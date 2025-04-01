@@ -58,7 +58,6 @@ func newTestGCNVDriver(mockAPI gcnvapi.GCNV) *NASStorageDriver {
 			AuthProviderX509CertURL: gcnvapi.AuthProviderX509CertURL,
 			ClientX509CertURL:       gcnvapi.ClientX509CertURL,
 		},
-		NFSMountOptions:     "nfsvers=3",
 		VolumeCreateTimeout: "10",
 	}
 
@@ -873,7 +872,7 @@ func TestPopulateConfigurationDefaults_NoneSet(t *testing.T) {
 	assert.Equal(t, drivers.DefaultVolumeSize, driver.Config.Size, "size mismatch")
 	assert.Equal(t, gcnvapi.ServiceLevelStandard, driver.Config.ServiceLevel, "service level mismatch")
 	assert.Equal(t, defaultStorageClass, driver.Config.StorageClass, "storage class mismatch")
-	assert.Equal(t, defaultNfsMountOptions, driver.Config.NFSMountOptions, "NFS mount options mismatch")
+	assert.Equal(t, "", driver.Config.NFSMountOptions, "NFS mount options mismatch")
 	assert.Equal(t, "", driver.Config.SnapshotDir, "snapshot dir mismatch")
 	assert.Equal(t, defaultSnapshotReserve, driver.Config.SnapshotReserve, "snapshot reserve mismatch")
 	assert.Equal(t, defaultUnixPermissions, driver.Config.UnixPermissions, "unix permissions mismatch")
@@ -1161,7 +1160,7 @@ func getStructsForCreateNFSVolume(ctx context.Context, driver *NASStorageDriver,
 				AllowedClients: "0.0.0.0/0",
 				SMB:            false,
 				Nfsv3:          true,
-				Nfsv4:          false,
+				Nfsv4:          true,
 				RuleIndex:      1,
 				AccessType:     gcnvapi.AccessTypeReadWrite,
 			},
@@ -1197,12 +1196,12 @@ func getStructsForCreateNFSVolume(ctx context.Context, driver *NASStorageDriver,
 		ServiceLevel:      gcnvapi.ServiceLevelPremium,
 		SizeBytes:         gcnvapi.VolumeSizeI64,
 		ExportPolicy:      exportPolicy,
-		ProtocolTypes:     []string{gcnvapi.ProtocolTypeNFSv3},
+		ProtocolTypes:     []string{gcnvapi.ProtocolTypeNFSv3, gcnvapi.ProtocolTypeNFSv41},
 		MountTargets:      nil,
 		UnixPermissions:   "0755",
 		Labels:            nil,
 		SnapshotReserve:   0,
-		SnapshotDirectory: false,
+		SnapshotDirectory: true,
 		SecurityStyle:     "Unix",
 	}
 
@@ -1212,7 +1211,7 @@ func getStructsForCreateNFSVolume(ctx context.Context, driver *NASStorageDriver,
 		CapacityPool:    "CP1",
 		SizeBytes:       gcnvapi.VolumeSizeI64,
 		ExportPolicy:    exportPolicy,
-		ProtocolTypes:   []string{gcnvapi.ProtocolTypeNFSv3},
+		ProtocolTypes:   []string{gcnvapi.ProtocolTypeNFSv3, gcnvapi.ProtocolTypeNFSv41},
 		UnixPermissions: "0755",
 		Labels: map[string]string{
 			"backend_uuid":     gcnvapi.BackendUUID,
@@ -1222,7 +1221,7 @@ func getStructsForCreateNFSVolume(ctx context.Context, driver *NASStorageDriver,
 			"version":          driver.fixGCPLabelValue(driver.telemetry.TridentVersion),
 		},
 		SnapshotReserve:   nil,
-		SnapshotDirectory: false,
+		SnapshotDirectory: true,
 		SecurityStyle:     "Unix",
 	}
 
@@ -1311,7 +1310,7 @@ func TestCreate_NFSVolume(t *testing.T) {
 	assert.Equal(t, volume.FullName, volConfig.InternalID, "internal ID not set on volConfig")
 	assert.Equal(t, strconv.FormatInt(createRequest.SizeBytes, 10), volConfig.Size, "request size mismatch")
 	assert.Equal(t, gcnvapi.ServiceLevelPremium, volConfig.ServiceLevel)
-	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "true", volConfig.SnapshotDir)
 	assert.Equal(t, "0777", volConfig.UnixPermissions)
 }
 
@@ -1355,7 +1354,7 @@ func TestCreate_NFSVolume_MultipleCapacityPools_FirstSucceeds(t *testing.T) {
 	assert.Equal(t, volume.FullName, volConfig.InternalID, "internal ID not set on volConfig")
 	assert.Equal(t, strconv.FormatInt(createRequest.SizeBytes, 10), volConfig.Size, "request size mismatch")
 	assert.Equal(t, gcnvapi.ServiceLevelPremium, volConfig.ServiceLevel)
-	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "true", volConfig.SnapshotDir)
 	assert.Equal(t, "0777", volConfig.UnixPermissions)
 }
 
@@ -1407,7 +1406,7 @@ func TestCreate_NFSVolume_MultipleCapacityPools_SecondSucceeds(t *testing.T) {
 	assert.Equal(t, volume.FullName, volConfig.InternalID, "internal ID not set on volConfig")
 	assert.Equal(t, strconv.FormatInt(createRequest.SizeBytes, 10), volConfig.Size, "request size mismatch")
 	assert.Equal(t, gcnvapi.ServiceLevelPremium, volConfig.ServiceLevel)
-	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "true", volConfig.SnapshotDir)
 	assert.Equal(t, "0777", volConfig.UnixPermissions)
 }
 
@@ -1955,7 +1954,7 @@ func TestGCNVCreate_InvalidSnapshotReserve(t *testing.T) {
 	assert.Equal(t, createRequest.ProtocolTypes, volume.ProtocolTypes, "protocol type mismatch")
 	assert.Equal(t, volume.FullName, volConfig.InternalID, "internal ID not set on volConfig")
 	assert.Equal(t, gcnvapi.ServiceLevelPremium, volConfig.ServiceLevel)
-	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "true", volConfig.SnapshotDir)
 	assert.Equal(t, "0777", volConfig.UnixPermissions)
 }
 
@@ -1977,6 +1976,9 @@ func TestCreate_MountOptions(t *testing.T) {
 	volConfig, capacityPool, volume, createRequest := getStructsForCreateNFSVolume(ctx, driver, storagePool)
 	volConfig.MountOptions = "nfsvers=3"
 	createRequest.UnixPermissions = "0777"
+	createRequest.ProtocolTypes = []string{gcnvapi.ProtocolTypeNFSv3}
+	createRequest.ExportPolicy.Rules[0].Nfsv4 = false
+	createRequest.SnapshotDirectory = false
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
@@ -2014,7 +2016,6 @@ func TestCreate_MountOptions_NFSv4(t *testing.T) {
 
 	volConfig, capacityPool, volume, createRequest := getStructsForCreateNFSVolume(ctx, driver, storagePool)
 
-	volConfig.SnapshotDir = "false"
 	volConfig.MountOptions = "nfsvers=4"
 	volume.ProtocolTypes = []string{gcnvapi.ProtocolTypeNFSv41}
 	createRequest.ProtocolTypes = []string{gcnvapi.ProtocolTypeNFSv41}
@@ -2060,9 +2061,6 @@ func TestCreate_MountOptions_BothEnabled(t *testing.T) {
 	storagePool := driver.pools["gcnv_pool"]
 
 	volConfig, capacityPool, volume, createRequest := getStructsForCreateNFSVolume(ctx, driver, storagePool)
-
-	volConfig.SnapshotDir = "false"
-	volConfig.MountOptions = " "
 
 	createRequest.UnixPermissions = "0777"
 	createRequest.ProtocolTypes = []string{gcnvapi.ProtocolTypeNFSv3, gcnvapi.ProtocolTypeNFSv41}
@@ -2114,13 +2112,12 @@ func TestCreate_InvalidMountOptions(t *testing.T) {
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
 }
 
-func TestCreate_NFSVolume_DefaultMountOptions(t *testing.T) {
+func TestCreate_NFSVolume_VolConfigMountOptionsNFSv3(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
 	driver.Config.BackendName = "gcnv"
 	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
-	driver.Config.NFSMountOptions = ""
 
 	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
 	assert.NoError(t, err, "error occurred")
@@ -2131,7 +2128,13 @@ func TestCreate_NFSVolume_DefaultMountOptions(t *testing.T) {
 	storagePool := driver.pools["gcnv_pool"]
 
 	volConfig, capacityPool, volume, createRequest := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	volConfig.MountOptions = "nfsvers=3"
+	volConfig.SnapshotDir = "false"
+
 	createRequest.UnixPermissions = "0777"
+	createRequest.ProtocolTypes = []string{gcnvapi.ProtocolTypeNFSv3}
+	createRequest.ExportPolicy.Rules[0].Nfsv4 = false
+	createRequest.SnapshotDirectory = false
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
@@ -2147,8 +2150,6 @@ func TestCreate_NFSVolume_DefaultMountOptions(t *testing.T) {
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
 	assert.NoError(t, result, "create failed")
-	assert.Equal(t, createRequest.SizeBytes, DefaultVolumeSize, "request size mismatch")
-	assert.Equal(t, volConfig.Size, defaultVolumeSizeStr, "config size mismatch")
 	assert.Equal(t, volume.FullName, volConfig.InternalID, "internal ID not set on volConfig")
 }
 
@@ -2169,7 +2170,6 @@ func TestCreate_NFSVolume_VolConfigMountOptions(t *testing.T) {
 
 	volConfig, capacityPool, volume, createRequest := getStructsForCreateNFSVolume(ctx, driver, storagePool)
 	volConfig.MountOptions = "nfsvers=4.1"
-	volConfig.SnapshotDir = "false"
 
 	createRequest.UnixPermissions = "0777"
 	createRequest.ProtocolTypes = []string{gcnvapi.ProtocolTypeNFSv41}
@@ -2308,7 +2308,7 @@ func TestCreate_NFSVolumeWithPoolLabels(t *testing.T) {
 	assert.Equal(t, volume.FullName, volConfig.InternalID, "internal ID not set on volConfig")
 	assert.Equal(t, strconv.FormatInt(createRequest.SizeBytes, 10), volConfig.Size, "request size mismatch")
 	assert.Equal(t, gcnvapi.ServiceLevelPremium, volConfig.ServiceLevel)
-	assert.Equal(t, "false", volConfig.SnapshotDir)
+	assert.Equal(t, "true", volConfig.SnapshotDir)
 	assert.Equal(t, "0777", volConfig.UnixPermissions)
 }
 
@@ -5108,13 +5108,13 @@ func TestPublish_NFSVolume(t *testing.T) {
 	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
+	volConfig.MountOptions = "nfsvers=3"
 	publishInfo.NfsPath = volConfig.AccessInfo.NfsPath
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, volConfig).Return(volume, nil).Times(1)
 
 	result := driver.Publish(ctx, volConfig, publishInfo)
-
 	assert.Nil(t, result, "not nil")
 	assert.Equal(t, "/trident-testvol1", publishInfo.NfsPath, "NFS path mismatch")
 	assert.Equal(t, "1.1.1.1", publishInfo.NfsServerIP, "NFS server IP mismatch")
@@ -5132,6 +5132,7 @@ func TestPublish_ROClone_NFSVolume(t *testing.T) {
 	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	volConfig, volume, publishInfo := getStructsForPublishNFSVolume(ctx, driver)
+	volConfig.MountOptions = "nfsvers=3"
 	publishInfo.NfsPath = "/trident-testvol1/.snapshot/" + gcnvapi.SnapshotUUID
 	volConfig.CloneSourceVolumeInternal = volConfig.Name
 	volConfig.ReadOnlyClone = true

@@ -246,10 +246,6 @@ func (d *NASStorageDriver) populateConfigurationDefaults(
 		config.StorageClass = defaultStorageClass
 	}
 
-	if config.NFSMountOptions == "" {
-		config.NFSMountOptions = defaultNfsMountOptions
-	}
-
 	if config.SnapshotDir != "" {
 		// Set the snapshotDir provided in the config
 		snapDirFormatted, err := convert.ToFormattedBool(config.SnapshotDir)
