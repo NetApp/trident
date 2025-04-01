@@ -1222,13 +1222,13 @@ func (d OntapAPIREST) ExportPolicyExists(ctx context.Context, policyName string)
 	return true, nil
 }
 
-func (d OntapAPIREST) ExportRuleList(ctx context.Context, policyName string) (map[string]int, error) {
+func (d OntapAPIREST) ExportRuleList(ctx context.Context, policyName string) (map[int]string, error) {
 	ruleListResponse, err := d.api.ExportRuleList(ctx, policyName)
 	if err != nil {
 		return nil, fmt.Errorf("error listing export policy rules; %v", err)
 	}
 
-	rules := make(map[string]int)
+	rules := make(map[int]string)
 	if ruleListResponse != nil &&
 		ruleListResponse.Payload != nil &&
 		ruleListResponse.Payload.NumRecords != nil &&
@@ -1238,7 +1238,13 @@ func (d OntapAPIREST) ExportRuleList(ctx context.Context, policyName string) (ma
 		for _, rule := range exportRuleList {
 			for _, client := range rule.ExportRuleInlineClients {
 				if client.Match != nil && rule.Index != nil {
-					rules[*client.Match] = int(*rule.Index)
+					index := int(*rule.Index)
+					match := *client.Match
+					if existing, ok := rules[index]; ok && existing != "" {
+						rules[index] = fmt.Sprintf("%s,%s", existing, match)
+					} else {
+						rules[index] = match
+					}
 				}
 			}
 		}

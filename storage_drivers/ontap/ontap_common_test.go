@@ -2609,7 +2609,7 @@ func TestRemoveExportPolicyRules_Success(t *testing.T) {
 	exportPolicy := "testPolicy"
 	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1", "1.1.1.2"}}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1, "1.1.1.2": 2}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1", 2: "1.1.1.2"}, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil)
 
@@ -2639,7 +2639,7 @@ func TestRemoveExportPolicyRules_ErrorInFirstDestroy(t *testing.T) {
 	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1", "2.2.2.2"}}
 	fakeErr := errors.New("fake destroy error")
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1, "2.2.2.2": 2}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1", 2: "2.2.2.2"}, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(fakeErr)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil)
 
@@ -2653,7 +2653,7 @@ func TestRemoveExportPolicyRules_NoMatchingRules(t *testing.T) {
 	exportPolicy := "testPolicy"
 	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1"}}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"2.2.2.2": 1}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "2.2.2.2"}, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
@@ -2666,7 +2666,7 @@ func TestRemoveExportPolicyRules_AllIPsMatchInZapiRule(t *testing.T) {
 	exportPolicy := "testPolicy"
 	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.2", "1.1.1.1"}}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1, 1.1.1.2": 1}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1, 1.1.1.2"}, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
@@ -2680,7 +2680,7 @@ func TestRemoveExportPolicyRules_DuplicateIPsMatchInZapiRule(t *testing.T) {
 	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1", "1.1.1.2"}}
 
 	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).
-		Return(map[string]int{"1.1.1.1, 1.1.1.2": 1, "1.1.1.2, 1.1.1.1": 2}, nil)
+		Return(map[int]string{1: "1.1.1.1, 1.1.1.2", 2: "1.1.1.2, 1.1.1.1"}, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil).Times(1)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil).Times(1)
 
@@ -2694,7 +2694,7 @@ func TestRemoveExportPolicyRules_OneIPMatchInZapiRule(t *testing.T) {
 	exportPolicy := "testPolicy"
 	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.2"}}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1, 1.1.1.2": 1}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1, 1.1.1.2"}, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
@@ -2707,7 +2707,7 @@ func TestRemoveExportPolicyRules_NoIPMatchInZapiRule(t *testing.T) {
 	exportPolicy := "testPolicy"
 	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"2.2.2.2", "2.2.2.3"}}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1, 1.1.1.2": 1}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1, 1.1.1.2"}, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
@@ -2720,7 +2720,7 @@ func TestRemoveExportPolicyRules_EmptyHostIPList(t *testing.T) {
 	exportPolicy := "testPolicy"
 	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{}}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1"}, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
@@ -2733,7 +2733,7 @@ func TestRemoveExportPolicyRules_EmptyExportRuleList(t *testing.T) {
 	exportPolicy := "testPolicy"
 	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1"}}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{}, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
@@ -2746,7 +2746,7 @@ func TestRemoveExportPolicyRules_InvalidIPFormat(t *testing.T) {
 	exportPolicy := "testPolicy"
 	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"invalidIP"}}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1"}, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
@@ -2759,7 +2759,7 @@ func TestRemoveExportPolicyRules_MixedValidAndInvalidIPs(t *testing.T) {
 	exportPolicy := "testPolicy"
 	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1", "invalidIP"}}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1"}, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
@@ -2772,7 +2772,7 @@ func TestRemoveExportPolicyRules_IPsWithSpaces(t *testing.T) {
 	exportPolicy := "testPolicy"
 	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{" 1.1.1.1 ", " 1.1.1.2 "}}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1, "1.1.1.2": 2}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1", 2: "1.1.1.2"}, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil)
 
@@ -2786,7 +2786,7 @@ func TestRemoveExportPolicyRules_IPsWithMixedFormats(t *testing.T) {
 	exportPolicy := "testPolicy"
 	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1", "2001:db8::1"}}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"1.1.1.1": 1, "2001:db8::1": 2}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1", 2: "2001:db8::1"}, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil)
 
@@ -2800,7 +2800,7 @@ func TestRemoveExportPolicyRules_IPsMatchInMixedFormats(t *testing.T) {
 	exportPolicy := "testPolicy"
 	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1"}}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[string]int{"::ffff:1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "::ffff:1.1.1.1"}, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
@@ -2844,7 +2844,7 @@ func TestReconcileExportPolicyRules_AllRulesExist(t *testing.T) {
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{"192.168.1.1", "192.168.1.2"}
-	existingRules := map[string]int{"192.168.1.1": 1, "192.168.1.2": 2}
+	existingRules := map[int]string{1: "192.168.1.1", 2: "192.168.1.2"}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -2865,7 +2865,7 @@ func TestReconcileExportPolicyRules_CreateMissingRules(t *testing.T) {
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{"192.168.1.1", "192.168.1.2"}
-	existingRules := map[string]int{"192.168.1.1": 1}
+	existingRules := map[int]string{1: "192.168.1.1"}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -2885,7 +2885,7 @@ func TestReconcileExportPolicyRules_DeleteUndesiredRules(t *testing.T) {
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{"192.168.1.1"}
-	existingRules := map[string]int{"192.168.1.1": 1, "192.168.1.2": 2}
+	existingRules := map[int]string{1: "192.168.1.1", 2: "192.168.1.2"}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -2905,7 +2905,7 @@ func TestReconcileExportPolicyRules_CreateAndDeleteRules(t *testing.T) {
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{"192.168.1.1"}
-	existingRules := map[string]int{"192.168.1.2": 2}
+	existingRules := map[int]string{2: "192.168.1.2"}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -2925,7 +2925,7 @@ func TestReconcileExportPolicyRules_IPAddressesWithSpace(t *testing.T) {
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{" 192.168.1.1", "192.168.1.2 "}
-	existingRules := map[string]int{"192.168.1.1 ": 1, " 192.168.1.2": 2}
+	existingRules := map[int]string{1: "192.168.1.1 ", 2: " 192.168.1.2"}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -2946,7 +2946,7 @@ func TestReconcileExportPolicyRules_OverlappingIPAddressesAllIPsExists(t *testin
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{"192.168.1.1", "192.168.1.11", "192.168.1.111"}
-	existingRules := map[string]int{"192.168.1.1": 1, "192.168.1.11": 2, "192.168.1.111": 3}
+	existingRules := map[int]string{1: "192.168.1.1", 2: "192.168.1.11", 3: "192.168.1.111"}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -2966,7 +2966,7 @@ func TestReconcileExportPolicyRules_OverlappingIPAddressesWithCreate(t *testing.
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{"192.168.1.1", "192.168.1.11", "192.168.1.111"}
-	existingRules := map[string]int{"192.168.1.1": 1, "192.168.1.111": 3}
+	existingRules := map[int]string{1: "192.168.1.1", 3: "192.168.1.111"}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -2986,7 +2986,7 @@ func TestReconcileExportPolicyRules_OverlappingIPAddressesWithDelete(t *testing.
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{"192.168.1.1", "192.168.1.11", "192.168.1.111"}
-	existingRules := map[string]int{"192.168.1.1": 1, "192.168.1.11": 2, "192.168.1.111": 3, "192.168.1.112": 4}
+	existingRules := map[int]string{1: "192.168.1.1", 2: "192.168.1.11", 3: "192.168.1.111", 4: "192.168.1.112"}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -3006,7 +3006,7 @@ func TestReconcileExportPolicyRules_OverlappingIPAddressesWithCreateAndDelete(t 
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{"192.168.1.1", "192.168.1.11", "192.168.1.111"}
-	existingRules := map[string]int{"192.168.1.1": 1, "192.168.1.111": 3, "192.168.1.112": 4}
+	existingRules := map[int]string{1: "192.168.1.1", 3: "192.168.1.111", 4: "192.168.1.112"}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -3107,7 +3107,7 @@ func TestReconcileExportPolicyRules_ErrorDeletingRule(t *testing.T) {
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{"192.168.1.1"}
-	existingRules := map[string]int{"192.168.1.1": 1, "192.168.1.2": 2}
+	existingRules := map[int]string{1: "192.168.1.1", 2: "192.168.1.2"}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -3127,7 +3127,7 @@ func TestReconcileExportPolicyRules_EmptyDesiredRules(t *testing.T) {
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{}
-	existingRules := map[string]int{"192.168.1.1": 1, "192.168.1.2": 2}
+	existingRules := map[int]string{1: "192.168.1.1", 2: "192.168.1.2"}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -3148,7 +3148,7 @@ func TestReconcileExportPolicyRules_NilDesiredRules(t *testing.T) {
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	var desiredPolicyRules []string
-	existingRules := map[string]int{"192.168.1.1": 1, "192.168.1.2": 2}
+	existingRules := map[int]string{1: "192.168.1.1", 2: "192.168.1.2"}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -3169,7 +3169,7 @@ func TestReconcileExportPolicyRules_EmptyExistingRules(t *testing.T) {
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{"192.168.1.1", "192.168.1.2"}
-	existingRules := map[string]int{}
+	existingRules := map[int]string{}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -3190,7 +3190,7 @@ func TestReconcileExportPolicyRules_NilExistingRules(t *testing.T) {
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{"192.168.1.1", "192.168.1.2"}
-	var existingRules map[string]int
+	var existingRules map[int]string
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -3211,7 +3211,7 @@ func TestReconcileExportPolicyRules_DuplicateDesiredRules(t *testing.T) {
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{"192.168.1.1", "192.168.1.1"}
-	existingRules := map[string]int{"192.168.1.1": 1}
+	existingRules := map[int]string{1: "192.168.1.1"}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -3231,7 +3231,7 @@ func TestReconcileExportPolicyRules_MatchingIpV4IpV6NoCreate(t *testing.T) {
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{"192.168.1.1"}
-	existingRules := map[string]int{"::ffff:192.168.1.1": 1}
+	existingRules := map[int]string{1: "::ffff:192.168.1.1"}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -3251,7 +3251,7 @@ func TestReconcileExportPolicyRules_ExistingZapiRulesCreate(t *testing.T) {
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{"192.168.1.1", "192.168.1.3", "192.168.1.4"}
-	existingRules := map[string]int{"192.168.1.1, 192.168.1.2": 1}
+	existingRules := map[int]string{1: "192.168.1.1, 192.168.1.2"}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -3272,7 +3272,7 @@ func TestReconcileExportPolicyRules_ExistingZapiRulesDelete(t *testing.T) {
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{"192.168.1.3"}
-	existingRules := map[string]int{"192.168.1.1, 192.168.1.2": 1, "192.168.1.3": 2}
+	existingRules := map[int]string{1: "192.168.1.1, 192.168.1.2", 2: "192.168.1.3"}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -3292,7 +3292,7 @@ func TestReconcileExportPolicyRules_DuplicateExistingZapiRulesDelete(t *testing.
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{"192.168.1.3", "192.168.1.1"}
-	existingRules := map[string]int{"192.168.1.1, 192.168.1.2": 1, "192.168.1.1, 192.168.1.5": 3, "192.168.1.3": 2}
+	existingRules := map[int]string{1: "192.168.1.1, 192.168.1.2", 3: "192.168.1.1, 192.168.1.5", 2: "192.168.1.3"}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -3312,7 +3312,7 @@ func TestReconcileExportPolicyRules_DuplicateExistingMixZapiRestRulesDelete(t *t
 	ctx := context.TODO()
 	policyName := "testPolicy"
 	desiredPolicyRules := []string{"192.168.1.1"}
-	existingRules := map[string]int{"192.168.1.1, 192.168.1.2": 1, "192.168.1.1": 2}
+	existingRules := map[int]string{1: "192.168.1.1, 192.168.1.2", 2: "192.168.1.1"}
 	config := &drivers.OntapStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DebugTraceFlags: map[string]bool{"method": true},
@@ -3325,6 +3325,83 @@ func TestReconcileExportPolicyRules_DuplicateExistingMixZapiRestRulesDelete(t *t
 	clientAPI.EXPECT().ExportRuleDestroy(ctx, policyName, gomock.AnyOf(1, 2)).Return(nil).Times(1)
 
 	err := reconcileExportPolicyRules(ctx, policyName, desiredPolicyRules, clientAPI, config)
+	assert.NoError(t, err)
+}
+
+func TestReconcileExportPolicyRules_MaxDeleteCount_ExactLimit(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	policyName := "testPolicy"
+	desiredPolicyRules := []string{"192.168.1.0"}
+	existingRules := make(map[int]string)
+	for i := 0; i <= 10; i++ {
+		existingRules[i] = fmt.Sprintf("192.168.1.%d", i)
+	}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Return(existingRules, nil)
+	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, policyName, gomock.Any()).Return(nil).Times(10)
+
+	err := reconcileExportPolicyRules(ctx, policyName, desiredPolicyRules, mockAPI, &drivers.OntapStorageDriverConfig{})
+	assert.NoError(t, err)
+}
+
+func TestReconcileExportPolicyRules_MaxDeleteCount_BelowLimit(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	policyName := "testPolicy"
+	desiredPolicyRules := []string{"192.168.1.0"}
+	existingRules := make(map[int]string)
+	for i := 0; i <= 5; i++ {
+		existingRules[i] = fmt.Sprintf("192.168.1.%d", i)
+	}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Return(existingRules, nil)
+	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, policyName, gomock.Any()).Return(nil).Times(5)
+
+	err := reconcileExportPolicyRules(ctx, policyName, desiredPolicyRules, mockAPI, &drivers.OntapStorageDriverConfig{})
+	assert.NoError(t, err)
+}
+
+func TestReconcileExportPolicyRules_MaxDeleteCount_ZeroDelete(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	policyName := "testPolicy"
+	desiredPolicyRules := []string{}
+	existingRules := make(map[int]string)
+
+	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Return(existingRules, nil)
+	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, policyName, gomock.Any()).Return(nil).Times(0)
+
+	err := reconcileExportPolicyRules(ctx, policyName, desiredPolicyRules, mockAPI, &drivers.OntapStorageDriverConfig{})
+	assert.NoError(t, err)
+}
+
+func TestReconcileExportPolicyRules_MaxDeleteCount_AboveLimit(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	policyName := "testPolicy"
+	desiredPolicyRules := []string{"192.168.1.0"}
+	existingRules := make(map[int]string)
+	for i := 0; i <= 20; i++ {
+		existingRules[i] = fmt.Sprintf("192.168.1.%d", i)
+	}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Return(existingRules, nil)
+	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, policyName, gomock.Any()).Return(nil).Times(10)
+
+	err := reconcileExportPolicyRules(ctx, policyName, desiredPolicyRules, mockAPI, &drivers.OntapStorageDriverConfig{})
 	assert.NoError(t, err)
 }
 
@@ -3341,7 +3418,7 @@ func TestEnsureNodeAccessForPolicy_PolicyExist(t *testing.T) {
 
 	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
 	// Return an empty set of rules when asked for them
-	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(make(map[string]int), nil)
+	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(make(map[int]string), nil)
 	// Ensure that the rules are created after getting an empty list of rules
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
 		gomock.Any()).After(ruleListCall).Return(nil)
@@ -3367,7 +3444,7 @@ func TestEnsureNodeAccessForPolicy_PolicyDoesNotExist(t *testing.T) {
 	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(false, nil)
 	mockAPI.EXPECT().ExportPolicyCreate(ctx, policyName).Times(1).Return(nil)
 	// Return an empty set of rules when asked for them
-	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(make(map[string]int), nil)
+	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(make(map[int]string), nil)
 	// Ensure that the rules are created after getting an empty list of rules
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
 		gomock.Any()).After(ruleListCall).Return(nil)
@@ -3392,7 +3469,7 @@ func TestEnsureNodeAccessForPolicy_NoCidrRuleMatch(t *testing.T) {
 
 	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
 	// Return an empty set of rules when asked for them
-	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(make(map[string]int), nil)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(make(map[int]string), nil)
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 	ontapConfig.AutoExportPolicy = true
@@ -3415,7 +3492,7 @@ func TestEnsureNodeAccessForPolicy_RuleAlreadyExist(t *testing.T) {
 
 	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
 	// Return an empty set of rules when asked for them
-	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(map[int]string{1: "1.1.1.1"}, nil)
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 	ontapConfig.AutoExportPolicy = true
@@ -3438,7 +3515,7 @@ func TestEnsureNodeAccessForPolicy_AddRuleToPolicy(t *testing.T) {
 
 	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
 	// Return an empty set of rules when asked for them
-	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(make(map[string]int), nil)
+	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(make(map[int]string), nil)
 	// Ensure that the rules are created after getting an empty list of rules
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
 		gomock.Any()).After(ruleListCall).Return(nil)
@@ -3458,7 +3535,7 @@ func TestEnsureNodeAccessForPolicy_NodeWithInvalidIPs(t *testing.T) {
 	policyName := "testPolicy"
 
 	clientAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(true, nil)
-	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[string]int{"1.1.1.1": 1}, nil)
+	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[int]string{1: "1.1.1.1"}, nil)
 	clientAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 	err := ensureNodeAccessForPolicy(ctx, targetNode, clientAPI, config, policyName)
@@ -3473,7 +3550,7 @@ func TestEnsureNodeAccessForPolicy_NodeWithNoIPs(t *testing.T) {
 	policyName := "testPolicy"
 
 	clientAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(true, nil)
-	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[string]int{"1.1.1.1": 1}, nil)
+	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[int]string{1: "1.1.1.1"}, nil)
 	clientAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 	err := ensureNodeAccessForPolicy(ctx, targetNode, clientAPI, config, policyName)
@@ -3488,7 +3565,7 @@ func TestEnsureNodeAccessForPolicy_NodeWithMultipleIPs(t *testing.T) {
 	policyName := "testPolicy"
 
 	clientAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(true, nil)
-	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[string]int{"192.168.1.1": 1}, nil)
+	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[int]string{1: "192.168.1.1"}, nil)
 	clientAPI.EXPECT().ExportRuleCreate(ctx, policyName, "192.168.1.2", config.NASType).Return(nil)
 
 	err := ensureNodeAccessForPolicy(ctx, targetNode, clientAPI, config, policyName)
@@ -3503,7 +3580,7 @@ func TestEnsureNodeAccessForPolicy_NodeWithIPv6(t *testing.T) {
 	policyName := "testPolicy"
 
 	clientAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(true, nil)
-	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[string]int{}, nil)
+	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[int]string{}, nil)
 	clientAPI.EXPECT().ExportRuleCreate(ctx, policyName, "2001:db8::1", config.NASType).Return(nil)
 
 	err := ensureNodeAccessForPolicy(ctx, targetNode, clientAPI, config, policyName)
@@ -3518,7 +3595,7 @@ func TestEnsureNodeAccessForPolicy_NodeWithMixedIPv4AndIPv6(t *testing.T) {
 	policyName := "testPolicy"
 
 	clientAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(true, nil)
-	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[string]int{"192.168.1.1": 1}, nil)
+	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[int]string{1: "192.168.1.1"}, nil)
 	clientAPI.EXPECT().ExportRuleCreate(ctx, policyName, "2001:db8::1", config.NASType).Return(nil)
 
 	err := ensureNodeAccessForPolicy(ctx, targetNode, clientAPI, config, policyName)
@@ -3533,7 +3610,7 @@ func TestEnsureNodeAccessForPolicy_NodeWithDuplicateIPs(t *testing.T) {
 	policyName := "testPolicy"
 
 	clientAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(true, nil)
-	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[string]int{"192.168.1.1": 1}, nil)
+	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[int]string{1: "192.168.1.1"}, nil)
 	clientAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 	err := ensureNodeAccessForPolicy(ctx, targetNode, clientAPI, config, policyName)
@@ -3548,7 +3625,7 @@ func TestEnsureNodeAccessForPolicy_MatchingIPv4IPv6NoCreate(t *testing.T) {
 	policyName := "testPolicy"
 
 	clientAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(true, nil)
-	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[string]int{"::ffff:192.168.1.1": 1}, nil)
+	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[int]string{1: "::ffff:192.168.1.1"}, nil)
 	clientAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 	err := ensureNodeAccessForPolicy(ctx, targetNode, clientAPI, config, policyName)
@@ -3600,7 +3677,7 @@ func TestEnsureNodeAccessForPolicy_WithErrorInApiOperation(t *testing.T) {
 	driver.Config.AutoExportPolicy = true
 	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Times(1).Return(true, nil)
-	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(make(map[string]int), nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Times(1).Return(make(map[int]string), nil)
 	mockAPI.EXPECT().ExportRuleCreate(ctx, policyName, nodeIP, gomock.Any()).Times(1).Return(mockError)
 
 	err = ensureNodeAccessForPolicy(ctx, nodes[0], mockAPI, &driver.Config, policyName)
@@ -3621,7 +3698,7 @@ func TestEnsureNodeAccessForPolicy_ExportRuleCombinationForZapiAndRest(t *testin
 	nodes := make([]*tridentmodels.Node, 0)
 	nodes = append(nodes, &tridentmodels.Node{Name: "node1", IPs: []string{nodeIP}})
 
-	zapiExportRule := map[string]int{"10.1.1.26, 10.1.1.0": 1}
+	zapiExportRule := map[int]string{1: "10.1.1.26, 10.1.1.0"}
 
 	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
 	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(zapiExportRule, nil)
@@ -3636,7 +3713,7 @@ func TestEnsureNodeAccessForPolicy_ExportRuleCombinationForZapiAndRest(t *testin
 	nodes = make([]*tridentmodels.Node, 0)
 	nodes = append(nodes, &tridentmodels.Node{Name: "node1", IPs: []string{nodeIP}})
 
-	restExportRule := map[string]int{"10.1.1.26": 1, "10.1.1.0": 2}
+	restExportRule := map[int]string{1: "10.1.1.26", 2: "10.1.1.0"}
 
 	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
 	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(restExportRule, nil)
@@ -3651,7 +3728,7 @@ func TestEnsureNodeAccessForPolicy_ExportRuleCombinationForZapiAndRest(t *testin
 	nodes = make([]*tridentmodels.Node, 0)
 	nodes = append(nodes, &tridentmodels.Node{Name: "node1", IPs: []string{nodeIP}})
 
-	restExportRule = map[string]int{"10.1.1.2, 10.1.1.3": 1, "10.1.1.4": 2}
+	restExportRule = map[int]string{1: "10.1.1.2, 10.1.1.3", 2: "10.1.1.4"}
 
 	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
 	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(restExportRule, nil)
@@ -3666,7 +3743,7 @@ func TestEnsureNodeAccessForPolicy_ExportRuleCombinationForZapiAndRest(t *testin
 	nodes = make([]*tridentmodels.Node, 0)
 	nodes = append(nodes, &tridentmodels.Node{Name: "node1", IPs: []string{nodeIP}})
 
-	restExportRule = map[string]int{"10.1.1.1, 10.1.1.3": 1, "10.1.1.1": 2}
+	restExportRule = map[int]string{1: "10.1.1.1, 10.1.1.3", 2: "10.1.1.1"}
 
 	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
 	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(restExportRule, nil)
@@ -3693,7 +3770,7 @@ func TestEnsureNodeAccessForPolicy_OverlappingStringInIPs(t *testing.T) {
 
 	// CASE 1: desired rules for the node matches the existing zapi format export rule
 
-	zapiExportRule := map[string]int{"10.10.1.118, 10.10.1.11": 1}
+	zapiExportRule := map[int]string{1: "10.10.1.118, 10.10.1.11"}
 
 	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
 	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(zapiExportRule, nil)
@@ -3703,7 +3780,7 @@ func TestEnsureNodeAccessForPolicy_OverlappingStringInIPs(t *testing.T) {
 
 	// CASE 2: both desired rules for the node does not matches the existing zapi format export rule
 
-	zapiExportRule = map[string]int{"10.10.1.222, 10.10.1.223": 1}
+	zapiExportRule = map[int]string{1: "10.10.1.222, 10.10.1.223"}
 
 	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
 	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(zapiExportRule, nil)
@@ -3715,7 +3792,7 @@ func TestEnsureNodeAccessForPolicy_OverlappingStringInIPs(t *testing.T) {
 
 	// CASE 3: one desired rule for the node does not match the existing zapi format export rule
 
-	zapiExportRule = map[string]int{"10.10.1.11, 10.10.1.223": 1}
+	zapiExportRule = map[int]string{1: "10.10.1.11, 10.10.1.223"}
 
 	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
 	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(zapiExportRule, nil)
@@ -3726,7 +3803,7 @@ func TestEnsureNodeAccessForPolicy_OverlappingStringInIPs(t *testing.T) {
 
 	// CASE 4: desired rules for the node matches the existing REST format export rule
 
-	restExportRule := map[string]int{"10.10.1.118": 1, "10.10.1.11": 2}
+	restExportRule := map[int]string{1: "10.10.1.118", 2: "10.10.1.11"}
 
 	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
 	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(restExportRule, nil)
@@ -3736,7 +3813,7 @@ func TestEnsureNodeAccessForPolicy_OverlappingStringInIPs(t *testing.T) {
 
 	// CASE 5: both desired rules for the node does not match the existing REST format export rule
 
-	restExportRule = map[string]int{"10.10.1.222": 1, "10.10.1.223": 2}
+	restExportRule = map[int]string{1: "10.10.1.222", 2: "10.10.1.223"}
 
 	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
 	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(restExportRule, nil)
@@ -3748,7 +3825,7 @@ func TestEnsureNodeAccessForPolicy_OverlappingStringInIPs(t *testing.T) {
 
 	// CASE 6: one desired rule f for the node does not match the existing REST format export rule
 
-	restExportRule = map[string]int{"10.10.1.11": 1, "10.10.1.223": 2}
+	restExportRule = map[int]string{1: "10.10.1.11", 2: "10.10.1.223"}
 
 	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
 	mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Times(1).Return(restExportRule, nil)
@@ -4296,7 +4373,7 @@ func TestGetDesiredExportPolicyRules_NodesWithDuplicateIPs(t *testing.T) {
 
 	rules, err := getDesiredExportPolicyRules(ctx, nodes, config)
 	assert.NoError(t, err)
-	assert.ElementsMatch(t, []string{"192.168.1.1", "192.168.1.1", "192.168.1.10", "192.168.1.20"}, rules)
+	assert.ElementsMatch(t, []string{"192.168.1.1", "192.168.1.10", "192.168.1.20"}, rules)
 }
 
 func TestGetDesiredExportPolicyRules_NodeWithMixedValidAndInvalidIPs(t *testing.T) {
@@ -4425,14 +4502,14 @@ func TestReconcileNASNodeAccess(t *testing.T) {
 
 	policyName := "fakePolicy"
 
-	ruleMap := make(map[string]int)
-	ruleMap["1.1.1.1"] = 1
+	ruleMap := make(map[int]string)
+	ruleMap[1] = "1.1.1.1"
 	error := fmt.Errorf("Error returned")
 
 	// Test1: Poitive flow
 	mockAPI.EXPECT().ExportPolicyCreate(ctx, policyName).Return(nil)
 	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Return(ruleMap, nil)
-	mockAPI.EXPECT().ExportRuleDestroy(ctx, policyName, ruleMap["1.1.1.1"]).Return(nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, policyName, 1).Return(nil)
 
 	err := reconcileNASNodeAccess(ctx, nodeList, config, mockAPI, policyName)
 
@@ -4460,7 +4537,7 @@ func TestReconcileNASNodeAccess(t *testing.T) {
 	config.AutoExportCIDRs = []string{}
 	mockAPI.EXPECT().ExportPolicyCreate(ctx, policyName).Return(nil)
 	mockAPI.EXPECT().ExportRuleList(ctx, policyName).Return(ruleMap, nil)
-	mockAPI.EXPECT().ExportRuleDestroy(ctx, policyName, ruleMap["1.1.1.1"]).AnyTimes().Return(error)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, policyName, 1).AnyTimes().Return(error)
 
 	err = reconcileNASNodeAccess(ctx, nodeList, config, mockAPI, policyName)
 
@@ -4564,7 +4641,7 @@ func TestReconcileNASNodeAccess_Success(t *testing.T) {
 	nodes := []*tridentmodels.Node{&node}
 
 	clientAPI.EXPECT().ExportPolicyCreate(ctx, policyName).Return(nil).Times(1)
-	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[string]int{}, nil).Times(1)
+	clientAPI.EXPECT().ExportRuleList(ctx, policyName).Return(map[int]string{}, nil).Times(1)
 	clientAPI.EXPECT().ExportRuleCreate(ctx, policyName, "1.1.1.1", config.NASType).
 		Return(nil).Times(1)
 	clientAPI.EXPECT().ExportRuleDestroy(ctx, policyName, gomock.Any()).Times(0)

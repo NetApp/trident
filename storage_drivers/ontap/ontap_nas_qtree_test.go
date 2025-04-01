@@ -585,7 +585,7 @@ func addCommonExpectToMockApiForInitialize(mockAPI *mockapi.MockOntapAPI) {
 	mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).AnyTimes().Return(map[string]string{}, nil)
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).AnyTimes().Return([]string{"10.0.0.1"}, nil)
 	mockAPI.EXPECT().ExportPolicyCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
-	mockAPI.EXPECT().ExportRuleList(ctx, gomock.Any()).AnyTimes().Return(map[string]int{}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, gomock.Any()).AnyTimes().Return(map[int]string{}, nil)
 	mockAPI.EXPECT().ExportRuleCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().QuotaResize(ctx, gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), gomock.Any(), false, "heartbeat",
@@ -641,7 +641,7 @@ func TestValidate_Success(t *testing.T) {
 	// Provide expect for mockAPI
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return([]string{"10.0.0.0"}, nil)
 	mockAPI.EXPECT().ExportPolicyCreate(ctx, gomock.Any()).Return(nil)
-	mockAPI.EXPECT().ExportRuleList(ctx, gomock.Any()).Return(map[string]int{}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, gomock.Any()).Return(map[int]string{}, nil)
 	mockAPI.EXPECT().ExportRuleCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 
 	// Provide basic configuration for driver
@@ -719,7 +719,7 @@ func TestValidate_WithNoAutoExportPolicy(t *testing.T) {
 	// Provide expect for mockAPI
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return([]string{"10.0.0.0"}, nil)
 	mockAPI.EXPECT().ExportPolicyCreate(ctx, gomock.Any()).Return(nil)
-	mockAPI.EXPECT().ExportRuleList(ctx, gomock.Any()).Return(map[string]int{}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, gomock.Any()).Return(map[int]string{}, nil)
 	mockAPI.EXPECT().ExportRuleCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 
 	// Validate
@@ -1236,7 +1236,7 @@ func TestPublishQtreeShare_LegacyVolumeWithEmptyPolicyInConfig_Success(t *testin
 		&api.Qtree{ExportPolicy: backendPolicy, Volume: flexVolName}, nil).Times(1)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Return(true, nil).Times(2)
 	// Return node ip rules when asked for them
-	mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(map[string]int{"1.1.1.1": 1}, nil).Times(2)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(map[int]string{1: "1.1.1.1"}, nil).Times(2)
 	mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, backendPolicy).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, backendPolicy).AnyTimes().Return(nil).Times(1)
 
@@ -1274,8 +1274,8 @@ func TestPublishQtreeShare_WithEmptyPolicy_Success(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).AnyTimes().Return(true, nil)
 	// Return an empty set of rules when asked for them
-	ruleListCall1 := mockAPI.EXPECT().ExportRuleList(gomock.Any(), qtreeName).Return(make(map[string]int), nil)
-	ruleListCall2 := mockAPI.EXPECT().ExportRuleList(gomock.Any(), flexVolPolicy).Return(make(map[string]int), nil)
+	ruleListCall1 := mockAPI.EXPECT().ExportRuleList(gomock.Any(), qtreeName).Return(make(map[int]string), nil)
+	ruleListCall2 := mockAPI.EXPECT().ExportRuleList(gomock.Any(), flexVolPolicy).Return(make(map[int]string), nil)
 	// Ensure that the rules are created after getting an empty list of rules
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
 		gomock.Any()).After(ruleListCall1).Return(nil)
@@ -1315,8 +1315,8 @@ func TestPublishQtreeShare_WithBackendPolicy_Success(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).AnyTimes().Return(true, nil)
 	// Return an empty set of rules when asked for them
-	ruleListCall1 := mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(make(map[string]int), nil)
-	ruleListCall2 := mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(make(map[string]int), nil)
+	ruleListCall1 := mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(make(map[int]string), nil)
+	ruleListCall2 := mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(make(map[int]string), nil)
 	// Ensure that the rules are created after getting an empty list of rules
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
 		gomock.Any()).After(ruleListCall1).Return(nil)
@@ -1336,8 +1336,8 @@ func TestPublishQtreeShare_WithBackendPolicy_Success(t *testing.T) {
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).AnyTimes().Return(true, nil)
 	// Return node ip rules when asked for them
-	mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(map[string]int{"1.1.1.1": 1}, nil)
-	mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(map[int]string{1: "1.1.1.1"}, nil)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(map[int]string{1: "1.1.1.1"}, nil)
 	mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, backendPolicy).AnyTimes().Return(nil)
 	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, backendPolicy).AnyTimes().Return(nil)
 
@@ -1400,7 +1400,7 @@ func TestPublishQtreeShare_WithErrorInApiOperation(t *testing.T) {
 	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Return(true, nil)
 	// Return an empty set of rules when asked for them
-	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), qtreeName).Return(make(map[string]int), nil)
+	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), qtreeName).Return(make(map[int]string), nil)
 	// Ensure that the rules are created after getting an empty list of rules
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
 		gomock.Any()).After(ruleListCall).Return(nil)
@@ -3835,7 +3835,7 @@ func TestReconcileNodeAccess(t *testing.T) {
 	volToNodePublications = make(map[string][]*models.VolumePublication)
 	nodes = make([]*models.Node, 0)
 	mockAPI.EXPECT().ExportPolicyCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
-	mockAPI.EXPECT().ExportRuleList(ctx, gomock.Any()).AnyTimes().Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, gomock.Any()).AnyTimes().Return(map[int]string{1: "1.1.1.1"}, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, gomock.Any(), 1).Return(nil)
 
 	err = driver.ReconcileNodeAccess(ctx, nodes, BackendUUID, "")
@@ -3870,7 +3870,7 @@ func TestReconcileNodeAccess(t *testing.T) {
 	driver.Config.AutoExportPolicy = true
 	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
 	mockAPI.EXPECT().ExportPolicyCreate(ctx, backendPolicy).AnyTimes().Return(nil)
-	mockAPI.EXPECT().ExportRuleList(ctx, gomock.Any()).AnyTimes().Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, gomock.Any()).AnyTimes().Return(map[int]string{1: "1.1.1.1"}, nil)
 
 	err = driver.ReconcileNodeAccess(ctx, nodes, BackendUUID, "")
 	assert.NoError(t, err, "Reconcile node access failed")
@@ -3904,7 +3904,7 @@ func TestReconcileNodeAccess(t *testing.T) {
 	driver.Config.AutoExportPolicy = true
 	driver.Config.AutoExportCIDRs = []string{"2.2.2.2/32"}
 	mockAPI.EXPECT().ExportPolicyCreate(ctx, backendPolicy).AnyTimes().Return(nil)
-	mockAPI.EXPECT().ExportRuleList(ctx, gomock.Any()).AnyTimes().Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, gomock.Any()).AnyTimes().Return(map[int]string{1: "1.1.1.1"}, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, backendPolicy, 1)
 
 	err = driver.ReconcileNodeAccess(ctx, nodes, BackendUUID, "")
@@ -3974,7 +3974,7 @@ func TestReconcileNodeAccess(t *testing.T) {
 	driver.Config.AutoExportPolicy = true
 	driver.Config.AutoExportCIDRs = []string{"2.2.2.2/32"}
 	mockAPI.EXPECT().ExportPolicyCreate(ctx, backendPolicy).AnyTimes().Return(nil)
-	mockAPI.EXPECT().ExportRuleList(ctx, backendPolicy).AnyTimes().Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, backendPolicy).AnyTimes().Return(map[int]string{1: "1.1.1.1"}, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, backendPolicy, 1)
 
 	err = driver.ReconcileNodeAccess(ctx, nodes, BackendUUID, "")
@@ -4090,7 +4090,7 @@ func TestNASQtreeStorageDriver_ensureDefaultExportPolicyRule_NoRulesSet(t *testi
 
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	// Return an empty set of rules when asked for them
-	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), fakeExportPolicy).Return(make(map[string]int), nil)
+	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), fakeExportPolicy).Return(make(map[int]string), nil)
 	// Ensure that the default rules are created after getting an empty list of rules
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), rules[0],
 		gomock.Any()).After(ruleListCall).Return(nil)
@@ -4109,10 +4109,10 @@ func TestNASQtreeStorageDriver_ensureDefaultExportPolicyRule_RulesExist(t *testi
 	mockCtrl := gomock.NewController(t)
 
 	fakeExportPolicy := "foobar"
-	fakeRules := map[string]int{
-		"foo": 0,
-		"bar": 1,
-		"baz": 2,
+	fakeRules := map[int]string{
+		0: "foo",
+		1: "bar",
+		2: "baz",
 	}
 
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
@@ -4152,7 +4152,7 @@ func TestNASQtreeStorageDriver_ensureDefaultExportPolicyRule_ErrorCreatingRules(
 
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	// Return an empty set of rules when asked for them
-	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), fakeExportPolicy).Return(make(map[string]int), nil)
+	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), fakeExportPolicy).Return(make(map[int]string), nil)
 	// Ensure that the default rules are created after getting an empty list of rules
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), rules[0], gomock.Any()).After(ruleListCall).Return(
 		fmt.Errorf("foobar"),
@@ -5763,7 +5763,7 @@ func TestOntapNasEcoUnpublish(t *testing.T) {
 				mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, gomock.Any()).
 					Return(&api.Qtree{ExportPolicy: qtreeName, Volume: flexVolName}, nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, qtreeName).
-					Return(map[string]int{"1.1.1.1": 1, "2.2.2.2": 2}, nil)
+					Return(map[int]string{1: "1.1.1.1", 2: "2.2.2.2"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, qtreeName, gomock.Any()).Times(2)
 				mockAPI.EXPECT().ExportRuleList(ctx, qtreeName)
 				mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, "tridentempty")
@@ -5778,7 +5778,7 @@ func TestOntapNasEcoUnpublish(t *testing.T) {
 				mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, gomock.Any()).
 					Return(&api.Qtree{ExportPolicy: qtreeName, Volume: flexVolName}, nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, qtreeName).
-					Return(map[string]int{"1.1.1.1": 1, "2.2.2.2": 2}, nil)
+					Return(map[int]string{1: "1.1.1.1", 2: "2.2.2.2"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, qtreeName, gomock.Any()).Times(2)
 				mockAPI.EXPECT().ExportRuleList(ctx, qtreeName)
 				mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, "tridentempty").
@@ -5800,9 +5800,9 @@ func TestOntapNasEcoUnpublish(t *testing.T) {
 				mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, gomock.Any()).
 					Return(&api.Qtree{ExportPolicy: qtreeName, Volume: flexVolName}, nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, qtreeName).
-					Return(map[string]int{"1.1.1.1": 1, "2.2.2.2": 2, "4.4.4.4": 4, "5.5.5.5": 5}, nil)
+					Return(map[int]string{1: "1.1.1.1", 2: "2.2.2.2", 4: "4.4.4.4", 5: "5.5.5.5"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, qtreeName, gomock.Any()).Times(2)
-				mockAPI.EXPECT().ExportRuleList(ctx, qtreeName).Return(map[string]int{"4.4.4.4": 4, "5.5.5.5": 5}, nil)
+				mockAPI.EXPECT().ExportRuleList(ctx, qtreeName).Return(map[int]string{4: "4.4.4.4", 5: "5.5.5.5"}, nil)
 			},
 			wantErr: assert.NoError,
 		},

@@ -4667,7 +4667,7 @@ func TestPublishFlexVolShare_WithEmptyPolicy_Success(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).AnyTimes().Return(true, nil)
 	// Return an empty set of rules when asked for them
-	ruleListCall1 := mockAPI.EXPECT().ExportRuleList(gomock.Any(), flexVolName).Return(make(map[string]int), nil)
+	ruleListCall1 := mockAPI.EXPECT().ExportRuleList(gomock.Any(), flexVolName).Return(make(map[int]string), nil)
 	// Ensure that the rules are created after getting an empty list of rules
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
 		gomock.Any()).After(ruleListCall1).Return(nil)
@@ -4703,7 +4703,7 @@ func TestPublishFlexVolShare_WithBackendPolicy_Success(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).AnyTimes().Return(true, nil)
 	// Return an empty set of rules when asked for them
-	ruleListCall1 := mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(make(map[string]int), nil)
+	ruleListCall1 := mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(make(map[int]string), nil)
 	// Ensure that the rules are created after getting an empty list of rules
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
 		gomock.Any()).After(ruleListCall1).Return(nil)
@@ -4720,7 +4720,7 @@ func TestPublishFlexVolShare_WithBackendPolicy_Success(t *testing.T) {
 	mockAPI, driver = newMockOntapNASDriver(t)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).AnyTimes().Return(true, nil)
 	// Return node ip rules when asked for them
-	mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(map[int]string{1: "1.1.1.1"}, nil)
 	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, backendPolicy).AnyTimes().Return(nil)
 
 	// Ensure auto export policy is enabled and CIDRs set
@@ -4780,7 +4780,7 @@ func TestPublishFlexVolShare_WithErrorInApiOperation(t *testing.T) {
 	driver.Config.AutoExportCIDRs = []string{"0.0.0.0/0"}
 	mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Return(true, nil)
 	// Return an empty set of rules when asked for them
-	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), flexVolName).Return(make(map[string]int), nil)
+	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), flexVolName).Return(make(map[int]string), nil)
 	// Ensure that the rules are created after getting an empty list of rules
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP,
 		gomock.Any()).After(ruleListCall).Return(nil)
@@ -4866,7 +4866,7 @@ func TestPublishFlexVolShare_LegacyVolumeWithEmptyPolicyInConfig_Success(t *test
 	mockAPI.EXPECT().VolumeInfo(ctx, flexVolName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil).Times(1)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, backendPolicy).Return(true, nil).Times(1)
 	// Return node ip rules when asked for them
-	mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(map[string]int{"1.1.1.1": 1}, nil)
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), backendPolicy).Return(map[int]string{1: "1.1.1.1"}, nil)
 	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, flexVolName, backendPolicy).Return(nil).Times(1)
 
 	// This handles the case where the customer originally created and mounted a volume in trident version <=23.01
@@ -4908,7 +4908,7 @@ func TestOntapNasUnpublish(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
 				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).
-					Return(map[string]int{"1.1.1.1": 1, "2.2.2.2": 2}, nil)
+					Return(map[int]string{1: "1.1.1.1", 2: "2.2.2.2"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, gomock.Any()).Times(2)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName)
 				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
@@ -4936,7 +4936,7 @@ func TestOntapNasUnpublish(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
 				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).
-					Return(map[string]int{"1.1.1.1": 1, "2.2.2.2": 2}, nil)
+					Return(map[int]string{1: "1.1.1.1", 2: "2.2.2.2"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, gomock.Any()).Times(2)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName)
 				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(false, nil)
@@ -4955,9 +4955,9 @@ func TestOntapNasUnpublish(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
 				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).
-					Return(map[string]int{"1.1.1.1": 1, "2.2.2.2": 2, "4.4.4.4": 4, "5.5.5.5": 5}, nil)
+					Return(map[int]string{1: "1.1.1.1", 2: "2.2.2.2", 4: "4.4.4.4", 5: "5.5.5.5"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, gomock.Any()).Times(2)
-				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[string]int{"4.4.4.4": 4, "5.5.5.5": 5}, nil)
+				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{4: "4.4.4.4", 5: "5.5.5.5"}, nil)
 			},
 			wantErr: assert.NoError,
 		},
@@ -4987,7 +4987,7 @@ func TestOntapNasUnpublish(t *testing.T) {
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
 				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
-				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[string]int{"1.1.1.1": 1, "2.2.2.2": 2}, nil)
+				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{1: "1.1.1.1", 2: "2.2.2.2"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, gomock.Any()).Times(2)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(nil, fmt.Errorf("some api error"))
 			},

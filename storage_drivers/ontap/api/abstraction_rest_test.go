@@ -2489,36 +2489,186 @@ func TestExportPolicyExists(t *testing.T) {
 	assert.Equal(t, false, isExists)
 }
 
-func TestExportRuleList(t *testing.T) {
-	exportClient := "exportClientMatch"
-	ruleIndex := int64(1)
-	numRecords := int64(1)
+func TestExportRuleList_NoDuplicateRules(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
+
+	policyName := "testPolicy"
+	expectedRules := map[int]string{
+		1: "192.168.1.1",
+		2: "192.168.1.2",
+	}
 
 	exportRule := models.ExportRuleResponse{
 		ExportRuleResponseInlineRecords: []*models.ExportRule{
 			{
-				ExportRuleInlineClients: []*models.ExportClients{{Match: &exportClient}},
-				Index:                   &ruleIndex,
+				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.1")}},
+				Index:                   convert.ToPtr(int64(1)),
+			},
+			{
+				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.2")}},
+				Index:                   convert.ToPtr(int64(2)),
 			},
 		},
-		NumRecords: &numRecords,
+		NumRecords: convert.ToPtr(int64(2)),
 	}
 
 	exportRuleResponse := nas.ExportRuleCollectionGetOK{
 		Payload: &exportRule,
 	}
 
-	// case 1: Export rule get list
-	rsi.EXPECT().ExportRuleList(ctx, "fake-policy").Return(&exportRuleResponse, nil)
-	rules, err := oapi.ExportRuleList(ctx, "fake-policy")
-	assert.NoError(t, err, "error returned while getting a export rule list")
-	assert.Equal(t, 1, rules["exportClientMatch"])
+	rsi.EXPECT().ExportRuleList(ctx, policyName).Return(&exportRuleResponse, nil)
 
-	// case 2: Export rule get list returned error
-	rsi.EXPECT().ExportRuleList(ctx, "fake-policy").Return(nil, fmt.Errorf("failed to get export rule"))
-	rules, err = oapi.ExportRuleList(ctx, "fake-policy")
-	assert.Error(t, err, "error returned while getting a export rule list")
+	rules, err := oapi.ExportRuleList(ctx, policyName)
+	assert.NoError(t, err)
+	assert.Equal(t, expectedRules, rules)
+}
+
+func TestExportRuleList_DuplicateRules(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	policyName := "testPolicy"
+	expectedRules := map[int]string{
+		1: "192.168.1.1",
+		2: "192.168.1.2",
+		3: "192.168.1.2",
+		4: "192.168.1.2",
+		5: "192.168.1.1",
+	}
+
+	exportRule := models.ExportRuleResponse{
+		ExportRuleResponseInlineRecords: []*models.ExportRule{
+			{
+				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.1")}},
+				Index:                   convert.ToPtr(int64(1)),
+			},
+			{
+				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.2")}},
+				Index:                   convert.ToPtr(int64(2)),
+			},
+			{
+				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.2")}},
+				Index:                   convert.ToPtr(int64(3)),
+			},
+			{
+				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.2")}},
+				Index:                   convert.ToPtr(int64(4)),
+			},
+			{
+				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.1")}},
+				Index:                   convert.ToPtr(int64(5)),
+			},
+		},
+		NumRecords: convert.ToPtr(int64(5)),
+	}
+
+	exportRuleResponse := nas.ExportRuleCollectionGetOK{
+		Payload: &exportRule,
+	}
+
+	rsi.EXPECT().ExportRuleList(ctx, policyName).Return(&exportRuleResponse, nil)
+
+	rules, err := oapi.ExportRuleList(ctx, policyName)
+	assert.NoError(t, err)
+	assert.Equal(t, expectedRules, rules)
+}
+
+func TestExportRuleList_MultiIPRule(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	policyName := "testPolicy"
+	expectedRules := map[int]string{
+		1: "192.168.1.1,10.2.2.1,10.0.0.1",
+		2: "192.168.1.2",
+		3: "192.168.1.2",
+		4: "192.168.1.2",
+		5: "192.168.1.1",
+	}
+
+	exportRule := models.ExportRuleResponse{
+		ExportRuleResponseInlineRecords: []*models.ExportRule{
+			{
+				ExportRuleInlineClients: []*models.ExportClients{
+					{Match: convert.ToPtr("192.168.1.1")},
+					{Match: convert.ToPtr("10.2.2.1")},
+					{Match: convert.ToPtr("10.0.0.1")},
+				},
+				Index: convert.ToPtr(int64(1)),
+			},
+			{
+				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.2")}},
+				Index:                   convert.ToPtr(int64(2)),
+			},
+			{
+				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.2")}},
+				Index:                   convert.ToPtr(int64(3)),
+			},
+			{
+				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.2")}},
+				Index:                   convert.ToPtr(int64(4)),
+			},
+			{
+				ExportRuleInlineClients: []*models.ExportClients{{Match: convert.ToPtr("192.168.1.1")}},
+				Index:                   convert.ToPtr(int64(5)),
+			},
+		},
+		NumRecords: convert.ToPtr(int64(5)),
+	}
+
+	exportRuleResponse := nas.ExportRuleCollectionGetOK{
+		Payload: &exportRule,
+	}
+
+	rsi.EXPECT().ExportRuleList(ctx, policyName).Return(&exportRuleResponse, nil)
+
+	rules, err := oapi.ExportRuleList(ctx, policyName)
+	assert.NoError(t, err)
+	assert.Equal(t, expectedRules, rules)
+}
+
+func TestExportRuleList_Error(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+	policyName := "testPolicy"
+
+	rsi.EXPECT().ExportRuleList(ctx, policyName).Return(nil,
+		fmt.Errorf("error listing export policy rules"))
+
+	rules, err := oapi.ExportRuleList(ctx, policyName)
+	assert.Error(t, err)
+	assert.Nil(t, rules)
+}
+
+func TestExportRuleList_NoRecords(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+	policyName := "testPolicy"
+
+	exportRule := models.ExportRuleResponse{
+		ExportRuleResponseInlineRecords: []*models.ExportRule{},
+		NumRecords:                      convert.ToPtr(int64(0)),
+	}
+	exportRuleResponse := nas.ExportRuleCollectionGetOK{
+		Payload: &exportRule,
+	}
+
+	rsi.EXPECT().ExportRuleList(ctx, policyName).Return(&exportRuleResponse, nil)
+
+	rules, err := oapi.ExportRuleList(ctx, policyName)
+	assert.NoError(t, err)
+	assert.Empty(t, rules)
+}
+
+func TestExportRuleList_NilPayload(t *testing.T) {
+	oapi, rsi := newMockOntapAPIREST(t)
+	policyName := "testPolicy"
+
+	exportRuleResponse := nas.ExportRuleCollectionGetOK{
+		Payload: nil,
+	}
+
+	rsi.EXPECT().ExportRuleList(ctx, policyName).Return(&exportRuleResponse, nil)
+
+	rules, err := oapi.ExportRuleList(ctx, policyName)
+	assert.NoError(t, err)
+	assert.Empty(t, rules)
 }
 
 func TestQtreeExists(t *testing.T) {

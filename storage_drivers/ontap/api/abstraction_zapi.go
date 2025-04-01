@@ -1849,18 +1849,18 @@ func (d OntapAPIZAPI) ExportPolicyExists(ctx context.Context, policyName string)
 	return true, nil
 }
 
-func (d OntapAPIZAPI) ExportRuleList(ctx context.Context, policyName string) (map[string]int, error) {
+func (d OntapAPIZAPI) ExportRuleList(ctx context.Context, policyName string) (map[int]string, error) {
 	ruleListResponse, err := d.api.ExportRuleGetIterRequest(policyName)
 	if err = azgo.GetError(ctx, ruleListResponse, err); err != nil {
 		return nil, fmt.Errorf("error listing export policy rules: %v", err)
 	}
-	rules := make(map[string]int)
+	rules := make(map[int]string)
 
 	if ruleListResponse.Result.NumRecords() > 0 {
 		rulesAttrList := ruleListResponse.Result.AttributesList()
 		exportRuleList := rulesAttrList.ExportRuleInfo()
 		for _, rule := range exportRuleList {
-			rules[rule.ClientMatch()] = rule.RuleIndex()
+			rules[rule.RuleIndex()] = rule.ClientMatch()
 		}
 	}
 

@@ -169,10 +169,10 @@ func (mr *MockOntapAPIMockRecorder) ExportRuleDestroy(arg0, arg1, arg2 any) *gom
 }
 
 // ExportRuleList mocks base method.
-func (m *MockOntapAPI) ExportRuleList(arg0 context.Context, arg1 string) (map[string]int, error) {
+func (m *MockOntapAPI) ExportRuleList(arg0 context.Context, arg1 string) (map[int]string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExportRuleList", arg0, arg1)
-	ret0, _ := ret[0].(map[string]int)
+	ret0, _ := ret[0].(map[int]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

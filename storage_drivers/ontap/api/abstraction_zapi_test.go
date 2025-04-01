@@ -10,6 +10,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 )
@@ -159,4 +160,138 @@ func TestLunGetAttributeZapi(t *testing.T) {
 	attributeValue, err = oapi.LunGetAttribute(ctx, tempLunPath, tempAttributeName)
 	assert.NoError(t, err)
 	assert.Equal(t, tempAttributeVale, attributeValue)
+}
+
+func TestExportRuleList_Zapi_NoDuplicateRules(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mock := mockapi.NewMockZapiClientInterface(ctrl)
+	oapi, err := api.NewOntapAPIZAPIFromZapiClientInterface(mock)
+	assert.NoError(t, err)
+
+	policyName := "testPolicy"
+	ruleListResponse := &azgo.ExportRuleGetIterResponse{
+		Result: azgo.ExportRuleGetIterResponseResult{
+			NumRecordsPtr: intPtr(2),
+			AttributesListPtr: &azgo.ExportRuleGetIterResponseResultAttributesList{
+				ExportRuleInfoPtr: []azgo.ExportRuleInfoType{
+					{RuleIndexPtr: intPtr(1), ClientMatchPtr: convert.ToPtr("192.168.1.0")},
+					{RuleIndexPtr: intPtr(2), ClientMatchPtr: convert.ToPtr("192.168.1.1")},
+				},
+			},
+			ResultStatusAttr: "passed",
+		},
+	}
+
+	mock.EXPECT().ExportRuleGetIterRequest(policyName).Return(ruleListResponse, nil).Times(1)
+	rules, err := oapi.ExportRuleList(ctx, policyName)
+	assert.NoError(t, err)
+	assert.Equal(t, map[int]string{1: "192.168.1.0", 2: "192.168.1.1"}, rules)
+}
+
+func TestExportRuleList_Zapi_DuplicateRules(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mock := mockapi.NewMockZapiClientInterface(ctrl)
+	oapi, err := api.NewOntapAPIZAPIFromZapiClientInterface(mock)
+	assert.NoError(t, err)
+
+	policyName := "testPolicy"
+	ruleListResponse := &azgo.ExportRuleGetIterResponse{
+		Result: azgo.ExportRuleGetIterResponseResult{
+			NumRecordsPtr: intPtr(5),
+			AttributesListPtr: &azgo.ExportRuleGetIterResponseResultAttributesList{
+				ExportRuleInfoPtr: []azgo.ExportRuleInfoType{
+					{RuleIndexPtr: intPtr(1), ClientMatchPtr: convert.ToPtr("192.168.1.1")},
+					{RuleIndexPtr: intPtr(2), ClientMatchPtr: convert.ToPtr("192.168.1.1")},
+					{RuleIndexPtr: intPtr(3), ClientMatchPtr: convert.ToPtr("192.168.1.2")},
+					{RuleIndexPtr: intPtr(4), ClientMatchPtr: convert.ToPtr("192.168.1.2")},
+					{RuleIndexPtr: intPtr(5), ClientMatchPtr: convert.ToPtr("192.168.1.1")},
+				},
+			},
+			ResultStatusAttr: "passed",
+		},
+	}
+
+	mock.EXPECT().ExportRuleGetIterRequest(policyName).Return(ruleListResponse, nil).Times(1)
+	rules, err := oapi.ExportRuleList(ctx, policyName)
+	assert.NoError(t, err)
+	assert.Equal(t, map[int]string{
+		1: "192.168.1.1",
+		2: "192.168.1.1",
+		3: "192.168.1.2",
+		4: "192.168.1.2",
+		5: "192.168.1.1",
+	}, rules)
+}
+
+func TestExportRuleList_Zapi_Error(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mock := mockapi.NewMockZapiClientInterface(ctrl)
+	oapi, err := api.NewOntapAPIZAPIFromZapiClientInterface(mock)
+	assert.NoError(t, err)
+
+	policyName := "testPolicy"
+
+	mock.EXPECT().ExportRuleGetIterRequest(policyName).Return(nil,
+		fmt.Errorf("error listing export policy rules")).Times(1)
+	rules, err := oapi.ExportRuleList(ctx, policyName)
+	assert.Error(t, err)
+	assert.Nil(t, rules)
+}
+
+func TestExportRuleList_Zapi_NoRecords(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mock := mockapi.NewMockZapiClientInterface(ctrl)
+	oapi, err := api.NewOntapAPIZAPIFromZapiClientInterface(mock)
+	assert.NoError(t, err)
+
+	policyName := "testPolicy"
+	ruleListResponse := &azgo.ExportRuleGetIterResponse{
+		Result: azgo.ExportRuleGetIterResponseResult{
+			NumRecordsPtr: intPtr(0),
+			AttributesListPtr: &azgo.ExportRuleGetIterResponseResultAttributesList{
+				ExportRuleInfoPtr: []azgo.ExportRuleInfoType{},
+			},
+			ResultStatusAttr: "passed",
+		},
+	}
+
+	mock.EXPECT().ExportRuleGetIterRequest(policyName).Return(ruleListResponse, nil).Times(1)
+	rules, err := oapi.ExportRuleList(ctx, policyName)
+	assert.NoError(t, err)
+	assert.Empty(t, rules)
+}
+
+func TestExportRuleList_Zapi_NilPayload(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mock := mockapi.NewMockZapiClientInterface(ctrl)
+	oapi, err := api.NewOntapAPIZAPIFromZapiClientInterface(mock)
+	assert.NoError(t, err)
+
+	policyName := "testPolicy"
+	ruleListResponse := &azgo.ExportRuleGetIterResponse{
+		Result: azgo.ExportRuleGetIterResponseResult{
+			NumRecordsPtr:     intPtr(0),
+			AttributesListPtr: nil,
+			ResultStatusAttr:  "passed",
+		},
+	}
+
+	mock.EXPECT().ExportRuleGetIterRequest(policyName).Return(ruleListResponse, nil).Times(1)
+	rules, err := oapi.ExportRuleList(ctx, policyName)
+	assert.NoError(t, err)
+	assert.Empty(t, rules)
+}
+
+func intPtr(i int) *int {
+	return &i
 }

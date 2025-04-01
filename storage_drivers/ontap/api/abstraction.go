@@ -58,7 +58,7 @@ type OntapAPI interface {
 	ExportPolicyExists(ctx context.Context, policyName string) (bool, error)
 	ExportRuleCreate(ctx context.Context, policyName, desiredPolicyRule, nasProtocol string) error
 	ExportRuleDestroy(ctx context.Context, policyName string, ruleIndex int) error
-	ExportRuleList(ctx context.Context, policyName string) (map[string]int, error)
+	ExportRuleList(ctx context.Context, policyName string) (map[int]string, error)
 
 	FlexgroupCreate(ctx context.Context, volume Volume) error
 	FlexgroupExists(ctx context.Context, volumeName string) (bool, error)

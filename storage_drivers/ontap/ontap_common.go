@@ -396,7 +396,7 @@ func ensureNodeAccessForPolicy(
 		// This can happen because of the difference in how ONTAP ZAPI and ONTAP REST creates export rule.
 
 		ruleFound := false
-		for existingRule := range existingRules {
+		for _, existingRule := range existingRules {
 			existingIPs := strings.Split(existingRule, ",")
 
 			for _, ip := range existingIPs {
@@ -439,17 +439,23 @@ func ensureNodeAccessForPolicy(
 func getDesiredExportPolicyRules(
 	ctx context.Context, nodes []*tridentmodels.Node, config *drivers.OntapStorageDriverConfig,
 ) ([]string, error) {
-	rules := make([]string, 0)
+	uniqueRules := make(map[string]struct{})
 	for _, node := range nodes {
 		// Filter the IPs based on the CIDRs provided by user
 		filteredIPs, err := network.FilterIPs(ctx, node.IPs, config.AutoExportCIDRs)
 		if err != nil {
 			return nil, err
 		}
-		if len(filteredIPs) > 0 {
-			rules = append(rules, filteredIPs...)
+		for _, ip := range filteredIPs {
+			uniqueRules[ip] = struct{}{}
 		}
 	}
+
+	rules := make([]string, 0, len(uniqueRules))
+	for ip := range uniqueRules {
+		rules = append(rules, ip)
+	}
+
 	return rules, nil
 }
 
@@ -458,7 +464,7 @@ func reconcileExportPolicyRules(
 	config *drivers.OntapStorageDriverConfig,
 ) error {
 	fields := LogFields{
-		"Method":             "reconcileExportPolicyRule",
+		"Method":             "reconcileExportPolicyRules",
 		"Type":               "ontap_common",
 		"policyName":         policyName,
 		"desiredPolicyRules": desiredPolicyRules,
@@ -489,33 +495,33 @@ func reconcileExportPolicyRules(
 		// existing rule is of format "1.1.1.1, 2.2.2.2" and the desired rule is format "1.1.1.1".
 		// This can happen because of the difference in how ONTAP ZAPI and ONTAP REST creates export rule.
 
-		foundExistingRule := ""
-		for existingRule := range existingRules {
-			existingIPs := strings.Split(existingRule, ",")
+		existingRuleIndex := -1
+		for ruleIndex, rule := range existingRules {
+			existingIPs := strings.Split(rule, ",")
 
 			for _, ip := range existingIPs {
 				ip = strings.TrimSpace(ip)
 
 				existingIP := net.ParseIP(ip)
 				if existingIP == nil {
-					Logc(ctx).WithField("existingRule", existingRule).Debug("Invalid existing rule IP")
+					Logc(ctx).WithField("existingRule", rule).Debug("Invalid existing rule IP")
 					continue
 				}
 
 				if existingIP.Equal(desiredIP) {
-					foundExistingRule = existingRule
+					existingRuleIndex = ruleIndex
 					break
 				}
 			}
 
-			if foundExistingRule != "" {
+			if existingRuleIndex != -1 {
 				break
 			}
 		}
 
-		if foundExistingRule != "" {
+		if existingRuleIndex != -1 {
 			// Rule already exists and we want it, so don't create it or delete it
-			delete(undesiredRules, foundExistingRule)
+			delete(undesiredRules, existingRuleIndex)
 		} else {
 			// Rule does not exist, so create it
 			if err = clientAPI.ExportRuleCreate(ctx, policyName, desiredRule, config.NASType); err != nil {
@@ -531,11 +537,21 @@ func reconcileExportPolicyRules(
 	}
 
 	Logc(ctx).WithField("undesiredRules", undesiredRules).Debug("Undesired export policy rules.")
-	// Now that the desired rules exists, delete the undesired rules
-	for _, ruleIndex := range undesiredRules {
+	// Now that the desired rules exists, delete the undesired rules.
+	// NOTE: With each rule deletion, ONTAP clears and rebuilds the export-policy cache. All I/O operations using the
+	// outdated cache are paused until it is fully reconstructed. Therefore, an upper limit is set on how many rules
+	// can be deleted during one reconciliation.
+	maxDeleteCount := 10
+	deleted := 0
+	for ruleIndex := range undesiredRules {
+		if deleted >= maxDeleteCount {
+			Logc(ctx).WithField("maxDeleteCount", maxDeleteCount).Info("Maximum export rule delete count reached.")
+			break
+		}
 		if err = clientAPI.ExportRuleDestroy(ctx, policyName, ruleIndex); err != nil {
 			return err
 		}
+		deleted++
 	}
 	return nil
 }
@@ -4516,7 +4532,7 @@ func removeExportPolicyRules(
 
 	// Match list of rules to rule index based on clientMatch address
 	// ONTAP expects the rule index to delete
-	for clientMatch, ruleIndex := range existingExportRules {
+	for ruleIndex, clientMatch := range existingExportRules {
 		// For the policy, match the node IP addresses to the clientMatch to remove the matched items.
 		// Example:
 		// trident_pvc_123 is attached to node1 and node2. The policy is being unpublished from node1.
