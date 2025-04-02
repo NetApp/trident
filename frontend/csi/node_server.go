@@ -2640,8 +2640,12 @@ func (p *Plugin) updateCHAPInfoForSessions(
 	if errs != nil {
 		Logc(cancelCtx).WithError(errs).Error("Failed to get updated CHAP info for portal(s).")
 		return errs
+	} else if len(iqnToCHAP) == 0 {
+		Logc(cancelCtx).Debug("No outdated CHAP info found in published sessions.")
+		return nil
 	}
 
+	Logc(cancelCtx).Debug("Updated CHAP info for published sessions.")
 	return nil
 }
 
