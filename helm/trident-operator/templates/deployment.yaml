@@ -52,6 +52,10 @@ spec:
         {{- if .Values.operatorDebug }}
         - -debug
         {{- end }}
+        {{- with .Values.resources }}
+        resources:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
         env:
         - name: POD_NAME
           valueFrom:
@@ -69,9 +73,6 @@ spec:
         image: {{ include "trident-operator.image" $ }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         name: trident-operator
-        {{- if .Values.resources }}
-          resources: {{ toYaml .Values.resources | nindent 12 }}
-        {{- end }}
       {{- if and (eq .Values.cloudProvider "Azure") (eq .Values.cloudIdentity "") }}
       volumes:
       - name: azure-cred
