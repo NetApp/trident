@@ -69,13 +69,9 @@ spec:
         image: {{ include "trident-operator.image" $ }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         name: trident-operator
-        resources:
-          requests:
-            cpu: "10m"
-            memory: "40Mi"
-          limits:
-            cpu: "20m"
-            memory: "80Mi"
+        {{- if .Values.resources }}
+          resources: {{ toYaml .Values.resources | nindent 12 }}
+        {{- end }}
       {{- if and (eq .Values.cloudProvider "Azure") (eq .Values.cloudIdentity "") }}
       volumes:
       - name: azure-cred
