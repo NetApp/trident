@@ -251,6 +251,15 @@ func (c *InMemoryClient) AddStorageClass(_ context.Context, s *sc.StorageClass) 
 	return nil
 }
 
+func (c *InMemoryClient) UpdateStorageClass(_ context.Context, sc *sc.StorageClass) error {
+	scName := sc.GetName()
+	if _, ok := c.storageClasses[scName]; !ok {
+		return NewPersistentStoreError(KeyNotFoundErr, scName)
+	}
+	c.storageClasses[scName] = sc.ConstructPersistent()
+	return nil
+}
+
 func (c *InMemoryClient) GetStorageClass(_ context.Context, scName string) (*sc.Persistent, error) {
 	ret, ok := c.storageClasses[scName]
 	if !ok {

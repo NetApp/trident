@@ -1181,6 +1181,25 @@ func (k *CRDClientV1) AddStorageClass(ctx context.Context, sc *storageclass.Stor
 	return nil
 }
 
+func (k *CRDClientV1) UpdateStorageClass(ctx context.Context, update *storageclass.StorageClass) error {
+	scName := update.GetName()
+
+	sc, err := k.crdClient.TridentV1().TridentStorageClasses(k.namespace).Get(ctx, v1.NameFix(scName), getOpts)
+	if err != nil {
+		return err
+	}
+
+	if err = sc.Apply(update.ConstructPersistent()); err != nil {
+		return err
+	}
+
+	if _, err = k.crdClient.TridentV1().TridentStorageClasses(k.namespace).Update(ctx, sc, updateOpts); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (k *CRDClientV1) HasStorageClasses(ctx context.Context) (bool, error) {
 	listOneOpts := metav1.ListOptions{Limit: 1}
 	scList, err := k.crdClient.TridentV1().TridentStorageClasses(k.namespace).List(ctx, listOneOpts)

@@ -2747,6 +2747,11 @@ func TestOrchestratorNotReady(t *testing.T) {
 		t.Errorf("Expected AddStorageClass to return an error.")
 	}
 
+	storageClass, err = orchestrator.UpdateStorageClass(ctx(), nil)
+	if storageClass != nil || !errors.IsNotReadyError(err) {
+		t.Errorf("Expected UpdateStorageClass to return an error.")
+	}
+
 	storageClass, err = orchestrator.GetStorageClass(ctx(), "")
 	if storageClass != nil || !errors.IsNotReadyError(err) {
 		t.Errorf("Expected GetStorageClass to return an error.")
@@ -4173,6 +4178,243 @@ func TestGetProtocol(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.Equal(t, tc.expected, protocolLocal, "expected both the protocols to be equal!")
 	}
+}
+
+func TestAddStorageClass(t *testing.T) {
+	orchestrator := getOrchestrator(t, false)
+	defer cleanup(t, orchestrator)
+
+	storageClassConfig := &storageclass.Config{
+		Name: "test-storage-class",
+		Attributes: map[string]sa.Request{
+			sa.IOPS: sa.NewIntRequest(1000),
+		},
+	}
+
+	// First add should work
+	storageClassExt, err := orchestrator.AddStorageClass(ctx(), storageClassConfig)
+	if err != nil {
+		t.Errorf("Failed to add storage class: %v", err)
+	}
+
+	if _, ok := orchestrator.storageClasses[storageClassExt.GetName()]; !ok {
+		t.Errorf("Storage class %s not found in orchestrator", storageClassExt.GetName())
+	}
+
+	// Second add should fail
+	storageClassExt, err = orchestrator.AddStorageClass(ctx(), storageClassConfig)
+
+	assert.Nil(t, storageClassExt, "Value should be nil")
+	assert.Error(t, err, "Add should have failed")
+}
+
+func TestAddStorageClass_PersistentStoreError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator, err := NewTridentOrchestrator(mockStoreClient)
+	orchestrator.bootstrapped = true
+	orchestrator.bootstrapError = nil
+
+	mockStoreClient.EXPECT().AddBackend(gomock.Any(), gomock.Any()).Return(nil)
+	mockStoreClient.EXPECT().AddStorageClass(gomock.Any(), gomock.Any()).Return(errors.New("failed"))
+
+	// Add backend with two pools
+	mockPools := tu.GetFakePools()
+	pools := map[string]*fake.StoragePool{
+		"fast-small":     mockPools[tu.FastSmall],
+		"slow-snapshots": mockPools[tu.SlowSnapshots],
+	}
+	cfg, err := fakedriver.NewFakeStorageDriverConfigJSON("backendWithTwoPools", config.File, pools, make([]fake.Volume, 0))
+	if err != nil {
+		t.Fatalf("Unable to generate cfg JSON: %v", err)
+	}
+	_, err = orchestrator.AddBackend(ctx(), cfg, "")
+	if err != nil {
+		t.Fatalf("Unable to add backend: %v", err)
+	}
+
+	// Add initial storage class
+	initialStorageClassConfig := &storageclass.Config{
+		Name: "initial-storage-class",
+		Attributes: map[string]sa.Request{
+			sa.IOPS: sa.NewIntRequest(2000),
+		},
+	}
+	_, err = orchestrator.AddStorageClass(ctx(), initialStorageClassConfig)
+	assert.Error(t, err, "AddStorageClass should have failed")
+}
+
+func TestUpdateStorageClass(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator, err := NewTridentOrchestrator(mockStoreClient)
+	orchestrator.bootstrapError = nil
+
+	// Test 1: Update existing storage class
+	scConfig := &storageclass.Config{Name: "testSC"}
+	sc := storageclass.New(scConfig)
+	orchestrator.storageClasses[sc.GetName()] = sc
+
+	mockStoreClient.EXPECT().UpdateStorageClass(gomock.Any(), sc).Return(nil).Times(1)
+	_, err = orchestrator.UpdateStorageClass(ctx(), scConfig)
+	assert.NoError(t, err, "should not return an error when updating an existing storage class")
+
+	// Test 2: Update non-existing storage class
+	scConfig = &storageclass.Config{Name: "nonExistentSC"}
+	_, err = orchestrator.UpdateStorageClass(ctx(), scConfig)
+	assert.Error(t, err, "should return an error when updating a non-existing storage class")
+
+	// Test 3: Error updating storage class in store
+	scConfig = &storageclass.Config{Name: "testSC"}
+	sc = storageclass.New(scConfig)
+	orchestrator.storageClasses[sc.GetName()] = sc
+
+	mockStoreClient.EXPECT().UpdateStorageClass(gomock.Any(), sc).Return(fmt.Errorf("store error")).Times(1)
+	_, err = orchestrator.UpdateStorageClass(ctx(), scConfig)
+	assert.Error(t, err, "should return an error when store client fails to update storage class")
+}
+
+func TestUpdateStorageClassWithBackends(t *testing.T) {
+	// Ensure backend-to-storageclass mapping is updated
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator, err := NewTridentOrchestrator(mockStoreClient)
+	orchestrator.bootstrapped = true
+	orchestrator.bootstrapError = nil
+
+	mockStoreClient.EXPECT().AddBackend(gomock.Any(), gomock.Any()).Return(nil)
+	mockStoreClient.EXPECT().AddStorageClass(gomock.Any(), gomock.Any()).Return(nil)
+	mockStoreClient.EXPECT().UpdateStorageClass(gomock.Any(), gomock.Any()).Return(nil)
+
+	// Add backend with two pools
+	mockPools := tu.GetFakePools()
+	pools := map[string]*fake.StoragePool{
+		"fast-small":     mockPools[tu.FastSmall],
+		"slow-snapshots": mockPools[tu.SlowSnapshots],
+	}
+	cfg, err := fakedriver.NewFakeStorageDriverConfigJSON("backendWithTwoPools", config.File, pools, make([]fake.Volume, 0))
+	if err != nil {
+		t.Fatalf("Unable to generate cfg JSON: %v", err)
+	}
+	_, err = orchestrator.AddBackend(ctx(), cfg, "")
+	if err != nil {
+		t.Fatalf("Unable to add backend: %v", err)
+	}
+
+	// Add initial storage class
+	initialStorageClassConfig := &storageclass.Config{
+		Name: "initial-storage-class",
+		Attributes: map[string]sa.Request{
+			sa.IOPS: sa.NewIntRequest(2000),
+		},
+	}
+	_, err = orchestrator.AddStorageClass(ctx(), initialStorageClassConfig)
+	if err != nil {
+		t.Fatalf("Unable to add initial storage class: %v", err)
+	}
+
+	// Validate initial storage class matches pool1
+	mockStoreClient.EXPECT().GetStorageClass(gomock.Any(), gomock.Any()).Return(
+		orchestrator.storageClasses["initial-storage-class"].ConstructPersistent(), nil)
+
+	validateStorageClass(t, orchestrator, initialStorageClassConfig.Name, []*tu.PoolMatch{
+		{Backend: "backendWithTwoPools", Pool: tu.FastSmall},
+	})
+
+	// Update storage class to match pool2
+	updatedStorageClassConfig := &storageclass.Config{
+		Name: "initial-storage-class",
+		Attributes: map[string]sa.Request{
+			sa.IOPS: sa.NewIntRequest(40),
+		},
+	}
+	_, err = orchestrator.UpdateStorageClass(ctx(), updatedStorageClassConfig)
+	if err != nil {
+		t.Fatalf("Unable to update storage class: %v", err)
+	}
+
+	// Validate updated storage class matches pool2
+	mockStoreClient.EXPECT().GetStorageClass(gomock.Any(), gomock.Any()).Return(
+		orchestrator.storageClasses["initial-storage-class"].ConstructPersistent(), nil)
+
+	validateStorageClass(t, orchestrator, updatedStorageClassConfig.Name, []*tu.PoolMatch{
+		{Backend: "backendWithTwoPools", Pool: tu.SlowSnapshots},
+	})
+}
+
+func TestUpdateStorageClassWithBackends_PersistentStoreError(t *testing.T) {
+	// Ensure backend-to-storageclass mapping is not updated if persistent store update fails
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	orchestrator, err := NewTridentOrchestrator(mockStoreClient)
+	orchestrator.bootstrapped = true
+	orchestrator.bootstrapError = nil
+
+	mockStoreClient.EXPECT().AddBackend(gomock.Any(), gomock.Any()).Return(nil)
+	mockStoreClient.EXPECT().AddStorageClass(gomock.Any(), gomock.Any()).Return(nil)
+	mockStoreClient.EXPECT().UpdateStorageClass(gomock.Any(), gomock.Any()).Return(errors.New("failed"))
+
+	// Add backend with two pools
+	mockPools := tu.GetFakePools()
+	pools := map[string]*fake.StoragePool{
+		"fast-small":     mockPools[tu.FastSmall],
+		"slow-snapshots": mockPools[tu.SlowSnapshots],
+	}
+	cfg, err := fakedriver.NewFakeStorageDriverConfigJSON("backendWithTwoPools", config.File, pools, make([]fake.Volume, 0))
+	if err != nil {
+		t.Fatalf("Unable to generate cfg JSON: %v", err)
+	}
+	_, err = orchestrator.AddBackend(ctx(), cfg, "")
+	if err != nil {
+		t.Fatalf("Unable to add backend: %v", err)
+	}
+
+	// Add initial storage class
+	initialStorageClassConfig := &storageclass.Config{
+		Name: "initial-storage-class",
+		Attributes: map[string]sa.Request{
+			sa.IOPS: sa.NewIntRequest(2000),
+		},
+	}
+	_, err = orchestrator.AddStorageClass(ctx(), initialStorageClassConfig)
+	if err != nil {
+		t.Fatalf("Unable to add initial storage class: %v", err)
+	}
+
+	// Validate initial storage class matches pool1
+	mockStoreClient.EXPECT().GetStorageClass(gomock.Any(), gomock.Any()).Return(
+		orchestrator.storageClasses["initial-storage-class"].ConstructPersistent(), nil)
+
+	validateStorageClass(t, orchestrator, initialStorageClassConfig.Name, []*tu.PoolMatch{
+		{Backend: "backendWithTwoPools", Pool: tu.FastSmall},
+	})
+
+	// Update storage class to match pool2
+	updatedStorageClassConfig := &storageclass.Config{
+		Name: "initial-storage-class",
+		Attributes: map[string]sa.Request{
+			sa.IOPS: sa.NewIntRequest(40),
+		},
+	}
+	_, err = orchestrator.UpdateStorageClass(ctx(), updatedStorageClassConfig)
+	assert.Error(t, err, "UpdateStorageClass should have failed")
+
+	// Validate storage class still matches pool1
+	mockStoreClient.EXPECT().GetStorageClass(gomock.Any(), gomock.Any()).Return(
+		orchestrator.storageClasses["initial-storage-class"].ConstructPersistent(), nil)
+
+	validateStorageClass(t, orchestrator, updatedStorageClassConfig.Name, []*tu.PoolMatch{
+		{Backend: "backendWithTwoPools", Pool: tu.FastSmall},
+	})
 }
 
 func TestGetBackend(t *testing.T) {

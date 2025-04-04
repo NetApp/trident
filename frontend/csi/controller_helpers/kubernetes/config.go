@@ -61,6 +61,7 @@ const (
 	AnnReadOnlyClone        = annPrefix + "/readOnlyClone"
 	AnnLUKSEncryption       = annPrefix + "/luksEncryption" // import only
 	AnnSkipRecoveryQueue    = annPrefix + "/skipRecoveryQueue"
+	AnnSelector             = annPrefix + "/selector"
 )
 
 var features = map[controllerhelpers.Feature]*versionutils.Version{

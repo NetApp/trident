@@ -107,6 +107,13 @@ func TestAddStorageClass(t *testing.T) {
 		},
 	}
 
+	scOtherProvisioner := &k8sstoragev1.StorageClass{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "other",
+		},
+		Provisioner: "other",
+	}
+
 	scDummy := "StorageClass"
 
 	backendTypeAttr, _ := storageattribute.CreateAttributeRequestFromAttributeValue("backendType", "ontap-nas")
@@ -118,43 +125,115 @@ func TestAddStorageClass(t *testing.T) {
 		},
 	}
 
+	// Ensure add works
 	mockCore.EXPECT().AddStorageClass(gomock.Any(), expectedSCConfig).Return(nil, nil).Times(1)
 
 	plugin.addStorageClass(sc)
+
+	// Ensure add handles failure
+	mockCore.EXPECT().AddStorageClass(gomock.Any(), expectedSCConfig).Return(nil, errors.New("failed")).Times(1)
+
+	plugin.addStorageClass(sc)
+
+	// Ensure negative cases cause no call to core
 	plugin.addStorageClass(scDummy)
+	plugin.addStorageClass(scOtherProvisioner)
 }
 
 func TestUpdateStorageClass(t *testing.T) {
+	ctx := GenerateRequestContextForLayer(context.TODO(), LogLayerCore)
 	mockCore, plugin := newMockPlugin(t)
 
 	sc := &k8sstoragev1.StorageClass{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: FakeStorageClass,
+			Name:            FakeStorageClass,
+			ResourceVersion: "1",
 		},
 		Provisioner: csi.Provisioner,
 		Parameters: map[string]string{
 			"backendType":               "ontap-nas",
+			"selector":                  "cluster=Cluster1",
 			"csi.storage.k8s.io/fsType": "nfs",
 		},
+	}
+
+	scUpdate := &k8sstoragev1.StorageClass{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            FakeStorageClass,
+			ResourceVersion: "2",
+			Annotations: map[string]string{
+				AnnSelector: "cluster=Cluster2",
+			},
+		},
+		Provisioner: csi.Provisioner,
+		Parameters: map[string]string{
+			"backendType":               "ontap-nas",
+			"selector":                  "cluster=Cluster1",
+			"csi.storage.k8s.io/fsType": "nfs",
+		},
+	}
+
+	scOtherProvisioner := &k8sstoragev1.StorageClass{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "other",
+		},
+		Provisioner: "other",
 	}
 
 	scDummy := "StorageClass"
 
 	backendTypeAttr, _ := storageattribute.CreateAttributeRequestFromAttributeValue("backendType", "ontap-nas")
-	expectedSCConfig := &storageclass.Config{
+	selector1, _ := storageattribute.CreateAttributeRequestFromAttributeValue("selector", "cluster=Cluster1")
+	selector2, _ := storageattribute.CreateAttributeRequestFromAttributeValue("selector", "cluster=Cluster2")
+
+	expectedSCConfig1 := &storageclass.Config{
 		Name: FakeStorageClass,
 		Attributes: map[string]storageattribute.Request{
 			"backendType": backendTypeAttr,
+			"selector":    selector1,
 		},
 	}
 
-	mockCore.EXPECT().AddStorageClass(gomock.Any(), expectedSCConfig).Return(nil, nil).Times(2)
+	expectedSCConfig2 := &storageclass.Config{
+		Name: FakeStorageClass,
+		Attributes: map[string]storageattribute.Request{
+			"backendType": backendTypeAttr,
+			"selector":    selector2,
+		},
+	}
+
+	// Ensure add works
+	mockCore.EXPECT().AddStorageClass(gomock.Any(), expectedSCConfig1).Return(nil, nil)
 
 	plugin.addStorageClass(sc)
 
-	mockCore.EXPECT().GetStorageClass(gomock.Any(), sc.Name).Return(nil, nil).Times(1)
+	// Ensure negative cases cause no call to core
+	plugin.updateStorageClass(sc, nil)
 	plugin.updateStorageClass(nil, sc)
+	plugin.updateStorageClass(sc, sc)
+	plugin.updateStorageClass(sc, scOtherProvisioner)
 	plugin.updateStorageClass(nil, scDummy)
+
+	// Ensure update works
+	mockCore.EXPECT().GetStorageClass(gomock.Any(), FakeStorageClass).Return(
+		storageclass.New(expectedSCConfig1).ConstructExternal(ctx), nil).Times(1)
+	mockCore.EXPECT().UpdateStorageClass(gomock.Any(), expectedSCConfig2).Return(nil, nil)
+
+	plugin.updateStorageClass(sc, scUpdate)
+
+	// Ensure update handles failure
+	mockCore.EXPECT().GetStorageClass(gomock.Any(), FakeStorageClass).Return(
+		storageclass.New(expectedSCConfig1).ConstructExternal(ctx), nil).Times(1)
+	mockCore.EXPECT().UpdateStorageClass(gomock.Any(), expectedSCConfig2).Return(nil, errors.New("failed"))
+
+	plugin.updateStorageClass(sc, scUpdate)
+
+	// Ensure update treated as add if not in core
+	mockCore.EXPECT().GetStorageClass(gomock.Any(), FakeStorageClass).Return(
+		nil, errors.NotFoundError("notFound")).Times(1)
+	mockCore.EXPECT().AddStorageClass(gomock.Any(), expectedSCConfig2).Return(nil, nil)
+
+	plugin.updateStorageClass(sc, scUpdate)
 }
 
 func TestDeleteStorageClass(t *testing.T) {
@@ -171,23 +250,28 @@ func TestDeleteStorageClass(t *testing.T) {
 		},
 	}
 
-	scDummy := "StorageClass"
-
-	backendTypeAttr, _ := storageattribute.CreateAttributeRequestFromAttributeValue("backendType", "ontap-nas")
-
-	expectedSCConfig := &storageclass.Config{
-		Name: FakeStorageClass,
-		Attributes: map[string]storageattribute.Request{
-			"backendType": backendTypeAttr,
+	scOtherProvisioner := &k8sstoragev1.StorageClass{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "other",
 		},
+		Provisioner: "other",
 	}
 
-	mockCore.EXPECT().AddStorageClass(gomock.Any(), expectedSCConfig).Return(nil, nil).Times(1)
-	plugin.addStorageClass(sc)
-	plugin.addStorageClass(scDummy)
+	scDummy := "StorageClass"
+
+	// Ensure delete works
 	mockCore.EXPECT().DeleteStorageClass(gomock.Any(), sc.Name).Return(nil).Times(1)
+
 	plugin.deleteStorageClass(sc)
+
+	// Ensure delete handles failure
+	mockCore.EXPECT().DeleteStorageClass(gomock.Any(), sc.Name).Return(errors.New("failed")).Times(1)
+
+	plugin.deleteStorageClass(sc)
+
+	// Ensure negative cases cause no call to core
 	plugin.deleteStorageClass(scDummy)
+	plugin.deleteStorageClass(scOtherProvisioner)
 }
 
 func TestProcessDeletedStorageClass_Failure(t *testing.T) {
@@ -210,37 +294,6 @@ func TestProcessDeletedStorageClass_Failure(t *testing.T) {
 }
 
 func TestProcessStorageClass(t *testing.T) {
-	mockCore, plugin := newMockPlugin(t)
-	ctx := context.TODO()
-	sc := &k8sstoragev1.StorageClass{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: FakeStorageClass,
-		},
-		Provisioner: csi.Provisioner,
-		Parameters: map[string]string{
-			"backendType":               "ontap-nas",
-			"csi.storage.k8s.io/fsType": "nfs",
-		},
-	}
-
-	backendTypeAttr, _ := storageattribute.CreateAttributeRequestFromAttributeValue("backendType", "ontap-nas")
-
-	expectedSCConfig := &storageclass.Config{
-		Name: FakeStorageClass,
-		Attributes: map[string]storageattribute.Request{
-			"backendType": backendTypeAttr,
-		},
-	}
-
-	mockCore.EXPECT().AddStorageClass(gomock.Any(), expectedSCConfig).Return(nil, nil).Times(2)
-	plugin.addStorageClass(sc)
-	mockCore.EXPECT().GetStorageClass(gomock.Any(), sc.Name).Return(nil, nil).Times(1)
-	plugin.processStorageClass(ctx, sc, "update")
-	mockCore.EXPECT().DeleteStorageClass(gomock.Any(), sc.Name).Return(nil).Times(1)
-	plugin.processStorageClass(ctx, sc, "delete")
-}
-
-func TestProcessAddedStorageClass(t *testing.T) {
 	mockCore, plugin := newMockPlugin(t)
 	ctx := context.TODO()
 
@@ -327,7 +380,7 @@ func TestProcessAddedStorageClass(t *testing.T) {
 			}
 
 			mockCore.EXPECT().AddStorageClass(gomock.Any(), expectedSCConfig).Return(nil, nil).Times(1)
-			plugin.processAddedStorageClass(ctx, sc)
+			plugin.processStorageClass(ctx, sc, false)
 		})
 	}
 }
@@ -561,7 +614,7 @@ func TestRemoveSCParameterPrefix_Failure(t *testing.T) {
 	}
 }
 
-func TestProcessAddedStorageClass_CreateBackendSPMapFromEncodedString_Failure(t *testing.T) {
+func TestProcessStorageClass_CreateBackendSPMapFromEncodedString_Failure(t *testing.T) {
 	mockCore, plugin := newMockPlugin(t)
 	ctx := context.TODO()
 	sc := &k8sstoragev1.StorageClass{
@@ -595,10 +648,10 @@ func TestProcessAddedStorageClass_CreateBackendSPMapFromEncodedString_Failure(t 
 	assert.NotNil(t, aspErr, espErr, spErr, "expected error")
 	mockCore.EXPECT().AddStorageClass(gomock.Any(), expectedSCConfig).Return(nil, nil).Times(2)
 	plugin.addStorageClass(sc)
-	plugin.processAddedStorageClass(ctx, sc)
+	plugin.processStorageClass(ctx, sc, false)
 }
 
-func TestProcessAddedStorageClass_CreateAttributeRequestFromAttributeValue_Failure(t *testing.T) {
+func TestProcessStorageClass_CreateAttributeRequestFromAttributeValue_Failure(t *testing.T) {
 	_, plugin := newMockPlugin(t)
 	ctx := context.TODO()
 
@@ -637,7 +690,7 @@ func TestProcessAddedStorageClass_CreateAttributeRequestFromAttributeValue_Failu
 
 			assert.NotNil(t, err, "expected error")
 			assert.Nil(t, valueAttr, "expected error")
-			plugin.processAddedStorageClass(ctx, sc)
+			plugin.processStorageClass(ctx, sc, false)
 		})
 	}
 }

@@ -4950,6 +4950,50 @@ func (o *TridentOrchestrator) AddStorageClass(
 	return sc.ConstructExternal(ctx), nil
 }
 
+func (o *TridentOrchestrator) UpdateStorageClass(
+	ctx context.Context, scConfig *storageclass.Config,
+) (scExternal *storageclass.External, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	defer recordTiming("storageclass_update", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	newSC := storageclass.New(scConfig)
+	scName := newSC.GetName()
+	oldSC, ok := o.storageClasses[scName]
+	if !ok {
+		return nil, errors.NotFoundError("storage class %s not found", scName)
+	}
+
+	if err = o.storeClient.UpdateStorageClass(ctx, newSC); err != nil {
+		return nil, err
+	}
+
+	// Remove storage class from backend map
+	for _, storagePool := range oldSC.GetStoragePoolsForProtocol(ctx, config.ProtocolAny, config.ReadWriteOnce) {
+		storagePool.RemoveStorageClass(scName)
+	}
+
+	// Add storage class to backend map
+	added := 0
+	for _, backend := range o.backends {
+		added += newSC.CheckAndAddBackend(ctx, backend)
+	}
+	Logc(ctx).WithField("storageClass", scName).Infof("Storage class satisfied by %d storage pools.", added)
+
+	// Update internal cache
+	o.storageClasses[scName] = newSC
+
+	return newSC.ConstructExternal(ctx), nil
+}
+
 func (o *TridentOrchestrator) GetStorageClass(
 	ctx context.Context, scName string,
 ) (scExternal *storageclass.External, err error) {

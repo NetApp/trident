@@ -888,26 +888,65 @@ func (h *helper) addStorageClass(obj interface{}) {
 	Logc(ctx).Trace(">>>> addStorageClass")
 	defer Logc(ctx).Trace("<<<< addStorageClass")
 
-	switch sc := obj.(type) {
-	case *k8sstoragev1.StorageClass:
-		h.processStorageClass(ctx, sc, eventAdd)
-	default:
+	sc, ok := obj.(*k8sstoragev1.StorageClass)
+	if !ok {
 		Logc(ctx).Errorf("K8S helper expected storage.k8s.io/v1 storage class; got %v", obj)
+		return
 	}
+
+	if sc.Provisioner != csi.Provisioner {
+		return
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"name":        sc.Name,
+		"provisioner": sc.Provisioner,
+		"parameters":  sc.Parameters,
+	}).Trace("Storage class added to cache.")
+
+	h.processStorageClass(ctx, sc, false)
 }
 
 // updateStorageClass is the update handler for the storage class watcher.
-func (h *helper) updateStorageClass(_, newObj interface{}) {
+func (h *helper) updateStorageClass(oldObj, newObj interface{}) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowStorageClassUpdate, LogLayerCSIFrontend)
 	Logc(ctx).Trace(">>>> updateStorageClass")
 	defer Logc(ctx).Trace("<<<< updateStorageClass")
 
-	switch sc := newObj.(type) {
-	case *k8sstoragev1.StorageClass:
-		h.processStorageClass(ctx, sc, eventUpdate)
-	default:
-		Logc(ctx).Errorf("K8S helper expected storage.k8s.io/v1 storage class; got %v",
-			newObj)
+	var oldSC, newSC *k8sstoragev1.StorageClass
+	var ok bool
+
+	if oldSC, ok = oldObj.(*k8sstoragev1.StorageClass); !ok {
+		Logc(ctx).Errorf("K8S helper expected storage.k8s.io/v1 storage class; got %v", oldObj)
+		return
+	}
+	if newSC, ok = newObj.(*k8sstoragev1.StorageClass); !ok {
+		Logc(ctx).Errorf("K8S helper expected storage.k8s.io/v1 storage class; got %v", newObj)
+		return
+	}
+
+	if newSC.Provisioner != csi.Provisioner {
+		return
+	}
+
+	logFields := LogFields{
+		"name":        newSC.Name,
+		"provisioner": newSC.Provisioner,
+		"parameters":  newSC.Parameters,
+	}
+
+	changed := oldSC.ResourceVersion != newSC.ResourceVersion
+	if changed {
+
+		knownToCore := true
+		if storageClass, _ := h.orchestrator.GetStorageClass(ctx, newSC.Name); storageClass == nil {
+			Logc(ctx).WithFields(logFields).Warning("K8S helper has no record of the updated " +
+				"storage class; instead it will try to create it.")
+			knownToCore = false
+		}
+
+		Logc(ctx).WithFields(logFields).Trace("Storage class updated in cache.")
+		h.processStorageClass(ctx, newSC, knownToCore)
 	}
 }
 
@@ -917,45 +956,23 @@ func (h *helper) deleteStorageClass(obj interface{}) {
 	Logc(ctx).Trace(">>>> deleteStorageClass")
 	defer Logc(ctx).Trace("<<<< deleteStorageClass")
 
-	switch sc := obj.(type) {
-	case *k8sstoragev1.StorageClass:
-		h.processStorageClass(ctx, sc, eventDelete)
-	default:
+	sc, ok := obj.(*k8sstoragev1.StorageClass)
+	if !ok {
 		Logc(ctx).Errorf("K8S helper expected storage.k8s.io/v1 storage class; got %v", obj)
+		return
 	}
-}
 
-// processStorageClass logs and handles add/update/delete events for CSI Trident storage classes.
-func (h *helper) processStorageClass(ctx context.Context, sc *k8sstoragev1.StorageClass, eventType string) {
-	Logc(ctx).Trace(">>>> processStorageClass")
-	defer Logc(ctx).Trace("<<<< processStorageClass")
-	// Validate the storage class
 	if sc.Provisioner != csi.Provisioner {
 		return
 	}
 
-	logFields := LogFields{
+	Logc(ctx).WithFields(LogFields{
 		"name":        sc.Name,
 		"provisioner": sc.Provisioner,
 		"parameters":  sc.Parameters,
-	}
+	}).Trace("Storage class deleted from cache.")
 
-	switch eventType {
-	case eventAdd:
-		Logc(ctx).WithFields(logFields).Trace("Storage class added to cache.")
-		h.processAddedStorageClass(ctx, sc)
-	case eventUpdate:
-		Logc(ctx).WithFields(logFields).Trace("Storage class updated in cache.")
-		// Make sure Trident has a record of this storage class.
-		if storageClass, _ := h.orchestrator.GetStorageClass(ctx, sc.Name); storageClass == nil {
-			Logc(ctx).WithFields(logFields).Warning("K8S helper has no record of the updated " +
-				"storage class; instead it will try to create it.")
-			h.processAddedStorageClass(ctx, sc)
-		}
-	case eventDelete:
-		Logc(ctx).WithFields(logFields).Trace("Storage class deleted from cache.")
-		h.processDeletedStorageClass(ctx, sc)
-	}
+	h.processDeletedStorageClass(ctx, sc)
 }
 
 func removeSCParameterPrefix(key string) string {
@@ -973,10 +990,16 @@ func removeSCParameterPrefix(key string) string {
 	return key
 }
 
-// processAddedStorageClass informs the orchestrator of a new storage class.
-func (h *helper) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.StorageClass) {
-	Logc(ctx).Trace(">>>> processAddedStorageClass")
-	defer Logc(ctx).Trace("<<<< processAddedStorageClass")
+// processStorageClass informs the orchestrator of a new or updated storage class.
+func (h *helper) processStorageClass(ctx context.Context, sc *k8sstoragev1.StorageClass, update bool) {
+	Logc(ctx).Trace(">>>> processStorageClass")
+	defer Logc(ctx).Trace("<<<< processStorageClass")
+	logFields := LogFields{
+		"name":        sc.Name,
+		"provisioner": sc.Provisioner,
+		"parameters":  sc.Parameters,
+	}
+
 	scConfig := new(storageclass.Config)
 	scConfig.Name = sc.Name
 	scConfig.Attributes = make(map[string]storageattribute.Request)
@@ -996,12 +1019,8 @@ func (h *helper) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 			// format:  additionalStoragePools: "backend1:pool1,pool2;backend2:pool1"
 			additionalPools, err := storageattribute.CreateBackendStoragePoolsMapFromEncodedString(v)
 			if err != nil {
-				Logc(ctx).WithFields(LogFields{
-					"name":        sc.Name,
-					"provisioner": sc.Provisioner,
-					"parameters":  sc.Parameters,
-					"error":       err,
-				}).Errorf("K8S helper could not process the storage class parameter %s", newKey)
+				Logc(ctx).WithFields(logFields).WithError(err).Errorf(
+					"K8S helper could not process the storage class parameter %s", newKey)
 			}
 			scConfig.AdditionalPools = additionalPools
 
@@ -1009,12 +1028,8 @@ func (h *helper) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 			// format:  excludeStoragePools: "backend1:pool1,pool2;backend2:pool1"
 			excludeStoragePools, err := storageattribute.CreateBackendStoragePoolsMapFromEncodedString(v)
 			if err != nil {
-				Logc(ctx).WithFields(LogFields{
-					"name":        sc.Name,
-					"provisioner": sc.Provisioner,
-					"parameters":  sc.Parameters,
-					"error":       err,
-				}).Errorf("K8S helper could not process the storage class parameter %s", newKey)
+				Logc(ctx).WithFields(logFields).WithError(err).Errorf(
+					"K8S helper could not process the storage class parameter %s", newKey)
 			}
 			scConfig.ExcludePools = excludeStoragePools
 
@@ -1022,12 +1037,8 @@ func (h *helper) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 			// format:  storagePools: "backend1:pool1,pool2;backend2:pool1"
 			pools, err := storageattribute.CreateBackendStoragePoolsMapFromEncodedString(v)
 			if err != nil {
-				Logc(ctx).WithFields(LogFields{
-					"name":        sc.Name,
-					"provisioner": sc.Provisioner,
-					"parameters":  sc.Parameters,
-					"error":       err,
-				}).Errorf("K8S helper could not process the storage class parameter %s", newKey)
+				Logc(ctx).WithFields(logFields).WithError(err).Errorf(
+					"K8S helper could not process the storage class parameter %s", newKey)
 			}
 			scConfig.Pools = pools
 
@@ -1035,33 +1046,42 @@ func (h *helper) processAddedStorageClass(ctx context.Context, sc *k8sstoragev1.
 			// format:  attribute: "value"
 			req, err := storageattribute.CreateAttributeRequestFromAttributeValue(newKey, v)
 			if err != nil {
-				Logc(ctx).WithFields(LogFields{
-					"name":        sc.Name,
-					"provisioner": sc.Provisioner,
-					"parameters":  sc.Parameters,
-					"error":       err,
-				}).Errorf("K8S helper could not process the storage class attribute %s", newKey)
+				Logc(ctx).WithFields(logFields).WithError(err).Errorf(
+					"K8S helper could not process the storage class attribute %s", newKey)
 				return
 			}
 			scConfig.Attributes[newKey] = req
 		}
 	}
 
-	// Add the storage class
-	if _, err := h.orchestrator.AddStorageClass(ctx, scConfig); err != nil {
-		Logc(ctx).WithFields(LogFields{
-			"name":        sc.Name,
-			"provisioner": sc.Provisioner,
-			"parameters":  sc.Parameters,
-		}).Warningf("K8S helper could not add a storage class: %s", err)
-		return
+	// To allow for atomic selector updates, replace selector with an annotation if it exists
+	for k, v := range sc.ObjectMeta.Annotations {
+		if k == AnnSelector {
+			req, err := storageattribute.CreateAttributeRequestFromAttributeValue("selector", v)
+			if err != nil {
+				Logc(ctx).WithFields(logFields).WithField(k, v).WithError(err).Errorf(
+					"K8S helper could not process the storage class annotation %s.", k)
+				continue
+			}
+			scConfig.Attributes["selector"] = req
+		}
 	}
 
-	Logc(ctx).WithFields(LogFields{
-		"name":        sc.Name,
-		"provisioner": sc.Provisioner,
-		"parameters":  sc.Parameters,
-	}).Trace("K8S helper added a storage class.")
+	if update {
+		// Update the storage class
+		if _, err := h.orchestrator.UpdateStorageClass(ctx, scConfig); err != nil {
+			Logc(ctx).WithFields(logFields).WithError(err).Warning("K8S helper could not update a storage class.")
+			return
+		}
+		Logc(ctx).WithFields(logFields).Trace("K8S helper updated a storage class.")
+	} else {
+		// Add the storage class
+		if _, err := h.orchestrator.AddStorageClass(ctx, scConfig); err != nil {
+			Logc(ctx).WithFields(logFields).WithError(err).Warning("K8S helper could not add a storage class.")
+			return
+		}
+		Logc(ctx).WithFields(logFields).Trace("K8S helper added a storage class.")
+	}
 }
 
 // processDeletedStorageClass informs the orchestrator of a deleted storage class.
@@ -1071,8 +1091,7 @@ func (h *helper) processDeletedStorageClass(ctx context.Context, sc *k8sstoragev
 	defer Logc(ctx).Trace("<<<< processDeletedStorageClass")
 
 	// Delete the storage class from Trident
-	err := h.orchestrator.DeleteStorageClass(ctx, sc.Name)
-	if err != nil {
+	if err := h.orchestrator.DeleteStorageClass(ctx, sc.Name); err != nil {
 		Logc(ctx).WithFields(logFields).Errorf("K8S helper could not delete the storage class: %v", err)
 	} else {
 		Logc(ctx).WithFields(logFields).Trace("K8S helper deleted the storage class.")

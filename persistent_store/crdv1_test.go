@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -659,7 +660,7 @@ func TestKubernetesAddSolidFireBackend(t *testing.T) {
 	}
 }
 
-func TestKubernetesAddStorageClass(t *testing.T) {
+func TestKubernetesAddUpdateDeleteStorageClass(t *testing.T) {
 	var err error
 
 	p, _ := GetTestKubernetesClient()
@@ -711,7 +712,37 @@ func TestKubernetesAddStorageClass(t *testing.T) {
 		}
 	}
 
-	if err := p.DeleteStorageClass(ctx(), bronzeClass); err != nil {
+	bronzeSSDConfig := &storageclass.Config{
+		Name:            "bronze",
+		Attributes:      make(map[string]storageattribute.Request),
+		AdditionalPools: make(map[string][]string),
+	}
+	bronzeSSDConfig.Attributes["media"] = storageattribute.NewStringRequest("ssd")
+	bronzeSSDConfig.AdditionalPools["ontapnas_10.0.207.101"] = []string{"aggr1"}
+	bronzeSSDConfig.AdditionalPools["ontapsan_10.0.207.103"] = []string{"aggr1"}
+	bronzeSSDClass := storageclass.New(bronzeSSDConfig)
+
+	// Update storage class
+	if err = p.UpdateStorageClass(ctx(), bronzeSSDClass); err != nil {
+		t.Fatal(err.Error())
+	}
+
+	updatedSC, err := p.GetStorageClass(ctx(), bronzeConfig.Name)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	sc = storageclass.NewFromPersistent(updatedSC)
+	// Validating correct retrieval of storage class attributes
+	retrievedAttrs = sc.GetAttributes()
+	if _, ok := retrievedAttrs["media"]; !ok {
+		t.Error("Could not find storage class attribute!")
+	}
+	if retrievedAttrs["media"].Value().(string) != "ssd" || retrievedAttrs["media"].GetType() != "string" {
+		t.Error("Could not retrieve storage class attribute!")
+	}
+
+	if err = p.DeleteStorageClass(ctx(), bronzeClass); err != nil {
 		t.Fatal(err.Error())
 	}
 
@@ -734,6 +765,29 @@ func TestKubernetesAddStorageClass(t *testing.T) {
 	if err != nil {
 		t.Error("DeleteStorageClass should have succeeded.")
 	}
+}
+
+func TestUpdateStorageClass_NotFound(t *testing.T) {
+	ctx := context.Background()
+	namespace := "trident"
+	scName := "non-existent-storage-class"
+
+	// Create a fake client
+	fakeClient := fake.NewSimpleClientset()
+	crdClient := &CRDClientV1{
+		crdClient: fakeClient,
+		namespace: namespace,
+	}
+
+	// Create a storage class to update
+	sc := storageclass.New(&storageclass.Config{
+		Name: scName,
+	})
+
+	// Attempt to update a non-existent storage class
+	err := crdClient.UpdateStorageClass(ctx, sc)
+	assert.Error(t, err)
+	assert.True(t, errors.IsNotFound(err))
 }
 
 func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {

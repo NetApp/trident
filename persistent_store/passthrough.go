@@ -386,6 +386,10 @@ func (c *PassthroughClient) AddStorageClass(context.Context, *sc.StorageClass) e
 	return nil
 }
 
+func (c *PassthroughClient) UpdateStorageClass(context.Context, *sc.StorageClass) error {
+	return nil
+}
+
 func (c *PassthroughClient) GetStorageClass(_ context.Context, scName string) (*sc.Persistent, error) {
 	return nil, NewPersistentStoreError(KeyNotFoundErr, scName)
 }

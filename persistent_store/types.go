@@ -59,6 +59,7 @@ type Client interface {
 	DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
 
 	AddStorageClass(ctx context.Context, sc *storageclass.StorageClass) error
+	UpdateStorageClass(ctx context.Context, sc *storageclass.StorageClass) error
 	GetStorageClass(ctx context.Context, scName string) (*storageclass.Persistent, error)
 	GetStorageClasses(ctx context.Context) ([]*storageclass.Persistent, error)
 	DeleteStorageClass(ctx context.Context, sc *storageclass.StorageClass) error

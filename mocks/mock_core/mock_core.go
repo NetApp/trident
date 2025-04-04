@@ -1194,6 +1194,21 @@ func (mr *MockOrchestratorMockRecorder) UpdateNode(arg0, arg1, arg2 any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNode", reflect.TypeOf((*MockOrchestrator)(nil).UpdateNode), arg0, arg1, arg2)
 }
 
+// UpdateStorageClass mocks base method.
+func (m *MockOrchestrator) UpdateStorageClass(arg0 context.Context, arg1 *storageclass.Config) (*storageclass.External, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateStorageClass", arg0, arg1)
+	ret0, _ := ret[0].(*storageclass.External)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateStorageClass indicates an expected call of UpdateStorageClass.
+func (mr *MockOrchestratorMockRecorder) UpdateStorageClass(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStorageClass", reflect.TypeOf((*MockOrchestrator)(nil).UpdateStorageClass), arg0, arg1)
+}
+
 // UpdateVolume mocks base method.
 func (m *MockOrchestrator) UpdateVolume(arg0 context.Context, arg1 string, arg2 *models.VolumeUpdateInfo) error {
 	m.ctrl.T.Helper()

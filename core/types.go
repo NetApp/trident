@@ -71,6 +71,7 @@ type Orchestrator interface {
 	DeleteSnapshot(ctx context.Context, volumeName, snapshotName string) error
 
 	AddStorageClass(ctx context.Context, scConfig *storageclass.Config) (*storageclass.External, error)
+	UpdateStorageClass(ctx context.Context, scConfig *storageclass.Config) (*storageclass.External, error)
 	DeleteStorageClass(ctx context.Context, scName string) error
 	GetStorageClass(ctx context.Context, scName string) (*storageclass.External, error)
 	ListStorageClasses(ctx context.Context) ([]*storageclass.External, error)

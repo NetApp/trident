@@ -55,7 +55,7 @@ func CreateAttributeRequestFromAttributeValue(name, val string) (Request, error)
 		val = strings.ToLower(val)
 	}
 
-	// To support SANType with case-insensitive value of ISCSI and NVMe
+	// To support SANType with case-insensitive value of ISCSI and NVMe and FCP
 	if name == SANType {
 		val = strings.ToLower(val)
 	}

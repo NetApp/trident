@@ -649,6 +649,20 @@ func (mr *MockStoreClientMockRecorder) UpdateSnapshot(arg0, arg1 any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSnapshot", reflect.TypeOf((*MockStoreClient)(nil).UpdateSnapshot), arg0, arg1)
 }
 
+// UpdateStorageClass mocks base method.
+func (m *MockStoreClient) UpdateStorageClass(arg0 context.Context, arg1 *storageclass.StorageClass) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateStorageClass", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateStorageClass indicates an expected call of UpdateStorageClass.
+func (mr *MockStoreClientMockRecorder) UpdateStorageClass(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStorageClass", reflect.TypeOf((*MockStoreClient)(nil).UpdateStorageClass), arg0, arg1)
+}
+
 // UpdateVolume mocks base method.
 func (m *MockStoreClient) UpdateVolume(arg0 context.Context, arg1 *storage.Volume) error {
 	m.ctrl.T.Helper()
