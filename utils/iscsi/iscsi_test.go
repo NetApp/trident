@@ -2283,6 +2283,95 @@ func TestClient_AddSession(t *testing.T) {
 	}
 }
 
+func TestClient_filterDevicesBySize(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockDevices := mock_devices.NewMockDevices(mockCtrl)
+
+	client := NewDetailed(
+		"",
+		nil,
+		nil,
+		nil,
+		mockDevices,
+		nil,
+		nil,
+		nil,
+		afero.Afero{},
+		nil,
+	)
+
+	ctx := context.TODO()
+	deviceInfo := &models.ScsiDeviceInfo{
+		Devices: []string{"sda", "sdb"},
+	}
+	minSize := int64(10)
+
+	// Negative case.
+	mockDevices.EXPECT().GetDiskSize(ctx, "/dev/sda").Return(int64(1), nil)
+	mockDevices.EXPECT().GetDiskSize(ctx, "/dev/sdb").Return(int64(0), errors.New("failed to open disk"))
+	deviceSizeMap, err := client.filterDevicesBySize(ctx, deviceInfo, minSize)
+	assert.Error(t, err)
+	assert.Nil(t, deviceSizeMap)
+	assert.NotEqual(t, len(deviceInfo.Devices), len(deviceSizeMap))
+
+	// Positive case #1: Only one device needs a resize.
+	mockDevices.EXPECT().GetDiskSize(ctx, "/dev/sda").Return(minSize, nil)
+	mockDevices.EXPECT().GetDiskSize(ctx, "/dev/sdb").Return(int64(1), nil)
+	deviceSizeMap, err = client.filterDevicesBySize(ctx, deviceInfo, minSize)
+	assert.NoError(t, err)
+	assert.NotNil(t, deviceSizeMap)
+	assert.NotEqual(t, len(deviceInfo.Devices), len(deviceSizeMap))
+
+	// Positive case #2: All devices need to resize.
+	mockDevices.EXPECT().GetDiskSize(ctx, "/dev/sda").Return(int64(1), nil)
+	mockDevices.EXPECT().GetDiskSize(ctx, "/dev/sdb").Return(int64(1), nil)
+	deviceSizeMap, err = client.filterDevicesBySize(ctx, deviceInfo, minSize)
+	assert.NoError(t, err)
+	assert.NotNil(t, deviceSizeMap)
+	assert.Equal(t, len(deviceInfo.Devices), len(deviceSizeMap))
+}
+
+func TestClient_rescanDevices(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockDevices := mock_devices.NewMockDevices(mockCtrl)
+
+	fs := afero.NewMemMapFs()
+	_, err := fs.Create("/sys/block/sda/device/rescan")
+	assert.NoError(t, err)
+
+	client := NewDetailed(
+		"",
+		nil,
+		nil,
+		nil,
+		mockDevices,
+		nil,
+		nil,
+		nil,
+		afero.Afero{Fs: fs},
+		nil,
+	)
+
+	ctx := context.TODO()
+	deviceSizeMap := map[string]int64{
+		"sda": 1,
+		"sdb": 1,
+	}
+
+	// Should fail because a device path does not exist.
+	mockDevices.EXPECT().ListAllDevices(ctx).AnyTimes()
+	err = client.rescanDevices(ctx, deviceSizeMap)
+	assert.Error(t, err)
+
+	// Add the missing device path.
+	_, err = fs.Create("/sys/block/sdb/device/rescan")
+	assert.NoError(t, err)
+
+	// Should succeed now that the device path exists.
+	err = client.rescanDevices(ctx, deviceSizeMap)
+	assert.NoError(t, err)
+}
+
 func TestClient_RescanDevices(t *testing.T) {
 	type parameters struct {
 		targetIQN string
@@ -2447,8 +2536,12 @@ func TestClient_RescanDevices(t *testing.T) {
 			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(1)
+
+				// This will be called twice because we read from each disk twice during an expansion.
+				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil).Times(1)
+				mockDevices.EXPECT().ListAllDevices(context.TODO()).Times(2)
 				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(1), nil).Times(1)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(1), nil).Times(1)
+				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(1), nil)
 				return mockDevices
 			},
 			getCommandClient: func(controller *gomock.Controller) tridentexec.Command {
@@ -2684,6 +2777,7 @@ func TestClient_RescanDevices(t *testing.T) {
 			assertError: assert.NoError,
 		},
 		"happy path": {
+			minSize:   10,
 			targetIQN: targetIQN,
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
 				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
@@ -2696,8 +2790,12 @@ func TestClient_RescanDevices(t *testing.T) {
 			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(1)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), nil)
+
+				// This will be called twice because we read from each disk twice during an expansion.
+				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil).Times(1)
+				mockDevices.EXPECT().ListAllDevices(context.TODO()).Times(2)
+				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(10), nil).Times(1)
+				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(10), nil)
 				return mockDevices
 			},
 			getCommandClient: func(controller *gomock.Controller) tridentexec.Command {
@@ -2706,6 +2804,8 @@ func TestClient_RescanDevices(t *testing.T) {
 			},
 			getFileSystemUtils: func() afero.Fs {
 				fs := afero.NewMemMapFs()
+				_, err := fs.Create("/sys/block/sda/device/rescan")
+				assert.NoError(t, err)
 				return fs
 			},
 			assertError: assert.NoError,
@@ -2721,110 +2821,6 @@ func TestClient_RescanDevices(t *testing.T) {
 				afero.Afero{Fs: params.getFileSystemUtils()}, nil)
 
 			err := client.RescanDevices(context.TODO(), params.targetIQN, params.lunID, params.minSize)
-			if params.assertError != nil {
-				params.assertError(t, err)
-			}
-		})
-	}
-}
-
-func TestClient_rescanDisk(t *testing.T) {
-	type parameters struct {
-		getFileSystemUtils func() afero.Fs
-		assertError        assert.ErrorAssertionFunc
-		getDevices         func(controller *gomock.Controller) devices.Devices
-	}
-	const deviceName = "sda"
-	tests := map[string]parameters{
-		"happy path": {
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				_, err := fs.Create(fmt.Sprintf("/sys/block/%s/device/rescan", deviceName))
-				assert.NoError(t, err)
-				return fs
-			},
-			getDevices: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().ListAllDevices(context.TODO()).Times(2)
-				return mockDevices
-			},
-			assertError: assert.NoError,
-		},
-		"error opening rescan file": {
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				return fs
-			},
-			getDevices: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().ListAllDevices(context.TODO())
-				return mockDevices
-			},
-			assertError: assert.Error,
-		},
-		"error writing to file": {
-			getFileSystemUtils: func() afero.Fs {
-				f := &aferoFileWrapper{
-					WriteStringError: errors.New("some error"),
-					File:             mem.NewFileHandle(&mem.FileData{}),
-				}
-
-				memMapFs := afero.NewMemMapFs()
-				_, err := memMapFs.Create(fmt.Sprintf("/sys/block/%s/device/rescan", deviceName))
-				assert.NoError(t, err)
-
-				fs := &aferoWrapper{
-					openFileResponse: f,
-					openResponse:     f,
-					Fs:               memMapFs,
-				}
-
-				return fs
-			},
-			getDevices: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().ListAllDevices(context.TODO())
-				return mockDevices
-			},
-			assertError: assert.Error,
-		},
-		"failed writing to file": {
-			getFileSystemUtils: func() afero.Fs {
-				f := &aferoFileWrapper{
-					WriteStringCount: 0,
-					File:             mem.NewFileHandle(&mem.FileData{}),
-				}
-
-				memMapFs := afero.NewMemMapFs()
-				_, err := memMapFs.Create(fmt.Sprintf("/sys/block/%s/device/rescan", deviceName))
-				assert.NoError(t, err)
-
-				fs := &aferoWrapper{
-					openFileResponse: f,
-					openResponse:     f,
-					Fs:               memMapFs,
-				}
-
-				return fs
-			},
-			getDevices: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().ListAllDevices(context.TODO())
-				return mockDevices
-			},
-			assertError: assert.Error,
-		},
-	}
-
-	for name, params := range tests {
-		t.Run(name, func(t *testing.T) {
-			var deviceClient devices.Devices
-			if params.getDevices != nil {
-				deviceClient = params.getDevices(gomock.NewController(t))
-			}
-			client := NewDetailed("", nil, nil, nil, deviceClient, nil, nil, nil,
-				afero.Afero{Fs: params.getFileSystemUtils()}, nil)
-			err := client.rescanDisk(context.TODO(), deviceName)
 			if params.assertError != nil {
 				params.assertError(t, err)
 			}
