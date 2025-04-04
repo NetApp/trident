@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -307,12 +308,15 @@ func (s *NVMeSubsystem) GetNVMeDeviceCountAt(ctx context.Context, path string) (
 	return count, nil
 }
 
-func (s *NVMeSubsystem) GetNVMeDeviceAt(ctx context.Context, nsUUID string) (NVMeDeviceInterface, error) {
+func (s *NVMeSubsystem) GetNVMeDeviceAt(ctx context.Context, nsUUID string) (*NVMeDevice, error) {
 	Logc(ctx).Trace(">>>> nvme_linux.GetNVMeDeviceAt")
 	defer Logc(ctx).Trace("<<<< nvme_linux.GetNVMeDeviceAt")
 
 	pathContents, err := afero.ReadDir(s.osFs, s.Name)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, errors.NotFoundError("NVMe directory %s not found: %v", s.Name, err)
+		}
 		return nil, fmt.Errorf("failed to open %s directory, %v", s.Name, err)
 	}
 

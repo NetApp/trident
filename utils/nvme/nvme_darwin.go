@@ -71,7 +71,7 @@ func (s *NVMeSubsystem) GetNVMeDeviceCountAt(ctx context.Context, path string) (
 	return 0, errors.UnsupportedError("GetNVMeDeviceCountAt is not supported for darwin")
 }
 
-func (s *NVMeSubsystem) GetNVMeDeviceAt(ctx context.Context, nsUUID string) (NVMeDeviceInterface, error) {
+func (s *NVMeSubsystem) GetNVMeDeviceAt(ctx context.Context, nsUUID string) (*NVMeDevice, error) {
 	Logc(ctx).Debug(">>>> nvme_darwin.GetNVMeDeviceAt")
 	defer Logc(ctx).Debug("<<<< nvme_darwin.GetNVMeDeviceAt")
 	return nil, errors.UnsupportedError("GetNVMeDeviceAt is not supported for darwin")

@@ -93,6 +93,8 @@ var (
 	betweenAttachAndLUKSPassphrase = fiji.Register("betweenAttachAndLUKSPassphrase", "node_server")
 	duringIscsiLogout              = fiji.Register("duringIscsiLogout", "node_server")
 	afterInitialTrackingInfoWrite  = fiji.Register("afterInitialTrackingInfoWrite", "node_server")
+	afterNvmeLuksDeviceClosed      = fiji.Register("afterNvmeLuksDeviceClosed", "node_server")
+	afterNvmeDisconnect            = fiji.Register("afterNvmeDisconnect", "node_server")
 )
 
 const (
@@ -2930,8 +2932,8 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 
 		luksMapperPath, err = p.devices.GetLUKSDeviceForMultipathDevice(devicePath)
 		if err != nil {
-			Logc(ctx).WithFields(fields).WithError(err).Error("Failed to get LUKS device path from device path.")
-			return &csi.NodeUnstageVolumeResponse{}, err
+			Logc(ctx).WithFields(fields).WithError(err).Debug("Failed to get LUKS device path from device path. " +
+				"Device may already be removed.")
 		}
 
 		if luksMapperPath != "" {
@@ -2942,6 +2944,9 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 					return &csi.NodeUnstageVolumeResponse{}, err
 				}
 				Logc(ctx).WithFields(fields).WithError(err).Debug("LUKS close wait time exceeded, continuing with device removal.")
+			}
+			if err := afterNvmeLuksDeviceClosed.Inject(); err != nil {
+				return nil, err
 			}
 		}
 	}
@@ -2993,6 +2998,9 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 				"subsystem", publishInfo.NVMeSubsystemNQN,
 			).WithError(err).Debug("Error disconnecting subsystem.")
 		}
+	}
+	if err := afterNvmeDisconnect.Inject(); err != nil {
+		return nil, err
 	}
 
 	volumeId, stagingTargetPath, err := p.getVolumeIdAndStagingPath(req)

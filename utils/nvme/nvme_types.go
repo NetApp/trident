@@ -142,8 +142,8 @@ type NVMeSubsystemInterface interface {
 	ConnectSubsystemToHost(ctx context.Context, IP string) error
 	DisconnectSubsystemFromHost(ctx context.Context) error
 	GetNamespaceCountForSubsDevice(ctx context.Context) (int, error)
-	GetNVMeDevice(ctx context.Context, nsUUID string) (NVMeDeviceInterface, error)
-	GetNVMeDeviceAt(ctx context.Context, nsUUID string) (NVMeDeviceInterface, error)
+	GetNVMeDevice(ctx context.Context, nsUUID string) (*NVMeDevice, error)
+	GetNVMeDeviceAt(ctx context.Context, nsUUID string) (*NVMeDevice, error)
 	GetNVMeDeviceCountAt(ctx context.Context, path string) (int, error)
 }
 

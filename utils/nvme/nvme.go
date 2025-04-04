@@ -154,7 +154,7 @@ func (s *NVMeSubsystem) GetNamespaceCount(ctx context.Context) (int, error) {
 	return count, nil
 }
 
-func (s *NVMeSubsystem) GetNVMeDevice(ctx context.Context, nsUUID string) (NVMeDeviceInterface, error) {
+func (s *NVMeSubsystem) GetNVMeDevice(ctx context.Context, nsUUID string) (*NVMeDevice, error) {
 	Logc(ctx).Debug(">>>> nvme.GetNVMeDevice")
 	defer Logc(ctx).Debug("<<<< nvme.GetNVMeDevice")
 
