@@ -20,6 +20,10 @@ import (
 	"github.com/netapp/trident/storage_drivers/azure/api"
 )
 
+const (
+	MountOptionNconnect = "4"
+)
+
 type ANF struct {
 	ANFConfig
 
@@ -199,7 +203,7 @@ func (a *ANF) CreateStorageClass() error {
 	}
 
 	for _, sc := range anfStorageClassMap.SCMap {
-		scYAML := getANFStorageClassYAML(sc, config.AzureNASStorageDriverName, a.TridentNamespace)
+		scYAML := getANFStorageClassYAML(sc, config.AzureNASStorageDriverName, a.TridentNamespace, MountOptionNconnect)
 		err := a.ConfClient.CreateOrPatchObject(confClients.OStorageClass, sc.Name, "", scYAML)
 		if err != nil {
 			return err

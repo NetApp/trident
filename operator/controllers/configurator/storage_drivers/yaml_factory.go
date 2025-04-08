@@ -4,6 +4,7 @@ package storage_drivers
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/netapp/trident/config"
@@ -119,7 +120,7 @@ func constructClientCredentials(clientCred string) string {
 	return cred
 }
 
-func getANFStorageClassYAML(sc ANFStorageClass, backendType, namespace string) string {
+func getANFStorageClassYAML(sc ANFStorageClass, backendType, namespace, nconnect string) string {
 	scYAML := anfStorageClassTemplate
 
 	scYAML = strings.ReplaceAll(scYAML, "{NAME}", sc.Name)
@@ -129,8 +130,11 @@ func getANFStorageClassYAML(sc ANFStorageClass, backendType, namespace string) s
 
 	if sc.NASType == sa.SMB {
 		scYAML = strings.ReplaceAll(scYAML, "{AAD_SECRET}", constructAADSecret(namespace))
+		scYAML = strings.ReplaceAll(scYAML, "{MOUNT_OPTIONS}", "")
 	} else {
 		scYAML = strings.ReplaceAll(scYAML, "{AAD_SECRET}", "")
+		mountOptions := map[string]string{"nconnect": nconnect}
+		scYAML = strings.ReplaceAll(scYAML, "{MOUNT_OPTIONS}", constructMountOptions(mountOptions))
 	}
 
 	return scYAML
@@ -148,6 +152,7 @@ parameters:
   {AAD_SECRET}
 volumeBindingMode: Immediate
 allowVolumeExpansion: true
+{MOUNT_OPTIONS}
 `
 
 func constructAADSecret(namespace string) string {
@@ -155,6 +160,26 @@ func constructAADSecret(namespace string) string {
 	aadSecret := "csi.storage.k8s.io/node-stage-secret-name: 'smbcreds'\n"
 	aadSecret += fmt.Sprintf("  csi.storage.k8s.io/node-stage-secret-namespace: '%s'", namespace)
 	return aadSecret
+}
+
+// constructMountOptions constructs the mount options for the storage class
+func constructMountOptions(mountOptions map[string]string) string {
+	if len(mountOptions) == 0 {
+		return ""
+	}
+
+	keys := make([]string, 0, len(mountOptions))
+	for key := range mountOptions {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	mountOptionsYAML := "mountOptions:\n"
+	for _, key := range keys {
+		mountOptionsYAML += fmt.Sprintf("  - %s=%s\n", key, mountOptions[key])
+	}
+
+	return mountOptionsYAML
 }
 
 // GetVolumeSnapshotClassYAML returns the VolumeSnapshotClass YAML

@@ -77,3 +77,34 @@ func TestConstructANFSupportedTopologies(t *testing.T) {
 		})
 	}
 }
+
+func TestConstructMountOptions(t *testing.T) {
+	testCases := []struct {
+		name     string
+		input    map[string]string
+		expected string
+	}{
+		{
+			name:     "No mount options",
+			input:    map[string]string{},
+			expected: "",
+		},
+		{
+			name:     "Single mount option",
+			input:    map[string]string{"key1": "value1"},
+			expected: "mountOptions:\n  - key1=value1\n",
+		},
+		{
+			name:     "Multiple mount options",
+			input:    map[string]string{"key1": "value1", "key2": "value2"},
+			expected: "mountOptions:\n  - key1=value1\n  - key2=value2\n",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := constructMountOptions(tc.input)
+			assert.Equal(t, tc.expected, result, "Incorrect mount options string returned")
+		})
+	}
+}
