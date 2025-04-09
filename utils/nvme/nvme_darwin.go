@@ -47,7 +47,8 @@ func (s *NVMeSubsystem) DisconnectSubsystemFromHost(ctx context.Context) error {
 }
 
 func (nh *NVMeHandler) GetNVMeSubsystem(ctx context.Context, nqn string) (*NVMeSubsystem,
-	error) {
+	error,
+) {
 	Logc(ctx).Debug(">>>> nvme_darwin.GetNVMeSubsystem")
 	defer Logc(ctx).Debug("<<<< nvme_darwin.GetNVMeSubsystem")
 	return &NVMeSubsystem{}, errors.UnsupportedError("GetNVMeSubsystem is not supported for darwin")

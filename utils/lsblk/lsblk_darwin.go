@@ -14,7 +14,8 @@ func (l *LsblkUtil) GetBlockDevices(ctx context.Context) ([]BlockDevice, error) 
 }
 
 func (l *LsblkUtil) FindParentDevice(ctx context.Context, deviceName string, devices []BlockDevice,
-	parent *BlockDevice) (*BlockDevice, error) {
+	parent *BlockDevice,
+) (*BlockDevice, error) {
 	Logc(ctx).Debug(">>>> lsblk_darwin.FindParentDevice")
 	defer Logc(ctx).Debug("<<<< lsblk_darwin.FindParentDevice")
 	return nil, errors.UnsupportedError("FindParentDevice is not supported for darwin")

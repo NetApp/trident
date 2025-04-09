@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -2534,7 +2533,7 @@ func TestGetStorageBackendSpecsASA(t *testing.T) {
 	assert.Equal(t, backend.Name(), driver.BackendName(), "Should be equal")
 
 	expectedPhysicalPoolsName := []string{"dummyPool1", "dummyPool2"}
-	assert.Equal(t, expectedPhysicalPoolsName, backend.GetPhysicalPoolNames(ctx))
+	assert.ElementsMatch(t, expectedPhysicalPoolsName, backend.GetPhysicalPoolNames(ctx), "Physical pool names do not match")
 }
 
 func TestGetStorageBackendPhysicalPoolNamesASA(t *testing.T) {
@@ -2558,13 +2557,9 @@ func TestGetStorageBackendPhysicalPoolNamesASA(t *testing.T) {
 	driver.physicalPools = physicalPools
 
 	expectedPhysicalPoolsName := []string{"dummyPool1", "dummyPool2"}
-
 	actualPhysicalPoolsName := driver.GetStorageBackendPhysicalPoolNames(ctx)
 
-	sort.Strings(expectedPhysicalPoolsName)
-	sort.Strings(actualPhysicalPoolsName)
-
-	assert.Equal(t, expectedPhysicalPoolsName, actualPhysicalPoolsName, "Should be equal")
+	assert.ElementsMatch(t, expectedPhysicalPoolsName, actualPhysicalPoolsName, "Should be equal")
 }
 
 func TestGetBackendStateASA(t *testing.T) {
