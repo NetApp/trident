@@ -2633,15 +2633,15 @@ func (c *RestClient) LunGet(ctx context.Context, uuid string) (*san.LunGetOK, er
 // LunGetByName gets the LUN with the specified name
 func (c *RestClient) LunGetByName(ctx context.Context, name string, fields []string) (*models.Lun, error) {
 	result, err := c.LunList(ctx, name, fields)
-	if err != nil || result.Payload == nil {
+	if err != nil {
 		return nil, err
 	}
 
-	if result == nil || result.Payload == nil || result.Payload.NumRecords == nil {
-		return nil, errors.NotFoundError(fmt.Sprintf("could not get LUN by name %v, error: %v", name, err))
+	if result == nil || result.Payload == nil || result.Payload.NumRecords == nil || *result.Payload.NumRecords == 0 {
+		return nil, errors.NotFoundError(fmt.Sprintf("could not get LUN by name %v", name))
 	}
 
-	if result.Payload.NumRecords != nil && *result.Payload.NumRecords == 1 && result.Payload.LunResponseInlineRecords != nil {
+	if *result.Payload.NumRecords == 1 && result.Payload.LunResponseInlineRecords != nil {
 		return result.Payload.LunResponseInlineRecords[0], nil
 	}
 	return nil, err
@@ -6101,14 +6101,10 @@ func (c *RestClient) JobScheduleExists(ctx context.Context, jobName string) (boo
 	if err != nil {
 		return false, err
 	}
-	if result == nil {
+	if result == nil || result.Payload == nil {
 		return false, fmt.Errorf("nil result finding job with name: %v", jobName)
 	}
-
-	if result.Payload.ScheduleResponseInlineRecords == nil {
-		return false, fmt.Errorf("could not find job with name: %v", jobName)
-	}
-	if result.Payload.NumRecords == nil {
+	if result.Payload.ScheduleResponseInlineRecords == nil || result.Payload.NumRecords == nil || *result.Payload.NumRecords == 0 {
 		return false, fmt.Errorf("could not find job with name: %v", jobName)
 	}
 	if result.Payload.NumRecords != nil && *result.Payload.NumRecords != 1 {

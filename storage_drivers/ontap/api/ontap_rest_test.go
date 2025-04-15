@@ -1091,6 +1091,27 @@ func mockLunResponseNumRecordsNil(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func mockLunResponseNumRecordsZero(w http.ResponseWriter, r *http.Request) {
+	numRecords := int64(0)
+	lunResponse := models.LunResponse{
+		LunResponseInlineRecords: []*models.Lun{},
+		NumRecords:               &numRecords,
+	}
+	if r.Method == "GET" {
+		if r.URL.Path == "/api/protocols/san/lun-maps" {
+			mockLunMapResponse(w, r)
+		} else {
+			setHTTPResponseHeader(w, http.StatusOK)
+			if r.URL.Path == "/api/storage/luns/fake-lunName" {
+				// LunGetByName calls LunList
+				json.NewEncoder(w).Encode(lunResponse)
+			} else {
+				json.NewEncoder(w).Encode(lunResponse)
+			}
+		}
+	}
+}
+
 func TestOntapREST_LunGetByName(t *testing.T) {
 	tests := []struct {
 		name            string
@@ -1100,6 +1121,7 @@ func TestOntapREST_LunGetByName(t *testing.T) {
 	}{
 		{"PositiveTest", mockLunResponse, false, false},
 		{"NumRecordsNilInResponse", mockLunResponseNumRecordsNil, true, true},
+		{"NumRecordsZeroInResponse", mockLunResponseNumRecordsZero, false, true},
 		{"BackendReturnError", mockResourceNotFound, true, true},
 	}
 	for _, test := range tests {
@@ -4259,6 +4281,17 @@ func mockJobScheduleResponseNumRecordsNil(w http.ResponseWriter, r *http.Request
 	json.NewEncoder(w).Encode(scheduleResponse)
 }
 
+func mockJobScheduleResponseNumRecordsZero(w http.ResponseWriter, r *http.Request) {
+	numRecords := int64(0)
+	scheduleResponse := &models.ScheduleResponse{
+		ScheduleResponseInlineRecords: []*models.Schedule{{}},
+		NumRecords:                    &numRecords,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(scheduleResponse)
+}
+
 func mockJobScheduleResponseNumRecordsGrt1(w http.ResponseWriter, r *http.Request) {
 	numRecords := int64(2)
 	scheduleResponse := &models.ScheduleResponse{
@@ -4279,6 +4312,7 @@ func TestOntapRest_JobScheduleExists(t *testing.T) {
 		{"PositiveTest", mockJobScheduleResponse, false},
 		{"JobIsNilInResponse", mockJobScheduleResponseRecordNil, true},
 		{"NumRecordFieldNil", mockJobScheduleResponseNumRecordsNil, true},
+		{"NumRecordFieldZero", mockJobScheduleResponseNumRecordsZero, true},
 		{"NumRecordMoreThanOne", mockJobScheduleResponseNumRecordsGrt1, true},
 		{"BackendReturnError", mockResourceNotFound, true},
 	}
