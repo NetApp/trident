@@ -14,6 +14,8 @@ import (
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
+	"github.com/netapp/trident/storage_drivers/ontap/api"
+	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
 )
 
 const (
@@ -81,23 +83,11 @@ func GetStorageDriver(
 
 	// ontap-san uses additional system details to choose the needed driver
 	case config.OntapSANStorageDriverName:
-		switch driverProtocol {
-		case sa.ISCSI:
-			if API.IsSANOptimized() && API.IsDisaggregated() {
-				ontapConfig.Flags[FlagPersonality] = PersonalityASAr2 // Used by ASUP to distinguish personalities
-				storageDriver = &ASAStorageDriver{API: API, Config: *ontapConfig}
-			} else if !API.IsSANOptimized() && !API.IsDisaggregated() {
-				storageDriver = &SANStorageDriver{API: API, AWSAPI: AWSAPI, Config: *ontapConfig}
-			} else {
-				return nil, fmt.Errorf("unsupported ONTAP personality with disaggregated %t and SAN optimized %t",
-					API.IsDisaggregated(), API.IsSANOptimized())
-			}
-		case sa.FCP:
-			storageDriver = &SANStorageDriver{API: API, AWSAPI: AWSAPI, Config: *ontapConfig}
-		case sa.NVMe:
-			storageDriver = &NVMeStorageDriver{API: API, AWSAPI: AWSAPI, Config: *ontapConfig}
-		default:
-			return nil, fmt.Errorf("unsupported SAN protocol %s", driverProtocol)
+		if storageDriver, err = getSANStorageDriverBasedOnPersonality(
+			API.IsSANOptimized(), API.IsDisaggregated(),
+			driverProtocol, ontapConfig,
+			API, AWSAPI); err != nil {
+			return nil, fmt.Errorf("error initializing %s driver: %v", ontapConfig.StorageDriverName, err)
 		}
 
 	default:
@@ -105,11 +95,46 @@ func GetStorageDriver(
 	}
 
 	Logc(ctx).WithFields(LogFields{
-		"disaggregated": API.IsDisaggregated(),
-		"sanOptimized":  API.IsSANOptimized(),
+		"disaggregated":  API.IsDisaggregated(),
+		"sanOptimized":   API.IsSANOptimized(),
+		"driverProtocol": driverProtocol,
 	}).Infof("ONTAP factory creating %T backend.", storageDriver)
 
 	return storageDriver, nil
+}
+
+func getSANStorageDriverBasedOnPersonality(
+	sanOptimized, disaggregated bool,
+	driverProtocol string, ontapConfig *drivers.OntapStorageDriverConfig,
+	api api.OntapAPI, awsapi awsapi.AWSAPI,
+) (storage.Driver, error) {
+	isASAr2 := false
+	if sanOptimized && disaggregated {
+		// Setup personality to be used by ASUP
+		if ontapConfig.Flags == nil {
+			ontapConfig.Flags = make(map[string]string)
+		}
+		ontapConfig.Flags[FlagPersonality] = PersonalityASAr2
+		isASAr2 = true
+	}
+
+	switch driverProtocol {
+	case sa.ISCSI:
+		if isASAr2 {
+			// ASAr2 iSCSI SAN driver
+			return &ASAStorageDriver{API: api, Config: *ontapConfig}, nil
+		} else {
+			// Unified iSCSI SAN driver
+			return &SANStorageDriver{API: api, AWSAPI: awsapi, Config: *ontapConfig}, nil
+		}
+	case sa.NVMe:
+		// Unified NVMe SAN driver
+		return &NVMeStorageDriver{API: api, AWSAPI: awsapi, Config: *ontapConfig}, nil
+	case sa.FCP:
+		return &SANStorageDriver{API: api, AWSAPI: awsapi, Config: *ontapConfig}, nil
+	default:
+		return nil, fmt.Errorf("unsupported SAN protocol %s", driverProtocol)
+	}
 }
 
 func getEmptyStorageDriver(driverName, driverProtocol string) (storage.Driver, error) {
