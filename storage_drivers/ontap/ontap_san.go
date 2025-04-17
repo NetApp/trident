@@ -756,7 +756,7 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 	volConfig.Size = lunInfo.Size
 
 	if convert.ToBool(volConfig.LUKSEncryption) {
-		newSize, err := subtractUintFromSizeString(volConfig.Size, luks.LUKSMetadataSize)
+		newSize, err := subtractUintFromSizeString(volConfig.Size, luks.MetadataSize)
 		if err != nil {
 			return err
 		}

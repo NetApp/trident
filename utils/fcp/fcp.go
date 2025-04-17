@@ -78,15 +78,6 @@ type OS interface {
 	PathExists(path string) (bool, error)
 }
 
-type Devices interface {
-	WaitForDevice(ctx context.Context, device string) error
-	GetDeviceFSType(ctx context.Context, device string) (string, error)
-	NewLUKSDevice(rawDevicePath, volumeId string) (luks.Device, error)
-	EnsureLUKSDeviceMappedOnHost(ctx context.Context, name string, secrets map[string]string) (bool, error)
-	IsDeviceUnformatted(ctx context.Context, device string) (bool, error)
-	EnsureDeviceReadable(ctx context.Context, device string) error
-}
-
 type FileSystem interface {
 	FormatVolume(ctx context.Context, device, fstype, options string) error
 	RepairVolume(ctx context.Context, device, fstype string)
@@ -508,8 +499,8 @@ func (client *Client) AttachVolume(
 	publishInfo.DevicePath = devicePath
 
 	if isLUKSDevice {
-		luksDevice := luks.NewLUKSDevice(devicePath, name, client.command)
-		luksFormatted, err = luksDevice.EnsureLUKSDeviceMappedOnHost(ctx, name, secrets)
+		luksDevice := luks.NewDevice(devicePath, name, client.command)
+		luksFormatted, err = luksDevice.EnsureDeviceMappedOnHost(ctx, name, secrets)
 		if err != nil {
 			return mpathSize, err
 		}

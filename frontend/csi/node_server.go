@@ -584,7 +584,7 @@ func (p *Plugin) nodeExpandVolume(
 
 	devicePath := publishInfo.DevicePath
 	if convert.ToBool(publishInfo.LUKSEncryption) {
-		if !luks.IsLegacyLUKSDevicePath(devicePath) {
+		if !luks.IsLegacyDevicePath(devicePath) {
 			devicePath, err = p.devices.GetLUKSDeviceForMultipathDevice(devicePath)
 			if err != nil {
 				Logc(ctx).WithFields(LogFields{
@@ -1330,7 +1330,7 @@ func (p *Plugin) nodeStageFCPVolume(
 		}
 
 		var luksDevice luks.Device
-		luksDevice = luks.NewLUKSDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
+		luksDevice = luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
 
 		// Ensure we update the passphrase in case it has never been set before
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
@@ -1393,7 +1393,7 @@ func (p *Plugin) nodeUnstageFCPVolume(
 			var luksMapperPath string
 			fields := LogFields{"device": publishInfo.DevicePath}
 			// Set device path to dm device to correctly verify legacy volumes.
-			if luks.IsLegacyLUKSDevicePath(publishInfo.DevicePath) {
+			if luks.IsLegacyDevicePath(publishInfo.DevicePath) {
 				luksMapperPath = publishInfo.DevicePath
 				dmPath, err := luks.GetDmDevicePathFromLUKSLegacyPath(ctx, p.command,
 					publishInfo.DevicePath)
@@ -1482,7 +1482,7 @@ func (p *Plugin) nodeUnstageFCPVolume(
 		}
 
 		// Set device path to dm device to correctly verify legacy volumes.
-		if luks.IsLegacyLUKSDevicePath(publishInfo.DevicePath) {
+		if luks.IsLegacyDevicePath(publishInfo.DevicePath) {
 			publishInfo.DevicePath = deviceInfo.MultipathDevice
 		}
 	}
@@ -1615,16 +1615,16 @@ func (p *Plugin) nodePublishFCPVolume(
 		// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
 
 		var luksDevice luks.Device
-		if luks.IsLegacyLUKSDevicePath(devicePath) {
+		if luks.IsLegacyDevicePath(devicePath) {
 			// Supports legacy volumes that store the LUKS device path
-			luksDevice, err = luks.NewLUKSDeviceFromMappingPath(
+			luksDevice, err = luks.NewDeviceFromMappingPath(
 				ctx, p.command, devicePath, req.VolumeContext["internalName"],
 			)
 			if err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
 			}
 		} else {
-			luksDevice = luks.NewLUKSDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
+			luksDevice = luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
 		}
 
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, req.GetVolumeId(), req.GetSecrets(), false)
@@ -1782,7 +1782,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 		}
 
 		var luksDevice luks.Device
-		luksDevice = luks.NewLUKSDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
+		luksDevice = luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
 
 		// Ensure we update the passphrase in case it has never been set before
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
@@ -1889,7 +1889,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 			var luksMapperPath string
 			fields := LogFields{"device": publishInfo.DevicePath}
 			// Set device path to dm device to correctly verify legacy volumes.
-			if luks.IsLegacyLUKSDevicePath(publishInfo.DevicePath) {
+			if luks.IsLegacyDevicePath(publishInfo.DevicePath) {
 				luksMapperPath = publishInfo.DevicePath
 				dmPath, err := luks.GetDmDevicePathFromLUKSLegacyPath(ctx, p.command,
 					publishInfo.DevicePath)
@@ -1977,7 +1977,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		}
 
 		// Set device path to dm device to correctly verify legacy volumes.
-		if luks.IsLegacyLUKSDevicePath(publishInfo.DevicePath) {
+		if luks.IsLegacyDevicePath(publishInfo.DevicePath) {
 			publishInfo.DevicePath = deviceInfo.MultipathDevice
 		}
 	}
@@ -2152,12 +2152,12 @@ func (p *Plugin) nodePublishISCSIVolume(
 		// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
 		var luksDevice luks.Device
 		var err error
-		if luks.IsLegacyLUKSDevicePath(devicePath) {
+		if luks.IsLegacyDevicePath(devicePath) {
 			// Supports legacy volumes that store the LUKS device path
-			luksDevice, err = luks.NewLUKSDeviceFromMappingPath(ctx, p.command, devicePath,
+			luksDevice, err = luks.NewDeviceFromMappingPath(ctx, p.command, devicePath,
 				req.VolumeContext["internalName"])
 		} else {
-			luksDevice = luks.NewLUKSDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
+			luksDevice = luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
 		}
 
 		if err != nil {
@@ -2866,7 +2866,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 	}
 
 	if isLUKS {
-		luksDevice := luks.NewLUKSDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
+		luksDevice := luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
 
 		// Ensure we update the passphrase in case it has never been set before
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
@@ -3070,7 +3070,7 @@ func (p *Plugin) nodePublishNVMeVolume(
 	devicePath := publishInfo.DevicePath
 	if convert.ToBool(publishInfo.LUKSEncryption) {
 		// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
-		luksDevice := luks.NewLUKSDevice(devicePath, req.VolumeContext["internalName"], p.command)
+		luksDevice := luks.NewDevice(devicePath, req.VolumeContext["internalName"], p.command)
 
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, req.GetVolumeId(), req.GetSecrets(), false)
 		if err != nil {

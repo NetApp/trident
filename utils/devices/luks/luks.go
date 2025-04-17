@@ -19,13 +19,13 @@ import (
 )
 
 const (
-	luksDevicePrefix = "luks-"
+	devicePrefix = "luks-"
 	// LUKS2 requires ~16MiB for overhead. Default to 18MiB just in case.
-	LUKSMetadataSize = 18874368
+	MetadataSize = 18874368
 )
 
 type Device interface {
-	EnsureLUKSDeviceMappedOnHost(ctx context.Context, name string, secrets map[string]string) (bool, error)
+	EnsureDeviceMappedOnHost(ctx context.Context, name string, secrets map[string]string) (bool, error)
 	MappedDevicePath() string
 	MappedDeviceName() string
 	RawDevicePath() string
@@ -42,8 +42,8 @@ type LUKSDevice struct {
 	osFs             afero.Fs
 }
 
-func NewLUKSDevice(rawDevicePath, volumeId string, command execCmd.Command) *LUKSDevice {
-	luksDeviceName := luksDevicePrefix + volumeId
+func NewDevice(rawDevicePath, volumeId string, command execCmd.Command) *LUKSDevice {
+	luksDeviceName := devicePrefix + volumeId
 	devices := devices.New()
 	osFs := afero.NewOsFs()
 	return NewDetailed(rawDevicePath, luksDeviceName, command, devices, osFs)
@@ -61,18 +61,18 @@ func NewDetailed(rawDevicePath, mappedDeviceName string, command execCmd.Command
 	}
 }
 
-func NewLUKSDeviceFromMappingPath(
+func NewDeviceFromMappingPath(
 	ctx context.Context, command execCmd.Command, mappingPath, volumeId string,
 ) (*LUKSDevice, error) {
-	rawDevicePath, err := GetUnderlyingDevicePathForLUKSDevice(ctx, command, mappingPath)
+	rawDevicePath, err := GetUnderlyingDevicePathForDevice(ctx, command, mappingPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not determine underlying device for LUKS mapping; %v", err)
 	}
-	return NewLUKSDevice(rawDevicePath, volumeId, command), nil
+	return NewDevice(rawDevicePath, volumeId, command), nil
 }
 
 // EnsureLUKSDeviceMappedOnHost ensures the specified device is LUKS formatted, opened, and has the current passphrase.
-func (d *LUKSDevice) EnsureLUKSDeviceMappedOnHost(ctx context.Context, name string, secrets map[string]string) (bool, error) {
+func (d *LUKSDevice) EnsureDeviceMappedOnHost(ctx context.Context, name string, secrets map[string]string) (bool, error) {
 	// Try to Open with current luks passphrase
 	luksPassphraseName, luksPassphrase, previousLUKSPassphraseName, previousLUKSPassphrase := GetLUKSPassphrasesFromSecretMap(secrets)
 	if luksPassphrase == "" {
@@ -149,7 +149,7 @@ func (d *LUKSDevice) ensureLUKSDevice(ctx context.Context, luksPassphrase string
 		return true, nil
 	}
 
-	if err := d.lUKSFormat(ctx, luksPassphrase); err != nil {
+	if err := d.formatUnformattedDevice(ctx, luksPassphrase); err != nil {
 		Logc(ctx).WithError(err).Error("Could not LUKS format device.")
 		return false, fmt.Errorf("could not LUKS format device; %w", err)
 	}
@@ -176,8 +176,8 @@ func GetLUKSPassphrasesFromSecretMap(secrets map[string]string) (string, string,
 	return luksPassphraseName, luksPassphrase, previousLUKSPassphraseName, previousLUKSPassphrase
 }
 
-// IsLegacyLUKSDevicePath returns true if the device path points to mapped LUKS device instead of mpath device.
-func IsLegacyLUKSDevicePath(devicePath string) bool {
+// IsLegacyDevicePath returns true if the device path points to mapped LUKS device instead of mpath device.
+func IsLegacyDevicePath(devicePath string) bool {
 	return strings.Contains(devicePath, "luks")
 }
 
@@ -186,7 +186,7 @@ func IsLegacyLUKSDevicePath(devicePath string) bool {
 func GetDmDevicePathFromLUKSLegacyPath(
 	ctx context.Context, command execCmd.Command, devicePath string,
 ) (string, error) {
-	if !IsLegacyLUKSDevicePath(devicePath) {
+	if !IsLegacyDevicePath(devicePath) {
 		return "", fmt.Errorf("device path is not a legacy LUKS device path")
 	}
 	lsblk := lsblk.NewLsblkUtilDetailed(command)

@@ -2267,7 +2267,7 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				return mockNodeHelper
 			},
 		},
-		"SAN: iSCSI unstage: GetUnderlyingDevicePathForLUKSDevice error": {
+		"SAN: iSCSI unstage: GetUnderlyingDevicePathForDevice error": {
 			assertError: assert.NoError,
 			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
 			publishInfo: NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).WithLUKSEncryption("true").Build(),

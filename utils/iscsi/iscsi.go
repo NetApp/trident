@@ -120,40 +120,6 @@ type OS interface {
 	PathExists(path string) (bool, error)
 }
 
-type Devices interface {
-	WaitForDevice(ctx context.Context, device string) error
-	GetDeviceFSType(ctx context.Context, device string) (string, error)
-	NewLUKSDevice(rawDevicePath, volumeId string) (luks.Device, error)
-	EnsureLUKSDeviceMappedOnHost(ctx context.Context, luksDevice luks.Device, name string,
-		secrets map[string]string) (bool, error)
-	IsDeviceUnformatted(ctx context.Context, device string) (bool, error)
-	EnsureDeviceReadable(ctx context.Context, device string) error
-	GetISCSIDiskSize(ctx context.Context, devicePath string) (int64, error)
-	GetMountedISCSIDevices(ctx context.Context) ([]*models.ScsiDeviceInfo, error)
-	MultipathFlushDevice(ctx context.Context, deviceInfo *models.ScsiDeviceInfo) error
-	CompareWithPublishedDevicePath(
-		ctx context.Context, publishInfo *models.VolumePublishInfo,
-		deviceInfo *models.ScsiDeviceInfo) (bool, error)
-	CompareWithPublishedSerialNumber(
-		ctx context.Context, publishInfo *models.VolumePublishInfo, deviceInfo *models.ScsiDeviceInfo,
-	) (bool, error)
-	CompareWithAllPublishInfos(
-		ctx context.Context, publishInfo *models.VolumePublishInfo,
-		allPublishInfos []models.VolumePublishInfo, deviceInfo *models.ScsiDeviceInfo,
-	) error
-	RemoveSCSIDevice(ctx context.Context, deviceInfo *models.ScsiDeviceInfo, ignoreErrors, skipFlush bool) (bool, error)
-	GetLUKSDeviceForMultipathDevice(multipathDevice string) (string, error)
-	CloseLUKSDevice(ctx context.Context, devicePath string) error
-	RemoveMultipathDeviceMapping(ctx context.Context, devicePath string) error
-	GetUnderlyingDevicePathForLUKSDevice(ctx context.Context, luksDevicePath string) (string, error)
-	GetDMDeviceForMapperPath(ctx context.Context, mapperPath string) (string, error)
-	GetDeviceInfoForLUN(
-		ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string, isDetachCall bool,
-	) (*models.ScsiDeviceInfo, error)
-	EnsureLUKSDeviceClosed(ctx context.Context, devicePath string) error
-	EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx context.Context, luksDevicePath string) error
-}
-
 type Client struct {
 	chrootPathPrefix     string
 	command              tridentexec.Command
@@ -427,8 +393,8 @@ func (client *Client) AttachVolume(
 	publishInfo.DevicePath = devicePath
 
 	if isLUKSDevice {
-		luksDevice := luks.NewLUKSDevice(devicePath, name, client.command)
-		luksFormatted, err = luksDevice.EnsureLUKSDeviceMappedOnHost(ctx, name, secrets)
+		luksDevice := luks.NewDevice(devicePath, name, client.command)
+		luksFormatted, err = luksDevice.EnsureDeviceMappedOnHost(ctx, name, secrets)
 		if err != nil {
 			return mpathSize, err
 		}

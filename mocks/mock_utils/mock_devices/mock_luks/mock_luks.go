@@ -54,6 +54,21 @@ func (mr *MockDeviceMockRecorder) CheckPassphrase(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPassphrase", reflect.TypeOf((*MockDevice)(nil).CheckPassphrase), arg0, arg1)
 }
 
+// EnsureDeviceMappedOnHost mocks base method.
+func (m *MockDevice) EnsureDeviceMappedOnHost(arg0 context.Context, arg1 string, arg2 map[string]string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureDeviceMappedOnHost", arg0, arg1, arg2)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EnsureDeviceMappedOnHost indicates an expected call of EnsureDeviceMappedOnHost.
+func (mr *MockDeviceMockRecorder) EnsureDeviceMappedOnHost(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureDeviceMappedOnHost", reflect.TypeOf((*MockDevice)(nil).EnsureDeviceMappedOnHost), arg0, arg1, arg2)
+}
+
 // EnsureFormattedAndOpen mocks base method.
 func (m *MockDevice) EnsureFormattedAndOpen(arg0 context.Context, arg1 string) (bool, error) {
 	m.ctrl.T.Helper()
@@ -67,21 +82,6 @@ func (m *MockDevice) EnsureFormattedAndOpen(arg0 context.Context, arg1 string) (
 func (mr *MockDeviceMockRecorder) EnsureFormattedAndOpen(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureFormattedAndOpen", reflect.TypeOf((*MockDevice)(nil).EnsureFormattedAndOpen), arg0, arg1)
-}
-
-// EnsureLUKSDeviceMappedOnHost mocks base method.
-func (m *MockDevice) EnsureLUKSDeviceMappedOnHost(arg0 context.Context, arg1 string, arg2 map[string]string) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnsureLUKSDeviceMappedOnHost", arg0, arg1, arg2)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// EnsureLUKSDeviceMappedOnHost indicates an expected call of EnsureLUKSDeviceMappedOnHost.
-func (mr *MockDeviceMockRecorder) EnsureLUKSDeviceMappedOnHost(arg0, arg1, arg2 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureLUKSDeviceMappedOnHost", reflect.TypeOf((*MockDevice)(nil).EnsureLUKSDeviceMappedOnHost), arg0, arg1, arg2)
 }
 
 // MappedDeviceName mocks base method.

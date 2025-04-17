@@ -1395,7 +1395,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			},
 			getLuksDevice: func(controller *gomock.Controller) luks.Device {
 				luksDevice := mock_luks.NewMockDevice(controller)
-				luksDevice.EXPECT().EnsureLUKSDeviceMappedOnHost(context.TODO(), "test-volume",
+				luksDevice.EXPECT().EnsureDeviceMappedOnHost(context.TODO(), "test-volume",
 					map[string]string{}).Return(false, errors.New("some error"))
 				return luksDevice
 			},
@@ -1482,7 +1482,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			getLuksDevice: func(controller *gomock.Controller) luks.Device {
 				luksDevice := mock_luks.NewMockDevice(controller)
 				luksDevice.EXPECT().MappedDevicePath().Return("/dev/mapper/dm-0")
-				luksDevice.EXPECT().EnsureLUKSDeviceMappedOnHost(context.TODO(), "test-volume",
+				luksDevice.EXPECT().EnsureDeviceMappedOnHost(context.TODO(), "test-volume",
 					map[string]string{}).Return(true, nil)
 				return luksDevice
 			},

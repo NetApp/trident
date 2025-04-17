@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestIsLegacyLUKSDevicePath(t *testing.T) {
+func TestIsLegacyDevicePath(t *testing.T) {
 	tests := map[string]struct {
 		name       string
 		devicePath string
@@ -25,7 +25,7 @@ func TestIsLegacyLUKSDevicePath(t *testing.T) {
 	}
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, params.expected, IsLegacyLUKSDevicePath(params.devicePath))
+			assert.Equal(t, params.expected, IsLegacyDevicePath(params.devicePath))
 		})
 	}
 }

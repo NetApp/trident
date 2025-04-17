@@ -316,8 +316,8 @@ func (nh *NVMeHandler) NVMeMountVolume(
 	var err error
 	isLUKSDevice := convert.ToBool(publishInfo.LUKSEncryption)
 	if isLUKSDevice {
-		luksDevice := luks.NewLUKSDevice(devicePath, name, nh.command)
-		luksFormatted, err = luksDevice.EnsureLUKSDeviceMappedOnHost(ctx, name, secrets)
+		luksDevice := luks.NewDevice(devicePath, name, nh.command)
+		luksFormatted, err = luksDevice.EnsureDeviceMappedOnHost(ctx, name, secrets)
 		if err != nil {
 			return err
 		}

@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewLUKSDevice(t *testing.T) {
-	luksDevice := NewLUKSDevice("/dev/sdb", "pvc-test", nil)
+func TestNewDevice(t *testing.T) {
+	luksDevice := NewDevice("/dev/sdb", "pvc-test", nil)
 	assert.Equal(t, luksDevice.RawDevicePath(), "/dev/sdb")
 	assert.Equal(t, luksDevice.MappedDevicePath(), "/dev/mapper/luks-pvc-test")
 	assert.Equal(t, luksDevice.MappedDeviceName(), "luks-pvc-test")

@@ -4422,7 +4422,7 @@ func incrementWithLUKSMetadataIfLUKSEnabled(ctx context.Context, size uint64, lu
 	}
 
 	if isLUKS {
-		return size + luks.LUKSMetadataSize
+		return size + luks.MetadataSize
 	}
 
 	return size
@@ -4435,13 +4435,13 @@ func decrementWithLUKSMetadataIfLUKSEnabled(ctx context.Context, size uint64, lu
 		Logc(ctx).WithError(err).Debug("Could not parse luksEncryption string.")
 	}
 
-	if luks.LUKSMetadataSize > size {
+	if luks.MetadataSize > size {
 		Logc(ctx).WithError(err).WithField("size", size).Error("Size too small to subtract LUKS metadata.")
 		return 0
 	}
 
 	if isLUKS {
-		return size - luks.LUKSMetadataSize
+		return size - luks.MetadataSize
 	}
 
 	return size

@@ -44,9 +44,9 @@ var (
 		"devices_linux")
 )
 
-// GetUnderlyingDevicePathForLUKSDevice returns the device mapped to the LUKS device
+// GetUnderlyingDevicePathForDevice returns the device mapped to the LUKS device
 // uses cryptsetup status <luks-device> and parses the output
-func GetUnderlyingDevicePathForLUKSDevice(ctx context.Context, command execCmd.Command, luksDevicePath string) (string,
+func GetUnderlyingDevicePathForDevice(ctx context.Context, command execCmd.Command, luksDevicePath string) (string,
 	error,
 ) {
 	out, err := command.ExecuteWithTimeoutAndInput(ctx, "cryptsetup", luksCommandTimeout, true,
@@ -85,8 +85,8 @@ func GetUnderlyingDevicePathForLUKSDevice(ctx context.Context, command execCmd.C
 	return devicePath, nil
 }
 
-// luksFormat sets up LUKS headers on the device with the specified passphrase, this destroys data on the device
-func (d *LUKSDevice) luksFormat(ctx context.Context, luksPassphrase string) error {
+// format sets up LUKS headers on the device with the specified passphrase, this destroys data on the device
+func (d *LUKSDevice) format(ctx context.Context, luksPassphrase string) error {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
 	if d.RawDevicePath() == "" {
@@ -114,9 +114,9 @@ func (d *LUKSDevice) luksFormat(ctx context.Context, luksPassphrase string) erro
 	return nil
 }
 
-// lUKSFormat attempts to set up LUKS headers on a device with the specified passphrase, but bails out if the
+// formatUnformattedDevice attempts to set up LUKS headers on a device with the specified passphrase, but bails out if the
 // underlying device already has a format present.
-func (d *LUKSDevice) lUKSFormat(ctx context.Context, luksPassphrase string) error {
+func (d *LUKSDevice) formatUnformattedDevice(ctx context.Context, luksPassphrase string) error {
 	fields := LogFields{"device": d.RawDevicePath()}
 	Logc(ctx).WithFields(fields).Debug("Attempting to LUKS format device.")
 
@@ -136,7 +136,7 @@ func (d *LUKSDevice) lUKSFormat(ctx context.Context, luksPassphrase string) erro
 	}
 
 	// Attempt LUKS format.
-	if err := d.luksFormat(ctx, luksPassphrase); err != nil {
+	if err := d.format(ctx, luksPassphrase); err != nil {
 		return fmt.Errorf("failed to LUKS format device; %w", err)
 	}
 

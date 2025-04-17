@@ -685,7 +685,7 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 	// If the import is a LUKS encrypted volume, then remove the LUKS metadata overhead from the reported
 	// size on the volConfig.
 	if convert.ToBool(volConfig.LUKSEncryption) {
-		newSize, err := subtractUintFromSizeString(volConfig.Size, luks.LUKSMetadataSize)
+		newSize, err := subtractUintFromSizeString(volConfig.Size, luks.MetadataSize)
 		if err != nil {
 			return err
 		}

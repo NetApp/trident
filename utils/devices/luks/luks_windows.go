@@ -36,12 +36,12 @@ func (d *LUKSDevice) IsOpen(ctx context.Context) (bool, error) {
 	return false, errors.UnsupportedError("IsOpen is not supported for windows")
 }
 
-// LUKSFormat attempts to set up LUKS headers on a device with the specified passphrase, but bails if the
+// formatUnformattedDevice attempts to set up LUKS headers on a device with the specified passphrase, but bails if thea
 // underlying device already has a format present that is not LUKS.
-func (d *LUKSDevice) lUKSFormat(ctx context.Context, _ string) error {
-	Logc(ctx).Debug(">>>> devices_windows.LUKSFormat")
-	defer Logc(ctx).Debug("<<<< devices_windows.LUKSFormat")
-	return errors.UnsupportedError("LUKSFormat is not supported for windows")
+func (d *LUKSDevice) formatUnformattedDevice(ctx context.Context, _ string) error {
+	Logc(ctx).Debug(">>>> devices_windows.formatUnformattedDevice")
+	defer Logc(ctx).Debug("<<<< devices_windows.formatUnformattedDevice")
+	return errors.UnsupportedError("formatUnformattedDevice is not supported for windows")
 }
 
 // Open makes the device accessible on the host
@@ -58,10 +58,10 @@ func (d *LUKSDevice) Resize(ctx context.Context, luksPassphrase string) error {
 	return errors.UnsupportedError("Resize is not supported for darwin")
 }
 
-func GetUnderlyingDevicePathForLUKSDevice(ctx context.Context, command exec.Command, luksDevicePath string) (string, error) {
-	Logc(ctx).Debug(">>>> devices_windows.GetUnderlyingDevicePathForLUKSDevice")
-	defer Logc(ctx).Debug("<<<< devices_windows.GetUnderlyingDevicePathForLUKSDevice")
-	return "", errors.UnsupportedError("GetUnderlyingDevicePathForLUKSDevice is not supported for windows")
+func GetUnderlyingDevicePathForDevice(ctx context.Context, command exec.Command, luksDevicePath string) (string, error) {
+	Logc(ctx).Debug(">>>> devices_windows.GetUnderlyingDevicePathForDevice")
+	defer Logc(ctx).Debug("<<<< devices_windows.GetUnderlyingDevicePathForDevice")
+	return "", errors.UnsupportedError("GetUnderlyingDevicePathForDevice is not supported for windows")
 }
 
 func IsOpen(ctx context.Context, devicePath string) (bool, error) {
