@@ -13,6 +13,7 @@ import (
 
 	"github.com/spf13/afero"
 
+	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils/errors"
@@ -23,6 +24,8 @@ var (
 	transport    = "tcp"
 	nvmeNQNRegex = regexp.MustCompile(`^nvme([0-9]+)n([0-9]+)$`)
 	nvmeRegex    = regexp.MustCompile(`^nvme([0-9]+)$`)
+
+	beforeNVMeDisconnect = fiji.Register("beforeNVMeDisconnect", "nvme_linux")
 )
 
 const (
@@ -161,6 +164,10 @@ func (s *NVMeSubsystem) ConnectSubsystemToHost(ctx context.Context, IP string) e
 func (s *NVMeSubsystem) DisconnectSubsystemFromHost(ctx context.Context) error {
 	Logc(ctx).Debug(">>>> nvme_linux.DisconnectSubsystemFromHost")
 	defer Logc(ctx).Debug("<<<< nvme_linux.DisconnectSubsystemFromHost")
+
+	if err := beforeNVMeDisconnect.Inject(); err != nil {
+		return err
+	}
 
 	_, err := s.command.Execute(ctx, "nvme", "disconnect", "-n", s.NQN)
 	if err != nil {

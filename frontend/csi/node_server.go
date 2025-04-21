@@ -2866,6 +2866,10 @@ func (p *Plugin) nodeStageNVMeVolume(
 	}
 
 	if isLUKS {
+		if err := betweenAttachAndLUKSPassphrase.Inject(); err != nil {
+			return err
+		}
+
 		luksDevice := luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
 
 		// Ensure we update the passphrase in case it has never been set before
@@ -2886,11 +2890,15 @@ func (p *Plugin) nodeStageNVMeVolume(
 		return err
 	}
 
+	if err := afterInitialTrackingInfoWrite.Inject(); err != nil {
+		return err
+	}
+
 	p.nvmeHandler.AddPublishedNVMeSession(&publishedNVMeSessions, publishInfo)
 	return nil
 }
 
-// nodeUnstageNVMEVolume unstages volume for nvme driver.
+// nodeUnstageNVMeVolume unstages volume for nvme driver.
 // - Get the device from tracking info OR from "nvme netapp ontapdevices".
 // - Flush the device using "nvme flush /dev/<nvme-device>"
 // - If the subsystem has <= 1 Namespaces connected to it, then disconnect.

@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/afero"
 	"go.uber.org/multierr"
 
+	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/utils/devices"
@@ -24,6 +25,8 @@ import (
 )
 
 const NVMeAttachTimeout = 20 * time.Second
+
+var beforeNVMeFlushDevice = fiji.Register("beforeNVMeFlushDevice", "nvme")
 
 func NewNVMeSubsystem(nqn string, command exec.Command, fs afero.Fs) *NVMeSubsystem {
 	return NewNVMeSubsystemDetailed(nqn, "", []Path{}, command, fs)
@@ -177,6 +180,10 @@ func (d *NVMeDevice) GetPath() string {
 
 // FlushDevice flushes any ongoing IOs on the device.
 func (d *NVMeDevice) FlushDevice(ctx context.Context, ignoreErrors, force bool) error {
+	if err := beforeNVMeFlushDevice.Inject(); err != nil {
+		return err
+	}
+
 	// Force is set in forced detach use case. We don't flush in that scenario and return success.
 	if force {
 		return nil
