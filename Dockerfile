@@ -13,7 +13,7 @@ RUN --mount=type=secret,id=activation_key,env=ACTIVATION_KEY \
     if [[ $DEPS_IMAGE =~ "alpine" ]]; \
         then apk add nfs-utils; \
         else subscription-manager register --activationkey $ACTIVATION_KEY --org $ORGANIZATION && \
-            yum install --repo=rhel-9-*-baseos-rpms -y nfs-utils; \
+            yum install --repo=rhel-9-*-baseos-rpms -y nfs-utils || { cat /var/log/rhsm/rhsm.log; exit 1; }  \
     fi; \
     # Copy real certificates \
     mkdir /real-certs; \
