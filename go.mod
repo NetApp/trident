@@ -52,11 +52,11 @@ require (
 	github.com/zcalusic/sysinfo v1.1.3
 	go.uber.org/mock v0.5.0
 	go.uber.org/multierr v1.11.0 // github.com/uber-go/multierr
-	golang.org/x/crypto v0.32.0 // github.com/golang/crypto
+	golang.org/x/crypto v0.35.0 // github.com/golang/crypto
 	golang.org/x/net v0.34.0 // github.com/golang/net
 	golang.org/x/oauth2 v0.26.0 // github.com/golang/oauth2
-	golang.org/x/sys v0.29.0 // github.com/golang/sys
-	golang.org/x/text v0.21.0 // github.com/golang/text
+	golang.org/x/sys v0.30.0 // github.com/golang/sys
+	golang.org/x/text v0.22.0 // github.com/golang/text
 	golang.org/x/time v0.9.0 // github.com/golang/time
 	google.golang.org/api v0.218.0
 	google.golang.org/grpc v1.70.0 // github.com/grpc/grpc-go
@@ -167,8 +167,8 @@ require (
 	go.opentelemetry.io/otel/metric v1.34.0 // indirect
 	go.opentelemetry.io/otel/trace v1.34.0 // indirect
 	golang.org/x/mod v0.21.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/term v0.28.0 // indirect
+	golang.org/x/sync v0.11.0 // indirect
+	golang.org/x/term v0.29.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
 	google.golang.org/genproto v0.0.0-20250122153221-138b5a5a4fd4 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250124145028-65684f501c47 // indirect
