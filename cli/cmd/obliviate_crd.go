@@ -5,6 +5,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -14,6 +15,7 @@ import (
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	. "github.com/netapp/trident/logging"
+	operatorCrdClient "github.com/netapp/trident/operator/crd/client/clientset/versioned"
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -26,6 +28,11 @@ var (
 
 	// crdClientset is a clientset for our own API group
 	crdClientset crdclient.Interface
+
+	// operatorCrdClient is a clientset for our own API group
+	operatorCrdClientSet operatorCrdClient.Interface
+
+	skipCRDs []string
 )
 
 // An empty namespace tells the crdClientset to list resources across all namespaces
@@ -34,6 +41,7 @@ const allNamespaces string = ""
 func init() {
 	obliviateCmd.AddCommand(obliviateCRDCmd)
 	obliviateCRDCmd.Flags().StringVar(&configPath, "k8s-config-path", kubeConfigPath(), "Path to KubeConfig file.")
+	obliviateCRDCmd.Flags().StringSliceVar(&skipCRDs, "skip-crds", []string{}, "List of CRDs to skip")
 }
 
 var obliviateCRDCmd = &cobra.Command{
@@ -53,6 +61,9 @@ var obliviateCRDCmd = &cobra.Command{
 				}
 			}
 			command := []string{"obliviate", "crd", fmt.Sprintf("--%s", forceConfirmation)}
+			if len(skipCRDs) > 0 {
+				command = append(command, fmt.Sprintf("--skip-crds=%s", strings.Join(skipCRDs, ",")))
+			}
 			out, err := TunnelCommand(append(command, args...))
 			printOutput(cmd, out, err)
 			return err
@@ -65,29 +76,61 @@ var obliviateCRDCmd = &cobra.Command{
 				return err
 			}
 
-			return obliviateCRDs()
+			return obliviateCRDs(skipCRDs)
 		}
 	},
 }
 
 func ObliviateCRDs(
-	kubeClientVal k8sclient.KubernetesClient, crdClientsetVal crdclient.Interface, timeout time.Duration,
+	kubeClientVal k8sclient.KubernetesClient, crdClientsetVal crdclient.Interface, operatorCrdClientSetVal operatorCrdClient.Interface,
+	timeout time.Duration, skipCRDs []string,
 ) error {
 	k8sClient = kubeClientVal
 	crdClientset = crdClientsetVal
+	operatorCrdClientSet = operatorCrdClientSetVal
 	k8sTimeout = timeout
 
-	return obliviateCRDs()
+	return obliviateCRDs(skipCRDs)
 }
 
-func obliviateCRDs() error {
+func obliviateCRDs(skipCRDs []string) error {
+	crdNames := []string{
+		"tridentversions.trident.netapp.io",
+		"tridentbackendconfigs.trident.netapp.io",
+		"tridentbackends.trident.netapp.io",
+		"tridentstorageclasses.trident.netapp.io",
+		"tridentmirrorrelationships.trident.netapp.io",
+		"tridentactionmirrorupdates.trident.netapp.io",
+		"tridentsnapshotinfos.trident.netapp.io",
+		"tridentvolumes.trident.netapp.io",
+		"tridentnodes.trident.netapp.io",
+		"tridenttransactions.trident.netapp.io",
+		"tridentsnapshots.trident.netapp.io",
+		"tridentvolumepublications.trident.netapp.io",
+		"tridentvolumereferences.trident.netapp.io",
+		"tridentactionsnapshotrestores.trident.netapp.io",
+		"tridentconfigurators.trident.netapp.io",
+		"tridentorchestrators.trident.netapp.io",
+	}
+	skipCRDMap := make(map[string]bool)
+	for _, crd := range skipCRDs {
+		skipCRDMap[crd] = true
+	}
+
+	var filteredCRDs []string
+	for _, crd := range crdNames {
+		if !skipCRDMap[crd] {
+			filteredCRDs = append(filteredCRDs, crd)
+		}
+	}
+
 	// Delete all instances of custom resources
-	if err := deleteCRs(); err != nil {
+	if err := deleteCRs(filteredCRDs); err != nil {
 		return err
 	}
 
 	// Delete all custom resource definitions
-	if err := deleteCRDs(); err != nil {
+	if err := deleteCRDs(filteredCRDs); err != nil {
 		return err
 	}
 
@@ -96,65 +139,190 @@ func obliviateCRDs() error {
 	return nil
 }
 
-func deleteCRs() error {
-	if err := deleteVersions(); err != nil {
+func deleteCRs(filteredCRDs []string) error {
+	for _, crd := range filteredCRDs {
+		switch crd {
+		case "tridentversions.trident.netapp.io":
+			if err := deleteVersions(); err != nil {
+				return err
+			}
+		case "tridentbackendconfigs.trident.netapp.io":
+			if err := deleteBackendConfigs(); err != nil {
+				return err
+			}
+		case "tridentbackends.trident.netapp.io":
+			if err := deleteBackends(); err != nil {
+				return err
+			}
+		case "tridentstorageclasses.trident.netapp.io":
+			if err := deleteStorageClasses(); err != nil {
+				return err
+			}
+		case "tridentmirrorrelationships.trident.netapp.io":
+			if err := deleteTridentMirrorRelationships(); err != nil {
+				return err
+			}
+		case "tridentactionmirrorupdates.trident.netapp.io":
+			if err := deleteTridentActionMirrorUpdates(); err != nil {
+				return err
+			}
+		case "tridentsnapshotinfos.trident.netapp.io":
+			if err := deleteTridentSnapshotInfos(); err != nil {
+				return err
+			}
+		case "tridentvolumes.trident.netapp.io":
+			if err := deleteVolumes(); err != nil {
+				return err
+			}
+		case "tridentnodes.trident.netapp.io":
+			if err := deleteNodes(); err != nil {
+				return err
+			}
+		case "tridenttransactions.trident.netapp.io":
+			if err := deleteTransactions(); err != nil {
+				return err
+			}
+		case "tridentsnapshots.trident.netapp.io":
+			if err := deleteSnapshots(); err != nil {
+				return err
+			}
+		case "tridentvolumepublications.trident.netapp.io":
+			if err := deleteVolumePublications(); err != nil {
+				return err
+			}
+		case "tridentvolumereferences.trident.netapp.io":
+			if err := deleteVolumeReferences(); err != nil {
+				return err
+			}
+		case "tridentactionsnapshotrestores.trident.netapp.io":
+			if err := deleteActionSnapshotRestores(); err != nil {
+				return err
+			}
+		case "tridentconfigurators.trident.netapp.io":
+			if err := deleteTridentConfigurators(); err != nil {
+				return err
+			}
+		case "tridentorchestrators.trident.netapp.io":
+			if err := deleteTridentOrchestrators(); err != nil {
+				return err
+			}
+		default:
+			Log().WithField("CRD", crd).Debug("CRD not present.")
+		}
+	}
+
+	return nil
+}
+
+func deleteTridentConfigurators() error {
+	crd := "tridentconfigurators.trident.netapp.io"
+	logFields := LogFields{"CRD": crd}
+
+	// See if CRD exists
+	exists, err := k8sClient.CheckCRDExists(crd)
+	if err != nil {
+		return err
+	} else if !exists {
+		Log().WithFields(logFields).Debug("CRD not present.")
+		return nil
+	}
+
+	configurators, err := operatorCrdClientSet.TridentV1().TridentConfigurators().List(ctx(), listOpts)
+	if err != nil {
+		return err
+	} else if len(configurators.Items) == 0 {
+		Log().WithFields(logFields).Info("Resources not present.")
+		return nil
+	}
+
+	for _, configurator := range configurators.Items {
+		if configurator.DeletionTimestamp.IsZero() {
+			_ = operatorCrdClientSet.TridentV1().TridentConfigurators().Delete(ctx(), configurator.Name, deleteOpts)
+		}
+	}
+
+	configurators, err = operatorCrdClientSet.TridentV1().TridentConfigurators().List(ctx(), listOpts)
+	if err != nil {
 		return err
 	}
 
-	if err := deleteTridentMirrorRelationships(); err != nil {
+	for _, configurator := range configurators.Items {
+		if configurator.HasTridentFinalizers() {
+			crCopy := configurator.DeepCopy()
+			crCopy.RemoveTridentFinalizers()
+			_, err := operatorCrdClientSet.TridentV1().TridentConfigurators().Update(ctx(), crCopy, updateOpts)
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
+				Log().Errorf("Problem removing finalizers: %v", err)
+				return err
+			}
+		}
+
+		deleteFunc := operatorCrdClientSet.TridentV1().TridentConfigurators().Delete
+		if err := deleteWithRetry(deleteFunc, ctx(), configurator.Name, nil); err != nil {
+			Log().Errorf("Problem deleting resource: %v", err)
+			return err
+		}
+	}
+
+	Log().WithFields(logFields).Info("Resources deleted.")
+	return nil
+}
+
+func deleteTridentOrchestrators() error {
+	crd := "tridentorchestrators.trident.netapp.io"
+	logFields := LogFields{"CRD": crd}
+
+	// See if CRD exists
+	exists, err := k8sClient.CheckCRDExists(crd)
+	if err != nil {
+		return err
+	} else if !exists {
+		Log().WithFields(logFields).Debug("CRD not present.")
+		return nil
+	}
+
+	orchestrators, err := operatorCrdClientSet.TridentV1().TridentOrchestrators().List(ctx(), listOpts)
+	if err != nil {
+		return err
+	} else if len(orchestrators.Items) == 0 {
+		Log().WithFields(logFields).Info("Resources not present.")
+		return nil
+	}
+
+	for _, orchestrator := range orchestrators.Items {
+		if orchestrator.DeletionTimestamp.IsZero() {
+			_ = operatorCrdClientSet.TridentV1().TridentOrchestrators().Delete(ctx(), orchestrator.Name, deleteOpts)
+		}
+	}
+
+	orchestrators, err = operatorCrdClientSet.TridentV1().TridentOrchestrators().List(ctx(), listOpts)
+	if err != nil {
 		return err
 	}
 
-	if err := deleteTridentActionMirrorUpdates(); err != nil {
-		return err
+	for _, orchestrator := range orchestrators.Items {
+		if orchestrator.HasTridentFinalizers() {
+			crCopy := orchestrator.DeepCopy()
+			crCopy.RemoveTridentFinalizers()
+			_, err := operatorCrdClientSet.TridentV1().TridentOrchestrators().Update(ctx(), crCopy, updateOpts)
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
+				Log().Errorf("Problem removing finalizers: %v", err)
+				return err
+			}
+		}
+
+		deleteFunc := operatorCrdClientSet.TridentV1().TridentOrchestrators().Delete
+		if err := deleteWithRetry(deleteFunc, ctx(), orchestrator.Name, nil); err != nil {
+			Log().Errorf("Problem deleting resource: %v", err)
+			return err
+		}
 	}
 
-	if err := deleteTridentSnapshotInfos(); err != nil {
-		return err
-	}
-
-	// deleting backend config before backends is desirable, do not want backend deletion without
-	// the backendconfig deletion to trigger another backend creation
-	if err := deleteBackendConfigs(); err != nil {
-		return err
-	}
-
-	if err := deleteBackends(); err != nil {
-		return err
-	}
-
-	if err := deleteStorageClasses(); err != nil {
-		return err
-	}
-
-	if err := deleteVolumes(); err != nil {
-		return err
-	}
-
-	if err := deleteNodes(); err != nil {
-		return err
-	}
-
-	if err := deleteTransactions(); err != nil {
-		return err
-	}
-
-	if err := deleteSnapshots(); err != nil {
-		return err
-	}
-
-	if err := deleteVolumePublications(); err != nil {
-		return err
-	}
-
-	if err := deleteVolumeReferences(); err != nil {
-		return err
-	}
-
-	if err := deleteActionSnapshotRestores(); err != nil {
-		return err
-	}
-
+	Log().WithFields(logFields).Info("Resources deleted.")
 	return nil
 }
 
@@ -955,24 +1123,7 @@ func deleteActionSnapshotRestores() error {
 	return nil
 }
 
-func deleteCRDs() error {
-	crdNames := []string{
-		"tridentversions.trident.netapp.io",
-		"tridentbackendconfigs.trident.netapp.io",
-		"tridentbackends.trident.netapp.io",
-		"tridentstorageclasses.trident.netapp.io",
-		"tridentmirrorrelationships.trident.netapp.io",
-		"tridentactionmirrorupdates.trident.netapp.io",
-		"tridentsnapshotinfos.trident.netapp.io",
-		"tridentvolumes.trident.netapp.io",
-		"tridentnodes.trident.netapp.io",
-		"tridenttransactions.trident.netapp.io",
-		"tridentsnapshots.trident.netapp.io",
-		"tridentvolumepublications.trident.netapp.io",
-		"tridentvolumereferences.trident.netapp.io",
-		"tridentactionsnapshotrestores.trident.netapp.io",
-	}
-
+func deleteCRDs(crdNames []string) error {
 	for _, crdName := range crdNames {
 
 		logFields := LogFields{"CRD": crdName}

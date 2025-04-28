@@ -1,0 +1,41 @@
+{{- if or .Values.cleanupCrds }}
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pre-delete-hook
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+spec:
+  template:
+    spec:
+      serviceAccountName: trident-operator
+      containers:
+      - name: pre-delete-container
+        image: bitnami/kubectl:1.21.0
+        command:
+          - sh
+          - -c
+          - |
+            set -x
+            if kubectl get torc trident -n trident; then
+              kubectl patch torc trident -n trident --type=merge -p '{"spec":{"wipeout":["crds"],"uninstall":true, "skipCRDsToObliviate":["tridentorchestrators.trident.netapp.io"]}}'
+              while kubectl get crds | grep '.trident.netapp.io' | grep -v 'tridentorchestrators.trident.netapp.io'; do
+                echo 'Waiting for CRDs to be deleted...'
+                sleep 5
+              done
+            else
+              echo 'Trident orchestrator does not exist.'
+            fi
+      restartPolicy: Never
+  backoffLimit: 4
+
+{{- end }}

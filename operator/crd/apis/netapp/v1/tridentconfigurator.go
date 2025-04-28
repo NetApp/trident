@@ -5,6 +5,8 @@ package v1
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/netapp/trident/pkg/collection"
 )
 
 type (
@@ -72,4 +74,34 @@ func (tc *TridentConfigurator) IsAWSFSxNTconf() (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+func (in *TridentConfigurator) GetFinalizers() []string {
+	if in.ObjectMeta.Finalizers != nil {
+		return in.ObjectMeta.Finalizers
+	}
+	return []string{}
+}
+
+func (in *TridentConfigurator) HasTridentFinalizers() bool {
+	for _, finalizerName := range GetTridentFinalizers() {
+		if collection.ContainsString(in.ObjectMeta.Finalizers, finalizerName) {
+			return true
+		}
+	}
+	return false
+}
+
+func (in *TridentConfigurator) AddTridentFinalizers() {
+	for _, finalizerName := range GetTridentFinalizers() {
+		if !collection.ContainsString(in.ObjectMeta.Finalizers, finalizerName) {
+			in.ObjectMeta.Finalizers = append(in.ObjectMeta.Finalizers, finalizerName)
+		}
+	}
+}
+
+func (in *TridentConfigurator) RemoveTridentFinalizers() {
+	for _, finalizerName := range GetTridentFinalizers() {
+		in.ObjectMeta.Finalizers = collection.RemoveString(in.ObjectMeta.Finalizers, finalizerName)
+	}
 }

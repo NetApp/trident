@@ -64,6 +64,7 @@ func initClients() error {
 	clients.K8SClient.SetTimeout(k8sTimeout)
 	k8sClient = clients.K8SClient
 	crdClientset = clients.TridentClient
+	operatorCrdClientSet = clients.TorcClient
 
 	// Detect whether we are running inside a pod
 	if clients.InK8SPod {

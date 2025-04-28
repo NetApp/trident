@@ -1,0 +1,79 @@
+{{- if or .Values.cleanupCrds }}
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: post-delete-service-account
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-delete
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": hook-succeeded
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: post-delete-cluster-role
+  annotations:
+    "helm.sh/hook": post-delete
+    "helm.sh/hook-weight": "-9"
+    "helm.sh/hook-delete-policy": hook-succeeded
+rules:
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["delete"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: post-delete-cluster-rolebinding
+  annotations:
+    "helm.sh/hook": post-delete
+    "helm.sh/hook-weight": "-8"
+    "helm.sh/hook-delete-policy": hook-succeeded
+subjects:
+- kind: ServiceAccount
+  name: post-delete-service-account
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: post-delete-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: post-delete-hook
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": post-delete
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+spec:
+  template:
+    spec:
+      serviceAccountName: post-delete-service-account
+      containers:
+      - name: post-delete-container
+        image: bitnami/kubectl:1.21.0
+        command:
+          - sh
+          - -c
+          - |
+            set -x
+            kubectl delete crd tridentorchestrators.trident.netapp.io
+      restartPolicy: Never
+  backoffLimit: 4
+
+{{- end }}

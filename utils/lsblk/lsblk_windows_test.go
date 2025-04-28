@@ -26,8 +26,8 @@ func TestFindParentDevice(t *testing.T) {
 	assert.Nil(t, devices)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not supported")
-
 }
+
 func TestGetParentDeviceKname(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	lsblk := NewLsblkUtilDetailed(mock_exec.NewMockCommand(ctrl))

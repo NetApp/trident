@@ -1165,7 +1165,7 @@ func (c *Controller) obliviateCRDs(tridentCR netappv1.TridentOrchestrator) error
 	if err != nil {
 		return err
 	}
-	if err := i.ObliviateCRDs(); err != nil {
+	if err := i.ObliviateCRDs(tridentCR.Spec.SkipCRDsToObliviate); err != nil {
 		return err
 	}
 

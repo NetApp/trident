@@ -9,6 +9,16 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+const (
+	TridentFinalizerName = "trident.netapp.io"
+)
+
+func GetTridentFinalizers() []string {
+	return []string{
+		TridentFinalizerName,
+	}
+}
+
 /************************
 * Trident Orchestrator
 ************************/
@@ -78,6 +88,7 @@ type TridentOrchestratorSpec struct {
 	K8sAPIQPS                    int               `json:"k8sAPIQPS,omitempty"`
 	FSGroupPolicy                string            `json:"fsGroupPolicy,omitempty"`
 	NodePrep                     []string          `json:"nodePrep"`
+	SkipCRDsToObliviate          []string          `json:"skipCRDsToObliviate,omitempty"`
 }
 
 // Toleration

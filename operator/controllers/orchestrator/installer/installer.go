@@ -26,6 +26,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/operator/config"
 	netappv1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
+	operatorCrdClient "github.com/netapp/trident/operator/crd/client/clientset/versioned"
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/utils/errors"
@@ -133,9 +134,10 @@ var (
 )
 
 type Installer struct {
-	client           ExtendedK8sClient
-	tridentCRDClient *crdclient.Clientset
-	namespace        string
+	client            ExtendedK8sClient
+	tridentCRDClient  *crdclient.Clientset
+	operatorCRDClient *operatorCrdClient.Clientset
+	namespace         string
 }
 
 func NewInstaller(kubeConfig *rest.Config, namespace string, timeout int) (TridentInstaller, error) {
@@ -157,12 +159,19 @@ func NewInstaller(kubeConfig *rest.Config, namespace string, timeout int) (Tride
 		return nil, fmt.Errorf("failed to initialize Trident's CRD client; %v", err)
 	}
 
+	// Create Operator CRD client
+	CRDClientForOperator, err := operatorCrdClient.NewForConfig(kubeConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize Operator's CRD client; %v", err)
+	}
+
 	Log().WithField("namespace", namespace).Debugf("Initialized installer.")
 
 	return &Installer{
-		client:           kubeClient,
-		tridentCRDClient: CRDClientForTrident,
-		namespace:        namespace,
+		client:            kubeClient,
+		tridentCRDClient:  CRDClientForTrident,
+		operatorCRDClient: CRDClientForOperator,
+		namespace:         namespace,
 	}, nil
 }
 

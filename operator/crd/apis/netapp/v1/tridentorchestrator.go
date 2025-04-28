@@ -2,6 +2,8 @@
 
 package v1
 
+import "github.com/netapp/trident/pkg/collection"
+
 type AppStatus string
 
 const (
@@ -30,4 +32,34 @@ func (o *TridentOrchestrator) IsTridentOperationInProgress() bool {
 		return true
 	}
 	return false
+}
+
+func (in *TridentOrchestrator) GetFinalizers() []string {
+	if in.ObjectMeta.Finalizers != nil {
+		return in.ObjectMeta.Finalizers
+	}
+	return []string{}
+}
+
+func (in *TridentOrchestrator) HasTridentFinalizers() bool {
+	for _, finalizerName := range GetTridentFinalizers() {
+		if collection.ContainsString(in.ObjectMeta.Finalizers, finalizerName) {
+			return true
+		}
+	}
+	return false
+}
+
+func (in *TridentOrchestrator) AddTridentFinalizers() {
+	for _, finalizerName := range GetTridentFinalizers() {
+		if !collection.ContainsString(in.ObjectMeta.Finalizers, finalizerName) {
+			in.ObjectMeta.Finalizers = append(in.ObjectMeta.Finalizers, finalizerName)
+		}
+	}
+}
+
+func (in *TridentOrchestrator) RemoveTridentFinalizers() {
+	for _, finalizerName := range GetTridentFinalizers() {
+		in.ObjectMeta.Finalizers = collection.RemoveString(in.ObjectMeta.Finalizers, finalizerName)
+	}
 }
