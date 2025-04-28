@@ -63,8 +63,8 @@ func TestBundleInSyncWithClusterRole(t *testing.T) {
 	}
 	inputPaths := []InputFilePaths{
 		{
-			ClusterRoleFilePath: "clusterrole_post_1_25.yaml",
-			BundleFilePath:      "bundle_post_1_25.yaml",
+			ClusterRoleFilePath: "clusterrole.yaml",
+			BundleFilePath:      "bundle.yaml",
 		},
 	}
 
