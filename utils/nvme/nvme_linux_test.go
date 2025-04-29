@@ -601,10 +601,10 @@ func TestNVMeMountVolume(t *testing.T) {
 			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
 				mockCommand := mockexec.NewMockCommand(ctrl)
 				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(
-					gomock.Any(), "cryptsetup", 30*time.Second, true, "", "status",
+					gomock.Any(), "cryptsetup", time.Minute, true, "", "status",
 					"/dev/mapper/luks-mockName").Return([]byte{}, mockexec.NewMockExitError(4,
 					"device does not exist"))
-				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(gomock.Any(), "cryptsetup", 30*time.Second, true, "", "status",
+				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(gomock.Any(), "cryptsetup", time.Minute, true, "", "status",
 					"/dev/mapper/luks-mockName").Return([]byte{}, nil)
 				return mockCommand
 			},

@@ -72,7 +72,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 					"config").Return([]byte(multipathConfig("no", false)), nil)
 				mockCommand.EXPECT().Execute(context.TODO(), "iscsiadm", "-m",
 					"session").Return([]byte(iscsiadmSessionOutput), nil)
-				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(context.TODO(), "cryptsetup", 30*time.Second, true, "",
+				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(context.TODO(), "cryptsetup", time.Minute, true, "",
 					"status", "/dev/mapper/luks-test-volume")
 				return mockCommand
 			},
@@ -164,7 +164,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 					"config").Return([]byte(multipathConfig("no", false)), nil)
 				mockCommand.EXPECT().Execute(context.TODO(), "iscsiadm", "-m",
 					"session").Return([]byte(iscsiadmSessionOutput), nil)
-				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(context.TODO(), "cryptsetup", 30*time.Second, true, "",
+				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(context.TODO(), "cryptsetup", time.Minute, true, "",
 					"status",
 					"/dev/mapper/luks-test-volume")
 				return mockCommand

@@ -95,6 +95,7 @@ var (
 	afterInitialTrackingInfoWrite  = fiji.Register("afterInitialTrackingInfoWrite", "node_server")
 	afterNvmeLuksDeviceClosed      = fiji.Register("afterNvmeLuksDeviceClosed", "node_server")
 	afterNvmeDisconnect            = fiji.Register("afterNvmeDisconnect", "node_server")
+	beforeTrackingInfoWrite        = fiji.Register("beforeTrackingInfoWrite", "node_server")
 )
 
 const (
@@ -1219,13 +1220,13 @@ func (p *Plugin) populatePublishedSessions(ctx context.Context) {
 		}
 
 		publishInfo := &trackingInfo.VolumePublishInfo
-
 		if publishInfo.SANType != sa.NVMe {
 			newCtx := context.WithValue(ctx, iscsi.SessionInfoSource, utils.SessionSourceTrackingInfo)
 			p.iscsi.AddSession(newCtx, &publishedISCSISessions, publishInfo, volumeID, "", models.NotInvalid)
 		} else {
 			p.nvmeHandler.AddPublishedNVMeSession(&publishedNVMeSessions, publishInfo)
 		}
+
 	}
 }
 
@@ -2877,6 +2878,10 @@ func (p *Plugin) nodeStageNVMeVolume(
 		if err != nil {
 			return fmt.Errorf("could not set LUKS volume passphrase; %v", err)
 		}
+	}
+
+	if err := beforeTrackingInfoWrite.Inject(); err != nil {
+		return err
 	}
 
 	volTrackingInfo := &models.VolumeTrackingInfo{

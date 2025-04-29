@@ -30,6 +30,8 @@ const (
 	ErrorNTimes HandlerType = "error-n-times"
 	// ErrorAfterNTimes tells the fault to error after 'n' times indefinitely.
 	ErrorAfterNTimes HandlerType = "error-after-n-times"
+	// ErrorXTimesAfterYTimes tells the fault to error up to 'x' times after 'y' times then succeed indefinitely
+	ErrorXTimesAfterYTimes HandlerType = "error-x-times-after-y-times"
 	// ExitAfterNTimes tells the fault to exit the process after 'n' times.
 	ExitAfterNTimes HandlerType = "exit-after-n-times"
 )
@@ -58,6 +60,8 @@ func NewFaultHandlerFromModel(model []byte) (FaultHandler, error) {
 		return handlers.NewErrorNTimesHandler(model)
 	case ErrorAfterNTimes:
 		return handlers.NewErrorAfterNTimesHandler(model)
+	case ErrorXTimesAfterYTimes:
+		return handlers.NewErrorXTimesAfterYTimesHandler(model)
 	case ExitAfterNTimes:
 		return handlers.NewExitAfterNTimesHandler(model)
 	}

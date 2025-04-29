@@ -24,9 +24,13 @@ import (
 	"github.com/netapp/trident/utils/mount"
 )
 
-const NVMeAttachTimeout = 20 * time.Second
+var (
+	duringAddPublishedNVMeSession = fiji.Register("duringAddPublishedNVMeSession", "nvme")
+	afterFormatBeforeFileSystem   = fiji.Register("afterFormatBeforeFileSystem", "nvme")
+	beforeNVMeFlushDevice         = fiji.Register("beforeNVMeFlushDevice", "nvme")
+)
 
-var beforeNVMeFlushDevice = fiji.Register("beforeNVMeFlushDevice", "nvme")
+const NVMeAttachTimeout = 20 * time.Second
 
 func NewNVMeSubsystem(nqn string, command exec.Command, fs afero.Fs) *NVMeSubsystem {
 	return NewNVMeSubsystemDetailed(nqn, "", []Path{}, command, fs)
@@ -324,8 +328,13 @@ func (nh *NVMeHandler) NVMeMountVolume(
 	isLUKSDevice := convert.ToBool(publishInfo.LUKSEncryption)
 	if isLUKSDevice {
 		luksDevice := luks.NewDevice(devicePath, name, nh.command)
+
 		luksFormatted, err = luksDevice.EnsureDeviceMappedOnHost(ctx, name, secrets)
 		if err != nil {
+			return err
+		}
+
+		if err := afterFormatBeforeFileSystem.Inject(); err != nil {
 			return err
 		}
 
@@ -559,6 +568,8 @@ func (nh *NVMeHandler) AddPublishedNVMeSession(pubSessions *NVMeSessions, publis
 	if pubSessions == nil {
 		return
 	}
+	// This fiji point is only for testing exits, so no error check needed
+	_ = duringAddPublishedNVMeSession.Inject()
 
 	pubSessions.AddNVMeSession(*NewNVMeSubsystem(publishInfo.NVMeSubsystemNQN, nh.command, nh.osFs),
 		publishInfo.NVMeTargetIPs)

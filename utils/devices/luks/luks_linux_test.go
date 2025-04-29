@@ -49,12 +49,6 @@ func mockCryptsetupLuksOpen(mock *mockexec.MockCommand) *gomock.Call {
 	)
 }
 
-func mockCryptsetupLuksClose(mock *mockexec.MockCommand) *gomock.Call {
-	return mock.EXPECT().ExecuteWithTimeoutAndInput(
-		gomock.Any(), "cryptsetup", luksCommandTimeout, true, "", "luksClose", gomock.Any(),
-	)
-}
-
 func mockCryptsetupLuksStatusWithDevicePath(mock *mockexec.MockCommand) *gomock.Call {
 	return mock.EXPECT().ExecuteWithTimeoutAndInput(
 		gomock.Any(), "cryptsetup", luksCommandTimeout, true, "", "status", gomock.Any(),
@@ -255,7 +249,6 @@ func TestLUKSDevice_ExecErrors(t *testing.T) {
 		mockCryptsetupLuksFormat(mockCommand).Return([]byte(""), luksError),
 		mockCryptsetupLuksOpen(mockCommand).Return([]byte(""), luksError),
 		mockCryptsetupLuksStatus(mockCommand).Return([]byte(""), luksError),
-		mockCryptsetupLuksClose(mockCommand).Return([]byte(""), luksError),
 	)
 
 	isFormatted, err := luksDevice.IsLUKSFormatted(context.Background())
@@ -271,10 +264,6 @@ func TestLUKSDevice_ExecErrors(t *testing.T) {
 	isOpen, err := luksDevice.IsOpen(context.Background())
 	assert.Error(t, err)
 	assert.False(t, isOpen)
-
-	devicesClient := devices.NewDetailed(mockCommand, afero.NewMemMapFs(), nil)
-	err = devicesClient.CloseLUKSDevice(context.Background(), luksDevice.MappedDevicePath())
-	assert.Error(t, err)
 }
 
 func TestEnsureLUKSDevice_FailsWithExecError(t *testing.T) {

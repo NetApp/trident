@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	luksCommandTimeout time.Duration = time.Second * 30
+	luksCommandTimeout time.Duration = time.Second * 60
 
 	luksCypherMode = "aes-xts-plain64"
 	luksType       = "luks2"
