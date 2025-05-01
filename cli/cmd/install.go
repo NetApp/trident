@@ -97,6 +97,7 @@ var (
 	silent                   bool
 	useIPv6                  bool
 	silenceAutosupport       bool
+	excludeAutosupport       bool
 	nodePrep                 []string
 	skipK8sVersionCheck      bool
 	windows                  bool
@@ -197,6 +198,8 @@ func init() {
 	installCmd.Flags().BoolVar(&useIPv6, "use-ipv6", false, "Use IPv6 for Trident's communication.")
 	installCmd.Flags().BoolVar(&silenceAutosupport, "silence-autosupport", tridentconfig.BuildType != "stable",
 		"Don't send autosupport bundles to NetApp automatically.")
+	installCmd.Flags().BoolVar(&excludeAutosupport, "exclude-autosupport", false,
+		"Don't install or run the autosupport container.")
 	installCmd.Flags().StringSliceVar(&nodePrep, "node-prep", []string{}, "Comma separated list of protocols to prepare nodes for.  Currently only iSCSI is supported.")
 	installCmd.Flags().BoolVar(&enableForceDetach, "enable-force-detach", false,
 		"Enable the force detach feature.")
@@ -262,6 +265,9 @@ func init() {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 	}
 	if err := installCmd.Flags().MarkHidden("autosupport-hostname"); err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, err)
+	}
+	if err := installCmd.Flags().MarkHidden("exclude-autosupport"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 	}
 	if err := installCmd.Flags().MarkHidden("fs-group-policy"); err != nil {
@@ -673,6 +679,7 @@ func prepareYAMLFiles() error {
 		ControllingCRDetails:    nil,
 		UseIPv6:                 useIPv6,
 		SilenceAutosupport:      silenceAutosupport,
+		ExcludeAutosupport:      excludeAutosupport,
 		Version:                 client.ServerVersion(),
 		HTTPRequestTimeout:      httpRequestTimeout.String(),
 		ServiceAccountName:      getControllerRBACResourceName(),
@@ -996,6 +1003,13 @@ func installTrident() (returnError error) {
 		}).Info("ACP is now obsolete; All workflows are now enabled by default.")
 	}
 
+	// excludeAutosupport completely removes the autosupport container from the deployment.
+	if excludeAutosupport {
+		Log().WithFields(LogFields{
+			"excludeAutosupport": excludeAutosupport,
+		}).Warn("Autosupport bundles cannot be generated.")
+	}
+
 	// Create the deployment
 	if useYAML && fileExists(deploymentPath) {
 		returnError = validateTridentDeployment()
@@ -1027,6 +1041,7 @@ func installTrident() (returnError error) {
 			ControllingCRDetails:    nil,
 			UseIPv6:                 useIPv6,
 			SilenceAutosupport:      silenceAutosupport,
+			ExcludeAutosupport:      excludeAutosupport,
 			Version:                 client.ServerVersion(),
 			HTTPRequestTimeout:      httpRequestTimeout.String(),
 			ServiceAccountName:      getControllerRBACResourceName(),

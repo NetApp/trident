@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package k8sclient
 
@@ -158,6 +158,7 @@ type DeploymentYAMLArguments struct {
 	Debug                      bool                  `json:"debug"`
 	UseIPv6                    bool                  `json:"useIPv6"`
 	SilenceAutosupport         bool                  `json:"silenceAutosupport"`
+	ExcludeAutosupport         bool                  `json:"excludeAutosupport"`
 	Version                    *versionutils.Version `json:"version"`
 	DisableAuditLog            bool                  `json:"disableAuditLog"`
 	HTTPRequestTimeout         string                `json:"httpRequestTimeout"`

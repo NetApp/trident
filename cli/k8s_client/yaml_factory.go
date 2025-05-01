@@ -373,6 +373,112 @@ spec:
       values: ["system-node-critical"]
 `
 
+const deploymentAutosupportYAMLTemplate = `
+      - name: {AUTOSUPPORT_CONTAINER_NAME}
+        image: {AUTOSUPPORT_IMAGE}
+        imagePullPolicy: {IMAGE_PULL_POLICY}
+        securityContext:
+          capabilities:
+            drop:
+            - all
+        command:
+        - /usr/local/bin/trident-autosupport
+        args:
+        - "--k8s-pod"
+        - "--log-format={LOG_FORMAT}"
+        - "--trident-silence-collector={AUTOSUPPORT_SILENCE}"
+        {ENABLE_ACP}
+        {AUTOSUPPORT_PROXY}
+        {AUTOSUPPORT_CUSTOM_URL}
+        {AUTOSUPPORT_SERIAL_NUMBER}
+        {AUTOSUPPORT_HOSTNAME}
+        {AUTOSUPPORT_DEBUG}
+        {AUTOSUPPORT_INSECURE}
+        resources:
+          limits:
+            memory: 1Gi
+        volumeMounts:
+        - name: asup-dir
+          mountPath: /asup
+`
+
+// getCSIDeploymentAutosupportYAML will return either an empty string (excludeAutosupport) or an ASUP YAML template
+// that will be inserted into the deployment YAML.
+// There may be some variables that are still not replaced, such as {LOG_FORMAT} or {IMAGE_PULL_POLICY}.
+// It is expected that the caller will complete the YAML replacements.
+func getCSIDeploymentAutosupportYAML(args *DeploymentYAMLArguments) string {
+	var autosupportProxyLine,
+		autosupportCustomURLLine,
+		autosupportSerialNumberLine,
+		autosupportHostnameLine,
+		autosupportDebugLine,
+		autosupportInsecureLine string
+
+	if args.ExcludeAutosupport {
+		return ""
+	}
+
+	if args.AutosupportImage == "" {
+		args.AutosupportImage = commonconfig.DefaultAutosupportImage
+	}
+
+	if args.AutosupportProxy != "" {
+		autosupportProxyLine = fmt.Sprint("- -proxy-url=", args.AutosupportProxy)
+	}
+
+	if args.AutosupportCustomURL != "" {
+		autosupportCustomURLLine = fmt.Sprint("- -custom-url=", args.AutosupportCustomURL)
+	}
+
+	if args.AutosupportSerialNumber != "" {
+		autosupportSerialNumberLine = fmt.Sprint("- -serial-number=", args.AutosupportSerialNumber)
+	}
+
+	if args.AutosupportHostname != "" {
+		autosupportHostnameLine = fmt.Sprint("- -hostname=", args.AutosupportHostname)
+	}
+
+	if args.Labels == nil {
+		args.Labels = make(map[string]string)
+	}
+	args.Labels[DefaultContainerLabelKey] = "trident-main"
+
+	if !IsLogLevelDebugOrHigher(args.LogLevel) {
+		autosupportDebugLine = "#" + autosupportDebugLine
+	}
+
+	if args.AutosupportInsecure {
+		autosupportInsecureLine = "- -insecure"
+	}
+
+	asupYAMLSnippet := deploymentAutosupportYAMLTemplate
+	asupYAMLSnippet = strings.ReplaceAll(asupYAMLSnippet, "{AUTOSUPPORT_CONTAINER_NAME}", commonconfig.DefaultAutosupportName)
+	asupYAMLSnippet = strings.ReplaceAll(asupYAMLSnippet, "{AUTOSUPPORT_IMAGE}", args.AutosupportImage)
+	asupYAMLSnippet = strings.ReplaceAll(asupYAMLSnippet, "{AUTOSUPPORT_PROXY}", autosupportProxyLine)
+	asupYAMLSnippet = strings.ReplaceAll(asupYAMLSnippet, "{AUTOSUPPORT_INSECURE}", autosupportInsecureLine)
+	asupYAMLSnippet = strings.ReplaceAll(asupYAMLSnippet, "{AUTOSUPPORT_CUSTOM_URL}", autosupportCustomURLLine)
+	asupYAMLSnippet = strings.ReplaceAll(asupYAMLSnippet, "{AUTOSUPPORT_SERIAL_NUMBER}", autosupportSerialNumberLine)
+	asupYAMLSnippet = strings.ReplaceAll(asupYAMLSnippet, "{AUTOSUPPORT_HOSTNAME}", autosupportHostnameLine)
+	asupYAMLSnippet = strings.ReplaceAll(asupYAMLSnippet, "{AUTOSUPPORT_DEBUG}", autosupportDebugLine)
+	asupYAMLSnippet = strings.ReplaceAll(asupYAMLSnippet, "{AUTOSUPPORT_SILENCE}", strconv.FormatBool(args.SilenceAutosupport))
+
+	return asupYAMLSnippet
+}
+
+var deploymentAutosupportVolumeYAML = `
+      - name: asup-dir
+        emptyDir:
+          medium: ""
+          sizeLimit: 1Gi
+`
+
+func getCSIDeploymentAutosupportVolumeYAML(args *DeploymentYAMLArguments) string {
+	if args.ExcludeAutosupport {
+		return ""
+	}
+	return deploymentAutosupportVolumeYAML
+}
+
 func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	var debugLine, sideCarLogLevel, ipLocalhost, enableACP, K8sAPISidecarThrottle, K8sAPITridentThrottle string
 	Log().WithFields(LogFields{
@@ -425,45 +531,6 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		}
 	}
 
-	if args.AutosupportImage == "" {
-		args.AutosupportImage = commonconfig.DefaultAutosupportImage
-	}
-
-	autosupportProxyLine := ""
-	if args.AutosupportProxy != "" {
-		autosupportProxyLine = fmt.Sprint("- -proxy-url=", args.AutosupportProxy)
-	}
-
-	autosupportCustomURLLine := ""
-	if args.AutosupportCustomURL != "" {
-		autosupportCustomURLLine = fmt.Sprint("- -custom-url=", args.AutosupportCustomURL)
-	}
-
-	autosupportSerialNumberLine := ""
-	if args.AutosupportSerialNumber != "" {
-		autosupportSerialNumberLine = fmt.Sprint("- -serial-number=", args.AutosupportSerialNumber)
-	}
-
-	autosupportHostnameLine := ""
-	if args.AutosupportHostname != "" {
-		autosupportHostnameLine = fmt.Sprint("- -hostname=", args.AutosupportHostname)
-	}
-
-	if args.Labels == nil {
-		args.Labels = make(map[string]string)
-	}
-	args.Labels[DefaultContainerLabelKey] = "trident-main"
-
-	autosupportDebugLine := "- -debug"
-	if !IsLogLevelDebugOrHigher(args.LogLevel) {
-		autosupportDebugLine = "#" + autosupportDebugLine
-	}
-
-	autosupportInsecureLine := ""
-	if args.AutosupportInsecure {
-		autosupportInsecureLine = "- -insecure"
-	}
-
 	if args.IdentityLabel {
 		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LABEL_IDENTITY}", AzureWorkloadIdentityLabel)
 	} else {
@@ -492,6 +559,11 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		K8sAPISidecarThrottle = fmt.Sprintf("- --kube-api-qps=%d\n        - --kube-api-burst=%d", queriesPerSecond, burst)
 	}
 
+	// Get the autosupport YAML snippet and insert it into the deployment YAML.
+	// This YAML snippet will have some "{}" variables that need to be replaced.
+	autosupportYAML := getCSIDeploymentAutosupportYAML(args)
+	autosupportVolumeYAML := getCSIDeploymentAutosupportVolumeYAML(args)
+
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{TRIDENT_IMAGE}", args.TridentImage)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEPLOYMENT_NAME}", args.DeploymentName)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SIDECAR_PROVISIONER_IMAGE}", args.CSISidecarProvisionerImage)
@@ -500,22 +572,15 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{CSI_SIDECAR_SNAPSHOTTER_IMAGE}", args.CSISidecarSnapshotterImage)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LABEL_APP}", args.Labels[TridentAppLabelKey])
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{SIDECAR_LOG_LEVEL}", sideCarLogLevel)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{IP_LOCALHOST}", ipLocalhost)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_YAML}", autosupportYAML)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_VOLUME_YAML}", autosupportVolumeYAML)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_FORMAT}", args.LogFormat)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DEBUG}", debugLine)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_LEVEL}", args.LogLevel)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_WORKFLOWS}", args.LogWorkflows)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LOG_LAYERS}", args.LogLayers)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{DISABLE_AUDIT_LOG}", strconv.FormatBool(args.DisableAuditLog))
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{IP_LOCALHOST}", ipLocalhost)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_IMAGE}", args.AutosupportImage)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_PROXY}", autosupportProxyLine)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_INSECURE}", autosupportInsecureLine)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_CUSTOM_URL}", autosupportCustomURLLine)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_SERIAL_NUMBER}", autosupportSerialNumberLine)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_HOSTNAME}", autosupportHostnameLine)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_DEBUG}", autosupportDebugLine)
-	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{AUTOSUPPORT_SILENCE}",
-		strconv.FormatBool(args.SilenceAutosupport))
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{HTTP_REQUEST_TIMEOUT}", args.HTTPRequestTimeout)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{IMAGE_PULL_POLICY}", args.ImagePullPolicy)
@@ -626,32 +691,7 @@ spec:
           mountPath: /certs
           readOnly: true
         {AZURE_CREDENTIAL_FILE_VOLUME_MOUNT}
-      - name: trident-autosupport
-        image: {AUTOSUPPORT_IMAGE}
-        imagePullPolicy: {IMAGE_PULL_POLICY}
-        securityContext:
-          capabilities:
-            drop:
-            - all
-        command:
-        - /usr/local/bin/trident-autosupport
-        args:
-        - "--k8s-pod"
-        - "--log-format={LOG_FORMAT}"
-        - "--trident-silence-collector={AUTOSUPPORT_SILENCE}"
-        {ENABLE_ACP}
-        {AUTOSUPPORT_PROXY}
-        {AUTOSUPPORT_CUSTOM_URL}
-        {AUTOSUPPORT_SERIAL_NUMBER}
-        {AUTOSUPPORT_HOSTNAME}
-        {AUTOSUPPORT_DEBUG}
-        {AUTOSUPPORT_INSECURE}
-        resources:
-          limits:
-            memory: 1Gi
-        volumeMounts:
-        - name: asup-dir
-          mountPath: /asup
+      {AUTOSUPPORT_YAML}
       - name: csi-provisioner
         image: {CSI_SIDECAR_PROVISIONER_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
@@ -754,10 +794,7 @@ spec:
               name: trident-csi
           - secret:
               name: trident-encryption-keys
-      - name: asup-dir
-        emptyDir:
-          medium: ""
-          sizeLimit: 1Gi
+      {AUTOSUPPORT_VOLUME_YAML}
       {AZURE_CREDENTIAL_FILE_VOLUME}
 `
 

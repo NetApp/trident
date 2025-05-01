@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -125,7 +125,7 @@ func discoverOperatingMode(_ *cobra.Command) error {
 
 		switch OperatingMode {
 		case ModeDirect:
-			fmt.Printf("Operating mode = %s, Server = %s, Autosuport server = %s\n",
+			fmt.Printf("Operating mode = %s, Server = %s, Autosupport server = %s\n",
 				OperatingMode, Server, AutosupportCollector)
 		case ModeTunnel:
 			fmt.Printf("Operating mode = %s, Trident pod = %s, Namespace = %s, CLI = %s\n",

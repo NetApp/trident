@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package v1
 
@@ -55,6 +55,7 @@ type TridentOrchestratorSpec struct {
 	K8sTimeout                   int               `json:"k8sTimeout,omitempty"`
 	HTTPRequestTimeout           string            `json:"httpRequestTimeout,omitempty"`
 	SilenceAutosupport           bool              `json:"silenceAutosupport,omitempty"`
+	ExcludeAutosupport           *bool             `json:"excludeAutosupport,omitempty"`
 	AutosupportImage             string            `json:"autosupportImage,omitempty"`
 	AutosupportProxy             string            `json:"autosupportProxy,omitempty"`
 	AutosupportInsecure          bool              `json:"autosupportInsecure,omitempty"`

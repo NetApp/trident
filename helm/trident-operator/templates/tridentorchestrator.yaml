@@ -9,6 +9,9 @@ spec:
   k8sTimeout: {{ .Values.tridentK8sTimeout }}
   httpRequestTimeout: {{ .Values.tridentHttpRequestTimeout }}
   silenceAutosupport: {{ include "trident.silenceAutosupport" $ }}
+  {{- if .Values.tridentExcludeAutosupport }}
+  excludeAutosupport: {{ .Values.tridentExcludeAutosupport }}
+  {{- end }}
   autosupportImage: {{ include "trident.autosupportImage" $ }}
   autosupportProxy: {{ .Values.tridentAutosupportProxy }}
   autosupportInsecure: {{ .Values.tridentAutosupportInsecure }}

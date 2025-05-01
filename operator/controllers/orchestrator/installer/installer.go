@@ -62,6 +62,7 @@ var (
 	debug              bool
 	useIPv6            bool
 	silenceAutosupport bool
+	excludeAutosupport bool
 	windows            bool
 
 	logLevel                           string
@@ -416,6 +417,7 @@ func (i *Installer) setInstallationParams(
 	useIPv6 = cr.Spec.IPv6
 	windows = cr.Spec.Windows
 	silenceAutosupport = cr.Spec.SilenceAutosupport
+	excludeAutosupport = cr.Spec.ExcludeAutosupport != nil && *cr.Spec.ExcludeAutosupport
 	autosupportInsecure = cr.Spec.AutosupportInsecure
 	if cr.Spec.AutosupportProxy != "" {
 		autosupportProxy = cr.Spec.AutosupportProxy
@@ -1487,6 +1489,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		ControllingCRDetails:       controllingCRDetails,
 		UseIPv6:                    useIPv6,
 		SilenceAutosupport:         silenceAutosupport,
+		ExcludeAutosupport:         excludeAutosupport,
 		Version:                    i.client.ServerVersion(),
 		HTTPRequestTimeout:         httpTimeout,
 		NodeSelector:               controllerPluginNodeSelector,

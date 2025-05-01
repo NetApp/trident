@@ -110,6 +110,17 @@ Trident SilenceAutosupport
 {{- end }}
 {{- end }}
 
+{{/*
+Trident ExcludeAutosupport
+*/}}
+{{- define "trident.excludeAutosupport" -}}
+{{- if .Values.tridentExcludeAutosupport | printf "%v" | eq "true" }}
+{{- "true" }}
+{{- else }}
+{{- "false" }}
+{{- end }}
+{{- end }}
+
 Trident AutoSupport image
 */}}
 {{- define "trident.autosupportImage" -}}

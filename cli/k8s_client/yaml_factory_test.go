@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package k8sclient
 
@@ -170,6 +170,7 @@ func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 		HTTPRequestTimeout:      config.HTTPTimeoutString,
 		UseIPv6:                 true,
 		SilenceAutosupport:      false,
+		ExcludeAutosupport:      false,
 		EnableACP:               true,
 		K8sAPIQPS:               100,
 	}
@@ -470,6 +471,101 @@ func TestGetCSIDeploymentYAMLAzure(t *testing.T) {
 		}
 	}
 	assert.True(t, envExist && volumeExist && volumeMountExist, "expected env var AZURE_CREDENTIAL_FILE to exist")
+}
+
+func TestGetCSIDeploymentYAML_AutosupportYAML_ExcludeAutosupport(t *testing.T) {
+	labels := make(map[string]string)
+	labels["app"] = "trident"
+
+	ownerRef := make(map[string]string)
+	ownerRef["uid"] = "123456789"
+	ownerRef["kind"] = "TridentProvisioner"
+
+	imagePullSecrets := []string{"thisisasecret"}
+
+	version := versionutils.MustParseSemantic("1.26.0")
+	deploymentArgs := &DeploymentYAMLArguments{
+		DeploymentName:          "trident-csi",
+		TridentImage:            "netapp/trident:20.10.0-custom",
+		AutosupportImage:        "netapp/trident-autosupport:20.10.0-custom",
+		AutosupportSerialNumber: "0000-0000",
+		AutosupportHostname:     "21e160d3-721f-4ec4-bcd4-c5e0d31d1a6e",
+		AutosupportProxy:        "http://127.0.0.1/",
+		AutosupportCustomURL:    "http://172.16.150.125:8888/",
+		ImageRegistry:           "registry.k8s.io",
+		LogFormat:               "text",
+		LogLevel:                "",
+		Debug:                   true,
+		AutosupportInsecure:     true,
+		ImagePullSecrets:        imagePullSecrets,
+		Labels:                  labels,
+		ControllingCRDetails:    map[string]string{},
+		Version:                 version,
+		HTTPRequestTimeout:      config.HTTPTimeoutString,
+		UseIPv6:                 true,
+		SilenceAutosupport:      false,
+		ExcludeAutosupport:      true,
+		EnableACP:               true,
+		K8sAPIQPS:               100,
+	}
+
+	deploymentYAML := GetCSIDeploymentYAML(deploymentArgs)
+	_, err := yaml.YAMLToJSON([]byte(deploymentYAML))
+	assert.NoError(t, err)
+
+	// Check that the autosupport container is not present
+	assert.NotContains(t, deploymentYAML, config.DefaultAutosupportName)
+	assert.NotContains(t, deploymentYAML, config.DefaultAutosupportImage)
+}
+
+func TestGetCSIDeploymentYAML_AutosupportYAML_EnableButSilenceAutosupport(t *testing.T) {
+	labels := make(map[string]string)
+	labels["app"] = "trident"
+
+	ownerRef := make(map[string]string)
+	ownerRef["uid"] = "123456789"
+	ownerRef["kind"] = "TridentProvisioner"
+
+	imagePullSecrets := []string{"thisisasecret"}
+	asupImage := "netapp/trident-autosupport:20.10.0-custom"
+	silenceASUP := true
+
+	version := versionutils.MustParseSemantic("1.26.0")
+	deploymentArgs := &DeploymentYAMLArguments{
+		DeploymentName:          "trident-csi",
+		TridentImage:            "netapp/trident:20.10.0-custom",
+		AutosupportImage:        asupImage,
+		AutosupportSerialNumber: "0000-0000",
+		AutosupportHostname:     "21e160d3-721f-4ec4-bcd4-c5e0d31d1a6e",
+		AutosupportProxy:        "http://127.0.0.1/",
+		AutosupportCustomURL:    "http://172.16.150.125:8888/",
+		ImageRegistry:           "registry.k8s.io",
+		LogFormat:               "text",
+		LogLevel:                "",
+		Debug:                   true,
+		AutosupportInsecure:     true,
+		ImagePullSecrets:        imagePullSecrets,
+		Labels:                  labels,
+		ControllingCRDetails:    map[string]string{},
+		Version:                 version,
+		HTTPRequestTimeout:      config.HTTPTimeoutString,
+		UseIPv6:                 true,
+		SilenceAutosupport:      silenceASUP,
+		ExcludeAutosupport:      false,
+		EnableACP:               true,
+		K8sAPIQPS:               100,
+	}
+
+	deploymentYAML := GetCSIDeploymentYAML(deploymentArgs)
+	bytes, err := yaml.YAMLToJSON([]byte(deploymentYAML))
+	assert.NoError(t, err)
+
+	// Check that the autosupport container is present
+	deployment := appsv1.Deployment{}
+	assert.NoError(t, yaml.Unmarshal(bytes, &deployment))
+	assert.Contains(t, deploymentYAML, config.DefaultAutosupportName)
+	assert.Contains(t, deploymentYAML, asupImage)
+	assert.Contains(t, deploymentYAML, fmt.Sprintf("--trident-silence-collector=%v", silenceASUP))
 }
 
 func TestGetCSIDeploymentYAML_K8sAPIQPS(t *testing.T) {
