@@ -397,6 +397,8 @@ const deploymentAutosupportYAMLTemplate = `
         resources:
           limits:
             memory: 1Gi
+          requests:
+            memory: '0'
         volumeMounts:
         - name: asup-dir
           mountPath: /asup
