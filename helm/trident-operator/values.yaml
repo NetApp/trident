@@ -189,3 +189,12 @@ ontapConfigurator:
       svmName: ''
       protocols: []
       authType: ''
+
+# ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+resources:
+  requests:
+    cpu: "10m"
+    memory: "40Mi"
+  limits:
+    cpu: "20m"
+    memory: "80Mi"
