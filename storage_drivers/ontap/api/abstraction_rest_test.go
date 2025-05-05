@@ -3846,6 +3846,49 @@ func TestLunGetByName(t *testing.T) {
 	assert.Error(t, err, "no error returned while getting a LUN by name")
 }
 
+func TestOntapAPIREST_LunExists(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockAPI := mockapi.NewMockRestClientInterface(ctrl)
+	oapi, err := api.NewOntapAPIRESTFromRestClientInterface(mockAPI)
+	assert.NoError(t, err)
+
+	ctx := context.Background()
+	lunPath := "/vol/vol1/lun0"
+
+	// Mock ClientConfig to avoid unexpected call
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+	mockAPI.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	// Case 1: LUN exists
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath, gomock.Any()).Return(&models.Lun{}, nil).Times(1)
+	exists, err := oapi.LunExists(ctx, lunPath)
+	assert.NoError(t, err, "expected no error when LUN exists")
+	assert.True(t, exists, "expected LUN to exist")
+
+	// Case 2: LUN does not exist
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath, gomock.Any()).Return(nil, nil).Times(1)
+	exists, err = oapi.LunExists(ctx, lunPath)
+	assert.NoError(t, err, "expected no error when LUN does not exist")
+	assert.False(t, exists, "expected LUN to not exist")
+
+	// Case 3: NotFoundError from REST client
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath, gomock.Any()).Return(
+		nil, errors.NotFoundError("LUN not found")).Times(1)
+	exists, err = oapi.LunExists(ctx, lunPath)
+	assert.NoError(t, err, "expected no error when NotFoundError is returned")
+	assert.False(t, exists, "expected LUN to not exist")
+
+	// Case 4: Unexpected error
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath, gomock.Any()).Return(nil, fmt.Errorf("unexpected error")).Times(1)
+	exists, err = oapi.LunExists(ctx, lunPath)
+	assert.Error(t, err, "expected error when unexpected error is returned")
+	assert.False(t, exists, "expected LUN to not exist")
+}
+
 func TestLunRename(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 

@@ -13,6 +13,7 @@ import (
 	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
+	"github.com/netapp/trident/utils/errors"
 )
 
 func TestOntapAPIZAPI_LunGetFSType(t *testing.T) {
@@ -290,6 +291,47 @@ func TestExportRuleList_Zapi_NilPayload(t *testing.T) {
 	rules, err := oapi.ExportRuleList(ctx, policyName)
 	assert.NoError(t, err)
 	assert.Empty(t, rules)
+}
+
+func TestOntapAPIZAPI_LunExists(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mock := mockapi.NewMockZapiClientInterface(ctrl)
+	oapi, err := api.NewOntapAPIZAPIFromZapiClientInterface(mock)
+	assert.NoError(t, err)
+
+	tempLunPath := "/vol/vol1/lun0"
+
+	// Mock ClientConfig to avoid unexpected call
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	// Case 1: LUN exists
+	mock.EXPECT().LunGet(tempLunPath).Return(&azgo.LunInfoType{}, nil).Times(1)
+	exists, err := oapi.LunExists(ctx, tempLunPath)
+	assert.NoError(t, err, "expected no error when LUN exists")
+	assert.True(t, exists, "expected LUN to exist")
+
+	// Case 2: LUN does not exist
+	mock.EXPECT().LunGet(tempLunPath).Return(nil, nil).Times(1)
+	exists, err = oapi.LunExists(ctx, tempLunPath)
+	assert.NoError(t, err, "expected no error when LUN does not exist")
+	assert.False(t, exists, "expected LUN to not exist")
+
+	// Case 3: NotFoundError from ZAPI client
+	mock.EXPECT().LunGet(tempLunPath).Return(nil, errors.NotFoundError("LUN not found")).Times(1)
+	exists, err = oapi.LunExists(ctx, tempLunPath)
+	assert.NoError(t, err, "expected no error when NotFoundError occurs")
+	assert.False(t, exists, "expected LUN to not exist")
+
+	// Case 4: Error from ZAPI client
+	mock.EXPECT().LunGet(tempLunPath).Return(nil, fmt.Errorf("error fetching LUN")).Times(1)
+	exists, err = oapi.LunExists(ctx, tempLunPath)
+	assert.Error(t, err, "expected error when ZAPI client returns an error")
+	assert.False(t, exists, "expected LUN to not exist")
 }
 
 func intPtr(i int) *int {

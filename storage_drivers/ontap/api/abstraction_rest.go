@@ -2346,6 +2346,11 @@ func (d OntapAPIREST) LunExists(ctx context.Context, name string) (bool, error) 
 
 	lunResponse, err := d.api.LunGetByName(ctx, name, make([]string, 0))
 	if err != nil {
+		if errors.IsNotFoundError(err) {
+			Logc(ctx).WithField("LUN", name).Debug("LUN does not exist.")
+			return false, nil
+		}
+
 		return false, err
 	}
 
