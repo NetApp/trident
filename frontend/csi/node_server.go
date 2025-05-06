@@ -81,7 +81,7 @@ var (
 	// TODO (pshashan): Unify both csiNodeLockTimeout and csiKubeletTimeout
 	csiKubeletTimeout = 110 * time.Second
 	topologyLabels    = make(map[string]string)
-	iscsiUtils        = utils.IscsiUtils
+	iscsiUtils        = iscsi.IscsiUtils
 	fcpUtils          = utils.FcpUtils
 
 	publishedISCSISessions, currentISCSISessions models.ISCSISessions
@@ -753,7 +753,7 @@ func (p *Plugin) nodeGetInfo(ctx context.Context) *models.Node {
 	}
 
 	iscsiWWN := ""
-	iscsiWWNs, err := utils.GetInitiatorIqns(ctx)
+	iscsiWWNs, err := iscsi.GetInitiatorIqns(ctx)
 	if err != nil {
 		Logc(ctx).WithError(err).Warn("Problem getting iSCSI initiator name.")
 	} else if len(iscsiWWNs) == 0 {
@@ -1206,7 +1206,7 @@ func unstashIscsiTargetPortals(publishInfo *models.VolumePublishInfo, reqPublish
 }
 
 func (p *Plugin) populatePublishedSessions(ctx context.Context) {
-	volumeIDs := utils.GetAllVolumeIDs(ctx, tridentDeviceInfoPath)
+	volumeIDs := iscsi.GetAllVolumeIDs(ctx, tridentDeviceInfoPath)
 	for _, volumeID := range volumeIDs {
 		trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, volumeID)
 		if err != nil || trackingInfo == nil {
@@ -1221,7 +1221,7 @@ func (p *Plugin) populatePublishedSessions(ctx context.Context) {
 
 		publishInfo := &trackingInfo.VolumePublishInfo
 		if publishInfo.SANType != sa.NVMe {
-			newCtx := context.WithValue(ctx, iscsi.SessionInfoSource, utils.SessionSourceTrackingInfo)
+			newCtx := context.WithValue(ctx, iscsi.SessionInfoSource, iscsi.SessionSourceTrackingInfo)
 			p.iscsi.AddSession(newCtx, &publishedISCSISessions, publishInfo, volumeID, "", models.NotInvalid)
 		} else {
 			p.nvmeHandler.AddPublishedNVMeSession(&publishedNVMeSessions, publishInfo)
@@ -1232,7 +1232,7 @@ func (p *Plugin) populatePublishedSessions(ctx context.Context) {
 
 func (p *Plugin) readAllTrackingFiles(ctx context.Context) []models.VolumePublishInfo {
 	publishInfos := make([]models.VolumePublishInfo, 0)
-	volumeIDs := utils.GetAllVolumeIDs(ctx, tridentDeviceInfoPath)
+	volumeIDs := iscsi.GetAllVolumeIDs(ctx, tridentDeviceInfoPath)
 	for _, volumeID := range volumeIDs {
 		trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, volumeID)
 		if err != nil || trackingInfo == nil {
@@ -2553,7 +2553,7 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 			return fmt.Errorf("failed to get LUNs for portal: %s; %w", portal, err)
 		}
 
-		if err = utils.InitiateScanForLuns(ctx, luns, publishInfo.IscsiTargetIQN); err != nil {
+		if err = iscsi.InitiateScanForLuns(ctx, luns, publishInfo.IscsiTargetIQN); err != nil {
 			Logc(ctx).WithError(err).Error("Could not initiate scan for some LUNs.")
 			return fmt.Errorf("failed to initiate scan for LUNs in portal: %s; %w", portal, err)
 		}
@@ -2576,7 +2576,7 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 func (p *Plugin) deprecatedIgroupInUse(ctx context.Context) bool {
 	volumeTrackingInfo, _ := p.nodeHelper.ListVolumeTrackingInfo(ctx)
 	for id, info := range volumeTrackingInfo {
-		if !utils.IsPerNodeIgroup(info.IscsiIgroup) {
+		if !iscsi.IsPerNodeIgroup(info.IscsiIgroup) {
 			Logc(ctx).WithFields(LogFields{
 				"volumeID": id,
 				"lunID":    info.IscsiLunNumber,

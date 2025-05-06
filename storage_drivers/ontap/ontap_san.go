@@ -242,7 +242,7 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 		return fmt.Errorf("replication validation failed: %v", err)
 	}
 
-	if err := ValidateSANDriver(ctx, &d.Config, d.ips); err != nil {
+	if err := ValidateSANDriver(ctx, &d.Config, d.ips, d.iscsi); err != nil {
 		return fmt.Errorf("driver validation failed: %v", err)
 	}
 
@@ -877,7 +877,7 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 						},
 					},
 				}
-				drivers.RemoveSCSIDeviceByPublishInfo(ctx, &publishInfo)
+				drivers.RemoveSCSIDeviceByPublishInfo(ctx, &publishInfo, d.iscsi)
 
 			}
 		}

@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -6448,4 +6450,206 @@ func structCopyHelper(input models.ISCSISessionData) *models.ISCSISessionData {
 	}
 
 	return &output
+}
+
+func TestIsPerNodeIgroup(t *testing.T) {
+	tt := map[string]bool{
+		"":        false,
+		"trident": false,
+		"node-01-8095-ad1b8212-49a0-82d4-ef4f8b5b620z":                                   false,
+		"trident-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":                                   false,
+		"-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":                                          false,
+		".ad1b8212-8095-49a0-82d4-ef4f8b5b620z":                                          false,
+		"igroup-a-trident-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":                          false,
+		"node-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":                                   true,
+		"trdnt-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":                                     true,
+		"worker0.hjonhjc.rtp.openenglab.netapp.com-25426e2a-9f96-4f4d-90a8-72a6cdd6f645": true,
+		"worker0-hjonhjc.trdnt-ad1b8212-8095-49a0-82d4-ef4f8b5b620z":                     true,
+	}
+
+	for input, expected := range tt {
+		assert.Equal(t, expected, IsPerNodeIgroup(input))
+	}
+}
+
+func TestParseInitiatorIQNs(t *testing.T) {
+	ctx := context.TODO()
+	tests := map[string]struct {
+		input     string
+		output    []string
+		predicate func(string) []string
+	}{
+		"Single valid initiator": {
+			input:  "InitiatorName=iqn.2005-03.org.open-iscsi:123abc456de",
+			output: []string{"iqn.2005-03.org.open-iscsi:123abc456de"},
+		},
+		"initiator with space": {
+			input:  "InitiatorName=iqn 2005-03.org.open-iscsi:123abc456de",
+			output: []string{"iqn"},
+		},
+		"Multiple valid initiators": {
+			input: `InitiatorName=iqn.2005-03.org.open-iscsi:123abc456de
+InitiatorName=iqn.2005-03.org.open-iscsi:secondIQN12`,
+			output: []string{"iqn.2005-03.org.open-iscsi:123abc456de", "iqn.2005-03.org.open-iscsi:secondIQN12"},
+		},
+		"Ignore comment initiator": {
+			input: `#InitiatorName=iqn.1994-05.demo.netapp.com
+InitiatorName=iqn.2005-03.org.open-iscsi:123abc456de`,
+			output: []string{"iqn.2005-03.org.open-iscsi:123abc456de"},
+		},
+		"Ignore inline comment": {
+			input:  "InitiatorName=iqn.2005-03.org.open-iscsi:123abc456de #inline comment in file",
+			output: []string{"iqn.2005-03.org.open-iscsi:123abc456de"},
+		},
+		"Tolerate space around equal sign": {
+			input:  "InitiatorName = iqn.2005-03.org.open-iscsi:123abc456de",
+			output: []string{"iqn.2005-03.org.open-iscsi:123abc456de"},
+		},
+		"Tolerate leading space": {
+			input:  " InitiatorName=iqn.2005-03.org.open-iscsi:123abc456de",
+			output: []string{"iqn.2005-03.org.open-iscsi:123abc456de"},
+		},
+		"Tolerate trailing space multiple initiators": {
+			input: `InitiatorName=iqn.2005-03.org.open-iscsi:123abc456de
+InitiatorName=iqn.2005-03.org.open-iscsi:secondIQN12 `,
+			output: []string{"iqn.2005-03.org.open-iscsi:123abc456de", "iqn.2005-03.org.open-iscsi:secondIQN12"},
+		},
+		"Full iscsi file": {
+			input: `## DO NOT EDIT OR REMOVE THIS FILE!
+## If you remove this file, the iSCSI daemon will not start.
+## If you change the InitiatorName, existing access control lists
+## may reject this initiator.  The InitiatorName must be unique
+## for each iSCSI initiator.  Do NOT duplicate iSCSI InitiatorNames.
+InitiatorName=iqn.2005-03.org.open-iscsi:123abc456de
+#InitiatorName=iqn.1994-05.demo.netapp.com`,
+			output: []string{"iqn.2005-03.org.open-iscsi:123abc456de"},
+		},
+		"Full iscsi file no initiator": {
+			input: `## DO NOT EDIT OR REMOVE THIS FILE!
+## If you remove this file, the iSCSI daemon will not start.
+## If you change the InitiatorName, existing access control lists
+## may reject this initiator.  The InitiatorName must be unique
+## for each iSCSI initiator.  Do NOT duplicate iSCSI InitiatorNames.
+#InitiatorName=iqn.1994-05.demo.netapp.com`,
+			output: []string{},
+		},
+	}
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			iqns := parseInitiatorIQNs(ctx, test.input)
+			assert.Equal(t, test.output, iqns, "Failed to parse initiators")
+		})
+	}
+}
+
+func TestGetInitiatorIqns(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCommand := mockexec.NewMockCommand(ctrl)
+
+	tests := map[string]struct {
+		commandOutput string
+		commandError  error
+		expectedIQNs  []string
+		expectedError bool
+	}{
+		"Valid IQNs": {
+			commandOutput: "InitiatorName=iqn.2005-03.org.open-iscsi:123abc456de\nInitiatorName=iqn.2005-03.org.open-iscsi:secondIQN12",
+			expectedIQNs:  []string{"iqn.2005-03.org.open-iscsi:123abc456de", "iqn.2005-03.org.open-iscsi:secondIQN12"},
+			expectedError: false,
+		},
+		"Malformed IQNs": {
+			commandOutput: "InitiatorName=iqn 2005-03.org.open-iscsi:123abc456de",
+			expectedIQNs:  []string{"iqn"},
+			expectedError: false,
+		},
+		"File does not exist": {
+			commandError:  fmt.Errorf("file not found"),
+			expectedIQNs:  nil,
+			expectedError: true,
+		},
+		"Empty file": {
+			commandOutput: "",
+			expectedIQNs:  []string{},
+			expectedError: false,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockCommand.EXPECT().Execute(gomock.Any(), "cat", "/etc/iscsi/initiatorname.iscsi").
+				Return([]byte(test.commandOutput), test.commandError)
+
+			command = mockCommand
+			iqns, err := GetInitiatorIqns(context.TODO())
+
+			if test.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, test.expectedIQNs, iqns)
+		})
+	}
+}
+
+func TestGetAllVolumeIDs(t *testing.T) {
+	fs := afero.NewMemMapFs()
+
+	tests := map[string]struct {
+		setupFiles     []string
+		expectedResult []string
+		expectedError  bool
+	}{
+		"Valid tracking files": {
+			setupFiles:     []string{"pvc-123.json", "pvc-456.json"},
+			expectedResult: []string{"pvc-123", "pvc-456"},
+			expectedError:  false,
+		},
+		"No tracking files": {
+			setupFiles:     []string{},
+			expectedResult: nil,
+			expectedError:  false,
+		},
+		"Invalid file names": {
+			setupFiles:     []string{"invalid-file.txt", "another-file.log"},
+			expectedResult: nil,
+			expectedError:  false,
+		},
+		"Mixed valid and invalid files": {
+			setupFiles:     []string{"pvc-123.json", "invalid-file.txt", "pvc-456.json"},
+			expectedResult: []string{"pvc-123", "pvc-456"},
+			expectedError:  false,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			// Setup the mock filesystem
+			dir := "/tracking"
+			_ = fs.MkdirAll(dir, 0o755)
+			for _, file := range test.setupFiles {
+				_, _ = fs.Create(fmt.Sprintf("%s/%s", dir, file))
+			}
+
+			// Use afero.ReadDir directly
+			files, err := afero.ReadDir(fs, dir)
+			assert.NoError(t, err)
+
+			// Extract volume IDs from file names
+			var result []string
+			for _, file := range files {
+				if filepath.Ext(file.Name()) == ".json" {
+					result = append(result, strings.TrimSuffix(file.Name(), ".json"))
+				}
+			}
+
+			// Validate the result
+			assert.Equal(t, test.expectedResult, result)
+
+			// Cleanup
+			_ = fs.RemoveAll(dir)
+		})
+	}
 }

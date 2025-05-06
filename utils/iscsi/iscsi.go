@@ -21,6 +21,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/spf13/afero"
 
+	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
@@ -42,6 +43,7 @@ const (
 	SessionInfoSource          = "sessionSource"
 	SessionSourceCurrentStatus = "currentStatus"
 	SessionSourceNodeStage     = "nodeStage"
+	SessionSourceTrackingInfo  = "trackingInfo"
 
 	iscsiadmLoginTimeoutValue       = 10
 	iscsiadmLoginTimeout            = iscsiadmLoginTimeoutValue * time.Second
@@ -64,9 +66,19 @@ const (
 )
 
 var (
+	command               = tridentexec.NewCommand()
 	portalPortPattern     = regexp.MustCompile(`.+:\d+$`)
 	pidRegex              = regexp.MustCompile(`^\d+$`)
 	pidRunningOrIdleRegex = regexp.MustCompile(`pid \d+ (running|idle)`)
+
+	iqnRegex      = regexp.MustCompile(`^\s*InitiatorName\s*=\s*(?P<iqn>\S+)(|\s+.*)$`)
+	IscsiUtils    = NewReconcileUtils()
+	devicesClient = devices.New()
+
+	// perNodeIgroupRegex is used to ensure an igroup meets the following format:
+	// <up to and including 59 characters of a container orchestrator node name>-<36 characters of trident version uuid>
+	// ex: Kubernetes-NodeA-01-ad1b8212-8095-49a0-82d4-ef4f8b5b620z
+	perNodeIgroupRegex = regexp.MustCompile(`^[0-9A-z\-.]{1,59}-[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}`)
 
 	beforeFlushDevice                              = fiji.Register("beforeFlushDevice", "devices")
 	duringConfigureISCSITargetBeforeISCSIAdmUpdate = fiji.Register("duringConfigureISCSITargetBeforeISCSIAdmUpdate", "iscsi")
@@ -100,8 +112,8 @@ type ISCSI interface {
 		ctx context.Context, publishedSessions, currentSessions *models.ISCSISessions,
 		iSCSISessionWaitTime time.Duration,
 	) ([]string, []string)
-	EnsureISCSISessionWithPortalDiscovery(ctx context.Context, hostDataIP string) error
-	EnsureISCSISessionsWithPortalDiscovery(ctx context.Context, hostDataIPs []string) error
+	EnsureSessionWithPortalDiscovery(ctx context.Context, hostDataIP string) error
+	EnsureSessionsWithPortalDiscovery(ctx context.Context, hostDataIPs []string) error
 	ISCSIDiscovery(ctx context.Context, portal string) ([]models.ISCSIDiscoveryInfo, error)
 	Supported(ctx context.Context) bool
 	IsPortalAccessible(ctx context.Context, portal string) (bool, error)
@@ -783,7 +795,7 @@ func (client *Client) GetDeviceInfoForLUN(
 	devicesForLUN, err := client.iscsiUtils.GetDevicesForLUN(paths)
 	if err != nil {
 		return nil, err
-	} else if 0 == len(devicesForLUN) {
+	} else if len(devicesForLUN) == 0 {
 		return nil, fmt.Errorf("scan not completed for LUN %d on target %s", lunID, iSCSINodeName)
 	}
 
@@ -2537,38 +2549,18 @@ func (client *Client) PopulateCurrentSessions(ctx context.Context, currentMappin
 	return nil
 }
 
-// iSCSISessionExistsToTargetIQN checks to see if a session exists to the specified target.
-func (client *Client) iSCSISessionExistsToTargetIQN(ctx context.Context, targetIQN string) (bool, error) {
-	Logc(ctx).Debug(">>>> iscsi.iSCSISessionExistsToTargetIQN")
-	defer Logc(ctx).Debug("<<<< iscsi.iSCSISessionExistsToTargetIQN")
-
-	sessionInfo, err := client.getSessionInfo(ctx)
-	if err != nil {
-		Logc(ctx).WithField("error", err).Error("Problem checking iSCSI sessions.")
-		return false, err
-	}
-
-	for _, e := range sessionInfo {
-		if e.TargetName == targetIQN {
-			return true, nil
-		}
-	}
-
-	return false, nil
-}
-
-func (client *Client) EnsureISCSISessionsWithPortalDiscovery(ctx context.Context, hostDataIPs []string) error {
+func (client *Client) EnsureSessionsWithPortalDiscovery(ctx context.Context, hostDataIPs []string) error {
 	for _, ip := range hostDataIPs {
-		if err := client.EnsureISCSISessionWithPortalDiscovery(ctx, ip); nil != err {
+		if err := client.EnsureSessionWithPortalDiscovery(ctx, ip); nil != err {
 			return err
 		}
 	}
 	return nil
 }
 
-func (client *Client) EnsureISCSISessionWithPortalDiscovery(ctx context.Context, hostDataIP string) error {
-	Logc(ctx).WithField("hostDataIP", hostDataIP).Debug(">>>> iscsi.EnsureISCSISessionWithPortalDiscovery")
-	defer Logc(ctx).Debug("<<<< iscsi.EnsureISCSISessionWithPortalDiscovery")
+func (client *Client) EnsureSessionWithPortalDiscovery(ctx context.Context, hostDataIP string) error {
+	Logc(ctx).WithField("hostDataIP", hostDataIP).Debug(">>>> iscsi.EnsureSessionWithPortalDiscovery")
+	defer Logc(ctx).Debug("<<<< iscsi.EnsureSessionWithPortalDiscovery")
 
 	// Ensure iSCSI is supported on system
 	if !client.Supported(ctx) {
@@ -2907,4 +2899,129 @@ func SortPortals(portals []string, publishedSessions *models.ISCSISessions) {
 			return iLastAccessTime.Before(jLastAccessTime)
 		})
 	}
+}
+
+// IsPerNodeIgroup accepts an igroup and returns whether that igroup matches the per-node igroup schema.
+func IsPerNodeIgroup(igroup string) bool {
+	// Trident never creates per-node igroups with "trident" in the name.
+	if strings.Contains(igroup, config.OrchestratorName) {
+		return false
+	}
+	return perNodeIgroupRegex.MatchString(igroup)
+}
+
+// GetInitiatorIqns returns parsed contents of /etc/iscsi/initiatorname.iscsi
+func GetInitiatorIqns(ctx context.Context) ([]string, error) {
+	Logc(ctx).Debug(">>>> iscsi.GetInitiatorIqns")
+	defer Logc(ctx).Debug("<<<< iscsi.GetInitiatorIqns")
+
+	out, err := command.Execute(ctx, "cat", "/etc/iscsi/initiatorname.iscsi")
+	if err != nil {
+		Logc(ctx).WithField("Error", err).Warn("Could not read initiatorname.iscsi; perhaps iSCSI is not installed?")
+		return nil, err
+	}
+
+	return parseInitiatorIQNs(ctx, string(out)), nil
+}
+
+// parseInitiatorIQNs accepts the contents of /etc/iscsi/initiatorname.iscsi and returns the IQN(s).
+func parseInitiatorIQNs(ctx context.Context, contents string) []string {
+	iqns := make([]string, 0)
+
+	lines := strings.Split(contents, "\n")
+	for _, line := range lines {
+
+		match := iqnRegex.FindStringSubmatch(line)
+
+		if match == nil {
+			continue
+		}
+
+		paramsMap := make(map[string]string)
+		for i, name := range iqnRegex.SubexpNames() {
+			if i > 0 && i <= len(match) {
+				paramsMap[name] = match[i]
+			}
+		}
+
+		if iqn, ok := paramsMap["iqn"]; ok {
+			iqns = append(iqns, iqn)
+		}
+	}
+
+	return iqns
+}
+
+// GetAllVolumeIDs returns names of all the volume IDs based on tracking files
+func GetAllVolumeIDs(ctx context.Context, trackingFileDirectory string) []string {
+	Logc(ctx).WithField("trackingFileDirectory", trackingFileDirectory).Debug(">>>> iscsi.GetAllVolumeIDs")
+	defer Logc(ctx).Debug("<<<< iscsi.GetAllVolumeIDs")
+
+	files, err := os.ReadDir(trackingFileDirectory)
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"error": err,
+		}).Warn("Failed to get list of tracking files.")
+
+		return nil
+	}
+
+	if len(files) == 0 {
+		Logc(ctx).Debug("No tracking file found.")
+		return nil
+	}
+
+	volumeIDs := make([]string, 0)
+	for _, file := range files {
+		if !file.IsDir() && strings.HasPrefix(file.Name(), "pvc-") && strings.HasSuffix(file.Name(), ".json") {
+			volumeIDs = append(volumeIDs, strings.TrimSuffix(file.Name(), ".json"))
+		}
+	}
+
+	if len(volumeIDs) == 0 {
+		Logc(ctx).Debug("No volume ID found.")
+	}
+
+	return volumeIDs
+}
+
+// InitiateScanForLuns initiates scans for LUNs in a given target against all hosts.
+func InitiateScanForLuns(ctx context.Context, luns []int32, target string) error {
+	fields := LogFields{
+		"luns":   luns,
+		"target": target,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.InitiateScanForLuns")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.InitiateScanForLuns")
+
+	deviceAddresses, err := IscsiUtils.DiscoverSCSIAddressMapForTarget(ctx, target)
+	if err != nil {
+		return fmt.Errorf("failed to discover SCSI address map for target: '%s'; %w", target, err)
+	} else if len(deviceAddresses) == 0 {
+		return fmt.Errorf("no SCSI addresses found for target: '%s'", target)
+	}
+
+	// Build a set of all device addresses -> luns.
+	// This should have entries like so: "10:0:0:0", "10:0:0:1", "11:0:0:0", "11:0:0:1", etc.
+	// As an example, if 10 LUNs require scan:
+	//  "10:0:0:0", "10:0:0:1",...,"10:0:0:9"
+	//  "11:0:0:0", "11:0:0:0",...,"11:0:0:9"
+	deviceAddressesWithLUNs := make([]models.ScsiDeviceAddress, 0)
+	for _, lun := range luns {
+		for _, address := range deviceAddresses {
+			deviceAddressesWithLUNs = append(deviceAddressesWithLUNs, models.ScsiDeviceAddress{
+				Host:    address.Host,
+				Channel: address.Channel,
+				Target:  address.Target,
+				LUN:     strconv.Itoa(int(lun)),
+			})
+		}
+	}
+
+	if err := devicesClient.ScanTargetLUN(ctx, deviceAddressesWithLUNs); err != nil {
+		Logc(ctx).WithError(err).Error("Could not initiate scan.")
+		return fmt.Errorf("failed to initiate scan; %w", err)
+	}
+
+	return nil
 }

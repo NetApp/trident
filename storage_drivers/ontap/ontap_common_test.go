@@ -19,6 +19,7 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	mock_ontap "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
+	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	"github.com/netapp/trident/pkg/capacity"
 	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
@@ -5833,14 +5834,17 @@ func TestValidateSANDriver(t *testing.T) {
 		UseCHAP:                   true,
 		DataLIF:                   "1.1.1.1",
 	}
+	mockCtrl := gomock.NewController(t)
 
-	err := ValidateSANDriver(ctx, config, ips)
+	iscsiClient := mock_iscsi.NewMockISCSI(mockCtrl)
+
+	err := ValidateSANDriver(ctx, config, ips, iscsiClient)
 	assert.NoError(t, err)
 
 	// Test 2:  IP not found
 	ips = []string{"2.2.2.2", "3.3.3.3", "4.4.4.4", "5.5.5.5", "6.6.6.6", "7.7.7.7", "8.8.8.8"}
 
-	err = ValidateSANDriver(ctx, config, ips)
+	err = ValidateSANDriver(ctx, config, ips, iscsiClient)
 
 	assert.NoError(t, err)
 }
@@ -5859,8 +5863,11 @@ func TestValidateSANDriver_IPNotFound(t *testing.T) {
 		UseCHAP:                   true,
 		DataLIF:                   "1.1.1.1",
 	}
+	mockCtrl := gomock.NewController(t)
 
-	err := ValidateSANDriver(ctx, config, ips)
+	iscsiClient := mock_iscsi.NewMockISCSI(mockCtrl)
+
+	err := ValidateSANDriver(ctx, config, ips, iscsiClient)
 
 	assert.NoError(t, err)
 }
@@ -5880,7 +5887,11 @@ func TestValidateSANDriver_BackendIgroupDeprecation(t *testing.T) {
 		DataLIF:                   "1.1.1.1",
 	}
 
-	err := ValidateSANDriver(ctx, config, ips)
+	mockCtrl := gomock.NewController(t)
+
+	iscsiClient := mock_iscsi.NewMockISCSI(mockCtrl)
+
+	err := ValidateSANDriver(ctx, config, ips, iscsiClient)
 
 	assert.NoError(t, err)
 }

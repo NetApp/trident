@@ -20,6 +20,7 @@ import (
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
+	"github.com/netapp/trident/utils/iscsi"
 	tridentmodels "github.com/netapp/trident/utils/models"
 )
 
@@ -354,16 +355,16 @@ func DecodeStorageBackendPools[P StorageBackendPool](
 }
 
 // TODO (vhs): Extract the common bits and write two different functions for iSCSI and FC
-func RemoveSCSIDeviceByPublishInfo(ctx context.Context, publishInfo *tridentmodels.VolumePublishInfo) {
+func RemoveSCSIDeviceByPublishInfo(ctx context.Context, publishInfo *tridentmodels.VolumePublishInfo, iscsiClient iscsi.ISCSI) {
 	if publishInfo.SANType == sa.ISCSI {
-		hostSessionMap := utils.IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, publishInfo.IscsiTargetIQN)
+		hostSessionMap := iscsi.IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, publishInfo.IscsiTargetIQN)
 		fields := LogFields{"targetIQN": publishInfo.IscsiTargetIQN}
 		if len(hostSessionMap) == 0 {
 			Logc(ctx).WithFields(fields).Error("Could not find host session for target IQN.")
 			return
 		}
 
-		deviceInfo, err := utils.IscsiClient.GetDeviceInfoForLUN(ctx, hostSessionMap, int(publishInfo.IscsiLunNumber),
+		deviceInfo, err := iscsiClient.GetDeviceInfoForLUN(ctx, hostSessionMap, int(publishInfo.IscsiLunNumber),
 			publishInfo.IscsiTargetIQN, false)
 		if err != nil {
 			Logc(ctx).WithError(err).WithFields(fields).Error("Error getting device info.")
@@ -371,7 +372,7 @@ func RemoveSCSIDeviceByPublishInfo(ctx context.Context, publishInfo *tridentmode
 			Logc(ctx).WithFields(fields).Error("No device info found.")
 		} else {
 			// Inform the host about the device removal
-			if _, err := utils.IscsiClient.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, true, false); err != nil {
+			if _, err := iscsiClient.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, true, false); err != nil {
 				Logc(ctx).WithError(err).WithFields(fields).Error("Error removing device.")
 			}
 		}
@@ -391,7 +392,7 @@ func RemoveSCSIDeviceByPublishInfo(ctx context.Context, publishInfo *tridentmode
 			Logc(ctx).WithFields(fields).Error("No device info found.")
 		} else {
 			// Inform the host about the device removal
-			if _, err := utils.IscsiClient.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, true,
+			if _, err := iscsiClient.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, true,
 				false); err != nil {
 				Logc(ctx).WithError(err).WithFields(fields).Error("Error removing device.")
 			}

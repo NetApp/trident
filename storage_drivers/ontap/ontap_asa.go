@@ -23,6 +23,7 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	tridenterrors "github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -33,6 +34,7 @@ type ASAStorageDriver struct {
 	ips         []string
 	API         api.OntapAPI
 	telemetry   *Telemetry
+	iscsi       iscsi.ISCSI
 
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
@@ -87,6 +89,11 @@ func (d *ASAStorageDriver) Initialize(
 		commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Initialize")
 
 	var err error
+
+	d.iscsi, err = iscsi.New()
+	if err != nil {
+		return fmt.Errorf("error initializing iSCSI client: %w", err)
+	}
 
 	if d.Config.CommonStorageDriverConfig == nil {
 
@@ -194,7 +201,7 @@ func (d *ASAStorageDriver) validate(ctx context.Context) error {
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> validate")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< validate")
 
-	if err := ValidateSANDriver(ctx, &d.Config, d.ips); err != nil {
+	if err := ValidateSANDriver(ctx, &d.Config, d.ips, d.iscsi); err != nil {
 		return fmt.Errorf("driver validation failed: %v", err)
 	}
 
@@ -658,7 +665,7 @@ func (d *ASAStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 					},
 				},
 			}
-			drivers.RemoveSCSIDeviceByPublishInfo(ctx, &publishInfo)
+			drivers.RemoveSCSIDeviceByPublishInfo(ctx, &publishInfo, d.iscsi)
 		}
 	}
 

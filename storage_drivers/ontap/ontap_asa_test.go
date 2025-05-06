@@ -26,6 +26,7 @@ import (
 	restAPIModels "github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
+	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -76,7 +77,11 @@ func newTestOntapASADriver(
 	config.StorageDriverName = "ontap-san"
 	config.StoragePrefix = convert.ToPtr("test_")
 
-	asaDriver := &ASAStorageDriver{}
+	iscsiClient, _ := iscsi.New()
+
+	asaDriver := &ASAStorageDriver{
+		iscsi: iscsiClient,
+	}
 	asaDriver.Config = *config
 
 	var ontapAPI api.OntapAPI

@@ -15,8 +15,8 @@ import (
 	"github.com/netapp/trident/mocks/mock_utils/mock_devices/mock_luks"
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
 	sa "github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/iscsi"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -63,7 +63,7 @@ func TestPerformProtocolSpecificReconciliation_BadProtocol(t *testing.T) {
 }
 
 func TestPerformProtocolSpecificReconciliation_ISCSI(t *testing.T) {
-	defer func() { iscsiUtils = utils.IscsiUtils }()
+	defer func() { iscsiUtils = iscsi.IscsiUtils }()
 	mockCtrl := gomock.NewController(t)
 	iscsiUtils = mock_iscsi.NewMockIscsiReconcileUtils(mockCtrl)
 	mockIscsiUtils, ok := iscsiUtils.(*mock_iscsi.MockIscsiReconcileUtils)
@@ -99,7 +99,7 @@ func TestPerformProtocolSpecificReconciliation_ISCSI(t *testing.T) {
 }
 
 func TestPerformProtocolSpecificReconciliation_NFS(t *testing.T) {
-	defer func() { iscsiUtils = utils.IscsiUtils }()
+	defer func() { iscsiUtils = iscsi.IscsiUtils }()
 	trackInfo := &models.VolumeTrackingInfo{}
 	testIP := "1.1.1.1"
 	trackInfo.VolumePublishInfo.NfsServerIP = testIP

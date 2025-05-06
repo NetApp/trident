@@ -68,32 +68,32 @@ func (mr *MockISCSIMockRecorder) AttachVolumeRetry(arg0, arg1, arg2, arg3, arg4,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachVolumeRetry", reflect.TypeOf((*MockISCSI)(nil).AttachVolumeRetry), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
-// EnsureISCSISessionWithPortalDiscovery mocks base method.
-func (m *MockISCSI) EnsureISCSISessionWithPortalDiscovery(arg0 context.Context, arg1 string) error {
+// EnsureSessionWithPortalDiscovery mocks base method.
+func (m *MockISCSI) EnsureSessionWithPortalDiscovery(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnsureISCSISessionWithPortalDiscovery", arg0, arg1)
+	ret := m.ctrl.Call(m, "EnsureSessionWithPortalDiscovery", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// EnsureISCSISessionWithPortalDiscovery indicates an expected call of EnsureISCSISessionWithPortalDiscovery.
-func (mr *MockISCSIMockRecorder) EnsureISCSISessionWithPortalDiscovery(arg0, arg1 any) *gomock.Call {
+// EnsureSessionWithPortalDiscovery indicates an expected call of EnsureSessionWithPortalDiscovery.
+func (mr *MockISCSIMockRecorder) EnsureSessionWithPortalDiscovery(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureISCSISessionWithPortalDiscovery", reflect.TypeOf((*MockISCSI)(nil).EnsureISCSISessionWithPortalDiscovery), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureSessionWithPortalDiscovery", reflect.TypeOf((*MockISCSI)(nil).EnsureSessionWithPortalDiscovery), arg0, arg1)
 }
 
-// EnsureISCSISessionsWithPortalDiscovery mocks base method.
-func (m *MockISCSI) EnsureISCSISessionsWithPortalDiscovery(arg0 context.Context, arg1 []string) error {
+// EnsureSessionsWithPortalDiscovery mocks base method.
+func (m *MockISCSI) EnsureSessionsWithPortalDiscovery(arg0 context.Context, arg1 []string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnsureISCSISessionsWithPortalDiscovery", arg0, arg1)
+	ret := m.ctrl.Call(m, "EnsureSessionsWithPortalDiscovery", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// EnsureISCSISessionsWithPortalDiscovery indicates an expected call of EnsureISCSISessionsWithPortalDiscovery.
-func (mr *MockISCSIMockRecorder) EnsureISCSISessionsWithPortalDiscovery(arg0, arg1 any) *gomock.Call {
+// EnsureSessionsWithPortalDiscovery indicates an expected call of EnsureSessionsWithPortalDiscovery.
+func (mr *MockISCSIMockRecorder) EnsureSessionsWithPortalDiscovery(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureISCSISessionsWithPortalDiscovery", reflect.TypeOf((*MockISCSI)(nil).EnsureISCSISessionsWithPortalDiscovery), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureSessionsWithPortalDiscovery", reflect.TypeOf((*MockISCSI)(nil).EnsureSessionsWithPortalDiscovery), arg0, arg1)
 }
 
 // GetDeviceInfoForLUN mocks base method.

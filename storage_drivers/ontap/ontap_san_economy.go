@@ -415,7 +415,7 @@ func (d *SANEconomyStorageDriver) validate(ctx context.Context) error {
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> validate")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< validate")
 
-	if err := ValidateSANDriver(ctx, &d.Config, d.ips); err != nil {
+	if err := ValidateSANDriver(ctx, &d.Config, d.ips, d.iscsi); err != nil {
 		return fmt.Errorf("driver validation failed: %w", err)
 	}
 
@@ -1083,7 +1083,7 @@ func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, volConfig *storag
 					},
 				},
 			}
-			drivers.RemoveSCSIDeviceByPublishInfo(ctx, &publishInfo)
+			drivers.RemoveSCSIDeviceByPublishInfo(ctx, &publishInfo, d.iscsi)
 		}
 	}
 

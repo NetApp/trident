@@ -37,11 +37,11 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/fcp"
 	"github.com/netapp/trident/utils/filesystem"
+	"github.com/netapp/trident/utils/iscsi"
 	tridentmodels "github.com/netapp/trident/utils/models"
 	"github.com/netapp/trident/utils/version"
 )
@@ -904,7 +904,7 @@ func PublishLUN(
 		if publishInfo.Localhost {
 
 			// Lookup local host IQNs
-			iqns, err := utils.GetInitiatorIqns(ctx)
+			iqns, err := iscsi.GetInitiatorIqns(ctx)
 			if err != nil {
 				return fmt.Errorf("error determining host initiator IQN: %v", err)
 			} else if len(iqns) == 0 {
@@ -1560,7 +1560,7 @@ func InitializeOntapAPI(
 
 // ValidateSANDriver contains the validation logic shared between ontap-san and ontap-san-economy.
 func ValidateSANDriver(
-	ctx context.Context, config *drivers.OntapStorageDriverConfig, ips []string,
+	ctx context.Context, config *drivers.OntapStorageDriverConfig, ips []string, iscsi iscsi.ISCSI,
 ) error {
 	fields := LogFields{"Method": "ValidateSANDriver", "Type": "ontap_common"}
 	Logd(ctx, config.StorageDriverName,
@@ -1579,7 +1579,7 @@ func ValidateSANDriver(
 	case tridentconfig.ContextDocker:
 		// Make sure this host is logged into the ONTAP iSCSI target
 		if config.SANType == sa.ISCSI {
-			err := utils.IscsiClient.EnsureISCSISessionsWithPortalDiscovery(ctx, ips)
+			err := iscsi.EnsureSessionsWithPortalDiscovery(ctx, ips)
 			if err != nil {
 				return fmt.Errorf("error establishing iSCSI session: %v", err)
 			}
@@ -1595,7 +1595,7 @@ func ValidateSANDriver(
 		}
 	}
 
-	if config.SANType == sa.FCP && config.UseCHAP == true {
+	if config.SANType == sa.FCP && config.UseCHAP {
 		return fmt.Errorf("CHAP is not supported with FCP protocol")
 	}
 

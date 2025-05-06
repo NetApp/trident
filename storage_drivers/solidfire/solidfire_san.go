@@ -63,6 +63,7 @@ type SANStorageDriver struct {
 	DefaultMinIOPS   int64
 	DefaultMaxIOPS   int64
 	iscsi            iscsi.ISCSI
+	iscsiClient      iscsi.Client
 
 	virtualPools map[string]storage.Pool
 }
@@ -1177,7 +1178,7 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 				},
 			},
 		}
-		drivers.RemoveSCSIDeviceByPublishInfo(ctx, &publishInfo)
+		drivers.RemoveSCSIDeviceByPublishInfo(ctx, &publishInfo, d.iscsi)
 
 		// Logout from the session
 		if err = d.detachVolume(ctx, v); err != nil {
