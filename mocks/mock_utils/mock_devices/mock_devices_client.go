@@ -41,6 +41,20 @@ func (m *MockDevices) EXPECT() *MockDevicesMockRecorder {
 	return m.recorder
 }
 
+// ClearFormatting mocks base method.
+func (m *MockDevices) ClearFormatting(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ClearFormatting", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ClearFormatting indicates an expected call of ClearFormatting.
+func (mr *MockDevicesMockRecorder) ClearFormatting(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClearFormatting", reflect.TypeOf((*MockDevices)(nil).ClearFormatting), arg0, arg1)
+}
+
 // CloseLUKSDevice mocks base method.
 func (m *MockDevices) CloseLUKSDevice(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()

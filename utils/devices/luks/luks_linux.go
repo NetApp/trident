@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	luksCommandTimeout time.Duration = time.Second * 60
+	luksCommandTimeout time.Duration = time.Second * 30
 
 	luksCypherMode = "aes-xts-plain64"
 	luksType       = "luks2"
@@ -102,7 +102,8 @@ func (d *LUKSDevice) format(ctx context.Context, luksPassphrase string) error {
 
 	if output, err := d.command.ExecuteWithTimeoutAndInput(
 		ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "luksFormat", device,
-		"--type", "luks2", "-c", "aes-xts-plain64",
+		"--type", "luks2", "-c", "aes-xts-plain64", "--hash", "sha256", "--pbkdf", "pbkdf2",
+		"--pbkdf-force-iterations", "1000",
 	); err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"device": device,
@@ -137,6 +138,15 @@ func (d *LUKSDevice) formatUnformattedDevice(ctx context.Context, luksPassphrase
 
 	// Attempt LUKS format.
 	if err := d.format(ctx, luksPassphrase); err != nil {
+		if errors.IsFormatError(err) {
+			Logc(ctx).Debug("Failed to format LUKS device. Clearing partial formatting.")
+			// We clear the formatting here to allow retires, else we would detect the device as already formatted
+			// or dirty and not retry the format on the next nodeStage attempt.
+			clearFormatErr := d.devices.ClearFormatting(ctx, d.rawDevicePath)
+			if clearFormatErr != nil {
+				Logc(ctx).WithError(clearFormatErr).Error("Failed to clear LUKS format. Format retries may fail.")
+			}
+		}
 		return fmt.Errorf("failed to LUKS format device; %w", err)
 	}
 

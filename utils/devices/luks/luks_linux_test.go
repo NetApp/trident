@@ -33,6 +33,7 @@ func mockCryptsetupLuksFormat(mock *mockexec.MockCommand) *gomock.Call {
 	return mock.EXPECT().ExecuteWithTimeoutAndInput(
 		gomock.Any(), "cryptsetup", luksCommandTimeout, true, gomock.Any(),
 		"luksFormat", gomock.Any(), "--type", "luks2", "-c", "aes-xts-plain64",
+		"--hash", "sha256", "--pbkdf", "pbkdf2", "--pbkdf-force-iterations", "1000",
 	)
 }
 
@@ -294,6 +295,7 @@ func TestEnsureLUKSDevice_IsOpen(t *testing.T) {
 func TestEnsureLUKSDevice_LUKSFormatFails(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockCommand := mockexec.NewMockCommand(mockCtrl)
+	rawDevicePath := "/dev/sdb"
 
 	// Setup mock calls and reassign any clients to their mock counterparts.
 	mockCryptsetupLuksStatus(mockCommand).Return([]byte{},
@@ -304,8 +306,9 @@ func TestEnsureLUKSDevice_LUKSFormatFails(t *testing.T) {
 
 	mockDevices := mock_devices.NewMockDevices(mockCtrl)
 	mockDevices.EXPECT().IsDeviceUnformatted(gomock.Any(), gomock.Any()).Return(true, nil)
+	mockDevices.EXPECT().ClearFormatting(gomock.Any(), rawDevicePath).Return(nil)
 
-	luksDevice := NewDetailed("/dev/sdb", devicePrefix+"pvc-test", mockCommand, mockDevices, afero.NewMemMapFs())
+	luksDevice := NewDetailed(rawDevicePath, devicePrefix+"pvc-test", mockCommand, mockDevices, afero.NewMemMapFs())
 
 	luksFormatted, err := luksDevice.ensureLUKSDevice(context.Background(), "mysecretlukspassphrase")
 	assert.Error(t, err)

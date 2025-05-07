@@ -1023,3 +1023,55 @@ func TestRemoveMultipathDeviceMappingWithRetries(t *testing.T) {
 		})
 	}
 }
+
+func TestClearFormatting(t *testing.T) {
+	devicePath := "/dev/mock-0"
+	tests := map[string]struct {
+		getMockCmd  func() exec.Command
+		expectError bool
+	}{
+		"Formatting cleared successfully": {
+			getMockCmd: func() exec.Command {
+				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "wipefs", 10*time.Second, false, "-a", devicePath).
+					Return([]byte{}, nil).Times(1)
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "dd", 5*time.Second, false, "if=/dev/zero", "of="+devicePath, "bs=4096", "count=512", "status=none").
+					Return([]byte{}, nil).Times(1)
+				return mockCommand
+			},
+			expectError: false,
+		},
+		"Error clearing filesystem signature": {
+			getMockCmd: func() exec.Command {
+				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "wipefs", 10*time.Second, false, "-a", devicePath).
+					Return(nil, fmt.Errorf("wipefs error")).Times(1)
+				return mockCommand
+			},
+			expectError: true,
+		},
+		"Error zeroing device header": {
+			getMockCmd: func() exec.Command {
+				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "wipefs", 10*time.Second, false, "-a", devicePath).
+					Return([]byte{}, nil).Times(1)
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "dd", 5*time.Second, false, "if=/dev/zero", "of="+devicePath, "bs=4096", "count=512", "status=none").
+					Return(nil, fmt.Errorf("dd error")).Times(1)
+				return mockCommand
+			},
+			expectError: true,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			deviceClient := NewDetailed(params.getMockCmd(), afero.NewMemMapFs(), NewDiskSizeGetter())
+			err := deviceClient.ClearFormatting(context.Background(), devicePath)
+			if params.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

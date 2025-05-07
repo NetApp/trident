@@ -87,8 +87,10 @@ func (d *LUKSDevice) EnsureDeviceMappedOnHost(ctx context.Context, name string, 
 		"luks-passphrase-name": luksPassphraseName,
 	}).Info("Opening encrypted volume.")
 	luksFormatted, err := d.EnsureFormattedAndOpen(ctx, luksPassphrase)
-	if err == nil {
-		return luksFormatted, nil
+
+	// If we fail due to a format issue there is no need to try to open the device.
+	if err == nil || errors.IsFormatError(err) {
+		return luksFormatted, err
 	}
 
 	// If we failed to open, try previous passphrase

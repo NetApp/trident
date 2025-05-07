@@ -77,6 +77,7 @@ type Devices interface {
 	) error
 	RemoveMultipathDeviceMappingWithRetries(ctx context.Context, devicePath string, retries uint64,
 		sleep time.Duration) error
+	ClearFormatting(ctx context.Context, devicePath string) error
 }
 
 type SizeGetter interface {
@@ -849,6 +850,57 @@ func (c *Client) ScanTargetLUN(ctx context.Context, deviceAddresses []models.Scs
 
 	}
 
+	return nil
+}
+
+// ClearFormatting clears any formatting on the device. Use with caution.
+// This is a destructive operation and should only be used when you are sure you want to clear the device.
+// The original purpose for this was to clear incomplete LUKS formatting where the inital format errored or timed out.
+// This allows us to retry the LUKS format. If we don't clear the formatting, we encounter an issue where we think
+// the device is already formatted and don't attempt to format it again.
+func (c *Client) ClearFormatting(ctx context.Context, devicePath string) error {
+	err := c.wipeFs(ctx, devicePath)
+	if err != nil {
+		// Log happens in wipeFs()
+		return err
+	}
+	err = c.zeroDeviceHeader(ctx, devicePath)
+	if err != nil {
+		// Log happens in zeroDeviceHeader()
+		return err
+	}
+	return nil
+}
+
+// zeroDeviceHeader zeros the first 4 KiB of the device header.
+func (c *Client) zeroDeviceHeader(ctx context.Context, devicePath string) error {
+	Logc(ctx).WithField("device", devicePath).Debug(">>>> devices.zeroDeviceHeader")
+	defer Logc(ctx).Debug("<<<< devices.zeroDeviceHeader")
+
+	const zeroDeviceTimeout = 5 * time.Second
+	args := []string{"if=/dev/zero", "of=" + devicePath, "bs=4096", "count=512", "status=none"}
+	out, err := c.command.ExecuteWithTimeout(ctx, "dd", zeroDeviceTimeout, false, args...)
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{"error": err, "output": string(out), "device": devicePath}).
+			Error("Failed to zero the device.")
+		return fmt.Errorf("failed to zero the device %v; %v", devicePath, string(out))
+	}
+
+	return nil
+}
+
+// wipeFs wipes the filesystem signature from the device. This is a destructive action.
+func (c *Client) wipeFs(ctx context.Context, devicePath string) error {
+	Logc(ctx).WithField("device", devicePath).Debug(">>>> devices.wipeFs")
+	defer Logc(ctx).Debug("<<<< devices.wipeFs")
+
+	const wipeFsTimeout = 10 * time.Second
+	out, err := c.command.ExecuteWithTimeout(ctx, "wipefs", wipeFsTimeout, false, "-a", devicePath)
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{"error": err, "output": string(out), "device": devicePath}).
+			Error("Failed to wipe the filesystem signature.")
+		return fmt.Errorf("failed to wipe FS %v: %v", devicePath, string(out))
+	}
 	return nil
 }
 
