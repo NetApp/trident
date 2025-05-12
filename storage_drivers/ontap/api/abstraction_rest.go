@@ -2532,7 +2532,7 @@ func (d OntapAPIREST) LunListIgroupsMapped(ctx context.Context, lunPath string) 
 			names = append(names, *records.Igroup.Name)
 		}
 	}
-	return names, err
+	return names, nil
 }
 
 // IgroupListLUNsMapped returns a list LUNs mapped to the igroup
@@ -2553,7 +2553,7 @@ func (d OntapAPIREST) IgroupListLUNsMapped(ctx context.Context, initiatorGroupNa
 			names = append(names, *records.Lun.Name)
 		}
 	}
-	return names, err
+	return names, nil
 }
 
 // LunMapGetReportingNodes returns a list of LUN map details
