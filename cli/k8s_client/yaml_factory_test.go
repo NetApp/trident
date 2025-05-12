@@ -137,6 +137,93 @@ func TestAPIVersion(t *testing.T) {
 	}
 }
 
+func TestGetCSIDeploymentAutosupportYAML(t *testing.T) {
+	t.Run("when ExcludeAutosupport is true", func(t *testing.T) {
+		t.Parallel()
+		args := &DeploymentYAMLArguments{
+			ExcludeAutosupport: true,
+		}
+		assert.Empty(t, getCSIDeploymentAutosupportYAML(args), "expected empty volume YAML when ExcludeAutosupport is true")
+		assert.Empty(t, getCSIDeploymentAutosupportVolumeYAML(args), "expected empty volume YAML when ExcludeAutosupport is true")
+	})
+
+	t.Run("when ExcludeAutosupport is false", func(t *testing.T) {
+		args := &DeploymentYAMLArguments{
+			ExcludeAutosupport: false,
+		}
+		result := getCSIDeploymentAutosupportYAML(args)
+		assert.Contains(t, result, config.DefaultAutosupportName, "expected autosupport container name when ExcludeAutosupport is false")
+		assert.Contains(t, result, config.DefaultAutosupportImage, "expected autosupport image when ExcludeAutosupport is false")
+		assert.Contains(t, result, "- -debug", "expected autosupport debug flag to be uncommented when ExcludeAutosupport is false")
+		assert.NotEmpty(t, getCSIDeploymentAutosupportVolumeYAML(args), "expected non-empty volume YAML when ExcludeAutosupport is false")
+	})
+}
+
+// Simple validation of the CSI Deployment YAML
+func TestGetCSIDeploymentYAML_WithExcludeAutosupport(t *testing.T) {
+	labels := make(map[string]string)
+	labels["app"] = "trident"
+	ownerRef := make(map[string]string)
+	ownerRef["uid"] = "123456789"
+	ownerRef["kind"] = "TridentProvisioner"
+	imagePullSecrets := []string{"thisisasecret"}
+	version := versionutils.MustParseSemantic("1.26.0")
+
+	excludeASUPDeploymentArgs := &DeploymentYAMLArguments{
+		DeploymentName:          "trident-csi",
+		TridentImage:            "netapp/trident:20.10.0-custom",
+		AutosupportImage:        "netapp/trident-autosupport:20.10.0-custom",
+		AutosupportSerialNumber: "0000-0000",
+		AutosupportHostname:     "21e160d3-721f-4ec4-bcd4-c5e0d31d1a6e",
+		AutosupportProxy:        "http://127.0.0.1/",
+		AutosupportCustomURL:    "http://172.16.150.125:8888/",
+		ImageRegistry:           "registry.k8s.io",
+		LogFormat:               "text",
+		LogLevel:                "",
+		Debug:                   true,
+		AutosupportInsecure:     true,
+		ImagePullSecrets:        imagePullSecrets,
+		Labels:                  labels,
+		ControllingCRDetails:    map[string]string{},
+		Version:                 version,
+		HTTPRequestTimeout:      config.HTTPTimeoutString,
+		UseIPv6:                 true,
+		SilenceAutosupport:      false,
+		ExcludeAutosupport:      true,
+		EnableACP:               true,
+		K8sAPIQPS:               100,
+	}
+	installASUPDeploymentArgs := &DeploymentYAMLArguments{
+		DeploymentName:          "trident-csi",
+		TridentImage:            "netapp/trident:20.10.0-custom",
+		AutosupportImage:        "netapp/trident-autosupport:20.10.0-custom",
+		AutosupportSerialNumber: "0000-0000",
+		AutosupportHostname:     "21e160d3-721f-4ec4-bcd4-c5e0d31d1a6e",
+		AutosupportProxy:        "http://127.0.0.1/",
+		AutosupportCustomURL:    "http://172.16.150.125:8888/",
+		ImageRegistry:           "registry.k8s.io",
+		LogFormat:               "text",
+		LogLevel:                "",
+		Debug:                   true,
+		AutosupportInsecure:     true,
+		ImagePullSecrets:        imagePullSecrets,
+		Labels:                  labels,
+		ControllingCRDetails:    map[string]string{},
+		Version:                 version,
+		HTTPRequestTimeout:      config.HTTPTimeoutString,
+		UseIPv6:                 true,
+		SilenceAutosupport:      false,
+		ExcludeAutosupport:      false,
+		EnableACP:               true,
+		K8sAPIQPS:               100,
+	}
+
+	deploymentYAML := GetCSIDeploymentYAML(excludeASUPDeploymentArgs)
+	assert.NotContains(t, deploymentYAML, getCSIDeploymentAutosupportYAML(installASUPDeploymentArgs))
+	assert.NotContains(t, deploymentYAML, getCSIDeploymentAutosupportYAML(installASUPDeploymentArgs))
+	assert.NotContains(t, deploymentYAML, getCSIDeploymentAutosupportVolumeYAML(installASUPDeploymentArgs))
+}
+
 // Simple validation of the CSI Deployment YAML
 func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 	labels := make(map[string]string)

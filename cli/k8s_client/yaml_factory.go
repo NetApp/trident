@@ -407,13 +407,6 @@ const deploymentAutosupportYAMLTemplate = `
 // There may be some variables that are still not replaced, such as {LOG_FORMAT} or {IMAGE_PULL_POLICY}.
 // It is expected that the caller will complete the YAML replacements.
 func getCSIDeploymentAutosupportYAML(args *DeploymentYAMLArguments) string {
-	var autosupportProxyLine,
-		autosupportCustomURLLine,
-		autosupportSerialNumberLine,
-		autosupportHostnameLine,
-		autosupportDebugLine,
-		autosupportInsecureLine string
-
 	if args.ExcludeAutosupport {
 		return ""
 	}
@@ -422,18 +415,22 @@ func getCSIDeploymentAutosupportYAML(args *DeploymentYAMLArguments) string {
 		args.AutosupportImage = commonconfig.DefaultAutosupportImage
 	}
 
+	autosupportProxyLine := ""
 	if args.AutosupportProxy != "" {
 		autosupportProxyLine = fmt.Sprint("- -proxy-url=", args.AutosupportProxy)
 	}
 
+	autosupportCustomURLLine := ""
 	if args.AutosupportCustomURL != "" {
 		autosupportCustomURLLine = fmt.Sprint("- -custom-url=", args.AutosupportCustomURL)
 	}
 
+	autosupportSerialNumberLine := ""
 	if args.AutosupportSerialNumber != "" {
 		autosupportSerialNumberLine = fmt.Sprint("- -serial-number=", args.AutosupportSerialNumber)
 	}
 
+	autosupportHostnameLine := ""
 	if args.AutosupportHostname != "" {
 		autosupportHostnameLine = fmt.Sprint("- -hostname=", args.AutosupportHostname)
 	}
@@ -443,10 +440,12 @@ func getCSIDeploymentAutosupportYAML(args *DeploymentYAMLArguments) string {
 	}
 	args.Labels[DefaultContainerLabelKey] = "trident-main"
 
+	autosupportDebugLine := "- -debug"
 	if !IsLogLevelDebugOrHigher(args.LogLevel) {
 		autosupportDebugLine = "#" + autosupportDebugLine
 	}
 
+	autosupportInsecureLine := ""
 	if args.AutosupportInsecure {
 		autosupportInsecureLine = "- -insecure"
 	}
