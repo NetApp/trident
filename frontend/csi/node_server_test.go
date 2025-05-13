@@ -34,8 +34,8 @@ import (
 	mock_nvme "github.com/netapp/trident/mocks/mock_utils/nvme"
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/pkg/convert"
+	"github.com/netapp/trident/pkg/locks"
 	sa "github.com/netapp/trident/storage_attribute"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
@@ -1263,9 +1263,9 @@ func TestFixISCSISessions(t *testing.T) {
 			portals := getPortals(input.PublishedPortals, input.PortalActions)
 
 			if input.AddNewNodeOps {
-				go utils.Lock(ctx, "test-lock1", nodeLockID)
+				go locks.Lock(ctx, "test-lock1", nodeLockID)
 				snooze(10)
-				go utils.Lock(ctx, "test-lock2", nodeLockID)
+				go locks.Lock(ctx, "test-lock2", nodeLockID)
 				snooze(10)
 			}
 
@@ -1290,16 +1290,16 @@ func TestFixISCSISessions(t *testing.T) {
 			}
 
 			if input.AddNewNodeOps {
-				utils.Unlock(ctx, "test-lock1", nodeLockID)
+				locks.Unlock(ctx, "test-lock1", nodeLockID)
 
 				// Wait for the lock to be released
-				for utils.WaitQueueSize(nodeLockID) > 1 {
+				for locks.WaitQueueSize(nodeLockID) > 1 {
 					snooze(10)
 				}
 
 				// Give some time for another context to acquire the lock
 				snooze(100)
-				utils.Unlock(ctx, "test-lock2", nodeLockID)
+				locks.Unlock(ctx, "test-lock2", nodeLockID)
 			}
 		})
 	}
@@ -1825,13 +1825,13 @@ func TestAttemptLock_Failure(t *testing.T) {
 		expected := attemptLock(ctx, lockContext, nodeLockID, lockTimeout)
 
 		assert.False(t, expected)
-		utils.Unlock(ctx, lockContext, nodeLockID)
+		locks.Unlock(ctx, lockContext, nodeLockID)
 	}()
 	// first request goes to sleep holding the lock
 	if expected {
 		time.Sleep(500 * time.Millisecond)
 	}
-	utils.Unlock(ctx, lockContext, nodeLockID)
+	locks.Unlock(ctx, lockContext, nodeLockID)
 	wg.Wait()
 }
 
@@ -1860,13 +1860,13 @@ func TestAttemptLock_Success(t *testing.T) {
 		expected := attemptLock(ctx, lockContext, nodeLockID, lockTimeout)
 
 		assert.True(t, expected)
-		utils.Unlock(ctx, lockContext, nodeLockID)
+		locks.Unlock(ctx, lockContext, nodeLockID)
 	}()
 	// first request goes to sleep holding the lock
 	if expected {
 		time.Sleep(200 * time.Millisecond)
 	}
-	utils.Unlock(ctx, lockContext, nodeLockID)
+	locks.Unlock(ctx, lockContext, nodeLockID)
 	wg.Wait()
 }
 

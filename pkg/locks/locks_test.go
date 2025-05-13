@@ -1,6 +1,6 @@
 // Copyright 2018 NetApp, Inc. All Rights Reserved.
 
-package utils
+package locks
 
 import (
 	"context"

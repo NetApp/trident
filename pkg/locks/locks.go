@@ -1,6 +1,6 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
-package utils
+package locks
 
 import (
 	"context"

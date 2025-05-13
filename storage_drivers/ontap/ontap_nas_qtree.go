@@ -23,12 +23,12 @@ import (
 	"github.com/netapp/trident/pkg/capacity"
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/pkg/convert"
+	"github.com/netapp/trident/pkg/locks"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/awsapi"
-	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
@@ -326,8 +326,8 @@ func (d *NASQtreeStorageDriver) Create(
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
 	// Ensure any Flexvol we create won't be pruned before we place a qtree on it
-	utils.Lock(ctx, "create", d.sharedLockID)
-	defer utils.Unlock(ctx, "create", d.sharedLockID)
+	locks.Lock(ctx, "create", d.sharedLockID)
+	defer locks.Unlock(ctx, "create", d.sharedLockID)
 
 	// Generic user-facing message
 	createError := errors.New("volume creation failed")
@@ -578,8 +578,8 @@ func (d *NASQtreeStorageDriver) Destroy(ctx context.Context, volConfig *storage.
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
 
 	// Ensure the deleted qtree reaping job doesn't interfere with this workflow
-	utils.Lock(ctx, "destroy", d.sharedLockID)
-	defer utils.Unlock(ctx, "destroy", d.sharedLockID)
+	locks.Lock(ctx, "destroy", d.sharedLockID)
+	defer locks.Unlock(ctx, "destroy", d.sharedLockID)
 
 	// Generic user-facing message
 	deleteError := errors.New("volume deletion failed")
@@ -1603,8 +1603,8 @@ func (d *NASQtreeStorageDriver) queueAllFlexvolsForQuotaResize(ctx context.Conte
 // operation will be attempted each time this method is called until it succeeds.
 func (d *NASQtreeStorageDriver) resizeQuotas(ctx context.Context) {
 	// Ensure we don't forget any Flexvol that is involved in a qtree provisioning workflow
-	utils.Lock(ctx, "resize", d.sharedLockID)
-	defer utils.Unlock(ctx, "resize", d.sharedLockID)
+	locks.Lock(ctx, "resize", d.sharedLockID)
+	defer locks.Unlock(ctx, "resize", d.sharedLockID)
 
 	Logc(ctx).Debug("Housekeeping, resizing quotas.")
 
@@ -1649,8 +1649,8 @@ func (d *NASQtreeStorageDriver) getTotalHardDiskLimitQuota(ctx context.Context, 
 // hardcoded prefix on their names) that have no qtrees are deleted.
 func (d *NASQtreeStorageDriver) pruneUnusedFlexvols(ctx context.Context) {
 	// Ensure we don't prune any Flexvol that is involved in a qtree provisioning workflow
-	utils.Lock(ctx, "prune", d.sharedLockID)
-	defer utils.Unlock(ctx, "prune", d.sharedLockID)
+	locks.Lock(ctx, "prune", d.sharedLockID)
+	defer locks.Unlock(ctx, "prune", d.sharedLockID)
 
 	Logc(ctx).Debug("Housekeeping, checking for managed Flexvols with no qtrees.")
 
@@ -1729,8 +1729,8 @@ func (d *NASQtreeStorageDriver) pruneUnusedFlexvols(ctx context.Context) {
 // destroy call failed or was never made due to a process interruption.
 func (d *NASQtreeStorageDriver) reapDeletedQtrees(ctx context.Context) {
 	// Ensure we don't reap any qtree that is involved in a qtree delete workflow
-	utils.Lock(ctx, "reap", d.sharedLockID)
-	defer utils.Unlock(ctx, "reap", d.sharedLockID)
+	locks.Lock(ctx, "reap", d.sharedLockID)
+	defer locks.Unlock(ctx, "reap", d.sharedLockID)
 
 	Logc(ctx).Debug("Housekeeping, checking for deleted qtrees.")
 
@@ -2288,8 +2288,8 @@ func (d *NASQtreeStorageDriver) Resize(ctx context.Context, volConfig *storage.V
 	}
 
 	// Ensure any Flexvol won't be pruned before resize is completed.
-	utils.Lock(ctx, "resize", d.sharedLockID)
-	defer utils.Unlock(ctx, "resize", d.sharedLockID)
+	locks.Lock(ctx, "resize", d.sharedLockID)
+	defer locks.Unlock(ctx, "resize", d.sharedLockID)
 
 	// Generic user-facing message
 	resizeError := errors.New("storage driver failed to resize the volume")

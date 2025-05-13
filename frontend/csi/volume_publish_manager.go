@@ -18,7 +18,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils"
+	"github.com/netapp/trident/pkg/locks"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
@@ -100,7 +100,7 @@ func (v *VolumePublishManager) WriteTrackingInfo(
 
 	// we can have locks on filename itself.
 	lockContext := "WriteTrackingInfo"
-	defer utils.Unlock(ctx, lockContext, filename)
+	defer locks.Unlock(ctx, lockContext, filename)
 	if !attemptLock(ctx, lockContext, filename, csiNodeLockTimeout) {
 		return status.Error(codes.Aborted, "request waited too long for the lock")
 	}
@@ -144,7 +144,7 @@ func (v *VolumePublishManager) readTrackingInfo(
 	}
 
 	lockContext := "ReadTrackingInfo"
-	defer utils.Unlock(ctx, lockContext, filename)
+	defer locks.Unlock(ctx, lockContext, filename)
 	if !attemptLock(ctx, lockContext, filename, csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock on tracking file")
 	}

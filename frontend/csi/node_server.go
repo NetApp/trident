@@ -28,6 +28,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/pkg/convert"
+	"github.com/netapp/trident/pkg/locks"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/utils"
 	"github.com/netapp/trident/utils/devices"
@@ -105,7 +106,7 @@ const (
 
 func attemptLock(ctx context.Context, lockContext, lockID string, lockTimeout time.Duration) bool {
 	startTime := time.Now()
-	utils.Lock(ctx, lockContext, lockID)
+	locks.Lock(ctx, lockContext, lockID)
 	// Fail if the gRPC call came in a long time ago to avoid kubelet 120s timeout
 	if time.Since(startTime) > lockTimeout {
 		Logc(ctx).Debugf("Request spent more than %v in the queue and timed out", csiNodeLockTimeout)
@@ -127,7 +128,7 @@ func (p *Plugin) NodeStageVolume(
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeStageVolume")
 
 	lockContext := "NodeStageVolume"
-	defer utils.Unlock(ctx, lockContext, req.GetVolumeId())
+	defer locks.Unlock(ctx, lockContext, req.GetVolumeId())
 	if !attemptLock(ctx, lockContext, req.GetVolumeId(), csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
 	}
@@ -181,7 +182,7 @@ func (p *Plugin) nodeUnstageVolume(
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeUnstageVolume")
 
 	lockContext := "NodeUnstageVolume"
-	defer utils.Unlock(ctx, lockContext, req.GetVolumeId())
+	defer locks.Unlock(ctx, lockContext, req.GetVolumeId())
 	if !attemptLock(ctx, lockContext, req.GetVolumeId(), csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
 	}
@@ -269,7 +270,7 @@ func (p *Plugin) NodePublishVolume(
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodePublishVolume")
 
 	lockContext := "NodePublishVolume"
-	defer utils.Unlock(ctx, lockContext, req.GetVolumeId())
+	defer locks.Unlock(ctx, lockContext, req.GetVolumeId())
 	if !attemptLock(ctx, lockContext, req.GetVolumeId(), csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
 	}
@@ -326,7 +327,7 @@ func (p *Plugin) NodeUnpublishVolume(
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeUnpublishVolume")
 
 	lockContext := "NodeUnpublishVolume"
-	defer utils.Unlock(ctx, lockContext, req.GetVolumeId())
+	defer locks.Unlock(ctx, lockContext, req.GetVolumeId())
 	if !attemptLock(ctx, lockContext, req.GetVolumeId(), csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
 	}
@@ -1553,7 +1554,7 @@ func (p *Plugin) nodeUnstageFCPVolumeRetry(
 ) (*csi.NodeUnstageVolumeResponse, error) {
 	// Serializing all the parallel requests by relying on the constant var.
 	lockContext := "NodeUnstageFCPVolume-" + req.GetVolumeId()
-	defer utils.Unlock(ctx, lockContext, nodeLockID)
+	defer locks.Unlock(ctx, lockContext, nodeLockID)
 
 	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
@@ -1588,7 +1589,7 @@ func (p *Plugin) nodePublishFCPVolume(
 ) (*csi.NodePublishVolumeResponse, error) {
 	// Serializing all the parallel requests by relying on the constant var.
 	lockContext := "NodePublishFCPVolume-" + req.GetVolumeId()
-	defer utils.Unlock(ctx, lockContext, nodeLockID)
+	defer locks.Unlock(ctx, lockContext, nodeLockID)
 
 	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
@@ -2090,7 +2091,7 @@ func (p *Plugin) nodeUnstageISCSIVolumeRetry(
 ) (*csi.NodeUnstageVolumeResponse, error) {
 	// Serializing all the parallel requests by relying on the constant var.
 	lockContext := "NodeUnstageISCSIVolume-" + req.GetVolumeId()
-	defer utils.Unlock(ctx, lockContext, nodeLockID)
+	defer locks.Unlock(ctx, lockContext, nodeLockID)
 
 	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
@@ -2125,7 +2126,7 @@ func (p *Plugin) nodePublishISCSIVolume(
 ) (*csi.NodePublishVolumeResponse, error) {
 	// Serializing all the parallel requests by relying on the constant var.
 	lockContext := "NodePublishISCSIVolume-" + req.GetVolumeId()
-	defer utils.Unlock(ctx, lockContext, nodeLockID)
+	defer locks.Unlock(ctx, lockContext, nodeLockID)
 
 	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
@@ -2655,8 +2656,8 @@ func (p *Plugin) updateCHAPInfoForSessions(
 // performISCSISelfHealing inspects the desired state of the iSCSI sessions with the current state and accordingly
 // identifies candidate sessions that require remediation. This function is invoked periodically.
 func (p *Plugin) performISCSISelfHealing(ctx context.Context) {
-	utils.Lock(ctx, iSCSISelfHealingLockContext, nodeLockID)
-	defer utils.Unlock(ctx, iSCSISelfHealingLockContext, nodeLockID)
+	locks.Lock(ctx, iSCSISelfHealingLockContext, nodeLockID)
+	defer locks.Unlock(ctx, iSCSISelfHealingLockContext, nodeLockID)
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -2742,7 +2743,7 @@ func (p *Plugin) fixISCSISessions(ctx context.Context, portals []string, portalT
 
 		// Check if there is a need to stop the loop from running
 		// NOTE: The loop should run at least once for all portal types.
-		if idx > 0 && utils.WaitQueueSize(nodeLockID) > 0 {
+		if idx > 0 && locks.WaitQueueSize(nodeLockID) > 0 {
 			// Check to see if some other operation(s) requires node lock, if not then continue to resolve
 			// non-stale iSCSI portal issues else break out of this loop.
 			if isNonStaleSessionFix {
@@ -2913,7 +2914,7 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 ) (*csi.NodeUnstageVolumeResponse, error) {
 	// Serializing all the parallel requests by relying on the constant var.
 	lockContext := "NodeUnstageNVMeVolume-" + req.GetVolumeId()
-	defer utils.Unlock(ctx, lockContext, nodeLockID)
+	defer locks.Unlock(ctx, lockContext, nodeLockID)
 
 	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
@@ -3057,7 +3058,7 @@ func (p *Plugin) nodePublishNVMeVolume(
 ) (*csi.NodePublishVolumeResponse, error) {
 	// Serializing all the parallel requests by relying on the constant var.
 	lockContext := "NodePublishNVMeVolume-" + req.GetVolumeId()
-	defer utils.Unlock(ctx, lockContext, nodeLockID)
+	defer locks.Unlock(ctx, lockContext, nodeLockID)
 
 	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
@@ -3128,7 +3129,7 @@ func (p *Plugin) nodeStageSANVolume(
 ) (*csi.NodeStageVolumeResponse, error) {
 	// Serializing all the parallel requests by relying on the constant var.
 	lockContext := "NodeStageSanVolume-" + req.GetVolumeId()
-	defer utils.Unlock(ctx, lockContext, nodeLockID)
+	defer locks.Unlock(ctx, lockContext, nodeLockID)
 
 	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
@@ -3190,8 +3191,8 @@ func (p *Plugin) nodeStageSANVolume(
 // performNVMeSelfHealing inspects the desired state of the NVMe sessions with the current state and accordingly
 // identifies candidate sessions that require remediation. This function is invoked periodically.
 func (p *Plugin) performNVMeSelfHealing(ctx context.Context) {
-	utils.Lock(ctx, nvmeSelfHealingLockContext, nodeLockID)
-	defer utils.Unlock(ctx, nvmeSelfHealingLockContext, nodeLockID)
+	locks.Lock(ctx, nvmeSelfHealingLockContext, nodeLockID)
+	defer locks.Unlock(ctx, nvmeSelfHealingLockContext, nodeLockID)
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -3240,7 +3241,7 @@ func (p *Plugin) fixNVMeSessions(ctx context.Context, stopAt time.Time, subsyste
 		// 1. We should fix at least one subsystem in a single self-healing thread.
 		// 2. If there's another thread waiting for the node lock and if we have exceeded our 60 secs lock, we should
 		//    stop NVMe self-healing.
-		if index > 0 && utils.WaitQueueSize(nodeLockID) > 0 && time.Now().After(stopAt) {
+		if index > 0 && locks.WaitQueueSize(nodeLockID) > 0 && time.Now().After(stopAt) {
 			Logc(ctx).Info("Self-healing has exceeded maximum runtime; preempting NVMe session self-healing.")
 			break
 		}
