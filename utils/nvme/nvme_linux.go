@@ -343,7 +343,7 @@ func (s *NVMeSubsystem) GetNVMeDeviceAt(ctx context.Context, nsUUID string) (*NV
 		}
 	}
 
-	return nil, fmt.Errorf("nvme device not found")
+	return nil, errors.NotFoundError("no device found for the given namespace %v", nsUUID)
 }
 
 // GetNVMeDeviceList returns the list of NVMe devices present on the k8s node.
