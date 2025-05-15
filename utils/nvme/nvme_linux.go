@@ -95,7 +95,12 @@ func (nh *NVMeHandler) listSubsystemsFromSysFs(ctx context.Context) (Subsystems,
 
 		fileContent := strings.TrimSpace(string(fileBytes))
 
-		sub := NVMeSubsystem{NQN: fileContent, Name: subsystemDirPath}
+		sub := NVMeSubsystem{
+			NQN:     fileContent,
+			Name:    subsystemDirPath,
+			command: nh.command,
+			osFs:    nh.osFs,
+		}
 		paths, err := GetNVMeSubsystemPaths(ctx, nh.osFs, subsystemDirPath)
 		if err != nil {
 			return subsystems, err
