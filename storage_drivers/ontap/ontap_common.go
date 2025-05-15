@@ -4001,6 +4001,7 @@ func cloneFlexvol(
 		"source":   source,
 		"snapshot": snapshot,
 		"split":    split,
+		"labels":   labels,
 	}
 	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> cloneFlexvol")
 	defer Logd(ctx, config.StorageDriverName,

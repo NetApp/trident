@@ -1128,16 +1128,30 @@ func (c *RestClient) startCloneSplitByNameAndStyle(ctx context.Context, volumeNa
 
 	params.SetInfo(volumeInfo)
 
-	_, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	volumeModifyOk, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
-	if volumeModifyAccepted == nil {
+
+	if volumeModifyOk == nil && volumeModifyAccepted == nil {
 		return fmt.Errorf("unexpected response from volume modify")
 	}
 
-	jobLink := getGenericJobLinkFromVolumeJobLink(volumeModifyAccepted.Payload)
-	return c.PollJobStatus(ctx, jobLink)
+	// If there is explicit error, return the error
+	if volumeModifyOk != nil && !volumeModifyOk.IsSuccess() {
+		return fmt.Errorf("failed to start clone split; %v", volumeModifyOk.Error())
+	}
+
+	if volumeModifyAccepted != nil && !volumeModifyAccepted.IsSuccess() {
+		return fmt.Errorf("failed to start clone split; %v", volumeModifyAccepted.Error())
+	}
+
+	// At this point, it is clear that no error occurred while trying to start the split.
+	// Since clone split usually takes time, we do not wait for its completion.
+	// Hence, do not get the jobLink and poll for its status. Assume, it is successful.
+	Logc(ctx).WithField("volume", volumeName).Debug(
+		"Clone split initiated successfully. This is an asynchronous operation, and its completion is not monitored.")
+	return nil
 }
 
 // restoreSnapshotByNameAndStyle restores a volume to a snapshot as a non-blocking operation
@@ -6941,16 +6955,30 @@ func (c *RestClient) StorageUnitCloneSplitStart(
 
 	params.SetInfo(suInfo)
 
-	_, suModifyAccepted, err := c.api.San.StorageUnitModify(params, c.authInfo)
+	suModifyOk, suModifyAccepted, err := c.api.San.StorageUnitModify(params, c.authInfo)
 	if err != nil {
 		return err
 	}
-	if suModifyAccepted == nil {
-		return fmt.Errorf("unexpected response from volume modify")
+
+	if suModifyOk == nil && suModifyAccepted == nil {
+		return fmt.Errorf("unexpected response from storage unit modify")
 	}
 
-	jobLink := getGenericJobLinkFromStorageUnitJobLink(suModifyAccepted.Payload)
-	return c.PollJobStatus(ctx, jobLink)
+	// If there is explicit error, return the error
+	if suModifyOk != nil && !suModifyOk.IsSuccess() {
+		return fmt.Errorf("failed to start clone split; %v", suModifyOk.Error())
+	}
+
+	if suModifyAccepted != nil && !suModifyAccepted.IsSuccess() {
+		return fmt.Errorf("failed to start clone split; %v", suModifyAccepted.Error())
+	}
+
+	// At this point, it is clear that no error occurred while trying to start the split.
+	// Since clone split usually takes time, we do not wait for its completion.
+	// Hence, do not get the jobLink and poll for its status. Assume, it is successful.
+	Logc(ctx).WithField("storageUnitUUID", suUUID).Debug(
+		"Clone split initiated successfully. This is an asynchronous operation, and its completion is not monitored.")
+	return nil
 }
 
 func (c *RestClient) StorageUnitListAllBackedBySnapshot(ctx context.Context, suName, snapshotName string) ([]string,
