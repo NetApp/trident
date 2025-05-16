@@ -2987,6 +2987,22 @@ func (d OntapAPIREST) SMBShareDestroy(ctx context.Context, shareName string) err
 	return nil
 }
 
+func (d OntapAPIREST) SMBShareAccessControlCreate(ctx context.Context, shareName string, smbShareACL map[string]string) error {
+	if err := d.api.SMBShareAccessControlCreate(ctx, shareName, smbShareACL); err != nil {
+		return fmt.Errorf("error while creating SMB share access control %v: %v", shareName, err)
+	}
+	return nil
+}
+
+func (d OntapAPIREST) SMBShareAccessControlDelete(ctx context.Context, shareName string,
+	smbShareACL map[string]string,
+) error {
+	if err := d.api.SMBShareAccessControlDelete(ctx, shareName, smbShareACL); err != nil {
+		return fmt.Errorf("error while deleting SMB share access control %v: %v", shareName, err)
+	}
+	return nil
+}
+
 // NVMeNamespaceCreate creates NVMe namespace.
 func (d OntapAPIREST) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error) {
 	fields := LogFields{

@@ -1671,6 +1671,34 @@ func (mr *MockRestClientInterfaceMockRecorder) QuotaSetEntry(arg0, arg1, arg2, a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuotaSetEntry", reflect.TypeOf((*MockRestClientInterface)(nil).QuotaSetEntry), arg0, arg1, arg2, arg3, arg4)
 }
 
+// SMBShareAccessControlCreate mocks base method.
+func (m *MockRestClientInterface) SMBShareAccessControlCreate(arg0 context.Context, arg1 string, arg2 map[string]string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SMBShareAccessControlCreate", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SMBShareAccessControlCreate indicates an expected call of SMBShareAccessControlCreate.
+func (mr *MockRestClientInterfaceMockRecorder) SMBShareAccessControlCreate(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMBShareAccessControlCreate", reflect.TypeOf((*MockRestClientInterface)(nil).SMBShareAccessControlCreate), arg0, arg1, arg2)
+}
+
+// SMBShareAccessControlDelete mocks base method.
+func (m *MockRestClientInterface) SMBShareAccessControlDelete(arg0 context.Context, arg1 string, arg2 map[string]string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SMBShareAccessControlDelete", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SMBShareAccessControlDelete indicates an expected call of SMBShareAccessControlDelete.
+func (mr *MockRestClientInterfaceMockRecorder) SMBShareAccessControlDelete(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMBShareAccessControlDelete", reflect.TypeOf((*MockRestClientInterface)(nil).SMBShareAccessControlDelete), arg0, arg1, arg2)
+}
+
 // SMBShareCreate mocks base method.
 func (m *MockRestClientInterface) SMBShareCreate(arg0 context.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()

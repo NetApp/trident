@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package kubernetes
 
@@ -24,6 +24,13 @@ const (
 	CacheBackoffMultiplier          = 1.414
 	CacheBackoffMaxInterval         = 5 * time.Second
 
+	NASTypeSMB = "smb"
+
+	SMBShareFullControlPermission = "full_control" // AD user Full Control permission
+	SMBShareReadPermission        = "read"         // AD user Read Only permission
+	SMBShareNoPermission          = "no_access"    // AD user No Access permission
+	SMBShareChangePermission      = "change"       // AD user Change permission
+
 	// Kubernetes-defined storage class parameters
 
 	K8sFsType                            = "fsType"
@@ -37,31 +44,37 @@ const (
 	AnnStorageProvisioner = "volume.beta.kubernetes.io/storage-provisioner"
 
 	// Orchestrator-defined annotations
-	annPrefix               = config.OrchestratorName + ".netapp.io"
-	AnnProtocol             = annPrefix + "/protocol"
-	AnnSnapshotPolicy       = annPrefix + "/snapshotPolicy"
-	AnnSnapshotReserve      = annPrefix + "/snapshotReserve"
-	AnnSnapshotDir          = annPrefix + "/snapshotDirectory"
-	AnnUnixPermissions      = annPrefix + "/unixPermissions"
-	AnnExportPolicy         = annPrefix + "/exportPolicy"
-	AnnBlockSize            = annPrefix + "/blockSize"
-	AnnFileSystem           = annPrefix + "/fileSystem"
-	AnnCloneFromPVC         = annPrefix + "/cloneFromPVC"
-	AnnCloneFromSnapshot    = annPrefix + "/cloneFromSnapshot"
-	AnnSplitOnClone         = annPrefix + "/splitOnClone"
-	AnnNotManaged           = annPrefix + "/notManaged"
-	AnnImportOriginalName   = annPrefix + "/importOriginalName"
-	AnnImportBackendUUID    = annPrefix + "/importBackendUUID"
-	AnnInternalSnapshotName = annPrefix + "/internalSnapshotName"
-	AnnMirrorRelationship   = annPrefix + "/mirrorRelationship"
-	AnnVolumeShareFromPVC   = annPrefix + "/shareFromPVC"
-	AnnVolumeCloneToNS      = annPrefix + "/cloneToNamespace"
-	AnnVolumeCloneFromNS    = annPrefix + "/cloneFromNamespace"
-	AnnVolumeShareToNS      = annPrefix + "/shareToNamespace"
-	AnnReadOnlyClone        = annPrefix + "/readOnlyClone"
-	AnnLUKSEncryption       = annPrefix + "/luksEncryption" // import only
-	AnnSkipRecoveryQueue    = annPrefix + "/skipRecoveryQueue"
-	AnnSelector             = annPrefix + "/selector"
+	prefix                      = config.OrchestratorName + ".netapp.io"
+	AnnProtocol                 = prefix + "/protocol"
+	AnnSnapshotPolicy           = prefix + "/snapshotPolicy"
+	AnnSnapshotReserve          = prefix + "/snapshotReserve"
+	AnnSnapshotDir              = prefix + "/snapshotDirectory"
+	AnnUnixPermissions          = prefix + "/unixPermissions"
+	AnnExportPolicy             = prefix + "/exportPolicy"
+	AnnBlockSize                = prefix + "/blockSize"
+	AnnFileSystem               = prefix + "/fileSystem"
+	AnnCloneFromPVC             = prefix + "/cloneFromPVC"
+	AnnCloneFromSnapshot        = prefix + "/cloneFromSnapshot"
+	AnnSplitOnClone             = prefix + "/splitOnClone"
+	AnnNotManaged               = prefix + "/notManaged"
+	AnnImportOriginalName       = prefix + "/importOriginalName"
+	AnnImportBackendUUID        = prefix + "/importBackendUUID"
+	AnnInternalSnapshotName     = prefix + "/internalSnapshotName"
+	AnnMirrorRelationship       = prefix + "/mirrorRelationship"
+	AnnVolumeShareFromPVC       = prefix + "/shareFromPVC"
+	AnnVolumeCloneToNS          = prefix + "/cloneToNamespace"
+	AnnVolumeCloneFromNS        = prefix + "/cloneFromNamespace"
+	AnnVolumeShareToNS          = prefix + "/shareToNamespace"
+	AnnReadOnlyClone            = prefix + "/readOnlyClone"
+	AnnLUKSEncryption           = prefix + "/luksEncryption" // import only
+	AnnSkipRecoveryQueue        = prefix + "/skipRecoveryQueue"
+	AnnSelector                 = prefix + "/selector"
+	AnnSMBShareAdUserPermission = prefix + "/smbShareAdUserPermission"
+	AnnSMBShareAdUser           = prefix + "/smbShareAdUser"
+	AnnSMBShareAccessControl    = prefix + "/smbShareAccessControl"
+
+	// Orchestrator-defined storage class parameters
+	SCParameterNASType = prefix + "/nasType"
 )
 
 var features = map[controllerhelpers.Feature]*versionutils.Version{

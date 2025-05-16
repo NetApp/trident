@@ -104,18 +104,18 @@ func (mr *MockControllerHelperMockRecorder) GetSnapshotConfigForImport(arg0, arg
 }
 
 // GetVolumeConfig mocks base method.
-func (m *MockControllerHelper) GetVolumeConfig(arg0 context.Context, arg1 string, arg2 int64, arg3 map[string]string, arg4 config.Protocol, arg5 []config.AccessMode, arg6 config.VolumeMode, arg7 string, arg8, arg9, arg10 []map[string]string) (*storage.VolumeConfig, error) {
+func (m *MockControllerHelper) GetVolumeConfig(arg0 context.Context, arg1 string, arg2 int64, arg3 map[string]string, arg4 config.Protocol, arg5 []config.AccessMode, arg6 config.VolumeMode, arg7 string, arg8, arg9, arg10 []map[string]string, arg11 map[string]string) (*storage.VolumeConfig, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumeConfig", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+	ret := m.ctrl.Call(m, "GetVolumeConfig", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11)
 	ret0, _ := ret[0].(*storage.VolumeConfig)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumeConfig indicates an expected call of GetVolumeConfig.
-func (mr *MockControllerHelperMockRecorder) GetVolumeConfig(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10 any) *gomock.Call {
+func (mr *MockControllerHelperMockRecorder) GetVolumeConfig(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeConfig", reflect.TypeOf((*MockControllerHelper)(nil).GetVolumeConfig), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeConfig", reflect.TypeOf((*MockControllerHelper)(nil).GetVolumeConfig), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11)
 }
 
 // IsTopologyInUse mocks base method.

@@ -275,6 +275,7 @@ func (d *NASStorageDriver) Create(
 		encryption        = collection.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
 		tieringPolicy     = collection.GetV(opts, "tieringPolicy", storagePool.InternalAttributes()[TieringPolicy])
 		skipRecoveryQueue = collection.GetV(opts, "skipRecoveryQueue", storagePool.InternalAttributes()[SkipRecoveryQueue])
+		adAdminUser       = collection.GetV(opts, "adAdminUser", storagePool.InternalAttributes()[ADAdminUser])
 		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
 		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
 	)
@@ -318,6 +319,12 @@ func (d *NASStorageDriver) Create(
 
 	if tieringPolicy == "" {
 		tieringPolicy = d.API.TieringPolicyValue(ctx)
+	}
+
+	if adAdminUser != "" {
+		if _, exists := volConfig.SMBShareACL[adAdminUser]; !exists {
+			volConfig.SMBShareACL[adAdminUser] = ADAdminUserPermission
+		}
 	}
 
 	if _, err = strconv.ParseBool(skipRecoveryQueue); skipRecoveryQueue != "" && err != nil {
@@ -445,7 +452,7 @@ func (d *NASStorageDriver) Create(
 		}
 
 		if d.Config.NASType == sa.SMB {
-			if err := d.EnsureSMBShare(ctx, name, "/"+name); err != nil {
+			if err := d.EnsureSMBShare(ctx, name, "/"+name, volConfig.SMBShareACL, volConfig.SecureSMBEnabled); err != nil {
 				return err
 			}
 		}
@@ -546,8 +553,9 @@ func (d *NASStorageDriver) CreateClone(
 		return err
 	}
 
+	// TODO: enable secure SMB share for clone volumes
 	if d.Config.NASType == sa.SMB {
-		if err := d.EnsureSMBShare(ctx, cloneVolConfig.InternalName, "/"+cloneVolConfig.InternalName); err != nil {
+		if err := d.EnsureSMBShare(ctx, cloneVolConfig.InternalName, "/"+cloneVolConfig.InternalName, cloneVolConfig.SMBShareACL, false); err != nil {
 			return err
 		}
 	}
@@ -734,9 +742,10 @@ func (d *NASStorageDriver) Import(
 		}
 	}
 
+	// TODO: enable secure SMB share for imported volumes
 	if d.Config.NASType == sa.SMB {
 		if flexvol.JunctionPath != "" {
-			if err := d.EnsureSMBShare(ctx, originalName, "/"+originalName); err != nil {
+			if err := d.EnsureSMBShare(ctx, originalName, "/"+originalName, volConfig.SMBShareACL, false); err != nil {
 				return err
 			}
 		}
@@ -1355,10 +1364,11 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 			}
 
 			// If smbShare is omitted in the backend configuration then,
-			// Trident tries to create sbmShare with the same name as volume InternalName.
+			// Trident tries to create smbShare with the same name as volume InternalName.
 			// This check ensures that volume is mounted before the share is created.
 			if d.Config.NASType == sa.SMB {
-				if err := d.EnsureSMBShare(ctx, volConfig.InternalName, "/"+volConfig.InternalName); err != nil {
+				if err := d.EnsureSMBShare(ctx, volConfig.InternalName, "/"+volConfig.InternalName,
+					volConfig.SMBShareACL, volConfig.SecureSMBEnabled); err != nil {
 					return err
 				}
 			}
@@ -1744,36 +1754,41 @@ func (d *NASStorageDriver) MountVolume(
 
 // EnsureSMBShare ensures that required SMB share is made available.
 func (d *NASStorageDriver) EnsureSMBShare(
-	ctx context.Context, name, path string,
+	ctx context.Context, name, path string, smbShareACL map[string]string, secureSMBEnabled bool,
 ) error {
-	if d.Config.SMBShare != "" {
-		// If user did specify SMB share, and it does not exist, create an SMB share with the specified name.
-		share, err := d.API.SMBShareExists(ctx, d.Config.SMBShare)
-		if err != nil {
-			return err
-		}
+	shareName := name
+	sharePath := path
 
-		// If share is not present create it.
-		if !share {
-			if err = d.API.SMBShareCreate(ctx, d.Config.SMBShare, "/"); err != nil {
-				return err
-			}
-		}
-	} else {
-		// If user did not specify SMB share in backend configuration, create an SMB share with the name passed.
-		share, err := d.API.SMBShareExists(ctx, name)
-		if err != nil {
-			return err
-		}
+	// Determine share name and path based on secureSMBEnabled and configuration
+	if !secureSMBEnabled && d.Config.SMBShare != "" {
+		shareName = d.Config.SMBShare
+		sharePath = "/"
+	}
 
-		// If share is not present create it.
-		if !share {
-			if err = d.API.SMBShareCreate(ctx, name, path); err != nil {
-				return err
-			}
+	// Check if the share exists
+	shareExists, err := d.API.SMBShareExists(ctx, shareName)
+	if err != nil {
+		return err
+	}
+
+	// Create the share if it does not exist
+	if !shareExists {
+		if err = d.API.SMBShareCreate(ctx, shareName, sharePath); err != nil {
+			return err
 		}
 	}
 
+	// If secure SMB is enabled, configure access control
+	if secureSMBEnabled {
+		if err = d.API.SMBShareAccessControlCreate(ctx, shareName, smbShareACL); err != nil {
+			return err
+		}
+
+		// Delete the Everyone Access Control created by default during share creation by ONTAP
+		if err = d.API.SMBShareAccessControlDelete(ctx, shareName, smbShareDeleteACL); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

@@ -2382,11 +2382,12 @@ func TestRestGetSLMLifs(t *testing.T) {
 	assert.ElementsMatch(t, result, []string{"1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"})
 }
 
-func TestConstructOntapNASVolumeAccessPath(t *testing.T) {
+func TestConstructOntapNASVolumeAccessPath_SecureSMBDisabled(t *testing.T) {
 	ctx := context.Background()
 
 	volConfig := &storage.VolumeConfig{
-		InternalName: "vol",
+		InternalName:     "vol",
+		SecureSMBEnabled: false,
 	}
 
 	tests := []struct {
@@ -2399,6 +2400,32 @@ func TestConstructOntapNASVolumeAccessPath(t *testing.T) {
 		{"", "/vol", "smb", "\\vol"},
 		{"", "/vol", "nfs", "/vol"},
 		{"", "/vol1", "nfs", "/vol1"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.smbShare, func(t *testing.T) {
+			result := ConstructOntapNASVolumeAccessPath(ctx, test.smbShare, test.volName, volConfig, test.protocol)
+			assert.Equal(t, test.expectedPath, result, "unable to construct Ontap-NAS volume access path")
+		})
+	}
+}
+
+func TestConstructOntapNASVolumeAccessPath_SecureSMBEnabled(t *testing.T) {
+	ctx := context.Background()
+
+	volConfig := &storage.VolumeConfig{
+		InternalName:     "vol",
+		SecureSMBEnabled: true,
+	}
+
+	tests := []struct {
+		smbShare     string
+		volName      string
+		protocol     string
+		expectedPath string
+	}{
+		{"test_share", "/vol", "smb", "\\vol"},
+		{"", "/vol", "smb", "\\vol"},
 	}
 
 	for _, test := range tests {
@@ -7711,6 +7738,17 @@ func TestPopulateConfigurationDefaults(t *testing.T) {
 	config.SANType = "ISCSI"
 	err := PopulateConfigurationDefaults(ctx, config)
 	assert.NoError(t, err)
+
+	// Test - verify adAdminUser set
+	config.ADAdminUser = "fakeUser"
+	err = PopulateConfigurationDefaults(ctx, config)
+	assert.NoError(t, err)
+
+	// Test - verify adAdminUser not set
+	config.ADAdminUser = ""
+	err = PopulateConfigurationDefaults(ctx, config)
+	assert.NoError(t, err)
+	assert.Equal(t, DefaultADAdminUser, config.ADAdminUser)
 
 	// Test1 - Positive flow with NASType SMB
 	config.NASType = sa.SMB

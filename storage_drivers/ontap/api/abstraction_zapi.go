@@ -2616,7 +2616,6 @@ func (d OntapAPIZAPI) SMBShareCreate(ctx context.Context, shareName, path string
 		}
 		return fmt.Errorf("error while creating SMB share %v: %v", shareName, err)
 	}
-
 	return nil
 }
 
@@ -2639,6 +2638,40 @@ func (d OntapAPIZAPI) SMBShareDestroy(ctx context.Context, shareName string) err
 		}
 		return fmt.Errorf("error while deleting SMB share %v: %v", shareName, err)
 	}
+	return nil
+}
+
+func (d OntapAPIZAPI) SMBShareAccessControlCreate(ctx context.Context, shareName string, smbShareACL map[string]string) error {
+	shareAccessControlResponse, err := d.api.SMBShareAccessControlCreate(shareName, smbShareACL)
+	if err != nil {
+		if err = azgo.GetError(ctx, shareAccessControlResponse, err); err != nil {
+			if zerr, ok := err.(azgo.ZapiError); ok {
+				if zerr.Code() == azgo.EAPIERROR {
+					return ApiError(fmt.Sprintf("%v", err))
+				}
+			}
+			return fmt.Errorf("error while creating SMB share access control %v: %v", shareName, err)
+		}
+	}
+
+	return nil
+}
+
+func (d OntapAPIZAPI) SMBShareAccessControlDelete(ctx context.Context, shareName string,
+	smbShareACL map[string]string,
+) error {
+	shareAccessControlDeleteResponse, err := d.api.SMBShareAccessControlDelete(shareName, smbShareACL)
+	if err != nil {
+		if err = azgo.GetError(ctx, shareAccessControlDeleteResponse, err); err != nil {
+			if zerr, ok := err.(azgo.ZapiError); ok {
+				if zerr.Code() == azgo.EAPIERROR {
+					return ApiError(fmt.Sprintf("%v", err))
+				}
+			}
+			return fmt.Errorf("error while deleting SMB share access control %v: %v", shareName, err)
+		}
+	}
+
 	return nil
 }
 

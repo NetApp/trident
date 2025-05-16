@@ -7550,14 +7550,47 @@ func mockSMBShareResourceNotFound(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode("")
 }
 
+func mockSMBShareAccessControlResponse(w http.ResponseWriter, r *http.Request) {
+	numRecords := int64(1)
+	switch r.Method {
+	case "POST":
+		// Mock response for creating SMB Share Access Control
+		accessControlCreateResponse := n_a_s.CifsShareACLCreateCreated{Location: "/"}
+		setHTTPResponseHeader(w, http.StatusCreated)
+		json.NewEncoder(w).Encode(accessControlCreateResponse)
+	case "DELETE":
+		// Mock response for deleting SMB Share Access Control
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(nil)
+	default:
+		// Mock response for listing SMB Share Access Control
+		smbShareACLResponse := models.CifsShareACLResponse{
+			CifsShareACLResponseInlineRecords: []*models.CifsShareACL{
+				{
+					UserOrGroup: convert.ToPtr("user1"),
+					Permission:  convert.ToPtr("full_control"),
+				},
+			},
+			NumRecords: &numRecords,
+		}
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(smbShareACLResponse)
+	}
+}
+
+func mockSMBShareAccessControlResourceNotFound(w http.ResponseWriter, r *http.Request) {
+	setHTTPResponseHeader(w, http.StatusNotFound)
+	json.NewEncoder(w).Encode("")
+}
+
 func TestOntapRest_SMBShareCreate(t *testing.T) {
 	tests := []struct {
 		name            string
 		mockFunction    func(w http.ResponseWriter, r *http.Request)
 		isErrorExpected bool
 	}{
-		{"SmbShareCreate_success", mockSMBShareResponse, false},
-		{"SmbShareCreate_failed", mockSMBShareResourceNotFound, true},
+		{"SMBShareCreate_success", mockSMBShareResponse, false},
+		{"SMBShareCreate_failed", mockSMBShareResourceNotFound, true},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -7580,7 +7613,7 @@ func TestOntapRest_SMBShareExists(t *testing.T) {
 	tests := []struct {
 		name             string
 		mockFunction     func(w http.ResponseWriter, r *http.Request)
-		isSmbShareExists bool
+		isSMBShareExists bool
 		isErrorExpected  bool
 	}{
 		{"GetSMBShare_success", mockSMBShareResponse, true, false},
@@ -7596,7 +7629,7 @@ func TestOntapRest_SMBShareExists(t *testing.T) {
 			smbShareExists, err := rs.SMBShareExists(ctx, "share")
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not found an SMB share")
-				assert.Equal(t, test.isSmbShareExists, smbShareExists)
+				assert.Equal(t, test.isSMBShareExists, smbShareExists)
 			} else {
 				assert.Error(t, err, "SMB share exists")
 			}
@@ -7625,6 +7658,62 @@ func TestOntapRest_SMBShareDestroy(t *testing.T) {
 				assert.NoError(t, err, "could not delete an SMB share")
 			} else {
 				assert.Error(t, err, "SMB share deleted")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_SMBShareAccessControlCreate(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"AccessControlCreate_success", mockSMBShareAccessControlResponse, false},
+		{"AccessControlCreate_failed", mockSMBShareAccessControlResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			smbShareAccessControl := make(map[string]string)
+			smbShareAccessControl["user"] = "full_control"
+			err := rs.SMBShareAccessControlCreate(ctx, "share", smbShareAccessControl)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not create SMB share access control")
+			} else {
+				assert.Error(t, err, "SMB share access control created")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_SMBShareAccessControlDelete(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"AccessControlDelete_success", mockSMBShareAccessControlResponse, false},
+		{"AccessControlDelete_failed", mockSMBShareAccessControlResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			smbShareAccessControl := make(map[string]string)
+			smbShareAccessControl["Everyone"] = "windows"
+			err := rs.SMBShareAccessControlDelete(ctx, "share", smbShareAccessControl)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "could not delete SMB share access control")
+			} else {
+				assert.Error(t, err, "SMB share access control deleted")
 			}
 			server.Close()
 		})

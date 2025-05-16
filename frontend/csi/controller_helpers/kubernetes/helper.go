@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	vsv1 "github.com/kubernetes-csi/external-snapshotter/client/v8/apis/volumesnapshot/v1"
+	"gopkg.in/yaml.v2"
 	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -40,6 +41,7 @@ import (
 func (h *helper) GetVolumeConfig(
 	ctx context.Context, name string, _ int64, _ map[string]string, _ config.Protocol, _ []config.AccessMode,
 	_ config.VolumeMode, fsType string, requisiteTopology, preferredTopology, _ []map[string]string,
+	secrets map[string]string,
 ) (*storage.VolumeConfig, error) {
 	// Kubernetes CSI passes us the name of what will become a new PV
 	pvName := name
@@ -91,7 +93,19 @@ func (h *helper) GetVolumeConfig(
 
 	// Create the volume config
 	annotations := processPVCAnnotations(pvc, fsType)
+
+	// Process annotations from the storage class
+	scAnnotations := processSCAnnotations(sc)
+
 	volumeConfig := getVolumeConfig(ctx, pvc, pvName, pvcSize, annotations, sc, requisiteTopology, preferredTopology)
+
+	// Update the volume config with the Access Control only if the storage class nasType parameter is SMB
+	if sc.Parameters[SCParameterNASType] == NASTypeSMB {
+		err = h.updateVolumeConfigWithSecureSMBAccessControl(ctx, volumeConfig, sc, annotations, scAnnotations, secrets)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	// Get clone annotations
 	sourceSnapshotName := getAnnotation(annotations, AnnCloneFromSnapshot)
@@ -679,6 +693,52 @@ func (h *helper) getSnapshotInternalNameFromAnnotation(
 	return internalName, nil
 }
 
+// updateVolumeConfigWithSecureSMBAccessControl update the volume config with the secure SMB access control from the
+// PVC annotations and the storage class annotations
+func (h *helper) updateVolumeConfigWithSecureSMBAccessControl(ctx context.Context, volumeConfig *storage.VolumeConfig,
+	sc *k8sstoragev1.StorageClass, pvcAnnotations, scAnnotations, secret map[string]string,
+) error {
+	if sc.Parameters[CSIParameterNodeStageSecretName] == "" || sc.Parameters[CSIParameterNodeStageSecretNamespace] == "" {
+		return fmt.Errorf("missing required parameters %s and %s for secure SMB access control",
+			CSIParameterNodeStageSecretName, CSIParameterNodeStageSecretNamespace)
+	}
+
+	// Get the smb share Access Control from PVC annotations
+	smbSharePVCAccessControlAnn := getAnnotation(pvcAnnotations, AnnSMBShareAccessControl)
+	smbShareACL, err := getSMBShareAccessControlFromPVCAnnotation(smbSharePVCAccessControlAnn)
+	if err != nil {
+		return fmt.Errorf("failed to parse smb share access control from annotation: %v", err)
+	}
+
+	adUserFromSC := getAnnotation(scAnnotations, AnnSMBShareAdUser)
+	adUserPermissionFromSC := getAnnotation(scAnnotations, AnnSMBShareAdUserPermission)
+
+	// Set SecureSMBEnabled to true if adUserFromSC is present. This ensures Secure SMB is enabled only when required.
+	if adUserFromSC != "" {
+		volumeConfig.SecureSMBEnabled = true
+	}
+
+	// Check if the adUserPermissionAnn is set,	if not set it to the full control
+	if adUserPermissionFromSC == "" {
+		adUserPermissionFromSC = SMBShareFullControlPermission
+	}
+
+	// Check if the adUserPermissionAnn is valid
+	if !isValidAccessControlPermission(adUserPermissionFromSC) {
+		return fmt.Errorf("invalid adUserPermission: %s. Valid adUserPermissions are %s, %s, %s, %s",
+			adUserPermissionFromSC, SMBShareFullControlPermission, SMBShareReadPermission, SMBShareChangePermission, SMBShareNoPermission)
+	}
+
+	// Check if adUser already exists in the smbShareACL, if not add it
+	if _, exists := smbShareACL[adUserFromSC]; !exists {
+		smbShareACL[adUserFromSC] = adUserPermissionFromSC
+	}
+
+	volumeConfig.SMBShareACL = smbShareACL
+
+	return nil
+}
+
 // RecordVolumeEvent accepts the name of a CSI volume (i.e. a PV name), finds the associated
 // PVC, and posts and event message on the PVC object with the K8S API server.
 func (h *helper) RecordVolumeEvent(ctx context.Context, name, eventType, reason, message string) {
@@ -743,6 +803,7 @@ func getVolumeConfig(
 	requisiteTopology, preferredTopology []map[string]string,
 ) *storage.VolumeConfig {
 	var accessModes []config.AccessMode
+	smbShareACL := make(map[string]string)
 
 	for _, pvcAccessMode := range pvc.Spec.AccessModes {
 		accessModes = append(accessModes, config.AccessMode(pvcAccessMode))
@@ -820,6 +881,7 @@ func getVolumeConfig(
 		Namespace:           pvc.Namespace,
 		RequestName:         pvc.Name,
 		SkipRecoveryQueue:   getAnnotation(annotations, AnnSkipRecoveryQueue),
+		SMBShareACL:         smbShareACL,
 	}
 }
 
@@ -857,4 +919,69 @@ func processPVCAnnotations(pvc *v1.PersistentVolumeClaim, fsType string) map[str
 	}
 
 	return annotations
+}
+
+// processSCAnnotations updates the annotations map with SC annotations.
+func processSCAnnotations(sc *k8sstoragev1.StorageClass) map[string]string {
+	annotations := sc.Annotations
+	if sc.Annotations == nil {
+		annotations = make(map[string]string)
+	}
+
+	return annotations
+}
+
+// getSMBShareAccessControlFromPVCAnnotation parses the smbShareAccessControl annotation and updates the smbShareACL map
+func getSMBShareAccessControlFromPVCAnnotation(smbShareAccessControlAnn string) (map[string]string, error) {
+	// Structure to hold the parsed smbShareAccessControlAnnotation
+	parsedData := make(map[string][]string)
+
+	// Parse the smbShareAccessControl annotation
+	if err := yaml.Unmarshal([]byte(smbShareAccessControlAnn), &parsedData); err != nil {
+		return nil, fmt.Errorf("failed to parse smbShareAccessControl annotation: %v", err)
+	}
+
+	// Convert the parsed data into the smbShareACL map
+	smbShareACL := make(map[string]string)
+
+	// Define a priority map for access control permissions,
+	// to determine the permission for user who is associated with multiple permissions
+	permissionPriority := map[string]int{
+		SMBShareFullControlPermission: 4, // Highest priority
+		SMBShareChangePermission:      3,
+		SMBShareReadPermission:        2,
+		SMBShareNoPermission:          1, // Lowest priority
+	}
+
+	for accessControlPermission, users := range parsedData {
+		if !isValidAccessControlPermission(accessControlPermission) {
+			return nil, fmt.Errorf("invalid access control permission %s in smbShareAccessControl annotation, "+
+				"valid access control permissions are %s, %s,%s,%s ", accessControlPermission, SMBShareFullControlPermission,
+				SMBShareReadPermission, SMBShareChangePermission, SMBShareNoPermission)
+		} else {
+			for _, user := range users {
+				// Check if the user already exists in the smbShareACL map
+				if existingPermission, exists := smbShareACL[user]; exists {
+					// Compare the priority of the existing permission with the new one
+					if permissionPriority[accessControlPermission] > permissionPriority[existingPermission] {
+						smbShareACL[user] = accessControlPermission
+					}
+				} else {
+					// If the user doesn't exist, add it to the map
+					smbShareACL[user] = accessControlPermission
+				}
+			}
+		}
+	}
+	return smbShareACL, nil
+}
+
+// isValidAccessControlPermission checks if the provided permission is valid
+func isValidAccessControlPermission(permission string) bool {
+	switch permission {
+	case SMBShareFullControlPermission, SMBShareReadPermission, SMBShareChangePermission, SMBShareNoPermission:
+		return true
+	default:
+		return false
+	}
 }

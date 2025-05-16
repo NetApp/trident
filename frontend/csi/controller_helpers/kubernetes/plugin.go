@@ -979,7 +979,7 @@ func removeSCParameterPrefix(key string) string {
 	Logc(context.Background()).WithField("key", key).Trace(">>>> removeSCParameterPrefix")
 	defer Logc(context.Background()).Trace("<<<< removeSCParameterPrefix")
 
-	if strings.HasPrefix(key, annPrefix) {
+	if strings.HasPrefix(key, prefix) {
 		scParamKV := strings.SplitN(key, "/", 2)
 		if len(scParamKV) != 2 || scParamKV[0] == "" || scParamKV[1] == "" {
 			Log().Errorf("Storage class parameter %s does not have the right format.", key)

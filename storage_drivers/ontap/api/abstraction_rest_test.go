@@ -1315,6 +1315,35 @@ func TestSMBShareDestroy(t *testing.T) {
 	assert.Error(t, err1, "no error returned while deleting SMB share")
 }
 
+func TestSMBShareAccessControlCreate(t *testing.T) {
+	oapi, mock := newMockOntapAPIREST(t)
+
+	// case 1: No Error returned while creating SMB share access control.
+	mock.EXPECT().SMBShareAccessControlCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	err1 := oapi.SMBShareAccessControlCreate(ctx, "", nil)
+	assert.NoError(t, err1, "error returned while creating SMB share access control")
+
+	// case 2: Error returned while creating SMB share access control.
+	mock.EXPECT().SMBShareAccessControlCreate(ctx, gomock.Any(), gomock.Any()).Return(
+		fmt.Errorf("failed to create SMB share access control"))
+	err1 = oapi.SMBShareAccessControlCreate(ctx, "", nil)
+	assert.Error(t, err1, "no error returned while creating SMB share access control")
+}
+
+func TestSMBShareAccessControlDelete(t *testing.T) {
+	oapi, mock := newMockOntapAPIREST(t)
+
+	// case 1: No Error returned while deleting SMB share access control.
+	mock.EXPECT().SMBShareAccessControlDelete(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	err1 := oapi.SMBShareAccessControlDelete(ctx, "", nil)
+	assert.NoError(t, err1, "error returned while deleting SMB share access control")
+
+	// case 2: Error returned while deleting SMB share access control.
+	mock.EXPECT().SMBShareAccessControlDelete(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("failed to delete SMB share access control"))
+	err1 = oapi.SMBShareAccessControlDelete(ctx, "", nil)
+	assert.Error(t, err1, "no error returned while deleting SMB share access control")
+}
+
 func TestGetRestErr(t *testing.T) {
 	payload := models.Job{}
 

@@ -430,4 +430,14 @@ type ZapiClientInterface interface {
 	// SMBShareDestroy destroys an SMB share
 	// Equivalent to filer::> cifs share delete shareName
 	SMBShareDestroy(shareName string) (*azgo.CifsShareDeleteResponse, error)
+	// SMBShareAccessControlCreate creates an SMB share access control entry for the specified share.
+	// Equivalent to filer::> cifs share access-control create -share <shareName> -user-or-group <userOrGroup> -access-type <accessType>
+	SMBShareAccessControlCreate(shareName string, smbShareACL map[string]string) (*azgo.
+		CifsShareAccessControlCreateResponse,
+		error)
+	// SMBShareAccessControlDelete deletes an SMB share access control entry for the specified share.
+	// Equivalent to filer::> cifs share access-control delete -share <shareName> -user-or-group <userOrGroup> -user-or-group-type <userOrGroupType>
+	SMBShareAccessControlDelete(shareName string, smbShareACL map[string]string) (*azgo.
+		CifsShareAccessControlDeleteResponse,
+		error)
 }

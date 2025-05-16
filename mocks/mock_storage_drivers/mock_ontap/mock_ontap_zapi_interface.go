@@ -1480,6 +1480,36 @@ func (mr *MockZapiClientInterfaceMockRecorder) QuotaStatus(arg0 any) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuotaStatus", reflect.TypeOf((*MockZapiClientInterface)(nil).QuotaStatus), arg0)
 }
 
+// SMBShareAccessControlCreate mocks base method.
+func (m *MockZapiClientInterface) SMBShareAccessControlCreate(arg0 string, arg1 map[string]string) (*azgo.CifsShareAccessControlCreateResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SMBShareAccessControlCreate", arg0, arg1)
+	ret0, _ := ret[0].(*azgo.CifsShareAccessControlCreateResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SMBShareAccessControlCreate indicates an expected call of SMBShareAccessControlCreate.
+func (mr *MockZapiClientInterfaceMockRecorder) SMBShareAccessControlCreate(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMBShareAccessControlCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).SMBShareAccessControlCreate), arg0, arg1)
+}
+
+// SMBShareAccessControlDelete mocks base method.
+func (m *MockZapiClientInterface) SMBShareAccessControlDelete(arg0 string, arg1 map[string]string) (*azgo.CifsShareAccessControlDeleteResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SMBShareAccessControlDelete", arg0, arg1)
+	ret0, _ := ret[0].(*azgo.CifsShareAccessControlDeleteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SMBShareAccessControlDelete indicates an expected call of SMBShareAccessControlDelete.
+func (mr *MockZapiClientInterfaceMockRecorder) SMBShareAccessControlDelete(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMBShareAccessControlDelete", reflect.TypeOf((*MockZapiClientInterface)(nil).SMBShareAccessControlDelete), arg0, arg1)
+}
+
 // SMBShareCreate mocks base method.
 func (m *MockZapiClientInterface) SMBShareCreate(arg0, arg1 string) (*azgo.CifsShareCreateResponse, error) {
 	m.ctrl.T.Helper()

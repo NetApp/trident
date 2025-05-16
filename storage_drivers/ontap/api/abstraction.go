@@ -230,6 +230,8 @@ type OntapAPI interface {
 	SMBShareCreate(ctx context.Context, shareName, path string) error
 	SMBShareExists(ctx context.Context, shareName string) (bool, error)
 	SMBShareDestroy(ctx context.Context, shareName string) error
+	SMBShareAccessControlCreate(ctx context.Context, shareName string, smbShareACL map[string]string) error
+	SMBShareAccessControlDelete(ctx context.Context, shareName string, smbShareACL map[string]string) error
 
 	TieringPolicyValue(ctx context.Context) string
 

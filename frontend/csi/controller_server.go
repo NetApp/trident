@@ -216,9 +216,12 @@ func (p *Plugin) CreateVolume(
 		preferredTopologies = append(preferredTopologies, preference)
 	}
 
+	// Get Active directory username secret.
+	secrets := req.GetSecrets()
+
 	// Convert volume creation options into a Trident volume config
 	volConfig, err := p.controllerHelper.GetVolumeConfig(ctx, req.Name, sizeBytes, req.Parameters, protocol, accessModes,
-		volumeMode, fsType, requisiteTopologies, preferredTopologies, nil)
+		volumeMode, fsType, requisiteTopologies, preferredTopologies, nil, secrets)
 	if err != nil {
 		p.controllerHelper.RecordVolumeEvent(ctx, req.Name, controllerhelpers.EventTypeNormal, "ProvisioningFailed", err.Error())
 		return nil, p.getCSIErrorForOrchestratorError(err)

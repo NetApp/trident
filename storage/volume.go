@@ -69,6 +69,9 @@ type VolumeConfig struct {
 	Namespace          string                 `json:"namespace"`
 	RequestName        string                 `json:"requestName"`
 	SkipRecoveryQueue  string                 `json:"skipRecoveryQueue"`
+	SMBShareACL        map[string]string      `json:"smbShareACL,omitempty"`
+	// SecureSMBEnabled indicates whether the volume is to be created with secure SMB enabled
+	SecureSMBEnabled bool `json:"secureSMBEnabled,omitempty"`
 }
 
 type VolumeCreatingConfig struct {

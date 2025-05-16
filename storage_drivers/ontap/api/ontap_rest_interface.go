@@ -348,6 +348,13 @@ type RestClientInterface interface {
 	// SMBShareDestroy destroys an SMB share.
 	// Equivalent to filer::> cifs share delete <shareName>
 	SMBShareDestroy(ctx context.Context, shareName string) error
+	// SMBShareAccessControlCreate creates an SMB share access control entry for the specified share.
+	// Equivalent to filer::> cifs share access-control create -share <shareName> -user-or-group <userOrGroup> -access-type <accessType>
+	SMBShareAccessControlCreate(ctx context.Context, shareName string, smbShareACL map[string]string) error
+	// SMBShareAccessControlDelete deletes an SMB share access control entry for the specified share.
+	// Equivalent to filer::> cifs share access-control delete -share <shareName> -user-or-group <userOrGroup>
+	SMBShareAccessControlDelete(ctx context.Context, shareName string, smbShareACL map[string]string) error
+
 	// NVMe Namespace operations
 	// NVMeNamespaceCreate creates NVMe namespace in the backend's SVM.
 	NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error)

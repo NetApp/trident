@@ -3356,4 +3356,48 @@ func (c Client) SMBShareDestroy(shareName string) (*azgo.CifsShareDeleteResponse
 	return response, err
 }
 
+// SMBShareAccessControlCreate creates an SMB share access control entry for the specified share.
+// Equivalent to filer::> cifs share access-control create -share <shareName> -user-or-group <userOrGroup> -access-type <accessType>
+func (c Client) SMBShareAccessControlCreate(shareName string,
+	smbShareACL map[string]string,
+) (*azgo.CifsShareAccessControlCreateResponse, error) {
+	for userOrGroup, permission := range smbShareACL {
+		response, err := azgo.NewCifsShareAccessControlCreateRequest().
+			SetShare(shareName).
+			SetPermission(permission).
+			SetUserOrGroup(userOrGroup).
+			ExecuteUsing(c.zr)
+		if err != nil {
+			return nil, err
+		} else if response.Result.ResultStatusAttr != "passed" && response.Result.ResultErrnoAttr != azgo.EDUPLICATEENTRY {
+			return nil, fmt.Errorf("failed to set SMB share ACL: %s", response.Result)
+		}
+	}
+
+	return nil, nil
+}
+
+// SMBShareAccessControlDelete deletes an SMB share access control entry for the specified share.
+// Equivalent to filer::> cifs share access-control delete -share <shareName> -user-or-group <userOrGroup> -user-or-
+// -group-type <userOrGroupType>
+func (c Client) SMBShareAccessControlDelete(shareName string,
+	smbShareACL map[string]string,
+) (*azgo.CifsShareAccessControlDeleteResponse, error) {
+	for userOrGroup, userOrGroupType := range smbShareACL {
+		response, err := azgo.NewCifsShareAccessControlDeleteRequest().
+			SetShare(shareName).
+			SetUserOrGroup(userOrGroup).
+			SetUserGroupType(userOrGroupType).
+			ExecuteUsing(c.zr)
+
+		if err != nil {
+			return nil, err
+		} else if response.Result.ResultStatusAttr != "passed" && response.Result.
+			ResultErrnoAttr != azgo.EOBJECTNOTFOUND {
+			return nil, fmt.Errorf("failed to delete SMB share ACL: %s", response.Result)
+		}
+	}
+	return nil, nil
+}
+
 // ///////////////////////////////////////////////////////////////////////////

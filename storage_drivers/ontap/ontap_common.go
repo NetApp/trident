@@ -67,10 +67,13 @@ import (
 // //////////////////////////////////////////////////////////////////////////////////////////
 
 const (
-	MinimumVolumeSizeBytes      = 20971520 // 20 MiB
-	HousekeepingStartupDelay    = 10 * time.Second
-	LUNMetadataBufferMultiplier = 1.1 // 10%
-	MaximumIgroupNameLength     = 96  // 96 characters is the maximum character count for ONTAP igroups.
+	MinimumVolumeSizeBytes          = 20971520 // 20 MiB
+	HousekeepingStartupDelay        = 10 * time.Second
+	LUNMetadataBufferMultiplier     = 1.1            // 10%
+	MaximumIgroupNameLength         = 96             // 96 characters is the maximum character count for ONTAP igroups.
+	ADAdminUserPermission           = "full_control" // AD admin user permission
+	DefaultSMBAccessControlUser     = "Everyone"     // Default SMB access control user
+	DefaultSMBAccessControlUserType = "windows"      // Default SMB access control user type
 
 	// Constants for internal pool attributes
 	Size                  = "size"
@@ -100,6 +103,7 @@ const (
 	SkipRecoveryQueue     = "skipRecoveryQueue"
 	QosPolicy             = "qosPolicy"
 	AdaptiveQosPolicy     = "adaptiveQosPolicy"
+	ADAdminUser           = "adAdminUser"
 	maxFlexGroupCloneWait = 120 * time.Second
 	maxFlexvolCloneWait   = 30 * time.Second
 
@@ -133,6 +137,7 @@ var (
 	volumeCharRegex          = regexp.MustCompile(`[^a-zA-Z0-9_]`)
 	volumeNameRegex          = regexp.MustCompile(`\{+.*\.volume.Name[^{a-z]*\}+`)
 	volumeNameStartWithRegex = regexp.MustCompile(`^[A-Za-z_].*`)
+	smbShareDeleteACL        = map[string]string{DefaultSMBAccessControlUser: DefaultSMBAccessControlUserType}
 )
 
 // CleanBackendName removes brackets and replaces colons with periods to avoid regex parsing errors.
@@ -1707,6 +1712,7 @@ const (
 	DefaultExt4FormatOptions         = ""
 	DefaultXfsFormatOptions          = ""
 	DefaultASAEncryption             = "true"
+	DefaultADAdminUser               = ""
 )
 
 // PopulateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
@@ -1856,6 +1862,10 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		config.NASType = sa.NFS
 	}
 
+	if config.ADAdminUser == "" {
+		config.ADAdminUser = DefaultADAdminUser
+	}
+
 	switch config.NASType {
 	case sa.SMB:
 		if config.SecurityStyle == "" {
@@ -1909,6 +1919,7 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		"AutoExportPolicy":       config.AutoExportPolicy,
 		"AutoExportCIDRs":        config.AutoExportCIDRs,
 		"FlexgroupAggregateList": config.FlexGroupAggregateList,
+		"ADAdminUser":            config.ADAdminUser,
 		"NameTemplate":           config.NameTemplate,
 	}).Debugf("Configuration defaults")
 
@@ -2769,6 +2780,7 @@ func InitializeStoragePoolsCommon(
 		pool.InternalAttributes()[SkipRecoveryQueue] = config.SkipRecoveryQueue
 		pool.InternalAttributes()[QosPolicy] = config.QosPolicy
 		pool.InternalAttributes()[AdaptiveQosPolicy] = config.AdaptiveQosPolicy
+		pool.InternalAttributes()[ADAdminUser] = config.ADAdminUser
 
 		pool.SetSupportedTopologies(config.SupportedTopologies)
 
@@ -2981,6 +2993,11 @@ func initializeVirtualPools(
 			adaptiveQosPolicy = vpool.AdaptiveQosPolicy
 		}
 
+		adAdminUser := config.ADAdminUser
+		if vpool.ADAdminUser != "" {
+			adAdminUser = vpool.ADAdminUser
+		}
+
 		pool := storage.NewStoragePool(nil, poolName(fmt.Sprintf("pool_%d", index), backendName))
 
 		// Update pool with attributes set by default for this backend
@@ -3052,6 +3069,7 @@ func initializeVirtualPools(
 		pool.InternalAttributes()[QosPolicy] = qosPolicy
 		pool.InternalAttributes()[LUKSEncryption] = luksEncryption
 		pool.InternalAttributes()[AdaptiveQosPolicy] = adaptiveQosPolicy
+		pool.InternalAttributes()[ADAdminUser] = adAdminUser
 		pool.SetSupportedTopologies(supportedTopologies)
 
 		if d.Name() == tridentconfig.OntapSANStorageDriverName || d.Name() == tridentconfig.OntapSANEconomyStorageDriverName {
@@ -4283,7 +4301,7 @@ func ConstructOntapNASVolumeAccessPath(
 		}
 		return fmt.Sprintf("/%s", volConfig.InternalName)
 	case sa.SMB:
-		if smbShare != "" {
+		if smbShare != "" && !volConfig.SecureSMBEnabled {
 			smbSharePath = fmt.Sprintf("\\%s", smbShare)
 		} else {
 			// Set share path as empty, volume name contains the path prefix.

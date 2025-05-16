@@ -130,6 +130,7 @@ func TestGetVolumeConfig(t *testing.T) {
 			}
 
 			dummyMap := make([]map[string]string, 0)
+			dummySecret := make(map[string]string)
 			expected := &storage.VolumeConfig{
 				Name:                test.volumeName,
 				Size:                "100",
@@ -144,7 +145,7 @@ func TestGetVolumeConfig(t *testing.T) {
 			}
 			result, err := plugin.GetVolumeConfig(ctx, test.volumeName, 100, test.parameters,
 				config.Protocol(config.File), test.accessMode, config.VolumeMode(config.Filesystem), "fsType",
-				dummyMap, dummyMap, nil)
+				dummyMap, dummyMap, nil, dummySecret)
 
 			if test.expected {
 				assert.Error(t, err, "Error is nil")

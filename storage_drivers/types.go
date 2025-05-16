@@ -213,6 +213,7 @@ type OntapStorageDriverConfigDefaults struct {
 	AdaptiveQosPolicy string `json:"adaptiveQosPolicy"`
 	FormatOptions     string `json:"formatOptions"`
 	SkipRecoveryQueue string `json:"skipRecoveryQueue"`
+	ADAdminUser       string `json:"adAdminUser"`
 	CommonStorageDriverConfigDefaults
 }
 

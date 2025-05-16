@@ -74,7 +74,7 @@ func (h *helper) Version() string {
 func (h *helper) GetVolumeConfig(
 	ctx context.Context, name string, sizeBytes int64, parameters map[string]string,
 	protocol config.Protocol, accessModes []config.AccessMode, volumeMode config.VolumeMode, fsType string,
-	requisiteTopology, preferredTopology, _ []map[string]string,
+	requisiteTopology, preferredTopology, _ []map[string]string, _ map[string]string,
 ) (*storage.VolumeConfig, error) {
 	accessMode := frontendcommon.CombineAccessModes(ctx, accessModes)
 

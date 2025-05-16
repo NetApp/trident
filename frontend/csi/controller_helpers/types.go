@@ -32,7 +32,7 @@ type ControllerHelper interface {
 	GetVolumeConfig(
 		ctx context.Context, name string, sizeBytes int64, parameters map[string]string,
 		protocol config.Protocol, accessModes []config.AccessMode, volumeMode config.VolumeMode, fsType string,
-		requisiteTopology, preferredTopology, accessibleTopology []map[string]string,
+		requisiteTopology, preferredTopology, accessibleTopology []map[string]string, secrets map[string]string,
 	) (*storage.VolumeConfig, error)
 
 	// GetSnapshotConfigForCreate accepts the attributes of a snapshot being requested by the CSI

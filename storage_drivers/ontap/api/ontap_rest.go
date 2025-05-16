@@ -6264,6 +6264,78 @@ func (c *RestClient) SMBShareDestroy(ctx context.Context, shareName string) erro
 	return nil
 }
 
+// SMBShareAccessControlCreate creates an SMB share access control entry for the specified share.
+// Equivalent to filer::> cifs share access-control create -share <shareName> -user-or-group <userOrGroup> -access-type <accessType>
+func (c *RestClient) SMBShareAccessControlCreate(ctx context.Context, shareName string,
+	smbShareACL map[string]string,
+) error {
+	params := nas.NewCifsShareACLCreateParams()
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.SetShare(shareName)
+	params.SetSvmUUID(c.svmUUID)
+
+	for userOrGroup, permission := range smbShareACL {
+		cifsShareInfo := &models.CifsShareACL{
+			Permission:  &permission,
+			UserOrGroup: &userOrGroup,
+		}
+
+		params.SetInfo(cifsShareInfo)
+		result, err := c.api.Nas.CifsShareACLCreate(params, c.authInfo)
+		if err != nil {
+			if restErr, extractErr := ExtractErrorResponse(ctx, err); extractErr == nil {
+				if restErr.Error != nil && restErr.Error.Code != nil && *restErr.Error.Code != DUPLICATE_ENTRY &&
+					restErr.Error.Message != nil {
+					return fmt.Errorf(*restErr.Error.Message)
+				}
+			} else {
+				return err
+			}
+		}
+		if result == nil && err == nil {
+			return fmt.Errorf("unexpected response from SMB share access control create")
+		}
+	}
+
+	return nil
+}
+
+// SMBShareAccessControlDelete deletes an SMB share access control entry for the specified share.
+// Equivalent to filer::> cifs share access-control delete -share <shareName> -user-or-group <userOrGroup>
+func (c *RestClient) SMBShareAccessControlDelete(ctx context.Context, shareName string,
+	smbShareACL map[string]string,
+) error {
+	params := nas.NewCifsShareACLDeleteParams()
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.SetSvmUUID(c.svmUUID)
+	params.SetShare(shareName)
+
+	for userOrGroup, userOrGroupType := range smbShareACL {
+		params.SetUserOrGroup(userOrGroup)
+		params.SetType(userOrGroupType)
+
+		result, err := c.api.Nas.CifsShareACLDelete(params, c.authInfo)
+		if err != nil {
+			if restErr, extractErr := ExtractErrorResponse(ctx, err); extractErr == nil {
+				if restErr.Error != nil && restErr.Error.Code != nil && *restErr.Error.Code != ENTRY_DOESNT_EXIST &&
+					restErr.Error.Message != nil {
+					return fmt.Errorf(*restErr.Error.Message)
+				}
+			} else {
+				return err
+			}
+		}
+		if result == nil && err == nil {
+			return fmt.Errorf("unexpected response from SMB share create")
+		}
+	}
+
+	return nil
+}
+
 // NVMe Namespace operations
 // NVMeNamespaceCreate creates NVMe namespace in the backend's SVM.
 func (c *RestClient) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error) {
