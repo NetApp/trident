@@ -275,8 +275,8 @@ docker_build_windows = $1 build \
 docker_build_operator = $1 build \
 	--platform $2 \
 	--file operator/Dockerfile \
-	--build-arg ARCH=$(call arch,$2) \
 	--build-arg BIN=$(call binary_path,trident-operator,$2) \
+	$(if $(TRIDENT_DEPS_IMAGE),--build-arg DEPS_IMAGE=$(TRIDENT_DEPS_IMAGE)) \
 	--tag $3 \
 	--rm \
 	$(if $(findstring $(DOCKER_BUILDX_BUILD_CLI),$1),--builder trident-builder) \

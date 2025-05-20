@@ -17,7 +17,7 @@ RUN --mount=type=secret,id=activation_key,env=ACTIVATION_KEY \
     fi; \
     # Copy real certificates \
     mkdir /real-certs; \
-    cp -L /etc/ssl/certs/* /real-certs/;
+    cp -L /etc/ssl/certs/* /real-certs/
 
 # Get the mount.nfs4 dependency
 RUN ldd /sbin/mount.nfs4 | tr -s '[:space:]' '\n' | grep '^/' | xargs -I % sh -c 'mkdir -p /nfs-deps/$(dirname %) && cp -L % /nfs-deps/%'
