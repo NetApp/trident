@@ -2647,6 +2647,32 @@ func TestOntapASAStorageDriver_Resize_LesserSizeThanCurrent(t *testing.T) {
 	assert.Error(t, err, "Expected error when resizing to lesser size than current")
 }
 
+func TestOntapASANVMeStorageDriver_Resize_DriverVolumeLimitError(t *testing.T) {
+	mockAPI, driver := newMockOntapASADriver(t)
+
+	volConfig := getASAVolumeConfig()
+
+	// Case: Invalid limitVolumeSize on driver
+	driver.Config.LimitVolumeSize = "1000.1000"
+
+	mockAPI.EXPECT().LunExists(ctx, "trident-pvc-1234").Return(true, nil)
+
+	err := driver.Resize(ctx, &volConfig, 2147483648) // 1GB
+
+	assert.ErrorContains(t, err, "error parsing limitVolumeSize")
+
+	// Case: requestedSize is more than limitVolumeSize
+	driver.Config.LimitVolumeSize = "2147483648" // 2 GB
+
+	mockAPI.EXPECT().LunExists(ctx, "trident-pvc-1234").Return(true, nil)
+
+	err = driver.Resize(ctx, &volConfig, 3221225472) // 3 GB
+
+	capacityErr, _ := errors.HasUnsupportedCapacityRangeError(err)
+
+	assert.True(t, capacityErr, "expected unsupported capacity error")
+}
+
 func TestOntapASAStorageDriver_Resize_APIErrors(t *testing.T) {
 	mockAPI, driver := newMockOntapASADriver(t)
 

@@ -1133,6 +1133,13 @@ func (d *ASAStorageDriver) Resize(
 		return tridenterrors.NotFoundError("LUN %s does not exist", name)
 	}
 
+	// Check if the requested size falls within limitVolumeSize config
+	if _, _, checkVolumeSizeLimitsError := drivers.CheckVolumeSizeLimits(
+		ctx, requestedSizeBytes, d.Config.CommonStorageDriverConfig,
+	); checkVolumeSizeLimitsError != nil {
+		return checkVolumeSizeLimitsError
+	}
+
 	// Get current size
 	currentLunSize, err := d.API.LunSize(ctx, name)
 	if err != nil {
