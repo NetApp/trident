@@ -796,7 +796,9 @@ func (client *Client) GetDeviceInfoForLUN(
 	if err != nil {
 		return nil, err
 	} else if len(devicesForLUN) == 0 {
-		return nil, fmt.Errorf("scan not completed for LUN %d on target %s", lunID, iSCSINodeName)
+		// No devices found may be due to a node reboot
+		Logc(ctx).WithFields(fields).Info("No devices found for LUN.")
+		return nil, nil
 	}
 
 	multipathDevice := ""

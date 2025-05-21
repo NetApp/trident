@@ -2997,7 +2997,7 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 			getFileSystemUtils: func() afero.Fs {
 				return afero.NewMemMapFs()
 			},
-			assertError:        assert.Error,
+			assertError:        assert.NoError,
 			expectedDeviceInfo: nil,
 		},
 		"error getting devices for LUN": {
@@ -3035,7 +3035,7 @@ func TestClient_getDeviceInfoForLUN(t *testing.T) {
 			getFileSystemUtils: func() afero.Fs {
 				return afero.NewMemMapFs()
 			},
-			assertError:        assert.Error,
+			assertError:        assert.NoError,
 			expectedDeviceInfo: nil,
 		},
 		"no multipath device found": {

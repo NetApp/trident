@@ -2379,11 +2379,29 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any(), false).Return(nil, nil)
+				mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().TargetHasMountedDevice(gomock.Any(),
+					"iqn.1992-08.com.netapp:sn.a0e6b50f49e611efa8b5005056b33c0d:vs.2").Return(false, nil)
+				mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), 6, 3).Return(true)
+				mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
+				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
 				return mockISCSIClient
+			},
+			getMountClient: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+				return mockMountClient
 			},
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil)
 				return mockDeviceClient
+			},
+			getNodeHelper: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).Return(nil)
+				return mockNodeHelper
 			},
 		},
 		"SAN: iSCSI unstage: GetDeviceInfoForLUN error": {

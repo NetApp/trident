@@ -1940,8 +1940,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		Logc(ctx).WithError(err).Debug("Could not find devices.")
 		return fmt.Errorf("could not get device info: %v", err)
 	} else if deviceInfo == nil {
-		Logc(ctx).Debug("Could not find devices, nothing to do.")
-		return nil
+		Logc(ctx).Debug("No devices found.")
 	}
 
 	// Remove Portal/LUN entries in self-healing map.
@@ -1949,7 +1948,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 
 	var luksMapperPath string
 	// If the multipath device is not present, the LUKS device should not exist.
-	if convert.ToBool(publishInfo.LUKSEncryption) && deviceInfo.MultipathDevice != "" {
+	if convert.ToBool(publishInfo.LUKSEncryption) && deviceInfo != nil && deviceInfo.MultipathDevice != "" {
 		fields := LogFields{
 			"lunID":           publishInfo.IscsiLunNumber,
 			"publishedDevice": publishInfo.DevicePath,
@@ -1985,18 +1984,21 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 
 	// Delete the device from the host.
-	unmappedMpathDevice, err := p.iscsi.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, p.unsafeDetach,
-		force)
-	if err != nil {
-		if errors.IsISCSISameLunNumberError(err) {
-			// There is a need to pass all the publish infos this time
-			unmappedMpathDevice, err = p.iscsi.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo,
-				p.readAllTrackingFiles(ctx),
-				p.unsafeDetach, force)
-		}
+	var unmappedMpathDevice string
+	if deviceInfo != nil {
+		unmappedMpathDevice, err = p.iscsi.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, p.unsafeDetach,
+			force)
+		if err != nil {
+			if errors.IsISCSISameLunNumberError(err) {
+				// There is a need to pass all the publish infos this time
+				unmappedMpathDevice, err = p.iscsi.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo,
+					p.readAllTrackingFiles(ctx),
+					p.unsafeDetach, force)
+			}
 
-		if err != nil && !p.unsafeDetach {
-			return status.Error(codes.Internal, err.Error())
+			if err != nil && !p.unsafeDetach {
+				return status.Error(codes.Internal, err.Error())
+			}
 		}
 	}
 
