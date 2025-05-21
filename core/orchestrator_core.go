@@ -2339,6 +2339,7 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 
 	// Clone the source config, as most of its attributes will apply to the clone
 	cloneConfig := sourceVolume.Config.ConstructClone()
+
 	internalName := ""
 	internalID := ""
 
@@ -2373,6 +2374,8 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 	cloneConfig.Namespace = volumeConfig.Namespace
 	cloneConfig.RequestName = volumeConfig.RequestName
 	cloneConfig.SkipRecoveryQueue = volumeConfig.SkipRecoveryQueue
+	// Empty out the export policy. It will be set in the backend driver.
+	cloneConfig.ExportPolicy = ""
 
 	// If it's from snapshot, we need the LUKS passphrases value from the snapshot
 	isLUKS, err := strconv.ParseBool(cloneConfig.LUKSEncryption)

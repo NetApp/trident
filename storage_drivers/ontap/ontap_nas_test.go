@@ -861,6 +861,7 @@ func TestOntapNasStorageDriverVolumeClone(t *testing.T) {
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
 		"tieringPolicy": "none",
+		"exportPolicy":  "default",
 	})
 	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
 		"type": "clone",
@@ -899,6 +900,7 @@ func TestOntapNasStorageDriverVolumeClone(t *testing.T) {
 			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").
 				Return(nil)
 			mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+			mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "default").Return(nil)
 
 			if test.NasType == sa.SMB {
 				driver.Config.NASType = sa.SMB
@@ -1024,6 +1026,7 @@ func TestOntapNasStorageDriverVolumeClone_NameTemplateStoragePoolUnset(t *testin
 	})
 	pool1.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." +
 		"RequestName}}"
+	pool1.InternalAttributes()[ExportPolicy] = "default"
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 	driver.Config.SplitOnClone = "false"
 	driver.Config.Labels = pool1.GetLabels(ctx, "")
@@ -1039,8 +1042,104 @@ func TestOntapNasStorageDriverVolumeClone_NameTemplateStoragePoolUnset(t *testin
 	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").
 		Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "default").Return(nil)
 
-	result := driver.CreateClone(ctx, nil, volConfig, nil)
+	result := driver.CreateClone(ctx, nil, volConfig, pool1)
+
+	assert.NoError(t, result)
+}
+
+func TestOntapNasStorageDriverVolumeClone_AutoExportPolicy_On(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:       "1g",
+		Encryption: "false",
+		FileSystem: "nfs",
+	}
+
+	flexVol := api.Volume{
+		Name:    "flexvol",
+		Comment: "flexvol",
+	}
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"type": "clone",
+	})
+	pool1.InternalAttributes()[ExportPolicy] = "<automatic>"
+
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.SplitOnClone = "false"
+	driver.Config.Labels = pool1.GetLabels(ctx, "")
+	driver.Config.AutoExportPolicy = true
+	prefix := "trident-"
+	driver.Config.StoragePrefix = &prefix
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+	mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
+	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
+		gomock.Any(), false).Return(nil)
+	mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
+		maxFlexvolCloneWait).Return("online", nil)
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").
+		Return(nil)
+	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+	mockAPI.EXPECT().ExportPolicyCreate(ctx, "trident-empty").Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "trident-empty").Return(nil)
+
+	result := driver.CreateClone(ctx, nil, volConfig, pool1)
+
+	assert.NoError(t, result)
+}
+
+func TestOntapNasStorageDriverVolumeClone_AutoExportPolicy_Off(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:       "1g",
+		Encryption: "false",
+		FileSystem: "nfs",
+	}
+
+	flexVol := api.Volume{
+		Name:    "flexvol",
+		Comment: "flexvol",
+	}
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"type": "clone",
+	})
+	pool1.InternalAttributes()[ExportPolicy] = "default"
+
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.SplitOnClone = "false"
+	driver.Config.Labels = pool1.GetLabels(ctx, "")
+	driver.Config.AutoExportPolicy = false
+	prefix := "trident-"
+	driver.Config.StoragePrefix = &prefix
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+	mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
+	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
+		gomock.Any(), false).Return(nil)
+	mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
+		maxFlexvolCloneWait).Return("online", nil)
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").
+		Return(nil)
+	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "default").Return(nil)
+
+	result := driver.CreateClone(ctx, nil, volConfig, pool1)
 
 	assert.NoError(t, result)
 }
@@ -1157,6 +1256,7 @@ func TestOntapNasStorageDriverVolumeClone_NameTemplate(t *testing.T) {
 			pool1.SetAttributes(map[string]sa.Offer{
 				sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 			})
+			pool1.InternalAttributes()[ExportPolicy] = "default"
 			driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
@@ -1169,6 +1269,7 @@ func TestOntapNasStorageDriverVolumeClone_NameTemplate(t *testing.T) {
 			mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, test.expectedLabel).
 				Return(nil)
 			mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+			mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "default").Return(nil)
 
 			result := driver.CreateClone(ctx, nil, volConfig, pool1)
 
@@ -1329,6 +1430,7 @@ func TestOntapNasStorageDriverVolumeClone_SMBShareCreateFail(t *testing.T) {
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
 		"tieringPolicy": "none",
+		"exportPolicy":  "default",
 	})
 	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
 		"type": "clone",
@@ -1361,6 +1463,7 @@ func TestOntapNasStorageDriverVolumeClone_SMBShareCreateFail(t *testing.T) {
 	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName,
 		"/"+volConfig.InternalName).Return(fmt.Errorf("cannot create volume"))
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "default").Return(nil)
 
 	result := driver.CreateClone(ctx, nil, volConfig, pool1)
 

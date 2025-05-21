@@ -553,6 +553,30 @@ func (d *NASStorageDriver) CreateClone(
 		return err
 	}
 
+	// Cloned volume in ontap by default will use the same export policy as the source volume.
+	// We need to make sure the correct export policy is set on the clone.
+	exportPolicy := collection.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
+
+	// only create the empty policy if autoExportPolicy = true
+	if d.Config.AutoExportPolicy {
+		// set empty export policy on flexVol creation
+		exportPolicy = getEmptyExportPolicyName(*d.Config.StoragePrefix)
+
+		err = ensureExportPolicyExists(ctx, exportPolicy, d.API)
+		if err != nil {
+			return fmt.Errorf("error ensuring export policy exists: %v", err)
+		}
+	}
+
+	// Set export policy on the new cloned volume
+	err = d.API.VolumeModifyExportPolicy(ctx, cloneVolConfig.InternalName, exportPolicy)
+	if err != nil {
+		Logc(ctx).WithError(err).Errorf("Error setting volume %s to empty export policy.", cloneVolConfig.InternalName)
+		return err
+	}
+
+	cloneVolConfig.ExportPolicy = exportPolicy
+
 	// TODO: enable secure SMB share for clone volumes
 	if d.Config.NASType == sa.SMB {
 		if err := d.EnsureSMBShare(ctx, cloneVolConfig.InternalName, "/"+cloneVolConfig.InternalName, cloneVolConfig.SMBShareACL, false); err != nil {
@@ -898,6 +922,7 @@ func (d *NASStorageDriver) setVolToEmptyPolicy(ctx context.Context, volName stri
 	if err != nil {
 		return err
 	}
+
 	if !exists {
 		Logc(ctx).WithField("exportPolicy", emptyExportPolicy).
 			Debug("Export policy not found, attempting to create it.")
@@ -906,11 +931,14 @@ func (d *NASStorageDriver) setVolToEmptyPolicy(ctx context.Context, volName stri
 			return err
 		}
 	}
+
 	err = d.API.VolumeModifyExportPolicy(ctx, volName, emptyExportPolicy)
 	if err != nil {
 		Logc(ctx).WithError(err).Errorf("Error setting volume %s to empty export policy.", volName)
+		return err
 	}
-	return err
+
+	return nil
 }
 
 func (d *NASStorageDriver) publishFlexVolShare(
