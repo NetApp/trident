@@ -1171,16 +1171,6 @@ func TestOntapREST_LunGet(t *testing.T) {
 	}
 }
 
-func TestOntapREST_PollLunCreate(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(mockLunResponse))
-	rs := newRestClient(server.Listener.Addr().String(), server.Client())
-	assert.NotNil(t, rs)
-
-	err := rs.pollLunCreate(ctx, "/fake-lunName")
-	assert.NoError(t, err, "could not poll LUN create job")
-	server.Close()
-}
-
 func mockInvalidResponse(w http.ResponseWriter, r *http.Request) {
 	setHTTPResponseHeader(w, http.StatusNotFound)
 	json.NewEncoder(w).Encode("invalidResponse")

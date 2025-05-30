@@ -2485,38 +2485,6 @@ func (c *RestClient) LunOptions(
 	return result, nil
 }
 
-// pollLunCreate polls for the created LUN to appear, with backoff retry logic
-func (c *RestClient) pollLunCreate(ctx context.Context, lunPath string) error {
-	checkCreateStatus := func() error {
-		fields := []string{""}
-		lun, err := c.LunGetByName(ctx, lunPath, fields)
-		if err != nil {
-			return err
-		}
-		if lun == nil {
-			return fmt.Errorf("could not find LUN with name %v", lunPath)
-		}
-		return nil
-	}
-	createStatusNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithField("increment", duration).Debug("LUN creation not finished, waiting.")
-	}
-	createStatusBackoff := backoff.NewExponentialBackOff()
-	createStatusBackoff.InitialInterval = 1 * time.Second
-	createStatusBackoff.Multiplier = 2
-	createStatusBackoff.RandomizationFactor = 0.1
-	createStatusBackoff.MaxElapsedTime = 2 * time.Minute
-
-	// Run the creation check using an exponential backoff
-	if err := backoff.RetryNotify(checkCreateStatus, createStatusBackoff, createStatusNotify); err != nil {
-		Logc(ctx).WithField("LUN", lunPath).Warnf("LUN not found after %3.2f seconds.",
-			createStatusBackoff.MaxElapsedTime.Seconds())
-		return err
-	}
-
-	return nil
-}
-
 // LunCloneCreate creates a LUN clone
 func (c *RestClient) LunCloneCreate(
 	ctx context.Context, lunPath, sourcePath string, sizeInBytes int64, osType string, qosPolicyGroup QosPolicyGroup,
@@ -2563,16 +2531,7 @@ func (c *RestClient) LunCloneCreate(
 
 	params.SetInfo(lunInfo)
 
-	lunCreateCreated, lunCreateAccepted, err := c.api.San.LunCreate(params, c.authInfo)
-	if err != nil {
-		return err
-	}
-	if lunCreateCreated == nil && lunCreateAccepted == nil {
-		return fmt.Errorf("unexpected response from LUN create")
-	}
-
-	// verify the created LUN can be found
-	return c.pollLunCreate(ctx, lunPath)
+	return c.lunCreate(ctx, params, "failed to create lun clone")
 }
 
 // LunCreate creates a LUN
@@ -2620,18 +2579,31 @@ func (c *RestClient) LunCreate(
 
 	params.SetInfo(lunInfo)
 
-	lunCreateCreated, lunCreateAccepted, err := c.api.San.LunCreate(params, c.authInfo)
+	return c.lunCreate(ctx, params, "failed to create lun")
+}
+
+func (c *RestClient) lunCreate(ctx context.Context, params *san.LunCreateParams, customErrMsg string) error {
+	lunCreateOk, lunCreateAccepted, err := c.api.San.LunCreate(params, c.authInfo)
 	if err != nil {
 		return err
 	}
 
 	// If both response parameter is nil, then it is unexpected.
-	if lunCreateCreated == nil && lunCreateAccepted == nil {
+	if lunCreateOk == nil && lunCreateAccepted == nil {
 		return fmt.Errorf("unexpected response from LUN create")
 	}
 
-	// verify the created LUN can be found
-	return c.pollLunCreate(ctx, lunPath)
+	// Check for synchronous response and return status based on that
+	if lunCreateOk != nil {
+		if lunCreateOk.IsSuccess() {
+			return nil
+		}
+		return fmt.Errorf("%s: %v", customErrMsg, lunCreateOk.Error())
+	}
+
+	// Else, wait for job to finish
+	jobLink := getGenericJobLinkFromLunJobLink(lunCreateAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // LunGet gets the LUN with the specified uuid
