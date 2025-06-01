@@ -7106,6 +7106,43 @@ func mockSnapMirrorRelationshipResponseFailure(w http.ResponseWriter, r *http.Re
 	}
 }
 
+func mockSnapMirrorRelationshipTransferResponseFailure(w http.ResponseWriter, r *http.Request) {
+	snapmirrorTransferResponse := &models.SnapmirrorTransferResponse{
+		SnapmirrorTransferResponseInlineRecords: []*models.SnapmirrorTransfer{
+			{
+				UUID: convert.ToPtr(strfmt.UUID("1234567899")),
+			},
+		},
+	}
+
+	if r.URL.Path == "/api/cluster/jobs/1234" {
+		mockQtreeJobResponse(w, r)
+	} else {
+		switch r.Method {
+		case "PATCH", "DELETE":
+			jobId := strfmt.UUID("1234")
+			jobLink := models.JobLink{UUID: &jobId}
+			jobResponse := models.JobLinkResponse{Job: &jobLink}
+			setHTTPResponseHeader(w, http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(jobResponse)
+		case "POST":
+			if r.URL.Path == "/api/snapmirror/relationships/1234/transfer" {
+				jobId := strfmt.UUID("1234")
+				jobLink := models.JobLink{UUID: &jobId}
+				jobResponse := models.JobLinkResponse{Job: &jobLink}
+				setHTTPResponseHeader(w, http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(jobResponse)
+			} else {
+				setHTTPResponseHeader(w, http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(snapmirrorTransferResponse)
+			}
+		default:
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(snapmirrorTransferResponse)
+		}
+	}
+}
+
 func mockSnapMirrorRelationshipResponseEmptyValue(w http.ResponseWriter, r *http.Request) {
 	snapMirrorRelationshipResponse := &models.SnapmirrorRelationshipResponse{
 		SnapmirrorRelationshipResponseInlineRecords: []*models.SnapmirrorRelationship{
@@ -7323,7 +7360,7 @@ func TestOntapRest_SnapmirrorAbort(t *testing.T) {
 	}{
 		{"PositiveTest", mockSnapMirrorRelationshipResponse, false},
 		{"UUIDNilInResponse", mockSnapMirrorRelationshipResponseUUIDNil, true},
-		{"SnapMirrorRelationshipFailed", mockSnapMirrorRelationshipResponseFailure, true},
+		{"SnapMirrorRelationshipTransferFailed", mockSnapMirrorRelationshipTransferResponseFailure, true},
 		{"NegativeTest_BackendReturnError", mockResourceNotFound, true},
 	}
 	for _, test := range tests {

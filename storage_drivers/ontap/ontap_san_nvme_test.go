@@ -777,6 +777,32 @@ func TestNVMeGetReplicationDetails_Error(t *testing.T) {
 	assert.ErrorContains(t, err, "invalid volume name")
 }
 
+func TestNVMeUpdateMirror_Error(t *testing.T) {
+	d := newNVMeDriver(nil, nil, nil)
+
+	err := d.UpdateMirror(ctx, "", "")
+
+	assert.ErrorContains(t, err, "invalid volume name")
+}
+
+func TestNVMeCheckMirrorTransferState_Error(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	mAPI.EXPECT().SVMName().Return("svm")
+
+	_, err := d.CheckMirrorTransferState(ctx, "")
+
+	assert.ErrorContains(t, err, "invalid volume name")
+}
+
+func TestNVMeGetMirrorTransferTime_Error(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	mAPI.EXPECT().SVMName().Return("svm")
+
+	_, err := d.GetMirrorTransferTime(ctx, "")
+
+	assert.ErrorContains(t, err, "invalid volume name")
+}
+
 func getNVMeCreateArgs(d *NVMeStorageDriver) (storage.Pool, *storage.VolumeConfig, map[string]sa.Request) {
 	pool1 := d.virtualPools["pool1"]
 	volConfig := &storage.VolumeConfig{InternalName: "vol1", Size: "200000000"}
@@ -1177,8 +1203,9 @@ func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
 		"Volume destroy API call return error": {
 			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
-				mockAPI.EXPECT().SVMName().Return("svm")
+				mockAPI.EXPECT().SVMName().Return("svm").AnyTimes()
 				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true,
 					false).Return(fmt.Errorf("destroy volume failed"))
 			},
@@ -1191,8 +1218,9 @@ func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
 		"volume Destroy error: volume config with internal snapshot": {
 			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
-				mockAPI.EXPECT().SVMName().Return("svm")
+				mockAPI.EXPECT().SVMName().Return("svm").AnyTimes()
 				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true,
 					false).Return(fmt.Errorf("destroy volume failed"))
 			},
@@ -1207,8 +1235,9 @@ func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
 		"happy path": {
 			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
-				mockAPI.EXPECT().SVMName().Return("svm")
+				mockAPI.EXPECT().SVMName().Return("svm").AnyTimes()
 				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, false).Return(nil)
 			},
 			getVolumeConfig: func(driver *NVMeStorageDriver) storage.VolumeConfig {
@@ -1220,8 +1249,9 @@ func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
 		"happy path: volume config with internal snapshot": {
 			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
-				mockAPI.EXPECT().SVMName().Return("svm")
+				mockAPI.EXPECT().SVMName().Return("svm").AnyTimes()
 				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, false).Return(nil)
 				mockAPI.EXPECT().VolumeSnapshotDelete(ctx, cloneSourceSnapshot, "").Return(nil)
 			},
@@ -1236,8 +1266,9 @@ func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
 		"volume config with internal snapshot: snapshot delete error": {
 			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
-				mockAPI.EXPECT().SVMName().Return("svm")
+				mockAPI.EXPECT().SVMName().Return("svm").AnyTimes()
 				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, false).Return(nil)
 				mockAPI.EXPECT().VolumeSnapshotDelete(ctx, cloneSourceSnapshot, "").
 					Return(fmt.Errorf("failed to delete snapshot"))
@@ -1253,8 +1284,9 @@ func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
 		"volume config with internal snapshot: snapshot delete not found error": {
 			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
-				mockAPI.EXPECT().SVMName().Return("svm")
+				mockAPI.EXPECT().SVMName().Return("svm").AnyTimes()
 				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, false).Return(nil)
 				mockAPI.EXPECT().VolumeSnapshotDelete(ctx, cloneSourceSnapshot, "").
 					Return(api.NotFoundError("snapshot not found"))
@@ -1270,8 +1302,9 @@ func TestNVMeDestroy_VolumeDestroy(t *testing.T) {
 		"skipRecoveryQueue volume": {
 			configureMockOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil)
-				mockAPI.EXPECT().SVMName().Return("svm")
+				mockAPI.EXPECT().SVMName().Return("svm").AnyTimes()
 				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(nil)
 			},
 			getVolumeConfig: func(driver *NVMeStorageDriver) storage.VolumeConfig {

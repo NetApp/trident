@@ -1975,14 +1975,12 @@ func (d OntapAPIREST) SnapmirrorPolicyGet(ctx context.Context, replicationPolicy
 func (d OntapAPIREST) isTransferInProgressError(
 	ctx context.Context, err error,
 ) bool {
-	if restErr, err := ExtractErrorResponse(ctx, err); err == nil {
-		if restErr.Error != nil && restErr.Error.Code != nil {
-			switch *restErr.Error.Code {
-			case SNAPMIRROR_TRANSFER_IN_PROGRESS, SNAPMIRROR_TRANSFER_IN_PROGRESS_BROKEN_OFF:
-				return true
-			default:
-				return false
-			}
+	if _, _, code := ExtractError(err); code != "" {
+		switch code {
+		case SNAPMIRROR_TRANSFER_IN_PROGRESS, SNAPMIRROR_TRANSFER_IN_PROGRESS_BROKEN_OFF:
+			return true
+		default:
+			return false
 		}
 	}
 	return false

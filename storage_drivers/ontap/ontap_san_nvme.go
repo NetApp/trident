@@ -795,6 +795,13 @@ func (d *NVMeStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volu
 		}
 	}
 
+	// If flexvol has been a snapmirror source
+	if err = d.API.SnapmirrorRelease(ctx, name, d.API.SVMName()); err != nil {
+		if !api.IsNotFoundError(err) {
+			return err
+		}
+	}
+
 	// Delete the FlexVol and Namespace.
 	err = d.API.VolumeDestroy(ctx, name, true, skipRecoveryQueue)
 	if err != nil {
@@ -838,6 +845,17 @@ func (d *NVMeStorageDriver) Publish(
 			return err
 		}
 		publishInfo.HostNQN = nqn
+	}
+
+	if volConfig.IsMirrorDestination {
+		// In this case, InternalID and NVMeNamespaceUUID would be empty
+		volConfig.InternalID = createNamespacePath(volConfig.InternalName, extractNamespaceName(""))
+		ns, err := d.API.NVMeNamespaceGetByName(ctx, volConfig.InternalID)
+		if err != nil {
+			return fmt.Errorf("problem fetching namespace %v. Error:%v", volConfig.InternalID, err)
+		}
+
+		volConfig.AccessInfo.NVMeNamespaceUUID = ns.UUID
 	}
 
 	nsPath := volConfig.InternalID
@@ -1522,7 +1540,8 @@ func (d *NVMeStorageDriver) EstablishMirror(
 		replicationSchedule = ""
 	}
 
-	return establishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
+	return establishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule,
+		d.API)
 }
 
 // ReestablishMirror will attempt to resync a snapmirror relationship,
@@ -1562,7 +1581,8 @@ func (d *NVMeStorageDriver) ReestablishMirror(
 		replicationSchedule = ""
 	}
 
-	return reestablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule, d.API)
+	return reestablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule,
+		d.API)
 }
 
 // PromoteMirror will break the snapmirror and make the destination volume RW,
@@ -1587,8 +1607,30 @@ func (d *NVMeStorageDriver) ReleaseMirror(ctx context.Context, localInternalVolu
 }
 
 // GetReplicationDetails returns the replication policy and schedule of a snapmirror relationship.
-func (d *NVMeStorageDriver) GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error) {
+func (d *NVMeStorageDriver) GetReplicationDetails(
+	ctx context.Context, localInternalVolumeName, remoteVolumeHandle string,
+) (string, string, string, error) {
 	return getReplicationDetails(ctx, localInternalVolumeName, remoteVolumeHandle, d.API)
+}
+
+// UpdateMirror will attempt a mirror update for the given destination volume
+func (d *NVMeStorageDriver) UpdateMirror(ctx context.Context, localInternalVolumeName, snapshotName string) error {
+	return mirrorUpdate(ctx, localInternalVolumeName, snapshotName, d.API)
+}
+
+// CheckMirrorTransferState will look at the transfer state of the mirror relationship to determine if it is failed,
+// succeeded or in progress
+func (d *NVMeStorageDriver) CheckMirrorTransferState(
+	ctx context.Context, localInternalVolumeName string,
+) (*time.Time, error) {
+	return checkMirrorTransferState(ctx, localInternalVolumeName, d.API)
+}
+
+// GetMirrorTransferTime will return the transfer time of the mirror relationship
+func (d *NVMeStorageDriver) GetMirrorTransferTime(
+	ctx context.Context, localInternalVolumeName string,
+) (*time.Time, error) {
+	return getMirrorTransferTime(ctx, localInternalVolumeName, d.API)
 }
 
 // CreateNVMeNamespaceCommentString returns the string that needs to be stored in namespace comment field.

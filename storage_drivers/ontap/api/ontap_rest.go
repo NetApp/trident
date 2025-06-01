@@ -5839,8 +5839,8 @@ func (c *RestClient) SnapmirrorQuiesce(
 func (c *RestClient) SnapmirrorAbort(
 	ctx context.Context, localFlexvolName, localSVMName, remoteFlexvolName, remoteSVMName string,
 ) error {
-	// first, find the relationship so we can then use the UUID to modify it
-	fields := []string{"destination.path", "source.path"}
+	// find the existing transfer in a relationship, so we can then use the UUID to abort the transfer.
+	fields := []string{"destination.path", "source.path", "transfer.uuid"}
 	relationship, err := c.SnapmirrorGet(ctx, localFlexvolName, c.SVMName(), remoteFlexvolName, remoteSVMName, fields)
 	if err != nil {
 		return err
@@ -5851,26 +5851,32 @@ func (c *RestClient) SnapmirrorAbort(
 	if relationship.UUID == nil {
 		return fmt.Errorf("unexpected response from snapmirror relationship lookup")
 	}
+	if relationship.Transfer == nil || relationship.Transfer.UUID == nil {
+		// no transfer in progress, nothing to abort
+		return nil
+	}
 
-	params := snapmirror.NewSnapmirrorRelationshipModifyParamsWithTimeout(c.httpClient.Timeout)
+	// Abort the transfer in the relationship
+	params := snapmirror.NewSnapmirrorRelationshipTransferModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
-	params.SetUUID(string(*relationship.UUID))
+	params.SetUUID(string(*relationship.Transfer.UUID))
+	params.WithRelationshipUUID(string(*relationship.UUID))
 
-	params.Info = &models.SnapmirrorRelationship{
+	params.Info = &models.SnapmirrorTransfer{
 		State: convert.ToPtr(models.SnapmirrorRelationshipInlineTransferStateAborted),
 	}
 
-	_, snapmirrorRelationshipModifyAccepted, err := c.api.Snapmirror.SnapmirrorRelationshipModify(params, c.authInfo)
-	if err != nil {
+	if _, err := c.api.Snapmirror.SnapmirrorRelationshipTransferModify(params, c.authInfo); err != nil {
+		if _, _, code := ExtractError(err); code == ENTRY_DOESNT_EXIST {
+			// Transfer does not exist, ignore the error
+			return nil
+		}
+
 		return err
 	}
-	if snapmirrorRelationshipModifyAccepted == nil {
-		return fmt.Errorf("unexpected response from snapmirror relationship modify")
-	}
 
-	jobLink := getGenericJobLinkFromSMRJobLink(snapmirrorRelationshipModifyAccepted.Payload)
-	return c.PollJobStatus(ctx, jobLink)
+	return nil
 }
 
 // SnapmirrorRelease removes all local snapmirror relationship metadata from the source vserver
