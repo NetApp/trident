@@ -574,6 +574,12 @@ func (d *NASQtreeStorageDriver) Destroy(ctx context.Context, volConfig *storage.
 		"Type":   "NASQtreeStorageDriver",
 		"name":   name,
 	}
+
+	// If it's a RO clone, no need to delete the volume
+	if volConfig.ReadOnlyClone {
+		return nil
+	}
+
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
 

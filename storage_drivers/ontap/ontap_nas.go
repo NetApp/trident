@@ -497,8 +497,9 @@ func (d *NASStorageDriver) CreateClone(
 	// If we still don't have splitOnClone value then HERE we check for value in the source PV's Storage/Virtual Pool
 	// If the value for "splitOnClone" is still empty then HERE we set it to backend config's SplitOnClone value
 
-	// Attempt to get splitOnClone value based on storagePool (source Volume's StoragePool)
+	// Attempt to get splitOnClone value and adAdminUser value based on storagePool (source Volume's StoragePool)
 	var storagePoolSplitOnCloneVal string
+	var adAdminUser string
 
 	var labelErr error
 	if storage.IsStoragePoolUnset(storagePool) {
@@ -511,21 +512,45 @@ func (d *NASStorageDriver) CreateClone(
 		if labelErr != nil {
 			return labelErr
 		}
+		if d.Config.NASType == sa.SMB {
+			adAdminUser = d.Config.ADAdminUser
+		}
 	} else {
 		if labels, labelErr = ConstructLabelsFromConfigs(ctx, storagePool, cloneVolConfig,
 			d.Config.CommonStorageDriverConfig, api.MaxNASLabelLength); labelErr != nil {
 			return labelErr
 		}
 		storagePoolSplitOnCloneVal = storagePool.InternalAttributes()[SplitOnClone]
+
+		if d.Config.NASType == sa.SMB {
+			// Update the clone volume config with the admin user details from the storage pool
+			adAdminUser = storagePool.InternalAttributes()[ADAdminUser]
+		}
+	}
+
+	if d.Config.NASType == sa.SMB {
+		if adAdminUser != "" {
+			if _, exists := cloneVolConfig.SMBShareACL[adAdminUser]; !exists {
+				cloneVolConfig.SMBShareACL[adAdminUser] = ADAdminUserPermission
+			}
+		}
 	}
 
 	if cloneVolConfig.ReadOnlyClone {
 		if flexvol.SnapshotDir == nil {
 			return fmt.Errorf("snapshot directory access is undefined on flexvol %s", flexvol.Name)
 		}
+
 		if *flexvol.SnapshotDir == false {
 			return fmt.Errorf("snapshot directory access is set to %t and readOnly clone is set to %t ",
 				*flexvol.SnapshotDir, cloneVolConfig.ReadOnlyClone)
+		}
+
+		if d.Config.NASType == sa.SMB && cloneVolConfig.SecureSMBEnabled {
+			if err := d.EnsureSMBShare(ctx, cloneVolConfig.InternalName, "/"+cloneVolConfig.CloneSourceVolumeInternal,
+				cloneVolConfig.SMBShareACL, cloneVolConfig.SecureSMBEnabled); err != nil {
+				return err
+			}
 		}
 		return nil
 	}
@@ -577,9 +602,9 @@ func (d *NASStorageDriver) CreateClone(
 
 	cloneVolConfig.ExportPolicy = exportPolicy
 
-	// TODO: enable secure SMB share for clone volumes
 	if d.Config.NASType == sa.SMB {
-		if err := d.EnsureSMBShare(ctx, cloneVolConfig.InternalName, "/"+cloneVolConfig.InternalName, cloneVolConfig.SMBShareACL, false); err != nil {
+		if err := d.EnsureSMBShare(ctx, cloneVolConfig.InternalName, "/"+cloneVolConfig.InternalName,
+			cloneVolConfig.SMBShareACL, cloneVolConfig.SecureSMBEnabled); err != nil {
 			return err
 		}
 	}
@@ -597,6 +622,16 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
+
+	// Handle ReadOnlyClone case early
+	if volConfig.ReadOnlyClone {
+		if d.Config.NASType == sa.SMB && volConfig.SecureSMBEnabled {
+			if err := d.DestroySMBShare(ctx, name); err != nil {
+				return err
+			}
+		}
+		return nil // Return early for all ReadOnlyClone cases
+	}
 
 	// TODO: If this is the parent of one or more clones, those clones have to split from this
 	// volume before it can be deleted, which means separate copies of those volumes.

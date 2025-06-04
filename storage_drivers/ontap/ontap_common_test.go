@@ -2405,7 +2405,7 @@ func TestConstructOntapNASVolumeAccessPath_SecureSMBDisabled(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.smbShare, func(t *testing.T) {
 			result := ConstructOntapNASVolumeAccessPath(ctx, test.smbShare, test.volName, volConfig, test.protocol)
-			assert.Equal(t, test.expectedPath, result, "unable to construct Ontap-NAS volume access path")
+			assert.Equal(t, test.expectedPath, result, "the constructed Ontap-NAS volume access path is incorrect")
 		})
 	}
 }
@@ -2431,7 +2431,7 @@ func TestConstructOntapNASVolumeAccessPath_SecureSMBEnabled(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.smbShare, func(t *testing.T) {
 			result := ConstructOntapNASVolumeAccessPath(ctx, test.smbShare, test.volName, volConfig, test.protocol)
-			assert.Equal(t, test.expectedPath, result, "unable to construct Ontap-NAS volume access path")
+			assert.Equal(t, test.expectedPath, result, "the constructed Ontap-NAS volume access path is incorrect")
 		})
 	}
 }
@@ -2459,7 +2459,35 @@ func TestConstructOntapNASVolumeAccessPath_ROClone(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.smbShare, func(t *testing.T) {
 			result := ConstructOntapNASVolumeAccessPath(ctx, test.smbShare, "/vol", volConfig, test.protocol)
-			assert.Equal(t, test.expectedPath, result, "unable to construct Ontap-NAS volume access path")
+			assert.Equal(t, test.expectedPath, result, "the constructed Ontap-NAS volume access path is incorrect")
+		})
+	}
+}
+
+func TestConstructOntapNASVolumeAccessPath_ROCloneSecureSMBEnabled(t *testing.T) {
+	ctx := context.Background()
+
+	volConfig := &storage.VolumeConfig{
+		InternalName:              "vol",
+		ReadOnlyClone:             true,
+		CloneSourceVolumeInternal: "sourceVol",
+		CloneSourceSnapshot:       "snapshot-abcd-1234-wxyz",
+		SecureSMBEnabled:          true,
+	}
+
+	tests := []struct {
+		smbShare     string
+		protocol     string
+		expectedPath string
+	}{
+		{"test_share", "smb", "\\vol\\~snapshot\\snapshot-abcd-1234-wxyz"},
+		{"", "smb", "\\vol\\~snapshot\\snapshot-abcd-1234-wxyz"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.smbShare, func(t *testing.T) {
+			result := ConstructOntapNASVolumeAccessPath(ctx, test.smbShare, "/vol", volConfig, test.protocol)
+			assert.Equal(t, test.expectedPath, result, "the constructed Ontap-NAS volume access path is incorrect")
 		})
 	}
 }
@@ -2478,7 +2506,7 @@ func TestConstructOntapNASFlexGroupSMBVolumePath(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.smbShare, func(t *testing.T) {
 			result := ConstructOntapNASFlexGroupSMBVolumePath(ctx, test.smbShare, "vol")
-			assert.Equal(t, test.expectedPath, result, "unable to construct Ontap-NAS-QTree SMB volume path")
+			assert.Equal(t, test.expectedPath, result, "the constructed  Ontap-NAS-QTree SMB volume access path is incorrect")
 		})
 	}
 }
@@ -2576,7 +2604,7 @@ func TestConstructOntapNASQTreeVolumePath(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.smbShare, func(t *testing.T) {
 			result := ConstructOntapNASQTreeVolumePath(ctx, test.smbShare, "flex-vol", test.volConfig, test.protocol)
-			assert.Equal(t, test.expectedPath, result, "unable to construct Ontap-NAS-QTree SMB volume path")
+			assert.Equal(t, test.expectedPath, result, "the constructed Ontap-NAS-QTree SMB volume path is incorrect")
 		})
 	}
 }

@@ -791,13 +791,10 @@ func (b *StorageBackend) RemoveVolume(ctx context.Context, volConfig *VolumeConf
 		return err
 	}
 
-	// If it's a RO clone, no need to delete the volume in the driver
-	if !volConfig.ReadOnlyClone {
-		if err := b.driver.Destroy(ctx, volConfig); err != nil {
-			// TODO:  Check the error being returned once the nDVP throws errors
-			// for volumes that aren't found.
-			return err
-		}
+	if err := b.driver.Destroy(ctx, volConfig); err != nil {
+		// TODO:  Check the error being returned once the nDVP throws errors
+		// for volumes that aren't found.
+		return err
 	}
 
 	b.RemoveCachedVolume(volConfig.Name)

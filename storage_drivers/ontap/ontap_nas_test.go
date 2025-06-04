@@ -916,6 +916,56 @@ func TestOntapNasStorageDriverVolumeClone(t *testing.T) {
 	}
 }
 
+func TestOntapNasStorageDriverVolumeClone_SecureSMBEnabled(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"type": "clone",
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.SplitOnClone = "false"
+	driver.Config.NASType = sa.SMB
+
+	volConfig := &storage.VolumeConfig{
+		Size:                        "1g",
+		Encryption:                  "false",
+		FileSystem:                  "smb",
+		CloneSourceSnapshotInternal: "flexvol",
+		SMBShareACL:                 map[string]string{"user": "full_control"},
+		SecureSMBEnabled:            true,
+	}
+
+	flexVol := api.Volume{
+		Name:    "flexvol",
+		Comment: "flexvol",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+	mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
+	mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
+		volConfig.CloneSourceSnapshotInternal, false).Return(nil)
+	mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
+		maxFlexvolCloneWait).Return("online", nil)
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").
+		Return(nil)
+	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "").Return(nil)
+	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, volConfig.InternalName, volConfig.SMBShareACL).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, volConfig.InternalName, smbShareDeleteACL).Return(nil)
+
+	result := driver.CreateClone(ctx, nil, volConfig, pool1)
+	assert.NoError(t, result)
+	assert.Empty(t, volConfig.CloneSourceSnapshot, "expected clone source snapshot not to be populated")
+	assert.NotEmpty(t, volConfig.CloneSourceSnapshotInternal, "expected clone source snapshot internal to be populated")
+}
+
 func TestOntapNasStorageDriverVolumeClone_ROClone(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 
@@ -945,6 +995,44 @@ func TestOntapNasStorageDriverVolumeClone_ROClone(t *testing.T) {
 
 	result := driver.CreateClone(ctx, nil, volConfig, pool1)
 
+	assert.NoError(t, result, "received error")
+}
+
+func TestOntapNasStorageDriverVolumeClone_ROCloneSecureSMBEnabled(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.SplitOnClone = "false"
+
+	volConfig := &storage.VolumeConfig{
+		Size:                        "1g",
+		Encryption:                  "false",
+		FileSystem:                  "nfs",
+		CloneSourceSnapshotInternal: "flexvol",
+		ReadOnlyClone:               true,
+		SMBShareACL:                 map[string]string{"user": "full_control"},
+		SecureSMBEnabled:            true,
+	}
+
+	flexVol := api.Volume{
+		Name:        "flexvol",
+		Comment:     "flexvol",
+		SnapshotDir: convert.ToPtr(true),
+	}
+	driver.Config.NASType = sa.SMB
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, volConfig.InternalName, volConfig.SMBShareACL).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, volConfig.InternalName, smbShareDeleteACL).Return(nil)
+
+	result := driver.CreateClone(ctx, nil, volConfig, pool1)
 	assert.NoError(t, result, "received error")
 }
 
@@ -1464,6 +1552,227 @@ func TestOntapNasStorageDriverVolumeClone_SMBShareCreateFail(t *testing.T) {
 	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName,
 		"/"+volConfig.InternalName).Return(fmt.Errorf("cannot create volume"))
 	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "default").Return(nil)
+
+	result := driver.CreateClone(ctx, nil, volConfig, pool1)
+
+	assert.Error(t, result)
+}
+
+func TestOntapNasStorageDriverVolumeClone_SecureSMBAccessControlCreatefail(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"type": "clone",
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.SplitOnClone = "false"
+	driver.Config.NASType = sa.SMB
+	volConfig := &storage.VolumeConfig{
+		Size:                        "1g",
+		Encryption:                  "false",
+		FileSystem:                  "smb",
+		CloneSourceSnapshotInternal: "flexvol",
+		SMBShareACL:                 map[string]string{"us": "full_control"},
+		SecureSMBEnabled:            true,
+	}
+
+	flexVol := api.Volume{
+		Name:    "flexvol",
+		Comment: "flexvol",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+	mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
+	mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
+		volConfig.CloneSourceSnapshotInternal, false).Return(nil)
+	mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
+		maxFlexvolCloneWait).Return("online", nil)
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").Return(nil)
+	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "").Return(nil)
+	mockAPI.EXPECT().SMBShareExists(ctx, "").Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, "", "/").Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, "", volConfig.SMBShareACL).Return(fmt.Errorf("cannot create SMB Share Access Control rule"))
+
+	result := driver.CreateClone(ctx, nil, volConfig, pool1)
+
+	assert.Error(t, result)
+}
+
+func TestOntapNasStorageDriverVolumeClone_SecureSMBAccessControlDeletefail(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"type": "clone",
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.SplitOnClone = "false"
+	driver.Config.NASType = sa.SMB
+
+	volConfig := &storage.VolumeConfig{
+		Size:                        "1g",
+		Encryption:                  "false",
+		FileSystem:                  "smb",
+		CloneSourceSnapshotInternal: "flexvol",
+		SMBShareACL:                 map[string]string{"user": "full_control"},
+		SecureSMBEnabled:            true,
+	}
+
+	flexVol := api.Volume{
+		Name:    "flexvol",
+		Comment: "flexvol",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+	mockAPI.EXPECT().VolumeExists(ctx, "").Return(false, nil)
+	mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
+		volConfig.CloneSourceSnapshotInternal, false).Return(nil)
+	mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, gomock.Any(), gomock.Any(),
+		maxFlexvolCloneWait).Return("online", nil)
+	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").Return(nil)
+	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "").Return(nil)
+
+	mockAPI.EXPECT().SMBShareExists(ctx, "").Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, "", "/").Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, "", volConfig.SMBShareACL).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, "", smbShareDeleteACL).Return(fmt.Errorf("cannot delete SMB Share Access Control rule"))
+
+	result := driver.CreateClone(ctx, nil, volConfig, pool1)
+
+	assert.Error(t, result)
+}
+
+func TestOntapNasStorageDriverVolumeClone_ROCloneSecureSMBAccessControlCreateFail(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"type": "clone",
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.SplitOnClone = "false"
+	driver.Config.NASType = sa.SMB
+
+	volConfig := &storage.VolumeConfig{
+		Size:                        "1g",
+		Encryption:                  "false",
+		FileSystem:                  "smb",
+		CloneSourceSnapshotInternal: "flexvol",
+		ReadOnlyClone:               true,
+		SMBShareACL:                 map[string]string{"user": "full_control"},
+		SecureSMBEnabled:            true,
+	}
+
+	flexVol := api.Volume{
+		Name:        "flexvol",
+		Comment:     "flexvol",
+		SnapshotDir: convert.ToPtr(true),
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+
+	mockAPI.EXPECT().SMBShareExists(ctx, "").Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, "", "/").Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, "", volConfig.SMBShareACL).
+		Return(fmt.Errorf("cannot create SMB Share Access Control rule"))
+
+	result := driver.CreateClone(ctx, nil, volConfig, pool1)
+
+	assert.Error(t, result)
+}
+
+func TestOntapNasStorageDriverVolumeClone_ROCloneSecureSMBAccessControlDeleteFail(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"type": "clone",
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.SplitOnClone = "false"
+	driver.Config.NASType = sa.SMB
+
+	volConfig := &storage.VolumeConfig{
+		Size:                        "1g",
+		Encryption:                  "false",
+		FileSystem:                  "smb",
+		CloneSourceSnapshotInternal: "flexvol",
+		ReadOnlyClone:               true,
+		SMBShareACL:                 map[string]string{"user": "full_control"},
+		SecureSMBEnabled:            true,
+	}
+
+	flexVol := api.Volume{
+		Name:        "flexvol",
+		Comment:     "flexvol",
+		SnapshotDir: convert.ToPtr(true),
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+	mockAPI.EXPECT().SMBShareExists(ctx, "").Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, "", "/").Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, "", volConfig.SMBShareACL).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, "", smbShareDeleteACL).Return(fmt.Errorf("cannot delete SMB Share Access Control rule"))
+
+	result := driver.CreateClone(ctx, nil, volConfig, pool1)
+
+	assert.Error(t, result)
+}
+
+func TestOntapNasStorageDriverVolumeClone_ROCloneSMBShareCreateFail(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	pool1.SetInternalAttributes(map[string]string{
+		"tieringPolicy": "none",
+	})
+	pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"type": "clone",
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+	driver.Config.SplitOnClone = "false"
+	driver.Config.NASType = sa.SMB
+
+	volConfig := &storage.VolumeConfig{
+		Size:                        "1g",
+		Encryption:                  "false",
+		FileSystem:                  "smb",
+		CloneSourceSnapshotInternal: "flexvol",
+		ReadOnlyClone:               true,
+		SMBShareACL:                 map[string]string{"user": "full_control"},
+		SecureSMBEnabled:            true,
+	}
+
+	flexVol := api.Volume{
+		Name:        "flexvol",
+		Comment:     "flexvol",
+		SnapshotDir: convert.ToPtr(true),
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
+	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName,
+		"/"+volConfig.InternalName).Return(fmt.Errorf("cannot create SMB Share Access Control rule"))
 
 	result := driver.CreateClone(ctx, nil, volConfig, pool1)
 

@@ -4336,8 +4336,13 @@ func ConstructOntapNASVolumeAccessPath(
 		}
 
 		if volConfig.ReadOnlyClone {
-			completeVolumePath = fmt.Sprintf("%s\\%s\\%s\\%s", smbSharePath, volConfig.CloneSourceVolumeInternal,
-				"~snapshot", volConfig.CloneSourceSnapshot)
+			if volConfig.SecureSMBEnabled {
+				completeVolumePath = fmt.Sprintf("%s\\%s\\%s\\%s", smbSharePath, volConfig.InternalName, "~snapshot",
+					volConfig.CloneSourceSnapshot)
+			} else {
+				completeVolumePath = fmt.Sprintf("%s\\%s\\%s\\%s", smbSharePath, volConfig.CloneSourceVolumeInternal,
+					"~snapshot", volConfig.CloneSourceSnapshot)
+			}
 		} else {
 			// If the user does not specify an SMB Share, Trident creates it with the same name as the flexvol volume name.
 			completeVolumePath = smbSharePath + volumeName
