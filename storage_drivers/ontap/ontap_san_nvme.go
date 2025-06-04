@@ -66,6 +66,7 @@ const (
 	nsAttributeFSType    = "com.netapp.ndvp.fstype"
 	nsAttributeLUKS      = "LUKS"
 	nsAttributeDriverCtx = "driverContext"
+	nsLabels             = "nsLabels"
 )
 
 // GetConfig is to get the driver's configuration.
@@ -157,7 +158,7 @@ func (d *NVMeStorageDriver) Initialize(
 
 	// Check NVMe feature support
 	if !d.API.SupportsFeature(ctx, api.NVMeProtocol) {
-		return fmt.Errorf("error initializing %s driver: ontap doesn't support NVMe", d.Name())
+		return fmt.Errorf("error initializing %s driver: ONTAP doesn't support NVMe", d.Name())
 	}
 
 	if d.ips, err = d.API.NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport); err != nil {
@@ -223,6 +224,10 @@ func (d *NVMeStorageDriver) validate(ctx context.Context) error {
 	fields := LogFields{"method": "validate", "type": "NVMeStorageDriver"}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> validate")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< validate")
+
+	if err := ValidateSANDriver(ctx, &d.Config, d.ips, nil); err != nil {
+		return fmt.Errorf("driver validation failed: %v", err)
+	}
 
 	err := validateReplicationConfig(ctx, d.Config.ReplicationPolicy, d.Config.ReplicationSchedule, d.API)
 	if err != nil {
@@ -396,7 +401,7 @@ func (d *NVMeStorageDriver) Create(
 		"skipRecoveryQueue": skipRecoveryQueue,
 		"qosPolicy":         qosPolicy,
 		"adaptiveQosPolicy": adaptiveQosPolicy,
-	}).Debug("Creating FlexVol.")
+	}).Debug("Creating FlexVol with NVMe namespace.")
 
 	createErrors := make([]error, 0)
 	physicalPoolNames := make([]string, 0)
@@ -485,7 +490,7 @@ func (d *NVMeStorageDriver) Create(
 			}
 
 			// Create namespace. If this fails, clean up and move on to the next pool.
-			nsUUID, err := d.API.NVMeNamespaceCreate(
+			err = d.API.NVMeNamespaceCreate(
 				ctx, api.NVMeNamespace{
 					Name:      nsPath,
 					Size:      namespaceSize,
@@ -512,9 +517,26 @@ func (d *NVMeStorageDriver) Create(
 				continue
 			}
 
+			// Get the newly created namespace and save the UUID
+			newNamespace, err := d.API.NVMeNamespaceGetByName(ctx, nsPath)
+			if err != nil {
+				return fmt.Errorf("failure checking for existence of volume: %v", err)
+			}
+
+			if newNamespace == nil {
+				return fmt.Errorf("newly created volume %s not found", name)
+			}
+
 			// Store the Namespace UUID and Namespace Path for future operations.
-			volConfig.AccessInfo.NVMeNamespaceUUID = nsUUID
+			volConfig.AccessInfo.NVMeNamespaceUUID = newNamespace.UUID
 			volConfig.InternalID = nsPath
+
+			Logc(ctx).WithFields(LogFields{
+				"name":          name,
+				"namespaceUUID": volConfig.AccessInfo.NVMeNamespaceUUID,
+				"internalName":  volConfig.InternalName,
+				"internalID":    volConfig.InternalID,
+			}).Debug("Created FlexVol with NVMe namespace.")
 		}
 		return nil
 	}
@@ -561,7 +583,7 @@ func (d *NVMeStorageDriver) CreateClone(
 		storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.Config.Labels)
 
 		if labels, labelErr = ConstructLabelsFromConfigs(ctx, storagePoolTemp, cloneVolConfig,
-			d.Config.CommonStorageDriverConfig, api.MaxNASLabelLength); labelErr != nil {
+			d.Config.CommonStorageDriverConfig, api.MaxSANLabelLength); labelErr != nil {
 			return labelErr
 		}
 	} else {
@@ -706,14 +728,14 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 
 			// Make comment field from labels
 			labels, labelErr := ConstructLabelsFromConfigs(ctx, storagePoolTemp, volConfig,
-				d.Config.CommonStorageDriverConfig, api.MaxNASLabelLength)
+				d.Config.CommonStorageDriverConfig, api.MaxSANLabelLength)
 			if labelErr != nil {
 				return labelErr
 			}
 
 			err = d.API.VolumeSetComment(ctx, volConfig.InternalName, originalName, labels)
 			if err != nil {
-				Logc(ctx).WithField("originalName", originalName).Warnf("Modifying comment failed: %v", err)
+				Logc(ctx).WithField("originalName", originalName).Errorf("Modifying comment failed: %v", err)
 				return fmt.Errorf("volume %s modify failed: %v", originalName, err)
 			}
 		}
@@ -1028,7 +1050,7 @@ func (d *NVMeStorageDriver) RestoreSnapshot(
 	return RestoreSnapshot(ctx, snapConfig, &d.Config, d.API)
 }
 
-// DeleteSnapshot creates a snapshot of a volume.
+// DeleteSnapshot deletes a snapshot of a volume.
 func (d *NVMeStorageDriver) DeleteSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {

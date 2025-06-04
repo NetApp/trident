@@ -184,6 +184,5 @@ type NVMeInterface interface {
 		ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
 		timeout time.Duration,
 	) error
-	GetNVMeDeviceList(ctx context.Context) (NVMeDevices, error)
 	GetNVMeSubsystem(ctx context.Context, nqn string) (*NVMeSubsystem, error)
 }

@@ -3610,6 +3610,8 @@ func mockNvmeNamespaceResponse(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		setHTTPResponseHeader(w, http.StatusCreated)
 		json.NewEncoder(w).Encode(nvmeNamespaceResponse)
+	case "DELETE":
+		setHTTPResponseHeader(w, http.StatusOK)
 	default:
 		setHTTPResponseHeader(w, http.StatusOK)
 		json.NewEncoder(w).Encode(nvmeNamespaceResponse)
@@ -3744,10 +3746,9 @@ func TestOntapRestNVMeNamespaceCreate(t *testing.T) {
 				BlockSize: 4096,
 				State:     "online",
 			}
-			uuid, err := rs.NVMeNamespaceCreate(ctx, ns)
+			err := rs.NVMeNamespaceCreate(ctx, ns)
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not create the NVMe namespace")
-				assert.Equal(t, "1cd8a442-86d1-11e0-ae1c-123478563412", uuid)
 			} else {
 				assert.Error(t, err, "NVMe namespace list created")
 			}
@@ -3843,6 +3844,52 @@ func TestOntapRest_NVMeNamespaceGetByName(t *testing.T) {
 				assert.Equal(t, "namespace1", *nvmeResponse.Name)
 			} else {
 				assert.Error(t, err, "get the NVMe namespace by name")
+			}
+			server.Close()
+		})
+	}
+}
+
+func mockNvmeNamespaceDeleteAsync(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "DELETE" {
+		mockRequestAccepted(w, r)
+	} else if r.URL.Path == "/api/cluster/jobs/1234" {
+		mockJobResponse(w, r)
+	}
+}
+
+func mockNvmeNamespaceDeleteSync(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "DELETE" {
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(nil)
+	}
+}
+
+func TestOntapRest_NVMeNamespaceDelete(t *testing.T) {
+	uuid := "1cd8a442-86d1-11e0-ae1c-123478563412"
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		uuid            string
+		isErrorExpected bool
+	}{
+		{"PositiveTest with jobID", mockNvmeNamespaceDeleteAsync, uuid, false},
+		{"PositiveTest with no jobID", mockNvmeNamespaceDeleteSync, uuid, false},
+		{"NegativeTest Namespace UUID not provided", nil, "", true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			defer server.Close()
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			err := rs.NVMeNamespaceDelete(ctx, test.uuid)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "expected no error when deleting thenamespace")
+			} else {
+				assert.Error(t, err, "expected error when deleting namespace")
 			}
 			server.Close()
 		})
@@ -8315,6 +8362,81 @@ func TestIsRESTSupportedDefault(t *testing.T) {
 			} else {
 				assert.NoError(t, err, tt.wantErrMsg)
 			}
+		})
+	}
+}
+
+func TestNVMeNamespaceSetComment(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNvmeNamespaceResponse, false},
+		{"BackendReturnError", mockNvmeResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			ns := NVMeNamespace{
+				Name:      "namespace1",
+				UUID:      "1cd8a442-86d1-11e0-ae1c-123478563412",
+				OsType:    "linux",
+				Size:      "99999",
+				BlockSize: 4096,
+				State:     "online",
+			}
+			err := rs.NVMeNamespaceSetComment(ctx, ns.UUID, "test comment")
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "expected no error while setting namespace comment")
+			} else {
+				assert.Error(t, err, "expected error while setting namespace comment")
+			}
+			server.Close()
+		})
+	}
+}
+
+func TestNVMeNamespaceSetQosPolicyGroup(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		isErrorExpected bool
+	}{
+		{"PositiveTest", mockNvmeNamespaceResponse, false},
+		{"BackendReturnError", mockNvmeResourceNotFound, true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			qos := QosPolicyGroup{
+				Name: "mock-qospolicy",
+				Kind: QosPolicyGroupKind,
+			}
+
+			ns := NVMeNamespace{
+				Name:      "namespace1",
+				UUID:      "1cd8a442-86d1-11e0-ae1c-123478563412",
+				OsType:    "linux",
+				Size:      "99999",
+				BlockSize: 4096,
+				State:     "online",
+				QosPolicy: qos,
+			}
+
+			err := rs.NVMeNamespaceSetQosPolicyGroup(ctx, ns.UUID, qos)
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "expected no error while setting namespace Qos")
+			} else {
+				assert.Error(t, err, "expected error while setting namespace QoS")
+			}
+			server.Close()
 		})
 	}
 }

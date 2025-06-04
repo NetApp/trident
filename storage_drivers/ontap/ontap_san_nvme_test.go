@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
@@ -133,7 +134,7 @@ func TestNVMeInitialize_NVMeNotSupported(t *testing.T) {
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
 
-	assert.ErrorContains(t, err, "ontap doesn't support NVMe")
+	assert.ErrorContains(t, err, "ONTAP doesn't support NVMe")
 }
 
 func TestNVMeInitialize_GetDataLifError(t *testing.T) {
@@ -371,6 +372,16 @@ func TestNVMeValidate_ReplicationValidationError(t *testing.T) {
 	err := d.validate(ctx)
 
 	assert.ErrorContains(t, err, "replication validation failed")
+}
+
+func TestNVMeValidate_SANValidationError(t *testing.T) {
+	d, _ := newNVMeDriverAndMockApi(t)
+	d.Config.SANType = "fcp"
+	d.Config.UseCHAP = true
+
+	err := d.validate(ctx)
+
+	assert.Error(t, err, "SAN validation must have failed")
 }
 
 func TestNVMeValidate_StoragePoolError(t *testing.T) {
@@ -1000,7 +1011,7 @@ func TestNVMeCreate_NamespaceCreateAPIError(t *testing.T) {
 	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy").Times(2)
 	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil).Times(2)
 	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).
-		Return("", fmt.Errorf("failed to create namespace")).
+		Return(fmt.Errorf("failed to create namespace")).
 		Times(2)
 	// Volume destroy error test case.
 	mAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(fmt.Errorf("failed to delete volume"))
@@ -1020,12 +1031,15 @@ func TestNVMeCreate_NamespaceCreateAPIError(t *testing.T) {
 func TestNVMeCreate_LUKSVolume(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
+	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
 
 	volConfig.LUKSEncryption = "true"
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
 	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
 	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
-	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return("nsUUID", nil)
+	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
+		&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil)
 
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -1048,11 +1062,14 @@ func TestNVMeCreate_InvalidSkipRecoveryQueue(t *testing.T) {
 func TestNVMeCreate_Success(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	pool1, volConfig, volAttrs := getNVMeCreateArgs(d)
+	nsPath := fmt.Sprintf("/vol/%s/namespace0", volConfig.InternalName)
 
 	mAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
 	mAPI.EXPECT().TieringPolicyValue(ctx).Return("TPolicy")
 	mAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
-	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return("nsUUID", nil)
+	mAPI.EXPECT().NVMeNamespaceCreate(ctx, gomock.Any()).Return(nil)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, nsPath).Return(
+		&api.NVMeNamespace{Name: volConfig.InternalName, UUID: uuid.New().String()}, nil)
 
 	err := d.Create(ctx, volConfig, pool1, volAttrs)
 

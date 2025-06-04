@@ -131,7 +131,7 @@ func (f *FSClient) GetDFOutput(ctx context.Context) ([]models.DFInfo, error) {
 
 // FormatVolume creates a filesystem for the supplied device of the supplied type.
 func (f *FSClient) FormatVolume(ctx context.Context, device, fstype, options string) error {
-	logFields := LogFields{"device": device, "fsType": fstype}
+	logFields := LogFields{"device": device, "fsType": fstype, "options": options}
 	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.formatVolume")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.formatVolume")
 
@@ -174,7 +174,7 @@ func (f *FSClient) FormatVolume(ctx context.Context, device, fstype, options str
 
 // formatVolume creates a filesystem for the supplied device of the supplied type.
 func (f *FSClient) formatVolumeRetry(ctx context.Context, device, fstype, options string) error {
-	logFields := LogFields{"device": device, "fsType": fstype}
+	logFields := LogFields{"device": device, "fsType": fstype, "options": options}
 	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.formatVolumeRetry")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.formatVolumeRetry")
 

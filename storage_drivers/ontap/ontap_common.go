@@ -112,8 +112,6 @@ const (
 	VolTypeDP  = "dp"  // data-protection
 	VolTypeDC  = "dc"  // data-cache
 	VolTypeTMP = "tmp" // temporary
-
-	ASATypeLun = "lun"
 )
 
 // For legacy reasons, these strings mustn't change
@@ -2008,6 +2006,10 @@ func PopulateASAConfigurationDefaults(ctx context.Context, config *drivers.Ontap
 		config.TieringPolicy = DefaultTieringPolicy
 	}
 
+	if config.SkipRecoveryQueue == "" {
+		config.SkipRecoveryQueue = DefaultSkipRecoveryQueue
+	}
+
 	if config.SANType == "" {
 		config.SANType = sa.ISCSI
 	} else {
@@ -2035,7 +2037,9 @@ func PopulateASAConfigurationDefaults(ctx context.Context, config *drivers.Ontap
 		"Size":                config.Size,
 		"TieringPolicy":       config.TieringPolicy,
 		"NameTemplate":        config.NameTemplate,
+		"SkipRecoveryQueue":   config.SkipRecoveryQueue,
 		"SANType":             config.SANType,
+		"FormatOptions":       config.FormatOptions,
 	}).Debugf("Configuration defaults")
 
 	return nil
@@ -2312,8 +2316,7 @@ func SplitVolumeFromBusySnapshot(
 
 func SplitASAVolumeFromBusySnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
-	client api.OntapAPI, cloneSplitStart func(ctx context.Context, cloneName, asaType string) error,
-	asaType string,
+	client api.OntapAPI, cloneSplitStart func(ctx context.Context, cloneName string) error,
 ) error {
 	fields := LogFields{
 		"Method":       "SplitASAVolumeFromBusySnapshot",
@@ -2334,7 +2337,7 @@ func SplitASAVolumeFromBusySnapshot(
 		return nil
 	}
 
-	if err := cloneSplitStart(ctx, childVolumes[0], asaType); err != nil {
+	if err := cloneSplitStart(ctx, childVolumes[0]); err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"snapshotName":     snapConfig.InternalName,
 			"parentVolumeName": snapConfig.VolumeInternalName,
@@ -2453,8 +2456,8 @@ func hasCloneSplitTimerExpired(
 
 func SplitASAVolumeFromBusySnapshotWithDelay(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
-	client api.OntapAPI, cloneSplitStart func(ctx context.Context, cloneName, asaType string) error,
-	cloneSplitTimers map[string]time.Time, asaType string,
+	client api.OntapAPI, cloneSplitStart func(ctx context.Context, cloneName string) error,
+	cloneSplitTimers map[string]time.Time,
 ) {
 	fields := LogFields{
 		"Method":       "SplitASAVolumeFromBusySnapshotWithDelay",
@@ -2462,7 +2465,6 @@ func SplitASAVolumeFromBusySnapshotWithDelay(
 		"snapshotID":   snapConfig.ID(),
 		"snapshotName": snapConfig.InternalName,
 		"volumeName":   snapConfig.VolumeInternalName,
-		"asaType":      asaType,
 	}
 
 	Logd(ctx, config.StorageDriverName,
@@ -2478,7 +2480,7 @@ func SplitASAVolumeFromBusySnapshotWithDelay(
 	}
 
 	// The delay has expired, so start the split
-	splitErr := SplitASAVolumeFromBusySnapshot(ctx, snapConfig, config, client, cloneSplitStart, asaType)
+	splitErr := SplitASAVolumeFromBusySnapshot(ctx, snapConfig, config, client, cloneSplitStart)
 	if splitErr != nil {
 
 		// The split start failed, so reset the timer so we start again after another brief delay.
@@ -2862,6 +2864,8 @@ func InitializeASAStoragePoolsCommon(
 	pool.InternalAttributes()[AdaptiveQosPolicy] = config.AdaptiveQosPolicy
 	pool.InternalAttributes()[SpaceAllocation] = config.SpaceAllocation
 	pool.InternalAttributes()[FileSystemType] = config.FileSystemType
+	pool.InternalAttributes()[SkipRecoveryQueue] = config.SkipRecoveryQueue
+	pool.InternalAttributes()[FormatOptions] = strings.TrimSpace(config.FormatOptions)
 
 	pool.SetSupportedTopologies(config.SupportedTopologies)
 
@@ -3328,6 +3332,8 @@ func ValidateASAStoragePools(
 	switch config.SANType {
 	case sa.ISCSI:
 		break
+	case sa.NVMe:
+		break
 	default:
 		return errors.New("invalid value for sanType")
 	}
@@ -3481,6 +3487,27 @@ func ValidateASAStoragePools(
 			_, err := drivers.CheckSupportedFilesystem(ctx, pool.InternalAttributes()[FileSystemType], "")
 			if err != nil {
 				return fmt.Errorf("invalid value for fileSystemType in pool %s: %v", poolName, err)
+			}
+		}
+
+		// Validate formatOptions
+		if pool.InternalAttributes()[FormatOptions] != "" {
+			if err := validateFormatOptions(pool.InternalAttributes()[FormatOptions]); err != nil {
+				return fmt.Errorf("invalid value for formatOptions in pool %s: %w", poolName, err)
+			}
+		}
+
+		// Validate skipRecoveryQueue
+		if pool.InternalAttributes()[SkipRecoveryQueue] != "" {
+			skipRecoveryQueueValue, err := strconv.ParseBool(pool.InternalAttributes()[SkipRecoveryQueue])
+			if err != nil {
+				return fmt.Errorf("invalid value for skipRecoveryQueue in pool %s: %w", poolName, err)
+			}
+
+			if skipRecoveryQueueValue {
+				// skipRecoveryQueue is not supported in ONTAP ASAr2, so we log a warning and continue.
+				Logc(ctx).WithField("skipRecoveryQueue", skipRecoveryQueueValue).Warn(
+					"skipRecoveryQueue is not supported. It will be ignored during delete operation.")
 			}
 		}
 	}
@@ -4605,7 +4632,7 @@ func removeExportPolicyRules(
 func deleteAutomaticASASnapshot(
 	ctx context.Context,
 	config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
-	volConfig *storage.VolumeConfig, asaType string,
+	volConfig *storage.VolumeConfig,
 ) {
 	name := volConfig.InternalName
 	source := volConfig.CloneSourceVolumeInternal
@@ -4617,7 +4644,6 @@ func deleteAutomaticASASnapshot(
 		"Type":         "ontap_common",
 		"snapshotName": snapshotInternal,
 		"volumeName":   name,
-		"asaType":      asaType,
 	}
 
 	Logd(ctx, config.StorageDriverName,
@@ -4629,7 +4655,6 @@ func deleteAutomaticASASnapshot(
 		"snapshotName":    snapshotInternal,
 		"cloneSourceName": source,
 		"cloneName":       name,
-		"asaType":         asaType,
 	}
 
 	// Automatic snapshot when created will set snapshotInternal field and leave snapshot field empty. Check if such exists.
@@ -4640,7 +4665,7 @@ func deleteAutomaticASASnapshot(
 
 	// Delete automatic ASA snapshot with backoff retry to handle busy snapshots case
 	deleteSnapshot := func() error {
-		if err := client.StorageUnitSnapshotDelete(ctx, snapshotInternal, source, asaType); err != nil {
+		if err := client.StorageUnitSnapshotDelete(ctx, snapshotInternal, source); err != nil {
 			if api.IsNotFoundError(err) {
 				// Snapshot is already deleted. Nothing to clean up.
 				Logc(ctx).WithFields(logFields).Debug("Automatic ASA snapshot not found, skipping cleanup.")
@@ -4687,7 +4712,6 @@ func deleteAutomaticASASnapshot(
 func createASASnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig,
 	config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
-	asaType string,
 ) (*storage.Snapshot, error) {
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
@@ -4697,7 +4721,6 @@ func createASASnapshot(
 		"Type":         "ontap_common",
 		"snapshotName": internalSnapName,
 		"volumeName":   internalVolName,
-		"asaType":      asaType,
 	}
 	Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> createASASnapshot")
@@ -4705,11 +4728,11 @@ func createASASnapshot(
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< createASASnapshot")
 
 	// Create the snapshot for ASA unit
-	if err := client.StorageUnitSnapshotCreate(ctx, internalSnapName, internalVolName, asaType); err != nil {
+	if err := client.StorageUnitSnapshotCreate(ctx, internalSnapName, internalVolName); err != nil {
 		return nil, err
 	}
 
-	snap, err := client.StorageUnitSnapshotInfo(ctx, internalSnapName, internalVolName, asaType)
+	snap, err := client.StorageUnitSnapshotInfo(ctx, internalSnapName, internalVolName)
 	if err != nil {
 		return nil, err
 	}
@@ -4732,10 +4755,11 @@ func createASASnapshot(
 	}, nil
 }
 
+// getASASnapshot gets an ASA snapshot.  To distinguish between an API error reading the snapshot
+// and a non-existent snapshot, this method may return (nil, nil).
 func getASASnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig,
 	config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
-	asaType string,
 ) (*storage.Snapshot, error) {
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
@@ -4745,13 +4769,12 @@ func getASASnapshot(
 		"Type":         "ontap_common",
 		"snapshotName": internalSnapName,
 		"volumeName":   internalVolName,
-		"asaType":      asaType,
 	}
 	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
 	defer Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
 
-	snap, err := client.StorageUnitSnapshotInfo(ctx, internalSnapName, internalVolName, asaType)
+	snap, err := client.StorageUnitSnapshotInfo(ctx, internalSnapName, internalVolName)
 	if err != nil {
 		if errors.IsNotFoundError(err) {
 			return nil, nil
@@ -4765,6 +4788,7 @@ func getASASnapshot(
 		"volumeName":   internalVolName,
 		"created":      snap.CreateTime,
 	}).Debug("Found snapshot.")
+
 	return &storage.Snapshot{
 		Config:  snapConfig,
 		Created: snap.CreateTime,
@@ -4776,7 +4800,6 @@ func getASASnapshot(
 func getASASnapshotList(
 	ctx context.Context, volConfig *storage.VolumeConfig,
 	config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
-	asaType string,
 ) ([]*storage.Snapshot, error) {
 	internalVolName := volConfig.InternalName
 
@@ -4784,14 +4807,13 @@ func getASASnapshotList(
 		"Method":     "getASASnapshotList",
 		"Type":       "ontap_common",
 		"volumeName": internalVolName,
-		"asaType":    asaType,
 	}
 	Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> getASASnapshotList")
 	defer Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< getASASnapshotList")
 
-	snapshots, err := client.StorageUnitSnapshotList(ctx, internalVolName, asaType)
+	snapshots, err := client.StorageUnitSnapshotList(ctx, internalVolName)
 	if err != nil {
 		return nil, fmt.Errorf("error enumerating snapshots: %v", err)
 	}
@@ -4827,10 +4849,10 @@ func getASASnapshotList(
 	return result, nil
 }
 
+// restoreASASnapshot restores an ASA volume (in place) from a snapshot.
 func restoreASASnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig,
 	config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
-	asaType string,
 ) error {
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
@@ -4840,14 +4862,13 @@ func restoreASASnapshot(
 		"Type":         "ontap_common",
 		"snapshotName": internalSnapName,
 		"volumeName":   internalVolName,
-		"asaType":      asaType,
 	}
 	Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreASASnapshot")
 	defer Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreASASnapshot")
 
-	if err := client.SnapshotRestoreVolume(ctx, internalSnapName, internalVolName); err != nil {
+	if err := client.StorageUnitSnapshotRestore(ctx, internalSnapName, internalVolName); err != nil {
 		return err
 	}
 
@@ -4862,7 +4883,7 @@ func restoreASASnapshot(
 func deleteASASnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig,
 	config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
-	cloneSplitTimers map[string]time.Time, asaType string,
+	cloneSplitTimers map[string]time.Time,
 ) error {
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
@@ -4872,14 +4893,13 @@ func deleteASASnapshot(
 		"Type":         "ontap_common",
 		"snapshotName": internalSnapName,
 		"volumeName":   internalVolName,
-		"asaType":      asaType,
 	}
 	Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> DeleteASASnapshot")
 	defer Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteASASnapshot")
 
-	err := client.StorageUnitSnapshotDelete(ctx, snapConfig.InternalName, internalVolName, asaType)
+	err := client.StorageUnitSnapshotDelete(ctx, snapConfig.InternalName, internalVolName)
 	if err != nil {
 		if api.IsSnapshotBusyError(err) {
 			Logc(ctx).WithFields(LogFields{
@@ -4889,7 +4909,7 @@ func deleteASASnapshot(
 
 			// Start a split here before returning the error so a subsequent delete attempt may succeed.
 			SplitASAVolumeFromBusySnapshotWithDelay(ctx, snapConfig, config, client,
-				client.StorageUnitCloneSplitStart, cloneSplitTimers, asaType)
+				client.StorageUnitCloneSplitStart, cloneSplitTimers)
 		}
 
 		// We must return the error, even if we started a split, so the snapshot delete is retried.
@@ -4907,11 +4927,11 @@ func deleteASASnapshot(
 	return nil
 }
 
-// cloneASAvol
+// cloneASAvol clones an ASA volume from a snapshot.  The clone name must not already exist.
 func cloneASAvol(
 	ctx context.Context, cloneVolConfig *storage.VolumeConfig,
 	split bool, config *drivers.OntapStorageDriverConfig,
-	client api.OntapAPI, asaType string,
+	client api.OntapAPI,
 ) error {
 	name := cloneVolConfig.InternalName
 	source := cloneVolConfig.CloneSourceVolumeInternal
@@ -4929,33 +4949,33 @@ func cloneASAvol(
 	defer Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< cloneASAvol")
 
-	// TODO (aparna0508): Get LUN or NVMe namespace based on ASA type.
-	// If the specified volume already exists, return an error
-	volExists, err := client.LunExists(ctx, name)
+	// If the storage unit (could be LUN or NVMe namespace) corresponding to the clone name already exists, return an error
+	exists, err := client.StorageUnitExists(ctx, name)
 	if err != nil {
 		return fmt.Errorf("error checking for existing volume: %v", err)
 	}
-	if volExists {
-		return fmt.Errorf("volume %s already exists", name)
+
+	if exists {
+		return drivers.NewVolumeExistsError(name)
 	}
 
 	// If no specific snapshot was requested, create one
 	if snapshot == "" {
 		snapshot = time.Now().UTC().Format(storage.SnapshotNameFormat)
-		if err = client.StorageUnitSnapshotCreate(ctx, snapshot, source, asaType); err != nil {
+		if err = client.StorageUnitSnapshotCreate(ctx, snapshot, source); err != nil {
 			return err
 		}
 		cloneVolConfig.CloneSourceSnapshotInternal = snapshot
 	}
 
 	// Create the clone based on a snapshot
-	if err = client.StorageUnitCloneCreate(ctx, name, source, snapshot, asaType); err != nil {
+	if err = client.StorageUnitCloneCreate(ctx, name, source, snapshot); err != nil {
 		return err
 	}
 
 	// Split the clone if requested
 	if split {
-		if err := client.StorageUnitCloneSplitStart(ctx, name, asaType); err != nil {
+		if err := client.StorageUnitCloneSplitStart(ctx, name); err != nil {
 			return fmt.Errorf("error splitting clone: %v", err)
 		}
 	}

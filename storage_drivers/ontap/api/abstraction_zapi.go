@@ -2676,13 +2676,35 @@ func (d OntapAPIZAPI) SMBShareAccessControlDelete(ctx context.Context, shareName
 }
 
 // NVMeNamespaceCreate creates NVMe namespace.
-func (d OntapAPIZAPI) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error) {
-	return "", errors.UnsupportedError("ZAPI call is not supported yet")
+func (d OntapAPIZAPI) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) error {
+	return errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 // NVMeNamespaceSetSize updates the namespace size to newSize.
 func (d OntapAPIZAPI) NVMeNamespaceSetSize(ctx context.Context, nsUUID string, newSize int64) error {
 	return errors.UnsupportedError("ZAPI call is not supported yet")
+}
+
+// NVMeNamespaceSetComment sets comments on a namespace.
+func (d OntapAPIZAPI) NVMeNamespaceSetComment(ctx context.Context, name, comment string) error {
+	return errors.UnsupportedError("ZAPI call is not supported yet")
+}
+
+// NVMeNamespaceSetQosPolicyGroup sets QoS policy on a namespace.
+func (d OntapAPIZAPI) NVMeNamespaceSetQosPolicyGroup(
+	ctx context.Context, name string, qosPolicyGroup QosPolicyGroup,
+) error {
+	return errors.UnsupportedError("ZAPI call is not supported yet")
+}
+
+// NVMeNamespaceRename renames the namespace to newName.
+func (d OntapAPIZAPI) NVMeNamespaceRename(ctx context.Context, nsUUID, newName string) error {
+	return errors.UnsupportedError("ZAPI call is not supported yet")
+}
+
+// NVMeNamespaceExists returns if an NVMe namespace exists.
+func (d OntapAPIZAPI) NVMeNamespaceExists(ctx context.Context, name string) (bool, error) {
+	return false, errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 // NVMeNamespaceGetByName returns NVMe namespace with the specified name.
@@ -2697,6 +2719,10 @@ func (d OntapAPIZAPI) NVMeNamespaceList(ctx context.Context, pattern string) (NV
 
 func (d OntapAPIZAPI) NamespaceSize(ctx context.Context, subsystemName string) (int, error) {
 	return 0, errors.UnsupportedError("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) NVMeNamespaceDelete(ctx context.Context, name string) error {
+	return errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*NVMeSubsystem, error) {
@@ -2825,48 +2851,48 @@ func (d OntapAPIZAPI) VolumeWaitForStates(
 	return volumeState, nil
 }
 
+func (d OntapAPIZAPI) StorageUnitExists(_ context.Context, _ string) (bool, error) {
+	return false, errors.UnsupportedError("ZAPI call is not supported yet")
+}
+
 func (d OntapAPIZAPI) StorageUnitSnapshotCreate(
-	_ context.Context, _,
-	_, _ string,
+	_ context.Context, _, _ string,
 ) error {
 	return errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) StorageUnitSnapshotInfo(
-	_ context.Context, _,
-	_, _ string,
+	_ context.Context, _, _ string,
 ) (*Snapshot, error) {
 	return nil, errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) StorageUnitSnapshotList(
-	_ context.Context, _, _ string,
+	_ context.Context, _ string,
 ) (*Snapshots, error) {
 	return nil, errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) StorageUnitSnapshotRestore(
-	_ context.Context, _,
-	_, suType string,
+	_ context.Context, _, _ string,
 ) error {
 	return errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) StorageUnitSnapshotDelete(
-	_ context.Context, _,
-	_, _ string,
+	_ context.Context, _, _ string,
 ) error {
 	return errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) StorageUnitCloneCreate(
-	_ context.Context, _, _, _, _ string,
+	_ context.Context, _, _, _ string,
 ) error {
 	return errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) StorageUnitCloneSplitStart(
-	_ context.Context, _, _ string,
+	_ context.Context, _ string,
 ) error {
 	return errors.UnsupportedError("ZAPI call is not supported yet")
 }

@@ -2856,6 +2856,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 	publishInfo.NVMeNamespaceUUID = req.PublishContext["nvmeNamespaceUUID"]
 	publishInfo.NVMeTargetIPs = strings.Split(req.PublishContext["nvmeTargetIPs"], ",")
 	publishInfo.SANType = req.PublishContext["SANType"]
+	publishInfo.FormatOptions = req.PublishContext["formatOptions"]
 
 	err := p.nvmeHandler.AttachNVMeVolumeRetry(
 		ctx, req.VolumeContext["internalName"], "", publishInfo, req.GetSecrets(), nvme.NVMeAttachTimeout,

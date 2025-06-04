@@ -281,55 +281,6 @@ func getMockNvmeDevices() NVMeDevices {
 	}
 }
 
-func TestGetNVMeDeviceList(t *testing.T) {
-	// Test1: Success - Able to get Device list
-	expectedNVMeDevices := getMockNvmeDevices()
-	ctx := context.Background()
-	mockCtrl := gomock.NewController(t)
-	mockCommand := mockexec.NewMockCommand(mockCtrl)
-	bytesBuffer := new(bytes.Buffer)
-	json.NewEncoder(bytesBuffer).Encode(expectedNVMeDevices)
-	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
-		false, "netapp", "ontapdevices", "-o", "json").Return(bytesBuffer.Bytes(), nil)
-
-	handler := NewNVMeHandlerDetailed(mockCommand, nil, nil, nil, nil)
-	gotNVMeDevices, err := handler.GetNVMeDeviceList(ctx)
-
-	assert.Equal(t, expectedNVMeDevices, gotNVMeDevices)
-	assert.NoError(t, err)
-
-	// Test2: Error - Not able to get Device list
-	expected := NVMeDevices{}
-	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
-		false, "netapp", "ontapdevices", "-o", "json").Return(nil, fmt.Errorf("Error getting device list"))
-
-	gotNVMeDevices, err = handler.GetNVMeDeviceList(ctx)
-
-	assert.Equal(t, expected, gotNVMeDevices)
-	assert.Error(t, err)
-
-	// Test3: Empty output and no error case
-	expectedNVMeDevices = NVMeDevices{}
-	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
-		false, "netapp", "ontapdevices", "-o", "json").Return([]byte(""), nil)
-
-	gotNVMeDevices, err = handler.GetNVMeDeviceList(ctx)
-
-	assert.Equal(t, expectedNVMeDevices, gotNVMeDevices)
-	assert.NoError(t, err)
-
-	// Test4: Error - Valid json but not mapping to NVMe Device
-	expectedValue := `{"some":"json"}`
-	bytesBuffer = new(bytes.Buffer)
-	json.NewEncoder(bytesBuffer).Encode(expectedValue)
-	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
-		false, "netapp", "ontapdevices", "-o", "json").Return(bytesBuffer.Bytes(), nil)
-
-	gotNVMeDevices, err = handler.GetNVMeDeviceList(ctx)
-
-	assert.Error(t, err)
-}
-
 func TestFlushNVMeDevice(t *testing.T) {
 	tests := map[string]struct {
 		ignoreErrors   bool

@@ -2874,7 +2874,7 @@ func (c *RestClient) LunSetAttribute(
 	}
 }
 
-// LunSetComment sets the comment for a given LUN.
+// LunSetQosPolicyGroup sets the QoS policy for a given LUN.
 func (c *RestClient) LunSetQosPolicyGroup(
 	ctx context.Context,
 	lunPath, qosPolicyGroup string,
@@ -3593,6 +3593,14 @@ func getGenericJobLinkFromStorageUnitSnapshotJobLink(suSnapshotJobLink *models.S
 	jobLink := &models.JobLinkResponse{}
 	if suSnapshotJobLink != nil {
 		jobLink.Job = suSnapshotJobLink.Job
+	}
+	return jobLink
+}
+
+func getGenericJobLinkFromNvmeNamespaceJobLink(nvmeNamespaceJobLink *models.NvmeNamespaceJobLinkResponse) *models.JobLinkResponse {
+	jobLink := &models.JobLinkResponse{}
+	if nvmeNamespaceJobLink != nil {
+		jobLink.Job = nvmeNamespaceJobLink.Job
 	}
 	return jobLink
 }
@@ -6316,7 +6324,7 @@ func (c *RestClient) SMBShareAccessControlDelete(ctx context.Context, shareName 
 
 // NVMe Namespace operations
 // NVMeNamespaceCreate creates NVMe namespace in the backend's SVM.
-func (c *RestClient) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error) {
+func (c *RestClient) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) error {
 	params := nvme.NewNvmeNamespaceCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -6326,7 +6334,7 @@ func (c *RestClient) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) 
 	sizeInBytes, err := convert.ToPositiveInt64(sizeBytesStr)
 	if err != nil {
 		Logc(ctx).WithField("sizeInBytes", sizeInBytes).WithError(err).Error("Invalid volume size.")
-		return "", fmt.Errorf("invalid volume size: %v", err)
+		return fmt.Errorf("invalid volume size: %v", err)
 	}
 
 	nsInfo := &models.NvmeNamespace{
@@ -6340,24 +6348,42 @@ func (c *RestClient) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) 
 		Svm:     &models.NvmeNamespaceInlineSvm{UUID: convert.ToPtr(c.svmUUID)},
 	}
 
+	// Set QosPolicy if present.
+	if ns.QosPolicy.Name != "" {
+		nsInfo.QosPolicy = &models.NvmeNamespaceInlineQosPolicy{
+			Name: convert.ToPtr(ns.QosPolicy.Name),
+		}
+	}
+
 	params.SetInfo(nsInfo)
 
-	nsCreateCreated, _, err := c.api.NvMe.NvmeNamespaceCreate(params, c.authInfo)
+	nsCreateCreated, nsCreateAccepted, err := c.api.NvMe.NvmeNamespaceCreate(params, c.authInfo)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	if nsCreateCreated.IsSuccess() {
-		nsResponse := nsCreateCreated.GetPayload()
-		// Verify that the created namespace is the same as the one we requested.
-		if nsResponse != nil && nsResponse.NumRecords != nil && *nsResponse.NumRecords == 1 &&
-			*nsResponse.NvmeNamespaceResponseInlineRecords[0].Name == ns.Name {
-			return *nsResponse.NvmeNamespaceResponseInlineRecords[0].UUID, nil
+	if nsCreateCreated == nil && nsCreateAccepted == nil {
+		return fmt.Errorf("unexpected response from NVMe namespace create")
+	}
+
+	// For unified ONTAP, we expect the call to be synchronous and response to contain the created namespace.
+	if nsCreateCreated != nil {
+		if nsCreateCreated.IsSuccess() {
+			nsResponse := nsCreateCreated.GetPayload()
+			// Verify that the created namespace is the same as the one we requested.
+			if nsResponse != nil && nsResponse.NumRecords != nil && *nsResponse.NumRecords == 1 &&
+				*nsResponse.NvmeNamespaceResponseInlineRecords[0].Name == ns.Name {
+				return nil
+			}
+			return fmt.Errorf("namespace create call succeeded but newly created namespace not found")
+		} else {
+			return fmt.Errorf("namespace create failed with error %v", nsCreateCreated.Error())
 		}
-		return "", fmt.Errorf("namespace create call succeeded but newly created namespace not found")
 	}
 
-	return "", fmt.Errorf("namespace create failed with error %v", nsCreateCreated.Error())
+	// For disaggregated (ASAr2) ONTAP personalities, we expect the call to be async and hence wait for job to complete.
+	jobLink := getGenericJobLinkFromNvmeNamespaceJobLink(nsCreateAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // NVMeNamespaceSetSize updates the namespace size to newSize.
@@ -6372,19 +6398,82 @@ func (c *RestClient) NVMeNamespaceSetSize(ctx context.Context, nsUUID string, ne
 		},
 	}
 
-	nsModify, _, err := c.api.NvMe.NvmeNamespaceModify(params, c.authInfo)
+	return c.nvmeNamespaceModify(ctx, params, "namespace resize failed")
+}
+
+func (c *RestClient) nvmeNamespaceModify(
+	ctx context.Context, params *nvme.NvmeNamespaceModifyParams,
+	customErrorMsg string,
+) error {
+	// Namespace modify can be sync or async depending on the parameter which is modified.
+	// Hence, handle the response generically.
+	nsModifyOk, nsModifyAccepted, err := c.api.NvMe.NvmeNamespaceModify(params, c.authInfo)
 	if err != nil {
-		return fmt.Errorf("namespace resize failed; %v", err)
-	}
-	if nsModify == nil {
-		return fmt.Errorf("namespace resize failed")
+		return fmt.Errorf("%s; %w", customErrorMsg, err)
 	}
 
-	if nsModify.IsSuccess() {
-		return nil
+	Logc(ctx).Debugf("NVMe namespace modify response nsModifyOk: %v, nsModifyAccepted: %v", nsModifyOk, nsModifyAccepted)
+
+	// When no error is returned, we expect at least one response to be returned.
+	if nsModifyOk == nil && nsModifyAccepted == nil {
+		return fmt.Errorf("%s; %s", customErrorMsg, "unexpected response from NVMe namespace modify")
 	}
 
-	return fmt.Errorf("namespace resize failed, %v", nsModify.Error())
+	// Prioritize the first response which is the case when call is synchronous.
+	if nsModifyOk != nil {
+		if nsModifyOk.IsSuccess() {
+			return nil
+		} else {
+			return fmt.Errorf("%s; %v", customErrorMsg, nsModifyOk.Error())
+		}
+	}
+
+	// If the response is async and returns job link then wait for job to finish.
+	jobLink := getGenericJobLinkFromNvmeNamespaceJobLink(nsModifyAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
+}
+
+// NVMeNamespaceSetComment sets comment for the given namespace.
+func (c *RestClient) NVMeNamespaceSetComment(ctx context.Context, nsUUID, comment string) error {
+	params := nvme.NewNvmeNamespaceModifyParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.UUID = nsUUID
+	params.Info = &models.NvmeNamespace{
+		Comment: convert.ToPtr(comment),
+	}
+
+	return c.nvmeNamespaceModify(ctx, params, "setting comment on namespace failed")
+}
+
+// NVMeNamespaceRename renames the namespace.
+func (c *RestClient) NVMeNamespaceRename(ctx context.Context, nsUUID, newName string) error {
+	// Prepare the parameters for the namespace rename request
+	params := nvme.NewNvmeNamespaceModifyParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.UUID = nsUUID
+	params.Info = &models.NvmeNamespace{
+		Name: convert.ToPtr(newName),
+	}
+
+	return c.nvmeNamespaceModify(ctx, params, "namespace rename failed")
+}
+
+func (c *RestClient) NVMeNamespaceSetQosPolicyGroup(
+	ctx context.Context, nsUUID string, qosPolicyGroup QosPolicyGroup,
+) error {
+	params := nvme.NewNvmeNamespaceModifyParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.UUID = nsUUID
+	params.Info = &models.NvmeNamespace{
+		QosPolicy: &models.NvmeNamespaceInlineQosPolicy{
+			Name: convert.ToPtr(qosPolicyGroup.Name),
+		},
+	}
+
+	return c.nvmeNamespaceModify(ctx, params, "setting QoS policy on namespace failed")
 }
 
 // NVMeNamespaceList finds Namespaces with the specified pattern.
@@ -6453,6 +6542,40 @@ func (c *RestClient) NVMeNamespaceGetByName(ctx context.Context, name string, fi
 		return result.Payload.NvmeNamespaceResponseInlineRecords[0], nil
 	}
 	return nil, errors.NotFoundError(fmt.Sprintf("could not find namespace with name %v", name))
+}
+
+func (c *RestClient) NVMeNamespaceDelete(ctx context.Context, nsUUID string) error {
+	params := nvme.NewNvmeNamespaceDeleteParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	if nsUUID == "" {
+		return fmt.Errorf("no namespace UUID provided")
+	}
+
+	params.UUID = nsUUID
+
+	nsDeleteOK, nsDeleteAccepted, err := c.api.NvMe.NvmeNamespaceDelete(params, c.authInfo)
+	if err != nil {
+		return err
+	}
+
+	if nsDeleteOK == nil && nsDeleteAccepted == nil {
+		return fmt.Errorf("unexpected response from NVMe namespace delete")
+	}
+
+	// Unified ONTAP has sync delete and returns 200 with empty body on success
+	if nsDeleteOK != nil {
+		if nsDeleteOK.IsSuccess() {
+			return nil
+		} else {
+			return fmt.Errorf("namespace delete failed, %v", nsDeleteOK.Error())
+		}
+	}
+
+	// ASAr2 personality has async delete and returns job link; thus wait for job to finish
+	jobLink := getGenericJobLinkFromNvmeNamespaceJobLink(nsDeleteAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 // NVMe Subsystem operations
@@ -6639,7 +6762,7 @@ func (c *RestClient) NVMeSubsystemCreate(ctx context.Context, subsystemName stri
 	params.Info = &models.NvmeSubsystem{
 		Name:   &subsystemName,
 		OsType: &osType,
-		Svm:    &models.NvmeSubsystemInlineSvm{Name: &c.svmName},
+		Svm:    &models.NvmeSubsystemInlineSvm{UUID: convert.ToPtr(c.svmUUID)},
 	}
 
 	subsysCreated, err := c.api.NvMe.NvmeSubsystemCreate(params, c.authInfo)
@@ -6773,23 +6896,61 @@ func (c *RestClient) NVMeNamespaceSize(ctx context.Context, namespacePath string
 // ASA.Next operations
 // ////////////////////////////////////////////////////////////////////////////
 
+// StorageUnitGetByName gets the storage unit with the specified name
+func (c *RestClient) StorageUnitGetByName(ctx context.Context, suName string) (*models.StorageUnit, error) {
+	params := san.NewStorageUnitCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.Name = convert.ToPtr(suName)
+	params.SvmUUID = convert.ToPtr(c.svmUUID)
+
+	params.Fields = []string{
+		"uuid",
+		"name",
+		"type",
+		"space.size",
+		"comment",
+		"qos_policy.name",
+		"create_time",
+		"enabled",
+		"serial_number",
+		"status.state",
+		"os_type",
+	}
+
+	result, err := c.api.San.StorageUnitCollectionGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	if result.Payload != nil && result.Payload.NumRecords != nil &&
+		*result.Payload.NumRecords == 1 && result.Payload.StorageUnitResponseInlineRecords != nil &&
+		result.Payload.StorageUnitResponseInlineRecords[0] != nil &&
+		result.Payload.StorageUnitResponseInlineRecords[0].Name != nil &&
+		*result.Payload.StorageUnitResponseInlineRecords[0].Name == suName {
+		return result.Payload.StorageUnitResponseInlineRecords[0], nil
+	}
+
+	return nil, NotFoundError(fmt.Sprintf("could not find storage unit with name %v", suName))
+}
+
 // StorageUnitSnapshotCreateAndWait creates a snapshot and waits on the job to complete
 func (c *RestClient) StorageUnitSnapshotCreateAndWait(ctx context.Context, suUUID, snapshotName string) error {
-	snapshotCreateResult, err := c.storageUnitSnapshotCreate(ctx, suUUID, snapshotName)
+	jobLink, err := c.storageUnitSnapshotCreate(ctx, suUUID, snapshotName)
 	if err != nil {
 		return fmt.Errorf("could not create snapshot; %v", err)
 	}
-	if snapshotCreateResult == nil {
-		return fmt.Errorf("could not create snapshot: %v", "unexpected result")
+	if jobLink == nil {
+		return fmt.Errorf("could not create snapshot: %v", "no job link found")
 	}
 
-	jobLink := getGenericJobLinkFromStorageUnitSnapshotJobLink(snapshotCreateResult.Payload)
 	return c.PollJobStatus(ctx, jobLink)
 }
 
 func (c *RestClient) storageUnitSnapshotCreate(
 	ctx context.Context, suUUID, snapshotName string,
-) (*san.StorageUnitSnapshotCreateAccepted, error) {
+) (*models.JobLinkResponse, error) {
 	params := san.NewStorageUnitSnapshotCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -6804,8 +6965,21 @@ func (c *RestClient) storageUnitSnapshotCreate(
 	}
 	params.SetInfo(snapshotInfo)
 
-	_, snapshotCreateAccepted, err := c.api.San.StorageUnitSnapshotCreate(params, c.authInfo)
-	return snapshotCreateAccepted, err
+	snapshotCreateOk, snapshotCreateAccepted, err := c.api.San.StorageUnitSnapshotCreate(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	// Job link can be returned in either of the responses.
+	if snapshotCreateOk != nil {
+		return getGenericJobLinkFromStorageUnitSnapshotJobLink(snapshotCreateOk.Payload), nil
+	}
+
+	if snapshotCreateAccepted != nil {
+		return getGenericJobLinkFromStorageUnitSnapshotJobLink(snapshotCreateAccepted.Payload), nil
+	}
+
+	return nil, fmt.Errorf("unexpected response from storage unit snapshot create")
 }
 
 func (c *RestClient) StorageUnitSnapshotListByName(
@@ -6887,13 +7061,21 @@ func (c *RestClient) StorageUnitSnapshotList(
 func (c *RestClient) StorageUnitSnapshotRestore(
 	ctx context.Context, snapshotName, suUUID string,
 ) error {
-	return c.restoreSUSnapshotByNameAndStyle(ctx, snapshotName, suUUID)
+	jobLink, err := c.restoreSUSnapshotByNameAndStyle(ctx, snapshotName, suUUID)
+	if err != nil {
+		return fmt.Errorf("could not restore storage unit from snapshot; %w", err)
+	}
+	if jobLink == nil {
+		return fmt.Errorf("could not restore storage unit from snapshot: %v", "no job link found")
+	}
+
+	return c.PollJobStatus(ctx, jobLink)
 }
 
 func (c *RestClient) restoreSUSnapshotByNameAndStyle(
 	ctx context.Context, snapshotName,
 	suUUID string,
-) error {
+) (*models.JobLinkResponse, error) {
 	params := san.NewStorageUnitModifyParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -6901,32 +7083,42 @@ func (c *RestClient) restoreSUSnapshotByNameAndStyle(
 	params.UUID = suUUID
 	params.RestoreToSnapshotName = &snapshotName
 
-	_, suModifyAccepted, err := c.api.San.StorageUnitModify(params, c.authInfo)
+	suModifyOk, suModifyAccepted, err := c.api.San.StorageUnitModify(params, c.authInfo)
 	if err != nil {
-		return err
-	}
-	if suModifyAccepted == nil {
-		return fmt.Errorf("unexpected response from storage unit modify")
+		return nil, err
 	}
 
-	jobLink := getGenericJobLinkFromStorageUnitJobLink(suModifyAccepted.Payload)
-	return c.PollJobStatus(ctx, jobLink)
+	// Job link can be returned in either of the responses.
+	if suModifyOk != nil {
+		return getGenericJobLinkFromStorageUnitJobLink(suModifyOk.Payload), nil
+	} else if suModifyAccepted != nil {
+		return getGenericJobLinkFromStorageUnitJobLink(suModifyAccepted.Payload), nil
+	}
+
+	return nil, fmt.Errorf("unexpected response from storage unit modify")
 }
 
 func (c *RestClient) StorageUnitSnapshotGetByName(
 	ctx context.Context, snapshotName, suUUID string,
 ) (*models.StorageUnitSnapshot, error) {
 	result, err := c.StorageUnitSnapshotListByName(ctx, suUUID, snapshotName)
-	if result.Payload != nil && result.Payload.NumRecords != nil &&
-		*result.Payload.NumRecords == 1 && result.Payload.StorageUnitSnapshotResponseInlineRecords != nil {
+	if err != nil {
+		return nil, err
+	}
+
+	if result != nil && result.Payload != nil && result.Payload.NumRecords != nil &&
+		*result.Payload.NumRecords == 1 && result.Payload.StorageUnitSnapshotResponseInlineRecords != nil &&
+		result.Payload.StorageUnitSnapshotResponseInlineRecords[0] != nil &&
+		result.Payload.StorageUnitSnapshotResponseInlineRecords[0].Name != nil &&
+		*result.Payload.StorageUnitSnapshotResponseInlineRecords[0].Name == snapshotName {
 		return result.Payload.StorageUnitSnapshotResponseInlineRecords[0], nil
 	}
-	return nil, err
+	return nil, NotFoundError(fmt.Sprintf("snapshot %v not found", snapshotName))
 }
 
 func (c *RestClient) StorageUnitSnapshotDelete(
 	ctx context.Context, suUUID, snapshotUUID string,
-) (*san.StorageUnitSnapshotDeleteAccepted, error) {
+) (*models.JobLinkResponse, error) {
 	params := san.NewStorageUnitSnapshotDeleteParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -6934,26 +7126,38 @@ func (c *RestClient) StorageUnitSnapshotDelete(
 	params.StorageUnitUUID = suUUID
 	params.UUID = snapshotUUID
 
-	_, snapshotDeleteAccepted, err := c.api.San.StorageUnitSnapshotDelete(params, c.authInfo)
-	return snapshotDeleteAccepted, err
+	snapshotDeleteOk, snapshotDeleteAccepted, err := c.api.San.StorageUnitSnapshotDelete(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	// Job link can be returned in either of the responses.
+	if snapshotDeleteOk != nil {
+		return getGenericJobLinkFromStorageUnitSnapshotJobLink(snapshotDeleteOk.Payload), nil
+	} else if snapshotDeleteAccepted != nil {
+		return getGenericJobLinkFromStorageUnitSnapshotJobLink(snapshotDeleteAccepted.Payload), nil
+	}
+
+	return nil, fmt.Errorf("unexpected response from storage unit snapshot delete")
 }
 
-func (c *RestClient) StorageUnitCloneCreate(ctx context.Context, suUUID, cloneName, snapshot string) error {
-	cloneCreateResult, err := c.suCreateClone(ctx, suUUID, cloneName, snapshot)
+func (c *RestClient) StorageUnitCloneCreate(
+	ctx context.Context, suUUID, cloneName, snapshot string,
+) error {
+	jobLink, err := c.suCreateClone(ctx, suUUID, cloneName, snapshot)
 	if err != nil {
-		return fmt.Errorf("could not create clone; %v", err)
+		return fmt.Errorf("could not create clone %v; %w", cloneName, err)
 	}
-	if cloneCreateResult == nil {
-		return fmt.Errorf("could not create clone: %v", "unexpected result")
+	if jobLink == nil {
+		return fmt.Errorf("could not create clone %v: %v", cloneName, "no job link found")
 	}
 
-	jobLink := getGenericJobLinkFromStorageUnitJobLink(cloneCreateResult.Payload)
 	return c.PollJobStatus(ctx, jobLink)
 }
 
 func (c *RestClient) suCreateClone(
 	ctx context.Context, suUUID, cloneName, snapshotName string,
-) (*san.StorageUnitCreateAccepted, error) {
+) (*models.JobLinkResponse, error) {
 	params := san.NewStorageUnitCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
@@ -6976,7 +7180,7 @@ func (c *RestClient) suCreateClone(
 				UUID: convert.ToPtr(c.svmUUID),
 			},
 		},
-		// IsFlexclone: convert.ToPtr(true), // TODO (aparna0508): set flexclone or leave default?
+		IsFlexclone: convert.ToPtr(true),
 	}
 
 	// Create a new storage unit with the above clone info
@@ -6987,8 +7191,19 @@ func (c *RestClient) suCreateClone(
 	}
 	params.SetInfo(suInfo)
 
-	_, suCreateAccepted, err := c.api.San.StorageUnitCreate(params, c.authInfo)
-	return suCreateAccepted, err
+	suCreateOk, suCreateAccepted, err := c.api.San.StorageUnitCreate(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	// Job link can be returned in either of the responses.
+	if suCreateOk != nil {
+		return getGenericJobLinkFromStorageUnitJobLink(suCreateOk.Payload), nil
+	} else if suCreateAccepted != nil {
+		return getGenericJobLinkFromStorageUnitJobLink(suCreateAccepted.Payload), nil
+	}
+
+	return nil, fmt.Errorf("unexpected response from storage unit create")
 }
 
 func (c *RestClient) StorageUnitCloneSplitStart(
@@ -7012,6 +7227,15 @@ func (c *RestClient) StorageUnitCloneSplitStart(
 
 	if suModifyOk == nil && suModifyAccepted == nil {
 		return fmt.Errorf("unexpected response from storage unit modify")
+	}
+
+	// If there is explicit error, return the error
+	if suModifyOk != nil && !suModifyOk.IsSuccess() {
+		return fmt.Errorf("failed to start clone split; %v", suModifyOk.Error())
+	}
+
+	if suModifyAccepted != nil && !suModifyAccepted.IsSuccess() {
+		return fmt.Errorf("failed to start clone split; %v", suModifyAccepted.Error())
 	}
 
 	// If there is explicit error, return the error

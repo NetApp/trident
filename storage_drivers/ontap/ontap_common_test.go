@@ -6617,7 +6617,7 @@ func TestValidateASAStoragePools(t *testing.T) {
 	assert.Error(t, err)
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Negative case: Test with Invalid value for FileSystemType
+	// Negative case: Test with invalid value for FileSystemType
 	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
 	physicalPools = map[string]storage.Pool{}
@@ -6625,6 +6625,34 @@ func TestValidateASAStoragePools(t *testing.T) {
 	storageDriver.virtualPools = virtualPools
 	storageDriver.physicalPools = physicalPools
 	storageDriver.virtualPools["test"].InternalAttributes()[FileSystemType] = "fake"
+
+	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+
+	assert.Error(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: Test with invalid value for formatOptions
+	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
+	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
+	physicalPools = map[string]storage.Pool{}
+	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
+	storageDriver.virtualPools = virtualPools
+	storageDriver.physicalPools = physicalPools
+	storageDriver.virtualPools["test"].InternalAttributes()[FormatOptions] = "  "
+
+	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
+
+	assert.Error(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: Test with invalid value for skipRecoveryQueue
+	storageDriver = newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
+	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
+	physicalPools = map[string]storage.Pool{}
+	virtualPools = map[string]storage.Pool{"test": getValidOntapASAPool()}
+	storageDriver.virtualPools = virtualPools
+	storageDriver.physicalPools = physicalPools
+	storageDriver.virtualPools["test"].InternalAttributes()[SkipRecoveryQueue] = "invalid"
 
 	err = ValidateASAStoragePools(ctx, physicalPools, virtualPools, storageDriver, 0)
 
@@ -9183,7 +9211,7 @@ func TestSplitASAVolumeFromBusySnapshot(t *testing.T) {
 			name: "Positive - Test1 - Runs without any error",
 			setupMock: func() {
 				mockAPI.EXPECT().StorageUnitListBySnapshotParent(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(api.VolumeNameList{volumeName}, nil).Times(1)
-				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName, ASATypeLun).Return(nil).Times(1)
+				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName).Return(nil).Times(1)
 			},
 			expectedError: false,
 		},
@@ -9206,7 +9234,7 @@ func TestSplitASAVolumeFromBusySnapshot(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setupMock()
-			err := SplitASAVolumeFromBusySnapshot(ctx, &snapConfig, &driver.Config, mockAPI, funcCloneSplitStart, ASATypeLun)
+			err := SplitASAVolumeFromBusySnapshot(ctx, &snapConfig, &driver.Config, mockAPI, funcCloneSplitStart)
 			if tc.expectedError {
 				assert.Error(t, err, "Expected an error")
 			} else {
@@ -9266,7 +9294,7 @@ func TestSplitASAVolumeFromBusySnapshotWithDelay(t *testing.T) {
 				cloneSplitTimer = make(map[string]time.Time)
 				cloneSplitTimer[snapConfig.ID()] = time.Now().Add(-15 * time.Second)
 				mockAPI.EXPECT().StorageUnitListBySnapshotParent(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(api.VolumeNameList{volumeName}, nil).Times(1)
-				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName, ASATypeLun).Return(nil).Times(1)
+				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName).Return(nil).Times(1)
 			},
 			expectedError: false,
 			verify: func(t *testing.T) {
@@ -9280,7 +9308,7 @@ func TestSplitASAVolumeFromBusySnapshotWithDelay(t *testing.T) {
 				cloneSplitTimer = make(map[string]time.Time)
 				cloneSplitTimer[snapConfig.ID()] = time.Now().Add(-15 * time.Second)
 				mockAPI.EXPECT().StorageUnitListBySnapshotParent(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(api.VolumeNameList{volumeName}, nil).Times(1)
-				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName, ASATypeLun).Return(fmt.Errorf("error")).Times(1)
+				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName).Return(fmt.Errorf("error")).Times(1)
 			},
 			expectedError: true,
 			verify: func(t *testing.T) {
@@ -9293,7 +9321,7 @@ func TestSplitASAVolumeFromBusySnapshotWithDelay(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setupMock()
-			SplitASAVolumeFromBusySnapshotWithDelay(ctx, &snapConfig, &driver.Config, mockAPI, funcCloneSplitStart, cloneSplitTimer, ASATypeLun)
+			SplitASAVolumeFromBusySnapshotWithDelay(ctx, &snapConfig, &driver.Config, mockAPI, funcCloneSplitStart, cloneSplitTimer)
 			tt.verify(t)
 		})
 	}
@@ -9324,8 +9352,8 @@ func TestCloneASAvol(t *testing.T) {
 			},
 			split: false,
 			setupMock: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(false, nil).Times(1)
-				mockAPI.EXPECT().StorageUnitCloneCreate(ctx, volumeName, sourceVolume, snapshotInternal, ASATypeLun).Return(nil).Times(1)
+				mockAPI.EXPECT().StorageUnitExists(ctx, volumeName).Return(false, nil).Times(1)
+				mockAPI.EXPECT().StorageUnitCloneCreate(ctx, volumeName, sourceVolume, snapshotInternal).Return(nil).Times(1)
 			},
 			expectedError: nil,
 		},
@@ -9338,7 +9366,7 @@ func TestCloneASAvol(t *testing.T) {
 			},
 			split: false,
 			setupMock: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(true, nil).Times(1)
+				mockAPI.EXPECT().StorageUnitExists(ctx, volumeName).Return(true, nil).Times(1)
 			},
 			expectedError: fmt.Errorf("volume %s already exists", volumeName),
 		},
@@ -9351,7 +9379,7 @@ func TestCloneASAvol(t *testing.T) {
 			},
 			split: false,
 			setupMock: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(false, fmt.Errorf("error checking for existing volume")).Times(1)
+				mockAPI.EXPECT().StorageUnitExists(ctx, volumeName).Return(false, fmt.Errorf("error checking for existing volume")).Times(1)
 			},
 			expectedError: fmt.Errorf("error checking for existing volume: %v", "error checking for existing volume"),
 		},
@@ -9364,9 +9392,9 @@ func TestCloneASAvol(t *testing.T) {
 			},
 			split: false,
 			setupMock: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(false, nil).Times(1)
-				mockAPI.EXPECT().StorageUnitSnapshotCreate(ctx, gomock.Any(), sourceVolume, ASATypeLun).Return(nil).Times(1)
-				mockAPI.EXPECT().StorageUnitCloneCreate(ctx, volumeName, sourceVolume, gomock.Any(), ASATypeLun).Return(nil).Times(1)
+				mockAPI.EXPECT().StorageUnitExists(ctx, volumeName).Return(false, nil).Times(1)
+				mockAPI.EXPECT().StorageUnitSnapshotCreate(ctx, gomock.Any(), sourceVolume).Return(nil).Times(1)
+				mockAPI.EXPECT().StorageUnitCloneCreate(ctx, volumeName, sourceVolume, gomock.Any()).Return(nil).Times(1)
 			},
 			expectedError: nil,
 		},
@@ -9379,8 +9407,8 @@ func TestCloneASAvol(t *testing.T) {
 			},
 			split: false,
 			setupMock: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(false, nil).Times(1)
-				mockAPI.EXPECT().StorageUnitSnapshotCreate(ctx, gomock.Any(), sourceVolume, ASATypeLun).Return(fmt.Errorf("error creating snapshot")).Times(1)
+				mockAPI.EXPECT().StorageUnitExists(ctx, volumeName).Return(false, nil).Times(1)
+				mockAPI.EXPECT().StorageUnitSnapshotCreate(ctx, gomock.Any(), sourceVolume).Return(fmt.Errorf("error creating snapshot")).Times(1)
 			},
 			expectedError: fmt.Errorf("error creating snapshot"),
 		},
@@ -9393,8 +9421,8 @@ func TestCloneASAvol(t *testing.T) {
 			},
 			split: false,
 			setupMock: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(false, nil).Times(1)
-				mockAPI.EXPECT().StorageUnitCloneCreate(ctx, volumeName, sourceVolume, snapshotInternal, ASATypeLun).Return(fmt.Errorf("error creating clone")).Times(1)
+				mockAPI.EXPECT().StorageUnitExists(ctx, volumeName).Return(false, nil).Times(1)
+				mockAPI.EXPECT().StorageUnitCloneCreate(ctx, volumeName, sourceVolume, snapshotInternal).Return(fmt.Errorf("error creating clone")).Times(1)
 			},
 			expectedError: fmt.Errorf("error creating clone"),
 		},
@@ -9407,9 +9435,9 @@ func TestCloneASAvol(t *testing.T) {
 			},
 			split: true,
 			setupMock: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(false, nil)
-				mockAPI.EXPECT().StorageUnitCloneCreate(ctx, volumeName, sourceVolume, snapshotInternal, ASATypeLun).Return(nil)
-				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName, ASATypeLun).Return(nil)
+				mockAPI.EXPECT().StorageUnitExists(ctx, volumeName).Return(false, nil)
+				mockAPI.EXPECT().StorageUnitCloneCreate(ctx, volumeName, sourceVolume, snapshotInternal).Return(nil)
+				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName).Return(nil)
 			},
 			expectedError: nil,
 		},
@@ -9422,9 +9450,9 @@ func TestCloneASAvol(t *testing.T) {
 			},
 			split: true,
 			setupMock: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(false, nil).Times(1)
-				mockAPI.EXPECT().StorageUnitCloneCreate(ctx, volumeName, sourceVolume, snapshotInternal, ASATypeLun).Return(nil).Times(1)
-				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName, ASATypeLun).Return(fmt.Errorf("error splitting clone")).Times(1)
+				mockAPI.EXPECT().StorageUnitExists(ctx, volumeName).Return(false, nil).Times(1)
+				mockAPI.EXPECT().StorageUnitCloneCreate(ctx, volumeName, sourceVolume, snapshotInternal).Return(nil).Times(1)
+				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName).Return(fmt.Errorf("error splitting clone")).Times(1)
 			},
 			expectedError: fmt.Errorf("error splitting clone: %v", "error splitting clone"),
 		},
@@ -9436,7 +9464,7 @@ func TestCloneASAvol(t *testing.T) {
 			defer ctrl.Finish()
 			tc.setupMock(mockAPI)
 
-			err := cloneASAvol(ctx, &tc.cloneVolConfig, tc.split, &driver.Config, mockAPI, ASATypeLun)
+			err := cloneASAvol(ctx, &tc.cloneVolConfig, tc.split, &driver.Config, mockAPI)
 
 			if tc.expectedError != nil {
 				assert.Error(t, err)

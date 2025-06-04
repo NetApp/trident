@@ -128,8 +128,13 @@ func getSANStorageDriverBasedOnPersonality(
 			return &SANStorageDriver{API: api, AWSAPI: awsapi, Config: *ontapConfig}, nil
 		}
 	case sa.NVMe:
-		// Unified NVMe SAN driver
-		return &NVMeStorageDriver{API: api, AWSAPI: awsapi, Config: *ontapConfig}, nil
+		if isASAr2 {
+			// ASAr2 NVMe SAN driver
+			return &ASANVMeStorageDriver{API: api, Config: *ontapConfig}, nil
+		} else {
+			// Unified NVMe SAN driver
+			return &NVMeStorageDriver{API: api, AWSAPI: awsapi, Config: *ontapConfig}, nil
+		}
 	case sa.FCP:
 		return &SANStorageDriver{API: api, AWSAPI: awsapi, Config: *ontapConfig}, nil
 	default:

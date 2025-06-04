@@ -573,7 +573,7 @@ func (b *StorageBackend) CloneVolume(
 		// Run the clone check using an exponential backoff
 		if err := backoff.RetryNotify(checkCloneExists, cloneBackoff, cloneExistsNotify); err != nil {
 			Logc(ctx).WithField("clone_volume", cloneVolConfig.Name).Warnf("Could not find clone after %3.2f seconds.",
-				float64(cloneBackoff.MaxElapsedTime))
+				float64(cloneBackoff.MaxElapsedTime.Seconds()))
 		} else {
 			Logc(ctx).WithField("clone_volume", cloneVolConfig.Name).Debug("Clone found.")
 		}

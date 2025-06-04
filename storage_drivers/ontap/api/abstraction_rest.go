@@ -152,7 +152,7 @@ func (d OntapAPIREST) ValidateAPIVersion(ctx context.Context) error {
 	// Make sure we're using a valid ONTAP version
 	ontapVersion, err := d.APIVersion(ctx, true)
 	if err != nil {
-		return fmt.Errorf("could not determine Data ONTAP version; %v", err)
+		return fmt.Errorf("could not determine Data ONTAP version; %w", err)
 	}
 	Logc(ctx).WithField("ontapVersion", ontapVersion).Debug("ONTAP version.")
 
@@ -3002,7 +3002,7 @@ func (d OntapAPIREST) SMBShareAccessControlDelete(ctx context.Context, shareName
 }
 
 // NVMeNamespaceCreate creates NVMe namespace.
-func (d OntapAPIREST) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error) {
+func (d OntapAPIREST) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) error {
 	fields := LogFields{
 		"Method": "NVMeNamespaceCreate",
 		"Type":   "OntapAPIREST",
@@ -3011,12 +3011,12 @@ func (d OntapAPIREST) NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace)
 	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeNamespaceCreate")
 	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeNamespaceCreate")
 
-	nsUUID, creationErr := d.api.NVMeNamespaceCreate(ctx, ns)
+	creationErr := d.api.NVMeNamespaceCreate(ctx, ns)
 	if creationErr != nil {
-		return "", fmt.Errorf("failed to create NVMe namespace %s: %v", ns.Name, creationErr)
+		return fmt.Errorf("failed to create NVMe namespace %s: %v", ns.Name, creationErr)
 	}
 
-	return nsUUID, nil
+	return nil
 }
 
 // NVMeNamespaceSetSize updates the namespace size to newSize.
@@ -3035,12 +3035,79 @@ func (d OntapAPIREST) NVMeNamespaceSetSize(ctx context.Context, nsUUID string, n
 	return d.api.NVMeNamespaceSetSize(ctx, nsUUID, newSize)
 }
 
+func (d OntapAPIREST) NVMeNamespaceSetComment(ctx context.Context, name, comment string) error {
+	fields := LogFields{
+		"Method":    "NVMeNamespaceSetComment",
+		"Type":      "OntapAPIREST",
+		"Namespace": name,
+		"Comment":   comment,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeNamespaceSetComment")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeNamespaceSetComment")
+
+	// Get the namespace
+	ns, err := d.NVMeNamespaceGetByName(ctx, name)
+	if err != nil {
+		return fmt.Errorf("error checking for namespace %s: %v", name, err)
+	}
+	if ns == nil || ns.UUID == "" {
+		return fmt.Errorf("namespace %s not found", name)
+	}
+
+	return d.api.NVMeNamespaceSetComment(ctx, ns.UUID, comment)
+}
+
+func (d OntapAPIREST) NVMeNamespaceSetQosPolicyGroup(
+	ctx context.Context, name string, qosPolicyGroup QosPolicyGroup,
+) error {
+	fields := LogFields{
+		"Method":              "NVMeNamespaceSetQosPolicyGroup",
+		"Type":                "OntapAPIREST",
+		"Namespace":           name,
+		"QoSPolicyGroup.Name": qosPolicyGroup.Name,
+		"QoSPolicyGroup.Kind": qosPolicyGroup.Kind,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeNamespaceSetQosPolicyGroup")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeNamespaceSetQosPolicyGroup")
+
+	// Get the namespace
+	ns, err := d.NVMeNamespaceGetByName(ctx, name)
+	if err != nil {
+		return fmt.Errorf("error checking for namespace %s: %v", name, err)
+	}
+	if ns == nil || ns.UUID == "" {
+		return fmt.Errorf("namespace %s not found", name)
+	}
+
+	return d.api.NVMeNamespaceSetQosPolicyGroup(ctx, ns.UUID, qosPolicyGroup)
+}
+
+// NVMeNamespaceRename renames the namespace to newName.
+func (d OntapAPIREST) NVMeNamespaceRename(ctx context.Context, nsUUID, newName string) error {
+	fields := LogFields{
+		"Method":    "NVMeNamespaceRename",
+		"Type":      "OntapAPIREST",
+		"Namespace": nsUUID,
+		"NewName":   newName,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> NVMeNamespaceRename")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< NVMeNamespaceRename")
+
+	return d.api.NVMeNamespaceRename(ctx, nsUUID, newName)
+}
+
 // NVMeNamespaceGetByName returns NVMe namespace with the specified name.
 func (d OntapAPIREST) NVMeNamespaceGetByName(ctx context.Context, name string) (*NVMeNamespace, error) {
 	logFields := LogFields{
-		"Method":  "NVMeNamespaceGetByName",
-		"Type":    "OntapAPIREST",
-		"LunPath": name,
+		"Method":        "NVMeNamespaceGetByName",
+		"Type":          "OntapAPIREST",
+		"NVMeNamespace": name,
 	}
 	Logd(ctx, d.driverName,
 		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace(">>>> NVMeNamespaceGetByName")
@@ -3064,6 +3131,32 @@ func (d OntapAPIREST) NVMeNamespaceGetByName(ctx context.Context, name string) (
 		return nil, err
 	}
 	return ns, nil
+}
+
+func (d OntapAPIREST) NVMeNamespaceExists(ctx context.Context, name string) (bool, error) {
+	logFields := LogFields{
+		"Method":    "NVMeNamespaceExists",
+		"Type":      "OntapAPIREST",
+		"Namespace": name,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace(">>>> NVMeNamespaceExists")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace("<<<< NVMeNamespaceExists")
+
+	fields := []string{}
+
+	if nsResponse, err := d.api.NVMeNamespaceGetByName(ctx, name, fields); err != nil {
+		if errors.IsNotFoundError(err) {
+			return false, nil
+		}
+		return false, err
+	} else if nsResponse != nil {
+		return true, nil
+	} else {
+		// unlikely that both response and err are nil
+		return false, fmt.Errorf("unexpected response when checking for namespace %s", name)
+	}
 }
 
 // NVMeNamespaceList returns the list of NVMe namespaces with the specified pattern.
@@ -3095,6 +3188,30 @@ func (d OntapAPIREST) NVMeNamespaceList(ctx context.Context, pattern string) (NV
 	}
 
 	return namespaces, nil
+}
+
+func (d OntapAPIREST) NVMeNamespaceDelete(ctx context.Context, name string) error {
+	logFields := LogFields{
+		"Method":    "NVMeNamespaceDelete",
+		"Type":      "OntapAPIREST",
+		"Namespace": name,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace(">>>> NVMeNamespaceDelete")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace("<<<< NVMeNamespaceDelete")
+
+	// Get the namespace
+	nsResponse, err := d.api.NVMeNamespaceGetByName(ctx, name, []string{})
+	if err != nil {
+		return fmt.Errorf("error checking for namespace %s: %v", name, err)
+	}
+
+	if nsResponse == nil || nsResponse.UUID == nil {
+		return fmt.Errorf("namespace %s not found", name)
+	}
+
+	return d.api.NVMeNamespaceDelete(ctx, *nsResponse.UUID)
 }
 
 // NVMeSubsystemAddNamespace adds a namespace to subsystem Map.
@@ -3376,11 +3493,27 @@ func (d OntapAPIREST) NVMeNamespaceGetSize(ctx context.Context, namespacePath st
 	return d.api.NVMeNamespaceSize(ctx, namespacePath)
 }
 
+func (d OntapAPIREST) StorageUnitExists(ctx context.Context, suName string) (bool, error) {
+	_, err := d.StorageUnitGetByName(ctx, suName)
+	if err != nil {
+		if IsNotFoundError(err) {
+			return false, nil
+		} else {
+			return false, err
+		}
+	}
+
+	return true, nil
+}
+
+func (d OntapAPIREST) StorageUnitGetByName(ctx context.Context, suName string) (*models.StorageUnit, error) {
+	return d.api.StorageUnitGetByName(ctx, suName)
+}
+
 func (d OntapAPIREST) StorageUnitSnapshotCreate(
-	ctx context.Context, snapshotName,
-	suName, suType string,
+	ctx context.Context, snapshotName, suName string,
 ) error {
-	suUUID, err := d.getStorageUnitUUIDBasedOnType(ctx, suName, suType)
+	suUUID, err := d.getStorageUnitUUID(ctx, suName)
 	if err != nil {
 		return err
 	}
@@ -3392,10 +3525,9 @@ func (d OntapAPIREST) StorageUnitSnapshotCreate(
 }
 
 func (d OntapAPIREST) StorageUnitSnapshotInfo(
-	ctx context.Context, snapshotName,
-	suName, suType string,
+	ctx context.Context, snapshotName, suName string,
 ) (*Snapshot, error) {
-	suUUID, err := d.getStorageUnitUUIDBasedOnType(ctx, suName, suType)
+	suUUID, err := d.getStorageUnitUUID(ctx, suName)
 	if err != nil {
 		return nil, err
 	}
@@ -3429,9 +3561,9 @@ func (d OntapAPIREST) StorageUnitSnapshotInfo(
 }
 
 func (d OntapAPIREST) StorageUnitSnapshotList(
-	ctx context.Context, suName, suType string,
+	ctx context.Context, suName string,
 ) (*Snapshots, error) {
-	suUUID, err := d.getStorageUnitUUIDBasedOnType(ctx, suName, suType)
+	suUUID, err := d.getStorageUnitUUID(ctx, suName)
 	if err != nil {
 		return nil, err
 	}
@@ -3463,10 +3595,9 @@ func (d OntapAPIREST) StorageUnitSnapshotList(
 }
 
 func (d OntapAPIREST) StorageUnitSnapshotRestore(
-	ctx context.Context, snapshotName,
-	suName, suType string,
+	ctx context.Context, snapshotName, suName string,
 ) error {
-	suUUID, err := d.getStorageUnitUUIDBasedOnType(ctx, suName, suType)
+	suUUID, err := d.getStorageUnitUUID(ctx, suName)
 	if err != nil {
 		return err
 	}
@@ -3479,10 +3610,9 @@ func (d OntapAPIREST) StorageUnitSnapshotRestore(
 }
 
 func (d OntapAPIREST) StorageUnitSnapshotDelete(
-	ctx context.Context, snapshotName,
-	suName, suType string,
+	ctx context.Context, snapshotName, suName string,
 ) error {
-	suUUID, err := d.getStorageUnitUUIDBasedOnType(ctx, suName, suType)
+	suUUID, err := d.getStorageUnitUUID(ctx, suName)
 	if err != nil {
 		return err
 	}
@@ -3505,16 +3635,15 @@ func (d OntapAPIREST) suSnapshotDeleteByNameAndStyle(
 	snapshotUUID := *snapshot.UUID
 
 	// DELETE the snapshot
-	snapshotDeleteResult, err := d.api.StorageUnitSnapshotDelete(ctx, suUUID, snapshotUUID)
+	jobLink, err := d.api.StorageUnitSnapshotDelete(ctx, suUUID, snapshotUUID)
 	if err != nil {
 		return fmt.Errorf("error while deleting snapshot; %w", err)
 	}
-	if snapshotDeleteResult == nil {
-		return fmt.Errorf("error while deleting snapshot: %v", snapshotName)
+	if jobLink == nil {
+		return fmt.Errorf("error while deleting snapshot: %v; %v", snapshotName, "no job link found")
 	}
 
 	// check snapshot delete job status
-	jobLink := getGenericJobLinkFromStorageUnitSnapshotJobLink(snapshotDeleteResult.Payload)
 	snapshotDeleteErr := d.api.PollJobStatus(ctx, jobLink)
 	if snapshotDeleteErr != nil {
 		Logc(ctx).Debugf("Could not delete the snapshot, going to check if it's busy; error was: %v", snapshotDeleteErr)
@@ -3535,8 +3664,10 @@ func (d OntapAPIREST) suSnapshotDeleteByNameAndStyle(
 	return nil
 }
 
-func (d OntapAPIREST) StorageUnitCloneCreate(ctx context.Context, cloneName, sourceName, snapshot, suType string) error {
-	suUUID, err := d.getStorageUnitUUIDBasedOnType(ctx, sourceName, suType)
+func (d OntapAPIREST) StorageUnitCloneCreate(
+	ctx context.Context, cloneName, sourceName, snapshot string,
+) error {
+	suUUID, err := d.getStorageUnitUUID(ctx, sourceName)
 	if err != nil {
 		return err
 	}
@@ -3550,9 +3681,9 @@ func (d OntapAPIREST) StorageUnitCloneCreate(ctx context.Context, cloneName, sou
 }
 
 func (d OntapAPIREST) StorageUnitCloneSplitStart(
-	ctx context.Context, cloneName, suType string,
+	ctx context.Context, cloneName string,
 ) error {
-	suUUID, err := d.getStorageUnitUUIDBasedOnType(ctx, cloneName, suType)
+	suUUID, err := d.getStorageUnitUUID(ctx, cloneName)
 	if err != nil {
 		return err
 	}
@@ -3563,27 +3694,18 @@ func (d OntapAPIREST) StorageUnitCloneSplitStart(
 	return nil
 }
 
-func (d OntapAPIREST) getStorageUnitUUIDBasedOnType(
-	ctx context.Context, suName, suType string,
+func (d OntapAPIREST) getStorageUnitUUID(
+	ctx context.Context, suName string,
 ) (string, error) {
-	suUUID := ""
-	switch strings.ToLower(suType) {
-	case "lun":
-		// Get lun info
-		lun, err := d.LunGetByName(ctx, suName)
-		if err != nil {
-			return "", err
-		}
-		if lun == nil {
-			return "", errors.NotFoundError("could not get storage unit %s by name", suName)
-		}
-
-		suUUID = lun.UUID
-	default:
-		return "", fmt.Errorf("%v is invalid type: %v", suName, suType)
+	su, err := d.StorageUnitGetByName(ctx, suName)
+	if err != nil {
+		return "", err
+	}
+	if su == nil || su.UUID == nil {
+		return "", errors.NotFoundError("could not get storage unit %s by name", suName)
 	}
 
-	return suUUID, nil
+	return *su.UUID, nil
 }
 
 func (d OntapAPIREST) StorageUnitListBySnapshotParent(

@@ -97,21 +97,6 @@ func (mr *MockNVMeInterfaceMockRecorder) GetHostNqn(arg0 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHostNqn", reflect.TypeOf((*MockNVMeInterface)(nil).GetHostNqn), arg0)
 }
 
-// GetNVMeDeviceList mocks base method.
-func (m *MockNVMeInterface) GetNVMeDeviceList(arg0 context.Context) (nvme.NVMeDevices, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNVMeDeviceList", arg0)
-	ret0, _ := ret[0].(nvme.NVMeDevices)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetNVMeDeviceList indicates an expected call of GetNVMeDeviceList.
-func (mr *MockNVMeInterfaceMockRecorder) GetNVMeDeviceList(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNVMeDeviceList", reflect.TypeOf((*MockNVMeInterface)(nil).GetNVMeDeviceList), arg0)
-}
-
 // GetNVMeSubsystem mocks base method.
 func (m *MockNVMeInterface) GetNVMeSubsystem(arg0 context.Context, arg1 string) (*nvme.NVMeSubsystem, error) {
 	m.ctrl.T.Helper()

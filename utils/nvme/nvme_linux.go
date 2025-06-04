@@ -351,50 +351,6 @@ func (s *NVMeSubsystem) GetNVMeDeviceAt(ctx context.Context, nsUUID string) (*NV
 	return nil, errors.NotFoundError("no device found for the given namespace %v", nsUUID)
 }
 
-// GetNVMeDeviceList returns the list of NVMe devices present on the k8s node.
-func (nh *NVMeHandler) GetNVMeDeviceList(ctx context.Context) (NVMeDevices, error) {
-	Logc(ctx).Debug(">>>> nvme_linux.GetNVMeDeviceList")
-	defer Logc(ctx).Debug("<<<< nvme_linux.GetNVMeDeviceList")
-
-	var ontapDevs NVMeDevices
-
-	out, err := nh.command.ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
-		false, "netapp", "ontapdevices", "-o", "json")
-	if err != nil {
-		Logc(ctx).WithError(err).Error("Failed to list NVMe ONTAP devices.")
-		return ontapDevs, fmt.Errorf("failed to list NVMe ONTAP devices; %v", err)
-	}
-
-	// There are 2 use cases where we may need to format the output before unmarshalling it.
-	// 1. When no namespaces are associated with any subsystem, the output of this command is not a json.
-	//    It is usually a string with this value - "No NVMe devices detected."
-	// 2. When any device is unreachable, we get the list of those devices stating the error reason and the available
-	//    list of devices is appended after that. For example -
-	//    # nvme netapp ontapdevices -o json
-	//    Identify Controller failed to /dev/nvme0n2 (Operation not permitted)
-	//    {
-	//       "ONTAPdevices":[ { ...,...} ]
-	//    }
-	//    In this case, we need to remove everything before valid json string starts from the string.
-	if !json.Valid(out) {
-		_, afterBrace, found := strings.Cut(string(out), "{")
-		if found {
-			afterBrace = "{" + afterBrace
-		}
-		out = []byte(afterBrace)
-	}
-
-	if string(out) != "" {
-		// "out" would be empty string if there are no devices
-		if err = json.Unmarshal(out, &ontapDevs); err != nil {
-			Logc(ctx).WithError(err).Error("Failed to unmarshal NVMe ONTAP devices.")
-			return ontapDevs, fmt.Errorf("failed to unmarshal NVMe ONTAP devices; %v", err)
-		}
-	}
-
-	return ontapDevs, nil
-}
-
 // FlushNVMeDevice flushes any ongoing IOs present on the NVMe device.
 func (d *NVMeDevice) FlushNVMeDevice(ctx context.Context) error {
 	Logc(ctx).Debug(">>>> nvme_linux.FlushNVMeDevice")

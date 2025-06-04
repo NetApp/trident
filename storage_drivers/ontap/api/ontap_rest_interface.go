@@ -357,13 +357,21 @@ type RestClientInterface interface {
 
 	// NVMe Namespace operations
 	// NVMeNamespaceCreate creates NVMe namespace in the backend's SVM.
-	NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error)
+	NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) error
 	// NVMeNamespaceSetSize updates the namespace size to newSize.
 	NVMeNamespaceSetSize(ctx context.Context, nsUUID string, newSize int64) error
+	// NVMeNamespaceSetComment sets comment on the namespace.
+	NVMeNamespaceSetComment(ctx context.Context, nsUUID, comment string) error
+	// NVMeNamespaceSetQosPolicyGroup sets QoS Policy Group on the namespace.
+	NVMeNamespaceSetQosPolicyGroup(ctx context.Context, nsUUID string, qosPolicyGroup QosPolicyGroup) error
+	// NVMeNamespaceRename renames the namespace to newName.
+	NVMeNamespaceRename(ctx context.Context, nsUUID, newName string) error
 	// NVMeNamespaceList finds Namespaces with the specified pattern.
 	NVMeNamespaceList(ctx context.Context, pattern string, fields []string) (*nvme.NvmeNamespaceCollectionGetOK, error)
 	// NVMeNamespaceGetByName gets the Namespace with the specified name.
 	NVMeNamespaceGetByName(ctx context.Context, name string, fields []string) (*models.NvmeNamespace, error)
+	// NVMeNamespaceDelete deletes NVMe namespace in the backend's SVM.
+	NVMeNamespaceDelete(ctx context.Context, nsUUID string) error
 	// NVMe Subsystem operations
 	// NVMeSubsystemAddNamespace adds namespace to subsystem-map
 	NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error
@@ -390,12 +398,13 @@ type RestClientInterface interface {
 	NVMeGetHostsOfSubsystem(ctx context.Context, subsUUID string) ([]*models.NvmeSubsystemHost, error)
 	NVMeNamespaceSize(ctx context.Context, namespacePath string) (int, error)
 
+	StorageUnitGetByName(ctx context.Context, suName string) (*models.StorageUnit, error)
 	StorageUnitSnapshotCreateAndWait(ctx context.Context, suUUID, snapshotName string) error
 	StorageUnitSnapshotListByName(ctx context.Context, suUUID, snapshotName string) (*san.StorageUnitSnapshotCollectionGetOK, error)
 	StorageUnitSnapshotList(ctx context.Context, suUUID string) (*san.StorageUnitSnapshotCollectionGetOK, error)
 	StorageUnitSnapshotRestore(ctx context.Context, snapshotName, suUUID string) error
 	StorageUnitSnapshotGetByName(ctx context.Context, snapshotName, suUUID string) (*models.StorageUnitSnapshot, error)
-	StorageUnitSnapshotDelete(ctx context.Context, suUUID, snapshotUUID string) (*san.StorageUnitSnapshotDeleteAccepted, error)
+	StorageUnitSnapshotDelete(ctx context.Context, suUUID, snapshotUUID string) (*models.JobLinkResponse, error)
 	StorageUnitCloneCreate(ctx context.Context, suUUID, cloneName, snapshot string) error
 	StorageUnitCloneSplitStart(ctx context.Context, suUUID string) error
 	StorageUnitListAllBackedBySnapshot(ctx context.Context, suName, snapshotName string) ([]string, error)

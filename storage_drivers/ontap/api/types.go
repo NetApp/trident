@@ -191,6 +191,7 @@ type NVMeNamespace struct {
 	BlockSize  int
 	State      string
 	Comment    string
+	QosPolicy  QosPolicyGroup
 }
 
 type NVMeSubsystem struct {

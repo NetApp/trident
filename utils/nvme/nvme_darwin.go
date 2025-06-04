@@ -85,13 +85,6 @@ func (s *NVMeSubsystem) GetNamespaceCountForSubsDevice(ctx context.Context) (int
 	return 0, errors.UnsupportedError("GetNamespaceCountForSubsDevice is not supported for darwin")
 }
 
-// GetNVMeDeviceList returns the list of NVMe devices present on the k8s node.
-func (nh *NVMeHandler) GetNVMeDeviceList(ctx context.Context) (NVMeDevices, error) {
-	Logc(ctx).Debug(">>>> nvme_darwin.GetNVMeDeviceList")
-	defer Logc(ctx).Debug("<<<< nvme_darwin.GetNVMeDeviceList")
-	return NVMeDevices{}, errors.UnsupportedError("GetNVMeDeviceList is not supported for darwin")
-}
-
 // FlushNVMeDevice flushes any ongoing IOs present on the NVMe device.
 func (d *NVMeDevice) FlushNVMeDevice(ctx context.Context) error {
 	Logc(ctx).Debug(">>>> nvme_darwin.FlushNVMeDevice")

@@ -235,11 +235,16 @@ type OntapAPI interface {
 
 	TieringPolicyValue(ctx context.Context) string
 
-	NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) (string, error)
+	NVMeNamespaceCreate(ctx context.Context, ns NVMeNamespace) error
 	NVMeNamespaceSetSize(ctx context.Context, nsUUID string, newSize int64) error
+	NVMeNamespaceSetComment(ctx context.Context, name, comment string) error
+	NVMeNamespaceSetQosPolicyGroup(ctx context.Context, name string, qosPolicyGroup QosPolicyGroup) error
+	NVMeNamespaceRename(ctx context.Context, nsUUID, newName string) error
+	NVMeNamespaceExists(ctx context.Context, name string) (bool, error)
 	NVMeNamespaceGetByName(ctx context.Context, name string) (*NVMeNamespace, error)
 	NVMeNamespaceList(ctx context.Context, pattern string) (NVMeNamespaces, error)
 	NVMeNamespaceGetSize(ctx context.Context, namespacePath string) (int, error)
+	NVMeNamespaceDelete(ctx context.Context, namespacePath string) error
 	NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*NVMeSubsystem, error)
 	NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error
 	NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error
@@ -251,13 +256,14 @@ type OntapAPI interface {
 	NVMeEnsureNamespaceMapped(ctx context.Context, subsystemUUID, nsUUID string) error
 	NVMeEnsureNamespaceUnmapped(ctx context.Context, hostNQN, subsytemUUID, nsUUID string) (bool, error)
 
-	StorageUnitSnapshotCreate(ctx context.Context, snapshotName, suName, suType string) error
-	StorageUnitSnapshotInfo(ctx context.Context, snapshotName, suName, suType string) (*Snapshot, error)
-	StorageUnitSnapshotList(ctx context.Context, suName, suType string) (*Snapshots, error)
-	StorageUnitSnapshotRestore(ctx context.Context, snapshotName, suName, suType string) error
-	StorageUnitSnapshotDelete(ctx context.Context, snapshotName, suName, suType string) error
-	StorageUnitCloneCreate(ctx context.Context, cloneName, sourceName, snapshot, suType string) error
-	StorageUnitCloneSplitStart(ctx context.Context, cloneName, suType string) error
+	StorageUnitExists(ctx context.Context, suName string) (bool, error)
+	StorageUnitSnapshotCreate(ctx context.Context, snapshotName, suName string) error
+	StorageUnitSnapshotInfo(ctx context.Context, snapshotName, suName string) (*Snapshot, error)
+	StorageUnitSnapshotList(ctx context.Context, suName string) (*Snapshots, error)
+	StorageUnitSnapshotRestore(ctx context.Context, snapshotName, suName string) error
+	StorageUnitSnapshotDelete(ctx context.Context, snapshotName, suName string) error
+	StorageUnitCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string) error
+	StorageUnitCloneSplitStart(ctx context.Context, cloneName string) error
 	StorageUnitListBySnapshotParent(ctx context.Context, snapshotName, sourceSU string) (VolumeNameList, error)
 }
 

@@ -251,17 +251,84 @@ func TestNVMeNamespaceCreate(t *testing.T) {
 		UUID: "fakeUUID",
 	}
 	// case 1: No error while creating namespace
-	mock.EXPECT().NVMeNamespaceCreate(ctx, ns).Return("fakeUUID", nil)
+	mock.EXPECT().NVMeNamespaceCreate(ctx, ns).Return(nil)
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	UUID, err := oapi.NVMeNamespaceCreate(ctx, ns)
+	err = oapi.NVMeNamespaceCreate(ctx, ns)
 	assert.NoError(t, err)
-	assert.Equal(t, ns.UUID, UUID, "namespace uuid does not match")
 
 	// case 2: Error returned while creating namespace
-	mock.EXPECT().NVMeNamespaceCreate(ctx, ns).Return("", fmt.Errorf("Error while creating namespace"))
+	mock.EXPECT().NVMeNamespaceCreate(ctx, ns).Return(fmt.Errorf("Error while creating namespace"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	_, err = oapi.NVMeNamespaceCreate(ctx, ns)
+	err = oapi.NVMeNamespaceCreate(ctx, ns)
 	assert.Error(t, err)
+}
+
+func TestNVMeNamespaceExists(t *testing.T) {
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mock := mockapi.NewMockRestClientInterface(ctrl)
+	oapi, err := api.NewOntapAPIRESTFromRestClientInterface(mock)
+	assert.NoError(t, err)
+	Name := "fakeNS"
+	UUID := "fakeUUID"
+	OsType := "fakeOS"
+	Location := &models.NvmeNamespaceInlineLocation{
+		Volume: &models.NvmeNamespaceInlineLocationInlineVolume{
+			Name: &Name,
+		},
+	}
+	Size := int64(99999)
+	BlockSize := int64(4096)
+	State := "fakeState"
+	Space := &models.NvmeNamespaceInlineSpace{
+		BlockSize: &BlockSize,
+		Size:      &Size,
+	}
+
+	Status := &models.NvmeNamespaceInlineStatus{
+		State: &State,
+	}
+
+	ns := &models.NvmeNamespace{
+		Name:     &Name,
+		UUID:     &UUID,
+		OsType:   &OsType,
+		Location: Location,
+		Space:    Space,
+		Status:   Status,
+	}
+
+	// case 1: No error while getting namespace
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name, gomock.Any()).Return(ns, nil)
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	exists, err := oapi.NVMeNamespaceExists(ctx, Name)
+	assert.NoError(t, err)
+	assert.True(t, exists, "expected namespace to exist")
+
+	// case 2: error while getting namespace
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name, gomock.Any()).Return(nil, fmt.Errorf("Error while getting namespace"))
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	exists, err = oapi.NVMeNamespaceExists(ctx, Name)
+	assert.Error(t, err)
+	assert.False(t, exists, "expected namespace to not exist")
+
+	// case 3: Not found error while getting namespace
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name, gomock.Any()).Return(nil, errors.NotFoundError("namespace not found"))
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	exists, err = oapi.NVMeNamespaceExists(ctx, Name)
+	assert.NoError(t, err, "expected no error when namespace is not found")
+	assert.False(t, exists, "expected namespace to not exist")
+
+	// case 4: No error, but no response either
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name, gomock.Any()).Return(nil, nil)
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	exists, err = oapi.NVMeNamespaceExists(ctx, Name)
+	assert.Error(t, err, "expected error when neither namespace nor any error is returned")
+	assert.False(t, exists, "expected namespace to not exist")
 }
 
 func TestNVMeNamespaceGetByName(t *testing.T) {
@@ -392,6 +459,72 @@ func TestNVMeNamespaceList(t *testing.T) {
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	_, err = oapi.NVMeNamespaceList(ctx, Name)
 	assert.Error(t, err)
+}
+
+func TestNVMeNamespaceDelete(t *testing.T) {
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mock := mockapi.NewMockRestClientInterface(ctrl)
+	oapi, err := api.NewOntapAPIRESTFromRestClientInterface(mock)
+	assert.NoError(t, err)
+	Name := "fakeNS"
+	UUID := "fakeUUID"
+	OsType := "fakeOS"
+	Location := &models.NvmeNamespaceInlineLocation{
+		Volume: &models.NvmeNamespaceInlineLocationInlineVolume{
+			Name: &Name,
+		},
+	}
+	Size := int64(99999)
+	BlockSize := int64(4096)
+	State := "fakeState"
+	Space := &models.NvmeNamespaceInlineSpace{
+		BlockSize: &BlockSize,
+		Size:      &Size,
+	}
+
+	Status := &models.NvmeNamespaceInlineStatus{
+		State: &State,
+	}
+
+	ns := &models.NvmeNamespace{
+		Name:     &Name,
+		UUID:     &UUID,
+		OsType:   &OsType,
+		Location: Location,
+		Space:    Space,
+		Status:   Status,
+	}
+
+	// case 1: Successful delete
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name, gomock.Any()).Return(ns, nil)
+	mock.EXPECT().NVMeNamespaceDelete(ctx, UUID).Return(nil)
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	err = oapi.NVMeNamespaceDelete(ctx, Name)
+	assert.NoError(t, err, "No error expected while deleting namespace")
+
+	// case 2: Error while getting namespace
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name, gomock.Any()).Return(nil, fmt.Errorf("error while getting namespace"))
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	err = oapi.NVMeNamespaceDelete(ctx, Name)
+	assert.Error(t, err, "Expected error while deleting namespace")
+
+	// case 3: Empty response when getting namespace
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name, gomock.Any()).Return(nil, nil)
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	err = oapi.NVMeNamespaceDelete(ctx, Name)
+	assert.Error(t, err, "Expected error while deleting namespace")
+
+	// case 4: Error while deleting namespace
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name, gomock.Any()).Return(ns, nil)
+	mock.EXPECT().NVMeNamespaceDelete(ctx, UUID).Return(fmt.Errorf("error while deleting namespace"))
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	err = oapi.NVMeNamespaceDelete(ctx, Name)
+	assert.Error(t, err, "Expected error while deleting namespace")
 }
 
 func TestAddNamespaceToSubsystemMap(t *testing.T) {
@@ -4376,4 +4509,211 @@ func TestTerminalStateError(t *testing.T) {
 
 	assert.Error(t, terminalStateError)
 	assert.Equal(t, "error in getting terminal state", terminalStateError.Error())
+}
+
+func TestNVMeNamespaceSetComment(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	ctx := context.Background()
+	namespaceName := "testNamespace"
+	comment := "testComment"
+	namespaceUUID := "testUUID"
+
+	// Mock the ClientConfig method
+	rsi.EXPECT().ClientConfig().Return(api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}).AnyTimes()
+
+	fields := []string{
+		"os_type",
+		"location.volume.name",
+		"space.size",
+		"space.block_size",
+		"status.state",
+		"comment",
+	}
+
+	// Case 1: Successfully set comment
+	mockNamespace := &models.NvmeNamespace{UUID: &namespaceUUID}
+	rsi.EXPECT().NVMeNamespaceGetByName(ctx, namespaceName, fields).Return(mockNamespace, nil)
+	rsi.EXPECT().NVMeNamespaceSetComment(ctx, namespaceUUID, comment).Return(nil)
+
+	err := oapi.NVMeNamespaceSetComment(ctx, namespaceName, comment)
+	assert.NoError(t, err, "unexpected error while setting namespace comment")
+
+	// Case 2: Namespace response nil
+	rsi.EXPECT().NVMeNamespaceGetByName(ctx, namespaceName, fields).Return(nil, nil)
+
+	err = oapi.NVMeNamespaceSetComment(ctx, namespaceName, comment)
+	assert.Error(t, err, "expected an error when namespace is not found")
+	assert.Contains(t, err.Error(), "namespace response is nil")
+
+	// Case 3: Error while retrieving namespace
+	rsi.EXPECT().NVMeNamespaceGetByName(ctx, namespaceName, fields).Return(nil, fmt.Errorf("mock error"))
+
+	err = oapi.NVMeNamespaceSetComment(ctx, namespaceName, comment)
+	assert.Error(t, err, "expected an error while retrieving namespace")
+	assert.Contains(t, err.Error(), "mock error")
+}
+
+func TestNVMeNamespaceSetQosPolicyGroup(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	ctx := context.Background()
+	namespaceName := "testNamespace"
+	qosPolicyGroup := api.QosPolicyGroup{
+		Name: "testQoSGroup",
+		Kind: api.QosPolicyGroupKind,
+	}
+	namespaceUUID := "testUUID"
+
+	fields := []string{
+		"os_type",
+		"location.volume.name",
+		"space.size",
+		"space.block_size",
+		"status.state",
+		"comment",
+	}
+
+	// Mock the ClientConfig method
+	rsi.EXPECT().ClientConfig().Return(api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}).AnyTimes()
+
+	// Case 1: Successfully set QoS policy group
+	mockNamespace := &models.NvmeNamespace{UUID: &namespaceUUID}
+	rsi.EXPECT().NVMeNamespaceGetByName(ctx, namespaceName, fields).Return(mockNamespace, nil)
+	rsi.EXPECT().NVMeNamespaceSetQosPolicyGroup(ctx, namespaceUUID, qosPolicyGroup).Return(nil)
+
+	err := oapi.NVMeNamespaceSetQosPolicyGroup(ctx, namespaceName, qosPolicyGroup)
+	assert.NoError(t, err, "unexpected error while setting QoS policy group")
+
+	// Case 2: Namespace not found
+	rsi.EXPECT().NVMeNamespaceGetByName(ctx, namespaceName, fields).Return(nil, nil)
+
+	err = oapi.NVMeNamespaceSetQosPolicyGroup(ctx, namespaceName, qosPolicyGroup)
+	assert.Error(t, err, "expected an error when namespace is not found")
+	assert.Contains(t, err.Error(), "namespace response is nil")
+
+	// Case 3: Error while retrieving namespace
+	rsi.EXPECT().NVMeNamespaceGetByName(ctx, namespaceName, fields).Return(nil, fmt.Errorf("mock error"))
+
+	err = oapi.NVMeNamespaceSetQosPolicyGroup(ctx, namespaceName, qosPolicyGroup)
+	assert.Error(t, err, "expected an error while retrieving namespace")
+	assert.Contains(t, err.Error(), "mock error")
+}
+
+func TestStorageUnitExists(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	ctx := context.Background()
+	suName := "testStorageUnit"
+
+	// Case 1: Storage unit exists
+	mockStorageUnit := &models.StorageUnit{Name: &suName}
+	rsi.EXPECT().StorageUnitGetByName(ctx, suName).Return(mockStorageUnit, nil)
+
+	exists, err := oapi.StorageUnitExists(ctx, suName)
+	assert.NoError(t, err, "unexpected error")
+	assert.True(t, exists, "expected storage unit to exist")
+
+	// Case 2: Storage unit does not exist
+	rsi.EXPECT().StorageUnitGetByName(ctx, suName).Return(nil, api.NotFoundError("not found"))
+
+	exists, err = oapi.StorageUnitExists(ctx, suName)
+	assert.NoError(t, err, "unexpected error")
+	assert.False(t, exists, "expected storage unit to not exist")
+
+	// Case 3: Error while fetching storage unit
+	rsi.EXPECT().StorageUnitGetByName(ctx, suName).Return(nil, fmt.Errorf("some error"))
+
+	exists, err = oapi.StorageUnitExists(ctx, suName)
+	assert.Error(t, err, "expected an error")
+	assert.False(t, exists, "expected storage unit to not exist")
+}
+
+func TestStorageUnitGetByName(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	ctx := context.Background()
+	suName := "testStorageUnit"
+
+	// Case 1: Storage unit is found
+	expectedStorageUnit := &models.StorageUnit{Name: &suName}
+	rsi.EXPECT().StorageUnitGetByName(ctx, suName).Return(expectedStorageUnit, nil)
+
+	storageUnit, err := oapi.StorageUnitGetByName(ctx, suName)
+	assert.NoError(t, err, "unexpected error")
+	assert.NotNil(t, storageUnit, "expected storage unit to be found")
+	assert.Equal(t, suName, *storageUnit.Name, "storage unit name mismatch")
+
+	// Case 2: Storage unit is not found
+	rsi.EXPECT().StorageUnitGetByName(ctx, suName).Return(nil, api.NotFoundError("not found"))
+
+	storageUnit, err = oapi.StorageUnitGetByName(ctx, suName)
+	assert.Error(t, err, "expected an error")
+	assert.Nil(t, storageUnit, "expected no storage unit to be found")
+
+	// Case 3: Error while fetching storage unit
+	rsi.EXPECT().StorageUnitGetByName(ctx, suName).Return(nil, fmt.Errorf("some error"))
+
+	storageUnit, err = oapi.StorageUnitGetByName(ctx, suName)
+	assert.Error(t, err, "expected an error")
+	assert.Nil(t, storageUnit, "expected no storage unit to be found")
+}
+
+func TestStorageUnitSnapshotCreate(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	ctx := context.Background()
+	snapshotName := "testSnapshot"
+	suName := "testStorageUnit"
+	suUUID := "testUUID"
+	mockSU := &models.StorageUnit{
+		UUID: convert.ToPtr(suUUID),
+		Space: &models.StorageUnitInlineSpace{
+			Size: convert.ToPtr(int64(100)),
+		},
+	}
+
+	// Mock the ClientConfig method
+	rsi.EXPECT().ClientConfig().Return(api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}).AnyTimes()
+
+	// Case 1: Successfully create a snapshot
+	rsi.EXPECT().StorageUnitGetByName(ctx, suName).Return(mockSU, nil).Times(1)
+	rsi.EXPECT().StorageUnitSnapshotCreateAndWait(ctx, suUUID, snapshotName).Return(nil)
+
+	err := oapi.StorageUnitSnapshotCreate(ctx, snapshotName, suName)
+	assert.NoError(t, err, "unexpected error while creating snapshot")
+
+	// Case 2: Error while getting storage unit UUID
+	rsi.EXPECT().StorageUnitGetByName(ctx, suName).Return(nil, errors.New("mock error")).Times(1)
+
+	err = oapi.StorageUnitSnapshotCreate(ctx, snapshotName, suName)
+	assert.Error(t, err, "expected an error while getting storage unit UUID")
+
+	// Case 3: Error while creating snapshot
+	rsi.EXPECT().StorageUnitGetByName(ctx, suName).Return(mockSU, nil).Times(1)
+	rsi.EXPECT().StorageUnitSnapshotCreateAndWait(ctx, suUUID, snapshotName).Return(fmt.Errorf("failed to create snapshot"))
+
+	err = oapi.StorageUnitSnapshotCreate(ctx, snapshotName, suName)
+	assert.Error(t, err, "expected an error while creating snapshot")
 }

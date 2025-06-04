@@ -83,13 +83,6 @@ func (s *NVMeSubsystem) GetNamespaceCountForSubsDevice(ctx context.Context) (int
 	return 0, errors.UnsupportedError("GetNamespaceCountForSubsDevice is not supported for windows")
 }
 
-// GetNVMeDeviceList returns the list of NVMe devices present on the k8s node.
-func (nh *NVMeHandler) GetNVMeDeviceList(ctx context.Context) (NVMeDevices, error) {
-	Logc(ctx).Debug(">>>> nvme_windows.GetNVMeDeviceList")
-	defer Logc(ctx).Debug("<<<< nvme_windows.GetNVMeDeviceList")
-	return NVMeDevices{}, errors.UnsupportedError("GetNVMeDeviceList is not supported for windows")
-}
-
 // FlushNVMeDevice flushes any ongoing IOs present on the NVMe device.
 func (d *NVMeDevice) FlushNVMeDevice(ctx context.Context) error {
 	Logc(ctx).Debug(">>>> nvme_windows.FlushNVMeDevice")

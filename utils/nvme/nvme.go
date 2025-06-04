@@ -377,9 +377,10 @@ func (nh *NVMeHandler) NVMeMountVolume(
 		}
 
 		Logc(ctx).WithFields(LogFields{
-			"volume":    name,
-			"namespace": publishInfo.NVMeNamespaceUUID,
-			"fstype":    publishInfo.FilesystemType,
+			"volume":        name,
+			"namespace":     publishInfo.NVMeNamespaceUUID,
+			"fstype":        publishInfo.FilesystemType,
+			"formatOptions": publishInfo.FormatOptions,
 		}).Debug("Formatting NVMe Namespace.")
 		err := nh.fsClient.FormatVolume(ctx, devicePath, publishInfo.FilesystemType, publishInfo.FormatOptions)
 		if err != nil {
