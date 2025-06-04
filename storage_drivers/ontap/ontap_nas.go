@@ -801,10 +801,30 @@ func (d *NASStorageDriver) Import(
 		}
 	}
 
-	// TODO: enable secure SMB share for imported volumes
+	// Disable Secure SMB if the volume to be imported is not managed by Trident
+	if volConfig.ImportNotManaged {
+		volConfig.SecureSMBEnabled = false
+	}
+
 	if d.Config.NASType == sa.SMB {
+		// Update the import volume config with the admin user details from the Trident backend
+		adAdminUser := d.Config.ADAdminUser
+		if adAdminUser != "" {
+			if _, exists := volConfig.SMBShareACL[adAdminUser]; !exists {
+				volConfig.SMBShareACL[adAdminUser] = ADAdminUserPermission
+			}
+		}
+
+		shareName := originalName
+		sharePath := "/" + originalName
+
 		if flexvol.JunctionPath != "" {
-			if err := d.EnsureSMBShare(ctx, originalName, "/"+originalName, volConfig.SMBShareACL, false); err != nil {
+			// If secure SMB is enabled, create a new share with the internal name
+			if volConfig.SecureSMBEnabled {
+				shareName = volConfig.InternalName
+			}
+			if err := d.EnsureSMBShare(ctx, shareName, sharePath,
+				volConfig.SMBShareACL, volConfig.SecureSMBEnabled); err != nil {
 				return err
 			}
 		}

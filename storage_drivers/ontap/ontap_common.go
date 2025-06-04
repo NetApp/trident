@@ -4344,8 +4344,13 @@ func ConstructOntapNASVolumeAccessPath(
 					"~snapshot", volConfig.CloneSourceSnapshot)
 			}
 		} else {
-			// If the user does not specify an SMB Share, Trident creates it with the same name as the flexvol volume name.
-			completeVolumePath = smbSharePath + volumeName
+			if volConfig.SecureSMBEnabled && volConfig.ImportOriginalName != "" {
+				// For Secure SMB, Trident creates new share with the internalName of the volume.
+				completeVolumePath = smbSharePath + "/" + volConfig.InternalName
+			} else {
+				// If the user does not specify an SMB Share, Trident creates it with the same name as the flexvol volume name.
+				completeVolumePath = smbSharePath + volumeName
+			}
 		}
 	}
 	// Replace unix styled path separator, if exists

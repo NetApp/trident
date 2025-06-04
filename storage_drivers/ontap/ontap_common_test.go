@@ -2492,6 +2492,33 @@ func TestConstructOntapNASVolumeAccessPath_ROCloneSecureSMBEnabled(t *testing.T)
 	}
 }
 
+func TestConstructOntapNASVolumeAccessPath_ImportSecureSMBEnabled(t *testing.T) {
+	ctx := context.Background()
+
+	volConfig := &storage.VolumeConfig{
+		InternalName:       "vol",
+		ImportOriginalName: "testVolImport",
+		SecureSMBEnabled:   true,
+	}
+
+	tests := []struct {
+		smbShare     string
+		volName      string
+		protocol     string
+		expectedPath string
+	}{
+		{"test_share", "/vol", "smb", "\\vol"},
+		{"", "/vol", "smb", "\\vol"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.smbShare, func(t *testing.T) {
+			result := ConstructOntapNASVolumeAccessPath(ctx, test.smbShare, test.volName, volConfig, test.protocol)
+			assert.Equal(t, test.expectedPath, result, "the constructed Ontap-NAS volume access path is incorrect")
+		})
+	}
+}
+
 func TestConstructOntapNASFlexGroupSMBVolumePath(t *testing.T) {
 	ctx := context.Background()
 

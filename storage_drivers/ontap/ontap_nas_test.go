@@ -5067,6 +5067,66 @@ func TestOntapNasStorageDriverVolumeImport_SMBShareCreateFail(t *testing.T) {
 	assert.Error(t, result)
 }
 
+func TestOntapNasStorageDriverVolumeImportNotManaged_SecureSMBEnabled(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	driver.Config.NASType = sa.SMB
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		Encryption:       "false",
+		InternalName:     "vol2",
+		PeerVolumeHandle: "fakesvm:vol1",
+		ImportNotManaged: true,
+		UnixPermissions:  DefaultUnixPermissions,
+		SMBShareACL:      map[string]string{"user": "full_control"},
+		SecureSMBEnabled: true,
+	}
+	flexVol := &api.Volume{
+		Name:         "flexvol",
+		Comment:      "flexvol",
+		JunctionPath: "/vol1",
+		Size:         "1",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
+	mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", flexVol.JunctionPath).Return(nil)
+	result := driver.Import(ctx, volConfig, "vol1")
+	assert.NoError(t, result)
+}
+
+func TestOntapNasStorageDriverVolumeImport_SecureSMBEnabled(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	driver.Config.NASType = sa.SMB
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		Encryption:       "false",
+		InternalName:     "vol2",
+		PeerVolumeHandle: "fakesvm:vol1",
+		ImportNotManaged: false,
+		UnixPermissions:  DefaultUnixPermissions,
+		SMBShareACL:      map[string]string{"user": "full_control"},
+		SecureSMBEnabled: true,
+	}
+	flexVol := &api.Volume{
+		Name:         "flexvol",
+		Comment:      "flexvol",
+		JunctionPath: "/vol1",
+		Size:         "1",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
+	mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
+	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
+	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, flexVol.JunctionPath).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, volConfig.InternalName, volConfig.SMBShareACL).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, volConfig.InternalName, smbShareDeleteACL).Return(nil)
+	result := driver.Import(ctx, volConfig, "vol1")
+	assert.NoError(t, result)
+}
+
 func TestOntapNasStorageDriverVolumeImport_NameTemplateInvalidLabel(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 
@@ -5186,6 +5246,71 @@ func TestOntapNasStorageDriverVolumeImport_NameTemplate(t *testing.T) {
 	result := driver.Import(ctx, volConfig, "vol1")
 
 	assert.NoError(t, result)
+}
+
+func TestOntapNasStorageDriverVolumeImport_SecureSMBAccessControlCreatefail(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	driver.Config.NASType = sa.SMB
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		Encryption:       "false",
+		InternalName:     "vol2",
+		PeerVolumeHandle: "fakesvm:vol1",
+		ImportNotManaged: false,
+		UnixPermissions:  DefaultUnixPermissions,
+		SMBShareACL:      map[string]string{"usr": "full_control"},
+		SecureSMBEnabled: true,
+	}
+	flexVol := &api.Volume{
+		Name:         "flexvol",
+		Comment:      "flexvol",
+		JunctionPath: "/vol1",
+		Size:         "1",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
+	mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
+	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
+	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, flexVol.JunctionPath).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, volConfig.InternalName,
+		volConfig.SMBShareACL).Return(fmt.Errorf("cannot create SMB Share Access Control rule"))
+	result := driver.Import(ctx, volConfig, "vol1")
+	assert.Error(t, result)
+}
+
+func TestOntapNasStorageDriverVolumeImport_SecureSMBAccessControlDeletefail(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	driver.Config.NASType = sa.SMB
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		Encryption:       "false",
+		InternalName:     "vol2",
+		PeerVolumeHandle: "fakesvm:vol1",
+		ImportNotManaged: false,
+		UnixPermissions:  DefaultUnixPermissions,
+		SMBShareACL:      map[string]string{"user": "full_control"},
+		SecureSMBEnabled: true,
+	}
+	flexVol := &api.Volume{
+		Name:         "flexvol",
+		Comment:      "flexvol",
+		JunctionPath: "/vol1",
+		Size:         "1",
+	}
+
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
+	mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
+	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
+	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, flexVol.JunctionPath).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, volConfig.InternalName, volConfig.SMBShareACL).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, volConfig.InternalName,
+		smbShareDeleteACL).Return(fmt.Errorf("cannot delete SMB Share Access Control rule"))
+	result := driver.Import(ctx, volConfig, "vol1")
+	assert.Error(t, result)
 }
 
 func TestOntapNasStorageDriverVolumeImport_NameTemplateLabelLengthExceeding(t *testing.T) {
