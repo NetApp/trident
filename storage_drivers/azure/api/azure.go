@@ -650,6 +650,7 @@ func (c Client) newFileSystemFromVolume(ctx context.Context, vol *netapp.Volume)
 		KerberosEnabled:    DerefBool(vol.Properties.KerberosEnabled),
 		KeyVaultEndpointID: DerefString(vol.Properties.KeyVaultPrivateEndpointResourceID),
 		Zones:              DerefStringPtrArray(vol.Zones),
+		MaxThroughput:      DerefFloat32(vol.Properties.ThroughputMibps),
 	}, nil
 }
 
@@ -1031,6 +1032,11 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 		encryptionKeySource = netapp.EncryptionKeySource(EncryptionKeyVault)
 		newVol.Properties.EncryptionKeySource = &encryptionKeySource
 		newVol.Properties.KeyVaultPrivateEndpointResourceID = &request.KeyVaultEndpointID
+	}
+
+	// Only set the max throughput if specified
+	if request.MaxThroughput != nil {
+		newVol.Properties.ThroughputMibps = request.MaxThroughput
 	}
 
 	Logc(ctx).WithFields(LogFields{
@@ -1746,6 +1752,14 @@ func DerefInt64(i *int64) int64 {
 		return *i
 	}
 	return 0
+}
+
+// DerefFloat32 accepts a float32 pointer and returns the value of the float32, or 0 if the pointer is nil.
+func DerefFloat32(i *float32) float32 {
+	if i != nil {
+		return *i
+	}
+	return float32(0)
 }
 
 // DerefNetworkFeatures accepts a NetworkFeatures pointer and returns its string value, or "" if the pointer is nil.

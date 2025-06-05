@@ -1258,6 +1258,8 @@ func TestInitializeStoragePools_NoVirtualPools(t *testing.T) {
 				UnixPermissions: "0700",
 				SnapshotDir:     "TRUE",
 				ExportRule:      "1.1.1.1/32",
+				QOSType:         api.QOSManual,
+				MaxThroughput:   "10",
 			},
 			VirtualNetwork:      "VN1",
 			Subnet:              "SN1",
@@ -1297,6 +1299,8 @@ func TestInitializeStoragePools_NoVirtualPools(t *testing.T) {
 	pool.InternalAttributes()[VirtualNetwork] = "VN1"
 	pool.InternalAttributes()[Subnet] = "SN1"
 	pool.InternalAttributes()[NetworkFeatures] = api.NetworkFeaturesStandard
+	pool.InternalAttributes()[QOSType] = api.QOSManual
+	pool.InternalAttributes()[MaxThroughput] = "10"
 	pool.InternalAttributes()[ResourceGroups] = "RG1,RG2"
 	pool.InternalAttributes()[NetappAccounts] = "NA1,NA2"
 	pool.InternalAttributes()[CapacityPools] = "CP1,CP2"
@@ -1345,6 +1349,8 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 					},
 					UnixPermissions: "0700",
 					ExportRule:      "2.2.2.2/32",
+					QOSType:         api.QOSAuto,
+					MaxThroughput:   "",
 				},
 				VirtualNetwork:      "VN1",
 				Subnet:              "SN1",
@@ -1363,6 +1369,8 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 				AzureNASStorageDriverConfigDefaults: drivers.AzureNASStorageDriverConfigDefaults{
 					UnixPermissions: "0770",
 					SnapshotDir:     "FALSE",
+					QOSType:         api.QOSManual,
+					MaxThroughput:   "5",
 				},
 				VirtualNetwork:      "VN1",
 				Subnet:              "SN2",
@@ -1400,6 +1408,8 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 	pool0.InternalAttributes()[VirtualNetwork] = "VN1"
 	pool0.InternalAttributes()[Subnet] = "SN1"
 	pool0.InternalAttributes()[NetworkFeatures] = api.NetworkFeaturesBasic
+	pool0.InternalAttributes()[QOSType] = api.QOSAuto
+	pool0.InternalAttributes()[MaxThroughput] = "4"
 	pool0.InternalAttributes()[ResourceGroups] = "RG1,RG2"
 	pool0.InternalAttributes()[NetappAccounts] = "NA1,NA2"
 	pool0.InternalAttributes()[CapacityPools] = "CP1"
@@ -1426,6 +1436,8 @@ func TestInitializeStoragePools_VirtualPools(t *testing.T) {
 	pool1.InternalAttributes()[VirtualNetwork] = "VN1"
 	pool1.InternalAttributes()[Subnet] = "SN2"
 	pool1.InternalAttributes()[NetworkFeatures] = ""
+	pool1.InternalAttributes()[QOSType] = api.QOSManual
+	pool1.InternalAttributes()[MaxThroughput] = "5"
 	pool1.InternalAttributes()[ResourceGroups] = "RG1,RG2"
 	pool1.InternalAttributes()[NetappAccounts] = "NA1,NA2"
 	pool1.InternalAttributes()[CapacityPools] = "CP2"
@@ -1637,6 +1649,31 @@ func TestValidate_InvalidNetworkFeatures(t *testing.T) {
 	assert.Error(t, result, "validate did not fail")
 }
 
+func TestValidate_InvalidQOSType(t *testing.T) {
+	_, driver := newMockANFDriver(t)
+	driver.Config.QOSType = "invalid"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+
+	result := driver.validate(ctx)
+
+	assert.Error(t, result, "validate did not fail")
+}
+
+func TestValidate_InvalidMaxThroughput(t *testing.T) {
+	_, driver := newMockANFDriver(t)
+	driver.Config.QOSType = api.QOSManual
+	driver.Config.MaxThroughput = "invalid"
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+
+	result := driver.validate(ctx)
+
+	assert.Error(t, result, "validate did not fail")
+}
+
 func getStructsForCreateNFSVolume(ctx context.Context, driver *NASStorageDriver, storagePool storage.Pool) (
 	*storage.VolumeConfig, *api.CapacityPool, *api.Subnet, *api.FilesystemCreateRequest, *api.FileSystem,
 ) {
@@ -1655,7 +1692,7 @@ func getStructsForCreateNFSVolume(ctx context.Context, driver *NASStorageDriver,
 		Location:          Location,
 		ServiceLevel:      api.ServiceLevelUltra,
 		ProvisioningState: api.StateAvailable,
-		QosType:           "Auto",
+		QosType:           api.QOSAuto,
 	}
 
 	subnet := &api.Subnet{
@@ -1765,6 +1802,7 @@ func TestCreate_NFSVolume(t *testing.T) {
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
 	driver.Config.NetworkFeatures = api.NetworkFeaturesStandard
 	driver.Config.NASType = "nfs"
+	driver.Config.QOSType = api.QOSManual
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -1773,8 +1811,10 @@ func TestCreate_NFSVolume(t *testing.T) {
 	storagePool := driver.pools["anf_pool"]
 
 	volConfig, capacityPool, subnet, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	capacityPool.QosType = api.QOSManual
 	createRequest.UnixPermissions = "0777"
 	createRequest.NetworkFeatures = api.NetworkFeaturesStandard
+	createRequest.MaxThroughput = convert.ToPtr(float32(4))
 	filesystem.UnixPermissions = "0777"
 	filesystem.NetworkFeatures = api.NetworkFeaturesStandard
 
@@ -1783,7 +1823,7 @@ func TestCreate_NFSVolume(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelUltra, api.QOSManual).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
@@ -1828,7 +1868,7 @@ func TestCreate_NFSVolume_MultipleCapacityPools_FirstSucceeds(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return(capacityPools).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return(capacityPools).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
@@ -1883,7 +1923,7 @@ func TestCreate_NFSVolume_MultipleCapacityPools_SecondSucceeds(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return(capacityPools).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return(capacityPools).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, &createRequest1).Return(nil, errFailed).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, &createRequest2).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
@@ -1943,7 +1983,7 @@ func TestCreate_NFSVolume_MultipleCapacityPools_NoneSucceeds(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return(capacityPools).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return(capacityPools).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, &createRequest1).Return(nil, errFailed).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, &createRequest2).Return(nil, errFailed).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, &createRequest3).Return(nil, errFailed).Times(1)
@@ -1998,7 +2038,7 @@ func TestCreate_NFSVolume_Kerberos_type5(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
@@ -2101,7 +2141,7 @@ func TestCreate_NFSVolume_Kerberos_type5I(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
@@ -2203,7 +2243,7 @@ func TestCreate_NFSVolume_Kerberos_type5P(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
@@ -2579,7 +2619,7 @@ func TestCreate_ZeroSize(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
@@ -2709,7 +2749,7 @@ func TestCreate_NoCapacityPool(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return([]*api.CapacityPool{}).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{}).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -2771,6 +2811,7 @@ func TestCreate_NFSVolume_DefaultMountOptions(t *testing.T) {
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
 	driver.Config.NASType = "nfs"
 	driver.Config.NfsMountOptions = ""
+	driver.Config.QOSType = api.QOSManual
 
 	driver.populateConfigurationDefaults(ctx, &driver.Config)
 	driver.initializeStoragePools(ctx)
@@ -2779,13 +2820,16 @@ func TestCreate_NFSVolume_DefaultMountOptions(t *testing.T) {
 	storagePool := driver.pools["anf_pool"]
 
 	volConfig, capacityPool, subnet, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	createRequest.MaxThroughput = convert.ToPtr(float32(4))
+
+	capacityPool.QosType = api.QOSManual
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelUltra, api.QOSManual).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
@@ -2821,7 +2865,7 @@ func TestCreate_NFSVolume_VolConfigMountOptions(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
@@ -3323,7 +3367,7 @@ func TestCreate_NFSVolume_WithSnapDirMountOptionCombinations(t *testing.T) {
 		mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false)
 		mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet)
 		mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-			api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool})
+			api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{capacityPool})
 		mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil)
 		mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 			driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil)
@@ -3358,7 +3402,7 @@ func TestCreate_NFSVolume_CreateFailed(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
@@ -3387,7 +3431,7 @@ func TestCreate_NFSVolume_BelowANFMinimumSize(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
@@ -3435,7 +3479,7 @@ func TestCreate_NFSVolume_ZoneSelectionSucceeds(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
@@ -3589,7 +3633,7 @@ func TestCreate_CMEKVolume(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
@@ -3633,7 +3677,7 @@ func TestCreate_CMEKVolumeNilNetworking(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(true).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
@@ -3668,7 +3712,7 @@ func TestCreate_SMBVolume(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
@@ -3703,7 +3747,7 @@ func TestCreate_SMBVolume_CreateFailed(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
@@ -3732,7 +3776,7 @@ func TestCreate_SMBVolume_BelowANFMinimumSize(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
 	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
 		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
@@ -3765,7 +3809,7 @@ func TestCreate_NFSVolumeOnSMBPool_CreateFailed(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
@@ -3795,7 +3839,7 @@ func TestCreate_SMBVolumeOnNFSPool_CreateFailed(t *testing.T) {
 	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
 	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelUltra).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)

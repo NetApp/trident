@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
-	netapp "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp/v7"
 	resourcegraph "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph"
 	features "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures"
 	"github.com/cenkalti/backoff/v4"
@@ -31,6 +30,7 @@ const (
 	resourceGroups     = "resourceGroups"
 	netappAccounts     = "netappAccounts"
 	capacityPools      = "capacityPools"
+	qosType            = "qosType"
 	DefaultMaxCacheAge = 10 * time.Minute
 )
 
@@ -244,7 +244,8 @@ func (c Client) checkForUnsatisfiedPools(ctx context.Context) (discoveryErrors [
 	for sPoolName, sPool := range c.sdkClient.AzureResources.StoragePoolMap {
 
 		// Find all capacity pools that work for this storage pool
-		cPools := c.CapacityPoolsForStoragePool(ctx, sPool, sPool.InternalAttributes()[serviceLevel])
+		cPools := c.CapacityPoolsForStoragePool(ctx, sPool,
+			sPool.InternalAttributes()[serviceLevel], sPool.InternalAttributes()[qosType])
 
 		if len(cPools) == 0 {
 
@@ -615,12 +616,6 @@ func (c Client) discoverCapacityPools(ctx context.Context) (*[]*CapacityPool, er
 			continue
 		}
 
-		if qosType == string(netapp.QosTypeManual) {
-			Logc(ctx).WithFields(logFields).Warningf("Ignoring capacity pool %s because it uses manual QoS.",
-				cPoolFullName)
-			continue
-		}
-
 		if poolID, ok = rawProperties["poolId"].(string); !ok {
 			Logc(ctx).WithFields(logFields).Error("Capacity pool query returned invalid poolId.")
 			continue
@@ -793,14 +788,14 @@ func (c Client) capacityPool(cPoolFullName string) *CapacityPool {
 }
 
 // CapacityPoolsForStoragePools returns all discovered capacity pools matching all known storage pools,
-// regardless of service levels.
+// regardless of service levels or QOS types.
 func (c Client) CapacityPoolsForStoragePools(ctx context.Context) []*CapacityPool {
 	// This map deduplicates cPools from multiple storage pools
 	cPoolMap := make(map[*CapacityPool]bool)
 
 	// Build deduplicated map of cPools
 	for _, sPool := range c.sdkClient.StoragePoolMap {
-		for _, cPool := range c.CapacityPoolsForStoragePool(ctx, sPool, "") {
+		for _, cPool := range c.CapacityPoolsForStoragePool(ctx, sPool, "", "") {
 			cPoolMap[cPool] = true
 		}
 	}
@@ -818,7 +813,7 @@ func (c Client) CapacityPoolsForStoragePools(ctx context.Context) []*CapacityPoo
 // CapacityPoolsForStoragePool returns all discovered capacity pools matching the specified
 // storage pool and service level.  The pools are shuffled to enable easier random selection.
 func (c Client) CapacityPoolsForStoragePool(
-	ctx context.Context, sPool storage.Pool, serviceLevel string,
+	ctx context.Context, sPool storage.Pool, serviceLevel, qosType string,
 ) []*CapacityPool {
 	Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).WithField("storagePool", sPool.Name()).
 		Tracef("Determining capacity pools for storage pool.")
@@ -875,6 +870,17 @@ func (c Client) CapacityPoolsForStoragePool(
 			if cPool.ServiceLevel != serviceLevel {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring capacity pool %s, not service level %s.",
 					cPoolFullName, serviceLevel)
+				filteredCapacityPoolMap[cPoolFullName] = false
+			}
+		}
+	}
+
+	// Filter out pools with non-matching QOS type
+	if qosType != "" {
+		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
+			if cPool.QosType != qosType {
+				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring capacity pool %s, not QOS type %s.",
+					cPoolFullName, qosType)
 				filteredCapacityPoolMap[cPoolFullName] = false
 			}
 		}

@@ -49,6 +49,8 @@ const (
 	defaultExportRule              = "0.0.0.0/0"
 	defaultVolumeSizeStr           = "53687091200"
 	defaultNetworkFeatures         = "" // Leave empty, some regions may never support this
+	defaultMaxThroughput           = "4"
+	defaultQOSType                 = api.QOSAuto
 
 	// Constants for internal pool attributes
 
@@ -63,8 +65,9 @@ const (
 	ResourceGroups  = "resourceGroups"
 	NetappAccounts  = "netappAccounts"
 	CapacityPools   = "capacityPools"
-	FilePoolVolumes = "filePoolVolumes"
+	MaxThroughput   = "maxThroughput"
 	Kerberos        = "kerberos"
+	QOSType         = "qosType"
 
 	nfsVersion3  = "3"
 	nfsVersion4  = "4"
@@ -308,6 +311,14 @@ func (d *NASStorageDriver) populateConfigurationDefaults(
 		config.NASType = sa.NFS
 	}
 
+	if config.QOSType == "" {
+		config.QOSType = defaultQOSType
+	}
+
+	if config.MaxThroughput == "" {
+		config.MaxThroughput = defaultMaxThroughput
+	}
+
 	Logc(ctx).WithFields(LogFields{
 		"StoragePrefix":   *config.StoragePrefix,
 		"Size":            config.Size,
@@ -317,6 +328,8 @@ func (d *NASStorageDriver) populateConfigurationDefaults(
 		"SnapshotDir":     config.SnapshotDir,
 		"LimitVolumeSize": config.LimitVolumeSize,
 		"ExportRule":      config.ExportRule,
+		"QOSType":         config.QOSType,
+		"MaxThroughput":   config.MaxThroughput,
 	}).Debugf("Configuration defaults")
 
 	return
@@ -369,6 +382,8 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 		pool.InternalAttributes()[NetappAccounts] = strings.Join(d.Config.NetappAccounts, ",")
 		pool.InternalAttributes()[CapacityPools] = strings.Join(d.Config.CapacityPools, ",")
 		pool.InternalAttributes()[Kerberos] = d.Config.Kerberos
+		pool.InternalAttributes()[QOSType] = d.Config.QOSType
+		pool.InternalAttributes()[MaxThroughput] = d.Config.MaxThroughput
 
 		pool.SetSupportedTopologies(d.Config.SupportedTopologies)
 
@@ -460,6 +475,16 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 				kerberos = vpool.Kerberos
 			}
 
+			qosType := d.Config.QOSType
+			if vpool.QOSType != "" {
+				qosType = vpool.QOSType
+			}
+
+			maxThroughput := d.Config.MaxThroughput
+			if vpool.MaxThroughput != "" {
+				maxThroughput = vpool.MaxThroughput
+			}
+
 			pool := storage.NewStoragePool(nil, d.poolName(fmt.Sprintf("pool_%d", index)))
 
 			pool.Attributes()[sa.BackendType] = sa.NewStringOffer(d.Name())
@@ -495,6 +520,8 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 			pool.InternalAttributes()[NetappAccounts] = strings.Join(netappAccounts, ",")
 			pool.InternalAttributes()[CapacityPools] = strings.Join(capacityPools, ",")
 			pool.InternalAttributes()[Kerberos] = kerberos
+			pool.InternalAttributes()[QOSType] = qosType
+			pool.InternalAttributes()[MaxThroughput] = maxThroughput
 
 			pool.SetSupportedTopologies(supportedTopologies)
 
@@ -713,6 +740,7 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 			return fmt.Errorf("invalid value for networkFeatures in pool %s", poolName)
 		}
 
+		// Validate Kerberos
 		if pool.InternalAttributes()[Kerberos] != "" {
 			if err := acp.API().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption); err != nil {
 				// Log a warning to avoid putting the backend into a failed state.
@@ -720,6 +748,21 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 					"attribute": Kerberos,
 					"value":     pool.InternalAttributes()[Kerberos],
 				}).WithError(err).Warning("Pool attribute requires ACP; workflows using this option may fail.")
+			}
+		}
+
+		// Validate QOSType
+		switch pool.InternalAttributes()[QOSType] {
+		case api.QOSAuto, api.QOSManual:
+			break
+		default:
+			return fmt.Errorf("invalid value for qosType in pool %s", poolName)
+		}
+
+		// Validate max throughput
+		if pool.InternalAttributes()[MaxThroughput] != "" {
+			if _, err := strconv.Atoi(pool.InternalAttributes()[MaxThroughput]); err != nil {
+				return fmt.Errorf("invalid value for maxThroughput in pool %s", poolName)
 			}
 		}
 	}
@@ -859,6 +902,21 @@ func (d *NASStorageDriver) Create(
 	// Take kerberos option from pool
 	kerberos := pool.InternalAttributes()[Kerberos]
 
+	// Take QOS type from pool
+	qosType := pool.InternalAttributes()[QOSType]
+
+	// Determine max throughput for manual QOS pools
+	maxThroughput := ""
+	var maxThroughputPtr *float32
+	if qosType == api.QOSManual {
+		maxThroughput = pool.InternalAttributes()[MaxThroughput]
+		parsedMaxThroughput, err := strconv.ParseFloat(maxThroughput, 32)
+		if err != nil {
+			return fmt.Errorf("invalid value for maxThroughput: %v", err)
+		}
+		maxThroughputPtr = convert.ToPtr(float32(parsedMaxThroughput))
+	}
+
 	// Determine protocol from mount options
 	var protocolTypes []string
 	var cifsAccess, nfsV3Access, nfsV41Access, kerberosEnabled bool
@@ -980,7 +1038,7 @@ func (d *NASStorageDriver) Create(
 	}
 
 	// Find matching capacity pools
-	cPools := d.SDK.CapacityPoolsForStoragePool(ctx, pool, serviceLevel)
+	cPools := d.SDK.CapacityPoolsForStoragePool(ctx, pool, serviceLevel, qosType)
 	if len(cPools) == 0 {
 		return fmt.Errorf("no capacity pools found for storage pool %s", pool.Name())
 	}
@@ -1010,6 +1068,7 @@ func (d *NASStorageDriver) Create(
 				"networkFeatures":  networkFeatures,
 				"keyVaultEndpoint": keyVaultEndpointID,
 				"zone":             zone,
+				"maxThroughput":    maxThroughput,
 			}).Debug("Creating volume.")
 		} else {
 			Logc(ctx).WithFields(LogFields{
@@ -1024,6 +1083,7 @@ func (d *NASStorageDriver) Create(
 				"networkFeatures":  networkFeatures,
 				"keyVaultEndpoint": keyVaultEndpointID,
 				"zone":             zone,
+				"maxThroughput":    maxThroughput,
 			}).Debug("Creating volume.")
 		}
 
@@ -1042,6 +1102,7 @@ func (d *NASStorageDriver) Create(
 			KerberosEnabled:    kerberosEnabled,
 			KeyVaultEndpointID: keyVaultEndpointID,
 			Zone:               zone,
+			MaxThroughput:      maxThroughputPtr,
 		}
 
 		// Add unix permissions and export policy fields only to NFS volume
@@ -1255,6 +1316,11 @@ func (d *NASStorageDriver) CreateClone(
 		zone = sourceVolume.Zones[0]
 	}
 
+	var maxThroughputPtr *float32
+	if sourceVolume.MaxThroughput > 0 {
+		maxThroughputPtr = &sourceVolume.MaxThroughput
+	}
+
 	Logc(ctx).WithFields(LogFields{
 		"creationToken":   name,
 		"sourceVolume":    sourceVolume.CreationToken,
@@ -1262,6 +1328,7 @@ func (d *NASStorageDriver) CreateClone(
 		"unixPermissions": sourceVolume.UnixPermissions,
 		"networkFeatures": networkFeatures,
 		"zone":            zone,
+		"maxThroughput":   sourceVolume.MaxThroughput,
 	}).Debug("Cloning volume.")
 
 	createRequest := &api.FilesystemCreateRequest{
@@ -1279,6 +1346,7 @@ func (d *NASStorageDriver) CreateClone(
 		NetworkFeatures:    networkFeatures,
 		KeyVaultEndpointID: keyVaultEndpointID,
 		Zone:               zone,
+		MaxThroughput:      maxThroughputPtr,
 	}
 
 	// Add unix permissions and export policy fields only to NFS volume

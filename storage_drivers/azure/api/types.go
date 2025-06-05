@@ -21,7 +21,7 @@ type Azure interface {
 	HasFeature(string) bool
 	CapacityPools() *[]*CapacityPool
 	CapacityPoolsForStoragePools(context.Context) []*CapacityPool
-	CapacityPoolsForStoragePool(context.Context, storage.Pool, string) []*CapacityPool
+	CapacityPoolsForStoragePool(context.Context, storage.Pool, string, string) []*CapacityPool
 	EnsureVolumeInValidCapacityPool(context.Context, *FileSystem) error
 	SubnetsForStoragePool(context.Context, storage.Pool) []*Subnet
 	RandomSubnetForStoragePool(context.Context, storage.Pool) *Subnet

@@ -1052,6 +1052,25 @@ func TestDerefInt64(t *testing.T) {
 	}
 }
 
+func TestDerefFloat32(t *testing.T) {
+	i1 := float32(0.0)
+	i2 := float32(42.0)
+
+	testCases := []struct {
+		Ptr            *float32
+		ExpectedResult float32
+	}{
+		{nil, 0.0},
+		{&i1, 0.0},
+		{&i2, 42.0},
+	}
+
+	for _, testCase := range testCases {
+		result := DerefFloat32(testCase.Ptr)
+		assert.Equal(t, testCase.ExpectedResult, result)
+	}
+}
+
 func TestIsTerminalStateError(t *testing.T) {
 	err := TerminalState(errors.New("terminal"))
 

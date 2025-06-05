@@ -112,6 +112,7 @@ func getFakeSDK() *Client {
 		FullName:          "RG1/NA1/CP1",
 		Location:          "myLocation",
 		ServiceLevel:      ServiceLevelUltra,
+		QosType:           QOSAuto,
 		ProvisioningState: "Auto",
 	}
 	sdk.sdkClient.CapacityPoolMap[RG1_NA1_CP1.FullName] = RG1_NA1_CP1
@@ -123,6 +124,7 @@ func getFakeSDK() *Client {
 		FullName:          "RG1/NA1/CP2",
 		Location:          "myLocation",
 		ServiceLevel:      ServiceLevelPremium,
+		QosType:           QOSAuto,
 		ProvisioningState: "Auto",
 	}
 	sdk.sdkClient.CapacityPoolMap[RG1_NA1_CP2.FullName] = RG1_NA1_CP2
@@ -134,7 +136,8 @@ func getFakeSDK() *Client {
 		FullName:          "RG1/NA2/CP1",
 		Location:          "myLocation",
 		ServiceLevel:      ServiceLevelUltra,
-		ProvisioningState: "Auto",
+		QosType:           QOSAuto,
+		ProvisioningState: StateAvailable,
 	}
 	sdk.sdkClient.CapacityPoolMap[RG1_NA2_CP1.FullName] = RG1_NA2_CP1
 
@@ -145,7 +148,8 @@ func getFakeSDK() *Client {
 		FullName:          "RG1/NA2/CP2",
 		Location:          "myLocation",
 		ServiceLevel:      ServiceLevelPremium,
-		ProvisioningState: "Auto",
+		QosType:           QOSAuto,
+		ProvisioningState: StateAvailable,
 	}
 	sdk.sdkClient.CapacityPoolMap[RG1_NA2_CP2.FullName] = RG1_NA2_CP2
 
@@ -156,7 +160,8 @@ func getFakeSDK() *Client {
 		FullName:          "RG2/NA1/CP1",
 		Location:          "myLocation",
 		ServiceLevel:      ServiceLevelUltra,
-		ProvisioningState: "Auto",
+		QosType:           QOSManual,
+		ProvisioningState: StateAvailable,
 	}
 	sdk.sdkClient.CapacityPoolMap[RG2_NA1_CP1.FullName] = RG2_NA1_CP1
 
@@ -167,7 +172,8 @@ func getFakeSDK() *Client {
 		FullName:          "RG2/NA1/CP2",
 		Location:          "myLocation",
 		ServiceLevel:      ServiceLevelPremium,
-		ProvisioningState: "Auto",
+		QosType:           QOSManual,
+		ProvisioningState: StateAvailable,
 	}
 	sdk.sdkClient.CapacityPoolMap[RG2_NA1_CP2.FullName] = RG2_NA1_CP2
 
@@ -178,7 +184,8 @@ func getFakeSDK() *Client {
 		FullName:          "RG2/NA2/CP3",
 		Location:          "myLocation",
 		ServiceLevel:      ServiceLevelStandard,
-		ProvisioningState: "Auto",
+		QosType:           QOSManual,
+		ProvisioningState: StateAvailable,
 	}
 	sdk.sdkClient.CapacityPoolMap[RG2_NA2_CP3.FullName] = RG2_NA2_CP3
 
@@ -653,6 +660,15 @@ func TestCapacityPoolsForStoragePools(t *testing.T) {
 	RG1_NA1_CP2 := sdk.capacityPool("RG1/NA1/CP2")
 	RG2_NA2_CP3 := sdk.capacityPool("RG2/NA2/CP3")
 
+	RG1_NA1_CP1.ServiceLevel = ServiceLevelUltra
+	RG1_NA1_CP1.QosType = QOSAuto
+
+	RG1_NA1_CP2.ServiceLevel = ServiceLevelPremium
+	RG1_NA1_CP2.QosType = QOSAuto
+
+	RG2_NA2_CP3.ServiceLevel = ServiceLevelStandard
+	RG2_NA2_CP3.QosType = QOSManual
+
 	sPool1 := storage.NewStoragePool(nil, "testPool1")
 	sPool1.InternalAttributes()[capacityPools] = "CP3"
 	sdk.sdkClient.StoragePoolMap[sPool1.Name()] = sPool1
@@ -685,6 +701,7 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 		netappAccounts string
 		capacityPools  string
 		serviceLevel   string
+		qosType        string
 		expected       []*CapacityPool
 	}{
 		{
@@ -692,13 +709,31 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 			netappAccounts: "",
 			capacityPools:  "",
 			serviceLevel:   "Ultra",
+			qosType:        "",
 			expected:       []*CapacityPool{RG1_NA1_CP1, RG1_NA2_CP1, RG2_NA1_CP1},
+		},
+		{
+			resourceGroups: "",
+			netappAccounts: "",
+			capacityPools:  "",
+			serviceLevel:   "Ultra",
+			qosType:        QOSAuto,
+			expected:       []*CapacityPool{RG1_NA1_CP1, RG1_NA2_CP1},
+		},
+		{
+			resourceGroups: "",
+			netappAccounts: "",
+			capacityPools:  "",
+			serviceLevel:   "Ultra",
+			qosType:        QOSManual,
+			expected:       []*CapacityPool{RG2_NA1_CP1},
 		},
 		{
 			resourceGroups: "",
 			netappAccounts: "NA2",
 			capacityPools:  "",
 			serviceLevel:   "Premium",
+			qosType:        "",
 			expected:       []*CapacityPool{RG1_NA2_CP2},
 		},
 		{
@@ -706,6 +741,7 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 			netappAccounts: "",
 			capacityPools:  "",
 			serviceLevel:   "Standard",
+			qosType:        "",
 			expected:       []*CapacityPool{RG2_NA2_CP3},
 		},
 		{
@@ -713,6 +749,7 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 			netappAccounts: "",
 			capacityPools:  "",
 			serviceLevel:   "Ultra",
+			qosType:        "",
 			expected:       []*CapacityPool{RG1_NA1_CP1, RG1_NA2_CP1},
 		},
 		{
@@ -720,6 +757,7 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 			netappAccounts: "",
 			capacityPools:  "",
 			serviceLevel:   "Ultra",
+			qosType:        "",
 			expected:       []*CapacityPool{},
 		},
 		{
@@ -727,6 +765,7 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 			netappAccounts: "NA1",
 			capacityPools:  "",
 			serviceLevel:   "Ultra",
+			qosType:        "",
 			expected:       []*CapacityPool{RG1_NA1_CP1, RG2_NA1_CP1},
 		},
 		{
@@ -734,6 +773,7 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 			netappAccounts: "RG1/NA1",
 			capacityPools:  "",
 			serviceLevel:   "Premium",
+			qosType:        "",
 			expected:       []*CapacityPool{RG1_NA1_CP2},
 		},
 		{
@@ -741,6 +781,7 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 			netappAccounts: "RG1/NA1,RG2/NA1",
 			capacityPools:  "",
 			serviceLevel:   "Premium",
+			qosType:        "",
 			expected:       []*CapacityPool{RG1_NA1_CP2, RG2_NA1_CP2},
 		},
 		{
@@ -748,6 +789,7 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 			netappAccounts: "RG1/NA1,RG2/NA1",
 			capacityPools:  "",
 			serviceLevel:   "Premium",
+			qosType:        "",
 			expected:       []*CapacityPool{RG1_NA1_CP2, RG2_NA1_CP2},
 		},
 		{
@@ -755,6 +797,7 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 			netappAccounts: "NA3",
 			capacityPools:  "",
 			serviceLevel:   "Premium",
+			qosType:        "",
 			expected:       []*CapacityPool{},
 		},
 		{
@@ -762,6 +805,7 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 			netappAccounts: "",
 			capacityPools:  "CP1",
 			serviceLevel:   "Ultra",
+			qosType:        "",
 			expected:       []*CapacityPool{RG1_NA1_CP1, RG1_NA2_CP1, RG2_NA1_CP1},
 		},
 		{
@@ -769,6 +813,7 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 			netappAccounts: "",
 			capacityPools:  "CP1,RG1/NA1/CP2",
 			serviceLevel:   "",
+			qosType:        "",
 			expected:       []*CapacityPool{RG1_NA1_CP1, RG1_NA2_CP1, RG2_NA1_CP1, RG1_NA1_CP2},
 		},
 		{
@@ -776,6 +821,7 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 			netappAccounts: "",
 			capacityPools:  "CP4",
 			serviceLevel:   "",
+			qosType:        "",
 			expected:       []*CapacityPool{},
 		},
 		{
@@ -783,13 +829,23 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 			netappAccounts: "NA1",
 			capacityPools:  "CP2",
 			serviceLevel:   "Premium",
+			qosType:        QOSAuto,
 			expected:       []*CapacityPool{RG1_NA1_CP2},
 		},
 		{
 			resourceGroups: "RG1",
 			netappAccounts: "NA1",
 			capacityPools:  "CP2",
+			serviceLevel:   "Premium",
+			qosType:        QOSManual,
+			expected:       []*CapacityPool{},
+		},
+		{
+			resourceGroups: "RG1",
+			netappAccounts: "NA1",
+			capacityPools:  "CP2",
 			serviceLevel:   "Standard",
+			qosType:        "",
 			expected:       []*CapacityPool{},
 		},
 		{
@@ -797,6 +853,7 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 			netappAccounts: "NA1,NA2,NA3",
 			capacityPools:  "RG1/NA1/CP1",
 			serviceLevel:   "Ultra",
+			qosType:        "",
 			expected:       []*CapacityPool{RG1_NA1_CP1},
 		},
 		{
@@ -804,6 +861,7 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 			netappAccounts: "",
 			capacityPools:  "RG1/NA1/CP1",
 			serviceLevel:   "",
+			qosType:        "",
 			expected:       []*CapacityPool{},
 		},
 	}
@@ -814,7 +872,7 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 		sPool.InternalAttributes()[netappAccounts] = test.netappAccounts
 		sPool.InternalAttributes()[capacityPools] = test.capacityPools
 
-		cPools := sdk.CapacityPoolsForStoragePool(context.TODO(), sPool, test.serviceLevel)
+		cPools := sdk.CapacityPoolsForStoragePool(context.TODO(), sPool, test.serviceLevel, test.qosType)
 
 		assert.ElementsMatch(t, test.expected, cPools)
 	}

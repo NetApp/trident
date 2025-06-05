@@ -38,6 +38,9 @@ const (
 
 	EncryptionKeyNetApp = "Microsoft.NetApp"
 	EncryptionKeyVault  = "Microsoft.KeyVault"
+
+	QOSAuto   = "Auto"
+	QOSManual = "Manual"
 )
 
 // AzureResources is the toplevel cache for the set of things we discover about our Azure environment.
@@ -135,6 +138,7 @@ type FileSystem struct {
 	KerberosEnabled    bool
 	KeyVaultEndpointID string
 	Zones              []string
+	MaxThroughput      float32
 }
 
 // FilesystemCreateRequest embodies all the details of a volume to be created.
@@ -156,6 +160,7 @@ type FilesystemCreateRequest struct {
 	KerberosEnabled    bool
 	KeyVaultEndpointID string
 	Zone               string
+	MaxThroughput      *float32
 }
 
 // ExportPolicy records details of a discovered Azure volume export policy.

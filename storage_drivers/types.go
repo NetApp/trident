@@ -521,6 +521,8 @@ type AzureNASStorageDriverConfigDefaults struct {
 	ExportRule      string `json:"exportRule"`
 	SnapshotDir     string `json:"snapshotDir"`
 	UnixPermissions string `json:"unixPermissions"`
+	MaxThroughput   string `json:"maxThroughput"`
+	QOSType         string `json:"qosType"`
 	CommonStorageDriverConfigDefaults
 }
 

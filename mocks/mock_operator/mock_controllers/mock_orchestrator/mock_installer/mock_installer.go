@@ -96,17 +96,17 @@ func (mr *MockTridentInstallerMockRecorder) InstallOrPatchTrident(arg0, arg1, ar
 }
 
 // ObliviateCRDs mocks base method.
-func (m *MockTridentInstaller) ObliviateCRDs() error {
+func (m *MockTridentInstaller) ObliviateCRDs(arg0 []string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ObliviateCRDs")
+	ret := m.ctrl.Call(m, "ObliviateCRDs", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ObliviateCRDs indicates an expected call of ObliviateCRDs.
-func (mr *MockTridentInstallerMockRecorder) ObliviateCRDs() *gomock.Call {
+func (mr *MockTridentInstallerMockRecorder) ObliviateCRDs(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ObliviateCRDs", reflect.TypeOf((*MockTridentInstaller)(nil).ObliviateCRDs))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ObliviateCRDs", reflect.TypeOf((*MockTridentInstaller)(nil).ObliviateCRDs), arg0)
 }
 
 // TridentDaemonSetInformation mocks base method.
