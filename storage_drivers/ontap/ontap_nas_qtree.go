@@ -391,6 +391,7 @@ func (d *NASQtreeStorageDriver) Create(
 		spaceReserve    = collection.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
 		snapshotPolicy  = collection.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
 		snapshotReserve = storagePool.InternalAttributes()[SnapshotReserve]
+		adAdminUser     = collection.GetV(opts, "adAdminUser", storagePool.InternalAttributes()[ADAdminUser])
 		snapshotDir     = collection.GetV(opts, "snapshotDir", storagePool.InternalAttributes()[SnapshotDir])
 		encryption      = collection.GetV(opts, "encryption", storagePool.InternalAttributes()[Encryption])
 
@@ -499,7 +500,14 @@ func (d *NASQtreeStorageDriver) Create(
 		}
 
 		if d.Config.NASType == sa.SMB {
-			if err = d.EnsureSMBShare(ctx, flexvol); err != nil {
+			if adAdminUser != "" {
+				if _, exists := volConfig.SMBShareACL[adAdminUser]; !exists {
+					volConfig.SMBShareACL[adAdminUser] = ADAdminUserPermission
+				}
+			}
+
+			shareName, sharePath := getSMBShareNamePath(flexvol, name, volConfig.SecureSMBEnabled)
+			if err = d.EnsureSMBShare(ctx, shareName, sharePath, volConfig.SMBShareACL, volConfig.SecureSMBEnabled); err != nil {
 				return err
 			}
 		}
@@ -513,7 +521,7 @@ func (d *NASQtreeStorageDriver) Create(
 
 // CreateClone creates a volume clone
 func (d *NASQtreeStorageDriver) CreateClone(
-	ctx context.Context, sourceVolConfig, cloneVolConfig *storage.VolumeConfig, _ storage.Pool,
+	ctx context.Context, sourceVolConfig, cloneVolConfig *storage.VolumeConfig, storagePool storage.Pool,
 ) error {
 	name := cloneVolConfig.InternalName
 	source := cloneVolConfig.CloneSourceVolumeInternal
@@ -548,6 +556,32 @@ func (d *NASQtreeStorageDriver) CreateClone(
 			return fmt.Errorf("snapshot directory access is set to %t and readOnly clone is set to %t ",
 				*storageVolume.SnapshotDir, cloneVolConfig.ReadOnlyClone)
 		}
+
+		// If the NAS type is SMB and Secure SMB is enabled, configure SMB share and ACLs for the clone.
+		if d.Config.NASType == sa.SMB && cloneVolConfig.SecureSMBEnabled {
+			adAdminUser := d.Config.ADAdminUser
+
+			// If a storage pool is set, prefer its AD admin user if available.
+			if !storage.IsStoragePoolUnset(storagePool) {
+				if spAdminUser := storagePool.InternalAttributes()[ADAdminUser]; spAdminUser != "" {
+					adAdminUser = spAdminUser
+				}
+			}
+
+			// Add the AD admin user to the SMB share ACL with the necessary permissions if not already present.
+			if adAdminUser != "" {
+				if _, exists := cloneVolConfig.SMBShareACL[adAdminUser]; !exists {
+					cloneVolConfig.SMBShareACL[adAdminUser] = ADAdminUserPermission
+				}
+			}
+
+			// Determine the SMB share path to create new SMB Share.
+			_, sharePath := getSMBShareNamePath(flexvol, source, cloneVolConfig.SecureSMBEnabled)
+			if err := d.EnsureSMBShare(ctx, name, sharePath, cloneVolConfig.SMBShareACL,
+				cloneVolConfig.SecureSMBEnabled); err != nil {
+				return err
+			}
+		}
 	} else {
 		return fmt.Errorf("cloning is not supported by backend type %s", d.Name())
 	}
@@ -575,13 +609,18 @@ func (d *NASQtreeStorageDriver) Destroy(ctx context.Context, volConfig *storage.
 		"name":   name,
 	}
 
-	// If it's a RO clone, no need to delete the volume
-	if volConfig.ReadOnlyClone {
-		return nil
-	}
-
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
+
+	// Handle ReadOnlyClone case early
+	if volConfig.ReadOnlyClone {
+		if d.Config.NASType == sa.SMB && volConfig.SecureSMBEnabled {
+			if err := d.DestroySMBShare(ctx, name); err != nil {
+				return err
+			}
+		}
+		return nil // Return early for all ReadOnlyClone cases
+	}
 
 	// Ensure the deleted qtree reaping job doesn't interfere with this workflow
 	locks.Lock(ctx, "destroy", d.sharedLockID)
@@ -637,6 +676,12 @@ func (d *NASQtreeStorageDriver) Destroy(ctx context.Context, volConfig *storage.
 			Logc(ctx).Error(err)
 		}
 		return deleteError
+	}
+
+	if d.Config.NASType == sa.SMB && volConfig.SecureSMBEnabled {
+		if err := d.DestroySMBShare(ctx, name); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -2542,37 +2587,58 @@ func (d NASQtreeStorageDriver) getQtreesInPool(
 }
 
 // EnsureSMBShare ensures that required SMB share is made available.
-func (d *NASQtreeStorageDriver) EnsureSMBShare(
-	ctx context.Context, name string,
+func (d NASQtreeStorageDriver) EnsureSMBShare(
+	ctx context.Context, name, path string, smbShareACL map[string]string, secureSMBEnabled bool,
 ) error {
-	if d.Config.SMBShare != "" {
-		// If user did specify SMB share, and it does not exist, create an SMB share with the specified name.
-		share, err := d.API.SMBShareExists(ctx, d.Config.SMBShare)
-		if err != nil {
-			return err
-		}
+	shareName := name
+	sharePath := path
 
-		// If share is not present create it.
-		if !share {
-			if err := d.API.SMBShareCreate(ctx, d.Config.SMBShare, "/"); err != nil {
-				return err
-			}
-		}
-	} else {
-		// If user did not specify SMB share in backend configuration, create an SMB share with the name passed.
-		share, err := d.API.SMBShareExists(ctx, name)
-		if err != nil {
-			return err
-		}
+	// Determine share name and path based on secureSMBEnabled and configuration
+	if !secureSMBEnabled && d.Config.SMBShare != "" {
+		shareName = d.Config.SMBShare
+		sharePath = "/"
+	}
 
-		// If share is not present create it.
-		if !share {
-			if err := d.API.SMBShareCreate(ctx, name, "/"+name); err != nil {
-				return err
-			}
+	// Check if the share exists
+	if shareExists, err := d.API.SMBShareExists(ctx, shareName); err != nil {
+		return err
+	} else if !shareExists {
+		// Create the share if it does not exist
+		if err = d.API.SMBShareCreate(ctx, shareName, sharePath); err != nil {
+			return err
 		}
 	}
 
+	// If secure SMB is enabled, configure access control
+	if secureSMBEnabled {
+		// Delete the Everyone Access Control created by default during share creation by ONTAP
+		if err := d.API.SMBShareAccessControlDelete(ctx, shareName, smbShareDeleteACL); err != nil {
+			return err
+		}
+
+		if err := d.API.SMBShareAccessControlCreate(ctx, shareName, smbShareACL); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// DestroySMBShare destroys an SMB share
+func (d NASQtreeStorageDriver) DestroySMBShare(
+	ctx context.Context, name string,
+) error {
+	// If the share being deleted matches with the backend config, Trident will not delete the SMB share.
+	if d.Config.SMBShare == name {
+		return nil
+	}
+
+	if shareExists, err := d.API.SMBShareExists(ctx, name); err != nil {
+		return err
+	} else if shareExists {
+		if err := d.API.SMBShareDestroy(ctx, name); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

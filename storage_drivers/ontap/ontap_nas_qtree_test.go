@@ -3984,12 +3984,20 @@ func TestReconcileNodeAccess(t *testing.T) {
 func TestEnsureSMBShare_Success_WithSMBShareInConfig(t *testing.T) {
 	volName := "vol1"
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		Encryption:       "false",
+		FileSystem:       "nfs",
+		InternalName:     "vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
+		SecureSMBEnabled: false,
+	}
 	driver.Config.SMBShare = volName
 
 	mockAPI.EXPECT().SMBShareExists(ctx, volName).AnyTimes().Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, volName, gomock.Any()).AnyTimes().Return(nil)
 
-	result := driver.EnsureSMBShare(ctx, volName)
+	result := driver.EnsureSMBShare(ctx, volName, "/"+volName, volConfig.SMBShareACL, volConfig.SecureSMBEnabled)
 
 	assert.NoError(t, result, "SMB Create failed")
 }
@@ -3997,13 +4005,45 @@ func TestEnsureSMBShare_Success_WithSMBShareInConfig(t *testing.T) {
 func TestEnsureSMBShare_Success_WithoutSMBShareInConfig(t *testing.T) {
 	volName := "vol1"
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		Encryption:       "false",
+		FileSystem:       "nfs",
+		InternalName:     "vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
+		SecureSMBEnabled: false,
+	}
 
 	mockAPI.EXPECT().SMBShareExists(ctx, volName).AnyTimes().Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, volName, gomock.Any()).AnyTimes().Return(nil)
 
-	result := driver.EnsureSMBShare(ctx, volName)
+	result := driver.EnsureSMBShare(ctx, volName, "/"+volName, volConfig.SMBShareACL, volConfig.SecureSMBEnabled)
 
 	assert.NoError(t, result, "SMB creation failed")
+}
+
+func TestEnsureSMBShare_Success_SecureSMBEnabled(t *testing.T) {
+	volName := "vol1"
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		Encryption:       "false",
+		FileSystem:       "nfs",
+		InternalName:     "vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
+		SMBShareACL:      map[string]string{"user": "full_control"},
+		SecureSMBEnabled: true,
+	}
+	driver.Config.SMBShare = volName
+
+	mockAPI.EXPECT().SMBShareExists(ctx, volName).AnyTimes().Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, volName, gomock.Any()).AnyTimes().Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, "vol1", smbShareDeleteACL).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, "vol1", volConfig.SMBShareACL).Return(nil)
+
+	result := driver.EnsureSMBShare(ctx, volName, "/"+volName, volConfig.SMBShareACL, volConfig.SecureSMBEnabled)
+
+	assert.NoError(t, result, "SMB Create failed")
 }
 
 func TestEnsureSMBShare_WithErrorInApiOperation(t *testing.T) {
@@ -4012,9 +4052,18 @@ func TestEnsureSMBShare_WithErrorInApiOperation(t *testing.T) {
 	// CASE 1: Error in checking for SMB share when share name present in config
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	driver.Config.SMBShare = volName
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		Encryption:       "false",
+		FileSystem:       "nfs",
+		InternalName:     "vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
+		SecureSMBEnabled: false,
+	}
+
 	mockAPI.EXPECT().SMBShareExists(ctx, volName).AnyTimes().Return(false, mockError)
 
-	result1 := driver.EnsureSMBShare(ctx, volName)
+	result1 := driver.EnsureSMBShare(ctx, volName, "/"+volName, volConfig.SMBShareACL, volConfig.SecureSMBEnabled)
 	assert.Error(t, result1, "Expected SMB creation to fail when api failed to check for SMB share, but got no error")
 
 	// CASE 2: Error in creatingSMB share when share name present in config
@@ -4023,14 +4072,14 @@ func TestEnsureSMBShare_WithErrorInApiOperation(t *testing.T) {
 	mockAPI.EXPECT().SMBShareExists(ctx, volName).AnyTimes().Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, volName, gomock.Any()).AnyTimes().Return(mockError)
 
-	result2 := driver.EnsureSMBShare(ctx, volName)
+	result2 := driver.EnsureSMBShare(ctx, volName, "/"+volName, volConfig.SMBShareACL, volConfig.SecureSMBEnabled)
 	assert.Error(t, result2, "Expected SMB creation to fail when api failed to check for SMB share, but got no error")
 
 	// CASE 3: Error in checking for SMB share when share name not present in config
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().SMBShareExists(ctx, volName).AnyTimes().Return(false, mockError)
 
-	result3 := driver.EnsureSMBShare(ctx, volName)
+	result3 := driver.EnsureSMBShare(ctx, volName, "/"+volName, volConfig.SMBShareACL, volConfig.SecureSMBEnabled)
 	assert.Error(t, result3, "Expected SMB creation to fail when api failed to check for SMB share, but got no error")
 
 	// CASE 4: Error in creatingSMB share when share name not present in config
@@ -4038,8 +4087,116 @@ func TestEnsureSMBShare_WithErrorInApiOperation(t *testing.T) {
 	mockAPI.EXPECT().SMBShareExists(ctx, volName).AnyTimes().Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, volName, gomock.Any()).AnyTimes().Return(mockError)
 
-	result4 := driver.EnsureSMBShare(ctx, volName)
+	result4 := driver.EnsureSMBShare(ctx, volName, "/"+volName, volConfig.SMBShareACL, volConfig.SecureSMBEnabled)
 	assert.Error(t, result4, "Expected SMB creation to fail when api failed to check for SMB share, but got no error")
+}
+
+func TestEnsureSMBShare_WithErrorInApiOperationSecureSMBEnabled(t *testing.T) {
+	volName := "vol1"
+
+	// CASE 1: Error in checking for SMB share
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		Encryption:       "false",
+		FileSystem:       "nfs",
+		InternalName:     "vol1",
+		PeerVolumeHandle: "fakesvm2:vol1",
+		SMBShareACL:      map[string]string{"us": "full_control"},
+		SecureSMBEnabled: true,
+	}
+
+	mockAPI.EXPECT().SMBShareExists(ctx, volName).AnyTimes().Return(false, mockError)
+
+	result1 := driver.EnsureSMBShare(ctx, volName, "/"+volName, volConfig.SMBShareACL, volConfig.SecureSMBEnabled)
+	assert.Error(t, result1, "Expected SMB creation to fail when api failed to check for SMB share, but got no error")
+
+	// CASE 2: Error in creatingSMB share
+	mockAPI, driver = newMockOntapNasQtreeDriver(t)
+	mockAPI.EXPECT().SMBShareExists(ctx, volName).AnyTimes().Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, volName, gomock.Any()).AnyTimes().Return(mockError)
+
+	result2 := driver.EnsureSMBShare(ctx, volName, "/"+volName, volConfig.SMBShareACL, volConfig.SecureSMBEnabled)
+	assert.Error(t, result2, "Expected SMB creation to fail when api failed to check for SMB share, but got no error")
+
+	// CASE 3: Error in deleting SMB Share Access Control
+	mockAPI, driver = newMockOntapNasQtreeDriver(t)
+	mockAPI.EXPECT().SMBShareExists(ctx, volName).AnyTimes().Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, volName, gomock.Any()).AnyTimes().Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, "vol1", smbShareDeleteACL).AnyTimes().Return(mockError)
+
+	result3 := driver.EnsureSMBShare(ctx, volName, "/"+volName, volConfig.SMBShareACL, volConfig.SecureSMBEnabled)
+	assert.Error(t, result3, "Expected SMB Share Access Control Deletion to fail when api failed to delete for SMB"+
+		" Share Access Control, but got no error")
+
+	// CASE 4: Error in creating SMB Share Access Control
+	mockAPI, driver = newMockOntapNasQtreeDriver(t)
+	mockAPI.EXPECT().SMBShareExists(ctx, volName).AnyTimes().Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, volName, gomock.Any()).AnyTimes().Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, "vol1", smbShareDeleteACL).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, "vol1", volConfig.SMBShareACL).AnyTimes().Return(mockError)
+
+	result4 := driver.EnsureSMBShare(ctx, volName, "/"+volName, volConfig.SMBShareACL, volConfig.SecureSMBEnabled)
+	assert.Error(t, result4, "Expected SMB Share Access Control Creation to fail when api failed to create "+
+		" for SMB share Access Control, but got no error")
+}
+
+func TestDestroySMBShare_Success_ShareNotInConfig(t *testing.T) {
+	shareName := "vol1"
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.SMBShare = "otherShare"
+
+	// SMB share exists and is destroyed successfully
+	mockAPI.EXPECT().SMBShareExists(ctx, shareName).Return(true, nil)
+	mockAPI.EXPECT().SMBShareDestroy(ctx, shareName).Return(nil)
+
+	err := driver.DestroySMBShare(ctx, shareName)
+	assert.NoError(t, err, "Expected no error when destroying SMB share")
+}
+
+func TestDestroySMBShare_Success_ShareDoesNotExist(t *testing.T) {
+	shareName := "vol1"
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.SMBShare = "otherShare"
+
+	// SMB share does not exist
+	mockAPI.EXPECT().SMBShareExists(ctx, shareName).Return(false, nil)
+
+	err := driver.DestroySMBShare(ctx, shareName)
+	assert.NoError(t, err, "Expected no error when SMB share does not exist")
+}
+
+func TestDestroySMBShare_SkipIfShareInConfig(t *testing.T) {
+	shareName := "vol1"
+	_, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.SMBShare = shareName
+
+	// Should skip deletion if share matches config
+	err := driver.DestroySMBShare(ctx, shareName)
+	assert.NoError(t, err, "Expected no error when SMB share matches config")
+}
+
+func TestDestroySMBShare_ErrorOnExistsCheck(t *testing.T) {
+	shareName := "vol1"
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.SMBShare = "otherShare"
+
+	mockAPI.EXPECT().SMBShareExists(ctx, shareName).Return(false, mockError)
+
+	err := driver.DestroySMBShare(ctx, shareName)
+	assert.Error(t, err, "Expected error when SMBShareExists fails")
+}
+
+func TestDestroySMBShare_ErrorOnDestroy(t *testing.T) {
+	shareName := "vol1"
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+	driver.Config.SMBShare = "otherShare"
+
+	mockAPI.EXPECT().SMBShareExists(ctx, shareName).Return(true, nil)
+	mockAPI.EXPECT().SMBShareDestroy(ctx, shareName).Return(mockError)
+
+	err := driver.DestroySMBShare(ctx, shareName)
+	assert.Error(t, err, "Expected error when SMBShareDestroy fails")
 }
 
 func TestOntapNasQtreeStorageDriverConfigString(t *testing.T) {

@@ -4402,16 +4402,35 @@ func ConstructOntapNASQTreeVolumePath(
 		}
 	case sa.SMB:
 		var smbSharePath string
-		if smbShare != "" {
+		if smbShare != "" && !volConfig.SecureSMBEnabled {
 			smbSharePath = smbShare + tridentconfig.WindowsPathSeparator
 		}
+		// In Secure SMB mode, Trident creates a unique SMB share for each qtree. Therefore, we use internalName (the qtree name) to construct the SMB path, instead of flexvol.
 		if volConfig.ReadOnlyClone {
-			completeVolumePath = fmt.Sprintf("\\%s%s\\%s\\%s\\%s", smbSharePath, flexvol,
-				volConfig.CloneSourceVolumeInternal, "~snapshot", volConfig.CloneSourceSnapshot)
+			if volConfig.SecureSMBEnabled {
+				// Secure SMB, read-only clone:
+				// Use for SMB client access to a snapshot of a qtree.
+				// Example: \qtree1\~snapshot\snap1
+				completeVolumePath = fmt.Sprintf("\\%s\\%s\\%s", volConfig.InternalName, "~snapshot", volConfig.CloneSourceSnapshot)
+			} else {
+				// Non-secure SMB, read-only clone:
+				// Use for SMB client access to a snapshot of a qtree via a shared SMB path.
+				// Example: \share1\flexvol1\sourceQtree\~snapshot\snap1
+				completeVolumePath = fmt.Sprintf("\\%s%s\\%s\\%s\\%s", smbSharePath, flexvol, volConfig.CloneSourceVolumeInternal, "~snapshot", volConfig.CloneSourceSnapshot)
+			}
 		} else {
-			completeVolumePath = fmt.Sprintf("\\%s%s\\%s", smbSharePath, flexvol, volConfig.InternalName)
+			if volConfig.SecureSMBEnabled {
+				// Secure SMB :
+				// Use for SMB client access to a qtree.
+				// Example: \qtree1
+				completeVolumePath = fmt.Sprintf("\\%s", volConfig.InternalName)
+			} else {
+				// Non-secure SMB,:
+				// Use for SMB client access to a qtree via a shared SMB path.
+				// Example: \share1\flexvol1\qtree1
+				completeVolumePath = fmt.Sprintf("\\%s%s\\%s", smbSharePath, flexvol, volConfig.InternalName)
+			}
 		}
-
 		// Replace unix styled path separator, if exists
 		completeVolumePath = strings.Replace(completeVolumePath, tridentconfig.UnixPathSeparator,
 			tridentconfig.WindowsPathSeparator,
@@ -5006,4 +5025,12 @@ func purgeRecoveryQueueVolume(ctx context.Context, api api.OntapAPI, volumeName 
 		Logc(ctx).WithField("volume",
 			volumeName).Errorf("error purging volume from ONTAP recovery queue: %v", err)
 	}
+}
+
+// getSMBShareNamePath constructs the SMB share name and path based on the provided parameters.
+func getSMBShareNamePath(flexvol, name string, secureSMBEnabled bool) (string, string) {
+	if secureSMBEnabled {
+		return name, "/" + flexvol + "/" + name
+	}
+	return flexvol, "/" + flexvol
 }

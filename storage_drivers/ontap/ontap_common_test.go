@@ -2636,6 +2636,82 @@ func TestConstructOntapNASQTreeVolumePath(t *testing.T) {
 	}
 }
 
+func TestConstructOntapNASQTreeVolumePath_SecureSMBEnabled(t *testing.T) {
+	ctx := context.Background()
+
+	tests := []struct {
+		smbShare     string
+		flexvol      string
+		volConfig    *storage.VolumeConfig
+		protocol     string
+		expectedPath string
+	}{
+		{
+			"test_share",
+			"flex-vol",
+			&storage.VolumeConfig{
+				Name:                      "pvc-vol",
+				InternalName:              "trident_pvc_vol",
+				CloneSourceVolumeInternal: "cloneSourceInternal",
+				CloneSourceSnapshot:       "sourceSnapShot",
+				ReadOnlyClone:             false,
+				SecureSMBEnabled:          true,
+			},
+			sa.SMB,
+			"\\trident_pvc_vol",
+		},
+		{
+			"",
+			"flex-vol",
+			&storage.VolumeConfig{
+				Name:                      "volumeConfig",
+				InternalName:              "trident_pvc_vol",
+				CloneSourceVolumeInternal: "cloneSourceInternal",
+				CloneSourceSnapshot:       "sourceSnapShot",
+				ReadOnlyClone:             false,
+				SecureSMBEnabled:          true,
+			},
+			sa.SMB,
+			"\\trident_pvc_vol",
+		},
+		{
+			"test_share",
+			"flex-vol",
+			&storage.VolumeConfig{
+				Name:                      "volumeConfig",
+				InternalName:              "trident_pvc_vol",
+				CloneSourceVolumeInternal: "cloneSourceInternal",
+				CloneSourceSnapshot:       "sourceSnapShot",
+				ReadOnlyClone:             true,
+				SecureSMBEnabled:          true,
+			},
+			sa.SMB,
+			"\\trident_pvc_vol\\~snapshot\\sourceSnapShot",
+		},
+		{
+			"",
+			"flex-vol",
+			&storage.VolumeConfig{
+				Name:                      "volumeConfig",
+				InternalName:              "trident_pvc_vol",
+				CloneSourceVolumeInternal: "cloneSourceInternal",
+				CloneSourceSnapshot:       "sourceSnapShot",
+				ReadOnlyClone:             true,
+				SecureSMBEnabled:          true,
+			},
+			sa.SMB,
+			"\\trident_pvc_vol\\~snapshot\\sourceSnapShot",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.smbShare, func(t *testing.T) {
+			result := ConstructOntapNASQTreeVolumePath(ctx, test.smbShare, "flex-vol", test.volConfig, test.protocol)
+			assert.Equal(t, test.expectedPath, result, "unable to construct Ontap-NAS-QTree SMB volume path")
+		})
+	}
+}
+
 func TestEnsureNodeAccess(t *testing.T) {
 	// Test 1 - Positive flow
 
@@ -9527,6 +9603,44 @@ func TestCloneASAvol(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
+		})
+	}
+}
+
+func TestGetSMBShareNamePath(t *testing.T) {
+	// Define test cases
+	tests := []struct {
+		name             string
+		flexvol          string
+		inputName        string
+		secureSMBEnabled bool
+		expectedName     string
+		expectedPath     string
+	}{
+		{
+			name:             "secureSMB disabled, valid flexvol",
+			flexvol:          "vol1",
+			inputName:        "share1",
+			secureSMBEnabled: false,
+			expectedName:     "vol1",
+			expectedPath:     "/vol1",
+		},
+		{
+			name:             "secureSMB enabled, valid flexvol and name",
+			flexvol:          "vol1",
+			inputName:        "share1",
+			secureSMBEnabled: true,
+			expectedName:     "share1",
+			expectedPath:     "/vol1/share1",
+		},
+	}
+
+	// Run test cases
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			shareName, sharePath := getSMBShareNamePath(tt.flexvol, tt.inputName, tt.secureSMBEnabled)
+			assert.Equal(t, tt.expectedName, shareName, "shareName mismatch for flexvol=%q, name=%q, secureSMBEnabled=%v", tt.flexvol, tt.inputName, tt.secureSMBEnabled)
+			assert.Equal(t, tt.expectedPath, sharePath, "sharePath mismatch for flexvol=%q, name=%q, secureSMBEnabled=%v", tt.flexvol, tt.inputName, tt.secureSMBEnabled)
 		})
 	}
 }
