@@ -313,6 +313,19 @@ func (client *Client) AttachVolume(
 		return mpathSize, err
 	}
 
+	/*
+		There is a known race condition with nodeUnstage in a specific scenario where both volumes share the same target portal.
+		This occurs when one request with volume.uuid is entering nodeStage and another request with a different volume.uuid
+		entering nodeUnstage, but both share the same target portal.
+
+		In this case, there can be a situation where both workflows obtain their respective views or the views they were looking for.
+		Meaning that nodeUnstage, when checking whether it is safe to log out from the session, affirms that it can safely log out.
+		Meanwhile, nodeStage sees that the device has been discovered and proceeds after waitForDeviceScan.
+
+		However, nodeStage will still error out either at waitForMultipathDeviceForLUN or GetDeviceInfoForLUN below.
+		Our backoff mechanism should handle the re-login of the session in such cases.
+	*/
+
 	// Wait for multipath device i.e. /dev/dm-* for the given LUN
 	err = client.waitForMultipathDeviceForLUN(ctx, hostSessionMap, lunID, publishInfo.IscsiTargetIQN)
 	if err != nil {
@@ -496,8 +509,8 @@ func (client *Client) AddSession(
 	volID, sessionNumber string, reasonInvalid models.PortalInvalid,
 ) {
 	if sessions == nil {
-		// Initialize and use it
-		sessions = &models.ISCSISessions{Info: make(map[string]*models.ISCSISessionData)}
+		// Although sessions should never be nil with the current implementation, this check is included as a safeguard
+		sessions = models.NewISCSISessions()
 	}
 
 	iSCSITargetIQN := publishInfo.IscsiTargetIQN
@@ -1905,6 +1918,9 @@ func (client *Client) execIscsiadmCommandRedacted(ctx context.Context, args []st
 func (client *Client) RemoveLUNFromSessions(ctx context.Context, publishInfo *models.VolumePublishInfo,
 	sessions *models.ISCSISessions,
 ) {
+	Logc(ctx).Debug(">>>> iscsi.RemoveLUNFromSessions")
+	defer Logc(ctx).Debug("<<<< iscsi.RemoveLUNFromSessions")
+
 	if sessions == nil || len(sessions.Info) == 0 {
 		Logc(ctx).Debug("No sessions found, nothing to remove.")
 		return
@@ -1971,6 +1987,9 @@ func (client *Client) SafeToLogOut(ctx context.Context, hostNumber, sessionNumbe
 func (client *Client) RemovePortalsFromSession(
 	ctx context.Context, publishInfo *models.VolumePublishInfo, sessions *models.ISCSISessions,
 ) {
+	Logc(ctx).Debug(">>>> iscsi.RemovePortalsFromSession")
+	defer Logc(ctx).Debug("<<<< iscsi.RemovePortalsFromSession")
+
 	if sessions == nil || len(sessions.Info) == 0 {
 		Logc(ctx).Debug("No sessions found, nothing to remove.")
 		return

@@ -390,6 +390,12 @@ func (p *Plugin) Activate() error {
 			// Initialize node scalability limiter.
 			p.InitializeNodeLimiter(ctx)
 
+			// Initialize publishedISCSISessions and currentISCSISessions,
+			// during activation to prevent concurrent threads from setting it to nil for each other.
+			// Just an additional safeguard.
+			publishedISCSISessions = models.NewISCSISessions()
+			currentISCSISessions = models.NewISCSISessions()
+
 			// Cleanup any stale volume publication state immediately so self-healing works with current data.
 			if err := p.performNodeCleanup(ctx); err != nil {
 				Logc(ctx).WithError(err).Warn("Failed to clean node; self-healing features may be unreliable.")
@@ -685,11 +691,45 @@ func (p *Plugin) InitializeNodeLimiter(ctx context.Context) {
 		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodePublishSMBVolume, err)
 	}
 
+	// Initializing iscsi limiters:
+	if p.limiterSharedMap[NodeStageISCSIVolume], err = limiter.New(ctx,
+		NodeStageISCSIVolume,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodeStageISCSIVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodeStageISCSIVolume, err)
+	}
+
+	if p.limiterSharedMap[NodeUnstageISCSIVolume], err = limiter.New(ctx,
+		NodeUnstageISCSIVolume,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodeUnstageISCSIVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodeUnstageISCSIVolume, err)
+	}
+
+	if p.limiterSharedMap[NodePublishISCSIVolume], err = limiter.New(ctx,
+		NodePublishISCSIVolume,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodePublishISCSIVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodePublishISCSIVolume, err)
+	}
+
+	// NodeUnpublish is common for all protocols
 	if p.limiterSharedMap[NodeUnpublishVolume], err = limiter.New(ctx,
 		NodeUnpublishVolume,
 		limiter.TypeSemaphoreN,
 		limiter.WithSemaphoreNSize(ctx, maxNodeUnpublishVolumeOperations),
 	); err != nil {
 		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodeUnpublishVolume, err)
+	}
+
+	if p.limiterSharedMap[NodeExpandVolume], err = limiter.New(ctx,
+		NodeExpandVolume,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodeExpandVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodeExpandVolume, err)
 	}
 }

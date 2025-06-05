@@ -613,6 +613,12 @@ type ISCSISessions struct {
 	Info map[string]*ISCSISessionData
 }
 
+func NewISCSISessions() *ISCSISessions {
+	return &ISCSISessions{
+		Info: make(map[string]*ISCSISessionData),
+	}
+}
+
 // IsEmpty identifies whether portal to LUN mapping is empty or not.
 func (p *ISCSISessions) IsEmpty() bool {
 	return p == nil || len(p.Info) == 0

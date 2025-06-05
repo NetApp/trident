@@ -13,6 +13,8 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -51,7 +53,7 @@ const (
 	iSCSINodeUnstageMaxDuration     = 15 * time.Second
 	iSCSILoginTimeout               = 10 * time.Second
 	iSCSISelfHealingLockContext     = "ISCSISelfHealingThread"
-	iSCSISelfHealingTimeout         = 90 * time.Second
+	iSCSISelfHealingTimeout         = 60 * time.Second
 	fcpNodeUnstageMaxDuration       = 15 * time.Second
 	nvmeSelfHealingLockContext      = "NVMeSelfHealingThread"
 	defaultNodeReconciliationPeriod = 1 * time.Minute
@@ -60,13 +62,17 @@ const (
 	fsUnavailableTimeout            = 5 * time.Second
 
 	// Node Scalability constants.
-	maxNodeStageNFSVolumeOperations   = 10
-	maxNodeStageSMBVolumeOperations   = 10
-	maxNodeUnstageNFSVolumeOperations = 10
-	maxNodeUnstageSMBVolumeOperations = 10
-	maxNodePublishNFSVolumeOperations = 10
-	maxNodePublishSMBVolumeOperations = 10
-	maxNodeUnpublishVolumeOperations  = 10
+	maxNodeStageNFSVolumeOperations     = 10
+	maxNodeStageSMBVolumeOperations     = 10
+	maxNodeUnstageNFSVolumeOperations   = 10
+	maxNodeUnstageSMBVolumeOperations   = 10
+	maxNodePublishNFSVolumeOperations   = 10
+	maxNodePublishSMBVolumeOperations   = 10
+	maxNodeUnpublishVolumeOperations    = 10
+	maxNodeStageISCSIVolumeOperations   = 5
+	maxNodeUnstageISCSIVolumeOperations = 10
+	maxNodePublishISCSIVolumeOperations = 10
+	maxNodeExpandVolumeOperations       = 10
 
 	NodeStageNFSVolume   = "NodeStageNFSVolume"
 	NodeStageSMBVolume   = "NodeStageSMBVolume"
@@ -74,19 +80,31 @@ const (
 	NodeUnstageSMBVolume = "NodeUnstageSMBVolume"
 	NodePublishNFSVolume = "NodePublishNFSVolume"
 	NodePublishSMBVolume = "NodePublishSMBVolume"
-	NodeUnpublishVolume  = "NodeUnpublishVolume"
+
+	// iSCSI Constants
+	NodeStageISCSIVolume   = "NodeStageISCSIVolume"
+	NodeUnstageISCSIVolume = "NodeUnstageISCSIVolume"
+	NodePublishISCSIVolume = "NodePublishISCSIVolume"
+
+	NodeUnpublishVolume = "NodeUnpublishVolume"
+	NodeExpandVolume    = "NodeExpandVolume"
+
+	// LockID Constant for the self-healing global lock.
+	iSCSISelfHealingSessionLock = "iSCSISelfHealingSessionLock"
 )
 
 var (
-	csiNodeLockTimeout = 60 * time.Second
 	// TODO (pshashan): Unify both csiNodeLockTimeout and csiKubeletTimeout
-	csiKubeletTimeout = 110 * time.Second
-	topologyLabels    = make(map[string]string)
-	iscsiUtils        = iscsi.IscsiUtils
-	fcpUtils          = utils.FcpUtils
+	csiNodeLockTimeout = 60 * time.Second
+	csiKubeletTimeout  = 110 * time.Second
 
-	publishedISCSISessions, currentISCSISessions models.ISCSISessions
+	topologyLabels = make(map[string]string)
+	iscsiUtils     = iscsi.IscsiUtils
+	fcpUtils       = utils.FcpUtils
+
+	publishedISCSISessions, currentISCSISessions *models.ISCSISessions
 	publishedNVMeSessions, currentNVMeSessions   nvme.NVMeSessions
+
 	// NVMeNamespacesFlushRetry - Non-persistent map of Namespaces to maintain the flush errors if any.
 	// During NodeUnstageVolume, Trident shall return success after specific wait time (nvmeMaxFlushWaitDuration).
 	NVMeNamespacesFlushRetry = make(map[string]time.Time)
@@ -97,6 +115,10 @@ var (
 	afterNvmeLuksDeviceClosed      = fiji.Register("afterNvmeLuksDeviceClosed", "node_server")
 	afterNvmeDisconnect            = fiji.Register("afterNvmeDisconnect", "node_server")
 	beforeTrackingInfoWrite        = fiji.Register("beforeTrackingInfoWrite", "node_server")
+
+	// TODO(pshashan): Once the locks package revamp PR is merged, remove both  of these var below.
+	iSCSISelfHealingLock           = sync.RWMutex{}
+	iSCSINodeOperationWaitingCount atomic.Int32
 )
 
 const (
@@ -482,12 +504,19 @@ func (p *Plugin) NodeGetVolumeStats(
 func (p *Plugin) NodeExpandVolume(
 	ctx context.Context, req *csi.NodeExpandVolumeRequest,
 ) (*csi.NodeExpandVolumeResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowVolumeResize)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
 	fields := LogFields{"Method": "NodeExpandVolume", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeExpandVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeExpandVolume")
+
+	ctx = SetContextWorkflow(ctx, WorkflowVolumeResize)
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
+	ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+	defer cancel()
+
+	if err := p.limiterSharedMap[NodeExpandVolume].Wait(ctx); err != nil {
+		return nil, err
+	}
+	defer p.limiterSharedMap[NodeExpandVolume].Release(ctx)
 
 	volumeId := req.GetVolumeId()
 	if volumeId == "" {
@@ -532,6 +561,28 @@ func (p *Plugin) NodeExpandVolume(
 			"volumePath":        volumePath,
 			"volumeId":          volumeId,
 		}).Warn("Received something other than the expected stagingTargetPath.")
+	}
+
+	{
+		// TODO(pshashan): Remove this POC once the FCP and NVMe protocols are parallelized.
+		// It currently enables parallelization for the iSCSI protocol while keeping FCP and NVMe serialized.
+		protocol, err := getVolumeProtocolFromPublishInfo(&trackingInfo.VolumePublishInfo)
+		if err != nil {
+			return nil, status.Errorf(codes.FailedPrecondition, "unable to read protocol info from publish info; %s", err)
+		}
+		lockID := req.GetVolumeId()
+		lockContext := "NodeExpandVolume"
+		if protocol == tridentconfig.Block {
+			switch trackingInfo.VolumePublishInfo.SANType {
+			case sa.NVMe, sa.FCP:
+				lockID = nodeLockID
+				lockContext = "NodeExpandVolume-" + req.GetVolumeId()
+			}
+		}
+		defer locks.Unlock(ctx, lockContext, lockID)
+		if !attemptLock(ctx, lockContext, lockID, csiNodeLockTimeout) {
+			return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+		}
 	}
 
 	err = p.nodeExpandVolume(ctx, &trackingInfo.VolumePublishInfo, requiredBytes, stagingTargetPath, volumeId,
@@ -1223,7 +1274,7 @@ func (p *Plugin) populatePublishedSessions(ctx context.Context) {
 		publishInfo := &trackingInfo.VolumePublishInfo
 		if publishInfo.SANType != sa.NVMe {
 			newCtx := context.WithValue(ctx, iscsi.SessionInfoSource, iscsi.SessionSourceTrackingInfo)
-			p.iscsi.AddSession(newCtx, &publishedISCSISessions, publishInfo, volumeID, "", models.NotInvalid)
+			p.iscsi.AddSession(newCtx, publishedISCSISessions, publishInfo, volumeID, "", models.NotInvalid)
 		} else {
 			p.nvmeHandler.AddPublishedNVMeSession(&publishedNVMeSessions, publishInfo)
 		}
@@ -1254,6 +1305,13 @@ func (p *Plugin) readAllTrackingFiles(ctx context.Context) []models.VolumePublis
 func (p *Plugin) nodeStageFCPVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest, publishInfo *models.VolumePublishInfo,
 ) (err error) {
+	// Serializing all the parallel requests by relying on the constant var.
+	lockContext := "NodeStageSANFCPVolume-" + req.GetVolumeId()
+	defer locks.Unlock(ctx, lockContext, nodeLockID)
+	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
+		return status.Error(codes.Aborted, "request waited too long for the lock")
+	}
+
 	Logc(ctx).Debug(">>>> nodeStageFCPVolume")
 	defer Logc(ctx).Debug("<<<< nodeStageFCPVolume")
 
@@ -1555,7 +1613,6 @@ func (p *Plugin) nodeUnstageFCPVolumeRetry(
 	// Serializing all the parallel requests by relying on the constant var.
 	lockContext := "NodeUnstageFCPVolume-" + req.GetVolumeId()
 	defer locks.Unlock(ctx, lockContext, nodeLockID)
-
 	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
 	}
@@ -1590,7 +1647,6 @@ func (p *Plugin) nodePublishFCPVolume(
 	// Serializing all the parallel requests by relying on the constant var.
 	lockContext := "NodePublishFCPVolume-" + req.GetVolumeId()
 	defer locks.Unlock(ctx, lockContext, nodeLockID)
-
 	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
 	}
@@ -1670,6 +1726,20 @@ func (p *Plugin) nodePublishFCPVolume(
 func (p *Plugin) nodeStageISCSIVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest, publishInfo *models.VolumePublishInfo,
 ) (err error) {
+	Logc(ctx).Debug(">>>> nodeStageISCSIVolume")
+	defer Logc(ctx).Debug("<<<< nodeStageISCSIVolume")
+
+	if err = p.limiterSharedMap[NodeStageISCSIVolume].Wait(ctx); err != nil {
+		return err
+	}
+	defer p.limiterSharedMap[NodeStageISCSIVolume].Release(ctx)
+
+	// TODO(pshashan): Once the locks package revamp PR is merged, remove this atomic counter.
+	iSCSINodeOperationWaitingCount.Add(1)
+	iSCSISelfHealingLock.RLock()
+	defer iSCSISelfHealingLock.RUnlock()
+	iSCSINodeOperationWaitingCount.Add(-1)
+
 	var useCHAP bool
 	useCHAP, err = strconv.ParseBool(req.PublishContext["useCHAP"])
 	if err != nil {
@@ -1811,7 +1881,17 @@ func (p *Plugin) nodeStageISCSIVolume(
 	// Beyond here if there is a problem with the session or there are missing LUNs
 	// then self-healing should be able to fix those issues.
 	newCtx := context.WithValue(ctx, iscsi.SessionInfoSource, iscsi.SessionSourceNodeStage)
-	p.iscsi.AddSession(newCtx, &publishedISCSISessions, publishInfo, req.GetVolumeId(), "", models.NotInvalid)
+
+	// Acquiring the global self-healing session lock may impact parallelism,
+	// but self-healing session operations are minimal and should complete quickly.
+	// Therefore, a slight performance impact is acceptable to keep the code clean and maintainable.
+	lockContext := "nodeStageISCSIVolume.AddSession"
+	if !attemptLock(ctx, lockContext, iSCSISelfHealingSessionLock, csiNodeLockTimeout) {
+		locks.Unlock(ctx, lockContext, iSCSISelfHealingSessionLock)
+		return status.Error(codes.Aborted, "request waited too long for the lock")
+	}
+	p.iscsi.AddSession(newCtx, publishedISCSISessions, publishInfo, req.GetVolumeId(), "", models.NotInvalid)
+	locks.Unlock(ctx, lockContext, iSCSISelfHealingSessionLock)
 	return nil
 }
 
@@ -1943,8 +2023,17 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		Logc(ctx).Debug("No devices found.")
 	}
 
+	// Acquiring the global self-healing session lock may impact parallelism,
+	// but self-healing session operations are minimal and should complete quickly.
+	// Therefore, a slight performance impact is acceptable to keep the code clean and maintainable.
+	lockContext := "nodeUnstageISCSIVolume.RemoveLUNFromSessions"
+	if !attemptLock(ctx, lockContext, iSCSISelfHealingSessionLock, csiNodeLockTimeout) {
+		locks.Unlock(ctx, lockContext, iSCSISelfHealingSessionLock)
+		return status.Error(codes.Aborted, "request waited too long for the lock")
+	}
 	// Remove Portal/LUN entries in self-healing map.
-	p.iscsi.RemoveLUNFromSessions(ctx, publishInfo, &publishedISCSISessions)
+	p.iscsi.RemoveLUNFromSessions(ctx, publishInfo, publishedISCSISessions)
+	locks.Unlock(ctx, lockContext, iSCSISelfHealingSessionLock)
 
 	var luksMapperPath string
 	// If the multipath device is not present, the LUKS device should not exist.
@@ -2025,8 +2114,17 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	if logout {
 		Logc(ctx).Debug("Safe to log out.")
 
+		// Acquiring the global self-healing session lock may impact parallelism,
+		// but self-healing session operations are minimal and should complete quickly.
+		// Therefore, a slight performance impact is acceptable to keep the code clean and maintainable.
+		lockContext = "nodeUnstageISCSIVolume.RemovePortalsFromSession"
+		if !attemptLock(ctx, lockContext, iSCSISelfHealingSessionLock, csiNodeLockTimeout) {
+			locks.Unlock(ctx, lockContext, iSCSISelfHealingSessionLock)
+			return status.Error(codes.Aborted, "request waited too long for the lock")
+		}
 		// Remove portal entries from the self-healing map.
-		p.iscsi.RemovePortalsFromSession(ctx, publishInfo, &publishedISCSISessions)
+		p.iscsi.RemovePortalsFromSession(ctx, publishInfo, publishedISCSISessions)
+		locks.Unlock(ctx, lockContext, iSCSISelfHealingSessionLock)
 
 		if err := p.iscsi.Logout(ctx, publishInfo.IscsiTargetIQN, publishInfo.IscsiTargetPortal); err != nil {
 			Logc(ctx).Error(err)
@@ -2091,13 +2189,19 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 func (p *Plugin) nodeUnstageISCSIVolumeRetry(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *models.VolumePublishInfo, force bool,
 ) (*csi.NodeUnstageVolumeResponse, error) {
-	// Serializing all the parallel requests by relying on the constant var.
-	lockContext := "NodeUnstageISCSIVolume-" + req.GetVolumeId()
-	defer locks.Unlock(ctx, lockContext, nodeLockID)
+	Logc(ctx).Debug(">>>> nodeUnstageISCSIVolumeRetry")
+	defer Logc(ctx).Debug("<<<< nodeUnstageISCSIVolumeRetry")
 
-	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
-		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	if err := p.limiterSharedMap[NodeUnstageISCSIVolume].Wait(ctx); err != nil {
+		return nil, err
 	}
+	defer p.limiterSharedMap[NodeUnstageISCSIVolume].Release(ctx)
+
+	// TODO(pshashan): Once the locks package revamp PR is merged, remove this atomic counter.
+	iSCSINodeOperationWaitingCount.Add(1)
+	iSCSISelfHealingLock.RLock()
+	defer iSCSISelfHealingLock.RUnlock()
+	iSCSINodeOperationWaitingCount.Add(-1)
 
 	nodeUnstageISCSIVolumeNotify := func(err error, duration time.Duration) {
 		Logc(ctx).WithField("increment", duration).Debug("Failed to unstage the volume, retrying.")
@@ -2126,13 +2230,13 @@ func (p *Plugin) nodeUnstageISCSIVolumeRetry(
 func (p *Plugin) nodePublishISCSIVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
-	// Serializing all the parallel requests by relying on the constant var.
-	lockContext := "NodePublishISCSIVolume-" + req.GetVolumeId()
-	defer locks.Unlock(ctx, lockContext, nodeLockID)
+	Logc(ctx).Debug(">>>> nodePublishISCSIVolume")
+	defer Logc(ctx).Debug("<<<< nodePublishISCSIVolume")
 
-	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
-		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	if err := p.limiterSharedMap[NodePublishISCSIVolume].Wait(ctx); err != nil {
+		return nil, err
 	}
+	defer p.limiterSharedMap[NodePublishISCSIVolume].Release(ctx)
 
 	var err error
 
@@ -2658,8 +2762,15 @@ func (p *Plugin) updateCHAPInfoForSessions(
 // performISCSISelfHealing inspects the desired state of the iSCSI sessions with the current state and accordingly
 // identifies candidate sessions that require remediation. This function is invoked periodically.
 func (p *Plugin) performISCSISelfHealing(ctx context.Context) {
-	locks.Lock(ctx, iSCSISelfHealingLockContext, nodeLockID)
-	defer locks.Unlock(ctx, iSCSISelfHealingLockContext, nodeLockID)
+	iSCSISelfHealingLock.Lock()
+	defer iSCSISelfHealingLock.Unlock()
+
+	lockContext := "performISCSISelfHealing.SessionLock"
+	defer locks.Unlock(ctx, lockContext, iSCSISelfHealingSessionLock)
+	if !attemptLock(ctx, lockContext, iSCSISelfHealingSessionLock, csiNodeLockTimeout) {
+		Logc(ctx).WithError(fmt.Errorf("request waited too long for the lock"))
+		return
+	}
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -2682,14 +2793,14 @@ func (p *Plugin) performISCSISelfHealing(ctx context.Context) {
 	}
 
 	// Reset current sessions
-	currentISCSISessions = models.ISCSISessions{}
+	currentISCSISessions = models.NewISCSISessions()
 
 	// Reset published iSCSI session remediation information
 	if err := publishedISCSISessions.ResetAllRemediationValues(); err != nil {
 		Logc(ctx).WithError(err).Error("Failed to reset remediation value(s) for published iSCSI sessions. ")
 	}
 
-	if err := p.iscsi.PopulateCurrentSessions(ctx, &currentISCSISessions); err != nil {
+	if err := p.iscsi.PopulateCurrentSessions(ctx, currentISCSISessions); err != nil {
 		Logc(ctx).WithError(err).
 			Error("Failed to get current state of iSCSI Sessions LUN mappings; skipping iSCSI self-heal cycle.")
 		return
@@ -2700,7 +2811,7 @@ func (p *Plugin) performISCSISelfHealing(ctx context.Context) {
 	}
 
 	// Update CHAP info for published sessions.
-	if err := p.updateCHAPInfoForSessions(ctx, &publishedISCSISessions, &currentISCSISessions); err != nil {
+	if err := p.updateCHAPInfoForSessions(ctx, publishedISCSISessions, currentISCSISessions); err != nil {
 		Logc(ctx).WithError(err).Error("Failed to update CHAP credentials for published iSCSI sessions.")
 	}
 
@@ -2715,8 +2826,8 @@ func (p *Plugin) performISCSISelfHealing(ctx context.Context) {
 	// to temporary networking issue or logged-out sessions or LUNs that were never scanned for some sessions.
 
 	// SELF-HEAL STEP 1: Identify all sorted candidate stale portals and sorted candidate non-stale portals.
-	staleISCSIPortals, nonStaleISCSIPortals := p.iscsi.InspectAllISCSISessions(ctx, &publishedISCSISessions,
-		&currentISCSISessions, p.iSCSISelfHealingWaitTime)
+	staleISCSIPortals, nonStaleISCSIPortals := p.iscsi.InspectAllISCSISessions(ctx, publishedISCSISessions,
+		currentISCSISessions, p.iSCSISelfHealingWaitTime)
 
 	// SELF-HEAL STEP 2: Attempt to fix all the stale portals.
 	p.fixISCSISessions(ctx, staleISCSIPortals, "stale", stopSelfHealingAt)
@@ -2737,26 +2848,18 @@ func (p *Plugin) fixISCSISessions(ctx context.Context, portals []string, portalT
 
 	Logc(ctx).Debugf("Found %s portal(s) that require remediation.", portalType)
 
-	for idx, portal := range portals {
-
-		// First get the fix action
-		fixAction := publishedISCSISessions.Info[portal].Remediation
-		isNonStaleSessionFix := fixAction != models.LogoutLoginScan
-
-		// Check if there is a need to stop the loop from running
-		// NOTE: The loop should run at least once for all portal types.
-		if idx > 0 && locks.WaitQueueSize(nodeLockID) > 0 {
-			// Check to see if some other operation(s) requires node lock, if not then continue to resolve
-			// non-stale iSCSI portal issues else break out of this loop.
-			if isNonStaleSessionFix {
-				Logc(ctx).Debug("Identified other node operations waiting for the node lock; preempting non-stale" +
-					" iSCSI session self-healing.")
-				break
-			} else if time.Now().After(stopAt) {
+	for _, portal := range portals {
+		// TODO(pshashan): Once the locks package revamp PR is merged, remove this atomic counter
+		// and just query the wait count of that particular lock.
+		if iSCSINodeOperationWaitingCount.Load() > 0 {
+			if time.Now().After(stopAt) {
 				Logc(ctx).Debug("Self-healing has exceeded maximum runtime; preempting iSCSI session self-healing.")
 				break
 			}
 		}
+
+		// First get the fix action
+		fixAction := publishedISCSISessions.Info[portal].Remediation
 
 		Logc(ctx).Debugf("Attempting to fix iSCSI portal %v it requires %s", portal, fixAction)
 
@@ -2849,6 +2952,13 @@ func (p *Plugin) nodeStageNVMeVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 	publishInfo *models.VolumePublishInfo,
 ) error {
+	// Serializing all the parallel requests by relying on the constant var.
+	lockContext := "NodeStageSANNVMeVolume-" + req.GetVolumeId()
+	defer locks.Unlock(ctx, lockContext, nodeLockID)
+	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
+		return status.Error(codes.Aborted, "request waited too long for the lock")
+	}
+
 	isLUKS := convert.ToBool(req.PublishContext["LUKSEncryption"])
 	publishInfo.LUKSEncryption = strconv.FormatBool(isLUKS)
 	publishInfo.MountOptions = req.PublishContext["mountOptions"]
@@ -2918,7 +3028,6 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 	// Serializing all the parallel requests by relying on the constant var.
 	lockContext := "NodeUnstageNVMeVolume-" + req.GetVolumeId()
 	defer locks.Unlock(ctx, lockContext, nodeLockID)
-
 	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
 	}
@@ -3062,7 +3171,6 @@ func (p *Plugin) nodePublishNVMeVolume(
 	// Serializing all the parallel requests by relying on the constant var.
 	lockContext := "NodePublishNVMeVolume-" + req.GetVolumeId()
 	defer locks.Unlock(ctx, lockContext, nodeLockID)
-
 	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
 	}
@@ -3130,14 +3238,6 @@ func (p *Plugin) nodePublishNVMeVolume(
 func (p *Plugin) nodeStageSANVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 ) (*csi.NodeStageVolumeResponse, error) {
-	// Serializing all the parallel requests by relying on the constant var.
-	lockContext := "NodeStageSanVolume-" + req.GetVolumeId()
-	defer locks.Unlock(ctx, lockContext, nodeLockID)
-
-	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
-		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
-	}
-
 	var err error
 
 	mountCapability := req.GetVolumeCapability().GetMount()

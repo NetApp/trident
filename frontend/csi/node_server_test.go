@@ -87,9 +87,12 @@ func TestNodeStageVolume(t *testing.T) {
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			plugin := &Plugin{
-				role: CSINode,
-				fs:   filesystem.New(mountClient),
+				role:             CSINode,
+				limiterSharedMap: make(map[string]limiter.Limiter),
+				fs:               filesystem.New(mountClient),
 			}
+
+			plugin.InitializeNodeLimiter(ctx)
 
 			if params.getISCSIClient != nil {
 				plugin.iscsi = params.getISCSIClient()
@@ -156,8 +159,11 @@ func TestNodeStageSANVolume(t *testing.T) {
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			plugin := &Plugin{
-				role: CSINode,
+				role:             CSINode,
+				limiterSharedMap: make(map[string]limiter.Limiter),
 			}
+
+			plugin.InitializeNodeLimiter(ctx)
 
 			if params.getISCSIClient != nil {
 				plugin.iscsi = params.getISCSIClient()
@@ -580,10 +586,13 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			plugin := &Plugin{
-				role:   CSINode,
-				aesKey: params.aesKey,
-				fs:     filesystem.New(mountClient),
+				role:             CSINode,
+				limiterSharedMap: make(map[string]limiter.Limiter),
+				aesKey:           params.aesKey,
+				fs:               filesystem.New(mountClient),
 			}
+
+			plugin.InitializeNodeLimiter(ctx)
 
 			if params.getISCSIClient != nil {
 				plugin.iscsi = params.getISCSIClient()
@@ -925,8 +934,9 @@ func TestFixISCSISessions(t *testing.T) {
 
 	sessionData1 := models.ISCSISessionData{
 		PortalInfo: models.PortalInfo{
-			ISCSITargetIQN: iqnList[0],
-			Credentials:    chapCredentials[2],
+			ISCSITargetIQN:         iqnList[0],
+			Credentials:            chapCredentials[2],
+			FirstIdentifiedStaleAt: time.Now().Add(-time.Second * 10),
 		},
 		LUNs: models.LUNs{
 			Info: mapCopyHelper(lunList1),
@@ -935,8 +945,9 @@ func TestFixISCSISessions(t *testing.T) {
 
 	sessionData2 := models.ISCSISessionData{
 		PortalInfo: models.PortalInfo{
-			ISCSITargetIQN: iqnList[1],
-			Credentials:    chapCredentials[2],
+			ISCSITargetIQN:         iqnList[1],
+			Credentials:            chapCredentials[2],
+			FirstIdentifiedStaleAt: time.Now().Add(-time.Second * 10),
 		},
 		LUNs: models.LUNs{
 			Info: mapCopyHelper(lunList2),
@@ -946,17 +957,32 @@ func TestFixISCSISessions(t *testing.T) {
 	type PreRun func(publishedSessions, currentSessions *models.ISCSISessions, portalActions []PortalAction)
 
 	inputs := []struct {
-		TestName           string
-		PublishedPortals   *models.ISCSISessions
-		CurrentPortals     *models.ISCSISessions
-		PortalActions      []PortalAction
-		StopAt             time.Time
-		AddNewNodeOps      bool // If there exist a new node operation would request lock.
-		SimulateConditions PreRun
-		PortalsFixed       []string
+		TestName                       string
+		PublishedPortals               *models.ISCSISessions
+		CurrentPortals                 *models.ISCSISessions
+		PortalActions                  []PortalAction
+		StopAt                         time.Time
+		AddNewNodeOps                  bool // If there exist a new node operation would request lock.
+		SimulateConditions             PreRun
+		PortalsFixed                   []string
+		SelfHealingRectifySessionError bool
 	}{
 		{
-			TestName: "No current sessions exist then all the non-stale sessions are fixed",
+			TestName:         "Sessions to fixed are zero",
+			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{}},
+			CurrentPortals:   &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{}},
+			PortalActions:    []PortalAction{},
+			StopAt:           time.Now().Add(100 * time.Second),
+			AddNewNodeOps:    false,
+			PortalsFixed:     []string{},
+			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions,
+				portalActions []PortalAction,
+			) {
+				return
+			},
+		},
+		{
+			TestName: "No node operations are waiting all the sessions are fixed",
 			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
@@ -983,8 +1009,7 @@ func TestFixISCSISessions(t *testing.T) {
 			},
 		},
 		{
-			TestName: "No current sessions exist AND self-heal exceeded max time AND NO node operation waiting then" +
-				" all the non-stale sessions are fixed",
+			TestName: "No node operations waiting AND self-healing exceeded max time, then all the sessions are fixed.",
 			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
@@ -1011,7 +1036,7 @@ func TestFixISCSISessions(t *testing.T) {
 			},
 		},
 		{
-			TestName: "No current sessions exist AND exist a node operation waiting then first non-stale sessions is fixed",
+			TestName: "Node operation is waiting, self healing didn't exceed max-time, all sessions are fixed.",
 			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
@@ -1025,7 +1050,7 @@ func TestFixISCSISessions(t *testing.T) {
 			},
 			StopAt:        time.Now().Add(time.Second * 100),
 			AddNewNodeOps: true,
-			PortalsFixed:  []string{ipList[1]},
+			PortalsFixed:  []string{ipList[0], ipList[1], ipList[2]},
 			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions,
 				portalActions []PortalAction,
 			) {
@@ -1038,8 +1063,7 @@ func TestFixISCSISessions(t *testing.T) {
 			},
 		},
 		{
-			TestName: "No current sessions exist AND self-heal exceeded max time AND exist a node operation waiting" +
-				" for lock then first non-stale sessions is fixed",
+			TestName: "Node Operation is waiting, self-healing time has exceeded, no sessions are fixed.",
 			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
@@ -1051,197 +1075,50 @@ func TestFixISCSISessions(t *testing.T) {
 				{Portal: ipList[1], Action: models.NoAction},
 				{Portal: ipList[2], Action: models.NoAction},
 			},
-			StopAt:        time.Time{},
+			StopAt:        time.Now().Add(-time.Second * 100),
 			AddNewNodeOps: true,
-			PortalsFixed:  []string{ipList[1]},
+			PortalsFixed:  []string{},
 			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions,
 				portalActions []PortalAction,
 			) {
 				timeNow := time.Now()
-				publishedSessions.Info[ipList[0]].PortalInfo.LastAccessTime = timeNow.Add(5 * time.Millisecond)
-				publishedSessions.Info[ipList[1]].PortalInfo.LastAccessTime = timeNow
-				publishedSessions.Info[ipList[2]].PortalInfo.LastAccessTime = timeNow.Add(10 * time.Millisecond)
+				publishedSessions.Info[ipList[0]].PortalInfo.LastAccessTime = timeNow.Add(-time.Second * 10)
+				publishedSessions.Info[ipList[1]].PortalInfo.LastAccessTime = timeNow.Add(-time.Second * 10)
+				publishedSessions.Info[ipList[2]].PortalInfo.LastAccessTime = timeNow.Add(-time.Second * 10)
 
 				setRemediation(publishedSessions, portalActions)
 			},
 		},
 		{
-			TestName: "Current sessions exist but missing LUNs then all the non-stale sessions are fixed",
+			TestName: "No Node Operation are waiting, selfHealingRectifySession returns an error",
 			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
 				ipList[0]: structCopyHelper(sessionData1),
 				ipList[1]: structCopyHelper(sessionData2),
 				ipList[2]: structCopyHelper(sessionData1),
 			}},
-			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
-				ipList[0]: structCopyHelper(sessionData1),
-				ipList[1]: structCopyHelper(sessionData2),
-				ipList[2]: structCopyHelper(sessionData1),
-			}},
+			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{}},
 			PortalActions: []PortalAction{
 				{Portal: ipList[0], Action: models.NoAction},
 				{Portal: ipList[1], Action: models.NoAction},
 				{Portal: ipList[2], Action: models.NoAction},
 			},
-			StopAt:        time.Now().Add(100 * time.Second),
-			AddNewNodeOps: false,
-			PortalsFixed:  []string{ipList[0], ipList[1], ipList[2]},
-			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions,
-				portalActions []PortalAction,
-			) {
-				timeNow := time.Now()
-				publishedSessions.Info[ipList[0]].PortalInfo.LastAccessTime = timeNow
-				publishedSessions.Info[ipList[1]].PortalInfo.LastAccessTime = timeNow.Add(5 * time.Millisecond)
-				publishedSessions.Info[ipList[2]].PortalInfo.LastAccessTime = timeNow.Add(10 * time.Millisecond)
-
-				currentSessions.Info[ipList[0]].LUNs = models.LUNs{
-					Info: nil,
-				}
-				currentSessions.Info[ipList[1]].LUNs = models.LUNs{
-					Info: nil,
-				}
-				currentSessions.Info[ipList[2]].LUNs = models.LUNs{
-					Info: nil,
-				}
-
-				setRemediation(publishedSessions, portalActions)
-			},
-		},
-		{
-			TestName: "Current sessions exist but missing LUNs AND exist a node operation waiting" +
-				" for lock then first non-stale sessions is fixed",
-			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
-				ipList[0]: structCopyHelper(sessionData1),
-				ipList[1]: structCopyHelper(sessionData2),
-				ipList[2]: structCopyHelper(sessionData1),
-			}},
-			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
-				ipList[0]: structCopyHelper(sessionData1),
-				ipList[1]: structCopyHelper(sessionData2),
-				ipList[2]: structCopyHelper(sessionData1),
-			}},
-			PortalActions: []PortalAction{
-				{Portal: ipList[0], Action: models.NoAction},
-				{Portal: ipList[1], Action: models.NoAction},
-				{Portal: ipList[2], Action: models.NoAction},
-			},
-			StopAt:        time.Now().Add(100 * time.Second),
-			AddNewNodeOps: true,
-			PortalsFixed:  []string{ipList[1]},
-			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions,
-				portalActions []PortalAction,
-			) {
-				timeNow := time.Now()
-				publishedSessions.Info[ipList[0]].PortalInfo.LastAccessTime = timeNow.Add(5 * time.Millisecond)
-				publishedSessions.Info[ipList[1]].PortalInfo.LastAccessTime = timeNow
-				publishedSessions.Info[ipList[2]].PortalInfo.LastAccessTime = timeNow.Add(10 * time.Millisecond)
-
-				currentSessions.Info[ipList[0]].LUNs = models.LUNs{
-					Info: nil,
-				}
-				currentSessions.Info[ipList[1]].LUNs = models.LUNs{
-					Info: nil,
-				}
-				currentSessions.Info[ipList[2]].LUNs = models.LUNs{
-					Info: nil,
-				}
-
-				setRemediation(publishedSessions, portalActions)
-			},
-		},
-		{
-			TestName: "Current sessions are stale then all the stale sessions are fixed",
-			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
-				ipList[0]: structCopyHelper(sessionData1),
-				ipList[1]: structCopyHelper(sessionData2),
-				ipList[2]: structCopyHelper(sessionData1),
-			}},
-			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
-				ipList[0]: structCopyHelper(sessionData1),
-				ipList[1]: structCopyHelper(sessionData2),
-				ipList[2]: structCopyHelper(sessionData1),
-			}},
-			PortalActions: []PortalAction{
-				{Portal: ipList[0], Action: models.LogoutLoginScan},
-				{Portal: ipList[1], Action: models.LogoutLoginScan},
-				{Portal: ipList[2], Action: models.LogoutLoginScan},
-			},
-			StopAt:        time.Now().Add(100 * time.Second),
-			AddNewNodeOps: false,
-			PortalsFixed:  []string{ipList[0], ipList[1], ipList[2]},
-			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions,
-				portalActions []PortalAction,
-			) {
-				timeNow := time.Now()
-				publishedSessions.Info[ipList[0]].PortalInfo.LastAccessTime = timeNow
-				publishedSessions.Info[ipList[1]].PortalInfo.LastAccessTime = timeNow.Add(5 * time.Millisecond)
-				publishedSessions.Info[ipList[2]].PortalInfo.LastAccessTime = timeNow.Add(10 * time.Millisecond)
-
-				setRemediation(publishedSessions, portalActions)
-			},
-		},
-		{
-			TestName: "Current sessions are stale AND only exist a node operation waiting" +
-				" for lock BUT self-heal has not exceeded then all stale sessions are fixed",
-			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
-				ipList[0]: structCopyHelper(sessionData1),
-				ipList[1]: structCopyHelper(sessionData2),
-				ipList[2]: structCopyHelper(sessionData1),
-			}},
-			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
-				ipList[0]: structCopyHelper(sessionData1),
-				ipList[1]: structCopyHelper(sessionData2),
-				ipList[2]: structCopyHelper(sessionData1),
-			}},
-			PortalActions: []PortalAction{
-				{Portal: ipList[0], Action: models.LogoutLoginScan},
-				{Portal: ipList[1], Action: models.LogoutLoginScan},
-				{Portal: ipList[2], Action: models.LogoutLoginScan},
-			},
-			StopAt:        time.Now().Add(100 * time.Second),
+			StopAt:        time.Now().Add(time.Second * 100),
 			AddNewNodeOps: true,
 			PortalsFixed:  []string{ipList[0], ipList[1], ipList[2]},
 			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions,
 				portalActions []PortalAction,
 			) {
 				timeNow := time.Now()
-				publishedSessions.Info[ipList[0]].PortalInfo.LastAccessTime = timeNow.Add(5 * time.Millisecond)
-				publishedSessions.Info[ipList[1]].PortalInfo.LastAccessTime = timeNow
-				publishedSessions.Info[ipList[2]].PortalInfo.LastAccessTime = timeNow.Add(10 * time.Millisecond)
+				publishedSessions.Info[ipList[0]].PortalInfo.LastAccessTime = timeNow.Add(-time.Second * 10)
+				publishedSessions.Info[ipList[0]].PortalInfo.ISCSITargetIQN = ""
+				publishedSessions.Info[ipList[1]].PortalInfo.LastAccessTime = timeNow.Add(-time.Second * 10)
+				publishedSessions.Info[ipList[1]].PortalInfo.ISCSITargetIQN = ""
+				publishedSessions.Info[ipList[2]].PortalInfo.LastAccessTime = timeNow.Add(-time.Second * 10)
+				publishedSessions.Info[ipList[2]].PortalInfo.ISCSITargetIQN = ""
 
 				setRemediation(publishedSessions, portalActions)
 			},
-		},
-		{
-			TestName: "Current sessions are stale AND exist a node operation waiting" +
-				" for lock AND self-heal exceeds time then first stale sessions is fixed",
-			PublishedPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
-				ipList[0]: structCopyHelper(sessionData1),
-				ipList[1]: structCopyHelper(sessionData2),
-				ipList[2]: structCopyHelper(sessionData1),
-			}},
-			CurrentPortals: &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
-				ipList[0]: structCopyHelper(sessionData1),
-				ipList[1]: structCopyHelper(sessionData2),
-				ipList[2]: structCopyHelper(sessionData1),
-			}},
-			PortalActions: []PortalAction{
-				{Portal: ipList[0], Action: models.LogoutLoginScan},
-				{Portal: ipList[1], Action: models.LogoutLoginScan},
-				{Portal: ipList[2], Action: models.LogoutLoginScan},
-			},
-			StopAt:        time.Time{},
-			AddNewNodeOps: true,
-			PortalsFixed:  []string{ipList[1]},
-			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions,
-				portalActions []PortalAction,
-			) {
-				timeNow := time.Now()
-				publishedSessions.Info[ipList[0]].PortalInfo.LastAccessTime = timeNow.Add(5 * time.Millisecond)
-				publishedSessions.Info[ipList[1]].PortalInfo.LastAccessTime = timeNow
-				publishedSessions.Info[ipList[2]].PortalInfo.LastAccessTime = timeNow.Add(10 * time.Millisecond)
-
-				setRemediation(publishedSessions, portalActions)
-			},
+			SelfHealingRectifySessionError: true,
 		},
 	}
 
@@ -1256,50 +1133,50 @@ func TestFixISCSISessions(t *testing.T) {
 
 	for _, input := range inputs {
 		t.Run(input.TestName, func(t *testing.T) {
-			publishedISCSISessions = *input.PublishedPortals
-			currentISCSISessions = *input.CurrentPortals
+			publishedISCSISessions = input.PublishedPortals
 
 			input.SimulateConditions(input.PublishedPortals, input.CurrentPortals, input.PortalActions)
 			portals := getPortals(input.PublishedPortals, input.PortalActions)
 
 			if input.AddNewNodeOps {
-				go locks.Lock(ctx, "test-lock1", nodeLockID)
-				snooze(10)
-				go locks.Lock(ctx, "test-lock2", nodeLockID)
-				snooze(10)
+				iSCSINodeOperationWaitingCount.Add(1)
+				iSCSINodeOperationWaitingCount.Add(1)
 			}
 
 			// Make sure this time is captured after the pre-run adds wait time
 			// Also on Windows the system time is often only updated once every
 			// 10-15 ms or so, which means if you query the current time twice
 			// within this period, you get the same value. Therefore, set this
-			// time to be slightly lower than time set in fixISCSISessions call.
+			// time to be slightly lower than time that will be
+			// set in fixISCSISessions call.
 			timeNow := time.Now().Add(-2 * time.Millisecond)
 
 			nodeServer.fixISCSISessions(context.TODO(), portals, "some-portal", input.StopAt)
 
 			for _, portal := range portals {
 				lastAccessTime := publishedISCSISessions.Info[portal].PortalInfo.LastAccessTime
+				firstIdentifiedStaleAt := publishedISCSISessions.Info[portal].PortalInfo.FirstIdentifiedStaleAt
 				if collection.ContainsString(input.PortalsFixed, portal) {
 					assert.True(t, lastAccessTime.After(timeNow),
 						fmt.Sprintf("mismatched last access time for %v portal", portal))
+					if input.SelfHealingRectifySessionError {
+						assert.NotEqual(t, firstIdentifiedStaleAt, time.Time{},
+							fmt.Sprintf("firstIdentifiedAt time is not empty for %v portal", portal))
+					} else {
+						assert.Equal(t, firstIdentifiedStaleAt, time.Time{},
+							fmt.Sprintf("firstIdentifiedAt time is not empty for %v portal", portal))
+					}
 				} else {
 					assert.True(t, lastAccessTime.Before(timeNow),
-						fmt.Sprintf("mismatched lass access time for %v portal", portal))
+						fmt.Sprintf("mismatched last access time for %v portal", portal))
+					assert.NotEqual(t, firstIdentifiedStaleAt, time.Time{},
+						fmt.Sprintf("firstIdentifiedAt time should not be empty for %v portal", portal))
 				}
 			}
 
 			if input.AddNewNodeOps {
-				locks.Unlock(ctx, "test-lock1", nodeLockID)
-
-				// Wait for the lock to be released
-				for locks.WaitQueueSize(nodeLockID) > 1 {
-					snooze(10)
-				}
-
-				// Give some time for another context to acquire the lock
-				snooze(100)
-				locks.Unlock(ctx, "test-lock2", nodeLockID)
+				iSCSINodeOperationWaitingCount.Add(-1)
+				iSCSINodeOperationWaitingCount.Add(-1)
 			}
 		})
 	}
