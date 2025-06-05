@@ -6271,9 +6271,22 @@ func (c *RestClient) SMBShareAccessControlCreate(ctx context.Context, shareName 
 		result, err := c.api.Nas.CifsShareACLCreate(params, c.authInfo)
 		if err != nil {
 			if restErr, extractErr := ExtractErrorResponse(ctx, err); extractErr == nil {
-				if restErr.Error != nil && restErr.Error.Code != nil && *restErr.Error.Code != DUPLICATE_ENTRY &&
-					restErr.Error.Message != nil {
+				if restErr.Error != nil && restErr.Error.Code != nil {
+					switch *restErr.Error.Code {
+					case DUPLICATE_ENTRY:
+						Logc(ctx).WithField("userOrGroup", userOrGroup).Debug("Duplicate SMB share ACL entry, ignoring.")
+					case INVALID_ENTRY:
+						Logc(ctx).WithField("userOrGroup", userOrGroup).Warn("Invalid user or group specified for SMB share access control")
+					default:
+						if restErr.Error.Message != nil {
+							return fmt.Errorf(*restErr.Error.Message)
+						}
+						return fmt.Errorf("ONTAP REST API error code %v with no message", *restErr.Error.Code)
+					}
+				} else if restErr.Error != nil && restErr.Error.Message != nil {
 					return fmt.Errorf(*restErr.Error.Message)
+				} else {
+					return fmt.Errorf("unknown ONTAP REST API error")
 				}
 			} else {
 				return err

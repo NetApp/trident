@@ -3369,6 +3369,9 @@ func (c Client) SMBShareAccessControlCreate(shareName string,
 			ExecuteUsing(c.zr)
 		if err != nil {
 			return nil, err
+		} else if response.Result.ResultErrnoAttr == azgo.EAPIERROR {
+			Logc(context.Background()).WithField("userOrGroup",
+				userOrGroup).Warn("Invalid user or group specified for SMB share access control")
 		} else if response.Result.ResultStatusAttr != "passed" && response.Result.ResultErrnoAttr != azgo.EDUPLICATEENTRY {
 			return nil, fmt.Errorf("failed to set SMB share ACL: %s", response.Result)
 		}

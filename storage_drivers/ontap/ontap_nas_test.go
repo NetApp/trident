@@ -1595,9 +1595,11 @@ func TestOntapNasStorageDriverVolumeClone_SecureSMBAccessControlCreatefail(t *te
 	mockAPI.EXPECT().VolumeSetComment(ctx, volConfig.InternalName, volConfig.InternalName, "{\"provisioning\":{\"type\":\"clone\"}}").Return(nil)
 	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
 	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "").Return(nil)
-	mockAPI.EXPECT().SMBShareExists(ctx, "").Return(false, nil)
-	mockAPI.EXPECT().SMBShareCreate(ctx, "", "/").Return(nil)
-	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, "", volConfig.SMBShareACL).Return(fmt.Errorf("cannot create SMB Share Access Control rule"))
+	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, volConfig.InternalName, smbShareDeleteACL).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, volConfig.InternalName, volConfig.SMBShareACL).
+		Return(fmt.Errorf("cannot create volume"))
 
 	result := driver.CreateClone(ctx, nil, volConfig, pool1)
 
@@ -1643,10 +1645,9 @@ func TestOntapNasStorageDriverVolumeClone_SecureSMBAccessControlDeletefail(t *te
 	mockAPI.EXPECT().VolumeMount(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
 	mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volConfig.InternalName, "").Return(nil)
 
-	mockAPI.EXPECT().SMBShareExists(ctx, "").Return(false, nil)
-	mockAPI.EXPECT().SMBShareCreate(ctx, "", "/").Return(nil)
-	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, "", volConfig.SMBShareACL).Return(nil)
-	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, "", smbShareDeleteACL).Return(fmt.Errorf("cannot delete SMB Share Access Control rule"))
+	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, volConfig.InternalName, smbShareDeleteACL).Return(fmt.Errorf("cannot create volume"))
 
 	result := driver.CreateClone(ctx, nil, volConfig, pool1)
 
@@ -1686,10 +1687,11 @@ func TestOntapNasStorageDriverVolumeClone_ROCloneSecureSMBAccessControlCreateFai
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
 
-	mockAPI.EXPECT().SMBShareExists(ctx, "").Return(false, nil)
-	mockAPI.EXPECT().SMBShareCreate(ctx, "", "/").Return(nil)
-	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, "", volConfig.SMBShareACL).
-		Return(fmt.Errorf("cannot create SMB Share Access Control rule"))
+	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, volConfig.InternalName, smbShareDeleteACL).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, volConfig.InternalName, volConfig.SMBShareACL).
+		Return(fmt.Errorf("cannot create volume"))
 
 	result := driver.CreateClone(ctx, nil, volConfig, pool1)
 
@@ -1728,10 +1730,9 @@ func TestOntapNasStorageDriverVolumeClone_ROCloneSecureSMBAccessControlDeleteFai
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(&flexVol, nil)
-	mockAPI.EXPECT().SMBShareExists(ctx, "").Return(false, nil)
-	mockAPI.EXPECT().SMBShareCreate(ctx, "", "/").Return(nil)
-	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, "", volConfig.SMBShareACL).Return(nil)
-	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, "", smbShareDeleteACL).Return(fmt.Errorf("cannot delete SMB Share Access Control rule"))
+	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, volConfig.InternalName, smbShareDeleteACL).Return(fmt.Errorf("cannot create volume"))
 
 	result := driver.CreateClone(ctx, nil, volConfig, pool1)
 
@@ -4666,43 +4667,22 @@ func TestOntapNasStorageDriverVolumeCreate_SecureSMBAccessControlCreatefail(t *t
 	driver.Config.NASType = sa.SMB
 	volAttrs := map[string]sa.Request{}
 
-	tests := []struct {
-		smbShare string
-	}{
-		{"vol1"},
-		{""},
-	}
+	mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
+	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
+	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
+	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
+	mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, "vol1", smbShareDeleteACL).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, "vol1", volConfig.SMBShareACL).
+		Return(fmt.Errorf("cannot create volume"))
 
-	for _, test := range tests {
-		t.Run(test.smbShare, func(t *testing.T) {
-			driver.Config.SMBShare = test.smbShare
+	result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
-			mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil)
-			mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
-			mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
-			mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
-			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
-			mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
-
-			if test.smbShare != "" {
-				mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
-				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(nil)
-				mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, "vol1", volConfig.SMBShareACL).
-					Return(fmt.Errorf("cannot create volume"))
-
-			} else {
-				mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
-				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(nil)
-				mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, "vol1", volConfig.SMBShareACL).
-					Return(fmt.Errorf("cannot create volume"))
-			}
-
-			result := driver.Create(ctx, volConfig, pool1, volAttrs)
-
-			assert.Error(t, result)
-		})
-	}
+	assert.Error(t, result)
 }
 
 func TestOntapNasStorageDriverVolumeCreate_SecureSMBAccessControlDeletefail(t *testing.T) {
@@ -4739,43 +4719,20 @@ func TestOntapNasStorageDriverVolumeCreate_SecureSMBAccessControlDeletefail(t *t
 	volAttrs := map[string]sa.Request{}
 	smbShareDeleteACL := map[string]string{"Everyone": "windows"}
 
-	tests := []struct {
-		smbShare string
-	}{
-		{"vol1"},
-		{""},
-	}
+	mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
+	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
+	mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
+	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
+	mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
+	mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, "vol1", smbShareDeleteACL).Return(fmt.Errorf("cannot create volume"))
 
-	for _, test := range tests {
-		t.Run(test.smbShare, func(t *testing.T) {
-			driver.Config.SMBShare = test.smbShare
+	result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
-			mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil)
-			mockAPI.EXPECT().SVMName().AnyTimes().Return("fakesvm")
-			mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
-			mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"fakesvm2"}, nil)
-			mockAPI.EXPECT().TieringPolicyValue(ctx).Return("none")
-			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
-			mockAPI.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil)
-
-			if test.smbShare != "" {
-				mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
-				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(nil)
-				mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, "vol1", volConfig.SMBShareACL).Return(nil)
-				mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, "vol1", smbShareDeleteACL).Return(fmt.Errorf("cannot create volume"))
-
-			} else {
-				mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
-				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(nil)
-				mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, "vol1", volConfig.SMBShareACL).Return(nil)
-				mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, "vol1", smbShareDeleteACL).Return(fmt.Errorf("cannot create volume"))
-			}
-
-			result := driver.Create(ctx, volConfig, pool1, volAttrs)
-
-			assert.Error(t, result)
-		})
-	}
+	assert.Error(t, result)
 }
 
 func TestOntapNasStorageDriverVolumeImport(t *testing.T) {
@@ -5274,6 +5231,7 @@ func TestOntapNasStorageDriverVolumeImport_SecureSMBAccessControlCreatefail(t *t
 	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, flexVol.JunctionPath).Return(nil)
+	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, volConfig.InternalName, smbShareDeleteACL).Return(nil)
 	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, volConfig.InternalName,
 		volConfig.SMBShareACL).Return(fmt.Errorf("cannot create SMB Share Access Control rule"))
 	result := driver.Import(ctx, volConfig, "vol1")
@@ -5306,7 +5264,6 @@ func TestOntapNasStorageDriverVolumeImport_SecureSMBAccessControlDeletefail(t *t
 	mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2", "vol1", DefaultUnixPermissions).Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, flexVol.JunctionPath).Return(nil)
-	mockAPI.EXPECT().SMBShareAccessControlCreate(ctx, volConfig.InternalName, volConfig.SMBShareACL).Return(nil)
 	mockAPI.EXPECT().SMBShareAccessControlDelete(ctx, volConfig.InternalName,
 		smbShareDeleteACL).Return(fmt.Errorf("cannot delete SMB Share Access Control rule"))
 	result := driver.Import(ctx, volConfig, "vol1")

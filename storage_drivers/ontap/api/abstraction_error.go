@@ -8,6 +8,7 @@ package api
 const (
 	ENTRY_DOESNT_EXIST                         = "4"
 	DUPLICATE_ENTRY                            = "1"
+	INVALID_ENTRY                              = "655446"
 	DP_VOLUME_NOT_INITIALIZED                  = "917536"
 	SNAPMIRROR_TRANSFER_IN_PROGRESS            = "13303812"
 	SNAPMIRROR_TRANSFER_IN_PROGRESS_BROKEN_OFF = "13303808" // Transition to broken_off state failed. Reason:Another transfer is in progress

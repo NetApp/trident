@@ -1863,12 +1863,12 @@ func (d *NASStorageDriver) EnsureSMBShare(
 
 	// If secure SMB is enabled, configure access control
 	if secureSMBEnabled {
-		if err = d.API.SMBShareAccessControlCreate(ctx, shareName, smbShareACL); err != nil {
+		// Delete the Everyone Access Control created by default during share creation by ONTAP
+		if err = d.API.SMBShareAccessControlDelete(ctx, shareName, smbShareDeleteACL); err != nil {
 			return err
 		}
 
-		// Delete the Everyone Access Control created by default during share creation by ONTAP
-		if err = d.API.SMBShareAccessControlDelete(ctx, shareName, smbShareDeleteACL); err != nil {
+		if err = d.API.SMBShareAccessControlCreate(ctx, shareName, smbShareACL); err != nil {
 			return err
 		}
 	}
