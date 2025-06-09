@@ -82,4 +82,7 @@ spec:
   nodePrep: {{- range .Values.nodePrep }}
     - {{.}} {{- end }}
   {{- end }}
-  
+  {{- if .Values.skipCRDsToObliviate }}
+  skipCRDsToObliviate: {{- range .Values.skipCRDsToObliviate }}
+    - {{.}} {{- end }}
+  {{- end }}

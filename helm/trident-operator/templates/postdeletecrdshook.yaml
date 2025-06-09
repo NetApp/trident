@@ -23,7 +23,7 @@ metadata:
 rules:
 - apiGroups: ["apiextensions.k8s.io"]
   resources: ["customresourcedefinitions"]
-  verbs: ["delete"]
+  verbs: ["get", "list", "delete", "patch"]
 
 ---
 
@@ -72,7 +72,10 @@ spec:
           - -c
           - |
             set -x
+            kubectl patch crd tridentorchestrators.trident.netapp.io -p '{"metadata":{"finalizers":[]}}' --type=merge
             kubectl delete crd tridentorchestrators.trident.netapp.io
+            kubectl patch crd tridentconfigurators.trident.netapp.io -p '{"metadata":{"finalizers":[]}}' --type=merge
+            kubectl delete crd tridentconfigurators.trident.netapp.io
       restartPolicy: Never
   backoffLimit: 4
 

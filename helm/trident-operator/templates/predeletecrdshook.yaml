@@ -27,8 +27,8 @@ spec:
           - |
             set -x
             if kubectl get torc trident -n trident; then
-              kubectl patch torc trident -n trident --type=merge -p '{"spec":{"wipeout":["crds"],"uninstall":true, "skipCRDsToObliviate":["tridentorchestrators.trident.netapp.io"]}}'
-              while kubectl get crds | grep '.trident.netapp.io' | grep -v 'tridentorchestrators.trident.netapp.io'; do
+              kubectl patch torc trident -n trident --type=merge -p '{"spec":{"wipeout":["crds"],"uninstall":true, "skipCRDsToObliviate":["tridentorchestrators.trident.netapp.io", "tridentconfigurators.trident.netapp.io"]}}'
+              while kubectl get crds | grep '.trident.netapp.io' | grep -v -e 'tridentorchestrators.trident.netapp.io' -e 'tridentconfigurators.trident.netapp.io'; do
                 echo 'Waiting for CRDs to be deleted...'
                 sleep 5
               done
