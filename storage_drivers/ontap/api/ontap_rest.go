@@ -33,6 +33,7 @@ import (
 	"github.com/netapp/trident/pkg/convert"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client"
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/application"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/cluster"
 	nas "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
 	nvme "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_v_me"
@@ -1750,6 +1751,158 @@ func (c *RestClient) sendPassThroughCliCommand(ctx context.Context, request *htt
 	Logd(ctx, c.driverName, c.config.DebugTraceFlags["api"]).Debugf("%s\n", string(responseBytes))
 
 	return response, nil
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+// Consistency Group operations
+// ////////////////////////////////////////////////////////////////////////////
+
+// ConsistencyGroupCreateAndWait creates a CG and waits on the job to complete
+func (c *RestClient) ConsistencyGroupCreateAndWait(ctx context.Context, cgName string, flexVols []string) error {
+	CGCreateResult, err := c.ConsistencyGroupCreate(ctx, cgName, flexVols)
+	if err != nil {
+		return fmt.Errorf("could not create consistency group; %v", err)
+	}
+	if CGCreateResult == nil {
+		return fmt.Errorf("could not create consistency group: %v", "unexpected result")
+	}
+
+	jobLink := getGenericJobLinkFromCGJobLink(CGCreateResult.Payload)
+	return c.PollJobStatus(ctx, jobLink)
+}
+
+// ConsistencyGroupCreate creates a consistency group
+func (c *RestClient) ConsistencyGroupCreate(
+	ctx context.Context, cgName string, flexVols []string,
+) (*application.ConsistencyGroupCreateAccepted, error) {
+	params := application.NewConsistencyGroupCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	volumes := make([]*models.ConsistencyGroupInlineVolumesInlineArrayItem, 0)
+	for _, vol := range flexVols {
+		v := &models.ConsistencyGroupInlineVolumesInlineArrayItem{
+			Name: convert.ToPtr(vol),
+		}
+		v.ProvisioningOptions = &models.ConsistencyGroupInlineVolumesInlineArrayItemInlineProvisioningOptions{
+			Action: convert.ToPtr(models.
+				ConsistencyGroupInlineVolumesInlineArrayItemInlineProvisioningOptionsActionAdd),
+		}
+
+		volumes = append(volumes, v)
+	}
+
+	cg := &models.ConsistencyGroup{
+		Name:                          convert.ToPtr(cgName),
+		ConsistencyGroupInlineVolumes: volumes,
+		Svm:                           &models.ConsistencyGroupInlineSvm{UUID: convert.ToPtr(c.svmUUID)},
+	}
+
+	params.SetInfo(cg)
+
+	_, cgCreateAccepted, err := c.api.Application.ConsistencyGroupCreate(params, c.authInfo)
+	return cgCreateAccepted, err
+}
+
+// ConsistencyGroupGet returns the consistency group info
+func (c *RestClient) ConsistencyGroupGet(ctx context.Context, cgName string) (*models.ConsistencyGroupResponseInlineRecordsInlineArrayItem, error) {
+	params := application.NewConsistencyGroupCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	params.Name = convert.ToPtr(cgName)
+	params.SvmUUID = convert.ToPtr(c.svmUUID)
+
+	// result, err := c.api.Application.ConsistencyGroupGet(params, c.authInfo)
+	result, err := c.api.Application.ConsistencyGroupCollectionGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	if result == nil || result.Payload == nil || result.Payload.NumRecords == nil || *result.Payload.NumRecords == 0 {
+		return nil, err
+	}
+	if *result.Payload.NumRecords == 1 && result.Payload.ConsistencyGroupResponseInlineRecords != nil {
+		return result.Payload.ConsistencyGroupResponseInlineRecords[0], nil
+	}
+
+	return nil, fmt.Errorf("could not find unique consistency group with name '%v'; found %d matching groups",
+		cgName, result.Payload.NumRecords)
+}
+
+// ConsistencyGroupDelete deletes the consistency group
+func (c *RestClient) ConsistencyGroupDelete(ctx context.Context, cgName string) error {
+	params := application.NewConsistencyGroupDeleteParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	cg, err := c.ConsistencyGroupGet(ctx, cgName)
+	if err != nil {
+		return err
+	}
+	if cg == nil || cg.UUID == nil {
+		return fmt.Errorf("consistency group UUID is empty")
+	}
+	params.SetUUID(*cg.UUID)
+
+	cgDeleteOK, cgDeleteAccepted, err := c.api.Application.ConsistencyGroupDelete(params, c.authInfo)
+	if err != nil {
+		// may need to check for code "53411842" for CG DNE
+		return err
+	}
+	if cgDeleteOK != nil {
+		if cgDeleteOK.IsSuccess() {
+			return nil
+		}
+	}
+	if cgDeleteAccepted == nil {
+		return fmt.Errorf("unexpected response from consistency group delete")
+	}
+
+	jobLink := getGenericJobLinkFromCGJobLink(cgDeleteAccepted.Payload)
+
+	return c.PollJobStatus(ctx, jobLink)
+}
+
+// ConsistencyGroupSnapshotAndWait creates a CG snapshot and waits on the job to complete
+func (c *RestClient) ConsistencyGroupSnapshotAndWait(ctx context.Context, cgName, snapName string) error {
+	CGSnapshotCreated, CGSnapshotAccepted, err := c.ConsistencyGroupSnapshot(ctx, cgName, snapName)
+	if err != nil {
+		return fmt.Errorf("could not create consistency group snapshot; %v", err)
+	}
+	if CGSnapshotCreated != nil {
+		return nil
+	}
+	if CGSnapshotAccepted == nil {
+		return fmt.Errorf("could not create consistency group snapshot: %v", "unexpected result")
+	}
+
+	jobLink := getGenericJobLinkFromCGSnapshotJobLink(CGSnapshotAccepted.Payload)
+	return c.PollJobStatus(ctx, jobLink)
+}
+
+// ConsistencyGroupSnapshot creates a snapshot of the consistency group
+func (c *RestClient) ConsistencyGroupSnapshot(ctx context.Context, cgName, snapName string) (
+	*application.ConsistencyGroupSnapshotCreateCreated, *application.ConsistencyGroupSnapshotCreateAccepted, error,
+) {
+	params := application.NewConsistencyGroupSnapshotCreateParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+
+	cg, err := c.ConsistencyGroupGet(ctx, cgName)
+	if err != nil {
+		return nil, nil, err
+	}
+	if cg.UUID == nil {
+		return nil, nil, fmt.Errorf("consistency group UUID is empty")
+	}
+	params.SetConsistencyGroupUUID(*cg.UUID)
+
+	snapshotInfo := &models.ConsistencyGroupSnapshot{
+		Name: convert.ToPtr(snapName),
+	}
+
+	params.SetInfo(snapshotInfo)
+
+	return c.api.Application.ConsistencyGroupSnapshotCreate(params, c.authInfo)
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -3593,6 +3746,22 @@ func getGenericJobLinkFromStorageUnitSnapshotJobLink(suSnapshotJobLink *models.S
 	jobLink := &models.JobLinkResponse{}
 	if suSnapshotJobLink != nil {
 		jobLink.Job = suSnapshotJobLink.Job
+	}
+	return jobLink
+}
+
+func getGenericJobLinkFromCGJobLink(cgJobLink *models.ConsistencyGroupJobLinkResponse) *models.JobLinkResponse {
+	jobLink := &models.JobLinkResponse{}
+	if cgJobLink != nil {
+		jobLink.Job = cgJobLink.Job
+	}
+	return jobLink
+}
+
+func getGenericJobLinkFromCGSnapshotJobLink(cgJobLink *models.ConsistencyGroupSnapshotJobLinkResponse) *models.JobLinkResponse {
+	jobLink := &models.JobLinkResponse{}
+	if cgJobLink != nil {
+		jobLink.Job = cgJobLink.Job
 	}
 	return jobLink
 }

@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 // DO NOT EDIT: Auto generated using 'ifacemaker -f ontap_zapi.go -s Client -i ZapiClientInterface -p api > ontap_zapi_interface.go'
 
@@ -440,4 +440,10 @@ type ZapiClientInterface interface {
 	SMBShareAccessControlDelete(shareName string, smbShareACL map[string]string) (*azgo.
 		CifsShareAccessControlDeleteResponse,
 		error)
+
+	// ConsistencyGroupStart does the validation to create a consistency group snapshot of multiple volumes on a single
+	// SVM, returns a cg-id to use with cg-commit to finish creating the snapshot
+	ConsistencyGroupStart(snapshotName string, volumeNames []azgo.VolumeNameType) (*azgo.CgStartResponse, error)
+	// ConsistencyGroupCommit finishes creating the snapshot from cg-start
+	ConsistencyGroupCommit(cgID int) (*azgo.CgCommitResponse, error)
 }

@@ -86,6 +86,36 @@ func (mr *MockZapiClientInterfaceMockRecorder) ClientConfig() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClientConfig", reflect.TypeOf((*MockZapiClientInterface)(nil).ClientConfig))
 }
 
+// ConsistencyGroupCommit mocks base method.
+func (m *MockZapiClientInterface) ConsistencyGroupCommit(arg0 int) (*azgo.CgCommitResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConsistencyGroupCommit", arg0)
+	ret0, _ := ret[0].(*azgo.CgCommitResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConsistencyGroupCommit indicates an expected call of ConsistencyGroupCommit.
+func (mr *MockZapiClientInterfaceMockRecorder) ConsistencyGroupCommit(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsistencyGroupCommit", reflect.TypeOf((*MockZapiClientInterface)(nil).ConsistencyGroupCommit), arg0)
+}
+
+// ConsistencyGroupStart mocks base method.
+func (m *MockZapiClientInterface) ConsistencyGroupStart(arg0 string, arg1 []string) (*azgo.CgStartResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConsistencyGroupStart", arg0, arg1)
+	ret0, _ := ret[0].(*azgo.CgStartResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConsistencyGroupStart indicates an expected call of ConsistencyGroupStart.
+func (mr *MockZapiClientInterfaceMockRecorder) ConsistencyGroupStart(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsistencyGroupStart", reflect.TypeOf((*MockZapiClientInterface)(nil).ConsistencyGroupStart), arg0, arg1)
+}
+
 // EmsAutosupportLog mocks base method.
 func (m *MockZapiClientInterface) EmsAutosupportLog(arg0 string, arg1 bool, arg2, arg3, arg4 string, arg5 int, arg6 string, arg7 int) (*azgo.EmsAutosupportLogResponse, error) {
 	m.ctrl.T.Helper()

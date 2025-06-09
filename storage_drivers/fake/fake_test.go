@@ -1,4 +1,4 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package fake
 
@@ -12,6 +12,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -148,4 +149,61 @@ func TestInitializeStoragePoolsLabels(t *testing.T) {
 		assert.Nil(t, err, "Error is not nil")
 		assert.Equal(t, c.virtualExpected, label, c.virtualErrorMessage)
 	}
+}
+
+func TestGetGroupSnapshotTarget(t *testing.T) {
+	driver := *NewFakeStorageDriverWithDebugTraceFlags(map[string]bool{"method": true})
+	volConfig := []*storage.VolumeConfig{
+		{Name: "vol1", InternalName: "vol1"},
+		{Name: "vol2", InternalName: "vol2"},
+	}
+
+	// Add volumes to the driver
+	driver.Volumes["vol1"] = fake.Volume{Name: "vol1"}
+	driver.Volumes["vol2"] = fake.Volume{Name: "vol2"}
+
+	targetInfo, err := driver.GetGroupSnapshotTarget(context.TODO(), volConfig)
+	assert.NoError(t, err, "GetGroupSnapshotTarget should not return an error")
+	assert.NotNil(t, targetInfo, "TargetInfo should not be nil")
+	assert.Equal(t, "fake", targetInfo.GetStorageType(), "TargetType should be 'fake'")
+	assert.Equal(t, "fake-instance", targetInfo.GetStorageUUID(), "TargetUUID should match the instance name")
+	assert.Len(t, targetInfo.GetVolumes(), 2, "There should be 2 target volumes")
+}
+
+func TestCreateGroupSnapshot(t *testing.T) {
+	driver := *NewFakeStorageDriverWithDebugTraceFlags(map[string]bool{"method": true})
+	vol1 := fake.Volume{Name: "vol1", SizeBytes: 1024}
+	vol2 := fake.Volume{Name: "vol2", SizeBytes: 2048}
+	driver.Volumes["vol1"] = vol1
+	driver.Volumes["vol2"] = vol2
+
+	groupSnapshotConfig := &storage.GroupSnapshotConfig{
+		Name:        "groupsnapshot-12345",
+		VolumeNames: []string{"vol1", "vol2"},
+	}
+	groupSnapshotTarget := &storage.GroupSnapshotTargetInfo{
+		StorageType: "fake",
+		StorageUUID: "fake-instance",
+		StorageVolumes: map[string]map[string]*storage.VolumeConfig{
+			"internalVol1": {
+				"vol1": {
+					Name:         "vol1",
+					InternalName: "internalVol1",
+				},
+			},
+			"internalVol2": {
+				"vol2": {
+					Name:         "vol2",
+					InternalName: "internalVol2",
+				},
+			},
+		},
+	}
+
+	groupSnapshot, snapshots, err := driver.CreateGroupSnapshot(context.TODO(), groupSnapshotConfig, groupSnapshotTarget)
+	assert.NoError(t, err, "CreateGroupSnapshot should not return an error")
+	assert.NotNil(t, groupSnapshot, "GroupSnapshot should not be nil")
+	assert.Equal(t, "groupsnapshot-12345", groupSnapshot.GroupSnapshotConfig.ID(),
+		"GroupSnapshot name should match")
+	assert.Equal(t, len(groupSnapshot.GetSnapshotIDs()), len(snapshots), "There should be 2 child snapshots")
 }

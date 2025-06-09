@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -1576,7 +1576,145 @@ func (k *CRDClientV1) DeleteSnapshots(ctx context.Context) error {
 
 	for _, item := range snapshotList.Items {
 		err := k.crdClient.TridentV1().TridentSnapshots(k.namespace).Delete(ctx, item.ObjectMeta.Name, k.deleteOpts())
-		if err != nil {
+		if err != nil && !k8sapierrors.IsAlreadyExists(err) {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (k *CRDClientV1) AddGroupSnapshot(ctx context.Context, groupSnapshot *storage.GroupSnapshot) error {
+	persistedGroupSnapshot, err := v1.NewTridentGroupSnapshot(groupSnapshot.ConstructPersistent())
+	if err != nil {
+		return err
+	}
+
+	_, err = k.crdClient.TridentV1().TridentGroupSnapshots(k.namespace).Create(ctx, persistedGroupSnapshot, createOpts)
+	if err != nil || !k8sapierrors.IsAlreadyExists(err) {
+		return err
+	}
+
+	// There could be some case where a group snapshot already exists, in which case we need to remove finalizers,
+	tgsnap, getErr := k.crdClient.TridentV1().TridentGroupSnapshots(k.namespace).Get(ctx, persistedGroupSnapshot.Name, getOpts)
+	if getErr != nil {
+		if !k8sapierrors.IsNotFound(getErr) {
+			return getErr
+		}
+	} else {
+		tgsnap = tgsnap.DeepCopy()
+		tgsnap.RemoveTridentFinalizers()
+		_, updateErr := k.crdClient.TridentV1().TridentGroupSnapshots(k.namespace).Update(ctx, tgsnap, updateOpts)
+		if updateErr != nil {
+			Logc(ctx).Errorf("Could not remove snapshot finalizers; %v", updateErr)
+			return updateErr
+		}
+
+		deleteErr := k.crdClient.TridentV1().TridentGroupSnapshots(k.namespace).Delete(ctx, tgsnap.Name, k.deleteOpts())
+		if deleteErr != nil {
+			Logc(ctx).Errorf("Could not delete snapshot; %v", deleteErr)
+			return deleteErr
+		}
+	}
+
+	_, err = k.crdClient.TridentV1().TridentGroupSnapshots(k.namespace).Create(ctx, persistedGroupSnapshot, createOpts)
+	return err
+}
+
+func (k *CRDClientV1) GetGroupSnapshot(ctx context.Context, groupSnapshotName string) (*storage.GroupSnapshotPersistent, error) {
+	tgsnaps, err := k.crdClient.TridentV1().TridentGroupSnapshots(k.namespace).Get(ctx, v1.NameFix(groupSnapshotName), getOpts)
+	if err != nil {
+		if k8sapierrors.IsNotFound(err) {
+			return nil, errors.WrapWithNotFoundError(err, "group snapshot %s not found", groupSnapshotName)
+		}
+		return nil, err
+	}
+
+	return tgsnaps.Persistent()
+}
+
+func (k *CRDClientV1) GetGroupSnapshots(ctx context.Context) ([]*storage.GroupSnapshotPersistent, error) {
+	tgsnaps, err := k.crdClient.TridentV1().TridentGroupSnapshots(k.namespace).List(ctx, listOpts)
+	if err != nil {
+		if k8sapierrors.IsNotFound(err) {
+			return nil, errors.WrapWithNotFoundError(err, "group snapshots not found")
+		}
+		return nil, err
+	}
+
+	return tgsnaps.Persistent()
+}
+
+func (k *CRDClientV1) UpdateGroupSnapshot(ctx context.Context, groupSnapshot *storage.GroupSnapshot) error {
+	tgsnap, err := k.crdClient.TridentV1().TridentGroupSnapshots(k.namespace).Get(ctx, v1.NameFix(groupSnapshot.ID()), getOpts)
+	if err != nil {
+		if k8sapierrors.IsNotFound(err) {
+			return errors.WrapWithNotFoundError(err, "group snapshot %s not found", groupSnapshot.ID())
+		}
+		return err
+	}
+
+	if err := tgsnap.Apply(groupSnapshot.ConstructPersistent()); err != nil {
+		return err
+	}
+
+	_, err = k.crdClient.TridentV1().TridentGroupSnapshots(k.namespace).Update(ctx, tgsnap, updateOpts)
+	if err != nil {
+		if k8sapierrors.IsNotFound(err) {
+			return errors.WrapWithNotFoundError(err, "group snapshot %s not found during update", groupSnapshot.ID())
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (k *CRDClientV1) DeleteGroupSnapshot(ctx context.Context, groupSnapshot *storage.GroupSnapshot) error {
+	err := k.crdClient.TridentV1().TridentGroupSnapshots(k.namespace).Delete(ctx, v1.NameFix(groupSnapshot.ID()), k.deleteOpts())
+	if err != nil {
+		if k8sapierrors.IsNotFound(err) {
+			return errors.WrapWithNotFoundError(err, "group snapshot %s not found", groupSnapshot.ID())
+		}
+		return err
+	}
+
+	// Check if the group snapshot still exists. If it does, it probably means that finalizers kept it from deleting.
+	tgsnap, getErr := k.crdClient.TridentV1().TridentGroupSnapshots(k.namespace).Get(ctx, v1.NameFix(groupSnapshot.ID()), getOpts)
+	if getErr != nil && !k8sapierrors.IsNotFound(getErr) {
+		return getErr
+	}
+
+	// Try removing the finalizers.
+	tgsnap = tgsnap.DeepCopy()
+	tgsnap.RemoveTridentFinalizers()
+	_, updateErr := k.crdClient.TridentV1().TridentGroupSnapshots(k.namespace).Update(ctx, tgsnap, updateOpts)
+	if updateErr != nil {
+		Logc(ctx).Errorf("Could not remove snapshot finalizers; %v", updateErr)
+		return updateErr
+	}
+
+	// Try deleting the group snapshot again. If it fails for any other reason other than not found, return the error.
+	deleteErr := k.crdClient.TridentV1().TridentGroupSnapshots(k.namespace).Delete(ctx, tgsnap.Name, k.deleteOpts())
+	if deleteErr != nil && !k8sapierrors.IsNotFound(deleteErr) {
+		Logc(ctx).Errorf("Failed to delete group snapshot; %v", deleteErr)
+		return deleteErr
+	}
+
+	return nil
+}
+
+func (k *CRDClientV1) DeleteGroupSnapshots(ctx context.Context) error {
+	tgsnapList, err := k.crdClient.TridentV1().TridentGroupSnapshots(k.namespace).List(ctx, listOpts)
+	if err != nil {
+		if k8sapierrors.IsNotFound(err) {
+			return errors.WrapWithNotFoundError(err, "group snapshots not found")
+		}
+		return err
+	}
+
+	for _, item := range tgsnapList.Items {
+		err := k.crdClient.TridentV1().TridentGroupSnapshots(k.namespace).Delete(ctx, item.ObjectMeta.Name, k.deleteOpts())
+		if err != nil && !k8sapierrors.IsNotFound(err) {
 			return err
 		}
 	}

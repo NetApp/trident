@@ -56,6 +56,20 @@ func (mr *MockOntapAPIMockRecorder) APIVersion(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "APIVersion", reflect.TypeOf((*MockOntapAPI)(nil).APIVersion), arg0, arg1)
 }
 
+// ConsistencyGroupSnapshot mocks base method.
+func (m *MockOntapAPI) ConsistencyGroupSnapshot(arg0 context.Context, arg1 string, arg2 []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConsistencyGroupSnapshot", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConsistencyGroupSnapshot indicates an expected call of ConsistencyGroupSnapshot.
+func (mr *MockOntapAPIMockRecorder) ConsistencyGroupSnapshot(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsistencyGroupSnapshot", reflect.TypeOf((*MockOntapAPI)(nil).ConsistencyGroupSnapshot), arg0, arg1, arg2)
+}
+
 // EmsAutosupportLog mocks base method.
 func (m *MockOntapAPI) EmsAutosupportLog(arg0 context.Context, arg1, arg2 string, arg3 bool, arg4, arg5, arg6 string, arg7 int, arg8 string, arg9 int) {
 	m.ctrl.T.Helper()

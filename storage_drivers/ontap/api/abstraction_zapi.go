@@ -2902,3 +2902,31 @@ func (d OntapAPIZAPI) StorageUnitListBySnapshotParent(
 ) (VolumeNameList, error) {
 	return nil, errors.UnsupportedError("ZAPI call is not supported yet")
 }
+
+func (d OntapAPIZAPI) ConsistencyGroupSnapshot(ctx context.Context, snapshotName string, volumes []string) error {
+	fields := LogFields{
+		"Method":        "ConsistencyGroupSnapshot",
+		"Type":          "OntapAPIZAPI",
+		"Snapshot Name": snapshotName,
+		"FlexVols":      volumes,
+	}
+	Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ConsistencyGroupSnapshot")
+	defer Logd(ctx, d.driverName,
+		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ConsistencyGroupSnapshot")
+
+	cgStartResponse, err := d.api.ConsistencyGroupStart(snapshotName, volumes)
+	if err = azgo.GetError(ctx, cgStartResponse, err); err != nil {
+		return err
+	}
+
+	if cgStartResponse != nil && cgStartResponse.Result.CgIdPtr != nil {
+		cgID := cgStartResponse.Result.CgId()
+		_, err := d.api.ConsistencyGroupCommit(cgID)
+		if err = azgo.GetError(ctx, cgStartResponse, err); err != nil {
+			return err
+		}
+	}
+
+	return err
+}

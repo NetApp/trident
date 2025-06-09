@@ -45,6 +45,7 @@ const (
 	NodeCRDName                  = "tridentnodes.trident.netapp.io"
 	SnapshotCRDName              = "tridentsnapshots.trident.netapp.io"
 	SnapshotInfoCRDName          = "tridentsnapshotinfos.trident.netapp.io"
+	GroupSnapshotCRDName         = "tridentgroupsnapshots.trident.netapp.io"
 	StorageClassCRDName          = "tridentstorageclasses.trident.netapp.io"
 	TransactionCRDName           = "tridenttransactions.trident.netapp.io"
 	VersionCRDName               = "tridentversions.trident.netapp.io"
@@ -174,6 +175,7 @@ var (
 		NodeCRDName,
 		VolumeReferenceCRDName,
 		SnapshotCRDName,
+		GroupSnapshotCRDName,
 		SnapshotInfoCRDName,
 		StorageClassCRDName,
 		TransactionCRDName,

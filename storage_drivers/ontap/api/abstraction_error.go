@@ -17,6 +17,7 @@ const (
 	FLEXGROUP_VOLUME_SIZE_ERROR_REST           = "917534"
 	EXPORT_POLICY_NOT_FOUND                    = "1703954"
 	EXPORT_POLICY_RULE_EXISTS                  = "1704070"
+	CONSISTENCY_GROUP_SNAP_EXISTS_ERROR        = "53411921"
 )
 
 // ///////////////////////////////////////////////////////////////////////////

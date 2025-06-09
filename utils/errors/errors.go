@@ -1010,3 +1010,44 @@ func IsFormatError(err error) bool {
 	var f *formatError
 	return errors.As(err, &f)
 }
+
+// ///////////////////////////////////////////////////////////////////////////
+// conflictError
+// ///////////////////////////////////////////////////////////////////////////
+
+type conflictError struct {
+	inner   error
+	message string
+}
+
+func (e *conflictError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
+	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+}
+
+func (e *conflictError) Unwrap() error { return e.inner }
+
+// ConflictError should be used when modifying a resource is disallowed due to
+// interconnectedness or dependencies, such as when a snapshot is part of a group of snapshots.
+func ConflictError(message string, a ...any) error {
+	return &conflictError{message: fmt.Sprintf(message, a...)}
+}
+
+func WrapWithConflictError(err error, message string, a ...any) error {
+	return &conflictError{
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
+	}
+}
+
+func IsConflictError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *conflictError
+	return errors.As(err, &errPtr)
+}

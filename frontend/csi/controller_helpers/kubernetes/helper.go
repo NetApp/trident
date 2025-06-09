@@ -693,6 +693,17 @@ func (h *helper) getSnapshotInternalNameFromAnnotation(
 	return internalName, nil
 }
 
+func (h *helper) GetGroupSnapshotConfigForCreate(
+	ctx context.Context, groupSnapshotName string, volumeNames []string,
+) (*storage.GroupSnapshotConfig, error) {
+	// Fill in what we already know about the snapshot config.
+	return &storage.GroupSnapshotConfig{
+		Version:     config.OrchestratorAPIVersion,
+		Name:        groupSnapshotName,
+		VolumeNames: volumeNames,
+	}, nil
+}
+
 // updateVolumeConfigWithSecureSMBAccessControl update the volume config with the secure SMB access control from the
 // PVC annotations and the storage class annotations
 func (h *helper) updateVolumeConfigWithSecureSMBAccessControl(ctx context.Context, volumeConfig *storage.VolumeConfig,

@@ -2240,6 +2240,35 @@ func (c Client) SnapshotDelete(snapshotName, volumeName string) (*azgo.SnapshotD
 // ///////////////////////////////////////////////////////////////////////////
 
 // ///////////////////////////////////////////////////////////////////////////
+// CONSISTENCY GROUP operations BEGIN
+
+// ConsistencyGroupStart does the validation to create a consistency group snapshot of multiple volumes on a single
+// SVM, returns a cg-id to use with cg-commit to finish creating the snapshot
+func (c Client) ConsistencyGroupStart(snapshotName string, volumeNames []azgo.VolumeNameType) (*azgo.CgStartResponse, error) {
+	flexVolNames := azgo.CgStartRequestVolumes{}
+	flexVolNames.SetVolumeName(volumeNames)
+
+	response, err := azgo.NewCgStartRequest().
+		SetSnapshot(snapshotName).
+		SetVolumes(flexVolNames).
+		ExecuteUsing(c.zr)
+
+	return response, err
+}
+
+// ConsistencyGroupCommit finishes creating the snapshot from cg-start
+func (c Client) ConsistencyGroupCommit(cgID int) (*azgo.CgCommitResponse, error) {
+	response, err := azgo.NewCgCommitRequest().
+		SetCgId(cgID).
+		ExecuteUsing(c.zr)
+
+	return response, err
+}
+
+// CONSISTENCY GROUP operations END
+// ///////////////////////////////////////////////////////////////////////////
+
+// ///////////////////////////////////////////////////////////////////////////
 // ISCSI operations BEGIN
 
 // IscsiServiceGetIterRequest returns information about an iSCSI target

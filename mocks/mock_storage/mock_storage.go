@@ -114,6 +114,20 @@ func (mr *MockBackendMockRecorder) CanGetState() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CanGetState", reflect.TypeOf((*MockBackend)(nil).CanGetState))
 }
 
+// CanGroupSnapshot mocks base method.
+func (m *MockBackend) CanGroupSnapshot() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CanGroupSnapshot")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// CanGroupSnapshot indicates an expected call of CanGroupSnapshot.
+func (mr *MockBackendMockRecorder) CanGroupSnapshot() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CanGroupSnapshot", reflect.TypeOf((*MockBackend)(nil).CanGroupSnapshot))
+}
+
 // CanMirror mocks base method.
 func (m *MockBackend) CanMirror() bool {
 	m.ctrl.T.Helper()
@@ -212,6 +226,22 @@ func (m *MockBackend) ConstructPersistent(arg0 context.Context) *storage.Backend
 func (mr *MockBackendMockRecorder) ConstructPersistent(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConstructPersistent", reflect.TypeOf((*MockBackend)(nil).ConstructPersistent), arg0)
+}
+
+// CreateGroupSnapshot mocks base method.
+func (m *MockBackend) CreateGroupSnapshot(arg0 context.Context, arg1 *storage.GroupSnapshotConfig, arg2 *storage.GroupSnapshotTargetInfo) (*storage.GroupSnapshot, []*storage.Snapshot, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateGroupSnapshot", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*storage.GroupSnapshot)
+	ret1, _ := ret[1].([]*storage.Snapshot)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// CreateGroupSnapshot indicates an expected call of CreateGroupSnapshot.
+func (mr *MockBackendMockRecorder) CreateGroupSnapshot(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGroupSnapshot", reflect.TypeOf((*MockBackend)(nil).CreateGroupSnapshot), arg0, arg1, arg2)
 }
 
 // CreateSnapshot mocks base method.
@@ -327,6 +357,21 @@ func (m *MockBackend) GetDriverName() string {
 func (mr *MockBackendMockRecorder) GetDriverName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDriverName", reflect.TypeOf((*MockBackend)(nil).GetDriverName))
+}
+
+// GetGroupSnapshotTarget mocks base method.
+func (m *MockBackend) GetGroupSnapshotTarget(arg0 context.Context, arg1 []*storage.VolumeConfig) (*storage.GroupSnapshotTargetInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetGroupSnapshotTarget", arg0, arg1)
+	ret0, _ := ret[0].(*storage.GroupSnapshotTargetInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetGroupSnapshotTarget indicates an expected call of GetGroupSnapshotTarget.
+func (mr *MockBackendMockRecorder) GetGroupSnapshotTarget(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupSnapshotTarget", reflect.TypeOf((*MockBackend)(nil).GetGroupSnapshotTarget), arg0, arg1)
 }
 
 // GetMirrorTransferTime mocks base method.
@@ -527,6 +572,21 @@ func (m *MockBackend) Online() bool {
 func (mr *MockBackendMockRecorder) Online() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Online", reflect.TypeOf((*MockBackend)(nil).Online))
+}
+
+// PostProcessGroupSnapshot mocks base method.
+func (m *MockBackend) PostProcessGroupSnapshot(arg0 context.Context, arg1 *storage.GroupSnapshotTargetInfo, arg2 *storage.GroupSnapshot) ([]*storage.Snapshot, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PostProcessGroupSnapshot", arg0, arg1, arg2)
+	ret0, _ := ret[0].([]*storage.Snapshot)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PostProcessGroupSnapshot indicates an expected call of PostProcessGroupSnapshot.
+func (mr *MockBackendMockRecorder) PostProcessGroupSnapshot(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PostProcessGroupSnapshot", reflect.TypeOf((*MockBackend)(nil).PostProcessGroupSnapshot), arg0, arg1, arg2)
 }
 
 // PublishVolume mocks base method.

@@ -231,6 +231,7 @@ var (
 	StorageClassURL  = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/storageclass"
 	NodeURL          = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/node"
 	SnapshotURL      = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/snapshot"
+	GroupSnapshotURL = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/groupsnapshot"
 	ChapURL          = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/chap"
 	PublicationURL   = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/publication"
 	LoggingConfigURL = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/logging"

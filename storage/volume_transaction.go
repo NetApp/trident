@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -6,12 +6,14 @@ type VolumeOperation string
 
 const (
 	// Transactions for synchronous operations
-	AddVolume      VolumeOperation = "addVolume"
-	DeleteVolume   VolumeOperation = "deleteVolume"
-	ImportVolume   VolumeOperation = "importVolume"
-	ResizeVolume   VolumeOperation = "resizeVolume"
-	AddSnapshot    VolumeOperation = "addSnapshot"
-	DeleteSnapshot VolumeOperation = "deleteSnapshot"
+	AddVolume           VolumeOperation = "addVolume"
+	DeleteVolume        VolumeOperation = "deleteVolume"
+	ImportVolume        VolumeOperation = "importVolume"
+	ResizeVolume        VolumeOperation = "resizeVolume"
+	AddSnapshot         VolumeOperation = "addSnapshot"
+	DeleteSnapshot      VolumeOperation = "deleteSnapshot"
+	AddGroupSnapshot    VolumeOperation = "addGroupSnapshot"
+	DeleteGroupSnapshot VolumeOperation = "deleteGroupSnapshot"
 
 	// Transactions for long-running operations
 	VolumeCreating VolumeOperation = "volumeCreating"
@@ -21,6 +23,7 @@ type VolumeTransaction struct {
 	Config               *VolumeConfig
 	VolumeCreatingConfig *VolumeCreatingConfig
 	SnapshotConfig       *SnapshotConfig
+	GroupSnapshotConfig  *GroupSnapshotConfig
 	Op                   VolumeOperation
 }
 
@@ -32,6 +35,8 @@ func (t *VolumeTransaction) Name() string {
 	switch t.Op {
 	case AddSnapshot, DeleteSnapshot:
 		return t.SnapshotConfig.ID()
+	case AddGroupSnapshot, DeleteGroupSnapshot:
+		return t.GroupSnapshotConfig.ID()
 	case VolumeCreating:
 		return t.VolumeCreatingConfig.Name
 	default:

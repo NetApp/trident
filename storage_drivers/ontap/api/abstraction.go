@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -265,6 +265,8 @@ type OntapAPI interface {
 	StorageUnitCloneCreate(ctx context.Context, cloneName, sourceName, snapshot string) error
 	StorageUnitCloneSplitStart(ctx context.Context, cloneName string) error
 	StorageUnitListBySnapshotParent(ctx context.Context, snapshotName, sourceSU string) (VolumeNameList, error)
+
+	ConsistencyGroupSnapshot(ctx context.Context, snapshotName string, volumes []string) error
 }
 
 type AggregateSpace interface {

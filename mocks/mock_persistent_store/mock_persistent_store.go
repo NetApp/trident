@@ -58,6 +58,20 @@ func (mr *MockStoreClientMockRecorder) AddBackend(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddBackend", reflect.TypeOf((*MockStoreClient)(nil).AddBackend), arg0, arg1)
 }
 
+// AddGroupSnapshot mocks base method.
+func (m *MockStoreClient) AddGroupSnapshot(arg0 context.Context, arg1 *storage.GroupSnapshot) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddGroupSnapshot", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddGroupSnapshot indicates an expected call of AddGroupSnapshot.
+func (mr *MockStoreClientMockRecorder) AddGroupSnapshot(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddGroupSnapshot", reflect.TypeOf((*MockStoreClient)(nil).AddGroupSnapshot), arg0, arg1)
+}
+
 // AddOrUpdateNode mocks base method.
 func (m *MockStoreClient) AddOrUpdateNode(arg0 context.Context, arg1 *models.Node) error {
 	m.ctrl.T.Helper()
@@ -168,6 +182,34 @@ func (m *MockStoreClient) DeleteBackends(arg0 context.Context) error {
 func (mr *MockStoreClientMockRecorder) DeleteBackends(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBackends", reflect.TypeOf((*MockStoreClient)(nil).DeleteBackends), arg0)
+}
+
+// DeleteGroupSnapshot mocks base method.
+func (m *MockStoreClient) DeleteGroupSnapshot(arg0 context.Context, arg1 *storage.GroupSnapshot) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteGroupSnapshot", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteGroupSnapshot indicates an expected call of DeleteGroupSnapshot.
+func (mr *MockStoreClientMockRecorder) DeleteGroupSnapshot(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteGroupSnapshot", reflect.TypeOf((*MockStoreClient)(nil).DeleteGroupSnapshot), arg0, arg1)
+}
+
+// DeleteGroupSnapshots mocks base method.
+func (m *MockStoreClient) DeleteGroupSnapshots(arg0 context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteGroupSnapshots", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteGroupSnapshots indicates an expected call of DeleteGroupSnapshots.
+func (mr *MockStoreClientMockRecorder) DeleteGroupSnapshots(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteGroupSnapshots", reflect.TypeOf((*MockStoreClient)(nil).DeleteGroupSnapshots), arg0)
 }
 
 // DeleteNode mocks base method.
@@ -339,6 +381,36 @@ func (m *MockStoreClient) GetConfig() *persistentstore.ClientConfig {
 func (mr *MockStoreClientMockRecorder) GetConfig() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConfig", reflect.TypeOf((*MockStoreClient)(nil).GetConfig))
+}
+
+// GetGroupSnapshot mocks base method.
+func (m *MockStoreClient) GetGroupSnapshot(arg0 context.Context, arg1 string) (*storage.GroupSnapshotPersistent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetGroupSnapshot", arg0, arg1)
+	ret0, _ := ret[0].(*storage.GroupSnapshotPersistent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetGroupSnapshot indicates an expected call of GetGroupSnapshot.
+func (mr *MockStoreClientMockRecorder) GetGroupSnapshot(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupSnapshot", reflect.TypeOf((*MockStoreClient)(nil).GetGroupSnapshot), arg0, arg1)
+}
+
+// GetGroupSnapshots mocks base method.
+func (m *MockStoreClient) GetGroupSnapshots(arg0 context.Context) ([]*storage.GroupSnapshotPersistent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetGroupSnapshots", arg0)
+	ret0, _ := ret[0].([]*storage.GroupSnapshotPersistent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetGroupSnapshots indicates an expected call of GetGroupSnapshots.
+func (mr *MockStoreClientMockRecorder) GetGroupSnapshots(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupSnapshots", reflect.TypeOf((*MockStoreClient)(nil).GetGroupSnapshots), arg0)
 }
 
 // GetNode mocks base method.
@@ -633,6 +705,20 @@ func (m *MockStoreClient) UpdateBackend(arg0 context.Context, arg1 storage.Backe
 func (mr *MockStoreClientMockRecorder) UpdateBackend(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBackend", reflect.TypeOf((*MockStoreClient)(nil).UpdateBackend), arg0, arg1)
+}
+
+// UpdateGroupSnapshot mocks base method.
+func (m *MockStoreClient) UpdateGroupSnapshot(arg0 context.Context, arg1 *storage.GroupSnapshot) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateGroupSnapshot", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateGroupSnapshot indicates an expected call of UpdateGroupSnapshot.
+func (mr *MockStoreClientMockRecorder) UpdateGroupSnapshot(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateGroupSnapshot", reflect.TypeOf((*MockStoreClient)(nil).UpdateGroupSnapshot), arg0, arg1)
 }
 
 // UpdateSnapshot mocks base method.

@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -81,6 +81,13 @@ type Client interface {
 	UpdateSnapshot(ctx context.Context, snapshot *storage.Snapshot) error
 	DeleteSnapshot(ctx context.Context, snapshot *storage.Snapshot) error
 	DeleteSnapshots(ctx context.Context) error
+
+	AddGroupSnapshot(ctx context.Context, groupSnapshot *storage.GroupSnapshot) error
+	GetGroupSnapshot(ctx context.Context, groupSnapshotName string) (*storage.GroupSnapshotPersistent, error)
+	GetGroupSnapshots(ctx context.Context) ([]*storage.GroupSnapshotPersistent, error)
+	UpdateGroupSnapshot(ctx context.Context, groupSnapshot *storage.GroupSnapshot) error
+	DeleteGroupSnapshot(ctx context.Context, groupSnapshot *storage.GroupSnapshot) error
+	DeleteGroupSnapshots(ctx context.Context) error
 }
 
 type CRDClient interface {

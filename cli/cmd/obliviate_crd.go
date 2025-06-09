@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -106,6 +106,7 @@ func obliviateCRDs(skipCRDs []string) error {
 		"tridentnodes.trident.netapp.io",
 		"tridenttransactions.trident.netapp.io",
 		"tridentsnapshots.trident.netapp.io",
+		"tridentgroupsnapshots.trident.netapp.io",
 		"tridentvolumepublications.trident.netapp.io",
 		"tridentvolumereferences.trident.netapp.io",
 		"tridentactionsnapshotrestores.trident.netapp.io",
@@ -184,6 +185,10 @@ func deleteCRs(filteredCRDs []string) error {
 			}
 		case "tridentsnapshots.trident.netapp.io":
 			if err := deleteSnapshots(); err != nil {
+				return err
+			}
+		case "tridentgroupsnapshots.trident.netapp.io":
+			if err := deleteGroupSnapshots(); err != nil {
 				return err
 			}
 		case "tridentvolumepublications.trident.netapp.io":
@@ -1000,6 +1005,62 @@ func deleteSnapshots() error {
 
 		deleteFunc := crdClientset.TridentV1().TridentSnapshots(snapshot.Namespace).Delete
 		if err := deleteWithRetry(deleteFunc, ctx(), snapshot.Name, nil); err != nil {
+			Log().Errorf("Problem deleting resource: %v", err)
+			return err
+		}
+	}
+
+	Log().WithFields(logFields).Info("Resources deleted.")
+	return nil
+}
+
+func deleteGroupSnapshots() error {
+	crd := "tridentgroupsnapshots.trident.netapp.io"
+	logFields := LogFields{"CRD": crd}
+
+	// See if CRD exists
+	exists, err := k8sClient.CheckCRDExists(crd)
+	if err != nil {
+		return err
+	} else if !exists {
+		Log().WithField("CRD", crd).Debug("CRD not present.")
+		return nil
+	}
+
+	tgsnaps, err := crdClientset.TridentV1().TridentGroupSnapshots(allNamespaces).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	} else if len(tgsnaps.Items) == 0 {
+		Log().WithFields(logFields).Info("Resources not present.")
+		return nil
+	}
+
+	for _, tgsnap := range tgsnaps.Items {
+		if tgsnap.DeletionTimestamp.IsZero() {
+			_ = crdClientset.TridentV1().TridentGroupSnapshots(tgsnap.Namespace).Delete(ctx(), tgsnap.Name, deleteOpts)
+		}
+	}
+
+	tgsnaps, err = crdClientset.TridentV1().TridentGroupSnapshots(allNamespaces).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	}
+
+	for _, tgsnap := range tgsnaps.Items {
+		if tgsnap.HasTridentFinalizers() {
+			crCopy := tgsnap.DeepCopy()
+			crCopy.RemoveTridentFinalizers()
+			_, err := crdClientset.TridentV1().TridentGroupSnapshots(tgsnap.Namespace).Update(ctx(), crCopy, updateOpts)
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
+				Log().Errorf("Problem removing finalizers: %v", err)
+				return err
+			}
+		}
+
+		deleteFunc := crdClientset.TridentV1().TridentGroupSnapshots(tgsnap.Namespace).Delete
+		if err := deleteWithRetry(deleteFunc, ctx(), tgsnap.Name, nil); err != nil {
 			Log().Errorf("Problem deleting resource: %v", err)
 			return err
 		}

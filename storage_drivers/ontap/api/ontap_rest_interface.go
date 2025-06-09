@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 // DO NOT EDIT: Auto generated using 'ifacemaker -f ontap_rest.go -s RestClient -i RestClientInterface -p api'
 package api
@@ -8,6 +8,7 @@ package api
 import (
 	"context"
 
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/application"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/cluster"
 	nas "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
 	nvme "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_v_me"
@@ -73,6 +74,22 @@ type RestClientInterface interface {
 	VolumeRecoveryQueuePurge(ctx context.Context, recoveryQueueVolumeName string) error
 	// VolumeRecoveryQueueGetName returns the name of the volume in the recovery queue for the specified volume
 	VolumeRecoveryQueueGetName(ctx context.Context, name string) (string, error)
+
+	// ConsistencyGroupCreate creates a consistency group
+	ConsistencyGroupCreate(ctx context.Context, cgName string,
+		flexVols []string) (*application.ConsistencyGroupCreateAccepted, error)
+	// ConsistencyGroupCreateAndWait creates a consistency group and waits on the job to complete
+	ConsistencyGroupCreateAndWait(ctx context.Context, cgName string, flexVols []string) error
+	// ConsistencyGroupGet returns the consistency group info
+	ConsistencyGroupGet(ctx context.Context, cgName string) (*models.ConsistencyGroupResponseInlineRecordsInlineArrayItem, error)
+	// ConsistencyGroupDelete deletes the consistency group
+	ConsistencyGroupDelete(ctx context.Context, cgName string) error
+	// ConsistencyGroupSnapshot creates a snapshot for the consistency group
+	ConsistencyGroupSnapshot(ctx context.Context, cgName,
+		snapName string) (*application.ConsistencyGroupSnapshotCreateCreated, *application.ConsistencyGroupSnapshotCreateAccepted, error)
+	// ConsistencyGroupSnapshotAndWait creates a snapshot for the consistency group and waits on the job to complete
+	ConsistencyGroupSnapshotAndWait(ctx context.Context, cgName, snapName string) error
+
 	// SnapshotCreate creates a snapshot
 	SnapshotCreate(ctx context.Context, volumeUUID, snapshotName string) (*storage.SnapshotCreateAccepted, error)
 	// SnapshotCreateAndWait creates a snapshot and waits on the job to complete

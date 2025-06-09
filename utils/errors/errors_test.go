@@ -499,3 +499,43 @@ func TestIsFormatError(t *testing.T) {
 		})
 	}
 }
+
+func TestConflictError(t *testing.T) {
+	err := ConflictError("conflict error with formatting %s, %s", "foo", "bar")
+	assert.True(t, strings.Contains("conflict error with formatting foo, bar", err.Error()))
+
+	err = fmt.Errorf("a generic error")
+	assert.False(t, IsConflictError(err))
+
+	assert.False(t, IsConflictError(nil))
+
+	err = ConflictError("")
+	assert.True(t, IsConflictError(err))
+
+	// Test wrapping
+	err = WrapWithConflictError(fmt.Errorf("not conflict err"), "conflict err")
+	assert.True(t, IsConflictError(err))
+	assert.Equal(t, "conflict err; not conflict err", err.Error())
+
+	err = WrapWithConflictError(nil, "conflict err")
+	assert.Equal(t, "conflict err", err.Error())
+
+	err = WrapWithConflictError(fmt.Errorf("not reconcile deferred err"), "")
+	assert.True(t, IsConflictError(err))
+	assert.Equal(t, "not reconcile deferred err", err.Error())
+
+	err = WrapWithConflictError(fmt.Errorf(""), "conflict err")
+	assert.True(t, IsConflictError(err))
+	assert.Equal(t, "conflict err", err.Error())
+
+	err = ConflictError("")
+	err = fmt.Errorf("custom message: %w", err)
+	assert.True(t, IsConflictError(err))
+	assert.Equal(t, "custom message: ", err.Error())
+
+	// wrap multi levels deep
+	err = ConflictError("")
+	err = fmt.Errorf("outer; %w", fmt.Errorf("inner; %w", err))
+	assert.True(t, IsConflictError(err))
+	assert.Equal(t, "outer; inner; ", err.Error())
+}

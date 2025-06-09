@@ -45,6 +45,10 @@ type ControllerHelper interface {
 	// a SnapshotConfig structure as needed by Trident to import a snapshot.
 	GetSnapshotConfigForImport(ctx context.Context, volumeName, snapshotName string) (*storage.SnapshotConfig, error)
 
+	// GetGroupSnapshotConfigForCreate accepts the attributes of a group snapshot being requested by CSI.
+	// It adds in any CO-specific details about the new group snapshot and returns a GroupSnapshotConfig structure.
+	GetGroupSnapshotConfigForCreate(ctx context.Context, groupSnapshotName string, volumeNames []string) (*storage.GroupSnapshotConfig, error)
+
 	// GetNodeTopologyLabels returns topology labels for a given node
 	// Example: map[string]string{"topology.kubernetes.io/region": "us-east1"}
 	GetNodeTopologyLabels(ctx context.Context, nodeName string) (map[string]string, error)

@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package storage
 
@@ -8,7 +8,7 @@ import (
 	"context"
 	"time"
 
-	roaring "github.com/RoaringBitmap/roaring/v2"
+	"github.com/RoaringBitmap/roaring/v2"
 
 	"github.com/netapp/trident/config"
 	storageattribute "github.com/netapp/trident/storage_attribute"
@@ -61,6 +61,7 @@ type Backend interface {
 	RemoveVolume(ctx context.Context, volConfig *VolumeConfig) error
 	RemoveCachedVolume(volumeName string)
 	CanSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) error
+	CanGroupSnapshot() bool
 	GetSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) (*Snapshot, error)
 	GetSnapshots(ctx context.Context, volConfig *VolumeConfig) ([]*Snapshot, error)
 	CreateSnapshot(ctx context.Context, snapConfig *SnapshotConfig, volConfig *VolumeConfig) (*Snapshot, error)
@@ -83,6 +84,7 @@ type Backend interface {
 	GetMirrorTransferTime(ctx context.Context, pvcVolumeName string) (*time.Time, error)
 	ChapEnabled
 	PublishEnforceable
+	GroupSnapshotter
 }
 
 type PublishEnforceable interface {

@@ -65,6 +65,8 @@ func httpStatusCodeForDelete(err error) int {
 		return http.StatusInternalServerError
 	} else if errors.IsNotFoundError(err) {
 		return http.StatusNotFound
+	} else if errors.IsConflictError(err) {
+		return http.StatusConflict
 	} else {
 		return http.StatusBadRequest
 	}
@@ -1291,12 +1293,27 @@ func (l *ListSnapshotsResponse) setList(payload []string) {
 	l.Snapshots = payload
 }
 
+// ListSnapshots handles requests to get or list snapshots.
+// It handles cases where query parameters are used to filter snapshots by volume or group.
 func ListSnapshots(w http.ResponseWriter, r *http.Request) {
 	response := &ListSnapshotsResponse{}
 	ListGeneric(w, r, response,
 		func(_ map[string]string) int {
+			var (
+				snapshots []*storage.SnapshotExternal
+				err       error
+			)
+			ctx := GenerateRequestContext(r.Context(), "", "", WorkflowSnapshotList, LogLayerRESTFrontend)
+
+			if r.URL.Query().Has("volume") {
+				snapshots, err = orchestrator.ListSnapshotsForVolume(ctx, r.URL.Query().Get("volume"))
+			} else if r.URL.Query().Has("group") {
+				snapshots, err = orchestrator.ListSnapshotsForGroup(ctx, r.URL.Query().Get("group"))
+			} else {
+				snapshots, err = orchestrator.ListSnapshots(ctx)
+			}
+
 			snapshotIDs := make([]string, 0)
-			snapshots, err := orchestrator.ListSnapshots(r.Context())
 			if err != nil {
 				response.Error = err.Error()
 			} else if len(snapshots) > 0 {
@@ -1311,6 +1328,8 @@ func ListSnapshots(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
+// ListSnapshotsForVolume should be deprecated after 26.10.
+// TODO: Deprecate ListSnapshotsForVolume post Trident 26.10 release.
 func ListSnapshotsForVolume(w http.ResponseWriter, r *http.Request) {
 	response := &ListSnapshotsResponse{}
 	ListGeneric(w, r, response,
@@ -1386,6 +1405,61 @@ func AddSnapshot(w http.ResponseWriter, r *http.Request) {
 func DeleteSnapshot(w http.ResponseWriter, r *http.Request) {
 	DeleteGeneric(w, r, func(ctx context.Context, vars map[string]string) error {
 		return orchestrator.DeleteSnapshot(r.Context(), vars["volume"], vars["snapshot"])
+	})
+}
+
+type GetGroupSnapshotResponse struct {
+	GroupSnapshot *storage.GroupSnapshotExternal `json:"groupSnapshot"`
+	Error         string                         `json:"error,omitempty"`
+}
+
+func GetGroupSnapshot(w http.ResponseWriter, r *http.Request) {
+	response := &GetGroupSnapshotResponse{}
+	GetGeneric(w, r, response,
+		func(vars map[string]string) int {
+			snapshot, err := orchestrator.GetGroupSnapshot(r.Context(), vars["group"])
+			if err != nil {
+				response.Error = err.Error()
+			} else {
+				response.GroupSnapshot = snapshot
+			}
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+type ListGroupSnapshotsResponse struct {
+	GroupSnapshots []string `json:"groupSnapshots"`
+	Error          string   `json:"error,omitempty"`
+}
+
+func (l *ListGroupSnapshotsResponse) setList(payload []string) {
+	l.GroupSnapshots = payload
+}
+
+func ListGroupSnapshots(w http.ResponseWriter, r *http.Request) {
+	response := &ListGroupSnapshotsResponse{}
+	ListGeneric(w, r, response,
+		func(_ map[string]string) int {
+			groupSnapIDs := make([]string, 0)
+			groupSnapshots, err := orchestrator.ListGroupSnapshots(r.Context())
+			if err != nil {
+				response.Error = err.Error()
+			}
+			if len(groupSnapshots) > 0 {
+				for _, groupSnapshot := range groupSnapshots {
+					groupSnapIDs = append(groupSnapIDs, groupSnapshot.ID())
+				}
+			}
+			response.setList(groupSnapIDs)
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+func DeleteGroupSnapshot(w http.ResponseWriter, r *http.Request) {
+	DeleteGeneric(w, r, func(ctx context.Context, vars map[string]string) error {
+		return orchestrator.DeleteGroupSnapshot(r.Context(), vars["group"])
 	})
 }
 

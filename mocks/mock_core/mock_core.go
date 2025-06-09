@@ -203,6 +203,21 @@ func (mr *MockOrchestratorMockRecorder) CloneVolume(arg0, arg1 any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloneVolume", reflect.TypeOf((*MockOrchestrator)(nil).CloneVolume), arg0, arg1)
 }
 
+// CreateGroupSnapshot mocks base method.
+func (m *MockOrchestrator) CreateGroupSnapshot(arg0 context.Context, arg1 *storage.GroupSnapshotConfig) (*storage.GroupSnapshotExternal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateGroupSnapshot", arg0, arg1)
+	ret0, _ := ret[0].(*storage.GroupSnapshotExternal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateGroupSnapshot indicates an expected call of CreateGroupSnapshot.
+func (mr *MockOrchestratorMockRecorder) CreateGroupSnapshot(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGroupSnapshot", reflect.TypeOf((*MockOrchestrator)(nil).CreateGroupSnapshot), arg0, arg1)
+}
+
 // CreateSnapshot mocks base method.
 func (m *MockOrchestrator) CreateSnapshot(arg0 context.Context, arg1 *storage.SnapshotConfig) (*storage.SnapshotExternal, error) {
 	m.ctrl.T.Helper()
@@ -244,6 +259,20 @@ func (m *MockOrchestrator) DeleteBackendByBackendUUID(arg0 context.Context, arg1
 func (mr *MockOrchestratorMockRecorder) DeleteBackendByBackendUUID(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBackendByBackendUUID", reflect.TypeOf((*MockOrchestrator)(nil).DeleteBackendByBackendUUID), arg0, arg1, arg2)
+}
+
+// DeleteGroupSnapshot mocks base method.
+func (m *MockOrchestrator) DeleteGroupSnapshot(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteGroupSnapshot", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteGroupSnapshot indicates an expected call of DeleteGroupSnapshot.
+func (mr *MockOrchestratorMockRecorder) DeleteGroupSnapshot(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteGroupSnapshot", reflect.TypeOf((*MockOrchestrator)(nil).DeleteGroupSnapshot), arg0, arg1)
 }
 
 // DeleteNode mocks base method.
@@ -416,6 +445,21 @@ func (m *MockOrchestrator) GetFrontend(arg0 context.Context, arg1 string) (front
 func (mr *MockOrchestratorMockRecorder) GetFrontend(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFrontend", reflect.TypeOf((*MockOrchestrator)(nil).GetFrontend), arg0, arg1)
+}
+
+// GetGroupSnapshot mocks base method.
+func (m *MockOrchestrator) GetGroupSnapshot(arg0 context.Context, arg1 string) (*storage.GroupSnapshotExternal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetGroupSnapshot", arg0, arg1)
+	ret0, _ := ret[0].(*storage.GroupSnapshotExternal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetGroupSnapshot indicates an expected call of GetGroupSnapshot.
+func (mr *MockOrchestratorMockRecorder) GetGroupSnapshot(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupSnapshot", reflect.TypeOf((*MockOrchestrator)(nil).GetGroupSnapshot), arg0, arg1)
 }
 
 // GetLogLevel mocks base method.
@@ -705,6 +749,21 @@ func (mr *MockOrchestratorMockRecorder) ListBackends(arg0 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBackends", reflect.TypeOf((*MockOrchestrator)(nil).ListBackends), arg0)
 }
 
+// ListGroupSnapshots mocks base method.
+func (m *MockOrchestrator) ListGroupSnapshots(arg0 context.Context) ([]*storage.GroupSnapshotExternal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListGroupSnapshots", arg0)
+	ret0, _ := ret[0].([]*storage.GroupSnapshotExternal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListGroupSnapshots indicates an expected call of ListGroupSnapshots.
+func (mr *MockOrchestratorMockRecorder) ListGroupSnapshots(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListGroupSnapshots", reflect.TypeOf((*MockOrchestrator)(nil).ListGroupSnapshots), arg0)
+}
+
 // ListLogLayers mocks base method.
 func (m *MockOrchestrator) ListLogLayers(arg0 context.Context) ([]string, error) {
 	m.ctrl.T.Helper()
@@ -778,6 +837,21 @@ func (m *MockOrchestrator) ListSnapshotsByName(arg0 context.Context, arg1 string
 func (mr *MockOrchestratorMockRecorder) ListSnapshotsByName(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSnapshotsByName", reflect.TypeOf((*MockOrchestrator)(nil).ListSnapshotsByName), arg0, arg1)
+}
+
+// ListSnapshotsForGroup mocks base method.
+func (m *MockOrchestrator) ListSnapshotsForGroup(arg0 context.Context, arg1 string) ([]*storage.SnapshotExternal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListSnapshotsForGroup", arg0, arg1)
+	ret0, _ := ret[0].([]*storage.SnapshotExternal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListSnapshotsForGroup indicates an expected call of ListSnapshotsForGroup.
+func (mr *MockOrchestratorMockRecorder) ListSnapshotsForGroup(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSnapshotsForGroup", reflect.TypeOf((*MockOrchestrator)(nil).ListSnapshotsForGroup), arg0, arg1)
 }
 
 // ListSnapshotsForVolume mocks base method.

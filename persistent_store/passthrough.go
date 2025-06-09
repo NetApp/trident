@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -462,5 +462,29 @@ func (c *PassthroughClient) DeleteSnapshot(context.Context, *storage.Snapshot) e
 }
 
 func (c *PassthroughClient) DeleteSnapshots(context.Context) error {
+	return nil
+}
+
+func (c *PassthroughClient) AddGroupSnapshot(context.Context, *storage.GroupSnapshot) error {
+	return nil
+}
+
+func (c *PassthroughClient) GetGroupSnapshot(context.Context, string) (*storage.GroupSnapshotPersistent, error) {
+	return nil, nil
+}
+
+func (c *PassthroughClient) GetGroupSnapshots(context.Context) ([]*storage.GroupSnapshotPersistent, error) {
+	return nil, nil
+}
+
+func (c *PassthroughClient) UpdateGroupSnapshot(context.Context, *storage.GroupSnapshot) error {
+	return nil
+}
+
+func (c *PassthroughClient) DeleteGroupSnapshot(context.Context, *storage.GroupSnapshot) error {
+	return nil
+}
+
+func (c *PassthroughClient) DeleteGroupSnapshots(context.Context) error {
 	return nil
 }

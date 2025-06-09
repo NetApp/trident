@@ -4115,6 +4115,189 @@ func TestSnapshotVolumes(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
+func TestGroupSnapshotVolumes(t *testing.T) {
+	mockPools := tu.GetFakePools()
+	orchestrator := getOrchestrator(t, false)
+
+	groupID := fmt.Sprintf("groupsnapshot-%s", uuid.New().String())
+	sourceVolumeIDs := make([]string, 0)
+
+	errored := false
+	for _, c := range []struct {
+		name      string
+		protocol  config.Protocol
+		poolNames []string
+	}{
+		{
+			name:      "fast-a",
+			protocol:  config.File,
+			poolNames: []string{tu.FastSmall, tu.FastThinOnly},
+		},
+	} {
+		pools := make(map[string]*fake.StoragePool, len(c.poolNames))
+		for _, poolName := range c.poolNames {
+			pools[poolName] = mockPools[poolName]
+		}
+		cfg, err := fakedriver.NewFakeStorageDriverConfigJSON(c.name, c.protocol, pools, make([]fake.Volume, 0))
+		if err != nil {
+			t.Fatalf("Unable to generate cfg JSON for %s: %v", c.name, err)
+		}
+		_, err = orchestrator.AddBackend(ctx(), cfg, "")
+		if err != nil {
+			t.Errorf("Unable to add backend %s: %v", c.name, err)
+			errored = true
+		}
+		orchestrator.mutex.Lock()
+		backend, err := orchestrator.getBackendByBackendName(c.name)
+		if err != nil {
+			t.Fatalf("Backend %s not stored in orchestrator", c.name)
+		}
+		persistentBackend, err := orchestrator.storeClient.GetBackend(ctx(), c.name)
+		if err != nil {
+			t.Fatalf("Unable to get backend %s from persistent store: %v", c.name, err)
+		} else if !reflect.DeepEqual(
+			backend.ConstructPersistent(ctx()),
+			persistentBackend,
+		) {
+			t.Error("Wrong data stored for backend ", c.name)
+		}
+		orchestrator.mutex.Unlock()
+	}
+	if errored {
+		t.Fatal("Failed to add all backends; aborting remaining tests.")
+	}
+
+	// Add storage classes.
+	storageClasses := []storageClassTest{
+		{
+			config: &storageclass.Config{
+				Name: "fast",
+				Attributes: map[string]sa.Request{
+					sa.IOPS:             sa.NewIntRequest(2000),
+					sa.Snapshots:        sa.NewBoolRequest(true),
+					sa.ProvisioningType: sa.NewStringRequest("thin"),
+				},
+			},
+			expected: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastSmall},
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+			},
+		},
+	}
+	for _, s := range storageClasses {
+		_, err := orchestrator.AddStorageClass(ctx(), s.config)
+		if err != nil {
+			t.Errorf("Unable to add storage class %s: %v", s.config.Name, err)
+			continue
+		}
+		validateStorageClass(t, orchestrator, s.config.Name, s.expected)
+	}
+
+	for _, s := range []struct {
+		name            string
+		config          *storage.VolumeConfig
+		expectedSuccess bool
+		expectedMatches []*tu.PoolMatch
+	}{
+		{
+			name:            "pvc1",
+			config:          tu.GenerateVolumeConfig("pvc1", 1, "fast", config.File),
+			expectedSuccess: true,
+			expectedMatches: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastSmall},
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+			},
+		},
+		{
+			name:            "pvc2",
+			config:          tu.GenerateVolumeConfig("pvc2", 1, "fast", config.File),
+			expectedSuccess: true,
+			expectedMatches: []*tu.PoolMatch{
+				{Backend: "fast-a", Pool: tu.FastSmall},
+				{Backend: "fast-a", Pool: tu.FastThinOnly},
+			},
+		},
+	} {
+		// Create the source volumes.
+		_, err := orchestrator.AddVolume(ctx(), s.config)
+		if err != nil {
+			t.Errorf("%s: could not add volume: %v", s.name, err)
+			continue
+		}
+
+		orchestrator.mutex.Lock()
+		volume, found := orchestrator.volumes[s.config.Name]
+		if s.expectedSuccess && !found {
+			t.Errorf("%s: did not get volume where expected.", s.name)
+			continue
+		}
+		sourceVolumeIDs = append(sourceVolumeIDs, volume.Config.Name)
+		orchestrator.mutex.Unlock()
+	}
+
+	// Now take a group snapshot and ensure everything looks fine.
+	groupSnapshotConfig := &storage.GroupSnapshotConfig{
+		Name:        groupID,
+		VolumeNames: sourceVolumeIDs,
+	}
+	groupSnapshotExternal, err := orchestrator.CreateGroupSnapshot(ctx(), groupSnapshotConfig)
+	if err != nil {
+		t.Fatalf("%s: got unexpected error creating group snapshot: %v", groupID, err)
+	}
+
+	// Group snapshot should be in cache.
+	_, found := orchestrator.groupSnapshots[groupSnapshotExternal.ID()]
+	if !found {
+		t.Errorf("%s: did not get group snapshot where expected.", groupID)
+	}
+
+	// All constituent snapshots should exist.
+	orchestrator.mutex.Lock()
+	for _, snapshotID := range groupSnapshotExternal.GetSnapshotIDs() {
+		volumeName, snapName, err := storage.ParseSnapshotID(snapshotID)
+		assert.NoError(t, err)
+
+		// Get each snapshot from the store.
+		persistentSnapshot, err := orchestrator.storeClient.GetSnapshot(ctx(), volumeName, snapName)
+		if err != nil {
+			t.Errorf("%s: unable to communicate with backing store: %v", snapName, err)
+		}
+		assert.NotNil(t, persistentSnapshot, "snapshot should not be nil")
+	}
+	orchestrator.mutex.Unlock()
+
+	// Delete the group snapshot.
+	err = orchestrator.DeleteGroupSnapshot(ctx(), groupSnapshotExternal.ID())
+	if err != nil {
+		t.Fatalf("%s: got unexpected error deleting group snapshot: %v", groupID, err)
+	}
+
+	// Group snapshot should no longer be in cache.
+	_, found = orchestrator.groupSnapshots[groupSnapshotExternal.ID()]
+	if found {
+		t.Errorf("%s: group snapshot found where no longer expected.", groupID)
+	}
+
+	// Constituent snapshots should no longer exist.
+	orchestrator.mutex.Lock()
+	for _, snapshotID := range groupSnapshotExternal.GetSnapshotIDs() {
+		volumeName, snapName, err := storage.ParseSnapshotID(snapshotID)
+		assert.NoError(t, err)
+
+		// Get each snapshot from the store.
+		persistentSnapshot, err := orchestrator.storeClient.GetSnapshot(ctx(), volumeName, snapName)
+		assert.Error(t, err)              // Not Found or Unable to find key errors.
+		assert.Nil(t, persistentSnapshot) // persisted snapshot should always be nil here.
+
+		// Double-check the cache does not have the constituent snapshots.
+		_, found := orchestrator.snapshots[snapshotID]
+		assert.False(t, found)
+	}
+	orchestrator.mutex.Unlock()
+
+	cleanup(t, orchestrator)
+}
+
 func TestGetProtocol(t *testing.T) {
 	orchestrator := getOrchestrator(t, false)
 
@@ -7742,7 +7925,7 @@ func TestListLogWorkflows(t *testing.T) {
 
 	flows, err := o.ListLoggingWorkflows(ctx())
 	expected := []string{
-		"backend=create,delete,get,list,update", "controller=get_capabilities,publish,unpublish",
+		"backend=create,delete,get,list,update", "controller_server=get_capabilities,publish,unpublish",
 		"core=bootstrap,init,node_reconcile,version", "cr=reconcile", "crd_controller=create", "grpc=trace",
 		"k8s_client=trace_api,trace_factory", "node=create,delete,get,get_capabilities,get_info,get_response,list,update",
 		"node_server=publish,stage,unpublish,unstage", "plugin=activate,create,deactivate,get,list",

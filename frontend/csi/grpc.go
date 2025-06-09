@@ -1,4 +1,4 @@
-// Copyright 2019 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 // Copyright 2017 The Kubernetes Authors.
 
@@ -20,7 +20,9 @@ import (
 // NonBlockingGRPCServer Defines Non blocking GRPC server interfaces
 type NonBlockingGRPCServer interface {
 	// Start services at the endpoint
-	Start(endpoint string, ids csi.IdentityServer, cs csi.ControllerServer, ns csi.NodeServer)
+	Start(endpoint string, ids csi.IdentityServer, cs csi.ControllerServer, ns csi.NodeServer,
+		gcs csi.GroupControllerServer)
+
 	// GracefulStop Stops the service gracefully
 	GracefulStop()
 	// Stops the service forcefully
@@ -37,9 +39,9 @@ type nonBlockingGRPCServer struct {
 }
 
 func (s *nonBlockingGRPCServer) Start(
-	endpoint string, ids csi.IdentityServer, cs csi.ControllerServer, ns csi.NodeServer,
+	endpoint string, ids csi.IdentityServer, cs csi.ControllerServer, ns csi.NodeServer, gcs csi.GroupControllerServer,
 ) {
-	go s.serve(endpoint, ids, cs, ns)
+	go s.serve(endpoint, ids, cs, ns, gcs)
 }
 
 func (s *nonBlockingGRPCServer) GracefulStop() {
@@ -51,7 +53,7 @@ func (s *nonBlockingGRPCServer) Stop() {
 }
 
 func (s *nonBlockingGRPCServer) serve(
-	endpoint string, ids csi.IdentityServer, cs csi.ControllerServer, ns csi.NodeServer,
+	endpoint string, ids csi.IdentityServer, cs csi.ControllerServer, ns csi.NodeServer, gcs csi.GroupControllerServer,
 ) {
 	proto, addr, err := ParseEndpoint(endpoint)
 	if err != nil {
@@ -118,6 +120,10 @@ func (s *nonBlockingGRPCServer) serve(
 	if ns != nil {
 		csi.RegisterNodeServer(server, ns)
 		Log().Debug("Registered CSI node server.")
+	}
+	if gcs != nil {
+		csi.RegisterGroupControllerServer(server, gcs)
+		Log().Debug("Registered CSI group controller server.")
 	}
 
 	if err := server.Serve(listener); err != nil {

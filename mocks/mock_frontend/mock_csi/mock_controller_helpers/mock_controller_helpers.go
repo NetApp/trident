@@ -43,6 +43,21 @@ func (m *MockControllerHelper) EXPECT() *MockControllerHelperMockRecorder {
 	return m.recorder
 }
 
+// GetGroupSnapshotConfigForCreate mocks base method.
+func (m *MockControllerHelper) GetGroupSnapshotConfigForCreate(arg0 context.Context, arg1 string, arg2 []string) (*storage.GroupSnapshotConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetGroupSnapshotConfigForCreate", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*storage.GroupSnapshotConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetGroupSnapshotConfigForCreate indicates an expected call of GetGroupSnapshotConfigForCreate.
+func (mr *MockControllerHelperMockRecorder) GetGroupSnapshotConfigForCreate(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupSnapshotConfigForCreate", reflect.TypeOf((*MockControllerHelper)(nil).GetGroupSnapshotConfigForCreate), arg0, arg1, arg2)
+}
+
 // GetNodePublicationState mocks base method.
 func (m *MockControllerHelper) GetNodePublicationState(arg0 context.Context, arg1 string) (*models.NodePublicationStateFlags, error) {
 	m.ctrl.T.Helper()

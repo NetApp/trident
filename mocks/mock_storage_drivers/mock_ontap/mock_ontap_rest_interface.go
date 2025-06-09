@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	api "github.com/netapp/trident/storage_drivers/ontap/api"
+	application "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/application"
 	cluster "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/cluster"
 	n_a_s "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
 	n_v_me "github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_v_me"
@@ -91,6 +92,94 @@ func (m *MockRestClientInterface) ClusterInfo(arg0 context.Context, arg1 []strin
 func (mr *MockRestClientInterfaceMockRecorder) ClusterInfo(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClusterInfo", reflect.TypeOf((*MockRestClientInterface)(nil).ClusterInfo), arg0, arg1, arg2)
+}
+
+// ConsistencyGroupCreate mocks base method.
+func (m *MockRestClientInterface) ConsistencyGroupCreate(arg0 context.Context, arg1 string, arg2 []string) (*application.ConsistencyGroupCreateAccepted, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConsistencyGroupCreate", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*application.ConsistencyGroupCreateAccepted)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConsistencyGroupCreate indicates an expected call of ConsistencyGroupCreate.
+func (mr *MockRestClientInterfaceMockRecorder) ConsistencyGroupCreate(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsistencyGroupCreate", reflect.TypeOf((*MockRestClientInterface)(nil).ConsistencyGroupCreate), arg0, arg1, arg2)
+}
+
+// ConsistencyGroupCreateAndWait mocks base method.
+func (m *MockRestClientInterface) ConsistencyGroupCreateAndWait(arg0 context.Context, arg1 string, arg2 []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConsistencyGroupCreateAndWait", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConsistencyGroupCreateAndWait indicates an expected call of ConsistencyGroupCreateAndWait.
+func (mr *MockRestClientInterfaceMockRecorder) ConsistencyGroupCreateAndWait(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsistencyGroupCreateAndWait", reflect.TypeOf((*MockRestClientInterface)(nil).ConsistencyGroupCreateAndWait), arg0, arg1, arg2)
+}
+
+// ConsistencyGroupDelete mocks base method.
+func (m *MockRestClientInterface) ConsistencyGroupDelete(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConsistencyGroupDelete", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConsistencyGroupDelete indicates an expected call of ConsistencyGroupDelete.
+func (mr *MockRestClientInterfaceMockRecorder) ConsistencyGroupDelete(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsistencyGroupDelete", reflect.TypeOf((*MockRestClientInterface)(nil).ConsistencyGroupDelete), arg0, arg1)
+}
+
+// ConsistencyGroupGet mocks base method.
+func (m *MockRestClientInterface) ConsistencyGroupGet(arg0 context.Context, arg1 string) (*models.ConsistencyGroupResponseInlineRecordsInlineArrayItem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConsistencyGroupGet", arg0, arg1)
+	ret0, _ := ret[0].(*models.ConsistencyGroupResponseInlineRecordsInlineArrayItem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConsistencyGroupGet indicates an expected call of ConsistencyGroupGet.
+func (mr *MockRestClientInterfaceMockRecorder) ConsistencyGroupGet(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsistencyGroupGet", reflect.TypeOf((*MockRestClientInterface)(nil).ConsistencyGroupGet), arg0, arg1)
+}
+
+// ConsistencyGroupSnapshot mocks base method.
+func (m *MockRestClientInterface) ConsistencyGroupSnapshot(arg0 context.Context, arg1, arg2 string) (*application.ConsistencyGroupSnapshotCreateCreated, *application.ConsistencyGroupSnapshotCreateAccepted, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConsistencyGroupSnapshot", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*application.ConsistencyGroupSnapshotCreateCreated)
+	ret1, _ := ret[1].(*application.ConsistencyGroupSnapshotCreateAccepted)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ConsistencyGroupSnapshot indicates an expected call of ConsistencyGroupSnapshot.
+func (mr *MockRestClientInterfaceMockRecorder) ConsistencyGroupSnapshot(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsistencyGroupSnapshot", reflect.TypeOf((*MockRestClientInterface)(nil).ConsistencyGroupSnapshot), arg0, arg1, arg2)
+}
+
+// ConsistencyGroupSnapshotAndWait mocks base method.
+func (m *MockRestClientInterface) ConsistencyGroupSnapshotAndWait(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConsistencyGroupSnapshotAndWait", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ConsistencyGroupSnapshotAndWait indicates an expected call of ConsistencyGroupSnapshotAndWait.
+func (mr *MockRestClientInterfaceMockRecorder) ConsistencyGroupSnapshotAndWait(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsistencyGroupSnapshotAndWait", reflect.TypeOf((*MockRestClientInterface)(nil).ConsistencyGroupSnapshotAndWait), arg0, arg1, arg2)
 }
 
 // EmsAutosupportLog mocks base method.

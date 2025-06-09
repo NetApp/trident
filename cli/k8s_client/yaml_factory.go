@@ -110,7 +110,6 @@ func GetClusterRoleYAML(clusterRoleName string, labels, controllingCRDetails map
 
 // Specific permissions for sidecars
 // csi-resizer needs 'list' for pods
-// csi-snapshotter needs 'watch' for volumesnapshotclasses
 // trident-autosupport needs 'get' for namespace resource cluster-wide
 const controllerClusterRoleCSIYAMLTemplate = `---
 kind: ClusterRole
@@ -162,6 +161,18 @@ rules:
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshotcontents"]
     verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["groupsnapshot.storage.k8s.io"]
+    resources: ["volumegroupsnapshots"]
+    verbs: ["list"]
+  - apiGroups: ["groupsnapshot.storage.k8s.io"]
+    resources: ["volumegroupsnapshotclasses"]
+    verbs: ["list", "watch"]
+  - apiGroups: ["groupsnapshot.storage.k8s.io"]
+    resources: ["volumegroupsnapshotcontents/status"]
+    verbs: ["update"]
+  - apiGroups: ["groupsnapshot.storage.k8s.io"]
+    resources: ["volumegroupsnapshotcontents"]
+    verbs: ["get", "list", "watch", "patch"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["csinodes"]
     verbs: ["get", "list", "watch"]
@@ -171,7 +182,8 @@ rules:
 "tridentmirrorrelationships", "tridentmirrorrelationships/status", "tridentsnapshotinfos",
 "tridentsnapshotinfos/status", "tridentvolumepublications", "tridentvolumereferences",
 "tridentactionmirrorupdates", "tridentactionmirrorupdates/status",
-"tridentactionsnapshotrestores", "tridentactionsnapshotrestores/status"]
+"tridentactionsnapshotrestores", "tridentactionsnapshotrestores/status",
+"tridentgroupsnapshots", "tridentgroupsnapshots/status"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
@@ -759,6 +771,7 @@ spec:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=300s"
         - "--csi-address=$(ADDRESS)"
+        - "--feature-gates=CSIVolumeGroupSnapshot=true"
         {K8S_API_CLIENT_SIDECAR_THROTTLE}
         env:
         - name: ADDRESS
@@ -1790,6 +1803,12 @@ func GetSnapshotCRDYAML() string {
 	return tridentSnapshotCRDYAMLv1
 }
 
+func GetGroupSnapshotCRDYAML() string {
+	Log().Trace(">>>> GetGroupSnapshotCRDYAML")
+	defer func() { Log().Trace("<<<< GetGroupSnapshotCRDYAML") }()
+	return tridentGroupSnapshotCRDYAMLv1
+}
+
 func GetVolumeReferenceCRDYAML() string {
 	Log().Trace(">>>> GetVolumeReferenceCRDYAML")
 	defer func() { Log().Trace("<<<< GetVolumeReferenceCRDYAML") }()
@@ -1820,6 +1839,7 @@ kubectl delete crd tridentvolumepublications.trident.netapp.io --wait=false
 kubectl delete crd tridentnodes.trident.netapp.io --wait=false
 kubectl delete crd tridenttransactions.trident.netapp.io --wait=false
 kubectl delete crd tridentsnapshots.trident.netapp.io --wait=false
+kubectl delete crd tridentgroupsnapshots.trident.netapp.io --wait=false
 kubectl delete crd tridentvolumereferences.trident.netapp.io --wait=false
 kubectl delete crd tridentactionsnapshotrestores.trident.netapp.io --wait=false
 
@@ -1834,6 +1854,7 @@ kubectl patch crd tridentvolumepublications.trident.netapp.io -p '{"metadata":{"
 kubectl patch crd tridentnodes.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridenttransactions.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentsnapshots.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
+kubectl patch crd tridentgroupsnapshots.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentvolumereferences.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 kubectl patch crd tridentactionsnapshotrestores.trident.netapp.io -p '{"metadata":{"finalizers": []}}' --type=merge
 
@@ -1848,6 +1869,7 @@ kubectl delete crd tridentvolumepublications.trident.netapp.io
 kubectl delete crd tridentnodes.trident.netapp.io
 kubectl delete crd tridenttransactions.trident.netapp.io
 kubectl delete crd tridentsnapshots.trident.netapp.io
+kubectl delete crd tridentgroupsnapshots.trident.netapp.io
 kubectl delete crd tridentvolumereferences.trident.netapp.io
 kubectl delete crd tridentactionsnapshotrestores.trident.netapp.io
 */
@@ -2492,6 +2514,41 @@ spec:
     - trident
     - trident-internal`
 
+const tridentGroupSnapshotCRDYAMLv1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentgroupsnapshots.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+      - name: Created
+        type: date
+        description: Creation time of the group snapshot
+        jsonPath: .dateCreated
+  scope: Namespaced
+  names:
+    plural: tridentgroupsnapshots
+    singular: tridentgroupsnapshot
+    kind: TridentGroupSnapshot
+    shortNames:
+      - tgroupsnapshot
+      - tgroupsnap
+      - tgsnapshot
+      - tgsnap
+      - tgss
+    categories:
+      - trident
+      - trident-internal`
+
 const tridentOrchestratorCRDYAMLv1 = `
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -2627,6 +2684,7 @@ const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentNodeCRDYAMLv1 +
 	"\n---" + tridentTransactionCRDYAMLv1 +
 	"\n---" + tridentSnapshotCRDYAMLv1 +
+	"\n---" + tridentGroupSnapshotCRDYAMLv1 +
 	"\n---" + tridentVolumeReferenceCRDYAMLv1 +
 	"\n---" + tridentActionSnapshotRestoreCRDYAMLv1 +
 	"\n---" + tridentConfiguratorCRDYAMLv1 + "\n"

@@ -3744,3 +3744,47 @@ func TerminalState(err error) *TerminalStateError {
 		Err: err,
 	}
 }
+
+// ConsistencyGroupSnapshot will create a consistency group (CG), take a snapshot of that CG and then delete the CG
+func (d OntapAPIREST) ConsistencyGroupSnapshot(ctx context.Context, snapshotName string, volumes []string) error {
+	var err error
+
+	if snapshotName == "" {
+		return fmt.Errorf("snapshot name cannot be empty")
+	}
+	if len(volumes) < 1 {
+		return fmt.Errorf("group snapshot must have at least one volume")
+	}
+
+	// max length of cg name is 30
+	cgName := fmt.Sprintf("cg-%s", snapshotName)[:30]
+
+	// Clean up consistency group if create or snapshot fails
+	defer func() {
+		if err != nil {
+			err = d.api.ConsistencyGroupDelete(ctx, cgName)
+		}
+	}()
+
+	err = d.api.ConsistencyGroupCreateAndWait(ctx, cgName, volumes)
+	if err != nil {
+		return err
+	}
+	err = d.api.ConsistencyGroupSnapshotAndWait(ctx, cgName, snapshotName)
+	if err != nil {
+		if restErr, ok := err.(RestError); ok {
+			// Error code for existing snapshot exists
+			if restErr.code != CONSISTENCY_GROUP_SNAP_EXISTS_ERROR {
+				return err
+			}
+		} else {
+			return err
+		}
+	}
+	err = d.api.ConsistencyGroupDelete(ctx, cgName)
+	if err != nil {
+		return err
+	}
+
+	return err
+}

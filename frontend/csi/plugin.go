@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -64,9 +64,10 @@ type Plugin struct {
 
 	grpc NonBlockingGRPCServer
 
-	csCap []*csi.ControllerServiceCapability
-	nsCap []*csi.NodeServiceCapability
-	vCap  []*csi.VolumeCapability_AccessMode
+	csCap  []*csi.ControllerServiceCapability
+	nsCap  []*csi.NodeServiceCapability
+	vCap   []*csi.VolumeCapability_AccessMode
+	gcsCap []*csi.GroupControllerServiceCapability
 
 	topologyInUse bool
 
@@ -148,6 +149,11 @@ func NewControllerPlugin(
 		csi.VolumeCapability_AccessMode_MULTI_NODE_READER_ONLY,
 		csi.VolumeCapability_AccessMode_MULTI_NODE_SINGLE_WRITER,
 		csi.VolumeCapability_AccessMode_MULTI_NODE_MULTI_WRITER,
+	})
+
+	// Define group controller capabilities
+	p.addGroupControllerServiceCapabilities(ctx, []csi.GroupControllerServiceCapability_RPC_Type{
+		csi.GroupControllerServiceCapability_RPC_CREATE_DELETE_GET_VOLUME_GROUP_SNAPSHOT,
 	})
 
 	return p, nil
@@ -324,25 +330,6 @@ func NewAllInOnePlugin(
 		osutils:                  osutils.New(),
 	}
 
-	// Define controller capabilities
-	p.addControllerServiceCapabilities(ctx, []csi.ControllerServiceCapability_RPC_Type{
-		csi.ControllerServiceCapability_RPC_CREATE_DELETE_VOLUME,
-		csi.ControllerServiceCapability_RPC_PUBLISH_UNPUBLISH_VOLUME,
-		csi.ControllerServiceCapability_RPC_LIST_VOLUMES,
-		csi.ControllerServiceCapability_RPC_CREATE_DELETE_SNAPSHOT,
-		csi.ControllerServiceCapability_RPC_LIST_SNAPSHOTS,
-		csi.ControllerServiceCapability_RPC_EXPAND_VOLUME,
-		csi.ControllerServiceCapability_RPC_CLONE_VOLUME,
-		csi.ControllerServiceCapability_RPC_LIST_VOLUMES_PUBLISHED_NODES,
-		csi.ControllerServiceCapability_RPC_SINGLE_NODE_MULTI_WRITER,
-	})
-
-	p.addNodeServiceCapabilities([]csi.NodeServiceCapability_RPC_Type{
-		csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
-		csi.NodeServiceCapability_RPC_EXPAND_VOLUME,
-		csi.NodeServiceCapability_RPC_GET_VOLUME_STATS,
-		csi.NodeServiceCapability_RPC_SINGLE_NODE_MULTI_WRITER,
-	})
 	port := "34571"
 	for _, envVar := range os.Environ() {
 		values := strings.Split(envVar, "=")
@@ -362,6 +349,26 @@ func NewAllInOnePlugin(
 		return nil, err
 	}
 
+	// Define controller capabilities
+	p.addControllerServiceCapabilities(ctx, []csi.ControllerServiceCapability_RPC_Type{
+		csi.ControllerServiceCapability_RPC_CREATE_DELETE_VOLUME,
+		csi.ControllerServiceCapability_RPC_PUBLISH_UNPUBLISH_VOLUME,
+		csi.ControllerServiceCapability_RPC_LIST_VOLUMES,
+		csi.ControllerServiceCapability_RPC_CREATE_DELETE_SNAPSHOT,
+		csi.ControllerServiceCapability_RPC_LIST_SNAPSHOTS,
+		csi.ControllerServiceCapability_RPC_EXPAND_VOLUME,
+		csi.ControllerServiceCapability_RPC_CLONE_VOLUME,
+		csi.ControllerServiceCapability_RPC_LIST_VOLUMES_PUBLISHED_NODES,
+		csi.ControllerServiceCapability_RPC_SINGLE_NODE_MULTI_WRITER,
+	})
+
+	p.addNodeServiceCapabilities([]csi.NodeServiceCapability_RPC_Type{
+		csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
+		csi.NodeServiceCapability_RPC_EXPAND_VOLUME,
+		csi.NodeServiceCapability_RPC_GET_VOLUME_STATS,
+		csi.NodeServiceCapability_RPC_SINGLE_NODE_MULTI_WRITER,
+	})
+
 	// Define volume capabilities
 	p.addVolumeCapabilityAccessModes(ctx, []csi.VolumeCapability_AccessMode_Mode{
 		csi.VolumeCapability_AccessMode_SINGLE_NODE_WRITER,
@@ -371,6 +378,10 @@ func NewAllInOnePlugin(
 		csi.VolumeCapability_AccessMode_MULTI_NODE_READER_ONLY,
 		csi.VolumeCapability_AccessMode_MULTI_NODE_SINGLE_WRITER,
 		csi.VolumeCapability_AccessMode_MULTI_NODE_MULTI_WRITER,
+	})
+
+	p.addGroupControllerServiceCapabilities(ctx, []csi.GroupControllerServiceCapability_RPC_Type{
+		csi.GroupControllerServiceCapability_RPC_CREATE_DELETE_GET_VOLUME_GROUP_SNAPSHOT,
 	})
 
 	return p, nil
@@ -420,7 +431,7 @@ func (p *Plugin) Activate() error {
 			p.topologyInUse = topologyInUse
 		}
 
-		p.grpc.Start(p.endpoint, p, p, p)
+		p.grpc.Start(p.endpoint, p, p, p, p)
 	}()
 	return nil
 }
@@ -484,6 +495,17 @@ func (p *Plugin) addVolumeCapabilityAccessModes(ctx context.Context, vc []csi.Vo
 	}
 
 	p.vCap = vCap
+}
+
+func (p *Plugin) addGroupControllerServiceCapabilities(ctx context.Context, cl []csi.GroupControllerServiceCapability_RPC_Type) {
+	var gcsCap []*csi.GroupControllerServiceCapability
+
+	for _, c := range cl {
+		Logc(ctx).WithField("capability", c.String()).Info("Enabling group controller service capability.")
+		gcsCap = append(gcsCap, NewGroupControllerServiceCapability(c))
+	}
+
+	p.gcsCap = gcsCap
 }
 
 func (p *Plugin) getCSIErrorForOrchestratorError(err error) error {

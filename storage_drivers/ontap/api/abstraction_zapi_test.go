@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package api_test
 
@@ -336,4 +336,63 @@ func TestOntapAPIZAPI_LunExists(t *testing.T) {
 
 func intPtr(i int) *int {
 	return &i
+}
+
+func TestOntapAPIZAPI_ConsistencyGroupSnapshot_success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mock := mockapi.NewMockZapiClientInterface(ctrl)
+	oapi, err := api.NewOntapAPIZAPIFromZapiClientInterface(mock)
+	assert.NoError(t, err)
+	// Mock ClientConfig to avoid unexpected call
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	snapshotName := "snapshot-12345"
+	volumes := []string{"vol1", "vol2"}
+
+	cgStartResponse := &azgo.CgStartResponse{
+		Result: azgo.CgStartResponseResult{
+			CgIdPtr:          convert.ToPtr(123),
+			ResultStatusAttr: "passed",
+		},
+	}
+	mock.EXPECT().ConsistencyGroupStart(snapshotName, volumes).Return(cgStartResponse, nil).Times(1)
+	mock.EXPECT().ConsistencyGroupCommit(*cgStartResponse.Result.CgIdPtr).Return(nil, nil).Times(1)
+
+	err = oapi.ConsistencyGroupSnapshot(ctx, snapshotName, volumes)
+	assert.NoError(t, err)
+}
+
+func TestOntapAPIZAPI_ConsistencyGroupSnapshot_fail(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mock := mockapi.NewMockZapiClientInterface(ctrl)
+	oapi, err := api.NewOntapAPIZAPIFromZapiClientInterface(mock)
+	assert.NoError(t, err)
+	// Mock ClientConfig to avoid unexpected call
+	clientConfig := api.ClientConfig{
+		DebugTraceFlags: map[string]bool{"method": true},
+	}
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+	snapshotName := "snapshot-12345"
+	volumes := []string{"vol1", "vol2"}
+
+	cgStartResponse := &azgo.CgStartResponse{
+		Result: azgo.CgStartResponseResult{
+			CgIdPtr:          nil,
+			ResultStatusAttr: "failed",
+			ResultErrnoAttr:  "123",
+			ResultReasonAttr: "error, forced failure",
+		},
+	}
+	mock.EXPECT().ConsistencyGroupStart(snapshotName, volumes).Return(cgStartResponse, nil).Times(1)
+
+	err = oapi.ConsistencyGroupSnapshot(ctx, snapshotName, volumes)
+	assert.Error(t, err)
 }

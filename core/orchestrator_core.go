@@ -93,6 +93,7 @@ type TridentOrchestrator struct {
 	nodes                    cache.NodeCache
 	volumePublications       *cache.VolumePublicationCache
 	snapshots                map[string]*storage.Snapshot
+	groupSnapshots           map[string]*storage.GroupSnapshot
 	storeClient              persistentstore.Client
 	bootstrapped             bool
 	bootstrapError           error
@@ -137,6 +138,7 @@ func NewTridentOrchestrator(client persistentstore.Client) (*TridentOrchestrator
 		nodes:              *cache.NewNodeCache(),
 		volumePublications: cache.NewVolumePublicationCache(),
 		snapshots:          make(map[string]*storage.Snapshot), // key is ID, not name
+		groupSnapshots:     make(map[string]*storage.GroupSnapshot),
 		mutex:              &sync.Mutex{},
 		storeClient:        client,
 		bootstrapped:       false,
@@ -435,6 +437,50 @@ func (o *TridentOrchestrator) bootstrapSnapshots(ctx context.Context) error {
 	return nil
 }
 
+func (o *TridentOrchestrator) bootstrapGroupSnapshots(ctx context.Context) error {
+	groupSnapshots, err := o.storeClient.GetGroupSnapshots(ctx)
+	if err != nil {
+		return err
+	}
+	for _, gs := range groupSnapshots {
+		// TODO:  If the API evolves, check the Version field here.
+		groupSnapshot := storage.NewGroupSnapshot(gs.Config(), gs.GetSnapshotIDs(), gs.GetCreated())
+		o.groupSnapshots[groupSnapshot.ID()] = groupSnapshot
+
+		// Check if there are any missing snapshots or any that are missing a group ID when they should have one.
+		groupID, snapshotIDs, created := groupSnapshot.ID(), groupSnapshot.GetSnapshotIDs(), groupSnapshot.GetCreated()
+		for _, snapID := range snapshotIDs {
+			// Get the snapshot by ID.
+			snapshot, ok := o.snapshots[snapID]
+			if !ok {
+				Logc(ctx).Warnf("Snapshot '%s' from group snapshot '%s'.", snapID, groupID)
+				continue // Log a warning and skip if we can't find a constituent snapshot.
+			}
+
+			if snapshot.Config.GroupSnapshotName != groupID {
+				Logc(ctx).WithFields(LogFields{
+					"snapshotGroupRef":  snapshot.Config.GroupSnapshotName,
+					"groupSnapshotName": groupID,
+				}).Warn("Snapshot created time does not match group snapshot created time.")
+			}
+
+			if snapshot.Created != created {
+				Logc(ctx).WithFields(LogFields{
+					"snapshotCreated": snapshot.Created,
+					"groupCreatedAt":  created,
+				}).Warn("Snapshot created time does not match group snapshot created time.")
+			}
+		}
+
+		Logc(ctx).WithFields(LogFields{
+			"groupSnapshot": groupSnapshot.ID(),
+			"snapshotIDs":   groupSnapshot.GetSnapshotIDs(),
+			"handler":       "Bootstrap",
+		}).Info("Added an existing group snapshot.")
+	}
+	return nil
+}
+
 func (o *TridentOrchestrator) bootstrapVolTxns(ctx context.Context) error {
 	volTxns, err := o.storeClient.GetVolumeTransactions(ctx)
 	if err != nil && !persistentstore.MatchKeyNotFoundErr(err) {
@@ -539,6 +585,8 @@ func (o *TridentOrchestrator) bootstrap(ctx context.Context) error {
 		o.bootstrapBackends,
 		// Volumes, storage classes, and snapshots require backends to be bootstrapped.
 		o.bootstrapStorageClasses, o.bootstrapVolumes, o.bootstrapSnapshots,
+		// Volume group snapshots require snapshots to be bootstrapped.
+		o.bootstrapGroupSnapshots,
 		// Volume transactions require volumes and snapshots to be bootstrapped.
 		o.bootstrapVolTxns,
 		// Node access reconciliation is part of node bootstrap and requires volume publications to be bootstrapped.
@@ -4130,6 +4178,501 @@ func (o *TridentOrchestrator) CreateSnapshot(
 	return snapshot.ConstructExternal(), nil
 }
 
+// CreateGroupSnapshot creates a snapshot of a volume group
+func (o *TridentOrchestrator) CreateGroupSnapshot(
+	ctx context.Context, groupSnapshotConfig *storage.GroupSnapshotConfig,
+) (externalGroupSnapshot *storage.GroupSnapshotExternal, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	var (
+		groupSnapshotTarget *storage.GroupSnapshotTargetInfo
+		groupSnapshotter    storage.Backend
+		groupSnapshot       *storage.GroupSnapshot
+		snapshots           []*storage.Snapshot
+		backendsToVolumes   map[string][]*storage.VolumeConfig
+	)
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	defer recordTiming("group_snapshot_create", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	// pvc-UUID names of all pvcs in a volume group
+	sourceVolumeIDs := groupSnapshotConfig.GetVolumeNames()
+	if len(sourceVolumeIDs) == 0 {
+		return nil, errors.InvalidInputError("group snapshot must have at least one source volume")
+	}
+
+	// Get the backends from the volumes and determine if they support group snapshots
+	// Map [backends] -> volumes
+	backendsToVolumes = make(map[string][]*storage.VolumeConfig, 0)
+	// Get the volume and do simple validation
+	for _, volumeID := range sourceVolumeIDs {
+
+		// Check if the snapshot already exists, the snapshot will exist in our cache
+		// snapshots are stored by their ID pvc-UUID/snapshot-GroupSnapshotUUID
+		// For group snapshots, the snapshot name will be the same for every volume in the group but we'll be able to
+		// differentiate based on the pvc if needed
+		snapName, err := storage.ConvertGroupSnapshotID(groupSnapshotConfig.ID())
+		if err != nil {
+			return nil, err
+		}
+		snapshotID := storage.MakeSnapshotID(volumeID, snapName)
+		if _, ok := o.snapshots[snapshotID]; ok {
+			return nil, fmt.Errorf("snapshot %s already exists", snapshotID)
+		}
+
+		v, ok := o.volumes[volumeID]
+		if !ok {
+			if _, ok = o.subordinateVolumes[volumeID]; ok {
+				return nil, errors.NotFoundError(fmt.Sprintf(
+					"creating snapshot is not allowed on subordinate volume %s", volumeID))
+			}
+			return nil, errors.NotFoundError(fmt.Sprintf("source volume %s not found", volumeID))
+		}
+		if v.State.IsDeleting() {
+			return nil, errors.VolumeStateError(fmt.Sprintf("source volume %s is deleting", volumeID))
+		}
+
+		// Get the backend and check it can group snapshot
+		b, ok := o.backends[v.BackendUUID]
+		if !ok {
+			// Should never get here but just to be safe
+			return nil, errors.NotFoundError(fmt.Sprintf("backend for volume %s not found", volumeID))
+		} else if !b.CanGroupSnapshot() {
+			// Pre-filter backend support for group snapshot capability.
+			// Fail fast if even a single backend cannot support group snapshot.
+			return nil, errors.UnsupportedError(fmt.Sprintf(
+				"backend %s for volume %s does not support group snapshots", b.Name(), volumeID))
+		} else if !b.Online() {
+			return nil, errors.New(fmt.Sprintf("backend for volume %s not online", volumeID))
+		}
+		backendsToVolumes[b.BackendUUID()] = append(backendsToVolumes[b.BackendUUID()], v.Config)
+	}
+
+	// Get the target info for each backend and the internal volume name from each source volume ID.
+	for backendUUID, volumes := range backendsToVolumes {
+		// Find the backend in cache.
+		b, ok := o.backends[backendUUID]
+		if !ok {
+			return nil, errors.NotFoundError("backend not found")
+		}
+
+		// Ensure all the targets match.
+		currentInfo, err := b.GetGroupSnapshotTarget(ctx, volumes)
+		if err != nil {
+			return nil, errors.New("failed to get storage target")
+		}
+
+		if groupSnapshotTarget == nil {
+			groupSnapshotTarget = currentInfo
+		}
+
+		if err = currentInfo.Validate(); err != nil {
+			return nil, fmt.Errorf("invalid storage target for backend %s", b.Name())
+		} else if !currentInfo.IsShared(groupSnapshotTarget) {
+			return nil, fmt.Errorf("storage target is not the same for all backends")
+		}
+
+		// Identify and remove duplicates for any source volumes that are shared across multiple backends.
+		groupSnapshotTarget.AddVolumes(currentInfo.GetVolumes())
+
+		// Set the group snapshotter to the last backend in the list since all the targets are the same,
+		// entry point shouldn't matter.
+		groupSnapshotter = b
+	}
+
+	// Fail fast if we don't have a group snapshotter by now.
+	if groupSnapshotter == nil {
+		return nil, errors.New("failed to set group snapshotter")
+	}
+
+	// Add a vol transaction with enough info about the whole group
+	// Add transaction in case the operation must be rolled back later
+	txn := &storage.VolumeTransaction{
+		GroupSnapshotConfig: groupSnapshotConfig,
+		Op:                  storage.AddGroupSnapshot,
+	}
+	if err = o.AddVolumeTransaction(ctx, txn); err != nil {
+		return nil, err
+	}
+
+	// Recovery function in case of error
+	defer func() {
+		err = o.addGroupSnapshotCleanup(ctx, err, backendsToVolumes, groupSnapshot, snapshots, txn, groupSnapshotConfig)
+	}()
+
+	// Create the group snapshot
+	groupSnapshot, snapshots, err = groupSnapshotter.CreateGroupSnapshot(ctx, groupSnapshotConfig, groupSnapshotTarget)
+	if err != nil {
+		if errors.IsMaxLimitReachedError(err) {
+			return nil, errors.MaxLimitReachedError(fmt.Sprintf("failed to create group snapshot %s: %v",
+				groupSnapshotConfig.ID(), err))
+		}
+		return nil, fmt.Errorf("failed to create group snapshot %s: %v", groupSnapshotConfig.ID(), err)
+	}
+
+	// Do post-processing here; nas and san should be no-ops; san-economy needs work
+	postProcessedSnaps, err := groupSnapshotter.PostProcessGroupSnapshot(ctx, groupSnapshotTarget, groupSnapshot)
+	if err != nil {
+		return nil, fmt.Errorf("failed to post process group snapshot %s: %v",
+			groupSnapshotConfig.ID(), err)
+	}
+	if postProcessedSnaps != nil {
+		// This would be the SAN-Economy case
+		for _, postProcessedSnap := range postProcessedSnaps {
+			groupSnapshot.SnapshotIDs = append(groupSnapshot.SnapshotIDs, postProcessedSnap.ID())
+		}
+	}
+
+	// Save references to new group snapshot and each snapshot
+	if err = o.storeClient.AddGroupSnapshot(ctx, groupSnapshot); err != nil {
+		return nil, err
+	}
+	o.groupSnapshots[groupSnapshot.ID()] = groupSnapshot
+
+	// Save references to new snapshots and build a list of external snapshots.
+	snapshotExternal := make([]*storage.SnapshotExternal, 0, len(groupSnapshot.GetSnapshotIDs()))
+	for _, snap := range snapshots {
+		if err = o.storeClient.AddSnapshot(ctx, snap); err != nil {
+			return nil, err
+		}
+		o.snapshots[snap.ID()] = snap
+		snapshotExternal = append(snapshotExternal, snap.ConstructExternal())
+	}
+
+	return groupSnapshot.ConstructExternal(), nil
+}
+
+// addGroupSnapshotCleanup is used as a deferred method from the group snapshot create method
+// to clean up in case anything goes wrong during the operation.
+func (o *TridentOrchestrator) addGroupSnapshotCleanup(
+	ctx context.Context, err error, backendsToVolumes map[string][]*storage.VolumeConfig,
+	groupSnapshot *storage.GroupSnapshot, snapshots []*storage.Snapshot, volTxn *storage.VolumeTransaction,
+	groupSnapshotConfig *storage.GroupSnapshotConfig,
+) error {
+	var cleanupErr, txErr error
+	if err != nil {
+		// We failed somewhere. There are two possible cases:
+		// 1.  We failed to create a snapshot and fell through to the end of the function.
+		//     In this case, we don't need to roll anything back.
+		// 2.  We failed to save the snapshots or group snapshot to the persistent store.
+		//     In this case, we need to remove the snapshots from the backend.
+		if backendsToVolumes != nil && snapshots != nil {
+			// We succeeded in adding the snapshots to the backends; now delete them.
+			// We need to go through each backend to delete the snapshot
+			for backendUUID, volConfigs := range backendsToVolumes {
+				backend, ok := o.backends[backendUUID]
+				if !ok {
+					cleanupErr = errors.NotFoundError("backend not found")
+				}
+				for _, volConfig := range volConfigs {
+					var volName string
+					for _, snap := range snapshots {
+						volName, _, err = storage.ParseSnapshotID(snap.ID())
+						if err != nil {
+							cleanupErr = err
+						}
+						if volName == volConfig.Name {
+							cleanupErr = backend.DeleteSnapshot(ctx, snap.Config, volConfig)
+							if cleanupErr != nil {
+								cleanupErr = fmt.Errorf("unable to delete group snapshot from backend during cleanup: %v",
+									cleanupErr)
+							}
+						}
+					}
+				}
+			}
+			if cleanupErr != nil {
+				cleanupErr = fmt.Errorf("unable to delete group snapshot from backend during cleanup:  %v", cleanupErr)
+			}
+		}
+	}
+	if cleanupErr == nil {
+		// Only clean up the snapshot transaction if we've succeeded at cleaning up on the backend or if we didn't
+		// need to do so in the first place.
+		if txErr = o.DeleteVolumeTransaction(ctx, volTxn); txErr != nil {
+			txErr = fmt.Errorf("unable to clean up group snapshot transaction: %v", txErr)
+		}
+	}
+	if cleanupErr != nil || txErr != nil {
+		// Remove the snapshot from memory, if it's there, so that the user can try to re-add.
+		// This will trigger recovery code.
+		delete(o.groupSnapshots, groupSnapshotConfig.ID())
+		if groupSnapshot != nil {
+			for _, snapID := range groupSnapshot.GetSnapshotIDs() {
+				delete(o.snapshots, snapID)
+			}
+		}
+
+		// Report on all errors we encountered.
+		err = multierr.Append(err, cleanupErr)
+		err = multierr.Append(err, txErr)
+		Logc(ctx).Warnf(
+			"Unable to clean up artifacts of group snapshot creation: %v. "+
+				"Repeat creating the group snapshot or restart %v.",
+			err, config.OrchestratorName)
+	}
+	return err
+}
+
+func (o *TridentOrchestrator) GetGroupSnapshot(ctx context.Context,
+	groupSnapshotID string,
+) (groupSnapshotExternal *storage.GroupSnapshotExternal, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	defer recordTiming("group_snapshot_get", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	return o.getGroupSnapshot(ctx, groupSnapshotID)
+}
+
+// getGroupSnapshot accepts a group snapshot ID and returns the group snapshot object.
+// It assumes the caller has already acquired the orchestrator mutex.
+func (o *TridentOrchestrator) getGroupSnapshot(
+	_ context.Context, groupSnapshotID string,
+) (*storage.GroupSnapshotExternal, error) {
+	groupSnapshot, found := o.groupSnapshots[groupSnapshotID]
+	if !found {
+		return nil, errors.NotFoundError("group snapshot %s was not found", groupSnapshotID)
+	}
+
+	return groupSnapshot.ConstructExternal(), nil
+}
+
+func (o *TridentOrchestrator) ListGroupSnapshots(
+	ctx context.Context,
+) (groupSnapshots []*storage.GroupSnapshotExternal, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	defer recordTiming("group_snapshot_list", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	var errs error
+	groupSnapshots = make([]*storage.GroupSnapshotExternal, 0, len(o.groupSnapshots))
+	for id := range o.groupSnapshots {
+		gs, err := o.getGroupSnapshot(ctx, id)
+		if err != nil {
+			errs = errors.Join(errs, err)
+			continue
+		}
+		groupSnapshots = append(groupSnapshots, gs)
+	}
+
+	if errs != nil {
+		Logc(ctx).WithError(err).Error("Could not retrieve some group snapshots.")
+		return nil, errs
+	}
+
+	sort.Sort(storage.ByGroupSnapshotExternalID(groupSnapshots))
+	return groupSnapshots, nil
+}
+
+func (o *TridentOrchestrator) DeleteGroupSnapshot(ctx context.Context, groupName string) (err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	defer recordTiming("group_snapshot_delete", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+	defer o.updateMetrics()
+
+	// Check if the group snapshot exists. If it doesn't, log an error and fail early.
+	groupSnapshot, ok := o.groupSnapshots[groupName]
+	if !ok {
+		Logc(ctx).Warnf("Group snapshot '%s' not found.", groupName)
+		return errors.NotFoundError("group snapshot '%s' not found", groupName)
+	}
+	snapshotIDs := groupSnapshot.GetSnapshotIDs()
+
+	// Start a transaction to delete the group snapshot.
+	txn := &storage.VolumeTransaction{
+		GroupSnapshotConfig: groupSnapshot.GroupSnapshotConfig,
+		Op:                  storage.DeleteGroupSnapshot,
+	}
+	if err = o.AddVolumeTransaction(ctx, txn); err != nil {
+		return err
+	}
+
+	// Ensure delete transaction is updated or cleaned up.
+	defer func() {
+		errTxn := o.DeleteVolumeTransaction(ctx, txn)
+		if errTxn != nil {
+			Logc(ctx).WithFields(LogFields{
+				"snapshotIDs": snapshotIDs,
+				"groupName":   groupName,
+				"error":       errTxn,
+				"operation":   txn.Op,
+			}).Warnf("Unable to delete group snapshot transaction. Repeat deletion using %s or restart %v.",
+				config.OrchestratorClientName, config.OrchestratorName)
+		}
+		if err != nil || errTxn != nil {
+			err = multierr.Append(err, errTxn)
+		}
+	}()
+
+	// Delete the group snapshot
+	return o.deleteGroupSnapshot(ctx, groupName)
+}
+
+// deleteGroupSnapshot does the necessary work to delete a group snapshot and all constituents entirely.
+// It does not construct a transaction, nor does it take locks; it assumes that the caller will take care of both of these.
+func (o *TridentOrchestrator) deleteGroupSnapshot(ctx context.Context, groupName string) error {
+	if groupName == "" {
+		return fmt.Errorf("empty group snapshot name")
+	}
+
+	groupSnapshot, ok := o.groupSnapshots[groupName]
+	if !ok {
+		return errors.NotFoundError("group snapshot %s not found", groupName)
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"groupName":   groupName,
+		"snapshotIDs": groupSnapshot.GetSnapshotIDs(),
+	}).Debug("Deleting group snapshot.")
+
+	// Delete each constituent snapshot from the backend and the store.
+	var errs error
+	for _, snapID := range groupSnapshot.GetSnapshotIDs() {
+		// There are several things to check for this:
+		//  1. Check if the snapshot is in the cache. If it's a cache-miss, do not delete.
+		//  2. Check if the snapshot is a source for a read-only volume. If so, bail out.
+		//  3. Check if the backend and source volume are non-existent. If so, delete the snapshot reference here.
+		//  4. Delete each constituent snapshot from the backend, store and cache.
+
+		// Check if this snapshot is in the cache. If not, log a warning and continue.
+		snapshot, ok := o.snapshots[snapID]
+		if !ok {
+			Logc(ctx).WithFields(LogFields{
+				"groupName":  groupName,
+				"snapshotID": snapID,
+			}).Warn("Could not find snapshot in group.")
+			continue
+		}
+		volumeName := snapshot.Config.VolumeName
+		snapshotName := snapshot.Config.Name
+
+		// Check if this grouped snapshot is a source for a read-only volume. If so, return error.
+		for _, vol := range o.volumes {
+			volName := vol.Config.Name
+			if vol.Config.ReadOnlyClone && vol.Config.CloneSourceSnapshot == snapshotName {
+				Logc(ctx).WithFields(LogFields{
+					"readyOnlyClone": volName,
+					"snapshotSource": snapshotName,
+				}).Error("Unable to safely delete source snapshot for read-only clone.")
+				return errors.ConflictError("unable to delete source snapshot %s "+
+					"for read-only clone %s", snapshotName, volName)
+			}
+		}
+
+		// The next section handles the case where the source volume AND the backend for this snapshot
+		// have been lost to Trident (possibly between installations) but the snapshot itself has not.
+		// If either the backend or volume resources do not exist, delete the snapshot immediately.
+
+		// Check if the backend and source volume are non-existent.
+		// If so, we can delete the snapshot here and move onto the next one.
+		volume, ok := o.volumes[volumeName]
+		if !ok && !snapshot.State.IsMissingVolume() {
+			Logc(ctx).WithFields(LogFields{
+				"snapshotID":    snapID,
+				"snapshotState": snapshot.State,
+				"volumeName":    volumeName,
+				"volumeExists":  ok,
+			}).Error("Cannot delete snapshot; inaccurate snapshot state.")
+			return errors.NotFoundError("volume %s not found", volumeName)
+		}
+
+		// At this point, we cannot rediscover the backend to remove the snapshot.
+		var backend storage.Backend
+		var backendUUID string
+		if volume != nil {
+			backendUUID = volume.BackendUUID
+			backend, ok = o.backends[backendUUID]
+			if !ok && !snapshot.State.IsMissingBackend() {
+				Logc(ctx).WithFields(LogFields{
+					"snapshotID":    snapID,
+					"snapshotState": snapshot.State,
+					"backendUUID":   backendUUID,
+					"backendExists": ok,
+				}).Error("Cannot delete snapshot; inaccurate snapshot state.")
+				return errors.NotFoundError("backend %s not found", backendUUID)
+			}
+		}
+
+		// Note that this block will only be entered in the case that the snapshot
+		// is missing its source volume and backend.
+		// In other words, the snapshot cannot be deleted in a backend if that backend reference doesn't exist
+		// or cannot be deduced via source volume reference.
+		if backend == nil || volume == nil {
+			Logc(ctx).WithFields(LogFields{
+				"snapshotID":           snapID,
+				"snapshotInternalName": snapshot.Config.InternalName,
+				"snapshotState":        snapshot.State,
+				"volumeName":           volumeName,
+				"internalVolumeName":   snapshot.Config.VolumeInternalName,
+				"backendUUID":          backendUUID,
+			}).Warn("Deleting snapshot reference without source volume or backend; snapshot may persist in storage system.")
+
+			// Remove the snapshot from Trident cache and store and continue.
+			if err := o.storeClient.DeleteSnapshot(ctx, snapshot); err != nil {
+				return err
+			}
+			delete(o.snapshots, snapshot.ID())
+			continue
+		}
+
+		// Delete each constituent snapshot from the backend, store and cache.
+		// Reuse the pre-existing deleteSnapshot method for this.
+		if err := o.deleteSnapshot(ctx, snapshot.Config); err != nil {
+			if !errors.IsNotFoundError(err) {
+				Logc(ctx).WithFields(LogFields{
+					"snapshotID": snapID,
+					"groupName":  groupName,
+					"volumeName": volumeName,
+					"error":      err,
+				}).WithError(err).Warn("Unable to delete snapshot.")
+				errs = errors.Join(errs, err)
+			}
+			continue
+		}
+	}
+
+	if errs != nil {
+		Logc(ctx).Debug("Unable to delete some grouped snapshots.")
+		return errs
+	}
+
+	// Only after deleting all constituent snapshots is it safe to delete the group snapshot reference.
+	if err := o.storeClient.DeleteGroupSnapshot(ctx, groupSnapshot); err != nil {
+		return err
+	}
+	delete(o.groupSnapshots, groupSnapshot.ID())
+
+	return nil
+}
+
 // ImportSnapshot will retrieve the snapshot from the backend and persist the snapshot information.
 func (o *TridentOrchestrator) ImportSnapshot(
 	ctx context.Context, snapshotConfig *storage.SnapshotConfig,
@@ -4461,6 +5004,22 @@ func (o *TridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, sn
 	snapshot, ok := o.snapshots[snapshotID]
 	if !ok {
 		return errors.NotFoundError("snapshot %s not found on volume %s", snapshotName, volumeName)
+	} else if snapshot.IsGrouped() {
+		// Only allow deletion of a grouped snapshot if the group snapshot is gone.
+		groupName := snapshot.GroupSnapshotName()
+		if _, ok := o.groupSnapshots[groupName]; ok {
+			Logc(ctx).WithFields(LogFields{
+				"snapshot":  snapshotID,
+				"groupName": groupName,
+			}).Warn("Snapshot could not be deleted because it is part of a group snapshot. Delete the group snapshot.")
+			return errors.ConflictError("unable to delete snapshot: '%s' "+
+				"while group: '%s' exists", snapshotID, groupName)
+		}
+
+		Logc(ctx).WithFields(LogFields{
+			"snapshot":  snapshotID,
+			"groupName": groupName,
+		}).Debug("Snapshot is grouped but group snapshot no longer exists. Proceeding with deletion.")
 	}
 
 	volume, ok := o.volumes[volumeName]
@@ -4471,7 +5030,7 @@ func (o *TridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, sn
 	}
 
 	// Note that this block will only be entered in the case that the snapshot
-	// is missing it's volume and the volume is nil. If the volume does not
+	// is missing its volume and the volume is nil. If the volume does not
 	// exist, delete the snapshot and clean up, then return.
 	if volume == nil {
 		if err = o.storeClient.DeleteSnapshot(ctx, snapshot); err != nil {
@@ -4484,8 +5043,8 @@ func (o *TridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, sn
 	// Check if the snapshot is a source for a read-only volume. If so, return error.
 	for _, vol := range o.volumes {
 		if vol.Config.ReadOnlyClone && vol.Config.CloneSourceSnapshot == snapshotName {
-			return fmt.Errorf("unable to delete snapshot %s as it is a source for read-only clone %s", snapshotName,
-				vol.Config.Name)
+			return errors.ConflictError("unable to delete snapshot %s as it is a source "+
+				"for read-only clone %s", snapshotName, vol.Config.Name)
 		}
 	}
 
@@ -4497,7 +5056,7 @@ func (o *TridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, sn
 	}
 
 	// Note that this block will only be entered in the case that the snapshot
-	// is missing it's backend and the backend is nil. If the backend does not
+	// is missing its backend and the backend is nil. If the backend does not
 	// exist, delete the snapshot and clean up, then return.
 	if backend == nil {
 		if err = o.storeClient.DeleteSnapshot(ctx, snapshot); err != nil {
@@ -4592,6 +5151,44 @@ func (o *TridentOrchestrator) ListSnapshotsByName(
 			snapshots = append(snapshots, s.ConstructExternal())
 		}
 	}
+	sort.Sort(storage.BySnapshotExternalID(snapshots))
+	return snapshots, nil
+}
+
+func (o *TridentOrchestrator) ListSnapshotsForGroup(
+	ctx context.Context, groupName string,
+) (snapshots []*storage.SnapshotExternal, err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	defer recordTiming("snapshot_list_by_group_name", &err)()
+
+	o.mutex.Lock()
+	defer o.mutex.Unlock()
+
+	fields := LogFields{"groupName": groupName}
+
+	// Pre-provisioned grouped snapshots may be imported prior to importing the group snapshot reference.
+	// Handle that case gracefully.
+	if _, ok := o.groupSnapshots[groupName]; !ok {
+		Logc(ctx).WithFields(fields).Warn("Group snapshot not found; attempting to list snapshots by name.")
+	}
+
+	snapshots = make([]*storage.SnapshotExternal, 0)
+	for _, snapshot := range o.snapshots {
+		if snapshot.Config.GroupSnapshotName == groupName {
+			snapshots = append(snapshots, snapshot.ConstructExternal())
+		}
+	}
+
+	if len(snapshots) == 0 {
+		Logc(ctx).Errorf("No snapshots found for group snapshot '%s'.", groupName)
+		return nil, errors.NotFoundError("no snapshots found for group snapshot '%s'", groupName)
+	}
+
 	sort.Sort(storage.BySnapshotExternalID(snapshots))
 	return snapshots, nil
 }

@@ -241,6 +241,7 @@ var controllerRoutes = Routes{
 		nil,
 		ListSnapshots,
 	},
+	// ListSnapshotsForVolume should be deprecated after v26.10.0.
 	Route{
 		"ListSnapshotsForVolume",
 		"GET",
@@ -268,6 +269,27 @@ var controllerRoutes = Routes{
 		config.SnapshotURL + "/{volume}/{snapshot}",
 		nil,
 		DeleteSnapshot,
+	},
+	Route{
+		"GetGroupSnapshot",
+		"GET",
+		config.GroupSnapshotURL + "/{group}",
+		nil,
+		GetGroupSnapshot,
+	},
+	Route{
+		"ListGroupSnapshots",
+		"GET",
+		config.GroupSnapshotURL,
+		nil,
+		ListGroupSnapshots,
+	},
+	Route{
+		"DeleteGroupSnapshot",
+		"DELETE",
+		config.GroupSnapshotURL + "/{group}",
+		nil,
+		DeleteGroupSnapshot,
 	},
 	Route{
 		"GetCHAP",

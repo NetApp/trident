@@ -56,6 +56,10 @@ type MultipleSnapshotResponse struct {
 	Items []storage.SnapshotExternal `json:"items"`
 }
 
+type MultipleGroupSnapshotResponse struct {
+	Items []storage.GroupSnapshotExternal `json:"items"`
+}
+
 type Version struct {
 	Version       string `json:"version"`
 	MajorVersion  uint   `json:"majorVersion"`

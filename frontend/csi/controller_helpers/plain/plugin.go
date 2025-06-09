@@ -119,6 +119,16 @@ func (h *helper) GetSnapshotConfigForImport(
 	}, nil
 }
 
+func (h *helper) GetGroupSnapshotConfigForCreate(
+	ctx context.Context, groupSnapshotName string, volumeNames []string,
+) (*storage.GroupSnapshotConfig, error) {
+	return &storage.GroupSnapshotConfig{
+		Version:     config.OrchestratorAPIVersion,
+		Name:        groupSnapshotName,
+		VolumeNames: volumeNames,
+	}, nil
+}
+
 func (h *helper) GetNodeTopologyLabels(_ context.Context, _ string) (map[string]string, error) {
 	return map[string]string{}, nil
 }

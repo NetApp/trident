@@ -1,10 +1,12 @@
-// Copyright 2020 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package storage
 
 import (
 	"fmt"
 	"regexp"
+	"strings"
+	"time"
 )
 
 const (
@@ -21,6 +23,7 @@ type SnapshotConfig struct {
 	VolumeInternalName  string   `json:"volumeInternalName,omitempty"`
 	LUKSPassphraseNames []string `json:"luksPassphraseNames,omitempty"`
 	ImportNotManaged    bool     `json:"importNotManaged"`
+	GroupSnapshotName   string   `json:"groupSnapshotName,omitempty"`
 }
 
 func (c *SnapshotConfig) ID() string {
@@ -79,6 +82,28 @@ func (s *SnapshotExternal) ID() string {
 	return MakeSnapshotID(s.Config.VolumeName, s.Config.Name)
 }
 
+func (s *SnapshotExternal) Validate() error {
+	if s.Config.Name == "" {
+		return fmt.Errorf("snapshot does not have a name")
+	}
+	if s.Config.VolumeName == "" {
+		return fmt.Errorf("snapshot does not have a volume name")
+	}
+	if s.Config.InternalName == "" {
+		return fmt.Errorf("snapshot does not have an internal name")
+	}
+	if s.Config.VolumeInternalName == "" {
+		return fmt.Errorf("snapshot does not have a volume internal name")
+	}
+	if _, err := time.Parse(time.RFC3339, s.Created); err != nil {
+		return fmt.Errorf("snapshot does not have a valid created date")
+	}
+	if s.SizeBytes < 0 {
+		return fmt.Errorf("snapshot size is empty")
+	}
+	return nil
+}
+
 type SnapshotPersistent struct {
 	Snapshot
 }
@@ -112,6 +137,7 @@ func (s *Snapshot) ConstructClone() *Snapshot {
 			VolumeInternalName:  s.Config.VolumeInternalName,
 			LUKSPassphraseNames: s.Config.LUKSPassphraseNames,
 			ImportNotManaged:    s.Config.ImportNotManaged,
+			GroupSnapshotName:   s.Config.GroupSnapshotName,
 		},
 		Created:   s.Created,
 		SizeBytes: s.SizeBytes,
@@ -121,6 +147,17 @@ func (s *Snapshot) ConstructClone() *Snapshot {
 
 func (s *Snapshot) ID() string {
 	return MakeSnapshotID(s.Config.VolumeName, s.Config.Name)
+}
+
+func (s *Snapshot) IsGrouped() bool {
+	return s.Config.GroupSnapshotName != ""
+}
+
+func (s *Snapshot) GroupSnapshotName() string {
+	if s.Config.GroupSnapshotName == "" {
+		return ""
+	}
+	return s.Config.GroupSnapshotName
 }
 
 func (s *SnapshotPersistent) ConstructExternal() *SnapshotExternal {
@@ -152,6 +189,15 @@ func ParseSnapshotID(snapshotID string) (string, string, error) {
 	}
 
 	return volumeName, snapshotName, nil
+}
+
+func ConvertGroupSnapshotID(groupSnapshotID string) (string, error) {
+	groupUUID := strings.Split(groupSnapshotID, "groupsnapshot-")
+	if len(groupUUID) != 2 {
+		return "", fmt.Errorf("invalid group snapshot ID format: %s", groupSnapshotID)
+	}
+	snapID := fmt.Sprintf("snapshot-%s", groupUUID[1])
+	return snapID, nil
 }
 
 type BySnapshotExternalID []*SnapshotExternal

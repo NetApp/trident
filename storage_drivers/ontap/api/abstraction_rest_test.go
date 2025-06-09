@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-openapi/strfmt"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
@@ -4509,6 +4510,55 @@ func TestTerminalStateError(t *testing.T) {
 
 	assert.Error(t, terminalStateError)
 	assert.Equal(t, "error in getting terminal state", terminalStateError.Error())
+}
+
+func TestConsistencyGroupSnapshot(t *testing.T) {
+	// volume := getVolumeInfo()
+	// volumeUUID := *volume.UUID
+	oapi, rsi := newMockOntapAPIREST(t)
+
+	snapshotName := fmt.Sprintf("snapshot-%s", uuid.New().String())
+	cgName := fmt.Sprintf("cg-%s", snapshotName)[:30]
+
+	volumes := []string{"vol1", "vol2"}
+
+	deleteErr := fmt.Errorf("error deleting cg")
+	snapshotErr := fmt.Errorf("error creating cg snapshot")
+	createErr := fmt.Errorf("error creating cg")
+
+	// case 1: CG snapshot create success
+	rsi.EXPECT().ConsistencyGroupCreateAndWait(ctx, cgName, volumes).Return(nil).Times(1)
+	rsi.EXPECT().ConsistencyGroupSnapshotAndWait(ctx, cgName, snapshotName).Return(nil).Times(1)
+	rsi.EXPECT().ConsistencyGroupDelete(ctx, cgName).Return(nil).Times(1)
+	err := oapi.ConsistencyGroupSnapshot(ctx, snapshotName, volumes)
+	assert.NoError(t, err)
+
+	// case 2: CG snapshot create success, but cg delete failed once
+	rsi.EXPECT().ConsistencyGroupCreateAndWait(ctx, cgName, volumes).Return(nil).Times(1)
+	rsi.EXPECT().ConsistencyGroupSnapshotAndWait(ctx, cgName, snapshotName).Return(nil).Times(1)
+	rsi.EXPECT().ConsistencyGroupDelete(ctx, cgName).Return(deleteErr).Times(1)
+	rsi.EXPECT().ConsistencyGroupDelete(ctx, cgName).Return(nil).Times(1)
+	err = oapi.ConsistencyGroupSnapshot(ctx, snapshotName, volumes)
+	// return deleteErr
+	assert.Error(t, err)
+	assert.Equal(t, deleteErr, err)
+
+	// case 3: CG create success, but snapshot fails
+	rsi.EXPECT().ConsistencyGroupCreateAndWait(ctx, cgName, volumes).Return(nil).Times(1)
+	rsi.EXPECT().ConsistencyGroupSnapshotAndWait(ctx, cgName, snapshotName).Return(snapshotErr).Times(1)
+	rsi.EXPECT().ConsistencyGroupDelete(ctx, cgName).Return(nil).Times(1)
+	err = oapi.ConsistencyGroupSnapshot(ctx, snapshotName, volumes)
+	// return snapshotErr
+	assert.Error(t, err)
+	assert.Equal(t, snapshotErr, err)
+
+	// case 4: CG create fails
+	rsi.EXPECT().ConsistencyGroupCreateAndWait(ctx, cgName, volumes).Return(createErr).Times(1)
+	rsi.EXPECT().ConsistencyGroupDelete(ctx, cgName).Return(nil).Times(1)
+	err = oapi.ConsistencyGroupSnapshot(ctx, snapshotName, volumes)
+	// return createErr
+	assert.Error(t, err)
+	assert.Equal(t, createErr, err)
 }
 
 func TestNVMeNamespaceSetComment(t *testing.T) {

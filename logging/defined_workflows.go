@@ -1,3 +1,5 @@
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
+
 package logging
 
 const (
@@ -5,23 +7,24 @@ const (
 	workflowCategorySeparator  = "="
 	workflowOperationSeparator = ","
 
-	CategoryCore           = WorkflowCategory("core")
-	CategoryCRDController  = WorkflowCategory("crd_controller")
-	CategoryCR             = WorkflowCategory("cr")
-	CategoryStorageClient  = WorkflowCategory("storage_client")
-	CategoryPlugin         = WorkflowCategory("plugin")
-	CategoryVolume         = WorkflowCategory("volume")
-	CategoryStorageClass   = WorkflowCategory("storage_class")
-	CategoryNode           = WorkflowCategory("node")
-	CategoryBackend        = WorkflowCategory("backend")
-	CategorySnapshot       = WorkflowCategory("snapshot")
-	CategoryController     = WorkflowCategory("controller")
-	CategoryNodeServer     = WorkflowCategory("node_server")
-	CategoryIdentityServer = WorkflowCategory("identity_server")
-	CategoryGRPC           = WorkflowCategory("grpc")
-	CategoryTridentREST    = WorkflowCategory("trident_rest")
-	CategoryK8sClient      = WorkflowCategory("k8s_client")
-	CategoryNone           = WorkflowCategory("none")
+	CategoryCore                  = WorkflowCategory("core")
+	CategoryCRDController         = WorkflowCategory("crd_controller")
+	CategoryCR                    = WorkflowCategory("cr")
+	CategoryStorageClient         = WorkflowCategory("storage_client")
+	CategoryPlugin                = WorkflowCategory("plugin")
+	CategoryVolume                = WorkflowCategory("volume")
+	CategoryStorageClass          = WorkflowCategory("storage_class")
+	CategoryNode                  = WorkflowCategory("node")
+	CategoryBackend               = WorkflowCategory("backend")
+	CategorySnapshot              = WorkflowCategory("snapshot")
+	CategoryGroupControllerServer = WorkflowCategory("group_controller_server")
+	CategoryControllerServer      = WorkflowCategory("controller_server")
+	CategoryNodeServer            = WorkflowCategory("node_server")
+	CategoryIdentityServer        = WorkflowCategory("identity_server")
+	CategoryGRPC                  = WorkflowCategory("grpc")
+	CategoryTridentREST           = WorkflowCategory("trident_rest")
+	CategoryK8sClient             = WorkflowCategory("k8s_client")
+	CategoryNone                  = WorkflowCategory("none")
 
 	OpBootstrap        = WorkflowOperation("bootstrap")
 	OpVersion          = WorkflowOperation("version")
@@ -111,6 +114,10 @@ var (
 	WorkflowStorageClassList   = Workflow{CategoryStorageClass, OpList}
 	WorkflowStorageClassDelete = Workflow{CategoryStorageClass, OpDelete}
 
+	WorkflowGroupSnapshotCreate = Workflow{CategoryGroupControllerServer, OpCreate}
+	WorkflowGroupSnapshotGet    = Workflow{CategoryGroupControllerServer, OpGet}
+	WorkflowGroupSnapshotDelete = Workflow{CategoryGroupControllerServer, OpDelete}
+
 	WorkflowNodeCreate          = Workflow{CategoryNode, OpCreate}
 	WorkflowNodeGet             = Workflow{CategoryNode, OpGet}
 	WorkflowNodeGetInfo         = Workflow{CategoryNode, OpGetInfo}
@@ -137,9 +144,9 @@ var (
 	WorkflowSnapshotList      = Workflow{CategorySnapshot, OpList}
 	WorkflowSnapshotCloneFrom = Workflow{CategorySnapshot, OpCloneFrom}
 
-	WorkflowControllerPublish         = Workflow{CategoryController, OpPublish}
-	WorkflowControllerUnpublish       = Workflow{CategoryController, OpUnpublish}
-	WorkflowControllerGetCapabilities = Workflow{CategoryController, OpGetCapabilties}
+	WorkflowControllerPublish         = Workflow{CategoryControllerServer, OpPublish}
+	WorkflowControllerUnpublish       = Workflow{CategoryControllerServer, OpUnpublish}
+	WorkflowControllerGetCapabilities = Workflow{CategoryControllerServer, OpGetCapabilties}
 
 	WorkflowNodeStage         = Workflow{CategoryNodeServer, OpStage}
 	WorkflowNodeUnstage       = Workflow{CategoryNodeServer, OpUnstage}

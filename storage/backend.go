@@ -100,6 +100,16 @@ type Mirrorer interface {
 	GetMirrorTransferTime(ctx context.Context, pvcVolumeName string) (*time.Time, error)
 }
 
+type GroupSnapshotter interface {
+	GetGroupSnapshotTarget(ctx context.Context, volConfigs []*VolumeConfig) (*GroupSnapshotTargetInfo, error)
+	CreateGroupSnapshot(
+		ctx context.Context, config *GroupSnapshotConfig, target *GroupSnapshotTargetInfo,
+	) (*GroupSnapshot, []*Snapshot, error)
+	PostProcessGroupSnapshot(
+		ctx context.Context, targetInfo *GroupSnapshotTargetInfo, groupSnapshot *GroupSnapshot,
+	) ([]*Snapshot, error)
+}
+
 // StateGetter provides a common interface for backends that support polling backend for state information.
 type StateGetter interface {
 	GetBackendState(ctx context.Context) (string, *roaring.Bitmap)
@@ -967,6 +977,46 @@ func (b *StorageBackend) DeleteSnapshot(
 
 	// Delete snapshot
 	return b.driver.DeleteSnapshot(ctx, snapConfig, volConfig)
+}
+
+func (b *StorageBackend) CanGroupSnapshot() bool {
+	_, ok := b.driver.(GroupSnapshotter)
+	return ok
+}
+
+func (b *StorageBackend) GetGroupSnapshotTarget(
+	ctx context.Context, volConfigs []*VolumeConfig,
+) (*GroupSnapshotTargetInfo, error) {
+	snapshotter, ok := b.driver.(GroupSnapshotter)
+	if !ok {
+		return nil, errors.UnsupportedError(
+			fmt.Sprintf("group snapshot is not supported for backend of type %v", b.driver.Name()))
+	}
+	return snapshotter.GetGroupSnapshotTarget(ctx, volConfigs)
+}
+
+func (b *StorageBackend) CreateGroupSnapshot(ctx context.Context, config *GroupSnapshotConfig,
+	target *GroupSnapshotTargetInfo,
+) (*GroupSnapshot, []*Snapshot, error) {
+	snapshotter, ok := b.driver.(GroupSnapshotter)
+	if !ok {
+		return nil, nil, errors.UnsupportedError(
+			fmt.Sprintf("group snapshot is not supported for backend of type %v", b.driver.Name()))
+	}
+
+	return snapshotter.CreateGroupSnapshot(ctx, config, target)
+}
+
+func (b *StorageBackend) PostProcessGroupSnapshot(
+	ctx context.Context, targetInfo *GroupSnapshotTargetInfo, groupSnapshot *GroupSnapshot,
+) ([]*Snapshot, error) {
+	snapshotter, ok := b.driver.(GroupSnapshotter)
+	if !ok {
+		return nil, errors.UnsupportedError(
+			fmt.Sprintf("group snapshot is not supported for backend of type %v", b.driver.Name()))
+	}
+
+	return snapshotter.PostProcessGroupSnapshot(ctx, targetInfo, groupSnapshot)
 }
 
 const (

@@ -165,6 +165,34 @@ rules:
       - update
       - patch
   - apiGroups:
+      - groupsnapshot.storage.k8s.io
+    resources:
+      - volumegroupsnapshots
+    verbs:
+      - list
+  - apiGroups:
+      - groupsnapshot.storage.k8s.io
+    resources:
+      - volumegroupsnapshotclasses
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - groupsnapshot.storage.k8s.io
+    resources:
+      - volumegroupsnapshotcontents
+    verbs:
+      - get
+      - list
+      - watch
+      - patch
+  - apiGroups:
+      - groupsnapshot.storage.k8s.io
+    resources:
+      - volumegroupsnapshotcontents/status
+    verbs:
+      - update
+  - apiGroups:
       - csi.storage.k8s.io
     resources:
       - csidrivers
@@ -222,6 +250,8 @@ rules:
       - tridentactionmirrorupdates/status
       - tridentsnapshotinfos
       - tridentsnapshotinfos/status
+      - tridentgroupsnapshots
+      - tridentgroupsnapshots/status
       - tridentactionsnapshotrestores
       - tridentactionsnapshotrestores/status
       - tridentprovisioners # Required for Tprov

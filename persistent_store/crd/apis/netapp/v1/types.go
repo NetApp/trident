@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package v1
 
@@ -439,7 +439,7 @@ type TridentSnapshot struct {
 	Created string `json:"dateCreated"`
 	// The size of the volume at the time the snapshot was created
 	SizeBytes int64 `json:"size"`
-	// State records the TridentVolume's state
+	// State records the TridentSnapshot's state
 	State string `json:"state"`
 }
 
@@ -451,6 +451,32 @@ type TridentSnapshotList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	// List of TridentSnapshot objects
 	Items []*TridentSnapshot `json:"items"`
+}
+
+// TridentGroupSnapshot defines a Trident group snapshot.
+// +genclient
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentGroupSnapshot struct {
+	metav1.TypeMeta `json:",inline"`
+	// +k8s:openapi-gen=false
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+	// Specification of the group snapshot
+	Spec runtime.RawExtension `json:"spec"`
+	// List of Snapshot IDs in the group.
+	Snapshots []string `json:"snapshotIDs"`
+	// The UTC time that the group snapshot was created at in RFC3339 format
+	Created string `json:"dateCreated,omitempty"`
+}
+
+// TridentGroupSnapshotList defines a list of Trident group snapshots.
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentGroupSnapshotList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	// List of TridentGroupSnapshot objects
+	Items []*TridentGroupSnapshot `json:"items"`
 }
 
 // TridentVolumeReference defines a PVC whose backing volume Trident may share to other namespaces.

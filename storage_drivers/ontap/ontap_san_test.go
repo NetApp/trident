@@ -5179,3 +5179,88 @@ func TestOntapSanStorageDriverVolumeRestoreSnapshot_Failure(t *testing.T) {
 
 	assert.Error(t, result)
 }
+
+func TestOntapSanVolumeGroupSnapshot(t *testing.T) {
+	ctx := context.Background()
+
+	mockAPI, driver := newMockOntapSANDriver(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	groupSnapshotConfig := &storage.GroupSnapshotConfig{
+		Name:         "groupsnapshot-1234",
+		InternalName: "groupsnapshot-1234",
+		VolumeNames:  []string{"vol1", "vol2"},
+	}
+	storageVols := storage.GroupSnapshotTargetVolumes{
+		"trident_vol1": {
+			"vol1": &storage.VolumeConfig{Name: "vol1"},
+		},
+		"trident_vol2": {
+			"vol2": &storage.VolumeConfig{Name: "vol2"},
+		},
+	}
+	targetInfo := &storage.GroupSnapshotTargetInfo{
+		StorageType:    "unified",
+		StorageUUID:    "12345",
+		StorageVolumes: storageVols,
+	}
+	storageVolNames := []string{"trident_vol1", "trident_vol2"}
+	snapName, _ := storage.ConvertGroupSnapshotID(groupSnapshotConfig.Name)
+	snapInfoResult := api.Snapshot{CreateTime: "1"}
+
+	mockAPI.EXPECT().ConsistencyGroupSnapshot(ctx, snapName, gomock.InAnyOrder(storageVolNames)).Return(nil).Times(1)
+
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapName, gomock.Any()).Return(snapInfoResult, nil).Times(2)
+	mockAPI.EXPECT().LunSize(ctx, gomock.Any()).Return(1073741824, nil).Times(2)
+
+	groupSnapshot, snapshots, err := driver.CreateGroupSnapshot(ctx, groupSnapshotConfig, targetInfo)
+
+	assert.Equal(t, groupSnapshot.ID(), groupSnapshotConfig.ID())
+	assert.Equal(t, groupSnapshot.GetVolumeNames(), groupSnapshotConfig.GetVolumeNames())
+
+	for _, snap := range snapshots {
+		assert.Contains(t, groupSnapshot.GetSnapshotIDs(), snap.ID())
+	}
+
+	assert.NoError(t, err, "Group snapshot creation failed")
+}
+
+func TestOntapSanVolumeGroupTarget(t *testing.T) {
+	ctx := context.Background()
+
+	mockAPI, driver := newMockOntapSANDriver(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	volumeConfigs := []*storage.VolumeConfig{
+		{
+			Name:         "vol1",
+			InternalName: "trident_vol1",
+		},
+		{
+			Name:         "vol2",
+			InternalName: "trident_vol2",
+		},
+	}
+
+	storageVols := storage.GroupSnapshotTargetVolumes{
+		"trident_vol1": {
+			"vol1": &storage.VolumeConfig{Name: "vol1", InternalName: "trident_vol1"},
+		},
+		"trident_vol2": {
+			"vol2": &storage.VolumeConfig{Name: "vol2", InternalName: "trident_vol2"},
+		},
+	}
+	expectedTargetInfo := &storage.GroupSnapshotTargetInfo{
+		StorageType:    "Unified",
+		StorageUUID:    "12345",
+		StorageVolumes: storageVols,
+	}
+
+	mockAPI.EXPECT().GetSVMUUID().Return("12345").Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil).Times(2)
+
+	targetInfo, err := driver.GetGroupSnapshotTarget(ctx, volumeConfigs)
+
+	assert.Equal(t, targetInfo, expectedTargetInfo)
+	assert.NoError(t, err, "Volume group target failed")
+}

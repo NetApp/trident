@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package persistentstore
 
@@ -30,6 +30,8 @@ type InMemoryClient struct {
 	nodesAdded              int
 	snapshots               map[string]*storage.SnapshotPersistent
 	snapshotsAdded          int
+	groupSnapshots          map[string]*storage.GroupSnapshotPersistent
+	groupSnapshotsAdded     int
 	uuid                    string
 }
 
@@ -402,6 +404,7 @@ func (c *InMemoryClient) UpdateSnapshot(_ context.Context, snapshot *storage.Sna
 // DeleteSnapshot deletes a snapshot from the persistent store
 func (c *InMemoryClient) DeleteSnapshot(_ context.Context, snapshot *storage.Snapshot) error {
 	delete(c.snapshots, snapshot.ID())
+	c.snapshotsAdded--
 	return nil
 }
 
@@ -412,5 +415,68 @@ func (c *InMemoryClient) DeleteSnapshots(context.Context) error {
 		return NewPersistentStoreError(KeyNotFoundErr, "Snapshots")
 	}
 	c.snapshots = make(map[string]*storage.SnapshotPersistent)
+	c.snapshotsAdded = 0
+	return nil
+}
+
+func (c *InMemoryClient) AddGroupSnapshot(_ context.Context, groupSnapshot *storage.GroupSnapshot) error {
+	groupSnapPersistent := groupSnapshot.ConstructPersistent()
+	if _, ok := c.groupSnapshots[groupSnapPersistent.ID()]; !ok {
+		c.groupSnapshotsAdded++
+	}
+	if len(c.groupSnapshots) == 0 {
+		c.groupSnapshots = make(map[string]*storage.GroupSnapshotPersistent)
+	}
+	c.groupSnapshots[groupSnapPersistent.ID()] = groupSnapPersistent
+	return nil
+}
+
+func (c *InMemoryClient) GetGroupSnapshot(_ context.Context, groupSnapshotName string) (*storage.GroupSnapshotPersistent, error) {
+	groupSnapshot, ok := c.groupSnapshots[groupSnapshotName]
+	if !ok {
+		return nil, NewPersistentStoreError(KeyNotFoundErr, groupSnapshotName)
+	}
+	return groupSnapshot, nil
+}
+
+func (c *InMemoryClient) GetGroupSnapshots(_ context.Context) ([]*storage.GroupSnapshotPersistent, error) {
+	tgsnapList := make([]*storage.GroupSnapshotPersistent, 0, len(c.groupSnapshots))
+	if c.groupSnapshotsAdded == 0 {
+		// Try to match etcd semantics as closely as possible.
+		return tgsnapList, nil
+	}
+
+	for _, tgsnap := range c.groupSnapshots {
+		tgsnapList = append(tgsnapList, tgsnap)
+	}
+	return tgsnapList, nil
+}
+
+func (c *InMemoryClient) UpdateGroupSnapshot(_ context.Context, groupSnapshot *storage.GroupSnapshot) error {
+	// UpdateGroupSnapshot requires the groupSnapshot to already exist.
+	if _, ok := c.groupSnapshots[groupSnapshot.ID()]; !ok {
+		return NewPersistentStoreError(KeyNotFoundErr, groupSnapshot.ID())
+	}
+	c.groupSnapshots[groupSnapshot.ID()] = groupSnapshot.ConstructPersistent()
+	return nil
+}
+
+func (c *InMemoryClient) DeleteGroupSnapshot(_ context.Context, groupSnapshot *storage.GroupSnapshot) error {
+	if _, ok := c.groupSnapshots[groupSnapshot.ID()]; !ok {
+		// Try to match etcd semantics as closely as possible.
+		return NewPersistentStoreError(KeyNotFoundErr, "GroupSnapshots")
+	}
+	delete(c.groupSnapshots, groupSnapshot.ID())
+	c.groupSnapshotsAdded--
+	return nil
+}
+
+// DeleteGroupSnapshots deletes all group snapshots
+func (c *InMemoryClient) DeleteGroupSnapshots(_ context.Context) error {
+	if c.groupSnapshotsAdded == 0 {
+		return NewPersistentStoreError(KeyNotFoundErr, "GroupSnapshots")
+	}
+	c.groupSnapshots = make(map[string]*storage.GroupSnapshotPersistent)
+	c.groupSnapshotsAdded = 0
 	return nil
 }

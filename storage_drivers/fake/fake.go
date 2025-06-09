@@ -44,6 +44,8 @@ const (
 	PVC_creating_01       = "creating-c44b-40f9-a0a2-a09172f1a1f6"
 	PVC_creating_02       = "creating-686e-4960-9135-b040c2d54332"
 	PVC_creating_clone_03 = "creating-382g-4ccj-k0k4-z88la30d9k22"
+
+	groupSnapshotTargetType = "fake"
 )
 
 type StorageDriver struct {
@@ -74,6 +76,9 @@ type StorageDriver struct {
 	// different driver instances with the same config won't actually share
 	// state.
 	DestroyedSnapshots map[string]bool
+
+	GroupSnapshots          map[string]*storage.GroupSnapshot // map[groupSnapshotName]GroupSnapshot
+	DestroyedGroupSnapshots map[string]bool
 
 	Secret string
 }
@@ -112,13 +117,15 @@ func NewFakeStorageBackend(
 
 func NewFakeStorageDriver(ctx context.Context, config drivers.FakeStorageDriverConfig) *StorageDriver {
 	driver := &StorageDriver{
-		initialized:        true,
-		Config:             config,
-		Volumes:            make(map[string]fake.Volume),
-		DestroyedVolumes:   make(map[string]bool),
-		Snapshots:          make(map[string]map[string]*storage.Snapshot),
-		DestroyedSnapshots: make(map[string]bool),
-		Secret:             "secret",
+		initialized:             true,
+		Config:                  config,
+		Volumes:                 make(map[string]fake.Volume),
+		DestroyedVolumes:        make(map[string]bool),
+		Snapshots:               make(map[string]map[string]*storage.Snapshot),
+		DestroyedSnapshots:      make(map[string]bool),
+		GroupSnapshots:          make(map[string]*storage.GroupSnapshot),
+		DestroyedGroupSnapshots: make(map[string]bool),
+		Secret:                  "secret",
 	}
 	_ = driver.populateConfigurationDefaults(ctx, &config)
 	_ = driver.initializeStoragePools()
@@ -146,11 +153,13 @@ func NewFakeStorageDriverWithPools(
 			FakeStorageDriverPool: vpool,
 			Storage:               vpools,
 		},
-		Volumes:            make(map[string]fake.Volume),
-		DestroyedVolumes:   make(map[string]bool),
-		Snapshots:          make(map[string]map[string]*storage.Snapshot),
-		DestroyedSnapshots: make(map[string]bool),
-		Secret:             "fake-secret",
+		Volumes:                 make(map[string]fake.Volume),
+		DestroyedVolumes:        make(map[string]bool),
+		Snapshots:               make(map[string]map[string]*storage.Snapshot),
+		DestroyedSnapshots:      make(map[string]bool),
+		GroupSnapshots:          make(map[string]*storage.GroupSnapshot),
+		DestroyedGroupSnapshots: make(map[string]bool),
+		Secret:                  "fake-secret",
 	}
 
 	err := driver.initializeStoragePools()
@@ -175,11 +184,13 @@ func NewFakeStorageDriverWithDebugTraceFlags(debugTraceFlags map[string]bool) *S
 			Username:     "fake-user",
 			Password:     "fake-password",
 		},
-		Volumes:            make(map[string]fake.Volume),
-		DestroyedVolumes:   make(map[string]bool),
-		Snapshots:          make(map[string]map[string]*storage.Snapshot),
-		DestroyedSnapshots: make(map[string]bool),
-		Secret:             "fake-secret",
+		Volumes:                 make(map[string]fake.Volume),
+		DestroyedVolumes:        make(map[string]bool),
+		Snapshots:               make(map[string]map[string]*storage.Snapshot),
+		DestroyedSnapshots:      make(map[string]bool),
+		GroupSnapshots:          make(map[string]*storage.GroupSnapshot),
+		DestroyedGroupSnapshots: make(map[string]bool),
+		Secret:                  "fake-secret",
 	}
 
 	return driver
@@ -316,6 +327,8 @@ func (d *StorageDriver) Initialize(
 	d.Config.SerialNumbers = []string{d.Config.InstanceName + "_SN"}
 	d.Snapshots = make(map[string]map[string]*storage.Snapshot)
 	d.DestroyedSnapshots = make(map[string]bool)
+	d.GroupSnapshots = make(map[string]*storage.GroupSnapshot)
+	d.DestroyedGroupSnapshots = make(map[string]bool)
 
 	s, _ := json.Marshal(d.Config)
 	Logc(ctx).Debugf("FakeStorageDriverConfig: %s", string(s))
@@ -1031,6 +1044,132 @@ func (d *StorageDriver) DeleteSnapshot(
 	d.DestroyedSnapshots[snapConfig.ID()] = true
 
 	return nil
+}
+
+// GetGroupSnapshotTarget returns a set of information about the target of a group snapshot.
+// This information is used to gather information in a consistent way across storage drivers.
+func (d *StorageDriver) GetGroupSnapshotTarget(
+	ctx context.Context, volConfigs []*storage.VolumeConfig,
+) (*storage.GroupSnapshotTargetInfo, error) {
+	fields := LogFields{
+		"Method": "GetGroupSnapshotTarget",
+		"Type":   "FakeStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetGroupSnapshotTarget")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetGroupSnapshotTarget")
+
+	targetType := groupSnapshotTargetType
+	targetUUID := d.Config.InstanceName
+
+	// Construct a set of unique source volume IDs to volume names to configs for the group snapshot.
+	targetVolumes := make(storage.GroupSnapshotTargetVolumes, 0)
+	for _, volumeConfig := range volConfigs {
+		volumeName := volumeConfig.Name
+		internalVolName := volumeConfig.InternalName
+		_, ok := d.Volumes[internalVolName]
+		if !ok {
+			return nil, fmt.Errorf("volume %s not found", internalVolName)
+		}
+
+		if targetVolumes[internalVolName] == nil {
+			targetVolumes[internalVolName] = make(map[string]*storage.VolumeConfig)
+		}
+
+		// For other drivers such as the SAN-Eco driver, this will be a flexvol name -> pv name -> volume config.
+		targetVolumes[internalVolName][volumeName] = volumeConfig
+	}
+
+	return storage.NewGroupSnapshotTargetInfo(targetType, targetUUID, targetVolumes), nil
+}
+
+func (d *StorageDriver) CreateGroupSnapshot(
+	ctx context.Context, config *storage.GroupSnapshotConfig, target *storage.GroupSnapshotTargetInfo,
+) (*storage.GroupSnapshot, []*storage.Snapshot, error) {
+	fields := LogFields{
+		"Method": "CreateGroupSnapshot",
+		"Type":   "FakeStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateGroupSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateGroupSnapshot")
+
+	_, ok := d.GroupSnapshots[config.ID()]
+	if ok {
+		return nil, nil, fmt.Errorf("staged group snapshot %s already exists", config.ID())
+	}
+
+	// Assign an internal name at the driver level.
+	config.InternalName = config.ID()
+	groupName := config.ID()
+
+	// Track the individual snapshots for each volume config in the config snapshot target.
+	groupedSnapshots := make([]*storage.Snapshot, 0)
+	snapshotIDs := make([]string, 0)
+	creationTime := time.Now().Format(time.RFC3339)
+
+	// Look at all target source volumes and build a list of snapshots.
+	// The sourceVolumeID here correlates to a parent FlexVolume.
+	// The list of constituentVolumes is a set of volumes that exist under the source volume ID.
+	for _, volumesToConfigs := range target.GetVolumes() {
+		// Set up the snap name and internal name.
+		snapName, err := storage.ConvertGroupSnapshotID(groupName)
+		if err != nil {
+			return nil, nil, err
+		}
+		snapInternalName := snapName
+
+		// The constituent volumes correlate to the "persistent volumes" in the CO. Each needs a unique snapshot object.
+		snapshots := make([]*storage.Snapshot, 0, len(volumesToConfigs))
+		for _, volume := range volumesToConfigs {
+			volumeName := volume.Name
+			internalVolumeName := volume.InternalName
+			sizeBytes, _ := convert.ToPositiveInt64(volume.Size)
+
+			// Create a snapshot for each volume in the group snapshot
+			snapshot := &storage.Snapshot{
+				Config: &storage.SnapshotConfig{
+					Name:               snapName,
+					InternalName:       snapInternalName,
+					VolumeName:         volumeName,
+					VolumeInternalName: internalVolumeName,
+					GroupSnapshotName:  groupName,
+				},
+				Created:   creationTime,
+				SizeBytes: sizeBytes,
+				State:     storage.SnapshotStateOnline,
+			}
+			snapshots = append(snapshots, snapshot)
+			snapshotIDs = append(snapshotIDs, snapshot.ID())
+
+			// Initialize the snapshot map if necessary.
+			// [internalVolume][internalSnapshotName]->snapshot
+			if _, ok = d.Snapshots[internalVolumeName]; !ok {
+				d.Snapshots[internalVolumeName] = make(map[string]*storage.Snapshot)
+			}
+			d.Snapshots[internalVolumeName][snapshot.Config.InternalName] = snapshot
+			d.DestroyedSnapshots[snapshot.ID()] = false
+
+			Logc(ctx).WithFields(LogFields{
+				"groupName":              groupName,
+				"snapshotName":           snapName,
+				"snapshotID":             snapshot.ID(),
+				"groupSnapshotReference": snapshot.Config.GroupSnapshotName,
+			}).Debug("Added group snapshot to fake driver.")
+		}
+
+		// Add the constituent snapshots to the list of snapshots for this group snapshot.
+		// Remember! These are unique the VolumeConfigs, not the source volume IDs.
+		groupedSnapshots = append(groupedSnapshots, snapshots...)
+	}
+
+	// Create the group snapshot object. This is a logical grouping of the constituent snapshots.
+	return storage.NewGroupSnapshot(config, snapshotIDs, creationTime), groupedSnapshots, nil
+}
+
+func (d *StorageDriver) PostProcessGroupSnapshot(ctx context.Context, targetInfo *storage.GroupSnapshotTargetInfo,
+	groupSnapshot *storage.GroupSnapshot,
+) ([]*storage.Snapshot, error) {
+	// no-op for fake driver
+	return nil, nil
 }
 
 func (d *StorageDriver) Get(_ context.Context, name string) error {

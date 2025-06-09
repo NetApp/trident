@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package v1
 
@@ -58,6 +58,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&TridentVersionList{},
 		&TridentSnapshot{},
 		&TridentSnapshotList{},
+		&TridentGroupSnapshot{},
+		&TridentGroupSnapshotList{},
 		&TridentVolumeReference{},
 		&TridentVolumeReferenceList{},
 		&TridentActionSnapshotRestore{},

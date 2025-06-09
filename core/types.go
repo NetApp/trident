@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -65,10 +65,16 @@ type Orchestrator interface {
 	GetSnapshot(ctx context.Context, volumeName, snapshotName string) (*storage.SnapshotExternal, error)
 	ListSnapshots(ctx context.Context) ([]*storage.SnapshotExternal, error)
 	ListSnapshotsByName(ctx context.Context, snapshotName string) ([]*storage.SnapshotExternal, error)
+	ListSnapshotsForGroup(ctx context.Context, groupName string) ([]*storage.SnapshotExternal, error)
 	ListSnapshotsForVolume(ctx context.Context, volumeName string) ([]*storage.SnapshotExternal, error)
 	ReadSnapshotsForVolume(ctx context.Context, volumeName string) ([]*storage.SnapshotExternal, error)
 	RestoreSnapshot(ctx context.Context, volumeName, snapshotName string) error
 	DeleteSnapshot(ctx context.Context, volumeName, snapshotName string) error
+
+	CreateGroupSnapshot(ctx context.Context, config *storage.GroupSnapshotConfig) (*storage.GroupSnapshotExternal, error)
+	DeleteGroupSnapshot(ctx context.Context, groupName string) error
+	GetGroupSnapshot(ctx context.Context, groupName string) (*storage.GroupSnapshotExternal, error)
+	ListGroupSnapshots(ctx context.Context) ([]*storage.GroupSnapshotExternal, error)
 
 	AddStorageClass(ctx context.Context, scConfig *storageclass.Config) (*storageclass.External, error)
 	UpdateStorageClass(ctx context.Context, scConfig *storageclass.Config) (*storageclass.External, error)
