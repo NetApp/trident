@@ -47,6 +47,7 @@ func mockCryptsetupLuksOpen(mock *mockexec.MockCommand) *gomock.Call {
 	return mock.EXPECT().ExecuteWithTimeoutAndInput(
 		gomock.Any(), "cryptsetup", luksCommandTimeout, true, gomock.Any(),
 		"open", gomock.Any(), gomock.Any(), "--type", "luks2",
+		"--allow-discards", "--persistent",
 	)
 }
 
@@ -58,8 +59,8 @@ func mockCryptsetupLuksStatusWithDevicePath(mock *mockexec.MockCommand) *gomock.
 
 func mockCryptsetupLuksTestPassphrase(mock *mockexec.MockCommand) *gomock.Call {
 	return mock.EXPECT().ExecuteWithTimeoutAndInput(
-		gomock.Any(), "cryptsetup", luksCommandTimeout, true, gomock.Any(), "open", gomock.Any(),
-		gomock.Any(), "--type", "luks2", "--test-passphrase",
+		gomock.Any(), "cryptsetup", luksCommandTimeout, true, gomock.Any(),
+		"open", gomock.Any(), gomock.Any(), "--type", "luks2", "--test-passphrase",
 	)
 }
 

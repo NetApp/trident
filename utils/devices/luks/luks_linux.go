@@ -230,8 +230,8 @@ func (d *LUKSDevice) Open(ctx context.Context, luksPassphrase string) error {
 	}
 
 	output, err := d.command.ExecuteWithTimeoutAndInput(
-		ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase, "open", device,
-		luksDeviceName, "--type", "luks2",
+		ctx, "cryptsetup", luksCommandTimeout, true, luksPassphrase,
+		"open", device, luksDeviceName, "--type", "luks2", "--allow-discards", "--persistent",
 	)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
