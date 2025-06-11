@@ -21,6 +21,7 @@ import (
 type MockIscsiReconcileUtils struct {
 	ctrl     *gomock.Controller
 	recorder *MockIscsiReconcileUtilsMockRecorder
+	isgomock struct{}
 }
 
 // MockIscsiReconcileUtilsMockRecorder is the mock recorder for MockIscsiReconcileUtils.
@@ -41,33 +42,33 @@ func (m *MockIscsiReconcileUtils) EXPECT() *MockIscsiReconcileUtilsMockRecorder 
 }
 
 // DiscoverSCSIAddressMapForTarget mocks base method.
-func (m *MockIscsiReconcileUtils) DiscoverSCSIAddressMapForTarget(arg0 context.Context, arg1 string) (map[string]models.ScsiDeviceAddress, error) {
+func (m *MockIscsiReconcileUtils) DiscoverSCSIAddressMapForTarget(ctx context.Context, targetIQN string) (map[string]models.ScsiDeviceAddress, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DiscoverSCSIAddressMapForTarget", arg0, arg1)
+	ret := m.ctrl.Call(m, "DiscoverSCSIAddressMapForTarget", ctx, targetIQN)
 	ret0, _ := ret[0].(map[string]models.ScsiDeviceAddress)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // DiscoverSCSIAddressMapForTarget indicates an expected call of DiscoverSCSIAddressMapForTarget.
-func (mr *MockIscsiReconcileUtilsMockRecorder) DiscoverSCSIAddressMapForTarget(arg0, arg1 any) *gomock.Call {
+func (mr *MockIscsiReconcileUtilsMockRecorder) DiscoverSCSIAddressMapForTarget(ctx, targetIQN any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoverSCSIAddressMapForTarget", reflect.TypeOf((*MockIscsiReconcileUtils)(nil).DiscoverSCSIAddressMapForTarget), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoverSCSIAddressMapForTarget", reflect.TypeOf((*MockIscsiReconcileUtils)(nil).DiscoverSCSIAddressMapForTarget), ctx, targetIQN)
 }
 
 // GetDevicesForLUN mocks base method.
-func (m *MockIscsiReconcileUtils) GetDevicesForLUN(arg0 []string) ([]string, error) {
+func (m *MockIscsiReconcileUtils) GetDevicesForLUN(paths []string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDevicesForLUN", arg0)
+	ret := m.ctrl.Call(m, "GetDevicesForLUN", paths)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetDevicesForLUN indicates an expected call of GetDevicesForLUN.
-func (mr *MockIscsiReconcileUtilsMockRecorder) GetDevicesForLUN(arg0 any) *gomock.Call {
+func (mr *MockIscsiReconcileUtilsMockRecorder) GetDevicesForLUN(paths any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDevicesForLUN", reflect.TypeOf((*MockIscsiReconcileUtils)(nil).GetDevicesForLUN), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDevicesForLUN", reflect.TypeOf((*MockIscsiReconcileUtils)(nil).GetDevicesForLUN), paths)
 }
 
 // GetISCSIHostSessionMapForTarget mocks base method.
@@ -99,16 +100,16 @@ func (mr *MockIscsiReconcileUtilsMockRecorder) GetSysfsBlockDirsForLUN(arg0, arg
 }
 
 // ReconcileISCSIVolumeInfo mocks base method.
-func (m *MockIscsiReconcileUtils) ReconcileISCSIVolumeInfo(arg0 context.Context, arg1 *models.VolumeTrackingInfo) (bool, error) {
+func (m *MockIscsiReconcileUtils) ReconcileISCSIVolumeInfo(ctx context.Context, trackingInfo *models.VolumeTrackingInfo) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileISCSIVolumeInfo", arg0, arg1)
+	ret := m.ctrl.Call(m, "ReconcileISCSIVolumeInfo", ctx, trackingInfo)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ReconcileISCSIVolumeInfo indicates an expected call of ReconcileISCSIVolumeInfo.
-func (mr *MockIscsiReconcileUtilsMockRecorder) ReconcileISCSIVolumeInfo(arg0, arg1 any) *gomock.Call {
+func (mr *MockIscsiReconcileUtilsMockRecorder) ReconcileISCSIVolumeInfo(ctx, trackingInfo any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileISCSIVolumeInfo", reflect.TypeOf((*MockIscsiReconcileUtils)(nil).ReconcileISCSIVolumeInfo), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileISCSIVolumeInfo", reflect.TypeOf((*MockIscsiReconcileUtils)(nil).ReconcileISCSIVolumeInfo), ctx, trackingInfo)
 }

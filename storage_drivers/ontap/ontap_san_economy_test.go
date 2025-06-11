@@ -4870,7 +4870,6 @@ func TestOntapSanEconomyInitialize_WithNameTemplate(t *testing.T) {
 	d.API = mockAPI
 	d.ips = []string{"127.0.0.1"}
 
-	defer mockCtrl.Finish()
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "ontap-san-economy",
@@ -4903,6 +4902,8 @@ func TestOntapSanEconomyInitialize_WithNameTemplate(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san-economy", "1", false, "heartbeat", gomock.Any(),
+		gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"10.0.207.7"}, nil)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
@@ -4928,7 +4929,6 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInStoragePool(t *testing.T)
 	d.API = mockAPI
 	d.ips = []string{"127.0.0.1"}
 
-	defer mockCtrl.Finish()
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "ontap-san-economy",
@@ -4966,6 +4966,8 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInStoragePool(t *testing.T)
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san-economy", "1", false, "heartbeat", gomock.Any(),
+		gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"10.0.207.7"}, nil)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
@@ -5034,6 +5036,8 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san-economy", "1", false, "heartbeat", gomock.Any(),
+		gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"10.0.207.7"}, nil)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
@@ -5175,8 +5179,7 @@ func TestOntapSanEconomyInitialize_NumOfLUNs(t *testing.T) {
 				map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 			)
 			mockAPI.EXPECT().EmsAutosupportLog(ctx, "ontap-san-economy", "1", false, "heartbeat", hostname,
-				gomock.Any(), 1,
-				"trident", 5).AnyTimes()
+				gomock.Any(), 1, "trident", 5).AnyTimes()
 			if !test.expectError {
 				mockAPI.EXPECT().IscsiInitiatorGetDefaultAuth(ctx).Return(authResponse, nil)
 				mockAPI.EXPECT().GetSVMUUID().Return("SVM1-uuid").AnyTimes()
@@ -5194,8 +5197,6 @@ func TestOntapSanEconomyInitialize_NumOfLUNs(t *testing.T) {
 }
 
 func TestOntapSanEconomyInitialize_OtherContext(t *testing.T) {
-	mockAPI, d := newMockOntapSanEcoDriver(t)
-	d.Config.CommonStorageDriverConfig = nil
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
 		StorageDriverName: "ontap-san-economy",
@@ -5229,6 +5230,8 @@ func TestOntapSanEconomyInitialize_OtherContext(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.driverContext, func(t *testing.T) {
+			mockAPI, d := newMockOntapSanEcoDriver(t)
+			d.Config.CommonStorageDriverConfig = nil
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 			mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"10.0.207.7"}, nil)
 			mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)

@@ -20,6 +20,7 @@ import (
 type MockMpathConfiguration struct {
 	ctrl     *gomock.Controller
 	recorder *MockMpathConfigurationMockRecorder
+	isgomock struct{}
 }
 
 // MockMpathConfigurationMockRecorder is the mock recorder for MockMpathConfiguration.
@@ -54,18 +55,18 @@ func (mr *MockMpathConfigurationMockRecorder) GetRootSection() *gomock.Call {
 }
 
 // GetSection mocks base method.
-func (m *MockMpathConfiguration) GetSection(arg0 string) (mpathconfig.MpathConfigurationSection, error) {
+func (m *MockMpathConfiguration) GetSection(sectionName string) (mpathconfig.MpathConfigurationSection, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSection", arg0)
+	ret := m.ctrl.Call(m, "GetSection", sectionName)
 	ret0, _ := ret[0].(mpathconfig.MpathConfigurationSection)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSection indicates an expected call of GetSection.
-func (mr *MockMpathConfigurationMockRecorder) GetSection(arg0 any) *gomock.Call {
+func (mr *MockMpathConfigurationMockRecorder) GetSection(sectionName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSection", reflect.TypeOf((*MockMpathConfiguration)(nil).GetSection), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSection", reflect.TypeOf((*MockMpathConfiguration)(nil).GetSection), sectionName)
 }
 
 // PrintConf mocks base method.
@@ -83,15 +84,15 @@ func (mr *MockMpathConfigurationMockRecorder) PrintConf() *gomock.Call {
 }
 
 // SaveConfig mocks base method.
-func (m *MockMpathConfiguration) SaveConfig(arg0 string) error {
+func (m *MockMpathConfiguration) SaveConfig(filePath string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveConfig", arg0)
+	ret := m.ctrl.Call(m, "SaveConfig", filePath)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SaveConfig indicates an expected call of SaveConfig.
-func (mr *MockMpathConfigurationMockRecorder) SaveConfig(arg0 any) *gomock.Call {
+func (mr *MockMpathConfigurationMockRecorder) SaveConfig(filePath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveConfig", reflect.TypeOf((*MockMpathConfiguration)(nil).SaveConfig), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveConfig", reflect.TypeOf((*MockMpathConfiguration)(nil).SaveConfig), filePath)
 }

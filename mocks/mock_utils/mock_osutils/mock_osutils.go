@@ -22,6 +22,7 @@ import (
 type MockUtils struct {
 	ctrl     *gomock.Controller
 	recorder *MockUtilsMockRecorder
+	isgomock struct{}
 }
 
 // MockUtilsMockRecorder is the mock recorder for MockUtils.
@@ -42,177 +43,177 @@ func (m *MockUtils) EXPECT() *MockUtilsMockRecorder {
 }
 
 // DeleteResourceAtPath mocks base method.
-func (m *MockUtils) DeleteResourceAtPath(arg0 context.Context, arg1 string) error {
+func (m *MockUtils) DeleteResourceAtPath(ctx context.Context, resource string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteResourceAtPath", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteResourceAtPath", ctx, resource)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteResourceAtPath indicates an expected call of DeleteResourceAtPath.
-func (mr *MockUtilsMockRecorder) DeleteResourceAtPath(arg0, arg1 any) *gomock.Call {
+func (mr *MockUtilsMockRecorder) DeleteResourceAtPath(ctx, resource any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteResourceAtPath", reflect.TypeOf((*MockUtils)(nil).DeleteResourceAtPath), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteResourceAtPath", reflect.TypeOf((*MockUtils)(nil).DeleteResourceAtPath), ctx, resource)
 }
 
 // EnsureDirExists mocks base method.
-func (m *MockUtils) EnsureDirExists(arg0 context.Context, arg1 string) error {
+func (m *MockUtils) EnsureDirExists(ctx context.Context, path string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnsureDirExists", arg0, arg1)
+	ret := m.ctrl.Call(m, "EnsureDirExists", ctx, path)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // EnsureDirExists indicates an expected call of EnsureDirExists.
-func (mr *MockUtilsMockRecorder) EnsureDirExists(arg0, arg1 any) *gomock.Call {
+func (mr *MockUtilsMockRecorder) EnsureDirExists(ctx, path any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureDirExists", reflect.TypeOf((*MockUtils)(nil).EnsureDirExists), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureDirExists", reflect.TypeOf((*MockUtils)(nil).EnsureDirExists), ctx, path)
 }
 
 // EnsureFileExists mocks base method.
-func (m *MockUtils) EnsureFileExists(arg0 context.Context, arg1 string) error {
+func (m *MockUtils) EnsureFileExists(ctx context.Context, path string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnsureFileExists", arg0, arg1)
+	ret := m.ctrl.Call(m, "EnsureFileExists", ctx, path)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // EnsureFileExists indicates an expected call of EnsureFileExists.
-func (mr *MockUtilsMockRecorder) EnsureFileExists(arg0, arg1 any) *gomock.Call {
+func (mr *MockUtilsMockRecorder) EnsureFileExists(ctx, path any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureFileExists", reflect.TypeOf((*MockUtils)(nil).EnsureFileExists), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureFileExists", reflect.TypeOf((*MockUtils)(nil).EnsureFileExists), ctx, path)
 }
 
 // EvalSymlinks mocks base method.
-func (m *MockUtils) EvalSymlinks(arg0 string) (string, error) {
+func (m *MockUtils) EvalSymlinks(path string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EvalSymlinks", arg0)
+	ret := m.ctrl.Call(m, "EvalSymlinks", path)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // EvalSymlinks indicates an expected call of EvalSymlinks.
-func (mr *MockUtilsMockRecorder) EvalSymlinks(arg0 any) *gomock.Call {
+func (mr *MockUtilsMockRecorder) EvalSymlinks(path any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EvalSymlinks", reflect.TypeOf((*MockUtils)(nil).EvalSymlinks), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EvalSymlinks", reflect.TypeOf((*MockUtils)(nil).EvalSymlinks), path)
 }
 
 // GetHostSystemInfo mocks base method.
-func (m *MockUtils) GetHostSystemInfo(arg0 context.Context) (*models.HostSystem, error) {
+func (m *MockUtils) GetHostSystemInfo(ctx context.Context) (*models.HostSystem, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetHostSystemInfo", arg0)
+	ret := m.ctrl.Call(m, "GetHostSystemInfo", ctx)
 	ret0, _ := ret[0].(*models.HostSystem)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetHostSystemInfo indicates an expected call of GetHostSystemInfo.
-func (mr *MockUtilsMockRecorder) GetHostSystemInfo(arg0 any) *gomock.Call {
+func (mr *MockUtilsMockRecorder) GetHostSystemInfo(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHostSystemInfo", reflect.TypeOf((*MockUtils)(nil).GetHostSystemInfo), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHostSystemInfo", reflect.TypeOf((*MockUtils)(nil).GetHostSystemInfo), ctx)
 }
 
 // GetIPAddresses mocks base method.
-func (m *MockUtils) GetIPAddresses(arg0 context.Context) ([]string, error) {
+func (m *MockUtils) GetIPAddresses(ctx context.Context) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetIPAddresses", arg0)
+	ret := m.ctrl.Call(m, "GetIPAddresses", ctx)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetIPAddresses indicates an expected call of GetIPAddresses.
-func (mr *MockUtilsMockRecorder) GetIPAddresses(arg0 any) *gomock.Call {
+func (mr *MockUtilsMockRecorder) GetIPAddresses(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIPAddresses", reflect.TypeOf((*MockUtils)(nil).GetIPAddresses), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIPAddresses", reflect.TypeOf((*MockUtils)(nil).GetIPAddresses), ctx)
 }
 
 // IsLikelyDir mocks base method.
-func (m *MockUtils) IsLikelyDir(arg0 string) (bool, error) {
+func (m *MockUtils) IsLikelyDir(mountpoint string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsLikelyDir", arg0)
+	ret := m.ctrl.Call(m, "IsLikelyDir", mountpoint)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IsLikelyDir indicates an expected call of IsLikelyDir.
-func (mr *MockUtilsMockRecorder) IsLikelyDir(arg0 any) *gomock.Call {
+func (mr *MockUtilsMockRecorder) IsLikelyDir(mountpoint any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsLikelyDir", reflect.TypeOf((*MockUtils)(nil).IsLikelyDir), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsLikelyDir", reflect.TypeOf((*MockUtils)(nil).IsLikelyDir), mountpoint)
 }
 
 // NFSActiveOnHost mocks base method.
-func (m *MockUtils) NFSActiveOnHost(arg0 context.Context) (bool, error) {
+func (m *MockUtils) NFSActiveOnHost(ctx context.Context) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NFSActiveOnHost", arg0)
+	ret := m.ctrl.Call(m, "NFSActiveOnHost", ctx)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NFSActiveOnHost indicates an expected call of NFSActiveOnHost.
-func (mr *MockUtilsMockRecorder) NFSActiveOnHost(arg0 any) *gomock.Call {
+func (mr *MockUtilsMockRecorder) NFSActiveOnHost(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NFSActiveOnHost", reflect.TypeOf((*MockUtils)(nil).NFSActiveOnHost), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NFSActiveOnHost", reflect.TypeOf((*MockUtils)(nil).NFSActiveOnHost), ctx)
 }
 
 // PathExists mocks base method.
-func (m *MockUtils) PathExists(arg0 string) (bool, error) {
+func (m *MockUtils) PathExists(path string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PathExists", arg0)
+	ret := m.ctrl.Call(m, "PathExists", path)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // PathExists indicates an expected call of PathExists.
-func (mr *MockUtilsMockRecorder) PathExists(arg0 any) *gomock.Call {
+func (mr *MockUtilsMockRecorder) PathExists(path any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PathExists", reflect.TypeOf((*MockUtils)(nil).PathExists), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PathExists", reflect.TypeOf((*MockUtils)(nil).PathExists), path)
 }
 
 // PathExistsWithTimeout mocks base method.
-func (m *MockUtils) PathExistsWithTimeout(arg0 context.Context, arg1 string, arg2 time.Duration) (bool, error) {
+func (m *MockUtils) PathExistsWithTimeout(ctx context.Context, path string, timeout time.Duration) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PathExistsWithTimeout", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "PathExistsWithTimeout", ctx, path, timeout)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // PathExistsWithTimeout indicates an expected call of PathExistsWithTimeout.
-func (mr *MockUtilsMockRecorder) PathExistsWithTimeout(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockUtilsMockRecorder) PathExistsWithTimeout(ctx, path, timeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PathExistsWithTimeout", reflect.TypeOf((*MockUtils)(nil).PathExistsWithTimeout), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PathExistsWithTimeout", reflect.TypeOf((*MockUtils)(nil).PathExistsWithTimeout), ctx, path, timeout)
 }
 
 // ServiceActiveOnHost mocks base method.
-func (m *MockUtils) ServiceActiveOnHost(arg0 context.Context, arg1 string) (bool, error) {
+func (m *MockUtils) ServiceActiveOnHost(ctx context.Context, service string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceActiveOnHost", arg0, arg1)
+	ret := m.ctrl.Call(m, "ServiceActiveOnHost", ctx, service)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ServiceActiveOnHost indicates an expected call of ServiceActiveOnHost.
-func (mr *MockUtilsMockRecorder) ServiceActiveOnHost(arg0, arg1 any) *gomock.Call {
+func (mr *MockUtilsMockRecorder) ServiceActiveOnHost(ctx, service any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceActiveOnHost", reflect.TypeOf((*MockUtils)(nil).ServiceActiveOnHost), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceActiveOnHost", reflect.TypeOf((*MockUtils)(nil).ServiceActiveOnHost), ctx, service)
 }
 
 // WaitForResourceDeletionAtPath mocks base method.
-func (m *MockUtils) WaitForResourceDeletionAtPath(arg0 context.Context, arg1 string, arg2 time.Duration) error {
+func (m *MockUtils) WaitForResourceDeletionAtPath(ctx context.Context, resource string, maxDuration time.Duration) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WaitForResourceDeletionAtPath", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "WaitForResourceDeletionAtPath", ctx, resource, maxDuration)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // WaitForResourceDeletionAtPath indicates an expected call of WaitForResourceDeletionAtPath.
-func (mr *MockUtilsMockRecorder) WaitForResourceDeletionAtPath(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockUtilsMockRecorder) WaitForResourceDeletionAtPath(ctx, resource, maxDuration any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForResourceDeletionAtPath", reflect.TypeOf((*MockUtils)(nil).WaitForResourceDeletionAtPath), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForResourceDeletionAtPath", reflect.TypeOf((*MockUtils)(nil).WaitForResourceDeletionAtPath), ctx, resource, maxDuration)
 }

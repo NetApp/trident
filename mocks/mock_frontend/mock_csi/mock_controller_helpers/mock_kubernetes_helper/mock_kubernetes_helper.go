@@ -22,6 +22,7 @@ import (
 type MockK8SControllerHelperPlugin struct {
 	ctrl     *gomock.Controller
 	recorder *MockK8SControllerHelperPluginMockRecorder
+	isgomock struct{}
 }
 
 // MockK8SControllerHelperPluginMockRecorder is the mock recorder for MockK8SControllerHelperPlugin.
@@ -84,33 +85,33 @@ func (mr *MockK8SControllerHelperPluginMockRecorder) GetName() *gomock.Call {
 }
 
 // GetNodePublicationState mocks base method.
-func (m *MockK8SControllerHelperPlugin) GetNodePublicationState(arg0 context.Context, arg1 string) (*models.NodePublicationStateFlags, error) {
+func (m *MockK8SControllerHelperPlugin) GetNodePublicationState(ctx context.Context, nodeName string) (*models.NodePublicationStateFlags, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNodePublicationState", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetNodePublicationState", ctx, nodeName)
 	ret0, _ := ret[0].(*models.NodePublicationStateFlags)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetNodePublicationState indicates an expected call of GetNodePublicationState.
-func (mr *MockK8SControllerHelperPluginMockRecorder) GetNodePublicationState(arg0, arg1 any) *gomock.Call {
+func (mr *MockK8SControllerHelperPluginMockRecorder) GetNodePublicationState(ctx, nodeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNodePublicationState", reflect.TypeOf((*MockK8SControllerHelperPlugin)(nil).GetNodePublicationState), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNodePublicationState", reflect.TypeOf((*MockK8SControllerHelperPlugin)(nil).GetNodePublicationState), ctx, nodeName)
 }
 
 // ImportVolume mocks base method.
-func (m *MockK8SControllerHelperPlugin) ImportVolume(arg0 context.Context, arg1 *storage.ImportVolumeRequest) (*storage.VolumeExternal, error) {
+func (m *MockK8SControllerHelperPlugin) ImportVolume(ctx context.Context, request *storage.ImportVolumeRequest) (*storage.VolumeExternal, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ImportVolume", arg0, arg1)
+	ret := m.ctrl.Call(m, "ImportVolume", ctx, request)
 	ret0, _ := ret[0].(*storage.VolumeExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ImportVolume indicates an expected call of ImportVolume.
-func (mr *MockK8SControllerHelperPluginMockRecorder) ImportVolume(arg0, arg1 any) *gomock.Call {
+func (mr *MockK8SControllerHelperPluginMockRecorder) ImportVolume(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ImportVolume", reflect.TypeOf((*MockK8SControllerHelperPlugin)(nil).ImportVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ImportVolume", reflect.TypeOf((*MockK8SControllerHelperPlugin)(nil).ImportVolume), ctx, request)
 }
 
 // Version mocks base method.

@@ -557,7 +557,7 @@ func TestNVMeGetStorageBackendSpecs(t *testing.T) {
 	d := newNVMeDriver(nil, nil, nil)
 	backend := storage.StorageBackend{}
 
-	backend.SetStorage(map[string]storage.Pool{})
+	backend.ClearStoragePools()
 
 	assert.NoError(t, d.GetStorageBackendSpecs(ctx, &backend), "Backend specs not updated.")
 }

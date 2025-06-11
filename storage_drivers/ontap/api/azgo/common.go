@@ -15,6 +15,7 @@ import (
 	"reflect"
 	"runtime/debug"
 	"strings"
+	"sync"
 	"time"
 
 	xrv "github.com/mattermost/xml-roundtrip-validator"
@@ -36,15 +37,46 @@ type ZAPIResponseIterable interface {
 
 type ZapiRunner struct {
 	ManagementLIF        string
-	SVM                  string
+	svm                  string
 	Username             string
 	Password             string
 	ClientPrivateKey     string
 	ClientCertificate    string
 	TrustedCACertificate string
 	Secure               bool
-	OntapiVersion        string
+	ontapApiVersion      string
 	DebugTraceFlags      map[string]bool // Example: {"api":false, "method":true}
+	m                    *sync.RWMutex
+}
+
+func NewZapiRunner(managementLIF, svm, username, password, clientPrivateKey, clientCertificate,
+	clientCACert string, secure bool, ontapApiVersion string, debugTraceFlags map[string]bool,
+) *ZapiRunner {
+	return &ZapiRunner{
+		ManagementLIF:        managementLIF,
+		svm:                  svm,
+		Username:             username,
+		Password:             password,
+		ClientPrivateKey:     clientPrivateKey,
+		ClientCertificate:    clientCertificate,
+		TrustedCACertificate: clientCACert,
+		Secure:               secure,
+		ontapApiVersion:      ontapApiVersion,
+		DebugTraceFlags:      debugTraceFlags,
+		m:                    &sync.RWMutex{},
+	}
+}
+
+// CopyForNontunneledZapiRunner returns a clone of the ZapiRunner configured on this driver with the SVM field cleared
+// so ZAPI calls made with the resulting runner aren't tunneled.  Note that the calls could still go directly to either
+// a cluster or vserver management LIF.
+func (o *ZapiRunner) CopyForNontunneledZapiRunner() *ZapiRunner {
+	o.m.RLock()
+	defer o.m.RUnlock()
+	clone := *o
+	clone.m = &sync.RWMutex{}
+	clone.svm = "" // Clear the SVM to prevent tunneling
+	return &clone
 }
 
 // GetZAPIName returns the name of the ZAPI request; it must parse the XML because ZAPIRequest is an interface
@@ -70,6 +102,24 @@ func GetZAPIName(zr ZAPIRequest) (string, error) {
 	return "", fmt.Errorf("could not find start tag for ZAPI: %v", zapiXML)
 }
 
+func (o *ZapiRunner) GetSVM() string {
+	o.m.RLock()
+	defer o.m.RUnlock()
+	return o.svm
+}
+
+func (o *ZapiRunner) SetOntapApiVersion(version string) {
+	o.m.Lock()
+	defer o.m.Unlock()
+	o.ontapApiVersion = version
+}
+
+func (o *ZapiRunner) GetOntapApiVersion() string {
+	o.m.RLock()
+	defer o.m.RUnlock()
+	return o.ontapApiVersion
+}
+
 // SendZapi sends the provided ZAPIRequest to the Ontap system
 func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 	startTime := time.Now()
@@ -87,16 +137,16 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 
 	zapiName, zapiNameErr := GetZAPIName(r)
 	if zapiNameErr == nil {
-		zapiOpsTotal.WithLabelValues(o.SVM, zapiName).Inc()
+		zapiOpsTotal.WithLabelValues(o.svm, zapiName).Inc()
 		defer func() {
 			endTime := float64(time.Since(startTime).Milliseconds())
-			zapiOpsDurationInMsBySVMSummary.WithLabelValues(o.SVM, zapiName).Observe(endTime)
+			zapiOpsDurationInMsBySVMSummary.WithLabelValues(o.svm, zapiName).Observe(endTime)
 		}()
 	}
 
 	s := ""
 	redactedRequest := ""
-	if o.SVM == "" {
+	if o.svm == "" {
 		s = fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
           <netapp xmlns="http://www.netapp.com/filer/admin" version="1.21">
             %s
@@ -105,7 +155,7 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 		s = fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
 		  <netapp xmlns="http://www.netapp.com/filer/admin" version="1.21" %s>
             %s
-          </netapp>`, "vfiler=\""+o.SVM+"\"", zapiCommand)
+          </netapp>`, "vfiler=\""+o.svm+"\"", zapiCommand)
 	}
 	if o.DebugTraceFlags["api"] {
 		secretFields := []string{"outbound-passphrase", "outbound-user-name", "passphrase", "user-name"}
@@ -195,6 +245,7 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
 func (o *ZapiRunner) ExecuteUsing(z ZAPIRequest, requestType string, v interface{}) (interface{}, error) {
 	// Copy the v interface, in case we need a clean version for a retry
+	o.m.RLock()
 	var vCopy interface{}
 	if reflect.TypeOf(v).Kind() == reflect.Ptr {
 		vCopy = reflect.New(reflect.ValueOf(v).Elem().Type()).Interface()
@@ -202,13 +253,15 @@ func (o *ZapiRunner) ExecuteUsing(z ZAPIRequest, requestType string, v interface
 		vCopy = reflect.New(reflect.TypeOf(v)).Elem().Interface()
 	}
 
+	svm := o.svm
+
 	// Try API call as-is first
 	response, err := o.executeWithoutIteration(z, requestType, v)
+	o.m.RUnlock()
 	if err != nil {
 		// Always return an error if the call itself failed
 		return response, err
 	}
-
 	// Check for non-existent SVM error in case this is MetroCluster
 	zapiError := NewZapiError(response)
 	if !zapiError.IsVserverNotFoundError() {
@@ -218,10 +271,12 @@ func (o *ZapiRunner) ExecuteUsing(z ZAPIRequest, requestType string, v interface
 
 	// The call failed for a non-existent SVM, so retry with MCC alternate name.
 	// Modifying the SVM name in the ZapiRunner prevents retries until the MCC switches again.
-	if strings.HasSuffix(o.SVM, "-mc") {
-		o.SVM = strings.TrimSuffix(o.SVM, "-mc")
+	o.m.Lock()
+	defer o.m.Unlock()
+	if strings.HasSuffix(svm, "-mc") {
+		o.svm = strings.TrimSuffix(svm, "-mc")
 	} else {
-		o.SVM += "-mc"
+		o.svm += "-mc"
 	}
 
 	return o.executeWithoutIteration(z, requestType, vCopy)

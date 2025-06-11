@@ -20,6 +20,7 @@ import (
 type MockStep struct {
 	ctrl     *gomock.Controller
 	recorder *MockStepMockRecorder
+	isgomock struct{}
 }
 
 // MockStepMockRecorder is the mock recorder for MockStep.
@@ -40,17 +41,17 @@ func (m *MockStep) EXPECT() *MockStepMockRecorder {
 }
 
 // Apply mocks base method.
-func (m *MockStep) Apply(arg0 context.Context) error {
+func (m *MockStep) Apply(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Apply", arg0)
+	ret := m.ctrl.Call(m, "Apply", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Apply indicates an expected call of Apply.
-func (mr *MockStepMockRecorder) Apply(arg0 any) *gomock.Call {
+func (mr *MockStepMockRecorder) Apply(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apply", reflect.TypeOf((*MockStep)(nil).Apply), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apply", reflect.TypeOf((*MockStep)(nil).Apply), ctx)
 }
 
 // GetName mocks base method.

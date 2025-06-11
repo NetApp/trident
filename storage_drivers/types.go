@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/brunoga/deep"
+
 	trident "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
@@ -234,6 +236,10 @@ func (d *OntapStorageDriverConfig) Marshal() ([]byte, error) {
 		return nil, fmt.Errorf("could not marshal OntapStorageDriverConfig: %v", err)
 	}
 	return bytes, nil
+}
+
+func (d *OntapStorageDriverConfig) SmartCopy() *OntapStorageDriverConfig {
+	return deep.MustCopy(d)
 }
 
 // InjectSecrets function replaces sensitive fields in the config with the field values in the map

@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"time"
+	"sync"
 
 	"github.com/RoaringBitmap/roaring/v2"
 
@@ -39,7 +39,7 @@ type ASAStorageDriver struct {
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
 
-	cloneSplitTimers map[string]time.Time
+	cloneSplitTimers *sync.Map
 }
 
 func (d *ASAStorageDriver) GetConfig() drivers.DriverConfig {
@@ -164,7 +164,7 @@ func (d *ASAStorageDriver) Initialize(
 	d.telemetry.Start(ctx)
 
 	// Set up the clone split timers
-	d.cloneSplitTimers = make(map[string]time.Time)
+	d.cloneSplitTimers = &sync.Map{}
 
 	Logc(ctx).Debug("Initialized All-SAN Array backend.")
 

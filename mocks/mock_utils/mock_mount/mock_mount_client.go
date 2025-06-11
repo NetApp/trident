@@ -21,6 +21,7 @@ import (
 type MockMount struct {
 	ctrl     *gomock.Controller
 	recorder *MockMountMockRecorder
+	isgomock struct{}
 }
 
 // MockMountMockRecorder is the mock recorder for MockMount.
@@ -41,120 +42,120 @@ func (m *MockMount) EXPECT() *MockMountMockRecorder {
 }
 
 // AttachNFSVolume mocks base method.
-func (m *MockMount) AttachNFSVolume(arg0 context.Context, arg1, arg2 string, arg3 *models.VolumePublishInfo) error {
+func (m *MockMount) AttachNFSVolume(ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AttachNFSVolume", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "AttachNFSVolume", ctx, name, mountpoint, publishInfo)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AttachNFSVolume indicates an expected call of AttachNFSVolume.
-func (mr *MockMountMockRecorder) AttachNFSVolume(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockMountMockRecorder) AttachNFSVolume(ctx, name, mountpoint, publishInfo any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachNFSVolume", reflect.TypeOf((*MockMount)(nil).AttachNFSVolume), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachNFSVolume", reflect.TypeOf((*MockMount)(nil).AttachNFSVolume), ctx, name, mountpoint, publishInfo)
 }
 
 // AttachSMBVolume mocks base method.
-func (m *MockMount) AttachSMBVolume(arg0 context.Context, arg1, arg2, arg3, arg4 string, arg5 *models.VolumePublishInfo) error {
+func (m *MockMount) AttachSMBVolume(ctx context.Context, name, mountpoint, username, password string, publishInfo *models.VolumePublishInfo) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AttachSMBVolume", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "AttachSMBVolume", ctx, name, mountpoint, username, password, publishInfo)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AttachSMBVolume indicates an expected call of AttachSMBVolume.
-func (mr *MockMountMockRecorder) AttachSMBVolume(arg0, arg1, arg2, arg3, arg4, arg5 any) *gomock.Call {
+func (mr *MockMountMockRecorder) AttachSMBVolume(ctx, name, mountpoint, username, password, publishInfo any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachSMBVolume", reflect.TypeOf((*MockMount)(nil).AttachSMBVolume), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachSMBVolume", reflect.TypeOf((*MockMount)(nil).AttachSMBVolume), ctx, name, mountpoint, username, password, publishInfo)
 }
 
 // GetHostMountInfo mocks base method.
-func (m *MockMount) GetHostMountInfo(arg0 context.Context) ([]models.MountInfo, error) {
+func (m *MockMount) GetHostMountInfo(ctx context.Context) ([]models.MountInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetHostMountInfo", arg0)
+	ret := m.ctrl.Call(m, "GetHostMountInfo", ctx)
 	ret0, _ := ret[0].([]models.MountInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetHostMountInfo indicates an expected call of GetHostMountInfo.
-func (mr *MockMountMockRecorder) GetHostMountInfo(arg0 any) *gomock.Call {
+func (mr *MockMountMockRecorder) GetHostMountInfo(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHostMountInfo", reflect.TypeOf((*MockMount)(nil).GetHostMountInfo), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHostMountInfo", reflect.TypeOf((*MockMount)(nil).GetHostMountInfo), ctx)
 }
 
 // GetSelfMountInfo mocks base method.
-func (m *MockMount) GetSelfMountInfo(arg0 context.Context) ([]models.MountInfo, error) {
+func (m *MockMount) GetSelfMountInfo(ctx context.Context) ([]models.MountInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSelfMountInfo", arg0)
+	ret := m.ctrl.Call(m, "GetSelfMountInfo", ctx)
 	ret0, _ := ret[0].([]models.MountInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSelfMountInfo indicates an expected call of GetSelfMountInfo.
-func (mr *MockMountMockRecorder) GetSelfMountInfo(arg0 any) *gomock.Call {
+func (mr *MockMountMockRecorder) GetSelfMountInfo(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSelfMountInfo", reflect.TypeOf((*MockMount)(nil).GetSelfMountInfo), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSelfMountInfo", reflect.TypeOf((*MockMount)(nil).GetSelfMountInfo), ctx)
 }
 
 // IsCompatible mocks base method.
-func (m *MockMount) IsCompatible(arg0 context.Context, arg1 string) error {
+func (m *MockMount) IsCompatible(ctx context.Context, protocol string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsCompatible", arg0, arg1)
+	ret := m.ctrl.Call(m, "IsCompatible", ctx, protocol)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // IsCompatible indicates an expected call of IsCompatible.
-func (mr *MockMountMockRecorder) IsCompatible(arg0, arg1 any) *gomock.Call {
+func (mr *MockMountMockRecorder) IsCompatible(ctx, protocol any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsCompatible", reflect.TypeOf((*MockMount)(nil).IsCompatible), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsCompatible", reflect.TypeOf((*MockMount)(nil).IsCompatible), ctx, protocol)
 }
 
 // IsLikelyNotMountPoint mocks base method.
-func (m *MockMount) IsLikelyNotMountPoint(arg0 context.Context, arg1 string) (bool, error) {
+func (m *MockMount) IsLikelyNotMountPoint(ctx context.Context, mountpoint string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsLikelyNotMountPoint", arg0, arg1)
+	ret := m.ctrl.Call(m, "IsLikelyNotMountPoint", ctx, mountpoint)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IsLikelyNotMountPoint indicates an expected call of IsLikelyNotMountPoint.
-func (mr *MockMountMockRecorder) IsLikelyNotMountPoint(arg0, arg1 any) *gomock.Call {
+func (mr *MockMountMockRecorder) IsLikelyNotMountPoint(ctx, mountpoint any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsLikelyNotMountPoint", reflect.TypeOf((*MockMount)(nil).IsLikelyNotMountPoint), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsLikelyNotMountPoint", reflect.TypeOf((*MockMount)(nil).IsLikelyNotMountPoint), ctx, mountpoint)
 }
 
 // IsMounted mocks base method.
-func (m *MockMount) IsMounted(arg0 context.Context, arg1, arg2, arg3 string) (bool, error) {
+func (m *MockMount) IsMounted(ctx context.Context, sourceDevice, mountpoint, mountOptions string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsMounted", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "IsMounted", ctx, sourceDevice, mountpoint, mountOptions)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IsMounted indicates an expected call of IsMounted.
-func (mr *MockMountMockRecorder) IsMounted(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockMountMockRecorder) IsMounted(ctx, sourceDevice, mountpoint, mountOptions any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsMounted", reflect.TypeOf((*MockMount)(nil).IsMounted), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsMounted", reflect.TypeOf((*MockMount)(nil).IsMounted), ctx, sourceDevice, mountpoint, mountOptions)
 }
 
 // IsNFSShareMounted mocks base method.
-func (m *MockMount) IsNFSShareMounted(arg0 context.Context, arg1, arg2 string) (bool, error) {
+func (m *MockMount) IsNFSShareMounted(ctx context.Context, exportPath, mountpoint string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsNFSShareMounted", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "IsNFSShareMounted", ctx, exportPath, mountpoint)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IsNFSShareMounted indicates an expected call of IsNFSShareMounted.
-func (mr *MockMountMockRecorder) IsNFSShareMounted(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockMountMockRecorder) IsNFSShareMounted(ctx, exportPath, mountpoint any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsNFSShareMounted", reflect.TypeOf((*MockMount)(nil).IsNFSShareMounted), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsNFSShareMounted", reflect.TypeOf((*MockMount)(nil).IsNFSShareMounted), ctx, exportPath, mountpoint)
 }
 
 // ListProcMountinfo mocks base method.
@@ -173,186 +174,186 @@ func (mr *MockMountMockRecorder) ListProcMountinfo() *gomock.Call {
 }
 
 // ListProcMounts mocks base method.
-func (m *MockMount) ListProcMounts(arg0 string) ([]models.MountPoint, error) {
+func (m *MockMount) ListProcMounts(mountFilePath string) ([]models.MountPoint, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListProcMounts", arg0)
+	ret := m.ctrl.Call(m, "ListProcMounts", mountFilePath)
 	ret0, _ := ret[0].([]models.MountPoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListProcMounts indicates an expected call of ListProcMounts.
-func (mr *MockMountMockRecorder) ListProcMounts(arg0 any) *gomock.Call {
+func (mr *MockMountMockRecorder) ListProcMounts(mountFilePath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListProcMounts", reflect.TypeOf((*MockMount)(nil).ListProcMounts), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListProcMounts", reflect.TypeOf((*MockMount)(nil).ListProcMounts), mountFilePath)
 }
 
 // MountDevice mocks base method.
-func (m *MockMount) MountDevice(arg0 context.Context, arg1, arg2, arg3 string, arg4 bool) error {
+func (m *MockMount) MountDevice(ctx context.Context, device, mountpoint, options string, isMountPointFile bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MountDevice", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "MountDevice", ctx, device, mountpoint, options, isMountPointFile)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // MountDevice indicates an expected call of MountDevice.
-func (mr *MockMountMockRecorder) MountDevice(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockMountMockRecorder) MountDevice(ctx, device, mountpoint, options, isMountPointFile any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MountDevice", reflect.TypeOf((*MockMount)(nil).MountDevice), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MountDevice", reflect.TypeOf((*MockMount)(nil).MountDevice), ctx, device, mountpoint, options, isMountPointFile)
 }
 
 // MountFilesystemForResize mocks base method.
-func (m *MockMount) MountFilesystemForResize(arg0 context.Context, arg1, arg2, arg3 string) (string, error) {
+func (m *MockMount) MountFilesystemForResize(ctx context.Context, devicePath, stagedTargetPath, mountOptions string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MountFilesystemForResize", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "MountFilesystemForResize", ctx, devicePath, stagedTargetPath, mountOptions)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // MountFilesystemForResize indicates an expected call of MountFilesystemForResize.
-func (mr *MockMountMockRecorder) MountFilesystemForResize(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockMountMockRecorder) MountFilesystemForResize(ctx, devicePath, stagedTargetPath, mountOptions any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MountFilesystemForResize", reflect.TypeOf((*MockMount)(nil).MountFilesystemForResize), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MountFilesystemForResize", reflect.TypeOf((*MockMount)(nil).MountFilesystemForResize), ctx, devicePath, stagedTargetPath, mountOptions)
 }
 
 // MountNFSPath mocks base method.
-func (m *MockMount) MountNFSPath(arg0 context.Context, arg1, arg2, arg3 string) error {
+func (m *MockMount) MountNFSPath(ctx context.Context, exportPath, mountpoint, options string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MountNFSPath", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "MountNFSPath", ctx, exportPath, mountpoint, options)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // MountNFSPath indicates an expected call of MountNFSPath.
-func (mr *MockMountMockRecorder) MountNFSPath(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockMountMockRecorder) MountNFSPath(ctx, exportPath, mountpoint, options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MountNFSPath", reflect.TypeOf((*MockMount)(nil).MountNFSPath), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MountNFSPath", reflect.TypeOf((*MockMount)(nil).MountNFSPath), ctx, exportPath, mountpoint, options)
 }
 
 // MountSMBPath mocks base method.
-func (m *MockMount) MountSMBPath(arg0 context.Context, arg1, arg2, arg3, arg4 string) error {
+func (m *MockMount) MountSMBPath(ctx context.Context, exportPath, mountpoint, username, password string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MountSMBPath", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "MountSMBPath", ctx, exportPath, mountpoint, username, password)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // MountSMBPath indicates an expected call of MountSMBPath.
-func (mr *MockMountMockRecorder) MountSMBPath(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockMountMockRecorder) MountSMBPath(ctx, exportPath, mountpoint, username, password any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MountSMBPath", reflect.TypeOf((*MockMount)(nil).MountSMBPath), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MountSMBPath", reflect.TypeOf((*MockMount)(nil).MountSMBPath), ctx, exportPath, mountpoint, username, password)
 }
 
 // PVMountpointMappings mocks base method.
-func (m *MockMount) PVMountpointMappings(arg0 context.Context) (map[string]string, error) {
+func (m *MockMount) PVMountpointMappings(ctx context.Context) (map[string]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PVMountpointMappings", arg0)
+	ret := m.ctrl.Call(m, "PVMountpointMappings", ctx)
 	ret0, _ := ret[0].(map[string]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // PVMountpointMappings indicates an expected call of PVMountpointMappings.
-func (mr *MockMountMockRecorder) PVMountpointMappings(arg0 any) *gomock.Call {
+func (mr *MockMountMockRecorder) PVMountpointMappings(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PVMountpointMappings", reflect.TypeOf((*MockMount)(nil).PVMountpointMappings), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PVMountpointMappings", reflect.TypeOf((*MockMount)(nil).PVMountpointMappings), ctx)
 }
 
 // RemountDevice mocks base method.
-func (m *MockMount) RemountDevice(arg0 context.Context, arg1, arg2 string) error {
+func (m *MockMount) RemountDevice(ctx context.Context, mountpoint, options string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemountDevice", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "RemountDevice", ctx, mountpoint, options)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RemountDevice indicates an expected call of RemountDevice.
-func (mr *MockMountMockRecorder) RemountDevice(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockMountMockRecorder) RemountDevice(ctx, mountpoint, options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemountDevice", reflect.TypeOf((*MockMount)(nil).RemountDevice), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemountDevice", reflect.TypeOf((*MockMount)(nil).RemountDevice), ctx, mountpoint, options)
 }
 
 // RemoveMountPoint mocks base method.
-func (m *MockMount) RemoveMountPoint(arg0 context.Context, arg1 string) error {
+func (m *MockMount) RemoveMountPoint(ctx context.Context, mountPointPath string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveMountPoint", arg0, arg1)
+	ret := m.ctrl.Call(m, "RemoveMountPoint", ctx, mountPointPath)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RemoveMountPoint indicates an expected call of RemoveMountPoint.
-func (mr *MockMountMockRecorder) RemoveMountPoint(arg0, arg1 any) *gomock.Call {
+func (mr *MockMountMockRecorder) RemoveMountPoint(ctx, mountPointPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMountPoint", reflect.TypeOf((*MockMount)(nil).RemoveMountPoint), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMountPoint", reflect.TypeOf((*MockMount)(nil).RemoveMountPoint), ctx, mountPointPath)
 }
 
 // Umount mocks base method.
-func (m *MockMount) Umount(arg0 context.Context, arg1 string) error {
+func (m *MockMount) Umount(ctx context.Context, mountpoint string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Umount", arg0, arg1)
+	ret := m.ctrl.Call(m, "Umount", ctx, mountpoint)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Umount indicates an expected call of Umount.
-func (mr *MockMountMockRecorder) Umount(arg0, arg1 any) *gomock.Call {
+func (mr *MockMountMockRecorder) Umount(ctx, mountpoint any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Umount", reflect.TypeOf((*MockMount)(nil).Umount), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Umount", reflect.TypeOf((*MockMount)(nil).Umount), ctx, mountpoint)
 }
 
 // UmountAndRemoveMountPoint mocks base method.
-func (m *MockMount) UmountAndRemoveMountPoint(arg0 context.Context, arg1 string) error {
+func (m *MockMount) UmountAndRemoveMountPoint(ctx context.Context, mountPoint string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UmountAndRemoveMountPoint", arg0, arg1)
+	ret := m.ctrl.Call(m, "UmountAndRemoveMountPoint", ctx, mountPoint)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UmountAndRemoveMountPoint indicates an expected call of UmountAndRemoveMountPoint.
-func (mr *MockMountMockRecorder) UmountAndRemoveMountPoint(arg0, arg1 any) *gomock.Call {
+func (mr *MockMountMockRecorder) UmountAndRemoveMountPoint(ctx, mountPoint any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UmountAndRemoveMountPoint", reflect.TypeOf((*MockMount)(nil).UmountAndRemoveMountPoint), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UmountAndRemoveMountPoint", reflect.TypeOf((*MockMount)(nil).UmountAndRemoveMountPoint), ctx, mountPoint)
 }
 
 // UmountAndRemoveTemporaryMountPoint mocks base method.
-func (m *MockMount) UmountAndRemoveTemporaryMountPoint(arg0 context.Context, arg1 string) error {
+func (m *MockMount) UmountAndRemoveTemporaryMountPoint(ctx context.Context, mountPath string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UmountAndRemoveTemporaryMountPoint", arg0, arg1)
+	ret := m.ctrl.Call(m, "UmountAndRemoveTemporaryMountPoint", ctx, mountPath)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UmountAndRemoveTemporaryMountPoint indicates an expected call of UmountAndRemoveTemporaryMountPoint.
-func (mr *MockMountMockRecorder) UmountAndRemoveTemporaryMountPoint(arg0, arg1 any) *gomock.Call {
+func (mr *MockMountMockRecorder) UmountAndRemoveTemporaryMountPoint(ctx, mountPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UmountAndRemoveTemporaryMountPoint", reflect.TypeOf((*MockMount)(nil).UmountAndRemoveTemporaryMountPoint), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UmountAndRemoveTemporaryMountPoint", reflect.TypeOf((*MockMount)(nil).UmountAndRemoveTemporaryMountPoint), ctx, mountPath)
 }
 
 // UmountSMBPath mocks base method.
-func (m *MockMount) UmountSMBPath(arg0 context.Context, arg1, arg2 string) error {
+func (m *MockMount) UmountSMBPath(ctx context.Context, mappingPath, target string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UmountSMBPath", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UmountSMBPath", ctx, mappingPath, target)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UmountSMBPath indicates an expected call of UmountSMBPath.
-func (mr *MockMountMockRecorder) UmountSMBPath(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockMountMockRecorder) UmountSMBPath(ctx, mappingPath, target any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UmountSMBPath", reflect.TypeOf((*MockMount)(nil).UmountSMBPath), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UmountSMBPath", reflect.TypeOf((*MockMount)(nil).UmountSMBPath), ctx, mappingPath, target)
 }
 
 // WindowsBindMount mocks base method.
-func (m *MockMount) WindowsBindMount(arg0 context.Context, arg1, arg2 string, arg3 []string) error {
+func (m *MockMount) WindowsBindMount(ctx context.Context, source, target string, options []string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WindowsBindMount", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "WindowsBindMount", ctx, source, target, options)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // WindowsBindMount indicates an expected call of WindowsBindMount.
-func (mr *MockMountMockRecorder) WindowsBindMount(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockMountMockRecorder) WindowsBindMount(ctx, source, target, options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WindowsBindMount", reflect.TypeOf((*MockMount)(nil).WindowsBindMount), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WindowsBindMount", reflect.TypeOf((*MockMount)(nil).WindowsBindMount), ctx, source, target, options)
 }

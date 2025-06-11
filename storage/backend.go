@@ -10,11 +10,12 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/RoaringBitmap/roaring/v2"
+	"github.com/brunoga/deep"
 	"github.com/cenkalti/backoff/v4"
-	"github.com/mitchellh/copystructure"
 
 	"github.com/netapp/trident/acp"
 	tridentconfig "github.com/netapp/trident/config"
@@ -131,8 +132,8 @@ type StorageBackend struct {
 	state              BackendState
 	userState          UserBackendState
 	stateReason        string
-	storage            map[string]Pool
-	volumes            map[string]*Volume
+	storagePools       *sync.Map
+	volumes            *sync.Map
 	configRef          string
 	nodeAccessUpToDate bool
 }
@@ -159,7 +160,13 @@ func (b *StorageBackend) UpdateVolume(
 		return nil, errors.NotManagedError("source volume %s is not managed by Trident", volConfig.InternalName)
 	}
 
-	return volUpdateDriver.Update(ctx, volConfig, updateInfo, b.volumes)
+	allVolumes := make(map[string]*Volume)
+	b.volumes.Range(func(k, v interface{}) bool {
+		allVolumes[k.(string)] = v.(*Volume)
+		return true
+	})
+
+	return volUpdateDriver.Update(ctx, volConfig, updateInfo, allVolumes)
 }
 
 func (b *StorageBackend) Driver() Driver {
@@ -225,20 +232,20 @@ func (b *StorageBackend) SetUserState(state UserBackendState) {
 	b.userState = state
 }
 
-func (b *StorageBackend) Storage() map[string]Pool {
-	return b.storage
+func (b *StorageBackend) StoragePools() *sync.Map {
+	return b.storagePools
 }
 
-func (b *StorageBackend) SetStorage(Storage map[string]Pool) {
-	b.storage = Storage
+func (b *StorageBackend) ClearStoragePools() {
+	b.storagePools = new(sync.Map)
 }
 
-func (b *StorageBackend) Volumes() map[string]*Volume {
+func (b *StorageBackend) Volumes() *sync.Map {
 	return b.volumes
 }
 
-func (b *StorageBackend) SetVolumes(Volumes map[string]*Volume) {
-	b.volumes = Volumes
+func (b *StorageBackend) ClearVolumes() {
+	b.volumes = new(sync.Map)
 }
 
 func (b *StorageBackend) ConfigRef() string {
@@ -335,12 +342,12 @@ func (s UserBackendState) Validate() error {
 
 func NewStorageBackend(ctx context.Context, driver Driver) (*StorageBackend, error) {
 	backend := StorageBackend{
-		driver:    driver,
-		state:     Online,
-		online:    true,
-		userState: UserNormal,
-		storage:   make(map[string]Pool),
-		volumes:   make(map[string]*Volume),
+		driver:       driver,
+		state:        Online,
+		online:       true,
+		userState:    UserNormal,
+		storagePools: new(sync.Map),
+		volumes:      new(sync.Map),
 	}
 
 	// Retrieve backend specs.
@@ -353,24 +360,24 @@ func NewStorageBackend(ctx context.Context, driver Driver) (*StorageBackend, err
 
 func NewFailedStorageBackend(ctx context.Context, driver Driver) Backend {
 	backend := StorageBackend{
-		name:    driver.BackendName(),
-		driver:  driver,
-		state:   Failed,
-		storage: make(map[string]Pool),
-		volumes: make(map[string]*Volume),
+		name:         driver.BackendName(),
+		driver:       driver,
+		state:        Failed,
+		storagePools: new(sync.Map),
+		volumes:      new(sync.Map),
 	}
 
 	Logc(ctx).WithFields(LogFields{
 		"backendUUID": backend.BackendUUID(),
 		"backendName": backend.Name(),
 		"driver":      driver.Name(),
-	}).Debug("Failed storage backend.")
+	}).Debug("Failed storagePools backend.")
 
 	return &backend
 }
 
 func (b *StorageBackend) AddStoragePool(pool Pool) {
-	b.storage[pool.Name()] = pool
+	b.storagePools.Store(pool.Name(), pool)
 }
 
 func (b *StorageBackend) GetPhysicalPoolNames(ctx context.Context) []string {
@@ -392,6 +399,12 @@ func (b *StorageBackend) IsCredentialsFieldSet(ctx context.Context) bool {
 	}
 
 	return false
+}
+
+func (b *StorageBackend) CreatePrepare(ctx context.Context, volConfig *VolumeConfig, storagePool Pool) {
+	if b.driver != nil {
+		b.driver.CreatePrepare(ctx, volConfig, storagePool)
+	}
 }
 
 func (b *StorageBackend) AddVolume(
@@ -476,7 +489,7 @@ func (b *StorageBackend) AddVolume(
 	}
 
 	vol := NewVolume(volConfig, b.backendUUID, storagePool.Name(), false, VolumeStateOnline)
-	b.volumes[vol.Config.Name] = vol
+	b.volumes.Store(vol.Config.Name, vol)
 	return vol, nil
 }
 
@@ -618,7 +631,7 @@ func (b *StorageBackend) CloneVolume(
 	}
 
 	vol := NewVolume(cloneVolConfig, b.backendUUID, poolName, false, VolumeStateOnline)
-	b.volumes[vol.Config.Name] = vol
+	b.volumes.Store(vol.Config.Name, vol)
 	return vol, nil
 }
 
@@ -725,7 +738,7 @@ func (b *StorageBackend) ImportVolume(ctx context.Context, volConfig *VolumeConf
 	}
 
 	volume := NewVolume(volConfig, b.backendUUID, drivers.UnsetPool, false, VolumeStateOnline)
-	b.volumes[volume.Config.Name] = volume
+	b.volumes.Store(volume.Config.Name, volume)
 	return volume, nil
 }
 
@@ -812,7 +825,7 @@ func (b *StorageBackend) RemoveVolume(ctx context.Context, volConfig *VolumeConf
 }
 
 func (b *StorageBackend) RemoveCachedVolume(volumeName string) {
-	delete(b.volumes, volumeName)
+	b.volumes.Delete(volumeName)
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
@@ -1046,7 +1059,12 @@ func (b *StorageBackend) GetUpdateType(ctx context.Context, origBackend Backend)
 // HasVolumes returns true if the Backend has one or more volumes
 // provisioned on it.
 func (b *StorageBackend) HasVolumes() bool {
-	return len(b.volumes) > 0
+	count := 0
+	b.volumes.Range(func(_, _ interface{}) bool {
+		count++
+		return false
+	})
+	return count > 0
 }
 
 // Terminate informs the backend that it is being deleted from the core
@@ -1213,12 +1231,45 @@ func (b *StorageBackend) ConstructExternal(ctx context.Context) *BackendExternal
 		ConfigRef:   b.configRef,
 	}
 
-	for name, pool := range b.storage {
-		backendExternal.Storage[name] = pool.ConstructExternal()
+	b.storagePools.Range(func(k, v interface{}) bool {
+		backendExternal.Storage[k.(string)] = v.(*StoragePool).ConstructExternal()
+		return true
+	})
+	b.volumes.Range(func(k, v interface{}) bool {
+		backendExternal.Volumes = append(backendExternal.Volumes, k.(string))
+		return true
+	})
+
+	return &backendExternal
+}
+
+// ConstructExternalWithPoolMap returns the external form of a backend.  The storage class information
+// is passed in as a map of pool names to storage classes.
+func (b *StorageBackend) ConstructExternalWithPoolMap(
+	ctx context.Context, poolMap map[string][]string,
+) *BackendExternal {
+	backendExternal := BackendExternal{
+		Name:        b.name,
+		BackendUUID: b.backendUUID,
+		Protocol:    b.GetProtocol(ctx),
+		Config:      b.driver.GetExternalConfig(ctx),
+		Storage:     make(map[string]interface{}),
+		Online:      b.online,
+		State:       b.state,
+		UserState:   b.userState,
+		StateReason: b.stateReason,
+		Volumes:     make([]string, 0),
+		ConfigRef:   b.configRef,
 	}
-	for volName := range b.volumes {
-		backendExternal.Volumes = append(backendExternal.Volumes, volName)
-	}
+
+	b.storagePools.Range(func(k, v interface{}) bool {
+		backendExternal.Storage[k.(string)] = v.(*StoragePool).ConstructExternalWithPoolMap(poolMap)
+		return true
+	})
+	b.volumes.Range(func(k, v interface{}) bool {
+		backendExternal.Volumes = append(backendExternal.Volumes, k.(string))
+		return true
+	})
 
 	return &backendExternal
 }
@@ -1340,13 +1391,8 @@ func (p *BackendPersistent) ExtractBackendSecrets(
 	var secretType string
 	var credentialsFieldSet, usingTridentSecretName bool
 
-	clone, err := copystructure.Copy(*p)
+	backend, err := deep.Copy(*p)
 	if err != nil {
-		return nil, nil, usingTridentSecretName, err
-	}
-
-	backend, ok := clone.(BackendPersistent)
-	if !ok {
 		return nil, nil, usingTridentSecretName, err
 	}
 
@@ -1523,4 +1569,20 @@ func (b *StorageBackend) EnablePublishEnforcement(ctx context.Context, volume *V
 func (b *StorageBackend) CanEnablePublishEnforcement() bool {
 	_, ok := b.driver.(PublishEnforceable)
 	return ok
+}
+
+// SmartCopy implements a shallow copy of StorageBackend because it satisfies interior mutability. This means the volume
+// and pool maps, and the driver, are shared between all copies of the StorageBackend.
+func (b *StorageBackend) SmartCopy() interface{} {
+	cpy := *b
+	return &cpy
+}
+
+func (b *StorageBackend) DeepCopyType() Backend {
+	cpy := *b
+	return &cpy
+}
+
+func (b *StorageBackend) GetUniqueKey() string {
+	return b.name
 }

@@ -21,6 +21,7 @@ import (
 type MockREST struct {
 	ctrl     *gomock.Controller
 	recorder *MockRESTMockRecorder
+	isgomock struct{}
 }
 
 // MockRESTMockRecorder is the mock recorder for MockREST.

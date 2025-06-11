@@ -1364,3 +1364,21 @@ func TestParseHostportIP(t *testing.T) {
 		})
 	}
 }
+
+func TestVolumePublication_SmartCopy(t *testing.T) {
+	// Create a VolumePublication object
+	volumePublication := &VolumePublication{
+		VolumeName: "vol-123",
+		NodeName:   "node-456",
+	}
+
+	// Create a deep copy of the VolumePublication object
+	copiedVolumePublication := volumePublication.SmartCopy().(*VolumePublication)
+
+	// Check that the copied volume publication is deeply equal to the original
+	assert.NotNil(t, copiedVolumePublication)
+	assert.Equal(t, volumePublication, copiedVolumePublication)
+
+	// Check that the copied volume publication does not point to the same memory
+	assert.False(t, volumePublication == copiedVolumePublication)
+}

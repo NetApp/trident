@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/brunoga/deep"
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"github.com/google/uuid"
-	"github.com/mitchellh/copystructure"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
@@ -1211,17 +1211,11 @@ func mapCopyHelper(input map[int32]string) map[int32]string {
 }
 
 func structCopyHelper(input models.ISCSISessionData) *models.ISCSISessionData {
-	clone, err := copystructure.Copy(input)
+	clone, err := deep.Copy(input)
 	if err != nil {
 		return &models.ISCSISessionData{}
 	}
-
-	output, ok := clone.(models.ISCSISessionData)
-	if !ok {
-		return &models.ISCSISessionData{}
-	}
-
-	return &output
+	return &clone
 }
 
 func snooze(val uint32) {

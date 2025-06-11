@@ -21,6 +21,7 @@ import (
 type MockCommand struct {
 	ctrl     *gomock.Controller
 	recorder *MockCommandMockRecorder
+	isgomock struct{}
 }
 
 // MockCommandMockRecorder is the mock recorder for MockCommand.
@@ -41,10 +42,10 @@ func (m *MockCommand) EXPECT() *MockCommandMockRecorder {
 }
 
 // Execute mocks base method.
-func (m *MockCommand) Execute(arg0 context.Context, arg1 string, arg2 ...string) ([]byte, error) {
+func (m *MockCommand) Execute(ctx context.Context, name string, args ...string) ([]byte, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1}
-	for _, a := range arg2 {
+	varargs := []any{ctx, name}
+	for _, a := range args {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Execute", varargs...)
@@ -54,32 +55,32 @@ func (m *MockCommand) Execute(arg0 context.Context, arg1 string, arg2 ...string)
 }
 
 // Execute indicates an expected call of Execute.
-func (mr *MockCommandMockRecorder) Execute(arg0, arg1 any, arg2 ...any) *gomock.Call {
+func (mr *MockCommandMockRecorder) Execute(ctx, name any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1}, arg2...)
+	varargs := append([]any{ctx, name}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockCommand)(nil).Execute), varargs...)
 }
 
 // ExecuteRedacted mocks base method.
-func (m *MockCommand) ExecuteRedacted(arg0 context.Context, arg1 string, arg2 []string, arg3 map[string]string) ([]byte, error) {
+func (m *MockCommand) ExecuteRedacted(ctx context.Context, name string, args []string, secretsToRedact map[string]string) ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExecuteRedacted", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "ExecuteRedacted", ctx, name, args, secretsToRedact)
 	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExecuteRedacted indicates an expected call of ExecuteRedacted.
-func (mr *MockCommandMockRecorder) ExecuteRedacted(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockCommandMockRecorder) ExecuteRedacted(ctx, name, args, secretsToRedact any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteRedacted", reflect.TypeOf((*MockCommand)(nil).ExecuteRedacted), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteRedacted", reflect.TypeOf((*MockCommand)(nil).ExecuteRedacted), ctx, name, args, secretsToRedact)
 }
 
 // ExecuteWithTimeout mocks base method.
-func (m *MockCommand) ExecuteWithTimeout(arg0 context.Context, arg1 string, arg2 time.Duration, arg3 bool, arg4 ...string) ([]byte, error) {
+func (m *MockCommand) ExecuteWithTimeout(ctx context.Context, name string, timeout time.Duration, logOutput bool, args ...string) ([]byte, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1, arg2, arg3}
-	for _, a := range arg4 {
+	varargs := []any{ctx, name, timeout, logOutput}
+	for _, a := range args {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ExecuteWithTimeout", varargs...)
@@ -89,17 +90,17 @@ func (m *MockCommand) ExecuteWithTimeout(arg0 context.Context, arg1 string, arg2
 }
 
 // ExecuteWithTimeout indicates an expected call of ExecuteWithTimeout.
-func (mr *MockCommandMockRecorder) ExecuteWithTimeout(arg0, arg1, arg2, arg3 any, arg4 ...any) *gomock.Call {
+func (mr *MockCommandMockRecorder) ExecuteWithTimeout(ctx, name, timeout, logOutput any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1, arg2, arg3}, arg4...)
+	varargs := append([]any{ctx, name, timeout, logOutput}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteWithTimeout", reflect.TypeOf((*MockCommand)(nil).ExecuteWithTimeout), varargs...)
 }
 
 // ExecuteWithTimeoutAndInput mocks base method.
-func (m *MockCommand) ExecuteWithTimeoutAndInput(arg0 context.Context, arg1 string, arg2 time.Duration, arg3 bool, arg4 string, arg5 ...string) ([]byte, error) {
+func (m *MockCommand) ExecuteWithTimeoutAndInput(ctx context.Context, name string, timeout time.Duration, logOutput bool, stdin string, args ...string) ([]byte, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1, arg2, arg3, arg4}
-	for _, a := range arg5 {
+	varargs := []any{ctx, name, timeout, logOutput, stdin}
+	for _, a := range args {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ExecuteWithTimeoutAndInput", varargs...)
@@ -109,17 +110,17 @@ func (m *MockCommand) ExecuteWithTimeoutAndInput(arg0 context.Context, arg1 stri
 }
 
 // ExecuteWithTimeoutAndInput indicates an expected call of ExecuteWithTimeoutAndInput.
-func (mr *MockCommandMockRecorder) ExecuteWithTimeoutAndInput(arg0, arg1, arg2, arg3, arg4 any, arg5 ...any) *gomock.Call {
+func (mr *MockCommandMockRecorder) ExecuteWithTimeoutAndInput(ctx, name, timeout, logOutput, stdin any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1, arg2, arg3, arg4}, arg5...)
+	varargs := append([]any{ctx, name, timeout, logOutput, stdin}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteWithTimeoutAndInput", reflect.TypeOf((*MockCommand)(nil).ExecuteWithTimeoutAndInput), varargs...)
 }
 
 // ExecuteWithoutLog mocks base method.
-func (m *MockCommand) ExecuteWithoutLog(arg0 context.Context, arg1 string, arg2 ...string) ([]byte, error) {
+func (m *MockCommand) ExecuteWithoutLog(ctx context.Context, name string, args ...string) ([]byte, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1}
-	for _, a := range arg2 {
+	varargs := []any{ctx, name}
+	for _, a := range args {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ExecuteWithoutLog", varargs...)
@@ -129,8 +130,8 @@ func (m *MockCommand) ExecuteWithoutLog(arg0 context.Context, arg1 string, arg2 
 }
 
 // ExecuteWithoutLog indicates an expected call of ExecuteWithoutLog.
-func (mr *MockCommandMockRecorder) ExecuteWithoutLog(arg0, arg1 any, arg2 ...any) *gomock.Call {
+func (mr *MockCommandMockRecorder) ExecuteWithoutLog(ctx, name any, args ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1}, arg2...)
+	varargs := append([]any{ctx, name}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteWithoutLog", reflect.TypeOf((*MockCommand)(nil).ExecuteWithoutLog), varargs...)
 }

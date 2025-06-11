@@ -155,3 +155,23 @@ func CreateNewStorageBackend(ctx context.Context, storageDriver storage.Driver) 
 	Logc(ctx).WithField("backend", sb).Info("Created new storage backend.")
 	return sb, nil
 }
+
+func ParseBackendName(configJSON string) (string, error) {
+	// Convert config (JSON or YAML) to JSON
+	configJSONBytes, err := yaml.YAMLToJSON([]byte(configJSON))
+	if err != nil {
+		err = fmt.Errorf("invalid config format: %v", err)
+		return "", err
+	}
+	newBackendConfig := &drivers.CommonStorageDriverConfig{}
+
+	// Decode configJSON into config object
+	err = json.Unmarshal(configJSONBytes, &newBackendConfig)
+	if err != nil {
+		return "", fmt.Errorf("could not parse JSON configuration: %v", err)
+	} else if newBackendConfig == nil {
+		return "", fmt.Errorf("could not parse JSON configuration: empty config")
+	}
+
+	return newBackendConfig.BackendName, nil
+}

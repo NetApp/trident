@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mitchellh/copystructure"
+	"github.com/brunoga/deep"
 
 	"github.com/netapp/trident/internal/crypto"
 	. "github.com/netapp/trident/logging"
@@ -189,6 +189,18 @@ func (v *VolumePublication) Copy() *VolumePublication {
 	}
 }
 
+func (v *VolumePublication) SmartCopy() interface{} {
+	return deep.MustCopy(v)
+}
+
+func (v *VolumePublication) GetVolumeID() string {
+	return v.VolumeName
+}
+
+func (v *VolumePublication) GetNodeID() string {
+	return v.NodeName
+}
+
 // ConstructExternal returns an externally facing representation of the VolumePublication.
 func (v *VolumePublication) ConstructExternal() *VolumePublicationExternal {
 	return &VolumePublicationExternal{
@@ -238,12 +250,16 @@ type NodeExternal struct {
 }
 
 func (n *Node) Copy() *Node {
-	if clone, err := copystructure.Copy(*n); err != nil {
+	clone, err := deep.Copy(n)
+	if err != nil {
 		return &Node{}
-	} else {
-		node := clone.(Node)
-		return &node
 	}
+
+	return clone
+}
+
+func (n *Node) SmartCopy() interface{} {
+	return deep.MustCopy(n)
 }
 
 // ConstructExternal returns an externally facing representation of the Node.

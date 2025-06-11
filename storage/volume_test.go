@@ -152,3 +152,19 @@ func constructSMBVolumeConfig() *VolumeConfig {
 		FileSystem: "ext4",
 	}
 }
+
+func TestVolume_SmartCopy(t *testing.T) {
+	// Create a volume
+	volume := NewVolume(constructIscsiVolumeConfig(), "uuid", "pool", false,
+		VolumeStateOnline)
+
+	// Create a deep copy of the volume
+	copiedVolume := volume.SmartCopy().(*Volume)
+
+	// Check that the copied volume is deeply equal to the original
+	assert.Equal(t, volume, copiedVolume)
+
+	// Check that the copied volume does not point to the same memory
+	assert.False(t, volume == copiedVolume)
+	assert.False(t, volume.Config == copiedVolume.Config)
+}

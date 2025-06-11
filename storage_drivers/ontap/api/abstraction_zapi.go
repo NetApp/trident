@@ -1088,17 +1088,18 @@ func NewZAPIClient(config ClientConfig, SVM, driverName string) *Client {
 	d := &Client{
 		driverName: driverName,
 		config:     config,
-		zr: &azgo.ZapiRunner{
-			ManagementLIF:        config.ManagementLIF,
-			SVM:                  SVM,
-			Username:             config.Username,
-			Password:             config.Password,
-			ClientPrivateKey:     config.ClientPrivateKey,
-			ClientCertificate:    config.ClientCertificate,
-			TrustedCACertificate: config.TrustedCACertificate,
-			Secure:               true,
-			DebugTraceFlags:      config.DebugTraceFlags,
-		},
+		zr: azgo.NewZapiRunner(
+			config.ManagementLIF,
+			SVM,
+			config.Username,
+			config.Password,
+			config.ClientPrivateKey,
+			config.ClientCertificate,
+			config.TrustedCACertificate,
+			true,
+			"",
+			config.DebugTraceFlags,
+		),
 		m: &sync.Mutex{},
 	}
 	return d

@@ -7681,7 +7681,7 @@ func TestGetStorageBackendSpecs(t *testing.T) {
 	driver.initializeTelemetry(ctx, BackendUUID)
 
 	backend := &storage.StorageBackend{}
-	backend.SetStorage(make(map[string]storage.Pool))
+	backend.ClearStoragePools()
 
 	result := driver.GetStorageBackendSpecs(ctx, backend)
 
@@ -7689,7 +7689,9 @@ func TestGetStorageBackendSpecs(t *testing.T) {
 	assert.Equal(t, "azurenetappfiles_1-cli", backend.Name(), "backend name mismatch")
 	for _, pool := range driver.pools {
 		assert.Equal(t, backend, pool.Backend(), "pool-backend mismatch")
-		assert.Equal(t, pool, backend.Storage()["azurenetappfiles_1-cli_pool"], "backend-pool mismatch")
+		p, ok := backend.StoragePools().Load("azurenetappfiles_1-cli_pool")
+		assert.True(t, ok)
+		assert.Equal(t, pool, p.(storage.Pool), "backend-pool mismatch")
 	}
 }
 

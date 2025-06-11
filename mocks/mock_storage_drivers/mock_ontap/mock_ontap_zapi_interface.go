@@ -23,6 +23,7 @@ import (
 type MockZapiClientInterface struct {
 	ctrl     *gomock.Controller
 	recorder *MockZapiClientInterfaceMockRecorder
+	isgomock struct{}
 }
 
 // MockZapiClientInterfaceMockRecorder is the mock recorder for MockZapiClientInterface.
@@ -43,33 +44,33 @@ func (m *MockZapiClientInterface) EXPECT() *MockZapiClientInterfaceMockRecorder 
 }
 
 // AggrSpaceGetIterRequest mocks base method.
-func (m *MockZapiClientInterface) AggrSpaceGetIterRequest(arg0 string) (*azgo.AggrSpaceGetIterResponse, error) {
+func (m *MockZapiClientInterface) AggrSpaceGetIterRequest(aggregateName string) (*azgo.AggrSpaceGetIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AggrSpaceGetIterRequest", arg0)
+	ret := m.ctrl.Call(m, "AggrSpaceGetIterRequest", aggregateName)
 	ret0, _ := ret[0].(*azgo.AggrSpaceGetIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AggrSpaceGetIterRequest indicates an expected call of AggrSpaceGetIterRequest.
-func (mr *MockZapiClientInterfaceMockRecorder) AggrSpaceGetIterRequest(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) AggrSpaceGetIterRequest(aggregateName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AggrSpaceGetIterRequest", reflect.TypeOf((*MockZapiClientInterface)(nil).AggrSpaceGetIterRequest), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AggrSpaceGetIterRequest", reflect.TypeOf((*MockZapiClientInterface)(nil).AggrSpaceGetIterRequest), aggregateName)
 }
 
 // AggregateCommitment mocks base method.
-func (m *MockZapiClientInterface) AggregateCommitment(arg0 context.Context, arg1 string) (*api.AggregateCommitment, error) {
+func (m *MockZapiClientInterface) AggregateCommitment(ctx context.Context, aggregate string) (*api.AggregateCommitment, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AggregateCommitment", arg0, arg1)
+	ret := m.ctrl.Call(m, "AggregateCommitment", ctx, aggregate)
 	ret0, _ := ret[0].(*api.AggregateCommitment)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AggregateCommitment indicates an expected call of AggregateCommitment.
-func (mr *MockZapiClientInterfaceMockRecorder) AggregateCommitment(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) AggregateCommitment(ctx, aggregate any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AggregateCommitment", reflect.TypeOf((*MockZapiClientInterface)(nil).AggregateCommitment), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AggregateCommitment", reflect.TypeOf((*MockZapiClientInterface)(nil).AggregateCommitment), ctx, aggregate)
 }
 
 // ClientConfig mocks base method.
@@ -87,138 +88,138 @@ func (mr *MockZapiClientInterfaceMockRecorder) ClientConfig() *gomock.Call {
 }
 
 // ConsistencyGroupCommit mocks base method.
-func (m *MockZapiClientInterface) ConsistencyGroupCommit(arg0 int) (*azgo.CgCommitResponse, error) {
+func (m *MockZapiClientInterface) ConsistencyGroupCommit(cgID int) (*azgo.CgCommitResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConsistencyGroupCommit", arg0)
+	ret := m.ctrl.Call(m, "ConsistencyGroupCommit", cgID)
 	ret0, _ := ret[0].(*azgo.CgCommitResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConsistencyGroupCommit indicates an expected call of ConsistencyGroupCommit.
-func (mr *MockZapiClientInterfaceMockRecorder) ConsistencyGroupCommit(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) ConsistencyGroupCommit(cgID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsistencyGroupCommit", reflect.TypeOf((*MockZapiClientInterface)(nil).ConsistencyGroupCommit), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsistencyGroupCommit", reflect.TypeOf((*MockZapiClientInterface)(nil).ConsistencyGroupCommit), cgID)
 }
 
 // ConsistencyGroupStart mocks base method.
-func (m *MockZapiClientInterface) ConsistencyGroupStart(arg0 string, arg1 []string) (*azgo.CgStartResponse, error) {
+func (m *MockZapiClientInterface) ConsistencyGroupStart(snapshotName string, volumeNames []azgo.VolumeNameType) (*azgo.CgStartResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConsistencyGroupStart", arg0, arg1)
+	ret := m.ctrl.Call(m, "ConsistencyGroupStart", snapshotName, volumeNames)
 	ret0, _ := ret[0].(*azgo.CgStartResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConsistencyGroupStart indicates an expected call of ConsistencyGroupStart.
-func (mr *MockZapiClientInterfaceMockRecorder) ConsistencyGroupStart(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) ConsistencyGroupStart(snapshotName, volumeNames any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsistencyGroupStart", reflect.TypeOf((*MockZapiClientInterface)(nil).ConsistencyGroupStart), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConsistencyGroupStart", reflect.TypeOf((*MockZapiClientInterface)(nil).ConsistencyGroupStart), snapshotName, volumeNames)
 }
 
 // EmsAutosupportLog mocks base method.
-func (m *MockZapiClientInterface) EmsAutosupportLog(arg0 string, arg1 bool, arg2, arg3, arg4 string, arg5 int, arg6 string, arg7 int) (*azgo.EmsAutosupportLogResponse, error) {
+func (m *MockZapiClientInterface) EmsAutosupportLog(appVersion string, autoSupport bool, category, computerName, eventDescription string, eventID int, eventSource string, logLevel int) (*azgo.EmsAutosupportLogResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EmsAutosupportLog", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	ret := m.ctrl.Call(m, "EmsAutosupportLog", appVersion, autoSupport, category, computerName, eventDescription, eventID, eventSource, logLevel)
 	ret0, _ := ret[0].(*azgo.EmsAutosupportLogResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // EmsAutosupportLog indicates an expected call of EmsAutosupportLog.
-func (mr *MockZapiClientInterfaceMockRecorder) EmsAutosupportLog(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) EmsAutosupportLog(appVersion, autoSupport, category, computerName, eventDescription, eventID, eventSource, logLevel any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmsAutosupportLog", reflect.TypeOf((*MockZapiClientInterface)(nil).EmsAutosupportLog), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmsAutosupportLog", reflect.TypeOf((*MockZapiClientInterface)(nil).EmsAutosupportLog), appVersion, autoSupport, category, computerName, eventDescription, eventID, eventSource, logLevel)
 }
 
 // ExportPolicyCreate mocks base method.
-func (m *MockZapiClientInterface) ExportPolicyCreate(arg0 string) (*azgo.ExportPolicyCreateResponse, error) {
+func (m *MockZapiClientInterface) ExportPolicyCreate(policy string) (*azgo.ExportPolicyCreateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExportPolicyCreate", arg0)
+	ret := m.ctrl.Call(m, "ExportPolicyCreate", policy)
 	ret0, _ := ret[0].(*azgo.ExportPolicyCreateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExportPolicyCreate indicates an expected call of ExportPolicyCreate.
-func (mr *MockZapiClientInterfaceMockRecorder) ExportPolicyCreate(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) ExportPolicyCreate(policy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportPolicyCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).ExportPolicyCreate), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportPolicyCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).ExportPolicyCreate), policy)
 }
 
 // ExportPolicyDestroy mocks base method.
-func (m *MockZapiClientInterface) ExportPolicyDestroy(arg0 string) (*azgo.ExportPolicyDestroyResponse, error) {
+func (m *MockZapiClientInterface) ExportPolicyDestroy(policy string) (*azgo.ExportPolicyDestroyResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExportPolicyDestroy", arg0)
+	ret := m.ctrl.Call(m, "ExportPolicyDestroy", policy)
 	ret0, _ := ret[0].(*azgo.ExportPolicyDestroyResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExportPolicyDestroy indicates an expected call of ExportPolicyDestroy.
-func (mr *MockZapiClientInterfaceMockRecorder) ExportPolicyDestroy(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) ExportPolicyDestroy(policy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportPolicyDestroy", reflect.TypeOf((*MockZapiClientInterface)(nil).ExportPolicyDestroy), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportPolicyDestroy", reflect.TypeOf((*MockZapiClientInterface)(nil).ExportPolicyDestroy), policy)
 }
 
 // ExportPolicyGet mocks base method.
-func (m *MockZapiClientInterface) ExportPolicyGet(arg0 string) (*azgo.ExportPolicyGetResponse, error) {
+func (m *MockZapiClientInterface) ExportPolicyGet(policy string) (*azgo.ExportPolicyGetResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExportPolicyGet", arg0)
+	ret := m.ctrl.Call(m, "ExportPolicyGet", policy)
 	ret0, _ := ret[0].(*azgo.ExportPolicyGetResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExportPolicyGet indicates an expected call of ExportPolicyGet.
-func (mr *MockZapiClientInterfaceMockRecorder) ExportPolicyGet(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) ExportPolicyGet(policy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportPolicyGet", reflect.TypeOf((*MockZapiClientInterface)(nil).ExportPolicyGet), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportPolicyGet", reflect.TypeOf((*MockZapiClientInterface)(nil).ExportPolicyGet), policy)
 }
 
 // ExportRuleCreate mocks base method.
-func (m *MockZapiClientInterface) ExportRuleCreate(arg0, arg1 string, arg2, arg3, arg4, arg5 []string) (*azgo.ExportRuleCreateResponse, error) {
+func (m *MockZapiClientInterface) ExportRuleCreate(policy, clientMatch string, protocols, roSecFlavors, rwSecFlavors, suSecFlavors []string) (*azgo.ExportRuleCreateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExportRuleCreate", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "ExportRuleCreate", policy, clientMatch, protocols, roSecFlavors, rwSecFlavors, suSecFlavors)
 	ret0, _ := ret[0].(*azgo.ExportRuleCreateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExportRuleCreate indicates an expected call of ExportRuleCreate.
-func (mr *MockZapiClientInterfaceMockRecorder) ExportRuleCreate(arg0, arg1, arg2, arg3, arg4, arg5 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) ExportRuleCreate(policy, clientMatch, protocols, roSecFlavors, rwSecFlavors, suSecFlavors any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportRuleCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).ExportRuleCreate), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportRuleCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).ExportRuleCreate), policy, clientMatch, protocols, roSecFlavors, rwSecFlavors, suSecFlavors)
 }
 
 // ExportRuleDestroy mocks base method.
-func (m *MockZapiClientInterface) ExportRuleDestroy(arg0 string, arg1 int) (*azgo.ExportRuleDestroyResponse, error) {
+func (m *MockZapiClientInterface) ExportRuleDestroy(policy string, ruleIndex int) (*azgo.ExportRuleDestroyResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExportRuleDestroy", arg0, arg1)
+	ret := m.ctrl.Call(m, "ExportRuleDestroy", policy, ruleIndex)
 	ret0, _ := ret[0].(*azgo.ExportRuleDestroyResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExportRuleDestroy indicates an expected call of ExportRuleDestroy.
-func (mr *MockZapiClientInterfaceMockRecorder) ExportRuleDestroy(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) ExportRuleDestroy(policy, ruleIndex any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportRuleDestroy", reflect.TypeOf((*MockZapiClientInterface)(nil).ExportRuleDestroy), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportRuleDestroy", reflect.TypeOf((*MockZapiClientInterface)(nil).ExportRuleDestroy), policy, ruleIndex)
 }
 
 // ExportRuleGetIterRequest mocks base method.
-func (m *MockZapiClientInterface) ExportRuleGetIterRequest(arg0 string) (*azgo.ExportRuleGetIterResponse, error) {
+func (m *MockZapiClientInterface) ExportRuleGetIterRequest(policy string) (*azgo.ExportRuleGetIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExportRuleGetIterRequest", arg0)
+	ret := m.ctrl.Call(m, "ExportRuleGetIterRequest", policy)
 	ret0, _ := ret[0].(*azgo.ExportRuleGetIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExportRuleGetIterRequest indicates an expected call of ExportRuleGetIterRequest.
-func (mr *MockZapiClientInterfaceMockRecorder) ExportRuleGetIterRequest(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) ExportRuleGetIterRequest(policy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportRuleGetIterRequest", reflect.TypeOf((*MockZapiClientInterface)(nil).ExportRuleGetIterRequest), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportRuleGetIterRequest", reflect.TypeOf((*MockZapiClientInterface)(nil).ExportRuleGetIterRequest), policy)
 }
 
 // FcpInterfaceGetIterRequest mocks base method.
@@ -252,168 +253,168 @@ func (mr *MockZapiClientInterfaceMockRecorder) FcpNodeGetNameRequest() *gomock.C
 }
 
 // FlexGroupCreate mocks base method.
-func (m *MockZapiClientInterface) FlexGroupCreate(arg0 context.Context, arg1 string, arg2 int, arg3 []string, arg4, arg5, arg6, arg7, arg8, arg9, arg10 string, arg11 api.QosPolicyGroup, arg12 *bool, arg13 int) (*azgo.VolumeCreateAsyncResponse, error) {
+func (m *MockZapiClientInterface) FlexGroupCreate(ctx context.Context, name string, size int, aggrs []azgo.AggrNameType, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup api.QosPolicyGroup, encrypt *bool, snapshotReserve int) (*azgo.VolumeCreateAsyncResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlexGroupCreate", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
+	ret := m.ctrl.Call(m, "FlexGroupCreate", ctx, name, size, aggrs, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve)
 	ret0, _ := ret[0].(*azgo.VolumeCreateAsyncResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlexGroupCreate indicates an expected call of FlexGroupCreate.
-func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupCreate(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupCreate(ctx, name, size, aggrs, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupCreate), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupCreate), ctx, name, size, aggrs, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve)
 }
 
 // FlexGroupDestroy mocks base method.
-func (m *MockZapiClientInterface) FlexGroupDestroy(arg0 context.Context, arg1 string, arg2 bool) (*azgo.VolumeDestroyAsyncResponse, error) {
+func (m *MockZapiClientInterface) FlexGroupDestroy(ctx context.Context, name string, force bool) (*azgo.VolumeDestroyAsyncResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlexGroupDestroy", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "FlexGroupDestroy", ctx, name, force)
 	ret0, _ := ret[0].(*azgo.VolumeDestroyAsyncResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlexGroupDestroy indicates an expected call of FlexGroupDestroy.
-func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupDestroy(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupDestroy(ctx, name, force any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupDestroy", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupDestroy), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupDestroy", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupDestroy), ctx, name, force)
 }
 
 // FlexGroupExists mocks base method.
-func (m *MockZapiClientInterface) FlexGroupExists(arg0 context.Context, arg1 string) (bool, error) {
+func (m *MockZapiClientInterface) FlexGroupExists(ctx context.Context, name string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlexGroupExists", arg0, arg1)
+	ret := m.ctrl.Call(m, "FlexGroupExists", ctx, name)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlexGroupExists indicates an expected call of FlexGroupExists.
-func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupExists(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupExists(ctx, name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupExists", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupExists), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupExists", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupExists), ctx, name)
 }
 
 // FlexGroupGet mocks base method.
-func (m *MockZapiClientInterface) FlexGroupGet(arg0 string) (*azgo.VolumeAttributesType, error) {
+func (m *MockZapiClientInterface) FlexGroupGet(name string) (*azgo.VolumeAttributesType, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlexGroupGet", arg0)
+	ret := m.ctrl.Call(m, "FlexGroupGet", name)
 	ret0, _ := ret[0].(*azgo.VolumeAttributesType)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlexGroupGet indicates an expected call of FlexGroupGet.
-func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupGet(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupGet(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupGet", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupGet), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupGet", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupGet), name)
 }
 
 // FlexGroupGetAll mocks base method.
-func (m *MockZapiClientInterface) FlexGroupGetAll(arg0 string) (*azgo.VolumeGetIterResponse, error) {
+func (m *MockZapiClientInterface) FlexGroupGetAll(prefix string) (*azgo.VolumeGetIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlexGroupGetAll", arg0)
+	ret := m.ctrl.Call(m, "FlexGroupGetAll", prefix)
 	ret0, _ := ret[0].(*azgo.VolumeGetIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlexGroupGetAll indicates an expected call of FlexGroupGetAll.
-func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupGetAll(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupGetAll(prefix any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupGetAll", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupGetAll), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupGetAll", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupGetAll), prefix)
 }
 
 // FlexGroupModifyUnixPermissions mocks base method.
-func (m *MockZapiClientInterface) FlexGroupModifyUnixPermissions(arg0 context.Context, arg1, arg2 string) (*azgo.VolumeModifyIterAsyncResponse, error) {
+func (m *MockZapiClientInterface) FlexGroupModifyUnixPermissions(ctx context.Context, volumeName, unixPermissions string) (*azgo.VolumeModifyIterAsyncResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlexGroupModifyUnixPermissions", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "FlexGroupModifyUnixPermissions", ctx, volumeName, unixPermissions)
 	ret0, _ := ret[0].(*azgo.VolumeModifyIterAsyncResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlexGroupModifyUnixPermissions indicates an expected call of FlexGroupModifyUnixPermissions.
-func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupModifyUnixPermissions(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupModifyUnixPermissions(ctx, volumeName, unixPermissions any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupModifyUnixPermissions", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupModifyUnixPermissions), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupModifyUnixPermissions", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupModifyUnixPermissions), ctx, volumeName, unixPermissions)
 }
 
 // FlexGroupSetComment mocks base method.
-func (m *MockZapiClientInterface) FlexGroupSetComment(arg0 context.Context, arg1, arg2 string) (*azgo.VolumeModifyIterAsyncResponse, error) {
+func (m *MockZapiClientInterface) FlexGroupSetComment(ctx context.Context, volumeName, newVolumeComment string) (*azgo.VolumeModifyIterAsyncResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlexGroupSetComment", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "FlexGroupSetComment", ctx, volumeName, newVolumeComment)
 	ret0, _ := ret[0].(*azgo.VolumeModifyIterAsyncResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlexGroupSetComment indicates an expected call of FlexGroupSetComment.
-func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupSetComment(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupSetComment(ctx, volumeName, newVolumeComment any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupSetComment", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupSetComment), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupSetComment", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupSetComment), ctx, volumeName, newVolumeComment)
 }
 
 // FlexGroupSetSize mocks base method.
-func (m *MockZapiClientInterface) FlexGroupSetSize(arg0 context.Context, arg1, arg2 string) (*azgo.VolumeSizeAsyncResponse, error) {
+func (m *MockZapiClientInterface) FlexGroupSetSize(ctx context.Context, name, newSize string) (*azgo.VolumeSizeAsyncResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlexGroupSetSize", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "FlexGroupSetSize", ctx, name, newSize)
 	ret0, _ := ret[0].(*azgo.VolumeSizeAsyncResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlexGroupSetSize indicates an expected call of FlexGroupSetSize.
-func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupSetSize(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupSetSize(ctx, name, newSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupSetSize", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupSetSize), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupSetSize", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupSetSize), ctx, name, newSize)
 }
 
 // FlexGroupSize mocks base method.
-func (m *MockZapiClientInterface) FlexGroupSize(arg0 string) (int, error) {
+func (m *MockZapiClientInterface) FlexGroupSize(name string) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlexGroupSize", arg0)
+	ret := m.ctrl.Call(m, "FlexGroupSize", name)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlexGroupSize indicates an expected call of FlexGroupSize.
-func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupSize(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupSize(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupSize", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupSize), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupSize", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupSize), name)
 }
 
 // FlexGroupUsedSize mocks base method.
-func (m *MockZapiClientInterface) FlexGroupUsedSize(arg0 string) (int, error) {
+func (m *MockZapiClientInterface) FlexGroupUsedSize(name string) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlexGroupUsedSize", arg0)
+	ret := m.ctrl.Call(m, "FlexGroupUsedSize", name)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlexGroupUsedSize indicates an expected call of FlexGroupUsedSize.
-func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupUsedSize(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupUsedSize(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupUsedSize", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupUsedSize), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupUsedSize", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupUsedSize), name)
 }
 
 // FlexGroupVolumeModifySnapshotDirectoryAccess mocks base method.
-func (m *MockZapiClientInterface) FlexGroupVolumeModifySnapshotDirectoryAccess(arg0 context.Context, arg1 string, arg2 bool) (*azgo.VolumeModifyIterAsyncResponse, error) {
+func (m *MockZapiClientInterface) FlexGroupVolumeModifySnapshotDirectoryAccess(ctx context.Context, name string, enable bool) (*azgo.VolumeModifyIterAsyncResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlexGroupVolumeModifySnapshotDirectoryAccess", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "FlexGroupVolumeModifySnapshotDirectoryAccess", ctx, name, enable)
 	ret0, _ := ret[0].(*azgo.VolumeModifyIterAsyncResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlexGroupVolumeModifySnapshotDirectoryAccess indicates an expected call of FlexGroupVolumeModifySnapshotDirectoryAccess.
-func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupVolumeModifySnapshotDirectoryAccess(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) FlexGroupVolumeModifySnapshotDirectoryAccess(ctx, name, enable any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupVolumeModifySnapshotDirectoryAccess", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupVolumeModifySnapshotDirectoryAccess), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexGroupVolumeModifySnapshotDirectoryAccess", reflect.TypeOf((*MockZapiClientInterface)(nil).FlexGroupVolumeModifySnapshotDirectoryAccess), ctx, name, enable)
 }
 
 // GetClonedZapiRunner mocks base method.
@@ -445,93 +446,93 @@ func (mr *MockZapiClientInterfaceMockRecorder) GetNontunneledZapiRunner() *gomoc
 }
 
 // GetPeeredVservers mocks base method.
-func (m *MockZapiClientInterface) GetPeeredVservers(arg0 context.Context) ([]string, error) {
+func (m *MockZapiClientInterface) GetPeeredVservers(ctx context.Context) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPeeredVservers", arg0)
+	ret := m.ctrl.Call(m, "GetPeeredVservers", ctx)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetPeeredVservers indicates an expected call of GetPeeredVservers.
-func (mr *MockZapiClientInterfaceMockRecorder) GetPeeredVservers(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) GetPeeredVservers(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPeeredVservers", reflect.TypeOf((*MockZapiClientInterface)(nil).GetPeeredVservers), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPeeredVservers", reflect.TypeOf((*MockZapiClientInterface)(nil).GetPeeredVservers), ctx)
 }
 
 // GetSVMState mocks base method.
-func (m *MockZapiClientInterface) GetSVMState(arg0 context.Context) (string, error) {
+func (m *MockZapiClientInterface) GetSVMState(ctx context.Context) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSVMState", arg0)
+	ret := m.ctrl.Call(m, "GetSVMState", ctx)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSVMState indicates an expected call of GetSVMState.
-func (mr *MockZapiClientInterfaceMockRecorder) GetSVMState(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) GetSVMState(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSVMState", reflect.TypeOf((*MockZapiClientInterface)(nil).GetSVMState), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSVMState", reflect.TypeOf((*MockZapiClientInterface)(nil).GetSVMState), ctx)
 }
 
 // IgroupAdd mocks base method.
-func (m *MockZapiClientInterface) IgroupAdd(arg0, arg1 string) (*azgo.IgroupAddResponse, error) {
+func (m *MockZapiClientInterface) IgroupAdd(initiatorGroupName, initiator string) (*azgo.IgroupAddResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IgroupAdd", arg0, arg1)
+	ret := m.ctrl.Call(m, "IgroupAdd", initiatorGroupName, initiator)
 	ret0, _ := ret[0].(*azgo.IgroupAddResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IgroupAdd indicates an expected call of IgroupAdd.
-func (mr *MockZapiClientInterfaceMockRecorder) IgroupAdd(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) IgroupAdd(initiatorGroupName, initiator any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupAdd", reflect.TypeOf((*MockZapiClientInterface)(nil).IgroupAdd), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupAdd", reflect.TypeOf((*MockZapiClientInterface)(nil).IgroupAdd), initiatorGroupName, initiator)
 }
 
 // IgroupCreate mocks base method.
-func (m *MockZapiClientInterface) IgroupCreate(arg0, arg1, arg2 string) (*azgo.IgroupCreateResponse, error) {
+func (m *MockZapiClientInterface) IgroupCreate(initiatorGroupName, initiatorGroupType, osType string) (*azgo.IgroupCreateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IgroupCreate", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "IgroupCreate", initiatorGroupName, initiatorGroupType, osType)
 	ret0, _ := ret[0].(*azgo.IgroupCreateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IgroupCreate indicates an expected call of IgroupCreate.
-func (mr *MockZapiClientInterfaceMockRecorder) IgroupCreate(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) IgroupCreate(initiatorGroupName, initiatorGroupType, osType any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).IgroupCreate), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).IgroupCreate), initiatorGroupName, initiatorGroupType, osType)
 }
 
 // IgroupDestroy mocks base method.
-func (m *MockZapiClientInterface) IgroupDestroy(arg0 string) (*azgo.IgroupDestroyResponse, error) {
+func (m *MockZapiClientInterface) IgroupDestroy(initiatorGroupName string) (*azgo.IgroupDestroyResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IgroupDestroy", arg0)
+	ret := m.ctrl.Call(m, "IgroupDestroy", initiatorGroupName)
 	ret0, _ := ret[0].(*azgo.IgroupDestroyResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IgroupDestroy indicates an expected call of IgroupDestroy.
-func (mr *MockZapiClientInterfaceMockRecorder) IgroupDestroy(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) IgroupDestroy(initiatorGroupName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupDestroy", reflect.TypeOf((*MockZapiClientInterface)(nil).IgroupDestroy), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupDestroy", reflect.TypeOf((*MockZapiClientInterface)(nil).IgroupDestroy), initiatorGroupName)
 }
 
 // IgroupGet mocks base method.
-func (m *MockZapiClientInterface) IgroupGet(arg0 string) (*azgo.InitiatorGroupInfoType, error) {
+func (m *MockZapiClientInterface) IgroupGet(initiatorGroupName string) (*azgo.InitiatorGroupInfoType, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IgroupGet", arg0)
+	ret := m.ctrl.Call(m, "IgroupGet", initiatorGroupName)
 	ret0, _ := ret[0].(*azgo.InitiatorGroupInfoType)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IgroupGet indicates an expected call of IgroupGet.
-func (mr *MockZapiClientInterfaceMockRecorder) IgroupGet(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) IgroupGet(initiatorGroupName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupGet", reflect.TypeOf((*MockZapiClientInterface)(nil).IgroupGet), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupGet", reflect.TypeOf((*MockZapiClientInterface)(nil).IgroupGet), initiatorGroupName)
 }
 
 // IgroupList mocks base method.
@@ -550,78 +551,78 @@ func (mr *MockZapiClientInterfaceMockRecorder) IgroupList() *gomock.Call {
 }
 
 // IgroupRemove mocks base method.
-func (m *MockZapiClientInterface) IgroupRemove(arg0, arg1 string, arg2 bool) (*azgo.IgroupRemoveResponse, error) {
+func (m *MockZapiClientInterface) IgroupRemove(initiatorGroupName, initiator string, force bool) (*azgo.IgroupRemoveResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IgroupRemove", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "IgroupRemove", initiatorGroupName, initiator, force)
 	ret0, _ := ret[0].(*azgo.IgroupRemoveResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IgroupRemove indicates an expected call of IgroupRemove.
-func (mr *MockZapiClientInterfaceMockRecorder) IgroupRemove(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) IgroupRemove(initiatorGroupName, initiator, force any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupRemove", reflect.TypeOf((*MockZapiClientInterface)(nil).IgroupRemove), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IgroupRemove", reflect.TypeOf((*MockZapiClientInterface)(nil).IgroupRemove), initiatorGroupName, initiator, force)
 }
 
 // IsVserverDRCapable mocks base method.
-func (m *MockZapiClientInterface) IsVserverDRCapable(arg0 context.Context) (bool, error) {
+func (m *MockZapiClientInterface) IsVserverDRCapable(ctx context.Context) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsVserverDRCapable", arg0)
+	ret := m.ctrl.Call(m, "IsVserverDRCapable", ctx)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IsVserverDRCapable indicates an expected call of IsVserverDRCapable.
-func (mr *MockZapiClientInterfaceMockRecorder) IsVserverDRCapable(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) IsVserverDRCapable(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsVserverDRCapable", reflect.TypeOf((*MockZapiClientInterface)(nil).IsVserverDRCapable), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsVserverDRCapable", reflect.TypeOf((*MockZapiClientInterface)(nil).IsVserverDRCapable), ctx)
 }
 
 // IsVserverDRDestination mocks base method.
-func (m *MockZapiClientInterface) IsVserverDRDestination(arg0 context.Context) (bool, error) {
+func (m *MockZapiClientInterface) IsVserverDRDestination(ctx context.Context) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsVserverDRDestination", arg0)
+	ret := m.ctrl.Call(m, "IsVserverDRDestination", ctx)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IsVserverDRDestination indicates an expected call of IsVserverDRDestination.
-func (mr *MockZapiClientInterfaceMockRecorder) IsVserverDRDestination(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) IsVserverDRDestination(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsVserverDRDestination", reflect.TypeOf((*MockZapiClientInterface)(nil).IsVserverDRDestination), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsVserverDRDestination", reflect.TypeOf((*MockZapiClientInterface)(nil).IsVserverDRDestination), ctx)
 }
 
 // IsVserverDRSource mocks base method.
-func (m *MockZapiClientInterface) IsVserverDRSource(arg0 context.Context) (bool, error) {
+func (m *MockZapiClientInterface) IsVserverDRSource(ctx context.Context) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsVserverDRSource", arg0)
+	ret := m.ctrl.Call(m, "IsVserverDRSource", ctx)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IsVserverDRSource indicates an expected call of IsVserverDRSource.
-func (mr *MockZapiClientInterfaceMockRecorder) IsVserverDRSource(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) IsVserverDRSource(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsVserverDRSource", reflect.TypeOf((*MockZapiClientInterface)(nil).IsVserverDRSource), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsVserverDRSource", reflect.TypeOf((*MockZapiClientInterface)(nil).IsVserverDRSource), ctx)
 }
 
 // IscsiInitiatorAddAuth mocks base method.
-func (m *MockZapiClientInterface) IscsiInitiatorAddAuth(arg0, arg1, arg2, arg3, arg4, arg5 string) (*azgo.IscsiInitiatorAddAuthResponse, error) {
+func (m *MockZapiClientInterface) IscsiInitiatorAddAuth(initiator, authType, userName, passphrase, outboundUserName, outboundPassphrase string) (*azgo.IscsiInitiatorAddAuthResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IscsiInitiatorAddAuth", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "IscsiInitiatorAddAuth", initiator, authType, userName, passphrase, outboundUserName, outboundPassphrase)
 	ret0, _ := ret[0].(*azgo.IscsiInitiatorAddAuthResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IscsiInitiatorAddAuth indicates an expected call of IscsiInitiatorAddAuth.
-func (mr *MockZapiClientInterfaceMockRecorder) IscsiInitiatorAddAuth(arg0, arg1, arg2, arg3, arg4, arg5 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) IscsiInitiatorAddAuth(initiator, authType, userName, passphrase, outboundUserName, outboundPassphrase any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiInitiatorAddAuth", reflect.TypeOf((*MockZapiClientInterface)(nil).IscsiInitiatorAddAuth), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiInitiatorAddAuth", reflect.TypeOf((*MockZapiClientInterface)(nil).IscsiInitiatorAddAuth), initiator, authType, userName, passphrase, outboundUserName, outboundPassphrase)
 }
 
 // IscsiInitiatorAuthGetIter mocks base method.
@@ -640,33 +641,33 @@ func (mr *MockZapiClientInterfaceMockRecorder) IscsiInitiatorAuthGetIter() *gomo
 }
 
 // IscsiInitiatorDeleteAuth mocks base method.
-func (m *MockZapiClientInterface) IscsiInitiatorDeleteAuth(arg0 string) (*azgo.IscsiInitiatorDeleteAuthResponse, error) {
+func (m *MockZapiClientInterface) IscsiInitiatorDeleteAuth(initiator string) (*azgo.IscsiInitiatorDeleteAuthResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IscsiInitiatorDeleteAuth", arg0)
+	ret := m.ctrl.Call(m, "IscsiInitiatorDeleteAuth", initiator)
 	ret0, _ := ret[0].(*azgo.IscsiInitiatorDeleteAuthResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IscsiInitiatorDeleteAuth indicates an expected call of IscsiInitiatorDeleteAuth.
-func (mr *MockZapiClientInterfaceMockRecorder) IscsiInitiatorDeleteAuth(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) IscsiInitiatorDeleteAuth(initiator any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiInitiatorDeleteAuth", reflect.TypeOf((*MockZapiClientInterface)(nil).IscsiInitiatorDeleteAuth), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiInitiatorDeleteAuth", reflect.TypeOf((*MockZapiClientInterface)(nil).IscsiInitiatorDeleteAuth), initiator)
 }
 
 // IscsiInitiatorGetAuth mocks base method.
-func (m *MockZapiClientInterface) IscsiInitiatorGetAuth(arg0 string) (*azgo.IscsiInitiatorGetAuthResponse, error) {
+func (m *MockZapiClientInterface) IscsiInitiatorGetAuth(initiator string) (*azgo.IscsiInitiatorGetAuthResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IscsiInitiatorGetAuth", arg0)
+	ret := m.ctrl.Call(m, "IscsiInitiatorGetAuth", initiator)
 	ret0, _ := ret[0].(*azgo.IscsiInitiatorGetAuthResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IscsiInitiatorGetAuth indicates an expected call of IscsiInitiatorGetAuth.
-func (mr *MockZapiClientInterfaceMockRecorder) IscsiInitiatorGetAuth(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) IscsiInitiatorGetAuth(initiator any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiInitiatorGetAuth", reflect.TypeOf((*MockZapiClientInterface)(nil).IscsiInitiatorGetAuth), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiInitiatorGetAuth", reflect.TypeOf((*MockZapiClientInterface)(nil).IscsiInitiatorGetAuth), initiator)
 }
 
 // IscsiInitiatorGetDefaultAuth mocks base method.
@@ -700,33 +701,33 @@ func (mr *MockZapiClientInterfaceMockRecorder) IscsiInitiatorGetIter() *gomock.C
 }
 
 // IscsiInitiatorModifyCHAPParams mocks base method.
-func (m *MockZapiClientInterface) IscsiInitiatorModifyCHAPParams(arg0, arg1, arg2, arg3, arg4 string) (*azgo.IscsiInitiatorModifyChapParamsResponse, error) {
+func (m *MockZapiClientInterface) IscsiInitiatorModifyCHAPParams(initiator, userName, passphrase, outboundUserName, outboundPassphrase string) (*azgo.IscsiInitiatorModifyChapParamsResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IscsiInitiatorModifyCHAPParams", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "IscsiInitiatorModifyCHAPParams", initiator, userName, passphrase, outboundUserName, outboundPassphrase)
 	ret0, _ := ret[0].(*azgo.IscsiInitiatorModifyChapParamsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IscsiInitiatorModifyCHAPParams indicates an expected call of IscsiInitiatorModifyCHAPParams.
-func (mr *MockZapiClientInterfaceMockRecorder) IscsiInitiatorModifyCHAPParams(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) IscsiInitiatorModifyCHAPParams(initiator, userName, passphrase, outboundUserName, outboundPassphrase any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiInitiatorModifyCHAPParams", reflect.TypeOf((*MockZapiClientInterface)(nil).IscsiInitiatorModifyCHAPParams), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiInitiatorModifyCHAPParams", reflect.TypeOf((*MockZapiClientInterface)(nil).IscsiInitiatorModifyCHAPParams), initiator, userName, passphrase, outboundUserName, outboundPassphrase)
 }
 
 // IscsiInitiatorSetDefaultAuth mocks base method.
-func (m *MockZapiClientInterface) IscsiInitiatorSetDefaultAuth(arg0, arg1, arg2, arg3, arg4 string) (*azgo.IscsiInitiatorSetDefaultAuthResponse, error) {
+func (m *MockZapiClientInterface) IscsiInitiatorSetDefaultAuth(authType, userName, passphrase, outboundUserName, outboundPassphrase string) (*azgo.IscsiInitiatorSetDefaultAuthResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IscsiInitiatorSetDefaultAuth", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "IscsiInitiatorSetDefaultAuth", authType, userName, passphrase, outboundUserName, outboundPassphrase)
 	ret0, _ := ret[0].(*azgo.IscsiInitiatorSetDefaultAuthResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IscsiInitiatorSetDefaultAuth indicates an expected call of IscsiInitiatorSetDefaultAuth.
-func (mr *MockZapiClientInterfaceMockRecorder) IscsiInitiatorSetDefaultAuth(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) IscsiInitiatorSetDefaultAuth(authType, userName, passphrase, outboundUserName, outboundPassphrase any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiInitiatorSetDefaultAuth", reflect.TypeOf((*MockZapiClientInterface)(nil).IscsiInitiatorSetDefaultAuth), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IscsiInitiatorSetDefaultAuth", reflect.TypeOf((*MockZapiClientInterface)(nil).IscsiInitiatorSetDefaultAuth), authType, userName, passphrase, outboundUserName, outboundPassphrase)
 }
 
 // IscsiInterfaceGetIterRequest mocks base method.
@@ -775,453 +776,453 @@ func (mr *MockZapiClientInterfaceMockRecorder) IscsiServiceGetIterRequest() *gom
 }
 
 // JobGetIterStatus mocks base method.
-func (m *MockZapiClientInterface) JobGetIterStatus(arg0 int) (*azgo.JobGetIterResponse, error) {
+func (m *MockZapiClientInterface) JobGetIterStatus(jobId int) (*azgo.JobGetIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "JobGetIterStatus", arg0)
+	ret := m.ctrl.Call(m, "JobGetIterStatus", jobId)
 	ret0, _ := ret[0].(*azgo.JobGetIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // JobGetIterStatus indicates an expected call of JobGetIterStatus.
-func (mr *MockZapiClientInterfaceMockRecorder) JobGetIterStatus(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) JobGetIterStatus(jobId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JobGetIterStatus", reflect.TypeOf((*MockZapiClientInterface)(nil).JobGetIterStatus), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JobGetIterStatus", reflect.TypeOf((*MockZapiClientInterface)(nil).JobGetIterStatus), jobId)
 }
 
 // JobScheduleExists mocks base method.
-func (m *MockZapiClientInterface) JobScheduleExists(arg0 context.Context, arg1 string) (bool, error) {
+func (m *MockZapiClientInterface) JobScheduleExists(ctx context.Context, jobName string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "JobScheduleExists", arg0, arg1)
+	ret := m.ctrl.Call(m, "JobScheduleExists", ctx, jobName)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // JobScheduleExists indicates an expected call of JobScheduleExists.
-func (mr *MockZapiClientInterfaceMockRecorder) JobScheduleExists(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) JobScheduleExists(ctx, jobName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JobScheduleExists", reflect.TypeOf((*MockZapiClientInterface)(nil).JobScheduleExists), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JobScheduleExists", reflect.TypeOf((*MockZapiClientInterface)(nil).JobScheduleExists), ctx, jobName)
 }
 
 // LunCloneCreate mocks base method.
-func (m *MockZapiClientInterface) LunCloneCreate(arg0, arg1, arg2 string, arg3 api.QosPolicyGroup) (*azgo.CloneCreateResponse, error) {
+func (m *MockZapiClientInterface) LunCloneCreate(volumeName, sourceLun, destinationLun string, qosPolicyGroup api.QosPolicyGroup) (*azgo.CloneCreateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunCloneCreate", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "LunCloneCreate", volumeName, sourceLun, destinationLun, qosPolicyGroup)
 	ret0, _ := ret[0].(*azgo.CloneCreateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunCloneCreate indicates an expected call of LunCloneCreate.
-func (mr *MockZapiClientInterfaceMockRecorder) LunCloneCreate(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunCloneCreate(volumeName, sourceLun, destinationLun, qosPolicyGroup any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunCloneCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).LunCloneCreate), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunCloneCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).LunCloneCreate), volumeName, sourceLun, destinationLun, qosPolicyGroup)
 }
 
 // LunCount mocks base method.
-func (m *MockZapiClientInterface) LunCount(arg0 context.Context, arg1 string) (int, error) {
+func (m *MockZapiClientInterface) LunCount(ctx context.Context, volume string) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunCount", arg0, arg1)
+	ret := m.ctrl.Call(m, "LunCount", ctx, volume)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunCount indicates an expected call of LunCount.
-func (mr *MockZapiClientInterfaceMockRecorder) LunCount(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunCount(ctx, volume any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunCount", reflect.TypeOf((*MockZapiClientInterface)(nil).LunCount), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunCount", reflect.TypeOf((*MockZapiClientInterface)(nil).LunCount), ctx, volume)
 }
 
 // LunCreate mocks base method.
-func (m *MockZapiClientInterface) LunCreate(arg0 string, arg1 int, arg2 string, arg3 api.QosPolicyGroup, arg4, arg5 bool) (*azgo.LunCreateBySizeResponse, error) {
+func (m *MockZapiClientInterface) LunCreate(lunPath string, sizeInBytes int, osType string, qosPolicyGroup api.QosPolicyGroup, spaceReserved, spaceAllocated bool) (*azgo.LunCreateBySizeResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunCreate", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "LunCreate", lunPath, sizeInBytes, osType, qosPolicyGroup, spaceReserved, spaceAllocated)
 	ret0, _ := ret[0].(*azgo.LunCreateBySizeResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunCreate indicates an expected call of LunCreate.
-func (mr *MockZapiClientInterfaceMockRecorder) LunCreate(arg0, arg1, arg2, arg3, arg4, arg5 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunCreate(lunPath, sizeInBytes, osType, qosPolicyGroup, spaceReserved, spaceAllocated any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).LunCreate), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).LunCreate), lunPath, sizeInBytes, osType, qosPolicyGroup, spaceReserved, spaceAllocated)
 }
 
 // LunDestroy mocks base method.
-func (m *MockZapiClientInterface) LunDestroy(arg0 string) (*azgo.LunDestroyResponse, error) {
+func (m *MockZapiClientInterface) LunDestroy(lunPath string) (*azgo.LunDestroyResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunDestroy", arg0)
+	ret := m.ctrl.Call(m, "LunDestroy", lunPath)
 	ret0, _ := ret[0].(*azgo.LunDestroyResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunDestroy indicates an expected call of LunDestroy.
-func (mr *MockZapiClientInterfaceMockRecorder) LunDestroy(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunDestroy(lunPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunDestroy", reflect.TypeOf((*MockZapiClientInterface)(nil).LunDestroy), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunDestroy", reflect.TypeOf((*MockZapiClientInterface)(nil).LunDestroy), lunPath)
 }
 
 // LunGet mocks base method.
-func (m *MockZapiClientInterface) LunGet(arg0 string) (*azgo.LunInfoType, error) {
+func (m *MockZapiClientInterface) LunGet(path string) (*azgo.LunInfoType, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunGet", arg0)
+	ret := m.ctrl.Call(m, "LunGet", path)
 	ret0, _ := ret[0].(*azgo.LunInfoType)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunGet indicates an expected call of LunGet.
-func (mr *MockZapiClientInterfaceMockRecorder) LunGet(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunGet(path any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGet", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGet), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGet", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGet), path)
 }
 
 // LunGetAll mocks base method.
-func (m *MockZapiClientInterface) LunGetAll(arg0 string) (*azgo.LunGetIterResponse, error) {
+func (m *MockZapiClientInterface) LunGetAll(pathPattern string) (*azgo.LunGetIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunGetAll", arg0)
+	ret := m.ctrl.Call(m, "LunGetAll", pathPattern)
 	ret0, _ := ret[0].(*azgo.LunGetIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunGetAll indicates an expected call of LunGetAll.
-func (mr *MockZapiClientInterfaceMockRecorder) LunGetAll(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunGetAll(pathPattern any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetAll", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetAll), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetAll", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetAll), pathPattern)
 }
 
 // LunGetAllForVolume mocks base method.
-func (m *MockZapiClientInterface) LunGetAllForVolume(arg0 string) (*azgo.LunGetIterResponse, error) {
+func (m *MockZapiClientInterface) LunGetAllForVolume(volumeName string) (*azgo.LunGetIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunGetAllForVolume", arg0)
+	ret := m.ctrl.Call(m, "LunGetAllForVolume", volumeName)
 	ret0, _ := ret[0].(*azgo.LunGetIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunGetAllForVolume indicates an expected call of LunGetAllForVolume.
-func (mr *MockZapiClientInterfaceMockRecorder) LunGetAllForVolume(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunGetAllForVolume(volumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetAllForVolume", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetAllForVolume), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetAllForVolume", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetAllForVolume), volumeName)
 }
 
 // LunGetAllForVserver mocks base method.
-func (m *MockZapiClientInterface) LunGetAllForVserver(arg0 string) (*azgo.LunGetIterResponse, error) {
+func (m *MockZapiClientInterface) LunGetAllForVserver(vserverName string) (*azgo.LunGetIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunGetAllForVserver", arg0)
+	ret := m.ctrl.Call(m, "LunGetAllForVserver", vserverName)
 	ret0, _ := ret[0].(*azgo.LunGetIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunGetAllForVserver indicates an expected call of LunGetAllForVserver.
-func (mr *MockZapiClientInterfaceMockRecorder) LunGetAllForVserver(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunGetAllForVserver(vserverName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetAllForVserver", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetAllForVserver), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetAllForVserver", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetAllForVserver), vserverName)
 }
 
 // LunGetAttribute mocks base method.
-func (m *MockZapiClientInterface) LunGetAttribute(arg0 context.Context, arg1, arg2 string) (string, error) {
+func (m *MockZapiClientInterface) LunGetAttribute(ctx context.Context, lunPath, name string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunGetAttribute", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "LunGetAttribute", ctx, lunPath, name)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunGetAttribute indicates an expected call of LunGetAttribute.
-func (mr *MockZapiClientInterfaceMockRecorder) LunGetAttribute(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunGetAttribute(ctx, lunPath, name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetAttribute", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetAttribute), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetAttribute", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetAttribute), ctx, lunPath, name)
 }
 
 // LunGetComment mocks base method.
-func (m *MockZapiClientInterface) LunGetComment(arg0 context.Context, arg1 string) (string, error) {
+func (m *MockZapiClientInterface) LunGetComment(ctx context.Context, lunPath string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunGetComment", arg0, arg1)
+	ret := m.ctrl.Call(m, "LunGetComment", ctx, lunPath)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunGetComment indicates an expected call of LunGetComment.
-func (mr *MockZapiClientInterfaceMockRecorder) LunGetComment(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunGetComment(ctx, lunPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetComment", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetComment), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetComment", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetComment), ctx, lunPath)
 }
 
 // LunGetGeometry mocks base method.
-func (m *MockZapiClientInterface) LunGetGeometry(arg0 string) (*azgo.LunGetGeometryResponse, error) {
+func (m *MockZapiClientInterface) LunGetGeometry(path string) (*azgo.LunGetGeometryResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunGetGeometry", arg0)
+	ret := m.ctrl.Call(m, "LunGetGeometry", path)
 	ret0, _ := ret[0].(*azgo.LunGetGeometryResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunGetGeometry indicates an expected call of LunGetGeometry.
-func (mr *MockZapiClientInterfaceMockRecorder) LunGetGeometry(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunGetGeometry(path any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetGeometry", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetGeometry), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetGeometry", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetGeometry), path)
 }
 
 // LunGetSerialNumber mocks base method.
-func (m *MockZapiClientInterface) LunGetSerialNumber(arg0 string) (*azgo.LunGetSerialNumberResponse, error) {
+func (m *MockZapiClientInterface) LunGetSerialNumber(lunPath string) (*azgo.LunGetSerialNumberResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunGetSerialNumber", arg0)
+	ret := m.ctrl.Call(m, "LunGetSerialNumber", lunPath)
 	ret0, _ := ret[0].(*azgo.LunGetSerialNumberResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunGetSerialNumber indicates an expected call of LunGetSerialNumber.
-func (mr *MockZapiClientInterfaceMockRecorder) LunGetSerialNumber(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunGetSerialNumber(lunPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetSerialNumber", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetSerialNumber), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetSerialNumber", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetSerialNumber), lunPath)
 }
 
 // LunMap mocks base method.
-func (m *MockZapiClientInterface) LunMap(arg0, arg1 string, arg2 int) (*azgo.LunMapResponse, error) {
+func (m *MockZapiClientInterface) LunMap(initiatorGroupName, lunPath string, lunID int) (*azgo.LunMapResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunMap", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "LunMap", initiatorGroupName, lunPath, lunID)
 	ret0, _ := ret[0].(*azgo.LunMapResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunMap indicates an expected call of LunMap.
-func (mr *MockZapiClientInterfaceMockRecorder) LunMap(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunMap(initiatorGroupName, lunPath, lunID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMap", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMap), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMap", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMap), initiatorGroupName, lunPath, lunID)
 }
 
 // LunMapAutoID mocks base method.
-func (m *MockZapiClientInterface) LunMapAutoID(arg0, arg1 string) (*azgo.LunMapResponse, error) {
+func (m *MockZapiClientInterface) LunMapAutoID(initiatorGroupName, lunPath string) (*azgo.LunMapResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunMapAutoID", arg0, arg1)
+	ret := m.ctrl.Call(m, "LunMapAutoID", initiatorGroupName, lunPath)
 	ret0, _ := ret[0].(*azgo.LunMapResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunMapAutoID indicates an expected call of LunMapAutoID.
-func (mr *MockZapiClientInterfaceMockRecorder) LunMapAutoID(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunMapAutoID(initiatorGroupName, lunPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapAutoID", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMapAutoID), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapAutoID", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMapAutoID), initiatorGroupName, lunPath)
 }
 
 // LunMapGet mocks base method.
-func (m *MockZapiClientInterface) LunMapGet(arg0, arg1 string) (*azgo.LunMapGetIterResponse, error) {
+func (m *MockZapiClientInterface) LunMapGet(initiatorGroupName, lunPath string) (*azgo.LunMapGetIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunMapGet", arg0, arg1)
+	ret := m.ctrl.Call(m, "LunMapGet", initiatorGroupName, lunPath)
 	ret0, _ := ret[0].(*azgo.LunMapGetIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunMapGet indicates an expected call of LunMapGet.
-func (mr *MockZapiClientInterfaceMockRecorder) LunMapGet(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunMapGet(initiatorGroupName, lunPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapGet", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMapGet), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapGet", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMapGet), initiatorGroupName, lunPath)
 }
 
 // LunMapIfNotMapped mocks base method.
-func (m *MockZapiClientInterface) LunMapIfNotMapped(arg0 context.Context, arg1, arg2 string) (int, error) {
+func (m *MockZapiClientInterface) LunMapIfNotMapped(ctx context.Context, initiatorGroupName, lunPath string) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunMapIfNotMapped", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "LunMapIfNotMapped", ctx, initiatorGroupName, lunPath)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunMapIfNotMapped indicates an expected call of LunMapIfNotMapped.
-func (mr *MockZapiClientInterfaceMockRecorder) LunMapIfNotMapped(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunMapIfNotMapped(ctx, initiatorGroupName, lunPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapIfNotMapped", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMapIfNotMapped), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapIfNotMapped", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMapIfNotMapped), ctx, initiatorGroupName, lunPath)
 }
 
 // LunMapListInfo mocks base method.
-func (m *MockZapiClientInterface) LunMapListInfo(arg0 string) (*azgo.LunMapListInfoResponse, error) {
+func (m *MockZapiClientInterface) LunMapListInfo(lunPath string) (*azgo.LunMapListInfoResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunMapListInfo", arg0)
+	ret := m.ctrl.Call(m, "LunMapListInfo", lunPath)
 	ret0, _ := ret[0].(*azgo.LunMapListInfoResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunMapListInfo indicates an expected call of LunMapListInfo.
-func (mr *MockZapiClientInterfaceMockRecorder) LunMapListInfo(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunMapListInfo(lunPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapListInfo", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMapListInfo), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapListInfo", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMapListInfo), lunPath)
 }
 
 // LunMapsGetByIgroup mocks base method.
-func (m *MockZapiClientInterface) LunMapsGetByIgroup(arg0 string) (*azgo.LunMapGetIterResponse, error) {
+func (m *MockZapiClientInterface) LunMapsGetByIgroup(initiatorGroupName string) (*azgo.LunMapGetIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunMapsGetByIgroup", arg0)
+	ret := m.ctrl.Call(m, "LunMapsGetByIgroup", initiatorGroupName)
 	ret0, _ := ret[0].(*azgo.LunMapGetIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunMapsGetByIgroup indicates an expected call of LunMapsGetByIgroup.
-func (mr *MockZapiClientInterfaceMockRecorder) LunMapsGetByIgroup(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunMapsGetByIgroup(initiatorGroupName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapsGetByIgroup", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMapsGetByIgroup), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapsGetByIgroup", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMapsGetByIgroup), initiatorGroupName)
 }
 
 // LunMapsGetByLun mocks base method.
-func (m *MockZapiClientInterface) LunMapsGetByLun(arg0 string) (*azgo.LunMapGetIterResponse, error) {
+func (m *MockZapiClientInterface) LunMapsGetByLun(lunPath string) (*azgo.LunMapGetIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunMapsGetByLun", arg0)
+	ret := m.ctrl.Call(m, "LunMapsGetByLun", lunPath)
 	ret0, _ := ret[0].(*azgo.LunMapGetIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunMapsGetByLun indicates an expected call of LunMapsGetByLun.
-func (mr *MockZapiClientInterfaceMockRecorder) LunMapsGetByLun(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunMapsGetByLun(lunPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapsGetByLun", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMapsGetByLun), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapsGetByLun", reflect.TypeOf((*MockZapiClientInterface)(nil).LunMapsGetByLun), lunPath)
 }
 
 // LunOffline mocks base method.
-func (m *MockZapiClientInterface) LunOffline(arg0 string) (*azgo.LunOfflineResponse, error) {
+func (m *MockZapiClientInterface) LunOffline(lunPath string) (*azgo.LunOfflineResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunOffline", arg0)
+	ret := m.ctrl.Call(m, "LunOffline", lunPath)
 	ret0, _ := ret[0].(*azgo.LunOfflineResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunOffline indicates an expected call of LunOffline.
-func (mr *MockZapiClientInterfaceMockRecorder) LunOffline(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunOffline(lunPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunOffline", reflect.TypeOf((*MockZapiClientInterface)(nil).LunOffline), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunOffline", reflect.TypeOf((*MockZapiClientInterface)(nil).LunOffline), lunPath)
 }
 
 // LunOnline mocks base method.
-func (m *MockZapiClientInterface) LunOnline(arg0 string) (*azgo.LunOnlineResponse, error) {
+func (m *MockZapiClientInterface) LunOnline(lunPath string) (*azgo.LunOnlineResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunOnline", arg0)
+	ret := m.ctrl.Call(m, "LunOnline", lunPath)
 	ret0, _ := ret[0].(*azgo.LunOnlineResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunOnline indicates an expected call of LunOnline.
-func (mr *MockZapiClientInterfaceMockRecorder) LunOnline(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunOnline(lunPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunOnline", reflect.TypeOf((*MockZapiClientInterface)(nil).LunOnline), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunOnline", reflect.TypeOf((*MockZapiClientInterface)(nil).LunOnline), lunPath)
 }
 
 // LunRename mocks base method.
-func (m *MockZapiClientInterface) LunRename(arg0, arg1 string) (*azgo.LunMoveResponse, error) {
+func (m *MockZapiClientInterface) LunRename(path, newPath string) (*azgo.LunMoveResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunRename", arg0, arg1)
+	ret := m.ctrl.Call(m, "LunRename", path, newPath)
 	ret0, _ := ret[0].(*azgo.LunMoveResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunRename indicates an expected call of LunRename.
-func (mr *MockZapiClientInterfaceMockRecorder) LunRename(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunRename(path, newPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunRename", reflect.TypeOf((*MockZapiClientInterface)(nil).LunRename), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunRename", reflect.TypeOf((*MockZapiClientInterface)(nil).LunRename), path, newPath)
 }
 
 // LunResize mocks base method.
-func (m *MockZapiClientInterface) LunResize(arg0 string, arg1 int) (uint64, error) {
+func (m *MockZapiClientInterface) LunResize(path string, sizeBytes int) (uint64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunResize", arg0, arg1)
+	ret := m.ctrl.Call(m, "LunResize", path, sizeBytes)
 	ret0, _ := ret[0].(uint64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunResize indicates an expected call of LunResize.
-func (mr *MockZapiClientInterfaceMockRecorder) LunResize(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunResize(path, sizeBytes any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunResize", reflect.TypeOf((*MockZapiClientInterface)(nil).LunResize), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunResize", reflect.TypeOf((*MockZapiClientInterface)(nil).LunResize), path, sizeBytes)
 }
 
 // LunSetAttribute mocks base method.
-func (m *MockZapiClientInterface) LunSetAttribute(arg0, arg1, arg2 string) (*azgo.LunSetAttributeResponse, error) {
+func (m *MockZapiClientInterface) LunSetAttribute(lunPath, name, value string) (*azgo.LunSetAttributeResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunSetAttribute", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "LunSetAttribute", lunPath, name, value)
 	ret0, _ := ret[0].(*azgo.LunSetAttributeResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunSetAttribute indicates an expected call of LunSetAttribute.
-func (mr *MockZapiClientInterfaceMockRecorder) LunSetAttribute(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunSetAttribute(lunPath, name, value any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunSetAttribute", reflect.TypeOf((*MockZapiClientInterface)(nil).LunSetAttribute), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunSetAttribute", reflect.TypeOf((*MockZapiClientInterface)(nil).LunSetAttribute), lunPath, name, value)
 }
 
 // LunSetQosPolicyGroup mocks base method.
-func (m *MockZapiClientInterface) LunSetQosPolicyGroup(arg0 string, arg1 api.QosPolicyGroup) (*azgo.LunSetQosPolicyGroupResponse, error) {
+func (m *MockZapiClientInterface) LunSetQosPolicyGroup(lunPath string, qosPolicyGroup api.QosPolicyGroup) (*azgo.LunSetQosPolicyGroupResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunSetQosPolicyGroup", arg0, arg1)
+	ret := m.ctrl.Call(m, "LunSetQosPolicyGroup", lunPath, qosPolicyGroup)
 	ret0, _ := ret[0].(*azgo.LunSetQosPolicyGroupResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunSetQosPolicyGroup indicates an expected call of LunSetQosPolicyGroup.
-func (mr *MockZapiClientInterfaceMockRecorder) LunSetQosPolicyGroup(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunSetQosPolicyGroup(lunPath, qosPolicyGroup any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunSetQosPolicyGroup", reflect.TypeOf((*MockZapiClientInterface)(nil).LunSetQosPolicyGroup), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunSetQosPolicyGroup", reflect.TypeOf((*MockZapiClientInterface)(nil).LunSetQosPolicyGroup), lunPath, qosPolicyGroup)
 }
 
 // LunSize mocks base method.
-func (m *MockZapiClientInterface) LunSize(arg0 string) (int, error) {
+func (m *MockZapiClientInterface) LunSize(lunPath string) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunSize", arg0)
+	ret := m.ctrl.Call(m, "LunSize", lunPath)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunSize indicates an expected call of LunSize.
-func (mr *MockZapiClientInterfaceMockRecorder) LunSize(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunSize(lunPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunSize", reflect.TypeOf((*MockZapiClientInterface)(nil).LunSize), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunSize", reflect.TypeOf((*MockZapiClientInterface)(nil).LunSize), lunPath)
 }
 
 // LunUnmap mocks base method.
-func (m *MockZapiClientInterface) LunUnmap(arg0, arg1 string) (*azgo.LunUnmapResponse, error) {
+func (m *MockZapiClientInterface) LunUnmap(initiatorGroupName, lunPath string) (*azgo.LunUnmapResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunUnmap", arg0, arg1)
+	ret := m.ctrl.Call(m, "LunUnmap", initiatorGroupName, lunPath)
 	ret0, _ := ret[0].(*azgo.LunUnmapResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunUnmap indicates an expected call of LunUnmap.
-func (mr *MockZapiClientInterfaceMockRecorder) LunUnmap(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunUnmap(initiatorGroupName, lunPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunUnmap", reflect.TypeOf((*MockZapiClientInterface)(nil).LunUnmap), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunUnmap", reflect.TypeOf((*MockZapiClientInterface)(nil).LunUnmap), initiatorGroupName, lunPath)
 }
 
 // NetFcpInterfaceGetDataLIFs mocks base method.
-func (m *MockZapiClientInterface) NetFcpInterfaceGetDataLIFs(arg0 context.Context, arg1 string) ([]string, error) {
+func (m *MockZapiClientInterface) NetFcpInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NetFcpInterfaceGetDataLIFs", arg0, arg1)
+	ret := m.ctrl.Call(m, "NetFcpInterfaceGetDataLIFs", ctx, protocol)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NetFcpInterfaceGetDataLIFs indicates an expected call of NetFcpInterfaceGetDataLIFs.
-func (mr *MockZapiClientInterfaceMockRecorder) NetFcpInterfaceGetDataLIFs(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) NetFcpInterfaceGetDataLIFs(ctx, protocol any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetFcpInterfaceGetDataLIFs", reflect.TypeOf((*MockZapiClientInterface)(nil).NetFcpInterfaceGetDataLIFs), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetFcpInterfaceGetDataLIFs", reflect.TypeOf((*MockZapiClientInterface)(nil).NetFcpInterfaceGetDataLIFs), ctx, protocol)
 }
 
 // NetInterfaceGet mocks base method.
@@ -1240,84 +1241,84 @@ func (mr *MockZapiClientInterfaceMockRecorder) NetInterfaceGet() *gomock.Call {
 }
 
 // NetInterfaceGetDataLIFs mocks base method.
-func (m *MockZapiClientInterface) NetInterfaceGetDataLIFs(arg0 context.Context, arg1 string) ([]string, error) {
+func (m *MockZapiClientInterface) NetInterfaceGetDataLIFs(ctx context.Context, protocol string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NetInterfaceGetDataLIFs", arg0, arg1)
+	ret := m.ctrl.Call(m, "NetInterfaceGetDataLIFs", ctx, protocol)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NetInterfaceGetDataLIFs indicates an expected call of NetInterfaceGetDataLIFs.
-func (mr *MockZapiClientInterfaceMockRecorder) NetInterfaceGetDataLIFs(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) NetInterfaceGetDataLIFs(ctx, protocol any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetInterfaceGetDataLIFs", reflect.TypeOf((*MockZapiClientInterface)(nil).NetInterfaceGetDataLIFs), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetInterfaceGetDataLIFs", reflect.TypeOf((*MockZapiClientInterface)(nil).NetInterfaceGetDataLIFs), ctx, protocol)
 }
 
 // NodeListSerialNumbers mocks base method.
-func (m *MockZapiClientInterface) NodeListSerialNumbers(arg0 context.Context) ([]string, error) {
+func (m *MockZapiClientInterface) NodeListSerialNumbers(ctx context.Context) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NodeListSerialNumbers", arg0)
+	ret := m.ctrl.Call(m, "NodeListSerialNumbers", ctx)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NodeListSerialNumbers indicates an expected call of NodeListSerialNumbers.
-func (mr *MockZapiClientInterfaceMockRecorder) NodeListSerialNumbers(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) NodeListSerialNumbers(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NodeListSerialNumbers", reflect.TypeOf((*MockZapiClientInterface)(nil).NodeListSerialNumbers), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NodeListSerialNumbers", reflect.TypeOf((*MockZapiClientInterface)(nil).NodeListSerialNumbers), ctx)
 }
 
 // QtreeCount mocks base method.
-func (m *MockZapiClientInterface) QtreeCount(arg0 context.Context, arg1 string) (int, error) {
+func (m *MockZapiClientInterface) QtreeCount(ctx context.Context, volume string) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QtreeCount", arg0, arg1)
+	ret := m.ctrl.Call(m, "QtreeCount", ctx, volume)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QtreeCount indicates an expected call of QtreeCount.
-func (mr *MockZapiClientInterfaceMockRecorder) QtreeCount(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) QtreeCount(ctx, volume any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeCount", reflect.TypeOf((*MockZapiClientInterface)(nil).QtreeCount), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeCount", reflect.TypeOf((*MockZapiClientInterface)(nil).QtreeCount), ctx, volume)
 }
 
 // QtreeCreate mocks base method.
-func (m *MockZapiClientInterface) QtreeCreate(arg0, arg1, arg2, arg3, arg4, arg5 string) (*azgo.QtreeCreateResponse, error) {
+func (m *MockZapiClientInterface) QtreeCreate(name, volumeName, unixPermissions, exportPolicy, securityStyle, qosPolicy string) (*azgo.QtreeCreateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QtreeCreate", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "QtreeCreate", name, volumeName, unixPermissions, exportPolicy, securityStyle, qosPolicy)
 	ret0, _ := ret[0].(*azgo.QtreeCreateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QtreeCreate indicates an expected call of QtreeCreate.
-func (mr *MockZapiClientInterfaceMockRecorder) QtreeCreate(arg0, arg1, arg2, arg3, arg4, arg5 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) QtreeCreate(name, volumeName, unixPermissions, exportPolicy, securityStyle, qosPolicy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).QtreeCreate), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).QtreeCreate), name, volumeName, unixPermissions, exportPolicy, securityStyle, qosPolicy)
 }
 
 // QtreeDestroyAsync mocks base method.
-func (m *MockZapiClientInterface) QtreeDestroyAsync(arg0 string, arg1 bool) (*azgo.QtreeDeleteAsyncResponse, error) {
+func (m *MockZapiClientInterface) QtreeDestroyAsync(path string, force bool) (*azgo.QtreeDeleteAsyncResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QtreeDestroyAsync", arg0, arg1)
+	ret := m.ctrl.Call(m, "QtreeDestroyAsync", path, force)
 	ret0, _ := ret[0].(*azgo.QtreeDeleteAsyncResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QtreeDestroyAsync indicates an expected call of QtreeDestroyAsync.
-func (mr *MockZapiClientInterfaceMockRecorder) QtreeDestroyAsync(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) QtreeDestroyAsync(path, force any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeDestroyAsync", reflect.TypeOf((*MockZapiClientInterface)(nil).QtreeDestroyAsync), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeDestroyAsync", reflect.TypeOf((*MockZapiClientInterface)(nil).QtreeDestroyAsync), path, force)
 }
 
 // QtreeExists mocks base method.
-func (m *MockZapiClientInterface) QtreeExists(arg0 context.Context, arg1, arg2 string) (bool, string, error) {
+func (m *MockZapiClientInterface) QtreeExists(ctx context.Context, name, volumePattern string) (bool, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QtreeExists", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "QtreeExists", ctx, name, volumePattern)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
@@ -1325,264 +1326,264 @@ func (m *MockZapiClientInterface) QtreeExists(arg0 context.Context, arg1, arg2 s
 }
 
 // QtreeExists indicates an expected call of QtreeExists.
-func (mr *MockZapiClientInterfaceMockRecorder) QtreeExists(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) QtreeExists(ctx, name, volumePattern any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeExists", reflect.TypeOf((*MockZapiClientInterface)(nil).QtreeExists), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeExists", reflect.TypeOf((*MockZapiClientInterface)(nil).QtreeExists), ctx, name, volumePattern)
 }
 
 // QtreeGet mocks base method.
-func (m *MockZapiClientInterface) QtreeGet(arg0, arg1 string) (*azgo.QtreeInfoType, error) {
+func (m *MockZapiClientInterface) QtreeGet(name, volumePrefix string) (*azgo.QtreeInfoType, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QtreeGet", arg0, arg1)
+	ret := m.ctrl.Call(m, "QtreeGet", name, volumePrefix)
 	ret0, _ := ret[0].(*azgo.QtreeInfoType)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QtreeGet indicates an expected call of QtreeGet.
-func (mr *MockZapiClientInterfaceMockRecorder) QtreeGet(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) QtreeGet(name, volumePrefix any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeGet", reflect.TypeOf((*MockZapiClientInterface)(nil).QtreeGet), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeGet", reflect.TypeOf((*MockZapiClientInterface)(nil).QtreeGet), name, volumePrefix)
 }
 
 // QtreeGetAll mocks base method.
-func (m *MockZapiClientInterface) QtreeGetAll(arg0 string) (*azgo.QtreeListIterResponse, error) {
+func (m *MockZapiClientInterface) QtreeGetAll(volumePrefix string) (*azgo.QtreeListIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QtreeGetAll", arg0)
+	ret := m.ctrl.Call(m, "QtreeGetAll", volumePrefix)
 	ret0, _ := ret[0].(*azgo.QtreeListIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QtreeGetAll indicates an expected call of QtreeGetAll.
-func (mr *MockZapiClientInterfaceMockRecorder) QtreeGetAll(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) QtreeGetAll(volumePrefix any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeGetAll", reflect.TypeOf((*MockZapiClientInterface)(nil).QtreeGetAll), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeGetAll", reflect.TypeOf((*MockZapiClientInterface)(nil).QtreeGetAll), volumePrefix)
 }
 
 // QtreeList mocks base method.
-func (m *MockZapiClientInterface) QtreeList(arg0, arg1 string) (*azgo.QtreeListIterResponse, error) {
+func (m *MockZapiClientInterface) QtreeList(prefix, volumePrefix string) (*azgo.QtreeListIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QtreeList", arg0, arg1)
+	ret := m.ctrl.Call(m, "QtreeList", prefix, volumePrefix)
 	ret0, _ := ret[0].(*azgo.QtreeListIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QtreeList indicates an expected call of QtreeList.
-func (mr *MockZapiClientInterfaceMockRecorder) QtreeList(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) QtreeList(prefix, volumePrefix any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeList", reflect.TypeOf((*MockZapiClientInterface)(nil).QtreeList), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeList", reflect.TypeOf((*MockZapiClientInterface)(nil).QtreeList), prefix, volumePrefix)
 }
 
 // QtreeModifyExportPolicy mocks base method.
-func (m *MockZapiClientInterface) QtreeModifyExportPolicy(arg0, arg1, arg2 string) (*azgo.QtreeModifyResponse, error) {
+func (m *MockZapiClientInterface) QtreeModifyExportPolicy(name, volumeName, exportPolicy string) (*azgo.QtreeModifyResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QtreeModifyExportPolicy", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "QtreeModifyExportPolicy", name, volumeName, exportPolicy)
 	ret0, _ := ret[0].(*azgo.QtreeModifyResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QtreeModifyExportPolicy indicates an expected call of QtreeModifyExportPolicy.
-func (mr *MockZapiClientInterfaceMockRecorder) QtreeModifyExportPolicy(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) QtreeModifyExportPolicy(name, volumeName, exportPolicy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeModifyExportPolicy", reflect.TypeOf((*MockZapiClientInterface)(nil).QtreeModifyExportPolicy), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeModifyExportPolicy", reflect.TypeOf((*MockZapiClientInterface)(nil).QtreeModifyExportPolicy), name, volumeName, exportPolicy)
 }
 
 // QtreeRename mocks base method.
-func (m *MockZapiClientInterface) QtreeRename(arg0, arg1 string) (*azgo.QtreeRenameResponse, error) {
+func (m *MockZapiClientInterface) QtreeRename(path, newPath string) (*azgo.QtreeRenameResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QtreeRename", arg0, arg1)
+	ret := m.ctrl.Call(m, "QtreeRename", path, newPath)
 	ret0, _ := ret[0].(*azgo.QtreeRenameResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QtreeRename indicates an expected call of QtreeRename.
-func (mr *MockZapiClientInterfaceMockRecorder) QtreeRename(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) QtreeRename(path, newPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeRename", reflect.TypeOf((*MockZapiClientInterface)(nil).QtreeRename), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QtreeRename", reflect.TypeOf((*MockZapiClientInterface)(nil).QtreeRename), path, newPath)
 }
 
 // QuotaEntryList mocks base method.
-func (m *MockZapiClientInterface) QuotaEntryList(arg0 string) (*azgo.QuotaListEntriesIterResponse, error) {
+func (m *MockZapiClientInterface) QuotaEntryList(volume string) (*azgo.QuotaListEntriesIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QuotaEntryList", arg0)
+	ret := m.ctrl.Call(m, "QuotaEntryList", volume)
 	ret0, _ := ret[0].(*azgo.QuotaListEntriesIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QuotaEntryList indicates an expected call of QuotaEntryList.
-func (mr *MockZapiClientInterfaceMockRecorder) QuotaEntryList(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) QuotaEntryList(volume any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuotaEntryList", reflect.TypeOf((*MockZapiClientInterface)(nil).QuotaEntryList), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuotaEntryList", reflect.TypeOf((*MockZapiClientInterface)(nil).QuotaEntryList), volume)
 }
 
 // QuotaGetEntry mocks base method.
-func (m *MockZapiClientInterface) QuotaGetEntry(arg0, arg1 string) (*azgo.QuotaEntryType, error) {
+func (m *MockZapiClientInterface) QuotaGetEntry(target, quotaType string) (*azgo.QuotaEntryType, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QuotaGetEntry", arg0, arg1)
+	ret := m.ctrl.Call(m, "QuotaGetEntry", target, quotaType)
 	ret0, _ := ret[0].(*azgo.QuotaEntryType)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QuotaGetEntry indicates an expected call of QuotaGetEntry.
-func (mr *MockZapiClientInterfaceMockRecorder) QuotaGetEntry(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) QuotaGetEntry(target, quotaType any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuotaGetEntry", reflect.TypeOf((*MockZapiClientInterface)(nil).QuotaGetEntry), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuotaGetEntry", reflect.TypeOf((*MockZapiClientInterface)(nil).QuotaGetEntry), target, quotaType)
 }
 
 // QuotaOff mocks base method.
-func (m *MockZapiClientInterface) QuotaOff(arg0 string) (*azgo.QuotaOffResponse, error) {
+func (m *MockZapiClientInterface) QuotaOff(volume string) (*azgo.QuotaOffResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QuotaOff", arg0)
+	ret := m.ctrl.Call(m, "QuotaOff", volume)
 	ret0, _ := ret[0].(*azgo.QuotaOffResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QuotaOff indicates an expected call of QuotaOff.
-func (mr *MockZapiClientInterfaceMockRecorder) QuotaOff(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) QuotaOff(volume any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuotaOff", reflect.TypeOf((*MockZapiClientInterface)(nil).QuotaOff), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuotaOff", reflect.TypeOf((*MockZapiClientInterface)(nil).QuotaOff), volume)
 }
 
 // QuotaOn mocks base method.
-func (m *MockZapiClientInterface) QuotaOn(arg0 string) (*azgo.QuotaOnResponse, error) {
+func (m *MockZapiClientInterface) QuotaOn(volume string) (*azgo.QuotaOnResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QuotaOn", arg0)
+	ret := m.ctrl.Call(m, "QuotaOn", volume)
 	ret0, _ := ret[0].(*azgo.QuotaOnResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QuotaOn indicates an expected call of QuotaOn.
-func (mr *MockZapiClientInterfaceMockRecorder) QuotaOn(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) QuotaOn(volume any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuotaOn", reflect.TypeOf((*MockZapiClientInterface)(nil).QuotaOn), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuotaOn", reflect.TypeOf((*MockZapiClientInterface)(nil).QuotaOn), volume)
 }
 
 // QuotaResize mocks base method.
-func (m *MockZapiClientInterface) QuotaResize(arg0 string) (*azgo.QuotaResizeResponse, error) {
+func (m *MockZapiClientInterface) QuotaResize(volume string) (*azgo.QuotaResizeResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QuotaResize", arg0)
+	ret := m.ctrl.Call(m, "QuotaResize", volume)
 	ret0, _ := ret[0].(*azgo.QuotaResizeResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QuotaResize indicates an expected call of QuotaResize.
-func (mr *MockZapiClientInterfaceMockRecorder) QuotaResize(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) QuotaResize(volume any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuotaResize", reflect.TypeOf((*MockZapiClientInterface)(nil).QuotaResize), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuotaResize", reflect.TypeOf((*MockZapiClientInterface)(nil).QuotaResize), volume)
 }
 
 // QuotaSetEntry mocks base method.
-func (m *MockZapiClientInterface) QuotaSetEntry(arg0, arg1, arg2, arg3, arg4 string) (*azgo.QuotaSetEntryResponse, error) {
+func (m *MockZapiClientInterface) QuotaSetEntry(qtreeName, volumeName, quotaTarget, quotaType, diskLimit string) (*azgo.QuotaSetEntryResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QuotaSetEntry", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "QuotaSetEntry", qtreeName, volumeName, quotaTarget, quotaType, diskLimit)
 	ret0, _ := ret[0].(*azgo.QuotaSetEntryResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QuotaSetEntry indicates an expected call of QuotaSetEntry.
-func (mr *MockZapiClientInterfaceMockRecorder) QuotaSetEntry(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) QuotaSetEntry(qtreeName, volumeName, quotaTarget, quotaType, diskLimit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuotaSetEntry", reflect.TypeOf((*MockZapiClientInterface)(nil).QuotaSetEntry), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuotaSetEntry", reflect.TypeOf((*MockZapiClientInterface)(nil).QuotaSetEntry), qtreeName, volumeName, quotaTarget, quotaType, diskLimit)
 }
 
 // QuotaStatus mocks base method.
-func (m *MockZapiClientInterface) QuotaStatus(arg0 string) (*azgo.QuotaStatusResponse, error) {
+func (m *MockZapiClientInterface) QuotaStatus(volume string) (*azgo.QuotaStatusResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QuotaStatus", arg0)
+	ret := m.ctrl.Call(m, "QuotaStatus", volume)
 	ret0, _ := ret[0].(*azgo.QuotaStatusResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QuotaStatus indicates an expected call of QuotaStatus.
-func (mr *MockZapiClientInterfaceMockRecorder) QuotaStatus(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) QuotaStatus(volume any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuotaStatus", reflect.TypeOf((*MockZapiClientInterface)(nil).QuotaStatus), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuotaStatus", reflect.TypeOf((*MockZapiClientInterface)(nil).QuotaStatus), volume)
 }
 
 // SMBShareAccessControlCreate mocks base method.
-func (m *MockZapiClientInterface) SMBShareAccessControlCreate(arg0 string, arg1 map[string]string) (*azgo.CifsShareAccessControlCreateResponse, error) {
+func (m *MockZapiClientInterface) SMBShareAccessControlCreate(shareName string, smbShareACL map[string]string) (*azgo.CifsShareAccessControlCreateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SMBShareAccessControlCreate", arg0, arg1)
+	ret := m.ctrl.Call(m, "SMBShareAccessControlCreate", shareName, smbShareACL)
 	ret0, _ := ret[0].(*azgo.CifsShareAccessControlCreateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SMBShareAccessControlCreate indicates an expected call of SMBShareAccessControlCreate.
-func (mr *MockZapiClientInterfaceMockRecorder) SMBShareAccessControlCreate(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SMBShareAccessControlCreate(shareName, smbShareACL any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMBShareAccessControlCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).SMBShareAccessControlCreate), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMBShareAccessControlCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).SMBShareAccessControlCreate), shareName, smbShareACL)
 }
 
 // SMBShareAccessControlDelete mocks base method.
-func (m *MockZapiClientInterface) SMBShareAccessControlDelete(arg0 string, arg1 map[string]string) (*azgo.CifsShareAccessControlDeleteResponse, error) {
+func (m *MockZapiClientInterface) SMBShareAccessControlDelete(shareName string, smbShareACL map[string]string) (*azgo.CifsShareAccessControlDeleteResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SMBShareAccessControlDelete", arg0, arg1)
+	ret := m.ctrl.Call(m, "SMBShareAccessControlDelete", shareName, smbShareACL)
 	ret0, _ := ret[0].(*azgo.CifsShareAccessControlDeleteResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SMBShareAccessControlDelete indicates an expected call of SMBShareAccessControlDelete.
-func (mr *MockZapiClientInterfaceMockRecorder) SMBShareAccessControlDelete(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SMBShareAccessControlDelete(shareName, smbShareACL any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMBShareAccessControlDelete", reflect.TypeOf((*MockZapiClientInterface)(nil).SMBShareAccessControlDelete), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMBShareAccessControlDelete", reflect.TypeOf((*MockZapiClientInterface)(nil).SMBShareAccessControlDelete), shareName, smbShareACL)
 }
 
 // SMBShareCreate mocks base method.
-func (m *MockZapiClientInterface) SMBShareCreate(arg0, arg1 string) (*azgo.CifsShareCreateResponse, error) {
+func (m *MockZapiClientInterface) SMBShareCreate(shareName, path string) (*azgo.CifsShareCreateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SMBShareCreate", arg0, arg1)
+	ret := m.ctrl.Call(m, "SMBShareCreate", shareName, path)
 	ret0, _ := ret[0].(*azgo.CifsShareCreateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SMBShareCreate indicates an expected call of SMBShareCreate.
-func (mr *MockZapiClientInterfaceMockRecorder) SMBShareCreate(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SMBShareCreate(shareName, path any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMBShareCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).SMBShareCreate), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMBShareCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).SMBShareCreate), shareName, path)
 }
 
 // SMBShareDestroy mocks base method.
-func (m *MockZapiClientInterface) SMBShareDestroy(arg0 string) (*azgo.CifsShareDeleteResponse, error) {
+func (m *MockZapiClientInterface) SMBShareDestroy(shareName string) (*azgo.CifsShareDeleteResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SMBShareDestroy", arg0)
+	ret := m.ctrl.Call(m, "SMBShareDestroy", shareName)
 	ret0, _ := ret[0].(*azgo.CifsShareDeleteResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SMBShareDestroy indicates an expected call of SMBShareDestroy.
-func (mr *MockZapiClientInterfaceMockRecorder) SMBShareDestroy(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SMBShareDestroy(shareName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMBShareDestroy", reflect.TypeOf((*MockZapiClientInterface)(nil).SMBShareDestroy), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMBShareDestroy", reflect.TypeOf((*MockZapiClientInterface)(nil).SMBShareDestroy), shareName)
 }
 
 // SMBShareExists mocks base method.
-func (m *MockZapiClientInterface) SMBShareExists(arg0 string) (bool, error) {
+func (m *MockZapiClientInterface) SMBShareExists(shareName string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SMBShareExists", arg0)
+	ret := m.ctrl.Call(m, "SMBShareExists", shareName)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SMBShareExists indicates an expected call of SMBShareExists.
-func (mr *MockZapiClientInterfaceMockRecorder) SMBShareExists(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SMBShareExists(shareName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMBShareExists", reflect.TypeOf((*MockZapiClientInterface)(nil).SMBShareExists), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMBShareExists", reflect.TypeOf((*MockZapiClientInterface)(nil).SMBShareExists), shareName)
 }
 
 // SVMGetAggregateNames mocks base method.
@@ -1643,370 +1644,370 @@ func (mr *MockZapiClientInterfaceMockRecorder) SVMUUID() *gomock.Call {
 }
 
 // SetSVMMCC mocks base method.
-func (m *MockZapiClientInterface) SetSVMMCC(arg0 bool) {
+func (m *MockZapiClientInterface) SetSVMMCC(mcc bool) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetSVMMCC", arg0)
+	m.ctrl.Call(m, "SetSVMMCC", mcc)
 }
 
 // SetSVMMCC indicates an expected call of SetSVMMCC.
-func (mr *MockZapiClientInterfaceMockRecorder) SetSVMMCC(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SetSVMMCC(mcc any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSVMMCC", reflect.TypeOf((*MockZapiClientInterface)(nil).SetSVMMCC), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSVMMCC", reflect.TypeOf((*MockZapiClientInterface)(nil).SetSVMMCC), mcc)
 }
 
 // SetSVMUUID mocks base method.
-func (m *MockZapiClientInterface) SetSVMUUID(arg0 string) {
+func (m *MockZapiClientInterface) SetSVMUUID(svmUUID string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetSVMUUID", arg0)
+	m.ctrl.Call(m, "SetSVMUUID", svmUUID)
 }
 
 // SetSVMUUID indicates an expected call of SetSVMUUID.
-func (mr *MockZapiClientInterfaceMockRecorder) SetSVMUUID(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SetSVMUUID(svmUUID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSVMUUID", reflect.TypeOf((*MockZapiClientInterface)(nil).SetSVMUUID), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSVMUUID", reflect.TypeOf((*MockZapiClientInterface)(nil).SetSVMUUID), svmUUID)
 }
 
 // SnapmirrorAbort mocks base method.
-func (m *MockZapiClientInterface) SnapmirrorAbort(arg0, arg1, arg2, arg3 string) (*azgo.SnapmirrorAbortResponse, error) {
+func (m *MockZapiClientInterface) SnapmirrorAbort(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorAbortResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorAbort", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "SnapmirrorAbort", localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	ret0, _ := ret[0].(*azgo.SnapmirrorAbortResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorAbort indicates an expected call of SnapmirrorAbort.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorAbort(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorAbort(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorAbort", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorAbort), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorAbort", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorAbort), localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 // SnapmirrorBreak mocks base method.
-func (m *MockZapiClientInterface) SnapmirrorBreak(arg0, arg1, arg2, arg3, arg4 string) (*azgo.SnapmirrorBreakResponse, error) {
+func (m *MockZapiClientInterface) SnapmirrorBreak(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName string) (*azgo.SnapmirrorBreakResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorBreak", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "SnapmirrorBreak", localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName)
 	ret0, _ := ret[0].(*azgo.SnapmirrorBreakResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorBreak indicates an expected call of SnapmirrorBreak.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorBreak(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorBreak(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorBreak", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorBreak), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorBreak", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorBreak), localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, snapshotName)
 }
 
 // SnapmirrorCreate mocks base method.
-func (m *MockZapiClientInterface) SnapmirrorCreate(arg0, arg1, arg2, arg3, arg4, arg5 string) (*azgo.SnapmirrorCreateResponse, error) {
+func (m *MockZapiClientInterface) SnapmirrorCreate(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule string) (*azgo.SnapmirrorCreateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorCreate", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "SnapmirrorCreate", localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule)
 	ret0, _ := ret[0].(*azgo.SnapmirrorCreateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorCreate indicates an expected call of SnapmirrorCreate.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorCreate(arg0, arg1, arg2, arg3, arg4, arg5 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorCreate(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorCreate), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorCreate), localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName, repPolicy, repSchedule)
 }
 
 // SnapmirrorDelete mocks base method.
-func (m *MockZapiClientInterface) SnapmirrorDelete(arg0, arg1, arg2, arg3 string) (*azgo.SnapmirrorDestroyResponse, error) {
+func (m *MockZapiClientInterface) SnapmirrorDelete(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorDestroyResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorDelete", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "SnapmirrorDelete", localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	ret0, _ := ret[0].(*azgo.SnapmirrorDestroyResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorDelete indicates an expected call of SnapmirrorDelete.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorDelete(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorDelete(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorDelete", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorDelete), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorDelete", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorDelete), localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 // SnapmirrorDeleteViaDestination mocks base method.
-func (m *MockZapiClientInterface) SnapmirrorDeleteViaDestination(arg0, arg1 string) (*azgo.SnapmirrorDestroyResponse, error) {
+func (m *MockZapiClientInterface) SnapmirrorDeleteViaDestination(localInternalVolumeName, localSVMName string) (*azgo.SnapmirrorDestroyResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorDeleteViaDestination", arg0, arg1)
+	ret := m.ctrl.Call(m, "SnapmirrorDeleteViaDestination", localInternalVolumeName, localSVMName)
 	ret0, _ := ret[0].(*azgo.SnapmirrorDestroyResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorDeleteViaDestination indicates an expected call of SnapmirrorDeleteViaDestination.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorDeleteViaDestination(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorDeleteViaDestination(localInternalVolumeName, localSVMName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorDeleteViaDestination", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorDeleteViaDestination), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorDeleteViaDestination", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorDeleteViaDestination), localInternalVolumeName, localSVMName)
 }
 
 // SnapmirrorDestinationRelease mocks base method.
-func (m *MockZapiClientInterface) SnapmirrorDestinationRelease(arg0 string) (*azgo.SnapmirrorReleaseResponse, error) {
+func (m *MockZapiClientInterface) SnapmirrorDestinationRelease(localInternalVolumeName string) (*azgo.SnapmirrorReleaseResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorDestinationRelease", arg0)
+	ret := m.ctrl.Call(m, "SnapmirrorDestinationRelease", localInternalVolumeName)
 	ret0, _ := ret[0].(*azgo.SnapmirrorReleaseResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorDestinationRelease indicates an expected call of SnapmirrorDestinationRelease.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorDestinationRelease(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorDestinationRelease(localInternalVolumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorDestinationRelease", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorDestinationRelease), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorDestinationRelease", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorDestinationRelease), localInternalVolumeName)
 }
 
 // SnapmirrorGet mocks base method.
-func (m *MockZapiClientInterface) SnapmirrorGet(arg0, arg1, arg2, arg3 string) (*azgo.SnapmirrorGetResponse, error) {
+func (m *MockZapiClientInterface) SnapmirrorGet(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorGetResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorGet", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "SnapmirrorGet", localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	ret0, _ := ret[0].(*azgo.SnapmirrorGetResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorGet indicates an expected call of SnapmirrorGet.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorGet(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorGet(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorGet", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorGet), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorGet", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorGet), localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 // SnapmirrorGetDestinationIterRequest mocks base method.
-func (m *MockZapiClientInterface) SnapmirrorGetDestinationIterRequest(arg0 string) (*azgo.SnapmirrorGetDestinationIterResponse, error) {
+func (m *MockZapiClientInterface) SnapmirrorGetDestinationIterRequest(relGroupType string) (*azgo.SnapmirrorGetDestinationIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorGetDestinationIterRequest", arg0)
+	ret := m.ctrl.Call(m, "SnapmirrorGetDestinationIterRequest", relGroupType)
 	ret0, _ := ret[0].(*azgo.SnapmirrorGetDestinationIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorGetDestinationIterRequest indicates an expected call of SnapmirrorGetDestinationIterRequest.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorGetDestinationIterRequest(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorGetDestinationIterRequest(relGroupType any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorGetDestinationIterRequest", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorGetDestinationIterRequest), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorGetDestinationIterRequest", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorGetDestinationIterRequest), relGroupType)
 }
 
 // SnapmirrorGetIterRequest mocks base method.
-func (m *MockZapiClientInterface) SnapmirrorGetIterRequest(arg0 string) (*azgo.SnapmirrorGetIterResponse, error) {
+func (m *MockZapiClientInterface) SnapmirrorGetIterRequest(relGroupType string) (*azgo.SnapmirrorGetIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorGetIterRequest", arg0)
+	ret := m.ctrl.Call(m, "SnapmirrorGetIterRequest", relGroupType)
 	ret0, _ := ret[0].(*azgo.SnapmirrorGetIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorGetIterRequest indicates an expected call of SnapmirrorGetIterRequest.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorGetIterRequest(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorGetIterRequest(relGroupType any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorGetIterRequest", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorGetIterRequest), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorGetIterRequest", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorGetIterRequest), relGroupType)
 }
 
 // SnapmirrorInitialize mocks base method.
-func (m *MockZapiClientInterface) SnapmirrorInitialize(arg0, arg1, arg2, arg3 string) (*azgo.SnapmirrorInitializeResponse, error) {
+func (m *MockZapiClientInterface) SnapmirrorInitialize(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorInitializeResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorInitialize", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "SnapmirrorInitialize", localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	ret0, _ := ret[0].(*azgo.SnapmirrorInitializeResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorInitialize indicates an expected call of SnapmirrorInitialize.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorInitialize(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorInitialize(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorInitialize", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorInitialize), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorInitialize", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorInitialize), localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 // SnapmirrorPolicyExists mocks base method.
-func (m *MockZapiClientInterface) SnapmirrorPolicyExists(arg0 context.Context, arg1 string) (bool, error) {
+func (m *MockZapiClientInterface) SnapmirrorPolicyExists(ctx context.Context, policyName string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorPolicyExists", arg0, arg1)
+	ret := m.ctrl.Call(m, "SnapmirrorPolicyExists", ctx, policyName)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorPolicyExists indicates an expected call of SnapmirrorPolicyExists.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorPolicyExists(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorPolicyExists(ctx, policyName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorPolicyExists", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorPolicyExists), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorPolicyExists", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorPolicyExists), ctx, policyName)
 }
 
 // SnapmirrorPolicyGet mocks base method.
-func (m *MockZapiClientInterface) SnapmirrorPolicyGet(arg0 context.Context, arg1 string) (*azgo.SnapmirrorPolicyInfoType, error) {
+func (m *MockZapiClientInterface) SnapmirrorPolicyGet(ctx context.Context, policyName string) (*azgo.SnapmirrorPolicyInfoType, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorPolicyGet", arg0, arg1)
+	ret := m.ctrl.Call(m, "SnapmirrorPolicyGet", ctx, policyName)
 	ret0, _ := ret[0].(*azgo.SnapmirrorPolicyInfoType)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorPolicyGet indicates an expected call of SnapmirrorPolicyGet.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorPolicyGet(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorPolicyGet(ctx, policyName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorPolicyGet", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorPolicyGet), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorPolicyGet", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorPolicyGet), ctx, policyName)
 }
 
 // SnapmirrorQuiesce mocks base method.
-func (m *MockZapiClientInterface) SnapmirrorQuiesce(arg0, arg1, arg2, arg3 string) (*azgo.SnapmirrorQuiesceResponse, error) {
+func (m *MockZapiClientInterface) SnapmirrorQuiesce(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorQuiesceResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorQuiesce", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "SnapmirrorQuiesce", localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	ret0, _ := ret[0].(*azgo.SnapmirrorQuiesceResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorQuiesce indicates an expected call of SnapmirrorQuiesce.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorQuiesce(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorQuiesce(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorQuiesce", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorQuiesce), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorQuiesce", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorQuiesce), localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 // SnapmirrorRelease mocks base method.
-func (m *MockZapiClientInterface) SnapmirrorRelease(arg0, arg1 string) error {
+func (m *MockZapiClientInterface) SnapmirrorRelease(sourceFlexvolName, sourceSVMName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorRelease", arg0, arg1)
+	ret := m.ctrl.Call(m, "SnapmirrorRelease", sourceFlexvolName, sourceSVMName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SnapmirrorRelease indicates an expected call of SnapmirrorRelease.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorRelease(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorRelease(sourceFlexvolName, sourceSVMName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorRelease", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorRelease), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorRelease", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorRelease), sourceFlexvolName, sourceSVMName)
 }
 
 // SnapmirrorResync mocks base method.
-func (m *MockZapiClientInterface) SnapmirrorResync(arg0, arg1, arg2, arg3 string) (*azgo.SnapmirrorResyncResponse, error) {
+func (m *MockZapiClientInterface) SnapmirrorResync(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName string) (*azgo.SnapmirrorResyncResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorResync", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "SnapmirrorResync", localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 	ret0, _ := ret[0].(*azgo.SnapmirrorResyncResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorResync indicates an expected call of SnapmirrorResync.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorResync(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorResync(localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorResync", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorResync), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorResync", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorResync), localInternalVolumeName, localSVMName, remoteFlexvolName, remoteSVMName)
 }
 
 // SnapmirrorUpdate mocks base method.
-func (m *MockZapiClientInterface) SnapmirrorUpdate(arg0, arg1 string) (*azgo.SnapmirrorUpdateResponse, error) {
+func (m *MockZapiClientInterface) SnapmirrorUpdate(localInternalVolumeName, snapshotName string) (*azgo.SnapmirrorUpdateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapmirrorUpdate", arg0, arg1)
+	ret := m.ctrl.Call(m, "SnapmirrorUpdate", localInternalVolumeName, snapshotName)
 	ret0, _ := ret[0].(*azgo.SnapmirrorUpdateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapmirrorUpdate indicates an expected call of SnapmirrorUpdate.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorUpdate(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapmirrorUpdate(localInternalVolumeName, snapshotName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorUpdate", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorUpdate), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapmirrorUpdate", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapmirrorUpdate), localInternalVolumeName, snapshotName)
 }
 
 // SnapshotCreate mocks base method.
-func (m *MockZapiClientInterface) SnapshotCreate(arg0, arg1 string) (*azgo.SnapshotCreateResponse, error) {
+func (m *MockZapiClientInterface) SnapshotCreate(snapshotName, volumeName string) (*azgo.SnapshotCreateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapshotCreate", arg0, arg1)
+	ret := m.ctrl.Call(m, "SnapshotCreate", snapshotName, volumeName)
 	ret0, _ := ret[0].(*azgo.SnapshotCreateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapshotCreate indicates an expected call of SnapshotCreate.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapshotCreate(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapshotCreate(snapshotName, volumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapshotCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapshotCreate), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapshotCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapshotCreate), snapshotName, volumeName)
 }
 
 // SnapshotDelete mocks base method.
-func (m *MockZapiClientInterface) SnapshotDelete(arg0, arg1 string) (*azgo.SnapshotDeleteResponse, error) {
+func (m *MockZapiClientInterface) SnapshotDelete(snapshotName, volumeName string) (*azgo.SnapshotDeleteResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapshotDelete", arg0, arg1)
+	ret := m.ctrl.Call(m, "SnapshotDelete", snapshotName, volumeName)
 	ret0, _ := ret[0].(*azgo.SnapshotDeleteResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapshotDelete indicates an expected call of SnapshotDelete.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapshotDelete(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapshotDelete(snapshotName, volumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapshotDelete", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapshotDelete), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapshotDelete", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapshotDelete), snapshotName, volumeName)
 }
 
 // SnapshotInfo mocks base method.
-func (m *MockZapiClientInterface) SnapshotInfo(arg0, arg1 string) (*azgo.SnapshotGetIterResponse, error) {
+func (m *MockZapiClientInterface) SnapshotInfo(snapshotName, volumeName string) (*azgo.SnapshotGetIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapshotInfo", arg0, arg1)
+	ret := m.ctrl.Call(m, "SnapshotInfo", snapshotName, volumeName)
 	ret0, _ := ret[0].(*azgo.SnapshotGetIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapshotInfo indicates an expected call of SnapshotInfo.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapshotInfo(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapshotInfo(snapshotName, volumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapshotInfo", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapshotInfo), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapshotInfo", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapshotInfo), snapshotName, volumeName)
 }
 
 // SnapshotList mocks base method.
-func (m *MockZapiClientInterface) SnapshotList(arg0 string) (*azgo.SnapshotGetIterResponse, error) {
+func (m *MockZapiClientInterface) SnapshotList(volumeName string) (*azgo.SnapshotGetIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapshotList", arg0)
+	ret := m.ctrl.Call(m, "SnapshotList", volumeName)
 	ret0, _ := ret[0].(*azgo.SnapshotGetIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapshotList indicates an expected call of SnapshotList.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapshotList(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapshotList(volumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapshotList", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapshotList), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapshotList", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapshotList), volumeName)
 }
 
 // SnapshotRestoreVolume mocks base method.
-func (m *MockZapiClientInterface) SnapshotRestoreVolume(arg0, arg1 string) (*azgo.SnapshotRestoreVolumeResponse, error) {
+func (m *MockZapiClientInterface) SnapshotRestoreVolume(snapshotName, volumeName string) (*azgo.SnapshotRestoreVolumeResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SnapshotRestoreVolume", arg0, arg1)
+	ret := m.ctrl.Call(m, "SnapshotRestoreVolume", snapshotName, volumeName)
 	ret0, _ := ret[0].(*azgo.SnapshotRestoreVolumeResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SnapshotRestoreVolume indicates an expected call of SnapshotRestoreVolume.
-func (mr *MockZapiClientInterfaceMockRecorder) SnapshotRestoreVolume(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SnapshotRestoreVolume(snapshotName, volumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapshotRestoreVolume", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapshotRestoreVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SnapshotRestoreVolume", reflect.TypeOf((*MockZapiClientInterface)(nil).SnapshotRestoreVolume), snapshotName, volumeName)
 }
 
 // SupportsFeature mocks base method.
-func (m *MockZapiClientInterface) SupportsFeature(arg0 context.Context, arg1 api.Feature) bool {
+func (m *MockZapiClientInterface) SupportsFeature(ctx context.Context, feature api.Feature) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SupportsFeature", arg0, arg1)
+	ret := m.ctrl.Call(m, "SupportsFeature", ctx, feature)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // SupportsFeature indicates an expected call of SupportsFeature.
-func (mr *MockZapiClientInterfaceMockRecorder) SupportsFeature(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SupportsFeature(ctx, feature any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SupportsFeature", reflect.TypeOf((*MockZapiClientInterface)(nil).SupportsFeature), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SupportsFeature", reflect.TypeOf((*MockZapiClientInterface)(nil).SupportsFeature), ctx, feature)
 }
 
 // SystemGetOntapiVersion mocks base method.
-func (m *MockZapiClientInterface) SystemGetOntapiVersion(arg0 context.Context, arg1 bool) (string, error) {
+func (m *MockZapiClientInterface) SystemGetOntapiVersion(ctx context.Context, cached bool) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SystemGetOntapiVersion", arg0, arg1)
+	ret := m.ctrl.Call(m, "SystemGetOntapiVersion", ctx, cached)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SystemGetOntapiVersion indicates an expected call of SystemGetOntapiVersion.
-func (mr *MockZapiClientInterfaceMockRecorder) SystemGetOntapiVersion(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) SystemGetOntapiVersion(ctx, cached any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SystemGetOntapiVersion", reflect.TypeOf((*MockZapiClientInterface)(nil).SystemGetOntapiVersion), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SystemGetOntapiVersion", reflect.TypeOf((*MockZapiClientInterface)(nil).SystemGetOntapiVersion), ctx, cached)
 }
 
 // SystemGetVersion mocks base method.
@@ -2025,407 +2026,407 @@ func (mr *MockZapiClientInterfaceMockRecorder) SystemGetVersion() *gomock.Call {
 }
 
 // TieringPolicyValue mocks base method.
-func (m *MockZapiClientInterface) TieringPolicyValue(arg0 context.Context) string {
+func (m *MockZapiClientInterface) TieringPolicyValue(ctx context.Context) string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TieringPolicyValue", arg0)
+	ret := m.ctrl.Call(m, "TieringPolicyValue", ctx)
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
 // TieringPolicyValue indicates an expected call of TieringPolicyValue.
-func (mr *MockZapiClientInterfaceMockRecorder) TieringPolicyValue(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) TieringPolicyValue(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TieringPolicyValue", reflect.TypeOf((*MockZapiClientInterface)(nil).TieringPolicyValue), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TieringPolicyValue", reflect.TypeOf((*MockZapiClientInterface)(nil).TieringPolicyValue), ctx)
 }
 
 // VolumeCloneCreate mocks base method.
-func (m *MockZapiClientInterface) VolumeCloneCreate(arg0, arg1, arg2 string) (*azgo.VolumeCloneCreateResponse, error) {
+func (m *MockZapiClientInterface) VolumeCloneCreate(name, source, snapshot string) (*azgo.VolumeCloneCreateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeCloneCreate", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "VolumeCloneCreate", name, source, snapshot)
 	ret0, _ := ret[0].(*azgo.VolumeCloneCreateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeCloneCreate indicates an expected call of VolumeCloneCreate.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeCloneCreate(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeCloneCreate(name, source, snapshot any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeCloneCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeCloneCreate), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeCloneCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeCloneCreate), name, source, snapshot)
 }
 
 // VolumeCloneCreateAsync mocks base method.
-func (m *MockZapiClientInterface) VolumeCloneCreateAsync(arg0, arg1, arg2 string) (*azgo.VolumeCloneCreateAsyncResponse, error) {
+func (m *MockZapiClientInterface) VolumeCloneCreateAsync(name, source, snapshot string) (*azgo.VolumeCloneCreateAsyncResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeCloneCreateAsync", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "VolumeCloneCreateAsync", name, source, snapshot)
 	ret0, _ := ret[0].(*azgo.VolumeCloneCreateAsyncResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeCloneCreateAsync indicates an expected call of VolumeCloneCreateAsync.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeCloneCreateAsync(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeCloneCreateAsync(name, source, snapshot any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeCloneCreateAsync", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeCloneCreateAsync), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeCloneCreateAsync", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeCloneCreateAsync), name, source, snapshot)
 }
 
 // VolumeCloneSplitStart mocks base method.
-func (m *MockZapiClientInterface) VolumeCloneSplitStart(arg0 string) (*azgo.VolumeCloneSplitStartResponse, error) {
+func (m *MockZapiClientInterface) VolumeCloneSplitStart(name string) (*azgo.VolumeCloneSplitStartResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeCloneSplitStart", arg0)
+	ret := m.ctrl.Call(m, "VolumeCloneSplitStart", name)
 	ret0, _ := ret[0].(*azgo.VolumeCloneSplitStartResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeCloneSplitStart indicates an expected call of VolumeCloneSplitStart.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeCloneSplitStart(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeCloneSplitStart(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeCloneSplitStart", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeCloneSplitStart), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeCloneSplitStart", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeCloneSplitStart), name)
 }
 
 // VolumeCreate mocks base method.
-func (m *MockZapiClientInterface) VolumeCreate(arg0 context.Context, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10 string, arg11 api.QosPolicyGroup, arg12 *bool, arg13 int, arg14 bool) (*azgo.VolumeCreateResponse, error) {
+func (m *MockZapiClientInterface) VolumeCreate(ctx context.Context, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment string, qosPolicyGroup api.QosPolicyGroup, encrypt *bool, snapshotReserve int, dpVolume bool) (*azgo.VolumeCreateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeCreate", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+	ret := m.ctrl.Call(m, "VolumeCreate", ctx, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume)
 	ret0, _ := ret[0].(*azgo.VolumeCreateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeCreate indicates an expected call of VolumeCreate.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeCreate(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeCreate(ctx, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeCreate), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeCreate), ctx, name, aggregateName, size, spaceReserve, snapshotPolicy, unixPermissions, exportPolicy, securityStyle, tieringPolicy, comment, qosPolicyGroup, encrypt, snapshotReserve, dpVolume)
 }
 
 // VolumeDestroy mocks base method.
-func (m *MockZapiClientInterface) VolumeDestroy(arg0 string, arg1 bool) (*azgo.VolumeDestroyResponse, error) {
+func (m *MockZapiClientInterface) VolumeDestroy(name string, force bool) (*azgo.VolumeDestroyResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeDestroy", arg0, arg1)
+	ret := m.ctrl.Call(m, "VolumeDestroy", name, force)
 	ret0, _ := ret[0].(*azgo.VolumeDestroyResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeDestroy indicates an expected call of VolumeDestroy.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeDestroy(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeDestroy(name, force any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeDestroy", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeDestroy), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeDestroy", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeDestroy), name, force)
 }
 
 // VolumeExists mocks base method.
-func (m *MockZapiClientInterface) VolumeExists(arg0 context.Context, arg1 string) (bool, error) {
+func (m *MockZapiClientInterface) VolumeExists(ctx context.Context, name string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeExists", arg0, arg1)
+	ret := m.ctrl.Call(m, "VolumeExists", ctx, name)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeExists indicates an expected call of VolumeExists.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeExists(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeExists(ctx, name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeExists", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeExists), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeExists", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeExists), ctx, name)
 }
 
 // VolumeGet mocks base method.
-func (m *MockZapiClientInterface) VolumeGet(arg0 string) (*azgo.VolumeAttributesType, error) {
+func (m *MockZapiClientInterface) VolumeGet(name string) (*azgo.VolumeAttributesType, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeGet", arg0)
+	ret := m.ctrl.Call(m, "VolumeGet", name)
 	ret0, _ := ret[0].(*azgo.VolumeAttributesType)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeGet indicates an expected call of VolumeGet.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeGet(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeGet(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeGet", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeGet), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeGet", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeGet), name)
 }
 
 // VolumeGetAll mocks base method.
-func (m *MockZapiClientInterface) VolumeGetAll(arg0 string) (*azgo.VolumeGetIterResponse, error) {
+func (m *MockZapiClientInterface) VolumeGetAll(prefix string) (*azgo.VolumeGetIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeGetAll", arg0)
+	ret := m.ctrl.Call(m, "VolumeGetAll", prefix)
 	ret0, _ := ret[0].(*azgo.VolumeGetIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeGetAll indicates an expected call of VolumeGetAll.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeGetAll(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeGetAll(prefix any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeGetAll", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeGetAll), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeGetAll", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeGetAll), prefix)
 }
 
 // VolumeGetType mocks base method.
-func (m *MockZapiClientInterface) VolumeGetType(arg0 string) (string, error) {
+func (m *MockZapiClientInterface) VolumeGetType(name string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeGetType", arg0)
+	ret := m.ctrl.Call(m, "VolumeGetType", name)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeGetType indicates an expected call of VolumeGetType.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeGetType(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeGetType(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeGetType", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeGetType), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeGetType", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeGetType), name)
 }
 
 // VolumeList mocks base method.
-func (m *MockZapiClientInterface) VolumeList(arg0 string) (*azgo.VolumeGetIterResponse, error) {
+func (m *MockZapiClientInterface) VolumeList(prefix string) (*azgo.VolumeGetIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeList", arg0)
+	ret := m.ctrl.Call(m, "VolumeList", prefix)
 	ret0, _ := ret[0].(*azgo.VolumeGetIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeList indicates an expected call of VolumeList.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeList(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeList(prefix any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeList", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeList), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeList", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeList), prefix)
 }
 
 // VolumeListAllBackedBySnapshot mocks base method.
-func (m *MockZapiClientInterface) VolumeListAllBackedBySnapshot(arg0 context.Context, arg1, arg2 string) ([]string, error) {
+func (m *MockZapiClientInterface) VolumeListAllBackedBySnapshot(ctx context.Context, volumeName, snapshotName string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeListAllBackedBySnapshot", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "VolumeListAllBackedBySnapshot", ctx, volumeName, snapshotName)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeListAllBackedBySnapshot indicates an expected call of VolumeListAllBackedBySnapshot.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeListAllBackedBySnapshot(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeListAllBackedBySnapshot(ctx, volumeName, snapshotName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeListAllBackedBySnapshot", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeListAllBackedBySnapshot), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeListAllBackedBySnapshot", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeListAllBackedBySnapshot), ctx, volumeName, snapshotName)
 }
 
 // VolumeListByAttrs mocks base method.
-func (m *MockZapiClientInterface) VolumeListByAttrs(arg0, arg1, arg2, arg3, arg4 string, arg5, arg6 *bool, arg7 int) (*azgo.VolumeGetIterResponse, error) {
+func (m *MockZapiClientInterface) VolumeListByAttrs(prefix, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, snapshotDir, encrypt *bool, snapReserve int) (*azgo.VolumeGetIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeListByAttrs", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	ret := m.ctrl.Call(m, "VolumeListByAttrs", prefix, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, snapshotDir, encrypt, snapReserve)
 	ret0, _ := ret[0].(*azgo.VolumeGetIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeListByAttrs indicates an expected call of VolumeListByAttrs.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeListByAttrs(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeListByAttrs(prefix, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, snapshotDir, encrypt, snapReserve any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeListByAttrs", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeListByAttrs), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeListByAttrs", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeListByAttrs), prefix, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, snapshotDir, encrypt, snapReserve)
 }
 
 // VolumeModifyExportPolicy mocks base method.
-func (m *MockZapiClientInterface) VolumeModifyExportPolicy(arg0, arg1 string) (*azgo.VolumeModifyIterResponse, error) {
+func (m *MockZapiClientInterface) VolumeModifyExportPolicy(volumeName, exportPolicyName string) (*azgo.VolumeModifyIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeModifyExportPolicy", arg0, arg1)
+	ret := m.ctrl.Call(m, "VolumeModifyExportPolicy", volumeName, exportPolicyName)
 	ret0, _ := ret[0].(*azgo.VolumeModifyIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeModifyExportPolicy indicates an expected call of VolumeModifyExportPolicy.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeModifyExportPolicy(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeModifyExportPolicy(volumeName, exportPolicyName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeModifyExportPolicy", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeModifyExportPolicy), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeModifyExportPolicy", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeModifyExportPolicy), volumeName, exportPolicyName)
 }
 
 // VolumeModifySnapshotDirectoryAccess mocks base method.
-func (m *MockZapiClientInterface) VolumeModifySnapshotDirectoryAccess(arg0 string, arg1 bool) (*azgo.VolumeModifyIterResponse, error) {
+func (m *MockZapiClientInterface) VolumeModifySnapshotDirectoryAccess(name string, enable bool) (*azgo.VolumeModifyIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeModifySnapshotDirectoryAccess", arg0, arg1)
+	ret := m.ctrl.Call(m, "VolumeModifySnapshotDirectoryAccess", name, enable)
 	ret0, _ := ret[0].(*azgo.VolumeModifyIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeModifySnapshotDirectoryAccess indicates an expected call of VolumeModifySnapshotDirectoryAccess.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeModifySnapshotDirectoryAccess(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeModifySnapshotDirectoryAccess(name, enable any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeModifySnapshotDirectoryAccess", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeModifySnapshotDirectoryAccess), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeModifySnapshotDirectoryAccess", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeModifySnapshotDirectoryAccess), name, enable)
 }
 
 // VolumeModifyUnixPermissions mocks base method.
-func (m *MockZapiClientInterface) VolumeModifyUnixPermissions(arg0, arg1 string) (*azgo.VolumeModifyIterResponse, error) {
+func (m *MockZapiClientInterface) VolumeModifyUnixPermissions(volumeName, unixPermissions string) (*azgo.VolumeModifyIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeModifyUnixPermissions", arg0, arg1)
+	ret := m.ctrl.Call(m, "VolumeModifyUnixPermissions", volumeName, unixPermissions)
 	ret0, _ := ret[0].(*azgo.VolumeModifyIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeModifyUnixPermissions indicates an expected call of VolumeModifyUnixPermissions.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeModifyUnixPermissions(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeModifyUnixPermissions(volumeName, unixPermissions any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeModifyUnixPermissions", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeModifyUnixPermissions), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeModifyUnixPermissions", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeModifyUnixPermissions), volumeName, unixPermissions)
 }
 
 // VolumeMount mocks base method.
-func (m *MockZapiClientInterface) VolumeMount(arg0, arg1 string) (*azgo.VolumeMountResponse, error) {
+func (m *MockZapiClientInterface) VolumeMount(name, junctionPath string) (*azgo.VolumeMountResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeMount", arg0, arg1)
+	ret := m.ctrl.Call(m, "VolumeMount", name, junctionPath)
 	ret0, _ := ret[0].(*azgo.VolumeMountResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeMount indicates an expected call of VolumeMount.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeMount(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeMount(name, junctionPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeMount", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeMount), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeMount", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeMount), name, junctionPath)
 }
 
 // VolumeOffline mocks base method.
-func (m *MockZapiClientInterface) VolumeOffline(arg0 string) (*azgo.VolumeOfflineResponse, error) {
+func (m *MockZapiClientInterface) VolumeOffline(name string) (*azgo.VolumeOfflineResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeOffline", arg0)
+	ret := m.ctrl.Call(m, "VolumeOffline", name)
 	ret0, _ := ret[0].(*azgo.VolumeOfflineResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeOffline indicates an expected call of VolumeOffline.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeOffline(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeOffline(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeOffline", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeOffline), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeOffline", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeOffline), name)
 }
 
 // VolumeRecoveryQueueGetIter mocks base method.
-func (m *MockZapiClientInterface) VolumeRecoveryQueueGetIter(arg0 string) (*azgo.VolumeRecoveryQueueGetIterResponse, error) {
+func (m *MockZapiClientInterface) VolumeRecoveryQueueGetIter(volumeName string) (*azgo.VolumeRecoveryQueueGetIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeRecoveryQueueGetIter", arg0)
+	ret := m.ctrl.Call(m, "VolumeRecoveryQueueGetIter", volumeName)
 	ret0, _ := ret[0].(*azgo.VolumeRecoveryQueueGetIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeRecoveryQueueGetIter indicates an expected call of VolumeRecoveryQueueGetIter.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeRecoveryQueueGetIter(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeRecoveryQueueGetIter(volumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeRecoveryQueueGetIter", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeRecoveryQueueGetIter), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeRecoveryQueueGetIter", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeRecoveryQueueGetIter), volumeName)
 }
 
 // VolumeRecoveryQueuePurge mocks base method.
-func (m *MockZapiClientInterface) VolumeRecoveryQueuePurge(arg0 string) (*azgo.VolumeRecoveryQueuePurgeResponse, error) {
+func (m *MockZapiClientInterface) VolumeRecoveryQueuePurge(volumeName string) (*azgo.VolumeRecoveryQueuePurgeResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeRecoveryQueuePurge", arg0)
+	ret := m.ctrl.Call(m, "VolumeRecoveryQueuePurge", volumeName)
 	ret0, _ := ret[0].(*azgo.VolumeRecoveryQueuePurgeResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeRecoveryQueuePurge indicates an expected call of VolumeRecoveryQueuePurge.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeRecoveryQueuePurge(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeRecoveryQueuePurge(volumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeRecoveryQueuePurge", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeRecoveryQueuePurge), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeRecoveryQueuePurge", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeRecoveryQueuePurge), volumeName)
 }
 
 // VolumeRename mocks base method.
-func (m *MockZapiClientInterface) VolumeRename(arg0, arg1 string) (*azgo.VolumeRenameResponse, error) {
+func (m *MockZapiClientInterface) VolumeRename(volumeName, newVolumeName string) (*azgo.VolumeRenameResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeRename", arg0, arg1)
+	ret := m.ctrl.Call(m, "VolumeRename", volumeName, newVolumeName)
 	ret0, _ := ret[0].(*azgo.VolumeRenameResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeRename indicates an expected call of VolumeRename.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeRename(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeRename(volumeName, newVolumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeRename", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeRename), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeRename", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeRename), volumeName, newVolumeName)
 }
 
 // VolumeSetComment mocks base method.
-func (m *MockZapiClientInterface) VolumeSetComment(arg0 context.Context, arg1, arg2 string) (*azgo.VolumeModifyIterResponse, error) {
+func (m *MockZapiClientInterface) VolumeSetComment(ctx context.Context, volumeName, newVolumeComment string) (*azgo.VolumeModifyIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeSetComment", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "VolumeSetComment", ctx, volumeName, newVolumeComment)
 	ret0, _ := ret[0].(*azgo.VolumeModifyIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeSetComment indicates an expected call of VolumeSetComment.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeSetComment(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeSetComment(ctx, volumeName, newVolumeComment any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSetComment", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeSetComment), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSetComment", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeSetComment), ctx, volumeName, newVolumeComment)
 }
 
 // VolumeSetQosPolicyGroupName mocks base method.
-func (m *MockZapiClientInterface) VolumeSetQosPolicyGroupName(arg0 string, arg1 api.QosPolicyGroup) (*azgo.VolumeModifyIterResponse, error) {
+func (m *MockZapiClientInterface) VolumeSetQosPolicyGroupName(name string, qosPolicyGroup api.QosPolicyGroup) (*azgo.VolumeModifyIterResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeSetQosPolicyGroupName", arg0, arg1)
+	ret := m.ctrl.Call(m, "VolumeSetQosPolicyGroupName", name, qosPolicyGroup)
 	ret0, _ := ret[0].(*azgo.VolumeModifyIterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeSetQosPolicyGroupName indicates an expected call of VolumeSetQosPolicyGroupName.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeSetQosPolicyGroupName(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeSetQosPolicyGroupName(name, qosPolicyGroup any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSetQosPolicyGroupName", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeSetQosPolicyGroupName), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSetQosPolicyGroupName", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeSetQosPolicyGroupName), name, qosPolicyGroup)
 }
 
 // VolumeSetSize mocks base method.
-func (m *MockZapiClientInterface) VolumeSetSize(arg0, arg1 string) (*azgo.VolumeSizeResponse, error) {
+func (m *MockZapiClientInterface) VolumeSetSize(name, newSize string) (*azgo.VolumeSizeResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeSetSize", arg0, arg1)
+	ret := m.ctrl.Call(m, "VolumeSetSize", name, newSize)
 	ret0, _ := ret[0].(*azgo.VolumeSizeResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeSetSize indicates an expected call of VolumeSetSize.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeSetSize(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeSetSize(name, newSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSetSize", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeSetSize), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSetSize", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeSetSize), name, newSize)
 }
 
 // VolumeSize mocks base method.
-func (m *MockZapiClientInterface) VolumeSize(arg0 string) (int, error) {
+func (m *MockZapiClientInterface) VolumeSize(name string) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeSize", arg0)
+	ret := m.ctrl.Call(m, "VolumeSize", name)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeSize indicates an expected call of VolumeSize.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeSize(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeSize(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSize", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeSize), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSize", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeSize), name)
 }
 
 // VolumeUnmount mocks base method.
-func (m *MockZapiClientInterface) VolumeUnmount(arg0 string, arg1 bool) (*azgo.VolumeUnmountResponse, error) {
+func (m *MockZapiClientInterface) VolumeUnmount(name string, force bool) (*azgo.VolumeUnmountResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeUnmount", arg0, arg1)
+	ret := m.ctrl.Call(m, "VolumeUnmount", name, force)
 	ret0, _ := ret[0].(*azgo.VolumeUnmountResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeUnmount indicates an expected call of VolumeUnmount.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeUnmount(arg0, arg1 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeUnmount(name, force any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeUnmount", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeUnmount), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeUnmount", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeUnmount), name, force)
 }
 
 // VolumeUsedSize mocks base method.
-func (m *MockZapiClientInterface) VolumeUsedSize(arg0 string) (int, error) {
+func (m *MockZapiClientInterface) VolumeUsedSize(name string) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeUsedSize", arg0)
+	ret := m.ctrl.Call(m, "VolumeUsedSize", name)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VolumeUsedSize indicates an expected call of VolumeUsedSize.
-func (mr *MockZapiClientInterfaceMockRecorder) VolumeUsedSize(arg0 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) VolumeUsedSize(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeUsedSize", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeUsedSize), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeUsedSize", reflect.TypeOf((*MockZapiClientInterface)(nil).VolumeUsedSize), name)
 }
 
 // VserverGetIterAdminRequest mocks base method.
@@ -2489,15 +2490,15 @@ func (mr *MockZapiClientInterfaceMockRecorder) VserverShowAggrGetIterRequest() *
 }
 
 // WaitForAsyncResponse mocks base method.
-func (m *MockZapiClientInterface) WaitForAsyncResponse(arg0 context.Context, arg1 any, arg2 time.Duration) error {
+func (m *MockZapiClientInterface) WaitForAsyncResponse(ctx context.Context, zapiResult any, maxWaitTime time.Duration) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WaitForAsyncResponse", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "WaitForAsyncResponse", ctx, zapiResult, maxWaitTime)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // WaitForAsyncResponse indicates an expected call of WaitForAsyncResponse.
-func (mr *MockZapiClientInterfaceMockRecorder) WaitForAsyncResponse(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) WaitForAsyncResponse(ctx, zapiResult, maxWaitTime any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForAsyncResponse", reflect.TypeOf((*MockZapiClientInterface)(nil).WaitForAsyncResponse), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForAsyncResponse", reflect.TypeOf((*MockZapiClientInterface)(nil).WaitForAsyncResponse), ctx, zapiResult, maxWaitTime)
 }

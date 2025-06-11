@@ -18,6 +18,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/RoaringBitmap/roaring/v2"
@@ -29,6 +30,7 @@ import (
 	"github.com/netapp/trident/pkg/capacity"
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/pkg/convert"
+	"github.com/netapp/trident/pkg/locks"
 	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
@@ -136,6 +138,8 @@ var (
 	volumeNameRegex          = regexp.MustCompile(`\{+.*\.volume.Name[^{a-z]*\}+`)
 	volumeNameStartWithRegex = regexp.MustCompile(`^[A-Za-z_].*`)
 	smbShareDeleteACL        = map[string]string{DefaultSMBAccessControlUser: DefaultSMBAccessControlUserType}
+	lunMutex                 = locks.NewGCNamedMutex()
+	igroupMutex              = locks.NewGCNamedMutex()
 )
 
 // CleanBackendName removes brackets and replaces colons with periods to avoid regex parsing errors.
@@ -759,6 +763,8 @@ func reconcileSANNodeAccess(
 		"backendUUID":   backendUUID,
 	}).Debug("Attempting to delete unused igroups")
 	for _, igroup := range igroups {
+		igroupMutex.Lock(igroup)
+		defer igroupMutex.Unlock(igroup)
 		if err := DestroyUnmappedIgroup(ctx, clientAPI, igroup); err != nil {
 			return err
 		}
@@ -888,6 +894,10 @@ func PublishLUN(
 	ctx context.Context, clientAPI api.OntapAPI, config *drivers.OntapStorageDriverConfig, ips []string,
 	publishInfo *tridentmodels.VolumePublishInfo, lunPath, igroupName, nodeName string,
 ) error {
+	lunMutex.Lock(lunPath)
+	defer lunMutex.Unlock(lunPath)
+	igroupMutex.Lock(igroupName)
+	defer igroupMutex.Unlock(igroupName)
 	fields := LogFields{
 		"Method":      "PublishLUN",
 		"Type":        "ontap_common",
@@ -2359,7 +2369,7 @@ func SplitASAVolumeFromBusySnapshot(
 func SplitVolumeFromBusySnapshotWithDelay(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
 	client api.OntapAPI, cloneSplitStart func(ctx context.Context, cloneName string) error,
-	cloneSplitTimers map[string]time.Time,
+	cloneSplitTimers *sync.Map,
 ) {
 	snapshotID := snapConfig.ID()
 	cloneSplitDelay, expired := hasCloneSplitTimerExpired(ctx, snapConfig, config, cloneSplitTimers)
@@ -2373,7 +2383,7 @@ func SplitVolumeFromBusySnapshotWithDelay(
 	if splitErr != nil {
 
 		// The split start failed, so reset the timer so we start again after another brief delay.
-		cloneSplitTimers[snapshotID] = time.Now()
+		cloneSplitTimers.Store(snapshotID, time.Now())
 
 		Logc(ctx).WithFields(LogFields{
 			"snapshot":           snapshotID,
@@ -2383,7 +2393,7 @@ func SplitVolumeFromBusySnapshotWithDelay(
 	} else {
 
 		// The split start succeeded, so add enough time to the timer that we don't try to start it again.
-		cloneSplitTimers[snapshotID] = time.Now().Add(1 * time.Hour)
+		cloneSplitTimers.Store(snapshotID, time.Now().Add(1*time.Hour))
 
 		Logc(ctx).WithField("snapshot", snapshotID).Warning("Retried locked snapshot delete, clone split started.")
 	}
@@ -2392,7 +2402,7 @@ func SplitVolumeFromBusySnapshotWithDelay(
 // hasCloneSplitTimerExpired Checks whether clone split timer has expired. If yes, returns the clone split delay time.
 func hasCloneSplitTimerExpired(
 	ctx context.Context, snapConfig *storage.SnapshotConfig,
-	config *drivers.OntapStorageDriverConfig, cloneSplitTimers map[string]time.Time,
+	config *drivers.OntapStorageDriverConfig, cloneSplitTimers *sync.Map,
 ) (time.Duration, bool) {
 	fields := LogFields{
 		"Method":       "hasCloneSplitTimerExpired",
@@ -2418,9 +2428,9 @@ func hasCloneSplitTimerExpired(
 	cloneSplitDelay := time.Duration(delay) * time.Second
 
 	// If this is the first delete, just log the time and return.
-	firstDeleteTime, ok := cloneSplitTimers[snapshotID]
+	firstDeleteTime, ok := cloneSplitTimers.Load(snapshotID)
 	if !ok {
-		cloneSplitTimers[snapshotID] = time.Now()
+		cloneSplitTimers.Store(snapshotID, time.Now())
 
 		Logc(ctx).WithFields(LogFields{
 			"snapshot":           snapshotID,
@@ -2430,8 +2440,18 @@ func hasCloneSplitTimerExpired(
 		return 0, false
 	}
 
+	t, ok := firstDeleteTime.(time.Time)
+	if !ok {
+		Logc(ctx).WithFields(LogFields{
+			"snapshot":           snapshotID,
+			"secondsBeforeSplit": fmt.Sprintf("%3.2f", cloneSplitDelay.Seconds()),
+		}).Warning("Time type conversion failed, restarting clone split timer.")
+		cloneSplitTimers.Store(snapshotID, time.Now())
+		return 0, false
+	}
+
 	// This isn't the first delete, and the split is still running, so there is nothing to do.
-	if time.Now().Sub(firstDeleteTime) < 0 {
+	if time.Now().Sub(t) < 0 {
 
 		Logc(ctx).WithFields(LogFields{
 			"snapshot": snapshotID,
@@ -2441,11 +2461,11 @@ func hasCloneSplitTimerExpired(
 	}
 
 	// This isn't the first delete, and the delay has not expired, so there is nothing to do.
-	if time.Now().Sub(firstDeleteTime) < cloneSplitDelay {
+	if time.Now().Sub(t) < cloneSplitDelay {
 
 		Logc(ctx).WithFields(LogFields{
 			"snapshot":           snapshotID,
-			"secondsBeforeSplit": fmt.Sprintf("%3.2f", time.Now().Sub(firstDeleteTime).Seconds()),
+			"secondsBeforeSplit": fmt.Sprintf("%3.2f", time.Now().Sub(t).Seconds()),
 		}).Warning("Retried locked snapshot delete, clone split timer not yet expired.")
 
 		return 0, false
@@ -2457,7 +2477,7 @@ func hasCloneSplitTimerExpired(
 func SplitASAVolumeFromBusySnapshotWithDelay(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, config *drivers.OntapStorageDriverConfig,
 	client api.OntapAPI, cloneSplitStart func(ctx context.Context, cloneName string) error,
-	cloneSplitTimers map[string]time.Time,
+	cloneSplitTimers *sync.Map,
 ) {
 	fields := LogFields{
 		"Method":       "SplitASAVolumeFromBusySnapshotWithDelay",
@@ -2484,7 +2504,7 @@ func SplitASAVolumeFromBusySnapshotWithDelay(
 	if splitErr != nil {
 
 		// The split start failed, so reset the timer so we start again after another brief delay.
-		cloneSplitTimers[snapshotID] = time.Now()
+		cloneSplitTimers.Store(snapshotID, time.Now())
 
 		Logc(ctx).WithFields(LogFields{
 			"snapshot":           snapshotID,
@@ -2494,7 +2514,7 @@ func SplitASAVolumeFromBusySnapshotWithDelay(
 	} else {
 
 		// The split start succeeded, so add enough time to the timer that we don't try to start it again.
-		cloneSplitTimers[snapshotID] = time.Now().Add(1 * time.Hour)
+		cloneSplitTimers.Store(snapshotID, time.Now().Add(1*time.Hour))
 
 		Logc(ctx).WithField("snapshot", snapshotID).Warning("Retried locked snapshot delete, clone split started.")
 	}
@@ -4122,6 +4142,8 @@ func LunUnmapAllIgroups(ctx context.Context, clientAPI api.OntapAPI, lunPath str
 
 	errored := false
 	for _, igroup := range igroups {
+		igroupMutex.Lock(igroup)
+		defer igroupMutex.Unlock(igroup)
 		err = clientAPI.LunUnmap(ctx, igroup, lunPath)
 		if err != nil {
 			errored = true
@@ -4194,6 +4216,8 @@ func DestroyUnmappedIgroup(ctx context.Context, clientAPI api.OntapAPI, igroup s
 func EnableSANPublishEnforcement(
 	ctx context.Context, clientAPI api.OntapAPI, volumeConfig *storage.VolumeConfig, lunPath string,
 ) error {
+	lunMutex.Lock(lunPath)
+	defer lunMutex.Unlock(lunPath)
 	fields := LogFields{
 		"volume": volumeConfig.Name,
 		"LUN":    volumeConfig.InternalName,
@@ -4912,7 +4936,7 @@ func restoreASASnapshot(
 func deleteASASnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig,
 	config *drivers.OntapStorageDriverConfig, client api.OntapAPI,
-	cloneSplitTimers map[string]time.Time,
+	cloneSplitTimers *sync.Map,
 ) error {
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
@@ -4946,7 +4970,7 @@ func deleteASASnapshot(
 	}
 
 	// Clean up any split timer
-	delete(cloneSplitTimers, snapConfig.ID())
+	cloneSplitTimers.Delete(snapConfig.ID())
 
 	Logc(ctx).WithFields(LogFields{
 		"snapshotName": internalSnapName,

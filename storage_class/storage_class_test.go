@@ -1055,7 +1055,10 @@ func TestCheckAndAddBackend(t *testing.T) {
 			backend := &storage.StorageBackend{}
 			backend.SetName(test.backendName)
 			backend.SetState(test.state)
-			backend.SetStorage(fakePools)
+			backend.ClearStoragePools()
+			for _, pool := range fakePools {
+				backend.AddStoragePool(pool)
+			}
 
 			if test.excludePool {
 				excludePools = excludePool
@@ -1098,7 +1101,10 @@ func TestIsAddedToBackend(t *testing.T) {
 		t.Run(fmt.Sprintf(testName+":"), func(t *testing.T) {
 			backend := &storage.StorageBackend{}
 			backend.SetName(test.backendName)
-			backend.SetStorage(test.fakePools)
+			backend.ClearStoragePools()
+			for _, pool := range test.fakePools {
+				backend.AddStoragePool(pool)
+			}
 
 			sc := New(&Config{
 				Name: "sc",
@@ -1154,7 +1160,10 @@ func TestGetStoragePools(t *testing.T) {
 	pools, _, fakePools := createAndGetPool(mockCtrl, 3)
 	backend := &storage.StorageBackend{}
 	backend.SetName("backend1")
-	backend.SetStorage(fakePools)
+	backend.ClearStoragePools()
+	for _, pool := range fakePools {
+		backend.AddStoragePool(pool)
+	}
 
 	sc := New(&Config{
 		Name: "sc",
@@ -1172,7 +1181,10 @@ func TestGetAdditionalStoragePools(t *testing.T) {
 	pools, additionalPools, fakePools := createAndGetPool(mockCtrl, 3)
 	backend := &storage.StorageBackend{}
 	backend.SetName("backend1")
-	backend.SetStorage(fakePools)
+	backend.ClearStoragePools()
+	for _, pool := range fakePools {
+		backend.AddStoragePool(pool)
+	}
 
 	sc := New(&Config{
 		Name: "sc",
@@ -1299,4 +1311,27 @@ func TestGetStoragePoolsForProtocolNegative(t *testing.T) {
 	storagePool := sc.GetStoragePoolsForProtocol(ctx, config.File, config.ReadWriteMany)
 
 	assert.Empty(t, storagePool, "unable to get storage pool")
+}
+
+func TestStorageClass_SmartCopy(t *testing.T) {
+	bronzeStorageConfig := &Config{
+		Name:            "bronze",
+		Attributes:      make(map[string]sa.Request),
+		AdditionalPools: make(map[string][]string),
+	}
+	bronzeStorageConfig.Attributes["media"] = sa.NewStringRequest("hdd")
+	bronzeStorageConfig.AdditionalPools["ontapnas"] = []string{"aggr1"}
+	bronzeStorageConfig.AdditionalPools["ontapsan"] = []string{"aggr1"}
+
+	storageClass := New(bronzeStorageConfig)
+
+	// Create a deep copy of the snapshot
+	copiedStorageClass := storageClass.SmartCopy().(*StorageClass)
+
+	// Check that the copied volume is deeply equal to the original
+	assert.Equal(t, storageClass, copiedStorageClass)
+
+	// Check that the copied volume does not point to the same memory
+	assert.False(t, storageClass == copiedStorageClass)
+	assert.False(t, storageClass.config == copiedStorageClass.config)
 }

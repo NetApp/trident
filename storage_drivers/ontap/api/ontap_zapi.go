@@ -81,17 +81,18 @@ func NewClient(config ClientConfig, SVM, driverName string) *Client {
 	d := &Client{
 		driverName: driverName,
 		config:     config,
-		zr: &azgo.ZapiRunner{
-			ManagementLIF:        config.ManagementLIF,
-			SVM:                  SVM,
-			Username:             config.Username,
-			Password:             config.Password,
-			ClientPrivateKey:     config.ClientPrivateKey,
-			ClientCertificate:    config.ClientCertificate,
-			TrustedCACertificate: config.TrustedCACertificate,
-			Secure:               true,
-			DebugTraceFlags:      config.DebugTraceFlags,
-		},
+		zr: azgo.NewZapiRunner(
+			config.ManagementLIF,
+			SVM,
+			config.Username,
+			config.Password,
+			config.ClientPrivateKey,
+			config.ClientCertificate,
+			config.TrustedCACertificate,
+			true,
+			"",
+			config.DebugTraceFlags,
+		),
 		m: &sync.Mutex{},
 	}
 	return d
@@ -118,7 +119,7 @@ func (c *Client) SVMMCC() bool {
 }
 
 func (c *Client) SVMName() string {
-	return c.zr.SVM
+	return c.zr.GetSVM()
 }
 
 // GetClonedZapiRunner returns a clone of the ZapiRunner configured on this driver.
@@ -132,10 +133,7 @@ func (c Client) GetClonedZapiRunner() *azgo.ZapiRunner {
 // made with the resulting runner aren't tunneled.  Note that the calls could still go directly to either a cluster or
 // vserver management LIF.
 func (c Client) GetNontunneledZapiRunner() *azgo.ZapiRunner {
-	clone := new(azgo.ZapiRunner)
-	*clone = *c.zr
-	clone.SVM = ""
-	return clone
+	return c.zr.CopyForNontunneledZapiRunner()
 }
 
 type QosPolicyGroupKindType int
@@ -3069,7 +3067,8 @@ func (c Client) SystemGetVersion() (*azgo.SystemGetVersionResponse, error) {
 
 // SystemGetOntapiVersion gets the ONTAPI version using the credentials, and caches & returns the result.
 func (c Client) SystemGetOntapiVersion(ctx context.Context, cached bool) (string, error) {
-	if c.zr.OntapiVersion == "" || !cached {
+	ontapApiVersion := c.zr.GetOntapApiVersion()
+	if ontapApiVersion == "" || !cached {
 		result, err := azgo.NewSystemGetOntapiVersionRequest().ExecuteUsing(c.zr)
 		if err = azgo.GetError(ctx, result, err); err != nil {
 			return "", fmt.Errorf("could not read ONTAPI version: %v", err)
@@ -3077,10 +3076,11 @@ func (c Client) SystemGetOntapiVersion(ctx context.Context, cached bool) (string
 
 		major := result.Result.MajorVersion()
 		minor := result.Result.MinorVersion()
-		c.zr.OntapiVersion = fmt.Sprintf("%d.%d", major, minor)
+		ontapApiVersion = fmt.Sprintf("%d.%d", major, minor)
+		c.zr.SetOntapApiVersion(ontapApiVersion)
 	}
 
-	return c.zr.OntapiVersion, nil
+	return ontapApiVersion, nil
 }
 
 func (c Client) NodeListSerialNumbers(ctx context.Context) ([]string, error) {

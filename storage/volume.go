@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mitchellh/copystructure"
+	"github.com/brunoga/deep"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/utils/models"
@@ -95,19 +95,11 @@ func (c *VolumeConfig) Validate() error {
 }
 
 func (c *VolumeConfig) ConstructClone() *VolumeConfig {
-	// If private fields are added to the VolumeConfig or any embedded structure
-	// this should be updated to use a deep copy facility that may account for it.
-	clone, err := copystructure.Copy(*c)
+	clone, err := deep.Copy(c)
 	if err != nil {
 		return &VolumeConfig{}
 	}
-
-	volConfig, ok := clone.(VolumeConfig)
-	if !ok {
-		return &VolumeConfig{}
-	}
-
-	return &volConfig
+	return clone
 }
 
 type Volume struct {
@@ -203,12 +195,28 @@ func (v *Volume) ConstructExternal() *VolumeExternal {
 	}
 }
 
+func (v *Volume) SmartCopy() interface{} {
+	return deep.MustCopy(v)
+}
+
 func (v *Volume) IsDeleting() bool {
 	return v.State.IsDeleting()
 }
 
 func (v *Volume) IsSubordinate() bool {
 	return v.State.IsSubordinate()
+}
+
+func (v *Volume) GetBackendID() string {
+	return v.BackendUUID
+}
+
+func (v *Volume) GetVolumeID() string {
+	return v.Config.ShareSourceVolume
+}
+
+func (v *Volume) GetUniqueKey() string {
+	return v.Config.InternalName
 }
 
 // VolumeExternalWrapper is used to return volumes and errors via channels between goroutines

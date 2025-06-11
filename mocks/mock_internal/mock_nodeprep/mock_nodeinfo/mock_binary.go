@@ -19,6 +19,7 @@ import (
 type MockBinary struct {
 	ctrl     *gomock.Controller
 	recorder *MockBinaryMockRecorder
+	isgomock struct{}
 }
 
 // MockBinaryMockRecorder is the mock recorder for MockBinary.
@@ -39,15 +40,15 @@ func (m *MockBinary) EXPECT() *MockBinaryMockRecorder {
 }
 
 // FindPath mocks base method.
-func (m *MockBinary) FindPath(arg0 string) string {
+func (m *MockBinary) FindPath(binaryName string) string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindPath", arg0)
+	ret := m.ctrl.Call(m, "FindPath", binaryName)
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
 // FindPath indicates an expected call of FindPath.
-func (mr *MockBinaryMockRecorder) FindPath(arg0 any) *gomock.Call {
+func (mr *MockBinaryMockRecorder) FindPath(binaryName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindPath", reflect.TypeOf((*MockBinary)(nil).FindPath), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindPath", reflect.TypeOf((*MockBinary)(nil).FindPath), binaryName)
 }

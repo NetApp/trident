@@ -142,8 +142,8 @@ func TestCreateNewStorageBackend_WithMockDriver(t *testing.T) {
 	dummyBackend.SetState("online")
 	dummyBackend.SetOnline(true)
 	dummyBackend.SetUserState(storage.UserNormal)
-	dummyBackend.SetStorage(make(map[string]storage.Pool))
-	dummyBackend.SetVolumes(make(map[string]*storage.Volume))
+	dummyBackend.ClearStoragePools()
+	dummyBackend.ClearVolumes()
 	mockDriver.EXPECT().GetStorageBackendSpecs(ctx, &dummyBackend).Return(fmt.Errorf("couldn't get backend specs"))
 
 	mockDriver.EXPECT().BackendName().Return(dummyBackendName)
@@ -305,4 +305,51 @@ func TestValidateCommonSettings_ValidationFailed(t *testing.T) {
 
 	_, _, err = ValidateCommonSettings(ctx, string(marshaledJSON))
 	assert.NotNil(t, err, "Storage driver name missing")
+}
+
+func TestParseBackendName(t *testing.T) {
+	tests := []struct {
+		name         string
+		configJSON   string
+		expectedName string
+		expectError  bool
+	}{
+		{
+			name:         "ValidJSON_ReturnsBackendName",
+			configJSON:   `{"backendName": "test-backend"}`,
+			expectedName: "test-backend",
+			expectError:  false,
+		},
+		{
+			name:         "InvalidYAML_ReturnsError",
+			configJSON:   "invalid-yaml",
+			expectedName: "",
+			expectError:  true,
+		},
+		{
+			name:         "EmptyJSON_ReturnsError",
+			configJSON:   "",
+			expectedName: "",
+			expectError:  true,
+		},
+		{
+			name:         "MissingBackendName_ReturnsEmpty",
+			configJSON:   `{"someOtherField": "value"}`,
+			expectedName: "",
+			expectError:  false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			backendName, err := ParseBackendName(test.configJSON)
+			if test.expectError {
+				assert.NotNil(t, err)
+				assert.Empty(t, backendName)
+			} else {
+				assert.Nil(t, err)
+				assert.Equal(t, test.expectedName, backendName)
+			}
+		})
+	}
 }

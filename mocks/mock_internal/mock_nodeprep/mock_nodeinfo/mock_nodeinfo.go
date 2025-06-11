@@ -21,6 +21,7 @@ import (
 type MockNode struct {
 	ctrl     *gomock.Controller
 	recorder *MockNodeMockRecorder
+	isgomock struct{}
 }
 
 // MockNodeMockRecorder is the mock recorder for MockNode.
@@ -41,16 +42,16 @@ func (m *MockNode) EXPECT() *MockNodeMockRecorder {
 }
 
 // GetInfo mocks base method.
-func (m *MockNode) GetInfo(arg0 context.Context) (*nodeinfo.NodeInfo, error) {
+func (m *MockNode) GetInfo(ctx context.Context) (*nodeinfo.NodeInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetInfo", arg0)
+	ret := m.ctrl.Call(m, "GetInfo", ctx)
 	ret0, _ := ret[0].(*nodeinfo.NodeInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetInfo indicates an expected call of GetInfo.
-func (mr *MockNodeMockRecorder) GetInfo(arg0 any) *gomock.Call {
+func (mr *MockNodeMockRecorder) GetInfo(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInfo", reflect.TypeOf((*MockNode)(nil).GetInfo), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInfo", reflect.TypeOf((*MockNode)(nil).GetInfo), ctx)
 }

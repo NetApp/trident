@@ -61,6 +61,7 @@ func newNASQtreeStorageDriver(api api.OntapAPI) *NASQtreeStorageDriver {
 	nasqtreeDriver.Config = *config
 	nasqtreeDriver.qtreesPerFlexvol = defaultQtreesPerFlexvol
 	nasqtreeDriver.quotaResizeMap = make(map[string]bool)
+	nasqtreeDriver.cloneSplitTimers = &sync.Map{}
 
 	nasqtreeDriver.API = api
 
@@ -5568,9 +5569,9 @@ func TestDeleteSnapshot_FailureSnapshotBusy(t *testing.T) {
 	mockAPI.EXPECT().VolumeListBySnapshotParent(ctx, "snap1", flexvol).Return(childVols, nil)
 	mockAPI.EXPECT().VolumeCloneSplitStart(ctx, flexvol).Return(nil)
 
-	driver.cloneSplitTimers = make(map[string]time.Time)
+	driver.cloneSplitTimers = &sync.Map{}
 	// Use DefaultCloneSplitDelay to set time to past. It is defaulted to 10 seconds.
-	driver.cloneSplitTimers[snapConfig.ID()] = time.Now().Add(-10 * time.Second)
+	driver.cloneSplitTimers.Store(snapConfig.ID(), time.Now().Add(-10*time.Second))
 	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
 
 	assert.NotNil(t, result, "result is nil")

@@ -20,6 +20,7 @@ import (
 type MockLimiter struct {
 	ctrl     *gomock.Controller
 	recorder *MockLimiterMockRecorder
+	isgomock struct{}
 }
 
 // MockLimiterMockRecorder is the mock recorder for MockLimiter.
@@ -40,27 +41,27 @@ func (m *MockLimiter) EXPECT() *MockLimiterMockRecorder {
 }
 
 // Release mocks base method.
-func (m *MockLimiter) Release(arg0 context.Context) {
+func (m *MockLimiter) Release(ctx context.Context) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Release", arg0)
+	m.ctrl.Call(m, "Release", ctx)
 }
 
 // Release indicates an expected call of Release.
-func (mr *MockLimiterMockRecorder) Release(arg0 any) *gomock.Call {
+func (mr *MockLimiterMockRecorder) Release(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Release", reflect.TypeOf((*MockLimiter)(nil).Release), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Release", reflect.TypeOf((*MockLimiter)(nil).Release), ctx)
 }
 
 // Wait mocks base method.
-func (m *MockLimiter) Wait(arg0 context.Context) error {
+func (m *MockLimiter) Wait(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Wait", arg0)
+	ret := m.ctrl.Call(m, "Wait", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Wait indicates an expected call of Wait.
-func (mr *MockLimiterMockRecorder) Wait(arg0 any) *gomock.Call {
+func (mr *MockLimiterMockRecorder) Wait(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Wait", reflect.TypeOf((*MockLimiter)(nil).Wait), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Wait", reflect.TypeOf((*MockLimiter)(nil).Wait), ctx)
 }

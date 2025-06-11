@@ -10,16 +10,17 @@
 package mock_devices
 
 import (
-	context "context"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
+	context "golang.org/x/net/context"
 )
 
 // MockSizeGetter is a mock of SizeGetter interface.
 type MockSizeGetter struct {
 	ctrl     *gomock.Controller
 	recorder *MockSizeGetterMockRecorder
+	isgomock struct{}
 }
 
 // MockSizeGetterMockRecorder is the mock recorder for MockSizeGetter.
@@ -40,16 +41,16 @@ func (m *MockSizeGetter) EXPECT() *MockSizeGetterMockRecorder {
 }
 
 // GetDiskSize mocks base method.
-func (m *MockSizeGetter) GetDiskSize(arg0 context.Context, arg1 string) (int64, error) {
+func (m *MockSizeGetter) GetDiskSize(ctx context.Context, devicePath string) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDiskSize", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetDiskSize", ctx, devicePath)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetDiskSize indicates an expected call of GetDiskSize.
-func (mr *MockSizeGetterMockRecorder) GetDiskSize(arg0, arg1 any) *gomock.Call {
+func (mr *MockSizeGetterMockRecorder) GetDiskSize(ctx, devicePath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDiskSize", reflect.TypeOf((*MockSizeGetter)(nil).GetDiskSize), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDiskSize", reflect.TypeOf((*MockSizeGetter)(nil).GetDiskSize), ctx, devicePath)
 }

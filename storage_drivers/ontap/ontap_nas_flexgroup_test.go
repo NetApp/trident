@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sync"
 	"testing"
 	"time"
 
@@ -75,6 +76,8 @@ func newTestOntapNASFlexgroupDriver(
 		StoragePrefix: *nasDriver.Config.StoragePrefix,
 		Driver:        nasDriver,
 	}
+
+	nasDriver.cloneSplitTimers = &sync.Map{}
 
 	return nasDriver
 }
@@ -3609,9 +3612,9 @@ func TestOntapNasFlexgroupStorageDriverVolumeDeleteSnapshot_Failure(t *testing.T
 	mockAPI.EXPECT().VolumeListBySnapshotParent(ctx, "snap1", "vol1").Return(childVols, nil)
 	mockAPI.EXPECT().FlexgroupCloneSplitStart(ctx, "vol1").Return(nil)
 
-	driver.cloneSplitTimers = make(map[string]time.Time)
+	driver.cloneSplitTimers = &sync.Map{}
 	// Use DefaultCloneSplitDelay to set time to past. It is defaulted to 10 seconds.
-	driver.cloneSplitTimers[snapConfig.ID()] = time.Now().Add(-10 * time.Second)
+	driver.cloneSplitTimers.Store(snapConfig.ID(), time.Now().Add(-10*time.Second))
 	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
 
 	assert.Error(t, result, "FlexgroupSnapshotDelete sucessfully executed")
@@ -3652,12 +3655,11 @@ func TestOntapNasFlexgroupStorageDriverGetStorageBackendSpecs(t *testing.T) {
 	_, driver := newMockOntapNASFlexgroupDriver(t)
 	backend := storage.StorageBackend{}
 
-	physicalPool := make(map[string]storage.Pool)
 	pool := storage.NewStoragePool(nil, "pool1")
-	physicalPool[pool.Name()] = pool
 	driver.physicalPool = pool
 
-	backend.SetStorage(physicalPool)
+	backend.ClearStoragePools()
+	backend.AddStoragePool(pool)
 
 	result1 := driver.GetStorageBackendSpecs(ctx, &backend)
 

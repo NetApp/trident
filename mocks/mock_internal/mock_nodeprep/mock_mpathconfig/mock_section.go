@@ -20,6 +20,7 @@ import (
 type MockMpathConfigurationSection struct {
 	ctrl     *gomock.Controller
 	recorder *MockMpathConfigurationSectionMockRecorder
+	isgomock struct{}
 }
 
 // MockMpathConfigurationSectionMockRecorder is the mock recorder for MockMpathConfigurationSection.
@@ -40,74 +41,74 @@ func (m *MockMpathConfigurationSection) EXPECT() *MockMpathConfigurationSectionM
 }
 
 // AddSection mocks base method.
-func (m *MockMpathConfigurationSection) AddSection(arg0 string) (mpathconfig.MpathConfigurationSection, error) {
+func (m *MockMpathConfigurationSection) AddSection(sectionName string) (mpathconfig.MpathConfigurationSection, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddSection", arg0)
+	ret := m.ctrl.Call(m, "AddSection", sectionName)
 	ret0, _ := ret[0].(mpathconfig.MpathConfigurationSection)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AddSection indicates an expected call of AddSection.
-func (mr *MockMpathConfigurationSectionMockRecorder) AddSection(arg0 any) *gomock.Call {
+func (mr *MockMpathConfigurationSectionMockRecorder) AddSection(sectionName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSection", reflect.TypeOf((*MockMpathConfigurationSection)(nil).AddSection), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSection", reflect.TypeOf((*MockMpathConfigurationSection)(nil).AddSection), sectionName)
 }
 
 // GetDeviceSection mocks base method.
-func (m *MockMpathConfigurationSection) GetDeviceSection(arg0, arg1, arg2 string) (mpathconfig.MpathConfigurationSection, error) {
+func (m *MockMpathConfigurationSection) GetDeviceSection(vendor, product, revision string) (mpathconfig.MpathConfigurationSection, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDeviceSection", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "GetDeviceSection", vendor, product, revision)
 	ret0, _ := ret[0].(mpathconfig.MpathConfigurationSection)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetDeviceSection indicates an expected call of GetDeviceSection.
-func (mr *MockMpathConfigurationSectionMockRecorder) GetDeviceSection(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockMpathConfigurationSectionMockRecorder) GetDeviceSection(vendor, product, revision any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeviceSection", reflect.TypeOf((*MockMpathConfigurationSection)(nil).GetDeviceSection), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeviceSection", reflect.TypeOf((*MockMpathConfigurationSection)(nil).GetDeviceSection), vendor, product, revision)
 }
 
 // GetProperty mocks base method.
-func (m *MockMpathConfigurationSection) GetProperty(arg0 string) (string, error) {
+func (m *MockMpathConfigurationSection) GetProperty(key string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetProperty", arg0)
+	ret := m.ctrl.Call(m, "GetProperty", key)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetProperty indicates an expected call of GetProperty.
-func (mr *MockMpathConfigurationSectionMockRecorder) GetProperty(arg0 any) *gomock.Call {
+func (mr *MockMpathConfigurationSectionMockRecorder) GetProperty(key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProperty", reflect.TypeOf((*MockMpathConfigurationSection)(nil).GetProperty), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProperty", reflect.TypeOf((*MockMpathConfigurationSection)(nil).GetProperty), key)
 }
 
 // HasProperty mocks base method.
-func (m *MockMpathConfigurationSection) HasProperty(arg0 string) bool {
+func (m *MockMpathConfigurationSection) HasProperty(key string) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "HasProperty", arg0)
+	ret := m.ctrl.Call(m, "HasProperty", key)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // HasProperty indicates an expected call of HasProperty.
-func (mr *MockMpathConfigurationSectionMockRecorder) HasProperty(arg0 any) *gomock.Call {
+func (mr *MockMpathConfigurationSectionMockRecorder) HasProperty(key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasProperty", reflect.TypeOf((*MockMpathConfigurationSection)(nil).HasProperty), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasProperty", reflect.TypeOf((*MockMpathConfigurationSection)(nil).HasProperty), key)
 }
 
 // SetProperty mocks base method.
-func (m *MockMpathConfigurationSection) SetProperty(arg0, arg1 string) error {
+func (m *MockMpathConfigurationSection) SetProperty(key, value string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetProperty", arg0, arg1)
+	ret := m.ctrl.Call(m, "SetProperty", key, value)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetProperty indicates an expected call of SetProperty.
-func (mr *MockMpathConfigurationSectionMockRecorder) SetProperty(arg0, arg1 any) *gomock.Call {
+func (mr *MockMpathConfigurationSectionMockRecorder) SetProperty(key, value any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetProperty", reflect.TypeOf((*MockMpathConfigurationSection)(nil).SetProperty), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetProperty", reflect.TypeOf((*MockMpathConfigurationSection)(nil).SetProperty), key, value)
 }

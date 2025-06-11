@@ -20,6 +20,7 @@ import (
 type MockMount struct {
 	ctrl     *gomock.Controller
 	recorder *MockMountMockRecorder
+	isgomock struct{}
 }
 
 // MockMountMockRecorder is the mock recorder for MockMount.
@@ -40,30 +41,30 @@ func (m *MockMount) EXPECT() *MockMountMockRecorder {
 }
 
 // MountFilesystemForResize mocks base method.
-func (m *MockMount) MountFilesystemForResize(arg0 context.Context, arg1, arg2, arg3 string) (string, error) {
+func (m *MockMount) MountFilesystemForResize(ctx context.Context, devicePath, stagedTargetPath, mountOptions string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MountFilesystemForResize", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "MountFilesystemForResize", ctx, devicePath, stagedTargetPath, mountOptions)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // MountFilesystemForResize indicates an expected call of MountFilesystemForResize.
-func (mr *MockMountMockRecorder) MountFilesystemForResize(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockMountMockRecorder) MountFilesystemForResize(ctx, devicePath, stagedTargetPath, mountOptions any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MountFilesystemForResize", reflect.TypeOf((*MockMount)(nil).MountFilesystemForResize), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MountFilesystemForResize", reflect.TypeOf((*MockMount)(nil).MountFilesystemForResize), ctx, devicePath, stagedTargetPath, mountOptions)
 }
 
 // RemoveMountPoint mocks base method.
-func (m *MockMount) RemoveMountPoint(arg0 context.Context, arg1 string) error {
+func (m *MockMount) RemoveMountPoint(ctx context.Context, mountPointPath string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveMountPoint", arg0, arg1)
+	ret := m.ctrl.Call(m, "RemoveMountPoint", ctx, mountPointPath)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RemoveMountPoint indicates an expected call of RemoveMountPoint.
-func (mr *MockMountMockRecorder) RemoveMountPoint(arg0, arg1 any) *gomock.Call {
+func (mr *MockMountMockRecorder) RemoveMountPoint(ctx, mountPointPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMountPoint", reflect.TypeOf((*MockMount)(nil).RemoveMountPoint), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMountPoint", reflect.TypeOf((*MockMount)(nil).RemoveMountPoint), ctx, mountPointPath)
 }

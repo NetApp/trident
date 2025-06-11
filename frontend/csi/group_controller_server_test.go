@@ -9,7 +9,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/mocks/mock_core"
-	"github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_helpers"
+	mock_controller_helpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_helpers"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils/errors"
 )

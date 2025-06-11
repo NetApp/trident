@@ -23,6 +23,7 @@ import (
 type MockNVMeInterface struct {
 	ctrl     *gomock.Controller
 	recorder *MockNVMeInterfaceMockRecorder
+	isgomock struct{}
 }
 
 // MockNVMeInterfaceMockRecorder is the mock recorder for MockNVMeInterface.
@@ -43,168 +44,168 @@ func (m *MockNVMeInterface) EXPECT() *MockNVMeInterfaceMockRecorder {
 }
 
 // AddPublishedNVMeSession mocks base method.
-func (m *MockNVMeInterface) AddPublishedNVMeSession(arg0 *nvme.NVMeSessions, arg1 *models.VolumePublishInfo) {
+func (m *MockNVMeInterface) AddPublishedNVMeSession(pubSessions *nvme.NVMeSessions, publishInfo *models.VolumePublishInfo) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddPublishedNVMeSession", arg0, arg1)
+	m.ctrl.Call(m, "AddPublishedNVMeSession", pubSessions, publishInfo)
 }
 
 // AddPublishedNVMeSession indicates an expected call of AddPublishedNVMeSession.
-func (mr *MockNVMeInterfaceMockRecorder) AddPublishedNVMeSession(arg0, arg1 any) *gomock.Call {
+func (mr *MockNVMeInterfaceMockRecorder) AddPublishedNVMeSession(pubSessions, publishInfo any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddPublishedNVMeSession", reflect.TypeOf((*MockNVMeInterface)(nil).AddPublishedNVMeSession), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddPublishedNVMeSession", reflect.TypeOf((*MockNVMeInterface)(nil).AddPublishedNVMeSession), pubSessions, publishInfo)
 }
 
 // AttachNVMeVolume mocks base method.
-func (m *MockNVMeInterface) AttachNVMeVolume(arg0 context.Context, arg1, arg2 string, arg3 *models.VolumePublishInfo, arg4 map[string]string) error {
+func (m *MockNVMeInterface) AttachNVMeVolume(ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AttachNVMeVolume", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "AttachNVMeVolume", ctx, name, mountpoint, publishInfo, secrets)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AttachNVMeVolume indicates an expected call of AttachNVMeVolume.
-func (mr *MockNVMeInterfaceMockRecorder) AttachNVMeVolume(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockNVMeInterfaceMockRecorder) AttachNVMeVolume(ctx, name, mountpoint, publishInfo, secrets any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachNVMeVolume", reflect.TypeOf((*MockNVMeInterface)(nil).AttachNVMeVolume), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachNVMeVolume", reflect.TypeOf((*MockNVMeInterface)(nil).AttachNVMeVolume), ctx, name, mountpoint, publishInfo, secrets)
 }
 
 // AttachNVMeVolumeRetry mocks base method.
-func (m *MockNVMeInterface) AttachNVMeVolumeRetry(arg0 context.Context, arg1, arg2 string, arg3 *models.VolumePublishInfo, arg4 map[string]string, arg5 time.Duration) error {
+func (m *MockNVMeInterface) AttachNVMeVolumeRetry(ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string, timeout time.Duration) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AttachNVMeVolumeRetry", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "AttachNVMeVolumeRetry", ctx, name, mountpoint, publishInfo, secrets, timeout)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AttachNVMeVolumeRetry indicates an expected call of AttachNVMeVolumeRetry.
-func (mr *MockNVMeInterfaceMockRecorder) AttachNVMeVolumeRetry(arg0, arg1, arg2, arg3, arg4, arg5 any) *gomock.Call {
+func (mr *MockNVMeInterfaceMockRecorder) AttachNVMeVolumeRetry(ctx, name, mountpoint, publishInfo, secrets, timeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachNVMeVolumeRetry", reflect.TypeOf((*MockNVMeInterface)(nil).AttachNVMeVolumeRetry), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachNVMeVolumeRetry", reflect.TypeOf((*MockNVMeInterface)(nil).AttachNVMeVolumeRetry), ctx, name, mountpoint, publishInfo, secrets, timeout)
 }
 
 // GetHostNqn mocks base method.
-func (m *MockNVMeInterface) GetHostNqn(arg0 context.Context) (string, error) {
+func (m *MockNVMeInterface) GetHostNqn(ctx context.Context) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetHostNqn", arg0)
+	ret := m.ctrl.Call(m, "GetHostNqn", ctx)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetHostNqn indicates an expected call of GetHostNqn.
-func (mr *MockNVMeInterfaceMockRecorder) GetHostNqn(arg0 any) *gomock.Call {
+func (mr *MockNVMeInterfaceMockRecorder) GetHostNqn(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHostNqn", reflect.TypeOf((*MockNVMeInterface)(nil).GetHostNqn), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHostNqn", reflect.TypeOf((*MockNVMeInterface)(nil).GetHostNqn), ctx)
 }
 
 // GetNVMeSubsystem mocks base method.
-func (m *MockNVMeInterface) GetNVMeSubsystem(arg0 context.Context, arg1 string) (*nvme.NVMeSubsystem, error) {
+func (m *MockNVMeInterface) GetNVMeSubsystem(ctx context.Context, nqn string) (*nvme.NVMeSubsystem, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNVMeSubsystem", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetNVMeSubsystem", ctx, nqn)
 	ret0, _ := ret[0].(*nvme.NVMeSubsystem)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetNVMeSubsystem indicates an expected call of GetNVMeSubsystem.
-func (mr *MockNVMeInterfaceMockRecorder) GetNVMeSubsystem(arg0, arg1 any) *gomock.Call {
+func (mr *MockNVMeInterfaceMockRecorder) GetNVMeSubsystem(ctx, nqn any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNVMeSubsystem", reflect.TypeOf((*MockNVMeInterface)(nil).GetNVMeSubsystem), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNVMeSubsystem", reflect.TypeOf((*MockNVMeInterface)(nil).GetNVMeSubsystem), ctx, nqn)
 }
 
 // InspectNVMeSessions mocks base method.
-func (m *MockNVMeInterface) InspectNVMeSessions(arg0 context.Context, arg1, arg2 *nvme.NVMeSessions) []nvme.NVMeSubsystem {
+func (m *MockNVMeInterface) InspectNVMeSessions(ctx context.Context, pubSessions, currSessions *nvme.NVMeSessions) []nvme.NVMeSubsystem {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InspectNVMeSessions", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "InspectNVMeSessions", ctx, pubSessions, currSessions)
 	ret0, _ := ret[0].([]nvme.NVMeSubsystem)
 	return ret0
 }
 
 // InspectNVMeSessions indicates an expected call of InspectNVMeSessions.
-func (mr *MockNVMeInterfaceMockRecorder) InspectNVMeSessions(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockNVMeInterfaceMockRecorder) InspectNVMeSessions(ctx, pubSessions, currSessions any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InspectNVMeSessions", reflect.TypeOf((*MockNVMeInterface)(nil).InspectNVMeSessions), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InspectNVMeSessions", reflect.TypeOf((*MockNVMeInterface)(nil).InspectNVMeSessions), ctx, pubSessions, currSessions)
 }
 
 // NVMeActiveOnHost mocks base method.
-func (m *MockNVMeInterface) NVMeActiveOnHost(arg0 context.Context) (bool, error) {
+func (m *MockNVMeInterface) NVMeActiveOnHost(ctx context.Context) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NVMeActiveOnHost", arg0)
+	ret := m.ctrl.Call(m, "NVMeActiveOnHost", ctx)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NVMeActiveOnHost indicates an expected call of NVMeActiveOnHost.
-func (mr *MockNVMeInterfaceMockRecorder) NVMeActiveOnHost(arg0 any) *gomock.Call {
+func (mr *MockNVMeInterfaceMockRecorder) NVMeActiveOnHost(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeActiveOnHost", reflect.TypeOf((*MockNVMeInterface)(nil).NVMeActiveOnHost), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeActiveOnHost", reflect.TypeOf((*MockNVMeInterface)(nil).NVMeActiveOnHost), ctx)
 }
 
 // NVMeMountVolume mocks base method.
-func (m *MockNVMeInterface) NVMeMountVolume(arg0 context.Context, arg1, arg2 string, arg3 *models.VolumePublishInfo, arg4 map[string]string) error {
+func (m *MockNVMeInterface) NVMeMountVolume(ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NVMeMountVolume", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "NVMeMountVolume", ctx, name, mountpoint, publishInfo, secrets)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // NVMeMountVolume indicates an expected call of NVMeMountVolume.
-func (mr *MockNVMeInterfaceMockRecorder) NVMeMountVolume(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockNVMeInterfaceMockRecorder) NVMeMountVolume(ctx, name, mountpoint, publishInfo, secrets any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeMountVolume", reflect.TypeOf((*MockNVMeInterface)(nil).NVMeMountVolume), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeMountVolume", reflect.TypeOf((*MockNVMeInterface)(nil).NVMeMountVolume), ctx, name, mountpoint, publishInfo, secrets)
 }
 
 // NewNVMeSubsystem mocks base method.
-func (m *MockNVMeInterface) NewNVMeSubsystem(arg0 context.Context, arg1 string) nvme.NVMeSubsystemInterface {
+func (m *MockNVMeInterface) NewNVMeSubsystem(ctx context.Context, subsNqn string) nvme.NVMeSubsystemInterface {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewNVMeSubsystem", arg0, arg1)
+	ret := m.ctrl.Call(m, "NewNVMeSubsystem", ctx, subsNqn)
 	ret0, _ := ret[0].(nvme.NVMeSubsystemInterface)
 	return ret0
 }
 
 // NewNVMeSubsystem indicates an expected call of NewNVMeSubsystem.
-func (mr *MockNVMeInterfaceMockRecorder) NewNVMeSubsystem(arg0, arg1 any) *gomock.Call {
+func (mr *MockNVMeInterfaceMockRecorder) NewNVMeSubsystem(ctx, subsNqn any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewNVMeSubsystem", reflect.TypeOf((*MockNVMeInterface)(nil).NewNVMeSubsystem), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewNVMeSubsystem", reflect.TypeOf((*MockNVMeInterface)(nil).NewNVMeSubsystem), ctx, subsNqn)
 }
 
 // PopulateCurrentNVMeSessions mocks base method.
-func (m *MockNVMeInterface) PopulateCurrentNVMeSessions(arg0 context.Context, arg1 *nvme.NVMeSessions) error {
+func (m *MockNVMeInterface) PopulateCurrentNVMeSessions(ctx context.Context, currSessions *nvme.NVMeSessions) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PopulateCurrentNVMeSessions", arg0, arg1)
+	ret := m.ctrl.Call(m, "PopulateCurrentNVMeSessions", ctx, currSessions)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PopulateCurrentNVMeSessions indicates an expected call of PopulateCurrentNVMeSessions.
-func (mr *MockNVMeInterfaceMockRecorder) PopulateCurrentNVMeSessions(arg0, arg1 any) *gomock.Call {
+func (mr *MockNVMeInterfaceMockRecorder) PopulateCurrentNVMeSessions(ctx, currSessions any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PopulateCurrentNVMeSessions", reflect.TypeOf((*MockNVMeInterface)(nil).PopulateCurrentNVMeSessions), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PopulateCurrentNVMeSessions", reflect.TypeOf((*MockNVMeInterface)(nil).PopulateCurrentNVMeSessions), ctx, currSessions)
 }
 
 // RectifyNVMeSession mocks base method.
-func (m *MockNVMeInterface) RectifyNVMeSession(arg0 context.Context, arg1 nvme.NVMeSubsystem, arg2 *nvme.NVMeSessions) {
+func (m *MockNVMeInterface) RectifyNVMeSession(ctx context.Context, subsystemToFix nvme.NVMeSubsystem, pubSessions *nvme.NVMeSessions) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RectifyNVMeSession", arg0, arg1, arg2)
+	m.ctrl.Call(m, "RectifyNVMeSession", ctx, subsystemToFix, pubSessions)
 }
 
 // RectifyNVMeSession indicates an expected call of RectifyNVMeSession.
-func (mr *MockNVMeInterfaceMockRecorder) RectifyNVMeSession(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockNVMeInterfaceMockRecorder) RectifyNVMeSession(ctx, subsystemToFix, pubSessions any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RectifyNVMeSession", reflect.TypeOf((*MockNVMeInterface)(nil).RectifyNVMeSession), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RectifyNVMeSession", reflect.TypeOf((*MockNVMeInterface)(nil).RectifyNVMeSession), ctx, subsystemToFix, pubSessions)
 }
 
 // RemovePublishedNVMeSession mocks base method.
-func (m *MockNVMeInterface) RemovePublishedNVMeSession(arg0 *nvme.NVMeSessions, arg1, arg2 string) bool {
+func (m *MockNVMeInterface) RemovePublishedNVMeSession(pubSessions *nvme.NVMeSessions, subNQN, nsUUID string) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemovePublishedNVMeSession", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "RemovePublishedNVMeSession", pubSessions, subNQN, nsUUID)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // RemovePublishedNVMeSession indicates an expected call of RemovePublishedNVMeSession.
-func (mr *MockNVMeInterfaceMockRecorder) RemovePublishedNVMeSession(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockNVMeInterfaceMockRecorder) RemovePublishedNVMeSession(pubSessions, subNQN, nsUUID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemovePublishedNVMeSession", reflect.TypeOf((*MockNVMeInterface)(nil).RemovePublishedNVMeSession), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemovePublishedNVMeSession", reflect.TypeOf((*MockNVMeInterface)(nil).RemovePublishedNVMeSession), pubSessions, subNQN, nsUUID)
 }

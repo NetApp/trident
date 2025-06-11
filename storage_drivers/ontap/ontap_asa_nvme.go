@@ -10,7 +10,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"time"
+	"sync"
 
 	"github.com/RoaringBitmap/roaring/v2"
 
@@ -41,7 +41,7 @@ type ASANVMeStorageDriver struct {
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
 
-	cloneSplitTimers map[string]time.Time
+	cloneSplitTimers *sync.Map
 }
 
 func (d *ASANVMeStorageDriver) GetConfig() drivers.DriverConfig {
@@ -159,7 +159,7 @@ func (d *ASANVMeStorageDriver) Initialize(
 	d.telemetry.Start(ctx)
 
 	// Set up the clone split timers
-	d.cloneSplitTimers = make(map[string]time.Time)
+	d.cloneSplitTimers = &sync.Map{}
 
 	Logc(ctx).Debug("Initialized All-SAN Array NVMe/TCP backend.")
 

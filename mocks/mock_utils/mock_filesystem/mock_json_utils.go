@@ -20,6 +20,7 @@ import (
 type MockJSONReaderWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockJSONReaderWriterMockRecorder
+	isgomock struct{}
 }
 
 // MockJSONReaderWriterMockRecorder is the mock recorder for MockJSONReaderWriter.
@@ -40,29 +41,29 @@ func (m *MockJSONReaderWriter) EXPECT() *MockJSONReaderWriterMockRecorder {
 }
 
 // ReadJSONFile mocks base method.
-func (m *MockJSONReaderWriter) ReadJSONFile(arg0 context.Context, arg1 any, arg2, arg3 string) error {
+func (m *MockJSONReaderWriter) ReadJSONFile(ctx context.Context, fileContents any, filepath, fileDescription string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReadJSONFile", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "ReadJSONFile", ctx, fileContents, filepath, fileDescription)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ReadJSONFile indicates an expected call of ReadJSONFile.
-func (mr *MockJSONReaderWriterMockRecorder) ReadJSONFile(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockJSONReaderWriterMockRecorder) ReadJSONFile(ctx, fileContents, filepath, fileDescription any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadJSONFile", reflect.TypeOf((*MockJSONReaderWriter)(nil).ReadJSONFile), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadJSONFile", reflect.TypeOf((*MockJSONReaderWriter)(nil).ReadJSONFile), ctx, fileContents, filepath, fileDescription)
 }
 
 // WriteJSONFile mocks base method.
-func (m *MockJSONReaderWriter) WriteJSONFile(arg0 context.Context, arg1 any, arg2, arg3 string) error {
+func (m *MockJSONReaderWriter) WriteJSONFile(ctx context.Context, fileContents any, filepath, fileDescription string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WriteJSONFile", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "WriteJSONFile", ctx, fileContents, filepath, fileDescription)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // WriteJSONFile indicates an expected call of WriteJSONFile.
-func (mr *MockJSONReaderWriterMockRecorder) WriteJSONFile(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockJSONReaderWriterMockRecorder) WriteJSONFile(ctx, fileContents, filepath, fileDescription any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteJSONFile", reflect.TypeOf((*MockJSONReaderWriter)(nil).WriteJSONFile), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteJSONFile", reflect.TypeOf((*MockJSONReaderWriter)(nil).WriteJSONFile), ctx, fileContents, filepath, fileDescription)
 }

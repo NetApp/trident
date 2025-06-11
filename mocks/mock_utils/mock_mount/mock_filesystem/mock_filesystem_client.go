@@ -22,6 +22,7 @@ import (
 type MockFilesystemClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockFilesystemClientMockRecorder
+	isgomock struct{}
 }
 
 // MockFilesystemClientMockRecorder is the mock recorder for MockFilesystemClient.
@@ -42,10 +43,10 @@ func (m *MockFilesystemClient) EXPECT() *MockFilesystemClientMockRecorder {
 }
 
 // CreateSymlink mocks base method.
-func (m *MockFilesystemClient) CreateSymlink(arg0 context.Context, arg1 *v1.CreateSymlinkRequest, arg2 ...grpc.CallOption) (*v1.CreateSymlinkResponse, error) {
+func (m *MockFilesystemClient) CreateSymlink(ctx context.Context, in *v1.CreateSymlinkRequest, opts ...grpc.CallOption) (*v1.CreateSymlinkResponse, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1}
-	for _, a := range arg2 {
+	varargs := []any{ctx, in}
+	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "CreateSymlink", varargs...)
@@ -55,17 +56,17 @@ func (m *MockFilesystemClient) CreateSymlink(arg0 context.Context, arg1 *v1.Crea
 }
 
 // CreateSymlink indicates an expected call of CreateSymlink.
-func (mr *MockFilesystemClientMockRecorder) CreateSymlink(arg0, arg1 any, arg2 ...any) *gomock.Call {
+func (mr *MockFilesystemClientMockRecorder) CreateSymlink(ctx, in any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1}, arg2...)
+	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSymlink", reflect.TypeOf((*MockFilesystemClient)(nil).CreateSymlink), varargs...)
 }
 
 // IsSymlink mocks base method.
-func (m *MockFilesystemClient) IsSymlink(arg0 context.Context, arg1 *v1.IsSymlinkRequest, arg2 ...grpc.CallOption) (*v1.IsSymlinkResponse, error) {
+func (m *MockFilesystemClient) IsSymlink(ctx context.Context, in *v1.IsSymlinkRequest, opts ...grpc.CallOption) (*v1.IsSymlinkResponse, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1}
-	for _, a := range arg2 {
+	varargs := []any{ctx, in}
+	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "IsSymlink", varargs...)
@@ -75,17 +76,17 @@ func (m *MockFilesystemClient) IsSymlink(arg0 context.Context, arg1 *v1.IsSymlin
 }
 
 // IsSymlink indicates an expected call of IsSymlink.
-func (mr *MockFilesystemClientMockRecorder) IsSymlink(arg0, arg1 any, arg2 ...any) *gomock.Call {
+func (mr *MockFilesystemClientMockRecorder) IsSymlink(ctx, in any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1}, arg2...)
+	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsSymlink", reflect.TypeOf((*MockFilesystemClient)(nil).IsSymlink), varargs...)
 }
 
 // Mkdir mocks base method.
-func (m *MockFilesystemClient) Mkdir(arg0 context.Context, arg1 *v1.MkdirRequest, arg2 ...grpc.CallOption) (*v1.MkdirResponse, error) {
+func (m *MockFilesystemClient) Mkdir(ctx context.Context, in *v1.MkdirRequest, opts ...grpc.CallOption) (*v1.MkdirResponse, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1}
-	for _, a := range arg2 {
+	varargs := []any{ctx, in}
+	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Mkdir", varargs...)
@@ -95,17 +96,17 @@ func (m *MockFilesystemClient) Mkdir(arg0 context.Context, arg1 *v1.MkdirRequest
 }
 
 // Mkdir indicates an expected call of Mkdir.
-func (mr *MockFilesystemClientMockRecorder) Mkdir(arg0, arg1 any, arg2 ...any) *gomock.Call {
+func (mr *MockFilesystemClientMockRecorder) Mkdir(ctx, in any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1}, arg2...)
+	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Mkdir", reflect.TypeOf((*MockFilesystemClient)(nil).Mkdir), varargs...)
 }
 
 // PathExists mocks base method.
-func (m *MockFilesystemClient) PathExists(arg0 context.Context, arg1 *v1.PathExistsRequest, arg2 ...grpc.CallOption) (*v1.PathExistsResponse, error) {
+func (m *MockFilesystemClient) PathExists(ctx context.Context, in *v1.PathExistsRequest, opts ...grpc.CallOption) (*v1.PathExistsResponse, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1}
-	for _, a := range arg2 {
+	varargs := []any{ctx, in}
+	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "PathExists", varargs...)
@@ -115,17 +116,17 @@ func (m *MockFilesystemClient) PathExists(arg0 context.Context, arg1 *v1.PathExi
 }
 
 // PathExists indicates an expected call of PathExists.
-func (mr *MockFilesystemClientMockRecorder) PathExists(arg0, arg1 any, arg2 ...any) *gomock.Call {
+func (mr *MockFilesystemClientMockRecorder) PathExists(ctx, in any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1}, arg2...)
+	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PathExists", reflect.TypeOf((*MockFilesystemClient)(nil).PathExists), varargs...)
 }
 
 // Rmdir mocks base method.
-func (m *MockFilesystemClient) Rmdir(arg0 context.Context, arg1 *v1.RmdirRequest, arg2 ...grpc.CallOption) (*v1.RmdirResponse, error) {
+func (m *MockFilesystemClient) Rmdir(ctx context.Context, in *v1.RmdirRequest, opts ...grpc.CallOption) (*v1.RmdirResponse, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1}
-	for _, a := range arg2 {
+	varargs := []any{ctx, in}
+	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Rmdir", varargs...)
@@ -135,8 +136,8 @@ func (m *MockFilesystemClient) Rmdir(arg0 context.Context, arg1 *v1.RmdirRequest
 }
 
 // Rmdir indicates an expected call of Rmdir.
-func (mr *MockFilesystemClientMockRecorder) Rmdir(arg0, arg1 any, arg2 ...any) *gomock.Call {
+func (mr *MockFilesystemClientMockRecorder) Rmdir(ctx, in any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1}, arg2...)
+	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Rmdir", reflect.TypeOf((*MockFilesystemClient)(nil).Rmdir), varargs...)
 }

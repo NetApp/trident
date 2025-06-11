@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -79,6 +80,7 @@ func newMockOntapSANDriver(t *testing.T) (*mockapi.MockOntapAPI, *SANStorageDriv
 	iscsiClient, err := iscsi.New()
 	assert.NoError(t, err)
 	driver.iscsi = iscsiClient
+	driver.cloneSplitTimers = &sync.Map{}
 
 	return mockAPI, driver
 }
@@ -2823,9 +2825,8 @@ func TestOntapSanVolumeSnapshotDelete_fail(t *testing.T) {
 	mockAPI.EXPECT().VolumeListBySnapshotParent(ctx, snapshotConfig.InternalName,
 		snapshotConfig.VolumeInternalName).Return(nil, nil)
 
-	driver.cloneSplitTimers = make(map[string]time.Time)
 	// Use DefaultCloneSplitDelay to set time to past. It is defaulted to 10 seconds.
-	driver.cloneSplitTimers[snapshotConfig.ID()] = time.Now().Add(-10 * time.Second)
+	driver.cloneSplitTimers.Store(snapshotConfig.ID(), time.Now().Add(-10*time.Second))
 	err := driver.DeleteSnapshot(ctx, snapshotConfig, &volConfig)
 
 	assert.Error(t, err, "Snapshot destroyed, expected an error")

@@ -12,6 +12,7 @@ package mock_storage
 import (
 	context "context"
 	reflect "reflect"
+	sync "sync"
 	time "time"
 
 	roaring "github.com/RoaringBitmap/roaring/v2"
@@ -26,6 +27,7 @@ import (
 type MockBackend struct {
 	ctrl     *gomock.Controller
 	recorder *MockBackendMockRecorder
+	isgomock struct{}
 }
 
 // MockBackendMockRecorder is the mock recorder for MockBackend.
@@ -46,30 +48,30 @@ func (m *MockBackend) EXPECT() *MockBackendMockRecorder {
 }
 
 // AddStoragePool mocks base method.
-func (m *MockBackend) AddStoragePool(arg0 storage.Pool) {
+func (m *MockBackend) AddStoragePool(pool storage.Pool) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddStoragePool", arg0)
+	m.ctrl.Call(m, "AddStoragePool", pool)
 }
 
 // AddStoragePool indicates an expected call of AddStoragePool.
-func (mr *MockBackendMockRecorder) AddStoragePool(arg0 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) AddStoragePool(pool any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddStoragePool", reflect.TypeOf((*MockBackend)(nil).AddStoragePool), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddStoragePool", reflect.TypeOf((*MockBackend)(nil).AddStoragePool), pool)
 }
 
 // AddVolume mocks base method.
-func (m *MockBackend) AddVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 storage.Pool, arg3 map[string]storageattribute.Request, arg4 bool) (*storage.Volume, error) {
+func (m *MockBackend) AddVolume(ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]storageattribute.Request, retry bool) (*storage.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddVolume", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "AddVolume", ctx, volConfig, storagePool, volAttributes, retry)
 	ret0, _ := ret[0].(*storage.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AddVolume indicates an expected call of AddVolume.
-func (mr *MockBackendMockRecorder) AddVolume(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) AddVolume(ctx, volConfig, storagePool, volAttributes, retry any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddVolume", reflect.TypeOf((*MockBackend)(nil).AddVolume), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddVolume", reflect.TypeOf((*MockBackend)(nil).AddVolume), ctx, volConfig, storagePool, volAttributes, retry)
 }
 
 // BackendUUID mocks base method.
@@ -143,47 +145,71 @@ func (mr *MockBackendMockRecorder) CanMirror() *gomock.Call {
 }
 
 // CanSnapshot mocks base method.
-func (m *MockBackend) CanSnapshot(arg0 context.Context, arg1 *storage.SnapshotConfig, arg2 *storage.VolumeConfig) error {
+func (m *MockBackend) CanSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CanSnapshot", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "CanSnapshot", ctx, snapConfig, volConfig)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CanSnapshot indicates an expected call of CanSnapshot.
-func (mr *MockBackendMockRecorder) CanSnapshot(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) CanSnapshot(ctx, snapConfig, volConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CanSnapshot", reflect.TypeOf((*MockBackend)(nil).CanSnapshot), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CanSnapshot", reflect.TypeOf((*MockBackend)(nil).CanSnapshot), ctx, snapConfig, volConfig)
 }
 
 // CheckMirrorTransferState mocks base method.
-func (m *MockBackend) CheckMirrorTransferState(arg0 context.Context, arg1 string) (*time.Time, error) {
+func (m *MockBackend) CheckMirrorTransferState(ctx context.Context, pvcVolumeName string) (*time.Time, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckMirrorTransferState", arg0, arg1)
+	ret := m.ctrl.Call(m, "CheckMirrorTransferState", ctx, pvcVolumeName)
 	ret0, _ := ret[0].(*time.Time)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CheckMirrorTransferState indicates an expected call of CheckMirrorTransferState.
-func (mr *MockBackendMockRecorder) CheckMirrorTransferState(arg0, arg1 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) CheckMirrorTransferState(ctx, pvcVolumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckMirrorTransferState", reflect.TypeOf((*MockBackend)(nil).CheckMirrorTransferState), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckMirrorTransferState", reflect.TypeOf((*MockBackend)(nil).CheckMirrorTransferState), ctx, pvcVolumeName)
+}
+
+// ClearStoragePools mocks base method.
+func (m *MockBackend) ClearStoragePools() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "ClearStoragePools")
+}
+
+// ClearStoragePools indicates an expected call of ClearStoragePools.
+func (mr *MockBackendMockRecorder) ClearStoragePools() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClearStoragePools", reflect.TypeOf((*MockBackend)(nil).ClearStoragePools))
+}
+
+// ClearVolumes mocks base method.
+func (m *MockBackend) ClearVolumes() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "ClearVolumes")
+}
+
+// ClearVolumes indicates an expected call of ClearVolumes.
+func (mr *MockBackendMockRecorder) ClearVolumes() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClearVolumes", reflect.TypeOf((*MockBackend)(nil).ClearVolumes))
 }
 
 // CloneVolume mocks base method.
-func (m *MockBackend) CloneVolume(arg0 context.Context, arg1, arg2 *storage.VolumeConfig, arg3 storage.Pool, arg4 bool) (*storage.Volume, error) {
+func (m *MockBackend) CloneVolume(ctx context.Context, sourceVolConfig, cloneVolConfig *storage.VolumeConfig, storagePool storage.Pool, retry bool) (*storage.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CloneVolume", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "CloneVolume", ctx, sourceVolConfig, cloneVolConfig, storagePool, retry)
 	ret0, _ := ret[0].(*storage.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CloneVolume indicates an expected call of CloneVolume.
-func (mr *MockBackendMockRecorder) CloneVolume(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) CloneVolume(ctx, sourceVolConfig, cloneVolConfig, storagePool, retry any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloneVolume", reflect.TypeOf((*MockBackend)(nil).CloneVolume), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloneVolume", reflect.TypeOf((*MockBackend)(nil).CloneVolume), ctx, sourceVolConfig, cloneVolConfig, storagePool, retry)
 }
 
 // ConfigRef mocks base method.
@@ -201,37 +227,51 @@ func (mr *MockBackendMockRecorder) ConfigRef() *gomock.Call {
 }
 
 // ConstructExternal mocks base method.
-func (m *MockBackend) ConstructExternal(arg0 context.Context) *storage.BackendExternal {
+func (m *MockBackend) ConstructExternal(ctx context.Context) *storage.BackendExternal {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConstructExternal", arg0)
+	ret := m.ctrl.Call(m, "ConstructExternal", ctx)
 	ret0, _ := ret[0].(*storage.BackendExternal)
 	return ret0
 }
 
 // ConstructExternal indicates an expected call of ConstructExternal.
-func (mr *MockBackendMockRecorder) ConstructExternal(arg0 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) ConstructExternal(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConstructExternal", reflect.TypeOf((*MockBackend)(nil).ConstructExternal), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConstructExternal", reflect.TypeOf((*MockBackend)(nil).ConstructExternal), ctx)
+}
+
+// ConstructExternalWithPoolMap mocks base method.
+func (m *MockBackend) ConstructExternalWithPoolMap(ctx context.Context, poolMap map[string][]string) *storage.BackendExternal {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConstructExternalWithPoolMap", ctx, poolMap)
+	ret0, _ := ret[0].(*storage.BackendExternal)
+	return ret0
+}
+
+// ConstructExternalWithPoolMap indicates an expected call of ConstructExternalWithPoolMap.
+func (mr *MockBackendMockRecorder) ConstructExternalWithPoolMap(ctx, poolMap any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConstructExternalWithPoolMap", reflect.TypeOf((*MockBackend)(nil).ConstructExternalWithPoolMap), ctx, poolMap)
 }
 
 // ConstructPersistent mocks base method.
-func (m *MockBackend) ConstructPersistent(arg0 context.Context) *storage.BackendPersistent {
+func (m *MockBackend) ConstructPersistent(ctx context.Context) *storage.BackendPersistent {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConstructPersistent", arg0)
+	ret := m.ctrl.Call(m, "ConstructPersistent", ctx)
 	ret0, _ := ret[0].(*storage.BackendPersistent)
 	return ret0
 }
 
 // ConstructPersistent indicates an expected call of ConstructPersistent.
-func (mr *MockBackendMockRecorder) ConstructPersistent(arg0 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) ConstructPersistent(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConstructPersistent", reflect.TypeOf((*MockBackend)(nil).ConstructPersistent), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConstructPersistent", reflect.TypeOf((*MockBackend)(nil).ConstructPersistent), ctx)
 }
 
 // CreateGroupSnapshot mocks base method.
-func (m *MockBackend) CreateGroupSnapshot(arg0 context.Context, arg1 *storage.GroupSnapshotConfig, arg2 *storage.GroupSnapshotTargetInfo) (*storage.GroupSnapshot, []*storage.Snapshot, error) {
+func (m *MockBackend) CreateGroupSnapshot(ctx context.Context, arg1 *storage.GroupSnapshotConfig, target *storage.GroupSnapshotTargetInfo) (*storage.GroupSnapshot, []*storage.Snapshot, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateGroupSnapshot", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "CreateGroupSnapshot", ctx, arg1, target)
 	ret0, _ := ret[0].(*storage.GroupSnapshot)
 	ret1, _ := ret[1].([]*storage.Snapshot)
 	ret2, _ := ret[2].(error)
@@ -239,38 +279,64 @@ func (m *MockBackend) CreateGroupSnapshot(arg0 context.Context, arg1 *storage.Gr
 }
 
 // CreateGroupSnapshot indicates an expected call of CreateGroupSnapshot.
-func (mr *MockBackendMockRecorder) CreateGroupSnapshot(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) CreateGroupSnapshot(ctx, arg1, target any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGroupSnapshot", reflect.TypeOf((*MockBackend)(nil).CreateGroupSnapshot), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGroupSnapshot", reflect.TypeOf((*MockBackend)(nil).CreateGroupSnapshot), ctx, arg1, target)
+}
+
+// CreatePrepare mocks base method.
+func (m *MockBackend) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "CreatePrepare", ctx, volConfig, storagePool)
+}
+
+// CreatePrepare indicates an expected call of CreatePrepare.
+func (mr *MockBackendMockRecorder) CreatePrepare(ctx, volConfig, storagePool any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePrepare", reflect.TypeOf((*MockBackend)(nil).CreatePrepare), ctx, volConfig, storagePool)
 }
 
 // CreateSnapshot mocks base method.
-func (m *MockBackend) CreateSnapshot(arg0 context.Context, arg1 *storage.SnapshotConfig, arg2 *storage.VolumeConfig) (*storage.Snapshot, error) {
+func (m *MockBackend) CreateSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig) (*storage.Snapshot, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateSnapshot", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "CreateSnapshot", ctx, snapConfig, volConfig)
 	ret0, _ := ret[0].(*storage.Snapshot)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateSnapshot indicates an expected call of CreateSnapshot.
-func (mr *MockBackendMockRecorder) CreateSnapshot(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) CreateSnapshot(ctx, snapConfig, volConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSnapshot", reflect.TypeOf((*MockBackend)(nil).CreateSnapshot), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSnapshot", reflect.TypeOf((*MockBackend)(nil).CreateSnapshot), ctx, snapConfig, volConfig)
+}
+
+// DeepCopyType mocks base method.
+func (m *MockBackend) DeepCopyType() storage.Backend {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeepCopyType")
+	ret0, _ := ret[0].(storage.Backend)
+	return ret0
+}
+
+// DeepCopyType indicates an expected call of DeepCopyType.
+func (mr *MockBackendMockRecorder) DeepCopyType() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeepCopyType", reflect.TypeOf((*MockBackend)(nil).DeepCopyType))
 }
 
 // DeleteSnapshot mocks base method.
-func (m *MockBackend) DeleteSnapshot(arg0 context.Context, arg1 *storage.SnapshotConfig, arg2 *storage.VolumeConfig) error {
+func (m *MockBackend) DeleteSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSnapshot", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "DeleteSnapshot", ctx, snapConfig, volConfig)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteSnapshot indicates an expected call of DeleteSnapshot.
-func (mr *MockBackendMockRecorder) DeleteSnapshot(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) DeleteSnapshot(ctx, snapConfig, volConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSnapshot", reflect.TypeOf((*MockBackend)(nil).DeleteSnapshot), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSnapshot", reflect.TypeOf((*MockBackend)(nil).DeleteSnapshot), ctx, snapConfig, volConfig)
 }
 
 // Driver mocks base method.
@@ -288,61 +354,61 @@ func (mr *MockBackendMockRecorder) Driver() *gomock.Call {
 }
 
 // EnablePublishEnforcement mocks base method.
-func (m *MockBackend) EnablePublishEnforcement(arg0 context.Context, arg1 *storage.Volume) error {
+func (m *MockBackend) EnablePublishEnforcement(ctx context.Context, volume *storage.Volume) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnablePublishEnforcement", arg0, arg1)
+	ret := m.ctrl.Call(m, "EnablePublishEnforcement", ctx, volume)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // EnablePublishEnforcement indicates an expected call of EnablePublishEnforcement.
-func (mr *MockBackendMockRecorder) EnablePublishEnforcement(arg0, arg1 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) EnablePublishEnforcement(ctx, volume any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnablePublishEnforcement", reflect.TypeOf((*MockBackend)(nil).EnablePublishEnforcement), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnablePublishEnforcement", reflect.TypeOf((*MockBackend)(nil).EnablePublishEnforcement), ctx, volume)
 }
 
 // GetBackendState mocks base method.
-func (m *MockBackend) GetBackendState(arg0 context.Context) (string, *roaring.Bitmap) {
+func (m *MockBackend) GetBackendState(ctx context.Context) (string, *roaring.Bitmap) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBackendState", arg0)
+	ret := m.ctrl.Call(m, "GetBackendState", ctx)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(*roaring.Bitmap)
 	return ret0, ret1
 }
 
 // GetBackendState indicates an expected call of GetBackendState.
-func (mr *MockBackendMockRecorder) GetBackendState(arg0 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) GetBackendState(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackendState", reflect.TypeOf((*MockBackend)(nil).GetBackendState), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackendState", reflect.TypeOf((*MockBackend)(nil).GetBackendState), ctx)
 }
 
 // GetChapInfo mocks base method.
-func (m *MockBackend) GetChapInfo(arg0 context.Context, arg1, arg2 string) (*models.IscsiChapInfo, error) {
+func (m *MockBackend) GetChapInfo(ctx context.Context, volumeName, nodeName string) (*models.IscsiChapInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetChapInfo", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "GetChapInfo", ctx, volumeName, nodeName)
 	ret0, _ := ret[0].(*models.IscsiChapInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetChapInfo indicates an expected call of GetChapInfo.
-func (mr *MockBackendMockRecorder) GetChapInfo(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) GetChapInfo(ctx, volumeName, nodeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChapInfo", reflect.TypeOf((*MockBackend)(nil).GetChapInfo), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetChapInfo", reflect.TypeOf((*MockBackend)(nil).GetChapInfo), ctx, volumeName, nodeName)
 }
 
 // GetDebugTraceFlags mocks base method.
-func (m *MockBackend) GetDebugTraceFlags(arg0 context.Context) map[string]bool {
+func (m *MockBackend) GetDebugTraceFlags(ctx context.Context) map[string]bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDebugTraceFlags", arg0)
+	ret := m.ctrl.Call(m, "GetDebugTraceFlags", ctx)
 	ret0, _ := ret[0].(map[string]bool)
 	return ret0
 }
 
 // GetDebugTraceFlags indicates an expected call of GetDebugTraceFlags.
-func (mr *MockBackendMockRecorder) GetDebugTraceFlags(arg0 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) GetDebugTraceFlags(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDebugTraceFlags", reflect.TypeOf((*MockBackend)(nil).GetDebugTraceFlags), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDebugTraceFlags", reflect.TypeOf((*MockBackend)(nil).GetDebugTraceFlags), ctx)
 }
 
 // GetDriverName mocks base method.
@@ -360,120 +426,134 @@ func (mr *MockBackendMockRecorder) GetDriverName() *gomock.Call {
 }
 
 // GetGroupSnapshotTarget mocks base method.
-func (m *MockBackend) GetGroupSnapshotTarget(arg0 context.Context, arg1 []*storage.VolumeConfig) (*storage.GroupSnapshotTargetInfo, error) {
+func (m *MockBackend) GetGroupSnapshotTarget(ctx context.Context, volConfigs []*storage.VolumeConfig) (*storage.GroupSnapshotTargetInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetGroupSnapshotTarget", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetGroupSnapshotTarget", ctx, volConfigs)
 	ret0, _ := ret[0].(*storage.GroupSnapshotTargetInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetGroupSnapshotTarget indicates an expected call of GetGroupSnapshotTarget.
-func (mr *MockBackendMockRecorder) GetGroupSnapshotTarget(arg0, arg1 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) GetGroupSnapshotTarget(ctx, volConfigs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupSnapshotTarget", reflect.TypeOf((*MockBackend)(nil).GetGroupSnapshotTarget), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupSnapshotTarget", reflect.TypeOf((*MockBackend)(nil).GetGroupSnapshotTarget), ctx, volConfigs)
 }
 
 // GetMirrorTransferTime mocks base method.
-func (m *MockBackend) GetMirrorTransferTime(arg0 context.Context, arg1 string) (*time.Time, error) {
+func (m *MockBackend) GetMirrorTransferTime(ctx context.Context, pvcVolumeName string) (*time.Time, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMirrorTransferTime", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetMirrorTransferTime", ctx, pvcVolumeName)
 	ret0, _ := ret[0].(*time.Time)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetMirrorTransferTime indicates an expected call of GetMirrorTransferTime.
-func (mr *MockBackendMockRecorder) GetMirrorTransferTime(arg0, arg1 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) GetMirrorTransferTime(ctx, pvcVolumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMirrorTransferTime", reflect.TypeOf((*MockBackend)(nil).GetMirrorTransferTime), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMirrorTransferTime", reflect.TypeOf((*MockBackend)(nil).GetMirrorTransferTime), ctx, pvcVolumeName)
 }
 
 // GetPhysicalPoolNames mocks base method.
-func (m *MockBackend) GetPhysicalPoolNames(arg0 context.Context) []string {
+func (m *MockBackend) GetPhysicalPoolNames(ctx context.Context) []string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPhysicalPoolNames", arg0)
+	ret := m.ctrl.Call(m, "GetPhysicalPoolNames", ctx)
 	ret0, _ := ret[0].([]string)
 	return ret0
 }
 
 // GetPhysicalPoolNames indicates an expected call of GetPhysicalPoolNames.
-func (mr *MockBackendMockRecorder) GetPhysicalPoolNames(arg0 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) GetPhysicalPoolNames(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPhysicalPoolNames", reflect.TypeOf((*MockBackend)(nil).GetPhysicalPoolNames), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPhysicalPoolNames", reflect.TypeOf((*MockBackend)(nil).GetPhysicalPoolNames), ctx)
 }
 
 // GetProtocol mocks base method.
-func (m *MockBackend) GetProtocol(arg0 context.Context) config.Protocol {
+func (m *MockBackend) GetProtocol(ctx context.Context) config.Protocol {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetProtocol", arg0)
+	ret := m.ctrl.Call(m, "GetProtocol", ctx)
 	ret0, _ := ret[0].(config.Protocol)
 	return ret0
 }
 
 // GetProtocol indicates an expected call of GetProtocol.
-func (mr *MockBackendMockRecorder) GetProtocol(arg0 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) GetProtocol(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProtocol", reflect.TypeOf((*MockBackend)(nil).GetProtocol), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProtocol", reflect.TypeOf((*MockBackend)(nil).GetProtocol), ctx)
 }
 
 // GetSnapshot mocks base method.
-func (m *MockBackend) GetSnapshot(arg0 context.Context, arg1 *storage.SnapshotConfig, arg2 *storage.VolumeConfig) (*storage.Snapshot, error) {
+func (m *MockBackend) GetSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig) (*storage.Snapshot, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSnapshot", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "GetSnapshot", ctx, snapConfig, volConfig)
 	ret0, _ := ret[0].(*storage.Snapshot)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSnapshot indicates an expected call of GetSnapshot.
-func (mr *MockBackendMockRecorder) GetSnapshot(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) GetSnapshot(ctx, snapConfig, volConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshot", reflect.TypeOf((*MockBackend)(nil).GetSnapshot), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshot", reflect.TypeOf((*MockBackend)(nil).GetSnapshot), ctx, snapConfig, volConfig)
 }
 
 // GetSnapshots mocks base method.
-func (m *MockBackend) GetSnapshots(arg0 context.Context, arg1 *storage.VolumeConfig) ([]*storage.Snapshot, error) {
+func (m *MockBackend) GetSnapshots(ctx context.Context, volConfig *storage.VolumeConfig) ([]*storage.Snapshot, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSnapshots", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetSnapshots", ctx, volConfig)
 	ret0, _ := ret[0].([]*storage.Snapshot)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSnapshots indicates an expected call of GetSnapshots.
-func (mr *MockBackendMockRecorder) GetSnapshots(arg0, arg1 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) GetSnapshots(ctx, volConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshots", reflect.TypeOf((*MockBackend)(nil).GetSnapshots), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshots", reflect.TypeOf((*MockBackend)(nil).GetSnapshots), ctx, volConfig)
+}
+
+// GetUniqueKey mocks base method.
+func (m *MockBackend) GetUniqueKey() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUniqueKey")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetUniqueKey indicates an expected call of GetUniqueKey.
+func (mr *MockBackendMockRecorder) GetUniqueKey() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUniqueKey", reflect.TypeOf((*MockBackend)(nil).GetUniqueKey))
 }
 
 // GetUpdateType mocks base method.
-func (m *MockBackend) GetUpdateType(arg0 context.Context, arg1 storage.Backend) *roaring.Bitmap {
+func (m *MockBackend) GetUpdateType(ctx context.Context, origBackend storage.Backend) *roaring.Bitmap {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUpdateType", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetUpdateType", ctx, origBackend)
 	ret0, _ := ret[0].(*roaring.Bitmap)
 	return ret0
 }
 
 // GetUpdateType indicates an expected call of GetUpdateType.
-func (mr *MockBackendMockRecorder) GetUpdateType(arg0, arg1 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) GetUpdateType(ctx, origBackend any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUpdateType", reflect.TypeOf((*MockBackend)(nil).GetUpdateType), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUpdateType", reflect.TypeOf((*MockBackend)(nil).GetUpdateType), ctx, origBackend)
 }
 
 // GetVolumeForImport mocks base method.
-func (m *MockBackend) GetVolumeForImport(arg0 context.Context, arg1 string) (*storage.VolumeExternal, error) {
+func (m *MockBackend) GetVolumeForImport(ctx context.Context, volumeID string) (*storage.VolumeExternal, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumeForImport", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetVolumeForImport", ctx, volumeID)
 	ret0, _ := ret[0].(*storage.VolumeExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumeForImport indicates an expected call of GetVolumeForImport.
-func (mr *MockBackendMockRecorder) GetVolumeForImport(arg0, arg1 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) GetVolumeForImport(ctx, volumeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeForImport", reflect.TypeOf((*MockBackend)(nil).GetVolumeForImport), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeForImport", reflect.TypeOf((*MockBackend)(nil).GetVolumeForImport), ctx, volumeID)
 }
 
 // HasVolumes mocks base method.
@@ -491,18 +571,18 @@ func (mr *MockBackendMockRecorder) HasVolumes() *gomock.Call {
 }
 
 // ImportVolume mocks base method.
-func (m *MockBackend) ImportVolume(arg0 context.Context, arg1 *storage.VolumeConfig) (*storage.Volume, error) {
+func (m *MockBackend) ImportVolume(ctx context.Context, volConfig *storage.VolumeConfig) (*storage.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ImportVolume", arg0, arg1)
+	ret := m.ctrl.Call(m, "ImportVolume", ctx, volConfig)
 	ret0, _ := ret[0].(*storage.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ImportVolume indicates an expected call of ImportVolume.
-func (mr *MockBackendMockRecorder) ImportVolume(arg0, arg1 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) ImportVolume(ctx, volConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ImportVolume", reflect.TypeOf((*MockBackend)(nil).ImportVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ImportVolume", reflect.TypeOf((*MockBackend)(nil).ImportVolume), ctx, volConfig)
 }
 
 // InvalidateNodeAccess mocks base method.
@@ -518,17 +598,17 @@ func (mr *MockBackendMockRecorder) InvalidateNodeAccess() *gomock.Call {
 }
 
 // IsCredentialsFieldSet mocks base method.
-func (m *MockBackend) IsCredentialsFieldSet(arg0 context.Context) bool {
+func (m *MockBackend) IsCredentialsFieldSet(ctx context.Context) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsCredentialsFieldSet", arg0)
+	ret := m.ctrl.Call(m, "IsCredentialsFieldSet", ctx)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // IsCredentialsFieldSet indicates an expected call of IsCredentialsFieldSet.
-func (mr *MockBackendMockRecorder) IsCredentialsFieldSet(arg0 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) IsCredentialsFieldSet(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsCredentialsFieldSet", reflect.TypeOf((*MockBackend)(nil).IsCredentialsFieldSet), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsCredentialsFieldSet", reflect.TypeOf((*MockBackend)(nil).IsCredentialsFieldSet), ctx)
 }
 
 // MarshalDriverConfig mocks base method.
@@ -575,176 +655,176 @@ func (mr *MockBackendMockRecorder) Online() *gomock.Call {
 }
 
 // PostProcessGroupSnapshot mocks base method.
-func (m *MockBackend) PostProcessGroupSnapshot(arg0 context.Context, arg1 *storage.GroupSnapshotTargetInfo, arg2 *storage.GroupSnapshot) ([]*storage.Snapshot, error) {
+func (m *MockBackend) PostProcessGroupSnapshot(ctx context.Context, targetInfo *storage.GroupSnapshotTargetInfo, groupSnapshot *storage.GroupSnapshot) ([]*storage.Snapshot, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PostProcessGroupSnapshot", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "PostProcessGroupSnapshot", ctx, targetInfo, groupSnapshot)
 	ret0, _ := ret[0].([]*storage.Snapshot)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // PostProcessGroupSnapshot indicates an expected call of PostProcessGroupSnapshot.
-func (mr *MockBackendMockRecorder) PostProcessGroupSnapshot(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) PostProcessGroupSnapshot(ctx, targetInfo, groupSnapshot any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PostProcessGroupSnapshot", reflect.TypeOf((*MockBackend)(nil).PostProcessGroupSnapshot), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PostProcessGroupSnapshot", reflect.TypeOf((*MockBackend)(nil).PostProcessGroupSnapshot), ctx, targetInfo, groupSnapshot)
 }
 
 // PublishVolume mocks base method.
-func (m *MockBackend) PublishVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 *models.VolumePublishInfo) error {
+func (m *MockBackend) PublishVolume(ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PublishVolume", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "PublishVolume", ctx, volConfig, publishInfo)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PublishVolume indicates an expected call of PublishVolume.
-func (mr *MockBackendMockRecorder) PublishVolume(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) PublishVolume(ctx, volConfig, publishInfo any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishVolume", reflect.TypeOf((*MockBackend)(nil).PublishVolume), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishVolume", reflect.TypeOf((*MockBackend)(nil).PublishVolume), ctx, volConfig, publishInfo)
 }
 
 // ReconcileNodeAccess mocks base method.
-func (m *MockBackend) ReconcileNodeAccess(arg0 context.Context, arg1 []*models.Node, arg2 string) error {
+func (m *MockBackend) ReconcileNodeAccess(ctx context.Context, nodes []*models.Node, tridentUUID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileNodeAccess", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ReconcileNodeAccess", ctx, nodes, tridentUUID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ReconcileNodeAccess indicates an expected call of ReconcileNodeAccess.
-func (mr *MockBackendMockRecorder) ReconcileNodeAccess(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) ReconcileNodeAccess(ctx, nodes, tridentUUID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileNodeAccess", reflect.TypeOf((*MockBackend)(nil).ReconcileNodeAccess), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileNodeAccess", reflect.TypeOf((*MockBackend)(nil).ReconcileNodeAccess), ctx, nodes, tridentUUID)
 }
 
 // ReconcileVolumeNodeAccess mocks base method.
-func (m *MockBackend) ReconcileVolumeNodeAccess(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 []*models.Node) error {
+func (m *MockBackend) ReconcileVolumeNodeAccess(ctx context.Context, volConfig *storage.VolumeConfig, nodes []*models.Node) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileVolumeNodeAccess", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ReconcileVolumeNodeAccess", ctx, volConfig, nodes)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ReconcileVolumeNodeAccess indicates an expected call of ReconcileVolumeNodeAccess.
-func (mr *MockBackendMockRecorder) ReconcileVolumeNodeAccess(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) ReconcileVolumeNodeAccess(ctx, volConfig, nodes any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVolumeNodeAccess", reflect.TypeOf((*MockBackend)(nil).ReconcileVolumeNodeAccess), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVolumeNodeAccess", reflect.TypeOf((*MockBackend)(nil).ReconcileVolumeNodeAccess), ctx, volConfig, nodes)
 }
 
 // RemoveCachedVolume mocks base method.
-func (m *MockBackend) RemoveCachedVolume(arg0 string) {
+func (m *MockBackend) RemoveCachedVolume(volumeName string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RemoveCachedVolume", arg0)
+	m.ctrl.Call(m, "RemoveCachedVolume", volumeName)
 }
 
 // RemoveCachedVolume indicates an expected call of RemoveCachedVolume.
-func (mr *MockBackendMockRecorder) RemoveCachedVolume(arg0 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) RemoveCachedVolume(volumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveCachedVolume", reflect.TypeOf((*MockBackend)(nil).RemoveCachedVolume), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveCachedVolume", reflect.TypeOf((*MockBackend)(nil).RemoveCachedVolume), volumeName)
 }
 
 // RemoveVolume mocks base method.
-func (m *MockBackend) RemoveVolume(arg0 context.Context, arg1 *storage.VolumeConfig) error {
+func (m *MockBackend) RemoveVolume(ctx context.Context, volConfig *storage.VolumeConfig) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveVolume", arg0, arg1)
+	ret := m.ctrl.Call(m, "RemoveVolume", ctx, volConfig)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RemoveVolume indicates an expected call of RemoveVolume.
-func (mr *MockBackendMockRecorder) RemoveVolume(arg0, arg1 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) RemoveVolume(ctx, volConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveVolume", reflect.TypeOf((*MockBackend)(nil).RemoveVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveVolume", reflect.TypeOf((*MockBackend)(nil).RemoveVolume), ctx, volConfig)
 }
 
 // RenameVolume mocks base method.
-func (m *MockBackend) RenameVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 string) error {
+func (m *MockBackend) RenameVolume(ctx context.Context, volConfig *storage.VolumeConfig, newName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RenameVolume", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "RenameVolume", ctx, volConfig, newName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RenameVolume indicates an expected call of RenameVolume.
-func (mr *MockBackendMockRecorder) RenameVolume(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) RenameVolume(ctx, volConfig, newName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenameVolume", reflect.TypeOf((*MockBackend)(nil).RenameVolume), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenameVolume", reflect.TypeOf((*MockBackend)(nil).RenameVolume), ctx, volConfig, newName)
 }
 
 // ResizeVolume mocks base method.
-func (m *MockBackend) ResizeVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 string) error {
+func (m *MockBackend) ResizeVolume(ctx context.Context, volConfig *storage.VolumeConfig, newSize string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResizeVolume", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ResizeVolume", ctx, volConfig, newSize)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ResizeVolume indicates an expected call of ResizeVolume.
-func (mr *MockBackendMockRecorder) ResizeVolume(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) ResizeVolume(ctx, volConfig, newSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResizeVolume", reflect.TypeOf((*MockBackend)(nil).ResizeVolume), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResizeVolume", reflect.TypeOf((*MockBackend)(nil).ResizeVolume), ctx, volConfig, newSize)
 }
 
 // RestoreSnapshot mocks base method.
-func (m *MockBackend) RestoreSnapshot(arg0 context.Context, arg1 *storage.SnapshotConfig, arg2 *storage.VolumeConfig) error {
+func (m *MockBackend) RestoreSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RestoreSnapshot", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "RestoreSnapshot", ctx, snapConfig, volConfig)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RestoreSnapshot indicates an expected call of RestoreSnapshot.
-func (mr *MockBackendMockRecorder) RestoreSnapshot(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) RestoreSnapshot(ctx, snapConfig, volConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreSnapshot", reflect.TypeOf((*MockBackend)(nil).RestoreSnapshot), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreSnapshot", reflect.TypeOf((*MockBackend)(nil).RestoreSnapshot), ctx, snapConfig, volConfig)
 }
 
 // SetBackendUUID mocks base method.
-func (m *MockBackend) SetBackendUUID(arg0 string) {
+func (m *MockBackend) SetBackendUUID(BackendUUID string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetBackendUUID", arg0)
+	m.ctrl.Call(m, "SetBackendUUID", BackendUUID)
 }
 
 // SetBackendUUID indicates an expected call of SetBackendUUID.
-func (mr *MockBackendMockRecorder) SetBackendUUID(arg0 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) SetBackendUUID(BackendUUID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetBackendUUID", reflect.TypeOf((*MockBackend)(nil).SetBackendUUID), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetBackendUUID", reflect.TypeOf((*MockBackend)(nil).SetBackendUUID), BackendUUID)
 }
 
 // SetConfigRef mocks base method.
-func (m *MockBackend) SetConfigRef(arg0 string) {
+func (m *MockBackend) SetConfigRef(ConfigRef string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetConfigRef", arg0)
+	m.ctrl.Call(m, "SetConfigRef", ConfigRef)
 }
 
 // SetConfigRef indicates an expected call of SetConfigRef.
-func (mr *MockBackendMockRecorder) SetConfigRef(arg0 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) SetConfigRef(ConfigRef any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetConfigRef", reflect.TypeOf((*MockBackend)(nil).SetConfigRef), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetConfigRef", reflect.TypeOf((*MockBackend)(nil).SetConfigRef), ConfigRef)
 }
 
 // SetDriver mocks base method.
-func (m *MockBackend) SetDriver(arg0 storage.Driver) {
+func (m *MockBackend) SetDriver(Driver storage.Driver) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetDriver", arg0)
+	m.ctrl.Call(m, "SetDriver", Driver)
 }
 
 // SetDriver indicates an expected call of SetDriver.
-func (mr *MockBackendMockRecorder) SetDriver(arg0 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) SetDriver(Driver any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetDriver", reflect.TypeOf((*MockBackend)(nil).SetDriver), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetDriver", reflect.TypeOf((*MockBackend)(nil).SetDriver), Driver)
 }
 
 // SetName mocks base method.
-func (m *MockBackend) SetName(arg0 string) {
+func (m *MockBackend) SetName(Name string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetName", arg0)
+	m.ctrl.Call(m, "SetName", Name)
 }
 
 // SetName indicates an expected call of SetName.
-func (mr *MockBackendMockRecorder) SetName(arg0 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) SetName(Name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetName", reflect.TypeOf((*MockBackend)(nil).SetName), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetName", reflect.TypeOf((*MockBackend)(nil).SetName), Name)
 }
 
 // SetNodeAccessUpToDate mocks base method.
@@ -760,63 +840,53 @@ func (mr *MockBackendMockRecorder) SetNodeAccessUpToDate() *gomock.Call {
 }
 
 // SetOnline mocks base method.
-func (m *MockBackend) SetOnline(arg0 bool) {
+func (m *MockBackend) SetOnline(Online bool) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetOnline", arg0)
+	m.ctrl.Call(m, "SetOnline", Online)
 }
 
 // SetOnline indicates an expected call of SetOnline.
-func (mr *MockBackendMockRecorder) SetOnline(arg0 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) SetOnline(Online any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetOnline", reflect.TypeOf((*MockBackend)(nil).SetOnline), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetOnline", reflect.TypeOf((*MockBackend)(nil).SetOnline), Online)
 }
 
 // SetState mocks base method.
-func (m *MockBackend) SetState(arg0 storage.BackendState) {
+func (m *MockBackend) SetState(State storage.BackendState) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetState", arg0)
+	m.ctrl.Call(m, "SetState", State)
 }
 
 // SetState indicates an expected call of SetState.
-func (mr *MockBackendMockRecorder) SetState(arg0 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) SetState(State any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetState", reflect.TypeOf((*MockBackend)(nil).SetState), arg0)
-}
-
-// SetStorage mocks base method.
-func (m *MockBackend) SetStorage(arg0 map[string]storage.Pool) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetStorage", arg0)
-}
-
-// SetStorage indicates an expected call of SetStorage.
-func (mr *MockBackendMockRecorder) SetStorage(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetStorage", reflect.TypeOf((*MockBackend)(nil).SetStorage), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetState", reflect.TypeOf((*MockBackend)(nil).SetState), State)
 }
 
 // SetUserState mocks base method.
-func (m *MockBackend) SetUserState(arg0 storage.UserBackendState) {
+func (m *MockBackend) SetUserState(State storage.UserBackendState) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetUserState", arg0)
+	m.ctrl.Call(m, "SetUserState", State)
 }
 
 // SetUserState indicates an expected call of SetUserState.
-func (mr *MockBackendMockRecorder) SetUserState(arg0 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) SetUserState(State any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUserState", reflect.TypeOf((*MockBackend)(nil).SetUserState), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUserState", reflect.TypeOf((*MockBackend)(nil).SetUserState), State)
 }
 
-// SetVolumes mocks base method.
-func (m *MockBackend) SetVolumes(arg0 map[string]*storage.Volume) {
+// SmartCopy mocks base method.
+func (m *MockBackend) SmartCopy() any {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetVolumes", arg0)
+	ret := m.ctrl.Call(m, "SmartCopy")
+	ret0, _ := ret[0].(any)
+	return ret0
 }
 
-// SetVolumes indicates an expected call of SetVolumes.
-func (mr *MockBackendMockRecorder) SetVolumes(arg0 any) *gomock.Call {
+// SmartCopy indicates an expected call of SmartCopy.
+func (mr *MockBackendMockRecorder) SmartCopy() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetVolumes", reflect.TypeOf((*MockBackend)(nil).SetVolumes), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SmartCopy", reflect.TypeOf((*MockBackend)(nil).SmartCopy))
 }
 
 // State mocks base method.
@@ -847,73 +917,73 @@ func (mr *MockBackendMockRecorder) StateReason() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StateReason", reflect.TypeOf((*MockBackend)(nil).StateReason))
 }
 
-// Storage mocks base method.
-func (m *MockBackend) Storage() map[string]storage.Pool {
+// StoragePools mocks base method.
+func (m *MockBackend) StoragePools() *sync.Map {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Storage")
-	ret0, _ := ret[0].(map[string]storage.Pool)
+	ret := m.ctrl.Call(m, "StoragePools")
+	ret0, _ := ret[0].(*sync.Map)
 	return ret0
 }
 
-// Storage indicates an expected call of Storage.
-func (mr *MockBackendMockRecorder) Storage() *gomock.Call {
+// StoragePools indicates an expected call of StoragePools.
+func (mr *MockBackendMockRecorder) StoragePools() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Storage", reflect.TypeOf((*MockBackend)(nil).Storage))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoragePools", reflect.TypeOf((*MockBackend)(nil).StoragePools))
 }
 
 // Terminate mocks base method.
-func (m *MockBackend) Terminate(arg0 context.Context) {
+func (m *MockBackend) Terminate(ctx context.Context) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Terminate", arg0)
+	m.ctrl.Call(m, "Terminate", ctx)
 }
 
 // Terminate indicates an expected call of Terminate.
-func (mr *MockBackendMockRecorder) Terminate(arg0 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) Terminate(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminate", reflect.TypeOf((*MockBackend)(nil).Terminate), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminate", reflect.TypeOf((*MockBackend)(nil).Terminate), ctx)
 }
 
 // UnpublishVolume mocks base method.
-func (m *MockBackend) UnpublishVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 *models.VolumePublishInfo) error {
+func (m *MockBackend) UnpublishVolume(ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UnpublishVolume", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UnpublishVolume", ctx, volConfig, publishInfo)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UnpublishVolume indicates an expected call of UnpublishVolume.
-func (mr *MockBackendMockRecorder) UnpublishVolume(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) UnpublishVolume(ctx, volConfig, publishInfo any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnpublishVolume", reflect.TypeOf((*MockBackend)(nil).UnpublishVolume), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnpublishVolume", reflect.TypeOf((*MockBackend)(nil).UnpublishVolume), ctx, volConfig, publishInfo)
 }
 
 // UpdateMirror mocks base method.
-func (m *MockBackend) UpdateMirror(arg0 context.Context, arg1, arg2 string) error {
+func (m *MockBackend) UpdateMirror(ctx context.Context, localInternalVolumeName, snapshotName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateMirror", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UpdateMirror", ctx, localInternalVolumeName, snapshotName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateMirror indicates an expected call of UpdateMirror.
-func (mr *MockBackendMockRecorder) UpdateMirror(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) UpdateMirror(ctx, localInternalVolumeName, snapshotName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMirror", reflect.TypeOf((*MockBackend)(nil).UpdateMirror), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMirror", reflect.TypeOf((*MockBackend)(nil).UpdateMirror), ctx, localInternalVolumeName, snapshotName)
 }
 
 // UpdateVolume mocks base method.
-func (m *MockBackend) UpdateVolume(arg0 context.Context, arg1 *storage.VolumeConfig, arg2 *models.VolumeUpdateInfo) (map[string]*storage.Volume, error) {
+func (m *MockBackend) UpdateVolume(ctx context.Context, volConfig *storage.VolumeConfig, updateInfo *models.VolumeUpdateInfo) (map[string]*storage.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateVolume", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UpdateVolume", ctx, volConfig, updateInfo)
 	ret0, _ := ret[0].(map[string]*storage.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateVolume indicates an expected call of UpdateVolume.
-func (mr *MockBackendMockRecorder) UpdateVolume(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockBackendMockRecorder) UpdateVolume(ctx, volConfig, updateInfo any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolume", reflect.TypeOf((*MockBackend)(nil).UpdateVolume), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolume", reflect.TypeOf((*MockBackend)(nil).UpdateVolume), ctx, volConfig, updateInfo)
 }
 
 // UserState mocks base method.
@@ -931,10 +1001,10 @@ func (mr *MockBackendMockRecorder) UserState() *gomock.Call {
 }
 
 // Volumes mocks base method.
-func (m *MockBackend) Volumes() map[string]*storage.Volume {
+func (m *MockBackend) Volumes() *sync.Map {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Volumes")
-	ret0, _ := ret[0].(map[string]*storage.Volume)
+	ret0, _ := ret[0].(*sync.Map)
 	return ret0
 }
 
@@ -948,6 +1018,7 @@ func (mr *MockBackendMockRecorder) Volumes() *gomock.Call {
 type MockPool struct {
 	ctrl     *gomock.Controller
 	recorder *MockPoolMockRecorder
+	isgomock struct{}
 }
 
 // MockPoolMockRecorder is the mock recorder for MockPool.
@@ -968,15 +1039,15 @@ func (m *MockPool) EXPECT() *MockPoolMockRecorder {
 }
 
 // AddStorageClass mocks base method.
-func (m *MockPool) AddStorageClass(arg0 string) {
+func (m *MockPool) AddStorageClass(class string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddStorageClass", arg0)
+	m.ctrl.Call(m, "AddStorageClass", class)
 }
 
 // AddStorageClass indicates an expected call of AddStorageClass.
-func (mr *MockPoolMockRecorder) AddStorageClass(arg0 any) *gomock.Call {
+func (mr *MockPoolMockRecorder) AddStorageClass(class any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddStorageClass", reflect.TypeOf((*MockPool)(nil).AddStorageClass), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddStorageClass", reflect.TypeOf((*MockPool)(nil).AddStorageClass), class)
 }
 
 // Attributes mocks base method.
@@ -1021,62 +1092,76 @@ func (mr *MockPoolMockRecorder) ConstructExternal() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConstructExternal", reflect.TypeOf((*MockPool)(nil).ConstructExternal))
 }
 
-// GetLabelMapFromTemplate mocks base method.
-func (m *MockPool) GetLabelMapFromTemplate(arg0 context.Context, arg1 map[string]any) map[string]string {
+// ConstructExternalWithPoolMap mocks base method.
+func (m *MockPool) ConstructExternalWithPoolMap(poolMap map[string][]string) *storage.PoolExternal {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLabelMapFromTemplate", arg0, arg1)
+	ret := m.ctrl.Call(m, "ConstructExternalWithPoolMap", poolMap)
+	ret0, _ := ret[0].(*storage.PoolExternal)
+	return ret0
+}
+
+// ConstructExternalWithPoolMap indicates an expected call of ConstructExternalWithPoolMap.
+func (mr *MockPoolMockRecorder) ConstructExternalWithPoolMap(poolMap any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConstructExternalWithPoolMap", reflect.TypeOf((*MockPool)(nil).ConstructExternalWithPoolMap), poolMap)
+}
+
+// GetLabelMapFromTemplate mocks base method.
+func (m *MockPool) GetLabelMapFromTemplate(ctx context.Context, templateData map[string]any) map[string]string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLabelMapFromTemplate", ctx, templateData)
 	ret0, _ := ret[0].(map[string]string)
 	return ret0
 }
 
 // GetLabelMapFromTemplate indicates an expected call of GetLabelMapFromTemplate.
-func (mr *MockPoolMockRecorder) GetLabelMapFromTemplate(arg0, arg1 any) *gomock.Call {
+func (mr *MockPoolMockRecorder) GetLabelMapFromTemplate(ctx, templateData any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLabelMapFromTemplate", reflect.TypeOf((*MockPool)(nil).GetLabelMapFromTemplate), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLabelMapFromTemplate", reflect.TypeOf((*MockPool)(nil).GetLabelMapFromTemplate), ctx, templateData)
 }
 
 // GetLabels mocks base method.
-func (m *MockPool) GetLabels(arg0 context.Context, arg1 string) map[string]string {
+func (m *MockPool) GetLabels(ctx context.Context, prefix string) map[string]string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLabels", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetLabels", ctx, prefix)
 	ret0, _ := ret[0].(map[string]string)
 	return ret0
 }
 
 // GetLabels indicates an expected call of GetLabels.
-func (mr *MockPoolMockRecorder) GetLabels(arg0, arg1 any) *gomock.Call {
+func (mr *MockPoolMockRecorder) GetLabels(ctx, prefix any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLabels", reflect.TypeOf((*MockPool)(nil).GetLabels), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLabels", reflect.TypeOf((*MockPool)(nil).GetLabels), ctx, prefix)
 }
 
 // GetLabelsJSON mocks base method.
-func (m *MockPool) GetLabelsJSON(arg0 context.Context, arg1 string, arg2 int) (string, error) {
+func (m *MockPool) GetLabelsJSON(ctx context.Context, key string, labelLimit int) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLabelsJSON", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "GetLabelsJSON", ctx, key, labelLimit)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetLabelsJSON indicates an expected call of GetLabelsJSON.
-func (mr *MockPoolMockRecorder) GetLabelsJSON(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockPoolMockRecorder) GetLabelsJSON(ctx, key, labelLimit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLabelsJSON", reflect.TypeOf((*MockPool)(nil).GetLabelsJSON), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLabelsJSON", reflect.TypeOf((*MockPool)(nil).GetLabelsJSON), ctx, key, labelLimit)
 }
 
 // GetTemplatizedLabelsJSON mocks base method.
-func (m *MockPool) GetTemplatizedLabelsJSON(arg0 context.Context, arg1 string, arg2 int, arg3 map[string]any) (string, error) {
+func (m *MockPool) GetTemplatizedLabelsJSON(ctx context.Context, key string, labelLimit int, templateData map[string]any) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTemplatizedLabelsJSON", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "GetTemplatizedLabelsJSON", ctx, key, labelLimit, templateData)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetTemplatizedLabelsJSON indicates an expected call of GetTemplatizedLabelsJSON.
-func (mr *MockPoolMockRecorder) GetTemplatizedLabelsJSON(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockPoolMockRecorder) GetTemplatizedLabelsJSON(ctx, key, labelLimit, templateData any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTemplatizedLabelsJSON", reflect.TypeOf((*MockPool)(nil).GetTemplatizedLabelsJSON), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTemplatizedLabelsJSON", reflect.TypeOf((*MockPool)(nil).GetTemplatizedLabelsJSON), ctx, key, labelLimit, templateData)
 }
 
 // InternalAttributes mocks base method.
@@ -1108,89 +1193,89 @@ func (mr *MockPoolMockRecorder) Name() *gomock.Call {
 }
 
 // RemoveStorageClass mocks base method.
-func (m *MockPool) RemoveStorageClass(arg0 string) bool {
+func (m *MockPool) RemoveStorageClass(class string) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveStorageClass", arg0)
+	ret := m.ctrl.Call(m, "RemoveStorageClass", class)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // RemoveStorageClass indicates an expected call of RemoveStorageClass.
-func (mr *MockPoolMockRecorder) RemoveStorageClass(arg0 any) *gomock.Call {
+func (mr *MockPoolMockRecorder) RemoveStorageClass(class any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveStorageClass", reflect.TypeOf((*MockPool)(nil).RemoveStorageClass), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveStorageClass", reflect.TypeOf((*MockPool)(nil).RemoveStorageClass), class)
 }
 
 // SetAttributes mocks base method.
-func (m *MockPool) SetAttributes(arg0 map[string]storageattribute.Offer) {
+func (m *MockPool) SetAttributes(attributes map[string]storageattribute.Offer) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetAttributes", arg0)
+	m.ctrl.Call(m, "SetAttributes", attributes)
 }
 
 // SetAttributes indicates an expected call of SetAttributes.
-func (mr *MockPoolMockRecorder) SetAttributes(arg0 any) *gomock.Call {
+func (mr *MockPoolMockRecorder) SetAttributes(attributes any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAttributes", reflect.TypeOf((*MockPool)(nil).SetAttributes), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAttributes", reflect.TypeOf((*MockPool)(nil).SetAttributes), attributes)
 }
 
 // SetBackend mocks base method.
-func (m *MockPool) SetBackend(arg0 storage.Backend) {
+func (m *MockPool) SetBackend(backend storage.Backend) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetBackend", arg0)
+	m.ctrl.Call(m, "SetBackend", backend)
 }
 
 // SetBackend indicates an expected call of SetBackend.
-func (mr *MockPoolMockRecorder) SetBackend(arg0 any) *gomock.Call {
+func (mr *MockPoolMockRecorder) SetBackend(backend any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetBackend", reflect.TypeOf((*MockPool)(nil).SetBackend), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetBackend", reflect.TypeOf((*MockPool)(nil).SetBackend), backend)
 }
 
 // SetInternalAttributes mocks base method.
-func (m *MockPool) SetInternalAttributes(arg0 map[string]string) {
+func (m *MockPool) SetInternalAttributes(internalAttributes map[string]string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetInternalAttributes", arg0)
+	m.ctrl.Call(m, "SetInternalAttributes", internalAttributes)
 }
 
 // SetInternalAttributes indicates an expected call of SetInternalAttributes.
-func (mr *MockPoolMockRecorder) SetInternalAttributes(arg0 any) *gomock.Call {
+func (mr *MockPoolMockRecorder) SetInternalAttributes(internalAttributes any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetInternalAttributes", reflect.TypeOf((*MockPool)(nil).SetInternalAttributes), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetInternalAttributes", reflect.TypeOf((*MockPool)(nil).SetInternalAttributes), internalAttributes)
 }
 
 // SetName mocks base method.
-func (m *MockPool) SetName(arg0 string) {
+func (m *MockPool) SetName(name string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetName", arg0)
+	m.ctrl.Call(m, "SetName", name)
 }
 
 // SetName indicates an expected call of SetName.
-func (mr *MockPoolMockRecorder) SetName(arg0 any) *gomock.Call {
+func (mr *MockPoolMockRecorder) SetName(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetName", reflect.TypeOf((*MockPool)(nil).SetName), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetName", reflect.TypeOf((*MockPool)(nil).SetName), name)
 }
 
 // SetStorageClasses mocks base method.
-func (m *MockPool) SetStorageClasses(arg0 []string) {
+func (m *MockPool) SetStorageClasses(storageClasses []string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetStorageClasses", arg0)
+	m.ctrl.Call(m, "SetStorageClasses", storageClasses)
 }
 
 // SetStorageClasses indicates an expected call of SetStorageClasses.
-func (mr *MockPoolMockRecorder) SetStorageClasses(arg0 any) *gomock.Call {
+func (mr *MockPoolMockRecorder) SetStorageClasses(storageClasses any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetStorageClasses", reflect.TypeOf((*MockPool)(nil).SetStorageClasses), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetStorageClasses", reflect.TypeOf((*MockPool)(nil).SetStorageClasses), storageClasses)
 }
 
 // SetSupportedTopologies mocks base method.
-func (m *MockPool) SetSupportedTopologies(arg0 []map[string]string) {
+func (m *MockPool) SetSupportedTopologies(supportedTopologies []map[string]string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetSupportedTopologies", arg0)
+	m.ctrl.Call(m, "SetSupportedTopologies", supportedTopologies)
 }
 
 // SetSupportedTopologies indicates an expected call of SetSupportedTopologies.
-func (mr *MockPoolMockRecorder) SetSupportedTopologies(arg0 any) *gomock.Call {
+func (mr *MockPoolMockRecorder) SetSupportedTopologies(supportedTopologies any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSupportedTopologies", reflect.TypeOf((*MockPool)(nil).SetSupportedTopologies), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSupportedTopologies", reflect.TypeOf((*MockPool)(nil).SetSupportedTopologies), supportedTopologies)
 }
 
 // StorageClasses mocks base method.

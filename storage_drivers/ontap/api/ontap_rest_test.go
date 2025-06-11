@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 
 	"github.com/go-openapi/strfmt"
@@ -8439,4 +8440,23 @@ func TestNVMeNamespaceSetQosPolicyGroup(t *testing.T) {
 			server.Close()
 		})
 	}
+}
+
+func TestSetOntapVersion(t *testing.T) {
+	ontapVersion := "9.8"
+	client := RestClient{
+		m: &sync.RWMutex{},
+	}
+	// Set a new ONTAP version
+	client.SetOntapVersion(ontapVersion)
+	assert.Equal(t, ontapVersion, client.OntapVersion, "SetOntapVersion should update the ONTAP version correctly")
+}
+
+func TestGetOntapVersion(t *testing.T) {
+	ontapVersion := "9.8"
+	client := RestClient{
+		m:            &sync.RWMutex{},
+		OntapVersion: ontapVersion,
+	}
+	assert.Equal(t, ontapVersion, client.GetOntapVersion(), "SetOntapVersion should update the ONTAP version correctly")
 }

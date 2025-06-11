@@ -19,6 +19,7 @@ import (
 type MockOS struct {
 	ctrl     *gomock.Controller
 	recorder *MockOSMockRecorder
+	isgomock struct{}
 }
 
 // MockOSMockRecorder is the mock recorder for MockOS.
@@ -39,16 +40,16 @@ func (m *MockOS) EXPECT() *MockOSMockRecorder {
 }
 
 // PathExists mocks base method.
-func (m *MockOS) PathExists(arg0 string) (bool, error) {
+func (m *MockOS) PathExists(path string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PathExists", arg0)
+	ret := m.ctrl.Call(m, "PathExists", path)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // PathExists indicates an expected call of PathExists.
-func (mr *MockOSMockRecorder) PathExists(arg0 any) *gomock.Call {
+func (mr *MockOSMockRecorder) PathExists(path any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PathExists", reflect.TypeOf((*MockOS)(nil).PathExists), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PathExists", reflect.TypeOf((*MockOS)(nil).PathExists), path)
 }

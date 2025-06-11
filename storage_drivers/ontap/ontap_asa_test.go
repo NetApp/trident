@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -1939,7 +1940,7 @@ func TestDeleteSnapshot(t *testing.T) {
 			VolumeInternalName: "testVol",
 		}
 
-		driver.cloneSplitTimers = make(map[string]time.Time)
+		driver.cloneSplitTimers = &sync.Map{}
 	}
 
 	tests := []struct {
@@ -2565,7 +2566,7 @@ func TestGetStorageBackendSpecsASA(t *testing.T) {
 
 	backend := &storage.StorageBackend{}
 	backend.SetOnline(true)
-	backend.SetStorage(make(map[string]storage.Pool))
+	backend.ClearStoragePools()
 	backend.SetDriver(driver)
 
 	pool1 := storage.NewStoragePool(nil, "dummyPool1")

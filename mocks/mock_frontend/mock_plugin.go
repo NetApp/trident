@@ -19,6 +19,7 @@ import (
 type MockPlugin struct {
 	ctrl     *gomock.Controller
 	recorder *MockPluginMockRecorder
+	isgomock struct{}
 }
 
 // MockPluginMockRecorder is the mock recorder for MockPlugin.

@@ -21,6 +21,7 @@ import (
 type MockCSIProxyUtils struct {
 	ctrl     *gomock.Controller
 	recorder *MockCSIProxyUtilsMockRecorder
+	isgomock struct{}
 }
 
 // MockCSIProxyUtilsMockRecorder is the mock recorder for MockCSIProxyUtils.
@@ -71,17 +72,17 @@ func (mr *MockCSIProxyUtilsMockRecorder) ExistsPath(arg0, arg1 any) *gomock.Call
 }
 
 // GetAPIVersions mocks base method.
-func (m *MockCSIProxyUtils) GetAPIVersions(arg0 context.Context) string {
+func (m *MockCSIProxyUtils) GetAPIVersions(ctx context.Context) string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAPIVersions", arg0)
+	ret := m.ctrl.Call(m, "GetAPIVersions", ctx)
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
 // GetAPIVersions indicates an expected call of GetAPIVersions.
-func (mr *MockCSIProxyUtilsMockRecorder) GetAPIVersions(arg0 any) *gomock.Call {
+func (mr *MockCSIProxyUtilsMockRecorder) GetAPIVersions(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAPIVersions", reflect.TypeOf((*MockCSIProxyUtils)(nil).GetAPIVersions), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAPIVersions", reflect.TypeOf((*MockCSIProxyUtils)(nil).GetAPIVersions), ctx)
 }
 
 // GetFilesystemUsage mocks base method.

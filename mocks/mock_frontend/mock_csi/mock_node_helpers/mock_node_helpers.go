@@ -6,12 +6,12 @@
 //	mockgen -destination=../../../mocks/mock_frontend/mock_csi/mock_node_helpers/mock_node_helpers.go github.com/netapp/trident/frontend/csi/node_helpers NodeHelper,VolumePublishManager
 //
 
-// Package mock_node_helpers is a generated GoMock package.
-package mock_node_helpers
+// Package mock_nodehelpers is a generated GoMock package.
+package mock_nodehelpers
 
 import (
 	context "context"
-	fs "io/fs"
+	os "os"
 	reflect "reflect"
 
 	models "github.com/netapp/trident/utils/models"
@@ -22,6 +22,7 @@ import (
 type MockNodeHelper struct {
 	ctrl     *gomock.Controller
 	recorder *MockNodeHelperMockRecorder
+	isgomock struct{}
 }
 
 // MockNodeHelperMockRecorder is the mock recorder for MockNodeHelper.
@@ -42,21 +43,21 @@ func (m *MockNodeHelper) EXPECT() *MockNodeHelperMockRecorder {
 }
 
 // AddPublishedPath mocks base method.
-func (m *MockNodeHelper) AddPublishedPath(arg0 context.Context, arg1, arg2 string) error {
+func (m *MockNodeHelper) AddPublishedPath(ctx context.Context, volumeID, pathToAdd string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddPublishedPath", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "AddPublishedPath", ctx, volumeID, pathToAdd)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddPublishedPath indicates an expected call of AddPublishedPath.
-func (mr *MockNodeHelperMockRecorder) AddPublishedPath(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockNodeHelperMockRecorder) AddPublishedPath(ctx, volumeID, pathToAdd any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddPublishedPath", reflect.TypeOf((*MockNodeHelper)(nil).AddPublishedPath), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddPublishedPath", reflect.TypeOf((*MockNodeHelper)(nil).AddPublishedPath), ctx, volumeID, pathToAdd)
 }
 
 // DeleteFailedUpgradeTrackingFile mocks base method.
-func (m *MockNodeHelper) DeleteFailedUpgradeTrackingFile(arg0 context.Context, arg1 fs.FileInfo) {
+func (m *MockNodeHelper) DeleteFailedUpgradeTrackingFile(arg0 context.Context, arg1 os.FileInfo) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "DeleteFailedUpgradeTrackingFile", arg0, arg1)
 }
@@ -82,10 +83,10 @@ func (mr *MockNodeHelperMockRecorder) DeleteTrackingInfo(arg0, arg1 any) *gomock
 }
 
 // GetVolumeTrackingFiles mocks base method.
-func (m *MockNodeHelper) GetVolumeTrackingFiles() ([]fs.FileInfo, error) {
+func (m *MockNodeHelper) GetVolumeTrackingFiles() ([]os.FileInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVolumeTrackingFiles")
-	ret0, _ := ret[0].([]fs.FileInfo)
+	ret0, _ := ret[0].([]os.FileInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -127,17 +128,17 @@ func (mr *MockNodeHelperMockRecorder) ReadTrackingInfo(arg0, arg1 any) *gomock.C
 }
 
 // RemovePublishedPath mocks base method.
-func (m *MockNodeHelper) RemovePublishedPath(arg0 context.Context, arg1, arg2 string) error {
+func (m *MockNodeHelper) RemovePublishedPath(ctx context.Context, volumeID, pathToRemove string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemovePublishedPath", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "RemovePublishedPath", ctx, volumeID, pathToRemove)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RemovePublishedPath indicates an expected call of RemovePublishedPath.
-func (mr *MockNodeHelperMockRecorder) RemovePublishedPath(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockNodeHelperMockRecorder) RemovePublishedPath(ctx, volumeID, pathToRemove any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemovePublishedPath", reflect.TypeOf((*MockNodeHelper)(nil).RemovePublishedPath), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemovePublishedPath", reflect.TypeOf((*MockNodeHelper)(nil).RemovePublishedPath), ctx, volumeID, pathToRemove)
 }
 
 // UpgradeVolumeTrackingFile mocks base method.
@@ -188,6 +189,7 @@ func (mr *MockNodeHelperMockRecorder) WriteTrackingInfo(arg0, arg1, arg2 any) *g
 type MockVolumePublishManager struct {
 	ctrl     *gomock.Controller
 	recorder *MockVolumePublishManagerMockRecorder
+	isgomock struct{}
 }
 
 // MockVolumePublishManagerMockRecorder is the mock recorder for MockVolumePublishManager.
@@ -208,7 +210,7 @@ func (m *MockVolumePublishManager) EXPECT() *MockVolumePublishManagerMockRecorde
 }
 
 // DeleteFailedUpgradeTrackingFile mocks base method.
-func (m *MockVolumePublishManager) DeleteFailedUpgradeTrackingFile(arg0 context.Context, arg1 fs.FileInfo) {
+func (m *MockVolumePublishManager) DeleteFailedUpgradeTrackingFile(arg0 context.Context, arg1 os.FileInfo) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "DeleteFailedUpgradeTrackingFile", arg0, arg1)
 }
@@ -234,10 +236,10 @@ func (mr *MockVolumePublishManagerMockRecorder) DeleteTrackingInfo(arg0, arg1 an
 }
 
 // GetVolumeTrackingFiles mocks base method.
-func (m *MockVolumePublishManager) GetVolumeTrackingFiles() ([]fs.FileInfo, error) {
+func (m *MockVolumePublishManager) GetVolumeTrackingFiles() ([]os.FileInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVolumeTrackingFiles")
-	ret0, _ := ret[0].([]fs.FileInfo)
+	ret0, _ := ret[0].([]os.FileInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

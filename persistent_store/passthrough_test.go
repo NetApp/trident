@@ -49,8 +49,9 @@ func getFakeVolumeWithName(name string, fakeBackend *storage.StorageBackend) *st
 		InternalName: name + "_internal",
 	}
 
-	return storage.NewVolume(volumeConfig, fakeBackend.BackendUUID(), fakeBackend.Storage()["pool-0"].Name(),
-		false, storage.VolumeStateOnline)
+	p, _ := fakeBackend.StoragePools().Load("pool-0")
+	return storage.NewVolume(volumeConfig, fakeBackend.BackendUUID(), p.(storage.Pool).Name(), false,
+		storage.VolumeStateOnline)
 }
 
 func getFakeVolumeTransaction() *storage.VolumeTransaction {
@@ -594,7 +595,8 @@ func TestPassthroughClient_GetVolumes(t *testing.T) {
 		InternalName: "fake_volume_1",
 		Size:         "1000000000",
 	}
-	err := fakeBackend.Driver().Create(ctx(), volConfig, fakeBackend.Storage()["pool-0"], make(map[string]sa.Request))
+	pool, _ := fakeBackend.StoragePools().Load("pool-0")
+	err := fakeBackend.Driver().Create(ctx(), volConfig, pool.(storage.Pool), make(map[string]sa.Request))
 	if err != nil {
 		t.Error(err)
 	}
@@ -604,7 +606,7 @@ func TestPassthroughClient_GetVolumes(t *testing.T) {
 		InternalName: "fake_volume_2",
 		Size:         "2000000000",
 	}
-	err = fakeBackend.Driver().Create(ctx(), volConfig, fakeBackend.Storage()["pool-0"], make(map[string]sa.Request))
+	err = fakeBackend.Driver().Create(ctx(), volConfig, pool.(storage.Pool), make(map[string]sa.Request))
 	if err != nil {
 		t.Error(err)
 	}

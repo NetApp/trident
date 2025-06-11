@@ -129,6 +129,7 @@ var (
 	iscsiSelfHealingWaitTime time.Duration
 	k8sAPIQPS                int
 	fsGroupPolicy            string
+	enableConcurrency        bool
 
 	// CLI-based K8S client
 	client k8sclient.KubernetesClient
@@ -256,6 +257,7 @@ func init() {
 		"with the Kubernetes API server. The Burst value is automatically set as a function of the QPS value.")
 	installCmd.Flags().StringVar(&fsGroupPolicy, "fs-group-policy", "", "The FSGroupPolicy "+
 		"to set on Trident's CSIDriver resource.")
+	installCmd.Flags().BoolVar(&enableConcurrency, "enable-concurrency", false, "Enable concurrency for Trident's controller **TECH PREVIEW**")
 
 	if err := installCmd.Flags().MarkHidden("skip-k8s-version-check"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
@@ -692,6 +694,7 @@ func prepareYAMLFiles() error {
 		CloudProvider:           cloudProvider,
 		IdentityLabel:           identityLabel,
 		K8sAPIQPS:               k8sAPIQPS,
+		EnableConcurrency:       enableConcurrency,
 	}
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
@@ -1054,6 +1057,7 @@ func installTrident() (returnError error) {
 			CloudProvider:           cloudProvider,
 			IdentityLabel:           identityLabel,
 			K8sAPIQPS:               k8sAPIQPS,
+			EnableConcurrency:       enableConcurrency,
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDeploymentYAML(deploymentArgs))

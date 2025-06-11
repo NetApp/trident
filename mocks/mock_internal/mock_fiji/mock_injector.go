@@ -19,6 +19,7 @@ import (
 type MockInjector struct {
 	ctrl     *gomock.Controller
 	recorder *MockInjectorMockRecorder
+	isgomock struct{}
 }
 
 // MockInjectorMockRecorder is the mock recorder for MockInjector.

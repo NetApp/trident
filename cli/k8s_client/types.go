@@ -172,6 +172,7 @@ type DeploymentYAMLArguments struct {
 	CloudProvider              string                `json:"cloudProvider"`
 	IdentityLabel              bool                  `json:"identityLabel"`
 	K8sAPIQPS                  int                   `json:"k8sAPIQPS"`
+	EnableConcurrency          bool                  `json:"enableConcurrency"`
 }
 
 type DaemonsetYAMLArguments struct {

@@ -6414,7 +6414,7 @@ func TestGCNVGetStorageBackendSpecs(t *testing.T) {
 	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
 	backend := &storage.StorageBackend{}
-	backend.SetStorage(make(map[string]storage.Pool))
+	backend.ClearStoragePools()
 
 	result := driver.GetStorageBackendSpecs(ctx, backend)
 
@@ -6422,7 +6422,9 @@ func TestGCNVGetStorageBackendSpecs(t *testing.T) {
 	assert.Equal(t, "googlecloudnetappvolumes_12345", backend.Name(), "backend name mismatch")
 	for _, pool := range driver.pools {
 		assert.Equal(t, backend, pool.Backend(), "pool-backend mismatch")
-		assert.Equal(t, pool, backend.Storage()["googlecloudnetappvolumes_12345_pool"], "backend-pool mismatch")
+		p, ok := backend.StoragePools().Load("googlecloudnetappvolumes_12345_pool")
+		assert.True(t, ok)
+		assert.Equal(t, pool, p.(storage.Pool), "backend-pool mismatch")
 	}
 }
 

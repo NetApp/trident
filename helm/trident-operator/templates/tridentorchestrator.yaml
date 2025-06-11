@@ -82,6 +82,7 @@ spec:
   nodePrep: {{- range .Values.nodePrep }}
     - {{.}} {{- end }}
   {{- end }}
+  enableConcurrency: {{ .Values.enableConcurrency }}
   {{- if .Values.skipCRDsToObliviate }}
   skipCRDsToObliviate: {{- range .Values.skipCRDsToObliviate }}
     - {{.}} {{- end }}

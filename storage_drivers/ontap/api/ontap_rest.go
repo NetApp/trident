@@ -19,6 +19,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -66,6 +67,7 @@ type RestClient struct {
 	clusterUUID   string
 	sanOptimized  bool
 	disaggregated bool
+	m             *sync.RWMutex
 }
 
 func (c *RestClient) ClientConfig() ClientConfig {
@@ -91,13 +93,27 @@ func (c *RestClient) SVMName() string {
 // IsSANOptimized returns whether this client has detected a SAN-optimized ONTAP cluster.  This
 // property is discovered in SystemGetOntapVersion().
 func (c *RestClient) IsSANOptimized() bool {
+	c.m.RLock()
+	defer c.m.RUnlock()
 	return c.sanOptimized
+}
+
+func (c *RestClient) SetSANOptimized(sanOptimized bool) {
+	c.m.Lock()
+	defer c.m.Unlock()
+	c.sanOptimized = sanOptimized
 }
 
 // IsDisaggregated returns whether this client has detected a disaggregated ONTAP cluster.  This
 // property is discovered in SystemGetOntapVersion().
 func (c *RestClient) IsDisaggregated() bool {
 	return c.disaggregated
+}
+
+func (c *RestClient) SetDisaggregated(disaggregated bool) {
+	c.m.Lock()
+	defer c.m.Unlock()
+	c.disaggregated = disaggregated
 }
 
 // NewRestClient is a factory method for creating a new instance
@@ -141,6 +157,7 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM, driverName str
 		config:     config,
 		svmName:    SVM,
 		driverName: driverName,
+		m:          &sync.RWMutex{},
 	}
 
 	result.tr = &http.Transport{
@@ -4069,13 +4086,26 @@ func (c *RestClient) ClusterInfo(
 	}
 }
 
+func (c *RestClient) SetOntapVersion(version string) {
+	c.m.Lock()
+	defer c.m.Unlock()
+	c.OntapVersion = version
+}
+
+func (c *RestClient) GetOntapVersion() string {
+	c.m.RLock()
+	defer c.m.RUnlock()
+	return c.OntapVersion
+}
+
 // SystemGetOntapVersion gets the ONTAP version using the credentials, and caches & returns the result.
 func (c *RestClient) SystemGetOntapVersion(
 	ctx context.Context, cached bool,
 ) (string, error) {
-	if c.OntapVersion != "" && cached {
+	ontapApiVersion := c.GetOntapVersion()
+	if ontapApiVersion != "" && cached {
 		// return cached version
-		return c.OntapVersion, nil
+		return ontapApiVersion, nil
 	}
 
 	// it wasn't cached, look it up and cache it
@@ -4093,11 +4123,12 @@ func (c *RestClient) SystemGetOntapVersion(
 	}
 
 	// version.Full // "NetApp Release 9.8X29: Sun Sep 27 12:15:48 UTC 2020"
-	c.OntapVersion = fmt.Sprintf("%d.%d.%d", *version.Generation, *version.Major, *version.Minor) // 9.8.0
+	ontapApiVersion = fmt.Sprintf("%d.%d.%d", *version.Generation, *version.Major, *version.Minor) // 9.8.0
+	c.SetOntapVersion(ontapApiVersion)
 
-	parsedVersion, err := versionutils.ParseSemantic(c.OntapVersion)
+	parsedVersion, err := versionutils.ParseSemantic(ontapApiVersion)
 	if err != nil {
-		return "unknown", fmt.Errorf("could not determine cluster version %s; %v", c.OntapVersion, err)
+		return "unknown", fmt.Errorf("could not determine cluster version %s; %v", ontapApiVersion, err)
 	}
 
 	// Determine ONTAP personality by invoking ClusterInfo again and requesting fields that ONTAP doesn't
@@ -4114,16 +4145,16 @@ func (c *RestClient) SystemGetOntapVersion(
 
 		sanOptimized := clusterInfoResult.Payload.SanOptimized
 		if sanOptimized != nil {
-			c.sanOptimized = *sanOptimized
+			c.SetSANOptimized(*sanOptimized)
 		}
 
 		disaggregated := clusterInfoResult.Payload.Disaggregated
 		if disaggregated != nil {
-			c.disaggregated = *disaggregated
+			c.SetDisaggregated(*disaggregated)
 		}
 	}
 
-	return c.OntapVersion, nil
+	return ontapApiVersion, nil
 }
 
 // NodeList returns information about nodes
@@ -4263,7 +4294,7 @@ func (c *RestClient) TieringPolicyValue(
 	// Use "none" for unified ONTAP, and "" for disaggregated ONTAP.
 	tieringPolicy = "none"
 
-	parsedVersion, err := versionutils.ParseSemantic(c.OntapVersion)
+	parsedVersion, err := versionutils.ParseSemantic(c.GetOntapVersion())
 	if err != nil {
 		return
 	}

@@ -52,7 +52,6 @@ type Orchestrator interface {
 	PublishVolume(ctx context.Context, volumeName string, publishInfo *models.VolumePublishInfo) error
 	UnpublishVolume(ctx context.Context, volumeName, nodeName string) error
 	ResizeVolume(ctx context.Context, volumeName, newSize string) error
-	SetVolumeState(ctx context.Context, volumeName string, state storage.VolumeState) error
 	ReloadVolumes(ctx context.Context) error
 
 	ListSubordinateVolumes(ctx context.Context, sourceVolumeName string) ([]*storage.VolumeExternal, error)
@@ -99,7 +98,6 @@ type Orchestrator interface {
 	ListVolumePublicationsForNode(
 		ctx context.Context, nodeName string,
 	) (publications []*models.VolumePublicationExternal, err error)
-	DeleteVolumePublication(ctx context.Context, volumeName, nodeName string) error
 
 	AddVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
 	GetVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error)
@@ -129,6 +127,8 @@ type Orchestrator interface {
 	GetSelectedLogLayers(ctx context.Context) (string, error)
 	ListLogLayers(ctx context.Context) ([]string, error)
 	SetLogLayers(ctx context.Context, workflows string) error
+
+	Stop()
 }
 
 type (

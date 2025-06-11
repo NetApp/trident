@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"io"
 	"net/http"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -53,4 +54,53 @@ func TestValidateZAPIResponse(t *testing.T) {
 	unmarshalErr := xml.Unmarshal([]byte(validToUnpatchedTridentResponseBody), &zapiResp)
 	errMsg := "the xml document should be unmarshalled without issue when not validated properly"
 	assert.Nil(t, unmarshalErr, errMsg)
+}
+
+func TestGetSVM(t *testing.T) {
+	svmName := "test_svm"
+	zRunner := ZapiRunner{
+		m:   &sync.RWMutex{},
+		svm: svmName,
+	}
+	// Test with a valid SVM name
+	svm := zRunner.GetSVM()
+	assert.Equal(t, svmName, svm, "GetSVM should return the correct SVM name")
+}
+
+func TestSetOntapVersion(t *testing.T) {
+	ontapVersion := "9.8"
+	zRunner := ZapiRunner{
+		m: &sync.RWMutex{},
+	}
+	// Set a new ONTAP version
+	zRunner.SetOntapApiVersion(ontapVersion)
+	assert.Equal(t, ontapVersion, zRunner.ontapApiVersion, "SetOntapVersion should update the ONTAP version correctly")
+}
+
+func TestGetOntapVersion(t *testing.T) {
+	ontapVersion := "9.8"
+	zRunner := ZapiRunner{
+		m:               &sync.RWMutex{},
+		ontapApiVersion: ontapVersion,
+	}
+	// Test with a valid ONTAP version
+	version := zRunner.GetOntapApiVersion()
+	assert.Equal(t, ontapVersion, version, "GetOntapVersion should return the correct ONTAP version")
+}
+
+func TestCopyForNontunneledZapiRunner(t *testing.T) {
+	// Create a ZapiRunner instance
+	originalZRunner := &ZapiRunner{
+		m:               &sync.RWMutex{},
+		svm:             "test_svm",
+		ontapApiVersion: "9.8",
+	}
+
+	copiedZRunner := originalZRunner.CopyForNontunneledZapiRunner()
+
+	assert.NotSame(t, originalZRunner, copiedZRunner, "Copied ZapiRunner should not be the same instance")
+	assert.Equal(t, "", copiedZRunner.svm, "SVM name should be empty in copied ZapiRunner")
+	assert.Equal(t, originalZRunner.ontapApiVersion, copiedZRunner.ontapApiVersion, "ONTAP versions should match")
+	assert.NotSame(t, originalZRunner.m, copiedZRunner.m, "Mutexes should not be the same instance")
+	assert.NotNil(t, copiedZRunner.m, "Copied ZapiRunner should have a non-nil mutex")
 }

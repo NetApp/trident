@@ -19,6 +19,7 @@ import (
 type MockFilePath struct {
 	ctrl     *gomock.Controller
 	recorder *MockFilePathMockRecorder
+	isgomock struct{}
 }
 
 // MockFilePathMockRecorder is the mock recorder for MockFilePath.

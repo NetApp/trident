@@ -6,8 +6,8 @@
 //	mockgen -destination=../mocks/mock_persistent_store/mock_persistent_store.go -mock_names Client=MockStoreClient github.com/netapp/trident/persistent_store Client
 //
 
-// Package mock_persistent_store is a generated GoMock package.
-package mock_persistent_store
+// Package mock_persistentstore is a generated GoMock package.
+package mock_persistentstore
 
 import (
 	context "context"
@@ -25,6 +25,7 @@ import (
 type MockStoreClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockStoreClientMockRecorder
+	isgomock struct{}
 }
 
 // MockStoreClientMockRecorder is the mock recorder for MockStoreClient.
@@ -45,328 +46,328 @@ func (m *MockStoreClient) EXPECT() *MockStoreClientMockRecorder {
 }
 
 // AddBackend mocks base method.
-func (m *MockStoreClient) AddBackend(arg0 context.Context, arg1 storage.Backend) error {
+func (m *MockStoreClient) AddBackend(ctx context.Context, b storage.Backend) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddBackend", arg0, arg1)
+	ret := m.ctrl.Call(m, "AddBackend", ctx, b)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddBackend indicates an expected call of AddBackend.
-func (mr *MockStoreClientMockRecorder) AddBackend(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) AddBackend(ctx, b any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddBackend", reflect.TypeOf((*MockStoreClient)(nil).AddBackend), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddBackend", reflect.TypeOf((*MockStoreClient)(nil).AddBackend), ctx, b)
 }
 
 // AddGroupSnapshot mocks base method.
-func (m *MockStoreClient) AddGroupSnapshot(arg0 context.Context, arg1 *storage.GroupSnapshot) error {
+func (m *MockStoreClient) AddGroupSnapshot(ctx context.Context, groupSnapshot *storage.GroupSnapshot) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddGroupSnapshot", arg0, arg1)
+	ret := m.ctrl.Call(m, "AddGroupSnapshot", ctx, groupSnapshot)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddGroupSnapshot indicates an expected call of AddGroupSnapshot.
-func (mr *MockStoreClientMockRecorder) AddGroupSnapshot(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) AddGroupSnapshot(ctx, groupSnapshot any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddGroupSnapshot", reflect.TypeOf((*MockStoreClient)(nil).AddGroupSnapshot), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddGroupSnapshot", reflect.TypeOf((*MockStoreClient)(nil).AddGroupSnapshot), ctx, groupSnapshot)
 }
 
 // AddOrUpdateNode mocks base method.
-func (m *MockStoreClient) AddOrUpdateNode(arg0 context.Context, arg1 *models.Node) error {
+func (m *MockStoreClient) AddOrUpdateNode(ctx context.Context, n *models.Node) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddOrUpdateNode", arg0, arg1)
+	ret := m.ctrl.Call(m, "AddOrUpdateNode", ctx, n)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddOrUpdateNode indicates an expected call of AddOrUpdateNode.
-func (mr *MockStoreClientMockRecorder) AddOrUpdateNode(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) AddOrUpdateNode(ctx, n any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddOrUpdateNode", reflect.TypeOf((*MockStoreClient)(nil).AddOrUpdateNode), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddOrUpdateNode", reflect.TypeOf((*MockStoreClient)(nil).AddOrUpdateNode), ctx, n)
 }
 
 // AddSnapshot mocks base method.
-func (m *MockStoreClient) AddSnapshot(arg0 context.Context, arg1 *storage.Snapshot) error {
+func (m *MockStoreClient) AddSnapshot(ctx context.Context, snapshot *storage.Snapshot) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddSnapshot", arg0, arg1)
+	ret := m.ctrl.Call(m, "AddSnapshot", ctx, snapshot)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddSnapshot indicates an expected call of AddSnapshot.
-func (mr *MockStoreClientMockRecorder) AddSnapshot(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) AddSnapshot(ctx, snapshot any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSnapshot", reflect.TypeOf((*MockStoreClient)(nil).AddSnapshot), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSnapshot", reflect.TypeOf((*MockStoreClient)(nil).AddSnapshot), ctx, snapshot)
 }
 
 // AddStorageClass mocks base method.
-func (m *MockStoreClient) AddStorageClass(arg0 context.Context, arg1 *storageclass.StorageClass) error {
+func (m *MockStoreClient) AddStorageClass(ctx context.Context, sc *storageclass.StorageClass) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddStorageClass", arg0, arg1)
+	ret := m.ctrl.Call(m, "AddStorageClass", ctx, sc)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddStorageClass indicates an expected call of AddStorageClass.
-func (mr *MockStoreClientMockRecorder) AddStorageClass(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) AddStorageClass(ctx, sc any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddStorageClass", reflect.TypeOf((*MockStoreClient)(nil).AddStorageClass), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddStorageClass", reflect.TypeOf((*MockStoreClient)(nil).AddStorageClass), ctx, sc)
 }
 
 // AddVolume mocks base method.
-func (m *MockStoreClient) AddVolume(arg0 context.Context, arg1 *storage.Volume) error {
+func (m *MockStoreClient) AddVolume(ctx context.Context, vol *storage.Volume) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddVolume", arg0, arg1)
+	ret := m.ctrl.Call(m, "AddVolume", ctx, vol)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddVolume indicates an expected call of AddVolume.
-func (mr *MockStoreClientMockRecorder) AddVolume(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) AddVolume(ctx, vol any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddVolume", reflect.TypeOf((*MockStoreClient)(nil).AddVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddVolume", reflect.TypeOf((*MockStoreClient)(nil).AddVolume), ctx, vol)
 }
 
 // AddVolumePublication mocks base method.
-func (m *MockStoreClient) AddVolumePublication(arg0 context.Context, arg1 *models.VolumePublication) error {
+func (m *MockStoreClient) AddVolumePublication(ctx context.Context, vp *models.VolumePublication) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddVolumePublication", arg0, arg1)
+	ret := m.ctrl.Call(m, "AddVolumePublication", ctx, vp)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddVolumePublication indicates an expected call of AddVolumePublication.
-func (mr *MockStoreClientMockRecorder) AddVolumePublication(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) AddVolumePublication(ctx, vp any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddVolumePublication", reflect.TypeOf((*MockStoreClient)(nil).AddVolumePublication), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddVolumePublication", reflect.TypeOf((*MockStoreClient)(nil).AddVolumePublication), ctx, vp)
 }
 
 // AddVolumeTransaction mocks base method.
-func (m *MockStoreClient) AddVolumeTransaction(arg0 context.Context, arg1 *storage.VolumeTransaction) error {
+func (m *MockStoreClient) AddVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddVolumeTransaction", arg0, arg1)
+	ret := m.ctrl.Call(m, "AddVolumeTransaction", ctx, volTxn)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddVolumeTransaction indicates an expected call of AddVolumeTransaction.
-func (mr *MockStoreClientMockRecorder) AddVolumeTransaction(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) AddVolumeTransaction(ctx, volTxn any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddVolumeTransaction", reflect.TypeOf((*MockStoreClient)(nil).AddVolumeTransaction), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddVolumeTransaction", reflect.TypeOf((*MockStoreClient)(nil).AddVolumeTransaction), ctx, volTxn)
 }
 
 // DeleteBackend mocks base method.
-func (m *MockStoreClient) DeleteBackend(arg0 context.Context, arg1 storage.Backend) error {
+func (m *MockStoreClient) DeleteBackend(ctx context.Context, backend storage.Backend) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteBackend", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteBackend", ctx, backend)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteBackend indicates an expected call of DeleteBackend.
-func (mr *MockStoreClientMockRecorder) DeleteBackend(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) DeleteBackend(ctx, backend any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBackend", reflect.TypeOf((*MockStoreClient)(nil).DeleteBackend), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBackend", reflect.TypeOf((*MockStoreClient)(nil).DeleteBackend), ctx, backend)
 }
 
 // DeleteBackends mocks base method.
-func (m *MockStoreClient) DeleteBackends(arg0 context.Context) error {
+func (m *MockStoreClient) DeleteBackends(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteBackends", arg0)
+	ret := m.ctrl.Call(m, "DeleteBackends", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteBackends indicates an expected call of DeleteBackends.
-func (mr *MockStoreClientMockRecorder) DeleteBackends(arg0 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) DeleteBackends(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBackends", reflect.TypeOf((*MockStoreClient)(nil).DeleteBackends), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBackends", reflect.TypeOf((*MockStoreClient)(nil).DeleteBackends), ctx)
 }
 
 // DeleteGroupSnapshot mocks base method.
-func (m *MockStoreClient) DeleteGroupSnapshot(arg0 context.Context, arg1 *storage.GroupSnapshot) error {
+func (m *MockStoreClient) DeleteGroupSnapshot(ctx context.Context, groupSnapshot *storage.GroupSnapshot) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteGroupSnapshot", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteGroupSnapshot", ctx, groupSnapshot)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteGroupSnapshot indicates an expected call of DeleteGroupSnapshot.
-func (mr *MockStoreClientMockRecorder) DeleteGroupSnapshot(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) DeleteGroupSnapshot(ctx, groupSnapshot any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteGroupSnapshot", reflect.TypeOf((*MockStoreClient)(nil).DeleteGroupSnapshot), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteGroupSnapshot", reflect.TypeOf((*MockStoreClient)(nil).DeleteGroupSnapshot), ctx, groupSnapshot)
 }
 
 // DeleteGroupSnapshots mocks base method.
-func (m *MockStoreClient) DeleteGroupSnapshots(arg0 context.Context) error {
+func (m *MockStoreClient) DeleteGroupSnapshots(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteGroupSnapshots", arg0)
+	ret := m.ctrl.Call(m, "DeleteGroupSnapshots", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteGroupSnapshots indicates an expected call of DeleteGroupSnapshots.
-func (mr *MockStoreClientMockRecorder) DeleteGroupSnapshots(arg0 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) DeleteGroupSnapshots(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteGroupSnapshots", reflect.TypeOf((*MockStoreClient)(nil).DeleteGroupSnapshots), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteGroupSnapshots", reflect.TypeOf((*MockStoreClient)(nil).DeleteGroupSnapshots), ctx)
 }
 
 // DeleteNode mocks base method.
-func (m *MockStoreClient) DeleteNode(arg0 context.Context, arg1 *models.Node) error {
+func (m *MockStoreClient) DeleteNode(ctx context.Context, n *models.Node) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteNode", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteNode", ctx, n)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteNode indicates an expected call of DeleteNode.
-func (mr *MockStoreClientMockRecorder) DeleteNode(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) DeleteNode(ctx, n any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNode", reflect.TypeOf((*MockStoreClient)(nil).DeleteNode), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNode", reflect.TypeOf((*MockStoreClient)(nil).DeleteNode), ctx, n)
 }
 
 // DeleteSnapshot mocks base method.
-func (m *MockStoreClient) DeleteSnapshot(arg0 context.Context, arg1 *storage.Snapshot) error {
+func (m *MockStoreClient) DeleteSnapshot(ctx context.Context, snapshot *storage.Snapshot) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSnapshot", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteSnapshot", ctx, snapshot)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteSnapshot indicates an expected call of DeleteSnapshot.
-func (mr *MockStoreClientMockRecorder) DeleteSnapshot(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) DeleteSnapshot(ctx, snapshot any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSnapshot", reflect.TypeOf((*MockStoreClient)(nil).DeleteSnapshot), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSnapshot", reflect.TypeOf((*MockStoreClient)(nil).DeleteSnapshot), ctx, snapshot)
 }
 
 // DeleteSnapshots mocks base method.
-func (m *MockStoreClient) DeleteSnapshots(arg0 context.Context) error {
+func (m *MockStoreClient) DeleteSnapshots(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSnapshots", arg0)
+	ret := m.ctrl.Call(m, "DeleteSnapshots", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteSnapshots indicates an expected call of DeleteSnapshots.
-func (mr *MockStoreClientMockRecorder) DeleteSnapshots(arg0 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) DeleteSnapshots(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSnapshots", reflect.TypeOf((*MockStoreClient)(nil).DeleteSnapshots), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSnapshots", reflect.TypeOf((*MockStoreClient)(nil).DeleteSnapshots), ctx)
 }
 
 // DeleteStorageClass mocks base method.
-func (m *MockStoreClient) DeleteStorageClass(arg0 context.Context, arg1 *storageclass.StorageClass) error {
+func (m *MockStoreClient) DeleteStorageClass(ctx context.Context, sc *storageclass.StorageClass) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteStorageClass", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteStorageClass", ctx, sc)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteStorageClass indicates an expected call of DeleteStorageClass.
-func (mr *MockStoreClientMockRecorder) DeleteStorageClass(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) DeleteStorageClass(ctx, sc any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteStorageClass", reflect.TypeOf((*MockStoreClient)(nil).DeleteStorageClass), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteStorageClass", reflect.TypeOf((*MockStoreClient)(nil).DeleteStorageClass), ctx, sc)
 }
 
 // DeleteVolume mocks base method.
-func (m *MockStoreClient) DeleteVolume(arg0 context.Context, arg1 *storage.Volume) error {
+func (m *MockStoreClient) DeleteVolume(ctx context.Context, vol *storage.Volume) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteVolume", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteVolume", ctx, vol)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteVolume indicates an expected call of DeleteVolume.
-func (mr *MockStoreClientMockRecorder) DeleteVolume(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) DeleteVolume(ctx, vol any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolume", reflect.TypeOf((*MockStoreClient)(nil).DeleteVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolume", reflect.TypeOf((*MockStoreClient)(nil).DeleteVolume), ctx, vol)
 }
 
 // DeleteVolumePublication mocks base method.
-func (m *MockStoreClient) DeleteVolumePublication(arg0 context.Context, arg1 *models.VolumePublication) error {
+func (m *MockStoreClient) DeleteVolumePublication(ctx context.Context, vp *models.VolumePublication) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteVolumePublication", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteVolumePublication", ctx, vp)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteVolumePublication indicates an expected call of DeleteVolumePublication.
-func (mr *MockStoreClientMockRecorder) DeleteVolumePublication(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) DeleteVolumePublication(ctx, vp any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolumePublication", reflect.TypeOf((*MockStoreClient)(nil).DeleteVolumePublication), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolumePublication", reflect.TypeOf((*MockStoreClient)(nil).DeleteVolumePublication), ctx, vp)
 }
 
 // DeleteVolumeTransaction mocks base method.
-func (m *MockStoreClient) DeleteVolumeTransaction(arg0 context.Context, arg1 *storage.VolumeTransaction) error {
+func (m *MockStoreClient) DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteVolumeTransaction", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteVolumeTransaction", ctx, volTxn)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteVolumeTransaction indicates an expected call of DeleteVolumeTransaction.
-func (mr *MockStoreClientMockRecorder) DeleteVolumeTransaction(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) DeleteVolumeTransaction(ctx, volTxn any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolumeTransaction", reflect.TypeOf((*MockStoreClient)(nil).DeleteVolumeTransaction), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolumeTransaction", reflect.TypeOf((*MockStoreClient)(nil).DeleteVolumeTransaction), ctx, volTxn)
 }
 
 // DeleteVolumes mocks base method.
-func (m *MockStoreClient) DeleteVolumes(arg0 context.Context) error {
+func (m *MockStoreClient) DeleteVolumes(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteVolumes", arg0)
+	ret := m.ctrl.Call(m, "DeleteVolumes", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteVolumes indicates an expected call of DeleteVolumes.
-func (mr *MockStoreClientMockRecorder) DeleteVolumes(arg0 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) DeleteVolumes(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolumes", reflect.TypeOf((*MockStoreClient)(nil).DeleteVolumes), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolumes", reflect.TypeOf((*MockStoreClient)(nil).DeleteVolumes), ctx)
 }
 
 // GetBackend mocks base method.
-func (m *MockStoreClient) GetBackend(arg0 context.Context, arg1 string) (*storage.BackendPersistent, error) {
+func (m *MockStoreClient) GetBackend(ctx context.Context, backendName string) (*storage.BackendPersistent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBackend", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetBackend", ctx, backendName)
 	ret0, _ := ret[0].(*storage.BackendPersistent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetBackend indicates an expected call of GetBackend.
-func (mr *MockStoreClientMockRecorder) GetBackend(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetBackend(ctx, backendName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackend", reflect.TypeOf((*MockStoreClient)(nil).GetBackend), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackend", reflect.TypeOf((*MockStoreClient)(nil).GetBackend), ctx, backendName)
 }
 
 // GetBackendSecret mocks base method.
-func (m *MockStoreClient) GetBackendSecret(arg0 context.Context, arg1 string) (map[string]string, error) {
+func (m *MockStoreClient) GetBackendSecret(ctx context.Context, secretName string) (map[string]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBackendSecret", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetBackendSecret", ctx, secretName)
 	ret0, _ := ret[0].(map[string]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetBackendSecret indicates an expected call of GetBackendSecret.
-func (mr *MockStoreClientMockRecorder) GetBackendSecret(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetBackendSecret(ctx, secretName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackendSecret", reflect.TypeOf((*MockStoreClient)(nil).GetBackendSecret), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackendSecret", reflect.TypeOf((*MockStoreClient)(nil).GetBackendSecret), ctx, secretName)
 }
 
 // GetBackends mocks base method.
-func (m *MockStoreClient) GetBackends(arg0 context.Context) ([]*storage.BackendPersistent, error) {
+func (m *MockStoreClient) GetBackends(ctx context.Context) ([]*storage.BackendPersistent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBackends", arg0)
+	ret := m.ctrl.Call(m, "GetBackends", ctx)
 	ret0, _ := ret[0].([]*storage.BackendPersistent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetBackends indicates an expected call of GetBackends.
-func (mr *MockStoreClientMockRecorder) GetBackends(arg0 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetBackends(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackends", reflect.TypeOf((*MockStoreClient)(nil).GetBackends), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackends", reflect.TypeOf((*MockStoreClient)(nil).GetBackends), ctx)
 }
 
 // GetConfig mocks base method.
@@ -384,138 +385,138 @@ func (mr *MockStoreClientMockRecorder) GetConfig() *gomock.Call {
 }
 
 // GetGroupSnapshot mocks base method.
-func (m *MockStoreClient) GetGroupSnapshot(arg0 context.Context, arg1 string) (*storage.GroupSnapshotPersistent, error) {
+func (m *MockStoreClient) GetGroupSnapshot(ctx context.Context, groupSnapshotName string) (*storage.GroupSnapshotPersistent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetGroupSnapshot", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetGroupSnapshot", ctx, groupSnapshotName)
 	ret0, _ := ret[0].(*storage.GroupSnapshotPersistent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetGroupSnapshot indicates an expected call of GetGroupSnapshot.
-func (mr *MockStoreClientMockRecorder) GetGroupSnapshot(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetGroupSnapshot(ctx, groupSnapshotName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupSnapshot", reflect.TypeOf((*MockStoreClient)(nil).GetGroupSnapshot), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupSnapshot", reflect.TypeOf((*MockStoreClient)(nil).GetGroupSnapshot), ctx, groupSnapshotName)
 }
 
 // GetGroupSnapshots mocks base method.
-func (m *MockStoreClient) GetGroupSnapshots(arg0 context.Context) ([]*storage.GroupSnapshotPersistent, error) {
+func (m *MockStoreClient) GetGroupSnapshots(ctx context.Context) ([]*storage.GroupSnapshotPersistent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetGroupSnapshots", arg0)
+	ret := m.ctrl.Call(m, "GetGroupSnapshots", ctx)
 	ret0, _ := ret[0].([]*storage.GroupSnapshotPersistent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetGroupSnapshots indicates an expected call of GetGroupSnapshots.
-func (mr *MockStoreClientMockRecorder) GetGroupSnapshots(arg0 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetGroupSnapshots(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupSnapshots", reflect.TypeOf((*MockStoreClient)(nil).GetGroupSnapshots), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupSnapshots", reflect.TypeOf((*MockStoreClient)(nil).GetGroupSnapshots), ctx)
 }
 
 // GetNode mocks base method.
-func (m *MockStoreClient) GetNode(arg0 context.Context, arg1 string) (*models.Node, error) {
+func (m *MockStoreClient) GetNode(ctx context.Context, nName string) (*models.Node, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNode", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetNode", ctx, nName)
 	ret0, _ := ret[0].(*models.Node)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetNode indicates an expected call of GetNode.
-func (mr *MockStoreClientMockRecorder) GetNode(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetNode(ctx, nName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNode", reflect.TypeOf((*MockStoreClient)(nil).GetNode), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNode", reflect.TypeOf((*MockStoreClient)(nil).GetNode), ctx, nName)
 }
 
 // GetNodes mocks base method.
-func (m *MockStoreClient) GetNodes(arg0 context.Context) ([]*models.Node, error) {
+func (m *MockStoreClient) GetNodes(ctx context.Context) ([]*models.Node, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNodes", arg0)
+	ret := m.ctrl.Call(m, "GetNodes", ctx)
 	ret0, _ := ret[0].([]*models.Node)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetNodes indicates an expected call of GetNodes.
-func (mr *MockStoreClientMockRecorder) GetNodes(arg0 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetNodes(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNodes", reflect.TypeOf((*MockStoreClient)(nil).GetNodes), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNodes", reflect.TypeOf((*MockStoreClient)(nil).GetNodes), ctx)
 }
 
 // GetSnapshot mocks base method.
-func (m *MockStoreClient) GetSnapshot(arg0 context.Context, arg1, arg2 string) (*storage.SnapshotPersistent, error) {
+func (m *MockStoreClient) GetSnapshot(ctx context.Context, volumeName, snapshotName string) (*storage.SnapshotPersistent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSnapshot", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "GetSnapshot", ctx, volumeName, snapshotName)
 	ret0, _ := ret[0].(*storage.SnapshotPersistent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSnapshot indicates an expected call of GetSnapshot.
-func (mr *MockStoreClientMockRecorder) GetSnapshot(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetSnapshot(ctx, volumeName, snapshotName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshot", reflect.TypeOf((*MockStoreClient)(nil).GetSnapshot), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshot", reflect.TypeOf((*MockStoreClient)(nil).GetSnapshot), ctx, volumeName, snapshotName)
 }
 
 // GetSnapshots mocks base method.
-func (m *MockStoreClient) GetSnapshots(arg0 context.Context) ([]*storage.SnapshotPersistent, error) {
+func (m *MockStoreClient) GetSnapshots(ctx context.Context) ([]*storage.SnapshotPersistent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSnapshots", arg0)
+	ret := m.ctrl.Call(m, "GetSnapshots", ctx)
 	ret0, _ := ret[0].([]*storage.SnapshotPersistent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSnapshots indicates an expected call of GetSnapshots.
-func (mr *MockStoreClientMockRecorder) GetSnapshots(arg0 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetSnapshots(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshots", reflect.TypeOf((*MockStoreClient)(nil).GetSnapshots), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshots", reflect.TypeOf((*MockStoreClient)(nil).GetSnapshots), ctx)
 }
 
 // GetStorageClass mocks base method.
-func (m *MockStoreClient) GetStorageClass(arg0 context.Context, arg1 string) (*storageclass.Persistent, error) {
+func (m *MockStoreClient) GetStorageClass(ctx context.Context, scName string) (*storageclass.Persistent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetStorageClass", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetStorageClass", ctx, scName)
 	ret0, _ := ret[0].(*storageclass.Persistent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetStorageClass indicates an expected call of GetStorageClass.
-func (mr *MockStoreClientMockRecorder) GetStorageClass(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetStorageClass(ctx, scName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStorageClass", reflect.TypeOf((*MockStoreClient)(nil).GetStorageClass), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStorageClass", reflect.TypeOf((*MockStoreClient)(nil).GetStorageClass), ctx, scName)
 }
 
 // GetStorageClasses mocks base method.
-func (m *MockStoreClient) GetStorageClasses(arg0 context.Context) ([]*storageclass.Persistent, error) {
+func (m *MockStoreClient) GetStorageClasses(ctx context.Context) ([]*storageclass.Persistent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetStorageClasses", arg0)
+	ret := m.ctrl.Call(m, "GetStorageClasses", ctx)
 	ret0, _ := ret[0].([]*storageclass.Persistent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetStorageClasses indicates an expected call of GetStorageClasses.
-func (mr *MockStoreClientMockRecorder) GetStorageClasses(arg0 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetStorageClasses(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStorageClasses", reflect.TypeOf((*MockStoreClient)(nil).GetStorageClasses), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStorageClasses", reflect.TypeOf((*MockStoreClient)(nil).GetStorageClasses), ctx)
 }
 
 // GetTridentUUID mocks base method.
-func (m *MockStoreClient) GetTridentUUID(arg0 context.Context) (string, error) {
+func (m *MockStoreClient) GetTridentUUID(ctx context.Context) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTridentUUID", arg0)
+	ret := m.ctrl.Call(m, "GetTridentUUID", ctx)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetTridentUUID indicates an expected call of GetTridentUUID.
-func (mr *MockStoreClientMockRecorder) GetTridentUUID(arg0 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetTridentUUID(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTridentUUID", reflect.TypeOf((*MockStoreClient)(nil).GetTridentUUID), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTridentUUID", reflect.TypeOf((*MockStoreClient)(nil).GetTridentUUID), ctx)
 }
 
 // GetType mocks base method.
@@ -533,150 +534,150 @@ func (mr *MockStoreClientMockRecorder) GetType() *gomock.Call {
 }
 
 // GetVersion mocks base method.
-func (m *MockStoreClient) GetVersion(arg0 context.Context) (*config.PersistentStateVersion, error) {
+func (m *MockStoreClient) GetVersion(ctx context.Context) (*config.PersistentStateVersion, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVersion", arg0)
+	ret := m.ctrl.Call(m, "GetVersion", ctx)
 	ret0, _ := ret[0].(*config.PersistentStateVersion)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVersion indicates an expected call of GetVersion.
-func (mr *MockStoreClientMockRecorder) GetVersion(arg0 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetVersion(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVersion", reflect.TypeOf((*MockStoreClient)(nil).GetVersion), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVersion", reflect.TypeOf((*MockStoreClient)(nil).GetVersion), ctx)
 }
 
 // GetVolume mocks base method.
-func (m *MockStoreClient) GetVolume(arg0 context.Context, arg1 string) (*storage.VolumeExternal, error) {
+func (m *MockStoreClient) GetVolume(ctx context.Context, volName string) (*storage.VolumeExternal, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolume", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetVolume", ctx, volName)
 	ret0, _ := ret[0].(*storage.VolumeExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolume indicates an expected call of GetVolume.
-func (mr *MockStoreClientMockRecorder) GetVolume(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetVolume(ctx, volName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolume", reflect.TypeOf((*MockStoreClient)(nil).GetVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolume", reflect.TypeOf((*MockStoreClient)(nil).GetVolume), ctx, volName)
 }
 
 // GetVolumePublication mocks base method.
-func (m *MockStoreClient) GetVolumePublication(arg0 context.Context, arg1 string) (*models.VolumePublication, error) {
+func (m *MockStoreClient) GetVolumePublication(ctx context.Context, vpName string) (*models.VolumePublication, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumePublication", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetVolumePublication", ctx, vpName)
 	ret0, _ := ret[0].(*models.VolumePublication)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumePublication indicates an expected call of GetVolumePublication.
-func (mr *MockStoreClientMockRecorder) GetVolumePublication(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetVolumePublication(ctx, vpName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumePublication", reflect.TypeOf((*MockStoreClient)(nil).GetVolumePublication), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumePublication", reflect.TypeOf((*MockStoreClient)(nil).GetVolumePublication), ctx, vpName)
 }
 
 // GetVolumePublications mocks base method.
-func (m *MockStoreClient) GetVolumePublications(arg0 context.Context) ([]*models.VolumePublication, error) {
+func (m *MockStoreClient) GetVolumePublications(ctx context.Context) ([]*models.VolumePublication, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumePublications", arg0)
+	ret := m.ctrl.Call(m, "GetVolumePublications", ctx)
 	ret0, _ := ret[0].([]*models.VolumePublication)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumePublications indicates an expected call of GetVolumePublications.
-func (mr *MockStoreClientMockRecorder) GetVolumePublications(arg0 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetVolumePublications(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumePublications", reflect.TypeOf((*MockStoreClient)(nil).GetVolumePublications), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumePublications", reflect.TypeOf((*MockStoreClient)(nil).GetVolumePublications), ctx)
 }
 
 // GetVolumeTransaction mocks base method.
-func (m *MockStoreClient) GetVolumeTransaction(arg0 context.Context, arg1 *storage.VolumeTransaction) (*storage.VolumeTransaction, error) {
+func (m *MockStoreClient) GetVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumeTransaction", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetVolumeTransaction", ctx, volTxn)
 	ret0, _ := ret[0].(*storage.VolumeTransaction)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumeTransaction indicates an expected call of GetVolumeTransaction.
-func (mr *MockStoreClientMockRecorder) GetVolumeTransaction(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetVolumeTransaction(ctx, volTxn any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeTransaction", reflect.TypeOf((*MockStoreClient)(nil).GetVolumeTransaction), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeTransaction", reflect.TypeOf((*MockStoreClient)(nil).GetVolumeTransaction), ctx, volTxn)
 }
 
 // GetVolumeTransactions mocks base method.
-func (m *MockStoreClient) GetVolumeTransactions(arg0 context.Context) ([]*storage.VolumeTransaction, error) {
+func (m *MockStoreClient) GetVolumeTransactions(ctx context.Context) ([]*storage.VolumeTransaction, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumeTransactions", arg0)
+	ret := m.ctrl.Call(m, "GetVolumeTransactions", ctx)
 	ret0, _ := ret[0].([]*storage.VolumeTransaction)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumeTransactions indicates an expected call of GetVolumeTransactions.
-func (mr *MockStoreClientMockRecorder) GetVolumeTransactions(arg0 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetVolumeTransactions(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeTransactions", reflect.TypeOf((*MockStoreClient)(nil).GetVolumeTransactions), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeTransactions", reflect.TypeOf((*MockStoreClient)(nil).GetVolumeTransactions), ctx)
 }
 
 // GetVolumes mocks base method.
-func (m *MockStoreClient) GetVolumes(arg0 context.Context) ([]*storage.VolumeExternal, error) {
+func (m *MockStoreClient) GetVolumes(ctx context.Context) ([]*storage.VolumeExternal, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumes", arg0)
+	ret := m.ctrl.Call(m, "GetVolumes", ctx)
 	ret0, _ := ret[0].([]*storage.VolumeExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumes indicates an expected call of GetVolumes.
-func (mr *MockStoreClientMockRecorder) GetVolumes(arg0 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) GetVolumes(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumes", reflect.TypeOf((*MockStoreClient)(nil).GetVolumes), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumes", reflect.TypeOf((*MockStoreClient)(nil).GetVolumes), ctx)
 }
 
 // IsBackendDeleting mocks base method.
-func (m *MockStoreClient) IsBackendDeleting(arg0 context.Context, arg1 storage.Backend) bool {
+func (m *MockStoreClient) IsBackendDeleting(ctx context.Context, backend storage.Backend) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsBackendDeleting", arg0, arg1)
+	ret := m.ctrl.Call(m, "IsBackendDeleting", ctx, backend)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // IsBackendDeleting indicates an expected call of IsBackendDeleting.
-func (mr *MockStoreClientMockRecorder) IsBackendDeleting(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) IsBackendDeleting(ctx, backend any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsBackendDeleting", reflect.TypeOf((*MockStoreClient)(nil).IsBackendDeleting), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsBackendDeleting", reflect.TypeOf((*MockStoreClient)(nil).IsBackendDeleting), ctx, backend)
 }
 
 // ReplaceBackendAndUpdateVolumes mocks base method.
-func (m *MockStoreClient) ReplaceBackendAndUpdateVolumes(arg0 context.Context, arg1, arg2 storage.Backend) error {
+func (m *MockStoreClient) ReplaceBackendAndUpdateVolumes(ctx context.Context, origBackend, newBackend storage.Backend) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReplaceBackendAndUpdateVolumes", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ReplaceBackendAndUpdateVolumes", ctx, origBackend, newBackend)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ReplaceBackendAndUpdateVolumes indicates an expected call of ReplaceBackendAndUpdateVolumes.
-func (mr *MockStoreClientMockRecorder) ReplaceBackendAndUpdateVolumes(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) ReplaceBackendAndUpdateVolumes(ctx, origBackend, newBackend any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReplaceBackendAndUpdateVolumes", reflect.TypeOf((*MockStoreClient)(nil).ReplaceBackendAndUpdateVolumes), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReplaceBackendAndUpdateVolumes", reflect.TypeOf((*MockStoreClient)(nil).ReplaceBackendAndUpdateVolumes), ctx, origBackend, newBackend)
 }
 
 // SetVersion mocks base method.
-func (m *MockStoreClient) SetVersion(arg0 context.Context, arg1 *config.PersistentStateVersion) error {
+func (m *MockStoreClient) SetVersion(ctx context.Context, version *config.PersistentStateVersion) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetVersion", arg0, arg1)
+	ret := m.ctrl.Call(m, "SetVersion", ctx, version)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetVersion indicates an expected call of SetVersion.
-func (mr *MockStoreClientMockRecorder) SetVersion(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) SetVersion(ctx, version any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetVersion", reflect.TypeOf((*MockStoreClient)(nil).SetVersion), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetVersion", reflect.TypeOf((*MockStoreClient)(nil).SetVersion), ctx, version)
 }
 
 // Stop mocks base method.
@@ -694,99 +695,99 @@ func (mr *MockStoreClientMockRecorder) Stop() *gomock.Call {
 }
 
 // UpdateBackend mocks base method.
-func (m *MockStoreClient) UpdateBackend(arg0 context.Context, arg1 storage.Backend) error {
+func (m *MockStoreClient) UpdateBackend(ctx context.Context, b storage.Backend) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateBackend", arg0, arg1)
+	ret := m.ctrl.Call(m, "UpdateBackend", ctx, b)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateBackend indicates an expected call of UpdateBackend.
-func (mr *MockStoreClientMockRecorder) UpdateBackend(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) UpdateBackend(ctx, b any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBackend", reflect.TypeOf((*MockStoreClient)(nil).UpdateBackend), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBackend", reflect.TypeOf((*MockStoreClient)(nil).UpdateBackend), ctx, b)
 }
 
 // UpdateGroupSnapshot mocks base method.
-func (m *MockStoreClient) UpdateGroupSnapshot(arg0 context.Context, arg1 *storage.GroupSnapshot) error {
+func (m *MockStoreClient) UpdateGroupSnapshot(ctx context.Context, groupSnapshot *storage.GroupSnapshot) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateGroupSnapshot", arg0, arg1)
+	ret := m.ctrl.Call(m, "UpdateGroupSnapshot", ctx, groupSnapshot)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateGroupSnapshot indicates an expected call of UpdateGroupSnapshot.
-func (mr *MockStoreClientMockRecorder) UpdateGroupSnapshot(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) UpdateGroupSnapshot(ctx, groupSnapshot any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateGroupSnapshot", reflect.TypeOf((*MockStoreClient)(nil).UpdateGroupSnapshot), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateGroupSnapshot", reflect.TypeOf((*MockStoreClient)(nil).UpdateGroupSnapshot), ctx, groupSnapshot)
 }
 
 // UpdateSnapshot mocks base method.
-func (m *MockStoreClient) UpdateSnapshot(arg0 context.Context, arg1 *storage.Snapshot) error {
+func (m *MockStoreClient) UpdateSnapshot(ctx context.Context, snapshot *storage.Snapshot) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateSnapshot", arg0, arg1)
+	ret := m.ctrl.Call(m, "UpdateSnapshot", ctx, snapshot)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateSnapshot indicates an expected call of UpdateSnapshot.
-func (mr *MockStoreClientMockRecorder) UpdateSnapshot(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) UpdateSnapshot(ctx, snapshot any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSnapshot", reflect.TypeOf((*MockStoreClient)(nil).UpdateSnapshot), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSnapshot", reflect.TypeOf((*MockStoreClient)(nil).UpdateSnapshot), ctx, snapshot)
 }
 
 // UpdateStorageClass mocks base method.
-func (m *MockStoreClient) UpdateStorageClass(arg0 context.Context, arg1 *storageclass.StorageClass) error {
+func (m *MockStoreClient) UpdateStorageClass(ctx context.Context, sc *storageclass.StorageClass) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateStorageClass", arg0, arg1)
+	ret := m.ctrl.Call(m, "UpdateStorageClass", ctx, sc)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateStorageClass indicates an expected call of UpdateStorageClass.
-func (mr *MockStoreClientMockRecorder) UpdateStorageClass(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) UpdateStorageClass(ctx, sc any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStorageClass", reflect.TypeOf((*MockStoreClient)(nil).UpdateStorageClass), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStorageClass", reflect.TypeOf((*MockStoreClient)(nil).UpdateStorageClass), ctx, sc)
 }
 
 // UpdateVolume mocks base method.
-func (m *MockStoreClient) UpdateVolume(arg0 context.Context, arg1 *storage.Volume) error {
+func (m *MockStoreClient) UpdateVolume(ctx context.Context, vol *storage.Volume) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateVolume", arg0, arg1)
+	ret := m.ctrl.Call(m, "UpdateVolume", ctx, vol)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateVolume indicates an expected call of UpdateVolume.
-func (mr *MockStoreClientMockRecorder) UpdateVolume(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) UpdateVolume(ctx, vol any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolume", reflect.TypeOf((*MockStoreClient)(nil).UpdateVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolume", reflect.TypeOf((*MockStoreClient)(nil).UpdateVolume), ctx, vol)
 }
 
 // UpdateVolumePublication mocks base method.
-func (m *MockStoreClient) UpdateVolumePublication(arg0 context.Context, arg1 *models.VolumePublication) error {
+func (m *MockStoreClient) UpdateVolumePublication(ctx context.Context, vp *models.VolumePublication) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateVolumePublication", arg0, arg1)
+	ret := m.ctrl.Call(m, "UpdateVolumePublication", ctx, vp)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateVolumePublication indicates an expected call of UpdateVolumePublication.
-func (mr *MockStoreClientMockRecorder) UpdateVolumePublication(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) UpdateVolumePublication(ctx, vp any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumePublication", reflect.TypeOf((*MockStoreClient)(nil).UpdateVolumePublication), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumePublication", reflect.TypeOf((*MockStoreClient)(nil).UpdateVolumePublication), ctx, vp)
 }
 
 // UpdateVolumeTransaction mocks base method.
-func (m *MockStoreClient) UpdateVolumeTransaction(arg0 context.Context, arg1 *storage.VolumeTransaction) error {
+func (m *MockStoreClient) UpdateVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateVolumeTransaction", arg0, arg1)
+	ret := m.ctrl.Call(m, "UpdateVolumeTransaction", ctx, volTxn)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateVolumeTransaction indicates an expected call of UpdateVolumeTransaction.
-func (mr *MockStoreClientMockRecorder) UpdateVolumeTransaction(arg0, arg1 any) *gomock.Call {
+func (mr *MockStoreClientMockRecorder) UpdateVolumeTransaction(ctx, volTxn any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumeTransaction", reflect.TypeOf((*MockStoreClient)(nil).UpdateVolumeTransaction), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumeTransaction", reflect.TypeOf((*MockStoreClient)(nil).UpdateVolumeTransaction), ctx, volTxn)
 }

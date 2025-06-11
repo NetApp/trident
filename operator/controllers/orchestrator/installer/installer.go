@@ -65,6 +65,7 @@ var (
 	silenceAutosupport bool
 	excludeAutosupport bool
 	windows            bool
+	enableConcurrency  bool
 
 	logLevel                           string
 	logWorkflows                       string
@@ -406,6 +407,7 @@ func (i *Installer) setInstallationParams(
 	} else {
 		disableAuditLog = *cr.Spec.DisableAuditLog
 	}
+	enableConcurrency = cr.Spec.EnableConcurrency
 
 	// ACP is obsolete now, so log a message and move on.
 	enableACP = cr.Spec.EnableACP
@@ -808,6 +810,7 @@ func (i *Installer) InstallOrPatchTrident(
 		K8sAPIQPS:                k8sAPIQPS,
 		FSGroupPolicy:            fsGroupPolicy,
 		NodePrep:                 nodePrep,
+		EnableConcurrency:        strconv.FormatBool(enableConcurrency),
 	}
 
 	Log().WithFields(LogFields{
@@ -1507,6 +1510,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		EnableACP:                  enableACP,
 		IdentityLabel:              identityLabel,
 		K8sAPIQPS:                  k8sAPIQPS,
+		EnableConcurrency:          enableConcurrency,
 	}
 
 	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)

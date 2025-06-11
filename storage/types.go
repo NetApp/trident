@@ -6,6 +6,7 @@ package storage
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/RoaringBitmap/roaring/v2"
@@ -15,6 +16,8 @@ import (
 	"github.com/netapp/trident/utils/models"
 )
 
+// +k8s:deepcopy-gen=true
+// +k8s:deepcopy-gen:interfaces=github.com/netapp/trident/storage.Driver,github.com/netapp/trident/storage.Pool
 type Backend interface {
 	Driver() Driver
 	SetDriver(Driver Driver)
@@ -30,10 +33,10 @@ type Backend interface {
 	StateReason() string
 	SetState(State BackendState)
 	SetUserState(State UserBackendState)
-	Storage() map[string]Pool
-	SetStorage(Storage map[string]Pool)
-	Volumes() map[string]*Volume
-	SetVolumes(Volumes map[string]*Volume)
+	StoragePools() *sync.Map
+	ClearStoragePools()
+	Volumes() *sync.Map
+	ClearVolumes()
 	ConfigRef() string
 	SetConfigRef(ConfigRef string)
 	AddStoragePool(pool Pool)
@@ -41,6 +44,7 @@ type Backend interface {
 	GetDriverName() string
 	GetProtocol(ctx context.Context) config.Protocol
 	IsCredentialsFieldSet(ctx context.Context) bool
+	CreatePrepare(ctx context.Context, volConfig *VolumeConfig, storagePool Pool)
 	AddVolume(
 		ctx context.Context, volConfig *VolumeConfig, storagePool Pool,
 		volAttributes map[string]storageattribute.Request, retry bool,
@@ -77,11 +81,15 @@ type Backend interface {
 	CanGetState() bool
 	GetBackendState(ctx context.Context) (string, *roaring.Bitmap)
 	ConstructExternal(ctx context.Context) *BackendExternal
+	ConstructExternalWithPoolMap(ctx context.Context, poolMap map[string][]string) *BackendExternal
 	ConstructPersistent(ctx context.Context) *BackendPersistent
 	CanMirror() bool
 	UpdateMirror(ctx context.Context, localInternalVolumeName, snapshotName string) error
 	CheckMirrorTransferState(ctx context.Context, pvcVolumeName string) (*time.Time, error)
 	GetMirrorTransferTime(ctx context.Context, pvcVolumeName string) (*time.Time, error)
+	SmartCopy() interface{}
+	DeepCopyType() Backend
+	GetUniqueKey() string
 	ChapEnabled
 	PublishEnforceable
 	GroupSnapshotter
@@ -112,6 +120,7 @@ type Pool interface {
 	AddStorageClass(class string)
 	RemoveStorageClass(class string) bool
 	ConstructExternal() *PoolExternal
+	ConstructExternalWithPoolMap(poolMap map[string][]string) *PoolExternal
 	GetLabelsJSON(ctx context.Context, key string, labelLimit int) (string, error)
 	GetTemplatizedLabelsJSON(ctx context.Context, key string, labelLimit int, templateData map[string]interface{}) (string, error)
 	GetLabels(ctx context.Context, prefix string) map[string]string

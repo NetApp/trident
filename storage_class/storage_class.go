@@ -11,6 +11,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/brunoga/deep"
+
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
@@ -218,6 +220,30 @@ func (s *StorageClass) Matches(ctx context.Context, storagePool storage.Pool) bo
 	return result
 }
 
+func (s *StorageClass) CheckBackend(ctx context.Context, b storage.Backend) bool {
+	Logc(ctx).WithFields(LogFields{
+		"backend":      b.Name(),
+		"storageClass": s.GetName(),
+	}).Debug("Checking backend for storage class")
+
+	if !b.State().IsOnline() {
+		Logc(ctx).WithField("backend", b.Name()).Warn("Backend not online.")
+		return false
+	}
+
+	matches := false
+	b.StoragePools().Range(func(_, v interface{}) bool {
+		pool := v.(storage.Pool)
+		if s.Matches(ctx, pool) {
+			matches = true
+			return false
+		}
+		return true
+	})
+
+	return matches
+}
+
 // CheckAndAddBackend iterates through each of the storage pools
 // for a given backend.  If the pool satisfies the storage class, it
 // adds that pool.  Returns the number of storage pools added.
@@ -233,7 +259,8 @@ func (s *StorageClass) CheckAndAddBackend(ctx context.Context, b storage.Backend
 	}
 
 	added := 0
-	for _, storagePool := range b.Storage() {
+	b.StoragePools().Range(func(_, v interface{}) bool {
+		storagePool := v.(storage.Pool)
 		if s.Matches(ctx, storagePool) {
 			s.pools = append(s.pools, storagePool)
 			storagePool.AddStorageClass(s.GetName())
@@ -243,20 +270,25 @@ func (s *StorageClass) CheckAndAddBackend(ctx context.Context, b storage.Backend
 				"storageClass": s.GetName(),
 			}).Debug("Storage class added to the storage pool.")
 		}
-	}
+		return true
+	})
 	return added
 }
 
 func (s *StorageClass) IsAddedToBackend(backend storage.Backend, storageClassName string) bool {
-	for _, storagePool := range backend.Storage() {
+	matches := false
+	backend.StoragePools().Range(func(_, v interface{}) bool {
+		storagePool := v.(storage.Pool)
 		for _, storageClass := range storagePool.StorageClasses() {
 			if storageClass == storageClassName {
-				return true
+				matches = true
+				return false
 			}
 		}
-	}
+		return true
+	})
 
-	return false
+	return matches
 }
 
 func (s *StorageClass) RemovePoolsForBackend(backend storage.Backend) {
@@ -369,6 +401,11 @@ func (s *StorageClass) GetStoragePoolsForProtocolByBackend(
 	return pools
 }
 
+// SetPools replaces the pools on this storage class.
+func (s *StorageClass) SetPools(pools []storage.Pool) {
+	s.pools = pools
+}
+
 func (s *StorageClass) Pools() []storage.Pool {
 	return s.pools
 }
@@ -409,6 +446,29 @@ func (s *StorageClass) ConstructExternal(ctx context.Context) *External {
 		sort.Strings(list)
 	}
 	return ret
+}
+
+// ConstructExternalWithPoolMap returns the external form of a storage class.  The matching pool information
+// is passed in as a map of backend names to pool names.
+func (s *StorageClass) ConstructExternalWithPoolMap(_ context.Context, pools map[string][]string) *External {
+	ret := &External{
+		Config:       s.config,
+		StoragePools: pools,
+	}
+	for _, list := range ret.StoragePools {
+		sort.Strings(list)
+	}
+	for _, list := range ret.Config.Pools {
+		sort.Strings(list)
+	}
+	for _, list := range ret.Config.AdditionalPools {
+		sort.Strings(list)
+	}
+	return ret
+}
+
+func (s *StorageClass) SmartCopy() interface{} {
+	return deep.MustCopy(s)
 }
 
 func (s *External) GetName() string {

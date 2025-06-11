@@ -21,6 +21,7 @@ import (
 type MockInstructions struct {
 	ctrl     *gomock.Controller
 	recorder *MockInstructionsMockRecorder
+	isgomock struct{}
 }
 
 // MockInstructionsMockRecorder is the mock recorder for MockInstructions.
@@ -41,17 +42,17 @@ func (m *MockInstructions) EXPECT() *MockInstructionsMockRecorder {
 }
 
 // Apply mocks base method.
-func (m *MockInstructions) Apply(arg0 context.Context) error {
+func (m *MockInstructions) Apply(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Apply", arg0)
+	ret := m.ctrl.Call(m, "Apply", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Apply indicates an expected call of Apply.
-func (mr *MockInstructionsMockRecorder) Apply(arg0 any) *gomock.Call {
+func (mr *MockInstructionsMockRecorder) Apply(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apply", reflect.TypeOf((*MockInstructions)(nil).Apply), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apply", reflect.TypeOf((*MockInstructions)(nil).Apply), ctx)
 }
 
 // GetName mocks base method.
@@ -83,29 +84,29 @@ func (mr *MockInstructionsMockRecorder) GetSteps() *gomock.Call {
 }
 
 // PostCheck mocks base method.
-func (m *MockInstructions) PostCheck(arg0 context.Context) error {
+func (m *MockInstructions) PostCheck(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PostCheck", arg0)
+	ret := m.ctrl.Call(m, "PostCheck", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PostCheck indicates an expected call of PostCheck.
-func (mr *MockInstructionsMockRecorder) PostCheck(arg0 any) *gomock.Call {
+func (mr *MockInstructionsMockRecorder) PostCheck(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PostCheck", reflect.TypeOf((*MockInstructions)(nil).PostCheck), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PostCheck", reflect.TypeOf((*MockInstructions)(nil).PostCheck), ctx)
 }
 
 // PreCheck mocks base method.
-func (m *MockInstructions) PreCheck(arg0 context.Context) error {
+func (m *MockInstructions) PreCheck(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PreCheck", arg0)
+	ret := m.ctrl.Call(m, "PreCheck", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PreCheck indicates an expected call of PreCheck.
-func (mr *MockInstructionsMockRecorder) PreCheck(arg0 any) *gomock.Call {
+func (mr *MockInstructionsMockRecorder) PreCheck(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PreCheck", reflect.TypeOf((*MockInstructions)(nil).PreCheck), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PreCheck", reflect.TypeOf((*MockInstructions)(nil).PreCheck), ctx)
 }

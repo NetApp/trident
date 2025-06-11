@@ -23,6 +23,7 @@ import (
 type MockOperatorCRDClientInterface struct {
 	ctrl     *gomock.Controller
 	recorder *MockOperatorCRDClientInterfaceMockRecorder
+	isgomock struct{}
 }
 
 // MockOperatorCRDClientInterfaceMockRecorder is the mock recorder for MockOperatorCRDClientInterface.
@@ -58,18 +59,18 @@ func (mr *MockOperatorCRDClientInterfaceMockRecorder) GetControllingTorcCR() *go
 }
 
 // GetTconfCR mocks base method.
-func (m *MockOperatorCRDClientInterface) GetTconfCR(arg0 string) (*v10.TridentConfigurator, error) {
+func (m *MockOperatorCRDClientInterface) GetTconfCR(name string) (*v10.TridentConfigurator, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTconfCR", arg0)
+	ret := m.ctrl.Call(m, "GetTconfCR", name)
 	ret0, _ := ret[0].(*v10.TridentConfigurator)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetTconfCR indicates an expected call of GetTconfCR.
-func (mr *MockOperatorCRDClientInterfaceMockRecorder) GetTconfCR(arg0 any) *gomock.Call {
+func (mr *MockOperatorCRDClientInterfaceMockRecorder) GetTconfCR(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTconfCR", reflect.TypeOf((*MockOperatorCRDClientInterface)(nil).GetTconfCR), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTconfCR", reflect.TypeOf((*MockOperatorCRDClientInterface)(nil).GetTconfCR), name)
 }
 
 // GetTconfCRList mocks base method.
@@ -103,9 +104,9 @@ func (mr *MockOperatorCRDClientInterfaceMockRecorder) GetTorcCRList() *gomock.Ca
 }
 
 // UpdateTridentConfiguratorStatus mocks base method.
-func (m *MockOperatorCRDClientInterface) UpdateTridentConfiguratorStatus(arg0 *v10.TridentConfigurator, arg1 v10.TridentConfiguratorStatus) (*v10.TridentConfigurator, bool, error) {
+func (m *MockOperatorCRDClientInterface) UpdateTridentConfiguratorStatus(tconfCR *v10.TridentConfigurator, newStatus v10.TridentConfiguratorStatus) (*v10.TridentConfigurator, bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateTridentConfiguratorStatus", arg0, arg1)
+	ret := m.ctrl.Call(m, "UpdateTridentConfiguratorStatus", tconfCR, newStatus)
 	ret0, _ := ret[0].(*v10.TridentConfigurator)
 	ret1, _ := ret[1].(bool)
 	ret2, _ := ret[2].(error)
@@ -113,15 +114,16 @@ func (m *MockOperatorCRDClientInterface) UpdateTridentConfiguratorStatus(arg0 *v
 }
 
 // UpdateTridentConfiguratorStatus indicates an expected call of UpdateTridentConfiguratorStatus.
-func (mr *MockOperatorCRDClientInterfaceMockRecorder) UpdateTridentConfiguratorStatus(arg0, arg1 any) *gomock.Call {
+func (mr *MockOperatorCRDClientInterfaceMockRecorder) UpdateTridentConfiguratorStatus(tconfCR, newStatus any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTridentConfiguratorStatus", reflect.TypeOf((*MockOperatorCRDClientInterface)(nil).UpdateTridentConfiguratorStatus), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTridentConfiguratorStatus", reflect.TypeOf((*MockOperatorCRDClientInterface)(nil).UpdateTridentConfiguratorStatus), tconfCR, newStatus)
 }
 
 // MockTridentCRDClientInterface is a mock of TridentCRDClientInterface interface.
 type MockTridentCRDClientInterface struct {
 	ctrl     *gomock.Controller
 	recorder *MockTridentCRDClientInterfaceMockRecorder
+	isgomock struct{}
 }
 
 // MockTridentCRDClientInterfaceMockRecorder is the mock recorder for MockTridentCRDClientInterface.
@@ -142,82 +144,83 @@ func (m *MockTridentCRDClientInterface) EXPECT() *MockTridentCRDClientInterfaceM
 }
 
 // CheckTridentBackendConfigExists mocks base method.
-func (m *MockTridentCRDClientInterface) CheckTridentBackendConfigExists(arg0, arg1 string) (bool, error) {
+func (m *MockTridentCRDClientInterface) CheckTridentBackendConfigExists(name, namespace string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckTridentBackendConfigExists", arg0, arg1)
+	ret := m.ctrl.Call(m, "CheckTridentBackendConfigExists", name, namespace)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CheckTridentBackendConfigExists indicates an expected call of CheckTridentBackendConfigExists.
-func (mr *MockTridentCRDClientInterfaceMockRecorder) CheckTridentBackendConfigExists(arg0, arg1 any) *gomock.Call {
+func (mr *MockTridentCRDClientInterfaceMockRecorder) CheckTridentBackendConfigExists(name, namespace any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckTridentBackendConfigExists", reflect.TypeOf((*MockTridentCRDClientInterface)(nil).CheckTridentBackendConfigExists), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckTridentBackendConfigExists", reflect.TypeOf((*MockTridentCRDClientInterface)(nil).CheckTridentBackendConfigExists), name, namespace)
 }
 
 // DeleteTridentBackendConfig mocks base method.
-func (m *MockTridentCRDClientInterface) DeleteTridentBackendConfig(arg0, arg1 string) error {
+func (m *MockTridentCRDClientInterface) DeleteTridentBackendConfig(name, namespace string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteTridentBackendConfig", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteTridentBackendConfig", name, namespace)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteTridentBackendConfig indicates an expected call of DeleteTridentBackendConfig.
-func (mr *MockTridentCRDClientInterfaceMockRecorder) DeleteTridentBackendConfig(arg0, arg1 any) *gomock.Call {
+func (mr *MockTridentCRDClientInterfaceMockRecorder) DeleteTridentBackendConfig(name, namespace any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTridentBackendConfig", reflect.TypeOf((*MockTridentCRDClientInterface)(nil).DeleteTridentBackendConfig), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTridentBackendConfig", reflect.TypeOf((*MockTridentCRDClientInterface)(nil).DeleteTridentBackendConfig), name, namespace)
 }
 
 // GetTridentBackendConfig mocks base method.
-func (m *MockTridentCRDClientInterface) GetTridentBackendConfig(arg0, arg1 string) (*v11.TridentBackendConfig, error) {
+func (m *MockTridentCRDClientInterface) GetTridentBackendConfig(name, namespace string) (*v11.TridentBackendConfig, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTridentBackendConfig", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetTridentBackendConfig", name, namespace)
 	ret0, _ := ret[0].(*v11.TridentBackendConfig)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetTridentBackendConfig indicates an expected call of GetTridentBackendConfig.
-func (mr *MockTridentCRDClientInterfaceMockRecorder) GetTridentBackendConfig(arg0, arg1 any) *gomock.Call {
+func (mr *MockTridentCRDClientInterfaceMockRecorder) GetTridentBackendConfig(name, namespace any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTridentBackendConfig", reflect.TypeOf((*MockTridentCRDClientInterface)(nil).GetTridentBackendConfig), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTridentBackendConfig", reflect.TypeOf((*MockTridentCRDClientInterface)(nil).GetTridentBackendConfig), name, namespace)
 }
 
 // ListTridentBackend mocks base method.
-func (m *MockTridentCRDClientInterface) ListTridentBackend(arg0 string) (*v11.TridentBackendList, error) {
+func (m *MockTridentCRDClientInterface) ListTridentBackend(namespace string) (*v11.TridentBackendList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListTridentBackend", arg0)
+	ret := m.ctrl.Call(m, "ListTridentBackend", namespace)
 	ret0, _ := ret[0].(*v11.TridentBackendList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListTridentBackend indicates an expected call of ListTridentBackend.
-func (mr *MockTridentCRDClientInterfaceMockRecorder) ListTridentBackend(arg0 any) *gomock.Call {
+func (mr *MockTridentCRDClientInterfaceMockRecorder) ListTridentBackend(namespace any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTridentBackend", reflect.TypeOf((*MockTridentCRDClientInterface)(nil).ListTridentBackend), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTridentBackend", reflect.TypeOf((*MockTridentCRDClientInterface)(nil).ListTridentBackend), namespace)
 }
 
 // PatchTridentBackendConfig mocks base method.
-func (m *MockTridentCRDClientInterface) PatchTridentBackendConfig(arg0, arg1 string, arg2 []byte, arg3 types.PatchType) error {
+func (m *MockTridentCRDClientInterface) PatchTridentBackendConfig(name, namespace string, patchBytes []byte, patchType types.PatchType) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PatchTridentBackendConfig", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "PatchTridentBackendConfig", name, namespace, patchBytes, patchType)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PatchTridentBackendConfig indicates an expected call of PatchTridentBackendConfig.
-func (mr *MockTridentCRDClientInterfaceMockRecorder) PatchTridentBackendConfig(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockTridentCRDClientInterfaceMockRecorder) PatchTridentBackendConfig(name, namespace, patchBytes, patchType any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchTridentBackendConfig", reflect.TypeOf((*MockTridentCRDClientInterface)(nil).PatchTridentBackendConfig), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchTridentBackendConfig", reflect.TypeOf((*MockTridentCRDClientInterface)(nil).PatchTridentBackendConfig), name, namespace, patchBytes, patchType)
 }
 
 // MockSnapshotCRDClientInterface is a mock of SnapshotCRDClientInterface interface.
 type MockSnapshotCRDClientInterface struct {
 	ctrl     *gomock.Controller
 	recorder *MockSnapshotCRDClientInterfaceMockRecorder
+	isgomock struct{}
 }
 
 // MockSnapshotCRDClientInterfaceMockRecorder is the mock recorder for MockSnapshotCRDClientInterface.
@@ -238,59 +241,59 @@ func (m *MockSnapshotCRDClientInterface) EXPECT() *MockSnapshotCRDClientInterfac
 }
 
 // CheckVolumeSnapshotClassExists mocks base method.
-func (m *MockSnapshotCRDClientInterface) CheckVolumeSnapshotClassExists(arg0 string) (bool, error) {
+func (m *MockSnapshotCRDClientInterface) CheckVolumeSnapshotClassExists(name string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckVolumeSnapshotClassExists", arg0)
+	ret := m.ctrl.Call(m, "CheckVolumeSnapshotClassExists", name)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CheckVolumeSnapshotClassExists indicates an expected call of CheckVolumeSnapshotClassExists.
-func (mr *MockSnapshotCRDClientInterfaceMockRecorder) CheckVolumeSnapshotClassExists(arg0 any) *gomock.Call {
+func (mr *MockSnapshotCRDClientInterfaceMockRecorder) CheckVolumeSnapshotClassExists(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckVolumeSnapshotClassExists", reflect.TypeOf((*MockSnapshotCRDClientInterface)(nil).CheckVolumeSnapshotClassExists), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckVolumeSnapshotClassExists", reflect.TypeOf((*MockSnapshotCRDClientInterface)(nil).CheckVolumeSnapshotClassExists), name)
 }
 
 // DeleteVolumeSnapshotClass mocks base method.
-func (m *MockSnapshotCRDClientInterface) DeleteVolumeSnapshotClass(arg0 string) error {
+func (m *MockSnapshotCRDClientInterface) DeleteVolumeSnapshotClass(name string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteVolumeSnapshotClass", arg0)
+	ret := m.ctrl.Call(m, "DeleteVolumeSnapshotClass", name)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteVolumeSnapshotClass indicates an expected call of DeleteVolumeSnapshotClass.
-func (mr *MockSnapshotCRDClientInterfaceMockRecorder) DeleteVolumeSnapshotClass(arg0 any) *gomock.Call {
+func (mr *MockSnapshotCRDClientInterfaceMockRecorder) DeleteVolumeSnapshotClass(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolumeSnapshotClass", reflect.TypeOf((*MockSnapshotCRDClientInterface)(nil).DeleteVolumeSnapshotClass), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolumeSnapshotClass", reflect.TypeOf((*MockSnapshotCRDClientInterface)(nil).DeleteVolumeSnapshotClass), name)
 }
 
 // GetVolumeSnapshotClass mocks base method.
-func (m *MockSnapshotCRDClientInterface) GetVolumeSnapshotClass(arg0 string) (*v1.VolumeSnapshotClass, error) {
+func (m *MockSnapshotCRDClientInterface) GetVolumeSnapshotClass(name string) (*v1.VolumeSnapshotClass, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumeSnapshotClass", arg0)
+	ret := m.ctrl.Call(m, "GetVolumeSnapshotClass", name)
 	ret0, _ := ret[0].(*v1.VolumeSnapshotClass)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumeSnapshotClass indicates an expected call of GetVolumeSnapshotClass.
-func (mr *MockSnapshotCRDClientInterfaceMockRecorder) GetVolumeSnapshotClass(arg0 any) *gomock.Call {
+func (mr *MockSnapshotCRDClientInterfaceMockRecorder) GetVolumeSnapshotClass(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeSnapshotClass", reflect.TypeOf((*MockSnapshotCRDClientInterface)(nil).GetVolumeSnapshotClass), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeSnapshotClass", reflect.TypeOf((*MockSnapshotCRDClientInterface)(nil).GetVolumeSnapshotClass), name)
 }
 
 // PatchVolumeSnapshotClass mocks base method.
-func (m *MockSnapshotCRDClientInterface) PatchVolumeSnapshotClass(arg0 string, arg1 []byte, arg2 types.PatchType) error {
+func (m *MockSnapshotCRDClientInterface) PatchVolumeSnapshotClass(name string, patchBytes []byte, patchType types.PatchType) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PatchVolumeSnapshotClass", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "PatchVolumeSnapshotClass", name, patchBytes, patchType)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PatchVolumeSnapshotClass indicates an expected call of PatchVolumeSnapshotClass.
-func (mr *MockSnapshotCRDClientInterfaceMockRecorder) PatchVolumeSnapshotClass(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockSnapshotCRDClientInterfaceMockRecorder) PatchVolumeSnapshotClass(name, patchBytes, patchType any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchVolumeSnapshotClass", reflect.TypeOf((*MockSnapshotCRDClientInterface)(nil).PatchVolumeSnapshotClass), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchVolumeSnapshotClass", reflect.TypeOf((*MockSnapshotCRDClientInterface)(nil).PatchVolumeSnapshotClass), name, patchBytes, patchType)
 }

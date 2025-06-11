@@ -22,6 +22,7 @@ import (
 type MockSmbClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockSmbClientMockRecorder
+	isgomock struct{}
 }
 
 // MockSmbClientMockRecorder is the mock recorder for MockSmbClient.
@@ -42,10 +43,10 @@ func (m *MockSmbClient) EXPECT() *MockSmbClientMockRecorder {
 }
 
 // NewSmbGlobalMapping mocks base method.
-func (m *MockSmbClient) NewSmbGlobalMapping(arg0 context.Context, arg1 *v1.NewSmbGlobalMappingRequest, arg2 ...grpc.CallOption) (*v1.NewSmbGlobalMappingResponse, error) {
+func (m *MockSmbClient) NewSmbGlobalMapping(ctx context.Context, in *v1.NewSmbGlobalMappingRequest, opts ...grpc.CallOption) (*v1.NewSmbGlobalMappingResponse, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1}
-	for _, a := range arg2 {
+	varargs := []any{ctx, in}
+	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "NewSmbGlobalMapping", varargs...)
@@ -55,17 +56,17 @@ func (m *MockSmbClient) NewSmbGlobalMapping(arg0 context.Context, arg1 *v1.NewSm
 }
 
 // NewSmbGlobalMapping indicates an expected call of NewSmbGlobalMapping.
-func (mr *MockSmbClientMockRecorder) NewSmbGlobalMapping(arg0, arg1 any, arg2 ...any) *gomock.Call {
+func (mr *MockSmbClientMockRecorder) NewSmbGlobalMapping(ctx, in any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1}, arg2...)
+	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSmbGlobalMapping", reflect.TypeOf((*MockSmbClient)(nil).NewSmbGlobalMapping), varargs...)
 }
 
 // RemoveSmbGlobalMapping mocks base method.
-func (m *MockSmbClient) RemoveSmbGlobalMapping(arg0 context.Context, arg1 *v1.RemoveSmbGlobalMappingRequest, arg2 ...grpc.CallOption) (*v1.RemoveSmbGlobalMappingResponse, error) {
+func (m *MockSmbClient) RemoveSmbGlobalMapping(ctx context.Context, in *v1.RemoveSmbGlobalMappingRequest, opts ...grpc.CallOption) (*v1.RemoveSmbGlobalMappingResponse, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1}
-	for _, a := range arg2 {
+	varargs := []any{ctx, in}
+	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "RemoveSmbGlobalMapping", varargs...)
@@ -75,8 +76,8 @@ func (m *MockSmbClient) RemoveSmbGlobalMapping(arg0 context.Context, arg1 *v1.Re
 }
 
 // RemoveSmbGlobalMapping indicates an expected call of RemoveSmbGlobalMapping.
-func (mr *MockSmbClientMockRecorder) RemoveSmbGlobalMapping(arg0, arg1 any, arg2 ...any) *gomock.Call {
+func (mr *MockSmbClientMockRecorder) RemoveSmbGlobalMapping(ctx, in any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1}, arg2...)
+	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveSmbGlobalMapping", reflect.TypeOf((*MockSmbClient)(nil).RemoveSmbGlobalMapping), varargs...)
 }

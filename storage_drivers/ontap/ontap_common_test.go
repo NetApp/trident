@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -4908,7 +4909,10 @@ func TestGetPoolsForCreate(t *testing.T) {
 	pool2.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
 	pool2.SetBackend(backend)
 
-	backend.SetStorage(map[string]storage.Pool{"pool": pool, "pool1": pool1, "pool2": pool2})
+	backend.ClearStoragePools()
+	for name, pool := range map[string]storage.Pool{"pool": pool, "pool1": pool1, "pool2": pool2} {
+		backend.StoragePools().Store(name, pool)
+	}
 	physicalPools := map[string]storage.Pool{"dummyPool1": pool1, "dummyPool2": pool2}
 	virtualPools := map[string]storage.Pool{"dummyPool": pool}
 	storagePool := pool
@@ -4938,7 +4942,8 @@ func TestGetPoolsForCreate_NoMatchingPools(t *testing.T) {
 	pool.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
 	pool.SetBackend(backend)
 
-	backend.SetStorage(map[string]storage.Pool{"pool": pool})
+	backend.ClearStoragePools()
+	backend.StoragePools().Store("pool", pool)
 	physicalPools := map[string]storage.Pool{}
 	virtualPools := map[string]storage.Pool{"dummyPool": pool}
 	storagePool := pool
@@ -6795,7 +6800,7 @@ func TestGetStorageBackendSpecsCommon(t *testing.T) {
 	backend := &storage.StorageBackend{}
 	backend.SetName("dummybackend")
 	backend.SetOnline(true)
-	backend.SetStorage(make(map[string]storage.Pool))
+	backend.ClearStoragePools()
 	pool1 := storage.NewStoragePool(nil, "dummyPool1")
 	pool1.Attributes()[sa.BackendType] = sa.NewStringOffer("dummyBackend")
 	pool1.Attributes()[sa.Snapshots] = sa.NewBoolOffer(true)
@@ -7339,11 +7344,11 @@ func TestSplitVolumeFromBusySnapshotWithDelay(t *testing.T) {
 	}
 
 	// Test 1: No snap found
-	cloneSplitTimers := make(map[string]time.Time)
+	cloneSplitTimers := &sync.Map{}
 	SplitVolumeFromBusySnapshotWithDelay(ctx, snapConfig, config, mockAPI, mockCloneSplitStart, cloneSplitTimers)
 
 	// Test 2: time difference is < 0
-	cloneSplitTimers[snapConfig.ID()] = time.Now().Add(10 * time.Millisecond)
+	cloneSplitTimers.Store(snapConfig.ID(), time.Now().Add(10*time.Millisecond))
 	SplitVolumeFromBusySnapshotWithDelay(ctx, snapConfig, config, mockAPI, mockCloneSplitStart, cloneSplitTimers)
 
 	time.Sleep(50 * time.Millisecond)
@@ -7352,7 +7357,7 @@ func TestSplitVolumeFromBusySnapshotWithDelay(t *testing.T) {
 
 	// Test 4: SplitVolumeFromBusySnapshot returning error
 	// Add the time for first delete in past so that SplitVolume is called.
-	cloneSplitTimers[snapConfig.ID()] = time.Now().Add(-10 * time.Second)
+	cloneSplitTimers.Store(snapConfig.ID(), time.Now().Add(-10*time.Second))
 	mockAPI.EXPECT().VolumeListBySnapshotParent(ctx, snapConfig.InternalName,
 		snapConfig.VolumeInternalName).Return(api.VolumeNameList{},
 		fmt.Errorf("error returned by VolumeListBySnapshotParent"))
@@ -7522,7 +7527,7 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Test2 - Invalid value of encryption
-	//defaults = &drivers.OntapStorageDriverConfigDefaults{
+	// defaults = &drivers.OntapStorageDriverConfigDefaults{
 	//	SpaceAllocation:                   "fake",
 	//	SpaceReserve:                      "fakeSpaceReserve",
 	//	SnapshotPolicy:                    "fakeSnapshotPolicy",
@@ -7539,8 +7544,8 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 	//	QosPolicy:                         "fakeQosPolicy",
 	//	AdaptiveQosPolicy:                 "fakeAdaptiveQosPolicy",
 	//	CommonStorageDriverConfigDefaults: *CommonConfigDefault,
-	//}
-	//storageDriver.Config.Storage = []drivers.OntapStorageDriverPool{
+	// }
+	// storageDriver.Config.Storage = []drivers.OntapStorageDriverPool{
 	//	{
 	//		Region: "fakeRegion",
 	//		Zone:   "fakeZone",
@@ -7552,18 +7557,18 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 	//		},
 	//		OntapStorageDriverConfigDefaults: *defaults,
 	//	},
-	//}
-	//mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"dummyPool1"}, nil)
-	//mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(map[string]string{"dummyPool1": "hdd"}, nil)
+	// }
+	// mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"dummyPool1"}, nil)
+	// mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(map[string]string{"dummyPool1": "hdd"}, nil)
 	//
-	//physicalPool, virtualPool, err = InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
+	// physicalPool, virtualPool, err = InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
 	//
-	//assert.NotNil(t, physicalPool, "Physical Pool not found when expected")
-	//assert.Nil(t, virtualPool, "Virtual pool not expected but found")
-	//assert.Error(t, err)
+	// assert.NotNil(t, physicalPool, "Physical Pool not found when expected")
+	// assert.Nil(t, virtualPool, "Virtual pool not expected but found")
+	// assert.Error(t, err)
 	//
-	//// Test3 - Invalid value of snapshotDir
-	//defaults = &drivers.OntapStorageDriverConfigDefaults{
+	// // Test3 - Invalid value of snapshotDir
+	// defaults = &drivers.OntapStorageDriverConfigDefaults{
 	//	SpaceAllocation:                   "fake",
 	//	SpaceReserve:                      "fakeSpaceReserve",
 	//	SnapshotPolicy:                    "fakeSnapshotPolicy",
@@ -7580,8 +7585,8 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 	//	QosPolicy:                         "fakeQosPolicy",
 	//	AdaptiveQosPolicy:                 "fakeAdaptiveQosPolicy",
 	//	CommonStorageDriverConfigDefaults: *CommonConfigDefault,
-	//}
-	//storageDriver.Config.Storage = []drivers.OntapStorageDriverPool{
+	// }
+	// storageDriver.Config.Storage = []drivers.OntapStorageDriverPool{
 	//	{
 	//		Region: "fakeRegion",
 	//		Zone:   "fakeZone",
@@ -7593,21 +7598,21 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 	//		},
 	//		OntapStorageDriverConfigDefaults: *defaults,
 	//	},
-	//}
-	//mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"dummyPool1"}, nil)
-	//mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(map[string]string{"dummyPool1": "hdd"}, nil)
+	// }
+	// mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"dummyPool1"}, nil)
+	// mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(map[string]string{"dummyPool1": "hdd"}, nil)
 	//
-	//physicalPool, virtualPool, err = InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
+	// physicalPool, virtualPool, err = InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
 	//
-	//assert.NotNil(t, physicalPool, "Physical Pool not found when expected")
-	//assert.Nil(t, virtualPool, "Virtual pool not expected but found")
-	//assert.Error(t, err)
+	// assert.NotNil(t, physicalPool, "Physical Pool not found when expected")
+	// assert.Nil(t, virtualPool, "Virtual pool not expected but found")
+	// assert.Error(t, err)
 	//
-	//// Test 4 - Checking whether the formatOptions are correctly updated or not.
-	//expectedVirtualPoolFormatOptions := "-b 4096 -E stride=256,stripe_width=16"
-	//expectedPhysicalPoolFormatOptions := "-F -K"
-	//storageDriver.Config.OntapStorageDriverPool.FormatOptions = expectedPhysicalPoolFormatOptions
-	//defaults = &drivers.OntapStorageDriverConfigDefaults{
+	// // Test 4 - Checking whether the formatOptions are correctly updated or not.
+	// expectedVirtualPoolFormatOptions := "-b 4096 -E stride=256,stripe_width=16"
+	// expectedPhysicalPoolFormatOptions := "-F -K"
+	// storageDriver.Config.OntapStorageDriverPool.FormatOptions = expectedPhysicalPoolFormatOptions
+	// defaults = &drivers.OntapStorageDriverConfigDefaults{
 	//	SpaceAllocation:                   "fake",
 	//	SpaceReserve:                      "fakeSpaceReserve",
 	//	SnapshotPolicy:                    "fakeSnapshotPolicy",
@@ -7625,8 +7630,8 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 	//	AdaptiveQosPolicy:                 "fakeAdaptiveQosPolicy",
 	//	FormatOptions:                     expectedVirtualPoolFormatOptions,
 	//	CommonStorageDriverConfigDefaults: *CommonConfigDefault,
-	//}
-	//storageDriver.Config.Storage = []drivers.OntapStorageDriverPool{
+	// }
+	// storageDriver.Config.Storage = []drivers.OntapStorageDriverPool{
 	//	{
 	//		Region: "fakeRegion",
 	//		Zone:   "fakeZone",
@@ -7639,21 +7644,21 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 	//		OntapStorageDriverConfigDefaults: *defaults,
 	//		NASType:                          sa.NFS,
 	//	},
-	//}
-	//mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"dummyPool1"}, nil)
-	//mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(map[string]string{"dummyPool1": "hdd"}, nil)
+	// }
+	// mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"dummyPool1"}, nil)
+	// mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(map[string]string{"dummyPool1": "hdd"}, nil)
 	//
-	//physicalPool, virtualPool, err = InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
+	// physicalPool, virtualPool, err = InitializeStoragePoolsCommon(ctx, storageDriver, pool1.Attributes(), backendName)
 	//
-	//assert.NotNil(t, physicalPool, "Physical Pool not found when expected")
-	//assert.NotNil(t, virtualPool, "Virtual Pool not found when expected")
-	//assert.NoError(t, err)
-	//for _, phyPool := range physicalPool {
+	// assert.NotNil(t, physicalPool, "Physical Pool not found when expected")
+	// assert.NotNil(t, virtualPool, "Virtual Pool not found when expected")
+	// assert.NoError(t, err)
+	// for _, phyPool := range physicalPool {
 	//	assert.Equal(t, expectedPhysicalPoolFormatOptions, phyPool.InternalAttributes()[FormatOptions])
-	//}
-	//for _, vPool := range virtualPool {
+	// }
+	// for _, vPool := range virtualPool {
 	//	assert.Equal(t, expectedVirtualPoolFormatOptions, vPool.InternalAttributes()[FormatOptions])
-	//}
+	// }
 
 	// Test 5 - Check for SANType
 	storageDriver.Config.Storage = []drivers.OntapStorageDriverPool{
@@ -9393,57 +9398,57 @@ func TestSplitASAVolumeFromBusySnapshotWithDelay(t *testing.T) {
 		VolumeInternalName: volumeName,
 	}
 	funcCloneSplitStart := mockAPI.StorageUnitCloneSplitStart
-	var cloneSplitTimer map[string]time.Time
+	var cloneSplitTimer *sync.Map
 
 	tests := []testCase{
 		{
 			name: "Positive - First Delete",
 			setupMock: func() {
-				cloneSplitTimer = make(map[string]time.Time)
+				cloneSplitTimer = &sync.Map{}
 			},
 			expectedError: false,
 			verify: func(t *testing.T) {
-				_, ok := cloneSplitTimer[snapConfig.ID()]
+				_, ok := cloneSplitTimer.Load(snapConfig.ID())
 				assert.True(t, ok, "A timer should be present")
 			},
 		},
 		{
 			name: "Positive - Not a first delete, and timer hasn't moved past cloneSplitDelay",
 			setupMock: func() {
-				cloneSplitTimer = make(map[string]time.Time)
-				cloneSplitTimer[snapConfig.ID()] = time.Now()
+				cloneSplitTimer = &sync.Map{}
+				cloneSplitTimer.Store(snapConfig.ID(), time.Now())
 			},
 			expectedError: false,
 			verify: func(t *testing.T) {
-				_, ok := cloneSplitTimer[snapConfig.ID()]
+				_, ok := cloneSplitTimer.Load(snapConfig.ID())
 				assert.True(t, ok, "A timer should be present")
 			},
 		},
 		{
 			name: "Positive - Not a first delete, and timer has moved past cloneSplitDelay",
 			setupMock: func() {
-				cloneSplitTimer = make(map[string]time.Time)
-				cloneSplitTimer[snapConfig.ID()] = time.Now().Add(-15 * time.Second)
+				cloneSplitTimer = &sync.Map{}
+				cloneSplitTimer.Store(snapConfig.ID(), time.Now().Add(-15*time.Second))
 				mockAPI.EXPECT().StorageUnitListBySnapshotParent(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(api.VolumeNameList{volumeName}, nil).Times(1)
 				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName).Return(nil).Times(1)
 			},
 			expectedError: false,
 			verify: func(t *testing.T) {
-				_, ok := cloneSplitTimer[snapConfig.ID()]
+				_, ok := cloneSplitTimer.Load(snapConfig.ID())
 				assert.True(t, ok, "A timer should be present")
 			},
 		},
 		{
 			name: "Negative - Error is returned when SplitASAVolumeFromBusySnapshot call is made",
 			setupMock: func() {
-				cloneSplitTimer = make(map[string]time.Time)
-				cloneSplitTimer[snapConfig.ID()] = time.Now().Add(-15 * time.Second)
+				cloneSplitTimer = &sync.Map{}
+				cloneSplitTimer.Store(snapConfig.ID(), time.Now().Add(-15*time.Second))
 				mockAPI.EXPECT().StorageUnitListBySnapshotParent(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(api.VolumeNameList{volumeName}, nil).Times(1)
 				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName).Return(fmt.Errorf("error")).Times(1)
 			},
 			expectedError: true,
 			verify: func(t *testing.T) {
-				_, ok := cloneSplitTimer[snapConfig.ID()]
+				_, ok := cloneSplitTimer.Load(snapConfig.ID())
 				assert.True(t, ok, "A timer should be present")
 			},
 		},

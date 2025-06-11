@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring/v2"
-	"github.com/mitchellh/copystructure"
+	"github.com/brunoga/deep"
 	"go.uber.org/multierr"
 
 	tridentconfig "github.com/netapp/trident/config"
@@ -1917,15 +1917,9 @@ func (d *NFSStorageDriver) StoreConfig(_ context.Context, b *storage.PersistentS
 func (d *NFSStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	// Clone the config so we don't risk altering the original
 
-	clone, err := copystructure.Copy(d.Config)
+	cloneConfig, err := deep.Copy(d.Config)
 	if err != nil {
 		Logc(ctx).Errorf("Could not clone GCP backend config; %v", err)
-		return drivers.GCPNFSStorageDriverConfig{}
-	}
-
-	cloneConfig, ok := clone.(drivers.GCPNFSStorageDriverConfig)
-	if !ok {
-		Logc(ctx).Errorf("Could not cast GCP backend config; %v", err)
 		return drivers.GCPNFSStorageDriverConfig{}
 	}
 

@@ -56,11 +56,19 @@ func (c *InMemoryClient) GetType() StoreType {
 }
 
 func (c *InMemoryClient) Stop() error {
+	c.backends = make(map[string]*storage.BackendPersistent)
 	c.backendsAdded = 0
+	c.volumes = make(map[string]*storage.VolumeExternal)
 	c.volumesAdded = 0
+	c.storageClasses = make(map[string]*sc.Persistent)
 	c.storageClassesAdded = 0
+	c.volumeTxns = make(map[string]*storage.VolumeTransaction)
 	c.volumeTxnsAdded = 0
+	c.volumePublications = make(map[string]*models.VolumePublication)
+	c.volumePublicationsAdded = 0
+	c.nodes = make(map[string]*models.Node)
 	c.nodesAdded = 0
+	c.snapshots = make(map[string]*storage.SnapshotPersistent)
 	c.snapshotsAdded = 0
 	return nil
 }

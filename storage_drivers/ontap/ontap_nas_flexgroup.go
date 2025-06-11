@@ -9,6 +9,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/RoaringBitmap/roaring/v2"
@@ -43,7 +44,7 @@ type NASFlexGroupStorageDriver struct {
 	virtualPools map[string]storage.Pool
 	timeout      time.Duration
 
-	cloneSplitTimers map[string]time.Time
+	cloneSplitTimers *sync.Map
 }
 
 func (d *NASFlexGroupStorageDriver) GetConfig() drivers.DriverConfig {
@@ -150,7 +151,7 @@ func (d *NASFlexGroupStorageDriver) Initialize(
 	d.telemetry.Start(ctx)
 
 	// Set up the clone split timers
-	d.cloneSplitTimers = make(map[string]time.Time)
+	d.cloneSplitTimers = &sync.Map{}
 
 	d.initialized = true
 	return nil
@@ -1404,7 +1405,7 @@ func (d *NASFlexGroupStorageDriver) DeleteSnapshot(
 	}
 
 	// Clean up any split timer
-	delete(d.cloneSplitTimers, snapConfig.ID())
+	d.cloneSplitTimers.Delete(snapConfig.ID())
 
 	Logc(ctx).WithField("snapshotName", snapConfig.InternalName).Debug("Deleted snapshot.")
 	return nil

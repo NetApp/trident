@@ -23,6 +23,7 @@ import (
 type MockGCNV struct {
 	ctrl     *gomock.Controller
 	recorder *MockGCNVMockRecorder
+	isgomock struct{}
 }
 
 // MockGCNVMockRecorder is the mock recorder for MockGCNV.

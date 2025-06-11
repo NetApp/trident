@@ -21,6 +21,7 @@ import (
 type MockFcpReconcileUtils struct {
 	ctrl     *gomock.Controller
 	recorder *MockFcpReconcileUtilsMockRecorder
+	isgomock struct{}
 }
 
 // MockFcpReconcileUtilsMockRecorder is the mock recorder for MockFcpReconcileUtils.
@@ -56,18 +57,18 @@ func (mr *MockFcpReconcileUtilsMockRecorder) CheckZoningExistsWithTarget(arg0, a
 }
 
 // GetDevicesForLUN mocks base method.
-func (m *MockFcpReconcileUtils) GetDevicesForLUN(arg0 []string) ([]string, error) {
+func (m *MockFcpReconcileUtils) GetDevicesForLUN(paths []string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDevicesForLUN", arg0)
+	ret := m.ctrl.Call(m, "GetDevicesForLUN", paths)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetDevicesForLUN indicates an expected call of GetDevicesForLUN.
-func (mr *MockFcpReconcileUtilsMockRecorder) GetDevicesForLUN(arg0 any) *gomock.Call {
+func (mr *MockFcpReconcileUtilsMockRecorder) GetDevicesForLUN(paths any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDevicesForLUN", reflect.TypeOf((*MockFcpReconcileUtils)(nil).GetDevicesForLUN), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDevicesForLUN", reflect.TypeOf((*MockFcpReconcileUtils)(nil).GetDevicesForLUN), paths)
 }
 
 // GetFCPHostSessionMapForTarget mocks base method.
@@ -99,16 +100,16 @@ func (mr *MockFcpReconcileUtilsMockRecorder) GetSysfsBlockDirsForLUN(arg0, arg1 
 }
 
 // ReconcileFCPVolumeInfo mocks base method.
-func (m *MockFcpReconcileUtils) ReconcileFCPVolumeInfo(arg0 context.Context, arg1 *models.VolumeTrackingInfo) (bool, error) {
+func (m *MockFcpReconcileUtils) ReconcileFCPVolumeInfo(ctx context.Context, trackingInfo *models.VolumeTrackingInfo) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileFCPVolumeInfo", arg0, arg1)
+	ret := m.ctrl.Call(m, "ReconcileFCPVolumeInfo", ctx, trackingInfo)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ReconcileFCPVolumeInfo indicates an expected call of ReconcileFCPVolumeInfo.
-func (mr *MockFcpReconcileUtilsMockRecorder) ReconcileFCPVolumeInfo(arg0, arg1 any) *gomock.Call {
+func (mr *MockFcpReconcileUtilsMockRecorder) ReconcileFCPVolumeInfo(ctx, trackingInfo any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileFCPVolumeInfo", reflect.TypeOf((*MockFcpReconcileUtils)(nil).ReconcileFCPVolumeInfo), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileFCPVolumeInfo", reflect.TypeOf((*MockFcpReconcileUtils)(nil).ReconcileFCPVolumeInfo), ctx, trackingInfo)
 }

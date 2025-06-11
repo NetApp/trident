@@ -423,6 +423,21 @@ func getCSIDeploymentAutosupportYAML(args *DeploymentYAMLArguments) string {
 		return ""
 	}
 
+	sidecarImages := []struct {
+		arg *string
+		tag string
+	}{
+		{&args.CSISidecarProvisionerImage, commonconfig.CSISidecarProvisionerImageTag},
+		{&args.CSISidecarAttacherImage, commonconfig.CSISidecarAttacherImageTag},
+		{&args.CSISidecarResizerImage, commonconfig.CSISidecarResizerImageTag},
+		{&args.CSISidecarSnapshotterImage, commonconfig.CSISidecarSnapshotterImageTag},
+	}
+	for _, image := range sidecarImages {
+		if *image.arg == "" {
+			*image.arg = args.ImageRegistry + "/" + image.tag
+		}
+	}
+
 	if args.AutosupportImage == "" {
 		args.AutosupportImage = commonconfig.DefaultAutosupportImage
 	}
@@ -603,6 +618,7 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_ACP}", enableACP)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{K8S_API_CLIENT_TRIDENT_THROTTLE}", K8sAPITridentThrottle)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{K8S_API_CLIENT_SIDECAR_THROTTLE}", K8sAPISidecarThrottle)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_CONCURRENCY}", strconv.FormatBool(args.EnableConcurrency))
 
 	// Log before secrets are inserted into YAML.
 	Log().WithField("yaml", deploymentYAML).Trace("CSI Deployment YAML.")
@@ -665,6 +681,7 @@ spec:
         - "--address={IP_LOCALHOST}"
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--enable_force_detach={ENABLE_FORCE_DETACH}"
+        - "--enable_concurrency={ENABLE_CONCURRENCY}"
         - "--metrics"
         {ENABLE_ACP}
         {DEBUG}
@@ -716,6 +733,7 @@ spec:
         - "--csi-address=$(ADDRESS)"
         - "--retry-interval-start=8s"
         - "--retry-interval-max=30s"
+        - "--worker-threads=5"
         {K8S_API_CLIENT_SIDECAR_THROTTLE}
         env:
         - name: ADDRESS
@@ -734,6 +752,7 @@ spec:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=60s"
         - "--retry-interval-start=10s"
+        - "--worker-threads=10"
         - "--csi-address=$(ADDRESS)"
         {K8S_API_CLIENT_SIDECAR_THROTTLE}
         env:
@@ -752,6 +771,7 @@ spec:
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=300s"
+        - "--workers=10"
         - "--csi-address=$(ADDRESS)"
         {K8S_API_CLIENT_SIDECAR_THROTTLE}
         env:
@@ -770,6 +790,7 @@ spec:
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=300s"
+        - "--worker-threads=10"
         - "--csi-address=$(ADDRESS)"
         - "--feature-gates=CSIVolumeGroupSnapshot=true"
         {K8S_API_CLIENT_SIDECAR_THROTTLE}

@@ -3,12 +3,11 @@ package utils
 import (
 	"github.com/spf13/afero"
 
-	"github.com/netapp/trident/utils/exec"
-	"github.com/netapp/trident/utils/mount"
-
 	"github.com/netapp/trident/utils/devices"
+	"github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/fcp"
 	"github.com/netapp/trident/utils/filesystem"
+	"github.com/netapp/trident/utils/mount"
 	"github.com/netapp/trident/utils/osutils"
 )
 

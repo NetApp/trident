@@ -23,6 +23,7 @@ import (
 type MockAWSAPI struct {
 	ctrl     *gomock.Controller
 	recorder *MockAWSAPIMockRecorder
+	isgomock struct{}
 }
 
 // MockAWSAPIMockRecorder is the mock recorder for MockAWSAPI.
@@ -43,261 +44,261 @@ func (m *MockAWSAPI) EXPECT() *MockAWSAPIMockRecorder {
 }
 
 // CreateSVM mocks base method.
-func (m *MockAWSAPI) CreateSVM(arg0 context.Context, arg1 *awsapi.SVMCreateRequest) (*awsapi.SVM, error) {
+func (m *MockAWSAPI) CreateSVM(ctx context.Context, request *awsapi.SVMCreateRequest) (*awsapi.SVM, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateSVM", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateSVM", ctx, request)
 	ret0, _ := ret[0].(*awsapi.SVM)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateSVM indicates an expected call of CreateSVM.
-func (mr *MockAWSAPIMockRecorder) CreateSVM(arg0, arg1 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) CreateSVM(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSVM", reflect.TypeOf((*MockAWSAPI)(nil).CreateSVM), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSVM", reflect.TypeOf((*MockAWSAPI)(nil).CreateSVM), ctx, request)
 }
 
 // CreateSecret mocks base method.
-func (m *MockAWSAPI) CreateSecret(arg0 context.Context, arg1 *awsapi.SecretCreateRequest) (*awsapi.Secret, error) {
+func (m *MockAWSAPI) CreateSecret(ctx context.Context, request *awsapi.SecretCreateRequest) (*awsapi.Secret, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateSecret", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateSecret", ctx, request)
 	ret0, _ := ret[0].(*awsapi.Secret)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateSecret indicates an expected call of CreateSecret.
-func (mr *MockAWSAPIMockRecorder) CreateSecret(arg0, arg1 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) CreateSecret(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSecret", reflect.TypeOf((*MockAWSAPI)(nil).CreateSecret), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSecret", reflect.TypeOf((*MockAWSAPI)(nil).CreateSecret), ctx, request)
 }
 
 // CreateVolume mocks base method.
-func (m *MockAWSAPI) CreateVolume(arg0 context.Context, arg1 *awsapi.VolumeCreateRequest) (*awsapi.Volume, error) {
+func (m *MockAWSAPI) CreateVolume(ctx context.Context, request *awsapi.VolumeCreateRequest) (*awsapi.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateVolume", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateVolume", ctx, request)
 	ret0, _ := ret[0].(*awsapi.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateVolume indicates an expected call of CreateVolume.
-func (mr *MockAWSAPIMockRecorder) CreateVolume(arg0, arg1 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) CreateVolume(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVolume", reflect.TypeOf((*MockAWSAPI)(nil).CreateVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVolume", reflect.TypeOf((*MockAWSAPI)(nil).CreateVolume), ctx, request)
 }
 
 // DeleteSecret mocks base method.
-func (m *MockAWSAPI) DeleteSecret(arg0 context.Context, arg1 string) error {
+func (m *MockAWSAPI) DeleteSecret(ctx context.Context, secretARN string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSecret", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteSecret", ctx, secretARN)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteSecret indicates an expected call of DeleteSecret.
-func (mr *MockAWSAPIMockRecorder) DeleteSecret(arg0, arg1 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) DeleteSecret(ctx, secretARN any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSecret", reflect.TypeOf((*MockAWSAPI)(nil).DeleteSecret), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSecret", reflect.TypeOf((*MockAWSAPI)(nil).DeleteSecret), ctx, secretARN)
 }
 
 // DeleteVolume mocks base method.
-func (m *MockAWSAPI) DeleteVolume(arg0 context.Context, arg1 *awsapi.Volume) error {
+func (m *MockAWSAPI) DeleteVolume(ctx context.Context, volume *awsapi.Volume) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteVolume", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteVolume", ctx, volume)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteVolume indicates an expected call of DeleteVolume.
-func (mr *MockAWSAPIMockRecorder) DeleteVolume(arg0, arg1 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) DeleteVolume(ctx, volume any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolume", reflect.TypeOf((*MockAWSAPI)(nil).DeleteVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolume", reflect.TypeOf((*MockAWSAPI)(nil).DeleteVolume), ctx, volume)
 }
 
 // GetFilesystemByID mocks base method.
-func (m *MockAWSAPI) GetFilesystemByID(arg0 context.Context, arg1 string) (*awsapi.Filesystem, error) {
+func (m *MockAWSAPI) GetFilesystemByID(ctx context.Context, ID string) (*awsapi.Filesystem, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFilesystemByID", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetFilesystemByID", ctx, ID)
 	ret0, _ := ret[0].(*awsapi.Filesystem)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetFilesystemByID indicates an expected call of GetFilesystemByID.
-func (mr *MockAWSAPIMockRecorder) GetFilesystemByID(arg0, arg1 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) GetFilesystemByID(ctx, ID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilesystemByID", reflect.TypeOf((*MockAWSAPI)(nil).GetFilesystemByID), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilesystemByID", reflect.TypeOf((*MockAWSAPI)(nil).GetFilesystemByID), ctx, ID)
 }
 
 // GetFilesystems mocks base method.
-func (m *MockAWSAPI) GetFilesystems(arg0 context.Context) (*[]*awsapi.Filesystem, error) {
+func (m *MockAWSAPI) GetFilesystems(ctx context.Context) (*[]*awsapi.Filesystem, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFilesystems", arg0)
+	ret := m.ctrl.Call(m, "GetFilesystems", ctx)
 	ret0, _ := ret[0].(*[]*awsapi.Filesystem)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetFilesystems indicates an expected call of GetFilesystems.
-func (mr *MockAWSAPIMockRecorder) GetFilesystems(arg0 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) GetFilesystems(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilesystems", reflect.TypeOf((*MockAWSAPI)(nil).GetFilesystems), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilesystems", reflect.TypeOf((*MockAWSAPI)(nil).GetFilesystems), ctx)
 }
 
 // GetSVMByID mocks base method.
-func (m *MockAWSAPI) GetSVMByID(arg0 context.Context, arg1 string) (*awsapi.SVM, error) {
+func (m *MockAWSAPI) GetSVMByID(ctx context.Context, ID string) (*awsapi.SVM, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSVMByID", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetSVMByID", ctx, ID)
 	ret0, _ := ret[0].(*awsapi.SVM)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSVMByID indicates an expected call of GetSVMByID.
-func (mr *MockAWSAPIMockRecorder) GetSVMByID(arg0, arg1 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) GetSVMByID(ctx, ID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSVMByID", reflect.TypeOf((*MockAWSAPI)(nil).GetSVMByID), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSVMByID", reflect.TypeOf((*MockAWSAPI)(nil).GetSVMByID), ctx, ID)
 }
 
 // GetSVMs mocks base method.
-func (m *MockAWSAPI) GetSVMs(arg0 context.Context) (*[]*awsapi.SVM, error) {
+func (m *MockAWSAPI) GetSVMs(ctx context.Context) (*[]*awsapi.SVM, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSVMs", arg0)
+	ret := m.ctrl.Call(m, "GetSVMs", ctx)
 	ret0, _ := ret[0].(*[]*awsapi.SVM)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSVMs indicates an expected call of GetSVMs.
-func (mr *MockAWSAPIMockRecorder) GetSVMs(arg0 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) GetSVMs(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSVMs", reflect.TypeOf((*MockAWSAPI)(nil).GetSVMs), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSVMs", reflect.TypeOf((*MockAWSAPI)(nil).GetSVMs), ctx)
 }
 
 // GetSecret mocks base method.
-func (m *MockAWSAPI) GetSecret(arg0 context.Context, arg1 string) (*awsapi.Secret, error) {
+func (m *MockAWSAPI) GetSecret(ctx context.Context, secretARN string) (*awsapi.Secret, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSecret", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetSecret", ctx, secretARN)
 	ret0, _ := ret[0].(*awsapi.Secret)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSecret indicates an expected call of GetSecret.
-func (mr *MockAWSAPIMockRecorder) GetSecret(arg0, arg1 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) GetSecret(ctx, secretARN any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSecret", reflect.TypeOf((*MockAWSAPI)(nil).GetSecret), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSecret", reflect.TypeOf((*MockAWSAPI)(nil).GetSecret), ctx, secretARN)
 }
 
 // GetVolume mocks base method.
-func (m *MockAWSAPI) GetVolume(arg0 context.Context, arg1 *storage.VolumeConfig) (*awsapi.Volume, error) {
+func (m *MockAWSAPI) GetVolume(ctx context.Context, volConfig *storage.VolumeConfig) (*awsapi.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolume", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetVolume", ctx, volConfig)
 	ret0, _ := ret[0].(*awsapi.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolume indicates an expected call of GetVolume.
-func (mr *MockAWSAPIMockRecorder) GetVolume(arg0, arg1 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) GetVolume(ctx, volConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolume", reflect.TypeOf((*MockAWSAPI)(nil).GetVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolume", reflect.TypeOf((*MockAWSAPI)(nil).GetVolume), ctx, volConfig)
 }
 
 // GetVolumeByARN mocks base method.
-func (m *MockAWSAPI) GetVolumeByARN(arg0 context.Context, arg1 string) (*awsapi.Volume, error) {
+func (m *MockAWSAPI) GetVolumeByARN(ctx context.Context, volumeARN string) (*awsapi.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumeByARN", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetVolumeByARN", ctx, volumeARN)
 	ret0, _ := ret[0].(*awsapi.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumeByARN indicates an expected call of GetVolumeByARN.
-func (mr *MockAWSAPIMockRecorder) GetVolumeByARN(arg0, arg1 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) GetVolumeByARN(ctx, volumeARN any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeByARN", reflect.TypeOf((*MockAWSAPI)(nil).GetVolumeByARN), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeByARN", reflect.TypeOf((*MockAWSAPI)(nil).GetVolumeByARN), ctx, volumeARN)
 }
 
 // GetVolumeByID mocks base method.
-func (m *MockAWSAPI) GetVolumeByID(arg0 context.Context, arg1 string) (*awsapi.Volume, error) {
+func (m *MockAWSAPI) GetVolumeByID(ctx context.Context, volumeID string) (*awsapi.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumeByID", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetVolumeByID", ctx, volumeID)
 	ret0, _ := ret[0].(*awsapi.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumeByID indicates an expected call of GetVolumeByID.
-func (mr *MockAWSAPIMockRecorder) GetVolumeByID(arg0, arg1 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) GetVolumeByID(ctx, volumeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeByID", reflect.TypeOf((*MockAWSAPI)(nil).GetVolumeByID), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeByID", reflect.TypeOf((*MockAWSAPI)(nil).GetVolumeByID), ctx, volumeID)
 }
 
 // GetVolumeByName mocks base method.
-func (m *MockAWSAPI) GetVolumeByName(arg0 context.Context, arg1 string) (*awsapi.Volume, error) {
+func (m *MockAWSAPI) GetVolumeByName(ctx context.Context, name string) (*awsapi.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumeByName", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetVolumeByName", ctx, name)
 	ret0, _ := ret[0].(*awsapi.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumeByName indicates an expected call of GetVolumeByName.
-func (mr *MockAWSAPIMockRecorder) GetVolumeByName(arg0, arg1 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) GetVolumeByName(ctx, name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeByName", reflect.TypeOf((*MockAWSAPI)(nil).GetVolumeByName), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeByName", reflect.TypeOf((*MockAWSAPI)(nil).GetVolumeByName), ctx, name)
 }
 
 // GetVolumes mocks base method.
-func (m *MockAWSAPI) GetVolumes(arg0 context.Context) (*[]*awsapi.Volume, error) {
+func (m *MockAWSAPI) GetVolumes(ctx context.Context) (*[]*awsapi.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumes", arg0)
+	ret := m.ctrl.Call(m, "GetVolumes", ctx)
 	ret0, _ := ret[0].(*[]*awsapi.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumes indicates an expected call of GetVolumes.
-func (mr *MockAWSAPIMockRecorder) GetVolumes(arg0 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) GetVolumes(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumes", reflect.TypeOf((*MockAWSAPI)(nil).GetVolumes), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumes", reflect.TypeOf((*MockAWSAPI)(nil).GetVolumes), ctx)
 }
 
 // RelabelVolume mocks base method.
-func (m *MockAWSAPI) RelabelVolume(arg0 context.Context, arg1 *awsapi.Volume, arg2 map[string]string) error {
+func (m *MockAWSAPI) RelabelVolume(ctx context.Context, volume *awsapi.Volume, labels map[string]string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RelabelVolume", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "RelabelVolume", ctx, volume, labels)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RelabelVolume indicates an expected call of RelabelVolume.
-func (mr *MockAWSAPIMockRecorder) RelabelVolume(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) RelabelVolume(ctx, volume, labels any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RelabelVolume", reflect.TypeOf((*MockAWSAPI)(nil).RelabelVolume), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RelabelVolume", reflect.TypeOf((*MockAWSAPI)(nil).RelabelVolume), ctx, volume, labels)
 }
 
 // ResizeVolume mocks base method.
-func (m *MockAWSAPI) ResizeVolume(arg0 context.Context, arg1 *awsapi.Volume, arg2 uint64) (*awsapi.Volume, error) {
+func (m *MockAWSAPI) ResizeVolume(ctx context.Context, volume *awsapi.Volume, newSizeBytes uint64) (*awsapi.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResizeVolume", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ResizeVolume", ctx, volume, newSizeBytes)
 	ret0, _ := ret[0].(*awsapi.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ResizeVolume indicates an expected call of ResizeVolume.
-func (mr *MockAWSAPIMockRecorder) ResizeVolume(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) ResizeVolume(ctx, volume, newSizeBytes any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResizeVolume", reflect.TypeOf((*MockAWSAPI)(nil).ResizeVolume), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResizeVolume", reflect.TypeOf((*MockAWSAPI)(nil).ResizeVolume), ctx, volume, newSizeBytes)
 }
 
 // VolumeExists mocks base method.
-func (m *MockAWSAPI) VolumeExists(arg0 context.Context, arg1 *storage.VolumeConfig) (bool, *awsapi.Volume, error) {
+func (m *MockAWSAPI) VolumeExists(ctx context.Context, volConfig *storage.VolumeConfig) (bool, *awsapi.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeExists", arg0, arg1)
+	ret := m.ctrl.Call(m, "VolumeExists", ctx, volConfig)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(*awsapi.Volume)
 	ret2, _ := ret[2].(error)
@@ -305,15 +306,15 @@ func (m *MockAWSAPI) VolumeExists(arg0 context.Context, arg1 *storage.VolumeConf
 }
 
 // VolumeExists indicates an expected call of VolumeExists.
-func (mr *MockAWSAPIMockRecorder) VolumeExists(arg0, arg1 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) VolumeExists(ctx, volConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeExists", reflect.TypeOf((*MockAWSAPI)(nil).VolumeExists), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeExists", reflect.TypeOf((*MockAWSAPI)(nil).VolumeExists), ctx, volConfig)
 }
 
 // VolumeExistsByARN mocks base method.
-func (m *MockAWSAPI) VolumeExistsByARN(arg0 context.Context, arg1 string) (bool, *awsapi.Volume, error) {
+func (m *MockAWSAPI) VolumeExistsByARN(ctx context.Context, volumeARN string) (bool, *awsapi.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeExistsByARN", arg0, arg1)
+	ret := m.ctrl.Call(m, "VolumeExistsByARN", ctx, volumeARN)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(*awsapi.Volume)
 	ret2, _ := ret[2].(error)
@@ -321,15 +322,15 @@ func (m *MockAWSAPI) VolumeExistsByARN(arg0 context.Context, arg1 string) (bool,
 }
 
 // VolumeExistsByARN indicates an expected call of VolumeExistsByARN.
-func (mr *MockAWSAPIMockRecorder) VolumeExistsByARN(arg0, arg1 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) VolumeExistsByARN(ctx, volumeARN any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeExistsByARN", reflect.TypeOf((*MockAWSAPI)(nil).VolumeExistsByARN), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeExistsByARN", reflect.TypeOf((*MockAWSAPI)(nil).VolumeExistsByARN), ctx, volumeARN)
 }
 
 // VolumeExistsByID mocks base method.
-func (m *MockAWSAPI) VolumeExistsByID(arg0 context.Context, arg1 string) (bool, *awsapi.Volume, error) {
+func (m *MockAWSAPI) VolumeExistsByID(ctx context.Context, volumeID string) (bool, *awsapi.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeExistsByID", arg0, arg1)
+	ret := m.ctrl.Call(m, "VolumeExistsByID", ctx, volumeID)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(*awsapi.Volume)
 	ret2, _ := ret[2].(error)
@@ -337,15 +338,15 @@ func (m *MockAWSAPI) VolumeExistsByID(arg0 context.Context, arg1 string) (bool, 
 }
 
 // VolumeExistsByID indicates an expected call of VolumeExistsByID.
-func (mr *MockAWSAPIMockRecorder) VolumeExistsByID(arg0, arg1 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) VolumeExistsByID(ctx, volumeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeExistsByID", reflect.TypeOf((*MockAWSAPI)(nil).VolumeExistsByID), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeExistsByID", reflect.TypeOf((*MockAWSAPI)(nil).VolumeExistsByID), ctx, volumeID)
 }
 
 // VolumeExistsByName mocks base method.
-func (m *MockAWSAPI) VolumeExistsByName(arg0 context.Context, arg1 string) (bool, *awsapi.Volume, error) {
+func (m *MockAWSAPI) VolumeExistsByName(ctx context.Context, name string) (bool, *awsapi.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeExistsByName", arg0, arg1)
+	ret := m.ctrl.Call(m, "VolumeExistsByName", ctx, name)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(*awsapi.Volume)
 	ret2, _ := ret[2].(error)
@@ -353,22 +354,22 @@ func (m *MockAWSAPI) VolumeExistsByName(arg0 context.Context, arg1 string) (bool
 }
 
 // VolumeExistsByName indicates an expected call of VolumeExistsByName.
-func (mr *MockAWSAPIMockRecorder) VolumeExistsByName(arg0, arg1 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) VolumeExistsByName(ctx, name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeExistsByName", reflect.TypeOf((*MockAWSAPI)(nil).VolumeExistsByName), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeExistsByName", reflect.TypeOf((*MockAWSAPI)(nil).VolumeExistsByName), ctx, name)
 }
 
 // WaitForVolumeStates mocks base method.
-func (m *MockAWSAPI) WaitForVolumeStates(arg0 context.Context, arg1 *awsapi.Volume, arg2, arg3 []string, arg4 time.Duration) (string, error) {
+func (m *MockAWSAPI) WaitForVolumeStates(ctx context.Context, volume *awsapi.Volume, desiredStates, abortStates []string, maxElapsedTime time.Duration) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WaitForVolumeStates", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "WaitForVolumeStates", ctx, volume, desiredStates, abortStates, maxElapsedTime)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // WaitForVolumeStates indicates an expected call of WaitForVolumeStates.
-func (mr *MockAWSAPIMockRecorder) WaitForVolumeStates(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockAWSAPIMockRecorder) WaitForVolumeStates(ctx, volume, desiredStates, abortStates, maxElapsedTime any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForVolumeStates", reflect.TypeOf((*MockAWSAPI)(nil).WaitForVolumeStates), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForVolumeStates", reflect.TypeOf((*MockAWSAPI)(nil).WaitForVolumeStates), ctx, volume, desiredStates, abortStates, maxElapsedTime)
 }

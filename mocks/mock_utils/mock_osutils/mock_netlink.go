@@ -20,6 +20,7 @@ import (
 type MockNetLink struct {
 	ctrl     *gomock.Controller
 	recorder *MockNetLinkMockRecorder
+	isgomock struct{}
 }
 
 // MockNetLinkMockRecorder is the mock recorder for MockNetLink.
@@ -40,33 +41,33 @@ func (m *MockNetLink) EXPECT() *MockNetLinkMockRecorder {
 }
 
 // AddrList mocks base method.
-func (m *MockNetLink) AddrList(arg0 netlink.Link, arg1 int) ([]netlink.Addr, error) {
+func (m *MockNetLink) AddrList(link netlink.Link, family int) ([]netlink.Addr, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddrList", arg0, arg1)
+	ret := m.ctrl.Call(m, "AddrList", link, family)
 	ret0, _ := ret[0].([]netlink.Addr)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AddrList indicates an expected call of AddrList.
-func (mr *MockNetLinkMockRecorder) AddrList(arg0, arg1 any) *gomock.Call {
+func (mr *MockNetLinkMockRecorder) AddrList(link, family any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddrList", reflect.TypeOf((*MockNetLink)(nil).AddrList), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddrList", reflect.TypeOf((*MockNetLink)(nil).AddrList), link, family)
 }
 
 // LinkByIndex mocks base method.
-func (m *MockNetLink) LinkByIndex(arg0 int) (netlink.Link, error) {
+func (m *MockNetLink) LinkByIndex(index int) (netlink.Link, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LinkByIndex", arg0)
+	ret := m.ctrl.Call(m, "LinkByIndex", index)
 	ret0, _ := ret[0].(netlink.Link)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LinkByIndex indicates an expected call of LinkByIndex.
-func (mr *MockNetLinkMockRecorder) LinkByIndex(arg0 any) *gomock.Call {
+func (mr *MockNetLinkMockRecorder) LinkByIndex(index any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LinkByIndex", reflect.TypeOf((*MockNetLink)(nil).LinkByIndex), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LinkByIndex", reflect.TypeOf((*MockNetLink)(nil).LinkByIndex), index)
 }
 
 // LinkList mocks base method.
@@ -85,16 +86,16 @@ func (mr *MockNetLinkMockRecorder) LinkList() *gomock.Call {
 }
 
 // RouteListFiltered mocks base method.
-func (m *MockNetLink) RouteListFiltered(arg0 int, arg1 *netlink.Route, arg2 uint64) ([]netlink.Route, error) {
+func (m *MockNetLink) RouteListFiltered(family int, filter *netlink.Route, filterMask uint64) ([]netlink.Route, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RouteListFiltered", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "RouteListFiltered", family, filter, filterMask)
 	ret0, _ := ret[0].([]netlink.Route)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RouteListFiltered indicates an expected call of RouteListFiltered.
-func (mr *MockNetLinkMockRecorder) RouteListFiltered(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockNetLinkMockRecorder) RouteListFiltered(family, filter, filterMask any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteListFiltered", reflect.TypeOf((*MockNetLink)(nil).RouteListFiltered), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteListFiltered", reflect.TypeOf((*MockNetLink)(nil).RouteListFiltered), family, filter, filterMask)
 }

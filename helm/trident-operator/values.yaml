@@ -189,3 +189,6 @@ ontapConfigurator:
       svmName: ''
       protocols: []
       authType: ''
+
+# enableConcurrency enables the concurrent core feature in Trident **TECH PREVIEW**
+enableConcurrency: false

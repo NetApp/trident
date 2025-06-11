@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/brunoga/deep"
 )
 
 const (
@@ -122,6 +124,10 @@ func (s *Snapshot) ConstructExternal() *SnapshotExternal {
 	return &SnapshotExternal{Snapshot: *clone}
 }
 
+func (s *Snapshot) SmartCopy() interface{} {
+	return deep.MustCopy(s)
+}
+
 func (s *Snapshot) ConstructPersistent() *SnapshotPersistent {
 	clone := s.ConstructClone()
 	return &SnapshotPersistent{Snapshot: *clone}
@@ -147,6 +153,14 @@ func (s *Snapshot) ConstructClone() *Snapshot {
 
 func (s *Snapshot) ID() string {
 	return MakeSnapshotID(s.Config.VolumeName, s.Config.Name)
+}
+
+func (s *Snapshot) GetVolumeID() string {
+	return s.Config.VolumeName
+}
+
+func (s *Snapshot) GetUniqueKey() string {
+	return s.Config.Name
 }
 
 func (s *Snapshot) IsGrouped() bool {

@@ -24,6 +24,7 @@ import (
 type MockGCPClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockGCPClientMockRecorder
+	isgomock struct{}
 }
 
 // MockGCPClientMockRecorder is the mock recorder for MockGCPClient.
@@ -44,155 +45,155 @@ func (m *MockGCPClient) EXPECT() *MockGCPClientMockRecorder {
 }
 
 // ChangeVolumeUnixPermissions mocks base method.
-func (m *MockGCPClient) ChangeVolumeUnixPermissions(arg0 context.Context, arg1 *api.Volume, arg2 string) (*api.Volume, error) {
+func (m *MockGCPClient) ChangeVolumeUnixPermissions(ctx context.Context, volume *api.Volume, newUnixPermissions string) (*api.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChangeVolumeUnixPermissions", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ChangeVolumeUnixPermissions", ctx, volume, newUnixPermissions)
 	ret0, _ := ret[0].(*api.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ChangeVolumeUnixPermissions indicates an expected call of ChangeVolumeUnixPermissions.
-func (mr *MockGCPClientMockRecorder) ChangeVolumeUnixPermissions(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) ChangeVolumeUnixPermissions(ctx, volume, newUnixPermissions any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeVolumeUnixPermissions", reflect.TypeOf((*MockGCPClient)(nil).ChangeVolumeUnixPermissions), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeVolumeUnixPermissions", reflect.TypeOf((*MockGCPClient)(nil).ChangeVolumeUnixPermissions), ctx, volume, newUnixPermissions)
 }
 
 // CreateSnapshot mocks base method.
-func (m *MockGCPClient) CreateSnapshot(arg0 context.Context, arg1 *api.SnapshotCreateRequest) error {
+func (m *MockGCPClient) CreateSnapshot(ctx context.Context, request *api.SnapshotCreateRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateSnapshot", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateSnapshot", ctx, request)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateSnapshot indicates an expected call of CreateSnapshot.
-func (mr *MockGCPClientMockRecorder) CreateSnapshot(arg0, arg1 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) CreateSnapshot(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSnapshot", reflect.TypeOf((*MockGCPClient)(nil).CreateSnapshot), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSnapshot", reflect.TypeOf((*MockGCPClient)(nil).CreateSnapshot), ctx, request)
 }
 
 // CreateVolume mocks base method.
-func (m *MockGCPClient) CreateVolume(arg0 context.Context, arg1 *api.VolumeCreateRequest) error {
+func (m *MockGCPClient) CreateVolume(ctx context.Context, request *api.VolumeCreateRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateVolume", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateVolume", ctx, request)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateVolume indicates an expected call of CreateVolume.
-func (mr *MockGCPClientMockRecorder) CreateVolume(arg0, arg1 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) CreateVolume(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVolume", reflect.TypeOf((*MockGCPClient)(nil).CreateVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVolume", reflect.TypeOf((*MockGCPClient)(nil).CreateVolume), ctx, request)
 }
 
 // DeleteSnapshot mocks base method.
-func (m *MockGCPClient) DeleteSnapshot(arg0 context.Context, arg1 *api.Volume, arg2 *api.Snapshot) error {
+func (m *MockGCPClient) DeleteSnapshot(ctx context.Context, volume *api.Volume, snapshot *api.Snapshot) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSnapshot", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "DeleteSnapshot", ctx, volume, snapshot)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteSnapshot indicates an expected call of DeleteSnapshot.
-func (mr *MockGCPClientMockRecorder) DeleteSnapshot(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) DeleteSnapshot(ctx, volume, snapshot any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSnapshot", reflect.TypeOf((*MockGCPClient)(nil).DeleteSnapshot), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSnapshot", reflect.TypeOf((*MockGCPClient)(nil).DeleteSnapshot), ctx, volume, snapshot)
 }
 
 // DeleteVolume mocks base method.
-func (m *MockGCPClient) DeleteVolume(arg0 context.Context, arg1 *api.Volume) error {
+func (m *MockGCPClient) DeleteVolume(ctx context.Context, volume *api.Volume) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteVolume", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteVolume", ctx, volume)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteVolume indicates an expected call of DeleteVolume.
-func (mr *MockGCPClientMockRecorder) DeleteVolume(arg0, arg1 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) DeleteVolume(ctx, volume any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolume", reflect.TypeOf((*MockGCPClient)(nil).DeleteVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolume", reflect.TypeOf((*MockGCPClient)(nil).DeleteVolume), ctx, volume)
 }
 
 // GetPools mocks base method.
-func (m *MockGCPClient) GetPools(arg0 context.Context) (*[]*api.Pool, error) {
+func (m *MockGCPClient) GetPools(ctx context.Context) (*[]*api.Pool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPools", arg0)
+	ret := m.ctrl.Call(m, "GetPools", ctx)
 	ret0, _ := ret[0].(*[]*api.Pool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetPools indicates an expected call of GetPools.
-func (mr *MockGCPClientMockRecorder) GetPools(arg0 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) GetPools(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPools", reflect.TypeOf((*MockGCPClient)(nil).GetPools), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPools", reflect.TypeOf((*MockGCPClient)(nil).GetPools), ctx)
 }
 
 // GetServiceLevels mocks base method.
-func (m *MockGCPClient) GetServiceLevels(arg0 context.Context) (map[string]string, error) {
+func (m *MockGCPClient) GetServiceLevels(ctx context.Context) (map[string]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetServiceLevels", arg0)
+	ret := m.ctrl.Call(m, "GetServiceLevels", ctx)
 	ret0, _ := ret[0].(map[string]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetServiceLevels indicates an expected call of GetServiceLevels.
-func (mr *MockGCPClientMockRecorder) GetServiceLevels(arg0 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) GetServiceLevels(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceLevels", reflect.TypeOf((*MockGCPClient)(nil).GetServiceLevels), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceLevels", reflect.TypeOf((*MockGCPClient)(nil).GetServiceLevels), ctx)
 }
 
 // GetSnapshotByID mocks base method.
-func (m *MockGCPClient) GetSnapshotByID(arg0 context.Context, arg1 string) (*api.Snapshot, error) {
+func (m *MockGCPClient) GetSnapshotByID(ctx context.Context, snapshotId string) (*api.Snapshot, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSnapshotByID", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetSnapshotByID", ctx, snapshotId)
 	ret0, _ := ret[0].(*api.Snapshot)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSnapshotByID indicates an expected call of GetSnapshotByID.
-func (mr *MockGCPClientMockRecorder) GetSnapshotByID(arg0, arg1 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) GetSnapshotByID(ctx, snapshotId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshotByID", reflect.TypeOf((*MockGCPClient)(nil).GetSnapshotByID), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshotByID", reflect.TypeOf((*MockGCPClient)(nil).GetSnapshotByID), ctx, snapshotId)
 }
 
 // GetSnapshotForVolume mocks base method.
-func (m *MockGCPClient) GetSnapshotForVolume(arg0 context.Context, arg1 *api.Volume, arg2 string) (*api.Snapshot, error) {
+func (m *MockGCPClient) GetSnapshotForVolume(ctx context.Context, volume *api.Volume, snapshotName string) (*api.Snapshot, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSnapshotForVolume", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "GetSnapshotForVolume", ctx, volume, snapshotName)
 	ret0, _ := ret[0].(*api.Snapshot)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSnapshotForVolume indicates an expected call of GetSnapshotForVolume.
-func (mr *MockGCPClientMockRecorder) GetSnapshotForVolume(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) GetSnapshotForVolume(ctx, volume, snapshotName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshotForVolume", reflect.TypeOf((*MockGCPClient)(nil).GetSnapshotForVolume), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshotForVolume", reflect.TypeOf((*MockGCPClient)(nil).GetSnapshotForVolume), ctx, volume, snapshotName)
 }
 
 // GetSnapshotsForVolume mocks base method.
-func (m *MockGCPClient) GetSnapshotsForVolume(arg0 context.Context, arg1 *api.Volume) (*[]api.Snapshot, error) {
+func (m *MockGCPClient) GetSnapshotsForVolume(ctx context.Context, volume *api.Volume) (*[]api.Snapshot, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSnapshotsForVolume", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetSnapshotsForVolume", ctx, volume)
 	ret0, _ := ret[0].(*[]api.Snapshot)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSnapshotsForVolume indicates an expected call of GetSnapshotsForVolume.
-func (mr *MockGCPClientMockRecorder) GetSnapshotsForVolume(arg0, arg1 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) GetSnapshotsForVolume(ctx, volume any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshotsForVolume", reflect.TypeOf((*MockGCPClient)(nil).GetSnapshotsForVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshotsForVolume", reflect.TypeOf((*MockGCPClient)(nil).GetSnapshotsForVolume), ctx, volume)
 }
 
 // GetVersion mocks base method.
-func (m *MockGCPClient) GetVersion(arg0 context.Context) (*version.Version, *version.Version, error) {
+func (m *MockGCPClient) GetVersion(ctx context.Context) (*version.Version, *version.Version, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVersion", arg0)
+	ret := m.ctrl.Call(m, "GetVersion", ctx)
 	ret0, _ := ret[0].(*version.Version)
 	ret1, _ := ret[1].(*version.Version)
 	ret2, _ := ret[2].(error)
@@ -200,75 +201,75 @@ func (m *MockGCPClient) GetVersion(arg0 context.Context) (*version.Version, *ver
 }
 
 // GetVersion indicates an expected call of GetVersion.
-func (mr *MockGCPClientMockRecorder) GetVersion(arg0 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) GetVersion(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVersion", reflect.TypeOf((*MockGCPClient)(nil).GetVersion), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVersion", reflect.TypeOf((*MockGCPClient)(nil).GetVersion), ctx)
 }
 
 // GetVolumeByCreationToken mocks base method.
-func (m *MockGCPClient) GetVolumeByCreationToken(arg0 context.Context, arg1 string) (*api.Volume, error) {
+func (m *MockGCPClient) GetVolumeByCreationToken(ctx context.Context, creationToken string) (*api.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumeByCreationToken", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetVolumeByCreationToken", ctx, creationToken)
 	ret0, _ := ret[0].(*api.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumeByCreationToken indicates an expected call of GetVolumeByCreationToken.
-func (mr *MockGCPClientMockRecorder) GetVolumeByCreationToken(arg0, arg1 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) GetVolumeByCreationToken(ctx, creationToken any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeByCreationToken", reflect.TypeOf((*MockGCPClient)(nil).GetVolumeByCreationToken), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeByCreationToken", reflect.TypeOf((*MockGCPClient)(nil).GetVolumeByCreationToken), ctx, creationToken)
 }
 
 // GetVolumeByID mocks base method.
-func (m *MockGCPClient) GetVolumeByID(arg0 context.Context, arg1 string) (*api.Volume, error) {
+func (m *MockGCPClient) GetVolumeByID(ctx context.Context, volumeId string) (*api.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumeByID", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetVolumeByID", ctx, volumeId)
 	ret0, _ := ret[0].(*api.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumeByID indicates an expected call of GetVolumeByID.
-func (mr *MockGCPClientMockRecorder) GetVolumeByID(arg0, arg1 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) GetVolumeByID(ctx, volumeId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeByID", reflect.TypeOf((*MockGCPClient)(nil).GetVolumeByID), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeByID", reflect.TypeOf((*MockGCPClient)(nil).GetVolumeByID), ctx, volumeId)
 }
 
 // GetVolumeByName mocks base method.
-func (m *MockGCPClient) GetVolumeByName(arg0 context.Context, arg1 string) (*api.Volume, error) {
+func (m *MockGCPClient) GetVolumeByName(ctx context.Context, name string) (*api.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumeByName", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetVolumeByName", ctx, name)
 	ret0, _ := ret[0].(*api.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumeByName indicates an expected call of GetVolumeByName.
-func (mr *MockGCPClientMockRecorder) GetVolumeByName(arg0, arg1 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) GetVolumeByName(ctx, name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeByName", reflect.TypeOf((*MockGCPClient)(nil).GetVolumeByName), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeByName", reflect.TypeOf((*MockGCPClient)(nil).GetVolumeByName), ctx, name)
 }
 
 // GetVolumes mocks base method.
-func (m *MockGCPClient) GetVolumes(arg0 context.Context) (*[]api.Volume, error) {
+func (m *MockGCPClient) GetVolumes(ctx context.Context) (*[]api.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumes", arg0)
+	ret := m.ctrl.Call(m, "GetVolumes", ctx)
 	ret0, _ := ret[0].(*[]api.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumes indicates an expected call of GetVolumes.
-func (mr *MockGCPClientMockRecorder) GetVolumes(arg0 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) GetVolumes(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumes", reflect.TypeOf((*MockGCPClient)(nil).GetVolumes), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumes", reflect.TypeOf((*MockGCPClient)(nil).GetVolumes), ctx)
 }
 
 // InvokeAPI mocks base method.
-func (m *MockGCPClient) InvokeAPI(arg0 context.Context, arg1 []byte, arg2, arg3 string) (*http.Response, []byte, error) {
+func (m *MockGCPClient) InvokeAPI(ctx context.Context, requestBody []byte, method, gcpURL string) (*http.Response, []byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InvokeAPI", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "InvokeAPI", ctx, requestBody, method, gcpURL)
 	ret0, _ := ret[0].(*http.Response)
 	ret1, _ := ret[1].([]byte)
 	ret2, _ := ret[2].(error)
@@ -276,89 +277,89 @@ func (m *MockGCPClient) InvokeAPI(arg0 context.Context, arg1 []byte, arg2, arg3 
 }
 
 // InvokeAPI indicates an expected call of InvokeAPI.
-func (mr *MockGCPClientMockRecorder) InvokeAPI(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) InvokeAPI(ctx, requestBody, method, gcpURL any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvokeAPI", reflect.TypeOf((*MockGCPClient)(nil).InvokeAPI), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvokeAPI", reflect.TypeOf((*MockGCPClient)(nil).InvokeAPI), ctx, requestBody, method, gcpURL)
 }
 
 // RelabelVolume mocks base method.
-func (m *MockGCPClient) RelabelVolume(arg0 context.Context, arg1 *api.Volume, arg2 []string) (*api.Volume, error) {
+func (m *MockGCPClient) RelabelVolume(ctx context.Context, volume *api.Volume, labels []string) (*api.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RelabelVolume", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "RelabelVolume", ctx, volume, labels)
 	ret0, _ := ret[0].(*api.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RelabelVolume indicates an expected call of RelabelVolume.
-func (mr *MockGCPClientMockRecorder) RelabelVolume(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) RelabelVolume(ctx, volume, labels any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RelabelVolume", reflect.TypeOf((*MockGCPClient)(nil).RelabelVolume), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RelabelVolume", reflect.TypeOf((*MockGCPClient)(nil).RelabelVolume), ctx, volume, labels)
 }
 
 // RenameRelabelVolume mocks base method.
-func (m *MockGCPClient) RenameRelabelVolume(arg0 context.Context, arg1 *api.Volume, arg2 string, arg3 []string) (*api.Volume, error) {
+func (m *MockGCPClient) RenameRelabelVolume(ctx context.Context, volume *api.Volume, newName string, labels []string) (*api.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RenameRelabelVolume", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "RenameRelabelVolume", ctx, volume, newName, labels)
 	ret0, _ := ret[0].(*api.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RenameRelabelVolume indicates an expected call of RenameRelabelVolume.
-func (mr *MockGCPClientMockRecorder) RenameRelabelVolume(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) RenameRelabelVolume(ctx, volume, newName, labels any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenameRelabelVolume", reflect.TypeOf((*MockGCPClient)(nil).RenameRelabelVolume), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenameRelabelVolume", reflect.TypeOf((*MockGCPClient)(nil).RenameRelabelVolume), ctx, volume, newName, labels)
 }
 
 // RenameVolume mocks base method.
-func (m *MockGCPClient) RenameVolume(arg0 context.Context, arg1 *api.Volume, arg2 string) (*api.Volume, error) {
+func (m *MockGCPClient) RenameVolume(ctx context.Context, volume *api.Volume, newName string) (*api.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RenameVolume", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "RenameVolume", ctx, volume, newName)
 	ret0, _ := ret[0].(*api.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RenameVolume indicates an expected call of RenameVolume.
-func (mr *MockGCPClientMockRecorder) RenameVolume(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) RenameVolume(ctx, volume, newName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenameVolume", reflect.TypeOf((*MockGCPClient)(nil).RenameVolume), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenameVolume", reflect.TypeOf((*MockGCPClient)(nil).RenameVolume), ctx, volume, newName)
 }
 
 // ResizeVolume mocks base method.
-func (m *MockGCPClient) ResizeVolume(arg0 context.Context, arg1 *api.Volume, arg2 int64) (*api.Volume, error) {
+func (m *MockGCPClient) ResizeVolume(ctx context.Context, volume *api.Volume, newSizeBytes int64) (*api.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResizeVolume", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ResizeVolume", ctx, volume, newSizeBytes)
 	ret0, _ := ret[0].(*api.Volume)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ResizeVolume indicates an expected call of ResizeVolume.
-func (mr *MockGCPClientMockRecorder) ResizeVolume(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) ResizeVolume(ctx, volume, newSizeBytes any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResizeVolume", reflect.TypeOf((*MockGCPClient)(nil).ResizeVolume), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResizeVolume", reflect.TypeOf((*MockGCPClient)(nil).ResizeVolume), ctx, volume, newSizeBytes)
 }
 
 // RestoreSnapshot mocks base method.
-func (m *MockGCPClient) RestoreSnapshot(arg0 context.Context, arg1 *api.Volume, arg2 *api.Snapshot) error {
+func (m *MockGCPClient) RestoreSnapshot(ctx context.Context, volume *api.Volume, snapshot *api.Snapshot) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RestoreSnapshot", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "RestoreSnapshot", ctx, volume, snapshot)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RestoreSnapshot indicates an expected call of RestoreSnapshot.
-func (mr *MockGCPClientMockRecorder) RestoreSnapshot(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) RestoreSnapshot(ctx, volume, snapshot any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreSnapshot", reflect.TypeOf((*MockGCPClient)(nil).RestoreSnapshot), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreSnapshot", reflect.TypeOf((*MockGCPClient)(nil).RestoreSnapshot), ctx, volume, snapshot)
 }
 
 // VolumeExistsByCreationToken mocks base method.
-func (m *MockGCPClient) VolumeExistsByCreationToken(arg0 context.Context, arg1 string) (bool, *api.Volume, error) {
+func (m *MockGCPClient) VolumeExistsByCreationToken(ctx context.Context, creationToken string) (bool, *api.Volume, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VolumeExistsByCreationToken", arg0, arg1)
+	ret := m.ctrl.Call(m, "VolumeExistsByCreationToken", ctx, creationToken)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(*api.Volume)
 	ret2, _ := ret[2].(error)
@@ -366,36 +367,36 @@ func (m *MockGCPClient) VolumeExistsByCreationToken(arg0 context.Context, arg1 s
 }
 
 // VolumeExistsByCreationToken indicates an expected call of VolumeExistsByCreationToken.
-func (mr *MockGCPClientMockRecorder) VolumeExistsByCreationToken(arg0, arg1 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) VolumeExistsByCreationToken(ctx, creationToken any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeExistsByCreationToken", reflect.TypeOf((*MockGCPClient)(nil).VolumeExistsByCreationToken), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeExistsByCreationToken", reflect.TypeOf((*MockGCPClient)(nil).VolumeExistsByCreationToken), ctx, creationToken)
 }
 
 // WaitForSnapshotState mocks base method.
-func (m *MockGCPClient) WaitForSnapshotState(arg0 context.Context, arg1 *api.Snapshot, arg2 string, arg3 []string, arg4 time.Duration) error {
+func (m *MockGCPClient) WaitForSnapshotState(ctx context.Context, snapshot *api.Snapshot, desiredState string, abortStates []string, maxElapsedTime time.Duration) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WaitForSnapshotState", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "WaitForSnapshotState", ctx, snapshot, desiredState, abortStates, maxElapsedTime)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // WaitForSnapshotState indicates an expected call of WaitForSnapshotState.
-func (mr *MockGCPClientMockRecorder) WaitForSnapshotState(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) WaitForSnapshotState(ctx, snapshot, desiredState, abortStates, maxElapsedTime any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForSnapshotState", reflect.TypeOf((*MockGCPClient)(nil).WaitForSnapshotState), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForSnapshotState", reflect.TypeOf((*MockGCPClient)(nil).WaitForSnapshotState), ctx, snapshot, desiredState, abortStates, maxElapsedTime)
 }
 
 // WaitForVolumeStates mocks base method.
-func (m *MockGCPClient) WaitForVolumeStates(arg0 context.Context, arg1 *api.Volume, arg2, arg3 []string, arg4 time.Duration) (string, error) {
+func (m *MockGCPClient) WaitForVolumeStates(ctx context.Context, volume *api.Volume, desiredStates, abortStates []string, maxElapsedTime time.Duration) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WaitForVolumeStates", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "WaitForVolumeStates", ctx, volume, desiredStates, abortStates, maxElapsedTime)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // WaitForVolumeStates indicates an expected call of WaitForVolumeStates.
-func (mr *MockGCPClientMockRecorder) WaitForVolumeStates(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockGCPClientMockRecorder) WaitForVolumeStates(ctx, volume, desiredStates, abortStates, maxElapsedTime any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForVolumeStates", reflect.TypeOf((*MockGCPClient)(nil).WaitForVolumeStates), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForVolumeStates", reflect.TypeOf((*MockGCPClient)(nil).WaitForVolumeStates), ctx, volume, desiredStates, abortStates, maxElapsedTime)
 }

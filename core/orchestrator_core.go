@@ -47,42 +47,6 @@ const (
 	AttachISCSIVolumeTimeoutLong   = time.Second * 90
 )
 
-// recordTiming is used to record in Prometheus the total time taken for an operation as follows:
-//
-//	defer recordTiming("backend_add")()
-//
-// see also: https://play.golang.org/p/6xRXlhFdqBd
-func recordTiming(operation string, err *error) func() {
-	startTime := time.Now()
-	return func() {
-		endTime := time.Since(startTime)
-		endTimeMS := float64(endTime.Milliseconds())
-		success := "true"
-		if *err != nil {
-			success = "false"
-		}
-		operationDurationInMsSummary.WithLabelValues(operation, success).Observe(endTimeMS)
-	}
-}
-
-func recordTransactionTiming(txn *storage.VolumeTransaction, err *error) {
-	if txn == nil || txn.VolumeCreatingConfig == nil {
-		// for unit tests, there will be no txn to record
-		return
-	}
-
-	operation := "transaction_volume_finish"
-
-	startTime := txn.VolumeCreatingConfig.StartTime
-	endTime := time.Since(startTime)
-	endTimeMS := float64(endTime.Milliseconds())
-	success := "true"
-	if *err != nil {
-		success = "false"
-	}
-	operationDurationInMsSummary.WithLabelValues(operation, success).Observe(endTimeMS)
-}
-
 type TridentOrchestrator struct {
 	backends                 map[string]storage.Backend // key is UUID, not name
 	volumes                  map[string]*storage.Volume
@@ -380,7 +344,7 @@ func (o *TridentOrchestrator) bootstrapVolumes(ctx context.Context) error {
 				}).Warning("Couldn't find backend. Setting state to MissingBackend.")
 				vol.State = storage.VolumeStateMissingBackend
 			} else {
-				backend.Volumes()[vol.Config.Name] = vol
+				backend.Volumes().Store(vol.Config.Name, vol)
 				if fakeDriver, ok := backend.Driver().(*fake.StorageDriver); ok {
 					fakeDriver.BootstrapVolume(ctx, vol)
 				}
@@ -1144,7 +1108,7 @@ func (o *TridentOrchestrator) validateAndCreateBackendFromConfig(
 	}
 
 	// For backends created using CRD Controller ensure there are no forbidden fields
-	if o.isCRDContext(ctx) {
+	if isCRDContext(ctx) {
 		if err = factory.SpecOnlyValidation(ctx, commonConfig, configInJSON); err != nil {
 			return nil, errors.WrapUnsupportedConfigError(err)
 		}
@@ -1290,7 +1254,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 
 	// Do not allow update of TridentBackendConfig-based backends using tridentctl
 	if originalConfigRef != "" {
-		if !o.isCRDContext(ctx) && !o.isPeriodicContext(ctx) {
+		if !isCRDContext(ctx) && !isPeriodicContext(ctx) {
 			Logc(ctx).WithFields(LogFields{
 				"backendName": backendName,
 				"backendUUID": backendUUID,
@@ -1470,7 +1434,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 					return nil, err
 				}
 			}
-			o.backends[backend.BackendUUID()].Volumes()[volName] = vol
+			o.backends[backend.BackendUUID()].Volumes().Store(volName, vol)
 		}
 	}
 
@@ -1809,7 +1773,7 @@ func (o *TridentOrchestrator) deleteBackendByBackendUUID(ctx context.Context, ba
 
 	// Do not allow deletion of TridentBackendConfig-based backends using tridentctl
 	if backend.ConfigRef() != "" {
-		if !o.isCRDContext(ctx) {
+		if !isCRDContext(ctx) {
 			Logc(ctx).WithFields(LogFields{
 				"backendName": backendName,
 				"backendUUID": backendUUID,
@@ -1825,12 +1789,14 @@ func (o *TridentOrchestrator) deleteBackendByBackendUUID(ctx context.Context, ba
 	backend.SetOnline(false) // TODO eventually remove
 	backend.SetState(storage.Deleting)
 	storageClasses := make(map[string]*storageclass.StorageClass)
-	for _, storagePool := range backend.Storage() {
+	backend.StoragePools().Range(func(_, v interface{}) bool {
+		storagePool := v.(storage.Pool)
 		for _, scName := range storagePool.StorageClasses() {
 			storageClasses[scName] = o.storageClasses[scName]
 		}
 		storagePool.SetStorageClasses([]string{})
-	}
+		return true
+	})
 	for _, sc := range storageClasses {
 		sc.RemovePoolsForBackend(backend)
 	}
@@ -1941,7 +1907,7 @@ func (o *TridentOrchestrator) addVolumeInitial(
 		"Protocol":   volumeConfig.Protocol,
 	}).Trace("Calling getProtocol with args.")
 	// Get the protocol based on the specified access mode & protocol
-	protocol, err := o.getProtocol(ctx, volumeConfig.VolumeMode, volumeConfig.AccessMode, volumeConfig.Protocol)
+	protocol, err := getProtocol(ctx, volumeConfig.VolumeMode, volumeConfig.AccessMode, volumeConfig.Protocol)
 	if err != nil {
 		return nil, err
 	}
@@ -2075,7 +2041,6 @@ func (o *TridentOrchestrator) addVolumeRetry(
 ) (externalVol *storage.VolumeExternal, err error) {
 	var (
 		backend storage.Backend
-		pool    storage.Pool
 		vol     *storage.Volume
 	)
 
@@ -2092,11 +2057,12 @@ func (o *TridentOrchestrator) addVolumeRetry(
 			txn.VolumeCreatingConfig.BackendUUID, volumeConfig.Name)
 	}
 
-	pool, found = backend.Storage()[txn.VolumeCreatingConfig.Pool]
+	p, found := backend.StoragePools().Load(txn.VolumeCreatingConfig.Pool)
 	if !found {
 		return nil, errors.NotFoundError("pool %s for backend %s not found",
 			txn.VolumeCreatingConfig.Pool, txn.VolumeCreatingConfig.BackendUUID)
 	}
+	pool := p.(storage.Pool)
 
 	// Recovery functions in case of error
 	defer func() {
@@ -2484,8 +2450,8 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 	// is because pool names are autogenerated based and are based on their relative arrangement.
 	sourceVolumePoolName := sourceVolume.Pool
 	if sourceVolumePoolName != drivers.UnsetPool {
-		if sourceVolumeStoragePool, ok := backend.Storage()[sourceVolumePoolName]; ok {
-			pool = sourceVolumeStoragePool
+		if sourceVolumeStoragePool, ok := backend.StoragePools().Load(sourceVolumePoolName); ok {
+			pool = sourceVolumeStoragePool.(storage.Pool)
 		}
 	}
 
@@ -2571,8 +2537,8 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 	// or non-existent pool.
 	sourceVolumePoolName := txn.VolumeCreatingConfig.Pool
 	if sourceVolumePoolName != drivers.UnsetPool {
-		if sourceVolumeStoragePool, ok := backend.Storage()[sourceVolumePoolName]; ok {
-			pool = sourceVolumeStoragePool
+		if sourceVolumeStoragePool, ok := backend.StoragePools().Load(sourceVolumePoolName); ok {
+			pool = sourceVolumeStoragePool.(storage.Pool)
 		}
 	}
 	if pool == nil {
@@ -2717,10 +2683,10 @@ func (o *TridentOrchestrator) validateImportVolume(ctx context.Context, volumeCo
 			volumeConfig.StorageClass, backend.Name())
 	}
 
-	// Identify the resultant protocol based on the VolumeMode, AccessMode and the Protocol. Fro a valid case
-	// o.getProtocol returns a protocol that is either same as volumeConfig.Protocol or `file/block` protocol
+	// Identify the resultant protocol based on the VolumeMode, AccessMode and the Protocol. For a valid case
+	// getProtocol() returns a protocol that is either same as volumeConfig.Protocol or `file/block` protocol
 	// in place of `Any` Protocol.
-	protocol, err := o.getProtocol(ctx, volumeConfig.VolumeMode, volumeConfig.AccessMode, volumeConfig.Protocol)
+	protocol, err := getProtocol(ctx, volumeConfig.VolumeMode, volumeConfig.AccessMode, volumeConfig.Protocol)
 	if err != nil {
 		return err
 	}
@@ -3233,7 +3199,7 @@ func (o *TridentOrchestrator) deleteVolume(ctx context.Context, volumeName strin
 		return err
 	}
 
-	// Check if we need to remove a soft-deleted source volume
+	// Check if we need to remove a soft-deleted source volume because a subordinate was deleted first.
 	if volume.Config.CloneSourceVolume != "" {
 		if cloneSourceVolume, ok := o.volumes[volume.Config.CloneSourceVolume]; ok && cloneSourceVolume.IsDeleting() {
 			if o.deleteVolume(ctx, cloneSourceVolume.Config.Name) != nil {
@@ -3476,18 +3442,6 @@ func (o *TridentOrchestrator) publishVolume(
 	return nil
 }
 
-func generateVolumePublication(volName string, publishInfo *models.VolumePublishInfo) *models.VolumePublication {
-	vp := &models.VolumePublication{
-		Name:       models.GenerateVolumePublishName(volName, publishInfo.HostName),
-		VolumeName: volName,
-		NodeName:   publishInfo.HostName,
-		ReadOnly:   publishInfo.ReadOnly,
-		AccessMode: publishInfo.AccessMode,
-	}
-
-	return vp
-}
-
 // setPublicationsSynced marks if volume publications have been synced or not and updates it in the store.
 func (o *TridentOrchestrator) setPublicationsSynced(ctx context.Context, volumePublicationsSynced bool) error {
 	version, err := o.storeClient.GetVersion(ctx)
@@ -3633,11 +3587,6 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 	return nil
 }
 
-// isDockerPluginMode returns true if the ENV variable config.DockerPluginModeEnvVariable is set
-func isDockerPluginMode() bool {
-	return os.Getenv(config.DockerPluginModeEnvVariable) != ""
-}
-
 // AttachVolume mounts a volume to the local host.  This method is currently only used by Docker,
 // and it should be able to accomplish its task using only the data passed in; it should not need to
 // use the storage controller API.  It may be assumed that this method always runs on the host to
@@ -3771,40 +3720,6 @@ func (o *TridentOrchestrator) DetachVolume(ctx context.Context, volumeName, moun
 
 	// Best effort removal of the mount point
 	_ = os.Remove(hostMountpoint) // trident is not chrooted, therefore we must the /host if in plugin mode
-	return nil
-}
-
-// SetVolumeState sets the state of a volume to a given value
-func (o *TridentOrchestrator) SetVolumeState(
-	ctx context.Context, volumeName string, state storage.VolumeState,
-) (err error) {
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
-
-	if o.bootstrapError != nil {
-		return o.bootstrapError
-	}
-
-	defer recordTiming("volume_set_state", &err)()
-
-	o.mutex.Lock()
-	defer o.mutex.Unlock()
-	defer o.updateMetrics()
-
-	volume, ok := o.volumes[volumeName]
-	if !ok {
-		return errors.NotFoundError("volume %s not found", volumeName)
-	}
-	// Nothing to do if the volume is already in desired state
-	if volume.State == state {
-		return nil
-	}
-	if err := o.updateVolumeOnPersistentStore(ctx, volume); err != nil {
-		msg := fmt.Sprintf("error updating volume in persistent store; %v", err)
-		Logc(ctx).WithField("volume", volumeName).Errorf(msg)
-		return fmt.Errorf(msg)
-	}
-	volume.State = state
-	Logc(ctx).WithField("volume", volumeName).Debugf("Volume state set to %s.", string(state))
 	return nil
 }
 
@@ -5277,7 +5192,7 @@ func (o *TridentOrchestrator) ReloadVolumes(ctx context.Context) (err error) {
 
 	// Clear out cached volumes in the backends
 	for _, backend := range o.backends {
-		backend.SetVolumes(make(map[string]*storage.Volume))
+		backend.ClearVolumes()
 	}
 
 	// Re-run the volume bootstrapping code
@@ -5428,91 +5343,6 @@ func (o *TridentOrchestrator) resizeVolumeCleanup(
 		// persistent store can be updated in the future through retries.
 	}
 	return err
-}
-
-// getProtocol returns the appropriate protocol based on a specified volume mode, access mode and protocol, or
-// an error if the two settings are incompatible.
-// NOTE: We do not support raw block volumes with NFS protocol.
-func (o *TridentOrchestrator) getProtocol(
-	ctx context.Context, volumeMode config.VolumeMode, accessMode config.AccessMode, protocol config.Protocol,
-) (config.Protocol, error) {
-	Logc(ctx).WithFields(LogFields{
-		"volumeMode": volumeMode,
-		"accessMode": accessMode,
-		"protocol":   protocol,
-	}).Debug("Orchestrator#getProtocol")
-
-	resultProtocol := protocol
-	var err error = nil
-
-	defer Logc(ctx).WithFields(LogFields{
-		"resultProtocol": resultProtocol,
-		"err":            err,
-	}).Debug("Orchestrator#getProtocol")
-
-	type accessVariables struct {
-		volumeMode config.VolumeMode
-		accessMode config.AccessMode
-		protocol   config.Protocol
-	}
-	type protocolResult struct {
-		protocol config.Protocol
-		err      error
-	}
-
-	err = fmt.Errorf("incompatible volume mode (%s), access mode (%s) and protocol (%s)", volumeMode, accessMode,
-		protocol)
-
-	protocolTable := map[accessVariables]protocolResult{
-		{config.Filesystem, config.ModeAny, config.ProtocolAny}: {config.ProtocolAny, nil},
-		{config.Filesystem, config.ModeAny, config.File}:        {config.File, nil},
-		{config.Filesystem, config.ModeAny, config.Block}:       {config.Block, nil},
-
-		{config.Filesystem, config.ReadWriteOnce, config.ProtocolAny}: {config.ProtocolAny, nil},
-		{config.Filesystem, config.ReadWriteOnce, config.File}:        {config.File, nil},
-		{config.Filesystem, config.ReadWriteOnce, config.Block}:       {config.Block, nil},
-
-		{config.Filesystem, config.ReadWriteOncePod, config.ProtocolAny}: {config.ProtocolAny, nil},
-		{config.Filesystem, config.ReadWriteOncePod, config.File}:        {config.File, nil},
-		{config.Filesystem, config.ReadWriteOncePod, config.Block}:       {config.Block, nil},
-
-		{config.Filesystem, config.ReadOnlyMany, config.ProtocolAny}: {config.ProtocolAny, nil},
-		{config.Filesystem, config.ReadOnlyMany, config.File}:        {config.File, nil},
-		{config.Filesystem, config.ReadOnlyMany, config.Block}:       {config.Block, nil},
-
-		{config.Filesystem, config.ReadWriteMany, config.ProtocolAny}: {config.File, nil},
-		{config.Filesystem, config.ReadWriteMany, config.File}:        {config.File, nil},
-		{config.Filesystem, config.ReadWriteMany, config.Block}:       {config.ProtocolAny, err},
-
-		{config.RawBlock, config.ModeAny, config.ProtocolAny}: {config.Block, nil},
-		{config.RawBlock, config.ModeAny, config.File}:        {config.ProtocolAny, err},
-		{config.RawBlock, config.ModeAny, config.Block}:       {config.Block, nil},
-
-		{config.RawBlock, config.ReadWriteOnce, config.ProtocolAny}: {config.Block, nil},
-		{config.RawBlock, config.ReadWriteOnce, config.File}:        {config.ProtocolAny, err},
-		{config.RawBlock, config.ReadWriteOnce, config.Block}:       {config.Block, nil},
-
-		{config.RawBlock, config.ReadWriteOncePod, config.ProtocolAny}: {config.Block, nil},
-		{config.RawBlock, config.ReadWriteOncePod, config.File}:        {config.ProtocolAny, err},
-		{config.RawBlock, config.ReadWriteOncePod, config.Block}:       {config.Block, nil},
-
-		{config.RawBlock, config.ReadOnlyMany, config.ProtocolAny}: {config.Block, nil},
-		{config.RawBlock, config.ReadOnlyMany, config.File}:        {config.ProtocolAny, err},
-		{config.RawBlock, config.ReadOnlyMany, config.Block}:       {config.Block, nil},
-
-		{config.RawBlock, config.ReadWriteMany, config.ProtocolAny}: {config.Block, nil},
-		{config.RawBlock, config.ReadWriteMany, config.File}:        {config.ProtocolAny, err},
-		{config.RawBlock, config.ReadWriteMany, config.Block}:       {config.Block, nil},
-	}
-
-	res, isValid := protocolTable[accessVariables{volumeMode, accessMode, protocol}]
-
-	if !isValid {
-		return config.ProtocolAny, fmt.Errorf("invalid volume mode (%s), access mode (%s) or protocol (%s)", volumeMode,
-			accessMode, protocol)
-	}
-
-	return res.protocol, res.err
 }
 
 func (o *TridentOrchestrator) AddStorageClass(
@@ -5755,7 +5585,7 @@ func (o *TridentOrchestrator) publishedNodesForBackend(b storage.Backend) []*mod
 	m := make(map[string]struct{})
 
 	for _, pub := range pubs {
-		if _, ok := volumes[pub.VolumeName]; ok {
+		if _, ok := volumes.Load(pub.VolumeName); ok {
 			m[pub.NodeName] = struct{}{}
 		}
 	}
@@ -5774,9 +5604,11 @@ func (o *TridentOrchestrator) volumePublicationsForBackend(b storage.Backend) ma
 	volumes := b.Volumes()
 	volumeToNodePublications := make(map[string][]*models.VolumePublication)
 
-	for _, volume := range volumes {
-		volumeToNodePublications[volume.Config.Name] = o.volumePublications.ListPublicationsForVolume(volume.Config.Name)
-	}
+	volumes.Range(func(k, _ interface{}) bool {
+		volName := k.(string)
+		volumeToNodePublications[volName] = o.volumePublications.ListPublicationsForVolume(volName)
+		return true
+	})
 	return volumeToNodePublications
 }
 
@@ -6370,23 +6202,6 @@ func (o *TridentOrchestrator) ListVolumePublicationsForNode(
 	return
 }
 
-// DeleteVolumePublication deletes the record of the volume publication for a given volume/node pair
-func (o *TridentOrchestrator) DeleteVolumePublication(ctx context.Context, volumeName, nodeName string) (err error) {
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
-
-	if o.bootstrapError != nil {
-		return o.bootstrapError
-	}
-
-	defer recordTiming("vol_pub_delete", &err)()
-
-	o.mutex.Lock()
-	defer o.mutex.Unlock()
-	defer o.updateMetrics()
-
-	return o.deleteVolumePublication(ctx, volumeName, nodeName)
-}
-
 func (o *TridentOrchestrator) deleteVolumePublication(ctx context.Context, volumeName, nodeName string) (err error) {
 	fields := LogFields{
 		"volumeName": volumeName,
@@ -6470,16 +6285,6 @@ func (o *TridentOrchestrator) replaceBackendAndUpdateVolumesOnPersistentStore(
 		"oldBackendName": origBackend.Name(),
 	}).Debug("Renaming a backend and updating volumes.")
 	return o.storeClient.ReplaceBackendAndUpdateVolumes(ctx, origBackend, newBackend)
-}
-
-func (o *TridentOrchestrator) isCRDContext(ctx context.Context) bool {
-	ctxSource := ctx.Value(ContextKeyRequestSource)
-	return ctxSource != nil && ctxSource == ContextSourceCRD
-}
-
-func (o *TridentOrchestrator) isPeriodicContext(ctx context.Context) bool {
-	ctxSource := ctx.Value(ContextKeyRequestSource)
-	return ctxSource != nil && ctxSource == ContextSourcePeriodic
 }
 
 // EstablishMirror creates a net-new replication mirror relationship between 2 volumes on a backend

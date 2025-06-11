@@ -126,6 +126,22 @@ func (p *StoragePool) ConstructExternal() *PoolExternal {
 	return external
 }
 
+// ConstructExternalWithPoolMap returns the external form of a pool.  The storage class information
+// is passed in as a map of pool names to storage classes.
+func (p *StoragePool) ConstructExternalWithPoolMap(poolMap map[string][]string) *PoolExternal {
+	external := &PoolExternal{
+		Name:                p.name,
+		StorageClasses:      poolMap[p.name],
+		Attributes:          p.attributes,
+		SupportedTopologies: p.supportedTopologies,
+	}
+
+	// We want to sort these so that the output remains consistent;
+	// there are cases where the order won't always be the same.
+	sort.Strings(external.StorageClasses)
+	return external
+}
+
 // GetLabelsJSON returns a JSON-formatted string containing the labels on this pool, suitable
 // for a label set on a storage volume.  The outer key may be customized.  For example:
 // {"provisioning":{"cloud":"anf","clusterName":"dev-test-cluster-1"}}

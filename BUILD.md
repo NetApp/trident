@@ -134,14 +134,6 @@ Path to buildkitd config file for docker buildx. Used to configure buildx contex
 registry mirrors. See docker (https://docs.docker.com/engine/reference/commandline/buildx_create/#config) and buildkit
 (https://github.com/moby/buildkit/blob/master/docs/buildkitd.toml.md) docs for more options and examples.
 
-`DEFAULT_AUTOSUPPORT_IMAGE`
-
-Override the default asup image in tridentctl and operator
-
-`DEFAULT_ACP_IMAGE`
-
-Override the default acp image in tridentctl and operator
-
 Example file:
 ```shell
 # insecure, local/private registry, set $PRIVATE_REGISTRY to appropriate value
@@ -153,6 +145,14 @@ Example file:
 [registry."docker.io"]
   mirrors = ["$MIRROR"]
 ```
+
+`DEFAULT_AUTOSUPPORT_IMAGE`
+
+Override the default asup image in tridentctl and operator
+
+`DEFAULT_ACP_IMAGE`
+
+Override the default acp image in tridentctl and operator
 
 `TRIDENT_IMAGE`
 

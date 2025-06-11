@@ -21,6 +21,7 @@ import (
 type MockTridentACP struct {
 	ctrl     *gomock.Controller
 	recorder *MockTridentACPMockRecorder
+	isgomock struct{}
 }
 
 // MockTridentACPMockRecorder is the mock recorder for MockTridentACP.

@@ -69,7 +69,7 @@ type NASQtreeStorageDriver struct {
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
 
-	cloneSplitTimers map[string]time.Time
+	cloneSplitTimers *sync.Map
 }
 
 func (d *NASQtreeStorageDriver) GetConfig() drivers.DriverConfig {
@@ -242,7 +242,7 @@ func (d *NASQtreeStorageDriver) Initialize(
 	d.telemetry.Start(ctx)
 
 	// Set up the clone split timers.
-	d.cloneSplitTimers = make(map[string]time.Time)
+	d.cloneSplitTimers = &sync.Map{}
 
 	d.initialized = true
 	return nil
@@ -1237,7 +1237,7 @@ func (d *NASQtreeStorageDriver) DeleteSnapshot(
 	}
 
 	// Clean up any split timer.
-	delete(d.cloneSplitTimers, snapConfig.ID())
+	d.cloneSplitTimers.Delete(snapConfig.ID())
 
 	Logc(ctx).WithField("snapshotName", snapConfig.InternalName).Debug("Deleted snapshot.")
 	return nil

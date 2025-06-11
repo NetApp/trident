@@ -126,6 +126,7 @@ var (
 		"Interval at which the NVMe self-healing thread is invoked")
 
 	// core
+	enableConcurrency          = flag.Bool("enable_concurrency", false, "Enable Concurrency in trident.")
 	backendStoragePollInterval = flag.Duration("backend_storage_poll_interval", config.BackendStoragePollInterval,
 		"Interval at which core polls backend storage for its state")
 
@@ -361,10 +362,20 @@ func main() {
 
 	processCmdLineArgs(ctx)
 
-	orchestrator, err := core.NewTridentOrchestrator(storeClient)
-	if err != nil {
-		_, _ = fmt.Fprint(os.Stderr, err)
-		os.Exit(1)
+	var orchestrator core.Orchestrator
+	if *enableConcurrency {
+		Log().Warning("Concurrency is enabled, feature is in tech preview and may not work as expected.")
+		orchestrator, err = core.NewConcurrentTridentOrchestrator(storeClient)
+		if err != nil {
+			_, _ = fmt.Fprint(os.Stderr, err)
+			os.Exit(1)
+		}
+	} else {
+		orchestrator, err = core.NewTridentOrchestrator(storeClient)
+		if err != nil {
+			_, _ = fmt.Fprint(os.Stderr, err)
+			os.Exit(1)
+		}
 	}
 
 	// Create HTTP metrics frontend
@@ -577,10 +588,13 @@ func main() {
 		}
 	}
 
-	if config.CurrentDriverContext == config.ContextCSI {
-		go orchestrator.PeriodicallyReconcileNodeAccessOnBackends()
+	// TODO (cknight): enable for concurrent core
+	if !*enableConcurrency {
+		if config.CurrentDriverContext == config.ContextCSI {
+			go orchestrator.PeriodicallyReconcileNodeAccessOnBackends()
+		}
+		go orchestrator.PeriodicallyReconcileBackendState(*backendStoragePollInterval)
 	}
-	go orchestrator.PeriodicallyReconcileBackendState(*backendStoragePollInterval)
 
 	// Register and wait for a shutdown signal
 	c := make(chan os.Signal, 1)

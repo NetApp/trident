@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/RoaringBitmap/roaring/v2"
@@ -55,7 +56,7 @@ type SANStorageDriver struct {
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
 
-	cloneSplitTimers map[string]time.Time
+	cloneSplitTimers *sync.Map
 }
 
 func (d *SANStorageDriver) GetConfig() drivers.DriverConfig {
@@ -202,7 +203,7 @@ func (d *SANStorageDriver) Initialize(
 	d.telemetry.Start(ctx)
 
 	// Set up the clone split timers
-	d.cloneSplitTimers = make(map[string]time.Time)
+	d.cloneSplitTimers = &sync.Map{}
 
 	d.initialized = true
 	return nil
@@ -1009,6 +1010,8 @@ func (d *SANStorageDriver) Unpublish(
 	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
 	name := volConfig.InternalName
+	lunMutex.Lock(lunPath(name))
+	defer lunMutex.Unlock(lunPath(name))
 
 	fields := LogFields{
 		"Method": "Unpublish",
@@ -1026,6 +1029,8 @@ func (d *SANStorageDriver) Unpublish(
 	var igroupName string
 	if d.Config.SANType == sa.FCP {
 		igroupName = getNodeSpecificFCPIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+		igroupMutex.Lock(igroupName)
+		defer igroupMutex.Unlock(igroupName)
 		lunPath := lunPath(name)
 		if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath); err != nil {
 			return fmt.Errorf("error unmapping LUN %s from igroup %s; %v", lunPath, igroupName, err)
@@ -1036,6 +1041,8 @@ func (d *SANStorageDriver) Unpublish(
 			igroupName)
 	} else {
 		igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+		igroupMutex.Lock(igroupName)
+		defer igroupMutex.Unlock(igroupName)
 		lunPath := lunPath(name)
 		if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath); err != nil {
 			return fmt.Errorf("error unmapping LUN %s from igroup %s; %v", lunPath, igroupName, err)
@@ -1151,7 +1158,7 @@ func (d *SANStorageDriver) DeleteSnapshot(
 	}
 
 	// Clean up any split timer
-	delete(d.cloneSplitTimers, snapConfig.ID())
+	d.cloneSplitTimers.Delete(snapConfig.ID())
 
 	Logc(ctx).WithField("snapshotName", snapConfig.InternalName).Debug("Deleted snapshot.")
 	return nil
@@ -1401,8 +1408,9 @@ func (d *SANStorageDriver) GetProtocol(context.Context) tridentconfig.Protocol {
 }
 
 func (d *SANStorageDriver) StoreConfig(_ context.Context, b *storage.PersistentStorageBackendConfig) {
-	drivers.SanitizeCommonStorageDriverConfig(d.Config.CommonStorageDriverConfig)
-	b.OntapConfig = &d.Config
+	config := d.Config.SmartCopy()
+	drivers.SanitizeCommonStorageDriverConfig(config.CommonStorageDriverConfig)
+	b.OntapConfig = config
 }
 
 func (d *SANStorageDriver) GetExternalConfig(ctx context.Context) interface{} {

@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mitchellh/copystructure"
+	"github.com/brunoga/deep"
 	"github.com/spf13/afero"
 	"github.com/spf13/afero/mem"
 	"github.com/stretchr/testify/assert"
@@ -6439,17 +6439,11 @@ func reverseSlice(input []string) []string {
 }
 
 func structCopyHelper(input models.ISCSISessionData) *models.ISCSISessionData {
-	clone, err := copystructure.Copy(input)
+	clone, err := deep.Copy(input)
 	if err != nil {
 		return &models.ISCSISessionData{}
 	}
-
-	output, ok := clone.(models.ISCSISessionData)
-	if !ok {
-		return &models.ISCSISessionData{}
-	}
-
-	return &output
+	return &clone
 }
 
 func TestIsPerNodeIgroup(t *testing.T) {
