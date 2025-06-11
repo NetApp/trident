@@ -3,10 +3,14 @@ package azgo
 import (
 	"bytes"
 	"encoding/xml"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
+	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -103,4 +107,85 @@ func TestCopyForNontunneledZapiRunner(t *testing.T) {
 	assert.Equal(t, originalZRunner.ontapApiVersion, copiedZRunner.ontapApiVersion, "ONTAP versions should match")
 	assert.NotSame(t, originalZRunner.m, copiedZRunner.m, "Mutexes should not be the same instance")
 	assert.NotNil(t, copiedZRunner.m, "Copied ZapiRunner should have a non-nil mutex")
+}
+
+func CreateTestZapiRunner(n int) *ZapiRunner {
+	managementLIF := "1.2.3.4"
+	svm := fmt.Sprintf("svm-%d", n)
+	username := fmt.Sprintf("user%d", n)
+	password := fmt.Sprintf("password%d", n)
+	clientPrivateKey := ""
+	clientCertificate := ""
+	clientCACert := ""
+	secure := false
+	ontapApiVersion := "9.8"
+	debugTraceFlags := map[string]bool{}
+	return &ZapiRunner{
+		ManagementLIF:        managementLIF,
+		svm:                  svm,
+		Username:             username,
+		Password:             password,
+		ClientPrivateKey:     clientPrivateKey,
+		ClientCertificate:    clientCertificate,
+		TrustedCACertificate: clientCACert,
+		Secure:               secure,
+		ontapApiVersion:      ontapApiVersion,
+		DebugTraceFlags:      debugTraceFlags,
+		m:                    &sync.RWMutex{},
+	}
+}
+
+type mockHttpClientGetter struct {
+	tr      http.RoundTripper
+	timeout time.Duration
+}
+
+func (m *mockHttpClientGetter) getHttpClient() (*http.Client, error) {
+	client := &http.Client{
+		Transport: m.tr,
+		Timeout:   m.timeout,
+	}
+	return client, nil
+}
+
+type RoundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f RoundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) {
+	return f(r)
+}
+
+var mockZapiErrorVserverNotFound string = `<?xml version="1.0" encoding="UTF-8"?>
+<netapp version="1.21" xmlns="http://www.netapp.com/filer/admin">
+  <results status="failed" errno="15698" reason="Simulated error for testing"/>
+</netapp>`
+
+// TestZapiRunner_ExecuteUsing_Parallel_MC tests the parallel execution of ExecuteUsing where the SVM name changes
+func TestZapiRunner_ExecuteUsing_Parallel_MC(t *testing.T) {
+	// Test parallel calls to ExecuteUsing with MC name changes
+	zRunner := CreateTestZapiRunner(1)
+	mockTransport := RoundTripFunc(func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(strings.NewReader(mockZapiErrorVserverNotFound)),
+			Header:     make(http.Header),
+		}, nil
+	})
+	mockGetter := &mockHttpClientGetter{
+		tr:      mockTransport,
+		timeout: 5 * time.Second,
+	}
+	zRunner.clientGetter = mockGetter
+
+	var wg sync.WaitGroup
+	for i := 0; i < 50; i++ {
+		wg.Add(1)
+		go func(n int) {
+			defer wg.Done()
+			zRunner.ExecuteUsing(&VolumeCreateRequest{}, "VolumeCreateRequest", NewVolumeCreateResponse())
+		}(i)
+	}
+	wg.Wait() // Wait for all goroutines to finish
+
+	// Check the SVM name, it should be one of the expected values
+	assert.True(t, zRunner.svm == "svm-1-mc" || zRunner.svm == "svm-1")
 }
