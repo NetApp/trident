@@ -35,6 +35,55 @@ type ZAPIResponseIterable interface {
 	NextTag() string
 }
 
+type httpClientGetter interface {
+	getHttpClient() (*http.Client, error)
+}
+
+func (o *ZapiRunner) getHttpClient() (*http.Client, error) {
+	// Check to use cert/key and load the cert pair
+	var cert tls.Certificate
+	caCertPool := x509.NewCertPool()
+	skipVerify := true
+	if o.ClientCertificate != "" && o.ClientPrivateKey != "" {
+		certDecode, err := base64.StdEncoding.DecodeString(o.ClientCertificate)
+		if err != nil {
+			return nil, errors.New("failed to decode client certificate from base64")
+		}
+		keyDecode, err := base64.StdEncoding.DecodeString(o.ClientPrivateKey)
+		if err != nil {
+			return nil, errors.New("failed to decode private key from base64")
+		}
+		cert, err = tls.X509KeyPair(certDecode, keyDecode)
+		if err != nil {
+			log.Debugf("error: %v", err)
+			return nil, errors.New("cannot load certificate and key")
+		}
+	}
+
+	// Check to use trustedCACertificate to use InsecureSkipVerify or not
+	if o.TrustedCACertificate != "" {
+		trustedCACert, err := base64.StdEncoding.DecodeString(o.TrustedCACertificate)
+		if err != nil {
+			return nil, errors.New("failed to decode trusted CA certificate from base64")
+		}
+		skipVerify = false
+		caCertPool.AppendCertsFromPEM(trustedCACert)
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: skipVerify, MinVersion: tridentconfig.MinClientTLSVersion,
+			Certificates: []tls.Certificate{cert}, RootCAs: caCertPool,
+		},
+	}
+
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   time.Duration(tridentconfig.StorageAPITimeoutSeconds * time.Second),
+	}
+	return client, nil
+}
+
 type ZapiRunner struct {
 	ManagementLIF        string
 	svm                  string
@@ -47,12 +96,13 @@ type ZapiRunner struct {
 	ontapApiVersion      string
 	DebugTraceFlags      map[string]bool // Example: {"api":false, "method":true}
 	m                    *sync.RWMutex
+	clientGetter         httpClientGetter
 }
 
 func NewZapiRunner(managementLIF, svm, username, password, clientPrivateKey, clientCertificate,
 	clientCACert string, secure bool, ontapApiVersion string, debugTraceFlags map[string]bool,
 ) *ZapiRunner {
-	return &ZapiRunner{
+	zr := &ZapiRunner{
 		ManagementLIF:        managementLIF,
 		svm:                  svm,
 		Username:             username,
@@ -65,6 +115,8 @@ func NewZapiRunner(managementLIF, svm, username, password, clientPrivateKey, cli
 		DebugTraceFlags:      debugTraceFlags,
 		m:                    &sync.RWMutex{},
 	}
+	zr.clientGetter = zr // Use ZapiRunners own getter for HTTP clients
+	return zr
 }
 
 // CopyForNontunneledZapiRunner returns a clone of the ZapiRunner configured on this driver with the SVM field cleared
@@ -182,50 +234,14 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/xml")
-
-	// Check to use cert/key and load the cert pair
-	var cert tls.Certificate
-	caCertPool := x509.NewCertPool()
-	skipVerify := true
-	if o.ClientCertificate != "" && o.ClientPrivateKey != "" {
-		certDecode, err := base64.StdEncoding.DecodeString(o.ClientCertificate)
-		if err != nil {
-			return nil, errors.New("failed to decode client certificate from base64")
-		}
-		keyDecode, err := base64.StdEncoding.DecodeString(o.ClientPrivateKey)
-		if err != nil {
-			return nil, errors.New("failed to decode private key from base64")
-		}
-		cert, err = tls.X509KeyPair(certDecode, keyDecode)
-		if err != nil {
-			log.Debugf("error: %v", err)
-			return nil, errors.New("cannot load certificate and key")
-		}
-	} else {
+	if o.ClientCertificate == "" || o.ClientPrivateKey == "" {
 		req.SetBasicAuth(o.Username, o.Password)
 	}
-
-	// Check to use trustedCACertificate to use InsecureSkipVerify or not
-	if o.TrustedCACertificate != "" {
-		trustedCACert, err := base64.StdEncoding.DecodeString(o.TrustedCACertificate)
-		if err != nil {
-			return nil, errors.New("failed to decode trusted CA certificate from base64")
-		}
-		skipVerify = false
-		caCertPool.AppendCertsFromPEM(trustedCACert)
+	client, err := o.clientGetter.getHttpClient()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get HTTP client: %v", err)
 	}
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: skipVerify, MinVersion: tridentconfig.MinClientTLSVersion,
-			Certificates: []tls.Certificate{cert}, RootCAs: caCertPool,
-		},
-	}
-
-	client := &http.Client{
-		Transport: tr,
-		Timeout:   time.Duration(tridentconfig.StorageAPITimeoutSeconds * time.Second),
-	}
 	response, err := client.Do(req)
 
 	if err != nil {
@@ -276,7 +292,7 @@ func (o *ZapiRunner) ExecuteUsing(z ZAPIRequest, requestType string, v interface
 	if strings.HasSuffix(svm, "-mc") {
 		o.svm = strings.TrimSuffix(svm, "-mc")
 	} else {
-		o.svm += "-mc"
+		o.svm = fmt.Sprintf("%s-mc", svm)
 	}
 
 	return o.executeWithoutIteration(z, requestType, vCopy)
