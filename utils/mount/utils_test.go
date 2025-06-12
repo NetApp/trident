@@ -54,7 +54,7 @@ func TestCheckMountOptions(t *testing.T) {
 				SuperOptions: []string{"sm1", "sm2"},
 			}
 
-			res := checkMountOptions(context.Background(), mountInfo, params.mountOptions)
+			res := checkMountOptions(context.Background(), &mountInfo, params.mountOptions)
 			params.assertError(t, res)
 		})
 	}
