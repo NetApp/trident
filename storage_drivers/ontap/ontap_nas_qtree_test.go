@@ -3781,6 +3781,22 @@ func TestResizeFlexvol_Success_WithoutOptimalSize(t *testing.T) {
 	assert.NoError(t, result, "Flexvol resize failed")
 }
 
+func TestResizeFlexvol_FallbackPath_VolumeSetSizeSuccess(t *testing.T) {
+	volName := "vol1"
+	ctx := context.Background()
+	resizeToInBytes := uint64(10737418240) // 10g
+
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	// Simulate getOptimalSizeForFlexvol returning an error (simulate error in VolumeInfo)
+	mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(nil, fmt.Errorf("mock error"))
+	// Expect VolumeSetSize to be called with "+" and the requested size, and succeed
+	mockAPI.EXPECT().VolumeSetSize(ctx, volName, "+"+strconv.FormatUint(resizeToInBytes, 10)).Return(nil).Times(1)
+
+	err := driver.resizeFlexvol(ctx, volName, resizeToInBytes)
+	assert.NoError(t, err, "Expected resizeFlexvol to return nil when VolumeSetSize succeeds in fallback path")
+}
+
 func TestResizeFlexvol_WithErrorInApiOperation(t *testing.T) {
 	volName := "vol1"
 	volInfo, _ := MockGetVolumeInfo(ctx, volName)
