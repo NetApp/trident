@@ -99,6 +99,13 @@ func (client *LinuxClient) IsMounted(ctx context.Context, sourceDevice, mountpoi
 	Logc(ctx).WithFields(logFields).Debug(">>>> mount_linux.IsMounted")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< mount_linux.IsMounted")
 
+	sourceDevice = strings.TrimPrefix(sourceDevice, "/dev/")
+
+	// Ensure at least one arg was specified
+	if sourceDevice == "" && mountpoint == "" {
+		return false, errors.New("no device or mountpoint specified")
+	}
+
 	// Get device path if source is already linked
 	devicePath, err := client.filepath.EvalSymlinks(sourceDevice)
 	if err != nil {
@@ -108,67 +115,23 @@ func (client *LinuxClient) IsMounted(ctx context.Context, sourceDevice, mountpoi
 	}
 	devicePath = strings.TrimPrefix(devicePath, "/dev/")
 
-	sourceDevice = strings.TrimPrefix(sourceDevice, "/dev/")
-
-	// Ensure at least one arg was specified
-	if sourceDevice == "" && mountpoint == "" {
-		return false, errors.New("no device or mountpoint specified")
-	}
-
-	// Read the system mounts
-	procSelfMountinfo, err := client.ListProcMountinfo()
+	mountInfo, err := client.ReadMountProcInfo(ctx, mountpoint, sourceDevice, devicePath)
 	if err != nil {
-		Logc(ctx).WithFields(logFields).Errorf("checking mounts failed; %s", err)
-		return false, fmt.Errorf("checking mounts failed; %s", err)
+		Logc(ctx).WithFields(logFields).WithError(err).Debug("Checking mounts failed.")
+		return false, err
 	}
 
-	// Check each mount for a match of source device and/or mountpoint
-	for _, procMount := range procSelfMountinfo {
-
-		// If mountpoint was specified and doesn't match proc mount, move on
-		if mountpoint != "" {
-			if !strings.Contains(procMount.MountPoint, mountpoint) {
-				continue
-			}
-			Logc(ctx).WithFields(logFields).Debugf("Mountpoint found: %v", procMount)
-		}
-
-		// If sourceDevice was specified and doesn't match proc mount, move on
-		if sourceDevice != "" {
-
-			procSourceDevice := strings.TrimPrefix(procMount.Root, "/")
-
-			if strings.HasPrefix(procMount.MountSource, "/dev/") {
-				procSourceDevice = strings.TrimPrefix(procMount.MountSource, "/dev/")
-				if sourceDevice != procSourceDevice && devicePath != procSourceDevice {
-					// Resolve any symlinks to get the real device, if device path has not already been found
-					procSourceDevice, err = client.filepath.EvalSymlinks(procMount.MountSource)
-					if err != nil {
-						Logc(ctx).WithFields(logFields).WithError(err).Debug("Could not resolve device symlink")
-						continue
-					}
-					procSourceDevice = strings.TrimPrefix(procSourceDevice, "/dev/")
-				}
-			}
-
-			if sourceDevice != procSourceDevice && devicePath != procSourceDevice {
-				continue
-			}
-
-			Logc(ctx).WithFields(logFields).Debugf("Device found: %v", sourceDevice)
-
-			if err = checkMountOptions(ctx, procMount, mountOptions); err != nil {
-				Logc(ctx).WithFields(logFields).WithError(err).Warning("Checking mount options failed.")
-			}
-
-		}
-
-		Logc(ctx).WithFields(logFields).Debug("Mount information found.")
-		return true, nil
+	if mountInfo == nil {
+		Logc(ctx).WithFields(logFields).Debug("Mount information not found.")
+		return false, nil
 	}
 
-	Logc(ctx).WithFields(logFields).Debug("Mount information not found.")
-	return false, nil
+	if err = checkMountOptions(ctx, mountInfo, mountOptions); err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Warning("Checking mount options failed.")
+	}
+
+	Logc(ctx).WithFields(logFields).Debug("Mount information found.")
+	return true, nil
 }
 
 // PVMountpointMappings identifies devices corresponding to published paths
@@ -349,8 +312,9 @@ func (client *LinuxClient) MountDevice(ctx context.Context, device, mountpoint, 
 	}
 
 	if !mounted {
-		if _, err := client.command.Execute(ctx, "mount", args...); err != nil {
-			Logc(ctx).WithField("error", err).Error("Mount failed.")
+		if out, err := client.command.Execute(ctx, "mount", args...); err != nil {
+			Logc(ctx).WithError(fmt.Errorf("exit error: %v, mount command output: %s", err, string(out))).Error("Mount failed.")
+			return fmt.Errorf("mount failed: %v, output: %s", err, out)
 		}
 	}
 
@@ -405,6 +369,9 @@ func (client *LinuxClient) EnsureFileExists(ctx context.Context, path string) er
 
 func (client *LinuxClient) EnsureDirExists(ctx context.Context, path string) error {
 	fields := LogFields{"path": path}
+
+	Logc(ctx).WithFields(fields).Debug(">>>> EnsureDirExists")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< EnsureDirExists")
 
 	if info, err := client.os.Stat(path); err == nil {
 		if !info.IsDir() {
@@ -590,48 +557,18 @@ func parseProcMountInfo(content []byte) ([]models.MountInfo, error) {
 			// The last split() item is empty string following the last \n
 			continue
 		}
-		fields := strings.Fields(line)
-		numFields := len(fields)
-		if numFields < minNumProcSelfMntInfoFieldsPerLine {
-			return nil, fmt.Errorf("wrong number of fields (expected at least %d, got %d): %s",
-				minNumProcSelfMntInfoFieldsPerLine, numFields, line)
+
+		mp, err := parseProcMount(line)
+		if err != nil {
+			return nil, err
 		}
 
-		// separator must be in the 4th position from the end for the line to contain fsType, mountSource, and
-		//  superOptions
-		if fields[numFields-4] != "-" {
-			return nil, fmt.Errorf("malformed mountinfo (could not find separator): %s", line)
-		}
-
-		// If root value is marked deleted, skip the entry
-		if strings.Contains(fields[3], "deleted") {
+		if mp == nil {
+			// For the case, where err == nil && mp == nil, this can happen when root is marked as deleted.
 			continue
 		}
 
-		mp := models.MountInfo{
-			DeviceId:     fields[2],
-			Root:         fields[3],
-			MountPoint:   fields[4],
-			MountOptions: strings.Split(fields[5], ","),
-		}
-
-		mountId, err := strconv.Atoi(fields[0])
-		if err != nil {
-			return nil, err
-		}
-		mp.MountId = mountId
-
-		parentId, err := strconv.Atoi(fields[1])
-		if err != nil {
-			return nil, err
-		}
-		mp.ParentId = parentId
-
-		mp.FsType = fields[numFields-3]
-		mp.MountSource = fields[numFields-2]
-		mp.SuperOptions = strings.Split(fields[numFields-1], ",")
-
-		out = append(out, mp)
+		out = append(out, *mp)
 	}
 	return out, nil
 }
@@ -680,4 +617,195 @@ func parseProcMounts(content []byte) ([]models.MountPoint, error) {
 		out = append(out, mp)
 	}
 	return out, nil
+}
+
+// ReadMountProcInfo tries the consistent read for the given mount information from the "/proc/self/mountinfo"
+func (client *LinuxClient) ReadMountProcInfo(ctx context.Context, mountpoint, sourceDevice, devicePath string) (*models.MountInfo, error) {
+	return client.ConsistentReadMount(ctx, "/proc/self/mountinfo", mountpoint, sourceDevice, devicePath, maxListTries)
+}
+
+// ConsistentReadMount verifies whether a specific mountpoint and source device consistently appear in the mount file.
+// It reads the file up to maxAttempts times, returning parsedEntry if the same matching entry is found in two consecutive reads.
+// Returns nil and an error if either the entry was present but not consistently found within the allowed attempts or there was an error.
+// Returns nil and nil if the entry was never found.
+func (client *LinuxClient) ConsistentReadMount(ctx context.Context, filename, mountpoint, sourceDevice, devicePath string, maxAttempts int) (*models.MountInfo, error) {
+	logFields := LogFields{
+		"filename":    filename,
+		"mountpoint":  mountpoint,
+		"maxAttempts": maxAttempts,
+	}
+
+	Logc(ctx).WithFields(logFields).Debug(">>>> ConsistentReadMount")
+	defer Logc(ctx).WithFields(logFields).Debug("<<<< ConsistentReadMount")
+
+	if maxAttempts < 1 {
+		Logc(ctx).WithFields(logFields).Errorf("maxAttempts has to be equal or greater than 1, currently set to :%d", maxAttempts)
+		return nil, fmt.Errorf("maxAttempts has to be equal or greater than 1, currently set to :%d", maxAttempts)
+	}
+
+	var (
+		previousMountEntry string
+		entryFound         = false
+	)
+
+	// First iteration is to actually read the file for the first time.
+	// And maxAttempts are made for the comparison thereafter.
+	// Hence, +1
+	for i := 0; i < (maxAttempts + 1); i++ {
+		select {
+		case <-ctx.Done():
+			Logc(ctx).WithError(ctx.Err()).Error("Exiting early as the context has been cancelled or timed out.")
+			return nil, ctx.Err()
+		default:
+		}
+
+		var (
+			mountFound   bool
+			currentMount string
+			parsedEntry  *models.MountInfo
+		)
+
+		content, err := client.os.ReadFile(filename)
+		if err != nil {
+			Logc(ctx).WithError(err).Error("Failed to read mount file.")
+			return nil, err
+		}
+
+		// Ranging over each entry.
+		lines := strings.Split(string(content), "\n")
+		for _, currentMount = range lines {
+			if currentMount == "" {
+				// The last split() item is empty string following the last \n
+				continue
+			}
+
+			// Parsing the line that we retrieved to models.MountInfo struct
+			parsedEntry, err = parseProcMount(currentMount)
+			if err != nil || parsedEntry == nil {
+				// We'll keep continuing ranging over remaining lines.
+				Logc(ctx).WithField("line", currentMount).WithError(err).Warn("Unable to parse the entry.")
+				continue
+			}
+
+			// Comparing the parsedEntry with the information that we have.
+			mountFound, err = client.compareMount(ctx, mountpoint, sourceDevice, devicePath, parsedEntry)
+			if err != nil {
+				Logc(ctx).WithField("line", currentMount).WithError(err).Warn("Unable to compare the mount.")
+				continue
+			}
+
+			if mountFound {
+				break
+			}
+		}
+
+		if mountFound {
+			entryFound = true
+			if previousMountEntry == currentMount {
+				return parsedEntry, nil
+			}
+		}
+
+		// Changing previousMountEntry every iteration ensures, that when we're comparing,
+		// it is between consecutive reads.
+		previousMountEntry = currentMount
+	}
+
+	if entryFound {
+		return nil, fmt.Errorf("could not find consistent mount entry in %s for mountpoint %s after %d attempts", filename, mountpoint, maxAttempts)
+	}
+
+	return nil, nil
+}
+
+// parseProcMount parses single line/entry of the /proc/self/mountinfo file.
+func parseProcMount(line string) (*models.MountInfo, error) {
+	// Ex: 26 29 0:5 / /dev rw,nosuid,relatime shared:2 - devtmpfs udev rw,size=4027860k,nr_inodes=1006965,mode=755,inode64
+
+	fields := strings.Fields(line)
+	numFields := len(fields)
+	if numFields < minNumProcSelfMntInfoFieldsPerLine {
+		return nil, fmt.Errorf("wrong number of fields (expected at least %d, got %d): %s",
+			minNumProcSelfMntInfoFieldsPerLine, numFields, line)
+	}
+
+	// separator must be in the 4th position from the end for the line to contain fsType, mountSource, and
+	//  superOptions
+	if fields[numFields-4] != "-" {
+		return nil, fmt.Errorf("malformed mountinfo (could not find separator): %s", line)
+	}
+
+	// If root value is marked deleted, skip the entry
+	if strings.Contains(fields[3], "deleted") {
+		return nil, nil
+	}
+
+	mp := models.MountInfo{
+		DeviceId:     fields[2],
+		Root:         fields[3],
+		MountPoint:   fields[4],
+		MountOptions: strings.Split(fields[5], ","),
+	}
+
+	mountId, err := strconv.Atoi(fields[0])
+	if err != nil {
+		return nil, err
+	}
+	mp.MountId = mountId
+
+	parentId, err := strconv.Atoi(fields[1])
+	if err != nil {
+		return nil, err
+	}
+	mp.ParentId = parentId
+
+	mp.FsType = fields[numFields-3]
+	mp.MountSource = fields[numFields-2]
+	mp.SuperOptions = strings.Split(fields[numFields-1], ",")
+
+	return &mp, nil
+}
+
+// compareMount compares the given mountpoint and sourceDevice with the retrieved entry from /proc/self/mountinfo
+func (client *LinuxClient) compareMount(ctx context.Context, mountpoint, sourceDevice, devicePath string, procMount *models.MountInfo) (bool, error) {
+	logFields := LogFields{
+		"mountPoint": mountpoint,
+		"procMount":  procMount,
+	}
+
+	var err error
+
+	if mountpoint != "" {
+		if !strings.Contains(procMount.MountPoint, mountpoint) {
+			return false, nil
+		}
+		Logc(ctx).WithFields(logFields).Debugf("Mountpoint found: %v", procMount)
+	}
+
+	// If sourceDevice was specified and doesn't match proc mount, move on
+	if sourceDevice != "" {
+
+		procSourceDevice := strings.TrimPrefix(procMount.Root, "/")
+
+		if strings.HasPrefix(procMount.MountSource, "/dev/") {
+			procSourceDevice = strings.TrimPrefix(procMount.MountSource, "/dev/")
+			if sourceDevice != procSourceDevice && devicePath != procSourceDevice {
+				// Resolve any symlinks to get the real device, if device path has not already been found
+				procSourceDevice, err = client.filepath.EvalSymlinks(procMount.MountSource)
+				if err != nil {
+					Logc(ctx).WithFields(logFields).WithError(err).Debug("Could not resolve device symlink")
+					return false, err
+				}
+				procSourceDevice = strings.TrimPrefix(procSourceDevice, "/dev/")
+			}
+		}
+
+		if sourceDevice != procSourceDevice && devicePath != procSourceDevice {
+			return false, nil
+		}
+
+		Logc(ctx).WithFields(logFields).Debugf("Device found: %v", sourceDevice)
+	}
+
+	return true, nil
 }

@@ -6,11 +6,13 @@ import (
 	"context"
 	"fmt"
 	"io/fs"
+	"math/rand"
 	"os"
 	"strings"
 	"syscall"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
@@ -121,10 +123,10 @@ func TestLinuxClient_IsMounted(t *testing.T) {
 		expectedResult    bool
 	}
 
-	const mountPoint = "/foo/test"
+	const defaultMountPoint = "/foo/test"
 	const badMountOptions = "dummy"
-	const sourceDevice = "/dev/sda1"
-	const devicePath = "/dev/sda1"
+	const defaultSourceDevice = "/dev/sdax"
+	const defaultDevicePath = "/dev/sda1" // This is what you get after resolving symlinks.
 
 	tests := map[string]parameters{
 		"error getting device path": {
@@ -137,15 +139,14 @@ func TestLinuxClient_IsMounted(t *testing.T) {
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks("").Return("", assert.AnError)
 				return mockFilePathClient
 			},
 			assertError:    assert.Error,
 			expectedResult: false,
 		},
 		"error listing proc mount information": {
-			mountPoint:   mountPoint,
-			sourceDevice: sourceDevice,
+			mountPoint:   defaultMountPoint,
+			sourceDevice: defaultSourceDevice,
 			mountOptions: "",
 			getOSClient: func(controller *gomock.Controller) oswrapper.OS {
 				mockOsClient := mock_oswrapper.NewMockOS(controller)
@@ -154,135 +155,141 @@ func TestLinuxClient_IsMounted(t *testing.T) {
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(sourceDevice).Return(devicePath, nil)
+				mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(defaultSourceDevice, "/dev/")).Return(defaultDevicePath, nil)
 				return mockFilePathClient
 			},
 			assertError:    assert.Error,
 			expectedResult: false,
 		},
 		"mount point not present in mountinfo": {
-			mountPoint:   mountPoint,
-			sourceDevice: sourceDevice,
+			mountPoint:   defaultMountPoint,
+			sourceDevice: defaultSourceDevice,
 			mountOptions: "",
 			getOSClient: func(controller *gomock.Controller) oswrapper.OS {
 				mockOsClient := mock_oswrapper.NewMockOS(controller)
-				mockOsClient.EXPECT().ReadFile(selfMountInfoPath).Return(newMountInfoEntry().bytes(), nil).Times(2)
+				mockOsClient.EXPECT().ReadFile(selfMountInfoPath).Return(newMountInfoEntry().bytes(), nil).Times(4)
 				return mockOsClient
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(sourceDevice).Return(devicePath, nil)
+				mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(defaultSourceDevice, "/dev/")).Return(defaultDevicePath, nil)
 				return mockFilePathClient
 			},
 			assertError:    assert.NoError,
 			expectedResult: false,
 		},
 		"mount point present, source device not specified": {
-			mountPoint:   mountPoint,
+			mountPoint:   defaultMountPoint,
 			sourceDevice: "",
 			mountOptions: "",
 			getOSClient: func(controller *gomock.Controller) oswrapper.OS {
 				mockOsClient := mock_oswrapper.NewMockOS(controller)
 				mockOsClient.EXPECT().ReadFile(selfMountInfoPath).Return(newMountInfoEntry().
-					withMountPoint(mountPoint).bytes(), nil).Times(2)
+					withMountPoint(defaultMountPoint).bytes(), nil).Times(2)
 				return mockOsClient
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks("").Return(devicePath, nil)
+				mockFilePathClient.EXPECT().EvalSymlinks("").Return(defaultDevicePath, nil)
 				return mockFilePathClient
 			},
 			assertError:    assert.NoError,
 			expectedResult: true,
 		},
 		"mount point present, source device mismatch": {
-			mountPoint:   mountPoint,
-			sourceDevice: "/dev/foo",
+			mountPoint:   defaultMountPoint,
+			sourceDevice: "/dev/boo",
 			mountOptions: "",
 			getOSClient: func(controller *gomock.Controller) oswrapper.OS {
 				mockOsClient := mock_oswrapper.NewMockOS(controller)
 				mockOsClient.EXPECT().ReadFile(selfMountInfoPath).Return(newMountInfoEntry().
-					withMountPoint(mountPoint).withMountSource(sourceDevice).bytes(), nil).Times(2)
+					withMountPoint(defaultMountPoint).withMountSource(defaultSourceDevice).bytes(), nil).Times(4)
 				return mockOsClient
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(sourceDevice).Return(devicePath, nil)
-				mockFilePathClient.EXPECT().EvalSymlinks("/dev/foo").Return("foo", nil)
+				gomock.InOrder(
+					mockFilePathClient.EXPECT().EvalSymlinks("boo").Return("/dev/foo", nil).Times(1),
+					mockFilePathClient.EXPECT().EvalSymlinks(defaultSourceDevice).Return(defaultDevicePath, nil).Times(4),
+				)
 				return mockFilePathClient
 			},
 			assertError:    assert.NoError,
 			expectedResult: false,
 		},
 		"happy path": {
-			mountPoint:   mountPoint,
-			sourceDevice: sourceDevice,
+			mountPoint:   defaultMountPoint,
+			sourceDevice: defaultSourceDevice,
 			mountOptions: "",
 			getOSClient: func(controller *gomock.Controller) oswrapper.OS {
 				mockOsClient := mock_oswrapper.NewMockOS(controller)
 				mockOsClient.EXPECT().ReadFile(selfMountInfoPath).Return(newMountInfoEntry().
-					withMountPoint(mountPoint).withMountSource(sourceDevice).bytes(), nil).Times(2)
+					withMountPoint(defaultMountPoint).withMountSource(defaultSourceDevice).bytes(), nil).Times(2)
 				return mockOsClient
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(sourceDevice).Return(devicePath, nil)
+				mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(defaultSourceDevice, "/dev/")).Return(defaultDevicePath, nil).Times(1)
 				return mockFilePathClient
 			},
 			assertError:    assert.NoError,
 			expectedResult: true,
 		},
 		"error checking mount options": {
-			mountPoint:   mountPoint,
-			sourceDevice: sourceDevice,
+			mountPoint:   defaultMountPoint,
+			sourceDevice: defaultSourceDevice,
 			mountOptions: badMountOptions,
 			getOSClient: func(controller *gomock.Controller) oswrapper.OS {
 				mockOsClient := mock_oswrapper.NewMockOS(controller)
 				mockOsClient.EXPECT().ReadFile("/proc/self/mountinfo").Return(newMountInfoEntry().
-					withMountPoint(mountPoint).withMountSource(sourceDevice).bytes(), nil).Times(2)
+					withMountPoint(defaultMountPoint).withMountSource(defaultSourceDevice).bytes(), nil).Times(2)
 				return mockOsClient
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(sourceDevice).Return(devicePath, nil)
+				mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(defaultSourceDevice, "/dev/")).Return(defaultDevicePath, nil)
 				return mockFilePathClient
 			},
 			assertError:    assert.NoError,
 			expectedResult: true,
 		},
 		"error evaluating symlink mount source": {
-			mountPoint:   mountPoint,
-			sourceDevice: sourceDevice,
+			mountPoint:   defaultMountPoint,
+			sourceDevice: defaultSourceDevice,
 			mountOptions: "",
 			getOSClient: func(controller *gomock.Controller) oswrapper.OS {
 				mockOsClient := mock_oswrapper.NewMockOS(controller)
 				mockOsClient.EXPECT().ReadFile(selfMountInfoPath).Return(newMountInfoEntry().
-					withMountPoint(mountPoint).withMountSource("/dev/foo").bytes(), nil).Times(2)
+					withMountPoint(defaultMountPoint).withMountSource("/dev/foo").bytes(), nil).Times(4)
 				return mockOsClient
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(sourceDevice).Return(devicePath, nil)
-				mockFilePathClient.EXPECT().EvalSymlinks("/dev/foo").Return("", assert.AnError)
+				gomock.InOrder(
+					mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(defaultSourceDevice, "/dev/")).Return(defaultDevicePath, nil).Times(1),
+					mockFilePathClient.EXPECT().EvalSymlinks("/dev/foo").Return("", assert.AnError).Times(4),
+				)
 				return mockFilePathClient
 			},
 			assertError:    assert.NoError,
 			expectedResult: false,
 		},
 		"mount source is a symlink": {
-			mountPoint:   mountPoint,
-			sourceDevice: sourceDevice,
+			mountPoint:   defaultMountPoint,
+			sourceDevice: defaultSourceDevice,
 			mountOptions: "",
 			getOSClient: func(controller *gomock.Controller) oswrapper.OS {
 				mockOsClient := mock_oswrapper.NewMockOS(controller)
 				mockOsClient.EXPECT().ReadFile(selfMountInfoPath).Return(newMountInfoEntry().
-					withMountPoint(mountPoint).withMountSource("/dev/foo").bytes(), nil).Times(2)
+					withMountPoint(defaultMountPoint).withMountSource("/dev/foo").bytes(), nil).Times(2)
 				return mockOsClient
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(sourceDevice).Return(devicePath, nil)
-				mockFilePathClient.EXPECT().EvalSymlinks("/dev/foo").Return(devicePath, nil)
+				gomock.InOrder(
+					mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(defaultSourceDevice, "/dev/")).Return(defaultDevicePath, nil).Times(1),
+					mockFilePathClient.EXPECT().EvalSymlinks("/dev/foo").Return(defaultDevicePath, nil).Times(2),
+				)
 				return mockFilePathClient
 			},
 			assertError:    assert.NoError,
@@ -749,12 +756,12 @@ func TestLinuxClient_MountDevice(t *testing.T) {
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(device).Return(device, nil)
+				mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(device, "/dev/")).Return(device, nil)
 				return mockFilePathClient
 			},
 			getOsClient: func(controller *gomock.Controller) oswrapper.OS {
 				mockOsClient := mock_oswrapper.NewMockOS(controller)
-				mockOsClient.EXPECT().ReadFile(selfMountInfoPath).Return(newMountInfoEntry().bytes(), nil).Times(2)
+				mockOsClient.EXPECT().ReadFile(selfMountInfoPath).Return(newMountInfoEntry().bytes(), nil).Times(4)
 				mockOsClient.EXPECT().Stat(mountPoint).Return(nil, nil)
 				return mockOsClient
 			},
@@ -770,12 +777,12 @@ func TestLinuxClient_MountDevice(t *testing.T) {
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(device).Return(device, nil)
+				mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(device, "/dev/")).Return(device, nil)
 				return mockFilePathClient
 			},
 			getOsClient: func(controller *gomock.Controller) oswrapper.OS {
 				mockOsClient := mock_oswrapper.NewMockOS(controller)
-				mockOsClient.EXPECT().ReadFile(selfMountInfoPath).Return(newMountInfoEntry().bytes(), nil).Times(2)
+				mockOsClient.EXPECT().ReadFile(selfMountInfoPath).Return(newMountInfoEntry().bytes(), nil).Times(4)
 				mockOsClient.EXPECT().Stat(mountPoint).Return(nil, nil)
 				return mockOsClient
 			},
@@ -791,12 +798,12 @@ func TestLinuxClient_MountDevice(t *testing.T) {
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(device).Return(device, nil)
+				mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(device, "/dev/")).Return(device, nil)
 				return mockFilePathClient
 			},
 			getOsClient: func(controller *gomock.Controller) oswrapper.OS {
 				mockOsClient := mock_oswrapper.NewMockOS(controller)
-				mockOsClient.EXPECT().ReadFile(selfMountInfoPath).Return(newMountInfoEntry().bytes(), nil).Times(2)
+				mockOsClient.EXPECT().ReadFile(selfMountInfoPath).Return(newMountInfoEntry().bytes(), nil).Times(4)
 				mockOsClient.EXPECT().Stat(mountPoint).Return(nil, assert.AnError)
 				mockOsClient.EXPECT().Stat(mountPoint).Return(&mockFileInfo{isDir: false}, nil)
 				return mockOsClient
@@ -813,16 +820,16 @@ func TestLinuxClient_MountDevice(t *testing.T) {
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(device).Return(device, nil)
+				mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(device, "/dev/")).Return(device, nil)
 				return mockFilePathClient
 			},
 			getOsClient: func(controller *gomock.Controller) oswrapper.OS {
 				mockOsClient := mock_oswrapper.NewMockOS(controller)
-				mockOsClient.EXPECT().ReadFile(selfMountInfoPath).Return(newMountInfoEntry().bytes(), nil).Times(2)
+				mockOsClient.EXPECT().ReadFile(selfMountInfoPath).Return(newMountInfoEntry().bytes(), nil).Times(4)
 				mockOsClient.EXPECT().Stat(mountPoint).Return(nil, nil)
 				return mockOsClient
 			},
-			assertError: assert.NoError,
+			assertError: assert.Error,
 		},
 	}
 
@@ -1553,6 +1560,235 @@ func TestLinuxClient_ListProcMounts(t *testing.T) {
 	}
 }
 
+func TestLinuxClient_ConsistentReadMount(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	ctx := context.Background
+
+	// Creating a mountInfoFile with random 100 entries
+	randomMountInfoFile := func() string {
+		var file strings.Builder
+		for i := 0; i < 100; i++ {
+			tempEntry := newMountInfoEntryRandom(nil)
+			file.WriteString(tempEntry.string())
+			file.WriteString("\n")
+		}
+		return file.String()
+	}()
+
+	tests := []struct {
+		name               string
+		mockOSExpectations func(mockOS *mock_oswrapper.MockOS, mountFileInfo string, attempt int)
+		attemptFound       int
+		err                bool
+		matched            bool
+	}{
+		{
+			name: "mountInfo file contains 100 entry, and needed entry is found consistently",
+			mockOSExpectations: func(mockOS *mock_oswrapper.MockOS, mountFileInfo string, attempt int) {
+				lines := strings.Split(mountFileInfo, "\n")
+				for i := 0; i < attempt; i++ {
+					indexRandom := rand.Intn(len(lines))
+					lines[indexRandom] = newMountInfoEntry().string()
+					mockOS.EXPECT().ReadFile(selfMountInfoPath).Return([]byte(strings.Join(lines, "\n")), nil).Times(1)
+				}
+			},
+			err:          false,
+			matched:      true,
+			attemptFound: 2,
+		},
+		{
+			name: "mountInfo file contains 100 entry, and needed entry is found in the second and third attempt",
+			mockOSExpectations: func(mockOS *mock_oswrapper.MockOS, mountFileInfo string, attempt int) {
+				// First time we get the incomplete line.
+				lines := strings.Split(mountFileInfo, "\n")
+				indexRandom := rand.Intn(len(lines))
+				entry := newMountInfoEntry()
+				entry.mountInfo.SuperOptions = nil
+				entry.mountInfo.MountSource = ""
+				lines[indexRandom] = entry.string()
+				mockOS.EXPECT().ReadFile(selfMountInfoPath).Return([]byte(strings.Join(lines, "\n")), nil).Times(1)
+
+				// Then after first attempt, we start getting the full entry
+				for i := 1; i < attempt; i++ {
+					newEntry := newMountInfoEntry()
+					lines[indexRandom] = newEntry.string()
+					mockOS.EXPECT().ReadFile(selfMountInfoPath).Return([]byte(strings.Join(lines, "\n")), nil).Times(1)
+				}
+			},
+			err:          false,
+			matched:      true,
+			attemptFound: 3,
+		},
+		{
+			name: "mountInfo file contains 100 entry, and needed entry is not found even after exhausting all the retries",
+			mockOSExpectations: func(mockOS *mock_oswrapper.MockOS, mountFileInfo string, attempt int) {
+				for i := 0; i < attempt; i++ {
+					mockOS.EXPECT().ReadFile(selfMountInfoPath).Return([]byte(mountFileInfo), nil).Times(1)
+				}
+			},
+			err:          false,
+			matched:      false,
+			attemptFound: 4,
+		},
+		{
+			name: "mountInfo file contains 100 entry, and needed entry disappears in-between",
+			mockOSExpectations: func(mockOS *mock_oswrapper.MockOS, mountFileInfo string, attempt int) {
+				// First time we get the needed line.
+				lines := strings.Split(mountFileInfo, "\n")
+				indexRandom := rand.Intn(len(lines))
+				entry := newMountInfoEntry()
+				lines[indexRandom] = entry.string()
+				mockOS.EXPECT().ReadFile(selfMountInfoPath).Return([]byte(strings.Join(lines, "\n")), nil).Times(1)
+
+				// Second attempt, the line disappears
+				lines[indexRandom] = newMountInfoEntryRandom(nil).string()
+				mockOS.EXPECT().ReadFile(selfMountInfoPath).Return([]byte(strings.Join(lines, "\n")), nil).Times(1)
+
+				// Third attempt, it reappears again
+				lines[indexRandom] = entry.string()
+				mockOS.EXPECT().ReadFile(selfMountInfoPath).Return([]byte(strings.Join(lines, "\n")), nil).Times(1)
+
+				// Fourth attempt the line is matched again
+				mockOS.EXPECT().ReadFile(selfMountInfoPath).Return([]byte(strings.Join(lines, "\n")), nil).Times(1)
+			},
+			err:          false,
+			matched:      true,
+			attemptFound: 4, // not needed here in this test case
+		},
+		{
+			name: "mountInfo file contains 100 entry, and needed entry was only found once",
+			mockOSExpectations: func(mockOS *mock_oswrapper.MockOS, mountFileInfo string, attempt int) {
+				// First time we get the needed line.
+				lines := strings.Split(mountFileInfo, "\n")
+				indexRandom := rand.Intn(len(lines))
+				entry := newMountInfoEntry()
+				lines[indexRandom] = entry.string()
+				mockOS.EXPECT().ReadFile(selfMountInfoPath).Return([]byte(strings.Join(lines, "\n")), nil).Times(1)
+
+				// Second attempt and afterward it disappears.
+				for i := 1; i < attempt; i++ {
+					mockOS.EXPECT().ReadFile(selfMountInfoPath).Return([]byte(mountFileInfo), nil).Times(1)
+				}
+			},
+			err:          true,
+			matched:      false,
+			attemptFound: 4, // not needed here in this test case
+		},
+		{
+			name: "mountInfo file contains 100 entry, and needed entry was founc complete in the second and third attempt",
+			mockOSExpectations: func(mockOS *mock_oswrapper.MockOS, mountFileInfo string, attempt int) {
+				// First time we get the needed line, but data is missing
+				lines := strings.Split(mountFileInfo, "\n")
+				indexRandom := rand.Intn(len(lines))
+				entry := newMountInfoEntry()
+				entry.mountInfo.FsType = "incomplete data"
+				entry.mountInfo.MountOptions = []string{"incomplete data"}
+				lines[indexRandom] = entry.string()
+				mockOS.EXPECT().ReadFile(selfMountInfoPath).Return([]byte(strings.Join(lines, "\n")), nil).Times(1)
+
+				// Second attempt we get the needed line, but one of the data is missing
+				entry = newMountInfoEntry()
+				entry.mountInfo.MountOptions = []string{"incomplete data"}
+				lines[indexRandom] = entry.string()
+				mockOS.EXPECT().ReadFile(selfMountInfoPath).Return([]byte(strings.Join(lines, "\n")), nil).Times(1)
+
+				// Third and Fourth attempt we get the full needed line.
+				entry = newMountInfoEntry()
+				lines[indexRandom] = entry.string()
+				mockOS.EXPECT().ReadFile(selfMountInfoPath).Return([]byte(strings.Join(lines, "\n")), nil).Times(2)
+			},
+			err:          false,
+			matched:      true,
+			attemptFound: 4,
+		},
+		{
+			name: "mountInfo file contains 100 entry, and needed entry was found complete at the last attempt.",
+			mockOSExpectations: func(mockOS *mock_oswrapper.MockOS, mountFileInfo string, attempt int) {
+				// First time we get the needed line, but data is missing
+				lines := strings.Split(mountFileInfo, "\n")
+				indexRandom := rand.Intn(len(lines))
+				entry := newMountInfoEntry()
+				entry.mountInfo.FsType = "incomplete data"
+				entry.mountInfo.MountOptions = []string{"incomplete data"}
+				entry.mountInfo.SuperOptions = []string{"incomplete data"}
+				lines[indexRandom] = entry.string()
+				mockOS.EXPECT().ReadFile(selfMountInfoPath).Return([]byte(strings.Join(lines, "\n")), nil).Times(1)
+
+				// Second attempt we get the needed line, but data is missing
+				entry = newMountInfoEntry()
+				entry.mountInfo.MountOptions = []string{"incomplete data"}
+				entry.mountInfo.SuperOptions = []string{"incomplete data"}
+				lines[indexRandom] = entry.string()
+				mockOS.EXPECT().ReadFile(selfMountInfoPath).Return([]byte(strings.Join(lines, "\n")), nil).Times(1)
+
+				// Third attempt we get the needed line, but one of the data is still missing.
+				entry = newMountInfoEntry()
+				entry.mountInfo.SuperOptions = []string{"incomplete data"}
+				lines[indexRandom] = entry.string()
+				mockOS.EXPECT().ReadFile(selfMountInfoPath).Return([]byte(strings.Join(lines, "\n")), nil).Times(1)
+
+				// Fourth attempt, found the needed entry, data is complete, but its too late.
+				entry = newMountInfoEntry()
+				lines[indexRandom] = entry.string()
+				mockOS.EXPECT().ReadFile(selfMountInfoPath).Return([]byte(strings.Join(lines, "\n")), nil).Times(1)
+			},
+			err:          true,
+			matched:      false,
+			attemptFound: 4, // not needed here in this test case
+		},
+		{
+			name: "mountInfo file contains 100 entry, parseProcMount returns an error for unrelated entry," +
+				" but test passes in the first attempt",
+			mockOSExpectations: func(mockOS *mock_oswrapper.MockOS, mountFileInfo string, attempt int) {
+				// First time we get the incomplete line.
+				lines := strings.Split(mountFileInfo, "\n")
+				indexRandom := rand.Intn(len(lines))
+				lines[indexRandom] = "Some wrong entry"
+
+				for i := 0; i < attempt; i++ {
+					// This indexRandom re-writing the above entry has the probability of (attempt * 1/100).
+					indexRandom = rand.Intn(len(lines))
+					lines[indexRandom] = newMountInfoEntry().string()
+					mockOS.EXPECT().ReadFile(selfMountInfoPath).Return([]byte(strings.Join(lines, "\n")), nil).Times(1)
+				}
+			},
+			err:          false,
+			matched:      true,
+			attemptFound: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockOS := mock_oswrapper.NewMockOS(ctrl)
+			expectedEntry := &newMountInfoEntry().mountInfo
+			tt.mockOSExpectations(mockOS, randomMountInfoFile, tt.attemptFound)
+
+			client := &LinuxClient{
+				os:       mockOS,
+				filepath: nil,
+				command:  nil,
+			}
+
+			sourcePath := strings.TrimPrefix(expectedEntry.MountSource, "/dev/")
+			devicePath := strings.TrimPrefix(expectedEntry.MountSource, "/dev/")
+
+			found, err := client.ConsistentReadMount(ctx(), selfMountInfoPath, expectedEntry.MountPoint, sourcePath, devicePath, maxListTries)
+			if !tt.err {
+				assert.NoError(t, err, "There shouldn't be any error")
+			} else {
+				assert.Errorf(t, err, "There should be an error")
+			}
+
+			if tt.matched {
+				assert.Equal(t, found, &newMountInfoEntry().mountInfo, "Should be equal")
+			} else {
+				assert.NotEqual(t, found, nil, "Should be equal to nil")
+			}
+		})
+	}
+}
+
 func TestParseProcMounts(t *testing.T) {
 	type parameters struct {
 		input          string
@@ -1635,6 +1871,32 @@ func newMountInfoEntry() *mountInfoEntry {
 			MountOptions: []string{"rw", "relatime"},
 			FsType:       "ext4",
 			MountSource:  "/dev/mapper/3600a098038314461522451715a736f33",
+			SuperOptions: []string{"rw", "data=ordered"},
+		},
+	}
+}
+
+var (
+	randomMountPoint []string = []string{"/mnt3", "/mnt4", "/mnt5", "/mnt6", "/mnt7", "/mnt8", "/mnt9"}
+	randomFSType     []string = []string{"ext4", "ext3", "ext2", "ext1", "xfs"}
+)
+
+func newMountInfoEntryRandom(mountOptions []string) *mountInfoEntry {
+	return &mountInfoEntry{
+		models.MountInfo{
+			MountId:    rand.Intn(1001),
+			ParentId:   rand.Intn(1001),
+			DeviceId:   fmt.Sprintf("%d:0", rand.Intn(101)),
+			Root:       "/mnt1",
+			MountPoint: randomMountPoint[rand.Intn(len(randomMountPoint))],
+			MountOptions: func() []string {
+				if mountOptions == nil {
+					return []string{"rw", "relatime"}
+				}
+				return mountOptions
+			}(),
+			FsType:       randomFSType[rand.Intn(len(randomFSType))],
+			MountSource:  fmt.Sprintf("/dev/mapper/%s", uuid.New().String()),
 			SuperOptions: []string{"rw", "data=ordered"},
 		},
 	}

@@ -13,7 +13,7 @@ import (
 
 // checkMountOptions check if the new mount options are different from already mounted options.
 // Return an error if there is mismatch with the mount options.
-func checkMountOptions(ctx context.Context, procMount models.MountInfo, mountOptions string) error {
+func checkMountOptions(ctx context.Context, procMount *models.MountInfo, mountOptions string) error {
 	// We have the source already mounted. Compare the mount options from the request.
 	optionSlice := strings.Split(strings.TrimPrefix(mountOptions, "-o"), ",")
 	for _, option := range optionSlice {
