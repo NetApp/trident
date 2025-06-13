@@ -65,7 +65,7 @@ func DecrementQueueSize(lockID string) {
 	currentWait, ok := waitQueue.Load(lockID)
 	if ok {
 		if ptr, ok := currentWait.(*uint32); ok {
-			if *ptr > 0 {
+			if atomic.LoadUint32(ptr) > 0 {
 				atomic.AddUint32(ptr, ^uint32(0))
 			}
 		}
