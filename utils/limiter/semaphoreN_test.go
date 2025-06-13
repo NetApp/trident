@@ -59,7 +59,7 @@ func TestSemaphoreN_Wait(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			err = lim.Wait(ctx)
+			err := lim.Wait(ctx)
 			defer lim.Release(ctx)
 			assert.NoError(t, err)
 		}()
