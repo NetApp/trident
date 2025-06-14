@@ -2447,6 +2447,7 @@ func (d *NASQtreeStorageDriver) resizeFlexvol(ctx context.Context, flexvol strin
 		if err = d.API.VolumeSetSize(ctx, flexvol, "+"+size); err != nil {
 			return fmt.Errorf("flexvol resize failed: %v", err)
 		}
+		return nil
 	}
 
 	// Got optimal size, so just set the Flexvol to that value
