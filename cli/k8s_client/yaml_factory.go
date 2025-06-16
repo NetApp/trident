@@ -585,6 +585,20 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		K8sAPISidecarThrottle = fmt.Sprintf("- --kube-api-qps=%d\n        - --kube-api-burst=%d", queriesPerSecond, burst)
 	}
 
+	// Fill in the CSI feature gates from the YAML.
+	// CSIFeatureGates should already be deduplicated.
+	// If multiple feature gates are specified for the same placeholder,
+	// gates will be a comma-delimited string.
+	for placeholder, gates := range args.CSIFeatureGates {
+		featureGates := fmt.Sprintf("- \"--feature-gates=%s\"", gates)
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, placeholder, featureGates)
+	}
+
+	// If there are no feature gates, remove the placeholder(s).
+	if len(args.CSIFeatureGates) == 0 {
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{FEATURE_GATES_CSI_SNAPSHOTTER}", "")
+	}
+
 	// Get the autosupport YAML snippet and insert it into the deployment YAML.
 	// This YAML snippet will have some "{}" variables that need to be replaced.
 	autosupportYAML := getCSIDeploymentAutosupportYAML(args)
@@ -792,7 +806,7 @@ spec:
         - "--timeout=300s"
         - "--worker-threads=10"
         - "--csi-address=$(ADDRESS)"
-        - "--feature-gates=CSIVolumeGroupSnapshot=true"
+        {FEATURE_GATES_CSI_SNAPSHOTTER}
         {K8S_API_CLIENT_SIDECAR_THROTTLE}
         env:
         - name: ADDRESS

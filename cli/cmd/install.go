@@ -865,6 +865,14 @@ func installTrident() (returnError error) {
 		}
 	}
 
+	// Automatically enable CSI feature gates.
+	csiFeatureGateYAMLSnippets, err := k8sclient.ConstructCSIFeatureGateYAMLSnippets(client)
+	if err != nil {
+		Log().WithError(err).Debug("Could not enable some CSI feature gates.")
+	} else {
+		Log().WithField("featureGates", csiFeatureGateYAMLSnippets).Debug("Enabling CSI feature gates.")
+	}
+
 	// All checks succeeded, so proceed with installation
 	Log().WithField("namespace", TridentPodNamespace).Info("Starting Trident installation.")
 
@@ -1058,6 +1066,7 @@ func installTrident() (returnError error) {
 			IdentityLabel:           identityLabel,
 			K8sAPIQPS:               k8sAPIQPS,
 			EnableConcurrency:       enableConcurrency,
+			CSIFeatureGates:         csiFeatureGateYAMLSnippets,
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDeploymentYAML(deploymentArgs))
