@@ -2183,6 +2183,11 @@ func (o *ConcurrentTridentOrchestrator) cloneVolume(
 		return nil, errors.NotFoundError("backend for source volume %s not found", volConfig.CloneSourceVolume)
 	}
 
+	if volConfig.StorageClass != sourceVolume.Config.StorageClass {
+		Logc(ctx).Errorf("Clone volume %s from source volume %s with different storage classes is not recommended.",
+			volConfig.Name, volConfig.CloneSourceVolume)
+	}
+
 	if volConfig.Size != "" {
 		cloneSourceVolumeSize, err := strconv.ParseInt(sourceVolume.Config.Size, 10, 64)
 		if err != nil {
@@ -2366,6 +2371,11 @@ func (o *ConcurrentTridentOrchestrator) cloneVolumeRetry(
 	}
 
 	Logc(ctx).WithFields(logFields).Debug("Cloning volume.")
+
+	if cloneConfig.StorageClass != sourceVolConfig.StorageClass {
+		Logc(ctx).Errorf("Clone volume %s from source volume %s with different storage classes is not recommended.",
+			cloneConfig.Name, cloneConfig.CloneSourceVolume)
+	}
 
 	// Create the volume
 	createVolume := func() error {
