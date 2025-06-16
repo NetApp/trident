@@ -1472,6 +1472,13 @@ func (i *Installer) createOrPatchTridentDeployment(
 		return fmt.Errorf("failed to remove unwanted Trident deployments; %v", err)
 	}
 
+	csiFeatureGateYAMLSnippets, err := k8sclient.ConstructCSIFeatureGateYAMLSnippets(i.client)
+	if err != nil {
+		Log().WithError(err).Debug("Could not enable some CSI feature gates.")
+	} else {
+		Log().WithField("featureGates", csiFeatureGateYAMLSnippets).Debug("Enabling CSI feature gates.")
+	}
+
 	deploymentArgs := &k8sclient.DeploymentYAMLArguments{
 		DeploymentName:             deploymentName,
 		TridentImage:               tridentImage,
@@ -1511,6 +1518,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		IdentityLabel:              identityLabel,
 		K8sAPIQPS:                  k8sAPIQPS,
 		EnableConcurrency:          enableConcurrency,
+		CSIFeatureGates:            csiFeatureGateYAMLSnippets,
 	}
 
 	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)

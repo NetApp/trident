@@ -121,7 +121,7 @@ spec:
 				// actions and objects from the underlying clientSet within the K8s Client.
 
 				// Initialize the fakeClient
-				fakeClient := fake.NewSimpleClientset()
+				fakeClient := fake.NewClientset()
 
 				// Prepend a reactor for each anticipated event.
 				event := test.event
