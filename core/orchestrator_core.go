@@ -2290,6 +2290,11 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 		return nil, errors.NotFoundError("source volume not found: %s", volumeConfig.CloneSourceVolume)
 	}
 
+	if volumeConfig.StorageClass != sourceVolume.Config.StorageClass {
+		Logc(ctx).Errorf("Clone volume %s from source volume %s with different storage classes is not recommended.",
+			volumeConfig.Name, volumeConfig.CloneSourceVolume)
+	}
+
 	Logc(ctx).WithFields(LogFields{
 		"Config.Size": sourceVolume.Config.Size,
 	}).Trace("Checking volume size.")
@@ -2523,6 +2528,11 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 	sourceVolume, found := o.volumes[cloneConfig.CloneSourceVolume]
 	if !found {
 		return nil, errors.NotFoundError("source volume not found: %s", cloneConfig.CloneSourceVolume)
+	}
+
+	if cloneConfig.StorageClass != sourceVolume.Config.StorageClass {
+		Logc(ctx).Errorf("Clone volume %s from source volume %s with different storage classes is not recommended.",
+			cloneConfig.Name, cloneConfig.CloneSourceVolume)
 	}
 
 	backend, found = o.backends[txn.VolumeCreatingConfig.BackendUUID]
