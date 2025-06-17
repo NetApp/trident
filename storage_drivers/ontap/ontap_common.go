@@ -1378,6 +1378,11 @@ func InitializeOntapDriver(
 	defer Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< InitializeOntapDriver")
 
+	if config.StoragePrefix == nil {
+		prefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
+		config.StoragePrefix = &prefix
+	}
+
 	// Splitting config.ManagementLIF with colon allows to provide managementLIF value as address:port format
 	mgmtLIF := ""
 	if network.IPv6Check(config.ManagementLIF) {
@@ -1743,11 +1748,6 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		}
 	}
 
-	if config.StoragePrefix == nil {
-		prefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
-		config.StoragePrefix = &prefix
-	}
-
 	if config.SpaceAllocation == "" {
 		config.SpaceAllocation = DefaultSpaceAllocation
 	}
@@ -1901,8 +1901,7 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		config.NameTemplate = ensureUniquenessInNameTemplate(config.NameTemplate)
 	}
 
-	Logc(ctx).WithFields(LogFields{
-		"StoragePrefix":          *config.StoragePrefix,
+	logFields := LogFields{
 		"SpaceAllocation":        config.SpaceAllocation,
 		"SpaceReserve":           config.SpaceReserve,
 		"SnapshotPolicy":         config.SnapshotPolicy,
@@ -1929,7 +1928,13 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		"FlexgroupAggregateList": config.FlexGroupAggregateList,
 		"ADAdminUser":            config.ADAdminUser,
 		"NameTemplate":           config.NameTemplate,
-	}).Debugf("Configuration defaults")
+	}
+
+	if config.StoragePrefix != nil {
+		logFields["StoragePrefix"] = *config.StoragePrefix
+	}
+
+	Logc(ctx).WithFields(logFields).Debugf("Configuration defaults")
 
 	return nil
 }

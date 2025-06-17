@@ -18,6 +18,7 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -36,6 +37,7 @@ func getCommonConfig() *drivers.CommonStorageDriverConfig {
 		BackendName:       "myOntapSANBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("trident_"),
 	}
 }
 

@@ -7808,6 +7808,7 @@ func TestUpdateBackendByBackendUUID(t *testing.T) {
 		"storageDriverName": "fake",
 		"backendName":       bName,
 		"protocol":          config.File,
+		"autoExportPolicy":  true,
 	}
 
 	tests := []struct {
@@ -7862,17 +7863,16 @@ func TestUpdateBackendByBackendUUID(t *testing.T) {
 			mocks:            func(mockStoreClient *mockpersistentstore.MockStoreClient) {},
 			wantErr:          assert.Error,
 		},
-		// TODO: (victorir) to unblock updating a backend 25.02. Needs refactoring.
-		// {
-		// 	name:        "UpdateStoragePrefixError",
-		// 	backendName: bName,
-		// 	newBackendConfig: map[string]interface{}{
-		// 		"version": 1, "storageDriverName": "fake", "backendName": bName,
-		// 		"storagePrefix": "new", "protocol": config.File,
-		// 	},
-		// 	mocks:   func(mockStoreClient *mockpersistentstore.MockStoreClient) {},
-		// 	wantErr: assert.Error,
-		// },
+		{
+			name:        "UpdateStoragePrefixError",
+			backendName: bName,
+			newBackendConfig: map[string]interface{}{
+				"version": 1, "storageDriverName": "fake", "backendName": bName,
+				"storagePrefix": "new", "protocol": config.File,
+			},
+			mocks:   func(mockStoreClient *mockpersistentstore.MockStoreClient) {},
+			wantErr: assert.Error,
+		},
 		{
 			name:        "BackendRenameWithExistingNameError",
 			backendName: bName,
@@ -7941,6 +7941,21 @@ func TestUpdateBackendByBackendUUID(t *testing.T) {
 			name:             "BackendUpdateSuccess",
 			backendName:      bName,
 			newBackendConfig: bConfig,
+			mocks: func(mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name:        "UpdateAutoExportPolicyToFalse",
+			backendName: bName,
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"backendName":       bName,
+				"protocol":          config.File,
+				"autoExportPolicy":  false,
+			},
 			mocks: func(mockStoreClient *mockpersistentstore.MockStoreClient) {
 				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil)
 			},
