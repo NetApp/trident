@@ -7892,6 +7892,7 @@ func TestPopulateConfigurationDefaults(t *testing.T) {
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		DebugTraceFlags: map[string]bool{"method": true},
+		StoragePrefix:   convert.ToPtr("storagePrefix_"),
 	}
 
 	config := &drivers.OntapStorageDriverConfig{

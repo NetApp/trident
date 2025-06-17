@@ -3916,6 +3916,7 @@ func TestOntapSanEconomyEnsureFlexvolForLUN_NewFlexvolNotPermitted(t *testing.T)
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 	configJSON := fmt.Sprintf(`
 	{
@@ -4812,6 +4813,7 @@ func TestOntapSanEconomyInitialize(t *testing.T) {
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 	commonConfigJSON := fmt.Sprintf(`
 	{
@@ -4876,6 +4878,7 @@ func TestOntapSanEconomyInitialize_WithNameTemplate(t *testing.T) {
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 	commonConfigJSON := fmt.Sprintf(`
 	{
@@ -4935,6 +4938,7 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInStoragePool(t *testing.T)
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 	commonConfigJSON := fmt.Sprintf(`
 	{
@@ -5002,6 +5006,7 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 	commonConfigJSON := fmt.Sprintf(`
 	{
@@ -5065,6 +5070,7 @@ func TestOntapSanEconomyInitialize_InvalidConfig(t *testing.T) {
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 	commonConfigJSON := fmt.Sprintf(`{invalid-json}`)
 	secrets := map[string]string{
@@ -5086,6 +5092,7 @@ func TestOntapSanEconomyInitialize_NoDataLIFs(t *testing.T) {
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 	commonConfigJSON := fmt.Sprintf(`
 	{
@@ -5135,6 +5142,7 @@ func TestOntapSanEconomyInitialize_NumOfLUNs(t *testing.T) {
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 	secrets := map[string]string{
 		"clientcertificate": "dummy-certificate",
@@ -5203,6 +5211,7 @@ func TestOntapSanEconomyInitialize_OtherContext(t *testing.T) {
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 	commonConfigJSON := fmt.Sprintf(`
 	{
@@ -5255,6 +5264,7 @@ func TestOntapSanEconomyInitialize_NoSVMAggregates(t *testing.T) {
 		BackendName:       "myOntapSanEcoBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 	commonConfigJSON := fmt.Sprintf(`
 	{

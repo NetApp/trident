@@ -303,6 +303,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize(t *testing.T) {
 		BackendName:       "myOntapNasFlexgroupBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 
 	configJSON := `
@@ -356,6 +357,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_withNameTemplate(t *testing.T)
 		BackendName:       "myOntapNasFlexgroupBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 
 	configJSON := `
@@ -402,6 +404,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_NameTemplateDefineInStoragePoo
 		BackendName:       "myOntapNasFlexgroupBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 
 	configJSON := `
@@ -455,6 +458,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_NameTemplateDefineInBothPool(t
 		BackendName:       "myOntapNasFlexgroupBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 
 	configJSON := `
@@ -507,6 +511,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_StoragePool(t *testing.T) {
 		BackendName:       "myOntapNasFlexgroupBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 
 	secrets := map[string]string{
@@ -818,6 +823,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_ValidationFailed(t *testing.T)
 		BackendName:       "myOntapNasFlexgroupBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 
 	secrets := map[string]string{
@@ -898,6 +904,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_GetSVMAggregateNamesFailed(t *
 		BackendName:       "myOntapNasFlexgroupBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 
 	configJSON, _ := getOntapStorageDriverConfigJson("true", "volume", "", "none",
@@ -930,6 +937,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_GetSVMAggregateNameEmptyList(t
 		BackendName:       "myOntapNasFlexgroupBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 
 	configJSON, _ := getOntapStorageDriverConfigJson("true", "volume", "", "none",

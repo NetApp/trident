@@ -386,6 +386,7 @@ func TestOntapNasStorageDriverInitialize(t *testing.T) {
 		BackendName:       "myOntapNasBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 
 	configJSON := `
@@ -438,6 +439,7 @@ func TestOntapNasStorageDriverInitialize_NameTemplateDefineInBackendConfig(t *te
 		BackendName:       "myOntapNasBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 
 	nameTemplate := "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}_{{slice .volume.Name 4 9}}"
@@ -497,6 +499,7 @@ func TestOntapNasStorageDriverInitialize_NameTemplateDefineInStoragePool(t *test
 		BackendName:       "myOntapNasBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 
 	expectedNameTemplate := "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}_{{slice .volume.Name 4 9}}"
@@ -561,6 +564,7 @@ func TestOntapNasStorageDriverInitialize_NameTemplateDefineInBothPool(t *testing
 		BackendName:       "myOntapNasBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 
 	expectedNameTemplate := "pool_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume.RequestName}}_{{slice .volume.Name 4 9}}"
@@ -627,6 +631,7 @@ func TestOntapNasStorageDriverInitialize_Failure(t *testing.T) {
 		BackendName:       "myOntapNasBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 
 	configJSON := `
@@ -659,6 +664,7 @@ func TestOntapNasStorageDriverInitialize_StoragePoolFailed(t *testing.T) {
 		BackendName:       "myOntapNasBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 
 	configJSON := `
@@ -693,6 +699,7 @@ func TestOntapNasStorageDriverInitialize_ValidationFailed(t *testing.T) {
 		BackendName:       "myOntapNasBackend",
 		DriverContext:     tridentconfig.ContextCSI,
 		DebugTraceFlags:   debugTraceFlags,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 
 	configJSON := `

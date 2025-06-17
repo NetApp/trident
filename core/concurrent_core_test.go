@@ -1895,25 +1895,24 @@ func Test_UpdateBackendConcurrentCore(t *testing.T) {
 				assert.ErrorContains(t, err, "unsupported config error; input is missing the credentials field")
 			},
 		},
-		//		TODO: (victorir) to unblock updating a backend 25.02. Needs refactoring.
-		// {
-		//	name: "UpdateStoragePrefixError",
-		//	newBackendConfig: map[string]interface{}{
-		//		"version":           1,
-		//		"storageDriverName": "fake",
-		//		"backendName":       existingBackendName,
-		//		"storagePrefix":     "new-prefix",
-		//		"protocol":          config.File,
-		//		"volumeAccess":      "1.0.0.1",
-		//	},
-		//	setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
-		//		fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid)
-		//		addBackendsToCache(t, fakeBackend)
-		//	},
-		//	verifyError: func(err error) {
-		//		assert.ErrorContains(t, err, "updating the storage prefix isn't currently supported")
-		//	},
-		// },
+		{
+			name: "UpdateStoragePrefixError",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"backendName":       existingBackendName,
+				"storagePrefix":     "new-prefix",
+				"protocol":          config.File,
+				"volumeAccess":      "1.0.0.1",
+			},
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "updating the storage prefix isn't currently supported")
+			},
+		},
 		{
 			name: "BackendRenameSuccess",
 			newBackendConfig: map[string]interface{}{

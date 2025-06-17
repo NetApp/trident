@@ -16,6 +16,7 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
 	"github.com/netapp/trident/pkg/capacity"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -239,6 +240,7 @@ func TestNVMeInitialize_WithNameTemplate(t *testing.T) {
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		StorageDriverName: "ontap-san",
 		DriverContext:     tridentconfig.ContextCSI,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 	configJSON := `
 	{
@@ -274,6 +276,7 @@ func TestNVMeInitialize_NameTemplateDefineInStoragePool(t *testing.T) {
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		StorageDriverName: "ontap-san",
 		DriverContext:     tridentconfig.ContextCSI,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 	configJSON := `
 	{
@@ -317,6 +320,7 @@ func TestNVMeInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		StorageDriverName: "ontap-san",
 		DriverContext:     tridentconfig.ContextCSI,
+		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
 	configJSON := `
 	{
