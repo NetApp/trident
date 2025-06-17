@@ -21,7 +21,8 @@ import (
 )
 
 const (
-	MountOptionNconnect = "4"
+	MountOptionNconnect     = "4"
+	NetworkFeaturesStandard = "Standard"
 )
 
 type ANF struct {
