@@ -51,7 +51,7 @@ func TestNodeStageVolume(t *testing.T) {
 	type parameters struct {
 		getISCSIClient          func() iscsi.ISCSI
 		getNodeHelper           func() nodehelpers.NodeHelper
-		nodeStageVolumeRequest  csi.NodeStageVolumeRequest
+		nodeStageVolumeRequest  *csi.NodeStageVolumeRequest
 		assertError             assert.ErrorAssertionFunc
 		nodeStageVolumeResponse *csi.NodeStageVolumeResponse
 	}
@@ -102,7 +102,7 @@ func TestNodeStageVolume(t *testing.T) {
 				plugin.nodeHelper = params.getNodeHelper()
 			}
 
-			nodeStageVolumeResponse, err := plugin.NodeStageVolume(context.Background(), &params.nodeStageVolumeRequest)
+			nodeStageVolumeResponse, err := plugin.NodeStageVolume(context.Background(), params.nodeStageVolumeRequest)
 			if params.assertError != nil {
 				params.assertError(t, err)
 			}
@@ -116,7 +116,7 @@ func TestNodeStageSANVolume(t *testing.T) {
 	type parameters struct {
 		getISCSIClient          func() iscsi.ISCSI
 		getNodeHelper           func() nodehelpers.NodeHelper
-		nodeStageVolumeRequest  csi.NodeStageVolumeRequest
+		nodeStageVolumeRequest  *csi.NodeStageVolumeRequest
 		assertError             assert.ErrorAssertionFunc
 		nodeStageVolumeResponse *csi.NodeStageVolumeResponse
 	}
@@ -173,7 +173,7 @@ func TestNodeStageSANVolume(t *testing.T) {
 				plugin.nodeHelper = params.getNodeHelper()
 			}
 
-			nodeStageVolumeResponse, err := plugin.nodeStageSANVolume(context.Background(), &params.nodeStageVolumeRequest)
+			nodeStageVolumeResponse, err := plugin.nodeStageSANVolume(context.Background(), params.nodeStageVolumeRequest)
 
 			if params.assertError != nil {
 				params.assertError(t, err)
@@ -189,7 +189,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 		getISCSIClient         func() iscsi.ISCSI
 		getNodeHelper          func() nodehelpers.NodeHelper
 		getRestClient          func() controllerAPI.TridentController
-		nodeStageVolumeRequest csi.NodeStageVolumeRequest
+		nodeStageVolumeRequest *csi.NodeStageVolumeRequest
 		assertError            assert.ErrorAssertionFunc
 		aesKey                 []byte
 	}
@@ -615,7 +615,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 				SharedTarget:   sharedTarget,
 			}
 
-			err = plugin.nodeStageISCSIVolume(context.Background(), &params.nodeStageVolumeRequest, &publishInfo)
+			err = plugin.nodeStageISCSIVolume(context.Background(), params.nodeStageVolumeRequest, &publishInfo)
 			if params.assertError != nil {
 				params.assertError(t, err)
 			}
@@ -2047,7 +2047,7 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 		getNodeHelper                func() nodehelpers.NodeHelper
 		publishInfo                  models.VolumePublishInfo
 		force                        bool
-		request                      csi.NodeUnstageVolumeRequest
+		request                      *csi.NodeUnstageVolumeRequest
 		assertError                  assert.ErrorAssertionFunc
 	}
 
@@ -2609,7 +2609,7 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				plugin.mount = params.getMountClient()
 			}
 
-			err := plugin.nodeUnstageISCSIVolume(context.Background(), &params.request, &params.publishInfo,
+			err := plugin.nodeUnstageISCSIVolume(context.Background(), params.request, &params.publishInfo,
 				params.force)
 			params.assertError(t, err)
 		})
@@ -2629,7 +2629,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 			csiKubeletTimeout = csiKubeletTimeoutTemp
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
-		requests := make([]csi.NodeStageVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeStageVolumeRequestBuilder(TypeNFSRequest).Build()
 		}
@@ -2665,7 +2665,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeStageVolume(context.Background(), &requests[i])
+				_, err := plugin.NodeStageVolume(context.Background(), requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -2684,7 +2684,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 			csiKubeletTimeout = csiKubeletTimeoutTemp
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
-		requests := make([]csi.NodeStageVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeStageVolumeRequestBuilder(TypeiSCSIRequest).WithVolumeID(uuid.NewString()).Build()
 		}
@@ -2727,7 +2727,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeStageVolume(context.Background(), &requests[i])
+				_, err := plugin.NodeStageVolume(context.Background(), requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -2746,7 +2746,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 			csiKubeletTimeout = csiKubeletTimeoutTemp
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
-		requests := make([]csi.NodeStageVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeStageVolumeRequestBuilder(TypeNFSRequest).Build()
 		}
@@ -2791,7 +2791,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 		// Spinning up go-routine for the first request.
 		go func() {
 			defer wg.Done()
-			_, err := plugin.NodeStageVolume(context.Background(), &requests[0])
+			_, err := plugin.NodeStageVolume(context.Background(), requests[0])
 			assert.NoError(t, err)
 		}()
 
@@ -2801,7 +2801,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 		for i := 1; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeStageVolume(context.Background(), &requests[i])
+				_, err := plugin.NodeStageVolume(context.Background(), requests[i])
 				assert.Error(t, err)
 			}()
 		}
@@ -2820,8 +2820,8 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 			csiKubeletTimeout = csiKubeletTimeoutTemp
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
-		NASrequests := make([]csi.NodeStageVolumeRequest, numOfRequestsNAS)
-		SANrequests := make([]csi.NodeStageVolumeRequest, numOfRequestsSAN)
+		NASrequests := make([]*csi.NodeStageVolumeRequest, numOfRequestsNAS)
+		SANrequests := make([]*csi.NodeStageVolumeRequest, numOfRequestsSAN)
 		for i := 0; i < numOfRequestsNAS; i++ {
 			NASrequests[i] = NewNodeStageVolumeRequestBuilder(TypeNFSRequest).Build()
 		}
@@ -2874,7 +2874,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequestsNAS; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeStageVolume(context.Background(), &NASrequests[i])
+				_, err := plugin.NodeStageVolume(context.Background(), NASrequests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -2882,7 +2882,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequestsSAN; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeStageVolume(context.Background(), &SANrequests[i])
+				_, err := plugin.NodeStageVolume(context.Background(), SANrequests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -2900,8 +2900,8 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 			csiKubeletTimeout = csiKubeletTimeoutTemp
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
-		NFSrequests := make([]csi.NodeStageVolumeRequest, numOfRequests)
-		SMBrequests := make([]csi.NodeStageVolumeRequest, numOfRequests)
+		NFSrequests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
+		SMBrequests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			NFSrequests[i] = NewNodeStageVolumeRequestBuilder(TypeNFSRequest).Build()
 			SMBrequests[i] = NewNodeStageVolumeRequestBuilder(TypeSMBRequest).Build()
@@ -2943,14 +2943,14 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 			// Spinning up go-routine for NFS requests.
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeStageVolume(context.Background(), &NFSrequests[i])
+				_, err := plugin.NodeStageVolume(context.Background(), NFSrequests[i])
 				assert.NoError(t, err)
 			}()
 
 			// Spinning up go-rotuine for SMB requests.
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeStageVolume(context.Background(), &SMBrequests[i])
+				_, err := plugin.NodeStageVolume(context.Background(), SMBrequests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -2975,7 +2975,7 @@ func TestNodeStageNFSVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodeStageVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeStageVolumeRequestBuilder(TypeNFSRequest).Build()
 		}
@@ -3015,7 +3015,7 @@ func TestNodeStageNFSVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeStageNFSVolume(ctx, &requests[i])
+				_, err := plugin.nodeStageNFSVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -3038,7 +3038,7 @@ func TestNodeStageNFSVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodeStageVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeStageVolumeRequestBuilder(TypeNFSRequest).Build()
 		}
@@ -3078,7 +3078,7 @@ func TestNodeStageNFSVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfParallelRequestsAllowed; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeStageNFSVolume(ctx, &requests[i])
+				_, err := plugin.nodeStageNFSVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -3092,7 +3092,7 @@ func TestNodeStageNFSVolume_Multithreaded(t *testing.T) {
 		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeStageNFSVolume(ctx, &requests[i])
+				_, err := plugin.nodeStageNFSVolume(ctx, requests[i])
 				assert.Error(t, err)
 			}()
 		}
@@ -3115,7 +3115,7 @@ func TestNodeStageNFSVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodeStageVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeStageVolumeRequestBuilder(TypeNFSRequest).Build()
 		}
@@ -3160,7 +3160,7 @@ func TestNodeStageNFSVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfParallelRequestsAllowed; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeStageNFSVolume(ctx, &requests[i])
+				_, err := plugin.nodeStageNFSVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -3174,7 +3174,7 @@ func TestNodeStageNFSVolume_Multithreaded(t *testing.T) {
 		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeStageNFSVolume(ctx, &requests[i])
+				_, err := plugin.nodeStageNFSVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -3199,7 +3199,7 @@ func TestNodeStageSMBVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodeStageVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeStageVolumeRequestBuilder(TypeSMBRequest).Build()
 		}
@@ -3240,7 +3240,7 @@ func TestNodeStageSMBVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeStageSMBVolume(ctx, &requests[i])
+				_, err := plugin.nodeStageSMBVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -3263,7 +3263,7 @@ func TestNodeStageSMBVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodeStageVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeStageVolumeRequestBuilder(TypeSMBRequest).Build()
 		}
@@ -3304,7 +3304,7 @@ func TestNodeStageSMBVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfParallelRequestsAllowed; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeStageSMBVolume(ctx, &requests[i])
+				_, err := plugin.nodeStageSMBVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -3317,7 +3317,7 @@ func TestNodeStageSMBVolume_Multithreaded(t *testing.T) {
 		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeStageSMBVolume(ctx, &requests[i])
+				_, err := plugin.nodeStageSMBVolume(ctx, requests[i])
 				assert.Error(t, err)
 			}()
 		}
@@ -3340,7 +3340,7 @@ func TestNodeStageSMBVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodeStageVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeStageVolumeRequestBuilder(TypeSMBRequest).Build()
 		}
@@ -3387,7 +3387,7 @@ func TestNodeStageSMBVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfParallelRequestsAllowed; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeStageSMBVolume(ctx, &requests[i])
+				_, err := plugin.nodeStageSMBVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -3401,7 +3401,7 @@ func TestNodeStageSMBVolume_Multithreaded(t *testing.T) {
 		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeStageSMBVolume(ctx, &requests[i])
+				_, err := plugin.nodeStageSMBVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -3421,8 +3421,8 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 			csiKubeletTimeout = csiKubeletTimeoutTemp
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
-		requests := func() []csi.NodeUnstageVolumeRequest {
-			requests := make([]csi.NodeUnstageVolumeRequest, numOfRequests)
+		requests := func() []*csi.NodeUnstageVolumeRequest {
+			requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
 			for i := 0; i < numOfRequests; i++ {
 				requests[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(uuid.New().String()).Build()
 			}
@@ -3459,7 +3459,7 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeUnstageVolume(context.Background(), &requests[i])
+				_, err := plugin.NodeUnstageVolume(context.Background(), requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -3477,8 +3477,8 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 			csiKubeletTimeout = csiKubeletTimeoutTemp
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
-		requests := func() []csi.NodeUnstageVolumeRequest {
-			requests := make([]csi.NodeUnstageVolumeRequest, numOfRequests)
+		requests := func() []*csi.NodeUnstageVolumeRequest {
+			requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
 			for i := 0; i < numOfRequests; i++ {
 				requests[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(uuid.NewString()).Build()
 			}
@@ -3544,7 +3544,7 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeUnstageVolume(context.Background(), &requests[i])
+				_, err := plugin.NodeUnstageVolume(context.Background(), requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -3563,7 +3563,7 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 			csiKubeletTimeout = csiKubeletTimeoutTemp
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
-		requests := make([]csi.NodeUnstageVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeUnstageVolumeRequestBuilder().Build()
 		}
@@ -3602,7 +3602,7 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 
 		go func() {
 			defer wg.Done()
-			_, err := plugin.NodeUnstageVolume(context.Background(), &requests[0])
+			_, err := plugin.NodeUnstageVolume(context.Background(), requests[0])
 			assert.NoError(t, err)
 		}()
 
@@ -3611,7 +3611,7 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 		for i := 1; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeUnstageVolume(context.Background(), &requests[i])
+				_, err := plugin.NodeUnstageVolume(context.Background(), requests[i])
 				assert.Error(t, err)
 			}()
 		}
@@ -3630,8 +3630,8 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 			csiKubeletTimeout = csiKubeletTimeoutTemp
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
-		NASrequests := make([]csi.NodeUnstageVolumeRequest, numOfRequestsNAS)
-		SANrequests := make([]csi.NodeUnstageVolumeRequest, numOfRequestsSAN)
+		NASrequests := make([]*csi.NodeUnstageVolumeRequest, numOfRequestsNAS)
+		SANrequests := make([]*csi.NodeUnstageVolumeRequest, numOfRequestsSAN)
 
 		for i := 0; i < numOfRequestsNAS; i++ {
 			NASrequests[i] = NewNodeUnstageVolumeRequestBuilder().Build()
@@ -3714,7 +3714,7 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequestsNAS; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := pluginNAS.NodeUnstageVolume(context.Background(), &NASrequests[i])
+				_, err := pluginNAS.NodeUnstageVolume(context.Background(), NASrequests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -3722,7 +3722,7 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequestsSAN; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := pluginSAN.NodeUnstageVolume(context.Background(), &SANrequests[i])
+				_, err := pluginSAN.NodeUnstageVolume(context.Background(), SANrequests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -3742,8 +3742,8 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 
 		csiNodeLockTimeout = 500 * time.Millisecond
 
-		NFSrequests := make([]csi.NodeUnstageVolumeRequest, numOfRequests)
-		SMBrequests := make([]csi.NodeUnstageVolumeRequest, numOfRequests)
+		NFSrequests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
+		SMBrequests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			NFSrequests[i] = NewNodeUnstageVolumeRequestBuilder().Build()
 			SMBrequests[i] = NewNodeUnstageVolumeRequestBuilder().Build()
@@ -3802,7 +3802,7 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := pluginNFS.NodeUnstageVolume(context.Background(), &NFSrequests[i])
+				_, err := pluginNFS.NodeUnstageVolume(context.Background(), NFSrequests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -3810,7 +3810,7 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := pluginSMB.NodeUnstageVolume(context.Background(), &SMBrequests[i])
+				_, err := pluginSMB.NodeUnstageVolume(context.Background(), SMBrequests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -3835,7 +3835,7 @@ func TestNodeUnstageNFSVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodeUnstageVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(uuid.New().String()).Build()
 		}
@@ -3866,7 +3866,7 @@ func TestNodeUnstageNFSVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeUnstageNFSVolume(ctx, &requests[i])
+				_, err := plugin.nodeUnstageNFSVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -3891,7 +3891,7 @@ func TestNodeUnstageNFSVolume_Multithreaded(t *testing.T) {
 
 		signalChan := make(chan struct{}, numOfParallelRequestsAllowed)
 
-		requests := make([]csi.NodeUnstageVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(uuid.NewString()).Build()
 		}
@@ -3921,7 +3921,7 @@ func TestNodeUnstageNFSVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfParallelRequestsAllowed; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeUnstageNFSVolume(ctx, &requests[i])
+				_, err := plugin.nodeUnstageNFSVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -3934,7 +3934,7 @@ func TestNodeUnstageNFSVolume_Multithreaded(t *testing.T) {
 		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeUnstageNFSVolume(ctx, &requests[i])
+				_, err := plugin.nodeUnstageNFSVolume(ctx, requests[i])
 				assert.Error(t, err)
 			}()
 		}
@@ -3957,7 +3957,7 @@ func TestNodeUnstageNFSVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodeUnstageVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(uuid.NewString()).Build()
 		}
@@ -3993,7 +3993,7 @@ func TestNodeUnstageNFSVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfParallelRequestsAllowed; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeUnstageNFSVolume(ctx, &requests[i])
+				_, err := plugin.nodeUnstageNFSVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -4007,7 +4007,7 @@ func TestNodeUnstageNFSVolume_Multithreaded(t *testing.T) {
 		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeUnstageNFSVolume(ctx, &requests[i])
+				_, err := plugin.nodeUnstageNFSVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -4032,7 +4032,7 @@ func TestNodeUnstageSMBVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodeUnstageVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(uuid.NewString()).Build()
 		}
@@ -4074,7 +4074,7 @@ func TestNodeUnstageSMBVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeUnstageSMBVolume(ctx, &requests[i])
+				_, err := plugin.nodeUnstageSMBVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -4097,7 +4097,7 @@ func TestNodeUnstageSMBVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodeUnstageVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(uuid.NewString()).Build()
 		}
@@ -4140,7 +4140,7 @@ func TestNodeUnstageSMBVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfParallelRequestsAllowed; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeUnstageSMBVolume(ctx, &requests[i])
+				_, err := plugin.nodeUnstageSMBVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -4153,7 +4153,7 @@ func TestNodeUnstageSMBVolume_Multithreaded(t *testing.T) {
 		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeUnstageSMBVolume(ctx, &requests[i])
+				_, err := plugin.nodeUnstageSMBVolume(ctx, requests[i])
 				assert.Error(t, err)
 			}()
 		}
@@ -4176,7 +4176,7 @@ func TestNodeUnstageSMBVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodeUnstageVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(uuid.NewString()).Build()
 		}
@@ -4230,7 +4230,7 @@ func TestNodeUnstageSMBVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfParallelRequestsAllowed; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeUnstageSMBVolume(ctx, &requests[i])
+				_, err := plugin.nodeUnstageSMBVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -4244,7 +4244,7 @@ func TestNodeUnstageSMBVolume_Multithreaded(t *testing.T) {
 		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodeUnstageSMBVolume(ctx, &requests[i])
+				_, err := plugin.nodeUnstageSMBVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -4264,8 +4264,8 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 			csiKubeletTimeout = csiKubeletTimeoutTemp
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
-		requests := func() []csi.NodePublishVolumeRequest {
-			requests := make([]csi.NodePublishVolumeRequest, numOfRequests)
+		requests := func() []*csi.NodePublishVolumeRequest {
+			requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
 			for i := 0; i < numOfRequests; i++ {
 				requests[i] = NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build()
 			}
@@ -4306,7 +4306,7 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodePublishVolume(context.Background(), &requests[i])
+				_, err := plugin.NodePublishVolume(context.Background(), requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -4325,7 +4325,7 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 			csiKubeletTimeout = csiKubeletTimeoutTemp
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
-		requests := make([]csi.NodePublishVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build()
 		}
@@ -4369,7 +4369,7 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 
 		go func() {
 			defer wg.Done()
-			_, err := plugin.NodePublishVolume(context.Background(), &requests[0])
+			_, err := plugin.NodePublishVolume(context.Background(), requests[0])
 			assert.NoError(t, err)
 		}()
 
@@ -4379,7 +4379,7 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 		for i := 1; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodePublishVolume(context.Background(), &requests[i])
+				_, err := plugin.NodePublishVolume(context.Background(), requests[i])
 				assert.Error(t, err)
 			}()
 		}
@@ -4397,8 +4397,8 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 			csiKubeletTimeout = csiKubeletTimeoutTemp
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
-		NFSrequests := make([]csi.NodePublishVolumeRequest, numOfRequests)
-		SMBrequests := make([]csi.NodePublishVolumeRequest, numOfRequests)
+		NFSrequests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
+		SMBrequests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			NFSrequests[i] = NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build()
 			SMBrequests[i] = NewNodePublishVolumeRequestBuilder(SMBNodePublishVolumeRequestType).Build()
@@ -4462,7 +4462,7 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := pluginNFS.NodePublishVolume(context.Background(), &NFSrequests[i])
+				_, err := pluginNFS.NodePublishVolume(context.Background(), NFSrequests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -4471,7 +4471,7 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := pluginSMB.NodePublishVolume(context.Background(), &SMBrequests[i])
+				_, err := pluginSMB.NodePublishVolume(context.Background(), SMBrequests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -4496,7 +4496,7 @@ func TestNodePublishNFSVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodePublishVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build()
 		}
@@ -4537,7 +4537,7 @@ func TestNodePublishNFSVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodePublishNFSVolume(ctx, &requests[i])
+				_, err := plugin.nodePublishNFSVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -4560,7 +4560,7 @@ func TestNodePublishNFSVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodePublishVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build()
 		}
@@ -4601,7 +4601,7 @@ func TestNodePublishNFSVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < maxNodeStageNFSVolumeOperations; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodePublishNFSVolume(ctx, &requests[i])
+				_, err := plugin.nodePublishNFSVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -4614,7 +4614,7 @@ func TestNodePublishNFSVolume_Multithreaded(t *testing.T) {
 		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodePublishNFSVolume(ctx, &requests[i])
+				_, err := plugin.nodePublishNFSVolume(ctx, requests[i])
 				assert.Error(t, err)
 			}()
 		}
@@ -4637,7 +4637,7 @@ func TestNodePublishNFSVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodePublishVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build()
 		}
@@ -4687,7 +4687,7 @@ func TestNodePublishNFSVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfParallelRequestsAllowed; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodePublishNFSVolume(ctx, &requests[i])
+				_, err := plugin.nodePublishNFSVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -4700,7 +4700,7 @@ func TestNodePublishNFSVolume_Multithreaded(t *testing.T) {
 		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodePublishNFSVolume(ctx, &requests[i])
+				_, err := plugin.nodePublishNFSVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -4725,7 +4725,7 @@ func TestNodePublishSMBVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodePublishVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodePublishVolumeRequestBuilder(SMBNodePublishVolumeRequestType).Build()
 		}
@@ -4757,7 +4757,7 @@ func TestNodePublishSMBVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodePublishSMBVolume(ctx, &requests[i])
+				_, err := plugin.nodePublishSMBVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -4780,7 +4780,7 @@ func TestNodePublishSMBVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodePublishVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodePublishVolumeRequestBuilder(SMBNodePublishVolumeRequestType).Build()
 		}
@@ -4813,7 +4813,7 @@ func TestNodePublishSMBVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfParallelRequestsAllowed; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodePublishSMBVolume(ctx, &requests[i])
+				_, err := plugin.nodePublishSMBVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -4826,7 +4826,7 @@ func TestNodePublishSMBVolume_Multithreaded(t *testing.T) {
 		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodePublishSMBVolume(ctx, &requests[i])
+				_, err := plugin.nodePublishSMBVolume(ctx, requests[i])
 				assert.Error(t, err)
 			}()
 		}
@@ -4849,7 +4849,7 @@ func TestNodePublishSMBVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodePublishVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodePublishVolumeRequestBuilder(SMBNodePublishVolumeRequestType).Build()
 		}
@@ -4889,7 +4889,7 @@ func TestNodePublishSMBVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfParallelRequestsAllowed; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodePublishSMBVolume(ctx, &requests[i])
+				_, err := plugin.nodePublishSMBVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -4903,7 +4903,7 @@ func TestNodePublishSMBVolume_Multithreaded(t *testing.T) {
 		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.nodePublishSMBVolume(ctx, &requests[i])
+				_, err := plugin.nodePublishSMBVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -4923,8 +4923,8 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 			csiKubeletTimeout = csiKubeletTimeoutTemp
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
-		requests := func() []csi.NodeUnpublishVolumeRequest {
-			requests := make([]csi.NodeUnpublishVolumeRequest, numOfRequests)
+		requests := func() []*csi.NodeUnpublishVolumeRequest {
+			requests := make([]*csi.NodeUnpublishVolumeRequest, numOfRequests)
 			for i := 0; i < numOfRequests; i++ {
 				requests[i] = NewNodeUnpublishVolumeRequestBuilder().Build()
 			}
@@ -4963,7 +4963,7 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeUnpublishVolume(context.Background(), &requests[i])
+				_, err := plugin.NodeUnpublishVolume(context.Background(), requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -4982,7 +4982,7 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 			csiKubeletTimeout = csiKubeletTimeoutTemp
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
-		requests := make([]csi.NodeUnpublishVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeUnpublishVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeUnpublishVolumeRequestBuilder().Build()
 		}
@@ -5027,7 +5027,7 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 
 		go func() {
 			defer wg.Done()
-			_, err := plugin.NodeUnpublishVolume(context.Background(), &requests[0])
+			_, err := plugin.NodeUnpublishVolume(context.Background(), requests[0])
 			assert.NoError(t, err)
 		}()
 
@@ -5037,7 +5037,7 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 		for i := 1; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeUnpublishVolume(context.Background(), &requests[i])
+				_, err := plugin.NodeUnpublishVolume(context.Background(), requests[i])
 				assert.Error(t, err)
 			}()
 		}
@@ -5060,7 +5060,7 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodeUnpublishVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeUnpublishVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeUnpublishVolumeRequestBuilder().Build()
 		}
@@ -5101,7 +5101,7 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfParallelRequestsAllowed; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeUnpublishVolume(ctx, &requests[i])
+				_, err := plugin.NodeUnpublishVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -5114,7 +5114,7 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeUnpublishVolume(ctx, &requests[i])
+				_, err := plugin.NodeUnpublishVolume(ctx, requests[i])
 				assert.Error(t, err)
 			}()
 		}
@@ -5137,7 +5137,7 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, csiNodeLockTimeout)
 		defer cancel()
 
-		requests := make([]csi.NodeUnpublishVolumeRequest, numOfRequests)
+		requests := make([]*csi.NodeUnpublishVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			requests[i] = NewNodeUnpublishVolumeRequestBuilder().Build()
 		}
@@ -5186,7 +5186,7 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfParallelRequestsAllowed; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeUnpublishVolume(ctx, &requests[i])
+				_, err := plugin.NodeUnpublishVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -5200,7 +5200,7 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeUnpublishVolume(ctx, &requests[i])
+				_, err := plugin.NodeUnpublishVolume(ctx, requests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -5229,7 +5229,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
 		// ---- NodeStage nodeStageRequests ----
-		nodeStageRequests := make([]csi.NodeStageVolumeRequest, numOfRequests)
+		nodeStageRequests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			nodeStageRequests[i] = NewNodeStageVolumeRequestBuilder(TypeNFSRequest).Build()
 		}
@@ -5263,7 +5263,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeStageVolume(context.Background(), &nodeStageRequests[i])
+				_, err := plugin.NodeStageVolume(context.Background(), nodeStageRequests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -5271,7 +5271,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		wg.Wait()
 
 		// ---- Unstaging all those previously staged nodeStageRequests ----
-		nodeUnstageRequests := make([]csi.NodeUnstageVolumeRequest, numOfRequests)
+		nodeUnstageRequests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			// Using the same volumeID as nodeStage requests.
 			nodeUnstageRequests[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(nodeStageRequests[i].VolumeId).Build()
@@ -5292,13 +5292,13 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 			// Spinning up go-routines for each request.
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeUnstageVolume(context.Background(), &nodeUnstageRequests[volumeIDs[i]])
+				_, err := plugin.NodeUnstageVolume(context.Background(), nodeUnstageRequests[volumeIDs[i]])
 				assert.NoError(t, err)
 			}()
 		}
 
 		// ---- Parallely creating another batch of 100 nodeStage requests ----
-		nodeStageRequests2 := make([]csi.NodeStageVolumeRequest, numOfRequests)
+		nodeStageRequests2 := make([]*csi.NodeStageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			nodeStageRequests2[i] = NewNodeStageVolumeRequestBuilder(TypeNFSRequest).Build()
 		}
@@ -5312,7 +5312,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeStageVolume(context.Background(), &nodeStageRequests2[i])
+				_, err := plugin.NodeStageVolume(context.Background(), nodeStageRequests2[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -5320,7 +5320,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		wg.Wait()
 
 		// ---- Unstaging all those previously staged nodeStageRequests of 2nd batch ----
-		nodeUnstageRequests2 := make([]csi.NodeUnstageVolumeRequest, numOfRequests)
+		nodeUnstageRequests2 := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			// Using the same volumeID as nodeStage requests.
 			nodeUnstageRequests2[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(nodeStageRequests2[i].VolumeId).Build()
@@ -5340,7 +5340,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeUnstageVolume(context.Background(), &nodeUnstageRequests2[volumeIDs[i]])
+				_, err := plugin.NodeUnstageVolume(context.Background(), nodeUnstageRequests2[volumeIDs[i]])
 				assert.NoError(t, err)
 			}()
 		}
@@ -5357,7 +5357,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
 		// ---- NodeStage nodeStageRequests ----
-		nodeStageRequests := make([]csi.NodeStageVolumeRequest, numOfRequests)
+		nodeStageRequests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			nodeStageRequests[i] = NewNodeStageVolumeRequestBuilder(TypeSMBRequest).Build()
 		}
@@ -5396,7 +5396,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeStageVolume(context.Background(), &nodeStageRequests[i])
+				_, err := plugin.NodeStageVolume(context.Background(), nodeStageRequests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -5404,7 +5404,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		wg.Wait()
 
 		// ---- Unstaging all those previously staged nodeStageRequests ----
-		nodeUnstageRequests := make([]csi.NodeUnstageVolumeRequest, numOfRequests)
+		nodeUnstageRequests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			// Using the same volumeID as nodeStage requests.
 			nodeUnstageRequests[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(nodeStageRequests[i].VolumeId).Build()
@@ -5429,13 +5429,13 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 			// Spinning up go-routines for each request.
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeUnstageVolume(context.Background(), &nodeUnstageRequests[volumeIDs[i]])
+				_, err := plugin.NodeUnstageVolume(context.Background(), nodeUnstageRequests[volumeIDs[i]])
 				assert.NoError(t, err)
 			}()
 		}
 
 		// ---- Parallely creating another batch of 100 nodeStage requests ----
-		nodeStageRequests2 := make([]csi.NodeStageVolumeRequest, numOfRequests)
+		nodeStageRequests2 := make([]*csi.NodeStageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			nodeStageRequests2[i] = NewNodeStageVolumeRequestBuilder(TypeSMBRequest).Build()
 		}
@@ -5452,7 +5452,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeStageVolume(context.Background(), &nodeStageRequests2[i])
+				_, err := plugin.NodeStageVolume(context.Background(), nodeStageRequests2[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -5460,7 +5460,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		wg.Wait()
 
 		// ---- Unstaging all those previously staged nodeStageRequests of 2nd batch ----
-		nodeUnstageRequests2 := make([]csi.NodeUnstageVolumeRequest, numOfRequests)
+		nodeUnstageRequests2 := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
 			// Using the same volumeID as nodeStage requests.
 			nodeUnstageRequests2[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(nodeStageRequests2[i].VolumeId).Build()
@@ -5483,7 +5483,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequests; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeUnstageVolume(context.Background(), &nodeUnstageRequests2[volumeIDs[i]])
+				_, err := plugin.NodeUnstageVolume(context.Background(), nodeUnstageRequests2[volumeIDs[i]])
 				assert.NoError(t, err)
 			}()
 		}
@@ -5494,7 +5494,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 
 // ----- helpers ----
 type NodeStageVolumeRequestBuilder struct {
-	request csi.NodeStageVolumeRequest
+	request *csi.NodeStageVolumeRequest
 }
 
 type NodeStageVolumeRequestType int
@@ -5511,7 +5511,7 @@ func NewNodeStageVolumeRequestBuilder(requestType NodeStageVolumeRequestType) *N
 	switch requestType {
 	case TypeiSCSIRequest:
 		return &NodeStageVolumeRequestBuilder{
-			request: csi.NodeStageVolumeRequest{
+			request: &csi.NodeStageVolumeRequest{
 				PublishContext: map[string]string{
 					"protocol":               "block",
 					"sharedTarget":           "false",
@@ -5538,7 +5538,7 @@ func NewNodeStageVolumeRequestBuilder(requestType NodeStageVolumeRequestType) *N
 
 	case TypeFCPRequest:
 		return &NodeStageVolumeRequestBuilder{
-			request: csi.NodeStageVolumeRequest{
+			request: &csi.NodeStageVolumeRequest{
 				PublishContext: map[string]string{
 					"protocol":       "block",
 					"sharedTarget":   "false",
@@ -5563,7 +5563,7 @@ func NewNodeStageVolumeRequestBuilder(requestType NodeStageVolumeRequestType) *N
 
 	case TypeSMBRequest:
 		return &NodeStageVolumeRequestBuilder{
-			request: csi.NodeStageVolumeRequest{
+			request: &csi.NodeStageVolumeRequest{
 				PublishContext: map[string]string{
 					"protocol":       "file",
 					"filesystemType": "smb",
@@ -5582,7 +5582,7 @@ func NewNodeStageVolumeRequestBuilder(requestType NodeStageVolumeRequestType) *N
 
 	case TypeNFSRequest:
 		return &NodeStageVolumeRequestBuilder{
-			request: csi.NodeStageVolumeRequest{
+			request: &csi.NodeStageVolumeRequest{
 				PublishContext: map[string]string{
 					"protocol":       "file",
 					"filesystemType": "nfs",
@@ -5683,7 +5683,7 @@ func (builder *NodeStageVolumeRequestBuilder) WithStagingTargetPath(stagingTarge
 	return builder
 }
 
-func (builder *NodeStageVolumeRequestBuilder) Build() csi.NodeStageVolumeRequest {
+func (builder *NodeStageVolumeRequestBuilder) Build() *csi.NodeStageVolumeRequest {
 	builder.request.PublishContext["fcpLunNumber"] = "0"
 	return builder.request
 }
@@ -5711,8 +5711,8 @@ func (builder *NodeUnstageVolumeRequestBuilder) WithStagingTargetPath(stagingTar
 	return builder
 }
 
-func (builder *NodeUnstageVolumeRequestBuilder) Build() csi.NodeUnstageVolumeRequest {
-	return builder.request
+func (builder *NodeUnstageVolumeRequestBuilder) Build() *csi.NodeUnstageVolumeRequest {
+	return &builder.request
 }
 
 type VolumePublishInfoBuilder struct {
@@ -5818,7 +5818,7 @@ func (b *VolumePublishInfoBuilder) Build() models.VolumePublishInfo {
 }
 
 type NodePublishVolumeRequestBuilder struct {
-	request csi.NodePublishVolumeRequest
+	request *csi.NodePublishVolumeRequest
 }
 
 type NodePublishVolumeRequestType int
@@ -5835,7 +5835,7 @@ func NewNodePublishVolumeRequestBuilder(requestType NodePublishVolumeRequestType
 	switch requestType {
 	case NFSNodePublishVolumeRequestType:
 		return &NodePublishVolumeRequestBuilder{
-			request: csi.NodePublishVolumeRequest{
+			request: &csi.NodePublishVolumeRequest{
 				VolumeId: uuid.NewString(),
 				PublishContext: map[string]string{
 					"protocol":       "file",
@@ -5856,7 +5856,7 @@ func NewNodePublishVolumeRequestBuilder(requestType NodePublishVolumeRequestType
 
 	case SMBNodePublishVolumeRequestType:
 		return &NodePublishVolumeRequestBuilder{
-			request: csi.NodePublishVolumeRequest{
+			request: &csi.NodePublishVolumeRequest{
 				VolumeId: uuid.NewString(),
 				PublishContext: map[string]string{
 					"protocol":       "file",
@@ -5879,24 +5879,24 @@ func NewNodePublishVolumeRequestBuilder(requestType NodePublishVolumeRequestType
 	}
 }
 
-func (p *NodePublishVolumeRequestBuilder) Build() csi.NodePublishVolumeRequest {
+func (p *NodePublishVolumeRequestBuilder) Build() *csi.NodePublishVolumeRequest {
 	return p.request
 }
 
 type NodeUnpublishVolumeRequestBuilder struct {
-	request csi.NodeUnpublishVolumeRequest
+	request *csi.NodeUnpublishVolumeRequest
 }
 
 func NewNodeUnpublishVolumeRequestBuilder() *NodeUnpublishVolumeRequestBuilder {
 	return &NodeUnpublishVolumeRequestBuilder{
-		request: csi.NodeUnpublishVolumeRequest{
+		request: &csi.NodeUnpublishVolumeRequest{
 			VolumeId:   uuid.NewString(),
 			TargetPath: "/tmp/raw",
 		},
 	}
 }
 
-func (u *NodeUnpublishVolumeRequestBuilder) Build() csi.NodeUnpublishVolumeRequest {
+func (u *NodeUnpublishVolumeRequestBuilder) Build() *csi.NodeUnpublishVolumeRequest {
 	return u.request
 }
 
@@ -5905,7 +5905,7 @@ func TestNodeStageFCPVolume(t *testing.T) {
 		getFCPClient           func() fcp.FCP
 		getNodeHelper          func() nodehelpers.NodeHelper
 		getRestClient          func() controllerAPI.TridentController
-		nodeStageVolumeRequest csi.NodeStageVolumeRequest
+		nodeStageVolumeRequest *csi.NodeStageVolumeRequest
 		assertError            assert.ErrorAssertionFunc
 		aesKey                 []byte
 	}
@@ -5963,7 +5963,7 @@ func TestNodeStageFCPVolume(t *testing.T) {
 				SharedTarget:   sharedTarget,
 			}
 
-			err = plugin.nodeStageFCPVolume(context.Background(), &params.nodeStageVolumeRequest, &publishInfo)
+			err = plugin.nodeStageFCPVolume(context.Background(), params.nodeStageVolumeRequest, &publishInfo)
 			if params.assertError != nil {
 				params.assertError(t, err)
 			}
