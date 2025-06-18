@@ -14,6 +14,10 @@ import (
 	"github.com/netapp/trident/pkg/maths"
 )
 
+const (
+	OneGiB = uint64(1073741824)
+)
+
 // ///////////////////////////////////////////////////////////////////////////
 //
 // Binary units

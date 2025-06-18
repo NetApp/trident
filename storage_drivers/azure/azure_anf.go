@@ -38,8 +38,7 @@ import (
 )
 
 const (
-	MinimumVolumeSizeBytes    = uint64(1000000000)  // 1 GB
-	MinimumANFVolumeSizeBytes = uint64(53687091200) // 50 GiB
+	MinimumANFVolumeSizeBytes = capacity.OneGiB * 50 // 50 GiB
 
 	defaultUnixPermissions         = "" // TODO (cknight): change to "0777" when whitelisted permissions feature reaches GA
 	defaultNfsMountOptions         = "nfsvers=3"
@@ -47,9 +46,9 @@ const (
 	defaultSnapshotDir             = ""
 	defaultLimitVolumeSize         = ""
 	defaultExportRule              = "0.0.0.0/0"
-	defaultVolumeSizeStr           = "53687091200"
-	defaultNetworkFeatures         = "" // Leave empty, some regions may never support this
-	defaultMaxThroughput           = "4"
+	defaultVolumeSizeStr           = "53687091200" // 50 GiB
+	defaultNetworkFeatures         = ""            // Leave empty, some regions may never support this
+	defaultMaxThroughput           = "4"           // MiB/s
 	defaultQOSType                 = api.QOSAuto
 
 	// Constants for internal pool attributes
@@ -858,10 +857,8 @@ func (d *NASStorageDriver) Create(
 		defaultSize, _ := capacity.ToBytes(pool.InternalAttributes()[Size])
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
-	if err = drivers.CheckMinVolumeSize(sizeBytes, MinimumVolumeSizeBytes); err != nil {
-		return err
-	}
 
+	// Enforce minimum volume size
 	if sizeBytes < MinimumANFVolumeSizeBytes {
 
 		Logc(ctx).WithFields(LogFields{
@@ -870,6 +867,11 @@ func (d *NASStorageDriver) Create(
 		}).Warningf("Requested size is too small. Setting volume size to the minimum allowable (50 GiB).")
 
 		sizeBytes = MinimumANFVolumeSizeBytes
+	}
+
+	// Ensure sizeBytes is a multiple of 1 GiB
+	if remainder := sizeBytes % capacity.OneGiB; remainder != 0 {
+		sizeBytes = ((sizeBytes / capacity.OneGiB) + 1) * capacity.OneGiB
 	}
 
 	if _, _, err = drivers.CheckVolumeSizeLimits(ctx, sizeBytes, d.Config.CommonStorageDriverConfig); err != nil {
@@ -2220,6 +2222,11 @@ func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	// Make sure the request isn't above the configured maximum volume size (if any)
 	if _, _, err = drivers.CheckVolumeSizeLimits(ctx, sizeBytes, d.Config.CommonStorageDriverConfig); err != nil {
 		return err
+	}
+
+	// Ensure sizeBytes is a multiple of 1 GiB
+	if remainder := sizeBytes % capacity.OneGiB; remainder != 0 {
+		sizeBytes = ((sizeBytes / capacity.OneGiB) + 1) * capacity.OneGiB
 	}
 
 	// Resize the volume

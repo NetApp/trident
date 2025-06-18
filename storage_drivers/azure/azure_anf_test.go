@@ -22,6 +22,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	mockacp "github.com/netapp/trident/mocks/mock_acp"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_azure"
+	"github.com/netapp/trident/pkg/capacity"
 	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	storagefake "github.com/netapp/trident/storage/fake"
@@ -2632,7 +2633,7 @@ func TestCreate_ZeroSize(t *testing.T) {
 	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
 }
 
-func TestCreate_BelowAbsoluteMinimumSize(t *testing.T) {
+func TestCreate_BelowMinimumSize(t *testing.T) {
 	mockAPI, driver := newMockANFDriver(t)
 	driver.Config.BackendName = "anf"
 	driver.Config.ServiceLevel = api.ServiceLevelUltra
@@ -2643,16 +2644,58 @@ func TestCreate_BelowAbsoluteMinimumSize(t *testing.T) {
 
 	storagePool := driver.pools["anf_pool"]
 
-	volConfig, _, _, _, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	volConfig, capacityPool, subnet, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
 	volConfig.Size = "1k"
 
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
+	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
-	assert.Error(t, result, "create did not fail")
-	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
+	assert.NoError(t, result, "create failed")
+	assert.Equal(t, createRequest.QuotaInBytes, DefaultVolumeSize, "request size mismatch")
+	assert.Equal(t, volConfig.Size, defaultVolumeSizeStr, "config size mismatch")
+	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+}
+
+func TestCreate_SizeNotGibMultiple(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.Config.BackendName = "anf"
+	driver.Config.ServiceLevel = api.ServiceLevelUltra
+
+	driver.populateConfigurationDefaults(ctx, &driver.Config)
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	storagePool := driver.pools["anf_pool"]
+
+	volConfig, capacityPool, subnet, createRequest, filesystem := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	volConfig.Size = "107374182401"                           // 100 GiB + 1 byte
+	createRequest.QuotaInBytes = int64(capacity.OneGiB * 101) // 101 GiB
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().HasFeature(api.FeatureUnixPermissions).Return(false).Times(1)
+	mockAPI.EXPECT().RandomSubnetForStoragePool(ctx, storagePool).Return(subnet).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelUltra, api.QOSAuto).Return([]*api.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(filesystem, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, filesystem, api.StateAvailable, []string{api.StateError},
+		driver.volumeCreateTimeout, api.Create).Return(api.StateAvailable, nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.NoError(t, result, "create failed")
+	assert.Equal(t, createRequest.QuotaInBytes, int64(108447924224), "request size mismatch")
+	assert.Equal(t, volConfig.Size, "108447924224", "config size mismatch") // 101 GiB
+	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
 }
 
 func TestCreate_AboveMaximumSize(t *testing.T) {
@@ -7549,6 +7592,26 @@ func TestResize(t *testing.T) {
 
 	assert.Nil(t, result, "not nil")
 	assert.Equal(t, strconv.FormatUint(newSize, 10), volConfig.Size, "size mismatch")
+	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
+}
+
+func TestResize_SizeNotGibMultiple(t *testing.T) {
+	mockAPI, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	volConfig, filesystem, _, _ := getStructsForDestroyNFSVolume(ctx, driver)
+	volConfig.InternalID = ""
+	newSize := (capacity.OneGiB * 100) + 1 // 100 GiB + 1 byte
+	expectedSize := capacity.OneGiB * 101  // 101 GiB
+
+	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(filesystem, nil).Times(1)
+	mockAPI.EXPECT().ResizeVolume(ctx, filesystem, int64(expectedSize)).Return(nil).Times(1)
+
+	result := driver.Resize(ctx, volConfig, newSize)
+
+	assert.Nil(t, result, "not nil")
+	assert.Equal(t, strconv.FormatUint(expectedSize, 10), volConfig.Size, "size mismatch")
 	assert.Equal(t, filesystem.ID, volConfig.InternalID, "internal ID not set on volConfig")
 }
 
