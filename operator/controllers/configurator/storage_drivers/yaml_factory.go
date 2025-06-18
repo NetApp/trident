@@ -26,6 +26,7 @@ func getANFTBCYaml(anf *ANF, vPools, nasType string) string {
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{SUBNET}", anf.Subnet)
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{NAS_TYPE}", nasType)
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{V_POOLS}", vPools)
+	tbcYaml = strings.ReplaceAll(tbcYaml, "{NETWORK_FEATURES}", NetworkFeaturesStandard)
 	tbcYaml = yaml.ReplaceMultilineTag(tbcYaml, "CUSTOMER_ENCRYPTION_KEYS", constructEncryptionKeys(anf.CustomerEncryptionKeys))
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{SUPPORTED_TOPOLOGIES}",
 		constructANFSupportedTopologies(anf.Location, anf.AvailabilityZones))
@@ -54,6 +55,7 @@ spec:
   virtualNetwork: {VIRTUAL_NETWORK}
   subnet: {SUBNET}
   subscriptionID: {SUBSCRIPTION_ID}
+  networkFeatures: {NETWORK_FEATURES}
   tenantID: {TENANT_ID}
   location: {LOCATION}
   {CLIENT_CREDENTIALS}
