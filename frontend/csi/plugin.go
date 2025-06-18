@@ -97,6 +97,11 @@ type Plugin struct {
 	fs      filesystem.Filesystem
 	fcp     fcp.FCP
 	osutils osutils.Utils
+
+	csi.UnimplementedIdentityServer
+	csi.UnimplementedNodeServer
+	csi.UnimplementedControllerServer
+	csi.UnimplementedGroupControllerServer
 }
 
 func NewControllerPlugin(
