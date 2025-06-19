@@ -973,9 +973,10 @@ func TestCreateASANVMe(t *testing.T) {
 
 func TestCreateCloneASANVMe(t *testing.T) {
 	var (
-		cloneVolConfig storage.VolumeConfig
-		storagePool    *storage.StoragePool
-		sourceNS       *api.NVMeNamespace
+		cloneVolConfig  storage.VolumeConfig
+		storagePool     *storage.StoragePool
+		sourceNS        *api.NVMeNamespace
+		nsCommentString string
 	)
 
 	mockAPI, driver := newMockOntapASANVMeDriver(t)
@@ -991,6 +992,16 @@ func TestCreateCloneASANVMe(t *testing.T) {
 		storagePool.SetInternalAttributes(map[string]string{
 			SplitOnClone: "false",
 		})
+
+		// Set how should be the expected comment to be set on the namespace
+		nsComment := map[string]string{
+			nsAttributeFSType:    cloneVolConfig.FileSystem,
+			nsAttributeLUKS:      cloneVolConfig.LUKSEncryption,
+			nsAttributeDriverCtx: string(driver.Config.DriverContext),
+			FormatOptions:        cloneVolConfig.FormatOptions,
+			nsLabels:             "",
+		}
+		nsCommentString, _ = driver.createNVMeNamespaceCommentString(ctx, nsComment, nsMaxCommentLength)
 
 		sourceNS = &api.NVMeNamespace{
 			Name: "sourceVol",
@@ -1019,6 +1030,7 @@ func TestCreateCloneASANVMe(t *testing.T) {
 					cloneVolConfig.CloneSourceSnapshotInternal).Return(nil).Times(1)
 				mockAPI.EXPECT().NVMeNamespaceSetQosPolicyGroup(ctx, cloneVolConfig.InternalName, expectedQOSPolicy).Return(nil).Times(1)
 				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, cloneVolConfig.InternalName).Return(sourceNS, nil).Times(1)
+				mockAPI.EXPECT().NVMeNamespaceSetComment(ctx, cloneVolConfig.InternalName, nsCommentString).Return(nil).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
 				assert.NoError(t, err, "Expected no error during clone creation")
@@ -1039,6 +1051,7 @@ func TestCreateCloneASANVMe(t *testing.T) {
 				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, cloneVolConfig.InternalName).Return(nil).Times(1)
 				mockAPI.EXPECT().NVMeNamespaceSetQosPolicyGroup(ctx, cloneVolConfig.InternalName, expectedQOSPolicy).Return(nil).Times(1)
 				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, cloneVolConfig.InternalName).Return(sourceNS, nil).Times(1)
+				mockAPI.EXPECT().NVMeNamespaceSetComment(ctx, cloneVolConfig.InternalName, nsCommentString).Return(nil).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
 				storagePool.SetInternalAttributes(map[string]string{
@@ -1086,6 +1099,7 @@ func TestCreateCloneASANVMe(t *testing.T) {
 				mockAPI.EXPECT().StorageUnitCloneCreate(
 					ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
 					cloneVolConfig.CloneSourceSnapshotInternal).Return(nil).Times(1)
+				mockAPI.EXPECT().NVMeNamespaceSetComment(ctx, cloneVolConfig.InternalName, nsCommentString).Return(nil).Times(1)
 				mockAPI.EXPECT().NVMeNamespaceSetQosPolicyGroup(ctx, cloneVolConfig.InternalName, expectedQOSPolicy).Return(
 					fmt.Errorf("api-error")).Times(1)
 			},
@@ -1104,14 +1118,24 @@ func TestCreateCloneASANVMe(t *testing.T) {
 				storagePool.SetAttributes(map[string]sa.Offer{
 					sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 				})
+				// Set how should be the expected comment to be set on the namespace
 				expectedLabel := "{\"provisioning\":{\"thisIsATestLABEL\":\"dev-test-cluster-1\"}}"
+				nsComment := map[string]string{
+					nsAttributeFSType:    cloneVolConfig.FileSystem,
+					nsAttributeLUKS:      cloneVolConfig.LUKSEncryption,
+					nsAttributeDriverCtx: string(driver.Config.DriverContext),
+					FormatOptions:        cloneVolConfig.FormatOptions,
+					nsLabels:             expectedLabel,
+				}
+				nsCommentString, _ := driver.createNVMeNamespaceCommentString(ctx, nsComment, nsMaxCommentLength)
+
 				mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, sourceNS.Name).Return(sourceNS, nil).Times(1)
 				mockAPI.EXPECT().StorageUnitExists(ctx, cloneVolConfig.InternalName).Return(
 					false, nil).Times(1)
 				mockAPI.EXPECT().StorageUnitCloneCreate(
 					ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
 					cloneVolConfig.CloneSourceSnapshotInternal).Return(nil).Times(1)
-				mockAPI.EXPECT().NVMeNamespaceSetComment(ctx, cloneVolConfig.InternalName, expectedLabel).Return(fmt.Errorf("api-error")).Times(1)
+				mockAPI.EXPECT().NVMeNamespaceSetComment(ctx, cloneVolConfig.InternalName, nsCommentString).Return(fmt.Errorf("api-error")).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Error(t, err, "Clone of a volume shouldn't be created.")
@@ -1264,7 +1288,17 @@ func TestCreateCloneASANVMe_NameTemplate(t *testing.T) {
 				ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
 				cloneVolConfig.CloneSourceSnapshotInternal).Return(nil).Times(1)
 			mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, cloneVolConfig.InternalName).Return(sourceNS, nil).Times(1)
-			mockAPI.EXPECT().NVMeNamespaceSetComment(ctx, cloneVolConfig.InternalName, test.expectedLabel).Return(nil).Times(1)
+
+			// Set how should be the expected comment to be set on the namespace
+			nsComment := map[string]string{
+				nsAttributeFSType:    cloneVolConfig.FileSystem,
+				nsAttributeLUKS:      cloneVolConfig.LUKSEncryption,
+				nsAttributeDriverCtx: string(driver.Config.DriverContext),
+				FormatOptions:        cloneVolConfig.FormatOptions,
+				nsLabels:             test.expectedLabel,
+			}
+			nsCommentString, err := driver.createNVMeNamespaceCommentString(ctx, nsComment, nsMaxCommentLength)
+			mockAPI.EXPECT().NVMeNamespaceSetComment(ctx, cloneVolConfig.InternalName, nsCommentString).Return(nil).Times(1)
 
 			driver.Config.Labels = map[string]string{
 				test.labelKey: test.labelValue,
@@ -1273,7 +1307,7 @@ func TestCreateCloneASANVMe_NameTemplate(t *testing.T) {
 				sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
 			})
 
-			err := driver.CreateClone(ctx, nil, &cloneVolConfig, storagePool)
+			err = driver.CreateClone(ctx, nil, &cloneVolConfig, storagePool)
 
 			assert.NoError(t, err, "Clone creation failed. Expected no error")
 		})
@@ -1395,7 +1429,7 @@ func TestDestroyASANVMe(t *testing.T) {
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Error(t, err)
-				assert.Contains(t, err.Error(), "error checking for existing NVMe namespace")
+				assert.Contains(t, err.Error(), "error checking for existing ASA NVMe namespace")
 			},
 		},
 		{
@@ -1406,7 +1440,7 @@ func TestDestroyASANVMe(t *testing.T) {
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Error(t, err)
-				assert.Contains(t, err.Error(), "error destroying NVMe namespace")
+				assert.Contains(t, err.Error(), "error destroying ASA NVMe namespace")
 			},
 		},
 	}
@@ -2041,7 +2075,7 @@ func TestGetNVMe(t *testing.T) {
 
 		err := driver.Get(ctx, "testNS")
 		assert.Error(t, err, "Expected error when checking Namespace existence fails")
-		assert.Contains(t, err.Error(), "error checking for existing NVMe namespace", "Expected error message")
+		assert.Contains(t, err.Error(), "error checking for existing ASA NVMe namespace", "Expected error message")
 	})
 }
 
@@ -2758,7 +2792,7 @@ func TestOntapASANVMeStorageDriver_Resize_InvalidCurrentSize(t *testing.T) {
 	err := driver.Resize(ctx, &volConfig, 1073741824) // 1GB
 
 	assert.Error(t, err, "Expected error when namespace current size is invalid")
-	assert.ErrorContains(t, err, "error while parsing NVMe namespace size",
+	assert.ErrorContains(t, err, "error while parsing ASA NVMe namespace size",
 		"Expected specific error message for invalid size")
 }
 
@@ -2894,6 +2928,7 @@ func TestImportASANVMe_Managed_Success(t *testing.T) {
 		nsAttributeFSType:    volConfig.FileSystem,
 		nsAttributeLUKS:      volConfig.LUKSEncryption,
 		nsAttributeDriverCtx: string(driver.Config.DriverContext),
+		FormatOptions:        volConfig.FormatOptions,
 		nsLabels:             "{\"provisioning\":{\"app\":\"my-db-app\",\"label\":\"gold\"}}",
 	}
 
@@ -2940,6 +2975,13 @@ func TestImportASANVMe_Managed_ExistingComments(t *testing.T) {
 		AccessType: "rw",
 	}
 
+	existingNsComment := map[string]string{
+		nsAttributeFSType:    volConfig.FileSystem,
+		nsAttributeLUKS:      volConfig.LUKSEncryption,
+		nsAttributeDriverCtx: string(driver.Config.DriverContext),
+		FormatOptions:        volConfig.FormatOptions,
+	}
+
 	tests := []struct {
 		name               string
 		getExistingComment func() string
@@ -2949,13 +2991,7 @@ func TestImportASANVMe_Managed_ExistingComments(t *testing.T) {
 			name: "MetadataLabels_WithCustomBaseLabel",
 			getExistingComment: func() string {
 				label := "{\"custom-comment\":{\"app\":\"my-gateway-app\",\"label\":\"silver\"}}"
-				existingNsComment := map[string]string{
-					nsAttributeFSType:    volConfig.FileSystem,
-					nsAttributeLUKS:      volConfig.LUKSEncryption,
-					nsAttributeDriverCtx: string(driver.Config.DriverContext),
-					nsLabels:             label,
-				}
-
+				existingNsComment[nsLabels] = label
 				existingCommentString, _ := driver.createNVMeNamespaceCommentString(ctx, existingNsComment, nsMaxCommentLength)
 
 				return existingCommentString
@@ -2973,13 +3009,7 @@ func TestImportASANVMe_Managed_ExistingComments(t *testing.T) {
 			name: "ChangedMetadataLabelKey",
 			getExistingComment: func() string {
 				label := "{\"custom-comment\":{\"app\":\"my-gateway-app\",\"label\":\"silver\"}}"
-				existingNsComment := map[string]string{
-					nsAttributeFSType:    volConfig.FileSystem,
-					nsAttributeLUKS:      volConfig.LUKSEncryption,
-					nsAttributeDriverCtx: string(driver.Config.DriverContext),
-					nsLabels:             label,
-				}
-
+				existingNsComment[nsLabels] = label
 				existingCommentString, _ := driver.createNVMeNamespaceCommentString(ctx, existingNsComment, nsMaxCommentLength)
 				updatedCommentString := strings.Replace(existingCommentString, `"nsAttribute"`, `"myCustomKey"`, 1)
 
@@ -2991,13 +3021,7 @@ func TestImportASANVMe_Managed_ExistingComments(t *testing.T) {
 			name: "TridentSetLabel",
 			getExistingComment: func() string {
 				label := "{\"provisioning\":{\"app\":\"my-gateway-app\",\"label\":\"silver\"}}"
-				existingNsComment := map[string]string{
-					nsAttributeFSType:    volConfig.FileSystem,
-					nsAttributeLUKS:      volConfig.LUKSEncryption,
-					nsAttributeDriverCtx: string(driver.Config.DriverContext),
-					nsLabels:             label,
-				}
-
+				existingNsComment[nsLabels] = label
 				existingCommentString, _ := driver.createNVMeNamespaceCommentString(ctx, existingNsComment, nsMaxCommentLength)
 
 				return existingCommentString
@@ -3035,6 +3059,7 @@ func TestImportASANVMe_Managed_ExistingComments(t *testing.T) {
 					nsAttributeFSType:    volConfig.FileSystem,
 					nsAttributeLUKS:      volConfig.LUKSEncryption,
 					nsAttributeDriverCtx: string(driver.Config.DriverContext),
+					FormatOptions:        volConfig.FormatOptions,
 					nsLabels:             "{\"provisioning\":{\"app\":\"my-db-app\",\"label\":\"gold\"}}",
 				}
 
@@ -3291,6 +3316,7 @@ func TestImportASANVMe_DifferentLabels(t *testing.T) {
 				nsAttributeFSType:    volConfig.FileSystem,
 				nsAttributeLUKS:      volConfig.LUKSEncryption,
 				nsAttributeDriverCtx: string(driver.Config.DriverContext),
+				FormatOptions:        volConfig.FormatOptions,
 				nsLabels:             test.expectedLabel,
 			}
 			nsCommentToBeSetString, _ := driver.createNVMeNamespaceCommentString(ctx, nsCommentToBeSet, nsMaxCommentLength)
@@ -3355,6 +3381,7 @@ func TestImportASANVMe_LabelLengthExceeding(t *testing.T) {
 		nsAttributeFSType:    volConfig.FileSystem,
 		nsAttributeLUKS:      volConfig.LUKSEncryption,
 		nsAttributeDriverCtx: string(driver.Config.DriverContext),
+		FormatOptions:        volConfig.FormatOptions,
 		nsLabels:             "{\"provisioning\":{\"app\":\"my-gateway-app\",\"label\":\"silver\"}}",
 	}
 
@@ -3399,6 +3426,7 @@ func TestImportASANVMe_APIErrors(t *testing.T) {
 		nsAttributeFSType:    volConfig.FileSystem,
 		nsAttributeLUKS:      volConfig.LUKSEncryption,
 		nsAttributeDriverCtx: string(driver.Config.DriverContext),
+		FormatOptions:        volConfig.FormatOptions,
 		nsLabels:             "{\"provisioning\":{\"app\":\"my-gateway-app\",\"label\":\"silver\"}}",
 	}
 
@@ -3507,6 +3535,7 @@ func TestImportASANVMe_APIErrors(t *testing.T) {
 					nsAttributeFSType:    volConfig.FileSystem,
 					nsAttributeLUKS:      volConfig.LUKSEncryption,
 					nsAttributeDriverCtx: string(driver.Config.DriverContext),
+					FormatOptions:        volConfig.FormatOptions,
 					nsLabels:             "{\"provisioning\":{\"app\":\"my-db-app\",\"label\":\"gold\"}}",
 				}
 
@@ -3579,7 +3608,7 @@ func TestOntapASANVMeStorageDriver_CreateNVMeNamespaceCommentString(t *testing.T
 func TestOntapASANVMeStorageDriver_ParseNVMeNamespaceCommentString(t *testing.T) {
 	_, driver := newMockOntapASANVMeDriver(t)
 
-	nsCommentString := `{"nsAttribute":{"LUKS":"luks","com.netapp.ndvp.fstype":"ext4","driverContext":"docker"}}`
+	nsCommentString := `{"nsAttribute":{"LUKS":"luks","com.netapp.ndvp.fstype":"ext4","formatOptions":"-E nodiscard","driverContext":"docker"}}`
 
 	nsComment, err := driver.ParseNVMeNamespaceCommentString(ctx, nsCommentString)
 
@@ -3587,4 +3616,362 @@ func TestOntapASANVMeStorageDriver_ParseNVMeNamespaceCommentString(t *testing.T)
 	assert.Equal(t, "ext4", nsComment[nsAttributeFSType])
 	assert.Equal(t, "luks", nsComment[nsAttributeLUKS])
 	assert.Equal(t, "docker", nsComment[nsAttributeDriverCtx])
+	assert.Equal(t, "-E nodiscard", nsComment[FormatOptions])
+}
+
+func TestCreateNSCommentBasedOnSourceNS(t *testing.T) {
+	ctx := context.Background()
+
+	_, driver := newMockOntapASANVMeDriver(t)
+	driver.Config.DriverContext = driverContextCSI
+
+	volConfig := &storage.VolumeConfig{
+		Name:           "testNamespace",
+		InternalName:   "testNamespace",
+		Size:           "1Gi",
+		FileSystem:     "ext4",
+		FormatOptions:  "-E nodiscard",
+		LUKSEncryption: "true",
+	}
+
+	pool := storage.NewStoragePool(nil, "fakepool")
+	unsetPool := storage.NewStoragePool(nil, drivers.UnsetPool)
+
+	// Define test cases
+	tests := []struct {
+		name                 string
+		getSourceNsComment   func() string
+		storagePool          storage.Pool
+		getDriverLabelConfig func() map[string]string
+		getExpectedResult    func() string
+		expectedError        bool
+	}{
+		{
+			name: "No comment set on source Namespace",
+			getSourceNsComment: func() string {
+				return ""
+			},
+			storagePool: pool,
+			getDriverLabelConfig: func() map[string]string {
+				return map[string]string{
+					"provisioning": "cluster=my-cluster",
+				}
+			},
+			getExpectedResult: func() string {
+				// New set of comment should be created taking values from volConfig and driver config
+				labels, _ := ConstructLabelsFromConfigs(ctx, pool, volConfig,
+					driver.Config.CommonStorageDriverConfig, api.MaxSANLabelLength)
+				newNsComment := map[string]string{
+					nsAttributeFSType:    volConfig.FileSystem,
+					nsAttributeLUKS:      volConfig.LUKSEncryption,
+					nsAttributeDriverCtx: string(driver.Config.DriverContext),
+					FormatOptions:        volConfig.FormatOptions,
+					nsLabels:             labels,
+				}
+
+				commentStr, _ := driver.createNVMeNamespaceCommentString(ctx, newNsComment, nsMaxCommentLength)
+				return commentStr
+			},
+			expectedError: false,
+		},
+		{
+			name: "Trident set comment on source Namespace",
+			getSourceNsComment: func() string {
+				existingNsComment := map[string]string{
+					nsAttributeFSType:    "xfs",
+					nsAttributeLUKS:      "false",
+					nsAttributeDriverCtx: "docker",
+					FormatOptions:        "--trim",
+					nsLabels:             "{\"provisioning\":{\"template\":\"testSU\"}}",
+				}
+
+				commentStr, _ := driver.createNVMeNamespaceCommentString(ctx, existingNsComment, nsMaxCommentLength)
+				return commentStr
+			},
+			storagePool: unsetPool,
+			getDriverLabelConfig: func() map[string]string {
+				return map[string]string{
+					"provisioning": "cluster=my-cluster",
+				}
+			},
+			getExpectedResult: func() string {
+				storagePoolTemp := ConstructPoolForLabels(driver.Config.NameTemplate, driver.Config.Labels)
+				labels, _ := ConstructLabelsFromConfigs(ctx, storagePoolTemp, volConfig,
+					driver.Config.CommonStorageDriverConfig, api.MaxSANLabelLength)
+				newNsComment := map[string]string{
+					nsAttributeFSType:    volConfig.FileSystem,
+					nsAttributeLUKS:      volConfig.LUKSEncryption,
+					nsAttributeDriverCtx: string(driver.Config.DriverContext),
+					FormatOptions:        volConfig.FormatOptions,
+					nsLabels:             labels,
+				}
+
+				commentStr, _ := driver.createNVMeNamespaceCommentString(ctx, newNsComment, nsMaxCommentLength)
+				return commentStr
+			},
+			expectedError: false,
+		},
+		{
+			name: "Comment not set by Trident on source Namespace",
+			getSourceNsComment: func() string {
+				return "some custom comment not set by Trident"
+			},
+			storagePool: unsetPool,
+			getDriverLabelConfig: func() map[string]string {
+				return map[string]string{
+					"provisioning": "cluster=my-cluster",
+				}
+			},
+			getExpectedResult: func() string {
+				return ""
+			},
+			expectedError: false,
+		},
+		{
+			name: "Comment set by Trident, but modified on source Namespace",
+			getSourceNsComment: func() string {
+				existingNsComment := map[string]string{
+					nsAttributeFSType:    "xfs",
+					nsAttributeLUKS:      "false",
+					nsAttributeDriverCtx: "docker",
+					FormatOptions:        "--trim",
+					nsLabels:             "{\"provisioning-key-not-present\":{\"template\":\"testSU\"}}",
+				}
+
+				commentStr, _ := driver.createNVMeNamespaceCommentString(ctx, existingNsComment, nsMaxCommentLength)
+				return commentStr
+			},
+			storagePool: nil,
+			getDriverLabelConfig: func() map[string]string {
+				return map[string]string{
+					"provisioning": "cluster=my-cluster",
+				}
+			},
+			getExpectedResult: func() string {
+				// Though comment on source namespace seems to be set by Trident, the "provisioning" key is modified
+				// Hence, we can't overwrite it.
+				return ""
+			},
+			expectedError: false,
+		},
+		{
+			name: "Error constructing base label, label length more than max length",
+			getSourceNsComment: func() string {
+				existingNsComment := map[string]string{
+					nsAttributeFSType:    "xfs",
+					nsAttributeLUKS:      "false",
+					nsAttributeDriverCtx: "docker",
+					FormatOptions:        "--trim",
+					nsLabels:             "{\"provisioning\":{\"template\":\"testSU\"}}",
+				}
+
+				commentStr, _ := driver.createNVMeNamespaceCommentString(ctx, existingNsComment, nsMaxCommentLength)
+				return commentStr
+			},
+			storagePool: nil,
+			getDriverLabelConfig: func() map[string]string {
+				longLabel := "thisIsATestLabelWhoseLengthShouldExceed1023Characters_AddingSomeRandomCharacters_" +
+					"V88bESTQlRIWRSS40sx9ND8P9yPf0LV8jPofiqtTp2iIXgotGh83zZ1HEeFlMGxZlIcOiPdoi07cJ" +
+					"bQBuHvTRNX6pHRKUXaIrjEpygM4SpaqHYdZ8O1k2meeugg7eXu4dPhqetI3Sip3W4v9QuFkh1YBaI" +
+					"9sHE9w5eRxpmTv0POpCB5xAqzmN6XCkxuXKc4yfNS9PRwcTSpvkA3PcKCF3TD1TJU3NYzcChsFQgm" +
+					"bAsR32cbJRdsOwx6BkHNfRCji0xSnBFUFUu1sGHfYCmzzd3OmChADIP6RwRtpnqNzvt0CU6uumBnl" +
+					"Lc5U7mBI1Ndmqhn0BBSh588thKOQcpD4bvnSBYU788tBeVxQtE8KkdUgKl8574eWldqWDiALwoiCS" +
+					"Ae2GuZzwG4ACw2uHdIkjb6FEwapSKCEogr4yWFAVCYPp2pA37Mj88QWN82BEpyoTV6BRAOsubNPfT" +
+					"N94X0qCcVaQp4L5bA4SPTQu0ag20a2k9LmVsocy5y11U3ewpzVGtENJmxyuyyAbxOFOkDxKLRMhgs" +
+					"uJMhhplD894tkEcPoiFhdsYZbBZ4MOBF6KkuBF5aqMrQbOCFt2vvTN843nRhomVMpY01SNuUeb5mh" +
+					"UN53wsqqHSGoYb1eUBDlTUDLFcCcNacxfsILqmthnrD1B5u85jRm1SfkFfuIDOgaaTM9UhxNQ1U6M" +
+					"mBaRYBkuGtTScoVTXyF4lij2sj1WWrKb7qWlaUUjxHiaxgLovPWErldCXXkNFsHgc7UYLQLF4j6lO" +
+					"I1QdTAyrtCcSxRwdkjBxj8mQy1HblHnaaBwP7Nax9FvIvxpeqyD6s3X1vfFNGAMuRsc9DKmPDfxjh" +
+					"qGzRQawFEbbURWij9xleKsUr0yCjukyKsxuaOlwbXnoFh4V3wtidrwrNXieFD608EANwvCp7u2S8Q" +
+					"px99T4O87AdQGa5cAX8Ccojd9tENOmQRmOAwVEuFtuogos96TFlq0YHyfESDTB2TWayIuGJvgTIpX" +
+					"lthQFQfHVgPpUZdzZMjXry"
+
+				return map[string]string{
+					"provisioning": longLabel,
+				}
+			},
+			getExpectedResult: func() string {
+				return ""
+			},
+			expectedError: true,
+		},
+		{
+			name: "Error constructing comment with metadata",
+			getSourceNsComment: func() string {
+				existingNsComment := map[string]string{
+					nsAttributeFSType:    "xfs",
+					nsAttributeLUKS:      "false",
+					nsAttributeDriverCtx: "docker",
+					FormatOptions:        "--trim",
+					nsLabels:             "{\"provisioning\":{\"template\":\"testSU\"}}",
+				}
+
+				commentStr, _ := driver.createNVMeNamespaceCommentString(ctx, existingNsComment, nsMaxCommentLength)
+				return commentStr
+			},
+			storagePool: nil,
+			getDriverLabelConfig: func() map[string]string {
+				// Label length is less than max length of 254 character;
+				// but after combining metadata, it will exceed 254 character
+				longLabelLessThan254Char := "thisIsATestLabelWhoseLengthShouldExceed1023Characters_AddingSomeRandomCharacters_" +
+					"V88bESTQlRIWRSS40sx9ND8P9yPf0LV8jPofiqtTp2iIXgotGh83zZ1HEeFlMGxZlIcOiPdoi07cJ"
+
+				return map[string]string{
+					"provisioning": longLabelLessThan254Char,
+				}
+			},
+			getExpectedResult: func() string {
+				return ""
+			},
+			expectedError: true,
+		},
+	}
+
+	// Run test cases
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// Perform some initialisations
+			driver.Config.Labels = test.getDriverLabelConfig()
+
+			sourceNs := &api.NVMeNamespace{
+				Comment: test.getSourceNsComment(),
+			}
+
+			// Get the namespace comment
+			result, err := driver.createNSCommentBasedOnSourceNS(
+				ctx, volConfig, sourceNs, test.storagePool)
+
+			// Check for correctness
+			if test.expectedError {
+				assert.Error(t, err, "expected error but got none")
+			} else {
+				assert.NoError(t, err, "expected no error but got one")
+				assert.Equal(t, test.getExpectedResult(), result, "expected result does not match")
+			}
+		})
+	}
+}
+
+func TestGenerateNSCommentWithMetadata(t *testing.T) {
+	ctx := context.Background()
+
+	_, driver := newMockOntapASANVMeDriver(t)
+	driver.Config.DriverContext = driverContextCSI
+
+	volConfig := &storage.VolumeConfig{
+		Name:           "testNamespace",
+		InternalName:   "testNamespace",
+		Size:           "1Gi",
+		FileSystem:     "ext3",
+		FormatOptions:  "-E nodiscard",
+		LUKSEncryption: "true",
+	}
+
+	fakePool := storage.NewStoragePool(nil, "fakepool")
+	fakePool.InternalAttributes()[FileSystemType] = filesystem.Ext4
+	fakePool.InternalAttributes()[SplitOnClone] = "true"
+	fakePool.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{
+		"cluster": "my-cluster-a",
+	})
+
+	// Define test cases
+	tests := []struct {
+		name                 string
+		storagePool          *storage.StoragePool
+		getDriverLabelConfig func() map[string]string
+		getExpectedResult    func() string
+		expectedError        bool
+	}{
+		{
+			name:        "Positive case",
+			storagePool: fakePool,
+			getDriverLabelConfig: func() map[string]string {
+				return map[string]string{
+					"provisioning": "cluster=my-cluster",
+				}
+			},
+			getExpectedResult: func() string {
+				labels, _ := ConstructLabelsFromConfigs(ctx, fakePool, volConfig,
+					driver.Config.CommonStorageDriverConfig, api.MaxSANLabelLength)
+				newNsComment := map[string]string{
+					nsAttributeFSType:    volConfig.FileSystem,
+					nsAttributeLUKS:      volConfig.LUKSEncryption,
+					nsAttributeDriverCtx: string(driver.Config.DriverContext),
+					FormatOptions:        volConfig.FormatOptions,
+					nsLabels:             labels,
+				}
+
+				commentStr, _ := driver.createNVMeNamespaceCommentString(ctx, newNsComment, nsMaxCommentLength)
+				return commentStr
+			},
+			expectedError: false,
+		},
+		{
+			name:        "Label length more than max length",
+			storagePool: storage.NewStoragePool(nil, drivers.UnsetPool),
+			getDriverLabelConfig: func() map[string]string {
+				longLabel := "thisIsATestLabelWhoseLengthShouldExceed1023Characters_AddingSomeRandomCharacters_" +
+					"V88bESTQlRIWRSS40sx9ND8P9yPf0LV8jPofiqtTp2iIXgotGh83zZ1HEeFlMGxZlIcOiPdoi07cJ" +
+					"bQBuHvTRNX6pHRKUXaIrjEpygM4SpaqHYdZ8O1k2meeugg7eXu4dPhqetI3Sip3W4v9QuFkh1YBaI" +
+					"9sHE9w5eRxpmTv0POpCB5xAqzmN6XCkxuXKc4yfNS9PRwcTSpvkA3PcKCF3TD1TJU3NYzcChsFQgm" +
+					"bAsR32cbJRdsOwx6BkHNfRCji0xSnBFUFUu1sGHfYCmzzd3OmChADIP6RwRtpnqNzvt0CU6uumBnl" +
+					"Lc5U7mBI1Ndmqhn0BBSh588thKOQcpD4bvnSBYU788tBeVxQtE8KkdUgKl8574eWldqWDiALwoiCS" +
+					"Ae2GuZzwG4ACw2uHdIkjb6FEwapSKCEogr4yWFAVCYPp2pA37Mj88QWN82BEpyoTV6BRAOsubNPfT" +
+					"N94X0qCcVaQp4L5bA4SPTQu0ag20a2k9LmVsocy5y11U3ewpzVGtENJmxyuyyAbxOFOkDxKLRMhgs" +
+					"uJMhhplD894tkEcPoiFhdsYZbBZ4MOBF6KkuBF5aqMrQbOCFt2vvTN843nRhomVMpY01SNuUeb5mh" +
+					"UN53wsqqHSGoYb1eUBDlTUDLFcCcNacxfsILqmthnrD1B5u85jRm1SfkFfuIDOgaaTM9UhxNQ1U6M" +
+					"mBaRYBkuGtTScoVTXyF4lij2sj1WWrKb7qWlaUUjxHiaxgLovPWErldCXXkNFsHgc7UYLQLF4j6lO" +
+					"I1QdTAyrtCcSxRwdkjBxj8mQy1HblHnaaBwP7Nax9FvIvxpeqyD6s3X1vfFNGAMuRsc9DKmPDfxjh" +
+					"qGzRQawFEbbURWij9xleKsUr0yCjukyKsxuaOlwbXnoFh4V3wtidrwrNXieFD608EANwvCp7u2S8Q" +
+					"px99T4O87AdQGa5cAX8Ccojd9tENOmQRmOAwVEuFtuogos96TFlq0YHyfESDTB2TWayIuGJvgTIpX" +
+					"lthQFQfHVgPpUZdzZMjXry"
+
+				return map[string]string{
+					"provisioning": longLabel,
+				}
+			},
+			getExpectedResult: func() string {
+				return ""
+			},
+			expectedError: true,
+		},
+		{
+			name:        "Error constructing comment with metadata",
+			storagePool: storage.NewStoragePool(nil, drivers.UnsetPool),
+			getDriverLabelConfig: func() map[string]string {
+				// Label length is less than max length of 254 character;
+				// but after combining metadata, it will exceed 254 character
+				longLabelLessThan254Char := "thisIsATestLabelWhoseLengthShouldExceed1023Characters_AddingSomeRandomCharacters_" +
+					"V88bESTQlRIWRSS40sx9ND8P9yPf0LV8jPofiqtTp2iIXgotGh83zZ1HEeFlMGxZlIcOiPdoi07cJ"
+
+				return map[string]string{
+					"provisioning": longLabelLessThan254Char,
+				}
+			},
+			getExpectedResult: func() string {
+				return ""
+			},
+			expectedError: true,
+		},
+	}
+
+	// Run test cases
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// Perform some initialisations
+			driver.Config.Labels = test.getDriverLabelConfig()
+
+			// Get the namespace comment
+			result, err := driver.createNSCommentWithMetadata(
+				ctx, volConfig, test.storagePool)
+
+			// Check for correctness
+			if test.expectedError {
+				assert.Error(t, err, "expected error but got none")
+			} else {
+				assert.NoError(t, err, "expected no error but got one")
+				assert.Equal(t, test.getExpectedResult(), result, "expected result does not match")
+			}
+		})
+	}
 }
