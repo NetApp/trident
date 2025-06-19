@@ -5339,6 +5339,70 @@ func TestOntapNasStorageDriverVolumeImport_NameTemplateLabelLengthExceeding(t *t
 	assert.Error(t, result)
 }
 
+func TestOntapNasStorageDriverVolumeImport_EmptyPolicy(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriver(t)
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		Encryption:       "false",
+		FileSystem:       "nfs",
+		InternalName:     "vol2",
+		PeerVolumeHandle: "SVM1:vol1",
+		ImportNotManaged: false,
+		UnixPermissions:  DefaultUnixPermissions,
+	}
+	flexVol := &api.Volume{
+		Name:         "flexvol",
+		Comment:      "flexvol",
+		Size:         "1",
+		JunctionPath: "/nfs/vol1",
+	}
+
+	tests := []struct {
+		name                   string
+		autoExportPolicy       bool
+		importNotManaged       bool
+		emptyPolicyShouldBeSet bool
+	}{
+		{name: "autoExportPolicyFalse", autoExportPolicy: false, importNotManaged: false, emptyPolicyShouldBeSet: false},
+		{name: "setEmptyPolicy", autoExportPolicy: true, importNotManaged: false, emptyPolicyShouldBeSet: true},
+		{name: "importNotManaged", autoExportPolicy: true, importNotManaged: true, emptyPolicyShouldBeSet: false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			driver.Config.NASType = sa.NFS
+			driver.Config.SecurityStyle = "mixed"
+			driver.Config.AutoExportPolicy = test.autoExportPolicy
+
+			volConfig.ImportNotManaged = test.importNotManaged
+			volConfig.ExportPolicy = ""
+
+			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
+
+			if !test.importNotManaged {
+				mockAPI.EXPECT().VolumeRename(ctx, "vol1", "vol2").Return(nil)
+				mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol2",
+					"vol1", DefaultUnixPermissions).Return(nil)
+			}
+
+			if test.emptyPolicyShouldBeSet {
+				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, "vol2", "test_empty").
+					Return(nil)
+			}
+
+			result := driver.Import(ctx, volConfig, "vol1")
+			assert.Nil(t, result)
+			if test.emptyPolicyShouldBeSet {
+				assert.Equal(t, volConfig.ExportPolicy, "test_empty")
+			} else {
+				assert.Equal(t, volConfig.ExportPolicy, "")
+			}
+		})
+	}
+}
+
 func TestOntapNasStorageDriverVolumePublish_NASType_None(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriver(t)
 	volConfig := &storage.VolumeConfig{
