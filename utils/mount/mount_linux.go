@@ -99,10 +99,10 @@ func (client *LinuxClient) IsMounted(ctx context.Context, sourceDevice, mountpoi
 	Logc(ctx).WithFields(logFields).Debug(">>>> mount_linux.IsMounted")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< mount_linux.IsMounted")
 
-	sourceDevice = strings.TrimPrefix(sourceDevice, "/dev/")
+	tempSourceDevice := strings.TrimPrefix(sourceDevice, "/dev/")
 
 	// Ensure at least one arg was specified
-	if sourceDevice == "" && mountpoint == "" {
+	if tempSourceDevice == "" && mountpoint == "" {
 		return false, errors.New("no device or mountpoint specified")
 	}
 
@@ -113,7 +113,9 @@ func (client *LinuxClient) IsMounted(ctx context.Context, sourceDevice, mountpoi
 		// Unset device path to try and find it from mountinfo
 		devicePath = ""
 	}
+
 	devicePath = strings.TrimPrefix(devicePath, "/dev/")
+	sourceDevice = tempSourceDevice
 
 	mountInfo, err := client.ReadMountProcInfo(ctx, mountpoint, sourceDevice, devicePath)
 	if err != nil {

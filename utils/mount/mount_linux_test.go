@@ -155,7 +155,7 @@ func TestLinuxClient_IsMounted(t *testing.T) {
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(defaultSourceDevice, "/dev/")).Return(defaultDevicePath, nil)
+				mockFilePathClient.EXPECT().EvalSymlinks(defaultSourceDevice).Return(defaultDevicePath, nil)
 				return mockFilePathClient
 			},
 			assertError:    assert.Error,
@@ -172,7 +172,7 @@ func TestLinuxClient_IsMounted(t *testing.T) {
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(defaultSourceDevice, "/dev/")).Return(defaultDevicePath, nil)
+				mockFilePathClient.EXPECT().EvalSymlinks(defaultSourceDevice).Return(defaultDevicePath, nil)
 				return mockFilePathClient
 			},
 			assertError:    assert.NoError,
@@ -209,7 +209,7 @@ func TestLinuxClient_IsMounted(t *testing.T) {
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
 				gomock.InOrder(
-					mockFilePathClient.EXPECT().EvalSymlinks("boo").Return("/dev/foo", nil).Times(1),
+					mockFilePathClient.EXPECT().EvalSymlinks("/dev/boo").Return("/dev/foo", nil).Times(1),
 					mockFilePathClient.EXPECT().EvalSymlinks(defaultSourceDevice).Return(defaultDevicePath, nil).Times(4),
 				)
 				return mockFilePathClient
@@ -229,7 +229,7 @@ func TestLinuxClient_IsMounted(t *testing.T) {
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(defaultSourceDevice, "/dev/")).Return(defaultDevicePath, nil).Times(1)
+				mockFilePathClient.EXPECT().EvalSymlinks(defaultSourceDevice).Return(defaultDevicePath, nil).Times(1)
 				return mockFilePathClient
 			},
 			assertError:    assert.NoError,
@@ -247,7 +247,7 @@ func TestLinuxClient_IsMounted(t *testing.T) {
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(defaultSourceDevice, "/dev/")).Return(defaultDevicePath, nil)
+				mockFilePathClient.EXPECT().EvalSymlinks(defaultSourceDevice).Return(defaultDevicePath, nil)
 				return mockFilePathClient
 			},
 			assertError:    assert.NoError,
@@ -266,7 +266,7 @@ func TestLinuxClient_IsMounted(t *testing.T) {
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
 				gomock.InOrder(
-					mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(defaultSourceDevice, "/dev/")).Return(defaultDevicePath, nil).Times(1),
+					mockFilePathClient.EXPECT().EvalSymlinks(defaultSourceDevice).Return(defaultDevicePath, nil).Times(1),
 					mockFilePathClient.EXPECT().EvalSymlinks("/dev/foo").Return("", assert.AnError).Times(4),
 				)
 				return mockFilePathClient
@@ -287,7 +287,7 @@ func TestLinuxClient_IsMounted(t *testing.T) {
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
 				gomock.InOrder(
-					mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(defaultSourceDevice, "/dev/")).Return(defaultDevicePath, nil).Times(1),
+					mockFilePathClient.EXPECT().EvalSymlinks(defaultSourceDevice).Return(defaultDevicePath, nil).Times(1),
 					mockFilePathClient.EXPECT().EvalSymlinks("/dev/foo").Return(defaultDevicePath, nil).Times(2),
 				)
 				return mockFilePathClient
@@ -756,7 +756,7 @@ func TestLinuxClient_MountDevice(t *testing.T) {
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(device, "/dev/")).Return(device, nil)
+				mockFilePathClient.EXPECT().EvalSymlinks(device).Return(device, nil)
 				return mockFilePathClient
 			},
 			getOsClient: func(controller *gomock.Controller) oswrapper.OS {
@@ -777,7 +777,7 @@ func TestLinuxClient_MountDevice(t *testing.T) {
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(device, "/dev/")).Return(device, nil)
+				mockFilePathClient.EXPECT().EvalSymlinks(device).Return(device, nil)
 				return mockFilePathClient
 			},
 			getOsClient: func(controller *gomock.Controller) oswrapper.OS {
@@ -798,7 +798,7 @@ func TestLinuxClient_MountDevice(t *testing.T) {
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(device, "/dev/")).Return(device, nil)
+				mockFilePathClient.EXPECT().EvalSymlinks(device).Return(device, nil)
 				return mockFilePathClient
 			},
 			getOsClient: func(controller *gomock.Controller) oswrapper.OS {
@@ -820,7 +820,7 @@ func TestLinuxClient_MountDevice(t *testing.T) {
 			},
 			getFilePathClient: func(controller *gomock.Controller) filepathwrapper.FilePath {
 				mockFilePathClient := mock_filepathwrapper.NewMockFilePath(controller)
-				mockFilePathClient.EXPECT().EvalSymlinks(strings.TrimPrefix(device, "/dev/")).Return(device, nil)
+				mockFilePathClient.EXPECT().EvalSymlinks(device).Return(device, nil)
 				return mockFilePathClient
 			},
 			getOsClient: func(controller *gomock.Controller) oswrapper.OS {
