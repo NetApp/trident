@@ -746,6 +746,16 @@ func (d *NASStorageDriver) Import(
 		}
 	}
 
+	// If autoExportPolicy is turned on and trident is managing the volume, set volume to empty export policy so that
+	// subsequent volume publish will set the correct per-volume export policy.
+	if d.Config.AutoExportPolicy && !volConfig.ImportNotManaged {
+		if err = d.setVolToEmptyPolicy(ctx, volConfig.InternalName); err != nil {
+			return err
+		}
+
+		volConfig.ExportPolicy = getEmptyExportPolicyName(*d.Config.StoragePrefix)
+	}
+
 	// Update the volume labels if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {
 		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, flexvol.Comment) {
