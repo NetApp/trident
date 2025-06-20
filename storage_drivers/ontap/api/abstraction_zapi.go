@@ -2726,7 +2726,7 @@ func (d OntapAPIZAPI) NVMeNamespaceDelete(ctx context.Context, name string) erro
 	return errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
-func (d OntapAPIZAPI) NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*NVMeSubsystem, error) {
+func (d OntapAPIZAPI) NVMeSubsystemCreate(ctx context.Context, subsystemName, comment string) (*NVMeSubsystem, error) {
 	return nil, errors.UnsupportedError("ZAPI call is not supported yet")
 }
 

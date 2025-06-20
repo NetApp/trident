@@ -3365,7 +3365,7 @@ func (d OntapAPIREST) NVMeRemoveHostFromSubsystem(ctx context.Context, hostNQN, 
 }
 
 // NVMeSubsystemCreate Checks if the subsystem is already there or not. If not, creates a new one.
-func (d OntapAPIREST) NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*NVMeSubsystem, error) {
+func (d OntapAPIREST) NVMeSubsystemCreate(ctx context.Context, subsystemName, comment string) (*NVMeSubsystem, error) {
 	logFields := LogFields{
 		"Method":        "SubsystemCreate",
 		"Type":          "OntapAPIREST",
@@ -3382,7 +3382,7 @@ func (d OntapAPIREST) NVMeSubsystemCreate(ctx context.Context, subsystemName str
 	}
 	if subsystem == nil {
 		Logc(ctx).Infof("Subsystem doesn't exist, creating new subsystem %v now.", subsystemName)
-		subsystem, err = d.api.NVMeSubsystemCreate(ctx, subsystemName)
+		subsystem, err = d.api.NVMeSubsystemCreate(ctx, subsystemName, comment)
 		if err != nil {
 			return nil, err
 		}

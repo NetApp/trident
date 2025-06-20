@@ -1526,7 +1526,7 @@ func TestPublishASANVMe(t *testing.T) {
 	publishInfo.HostNQN = "fakeHostNQN"
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
 	mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, volConfig.InternalName).Return(&nvmeNamespace, nil).Times(1)
-	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, gomock.Any(), gomock.Any()).Return(subsystem, nil).Times(1)
 	mockAPI.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
 	mockAPI.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
@@ -1571,7 +1571,7 @@ func TestPublishASANVMe(t *testing.T) {
 	// case: Error creating subsystem in CSI Context
 	driver.Config.DriverContext = tridentconfig.ContextCSI
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID").Return(
+	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, gomock.Any(), gomock.Any()).Return(
 		subsystem, fmt.Errorf("Error creating subsystem")).Times(1)
 
 	err = driver.Publish(ctx, volConfig, publishInfo)
@@ -1590,7 +1590,7 @@ func TestPublishASANVMe(t *testing.T) {
 	// case: Error while adding host nqn to subsystem
 	publishInfo.HostNQN = "fakeHostNQN"
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, gomock.Any(), gomock.Any()).Return(subsystem, nil).Times(1)
 	mockAPI.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(fmt.Errorf("Error adding host nqnq to subsystem")).Times(1)
 
 	err = driver.Publish(ctx, volConfig, publishInfo)
@@ -1599,7 +1599,7 @@ func TestPublishASANVMe(t *testing.T) {
 
 	// case: Error returned by NVMeEnsureNamespaceMapped
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, gomock.Any(), gomock.Any()).Return(subsystem, nil).Times(1)
 	mockAPI.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
 	mockAPI.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(
 		fmt.Errorf("Error returned by NVMeEnsureNamespaceMapped")).Times(1)
@@ -1610,7 +1610,7 @@ func TestPublishASANVMe(t *testing.T) {
 
 	// case: Success
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, gomock.Any(), gomock.Any()).Return(subsystem, nil).Times(1)
 	mockAPI.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
 	mockAPI.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
@@ -1621,7 +1621,7 @@ func TestPublishASANVMe(t *testing.T) {
 	// case: Success for RAW volume
 	volConfig.FileSystem = filesystem.Raw
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, "s_fakeInternalName").Return(subsystem, nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, "s_fakeInternalName", "s_fakeInternalName").Return(subsystem, nil).Times(1)
 	mockAPI.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
 	mockAPI.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
 

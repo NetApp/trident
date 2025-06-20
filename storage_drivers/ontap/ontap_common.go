@@ -5,6 +5,8 @@ package ontap
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -24,6 +26,7 @@ import (
 	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/cenkalti/backoff/v4"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/uuid"
 
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
@@ -5062,4 +5065,49 @@ func getSMBShareNamePath(flexvol, name string, secureSMBEnabled bool) (string, s
 		return name, "/" + flexvol + "/" + name
 	}
 	return flexvol, "/" + flexvol
+}
+
+// getUniqueNodeSpecificSubsystemName generates a subsystem name combining node name and Trident UUID along with a prefix.
+// If the generated subsystem name exceeds the maximum length, it attempts to shorten the Trident UUID.
+// If it still exceeds the maximum length, it generates a hash of the subsystem name and truncates the hash if needed.
+func getUniqueNodeSpecificSubsystemName(
+	nodeName, tridentUUID, prefix string, maxSubsystemLength int,
+) (string, string, error) {
+	// Ensure node name is not empty
+	if len(nodeName) == 0 {
+		return "", "", fmt.Errorf("failed to generate susbsystem name for node %v; node name is empty", nodeName)
+	}
+
+	// Ensure Trident UUID is not empty
+	if len(tridentUUID) == 0 {
+		return "", "", fmt.Errorf("failed to generate susbsystem name for node %v; Trident UUID is empty", nodeName)
+	}
+
+	// Construct the subsystem name
+	completeSSName := fmt.Sprintf("%s_%s_%s", prefix, nodeName, tridentUUID)
+	finalSSName := completeSSName
+
+	// Ensure the final name does not exceed the maximum length
+	if len(finalSSName) > maxSubsystemLength {
+		// Try reducing character count of Trident UUID.
+		// Convert it to raw bytes and then do base64 encoding. This returns 24 character string.
+		u, err := uuid.Parse(tridentUUID)
+		if err != nil {
+			return "", "", fmt.Errorf("failed to generate susbsystem name for node %v; %w", nodeName, err)
+		}
+
+		base64Str := base64.StdEncoding.EncodeToString(u[:])
+		finalSSName = fmt.Sprintf("%s_%s_%s", prefix, nodeName, base64Str)
+
+		if len(finalSSName) > maxSubsystemLength {
+			// If even after Trident UUID reduction, the length is more than max length,
+			// then generate a hash and truncate if needed.
+			finalSSName = fmt.Sprintf("%x", sha256.Sum256([]byte(completeSSName)))
+			if len(finalSSName) > maxSubsystemLength {
+				finalSSName = finalSSName[:maxSubsystemLength]
+			}
+		}
+	}
+
+	return completeSSName, finalSSName, nil
 }

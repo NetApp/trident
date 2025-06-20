@@ -44,6 +44,10 @@ type ASANVMeStorageDriver struct {
 	cloneSplitTimers *sync.Map
 }
 
+const (
+	asaNVMeSubsystemPrefix = "an"
+)
+
 func (d *ASANVMeStorageDriver) GetConfig() drivers.DriverConfig {
 	return &d.Config
 }
@@ -859,21 +863,37 @@ func (d *ASANVMeStorageDriver) Publish(
 	// When FS type is RAW, we create a new subsystem per namespace,
 	// else we use the subsystem created for that particular node
 	var ssName string
+	var completeSSName string
+
 	if volConfig.FileSystem == filesystem.Raw {
 		ssName = getNamespaceSpecificSubsystemName(name, pvName)
+		completeSSName = ssName
 	} else {
-		ssName = getNodeSpecificSubsystemName(publishInfo.HostName, publishInfo.TridentUUID)
+		// Create a unique node specific subsystem name. Use prefix to indicate ASA r2 NVMe.
+		completeSSName, ssName, err = getUniqueNodeSpecificSubsystemName(
+			publishInfo.HostName, publishInfo.TridentUUID, asaNVMeSubsystemPrefix, maximumSubsystemNameLength)
+		if err != nil {
+			return fmt.Errorf("failed to create node specific subsystem name: %w", err)
+		}
 	}
 
+	logFields := LogFields{
+		"filesystemType":        volConfig.FileSystem,
+		"hostName":              publishInfo.HostName,
+		"subsystemName":         ssName,
+		"completeSubsystemName": completeSSName,
+	}
+	Logc(ctx).WithFields(logFields).Debug("Successfully generated subsystem name for publish.")
+
 	// Checks if subsystem exists and creates a new one if not
-	subsystem, err := d.API.NVMeSubsystemCreate(ctx, ssName)
+	subsystem, err := d.API.NVMeSubsystemCreate(ctx, ssName, completeSSName)
 	if err != nil {
 		Logc(ctx).Errorf("subsystem create failed, %w", err)
 		return err
 	}
 
 	if subsystem == nil {
-		return fmt.Errorf("No subsystem returned after subsystem create")
+		return fmt.Errorf("no subsystem returned after subsystem create")
 	}
 
 	// Fill important info in publishInfo

@@ -245,7 +245,7 @@ type OntapAPI interface {
 	NVMeNamespaceList(ctx context.Context, pattern string) (NVMeNamespaces, error)
 	NVMeNamespaceGetSize(ctx context.Context, namespacePath string) (int, error)
 	NVMeNamespaceDelete(ctx context.Context, namespacePath string) error
-	NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*NVMeSubsystem, error)
+	NVMeSubsystemCreate(ctx context.Context, subsystemName, comment string) (*NVMeSubsystem, error)
 	NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error
 	NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error
 	NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error

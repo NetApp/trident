@@ -4,6 +4,8 @@ package ontap
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"math/rand"
@@ -14,6 +16,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
@@ -9647,6 +9650,98 @@ func TestGetSMBShareNamePath(t *testing.T) {
 			shareName, sharePath := getSMBShareNamePath(tt.flexvol, tt.inputName, tt.secureSMBEnabled)
 			assert.Equal(t, tt.expectedName, shareName, "shareName mismatch for flexvol=%q, name=%q, secureSMBEnabled=%v", tt.flexvol, tt.inputName, tt.secureSMBEnabled)
 			assert.Equal(t, tt.expectedPath, sharePath, "sharePath mismatch for flexvol=%q, name=%q, secureSMBEnabled=%v", tt.flexvol, tt.inputName, tt.secureSMBEnabled)
+		})
+	}
+}
+
+func TestGetUniqueNodeSpecificSubsystemName(t *testing.T) {
+	tridentUUID := "550e8400-e29b-41d4-a716-446655440000"
+	u, _ := uuid.Parse(tridentUUID)
+	base64TridentUUID := base64.StdEncoding.EncodeToString(u[:])
+
+	tests := []struct {
+		description        string
+		nodeName           string
+		tridentUUID        string
+		prefix             string
+		maxSubsystemLength int
+		expectedBestCase   string
+		expectedFinal      string
+		expectError        bool
+	}{
+		{
+			description:        "Valid input, no truncation needed",
+			nodeName:           "node1",
+			tridentUUID:        tridentUUID,
+			prefix:             "prefix",
+			maxSubsystemLength: 64,
+			expectedBestCase:   fmt.Sprintf("prefix_node1_%s", tridentUUID),
+			expectedFinal:      fmt.Sprintf("prefix_node1_%s", tridentUUID),
+			expectError:        false,
+		},
+		{
+			description:        "Best name not possible, Base64 encoding needed",
+			nodeName:           "node1",
+			tridentUUID:        tridentUUID,
+			prefix:             "prefix",
+			maxSubsystemLength: 40,
+			expectedBestCase:   fmt.Sprintf("prefix_node1_%s", tridentUUID),
+			expectedFinal:      fmt.Sprintf("prefix_node1_%s", base64TridentUUID),
+			expectError:        false,
+		},
+		{
+			description:        "Second best name not possible, full hash needed",
+			nodeName:           "averylongnodenameexceedingthelimit",
+			tridentUUID:        tridentUUID,
+			prefix:             "prefix",
+			maxSubsystemLength: 64,
+			expectedBestCase:   fmt.Sprintf("prefix_averylongnodenameexceedingthelimit_%s", tridentUUID),
+			expectedFinal:      fmt.Sprintf("%x", sha256.Sum256([]byte(fmt.Sprintf("prefix_averylongnodenameexceedingthelimit_%s", tridentUUID)))),
+			expectError:        false,
+		},
+		{
+			description:        "Even hash is more than limit, truncation needed",
+			nodeName:           "averylongnodenameexceedingthelimit",
+			tridentUUID:        tridentUUID,
+			prefix:             "prefix",
+			maxSubsystemLength: 32,
+			expectedBestCase:   fmt.Sprintf("prefix_averylongnodenameexceedingthelimit_%s", tridentUUID),
+			expectedFinal:      fmt.Sprintf("%x", sha256.Sum256([]byte(fmt.Sprintf("prefix_averylongnodenameexceedingthelimit_%s", tridentUUID))))[:32],
+			expectError:        false,
+		},
+		{
+			description:        "Empty node name",
+			nodeName:           "",
+			tridentUUID:        "550e8400-e29b-41d4-a716-446655440000",
+			prefix:             "prefix",
+			maxSubsystemLength: 64,
+			expectedBestCase:   "",
+			expectedFinal:      "",
+			expectError:        true,
+		},
+		{
+			description:        "Empty Trident UUID",
+			nodeName:           "node1",
+			tridentUUID:        "",
+			prefix:             "prefix",
+			maxSubsystemLength: 64,
+			expectedBestCase:   "",
+			expectedFinal:      "",
+			expectError:        true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			bestCase, final, err := getUniqueNodeSpecificSubsystemName(test.nodeName, test.tridentUUID, test.prefix, test.maxSubsystemLength)
+
+			if test.expectError {
+				assert.Error(t, err, "Expected error, got none")
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, test.expectedBestCase, bestCase, "Best case name mismatch")
+				assert.Equal(t, test.expectedFinal, final, "Final name mismatch")
+			}
 		})
 	}
 }

@@ -6966,7 +6966,7 @@ func (c *RestClient) NVMeSubsystemGetByName(
 }
 
 // NVMeSubsystemCreate creates a new subsystem
-func (c *RestClient) NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*models.NvmeSubsystem, error) {
+func (c *RestClient) NVMeSubsystemCreate(ctx context.Context, subsystemName, comment string) (*models.NvmeSubsystem, error) {
 	params := nvme.NewNvmeSubsystemCreateParamsWithTimeout(c.httpClient.Timeout)
 	osType := "linux"
 	params.Context = ctx
@@ -6976,6 +6976,11 @@ func (c *RestClient) NVMeSubsystemCreate(ctx context.Context, subsystemName stri
 		Name:   &subsystemName,
 		OsType: &osType,
 		Svm:    &models.NvmeSubsystemInlineSvm{UUID: convert.ToPtr(c.svmUUID)},
+	}
+
+	// If comment is provided, set the comment
+	if len(comment) > 0 {
+		params.Info.Comment = convert.ToPtr(comment)
 	}
 
 	subsysCreated, err := c.api.NvMe.NvmeSubsystemCreate(params, c.authInfo)
