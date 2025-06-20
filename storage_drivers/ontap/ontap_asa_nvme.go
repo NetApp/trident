@@ -344,22 +344,7 @@ func (d *ASANVMeStorageDriver) Create(
 	volConfig.FileSystem = fstype
 
 	// Make comment field from labels
-	labels, labelErr := ConstructLabelsFromConfigs(ctx, storagePool, volConfig,
-		d.Config.CommonStorageDriverConfig, api.MaxSANLabelLength)
-	if labelErr != nil {
-		return labelErr
-	}
-
-	// Attributes stored in the namespace comment field.
-	nsComment := map[string]string{
-		nsAttributeFSType:    fstype,
-		nsAttributeLUKS:      luksEncryption,
-		nsAttributeDriverCtx: string(d.Config.DriverContext),
-		FormatOptions:        formatOptions,
-		nsLabels:             labels,
-	}
-
-	nsCommentString, err := d.createNVMeNamespaceCommentString(ctx, nsComment, nsMaxCommentLength)
+	nsCommentString, err := d.createNSCommentWithMetadata(ctx, volConfig, storagePool)
 	if err != nil {
 		return err
 	}
@@ -382,7 +367,6 @@ func (d *ASANVMeStorageDriver) Create(
 		"qosPolicy":         qosPolicy,
 		"adaptiveQosPolicy": adaptiveQosPolicy,
 		"qosPolicyGroup":    qosPolicyGroup,
-		"labels":            labels,
 		"nsComments":        nsCommentString,
 	}).Debug("Creating ASA NVMe namespace.")
 
@@ -463,25 +447,9 @@ func (d *ASANVMeStorageDriver) CreateClone(
 		return tridenterrors.NotFoundError("source NVMe namespace %s not found", cloneVolConfig.CloneSourceVolumeInternal)
 	}
 
-	// Construct labels for the clone
-	labels := ""
-	var labelErr error
-	if storage.IsStoragePoolUnset(storagePool) {
-		// Set the base label
-		storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.Config.Labels)
-
-		if labels, labelErr = ConstructLabelsFromConfigs(ctx, storagePoolTemp, cloneVolConfig,
-			d.Config.CommonStorageDriverConfig, api.MaxSANLabelLength); labelErr != nil {
-			return labelErr
-		}
-	} else {
-		// Set the labels based on the storage pool
+	// Set the value for split on clone based on storagePool
+	if !storage.IsStoragePoolUnset(storagePool) {
 		storagePoolSplitOnCloneVal = storagePool.InternalAttributes()[SplitOnClone]
-
-		if labels, labelErr = ConstructLabelsFromConfigs(ctx, storagePool, cloneVolConfig,
-			d.Config.CommonStorageDriverConfig, api.MaxSANLabelLength); labelErr != nil {
-			return labelErr
-		}
 	}
 
 	// If storagePoolSplitOnCloneVal is still unknown, set it to backend's default value
@@ -501,6 +469,13 @@ func (d *ASANVMeStorageDriver) CreateClone(
 		return err
 	}
 
+	// Construct comment including both metadata and labels for the clone based on the cloneVolConfig
+	labels, labelErr := d.createNSCommentWithMetadata(ctx, cloneVolConfig, storagePool)
+	if labelErr != nil {
+		return fmt.Errorf("failed to create clone ASA NVMe namespace %v: %w", name, err)
+	}
+
+	// Clone the ASA NVMe namespace
 	Logc(ctx).WithField("splitOnClone", split).Debug("Creating ASA NVMe namespace clone.")
 	if err = cloneASAvol(ctx, cloneVolConfig, split, &d.Config, d.API); err != nil {
 		return err
@@ -552,7 +527,7 @@ func (d *ASANVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Vo
 	if err != nil {
 		return err
 	} else if nsInfo == nil {
-		return tridenterrors.NotFoundError("NVMe namespace %s not found", originalName)
+		return tridenterrors.NotFoundError("ASA NVMe namespace %s not found", originalName)
 	}
 
 	// Get flexvol corresponding to the Namespace and ensure it is "rw" volume
@@ -560,11 +535,11 @@ func (d *ASANVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Vo
 	if err != nil {
 		return err
 	} else if flexvol == nil {
-		return tridenterrors.NotFoundError("NVMe namespace %s not found", originalName)
+		return tridenterrors.NotFoundError("ASA NVMe volume %s not found", originalName)
 	}
 
 	if flexvol.AccessType != "rw" {
-		Logc(ctx).WithField("originalName", originalName).Error("Could not import NVMe namespace, type is not rw.")
+		Logc(ctx).WithField("originalName", originalName).Error("Could not import ASA NVMe namespace, type is not rw.")
 		return fmt.Errorf("NVMe namepsace %s type is %s, not rw", originalName, flexvol.AccessType)
 	}
 
@@ -581,7 +556,7 @@ func (d *ASANVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Vo
 
 	// The Namespace should be online
 	if nsInfo.State != "online" {
-		return fmt.Errorf("NVMe namespace %s is not online", nsInfo.Name)
+		return fmt.Errorf("ASA NVMe namespace %s is not online", nsInfo.Name)
 	}
 
 	// The Namespace should not be mapped to any subsystem
@@ -589,72 +564,35 @@ func (d *ASANVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Vo
 	if err != nil {
 		return err
 	} else if nsMapped {
-		return fmt.Errorf("NVMe namespace %s is mapped to a subsystem", nsInfo.Name)
+		return fmt.Errorf("ASA NVMe namespace %s is mapped to a subsystem", nsInfo.Name)
 	}
 
 	// Use the Namespace size
 	volConfig.Size = nsInfo.Size
 
-	// Rename the Namespace if Trident will manage its lifecycle
+	// Rename the Namespace and recreate comments if Trident will manage its lifecycle
 	if !volConfig.ImportNotManaged {
+		// Rename the namespace
 		err = d.API.NVMeNamespaceRename(ctx, nsInfo.UUID, volConfig.InternalName)
 		if err != nil {
 			Logc(ctx).WithField("originalName", originalName).Errorf(
-				"Could not import NVMe namespace, rename of NVMe namespace failed: %w.", err)
-			return fmt.Errorf("NVMe namespace %s rename failed: %w", originalName, err)
+				"Could not import ASA NVMe namespace, rename of ASA NVMe namespace failed: %w.", err)
+			return fmt.Errorf("ASA NVMe namespace %s rename failed: %w", originalName, err)
 		}
 
-		// Get the comment from the namespace and see if it is set by Trident.
-		// If so, we can overwrite it with new values provided in the config.
-		// For ASAr2 NVMe, the comment will be of below format:
-		// {"nsAttribute": {"LUKS":"false","com.netapp.ndvp.fstype":"ext4","driverContext":"csi","nsLabels":"{\"provisioning\":{\"test0\":\"custom label set in backend\"}}"}}
-
-		poolLabelOverwrite := false
-		commentFields := LogFields{"originalName": originalName, "comment": nsInfo.Comment}
-
-		// Parse the namespace comment
-		nsAttrs, err := d.ParseNVMeNamespaceCommentString(ctx, nsInfo.Comment)
-		if err != nil {
-			Logc(ctx).WithFields(commentFields).Warnf("Failed to prase NVMe namespace comment; ignoring it: %w.", err)
-		} else {
-			// Check if we can overwrite the labels
-			poolLabelOverwrite = storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, nsAttrs[nsLabels])
-			Logc(ctx).WithFields(commentFields).Infof("Decided to overwrite pool label during import: %v.", poolLabelOverwrite)
+		// Create comment for the namespace based on the source Namespace
+		nsCommentString, commentErr := d.createNSCommentBasedOnSourceNS(ctx, volConfig, nsInfo, nil)
+		if commentErr != nil {
+			Logc(ctx).WithFields(fields).WithError(err).Error("Failed to import ASA NVMe namespace as failed to generate comment.")
+			return fmt.Errorf("ASA NVMe namespace %s import failed: %w", originalName, commentErr)
 		}
 
-		// If we can overwrite pool label, then recreate the labels and set it as namespace comment
-		if poolLabelOverwrite {
-			// Set the base label
-			storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.Config.Labels)
-
-			// Make comment field from labels
-			labels, labelErr := ConstructLabelsFromConfigs(ctx, storagePoolTemp, volConfig,
-				d.Config.CommonStorageDriverConfig, api.MaxSANLabelLength)
-			if labelErr != nil {
-				return labelErr
-			}
-
-			// Recreate the metadata labels
-			nsComment := map[string]string{
-				nsAttributeFSType:    volConfig.FileSystem,
-				nsAttributeLUKS:      volConfig.LUKSEncryption,
-				nsAttributeDriverCtx: string(d.Config.DriverContext),
-				nsLabels:             labels,
-			}
-
-			nsCommentString, err := d.createNVMeNamespaceCommentString(ctx, nsComment, nsMaxCommentLength)
-
-			fields := LogFields{"originalName": originalName, "nsComment": nsCommentString}
-			if err != nil {
-				Logc(ctx).WithFields(fields).WithError(err).Error("Failed to import NVMe namespace as failed to create comment.")
-				return fmt.Errorf("could not import NVMe namespace %v as failed to create comment: %w", originalName, err)
-			}
-
-			// Set comment on the namespace
+		// Set comment on the namespace if needed
+		if nsCommentString != "" {
 			err = d.API.NVMeNamespaceSetComment(ctx, volConfig.InternalName, nsCommentString)
 			if err != nil {
-				Logc(ctx).WithFields(fields).WithError(err).Error("Failed to import NVMe namespace as failed to modify comment")
-				return fmt.Errorf("NVMe namespace %s modify failed: %w", originalName, err)
+				Logc(ctx).WithFields(fields).WithError(err).Error("Failed to import ASA NVMe namespace as failed to modify comment.")
+				return fmt.Errorf("ASA NVMe namespace %s import failed: %w", originalName, err)
 			}
 		}
 	}
@@ -663,6 +601,123 @@ func (d *ASANVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Vo
 	volConfig.AccessInfo.NVMeNamespaceUUID = nsInfo.UUID
 
 	return nil
+}
+
+// createNSCommentBasedOnSourceNS creates a comment string for ASA NVMe namespace based on comments on source namespace
+// It checks if the source namespace's comment has been set by Trident. If so, it creates a new comment by combining
+// metadata with new values provided in the config. If the comment is not set by Trident in the source namespace, it
+// does not create new comments and returns empty string.
+// Sample comment set by Trident (metadata + label):
+// {"nsAttribute":{"LUKS":"false","com.netapp.ndvp.fstype":"ext4","driverContext":"csi",
+// "formatOptions":"-E nodiscard","nsLabels":"{\"provisioning\":{\"Cluster\":\"my_cluster_new\",\"team\":\"abc\"}}"}}
+func (d *ASANVMeStorageDriver) createNSCommentBasedOnSourceNS(
+	ctx context.Context, volConfig *storage.VolumeConfig,
+	sourceNs *api.NVMeNamespace, storagePool storage.Pool,
+) (string, error) {
+	fields := LogFields{
+		"Method":           "createNSCommentBasedOnSourceNS",
+		"Type":             "ASANVMeStorageDriver",
+		"name":             volConfig.InternalName,
+		"sourceNSName":     sourceNs.Name,
+		"sourceNSComments": sourceNs.Comment,
+		"storgePool":       storagePool,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> createNSCommentBasedOnSourceNS")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< createNSCommentBasedOnSourceNS")
+
+	commentFields := LogFields{
+		"name":            volConfig.InternalName,
+		"sourceNSName":    sourceNs.Name,
+		"sourceNSComment": sourceNs.Comment,
+	}
+
+	// If the source namespace comment is not empty, check if it is of format as that set by Trident.
+	// If yes, then we can overwrite it with new values provided in the config.
+	if sourceNs.Comment != "" {
+		poolLabelOverwrite := false
+
+		// Parse the source namespace comment
+		nsAttrs, err := d.ParseNVMeNamespaceCommentString(ctx, sourceNs.Comment)
+		if err != nil {
+			// Existing comment seems not to be set by Trident. Ignore it.
+			Logc(ctx).WithFields(commentFields).Warnf(
+				"Failed to parse ASA NVMe namespace comment; it doesn't seem to be set by Trident, thus ignoring it: %w.", err)
+			return "", nil
+		} else {
+			// Existing comment is set by Trident. Check if we can overwrite the labels.
+			poolLabelOverwrite = storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, nsAttrs[nsLabels])
+			Logc(ctx).WithFields(commentFields).Infof("Decided to overwrite pool label based on source ASA NVMe Namespace: %v.", poolLabelOverwrite)
+		}
+
+		// If we cannot overwrite pool label ('provisioning' key is missing from comment json), then ignore the existing comment
+		if !poolLabelOverwrite {
+			Logc(ctx).WithFields(commentFields).Debug("Using existing ASA NVMe namespace comment.")
+			return "", nil
+		}
+	}
+
+	// If the source namespace does not have any existing comment, or we can overwrite pool label, then recreate the labels
+	nsCommentString, err := d.createNSCommentWithMetadata(ctx, volConfig, storagePool)
+	if err != nil {
+		Logc(ctx).WithFields(commentFields).WithError(err).Error("Failed to create ASA NVMe namespace comment from source ASA NVMe namespace.")
+		return "", fmt.Errorf("failed to create ASA NVMe namespace comment: %w", err)
+	}
+
+	return nsCommentString, nil
+}
+
+// createNSCommentWithMetadata creates a comment string combining metadata and labels
+func (d *ASANVMeStorageDriver) createNSCommentWithMetadata(
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool,
+) (string, error) {
+	fields := LogFields{
+		"Method":     "createNSCommentWithMetadata",
+		"Type":       "ASANVMeStorageDriver",
+		"name":       volConfig.InternalName,
+		"storgePool": storagePool,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> createNSCommentWithMetadata")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< createNSCommentWithMetadata")
+
+	var labels string
+	var labelErr error
+
+	if storage.IsStoragePoolUnset(storagePool) {
+		// Create a temporary storage pool
+		storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.Config.Labels)
+
+		// Create the base label
+		if labels, labelErr = ConstructLabelsFromConfigs(ctx, storagePoolTemp, volConfig,
+			d.Config.CommonStorageDriverConfig, api.MaxSANLabelLength); labelErr != nil {
+			return "", labelErr
+		}
+	} else {
+		// Create the base label
+
+		if labels, labelErr = ConstructLabelsFromConfigs(ctx, storagePool, volConfig,
+			d.Config.CommonStorageDriverConfig, api.MaxSANLabelLength); labelErr != nil {
+			return "", labelErr
+		}
+	}
+
+	// Create the namespace comment combining the metadata and labels
+	nsComment := map[string]string{
+		nsAttributeFSType:    volConfig.FileSystem,
+		nsAttributeLUKS:      volConfig.LUKSEncryption,
+		nsAttributeDriverCtx: string(d.Config.DriverContext),
+		FormatOptions:        volConfig.FormatOptions,
+		nsLabels:             labels,
+	}
+
+	comment, err := d.createNVMeNamespaceCommentString(ctx, nsComment, nsMaxCommentLength)
+
+	commentFields := LogFields{
+		"name":    volConfig.InternalName,
+		"comment": comment,
+	}
+	Logc(ctx).WithFields(commentFields).Debug("Successfully created ASA NVMe namespace comment with both metadata and labels.")
+
+	return comment, err
 }
 
 func (d *ASANVMeStorageDriver) Rename(ctx context.Context, name, newName string) error {
@@ -678,13 +733,13 @@ func (d *ASANVMeStorageDriver) Rename(ctx context.Context, name, newName string)
 	// Get the NVMe namespace
 	ns, err := d.API.NVMeNamespaceGetByName(ctx, name)
 	if err != nil {
-		return fmt.Errorf("error getting NVMe namespace %s: %w", name, err)
+		return fmt.Errorf("error getting ASA NVMe namespace %s: %w", name, err)
 	}
 
 	err = d.API.NVMeNamespaceRename(ctx, ns.UUID, newName)
 	if err != nil {
-		Logc(ctx).WithField("name", name).WithError(err).Error("Could not rename NVMe namespace")
-		return fmt.Errorf("could not rename NVMe namespace %s: %w", name, err)
+		Logc(ctx).WithField("name", name).WithError(err).Error("Could not rename ASA NVMe namespace")
+		return fmt.Errorf("could not rename ASA NVMe namespace %s: %w", name, err)
 	}
 
 	return nil
@@ -705,10 +760,10 @@ func (d *ASANVMeStorageDriver) Destroy(ctx context.Context, volConfig *storage.V
 	// Validate NVMe namespace exists before trying to destroy
 	volExists, err := d.API.NVMeNamespaceExists(ctx, name)
 	if err != nil {
-		return fmt.Errorf("error checking for existing NVMe namespace %v: %w", name, err)
+		return fmt.Errorf("error checking for existing ASA NVMe namespace %v: %w", name, err)
 	}
 	if !volExists {
-		Logc(ctx).WithField("NVMe namespace", name).Debug("NVMe namespace already deleted, skipping destroy.")
+		Logc(ctx).WithField("name", name).Debug("ASA NVMe namespace already deleted, skipping destroy.")
 		return nil
 	}
 
@@ -723,13 +778,13 @@ func (d *ASANVMeStorageDriver) Destroy(ctx context.Context, volConfig *storage.V
 	// skipRecoveryQueue is not supported yet. Log it and continue.
 	if skipRecoveryQueueValue, err := strconv.ParseBool(volConfig.SkipRecoveryQueue); err == nil {
 		Logc(ctx).WithField("skipRecoveryQueue", skipRecoveryQueueValue).Warn(
-			"SkipRecoveryQueue is not supported. It will be ignored when deleting NVMe namespace.")
+			"SkipRecoveryQueue is not supported. It will be ignored when deleting ASA NVMe namespace.")
 	}
 
 	// Delete the Namespace
 	err = d.API.NVMeNamespaceDelete(ctx, name)
 	if err != nil {
-		return fmt.Errorf("error destroying NVMe namespace %v: %w", name, err)
+		return fmt.Errorf("error destroying ASA NVMe namespace %v: %w", name, err)
 	}
 
 	return nil
@@ -775,14 +830,14 @@ func (d *ASANVMeStorageDriver) Publish(
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
 		ns, err := d.API.NVMeNamespaceGetByName(ctx, name)
 		if err != nil {
-			return fmt.Errorf("problem fetching NVMe namespace %v; %w", name, err)
+			return fmt.Errorf("problem fetching ASA NVMe namespace %v; %w", name, err)
 		}
 		if ns == nil {
-			return fmt.Errorf("NVMe namespace %v not found", name)
+			return fmt.Errorf("ASA NVMe namespace %v not found", name)
 		}
 		nsAttrs, err := d.ParseNVMeNamespaceCommentString(ctx, ns.Comment)
 		if err != nil {
-			return fmt.Errorf("failed to parse NVMe namespace %v comment %v; %w", name, ns.Comment, err)
+			return fmt.Errorf("failed to parse ASA NVMe namespace %v comment %v; %w", name, ns.Comment, err)
 		}
 		publishInfo.FilesystemType = nsAttrs[nsAttributeFSType]
 		publishInfo.LUKSEncryption = nsAttrs[nsAttributeLUKS]
@@ -978,11 +1033,11 @@ func (d *ASANVMeStorageDriver) Get(ctx context.Context, name string) error {
 
 	exists, err := d.API.NVMeNamespaceExists(ctx, name)
 	if err != nil {
-		return fmt.Errorf("error checking for existing NVMe namespace %v: %w", name, err)
+		return fmt.Errorf("error checking for existing ASA NVMe namespace %v: %w", name, err)
 	}
 	if !exists {
-		Logc(ctx).WithField("NVMe namespace", name).Debug("NVMe namespace not found.")
-		return tridenterrors.NotFoundError("NVMe namespace %s does not exist", name)
+		Logc(ctx).WithField("name", name).Debug("ASA NVMe namespace not found.")
+		return tridenterrors.NotFoundError("ASA NVMe namespace %s does not exist", name)
 	}
 
 	return nil
@@ -1237,22 +1292,22 @@ func (d *ASANVMeStorageDriver) Resize(
 	// Get the NVMe namespace
 	ns, err := d.API.NVMeNamespaceGetByName(ctx, name)
 	if err != nil {
-		Logc(ctx).WithField("name", name).WithError(err).Error("Error checking for existing NVMe namespace.")
-		return fmt.Errorf("error checking for existing NVMe namespace %v: %w", name, err)
+		Logc(ctx).WithField("name", name).WithError(err).Error("Error checking for existing ASA NVMe namespace.")
+		return fmt.Errorf("error checking for existing ASA NVMe namespace %v: %w", name, err)
 	}
 
 	if ns == nil {
-		return tridenterrors.NotFoundError("NVMe namespace %s does not exist", name)
+		return tridenterrors.NotFoundError("ASA NVMe namespace %s does not exist", name)
 	}
 
 	// Get current size
 	nsSizeBytes, err := convert.ToPositiveInt64(ns.Size)
 	if err != nil {
-		return fmt.Errorf("error while parsing NVMe namespace size, %w", err)
+		return fmt.Errorf("error while parsing ASA NVMe namespace size, %w", err)
 	}
 
 	if int64(requestedSizeBytes) < nsSizeBytes {
-		return fmt.Errorf("requested size %d is less than existing NVMe namespace size %d", requestedSizeBytes, nsSizeBytes)
+		return fmt.Errorf("requested size %d is less than existing ASA NVMe namespace size %d", requestedSizeBytes, nsSizeBytes)
 	}
 
 	// Check if the requested size falls within volume size limits
@@ -1264,8 +1319,8 @@ func (d *ASANVMeStorageDriver) Resize(
 
 	// Resize Namespace
 	if err = d.API.NVMeNamespaceSetSize(ctx, ns.UUID, int64(requestedSizeBytes)); err != nil {
-		Logc(ctx).WithField("name", name).WithError(err).Error("NVMe namespace resize failed.")
-		return fmt.Errorf("NVMe namespace %s resize failed: %w", name, err)
+		Logc(ctx).WithField("name", name).WithError(err).Error("ASA NVMe namespace resize failed.")
+		return fmt.Errorf("ASA NVMe namespace %s resize failed: %w", name, err)
 	}
 
 	// Setting the new size in the volume config.
