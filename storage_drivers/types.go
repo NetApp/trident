@@ -374,6 +374,7 @@ type SolidfireStorageDriverConfig struct {
 	AccessGroups               []int64
 	UseCHAP                    bool
 	DefaultBlockSize           int64 // blocksize to use on create when not specified  (512|4096, 512 is default)
+	TrustedCACertificate       string
 
 	SolidfireStorageDriverPool
 	Storage []SolidfireStorageDriverPool `json:"storage"`

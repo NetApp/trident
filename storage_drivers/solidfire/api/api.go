@@ -6,6 +6,8 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -32,20 +34,22 @@ type Client struct {
 	DefaultBlockSize int64
 	DebugTraceFlags  map[string]bool
 	AccountID        int64
+	httpClient       *http.Client
 }
 
 // Config holds the configuration data for the Client to communicate with a SolidFire storage system
 type Config struct {
-	TenantName       string
-	EndPoint         string
-	MountPoint       string
-	SVIP             string
-	InitiatorIFace   string // iface to use of iSCSI initiator
-	Types            *[]VolType
-	LegacyNamePrefix string
-	AccessGroups     []int64
-	DefaultBlockSize int64
-	DebugTraceFlags  map[string]bool
+	TenantName           string
+	EndPoint             string
+	MountPoint           string
+	SVIP                 string
+	InitiatorIFace       string // iface to use of iSCSI initiator
+	Types                *[]VolType
+	LegacyNamePrefix     string
+	AccessGroups         []int64
+	DefaultBlockSize     int64
+	DebugTraceFlags      map[string]bool
+	TrustedCACertificate string
 }
 
 // VolType holds quality of service configuration data
@@ -56,6 +60,25 @@ type VolType struct {
 
 // NewFromParameters is a factory method to create a new sfapi.Client object using the supplied parameters
 func NewFromParameters(pendpoint, psvip string, pcfg Config) (c *Client, err error) {
+	tcfg := tls.Config{MinVersion: tridentconfig.MinClientTLSVersion, InsecureSkipVerify: true}
+	if pcfg.TrustedCACertificate != "" {
+		caCert, err := base64.StdEncoding.DecodeString(pcfg.TrustedCACertificate)
+		if err != nil {
+			return nil, err
+		}
+		caCertPool := x509.NewCertPool()
+		if !caCertPool.AppendCertsFromPEM(caCert) {
+			return nil, fmt.Errorf("failed to append CA certificate, certificate may be invalid or malformed")
+		}
+		tcfg.RootCAs = caCertPool
+		tcfg.InsecureSkipVerify = false
+	}
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tcfg,
+		},
+		Timeout: tridentconfig.StorageAPITimeoutSeconds * time.Second,
+	}
 	SFClient := &Client{
 		Endpoint:         pendpoint,
 		SVIP:             psvip,
@@ -64,6 +87,7 @@ func NewFromParameters(pendpoint, psvip string, pcfg Config) (c *Client, err err
 		VolumeTypes:      pcfg.Types,
 		DefaultBlockSize: pcfg.DefaultBlockSize,
 		DebugTraceFlags:  pcfg.DebugTraceFlags,
+		httpClient:       httpClient,
 	}
 	return SFClient, nil
 }
@@ -104,14 +128,7 @@ func (c *Client) Request(ctx context.Context, method string, params interface{},
 		c.Config.DebugTraceFlags["api"])
 
 	// Send the request
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true, MinVersion: tridentconfig.MinClientTLSVersion},
-	}
-	httpClient := &http.Client{
-		Transport: tr,
-		Timeout:   tridentconfig.StorageAPITimeoutSeconds * time.Second,
-	}
-	response, err = httpClient.Do(request)
+	response, err = c.httpClient.Do(request)
 	if err != nil {
 		Logc(ctx).Errorf("Error response from SolidFire API request: %v", err)
 		return nil, errors.New("device API error")

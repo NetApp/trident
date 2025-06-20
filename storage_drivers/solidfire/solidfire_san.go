@@ -201,15 +201,16 @@ func (d *SANStorageDriver) Initialize(
 	// Create a new api.Config object from the JSON config file
 	svip := config.SVIP
 	cfg := api.Config{
-		TenantName:       config.TenantName,
-		EndPoint:         endpoint,
-		SVIP:             config.SVIP,
-		InitiatorIFace:   config.InitiatorIFace,
-		Types:            config.Types,
-		LegacyNamePrefix: config.LegacyNamePrefix,
-		AccessGroups:     config.AccessGroups,
-		DefaultBlockSize: defaultBlockSize,
-		DebugTraceFlags:  config.DebugTraceFlags,
+		TenantName:           config.TenantName,
+		EndPoint:             endpoint,
+		SVIP:                 config.SVIP,
+		InitiatorIFace:       config.InitiatorIFace,
+		Types:                config.Types,
+		LegacyNamePrefix:     config.LegacyNamePrefix,
+		AccessGroups:         config.AccessGroups,
+		DefaultBlockSize:     defaultBlockSize,
+		DebugTraceFlags:      config.DebugTraceFlags,
+		TrustedCACertificate: config.TrustedCACertificate,
 	}
 
 	Logc(ctx).WithFields(LogFields{
