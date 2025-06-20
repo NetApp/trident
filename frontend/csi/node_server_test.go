@@ -2676,8 +2676,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 	// Test 2:
 	// Sending n number of SAN requests of different volume.uuid, and they should succeed
 	t.Run("Test Case 2: Sending n num of SAN requests with different volume.uuid and asserting noError", func(t *testing.T) {
-		// SAN is not parallelized yet, so not stress testing that much as others.
-		numOfRequests := 10
+		numOfRequests := 100
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
@@ -2813,7 +2812,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 	// Mixing SAN and NAS requests
 	t.Run("Test Case 4: Mixing SAN and NAS requests and waiting for both of them to succeed", func(t *testing.T) {
 		numOfRequestsNAS := 50
-		numOfRequestsSAN := 10 // SAN is not parallelized yet, not stress testing that much as others.
+		numOfRequestsSAN := 50
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
@@ -3470,7 +3469,7 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 	// Test 2:
 	// Sending n number of SAN requests of different volume.uuid, and they should succeed
 	t.Run("Test Case 2: Sending n num of SAN requests with different volume.uuid and asserting noError", func(t *testing.T) {
-		numOfRequests := 10
+		numOfRequests := 100
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
@@ -3623,7 +3622,7 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 	// Mixing SAN and NAS requests
 	t.Run("Test Case 4: Mixing SAN and NAS requests and waiting for both of them to succeed", func(t *testing.T) {
 		numOfRequestsNAS := 50
-		numOfRequestsSAN := 10
+		numOfRequestsSAN := 50
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
@@ -4472,6 +4471,160 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 			go func() {
 				defer wg.Done()
 				_, err := pluginSMB.NodePublishVolume(context.Background(), SMBrequests[i])
+				assert.NoError(t, err)
+			}()
+		}
+
+		wg.Wait()
+	})
+
+	// Test 4:
+	// Sending n number of SAN requests of different volume.uuid, and they should succeed
+	t.Run("Test Case 4: Sending n SAN requests within the limit of the limiter", func(t *testing.T) {
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		defer cancel()
+
+		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			requests[i] = NewNodePublishVolumeRequestBuilder(iSCSINodePublishVolumeRequestType).Build()
+		}
+
+		ctrl := gomock.NewController(t)
+		mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
+		mountClient, _ := mount.New()
+
+		for i := 0; i < numOfRequests; i++ {
+			volumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).Build(),
+			}
+			mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(volumeTrackingInfo, nil)
+			mockMount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Eq(false)).Return(nil)
+			mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		}
+
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockNodeHelper,
+			iscsi:            mockISCSIClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		for i := 0; i < numOfRequests; i++ {
+			go func(i int) {
+				defer wg.Done()
+				_, err := plugin.NodePublishVolume(ctx, requests[i])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+
+	// Test 5:
+	// Mixing nfs and san requests
+	t.Run("Test Case 5: Mixing NFS and SAN requests and waiting for both of them to succeed", func(t *testing.T) {
+		numOfRequests := 50
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		NFSrequests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
+		ISCSIrequests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			NFSrequests[i] = NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build()
+			ISCSIrequests[i] = NewNodePublishVolumeRequestBuilder(iSCSINodePublishVolumeRequestType).Build()
+		}
+
+		csiNodeLockTimeout = 500 * time.Millisecond
+
+		mockMount := mock_mount.NewMockMount(gomock.NewController(t))
+		// Need two mockTrackingClient because of conflicting ReadTrackingInfo function call.
+		mockTrackingClientNFS := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+		mockFilesystem := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+		mockISCSINodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+		mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+		mountClient, _ := mount.New()
+
+		for i := 0; i < numOfRequests; i++ {
+			nfsVolumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNFSVolumePublishInfo).Build(),
+			}
+			iscsiVolumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).Build(),
+			}
+
+			// Setting up mocks expectation for NAS request.
+			mockTrackingClientNFS.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(nfsVolumeTrackingInfo, nil)
+			mockTrackingClientNFS.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(nfsVolumeTrackingInfo, nil)
+			mockMount.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(true, nil)
+			mockMount.EXPECT().AttachNFSVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			mockTrackingClientNFS.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+			// Setting up mocks expectation for SAN request.
+			mockISCSINodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(iscsiVolumeTrackingInfo, nil)
+			mockMount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Eq(false)).Return(nil)
+			mockISCSINodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		}
+
+		// Creating an NFS node plugin.
+		pluginNFS := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			fs:               mockFilesystem,
+			nodeHelper:       mockTrackingClientNFS,
+		}
+
+		pluginNFS.InitializeNodeLimiter(ctx)
+
+		// Creating an ISCSI node plugin.
+		pluginISCSI := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockISCSINodeHelper,
+			iscsi:            mockISCSIClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		pluginISCSI.InitializeNodeLimiter(ctx)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests * 2)
+
+		// Spinning up go-routine for NFS requests.
+		for i := 0; i < numOfRequests; i++ {
+			go func() {
+				defer wg.Done()
+				_, err := pluginNFS.NodePublishVolume(context.Background(), NFSrequests[i])
+				assert.NoError(t, err)
+			}()
+		}
+
+		// Spinning up go-routine for SMB requests.
+		for i := 0; i < numOfRequests; i++ {
+			go func() {
+				defer wg.Done()
+				_, err := pluginISCSI.NodePublishVolume(context.Background(), ISCSIrequests[i])
 				assert.NoError(t, err)
 			}()
 		}
@@ -5490,6 +5643,959 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 
 		wg.Wait()
 	})
+
+	t.Run("Test Case 3: Testing with ISCSI requests", func(t *testing.T) {
+		numOfRequests := 20
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		// ---- NodeStage nodeStageRequests ----
+		nodeStageRequests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
+		publishInfos := make([]models.VolumePublishInfo, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			nodeStageRequests[i] = NewNodeStageVolumeRequestBuilder(TypeiSCSIRequest).Build()
+			publishInfos[i] = NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).Build()
+		}
+
+		csiNodeLockTimeout = 500 * time.Millisecond
+		csiKubeletTimeout = 500 * time.Millisecond
+
+		// Creating mock clients.
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
+		mountClient, _ := mount.New()
+		mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+		mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+
+		mockDevicePath := "/dev/mapper/mock-device"
+		mockDevice := &models.ScsiDeviceInfo{MultipathDevice: mockDevicePath}
+
+		// Setting up expectations for each request
+		for i := 0; i < numOfRequests; i++ {
+			mockISCSIClient.EXPECT().AttachVolumeRetry(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(int64(0), nil)
+			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil) // Initial and deferred write
+			mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
+		}
+
+		// Creating a node plugin.
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockTrackingClient,
+			iscsi:            mockISCSIClient,
+			fs:               filesystem.New(mountClient),
+			devices:          mockDeviceClient,
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+		iscsiUtils = mockIscsiReconcileUtilsClient
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		// Spinning up go-routines for each request.
+		for i := 0; i < numOfRequests; i++ {
+			go func() {
+				defer wg.Done()
+				_, err := plugin.NodeStageVolume(context.Background(), nodeStageRequests[i])
+				assert.NoError(t, err)
+			}()
+		}
+		wg.Wait()
+
+		// ---- Unstaging all those previously staged nodeStageRequests ----
+		nodeUnstageRequests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			// Using the same volumeID as nodeStage requests.
+			nodeUnstageRequests[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(nodeStageRequests[i].VolumeId).Build()
+		}
+
+		// Setting up mocks expectation for each request.
+		for i := 0; i < numOfRequests; i++ {
+			mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), false).Return(mockDevice, nil).Times(2)
+			mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any()).Times(2)
+			mockISCSIClient.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).Return(false, nil).Times(numOfRequests).Times(2)
+			mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true).Times(numOfRequests).Times(2)
+			mockISCSIClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), false, false).Return("", nil).Times(numOfRequests).Times(2)
+			mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any()).Times(numOfRequests).Times(2)
+			mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any()).Times(numOfRequests).Times(2)
+			mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any()).Return(nil)
+			volumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).Build(),
+			}
+			mockTrackingClient.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(volumeTrackingInfo, nil)
+			mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+				gomock.Any()).Return(map[int]int{6: 3}).Times(2)
+			mockMount.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil).Times(2)
+			mockTrackingClient.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).Return(nil)
+		}
+
+		wg.Add(numOfRequests)
+		volumeIDs := rand.Perm(numOfRequests) // Randomizing the requests.
+		for i := 0; i < numOfRequests; i++ {
+			// Spinning up go-routines for each request.
+			go func() {
+				defer wg.Done()
+				_, err := plugin.NodeUnstageVolume(context.Background(), nodeUnstageRequests[volumeIDs[i]])
+				assert.NoError(t, err)
+			}()
+		}
+
+		// ---- Parallely creating another batch of 100 nodeStage requests ----
+		nodeStageRequests2 := make([]*csi.NodeStageVolumeRequest, numOfRequests)
+		publishInfos2 := make([]models.VolumePublishInfo, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			nodeStageRequests2[i] = NewNodeStageVolumeRequestBuilder(TypeiSCSIRequest).Build()
+			publishInfos2[i] = NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).Build()
+		}
+		// Setting up expectations for each request
+		for i := 0; i < numOfRequests; i++ {
+			mockISCSIClient.EXPECT().AttachVolumeRetry(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(int64(0), nil)
+			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil) // Initial and deferred write
+			mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
+		}
+		wg.Add(numOfRequests)
+		// Spinning up go-routines for each request.
+		for i := 0; i < numOfRequests; i++ {
+			go func() {
+				defer wg.Done()
+				_, err := plugin.NodeStageVolume(context.Background(), nodeStageRequests2[i])
+				assert.NoError(t, err)
+			}()
+		}
+		wg.Wait()
+		// ---- Unstaging all those previously staged nodeStageRequests of 2nd batch ----
+		nodeUnstageRequests2 := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			// Using the same volumeID as nodeStage requests.
+			nodeUnstageRequests2[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(nodeStageRequests2[i].VolumeId).Build()
+		}
+		// Setting up mocks expectation for each request.
+		for i := 0; i < numOfRequests; i++ {
+			mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any()).Return(nil)
+			volumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).Build(),
+			}
+			mockTrackingClient.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(volumeTrackingInfo, nil)
+			mockTrackingClient.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).Return(nil)
+		}
+		wg.Add(numOfRequests)
+		volumeIDs = rand.Perm(numOfRequests) // Randomizing the requests.
+		for i := 0; i < numOfRequests; i++ {
+			go func() {
+				defer wg.Done()
+				_, err := plugin.NodeUnstageVolume(context.Background(), nodeUnstageRequests2[volumeIDs[i]])
+				assert.NoError(t, err)
+			}()
+		}
+		wg.Wait()
+	})
+}
+
+// ------------------------ ISCSI Volume Multithreaded Tests ------------------------
+
+// TestNodeStageISCSIVolume_Multithreaded tests the multithreaded behavior of NodeStageISCSIVolume
+func TestNodeStageISCSIVolume_Multithreaded(t *testing.T) {
+	// Test 1: Sending requests within the limit of the limiter
+	t.Run("Test Case 1: Sending requests within the limit of the limiter", func(t *testing.T) {
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		defer cancel()
+
+		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
+		publishInfos := make([]*models.VolumePublishInfo, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			requests[i] = NewNodeStageVolumeRequestBuilder(TypeiSCSIRequest).Build()
+			publishInfos[i] = &models.VolumePublishInfo{}
+		}
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
+		mountClient, _ := mount.New()
+
+		// Setting up expectations for each request
+		for i := 0; i < numOfRequests; i++ {
+			mockISCSIClient.EXPECT().AttachVolumeRetry(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(int64(0), nil)
+			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2) // Initial and deferred write
+			mockISCSIClient.EXPECT().AddSession(gomock.Any(), publishedISCSISessions, publishInfos[i], requests[i].VolumeId, "", models.NotInvalid).Return()
+		}
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockTrackingClient,
+			iscsi:            mockISCSIClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		// Modifying the limiter limit
+		plugin.limiterSharedMap[NodeStageISCSIVolume], _ = limiter.New(ctx,
+			NodeStageISCSIVolume,
+			limiter.TypeSemaphoreN,
+			limiter.WithSemaphoreNSize(ctx, numOfRequests),
+		)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		// Spinning up go-routines for each request
+		for i := 0; i < numOfRequests; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				err := plugin.nodeStageISCSIVolume(ctx, requests[idx], publishInfos[idx])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+
+	// Test 2: Sending more than what can be parallelized
+	t.Run("Test Case 2: Sending more than what can be parallelized", func(t *testing.T) {
+		numOfRequests := 100
+		numOfParallelRequestsAllowed := maxNodeStageISCSIVolumeOperations
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		defer cancel()
+
+		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
+		publishInfos := make([]*models.VolumePublishInfo, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			requests[i] = NewNodeStageVolumeRequestBuilder(TypeiSCSIRequest).Build()
+			publishInfos[i] = &models.VolumePublishInfo{}
+		}
+
+		signalChan := make(chan struct{}, numOfParallelRequestsAllowed)
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
+		mountClient, _ := mount.New()
+
+		// Setting up expectations for numOfParallelRequestsAllowed requests
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			mockISCSIClient.EXPECT().AttachVolumeRetry(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(int64(0), nil)
+			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, volumeID string, info *models.VolumeTrackingInfo) error {
+				signalChan <- struct{}{}
+				time.Sleep(600 * time.Millisecond)
+				return nil
+			}).Times(2) // Initial and deferred write
+			mockISCSIClient.EXPECT().AddSession(gomock.Any(), publishedISCSISessions, publishInfos[i], requests[i].VolumeId, "", models.NotInvalid).Return()
+		}
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockTrackingClient,
+			iscsi:            mockISCSIClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		// Spinning up go-routines for the first numOfParallelRequestsAllowed requests
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				err := plugin.nodeStageISCSIVolume(ctx, requests[idx], publishInfos[idx])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		// Waiting for the first numOfParallelRequestsAllowed requests to acquire the limiter
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			<-signalChan
+		}
+
+		// Spinning up the rest of the requests, which should error out
+		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				err := plugin.nodeStageISCSIVolume(ctx, requests[idx], publishInfos[idx])
+				assert.Error(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+
+	// Test 3: Sending more than what can be parallelized, but additional ones wait and succeed
+	t.Run("Test Case 3: Sending more than what can be parallelized, but additional ones wait and succeed", func(t *testing.T) {
+		numOfRequests := 100
+		numOfParallelRequestsAllowed := maxNodeStageISCSIVolumeOperations
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		defer cancel()
+
+		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
+		publishInfos := make([]*models.VolumePublishInfo, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			requests[i] = NewNodeStageVolumeRequestBuilder(TypeiSCSIRequest).Build()
+			publishInfos[i] = &models.VolumePublishInfo{}
+		}
+
+		signalChan := make(chan struct{}, numOfParallelRequestsAllowed)
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
+		mountClient, _ := mount.New()
+
+		// Setting up expectations for numOfParallelRequestsAllowed requests
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			mockISCSIClient.EXPECT().AttachVolumeRetry(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(int64(0), nil)
+			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, volumeID string, info *models.VolumeTrackingInfo) error {
+				signalChan <- struct{}{}
+				time.Sleep(100 * time.Millisecond)
+				return nil
+			}).Times(2) // Initial and deferred write
+			mockISCSIClient.EXPECT().AddSession(gomock.Any(), publishedISCSISessions, publishInfos[i], requests[i].VolumeId, "", models.NotInvalid).Return()
+		}
+
+		// Setting up expectations for remaining requests
+		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
+			mockISCSIClient.EXPECT().AttachVolumeRetry(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(int64(0), nil)
+			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2) // Initial and deferred write
+			mockISCSIClient.EXPECT().AddSession(gomock.Any(), publishedISCSISessions, publishInfos[i], requests[i].VolumeId, "", models.NotInvalid).Return()
+		}
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockTrackingClient,
+			iscsi:            mockISCSIClient,
+			fs:               filesystem.New(mountClient),
+		}
+		plugin.InitializeNodeLimiter(ctx)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		// Spinning up go-routines for numOfParallelRequestsAllowed requests
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				err := plugin.nodeStageISCSIVolume(ctx, requests[idx], publishInfos[idx])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		// Waiting for the first numOfParallelRequestsAllowed requests to acquire the limiter
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			<-signalChan
+		}
+
+		// Spinning up the rest of the requests
+		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				err := plugin.nodeStageISCSIVolume(ctx, requests[idx], publishInfos[idx])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+}
+
+// TestNodeUnstageISCSIVolume_Multithreaded tests the multithreaded behavior of the nodeUnstageISCSIVolume function.
+func TestNodeUnstageISCSIVolume_Multithreaded(t *testing.T) {
+	// Test 1: Sending requests within the limit of the limiter
+	t.Run("Test Case 1: Sending requests within the limit of the limiter", func(t *testing.T) {
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		defer cancel()
+
+		requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
+		publishInfos := make([]models.VolumePublishInfo, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			requests[i] = NewNodeUnstageVolumeRequestBuilder().Build()
+			publishInfos[i] = NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).Build()
+		}
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
+		mountClient, _ := mount.New()
+		mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+		mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+
+		mockDevicePath := "/dev/mapper/mock-device"
+		mockDevice := &models.ScsiDeviceInfo{MultipathDevice: mockDevicePath}
+		// Setting up expectations for each request
+		for i := 0; i < numOfRequests; i++ {
+			mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
+			mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+			mockISCSIClient.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).Return(false, nil)
+			mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+			mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
+			mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+			mockISCSIClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), false, false).Return("", nil)
+			mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any()).Return(nil)
+			mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+				gomock.Any()).Return(map[int]int{6: 3})
+			mockMount.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+			mockTrackingClient.EXPECT().DeleteTrackingInfo(gomock.Any(), requests[i].VolumeId).Return(nil)
+		}
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockTrackingClient,
+			iscsi:            mockISCSIClient,
+			fs:               filesystem.New(mountClient),
+			devices:          mockDeviceClient,
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+		iscsiUtils = mockIscsiReconcileUtilsClient
+
+		// Modifying the limiter limit
+		plugin.limiterSharedMap[NodeUnstageISCSIVolume], _ = limiter.New(ctx,
+			NodeUnstageISCSIVolume,
+			limiter.TypeSemaphoreN,
+			limiter.WithSemaphoreNSize(ctx, numOfRequests),
+		)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		// Spinning up go-routines for each request
+		for i := 0; i < numOfRequests; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				err := plugin.nodeUnstageISCSIVolume(ctx, requests[idx], &publishInfos[idx], false)
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+
+	// Test 2: Sending more than what can be parallelized, but additional ones wait and succeed
+	t.Run("Test Case 2: Sending more than what can be parallelized, but additional ones wait and succeed", func(t *testing.T) {
+		numOfRequests := 100
+		numOfParallelRequestsAllowed := maxNodeUnstageISCSIVolumeOperations
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		defer cancel()
+
+		requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
+		publishInfos := make([]models.VolumePublishInfo, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			requests[i] = NewNodeUnstageVolumeRequestBuilder().Build()
+			publishInfos[i] = NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).Build()
+		}
+
+		signalChan := make(chan struct{}, numOfParallelRequestsAllowed)
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
+		mountClient, _ := mount.New()
+		mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+		mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+
+		mockDevicePath := "/dev/mapper/mock-device"
+		mockDevice := &models.ScsiDeviceInfo{MultipathDevice: mockDevicePath}
+
+		// Setting up expectations for numOfParallelRequestsAllowed requests
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
+			mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+			mockISCSIClient.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).Return(false, nil)
+			mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+			mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
+			mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any()).Return(nil)
+			mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+			mockISCSIClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), false, false).Return("", nil)
+			mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+				gomock.Any()).Return(map[int]int{6: 3})
+			mockMount.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+			mockTrackingClient.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).DoAndReturn(func(context.Context, string) error {
+				signalChan <- struct{}{}
+				time.Sleep(600 * time.Millisecond)
+				return nil
+			})
+		}
+
+		// Setting up expectations for remaining requests
+		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
+			mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), false).Return(mockDevice, nil)
+			mockISCSIClient.EXPECT().RemoveLUNFromSessions(gomock.Any(), gomock.Any(), gomock.Any())
+			mockISCSIClient.EXPECT().TargetHasMountedDevice(gomock.Any(), gomock.Any()).Return(false, nil)
+			mockISCSIClient.EXPECT().SafeToLogOut(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+			mockISCSIClient.EXPECT().RemovePortalsFromSession(gomock.Any(), gomock.Any(), gomock.Any())
+			mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any()).Return(nil)
+			mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any())
+			mockISCSIClient.EXPECT().PrepareDeviceForRemoval(gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), false, false).Return("", nil)
+			mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+				gomock.Any()).Return(map[int]int{6: 3})
+			mockMount.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+			mockTrackingClient.EXPECT().DeleteTrackingInfo(gomock.Any(), requests[i].VolumeId).Return(nil)
+		}
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockTrackingClient,
+			iscsi:            mockISCSIClient,
+			fs:               filesystem.New(mountClient),
+			devices:          mockDeviceClient,
+		}
+		plugin.InitializeNodeLimiter(ctx)
+		iscsiUtils = mockIscsiReconcileUtilsClient
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		// Spinning up go-routines for numOfParallelRequestsAllowed requests
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				err := plugin.nodeUnstageISCSIVolume(ctx, requests[idx], &publishInfos[idx], false)
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		// Waiting for the first numOfParallelRequestsAllowed requests to acquire the limiter
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			<-signalChan
+		}
+
+		// Spinning up the rest of the requests
+		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				err := plugin.nodeUnstageISCSIVolume(ctx, requests[idx], &publishInfos[idx], false)
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+}
+
+// TestNodePublishISCSIVolume_Multithreaded tests the multithreaded behavior of NodePublishISCSIVolume.
+func TestNodePublishISCSIVolume_Multithreaded(t *testing.T) {
+	// Test 1: Sending requests within the limit of the limiter
+	t.Run("Test Case 1: Sending requests within the limit of the limiter", func(t *testing.T) {
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		defer cancel()
+
+		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			requests[i] = NewNodePublishVolumeRequestBuilder(iSCSINodePublishVolumeRequestType).Build()
+		}
+
+		ctrl := gomock.NewController(t)
+		mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
+		mountClient, _ := mount.New()
+
+		for i := 0; i < numOfRequests; i++ {
+			volumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).Build(),
+			}
+			mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(volumeTrackingInfo, nil)
+			mockMount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Eq(false)).Return(nil)
+			mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		}
+
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockNodeHelper,
+			iscsi:            mockISCSIClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		plugin.limiterSharedMap[NodePublishISCSIVolume], _ = limiter.New(ctx,
+			NodePublishISCSIVolume,
+			limiter.TypeSemaphoreN,
+			limiter.WithSemaphoreNSize(ctx, numOfRequests),
+		)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		for i := 0; i < numOfRequests; i++ {
+			go func(i int) {
+				defer wg.Done()
+				_, err := plugin.nodePublishISCSIVolume(ctx, requests[i])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+
+	// Test 2: Sending more requests than can be parallelized, expecting errors for excess requests
+	t.Run("Test Case 2: Sending more than what can be parallelized", func(t *testing.T) {
+		numOfRequests := 100
+		numOfParallelRequestsAllowed := maxNodePublishISCSIVolumeOperations
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		defer cancel()
+
+		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			requests[i] = NewNodePublishVolumeRequestBuilder(iSCSINodePublishVolumeRequestType).Build()
+		}
+
+		signalChan := make(chan struct{}, numOfParallelRequestsAllowed)
+
+		ctrl := gomock.NewController(t)
+		mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
+		mountClient, _ := mount.New()
+
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			volumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).Build(),
+			}
+			mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, _ string) (*models.VolumeTrackingInfo, error) {
+				signalChan <- struct{}{}
+				time.Sleep(600 * time.Millisecond)
+				return volumeTrackingInfo, nil
+			})
+			mockMount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Eq(false)).Return(nil)
+			mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		}
+
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockNodeHelper,
+			iscsi:            mockISCSIClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			go func(i int) {
+				defer wg.Done()
+				_, err := plugin.nodePublishISCSIVolume(ctx, requests[i])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			<-signalChan
+		}
+
+		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
+			go func(i int) {
+				defer wg.Done()
+				_, err := plugin.nodePublishISCSIVolume(ctx, requests[i])
+				assert.Error(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+
+	// Test 3: Sending more requests than can be parallelized, but excess requests wait and succeed
+	t.Run("Test Case 3: Sending more than what can be parallelized, excess requests wait and succeed", func(t *testing.T) {
+		numOfRequests := 100
+		numOfParallelRequestsAllowed := maxNodePublishISCSIVolumeOperations
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		defer cancel()
+
+		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			requests[i] = NewNodePublishVolumeRequestBuilder(iSCSINodePublishVolumeRequestType).Build()
+		}
+
+		signalChan := make(chan struct{}, numOfParallelRequestsAllowed)
+
+		ctrl := gomock.NewController(t)
+		mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
+		mountClient, _ := mount.New()
+
+		for i := 0; i < numOfRequests; i++ {
+			volumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).Build(),
+			}
+			if i < numOfParallelRequestsAllowed {
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, _ string) (*models.VolumeTrackingInfo, error) {
+					signalChan <- struct{}{}
+					time.Sleep(100 * time.Millisecond)
+					return volumeTrackingInfo, nil
+				})
+			} else {
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(volumeTrackingInfo, nil)
+			}
+			mockMount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Eq(false)).Return(nil)
+			mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		}
+
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockNodeHelper,
+			iscsi:            mockISCSIClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			go func(i int) {
+				defer wg.Done()
+				_, err := plugin.nodePublishISCSIVolume(ctx, requests[i])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			<-signalChan
+		}
+
+		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
+			go func(i int) {
+				defer wg.Done()
+				_, err := plugin.nodePublishISCSIVolume(ctx, requests[i])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+
+	// Test 4: LUKS encrypted volume handling
+	t.Run("Test Case 4: LUKS encrypted volume", func(t *testing.T) {
+		numOfRequests := 100
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		defer cancel()
+
+		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			requests[i] = NewNodePublishVolumeRequestBuilder(iSCSINodePublishVolumeRequestType).Build()
+		}
+
+		ctrl := gomock.NewController(t)
+		mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
+		mountClient, _ := mount.New()
+
+		volumeTrackingInfo := &models.VolumeTrackingInfo{
+			VolumePublishInfo: NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).
+				WithLUKSEncryption("true").
+				WithDevicePath("/dev/mapper/test-device").
+				Build(),
+		}
+
+		mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(volumeTrackingInfo, nil)
+		mockMount.EXPECT().MountDevice(gomock.Any(), gomock.Eq("/dev/mapper/luks-pvc-12345-123"), gomock.Any(), gomock.Any(), gomock.Eq(false)).Return(nil)
+		mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockNodeHelper,
+			iscsi:            mockISCSIClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		plugin.limiterSharedMap[NodePublishISCSIVolume], _ = limiter.New(ctx,
+			NodePublishISCSIVolume,
+			limiter.TypeSemaphoreN,
+			limiter.WithSemaphoreNSize(ctx, numOfRequests),
+		)
+
+		_, err := plugin.nodePublishISCSIVolume(ctx, requests[0])
+		assert.NoError(t, err)
+	})
+
+	// Test 5: Raw block volume handling
+	t.Run("Test Case 5: Raw block volume", func(t *testing.T) {
+		numOfRequests := 100
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		defer cancel()
+
+		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			requests[i] = NewNodePublishVolumeRequestBuilder(iSCSINodePublishVolumeRequestType).Build()
+		}
+
+		ctrl := gomock.NewController(t)
+		mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
+		mountClient, _ := mount.New()
+
+		volumeTrackingInfo := &models.VolumeTrackingInfo{
+			VolumePublishInfo: NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).
+				WithFilesystemType(filesystem.Raw).
+				Build(),
+		}
+
+		mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(volumeTrackingInfo, nil)
+		mockMount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Eq(true)).Return(nil)
+		mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockNodeHelper,
+			iscsi:            mockISCSIClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		plugin.limiterSharedMap[NodePublishISCSIVolume], _ = limiter.New(ctx,
+			NodePublishISCSIVolume,
+			limiter.TypeSemaphoreN,
+			limiter.WithSemaphoreNSize(ctx, numOfRequests),
+		)
+
+		_, err := plugin.nodePublishISCSIVolume(ctx, requests[0])
+		assert.NoError(t, err)
+	})
 }
 
 // ----- helpers ----
@@ -5861,6 +6967,31 @@ func NewNodePublishVolumeRequestBuilder(requestType NodePublishVolumeRequestType
 				PublishContext: map[string]string{
 					"protocol":       "file",
 					"filesystemType": "smb",
+				},
+				StagingTargetPath: "/foo",
+				TargetPath:        "/tmp/raw",
+				Secrets: map[string]string{
+					"username": "username",
+					"password": "password",
+				},
+				VolumeContext: map[string]string{
+					"internalName": "pvc-12345-123",
+				},
+				Readonly: false,
+			},
+		}
+	case iSCSINodePublishVolumeRequestType:
+		return &NodePublishVolumeRequestBuilder{
+			request: &csi.NodePublishVolumeRequest{
+				VolumeId: uuid.NewString(),
+				PublishContext: map[string]string{
+					"protocol":               "block",
+					"sharedTarget":           "false",
+					"filesystemType":         filesystem.Ext4,
+					"useCHAP":                "false",
+					"iscsiLunNumber":         "0",
+					"iscsiTargetIqn":         "iqn.2016-04.com.mock-iscsi:8a1e4b296331",
+					"iscsiTargetPortalCount": "2",
 				},
 				StagingTargetPath: "/foo",
 				TargetPath:        "/tmp/raw",
