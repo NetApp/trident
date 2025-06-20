@@ -404,7 +404,7 @@ type RestClientInterface interface {
 	// NVMeSubsystemGetByName gets the subsystem with the specified name
 	NVMeSubsystemGetByName(ctx context.Context, subsystemName string, fields []string) (*models.NvmeSubsystem, error)
 	// NVMeSubsystemCreate creates a new subsystem
-	NVMeSubsystemCreate(ctx context.Context, subsystemName string) (*models.NvmeSubsystem, error)
+	NVMeSubsystemCreate(ctx context.Context, subsystemName, comment string) (*models.NvmeSubsystem, error)
 	// NVMeSubsystemDelete deletes a given subsystem
 	NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error
 	// NVMeAddHostNqnToSubsystem adds the NQN of the host to the subsystem

@@ -919,7 +919,7 @@ func (d *NVMeStorageDriver) Publish(
 	}
 
 	// Checks if subsystem exists and creates a new one if not
-	subsystem, err := d.API.NVMeSubsystemCreate(ctx, ssName)
+	subsystem, err := d.API.NVMeSubsystemCreate(ctx, ssName, ssName)
 	if err != nil {
 		Logc(ctx).Errorf("subsystem create failed, %v", err)
 		return err

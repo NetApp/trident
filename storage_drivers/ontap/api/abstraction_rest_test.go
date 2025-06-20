@@ -748,6 +748,7 @@ func TestNVMeSubsystemCreate(t *testing.T) {
 
 	// case 1: No error while adding host to subsystem
 	subsystemName := "fakeSubsystem"
+	subsystemComment := "fakeSubsystemComment"
 	subsysUUID := "fakeUUID"
 	targetNQN := "fakeTargetNQN"
 	subsys := &models.NvmeSubsystem{
@@ -758,7 +759,7 @@ func TestNVMeSubsystemCreate(t *testing.T) {
 
 	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(subsys, nil)
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	subsystem, err := oapi.NVMeSubsystemCreate(ctx, subsystemName)
+	subsystem, err := oapi.NVMeSubsystemCreate(ctx, subsystemName, subsystemComment)
 	assert.NoError(t, err)
 	assert.Equal(t, subsystem.UUID, subsysUUID, "subsystem UUID does not match")
 	assert.Equal(t, subsystem.Name, subsystemName, "subsystem name does not match")
@@ -767,14 +768,14 @@ func TestNVMeSubsystemCreate(t *testing.T) {
 	// case 2: Error getting susbsystem info from backend
 	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(nil, fmt.Errorf("Error getting susbsystem info"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	_, err = oapi.NVMeSubsystemCreate(ctx, subsystemName)
+	_, err = oapi.NVMeSubsystemCreate(ctx, subsystemName, subsystemComment)
 	assert.Error(t, err)
 
 	// case 3: Subsystem not present, create a new one successfully
 	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(nil, nil)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, subsystemName).Return(subsys, nil)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, subsystemName, subsystemComment).Return(subsys, nil)
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	newsubsys, err := oapi.NVMeSubsystemCreate(ctx, subsystemName)
+	newsubsys, err := oapi.NVMeSubsystemCreate(ctx, subsystemName, subsystemComment)
 	assert.NoError(t, err)
 	assert.Equal(t, newsubsys.UUID, subsysUUID, "subsystem UUID does not match")
 	assert.Equal(t, newsubsys.Name, subsystemName, "subsystem name does not match")
@@ -782,16 +783,16 @@ func TestNVMeSubsystemCreate(t *testing.T) {
 
 	// case 4: Subsystem not present, create a new one with failure
 	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(nil, nil)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, subsystemName).Return(nil, fmt.Errorf("Error creating susbsystem"))
+	mock.EXPECT().NVMeSubsystemCreate(ctx, subsystemName, subsystemComment).Return(nil, fmt.Errorf("Error creating susbsystem"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	newsubsys, err = oapi.NVMeSubsystemCreate(ctx, subsystemName)
+	newsubsys, err = oapi.NVMeSubsystemCreate(ctx, subsystemName, subsystemComment)
 	assert.Error(t, err)
 
 	// case 5: Subsystem not present, create a new one but returned nil
 	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(nil, nil)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, subsystemName).Return(nil, nil)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, subsystemName, subsystemComment).Return(nil, nil)
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	newsubsys, err = oapi.NVMeSubsystemCreate(ctx, subsystemName)
+	newsubsys, err = oapi.NVMeSubsystemCreate(ctx, subsystemName, subsystemComment)
 	assert.Error(t, err)
 }
 

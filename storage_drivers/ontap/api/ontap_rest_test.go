@@ -4075,7 +4075,7 @@ func TestOntapRest_NVMeSubsystemCreate(t *testing.T) {
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
-			nvmeSubsystem, err := rs.NVMeSubsystemCreate(ctx, "subsystemName")
+			nvmeSubsystem, err := rs.NVMeSubsystemCreate(ctx, "subsystemName", "comment to be set on subsystem")
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "issue while creating subsystem")
 				assert.Equal(t, "subsystemName", *nvmeSubsystem.Name)
