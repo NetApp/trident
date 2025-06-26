@@ -18,6 +18,7 @@ import (
 	mockpersistentstore "github.com/netapp/trident/mocks/mock_persistent_store"
 	mockstorage "github.com/netapp/trident/mocks/mock_storage"
 	persistentstore "github.com/netapp/trident/persistent_store"
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/fake"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -7520,6 +7521,704 @@ func TestImportSnapshotConcurrentCore(t *testing.T) {
 				tt.verifyError(err)
 			}
 
+			if tt.verifyResult != nil {
+				tt.verifyResult(result)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestAddStorageClassConcurrentCore(t *testing.T) {
+	scConfig := &storageclass.Config{
+		Version: "1",
+		Name:    "sc1",
+	}
+	sc := storageclass.New(scConfig)
+
+	fakePool1 := storage.NewStoragePool(nil, "pool1")
+
+	tests := []struct {
+		name         string
+		scConfig     *storageclass.Config
+		bootstrapErr error
+		setupMocks   func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
+		verifyResult func(result *storageclass.External, o *ConcurrentTridentOrchestrator)
+		verifyError  func(t *testing.T, err error)
+	}{
+		{
+			name:         "Success",
+			scConfig:     scConfig,
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend.EXPECT().StoragePools().Return(makeSyncMapFromMap(map[string]storage.Pool{"pool1": fakePool1})).AnyTimes()
+
+				fakePool1.SetBackend(mockBackend)
+
+				addBackendsToCache(t, mockBackend)
+
+				mockStoreClient.EXPECT().AddStorageClass(gomock.Any(), sc).Return(nil).Times(1)
+			},
+			verifyResult: func(result *storageclass.External, o *ConcurrentTridentOrchestrator) {
+				assert.NotNil(t, result)
+
+				// Additionally verify the storage class is added to the cache
+				newSC := getStorageClassByNameFromCache(t, "sc1")
+				assert.NotNil(t, newSC)
+
+				// Assert the pool map was updated
+				poolMap := o.GetStorageClassPoolMap()
+				assert.NotNil(t, poolMap)
+
+				backendPoolMap := poolMap.BackendPoolMapForStorageClass(testCtx, "sc1")
+				assert.NotNil(t, backendPoolMap)
+
+				poolNames := backendPoolMap["testBackend"]
+				assert.True(t, collection.StringInSlice("pool1", poolNames))
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:         "BootstrapError",
+			scConfig:     scConfig,
+			bootstrapErr: fmt.Errorf("bootstrap error"),
+			setupMocks:   nil,
+			verifyResult: func(result *storageclass.External, o *ConcurrentTridentOrchestrator) {
+				assert.Nil(t, result)
+
+				// Additionally verify the storage class is not added to the cache
+				newSC := getStorageClassByNameFromCache(t, "sc1")
+				assert.Nil(t, newSC)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+		},
+		{
+			name:         "StorageClassAlreadyExists",
+			scConfig:     scConfig,
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend.EXPECT().StoragePools().Return(makeSyncMapFromMap(map[string]storage.Pool{"pool1": fakePool1})).AnyTimes()
+
+				fakePool1.SetBackend(mockBackend)
+
+				addBackendsToCache(t, mockBackend)
+				addStorageClassesToCache(t, sc)
+			},
+			verifyResult: func(result *storageclass.External, o *ConcurrentTridentOrchestrator) {
+				assert.Nil(t, result)
+
+				// Additionally verify the storage class remains in the cache
+				newSC := getStorageClassByNameFromCache(t, "sc1")
+				assert.NotNil(t, newSC)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NotNil(t, err)
+			},
+		},
+		{
+			name:         "StoreError",
+			scConfig:     scConfig,
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend.EXPECT().StoragePools().Return(makeSyncMapFromMap(map[string]storage.Pool{"pool1": fakePool1})).AnyTimes()
+
+				fakePool1.SetBackend(mockBackend)
+
+				addBackendsToCache(t, mockBackend)
+
+				mockStoreClient.EXPECT().AddStorageClass(gomock.Any(), sc).Return(failed).Times(1)
+			},
+			verifyResult: func(result *storageclass.External, o *ConcurrentTridentOrchestrator) {
+				assert.Nil(t, result)
+
+				// Additionally verify the storage class is not added to the cache
+				newSC := getStorageClassByNameFromCache(t, "sc1")
+				assert.Nil(t, newSC)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NotNil(t, err)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			o.bootstrapError = tt.bootstrapErr
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient, o)
+			}
+
+			result, err := o.AddStorageClass(testCtx, tt.scConfig)
+
+			if tt.verifyResult != nil {
+				tt.verifyResult(result, o)
+			}
+
+			if tt.verifyError != nil {
+				tt.verifyError(t, err)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestUpdateStorageClassConcurrentCore(t *testing.T) {
+	scConfig := &storageclass.Config{
+		Version: "1",
+		Name:    "sc1",
+		Pools:   map[string][]string{"testBackend": {"pool1"}},
+	}
+	sc := storageclass.New(scConfig)
+
+	scConfigUpdated := &storageclass.Config{
+		Version: "1",
+		Name:    "sc1",
+		Pools:   map[string][]string{"testBackend": {"pool2"}},
+	}
+
+	fakePool1 := storage.NewStoragePool(nil, "pool1")
+	fakePool2 := storage.NewStoragePool(nil, "pool2")
+
+	tests := []struct {
+		name         string
+		scConfig     *storageclass.Config
+		bootstrapErr error
+		setupMocks   func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
+		verifyResult func(result *storageclass.External, o *ConcurrentTridentOrchestrator)
+		verifyError  func(t *testing.T, err error)
+	}{
+		{
+			name:         "Success",
+			scConfig:     scConfigUpdated,
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend.EXPECT().StoragePools().Return(makeSyncMapFromMap(map[string]storage.Pool{
+					"pool1": fakePool1,
+					"pool2": fakePool2,
+				})).AnyTimes()
+
+				fakePool1.SetBackend(mockBackend)
+				fakePool2.SetBackend(mockBackend)
+
+				addBackendsToCache(t, mockBackend)
+				addStorageClassesToCache(t, sc)
+
+				o.RebuildStorageClassPoolMap(testCtx)
+
+				mockStoreClient.EXPECT().UpdateStorageClass(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyResult: func(result *storageclass.External, o *ConcurrentTridentOrchestrator) {
+				assert.NotNil(t, result)
+
+				// Additionally verify the storage class is added to the cache
+				newSC := getStorageClassByNameFromCache(t, "sc1")
+				assert.NotNil(t, newSC)
+
+				// Assert the pool map was updated
+				poolMap := o.GetStorageClassPoolMap()
+				assert.NotNil(t, poolMap)
+
+				backendPoolMap := poolMap.BackendPoolMapForStorageClass(testCtx, "sc1")
+				assert.NotNil(t, backendPoolMap)
+
+				poolNames := backendPoolMap["testBackend"]
+				assert.False(t, collection.StringInSlice("pool1", poolNames))
+				assert.True(t, collection.StringInSlice("pool2", poolNames))
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:         "BootstrapError",
+			scConfig:     scConfigUpdated,
+			bootstrapErr: fmt.Errorf("bootstrap error"),
+			setupMocks:   nil,
+			verifyResult: func(result *storageclass.External, o *ConcurrentTridentOrchestrator) {
+				assert.Nil(t, result)
+
+				// Additionally verify the storage class is not added to the cache
+				newSC := getStorageClassByNameFromCache(t, "sc1")
+				assert.Nil(t, newSC)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+		},
+		{
+			name:         "StorageClassNotFound",
+			scConfig:     scConfig,
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend.EXPECT().StoragePools().Return(makeSyncMapFromMap(map[string]storage.Pool{
+					"pool1": fakePool1,
+					"pool2": fakePool2,
+				})).AnyTimes()
+
+				fakePool1.SetBackend(mockBackend)
+				fakePool2.SetBackend(mockBackend)
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyResult: func(result *storageclass.External, o *ConcurrentTridentOrchestrator) {
+				assert.Nil(t, result)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NotNil(t, err)
+			},
+		},
+		{
+			name:         "StoreError",
+			scConfig:     scConfig,
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend.EXPECT().StoragePools().Return(makeSyncMapFromMap(map[string]storage.Pool{
+					"pool1": fakePool1,
+					"pool2": fakePool2,
+				})).AnyTimes()
+
+				fakePool1.SetBackend(mockBackend)
+				fakePool2.SetBackend(mockBackend)
+
+				addBackendsToCache(t, mockBackend)
+				addStorageClassesToCache(t, sc)
+
+				o.RebuildStorageClassPoolMap(testCtx)
+
+				mockStoreClient.EXPECT().UpdateStorageClass(gomock.Any(), gomock.Any()).Return(failed).Times(1)
+			},
+			verifyResult: func(result *storageclass.External, o *ConcurrentTridentOrchestrator) {
+				assert.Nil(t, result)
+
+				// Additionally verify the storage class remains in the cache
+				newSC := getStorageClassByNameFromCache(t, "sc1")
+				assert.NotNil(t, newSC)
+
+				// Assert the pool map was not updated
+				poolMap := o.GetStorageClassPoolMap()
+				assert.NotNil(t, poolMap)
+
+				backendPoolMap := poolMap.BackendPoolMapForStorageClass(testCtx, "sc1")
+				assert.NotNil(t, backendPoolMap)
+
+				poolNames := backendPoolMap["testBackend"]
+				assert.True(t, collection.StringInSlice("pool1", poolNames))
+				assert.False(t, collection.StringInSlice("pool2", poolNames))
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NotNil(t, err)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			o.bootstrapError = tt.bootstrapErr
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient, o)
+			}
+
+			result, err := o.UpdateStorageClass(testCtx, tt.scConfig)
+
+			if tt.verifyResult != nil {
+				tt.verifyResult(result, o)
+			}
+
+			if tt.verifyError != nil {
+				tt.verifyError(t, err)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestDeleteStorageClassConcurrentCore(t *testing.T) {
+	scConfig := &storageclass.Config{
+		Version: "1",
+		Name:    "sc1",
+		Pools:   map[string][]string{"testBackend": {"pool1"}},
+	}
+	sc := storageclass.New(scConfig)
+
+	fakePool1 := storage.NewStoragePool(nil, "pool1")
+	fakePool2 := storage.NewStoragePool(nil, "pool2")
+
+	tests := []struct {
+		name         string
+		bootstrapErr error
+		setupMocks   func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
+		verifyError  func(t *testing.T, err error, o *ConcurrentTridentOrchestrator)
+	}{
+		{
+			name:         "Success",
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend.EXPECT().StoragePools().Return(makeSyncMapFromMap(map[string]storage.Pool{
+					"pool1": fakePool1,
+					"pool2": fakePool2,
+				})).AnyTimes()
+
+				fakePool1.SetBackend(mockBackend)
+				fakePool2.SetBackend(mockBackend)
+
+				addBackendsToCache(t, mockBackend)
+				addStorageClassesToCache(t, sc)
+
+				o.RebuildStorageClassPoolMap(testCtx)
+
+				mockStoreClient.EXPECT().DeleteStorageClass(gomock.Any(), sc).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error, o *ConcurrentTridentOrchestrator) {
+				assert.NoError(t, err)
+
+				// Assert the pool map no longer contains the storage class
+				poolMap := o.GetStorageClassPoolMap()
+				assert.NotNil(t, poolMap)
+
+				backendPoolMap := poolMap.BackendPoolMapForStorageClass(testCtx, "sc1")
+				assert.Nil(t, backendPoolMap)
+			},
+		},
+		{
+			name:         "BootstrapError",
+			bootstrapErr: fmt.Errorf("bootstrap error"),
+			setupMocks:   nil,
+			verifyError: func(t *testing.T, err error, o *ConcurrentTridentOrchestrator) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+		},
+		{
+			name:         "StorageClassNotFound",
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend.EXPECT().StoragePools().Return(makeSyncMapFromMap(map[string]storage.Pool{
+					"pool1": fakePool1,
+					"pool2": fakePool2,
+				})).AnyTimes()
+
+				fakePool1.SetBackend(mockBackend)
+				fakePool2.SetBackend(mockBackend)
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyError: func(t *testing.T, err error, o *ConcurrentTridentOrchestrator) {
+				assert.NotNil(t, err)
+			},
+		},
+		{
+			name:         "StoreError",
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend.EXPECT().StoragePools().Return(makeSyncMapFromMap(map[string]storage.Pool{
+					"pool1": fakePool1,
+					"pool2": fakePool2,
+				})).AnyTimes()
+
+				fakePool1.SetBackend(mockBackend)
+				fakePool2.SetBackend(mockBackend)
+
+				addBackendsToCache(t, mockBackend)
+				addStorageClassesToCache(t, sc)
+
+				o.RebuildStorageClassPoolMap(testCtx)
+
+				mockStoreClient.EXPECT().DeleteStorageClass(gomock.Any(), sc).Return(failed).Times(1)
+			},
+			verifyError: func(t *testing.T, err error, o *ConcurrentTridentOrchestrator) {
+				assert.NotNil(t, err)
+
+				// Assert the pool map was not updated
+				poolMap := o.GetStorageClassPoolMap()
+				assert.NotNil(t, poolMap)
+
+				backendPoolMap := poolMap.BackendPoolMapForStorageClass(testCtx, "sc1")
+				assert.NotNil(t, backendPoolMap)
+
+				poolNames := backendPoolMap["testBackend"]
+				assert.True(t, collection.StringInSlice("pool1", poolNames))
+				assert.False(t, collection.StringInSlice("pool2", poolNames))
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			o.bootstrapError = tt.bootstrapErr
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient, o)
+			}
+
+			err := o.DeleteStorageClass(testCtx, "sc1")
+
+			if tt.verifyError != nil {
+				tt.verifyError(t, err, o)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestGetStorageClassConcurrentCore(t *testing.T) {
+	scConfig := &storageclass.Config{
+		Version: "1",
+		Name:    "sc1",
+		Pools:   map[string][]string{"testBackend": {"pool1"}},
+	}
+	sc := storageclass.New(scConfig)
+
+	fakePool1 := storage.NewStoragePool(nil, "pool1")
+	fakePool2 := storage.NewStoragePool(nil, "pool2")
+
+	tests := []struct {
+		name         string
+		scName       string
+		bootstrapErr error
+		setupMocks   func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
+		verifyError  func(err error)
+		verifyResult func(result *storageclass.External)
+	}{
+		{
+			name:         "Success",
+			scName:       "sc1",
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend.EXPECT().StoragePools().Return(makeSyncMapFromMap(map[string]storage.Pool{
+					"pool1": fakePool1,
+					"pool2": fakePool2,
+				})).AnyTimes()
+
+				fakePool1.SetBackend(mockBackend)
+				fakePool2.SetBackend(mockBackend)
+
+				addBackendsToCache(t, mockBackend)
+				addStorageClassesToCache(t, sc)
+
+				o.RebuildStorageClassPoolMap(testCtx)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result *storageclass.External) {
+				require.NotNil(t, result)
+				assert.Equal(t, "sc1", result.Config.Name)
+			},
+		},
+		{
+			name:         "BootstrapError",
+			scName:       "sc1",
+			bootstrapErr: fmt.Errorf("bootstrap error"),
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+			},
+			verifyError: func(err error) {
+				assert.Error(t, err)
+				assert.Equal(t, "bootstrap error", err.Error())
+			},
+			verifyResult: func(result *storageclass.External) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name:         "NotFound",
+			scName:       "nonexistent",
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+			},
+			verifyError: func(err error) {
+				assert.Error(t, err)
+				assert.True(t, errors.IsNotFoundError(err))
+			},
+			verifyResult: func(result *storageclass.External) {
+				assert.Nil(t, result)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			o.bootstrapError = tt.bootstrapErr
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient, o)
+			}
+
+			result, err := o.GetStorageClass(testCtx, tt.scName)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+			if tt.verifyResult != nil {
+				tt.verifyResult(result)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestListStorageClassesConcurrentCore(t *testing.T) {
+	sc1Config := &storageclass.Config{
+		Version: "1",
+		Name:    "sc1",
+		Pools:   map[string][]string{"testBackend": {"pool1"}},
+	}
+	sc1 := storageclass.New(sc1Config)
+
+	sc2Config := &storageclass.Config{
+		Version: "1",
+		Name:    "sc2",
+		Pools:   map[string][]string{"testBackend": {"pool2"}},
+	}
+	sc2 := storageclass.New(sc2Config)
+
+	fakePool1 := storage.NewStoragePool(nil, "pool1")
+	fakePool2 := storage.NewStoragePool(nil, "pool2")
+
+	tests := []struct {
+		name         string
+		bootstrapErr error
+		setupMocks   func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
+		verifyError  func(err error)
+		verifyResult func(result []*storageclass.External)
+	}{
+		{
+			name:         "Success",
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend.EXPECT().StoragePools().Return(makeSyncMapFromMap(map[string]storage.Pool{
+					"pool1": fakePool1,
+					"pool2": fakePool2,
+				})).AnyTimes()
+
+				fakePool1.SetBackend(mockBackend)
+				fakePool2.SetBackend(mockBackend)
+
+				addBackendsToCache(t, mockBackend)
+				addStorageClassesToCache(t, sc1, sc2)
+
+				o.RebuildStorageClassPoolMap(testCtx)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result []*storageclass.External) {
+				require.Len(t, result, 2)
+				expectedNames := []string{"sc1", "sc2"}
+				actualNames := []string{}
+				for _, sc := range result {
+					actualNames = append(actualNames, sc.Config.Name)
+				}
+				assert.ElementsMatch(t, expectedNames, actualNames)
+			},
+		},
+		{
+			name:         "BootstrapError",
+			bootstrapErr: fmt.Errorf("bootstrap error"),
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.Error(t, err)
+				assert.Equal(t, "bootstrap error", err.Error())
+			},
+			verifyResult: func(result []*storageclass.External) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name:         "Empty",
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				// No volumes or subordinate volumes added
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result []*storageclass.External) {
+				assert.Empty(t, result)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			o.bootstrapError = tt.bootstrapErr
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient, o)
+			}
+
+			result, err := o.ListStorageClasses(testCtx)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
 			if tt.verifyResult != nil {
 				tt.verifyResult(result)
 			}
