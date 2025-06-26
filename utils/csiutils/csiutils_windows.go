@@ -5,6 +5,7 @@ package csiutils
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -74,7 +75,7 @@ func (mounter *csiProxyUtils) SMBMount(ctx context.Context, source, target, fsTy
 	defer Logc(ctx).Debug("<<<< csiutils.SMBMount")
 
 	if len(username) == 0 || len(password) == 0 {
-		return fmt.Errorf("empty username or password is not allowed")
+		return errors.New("empty username or password is not allowed")
 	}
 
 	parentDir := filepath.Dir(target)
@@ -200,7 +201,7 @@ func (mounter *csiProxyUtils) List(ctx context.Context) ([]mount.MountPoint, err
 	Logc(ctx).Debug(">>>> csiutils.List")
 	defer Logc(ctx).Debug("<<<< csiutils.List")
 
-	return []mount.MountPoint{}, fmt.Errorf("List not implemented for CSIProxyUtils")
+	return []mount.MountPoint{}, errors.New("List not implemented for CSIProxyUtils")
 }
 
 func (mounter *csiProxyUtils) IsMountPointMatch(ctx context.Context, mp mount.MountPoint, dir string) bool {
@@ -248,7 +249,7 @@ func (mounter *csiProxyUtils) PathIsDevice(ctx context.Context, pathname string)
 	Logc(ctx).Debug(">>>> csiutils.PathIsDevice")
 	defer Logc(ctx).Debug("<<<< csiutils.PathIsDevice")
 
-	return false, fmt.Errorf("PathIsDevice not implemented for CSIProxyUtils")
+	return false, errors.New("PathIsDevice not implemented for CSIProxyUtils")
 }
 
 func (mounter *csiProxyUtils) DeviceOpened(ctx context.Context, pathname string) (bool, error) {
@@ -257,7 +258,7 @@ func (mounter *csiProxyUtils) DeviceOpened(ctx context.Context, pathname string)
 	Logc(ctx).Debug(">>>> csiutils.DeviceOpened")
 	defer Logc(ctx).Debug("<<<< csiutils.DeviceOpened")
 
-	return false, fmt.Errorf("DeviceOpened not implemented for CSIProxyUtils")
+	return false, errors.New("DeviceOpened not implemented for CSIProxyUtils")
 }
 
 func (mounter *csiProxyUtils) GetDeviceNameFromMount(ctx context.Context, mountPath, pluginMountDir string) (string,
@@ -268,7 +269,7 @@ func (mounter *csiProxyUtils) GetDeviceNameFromMount(ctx context.Context, mountP
 	Logc(ctx).Debug(">>>> csiutils.GetDeviceNameFromMount")
 	defer Logc(ctx).Debug("<<<< csiutils.GetDeviceNameFromMount")
 
-	return "", fmt.Errorf("GetDeviceNameFromMount not implemented for CSIProxyUtils")
+	return "", errors.New("GetDeviceNameFromMount not implemented for CSIProxyUtils")
 }
 
 func (mounter *csiProxyUtils) MakeRShared(ctx context.Context, path string) error {
@@ -277,7 +278,7 @@ func (mounter *csiProxyUtils) MakeRShared(ctx context.Context, path string) erro
 	Logc(ctx).Debug(">>>> csiutils.MakeRShared")
 	defer Logc(ctx).Debug("<<<< csiutils.MakeRShared")
 
-	return fmt.Errorf("MakeRShared not implemented for CSIProxyUtils")
+	return errors.New("MakeRShared not implemented for CSIProxyUtils")
 }
 
 func (mounter *csiProxyUtils) MakeFile(ctx context.Context, pathname string) error {
@@ -286,7 +287,7 @@ func (mounter *csiProxyUtils) MakeFile(ctx context.Context, pathname string) err
 	Logc(ctx).Debug(">>>> csiutils.MakeFile")
 	defer Logc(ctx).Debug("<<<< csiutils.MakeFile")
 
-	return fmt.Errorf("MakeFile not implemented for CSIProxyUtils")
+	return errors.New("MakeFile not implemented for CSIProxyUtils")
 }
 
 // MakeDir - Creates a directory. The CSI proxy takes in context information.
@@ -350,7 +351,7 @@ func (mounter *csiProxyUtils) EvalHostSymlinks(ctx context.Context, pathname str
 	Logc(ctx).Debug(">>>> csiutils.EvalHostSymlinks")
 	defer Logc(ctx).Debug("<<<< csiutils.EvalHostSymlinks")
 
-	return "", fmt.Errorf("EvalHostSymlinks not implemented for CSIProxyUtils")
+	return "", errors.New("EvalHostSymlinks not implemented for CSIProxyUtils")
 }
 
 func (mounter *csiProxyUtils) GetMountRefs(ctx context.Context, pathname string) ([]string, error) {
@@ -359,7 +360,7 @@ func (mounter *csiProxyUtils) GetMountRefs(ctx context.Context, pathname string)
 	Logc(ctx).Debug(">>>> csiutils.GetMountRefs")
 	defer Logc(ctx).Debug("<<<< csiutils.GetMountRefs")
 
-	return []string{}, fmt.Errorf("GetMountRefs not implemented for CSIProxyUtils")
+	return []string{}, errors.New("GetMountRefs not implemented for CSIProxyUtils")
 }
 
 func (mounter *csiProxyUtils) GetFSGroup(ctx context.Context, pathname string) (int64, error) {
@@ -368,7 +369,7 @@ func (mounter *csiProxyUtils) GetFSGroup(ctx context.Context, pathname string) (
 	Logc(ctx).Debug(">>>> csiutils.GetFSGroup")
 	defer Logc(ctx).Debug("<<<< csiutils.GetFSGroup")
 
-	return -1, fmt.Errorf("GetFSGroup not implemented for CSIProxyUtils")
+	return -1, errors.New("GetFSGroup not implemented for CSIProxyUtils")
 }
 
 func (mounter *csiProxyUtils) GetSELinuxSupport(ctx context.Context, pathname string) (bool, error) {
@@ -377,7 +378,7 @@ func (mounter *csiProxyUtils) GetSELinuxSupport(ctx context.Context, pathname st
 	Logc(ctx).Debug(">>>> csiutils.GetSELinuxSupport")
 	defer Logc(ctx).Debug("<<<< csiutils.GetSELinuxSupport")
 
-	return false, fmt.Errorf("GetSELinuxSupport not implemented for CSIProxyUtils")
+	return false, errors.New("GetSELinuxSupport not implemented for CSIProxyUtils")
 }
 
 func (mounter *csiProxyUtils) GetMode(ctx context.Context, pathname string) (os.FileMode, error) {
@@ -386,7 +387,7 @@ func (mounter *csiProxyUtils) GetMode(ctx context.Context, pathname string) (os.
 	Logc(ctx).Debug(">>>> csiutils.GetMode")
 	defer Logc(ctx).Debug("<<<< csiutils.GetMode")
 
-	return 0, fmt.Errorf("GetMode not implemented for CSIProxyUtils")
+	return 0, errors.New("GetMode not implemented for CSIProxyUtils")
 }
 
 func (mounter *csiProxyUtils) MountSensitive(
@@ -398,7 +399,7 @@ func (mounter *csiProxyUtils) MountSensitive(
 	Logc(ctx).Debug(">>>> csiutils.MountSensitive")
 	defer Logc(ctx).Debug("<<<< csiutils.MountSensitive")
 
-	return fmt.Errorf("MountSensitive not implemented for CSIProxyUtils")
+	return errors.New("MountSensitive not implemented for CSIProxyUtils")
 }
 
 func (mounter *csiProxyUtils) MountSensitiveWithoutSystemd(
@@ -410,7 +411,7 @@ func (mounter *csiProxyUtils) MountSensitiveWithoutSystemd(
 	Logc(ctx).Debug(">>>> csiutils.MountSensitiveWithoutSystemd")
 	defer Logc(ctx).Debug("<<<< csiutils.MountSensitiveWithoutSystemd")
 
-	return fmt.Errorf("MountSensitiveWithoutSystemd not implemented for CSIProxyUtils")
+	return errors.New("MountSensitiveWithoutSystemd not implemented for CSIProxyUtils")
 }
 
 func (mounter *csiProxyUtils) MountSensitiveWithoutSystemdWithMountFlags(

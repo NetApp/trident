@@ -784,7 +784,6 @@ func TestCreateClone_Success_ROClone(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(ctx, "trident_qtree_pool_trident_GLVRJSQGLP").Return(&flexVol, nil)
 
 	result := driver.CreateClone(ctx, srcVolConfig, volConfig, nil)
-	fmt.Println(result)
 
 	assert.NoError(t, result, "received error %v", result)
 }
@@ -876,7 +875,6 @@ func TestCreateClone_FailureNoVolInfo(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(ctx, "trident_qtree_pool_trident_GLVRJSQGLP").Return(&flexVol, mockError)
 
 	result := driver.CreateClone(ctx, srcVolConfig, volConfig, nil)
-	fmt.Println(result)
 
 	assert.Error(t, result, "expected error")
 }
@@ -3789,7 +3787,7 @@ func TestResizeFlexvol_FallbackPath_VolumeSetSizeSuccess(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 
 	// Simulate getOptimalSizeForFlexvol returning an error (simulate error in VolumeInfo)
-	mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(nil, fmt.Errorf("mock error"))
+	mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(nil, errors.New("mock error"))
 	// Expect VolumeSetSize to be called with "+" and the requested size, and succeed
 	mockAPI.EXPECT().VolumeSetSize(ctx, volName, "+"+strconv.FormatUint(resizeToInBytes, 10)).Return(nil).Times(1)
 
@@ -4308,7 +4306,7 @@ func TestNASQtreeStorageDriver_ensureDefaultExportPolicyRule_ErrorGettingRules(t
 
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	// Return an error when asked for export rules
-	mockAPI.EXPECT().ExportRuleList(gomock.Any(), fakeExportPolicy).Return(nil, fmt.Errorf("foobar"))
+	mockAPI.EXPECT().ExportRuleList(gomock.Any(), fakeExportPolicy).Return(nil, errors.New("foobar"))
 
 	qtreeDriver := newNASQtreeStorageDriver(mockAPI)
 	qtreeDriver.flexvolExportPolicy = fakeExportPolicy
@@ -4329,7 +4327,7 @@ func TestNASQtreeStorageDriver_ensureDefaultExportPolicyRule_ErrorCreatingRules(
 	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), fakeExportPolicy).Return(make(map[int]string), nil)
 	// Ensure that the default rules are created after getting an empty list of rules
 	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), rules[0], gomock.Any()).After(ruleListCall).Return(
-		fmt.Errorf("foobar"),
+		errors.New("foobar"),
 	)
 
 	qtreeDriver := newNASQtreeStorageDriver(mockAPI)
@@ -4449,7 +4447,7 @@ func TestNASQtreeStorageDriver_getQuotaDiskLimitSize_Error(t *testing.T) {
 	expectedLimit := uint64(0)
 
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
-	mockAPI.EXPECT().QuotaGetEntry(gomock.Any(), flexvolName, qtreeName, "tree").Return(nil, fmt.Errorf("error"))
+	mockAPI.EXPECT().QuotaGetEntry(gomock.Any(), flexvolName, qtreeName, "tree").Return(nil, errors.New("error"))
 	driver := newNASQtreeStorageDriver(mockAPI)
 
 	limit, err := driver.getQuotaDiskLimitSize(ctx, qtreeName, flexvolName)
@@ -5011,7 +5009,7 @@ func TestCreate_WithErrorInApiOperation(t *testing.T) {
 func TestNASQtreeStorageDriverGetBackendState(t *testing.T) {
 	mockApi, mockDriver := newMockOntapNasQtreeDriver(t)
 
-	mockApi.EXPECT().GetSVMState(ctx).Return("", fmt.Errorf("returning test error"))
+	mockApi.EXPECT().GetSVMState(ctx).Return("", errors.New("returning test error"))
 
 	reason, changeMap := mockDriver.GetBackendState(ctx)
 	assert.Equal(t, reason, StateReasonSVMUnreachable, "should be 'SVM is not reachable'")
@@ -5391,8 +5389,8 @@ func TestGetSnapshot_FailureNoSnapshotReturned(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
 		api.Snapshot{},
-		errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapConfig.InternalName,
-			snapConfig.VolumeInternalName)))
+		errors.NotFoundError("snapshot %v not found for volume %v", snapConfig.InternalName,
+			snapConfig.VolumeInternalName))
 
 	snap, err := driver.GetSnapshot(ctx, snapConfig, volConfig)
 
@@ -5985,7 +5983,7 @@ func TestOntapNasEcoUnpublish(t *testing.T) {
 			args: args{publishEnforcement: false, autoExportPolicy: true},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, qtreeName, flexVolName string) {
 				mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, gomock.Any()).
-					Return(nil, fmt.Errorf("qtree does not exist"))
+					Return(nil, errors.New("qtree does not exist"))
 			},
 			wantErr: assert.Error,
 		},
@@ -5994,7 +5992,7 @@ func TestOntapNasEcoUnpublish(t *testing.T) {
 			args: args{publishEnforcement: false, autoExportPolicy: true},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, qtreeName, flexVolName string) {
 				mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, gomock.Any()).
-					Return(nil, fmt.Errorf("some api error"))
+					Return(nil, errors.New("some api error"))
 			},
 			wantErr: assert.Error,
 		},
@@ -6004,7 +6002,7 @@ func TestOntapNasEcoUnpublish(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI, qtreeName, flexVolName string) {
 				mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, gomock.Any()).
 					Return(&api.Qtree{ExportPolicy: qtreeName, Volume: flexVolName}, nil)
-				mockAPI.EXPECT().ExportRuleList(ctx, qtreeName).Return(nil, fmt.Errorf("some api error"))
+				mockAPI.EXPECT().ExportRuleList(ctx, qtreeName).Return(nil, errors.New("some api error"))
 			},
 			wantErr: assert.Error,
 		},

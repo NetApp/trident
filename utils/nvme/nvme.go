@@ -18,6 +18,7 @@ import (
 	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/devices/luks"
+	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
@@ -149,7 +150,7 @@ func (s *NVMeSubsystem) GetNamespaceCount(ctx context.Context) (int, error) {
 	}
 
 	if !credibility {
-		return 0, fmt.Errorf("nvme paths are down, couldn't get the number of namespaces")
+		return 0, errors.New("nvme paths are down, couldn't get the number of namespaces")
 	}
 
 	count, err := s.GetNVMeDeviceCountAt(ctx, s.Name)
@@ -349,7 +350,7 @@ func (nh *NVMeHandler) NVMeMountVolume(
 			"isLUKSFormatted": luksFormatted,
 			"shouldBeLUKS":    isLUKSDevice,
 		}).Error("Device should be a LUKS device but is not LUKS formatted.")
-		return fmt.Errorf("device should be a LUKS device but is not LUKS formatted")
+		return errors.New("device should be a LUKS device but is not LUKS formatted")
 	}
 
 	// No filesystem work is required for raw block; return early.
@@ -598,7 +599,7 @@ func (nh *NVMeHandler) RemovePublishedNVMeSession(pubSessions *NVMeSessions, sub
 // is done by listing the existing NVMe namespaces using the nvme cli command.
 func (nh *NVMeHandler) PopulateCurrentNVMeSessions(ctx context.Context, currSessions *NVMeSessions) error {
 	if currSessions == nil {
-		return fmt.Errorf("current NVMeSessions not initialized")
+		return errors.New("current NVMeSessions not initialized")
 	}
 
 	// Get the list of the subsystems currently present on the k8s node.

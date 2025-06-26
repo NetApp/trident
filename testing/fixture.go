@@ -30,7 +30,7 @@ import (
 	jsonpatch "github.com/evanphx/json-patch/v5"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
-	"k8s.io/apimachinery/pkg/api/errors"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -42,6 +42,7 @@ import (
 
 	"github.com/netapp/trident/internal/crypto"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // This file is derived from k8s.io/client-go/testing/fixture.go, version 0.26.0.
@@ -206,7 +207,7 @@ func ObjectReaction(tracker ObjectTracker) clientgotesting.ReactionFunc {
 					return true, nil, err
 				}
 			default:
-				return true, nil, fmt.Errorf("PatchType is not supported")
+				return true, nil, errors.New("PatchType is not supported")
 			}
 
 			if obj, err = tracker.Update(gvr, obj, ns); err != nil {
@@ -302,7 +303,7 @@ func (t *tracker) Watch(gvr schema.GroupVersionResource, ns string) (watch.Inter
 }
 
 func (t *tracker) Get(gvr schema.GroupVersionResource, ns, name string) (runtime.Object, error) {
-	errNotFound := errors.NewNotFound(gvr.GroupResource(), name)
+	errNotFound := k8serrors.NewNotFound(gvr.GroupResource(), name)
 
 	t.lock.RLock()
 	defer t.lock.RUnlock()
@@ -325,7 +326,7 @@ func (t *tracker) Get(gvr schema.GroupVersionResource, ns, name string) (runtime
 	obj := matchingObj.DeepCopyObject()
 	if status, ok := obj.(*metav1.Status); ok {
 		if status.Status != metav1.StatusSuccess {
-			return nil, &errors.StatusError{ErrStatus: *status}
+			return nil, &k8serrors.StatusError{ErrStatus: *status}
 		}
 	}
 
@@ -440,7 +441,7 @@ func (t *tracker) add(
 	if ns != newMeta.GetNamespace() {
 		msg := fmt.Sprintf("request namespace does not match object namespace, request: %q object: %q",
 			ns, newMeta.GetNamespace())
-		return nil, errors.NewBadRequest(msg)
+		return nil, k8serrors.NewBadRequest(msg)
 	}
 
 	_, ok := t.objects[gvr]
@@ -505,14 +506,14 @@ func (t *tracker) add(
 		}
 
 		Log().WithFields(LogFields{"object": obj}).Debug("add: object already exists.")
-		return nil, errors.NewAlreadyExists(gr, newMeta.GetName())
+		return nil, k8serrors.NewAlreadyExists(gr, newMeta.GetName())
 	}
 
 	if replaceExisting {
 		Log().WithFields(LogFields{"object": obj}).Debug("add: object not found.")
 
 		// Tried to update but no matching object was found.
-		return nil, errors.NewNotFound(gr, newMeta.GetName())
+		return nil, k8serrors.NewNotFound(gr, newMeta.GetName())
 	}
 
 	// Set the creation timestamp
@@ -520,7 +521,7 @@ func (t *tracker) add(
 	if (&creationTimeStamp).IsZero() {
 		newMeta.SetCreationTimestamp(metav1.Now())
 	} else {
-		return nil, errors.NewBadRequest("new object may not contain a creation timestamp")
+		return nil, k8serrors.NewBadRequest("new object may not contain a creation timestamp")
 	}
 
 	t.objects[gvr][namespacedName] = obj
@@ -557,13 +558,13 @@ func (t *tracker) Delete(gvr schema.GroupVersionResource, ns, name string) error
 
 	objs, ok := t.objects[gvr]
 	if !ok {
-		return errors.NewNotFound(gvr.GroupResource(), name)
+		return k8serrors.NewNotFound(gvr.GroupResource(), name)
 	}
 
 	namespacedName := types.NamespacedName{Namespace: ns, Name: name}
 	obj, ok := objs[namespacedName]
 	if !ok {
-		return errors.NewNotFound(gvr.GroupResource(), name)
+		return k8serrors.NewNotFound(gvr.GroupResource(), name)
 	}
 
 	newMeta, err := meta.Accessor(obj)

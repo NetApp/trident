@@ -63,7 +63,7 @@ func (a *Apt) InstallIscsiRequirements(ctx context.Context) error {
 func (a *Apt) installPackageWithValidation(ctx context.Context, packageName string) error {
 	output, err := a.installPackage(ctx, packageName)
 	if err != nil {
-		return errors.New(fmt.Sprintf("failed to install %s package: %v", packageName, err))
+		return fmt.Errorf("failed to install %s package: %v", packageName, err)
 	}
 
 	Log().WithFields(LogFields{
@@ -82,11 +82,11 @@ func (a *Apt) installPackageWithValidation(ctx context.Context, packageName stri
 func (a *Apt) validatePackageInstall(ctx context.Context, packageName string) error {
 	output, err := a.getPackageInfo(ctx, packageName)
 	if err != nil {
-		return errors.New(fmt.Sprintf("failed to validate %s package install: %s", packageName, output))
+		return fmt.Errorf("failed to validate %s package install: %s", packageName, output)
 	}
 
 	if !strings.Contains(output, packageName) {
-		return errors.New(fmt.Sprintf("failed to install %s package : %s", packageName, output))
+		return fmt.Errorf("failed to install %s package : %s", packageName, output)
 	}
 
 	return nil

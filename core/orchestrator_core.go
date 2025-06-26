@@ -2939,7 +2939,7 @@ func (o *TridentOrchestrator) addVolumeCleanup(
 				errList = append(errList, e.Error())
 			}
 		}
-		err = fmt.Errorf(strings.Join(errList, ", "))
+		err = errors.New(strings.Join(errList, ", "))
 		Logc(ctx).Warnf(
 			"Unable to clean up artifacts of volume creation; %v. Repeat creating the volume or restart %v.",
 			err, config.OrchestratorName)
@@ -3047,7 +3047,7 @@ func (o *TridentOrchestrator) importVolumeCleanup(
 				errList = append(errList, e.Error())
 			}
 		}
-		err = fmt.Errorf(strings.Join(errList, ", "))
+		err = errors.New(strings.Join(errList, ", "))
 		Logc(ctx).Warnf("Unable to clean up artifacts of volume import: %v. Repeat importing the volume %v.",
 			err, volumeConfig.ImportOriginalName)
 	}
@@ -3284,7 +3284,7 @@ func (o *TridentOrchestrator) DeleteVolume(ctx context.Context, volumeName strin
 					errList = append(errList, e.Error())
 				}
 			}
-			err = fmt.Errorf(strings.Join(errList, ", "))
+			err = errors.New(strings.Join(errList, ", "))
 		}
 	}()
 
@@ -3370,7 +3370,7 @@ func (o *TridentOrchestrator) publishVolume(
 		if err := o.addVolumePublication(ctx, publication); err != nil || publication == nil {
 			msg := "error saving volume publication record"
 			Logc(ctx).WithError(err).Error(msg)
-			return fmt.Errorf(msg)
+			return errors.New(msg)
 		}
 	}
 
@@ -3383,7 +3383,7 @@ func (o *TridentOrchestrator) publishVolume(
 			"NewReadOnly":   publishInfo.ReadOnly,
 			"NewAccessMode": publishInfo.AccessMode,
 		}).Errorf(msg)
-		return errors.FoundError(msg)
+		return errors.FoundError("%s", msg)
 	}
 
 	publishInfo.TridentUUID = o.uuid
@@ -3450,14 +3450,14 @@ func (o *TridentOrchestrator) setPublicationsSynced(ctx context.Context, volumeP
 	if err != nil {
 		msg := "error getting Trident version object"
 		Logc(ctx).WithError(err).Error(msg)
-		return fmt.Errorf(msg)
+		return errors.New(msg)
 	}
 	version.PublicationsSynced = volumePublicationsSynced
 	err = o.storeClient.SetVersion(ctx, version)
 	if err != nil {
 		msg := "error updating Trident version object"
 		Logc(ctx).WithError(err).Error(msg)
-		return fmt.Errorf(msg)
+		return errors.New(msg)
 	}
 	// Update in-memory flag.
 	o.volumePublicationsSynced = volumePublicationsSynced
@@ -3504,7 +3504,7 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 	} else if publication == nil {
 		msg := "volumePublication is nil"
 		Logc(ctx).WithFields(fields).Errorf(msg)
-		return fmt.Errorf(msg)
+		return errors.New(msg)
 	}
 
 	// Get node attributes from the node ID
@@ -3581,7 +3581,7 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 		msg := "unable to delete volume publication record"
 		if !errors.IsNotFoundError(err) {
 			Logc(ctx).WithError(err).Error(msg)
-			return fmt.Errorf(msg)
+			return errors.New(msg)
 		}
 		Logc(ctx).WithError(err).Debugf("%s; publication not found, ignoring.", msg)
 	}
@@ -3771,17 +3771,17 @@ func (o *TridentOrchestrator) addSubordinateVolume(
 		return nil, errors.NotFoundError("source volume %s for subordinate volume %s not found",
 			volumeConfig.ShareSourceVolume, volumeConfig.Name)
 	} else if sourceVolume.Config.ImportNotManaged {
-		return nil, fmt.Errorf(fmt.Sprintf("source volume %s for subordinate volume %s is an unmanaged import",
-			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+		return nil, fmt.Errorf("source volume %s for subordinate volume %s is an unmanaged import",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name)
 	} else if sourceVolume.Config.StorageClass != volumeConfig.StorageClass {
-		return nil, fmt.Errorf(fmt.Sprintf("source volume %s for subordinate volume %s has a different storage class",
-			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+		return nil, fmt.Errorf("source volume %s for subordinate volume %s has a different storage class",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name)
 	} else if sourceVolume.Orphaned {
-		return nil, fmt.Errorf(fmt.Sprintf("source volume %s for subordinate volume %s is orphaned",
-			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+		return nil, fmt.Errorf("source volume %s for subordinate volume %s is orphaned",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name)
 	} else if sourceVolume.State != storage.VolumeStateOnline {
-		return nil, fmt.Errorf(fmt.Sprintf("source volume %s for subordinate volume %s is not online",
-			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+		return nil, fmt.Errorf("source volume %s for subordinate volume %s is not online",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name)
 	}
 
 	// Get the backend and ensure it and the source volume are NFS
@@ -3789,8 +3789,8 @@ func (o *TridentOrchestrator) addSubordinateVolume(
 		return nil, errors.NotFoundError("backend %s for source volume %s not found",
 			sourceVolume.BackendUUID, sourceVolume.Config.Name)
 	} else if backend.GetProtocol(ctx) != config.File || sourceVolume.Config.AccessInfo.NfsPath == "" {
-		return nil, fmt.Errorf(fmt.Sprintf("source volume %s for subordinate volume %s must be NFS",
-			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+		return nil, fmt.Errorf("source volume %s for subordinate volume %s must be NFS",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name)
 	}
 
 	// Ensure requested volume size is not larger than the source
@@ -3799,8 +3799,8 @@ func (o *TridentOrchestrator) addSubordinateVolume(
 		return nil, fmt.Errorf("invalid size for source volume %s", sourceVolume.Config.Name)
 	}
 	if sourceVolumeSize < volumeSize {
-		return nil, fmt.Errorf(fmt.Sprintf("source volume %s may not be smaller than subordinate volume %s",
-			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+		return nil, fmt.Errorf("source volume %s may not be smaller than subordinate volume %s",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name)
 	}
 
 	// Copy a few needed fields from the source volume
@@ -4147,10 +4147,10 @@ func (o *TridentOrchestrator) CreateGroupSnapshot(
 		v, ok := o.volumes[volumeID]
 		if !ok {
 			if _, ok = o.subordinateVolumes[volumeID]; ok {
-				return nil, errors.NotFoundError(fmt.Sprintf(
-					"creating snapshot is not allowed on subordinate volume %s", volumeID))
+				return nil, errors.NotFoundError(
+					"creating snapshot is not allowed on subordinate volume %s", volumeID)
 			}
-			return nil, errors.NotFoundError(fmt.Sprintf("source volume %s not found", volumeID))
+			return nil, errors.NotFoundError("source volume %s not found", volumeID)
 		}
 		if v.State.IsDeleting() {
 			return nil, errors.VolumeStateError(fmt.Sprintf("source volume %s is deleting", volumeID))
@@ -4160,7 +4160,7 @@ func (o *TridentOrchestrator) CreateGroupSnapshot(
 		b, ok := o.backends[v.BackendUUID]
 		if !ok {
 			// Should never get here but just to be safe
-			return nil, errors.NotFoundError(fmt.Sprintf("backend for volume %s not found", volumeID))
+			return nil, errors.NotFoundError("backend for volume %s not found", volumeID)
 		} else if !b.CanGroupSnapshot() {
 			// Pre-filter backend support for group snapshot capability.
 			// Fail fast if even a single backend cannot support group snapshot.
@@ -4457,7 +4457,7 @@ func (o *TridentOrchestrator) DeleteGroupSnapshot(ctx context.Context, groupName
 // It does not construct a transaction, nor does it take locks; it assumes that the caller will take care of both of these.
 func (o *TridentOrchestrator) deleteGroupSnapshot(ctx context.Context, groupName string) error {
 	if groupName == "" {
-		return fmt.Errorf("empty group snapshot name")
+		return errors.New("empty group snapshot name")
 	}
 
 	groupSnapshot, ok := o.groupSnapshots[groupName]
@@ -4705,7 +4705,7 @@ func (o *TridentOrchestrator) addSnapshotCleanup(
 				errList = append(errList, e.Error())
 			}
 		}
-		err = fmt.Errorf(strings.Join(errList, ", "))
+		err = errors.New(strings.Join(errList, ", "))
 		Logc(ctx).Warnf(
 			"Unable to clean up artifacts of snapshot creation: %v. Repeat creating the snapshot or restart %v.",
 			err, config.OrchestratorName)
@@ -4807,18 +4807,18 @@ func (o *TridentOrchestrator) RestoreSnapshot(ctx context.Context, volumeName, s
 
 	volume, ok := o.volumes[volumeName]
 	if !ok {
-		return errors.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
+		return errors.NotFoundError("volume %s not found", volumeName)
 	}
 
 	snapshotID := storage.MakeSnapshotID(volumeName, snapshotName)
 	snapshot, ok := o.snapshots[snapshotID]
 	if !ok {
-		return errors.NotFoundError(fmt.Sprintf("snapshot %s not found on volume %s", snapshotName, volumeName))
+		return errors.NotFoundError("snapshot %s not found on volume %s", snapshotName, volumeName)
 	}
 
 	backend, ok := o.backends[volume.BackendUUID]
 	if !ok {
-		return errors.NotFoundError(fmt.Sprintf("backend %s not found", volume.BackendUUID))
+		return errors.NotFoundError("backend %s not found", volume.BackendUUID)
 	}
 
 	logFields := LogFields{
@@ -5020,7 +5020,7 @@ func (o *TridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, sn
 					errList = append(errList, e.Error())
 				}
 			}
-			err = fmt.Errorf(strings.Join(errList, ", "))
+			err = errors.New(strings.Join(errList, ", "))
 		}
 	}()
 
@@ -5333,7 +5333,7 @@ func (o *TridentOrchestrator) resizeVolumeCleanup(
 			}
 		}
 		if len(errList) > 0 {
-			err = fmt.Errorf(strings.Join(errList, ", "))
+			err = errors.New(strings.Join(errList, ", "))
 			Logc(ctx).Warnf(
 				"Unable to clean up artifacts of volume resize: %v. Repeat resizing the volume or restart %v.",
 				err, config.OrchestratorName)

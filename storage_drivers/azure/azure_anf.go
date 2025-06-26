@@ -640,10 +640,10 @@ func (d *NASStorageDriver) initializeAzureSDKClient(
 
 			credFile, err := os.ReadFile(credFilePath)
 			if err != nil {
-				return errors.New("error reading from azure config file: " + err.Error())
+				return fmt.Errorf("error reading from azure config file: %w", err)
 			}
 			if err = json.Unmarshal(credFile, &clientConfig); err != nil {
-				return errors.New("error parsing azureAuthConfig: " + err.Error())
+				return fmt.Errorf("error parsing azureAuthConfig: %w", err)
 			}
 
 			// Set SubscriptionID and Location.
@@ -1118,7 +1118,7 @@ func (d *NASStorageDriver) Create(
 		if createErr != nil {
 			errMessage := fmt.Sprintf("ANF pool %s; error creating volume %s: %v", cPool.Name, name, createErr)
 			Logc(ctx).Error(errMessage)
-			createErrors = multierr.Combine(createErrors, fmt.Errorf(errMessage))
+			createErrors = multierr.Combine(createErrors, errors.New(errMessage))
 			continue
 		}
 

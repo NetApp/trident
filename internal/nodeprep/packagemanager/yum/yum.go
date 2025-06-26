@@ -9,7 +9,6 @@ import (
 	"time"
 
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/exec"
 )
 
@@ -63,7 +62,7 @@ func (y *Yum) InstallIscsiRequirements(ctx context.Context) error {
 func (y *Yum) installPackageWithValidation(ctx context.Context, packageName string) error {
 	output, err := y.installPackage(ctx, packageName)
 	if err != nil {
-		return errors.New(fmt.Sprintf("failed to install %s package: %v", packageName, err))
+		return fmt.Errorf("failed to install %s package: %v", packageName, err)
 	}
 
 	Log().WithFields(LogFields{
@@ -82,11 +81,11 @@ func (y *Yum) installPackageWithValidation(ctx context.Context, packageName stri
 func (y *Yum) validatePackageInstall(ctx context.Context, packageName string) error {
 	output, err := y.getPackageInfo(ctx, packageName)
 	if err != nil {
-		return errors.New(fmt.Sprintf("failed to validate %s package install: %s", packageName, err))
+		return fmt.Errorf("failed to validate %s package install: %s", packageName, err)
 	}
 
 	if !strings.Contains(output, packageName) {
-		return errors.New(fmt.Sprintf("failed to install %s package : %s", packageName, output))
+		return fmt.Errorf("failed to install %s package : %s", packageName, output)
 	}
 
 	return nil

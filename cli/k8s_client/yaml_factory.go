@@ -444,22 +444,22 @@ func getCSIDeploymentAutosupportYAML(args *DeploymentYAMLArguments) string {
 
 	autosupportProxyLine := ""
 	if args.AutosupportProxy != "" {
-		autosupportProxyLine = fmt.Sprint("- -proxy-url=", args.AutosupportProxy)
+		autosupportProxyLine = fmt.Sprintf("- -proxy-url=%s", args.AutosupportProxy)
 	}
 
 	autosupportCustomURLLine := ""
 	if args.AutosupportCustomURL != "" {
-		autosupportCustomURLLine = fmt.Sprint("- -custom-url=", args.AutosupportCustomURL)
+		autosupportCustomURLLine = fmt.Sprintf("- -custom-url=%s", args.AutosupportCustomURL)
 	}
 
 	autosupportSerialNumberLine := ""
 	if args.AutosupportSerialNumber != "" {
-		autosupportSerialNumberLine = fmt.Sprint("- -serial-number=", args.AutosupportSerialNumber)
+		autosupportSerialNumberLine = fmt.Sprintf("- -serial-number=%s", args.AutosupportSerialNumber)
 	}
 
 	autosupportHostnameLine := ""
 	if args.AutosupportHostname != "" {
-		autosupportHostnameLine = fmt.Sprint("- -hostname=", args.AutosupportHostname)
+		autosupportHostnameLine = fmt.Sprintf("- -hostname=%s", args.AutosupportHostname)
 	}
 
 	if args.Labels == nil {

@@ -54,7 +54,7 @@ func TestEnsureLUKSDeviceClosedWithMaxWaitLimit(t *testing.T) {
 		{
 			name: "FailsBeforeMaxWaitLimit",
 			mockSetup: func(mockCommand *mockexec.MockCommand) {
-				mockCryptsetupLuksClose(mockCommand).Return([]byte(""), fmt.Errorf("close error"))
+				mockCryptsetupLuksClose(mockCommand).Return([]byte(""), errors.New("close error"))
 			},
 			expectedError:   true,
 			expectedErrType: fmt.Errorf("%w", errors.New("")),
@@ -62,7 +62,7 @@ func TestEnsureLUKSDeviceClosedWithMaxWaitLimit(t *testing.T) {
 		{
 			name: "FailsWithMaxWaitExceededError",
 			mockSetup: func(mockCommand *mockexec.MockCommand) {
-				mockCryptsetupLuksClose(mockCommand).Return([]byte(""), fmt.Errorf("close error"))
+				mockCryptsetupLuksClose(mockCommand).Return([]byte(""), errors.New("close error"))
 				LuksCloseDurations[luksDevicePath] = time.Now().Add(-luksCloseMaxWaitDuration - time.Second)
 			},
 			expectedError:   true,
@@ -168,7 +168,7 @@ func TestFlushOneDevice(t *testing.T) {
 			mockSetup: func(mockCommand *mockexec.MockCommand) {
 				mockCommand.EXPECT().ExecuteWithTimeout(
 					gomock.Any(), "blockdev", deviceOperationsTimeout, true, "--flushbufs", "/dev/sda",
-				).Return([]byte(""), fmt.Errorf("flush error"))
+				).Return([]byte(""), errors.New("flush error"))
 			},
 			expectedError: true,
 		},
@@ -460,7 +460,7 @@ func TestMultipathFlushDevice(t *testing.T) {
 				volumeFlushExceptions[devicePath] = time.Now().Add(-1 * time.Hour)
 				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
 				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 5*time.Second, true,
-					"-C", "/dev/dm-0").Return([]byte("no usable paths found"), fmt.Errorf("error"))
+					"-C", "/dev/dm-0").Return([]byte("no usable paths found"), errors.New("error"))
 				return mockCommand
 			},
 			deviceInfo: &models.ScsiDeviceInfo{
@@ -474,7 +474,7 @@ func TestMultipathFlushDevice(t *testing.T) {
 				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 5*time.Second, true,
 					"-C", devicePath).Return([]byte(""), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "blockdev", 5*time.Second, true, "--flushbufs",
-					devicePath).Return([]byte(""), fmt.Errorf("error"))
+					devicePath).Return([]byte(""), errors.New("error"))
 				return mockCommand
 			},
 			deviceInfo: &models.ScsiDeviceInfo{
@@ -490,7 +490,7 @@ func TestMultipathFlushDevice(t *testing.T) {
 				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "blockdev", 5*time.Second, true, "--flushbufs",
 					devicePath).Return([]byte(""), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 10*time.Second, false, "-f",
-					devicePath).Return([]byte(""), fmt.Errorf("error"))
+					devicePath).Return([]byte(""), errors.New("error"))
 				return mockCommand
 			},
 			deviceInfo: &models.ScsiDeviceInfo{
@@ -540,7 +540,7 @@ func TestFlushDevice(t *testing.T) {
 			getMockCmd: func() exec.Command {
 				mockCmd := mockexec.NewMockCommand(gomock.NewController(t))
 				mockCmd.EXPECT().ExecuteWithTimeout(gomock.Any(), "blockdev", 5*time.Second, true, "--flushbufs",
-					DevPrefix+device).Return([]byte(""), fmt.Errorf("error"))
+					DevPrefix+device).Return([]byte(""), errors.New("error"))
 				return mockCmd
 			},
 			expectError: true,

@@ -235,7 +235,7 @@ func (c *Client) GetDeviceFSType(ctx context.Context, device string) (string, er
 			Logc(ctx).WithField("device", device).Errorf("Device is unformatted.")
 		}
 
-		return "", fmt.Errorf("unable to identify fsType")
+		return "", errors.New("unable to identify fsType")
 	}
 
 	return fsType, nil

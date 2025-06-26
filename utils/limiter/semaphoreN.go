@@ -2,6 +2,7 @@ package limiter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	. "github.com/netapp/trident/logging"
@@ -31,7 +32,7 @@ func (s *SemaphoreN) Wait(ctx context.Context) error {
 		Logc(ctx).WithField("ID", s.id).Debug("SemaphoreN lock acquired successfully.")
 		return nil
 	case <-ctx.Done():
-		return fmt.Errorf("context has been cancelled")
+		return errors.New("context has been cancelled")
 	}
 }
 

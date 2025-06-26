@@ -4,7 +4,6 @@ package ontap
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -852,7 +851,7 @@ func TestMirrorUpdate_UpdateError(t *testing.T) {
 	snapName := "snapshot-123"
 	localInternalVolumeName := "pvc_123"
 
-	mockAPI.EXPECT().SnapmirrorUpdate(ctx, localInternalVolumeName, snapName).Times(1).Return(fmt.Errorf("failed"))
+	mockAPI.EXPECT().SnapmirrorUpdate(ctx, localInternalVolumeName, snapName).Times(1).Return(errors.New("failed"))
 
 	err := mirrorUpdate(ctx, localInternalVolumeName, snapName, mockAPI)
 
@@ -941,7 +940,7 @@ func TestCheckMirrorTransferState_SnapmirrorGetError(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().Return(localSVMName)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, "", "").
-		Return(nil, fmt.Errorf("failed"))
+		Return(nil, errors.New("failed"))
 
 	endTime, err := checkMirrorTransferState(ctx, localInternalVolumeName, mockAPI)
 
@@ -1064,7 +1063,7 @@ func TestGetMirrorTransferTime_SnapmirrorGetError(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().Return(localSVMName)
 	mockAPI.EXPECT().SnapmirrorGet(ctx, localInternalVolumeName, localSVMName, "", "").
-		Return(nil, fmt.Errorf("failed"))
+		Return(nil, errors.New("failed"))
 
 	endTime, err := getMirrorTransferTime(ctx, localInternalVolumeName, mockAPI)
 

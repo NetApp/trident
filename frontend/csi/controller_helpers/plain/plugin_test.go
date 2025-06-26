@@ -120,7 +120,7 @@ func TestGetVolumeConfig(t *testing.T) {
 	}
 
 	for testName, test := range tests {
-		t.Run(fmt.Sprintf(testName+":"), func(t *testing.T) {
+		t.Run(testName+":", func(t *testing.T) {
 			if test.expected {
 				err := fmt.Errorf("error")
 				orchestrator.EXPECT().GetStorageClass(ctx, gomock.Any()).Return(nil, err)
@@ -178,7 +178,7 @@ func TestGetSnapshotConfigForCreate(t *testing.T) {
 	}
 
 	for testName, test := range tests {
-		t.Run(fmt.Sprintf(testName+":"), func(t *testing.T) {
+		t.Run(testName+":", func(t *testing.T) {
 			expected := &storage.SnapshotConfig{
 				Version:    config.OrchestratorAPIVersion,
 				Name:       test.snapshotName,
@@ -214,7 +214,7 @@ func TestGetSnapshotConfigForImport(t *testing.T) {
 	}
 
 	for testName, test := range tests {
-		t.Run(fmt.Sprintf(testName+":"), func(t *testing.T) {
+		t.Run(testName+":", func(t *testing.T) {
 			expected := &storage.SnapshotConfig{
 				Version:    config.OrchestratorAPIVersion,
 				Name:       test.snapshotName,

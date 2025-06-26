@@ -214,7 +214,7 @@ func getVolumeProtocolFromPublishInfo(publishInfo *models.VolumePublishInfo) (co
 	errMsg := "unable to infer volume protocol"
 	Logc(context.Background()).WithFields(fields).Error(FormatMessageForLog(errMsg))
 
-	return "", fmt.Errorf(errMsg)
+	return "", errors.New(errMsg)
 }
 
 // performProtocolSpecificReconciliation checks the protocol-specific conditions that signify whether a volume exists.

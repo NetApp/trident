@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"testing"
 	"time"
 
@@ -47,7 +47,7 @@ func TestGetHostNQN(t *testing.T) {
 	// Test2: Error - Unable to get Host NQN
 	expectedNqn = ""
 	mockCommand.EXPECT().Execute(ctx, "cat", "/etc/nvme/hostnqn").Return([]byte("fakeNQN"),
-		fmt.Errorf("Error getting host NQN"))
+		errors.New("Error getting host NQN"))
 
 	gotNqn, err = handler.GetHostNqn(ctx)
 
@@ -75,7 +75,7 @@ func TestNVMeActiveOnHost(t *testing.T) {
 	// Test2: Error - NVMe cli is not installed on host
 	expectedValue = false
 	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
-		false, "version").Return([]byte(""), fmt.Errorf("NVMe CLI not installed"))
+		false, "version").Return([]byte(""), errors.New("NVMe CLI not installed"))
 
 	gotValue, err = handler.NVMeActiveOnHost(ctx)
 
@@ -87,7 +87,7 @@ func TestNVMeActiveOnHost(t *testing.T) {
 	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
 		false, "version").Return([]byte(""), nil)
 	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "lsmod", NVMeListCmdTimeoutInSeconds*time.Second,
-		false).Return([]byte(""), fmt.Errorf("error getting NVMe driver info"))
+		false).Return([]byte(""), errors.New("error getting NVMe driver info"))
 
 	gotValue, err = handler.NVMeActiveOnHost(ctx)
 
@@ -137,7 +137,7 @@ func TestGetNVMeSubsystemListRHEL(t *testing.T) {
 		{},
 	}
 	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
-		false, "list-subsys", "-o", "json").Return([]byte(""), fmt.Errorf("Error getting NVMe subsystems"))
+		false, "list-subsys", "-o", "json").Return([]byte(""), errors.New("Error getting NVMe subsystems"))
 
 	_, err = GetNVMeSubsystemList(ctx, mockCommand)
 
@@ -216,7 +216,7 @@ func TestConnectSubsystemToHost(t *testing.T) {
 
 	// Test2: Error - Unable to connect to subsystem
 	mockCommand.EXPECT().Execute(ctx, "nvme", "connect", "-t", "tcp", "-n", gomock.Any(),
-		"-a", gomock.Any(), "-s", "4420", "-l", "-1").Return([]byte(""), fmt.Errorf("Error connecting to subsystem"))
+		"-a", gomock.Any(), "-s", "4420", "-l", "-1").Return([]byte(""), errors.New("Error connecting to subsystem"))
 	err = subsystem.ConnectSubsystemToHost(ctx, "fakeDataLif")
 
 	assert.Error(t, err)
@@ -237,7 +237,7 @@ func TestDisconnectSubsystemFromHost(t *testing.T) {
 
 	// Test2: Error - Unable to disconnect from subsystem
 	mockCommand.EXPECT().Execute(ctx, "nvme", "disconnect",
-		"-n", gomock.Any()).Return([]byte(""), fmt.Errorf("Error disconnecting subsytem"))
+		"-n", gomock.Any()).Return([]byte(""), errors.New("Error disconnecting subsytem"))
 
 	err = subsystem.Disconnect(ctx)
 
@@ -262,7 +262,7 @@ func TestGetNamespaceCountForSubsDevice(t *testing.T) {
 	// Test2: Error - Unable to get namespace count
 	expectedCount = 0
 	mockCommand.EXPECT().ExecuteWithTimeout(ctx, "nvme", NVMeListCmdTimeoutInSeconds*time.Second,
-		false, "list-ns", gomock.Any()).Return([]byte(""), fmt.Errorf("Error getting namespace count"))
+		false, "list-ns", gomock.Any()).Return([]byte(""), errors.New("Error getting namespace count"))
 
 	gotCount, err = subsys.GetNamespaceCountForSubsDevice(ctx)
 
@@ -304,7 +304,7 @@ func TestFlushNVMeDevice(t *testing.T) {
 			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
 				mockCmd := mockexec.NewMockCommand(ctrl)
 				mockCmd.EXPECT().Execute(context.Background(), "nvme", "flush", gomock.Any()).Return([]byte(""),
-					fmt.Errorf("Error flushing NVMe device"))
+					errors.New("Error flushing NVMe device"))
 				return mockCmd
 			},
 			expectErr: true,
@@ -323,7 +323,7 @@ func TestFlushNVMeDevice(t *testing.T) {
 			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
 				mockCmd := mockexec.NewMockCommand(ctrl)
 				mockCmd.EXPECT().Execute(context.Background(), "nvme", "flush", gomock.Any()).Return([]byte(""),
-					fmt.Errorf("Error flushing NVMe device"))
+					errors.New("Error flushing NVMe device"))
 				return mockCmd
 			},
 			expectErr: false,
@@ -634,7 +634,7 @@ func TestNVMeMountVolume(t *testing.T) {
 			getMockDevices: func(ctrl *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(ctrl)
 				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/mock-device").Return("", nil)
-				mockDevices.EXPECT().IsDeviceUnformatted(gomock.Any(), "/dev/mock-device").Return(true, fmt.Errorf("error"))
+				mockDevices.EXPECT().IsDeviceUnformatted(gomock.Any(), "/dev/mock-device").Return(true, errors.New("error"))
 				return mockDevices
 			},
 			getMockMount: func(ctrl *gomock.Controller) mount.Mount {
@@ -736,7 +736,7 @@ func TestNVMeMountVolume(t *testing.T) {
 				mockMount := mock_mount.NewMockMount(ctrl)
 				mockMount.EXPECT().IsMounted(gomock.Any(), "/dev/mock-device", "", "").Return(true, nil)
 				mockMount.EXPECT().MountDevice(gomock.Any(), "/dev/mock-device", "/mock/mountpoint", "",
-					false).Return(fmt.Errorf("error"))
+					false).Return(errors.New("error"))
 				return mockMount
 			},
 			getFsClient: func(ctrl *gomock.Controller) filesystem.Filesystem {
@@ -796,7 +796,7 @@ func TestConnect(t *testing.T) {
 			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
 				mockCommand := mockexec.NewMockCommand(ctrl)
 				mockCommand.EXPECT().Execute(gomock.Any(), "nvme", "connect", "-t", "tcp", "-n", mockNqn,
-					"-a", "1.2.3.4", "-s", "4420", "-l", "-1").Return([]byte{}, fmt.Errorf("error"))
+					"-a", "1.2.3.4", "-s", "4420", "-l", "-1").Return([]byte{}, errors.New("error"))
 				return mockCommand
 			},
 			getFs: func() (afero.Fs, error) {
@@ -845,7 +845,7 @@ func TestConnect(t *testing.T) {
 			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
 				mockCommand := mockexec.NewMockCommand(ctrl)
 				mockCommand.EXPECT().Execute(gomock.Any(), "nvme", "connect", "-t", "tcp", "-n", mockNqn,
-					"-a", "10.193.108.74", "-s", "4420", "-l", "-1").Return([]byte{}, fmt.Errorf("error"))
+					"-a", "10.193.108.74", "-s", "4420", "-l", "-1").Return([]byte{}, errors.New("error"))
 				return mockCommand
 			},
 			getFs: func() (afero.Fs, error) {

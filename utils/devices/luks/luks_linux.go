@@ -57,7 +57,7 @@ func GetUnderlyingDevicePathForDevice(ctx context.Context, command execCmd.Comma
 	if err != nil {
 		return "", err
 	} else if !strings.Contains(output, "device:") {
-		return "", fmt.Errorf("cryptsetup status command output does not contain a device entry")
+		return "", errors.New("cryptsetup status command output does not contain a device entry")
 	}
 
 	var devicePath string
@@ -90,7 +90,7 @@ func (d *LUKSDevice) format(ctx context.Context, luksPassphrase string) error {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
 	if d.RawDevicePath() == "" {
-		return fmt.Errorf("no device path for LUKS device")
+		return errors.New("no device path for LUKS device")
 	}
 	device := d.RawDevicePath()
 
@@ -133,7 +133,7 @@ func (d *LUKSDevice) formatUnformattedDevice(ctx context.Context, luksPassphrase
 	if unformatted, err := d.devices.IsDeviceUnformatted(ctx, d.RawDevicePath()); err != nil {
 		return fmt.Errorf("failed to check if device is unformatted; %w", err)
 	} else if !unformatted {
-		return fmt.Errorf("cannot LUKS format device; device is not empty")
+		return errors.New("cannot LUKS format device; device is not empty")
 	}
 
 	// Attempt LUKS format.
@@ -154,7 +154,7 @@ func (d *LUKSDevice) formatUnformattedDevice(ctx context.Context, luksPassphrase
 	if luksFormatted, err := d.IsLUKSFormatted(ctx); err != nil {
 		return fmt.Errorf("failed to check if device is LUKS formatted; %w", err)
 	} else if !luksFormatted {
-		return fmt.Errorf("device is not LUKS formatted")
+		return errors.New("device is not LUKS formatted")
 	}
 
 	Logc(ctx).WithFields(fields).Debug("Device is LUKS formatted.")
@@ -166,7 +166,7 @@ func (d *LUKSDevice) IsLUKSFormatted(ctx context.Context) (bool, error) {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
 	if d.RawDevicePath() == "" {
-		return false, fmt.Errorf("no device path for LUKS device")
+		return false, errors.New("no device path for LUKS device")
 	}
 	device := d.RawDevicePath()
 
@@ -217,7 +217,7 @@ func (d *LUKSDevice) Open(ctx context.Context, luksPassphrase string) error {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
 	if d.RawDevicePath() == "" {
-		return fmt.Errorf("no device path for LUKS device")
+		return errors.New("no device path for LUKS device")
 	}
 	device := d.RawDevicePath()
 	luksDeviceName := d.MappedDeviceName()
@@ -294,7 +294,7 @@ func (d *LUKSDevice) RotatePassphrase(
 	ctx context.Context, volumeId, previousLUKSPassphrase, luksPassphrase string,
 ) error {
 	if d.RawDevicePath() == "" {
-		return fmt.Errorf("no device path for LUKS device")
+		return errors.New("no device path for LUKS device")
 	}
 	Logc(ctx).WithFields(LogFields{
 		"volume":           volumeId,
@@ -304,10 +304,10 @@ func (d *LUKSDevice) RotatePassphrase(
 
 	// make sure the new passphrase is valid
 	if previousLUKSPassphrase == "" {
-		return fmt.Errorf("previous LUKS passphrase is empty")
+		return errors.New("previous LUKS passphrase is empty")
 	}
 	if luksPassphrase == "" {
-		return fmt.Errorf("new LUKS passphrase is empty")
+		return errors.New("new LUKS passphrase is empty")
 	}
 
 	// Write the old passphrase to an anonymous file in memory because we can't provide it on stdin

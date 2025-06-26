@@ -3632,7 +3632,7 @@ func TestClient_handleInvalidSerials(t *testing.T) {
 			},
 			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().GetLunSerial(context.TODO(), devicePath).Return("", fmt.Errorf("mock error"))
+				mockDevices.EXPECT().GetLunSerial(context.TODO(), devicePath).Return("", errors.New("mock error"))
 				return mockDevices
 			},
 			assertError: assert.Error,
@@ -5011,7 +5011,7 @@ func TestLogout(t *testing.T) {
 			getMockCommand: func(controller *gomock.Controller) tridentexec.Command {
 				mockCommand := mockexec.NewMockCommand(controller)
 				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m", "node", "-T", gomock.Any(), "--portal",
-					gomock.Any(), "-u").Return(nil, fmt.Errorf("error"))
+					gomock.Any(), "-u").Return(nil, errors.New("error"))
 				return mockCommand
 			},
 			expectError: false,
@@ -5096,7 +5096,7 @@ func TestPrepareDeviceForRemoval(t *testing.T) {
 			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any()).Return(true, fmt.Errorf("error"))
+					gomock.Any()).Return(true, errors.New("error"))
 				return mockDevices
 			},
 			deviceInfo: &models.ScsiDeviceInfo{
@@ -5170,7 +5170,7 @@ func TestRemoveSCSIDevice(t *testing.T) {
 			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().ListAllDevices(gomock.Any())
-				mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
+				mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any()).Return(errors.New("error"))
 				return mockDevices
 			},
 			deviceInfo: &models.ScsiDeviceInfo{
@@ -5186,7 +5186,7 @@ func TestRemoveSCSIDevice(t *testing.T) {
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().ListAllDevices(gomock.Any())
 				mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any()).Return(nil)
-				mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
+				mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("error"))
 				return mockDevices
 			},
 			deviceInfo: &models.ScsiDeviceInfo{
@@ -5203,7 +5203,7 @@ func TestRemoveSCSIDevice(t *testing.T) {
 				mockDevices.EXPECT().ListAllDevices(gomock.Any())
 				mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any())
 				mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				mockDevices.EXPECT().RemoveDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
+				mockDevices.EXPECT().RemoveDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("error"))
 				return mockDevices
 			},
 			deviceInfo: &models.ScsiDeviceInfo{
@@ -5222,7 +5222,7 @@ func TestRemoveSCSIDevice(t *testing.T) {
 				mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockDevices.EXPECT().RemoveDevice(gomock.Any(), gomock.Any(), gomock.Any())
 				mockDevices.EXPECT().WaitForDevicesRemoval(gomock.Any(), DevPrefix, gomock.Any(),
-					devicesRemovalMaxWaitTime).Return(fmt.Errorf("error"))
+					devicesRemovalMaxWaitTime).Return(errors.New("error"))
 				return mockDevices
 			},
 			deviceInfo: &models.ScsiDeviceInfo{
@@ -6559,7 +6559,7 @@ func TestGetInitiatorIqns(t *testing.T) {
 			expectedError: false,
 		},
 		"File does not exist": {
-			commandError:  fmt.Errorf("file not found"),
+			commandError:  errors.New("file not found"),
 			expectedIQNs:  nil,
 			expectedError: true,
 		},

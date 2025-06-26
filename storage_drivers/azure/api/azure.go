@@ -281,7 +281,7 @@ func GetAzureCredential(config ClientConfig) (credential azcore.TokenCredential,
 
 	authProvider, err := azclient.NewAuthProvider(&armConfig, &config.AzureAuthConfig)
 	if err != nil {
-		return nil, errors.New("error creating azure auth provider: " + err.Error())
+		return nil, fmt.Errorf("error creating azure auth provider: %w", err)
 	}
 
 	return authProvider.GetAzIdentity(), nil

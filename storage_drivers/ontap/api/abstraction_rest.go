@@ -1290,7 +1290,7 @@ func (d OntapAPIREST) QtreeListByPrefix(ctx context.Context, prefix, volumePrefi
 	if err != nil {
 		msg := fmt.Sprintf("Error listing qtrees; %v", err)
 		Logc(ctx).Errorf(msg)
-		return nil, fmt.Errorf(msg)
+		return nil, errors.New(msg)
 	}
 	qtrees := Qtrees{}
 	for _, qtree := range qtreeList.GetPayload().QtreeResponseInlineRecords {
@@ -1330,7 +1330,7 @@ func (d OntapAPIREST) QtreeGetByName(ctx context.Context, name, volumePrefix str
 	if err != nil {
 		msg := "error getting qtree"
 		Logc(ctx).WithError(err).Errorf(msg)
-		return nil, fmt.Errorf(msg)
+		return nil, errors.New(msg)
 	}
 	return d.convertQtree(qtree), nil
 }
@@ -1581,10 +1581,10 @@ func (d OntapAPIREST) VolumeSnapshotInfo(ctx context.Context, snapshotName, sour
 		return emptyResult, fmt.Errorf("error getting snapshot %v for volume %v: %v", snapshotName, sourceVolume, err)
 	}
 	if snapListResponse == nil || snapListResponse.Payload == nil || snapListResponse.Payload.SnapshotResponseInlineRecords == nil {
-		return emptyResult, errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapshotName, sourceVolume))
+		return emptyResult, errors.NotFoundError("snapshot %v not found for volume %v", snapshotName, sourceVolume)
 	}
 	if len(snapListResponse.Payload.SnapshotResponseInlineRecords) == 0 {
-		return emptyResult, errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapshotName, sourceVolume))
+		return emptyResult, errors.NotFoundError("snapshot %v not found for volume %v", snapshotName, sourceVolume)
 	}
 
 	if len(snapListResponse.Payload.SnapshotResponseInlineRecords) > 1 {
@@ -2043,7 +2043,7 @@ func (d OntapAPIREST) SnapmirrorUpdate(ctx context.Context, localInternalVolumeN
 	err := d.api.SnapmirrorUpdate(ctx, localInternalVolumeName, snapshotName)
 	if err != nil {
 		if restErr, err := ExtractErrorResponse(ctx, err); err == nil {
-			return fmt.Errorf(*restErr.Error.Message)
+			return errors.New(*restErr.Error.Message)
 		}
 		return err
 	}
@@ -2507,7 +2507,7 @@ func (d OntapAPIREST) LunUnmap(ctx context.Context, initiatorGroupName, lunPath 
 	if err != nil {
 		msg := "error unmapping LUN"
 		Logc(ctx).WithError(err).Error(msg)
-		return fmt.Errorf(msg)
+		return errors.New(msg)
 	}
 	return nil
 }
@@ -3537,10 +3537,10 @@ func (d OntapAPIREST) StorageUnitSnapshotInfo(
 		return nil, fmt.Errorf("error getting snapshot %v for volume %v: %w", snapshotName, suName, err)
 	}
 	if snapListResponse == nil || snapListResponse.Payload == nil || snapListResponse.Payload.StorageUnitSnapshotResponseInlineRecords == nil {
-		return nil, errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapshotName, suName))
+		return nil, errors.NotFoundError("snapshot %v not found for volume %v", snapshotName, suName)
 	}
 	if len(snapListResponse.Payload.StorageUnitSnapshotResponseInlineRecords) == 0 {
-		return nil, errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapshotName, suName))
+		return nil, errors.NotFoundError("snapshot %v not found for volume %v", snapshotName, suName)
 	}
 
 	if len(snapListResponse.Payload.StorageUnitSnapshotResponseInlineRecords) > 1 {

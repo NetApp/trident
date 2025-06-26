@@ -803,7 +803,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_StoragePoolFailed(t *testing.T
 				var aggrList []string
 				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(aggrList, nil)
 			} else {
-				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(nil, fmt.Errorf(test.err))
+				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(nil, errors.New(test.err))
 			}
 			mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
 			result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
@@ -867,7 +867,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_ValidationFailed(t *testing.T)
 					map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 				)
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").Return(nil,
-					fmt.Errorf("failed to get data LIFs")) // failed to get network interface
+					errors.New("failed to get data LIFs")) // failed to get network interface
 
 				result := driver.Initialize(ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
 
@@ -920,7 +920,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_GetSVMAggregateNamesFailed(t *
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 	)
-	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return(nil, fmt.Errorf("no aggregates found"))
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return(nil, errors.New("no aggregates found"))
 	result := driver.Initialize(ctx, "CSI", string(configJSON), commonConfig, secrets, BackendUUID)
 	assert.Error(t, result, "FlexGroup driver initialization succeeded even with no aggregates present on SVM")
 	assert.Contains(t, result.Error(), "no aggregates found")
@@ -970,7 +970,7 @@ func TestOntapNasFlexgroupStorageDriverTerminate(t *testing.T) {
 		err  error
 	}{
 		{"TerminateSuccess", nil},
-		{"TerminateFailed", fmt.Errorf("policy not found")},
+		{"TerminateFailed", errors.New("policy not found")},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -1001,7 +1001,7 @@ func TestOntapNasFlexgroupStorageDriverTerminate_TelemetryFailure(t *testing.T) 
 	driver.initialized = true
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().ExportPolicyDestroy(ctx, "trident-dummy").Return(fmt.Errorf("policy not found"))
+	mockAPI.EXPECT().ExportPolicyDestroy(ctx, "trident-dummy").Return(errors.New("policy not found"))
 
 	driver.Terminate(ctx, "dummy")
 
@@ -1098,7 +1098,7 @@ func TestNASFlexGroupStorageDriverGetBackendState(t *testing.T) {
 
 	// set fake values
 	mockDriver.physicalPool = storage.NewStoragePool(nil, "pool1")
-	mockApi.EXPECT().GetSVMState(ctx).Return("", fmt.Errorf("returning test error"))
+	mockApi.EXPECT().GetSVMState(ctx).Return("", errors.New("returning test error"))
 
 	reason, changeMap := mockDriver.GetBackendState(ctx)
 	assert.Equal(t, reason, StateReasonSVMUnreachable, "should be 'SVM is not reachable'")
@@ -1137,7 +1137,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_Failure(t *testing.T) {
 
 	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
-	mockAPI.EXPECT().FlexgroupCreate(ctx, gomock.Any()).AnyTimes().Return(fmt.Errorf("volume creation failed"))
+	mockAPI.EXPECT().FlexgroupCreate(ctx, gomock.Any()).AnyTimes().Return(errors.New("volume creation failed"))
 
 	result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -1178,7 +1178,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_SnapshotDisabled(t *testing.
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().FlexgroupCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
 	mockAPI.EXPECT().FlexgroupModifySnapshotDirectoryAccess(ctx, "vol1", false).Return(
-		fmt.Errorf("failed to disable snapshot directory access"))
+		errors.New("failed to disable snapshot directory access"))
 
 	result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -1219,7 +1219,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_MountFailure(t *testing.T) {
 	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().FlexgroupCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
-	mockAPI.EXPECT().FlexgroupMount(ctx, "vol1", "/vol1").Return(fmt.Errorf("volume mount failed"))
+	mockAPI.EXPECT().FlexgroupMount(ctx, "vol1", "/vol1").Return(errors.New("volume mount failed"))
 
 	result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -1332,10 +1332,10 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_SMBShareCreatefail(t *testin
 
 			if test.smbShareName != "" {
 				mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
-				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/").Return(fmt.Errorf(test.errMessage))
+				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/").Return(errors.New(test.errMessage))
 			} else {
 				mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
-				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(fmt.Errorf(test.errMessage))
+				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(errors.New(test.errMessage))
 			}
 			result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -1382,7 +1382,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_FlexgroupExistsCheckFailure(
 				assert.Error(t, result, "Flexgroup volume exists")
 				assert.Contains(t, result.Error(), "volume vol1 already exists")
 			} else {
-				mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(test.flexgroupExists, fmt.Errorf(test.errMessage))
+				mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(test.flexgroupExists, errors.New(test.errMessage))
 				result := driver.Create(ctx, volConfig, pool1, volAttrs)
 
 				assert.Error(t, result, "Flexgroup volume exists")
@@ -1425,7 +1425,7 @@ func TestOntapNasStorageFlexgroupDriverVolumeCreate_GetSVMAggregateNamesFailure(
 				var aggrList []string
 				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(aggrList, nil)
 			} else {
-				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(nil, fmt.Errorf(test.errMessage))
+				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(nil, errors.New(test.errMessage))
 			}
 			driver.Config.FlexGroupAggregateList = nil
 			result := driver.Create(ctx, volConfig, pool1, volAttrs)
@@ -1800,7 +1800,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeDestroy_Fail(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
 	mockAPI.EXPECT().FlexgroupDestroy(ctx, volConfig.InternalName, true,
-		false).Return(fmt.Errorf("cannot delete volume"))
+		false).Return(errors.New("cannot delete volume"))
 
 	result := driver.Destroy(ctx, volConfig)
 
@@ -1835,7 +1835,7 @@ func TestOntapNasFlexgroupStorageDriverSMBShareDestroy_VolumeNotFound(t *testing
 			mockAPI.EXPECT().FlexgroupDestroy(ctx, volConfig.InternalName, true, false).Return(nil)
 			if test.name == "SMBShareServerError" {
 				mockAPI.EXPECT().SMBShareExists(ctx, volNameInternal).Return(false,
-					fmt.Errorf(test.errMessage))
+					errors.New(test.errMessage))
 				result := driver.Destroy(ctx, volConfig)
 				assert.Error(t, result, "SMB Share created")
 				assert.Contains(t, result.Error(), test.errMessage)
@@ -1866,7 +1866,7 @@ func TestOntapNasFlexgroupStorageDriverSMBDestroy_Fail(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
 	mockAPI.EXPECT().FlexgroupDestroy(ctx, volConfig.InternalName, true, false).Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, volNameInternal).Return(true, nil)
-	mockAPI.EXPECT().SMBShareDestroy(ctx, volNameInternal).Return(fmt.Errorf("cannot delete SMB share"))
+	mockAPI.EXPECT().SMBShareDestroy(ctx, volNameInternal).Return(errors.New("cannot delete SMB share"))
 
 	result := driver.Destroy(ctx, volConfig)
 
@@ -2087,7 +2087,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 			if test.name == "FlexgroupInfoFailed" {
-				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(nil, fmt.Errorf(test.errMessage))
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(nil, errors.New(test.errMessage))
 
 				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
 
@@ -2123,7 +2123,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
 				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 				mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true,
-					fmt.Errorf(test.errMessage))
+					errors.New(test.errMessage))
 
 				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
 
@@ -2135,7 +2135,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 				mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(false, nil)
 				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(),
-					gomock.Any()).Return(fmt.Errorf(test.errMessage))
+					gomock.Any()).Return(errors.New(test.errMessage))
 
 				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
 
@@ -2154,7 +2154,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(),
-					gomock.Any()).Return(fmt.Errorf(test.errMessage))
+					gomock.Any()).Return(errors.New(test.errMessage))
 
 				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
 
@@ -2173,7 +2173,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(),
-					gomock.Any()).Return(fmt.Errorf(test.errMessage))
+					gomock.Any()).Return(errors.New(test.errMessage))
 
 				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
 
@@ -2193,7 +2193,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 					gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().FlexgroupSetQosPolicyGroupName(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf(test.errMessage))
+				mockAPI.EXPECT().FlexgroupSetQosPolicyGroupName(ctx, gomock.Any(), gomock.Any()).Return(errors.New(test.errMessage))
 
 				cloneConfig.QosPolicy = "fake-qos-policy"
 				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
@@ -2212,7 +2212,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().FlexgroupCloneSplitStart(ctx, gomock.Any()).Return(fmt.Errorf(
+				mockAPI.EXPECT().FlexgroupCloneSplitStart(ctx, gomock.Any()).Return(errors.New(
 					test.errMessage))
 
 				cloneConfig.SplitOnClone = "true"
@@ -2294,7 +2294,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 
 			if test.name == "FlexgroupInfoFailed" {
-				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(nil, fmt.Errorf(test.errMessage))
+				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(nil, errors.New(test.errMessage))
 
 				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
 
@@ -2329,7 +2329,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 			} else if test.name == "FlexgroupVolumeExistsFailed" {
 				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(&flexgroup, nil)
 				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
-				mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, fmt.Errorf(test.errMessage))
+				mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(true, errors.New(test.errMessage))
 
 				result := driver.CreateClone(ctx, nil, cloneConfig, pool1)
 
@@ -2341,7 +2341,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 				mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 				mockAPI.EXPECT().FlexgroupExists(ctx, cloneConfig.InternalName).Return(false, nil)
 				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(),
-					gomock.Any()).Return(fmt.Errorf(test.errMessage))
+					gomock.Any()).Return(errors.New(test.errMessage))
 
 				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
 
@@ -2360,7 +2360,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(),
-					gomock.Any()).Return(fmt.Errorf(test.errMessage))
+					gomock.Any()).Return(errors.New(test.errMessage))
 
 				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
 
@@ -2379,7 +2379,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(),
-					gomock.Any()).Return(fmt.Errorf(test.errMessage))
+					gomock.Any()).Return(errors.New(test.errMessage))
 
 				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
 
@@ -2399,7 +2399,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupSetQosPolicyGroupName(ctx, gomock.Any(),
-					gomock.Any()).Return(fmt.Errorf(test.errMessage))
+					gomock.Any()).Return(errors.New(test.errMessage))
 
 				cloneConfig.QosPolicy = "fake-qos-policy"
 				result := driver.CreateClone(ctx, volConfig, cloneConfig, pool1)
@@ -2418,7 +2418,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 				mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().FlexgroupCloneSplitStart(ctx, gomock.Any()).Return(fmt.Errorf(
+				mockAPI.EXPECT().FlexgroupCloneSplitStart(ctx, gomock.Any()).Return(errors.New(
 					test.errMessage))
 
 				cloneConfig.SplitOnClone = "true"
@@ -2709,7 +2709,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateFail(t *testing.T) {
 	mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 	mockAPI.EXPECT().FlexgroupExists(ctx, "").Return(false, nil)
 	mockAPI.EXPECT().VolumeCloneCreate(ctx, volConfig.InternalName, volConfig.CloneSourceVolumeInternal,
-		volConfig.CloneSourceSnapshotInternal, true).Return(fmt.Errorf("create clone fail"))
+		volConfig.CloneSourceSnapshotInternal, true).Return(errors.New("create clone fail"))
 
 	result := driver.CreateClone(ctx, nil, volConfig, pool1)
 
@@ -2760,7 +2760,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_SMBShareCreateFail(t *testing
 	mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(), gomock.Any()).Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, volConfig.InternalName).Return(false, nil)
 	mockAPI.EXPECT().SMBShareCreate(ctx, volConfig.InternalName, "/"+volConfig.InternalName).Return(
-		fmt.Errorf("cannot create volume"))
+		errors.New("cannot create volume"))
 
 	result := driver.CreateClone(ctx, nil, volConfig, pool1)
 
@@ -2967,7 +2967,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeImport_ModifyComment(t *testing.T) 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().FlexgroupInfo(ctx, gomock.Any()).Return(flexgroup, nil)
 	mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(
-		fmt.Errorf("error modifying comment"))
+		errors.New("error modifying comment"))
 
 	result := driver.Import(ctx, volConfig, "vol1")
 
@@ -3009,7 +3009,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeImport_UnixPermissions(t *testing.T
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 			mockAPI.EXPECT().FlexgroupInfo(ctx, gomock.Any()).Return(flexgroup, nil)
 			mockAPI.EXPECT().FlexgroupModifyUnixPermissions(ctx, gomock.Any(),
-				gomock.Any(), "").Return(fmt.Errorf("error modifying unix permissions"))
+				gomock.Any(), "").Return(errors.New("error modifying unix permissions"))
 
 			result := driver.Import(ctx, volConfig, "vol1")
 			assert.Error(t, result, "Flexgroup imported even with backend failed to modify unix permissions")
@@ -3040,7 +3040,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeImport_SMBShareCreateFail(t *testin
 	mockAPI.EXPECT().FlexgroupModifyUnixPermissions(ctx, gomock.Any(),
 		gomock.Any(), DefaultUnixPermissions).Return(nil)
 	mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
-	mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(fmt.Errorf("error creating SMB share"))
+	mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(errors.New("error creating SMB share"))
 
 	result := driver.Import(ctx, volConfig, "vol1")
 	assert.Error(t, result, "Flexgroup imported even with SMB share creation failed")
@@ -3282,11 +3282,11 @@ func TestOntapNasFlexgroupStorageDriverVolumeGetSnapshot_VolumeSizeFailure(t *te
 		getVolumeSizeFailedError error
 	}{
 		{"VolumeNotFound", errors.NotFoundError("failed to get flexgroup size")},
-		{"Failed to get volume", fmt.Errorf("failed to get flexgroup size")},
+		{"Failed to get volume", errors.New("failed to get flexgroup size")},
 	}
 
 	for _, test := range tests {
-		t.Run(fmt.Sprintf(test.TestName), func(t *testing.T) {
+		t.Run(test.TestName, func(t *testing.T) {
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 			mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(0, test.getVolumeSizeFailedError)
 
@@ -3320,7 +3320,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeGetSnapshot_NoSnapshot(t *testing.T
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(1, nil)
-	mockAPI.EXPECT().FlexgroupSnapshotList(ctx, "vol1").Return(nil, fmt.Errorf("no snapshots found"))
+	mockAPI.EXPECT().FlexgroupSnapshotList(ctx, "vol1").Return(nil, errors.New("no snapshots found"))
 
 	snap, err := driver.GetSnapshot(ctx, snapConfig, volConfig)
 
@@ -3387,7 +3387,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeGetSnapshots_VolumeSizeFailure(t *t
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(0, fmt.Errorf("failed to get volume size"))
+	mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(0, errors.New("failed to get volume size"))
 
 	snap, err := driver.GetSnapshots(ctx, volConfig)
 
@@ -3406,7 +3406,7 @@ func TestConstructOntapNASFlexgroupSMBVolumePath2StorageDriverVolumeGetSnapshots
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(1, nil)
-	mockAPI.EXPECT().FlexgroupSnapshotList(ctx, "vol1").Return(nil, fmt.Errorf("no snapshots found"))
+	mockAPI.EXPECT().FlexgroupSnapshotList(ctx, "vol1").Return(nil, errors.New("no snapshots found"))
 
 	snap, err := driver.GetSnapshots(ctx, volConfig)
 
@@ -3482,7 +3482,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreateSnapshot_Failure(t *testing.T
 			if test.name == "FlexgroupExistsFailed" {
 				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 				mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false,
-					fmt.Errorf(test.message))
+					errors.New(test.message))
 
 				_, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
 				assert.Error(t, err, "Flexgroup volume exists")
@@ -3496,7 +3496,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreateSnapshot_Failure(t *testing.T
 				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 				mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(true, nil)
 				mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(1,
-					fmt.Errorf(test.message))
+					errors.New(test.message))
 
 				_, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
 				assert.Error(t, err, "CreateSnapshot FlexgroupUsedSize successfully executed")
@@ -3504,7 +3504,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreateSnapshot_Failure(t *testing.T
 				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 				mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(true, nil)
 				mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(1, nil)
-				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, "snap1", "vol1").Return(fmt.Errorf(test.message))
+				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, "snap1", "vol1").Return(errors.New(test.message))
 
 				_, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
 				assert.Error(t, err, "CreateSnapshot FlexgroupSnapshotCreate successfully executed")
@@ -3513,7 +3513,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreateSnapshot_Failure(t *testing.T
 				mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(true, nil)
 				mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(1, nil)
 				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, "snap1", "vol1").Return(nil)
-				mockAPI.EXPECT().FlexgroupSnapshotList(ctx, "vol1").Return(nil, fmt.Errorf(test.message))
+				mockAPI.EXPECT().FlexgroupSnapshotList(ctx, "vol1").Return(nil, errors.New(test.message))
 
 				_, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
 				assert.Error(t, err, "CreateSnapshot FlexgroupSnapshotList successfully executed")
@@ -3569,7 +3569,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeRestoreSnapshot_Failure(t *testing.
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().SnapshotRestoreFlexgroup(ctx, "snap1", "vol1").Return(fmt.Errorf("failed to restore volume"))
+	mockAPI.EXPECT().SnapshotRestoreFlexgroup(ctx, "snap1", "vol1").Return(errors.New("failed to restore volume"))
 
 	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
 
@@ -3641,7 +3641,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeGet(t *testing.T) {
 func TestOntapNasFlexgroupStorageDriverVolumeGet_Error(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 
-	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, fmt.Errorf("error checking for existing volume"))
+	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, errors.New("error checking for existing volume"))
 
 	result := driver.Get(ctx, "vol1")
 
@@ -3740,7 +3740,7 @@ func TestOntapNasFlexgroupStorageDriverGetVolumeExternalWrappers_Failure(t *test
 	channel := make(chan *storage.VolumeExternalWrapper, 1)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().FlexgroupListByPrefix(ctx, gomock.Any()).Return(nil, fmt.Errorf("no volume found"))
+	mockAPI.EXPECT().FlexgroupListByPrefix(ctx, gomock.Any()).Return(nil, errors.New("no volume found"))
 
 	driver.GetVolumeExternalWrappers(ctx, channel)
 
@@ -3811,7 +3811,7 @@ func TestOntapNasFlexgroupStorageDriverCreateFollowup_NASType_SMB(t *testing.T) 
 				assert.NoError(t, result)
 			} else {
 				mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
-				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(fmt.Errorf("SMB share creation failed"))
+				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(errors.New("SMB share creation failed"))
 
 				result := driver.CreateFollowup(ctx, volConfig)
 				assert.Error(t, result, "SMB Share Created")
@@ -3839,7 +3839,7 @@ func TestOntapNasFlexgroupStorageDriverCreateFollowup_VolumeInfoFailure(t *testi
 		t.Run(test.name, func(t *testing.T) {
 			if test.name == "VolumeInfoFailure" {
 				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-				mockAPI.EXPECT().FlexgroupInfo(ctx, gomock.Any()).Return(nil, fmt.Errorf("could not find volume"))
+				mockAPI.EXPECT().FlexgroupInfo(ctx, gomock.Any()).Return(nil, errors.New("could not find volume"))
 
 				result := driver.CreateFollowup(ctx, volConfig)
 
@@ -3892,13 +3892,13 @@ func TestOntapNasFlexgroupStorageDriverCreateFollowup_VolumeMountFailure(t *test
 				result := driver.CreateFollowup(ctx, volConfig)
 				assert.Error(t, result, "Flexgroup volume mounted")
 			} else if test.name == "MountNFSVolumeFailed" {
-				mockAPI.EXPECT().FlexgroupMount(ctx, "vol1", "/vol1").Return(fmt.Errorf(test.message))
+				mockAPI.EXPECT().FlexgroupMount(ctx, "vol1", "/vol1").Return(errors.New(test.message))
 
 				result := driver.CreateFollowup(ctx, volConfig)
 				assert.Error(t, result, "Flexgroup volume mounted")
 			} else if test.name == "MountSMBVolumeFailed" {
 				driver.Config.NASType = sa.SMB
-				mockAPI.EXPECT().FlexgroupMount(ctx, "vol1", "/vol1").Return(fmt.Errorf(test.message))
+				mockAPI.EXPECT().FlexgroupMount(ctx, "vol1", "/vol1").Return(errors.New(test.message))
 
 				result := driver.CreateFollowup(ctx, volConfig)
 				assert.Error(t, result, "Flexgroup volume mounted")
@@ -4146,7 +4146,7 @@ func TestOntapNasFlexgroupStorageDriverResize_NoVolumeInfo(t *testing.T) {
 
 	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(true, nil)
 	mockAPI.EXPECT().FlexgroupSize(ctx, "vol1").Return(uint64(429496729600), nil)
-	mockAPI.EXPECT().FlexgroupInfo(ctx, "vol1").Return(nil, fmt.Errorf("error fetching volume info"))
+	mockAPI.EXPECT().FlexgroupInfo(ctx, "vol1").Return(nil, errors.New("error fetching volume info"))
 	mockAPI.EXPECT().FlexgroupSetSize(ctx, "vol1", "536870912000").Return(nil)
 
 	result := driver.Resize(ctx, volConfig, 536870912000) // 500GB
@@ -4227,7 +4227,7 @@ func TestOntapNasFlexgroupStorageDriverResize_Failure(t *testing.T) {
 	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(true, nil)
 	mockAPI.EXPECT().FlexgroupSize(ctx, "vol1").Return(uint64(429496729600), nil)
 	mockAPI.EXPECT().FlexgroupInfo(ctx, "vol1").Return(&flexgroup, nil)
-	mockAPI.EXPECT().FlexgroupSetSize(ctx, "vol1", "536870912000").Return(fmt.Errorf("cannot resize to specified size"))
+	mockAPI.EXPECT().FlexgroupSetSize(ctx, "vol1", "536870912000").Return(errors.New("cannot resize to specified size"))
 
 	result := driver.Resize(ctx, volConfig, 536870912000) // 500GB
 
@@ -4277,7 +4277,7 @@ func TestOntapNasFlexgroupStorageDriverGetVolumeForImport_Failure(t *testing.T) 
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
-	mockAPI.EXPECT().FlexgroupInfo(ctx, "vol1").Return(nil, fmt.Errorf("error fetching volume info"))
+	mockAPI.EXPECT().FlexgroupInfo(ctx, "vol1").Return(nil, errors.New("error fetching volume info"))
 
 	volExt, err := driver.GetVolumeForImport(ctx, "vol1")
 
@@ -4367,12 +4367,12 @@ func TestOntapNasFlexgroupStorageDriverEnsureSMBShare(t *testing.T) {
 				assert.NoError(t, result, "")
 			} else if test.name == "SMBShareCreateWithGivenName_Failed" {
 				mockAPI.EXPECT().SMBShareExists(ctx, "smbShare").Return(false, nil)
-				mockAPI.EXPECT().SMBShareCreate(ctx, "smbShare", "/").Return(fmt.Errorf(test.errMessage))
+				mockAPI.EXPECT().SMBShareCreate(ctx, "smbShare", "/").Return(errors.New(test.errMessage))
 
 				result := driver.EnsureSMBShare(ctx, driver.Config.SMBShare, "/"+driver.Config.SMBShare)
 				assert.Error(t, result, "SMB share created")
 			} else if test.name == "SMBShareCreateWithGivenName_shareExists" {
-				mockAPI.EXPECT().SMBShareExists(ctx, "smbShare").Return(false, fmt.Errorf(test.errMessage))
+				mockAPI.EXPECT().SMBShareExists(ctx, "smbShare").Return(false, errors.New(test.errMessage))
 
 				result := driver.EnsureSMBShare(ctx, driver.Config.SMBShare, "/"+driver.Config.SMBShare)
 				assert.Error(t, result, "SMB share exists")
@@ -4386,13 +4386,13 @@ func TestOntapNasFlexgroupStorageDriverEnsureSMBShare(t *testing.T) {
 			} else if test.name == "SMBShareCreateWithVolumeName_Failed" {
 				driver.Config.SMBShare = ""
 				mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
-				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(fmt.Errorf(test.errMessage))
+				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(errors.New(test.errMessage))
 
 				result := driver.EnsureSMBShare(ctx, "vol1", "/vol1")
 				assert.Error(t, result, "SMB share created")
 			} else if test.name == "SMBShareCreateWithVolumeName_shareExists" {
 				driver.Config.SMBShare = ""
-				mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, fmt.Errorf(test.errMessage))
+				mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, errors.New(test.errMessage))
 
 				result := driver.EnsureSMBShare(ctx, "vol1", "/vol1")
 				assert.Error(t, result, "SMB share exists")
@@ -4422,7 +4422,7 @@ func TestOntapNasFlexgroupGetVserverAggrMediaType(t *testing.T) {
 				assert.NoError(t, err)
 			} else if test.name == "GetSVMAggregateAttributes_Failed" {
 				mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).Return(
-					nil, fmt.Errorf(test.errMessage))
+					nil, errors.New(test.errMessage))
 
 				_, err := driver.getVserverAggrMediaType(ctx, []string{"aggr2"})
 				assert.Error(t, err, "Get the SVM aggregate")
@@ -4469,7 +4469,7 @@ func TestPublishShare(t *testing.T) {
 	ruleList["0.0.0.1/0"] = 0
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(false, nil)
-	mockAPI.EXPECT().ExportPolicyCreate(ctx, policyName).Return(fmt.Errorf("Error Creating Policy"))
+	mockAPI.EXPECT().ExportPolicyCreate(ctx, policyName).Return(errors.New("Error Creating Policy"))
 
 	err = publishFlexgroupShare(ctx, mockAPI, config, publishInfo, volumeName, MockModifyVolumeExportPolicy)
 

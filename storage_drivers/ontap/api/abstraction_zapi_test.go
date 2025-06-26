@@ -3,7 +3,6 @@
 package api_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -32,7 +31,7 @@ func TestOntapAPIZAPI_LunGetFSType(t *testing.T) {
 
 	// When value is present in LUN comment
 	mock.EXPECT().LunGetAttribute(ctx, "/vol/volumeName/storagePrefix_lunName",
-		"com.netapp.ndvp.fstype").Return("", fmt.Errorf("not able to find fstype attribute"))
+		"com.netapp.ndvp.fstype").Return("", errors.New("not able to find fstype attribute"))
 	commentJSON := `
 	{
 	    "lunAttributes": {
@@ -56,9 +55,9 @@ func TestOntapAPIZAPI_LunGetFSType_Failure(t *testing.T) {
 
 	// Case 1: LunGetComment fails
 	mock.EXPECT().LunGetAttribute(ctx, "/vol/volumeName/storagePrefix_lunName",
-		"com.netapp.ndvp.fstype").Return("", fmt.Errorf("not able to find fstype attribute"))
+		"com.netapp.ndvp.fstype").Return("", errors.New("not able to find fstype attribute"))
 	mock.EXPECT().LunGetComment(ctx,
-		"/vol/volumeName/storagePrefix_lunName").Return("", fmt.Errorf("failed to get LUN comment"))
+		"/vol/volumeName/storagePrefix_lunName").Return("", errors.New("failed to get LUN comment"))
 	fstype, err := oapi.LunGetFSType(ctx, "/vol/volumeName/storagePrefix_lunName")
 	assert.Empty(t, fstype)
 	assert.Error(t, err)
@@ -70,7 +69,7 @@ func TestOntapAPIZAPI_LunGetFSType_Failure(t *testing.T) {
 	        "fstype": "ext4"
 	}`
 	mock.EXPECT().LunGetAttribute(ctx, "/vol/volumeName/storagePrefix_lunName",
-		"com.netapp.ndvp.fstype").Return("", fmt.Errorf("not able to find fstype attribute"))
+		"com.netapp.ndvp.fstype").Return("", errors.New("not able to find fstype attribute"))
 	mock.EXPECT().LunGetComment(ctx,
 		"/vol/volumeName/storagePrefix_lunName").Return(invalidJSON, nil)
 	fstype, err = oapi.LunGetFSType(ctx, "/vol/volumeName/storagePrefix_lunName")
@@ -85,7 +84,7 @@ func TestOntapAPIZAPI_LunGetFSType_Failure(t *testing.T) {
 	    }
 	}`
 	mock.EXPECT().LunGetAttribute(ctx, "/vol/volumeName/storagePrefix_lunName",
-		"com.netapp.ndvp.fstype").Return("", fmt.Errorf("not able to find fstype attribute"))
+		"com.netapp.ndvp.fstype").Return("", errors.New("not able to find fstype attribute"))
 	mock.EXPECT().LunGetComment(ctx,
 		"/vol/volumeName/storagePrefix_lunName").Return(commentJSON, nil)
 	fstype, err = oapi.LunGetFSType(ctx, "/vol/volumeName/storagePrefix_lunName")
@@ -100,7 +99,7 @@ func TestOntapAPIZAPI_LunGetFSType_Failure(t *testing.T) {
 	    }
 	}`
 	mock.EXPECT().LunGetAttribute(ctx, "/vol/volumeName/storagePrefix_lunName",
-		"com.netapp.ndvp.fstype").Return("", fmt.Errorf("not able to find fstype attribute"))
+		"com.netapp.ndvp.fstype").Return("", errors.New("not able to find fstype attribute"))
 	mock.EXPECT().LunGetComment(ctx,
 		"/vol/volumeName/storagePrefix_lunName").Return(invalidCommentJSON, nil)
 	fstype, err = oapi.LunGetFSType(ctx, "/vol/volumeName/storagePrefix_lunName")
@@ -129,7 +128,7 @@ func TestLunSetAttributeZapi(t *testing.T) {
 	assert.NoError(t, err, "error returned while modifying a LUN attribute")
 
 	// case 1b: Negative test, d.api.LunSetAttribute for fsType return error
-	zapi.EXPECT().LunSetAttribute(tempLunPath, tempAttribute, "fake-FStype").Return(nil, fmt.Errorf("error")).Times(1)
+	zapi.EXPECT().LunSetAttribute(tempLunPath, tempAttribute, "fake-FStype").Return(nil, errors.New("error")).Times(1)
 	err = oapi.LunSetAttribute(ctx, tempLunPath, tempAttribute, "fake-FStype", "", "", "")
 	assert.Error(t, err)
 
@@ -150,7 +149,7 @@ func TestLunGetAttributeZapi(t *testing.T) {
 	tempAttributeName := "fsType"
 
 	// 1 - Negative test, d.api.LunGetAttribute returns error
-	zapi.EXPECT().LunGetAttribute(gomock.Any(), tempLunPath, tempAttributeName).Return("", fmt.Errorf("error")).Times(1)
+	zapi.EXPECT().LunGetAttribute(gomock.Any(), tempLunPath, tempAttributeName).Return("", errors.New("error")).Times(1)
 	attributeValue, err := oapi.LunGetAttribute(ctx, tempLunPath, tempAttributeName)
 	assert.Error(t, err)
 	assert.Equal(t, "", attributeValue)
@@ -239,7 +238,7 @@ func TestExportRuleList_Zapi_Error(t *testing.T) {
 	policyName := "testPolicy"
 
 	mock.EXPECT().ExportRuleGetIterRequest(policyName).Return(nil,
-		fmt.Errorf("error listing export policy rules")).Times(1)
+		errors.New("error listing export policy rules")).Times(1)
 	rules, err := oapi.ExportRuleList(ctx, policyName)
 	assert.Error(t, err)
 	assert.Nil(t, rules)
@@ -328,7 +327,7 @@ func TestOntapAPIZAPI_LunExists(t *testing.T) {
 	assert.False(t, exists, "expected LUN to not exist")
 
 	// Case 4: Error from ZAPI client
-	mock.EXPECT().LunGet(tempLunPath).Return(nil, fmt.Errorf("error fetching LUN")).Times(1)
+	mock.EXPECT().LunGet(tempLunPath).Return(nil, errors.New("error fetching LUN")).Times(1)
 	exists, err = oapi.LunExists(ctx, tempLunPath)
 	assert.Error(t, err, "expected error when ZAPI client returns an error")
 	assert.False(t, exists, "expected LUN to not exist")

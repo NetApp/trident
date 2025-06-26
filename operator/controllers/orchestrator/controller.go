@@ -303,7 +303,7 @@ func (c *Controller) processNextWorkItem() bool {
 				Log().Info("-------------------------------------------------")
 				Log().Info("-------------------------------------------------")
 
-				return fmt.Errorf(errMessage)
+				return errors.New(errMessage)
 			} else if errors.IsReconcileIncompleteError(err) {
 				c.workqueue.Add(keyItem)
 			} else {
@@ -315,7 +315,7 @@ func (c *Controller) processNextWorkItem() bool {
 			Log().Info("-------------------------------------------------")
 			Log().Info("-------------------------------------------------")
 
-			return fmt.Errorf(errMessage)
+			return errors.New(errMessage)
 		}
 		// Finally, if no error occurs we Forget this item so it does not
 		// get queued again until another change happens.

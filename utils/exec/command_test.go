@@ -29,11 +29,11 @@ func TestShellProcess(t *testing.T) {
 	}
 	// Print out the test value to stdout
 	returnString, _ := b64.StdEncoding.DecodeString(os.Getenv("GO_TEST_RETURN_VALUE"))
-	fmt.Fprintf(os.Stdout, string(returnString))
+	fmt.Fprint(os.Stdout, string(returnString))
 	if os.Getenv("GO_TEST_RETURN_PADDING_LENGTH") != "" {
 		padLength, _ := strconv.Atoi(os.Getenv("GO_TEST_RETURN_PADDING_LENGTH"))
 		padString := make([]byte, padLength-len(returnString))
-		fmt.Fprintf(os.Stdout, string(padString))
+		fmt.Fprint(os.Stdout, string(padString))
 	}
 	code, err := strconv.Atoi(os.Getenv("GO_TEST_RETURN_CODE"))
 	if err != nil {

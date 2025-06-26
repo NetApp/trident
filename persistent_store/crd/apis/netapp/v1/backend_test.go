@@ -139,6 +139,6 @@ func TestBackend_Persistent(t *testing.T) {
 	// Compare
 	if !cmp.Equal(persistent, expected) {
 		msg := fmt.Sprintf("TridentBackend does not match expected result, got: %v expected: %v", persistent, expected)
-		t.Fatalf(msg)
+		t.Fatal(msg)
 	}
 }

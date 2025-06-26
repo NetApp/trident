@@ -453,7 +453,7 @@ func (d *NASQtreeStorageDriver) Create(
 			errMessage := fmt.Sprintf("ONTAP-NAS-QTREE pool %s/%s; error: %v", storagePool.Name(), aggregate,
 				aggrLimitsErr)
 			Logc(ctx).Error(errMessage)
-			createErrors = append(createErrors, fmt.Errorf(errMessage))
+			createErrors = append(createErrors, errors.New(errMessage))
 			continue
 		}
 
@@ -465,7 +465,7 @@ func (d *NASQtreeStorageDriver) Create(
 			errMessage := fmt.Sprintf("ONTAP-NAS-QTREE pool %s/%s; Flexvol location/creation failed %s: %v",
 				storagePool.Name(), aggregate, name, flexvolErr)
 			Logc(ctx).Error(errMessage)
-			createErrors = append(createErrors, fmt.Errorf(errMessage))
+			createErrors = append(createErrors, errors.New(errMessage))
 			continue
 		}
 		volConfig.InternalID = d.CreateQtreeInternalID(d.Config.SVM, flexvol, name)
@@ -477,7 +477,7 @@ func (d *NASQtreeStorageDriver) Create(
 			errMessage := fmt.Sprintf("ONTAP-NAS-QTREE pool %s/%s; Flexvol resize failed %s/%s: %v", storagePool.Name(),
 				aggregate, flexvol, name, err)
 			Logc(ctx).Error(errMessage)
-			createErrors = append(createErrors, fmt.Errorf(errMessage))
+			createErrors = append(createErrors, errors.New(errMessage))
 			continue
 		}
 
@@ -487,7 +487,7 @@ func (d *NASQtreeStorageDriver) Create(
 			errMessage := fmt.Sprintf("ONTAP-NAS-QTREE pool %s/%s; Qtree creation failed %s/%s: %v",
 				storagePool.Name(), aggregate, flexvol, name, err)
 			Logc(ctx).Error(errMessage)
-			createErrors = append(createErrors, fmt.Errorf(errMessage))
+			createErrors = append(createErrors, errors.New(errMessage))
 			continue
 		}
 
@@ -788,7 +788,7 @@ func (d *NASQtreeStorageDriver) publishQtreeShare(
 			return err
 		}
 		if backendQtree == nil {
-			return errors.NotFoundError(fmt.Sprintf("qtree %s not found", qtree))
+			return errors.NotFoundError("qtree %s not found", qtree)
 		}
 		volConfig.ExportPolicy = backendQtree.ExportPolicy
 	}

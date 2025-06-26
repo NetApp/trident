@@ -1405,7 +1405,7 @@ func (d *StorageDriver) handleVolumeCreatingTransaction(ctx context.Context, vol
 	if createVolume, ok := d.CreatingVolumes[volName]; ok {
 		if createVolume.FinalIteration == createVolume.Iterations {
 			if len(createVolume.Error) != 0 {
-				return fmt.Errorf(createVolume.Error)
+				return errors.New(createVolume.Error)
 			}
 		} else {
 			createVolume.Iterations++

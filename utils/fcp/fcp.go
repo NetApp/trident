@@ -299,7 +299,7 @@ func (client *Client) reloadMultipathDevice(ctx context.Context, multipathDevice
 	defer Logc(ctx).WithFields(fields).Debug("<<<< fcp.reloadMultipathDevice")
 
 	if multipathDevice == "" {
-		return fmt.Errorf("cannot reload an empty multipathDevice")
+		return errors.New("cannot reload an empty multipathDevice")
 	}
 
 	_, err := client.command.ExecuteWithTimeout(ctx, "multipath", 10*time.Second, true, "-r",
@@ -400,7 +400,7 @@ func (client *Client) AttachVolume(
 	// process, if they haven't already been run).
 	failHandler := func(ctx context.Context, path string) error {
 		Logc(ctx).Error("Detected LUN serial number mismatch, attaching volume would risk data corruption, giving up")
-		return fmt.Errorf("LUN serial number mismatch, kernel has stale cached data")
+		return errors.New("LUN serial number mismatch, kernel has stale cached data")
 	}
 	err = client.handleInvalidSerials(ctx, hostSessionMap, lunID, publishInfo.FCTargetWWNN, publishInfo.FCPLunSerial,
 		failHandler)
@@ -752,7 +752,7 @@ func (client *Client) waitForMultipathDeviceForDevices(ctx context.Context, devi
 
 	if multipathDevice == "" {
 		Logc(ctx).WithField("multipathDevice", multipathDevice).Warn("Multipath device not found.")
-		return "", fmt.Errorf("multipath device not found when it is expected")
+		return "", errors.New("multipath device not found when it is expected")
 
 	} else {
 		Logc(ctx).WithField("multipathDevice", multipathDevice).Debug("Multipath device found.")
@@ -990,7 +990,7 @@ func (client *Client) verifyMultipathDeviceSerial(
 // attachment to go through
 func (client *Client) PreChecks(ctx context.Context) error {
 	if !client.multipathdIsRunning(ctx) {
-		return fmt.Errorf("multipathd is not running")
+		return errors.New("multipathd is not running")
 	}
 
 	findMultipathsValue, err := client.identifyFindMultipathsValue(ctx)

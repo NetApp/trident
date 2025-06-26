@@ -91,7 +91,7 @@ func (g autoFeatureGate) Gates() map[string]string {
 // If some but not all feature gates are safe to enable, they will be returned along with an error.
 func ConstructCSIFeatureGateYAMLSnippets(client KubernetesClient) (map[string]string, error) {
 	if client == nil {
-		return nil, fmt.Errorf("k8s API client is nil; cannot auto-enable feature gates")
+		return nil, errors.New("k8s API client is nil; cannot auto-enable feature gates")
 	}
 
 	// Automatically enable feature gates.

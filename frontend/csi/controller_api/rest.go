@@ -8,6 +8,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -150,7 +151,7 @@ func (c *ControllerRestClient) CreateNode(ctx context.Context, node *models.Node
 	}
 
 	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
-		return createResponse, fmt.Errorf("could not add CSI node")
+		return createResponse, errors.New("could not add CSI node")
 	}
 	return createResponse, nil
 }
@@ -183,8 +184,8 @@ func (c *ControllerRestClient) GetNode(ctx context.Context, nodeName string) (*m
 
 	if resp.StatusCode != http.StatusOK {
 		msg := "could not get node info"
-		Logc(ctx).WithError(fmt.Errorf(getNodeResponse.Error)).Error(msg)
-		return nil, fmt.Errorf(msg)
+		Logc(ctx).WithError(errors.New(getNodeResponse.Error)).Error(msg)
+		return nil, errors.New(msg)
 	}
 
 	return getNodeResponse.Node, nil
@@ -225,8 +226,8 @@ func (c *ControllerRestClient) UpdateNode(
 
 	if resp.StatusCode != http.StatusAccepted {
 		msg := "could not update node"
-		Logc(ctx).WithError(fmt.Errorf(updateNodeResponse.Error)).Error(msg)
-		return fmt.Errorf(msg)
+		Logc(ctx).WithError(errors.New(updateNodeResponse.Error)).Error(msg)
+		return errors.New(msg)
 	}
 
 	return nil
@@ -245,7 +246,7 @@ func (c *ControllerRestClient) GetNodes(ctx context.Context) ([]string, error) {
 	}
 
 	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("could not list the CSI nodes")
+		return nil, errors.New("could not list the CSI nodes")
 	}
 
 	// Parse JSON data
@@ -272,7 +273,7 @@ func (c *ControllerRestClient) DeleteNode(ctx context.Context, nodeName string) 
 	case http.StatusGone:
 		break
 	default:
-		return fmt.Errorf("could not delete the node")
+		return errors.New("could not delete the node")
 	}
 	return nil
 }
@@ -295,8 +296,8 @@ func (c *ControllerRestClient) GetChap(ctx context.Context, volumeID, nodeName s
 
 	if resp.StatusCode != http.StatusOK {
 		msg := "could not get CHAP info"
-		Logc(ctx).WithError(fmt.Errorf(getResponse.Error)).Error(msg)
-		return nil, fmt.Errorf(msg)
+		Logc(ctx).WithError(errors.New(getResponse.Error)).Error(msg)
+		return nil, errors.New(msg)
 	}
 	return getResponse.CHAP, nil
 }
@@ -327,8 +328,8 @@ func (c *ControllerRestClient) ListVolumePublicationsForNode(
 
 	if resp.StatusCode != http.StatusOK {
 		msg := "could not list publications"
-		Logc(ctx).WithError(fmt.Errorf(listResponse.Error)).Error(msg)
-		return nil, fmt.Errorf(msg)
+		Logc(ctx).WithError(errors.New(listResponse.Error)).Error(msg)
+		return nil, errors.New(msg)
 	}
 
 	return listResponse.VolumePublications, nil

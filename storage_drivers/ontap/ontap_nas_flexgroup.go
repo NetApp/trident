@@ -684,7 +684,7 @@ func (d *NASFlexGroupStorageDriver) Create(
 		})
 	if err != nil {
 		errMessage := fmt.Sprintf("ONTAP-NAS-FLEXGROUP pool %s; error creating volume %s: %v", storagePool.Name(), name, err)
-		createErrors = append(createErrors, fmt.Errorf(errMessage))
+		createErrors = append(createErrors, errors.New(errMessage))
 		return drivers.NewBackendIneligibleError(name, createErrors, physicalPoolNames)
 	}
 

@@ -119,11 +119,11 @@ func (c *Client) CloneVolume(ctx context.Context, req *CloneVolumeRequest) (Volu
 		if cloneError != nil {
 			errorMessage := cloneError.Error()
 			if strings.Contains(errorMessage, "SliceNotRegistered") {
-				return fmt.Errorf("detected SliceNotRegistered on Clone operation")
+				return errors.New("detected SliceNotRegistered on Clone operation")
 			} else if strings.Contains(errorMessage, "xInvalidParameter") {
-				return fmt.Errorf("detected xInvalidParameter on Clone operation")
+				return errors.New("detected xInvalidParameter on Clone operation")
 			} else if strings.Contains(errorMessage, "xNotReadyForIO") {
-				return fmt.Errorf("detected xNotReadyForIO on Clone operation")
+				return errors.New("detected xNotReadyForIO on Clone operation")
 			} else {
 				Logc(ctx).Debugf("encountered err: %s during volume clone operation", cloneError)
 				return backoff.Permanent(cloneError)

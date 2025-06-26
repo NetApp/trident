@@ -306,7 +306,7 @@ func (client *Client) AttachVolume(
 	// process, if they haven't already been run).
 	failHandler := func(ctx context.Context, path string) error {
 		Logc(ctx).Error("Detected LUN serial number mismatch, attaching volume would risk data corruption, giving up")
-		return fmt.Errorf("LUN serial number mismatch, kernel has stale cached data")
+		return errors.New("LUN serial number mismatch, kernel has stale cached data")
 	}
 	err = client.handleInvalidSerials(ctx, hostSessionMap, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial, failHandler)
 	if err != nil {
@@ -676,7 +676,7 @@ func (client *Client) RescanDevices(ctx context.Context, targetIQN string, lunID
 
 		if len(devicesBySize) != 0 {
 			Logc(ctx).WithFields(fields).Error("Some devices are still undersized after rescan.")
-			return fmt.Errorf("devices are still undersized after rescan")
+			return errors.New("devices are still undersized after rescan")
 		}
 	}
 
@@ -755,7 +755,7 @@ func (client *Client) reloadMultipathDevice(ctx context.Context, multipathDevice
 	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.reloadMultipathDevice")
 
 	if multipathDevice == "" {
-		return fmt.Errorf("cannot reload an empty multipathDevice")
+		return errors.New("cannot reload an empty multipathDevice")
 	}
 
 	_, err := client.command.ExecuteWithTimeout(ctx, "multipath", 10*time.Second, true, "-r",
@@ -960,7 +960,7 @@ func (client *Client) waitForMultipathDeviceForDevices(ctx context.Context, devi
 
 	if multipathDevice == "" {
 		Logc(ctx).WithField("multipathDevice", multipathDevice).Warn("Multipath device not found.")
-		return "", fmt.Errorf("multipath device not found when it is expected")
+		return "", errors.New("multipath device not found when it is expected")
 
 	} else {
 		Logc(ctx).WithField("multipathDevice", multipathDevice).Debug("Multipath device found.")
@@ -1154,7 +1154,7 @@ func (client *Client) portalsToLogin(ctx context.Context, targetIQN string, port
 	}
 
 	if len(portals) == len(portalsInStaleState) {
-		return nil, false, fmt.Errorf("no new session to establish and existing session(s) might be in unhealthy state")
+		return nil, false, errors.New("no new session to establish and existing session(s) might be in unhealthy state")
 	}
 
 	loggedIn := len(portals) != (len(portalsNotLoggedIn) + len(portalsInStaleState))
@@ -1607,7 +1607,7 @@ func (client *Client) PreChecks(ctx context.Context) error {
 	}
 
 	if !client.multipathdIsRunning(ctx) {
-		return fmt.Errorf("multipathd is not running")
+		return errors.New("multipathd is not running")
 	}
 
 	findMultipathsValue, err := client.identifyFindMultipathsValue(ctx)
@@ -1817,7 +1817,7 @@ func (client *Client) ensureTarget(
 		"portal": targetPortal,
 		"iqn":    targetIqn,
 	}).Warning("Target not discovered")
-	return fmt.Errorf("target not discovered")
+	return errors.New("target not discovered")
 }
 
 // updateDiscoveryDb update the iscsi discoverydb with the passed values
@@ -2489,7 +2489,7 @@ func (client *Client) ISCSIDiscovery(ctx context.Context, portal string) ([]mode
 func (client *Client) PopulateCurrentSessions(ctx context.Context, currentMapping *models.ISCSISessions) error {
 	sessionInfos, err := client.getSessionInfo(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to get iSCSI session information")
+		return errors.New("failed to get iSCSI session information")
 	}
 
 	// List of duplicate portals that can cause issues for self-healing should be excluded.

@@ -314,14 +314,14 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 		if err != nil {
 			errMessage := fmt.Sprintf("unexpected parse error during Trident client version retrieval; err: %v", err)
 			Log().Errorf(errMessage)
-			return "", fmt.Errorf(errMessage)
+			return "", errors.New(errMessage)
 		}
 
 		supportedTridentVersion, err := versionutils.ParseDate(DefaultTridentVersion)
 		if err != nil {
 			errMessage := fmt.Sprintf("unexpected parse error during supported Trident version; err: %v", err)
 			Log().Errorf(errMessage)
-			return "", fmt.Errorf(errMessage)
+			return "", errors.New(errMessage)
 		}
 
 		tridentImageShortVersion := tridentImageVersion.ShortString()
@@ -331,7 +331,7 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 			errMessage := fmt.Sprintf("unsupported Trident image version '%s', supported Trident version is '%s'",
 				tridentImageVersion.ShortStringWithRelease(), supportedTridentVersion.ShortStringWithRelease())
 			Log().Errorf(errMessage)
-			return "", fmt.Errorf(errMessage)
+			return "", errors.New(errMessage)
 		}
 
 		// need to append 'v', so that it can be stores in trident version label later
@@ -1875,7 +1875,7 @@ func (i *Installer) getTridentClientVersionInfo(
 		errMessage := fmt.Sprintf("unable to umarshall client version YAML to Version struct; err: %v", err)
 		Log().WithField("image", imageName).Errorf(errMessage)
 
-		return nil, fmt.Errorf(errMessage)
+		return nil, errors.New(errMessage)
 	}
 
 	Log().WithField("version", clientVersion).Debugf("Successfully found Trident image version information.")
@@ -1917,7 +1917,7 @@ func (i *Installer) getTridentVersionYAML(imageName string, controllingCRDetails
 				"err":   err,
 			}).Errorf("Could not delete Trident version pod.")
 		}
-		return []byte{}, fmt.Errorf(errMessage)
+		return []byte{}, errors.New(errMessage)
 	}
 
 	outputString := string(output)

@@ -11,6 +11,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // //////////////////////////////////////////////////////////////////////////////////////////
@@ -359,7 +360,7 @@ func GetError(ctx context.Context, response *APIResponse, errorIn error) (errorO
 	}
 
 	if response == nil {
-		errorOut = fmt.Errorf("API error: nil response")
+		errorOut = errors.New("API error: nil response")
 		return errorOut
 	}
 

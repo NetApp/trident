@@ -5,7 +5,6 @@ package filesystem
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/fs"
 	"testing"
 	"time"
@@ -235,7 +234,7 @@ func TestGetDFOutput(t *testing.T) {
 		},
 		"Error": {
 			mockOutput:     nil,
-			mockError:      fmt.Errorf("error"),
+			mockError:      errors.New("error"),
 			expectedResult: nil,
 			expectError:    true,
 		},
@@ -383,7 +382,7 @@ func TestRepairVolume(t *testing.T) {
 			device: "/dev/sda1",
 			fstype: Ext4,
 			mockSetup: func() {
-				mockExec.EXPECT().Execute(gomock.Any(), "fsck.ext4", "-p", "/dev/sda1").Return(nil, fmt.Errorf("mock error")).Times(1)
+				mockExec.EXPECT().Execute(gomock.Any(), "fsck.ext4", "-p", "/dev/sda1").Return(nil, errors.New("mock error")).Times(1)
 			},
 		},
 	}

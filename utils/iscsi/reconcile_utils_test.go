@@ -127,11 +127,11 @@ func populateSysFsScsiHostSessionTargetName(t *testing.T, path string, osFs afer
 
 	// Write targetIQN to this.
 	if err := osFs.WriteFile(targetNameFilePath, []byte(target), 0x0000); err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 	contents, err := osFs.ReadFile(targetNameFilePath)
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 	assert.Equal(t, target, string(contents))
 	return targetNameFilePath

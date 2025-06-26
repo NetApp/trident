@@ -319,7 +319,7 @@ func TestVolumeUpdater_Failure(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, responseCode)
 
 	// CASE 4: Failed to update the volume: Volume not found
-	notFoundErr := errors.NotFoundError(fmt.Sprintf("volume %s was not found", volName))
+	notFoundErr := errors.NotFoundError("volume %s was not found", volName)
 	mockCtrl = gomock.NewController(t)
 	mockOrchestrator = mockcore.NewMockOrchestrator(mockCtrl)
 	orchestrator = mockOrchestrator

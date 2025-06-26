@@ -6,7 +6,6 @@ package luks
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -21,7 +20,7 @@ import (
 	"github.com/netapp/trident/utils/errors"
 )
 
-var luksError = fmt.Errorf("luks error")
+var luksError = errors.New("luks error")
 
 func mockCryptsetupIsLuks(mock *mockexec.MockCommand) *gomock.Call {
 	return mock.EXPECT().ExecuteWithTimeoutAndInput(
@@ -644,7 +643,7 @@ func TestMountLUKSDevice_secondPassphraseSuccess(t *testing.T) {
 		"previous-luks-passphrase-name": "B",
 	}
 	mockCommand := mock_exec.NewMockCommand(gomock.NewController(t))
-	mockCryptsetupLuksStatus(mockCommand).Return([]byte{}, fmt.Errorf("mock error"))
+	mockCryptsetupLuksStatus(mockCommand).Return([]byte{}, errors.New("mock error"))
 	mockCryptsetupLuksStatus(mockCommand).Return([]byte{},
 		mock_exec.NewMockExitError(cryptsetupStatusDeviceDoesNotExistStatusCode, "mock error"))
 	mockCryptsetupIsLuks(mockCommand).Return([]byte{}, nil)
@@ -665,7 +664,7 @@ func TestMountLUKSDevice_passphraseRotationFails(t *testing.T) {
 		"previous-luks-passphrase-name": "B",
 	}
 	mockCommand := mock_exec.NewMockCommand(gomock.NewController(t))
-	mockCryptsetupLuksStatus(mockCommand).Return([]byte{}, fmt.Errorf("mock error")).Times(2)
+	mockCryptsetupLuksStatus(mockCommand).Return([]byte{}, errors.New("mock error")).Times(2)
 	luksDevice := NewDetailed("/dev/sdb", "1234", mockCommand, nil, nil)
 
 	luksFormatted, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
@@ -706,7 +705,7 @@ func TestMountLUKSDevice_NoSecondPassphraseNameFailure(t *testing.T) {
 	}
 	mockCommand := mock_exec.NewMockCommand(gomock.NewController(t))
 	luksDevice := NewDetailed("/dev/sdb", "1234", mockCommand, nil, nil)
-	mockCryptsetupLuksStatus(mockCommand).Return([]byte{}, fmt.Errorf("mock error")).Times(1)
+	mockCryptsetupLuksStatus(mockCommand).Return([]byte{}, errors.New("mock error")).Times(1)
 
 	luksFormatted, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
 	assert.Error(t, err)
@@ -718,7 +717,7 @@ func TestMountLUKSDevice_NoSecondPassphraseNameSpecifiedFailure(t *testing.T) {
 
 	mockCommand := mock_exec.NewMockCommand(gomock.NewController(t))
 	luksDevice := NewDetailed("/dev/sdb", "1234", mockCommand, nil, nil)
-	mockCryptsetupLuksStatus(mockCommand).Return([]byte{}, fmt.Errorf("mock error"))
+	mockCryptsetupLuksStatus(mockCommand).Return([]byte{}, errors.New("mock error"))
 
 	secrets := map[string]string{
 		"luks-passphrase":      "secretA",
@@ -733,7 +732,7 @@ func TestMountLUKSDevice_NoSecondPassphraseNameBlankFailure(t *testing.T) {
 	// Negative case: Test first passphrase fails, second is blank
 	mockCommand := mock_exec.NewMockCommand(gomock.NewController(t))
 	luksDevice := NewDetailed("/dev/sdb", "1234", mockCommand, nil, nil)
-	mockCryptsetupLuksStatus(mockCommand).Return([]byte{}, fmt.Errorf("mock error"))
+	mockCryptsetupLuksStatus(mockCommand).Return([]byte{}, errors.New("mock error"))
 	secrets := map[string]string{
 		"luks-passphrase":               "secretA",
 		"luks-passphrase-name":          "A",
@@ -749,7 +748,7 @@ func TestMountLUKSDevice_DuplicatePassphraseFailure(t *testing.T) {
 	// Negative case: Test first passphrase fails, second is the same
 	mockCommand := mock_exec.NewMockCommand(gomock.NewController(t))
 	luksDevice := NewDetailed("/dev/sdb", "1234", mockCommand, nil, nil)
-	mockCryptsetupLuksStatus(mockCommand).Return([]byte{}, fmt.Errorf("mock-error"))
+	mockCryptsetupLuksStatus(mockCommand).Return([]byte{}, errors.New("mock-error"))
 	secrets := map[string]string{
 		"luks-passphrase":               "secretA",
 		"luks-passphrase-name":          "A",
@@ -786,7 +785,7 @@ func TestMountLUKSDevice_FirstPassphraseBlankFailureasdf(t *testing.T) {
 	}
 	mockCommand := mock_exec.NewMockCommand(gomock.NewController(t))
 	luksDevice := NewDetailed("/dev/sdb", "1234", mockCommand, nil, nil)
-	mockCryptsetupLuksStatus(mockCommand).Return([]byte{}, fmt.Errorf("mock-error")).Times(2)
+	mockCryptsetupLuksStatus(mockCommand).Return([]byte{}, errors.New("mock-error")).Times(2)
 
 	luksFormatted, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
 	assert.Error(t, err)

@@ -81,7 +81,10 @@ func (e *foundError) Error() string {
 func (e *foundError) Unwrap() error { return e.inner }
 
 func FoundError(message string, a ...any) error {
-	return &foundError{message: fmt.Sprintf(message, a...)}
+	if len(a) == 0 {
+		return &foundError{message: message}
+	}
+	return &foundError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func WrapWithFoundError(err error, message string, a ...any) error {
@@ -120,7 +123,10 @@ func (e *notFoundError) Error() string {
 func (e *notFoundError) Unwrap() error { return e.inner }
 
 func NotFoundError(message string, a ...any) error {
-	return &notFoundError{message: fmt.Sprintf(message, a...)}
+	if len(a) == 0 {
+		return &notFoundError{message: message}
+	}
+	return &notFoundError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func WrapWithNotFoundError(err error, message string, a ...any) error {
@@ -159,7 +165,10 @@ func (e *alreadyExistsError) Error() string {
 func (e *alreadyExistsError) Unwrap() error { return e.inner }
 
 func AlreadyExistsError(message string, a ...any) error {
-	return &alreadyExistsError{message: fmt.Sprintf(message, a...)}
+	if len(a) == 0 {
+		return &alreadyExistsError{message: message}
+	}
+	return &alreadyExistsError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func WrapWithAlreadyExistsError(err error, message string, a ...any) error {
@@ -324,7 +333,10 @@ func (e *connectionError) Unwrap() error {
 }
 
 func ConnectionError(message string, a ...any) error {
-	return &connectionError{message: fmt.Sprintf(message, a...)}
+	if len(a) == 0 {
+		return &connectionError{message: message}
+	}
+	return &connectionError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func WrapWithConnectionError(err error, message string, a ...any) error {
@@ -410,7 +422,10 @@ func (e *reconcileDeferredError) Unwrap() error {
 }
 
 func ReconcileDeferredError(message string, a ...any) error {
-	return &reconcileDeferredError{message: fmt.Sprintf(message, a...)}
+	if len(a) == 0 {
+		return &reconcileDeferredError{message: message}
+	}
+	return &reconcileDeferredError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func WrapWithReconcileDeferredError(err error, message string, a ...any) error {
@@ -452,7 +467,10 @@ func (e *reconcileIncompleteError) Unwrap() error {
 }
 
 func ReconcileIncompleteError(message string, a ...any) error {
-	return &reconcileIncompleteError{message: fmt.Sprintf(message, a...)}
+	if len(a) == 0 {
+		return &reconcileIncompleteError{message: message}
+	}
+	return &reconcileIncompleteError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func WrapWithReconcileIncompleteError(err error, message string, a ...any) error {
@@ -494,7 +512,10 @@ func (e *reconcileFailedError) Unwrap() error {
 }
 
 func ReconcileFailedError(message string, a ...any) error {
-	return &reconcileFailedError{message: fmt.Sprintf(message, a...)}
+	if len(a) == 0 {
+		return &reconcileFailedError{message: message}
+	}
+	return &reconcileFailedError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func WrapWithReconcileFailedError(err error, message string, a ...any) error {
@@ -523,9 +544,10 @@ type unsupportedConfigError struct {
 func (e *unsupportedConfigError) Error() string { return e.message }
 
 func UnsupportedConfigError(message string, a ...any) error {
-	return &unsupportedConfigError{
-		message: fmt.Sprintf(message, a...),
+	if len(a) == 0 {
+		return &unsupportedConfigError{message: message}
 	}
+	return &unsupportedConfigError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func WrapUnsupportedConfigError(err error) error {
@@ -554,8 +576,11 @@ type unlicensedError struct {
 func (e *unlicensedError) Error() string { return e.message }
 
 func UnlicensedError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &unlicensedError{message: message}
+	}
 	return &unlicensedError{
-		message: fmt.Sprintf(message, a...),
+		message: fmt.Sprintf(fmt.Sprintf("%s", message), a...),
 	}
 }
 
@@ -972,7 +997,10 @@ func (e *notManagedError) Error() string {
 func (e *notManagedError) Unwrap() error { return e.inner }
 
 func NotManagedError(message string, a ...any) error {
-	return &notManagedError{message: fmt.Sprintf(message, a...)}
+	if len(a) == 0 {
+		return &notManagedError{message: message}
+	}
+	return &notManagedError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func WrapWithNotManagedError(err error, message string, a ...any) error {
@@ -1034,7 +1062,10 @@ func (e *conflictError) Unwrap() error { return e.inner }
 // ConflictError should be used when modifying a resource is disallowed due to
 // interconnectedness or dependencies, such as when a snapshot is part of a group of snapshots.
 func ConflictError(message string, a ...any) error {
-	return &conflictError{message: fmt.Sprintf(message, a...)}
+	if len(a) == 0 {
+		return &conflictError{message: message}
+	}
+	return &conflictError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func WrapWithConflictError(err error, message string, a ...any) error {

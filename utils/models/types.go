@@ -643,11 +643,11 @@ func (p *ISCSISessions) IsEmpty() bool {
 // ISCSISessionData returns the PortalInfo and LUNInfo associated to a portal
 func (p *ISCSISessions) ISCSISessionData(portal string) (*ISCSISessionData, error) {
 	if p.IsEmpty() {
-		return nil, fmt.Errorf("no iSCSI sessions exist")
+		return nil, errors.New("no iSCSI sessions exist")
 	}
 
 	if strings.TrimSpace(portal) == "" {
-		return nil, fmt.Errorf("portal value cannot be empty")
+		return nil, errors.New("portal value cannot be empty")
 	}
 
 	if iSCSISessionData, found := p.Info[network.ParseHostportIP(portal)]; found {
@@ -660,15 +660,15 @@ func (p *ISCSISessions) ISCSISessionData(portal string) (*ISCSISessionData, erro
 // AddPortal creates a portal entry along with PortalInfo but without any LUNInfo
 func (p *ISCSISessions) AddPortal(portal string, portalInfo PortalInfo) error {
 	if p == nil {
-		return fmt.Errorf("ISCSISession has not been initialized")
+		return errors.New("ISCSISession has not been initialized")
 	}
 
 	if strings.TrimSpace(portal) == "" {
-		return fmt.Errorf("portal value cannot be empty")
+		return errors.New("portal value cannot be empty")
 	}
 
 	if !portalInfo.HasTargetIQN() {
-		return fmt.Errorf("portal info is missing target IQN")
+		return errors.New("portal info is missing target IQN")
 	}
 
 	if _, err := p.ISCSISessionData(portal); err == nil {
@@ -697,7 +697,7 @@ func (p *ISCSISessions) UpdateAndRecordPortalInfoChanges(portal string, portalIn
 	var portalInfoChanges string
 
 	if !portalInfo.HasTargetIQN() {
-		return portalInfoChanges, fmt.Errorf("new portal info is missing target IQN")
+		return portalInfoChanges, errors.New("new portal info is missing target IQN")
 	}
 
 	iSCSISessionData, err := p.ISCSISessionData(portal)
@@ -907,7 +907,7 @@ func (p *ISCSISessions) ResetAllRemediationValues() error {
 
 	errVal := sb.String()
 	if errVal != "" {
-		return fmt.Errorf(errVal)
+		return errors.New(errVal)
 	}
 
 	return nil
@@ -1002,5 +1002,5 @@ type MountInfo struct {
 }
 
 func GenerateVolumePublishName(volumeID, nodeID string) string {
-	return fmt.Sprintf(volumeID + "." + nodeID)
+	return fmt.Sprintf("%s.%s", volumeID, nodeID)
 }

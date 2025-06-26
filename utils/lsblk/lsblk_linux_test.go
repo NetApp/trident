@@ -2,7 +2,7 @@ package lsblk
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -107,7 +107,7 @@ func TestGetNamespaceCount(t *testing.T) {
 			getCommand: func(ctrl *gomock.Controller) exec.Command {
 				mockCmd := mock_exec.NewMockCommand(ctrl)
 				mockCmd.EXPECT().ExecuteWithTimeout(gomock.Any(), "lsblk", gomock.Any(), false, "-o",
-					"NAME,KNAME,TYPE,SIZE,MOUNTPOINT", "--json").Return([]byte{}, fmt.Errorf("error"))
+					"NAME,KNAME,TYPE,SIZE,MOUNTPOINT", "--json").Return([]byte{}, errors.New("error"))
 				return mockCmd
 			},
 			devicePath:   "luks-trident_pvc_43c2e279_9964_4af5_a0ef_5ec2c8815b16",

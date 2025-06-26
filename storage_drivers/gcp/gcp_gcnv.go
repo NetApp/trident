@@ -880,7 +880,7 @@ func (d *NASStorageDriver) Create(
 		if createErr != nil {
 			errMessage := fmt.Sprintf("GCNV pool %s; error creating volume %s: %v", cPool.Name, name, createErr)
 			Logc(ctx).Error(errMessage)
-			createErrors = multierr.Combine(createErrors, fmt.Errorf(errMessage))
+			createErrors = multierr.Combine(createErrors, errors.New(errMessage))
 			continue
 		}
 

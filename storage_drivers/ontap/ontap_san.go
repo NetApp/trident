@@ -484,7 +484,7 @@ func (d *SANStorageDriver) Create(
 		); aggrLimitsErr != nil {
 			errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error: %v", storagePool.Name(), aggregate, aggrLimitsErr)
 			Logc(ctx).Error(errMessage)
-			createErrors = append(createErrors, fmt.Errorf(errMessage))
+			createErrors = append(createErrors, errors.New(errMessage))
 
 			// Move on to the next pool
 			continue
@@ -526,7 +526,7 @@ func (d *SANStorageDriver) Create(
 					aggregate, name, err,
 				)
 				Logc(ctx).Error(errMessage)
-				createErrors = append(createErrors, fmt.Errorf(errMessage))
+				createErrors = append(createErrors, errors.New(errMessage))
 
 				// Move on to the next pool
 				continue
@@ -557,7 +557,7 @@ func (d *SANStorageDriver) Create(
 					aggregate, name, err,
 				)
 				Logc(ctx).Error(errMessage)
-				createErrors = append(createErrors, fmt.Errorf(errMessage))
+				createErrors = append(createErrors, errors.New(errMessage))
 
 				// Don't leave the new Flexvol around.
 				// If VolumeDestroy() fails for any reason, volume must be manually deleted.
@@ -581,7 +581,7 @@ func (d *SANStorageDriver) Create(
 				errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error saving file system type for LUN %s: %v",
 					storagePool.Name(), aggregate, name, err)
 				Logc(ctx).Error(errMessage)
-				createErrors = append(createErrors, fmt.Errorf(errMessage))
+				createErrors = append(createErrors, errors.New(errMessage))
 
 				// Don't leave the new LUN around.
 				// If the following LunDestroy() fails for any reason, LUN and volume must be manually deleted.
@@ -958,7 +958,7 @@ func (d *SANStorageDriver) Publish(
 		return err
 	}
 	if !volIsRW {
-		return fmt.Errorf("volume is not read-write")
+		return errors.New("volume is not read-write")
 	}
 
 	lunPath := lunPath(name)
@@ -1566,7 +1566,7 @@ func (d *SANStorageDriver) Resize(
 
 	if requestedSizeBytes > math.MaxInt64 {
 		Logc(ctx).WithFields(fields).Error("Invalid volume size.")
-		return fmt.Errorf("invalid volume size")
+		return errors.New("invalid volume size")
 	}
 
 	// Validation checks
@@ -1656,7 +1656,7 @@ func (d *SANStorageDriver) Resize(
 		err := d.API.VolumeSetSize(ctx, name, strconv.FormatUint(newFlexvolSize, 10))
 		if err != nil {
 			Logc(ctx).WithField("error", err).Error("Volume resize failed.")
-			return fmt.Errorf("volume resize failed")
+			return errors.New("volume resize failed")
 		}
 	}
 
@@ -1666,7 +1666,7 @@ func (d *SANStorageDriver) Resize(
 		returnSize, err = d.API.LunSetSize(ctx, lunPath(name), strconv.FormatUint(requestedSizeBytes, 10))
 		if err != nil {
 			Logc(ctx).WithField("error", err).Error("LUN resize failed.")
-			return fmt.Errorf("volume resize failed")
+			return errors.New("volume resize failed")
 		}
 	}
 

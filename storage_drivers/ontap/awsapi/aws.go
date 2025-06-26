@@ -301,10 +301,10 @@ func (d *Client) GetFilesystemByID(ctx context.Context, filesystemID string) (*F
 		return nil, fmt.Errorf("error iterating filesystems; %w", err)
 	}
 	if len(output.FileSystems) == 0 {
-		return nil, errors.NotFoundError(fmt.Sprintf("filesystem %s not found", filesystemID))
+		return nil, errors.NotFoundError("filesystem %s not found", filesystemID)
 	}
 	if len(output.FileSystems) > 1 {
-		return nil, errors.NotFoundError(fmt.Sprintf("multiple filesystems with ID '%s' found", filesystemID))
+		return nil, errors.NotFoundError("multiple filesystems with ID '%s' found", filesystemID)
 	}
 
 	logFields["requestID"], _ = middleware.GetRequestIDMetadata(output.ResultMetadata)
@@ -425,10 +425,10 @@ func (d *Client) GetSVMByID(ctx context.Context, svmID string) (*SVM, error) {
 		return nil, fmt.Errorf("error iterating SVMs; %w", err)
 	}
 	if len(output.StorageVirtualMachines) == 0 {
-		return nil, errors.NotFoundError(fmt.Sprintf("SVM %s not found", svmID))
+		return nil, errors.NotFoundError("SVM %s not found", svmID)
 	}
 	if len(output.StorageVirtualMachines) > 1 {
-		return nil, errors.NotFoundError(fmt.Sprintf("multiple SVMs with ID '%s' found", svmID))
+		return nil, errors.NotFoundError("multiple SVMs with ID '%s' found", svmID)
 	}
 
 	logFields["requestID"], _ = middleware.GetRequestIDMetadata(output.ResultMetadata)
@@ -599,10 +599,10 @@ func (d *Client) GetVolumeByID(ctx context.Context, volumeID string) (*Volume, e
 		return nil, fmt.Errorf("error iterating volumes; %w", err)
 	}
 	if len(output.Volumes) == 0 {
-		return nil, errors.NotFoundError(fmt.Sprintf("volume %s not found", volumeID))
+		return nil, errors.NotFoundError("volume %s not found", volumeID)
 	}
 	if len(output.Volumes) > 1 {
-		return nil, errors.NotFoundError(fmt.Sprintf("multiple volumes with ID '%s' found", volumeID))
+		return nil, errors.NotFoundError("multiple volumes with ID '%s' found", volumeID)
 	}
 
 	logFields["requestID"], _ = middleware.GetRequestIDMetadata(output.ResultMetadata)

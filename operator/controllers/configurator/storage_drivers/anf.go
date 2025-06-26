@@ -122,10 +122,10 @@ func (a *ANF) Validate() error {
 
 			credFile, err := os.ReadFile(credFilePath)
 			if err != nil {
-				return fmt.Errorf("error reading from azure config file: " + err.Error())
+				return fmt.Errorf("error reading from azure config file: %w", err)
 			}
 			if err = json.Unmarshal(credFile, &clientConfig); err != nil {
-				return fmt.Errorf("error parsing azureAuthConfig: " + err.Error())
+				return fmt.Errorf("error parsing azureAuthConfig: %w", err)
 			}
 
 			// Set SubscriptionID and Location.

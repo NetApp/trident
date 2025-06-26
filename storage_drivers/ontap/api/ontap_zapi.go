@@ -152,7 +152,7 @@ type QosPolicyGroup struct {
 func NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy string) (QosPolicyGroup, error) {
 	switch {
 	case qosPolicy != "" && adaptiveQosPolicy != "":
-		return QosPolicyGroup{}, fmt.Errorf("only one kind of QoS policy group may be defined")
+		return QosPolicyGroup{}, errors.New("only one kind of QoS policy group may be defined")
 	case qosPolicy != "":
 		return QosPolicyGroup{
 			Name: qosPolicy,
@@ -607,7 +607,7 @@ func (c Client) LunGetComment(ctx context.Context, lunPath string) (string, erro
 		return "", fmt.Errorf("could not find LUN with name %v", lunPath)
 	}
 	if lun.CommentPtr == nil {
-		return "", fmt.Errorf("LUN did not have a comment")
+		return "", errors.New("LUN did not have a comment")
 	}
 
 	return *lun.CommentPtr, nil
@@ -643,15 +643,15 @@ func (c Client) LunGet(path string) (*azgo.LunInfoType, error) {
 	if err != nil {
 		return &azgo.LunInfoType{}, err
 	} else if response.Result.NumRecords() == 0 {
-		return &azgo.LunInfoType{}, errors.NotFoundError(fmt.Sprintf("LUN %s not found", path))
+		return &azgo.LunInfoType{}, errors.NotFoundError("LUN %s not found", path)
 	} else if response.Result.NumRecords() > 1 {
 		return &azgo.LunInfoType{}, fmt.Errorf("more than one LUN %s found", path)
 	} else if response.Result.AttributesListPtr == nil {
-		return &azgo.LunInfoType{}, errors.NotFoundError(fmt.Sprintf("LUN %s not found", path))
+		return &azgo.LunInfoType{}, errors.NotFoundError("LUN %s not found", path)
 	} else if response.Result.AttributesListPtr.LunInfoPtr != nil {
 		return &response.Result.AttributesListPtr.LunInfoPtr[0], nil
 	}
-	return &azgo.LunInfoType{}, errors.NotFoundError(fmt.Sprintf("LUN %s not found", path))
+	return &azgo.LunInfoType{}, errors.NotFoundError("LUN %s not found", path)
 }
 
 func (c Client) lunGetAllCommon(query *azgo.LunGetIterRequestQuery) (*azgo.LunGetIterResponse, error) {
@@ -703,7 +703,7 @@ func (c Client) LunResize(path string, sizeBytes int) (uint64, error) {
 			return uint64(size), nil
 		}
 	} else {
-		return errSize, fmt.Errorf("error parsing result size")
+		return errSize, errors.New("error parsing result size")
 	}
 }
 
@@ -1527,15 +1527,15 @@ func (c Client) volumeGetIterCommon(
 	if err != nil {
 		return &azgo.VolumeAttributesType{}, err
 	} else if response.Result.NumRecords() == 0 {
-		return &azgo.VolumeAttributesType{}, errors.NotFoundError(fmt.Sprintf("flexvol %s not found", name))
+		return &azgo.VolumeAttributesType{}, errors.NotFoundError("flexvol %s not found", name)
 	} else if response.Result.NumRecords() > 1 {
 		return &azgo.VolumeAttributesType{}, fmt.Errorf("more than one Flexvol %s found", name)
 	} else if response.Result.AttributesListPtr == nil {
-		return &azgo.VolumeAttributesType{}, errors.NotFoundError(fmt.Sprintf("flexvol %s not found", name))
+		return &azgo.VolumeAttributesType{}, errors.NotFoundError("flexvol %s not found", name)
 	} else if response.Result.AttributesListPtr.VolumeAttributesPtr != nil {
 		return &response.Result.AttributesListPtr.VolumeAttributesPtr[0], nil
 	}
-	return &azgo.VolumeAttributesType{}, errors.NotFoundError(fmt.Sprintf("flexvol %s not found", name))
+	return &azgo.VolumeAttributesType{}, errors.NotFoundError("flexvol %s not found", name)
 }
 
 // VolumeGetAll returns all relevant details for all FlexVols whose names match the supplied prefix
@@ -3232,13 +3232,13 @@ func (c Client) IscsiInitiatorAuthGetIter() ([]azgo.IscsiSecurityEntryInfoType, 
 	if err != nil {
 		return []azgo.IscsiSecurityEntryInfoType{}, err
 	} else if response.Result.NumRecords() == 0 {
-		return []azgo.IscsiSecurityEntryInfoType{}, fmt.Errorf("no iscsi security entries found")
+		return []azgo.IscsiSecurityEntryInfoType{}, errors.New("no iscsi security entries found")
 	} else if response.Result.AttributesListPtr == nil {
-		return []azgo.IscsiSecurityEntryInfoType{}, fmt.Errorf("no iscsi security entries found")
+		return []azgo.IscsiSecurityEntryInfoType{}, errors.New("no iscsi security entries found")
 	} else if response.Result.AttributesListPtr.IscsiSecurityEntryInfoPtr != nil {
 		return response.Result.AttributesListPtr.IscsiSecurityEntryInfoPtr, nil
 	}
-	return []azgo.IscsiSecurityEntryInfoType{}, fmt.Errorf("no iscsi security entries found")
+	return []azgo.IscsiSecurityEntryInfoType{}, errors.New("no iscsi security entries found")
 }
 
 // IscsiInitiatorDeleteAuth deletes the authorization details for a single initiator
@@ -3278,13 +3278,13 @@ func (c Client) IscsiInitiatorGetIter() ([]azgo.IscsiInitiatorListEntryInfoType,
 	if err != nil {
 		return []azgo.IscsiInitiatorListEntryInfoType{}, err
 	} else if response.Result.NumRecords() == 0 {
-		return []azgo.IscsiInitiatorListEntryInfoType{}, fmt.Errorf("no iscsi initiator entries found")
+		return []azgo.IscsiInitiatorListEntryInfoType{}, errors.New("no iscsi initiator entries found")
 	} else if response.Result.AttributesListPtr == nil {
-		return []azgo.IscsiInitiatorListEntryInfoType{}, fmt.Errorf("no iscsi initiator entries found")
+		return []azgo.IscsiInitiatorListEntryInfoType{}, errors.New("no iscsi initiator entries found")
 	} else if response.Result.AttributesListPtr.IscsiInitiatorListEntryInfoPtr != nil {
 		return response.Result.AttributesListPtr.IscsiInitiatorListEntryInfoPtr, nil
 	}
-	return []azgo.IscsiInitiatorListEntryInfoType{}, fmt.Errorf("no iscsi initiator entries found")
+	return []azgo.IscsiInitiatorListEntryInfoType{}, errors.New("no iscsi initiator entries found")
 }
 
 // IscsiInitiatorModifyCHAPParams modifies the authorization details for a single initiator

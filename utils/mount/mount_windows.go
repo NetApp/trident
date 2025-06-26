@@ -122,7 +122,7 @@ func (c *WindowsClient) MountSMBPath(ctx context.Context, exportPath, mountPoint
 	}
 
 	if len(username) == 0 || len(password) == 0 {
-		return fmt.Errorf("empty username or password is not allowed")
+		return errors.New("empty username or password is not allowed")
 	}
 
 	targetParentDir := filepath.Dir(mountPoint)

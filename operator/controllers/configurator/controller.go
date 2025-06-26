@@ -212,7 +212,7 @@ func (c *Controller) processNextWorkItem() bool {
 				Log().Info("-------------------------------------------------")
 				Log().Info("-------------------------------------------------")
 
-				return fmt.Errorf(errMessage)
+				return errors.New(errMessage)
 			} else if errors.IsNotFoundError(err) {
 				errMessage := fmt.Sprintf("resource not found, needs manual intervention to fix it;"+
 					"error syncing tconf '%s': %s, not requeuing", keyItem, err.Error())
@@ -223,7 +223,7 @@ func (c *Controller) processNextWorkItem() bool {
 				Log().Info("-------------------------------------------------")
 				Log().Info("-------------------------------------------------")
 
-				return fmt.Errorf(errMessage)
+				return errors.New(errMessage)
 			} else if errors.IsReconcileIncompleteError(err) {
 				c.workqueue.Add(keyItem)
 			} else {
@@ -235,7 +235,7 @@ func (c *Controller) processNextWorkItem() bool {
 			Log().Info("-------------------------------------------------")
 			Log().Info("-------------------------------------------------")
 
-			return fmt.Errorf(errMessage)
+			return errors.New(errMessage)
 		}
 		// Finally, if no error occurs we Forget this item so it does not
 		// get queued again until another change happens.

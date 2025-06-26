@@ -380,7 +380,7 @@ func TestInitializeASA(t *testing.T) {
 			name: "driver.API.NetInterfaceGetDataLIFs returns an error",
 			setupMocks: func() {
 				driver.initialized = false
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"127.0.0.1"}, fmt.Errorf("some-error")).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"127.0.0.1"}, errors.New("some-error")).Times(1)
 			},
 			expectedError: true,
 			verify: func(t *testing.T, err error) {
@@ -435,7 +435,7 @@ func TestInitializeASA(t *testing.T) {
 				driver.initialized = false
 				driver.Config.StoragePrefix = convert.ToPtr("#test_")
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"127.0.0.1"}, nil).Times(1)
-				mockAPI.EXPECT().IgroupDestroy(ctx, driver.Config.IgroupName).Return(fmt.Errorf("api-error")).Times(1)
+				mockAPI.EXPECT().IgroupDestroy(ctx, driver.Config.IgroupName).Return(errors.New("api-error")).Times(1)
 			},
 			expectedError: true,
 			verify: func(t *testing.T, err error) {
@@ -499,7 +499,7 @@ func TestTerminate(t *testing.T) {
 			driverContext: tridentconfig.ContextCSI,
 			telemetry:     nil,
 			setupMocks: func() {
-				mockAPI.EXPECT().IgroupDestroy(ctx, driver.Config.IgroupName).Return(fmt.Errorf("api-error")).Times(1)
+				mockAPI.EXPECT().IgroupDestroy(ctx, driver.Config.IgroupName).Return(errors.New("api-error")).Times(1)
 			},
 		},
 		{
@@ -727,7 +727,7 @@ func TestCreateASA(t *testing.T) {
 		{
 			name: "Negative case - Error checking LUN existence",
 			setupMocks: func() {
-				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(false, fmt.Errorf("error checking lun existence")).Times(1)
+				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(false, errors.New("error checking lun existence")).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Error(t, err, "Should be an error")
@@ -752,7 +752,7 @@ func TestCreateASA(t *testing.T) {
 			setupMocks: func() {
 				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(false, nil).Times(1)
 				mockAPI.EXPECT().TieringPolicyValue(ctx).Return("fake").Times(1)
-				mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Return(fmt.Errorf("API error")).Times(1)
+				mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Return(errors.New("API error")).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Error(t, err, "Should be an error")
@@ -765,7 +765,7 @@ func TestCreateASA(t *testing.T) {
 				mockAPI.EXPECT().LunExists(ctx, volumeName).Return(false, nil).Times(1)
 				mockAPI.EXPECT().TieringPolicyValue(ctx).Return("fake").Times(1)
 				mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Return(nil).Times(1)
-				mockAPI.EXPECT().LunSetComment(ctx, volumeName, labels).Return(fmt.Errorf("API error")).Times(1)
+				mockAPI.EXPECT().LunSetComment(ctx, volumeName, labels).Return(errors.New("API error")).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Error(t, err)
@@ -784,7 +784,7 @@ func TestCreateASA(t *testing.T) {
 					string(driver.Config.DriverContext),
 					storagePool.InternalAttributes()[LUKSEncryption],
 					storagePool.InternalAttributes()[FormatOptions]).
-					Return(fmt.Errorf("api-error")).Times(1)
+					Return(errors.New("api-error")).Times(1)
 				mockAPI.EXPECT().LunDestroy(ctx, volumeName).Return(nil).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
@@ -1040,7 +1040,7 @@ func TestCreateCloneASA(t *testing.T) {
 		{
 			name: "Negative - LunGetByName returns an error",
 			setupMocks: func() {
-				mockAPI.EXPECT().LunGetByName(ctx, sourceLun.Name).Return(sourceLun, fmt.Errorf("error-api")).Times(1)
+				mockAPI.EXPECT().LunGetByName(ctx, sourceLun.Name).Return(sourceLun, errors.New("error-api")).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Error(t, err, "Expected an error during clone creation")
@@ -1076,7 +1076,7 @@ func TestCreateCloneASA(t *testing.T) {
 				mockAPI.EXPECT().StorageUnitCloneCreate(
 					ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
 					cloneVolConfig.CloneSourceSnapshotInternal).Return(nil).Times(1)
-				mockAPI.EXPECT().LunSetQosPolicyGroup(ctx, cloneVolConfig.InternalName, expectedQOSPolicy).Return(fmt.Errorf("api-error")).Times(1)
+				mockAPI.EXPECT().LunSetQosPolicyGroup(ctx, cloneVolConfig.InternalName, expectedQOSPolicy).Return(errors.New("api-error")).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Error(t, err, "Expected an error during clone creation")
@@ -1100,7 +1100,7 @@ func TestCreateCloneASA(t *testing.T) {
 				mockAPI.EXPECT().StorageUnitCloneCreate(
 					ctx, cloneVolConfig.InternalName, cloneVolConfig.CloneSourceVolumeInternal,
 					cloneVolConfig.CloneSourceSnapshotInternal).Return(nil).Times(1)
-				mockAPI.EXPECT().LunSetComment(ctx, cloneVolConfig.InternalName, expectedLabel).Return(fmt.Errorf("api-error")).Times(1)
+				mockAPI.EXPECT().LunSetComment(ctx, cloneVolConfig.InternalName, expectedLabel).Return(errors.New("api-error")).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Error(t, err, "Clone of a volume shouldn't be created.")
@@ -1291,7 +1291,7 @@ func TestRenameASA(t *testing.T) {
 			newName: "newLUN", mocks: func(mockAPI *mockapi.MockOntapAPI, name, newName string, err error) {
 				mockAPI.EXPECT().LunRename(ctx, name, newName).Return(err).Times(1)
 			},
-			mockError: fmt.Errorf("rename error"),
+			mockError: errors.New("rename error"),
 			expectErr: true,
 		},
 	}
@@ -1364,7 +1364,7 @@ func TestDestroyASA(t *testing.T) {
 		{
 			name: "Negative - Error checking for existing LUN",
 			setupMocks: func() {
-				mockAPI.EXPECT().LunExists(ctx, volConfig.InternalName).Return(false, fmt.Errorf("error checking LUN"))
+				mockAPI.EXPECT().LunExists(ctx, volConfig.InternalName).Return(false, errors.New("error checking LUN"))
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Error(t, err)
@@ -1375,7 +1375,7 @@ func TestDestroyASA(t *testing.T) {
 			name: "Negative - Error destroying LUN",
 			setupMocks: func() {
 				mockAPI.EXPECT().LunExists(ctx, volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunDestroy(ctx, volConfig.InternalName).Return(fmt.Errorf("error destroying LUN"))
+				mockAPI.EXPECT().LunDestroy(ctx, volConfig.InternalName).Return(errors.New("error destroying LUN"))
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Error(t, err)
@@ -1390,7 +1390,7 @@ func TestDestroyASA(t *testing.T) {
 				mockAPI.EXPECT().LunExists(ctx, volConfig.InternalName).Return(true, nil).Times(1)
 				mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("nodeName", nil).Times(1)
 				mockAPI.EXPECT().IscsiInterfaceGet(ctx, driver.Config.SVM).Return([]string{"iscsiInterfaces"}, nil).Times(1)
-				mockAPI.EXPECT().LunMapInfo(ctx, driver.Config.IgroupName, volConfig.InternalName).Return(1, fmt.Errorf("error")).Times(1)
+				mockAPI.EXPECT().LunMapInfo(ctx, driver.Config.IgroupName, volConfig.InternalName).Return(1, errors.New("error")).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Error(t, err, "Expected an error.")
@@ -1488,7 +1488,7 @@ func TestPublishASA(t *testing.T) {
 		{
 			name: "Negative - Volume not found",
 			setupMocks: func() {
-				mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(nil, fmt.Errorf("volume not found"))
+				mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(nil, errors.New("volume not found"))
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Error(t, err, "Expected error when volume is not found")
@@ -1508,7 +1508,7 @@ func TestPublishASA(t *testing.T) {
 			name: "Negative - Error getting target info",
 			setupMocks: func() {
 				mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil)
-				mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("nodeName", fmt.Errorf("error")).Times(1)
+				mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("nodeName", errors.New("error")).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Error(t, err, "Expected error when getting target info fails")
@@ -1522,7 +1522,7 @@ func TestPublishASA(t *testing.T) {
 				mockAPI.EXPECT().IscsiInterfaceGet(ctx, driver.Config.SVM).Return([]string{"iscsiInterfaces"}, nil).Times(1)
 				mockAPI.EXPECT().LunGetFSType(ctx, volConfig.InternalName).Return("lunFSType", nil).Times(1)
 				mockAPI.EXPECT().LunGetAttribute(ctx, volConfig.InternalName, "formatOptions").Return("formatOptions", nil).Times(1)
-				mockAPI.EXPECT().LunGetByName(ctx, volConfig.InternalName).Return(nil, fmt.Errorf("error")).Times(1)
+				mockAPI.EXPECT().LunGetByName(ctx, volConfig.InternalName).Return(nil, errors.New("error")).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Error(t, err, "Expected error when getting target info fails")
@@ -1563,7 +1563,7 @@ func TestUnpublishASA(t *testing.T) {
 			HostName:    "testHost",
 			TridentUUID: "testUUID",
 		}
-		volConfig.AccessInfo.IscsiIgroup = fmt.Sprintf(publishInfo.HostName + "-" + publishInfo.TridentUUID)
+		volConfig.AccessInfo.IscsiIgroup = publishInfo.HostName + "-" + publishInfo.TridentUUID
 		return volConfig, publishInfo
 	}
 
@@ -1594,7 +1594,7 @@ func TestUnpublishASA(t *testing.T) {
 		{
 			name: "Error unmapping LUN from igroup",
 			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().LunMapInfo(ctx, "testHost-testUUID", "testVol").Return(0, fmt.Errorf("error")).Times(1)
+				mockAPI.EXPECT().LunMapInfo(ctx, "testHost-testUUID", "testVol").Return(0, errors.New("error")).Times(1)
 			},
 			driverContext: tridentconfig.ContextCSI,
 			expectedError: true,
@@ -1607,7 +1607,7 @@ func TestUnpublishASA(t *testing.T) {
 			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().LunMapInfo(ctx, "testHost-testUUID", "testVol").Return(lunID, nil).Times(1)
 				mockAPI.EXPECT().LunUnmap(ctx, "testHost-testUUID", "testVol").Return(nil).Times(1)
-				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, "testHost-testUUID").Return([]string{}, fmt.Errorf("error")).Times(1)
+				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, "testHost-testUUID").Return([]string{}, errors.New("error")).Times(1)
 			},
 			driverContext: tridentconfig.ContextCSI,
 			expectedError: true,
@@ -1684,7 +1684,7 @@ func TestGetSnapshot(t *testing.T) {
 			setupMocks: func() {
 				mockAPI.EXPECT().StorageUnitSnapshotInfo(
 					ctx, snapConfig.InternalName, snapConfig.VolumeInternalName,
-				).Return(nil, fmt.Errorf("error")).Times(1)
+				).Return(nil, errors.New("error")).Times(1)
 			},
 			verify: func(t *testing.T, snap *storage.Snapshot, err error) {
 				assert.Error(t, err, "Expected error when retrieving snapshot fails")
@@ -1756,7 +1756,7 @@ func TestGetSnapshots(t *testing.T) {
 			name: "Negative - Error retrieving snapshots",
 			setupMocks: func() {
 				mockAPI.EXPECT().StorageUnitSnapshotList(
-					ctx, volConfig.InternalName).Return(nil, fmt.Errorf("error")).Times(1)
+					ctx, volConfig.InternalName).Return(nil, errors.New("error")).Times(1)
 			},
 			verify: func(t *testing.T, snaps []*storage.Snapshot, err error) {
 				assert.Error(t, err, "Expected error when retrieving snapshots fails")
@@ -1820,19 +1820,19 @@ func TestCreateSnapshot(t *testing.T) {
 		{
 			name: "Error creating snapshot",
 			setupMock: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().StorageUnitSnapshotCreate(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(fmt.Errorf("error creating snapshot")).Times(1)
+				mockAPI.EXPECT().StorageUnitSnapshotCreate(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(errors.New("error creating snapshot")).Times(1)
 			},
 			expectedSnapshot: nil,
-			expectedError:    fmt.Errorf("error creating snapshot"),
+			expectedError:    errors.New("error creating snapshot"),
 		},
 		{
 			name: "Error retrieving snapshot info",
 			setupMock: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().StorageUnitSnapshotCreate(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(nil).Times(1)
-				mockAPI.EXPECT().StorageUnitSnapshotInfo(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(nil, fmt.Errorf("error retrieving snapshot info")).Times(1)
+				mockAPI.EXPECT().StorageUnitSnapshotInfo(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(nil, errors.New("error retrieving snapshot info")).Times(1)
 			},
 			expectedSnapshot: nil,
-			expectedError:    fmt.Errorf("error retrieving snapshot info"),
+			expectedError:    errors.New("error retrieving snapshot info"),
 		},
 		{
 			name: "No snapshot created",
@@ -1905,7 +1905,7 @@ func TestRestoreSnapshot(t *testing.T) {
 			setupMocks: func() {
 				mockAPI.EXPECT().StorageUnitSnapshotRestore(
 					ctx, snapConfig.InternalName, snapConfig.VolumeInternalName,
-				).Return(fmt.Errorf("error")).Times(1)
+				).Return(errors.New("error")).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Error(t, err, "Expected error during snapshot restore")
@@ -1975,7 +1975,7 @@ func TestDeleteSnapshot(t *testing.T) {
 			setupMocks: func() {
 				mockAPI.EXPECT().StorageUnitSnapshotDelete(
 					ctx, snapConfig.InternalName, snapConfig.VolumeInternalName,
-				).Return(fmt.Errorf("general error")).Times(1)
+				).Return(errors.New("general error")).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Error(t, err, "Expected general error during snapshot deletion")
@@ -2025,7 +2025,7 @@ func TestGet(t *testing.T) {
 	t.Run("Negative - Test2 - Error checking LUN existence", func(t *testing.T) {
 		initializeFunction()
 
-		mockAPI.EXPECT().LunExists(ctx, "testLUN").Return(false, fmt.Errorf("error checking LUN")).Times(1)
+		mockAPI.EXPECT().LunExists(ctx, "testLUN").Return(false, errors.New("error checking LUN")).Times(1)
 
 		err := driver.Get(ctx, "testLUN")
 		assert.Error(t, err, "Expected error when checking LUN existence fails")
@@ -2281,10 +2281,10 @@ func TestGetVolumeExternalWrappersASA(t *testing.T) {
 		{
 			name: "Error retrieving volumes",
 			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeListByPrefix(ctx, *driver.Config.StoragePrefix).Return(nil, fmt.Errorf("volume error")).Times(1)
+				mockAPI.EXPECT().VolumeListByPrefix(ctx, *driver.Config.StoragePrefix).Return(nil, errors.New("volume error")).Times(1)
 			},
 			storagePrefix:      "prefix_",
-			expectedVolumes:    []*storage.VolumeExternalWrapper{{Volume: nil, Error: fmt.Errorf("volume error")}},
+			expectedVolumes:    []*storage.VolumeExternalWrapper{{Volume: nil, Error: errors.New("volume error")}},
 			expectedErrorCount: 1,
 		},
 		{
@@ -2293,10 +2293,10 @@ func TestGetVolumeExternalWrappersASA(t *testing.T) {
 				mockAPI.EXPECT().VolumeListByPrefix(ctx, *driver.Config.StoragePrefix).Return([]*api.Volume{
 					{Name: "prefix_vol1"},
 				}, nil).Times(1)
-				mockAPI.EXPECT().LunList(ctx, *driver.Config.StoragePrefix+"*").Return(nil, fmt.Errorf("LUN error")).Times(1)
+				mockAPI.EXPECT().LunList(ctx, *driver.Config.StoragePrefix+"*").Return(nil, errors.New("LUN error")).Times(1)
 			},
 			storagePrefix:      "prefix_",
-			expectedVolumes:    []*storage.VolumeExternalWrapper{{Volume: nil, Error: fmt.Errorf("LUN error")}},
+			expectedVolumes:    []*storage.VolumeExternalWrapper{{Volume: nil, Error: errors.New("LUN error")}},
 			expectedErrorCount: 1,
 		},
 		{
@@ -2395,10 +2395,10 @@ func TestGetVolumeForImportASA(t *testing.T) {
 			name:     "Error retrieving volume",
 			volumeID: "testVol",
 			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeInfo(ctx, "testVol").Return(nil, fmt.Errorf("volume error")).Times(1)
+				mockAPI.EXPECT().VolumeInfo(ctx, "testVol").Return(nil, errors.New("volume error")).Times(1)
 			},
 			expectedVolume: nil,
-			expectedError:  fmt.Errorf("volume error"),
+			expectedError:  errors.New("volume error"),
 		},
 		{
 			name:     "Error retrieving LUN",
@@ -2409,10 +2409,10 @@ func TestGetVolumeForImportASA(t *testing.T) {
 					SnapshotPolicy: "default",
 					Aggregates:     []string{"aggr1"},
 				}, nil).Times(1)
-				mockAPI.EXPECT().LunGetByName(ctx, "testVol").Return(nil, fmt.Errorf("LUN error")).Times(1)
+				mockAPI.EXPECT().LunGetByName(ctx, "testVol").Return(nil, errors.New("LUN error")).Times(1)
 			},
 			expectedVolume: nil,
-			expectedError:  fmt.Errorf("LUN error"),
+			expectedError:  errors.New("LUN error"),
 		},
 	}
 
@@ -2733,7 +2733,7 @@ func TestOntapASAStorageDriver_Resize_APIErrors(t *testing.T) {
 	volConfig := getASAVolumeConfig()
 
 	// Case: Failure while checking if LUN exists
-	mockAPI.EXPECT().LunExists(ctx, "trident-pvc-1234").Return(false, fmt.Errorf("error checking LUN existence"))
+	mockAPI.EXPECT().LunExists(ctx, "trident-pvc-1234").Return(false, errors.New("error checking LUN existence"))
 
 	err := driver.Resize(ctx, &volConfig, 2147483648) // 2GB
 
@@ -2748,7 +2748,7 @@ func TestOntapASAStorageDriver_Resize_APIErrors(t *testing.T) {
 
 	// Case: Failure while getting LUN size
 	mockAPI.EXPECT().LunExists(ctx, "trident-pvc-1234").Return(true, nil)
-	mockAPI.EXPECT().LunSize(ctx, "trident-pvc-1234").Return(0, fmt.Errorf("error getting LUN size"))
+	mockAPI.EXPECT().LunSize(ctx, "trident-pvc-1234").Return(0, errors.New("error getting LUN size"))
 
 	err = driver.Resize(ctx, &volConfig, 2147483648) // 2GB
 
@@ -2757,7 +2757,7 @@ func TestOntapASAStorageDriver_Resize_APIErrors(t *testing.T) {
 	// Case: Failure while resizing LUN
 	mockAPI.EXPECT().LunExists(ctx, "trident-pvc-1234").Return(true, nil)
 	mockAPI.EXPECT().LunSize(ctx, "trident-pvc-1234").Return(1073741824, nil)
-	mockAPI.EXPECT().LunSetSize(ctx, "trident-pvc-1234", "2147483648").Return(uint64(0), fmt.Errorf("error resizing LUN"))
+	mockAPI.EXPECT().LunSetSize(ctx, "trident-pvc-1234", "2147483648").Return(uint64(0), errors.New("error resizing LUN"))
 
 	err = driver.Resize(ctx, &volConfig, 2147483648) // 2GB
 
@@ -3090,7 +3090,7 @@ func TestOntapASAStorageDriver_APIErrors(t *testing.T) {
 			name: "LunInfo_Fail",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().LunGetByName(ctx, originalVolumeName).Return(
-					nil, fmt.Errorf("error while fetching LUN"))
+					nil, errors.New("error while fetching LUN"))
 			},
 			wantErr:       assert.Error,
 			assertMessage: "Expected error while fetching LUN, got nil.",
@@ -3114,7 +3114,7 @@ func TestOntapASAStorageDriver_APIErrors(t *testing.T) {
 				}
 				mockAPI.EXPECT().LunGetByName(ctx, originalVolumeName).Return(&lun, nil)
 				mockAPI.EXPECT().VolumeInfo(ctx, originalVolumeName).Return(nil,
-					fmt.Errorf("error while fetching volume"))
+					errors.New("error while fetching volume"))
 			},
 			wantErr:       assert.Error,
 			assertMessage: "Expected error while fetching volume, got nil.",
@@ -3150,7 +3150,7 @@ func TestOntapASAStorageDriver_APIErrors(t *testing.T) {
 				mockAPI.EXPECT().LunGetByName(ctx, originalVolumeName).Return(&lun, nil)
 				mockAPI.EXPECT().VolumeInfo(ctx, originalVolumeName).Return(&volume, nil)
 				mockAPI.EXPECT().LunRename(ctx, originalVolumeName, volConfig.InternalName).Return(
-					fmt.Errorf("error while renaming LUN"))
+					errors.New("error while renaming LUN"))
 			},
 			wantErr:       assert.Error,
 			assertMessage: "Expected LUN rename to fail, but it succeeded",
@@ -3177,7 +3177,7 @@ func TestOntapASAStorageDriver_APIErrors(t *testing.T) {
 				mockAPI.EXPECT().LunRename(ctx, originalVolumeName, volConfig.InternalName).Return(nil)
 				mockAPI.EXPECT().LunSetComment(ctx, volConfig.InternalName,
 					"{\"provisioning\":{\"app\":\"my-db-app\",\"label\":\"gold\"}}").Return(
-					fmt.Errorf("error while setting LUN comment"))
+					errors.New("error while setting LUN comment"))
 			},
 			wantErr:       assert.Error,
 			assertMessage: "Expected LUN set comment to fail, but it succeeded",
@@ -3205,7 +3205,7 @@ func TestOntapASAStorageDriver_APIErrors(t *testing.T) {
 				mockAPI.EXPECT().LunSetComment(ctx, volConfig.InternalName,
 					"{\"provisioning\":{\"app\":\"my-db-app\",\"label\":\"gold\"}}").Return(nil)
 				mockAPI.EXPECT().LunListIgroupsMapped(ctx, volConfig.InternalName).Return(
-					nil, fmt.Errorf("error while listing igroups of LUN"))
+					nil, errors.New("error while listing igroups of LUN"))
 			},
 			wantErr:       assert.Error,
 			assertMessage: "Expected LUN list igroup to fail, but it succeeded",
@@ -3235,7 +3235,7 @@ func TestOntapASAStorageDriver_APIErrors(t *testing.T) {
 					"{\"provisioning\":{\"app\":\"my-db-app\",\"label\":\"gold\"}}").Return(nil)
 				mockAPI.EXPECT().LunListIgroupsMapped(ctx, volConfig.InternalName).Return(igroups, nil)
 				mockAPI.EXPECT().LunUnmap(ctx, gomock.Any(), volConfig.InternalName).Return(
-					fmt.Errorf("error while unmaping igroup of LUN")).AnyTimes()
+					errors.New("error while unmaping igroup of LUN")).AnyTimes()
 			},
 			wantErr:       assert.Error,
 			assertMessage: "Expected LUN unmap igroup to fail, but it succeeded",

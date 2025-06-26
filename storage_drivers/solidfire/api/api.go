@@ -68,7 +68,7 @@ func NewFromParameters(pendpoint, psvip string, pcfg Config) (c *Client, err err
 		}
 		caCertPool := x509.NewCertPool()
 		if !caCertPool.AppendCertsFromPEM(caCert) {
-			return nil, fmt.Errorf("failed to append CA certificate, certificate may be invalid or malformed")
+			return nil, errors.New("failed to append CA certificate, certificate may be invalid or malformed")
 		}
 		tcfg.RootCAs = caCertPool
 		tcfg.InsecureSkipVerify = false

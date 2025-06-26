@@ -4,7 +4,6 @@ package acp
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -75,7 +74,7 @@ func (c *client) GetVersion(ctx context.Context) (*version.Version, error) {
 
 	if acpVersion == nil {
 		Logc(ctx).Error("No version in response from Trident-ACP REST API.")
-		return nil, fmt.Errorf("no version in response from Trident-ACP REST API")
+		return nil, errors.New("no version in response from Trident-ACP REST API")
 	}
 
 	Logc(ctx).WithField("version", acpVersion.String()).Debug("Received Trident-ACP version.")
@@ -116,7 +115,7 @@ func (c *client) GetVersionWithBackoff(ctx context.Context) (*version.Version, e
 		return nil, err
 	} else if v == nil {
 		Logc(ctx).Error("No version in response from Trident-ACP REST API.")
-		return nil, fmt.Errorf("no version in response from Trident-ACP REST API")
+		return nil, errors.New("no version in response from Trident-ACP REST API")
 	}
 
 	Logc(ctx).WithField("version", v.String()).Debug("The Trident-ACP REST API is responsive.")

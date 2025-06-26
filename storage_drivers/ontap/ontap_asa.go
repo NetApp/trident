@@ -1156,7 +1156,7 @@ func (d *ASAStorageDriver) Resize(
 			"error": err,
 			"name":  name,
 		}).Error("Error checking for existing LUN.")
-		return fmt.Errorf("error occurred checking for existing LUN")
+		return errors.New("error occurred checking for existing LUN")
 	}
 	if !volExists {
 		return tridenterrors.NotFoundError("LUN %s does not exist", name)

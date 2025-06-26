@@ -1538,7 +1538,7 @@ func TestClient_handleInvalidSerials_errSerialFiles(t *testing.T) {
 
 	mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{devicePath})
 
-	mockDevices.EXPECT().GetLunSerial(context.TODO(), devicePath).Return("", fmt.Errorf("mock error"))
+	mockDevices.EXPECT().GetLunSerial(context.TODO(), devicePath).Return("", errors.New("mock error"))
 
 	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
 		mockOsClient, mockDevices, mockFileSystem,
@@ -1865,7 +1865,7 @@ func TestPrepareDeviceForRemoval_VerifyMpathError(t *testing.T) {
 	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, fs := NewDrivers()
 
 	mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
-		gomock.Any()).Return(true, fmt.Errorf("error"))
+		gomock.Any()).Return(true, errors.New("error"))
 
 	fcpClient := NewDetailed("/host", mockCommand, DefaultSelfHealingExclusion,
 		mockOsClient, mockDevices, mockFileSystem,
@@ -1964,7 +1964,7 @@ func TestRemoveSCSIDevice_multiPathFlushFailed(t *testing.T) {
 	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, fs := NewDrivers()
 
 	mockDevices.EXPECT().ListAllDevices(gomock.Any())
-	mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
+	mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any()).Return(errors.New("error"))
 
 	fcpClient := NewDetailed("/host", mockCommand, DefaultSelfHealingExclusion,
 		mockOsClient, mockDevices, mockFileSystem,
@@ -1986,7 +1986,7 @@ func TestRemoveSCSIDevice_deviceFlushFailed(t *testing.T) {
 
 	mockDevices.EXPECT().ListAllDevices(gomock.Any())
 	mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any()).Return(nil)
-	mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
+	mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("error"))
 
 	fcpClient := NewDetailed("/host", mockCommand, DefaultSelfHealingExclusion,
 		mockOsClient, mockDevices, mockFileSystem,
@@ -2009,7 +2009,7 @@ func TestRemoveSCSIDevice_RemoveDeviceFailed(t *testing.T) {
 	mockDevices.EXPECT().ListAllDevices(gomock.Any())
 	mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any())
 	mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-	mockDevices.EXPECT().RemoveDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
+	mockDevices.EXPECT().RemoveDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("error"))
 
 	fcpClient := NewDetailed("/host", mockCommand, DefaultSelfHealingExclusion,
 		mockOsClient, mockDevices, mockFileSystem,
@@ -2034,7 +2034,7 @@ func TestRemoveSCSIDevice_WaitForRemovalFailed(t *testing.T) {
 	mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 	mockDevices.EXPECT().RemoveDevice(gomock.Any(), gomock.Any(), gomock.Any())
 	mockDevices.EXPECT().WaitForDevicesRemoval(gomock.Any(), DevPrefix, gomock.Any(),
-		devicesRemovalMaxWaitTime).Return(fmt.Errorf("error"))
+		devicesRemovalMaxWaitTime).Return(errors.New("error"))
 
 	fcpClient := NewDetailed("/host", mockCommand, DefaultSelfHealingExclusion,
 		mockOsClient, mockDevices, mockFileSystem,

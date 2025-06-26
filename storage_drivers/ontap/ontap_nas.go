@@ -391,7 +391,7 @@ func (d *NASStorageDriver) Create(
 		); aggrLimitsErr != nil {
 			errMessage := fmt.Sprintf("ONTAP-NAS pool %s/%s; error: %v", storagePool.Name(), aggregate, aggrLimitsErr)
 			Logc(ctx).Error(errMessage)
-			createErrors = append(createErrors, fmt.Errorf(errMessage))
+			createErrors = append(createErrors, errors.New(errMessage))
 			continue
 		}
 
@@ -430,7 +430,7 @@ func (d *NASStorageDriver) Create(
 			errMessage := fmt.Sprintf("ONTAP-NAS pool %s/%s; error creating volume %s: %v", storagePool.Name(),
 				aggregate, name, err)
 			Logc(ctx).Error(errMessage)
-			createErrors = append(createErrors, fmt.Errorf(errMessage))
+			createErrors = append(createErrors, errors.New(errMessage))
 			continue
 		}
 

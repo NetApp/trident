@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/models"
 )
 
@@ -249,5 +250,5 @@ func (h *FcpReconcileHelper) CheckZoningExistsWithTarget(ctx context.Context, ta
 		}
 	}
 
-	return false, fmt.Errorf("no zoned ports found")
+	return false, errors.New("no zoned ports found")
 }

@@ -76,10 +76,10 @@ func (d *LUKSDevice) EnsureDeviceMappedOnHost(ctx context.Context, name string, 
 	// Try to Open with current luks passphrase
 	luksPassphraseName, luksPassphrase, previousLUKSPassphraseName, previousLUKSPassphrase := GetLUKSPassphrasesFromSecretMap(secrets)
 	if luksPassphrase == "" {
-		return false, fmt.Errorf("LUKS passphrase cannot be empty")
+		return false, errors.New("LUKS passphrase cannot be empty")
 	}
 	if luksPassphraseName == "" {
-		return false, fmt.Errorf("LUKS passphrase name cannot be empty")
+		return false, errors.New("LUKS passphrase name cannot be empty")
 	}
 
 	Logc(ctx).WithFields(LogFields{
@@ -99,10 +99,10 @@ func (d *LUKSDevice) EnsureDeviceMappedOnHost(ctx context.Context, name string, 
 		return luksFormatted, fmt.Errorf("could not open LUKS device; %v", err)
 	}
 	if luksPassphrase == previousLUKSPassphrase {
-		return luksFormatted, fmt.Errorf("could not open LUKS device, previous passphrase matches current")
+		return luksFormatted, errors.New("could not open LUKS device, previous passphrase matches current")
 	}
 	if previousLUKSPassphraseName == "" {
-		return luksFormatted, fmt.Errorf("could not open LUKS device, no previous passphrase name provided")
+		return luksFormatted, errors.New("could not open LUKS device, no previous passphrase name provided")
 	}
 	Logc(ctx).WithFields(LogFields{
 		"volume":               name,
@@ -189,7 +189,7 @@ func GetDmDevicePathFromLUKSLegacyPath(
 	ctx context.Context, command execCmd.Command, devicePath string,
 ) (string, error) {
 	if !IsLegacyDevicePath(devicePath) {
-		return "", fmt.Errorf("device path is not a legacy LUKS device path")
+		return "", errors.New("device path is not a legacy LUKS device path")
 	}
 	lsblk := lsblk.NewLsblkUtilDetailed(command)
 	dev, err := lsblk.GetParentDeviceKname(ctx, devicePath)

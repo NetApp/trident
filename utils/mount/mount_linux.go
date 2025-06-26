@@ -347,7 +347,7 @@ func (client *LinuxClient) EnsureFileExists(ctx context.Context, path string) er
 	if info, err := client.os.Stat(path); err == nil {
 		if info.IsDir() {
 			Logc(ctx).WithFields(fields).Error("Path exists but is a directory")
-			return fmt.Errorf("path exists but is a directory")
+			return errors.New("path exists but is a directory")
 		}
 		return nil
 

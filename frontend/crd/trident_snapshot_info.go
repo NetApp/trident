@@ -195,7 +195,7 @@ func (c *TridentCrdController) getSnapshotHandle(
 		Logx(ctx).WithField("snapshotDriver", snapContent.Spec.Driver).Debug(message)
 		c.recorder.Eventf(snapshotInfo, corev1.EventTypeWarning, netappv1.SnapshotInfoInvalid,
 			"VolumeSnapshot '%v' is not a Trident snapshot", k8sSnapshot.Name)
-		return "", fmt.Errorf(message)
+		return "", errors.New(message)
 	}
 
 	// Check if VolumeSnapshotContent has internal name set

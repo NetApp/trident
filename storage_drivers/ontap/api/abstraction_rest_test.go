@@ -160,7 +160,7 @@ func TestOntapAPIREST_LunGetFSType(t *testing.T) {
 
 	// When value is present in LUN comment
 	mock.EXPECT().LunGetAttribute(ctx, "/vol/volumeName/storagePrefix_lunName",
-		"com.netapp.ndvp.fstype").Return("", fmt.Errorf("not able to find fstype attribute"))
+		"com.netapp.ndvp.fstype").Return("", errors.New("not able to find fstype attribute"))
 	commentJSON := `
 	{
 	    "lunAttributes": {
@@ -184,9 +184,9 @@ func TestOntapAPIREST_LunGetFSType_Failure(t *testing.T) {
 
 	// Case 1: LunGetComment fails
 	mock.EXPECT().LunGetAttribute(ctx, "/vol/volumeName/storagePrefix_lunName",
-		"com.netapp.ndvp.fstype").Return("", fmt.Errorf("not able to find fstype attribute"))
+		"com.netapp.ndvp.fstype").Return("", errors.New("not able to find fstype attribute"))
 	mock.EXPECT().LunGetComment(ctx,
-		"/vol/volumeName/storagePrefix_lunName").Return("", fmt.Errorf("failed to get LUN comment"))
+		"/vol/volumeName/storagePrefix_lunName").Return("", errors.New("failed to get LUN comment"))
 	fstype, err := oapi.LunGetFSType(ctx, "/vol/volumeName/storagePrefix_lunName")
 	assert.Empty(t, fstype)
 	assert.Error(t, err)
@@ -198,7 +198,7 @@ func TestOntapAPIREST_LunGetFSType_Failure(t *testing.T) {
 	        "fstype": "ext4"
 	}`
 	mock.EXPECT().LunGetAttribute(ctx, "/vol/volumeName/storagePrefix_lunName",
-		"com.netapp.ndvp.fstype").Return("", fmt.Errorf("not able to find fstype attribute"))
+		"com.netapp.ndvp.fstype").Return("", errors.New("not able to find fstype attribute"))
 	mock.EXPECT().LunGetComment(ctx,
 		"/vol/volumeName/storagePrefix_lunName").Return(invalidJSON, nil)
 	fstype, err = oapi.LunGetFSType(ctx, "/vol/volumeName/storagePrefix_lunName")
@@ -213,7 +213,7 @@ func TestOntapAPIREST_LunGetFSType_Failure(t *testing.T) {
 	    }
 	}`
 	mock.EXPECT().LunGetAttribute(ctx, "/vol/volumeName/storagePrefix_lunName",
-		"com.netapp.ndvp.fstype").Return("", fmt.Errorf("not able to find fstype attribute"))
+		"com.netapp.ndvp.fstype").Return("", errors.New("not able to find fstype attribute"))
 	mock.EXPECT().LunGetComment(ctx,
 		"/vol/volumeName/storagePrefix_lunName").Return(commentJSON, nil)
 	fstype, err = oapi.LunGetFSType(ctx, "/vol/volumeName/storagePrefix_lunName")
@@ -228,7 +228,7 @@ func TestOntapAPIREST_LunGetFSType_Failure(t *testing.T) {
 	    }
 	}`
 	mock.EXPECT().LunGetAttribute(ctx, "/vol/volumeName/storagePrefix_lunName",
-		"com.netapp.ndvp.fstype").Return("", fmt.Errorf("not able to find fstype attribute"))
+		"com.netapp.ndvp.fstype").Return("", errors.New("not able to find fstype attribute"))
 	mock.EXPECT().LunGetComment(ctx,
 		"/vol/volumeName/storagePrefix_lunName").Return(invalidCommentJSON, nil)
 	fstype, err = oapi.LunGetFSType(ctx, "/vol/volumeName/storagePrefix_lunName")
@@ -258,7 +258,7 @@ func TestNVMeNamespaceCreate(t *testing.T) {
 	assert.NoError(t, err)
 
 	// case 2: Error returned while creating namespace
-	mock.EXPECT().NVMeNamespaceCreate(ctx, ns).Return(fmt.Errorf("Error while creating namespace"))
+	mock.EXPECT().NVMeNamespaceCreate(ctx, ns).Return(errors.New("Error while creating namespace"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	err = oapi.NVMeNamespaceCreate(ctx, ns)
 	assert.Error(t, err)
@@ -311,7 +311,7 @@ func TestNVMeNamespaceExists(t *testing.T) {
 	assert.True(t, exists, "expected namespace to exist")
 
 	// case 2: error while getting namespace
-	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name, gomock.Any()).Return(nil, fmt.Errorf("Error while getting namespace"))
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name, gomock.Any()).Return(nil, errors.New("Error while getting namespace"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	exists, err = oapi.NVMeNamespaceExists(ctx, Name)
 	assert.Error(t, err)
@@ -380,7 +380,7 @@ func TestNVMeNamespaceGetByName(t *testing.T) {
 	assert.Equal(t, Name, namespace.Name, "namespace name does not match")
 
 	// case 2: error while getting namespace
-	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name, gomock.Any()).Return(nil, fmt.Errorf("Error while getting namespace"))
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name, gomock.Any()).Return(nil, errors.New("Error while getting namespace"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	namespace, err = oapi.NVMeNamespaceGetByName(ctx, Name)
 	assert.Error(t, err)
@@ -445,7 +445,7 @@ func TestNVMeNamespaceList(t *testing.T) {
 	assert.Equal(t, Name, namespaces[0].Name, "namespace does not match")
 
 	// case 2: error while getting namespace list
-	mock.EXPECT().NVMeNamespaceList(ctx, Name, gomock.Any()).Return(nil, fmt.Errorf("Error getting namespace list"))
+	mock.EXPECT().NVMeNamespaceList(ctx, Name, gomock.Any()).Return(nil, errors.New("Error getting namespace list"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	_, err = oapi.NVMeNamespaceList(ctx, Name)
 	assert.Error(t, err)
@@ -509,7 +509,7 @@ func TestNVMeNamespaceDelete(t *testing.T) {
 	assert.NoError(t, err, "No error expected while deleting namespace")
 
 	// case 2: Error while getting namespace
-	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name, gomock.Any()).Return(nil, fmt.Errorf("error while getting namespace"))
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name, gomock.Any()).Return(nil, errors.New("error while getting namespace"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	err = oapi.NVMeNamespaceDelete(ctx, Name)
 	assert.Error(t, err, "Expected error while deleting namespace")
@@ -522,7 +522,7 @@ func TestNVMeNamespaceDelete(t *testing.T) {
 
 	// case 4: Error while deleting namespace
 	mock.EXPECT().NVMeNamespaceGetByName(ctx, Name, gomock.Any()).Return(ns, nil)
-	mock.EXPECT().NVMeNamespaceDelete(ctx, UUID).Return(fmt.Errorf("error while deleting namespace"))
+	mock.EXPECT().NVMeNamespaceDelete(ctx, UUID).Return(errors.New("error while deleting namespace"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	err = oapi.NVMeNamespaceDelete(ctx, Name)
 	assert.Error(t, err, "Expected error while deleting namespace")
@@ -548,7 +548,7 @@ func TestAddNamespaceToSubsystemMap(t *testing.T) {
 	assert.NoError(t, err)
 
 	// case 2: Error returned while adding namespace to subsystem
-	mock.EXPECT().NVMeSubsystemAddNamespace(ctx, subsysUUID, nsUUID).Return(fmt.Errorf("Error while adding NS to subsystem"))
+	mock.EXPECT().NVMeSubsystemAddNamespace(ctx, subsysUUID, nsUUID).Return(errors.New("Error while adding NS to subsystem"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	err = oapi.NVMeSubsystemAddNamespace(ctx, subsysUUID, nsUUID)
 	assert.Error(t, err)
@@ -576,7 +576,7 @@ func TestNVMeSubsystemRemoveNamespace(t *testing.T) {
 	// case 2: Error returned while adding namespace to subsystem
 	nsUUID = "fakeNsUUID"
 	subsystemUUID = "fakeSubsystemUUID"
-	mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, nsUUID).Return(fmt.Errorf("Error while removing NS to subsystem"))
+	mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, nsUUID).Return(errors.New("Error while removing NS to subsystem"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	err = oapi.NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, nsUUID)
 	assert.Error(t, err)
@@ -603,7 +603,7 @@ func TestNVMeSubsystemGetNamespaceCount(t *testing.T) {
 
 	// case 2: Error returned while adding namespace to subsystem
 	subsystemUUID = "fakeSubsystemUUID"
-	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(0), fmt.Errorf("Error while removing NS to subsystem"))
+	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(0), errors.New("Error while removing NS to subsystem"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	count, err = oapi.NVMeSubsystemGetNamespaceCount(ctx, subsystemUUID)
 	assert.Equal(t, int64(0), count, "NVMe Subsystem count expected zero. It is non zero")
@@ -630,7 +630,7 @@ func TestNVMeSubsystemDelete(t *testing.T) {
 
 	// case 2: Error returned while deleting subsystem
 	subsystemUUID = "fakeSubsystemUUID"
-	mock.EXPECT().NVMeSubsystemDelete(ctx, subsystemUUID).Return(fmt.Errorf("Error while deleting subsystem"))
+	mock.EXPECT().NVMeSubsystemDelete(ctx, subsystemUUID).Return(errors.New("Error while deleting subsystem"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	err = oapi.NVMeSubsystemDelete(ctx, subsystemUUID)
 	assert.Error(t, err)
@@ -661,7 +661,7 @@ func TestNVMeAddHostToSubsystem(t *testing.T) {
 	assert.NoError(t, err)
 
 	// case 2: Error returned while getting host of subsystem
-	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return(nil, fmt.Errorf("Error while getting hosts for subsystem"))
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return(nil, errors.New("Error while getting hosts for subsystem"))
 	mock.EXPECT().NVMeAddHostNqnToSubsystem(ctx, hostNQN, subsystemUUID).AnyTimes().Return(nil)
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	err = oapi.NVMeAddHostToSubsystem(ctx, hostNQN, subsystemUUID)
@@ -669,7 +669,7 @@ func TestNVMeAddHostToSubsystem(t *testing.T) {
 
 	// case 3: Error returned while adding host to subsystem
 	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1}, nil)
-	mock.EXPECT().NVMeAddHostNqnToSubsystem(ctx, hostNQN1, subsystemUUID).Return(fmt.Errorf("Error while adding hosts to subsystem"))
+	mock.EXPECT().NVMeAddHostNqnToSubsystem(ctx, hostNQN1, subsystemUUID).Return(errors.New("Error while adding hosts to subsystem"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	err = oapi.NVMeAddHostToSubsystem(ctx, hostNQN1, subsystemUUID)
 	assert.Error(t, err)
@@ -698,7 +698,7 @@ func TestNVMeRemoveHostFromSubsystem(t *testing.T) {
 	subsystemUUID := "fakesubsysUUID"
 	host1 := &models.NvmeSubsystemHost{}
 
-	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return(nil, fmt.Errorf("Error while getting hosts for subsystem"))
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return(nil, errors.New("Error while getting hosts for subsystem"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 
 	err = oapi.NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID)
@@ -719,7 +719,7 @@ func TestNVMeRemoveHostFromSubsystem(t *testing.T) {
 	host1.Nqn = &hostNQN
 	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1}, nil)
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID).Return(fmt.Errorf("Error while removing host"))
+	mock.EXPECT().NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID).Return(errors.New("Error while removing host"))
 
 	err = oapi.NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID)
 
@@ -766,7 +766,7 @@ func TestNVMeSubsystemCreate(t *testing.T) {
 	assert.Equal(t, subsystem.NQN, targetNQN, "host does not match")
 
 	// case 2: Error getting susbsystem info from backend
-	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(nil, fmt.Errorf("Error getting susbsystem info"))
+	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(nil, errors.New("Error getting susbsystem info"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	_, err = oapi.NVMeSubsystemCreate(ctx, subsystemName, subsystemComment)
 	assert.Error(t, err)
@@ -783,7 +783,7 @@ func TestNVMeSubsystemCreate(t *testing.T) {
 
 	// case 4: Subsystem not present, create a new one with failure
 	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(nil, nil)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, subsystemName, subsystemComment).Return(nil, fmt.Errorf("Error creating susbsystem"))
+	mock.EXPECT().NVMeSubsystemCreate(ctx, subsystemName, subsystemComment).Return(nil, errors.New("Error creating susbsystem"))
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	newsubsys, err = oapi.NVMeSubsystemCreate(ctx, subsystemName, subsystemComment)
 	assert.Error(t, err)
@@ -817,7 +817,7 @@ func TestNVMeEnsureNamespaceMapped(t *testing.T) {
 
 	// case 1: Error getting namespace from subsystem
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystem.UUID, nsUUID).Return(false, fmt.Errorf("Error getting namespace subsystem mapping"))
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystem.UUID, nsUUID).Return(false, errors.New("Error getting namespace subsystem mapping"))
 
 	err = oapi.NVMeEnsureNamespaceMapped(ctx, subsystem.UUID, nsUUID)
 
@@ -834,7 +834,7 @@ func TestNVMeEnsureNamespaceMapped(t *testing.T) {
 	// case 3: Namespace is not mapped but adding host to subsystem returned error
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystem.UUID, nsUUID).Return(false, nil)
-	mock.EXPECT().NVMeSubsystemAddNamespace(ctx, subsystem.UUID, nsUUID).Return(fmt.Errorf("Error adding host to subsystem"))
+	mock.EXPECT().NVMeSubsystemAddNamespace(ctx, subsystem.UUID, nsUUID).Return(errors.New("Error adding host to subsystem"))
 
 	err = oapi.NVMeEnsureNamespaceMapped(ctx, subsystem.UUID, nsUUID)
 
@@ -871,7 +871,7 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 
 	// case 1: Error getting namespace from subsystem
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(false, fmt.Errorf("Error getting namespace subsystem mapping")).Times(1)
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(false, errors.New("Error getting namespace subsystem mapping")).Times(1)
 
 	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
@@ -890,7 +890,7 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 	// case 3: Failed to get hosts of the subsystem
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
-	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return(nil, fmt.Errorf("failed to get hosts")).Times(1)
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return(nil, errors.New("failed to get hosts")).Times(1)
 
 	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
@@ -911,7 +911,7 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
 	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1, host2}, nil).Times(1)
-	mock.EXPECT().NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID).Return(fmt.Errorf("Error removing host from subsystem")).Times(1)
+	mock.EXPECT().NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID).Return(errors.New("Error removing host from subsystem")).Times(1)
 
 	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
@@ -933,7 +933,7 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
 	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1}, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, nsUUID).Return(fmt.Errorf("Error removing namespace from subsystem")).Times(1)
+	mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, nsUUID).Return(errors.New("Error removing namespace from subsystem")).Times(1)
 
 	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
@@ -945,7 +945,7 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
 	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1}, nil).Times(1)
 	mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, nsUUID).Return(nil).Times(1)
-	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(0), fmt.Errorf("Error getting namespace count from subsystem")).Times(1)
+	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(0), errors.New("Error getting namespace count from subsystem")).Times(1)
 
 	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
@@ -957,7 +957,7 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
 	mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, nsUUID).Return(nil).Times(1)
 	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(0), nil).Times(1)
-	mock.EXPECT().NVMeSubsystemDelete(ctx, subsystemUUID).Return(fmt.Errorf("Error deleting subsystem")).Times(1)
+	mock.EXPECT().NVMeSubsystemDelete(ctx, subsystemUUID).Return(errors.New("Error deleting subsystem")).Times(1)
 	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1}, nil).Times(1)
 
 	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
@@ -995,7 +995,7 @@ func TestNVMeIsNamespaceMapped(t *testing.T) {
 
 	// case 1: Error checking if namespace is mapped
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(false, fmt.Errorf(" Error checking if namespace is mapped"))
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(false, errors.New(" Error checking if namespace is mapped"))
 
 	_, err = oapi.NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID)
 
@@ -1042,7 +1042,7 @@ func TestVolumeWaitForStates(t *testing.T) {
 
 	// Test1: Error - While getting the volume
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().VolumeGetByName(ctx, volName, gomock.Any()).AnyTimes().Return(nil, fmt.Errorf("Error getting the volume"))
+	mock.EXPECT().VolumeGetByName(ctx, volName, gomock.Any()).AnyTimes().Return(nil, errors.New("Error getting the volume"))
 
 	currentState, err := oapi.VolumeWaitForStates(ctx, "fakeVolName", desiredStates, abortStates, maxElapsedTime)
 
@@ -1182,7 +1182,7 @@ func TestNVMeNamespaceSetSize(t *testing.T) {
 	assert.NoError(t, err, "failed to modify size on NVMe namespace")
 
 	// case 2: Error returned while upating size
-	mock.EXPECT().NVMeNamespaceSetSize(ctx, "fakeUUID", int64(3221225472)).Return(fmt.Errorf(
+	mock.EXPECT().NVMeNamespaceSetSize(ctx, "fakeUUID", int64(3221225472)).Return(errors.New(
 		"Error while updating size"))
 	err = oapi.NVMeNamespaceSetSize(ctx, ns.UUID, int64(3221225472))
 	assert.Error(t, err)
@@ -1220,7 +1220,7 @@ func TestIgroupList(t *testing.T) {
 
 	// case 2: Error returned while getting igroup list
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().IgroupList(ctx, "", gomock.Any()).Return(nil, fmt.Errorf("failed to get igroup"))
+	mock.EXPECT().IgroupList(ctx, "", gomock.Any()).Return(nil, errors.New("failed to get igroup"))
 
 	_, err1 = oapi.IgroupList(ctx)
 	assert.Error(t, err1, "No error while getting Igroup list")
@@ -1268,7 +1268,7 @@ func TestIgroupRemove(t *testing.T) {
 
 	// case 2: Error returned while deleting the igroup.
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().IgroupRemove(ctx, initiator, initiatorGroup).Return(fmt.Errorf("failed to remove igroup"))
+	mock.EXPECT().IgroupRemove(ctx, initiator, initiatorGroup).Return(errors.New("failed to remove igroup"))
 
 	err = oapi.IgroupRemove(ctx, initiator, initiatorGroup, false)
 	assert.Error(t, err, "No error returned while deleting the igroup.")
@@ -1312,7 +1312,7 @@ func TestIgroupGetByName(t *testing.T) {
 
 	// case 2: Error returned while getting igroup by name.
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-	mock.EXPECT().IgroupGetByName(ctx, initiatorGroup, gomock.Any()).Return(nil, fmt.Errorf("Failed to get igroup by name"))
+	mock.EXPECT().IgroupGetByName(ctx, initiatorGroup, gomock.Any()).Return(nil, errors.New("Failed to get igroup by name"))
 
 	_, err1 = oapi.IgroupGetByName(ctx, initiatorGroup)
 
@@ -1351,7 +1351,7 @@ func TestGetSLMDataLifs(t *testing.T) {
 	assert.Nil(t, reportedDataLIFs)
 
 	// case 3: Error returned while getting IP interface.
-	mock.EXPECT().NetworkIPInterfacesList(ctx).Return(nil, fmt.Errorf("failed to get network info"))
+	mock.EXPECT().NetworkIPInterfacesList(ctx).Return(nil, errors.New("failed to get network info"))
 	reportedDataLIFs, err1 = oapi.GetSLMDataLifs(ctx, []string{"1.1.1.1", "2.2.2.2"}, []string{"node1"})
 	assert.Error(t, err1, "no error returned while getting IP interface")
 	assert.Nil(t, reportedDataLIFs)
@@ -1400,7 +1400,7 @@ func TestGetSVMState(t *testing.T) {
 	assert.Equal(t, "online", state)
 
 	// case 2: Error returned while getting SVM state.
-	mock.EXPECT().GetSVMState(ctx).Return("", fmt.Errorf("failed to get SVM state"))
+	mock.EXPECT().GetSVMState(ctx).Return("", errors.New("failed to get SVM state"))
 
 	_, err1 = oapi.GetSVMState(ctx)
 	assert.Error(t, err1, "no error returned while getting SVM state.")
@@ -1415,7 +1415,7 @@ func TestSMBShareCreate(t *testing.T) {
 	assert.NoError(t, err1, "error returned while creating SMB share")
 
 	// case 2: Error returned while creating SMB share.
-	mock.EXPECT().SMBShareCreate(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("failed to create SMB share"))
+	mock.EXPECT().SMBShareCreate(ctx, gomock.Any(), gomock.Any()).Return(errors.New("failed to create SMB share"))
 	err1 = oapi.SMBShareCreate(ctx, "", "")
 	assert.Error(t, err1, "no error returned while creating SMB share")
 }
@@ -1430,7 +1430,7 @@ func TestSMBShareExists(t *testing.T) {
 	assert.Equal(t, true, shareExists)
 
 	// case 2: Error returned while getting SMB share.
-	mock.EXPECT().SMBShareExists(ctx, gomock.Any()).Return(false, fmt.Errorf("failed to verify SMB share"))
+	mock.EXPECT().SMBShareExists(ctx, gomock.Any()).Return(false, errors.New("failed to verify SMB share"))
 	shareExists, err1 = oapi.SMBShareExists(ctx, "")
 	assert.Error(t, err1, "no error returned while getting SMB share")
 	assert.Equal(t, false, shareExists)
@@ -1445,7 +1445,7 @@ func TestSMBShareDestroy(t *testing.T) {
 	assert.NoError(t, err1, "error returned while deleting SMB share")
 
 	// case 2: Error returned while deleting SMB share.
-	mock.EXPECT().SMBShareDestroy(ctx, "").Return(fmt.Errorf("failed to destroy SMB share"))
+	mock.EXPECT().SMBShareDestroy(ctx, "").Return(errors.New("failed to destroy SMB share"))
 	err1 = oapi.SMBShareDestroy(ctx, "")
 	assert.Error(t, err1, "no error returned while deleting SMB share")
 }
@@ -1460,7 +1460,7 @@ func TestSMBShareAccessControlCreate(t *testing.T) {
 
 	// case 2: Error returned while creating SMB share access control.
 	mock.EXPECT().SMBShareAccessControlCreate(ctx, gomock.Any(), gomock.Any()).Return(
-		fmt.Errorf("failed to create SMB share access control"))
+		errors.New("failed to create SMB share access control"))
 	err1 = oapi.SMBShareAccessControlCreate(ctx, "", nil)
 	assert.Error(t, err1, "no error returned while creating SMB share access control")
 }
@@ -1474,7 +1474,7 @@ func TestSMBShareAccessControlDelete(t *testing.T) {
 	assert.NoError(t, err1, "error returned while deleting SMB share access control")
 
 	// case 2: Error returned while deleting SMB share access control.
-	mock.EXPECT().SMBShareAccessControlDelete(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("failed to delete SMB share access control"))
+	mock.EXPECT().SMBShareAccessControlDelete(ctx, gomock.Any(), gomock.Any()).Return(errors.New("failed to delete SMB share access control"))
 	err1 = oapi.SMBShareAccessControlDelete(ctx, "", nil)
 	assert.Error(t, err1, "no error returned while deleting SMB share access control")
 }
@@ -1614,7 +1614,7 @@ func TestVolumeCreate(t *testing.T) {
 	rsi.EXPECT().VolumeCreate(ctx, volume.Name, volume.Aggregates[0], volume.Size, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
 		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve, volume.DPVolume).
-		Return(fmt.Errorf("Volume create failed"))
+		Return(errors.New("Volume create failed"))
 	err = oapi.VolumeCreate(ctx, volume)
 	assert.Error(t, err, "no error returned while creating volume")
 }
@@ -1628,7 +1628,7 @@ func TestVolumeDestroy(t *testing.T) {
 	assert.NoError(t, err, "error returned while deleting a volume")
 
 	// case 2: Delete volume, returned error.
-	rsi.EXPECT().VolumeDestroy(ctx, "vol1", false).Return(fmt.Errorf("failed to delete volume"))
+	rsi.EXPECT().VolumeDestroy(ctx, "vol1", false).Return(errors.New("failed to delete volume"))
 	err = oapi.VolumeDestroy(ctx, "vol1", false, false)
 	assert.Error(t, err, "no error returned while deleting a volume")
 }
@@ -1649,7 +1649,7 @@ func TestVolumeInfo(t *testing.T) {
 	assert.Error(t, err, "no error returned while getting a volume")
 
 	// case 3: Get volume. Backend returned an error.
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(nil, fmt.Errorf("Failed to get volume"))
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(nil, errors.New("Failed to get volume"))
 	_, err = oapi.VolumeInfo(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a volume")
 
@@ -1712,7 +1712,7 @@ func TestEmsAutosupportLog(t *testing.T) {
 		"", 123, "", 0)
 
 	rsi.EXPECT().EmsAutosupportLog(ctx, "9.13.1", true, "", "CN-USERS", "", 123, "", 0).
-		Return(fmt.Errorf("Could not generate Autosupport message"))
+		Return(errors.New("Could not generate Autosupport message"))
 	oapi.EmsAutosupportLog(ctx, "ontap-nas", "9.13.1", true, "", "CN-USERS",
 		"", 123, "", 0)
 }
@@ -1766,7 +1766,7 @@ func TestFlexgroupCreate(t *testing.T) {
 	rsi.EXPECT().FlexGroupCreate(ctx, volume.Name, 1073741824000, volume.Aggregates, volume.SpaceReserve,
 		volume.SnapshotPolicy, volume.UnixPermissions, volume.ExportPolicy, volume.SecurityStyle,
 		volume.TieringPolicy, volume.Comment, volume.Qos, volume.Encrypt, volume.SnapshotReserve).
-		Return(fmt.Errorf("flexgroup volume creation failed"))
+		Return(errors.New("flexgroup volume creation failed"))
 	err = oapi.FlexgroupCreate(ctx, volume)
 	assert.Error(t, err, "no error returned while creating a flexgroup volume")
 }
@@ -1781,7 +1781,7 @@ func TestFlexgroupCloneSplitStart(t *testing.T) {
 
 	// case 2: Flexgroup split clone negative test
 	rsi.EXPECT().FlexgroupCloneSplitStart(ctx, "fake-cloneVolume").Return(
-		fmt.Errorf("flexgroup volume splits clone failed"))
+		errors.New("flexgroup volume splits clone failed"))
 	err = oapi.FlexgroupCloneSplitStart(ctx, "fake-cloneVolume")
 	assert.Error(t, err, "no error returned while spilt clone a flexgroup volume")
 }
@@ -1796,7 +1796,7 @@ func TestFlexgroupDisableSnapshotDirectoryAccess(t *testing.T) {
 
 	// case 2: Flexgroup disable snapshot directory access negative test.
 	rsi.EXPECT().FlexGroupVolumeModifySnapshotDirectoryAccess(ctx, "fake-volume", false).Return(
-		fmt.Errorf("flexgroup volume disable snapshot directory failed"))
+		errors.New("flexgroup volume disable snapshot directory failed"))
 	err = oapi.FlexgroupModifySnapshotDirectoryAccess(ctx, "fake-volume", false)
 	assert.Error(t, err, "No error returned while disable snapshot dir access of a flexgroup volume")
 }
@@ -1816,7 +1816,7 @@ func TestFlexgroupInfo(t *testing.T) {
 	assert.Error(t, err, "no error returned while getting a flexgroup volume")
 
 	// case 3: Flexgroup get by name, returned error.
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(nil, fmt.Errorf("failed to get flexgroup volume"))
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(nil, errors.New("failed to get flexgroup volume"))
 	_, err = oapi.FlexgroupInfo(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a flexgroup volume")
 
@@ -1837,7 +1837,7 @@ func TestFlexgroupSetComment(t *testing.T) {
 
 	// case 2: Flexgroup set comment returned error.
 	rsi.EXPECT().FlexGroupSetComment(ctx, "trident-pvc-1234", "flexvol comment").Return(
-		fmt.Errorf("failed to update comment on flexgroup volume"))
+		errors.New("failed to update comment on flexgroup volume"))
 	err = oapi.FlexgroupSetComment(ctx, "trident-pvc-1234", "vol1", "flexvol comment")
 	assert.Error(t, err, "no error returned while modifying a flexgroup comment")
 }
@@ -1853,7 +1853,7 @@ func TestFlexgroupSetQosPolicyGroupName(t *testing.T) {
 
 	// case 2: Flexgroup set QoS policy returned error.
 	rsi.EXPECT().FlexgroupSetQosPolicyGroupName(ctx, "trident-pvc-1234", qosPolicy).Return(
-		fmt.Errorf("failed to update comment on flexgroup volume"))
+		errors.New("failed to update comment on flexgroup volume"))
 	err = oapi.FlexgroupSetQosPolicyGroupName(ctx, "trident-pvc-1234", qosPolicy)
 	assert.Error(t, err, "no error returned while modifying a QoS policy")
 }
@@ -1923,7 +1923,7 @@ func TestFlexgroupSnapshotCreate(t *testing.T) {
 	assert.NoError(t, err, "error returned while creating snapshot of a flexgroup")
 
 	// case 2: Flexgroup snapshot create. Could not get the volume info
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(nil, fmt.Errorf("Failed to get flexgroup"))
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(nil, errors.New("Failed to get flexgroup"))
 	err = oapi.FlexgroupSnapshotCreate(ctx, "fake-snapshot", "vol1")
 	assert.Error(t, err, "no error returned while creating snapshot of a flexgroup")
 
@@ -1934,7 +1934,7 @@ func TestFlexgroupSnapshotCreate(t *testing.T) {
 
 	// case 4: Flexgroup snapshot create. Could not create snapshot.
 	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
-	rsi.EXPECT().SnapshotCreateAndWait(ctx, volumeUUID, "fake-snapshot").Return(fmt.Errorf("snapshot creation failed"))
+	rsi.EXPECT().SnapshotCreateAndWait(ctx, volumeUUID, "fake-snapshot").Return(errors.New("snapshot creation failed"))
 	err = oapi.FlexgroupSnapshotCreate(ctx, "fake-snapshot", "vol1")
 	assert.Error(t, err, "no error returned while creating snapshot of a flexgroup")
 }
@@ -1963,7 +1963,7 @@ func TestFlexgroupSnapshotList(t *testing.T) {
 	assert.Equal(t, createTime1.String(), snapshots[0].CreateTime)
 
 	// case 2: Flexgroup get by name returned error
-	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(nil, fmt.Errorf("failed to get flexgroup"))
+	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(nil, errors.New("failed to get flexgroup"))
 	_, err = oapi.FlexgroupSnapshotList(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a flexgroup")
 
@@ -1980,7 +1980,7 @@ func TestFlexgroupSnapshotList(t *testing.T) {
 
 	// case 5: Flexgroup snapshot list returned error
 	rsi.EXPECT().FlexGroupGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
-	rsi.EXPECT().SnapshotList(ctx, volumeUUID).Return(nil, fmt.Errorf("failed to get snapshot info"))
+	rsi.EXPECT().SnapshotList(ctx, volumeUUID).Return(nil, errors.New("failed to get snapshot info"))
 	snapshots, err = oapi.FlexgroupSnapshotList(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a flexgroup")
 
@@ -2002,7 +2002,7 @@ func TestFlexgroupModifyUnixPermissions(t *testing.T) {
 
 	// case 2: Flexgroup modify unix permission returned error
 	rsi.EXPECT().FlexGroupModifyUnixPermissions(ctx, "trident-pvc-1234", "--rwxrwxrwx").Return(
-		fmt.Errorf("failed to modify unix permission on flexgroup volume"))
+		errors.New("failed to modify unix permission on flexgroup volume"))
 	err = oapi.FlexgroupModifyUnixPermissions(ctx, "trident-pvc-1234", "vol1", "--rwxrwxrwx")
 	assert.Error(t, err, "no error returned while modifying a unix permission")
 }
@@ -2017,7 +2017,7 @@ func TestFlexgroupMount(t *testing.T) {
 
 	// case 2: Flexgroup mount returned error
 	rsi.EXPECT().FlexGroupMount(ctx, "trident-pvc-1234", "/trident-pvc-1234").Return(
-		fmt.Errorf("failed to mount flexgroup volume"))
+		errors.New("failed to mount flexgroup volume"))
 	err = oapi.FlexgroupMount(ctx, "trident-pvc-1234", "/trident-pvc-1234")
 	assert.Error(t, err, "no error returned while mounting a volume")
 }
@@ -2034,13 +2034,13 @@ func TestFlexgroupDestroy(t *testing.T) {
 	// case 2: Flexgroup destroyed returned error
 	rsi.EXPECT().FlexgroupUnmount(ctx, "trident-pvc-1234").Return(nil)
 	rsi.EXPECT().FlexGroupDestroy(ctx, "trident-pvc-1234", false).Return(
-		fmt.Errorf("failed to delete flexgroup volume"))
+		errors.New("failed to delete flexgroup volume"))
 	err = oapi.FlexgroupDestroy(ctx, "trident-pvc-1234", true, false)
 	assert.Error(t, err, "no error returned while deleting a volume")
 
 	// case 3: Flexgroup unmount returned error
 	rsi.EXPECT().FlexgroupUnmount(ctx, "trident-pvc-1234").Return(
-		fmt.Errorf("failed to unmount flexgroup volume"))
+		errors.New("failed to unmount flexgroup volume"))
 	err = oapi.FlexgroupDestroy(ctx, "trident-pvc-1234", true, false)
 	assert.Error(t, err, "no error returned while deleting a volume")
 }
@@ -2068,7 +2068,7 @@ func TestFlexgroupListByPrefix(t *testing.T) {
 	assert.Error(t, err, "no error returned while getting a volume")
 
 	// case 3: Flexgroup get returned error
-	rsi.EXPECT().FlexGroupGetAll(ctx, *volume.Name+"*", gomock.Any()).Return(nil, fmt.Errorf("failed to get flexgroup"))
+	rsi.EXPECT().FlexGroupGetAll(ctx, *volume.Name+"*", gomock.Any()).Return(nil, errors.New("failed to get flexgroup"))
 	volumeInfo, err = oapi.FlexgroupListByPrefix(ctx, *volume.Name)
 	assert.Error(t, err, "no error returned while getting a volume")
 
@@ -2089,7 +2089,7 @@ func TestFlexgroupSetSize(t *testing.T) {
 
 	// case 2: Flexgroup modify size returned error.
 	rsi.EXPECT().FlexGroupSetSize(ctx, "trident-pvc-1234", "107374182400").Return(
-		fmt.Errorf("failed to update flexgroup volume size"))
+		errors.New("failed to update flexgroup volume size"))
 	err = oapi.FlexgroupSetSize(ctx, "trident-pvc-1234", "107374182400")
 	assert.Error(t, err, "no error returned while modifying a size of a volume")
 }
@@ -2105,7 +2105,7 @@ func TestFlexgroupSize(t *testing.T) {
 
 	// case 2: Flexgroup get size returned error
 	rsi.EXPECT().FlexGroupSize(ctx, "trident-pvc-1234").Return(uint64(107374182400),
-		fmt.Errorf("failed to get flexgroup volume size"))
+		errors.New("failed to get flexgroup volume size"))
 	volumeSize, err = oapi.FlexgroupSize(ctx, "trident-pvc-1234")
 	assert.Error(t, err, "no error returned while getting a size of a volume")
 }
@@ -2121,7 +2121,7 @@ func TestFlexgroupUsedSize(t *testing.T) {
 
 	// case 2: Flexgroup get used size returned error
 	rsi.EXPECT().FlexGroupUsedSize(ctx, "trident-pvc-1234").Return(107374182400,
-		fmt.Errorf("failed to get flexgroup volume used size"))
+		errors.New("failed to get flexgroup volume used size"))
 	volumeSize, err = oapi.FlexgroupUsedSize(ctx, "trident-pvc-1234")
 	assert.Error(t, err, "no error returned while getting a used size of a volume")
 }
@@ -2136,7 +2136,7 @@ func TestFlexgroupModifyExportPolicy(t *testing.T) {
 
 	// case 1: Flexgroup modify export policy returned error
 	rsi.EXPECT().FlexgroupModifyExportPolicy(ctx, "trident-pvc-1234", "fake-policy").Return(
-		fmt.Errorf("failed to modify export policy"))
+		errors.New("failed to modify export policy"))
 	err = oapi.FlexgroupModifyExportPolicy(ctx, "trident-pvc-1234", "fake-policy")
 	assert.Error(t, err, "no error returned while modifying a export policy of a volume")
 }
@@ -2151,7 +2151,7 @@ func TestFlexgroupUnmount(t *testing.T) {
 
 	// case 2: Flexgroup umount returned error
 	rsi.EXPECT().FlexgroupUnmount(ctx, "trident-pvc-1234").Return(
-		fmt.Errorf("failed to unmount flexgroup volume"))
+		errors.New("failed to unmount flexgroup volume"))
 	err = oapi.FlexgroupUnmount(ctx, "trident-pvc-1234", false)
 	assert.Error(t, err, "no error returned while unmounting a flexgroup")
 }
@@ -2224,7 +2224,7 @@ func TestExportPolicyDestroy(t *testing.T) {
 
 	// case 2: Export policy delete returned error
 	rsi.EXPECT().ExportPolicyDestroy(ctx, "trident-pvc-1234").Return(nil,
-		fmt.Errorf("failed to delete export policy"))
+		errors.New("failed to delete export policy"))
 	err = oapi.ExportPolicyDestroy(ctx, "trident-pvc-1234")
 	assert.Error(t, err, "no error returned while deleting a export policy")
 
@@ -2245,7 +2245,7 @@ func TestVolumeExists(t *testing.T) {
 
 	// case 2: volume exists returned error
 	rsi.EXPECT().VolumeExists(ctx, "trident-pvc-1234").Return(true,
-		fmt.Errorf("flexgroup volume does not exists"))
+		errors.New("flexgroup volume does not exists"))
 	isExists, err = oapi.VolumeExists(ctx, "trident-pvc-1234")
 	assert.Error(t, err, "no error returned while verifying a volume")
 }
@@ -2364,7 +2364,7 @@ func TestVolumeDisableSnapshotDirectoryAccess(t *testing.T) {
 
 	// case 2: Volume disable snapshot directory access negative test case
 	rsi.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx, "vol1", false).
-		Return(fmt.Errorf("error disabling snapshot directory access"))
+		Return(errors.New("error disabling snapshot directory access"))
 	err = oapi.VolumeModifySnapshotDirectoryAccess(ctx, "vol1", false)
 	assert.Error(t, err, " no error returned disabling a snapshot directory access")
 }
@@ -2379,7 +2379,7 @@ func TestVolumeMount(t *testing.T) {
 
 	// case 2: Volume mount returned nil
 	rsi.EXPECT().VolumeMount(ctx, "vol1", "/vol1").Return(nil).
-		Return(fmt.Errorf("failed to mount volume"))
+		Return(errors.New("failed to mount volume"))
 	err = oapi.VolumeMount(ctx, "vol1", "/vol1")
 	assert.Error(t, err, "no error returned mounting a volume")
 
@@ -2411,7 +2411,7 @@ func TestVolumeSetComment(t *testing.T) {
 
 	// case 2: Volume set comment negative test
 	rsi.EXPECT().VolumeSetComment(ctx, "trident-pvc-1234", "flexvol comment").Return(
-		fmt.Errorf("failed to update comment on volume"))
+		errors.New("failed to update comment on volume"))
 	err = oapi.VolumeSetComment(ctx, "trident-pvc-1234", "vol1", "flexvol comment")
 	assert.Error(t, err, "no error returned while modifying a comment on volume")
 }
@@ -2438,7 +2438,7 @@ func TestExportPolicyCreate(t *testing.T) {
 
 	// case 3: Volume create export policy negative test
 	rsi.EXPECT().ExportPolicyGetByName(ctx, "fake-exportPolicy").Return(nil,
-		fmt.Errorf("failed to verify export policy"))
+		errors.New("failed to verify export policy"))
 	err = oapi.ExportPolicyCreate(ctx, "fake-exportPolicy")
 	assert.Error(t, err, "no error returned while creating a export policy")
 
@@ -2451,7 +2451,7 @@ func TestExportPolicyCreate(t *testing.T) {
 	// case 5: Volume create export policy returned error
 	rsi.EXPECT().ExportPolicyGetByName(ctx, "fake-exportPolicy").Return(nil, nil)
 	rsi.EXPECT().ExportPolicyCreate(ctx, "fake-exportPolicy").Return(nil,
-		fmt.Errorf("export policy creation failed"))
+		errors.New("export policy creation failed"))
 	err = oapi.ExportPolicyCreate(ctx, "fake-exportPolicy")
 	assert.Error(t, err, "no error returned while creating a export policy")
 }
@@ -2484,7 +2484,7 @@ func TestVolumeSetSize(t *testing.T) {
 
 	// case 2: Volume modify size negative test
 	rsi.EXPECT().VolumeSetSize(ctx, "vol1", "1073741824000").Return(
-		fmt.Errorf("failed to update volume size"))
+		errors.New("failed to update volume size"))
 	err = oapi.VolumeSetSize(ctx, "vol1", "1073741824000")
 	assert.Error(t, err, "no error returned while modifying a volume size")
 }
@@ -2499,7 +2499,7 @@ func TestVolumeModifyUnixPermissions(t *testing.T) {
 
 	// case 2: Volume modify unix permission negative test
 	rsi.EXPECT().VolumeModifyUnixPermissions(ctx, "trident-pvc-1234", "--rwxrwxrwx").Return(
-		fmt.Errorf("failed to modify unix permission on flexgroup volume"))
+		errors.New("failed to modify unix permission on flexgroup volume"))
 	err = oapi.VolumeModifyUnixPermissions(ctx, "trident-pvc-1234", "vol1", "--rwxrwxrwx")
 	assert.Error(t, err, "no error returned while modifying a unix permission")
 }
@@ -2532,7 +2532,7 @@ func TestVolumeListByPrefix(t *testing.T) {
 	assert.Error(t, err, "no error returned while getting a volume info")
 
 	// case 2: Get volume negative test
-	rsi.EXPECT().VolumeList(ctx, *volume.Name+"*", gomock.Any()).Return(nil, fmt.Errorf("failed to get volume"))
+	rsi.EXPECT().VolumeList(ctx, *volume.Name+"*", gomock.Any()).Return(nil, errors.New("failed to get volume"))
 	_, err = oapi.VolumeListByPrefix(ctx, *volume.Name)
 	assert.Error(t, err, "no error returned while getting a volume info")
 }
@@ -2582,7 +2582,7 @@ func TestExportRuleCreate(t *testing.T) {
 
 	// case 3: Export rule create returned error
 	rsi.EXPECT().ExportRuleCreate(ctx, "fake-policy", "fake-rule", []string{"nfs"}, []string{"any"},
-		[]string{"any"}, []string{"any"}).Return(nil, fmt.Errorf("failed to get export rule"))
+		[]string{"any"}, []string{"any"}).Return(nil, errors.New("failed to get export rule"))
 	err = oapi.ExportRuleCreate(ctx, "fake-policy", "fake-rule", sa.NFS)
 	assert.Error(t, err, "no error returned while creating a export rule")
 }
@@ -2607,7 +2607,7 @@ func TestExportRuleDestroy(t *testing.T) {
 	assert.Error(t, err, "no error returned while deleting a export rule")
 
 	// case 3: Export rule delete negative test
-	rsi.EXPECT().ExportRuleDestroy(ctx, "fake-policy", 1).Return(nil, fmt.Errorf("failed to get export rule"))
+	rsi.EXPECT().ExportRuleDestroy(ctx, "fake-policy", 1).Return(nil, errors.New("failed to get export rule"))
 	err = oapi.ExportRuleDestroy(ctx, "fake-policy", 1)
 	assert.Error(t, err, "no error returned while deleting a export rule")
 }
@@ -2622,7 +2622,7 @@ func TestVolumeModifyExportPolicy(t *testing.T) {
 
 	// case 2: Export rule modify negative test
 	rsi.EXPECT().VolumeModifyExportPolicy(ctx, "trident-pvc-1234", "fake-policy").Return(
-		fmt.Errorf("failed to modify export policy"))
+		errors.New("failed to modify export policy"))
 	err = oapi.VolumeModifyExportPolicy(ctx, "trident-pvc-1234", "fake-policy")
 	assert.Error(t, err, "no error returned while modifying a export policy")
 }
@@ -2647,7 +2647,7 @@ func TestExportPolicyExists(t *testing.T) {
 
 	// case 3: Export rule get returned error
 	rsi.EXPECT().ExportPolicyGetByName(ctx, "fake-exportPolicy").Return(nil,
-		fmt.Errorf("failed to verify export policy"))
+		errors.New("failed to verify export policy"))
 	isExists, err = oapi.ExportPolicyExists(ctx, "fake-exportPolicy")
 	assert.Error(t, err, "no error returned while getting an export policy")
 	assert.Equal(t, false, isExists)
@@ -2794,7 +2794,7 @@ func TestExportRuleList_Error(t *testing.T) {
 	policyName := "testPolicy"
 
 	rsi.EXPECT().ExportRuleList(ctx, policyName).Return(nil,
-		fmt.Errorf("error listing export policy rules"))
+		errors.New("error listing export policy rules"))
 
 	rules, err := oapi.ExportRuleList(ctx, policyName)
 	assert.Error(t, err)
@@ -2907,7 +2907,7 @@ func TestQtreeListByPrefix(t *testing.T) {
 
 	// case 2: Get the Qtree list failed. Backend returned an error
 	rsi.EXPECT().QtreeList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil,
-		fmt.Errorf("failed to get qtree for given prefix"))
+		errors.New("failed to get qtree for given prefix"))
 	_, err = oapi.QtreeListByPrefix(ctx, *qtree.Name, *qtree.Volume.Name)
 	assert.Error(t, err, "no error returned while getting a Qtree list")
 }
@@ -2947,7 +2947,7 @@ func TestQtreeGetByName(t *testing.T) {
 	assert.Equal(t, "777", qtreeVolume.UnixPermissions)
 
 	// case 2: Get the Qtree failed. Backend returned an error.
-	rsi.EXPECT().QtreeGet(ctx, "vol1", "").Return(&qtree, fmt.Errorf("Failed to get qtree"))
+	rsi.EXPECT().QtreeGet(ctx, "vol1", "").Return(&qtree, errors.New("Failed to get qtree"))
 	qtreeVolume, err = oapi.QtreeGetByName(ctx, "vol1", "")
 	assert.Error(t, err, "no error returned while getting a Qtree")
 }
@@ -2975,7 +2975,7 @@ func TestQuotaEntryList(t *testing.T) {
 	assert.Equal(t, "/vol/quotaVolume/quotaQtree", quotaEntries[0].Target)
 	assert.Equal(t, int64(1073741810), quotaEntries[0].DiskLimitBytes)
 
-	rsi.EXPECT().QuotaEntryList(ctx, quotaVolumeName).Return(nil, fmt.Errorf("failed to quota entry"))
+	rsi.EXPECT().QuotaEntryList(ctx, quotaVolumeName).Return(nil, errors.New("failed to quota entry"))
 	_, err = oapi.QuotaEntryList(ctx, quotaVolumeName)
 	assert.Error(t, err, "no error returned while getting a Qtrees")
 }
@@ -2991,7 +2991,7 @@ func TestQuotaOff(t *testing.T) {
 	assert.NoError(t, err, "error returned while doing quota off")
 
 	// case 2: Quota OFF negative test
-	rsi.EXPECT().QuotaOff(ctx, quotaVolumeName).Return(fmt.Errorf("error disabling quota"))
+	rsi.EXPECT().QuotaOff(ctx, quotaVolumeName).Return(errors.New("error disabling quota"))
 	err = oapi.QuotaOff(ctx, quotaVolumeName)
 	assert.Error(t, err, "no error returned while doing quota off")
 }
@@ -3007,7 +3007,7 @@ func TestQuotaOn(t *testing.T) {
 	assert.NoError(t, err, "error returned while doing quota on")
 
 	// case 2: Quota ON negative test
-	rsi.EXPECT().QuotaOn(ctx, quotaVolumeName).Return(fmt.Errorf("error enabling quota"))
+	rsi.EXPECT().QuotaOn(ctx, quotaVolumeName).Return(errors.New("error enabling quota"))
 	err = oapi.QuotaOn(ctx, quotaVolumeName)
 	assert.Error(t, err, "no error returned while doing quota ON")
 }
@@ -3033,7 +3033,7 @@ func TestQuotaStatus(t *testing.T) {
 	assert.NoError(t, err, "error returned while getting a quota status")
 	assert.Equal(t, *volume.Quota.State, quotaStatus)
 
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(nil, fmt.Errorf("error enabling quota"))
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(nil, errors.New("error enabling quota"))
 	quotaStatus, err = oapi.QuotaStatus(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a quota status")
 
@@ -3100,7 +3100,7 @@ func TestQuotaGetEntry(t *testing.T) {
 
 	// case 2: Quota get entry failed. Backend returned an error
 	rsi.EXPECT().QuotaGetEntry(ctx, quotaVolumeName, quotaQtreeName, quotaType).Return(
-		&quotaRule, fmt.Errorf("error getting quota rule"))
+		&quotaRule, errors.New("error getting quota rule"))
 	_, err = oapi.QuotaGetEntry(ctx, quotaVolumeName, quotaQtreeName, quotaType)
 	assert.NoError(t, err, "no error returned while getting a quota")
 }
@@ -3126,13 +3126,13 @@ func TestVolumeSnapshotCreate(t *testing.T) {
 	assert.NoError(t, err, "error returned while creating a snapshot")
 
 	// case 2: Create volume snapshot, parent volume verification returned error
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(nil, fmt.Errorf("Failed to get flexgroup"))
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(nil, errors.New("Failed to get flexgroup"))
 	err = oapi.VolumeSnapshotCreate(ctx, "fake-snapshot", "vol1")
 	assert.Error(t, err, "no error returned while creating a snapshot")
 
 	// case 3: Create volume snapshot returned error
 	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
-	rsi.EXPECT().SnapshotCreateAndWait(ctx, *volume.UUID, "fake-snapshot").Return(fmt.Errorf(
+	rsi.EXPECT().SnapshotCreateAndWait(ctx, *volume.UUID, "fake-snapshot").Return(errors.New(
 		"snapshot creation failed"))
 	err = oapi.VolumeSnapshotCreate(ctx, "fake-snapshot", "vol1")
 	assert.Error(t, err, "no error returned while creating a snapshot")
@@ -3148,7 +3148,7 @@ func TestVolumeCloneCreate(t *testing.T) {
 
 	// case 2: create volume clone failed. Backend return an error
 	rsi.EXPECT().VolumeCloneCreateAsync(ctx, "fake-cloneVolume", "fake-volume", "fake-snaphot").Return(
-		fmt.Errorf("error creating clone"))
+		errors.New("error creating clone"))
 	err = oapi.VolumeCloneCreate(ctx, "fake-cloneVolume", "fake-volume", "fake-snaphot", true)
 	assert.Error(t, err, "no error returned while creating a clone")
 }
@@ -3177,7 +3177,7 @@ func TestVolumeSnapshotList(t *testing.T) {
 	assert.Equal(t, createTime1.String(), snapshots[0].CreateTime, "snapshot creation time does not match")
 
 	// case 2: Get volume snapshot parent volume verification returned error
-	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(nil, fmt.Errorf("failed to get flexgroup"))
+	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(nil, errors.New("failed to get flexgroup"))
 	_, err = oapi.VolumeSnapshotList(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a snapshot list")
 
@@ -3189,7 +3189,7 @@ func TestVolumeSnapshotList(t *testing.T) {
 
 	// case 4: Get volume snapshot returned error
 	rsi.EXPECT().VolumeGetByName(ctx, "vol1", gomock.Any()).Return(volume, nil)
-	rsi.EXPECT().SnapshotList(ctx, volumeUUID).Return(nil, fmt.Errorf("failed to get snapshot info"))
+	rsi.EXPECT().SnapshotList(ctx, volumeUUID).Return(nil, errors.New("failed to get snapshot info"))
 	snapshots, err = oapi.VolumeSnapshotList(ctx, "vol1")
 	assert.Error(t, err, "no error returned while getting a snapshot list")
 }
@@ -3205,7 +3205,7 @@ func TestVolumeSetQosPolicyGroupName(t *testing.T) {
 
 	// case 2: Modify volume QoS policy returned error
 	rsi.EXPECT().VolumeSetQosPolicyGroupName(ctx, "trident-pvc-1234", qosPolicy).Return(
-		fmt.Errorf("failed to update comment on volume"))
+		errors.New("failed to update comment on volume"))
 	err = oapi.VolumeSetQosPolicyGroupName(ctx, "trident-pvc-1234", qosPolicy)
 	assert.Error(t, err, "no error returned while modifying a qos policy on volume")
 }
@@ -3220,7 +3220,7 @@ func TestVolumeCloneSplitStart(t *testing.T) {
 
 	// case 2: Modify volume split clone. returned error
 	rsi.EXPECT().VolumeCloneSplitStart(ctx, "fake-cloneVolume").Return(
-		fmt.Errorf("volume splits clone failed"))
+		errors.New("volume splits clone failed"))
 	err = oapi.VolumeCloneSplitStart(ctx, "fake-cloneVolume")
 	assert.Error(t, err, "no error returned while doing a split clone on volume")
 }
@@ -3235,7 +3235,7 @@ func TestSnapshotRestoreVolume(t *testing.T) {
 
 	// case 2:  Snapshot restore returned error
 	rsi.EXPECT().SnapshotRestoreVolume(ctx, "fake-snapshot", "fake-volume").Return(
-		fmt.Errorf("error restoring snapshot"))
+		errors.New("error restoring snapshot"))
 	err = oapi.SnapshotRestoreVolume(ctx, "fake-snapshot", "fake-volume")
 	assert.Error(t, err, "no error returned while restoring a snapshot")
 }
@@ -3250,7 +3250,7 @@ func TestSnapshotRestoreFlexgroup(t *testing.T) {
 
 	// case 2:  Flexgroup Snapshot restore returned error
 	rsi.EXPECT().SnapshotRestoreFlexgroup(ctx, "fake-snapshot", "fake-volume").Return(
-		fmt.Errorf("error restoring snapshot"))
+		errors.New("error restoring snapshot"))
 	err = oapi.SnapshotRestoreFlexgroup(ctx, "fake-snapshot", "fake-volume")
 	assert.Error(t, err, "no error returned while restoring a snapshot for flexgroup")
 }
@@ -3272,7 +3272,7 @@ func TestSnapshotDeleteByNameAndStyle(t *testing.T) {
 	assert.NoError(t, err, "error returned while deleting a snapshot by name")
 
 	// case 2:  Snapshot verification returned error
-	rsi.EXPECT().SnapshotGetByName(ctx, "fake-volumeUUID", "fake-snapshot").Return(nil, fmt.Errorf("error checking for snapshot"))
+	rsi.EXPECT().SnapshotGetByName(ctx, "fake-volumeUUID", "fake-snapshot").Return(nil, errors.New("error checking for snapshot"))
 	err = oapi.SnapshotDeleteByNameAndStyle(ctx, "fake-snapshot", "fake-volume", "fake-volumeUUID")
 	assert.Error(t, err, "no error returned while deleting a snapshot by name")
 
@@ -3296,7 +3296,7 @@ func TestSnapshotDeleteByNameAndStyle(t *testing.T) {
 
 	// case 6:  Snapshot delete returned error
 	rsi.EXPECT().SnapshotGetByName(ctx, "fake-volumeUUID", "fake-snapshot").Return(snapshot, nil)
-	rsi.EXPECT().SnapshotDelete(ctx, "fake-volumeUUID", *snapshot.UUID).Return(nil, fmt.Errorf("error while deleting snapshot"))
+	rsi.EXPECT().SnapshotDelete(ctx, "fake-volumeUUID", *snapshot.UUID).Return(nil, errors.New("error while deleting snapshot"))
 	err = oapi.SnapshotDeleteByNameAndStyle(ctx, "fake-snapshot", "fake-volume", "fake-volumeUUID")
 	assert.Error(t, err, "no error returned while deleting a snapshot by name")
 
@@ -3334,7 +3334,7 @@ func TestFlexgroupSnapshotDelete(t *testing.T) {
 	assert.NoError(t, err, "error returned while deleting a snapshot")
 
 	// case 2:  Flexgroup Snapshot verification returned error
-	rsi.EXPECT().FlexGroupGetByName(ctx, "fake-volume", gomock.Any()).Return(nil, fmt.Errorf("failed to get volume"))
+	rsi.EXPECT().FlexGroupGetByName(ctx, "fake-volume", gomock.Any()).Return(nil, errors.New("failed to get volume"))
 	err = oapi.FlexgroupSnapshotDelete(ctx, "fake-snapshot", "fake-volume")
 	assert.Error(t, err, "no error returned while deleting a snapshot")
 
@@ -3365,7 +3365,7 @@ func TestVolumeSnapshotDelete(t *testing.T) {
 	assert.NoError(t, err, "error returned while deleting a snapshot")
 
 	// case 2:  Volume Snapshot verification returned error
-	rsi.EXPECT().VolumeGetByName(ctx, "fake-volume", gomock.Any()).Return(nil, fmt.Errorf("failed to get volume"))
+	rsi.EXPECT().VolumeGetByName(ctx, "fake-volume", gomock.Any()).Return(nil, errors.New("failed to get volume"))
 	err = oapi.VolumeSnapshotDelete(ctx, "fake-snapshot", "fake-volume")
 	assert.Error(t, err, "no error returned while deleting a snapshot")
 
@@ -3392,7 +3392,7 @@ func TestVolumeListBySnapshotParent(t *testing.T) {
 
 	// case 3:  Get volume Snapshot list returned error
 	rsi.EXPECT().VolumeListAllBackedBySnapshot(ctx, "fake-snapshot", "fake-volume").
-		Return(nil, fmt.Errorf("child volume not found"))
+		Return(nil, errors.New("child volume not found"))
 	volumeList, err = oapi.VolumeListBySnapshotParent(ctx, "fake-volume", "fake-snapshot")
 	assert.Error(t, err, "no error returned while getting a volume")
 }
@@ -3408,8 +3408,8 @@ func TestSnapmirrorDeleteViaDestination(t *testing.T) {
 
 	// case 2: SnapMirror delete via destination returned error
 	rsi.EXPECT().SnapmirrorDeleteViaDestination(ctx, "vol1", "svm").Return(
-		fmt.Errorf("error while deleting snapmirror"))
-	rsi.EXPECT().SnapmirrorRelease(ctx, "vol1", "svm").Return(fmt.Errorf("error while deleting snapmirror"))
+		errors.New("error while deleting snapmirror"))
+	rsi.EXPECT().SnapmirrorRelease(ctx, "vol1", "svm").Return(errors.New("error while deleting snapmirror"))
 	err = oapi.SnapmirrorDeleteViaDestination(ctx, "vol1", "svm")
 	assert.Error(t, err, "no error returned while deleting a SnapMirror via destination")
 }
@@ -3423,7 +3423,7 @@ func TestSnapmirrorRelease(t *testing.T) {
 	assert.NoError(t, err, "error returned while deleting a SnapMirror")
 
 	// case 2: SnapMirror deletereturned error
-	rsi.EXPECT().SnapmirrorRelease(ctx, "vol1", "svm").Return(fmt.Errorf("error deleting snapmirror"))
+	rsi.EXPECT().SnapmirrorRelease(ctx, "vol1", "svm").Return(errors.New("error deleting snapmirror"))
 	err = oapi.SnapmirrorRelease(ctx, "vol1", "svm")
 	assert.Error(t, err, "no error returned while deleting a SnapMirror")
 }
@@ -3523,7 +3523,7 @@ func TestSnapmirrorDelete(t *testing.T) {
 
 	// case 2: Delete SnapMirror returned error
 	rsi.EXPECT().SnapmirrorDelete(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
-		"fake-remoteSVM").Return(fmt.Errorf("unable to delete snapmirror"))
+		"fake-remoteSVM").Return(errors.New("unable to delete snapmirror"))
 	err = oapi.SnapmirrorDelete(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
 		"fake-remoteSVM")
 	assert.Error(t, err, "no error returned while deleting a SnapMirror")
@@ -3541,7 +3541,7 @@ func TestSnapmirrorResync(t *testing.T) {
 
 	// case 2: Resync SnapMirror returned error
 	rsi.EXPECT().SnapmirrorResync(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume", "fake-remoteSVM").Return(
-		fmt.Errorf("unable to resync snapmirror"))
+		errors.New("unable to resync snapmirror"))
 	rsi.EXPECT().SnapmirrorDelete(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
 		"fake-remoteSVM").Return(nil)
 	err = oapi.SnapmirrorResync(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
@@ -3550,9 +3550,9 @@ func TestSnapmirrorResync(t *testing.T) {
 
 	// case 3: Delete SnapMirror returned error
 	rsi.EXPECT().SnapmirrorResync(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume", "fake-remoteSVM").Return(
-		fmt.Errorf("unable to resync snapmirror"))
+		errors.New("unable to resync snapmirror"))
 	rsi.EXPECT().SnapmirrorDelete(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
-		"fake-remoteSVM").Return(fmt.Errorf("unable to delete snapmirror"))
+		"fake-remoteSVM").Return(errors.New("unable to delete snapmirror"))
 	err = oapi.SnapmirrorResync(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
 		"fake-remoteSVM")
 	assert.Error(t, err, "no error returned while resyncing a SnapMirror")
@@ -3638,7 +3638,7 @@ func TestSnapmirrorQuiesce(t *testing.T) {
 
 	// case 2: Quiesce a SnapMirror failed.
 	rsi.EXPECT().SnapmirrorQuiesce(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
-		"fake-remoteSVM").Return(fmt.Errorf("quiesce a SnapMirror failed"))
+		"fake-remoteSVM").Return(errors.New("quiesce a SnapMirror failed"))
 	err = oapi.SnapmirrorQuiesce(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
 		"fake-remoteSVM")
 	assert.Error(t, err, "no error returned while quiescing a SnapMirror")
@@ -3656,7 +3656,7 @@ func TestSnapmirrorAbort(t *testing.T) {
 
 	// case 2; Abort the SnapMirror failed. Backend return an error
 	rsi.EXPECT().SnapmirrorAbort(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
-		"fake-remoteSVM").Return(fmt.Errorf("quiesce a SnapMirror failed"))
+		"fake-remoteSVM").Return(errors.New("quiesce a SnapMirror failed"))
 	err = oapi.SnapmirrorAbort(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
 		"fake-remoteSVM")
 	assert.Error(t, err, "no error returned while aborting a SnapMirror")
@@ -3674,7 +3674,7 @@ func TestSnapmirrorBreak(t *testing.T) {
 
 	// case 2: Negative test, break the SnapMirror. backend return an error.
 	rsi.EXPECT().SnapmirrorBreak(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
-		"fake-remoteSVM", "fake-snapshot").Return(fmt.Errorf("quiesce a SnapMirror failed"))
+		"fake-remoteSVM", "fake-snapshot").Return(errors.New("quiesce a SnapMirror failed"))
 	err = oapi.SnapmirrorBreak(ctx, "fake-localVolume", "fake-localSvm", "fake-remoteVolume",
 		"fake-remoteSVM", "fake-snapshot")
 	assert.Error(t, err, "no error returned while breaking a SnapMirror")
@@ -3689,7 +3689,7 @@ func TestSnapmirrorUpdate(t *testing.T) {
 	assert.NoError(t, err, "error returned while updating a SnapMirror")
 
 	// case 2: Negative test update the SnapMirror. Backend return an error.
-	rsi.EXPECT().SnapmirrorUpdate(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("SnapMirror update failed"))
+	rsi.EXPECT().SnapmirrorUpdate(ctx, gomock.Any(), gomock.Any()).Return(errors.New("SnapMirror update failed"))
 	err = oapi.SnapmirrorUpdate(ctx, "fake-localVolume", "fake-snapshot")
 	assert.Error(t, err, "no error returned while updating a SnapMirror")
 }
@@ -3705,7 +3705,7 @@ func TestJobScheduleExists(t *testing.T) {
 
 	// case 2: Negative test, verify job scheduled
 	rsi.EXPECT().JobScheduleExists(ctx, "fake-replicationSchedule").Return(
-		false, fmt.Errorf("failed to get job"))
+		false, errors.New("failed to get job"))
 	_, err = oapi.JobScheduleExists(ctx, "fake-replicationSchedule")
 	assert.Error(t, err, "no error returned while verifying a job")
 }
@@ -3720,7 +3720,7 @@ func TestGetSVMPeers(t *testing.T) {
 	assert.Equal(t, "svm1", svms[0], "svm name does not match")
 
 	// case 2: Negative test get the peer SVM
-	rsi.EXPECT().GetPeeredVservers(ctx).Return([]string{}, fmt.Errorf("failed to get SVM"))
+	rsi.EXPECT().GetPeeredVservers(ctx).Return([]string{}, errors.New("failed to get SVM"))
 	_, err = oapi.GetSVMPeers(ctx)
 	assert.Error(t, err, "no error returned while getting a peer system SVM")
 }
@@ -3785,7 +3785,7 @@ func TestLunList(t *testing.T) {
 	assert.Equal(t, *lun.Name, luns[0].Name, "LUN name does not match")
 
 	// case 2: Get LUN list returned error
-	rsi.EXPECT().LunList(ctx, "", gomock.Any()).Return(nil, fmt.Errorf("lun not found with given pattern"))
+	rsi.EXPECT().LunList(ctx, "", gomock.Any()).Return(nil, errors.New("lun not found with given pattern"))
 	luns, err = oapi.LunList(ctx, "")
 	assert.Error(t, err, "no error returned while getting a LUN info")
 
@@ -3830,7 +3830,7 @@ func TestLunCreate(t *testing.T) {
 
 	// case 2: Create LUN returned error
 	rsi.EXPECT().LunCreate(ctx, lun.Name, int64(2147483648), lun.OsType, lun.Qos, lun.SpaceReserved,
-		lun.SpaceAllocated).Return(fmt.Errorf("Failed to create LUN"))
+		lun.SpaceAllocated).Return(errors.New("Failed to create LUN"))
 	err = oapi.LunCreate(ctx, lun)
 	assert.Error(t, err, "no error returned while creating a LUN info")
 }
@@ -3855,12 +3855,12 @@ func TestLunDestroy(t *testing.T) {
 
 	// case 2: Delete LUN returned error
 	rsi.EXPECT().LunGetByName(ctx, "/"+*lun.Name, gomock.Any()).Return(lun, nil)
-	rsi.EXPECT().LunDelete(ctx, *lun.UUID).Return(fmt.Errorf("failed to delete lun"))
+	rsi.EXPECT().LunDelete(ctx, *lun.UUID).Return(errors.New("failed to delete lun"))
 	err = oapi.LunDestroy(ctx, "/"+*lun.Name)
 	assert.Error(t, err, "no error returned while deleting a LUN")
 
 	// case 3: Delete LUN, LUN verification returned error
-	rsi.EXPECT().LunGetByName(ctx, "/"+*lun.Name, gomock.Any()).Return(nil, fmt.Errorf("failed to get lun"))
+	rsi.EXPECT().LunGetByName(ctx, "/"+*lun.Name, gomock.Any()).Return(nil, errors.New("failed to get lun"))
 	err = oapi.LunDestroy(ctx, "/"+*lun.Name)
 	assert.Error(t, err, "no error returned while deleting a LUN")
 
@@ -3887,7 +3887,7 @@ func TestLunGetGeometry(t *testing.T) {
 	assert.NoError(t, err, "error returned while getting a LUN option")
 
 	// case 2: Positive test, get the LUN options returned error.
-	rsi.EXPECT().LunOptions(ctx).Return(&api.LunOptionsResult{}, fmt.Errorf("failed to get lun option"))
+	rsi.EXPECT().LunOptions(ctx).Return(&api.LunOptionsResult{}, errors.New("failed to get lun option"))
 	_, err = oapi.LunGetGeometry(ctx, "/")
 	assert.Error(t, err, "no error returned while getting a LUN option")
 
@@ -3924,7 +3924,7 @@ func TestLunGetAttribute(t *testing.T) {
 	tempAttributeName := "fsType"
 
 	// 1 - Negative test, d.api.LunGetAttribute returns error
-	rsi.EXPECT().LunGetAttribute(gomock.Any(), tempLunPath, tempAttributeName).Return("", fmt.Errorf("error")).Times(1)
+	rsi.EXPECT().LunGetAttribute(gomock.Any(), tempLunPath, tempAttributeName).Return("", errors.New("error")).Times(1)
 	attributeValue, err := oapi.LunGetAttribute(ctx, tempLunPath, tempAttributeName)
 	assert.Error(t, err)
 	assert.Equal(t, "", attributeValue)
@@ -3955,7 +3955,7 @@ func TestLunCloneCreate(t *testing.T) {
 	assert.NoError(t, err, "error returned while cloning a LUN")
 
 	// case 2, Negative test, Unable to get LUN info. Beckend returned error
-	rsi.EXPECT().LunGetByName(ctx, gomock.Any(), gomock.Any()).Return(lun, fmt.Errorf("failed to get lun"))
+	rsi.EXPECT().LunGetByName(ctx, gomock.Any(), gomock.Any()).Return(lun, errors.New("failed to get lun"))
 	err = oapi.LunCloneCreate(ctx, "fake-cloneVolume", "fake-volume", "fake-snaphot", api.QosPolicyGroup{})
 	assert.Error(t, err, "no error returned while cloning a LUN")
 
@@ -4000,7 +4000,7 @@ func TestLunGetByName(t *testing.T) {
 	assert.Equal(t, *lun.Name, lunResponse.Name, "Lun name does not match")
 
 	// case 2: Negative test, backend returned error
-	rsi.EXPECT().LunGetByName(ctx, gomock.Any(), gomock.Any()).Return(lun, fmt.Errorf("failed to get lun"))
+	rsi.EXPECT().LunGetByName(ctx, gomock.Any(), gomock.Any()).Return(lun, errors.New("failed to get lun"))
 	lunResponse, err = oapi.LunGetByName(ctx, "fake-lun")
 	assert.Error(t, err, "no error returned while getting a LUN by name")
 
@@ -4047,7 +4047,7 @@ func TestOntapAPIREST_LunExists(t *testing.T) {
 	assert.False(t, exists, "expected LUN to not exist")
 
 	// Case 4: Unexpected error
-	mockAPI.EXPECT().LunGetByName(ctx, lunPath, gomock.Any()).Return(nil, fmt.Errorf("unexpected error")).Times(1)
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath, gomock.Any()).Return(nil, errors.New("unexpected error")).Times(1)
 	exists, err = oapi.LunExists(ctx, lunPath)
 	assert.Error(t, err, "expected error when unexpected error is returned")
 	assert.False(t, exists, "expected LUN to not exist")
@@ -4069,7 +4069,7 @@ func TestLunRename(t *testing.T) {
 	assert.NoError(t, err, "error returned while renaming a LUN")
 
 	// case 2: Negative test, renamed the LUN
-	rsi.EXPECT().LunRename(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("lun rename failed"))
+	rsi.EXPECT().LunRename(ctx, gomock.Any(), gomock.Any()).Return(errors.New("lun rename failed"))
 	err = oapi.LunRename(ctx, "fake-lun", "fake-newLun")
 	assert.Error(t, err, "no error returned while renaming a LUN")
 }
@@ -4094,7 +4094,7 @@ func TestLunMapInfo(t *testing.T) {
 	assert.Equal(t, logicalUnitNumber, int64(lunid), "logical unit does not match")
 
 	// case 2: Negative test, get lun map info
-	rsi.EXPECT().LunMapInfo(ctx, gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("failed to get lun map"))
+	rsi.EXPECT().LunMapInfo(ctx, gomock.Any(), gomock.Any()).Return(nil, errors.New("failed to get lun map"))
 	_, err = oapi.LunMapInfo(ctx, igroupName, "/vol/lun0")
 	assert.Error(t, err, "no error returned while getting a LUN map info")
 }
@@ -4115,7 +4115,7 @@ func TestLunUnmap(t *testing.T) {
 	assert.NoError(t, err, "error returned while unmapping a LUN")
 
 	// case 2: Negative test, unmap LUN.
-	rsi.EXPECT().LunUnmap(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("failed to unmap lun"))
+	rsi.EXPECT().LunUnmap(ctx, gomock.Any(), gomock.Any()).Return(errors.New("failed to unmap lun"))
 	err = oapi.LunUnmap(ctx, "igroup", "/vol/lun0")
 	assert.Error(t, err, "no error returned while unmapping a LUN")
 }
@@ -4142,7 +4142,7 @@ func TestLunListIgroupsMapped(t *testing.T) {
 	assert.Equal(t, igroupName, igroupNames[0])
 
 	// case 2: Negative test, get ia LUN list mapped with igroup
-	rsi.EXPECT().LunMapList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("failed to get lun map"))
+	rsi.EXPECT().LunMapList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed to get lun map"))
 	_, err = oapi.LunListIgroupsMapped(ctx, "/vol/lun0")
 	assert.Error(t, err, "no error returned while getting a LUN list mapped with igroup")
 }
@@ -4169,7 +4169,7 @@ func TestIgroupListLUNsMapped(t *testing.T) {
 	assert.Equal(t, lunName, lunNames[0])
 
 	// case 2: Negative test, get igroup list mapped with LUN.
-	rsi.EXPECT().LunMapList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("failed to get lun map"))
+	rsi.EXPECT().LunMapList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed to get lun map"))
 	_, err = oapi.IgroupListLUNsMapped(ctx, "/vol/lun0")
 	assert.Error(t, err, "no error returned while getting a igroup mapped with lun")
 }
@@ -4185,7 +4185,7 @@ func TestLunMapGetReportingNodes(t *testing.T) {
 
 	// case 2: Negative test: get the lun reporting node.
 	rsi.EXPECT().LunMapGetReportingNodes(ctx, gomock.Any(), gomock.Any()).Return(nil,
-		fmt.Errorf("failed to get lun map node"))
+		errors.New("failed to get lun map node"))
 	_, err = oapi.LunMapGetReportingNodes(ctx, "igroup", "/vol/lun0")
 	assert.Error(t, err, "no error returned while getting lun map reporting node")
 }
@@ -4200,7 +4200,7 @@ func TestLunSize(t *testing.T) {
 	assert.Equal(t, 2147483648, size)
 
 	// case 2: Negative test, get the lun size.
-	rsi.EXPECT().LunSize(ctx, "/vol/vol1/lun0").Return(0, fmt.Errorf("failed to get size"))
+	rsi.EXPECT().LunSize(ctx, "/vol/vol1/lun0").Return(0, errors.New("failed to get size"))
 	_, err = oapi.LunSize(ctx, "/vol/vol1/lun0")
 	assert.Error(t, err, "no error returned while getting a lun size")
 }
@@ -4222,7 +4222,7 @@ func TestLunSetSize(t *testing.T) {
 	assert.Equal(t, uint64(2147483648), size, "LUN size does not match")
 
 	// case 2: Negative test modify the LUN size
-	rsi.EXPECT().LunSetSize(ctx, gomock.Any(), gomock.Any()).Return(uint64(0), fmt.Errorf("failed to set size"))
+	rsi.EXPECT().LunSetSize(ctx, gomock.Any(), gomock.Any()).Return(uint64(0), errors.New("failed to set size"))
 	_, err = oapi.LunSetSize(ctx, "/vol/lun0", "2147483648")
 	assert.Error(t, err, "no error returned while modifying a lun size")
 }
@@ -4254,7 +4254,7 @@ func TestIscsiInitiatorGetDefaultAuth(t *testing.T) {
 	assert.Equal(t, iscsiInitiatorAuth.AuthType, authType, "authType does not match")
 
 	// case 2: Failed to get the iscsi initialor default auth.
-	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed to get iscsi initiator auth"))
+	rsi.EXPECT().IscsiInitiatorGetDefaultAuth(ctx, gomock.Any()).Return(nil, errors.New("failed to get iscsi initiator auth"))
 	iscsiInitiatorAuth, err = oapi.IscsiInitiatorGetDefaultAuth(ctx)
 	assert.Error(t, err, "no error returned while iscsi initiator default auth")
 
@@ -4319,7 +4319,7 @@ func TestIscsiInitiatorSetDefaultAuth(t *testing.T) {
 
 	// case 2: Failed to get the default iscsi initiator auth
 	rsi.EXPECT().IscsiInitiatorSetDefaultAuth(ctx, authType, chapUser, "", chapUser, "").Return(
-		fmt.Errorf("failed to get iscsi initiator auth"))
+		errors.New("failed to get iscsi initiator auth"))
 	err = oapi.IscsiInitiatorSetDefaultAuth(ctx, authType, chapUser, "", chapUser, "")
 	assert.Error(t, err, "no error returned while setting the iscsi initiator auth")
 }
@@ -4344,7 +4344,7 @@ func TestIscsiInterfaceGet(t *testing.T) {
 	assert.Equal(t, iscsiInterface[0], targetName)
 
 	// case 2: Negative test, backend return error in response.
-	rsi.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed to get iscsi interface service"))
+	rsi.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return(nil, errors.New("failed to get iscsi interface service"))
 	_, err = oapi.IscsiInterfaceGet(ctx, svmName)
 	assert.Error(t, err, "no error returned while getting iscsi interface")
 
@@ -4411,7 +4411,7 @@ func TestIscsiNodeGetNameRequest(t *testing.T) {
 	assert.Error(t, err, "no error returned while getting node name")
 
 	// case 6: Unable to get the node name from backend.
-	rsi.EXPECT().IscsiNodeGetName(ctx, gomock.Any()).Return(nil, fmt.Errorf("iscsi node name not found"))
+	rsi.EXPECT().IscsiNodeGetName(ctx, gomock.Any()).Return(nil, errors.New("iscsi node name not found"))
 	_, err = oapi.IscsiNodeGetNameRequest(ctx)
 	assert.Error(t, err, "no error returned while getting node name")
 }
@@ -4453,7 +4453,7 @@ func TestIgroupCreate(t *testing.T) {
 	assert.NoError(t, err, "error while creating igroup")
 
 	// Negative test, Unoble to verify igroup exists
-	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup, gomock.Any()).Return(nil, fmt.Errorf("failed to verify igroup"))
+	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup, gomock.Any()).Return(nil, errors.New("failed to verify igroup"))
 	err = oapi.IgroupCreate(ctx, initiatorGroup, initiator1, "Linux")
 	assert.Error(t, err, "no error while verifying igroup")
 
@@ -4466,14 +4466,14 @@ func TestIgroupCreate(t *testing.T) {
 	// Negative test, igroup creation failed.
 	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup, gomock.Any()).Return(nil, nil)
 	rsi.EXPECT().IgroupCreate(ctx, initiatorGroup, initiator1, "Linux").Return(
-		fmt.Errorf("failed to create igroup"))
+		errors.New("failed to create igroup"))
 	err = oapi.IgroupCreate(ctx, initiatorGroup, initiator1, "Linux")
 	assert.Error(t, err, "No error while creating igroup")
 
 	// Negative test, igroup creation failed.
 	rsi.EXPECT().IgroupGetByName(ctx, initiatorGroup, gomock.Any()).Return(nil, nil)
 	rsi.EXPECT().IgroupCreate(ctx, initiatorGroup, initiator1, "Linux").Return(
-		fmt.Errorf("404 failed to create igroup"))
+		errors.New("404 failed to create igroup"))
 	err = oapi.IgroupCreate(ctx, initiatorGroup, initiator1, "Linux")
 	assert.Error(t, err, "No error while creating igroup")
 }
@@ -4496,7 +4496,7 @@ func TestIgroupDestroy(t *testing.T) {
 	assert.NoError(t, err, "error while deleting igroup")
 
 	// Negative test, Unable to delete igroup
-	rsi.EXPECT().IgroupDestroy(ctx, initiatorGroup).Return(fmt.Errorf("Unable to delete igroup"))
+	rsi.EXPECT().IgroupDestroy(ctx, initiatorGroup).Return(errors.New("Unable to delete igroup"))
 	err = oapi.IgroupDestroy(ctx, initiatorGroup)
 	assert.Error(t, err, "No error while deleting igroup")
 
@@ -4507,7 +4507,7 @@ func TestIgroupDestroy(t *testing.T) {
 }
 
 func TestTerminalStateError(t *testing.T) {
-	terminalStateError := api.TerminalState(fmt.Errorf("error in getting terminal state"))
+	terminalStateError := api.TerminalState(errors.New("error in getting terminal state"))
 
 	assert.Error(t, terminalStateError)
 	assert.Equal(t, "error in getting terminal state", terminalStateError.Error())
@@ -4523,9 +4523,9 @@ func TestConsistencyGroupSnapshot(t *testing.T) {
 
 	volumes := []string{"vol1", "vol2"}
 
-	deleteErr := fmt.Errorf("error deleting cg")
-	snapshotErr := fmt.Errorf("error creating cg snapshot")
-	createErr := fmt.Errorf("error creating cg")
+	deleteErr := errors.New("error deleting cg")
+	snapshotErr := errors.New("error creating cg snapshot")
+	createErr := errors.New("error creating cg")
 
 	// case 1: CG snapshot create success
 	rsi.EXPECT().ConsistencyGroupCreateAndWait(ctx, cgName, volumes).Return(nil).Times(1)
@@ -4603,7 +4603,7 @@ func TestNVMeNamespaceSetComment(t *testing.T) {
 	assert.Contains(t, err.Error(), "namespace response is nil")
 
 	// Case 3: Error while retrieving namespace
-	rsi.EXPECT().NVMeNamespaceGetByName(ctx, namespaceName, fields).Return(nil, fmt.Errorf("mock error"))
+	rsi.EXPECT().NVMeNamespaceGetByName(ctx, namespaceName, fields).Return(nil, errors.New("mock error"))
 
 	err = oapi.NVMeNamespaceSetComment(ctx, namespaceName, comment)
 	assert.Error(t, err, "expected an error while retrieving namespace")
@@ -4654,7 +4654,7 @@ func TestNVMeNamespaceSetQosPolicyGroup(t *testing.T) {
 	assert.Contains(t, err.Error(), "namespace response is nil")
 
 	// Case 3: Error while retrieving namespace
-	rsi.EXPECT().NVMeNamespaceGetByName(ctx, namespaceName, fields).Return(nil, fmt.Errorf("mock error"))
+	rsi.EXPECT().NVMeNamespaceGetByName(ctx, namespaceName, fields).Return(nil, errors.New("mock error"))
 
 	err = oapi.NVMeNamespaceSetQosPolicyGroup(ctx, namespaceName, qosPolicyGroup)
 	assert.Error(t, err, "expected an error while retrieving namespace")
@@ -4686,7 +4686,7 @@ func TestStorageUnitExists(t *testing.T) {
 	assert.False(t, exists, "expected storage unit to not exist")
 
 	// Case 3: Error while fetching storage unit
-	rsi.EXPECT().StorageUnitGetByName(ctx, suName).Return(nil, fmt.Errorf("some error"))
+	rsi.EXPECT().StorageUnitGetByName(ctx, suName).Return(nil, errors.New("some error"))
 
 	exists, err = oapi.StorageUnitExists(ctx, suName)
 	assert.Error(t, err, "expected an error")
@@ -4719,7 +4719,7 @@ func TestStorageUnitGetByName(t *testing.T) {
 	assert.Nil(t, storageUnit, "expected no storage unit to be found")
 
 	// Case 3: Error while fetching storage unit
-	rsi.EXPECT().StorageUnitGetByName(ctx, suName).Return(nil, fmt.Errorf("some error"))
+	rsi.EXPECT().StorageUnitGetByName(ctx, suName).Return(nil, errors.New("some error"))
 
 	storageUnit, err = oapi.StorageUnitGetByName(ctx, suName)
 	assert.Error(t, err, "expected an error")
@@ -4763,7 +4763,7 @@ func TestStorageUnitSnapshotCreate(t *testing.T) {
 
 	// Case 3: Error while creating snapshot
 	rsi.EXPECT().StorageUnitGetByName(ctx, suName).Return(mockSU, nil).Times(1)
-	rsi.EXPECT().StorageUnitSnapshotCreateAndWait(ctx, suUUID, snapshotName).Return(fmt.Errorf("failed to create snapshot"))
+	rsi.EXPECT().StorageUnitSnapshotCreateAndWait(ctx, suUUID, snapshotName).Return(errors.New("failed to create snapshot"))
 
 	err = oapi.StorageUnitSnapshotCreate(ctx, snapshotName, suName)
 	assert.Error(t, err, "expected an error while creating snapshot")

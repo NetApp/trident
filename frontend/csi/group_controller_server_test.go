@@ -221,7 +221,7 @@ func TestCreateVolumeGroupSnapshot_Succeeds(t *testing.T) {
 	for _, vol := range groupSnapshotConfig.GetVolumeNames() {
 		snapName, err := storage.ConvertGroupSnapshotID(groupSnapshotConfig.ID())
 		if err != nil {
-			t.Fatalf(err.Error())
+			t.Fatal(err.Error())
 		}
 
 		snaps = append(snaps, &storage.SnapshotExternal{
@@ -352,7 +352,7 @@ func TestGetVolumeGroupSnapshot_Succeeds(t *testing.T) {
 	name := "groupsnapshot-1qaz2wsx3edc1qaz2wsx3edc"
 	snapName, err := storage.ConvertGroupSnapshotID(name)
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 
 	snaps := []string{
@@ -540,7 +540,7 @@ func TestDeleteVolumeGroupSnapshot_Succeeds(t *testing.T) {
 	name := "groupsnapshot-1qaz2wsx3edc1qaz2wsx3edc"
 	snapName, err := storage.ConvertGroupSnapshotID(name)
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 
 	snaps := []string{

@@ -49,14 +49,14 @@ func TestRemoveMultipathDeviceMapping(t *testing.T) {
 			name:        "Device does not exist",
 			devicePath:  "/dev/mapper/doesNotExist",
 			mockReturn:  []byte("'/dev/mapper/doesNotExist' is not a valid argument"),
-			mockError:   fmt.Errorf("error"),
+			mockError:   errors.New("error"),
 			expectError: false,
 		},
 		{
 			name:        "Negative case",
 			devicePath:  "/dev/mock-0",
 			mockReturn:  nil,
-			mockError:   fmt.Errorf("error"),
+			mockError:   errors.New("error"),
 			expectError: true,
 		},
 	}
@@ -308,7 +308,7 @@ func TestClient_EnsureDeviceReadable(t *testing.T) {
 			getMockCmd: func() exec.Command {
 				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
 				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "dd", 5*time.Second, false, "if="+devicePath,
-					"bs=4096", "count=1", "status=none").Return([]byte(""), fmt.Errorf("error"))
+					"bs=4096", "count=1", "status=none").Return([]byte(""), errors.New("error"))
 				return mockCommand
 			},
 			expectError: true,
@@ -356,7 +356,7 @@ func TestCanFlushMultipathDevice(t *testing.T) {
 			getMockCmd: func() exec.Command {
 				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
 				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 5*time.Second, true,
-					"-C", devicePath).Return([]byte(""), fmt.Errorf("error"))
+					"-C", devicePath).Return([]byte(""), errors.New("error"))
 				return mockCommand
 			},
 			expectError: true,
@@ -365,7 +365,7 @@ func TestCanFlushMultipathDevice(t *testing.T) {
 			getMockCmd: func() exec.Command {
 				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
 				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 5*time.Second, true,
-					"-C", devicePath).Return([]byte("no usable paths found"), fmt.Errorf("error"))
+					"-C", devicePath).Return([]byte("no usable paths found"), errors.New("error"))
 				return mockCommand
 			},
 			expectError: true,
@@ -375,7 +375,7 @@ func TestCanFlushMultipathDevice(t *testing.T) {
 				volumeFlushExceptions[devicePath] = time.Now().Add(-1 * time.Hour)
 				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
 				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 5*time.Second, true,
-					"-C", devicePath).Return([]byte("no usable paths found"), fmt.Errorf("error"))
+					"-C", devicePath).Return([]byte("no usable paths found"), errors.New("error"))
 				return mockCommand
 			},
 			expectError: true,
@@ -1045,7 +1045,7 @@ func TestClearFormatting(t *testing.T) {
 			getMockCmd: func() exec.Command {
 				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
 				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "wipefs", 10*time.Second, false, "-a", devicePath).
-					Return(nil, fmt.Errorf("wipefs error")).Times(1)
+					Return(nil, errors.New("wipefs error")).Times(1)
 				return mockCommand
 			},
 			expectError: true,
@@ -1056,7 +1056,7 @@ func TestClearFormatting(t *testing.T) {
 				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "wipefs", 10*time.Second, false, "-a", devicePath).
 					Return([]byte{}, nil).Times(1)
 				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "dd", 5*time.Second, false, "if=/dev/zero", "of="+devicePath, "bs=4096", "count=512", "status=none").
-					Return(nil, fmt.Errorf("dd error")).Times(1)
+					Return(nil, errors.New("dd error")).Times(1)
 				return mockCommand
 			},
 			expectError: true,

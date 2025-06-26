@@ -6,7 +6,6 @@ package osutils
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"os"
 	"strings"
@@ -40,7 +39,7 @@ func TestGetIPAddresses(t *testing.T) {
 
 func TestGetIPAddresses_Error(t *testing.T) {
 	mockNetLink := mock_osutils.NewMockNetLink(gomock.NewController(t))
-	mockNetLink.EXPECT().LinkList().Return(nil, fmt.Errorf("error"))
+	mockNetLink.EXPECT().LinkList().Return(nil, errors.New("error"))
 
 	defer func(originalNetlink NetLink) {
 		netLink = originalNetlink
@@ -72,7 +71,7 @@ func TestGetIPAddressesExceptingDummyInterfaces(t *testing.T) {
 
 func TestGetIPAddressesExceptingDummyInterfaces_NegTests(t *testing.T) {
 	mockNetLink := mock_osutils.NewMockNetLink(gomock.NewController(t))
-	mockNetLink.EXPECT().LinkList().Return(nil, fmt.Errorf("error"))
+	mockNetLink.EXPECT().LinkList().Return(nil, errors.New("error"))
 
 	defer func(originalNetlink NetLink) {
 		netLink = originalNetlink
@@ -138,7 +137,7 @@ func TestNFSActiveOnHost(t *testing.T) {
 		},
 		{
 			name:        "Fails",
-			expectedErr: fmt.Errorf("failed to check if service is active on host"),
+			expectedErr: errors.New("failed to check if service is active on host"),
 		},
 	}
 
@@ -212,7 +211,7 @@ func TestGetHostSystemInfo(t *testing.T) {
 
 	// ExecuteWithTimeout error
 	mockCmd.EXPECT().ExecuteWithTimeout(ctx, "tridentctl", 5*time.Second, true, "system", "--chroot-path",
-		"/host").Return(nil, fmt.Errorf("error"))
+		"/host").Return(nil, errors.New("error"))
 	osUtils = NewDetailed(mockCmd, afero.NewMemMapFs())
 	hostInfo, err = osUtils.GetHostSystemInfo(ctx)
 	assert.Error(t, err, "error is not nil")
@@ -234,7 +233,7 @@ func TestGetUsableAddressesFromLinks(t *testing.T) {
 	}
 
 	mockNetLink := mock_osutils.NewMockNetLink(gomock.NewController(t))
-	mockNetLink.EXPECT().AddrList(gomock.Any(), netlink.FAMILY_ALL).Return(nil, fmt.Errorf("error"))
+	mockNetLink.EXPECT().AddrList(gomock.Any(), netlink.FAMILY_ALL).Return(nil, errors.New("error"))
 	mockNetLink.EXPECT().AddrList(gomock.Any(), netlink.FAMILY_ALL).Return(mockAddresses, nil)
 	defer func(originalNetlink NetLink) {
 		netLink = originalNetlink

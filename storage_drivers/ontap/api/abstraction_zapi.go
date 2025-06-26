@@ -784,7 +784,7 @@ func (d OntapAPIZAPI) LunListIgroupsMapped(ctx context.Context, lunPath string) 
 	if err != nil {
 		msg := "error getting LUN maps"
 		Logc(ctx).WithError(err).Error(msg)
-		return nil, fmt.Errorf(msg)
+		return nil, errors.New(msg)
 	}
 	attributesList := lunMapGetResponse.Result.AttributesList()
 	for _, lunMapInfo := range attributesList.LunMapInfo() {
@@ -801,7 +801,7 @@ func (d OntapAPIZAPI) IgroupListLUNsMapped(ctx context.Context, initiatorGroupNa
 	if err != nil {
 		msg := "error getting LUN maps"
 		Logc(ctx).WithError(err).Error(msg)
-		return nil, fmt.Errorf(msg)
+		return nil, errors.New(msg)
 	}
 	attributesList := lunMapGetResponse.Result.AttributesList()
 	for _, lunMapInfo := range attributesList.LunMapInfo() {
@@ -852,7 +852,7 @@ func (d OntapAPIZAPI) LunUnmap(ctx context.Context, initiatorGroupName, lunPath 
 	if err != nil {
 		msg := "error unmapping LUN"
 		Logc(ctx).WithFields(fields).WithError(err).Error(msg)
-		return fmt.Errorf(msg)
+		return errors.New(msg)
 	}
 	return nil
 }
@@ -1944,7 +1944,7 @@ func (d OntapAPIZAPI) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, 
 	if err = azgo.GetError(ctx, response, err); err != nil {
 		msg := "error setting quota"
 		Logc(ctx).WithError(err).Error(msg)
-		return fmt.Errorf(msg)
+		return errors.New(msg)
 	}
 	return nil
 }
@@ -1994,7 +1994,7 @@ func (d OntapAPIZAPI) QtreeListByPrefix(ctx context.Context, prefix, volumePrefi
 	if err = azgo.GetError(ctx, listResponse, err); err != nil {
 		msg := fmt.Sprintf("Error listing qtrees. %v", err)
 		Logc(ctx).Errorf(msg)
-		return nil, fmt.Errorf(msg)
+		return nil, errors.New(msg)
 	}
 	qtrees := Qtrees{}
 	if listResponse.Result.AttributesListPtr != nil {
@@ -2033,7 +2033,7 @@ func (d OntapAPIZAPI) QtreeGetByName(ctx context.Context, name, volumePrefix str
 	if err != nil {
 		msg := "error getting qtree"
 		Logc(ctx).WithError(err).Error(msg)
-		return nil, fmt.Errorf(msg)
+		return nil, errors.New(msg)
 	}
 	return d.convertQtree(*qtree), nil
 }
@@ -2060,7 +2060,7 @@ func (d OntapAPIZAPI) convertQuota(ctx context.Context, quota azgo.QuotaEntryTyp
 		if err != nil {
 			msg := fmt.Sprintf("could not parse diskLimit %s", quota.DiskLimit())
 			Logc(ctx).WithError(err).Error(msg)
-			return nil, fmt.Errorf(msg)
+			return nil, errors.New(msg)
 		}
 		diskLimit *= 1024 // Convert from KB to Bytes
 	} else {
@@ -2169,7 +2169,7 @@ func (d OntapAPIZAPI) VolumeSnapshotInfo(ctx context.Context, snapshotName, sour
 	}
 
 	if snapListResponse.Result.NumRecords() == 0 {
-		return emptyResult, errors.NotFoundError(fmt.Sprintf("snapshot %v not found for volume %v", snapshotName, sourceVolume))
+		return emptyResult, errors.NotFoundError("snapshot %v not found for volume %v", snapshotName, sourceVolume)
 	} else if snapListResponse.Result.NumRecords() > 1 {
 		return emptyResult, fmt.Errorf("should have exactly 1 record, not: %v", snapListResponse.Result.NumRecords())
 	}

@@ -271,7 +271,7 @@ func updateNVMeSubsystemPathAttributes(ctx context.Context, fs afero.Fs, path *P
 	defer Logc(ctx).Trace("<<<< nvme_linux.updateNVMeSubsystemPathAttributes")
 
 	if path == nil {
-		return fmt.Errorf("path is nil")
+		return errors.New("path is nil")
 	}
 	var err error
 	// Example of state: live

@@ -1,55 +1,58 @@
+version: "2"
 run:
-  timeout: 5m
-  go: 1.23
-
+  go: "1.24"
 linters:
-  disable-all: true
-  # Enable specific linter
-  # https://golangci-lint.run/usage/linters/#enabled-by-default-linters
+  default: none
+  enable:
+    - errcheck
+    - gosec
+    - govet
+  settings:
+    gosec:
+      excludes:
+        - G402
+        - G115
+    govet:
+      disable:
+        - printf
+    lll:
+      line-length: 120
+      tab-width: 4
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - dupl
+          - errcheck
+          - gocyclo
+          - gosec
+        path: _test\.go
+      - linters:
+          - lll
+        source: '^//go:generate '
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
   enable:
     - gofumpt
     - goimports
-    - govet
-    - errcheck
-    - gosec
-
-issues:
-  exclude-rules:
-    # Exclude some linters from running on tests files.
-    - path: _test\.go
-      linters:
-        - gocyclo
-        - errcheck
-        - dupl
-        - gosec
-    # Exclude `lll` issues for long lines with `go:generate`.
-    - linters:
-        - lll
-      source: "^//go:generate "
-
-linters-settings:
-  gofumpt:
-    extra-rules: true
-    module-path: github.com/netapp/trident
-
-  goimports:
-    # Put imports beginning with prefix after 3rd-party packages.
-    # It's a comma-separated list of prefixes.
-    local-prefixes: github.com/netapp/trident
-
-  lll:
-    # Max line length, lines longer will be reported.
-    # '\t' is counted as 1 character by default, and can be changed with the tab-width option.
-    line-length: 120
-    # Tab width in spaces.
-    tab-width: 4
-
-  gosec:
-    excludes:
-      # Exclude TLS client side erorrs for now, until Trident fully supports TLS1.3
-      - G402 # Look for bad TLS connection settings
-      - G115
-
-  govet:
-    disable:
-      - printf
+  settings:
+    gofumpt:
+      module-path: github.com/netapp/trident
+      extra-rules: true
+    goimports:
+      local-prefixes:
+        - github.com/netapp/trident
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

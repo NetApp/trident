@@ -577,7 +577,7 @@ func (d *SANEconomyStorageDriver) Create(
 				"ONTAP-SAN-ECONOMY pool %s/%s; error: %v", storagePool.Name(), aggregate, aggrLimitsErr,
 			)
 			Logc(ctx).Error(errMessage)
-			createErrors = append(createErrors, fmt.Errorf(errMessage))
+			createErrors = append(createErrors, errors.New(errMessage))
 
 			// Move on to the next pool
 			continue
@@ -611,7 +611,7 @@ func (d *SANEconomyStorageDriver) Create(
 				storagePool.Name(), aggregate, name, err,
 			)
 			Logc(ctx).Error(errMessage)
-			createErrors = append(createErrors, fmt.Errorf(errMessage))
+			createErrors = append(createErrors, errors.New(errMessage))
 
 			// Move on to the next pool
 			continue
@@ -625,7 +625,7 @@ func (d *SANEconomyStorageDriver) Create(
 				storagePool.Name(), aggregate, bucketVol, name, err,
 			)
 			Logc(ctx).Error(errMessage)
-			createErrors = append(createErrors, fmt.Errorf(errMessage))
+			createErrors = append(createErrors, errors.New(errMessage))
 
 			// Don't leave the new Flexvol around if we just created it
 			if newVol {
@@ -666,7 +666,7 @@ func (d *SANEconomyStorageDriver) Create(
 					storagePool.Name(), aggregate, bucketVol, name, err,
 				)
 				Logc(ctx).Error(errMessage)
-				createErrors = append(createErrors, fmt.Errorf(errMessage))
+				createErrors = append(createErrors, errors.New(errMessage))
 
 				// Don't leave the new Flexvol around if we just created it
 				if newVol {
@@ -701,7 +701,7 @@ func (d *SANEconomyStorageDriver) Create(
 				storagePool.Name(), aggregate, bucketVol, name, err,
 			)
 			Logc(ctx).Error(errMessage)
-			createErrors = append(createErrors, fmt.Errorf(errMessage))
+			createErrors = append(createErrors, errors.New(errMessage))
 
 			// Don't leave the new LUN around
 			if err = d.API.LunDestroy(ctx, lunPathEco); err != nil {
@@ -1105,7 +1105,7 @@ func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, volConfig *storag
 	if err = LunUnmapAllIgroups(ctx, d.GetAPI(), lunPathEco); err != nil {
 		msg := "error removing all mappings from LUN"
 		Logc(ctx).WithError(err).Error(msg)
-		return fmt.Errorf(msg)
+		return errors.New(msg)
 	}
 
 	if err = d.API.LunDestroy(ctx, lunPathEco); err != nil {
@@ -1572,7 +1572,7 @@ func (d *SANEconomyStorageDriver) RestoreSnapshot(
 		if err = LunUnmapAllIgroups(ctx, d.GetAPI(), snapLunCopyPath); err != nil {
 			msg := "error removing all mappings from LUN"
 			Logc(ctx).WithError(err).Error(msg)
-			return fmt.Errorf(msg)
+			return errors.New(msg)
 		}
 
 		if err = d.API.LunDestroy(ctx, snapLunCopyPath); err != nil {

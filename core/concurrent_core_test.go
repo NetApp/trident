@@ -5,7 +5,6 @@ package core
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"sync"
 	"testing"
 
@@ -1434,7 +1433,7 @@ func TestGetBackendConcurrentCore(t *testing.T) {
 			name:        "BootstrapError",
 			backendName: "testBackend",
 			setupMocks: func(o *ConcurrentTridentOrchestrator) {
-				o.bootstrapError = fmt.Errorf("bootstrap error")
+				o.bootstrapError = errors.New("bootstrap error")
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "bootstrap error")
@@ -1517,7 +1516,7 @@ func TestGetBackendByBackendUUIDConcurrentCore(t *testing.T) {
 		},
 		{
 			name:         "BootstrapError",
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks: func(o *ConcurrentTridentOrchestrator) {
 				// No backends added for this case
 			},
@@ -1606,7 +1605,7 @@ func TestListBackendsConcurrentCore(t *testing.T) {
 		},
 		{
 			name:         "BootstrapError",
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks: func(o *ConcurrentTridentOrchestrator) {
 				// No backends added
 			},
@@ -1710,7 +1709,7 @@ func TestDeleteBackendConcurrentCore(t *testing.T) {
 			name:                "BootstrapError",
 			backendNameToDelete: "testBackend",
 			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
-				o.bootstrapError = fmt.Errorf("bootstrap error")
+				o.bootstrapError = errors.New("bootstrap error")
 				fakeBackend := getFakeBackend("testBackend", "uuid", nil)
 				addBackendsToCache(t, fakeBackend)
 			},
@@ -1807,7 +1806,7 @@ func Test_UpdateBackendConcurrentCore(t *testing.T) {
 			newBackendConfig: nil,
 			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				o.bootstrapped = false
-				o.bootstrapError = fmt.Errorf("bootstrap error")
+				o.bootstrapError = errors.New("bootstrap error")
 
 				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
 				addBackendsToCache(t, fakeBackend)
@@ -2259,7 +2258,7 @@ func TestAddBackendConcurrentCore(t *testing.T) {
 			configJSON: `{"backendName": "existingBackend", "storageDriverName": "fake", "version": 1, "protocol": "file", "volumeAccess": "1.0.0.1"}`,
 			configRef:  "",
 			setupMocks: func(t *testing.T, o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
-				mockStoreClient.EXPECT().AddBackend(gomock.Any(), gomock.Any()).Return(fmt.Errorf("persistent store error"))
+				mockStoreClient.EXPECT().AddBackend(gomock.Any(), gomock.Any()).Return(errors.New("persistent store error"))
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "persistent store error")
@@ -2376,7 +2375,7 @@ func TestAddVolumeConcurrentCore(t *testing.T) {
 			volumeConfig: &storage.VolumeConfig{
 				Name: "vol1", InternalName: "vol1",
 			},
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 			},
 			verifyError: func(err error) {
@@ -3488,7 +3487,7 @@ func TestUpdateVolumeLUKSPassphraseNamesConcurrentCore(t *testing.T) {
 			name:            "BootstrapError",
 			volumeName:      "vol1",
 			passphraseNames: &[]string{"key1"},
-			bootstrapErr:    fmt.Errorf("bootstrap error"),
+			bootstrapErr:    errors.New("bootstrap error"),
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 				// No volumes added
 			},
@@ -3553,7 +3552,7 @@ func TestUpdateVolumeLUKSPassphraseNamesConcurrentCore(t *testing.T) {
 
 				addVolumesToCache(t, vol)
 
-				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(fmt.Errorf("persistence error")).Times(1)
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(errors.New("persistence error")).Times(1)
 			},
 			verifyError: func(t *testing.T, err error) {
 				assert.Error(t, err)
@@ -3636,7 +3635,7 @@ func TestCloneVolumeConcurrentCore(t *testing.T) {
 	}{
 		{
 			name:         "BootstrapError",
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 			},
 			volumeConfig: &storage.VolumeConfig{
@@ -4369,7 +4368,7 @@ func TestDeleteVolumeConcurrentCore(t *testing.T) {
 		{
 			name:         "BootstrapError",
 			volumeName:   "vol1",
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks:   nil,
 			verifyError: func(t *testing.T, err error) {
 				assert.ErrorContains(t, err, "bootstrap error")
@@ -5094,7 +5093,7 @@ func TestGetVolumeForImportConcurrentCore(t *testing.T) {
 			name:         "BootstrapError",
 			volumeID:     "vol1",
 			backendName:  "backend1",
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks: func(o *ConcurrentTridentOrchestrator, mockCtrl *gomock.Controller) {
 				// No backends added
 			},
@@ -5112,7 +5111,7 @@ func TestGetVolumeForImportConcurrentCore(t *testing.T) {
 			backendName: "backend1",
 			setupMocks: func(o *ConcurrentTridentOrchestrator, mockCtrl *gomock.Controller) {
 				mockBackend := getMockBackend(mockCtrl, "backend1", "backend-uuid1")
-				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "vol1").Return(nil, fmt.Errorf("backend error")).Times(1)
+				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "vol1").Return(nil, errors.New("backend error")).Times(1)
 				addBackendsToCache(t, mockBackend)
 			},
 			verifyError: func(err error) {
@@ -5204,7 +5203,7 @@ func TestListVolumesConcurrentCore(t *testing.T) {
 		},
 		{
 			name:         "BootstrapError",
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks: func(o *ConcurrentTridentOrchestrator) {
 				// No setup needed
 			},
@@ -5305,7 +5304,7 @@ func TestGetVolumeConcurrentCore(t *testing.T) {
 		{
 			name:         "BootstrapError",
 			volumeName:   "vol1",
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks:   func() {},
 			verifyError: func(err error) {
 				assert.Error(t, err)
@@ -5413,7 +5412,7 @@ func TestListSubordinateVolumesConcurrentCore(t *testing.T) {
 		{
 			name:             "BootstrapError",
 			sourceVolumeName: "",
-			bootstrapErr:     fmt.Errorf("bootstrap error"),
+			bootstrapErr:     errors.New("bootstrap error"),
 			setupMocks: func(mockCtrl *gomock.Controller) {
 				// No setup needed
 			},
@@ -5591,7 +5590,7 @@ func TestGetSubordinateSourceVolumeConcurrentCore(t *testing.T) {
 		{
 			name:         "BootstrapError",
 			volumeName:   "",
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks: func(mockCtrl *gomock.Controller) {
 				// No setup needed
 			},
@@ -5754,7 +5753,7 @@ func TestListSnapshotsConcurrentCore(t *testing.T) {
 		},
 		{
 			name:         "BootstrapError",
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks: func(o *ConcurrentTridentOrchestrator) {
 				// No snapshots added
 			},
@@ -5848,7 +5847,7 @@ func TestListSnapshotsByNameConcurrentCore(t *testing.T) {
 		{
 			name:         "BootstrapError",
 			snapshotName: "snapshot1",
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks: func(o *ConcurrentTridentOrchestrator) {
 				// No snapshots added
 			},
@@ -5942,7 +5941,7 @@ func TestListSnapshotsForVolumeConcurrentCore(t *testing.T) {
 		{
 			name:         "BootstrapError",
 			volumeName:   "vol1",
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks: func(o *ConcurrentTridentOrchestrator) {
 				// No volumes added
 			},
@@ -6057,7 +6056,7 @@ func TestReadSnapshotsForVolumeConcurrentCore(t *testing.T) {
 		{
 			name:         "BootstrapError",
 			volumeName:   "vol1",
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
 				// No volumes added
 			},
@@ -6159,7 +6158,7 @@ func TestGetSnapshotConcurrentCore(t *testing.T) {
 			name:         "BootstrapError",
 			volumeName:   "vol1",
 			snapshotName: "snapshot1",
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				// No snapshots added
 			},
@@ -6264,7 +6263,7 @@ func TestGetSnapshotConcurrentCore(t *testing.T) {
 
 				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
 				mockBackend.EXPECT().GetSnapshot(gomock.Any(), snapshot.Config, vol.Config).
-					Return(nil, fmt.Errorf("ontap error")).
+					Return(nil, errors.New("ontap error")).
 					Times(1)
 
 				addBackendsToCache(t, mockBackend)
@@ -6310,7 +6309,7 @@ func TestGetSnapshotConcurrentCore(t *testing.T) {
 
 				// Error on saving the snapshot to persistence
 				mockStoreClient.EXPECT().UpdateSnapshot(gomock.Any(), onlineSnapshot).Return(
-					fmt.Errorf("persistence error")).Times(1)
+					errors.New("persistence error")).Times(1)
 			},
 			verifyError: func(err error) {
 				assert.Error(t, err)
@@ -6565,7 +6564,7 @@ func TestDeleteSnapshotConcurrentCore(t *testing.T) {
 			name:         "BootstrapError",
 			volumeName:   "vol1",
 			snapshotName: "snapshot1",
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				// No snapshots added
 			},
@@ -6837,7 +6836,7 @@ func TestCreateSnapshotConcurrentCore(t *testing.T) {
 				Name:       "snapshot1",
 				VolumeName: "vol1",
 			},
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				// No volumes added
 			},
@@ -6894,7 +6893,7 @@ func TestCreateSnapshotConcurrentCore(t *testing.T) {
 
 				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
 				mockBackend.EXPECT().CanSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(
-					fmt.Errorf("snapshots cannot be taken")).Times(1)
+					errors.New("snapshots cannot be taken")).Times(1)
 
 				addBackendsToCache(t, mockBackend)
 				addVolumesToCache(t, vol)
@@ -6931,7 +6930,7 @@ func TestCreateSnapshotConcurrentCore(t *testing.T) {
 
 				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(
-					fmt.Errorf("persistence error")).Times(1)
+					errors.New("persistence error")).Times(1)
 			},
 			verifyError: func(err error) {
 				assert.Error(t, err)
@@ -6957,7 +6956,7 @@ func TestCreateSnapshotConcurrentCore(t *testing.T) {
 				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
 				mockBackend.EXPECT().CanSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				mockBackend.EXPECT().CreateSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(
-					nil, fmt.Errorf("ontap error")).Times(1)
+					nil, errors.New("ontap error")).Times(1)
 
 				addBackendsToCache(t, mockBackend)
 				addVolumesToCache(t, vol)
@@ -7036,7 +7035,7 @@ func TestCreateSnapshotConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				mockStoreClient.EXPECT().AddSnapshot(gomock.Any(), gomock.Any()).Return(
-					fmt.Errorf("persistence error")).Times(1)
+					errors.New("persistence error")).Times(1)
 			},
 			verifyError: func(err error) {
 				assert.Error(t, err)
@@ -7310,7 +7309,7 @@ func TestRestoreSnapshotConcurrentCore(t *testing.T) {
 				}
 				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
 				mockBackend.EXPECT().RestoreSnapshot(gomock.Any(), snapshot.Config, vol.Config).
-					Return(fmt.Errorf("ontap restore error")).Times(1)
+					Return(errors.New("ontap restore error")).Times(1)
 
 				addBackendsToCache(t, mockBackend)
 				addVolumesToCache(t, vol)
@@ -7324,7 +7323,7 @@ func TestRestoreSnapshotConcurrentCore(t *testing.T) {
 			name:         "BootstrapError",
 			volumeName:   "vol1",
 			snapshotName: "snapshot1",
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
 				// No setup needed
 			},
@@ -7752,7 +7751,7 @@ func TestResizeVolumeConcurrentCore(t *testing.T) {
 					Orphaned:    true,
 				}
 				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
-				mockBackend.EXPECT().ResizeVolume(gomock.Any(), volume.Config, "100Gi").Return(fmt.Errorf("volume resize failed")).Times(1)
+				mockBackend.EXPECT().ResizeVolume(gomock.Any(), volume.Config, "100Gi").Return(errors.New("volume resize failed")).Times(1)
 
 				addBackendsToCache(t, mockBackend)
 				addVolumesToCache(t, volume)
@@ -7786,7 +7785,7 @@ func TestResizeVolumeConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(fmt.Errorf("persistence error")).Times(1)
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(errors.New("persistence error")).Times(1)
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "persistence error")
@@ -7813,7 +7812,7 @@ func TestResizeVolumeConcurrentCore(t *testing.T) {
 				addVolumesToCache(t, volume)
 
 				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(fmt.Errorf("persistence error")).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(errors.New("persistence error")).Times(1)
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "persistence error")
@@ -7842,7 +7841,7 @@ func TestResizeVolumeConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(fmt.Errorf("persistence error")).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(errors.New("persistence error")).Times(1)
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "persistence error")
@@ -8084,7 +8083,7 @@ func TestResizeSubordinateVolumeConcurrentCore(t *testing.T) {
 				addBackendsToCache(t, fakeBackend)
 				addVolumesToCache(t, volume)
 				addSubordinateVolumesToCache(t, subVolume)
-				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(fmt.Errorf("persistence error")).Times(1)
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(errors.New("persistence error")).Times(1)
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "persistence error")
@@ -8271,7 +8270,7 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 				ImportBackendUUID:  "backend-uuid1",
 				ImportOriginalName: "originalVolume",
 			},
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 				// No setup needed
 			},
@@ -8375,7 +8374,7 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 				addStorageClassesToCache(t, fakeStorageClass)
 
 				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
-					Return(nil, fmt.Errorf("volume get error")).Times(1)
+					Return(nil, errors.New("volume get error")).Times(1)
 
 				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
@@ -8736,7 +8735,7 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(
-					fmt.Errorf("transaction error")).Times(1)
+					errors.New("transaction error")).Times(1)
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "failed to add volume transaction")
@@ -8771,7 +8770,7 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
 				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").Return(originalBackendVol, nil).Times(1)
 				mockBackend.EXPECT().ImportVolume(gomock.Any(), gomock.Any()).Return(
-					nil, fmt.Errorf("volume import error in backend")).Times(1)
+					nil, errors.New("volume import error in backend")).Times(1)
 
 				volConfig.InternalName = "testVolume" // setting this because of trident managed import
 
@@ -8832,13 +8831,13 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
 				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").Return(originalBackendVol, nil).Times(1)
 				mockBackend.EXPECT().ImportVolume(gomock.Any(), gomock.Any()).Return(
-					nil, fmt.Errorf("volume import error in backend")).Times(1)
+					nil, errors.New("volume import error in backend")).Times(1)
 
 				volConfig.InternalName = "testVolume" // setting this because of trident managed import
 
 				// Make sure the cleanup routine calls volume rename and fails
 				mockBackend.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").
-					Return(fmt.Errorf("failed to rename volume")).Times(1)
+					Return(errors.New("failed to rename volume")).Times(1)
 				mockBackend.EXPECT().RemoveCachedVolume("testVolume").Times(1)
 
 				fakePool1.SetBackend(mockBackend)
@@ -8926,7 +8925,7 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(fmt.Errorf("failed to add volume to persistence")).Times(1)
+				mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(errors.New("failed to add volume to persistence")).Times(1)
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "failed to persist imported volume data: failed to add volume to persistence")
@@ -8983,9 +8982,9 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 				volConfig.InternalName = "testVolume" // setting this because of trident managed import
 
 				mockBackend1.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(nil).Times(1)
-				mockBackend2.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(fmt.Errorf("vol not found")).AnyTimes()
-				mockBackend3.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(fmt.Errorf("vol not found")).AnyTimes()
-				mockBackend4.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(fmt.Errorf("vol not found")).AnyTimes()
+				mockBackend2.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(errors.New("vol not found")).AnyTimes()
+				mockBackend3.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(errors.New("vol not found")).AnyTimes()
+				mockBackend4.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(errors.New("vol not found")).AnyTimes()
 
 				fakePool1.SetBackend(mockBackend1)
 				fakePool1.AddStorageClass("gold")
@@ -9252,7 +9251,7 @@ func TestRemoveBackendConfigRef(t *testing.T) {
 				mockBackend.EXPECT().SetConfigRef("").Times(1)
 
 				mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), mockBackend).Return(fmt.Errorf("update error")).Times(1)
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), mockBackend).Return(errors.New("update error")).Times(1)
 
 				o.storeClient = mockStoreClient
 

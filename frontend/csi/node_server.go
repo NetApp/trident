@@ -548,7 +548,7 @@ func (p *Plugin) NodeExpandVolume(
 			return nil, status.Error(codes.NotFound, msg)
 		}
 
-		return nil, status.Errorf(codes.Internal, err.Error())
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	stagingTargetPath := trackingInfo.StagingTargetPath
@@ -1946,7 +1946,7 @@ func (p *Plugin) updateChapInfoFromController(
 	if err != nil {
 		msg := "could not retrieve CHAP credentials from Trident controller"
 		Logc(ctx).WithError(err).Error(msg)
-		return fmt.Errorf(msg)
+		return errors.New(msg)
 	}
 	publishInfo.UseCHAP = chapInfo.UseCHAP
 	publishInfo.IscsiUsername = chapInfo.IscsiUsername

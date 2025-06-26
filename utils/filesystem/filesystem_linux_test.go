@@ -4,7 +4,6 @@ package filesystem
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -86,7 +85,7 @@ func TestExpandFilesystemOnNode(t *testing.T) {
 			sharedTargetPath: "",
 			fsType:           "fake-fs",
 			mountOptions:     "",
-			err:              fmt.Errorf(""),
+			err:              errors.New(""),
 			getMountClient: func() Mount {
 				mockMountClient := mock_filesystem.NewMockMount(gomock.NewController(t))
 				mockMountClient.EXPECT().MountFilesystemForResize(gomock.Any(), mockVolumeInfo.DevicePath,
@@ -100,11 +99,11 @@ func TestExpandFilesystemOnNode(t *testing.T) {
 			sharedTargetPath: "",
 			fsType:           "",
 			mountOptions:     "",
-			err:              fmt.Errorf(""),
+			err:              errors.New(""),
 			getMountClient: func() Mount {
 				mockMountClient := mock_filesystem.NewMockMount(gomock.NewController(t))
 				mockMountClient.EXPECT().MountFilesystemForResize(gomock.Any(), mockVolumeInfo.DevicePath,
-					"", "").Return("", fmt.Errorf("mount error"))
+					"", "").Return("", errors.New("mount error"))
 				return mockMountClient
 			},
 		},
@@ -113,7 +112,7 @@ func TestExpandFilesystemOnNode(t *testing.T) {
 			sharedTargetPath: "",
 			fsType:           "ext3",
 			mountOptions:     "",
-			err:              fmt.Errorf(""),
+			err:              errors.New(""),
 			getMountClient: func() Mount {
 				mockMountClient := mock_filesystem.NewMockMount(gomock.NewController(t))
 				mockMountClient.EXPECT().MountFilesystemForResize(gomock.Any(), mockVolumeInfo.DevicePath,
@@ -124,7 +123,7 @@ func TestExpandFilesystemOnNode(t *testing.T) {
 			getCommandClient: func() execCmd.Command {
 				mockCommand := mock_exec.NewMockCommand(gomock.NewController(t))
 				mockCommand.EXPECT().Execute(context.Background(), "resize2fs",
-					mockVolumeInfo.DevicePath).Return(nil, fmt.Errorf("resize error"))
+					mockVolumeInfo.DevicePath).Return(nil, errors.New("resize error"))
 				return mockCommand
 			},
 		},
@@ -133,7 +132,7 @@ func TestExpandFilesystemOnNode(t *testing.T) {
 			sharedTargetPath: "",
 			fsType:           "ext3",
 			mountOptions:     "",
-			err:              fmt.Errorf(""),
+			err:              errors.New(""),
 			getMountClient: func() Mount {
 				mockMountClient := mock_filesystem.NewMockMount(gomock.NewController(t))
 				mockMountClient.EXPECT().MountFilesystemForResize(gomock.Any(), mockVolumeInfo.DevicePath,

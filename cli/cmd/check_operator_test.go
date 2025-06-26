@@ -3,7 +3,6 @@
 package cmd
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"testing"
@@ -15,6 +14,7 @@ import (
 
 	"github.com/netapp/trident/cli/api"
 	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
+	"github.com/netapp/trident/utils/errors"
 	execCmd "github.com/netapp/trident/utils/exec"
 )
 
@@ -89,7 +89,7 @@ func TestCheckOperatorStatus_RequestError(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 
 	httpmock.RegisterResponder("GET", url,
-		httpmock.NewErrorResponder(fmt.Errorf("random error")))
+		httpmock.NewErrorResponder(errors.New("random error")))
 
 	err := checkOperatorStatus(1)
 

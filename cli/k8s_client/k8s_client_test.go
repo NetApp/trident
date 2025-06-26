@@ -4,7 +4,6 @@ package k8sclient
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"os"
 	"testing"
@@ -22,7 +21,7 @@ import (
 	"github.com/netapp/trident/utils/errors"
 )
 
-var mockError = fmt.Errorf("mock error")
+var mockError = errors.New("mock error")
 
 func TestMain(m *testing.M) {
 	// Disable any standard log output

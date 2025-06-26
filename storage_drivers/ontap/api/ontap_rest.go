@@ -667,7 +667,7 @@ func (c *RestClient) getVolumeUsedSizeByNameAndStyle(ctx context.Context, volume
 		return 0, err
 	}
 	if volume == nil {
-		return 0, errors.NotFoundError(fmt.Sprintf("could not find volume with name %v", volumeName))
+		return 0, errors.NotFoundError("could not find volume with name %v", volumeName)
 	}
 
 	if volume.Space == nil {
@@ -1737,7 +1737,7 @@ func (c *RestClient) VolumeRecoveryQueueGetName(ctx context.Context, name string
 	}
 
 	if len(responseObject.Records) == 0 {
-		return "", errors.NotFoundError(fmt.Sprintf("unable to find volume '%s' in the recovery queue", name))
+		return "", errors.NotFoundError("unable to find volume '%s' in the recovery queue", name)
 	}
 
 	if len(responseObject.Records) > 1 {
@@ -2794,7 +2794,7 @@ func (c *RestClient) LunGetByName(ctx context.Context, name string, fields []str
 	}
 
 	if result == nil || result.Payload == nil || result.Payload.NumRecords == nil || *result.Payload.NumRecords == 0 {
-		return nil, errors.NotFoundError(fmt.Sprintf("could not get LUN by name %v", name))
+		return nil, errors.NotFoundError("could not get LUN by name %v", name)
 	}
 
 	if *result.Payload.NumRecords == 1 && result.Payload.LunResponseInlineRecords != nil {
@@ -3353,7 +3353,7 @@ func (c *RestClient) LunSize(
 		return 0, err
 	}
 	if lun == nil {
-		return 0, errors.NotFoundError(fmt.Sprintf("could not find LUN with name %v", lunPath))
+		return 0, errors.NotFoundError("could not find LUN with name %v", lunPath)
 	}
 	if lun.Space == nil {
 		return 0, fmt.Errorf("could not find LUN space with name %v", lunPath)
@@ -4581,7 +4581,7 @@ func (c *RestClient) ExportRuleDestroy(
 		if restErr, extractErr := ExtractErrorResponse(ctx, err); extractErr == nil {
 			if restErr.Error != nil && restErr.Error.Code != nil && *restErr.Error.Code != ENTRY_DOESNT_EXIST &&
 				restErr.Error.Message != nil {
-				return ok, fmt.Errorf(*restErr.Error.Message)
+				return ok, errors.New(*restErr.Error.Message)
 			}
 		} else {
 			return ok, err
@@ -6159,7 +6159,7 @@ func (c *RestClient) SnapmirrorDeleteViaDestination(
 	if err != nil {
 		if restErr, extractErr := ExtractErrorResponse(ctx, err); extractErr == nil {
 			if restErr.Error != nil && restErr.Error.Code != nil && *restErr.Error.Code != ENTRY_DOESNT_EXIST {
-				return fmt.Errorf(*restErr.Error.Message)
+				return errors.New(*restErr.Error.Message)
 			}
 		} else {
 			return err
@@ -6479,14 +6479,14 @@ func (c *RestClient) SMBShareAccessControlCreate(ctx context.Context, shareName 
 						Logc(ctx).WithField("userOrGroup", userOrGroup).Warn("Invalid user or group specified for SMB share access control")
 					default:
 						if restErr.Error.Message != nil {
-							return fmt.Errorf(*restErr.Error.Message)
+							return errors.New(*restErr.Error.Message)
 						}
 						return fmt.Errorf("ONTAP REST API error code %v with no message", *restErr.Error.Code)
 					}
 				} else if restErr.Error != nil && restErr.Error.Message != nil {
-					return fmt.Errorf(*restErr.Error.Message)
+					return errors.New(*restErr.Error.Message)
 				} else {
-					return fmt.Errorf("unknown ONTAP REST API error")
+					return errors.New("unknown ONTAP REST API error")
 				}
 			} else {
 				return err
@@ -6521,7 +6521,7 @@ func (c *RestClient) SMBShareAccessControlDelete(ctx context.Context, shareName 
 			if restErr, extractErr := ExtractErrorResponse(ctx, err); extractErr == nil {
 				if restErr.Error != nil && restErr.Error.Code != nil && *restErr.Error.Code != ENTRY_DOESNT_EXIST &&
 					restErr.Error.Message != nil {
-					return fmt.Errorf(*restErr.Error.Message)
+					return errors.New(*restErr.Error.Message)
 				}
 			} else {
 				return err
@@ -6754,7 +6754,7 @@ func (c *RestClient) NVMeNamespaceGetByName(ctx context.Context, name string, fi
 		*result.Payload.NumRecords == 1 && result.Payload.NvmeNamespaceResponseInlineRecords != nil {
 		return result.Payload.NvmeNamespaceResponseInlineRecords[0], nil
 	}
-	return nil, errors.NotFoundError(fmt.Sprintf("could not find namespace with name %v", name))
+	return nil, errors.NotFoundError("could not find namespace with name %v", name)
 }
 
 func (c *RestClient) NVMeNamespaceDelete(ctx context.Context, nsUUID string) error {
@@ -7102,7 +7102,7 @@ func (c *RestClient) NVMeNamespaceSize(ctx context.Context, namespacePath string
 		return 0, err
 	}
 	if namespace == nil {
-		return 0, errors.NotFoundError(fmt.Sprintf("could not find namespace with name %v", namespace))
+		return 0, errors.NotFoundError("could not find namespace with name %v", namespace)
 	}
 	size := namespace.Space.Size
 	return int(*size), nil

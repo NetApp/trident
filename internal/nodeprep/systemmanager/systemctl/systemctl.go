@@ -9,7 +9,6 @@ import (
 	"time"
 
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/exec"
 )
 
@@ -37,7 +36,7 @@ func (s *Systemctl) EnableServiceWithValidation(ctx context.Context, serviceName
 			"output":  output,
 		}).Info("Output from enabling service.")
 
-		return errors.New(fmt.Sprintf("failed to enable %s: %v", serviceName, err))
+		return fmt.Errorf("failed to enable %s: %v", serviceName, err)
 	}
 
 	Log().WithFields(LogFields{
@@ -57,11 +56,11 @@ func (s *Systemctl) EnableServiceWithValidation(ctx context.Context, serviceName
 func (s *Systemctl) validateServiceEnabled(ctx context.Context, serviceName string) error {
 	output, err := s.isServiceActive(ctx, serviceName)
 	if err != nil {
-		return errors.New(fmt.Sprintf("failed to validate if %s service is enabled: %s", serviceName, err))
+		return fmt.Errorf("failed to validate if %s service is enabled: %s", serviceName, err)
 	}
 
 	if !strings.Contains(output, activeStateActive) {
-		return errors.New(fmt.Sprintf("failed to validate if %s service is enabled: %s", serviceName, output))
+		return fmt.Errorf("failed to validate if %s service is enabled: %s", serviceName, output)
 	}
 
 	return nil

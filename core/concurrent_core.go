@@ -3657,17 +3657,17 @@ func (o *ConcurrentTridentOrchestrator) addSubordinateVolume(
 	} else if subordinateVolume != nil {
 		return nil, fmt.Errorf("subordinate volume %s already exists", volumeConfig.Name)
 	} else if sourceVolume.Config.ImportNotManaged {
-		return nil, fmt.Errorf(fmt.Sprintf("source volume %s for subordinate volume %s is an unmanaged import",
-			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+		return nil, fmt.Errorf("source volume %s for subordinate volume %s is an unmanaged import",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name)
 	} else if sourceVolume.Config.StorageClass != volumeConfig.StorageClass {
-		return nil, fmt.Errorf(fmt.Sprintf("source volume %s for subordinate volume %s has a different storage class",
-			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+		return nil, fmt.Errorf("source volume %s for subordinate volume %s has a different storage class",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name)
 	} else if sourceVolume.Orphaned {
-		return nil, fmt.Errorf(fmt.Sprintf("source volume %s for subordinate volume %s is orphaned",
-			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+		return nil, fmt.Errorf("source volume %s for subordinate volume %s is orphaned",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name)
 	} else if sourceVolume.State != storage.VolumeStateOnline {
-		return nil, fmt.Errorf(fmt.Sprintf("source volume %s for subordinate volume %s is not online",
-			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+		return nil, fmt.Errorf("source volume %s for subordinate volume %s is not online",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name)
 	}
 
 	// Get the backend and ensure it and the source volume are NFS
@@ -3675,8 +3675,8 @@ func (o *ConcurrentTridentOrchestrator) addSubordinateVolume(
 		return nil, errors.NotFoundError("backend %s for source volume %s not found",
 			sourceVolume.BackendUUID, sourceVolume.Config.Name)
 	} else if backend.GetProtocol(ctx) != config.File || sourceVolume.Config.AccessInfo.NfsPath == "" {
-		return nil, fmt.Errorf(fmt.Sprintf("source volume %s for subordinate volume %s must be NFS",
-			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+		return nil, fmt.Errorf("source volume %s for subordinate volume %s must be NFS",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name)
 	}
 
 	// Ensure requested volume size is not larger than the source
@@ -3689,8 +3689,8 @@ func (o *ConcurrentTridentOrchestrator) addSubordinateVolume(
 		return nil, fmt.Errorf("invalid size for source volume %s", sourceVolume.Config.Name)
 	}
 	if sourceVolumeSize < volumeSize {
-		return nil, fmt.Errorf(fmt.Sprintf("source volume %s may not be smaller than subordinate volume %s",
-			volumeConfig.ShareSourceVolume, volumeConfig.Name))
+		return nil, fmt.Errorf("source volume %s may not be smaller than subordinate volume %s",
+			volumeConfig.ShareSourceVolume, volumeConfig.Name)
 	}
 
 	// Copy a few needed fields from the source volume
@@ -4394,7 +4394,7 @@ func (o *ConcurrentTridentOrchestrator) RestoreSnapshot(ctx context.Context, vol
 	volume := results[0].Volume.Read
 
 	if volume == nil {
-		return errors.NotFoundError(fmt.Sprintf("volume %s not found", volumeName))
+		return errors.NotFoundError("volume %s not found", volumeName)
 	}
 
 	snapshotID := storage.MakeSnapshotID(volumeName, snapshotName)
@@ -4426,11 +4426,11 @@ func (o *ConcurrentTridentOrchestrator) RestoreSnapshot(ctx context.Context, vol
 	backend := results[0].Backend.Read
 
 	if snapshot == nil {
-		return errors.NotFoundError(fmt.Sprintf("snapshot %s not found on volume %s", snapshotName, volumeName))
+		return errors.NotFoundError("snapshot %s not found on volume %s", snapshotName, volumeName)
 	}
 
 	if backend == nil {
-		return errors.NotFoundError(fmt.Sprintf("backend %s not found", volume.BackendUUID))
+		return errors.NotFoundError("backend %s not found", volume.BackendUUID)
 	}
 
 	logFields := LogFields{

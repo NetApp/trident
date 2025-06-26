@@ -51,7 +51,7 @@ func validateUpdateBackendStateArguments(cmd *cobra.Command, args []string) erro
 	}
 
 	if flagSet != 1 {
-		return fmt.Errorf("exactly one of --state or --user-state must be specified")
+		return errors.New("exactly one of --state or --user-state must be specified")
 	}
 
 	return nil

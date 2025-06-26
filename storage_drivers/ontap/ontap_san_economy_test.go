@@ -390,7 +390,7 @@ func TestOntapSanEconomyTerminate_Failed(t *testing.T) {
 		done: make(chan struct{}),
 	}
 
-	mockAPI.EXPECT().IgroupDestroy(ctx, gomock.Any()).Times(1).Return(fmt.Errorf("failed to destroy igroup"))
+	mockAPI.EXPECT().IgroupDestroy(ctx, gomock.Any()).Times(1).Return(errors.New("failed to destroy igroup"))
 
 	d.Terminate(ctx, "")
 
@@ -851,7 +851,7 @@ func TestOntapSanEconomyVolumeCreate_LUNExists(t *testing.T) {
 			if test.lunExists {
 				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil)
 			} else {
-				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, fmt.Errorf(test.message))
+				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, errors.New(test.message))
 			}
 
 			result := d.Create(ctx, volConfig, pool1, volAttrs)
@@ -1220,7 +1220,7 @@ func TestOntapSanEconomyVolumeCreate_NoFlexvol(t *testing.T) {
 	volAttrs := map[string]sa.Request{}
 
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(api.Luns{}, nil)
-	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Return(api.Volumes{}, fmt.Errorf("failed to list volumes"))
+	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Return(api.Volumes{}, errors.New("failed to list volumes"))
 
 	result := d.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -1252,9 +1252,9 @@ func TestOntapSanEconomyVolumeCreate_ResizeFailed(t *testing.T) {
 			mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Times(1).Return(api.Volumes{}, nil)
 			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
 			mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
-			mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("error resizing volume"))
+			mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(errors.New("error resizing volume"))
 			if test.destroyError {
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(fmt.Errorf(test.message))
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(errors.New(test.message))
 			} else {
 				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(nil)
 			}
@@ -1292,9 +1292,9 @@ func TestOntapSanEconomyVolumeCreate_LUNCreateFailed(t *testing.T) {
 			mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Times(1).Return(nil)
 			mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 			mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
-			mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(fmt.Errorf("failed to create lun"))
+			mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(errors.New("failed to create lun"))
 			if test.destroyError {
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(fmt.Errorf(test.message))
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(errors.New(test.message))
 			} else {
 				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(nil)
 			}
@@ -1352,7 +1352,7 @@ func TestOntapSanEconomyVolumeCreate_GetLUNFailed(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
 	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
-	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Times(1).Return(nil, fmt.Errorf("failed to fetch lun"))
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Times(1).Return(nil, errors.New("failed to fetch lun"))
 
 	result := d.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -1389,15 +1389,15 @@ func TestOntapSanEconomyVolumeCreate_LUNSetAttributeFailed(t *testing.T) {
 			mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Times(1).Return(nil)
 			mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Times(1).Return(&api.Lun{Size: "1073741824"}, nil)
 			mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-				gomock.Any(), gomock.Any()).Times(1).Return(fmt.Errorf("failed to set attribute"))
+				gomock.Any(), gomock.Any()).Times(1).Return(errors.New("failed to set attribute"))
 
 			switch test.errorType {
 			case "Lun":
-				mockAPI.EXPECT().LunDestroy(ctx, gomock.Any()).Return(fmt.Errorf(test.message))
+				mockAPI.EXPECT().LunDestroy(ctx, gomock.Any()).Return(errors.New(test.message))
 				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(nil)
 			case "Volume":
 				mockAPI.EXPECT().LunDestroy(ctx, gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(fmt.Errorf(test.message))
+				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(errors.New(test.message))
 			default:
 				mockAPI.EXPECT().LunDestroy(ctx, gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(nil)
@@ -1471,7 +1471,7 @@ func TestOntapSanEconomyVolumeCreate_ResizeVolumeSizeFailed(t *testing.T) {
 	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Times(1).Return(&lun, nil)
 	mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any()).Times(1).Return(nil)
-	mockAPI.EXPECT().VolumeSize(ctx, gomock.Any()).Return(uint64(1073741824), fmt.Errorf("failed to set size"))
+	mockAPI.EXPECT().VolumeSize(ctx, gomock.Any()).Return(uint64(1073741824), errors.New("failed to set size"))
 
 	result := d.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -1506,7 +1506,7 @@ func TestOntapSanEconomyVolumeCreate_ResizeSetSizeFailed(t *testing.T) {
 	mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any()).Times(1).Return(nil)
 	mockAPI.EXPECT().VolumeSize(ctx, gomock.Any()).Return(uint64(1073741824), nil)
-	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("failed to set volume size"))
+	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(errors.New("failed to set volume size"))
 
 	result := d.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -1542,7 +1542,7 @@ func TestOntapSanEconomyVolumeCreate_ResizeVolumeSizeFailed2(t *testing.T) {
 		gomock.Any(), gomock.Any()).Times(1).Return(nil)
 	mockAPI.EXPECT().VolumeSize(ctx, gomock.Any()).Return(uint64(1073741824), nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil)
-	mockAPI.EXPECT().VolumeSize(ctx, gomock.Any()).Return(uint64(1073741824), fmt.Errorf("failed to get volume size"))
+	mockAPI.EXPECT().VolumeSize(ctx, gomock.Any()).Return(uint64(1073741824), errors.New("failed to get volume size"))
 
 	result := d.Create(ctx, volConfig, pool1, volAttrs)
 
@@ -1799,7 +1799,7 @@ func TestOntapSanEconomyVolumeImport(t *testing.T) {
 			name:        "VolumeInfo_Error",
 			volToImport: "someRandom/my_LUN",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeInfo(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("import is not implemented"))
+				mockAPI.EXPECT().VolumeInfo(gomock.Any(), gomock.Any()).Return(nil, errors.New("import is not implemented"))
 			},
 			wantErr: assert.Error,
 			testOut: "Import succeeded",
@@ -1827,7 +1827,7 @@ func TestOntapSanEconomyVolumeImport(t *testing.T) {
 			volToImport: "someRandom/my_LUN",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeInfo(gomock.Any(), gomock.Any()).Return(&api.Volume{AccessType: "rw"}, nil)
-				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("LUN not found"))
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(nil, errors.New("LUN not found"))
 			},
 			wantErr: assert.Error,
 			testOut: "Import succeeded",
@@ -1915,7 +1915,7 @@ func TestOntapSanEconomyVolumeImport_Managed(t *testing.T) {
 				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).
 					Return(&api.Lun{Name: "/vol/my_vol/my_LUN", State: "online", Size: "1073741824"}, nil)
 				mockAPI.EXPECT().LunRename(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(fmt.Errorf("LUN rename failed"))
+					Return(errors.New("LUN rename failed"))
 			},
 			wantErr: assert.Error,
 			testOut: "Import succeeded",
@@ -1929,7 +1929,7 @@ func TestOntapSanEconomyVolumeImport_Managed(t *testing.T) {
 					Return(&api.Lun{Name: "/vol/my_vol/my_LUN", State: "online", Size: "1073741824"}, nil)
 				mockAPI.EXPECT().LunRename(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				mockAPI.EXPECT().VolumeRename(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(fmt.Errorf("volume rename failed"))
+					Return(errors.New("volume rename failed"))
 			},
 			wantErr: assert.Error,
 			testOut: "Import succeeded",
@@ -1943,9 +1943,9 @@ func TestOntapSanEconomyVolumeImport_Managed(t *testing.T) {
 					Return(&api.Lun{Name: "/vol/my_vol/my_LUN", State: "online", Size: "1073741824"}, nil)
 				mockAPI.EXPECT().LunRename(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeRename(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(fmt.Errorf("volume rename failed"))
+					Return(errors.New("volume rename failed"))
 				mockAPI.EXPECT().LunRename(gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(fmt.Errorf("LUN rename failed"))
+					Return(errors.New("LUN rename failed"))
 			},
 			wantErr: assert.Error,
 			testOut: "Import succeeded",
@@ -1960,7 +1960,7 @@ func TestOntapSanEconomyVolumeImport_Managed(t *testing.T) {
 				mockAPI.EXPECT().LunRename(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().VolumeRename(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().LunListIgroupsMapped(gomock.Any(), gomock.Any()).
-					Return(nil, fmt.Errorf("dummy error"))
+					Return(nil, errors.New("dummy error"))
 			},
 			wantErr: assert.Error,
 			testOut: "Import succeeded",
@@ -2109,7 +2109,7 @@ func TestOntapSanEconomyVolumeDestroy_LUNDoesNotExist(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.message, func(t *testing.T) {
 			if test.expectError {
-				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, fmt.Errorf(test.message))
+				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, errors.New(test.message))
 			} else {
 				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, nil)
 			}
@@ -2167,7 +2167,7 @@ func TestOntapSanEconomyVolumeDestroy_DeleteSnapshotFailed(t *testing.T) {
 
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil)
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(snapLuns, nil).AnyTimes()
-	mockAPI.EXPECT().LunDestroy(ctx, gomock.Any()).Return(fmt.Errorf("failed to delete lun"))
+	mockAPI.EXPECT().LunDestroy(ctx, gomock.Any()).Return(errors.New("failed to delete lun"))
 
 	result := d.Destroy(ctx, volConfig)
 
@@ -2200,7 +2200,7 @@ func TestOntapSanEconomyVolumeDestroy_UnmapFailed(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(ctx, "volumeName").Return(flexVol, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, "volumeName", "1073741824").Return(nil)
 	mockAPI.EXPECT().LunListIgroupsMapped(ctx, gomock.Any()).Return([]string{"igroup1"}, nil)
-	mockAPI.EXPECT().LunUnmap(ctx, "igroup1", gomock.Any()).Return(fmt.Errorf("failed to unmap lun"))
+	mockAPI.EXPECT().LunUnmap(ctx, "igroup1", gomock.Any()).Return(errors.New("failed to unmap lun"))
 
 	result := d.Destroy(ctx, volConfig)
 
@@ -2234,7 +2234,7 @@ func TestOntapSanEconomyVolumeDestroy_LUNDestroyFailed(t *testing.T) {
 	mockAPI.EXPECT().LunDestroy(ctx, gomock.Any()).Return(nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, "volumeName").Return(flexVol, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, "volumeName", "1073741824").Return(nil)
-	mockAPI.EXPECT().LunDestroy(ctx, gomock.Any()).Return(fmt.Errorf("failed to destroy lun"))
+	mockAPI.EXPECT().LunDestroy(ctx, gomock.Any()).Return(errors.New("failed to destroy lun"))
 
 	result := d.Destroy(ctx, volConfig)
 
@@ -2297,7 +2297,7 @@ func TestOntapSanEconomyVolumeDestroy_DockerContext_Failure(t *testing.T) {
 
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil)
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(snapLuns, nil).AnyTimes()
-	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("", fmt.Errorf("error fetching node name"))
+	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("", errors.New("error fetching node name"))
 
 	result := d.Destroy(ctx, volConfig)
 
@@ -2325,7 +2325,7 @@ func TestOntapSanEconomyVolumeDestroy_DockerContext_LunMapInfoError(t *testing.T
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(snapLuns, nil).AnyTimes()
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("node", nil)
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, "SVM1").Return([]string{"node"}, nil)
-	mockAPI.EXPECT().LunMapInfo(ctx, "", gomock.Any()).Return(0, fmt.Errorf("failed to fetch lun map info"))
+	mockAPI.EXPECT().LunMapInfo(ctx, "", gomock.Any()).Return(0, errors.New("failed to fetch lun map info"))
 
 	result := d.Destroy(ctx, volConfig)
 
@@ -2365,7 +2365,7 @@ func TestOntapSanEconomyVolumeDeleteBucketIfEmpty(t *testing.T) {
 func TestOntapSanEconomyVolumeDeleteBucketIfEmpty_LUNFetchFailed(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 
-	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(nil, fmt.Errorf("error fetching lun"))
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(nil, errors.New("error fetching lun"))
 
 	result := d.DeleteBucketIfEmpty(ctx, "volumeName")
 
@@ -2376,7 +2376,7 @@ func TestOntapSanEconomyVolumeDeleteBucketIfEmpty_LUNDestroyFailed(t *testing.T)
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(api.Luns{}, nil)
-	mockAPI.EXPECT().VolumeDestroy(ctx, "volumeName", true, true).Return(fmt.Errorf("failed to destroy lun"))
+	mockAPI.EXPECT().VolumeDestroy(ctx, "volumeName", true, true).Return(errors.New("failed to destroy lun"))
 
 	result := d.DeleteBucketIfEmpty(ctx, "volumeName")
 
@@ -2390,8 +2390,8 @@ func TestOntapSanEconomyVolumeDeleteBucketIfEmpty_VolumeSetSizeFailed(t *testing
 	}
 
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil)
-	mockAPI.EXPECT().VolumeInfo(ctx, "volumeName").Return(nil, fmt.Errorf("failed to fetch volume info"))
-	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("failed to resize the volume"))
+	mockAPI.EXPECT().VolumeInfo(ctx, "volumeName").Return(nil, errors.New("failed to fetch volume info"))
+	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(errors.New("failed to resize the volume"))
 
 	result := d.DeleteBucketIfEmpty(ctx, "volumeName")
 
@@ -2565,7 +2565,7 @@ func TestOntapSanEconomyVolumePublish_LUNDoesNotExist(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.message, func(t *testing.T) {
 			if test.expectError {
-				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, fmt.Errorf(test.message))
+				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, errors.New(test.message))
 			} else {
 				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(api.Luns{}, nil)
 			}
@@ -2597,7 +2597,7 @@ func TestOntapSanEconomyVolumePublish_GetISCSITargetInfoFailed(t *testing.T) {
 
 	mockAPI.EXPECT().LunList(ctx,
 		gomock.Any()).Times(1).Return(api.Luns{api.Lun{Size: "1g", Name: "lunName", VolumeName: "volumeName"}}, nil)
-	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("", fmt.Errorf("failed to get name"))
+	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("", errors.New("failed to get name"))
 
 	result := d.Publish(ctx, volConfig, publishInfo)
 
@@ -2640,7 +2640,7 @@ func TestOntapSanEconomyVolumeUnpublish_LunListFails(t *testing.T) {
 	d := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.helper = NewTestLUNHelper("", tridentconfig.ContextCSI)
 
-	apiError := fmt.Errorf("api error")
+	apiError := errors.New("api error")
 	volumeName := "lun0"
 	volConfig := &storage.VolumeConfig{
 		InternalName: volumeName,
@@ -2698,7 +2698,7 @@ func TestOntapSanEconomyVolumeUnpublish_LUNMapInfoFails(t *testing.T) {
 	d := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.helper = NewTestLUNHelper("", tridentconfig.ContextCSI)
 
-	apiError := fmt.Errorf("api error")
+	apiError := errors.New("api error")
 	volumeName := "lun0"
 	bucketName := "bucket0"
 	luns := api.Luns{
@@ -2739,7 +2739,7 @@ func TestOntapSanEconomyVolumeUnpublish_IgroupListLUNsMappedFails(t *testing.T) 
 	d := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.helper = NewTestLUNHelper("", tridentconfig.ContextCSI)
 
-	apiError := fmt.Errorf("api error")
+	apiError := errors.New("api error")
 	volumeName := "lun0"
 	bucketName := "bucket0"
 	luns := api.Luns{
@@ -2782,7 +2782,7 @@ func TestOntapSanEconomyVolumeUnpublish_IgroupDestroyFails(t *testing.T) {
 	d := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.helper = NewTestLUNHelper("", tridentconfig.ContextCSI)
 
-	apiError := fmt.Errorf("api error")
+	apiError := errors.New("api error")
 	volumeName := "lun0"
 	bucketName := "bucket0"
 	luns := api.Luns{
@@ -2864,7 +2864,7 @@ func TestOntapSanEconomyVolumeUnpublish(t *testing.T) {
 	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
 	defer func() { tridentconfig.CurrentDriverContext = originalContext }()
 
-	apiError := fmt.Errorf("api error")
+	apiError := errors.New("api error")
 	volumeName := "lun0"
 	bucketName := "bucket0"
 	luns := api.Luns{
@@ -3081,7 +3081,7 @@ func TestOntapSanEconomyGetSnapshots_LUNDoesNotExist(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.message, func(t *testing.T) {
 			if test.expectError {
-				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, fmt.Errorf(test.message))
+				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, errors.New(test.message))
 			} else {
 				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(api.Luns{}, nil)
 			}
@@ -3164,7 +3164,7 @@ func TestOntapSanEconomyCreateSnapshot_LUNDoesNotExist(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.message, func(t *testing.T) {
 			if test.expectError {
-				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, fmt.Errorf(test.message))
+				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, errors.New(test.message))
 			} else {
 				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(api.Luns{}, nil)
 			}
@@ -3190,7 +3190,7 @@ func TestOntapSanEconomyCreateSnapshot_LUNCreateCloneFailed(t *testing.T) {
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{sourceLun}, nil).Times(1)
 	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&sourceLun, nil)
 	mockAPI.EXPECT().LunCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(),
-		api.QosPolicyGroup{}).Return(fmt.Errorf("failed to create lun clone"))
+		api.QosPolicyGroup{}).Return(errors.New("failed to create lun clone"))
 
 	snap, err := d.CreateSnapshot(ctx, snapConfig, &storage.VolumeConfig{})
 
@@ -3206,7 +3206,7 @@ func TestOntapSanEconomyCreateSnapshot_LUNGetByNameFailed(t *testing.T) {
 	d.flexvolNamePrefix = storagePrefix
 
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{sourceLun}, nil).Times(1)
-	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed to fetch lun"))
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil, errors.New("failed to fetch lun"))
 
 	snap, err := d.CreateSnapshot(ctx, snapConfig, &storage.VolumeConfig{})
 
@@ -3236,7 +3236,7 @@ func TestOntapSanEconomyCreateSnapshot_CreateLUNClone_LUNDoesNotExist(t *testing
 	for _, test := range tests {
 		t.Run(test.message, func(t *testing.T) {
 			if test.expectError {
-				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, fmt.Errorf(test.message))
+				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, errors.New(test.message))
 			} else {
 				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{sourceLun}, nil)
 			}
@@ -3268,7 +3268,7 @@ func TestOntapSanEconomyCreateSnapshot_CreateLUNClone_LUNCreatedFromSnapshot(t *
 		t.Run(test.message, func(t *testing.T) {
 			mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, nil)
 			if test.expectError {
-				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, fmt.Errorf(test.message))
+				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, errors.New(test.message))
 			} else {
 				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, nil)
 			}
@@ -3298,7 +3298,7 @@ func TestOntapSanEconomyCreateSnapshot_CreateLUNClone_LUNCloneCreateFailed(t *te
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{sourceLun}, nil)
 	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Times(1).Return(&sourceLun, nil)
 	mockAPI.EXPECT().LunCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(),
-		api.QosPolicyGroup{}).Return(fmt.Errorf("failed to create lun clone"))
+		api.QosPolicyGroup{}).Return(errors.New("failed to create lun clone"))
 
 	internalID, result := d.createLUNClone(ctx,
 		"storagePrefix_pvc_ff297a18_921a_4435_b679_c3fea351f92c_snapshot_snapshot_e753e1a5-e57b-4f94-adbc-22f7c05e2121",
@@ -3324,7 +3324,7 @@ func TestOntapSanEconomyCreateSnapshot_GetSnapshotsEconomyFailed(t *testing.T) {
 	mockAPI.EXPECT().LunCloneCreate(ctx, gomock.Any(), gomock.Any(), gomock.Any(), api.QosPolicyGroup{}).Return(nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Times(1).Return(nil)
-	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed to fetch lun")).Times(2)
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, errors.New("failed to fetch lun")).Times(2)
 
 	snap, err := d.CreateSnapshot(ctx, snapConfig, &storage.VolumeConfig{})
 
@@ -3767,7 +3767,7 @@ func TestOntapSanEconomyVolumeDeleteSnapshot_LUNDoesNotExist(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.message, func(t *testing.T) {
 			if test.expectError {
-				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, fmt.Errorf(test.message))
+				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, errors.New(test.message))
 			} else {
 				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, nil)
 			}
@@ -3828,7 +3828,7 @@ func TestOntapSanEconomyGet_LUNDoesNotExist(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.message, func(t *testing.T) {
 			if test.expectError {
-				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, fmt.Errorf(test.message))
+				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, errors.New(test.message))
 			} else {
 				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, nil)
 			}
@@ -3897,7 +3897,7 @@ func TestOntapSanEconomyEnsureFlexvolForLUN_FlexvolNotFound(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Return(api.Volumes{vol}, nil)
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil)
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(fmt.Errorf("failed to create volume"))
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(errors.New("failed to create volume"))
 
 	flexVol, newly, err := d.ensureFlexvolForLUN(ctx, vol, uint64(1073741824), opts, &d.Config, pool1,
 		make(map[string]struct{}))
@@ -3918,7 +3918,7 @@ func TestOntapSanEconomyEnsureFlexvolForLUN_NewFlexvolNotPermitted(t *testing.T)
 		DebugTraceFlags:   debugTraceFlags,
 		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
-	configJSON := fmt.Sprintf(`
+	configJSON := `
 	{
 	    "managementLIF":       "10.0.207.8",
 	    "dataLIF":             "10.0.207.7",
@@ -3930,7 +3930,7 @@ func TestOntapSanEconomyEnsureFlexvolForLUN_NewFlexvolNotPermitted(t *testing.T)
 	    "storagePrefix":       "san-eco",
 	    "version":             1,
         "denyNewVolumePools":  "true"
-	}`)
+	}`
 	secrets := map[string]string{
 		"clientcertificate": "dummy-certificate",
 	}
@@ -4110,7 +4110,7 @@ func TestGetVolumeForImport_LUNDoesNotExist(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 
-	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed to get volume"))
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, errors.New("failed to get volume"))
 	result, err = d.GetVolumeForImport(ctx, "my_bucket/my_LUN")
 	assert.Error(t, err)
 	assert.Nil(t, result)
@@ -4120,7 +4120,7 @@ func TestGetVolumeForImport_VolumeInfoFailed(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
 
-	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(nil, fmt.Errorf("failed to get volume info"))
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(nil, errors.New("failed to get volume info"))
 
 	result, err := d.GetVolumeForImport(ctx, "my_Bucket/my_Lun")
 
@@ -4133,7 +4133,7 @@ func TestGetVolumeForImport_LunGetByNameFailed(t *testing.T) {
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
 
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{Aggregates: []string{"data"}}, nil)
-	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed to get lun by name"))
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil, errors.New("failed to get lun by name"))
 
 	result, err := d.GetVolumeForImport(ctx, "my_Bucket/my_Lun")
 
@@ -4169,7 +4169,7 @@ func TestGetVolumeExternalWrappers_Failed(t *testing.T) {
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
 	channel := make(chan *storage.VolumeExternalWrapper, 1)
 
-	mockAPI.EXPECT().VolumeListByPrefix(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed to list volume by prefix"))
+	mockAPI.EXPECT().VolumeListByPrefix(ctx, gomock.Any()).Return(nil, errors.New("failed to list volume by prefix"))
 
 	d.GetVolumeExternalWrappers(ctx, channel)
 
@@ -4211,7 +4211,7 @@ func TestGetVolumeExternalWrappers_LUNDoesNotExist(t *testing.T) {
 	d.helper = NewTestLUNHelper("storagePrefix_", tridentconfig.ContextCSI)
 	channel := make(chan *storage.VolumeExternalWrapper, 1)
 
-	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed to fetch lun"))
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, errors.New("failed to fetch lun"))
 	mockAPI.EXPECT().VolumeListByPrefix(ctx, gomock.Any()).Return(api.Volumes{&api.Volume{}}, nil).Times(1)
 
 	d.GetVolumeExternalWrappers(ctx, channel)
@@ -4432,7 +4432,7 @@ func TestOntapSanEconomyVolumeResize_LUNExists(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.message, func(t *testing.T) {
 			if test.isError {
-				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, fmt.Errorf(test.message))
+				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, errors.New(test.message))
 			} else {
 				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(api.Luns{}, nil)
 			}
@@ -4484,7 +4484,7 @@ func TestOntapSanEconomyVolumeResize_GetSizeFailed(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil).Times(2)
-	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed to fetch lun"))
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil, errors.New("failed to fetch lun"))
 
 	result := d.Resize(ctx, volConfig, uint64(2147483648))
 
@@ -4507,7 +4507,7 @@ func TestOntapSanEconomyVolumeResize_VolumeInfoFailed(t *testing.T) {
 
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil).Times(2)
 	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&lun, nil)
-	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed to get volume info")).Times(2)
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(nil, errors.New("failed to get volume info")).Times(2)
 
 	result := d.Resize(ctx, volConfig, uint64(2147483648))
 
@@ -4689,7 +4689,7 @@ func TestOntapSanEconomyVolumeResize_VolumeSetSizeFailed(t *testing.T) {
 	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&lun, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{}, nil)
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{Aggregates: []string{"aggr"}}, nil)
-	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("failed to set volume size"))
+	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(errors.New("failed to set volume size"))
 
 	result := d.Resize(ctx, volConfig, uint64(2147483648))
 
@@ -4716,7 +4716,7 @@ func TestOntapSanEconomyVolumeResize_LunSetSizeFailed(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{Aggregates: []string{"aggr"}}, nil)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil)
 	mockAPI.EXPECT().LunSetSize(ctx, gomock.Any(), "2147483648").Return(uint64(2147483648),
-		fmt.Errorf("failed to set lun size"))
+		errors.New("failed to set lun size"))
 
 	result := d.Resize(ctx, volConfig, uint64(2147483648))
 
@@ -4770,7 +4770,7 @@ func TestOntapSanEconomyVolumeResize_VolumeSizeFailed(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{Aggregates: []string{"aggr"}}, nil).Times(2)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(2)
 	mockAPI.EXPECT().LunSetSize(ctx, gomock.Any(), gomock.Any()).Return(uint64(16106127360), nil)
-	mockAPI.EXPECT().VolumeSize(ctx, gomock.Any()).Return(uint64(2147483648), fmt.Errorf("failed to get volume size"))
+	mockAPI.EXPECT().VolumeSize(ctx, gomock.Any()).Return(uint64(2147483648), errors.New("failed to get volume size"))
 
 	result := d.Resize(ctx, volConfig, uint64(2147483648))
 
@@ -4797,7 +4797,7 @@ func TestOntapSanEconomyVolumeResize_VolumeSetSizeFailed2(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{Aggregates: []string{"aggr"}}, nil).Times(2)
 	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil)
 	mockAPI.EXPECT().LunSetSize(ctx, gomock.Any(), gomock.Any()).Return(uint64(16106127360), nil)
-	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("failed to set volume size"))
+	mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(errors.New("failed to set volume size"))
 
 	result := d.Resize(ctx, volConfig, uint64(2147483648))
 
@@ -4815,7 +4815,7 @@ func TestOntapSanEconomyInitialize(t *testing.T) {
 		DebugTraceFlags:   debugTraceFlags,
 		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
-	commonConfigJSON := fmt.Sprintf(`
+	commonConfigJSON := `
 	{
 	    "managementLIF":     "10.0.207.8",
 	    "dataLIF":           "10.0.207.7",
@@ -4827,7 +4827,7 @@ func TestOntapSanEconomyInitialize(t *testing.T) {
 	    "storagePrefix":     "san-eco",
 	    "debugTraceFlags":   {"method": true, "api": true},
 	    "version":1
-	}`)
+	}`
 	secrets := map[string]string{
 		"clientcertificate": "dummy-certificate",
 	}
@@ -4880,7 +4880,7 @@ func TestOntapSanEconomyInitialize_WithNameTemplate(t *testing.T) {
 		DebugTraceFlags:   debugTraceFlags,
 		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
-	commonConfigJSON := fmt.Sprintf(`
+	commonConfigJSON := `
 	{
 	    "managementLIF":     "10.0.207.8",
 	    "dataLIF":           "10.0.207.7",
@@ -4895,7 +4895,7 @@ func TestOntapSanEconomyInitialize_WithNameTemplate(t *testing.T) {
 	    "storagePrefix":     "san-eco",
 	    "debugTraceFlags":   {"method": true, "api": true},
 	    "version":1
-	}`)
+	}`
 	secrets := map[string]string{
 		"clientcertificate": "dummy-certificate",
 	}
@@ -4940,7 +4940,7 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInStoragePool(t *testing.T)
 		DebugTraceFlags:   debugTraceFlags,
 		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
-	commonConfigJSON := fmt.Sprintf(`
+	commonConfigJSON := `
 	{
 	    "managementLIF":     "10.0.207.8",
 	    "dataLIF":           "10.0.207.7",
@@ -4960,7 +4960,7 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInStoragePool(t *testing.T)
 	    "storagePrefix":     "san-eco",
 	    "debugTraceFlags":   {"method": true, "api": true},
 	    "version":1
-	}`)
+	}`
 	secrets := map[string]string{
 		"clientcertificate": "dummy-certificate",
 	}
@@ -5008,7 +5008,7 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 		DebugTraceFlags:   debugTraceFlags,
 		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
-	commonConfigJSON := fmt.Sprintf(`
+	commonConfigJSON := `
 	{
 	    "managementLIF":     "10.0.207.8",
 	    "dataLIF":           "10.0.207.7",
@@ -5031,7 +5031,7 @@ func TestOntapSanEconomyInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 	    "storagePrefix":     "san-eco",
 	    "debugTraceFlags":   {"method": true, "api": true},
 	    "version":1
-	}`)
+	}`
 	secrets := map[string]string{
 		"clientcertificate": "dummy-certificate",
 	}
@@ -5072,7 +5072,7 @@ func TestOntapSanEconomyInitialize_InvalidConfig(t *testing.T) {
 		DebugTraceFlags:   debugTraceFlags,
 		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
-	commonConfigJSON := fmt.Sprintf(`{invalid-json}`)
+	commonConfigJSON := `{invalid-json}`
 	secrets := map[string]string{
 		"clientcertificate": "dummy-certificate",
 	}
@@ -5094,7 +5094,7 @@ func TestOntapSanEconomyInitialize_NoDataLIFs(t *testing.T) {
 		DebugTraceFlags:   debugTraceFlags,
 		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
-	commonConfigJSON := fmt.Sprintf(`
+	commonConfigJSON := `
 	{
 	    "managementLIF":     "10.0.207.8",
 	    "dataLIF":           "10.0.207.7",
@@ -5106,7 +5106,7 @@ func TestOntapSanEconomyInitialize_NoDataLIFs(t *testing.T) {
 	    "storagePrefix":     "san-eco",
 	    "debugTraceFlags":   {"method": true, "api": true},
 	    "version":1
-	}`)
+	}`
 	secrets := map[string]string{
 		"clientcertificate": "dummy-certificate",
 	}
@@ -5122,7 +5122,7 @@ func TestOntapSanEconomyInitialize_NoDataLIFs(t *testing.T) {
 		t.Run(test.message, func(t *testing.T) {
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 			if test.expectError {
-				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(nil, fmt.Errorf(test.message))
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(nil, errors.New(test.message))
 			} else {
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return(nil, nil)
 			}
@@ -5213,7 +5213,7 @@ func TestOntapSanEconomyInitialize_OtherContext(t *testing.T) {
 		DebugTraceFlags:   debugTraceFlags,
 		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
-	commonConfigJSON := fmt.Sprintf(`
+	commonConfigJSON := `
 	{
 	    "managementLIF":     "10.0.207.8",
 	    "dataLIF":           "10.0.207.7",
@@ -5225,7 +5225,7 @@ func TestOntapSanEconomyInitialize_OtherContext(t *testing.T) {
 	    "storagePrefix":     "san-eco",
 	    "debugTraceFlags":   {"method": true, "api": true},
 	    "version":1
-	}`)
+	}`
 	secrets := map[string]string{
 		"clientcertificate": "dummy-certificate",
 	}
@@ -5266,7 +5266,7 @@ func TestOntapSanEconomyInitialize_NoSVMAggregates(t *testing.T) {
 		DebugTraceFlags:   debugTraceFlags,
 		StoragePrefix:     convert.ToPtr("storagePrefix_"),
 	}
-	commonConfigJSON := fmt.Sprintf(`
+	commonConfigJSON := `
 	{
 	    "managementLIF":     "10.0.207.8",
 	    "dataLIF":           "10.0.207.7",
@@ -5278,14 +5278,14 @@ func TestOntapSanEconomyInitialize_NoSVMAggregates(t *testing.T) {
 	    "storagePrefix":     "san-eco",
 	    "debugTraceFlags":   {"method": true, "api": true},
 	    "version":1
-	}`)
+	}`
 	secrets := map[string]string{
 		"clientcertificate": "dummy-certificate",
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "iscsi").Return([]string{"10.0.207.7"}, nil)
-	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return(nil, fmt.Errorf("error getting svm aggregate names"))
+	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return(nil, errors.New("error getting svm aggregate names"))
 
 	result := d.Initialize(ctx, "csi", commonConfigJSON, commonConfig, secrets, BackendUUID)
 
@@ -5344,7 +5344,7 @@ func TestOntapSanEconomyInitialize_GetFlexvolForLUN_LUNDoesNotExist(t *testing.T
 	}
 
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Return(api.Volumes{vol}, nil)
-	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, fmt.Errorf("error fetching luns"))
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, errors.New("error fetching luns"))
 
 	flexVol, err := d.getFlexvolForLUN(ctx, vol, uint64(1073741824), false, uint64(2147483648),
 		make(map[string]struct{}))
@@ -5362,7 +5362,7 @@ func TestOntapSanEconomyInitialize_GetFlexvolForLUN_LimitFlexvolSize_Failed(t *t
 	}
 
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Return(api.Volumes{vol}, nil)
-	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(nil, fmt.Errorf("failed to get volume"))
+	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(nil, errors.New("failed to get volume"))
 
 	flexVol, err := d.getFlexvolForLUN(ctx, vol, uint64(1073741824), true, uint64(2147483648),
 		make(map[string]struct{}))
@@ -5445,7 +5445,7 @@ func TestOntapSanEconomyInitialize_CreateFlexvolForLUN_Failed(t *testing.T) {
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(fmt.Errorf("failed to create volume"))
+	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(errors.New("failed to create volume"))
 
 	volName, err := d.createFlexvolForLUN(ctx, vol, opts, pool1)
 
@@ -5465,8 +5465,8 @@ func TestOntapSanEconomyInitialize_CreateFlexvolForLUN_Failed(t *testing.T) {
 //
 //	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
 //	mockAPI.EXPECT().VolumeModifySnapshotDirectoryAccess(ctx,
-//		gomock.Any(), false).Return(fmt.Errorf("failed to disable snapshot directory access"))
-//	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(fmt.Errorf("failed to destroy volume"))
+//		gomock.Any(), false).Return(errors.New("failed to disable snapshot directory access"))
+//	mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true).Return(errors.New("failed to destroy volume"))
 //
 //	volName, err := d.createFlexvolForLUN(ctx, vol, opts, pool1)
 //
@@ -5493,7 +5493,7 @@ func TestOntapSanEconomyGetSnapshotEconomy_LUNDoesNotExist(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.message, func(t *testing.T) {
 			if test.expectError {
-				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, fmt.Errorf(test.message))
+				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, errors.New(test.message))
 			} else {
 				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, nil)
 			}
@@ -5524,7 +5524,7 @@ func TestOntapSanEconomyGetSnapshotEconomy_LunGetByNameFailed(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil)
-	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil, fmt.Errorf("failed to get lun by name"))
+	mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil, errors.New("failed to get lun by name"))
 
 	snap, err := d.getSnapshotEconomy(ctx, snapConfig, &d.Config)
 
@@ -5705,7 +5705,7 @@ func TestOntapSanEconomyEnablePublishEnforcement_FailsCheckingIfLUNExists(t *tes
 			ImportNotManaged: false,
 		},
 	}
-	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, fmt.Errorf("ontap api error"))
+	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, errors.New("ontap api error"))
 
 	err := d.EnablePublishEnforcement(ctx, volume)
 	assert.Error(t, err)
@@ -5772,7 +5772,7 @@ func TestOntapSanEconomyEnablePublishEnforcement_FailsToUnmapAllIgroups(t *testi
 		},
 	}
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(luns, nil)
-	mockAPI.EXPECT().LunListIgroupsMapped(ctx, gomock.Any()).Return(nil, fmt.Errorf("ontap api error"))
+	mockAPI.EXPECT().LunListIgroupsMapped(ctx, gomock.Any()).Return(nil, errors.New("ontap api error"))
 
 	err := d.EnablePublishEnforcement(ctx, volume)
 	assert.Error(t, err)
@@ -5819,7 +5819,7 @@ func TestOntapSanEconomyEnablePublishEnforcement_EnablesAccessControl(t *testing
 func TestSANEconomyStorageDriverGetBackendState(t *testing.T) {
 	mockApi, mockDriver := newMockOntapSanEcoDriver(t)
 
-	mockApi.EXPECT().GetSVMState(ctx).Return("", fmt.Errorf("returning test error"))
+	mockApi.EXPECT().GetSVMState(ctx).Return("", errors.New("returning test error"))
 
 	reason, changeMap := mockDriver.GetBackendState(ctx)
 	assert.Equal(t, reason, StateReasonSVMUnreachable, "should be 'SVM is not reachable'")

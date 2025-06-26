@@ -1177,14 +1177,14 @@ func getISCSIDataLIFsForReportingNodes(
 	//               a Trident managed iGroup, thus it is very much possible to get zero reporting nodes and/or
 	//               zero SLM dataLIFs. Thus adding this ugly temporary ugly condition to handle that scenario.
 	if !unmanagedImport && len(reportingNodes) < 1 {
-		return nil, fmt.Errorf("no reporting nodes found")
+		return nil, errors.New("no reporting nodes found")
 	}
 
 	reportedDataLIFs, err := clientAPI.GetSLMDataLifs(ctx, ips, reportingNodes)
 	if err != nil {
 		return nil, err
 	} else if !unmanagedImport && len(reportedDataLIFs) < 1 {
-		return nil, fmt.Errorf("no reporting data LIFs found")
+		return nil, errors.New("no reporting data LIFs found")
 	}
 
 	Logc(ctx).WithField("reportedDataLIFs", reportedDataLIFs).Debug("Data LIFs with reporting nodes.")
@@ -1204,12 +1204,12 @@ func ValidateBidirectionalChapCredentials(
 
 	// make sure it's one of the 3 types we understand
 	if !isDefaultAuthTypeNone && !isDefaultAuthTypeCHAP && !isDefaultAuthTypeDeny {
-		return nil, fmt.Errorf("default initiator's auth type is unsupported")
+		return nil, errors.New("default initiator's auth type is unsupported")
 	}
 
 	// make sure access is allowed
 	if isDefaultAuthTypeDeny {
-		return nil, fmt.Errorf("default initiator's auth type is deny")
+		return nil, errors.New("default initiator's auth type is deny")
 	}
 
 	// make sure all 4 fields are set
@@ -1233,12 +1233,12 @@ func ValidateBidirectionalChapCredentials(
 	// if CHAP is already enabled, make sure the usernames match
 	if isDefaultAuthTypeCHAP {
 		if defaultAuth.ChapUser == "" || defaultAuth.ChapOutboundUser == "" {
-			return nil, fmt.Errorf("error checking default initiator's credentials")
+			return nil, errors.New("error checking default initiator's credentials")
 		}
 
 		if config.ChapUsername != defaultAuth.ChapUser ||
 			config.ChapTargetUsername != defaultAuth.ChapOutboundUser {
-			return nil, fmt.Errorf("provided CHAP usernames do not match default initiator's usernames")
+			return nil, errors.New("provided CHAP usernames do not match default initiator's usernames")
 		}
 	}
 
@@ -1347,7 +1347,7 @@ func InitializeSANDriver(
 
 		} else {
 			if !isDefaultAuthTypeNone {
-				return fmt.Errorf("default initiator's auth type is not 'none'")
+				return errors.New("default initiator's auth type is not 'none'")
 			}
 		}
 	}
@@ -1605,7 +1605,7 @@ func ValidateSANDriver(
 				return fmt.Errorf("error establishing iSCSI session: %v", err)
 			}
 		} else if config.SANType == sa.FCP {
-			return fmt.Errorf("trident does not support FCP in Docker plugin mode")
+			return errors.New("trident does not support FCP in Docker plugin mode")
 		}
 	case tridentconfig.ContextCSI:
 		// ontap-san-* drivers should all support publish enforcement with CSI; if the igroup is set
@@ -1617,7 +1617,7 @@ func ValidateSANDriver(
 	}
 
 	if config.SANType == sa.FCP && config.UseCHAP {
-		return fmt.Errorf("CHAP is not supported with FCP protocol")
+		return errors.New("CHAP is not supported with FCP protocol")
 	}
 
 	return nil
@@ -1642,7 +1642,7 @@ func ValidateNASDriver(
 			config.LUKSEncryption)
 	}
 	if isLuks {
-		return fmt.Errorf("ONTAP NAS drivers do not support LUKS encrypted volumes")
+		return errors.New("ONTAP NAS drivers do not support LUKS encrypted volumes")
 	}
 
 	if config.NASType == sa.SMB {
@@ -1691,7 +1691,7 @@ func ValidateStoragePrefix(storagePrefix string) error {
 	if err != nil {
 		err = fmt.Errorf("could not check storage prefix; %v", err)
 	} else if !matched {
-		err = fmt.Errorf(
+		err = errors.New(
 			"storage prefix may only contain letters/digits/underscore/dash and must begin with letter/underscore/dash")
 	}
 
@@ -2708,7 +2708,7 @@ func ensureUniquenessInNameTemplate(nameTemplate string) string {
 func validateFormatOptions(formatOptions string) error {
 	formatOptions = strings.TrimSpace(formatOptions)
 	if formatOptions == "" {
-		return fmt.Errorf("empty formatOptions is provided")
+		return errors.New("empty formatOptions is provided")
 	}
 	return nil
 }
@@ -3409,7 +3409,7 @@ func ValidateASAStoragePools(
 		}
 
 		if pool.InternalAttributes()[ExportPolicy] != "" {
-			return fmt.Errorf("invalid value for exportPolicy")
+			return errors.New("invalid value for exportPolicy")
 		}
 
 		if pool.InternalAttributes()[UnixPermissions] != "" {
@@ -3708,7 +3708,7 @@ func getPoolsForCreate(
 	}
 
 	if len(candidatePools) == 0 {
-		err := fmt.Errorf("backend has no physical pools that can satisfy request")
+		err := errors.New("backend has no physical pools that can satisfy request")
 		return nil, drivers.NewBackendIneligibleError(volConfig.InternalName, []error{err}, []string{})
 	}
 
@@ -3757,7 +3757,7 @@ func GetVolumeNameFromTemplate(
 	t, err := template.New("templatizedVolumeName").Parse(pool.InternalAttributes()[NameTemplate])
 	if err != nil {
 		Logc(ctx).WithError(err).Error("invalid name template in pool %s: %v", pool.Name(), err)
-		return "", fmt.Errorf("invalid name template in pool")
+		return "", errors.New("invalid name template in pool")
 	} else {
 		templateData := make(map[string]interface{})
 		templateData["volume"] = volConfig
@@ -3768,7 +3768,7 @@ func GetVolumeNameFromTemplate(
 		var tBuffer bytes.Buffer
 		if err := t.Execute(&tBuffer, templateData); err != nil {
 			Logc(ctx).WithError(err).Error("Volume name template execution failed, using default name rules.")
-			return "", fmt.Errorf("Volume name template execution failed")
+			return "", errors.New("Volume name template execution failed")
 		} else {
 			internal := tBuffer.String()
 			internal = volumeCharRegex.ReplaceAllString(internal, "_")
@@ -4145,7 +4145,7 @@ func LunUnmapAllIgroups(ctx context.Context, clientAPI api.OntapAPI, lunPath str
 	if err != nil {
 		msg := "error listing igroup mappings"
 		Logc(ctx).WithError(err).Errorf(msg)
-		return fmt.Errorf(msg)
+		return errors.New(msg)
 	}
 
 	errored := false
@@ -4178,7 +4178,7 @@ func LunUnmapIgroup(ctx context.Context, clientAPI api.OntapAPI, igroup, lunPath
 	if err != nil {
 		msg := fmt.Sprintf("error reading LUN maps")
 		Logc(ctx).WithError(err).Error(msg)
-		return fmt.Errorf(msg)
+		return errors.New(msg)
 	}
 
 	if lunID >= 0 {
@@ -4186,7 +4186,7 @@ func LunUnmapIgroup(ctx context.Context, clientAPI api.OntapAPI, igroup, lunPath
 		if err != nil {
 			msg := "error unmapping LUN"
 			Logc(ctx).WithError(err).Error(msg)
-			return fmt.Errorf(msg)
+			return errors.New(msg)
 		}
 	}
 
@@ -4199,7 +4199,7 @@ func DestroyUnmappedIgroup(ctx context.Context, clientAPI api.OntapAPI, igroup s
 	if err != nil {
 		msg := fmt.Sprintf("error listing LUNs mapped to igroup %s", igroup)
 		Logc(ctx).WithError(err).Error(msg)
-		return fmt.Errorf(msg)
+		return errors.New(msg)
 	}
 
 	if len(luns) == 0 {
@@ -4209,7 +4209,7 @@ func DestroyUnmappedIgroup(ctx context.Context, clientAPI api.OntapAPI, igroup s
 		if err := clientAPI.IgroupDestroy(ctx, igroup); err != nil {
 			msg := fmt.Sprintf("error deleting igroup %s", igroup)
 			Logc(ctx).WithError(err).Error(msg)
-			return fmt.Errorf(msg)
+			return errors.New(msg)
 		}
 	} else {
 		Logc(ctx).WithField(
@@ -4241,7 +4241,7 @@ func EnableSANPublishEnforcement(
 	if err != nil {
 		msg := "error removing all igroup mappings from LUN"
 		Logc(ctx).WithFields(fields).WithError(err).Error(msg)
-		return fmt.Errorf(msg)
+		return errors.New(msg)
 	}
 
 	volumeConfig.AccessInfo.PublishEnforcement = true
@@ -4259,7 +4259,7 @@ func ValidateStoragePrefixEconomy(storagePrefix string) error {
 	if err != nil {
 		err = fmt.Errorf("could not check storage prefix; %v", err)
 	} else if !matched {
-		err = fmt.Errorf("storage prefix may only contain letters/digits/underscore/dash")
+		err = errors.New("storage prefix may only contain letters/digits/underscore/dash")
 	}
 
 	return err
@@ -4268,7 +4268,7 @@ func ValidateStoragePrefixEconomy(storagePrefix string) error {
 func parseVolumeHandle(volumeHandle string) (svm, flexvol string, err error) {
 	tokens := strings.SplitN(volumeHandle, ":", 2)
 	if len(tokens) != 2 {
-		return "", "", fmt.Errorf("invalid volume handle")
+		return "", "", errors.New("invalid volume handle")
 	}
 	return tokens[0], tokens[1], nil
 }
@@ -4523,7 +4523,7 @@ func subtractUintFromSizeString(size string, val uint64) (string, error) {
 		return "", fmt.Errorf("invalid size string: %v", err)
 	}
 	if val > sizeBytes {
-		return "", fmt.Errorf("right-hand term too large")
+		return "", errors.New("right-hand term too large")
 	}
 	return strconv.FormatUint(sizeBytes-val, 10), nil
 }

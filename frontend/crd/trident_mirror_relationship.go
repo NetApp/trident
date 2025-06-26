@@ -376,7 +376,7 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 	)
 	statusErr, ok := err.(*k8sapierrors.StatusError)
 	if (ok && statusErr.Status().Reason == metav1.StatusReasonNotFound) || localPVC == nil {
-		message := fmt.Sprintf("Local PVC for TridentMirrorRelationship does not yet exist.")
+		message := "Local PVC for TridentMirrorRelationship does not yet exist."
 		Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Trace(message)
 		// If PVC does not yet exist, do not update the TMR and retry later
 		return nil, errors.ReconcileDeferredError(message)
@@ -387,14 +387,13 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 	// Check if local PVC is bound to a PV
 	localPV, _ := c.kubeClientset.CoreV1().PersistentVolumes().Get(ctx, localPVC.Spec.VolumeName, metav1.GetOptions{})
 	if localPV == nil || localPV.Spec.CSI == nil || localPV.Spec.CSI.VolumeAttributes == nil {
-		message := fmt.Sprintf("PV for local PVC for TridentMirrorRelationship does not yet exist.")
+		message := "PV for local PVC for TridentMirrorRelationship does not yet exist."
 		Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Trace(message)
 		return nil, errors.ReconcileDeferredError(message)
 	}
 	// Check if PV has internal name set
 	if localPV.Spec.CSI.VolumeAttributes["internalName"] == "" {
-		message := fmt.Sprintf(
-			"PV for local PVC for TridentMirrorRelationship does not yet have an internal volume name set.")
+		message := "PV for local PVC for TridentMirrorRelationship does not yet have an internal volume name set."
 		Logx(ctx).WithFields(logFields).WithField("PVC", localPVCName).Trace(message)
 		return nil, errors.ReconcileDeferredError(message)
 	}

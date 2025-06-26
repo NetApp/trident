@@ -18,7 +18,7 @@ import (
 func TestUnsupportedCapacityRangeError(t *testing.T) {
 	// test setup
 	err := errors.New("a generic error")
-	unsupportedCapacityRangeErr := UnsupportedCapacityRangeError(fmt.Errorf(
+	unsupportedCapacityRangeErr := UnsupportedCapacityRangeError(errors.New(
 		"error wrapped within UnsupportedCapacityRange"))
 	wrappedError := fmt.Errorf("wrapping unsupportedCapacityRange; %w", unsupportedCapacityRangeErr)
 
@@ -43,7 +43,7 @@ func TestNotFoundError(t *testing.T) {
 	err := NotFoundError("not found error with formatting %s, %s", "foo", "bar")
 	assert.True(t, strings.Contains("not found error with formatting foo, bar", err.Error()))
 
-	err = fmt.Errorf("a generic error")
+	err = errors.New("a generic error")
 	assert.False(t, IsNotFoundError(err))
 
 	assert.False(t, IsNotFoundError(nil))
@@ -52,18 +52,18 @@ func TestNotFoundError(t *testing.T) {
 	assert.True(t, IsNotFoundError(err))
 
 	// Test wrapping
-	err = WrapWithNotFoundError(fmt.Errorf("not a not found err"), "not found")
+	err = WrapWithNotFoundError(errors.New("not a not found err"), "not found")
 	assert.True(t, IsNotFoundError(err))
 	assert.Equal(t, "not found; not a not found err", err.Error())
 
 	err = WrapWithNotFoundError(nil, "not found")
 	assert.Equal(t, "not found", err.Error())
 
-	err = WrapWithNotFoundError(fmt.Errorf("not a not found err"), "")
+	err = WrapWithNotFoundError(errors.New("not a not found err"), "")
 	assert.True(t, IsNotFoundError(err))
 	assert.Equal(t, "not a not found err", err.Error())
 
-	err = WrapWithNotFoundError(fmt.Errorf(""), "not found")
+	err = WrapWithNotFoundError(errors.New(""), "not found")
 	assert.True(t, IsNotFoundError(err))
 	assert.Equal(t, "not found", err.Error())
 
@@ -83,7 +83,7 @@ func TestFoundError(t *testing.T) {
 	err := FoundError("found error with formatting %s, %s", "foo", "bar")
 	assert.True(t, strings.Contains("found error with formatting foo, bar", err.Error()))
 
-	err = fmt.Errorf("a generic error")
+	err = errors.New("a generic error")
 	assert.False(t, IsFoundError(err))
 
 	assert.False(t, IsFoundError(nil))
@@ -92,18 +92,18 @@ func TestFoundError(t *testing.T) {
 	assert.True(t, IsFoundError(err))
 
 	// Test wrapping
-	err = WrapWithFoundError(fmt.Errorf("not a found err"), "found")
+	err = WrapWithFoundError(errors.New("not a found err"), "found")
 	assert.True(t, IsFoundError(err))
 	assert.Equal(t, "found; not a found err", err.Error())
 
 	err = WrapWithFoundError(nil, "found")
 	assert.Equal(t, "found", err.Error())
 
-	err = WrapWithFoundError(fmt.Errorf("not a found err"), "")
+	err = WrapWithFoundError(errors.New("not a found err"), "")
 	assert.True(t, IsFoundError(err))
 	assert.Equal(t, "not a found err", err.Error())
 
-	err = WrapWithFoundError(fmt.Errorf(""), "found")
+	err = WrapWithFoundError(errors.New(""), "found")
 	assert.True(t, IsFoundError(err))
 	assert.Equal(t, "found", err.Error())
 
@@ -123,7 +123,7 @@ func TestNotManagedError(t *testing.T) {
 	err := NotManagedError("not managed error with formatting %s, %s", "foo", "bar")
 	assert.True(t, strings.Contains("not managed error with formatting foo, bar", err.Error()))
 
-	err = fmt.Errorf("a generic error")
+	err = errors.New("a generic error")
 	assert.False(t, IsNotManagedError(err))
 
 	assert.False(t, IsNotManagedError(nil))
@@ -132,18 +132,18 @@ func TestNotManagedError(t *testing.T) {
 	assert.True(t, IsNotManagedError(err))
 
 	// Test wrapping
-	err = WrapWithNotManagedError(fmt.Errorf("not a not managed err"), "not managed")
+	err = WrapWithNotManagedError(errors.New("not a not managed err"), "not managed")
 	assert.True(t, IsNotManagedError(err))
 	assert.Equal(t, "not managed; not a not managed err", err.Error())
 
 	err = WrapWithNotManagedError(nil, "not managed")
 	assert.Equal(t, "not managed", err.Error())
 
-	err = WrapWithNotManagedError(fmt.Errorf("not a not managed err"), "")
+	err = WrapWithNotManagedError(errors.New("not a not managed err"), "")
 	assert.True(t, IsNotManagedError(err))
 	assert.Equal(t, "not a not managed err", err.Error())
 
-	err = WrapWithNotManagedError(fmt.Errorf(""), "not managed")
+	err = WrapWithNotManagedError(errors.New(""), "not managed")
 	assert.True(t, IsNotManagedError(err))
 	assert.Equal(t, "not managed", err.Error())
 
@@ -163,7 +163,7 @@ func TestConnectionError(t *testing.T) {
 	err := ConnectionError("connection error with formatting %s, %s", "foo", "bar")
 	assert.True(t, strings.Contains("connection error with formatting foo, bar", err.Error()))
 
-	err = fmt.Errorf("a generic error")
+	err = errors.New("a generic error")
 	assert.False(t, IsConnectionError(err))
 
 	assert.False(t, IsConnectionError(nil))
@@ -172,18 +172,18 @@ func TestConnectionError(t *testing.T) {
 	assert.True(t, IsConnectionError(err))
 
 	// Test wrapping
-	err = WrapWithConnectionError(fmt.Errorf("not a connection err"), "not found")
+	err = WrapWithConnectionError(errors.New("not a connection err"), "not found")
 	assert.True(t, IsConnectionError(err))
 	assert.Equal(t, "not found; not a connection err", err.Error())
 
 	err = WrapWithConnectionError(nil, "connection")
 	assert.Equal(t, "connection", err.Error())
 
-	err = WrapWithConnectionError(fmt.Errorf("not a connection err"), "")
+	err = WrapWithConnectionError(errors.New("not a connection err"), "")
 	assert.True(t, IsConnectionError(err))
 	assert.Equal(t, "not a connection err", err.Error())
 
-	err = WrapWithConnectionError(fmt.Errorf(""), "connection")
+	err = WrapWithConnectionError(errors.New(""), "connection")
 	assert.True(t, IsConnectionError(err))
 	assert.Equal(t, "connection", err.Error())
 
@@ -202,7 +202,7 @@ func TestConnectionError(t *testing.T) {
 func TestAsInvalidJSONError(t *testing.T) {
 	unmarshalTypeErr := &json.UnmarshalTypeError{
 		Value:  "",
-		Type:   reflect.TypeOf(fmt.Errorf("foo")),
+		Type:   reflect.TypeOf(errors.New("foo")),
 		Offset: 0,
 		Struct: "",
 		Field:  "",
@@ -244,7 +244,7 @@ func TestAsInvalidJSONError(t *testing.T) {
 }
 
 func TestResourceExhaustedError(t *testing.T) {
-	resExhaustedErr := ResourceExhaustedError(fmt.Errorf("volume limit reached"))
+	resExhaustedErr := ResourceExhaustedError(errors.New("volume limit reached"))
 
 	tests := []struct {
 		Name    string
@@ -253,7 +253,7 @@ func TestResourceExhaustedError(t *testing.T) {
 	}{
 		{
 			Name:    "NotResourceExhaustedError",
-			Err:     fmt.Errorf("a generic error"),
+			Err:     errors.New("a generic error"),
 			wantErr: assert.False,
 		},
 		{
@@ -280,7 +280,7 @@ func TestReconcileDeferredError(t *testing.T) {
 	err := ReconcileDeferredError("deferred error with formatting %s, %s", "foo", "bar")
 	assert.True(t, strings.Contains("deferred error with formatting foo, bar", err.Error()))
 
-	err = fmt.Errorf("a generic error")
+	err = errors.New("a generic error")
 	assert.False(t, IsReconcileDeferredError(err))
 
 	assert.False(t, IsReconcileDeferredError(nil))
@@ -289,18 +289,18 @@ func TestReconcileDeferredError(t *testing.T) {
 	assert.True(t, IsReconcileDeferredError(err))
 
 	// Test wrapping
-	err = WrapWithReconcileDeferredError(fmt.Errorf("not reconcile deferred err"), "reconcile deferred")
+	err = WrapWithReconcileDeferredError(errors.New("not reconcile deferred err"), "reconcile deferred")
 	assert.True(t, IsReconcileDeferredError(err))
 	assert.Equal(t, "reconcile deferred; not reconcile deferred err", err.Error())
 
 	err = WrapWithReconcileDeferredError(nil, "reconcile deferred")
 	assert.Equal(t, "reconcile deferred", err.Error())
 
-	err = WrapWithReconcileDeferredError(fmt.Errorf("not reconcile deferred err"), "")
+	err = WrapWithReconcileDeferredError(errors.New("not reconcile deferred err"), "")
 	assert.True(t, IsReconcileDeferredError(err))
 	assert.Equal(t, "not reconcile deferred err", err.Error())
 
-	err = WrapWithReconcileDeferredError(fmt.Errorf(""), "reconcile deferred")
+	err = WrapWithReconcileDeferredError(errors.New(""), "reconcile deferred")
 	assert.True(t, IsReconcileDeferredError(err))
 	assert.Equal(t, "reconcile deferred", err.Error())
 
@@ -320,7 +320,7 @@ func TestReconcileIncompleteError(t *testing.T) {
 	err := ReconcileIncompleteError("deferred error with formatting %s, %s", "foo", "bar")
 	assert.True(t, strings.Contains("deferred error with formatting foo, bar", err.Error()))
 
-	err = fmt.Errorf("a generic error")
+	err = errors.New("a generic error")
 	assert.False(t, IsReconcileIncompleteError(err))
 
 	assert.False(t, IsReconcileIncompleteError(nil))
@@ -329,18 +329,18 @@ func TestReconcileIncompleteError(t *testing.T) {
 	assert.True(t, IsReconcileIncompleteError(err))
 
 	// Test wrapping
-	err = WrapWithReconcileIncompleteError(fmt.Errorf("not reconcile deferred err"), "reconcile deferred")
+	err = WrapWithReconcileIncompleteError(errors.New("not reconcile deferred err"), "reconcile deferred")
 	assert.True(t, IsReconcileIncompleteError(err))
 	assert.Equal(t, "reconcile deferred; not reconcile deferred err", err.Error())
 
 	err = WrapWithReconcileIncompleteError(nil, "reconcile deferred")
 	assert.Equal(t, "reconcile deferred", err.Error())
 
-	err = WrapWithReconcileIncompleteError(fmt.Errorf("not reconcile deferred err"), "")
+	err = WrapWithReconcileIncompleteError(errors.New("not reconcile deferred err"), "")
 	assert.True(t, IsReconcileIncompleteError(err))
 	assert.Equal(t, "not reconcile deferred err", err.Error())
 
-	err = WrapWithReconcileIncompleteError(fmt.Errorf(""), "reconcile deferred")
+	err = WrapWithReconcileIncompleteError(errors.New(""), "reconcile deferred")
 	assert.True(t, IsReconcileIncompleteError(err))
 	assert.Equal(t, "reconcile deferred", err.Error())
 
@@ -360,7 +360,7 @@ func TestUnsupportedConfigError(t *testing.T) {
 	err := UnsupportedConfigError("error with formatting %s, %s", "foo", "bar")
 	assert.True(t, strings.Contains("error with formatting foo, bar", err.Error()))
 
-	err = fmt.Errorf("a generic error")
+	err = errors.New("a generic error")
 	assert.False(t, IsUnsupportedConfigError(err))
 
 	assert.False(t, IsUnsupportedConfigError(nil))
@@ -370,18 +370,18 @@ func TestUnsupportedConfigError(t *testing.T) {
 
 	// Multierr tests
 	err = multierr.Combine(
-		fmt.Errorf("not unsupported config err"),
+		errors.New("not unsupported config err"),
 		UnsupportedConfigError("is unsupported config error"),
 	)
 	assert.True(t, IsUnsupportedConfigError(err))
 
 	err = multierr.Combine(
-		fmt.Errorf("not unsupported config err"),
-		fmt.Errorf("not unsupported config err"),
+		errors.New("not unsupported config err"),
+		errors.New("not unsupported config err"),
 	)
 	assert.False(t, IsUnsupportedConfigError(err))
 
-	err = WrapUnsupportedConfigError(fmt.Errorf("not unsupported config err"))
+	err = WrapUnsupportedConfigError(errors.New("not unsupported config err"))
 	assert.True(t, IsUnsupportedConfigError(err))
 
 	err = WrapUnsupportedConfigError(nil)
@@ -392,7 +392,7 @@ func TestUnlicensedError(t *testing.T) {
 	err := UnlicensedError("error with formatting %s, %s", "foo", "bar")
 	assert.True(t, strings.Contains("error with formatting foo, bar", err.Error()))
 
-	err = fmt.Errorf("a generic error")
+	err = errors.New("a generic error")
 	assert.False(t, IsUnlicensedError(err))
 
 	assert.False(t, IsUnlicensedError(nil))
@@ -402,18 +402,18 @@ func TestUnlicensedError(t *testing.T) {
 
 	// Multierr tests
 	err = multierr.Combine(
-		fmt.Errorf("not unlicensed err"),
+		errors.New("not unlicensed err"),
 		UnlicensedError("is unlicensed error"),
 	)
 	assert.True(t, IsUnlicensedError(err))
 
 	err = multierr.Combine(
-		fmt.Errorf("not unlicensed err"),
-		fmt.Errorf("not unlicensed err"),
+		errors.New("not unlicensed err"),
+		errors.New("not unlicensed err"),
 	)
 	assert.False(t, IsUnlicensedError(err))
 
-	err = WrapUnlicensedError(fmt.Errorf("not unlicensed err"))
+	err = WrapUnlicensedError(errors.New("not unlicensed err"))
 	assert.True(t, IsUnlicensedError(err))
 
 	err = WrapUnlicensedError(nil)
@@ -424,7 +424,7 @@ func TestReconcileFailedError(t *testing.T) {
 	err := ReconcileFailedError("deferred error with formatting %s, %s", "foo", "bar")
 	assert.True(t, strings.Contains("deferred error with formatting foo, bar", err.Error()))
 
-	err = fmt.Errorf("a generic error")
+	err = errors.New("a generic error")
 	assert.False(t, IsReconcileFailedError(err))
 
 	assert.False(t, IsReconcileFailedError(nil))
@@ -433,18 +433,18 @@ func TestReconcileFailedError(t *testing.T) {
 	assert.True(t, IsReconcileFailedError(err))
 
 	// Test wrapping
-	err = WrapWithReconcileFailedError(fmt.Errorf("not reconcile deferred err"), "reconcile deferred")
+	err = WrapWithReconcileFailedError(errors.New("not reconcile deferred err"), "reconcile deferred")
 	assert.True(t, IsReconcileFailedError(err))
 	assert.Equal(t, "reconcile deferred; not reconcile deferred err", err.Error())
 
 	err = WrapWithReconcileFailedError(nil, "reconcile deferred")
 	assert.Equal(t, "reconcile deferred", err.Error())
 
-	err = WrapWithReconcileFailedError(fmt.Errorf("not reconcile deferred err"), "")
+	err = WrapWithReconcileFailedError(errors.New("not reconcile deferred err"), "")
 	assert.True(t, IsReconcileFailedError(err))
 	assert.Equal(t, "not reconcile deferred err", err.Error())
 
-	err = WrapWithReconcileFailedError(fmt.Errorf(""), "reconcile deferred")
+	err = WrapWithReconcileFailedError(errors.New(""), "reconcile deferred")
 	assert.True(t, IsReconcileFailedError(err))
 	assert.Equal(t, "reconcile deferred", err.Error())
 
@@ -461,7 +461,7 @@ func TestReconcileFailedError(t *testing.T) {
 }
 
 func TestFormatError(t *testing.T) {
-	err := FormatError(fmt.Errorf("formatting error"))
+	err := FormatError(errors.New("formatting error"))
 	assert.True(t, IsFormatError(err))
 	assert.Equal(t, "Formatting failed; formatting error", err.Error())
 }
@@ -478,7 +478,7 @@ func TestIsFormatError(t *testing.T) {
 	}{
 		{
 			Name:    "NotFormatError",
-			Err:     fmt.Errorf("a generic error"),
+			Err:     errors.New("a generic error"),
 			wantErr: assert.False,
 		},
 		{
@@ -504,7 +504,7 @@ func TestConflictError(t *testing.T) {
 	err := ConflictError("conflict error with formatting %s, %s", "foo", "bar")
 	assert.True(t, strings.Contains("conflict error with formatting foo, bar", err.Error()))
 
-	err = fmt.Errorf("a generic error")
+	err = errors.New("a generic error")
 	assert.False(t, IsConflictError(err))
 
 	assert.False(t, IsConflictError(nil))
@@ -513,18 +513,18 @@ func TestConflictError(t *testing.T) {
 	assert.True(t, IsConflictError(err))
 
 	// Test wrapping
-	err = WrapWithConflictError(fmt.Errorf("not conflict err"), "conflict err")
+	err = WrapWithConflictError(errors.New("not conflict err"), "conflict err")
 	assert.True(t, IsConflictError(err))
 	assert.Equal(t, "conflict err; not conflict err", err.Error())
 
 	err = WrapWithConflictError(nil, "conflict err")
 	assert.Equal(t, "conflict err", err.Error())
 
-	err = WrapWithConflictError(fmt.Errorf("not reconcile deferred err"), "")
+	err = WrapWithConflictError(errors.New("not reconcile deferred err"), "")
 	assert.True(t, IsConflictError(err))
 	assert.Equal(t, "not reconcile deferred err", err.Error())
 
-	err = WrapWithConflictError(fmt.Errorf(""), "conflict err")
+	err = WrapWithConflictError(errors.New(""), "conflict err")
 	assert.True(t, IsConflictError(err))
 	assert.Equal(t, "conflict err", err.Error())
 

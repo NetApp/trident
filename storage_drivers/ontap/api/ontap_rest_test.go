@@ -22,6 +22,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/storage"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
+	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -1179,7 +1180,7 @@ func mockInvalidResponse(w http.ResponseWriter, r *http.Request) {
 
 func mockUnauthorizedError(w http.ResponseWriter, r *http.Request) {
 	setHTTPResponseHeader(w, http.StatusUnauthorized)
-	json.NewEncoder(w).Encode(fmt.Errorf("error"))
+	json.NewEncoder(w).Encode(errors.New("error"))
 }
 
 func mockIOUtilError(w http.ResponseWriter, r *http.Request) {
@@ -4640,7 +4641,7 @@ func TestGetAllVolumesByPatternStyleAndState_failure(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		t.Run(fmt.Sprintf(test.style), func(t *testing.T) {
+		t.Run(test.style, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
 
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
@@ -8189,7 +8190,7 @@ func TestOntapREST_ToExportAuthenticationFlavorSlice(t *testing.T) {
 		{"sys", models.ExportAuthenticationFlavorSys},
 	}
 	for _, test := range tests {
-		t.Run(fmt.Sprintf(test.authFlavor), func(t *testing.T) {
+		t.Run(test.authFlavor, func(t *testing.T) {
 			exportAuthenticationFlavor := []string{test.authFlavor}
 			result := ToExportAuthenticationFlavorSlice(exportAuthenticationFlavor)
 			assert.Equal(t, test.exportAuthenticationFlavor, *result[0])
@@ -8235,19 +8236,19 @@ func TestExtractError(t *testing.T) {
 		// Valid errors
 		{
 			"Valid",
-			fmt.Errorf("API status: failed, Reason: Size \\\"1GB\\\" (\\\"1073741824B\\\") is too small.Minimum size is \\\"400GB\\\" (\\\"429496729600B\\\").,Code: 13115"),
+			errors.New("API status: failed, Reason: Size \\\"1GB\\\" (\\\"1073741824B\\\") is too small.Minimum size is \\\"400GB\\\" (\\\"429496729600B\\\").,Code: 13115"),
 			true,
 		},
 		{
 			"Valid",
-			fmt.Errorf("API State: failure, Message: Size \\\"1GB\\\" (\\\"1073741824B\\\") is too small.Minimum size is \\\"400GB\\\" (\\\"429496729600B\\\").,Code: 917534"),
+			errors.New("API State: failure, Message: Size \\\"1GB\\\" (\\\"1073741824B\\\") is too small.Minimum size is \\\"400GB\\\" (\\\"429496729600B\\\").,Code: 917534"),
 			true,
 		},
 
 		// Invalid errors
-		{"Invalid", fmt.Errorf("test-error, 113455"), false},
-		{"Invalid", fmt.Errorf("test-error"), false},
-		{"Invalid", fmt.Errorf(""), false},
+		{"Invalid", errors.New("test-error, 113455"), false},
+		{"Invalid", errors.New("test-error"), false},
+		{"Invalid", errors.New(""), false},
 	}
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {

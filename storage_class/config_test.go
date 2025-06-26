@@ -4,7 +4,6 @@ package storageclass
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -45,7 +44,7 @@ func TestUnmarshalJSON(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		t.Run(fmt.Sprintf(i+":"), func(t *testing.T) {
+		t.Run(i+":", func(t *testing.T) {
 			err := conf.UnmarshalJSON(test.ByteArray)
 			if test.isErrorExpected {
 				assert.Error(t, err, "Error is nil")

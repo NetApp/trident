@@ -2123,9 +2123,9 @@ func (d *NFSStorageDriver) GetPoolsForCreate(
 	// Software class backend doesn't have pools with matching filters, so we throw error
 	if len(GCPPools) == 0 {
 		if poolErrors != "" {
-			return nil, errors.ResourceExhaustedError(fmt.Errorf(poolErrors))
+			return nil, errors.ResourceExhaustedError(errors.New(poolErrors))
 		}
-		return nil, fmt.Errorf("no GCP pools found")
+		return nil, errors.New("no GCP pools found")
 	}
 
 	// Sort GCP pools on number of volumes

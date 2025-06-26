@@ -416,7 +416,7 @@ func (d *NVMeStorageDriver) Create(
 		); aggrLimitsErr != nil {
 			errMessage := fmt.Sprintf("ONTAP-NVMe pool %s/%s; error: %v", storagePool.Name(), aggregate, aggrLimitsErr)
 			Logc(ctx).Error(errMessage)
-			createErrors = append(createErrors, fmt.Errorf(errMessage))
+			createErrors = append(createErrors, errors.New(errMessage))
 
 			// Move on to the next pool.
 			continue
@@ -463,7 +463,7 @@ func (d *NVMeStorageDriver) Create(
 				aggregate, name, err,
 			)
 			Logc(ctx).Error(errMessage)
-			createErrors = append(createErrors, fmt.Errorf(errMessage))
+			createErrors = append(createErrors, errors.New(errMessage))
 
 			// Move on to the next pool.
 			continue
@@ -505,7 +505,7 @@ func (d *NVMeStorageDriver) Create(
 					aggregate, name, err,
 				)
 				Logc(ctx).Error(errMessage)
-				createErrors = append(createErrors, fmt.Errorf(errMessage))
+				createErrors = append(createErrors, errors.New(errMessage))
 
 				// Don't leave the new FlexVol around.
 				if err := d.API.VolumeDestroy(ctx, name, true, true); err != nil {

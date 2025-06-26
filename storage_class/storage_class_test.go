@@ -277,7 +277,7 @@ func TestStorageClassMatches(t *testing.T) {
 	}
 
 	for testName, test := range tests {
-		t.Run(fmt.Sprintf(testName+":"), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%s:", testName), func(t *testing.T) {
 			assert.Equal(t, test.storageClass.Matches(ctx, test.storagePool), test.result,
 				"storage pool does not match ")
 		})
@@ -1046,7 +1046,7 @@ func TestCheckAndAddBackend(t *testing.T) {
 	}
 
 	for testName, test := range tests {
-		t.Run(fmt.Sprintf(testName+":"), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%s:", testName), func(t *testing.T) {
 			_, excludePool, fakePools := createAndGetPool(mockCtrl, 3)
 
 			excludePools := make(map[string][]string, 0)
@@ -1098,7 +1098,7 @@ func TestIsAddedToBackend(t *testing.T) {
 	}
 
 	for testName, test := range tests {
-		t.Run(fmt.Sprintf(testName+":"), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%s:", testName), func(t *testing.T) {
 			backend := &storage.StorageBackend{}
 			backend.SetName(test.backendName)
 			backend.ClearStoragePools()
@@ -1140,7 +1140,7 @@ func TestRemovePoolsForBackend(t *testing.T) {
 	}
 
 	for testName, test := range tests {
-		t.Run(fmt.Sprintf(testName+":"), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%s:", testName), func(t *testing.T) {
 			test.storagePool.EXPECT().Backend().Return(test.backend).Times(1)
 			sc := New(&Config{
 				Name: "sc",
@@ -1238,7 +1238,7 @@ func TestRegexMatcherImplNegative(t *testing.T) {
 	})
 
 	for testName, test := range tests {
-		t.Run(fmt.Sprintf(testName+":"), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%s:", testName), func(t *testing.T) {
 			var result bool = false
 			if test.storagePool == nil {
 				result = sc.regexMatcherImpl(ctx, nil, test.storagePoolBackendName, test.storagePoolList)

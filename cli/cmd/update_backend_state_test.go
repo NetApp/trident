@@ -4,7 +4,6 @@ package cmd
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -21,6 +20,7 @@ import (
 	"github.com/netapp/trident/frontend/rest"
 	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils/errors"
 	execCmd "github.com/netapp/trident/utils/exec"
 )
 
@@ -393,7 +393,7 @@ func TestUpdateBackendState(t *testing.T) {
 			urlUpdateBackendResponse: BaseURL() + "/backend/" + backends[0].Name + "/state",
 			urlGetBackendResponse:    BaseURL() + "/backend/" + backends[0].Name,
 			updateBackendResponse: func(req *http.Request) (*http.Response, error) {
-				return nil, fmt.Errorf("trident server not found")
+				return nil, errors.New("trident server not found")
 			},
 			matchOutput: false,
 		},
