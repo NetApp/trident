@@ -95,7 +95,7 @@ tridentExcludeAutosupport: false
 tridentAutosupportImage: ""
 
 # tridentAutosupportImageTag allows overriding the tag of the image for Trident's Autosupport container.
-tridentAutosupportImageTag: "25.02"
+tridentAutosupportImageTag: "25.06"
 
 # tridentAutosupportProxy allows Trident's autosupport container to phone home via an HTTP proxy.
 tridentAutosupportProxy: ""
