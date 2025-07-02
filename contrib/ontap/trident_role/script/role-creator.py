@@ -9,7 +9,7 @@ Purpose: THE FOLLOWING SCRIPT SHOWS HOW TO CREATE ROLE USING REST API.
 usage: role-creator.py [-h] [-v VSERVER_NAME] [-r ROLE_NAME] [--zapi] [--rest] [-i HOST_IP] [-u USERNAME] [-p PASSWORD] [-j JSON]
                        [--log-level {CRITICAL,FATAL,ERROR,WARN,WARNING,INFO,DEBUG,NOTSET}]
 
-Copyright (c) 2024 NetApp, Inc. All Rights Reserved.
+Copyright (c) 2025 NetApp, Inc. All Rights Reserved.
 Licensed under the BSD 3-Clause "New or Revised" License (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at

@@ -10,7 +10,7 @@
 
 # usage: ./role-generator.sh [-h] [-v VSERVER_NAME] [-r ROLE_NAME] [--zapi] [--rest] [-j JSON] [-o OUTPUT]
 
-# Copyright (c) 2024 NetApp, Inc. All Rights Reserved.
+# Copyright (c) 2025 NetApp, Inc. All Rights Reserved.
 # Licensed under the BSD 3-Clause "New or Revised" License (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
