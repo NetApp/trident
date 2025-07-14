@@ -19,8 +19,17 @@ import (
 var (
 	xtermControlRegex = regexp.MustCompile(`\x1B\[[0-9;]*[a-zA-Z]`)
 
-	_ Command = NewCommand()
+	// Ensure these structures always implement these interfaces at compilation.
+	_ Command   = NewCommand()
+	_ ExitError = &exec.ExitError{}
 )
+
+// ExitError defines the methods that exec.ExitError implements.
+// This enables unit testing and mocking of exit codes.
+type ExitError interface {
+	error
+	ExitCode() int
+}
 
 // Command defines a set of behaviors for executing commands on a host.
 type Command interface {
