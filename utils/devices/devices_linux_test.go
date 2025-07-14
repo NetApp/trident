@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 // NOTE: This file should only contain functions for handling devices for linux flavor
 
@@ -7,7 +7,6 @@ package devices
 import (
 	"context"
 	"fmt"
-	"strings"
 	"testing"
 	"time"
 
@@ -52,6 +51,34 @@ func TestEnsureLUKSDeviceClosedWithMaxWaitLimit(t *testing.T) {
 			expectedError: false,
 		},
 		{
+			name: "SucceedsWhenDeviceIsAlreadyClosed",
+			mockSetup: func(mockCommand *mockexec.MockCommand) {
+				mockCryptsetupLuksClose(mockCommand).Return(
+					[]byte(""),
+					mockexec.NewMockExitError(luksCloseDeviceAlreadyClosedExitCode, "mock error"),
+				)
+			},
+			expectedError: false,
+		},
+		{
+			name: "SucceedsWhenDeviceExecCmdReturnsErrorButLuksCloseHadExitCode0",
+			mockSetup: func(mockCommand *mockexec.MockCommand) {
+				mockCryptsetupLuksClose(mockCommand).Return(
+					[]byte(""),
+					mockexec.NewMockExitError(luksCloseDeviceAlreadyClosedExitCode, "mock error"),
+				)
+			},
+			expectedError: false,
+		},
+		{
+			name: "FailsWhenLUKSCloseFailsWithUnexpectedExitCode1",
+			mockSetup: func(mockCommand *mockexec.MockCommand) {
+				mockCryptsetupLuksClose(mockCommand).Return([]byte(""), mockexec.NewMockExitError(1, "mock error"))
+			},
+			expectedError:   true,
+			expectedErrType: fmt.Errorf("%w", errors.New("")),
+		},
+		{
 			name: "FailsBeforeMaxWaitLimit",
 			mockSetup: func(mockCommand *mockexec.MockCommand) {
 				mockCryptsetupLuksClose(mockCommand).Return([]byte(""), errors.New("close error"))
@@ -71,22 +98,24 @@ func TestEnsureLUKSDeviceClosedWithMaxWaitLimit(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			tc.mockSetup(client)
-			err := deviceClient.EnsureLUKSDeviceClosedWithMaxWaitLimit(context.TODO(), luksDevicePath)
-			if tc.expectedError {
-				assert.Error(t, err)
-				if tc.expectedErrType != nil {
-					assert.IsType(t, tc.expectedErrType, err)
+		t.Run(
+			tc.name, func(t *testing.T) {
+				tc.mockSetup(client)
+				err := deviceClient.EnsureLUKSDeviceClosedWithMaxWaitLimit(context.TODO(), luksDevicePath)
+				if tc.expectedError {
+					assert.Error(t, err)
+					if tc.expectedErrType != nil {
+						assert.IsType(t, tc.expectedErrType, err)
+					}
+				} else {
+					assert.NoError(t, err)
 				}
-			} else {
-				assert.NoError(t, err)
-			}
-		})
+			},
+		)
 	}
 }
 
-func Test_CloseLUKSDevice(t *testing.T) {
+func TestCloseLUKSDevice(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockCommand := mockexec.NewMockCommand(mockCtrl)
 	deviceClient := NewDetailed(mockCommand, afero.NewMemMapFs(), NewDiskSizeGetter())
@@ -98,34 +127,46 @@ func Test_CloseLUKSDevice(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestCloseLUKSDevice_DeviceAlreadyClosedOrDoesNotExist(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockCommand := mockexec.NewMockCommand(mockCtrl)
+	deviceClient := NewDetailed(mockCommand, afero.NewMemMapFs(), NewDiskSizeGetter())
+
+	// Setup mock calls and reassign any clients to their mock counterparts.
+	mockCryptsetupLuksClose(mockCommand).Return(
+		[]byte(""),
+		mockexec.NewMockExitError(luksCloseDeviceAlreadyClosedExitCode, "closed or doesn't exist"),
+	)
+
+	err := deviceClient.CloseLUKSDevice(context.Background(), "/dev/sdb")
+	assert.NoError(t, err)
+
+	// Setup mock calls and reassign any clients to their mock counterparts.
+	mockCryptsetupLuksClose(mockCommand).Return(
+		[]byte(""),
+		mockexec.NewMockExitError(luksCloseDeviceSafelyClosedExitCode, "succeeds but has exec error"),
+	)
+
+	err = deviceClient.CloseLUKSDevice(context.Background(), "/dev/sdb")
+	assert.NoError(t, err)
+}
+
+func TestCloseLUKSDevice_DeviceIsBusy(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockCommand := mockexec.NewMockCommand(mockCtrl)
+	deviceClient := NewDetailed(mockCommand, afero.NewMemMapFs(), NewDiskSizeGetter())
+
+	// Setup mock calls and reassign any clients to their mock counterparts.
+	mockCryptsetupLuksClose(mockCommand).Return([]byte(""), mockexec.NewMockExitError(5, "busy device"))
+
+	err := deviceClient.CloseLUKSDevice(context.Background(), "/dev/sdb")
+	assert.Error(t, err)
+}
+
 func TestEnsureLUKSDeviceClosed_DeviceDoesNotExist(t *testing.T) {
 	deviceClient := NewDetailed(exec.NewCommand(), afero.NewMemMapFs(), NewDiskSizeGetter())
 	err := deviceClient.EnsureLUKSDeviceClosed(context.Background(), "/dev/mapper/luks-test-dev")
 	assert.NoError(t, err)
-}
-
-func TestEnsureLUKSDeviceClosed_FailsToDetectDevice(t *testing.T) {
-	osFs := afero.NewOsFs()
-	var b strings.Builder
-	b.Grow(1025)
-	for i := 0; i < 1025; i++ {
-		b.WriteByte('a')
-	}
-	s := b.String()
-	deviceClient := NewDetailed(exec.NewCommand(), osFs, NewDiskSizeGetter())
-	err := deviceClient.EnsureLUKSDeviceClosed(context.Background(), "/dev/mapper/"+s)
-	assert.Error(t, err)
-}
-
-func TestEnsureLUKSDeviceClosed_FailsToCloseDevice(t *testing.T) {
-	ctx := context.Background()
-	devicePath := "/dev/mapper/luks-test-dev"
-	osFs := afero.NewMemMapFs()
-	osFs.Create(devicePath)
-
-	deviceClient := NewDetailed(exec.NewCommand(), osFs, NewDiskSizeGetter())
-	err := deviceClient.EnsureLUKSDeviceClosed(ctx, devicePath)
-	assert.Error(t, err)
 }
 
 func TestEnsureLUKSDeviceClosed_ClosesDevice(t *testing.T) {
@@ -145,6 +186,41 @@ func TestEnsureLUKSDeviceClosed_ClosesDevice(t *testing.T) {
 	deviceClient := NewDetailed(mockCommand, osFs, NewDiskSizeGetter())
 	err := deviceClient.EnsureLUKSDeviceClosed(ctx, devicePath)
 	assert.NoError(t, err)
+}
+
+func TestEnsureLUKSDeviceClosed_FailsToDetectDevice(t *testing.T) {
+	ctx := context.Background()
+	devicePath := "/dev/mapper/luks-test-dev"
+	osFs := afero.NewOsFs()
+	mockCtrl := gomock.NewController(t)
+	mockCommand := mockexec.NewMockCommand(mockCtrl)
+
+	// Setup mock calls and reassign any clients to their mock counterparts.
+	gomock.InOrder(
+		mockCryptsetupLuksClose(mockCommand).Return([]byte(""), mockexec.NewMockExitError(4, "device not found")),
+	)
+
+	deviceClient := NewDetailed(mockCommand, osFs, NewDiskSizeGetter())
+	err := deviceClient.EnsureLUKSDeviceClosed(ctx, devicePath)
+	assert.NoError(t, err)
+}
+
+func TestEnsureLUKSDeviceClosed_FailsToCloseDeviceWithBusyDevice(t *testing.T) {
+	ctx := context.Background()
+	devicePath := "/dev/mapper/luks-test-dev"
+	osFs := afero.NewMemMapFs()
+	osFs.Create(devicePath)
+
+	mockCtrl := gomock.NewController(t)
+	mockCommand := mockexec.NewMockCommand(mockCtrl)
+
+	// Setup mock calls and reassign any clients to their mock counterparts.
+	gomock.InOrder(
+		mockCryptsetupLuksClose(mockCommand).Return([]byte(""), mockexec.NewMockExitError(5, "busy device")),
+	)
+	deviceClient := NewDetailed(mockCommand, osFs, NewDiskSizeGetter())
+	err := deviceClient.EnsureLUKSDeviceClosed(ctx, devicePath)
+	assert.Error(t, err)
 }
 
 func TestFlushOneDevice(t *testing.T) {
@@ -175,25 +251,27 @@ func TestFlushOneDevice(t *testing.T) {
 	}
 
 	for name, params := range tests {
-		t.Run(name, func(t *testing.T) {
-			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
+		t.Run(
+			name, func(t *testing.T) {
+				mockCtrl := gomock.NewController(t)
+				defer mockCtrl.Finish()
 
-			mockCommand := mockexec.NewMockCommand(mockCtrl)
-			params.mockSetup(mockCommand)
+				mockCommand := mockexec.NewMockCommand(mockCtrl)
+				params.mockSetup(mockCommand)
 
-			client := &Client{
-				command: mockCommand,
-				osFs:    afero.Afero{Fs: afero.NewMemMapFs()},
-			}
+				client := &Client{
+					command: mockCommand,
+					osFs:    afero.Afero{Fs: afero.NewMemMapFs()},
+				}
 
-			err := client.FlushOneDevice(context.Background(), params.devicePath)
-			if params.expectedError {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-		})
+				err := client.FlushOneDevice(context.Background(), params.devicePath)
+				if params.expectedError {
+					assert.Error(t, err)
+				} else {
+					assert.NoError(t, err)
+				}
+			},
+		)
 	}
 }
 
@@ -260,7 +338,8 @@ func TestGetDeviceFSType(t *testing.T) {
 				).Return([]byte("TYPE="), nil)
 				mockCommand.EXPECT().ExecuteWithTimeout(
 					context.Background(), "dd", 5*time.Second, false, "if=/dev/sda", "bs=4096",
-					"count=512", "status=none")
+					"count=512", "status=none",
+				)
 				return mockCommand
 			},
 			getMockFs: func() afero.Fs {
@@ -286,7 +365,8 @@ func TestGetDeviceFSType(t *testing.T) {
 				}
 				mockCommand.EXPECT().ExecuteWithTimeout(
 					context.Background(), "dd", 5*time.Second, false, "if=/dev/sda", "bs=4096",
-					"count=512", "status=none").Return(out, nil)
+					"count=512", "status=none",
+				).Return(out, nil)
 				return mockCommand
 			},
 			getMockFs: func() afero.Fs {
@@ -317,20 +397,22 @@ func TestGetDeviceFSType(t *testing.T) {
 	}
 
 	for name, params := range tests {
-		t.Run(name, func(t *testing.T) {
-			client := &Client{
-				command: params.getMockCommand(),
-				osFs:    afero.Afero{Fs: params.getMockFs()},
-			}
+		t.Run(
+			name, func(t *testing.T) {
+				client := &Client{
+					command: params.getMockCommand(),
+					osFs:    afero.Afero{Fs: params.getMockFs()},
+				}
 
-			fsType, err := client.GetDeviceFSType(context.Background(), params.device)
-			if params.expectedError {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, params.expectedFSType, fsType)
-			}
-		})
+				fsType, err := client.GetDeviceFSType(context.Background(), params.device)
+				if params.expectedError {
+					assert.Error(t, err)
+				} else {
+					assert.NoError(t, err)
+					assert.Equal(t, params.expectedFSType, fsType)
+				}
+			},
+		)
 	}
 }
 
@@ -350,8 +432,9 @@ func TestClient_verifyMultipathDeviceSize(t *testing.T) {
 		"error getting device size": {
 			getMockDiskSizeGetter: func(controller *gomock.Controller) SizeGetter {
 				mockGetter := mock_devices.NewMockSizeGetter(controller)
-				mockGetter.EXPECT().GetDiskSize(context.TODO(), gomock.Any()).Return(int64(0),
-					errors.New("some error"))
+				mockGetter.EXPECT().GetDiskSize(context.TODO(), gomock.Any()).Return(
+					int64(0), errors.New("get size error"),
+				)
 				return mockGetter
 			},
 			assertError:        assert.Error,
@@ -362,8 +445,9 @@ func TestClient_verifyMultipathDeviceSize(t *testing.T) {
 			getMockDiskSizeGetter: func(controller *gomock.Controller) SizeGetter {
 				mockGetter := mock_devices.NewMockSizeGetter(controller)
 				mockGetter.EXPECT().GetDiskSize(context.TODO(), gomock.Any()).Return(int64(1), nil)
-				mockGetter.EXPECT().GetDiskSize(context.TODO(), gomock.Any()).Return(int64(0),
-					errors.New("some error"))
+				mockGetter.EXPECT().GetDiskSize(context.TODO(), gomock.Any()).Return(
+					int64(0), errors.New("get size error"),
+				)
 				return mockGetter
 			},
 			assertError:        assert.Error,
@@ -395,18 +479,22 @@ func TestClient_verifyMultipathDeviceSize(t *testing.T) {
 	}
 
 	for name, params := range tests {
-		t.Run(name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			client := NewDetailed(exec.NewCommand(), afero.NewMemMapFs(), params.getMockDiskSizeGetter(ctrl))
-			deviceSize, valid, err := client.VerifyMultipathDeviceSize(context.TODO(), multipathDeviceName, deviceName)
-			if params.assertError != nil {
-				params.assertError(t, err)
-			}
-			if params.assertValid != nil {
-				params.assertValid(t, valid)
-			}
-			assert.Equal(t, params.expectedDeviceSize, deviceSize)
-		})
+		t.Run(
+			name, func(t *testing.T) {
+				ctrl := gomock.NewController(t)
+				client := NewDetailed(exec.NewCommand(), afero.NewMemMapFs(), params.getMockDiskSizeGetter(ctrl))
+				deviceSize, valid, err := client.VerifyMultipathDeviceSize(
+					context.TODO(), multipathDeviceName, deviceName,
+				)
+				if params.assertError != nil {
+					params.assertError(t, err)
+				}
+				if params.assertValid != nil {
+					params.assertValid(t, valid)
+				}
+				assert.Equal(t, params.expectedDeviceSize, deviceSize)
+			},
+		)
 	}
 }
 
@@ -420,12 +508,15 @@ func TestMultipathFlushDevice(t *testing.T) {
 		"Happy Path": {
 			getMockCmd: func() exec.Command {
 				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 5*time.Second, true,
-					"-C", devicePath).Return([]byte(""), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "blockdev", 5*time.Second, true, "--flushbufs",
-					devicePath).Return([]byte(""), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 10*time.Second, false, "-f",
-					devicePath).Return([]byte(""), nil)
+				mockCommand.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "multipath", 5*time.Second, true, "-C", devicePath,
+				).Return([]byte(""), nil)
+				mockCommand.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "blockdev", 5*time.Second, true, "--flushbufs", devicePath,
+				).Return([]byte(""), nil)
+				mockCommand.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "multipath", 10*time.Second, false, "-f", devicePath,
+				).Return([]byte(""), nil)
 				return mockCommand
 			},
 			deviceInfo: &models.ScsiDeviceInfo{
@@ -446,8 +537,9 @@ func TestMultipathFlushDevice(t *testing.T) {
 		"Can Flush Error": {
 			getMockCmd: func() exec.Command {
 				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 5*time.Second, true,
-					"-C", "/dev/dm-0").Return([]byte(""), errors.ISCSIDeviceFlushError("error"))
+				mockCommand.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "multipath", 5*time.Second, true, "-C", "/dev/dm-0",
+				).Return([]byte(""), errors.ISCSIDeviceFlushError("error"))
 				return mockCommand
 			},
 			deviceInfo: &models.ScsiDeviceInfo{
@@ -459,8 +551,9 @@ func TestMultipathFlushDevice(t *testing.T) {
 			getMockCmd: func() exec.Command {
 				volumeFlushExceptions[devicePath] = time.Now().Add(-1 * time.Hour)
 				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 5*time.Second, true,
-					"-C", "/dev/dm-0").Return([]byte("no usable paths found"), errors.New("error"))
+				mockCommand.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "multipath", 5*time.Second, true, "-C", "/dev/dm-0",
+				).Return([]byte("no usable paths found"), errors.New("error"))
 				return mockCommand
 			},
 			deviceInfo: &models.ScsiDeviceInfo{
@@ -471,10 +564,12 @@ func TestMultipathFlushDevice(t *testing.T) {
 		"Flush Error": {
 			getMockCmd: func() exec.Command {
 				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 5*time.Second, true,
-					"-C", devicePath).Return([]byte(""), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "blockdev", 5*time.Second, true, "--flushbufs",
-					devicePath).Return([]byte(""), errors.New("error"))
+				mockCommand.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "multipath", 5*time.Second, true, "-C", devicePath,
+				).Return([]byte(""), nil)
+				mockCommand.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "blockdev", 5*time.Second, true, "--flushbufs", devicePath,
+				).Return([]byte(""), errors.New("error"))
 				return mockCommand
 			},
 			deviceInfo: &models.ScsiDeviceInfo{
@@ -485,12 +580,15 @@ func TestMultipathFlushDevice(t *testing.T) {
 		"Multipath Remove Error": {
 			getMockCmd: func() exec.Command {
 				mockCommand := mockexec.NewMockCommand(gomock.NewController(t))
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 5*time.Second, true,
-					"-C", devicePath).Return([]byte(""), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "blockdev", 5*time.Second, true, "--flushbufs",
-					devicePath).Return([]byte(""), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipath", 10*time.Second, false, "-f",
-					devicePath).Return([]byte(""), errors.New("error"))
+				mockCommand.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "multipath", 5*time.Second, true, "-C", devicePath,
+				).Return([]byte(""), nil)
+				mockCommand.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "blockdev", 5*time.Second, true, "--flushbufs", devicePath,
+				).Return([]byte(""), nil)
+				mockCommand.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "multipath", 10*time.Second, false, "-f", devicePath,
+				).Return([]byte(""), errors.New("error"))
 				return mockCommand
 			},
 			deviceInfo: &models.ScsiDeviceInfo{
@@ -500,16 +598,18 @@ func TestMultipathFlushDevice(t *testing.T) {
 		},
 	}
 	for name, params := range tests {
-		t.Run(name, func(t *testing.T) {
-			deviceClient := NewDetailed(params.getMockCmd(), afero.NewMemMapFs(), NewDiskSizeGetter())
-			err := deviceClient.MultipathFlushDevice(context.TODO(), params.deviceInfo)
-			delete(volumeFlushExceptions, devicePath)
-			if params.expectError {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-		})
+		t.Run(
+			name, func(t *testing.T) {
+				deviceClient := NewDetailed(params.getMockCmd(), afero.NewMemMapFs(), NewDiskSizeGetter())
+				err := deviceClient.MultipathFlushDevice(context.TODO(), params.deviceInfo)
+				delete(volumeFlushExceptions, devicePath)
+				if params.expectError {
+					assert.Error(t, err)
+				} else {
+					assert.NoError(t, err)
+				}
+			},
+		)
 	}
 }
 
@@ -527,8 +627,9 @@ func TestFlushDevice(t *testing.T) {
 			},
 			getMockCmd: func() exec.Command {
 				mockCmd := mockexec.NewMockCommand(gomock.NewController(t))
-				mockCmd.EXPECT().ExecuteWithTimeout(gomock.Any(), "blockdev", 5*time.Second, true, "--flushbufs",
-					DevPrefix+device).Return([]byte(""), nil)
+				mockCmd.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "blockdev", 5*time.Second, true, "--flushbufs", DevPrefix+device,
+				).Return([]byte(""), nil)
 				return mockCmd
 			},
 			expectError: false,
@@ -539,22 +640,25 @@ func TestFlushDevice(t *testing.T) {
 			},
 			getMockCmd: func() exec.Command {
 				mockCmd := mockexec.NewMockCommand(gomock.NewController(t))
-				mockCmd.EXPECT().ExecuteWithTimeout(gomock.Any(), "blockdev", 5*time.Second, true, "--flushbufs",
-					DevPrefix+device).Return([]byte(""), errors.New("error"))
+				mockCmd.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "blockdev", 5*time.Second, true, "--flushbufs", DevPrefix+device,
+				).Return([]byte(""), errors.New("error"))
 				return mockCmd
 			},
 			expectError: true,
 		},
 	}
 	for name, params := range tests {
-		t.Run(name, func(t *testing.T) {
-			deviceClient := NewDetailed(params.getMockCmd(), afero.NewMemMapFs(), NewDiskSizeGetter())
-			err := deviceClient.FlushDevice(context.TODO(), params.deviceInfo, params.force)
-			if params.expectError {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-		})
+		t.Run(
+			name, func(t *testing.T) {
+				deviceClient := NewDetailed(params.getMockCmd(), afero.NewMemMapFs(), NewDiskSizeGetter())
+				err := deviceClient.FlushDevice(context.TODO(), params.deviceInfo, params.force)
+				if params.expectError {
+					assert.Error(t, err)
+				} else {
+					assert.NoError(t, err)
+				}
+			},
+		)
 	}
 }
