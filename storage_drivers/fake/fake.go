@@ -1165,13 +1165,6 @@ func (d *StorageDriver) CreateGroupSnapshot(
 	return storage.NewGroupSnapshot(config, snapshotIDs, creationTime), groupedSnapshots, nil
 }
 
-func (d *StorageDriver) PostProcessGroupSnapshot(ctx context.Context, targetInfo *storage.GroupSnapshotTargetInfo,
-	groupSnapshot *storage.GroupSnapshot,
-) ([]*storage.Snapshot, error) {
-	// no-op for fake driver
-	return nil, nil
-}
-
 func (d *StorageDriver) Get(_ context.Context, name string) error {
 	_, ok := d.Volumes[name]
 	if !ok {

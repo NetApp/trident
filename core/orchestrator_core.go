@@ -4191,9 +4191,11 @@ func (o *TridentOrchestrator) CreateGroupSnapshot(
 		}
 
 		if err = currentInfo.Validate(); err != nil {
-			return nil, fmt.Errorf("invalid storage target for backend %s", b.Name())
+			// If the storage target is invalid, we cannot create a group snapshot, snapshotter should not retry.
+			return nil, errors.InvalidInputError("invalid storage target for backend %s", b.Name())
 		} else if !currentInfo.IsShared(groupSnapshotTarget) {
-			return nil, fmt.Errorf("storage target is not the same for all backends")
+			// If the storage target is not shared, we cannot create a group snapshot, snapshotter should not retry.
+			return nil, errors.InvalidInputError("storage target is not the same for all backends")
 		}
 
 		// Identify and remove duplicates for any source volumes that are shared across multiple backends.
@@ -4225,6 +4227,7 @@ func (o *TridentOrchestrator) CreateGroupSnapshot(
 	}()
 
 	// Create the group snapshot
+	// TODO (TRID-16891): Do post-processing within the driver function; san-economy needs work
 	groupSnapshot, snapshots, err = groupSnapshotter.CreateGroupSnapshot(ctx, groupSnapshotConfig, groupSnapshotTarget)
 	if err != nil {
 		if errors.IsMaxLimitReachedError(err) {
@@ -4232,19 +4235,6 @@ func (o *TridentOrchestrator) CreateGroupSnapshot(
 				groupSnapshotConfig.ID(), err))
 		}
 		return nil, fmt.Errorf("failed to create group snapshot %s: %v", groupSnapshotConfig.ID(), err)
-	}
-
-	// Do post-processing here; nas and san should be no-ops; san-economy needs work
-	postProcessedSnaps, err := groupSnapshotter.PostProcessGroupSnapshot(ctx, groupSnapshotTarget, groupSnapshot)
-	if err != nil {
-		return nil, fmt.Errorf("failed to post process group snapshot %s: %v",
-			groupSnapshotConfig.ID(), err)
-	}
-	if postProcessedSnaps != nil {
-		// This would be the SAN-Economy case
-		for _, postProcessedSnap := range postProcessedSnaps {
-			groupSnapshot.SnapshotIDs = append(groupSnapshot.SnapshotIDs, postProcessedSnap.ID())
-		}
 	}
 
 	// Save references to new group snapshot and each snapshot

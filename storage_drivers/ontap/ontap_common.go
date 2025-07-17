@@ -4058,6 +4058,141 @@ func createFlexvolSnapshot(
 	}, nil
 }
 
+// GetGroupSnapshotTarget returns a set of information about the target of a group snapshot.
+// This information is used to gather information in a consistent way across storage drivers.
+func GetGroupSnapshotTarget(
+	ctx context.Context, volConfigs []*storage.VolumeConfig, config *drivers.OntapStorageDriverConfig,
+	client api.OntapAPI,
+) (*storage.GroupSnapshotTargetInfo, error) {
+	fields := LogFields{
+		"Method": "GetGroupSnapshotTarget",
+		"Type":   "ontap_common",
+	}
+	Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetGroupSnapshotTarget")
+	defer Logd(ctx, config.StorageDriverName,
+		config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetGroupSnapshotTarget")
+
+	targetType := PersonalityUnified
+	if config.Flags != nil && config.Flags[FlagPersonality] != "" {
+		targetType = config.Flags[FlagPersonality]
+	}
+
+	targetUUID := client.GetSVMUUID()
+
+	// Construct a set of unique source volume IDs to volume names to configs for the group snapshot.
+	targetVolumes := make(storage.GroupSnapshotTargetVolumes, 0)
+	for _, volumeConfig := range volConfigs {
+		volumeName := volumeConfig.Name
+		internalVolName := volumeConfig.InternalName
+
+		// If the specified volume doesn't exist, return error
+		if volExists, err := client.VolumeExists(ctx, internalVolName); err != nil {
+			return nil, fmt.Errorf("error checking for existing volume: %v", err)
+		} else if !volExists {
+			return nil, errors.NotFoundError("volume %s does not exist", internalVolName)
+		}
+
+		if targetVolumes[internalVolName] == nil {
+			targetVolumes[internalVolName] = make(map[string]*storage.VolumeConfig)
+		}
+
+		// For other drivers such as the SAN-Eco driver, this will be a flexvol name -> pv name -> volume config.
+		targetVolumes[internalVolName][volumeName] = volumeConfig
+	}
+
+	return storage.NewGroupSnapshotTargetInfo(targetType, targetUUID, targetVolumes), nil
+}
+
+func CreateGroupSnapshot(
+	ctx context.Context, groupSnapshotConfig *storage.GroupSnapshotConfig, target *storage.GroupSnapshotTargetInfo,
+	driverConfig *drivers.OntapStorageDriverConfig, client api.OntapAPI, sizeGetter func(context.Context, string) (int, error),
+) (*storage.GroupSnapshot, []*storage.Snapshot, error) {
+	fields := LogFields{
+		"Method": "CreateGroupSnapshot",
+		"Type":   "ontap_common",
+	}
+	Logd(ctx, driverConfig.StorageDriverName,
+		driverConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateGroupSnapshot")
+	defer Logd(ctx, driverConfig.StorageDriverName,
+		driverConfig.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateGroupSnapshot")
+
+	// Assign an internal name at the driver level.
+	groupSnapshotConfig.InternalName = groupSnapshotConfig.ID()
+	groupName := groupSnapshotConfig.ID()
+	snapName, err := storage.ConvertGroupSnapshotID(groupName)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Track the individual snapshots for each internalVolumeName config in the config snapshot target.
+	groupedSnapshots := make([]*storage.Snapshot, 0)
+	snapshotIDs := make([]string, 0)
+
+	// Look at all target source internalVolumes and build a list of snapshots.
+	// The sourceVolumeID here correlates to a parent FlexVolume.
+	// The list of constituentVolumes is a set of internalVolumes that exist under the source internalVolumeName ID.
+	internalVolumes := make([]string, 0, len(target.GetVolumes()))
+	for vol := range target.GetVolumes() {
+		internalVolumes = append(internalVolumes, vol)
+	}
+
+	// After we create the group snapshot and there is no error,
+	// if we fail for another reason we need to return the group snapshot so each snapshot is cleaned up.
+	if err = client.ConsistencyGroupSnapshot(ctx, snapName, internalVolumes); err != nil {
+		return nil, nil, err
+	}
+
+	var returnErr error
+	dateCreated := ""
+	for _, internalVolumeName := range internalVolumes {
+		snap, err := client.VolumeSnapshotInfo(ctx, snapName, internalVolumeName)
+		if err != nil {
+			returnErr = errors.Join(returnErr, err)
+		}
+		if dateCreated == "" {
+			dateCreated = snap.CreateTime
+		} else if dateCreated != snap.CreateTime {
+			Logc(ctx).Debugf("Snapshots in group '%s' created at different times: '%s' vs '%s'",
+				groupName, dateCreated, snap.CreateTime)
+		}
+
+		size, err := sizeGetter(ctx, internalVolumeName)
+		if err != nil {
+			returnErr = errors.Join(returnErr, fmt.Errorf("error reading volume size: %v", err))
+			continue
+		}
+
+		var snapVolumeName string
+		for volName := range target.GetVolumes()[internalVolumeName] {
+			snapVolumeName = volName
+
+			// Create a snapshot config and object for each constituent snapshot for the group.
+			snapConfig := &storage.SnapshotConfig{
+				Name:               snapName,
+				InternalName:       snapName,
+				VolumeInternalName: internalVolumeName,
+				VolumeName:         snapVolumeName,
+				ImportNotManaged:   false,
+				GroupSnapshotName:  groupName,
+			}
+
+			snapshot := &storage.Snapshot{
+				Config:    snapConfig,
+				Created:   snap.CreateTime,
+				SizeBytes: int64(size),
+				State:     storage.SnapshotStateOnline,
+			}
+
+			groupedSnapshots = append(groupedSnapshots, snapshot)
+			snapshotIDs = append(snapshotIDs, snapshot.ID())
+		}
+	}
+
+	// Create the group snapshot object. This is a logical grouping of the constituent snapshots.
+	return storage.NewGroupSnapshot(groupSnapshotConfig, snapshotIDs, dateCreated), groupedSnapshots, returnErr
+}
+
 // cloneFlexvol creates a volume clone
 func cloneFlexvol(
 	ctx context.Context, cloneVolConfig *storage.VolumeConfig, labels string, split bool, config *drivers.OntapStorageDriverConfig,

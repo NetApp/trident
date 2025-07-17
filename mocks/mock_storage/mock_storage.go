@@ -654,21 +654,6 @@ func (mr *MockBackendMockRecorder) Online() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Online", reflect.TypeOf((*MockBackend)(nil).Online))
 }
 
-// PostProcessGroupSnapshot mocks base method.
-func (m *MockBackend) PostProcessGroupSnapshot(ctx context.Context, targetInfo *storage.GroupSnapshotTargetInfo, groupSnapshot *storage.GroupSnapshot) ([]*storage.Snapshot, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PostProcessGroupSnapshot", ctx, targetInfo, groupSnapshot)
-	ret0, _ := ret[0].([]*storage.Snapshot)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// PostProcessGroupSnapshot indicates an expected call of PostProcessGroupSnapshot.
-func (mr *MockBackendMockRecorder) PostProcessGroupSnapshot(ctx, targetInfo, groupSnapshot any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PostProcessGroupSnapshot", reflect.TypeOf((*MockBackend)(nil).PostProcessGroupSnapshot), ctx, targetInfo, groupSnapshot)
-}
-
 // PublishVolume mocks base method.
 func (m *MockBackend) PublishVolume(ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo) error {
 	m.ctrl.T.Helper()

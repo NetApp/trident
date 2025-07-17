@@ -1280,7 +1280,7 @@ func (d *NASStorageDriver) RestoreSnapshot(
 	return RestoreSnapshot(ctx, snapConfig, &d.Config, d.API)
 }
 
-// DeleteSnapshot creates a snapshot of a volume.
+// DeleteSnapshot deletes a snapshot of a volume.
 func (d *NASStorageDriver) DeleteSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, _ *storage.VolumeConfig,
 ) error {
@@ -1309,6 +1309,34 @@ func (d *NASStorageDriver) DeleteSnapshot(
 
 	Logc(ctx).WithField("snapshotName", snapConfig.InternalName).Debug("Deleted snapshot.")
 	return nil
+}
+
+// GetGroupSnapshotTarget returns a set of information about the target of a group snapshot.
+// This information is used to gather information in a consistent way across storage drivers.
+func (d *NASStorageDriver) GetGroupSnapshotTarget(
+	ctx context.Context, volConfigs []*storage.VolumeConfig,
+) (*storage.GroupSnapshotTargetInfo, error) {
+	fields := LogFields{
+		"Method": "GetGroupSnapshotTarget",
+		"Type":   "NASStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetGroupSnapshotTarget")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetGroupSnapshotTarget")
+
+	return GetGroupSnapshotTarget(ctx, volConfigs, &d.Config, d.API)
+}
+
+func (d *NASStorageDriver) CreateGroupSnapshot(
+	ctx context.Context, config *storage.GroupSnapshotConfig, target *storage.GroupSnapshotTargetInfo,
+) (*storage.GroupSnapshot, []*storage.Snapshot, error) {
+	fields := LogFields{
+		"Method": "CreateGroupSnapshot",
+		"Type":   "NASStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateGroupSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateGroupSnapshot")
+
+	return CreateGroupSnapshot(ctx, config, target, &d.Config, d.API, d.volumeUsedSize)
 }
 
 // Get tests for the existence of a volume

@@ -231,8 +231,11 @@ type unsupportedError struct {
 
 func (e *unsupportedError) Error() string { return e.message }
 
-func UnsupportedError(message string) error {
-	return &unsupportedError{message}
+func UnsupportedError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &unsupportedError{message: message}
+	}
+	return &unsupportedError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func IsUnsupportedError(err error) bool {
@@ -253,8 +256,11 @@ type volumeCreatingError struct {
 
 func (e *volumeCreatingError) Error() string { return e.message }
 
-func VolumeCreatingError(message string) error {
-	return &volumeCreatingError{message}
+func VolumeCreatingError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &volumeCreatingError{message: message}
+	}
+	return &volumeCreatingError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func IsVolumeCreatingError(err error) bool {
@@ -275,8 +281,11 @@ type volumeDeletingError struct {
 
 func (e *volumeDeletingError) Error() string { return e.message }
 
-func VolumeDeletingError(message string) error {
-	return &volumeDeletingError{message}
+func VolumeDeletingError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &volumeDeletingError{message: message}
+	}
+	return &volumeDeletingError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func IsVolumeDeletingError(err error) bool {
@@ -297,8 +306,11 @@ type volumeStateError struct {
 
 func (e *volumeStateError) Error() string { return e.message }
 
-func VolumeStateError(message string) error {
-	return &volumeStateError{message}
+func VolumeStateError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &volumeStateError{message: message}
+	}
+	return &volumeStateError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func IsVolumeStateError(err error) bool {
@@ -364,8 +376,11 @@ type timeoutError struct {
 
 func (e *timeoutError) Error() string { return e.message }
 
-func TimeoutError(message string) error {
-	return &timeoutError{message}
+func TimeoutError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &timeoutError{message: message}
+	}
+	return &timeoutError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func IsTimeoutError(err error) bool {
@@ -386,8 +401,11 @@ type maxWaitExceededError struct {
 
 func (e *maxWaitExceededError) Error() string { return e.message }
 
-func MaxWaitExceededError(message string) error {
-	return &maxWaitExceededError{message}
+func MaxWaitExceededError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &maxWaitExceededError{message: message}
+	}
+	return &maxWaitExceededError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func IsMaxWaitExceededError(err error) bool {
@@ -633,8 +651,11 @@ type invalidInputError struct {
 
 func (e *invalidInputError) Error() string { return e.message }
 
-func InvalidInputError(message string) error {
-	return &invalidInputError{message}
+func InvalidInputError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &invalidInputError{message: message}
+	}
+	return &invalidInputError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func IsInvalidInputError(err error) bool {
@@ -684,8 +705,11 @@ type maxLimitReachedError struct {
 
 func (e *maxLimitReachedError) Error() string { return e.message }
 
-func MaxLimitReachedError(message string) error {
-	return &maxLimitReachedError{message}
+func MaxLimitReachedError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &maxLimitReachedError{message: message}
+	}
+	return &maxLimitReachedError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func IsMaxLimitReachedError(err error) bool {
@@ -722,8 +746,11 @@ type authError struct {
 
 func (e *authError) Error() string { return e.message }
 
-func AuthError(message string) error {
-	return &authError{message}
+func AuthError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &authError{message: message}
+	}
+	return &authError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func IsAuthError(err error) bool {
@@ -744,8 +771,11 @@ type iSCSIDeviceFlushError struct {
 
 func (e *iSCSIDeviceFlushError) Error() string { return e.message }
 
-func ISCSIDeviceFlushError(message string) error {
-	return &iSCSIDeviceFlushError{message}
+func ISCSIDeviceFlushError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &iSCSIDeviceFlushError{message: message}
+	}
+	return &iSCSIDeviceFlushError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func IsISCSIDeviceFlushError(err error) bool {
@@ -766,8 +796,11 @@ type iSCSISameLunNumberError struct {
 
 func (e *iSCSISameLunNumberError) Error() string { return e.message }
 
-func ISCSISameLunNumberError(message string) error {
-	return &iSCSISameLunNumberError{message}
+func ISCSISameLunNumberError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &iSCSISameLunNumberError{message: message}
+	}
+	return &iSCSISameLunNumberError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func IsISCSISameLunNumberError(err error) bool {
@@ -788,8 +821,11 @@ type fcpSameLunNumberError struct {
 
 func (e *fcpSameLunNumberError) Error() string { return e.message }
 
-func FCPSameLunNumberError(message string) error {
-	return &fcpSameLunNumberError{message}
+func FCPSameLunNumberError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &fcpSameLunNumberError{message: message}
+	}
+	return &fcpSameLunNumberError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func IsFCPSameLunNumberError(err error) bool {
@@ -810,8 +846,11 @@ type tooManyRequestsError struct {
 
 func (e *tooManyRequestsError) Error() string { return e.message }
 
-func TooManyRequestsError(message string) error {
-	return &tooManyRequestsError{message}
+func TooManyRequestsError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &tooManyRequestsError{message: message}
+	}
+	return &tooManyRequestsError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func IsTooManyRequestsError(err error) bool {
@@ -832,8 +871,11 @@ type incorrectLUKSPassphrase struct {
 
 func (e *incorrectLUKSPassphrase) Error() string { return e.message }
 
-func IncorrectLUKSPassphraseError(message string) error {
-	return &incorrectLUKSPassphrase{message}
+func IncorrectLUKSPassphraseError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &incorrectLUKSPassphrase{message: message}
+	}
+	return &incorrectLUKSPassphrase{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func IsIncorrectLUKSPassphraseError(err error) bool {
@@ -854,8 +896,11 @@ type invalidJSONError struct {
 
 func (e *invalidJSONError) Error() string { return e.message }
 
-func InvalidJSONError(message string) error {
-	return &invalidJSONError{message}
+func InvalidJSONError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &invalidJSONError{message: message}
+	}
+	return &invalidJSONError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
 }
 
 func IsInvalidJSONError(err error) bool {

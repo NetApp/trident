@@ -106,9 +106,6 @@ type GroupSnapshotter interface {
 	CreateGroupSnapshot(
 		ctx context.Context, config *GroupSnapshotConfig, target *GroupSnapshotTargetInfo,
 	) (*GroupSnapshot, []*Snapshot, error)
-	PostProcessGroupSnapshot(
-		ctx context.Context, targetInfo *GroupSnapshotTargetInfo, groupSnapshot *GroupSnapshot,
-	) ([]*Snapshot, error)
 }
 
 // StateGetter provides a common interface for backends that support polling backend for state information.
@@ -1018,18 +1015,6 @@ func (b *StorageBackend) CreateGroupSnapshot(ctx context.Context, config *GroupS
 	}
 
 	return snapshotter.CreateGroupSnapshot(ctx, config, target)
-}
-
-func (b *StorageBackend) PostProcessGroupSnapshot(
-	ctx context.Context, targetInfo *GroupSnapshotTargetInfo, groupSnapshot *GroupSnapshot,
-) ([]*Snapshot, error) {
-	snapshotter, ok := b.driver.(GroupSnapshotter)
-	if !ok {
-		return nil, errors.UnsupportedError(
-			fmt.Sprintf("group snapshot is not supported for backend of type %v", b.driver.Name()))
-	}
-
-	return snapshotter.PostProcessGroupSnapshot(ctx, targetInfo, groupSnapshot)
 }
 
 const (
