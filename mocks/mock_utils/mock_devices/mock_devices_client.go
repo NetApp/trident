@@ -228,6 +228,21 @@ func (mr *MockDevicesMockRecorder) GetLunSerial(ctx, path any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLunSerial", reflect.TypeOf((*MockDevices)(nil).GetLunSerial), ctx, path)
 }
 
+// GetMultipathDeviceBySerial mocks base method.
+func (m *MockDevices) GetMultipathDeviceBySerial(ctx context.Context, hexSerial string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMultipathDeviceBySerial", ctx, hexSerial)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMultipathDeviceBySerial indicates an expected call of GetMultipathDeviceBySerial.
+func (mr *MockDevicesMockRecorder) GetMultipathDeviceBySerial(ctx, hexSerial any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMultipathDeviceBySerial", reflect.TypeOf((*MockDevices)(nil).GetMultipathDeviceBySerial), ctx, hexSerial)
+}
+
 // GetMultipathDeviceUUID mocks base method.
 func (m *MockDevices) GetMultipathDeviceUUID(multipathDevicePath string) (string, error) {
 	m.ctrl.T.Helper()
