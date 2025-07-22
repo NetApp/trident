@@ -19,7 +19,9 @@ import (
 var (
 	xtermControlRegex = regexp.MustCompile(`\x1B\[[0-9;]*[a-zA-Z]`)
 
-	_ Command = NewCommand()
+	// Ensure these structures always implement these interfaces at compilation.
+	_ Command   = NewCommand()
+	_ ExitError = &exec.ExitError{}
 )
 
 // ExitError defines the methods that exec.ExitError implements.

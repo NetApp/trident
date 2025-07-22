@@ -23,8 +23,10 @@ import (
 )
 
 const (
-	luksCloseTimeout         = 30 * time.Second
-	luksCloseMaxWaitDuration = 2 * time.Minute
+	luksCloseTimeout                     = 30 * time.Second
+	luksCloseMaxWaitDuration             = 2 * time.Minute
+	luksCloseDeviceSafelyClosedExitCode  = 0
+	luksCloseDeviceAlreadyClosedExitCode = 4
 )
 
 var (
@@ -47,12 +49,11 @@ func (c *Client) FlushOneDevice(ctx context.Context, devicePath string) error {
 		ctx, "blockdev", deviceOperationsTimeout, true, "--flushbufs", devicePath,
 	)
 	if err != nil {
-		Logc(ctx).WithFields(
-			LogFields{
-				"error":  err,
-				"output": string(out),
-				"device": devicePath,
-			}).Debug("blockdev --flushbufs failed.")
+		Logc(ctx).WithFields(LogFields{
+			"error":  err,
+			"output": string(out),
+			"device": devicePath,
+		}).Debug("blockdev --flushbufs failed.")
 		return fmt.Errorf("flush device failed for %s : %s", devicePath, err)
 	}
 
@@ -112,6 +113,7 @@ func (c *Client) VerifyMultipathDeviceSize(
 }
 
 // CloseLUKSDevice performs a luksClose on the device at the specified path (example: "/dev/mapper/<luks>").
+// It gracefully handles the cases where a LUKS device has already been closed or the device doesn't exist.
 func (c *Client) CloseLUKSDevice(ctx context.Context, devicePath string) error {
 	if err := beforeLuksClose.Inject(); err != nil {
 		return err
@@ -126,9 +128,22 @@ func (c *Client) CloseLUKSDevice(ctx context.Context, devicePath string) error {
 	}
 
 	if err != nil {
-		fields := LogFields{"luksDevicePath": devicePath, "output": string(output)}
-		Logc(ctx).WithFields(fields).WithError(err).Debug("Failed to close LUKS device")
-		return fmt.Errorf("failed to close LUKS device %s; %w", devicePath, err)
+		fields := LogFields{"luksDevicePath": devicePath, "output": string(output), "err": err.Error()}
+		var exitErr execCmd.ExitError
+		if !errors.As(err, &exitErr) {
+			Logc(ctx).WithFields(fields).Error("Failed to close LUKS device with unknown error.")
+			return fmt.Errorf("failed to close LUKS device %s; %w", devicePath, err)
+		}
+
+		switch exitErr.ExitCode() {
+		// exit code "0" and "4" are safe to ignore. "0" will likely never be hit but check for it regardless.
+		case luksCloseDeviceSafelyClosedExitCode, luksCloseDeviceAlreadyClosedExitCode:
+			Logc(ctx).WithFields(fields).Debug("LUKS device is already closed or did not exist.")
+			return nil
+		default:
+			Logc(ctx).WithFields(fields).Error("Failed to close LUKS device.")
+			return fmt.Errorf("exit code '%d' when closing LUKS device '%s'; %w", exitErr.ExitCode(), devicePath, err)
+		}
 	}
 
 	Logc(ctx).WithField("luksDevicePath", devicePath).Debug("Closed LUKS device.")
@@ -138,19 +153,19 @@ func (c *Client) CloseLUKSDevice(ctx context.Context, devicePath string) error {
 // EnsureLUKSDeviceClosed ensures there is no open LUKS device at the specified path (example: "/dev/mapper/<luks>").
 func (c *Client) EnsureLUKSDeviceClosed(ctx context.Context, devicePath string) error {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
-	_, err := c.osFs.Stat(devicePath)
-	if err == nil {
-		return c.CloseLUKSDevice(ctx, devicePath)
-	} else if !os.IsNotExist(err) {
-		Logc(ctx).WithFields(LogFields{
-			"device": devicePath,
-			"error":  err.Error(),
-		}).Debug("Failed to stat device.")
-		return fmt.Errorf("could not stat device: %s; %v", devicePath, err)
+	fields := LogFields{"luksDevicePath": devicePath}
+
+	if err := c.CloseLUKSDevice(ctx, devicePath); err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error("Could not close LUKS device.")
+		return fmt.Errorf("could not close LUKS device %s; %w", devicePath, err)
 	}
-	Logc(ctx).WithFields(LogFields{
-		"device": devicePath,
-	}).Debug("LUKS device not found.")
+
+	// If LUKS close succeeded, the block device node should be gone.
+	// It's the responsibility of the kernel and udev to manage /dev/mapper entries.
+	// If the /dev/mapper entry lives on, log a warning and return success.
+	if _, err := c.osFs.Stat(devicePath); err == nil {
+		Logc(ctx).WithFields(fields).Warn("Stale device mapper file found for LUKS device. Is udev is running?")
+	}
 
 	return nil
 }
@@ -163,12 +178,11 @@ func (c *Client) EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx context.Context, luk
 			return durationErr
 		}
 		if elapsed > luksCloseMaxWaitDuration {
-			Logc(ctx).WithFields(
-				LogFields{
-					"device":  luksDevicePath,
-					"elapsed": elapsed,
-					"maxWait": luksDevicePath,
-				}).Debug("LUKS close max wait time expired, continuing with removal.")
+			Logc(ctx).WithFields(LogFields{
+				"device":  luksDevicePath,
+				"elapsed": elapsed,
+				"maxWait": luksDevicePath,
+			}).Debug("LUKS close max wait time expired, continuing with removal.")
 			return errors.MaxWaitExceededError(fmt.Sprintf("LUKS close wait time expired. Elapsed: %v", elapsed))
 		}
 		return err
@@ -184,7 +198,7 @@ func (c *Client) GetDeviceFSType(ctx context.Context, device string) (string, er
 	// blkid return status=2 both in case of an unformatted filesystem as well as for the case when it is
 	// unable to get the filesystem (e.g. IO error), therefore ensure device is available before calling blkid
 	if err := c.WaitForDevice(ctx, device); err != nil {
-		return "", fmt.Errorf("could not find device before checking for the filesystem %v; %s.", device, err)
+		return "", fmt.Errorf("could not find device before checking for the filesystem %v; %s", device, err)
 	}
 
 	out, err := c.command.ExecuteWithTimeout(ctx, "blkid", 5*time.Second, true, device)
