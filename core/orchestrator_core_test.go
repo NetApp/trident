@@ -1527,6 +1527,99 @@ func TestCloneVolumes(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
+func TestCloneVolumeWithMismatchedStorageClass(t *testing.T) {
+	ctx := context.Background()
+	mockPools := tu.GetFakePools()
+	orchestrator := getOrchestrator(t, false)
+
+	// Add backends
+	backendConfig, err := fakedriver.NewFakeStorageDriverConfigJSON(
+		"fast-backend",
+		config.File,
+		map[string]*fake.StoragePool{
+			tu.FastSmall: mockPools[tu.FastSmall],
+		},
+		[]fake.Volume{},
+	)
+	if err != nil {
+		t.Fatalf("Unable to generate backend config JSON: %v", err)
+	}
+	_, err = orchestrator.AddBackend(ctx, backendConfig, "")
+	if err != nil {
+		t.Fatalf("Unable to add backend: %v", err)
+	}
+
+	// Add storage classes
+	storageClasses := []storageClassTest{
+		{
+			config: &storageclass.Config{
+				Name: "fast",
+				Attributes: map[string]sa.Request{
+					sa.IOPS:             sa.NewIntRequest(2000),
+					sa.Snapshots:        sa.NewBoolRequest(true),
+					sa.ProvisioningType: sa.NewStringRequest("thin"),
+				},
+			},
+			expected: []*tu.PoolMatch{{Backend: "fast-backend", Pool: tu.FastSmall}},
+		},
+		{
+			config: &storageclass.Config{
+				Name: "slow",
+				Attributes: map[string]sa.Request{
+					sa.IOPS:             sa.NewIntRequest(40),
+					sa.Snapshots:        sa.NewBoolRequest(true),
+					sa.ProvisioningType: sa.NewStringRequest("thin"),
+				},
+			},
+			expected: []*tu.PoolMatch{},
+		},
+	}
+	for _, sc := range storageClasses {
+		if _, err := orchestrator.AddStorageClass(ctx, sc.config); err != nil {
+			t.Fatalf("Unable to add storage class %s %v", sc.config.Name, err)
+		}
+	}
+
+	// Create source volume
+	sourceConfig := tu.GenerateVolumeConfig("source-vol", 1, "fast", config.File)
+	_, err = orchestrator.AddVolume(ctx, sourceConfig)
+	if err != nil {
+		t.Fatalf("Unable to add source volume: %v", err)
+	}
+
+	// Attempt to clone with mismatched storage class
+	cloneConfig := &storage.VolumeConfig{
+		Name:              "clone-vol",
+		StorageClass:      "slow", // Mismatched storage class
+		CloneSourceVolume: "source-vol",
+		VolumeMode:        "file",
+	}
+	_, err = orchestrator.CloneVolume(ctx, cloneConfig)
+
+	// Verify error
+	if err == nil {
+		t.Error("Expected error when cloning with mismatched storage class, but got none")
+	} else if !errors.IsMismatchedStorageClassError(err) {
+		t.Errorf("Expected CloneStorageClassNotMatchError, got: %v", err)
+	}
+
+	// Verify clone was not created
+	orchestrator.mutex.Lock()
+	_, found := orchestrator.volumes["clone-vol"]
+	if found {
+		t.Error("Clone volume was created despite mismatched storage class")
+	}
+	orchestrator.mutex.Unlock()
+
+	// Verify source volume still exists
+	_, err = orchestrator.storeClient.GetVolume(ctx, "source-vol")
+	if err != nil {
+		t.Errorf("Source volume not found after failed clone attempt: %v", err)
+	}
+
+	cleanup(t, orchestrator)
+}
+
 func addBackend(
 	t *testing.T, orchestrator *TridentOrchestrator, backendName string, backendProtocol config.Protocol,
 ) {
