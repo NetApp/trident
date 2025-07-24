@@ -539,3 +539,20 @@ func TestConflictError(t *testing.T) {
 	assert.True(t, IsConflictError(err))
 	assert.Equal(t, "outer; inner; ", err.Error())
 }
+
+func TestMismatchedStorageClassError(t *testing.T) {
+	err := MismatchedStorageClassError("clone volume test-clone from source volume test-source with different storage classes is not allowed")
+	assert.True(t, strings.Contains("clone volume test-clone from source volume test-source with different storage classes is not allowed", err.Error()))
+
+	err = errors.New("clone volume test-clone from source volume test-source with different storage classes is not allowed")
+	assert.False(t, IsMismatchedStorageClassError(err))
+
+	assert.False(t, IsMismatchedStorageClassError(nil))
+
+	err = MismatchedStorageClassError("")
+	assert.True(t, IsMismatchedStorageClassError(err))
+
+	err = MismatchedStorageClassError("clone volume test-clone from source volume test-source with different storage classes is not allowed")
+	assert.True(t, IsMismatchedStorageClassError(err))
+	assert.Equal(t, "clone volume test-clone from source volume test-source with different storage classes is not allowed", err.Error())
+}

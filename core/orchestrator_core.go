@@ -2282,9 +2282,10 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 		return nil, errors.NotFoundError("source volume not found: %s", volumeConfig.CloneSourceVolume)
 	}
 
-	if volumeConfig.StorageClass != sourceVolume.Config.StorageClass {
-		Logc(ctx).Errorf("Clone volume %s from source volume %s with different storage classes is not recommended.",
-			volumeConfig.Name, volumeConfig.CloneSourceVolume)
+	// Check if the storage class of source and clone volume is different, only if the orchestrator is not in Docker plugin mode. In Docker plugin mode, the storage class of source and clone volume will be different.
+	if !isDockerPluginMode() && volumeConfig.StorageClass != sourceVolume.Config.StorageClass {
+		return nil, errors.MismatchedStorageClassError("clone volume %s from source volume %s with different storage classes is not allowed", volumeConfig.Name,
+			volumeConfig.CloneSourceVolume)
 	}
 
 	Logc(ctx).WithFields(LogFields{
@@ -2522,8 +2523,9 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 		return nil, errors.NotFoundError("source volume not found: %s", cloneConfig.CloneSourceVolume)
 	}
 
-	if cloneConfig.StorageClass != sourceVolume.Config.StorageClass {
-		Logc(ctx).Errorf("Clone volume %s from source volume %s with different storage classes is not recommended.",
+	// Check if the storage class of source and clone volume is different, only if the orchestrator is not in Docker plugin mode. In Docker plugin mode, the storage class of source and clone volume will be different at times.
+	if !isDockerPluginMode() && cloneConfig.StorageClass != sourceVolume.Config.StorageClass {
+		return nil, errors.MismatchedStorageClassError("clone volume %s from source volume %s with different storage classes is not allowed",
 			cloneConfig.Name, cloneConfig.CloneSourceVolume)
 	}
 

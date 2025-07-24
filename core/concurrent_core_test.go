@@ -4286,6 +4286,50 @@ func TestCloneVolumeConcurrentCore(t *testing.T) {
 				assert.Nil(t, volume)
 			},
 		},
+		{
+			name:         "CloneVolumeFromDifferentStorageClassFailed",
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid")
+
+				sourceVolumeDifferentStorageClass := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						InternalName: "sourceVolume",
+						Name:         "sourceVolume",
+						Size:         "1073741824",
+						VolumeMode:   config.Filesystem,
+						StorageClass: "test-storage-class",
+					},
+					BackendUUID: "backend-uuid",
+				}
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, sourceVolumeDifferentStorageClass)
+				addSnapshotsToCache(t, sourceSnapshot)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			volumeConfig: &storage.VolumeConfig{
+				InternalName:              "cloneVolume",
+				Name:                      "cloneVolume",
+				Size:                      "1073741824",
+				VolumeMode:                config.Filesystem,
+				CloneSourceVolume:         "sourceVolume",
+				CloneSourceVolumeInternal: "sourceVolume",
+				StorageClass:              "test-different-storage-class",
+			},
+			verifyError: func(err error) {
+				assert.True(t, errors.IsMismatchedStorageClassError(err))
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				require.Nil(t, result)
+				// Additionally verify the volume is not added to the cache
+				volume := getVolumeByNameFromCache(t, "cloneVolume")
+				assert.Nil(t, volume)
+			},
+		},
 	}
 
 	for _, tt := range tests {

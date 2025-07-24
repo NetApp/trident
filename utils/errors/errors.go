@@ -621,6 +621,34 @@ func IsInvalidInputError(err error) bool {
 }
 
 // ///////////////////////////////////////////////////////////////////////////
+// mismatchedStorageClassError
+// ///////////////////////////////////////////////////////////////////////////
+
+type mismatchedStorageClassError struct {
+	message string
+}
+
+func (e *mismatchedStorageClassError) Error() string {
+	return e.message
+}
+
+func MismatchedStorageClassError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &mismatchedStorageClassError{message: message}
+	}
+	return &mismatchedStorageClassError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
+}
+
+func IsMismatchedStorageClassError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	var errPointer *mismatchedStorageClassError
+	return errors.As(err, &errPointer)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
 // unsupportedCapacityRangeError
 // ///////////////////////////////////////////////////////////////////////////
 
