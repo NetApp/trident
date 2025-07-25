@@ -3451,23 +3451,36 @@ func (d OntapAPIREST) NVMeEnsureNamespaceUnmapped(ctx context.Context, hostNQN, 
 		return false, fmt.Errorf("error getting hosts mapped to subsystem with UUID %s; %v", subsystemUUID, err)
 	}
 
-	if subsystemHosts == nil {
-		return false, fmt.Errorf("error getting hosts attached to subsystem %v", subsystemUUID)
+	hostFound := false
+	for _, host := range subsystemHosts {
+		if host != nil && *host.Nqn == hostNQN {
+			hostFound = true
+			break
+		}
 	}
 
 	// In case of multiple hosts attached to a subsystem (e.g. in RWX case), do not delete the namespace,
 	// subsystem or the published info
 	if len(subsystemHosts) > 1 {
-		Logc(ctx).Infof("Multiple hosts are attached to this subsystem %v. Do not delete namespace or subsystem",
-			subsystemUUID)
-		// Remove HostNQN from the subsystem using api call
-		if err := d.api.NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID); err != nil {
-			Logc(ctx).Errorf("Remove host from subsystem failed; %v", err)
-			return false, err
+		if hostFound {
+			Logc(ctx).Infof("Multiple hosts are attached to this subsystem %v. Do not delete namespace or subsystem",
+				subsystemUUID)
+			if err = d.api.NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID); err != nil {
+				Logc(ctx).Errorf("Remove host from subsystem failed; %v", err)
+				return false, err
+			}
 		}
 		return false, nil
 	}
 
+	// If there is only one host attached to the subsystem, check if it is the host which is being asked to be unmapped
+	if len(subsystemHosts) == 1 && !hostFound {
+		Logc(ctx).Infof("Hosts are attached to this subsystem %v. Do not delete namespace or subsystem",
+			subsystemUUID)
+		return false, nil
+	}
+
+	// Proceed further as there are no hosts or only the specified host is present that needs to be unmapped.
 	// Unmap the namespace from the subsystem
 	err = d.api.NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, namespaceUUID)
 	if err != nil {
