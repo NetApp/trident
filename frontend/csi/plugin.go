@@ -105,7 +105,7 @@ type Plugin struct {
 }
 
 func NewControllerPlugin(
-	nodeName, endpoint, aesKeyFile string, orchestrator core.Orchestrator, helper *controllerhelpers.ControllerHelper,
+	nodeName, endpoint, aesKeyFile string, orchestrator core.Orchestrator, helper controllerhelpers.ControllerHelper,
 	enableForceDetach bool,
 ) (*Plugin, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate, LogLayerCSIFrontend)
@@ -119,7 +119,7 @@ func NewControllerPlugin(
 		version:           tridentconfig.OrchestratorVersion.ShortString(),
 		endpoint:          endpoint,
 		role:              CSIController,
-		controllerHelper:  *helper,
+		controllerHelper:  helper,
 		enableForceDetach: enableForceDetach,
 		opCache:           sync.Map{},
 		command:           execCmd.NewCommand(),
@@ -166,7 +166,7 @@ func NewControllerPlugin(
 
 func NewNodePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey, aesKeyFile string, orchestrator core.Orchestrator,
-	unsafeDetach bool, helper *nodehelpers.NodeHelper, enableForceDetach bool,
+	unsafeDetach bool, helper nodehelpers.NodeHelper, enableForceDetach bool,
 	iSCSISelfHealingInterval, iSCSIStaleSessionWaitTime, nvmeSelfHealingInterval time.Duration,
 ) (*Plugin, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate, LogLayerCSIFrontend)
@@ -206,7 +206,7 @@ func NewNodePlugin(
 		version:                  tridentconfig.OrchestratorVersion.ShortString(),
 		endpoint:                 endpoint,
 		role:                     CSINode,
-		nodeHelper:               *helper,
+		nodeHelper:               helper,
 		enableForceDetach:        enableForceDetach,
 		unsafeDetach:             unsafeDetach,
 		opCache:                  sync.Map{},
@@ -284,7 +284,7 @@ func NewNodePlugin(
 // identity interfaces.
 func NewAllInOnePlugin(
 	nodeName, endpoint, caCert, clientCert, clientKey, aesKeyFile string, orchestrator core.Orchestrator,
-	controllerHelper *controllerhelpers.ControllerHelper, nodeHelper *nodehelpers.NodeHelper, unsafeDetach bool,
+	controllerHelper controllerhelpers.ControllerHelper, nodeHelper nodehelpers.NodeHelper, unsafeDetach bool,
 	iSCSISelfHealingInterval, iSCSIStaleSessionWaitTime, nvmeSelfHealingInterval time.Duration,
 ) (*Plugin, error) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginCreate, LogLayerCSIFrontend)
@@ -318,8 +318,8 @@ func NewAllInOnePlugin(
 		endpoint:                 endpoint,
 		role:                     CSIAllInOne,
 		unsafeDetach:             unsafeDetach,
-		controllerHelper:         *controllerHelper,
-		nodeHelper:               *nodeHelper,
+		controllerHelper:         controllerHelper,
+		nodeHelper:               nodeHelper,
 		opCache:                  sync.Map{},
 		limiterSharedMap:         make(map[string]limiter.Limiter),
 		iSCSISelfHealingInterval: iSCSISelfHealingInterval,

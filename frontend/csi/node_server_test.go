@@ -5,8 +5,12 @@ package csi
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"math/rand"
+	"os"
+	"runtime"
 	"strconv"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -14,11 +18,17 @@ import (
 	"github.com/brunoga/deep"
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"github.com/google/uuid"
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
+	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/mocks/mock_utils/mock_fcp"
+	execCmd "github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/fcp"
+	"github.com/netapp/trident/utils/smb"
 
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
@@ -87,6 +97,7 @@ func TestNodeStageVolume(t *testing.T) {
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			plugin := &Plugin{
+				command:          execCmd.NewCommand(),
 				role:             CSINode,
 				limiterSharedMap: make(map[string]limiter.Limiter),
 				fs:               filesystem.New(mountClient),
@@ -159,6 +170,7 @@ func TestNodeStageSANVolume(t *testing.T) {
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			plugin := &Plugin{
+				command:          execCmd.NewCommand(),
 				role:             CSINode,
 				limiterSharedMap: make(map[string]limiter.Limiter),
 			}
@@ -586,6 +598,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			plugin := &Plugin{
+				command:          execCmd.NewCommand(),
 				role:             CSINode,
 				limiterSharedMap: make(map[string]limiter.Limiter),
 				aesKey:           params.aesKey,
@@ -697,6 +710,7 @@ func TestGetChapInfoFromController(t *testing.T) {
 			test.mocks(mockAPI, test.args, test.data)
 
 			plugin := &Plugin{
+				command:    execCmd.NewCommand(),
 				restClient: mockAPI,
 			}
 
@@ -850,6 +864,7 @@ func TestUpdateChapInfoForSessions(t *testing.T) {
 	mockClient := mockControllerAPI.NewMockTridentController(mockCtrl)
 
 	plugin := &Plugin{
+		command:    execCmd.NewCommand(),
 		nodeName:   node,
 		iscsi:      mockISCSI,
 		restClient: mockClient,
@@ -2600,7 +2615,8 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			plugin := &Plugin{
-				role: CSINode,
+				command: execCmd.NewCommand(),
+				role:    CSINode,
 			}
 
 			if params.getISCSIClient != nil {
@@ -2664,6 +2680,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin.
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -2724,6 +2741,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin.
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			nodeHelper:       mockTrackingClient,
@@ -2790,6 +2808,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 
 		// Creating node plugin.
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -2870,6 +2889,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin.
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -2941,6 +2961,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin.
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -3006,6 +3027,7 @@ func TestNodeStageNFSVolume_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin.
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -3076,6 +3098,7 @@ func TestNodeStageNFSVolume_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin.
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -3158,6 +3181,7 @@ func TestNodeStageNFSVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -3231,6 +3255,7 @@ func TestNodeStageSMBVolume_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin.
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -3302,6 +3327,7 @@ func TestNodeStageSMBVolume_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin.
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -3385,6 +3411,7 @@ func TestNodeStageSMBVolume_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin.
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -3458,6 +3485,7 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin.
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			nodeHelper:       mockTrackingClient,
@@ -3540,6 +3568,7 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin.
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			nodeHelper:       mockTrackingClient,
@@ -3604,6 +3633,7 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 		})
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			nodeHelper:       mockTrackingClient,
@@ -3862,6 +3892,7 @@ func TestNodeUnstageNFSVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			nodeHelper:       mockTrackingClient,
@@ -3923,6 +3954,7 @@ func TestNodeUnstageNFSVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			nodeHelper:       mockTrackingClient,
@@ -3995,6 +4027,7 @@ func TestNodeUnstageNFSVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			nodeHelper:       mockTrackingClient,
@@ -4068,6 +4101,7 @@ func TestNodeUnstageSMBVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -4140,6 +4174,7 @@ func TestNodeUnstageSMBVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -4229,6 +4264,7 @@ func TestNodeUnstageSMBVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -4307,6 +4343,7 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin.
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			nodeHelper:       mockTrackingClient,
@@ -4371,6 +4408,7 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 		mockTrackingClient.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			nodeHelper:       mockTrackingClient,
@@ -4529,6 +4567,7 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -4685,6 +4724,7 @@ func TestNodePublishNFSVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			nodeHelper:       mockTrackingClient,
@@ -4755,6 +4795,7 @@ func TestNodePublishNFSVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			nodeHelper:       mockTrackingClient,
@@ -4842,6 +4883,7 @@ func TestNodePublishNFSVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			nodeHelper:       mockTrackingClient,
@@ -4907,6 +4949,7 @@ func TestNodePublishSMBVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -4968,6 +5011,7 @@ func TestNodePublishSMBVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -5044,6 +5088,7 @@ func TestNodePublishSMBVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -5117,6 +5162,7 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin.
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -5182,6 +5228,7 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 		mockTrackingClient.EXPECT().RemovePublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			nodeHelper:       mockTrackingClient,
@@ -5254,6 +5301,7 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			nodeHelper:       mockTrackingClient,
@@ -5339,6 +5387,7 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			nodeHelper:       mockTrackingClient,
@@ -5417,6 +5466,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin.
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -5549,6 +5599,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin.
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -5702,6 +5753,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin.
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -5864,6 +5916,7 @@ func TestNodeStageISCSIVolume_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -5941,6 +5994,7 @@ func TestNodeStageISCSIVolume_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -6034,6 +6088,7 @@ func TestNodeStageISCSIVolume_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -6128,6 +6183,7 @@ func TestNodeUnstageISCSIVolume_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -6243,6 +6299,7 @@ func TestNodeUnstageISCSIVolume_Multithreaded(t *testing.T) {
 
 		// Creating a node plugin
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -6320,6 +6377,7 @@ func TestNodePublishISCSIVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -6391,6 +6449,7 @@ func TestNodePublishISCSIVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -6472,6 +6531,7 @@ func TestNodePublishISCSIVolume_Multithreaded(t *testing.T) {
 		}
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -6543,6 +6603,7 @@ func TestNodePublishISCSIVolume_Multithreaded(t *testing.T) {
 		mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -6597,6 +6658,7 @@ func TestNodePublishISCSIVolume_Multithreaded(t *testing.T) {
 		mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			mount:            mockMount,
@@ -6851,6 +6913,8 @@ const (
 	TypeiSCSIVolumePublishInfo VolumePublishInfoType = iota
 	TypeNFSVolumePublishInfo
 	TypeSMBVolumePublishInfo
+	TypeFCPVolumePublishInfo
+	TypeNVMeVolumePublishInfo
 )
 
 func NewVolumePublishInfoBuilder(volumePublishInfoType VolumePublishInfoType) *VolumePublishInfoBuilder {
@@ -6863,6 +6927,7 @@ func NewVolumePublishInfoBuilder(volumePublishInfoType VolumePublishInfoType) *V
 				SharedTarget:   true,
 				DevicePath:     "/dev/mapper/mock-device",
 				LUKSEncryption: "false",
+				SANType:        sa.ISCSI,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					IscsiAccessInfo: models.IscsiAccessInfo{
 						IscsiTargetPortal: "10.10.10.10",
@@ -6899,6 +6964,44 @@ func NewVolumePublishInfoBuilder(volumePublishInfoType VolumePublishInfoType) *V
 					SMBAccessInfo: models.SMBAccessInfo{
 						SMBServer: "167.12.1.1",
 						SMBPath:   "/raw/temp",
+					},
+				},
+			},
+		}
+	case TypeFCPVolumePublishInfo:
+		return &VolumePublishInfoBuilder{
+			publishInfo: models.VolumePublishInfo{
+				Localhost:      true,
+				FilesystemType: "ext4",
+				SharedTarget:   true,
+				DevicePath:     "/dev/mapper/mock-device",
+				LUKSEncryption: "false",
+				SANType:        sa.FCP,
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					FCPAccessInfo: models.FCPAccessInfo{
+						FCPLunNumber:           0,
+						FCPIgroup:              "ubuntu-linux-22-04-02-desktop-13064d2e-2415-452e-870b-2c08c94f9447",
+						FCPLunSerial:           "yocwC+Ws3R1K",
+						FibreChannelAccessInfo: models.FibreChannelAccessInfo{FCTargetWWNN: "20:00:00:00:00:00:00:01"},
+					},
+				},
+			},
+		}
+	case TypeNVMeVolumePublishInfo:
+		return &VolumePublishInfoBuilder{
+			publishInfo: models.VolumePublishInfo{
+				Localhost:      true,
+				FilesystemType: "ext4",
+				SharedTarget:   true,
+				DevicePath:     "/dev/mapper/mock-device",
+				LUKSEncryption: "false",
+				SANType:        sa.NVMe,
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					NVMeAccessInfo: models.NVMeAccessInfo{
+						NVMeNamespaceUUID: "nvme-namespace-id",
+						NVMeSubsystemUUID: "nvme-subsystem-id",
+						NVMeSubsystemNQN:  "nqn.2016-04.com.mock-nvme:host",
+						NVMeTargetIPs:     []string{"192.168.1.1"},
 					},
 				},
 			},
@@ -6976,7 +7079,7 @@ func NewNodePublishVolumeRequestBuilder(requestType NodePublishVolumeRequestType
 				VolumeContext: map[string]string{
 					"internalName": "pvc-12345-123",
 				},
-				Readonly: false,
+				Readonly: true,
 			},
 		}
 
@@ -6987,6 +7090,29 @@ func NewNodePublishVolumeRequestBuilder(requestType NodePublishVolumeRequestType
 				PublishContext: map[string]string{
 					"protocol":       "file",
 					"filesystemType": "smb",
+				},
+				StagingTargetPath: "/foo",
+				TargetPath:        "/tmp/raw",
+				Secrets: map[string]string{
+					"username": "username",
+					"password": "password",
+				},
+				VolumeContext: map[string]string{
+					"internalName": "pvc-12345-123",
+				},
+				Readonly: false,
+			},
+		}
+	case FCPNodePublishVolumeRequestType:
+		return &NodePublishVolumeRequestBuilder{
+			request: &csi.NodePublishVolumeRequest{
+				VolumeId: uuid.NewString(),
+				PublishContext: map[string]string{
+					"protocol":       "block",
+					"sharedTarget":   "false",
+					"filesystemType": filesystem.Ext4,
+					"useCHAP":        "false",
+					"SANType":        sa.FCP,
 				},
 				StagingTargetPath: "/foo",
 				TargetPath:        "/tmp/raw",
@@ -7012,6 +7138,30 @@ func NewNodePublishVolumeRequestBuilder(requestType NodePublishVolumeRequestType
 					"iscsiLunNumber":         "0",
 					"iscsiTargetIqn":         "iqn.2016-04.com.mock-iscsi:8a1e4b296331",
 					"iscsiTargetPortalCount": "2",
+					"SANType":                "iscsi",
+				},
+				StagingTargetPath: "/foo",
+				TargetPath:        "/tmp/raw",
+				Secrets: map[string]string{
+					"username": "username",
+					"password": "password",
+				},
+				VolumeContext: map[string]string{
+					"internalName": "pvc-12345-123",
+				},
+				Readonly: false,
+			},
+		}
+	case NVMENodePublishVolumeRequestType:
+		return &NodePublishVolumeRequestBuilder{
+			request: &csi.NodePublishVolumeRequest{
+				VolumeId: uuid.NewString(),
+				PublishContext: map[string]string{
+					"protocol":       "block",
+					"sharedTarget":   "false",
+					"filesystemType": filesystem.Ext4,
+					"useCHAP":        "false",
+					"SANType":        sa.NVMe,
 				},
 				StagingTargetPath: "/foo",
 				TargetPath:        "/tmp/raw",
@@ -7088,9 +7238,10 @@ func TestNodeStageFCPVolume(t *testing.T) {
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			plugin := &Plugin{
-				role:   CSINode,
-				aesKey: params.aesKey,
-				fs:     filesystem.New(mountClient),
+				command: execCmd.NewCommand(),
+				role:    CSINode,
+				aesKey:  params.aesKey,
+				fs:      filesystem.New(mountClient),
 			}
 
 			if params.getFCPClient != nil {
@@ -7120,4 +7271,5406 @@ func TestNodeStageFCPVolume(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNodeStageVolume1(t *testing.T) {
+	testCases := []struct {
+		name                      string
+		req                       *csi.NodeStageVolumeRequest
+		expectedResponse          *csi.NodeStageVolumeResponse
+		expErrCode                codes.Code
+		protocol                  string
+		filesystemType            string
+		setupISCSIMock            func() iscsi.ISCSI
+		setupNodeHelperMock       func() nodehelpers.NodeHelper
+		setupRestClientMock       func() controllerAPI.TridentController
+		setupMount                func() mount.Mount
+		aesKey                    []byte
+		setupNVMeHandler          func() nvme.NVMeInterface
+		lockAcquisitionShouldFail bool
+		contextTimeoutBeforeCall  bool
+	}{
+		{
+			name: "Success - NFS Volume staging",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{
+							FsType: "nfs",
+						},
+					},
+				},
+				PublishContext: map[string]string{
+					"protocol":       string(tridentconfig.File),
+					"filesystemType": "nfs",
+				},
+			},
+			expectedResponse: &csi.NodeStageVolumeResponse{},
+			expErrCode:       codes.OK,
+			protocol:         string(tridentconfig.File),
+			filesystemType:   "nfs",
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsCompatible(gomock.Any(), gomock.Any()).Return(nil)
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "NFS Volume staging errored and Response is nil, No compatibility of protocol and platform",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{
+							FsType: "nfs",
+						},
+					},
+				},
+				PublishContext: map[string]string{
+					"protocol":       string(tridentconfig.File),
+					"filesystemType": "nfs",
+				},
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.Unknown,
+			protocol:         string(tridentconfig.File),
+			filesystemType:   "nfs",
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsCompatible(gomock.Any(), gomock.Any()).Return(errors.New("some error"))
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "NFS Volume staging errored, Saving the device info to the volume tracking info path",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{
+							FsType: "nfs",
+						},
+					},
+				},
+				PublishContext: map[string]string{
+					"protocol":       string(tridentconfig.File),
+					"filesystemType": "nfs",
+				},
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.Internal,
+			protocol:         string(tridentconfig.File),
+			filesystemType:   "nfs",
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsCompatible(gomock.Any(), gomock.Any()).Return(nil)
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(errors.New("some error")).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "Success- SMB Volume staging",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{
+							FsType: "nfs",
+						},
+					},
+				},
+				PublishContext: map[string]string{
+					"protocol":       string(tridentconfig.File),
+					"filesystemType": "smb",
+				},
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.OK,
+			protocol:         string(tridentconfig.File),
+			filesystemType:   "nfs",
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsCompatible(gomock.Any(), gomock.Any()).Return(nil)
+				mockMountClient.EXPECT().AttachSMBVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "SMB Volume staging errored and Response is nil, No compatibility of protocol and platform",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{
+							FsType: "smb",
+						},
+					},
+				},
+				PublishContext: map[string]string{
+					"protocol":       string(tridentconfig.File),
+					"filesystemType": "smb",
+				},
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.Unknown,
+			protocol:         string(tridentconfig.File),
+			filesystemType:   "smb",
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsCompatible(gomock.Any(), gomock.Any()).Return(errors.New(""))
+				mockMountClient.EXPECT().AttachSMBVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "SMB Volume staging errored, Saving the device info to the volume tracking info path",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{
+							FsType: "smb",
+						},
+					},
+				},
+				PublishContext: map[string]string{
+					"protocol":       string(tridentconfig.File),
+					"filesystemType": "smb",
+				},
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.Internal,
+			protocol:         string(tridentconfig.File),
+			filesystemType:   "nfs",
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsCompatible(gomock.Any(), gomock.Any()).Return(nil)
+				mockMountClient.EXPECT().AttachSMBVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(errors.New("some error")).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "SMB Volume staging errored, during AttachSMBVolume with some permission error",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{
+							FsType: smb.SMB,
+						},
+					},
+				},
+				PublishContext: map[string]string{
+					"protocol":       string(tridentconfig.File),
+					"filesystemType": "smb",
+				},
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.PermissionDenied,
+			protocol:         string(tridentconfig.File),
+			filesystemType:   "smb",
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsCompatible(gomock.Any(), gomock.Any()).Return(nil)
+				mockMountClient.EXPECT().AttachSMBVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(os.ErrPermission).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "SMB Volume staging errored, during AttachSMBVolume with some invalid argument error",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{
+							FsType: smb.SMB,
+						},
+					},
+				},
+				PublishContext: map[string]string{
+					"protocol":       string(tridentconfig.File),
+					"filesystemType": "smb",
+				},
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.InvalidArgument,
+			protocol:         string(tridentconfig.File),
+			filesystemType:   "smb",
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsCompatible(gomock.Any(), gomock.Any()).Return(nil)
+				mockMountClient.EXPECT().AttachSMBVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("invalid argument")).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "SMB Volume staging errored, during AttachSMBVolume with some other error",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{
+							FsType: smb.SMB,
+						},
+					},
+				},
+				PublishContext: map[string]string{
+					"protocol":       string(tridentconfig.File),
+					"filesystemType": "smb",
+				},
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.Internal,
+			protocol:         string(tridentconfig.File),
+			filesystemType:   "smb",
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsCompatible(gomock.Any(), gomock.Any()).Return(nil)
+				mockMountClient.EXPECT().AttachSMBVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("some error")).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "SMB Volume staging errored, during AttachSMBVolume with context.DeadlineExceeded error",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{
+							FsType: smb.SMB,
+						},
+					},
+				},
+				PublishContext: map[string]string{
+					"protocol":       string(tridentconfig.File),
+					"filesystemType": "smb",
+				},
+			},
+			expectedResponse:         nil,
+			expErrCode:               codes.DeadlineExceeded,
+			protocol:                 string(tridentconfig.File),
+			filesystemType:           "smb",
+			contextTimeoutBeforeCall: true,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsCompatible(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockMountClient.EXPECT().AttachSMBVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(status.Error(codes.DeadlineExceeded, "smb attach timed out")).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "Volume staging errored, because of some unknown protocol",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{
+							FsType: smb.SMB,
+						},
+					},
+				},
+				PublishContext: map[string]string{
+					"protocol":       "unknown",
+					"filesystemType": "smb",
+				},
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.InvalidArgument,
+			protocol:         string(tridentconfig.File),
+			filesystemType:   "smb",
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsCompatible(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockMountClient.EXPECT().AttachSMBVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "Volume staging errored, iscsi protocol",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-iscsi-volume",
+				StagingTargetPath: "/staging/path",
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{
+							FsType: "ext4",
+						},
+					},
+				},
+				PublishContext: map[string]string{
+					"protocol":     string(tridentconfig.Block),
+					"SANType":      sa.ISCSI,
+					"sharedTarget": "false",
+				},
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.Internal,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsCompatible(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockMountClient.EXPECT().AttachSMBVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "Volume staging errored, fcp protocol",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-iscsi-volume",
+				StagingTargetPath: "/staging/path",
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{
+							FsType: "ext4",
+						},
+					},
+				},
+				PublishContext: map[string]string{
+					"protocol":     string(tridentconfig.Block),
+					"SANType":      sa.FCP,
+					"sharedTarget": "false",
+				},
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.Internal,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsCompatible(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockMountClient.EXPECT().AttachSMBVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "Volume staging errored, nvme protocol",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-iscsi-volume",
+				StagingTargetPath: "/staging/path",
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{
+							FsType: "ext4",
+						},
+					},
+				},
+				PublishContext: map[string]string{
+					"protocol":     string(tridentconfig.Block),
+					"SANType":      sa.NVMe,
+					"sharedTarget": "false",
+				},
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.Internal,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsCompatible(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockMountClient.EXPECT().AttachSMBVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupNVMeHandler: func() nvme.NVMeInterface {
+				mockNvmeHandler := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
+				mockNvmeHandler.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockNvmeHandler
+			},
+		},
+		{
+			name: "Volume staging errored, invalid SANType",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-iscsi-volume",
+				StagingTargetPath: "/staging/path",
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{
+							FsType: "ext4",
+						},
+					},
+				},
+				PublishContext: map[string]string{
+					"protocol":     string(tridentconfig.Block),
+					"SANType":      "",
+					"sharedTarget": "false",
+				},
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.InvalidArgument,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsCompatible(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockMountClient.EXPECT().AttachSMBVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+	}
+
+	mountClient, _ := mount.New()
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Create plugin instance
+			plugin := &Plugin{
+				command:          execCmd.NewCommand(),
+				role:             CSINode,
+				limiterSharedMap: make(map[string]limiter.Limiter),
+				aesKey:           tc.aesKey,
+				fs:               filesystem.New(mountClient),
+			}
+
+			plugin.InitializeNodeLimiter(ctx)
+
+			// Setup mocks
+			if tc.setupISCSIMock != nil {
+				plugin.iscsi = tc.setupISCSIMock()
+			}
+
+			if tc.setupNodeHelperMock != nil {
+				plugin.nodeHelper = tc.setupNodeHelperMock()
+			}
+
+			if tc.setupRestClientMock != nil {
+				plugin.restClient = tc.setupRestClientMock()
+			}
+			if tc.setupNVMeHandler != nil {
+				plugin.nvmeHandler = tc.setupNVMeHandler()
+			}
+			if tc.setupMount != nil {
+				plugin.mount = tc.setupMount()
+			}
+
+			// Create context with potential timeout
+			testCtx := context.Background()
+			if tc.contextTimeoutBeforeCall {
+				// Create a context that times out immediately
+				cancelCtx, cancel := context.WithTimeout(context.Background(), 1*time.Nanosecond)
+				defer cancel()
+				time.Sleep(2 * time.Nanosecond) // Ensure timeout has occurred
+				testCtx = cancelCtx
+			}
+
+			// Call the function under test
+			resp, err := plugin.NodeStageVolume(testCtx, tc.req)
+
+			// Verify results
+			if tc.expErrCode != codes.OK {
+				assert.Error(t, err)
+				if err != nil {
+					status, _ := status.FromError(err)
+					// assert.True(t, ok)
+					assert.Equal(t, tc.expErrCode, status.Code(), "Expected error code %v, got %v", tc.expErrCode, status.Code())
+				}
+				assert.Nil(t, resp)
+				return
+			}
+
+			assert.NoError(t, err)
+			assert.NotNil(t, resp)
+			if tc.expectedResponse != nil {
+				assert.Equal(t, tc.expectedResponse, resp)
+			}
+		})
+	}
+}
+
+func TestGetVolumeIdAndStagingPath(t *testing.T) {
+	testCases := []struct {
+		name                string
+		req                 RequestHandler
+		expectedVolumeId    string
+		expectedStagingPath string
+		expErrCode          codes.Code
+	}{
+		{
+			name: "Success - Valid volume ID and staging path",
+			req: &mockRequestHandler{
+				volumeId:          "test-volume-123",
+				stagingTargetPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/pv/test-volume/globalmount",
+			},
+			expectedVolumeId:    "test-volume-123",
+			expectedStagingPath: "/var/lib/kubelet/plugins/kubernetes.io/csi/pv/test-volume/globalmount",
+			expErrCode:          codes.OK,
+		},
+
+		{
+			name: "Error - Empty volume ID",
+			req: &mockRequestHandler{
+				volumeId:          "",
+				stagingTargetPath: "/staging/path",
+			},
+			expectedVolumeId:    "",
+			expectedStagingPath: "",
+			expErrCode:          codes.InvalidArgument,
+		},
+		{
+			name: "Error - Empty staging target path",
+			req: &mockRequestHandler{
+				volumeId:          "test-volume-123",
+				stagingTargetPath: "",
+			},
+			expectedVolumeId:    "",
+			expectedStagingPath: "",
+			expErrCode:          codes.InvalidArgument,
+		},
+		{
+			name: "Error - Both volume ID and staging path empty",
+			req: &mockRequestHandler{
+				volumeId:          "",
+				stagingTargetPath: "",
+			},
+			expectedVolumeId:    "",
+			expectedStagingPath: "",
+			expErrCode:          codes.InvalidArgument,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Create plugin instance
+			plugin := &Plugin{
+				command: execCmd.NewCommand(),
+			}
+
+			// Call the function under test
+			volumeId, stagingPath, err := plugin.getVolumeIdAndStagingPath(tc.req)
+
+			// Verify results
+			if tc.expErrCode != codes.OK {
+				assert.Error(t, err)
+				if err != nil {
+					status, _ := status.FromError(err)
+					assert.Equal(t, tc.expErrCode, status.Code(), "Expected error code %v, got %v", tc.expErrCode, status.Code())
+				}
+				assert.Equal(t, tc.expectedVolumeId, volumeId, "Volume ID should be empty on error")
+				assert.Equal(t, tc.expectedStagingPath, stagingPath, "Staging path should be empty on error")
+				return
+			}
+
+			// Success case assertions
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectedVolumeId, volumeId, "Volume ID should match expected")
+			assert.Equal(t, tc.expectedStagingPath, stagingPath, "Staging path should match expected")
+		})
+	}
+}
+
+// mockRequestHandler implements RequestHandler interface for testing
+type mockRequestHandler struct {
+	volumeId          string
+	stagingTargetPath string
+}
+
+func (m *mockRequestHandler) GetVolumeId() string {
+	return m.volumeId
+}
+
+func (m *mockRequestHandler) GetStagingTargetPath() string {
+	return m.stagingTargetPath
+}
+
+func TestRefreshTimerPeriod1(t *testing.T) {
+	testCases := []struct {
+		name                string
+		testType            string // "range", "multiple_calls", "constants"
+		expectedMinDuration time.Duration
+		expectedMaxDuration time.Duration
+		numberOfCalls       int
+		shouldTestVariation bool
+		shouldTestConstants bool
+	}{
+		{
+			name:                "Success - Normal random jitter generation within range",
+			testType:            "range",
+			expectedMinDuration: defaultNodeReconciliationPeriod,
+			expectedMaxDuration: defaultNodeReconciliationPeriod + maximumNodeReconciliationJitter,
+			numberOfCalls:       1,
+		},
+		{
+			name:                "Success - Multiple calls show variation in jitter",
+			testType:            "multiple_calls",
+			expectedMinDuration: defaultNodeReconciliationPeriod,
+			expectedMaxDuration: defaultNodeReconciliationPeriod + maximumNodeReconciliationJitter,
+			numberOfCalls:       10,
+			shouldTestVariation: true,
+		},
+		{
+			name:                "Success - Range validation over 20 calls",
+			testType:            "range",
+			expectedMinDuration: defaultNodeReconciliationPeriod,
+			expectedMaxDuration: defaultNodeReconciliationPeriod + maximumNodeReconciliationJitter,
+			numberOfCalls:       20,
+		},
+		{
+			name:                "Success - Single call returns positive duration",
+			testType:            "range",
+			expectedMinDuration: time.Nanosecond, // Just ensure it's positive
+			expectedMaxDuration: defaultNodeReconciliationPeriod + maximumNodeReconciliationJitter,
+			numberOfCalls:       1,
+		},
+		{
+			name:                "Validation - Constants are reasonable",
+			testType:            "constants",
+			shouldTestConstants: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Create plugin instance
+			plugin := &Plugin{
+				command: execCmd.NewCommand(),
+			}
+
+			// Create context
+			ctx := context.Background()
+
+			switch tc.testType {
+			case "constants":
+				// Test that constants are reasonable
+				assert.Positive(t, defaultNodeReconciliationPeriod,
+					"defaultNodeReconciliationPeriod should be positive")
+				assert.Positive(t, maximumNodeReconciliationJitter,
+					"maximumNodeReconciliationJitter should be positive")
+
+				// Verify jitter is smaller than base period (good practice)
+				assert.Less(t, maximumNodeReconciliationJitter, defaultNodeReconciliationPeriod,
+					"Jitter should be smaller than base period for predictable behavior")
+
+				// Verify minimum duration is reasonable (at least 1 second)
+				assert.GreaterOrEqual(t, defaultNodeReconciliationPeriod, time.Second,
+					"Base reconciliation period should be at least 1 second")
+
+			case "multiple_calls":
+				// Test multiple calls and optionally check for variation
+				results := make([]time.Duration, tc.numberOfCalls)
+				for i := 0; i < tc.numberOfCalls; i++ {
+					duration := plugin.refreshTimerPeriod(ctx)
+					results[i] = duration
+
+					// Verify each result is within expected range
+					assert.GreaterOrEqual(t, duration, tc.expectedMinDuration,
+						"Duration should be >= minimum expected duration")
+					assert.LessOrEqual(t, duration, tc.expectedMaxDuration,
+						"Duration should be <= maximum expected duration")
+					assert.Positive(t, duration, "Duration should always be positive")
+				}
+
+				if tc.shouldTestVariation {
+					// Verify we have some variation (not all the same)
+					// This is probabilistic but very likely to pass with multiple samples
+					allSame := true
+					for i := 1; i < len(results); i++ {
+						if results[i] != results[0] {
+							allSame = false
+							break
+						}
+					}
+					if allSame {
+						t.Logf("Note: All %d random values were identical - this is statistically unlikely but possible", tc.numberOfCalls)
+					}
+
+					// Additional statistical check: ensure we have some spread
+					min := results[0]
+					max := results[0]
+					for _, result := range results {
+						if result < min {
+							min = result
+						}
+						if result > max {
+							max = result
+						}
+					}
+					spread := max - min
+					t.Logf("Spread of values over %d calls: %v (min: %v, max: %v)", tc.numberOfCalls, spread, min, max)
+				}
+
+			case "range":
+				// Test single or multiple calls for range validation
+				for i := 0; i < tc.numberOfCalls; i++ {
+					duration := plugin.refreshTimerPeriod(ctx)
+
+					// Verify the duration is within expected range
+					assert.GreaterOrEqual(t, duration, tc.expectedMinDuration,
+						"Duration should be >= minimum expected duration")
+					assert.LessOrEqual(t, duration, tc.expectedMaxDuration,
+						"Duration should be <= maximum expected duration")
+					assert.Positive(t, duration, "Duration should always be positive")
+
+					// Log the actual value for debugging
+					if tc.numberOfCalls == 1 {
+						t.Logf("Generated duration: %v (base: %v, max jitter: %v)",
+							duration, defaultNodeReconciliationPeriod, maximumNodeReconciliationJitter)
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestStartReconcilingNodePublications(t *testing.T) {
+	testCases := []struct {
+		name                  string
+		setupPlugin           func() *Plugin
+		setupMocks            func(*gomock.Controller) (*Plugin, func())
+		shouldVerifyGoroutine bool
+		shouldVerifyTimer     bool
+	}{
+		{
+			name: "Success - Start reconciliation service",
+			setupMocks: func(ctrl *gomock.Controller) (*Plugin, func()) {
+				plugin := &Plugin{
+					command:                 execCmd.NewCommand(),
+					stopNodePublicationLoop: make(chan bool),
+				}
+
+				// Create a cleanup function to stop the goroutine
+				cleanup := func() {
+					if plugin.stopNodePublicationLoop != nil {
+						close(plugin.stopNodePublicationLoop)
+					}
+					if plugin.nodePublicationTimer != nil {
+						plugin.nodePublicationTimer.Stop()
+					}
+				}
+
+				return plugin, cleanup
+			},
+			shouldVerifyGoroutine: true,
+			shouldVerifyTimer:     true,
+		},
+		{
+			name: "Success - Timer is initialized correctly",
+			setupMocks: func(ctrl *gomock.Controller) (*Plugin, func()) {
+				plugin := &Plugin{
+					command:                 execCmd.NewCommand(),
+					stopNodePublicationLoop: make(chan bool),
+				}
+
+				cleanup := func() {
+					if plugin.stopNodePublicationLoop != nil {
+						close(plugin.stopNodePublicationLoop)
+					}
+					if plugin.nodePublicationTimer != nil {
+						plugin.nodePublicationTimer.Stop()
+					}
+				}
+
+				return plugin, cleanup
+			},
+			shouldVerifyTimer: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			plugin, cleanup := tc.setupMocks(mockCtrl)
+			defer cleanup()
+
+			ctx := context.Background()
+
+			// Call the function under test
+			plugin.startReconcilingNodePublications(ctx)
+
+			if tc.shouldVerifyTimer {
+				// Verify timer is initialized
+				assert.NotNil(t, plugin.nodePublicationTimer, "Timer should be initialized")
+			}
+
+			if tc.shouldVerifyGoroutine {
+				// Give the goroutine a moment to start
+				time.Sleep(10 * time.Millisecond)
+
+				// Verify the goroutine is running by checking if stopping it works
+				// This is an indirect test since we can't directly verify goroutine existence
+				assert.NotNil(t, plugin.stopNodePublicationLoop, "Stop channel should exist")
+			}
+		})
+	}
+}
+
+func TestStopReconcilingNodePublications(t *testing.T) {
+	testCases := []struct {
+		name                string
+		setupPlugin         func() *Plugin
+		shouldVerifyTimer   bool
+		shouldVerifyChannel bool
+	}{
+		{
+			name: "Success - Stop with active timer and channel",
+			setupPlugin: func() *Plugin {
+				plugin := &Plugin{
+					command:                 execCmd.NewCommand(),
+					nodePublicationTimer:    time.NewTimer(time.Hour), // Long timer to test stopping
+					stopNodePublicationLoop: make(chan bool),
+				}
+				return plugin
+			},
+			shouldVerifyTimer:   true,
+			shouldVerifyChannel: true,
+		},
+		{
+			name: "Success - Stop with nil timer",
+			setupPlugin: func() *Plugin {
+				plugin := &Plugin{
+					command:                 execCmd.NewCommand(),
+					nodePublicationTimer:    nil,
+					stopNodePublicationLoop: make(chan bool),
+				}
+				return plugin
+			},
+			shouldVerifyTimer:   false,
+			shouldVerifyChannel: true,
+		},
+		{
+			name: "Success - Stop with nil channel",
+			setupPlugin: func() *Plugin {
+				plugin := &Plugin{
+					command:                 execCmd.NewCommand(),
+					nodePublicationTimer:    time.NewTimer(time.Hour),
+					stopNodePublicationLoop: nil,
+				}
+				return plugin
+			},
+			shouldVerifyTimer:   true,
+			shouldVerifyChannel: false,
+		},
+		{
+			name: "Success - Stop with both nil",
+			setupPlugin: func() *Plugin {
+				plugin := &Plugin{
+					command:                 execCmd.NewCommand(),
+					nodePublicationTimer:    nil,
+					stopNodePublicationLoop: nil,
+				}
+				return plugin
+			},
+			shouldVerifyTimer:   false,
+			shouldVerifyChannel: false,
+		},
+		{
+			name: "Success - Stop with already stopped timer",
+			setupPlugin: func() *Plugin {
+				timer := time.NewTimer(1 * time.Nanosecond) // Very short timer
+				time.Sleep(2 * time.Nanosecond)             // Ensure it fires
+				plugin := &Plugin{
+					command:                 execCmd.NewCommand(),
+					nodePublicationTimer:    timer,
+					stopNodePublicationLoop: make(chan bool, 2),
+				}
+				return plugin
+			},
+			shouldVerifyTimer:   true,
+			shouldVerifyChannel: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			plugin := tc.setupPlugin()
+			ctx := context.Background()
+
+			// Store initial state for verification
+			initialTimer := plugin.nodePublicationTimer
+			initialChannel := plugin.stopNodePublicationLoop
+
+			// Call the function under test
+			plugin.stopReconcilingNodePublications(ctx)
+
+			if tc.shouldVerifyTimer && initialTimer != nil {
+				// Timer should still exist but be stopped
+				assert.NotNil(t, plugin.nodePublicationTimer, "Timer should still exist after stopping")
+			}
+
+			if tc.shouldVerifyChannel && initialChannel != nil {
+				// Channel should be closed - verify by checking if we can receive from it immediately
+				select {
+				case <-plugin.stopNodePublicationLoop:
+					// Channel is closed, which is expected
+				default:
+					t.Error("Channel should be closed after stopping")
+				}
+			}
+		})
+	}
+}
+
+func TestReconcileNodePublicationState(t *testing.T) {
+	testCases := []struct {
+		name                string
+		setupNodeHelperMock func() nodehelpers.NodeHelper
+		setupRestClientMock func() controllerAPI.TridentController
+		expectedError       bool
+	}{
+		{
+			name: "Success - Node is already clean, no action needed",
+			setupRestClientMock: func() controllerAPI.TridentController {
+				mockRestClient := mockControllerAPI.NewMockTridentController(gomock.NewController(t))
+				mockRestClient.EXPECT().GetChap(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(&models.IscsiChapInfo{}, nil).AnyTimes()
+				mockRestClient.EXPECT().GetNode(gomock.Any(), gomock.Any()).Return(&models.NodeExternal{
+					PublicationState: models.NodeClean,
+				}, nil).AnyTimes()
+				mockRestClient.EXPECT().ListVolumePublicationsForNode(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				return mockRestClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ListVolumeTrackingInfo(gomock.Any()).Return(nil, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			expectedError: false,
+		},
+		{
+			name: "Error - Failed to get node from controller",
+			setupRestClientMock: func() controllerAPI.TridentController {
+				mockRestClient := mockControllerAPI.NewMockTridentController(gomock.NewController(t))
+				mockRestClient.EXPECT().GetNode(gomock.Any(), gomock.Any()).Return(nil, errors.New("controller unreachable")).AnyTimes()
+				mockRestClient.EXPECT().ListVolumePublicationsForNode(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				return mockRestClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ListVolumeTrackingInfo(gomock.Any()).Return(nil, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			expectedError: true,
+		},
+		{
+			name: "Error - Node cleanup failed",
+			setupRestClientMock: func() controllerAPI.TridentController {
+				mockRestClient := mockControllerAPI.NewMockTridentController(gomock.NewController(t))
+				mockRestClient.EXPECT().GetNode(gomock.Any(), gomock.Any()).Return(&models.NodeExternal{
+					PublicationState: models.NodeDirty,
+				}, nil)
+				mockRestClient.EXPECT().ListVolumePublicationsForNode(gomock.Any(), gomock.Any()).Return(nil, errors.New("")).AnyTimes()
+				return mockRestClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ListVolumeTrackingInfo(gomock.Any()).Return(nil, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			expectedError: true,
+		},
+		{
+			name: "Error - Update node state failed",
+			setupRestClientMock: func() controllerAPI.TridentController {
+				mockRestClient := mockControllerAPI.NewMockTridentController(gomock.NewController(t))
+				mockRestClient.EXPECT().GetNode(gomock.Any(), gomock.Any()).Return(&models.NodeExternal{
+					PublicationState: models.NodeDirty,
+				}, nil).AnyTimes()
+				mockRestClient.EXPECT().ListVolumePublicationsForNode(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mockRestClient.EXPECT().UpdateNode(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockRestClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ListVolumeTrackingInfo(gomock.Any()).Return(map[string]*models.VolumeTrackingInfo{"test-vol": {}}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			expectedError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			plugin := &Plugin{
+				command:              execCmd.NewCommand(),
+				role:                 CSINode,
+				limiterSharedMap:     make(map[string]limiter.Limiter),
+				nodePublicationTimer: time.NewTimer(time.Hour),
+			}
+
+			plugin.InitializeNodeLimiter(ctx)
+
+			if tc.setupRestClientMock != nil {
+				plugin.restClient = tc.setupRestClientMock()
+			}
+			if tc.setupNodeHelperMock != nil {
+				plugin.nodeHelper = tc.setupNodeHelperMock()
+			}
+
+			ctx := context.Background()
+
+			// Call the function under test
+			err := plugin.reconcileNodePublicationState(ctx)
+
+			// Verify results
+			if tc.expectedError {
+				assert.Error(t, err, "Expected an error")
+			} else {
+				assert.NoError(t, err, "Expected no error")
+			}
+
+			// Verify timer was reset (check it's not nil and still running)
+			assert.NotNil(t, plugin.nodePublicationTimer, "Timer should exist after reconciliation")
+		})
+	}
+}
+
+func TestNodePublishVolumeCases(t *testing.T) {
+	testCases := []struct {
+		name                     string
+		req                      *csi.NodePublishVolumeRequest
+		expectedResponse         *csi.NodePublishVolumeResponse
+		expErrCode               codes.Code
+		setupMockOSUtils         func() osutils.OSUtils
+		setupISCSIMock           func() iscsi.ISCSI
+		setupNodeHelperMock      func() nodehelpers.NodeHelper
+		setupRestClientMock      func() controllerAPI.TridentController
+		setupMount               func() mount.Mount
+		contextTimeoutBeforeCall bool
+	}{
+		{
+			name:             "Success - NFS Volume publish",
+			req:              NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build(),
+			expectedResponse: &csi.NodePublishVolumeResponse{},
+			expErrCode:       codes.OK,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(true, nil).AnyTimes()
+				mockMountClient.EXPECT().AttachNFSVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNFSVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name:             "Success - NFS Volume publish",
+			req:              NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build(),
+			expectedResponse: &csi.NodePublishVolumeResponse{},
+			expErrCode:       codes.OK,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNFSVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name:             "Error - NFS Volume publish failed to read tracking info",
+			req:              NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build(),
+			expectedResponse: &csi.NodePublishVolumeResponse{},
+			expErrCode:       codes.Internal,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(true, nil).AnyTimes()
+				mockMountClient.EXPECT().AttachNFSVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil, errors.New("some error")).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name:             "Error - NFS Volume publish failed as tracking info file not found",
+			req:              NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build(),
+			expectedResponse: &csi.NodePublishVolumeResponse{},
+			expErrCode:       codes.FailedPrecondition,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(true, nil).AnyTimes()
+				mockMountClient.EXPECT().AttachNFSVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil, errors.NotFoundError("some error")).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name:             "Error - NFS Volume publish failed as checking isLikelyNotMountPoint failed",
+			req:              NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build(),
+			expectedResponse: nil,
+			expErrCode:       codes.Internal,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(false, errors.New("some error")).AnyTimes()
+				mockMountClient.EXPECT().AttachNFSVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNFSVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name:             "Error - NFS Volume publish failed as attaching nfs volume failed with permission denied",
+			req:              NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build(),
+			expectedResponse: nil,
+			expErrCode:       codes.PermissionDenied,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(false, os.ErrNotExist).AnyTimes()
+				mockMountClient.EXPECT().AttachNFSVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(os.ErrPermission).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNFSVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name:             "Error - NFS Volume publish failed as attaching nfs volume failed with some error",
+			req:              NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build(),
+			expectedResponse: nil,
+			expErrCode:       codes.Internal,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(false, os.ErrNotExist).AnyTimes()
+				mockMountClient.EXPECT().AttachNFSVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("some error")).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNFSVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name:             "Error - NFS Volume publish failed as attaching nfs volume failed with invalid argument",
+			req:              NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build(),
+			expectedResponse: nil,
+			expErrCode:       codes.InvalidArgument,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(false, os.ErrNotExist).AnyTimes()
+				mockMountClient.EXPECT().AttachNFSVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("invalid argument")).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNFSVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name:             "Error - NFS Volume publish failed as adding the published path to tracking info file failed",
+			req:              NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build(),
+			expectedResponse: nil,
+			expErrCode:       codes.Unknown,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(false, os.ErrNotExist).AnyTimes()
+				mockMountClient.EXPECT().AttachNFSVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNFSVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("some error")).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name:             "Success - SMB Volume publish",
+			req:              NewNodePublishVolumeRequestBuilder(SMBNodePublishVolumeRequestType).Build(),
+			expectedResponse: &csi.NodePublishVolumeResponse{},
+			expErrCode:       codes.OK,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(true, nil).AnyTimes()
+				mockMountClient.EXPECT().AttachNFSVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockMountClient.EXPECT().WindowsBindMount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeSMBVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "Error - SMB Volume publish because of empty target path",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId: uuid.NewString(),
+				PublishContext: map[string]string{
+					"protocol":       "file",
+					"filesystemType": "smb",
+				},
+				StagingTargetPath: "/foo",
+				TargetPath:        "",
+				VolumeContext: map[string]string{
+					"internalName": "pvc-12345-123",
+				},
+				Readonly: false,
+			},
+
+			expectedResponse: nil,
+			expErrCode:       codes.InvalidArgument,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(true, nil).AnyTimes()
+				mockMountClient.EXPECT().AttachNFSVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockMountClient.EXPECT().WindowsBindMount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeSMBVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "Error - SMB Volume publish as staging target not provided",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId: uuid.NewString(),
+				PublishContext: map[string]string{
+					"protocol":       "file",
+					"filesystemType": "smb",
+				},
+				StagingTargetPath: "",
+				TargetPath:        "/foo",
+				VolumeContext: map[string]string{
+					"internalName": "pvc-12345-123",
+				},
+				Readonly: true,
+			},
+
+			expectedResponse: nil,
+			expErrCode:       codes.InvalidArgument,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(true, nil).AnyTimes()
+				mockMountClient.EXPECT().AttachNFSVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockMountClient.EXPECT().WindowsBindMount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeSMBVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name:             "Error - SMB Volume publish failed as windows bind mount failed with permission denied",
+			req:              NewNodePublishVolumeRequestBuilder(SMBNodePublishVolumeRequestType).Build(),
+			expectedResponse: nil,
+			expErrCode:       codes.PermissionDenied,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(false, os.ErrNotExist).AnyTimes()
+				mockMountClient.EXPECT().WindowsBindMount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(os.ErrPermission).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeSMBVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name:             "Error - SMB Volume publish failed, error checking if mount point exist",
+			req:              NewNodePublishVolumeRequestBuilder(SMBNodePublishVolumeRequestType).Build(),
+			expectedResponse: nil,
+			expErrCode:       codes.Internal,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(false, errors.New("")).AnyTimes()
+				mockMountClient.EXPECT().WindowsBindMount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeSMBVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name:             "Error - SMB Volume publish failed as windows bind mount failed with some error",
+			req:              NewNodePublishVolumeRequestBuilder(SMBNodePublishVolumeRequestType).Build(),
+			expectedResponse: nil,
+			expErrCode:       codes.Internal,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(true, nil).AnyTimes()
+				mockMountClient.EXPECT().WindowsBindMount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("some error")).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeSMBVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name:             "Error - SMB Volume publish failed as volume not mounted",
+			req:              NewNodePublishVolumeRequestBuilder(SMBNodePublishVolumeRequestType).Build(),
+			expectedResponse: nil,
+			expErrCode:       codes.OK,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeSMBVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name:             "Error - SMB Volume publish failed as windows bind mount failed with invalid argument",
+			req:              NewNodePublishVolumeRequestBuilder(SMBNodePublishVolumeRequestType).Build(),
+			expectedResponse: nil,
+			expErrCode:       codes.InvalidArgument,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(false, os.ErrNotExist).AnyTimes()
+				mockMountClient.EXPECT().WindowsBindMount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("invalid argument")).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeSMBVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		// {
+		// 	name: "SMB Volume publish errored, with context.DeadlineExceeded error",
+		// 	req: &csi.NodePublishVolumeRequest{
+		// 		VolumeId:          "test-nfs-volume",
+		// 		StagingTargetPath: "/staging/path",
+		// 		VolumeCapability: &csi.VolumeCapability{
+		// 			AccessType: &csi.VolumeCapability_Mount{
+		// 				Mount: &csi.VolumeCapability_MountVolume{
+		// 					FsType: smb.SMB,
+		// 				},
+		// 			},
+		// 		},
+		// 		PublishContext: map[string]string{
+		// 			"protocol":       string(tridentconfig.File),
+		// 			"filesystemType": "smb",
+		// 		},
+		// 	},
+		// 	expectedResponse:         nil,
+		// 	expErrCode:               codes.DeadlineExceeded,
+		// 	contextTimeoutBeforeCall: true,
+		// 	setupMount: func() mount.Mount {
+		// 		mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+		// 		mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(false, os.ErrNotExist).AnyTimes()
+		// 		mockMountClient.EXPECT().WindowsBindMount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(status.Error(codes.DeadlineExceeded, "smb attach timed out")).AnyTimes()
+		// 		return mockMountClient
+		// 	},
+		// 	setupNodeHelperMock: func() nodehelpers.NodeHelper {
+		// 		mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+		// 		mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+		// 			gomock.Any()).Return(&models.VolumeTrackingInfo{
+		// 			VolumePublishInfo: NewVolumePublishInfoBuilder(TypeSMBVolumePublishInfo).Build(),
+		// 		}, nil).AnyTimes()
+		// 		mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+		// 		return mockNodeHelper
+		// 	},
+		// },
+		{
+			name: "Success - SAN Volume publish with iSCSI protocol",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId: uuid.NewString(),
+				PublishContext: map[string]string{
+					"protocol":       "unknown",
+					"filesystemType": "smb",
+				},
+			},
+			expectedResponse: &csi.NodePublishVolumeResponse{},
+			expErrCode:       codes.InvalidArgument,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Eq(false)).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name:             "Success - SAN Volume publish with fcp protocol",
+			req:              NewNodePublishVolumeRequestBuilder(FCPNodePublishVolumeRequestType).Build(),
+			expectedResponse: &csi.NodePublishVolumeResponse{},
+			expErrCode:       codes.OK,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Eq(false)).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeFCPVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name:             "Success - SAN Volume publish with NVMe protocol",
+			req:              NewNodePublishVolumeRequestBuilder(NVMENodePublishVolumeRequestType).Build(),
+			expectedResponse: &csi.NodePublishVolumeResponse{},
+			expErrCode:       codes.OK,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Eq(false)).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNVMeVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name:             "Success -  Volume publish for unknown protocol",
+			req:              NewNodePublishVolumeRequestBuilder(NVMENodePublishVolumeRequestType).Build(),
+			expectedResponse: &csi.NodePublishVolumeResponse{},
+			expErrCode:       codes.OK,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Eq(false)).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNVMeVolumePublishInfo).Build(),
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+	}
+
+	mountClient, _ := mount.New()
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Create plugin instance
+			plugin := &Plugin{
+				command:          execCmd.NewCommand(),
+				role:             CSINode,
+				limiterSharedMap: make(map[string]limiter.Limiter),
+				// aesKey:           tc.aesKey,
+				fs: filesystem.New(mountClient),
+			}
+
+			plugin.InitializeNodeLimiter(ctx)
+
+			// Setup mocks
+			if tc.setupISCSIMock != nil {
+				plugin.iscsi = tc.setupISCSIMock()
+			}
+
+			if tc.setupNodeHelperMock != nil {
+				plugin.nodeHelper = tc.setupNodeHelperMock()
+			}
+
+			if tc.setupRestClientMock != nil {
+				plugin.restClient = tc.setupRestClientMock()
+			}
+
+			if tc.setupMount != nil {
+				plugin.mount = tc.setupMount()
+			}
+
+			// Create context with potential timeout
+			testCtx := context.Background()
+			if tc.contextTimeoutBeforeCall {
+				// Create a context that times out immediately
+				cancelCtx, cancel := context.WithTimeout(context.Background(), 1*time.Nanosecond)
+				defer cancel()
+				time.Sleep(2 * time.Nanosecond) // Ensure timeout has occurred
+				testCtx = cancelCtx
+			}
+
+			resp, err := plugin.NodePublishVolume(testCtx, tc.req)
+
+			if tc.expErrCode != codes.OK {
+				assert.Error(t, err)
+				if err != nil {
+					status, _ := status.FromError(err)
+					// assert.True(t, ok)
+					assert.Equal(t, tc.expErrCode, status.Code(), "Expected error code %v, got %v", tc.expErrCode, status.Code())
+				}
+				assert.Nil(t, resp)
+				return
+			}
+
+			assert.NoError(t, err)
+			assert.NotNil(t, resp)
+			if tc.expectedResponse != nil {
+				assert.Equal(t, tc.expectedResponse, resp)
+			}
+		})
+	}
+}
+
+func TestNodeGetVolumeStats(t *testing.T) {
+	volumeID := "vol-123"
+	volumePath := "/mnt/vol-123"
+	stagingPath := "/staging/vol-123"
+
+	testCases := []struct {
+		name                string
+		req                 *csi.NodeGetVolumeStatsRequest
+		setupNodeHelperMock func() nodehelpers.NodeHelper
+		expErrCode          codes.Code
+		expResp             *csi.NodeGetVolumeStatsResponse
+		mockFilesystem      func() filesystem.Filesystem
+		setupOsutils        func() osutils.Utils
+	}{
+		{
+			name:       "Empty volume ID",
+			req:        &csi.NodeGetVolumeStatsRequest{VolumeId: "", VolumePath: volumePath},
+			expErrCode: codes.InvalidArgument,
+		},
+		{
+			name:       "Empty volume path",
+			req:        &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: ""},
+			expErrCode: codes.InvalidArgument,
+		},
+		{
+			name: "Volume publish path does not exist",
+			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath},
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(false, errors.New(""))
+				return mockOSUtils
+			},
+			expErrCode: codes.NotFound,
+		},
+		{
+			name: "tracking info file not found, for staging target path",
+			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath, StagingTargetPath: stagingPath},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil, errors.NotFoundError("")).AnyTimes()
+
+				return mockNodeHelper
+			},
+			expErrCode: codes.FailedPrecondition,
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+		},
+		{
+			name: "Raw block volume",
+			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath, StagingTargetPath: stagingPath},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: filesystem.Raw,
+					},
+				}, nil).AnyTimes()
+
+				return mockNodeHelper
+			},
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			expErrCode: codes.OK,
+			expResp:    &csi.NodeGetVolumeStatsResponse{},
+		},
+		{
+			name: "Reading tracking info file failed, for staging target path",
+			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath, StagingTargetPath: stagingPath},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil, errors.New("")).AnyTimes()
+
+				return mockNodeHelper
+			},
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			expErrCode: codes.Internal,
+		},
+		{
+			name: "Filesystem stats error",
+			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath},
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().GetFilesystemStats(gomock.Any(), gomock.Any()).Return(
+					int64(0), int64(0), int64(0), int64(0), int64(0), int64(0), errors.New("")).AnyTimes()
+				return mockFilesystem1
+			},
+
+			expErrCode: codes.Unknown,
+		},
+		{
+			name: "Filesystem stats success",
+			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{}, nil).AnyTimes()
+
+				return mockNodeHelper
+			},
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().GetFilesystemStats(gomock.Any(), gomock.Any()).Return(
+					int64(1), int64(2), int64(1), int64(1), int64(1), int64(2), nil,
+				).AnyTimes()
+
+				return mockFilesystem1
+			},
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			expErrCode: codes.OK,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			plugin := &Plugin{
+				command:          execCmd.NewCommand(),
+				role:             CSINode,
+				limiterSharedMap: make(map[string]limiter.Limiter),
+			}
+
+			plugin.InitializeNodeLimiter(ctx)
+
+			if tc.mockFilesystem != nil {
+				plugin.fs = tc.mockFilesystem()
+			}
+
+			if tc.setupNodeHelperMock != nil {
+				plugin.nodeHelper = tc.setupNodeHelperMock()
+			}
+
+			if tc.setupOsutils != nil {
+				plugin.osutils = tc.setupOsutils()
+			}
+
+			resp, err := plugin.NodeGetVolumeStats(ctx, tc.req)
+
+			if tc.expErrCode != codes.OK {
+				assert.Error(t, err)
+				if err != nil {
+					status, _ := status.FromError(err)
+					assert.Equal(t, tc.expErrCode, status.Code(), "Expected error code %v, got %v", tc.expErrCode, status.Code())
+				}
+				assert.Nil(t, resp)
+				return
+			}
+
+			assert.NoError(t, err)
+			assert.NotNil(t, resp)
+		})
+	}
+}
+
+func TestPlugin_NodeGetCapabilities(t *testing.T) {
+	// Arrange
+	expectedCapabilities := []*csi.NodeServiceCapability{
+		{
+			Type: &csi.NodeServiceCapability_Rpc{
+				Rpc: &csi.NodeServiceCapability_RPC{
+					Type: csi.NodeServiceCapability_RPC_STAGE_UNSTAGE_VOLUME,
+				},
+			},
+		},
+	}
+	plugin := &Plugin{
+		command: execCmd.NewCommand(),
+		nsCap:   expectedCapabilities,
+	}
+
+	// Act
+	resp, err := plugin.NodeGetCapabilities(context.Background(), &csi.NodeGetCapabilitiesRequest{})
+
+	// Assert
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.Equal(t, expectedCapabilities, resp.Capabilities)
+}
+
+func TestCleanStalePublications(t *testing.T) {
+	// fail the request as no staging target path was provided in request to unstage vol
+	setupOsutils := func() osutils.Utils {
+		mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+		mockOSUtils.EXPECT().IsLikelyDir(gomock.Any()).Return(false, errors.New("some error"))
+		return mockOSUtils
+	}
+	plugin := &Plugin{
+		command:          execCmd.NewCommand(),
+		role:             CSINode,
+		limiterSharedMap: make(map[string]limiter.Limiter),
+		osutils:          setupOsutils(),
+	}
+
+	plugin.InitializeNodeLimiter(ctx)
+
+	stalePublications := map[string]*models.VolumeTrackingInfo{"p1": {PublishedPaths: map[string]struct{}{"path1": {}}}}
+
+	err := plugin.cleanStalePublications(context.Background(), stalePublications)
+
+	// Assert
+	assert.Error(t, err)
+}
+
+func TestPlugin_NodeGetInfo(t *testing.T) {
+	// Arrange
+	nodeName := "test-node"
+	plugin := &Plugin{
+		command:  execCmd.NewCommand(),
+		nodeName: nodeName,
+	}
+
+	resp, err := plugin.NodeGetInfo(context.Background(), &csi.NodeGetInfoRequest{})
+
+	// Assert
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.Equal(t, nodeName, resp.NodeId)
+}
+
+func TestNodeGetInfo(t *testing.T) {
+	testCases := []struct {
+		name             string
+		expectedResponse *models.Node
+		setupOsutils     func() osutils.Utils
+		getISCSIClient   func() iscsi.ISCSI
+		setupNVMeHandler func() nvme.NVMeInterface
+	}{
+		{
+			name: "Get Node info error, Unable to get host system information",
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().GetHostSystemInfo(gomock.Any()).Return(nil, errors.New("some error"))
+				mockOSUtils.EXPECT().GetIPAddresses(gomock.Any()).Return(nil, errors.New("some error"))
+				mockOSUtils.EXPECT().NFSActiveOnHost(gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().ISCSIActiveOnHost(
+					gomock.Any(), gomock.Any()).Return(true, nil).AnyTimes()
+				return mockISCSIClient
+			},
+			setupNVMeHandler: func() nvme.NVMeInterface {
+				mockNvmeHandler := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
+				mockNvmeHandler.EXPECT().NVMeActiveOnHost(gomock.Any()).Return(true, nil).AnyTimes()
+				mockNvmeHandler.EXPECT().GetHostNqn(gomock.Any()).Return("ips", nil).AnyTimes()
+				return mockNvmeHandler
+			},
+
+			expectedResponse: &models.Node{},
+		},
+		{
+			name: "Get Node info error, Could not get IP addresses.",
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().GetHostSystemInfo(gomock.Any()).Return(&models.HostSystem{}, nil)
+				mockOSUtils.EXPECT().GetIPAddresses(gomock.Any()).Return(nil, errors.New("some error"))
+				mockOSUtils.EXPECT().NFSActiveOnHost(gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().ISCSIActiveOnHost(
+					gomock.Any(), gomock.Any()).Return(true, nil).AnyTimes()
+				return mockISCSIClient
+			},
+			setupNVMeHandler: func() nvme.NVMeInterface {
+				mockNvmeHandler := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
+				mockNvmeHandler.EXPECT().NVMeActiveOnHost(gomock.Any()).Return(true, nil).AnyTimes()
+				mockNvmeHandler.EXPECT().GetHostNqn(gomock.Any()).Return("ips", nil).AnyTimes()
+				return mockNvmeHandler
+			},
+
+			expectedResponse: &models.Node{},
+		},
+		{
+			name: "Get Node info, Could not find any usable IP addresses.",
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().GetHostSystemInfo(gomock.Any()).Return(&models.HostSystem{}, nil)
+				mockOSUtils.EXPECT().GetIPAddresses(gomock.Any()).Return([]string{}, nil)
+				mockOSUtils.EXPECT().NFSActiveOnHost(gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().ISCSIActiveOnHost(
+					gomock.Any(), gomock.Any()).Return(true, nil).AnyTimes()
+				return mockISCSIClient
+			},
+			setupNVMeHandler: func() nvme.NVMeInterface {
+				mockNvmeHandler := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
+				mockNvmeHandler.EXPECT().NVMeActiveOnHost(gomock.Any()).Return(true, nil).AnyTimes()
+				mockNvmeHandler.EXPECT().GetHostNqn(gomock.Any()).Return("", errors.New("")).AnyTimes()
+				return mockNvmeHandler
+			},
+			expectedResponse: &models.Node{},
+		},
+		{
+			name: "Get Node info, Discovered IP addresses.",
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().GetHostSystemInfo(gomock.Any()).Return(&models.HostSystem{}, nil)
+				mockOSUtils.EXPECT().GetIPAddresses(gomock.Any()).Return([]string{"ip1", "ip2"}, nil)
+				mockOSUtils.EXPECT().NFSActiveOnHost(gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().ISCSIActiveOnHost(
+					gomock.Any(), gomock.Any()).Return(true, nil).AnyTimes()
+				return mockISCSIClient
+			},
+			setupNVMeHandler: func() nvme.NVMeInterface {
+				mockNvmeHandler := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
+				mockNvmeHandler.EXPECT().NVMeActiveOnHost(gomock.Any()).Return(true, nil).AnyTimes()
+				mockNvmeHandler.EXPECT().GetHostNqn(gomock.Any()).Return("", nil).AnyTimes()
+				return mockNvmeHandler
+			},
+			expectedResponse: &models.Node{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Create plugin instance
+			plugin := &Plugin{
+				command:          execCmd.NewCommand(),
+				role:             CSINode,
+				limiterSharedMap: make(map[string]limiter.Limiter),
+			}
+
+			plugin.InitializeNodeLimiter(ctx)
+
+			// Setup mocks
+			if tc.setupOsutils != nil {
+				plugin.osutils = tc.setupOsutils()
+			}
+			if tc.getISCSIClient != nil {
+				plugin.iscsi = tc.getISCSIClient()
+			}
+
+			if tc.setupNVMeHandler != nil {
+				plugin.nvmeHandler = tc.setupNVMeHandler()
+			}
+			testCtx := context.Background()
+
+			resp := plugin.nodeGetInfo(testCtx)
+
+			assert.NotNil(t, resp)
+		})
+	}
+}
+
+func TestNodeUnStageVolume(t *testing.T) {
+	defer func(previousIscsiUtils iscsi.IscsiReconcileUtils) {
+		iscsiUtils = previousIscsiUtils
+	}(iscsiUtils)
+	testCases := []struct {
+		name                         string
+		req                          *csi.NodeUnstageVolumeRequest
+		expectedResponse             *csi.NodeUnstageVolumeResponse
+		expErrCode                   codes.Code
+		setupISCSIMock               func() iscsi.ISCSI
+		setupNodeHelperMock          func() nodehelpers.NodeHelper
+		setupRestClientMock          func() controllerAPI.TridentController
+		setupMount                   func() mount.Mount
+		contextTimeoutBeforeCall     bool
+		mockFilesystem               func() filesystem.Filesystem
+		getDeviceClient              func() devices.Devices
+		setupNVMeHandler             func() nvme.NVMeInterface
+		getIscsiReconcileUtilsClient func() iscsi.IscsiReconcileUtils
+	}{
+		{
+			name: "Volume Unstaging errored, empty volumeID provided",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "",
+				StagingTargetPath: "/staging/path",
+			},
+			expectedResponse: &csi.NodeUnstageVolumeResponse{},
+			expErrCode:       codes.InvalidArgument,
+		},
+		{
+			name: "Volume Unstaging errored, empty StagingTargetPath provided",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-vol",
+				StagingTargetPath: "",
+			},
+			expectedResponse: &csi.NodeUnstageVolumeResponse{},
+			expErrCode:       codes.InvalidArgument,
+		},
+		{
+			name: "Volume Unstaging errored, Not found tracking info file",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-vol",
+				StagingTargetPath: "/staging/path",
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil, errors.NotFoundError("")).AnyTimes()
+				return mockNodeHelper
+			},
+			expectedResponse: &csi.NodeUnstageVolumeResponse{},
+			expErrCode:       codes.OK,
+		},
+		{
+			name: "Volume Unstaging errored, Unable to read the volume tracking file",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-vol",
+				StagingTargetPath: "/staging/path",
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil, errors.New("")).AnyTimes()
+				return mockNodeHelper
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.Internal,
+		},
+		{
+			name: "Volume Unstaging errored,unable to read protocol info from publish info",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+			},
+			expectedResponse: &csi.NodeUnstageVolumeResponse{},
+			expErrCode:       codes.FailedPrecondition,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsCompatible(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{VolumePublishInfo: models.VolumePublishInfo{}}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "Success - NFS Volume Unstaging",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+			},
+			expectedResponse: &csi.NodeUnstageVolumeResponse{},
+			expErrCode:       codes.OK,
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							NfsAccessInfo: models.NfsAccessInfo{
+								NfsServerIP: "some-ip",
+							},
+						},
+					},
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "Success - NFS Volume Unstaging failed, error in deleting tracking info file",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+			},
+			expectedResponse: &csi.NodeUnstageVolumeResponse{},
+			expErrCode:       codes.Internal,
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							NfsAccessInfo: models.NfsAccessInfo{
+								NfsServerIP: "some-ip",
+							},
+						},
+					},
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "Success - SMB Volume Unstaging",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+			},
+			expectedResponse: &csi.NodeUnstageVolumeResponse{},
+			expErrCode:       codes.OK,
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil).AnyTimes()
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							SMBAccessInfo: models.SMBAccessInfo{
+								SMBPath: "some-path",
+							},
+						},
+						FilesystemType: smb.SMB,
+					},
+				}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountSMBPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				return mockMountClient
+			},
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().GetUnmountPath(gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+
+				return mockFilesystem1
+			},
+		},
+		{
+			name: "Error - SMB Volume Unstaging, failed getting mount path",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.Unknown,
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							SMBAccessInfo: models.SMBAccessInfo{
+								SMBPath: "some-path",
+							},
+						},
+						FilesystemType: smb.SMB,
+					},
+				}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountSMBPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().GetUnmountPath(gomock.Any(), gomock.Any()).Return("", errors.New("failed getting unmount path")).AnyTimes()
+
+				return mockFilesystem1
+			},
+		},
+		{
+			name: "Error - SMB Volume Unstaging, failed unmounting volume",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.Unknown,
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil).AnyTimes()
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							SMBAccessInfo: models.SMBAccessInfo{
+								SMBPath: "some-path",
+							},
+						},
+						FilesystemType: smb.SMB,
+					},
+				}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountSMBPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("some error"))
+				return mockMountClient
+			},
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().GetUnmountPath(gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+
+				return mockFilesystem1
+			},
+		},
+		{
+			name: "Success - SMB Volume Unstaging failed, error in deleting tracking info file",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+			},
+			expectedResponse: &csi.NodeUnstageVolumeResponse{},
+			expErrCode:       codes.Internal,
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(errors.New("error deleting")).AnyTimes()
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							SMBAccessInfo: models.SMBAccessInfo{
+								SMBPath: "some-path",
+							},
+						},
+						FilesystemType: smb.SMB,
+					},
+				}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountSMBPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				return mockMountClient
+			},
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().GetUnmountPath(gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+
+				return mockFilesystem1
+			},
+		},
+		{
+			name: "Success - Iscsi Volume Unstaging",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-iscsi-volume",
+				StagingTargetPath: "/staging/path",
+			},
+			expectedResponse: &csi.NodeUnstageVolumeResponse{},
+			expErrCode:       codes.OK,
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil).AnyTimes()
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{VolumePublishInfo: models.VolumePublishInfo{VolumeAccessInfo: models.VolumeAccessInfo{IscsiAccessInfo: models.IscsiAccessInfo{IscsiTargetIQN: "fake-iqn"}}}}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().GetUnmountPath(gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+
+				return mockFilesystem1
+			},
+			setupISCSIMock: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+				return mockISCSIClient
+			},
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[int]int{}).AnyTimes()
+				return mockIscsiReconcileUtilsClient
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockDeviceClient.EXPECT().GetMultipathDeviceBySerial(gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+				return mockDeviceClient
+			},
+		},
+		{
+			name: "Success - fcp Volume Unstaging",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-iscsi-volume",
+				StagingTargetPath: "/staging/path",
+			},
+			expectedResponse: &csi.NodeUnstageVolumeResponse{},
+			expErrCode:       codes.OK,
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil).AnyTimes()
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{VolumePublishInfo: models.VolumePublishInfo{SANType: sa.FCP, FilesystemType: sa.FCP, VolumeAccessInfo: models.VolumeAccessInfo{FCPAccessInfo: models.FCPAccessInfo{FibreChannelAccessInfo: models.FibreChannelAccessInfo{FCTargetWWNN: "fake-wwwn"}}}}}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().GetUnmountPath(gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+
+				return mockFilesystem1
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockDeviceClient
+			},
+		},
+		{
+			name: "Success - Nvme Volume Unstaging",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-iscsi-volume",
+				StagingTargetPath: "/staging/path",
+			},
+			expectedResponse: &csi.NodeUnstageVolumeResponse{},
+			expErrCode:       codes.OK,
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil).AnyTimes()
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{VolumePublishInfo: models.VolumePublishInfo{SANType: sa.NVMe, FilesystemType: "ext4", VolumeAccessInfo: models.VolumeAccessInfo{NVMeAccessInfo: models.NVMeAccessInfo{NVMeSubsystemNQN: "fake-nqn"}}}}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().GetUnmountPath(gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+
+				return mockFilesystem1
+			},
+			setupNVMeHandler: func() nvme.NVMeInterface {
+				mockNvmeHandler := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
+				mockNvmeHandler.EXPECT().RemovePublishedNVMeSession(gomock.Any(), gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+				mockNvmeHandler.EXPECT().NewNVMeSubsystem(gomock.Any(), gomock.Any()).Return(nvme.NewNVMeSubsystemDetailed("mock-nqn", "mock-name", []nvme.Path{{Address: "mock-address"}}, nil, afero.NewMemMapFs())).AnyTimes()
+				return mockNvmeHandler
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockDeviceClient
+			},
+		},
+	}
+
+	mountClient, _ := mount.New()
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if runtime.GOOS == "darwin" && strings.Contains(tc.name, "Nvme Volume Unstaging") {
+				t.Skip("Skipping test on Darwin (macOS) as NVMe is not supported")
+			}
+
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Create plugin instance
+			plugin := &Plugin{
+				command:          execCmd.NewCommand(),
+				role:             CSINode,
+				limiterSharedMap: make(map[string]limiter.Limiter),
+				fs:               filesystem.New(mountClient),
+			}
+
+			plugin.InitializeNodeLimiter(ctx)
+
+			// Setup mocks
+			if tc.mockFilesystem != nil {
+				plugin.fs = tc.mockFilesystem()
+			}
+
+			if tc.setupNodeHelperMock != nil {
+				plugin.nodeHelper = tc.setupNodeHelperMock()
+			}
+
+			if tc.setupRestClientMock != nil {
+				plugin.restClient = tc.setupRestClientMock()
+			}
+			if tc.getIscsiReconcileUtilsClient != nil {
+				iscsiUtils = tc.getIscsiReconcileUtilsClient()
+			}
+
+			if tc.setupISCSIMock != nil {
+				plugin.iscsi = tc.setupISCSIMock()
+			}
+
+			if tc.setupMount != nil {
+				plugin.mount = tc.setupMount()
+			}
+			if tc.setupNVMeHandler != nil {
+				plugin.nvmeHandler = tc.setupNVMeHandler()
+			}
+			if tc.getDeviceClient != nil {
+				plugin.devices = tc.getDeviceClient()
+			}
+
+			// Create context with potential timeout
+			testCtx := context.Background()
+			if tc.contextTimeoutBeforeCall {
+				// Create a context that times out immediately
+				cancelCtx, cancel := context.WithTimeout(context.Background(), 1*time.Nanosecond)
+				defer cancel()
+				time.Sleep(2 * time.Nanosecond) // Ensure timeout has occurred
+				testCtx = cancelCtx
+			}
+
+			// Call the function under test
+			resp, err := plugin.NodeUnstageVolume(testCtx, tc.req)
+
+			// Verify results
+			if tc.expErrCode != codes.OK {
+				assert.Error(t, err)
+				if err != nil {
+					status, _ := status.FromError(err)
+					// assert.True(t, ok)
+					assert.Equal(t, tc.expErrCode, status.Code(), "Expected error code %v, got %v", tc.expErrCode, status.Code())
+				}
+				assert.Nil(t, resp)
+				return
+			}
+
+			assert.NoError(t, err)
+			assert.NotNil(t, resp)
+		})
+	}
+}
+
+func TestNodeUnpublishVolume(t *testing.T) {
+	testCases := []struct {
+		name                string
+		req                 *csi.NodeUnpublishVolumeRequest
+		expectedResponse    *csi.NodeUnpublishVolumeResponse
+		expErrCode          codes.Code
+		setupOsutils        func() osutils.Utils
+		setupNodeHelperMock func() nodehelpers.NodeHelper
+		setupMount          func() mount.Mount
+	}{
+		{
+			name: "Volume Unpublish errored, empty volumeID provided",
+			req: &csi.NodeUnpublishVolumeRequest{
+				VolumeId:   "",
+				TargetPath: "/staging/path",
+			},
+			expectedResponse: &csi.NodeUnpublishVolumeResponse{},
+			expErrCode:       codes.InvalidArgument,
+		},
+		{
+			name: "Volume Unpublish errored, empty TargetPath provided",
+			req: &csi.NodeUnpublishVolumeRequest{
+				VolumeId:   "test-vol",
+				TargetPath: "",
+			},
+			expectedResponse: &csi.NodeUnpublishVolumeResponse{},
+			expErrCode:       codes.InvalidArgument,
+		},
+		{
+			name: "Volume unpublish errored, could not check if the target path is a directory",
+			req: &csi.NodeUnpublishVolumeRequest{
+				VolumeId:   "test-vol",
+				TargetPath: "/staging/path",
+			},
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().IsLikelyDir(gomock.Any()).Return(false, errors.New("some error"))
+				return mockOSUtils
+			},
+			expectedResponse: &csi.NodeUnpublishVolumeResponse{},
+			expErrCode:       codes.Internal,
+		},
+		{
+			name: "Volume unpublish errored, target path directory not found",
+			req: &csi.NodeUnpublishVolumeRequest{
+				VolumeId:   "test-vol",
+				TargetPath: "/staging/path",
+			},
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().IsLikelyDir(gomock.Any()).Return(false, fs.ErrNotExist)
+				return mockOSUtils
+			},
+			expectedResponse: &csi.NodeUnpublishVolumeResponse{},
+			expErrCode:       codes.OK,
+		},
+		{
+			name: "Volume unpublish errored, target path is a directory, volume not mounted",
+			req: &csi.NodeUnpublishVolumeRequest{
+				VolumeId:   "test-vol",
+				TargetPath: "/staging/path",
+			},
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().IsLikelyDir(gomock.Any()).Return(true, nil)
+				mockOSUtils.EXPECT().DeleteResourceAtPath(gomock.Any(), gomock.Any()).Return(nil)
+				return mockOSUtils
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(true, nil)
+
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().RemovePublishedPath(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			expectedResponse: &csi.NodeUnpublishVolumeResponse{},
+			expErrCode:       codes.OK,
+		},
+		{
+			name: "Volume unpublish errored, target path is not a directory, volume not mounted",
+			req: &csi.NodeUnpublishVolumeRequest{
+				VolumeId:   "test-vol",
+				TargetPath: "/staging/path",
+			},
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().IsLikelyDir(gomock.Any()).Return(false, nil)
+				mockOSUtils.EXPECT().DeleteResourceAtPath(gomock.Any(), gomock.Any()).Return(nil)
+				return mockOSUtils
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsMounted(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
+				return mockMountClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().RemovePublishedPath(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			expectedResponse: &csi.NodeUnpublishVolumeResponse{},
+			expErrCode:       codes.OK,
+		},
+		{
+			name: "Volume unpublish errored, target path is a directory, unable to check if targetPath  is mounted",
+			req: &csi.NodeUnpublishVolumeRequest{
+				VolumeId:   "test-vol",
+				TargetPath: "/staging/path",
+			},
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().IsLikelyDir(gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(false, errors.New("some error")).AnyTimes()
+				return mockMountClient
+			},
+			expectedResponse: &csi.NodeUnpublishVolumeResponse{},
+			expErrCode:       codes.Internal,
+		},
+		{
+			name: "Volume unpublish errored, target path is a directory, mountpath doesn't exist",
+			req: &csi.NodeUnpublishVolumeRequest{
+				VolumeId:   "test-vol",
+				TargetPath: "/staging/path",
+			},
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().IsLikelyDir(gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(false, fs.ErrNotExist).AnyTimes()
+				return mockMountClient
+			},
+			expectedResponse: &csi.NodeUnpublishVolumeResponse{},
+			expErrCode:       codes.NotFound,
+		},
+		{
+			name: "Volume unpublish errored, unable to unmount volume",
+			req: &csi.NodeUnpublishVolumeRequest{
+				VolumeId:   "test-nfs-volume",
+				TargetPath: "/staging/path",
+			},
+			expectedResponse: &csi.NodeUnpublishVolumeResponse{},
+			expErrCode:       codes.InvalidArgument,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
+				mockMountClient.EXPECT().Umount(gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockMountClient
+			},
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().IsLikelyDir(gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{VolumePublishInfo: models.VolumePublishInfo{}}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "Volume unpublish errored, unable to delete resource at target path, could not remove published path",
+			req: &csi.NodeUnpublishVolumeRequest{
+				VolumeId:   "test-nfs-volume",
+				TargetPath: "/staging/path",
+			},
+			expectedResponse: &csi.NodeUnpublishVolumeResponse{},
+			expErrCode:       codes.Internal,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
+				mockMountClient.EXPECT().Umount(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().IsLikelyDir(gomock.Any()).Return(true, nil)
+				mockOSUtils.EXPECT().DeleteResourceAtPath(gomock.Any(), gomock.Any()).Return(errors.New(""))
+				return mockOSUtils
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().RemovePublishedPath(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "Volume unpublish errored, published path from volume tracking file for volume is not found",
+			req: &csi.NodeUnpublishVolumeRequest{
+				VolumeId:   "test-nfs-volume",
+				TargetPath: "/staging/path",
+			},
+			expectedResponse: &csi.NodeUnpublishVolumeResponse{},
+			expErrCode:       codes.OK,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
+				mockMountClient.EXPECT().Umount(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().IsLikelyDir(gomock.Any()).Return(true, nil)
+				mockOSUtils.EXPECT().DeleteResourceAtPath(gomock.Any(), gomock.Any()).Return(nil)
+				return mockOSUtils
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().RemovePublishedPath(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(errors.NotFoundError("")).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+		{
+			name: "Success - volume unpublish",
+			req: &csi.NodeUnpublishVolumeRequest{
+				VolumeId:   "test-nfs-volume",
+				TargetPath: "/staging/path",
+			},
+			expectedResponse: &csi.NodeUnpublishVolumeResponse{},
+			expErrCode:       codes.OK,
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
+				mockMountClient.EXPECT().Umount(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			setupOsutils: func() osutils.Utils {
+				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
+				mockOSUtils.EXPECT().IsLikelyDir(gomock.Any()).Return(true, nil)
+				mockOSUtils.EXPECT().DeleteResourceAtPath(gomock.Any(), gomock.Any()).Return(nil)
+				return mockOSUtils
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().RemovePublishedPath(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+		},
+	}
+
+	mountClient, _ := mount.New()
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Create plugin instance
+			plugin := &Plugin{
+				command:          execCmd.NewCommand(),
+				role:             CSINode,
+				limiterSharedMap: make(map[string]limiter.Limiter),
+				fs:               filesystem.New(mountClient),
+			}
+
+			plugin.InitializeNodeLimiter(ctx)
+
+			if tc.setupNodeHelperMock != nil {
+				plugin.nodeHelper = tc.setupNodeHelperMock()
+			}
+
+			if tc.setupMount != nil {
+				plugin.mount = tc.setupMount()
+			}
+			if tc.setupOsutils != nil {
+				plugin.osutils = tc.setupOsutils()
+			}
+
+			testCtx := context.Background()
+
+			resp, err := plugin.NodeUnpublishVolume(testCtx, tc.req)
+
+			// Verify results
+			if tc.expErrCode != codes.OK {
+				assert.Error(t, err)
+				if err != nil {
+					status, _ := status.FromError(err)
+					// assert.True(t, ok)
+					assert.Equal(t, tc.expErrCode, status.Code(), "Expected error code %v, got %v", tc.expErrCode, status.Code())
+				}
+				assert.Nil(t, resp)
+				return
+			}
+
+			assert.NoError(t, err)
+			assert.NotNil(t, resp)
+		})
+	}
+}
+
+func TestNodeExpandVolume(t *testing.T) {
+	testCases := []struct {
+		name                string
+		req                 *csi.NodeExpandVolumeRequest
+		expectedResponse    *csi.NodeExpandVolumeResponse
+		expErrCode          codes.Code
+		setupNodeHelperMock func() nodehelpers.NodeHelper
+		setupISCSIMock      func() iscsi.ISCSI
+		getFCPClient        func() fcp.FCP
+		mockFilesystem      func() filesystem.Filesystem
+		getDeviceClient     func() devices.Devices
+	}{
+		{
+			name: "Node expand volume failed, empty volumeID provided",
+			req: &csi.NodeExpandVolumeRequest{
+				VolumeId: "",
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.InvalidArgument,
+		},
+		{
+			name: "Node expand volume failed, empty TargetPath provided",
+			req: &csi.NodeExpandVolumeRequest{
+				VolumeId:   "test-vol",
+				VolumePath: "",
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.InvalidArgument,
+		},
+		{
+			name: "Node expand volume failed, could not read  volume tracking file",
+			req: &csi.NodeExpandVolumeRequest{
+				VolumeId:   "test-vol",
+				VolumePath: "/vol/path",
+				CapacityRange: &csi.CapacityRange{
+					RequiredBytes: 2 * 1024 * 1024 * 1024,
+					LimitBytes:    3 * 1024 * 1024 * 1024,
+				},
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil, errors.New("")).AnyTimes()
+				return mockNodeHelper
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.Internal,
+		},
+		{
+			name: "Node expand volume failed,  volume tracking file not found",
+			req: &csi.NodeExpandVolumeRequest{
+				VolumeId:   "test-vol",
+				VolumePath: "/vol/path",
+				CapacityRange: &csi.CapacityRange{
+					RequiredBytes: 2 * 1024 * 1024 * 1024,
+					LimitBytes:    3 * 1024 * 1024 * 1024,
+				},
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil, errors.NotFoundError("")).AnyTimes()
+				return mockNodeHelper
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.NotFound,
+		},
+		{
+			name: "Node expand volume failed, unable to read protocol info from publish info",
+			req: &csi.NodeExpandVolumeRequest{
+				VolumeId:   "test-vol",
+				VolumePath: "/vol/path",
+				CapacityRange: &csi.CapacityRange{
+					RequiredBytes: 2 * 1024 * 1024 * 1024,
+					LimitBytes:    3 * 1024 * 1024 * 1024,
+				},
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{StagingTargetPath: "/path", VolumePublishInfo: models.VolumePublishInfo{}}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			expectedResponse: nil,
+			expErrCode:       codes.FailedPrecondition,
+		},
+		{
+			name: "Node expand volume for file protocols not required",
+			req: &csi.NodeExpandVolumeRequest{
+				VolumeId:   "test-vol",
+				VolumePath: "/vol/path",
+				CapacityRange: &csi.CapacityRange{
+					RequiredBytes: 2 * 1024 * 1024 * 1024,
+					LimitBytes:    3 * 1024 * 1024 * 1024,
+				},
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							NfsAccessInfo: models.NfsAccessInfo{
+								NfsServerIP: "some-ip",
+							},
+						},
+					},
+					StagingTargetPath: "/vol/path",
+				}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			expectedResponse: &csi.NodeExpandVolumeResponse{},
+			expErrCode:       codes.OK,
+		},
+		{
+			name: "Node expand volume for block protocols failed, filesystem type not supported",
+			req: &csi.NodeExpandVolumeRequest{
+				VolumeId:   "test-vol",
+				VolumePath: "/vol/path",
+				CapacityRange: &csi.CapacityRange{
+					RequiredBytes: 2 * 1024 * 1024 * 1024,
+					LimitBytes:    3 * 1024 * 1024 * 1024,
+				},
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: "unsupported-fs",
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							IscsiAccessInfo: models.IscsiAccessInfo{
+								IscsiTargetIQN: "some-iqn",
+							},
+						},
+					},
+					StagingTargetPath: "/vol/path",
+				}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			expectedResponse: &csi.NodeExpandVolumeResponse{},
+			expErrCode:       codes.Unknown,
+		},
+		{
+			name: "Node expand volume failed for Iscsi block protocol success",
+			req: &csi.NodeExpandVolumeRequest{
+				VolumeId:   "test-vol",
+				VolumePath: "/vol/path",
+				CapacityRange: &csi.CapacityRange{
+					RequiredBytes: 2 * 1024 * 1024 * 1024,
+					LimitBytes:    3 * 1024 * 1024 * 1024,
+				},
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: "ext4",
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							IscsiAccessInfo: models.IscsiAccessInfo{
+								IscsiTargetIQN: "some-iqn",
+							},
+						},
+					},
+					StagingTargetPath: "/vol/path",
+				}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupISCSIMock: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true).AnyTimes()
+				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockISCSIClient
+			},
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+
+				return mockFilesystem1
+			},
+			expectedResponse: &csi.NodeExpandVolumeResponse{},
+			expErrCode:       codes.OK,
+		},
+		{
+			name: "Node expand volume failed for Iscsi block protocol failed, device to expand is not attached",
+			req: &csi.NodeExpandVolumeRequest{
+				VolumeId:   "test-vol",
+				VolumePath: "/vol/path",
+				CapacityRange: &csi.CapacityRange{
+					RequiredBytes: 2 * 1024 * 1024 * 1024,
+					LimitBytes:    3 * 1024 * 1024 * 1024,
+				},
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: "ext4",
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							IscsiAccessInfo: models.IscsiAccessInfo{
+								IscsiTargetIQN: "some-iqn",
+							},
+						},
+					},
+					StagingTargetPath: "/vol/path",
+				}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupISCSIMock: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockISCSIClient
+			},
+
+			expErrCode: codes.Internal,
+		},
+		{
+			name: "Node expand volume failed for Iscsi block protocol failed, Unable to rescan device.",
+			req: &csi.NodeExpandVolumeRequest{
+				VolumeId:   "test-vol",
+				VolumePath: "/vol/path",
+				CapacityRange: &csi.CapacityRange{
+					RequiredBytes: 2 * 1024 * 1024 * 1024,
+					LimitBytes:    3 * 1024 * 1024 * 1024,
+				},
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: "ext4",
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							IscsiAccessInfo: models.IscsiAccessInfo{
+								IscsiTargetIQN: "some-iqn",
+							},
+						},
+					},
+					StagingTargetPath: "/vol/path",
+				}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupISCSIMock: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true).AnyTimes()
+				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockISCSIClient
+			},
+
+			expErrCode: codes.Internal,
+		},
+		{
+			name: "Node expand volume failed for Iscsi block protocol failed, Unable to expand filesystem.",
+			req: &csi.NodeExpandVolumeRequest{
+				VolumeId:   "test-vol",
+				VolumePath: "/vol/path",
+				CapacityRange: &csi.CapacityRange{
+					RequiredBytes: 2 * 1024 * 1024 * 1024,
+					LimitBytes:    3 * 1024 * 1024 * 1024,
+				},
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: "ext4",
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							IscsiAccessInfo: models.IscsiAccessInfo{
+								IscsiTargetIQN: "some-iqn",
+							},
+						},
+					},
+					StagingTargetPath: "/vol/path",
+				}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupISCSIMock: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true).AnyTimes()
+				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockISCSIClient
+			},
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(0), errors.New("some error")).AnyTimes()
+
+				return mockFilesystem1
+			},
+			expErrCode: codes.Internal,
+		},
+		{
+			name: "Node expand volume failed for fcp block protocol failed, device to expand is not attached",
+			req: &csi.NodeExpandVolumeRequest{
+				VolumeId:   "test-vol",
+				VolumePath: "/vol/path",
+				CapacityRange: &csi.CapacityRange{
+					RequiredBytes: 2 * 1024 * 1024 * 1024,
+					LimitBytes:    3 * 1024 * 1024 * 1024,
+				},
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: "ext4",
+						SANType:        sa.FCP,
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							FCPAccessInfo: models.FCPAccessInfo{
+								FibreChannelAccessInfo: models.FibreChannelAccessInfo{
+									FCTargetWWNN: "some-wwnn",
+								},
+							},
+						},
+					},
+					StagingTargetPath: "/vol/path",
+				}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			getFCPClient: func() fcp.FCP {
+				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
+				mockFCPClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+				return mockFCPClient
+			},
+			expErrCode: codes.Internal,
+		},
+		{
+			name: "Node expand volume failed for fcp block protocol failed, Unable to rescan device.",
+			req: &csi.NodeExpandVolumeRequest{
+				VolumeId:   "test-vol",
+				VolumePath: "/vol/path",
+				CapacityRange: &csi.CapacityRange{
+					RequiredBytes: 2 * 1024 * 1024 * 1024,
+					LimitBytes:    3 * 1024 * 1024 * 1024,
+				},
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: "ext4",
+						SANType:        sa.FCP,
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							FCPAccessInfo: models.FCPAccessInfo{
+								FibreChannelAccessInfo: models.FibreChannelAccessInfo{
+									FCTargetWWNN: "some-wwnn",
+								},
+							},
+						},
+					},
+					StagingTargetPath: "/vol/path",
+				}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			getFCPClient: func() fcp.FCP {
+				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
+				mockFCPClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true).AnyTimes()
+				mockFCPClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockFCPClient
+			},
+			expErrCode: codes.Internal,
+		},
+		{
+			name: "Node expand volume for NVMe protocol success",
+			req: &csi.NodeExpandVolumeRequest{
+				VolumeId:   "test-vol",
+				VolumePath: "/vol/path",
+				CapacityRange: &csi.CapacityRange{
+					RequiredBytes: 2 * 1024 * 1024 * 1024,
+					LimitBytes:    3 * 1024 * 1024 * 1024,
+				},
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						SANType:        sa.NVMe,
+						FilesystemType: "ext4",
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							NVMeAccessInfo: models.NVMeAccessInfo{
+								NVMeSubsystemNQN: "some-nqn",
+							},
+						},
+					},
+					StagingTargetPath: "/vol/path",
+				}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+
+				return mockFilesystem1
+			},
+			expectedResponse: &csi.NodeExpandVolumeResponse{},
+			expErrCode:       codes.OK,
+		},
+		{
+			name: "Node expand volume failed for Iscsi block protocol, luks enabled, error in getting multipath luks device",
+			req: &csi.NodeExpandVolumeRequest{
+				VolumeId:   "test-vol",
+				VolumePath: "/vol/path",
+				CapacityRange: &csi.CapacityRange{
+					RequiredBytes: 2 * 1024 * 1024 * 1024,
+					LimitBytes:    3 * 1024 * 1024 * 1024,
+				},
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						DevicePath:     "not-legacy-device-path",
+						LUKSEncryption: "true",
+						FilesystemType: "ext4",
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							IscsiAccessInfo: models.IscsiAccessInfo{
+								IscsiTargetIQN: "some-iqn",
+							},
+						},
+					},
+					StagingTargetPath: "/vol/path",
+				}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupISCSIMock: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true).AnyTimes()
+				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockISCSIClient
+			},
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+
+				return mockFilesystem1
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("", errors.New(""))
+				return mockDeviceClient
+			},
+			expErrCode: codes.Internal,
+		},
+		{
+			name: "Node expand volume failed for Iscsi block protocol failed with luks enabled, luks-passphrase empty",
+			req: &csi.NodeExpandVolumeRequest{
+				VolumeId:   "test-vol",
+				VolumePath: "/vol/path",
+				CapacityRange: &csi.CapacityRange{
+					RequiredBytes: 2 * 1024 * 1024 * 1024,
+					LimitBytes:    3 * 1024 * 1024 * 1024,
+				},
+				Secrets: map[string]string{"luks-passphrase": ""},
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						DevicePath:     "luks-legacy-device-path",
+						LUKSEncryption: "true",
+						FilesystemType: "ext4",
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							IscsiAccessInfo: models.IscsiAccessInfo{
+								IscsiTargetIQN: "some-iqn",
+							},
+						},
+					},
+					StagingTargetPath: "/vol/path",
+				}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupISCSIMock: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true).AnyTimes()
+				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockISCSIClient
+			},
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+
+				return mockFilesystem1
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("x/device-path", nil).AnyTimes()
+				return mockDeviceClient
+			},
+			expErrCode: codes.InvalidArgument,
+		},
+		{
+			name: "Node expand volume failed for Iscsi block protocol failed with luks enabled, luks-passphrase not present",
+			req: &csi.NodeExpandVolumeRequest{
+				VolumeId:   "test-vol",
+				VolumePath: "/vol/path",
+				CapacityRange: &csi.CapacityRange{
+					RequiredBytes: 2 * 1024 * 1024 * 1024,
+					LimitBytes:    3 * 1024 * 1024 * 1024,
+				},
+				Secrets: map[string]string{},
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						DevicePath:     "luks-legacy-device-path",
+						LUKSEncryption: "true",
+						FilesystemType: "ext4",
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							IscsiAccessInfo: models.IscsiAccessInfo{
+								IscsiTargetIQN: "some-iqn",
+							},
+						},
+					},
+					StagingTargetPath: "/vol/path",
+				}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupISCSIMock: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true).AnyTimes()
+				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockISCSIClient
+			},
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+
+				return mockFilesystem1
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("x/device-path", nil).AnyTimes()
+				return mockDeviceClient
+			},
+			expErrCode: codes.InvalidArgument,
+		},
+		{
+			name: "Node expand volume failed for Iscsi block protocol failed with luks enabled",
+			req: &csi.NodeExpandVolumeRequest{
+				VolumeId:   "test-vol",
+				VolumePath: "/vol/path",
+				CapacityRange: &csi.CapacityRange{
+					RequiredBytes: 2 * 1024 * 1024 * 1024,
+					LimitBytes:    3 * 1024 * 1024 * 1024,
+				},
+				Secrets: map[string]string{"luks-passphrase": "fake-pass"},
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						DevicePath:     "luks-legacy-device-path",
+						LUKSEncryption: "true",
+						FilesystemType: "ext4",
+						VolumeAccessInfo: models.VolumeAccessInfo{
+							IscsiAccessInfo: models.IscsiAccessInfo{
+								IscsiTargetIQN: "some-iqn",
+							},
+						},
+					},
+					StagingTargetPath: "/vol/path",
+				}, nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupISCSIMock: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true).AnyTimes()
+				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockISCSIClient
+			},
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+
+				return mockFilesystem1
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("x/device-path", nil).AnyTimes()
+				return mockDeviceClient
+			},
+			expErrCode: codes.Internal,
+		},
+	}
+
+	mountClient, _ := mount.New()
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Create plugin instance
+			plugin := &Plugin{
+				command:          execCmd.NewCommand(),
+				role:             CSINode,
+				limiterSharedMap: make(map[string]limiter.Limiter),
+				fs:               filesystem.New(mountClient),
+			}
+
+			plugin.InitializeNodeLimiter(ctx)
+
+			if tc.setupNodeHelperMock != nil {
+				plugin.nodeHelper = tc.setupNodeHelperMock()
+			}
+			if tc.setupISCSIMock != nil {
+				plugin.iscsi = tc.setupISCSIMock()
+			}
+			if tc.getDeviceClient != nil {
+				plugin.devices = tc.getDeviceClient()
+			}
+
+			if tc.getFCPClient != nil {
+				plugin.fcp = tc.getFCPClient()
+			}
+			if tc.mockFilesystem != nil {
+				plugin.fs = tc.mockFilesystem()
+			}
+
+			testCtx := context.Background()
+
+			resp, err := plugin.NodeExpandVolume(testCtx, tc.req)
+
+			// Verify results
+			if tc.expErrCode != codes.OK {
+				assert.Error(t, err)
+				if err != nil {
+					status, _ := status.FromError(err)
+					// assert.True(t, ok)
+					assert.Equal(t, tc.expErrCode, status.Code(), "Expected error code %v, got %v", tc.expErrCode, status.Code())
+				}
+				assert.Nil(t, resp)
+				return
+			}
+
+			assert.NoError(t, err)
+			assert.NotNil(t, resp)
+		})
+	}
+}
+
+func TestNodeStageFCPVolume_FailureCases(t *testing.T) {
+	testCases := []struct {
+		name                string
+		req                 *csi.NodeStageVolumeRequest
+		expErrCode          codes.Code
+		publishInfo         *models.VolumePublishInfo
+		setupFCPMock        func() fcp.FCP
+		setupNodeHelperMock func() nodehelpers.NodeHelper
+	}{
+		{
+			name: "FCP volume staging failed, error getting staging target path",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "",
+				PublishContext: map[string]string{
+					"fcpLunNumber": "123",
+				},
+			},
+			publishInfo: &models.VolumePublishInfo{},
+			expErrCode:  codes.InvalidArgument,
+		},
+		{
+			name: "FCP Volume staging errored, invalid fcpLunNumber",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				PublishContext: map[string]string{
+					"fcpLunNumber": "-123",
+				},
+			},
+			publishInfo: &models.VolumePublishInfo{},
+			expErrCode:  codes.Unknown,
+		},
+		{
+			name: "FCP Volume staging errored, Could not write tracking file.",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				PublishContext: map[string]string{
+					"fcpLunNumber": "123",
+				},
+			},
+			publishInfo: &models.VolumePublishInfo{},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(errors.New("some error")).AnyTimes()
+				return mockNodeHelper
+			},
+			expErrCode: codes.Unknown,
+		},
+		{
+			name: "FCP Volume staging Success, could not set LUKS volume passphrase",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				PublishContext: map[string]string{
+					"fcpLunNumber":   "123",
+					"LUKSEncryption": "true",
+				},
+				VolumeContext: map[string]string{
+					"internalName": "test-vol",
+				},
+			},
+			setupFCPMock: func() fcp.FCP {
+				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
+				mockFCPClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(3), nil)
+				return mockFCPClient
+			},
+			publishInfo: &models.VolumePublishInfo{},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			expErrCode: codes.Unknown,
+		},
+		{
+			name: "FCP Volume staging success, attempt to perform gratitous resize failed, when multipath device size incorrect",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				PublishContext: map[string]string{
+					"fcpLunNumber":   "123",
+					"LUKSEncryption": "false",
+				},
+				VolumeContext: map[string]string{
+					"internalName": "test-vol",
+				},
+			},
+			publishInfo: &models.VolumePublishInfo{},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupFCPMock: func() fcp.FCP {
+				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
+				mockFCPClient.EXPECT().AttachVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(int64(3), nil)
+				return mockFCPClient
+			},
+			expErrCode: codes.OK,
+		},
+	}
+
+	mountClient, _ := mount.New()
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Create plugin instance
+			plugin := &Plugin{
+				command:          execCmd.NewCommand(),
+				role:             CSINode,
+				limiterSharedMap: make(map[string]limiter.Limiter),
+				fs:               filesystem.New(mountClient),
+			}
+
+			plugin.InitializeNodeLimiter(ctx)
+
+			if tc.setupNodeHelperMock != nil {
+				plugin.nodeHelper = tc.setupNodeHelperMock()
+			}
+			if tc.setupFCPMock != nil {
+				plugin.fcp = tc.setupFCPMock()
+			}
+
+			testCtx := context.Background()
+
+			err := plugin.nodeStageFCPVolume(testCtx, tc.req, tc.publishInfo)
+
+			// Verify results
+			if tc.expErrCode != codes.OK {
+				assert.Error(t, err)
+				if err != nil {
+					status, _ := status.FromError(err)
+					// assert.True(t, ok)
+					assert.Equal(t, tc.expErrCode, status.Code(), "Expected error code %v, got %v", tc.expErrCode, status.Code())
+				}
+				return
+			}
+
+			assert.NoError(t, err)
+		})
+	}
+}
+
+func TestNodeUnstageFCPVolume(t *testing.T) {
+	defer func(previousfcpUtils fcp.FcpReconcileUtils) {
+		fcpUtils = previousfcpUtils
+	}(fcpUtils)
+	testCases := []struct {
+		name                string
+		req                 *csi.NodeUnstageVolumeRequest
+		expErrCode          codes.Code
+		publishInfo         *models.VolumePublishInfo
+		force               bool
+		setupFCPutils       func() fcp.FcpReconcileUtils
+		setupFCPMock        func() fcp.FCP
+		setupMount          func() mount.Mount
+		getDeviceClient     func() devices.Devices
+		setupNodeHelperMock func() nodehelpers.NodeHelper
+	}{
+		{
+			name: "node unstage fcp volume success, Got 0 devices for LUN",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+			},
+			publishInfo: &models.VolumePublishInfo{},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockDeviceClient
+			},
+			setupFCPutils: func() fcp.FcpReconcileUtils {
+				setupFCPutils := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+				setupFCPutils.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return([]map[string]int{{"session": 3}}).AnyTimes()
+				setupFCPutils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(),
+					gomock.Any()).Return([]string{}).AnyTimes()
+				setupFCPutils.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{}, nil).AnyTimes()
+				return setupFCPutils
+			},
+			expErrCode: codes.OK,
+		},
+		{
+			name: "node unstage fcp volume success, got devices for LUN",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+			},
+			publishInfo: &models.VolumePublishInfo{},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupFCPMock: func() fcp.FCP {
+				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
+				mockFCPClient.EXPECT().GetDeviceInfoForLUN(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&models.ScsiDeviceInfo{}, nil).AnyTimes()
+				mockFCPClient.EXPECT().PrepareDeviceForRemoval(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+				return mockFCPClient
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockDeviceClient
+			},
+			setupFCPutils: func() fcp.FcpReconcileUtils {
+				setupFCPutils := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+				setupFCPutils.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return([]map[string]int{{"session": 3}}).AnyTimes()
+				setupFCPutils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(),
+					gomock.Any()).Return([]string{}).AnyTimes()
+				setupFCPutils.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{"d1", "d2"}, nil).AnyTimes()
+				return setupFCPutils
+			},
+			expErrCode: codes.OK,
+		},
+		{
+			name: "node unstage fcp volume failed, could not get devices for LUN",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+			},
+			publishInfo: &models.VolumePublishInfo{},
+			setupFCPutils: func() fcp.FcpReconcileUtils {
+				setupFCPutils := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+				setupFCPutils.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return([]map[string]int{{"session": 3}}).AnyTimes()
+				setupFCPutils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(),
+					gomock.Any()).Return([]string{}).AnyTimes()
+				setupFCPutils.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{}, errors.New("")).AnyTimes()
+				return setupFCPutils
+			},
+			expErrCode: codes.Unknown,
+		},
+		{
+			name: "node unstage fcp volume failed, empty staging path",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "",
+			},
+			publishInfo: &models.VolumePublishInfo{},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupFCPMock: func() fcp.FCP {
+				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
+				mockFCPClient.EXPECT().GetDeviceInfoForLUN(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&models.ScsiDeviceInfo{}, nil).AnyTimes()
+				mockFCPClient.EXPECT().PrepareDeviceForRemoval(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+				return mockFCPClient
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockDeviceClient
+			},
+			setupFCPutils: func() fcp.FcpReconcileUtils {
+				setupFCPutils := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+				setupFCPutils.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return([]map[string]int{{"session": 3}}).AnyTimes()
+				setupFCPutils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(),
+					gomock.Any()).Return([]string{}).AnyTimes()
+				setupFCPutils.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{}, nil).AnyTimes()
+				return setupFCPutils
+			},
+			expErrCode: codes.InvalidArgument,
+		},
+		{
+			name: "node unstage fcp volume failed, error deleting tracking info file",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+			},
+			publishInfo: &models.VolumePublishInfo{},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockNodeHelper
+			},
+			setupFCPMock: func() fcp.FCP {
+				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
+				mockFCPClient.EXPECT().GetDeviceInfoForLUN(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&models.ScsiDeviceInfo{}, nil).AnyTimes()
+				mockFCPClient.EXPECT().PrepareDeviceForRemoval(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+				return mockFCPClient
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockDeviceClient
+			},
+			setupFCPutils: func() fcp.FcpReconcileUtils {
+				setupFCPutils := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+				setupFCPutils.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return([]map[string]int{{"session": 3}}).AnyTimes()
+				setupFCPutils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(),
+					gomock.Any()).Return([]string{}).AnyTimes()
+				setupFCPutils.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{}, nil).AnyTimes()
+				return setupFCPutils
+			},
+			expErrCode: codes.Internal,
+		},
+		{
+			name: "node unstage fcp volume failed, error deleting tracking info file with luks enabled",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+			},
+			publishInfo: &models.VolumePublishInfo{
+				LUKSEncryption: "true",
+				DevicePath:     "not-legacy-device-path",
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockNodeHelper
+			},
+			setupFCPMock: func() fcp.FCP {
+				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
+				mockFCPClient.EXPECT().GetDeviceInfoForLUN(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&models.ScsiDeviceInfo{}, nil).AnyTimes()
+				mockFCPClient.EXPECT().PrepareDeviceForRemoval(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+				return mockFCPClient
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("", errors.New("")).AnyTimes()
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockDeviceClient
+			},
+			setupFCPutils: func() fcp.FcpReconcileUtils {
+				setupFCPutils := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+				setupFCPutils.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return([]map[string]int{{"session": 3}}).AnyTimes()
+				setupFCPutils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(),
+					gomock.Any()).Return([]string{}).AnyTimes()
+				setupFCPutils.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{}, nil).AnyTimes()
+				return setupFCPutils
+			},
+			expErrCode: codes.Internal,
+		},
+		{
+			name: "node unstage fcp volume success, with luks enabled",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+			},
+			publishInfo: &models.VolumePublishInfo{
+				LUKSEncryption: "true",
+				DevicePath:     "luks-legacy-device-path",
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupFCPMock: func() fcp.FCP {
+				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
+				mockFCPClient.EXPECT().GetDeviceInfoForLUN(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&models.ScsiDeviceInfo{}, nil).AnyTimes()
+				mockFCPClient.EXPECT().PrepareDeviceForRemoval(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+				return mockFCPClient
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockDeviceClient
+			},
+			setupFCPutils: func() fcp.FcpReconcileUtils {
+				setupFCPutils := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+				setupFCPutils.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return([]map[string]int{{"session": 3}}).AnyTimes()
+				setupFCPutils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(),
+					gomock.Any()).Return([]string{}).AnyTimes()
+				setupFCPutils.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{}, nil).AnyTimes()
+				return setupFCPutils
+			},
+			expErrCode: codes.OK,
+		},
+		{
+			name: "node unstage fcp volume error, error getting device info for LUN",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+			},
+			publishInfo: &models.VolumePublishInfo{
+				LUKSEncryption: "true",
+				DevicePath:     "luks-legacy-device-path",
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupFCPMock: func() fcp.FCP {
+				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
+				mockFCPClient.EXPECT().GetDeviceInfoForLUN(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("")).AnyTimes()
+				mockFCPClient.EXPECT().PrepareDeviceForRemoval(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+				return mockFCPClient
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockDeviceClient
+			},
+			setupFCPutils: func() fcp.FcpReconcileUtils {
+				setupFCPutils := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+				setupFCPutils.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return([]map[string]int{{"session": 3}}).AnyTimes()
+				setupFCPutils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(),
+					gomock.Any()).Return([]string{}).AnyTimes()
+				setupFCPutils.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{"d1"}, nil).AnyTimes()
+				return setupFCPutils
+			},
+			expErrCode: codes.Unknown,
+		},
+		{
+			name: "node unstage fcp volume error, device info for LUN is nil",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+			},
+			publishInfo: &models.VolumePublishInfo{
+				LUKSEncryption: "true",
+				DevicePath:     "luks-legacy-device-path",
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupFCPMock: func() fcp.FCP {
+				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
+				mockFCPClient.EXPECT().GetDeviceInfoForLUN(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mockFCPClient.EXPECT().PrepareDeviceForRemoval(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+				return mockFCPClient
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockDeviceClient
+			},
+			setupFCPutils: func() fcp.FcpReconcileUtils {
+				setupFCPutils := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+				setupFCPutils.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return([]map[string]int{{"session": 3}}).AnyTimes()
+				setupFCPutils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(),
+					gomock.Any()).Return([]string{}).AnyTimes()
+				setupFCPutils.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{"d1"}, nil).AnyTimes()
+				return setupFCPutils
+			},
+			expErrCode: codes.OK,
+		},
+		{
+			name: "node unstage fcp volume error, Failed to get LUKS device path from multipath device.",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+			},
+			publishInfo: &models.VolumePublishInfo{
+				LUKSEncryption: "true",
+				DevicePath:     "luks-legacy-device-path",
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupFCPMock: func() fcp.FCP {
+				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
+				mockFCPClient.EXPECT().GetDeviceInfoForLUN(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&models.ScsiDeviceInfo{MultipathDevice: "xyz"}, nil).AnyTimes()
+				mockFCPClient.EXPECT().PrepareDeviceForRemoval(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+				return mockFCPClient
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("", errors.New("")).AnyTimes()
+				// mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+				// 	gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				// mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockDeviceClient
+			},
+			setupFCPutils: func() fcp.FcpReconcileUtils {
+				setupFCPutils := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+				setupFCPutils.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return([]map[string]int{{"session": 3}}).AnyTimes()
+				setupFCPutils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(),
+					gomock.Any()).Return([]string{}).AnyTimes()
+				setupFCPutils.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{"d1"}, nil).AnyTimes()
+				return setupFCPutils
+			},
+			expErrCode: codes.Unknown,
+		},
+		{
+			name: "node unstage fcp volume error, Failed to close LUKS device.",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+			},
+			publishInfo: &models.VolumePublishInfo{
+				LUKSEncryption: "true",
+				DevicePath:     "luks-legacy-device-path",
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupFCPMock: func() fcp.FCP {
+				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
+				mockFCPClient.EXPECT().GetDeviceInfoForLUN(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&models.ScsiDeviceInfo{MultipathDevice: "xyz"}, nil).AnyTimes()
+				mockFCPClient.EXPECT().PrepareDeviceForRemoval(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+				return mockFCPClient
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("multipath-device", nil).AnyTimes()
+				// mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+				// 	gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockDeviceClient
+			},
+			setupFCPutils: func() fcp.FcpReconcileUtils {
+				setupFCPutils := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+				setupFCPutils.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return([]map[string]int{{"session": 3}}).AnyTimes()
+				setupFCPutils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(),
+					gomock.Any()).Return([]string{}).AnyTimes()
+				setupFCPutils.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{"d1"}, nil).AnyTimes()
+				return setupFCPutils
+			},
+			expErrCode: codes.Unknown,
+		},
+		{
+			name: "node unstage fcp volume error, error preparing device for removal",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+			},
+			publishInfo: &models.VolumePublishInfo{
+				LUKSEncryption: "true",
+				DevicePath:     "luks-legacy-device-path",
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupFCPMock: func() fcp.FCP {
+				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
+				mockFCPClient.EXPECT().GetDeviceInfoForLUN(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&models.ScsiDeviceInfo{MultipathDevice: "xyz"}, nil).AnyTimes()
+				mockFCPClient.EXPECT().PrepareDeviceForRemoval(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", errors.FCPSameLunNumberError("")).AnyTimes()
+				return mockFCPClient
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("multipath-device", nil).AnyTimes()
+				// mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+				// 	gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), gomock.Any()).Return(errors.MaxWaitExceededError("")).AnyTimes()
+				return mockDeviceClient
+			},
+			setupFCPutils: func() fcp.FcpReconcileUtils {
+				setupFCPutils := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+				setupFCPutils.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return([]map[string]int{{"session": 3}}).AnyTimes()
+				setupFCPutils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(),
+					gomock.Any()).Return([]string{}).AnyTimes()
+				setupFCPutils.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{"d1"}, nil).AnyTimes()
+				return setupFCPutils
+			},
+			expErrCode: codes.Internal,
+		},
+		{
+			name: "node unstage fcp volume error, failed to remove temporary directory in staging target path",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+			},
+			publishInfo: &models.VolumePublishInfo{
+				LUKSEncryption: "true",
+				DevicePath:     "luks-legacy-device-path",
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupFCPMock: func() fcp.FCP {
+				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
+				mockFCPClient.EXPECT().GetDeviceInfoForLUN(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&models.ScsiDeviceInfo{MultipathDevice: "xyz"}, nil).AnyTimes()
+				mockFCPClient.EXPECT().PrepareDeviceForRemoval(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+				return mockFCPClient
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockMountClient
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("multipath-device", nil).AnyTimes()
+				// mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+				// 	gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), gomock.Any()).Return(errors.MaxWaitExceededError("")).AnyTimes()
+				return mockDeviceClient
+			},
+			setupFCPutils: func() fcp.FcpReconcileUtils {
+				setupFCPutils := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+				setupFCPutils.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return([]map[string]int{{"session": 3}}).AnyTimes()
+				setupFCPutils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(),
+					gomock.Any()).Return([]string{}).AnyTimes()
+				setupFCPutils.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{"d1"}, nil).AnyTimes()
+				return setupFCPutils
+			},
+			expErrCode: codes.Internal,
+		},
+		{
+			name: "node unstage fcp volume error, failed to flush(remove) multipath device mappings",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+			},
+			publishInfo: &models.VolumePublishInfo{
+				LUKSEncryption: "true",
+				DevicePath:     "luks-legacy-device-path",
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupFCPMock: func() fcp.FCP {
+				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
+				mockFCPClient.EXPECT().GetDeviceInfoForLUN(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&models.ScsiDeviceInfo{MultipathDevice: "xyz"}, nil).AnyTimes()
+				mockFCPClient.EXPECT().PrepareDeviceForRemoval(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+				return mockFCPClient
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("multipath-device", nil).AnyTimes()
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), gomock.Any()).Return(errors.MaxWaitExceededError("")).AnyTimes()
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosed(gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockDeviceClient
+			},
+			setupFCPutils: func() fcp.FcpReconcileUtils {
+				setupFCPutils := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+				setupFCPutils.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return([]map[string]int{{"session": 3}}).AnyTimes()
+				setupFCPutils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(),
+					gomock.Any()).Return([]string{}).AnyTimes()
+				setupFCPutils.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{"d1"}, nil).AnyTimes()
+				return setupFCPutils
+			},
+			expErrCode: codes.Unknown,
+		},
+		{
+			name: "node unstage fcp volume error, failed deleting tracking info file",
+			req: &csi.NodeUnstageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+			},
+			publishInfo: &models.VolumePublishInfo{
+				LUKSEncryption: "true",
+				DevicePath:     "luks-legacy-device-path",
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockNodeHelper
+			},
+			setupFCPMock: func() fcp.FCP {
+				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
+				mockFCPClient.EXPECT().GetDeviceInfoForLUN(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&models.ScsiDeviceInfo{MultipathDevice: "xyz"}, nil).AnyTimes()
+				mockFCPClient.EXPECT().PrepareDeviceForRemoval(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+				return mockFCPClient
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("multipath-device", nil).AnyTimes()
+				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosed(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), gomock.Any()).Return(errors.MaxWaitExceededError("")).AnyTimes()
+				return mockDeviceClient
+			},
+			setupFCPutils: func() fcp.FcpReconcileUtils {
+				setupFCPutils := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+				setupFCPutils.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(),
+					gomock.Any()).Return([]map[string]int{{"session": 3}}).AnyTimes()
+				setupFCPutils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(),
+					gomock.Any()).Return([]string{}).AnyTimes()
+				setupFCPutils.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{"d1"}, nil).AnyTimes()
+				return setupFCPutils
+			},
+			expErrCode: codes.Internal,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Create plugin instance
+			plugin := &Plugin{
+				command:          execCmd.NewCommand(),
+				role:             CSINode,
+				limiterSharedMap: make(map[string]limiter.Limiter),
+			}
+
+			plugin.InitializeNodeLimiter(ctx)
+
+			if tc.setupNodeHelperMock != nil {
+				plugin.nodeHelper = tc.setupNodeHelperMock()
+			}
+			if tc.setupFCPMock != nil {
+				plugin.fcp = tc.setupFCPMock()
+			}
+			if tc.setupMount != nil {
+				plugin.mount = tc.setupMount()
+			}
+			if tc.getDeviceClient != nil {
+				plugin.devices = tc.getDeviceClient()
+			}
+			if tc.setupFCPutils != nil {
+				fcpUtils = tc.setupFCPutils()
+			}
+
+			testCtx := context.Background()
+
+			err := plugin.nodeUnstageFCPVolume(testCtx, tc.req, tc.publishInfo, tc.force)
+
+			// Verify results
+			if tc.expErrCode != codes.OK {
+				assert.Error(t, err)
+				if err != nil {
+					status, _ := status.FromError(err)
+					// assert.True(t, ok)
+					assert.Equal(t, tc.expErrCode, status.Code(), "Expected error code %v, got %v", tc.expErrCode, status.Code())
+				}
+				return
+			}
+
+			assert.NoError(t, err)
+		})
+	}
+}
+
+func TestNodePublishFCPVolume(t *testing.T) {
+	defer func(previousfcpUtils fcp.FcpReconcileUtils) {
+		fcpUtils = previousfcpUtils
+	}(fcpUtils)
+	testCases := []struct {
+		name                string
+		req                 *csi.NodePublishVolumeRequest
+		expErrCode          codes.Code
+		setupMount          func() mount.Mount
+		setupNodeHelperMock func() nodehelpers.NodeHelper
+	}{
+		{
+			name: "node publish fcp volume success",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId: uuid.NewString(),
+				PublishContext: map[string]string{
+					"protocol":       "block",
+					"sharedTarget":   "false",
+					"filesystemType": filesystem.Ext4,
+					"useCHAP":        "false",
+					"SANType":        sa.FCP,
+				},
+				StagingTargetPath: "/foo",
+				TargetPath:        "/tmp/raw",
+				Secrets: map[string]string{
+					"username": "username",
+					"password": "password",
+				},
+				VolumeContext: map[string]string{
+					"internalName": "pvc-12345-123",
+				},
+				Readonly: true,
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{VolumePublishInfo: models.VolumePublishInfo{DevicePath: "devicepath", FilesystemType: "ext4"}}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			expErrCode: codes.OK,
+		},
+		{
+			name: "node publish fcp volume failed, error reading tracking info file",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId: uuid.NewString(),
+				PublishContext: map[string]string{
+					"protocol":       "block",
+					"sharedTarget":   "false",
+					"filesystemType": filesystem.Ext4,
+					"useCHAP":        "false",
+					"SANType":        sa.FCP,
+				},
+				StagingTargetPath: "/foo",
+				TargetPath:        "/tmp/raw",
+				Secrets: map[string]string{
+					"username": "username",
+					"password": "password",
+				},
+				VolumeContext: map[string]string{
+					"internalName": "pvc-12345-123",
+				},
+				Readonly: false,
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil, errors.New("")).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			expErrCode: codes.Internal,
+		},
+		{
+			name: "node publish fcp volume failed, error reading tracking info file not found",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId: uuid.NewString(),
+				PublishContext: map[string]string{
+					"protocol":       "block",
+					"sharedTarget":   "false",
+					"filesystemType": filesystem.Ext4,
+					"useCHAP":        "false",
+					"SANType":        sa.FCP,
+				},
+				StagingTargetPath: "/foo",
+				TargetPath:        "/tmp/raw",
+				Secrets: map[string]string{
+					"username": "username",
+					"password": "password",
+				},
+				VolumeContext: map[string]string{
+					"internalName": "pvc-12345-123",
+				},
+				Readonly: false,
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil, errors.NotFoundError("")).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			expErrCode: codes.FailedPrecondition,
+		},
+		{
+			name: "node publish fcp volume failed, mount device failed for raw fs",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId: uuid.NewString(),
+				PublishContext: map[string]string{
+					"protocol":       "block",
+					"sharedTarget":   "false",
+					"filesystemType": filesystem.Ext4,
+					"useCHAP":        "false",
+					"SANType":        sa.FCP,
+				},
+				StagingTargetPath: "/foo",
+				TargetPath:        "/tmp/raw",
+				Secrets: map[string]string{
+					"username": "username",
+					"password": "password",
+				},
+				VolumeContext: map[string]string{
+					"internalName": "pvc-12345-123",
+				},
+				Readonly: true,
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{VolumePublishInfo: models.VolumePublishInfo{DevicePath: "devicepath", FilesystemType: "raw"}}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockMountClient
+			},
+			expErrCode: codes.Internal,
+		},
+		{
+			name: "node publish fcp volume failed, mount device failed for raw fs",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId: uuid.NewString(),
+				PublishContext: map[string]string{
+					"protocol":       "block",
+					"sharedTarget":   "false",
+					"filesystemType": filesystem.Ext4,
+					"useCHAP":        "false",
+					"SANType":        sa.FCP,
+				},
+				StagingTargetPath: "/foo",
+				TargetPath:        "/tmp/raw",
+				Secrets: map[string]string{
+					"username": "username",
+					"password": "password",
+				},
+				VolumeContext: map[string]string{
+					"internalName": "pvc-12345-123",
+				},
+				Readonly: false,
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{VolumePublishInfo: models.VolumePublishInfo{DevicePath: "devicepath", FilesystemType: "ext4"}}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockMountClient
+			},
+			expErrCode: codes.Internal,
+		},
+		{
+			name: "node publish fcp volume failed, adding published path errored",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId: uuid.NewString(),
+				PublishContext: map[string]string{
+					"protocol":       "block",
+					"sharedTarget":   "false",
+					"filesystemType": filesystem.Ext4,
+					"useCHAP":        "false",
+					"SANType":        sa.FCP,
+				},
+				StagingTargetPath: "/foo",
+				TargetPath:        "/tmp/raw",
+				Secrets: map[string]string{
+					"username": "username",
+					"password": "password",
+				},
+				VolumeContext: map[string]string{
+					"internalName": "pvc-12345-123",
+				},
+				Readonly: false,
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{VolumePublishInfo: models.VolumePublishInfo{DevicePath: "devicepath", FilesystemType: "ext4"}}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			expErrCode: codes.Unknown,
+		},
+		{
+			name: "node publish fcp volume failed, luks encryption enabled, empty pasphrase, non legacy device path",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId: uuid.NewString(),
+				PublishContext: map[string]string{
+					"protocol":       "block",
+					"sharedTarget":   "false",
+					"filesystemType": filesystem.Ext4,
+					"useCHAP":        "false",
+					"SANType":        sa.FCP,
+				},
+				StagingTargetPath: "/foo",
+				TargetPath:        "/tmp/raw",
+				Secrets: map[string]string{
+					"username":        "username",
+					"password":        "password",
+					"luks-passphrase": "",
+				},
+				VolumeContext: map[string]string{
+					"internalName": "pvc-12345-123",
+				},
+				Readonly: false,
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{VolumePublishInfo: models.VolumePublishInfo{DevicePath: "devicepath", FilesystemType: "ext4", LUKSEncryption: "true"}}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			expErrCode: codes.OK,
+		},
+		{
+			name: "node publish fcp volume failed, luks encryption enabled, empty pasphrase, lagacy device path",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId: uuid.NewString(),
+				PublishContext: map[string]string{
+					"protocol":       "block",
+					"sharedTarget":   "false",
+					"filesystemType": filesystem.Ext4,
+					"useCHAP":        "false",
+					"SANType":        sa.FCP,
+				},
+				StagingTargetPath: "/foo",
+				TargetPath:        "/tmp/raw",
+				Secrets: map[string]string{
+					"username":        "username",
+					"password":        "password",
+					"luks-passphrase": "",
+				},
+				VolumeContext: map[string]string{
+					"internalName": "pvc-12345-123",
+				},
+				Readonly: false,
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{VolumePublishInfo: models.VolumePublishInfo{DevicePath: "luks-devicepath", FilesystemType: "ext4", LUKSEncryption: "true"}}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+			expErrCode: codes.Internal,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Create plugin instance
+			plugin := &Plugin{
+				command:          execCmd.NewCommand(),
+				role:             CSINode,
+				limiterSharedMap: make(map[string]limiter.Limiter),
+			}
+
+			plugin.InitializeNodeLimiter(ctx)
+
+			if tc.setupNodeHelperMock != nil {
+				plugin.nodeHelper = tc.setupNodeHelperMock()
+			}
+
+			if tc.setupMount != nil {
+				plugin.mount = tc.setupMount()
+			}
+
+			testCtx := context.Background()
+
+			_, err := plugin.nodePublishFCPVolume(testCtx, tc.req)
+
+			// Verify results
+			if tc.expErrCode != codes.OK {
+				assert.Error(t, err)
+				if err != nil {
+					status, _ := status.FromError(err)
+					// assert.True(t, ok)
+					assert.Equal(t, tc.expErrCode, status.Code(), "Expected error code %v, got %v", tc.expErrCode, status.Code())
+				}
+				return
+			}
+
+			assert.NoError(t, err)
+		})
+	}
+}
+
+func TestNodeStageNVMeVolume(t *testing.T) {
+	testCases := []struct {
+		name                 string
+		req                  *csi.NodeStageVolumeRequest
+		expErrCode           codes.Code
+		publishInfo          *models.VolumePublishInfo
+		setupNvmeHandlerMock func() nvme.NVMeInterface
+		setupNodeHelperMock  func() nodehelpers.NodeHelper
+	}{
+		{
+			name: "NVMe volume staging failed, error getting staging target path",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "",
+				PublishContext: map[string]string{
+					"fcpLunNumber": "123",
+				},
+			},
+			setupNvmeHandlerMock: func() nvme.NVMeInterface {
+				setupNvmeHandlerMock := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
+				setupNvmeHandlerMock.EXPECT().AttachNVMeVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(errors.New("")).AnyTimes()
+				return setupNvmeHandlerMock
+			},
+			publishInfo: &models.VolumePublishInfo{},
+			expErrCode:  codes.Unknown,
+		},
+		{
+			name: "NVMe Volume staging errored, Could not write tracking file.",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				PublishContext:    map[string]string{},
+			},
+			setupNvmeHandlerMock: func() nvme.NVMeInterface {
+				setupNvmeHandlerMock := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
+				setupNvmeHandlerMock.EXPECT().AttachNVMeVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(nil).AnyTimes()
+				return setupNvmeHandlerMock
+			},
+			publishInfo: &models.VolumePublishInfo{},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(errors.New("some error")).AnyTimes()
+				return mockNodeHelper
+			},
+			expErrCode: codes.Unknown,
+		},
+		{
+			name: "NVMe Volume staging errored, AttachNVMeVolumeRetry failed",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				PublishContext:    map[string]string{},
+			},
+			setupNvmeHandlerMock: func() nvme.NVMeInterface {
+				setupNvmeHandlerMock := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
+				setupNvmeHandlerMock.EXPECT().AttachNVMeVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(errors.New("")).AnyTimes()
+				return setupNvmeHandlerMock
+			},
+			publishInfo: &models.VolumePublishInfo{},
+			expErrCode:  codes.Unknown,
+		},
+		{
+			name: "NVMe Volume staging errored, luks enabled, passphrase empty",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				PublishContext: map[string]string{
+					"LUKSEncryption": "true",
+				},
+			},
+			setupNvmeHandlerMock: func() nvme.NVMeInterface {
+				setupNvmeHandlerMock := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
+				setupNvmeHandlerMock.EXPECT().AttachNVMeVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(nil).AnyTimes()
+				return setupNvmeHandlerMock
+			},
+			publishInfo: &models.VolumePublishInfo{
+				DevicePath: "device",
+			},
+			expErrCode: codes.Unknown,
+		},
+		{
+			name: "NVMe Volume staging success",
+			req: &csi.NodeStageVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging/path",
+				PublishContext:    map[string]string{},
+			},
+			setupNvmeHandlerMock: func() nvme.NVMeInterface {
+				setupNvmeHandlerMock := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
+				setupNvmeHandlerMock.EXPECT().AttachNVMeVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(nil).AnyTimes()
+				setupNvmeHandlerMock.EXPECT().AddPublishedNVMeSession(gomock.Any(), gomock.Any()).AnyTimes()
+				return setupNvmeHandlerMock
+			},
+			publishInfo: &models.VolumePublishInfo{},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			expErrCode: codes.OK,
+		},
+	}
+
+	mountClient, _ := mount.New()
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Create plugin instance
+			plugin := &Plugin{
+				command:          execCmd.NewCommand(),
+				role:             CSINode,
+				limiterSharedMap: make(map[string]limiter.Limiter),
+				fs:               filesystem.New(mountClient),
+			}
+
+			plugin.InitializeNodeLimiter(ctx)
+
+			if tc.setupNodeHelperMock != nil {
+				plugin.nodeHelper = tc.setupNodeHelperMock()
+			}
+			if tc.setupNvmeHandlerMock != nil {
+				plugin.nvmeHandler = tc.setupNvmeHandlerMock()
+			}
+
+			testCtx := context.Background()
+
+			err := plugin.nodeStageNVMeVolume(testCtx, tc.req, tc.publishInfo)
+
+			// Verify results
+			if tc.expErrCode != codes.OK {
+				assert.Error(t, err)
+				if err != nil {
+					status, _ := status.FromError(err)
+					// assert.True(t, ok)
+					assert.Equal(t, tc.expErrCode, status.Code(), "Expected error code %v, got %v", tc.expErrCode, status.Code())
+				}
+				return
+			}
+
+			assert.NoError(t, err)
+		})
+	}
+}
+
+func TestNodePublishNVMeVolume(t *testing.T) {
+	testCases := []struct {
+		name                string
+		req                 *csi.NodePublishVolumeRequest
+		expErrCode          codes.Code
+		setupMount          func() mount.Mount
+		setupNodeHelperMock func() nodehelpers.NodeHelper
+	}{
+		{
+			name: "NVMe volume publish success, raw filesystem",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+				TargetPath:        "/target",
+				Readonly:          true,
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: filesystem.Raw,
+					},
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+
+			expErrCode: codes.OK,
+		},
+		{
+			name: "NVMe volume publish success, ext4 filesystem",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+				TargetPath:        "/target",
+				Readonly:          true,
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: "ext4",
+					},
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+				return mockMountClient
+			},
+			expErrCode: codes.OK,
+		},
+		{
+			name: "NVMe volume publish error, unable to mount device for ext4 fs type",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+				TargetPath:        "/target",
+				Readonly:          true,
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: "ext4",
+					},
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockMountClient
+			},
+			expErrCode: codes.Internal,
+		},
+		{
+			name: "NVMe volume publish error, unable to mount device for raw fs type",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+				TargetPath:        "/target",
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: filesystem.Raw,
+					},
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockMountClient
+			},
+			expErrCode: codes.Internal,
+		},
+		{
+			name: "NVMe volume publish errored, Failed to add publish path",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+				TargetPath:        "/target",
+				Readonly:          true,
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: "ext4",
+					},
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+				return mockMountClient
+			},
+			expErrCode: codes.Unknown,
+		},
+		{
+			name: "NVMe volume publish errored, Failed to read tracking info file",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+				TargetPath:        "/target",
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil, errors.New("")).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+				return mockMountClient
+			},
+			expErrCode: codes.Internal,
+		},
+		{
+			name: "NVMe volume publish errored, tracking info file not found",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+				TargetPath:        "/target",
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(nil, errors.NotFoundError("")).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+				return mockMountClient
+			},
+			expErrCode: codes.FailedPrecondition,
+		},
+		{
+			name: "NVMe volume publish success, luks encryption enabled",
+			req: &csi.NodePublishVolumeRequest{
+				VolumeId:          "test-nfs-volume",
+				StagingTargetPath: "/staging",
+				TargetPath:        "/target",
+				Readonly:          true,
+				VolumeContext:     map[string]string{"internalName": "test-nfs-volume"},
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: filesystem.Raw,
+						LUKSEncryption: "true",
+					},
+				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockNodeHelper
+			},
+			setupMount: func() mount.Mount {
+				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
+				mockMountClient.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				return mockMountClient
+			},
+
+			expErrCode: codes.OK,
+		},
+	}
+
+	mountClient, _ := mount.New()
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Create plugin instance
+			plugin := &Plugin{
+				command:          execCmd.NewCommand(),
+				role:             CSINode,
+				limiterSharedMap: make(map[string]limiter.Limiter),
+				fs:               filesystem.New(mountClient),
+			}
+
+			plugin.InitializeNodeLimiter(ctx)
+
+			if tc.setupNodeHelperMock != nil {
+				plugin.nodeHelper = tc.setupNodeHelperMock()
+			}
+			if tc.setupMount != nil {
+				plugin.mount = tc.setupMount()
+			}
+
+			testCtx := context.Background()
+
+			_, err := plugin.nodePublishNVMeVolume(testCtx, tc.req)
+
+			// Verify results
+			if tc.expErrCode != codes.OK {
+				assert.Error(t, err)
+				if err != nil {
+					status, _ := status.FromError(err)
+					// assert.True(t, ok)
+					assert.Equal(t, tc.expErrCode, status.Code(), "Expected error code %v, got %v", tc.expErrCode, status.Code())
+				}
+				return
+			}
+
+			assert.NoError(t, err)
+		})
+	}
+}
+
+func TestPerformIscsiSelfHealing(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockIscsiHandler := mock_iscsi.NewMockISCSI(mockCtrl)
+	nodeServer := &Plugin{iscsi: mockIscsiHandler}
+
+	// Empty Published sessions case.
+	mockIscsiHandler.EXPECT().PreChecks(ctx).Return(nil).AnyTimes()
+	mockIscsiHandler.EXPECT().PopulateCurrentSessions(ctx, gomock.Any()).Return(nil).AnyTimes()
+	mockIscsiHandler.EXPECT().InspectAllISCSISessions(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]string{}, []string{}).AnyTimes()
+
+	nodeServer.performISCSISelfHealing(ctx)
+
+	// Error populating current sessions.
+	publishedISCSISessions.AddLUNToPortal("portal", models.LUNData{LUN: 1, VolID: "vol-id"})
+	publishedISCSISessions.AddPortal("portal", models.PortalInfo{})
+	mockIscsiHandler.EXPECT().PopulateCurrentSessions(ctx, gomock.Any()).
+		Return(errors.New("Failed to get current state of iSCSI Sessions LUN mappings; skipping iSCSI self-heal cycle.")).AnyTimes()
+	mockIscsiHandler.EXPECT().PreChecks(ctx).Return(nil).AnyTimes()
+
+	nodeServer.performISCSISelfHealing(ctx)
+
+	// Self-healing process done.
+	mockIscsiHandler.EXPECT().PreChecks(ctx).Return(errors.New("")).AnyTimes()
+	mockIscsiHandler.EXPECT().PopulateCurrentSessions(ctx, gomock.Any()).Return(nil).AnyTimes()
+	mockIscsiHandler.EXPECT().InspectAllISCSISessions(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]string{}, []string{}).AnyTimes()
+
+	nodeServer.performISCSISelfHealing(ctx)
+	// Cleanup of global objects.
+	publishedISCSISessions.RemoveLUNFromPortal("protal", 1)
+	publishedISCSISessions.RemovePortal("portal")
+}
+
+func TestSelfHealingRectifySession(t *testing.T) {
+	defer func(previousIscsiUtils iscsi.IscsiReconcileUtils) {
+		iscsi.IscsiUtils = previousIscsiUtils
+	}(iscsi.IscsiUtils)
+	lunList1 := map[int32]string{
+		1: "volID-1",
+	}
+	sessionData1 := models.ISCSISessionData{
+		PortalInfo: models.PortalInfo{
+			ISCSITargetIQN: "IQN1",
+			Credentials: models.IscsiChapInfo{
+				UseCHAP:              true,
+				IscsiUsername:        "username1",
+				IscsiInitiatorSecret: "secret1",
+				IscsiTargetUsername:  "username2",
+				IscsiTargetSecret:    "secret2",
+			},
+			FirstIdentifiedStaleAt: time.Now().Add(-time.Second * 10),
+		},
+		LUNs: models.LUNs{
+			Info: mapCopyHelper(lunList1),
+		},
+	}
+
+	sessionData2 := models.ISCSISessionData{
+		PortalInfo: models.PortalInfo{
+			ISCSITargetIQN:         "IQN1",
+			FirstIdentifiedStaleAt: time.Now().Add(-time.Second * 10),
+		},
+	}
+
+	PublishedPortals := &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{
+		"1.2.3.4": structCopyHelper(sessionData1),
+		"1.3.2.1": structCopyHelper(sessionData2),
+	}}
+	CurrentPortals := &models.ISCSISessions{Info: map[string]*models.ISCSISessionData{}}
+
+	publishedISCSISessions = PublishedPortals
+	currentISCSISessions = CurrentPortals
+
+	testCases := []struct {
+		name                         string
+		portal                       string
+		action                       models.ISCSIAction
+		expErr                       error
+		getISCSIClient               func() iscsi.ISCSI
+		getIscsiReconcileUtilsClient func() iscsi.IscsiReconcileUtils
+		setupNodeHelperMock          func() nodehelpers.NodeHelper
+	}{
+		{
+			name:   "SelfHealingRectifySession for Scan action error,failed to initiate scan for LUNs in portal",
+			portal: "1.2.3.4",
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().DiscoverSCSIAddressMapForTarget(gomock.Any(),
+					gomock.Any()).Return(nil, errors.New("")).AnyTimes()
+				return mockIscsiReconcileUtilsClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ListVolumeTrackingInfo(gomock.Any()).Return(map[string]*models.VolumeTrackingInfo{"abc": {}}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockNodeHelper
+			},
+			action: models.Scan,
+
+			expErr: errors.New("failed to initiate scan for LUNs in portal"),
+		},
+		{
+			name:   "SelfHealingRectifySession for Scan action success",
+			portal: "1.3.2.1",
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().DiscoverSCSIAddressMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[string]models.ScsiDeviceAddress{"scsi": {}}, nil).AnyTimes()
+				return mockIscsiReconcileUtilsClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ListVolumeTrackingInfo(gomock.Any()).Return(map[string]*models.VolumeTrackingInfo{"abc": {}}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockNodeHelper
+			},
+			action: models.Scan,
+
+			expErr: nil,
+		},
+		{
+			name:   "SelfHealingRectifySession for LoginScan action error, failed to get volume ID for lun ID",
+			portal: "1.3.2.1",
+			action: models.LoginScan,
+
+			expErr: errors.New("failed to get volume ID for lun ID"),
+		},
+		{
+			name:   "SelfHealingRectifySession, No valid action to be taken in iSCSI self-healing.",
+			portal: "1.2.3.4",
+			action: 0,
+
+			expErr: nil,
+		},
+		{
+			name:   "SelfHealingRectifySession for LogoutLoginScan action error, cannot safely log out of unresponsive portal",
+			portal: "1.2.3.4",
+			action: models.LogoutLoginScan,
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().IsPortalAccessible(gomock.Any(), gomock.Any()).Return(false, nil)
+				return mockISCSIClient
+			},
+			expErr: errors.New("cannot safely log out of unresponsive portal"),
+		},
+		{
+			name:   "SelfHealingRectifySession for LogoutLoginScan action error, error while logging out of target",
+			portal: "1.2.3.4",
+			action: models.LogoutLoginScan,
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().IsPortalAccessible(gomock.Any(), gomock.Any()).Return(true, nil)
+				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New(""))
+				return mockISCSIClient
+			},
+			expErr: errors.New("error while logging out of target"),
+		},
+		{
+			name:   "SelfHealingRectifySession for LogoutLoginScan action error, failed to initiate scan in fallthrough",
+			portal: "1.2.3.4",
+			action: models.LogoutLoginScan,
+			getISCSIClient: func() iscsi.ISCSI {
+				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+				mockISCSIClient.EXPECT().IsPortalAccessible(gomock.Any(), gomock.Any()).Return(true, nil)
+				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockISCSIClient.EXPECT().AttachVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+				return mockISCSIClient
+			},
+			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {
+				mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+				mockIscsiReconcileUtilsClient.EXPECT().DiscoverSCSIAddressMapForTarget(gomock.Any(),
+					gomock.Any()).Return(map[string]models.ScsiDeviceAddress{"scsi": {}}, nil).AnyTimes()
+				return mockIscsiReconcileUtilsClient
+			},
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().ListVolumeTrackingInfo(gomock.Any()).Return(map[string]*models.VolumeTrackingInfo{"abc": {}}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				return mockNodeHelper
+			},
+			expErr: errors.New("failed to initiate scan"),
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Create plugin instance
+			plugin := &Plugin{
+				command:          execCmd.NewCommand(),
+				role:             CSINode,
+				limiterSharedMap: make(map[string]limiter.Limiter),
+			}
+
+			plugin.InitializeNodeLimiter(ctx)
+
+			if tc.getIscsiReconcileUtilsClient != nil {
+				iscsi.IscsiUtils = tc.getIscsiReconcileUtilsClient()
+			}
+			if tc.setupNodeHelperMock != nil {
+				plugin.nodeHelper = tc.setupNodeHelperMock()
+			}
+			if tc.getISCSIClient != nil {
+				plugin.iscsi = tc.getISCSIClient()
+			}
+
+			testCtx := context.Background()
+
+			err := plugin.selfHealingRectifySession(testCtx, tc.portal, tc.action)
+
+			if tc.expErr != nil {
+				assert.Error(t, err)
+			} else {
+				assert.Nil(t, err)
+			}
+		})
+	}
+	publishedISCSISessions.RemoveLUNFromPortal("1.2.3.4", 1)
+	publishedISCSISessions.RemovePortal("1.2.3.4")
 }

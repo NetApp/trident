@@ -24,10 +24,43 @@ import (
 	"github.com/netapp/trident/utils/models"
 )
 
-func TestNewVolumePublishManager(t *testing.T) {
+func TestNewVolumePublishManagerDetailed(t *testing.T) {
 	aPath := "foo"
 	v := NewVolumePublishManagerDetailed(aPath, filesystem.New(nil), afero.NewOsFs())
 	assert.Equal(t, aPath, v.volumeTrackingInfoPath, "volume publish manager did not contain expected path")
+}
+
+func TestNewVolumePublishManager(t *testing.T) {
+	testCases := []struct {
+		name                   string
+		volumeTrackingInfoPath string
+		expectedError          bool
+	}{
+		{
+			name:                   "Success - Valid path",
+			volumeTrackingInfoPath: "/tmp/volume-tracking",
+			expectedError:          false,
+		},
+		{
+			name:                   "Success - Empty path",
+			volumeTrackingInfoPath: "",
+			expectedError:          false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			manager, err := NewVolumePublishManager(tc.volumeTrackingInfoPath)
+
+			if tc.expectedError {
+				assert.Error(t, err)
+				assert.Nil(t, manager)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, manager)
+			}
+		})
+	}
 }
 
 func TestGetVolumeTrackingFiles(t *testing.T) {

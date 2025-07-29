@@ -1,14 +1,19 @@
 package csi
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
+	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	"github.com/netapp/trident/mocks/mock_core"
+	mockcore "github.com/netapp/trident/mocks/mock_core"
 	mock_controller_helpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_helpers"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils/errors"
@@ -581,4 +586,597 @@ func TestDeleteVolumeGroupSnapshot_Succeeds(t *testing.T) {
 	resp, err := plugin.DeleteVolumeGroupSnapshot(ctx, req)
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
+}
+
+func TestDeleteGroupedSnapshots(t *testing.T) {
+	testCases := []struct {
+		name                  string
+		snapshotIDs           []string
+		deleteSnapshotReturns error
+		assertErr             assert.ErrorAssertionFunc
+	}{
+		{
+			name:                  "Success - Delete all snapshots",
+			snapshotIDs:           []string{"volume-1/snapshot-1"},
+			deleteSnapshotReturns: nil,
+			assertErr:             assert.NoError,
+		},
+		{
+			name:                  "Error - Delete snapshot fails",
+			snapshotIDs:           []string{"volume-1/snapshot-1"},
+			deleteSnapshotReturns: errors.New("some error"),
+			assertErr:             assert.Error,
+		},
+		{
+			name:        "Error - Parse snapshot ID should not fail",
+			snapshotIDs: []string{"invalid-id"},
+			assertErr:   assert.NoError, // errors.New("snapshot ID  does not contain a volume name"),
+		},
+		{
+			name:                  "Success - Delete with not found errors (ignored)",
+			snapshotIDs:           []string{"volume-1/snapshot-1"},
+			deleteSnapshotReturns: errors.NotFoundError("some error"),
+			assertErr:             assert.NoError,
+		},
+		{
+			name:        "Success - Empty snapshot list",
+			snapshotIDs: []string{},
+			assertErr:   assert.NoError,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Create a mocked orchestrator
+			mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+			plugin := &Plugin{
+				orchestrator: mockOrchestrator,
+			}
+
+			// Mock GetVolume
+			mockOrchestrator.EXPECT().
+				DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(tc.deleteSnapshotReturns).AnyTimes()
+
+			err := plugin.deleteGroupedSnapshots(context.Background(), tc.snapshotIDs)
+
+			tc.assertErr(t, err)
+		})
+	}
+}
+
+func TestGroupControllerGetCapabilities(t *testing.T) {
+	testCases := []struct {
+		name     string
+		gcsCap   []*csi.GroupControllerServiceCapability
+		expected *csi.GroupControllerGetCapabilitiesResponse
+	}{
+		{
+			name: "Success - Return capabilities",
+			gcsCap: []*csi.GroupControllerServiceCapability{
+				{
+					Type: &csi.GroupControllerServiceCapability_Rpc{
+						Rpc: &csi.GroupControllerServiceCapability_RPC{
+							Type: csi.GroupControllerServiceCapability_RPC_CREATE_DELETE_GET_VOLUME_GROUP_SNAPSHOT,
+						},
+					},
+				},
+			},
+			expected: &csi.GroupControllerGetCapabilitiesResponse{
+				Capabilities: []*csi.GroupControllerServiceCapability{
+					{
+						Type: &csi.GroupControllerServiceCapability_Rpc{
+							Rpc: &csi.GroupControllerServiceCapability_RPC{
+								Type: csi.GroupControllerServiceCapability_RPC_CREATE_DELETE_GET_VOLUME_GROUP_SNAPSHOT,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			plugin := &Plugin{
+				gcsCap: tc.gcsCap,
+			}
+
+			resp, err := plugin.GroupControllerGetCapabilities(context.Background(), &csi.GroupControllerGetCapabilitiesRequest{})
+
+			assert.NoError(t, err)
+			assert.NotNil(t, resp)
+			assert.Equal(t, tc.expected, resp)
+		})
+	}
+}
+
+func TestCreateVolumeGroupSnapshot(t *testing.T) {
+	defer setThanResetBackoff(t, 0)()
+	snapshotConfig := &storage.SnapshotConfig{
+		Name:       "snap1",
+		VolumeName: "vol-1",
+	}
+	snapshot := storage.Snapshot{
+		Created:   "2023-05-15T17:04:09Z",
+		SizeBytes: 1024,
+		State:     "offline",
+		Config:    snapshotConfig,
+	}
+	snapshotConfig2 := &storage.SnapshotConfig{
+		Name:       "snap1",
+		VolumeName: "vol-2",
+	}
+	snapshot2 := storage.Snapshot{
+		Created:   "2023-05-15T17:04:09Z",
+		SizeBytes: 1024,
+		State:     "offline",
+		Config:    snapshotConfig2,
+	}
+	testCases := []struct {
+		name                         string
+		req                          *csi.CreateVolumeGroupSnapshotRequest
+		listSnapshotsForGroupReturns error
+		listSnapshot                 []*storage.SnapshotExternal
+		mockControllerHelpers        func() controllerhelpers.ControllerHelper
+		expErrCode                   codes.Code
+	}{
+		{
+			name: "CreateVolumeGroupSnapshot Error - group snapshot was invalid",
+			req: &csi.CreateVolumeGroupSnapshotRequest{
+				Name:            "snapshot-1",
+				SourceVolumeIds: []string{"vol-1", "vol-2"},
+			},
+			mockControllerHelpers: func() controllerhelpers.ControllerHelper {
+				helper := mock_controller_helpers.NewMockControllerHelper(gomock.NewController(t))
+				helper.EXPECT().GetGroupSnapshotConfigForCreate(gomock.Any(), gomock.Any(), gomock.Any()).Return(&storage.GroupSnapshotConfig{}, nil)
+				return helper
+			},
+			expErrCode: codes.InvalidArgument,
+		},
+		{
+			name: "CreateVolumeGroupSnapshot Error - Could not list snapshots for group snapshot",
+			req: &csi.CreateVolumeGroupSnapshotRequest{
+				Name:            "snapshot-1",
+				SourceVolumeIds: []string{"vol-1", "vol-2"},
+			},
+			mockControllerHelpers: func() controllerhelpers.ControllerHelper {
+				helper := mock_controller_helpers.NewMockControllerHelper(gomock.NewController(t))
+				helper.EXPECT().GetGroupSnapshotConfigForCreate(gomock.Any(), gomock.Any(), gomock.Any()).Return(&storage.GroupSnapshotConfig{
+					Version:     Version,
+					Name:        "grp1",
+					VolumeNames: []string{"v1", "v2"},
+				}, nil)
+				return helper
+			},
+			listSnapshotsForGroupReturns: errors.New(""),
+			expErrCode:                   codes.Unknown,
+		},
+		{
+			name: "CreateVolumeGroupSnapshot Error - Group snapshot exists but is incompatible",
+			req: &csi.CreateVolumeGroupSnapshotRequest{
+				Name:            "snapshot-1",
+				SourceVolumeIds: []string{"vol-1", "vol-2"},
+			},
+			mockControllerHelpers: func() controllerhelpers.ControllerHelper {
+				helper := mock_controller_helpers.NewMockControllerHelper(gomock.NewController(t))
+				helper.EXPECT().GetGroupSnapshotConfigForCreate(gomock.Any(), gomock.Any(), gomock.Any()).Return(&storage.GroupSnapshotConfig{
+					Version:     Version,
+					Name:        "grp1",
+					VolumeNames: []string{"v1", "v2"},
+				}, nil)
+				return helper
+			},
+			listSnapshotsForGroupReturns: nil,
+			expErrCode:                   codes.Internal,
+		},
+		{
+			name: "CreateVolumeGroupSnapshot Error - could not convert group snapshot to CSI group snapshot",
+			req: &csi.CreateVolumeGroupSnapshotRequest{
+				Name:            "snapshot-1",
+				SourceVolumeIds: []string{"vol-1", "vol-2"},
+			},
+			mockControllerHelpers: func() controllerhelpers.ControllerHelper {
+				helper := mock_controller_helpers.NewMockControllerHelper(gomock.NewController(t))
+				helper.EXPECT().GetGroupSnapshotConfigForCreate(gomock.Any(), gomock.Any(), gomock.Any()).Return(&storage.GroupSnapshotConfig{
+					Version:     Version,
+					Name:        "grp1",
+					VolumeNames: []string{"vol-1", "vol-2"},
+				}, nil)
+				return helper
+			},
+			listSnapshot:                 []*storage.SnapshotExternal{snapshot.ConstructExternal(), snapshot2.ConstructExternal()},
+			listSnapshotsForGroupReturns: nil,
+			expErrCode:                   codes.Internal,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Create a mocked orchestrator
+			mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+			plugin := &Plugin{
+				orchestrator: mockOrchestrator,
+			}
+
+			if tc.mockControllerHelpers != nil {
+				plugin.controllerHelper = tc.mockControllerHelpers()
+			}
+			// Mock GetVolume
+			mockOrchestrator.EXPECT().
+				GetGroupSnapshot(gomock.Any(), gomock.Any()).Return(&storage.GroupSnapshotExternal{GroupSnapshot: storage.GroupSnapshot{GroupSnapshotConfig: &storage.GroupSnapshotConfig{Name: "snap"}}}, nil).AnyTimes()
+			mockOrchestrator.EXPECT().
+				ListSnapshotsForGroup(gomock.Any(), gomock.Any()).Return(tc.listSnapshot, tc.listSnapshotsForGroupReturns).AnyTimes()
+
+			_, err := plugin.CreateVolumeGroupSnapshot(context.Background(), tc.req)
+
+			if tc.expErrCode != codes.OK {
+				assert.Error(t, err)
+				status, ok := status.FromError(err)
+				assert.True(t, ok)
+				assert.Equal(t, tc.expErrCode, status.Code(), "Expected error code %v, got %v", tc.expErrCode, status.Code())
+				return
+			}
+			assert.NoError(t, err)
+		})
+	}
+}
+
+func TestGetCSIGroupSnapshotFromTridentGroupSnapshot(t *testing.T) {
+	snapshotConfig := &storage.SnapshotConfig{
+		Name:       "snap1",
+		VolumeName: "vol-1",
+	}
+
+	// Create snapshots for different test cases
+	onlineSnapshot := storage.Snapshot{
+		Created:   "2023-05-15T17:04:09Z",
+		SizeBytes: 1024,
+		State:     storage.SnapshotStateOnline,
+		Config:    snapshotConfig,
+	}
+
+	offlineSnapshot := storage.Snapshot{
+		Created:   "2023-05-15T17:04:09Z",
+		SizeBytes: 1024,
+		State:     storage.SnapshotStateCreating,
+		Config:    snapshotConfig,
+	}
+
+	invalidTimeSnapshot := storage.Snapshot{
+		Created:   "invalid-time",
+		SizeBytes: 1024,
+		State:     storage.SnapshotStateOnline,
+		Config:    snapshotConfig,
+	}
+
+	testCases := []struct {
+		name           string
+		groupSnapshot  *storage.GroupSnapshotExternal
+		snapshots      []*storage.SnapshotExternal
+		expectedError  codes.Code
+		expectedResult bool
+	}{
+		{
+			name:          "Error - Group snapshot is nil",
+			groupSnapshot: nil,
+			snapshots:     []*storage.SnapshotExternal{},
+			expectedError: codes.Internal,
+		},
+		{
+			name: "Error - Group snapshot validation fails",
+			groupSnapshot: &storage.GroupSnapshotExternal{
+				GroupSnapshot: storage.GroupSnapshot{
+					GroupSnapshotConfig: &storage.GroupSnapshotConfig{
+						Name: "snap",
+						// Missing VolumeNames to trigger validation failure
+					},
+					Created: "2023-05-15T17:04:09Z",
+				},
+			},
+			snapshots:     []*storage.SnapshotExternal{},
+			expectedError: codes.Internal,
+		},
+		{
+			name: "Error - Invalid group creation time",
+			groupSnapshot: &storage.GroupSnapshotExternal{
+				GroupSnapshot: storage.GroupSnapshot{
+					GroupSnapshotConfig: &storage.GroupSnapshotConfig{
+						Name:        "snap",
+						VolumeNames: []string{"vol-1"},
+					},
+					Created: "invalid-time",
+				},
+			},
+			snapshots:     []*storage.SnapshotExternal{},
+			expectedError: codes.Internal,
+		},
+		{
+			name: "Error - Snapshot not ready",
+			groupSnapshot: &storage.GroupSnapshotExternal{
+				GroupSnapshot: storage.GroupSnapshot{
+					GroupSnapshotConfig: &storage.GroupSnapshotConfig{
+						Name:        "snap",
+						VolumeNames: []string{"vol-1"},
+					},
+					Created: "2023-05-15T17:04:09Z",
+				},
+			},
+			snapshots:     []*storage.SnapshotExternal{offlineSnapshot.ConstructExternal()},
+			expectedError: codes.Internal,
+		},
+		{
+			name: "Success - Valid group snapshot with ready snapshots",
+			groupSnapshot: &storage.GroupSnapshotExternal{
+				GroupSnapshot: storage.GroupSnapshot{
+					GroupSnapshotConfig: &storage.GroupSnapshotConfig{
+						Name:        "snap",
+						VolumeNames: []string{"vol-1"},
+					},
+					Created: "2023-05-15T17:04:09Z",
+				},
+			},
+			snapshots:      []*storage.SnapshotExternal{onlineSnapshot.ConstructExternal()},
+			expectedResult: true,
+		},
+		{
+			name: "Success - Invalid snapshot time uses group time",
+			groupSnapshot: &storage.GroupSnapshotExternal{
+				GroupSnapshot: storage.GroupSnapshot{
+					GroupSnapshotConfig: &storage.GroupSnapshotConfig{
+						Name:        "snap",
+						VolumeNames: []string{"vol-1"},
+					},
+					Created: "2023-05-15T17:04:09Z",
+				},
+			},
+			snapshots:      []*storage.SnapshotExternal{invalidTimeSnapshot.ConstructExternal()},
+			expectedResult: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			plugin := &Plugin{}
+
+			result, err := plugin.getCSIGroupSnapshotFromTridentGroupSnapshot(
+				context.Background(), tc.groupSnapshot, tc.snapshots)
+
+			if tc.expectedError != codes.OK {
+				assert.Error(t, err)
+				status, ok := status.FromError(err)
+				assert.True(t, ok)
+				assert.Equal(t, tc.expectedError, status.Code())
+				assert.Nil(t, result)
+				return
+			}
+
+			if tc.expectedResult {
+				assert.NoError(t, err)
+				assert.NotNil(t, result)
+				assert.Equal(t, tc.groupSnapshot.ID(), result.GroupSnapshotId)
+				assert.Len(t, result.Snapshots, len(tc.snapshots))
+				assert.True(t, result.ReadyToUse)
+			}
+		})
+	}
+}
+
+func TestValidateGroupSnapshot(t *testing.T) {
+	snapshotConfig := &storage.SnapshotConfig{
+		Name:               "snap1",
+		InternalName:       "internal_snap1",
+		VolumeName:         "vol-1",
+		VolumeInternalName: "internal_vol_1",
+	}
+
+	invalidSnapshotConfig := &storage.SnapshotConfig{
+		Name:       "", // Invalid: empty name
+		VolumeName: "vol-1",
+	}
+
+	// Create snapshots for different test cases
+	onlineSnapshot := storage.Snapshot{
+		Created:   "2023-05-15T17:04:09Z",
+		SizeBytes: 1024,
+		State:     storage.SnapshotStateOnline,
+		Config:    snapshotConfig,
+	}
+
+	offlineSnapshot := storage.Snapshot{
+		Created:   "2023-05-15T17:04:09Z",
+		SizeBytes: 1024,
+		State:     storage.SnapshotStateCreating,
+		Config:    snapshotConfig,
+	}
+
+	invalidSnapshot := storage.Snapshot{
+		Created:   "2023-05-15T17:04:09Z",
+		SizeBytes: 1024,
+		State:     storage.SnapshotStateOnline,
+		Config:    invalidSnapshotConfig,
+	}
+
+	testCases := []struct {
+		name          string
+		groupSnapshot *storage.GroupSnapshotExternal
+		snapshots     []*storage.SnapshotExternal
+		volumeNames   []string
+		expectedError codes.Code
+	}{
+		{
+			name:          "Error - Group snapshot is nil",
+			groupSnapshot: nil,
+			snapshots:     []*storage.SnapshotExternal{(&onlineSnapshot).ConstructExternal()},
+			volumeNames:   []string{"vol-1"},
+			expectedError: codes.Internal,
+		},
+		{
+			name: "Error - No snapshots provided",
+			groupSnapshot: &storage.GroupSnapshotExternal{
+				GroupSnapshot: storage.GroupSnapshot{
+					GroupSnapshotConfig: &storage.GroupSnapshotConfig{Name: "group-1"},
+				},
+			},
+			snapshots:     []*storage.SnapshotExternal{},
+			volumeNames:   []string{"vol-1"},
+			expectedError: codes.Internal,
+		},
+		{
+			name: "Error - No volume names provided",
+			groupSnapshot: &storage.GroupSnapshotExternal{
+				GroupSnapshot: storage.GroupSnapshot{
+					GroupSnapshotConfig: &storage.GroupSnapshotConfig{Name: "group-1"},
+				},
+			},
+			snapshots:     []*storage.SnapshotExternal{(&onlineSnapshot).ConstructExternal()},
+			volumeNames:   []string{},
+			expectedError: codes.Internal,
+		},
+		{
+			name: "Error - Parse snapshot ID fails",
+			groupSnapshot: &storage.GroupSnapshotExternal{
+				GroupSnapshot: storage.GroupSnapshot{
+					GroupSnapshotConfig: &storage.GroupSnapshotConfig{Name: "group-1"},
+				},
+			},
+			snapshots: []*storage.SnapshotExternal{
+				// Create snapshot with invalid ID format
+				(&storage.Snapshot{
+					Created:   "2023-05-15T17:04:09Z",
+					SizeBytes: 1024,
+					State:     storage.SnapshotStateOnline,
+					Config: &storage.SnapshotConfig{
+						Name:               "invalid-snapshot-id",
+						InternalName:       "internal_invalid",
+						VolumeName:         "",
+						VolumeInternalName: "internal_vol_1",
+					},
+				}).ConstructExternal(),
+			},
+			volumeNames:   []string{"vol-1"},
+			expectedError: codes.Internal,
+		},
+		{
+			name: "Error - Duplicate volume in group",
+			groupSnapshot: &storage.GroupSnapshotExternal{
+				GroupSnapshot: storage.GroupSnapshot{
+					GroupSnapshotConfig: &storage.GroupSnapshotConfig{Name: "group-1"},
+				},
+			},
+			snapshots: []*storage.SnapshotExternal{
+				(&storage.Snapshot{
+					Created:   "2023-05-15T17:04:09Z",
+					SizeBytes: 1024,
+					State:     storage.SnapshotStateOnline,
+					Config:    &storage.SnapshotConfig{Name: "snap-1", InternalName: "internal_snap1", VolumeName: "vol-1"},
+				}).ConstructExternal(),
+				(&storage.Snapshot{
+					Created:   "2023-05-15T17:04:09Z",
+					SizeBytes: 1024,
+					State:     storage.SnapshotStateOnline,
+					Config:    &storage.SnapshotConfig{Name: "snap-2", InternalName: "internal_snap2", VolumeName: "vol-1"},
+				}).ConstructExternal(),
+			},
+			volumeNames:   []string{"vol-1"},
+			expectedError: codes.AlreadyExists,
+		},
+		{
+			name: "Error - Volume count mismatch",
+			groupSnapshot: &storage.GroupSnapshotExternal{
+				GroupSnapshot: storage.GroupSnapshot{
+					GroupSnapshotConfig: &storage.GroupSnapshotConfig{Name: "group-1"},
+				},
+			},
+			snapshots: []*storage.SnapshotExternal{
+				(&storage.Snapshot{
+					Created:   "2023-05-15T17:04:09Z",
+					SizeBytes: 1024,
+					State:     storage.SnapshotStateOnline,
+					Config:    &storage.SnapshotConfig{Name: "snap-1", InternalName: "internal_snap1", VolumeName: "vol-1"},
+				}).ConstructExternal(),
+			},
+			volumeNames:   []string{"vol-1", "vol-2"},
+			expectedError: codes.AlreadyExists,
+		},
+		{
+			name: "Error - Missing volume in group",
+			groupSnapshot: &storage.GroupSnapshotExternal{
+				GroupSnapshot: storage.GroupSnapshot{
+					GroupSnapshotConfig: &storage.GroupSnapshotConfig{Name: "group-1"},
+				},
+			},
+			snapshots: []*storage.SnapshotExternal{
+				(&storage.Snapshot{
+					Created:   "2023-05-15T17:04:09Z",
+					SizeBytes: 1024,
+					State:     storage.SnapshotStateOnline,
+					Config:    &storage.SnapshotConfig{Name: "snap-1", InternalName: "internal_snap1", VolumeName: "vol-1"},
+				}).ConstructExternal(),
+			},
+			volumeNames:   []string{"vol-2"},
+			expectedError: codes.Internal,
+		},
+		{
+			name: "Error - Invalid constituent snapshot",
+			groupSnapshot: &storage.GroupSnapshotExternal{
+				GroupSnapshot: storage.GroupSnapshot{
+					GroupSnapshotConfig: &storage.GroupSnapshotConfig{Name: "group-1"},
+				},
+			},
+			snapshots: []*storage.SnapshotExternal{
+				(&invalidSnapshot).ConstructExternal(),
+			},
+			volumeNames:   []string{"vol-1"},
+			expectedError: codes.Internal,
+		},
+		{
+			name: "Error - Snapshot not ready",
+			groupSnapshot: &storage.GroupSnapshotExternal{
+				GroupSnapshot: storage.GroupSnapshot{
+					GroupSnapshotConfig: &storage.GroupSnapshotConfig{Name: "group-1"},
+				},
+			},
+			snapshots: []*storage.SnapshotExternal{
+				(&offlineSnapshot).ConstructExternal(),
+			},
+			volumeNames:   []string{"vol-1"},
+			expectedError: codes.Internal,
+		},
+		{
+			name: "Success - Valid group snapshot",
+			groupSnapshot: &storage.GroupSnapshotExternal{
+				GroupSnapshot: storage.GroupSnapshot{
+					GroupSnapshotConfig: &storage.GroupSnapshotConfig{Name: "group-1"},
+				},
+			},
+			snapshots: []*storage.SnapshotExternal{
+				(&onlineSnapshot).ConstructExternal(),
+			},
+			volumeNames:   []string{"vol-1"},
+			expectedError: codes.OK,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			plugin := &Plugin{}
+
+			err := plugin.validateGroupSnapshot(context.Background(), tc.groupSnapshot, tc.snapshots, tc.volumeNames)
+
+			if tc.expectedError != codes.OK {
+				assert.Error(t, err)
+				status, ok := status.FromError(err)
+				assert.True(t, ok)
+				assert.Equal(t, tc.expectedError, status.Code())
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }

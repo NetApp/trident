@@ -27,7 +27,6 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/fiji"
-	"github.com/netapp/trident/internal/syswrap"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/pkg/convert"
@@ -247,7 +246,6 @@ func (p *Plugin) nodeUnstageVolume(
 	}
 
 	var resp *csi.NodeUnstageVolumeResponse
-
 	switch protocol {
 	case tridentconfig.File:
 		if publishInfo.FilesystemType == smb.SMB {
@@ -270,7 +268,6 @@ func (p *Plugin) nodeUnstageVolume(
 	default:
 		return nil, status.Error(codes.InvalidArgument, "unknown protocol")
 	}
-
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			return nil, status.Error(codes.DeadlineExceeded, "nodeUnstageVolume timed out")
@@ -447,7 +444,7 @@ func (p *Plugin) NodeGetVolumeStats(
 	}
 
 	// Ensure volume is published at path
-	exists, err := syswrap.Exists(ctx, req.GetVolumePath(), fsUnavailableTimeout)
+	exists, err := p.osutils.PathExistsWithTimeout(ctx, req.GetVolumePath(), fsUnavailableTimeout)
 	if !exists || err != nil {
 		return nil, status.Error(codes.NotFound,
 			fmt.Sprintf("could not find volume mount at path: %s; %v", req.GetVolumePath(), err))
@@ -1399,7 +1396,6 @@ func (p *Plugin) nodeStageFCPVolume(
 			return fmt.Errorf("could not set LUKS volume passphrase")
 		}
 	}
-
 	if mpathSize > 0 {
 		Logc(ctx).Warn("Multipath device size may not be correct, performing gratuitous resize.")
 
@@ -2607,7 +2603,6 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 		"portal": portal,
 		"action": action,
 	}).Debug("ISCSI self-healing rectify session is invoked.")
-
 	publishInfo, err := publishedISCSISessions.GeneratePublishInfo(portal)
 	if err != nil {
 		return fmt.Errorf("failed to get publish info for session on portal '%s'; %v", portal, err)
@@ -2796,7 +2791,6 @@ func (p *Plugin) performISCSISelfHealing(ctx context.Context) {
 
 	// After this time self-healing may be stopped
 	stopSelfHealingAt := time.Now().Add(iSCSISelfHealingTimeout)
-
 	// If there are not iSCSI volumes expected on the host skip self-healing
 	if publishedISCSISessions.IsEmpty() {
 		Logc(ctx).Debug("Skipping iSCSI self-heal cycle; no iSCSI volumes published on the host.")

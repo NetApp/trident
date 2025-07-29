@@ -479,12 +479,12 @@ func main() {
 		case csi.CSIController:
 			txnMonitor = true
 			csiFrontend, err = csi.NewControllerPlugin(*csiNodeName, *csiEndpoint, *aesKey, orchestrator,
-				&controllerHelper, *enableForceDetach)
+				controllerHelper, *enableForceDetach)
 
 			fijiFrontend = fiji.NewFrontend(":50001")
 		case csi.CSINode:
 			csiFrontend, err = csi.NewNodePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, *aesKey, orchestrator, *csiUnsafeNodeDetach, &nodeHelper, *enableForceDetach,
+				*httpsClientKey, *aesKey, orchestrator, *csiUnsafeNodeDetach, nodeHelper, *enableForceDetach,
 				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime, *nvmeSelfHealingInterval)
 			enableMutualTLS = false
 			handler = rest.NewNodeRouter(csiFrontend)
@@ -493,7 +493,7 @@ func main() {
 		case csi.CSIAllInOne:
 			txnMonitor = true
 			csiFrontend, err = csi.NewAllInOnePlugin(*csiNodeName, *csiEndpoint, *httpsCACert, *httpsClientCert,
-				*httpsClientKey, *aesKey, orchestrator, &controllerHelper, &nodeHelper, *csiUnsafeNodeDetach,
+				*httpsClientKey, *aesKey, orchestrator, controllerHelper, nodeHelper, *csiUnsafeNodeDetach,
 				*iSCSISelfHealingInterval, *iSCSISelfHealingWaitTime, *nvmeSelfHealingInterval)
 
 			fijiFrontend = fiji.NewFrontend(":50000")
