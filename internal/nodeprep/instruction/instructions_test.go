@@ -18,6 +18,7 @@ import (
 func TestInstructions(t *testing.T) {
 	RHELYumISCSI := newRHELYumISCSI()
 	DebianAptISCSI := newDebianAptISCSI()
+	RHCOSISCSI := newRHCOSISCSI()
 	YumISCSI := newYumISCSI()
 	AptISCSI := newAptISCSI()
 
@@ -28,6 +29,7 @@ func TestInstructions(t *testing.T) {
 		scopedInstructions := map[Key]Instructions{}
 		scopedInstructions[Key{Protocol: protocol.ISCSI, Distro: nodeinfo.DistroAmzn, PkgMgr: nodeinfo.PkgMgrYum}] = RHELYumISCSI
 		scopedInstructions[Key{Protocol: protocol.ISCSI, Distro: nodeinfo.DistroUbuntu, PkgMgr: nodeinfo.PkgMgrApt}] = DebianAptISCSI
+		scopedInstructions[Key{Protocol: protocol.ISCSI, Distro: nodeinfo.DistroRhel, PkgMgr: nodeinfo.PkgMgrNone}] = RHCOSISCSI
 		scopedInstructions[Key{Protocol: protocol.ISCSI, Distro: "", PkgMgr: nodeinfo.PkgMgrYum}] = YumISCSI
 		scopedInstructions[Key{Protocol: protocol.ISCSI, Distro: "", PkgMgr: nodeinfo.PkgMgrApt}] = AptISCSI
 		ScopedInstructions(scopedInstructions)
@@ -51,6 +53,12 @@ func TestInstructions(t *testing.T) {
 	amazonHostSystemResponse := models.HostSystem{
 		OS: models.SystemOS{
 			Distro: nodeinfo.DistroAmzn,
+		},
+	}
+
+	rhelHostSystemResponse := models.HostSystem{
+		OS: models.SystemOS{
+			Distro: nodeinfo.DistroRhel,
 		},
 	}
 
@@ -121,6 +129,27 @@ func TestInstructions(t *testing.T) {
 				Distro:     fooDistro,
 			},
 			expectedInstructions: []Instructions{RHELYumISCSI},
+			setInstructions:      setDefaultInstructions,
+			assertError:          assert.NoError,
+		},
+		"node info returns rhel distro without package manager": {
+			getOSClient: func(controller *gomock.Controller) osutils.Utils {
+				os := mock_osutils.NewMockUtils(controller)
+				os.EXPECT().GetHostSystemInfo(gomock.Any()).Return(&rhelHostSystemResponse, nil)
+				return os
+			},
+			getBinaryClient: func(controller *gomock.Controller) nodeinfo.Binary {
+				binary := mock_nodeinfo.NewMockBinary(controller)
+				binary.EXPECT().FindPath(nodeinfo.PkgMgrYum).Return("")
+				binary.EXPECT().FindPath(nodeinfo.PkgMgrApt).Return("")
+				return binary
+			},
+			expectedNodeInfo: &nodeinfo.NodeInfo{
+				PkgMgr:     nodeinfo.PkgMgrNone,
+				HostSystem: rhelHostSystemResponse,
+				Distro:     nodeinfo.DistroRhel,
+			},
+			expectedInstructions: []Instructions{RHCOSISCSI},
 			setInstructions:      setDefaultInstructions,
 			assertError:          assert.NoError,
 		},

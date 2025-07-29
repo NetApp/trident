@@ -28,6 +28,7 @@ const (
 	DistroUbuntu  Distro = osutils.Ubuntu
 	DistroAmzn    Distro = "amzn"
 	DistroRhcos   Distro = "rhcos"
+	DistroRhel    Distro = osutils.RHEL
 	DistroUnknown        = "unknown"
 
 	PkgMgrYum  PkgMgr = "yum"

@@ -30,6 +30,7 @@ func init() {
 	instructionMap[Key{Protocol: protocol.ISCSI, Distro: nodeinfo.DistroAmzn, PkgMgr: nodeinfo.PkgMgrYum}] = newRHELYumISCSI()
 	instructionMap[Key{Protocol: protocol.ISCSI, Distro: nodeinfo.DistroUbuntu, PkgMgr: nodeinfo.PkgMgrApt}] = newDebianAptISCSI()
 	instructionMap[Key{Protocol: protocol.ISCSI, Distro: nodeinfo.DistroRhcos, PkgMgr: nodeinfo.PkgMgrNone}] = newRHCOSISCSI()
+	instructionMap[Key{Protocol: protocol.ISCSI, Distro: nodeinfo.DistroRhel, PkgMgr: nodeinfo.PkgMgrNone}] = newRHCOSISCSI()
 	instructionMap[Key{Protocol: protocol.ISCSI, Distro: "", PkgMgr: nodeinfo.PkgMgrYum}] = newYumISCSI()
 	instructionMap[Key{Protocol: protocol.ISCSI, Distro: "", PkgMgr: nodeinfo.PkgMgrApt}] = newAptISCSI()
 }
