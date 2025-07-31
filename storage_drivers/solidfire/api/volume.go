@@ -75,7 +75,7 @@ func (c *Client) WaitForVolumeByID(ctx context.Context, volID int64) (Volume, er
 	volumeBackoff.InitialInterval = 2 * time.Second
 	volumeBackoff.Multiplier = 1.414
 	volumeBackoff.RandomizationFactor = 0.1
-	volumeBackoff.MaxElapsedTime = 60 * time.Second
+	volumeBackoff.MaxElapsedTime = 300 * time.Second
 
 	// Run the volume check using an exponential backoff
 	if err := backoff.RetryNotify(checkVolumeExists, volumeBackoff, volumeExistsNotify); err != nil {
