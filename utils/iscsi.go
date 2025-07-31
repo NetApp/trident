@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"regexp"
@@ -478,8 +479,12 @@ func (h *IscsiReconcileHelper) GetMultipathDeviceDisks(ctx context.Context, mult
 	diskPath := chrootPathPrefix + fmt.Sprintf("/sys/block/%s/slaves/", multipathDevice)
 	diskDirs, err := os.ReadDir(diskPath)
 	if err != nil {
-		Logc(ctx).WithError(err).Errorf("Could not read %s", diskDirs)
-		return nil, fmt.Errorf("failed to identify multipath device disks; unable to read '%s'", diskDirs)
+		if errors.Is(err, fs.ErrNotExist) {
+			Logc(ctx).Warningf("multipath device directory %s does not exist, device is already gone?", diskDirs)
+			return nil, nil
+		}
+		Logc(ctx).WithError(err).Errorf("Could not read %s", diskPath)
+		return nil, fmt.Errorf("failed to identify multipath device disks; unable to read %q :%w", diskPath, err)
 	}
 
 	for _, diskDir := range diskDirs {
