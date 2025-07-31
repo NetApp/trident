@@ -1,4 +1,4 @@
-package core
+package metrics
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	tridentBuildInfo = promauto.NewGaugeVec(
+	TridentBuildInfo = promauto.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: config.OrchestratorName,
 			Name:      "build_info",
@@ -16,7 +16,7 @@ var (
 		},
 		[]string{"trident_revision", "trident_version", "build_type"},
 	)
-	tridentBackendInfo = promauto.NewGaugeVec(
+	TridentBackendInfo = promauto.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: config.OrchestratorName,
 			Name:      "backend_info",
@@ -24,7 +24,7 @@ var (
 		},
 		[]string{"backend_type", "backend_name", "backend_uuid"},
 	)
-	backendsGauge = promauto.NewGaugeVec(
+	BackendsGauge = promauto.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: config.OrchestratorName,
 			Name:      "backend_count",
@@ -32,7 +32,7 @@ var (
 		},
 		[]string{"backend_type", "backend_state"},
 	)
-	volumeAllocatedBytesGauge = promauto.NewGaugeVec(
+	VolumeAllocatedBytesGauge = promauto.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: config.OrchestratorName,
 			Name:      "volume_allocated_bytes",
@@ -40,7 +40,7 @@ var (
 		},
 		[]string{"backend_type", "backend_uuid", "volume_state", "volume_type"},
 	)
-	volumesGauge = promauto.NewGaugeVec(
+	VolumesGauge = promauto.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: config.OrchestratorName,
 			Name:      "volume_count",
@@ -48,28 +48,28 @@ var (
 		},
 		[]string{"backend_type", "backend_uuid", "volume_state", "volume_type"},
 	)
-	volumesTotalBytesGauge = promauto.NewGauge(
+	VolumesTotalBytesGauge = promauto.NewGauge(
 		prometheus.GaugeOpts{
 			Namespace: config.OrchestratorName,
 			Name:      "volume_total_bytes",
 			Help:      "The total number of bytes in all volumes",
 		},
 	)
-	scGauge = promauto.NewGauge(
+	SCGauge = promauto.NewGauge(
 		prometheus.GaugeOpts{
 			Namespace: config.OrchestratorName,
 			Name:      "storageclass_count",
 			Help:      "The total number of storage classes",
 		},
 	)
-	nodeGauge = promauto.NewGauge(
+	NodeGauge = promauto.NewGauge(
 		prometheus.GaugeOpts{
 			Namespace: config.OrchestratorName,
 			Name:      "node_count",
 			Help:      "The total number of nodes",
 		},
 	)
-	snapshotGauge = promauto.NewGaugeVec(
+	SnapshotGauge = promauto.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: config.OrchestratorName,
 			Name:      "snapshot_count",
@@ -77,7 +77,7 @@ var (
 		},
 		[]string{"backend_type", "backend_uuid"},
 	)
-	snapshotAllocatedBytesGauge = promauto.NewGaugeVec(
+	SnapshotAllocatedBytesGauge = promauto.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: config.OrchestratorName,
 			Name:      "snapshot_allocated_bytes",
@@ -85,7 +85,7 @@ var (
 		},
 		[]string{"backend_type", "backend_uuid"},
 	)
-	operationDurationInMsSummary = promauto.NewSummaryVec(
+	OperationDurationInMsSummary = promauto.NewSummaryVec(
 		prometheus.SummaryOpts{
 			Namespace:  config.OrchestratorName,
 			Name:       "operation_duration_milliseconds",

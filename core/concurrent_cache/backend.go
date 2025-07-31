@@ -102,15 +102,25 @@ func UpsertBackend(id, name, newName string) Subquery {
 		newKey: newName,
 		setResults: func(s *Subquery, r *Result) error {
 			backends.rlock()
-			if i, ok := backends.data[s.id]; ok {
-				r.Backend.Read = i.SmartCopy().(storage.Backend)
+			oldBackendData, ok := backends.data[s.id]
+			if ok {
+				r.Backend.Read = oldBackendData.SmartCopy().(storage.Backend)
 			}
 			backends.runlock()
+
 			r.Backend.Upsert = func(b storage.Backend) {
-				backends.lock()
 				if s.id == "" {
 					s.id = b.BackendUUID()
 				}
+
+				// Update metrics
+				if oldBackendData != nil {
+					deleteBackendFromMetrics(oldBackendData.(storage.Backend))
+				}
+				addBackendToMetrics(b)
+
+				backends.lock()
+
 				// This is the canonical method for upserting with a unique key.
 				// There are 4 cases: key and newKey are equal, key is empty, newKey is empty,
 				// and key and newKey are different. In all cases expect #3,
@@ -131,6 +141,7 @@ func UpsertBackend(id, name, newName string) Subquery {
 					delete(backends.key.data, s.key)
 					backends.key.data[s.newKey] = s.id
 				}
+
 				backends.data[s.id] = b
 				backends.unlock()
 			}
@@ -146,11 +157,18 @@ func DeleteBackend(id string) Subquery {
 		id:  id,
 		setResults: func(s *Subquery, r *Result) error {
 			backends.rlock()
-			if i, ok := backends.data[s.id]; ok {
-				r.Backend.Read = i.SmartCopy().(storage.Backend)
+			backendData, ok := backends.data[s.id]
+			if ok {
+				r.Backend.Read = backendData.SmartCopy().(storage.Backend)
 			}
 			backends.runlock()
+
 			r.Backend.Delete = func() {
+				// Update metrics
+				if backendData != nil {
+					deleteBackendFromMetrics(backendData.(storage.Backend))
+				}
+
 				backends.lock()
 				delete(backends.data, s.id)
 				// delete from the uniqueKey cache as well

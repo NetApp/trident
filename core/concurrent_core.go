@@ -228,9 +228,6 @@ func (o *ConcurrentTridentOrchestrator) bootstrap(ctx context.Context) error {
 
 	o.RebuildStorageClassPoolMap(ctx)
 
-	// If nothing failed during bootstrapping, initialize the core metrics
-	o.updateMetrics()
-
 	return nil
 }
 
@@ -651,12 +648,6 @@ func (o *ConcurrentTridentOrchestrator) Stop() {
 	// o.StopTransactionMonitor()
 }
 
-// updateMetrics updates the metrics that track the core objects.
-// The caller should hold the orchestrator lock.
-func (o *ConcurrentTridentOrchestrator) updateMetrics() {
-	// TODO (cknight): reenable
-}
-
 // validateAndCreateBackendFromConfig validates config and creates backend based on Config
 func (o *ConcurrentTridentOrchestrator) validateAndCreateBackendFromConfig(
 	ctx context.Context, configJSON, configRef, backendUUID string,
@@ -901,7 +892,6 @@ func (o *ConcurrentTridentOrchestrator) AddBackend(
 	}
 
 	defer recordTiming("backend_add", &err)()
-	defer o.updateMetrics()
 
 	newBackendName, err := factory.ParseBackendName(configJSON)
 	if err != nil {
@@ -936,7 +926,6 @@ func (o *ConcurrentTridentOrchestrator) DeleteBackend(ctx context.Context, backe
 	}
 
 	defer recordTiming("backend_delete", &err)()
-	defer o.updateMetrics()
 
 	results, unlocker, err := db.Lock(db.Query(db.ReadBackendByName(backendName)))
 	if err != nil {
@@ -969,7 +958,6 @@ func (o *ConcurrentTridentOrchestrator) DeleteBackendByBackendUUID(
 	}
 
 	defer recordTiming("backend_delete", &err)()
-	defer o.updateMetrics()
 
 	return o.deleteBackendByBackendUUID(ctx, backendName, backendUUID)
 }
@@ -1163,7 +1151,6 @@ func (o *ConcurrentTridentOrchestrator) UpdateBackend(
 	}
 
 	defer recordTiming("backend_update", &err)()
-	defer o.updateMetrics()
 
 	backend, err := o.upsertBackend(ctx, configJSON, backendName, "", configRef)
 	if err != nil {
@@ -1201,7 +1188,6 @@ func (o *ConcurrentTridentOrchestrator) UpdateBackendByBackendUUID(
 	}
 
 	defer recordTiming("backend_update", &err)()
-	defer o.updateMetrics()
 
 	backend, err := o.upsertBackend(ctx, configJSON, backendName, backendUUID, configRef)
 	if err != nil {
@@ -1621,11 +1607,12 @@ func (o *ConcurrentTridentOrchestrator) UpdateBackendState(ctx context.Context, 
 	return nil, fmt.Errorf("UpdateBackendState is not implemented for concurrent core")
 }
 
-func (o *ConcurrentTridentOrchestrator) RemoveBackendConfigRef(ctx context.Context, backendUUID, configRef string) (err error) {
+func (o *ConcurrentTridentOrchestrator) RemoveBackendConfigRef(
+	ctx context.Context, backendUUID, configRef string,
+) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	defer recordTiming("backend_update", &err)()
-	defer o.updateMetrics()
 
 	results, unlocker, err := db.Lock(db.Query(db.UpsertBackend(backendUUID, "", "")))
 	defer unlocker()
@@ -1673,7 +1660,6 @@ func (o *ConcurrentTridentOrchestrator) AddVolume(
 	}
 
 	defer recordTiming("volume_add", &err)()
-	defer o.updateMetrics()
 
 	volumeConfig.Version = config.OrchestratorAPIVersion
 
@@ -2016,14 +2002,12 @@ func (o *ConcurrentTridentOrchestrator) UpdateVolume(
 // UpdateVolumeLUKSPassphraseNames updates the LUKS passphrase names stored on a volume in the cache and persistent store.
 func (o *ConcurrentTridentOrchestrator) UpdateVolumeLUKSPassphraseNames(
 	ctx context.Context, volumeName string, passphraseNames *[]string,
-) error {
+) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError
 	}
-
-	defer o.updateMetrics()
 
 	// Get write lock for volume
 	results, unlocker, err := db.Lock(db.Query(db.UpsertVolume(volumeName, "")))
@@ -2072,7 +2056,6 @@ func (o *ConcurrentTridentOrchestrator) CloneVolume(
 	}
 
 	defer recordTiming("volume_clone", &err)()
-	defer o.updateMetrics()
 
 	volumeConfig.Version = config.OrchestratorAPIVersion
 
@@ -2429,7 +2412,6 @@ func (o *ConcurrentTridentOrchestrator) DeleteVolume(ctx context.Context, volume
 	}
 
 	defer recordTiming("volume_delete", &err)()
-	defer o.updateMetrics()
 
 	// Check for subordinate volume
 	results, unlocker, err := db.Lock(db.Query(db.InconsistentReadSubordinateVolume(volumeName)))
@@ -2705,7 +2687,8 @@ func (o *ConcurrentTridentOrchestrator) GetVolumeForImport(
 	return backend.GetVolumeForImport(ctx, volumeID)
 }
 
-func (o *ConcurrentTridentOrchestrator) ImportVolume(ctx context.Context, volumeConfig *storage.VolumeConfig,
+func (o *ConcurrentTridentOrchestrator) ImportVolume(
+	ctx context.Context, volumeConfig *storage.VolumeConfig,
 ) (v *storage.VolumeExternal, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
@@ -2720,7 +2703,6 @@ func (o *ConcurrentTridentOrchestrator) ImportVolume(ctx context.Context, volume
 	}
 
 	defer recordTiming("volume_import", &err)()
-	defer o.updateMetrics()
 
 	Logc(ctx).WithFields(LogFields{
 		"volumeConfig": volumeConfig,
@@ -3507,7 +3489,6 @@ func (o *ConcurrentTridentOrchestrator) ResizeVolume(ctx context.Context, volume
 	}
 
 	defer recordTiming("volume_resize", &err)()
-	defer o.updateMetrics()
 
 	results, unlocker, err := db.Lock(db.Query(
 		db.InconsistentReadVolume(volumeName),
@@ -3933,7 +3914,6 @@ func (o *ConcurrentTridentOrchestrator) CreateSnapshot(
 	}
 
 	defer recordTiming("snapshot_create", &err)()
-	defer o.updateMetrics()
 
 	// inconsistent read volume
 	results, unlocker, err := db.Lock(db.Query(
@@ -4065,7 +4045,6 @@ func (o *ConcurrentTridentOrchestrator) ImportSnapshot(
 	}
 
 	defer recordTiming("snapshot_import", &err)()
-	defer o.updateMetrics()
 
 	// Fail immediately if the internal name isn't set.
 	if snapshotConfig.InternalName == "" {
@@ -4377,7 +4356,9 @@ func (o *ConcurrentTridentOrchestrator) ReadSnapshotsForVolume(
 // RestoreSnapshot restores a volume to the specified snapshot.  The caller is responsible for ensuring this is
 // the newest snapshot known to the container orchestrator.  Any other snapshots that are newer than the specified
 // one that are not known to the container orchestrator may be lost.
-func (o *ConcurrentTridentOrchestrator) RestoreSnapshot(ctx context.Context, volumeName, snapshotName string) (err error) {
+func (o *ConcurrentTridentOrchestrator) RestoreSnapshot(
+	ctx context.Context, volumeName, snapshotName string,
+) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -4385,7 +4366,6 @@ func (o *ConcurrentTridentOrchestrator) RestoreSnapshot(ctx context.Context, vol
 	}
 
 	defer recordTiming("snapshot_restore", &err)()
-	defer o.updateMetrics()
 
 	results, unlocker, err := db.Lock(db.Query(db.InconsistentReadVolume(volumeName)))
 	unlocker()
@@ -4580,7 +4560,9 @@ func (o *ConcurrentTridentOrchestrator) deleteSnapshotCleanup(
 	return combinedErr
 }
 
-func (o *ConcurrentTridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, snapshotName string) (err error) {
+func (o *ConcurrentTridentOrchestrator) DeleteSnapshot(
+	ctx context.Context, volumeName, snapshotName string,
+) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -4588,7 +4570,6 @@ func (o *ConcurrentTridentOrchestrator) DeleteSnapshot(ctx context.Context, volu
 	}
 
 	defer recordTiming("snapshot_delete", &err)()
-	defer o.updateMetrics()
 
 	snapshotID := storage.MakeSnapshotID(volumeName, snapshotName)
 
@@ -4665,7 +4646,6 @@ func (o *ConcurrentTridentOrchestrator) AddStorageClass(
 	}
 
 	defer recordTiming("storageclass_add", &err)()
-	defer o.updateMetrics()
 
 	sc := storageclass.New(scConfig)
 	scName := scConfig.Name
@@ -4709,7 +4689,6 @@ func (o *ConcurrentTridentOrchestrator) UpdateStorageClass(
 	}
 
 	defer recordTiming("storageclass_update", &err)()
-	defer o.updateMetrics()
 
 	newSC := storageclass.New(scConfig)
 	scName := newSC.GetName()
@@ -4751,7 +4730,6 @@ func (o *ConcurrentTridentOrchestrator) DeleteStorageClass(ctx context.Context, 
 	}
 
 	defer recordTiming("storageclass_delete", &err)()
-	defer o.updateMetrics()
 
 	// Prepare cache for storage class delete
 	results, unlocker, err := db.Lock(db.Query(db.DeleteStorageClass(scName)))

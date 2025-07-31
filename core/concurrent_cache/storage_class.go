@@ -68,11 +68,19 @@ func UpsertStorageClass(id string) Subquery {
 		id:  id,
 		setResults: func(s *Subquery, r *Result) error {
 			storageClasses.rlock()
-			if i, ok := storageClasses.data[s.id]; ok {
-				r.StorageClass.Read = i.SmartCopy().(*storageclass.StorageClass)
+			oldSCData, ok := storageClasses.data[s.id]
+			if ok {
+				r.StorageClass.Read = oldSCData.SmartCopy().(*storageclass.StorageClass)
 			}
 			storageClasses.runlock()
+
 			r.StorageClass.Upsert = func(sc *storageclass.StorageClass) {
+				// Update metrics
+				if oldSCData != nil {
+					deleteStorageClassFromMetrics(oldSCData.(*storageclass.StorageClass))
+				}
+				addStorageClassToMetrics(sc)
+
 				storageClasses.lock()
 				storageClasses.data[s.id] = sc
 				storageClasses.unlock()
@@ -89,11 +97,18 @@ func DeleteStorageClass(id string) Subquery {
 		id:  id,
 		setResults: func(s *Subquery, r *Result) error {
 			storageClasses.rlock()
-			if i, ok := storageClasses.data[s.id]; ok {
-				r.StorageClass.Read = i.SmartCopy().(*storageclass.StorageClass)
+			scData, ok := storageClasses.data[s.id]
+			if ok {
+				r.StorageClass.Read = scData.SmartCopy().(*storageclass.StorageClass)
 			}
 			storageClasses.runlock()
+
 			r.StorageClass.Delete = func() {
+				// Update metrics
+				if scData != nil {
+					deleteStorageClassFromMetrics(scData.(*storageclass.StorageClass))
+				}
+
 				storageClasses.lock()
 				delete(storageClasses.data, id)
 				storageClasses.unlock()

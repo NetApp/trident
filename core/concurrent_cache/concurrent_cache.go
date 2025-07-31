@@ -232,11 +232,30 @@ func assembleQueries(queries [][]Subquery, roots [][]int, cachesPresent map[reso
 }
 
 func lockCachesAndFillInIDs(queries [][]Subquery, roots [][]int, cachesPresent map[resource]struct{}) error {
-	sortedResources := make([]resource, 0, len(cachesPresent))
+	resources := make([]resource, 0, len(cachesPresent))
 	for r := range cachesPresent {
-		sortedResources = append(sortedResources, r)
+		resources = append(resources, r)
 	}
-	slices.SortFunc(sortedResources, func(i, j resource) int {
+	unlocker, err := rLockCaches(resources)
+	defer unlocker()
+	if err != nil {
+		return err
+	}
+
+	for i := range queries {
+		for _, r := range roots[i] {
+			if err := fillInIDs(r, queries[i]); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// rLockCaches sorts and acquires read locks on all caches for the given resources. It returns a function that releases
+// the locks, and error if a cache does not exist.
+func rLockCaches(resources []resource) (func(), error) {
+	slices.SortFunc(resources, func(i, j resource) int {
 		switch {
 		case resourceRanks[i] > resourceRanks[j]:
 			return -1
@@ -253,24 +272,18 @@ func lockCachesAndFillInIDs(queries [][]Subquery, roots [][]int, cachesPresent m
 
 		return 0
 	})
-
-	for _, r := range sortedResources {
+	unlocks := make([]func(), 0, len(caches))
+	for _, r := range resources {
 		c, ok := caches[r]
 		if !ok {
-			return fmt.Errorf("no cache found for %s", r)
+			return func() {}, fmt.Errorf("no cache found for resource %s", r)
 		}
 		c.rlock()
-		defer c.runlock()
+		unlocks = append(unlocks, c.runlock)
 	}
-
-	for i := range queries {
-		for _, r := range roots[i] {
-			if err := fillInIDs(r, queries[i]); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
+	return func() {
+		doReverse(unlocks)
+	}, nil
 }
 
 func checkError(queries []Subquery) error {

@@ -19,6 +19,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core/cache"
+	"github.com/netapp/trident/core/metrics"
 	"github.com/netapp/trident/frontend"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	. "github.com/netapp/trident/logging"
@@ -615,24 +616,24 @@ func (o *TridentOrchestrator) Stop() {
 // updateMetrics updates the metrics that track the core objects.
 // The caller should hold the orchestrator lock.
 func (o *TridentOrchestrator) updateMetrics() {
-	tridentBuildInfo.WithLabelValues(config.BuildHash,
+	metrics.TridentBuildInfo.WithLabelValues(config.BuildHash,
 		config.OrchestratorVersion.ShortString(),
 		config.BuildType).Set(float64(1))
 
-	backendsGauge.Reset()
-	tridentBackendInfo.Reset()
+	metrics.BackendsGauge.Reset()
+	metrics.TridentBackendInfo.Reset()
 	for _, backend := range o.backends {
 		if backend == nil {
 			continue
 		}
-		backendsGauge.WithLabelValues(backend.GetDriverName(), backend.State().String()).Inc()
-		tridentBackendInfo.WithLabelValues(backend.GetDriverName(), backend.Name(),
+		metrics.BackendsGauge.WithLabelValues(backend.GetDriverName(), backend.State().String()).Inc()
+		metrics.TridentBackendInfo.WithLabelValues(backend.GetDriverName(), backend.Name(),
 			backend.BackendUUID()).Set(float64(1))
 	}
 
-	volumesGauge.Reset()
+	metrics.VolumesGauge.Reset()
 	volumesTotalBytes := float64(0)
-	volumeAllocatedBytesGauge.Reset()
+	metrics.VolumeAllocatedBytesGauge.Reset()
 	for _, volume := range o.volumes {
 		if volume == nil {
 			continue
@@ -641,30 +642,30 @@ func (o *TridentOrchestrator) updateMetrics() {
 		volumesTotalBytes += bytes
 		if backend, err := o.getBackendByBackendUUID(volume.BackendUUID); err == nil {
 			driverName := backend.GetDriverName()
-			volumesGauge.WithLabelValues(driverName,
+			metrics.VolumesGauge.WithLabelValues(driverName,
 				volume.BackendUUID,
 				string(volume.State),
 				string(volume.Config.VolumeMode)).Inc()
 
-			volumeAllocatedBytesGauge.WithLabelValues(driverName, backend.BackendUUID(), string(volume.State),
+			metrics.VolumeAllocatedBytesGauge.WithLabelValues(driverName, backend.BackendUUID(), string(volume.State),
 				string(volume.Config.VolumeMode)).Add(bytes)
 		}
 	}
-	volumesTotalBytesGauge.Set(volumesTotalBytes)
+	metrics.VolumesTotalBytesGauge.Set(volumesTotalBytes)
 
-	scGauge.Set(float64(len(o.storageClasses)))
-	nodeGauge.Set(float64(o.nodes.Len()))
-	snapshotGauge.Reset()
-	snapshotAllocatedBytesGauge.Reset()
+	metrics.SCGauge.Set(float64(len(o.storageClasses)))
+	metrics.NodeGauge.Set(float64(o.nodes.Len()))
+	metrics.SnapshotGauge.Reset()
+	metrics.SnapshotAllocatedBytesGauge.Reset()
 	for _, snapshot := range o.snapshots {
 		vol := o.volumes[snapshot.Config.VolumeName]
 		if vol != nil {
 			if backend, err := o.getBackendByBackendUUID(vol.BackendUUID); err == nil {
 				driverName := backend.GetDriverName()
-				snapshotGauge.WithLabelValues(
+				metrics.SnapshotGauge.WithLabelValues(
 					driverName,
 					vol.BackendUUID).Inc()
-				snapshotAllocatedBytesGauge.WithLabelValues(driverName, backend.BackendUUID()).
+				metrics.SnapshotAllocatedBytesGauge.WithLabelValues(driverName, backend.BackendUUID()).
 					Add(float64(snapshot.SizeBytes))
 			}
 		}

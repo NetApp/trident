@@ -4694,9 +4694,10 @@ func TestDeleteVolumeConcurrentCore(t *testing.T) {
 			volumeName: "vol1",
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 				mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
-					"name":  "testBackend",
-					"uuid":  "backend-uuid1",
-					"state": string(storage.Deleting),
+					"name":       "testBackend",
+					"uuid":       "backend-uuid1",
+					"state":      string(storage.Deleting),
+					"driverName": "ontap-nas",
 				})
 				mockBackend.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
 				mockBackend.EXPECT().HasVolumes().Return(false).AnyTimes()
@@ -4725,9 +4726,10 @@ func TestDeleteVolumeConcurrentCore(t *testing.T) {
 			volumeName: "vol1",
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 				mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
-					"name":  "testBackend",
-					"uuid":  "backend-uuid1",
-					"state": string(storage.Deleting),
+					"name":       "testBackend",
+					"uuid":       "backend-uuid1",
+					"state":      string(storage.Deleting),
+					"driverName": "ontap-nas",
 				})
 				mockBackend.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
 				mockBackend.EXPECT().HasVolumes().Return(false).AnyTimes()
@@ -4755,9 +4757,10 @@ func TestDeleteVolumeConcurrentCore(t *testing.T) {
 			volumeName: "vol1",
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 				mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
-					"name":  "testBackend",
-					"uuid":  "backend-uuid1",
-					"state": string(storage.Deleting),
+					"name":       "testBackend",
+					"uuid":       "backend-uuid1",
+					"state":      string(storage.Deleting),
+					"driverName": "ontap-nas",
 				})
 				mockBackend.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
 				mockBackend.EXPECT().HasVolumes().Return(true).AnyTimes()
@@ -8287,6 +8290,7 @@ func TestPublishVolumeConcurrentCore(t *testing.T) {
 			nodeName:   "testNode",
 			setupMocks: func(t *testing.T, mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
 				driver := mockstorage.NewMockDriver(mockCtrl)
+				driver.EXPECT().Name().Return(config.FakeStorageDriverName).AnyTimes()
 				driver.EXPECT().GetStorageBackendSpecs(gomock.Any(), gomock.Any()).Return(nil)
 				driver.EXPECT().CreateFollowup(gomock.Any(), gomock.Any()).Return(nil)
 				driver.EXPECT().Publish(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)

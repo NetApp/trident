@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/core/metrics"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils/models"
@@ -28,7 +29,7 @@ func recordTiming(operation string, err *error) func() {
 		if *err != nil {
 			success = "false"
 		}
-		operationDurationInMsSummary.WithLabelValues(operation, success).Observe(endTimeMS)
+		metrics.OperationDurationInMsSummary.WithLabelValues(operation, success).Observe(endTimeMS)
 	}
 }
 
@@ -47,7 +48,7 @@ func recordTransactionTiming(txn *storage.VolumeTransaction, err *error) {
 	if *err != nil {
 		success = "false"
 	}
-	operationDurationInMsSummary.WithLabelValues(operation, success).Observe(endTimeMS)
+	metrics.OperationDurationInMsSummary.WithLabelValues(operation, success).Observe(endTimeMS)
 }
 
 // getProtocol returns the appropriate protocol based on a specified volume mode, access mode and protocol, or

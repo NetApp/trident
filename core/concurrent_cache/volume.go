@@ -95,6 +95,7 @@ func InconsistentReadVolume(id string) Subquery {
 
 func UpsertVolumeByInternalName(volumeName, internalVolumeName, newInternalVolumeName, backendID string) Subquery {
 	var setOwnerIDs func([]Subquery, int) error
+
 	if backendID != "" {
 		setOwnerIDs = func(s []Subquery, i int) error {
 			if err := checkDependency(s, i, backend); err != nil {
@@ -113,12 +114,30 @@ func UpsertVolumeByInternalName(volumeName, internalVolumeName, newInternalVolum
 		setDependencyIDs: setOwnerIDs,
 		setResults: func(s *Subquery, r *Result) error {
 			volumes.rlock()
-			if i, ok := volumes.data[s.id]; ok {
-				r.Volume.Read = i.SmartCopy().(*storage.Volume)
+			oldVolumeData, ok := volumes.data[s.id]
+			if ok {
+				r.Volume.Read = oldVolumeData.SmartCopy().(*storage.Volume)
 			}
 			volumes.runlock()
+
 			r.Volume.Upsert = func(v *storage.Volume) {
+				// Update metrics
+				backends.rlock()
+				if oldVolumeData != nil {
+					oldVolume := oldVolumeData.(*storage.Volume)
+					if oldBackendData, ok := backends.data[oldVolume.BackendUUID]; ok {
+						oldBackend := oldBackendData.(storage.Backend)
+						deleteVolumeFromMetrics(oldVolume, oldBackend)
+					}
+				}
+				if backendData, ok := backends.data[v.BackendUUID]; ok {
+					backend := backendData.(storage.Backend)
+					addVolumeToMetrics(v, backend)
+				}
+				backends.runlock()
+
 				volumes.lock()
+
 				switch {
 				case s.key != "" && s.newKey == s.key:
 					volumes.key.data[s.key] = s.id
@@ -130,6 +149,7 @@ func UpsertVolumeByInternalName(volumeName, internalVolumeName, newInternalVolum
 					delete(volumes.key.data, s.key)
 					volumes.key.data[s.newKey] = s.id
 				}
+
 				volumes.data[s.id] = v
 				volumes.unlock()
 			}
@@ -140,6 +160,7 @@ func UpsertVolumeByInternalName(volumeName, internalVolumeName, newInternalVolum
 
 func UpsertVolume(volumeName, backendID string) Subquery {
 	var setOwnerIDs func([]Subquery, int) error
+
 	if backendID != "" {
 		setOwnerIDs = func(s []Subquery, i int) error {
 			if err := checkDependency(s, i, backend); err != nil {
@@ -156,11 +177,28 @@ func UpsertVolume(volumeName, backendID string) Subquery {
 		setDependencyIDs: setOwnerIDs,
 		setResults: func(s *Subquery, r *Result) error {
 			volumes.rlock()
-			if i, ok := volumes.data[s.id]; ok {
-				r.Volume.Read = i.SmartCopy().(*storage.Volume)
+			oldVolumeData, ok := volumes.data[s.id]
+			if ok {
+				r.Volume.Read = oldVolumeData.SmartCopy().(*storage.Volume)
 			}
 			volumes.runlock()
+
 			r.Volume.Upsert = func(v *storage.Volume) {
+				// Update metrics
+				backends.rlock()
+				if oldVolumeData != nil {
+					oldVolume := oldVolumeData.(*storage.Volume)
+					if oldBackendData, ok := backends.data[oldVolume.BackendUUID]; ok {
+						oldBackend := oldBackendData.(storage.Backend)
+						deleteVolumeFromMetrics(oldVolume, oldBackend)
+					}
+				}
+				if backendData, ok := backends.data[v.BackendUUID]; ok {
+					backend := backendData.(storage.Backend)
+					addVolumeToMetrics(v, backend)
+				}
+				backends.runlock()
+
 				volumes.lock()
 				volumes.data[s.id] = v
 				volumes.unlock()
@@ -193,11 +231,28 @@ func UpsertVolumeByBackendName(volumeName, backendName string) Subquery {
 		setDependencyIDs: setOwnerIDs,
 		setResults: func(s *Subquery, r *Result) error {
 			volumes.rlock()
-			if i, ok := volumes.data[s.id]; ok {
-				r.Volume.Read = i.SmartCopy().(*storage.Volume)
+			oldVolumeData, ok := volumes.data[s.id]
+			if ok {
+				r.Volume.Read = oldVolumeData.SmartCopy().(*storage.Volume)
 			}
 			volumes.runlock()
+
 			r.Volume.Upsert = func(v *storage.Volume) {
+				// Update metrics
+				backends.rlock()
+				if oldVolumeData != nil {
+					oldVolume := oldVolumeData.(*storage.Volume)
+					if oldBackendData, ok := backends.data[oldVolume.BackendUUID]; ok {
+						oldBackend := oldBackendData.(storage.Backend)
+						deleteVolumeFromMetrics(oldVolume, oldBackend)
+					}
+				}
+				if backendData, ok := backends.data[v.BackendUUID]; ok {
+					backend := backendData.(storage.Backend)
+					addVolumeToMetrics(v, backend)
+				}
+				backends.runlock()
+
 				volumes.lock()
 				volumes.data[s.id] = v
 				volumes.unlock()
@@ -214,11 +269,24 @@ func DeleteVolume(id string) Subquery {
 		id:  id,
 		setResults: func(s *Subquery, r *Result) error {
 			volumes.rlock()
-			if i, ok := volumes.data[s.id]; ok {
-				r.Volume.Read = i.SmartCopy().(*storage.Volume)
+			volumeData, ok := volumes.data[s.id]
+			if ok {
+				r.Volume.Read = volumeData.SmartCopy().(*storage.Volume)
 			}
 			volumes.runlock()
+
 			r.Volume.Delete = func() {
+				// Update metrics
+				backends.rlock()
+				if volumeData != nil {
+					volume := volumeData.(*storage.Volume)
+					if backendData, ok := backends.data[volume.BackendUUID]; ok {
+						backend := backendData.(storage.Backend)
+						deleteVolumeFromMetrics(volume, backend)
+					}
+				}
+				backends.runlock()
+
 				volumes.lock()
 				delete(volumes.data, s.id)
 				// delete from the uniqueKey cache as well

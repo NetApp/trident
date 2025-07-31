@@ -68,11 +68,19 @@ func UpsertNode(id string) Subquery {
 		id:  id,
 		setResults: func(s *Subquery, r *Result) error {
 			nodes.rlock()
-			if i, ok := nodes.data[s.id]; ok {
-				r.Node.Read = i.SmartCopy().(*models.Node)
+			oldNodeData, ok := nodes.data[s.id]
+			if ok {
+				r.Node.Read = oldNodeData.SmartCopy().(*models.Node)
 			}
 			nodes.runlock()
+
 			r.Node.Upsert = func(n *models.Node) {
+				// Update metrics
+				if oldNodeData != nil {
+					deleteNodeFromMetrics(oldNodeData.(*models.Node))
+				}
+				addNodeToMetrics(n)
+
 				nodes.lock()
 				nodes.data[s.id] = n
 				nodes.unlock()
@@ -89,11 +97,18 @@ func DeleteNode(id string) Subquery {
 		id:  id,
 		setResults: func(s *Subquery, r *Result) error {
 			nodes.rlock()
-			if i, ok := nodes.data[s.id]; ok {
-				r.Node.Read = i.SmartCopy().(*models.Node)
+			nodeData, ok := nodes.data[s.id]
+			if ok {
+				r.Node.Read = nodeData.SmartCopy().(*models.Node)
 			}
 			nodes.runlock()
+
 			r.Node.Delete = func() {
+				// Update metrics
+				if nodeData != nil {
+					deleteNodeFromMetrics(nodeData.(*models.Node))
+				}
+
 				nodes.lock()
 				delete(nodes.data, s.id)
 				nodes.unlock()
