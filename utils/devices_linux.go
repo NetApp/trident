@@ -13,6 +13,7 @@ import (
 	"time"
 	"unsafe"
 
+	execCmd "github.com/netapp/trident/utils/exec"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/cenkalti/backoff/v4"
@@ -29,6 +30,8 @@ const (
 	luksType                         = "luks2"
 	// Return code for "no permission (bad passphrase)" from cryptsetup command
 	luksCryptsetupBadPassphraseReturnCode = 2
+	luksCloseDeviceSafelyClosedExitCode   = 0
+	luksCloseDeviceAlreadyClosedExitCode  = 4
 )
 
 // flushOneDevice flushes any outstanding I/O to a disk
@@ -175,17 +178,28 @@ func (d *LUKSDevice) Close(ctx context.Context) error {
 }
 
 // closeLUKSDevice performs a luksClose on the specified LUKS device
+// It gracefully handles the cases where a LUKS device has already been closed or the device doesn't exist.
 func closeLUKSDevice(ctx context.Context, luksDevicePath string) error {
 	output, err := command.ExecuteWithTimeoutAndInput(
 		ctx, "cryptsetup", luksCommandTimeout, true, "", "luksClose", luksDevicePath,
 	)
 	if nil != err {
-		Log().WithFields(LogFields{
-			"MappedDeviceName": luksDevicePath,
-			"error":            err.Error(),
-			"output":           string(output),
-		}).Debug("Failed to Close LUKS device")
-		return fmt.Errorf("failed to Close LUKS device %s; %v", luksDevicePath, err)
+		fields := LogFields{"luksDevicePath": luksDevicePath, "output": string(output), "err": err.Error()}
+		var exitErr execCmd.ExitError
+		if !errors.As(err, &exitErr) {
+			Logc(ctx).WithFields(fields).Error("Failed to close LUKS device with unknown error.")
+			return fmt.Errorf("failed to close LUKS device %s; %w", luksDevicePath, err)
+		}
+
+		switch exitErr.ExitCode() {
+		// exit code "0" and "4" are safe to ignore. "0" will likely never be hit but check for it regardless.
+		case luksCloseDeviceSafelyClosedExitCode, luksCloseDeviceAlreadyClosedExitCode:
+			Logc(ctx).WithFields(fields).Debug("LUKS device is already closed or did not exist.")
+			return nil
+		default:
+			Logc(ctx).WithFields(fields).Error("Failed to close LUKS device.")
+			return fmt.Errorf("exit code '%d' when closing LUKS device '%s'; %w", exitErr.ExitCode(), luksDevicePath, err)
+		}
 	}
 	return nil
 }
@@ -209,21 +223,18 @@ func IsLUKSDeviceOpen(ctx context.Context, luksDevicePath string) (bool, error) 
 // EnsureLUKSDeviceClosed ensures there is not an open LUKS device at the specified path
 func EnsureLUKSDeviceClosed(ctx context.Context, luksDevicePath string) error {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
+	fields := LogFields{"luksDevicePath": luksDevicePath}
 
-	_, err := osFs.Stat(luksDevicePath)
-	if err == nil {
-		// Need to Close the LUKS device
-		return closeLUKSDevice(ctx, luksDevicePath)
-	} else if os.IsNotExist(err) {
-		Logc(ctx).WithFields(LogFields{
-			"device": luksDevicePath,
-		}).Debug("LUKS device not found.")
-	} else {
-		Logc(ctx).WithFields(LogFields{
-			"device": luksDevicePath,
-			"error":  err.Error(),
-		}).Debug("Failed to stat device")
-		return fmt.Errorf("could not stat device: %s %v.", luksDevicePath, err)
+	if err := closeLUKSDevice(ctx, luksDevicePath); err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Error("Could not close LUKS device.")
+		return fmt.Errorf("could not close LUKS device %s; %w", luksDevicePath, err)
+	}
+
+	// If LUKS close succeeded, the block device node should be gone.
+	// It's the responsibility of the kernel and udev to manage /dev/mapper entries.
+	// If the /dev/mapper entry lives on, log a warning and return success.
+	if _, err := osFs.Stat(luksDevicePath); err != nil {
+		Logc(ctx).WithFields(fields).Warn("Stale device mapper file found for LUKS device. Is udev is running?")
 	}
 	return nil
 }
