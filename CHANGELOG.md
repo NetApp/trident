@@ -2,7 +2,23 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v25.02.0
+## Changes since v25.06.0
+
+### Trident
+
+**Fixes:**
+
+- **Kubernetes:** Fixed an issue where NQNs were not checked before they are unmapped from Subsystems.
+- **Kubernetes:** Fixed an issue where multiple attempts to close a LUKS device resulted in failures to detach volumes.
+- **Kubernetes:** Fixed iSCSI volume unstage when the device path has changed since its creation.
+- Increased timeout when cloning a volume using SolidFire backends (Issue [#1008](https://github.com/NetApp/trident/issues/1008)).
+- **Openshift:** Fixed an issue where iSCSI node prep failed with OCP 4.19.
+
+**Enhancements:**
+
+- **Kubernetes:** Block cloning of volume across different storage classes.
+
+## v25.06.0
 
 ### Trident
 
