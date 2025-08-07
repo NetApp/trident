@@ -13,9 +13,6 @@
 - **Kubernetes:** Fixed iSCSI volume unstage when the device path has changed since its creation.
 - Increased timeout when cloning a volume using SolidFire backends (Issue [#1008](https://github.com/NetApp/trident/issues/1008)).
 - **Openshift:** Fixed an issue where iSCSI node prep failed with OCP 4.19.
-
-**Enhancements:**
-
 - **Kubernetes:** Block cloning of volume across different storage classes.
 
 ## v25.06.0
