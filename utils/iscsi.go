@@ -501,7 +501,10 @@ func (h *IscsiReconcileHelper) GetMultipathDeviceDisks(ctx context.Context, mult
 
 // GetMultipathDeviceBySerial find DM device whose UUID /sys/block/dmX/dm/uuid contains serial in hex format.
 func (h *IscsiReconcileHelper) GetMultipathDeviceBySerial(ctx context.Context, hexSerial string) (string, error) {
-	sysPath := chrootPathPrefix + "/sys/block/"
+	var (
+		sysPath             = chrootPathPrefix + "/sys/block/"
+		multipathCMDTimeout = 10 * time.Second
+	)
 
 	blockDirs, err := os.ReadDir(sysPath)
 	if err != nil {
@@ -525,13 +528,27 @@ func (h *IscsiReconcileHelper) GetMultipathDeviceBySerial(ctx context.Context, h
 			continue
 		}
 
-		if strings.Contains(uuid, hexSerial) {
-			Logc(ctx).WithFields(LogFields{
-				"UUID":            hexSerial,
-				"multipathDevice": dmDeviceName,
-			}).Debug("Found multipath device by UUID.")
-			return dmDeviceName, nil
+		if !strings.Contains(uuid, hexSerial) {
+			continue
 		}
+
+		// Use 'multipath -l' and check the exit code. A success return
+		// indicates that it is a not a stale device. Noted that frequently
+		// running this in a busy environment may time out, and lead to a
+		// situation that the device is not properly discovered. But it will
+		// fail the following operations and retries next time.
+		if _, err := command.ExecuteWithTimeout(ctx, "multipath", multipathCMDTimeout, true, "-l", dmDeviceName); err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"device": dmDeviceName,
+			}).WithError(err).Warn("Candidate is not a valid map known to multipathd, ignoring stale entry.")
+			continue
+		}
+
+		Logc(ctx).WithFields(LogFields{
+			"UUID":            hexSerial,
+			"multipathDevice": dmDeviceName,
+		}).Debug("Found multipath device by UUID.")
+		return dmDeviceName, nil
 	}
 
 	return "", errors.NotFoundError("no multipath device found")
