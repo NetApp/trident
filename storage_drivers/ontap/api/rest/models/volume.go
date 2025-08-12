@@ -74,7 +74,17 @@ type Volume struct {
 	// consistency group
 	ConsistencyGroup *VolumeInlineConsistencyGroup `json:"consistency_group,omitempty"`
 
+	// Specifies the number of total constituents in the FlexGroup volume. Valid for POST, PATCH and GET requests. In volume create (POST), you can alternatively specify the number of constituents in the constituents_per_aggregate parameter and specify the storage availability zone in the aggregates parameter. If none of these values are specified, ONTAP determines the number of constituents to create based on the size of the FlexGroup volume.
+	// Minimum: 1
+	ConstituentCount *int64 `json:"constituent_count,omitempty"`
+
+	// <personalities supports=unified,asar2>
 	// Specifies the number of times to iterate over the aggregates listed with the "aggregates.name" or "aggregates.uuid" when creating or expanding a FlexGroup volume. If a volume is being created on a single aggregate, the system creates a flexible volume if the "constituents_per_aggregate" field is not specified, or a FlexGroup volume if it is specified. If a volume is being created on multiple aggregates, the system always creates a FlexGroup volume. If a volume is being created on multiple aggregates and the "constituents_per_aggregate" field is not specified, the default value of the "constituents_per_aggregate" field is 4. The root constituent of a FlexGroup volume is always placed on the first aggregate in the list, unless 'optimize_aggregates' is specified as 'true'. If the "aggregates.name" or "aggregates.uuid" is specified in a PATCH request to expand an existing FlexGroup volume, the default value of the "constituents_per_aggregate" field is 1. The volume expand operation is only supported on FlexGroup volumes.
+	// </personalities>
+	// <personalities supports=aiml>
+	// Optional. Only supported in volume create (POST), and specifies how many constituents the FlexGroup volume should have. If supplied, the aggregates must also be supplied, and it must contain only the storage availability zone. Provided for backward-compatibility only. Using constituent_count instead of it and aggregates is always preferred.
+	// </personalities>
+	//
 	// Maximum: 1000
 	// Minimum: 1
 	ConstituentsPerAggregate *int64 `json:"constituents_per_aggregate,omitempty"`
@@ -120,6 +130,12 @@ type Volume struct {
 
 	// guarantee
 	Guarantee *VolumeInlineGuarantee `json:"guarantee,omitempty"`
+
+	// Specifies whether the volume has directories with public index files.
+	HasDirIndexPublic *bool `json:"has_dir_index_public,omitempty"`
+
+	// When set to true, this field enables support for directory index transfer.
+	IsDirIndexTransferEnabled *bool `json:"is_dir_index_transfer_enabled,omitempty"`
 
 	// Specifies whether the volume is provisioned for an object store server.
 	// Read Only: true
@@ -178,6 +194,10 @@ type Volume struct {
 
 	// Physical size of the volume, in bytes. The minimum size for a FlexVol volume is 20MB and the minimum size for a FlexGroup volume is 200MB per constituent. The recommended size for a FlexGroup volume is a minimum of 100GB per constituent. For all volumes, the default size is equal to the minimum size.
 	Size *int64 `json:"size,omitempty"`
+
+	// When expanding a FlexGroup volume, this specifies whether to add new constituents, or to resize the current constituents.
+	// Enum: ["use_existing_resources","add_new_resources"]
+	SizingMethod *string `json:"sizing_method,omitempty"`
 
 	// snaplock
 	Snaplock *VolumeInlineSnaplock `json:"snaplock,omitempty"`
@@ -240,11 +260,20 @@ type Volume struct {
 	// Max Items: 64
 	VolumeInlineTags []*string `json:"_tags,omitempty"`
 
-	// Aggregate hosting the volume. Required on POST.
+	// <personalities supports=unified,asar2>
+	// Aggregate(s) hosting the volume. Optional.
+	// </personalities>
+	// <personalities supports=aiml>
+	// Optional. Only supported in volume create (POST), and must hold only the storage availability zone. If supplied, the constituents_per_aggregate must also be supplied. Provided for backward-compatibility only. Using constituent_count instead of it and constituents_per_aggregate is always preferred.
+	// </personalities>
+	//
 	VolumeInlineAggregates []*VolumeInlineAggregatesInlineArrayItem `json:"aggregates,omitempty"`
 
 	// FlexGroup volume constituents. FlexGroup volume constituents can be retrieved more efficiently by specifying "is_constituent=true" or "is_constituent=true&flexgroup.uuid=<flexgroup.uuid>" as query parameters.
 	VolumeInlineConstituents []*VolumeInlineConstituentsInlineArrayItem `json:"constituents,omitempty"`
+
+	// List of the nodes hosting the volume.
+	VolumeInlineNodes []*VolumeInlineNodesInlineArrayItem `json:"nodes,omitempty"`
 
 	// Describes the current status of a volume.
 	// Read Only: true
@@ -300,6 +329,10 @@ func (m *Volume) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateConsistencyGroup(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateConstituentCount(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -383,6 +416,10 @@ func (m *Volume) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateSizingMethod(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSnaplock(formats); err != nil {
 		res = append(res, err)
 	}
@@ -436,6 +473,10 @@ func (m *Volume) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateVolumeInlineConstituents(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVolumeInlineNodes(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -761,6 +802,18 @@ func (m *Volume) validateConsistencyGroup(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Volume) validateConstituentCount(formats strfmt.Registry) error {
+	if swag.IsZero(m.ConstituentCount) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("constituent_count", "body", *m.ConstituentCount, 1, false); err != nil {
+		return err
 	}
 
 	return nil
@@ -1945,6 +1998,62 @@ func (m *Volume) validateScheduledSnapshotNamingScheme(formats strfmt.Registry) 
 	return nil
 }
 
+var volumeTypeSizingMethodPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["use_existing_resources","add_new_resources"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeTypeSizingMethodPropEnum = append(volumeTypeSizingMethodPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// volume
+	// Volume
+	// sizing_method
+	// SizingMethod
+	// use_existing_resources
+	// END DEBUGGING
+	// VolumeSizingMethodUseExistingResources captures enum value "use_existing_resources"
+	VolumeSizingMethodUseExistingResources string = "use_existing_resources"
+
+	// BEGIN DEBUGGING
+	// volume
+	// Volume
+	// sizing_method
+	// SizingMethod
+	// add_new_resources
+	// END DEBUGGING
+	// VolumeSizingMethodAddNewResources captures enum value "add_new_resources"
+	VolumeSizingMethodAddNewResources string = "add_new_resources"
+)
+
+// prop value enum
+func (m *Volume) validateSizingMethodEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeTypeSizingMethodPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Volume) validateSizingMethod(formats strfmt.Registry) error {
+	if swag.IsZero(m.SizingMethod) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateSizingMethodEnum("sizing_method", "body", *m.SizingMethod); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Volume) validateSnaplock(formats strfmt.Registry) error {
 	if swag.IsZero(m.Snaplock) { // not required
 		return nil
@@ -2360,6 +2469,30 @@ func (m *Volume) validateVolumeInlineConstituents(formats strfmt.Registry) error
 	return nil
 }
 
+func (m *Volume) validateVolumeInlineNodes(formats strfmt.Registry) error {
+	if swag.IsZero(m.VolumeInlineNodes) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.VolumeInlineNodes); i++ {
+		if swag.IsZero(m.VolumeInlineNodes[i]) { // not required
+			continue
+		}
+
+		if m.VolumeInlineNodes[i] != nil {
+			if err := m.VolumeInlineNodes[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("nodes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 // ContextValidate validate this volume based on the context it is used
 func (m *Volume) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -2509,6 +2642,10 @@ func (m *Volume) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 	}
 
 	if err := m.contextValidateVolumeInlineConstituents(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeInlineNodes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3018,6 +3155,24 @@ func (m *Volume) contextValidateVolumeInlineConstituents(ctx context.Context, fo
 	return nil
 }
 
+func (m *Volume) contextValidateVolumeInlineNodes(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeInlineNodes); i++ {
+
+		if m.VolumeInlineNodes[i] != nil {
+			if err := m.VolumeInlineNodes[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("nodes" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *Volume) contextValidateVolumeInlineStatus(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "status", "body", []*string(m.VolumeInlineStatus)); err != nil {
@@ -3472,13 +3627,39 @@ func (m *VolumeInlineAggregatesInlineArrayItemInlineLinks) UnmarshalBinary(b []b
 // swagger:model volume_inline_analytics
 type VolumeInlineAnalytics struct {
 
+	// by accessed time
+	ByAccessedTime *VolumeInlineAnalyticsInlineByAccessedTime `json:"by_accessed_time,omitempty"`
+
+	// by modified time
+	ByModifiedTime *VolumeInlineAnalyticsInlineByModifiedTime `json:"by_modified_time,omitempty"`
+
+	// Number of bytes used on-disk.
+	// Example: 15436648448
+	// Read Only: true
+	BytesUsed *int64 `json:"bytes_used,omitempty"`
+
+	// Number of descendants.
+	// Example: 21134
+	// Read Only: true
+	FileCount *int64 `json:"file_count,omitempty"`
+
 	// Number of files in the volume that the file system analytics initialization scan has processed. Only returned when the state is `initializing`.
 	// Example: 43002
 	// Read Only: true
 	FilesScanned *int64 `json:"files_scanned,omitempty"`
 
+	// Returns true if data collection is incomplete for this directory tree.
+	// Read Only: true
+	IncompleteData *bool `json:"incomplete_data,omitempty"`
+
 	// initialization
 	Initialization *VolumeInlineAnalyticsInlineInitialization `json:"initialization,omitempty"`
+
+	// Time of data collection.
+	// Example: 2024-11-06 18:57:15
+	// Read Only: true
+	// Format: date-time
+	ReportTime *strfmt.DateTime `json:"report_time,omitempty"`
 
 	// Percentage of files in the volume that the file system analytics initialization scan has processed. Only returned when the state is `initializing`.
 	// Example: 17
@@ -3491,6 +3672,11 @@ type VolumeInlineAnalytics struct {
 	// File system analytics state of the volume. If this value is "on", ONTAP collects extra file system analytics information for all directories on the volume. There will be a slight impact to I/O performance to collect this information. If this value is "off", file system analytics information is not collected and not available to be viewed. If this value is "initializing", that means file system analytics was recently turned on, and the initialization scan to gather information for all existing files and directories is currently running. If this value is "initialization_paused", this means that the initialization scan is currently paused. If this value is 'unknown', this means that there was an internal error when determining the file system analytics state for the volume.
 	// Enum: ["unknown","initializing","initialization_paused","off","on"]
 	State *string `json:"state,omitempty"`
+
+	// Number of sub-directories.
+	// Example: 35
+	// Read Only: true
+	SubdirCount *int64 `json:"subdir_count,omitempty"`
 
 	// This field indicates whether or not file system analytics is supported on the volume. If file system analytics is not supported, the reason will be specified in the "analytics.unsupported_reason" field.
 	// Read Only: true
@@ -3509,7 +3695,19 @@ type VolumeInlineAnalytics struct {
 func (m *VolumeInlineAnalytics) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateByAccessedTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateByModifiedTime(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateInitialization(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateReportTime(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3531,6 +3729,40 @@ func (m *VolumeInlineAnalytics) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *VolumeInlineAnalytics) validateByAccessedTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.ByAccessedTime) { // not required
+		return nil
+	}
+
+	if m.ByAccessedTime != nil {
+		if err := m.ByAccessedTime.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_accessed_time")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAnalytics) validateByModifiedTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.ByModifiedTime) { // not required
+		return nil
+	}
+
+	if m.ByModifiedTime != nil {
+		if err := m.ByModifiedTime.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_modified_time")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *VolumeInlineAnalytics) validateInitialization(formats strfmt.Registry) error {
 	if swag.IsZero(m.Initialization) { // not required
 		return nil
@@ -3543,6 +3775,18 @@ func (m *VolumeInlineAnalytics) validateInitialization(formats strfmt.Registry) 
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAnalytics) validateReportTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.ReportTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("analytics"+"."+"report_time", "body", "date-time", m.ReportTime.String(), formats); err != nil {
+		return err
 	}
 
 	return nil
@@ -3672,11 +3916,35 @@ func (m *VolumeInlineAnalytics) validateUnsupportedReason(formats strfmt.Registr
 func (m *VolumeInlineAnalytics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateByAccessedTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateByModifiedTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateBytesUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFileCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateFilesScanned(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateIncompleteData(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateInitialization(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateReportTime(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3685,6 +3953,10 @@ func (m *VolumeInlineAnalytics) ContextValidate(ctx context.Context, formats str
 	}
 
 	if err := m.contextValidateScanThrottleReason(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSubdirCount(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3706,9 +3978,64 @@ func (m *VolumeInlineAnalytics) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
+func (m *VolumeInlineAnalytics) contextValidateByAccessedTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ByAccessedTime != nil {
+		if err := m.ByAccessedTime.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_accessed_time")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAnalytics) contextValidateByModifiedTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ByModifiedTime != nil {
+		if err := m.ByModifiedTime.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_modified_time")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAnalytics) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "analytics"+"."+"bytes_used", "body", m.BytesUsed); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAnalytics) contextValidateFileCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "analytics"+"."+"file_count", "body", m.FileCount); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *VolumeInlineAnalytics) contextValidateFilesScanned(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "analytics"+"."+"files_scanned", "body", m.FilesScanned); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAnalytics) contextValidateIncompleteData(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "analytics"+"."+"incomplete_data", "body", m.IncompleteData); err != nil {
 		return err
 	}
 
@@ -3724,6 +4051,15 @@ func (m *VolumeInlineAnalytics) contextValidateInitialization(ctx context.Contex
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAnalytics) contextValidateReportTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "analytics"+"."+"report_time", "body", m.ReportTime); err != nil {
+		return err
 	}
 
 	return nil
@@ -3747,6 +4083,15 @@ func (m *VolumeInlineAnalytics) contextValidateScanThrottleReason(ctx context.Co
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAnalytics) contextValidateSubdirCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "analytics"+"."+"subdir_count", "body", m.SubdirCount); err != nil {
+		return err
 	}
 
 	return nil
@@ -3795,6 +4140,534 @@ func (m *VolumeInlineAnalytics) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *VolumeInlineAnalytics) UnmarshalBinary(b []byte) error {
 	var res VolumeInlineAnalytics
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeInlineAnalyticsInlineByAccessedTime File system analytics information, broken down by date of last access.
+//
+// swagger:model volume_inline_analytics_inline_by_accessed_time
+type VolumeInlineAnalyticsInlineByAccessedTime struct {
+
+	// bytes used
+	BytesUsed *VolumeInlineAnalyticsInlineByAccessedTimeInlineBytesUsed `json:"bytes_used,omitempty"`
+}
+
+// Validate validates this volume inline analytics inline by accessed time
+func (m *VolumeInlineAnalyticsInlineByAccessedTime) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateBytesUsed(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeInlineAnalyticsInlineByAccessedTime) validateBytesUsed(formats strfmt.Registry) error {
+	if swag.IsZero(m.BytesUsed) { // not required
+		return nil
+	}
+
+	if m.BytesUsed != nil {
+		if err := m.BytesUsed.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume inline analytics inline by accessed time based on the context it is used
+func (m *VolumeInlineAnalyticsInlineByAccessedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateBytesUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeInlineAnalyticsInlineByAccessedTime) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.BytesUsed != nil {
+		if err := m.BytesUsed.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeInlineAnalyticsInlineByAccessedTime) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeInlineAnalyticsInlineByAccessedTime) UnmarshalBinary(b []byte) error {
+	var res VolumeInlineAnalyticsInlineByAccessedTime
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeInlineAnalyticsInlineByAccessedTimeInlineBytesUsed Number of bytes used on-disk, broken down by date of last access.
+//
+// swagger:model volume_inline_analytics_inline_by_accessed_time_inline_bytes_used
+type VolumeInlineAnalyticsInlineByAccessedTimeInlineBytesUsed struct {
+
+	// A score summarizing how old the data is. A higher value means the data is older.
+	// Example: 15.23
+	AgedDataMetric *float64 `json:"aged_data_metric,omitempty"`
+
+	// labels
+	Labels AnalyticsHistogramByTimeLabelsArrayInline `json:"labels,omitempty"`
+
+	// The newest time label with a non-zero histogram value.
+	NewestLabel *AnalyticsHistogramTimeLabel `json:"newest_label,omitempty"`
+
+	// The oldest time label with a non-zero histogram value.
+	OldestLabel *AnalyticsHistogramTimeLabel `json:"oldest_label,omitempty"`
+
+	// Percentages for this histogram
+	// Example: [0.1,11.24,0.18,15.75,0.75,83.5,0]
+	Percentages []*float64 `json:"percentages,omitempty"`
+
+	// Values for this histogram
+	// Example: [15925248,1735569408,27672576,2430595072,116105216,12889948160,0]
+	Values []*int64 `json:"values,omitempty"`
+}
+
+// Validate validates this volume inline analytics inline by accessed time inline bytes used
+func (m *VolumeInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLabels(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNewestLabel(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateOldestLabel(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) validateLabels(formats strfmt.Registry) error {
+	if swag.IsZero(m.Labels) { // not required
+		return nil
+	}
+
+	if err := m.Labels.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used" + "." + "labels")
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) validateNewestLabel(formats strfmt.Registry) error {
+	if swag.IsZero(m.NewestLabel) { // not required
+		return nil
+	}
+
+	if m.NewestLabel != nil {
+		if err := m.NewestLabel.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used" + "." + "newest_label")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) validateOldestLabel(formats strfmt.Registry) error {
+	if swag.IsZero(m.OldestLabel) { // not required
+		return nil
+	}
+
+	if m.OldestLabel != nil {
+		if err := m.OldestLabel.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used" + "." + "oldest_label")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume inline analytics inline by accessed time inline bytes used based on the context it is used
+func (m *VolumeInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLabels(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNewestLabel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateOldestLabel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) contextValidateLabels(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := m.Labels.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used" + "." + "labels")
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) contextValidateNewestLabel(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.NewestLabel != nil {
+		if err := m.NewestLabel.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used" + "." + "newest_label")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) contextValidateOldestLabel(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.OldestLabel != nil {
+		if err := m.OldestLabel.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_accessed_time" + "." + "bytes_used" + "." + "oldest_label")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) UnmarshalBinary(b []byte) error {
+	var res VolumeInlineAnalyticsInlineByAccessedTimeInlineBytesUsed
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeInlineAnalyticsInlineByModifiedTime File system analytics information, broken down by date of last modification.
+//
+// swagger:model volume_inline_analytics_inline_by_modified_time
+type VolumeInlineAnalyticsInlineByModifiedTime struct {
+
+	// bytes used
+	BytesUsed *VolumeInlineAnalyticsInlineByModifiedTimeInlineBytesUsed `json:"bytes_used,omitempty"`
+}
+
+// Validate validates this volume inline analytics inline by modified time
+func (m *VolumeInlineAnalyticsInlineByModifiedTime) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateBytesUsed(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeInlineAnalyticsInlineByModifiedTime) validateBytesUsed(formats strfmt.Registry) error {
+	if swag.IsZero(m.BytesUsed) { // not required
+		return nil
+	}
+
+	if m.BytesUsed != nil {
+		if err := m.BytesUsed.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume inline analytics inline by modified time based on the context it is used
+func (m *VolumeInlineAnalyticsInlineByModifiedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateBytesUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeInlineAnalyticsInlineByModifiedTime) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.BytesUsed != nil {
+		if err := m.BytesUsed.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeInlineAnalyticsInlineByModifiedTime) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeInlineAnalyticsInlineByModifiedTime) UnmarshalBinary(b []byte) error {
+	var res VolumeInlineAnalyticsInlineByModifiedTime
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeInlineAnalyticsInlineByModifiedTimeInlineBytesUsed Number of bytes used on-disk, broken down by date of last modification.
+//
+// swagger:model volume_inline_analytics_inline_by_modified_time_inline_bytes_used
+type VolumeInlineAnalyticsInlineByModifiedTimeInlineBytesUsed struct {
+
+	// A score summarizing how old the data is. A higher value means the data is older.
+	// Example: 15.23
+	AgedDataMetric *float64 `json:"aged_data_metric,omitempty"`
+
+	// labels
+	Labels AnalyticsHistogramByTimeLabelsArrayInline `json:"labels,omitempty"`
+
+	// The newest time label with a non-zero histogram value.
+	NewestLabel *AnalyticsHistogramTimeLabel `json:"newest_label,omitempty"`
+
+	// The oldest time label with a non-zero histogram value.
+	OldestLabel *AnalyticsHistogramTimeLabel `json:"oldest_label,omitempty"`
+
+	// Percentages for this histogram
+	// Example: [0.1,11.24,0.18,15.75,0.75,83.5,0]
+	Percentages []*float64 `json:"percentages,omitempty"`
+
+	// Values for this histogram
+	// Example: [15925248,1735569408,27672576,2430595072,116105216,12889948160,0]
+	Values []*int64 `json:"values,omitempty"`
+}
+
+// Validate validates this volume inline analytics inline by modified time inline bytes used
+func (m *VolumeInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLabels(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNewestLabel(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateOldestLabel(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) validateLabels(formats strfmt.Registry) error {
+	if swag.IsZero(m.Labels) { // not required
+		return nil
+	}
+
+	if err := m.Labels.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used" + "." + "labels")
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) validateNewestLabel(formats strfmt.Registry) error {
+	if swag.IsZero(m.NewestLabel) { // not required
+		return nil
+	}
+
+	if m.NewestLabel != nil {
+		if err := m.NewestLabel.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used" + "." + "newest_label")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) validateOldestLabel(formats strfmt.Registry) error {
+	if swag.IsZero(m.OldestLabel) { // not required
+		return nil
+	}
+
+	if m.OldestLabel != nil {
+		if err := m.OldestLabel.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used" + "." + "oldest_label")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume inline analytics inline by modified time inline bytes used based on the context it is used
+func (m *VolumeInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLabels(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNewestLabel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateOldestLabel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) contextValidateLabels(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := m.Labels.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used" + "." + "labels")
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) contextValidateNewestLabel(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.NewestLabel != nil {
+		if err := m.NewestLabel.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used" + "." + "newest_label")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) contextValidateOldestLabel(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.OldestLabel != nil {
+		if err := m.OldestLabel.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("analytics" + "." + "by_modified_time" + "." + "bytes_used" + "." + "oldest_label")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) UnmarshalBinary(b []byte) error {
+	var res VolumeInlineAnalyticsInlineByModifiedTimeInlineBytesUsed
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4063,10 +4936,15 @@ func (m *VolumeInlineAnalyticsInlineUnsupportedReason) UnmarshalBinary(b []byte)
 // swagger:model volume_inline_anti_ransomware
 type VolumeInlineAntiRansomware struct {
 
+	// This field specifies whether the attack was reported by `File Analysis` or `Encrypted data percentage analysis`.
+	// Read Only: true
+	// Enum: ["file_analysis","encryption_percentage_analysis"]
+	AttackDetectedBy *string `json:"attack_detected_by,omitempty"`
+
 	// attack detection parameters
 	AttackDetectionParameters *AntiRansomwareVolumeAttackDetectionParameters `json:"attack_detection_parameters,omitempty"`
 
-	// Probability of a ransomware attack.<br>`none` No files are suspected of ransomware activity.<br>`low` A number of files are suspected of ransomware activity.<br>`moderate` A moderate number of files are suspected of ransomware activity.<br>`high` A large number of files are suspected of ransomware activity.
+	// Probability of a ransomware attack.<br>`none` No suspected ransomware activity.<br>`low` Minimally suspected ransomware activity.<br>`moderate` Moderately suspected ransomware activity.<br>`high` Significantly suspected ransomware activity.
 	// Read Only: true
 	// Enum: ["none","low","moderate","high"]
 	AttackProbability *string `json:"attack_probability,omitempty"`
@@ -4074,6 +4952,16 @@ type VolumeInlineAntiRansomware struct {
 	// attack reports
 	// Read Only: true
 	AttackReports []*AntiRansomwareAttackReport `json:"attack_reports,omitempty"`
+
+	// This field specifies the block device evaluation start time.
+	// Read Only: true
+	// Format: date-time
+	BlockDeviceDetectionStartTime *strfmt.DateTime `json:"block_device_detection_start_time,omitempty"`
+
+	// This field specifies the block device attack detection status. <br> `evaluation_period` Attack detection is currently in its evaluation phase. <br> `active_unsuitable_workload` Attack detection is active, but the current workload is not suitable for Anti-ransomware protection. <br> `active_suitable_workload` Attack detection is active, and the current workload is appropriate for Anti-ransomware protection.
+	// Read Only: true
+	// Enum: ["evaluation_period","active_unsuitable_workload","active_suitable_workload"]
+	BlockDeviceDetectionState *string `json:"block_device_detection_state,omitempty"`
 
 	// Time when Anti-ransomware monitoring `state` is set to dry-run value for starting evaluation mode.
 	// Read Only: true
@@ -4086,7 +4974,7 @@ type VolumeInlineAntiRansomware struct {
 	// space
 	Space *VolumeInlineAntiRansomwareInlineSpace `json:"space,omitempty"`
 
-	// Anti-ransomware state.<br>`disabled` Anti-ransomware monitoring is disabled on the volume.  This is the default state in a POST operation.<br>`disable_in_progress` Anti-ransomware monitoring is being disabled and a cleanup operation is in effect. Valid in GET operation.<br>`dry_run` Anti-ransomware monitoring is enabled in the evaluation mode.<br>`enabled` Anti-ransomware monitoring is active on the volume.<br>`paused` Anti-ransomware monitoring is paused on the volume.<br>`enable_paused` Anti-ransomware monitoring is paused on the volume from its earlier enabled state. Valid in GET operation. <br>`dry_run_paused` Anti-ransomware monitoring is paused on the volume from its earlier dry_run state. Valid in GET operation. <br>For POST, the valid Anti-ransomware states are only `disabled`, `enabled` and `dry_run`, whereas for PATCH, `paused` is also valid along with the three valid states for POST.
+	// Anti-ransomware state.<br>`disabled` Anti-ransomware monitoring is disabled on the volume. This is the default state in a POST operation.<br>`disable_in_progress` Anti-ransomware monitoring is being disabled and a cleanup operation is in effect. Valid in GET operation.<br>`dry_run` Anti-ransomware monitoring is enabled in the evaluation mode.<br>`enabled` Anti-ransomware monitoring is active on the volume.<br>`paused` Anti-ransomware monitoring is paused on the volume.<br>`enable_paused` Anti-ransomware monitoring is paused on the volume from its earlier enabled state. Valid in GET operation. <br>`dry_run_paused` Anti-ransomware monitoring is paused on the volume from its earlier dry_run state. Valid in GET operation. <br>For POST, the valid Anti-ransomware states are only `disabled`, `enabled` and `dry_run`, whereas for PATCH, `paused` is also valid along with the three valid states for POST.
 	// Enum: ["disabled","disable_in_progress","dry_run","enabled","paused","enable_paused","dry_run_paused"]
 	State *string `json:"state,omitempty"`
 
@@ -4114,6 +5002,10 @@ type VolumeInlineAntiRansomware struct {
 func (m *VolumeInlineAntiRansomware) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateAttackDetectedBy(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateAttackDetectionParameters(formats); err != nil {
 		res = append(res, err)
 	}
@@ -4123,6 +5015,14 @@ func (m *VolumeInlineAntiRansomware) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateAttackReports(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateBlockDeviceDetectionStartTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateBlockDeviceDetectionState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -4161,6 +5061,62 @@ func (m *VolumeInlineAntiRansomware) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+var volumeInlineAntiRansomwareTypeAttackDetectedByPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["file_analysis","encryption_percentage_analysis"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeInlineAntiRansomwareTypeAttackDetectedByPropEnum = append(volumeInlineAntiRansomwareTypeAttackDetectedByPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// volume_inline_anti_ransomware
+	// VolumeInlineAntiRansomware
+	// attack_detected_by
+	// AttackDetectedBy
+	// file_analysis
+	// END DEBUGGING
+	// VolumeInlineAntiRansomwareAttackDetectedByFileAnalysis captures enum value "file_analysis"
+	VolumeInlineAntiRansomwareAttackDetectedByFileAnalysis string = "file_analysis"
+
+	// BEGIN DEBUGGING
+	// volume_inline_anti_ransomware
+	// VolumeInlineAntiRansomware
+	// attack_detected_by
+	// AttackDetectedBy
+	// encryption_percentage_analysis
+	// END DEBUGGING
+	// VolumeInlineAntiRansomwareAttackDetectedByEncryptionPercentageAnalysis captures enum value "encryption_percentage_analysis"
+	VolumeInlineAntiRansomwareAttackDetectedByEncryptionPercentageAnalysis string = "encryption_percentage_analysis"
+)
+
+// prop value enum
+func (m *VolumeInlineAntiRansomware) validateAttackDetectedByEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeInlineAntiRansomwareTypeAttackDetectedByPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeInlineAntiRansomware) validateAttackDetectedBy(formats strfmt.Registry) error {
+	if swag.IsZero(m.AttackDetectedBy) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAttackDetectedByEnum("anti_ransomware"+"."+"attack_detected_by", "body", *m.AttackDetectedBy); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -4276,6 +5232,84 @@ func (m *VolumeInlineAntiRansomware) validateAttackReports(formats strfmt.Regist
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAntiRansomware) validateBlockDeviceDetectionStartTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.BlockDeviceDetectionStartTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("anti_ransomware"+"."+"block_device_detection_start_time", "body", "date-time", m.BlockDeviceDetectionStartTime.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var volumeInlineAntiRansomwareTypeBlockDeviceDetectionStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["evaluation_period","active_unsuitable_workload","active_suitable_workload"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeInlineAntiRansomwareTypeBlockDeviceDetectionStatePropEnum = append(volumeInlineAntiRansomwareTypeBlockDeviceDetectionStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// volume_inline_anti_ransomware
+	// VolumeInlineAntiRansomware
+	// block_device_detection_state
+	// BlockDeviceDetectionState
+	// evaluation_period
+	// END DEBUGGING
+	// VolumeInlineAntiRansomwareBlockDeviceDetectionStateEvaluationPeriod captures enum value "evaluation_period"
+	VolumeInlineAntiRansomwareBlockDeviceDetectionStateEvaluationPeriod string = "evaluation_period"
+
+	// BEGIN DEBUGGING
+	// volume_inline_anti_ransomware
+	// VolumeInlineAntiRansomware
+	// block_device_detection_state
+	// BlockDeviceDetectionState
+	// active_unsuitable_workload
+	// END DEBUGGING
+	// VolumeInlineAntiRansomwareBlockDeviceDetectionStateActiveUnsuitableWorkload captures enum value "active_unsuitable_workload"
+	VolumeInlineAntiRansomwareBlockDeviceDetectionStateActiveUnsuitableWorkload string = "active_unsuitable_workload"
+
+	// BEGIN DEBUGGING
+	// volume_inline_anti_ransomware
+	// VolumeInlineAntiRansomware
+	// block_device_detection_state
+	// BlockDeviceDetectionState
+	// active_suitable_workload
+	// END DEBUGGING
+	// VolumeInlineAntiRansomwareBlockDeviceDetectionStateActiveSuitableWorkload captures enum value "active_suitable_workload"
+	VolumeInlineAntiRansomwareBlockDeviceDetectionStateActiveSuitableWorkload string = "active_suitable_workload"
+)
+
+// prop value enum
+func (m *VolumeInlineAntiRansomware) validateBlockDeviceDetectionStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeInlineAntiRansomwareTypeBlockDeviceDetectionStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VolumeInlineAntiRansomware) validateBlockDeviceDetectionState(formats strfmt.Registry) error {
+	if swag.IsZero(m.BlockDeviceDetectionState) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateBlockDeviceDetectionStateEnum("anti_ransomware"+"."+"block_device_detection_state", "body", *m.BlockDeviceDetectionState); err != nil {
+		return err
 	}
 
 	return nil
@@ -4512,6 +5546,10 @@ func (m *VolumeInlineAntiRansomware) validateWorkload(formats strfmt.Registry) e
 func (m *VolumeInlineAntiRansomware) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateAttackDetectedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateAttackDetectionParameters(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -4521,6 +5559,14 @@ func (m *VolumeInlineAntiRansomware) ContextValidate(ctx context.Context, format
 	}
 
 	if err := m.contextValidateAttackReports(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateBlockDeviceDetectionStartTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateBlockDeviceDetectionState(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -4555,6 +5601,15 @@ func (m *VolumeInlineAntiRansomware) ContextValidate(ctx context.Context, format
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *VolumeInlineAntiRansomware) contextValidateAttackDetectedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "anti_ransomware"+"."+"attack_detected_by", "body", m.AttackDetectedBy); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -4598,6 +5653,24 @@ func (m *VolumeInlineAntiRansomware) contextValidateAttackReports(ctx context.Co
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAntiRansomware) contextValidateBlockDeviceDetectionStartTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "anti_ransomware"+"."+"block_device_detection_start_time", "body", m.BlockDeviceDetectionStartTime); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineAntiRansomware) contextValidateBlockDeviceDetectionState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "anti_ransomware"+"."+"block_device_detection_state", "body", m.BlockDeviceDetectionState); err != nil {
+		return err
 	}
 
 	return nil
@@ -6195,6 +7268,9 @@ type VolumeInlineConstituentsInlineArrayItem struct {
 	// Read Only: true
 	Name *string `json:"name,omitempty"`
 
+	// node
+	Node *VolumeInlineConstituentsInlineArrayItemInlineNode `json:"node,omitempty"`
+
 	// space
 	Space *VolumeInlineConstituentsInlineArrayItemInlineSpace `json:"space,omitempty"`
 }
@@ -6208,6 +7284,10 @@ func (m *VolumeInlineConstituentsInlineArrayItem) Validate(formats strfmt.Regist
 	}
 
 	if err := m.validateMovement(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNode(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -6255,6 +7335,23 @@ func (m *VolumeInlineConstituentsInlineArrayItem) validateMovement(formats strfm
 	return nil
 }
 
+func (m *VolumeInlineConstituentsInlineArrayItem) validateNode(formats strfmt.Registry) error {
+	if swag.IsZero(m.Node) { // not required
+		return nil
+	}
+
+	if m.Node != nil {
+		if err := m.Node.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *VolumeInlineConstituentsInlineArrayItem) validateSpace(formats strfmt.Registry) error {
 	if swag.IsZero(m.Space) { // not required
 		return nil
@@ -6285,6 +7382,10 @@ func (m *VolumeInlineConstituentsInlineArrayItem) ContextValidate(ctx context.Co
 	}
 
 	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNode(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -6330,6 +7431,20 @@ func (m *VolumeInlineConstituentsInlineArrayItem) contextValidateName(ctx contex
 
 	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineConstituentsInlineArrayItem) contextValidateNode(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Node != nil {
+		if err := m.Node.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("node")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -6950,6 +8065,79 @@ func (m *VolumeInlineConstituentsInlineArrayItemInlineMovementInlineDestinationA
 // UnmarshalBinary interface implementation
 func (m *VolumeInlineConstituentsInlineArrayItemInlineMovementInlineDestinationAggregateInlineLinks) UnmarshalBinary(b []byte) error {
 	var res VolumeInlineConstituentsInlineArrayItemInlineMovementInlineDestinationAggregateInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// VolumeInlineConstituentsInlineArrayItemInlineNode volume inline constituents inline array item inline node
+//
+// swagger:model volume_inline_constituents_inline_array_item_inline_node
+type VolumeInlineConstituentsInlineArrayItemInlineNode struct {
+
+	// List of the node names hosting the FlexGroup volume constituent.
+	// Read Only: true
+	Name *string `json:"name,omitempty"`
+
+	// List of the node UUIDs hosting the FlexGroup volume constituent.
+	// Read Only: true
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this volume inline constituents inline array item inline node
+func (m *VolumeInlineConstituentsInlineArrayItemInlineNode) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this volume inline constituents inline array item inline node based on the context it is used
+func (m *VolumeInlineConstituentsInlineArrayItemInlineNode) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeInlineConstituentsInlineArrayItemInlineNode) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "node"+"."+"name", "body", m.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineConstituentsInlineArrayItemInlineNode) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "node"+"."+"uuid", "body", m.UUID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeInlineConstituentsInlineArrayItemInlineNode) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeInlineConstituentsInlineArrayItemInlineNode) UnmarshalBinary(b []byte) error {
+	var res VolumeInlineConstituentsInlineArrayItemInlineNode
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -7598,6 +8786,10 @@ type VolumeInlineEfficiency struct {
 	// Sis progress of the volume.
 	// Read Only: true
 	Progress *string `json:"progress,omitempty"`
+
+	// Storage efficiency that does not include the savings provided by snapshots.
+	// Read Only: true
+	Ratio *float64 `json:"ratio,omitempty"`
 
 	// scanner
 	Scanner *VolumeInlineEfficiencyInlineScanner `json:"scanner,omitempty"`
@@ -8633,6 +9825,10 @@ func (m *VolumeInlineEfficiency) ContextValidate(ctx context.Context, formats st
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateRatio(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateScanner(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -8771,6 +9967,15 @@ func (m *VolumeInlineEfficiency) contextValidatePolicy(ctx context.Context, form
 func (m *VolumeInlineEfficiency) contextValidateProgress(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "efficiency"+"."+"progress", "body", m.Progress); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineEfficiency) contextValidateRatio(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "efficiency"+"."+"ratio", "body", m.Ratio); err != nil {
 		return err
 	}
 
@@ -10074,6 +11279,10 @@ func (m *VolumeInlineErrorState) UnmarshalBinary(b []byte) error {
 // swagger:model volume_inline_files
 type VolumeInlineFiles struct {
 
+	// Number of inodes that can currently be stored on the volume for user-visible files.  This number dynamically increases as more user-visible files are created.
+	// Read Only: true
+	InodefileCapacity *int64 `json:"inodefile_capacity,omitempty"`
+
 	// The maximum number of files (inodes) for user-visible data allowed on the volume. This value can be increased or decreased. Increasing the maximum number of files does not immediately cause additional disk space to be used to track files. Instead, as more files are created on the volume, the system dynamically increases the number of disk blocks that are used to track files. The space assigned to track files is never freed, and this value cannot be decreased below the current number of files that can be tracked within the assigned space for the volume. Valid in PATCH.
 	Maximum *int64 `json:"maximum,omitempty"`
 
@@ -10091,6 +11300,10 @@ func (m *VolumeInlineFiles) Validate(formats strfmt.Registry) error {
 func (m *VolumeInlineFiles) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateInodefileCapacity(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateUsed(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -10098,6 +11311,15 @@ func (m *VolumeInlineFiles) ContextValidate(ctx context.Context, formats strfmt.
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *VolumeInlineFiles) contextValidateInodefileCapacity(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "files"+"."+"inodefile_capacity", "body", m.InodefileCapacity); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -13753,6 +14975,79 @@ func (m *VolumeInlineNasInlineJunctionParentInlineLinks) UnmarshalBinary(b []byt
 	return nil
 }
 
+// VolumeInlineNodesInlineArrayItem volume inline nodes inline array item
+//
+// swagger:model volume_inline_nodes_inline_array_item
+type VolumeInlineNodesInlineArrayItem struct {
+
+	// List of the node names hosting the volume.
+	// Read Only: true
+	Name *string `json:"name,omitempty"`
+
+	// List of the node UUIDs hosting the volume.
+	// Read Only: true
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this volume inline nodes inline array item
+func (m *VolumeInlineNodesInlineArrayItem) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this volume inline nodes inline array item based on the context it is used
+func (m *VolumeInlineNodesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *VolumeInlineNodesInlineArrayItem) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *VolumeInlineNodesInlineArrayItem) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "uuid", "body", m.UUID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *VolumeInlineNodesInlineArrayItem) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *VolumeInlineNodesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res VolumeInlineNodesInlineArrayItem
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // VolumeInlineQos QoS information
 //
 // swagger:model volume_inline_qos
@@ -13839,7 +15134,7 @@ func (m *VolumeInlineQos) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// VolumeInlineQosInlinePolicy When "min_throughput_iops", "min_throughput_mbps", "max_throughput_iops" or "max_throughput_mbps" attributes are specified, the storage object is assigned to an auto-generated QoS policy group. If the attributes are later modified, the auto-generated QoS policy-group attributes are modified. Attributes can be removed by specifying "0" and policy group by specifying "none". Upon deletion of the storage object or if the attributes are removed, then the QoS policy-group is also removed.
+// VolumeInlineQosInlinePolicy When "min_throughput_iops", "min_throughput_mbps", "min_throughput", "max_throughput_iops", "max_throughput_mbps" or "max_throughput" attributes are specified, the storage object is assigned to an auto-generated QoS policy group. If the attributes are later modified, the auto-generated QoS policy-group attributes are modified. Attributes can be removed by specifying "0" and policy group by specifying "none". Upon deletion of the storage object or if the attributes are removed, then the QoS policy-group is also removed.
 //
 // swagger:model volume_inline_qos_inline_policy
 type VolumeInlineQosInlinePolicy struct {
@@ -13847,25 +15142,33 @@ type VolumeInlineQosInlinePolicy struct {
 	// links
 	Links *VolumeInlineQosInlinePolicyInlineLinks `json:"_links,omitempty"`
 
-	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in Kilobytes per sec, Megabytes per sec or Gigabytes per sec along with or without IOPS. 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when either max_throughput_mbps or max_throughput_iops are set during POST or PATCH. During GET, the returned value is rounded to the largest unit with a value greater than 1.
+	// Example: ["900KB/s","500MB/s","120GB/s","5000IOPS","5000IOPS,500KB/s","2500IOPS,100MB/s","1000IOPS,25MB/s"]
+	MaxThroughput *string `json:"max_throughput,omitempty"`
+
+	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 10000
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
-	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 500
 	// Maximum: 4.194303e+06
 	// Minimum: 0
 	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
-	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in Kilobytes per sec, Megabytes per sec or Gigabytes per sec along with or without IOPS. 0 means none.Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when either min_throughput_mbps or min_throughput_iops are set during POST or PATCH. During GET, the returned value is rounded to the largest unit with a value greater than 1.
+	// Example: ["900KB/s","500MB/s","120GB/s","5000IOPS","5000IOPS,500KB/s","2500IOPS,100MB/s","1000IOPS,25MB/s"]
+	MinThroughput *string `json:"min_throughput,omitempty"`
+
+	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 2000
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
-	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 500
 	// Maximum: 4.194303e+06
 	// Minimum: 0

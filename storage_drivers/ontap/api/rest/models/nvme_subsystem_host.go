@@ -44,6 +44,9 @@ type NvmeSubsystemHost struct {
 	// Enum: ["regular","high"]
 	Priority *string `json:"priority,omitempty"`
 
+	// proximity
+	Proximity *NvmeSubsystemHostInlineProximity `json:"proximity,omitempty"`
+
 	// subsystem
 	Subsystem *NvmeSubsystemHostInlineSubsystem `json:"subsystem,omitempty"`
 
@@ -72,6 +75,10 @@ func (m *NvmeSubsystemHost) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePriority(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateProximity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -220,6 +227,23 @@ func (m *NvmeSubsystemHost) validatePriority(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *NvmeSubsystemHost) validateProximity(formats strfmt.Registry) error {
+	if swag.IsZero(m.Proximity) { // not required
+		return nil
+	}
+
+	if m.Proximity != nil {
+		if err := m.Proximity.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("proximity")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *NvmeSubsystemHost) validateSubsystem(formats strfmt.Registry) error {
 	if swag.IsZero(m.Subsystem) { // not required
 		return nil
@@ -271,6 +295,10 @@ func (m *NvmeSubsystemHost) ContextValidate(ctx context.Context, formats strfmt.
 	}
 
 	if err := m.contextValidateNvmeSubsystemHostInlineRecords(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProximity(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -343,6 +371,20 @@ func (m *NvmeSubsystemHost) contextValidateNvmeSubsystemHostInlineRecords(ctx co
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *NvmeSubsystemHost) contextValidateProximity(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Proximity != nil {
+		if err := m.Proximity.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("proximity")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -918,6 +960,291 @@ func (m *NvmeSubsystemHostInlineLinks) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *NvmeSubsystemHostInlineLinks) UnmarshalBinary(b []byte) error {
 	var res NvmeSubsystemHostInlineLinks
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeSubsystemHostInlineProximity Properties that define the SVMs to which the host is proximal. This information is used to properly report active optimized and active non-optimized network paths using an NVMe controller. If no configuration has been specified for the host, the sub-object is not present in GET requests.<br/>
+// These properties apply to all instances of the host in the NVMe subsystem in the SVM and its peers.
+//
+// swagger:model nvme_subsystem_host_inline_proximity
+type NvmeSubsystemHostInlineProximity struct {
+
+	// A boolean that indicates if the host is proximal to the SVM for which it is configured.
+	//
+	LocalSvm *bool `json:"local_svm,omitempty"`
+
+	// An array of remote peer SVMs to which the host is proximal.
+	//
+	PeerSvms []*NvmeSubsystemHostProximityPeerSvmsItems0 `json:"peer_svms,omitempty"`
+}
+
+// Validate validates this nvme subsystem host inline proximity
+func (m *NvmeSubsystemHostInlineProximity) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validatePeerSvms(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemHostInlineProximity) validatePeerSvms(formats strfmt.Registry) error {
+	if swag.IsZero(m.PeerSvms) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.PeerSvms); i++ {
+		if swag.IsZero(m.PeerSvms[i]) { // not required
+			continue
+		}
+
+		if m.PeerSvms[i] != nil {
+			if err := m.PeerSvms[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("proximity" + "." + "peer_svms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme subsystem host inline proximity based on the context it is used
+func (m *NvmeSubsystemHostInlineProximity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidatePeerSvms(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemHostInlineProximity) contextValidatePeerSvms(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.PeerSvms); i++ {
+
+		if m.PeerSvms[i] != nil {
+			if err := m.PeerSvms[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("proximity" + "." + "peer_svms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeSubsystemHostInlineProximity) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeSubsystemHostInlineProximity) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemHostInlineProximity
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeSubsystemHostProximityPeerSvmsItems0 A reference to an SVM peer relationship.
+//
+// swagger:model NvmeSubsystemHostProximityPeerSvmsItems0
+type NvmeSubsystemHostProximityPeerSvmsItems0 struct {
+
+	// links
+	Links *NvmeSubsystemHostProximityPeerSvmsItems0Links `json:"_links,omitempty"`
+
+	// The local name of the peer SVM. This name is unique among all local and peer SVMs.
+	//
+	// Example: peer1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM peer relationship. This is the UUID of the relationship, not the UUID of the peer SVM itself.
+	//
+	// Example: 4204cf77-4c82-9bdb-5644-b5a841c097a9
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this nvme subsystem host proximity peer svms items0
+func (m *NvmeSubsystemHostProximityPeerSvmsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemHostProximityPeerSvmsItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme subsystem host proximity peer svms items0 based on the context it is used
+func (m *NvmeSubsystemHostProximityPeerSvmsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemHostProximityPeerSvmsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeSubsystemHostProximityPeerSvmsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeSubsystemHostProximityPeerSvmsItems0) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemHostProximityPeerSvmsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeSubsystemHostProximityPeerSvmsItems0Links nvme subsystem host proximity peer svms items0 links
+//
+// swagger:model NvmeSubsystemHostProximityPeerSvmsItems0Links
+type NvmeSubsystemHostProximityPeerSvmsItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this nvme subsystem host proximity peer svms items0 links
+func (m *NvmeSubsystemHostProximityPeerSvmsItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemHostProximityPeerSvmsItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme subsystem host proximity peer svms items0 links based on the context it is used
+func (m *NvmeSubsystemHostProximityPeerSvmsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *NvmeSubsystemHostProximityPeerSvmsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeSubsystemHostProximityPeerSvmsItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeSubsystemHostProximityPeerSvmsItems0Links) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemHostProximityPeerSvmsItems0Links
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

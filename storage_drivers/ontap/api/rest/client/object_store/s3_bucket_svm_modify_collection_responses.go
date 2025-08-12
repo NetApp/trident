@@ -319,6 +319,12 @@ type S3BucketSvmModifyCollectionBody struct {
 	// encryption
 	Encryption *models.S3BucketSvmInlineEncryption `json:"encryption,omitempty"`
 
+	// Specifies whether the NAS bucket returns a consistent ETag across different S3 requests.
+	IsConsistentEtag *bool `json:"is_consistent_etag,omitempty"`
+
+	// Specifies whether the NAS bucket mapping or association with a NAS volume can change according to the changes in the NAS volume junction-path due to volume operations like mount and unmount and therefore the NAS bucket will have access to any path in a NAS volume that matches the specified nas-path. Or is immutable and therefore the NAS bucket will always have access to the same nas-path that was specified during bucket creation even if the volume junction-path has undergone changes after the bucket creation.
+	IsNasPathMutable *bool `json:"is_nas_path_mutable,omitempty"`
+
 	// lifecycle management
 	LifecycleManagement *models.S3BucketSvmInlineLifecycleManagement `json:"lifecycle_management,omitempty"`
 
@@ -3930,25 +3936,33 @@ type S3BucketSvmInlineQosPolicy struct {
 	// links
 	Links *models.S3BucketSvmInlineQosPolicyInlineLinks `json:"_links,omitempty"`
 
-	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in Kilobytes per sec, Megabytes per sec or Gigabytes per sec along with or without IOPS. 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when either max_throughput_mbps or max_throughput_iops are set during POST or PATCH. During GET, the returned value is rounded to the largest unit with a value greater than 1.
+	// Example: ["900KB/s","500MB/s","120GB/s","5000IOPS","5000IOPS,500KB/s","2500IOPS,100MB/s","1000IOPS,25MB/s"]
+	MaxThroughput *string `json:"max_throughput,omitempty"`
+
+	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 10000
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
-	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 500
 	// Maximum: 4.194303e+06
 	// Minimum: 0
 	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
-	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in Kilobytes per sec, Megabytes per sec or Gigabytes per sec along with or without IOPS. 0 means none.Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when either min_throughput_mbps or min_throughput_iops are set during POST or PATCH. During GET, the returned value is rounded to the largest unit with a value greater than 1.
+	// Example: ["900KB/s","500MB/s","120GB/s","5000IOPS","5000IOPS,500KB/s","2500IOPS,100MB/s","1000IOPS,25MB/s"]
+	MinThroughput *string `json:"min_throughput,omitempty"`
+
+	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 2000
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
-	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 500
 	// Maximum: 4.194303e+06
 	// Minimum: 0

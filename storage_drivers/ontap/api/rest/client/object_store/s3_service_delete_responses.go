@@ -30,6 +30,12 @@ func (o *S3ServiceDeleteReader) ReadResponse(response runtime.ClientResponse, co
 			return nil, err
 		}
 		return result, nil
+	case 202:
+		result := NewS3ServiceDeleteAccepted()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	default:
 		result := NewS3ServiceDeleteDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -53,7 +59,7 @@ S3ServiceDeleteOK describes a response with status code 200, with default header
 OK
 */
 type S3ServiceDeleteOK struct {
-	Payload *models.S3ServiceDeleteResponse
+	Payload *models.S3ServiceJobLinkResponse
 }
 
 // IsSuccess returns true when this s3 service delete o k response has a 2xx status code
@@ -96,13 +102,83 @@ func (o *S3ServiceDeleteOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}][%d] s3ServiceDeleteOK %s", 200, payload)
 }
 
-func (o *S3ServiceDeleteOK) GetPayload() *models.S3ServiceDeleteResponse {
+func (o *S3ServiceDeleteOK) GetPayload() *models.S3ServiceJobLinkResponse {
 	return o.Payload
 }
 
 func (o *S3ServiceDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.S3ServiceDeleteResponse)
+	o.Payload = new(models.S3ServiceJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewS3ServiceDeleteAccepted creates a S3ServiceDeleteAccepted with default headers values
+func NewS3ServiceDeleteAccepted() *S3ServiceDeleteAccepted {
+	return &S3ServiceDeleteAccepted{}
+}
+
+/*
+S3ServiceDeleteAccepted describes a response with status code 202, with default header values.
+
+Accepted
+*/
+type S3ServiceDeleteAccepted struct {
+	Payload *models.S3ServiceJobLinkResponse
+}
+
+// IsSuccess returns true when this s3 service delete accepted response has a 2xx status code
+func (o *S3ServiceDeleteAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 service delete accepted response has a 3xx status code
+func (o *S3ServiceDeleteAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 service delete accepted response has a 4xx status code
+func (o *S3ServiceDeleteAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 service delete accepted response has a 5xx status code
+func (o *S3ServiceDeleteAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 service delete accepted response a status code equal to that given
+func (o *S3ServiceDeleteAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
+// Code gets the status code for the s3 service delete accepted response
+func (o *S3ServiceDeleteAccepted) Code() int {
+	return 202
+}
+
+func (o *S3ServiceDeleteAccepted) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}][%d] s3ServiceDeleteAccepted %s", 202, payload)
+}
+
+func (o *S3ServiceDeleteAccepted) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/s3/services/{svm.uuid}][%d] s3ServiceDeleteAccepted %s", 202, payload)
+}
+
+func (o *S3ServiceDeleteAccepted) GetPayload() *models.S3ServiceJobLinkResponse {
+	return o.Payload
+}
+
+func (o *S3ServiceDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.S3ServiceJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

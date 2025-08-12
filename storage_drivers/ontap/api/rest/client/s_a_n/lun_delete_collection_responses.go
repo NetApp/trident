@@ -197,7 +197,8 @@ func NewLunDeleteCollectionDefault(code int) *LunDeleteCollectionDefault {
 | 5374865 | The LUN's aggregate is offline. The aggregate must be online to modify or remove the LUN. |
 | 5374866 | The LUN's volume is offline. The volume must be online to modify or remove the LUN. |
 | 5374875 | The specified LUN was not found. |
-| 5374876 | The specified LUN was not found. |
+| 5374876 | The specified LUN was not found.<personalities supports=asar2> |
+| 5376520 | Deleting a LUN that is the parent of a clone is not allowed. To allow deletion of the parent, split or delete the child clone.</personalities> |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type LunDeleteCollectionDefault struct {

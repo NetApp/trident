@@ -560,6 +560,12 @@ type ShelfModifyCollectionParams struct {
 	*/
 	PortsRemoteWwn *string
 
+	/* PortsSpeed.
+
+	   Filter by ports.speed
+	*/
+	PortsSpeed *int64
+
 	/* PortsState.
 
 	   Filter by ports.state
@@ -571,6 +577,12 @@ type ShelfModifyCollectionParams struct {
 	   Filter by ports.wwn
 	*/
 	PortsWwn *string
+
+	/* RawCapacity.
+
+	   Filter by raw_capacity
+	*/
+	RawCapacity *int64
 
 	/* ReturnRecords.
 
@@ -1718,6 +1730,17 @@ func (o *ShelfModifyCollectionParams) SetPortsRemoteWwn(portsRemoteWwn *string) 
 	o.PortsRemoteWwn = portsRemoteWwn
 }
 
+// WithPortsSpeed adds the portsSpeed to the shelf modify collection params
+func (o *ShelfModifyCollectionParams) WithPortsSpeed(portsSpeed *int64) *ShelfModifyCollectionParams {
+	o.SetPortsSpeed(portsSpeed)
+	return o
+}
+
+// SetPortsSpeed adds the portsSpeed to the shelf modify collection params
+func (o *ShelfModifyCollectionParams) SetPortsSpeed(portsSpeed *int64) {
+	o.PortsSpeed = portsSpeed
+}
+
 // WithPortsState adds the portsState to the shelf modify collection params
 func (o *ShelfModifyCollectionParams) WithPortsState(portsState *string) *ShelfModifyCollectionParams {
 	o.SetPortsState(portsState)
@@ -1738,6 +1761,17 @@ func (o *ShelfModifyCollectionParams) WithPortsWwn(portsWwn *string) *ShelfModif
 // SetPortsWwn adds the portsWwn to the shelf modify collection params
 func (o *ShelfModifyCollectionParams) SetPortsWwn(portsWwn *string) {
 	o.PortsWwn = portsWwn
+}
+
+// WithRawCapacity adds the rawCapacity to the shelf modify collection params
+func (o *ShelfModifyCollectionParams) WithRawCapacity(rawCapacity *int64) *ShelfModifyCollectionParams {
+	o.SetRawCapacity(rawCapacity)
+	return o
+}
+
+// SetRawCapacity adds the rawCapacity to the shelf modify collection params
+func (o *ShelfModifyCollectionParams) SetRawCapacity(rawCapacity *int64) {
+	o.RawCapacity = rawCapacity
 }
 
 // WithReturnRecords adds the returnRecords to the shelf modify collection params
@@ -3431,6 +3465,23 @@ func (o *ShelfModifyCollectionParams) WriteToRequest(r runtime.ClientRequest, re
 		}
 	}
 
+	if o.PortsSpeed != nil {
+
+		// query param ports.speed
+		var qrPortsSpeed int64
+
+		if o.PortsSpeed != nil {
+			qrPortsSpeed = *o.PortsSpeed
+		}
+		qPortsSpeed := swag.FormatInt64(qrPortsSpeed)
+		if qPortsSpeed != "" {
+
+			if err := r.SetQueryParam("ports.speed", qPortsSpeed); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.PortsState != nil {
 
 		// query param ports.state
@@ -3460,6 +3511,23 @@ func (o *ShelfModifyCollectionParams) WriteToRequest(r runtime.ClientRequest, re
 		if qPortsWwn != "" {
 
 			if err := r.SetQueryParam("ports.wwn", qPortsWwn); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RawCapacity != nil {
+
+		// query param raw_capacity
+		var qrRawCapacity int64
+
+		if o.RawCapacity != nil {
+			qrRawCapacity = *o.RawCapacity
+		}
+		qRawCapacity := swag.FormatInt64(qrRawCapacity)
+		if qRawCapacity != "" {
+
+			if err := r.SetQueryParam("raw_capacity", qRawCapacity); err != nil {
 				return err
 			}
 		}

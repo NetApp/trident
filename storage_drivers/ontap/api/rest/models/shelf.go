@@ -61,13 +61,18 @@ type Shelf struct {
 	// module type
 	// Example: iom6
 	// Read Only: true
-	// Enum: ["unknown","iom6","iom6e","iom12","iom12b","iom12c","iom12e","iom12f","iom12g","nsm100","nsm8e","nsm16e","psm3e","nsm100b"]
+	// Enum: ["unknown","iom6","iom6e","iom12","iom12b","iom12c","iom12e","iom12f","iom12g","nsm100","nsm8e","nsm16e","psm3e","nsm100b","nsm140"]
 	ModuleType *string `json:"module_type,omitempty"`
 
 	// name
 	// Example: 1.1
 	// Read Only: true
 	Name *string `json:"name,omitempty"`
+
+	// Raw capacity of drives in shelf in 4k blocks
+	// Example: 5157308772
+	// Read Only: true
+	RawCapacity *int64 `json:"raw_capacity,omitempty"`
 
 	// serial number
 	// Example: SHFMS1514000895
@@ -371,7 +376,7 @@ var shelfTypeModuleTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["unknown","iom6","iom6e","iom12","iom12b","iom12c","iom12e","iom12f","iom12g","nsm100","nsm8e","nsm16e","psm3e","nsm100b"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["unknown","iom6","iom6e","iom12","iom12b","iom12c","iom12e","iom12f","iom12g","nsm100","nsm8e","nsm16e","psm3e","nsm100b","nsm140"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -520,6 +525,16 @@ const (
 	// END DEBUGGING
 	// ShelfModuleTypeNsm100b captures enum value "nsm100b"
 	ShelfModuleTypeNsm100b string = "nsm100b"
+
+	// BEGIN DEBUGGING
+	// shelf
+	// Shelf
+	// module_type
+	// ModuleType
+	// nsm140
+	// END DEBUGGING
+	// ShelfModuleTypeNsm140 captures enum value "nsm140"
+	ShelfModuleTypeNsm140 string = "nsm140"
 )
 
 // prop value enum
@@ -930,6 +945,10 @@ func (m *Shelf) ContextValidate(ctx context.Context, formats strfmt.Registry) er
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateRawCapacity(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSerialNumber(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1076,6 +1095,15 @@ func (m *Shelf) contextValidateModuleType(ctx context.Context, formats strfmt.Re
 func (m *Shelf) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Shelf) contextValidateRawCapacity(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "raw_capacity", "body", m.RawCapacity); err != nil {
 		return err
 	}
 
@@ -3664,6 +3692,10 @@ type ShelfInlinePortsInlineArrayItem struct {
 
 	// remote
 	Remote *ShelfInlinePortsInlineArrayItemInlineRemote `json:"remote,omitempty"`
+
+	// speed
+	// Example: 100
+	Speed *int64 `json:"speed,omitempty"`
 
 	// state
 	// Example: connected

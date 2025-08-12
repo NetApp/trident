@@ -62,6 +62,24 @@ StorageUnitModifyCollectionParams contains all the parameters to send to the API
 */
 type StorageUnitModifyCollectionParams struct {
 
+	/* AntiRansomwareAttackProbability.
+
+	   Filter by anti_ransomware.attack_probability
+	*/
+	AntiRansomwareAttackProbability *string
+
+	/* AntiRansomwareAttackReportsTime.
+
+	   Filter by anti_ransomware.attack_reports.time
+	*/
+	AntiRansomwareAttackReportsTime *string
+
+	/* AntiRansomwareState.
+
+	   Filter by anti_ransomware.state
+	*/
+	AntiRansomwareState *string
+
 	/* Class.
 
 	   Filter by class
@@ -416,12 +434,6 @@ type StorageUnitModifyCollectionParams struct {
 	*/
 	OsType *string
 
-	/* PreserveLunIds.
-
-	   Specifies whether LUN IDs need to be preserved during a snapshot restore operation.
-	*/
-	PreserveLunIds *bool
-
 	/* QosPolicyName.
 
 	   Filter by qos_policy.name
@@ -436,25 +448,40 @@ type StorageUnitModifyCollectionParams struct {
 
 	/* RestoreToByteCount.
 
-	   Number of bytes to restore from the source storage unit, in multiples of 4096.
+	   The number of bytes to restore from the source storage unit, in multiples of 4096. When set, `restore_to.start_byte` must also be set. Setting these parameters requires also setting `restore_to.keep_snapshots` to `true`.
+
 	*/
 	RestoreToByteCount *float64
 
+	/* RestoreToKeepSnapshots.
+
+	     Requests that snapshots created after the restored snapshot be retained for the storage unit.
+	- If `false`, all snapshots created after the restored snapshot are deleted when the snapshot is restored.
+	- If `true`, all snapshots created after the restored snapshot are retained when the snapshot is restored.
+	This must be set to `true` when `restore_to.start_byte` and `restore_to.byte_count` are set or when called for a secondary storage unit.<br/>
+
+
+	*/
+	RestoreToKeepSnapshots *bool
+
 	/* RestoreToSnapshotName.
 
-	   Name of the snapshot to restore the storage unit to the point in time the snapshot was taken.
+	   The name of the snapshot to restore the storage unit to the point in time at which the snapshot was taken.
+
 	*/
 	RestoreToSnapshotName *string
 
 	/* RestoreToSnapshotUUID.
 
-	   UUID of the snapshot to restore the storage unit to the point in time the snapshot was taken.
+	   The UUID of the snapshot to restore the storage unit to the point in time at which the snapshot was taken.
+
 	*/
 	RestoreToSnapshotUUID *string
 
 	/* RestoreToStartByte.
 
-	   Starting byte offset of the source storage unit, in multiples of 4096.
+	   The starting byte offset of the source storage unit, in multiples of 4096. When set, `restore_to.byte_count` must also be set. Setting these parameters requires also setting `restore_to.keep_snapshots` to `true`.
+
 	*/
 	RestoreToStartByte *float64
 
@@ -479,6 +506,12 @@ type StorageUnitModifyCollectionParams struct {
 	   Filter by serial_number
 	*/
 	SerialNumber *string
+
+	/* SerialNumberHex.
+
+	   Filter by serial_number_hex
+	*/
+	SerialNumberHex *string
 
 	/* SerialRecords.
 
@@ -668,7 +701,7 @@ func (o *StorageUnitModifyCollectionParams) SetDefaults() {
 	var (
 		continueOnFailureDefault = bool(false)
 
-		preserveLunIdsDefault = bool(false)
+		restoreToKeepSnapshotsDefault = bool(false)
 
 		returnRecordsDefault = bool(true)
 
@@ -678,11 +711,11 @@ func (o *StorageUnitModifyCollectionParams) SetDefaults() {
 	)
 
 	val := StorageUnitModifyCollectionParams{
-		ContinueOnFailure: &continueOnFailureDefault,
-		PreserveLunIds:    &preserveLunIdsDefault,
-		ReturnRecords:     &returnRecordsDefault,
-		ReturnTimeout:     &returnTimeoutDefault,
-		SerialRecords:     &serialRecordsDefault,
+		ContinueOnFailure:      &continueOnFailureDefault,
+		RestoreToKeepSnapshots: &restoreToKeepSnapshotsDefault,
+		ReturnRecords:          &returnRecordsDefault,
+		ReturnTimeout:          &returnTimeoutDefault,
+		SerialRecords:          &serialRecordsDefault,
 	}
 
 	val.timeout = o.timeout
@@ -722,6 +755,39 @@ func (o *StorageUnitModifyCollectionParams) WithHTTPClient(client *http.Client) 
 // SetHTTPClient adds the HTTPClient to the storage unit modify collection params
 func (o *StorageUnitModifyCollectionParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithAntiRansomwareAttackProbability adds the antiRansomwareAttackProbability to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) WithAntiRansomwareAttackProbability(antiRansomwareAttackProbability *string) *StorageUnitModifyCollectionParams {
+	o.SetAntiRansomwareAttackProbability(antiRansomwareAttackProbability)
+	return o
+}
+
+// SetAntiRansomwareAttackProbability adds the antiRansomwareAttackProbability to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) SetAntiRansomwareAttackProbability(antiRansomwareAttackProbability *string) {
+	o.AntiRansomwareAttackProbability = antiRansomwareAttackProbability
+}
+
+// WithAntiRansomwareAttackReportsTime adds the antiRansomwareAttackReportsTime to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) WithAntiRansomwareAttackReportsTime(antiRansomwareAttackReportsTime *string) *StorageUnitModifyCollectionParams {
+	o.SetAntiRansomwareAttackReportsTime(antiRansomwareAttackReportsTime)
+	return o
+}
+
+// SetAntiRansomwareAttackReportsTime adds the antiRansomwareAttackReportsTime to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) SetAntiRansomwareAttackReportsTime(antiRansomwareAttackReportsTime *string) {
+	o.AntiRansomwareAttackReportsTime = antiRansomwareAttackReportsTime
+}
+
+// WithAntiRansomwareState adds the antiRansomwareState to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) WithAntiRansomwareState(antiRansomwareState *string) *StorageUnitModifyCollectionParams {
+	o.SetAntiRansomwareState(antiRansomwareState)
+	return o
+}
+
+// SetAntiRansomwareState adds the antiRansomwareState to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) SetAntiRansomwareState(antiRansomwareState *string) {
+	o.AntiRansomwareState = antiRansomwareState
 }
 
 // WithClass adds the class to the storage unit modify collection params
@@ -1373,17 +1439,6 @@ func (o *StorageUnitModifyCollectionParams) SetOsType(osType *string) {
 	o.OsType = osType
 }
 
-// WithPreserveLunIds adds the preserveLunIds to the storage unit modify collection params
-func (o *StorageUnitModifyCollectionParams) WithPreserveLunIds(preserveLunIds *bool) *StorageUnitModifyCollectionParams {
-	o.SetPreserveLunIds(preserveLunIds)
-	return o
-}
-
-// SetPreserveLunIds adds the preserveLunIds to the storage unit modify collection params
-func (o *StorageUnitModifyCollectionParams) SetPreserveLunIds(preserveLunIds *bool) {
-	o.PreserveLunIds = preserveLunIds
-}
-
 // WithQosPolicyName adds the qosPolicyName to the storage unit modify collection params
 func (o *StorageUnitModifyCollectionParams) WithQosPolicyName(qosPolicyName *string) *StorageUnitModifyCollectionParams {
 	o.SetQosPolicyName(qosPolicyName)
@@ -1415,6 +1470,17 @@ func (o *StorageUnitModifyCollectionParams) WithRestoreToByteCount(restoreToByte
 // SetRestoreToByteCount adds the restoreToByteCount to the storage unit modify collection params
 func (o *StorageUnitModifyCollectionParams) SetRestoreToByteCount(restoreToByteCount *float64) {
 	o.RestoreToByteCount = restoreToByteCount
+}
+
+// WithRestoreToKeepSnapshots adds the restoreToKeepSnapshots to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) WithRestoreToKeepSnapshots(restoreToKeepSnapshots *bool) *StorageUnitModifyCollectionParams {
+	o.SetRestoreToKeepSnapshots(restoreToKeepSnapshots)
+	return o
+}
+
+// SetRestoreToKeepSnapshots adds the restoreToKeepSnapshots to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) SetRestoreToKeepSnapshots(restoreToKeepSnapshots *bool) {
+	o.RestoreToKeepSnapshots = restoreToKeepSnapshots
 }
 
 // WithRestoreToSnapshotName adds the restoreToSnapshotName to the storage unit modify collection params
@@ -1481,6 +1547,17 @@ func (o *StorageUnitModifyCollectionParams) WithSerialNumber(serialNumber *strin
 // SetSerialNumber adds the serialNumber to the storage unit modify collection params
 func (o *StorageUnitModifyCollectionParams) SetSerialNumber(serialNumber *string) {
 	o.SerialNumber = serialNumber
+}
+
+// WithSerialNumberHex adds the serialNumberHex to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) WithSerialNumberHex(serialNumberHex *string) *StorageUnitModifyCollectionParams {
+	o.SetSerialNumberHex(serialNumberHex)
+	return o
+}
+
+// SetSerialNumberHex adds the serialNumberHex to the storage unit modify collection params
+func (o *StorageUnitModifyCollectionParams) SetSerialNumberHex(serialNumberHex *string) {
+	o.SerialNumberHex = serialNumberHex
 }
 
 // WithSerialRecords adds the serialRecords to the storage unit modify collection params
@@ -1798,6 +1875,57 @@ func (o *StorageUnitModifyCollectionParams) WriteToRequest(r runtime.ClientReque
 		return err
 	}
 	var res []error
+
+	if o.AntiRansomwareAttackProbability != nil {
+
+		// query param anti_ransomware.attack_probability
+		var qrAntiRansomwareAttackProbability string
+
+		if o.AntiRansomwareAttackProbability != nil {
+			qrAntiRansomwareAttackProbability = *o.AntiRansomwareAttackProbability
+		}
+		qAntiRansomwareAttackProbability := qrAntiRansomwareAttackProbability
+		if qAntiRansomwareAttackProbability != "" {
+
+			if err := r.SetQueryParam("anti_ransomware.attack_probability", qAntiRansomwareAttackProbability); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AntiRansomwareAttackReportsTime != nil {
+
+		// query param anti_ransomware.attack_reports.time
+		var qrAntiRansomwareAttackReportsTime string
+
+		if o.AntiRansomwareAttackReportsTime != nil {
+			qrAntiRansomwareAttackReportsTime = *o.AntiRansomwareAttackReportsTime
+		}
+		qAntiRansomwareAttackReportsTime := qrAntiRansomwareAttackReportsTime
+		if qAntiRansomwareAttackReportsTime != "" {
+
+			if err := r.SetQueryParam("anti_ransomware.attack_reports.time", qAntiRansomwareAttackReportsTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AntiRansomwareState != nil {
+
+		// query param anti_ransomware.state
+		var qrAntiRansomwareState string
+
+		if o.AntiRansomwareState != nil {
+			qrAntiRansomwareState = *o.AntiRansomwareState
+		}
+		qAntiRansomwareState := qrAntiRansomwareState
+		if qAntiRansomwareState != "" {
+
+			if err := r.SetQueryParam("anti_ransomware.state", qAntiRansomwareState); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.Class != nil {
 
@@ -2788,23 +2916,6 @@ func (o *StorageUnitModifyCollectionParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
-	if o.PreserveLunIds != nil {
-
-		// query param preserve_lun_ids
-		var qrPreserveLunIds bool
-
-		if o.PreserveLunIds != nil {
-			qrPreserveLunIds = *o.PreserveLunIds
-		}
-		qPreserveLunIds := swag.FormatBool(qrPreserveLunIds)
-		if qPreserveLunIds != "" {
-
-			if err := r.SetQueryParam("preserve_lun_ids", qPreserveLunIds); err != nil {
-				return err
-			}
-		}
-	}
-
 	if o.QosPolicyName != nil {
 
 		// query param qos_policy.name
@@ -2851,6 +2962,23 @@ func (o *StorageUnitModifyCollectionParams) WriteToRequest(r runtime.ClientReque
 		if qRestoreToByteCount != "" {
 
 			if err := r.SetQueryParam("restore_to.byte_count", qRestoreToByteCount); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RestoreToKeepSnapshots != nil {
+
+		// query param restore_to.keep_snapshots
+		var qrRestoreToKeepSnapshots bool
+
+		if o.RestoreToKeepSnapshots != nil {
+			qrRestoreToKeepSnapshots = *o.RestoreToKeepSnapshots
+		}
+		qRestoreToKeepSnapshots := swag.FormatBool(qrRestoreToKeepSnapshots)
+		if qRestoreToKeepSnapshots != "" {
+
+			if err := r.SetQueryParam("restore_to.keep_snapshots", qRestoreToKeepSnapshots); err != nil {
 				return err
 			}
 		}
@@ -2953,6 +3081,23 @@ func (o *StorageUnitModifyCollectionParams) WriteToRequest(r runtime.ClientReque
 		if qSerialNumber != "" {
 
 			if err := r.SetQueryParam("serial_number", qSerialNumber); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SerialNumberHex != nil {
+
+		// query param serial_number_hex
+		var qrSerialNumberHex string
+
+		if o.SerialNumberHex != nil {
+			qrSerialNumberHex = *o.SerialNumberHex
+		}
+		qSerialNumberHex := qrSerialNumberHex
+		if qSerialNumberHex != "" {
+
+			if err := r.SetQueryParam("serial_number_hex", qSerialNumberHex); err != nil {
 				return err
 			}
 		}

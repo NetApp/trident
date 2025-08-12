@@ -62,6 +62,12 @@ GcpKmsCollectionGetParams contains all the parameters to send to the API endpoin
 */
 type GcpKmsCollectionGetParams struct {
 
+	/* AuthenticationMethod.
+
+	   Filter by authentication_method
+	*/
+	AuthenticationMethod *string
+
 	/* CallerAccount.
 
 	   Filter by caller_account
@@ -109,6 +115,12 @@ type GcpKmsCollectionGetParams struct {
 	   Specify the fields to return.
 	*/
 	Fields []string
+
+	/* GceMetadataServer.
+
+	   Filter by gce_metadata_server
+	*/
+	GceMetadataServer *string
 
 	/* GoogleReachabilityCode.
 
@@ -349,6 +361,17 @@ func (o *GcpKmsCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithAuthenticationMethod adds the authenticationMethod to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithAuthenticationMethod(authenticationMethod *string) *GcpKmsCollectionGetParams {
+	o.SetAuthenticationMethod(authenticationMethod)
+	return o
+}
+
+// SetAuthenticationMethod adds the authenticationMethod to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetAuthenticationMethod(authenticationMethod *string) {
+	o.AuthenticationMethod = authenticationMethod
+}
+
 // WithCallerAccount adds the callerAccount to the gcp kms collection get params
 func (o *GcpKmsCollectionGetParams) WithCallerAccount(callerAccount *string) *GcpKmsCollectionGetParams {
 	o.SetCallerAccount(callerAccount)
@@ -435,6 +458,17 @@ func (o *GcpKmsCollectionGetParams) WithFields(fields []string) *GcpKmsCollectio
 // SetFields adds the fields to the gcp kms collection get params
 func (o *GcpKmsCollectionGetParams) SetFields(fields []string) {
 	o.Fields = fields
+}
+
+// WithGceMetadataServer adds the gceMetadataServer to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) WithGceMetadataServer(gceMetadataServer *string) *GcpKmsCollectionGetParams {
+	o.SetGceMetadataServer(gceMetadataServer)
+	return o
+}
+
+// SetGceMetadataServer adds the gceMetadataServer to the gcp kms collection get params
+func (o *GcpKmsCollectionGetParams) SetGceMetadataServer(gceMetadataServer *string) {
+	o.GceMetadataServer = gceMetadataServer
 }
 
 // WithGoogleReachabilityCode adds the googleReachabilityCode to the gcp kms collection get params
@@ -753,6 +787,23 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
+	if o.AuthenticationMethod != nil {
+
+		// query param authentication_method
+		var qrAuthenticationMethod string
+
+		if o.AuthenticationMethod != nil {
+			qrAuthenticationMethod = *o.AuthenticationMethod
+		}
+		qAuthenticationMethod := qrAuthenticationMethod
+		if qAuthenticationMethod != "" {
+
+			if err := r.SetQueryParam("authentication_method", qAuthenticationMethod); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.CallerAccount != nil {
 
 		// query param caller_account
@@ -880,6 +931,23 @@ func (o *GcpKmsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.GceMetadataServer != nil {
+
+		// query param gce_metadata_server
+		var qrGceMetadataServer string
+
+		if o.GceMetadataServer != nil {
+			qrGceMetadataServer = *o.GceMetadataServer
+		}
+		qGceMetadataServer := qrGceMetadataServer
+		if qGceMetadataServer != "" {
+
+			if err := r.SetQueryParam("gce_metadata_server", qGceMetadataServer); err != nil {
+				return err
+			}
 		}
 	}
 

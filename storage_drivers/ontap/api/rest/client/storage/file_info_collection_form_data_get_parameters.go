@@ -68,6 +68,12 @@ type FileInfoCollectionFormDataGetParams struct {
 	*/
 	AccessedTime *string
 
+	/* AnalyticsByAccessedTimeBytesUsedAgedDataMetric.
+
+	   Filter by analytics.by_accessed_time.bytes_used.aged_data_metric
+	*/
+	AnalyticsByAccessedTimeBytesUsedAgedDataMetric *float64
+
 	/* AnalyticsByAccessedTimeBytesUsedLabels.
 
 	   Filter by analytics.by_accessed_time.bytes_used.labels
@@ -97,6 +103,12 @@ type FileInfoCollectionFormDataGetParams struct {
 	   Filter by analytics.by_accessed_time.bytes_used.values
 	*/
 	AnalyticsByAccessedTimeBytesUsedValues *int64
+
+	/* AnalyticsByModifiedTimeBytesUsedAgedDataMetric.
+
+	   Filter by analytics.by_modified_time.bytes_used.aged_data_metric
+	*/
+	AnalyticsByModifiedTimeBytesUsedAgedDataMetric *float64
 
 	/* AnalyticsByModifiedTimeBytesUsedLabels.
 
@@ -162,6 +174,12 @@ type FileInfoCollectionFormDataGetParams struct {
 	   Filter by analytics.incomplete_data
 	*/
 	AnalyticsIncompleteData *bool
+
+	/* AnalyticsReportTime.
+
+	   Filter by analytics.report_time
+	*/
+	AnalyticsReportTime *string
 
 	/* AnalyticsSubdirCount.
 
@@ -470,6 +488,17 @@ func (o *FileInfoCollectionFormDataGetParams) SetAccessedTime(accessedTime *stri
 	o.AccessedTime = accessedTime
 }
 
+// WithAnalyticsByAccessedTimeBytesUsedAgedDataMetric adds the analyticsByAccessedTimeBytesUsedAgedDataMetric to the file info collection form data get params
+func (o *FileInfoCollectionFormDataGetParams) WithAnalyticsByAccessedTimeBytesUsedAgedDataMetric(analyticsByAccessedTimeBytesUsedAgedDataMetric *float64) *FileInfoCollectionFormDataGetParams {
+	o.SetAnalyticsByAccessedTimeBytesUsedAgedDataMetric(analyticsByAccessedTimeBytesUsedAgedDataMetric)
+	return o
+}
+
+// SetAnalyticsByAccessedTimeBytesUsedAgedDataMetric adds the analyticsByAccessedTimeBytesUsedAgedDataMetric to the file info collection form data get params
+func (o *FileInfoCollectionFormDataGetParams) SetAnalyticsByAccessedTimeBytesUsedAgedDataMetric(analyticsByAccessedTimeBytesUsedAgedDataMetric *float64) {
+	o.AnalyticsByAccessedTimeBytesUsedAgedDataMetric = analyticsByAccessedTimeBytesUsedAgedDataMetric
+}
+
 // WithAnalyticsByAccessedTimeBytesUsedLabels adds the analyticsByAccessedTimeBytesUsedLabels to the file info collection form data get params
 func (o *FileInfoCollectionFormDataGetParams) WithAnalyticsByAccessedTimeBytesUsedLabels(analyticsByAccessedTimeBytesUsedLabels *string) *FileInfoCollectionFormDataGetParams {
 	o.SetAnalyticsByAccessedTimeBytesUsedLabels(analyticsByAccessedTimeBytesUsedLabels)
@@ -523,6 +552,17 @@ func (o *FileInfoCollectionFormDataGetParams) WithAnalyticsByAccessedTimeBytesUs
 // SetAnalyticsByAccessedTimeBytesUsedValues adds the analyticsByAccessedTimeBytesUsedValues to the file info collection form data get params
 func (o *FileInfoCollectionFormDataGetParams) SetAnalyticsByAccessedTimeBytesUsedValues(analyticsByAccessedTimeBytesUsedValues *int64) {
 	o.AnalyticsByAccessedTimeBytesUsedValues = analyticsByAccessedTimeBytesUsedValues
+}
+
+// WithAnalyticsByModifiedTimeBytesUsedAgedDataMetric adds the analyticsByModifiedTimeBytesUsedAgedDataMetric to the file info collection form data get params
+func (o *FileInfoCollectionFormDataGetParams) WithAnalyticsByModifiedTimeBytesUsedAgedDataMetric(analyticsByModifiedTimeBytesUsedAgedDataMetric *float64) *FileInfoCollectionFormDataGetParams {
+	o.SetAnalyticsByModifiedTimeBytesUsedAgedDataMetric(analyticsByModifiedTimeBytesUsedAgedDataMetric)
+	return o
+}
+
+// SetAnalyticsByModifiedTimeBytesUsedAgedDataMetric adds the analyticsByModifiedTimeBytesUsedAgedDataMetric to the file info collection form data get params
+func (o *FileInfoCollectionFormDataGetParams) SetAnalyticsByModifiedTimeBytesUsedAgedDataMetric(analyticsByModifiedTimeBytesUsedAgedDataMetric *float64) {
+	o.AnalyticsByModifiedTimeBytesUsedAgedDataMetric = analyticsByModifiedTimeBytesUsedAgedDataMetric
 }
 
 // WithAnalyticsByModifiedTimeBytesUsedLabels adds the analyticsByModifiedTimeBytesUsedLabels to the file info collection form data get params
@@ -622,6 +662,17 @@ func (o *FileInfoCollectionFormDataGetParams) WithAnalyticsIncompleteData(analyt
 // SetAnalyticsIncompleteData adds the analyticsIncompleteData to the file info collection form data get params
 func (o *FileInfoCollectionFormDataGetParams) SetAnalyticsIncompleteData(analyticsIncompleteData *bool) {
 	o.AnalyticsIncompleteData = analyticsIncompleteData
+}
+
+// WithAnalyticsReportTime adds the analyticsReportTime to the file info collection form data get params
+func (o *FileInfoCollectionFormDataGetParams) WithAnalyticsReportTime(analyticsReportTime *string) *FileInfoCollectionFormDataGetParams {
+	o.SetAnalyticsReportTime(analyticsReportTime)
+	return o
+}
+
+// SetAnalyticsReportTime adds the analyticsReportTime to the file info collection form data get params
+func (o *FileInfoCollectionFormDataGetParams) SetAnalyticsReportTime(analyticsReportTime *string) {
+	o.AnalyticsReportTime = analyticsReportTime
 }
 
 // WithAnalyticsSubdirCount adds the analyticsSubdirCount to the file info collection form data get params
@@ -1056,6 +1107,23 @@ func (o *FileInfoCollectionFormDataGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
+	if o.AnalyticsByAccessedTimeBytesUsedAgedDataMetric != nil {
+
+		// query param analytics.by_accessed_time.bytes_used.aged_data_metric
+		var qrAnalyticsByAccessedTimeBytesUsedAgedDataMetric float64
+
+		if o.AnalyticsByAccessedTimeBytesUsedAgedDataMetric != nil {
+			qrAnalyticsByAccessedTimeBytesUsedAgedDataMetric = *o.AnalyticsByAccessedTimeBytesUsedAgedDataMetric
+		}
+		qAnalyticsByAccessedTimeBytesUsedAgedDataMetric := swag.FormatFloat64(qrAnalyticsByAccessedTimeBytesUsedAgedDataMetric)
+		if qAnalyticsByAccessedTimeBytesUsedAgedDataMetric != "" {
+
+			if err := r.SetQueryParam("analytics.by_accessed_time.bytes_used.aged_data_metric", qAnalyticsByAccessedTimeBytesUsedAgedDataMetric); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.AnalyticsByAccessedTimeBytesUsedLabels != nil {
 
 		// query param analytics.by_accessed_time.bytes_used.labels
@@ -1136,6 +1204,23 @@ func (o *FileInfoCollectionFormDataGetParams) WriteToRequest(r runtime.ClientReq
 		if qAnalyticsByAccessedTimeBytesUsedValues != "" {
 
 			if err := r.SetQueryParam("analytics.by_accessed_time.bytes_used.values", qAnalyticsByAccessedTimeBytesUsedValues); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByModifiedTimeBytesUsedAgedDataMetric != nil {
+
+		// query param analytics.by_modified_time.bytes_used.aged_data_metric
+		var qrAnalyticsByModifiedTimeBytesUsedAgedDataMetric float64
+
+		if o.AnalyticsByModifiedTimeBytesUsedAgedDataMetric != nil {
+			qrAnalyticsByModifiedTimeBytesUsedAgedDataMetric = *o.AnalyticsByModifiedTimeBytesUsedAgedDataMetric
+		}
+		qAnalyticsByModifiedTimeBytesUsedAgedDataMetric := swag.FormatFloat64(qrAnalyticsByModifiedTimeBytesUsedAgedDataMetric)
+		if qAnalyticsByModifiedTimeBytesUsedAgedDataMetric != "" {
+
+			if err := r.SetQueryParam("analytics.by_modified_time.bytes_used.aged_data_metric", qAnalyticsByModifiedTimeBytesUsedAgedDataMetric); err != nil {
 				return err
 			}
 		}
@@ -1283,6 +1368,23 @@ func (o *FileInfoCollectionFormDataGetParams) WriteToRequest(r runtime.ClientReq
 		if qAnalyticsIncompleteData != "" {
 
 			if err := r.SetQueryParam("analytics.incomplete_data", qAnalyticsIncompleteData); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsReportTime != nil {
+
+		// query param analytics.report_time
+		var qrAnalyticsReportTime string
+
+		if o.AnalyticsReportTime != nil {
+			qrAnalyticsReportTime = *o.AnalyticsReportTime
+		}
+		qAnalyticsReportTime := qrAnalyticsReportTime
+		if qAnalyticsReportTime != "" {
+
+			if err := r.SetQueryParam("analytics.report_time", qAnalyticsReportTime); err != nil {
 				return err
 			}
 		}

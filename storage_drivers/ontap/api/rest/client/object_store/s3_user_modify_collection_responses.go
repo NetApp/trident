@@ -146,6 +146,7 @@ func NewS3UserModifyCollectionDefault(code int) *S3UserModifyCollectionDefault {
 | 92406201   | Missing access-key or secret-key. Either provide both of the keys or none. If not provided, keys are generated automatically. |
 | 92406202   | The \"delete_keys\" operation must be performed without specifying the user keys. |
 | 92406205   | The object store user access key contains invalid characters. Valid characters are 0-9 and A-Z. |
+| 92406308   | Cannot disable user \"user1\" in SVM \"vs1\" because the user belongs to at least one object store group. Remove the user from all groups before disabling the user. |
 */
 type S3UserModifyCollectionDefault struct {
 	_statusCode int

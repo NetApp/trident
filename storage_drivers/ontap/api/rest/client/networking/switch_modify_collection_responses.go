@@ -207,9 +207,15 @@ func NewSwitchModifyCollectionDefault(code int) *SwitchModifyCollectionDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 12517379 | Settings updated, but the IP address \"{address}\" is not reachable. Verify that the address is valid or check the network path. |
-| 12517381 | Settings updated, but the SNMP validation request timed out. Verify that the \"snmp.user\" parameter is valid. |
-| 12517383 | Settings updated, but the SNMP validation request timed out. Verify that the \"snmp.user\" parameter is valid (i.e., the SNMPv3 user exists in ONTAP and on the remote switch). If the \"snmp.user\" parameter is valid, verify that the SNMPv3 user's credentials are the same both in ONTAP as well as in the remote switch. If a custom engine-id was provided for the SNMPv3 user, ensure it is the same as that of the remote switch. |
+| 5636148 | Failed to discover SNMPv3 engine ID of the remote switch. |
+| 5636149 | The \"<snmp.user>\" must be a valid SNMPv3 user belonging to remote switch \"<name.>\" and must also be configured in ONTAP. |
+| 5636152 | 0.0.0.0 cannot be specified as the IP address for the \"<address.>\" parameter. |
+| 8912900 | Invalid IP address. |
+| 9044009 | SNMPv3 client feature is not available until the effective cluster version is ONTAP 9.3 or later. |
+| 12517379 | Warning&#58; Settings updated, but the IP \"<address.>\" is not reachable. Verify that the address is valid, or check the network path. |
+| 12517381 | Warning&#58; Settings updated, but the SNMP validation request timed out. Verify that the \"<snmp.user>\" parameter is valid. |
+| 12517383 | Warning&#58; Settings updated, but the SNMPv3 validation request timed out. Verify that the \"<snmp.user>\" parameter is valid (i.e., the SNMPv3 user exists in ONTAP and on the remote switch). If the \"<snmp.user>\" parameter is valid, verify that the SNMPv3 user's credentials are the same both in ONTAP as well as in the remote switch. If a custom engine-id was provided for the SNMPv3 user, ensure it is the same as that of the remote switch. |
+| 12517411 | The input value for \"<name.>\", \"<address.>\" and/or \"<network.>\" must match its discovered value. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SwitchModifyCollectionDefault struct {
@@ -302,6 +308,18 @@ type SwitchModifyCollectionBody struct {
 	// Switch Network.
 	// Enum: ["cluster","storage"]
 	Network *string `json:"network,omitempty"`
+
+	// The switch reference configuration file (RCF) version.
+	// Example: RCF NX9336C-FX2 v1.13 1-CLUSTER
+	// Read Only: true
+	RcfVersion *string `json:"rcf_version,omitempty"`
+
+	// Switch role based on the interface configurations. Using '+' to combine multiple roles.
+	// Available role types are: cluster, multicluster, storage, multistorage, metrocluster.
+	//
+	// Example: ["cluster+storage"]
+	// Read Only: true
+	Role *string `json:"role,omitempty"`
 
 	// Serial Number.
 	// Read Only: true
@@ -495,6 +513,14 @@ func (o *SwitchModifyCollectionBody) ContextValidate(ctx context.Context, format
 		res = append(res, err)
 	}
 
+	if err := o.contextValidateRcfVersion(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateRole(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.contextValidateSerialNumber(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -549,6 +575,24 @@ func (o *SwitchModifyCollectionBody) contextValidateMonitoring(ctx context.Conte
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (o *SwitchModifyCollectionBody) contextValidateRcfVersion(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"rcf_version", "body", o.RcfVersion); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *SwitchModifyCollectionBody) contextValidateRole(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"role", "body", o.Role); err != nil {
+		return err
 	}
 
 	return nil

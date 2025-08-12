@@ -86,6 +86,12 @@ type StorageClusterGetParams struct {
 	*/
 	BlockStorageInactiveData *int64
 
+	/* BlockStorageLogAndRecoveryMetadata.
+
+	   Filter by block_storage.log_and_recovery_metadata
+	*/
+	BlockStorageLogAndRecoveryMetadata *int64
+
 	/* BlockStorageMediasAvailable.
 
 	   Filter by block_storage.medias.available
@@ -278,6 +284,42 @@ type StorageClusterGetParams struct {
 	*/
 	Fields []string
 
+	/* MetricAvailableSize.
+
+	   Filter by metric.available_size
+	*/
+	MetricAvailableSize *int64
+
+	/* MetricDuration.
+
+	   Filter by metric.duration
+	*/
+	MetricDuration *string
+
+	/* MetricStatus.
+
+	   Filter by metric.status
+	*/
+	MetricStatus *string
+
+	/* MetricTimestamp.
+
+	   Filter by metric.timestamp
+	*/
+	MetricTimestamp *string
+
+	/* MetricTotalSize.
+
+	   Filter by metric.total_size
+	*/
+	MetricTotalSize *int64
+
+	/* MetricUsedSize.
+
+	   Filter by metric.used_size
+	*/
+	MetricUsedSize *int64
+
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -373,6 +415,17 @@ func (o *StorageClusterGetParams) WithBlockStorageInactiveData(blockStorageInact
 // SetBlockStorageInactiveData adds the blockStorageInactiveData to the storage cluster get params
 func (o *StorageClusterGetParams) SetBlockStorageInactiveData(blockStorageInactiveData *int64) {
 	o.BlockStorageInactiveData = blockStorageInactiveData
+}
+
+// WithBlockStorageLogAndRecoveryMetadata adds the blockStorageLogAndRecoveryMetadata to the storage cluster get params
+func (o *StorageClusterGetParams) WithBlockStorageLogAndRecoveryMetadata(blockStorageLogAndRecoveryMetadata *int64) *StorageClusterGetParams {
+	o.SetBlockStorageLogAndRecoveryMetadata(blockStorageLogAndRecoveryMetadata)
+	return o
+}
+
+// SetBlockStorageLogAndRecoveryMetadata adds the blockStorageLogAndRecoveryMetadata to the storage cluster get params
+func (o *StorageClusterGetParams) SetBlockStorageLogAndRecoveryMetadata(blockStorageLogAndRecoveryMetadata *int64) {
+	o.BlockStorageLogAndRecoveryMetadata = blockStorageLogAndRecoveryMetadata
 }
 
 // WithBlockStorageMediasAvailable adds the blockStorageMediasAvailable to the storage cluster get params
@@ -727,6 +780,72 @@ func (o *StorageClusterGetParams) SetFields(fields []string) {
 	o.Fields = fields
 }
 
+// WithMetricAvailableSize adds the metricAvailableSize to the storage cluster get params
+func (o *StorageClusterGetParams) WithMetricAvailableSize(metricAvailableSize *int64) *StorageClusterGetParams {
+	o.SetMetricAvailableSize(metricAvailableSize)
+	return o
+}
+
+// SetMetricAvailableSize adds the metricAvailableSize to the storage cluster get params
+func (o *StorageClusterGetParams) SetMetricAvailableSize(metricAvailableSize *int64) {
+	o.MetricAvailableSize = metricAvailableSize
+}
+
+// WithMetricDuration adds the metricDuration to the storage cluster get params
+func (o *StorageClusterGetParams) WithMetricDuration(metricDuration *string) *StorageClusterGetParams {
+	o.SetMetricDuration(metricDuration)
+	return o
+}
+
+// SetMetricDuration adds the metricDuration to the storage cluster get params
+func (o *StorageClusterGetParams) SetMetricDuration(metricDuration *string) {
+	o.MetricDuration = metricDuration
+}
+
+// WithMetricStatus adds the metricStatus to the storage cluster get params
+func (o *StorageClusterGetParams) WithMetricStatus(metricStatus *string) *StorageClusterGetParams {
+	o.SetMetricStatus(metricStatus)
+	return o
+}
+
+// SetMetricStatus adds the metricStatus to the storage cluster get params
+func (o *StorageClusterGetParams) SetMetricStatus(metricStatus *string) {
+	o.MetricStatus = metricStatus
+}
+
+// WithMetricTimestamp adds the metricTimestamp to the storage cluster get params
+func (o *StorageClusterGetParams) WithMetricTimestamp(metricTimestamp *string) *StorageClusterGetParams {
+	o.SetMetricTimestamp(metricTimestamp)
+	return o
+}
+
+// SetMetricTimestamp adds the metricTimestamp to the storage cluster get params
+func (o *StorageClusterGetParams) SetMetricTimestamp(metricTimestamp *string) {
+	o.MetricTimestamp = metricTimestamp
+}
+
+// WithMetricTotalSize adds the metricTotalSize to the storage cluster get params
+func (o *StorageClusterGetParams) WithMetricTotalSize(metricTotalSize *int64) *StorageClusterGetParams {
+	o.SetMetricTotalSize(metricTotalSize)
+	return o
+}
+
+// SetMetricTotalSize adds the metricTotalSize to the storage cluster get params
+func (o *StorageClusterGetParams) SetMetricTotalSize(metricTotalSize *int64) {
+	o.MetricTotalSize = metricTotalSize
+}
+
+// WithMetricUsedSize adds the metricUsedSize to the storage cluster get params
+func (o *StorageClusterGetParams) WithMetricUsedSize(metricUsedSize *int64) *StorageClusterGetParams {
+	o.SetMetricUsedSize(metricUsedSize)
+	return o
+}
+
+// SetMetricUsedSize adds the metricUsedSize to the storage cluster get params
+func (o *StorageClusterGetParams) SetMetricUsedSize(metricUsedSize *int64) {
+	o.MetricUsedSize = metricUsedSize
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *StorageClusterGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -798,6 +917,23 @@ func (o *StorageClusterGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qBlockStorageInactiveData != "" {
 
 			if err := r.SetQueryParam("block_storage.inactive_data", qBlockStorageInactiveData); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BlockStorageLogAndRecoveryMetadata != nil {
+
+		// query param block_storage.log_and_recovery_metadata
+		var qrBlockStorageLogAndRecoveryMetadata int64
+
+		if o.BlockStorageLogAndRecoveryMetadata != nil {
+			qrBlockStorageLogAndRecoveryMetadata = *o.BlockStorageLogAndRecoveryMetadata
+		}
+		qBlockStorageLogAndRecoveryMetadata := swag.FormatInt64(qrBlockStorageLogAndRecoveryMetadata)
+		if qBlockStorageLogAndRecoveryMetadata != "" {
+
+			if err := r.SetQueryParam("block_storage.log_and_recovery_metadata", qBlockStorageLogAndRecoveryMetadata); err != nil {
 				return err
 			}
 		}
@@ -1338,6 +1474,108 @@ func (o *StorageClusterGetParams) WriteToRequest(r runtime.ClientRequest, reg st
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.MetricAvailableSize != nil {
+
+		// query param metric.available_size
+		var qrMetricAvailableSize int64
+
+		if o.MetricAvailableSize != nil {
+			qrMetricAvailableSize = *o.MetricAvailableSize
+		}
+		qMetricAvailableSize := swag.FormatInt64(qrMetricAvailableSize)
+		if qMetricAvailableSize != "" {
+
+			if err := r.SetQueryParam("metric.available_size", qMetricAvailableSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricDuration != nil {
+
+		// query param metric.duration
+		var qrMetricDuration string
+
+		if o.MetricDuration != nil {
+			qrMetricDuration = *o.MetricDuration
+		}
+		qMetricDuration := qrMetricDuration
+		if qMetricDuration != "" {
+
+			if err := r.SetQueryParam("metric.duration", qMetricDuration); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricStatus != nil {
+
+		// query param metric.status
+		var qrMetricStatus string
+
+		if o.MetricStatus != nil {
+			qrMetricStatus = *o.MetricStatus
+		}
+		qMetricStatus := qrMetricStatus
+		if qMetricStatus != "" {
+
+			if err := r.SetQueryParam("metric.status", qMetricStatus); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricTimestamp != nil {
+
+		// query param metric.timestamp
+		var qrMetricTimestamp string
+
+		if o.MetricTimestamp != nil {
+			qrMetricTimestamp = *o.MetricTimestamp
+		}
+		qMetricTimestamp := qrMetricTimestamp
+		if qMetricTimestamp != "" {
+
+			if err := r.SetQueryParam("metric.timestamp", qMetricTimestamp); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricTotalSize != nil {
+
+		// query param metric.total_size
+		var qrMetricTotalSize int64
+
+		if o.MetricTotalSize != nil {
+			qrMetricTotalSize = *o.MetricTotalSize
+		}
+		qMetricTotalSize := swag.FormatInt64(qrMetricTotalSize)
+		if qMetricTotalSize != "" {
+
+			if err := r.SetQueryParam("metric.total_size", qMetricTotalSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MetricUsedSize != nil {
+
+		// query param metric.used_size
+		var qrMetricUsedSize int64
+
+		if o.MetricUsedSize != nil {
+			qrMetricUsedSize = *o.MetricUsedSize
+		}
+		qMetricUsedSize := swag.FormatInt64(qrMetricUsedSize)
+		if qMetricUsedSize != "" {
+
+			if err := r.SetQueryParam("metric.used_size", qMetricUsedSize); err != nil {
+				return err
+			}
 		}
 	}
 

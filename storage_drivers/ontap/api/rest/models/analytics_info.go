@@ -11,6 +11,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // AnalyticsInfo File system analytics information summarizing all descendants of a specific directory.
@@ -35,6 +36,10 @@ type AnalyticsInfo struct {
 	// Returns true if data collection is incomplete for this directory tree.
 	IncompleteData *bool `json:"incomplete_data,omitempty"`
 
+	// The date and time analytics information was collected.
+	// Format: date-time
+	ReportTime *strfmt.DateTime `json:"report_time,omitempty"`
+
 	// Number of sub directories
 	// Example: 35
 	SubdirCount *int64 `json:"subdir_count,omitempty"`
@@ -49,6 +54,10 @@ func (m *AnalyticsInfo) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateByModifiedTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateReportTime(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -87,6 +96,18 @@ func (m *AnalyticsInfo) validateByModifiedTime(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *AnalyticsInfo) validateReportTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.ReportTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("report_time", "body", "date-time", m.ReportTime.String(), formats); err != nil {
+		return err
 	}
 
 	return nil
@@ -246,6 +267,10 @@ func (m *AnalyticsInfoInlineByAccessedTime) UnmarshalBinary(b []byte) error {
 //
 // swagger:model analytics_info_inline_by_accessed_time_inline_bytes_used
 type AnalyticsInfoInlineByAccessedTimeInlineBytesUsed struct {
+
+	// A score summarizing how old the data is. A higher value means the data is older.
+	// Example: 15.23
+	AgedDataMetric *float64 `json:"aged_data_metric,omitempty"`
 
 	// labels
 	Labels AnalyticsHistogramByTimeLabelsArrayInline `json:"labels,omitempty"`
@@ -506,6 +531,10 @@ func (m *AnalyticsInfoInlineByModifiedTime) UnmarshalBinary(b []byte) error {
 //
 // swagger:model analytics_info_inline_by_modified_time_inline_bytes_used
 type AnalyticsInfoInlineByModifiedTimeInlineBytesUsed struct {
+
+	// A score summarizing how old the data is. A higher value means the data is older.
+	// Example: 15.23
+	AgedDataMetric *float64 `json:"aged_data_metric,omitempty"`
 
 	// labels
 	Labels AnalyticsHistogramByTimeLabelsArrayInline `json:"labels,omitempty"`

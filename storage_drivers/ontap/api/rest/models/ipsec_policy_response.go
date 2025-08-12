@@ -500,6 +500,9 @@ type IpsecPolicyResponseInlineRecordsInlineArrayItem struct {
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
 
+	// ppk
+	Ppk *IpsecPolicyResponseInlineRecordsInlineArrayItemInlinePpk `json:"ppk,omitempty"`
+
 	// Lower layer protocol to be covered by the IPsec policy.
 	// Example: 17
 	Protocol *string `json:"protocol,omitempty"`
@@ -552,6 +555,10 @@ func (m *IpsecPolicyResponseInlineRecordsInlineArrayItem) Validate(formats strfm
 	}
 
 	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePpk(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -786,6 +793,23 @@ func (m *IpsecPolicyResponseInlineRecordsInlineArrayItem) validateName(formats s
 	return nil
 }
 
+func (m *IpsecPolicyResponseInlineRecordsInlineArrayItem) validatePpk(formats strfmt.Registry) error {
+	if swag.IsZero(m.Ppk) { // not required
+		return nil
+	}
+
+	if m.Ppk != nil {
+		if err := m.Ppk.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ppk")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *IpsecPolicyResponseInlineRecordsInlineArrayItem) validateRemoteEndpoint(formats strfmt.Registry) error {
 	if swag.IsZero(m.RemoteEndpoint) { // not required
 		return nil
@@ -869,6 +893,10 @@ func (m *IpsecPolicyResponseInlineRecordsInlineArrayItem) ContextValidate(ctx co
 		res = append(res, err)
 	}
 
+	if err := m.contextValidatePpk(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateRemoteEndpoint(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -925,6 +953,20 @@ func (m *IpsecPolicyResponseInlineRecordsInlineArrayItem) contextValidateLocalEn
 		if err := m.LocalEndpoint.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("local_endpoint")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IpsecPolicyResponseInlineRecordsInlineArrayItem) contextValidatePpk(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Ppk != nil {
+		if err := m.Ppk.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ppk")
 			}
 			return err
 		}
@@ -1528,6 +1570,95 @@ func (m *IpsecPolicyResponseInlineRecordsInlineArrayItemInlineLocalEndpoint) Mar
 // UnmarshalBinary interface implementation
 func (m *IpsecPolicyResponseInlineRecordsInlineArrayItemInlineLocalEndpoint) UnmarshalBinary(b []byte) error {
 	var res IpsecPolicyResponseInlineRecordsInlineArrayItemInlineLocalEndpoint
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IpsecPolicyResponseInlineRecordsInlineArrayItemInlinePpk Post-quantum pre-shared key information.
+//
+// swagger:model ipsec_policy_response_inline_records_inline_array_item_inline_ppk
+type IpsecPolicyResponseInlineRecordsInlineArrayItemInlinePpk struct {
+
+	// Post-quantum pre-shared key identity.
+	// Max Length: 64
+	// Min Length: 6
+	Identity *string `json:"identity,omitempty"`
+
+	// Post-quantum pre-shared key.
+	// Max Length: 128
+	// Min Length: 18
+	SharedKey *string `json:"shared_key,omitempty"`
+}
+
+// Validate validates this ipsec policy response inline records inline array item inline ppk
+func (m *IpsecPolicyResponseInlineRecordsInlineArrayItemInlinePpk) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateIdentity(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSharedKey(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IpsecPolicyResponseInlineRecordsInlineArrayItemInlinePpk) validateIdentity(formats strfmt.Registry) error {
+	if swag.IsZero(m.Identity) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("ppk"+"."+"identity", "body", *m.Identity, 6); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("ppk"+"."+"identity", "body", *m.Identity, 64); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *IpsecPolicyResponseInlineRecordsInlineArrayItemInlinePpk) validateSharedKey(formats strfmt.Registry) error {
+	if swag.IsZero(m.SharedKey) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("ppk"+"."+"shared_key", "body", *m.SharedKey, 18); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("ppk"+"."+"shared_key", "body", *m.SharedKey, 128); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this ipsec policy response inline records inline array item inline ppk based on context it is used
+func (m *IpsecPolicyResponseInlineRecordsInlineArrayItemInlinePpk) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IpsecPolicyResponseInlineRecordsInlineArrayItemInlinePpk) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IpsecPolicyResponseInlineRecordsInlineArrayItemInlinePpk) UnmarshalBinary(b []byte) error {
+	var res IpsecPolicyResponseInlineRecordsInlineArrayItemInlinePpk
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

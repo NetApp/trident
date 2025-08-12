@@ -14,6 +14,7 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
@@ -74,6 +75,12 @@ type NfsTLSInterfaceModifyParams struct {
 	   Network interface UUID.
 	*/
 	InterfaceUUID string
+
+	/* SkipSanValidation.
+
+	   Indicates whether Subject Alternate Name (SAN) validation has to be skipped.
+	*/
+	SkipSanValidation *bool
 
 	timeout    time.Duration
 	Context    context.Context
@@ -150,6 +157,17 @@ func (o *NfsTLSInterfaceModifyParams) SetInterfaceUUID(interfaceUUID string) {
 	o.InterfaceUUID = interfaceUUID
 }
 
+// WithSkipSanValidation adds the skipSanValidation to the nfs tls interface modify params
+func (o *NfsTLSInterfaceModifyParams) WithSkipSanValidation(skipSanValidation *bool) *NfsTLSInterfaceModifyParams {
+	o.SetSkipSanValidation(skipSanValidation)
+	return o
+}
+
+// SetSkipSanValidation adds the skipSanValidation to the nfs tls interface modify params
+func (o *NfsTLSInterfaceModifyParams) SetSkipSanValidation(skipSanValidation *bool) {
+	o.SkipSanValidation = skipSanValidation
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *NfsTLSInterfaceModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -166,6 +184,23 @@ func (o *NfsTLSInterfaceModifyParams) WriteToRequest(r runtime.ClientRequest, re
 	// path param interface.uuid
 	if err := r.SetPathParam("interface.uuid", o.InterfaceUUID); err != nil {
 		return err
+	}
+
+	if o.SkipSanValidation != nil {
+
+		// query param skip_san_validation
+		var qrSkipSanValidation bool
+
+		if o.SkipSanValidation != nil {
+			qrSkipSanValidation = *o.SkipSanValidation
+		}
+		qSkipSanValidation := swag.FormatBool(qrSkipSanValidation)
+		if qSkipSanValidation != "" {
+
+			if err := r.SetQueryParam("skip_san_validation", qSkipSanValidation); err != nil {
+				return err
+			}
+		}
 	}
 
 	if len(res) > 0 {

@@ -137,6 +137,8 @@ func NewActiveDirectoryModifyCollectionDefault(code int) *ActiveDirectoryModifyC
 | 656467 | Failed to modify the Active Directory machine account. Reason: Organizational-Unit not found. |
 | 656478 | Failed to create the Active Directory machine account. Reason: KDC has no support for encryption type. |
 | 656490 | Unable to modify the Active Directory account. The Active Directory account name is already used by another SVM. |
+| 656495 | Failed to update Active Directory security settings for SVM. |
+| 656496 | Failed to update Active Directory security settings for SVM. Reason: KDC has no support for encryption type. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ActiveDirectoryModifyCollectionDefault struct {
@@ -241,6 +243,9 @@ type ActiveDirectoryModifyCollectionBody struct {
 	// Min Length: 1
 	Password *string `json:"password,omitempty"`
 
+	// security
+	Security *models.ActiveDirectorySecurity `json:"security,omitempty"`
+
 	// svm
 	Svm *models.ActiveDirectoryInlineSvm `json:"svm,omitempty"`
 
@@ -275,6 +280,10 @@ func (o *ActiveDirectoryModifyCollectionBody) Validate(formats strfmt.Registry) 
 	}
 
 	if err := o.validatePassword(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateSecurity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -400,6 +409,23 @@ func (o *ActiveDirectoryModifyCollectionBody) validatePassword(formats strfmt.Re
 	return nil
 }
 
+func (o *ActiveDirectoryModifyCollectionBody) validateSecurity(formats strfmt.Registry) error {
+	if swag.IsZero(o.Security) { // not required
+		return nil
+	}
+
+	if o.Security != nil {
+		if err := o.Security.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "security")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (o *ActiveDirectoryModifyCollectionBody) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(o.Svm) { // not required
 		return nil
@@ -442,6 +468,10 @@ func (o *ActiveDirectoryModifyCollectionBody) ContextValidate(ctx context.Contex
 	}
 
 	if err := o.contextValidateActiveDirectoryResponseInlineRecords(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateSecurity(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -512,6 +542,20 @@ func (o *ActiveDirectoryModifyCollectionBody) contextValidateActiveDirectoryResp
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (o *ActiveDirectoryModifyCollectionBody) contextValidateSecurity(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Security != nil {
+		if err := o.Security.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "security")
+			}
+			return err
+		}
 	}
 
 	return nil

@@ -110,6 +110,24 @@ type NvmeSubsystemModifyCollectionParams struct {
 	*/
 	HostsPriority *string
 
+	/* HostsProximityLocalSvm.
+
+	   Filter by hosts.proximity.local_svm
+	*/
+	HostsProximityLocalSvm *bool
+
+	/* HostsProximityPeerSvmsName.
+
+	   Filter by hosts.proximity.peer_svms.name
+	*/
+	HostsProximityPeerSvmsName *string
+
+	/* HostsProximityPeerSvmsUUID.
+
+	   Filter by hosts.proximity.peer_svms.uuid
+	*/
+	HostsProximityPeerSvmsUUID *string
+
 	/* HostsTLSKeyType.
 
 	   Filter by hosts.tls.key_type
@@ -145,6 +163,72 @@ type NvmeSubsystemModifyCollectionParams struct {
 	   Filter by os_type
 	*/
 	OsType *string
+
+	/* ReplicationErrorSubsystemLocalSvm.
+
+	   Filter by replication.error.subsystem.local_svm
+	*/
+	ReplicationErrorSubsystemLocalSvm *bool
+
+	/* ReplicationErrorSubsystemName.
+
+	   Filter by replication.error.subsystem.name
+	*/
+	ReplicationErrorSubsystemName *string
+
+	/* ReplicationErrorSubsystemUUID.
+
+	   Filter by replication.error.subsystem.uuid
+	*/
+	ReplicationErrorSubsystemUUID *string
+
+	/* ReplicationErrorSummaryArgumentsCode.
+
+	   Filter by replication.error.summary.arguments.code
+	*/
+	ReplicationErrorSummaryArgumentsCode *string
+
+	/* ReplicationErrorSummaryArgumentsMessage.
+
+	   Filter by replication.error.summary.arguments.message
+	*/
+	ReplicationErrorSummaryArgumentsMessage *string
+
+	/* ReplicationErrorSummaryCode.
+
+	   Filter by replication.error.summary.code
+	*/
+	ReplicationErrorSummaryCode *string
+
+	/* ReplicationErrorSummaryMessage.
+
+	   Filter by replication.error.summary.message
+	*/
+	ReplicationErrorSummaryMessage *string
+
+	/* ReplicationPeerSubsystemUUID.
+
+	   Filter by replication.peer_subsystem.uuid
+	*/
+	ReplicationPeerSubsystemUUID *string
+
+	/* ReplicationPeerSvmName.
+
+	   Filter by replication.peer_svm.name
+	*/
+	ReplicationPeerSvmName *string
+
+	/* ReplicationPeerSvmUUID.
+
+	   Filter by replication.peer_svm.uuid
+	*/
+	ReplicationPeerSvmUUID *string
+
+	/* ReplicationState.
+
+	   Filter by replication.state
+	*/
+	ReplicationState *string
 
 	/* ReturnRecords.
 
@@ -389,6 +473,39 @@ func (o *NvmeSubsystemModifyCollectionParams) SetHostsPriority(hostsPriority *st
 	o.HostsPriority = hostsPriority
 }
 
+// WithHostsProximityLocalSvm adds the hostsProximityLocalSvm to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) WithHostsProximityLocalSvm(hostsProximityLocalSvm *bool) *NvmeSubsystemModifyCollectionParams {
+	o.SetHostsProximityLocalSvm(hostsProximityLocalSvm)
+	return o
+}
+
+// SetHostsProximityLocalSvm adds the hostsProximityLocalSvm to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) SetHostsProximityLocalSvm(hostsProximityLocalSvm *bool) {
+	o.HostsProximityLocalSvm = hostsProximityLocalSvm
+}
+
+// WithHostsProximityPeerSvmsName adds the hostsProximityPeerSvmsName to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) WithHostsProximityPeerSvmsName(hostsProximityPeerSvmsName *string) *NvmeSubsystemModifyCollectionParams {
+	o.SetHostsProximityPeerSvmsName(hostsProximityPeerSvmsName)
+	return o
+}
+
+// SetHostsProximityPeerSvmsName adds the hostsProximityPeerSvmsName to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) SetHostsProximityPeerSvmsName(hostsProximityPeerSvmsName *string) {
+	o.HostsProximityPeerSvmsName = hostsProximityPeerSvmsName
+}
+
+// WithHostsProximityPeerSvmsUUID adds the hostsProximityPeerSvmsUUID to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) WithHostsProximityPeerSvmsUUID(hostsProximityPeerSvmsUUID *string) *NvmeSubsystemModifyCollectionParams {
+	o.SetHostsProximityPeerSvmsUUID(hostsProximityPeerSvmsUUID)
+	return o
+}
+
+// SetHostsProximityPeerSvmsUUID adds the hostsProximityPeerSvmsUuid to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) SetHostsProximityPeerSvmsUUID(hostsProximityPeerSvmsUUID *string) {
+	o.HostsProximityPeerSvmsUUID = hostsProximityPeerSvmsUUID
+}
+
 // WithHostsTLSKeyType adds the hostsTLSKeyType to the nvme subsystem modify collection params
 func (o *NvmeSubsystemModifyCollectionParams) WithHostsTLSKeyType(hostsTLSKeyType *string) *NvmeSubsystemModifyCollectionParams {
 	o.SetHostsTLSKeyType(hostsTLSKeyType)
@@ -453,6 +570,127 @@ func (o *NvmeSubsystemModifyCollectionParams) WithOsType(osType *string) *NvmeSu
 // SetOsType adds the osType to the nvme subsystem modify collection params
 func (o *NvmeSubsystemModifyCollectionParams) SetOsType(osType *string) {
 	o.OsType = osType
+}
+
+// WithReplicationErrorSubsystemLocalSvm adds the replicationErrorSubsystemLocalSvm to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) WithReplicationErrorSubsystemLocalSvm(replicationErrorSubsystemLocalSvm *bool) *NvmeSubsystemModifyCollectionParams {
+	o.SetReplicationErrorSubsystemLocalSvm(replicationErrorSubsystemLocalSvm)
+	return o
+}
+
+// SetReplicationErrorSubsystemLocalSvm adds the replicationErrorSubsystemLocalSvm to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) SetReplicationErrorSubsystemLocalSvm(replicationErrorSubsystemLocalSvm *bool) {
+	o.ReplicationErrorSubsystemLocalSvm = replicationErrorSubsystemLocalSvm
+}
+
+// WithReplicationErrorSubsystemName adds the replicationErrorSubsystemName to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) WithReplicationErrorSubsystemName(replicationErrorSubsystemName *string) *NvmeSubsystemModifyCollectionParams {
+	o.SetReplicationErrorSubsystemName(replicationErrorSubsystemName)
+	return o
+}
+
+// SetReplicationErrorSubsystemName adds the replicationErrorSubsystemName to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) SetReplicationErrorSubsystemName(replicationErrorSubsystemName *string) {
+	o.ReplicationErrorSubsystemName = replicationErrorSubsystemName
+}
+
+// WithReplicationErrorSubsystemUUID adds the replicationErrorSubsystemUUID to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) WithReplicationErrorSubsystemUUID(replicationErrorSubsystemUUID *string) *NvmeSubsystemModifyCollectionParams {
+	o.SetReplicationErrorSubsystemUUID(replicationErrorSubsystemUUID)
+	return o
+}
+
+// SetReplicationErrorSubsystemUUID adds the replicationErrorSubsystemUuid to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) SetReplicationErrorSubsystemUUID(replicationErrorSubsystemUUID *string) {
+	o.ReplicationErrorSubsystemUUID = replicationErrorSubsystemUUID
+}
+
+// WithReplicationErrorSummaryArgumentsCode adds the replicationErrorSummaryArgumentsCode to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) WithReplicationErrorSummaryArgumentsCode(replicationErrorSummaryArgumentsCode *string) *NvmeSubsystemModifyCollectionParams {
+	o.SetReplicationErrorSummaryArgumentsCode(replicationErrorSummaryArgumentsCode)
+	return o
+}
+
+// SetReplicationErrorSummaryArgumentsCode adds the replicationErrorSummaryArgumentsCode to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) SetReplicationErrorSummaryArgumentsCode(replicationErrorSummaryArgumentsCode *string) {
+	o.ReplicationErrorSummaryArgumentsCode = replicationErrorSummaryArgumentsCode
+}
+
+// WithReplicationErrorSummaryArgumentsMessage adds the replicationErrorSummaryArgumentsMessage to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) WithReplicationErrorSummaryArgumentsMessage(replicationErrorSummaryArgumentsMessage *string) *NvmeSubsystemModifyCollectionParams {
+	o.SetReplicationErrorSummaryArgumentsMessage(replicationErrorSummaryArgumentsMessage)
+	return o
+}
+
+// SetReplicationErrorSummaryArgumentsMessage adds the replicationErrorSummaryArgumentsMessage to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) SetReplicationErrorSummaryArgumentsMessage(replicationErrorSummaryArgumentsMessage *string) {
+	o.ReplicationErrorSummaryArgumentsMessage = replicationErrorSummaryArgumentsMessage
+}
+
+// WithReplicationErrorSummaryCode adds the replicationErrorSummaryCode to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) WithReplicationErrorSummaryCode(replicationErrorSummaryCode *string) *NvmeSubsystemModifyCollectionParams {
+	o.SetReplicationErrorSummaryCode(replicationErrorSummaryCode)
+	return o
+}
+
+// SetReplicationErrorSummaryCode adds the replicationErrorSummaryCode to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) SetReplicationErrorSummaryCode(replicationErrorSummaryCode *string) {
+	o.ReplicationErrorSummaryCode = replicationErrorSummaryCode
+}
+
+// WithReplicationErrorSummaryMessage adds the replicationErrorSummaryMessage to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) WithReplicationErrorSummaryMessage(replicationErrorSummaryMessage *string) *NvmeSubsystemModifyCollectionParams {
+	o.SetReplicationErrorSummaryMessage(replicationErrorSummaryMessage)
+	return o
+}
+
+// SetReplicationErrorSummaryMessage adds the replicationErrorSummaryMessage to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) SetReplicationErrorSummaryMessage(replicationErrorSummaryMessage *string) {
+	o.ReplicationErrorSummaryMessage = replicationErrorSummaryMessage
+}
+
+// WithReplicationPeerSubsystemUUID adds the replicationPeerSubsystemUUID to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) WithReplicationPeerSubsystemUUID(replicationPeerSubsystemUUID *string) *NvmeSubsystemModifyCollectionParams {
+	o.SetReplicationPeerSubsystemUUID(replicationPeerSubsystemUUID)
+	return o
+}
+
+// SetReplicationPeerSubsystemUUID adds the replicationPeerSubsystemUuid to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) SetReplicationPeerSubsystemUUID(replicationPeerSubsystemUUID *string) {
+	o.ReplicationPeerSubsystemUUID = replicationPeerSubsystemUUID
+}
+
+// WithReplicationPeerSvmName adds the replicationPeerSvmName to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) WithReplicationPeerSvmName(replicationPeerSvmName *string) *NvmeSubsystemModifyCollectionParams {
+	o.SetReplicationPeerSvmName(replicationPeerSvmName)
+	return o
+}
+
+// SetReplicationPeerSvmName adds the replicationPeerSvmName to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) SetReplicationPeerSvmName(replicationPeerSvmName *string) {
+	o.ReplicationPeerSvmName = replicationPeerSvmName
+}
+
+// WithReplicationPeerSvmUUID adds the replicationPeerSvmUUID to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) WithReplicationPeerSvmUUID(replicationPeerSvmUUID *string) *NvmeSubsystemModifyCollectionParams {
+	o.SetReplicationPeerSvmUUID(replicationPeerSvmUUID)
+	return o
+}
+
+// SetReplicationPeerSvmUUID adds the replicationPeerSvmUuid to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) SetReplicationPeerSvmUUID(replicationPeerSvmUUID *string) {
+	o.ReplicationPeerSvmUUID = replicationPeerSvmUUID
+}
+
+// WithReplicationState adds the replicationState to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) WithReplicationState(replicationState *string) *NvmeSubsystemModifyCollectionParams {
+	o.SetReplicationState(replicationState)
+	return o
+}
+
+// SetReplicationState adds the replicationState to the nvme subsystem modify collection params
+func (o *NvmeSubsystemModifyCollectionParams) SetReplicationState(replicationState *string) {
+	o.ReplicationState = replicationState
 }
 
 // WithReturnRecords adds the returnRecords to the nvme subsystem modify collection params
@@ -742,6 +980,57 @@ func (o *NvmeSubsystemModifyCollectionParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
+	if o.HostsProximityLocalSvm != nil {
+
+		// query param hosts.proximity.local_svm
+		var qrHostsProximityLocalSvm bool
+
+		if o.HostsProximityLocalSvm != nil {
+			qrHostsProximityLocalSvm = *o.HostsProximityLocalSvm
+		}
+		qHostsProximityLocalSvm := swag.FormatBool(qrHostsProximityLocalSvm)
+		if qHostsProximityLocalSvm != "" {
+
+			if err := r.SetQueryParam("hosts.proximity.local_svm", qHostsProximityLocalSvm); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HostsProximityPeerSvmsName != nil {
+
+		// query param hosts.proximity.peer_svms.name
+		var qrHostsProximityPeerSvmsName string
+
+		if o.HostsProximityPeerSvmsName != nil {
+			qrHostsProximityPeerSvmsName = *o.HostsProximityPeerSvmsName
+		}
+		qHostsProximityPeerSvmsName := qrHostsProximityPeerSvmsName
+		if qHostsProximityPeerSvmsName != "" {
+
+			if err := r.SetQueryParam("hosts.proximity.peer_svms.name", qHostsProximityPeerSvmsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HostsProximityPeerSvmsUUID != nil {
+
+		// query param hosts.proximity.peer_svms.uuid
+		var qrHostsProximityPeerSvmsUUID string
+
+		if o.HostsProximityPeerSvmsUUID != nil {
+			qrHostsProximityPeerSvmsUUID = *o.HostsProximityPeerSvmsUUID
+		}
+		qHostsProximityPeerSvmsUUID := qrHostsProximityPeerSvmsUUID
+		if qHostsProximityPeerSvmsUUID != "" {
+
+			if err := r.SetQueryParam("hosts.proximity.peer_svms.uuid", qHostsProximityPeerSvmsUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.HostsTLSKeyType != nil {
 
 		// query param hosts.tls.key_type
@@ -825,6 +1114,193 @@ func (o *NvmeSubsystemModifyCollectionParams) WriteToRequest(r runtime.ClientReq
 		if qOsType != "" {
 
 			if err := r.SetQueryParam("os_type", qOsType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorSubsystemLocalSvm != nil {
+
+		// query param replication.error.subsystem.local_svm
+		var qrReplicationErrorSubsystemLocalSvm bool
+
+		if o.ReplicationErrorSubsystemLocalSvm != nil {
+			qrReplicationErrorSubsystemLocalSvm = *o.ReplicationErrorSubsystemLocalSvm
+		}
+		qReplicationErrorSubsystemLocalSvm := swag.FormatBool(qrReplicationErrorSubsystemLocalSvm)
+		if qReplicationErrorSubsystemLocalSvm != "" {
+
+			if err := r.SetQueryParam("replication.error.subsystem.local_svm", qReplicationErrorSubsystemLocalSvm); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorSubsystemName != nil {
+
+		// query param replication.error.subsystem.name
+		var qrReplicationErrorSubsystemName string
+
+		if o.ReplicationErrorSubsystemName != nil {
+			qrReplicationErrorSubsystemName = *o.ReplicationErrorSubsystemName
+		}
+		qReplicationErrorSubsystemName := qrReplicationErrorSubsystemName
+		if qReplicationErrorSubsystemName != "" {
+
+			if err := r.SetQueryParam("replication.error.subsystem.name", qReplicationErrorSubsystemName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorSubsystemUUID != nil {
+
+		// query param replication.error.subsystem.uuid
+		var qrReplicationErrorSubsystemUUID string
+
+		if o.ReplicationErrorSubsystemUUID != nil {
+			qrReplicationErrorSubsystemUUID = *o.ReplicationErrorSubsystemUUID
+		}
+		qReplicationErrorSubsystemUUID := qrReplicationErrorSubsystemUUID
+		if qReplicationErrorSubsystemUUID != "" {
+
+			if err := r.SetQueryParam("replication.error.subsystem.uuid", qReplicationErrorSubsystemUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorSummaryArgumentsCode != nil {
+
+		// query param replication.error.summary.arguments.code
+		var qrReplicationErrorSummaryArgumentsCode string
+
+		if o.ReplicationErrorSummaryArgumentsCode != nil {
+			qrReplicationErrorSummaryArgumentsCode = *o.ReplicationErrorSummaryArgumentsCode
+		}
+		qReplicationErrorSummaryArgumentsCode := qrReplicationErrorSummaryArgumentsCode
+		if qReplicationErrorSummaryArgumentsCode != "" {
+
+			if err := r.SetQueryParam("replication.error.summary.arguments.code", qReplicationErrorSummaryArgumentsCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorSummaryArgumentsMessage != nil {
+
+		// query param replication.error.summary.arguments.message
+		var qrReplicationErrorSummaryArgumentsMessage string
+
+		if o.ReplicationErrorSummaryArgumentsMessage != nil {
+			qrReplicationErrorSummaryArgumentsMessage = *o.ReplicationErrorSummaryArgumentsMessage
+		}
+		qReplicationErrorSummaryArgumentsMessage := qrReplicationErrorSummaryArgumentsMessage
+		if qReplicationErrorSummaryArgumentsMessage != "" {
+
+			if err := r.SetQueryParam("replication.error.summary.arguments.message", qReplicationErrorSummaryArgumentsMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorSummaryCode != nil {
+
+		// query param replication.error.summary.code
+		var qrReplicationErrorSummaryCode string
+
+		if o.ReplicationErrorSummaryCode != nil {
+			qrReplicationErrorSummaryCode = *o.ReplicationErrorSummaryCode
+		}
+		qReplicationErrorSummaryCode := qrReplicationErrorSummaryCode
+		if qReplicationErrorSummaryCode != "" {
+
+			if err := r.SetQueryParam("replication.error.summary.code", qReplicationErrorSummaryCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorSummaryMessage != nil {
+
+		// query param replication.error.summary.message
+		var qrReplicationErrorSummaryMessage string
+
+		if o.ReplicationErrorSummaryMessage != nil {
+			qrReplicationErrorSummaryMessage = *o.ReplicationErrorSummaryMessage
+		}
+		qReplicationErrorSummaryMessage := qrReplicationErrorSummaryMessage
+		if qReplicationErrorSummaryMessage != "" {
+
+			if err := r.SetQueryParam("replication.error.summary.message", qReplicationErrorSummaryMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationPeerSubsystemUUID != nil {
+
+		// query param replication.peer_subsystem.uuid
+		var qrReplicationPeerSubsystemUUID string
+
+		if o.ReplicationPeerSubsystemUUID != nil {
+			qrReplicationPeerSubsystemUUID = *o.ReplicationPeerSubsystemUUID
+		}
+		qReplicationPeerSubsystemUUID := qrReplicationPeerSubsystemUUID
+		if qReplicationPeerSubsystemUUID != "" {
+
+			if err := r.SetQueryParam("replication.peer_subsystem.uuid", qReplicationPeerSubsystemUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationPeerSvmName != nil {
+
+		// query param replication.peer_svm.name
+		var qrReplicationPeerSvmName string
+
+		if o.ReplicationPeerSvmName != nil {
+			qrReplicationPeerSvmName = *o.ReplicationPeerSvmName
+		}
+		qReplicationPeerSvmName := qrReplicationPeerSvmName
+		if qReplicationPeerSvmName != "" {
+
+			if err := r.SetQueryParam("replication.peer_svm.name", qReplicationPeerSvmName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationPeerSvmUUID != nil {
+
+		// query param replication.peer_svm.uuid
+		var qrReplicationPeerSvmUUID string
+
+		if o.ReplicationPeerSvmUUID != nil {
+			qrReplicationPeerSvmUUID = *o.ReplicationPeerSvmUUID
+		}
+		qReplicationPeerSvmUUID := qrReplicationPeerSvmUUID
+		if qReplicationPeerSvmUUID != "" {
+
+			if err := r.SetQueryParam("replication.peer_svm.uuid", qReplicationPeerSvmUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationState != nil {
+
+		// query param replication.state
+		var qrReplicationState string
+
+		if o.ReplicationState != nil {
+			qrReplicationState = *o.ReplicationState
+		}
+		qReplicationState := qrReplicationState
+		if qReplicationState != "" {
+
+			if err := r.SetQueryParam("replication.state", qReplicationState); err != nil {
 				return err
 			}
 		}

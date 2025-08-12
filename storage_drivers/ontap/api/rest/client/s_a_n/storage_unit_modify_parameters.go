@@ -70,33 +70,42 @@ type StorageUnitModifyParams struct {
 	*/
 	Info *models.StorageUnit
 
-	/* PreserveLunIds.
-
-	   Specifies whether LUN IDs need to be preserved during a snapshot restore operation.
-	*/
-	PreserveLunIds *bool
-
 	/* RestoreToByteCount.
 
-	   Number of bytes to restore from the source storage unit, in multiples of 4096.
+	   The number of bytes to restore from the source storage unit, in multiples of 4096. When set, `restore_to.start_byte` must also be set. Setting these parameters requires also setting `restore_to.keep_snapshots` to `true`.
+
 	*/
 	RestoreToByteCount *float64
 
+	/* RestoreToKeepSnapshots.
+
+	     Requests that snapshots created after the restored snapshot be retained for the storage unit.
+	- If `false`, all snapshots created after the restored snapshot are deleted when the snapshot is restored.
+	- If `true`, all snapshots created after the restored snapshot are retained when the snapshot is restored.
+	This must be set to `true` when `restore_to.start_byte` and `restore_to.byte_count` are set or when called for a secondary storage unit.<br/>
+
+
+	*/
+	RestoreToKeepSnapshots *bool
+
 	/* RestoreToSnapshotName.
 
-	   Name of the snapshot to restore the storage unit to the point in time the snapshot was taken.
+	   The name of the snapshot to restore the storage unit to the point in time at which the snapshot was taken.
+
 	*/
 	RestoreToSnapshotName *string
 
 	/* RestoreToSnapshotUUID.
 
-	   UUID of the snapshot to restore the storage unit to the point in time the snapshot was taken.
+	   The UUID of the snapshot to restore the storage unit to the point in time at which the snapshot was taken.
+
 	*/
 	RestoreToSnapshotUUID *string
 
 	/* RestoreToStartByte.
 
-	   Starting byte offset of the source storage unit, in multiples of 4096.
+	   The starting byte offset of the source storage unit, in multiples of 4096. When set, `restore_to.byte_count` must also be set. Setting these parameters requires also setting `restore_to.keep_snapshots` to `true`.
+
 	*/
 	RestoreToStartByte *float64
 
@@ -131,14 +140,14 @@ func (o *StorageUnitModifyParams) WithDefaults() *StorageUnitModifyParams {
 // All values with no default are reset to their zero value.
 func (o *StorageUnitModifyParams) SetDefaults() {
 	var (
-		preserveLunIdsDefault = bool(false)
+		restoreToKeepSnapshotsDefault = bool(false)
 
 		returnTimeoutDefault = int64(0)
 	)
 
 	val := StorageUnitModifyParams{
-		PreserveLunIds: &preserveLunIdsDefault,
-		ReturnTimeout:  &returnTimeoutDefault,
+		RestoreToKeepSnapshots: &restoreToKeepSnapshotsDefault,
+		ReturnTimeout:          &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -191,17 +200,6 @@ func (o *StorageUnitModifyParams) SetInfo(info *models.StorageUnit) {
 	o.Info = info
 }
 
-// WithPreserveLunIds adds the preserveLunIds to the storage unit modify params
-func (o *StorageUnitModifyParams) WithPreserveLunIds(preserveLunIds *bool) *StorageUnitModifyParams {
-	o.SetPreserveLunIds(preserveLunIds)
-	return o
-}
-
-// SetPreserveLunIds adds the preserveLunIds to the storage unit modify params
-func (o *StorageUnitModifyParams) SetPreserveLunIds(preserveLunIds *bool) {
-	o.PreserveLunIds = preserveLunIds
-}
-
 // WithRestoreToByteCount adds the restoreToByteCount to the storage unit modify params
 func (o *StorageUnitModifyParams) WithRestoreToByteCount(restoreToByteCount *float64) *StorageUnitModifyParams {
 	o.SetRestoreToByteCount(restoreToByteCount)
@@ -211,6 +209,17 @@ func (o *StorageUnitModifyParams) WithRestoreToByteCount(restoreToByteCount *flo
 // SetRestoreToByteCount adds the restoreToByteCount to the storage unit modify params
 func (o *StorageUnitModifyParams) SetRestoreToByteCount(restoreToByteCount *float64) {
 	o.RestoreToByteCount = restoreToByteCount
+}
+
+// WithRestoreToKeepSnapshots adds the restoreToKeepSnapshots to the storage unit modify params
+func (o *StorageUnitModifyParams) WithRestoreToKeepSnapshots(restoreToKeepSnapshots *bool) *StorageUnitModifyParams {
+	o.SetRestoreToKeepSnapshots(restoreToKeepSnapshots)
+	return o
+}
+
+// SetRestoreToKeepSnapshots adds the restoreToKeepSnapshots to the storage unit modify params
+func (o *StorageUnitModifyParams) SetRestoreToKeepSnapshots(restoreToKeepSnapshots *bool) {
+	o.RestoreToKeepSnapshots = restoreToKeepSnapshots
 }
 
 // WithRestoreToSnapshotName adds the restoreToSnapshotName to the storage unit modify params
@@ -281,23 +290,6 @@ func (o *StorageUnitModifyParams) WriteToRequest(r runtime.ClientRequest, reg st
 		}
 	}
 
-	if o.PreserveLunIds != nil {
-
-		// query param preserve_lun_ids
-		var qrPreserveLunIds bool
-
-		if o.PreserveLunIds != nil {
-			qrPreserveLunIds = *o.PreserveLunIds
-		}
-		qPreserveLunIds := swag.FormatBool(qrPreserveLunIds)
-		if qPreserveLunIds != "" {
-
-			if err := r.SetQueryParam("preserve_lun_ids", qPreserveLunIds); err != nil {
-				return err
-			}
-		}
-	}
-
 	if o.RestoreToByteCount != nil {
 
 		// query param restore_to.byte_count
@@ -310,6 +302,23 @@ func (o *StorageUnitModifyParams) WriteToRequest(r runtime.ClientRequest, reg st
 		if qRestoreToByteCount != "" {
 
 			if err := r.SetQueryParam("restore_to.byte_count", qRestoreToByteCount); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RestoreToKeepSnapshots != nil {
+
+		// query param restore_to.keep_snapshots
+		var qrRestoreToKeepSnapshots bool
+
+		if o.RestoreToKeepSnapshots != nil {
+			qrRestoreToKeepSnapshots = *o.RestoreToKeepSnapshots
+		}
+		qRestoreToKeepSnapshots := swag.FormatBool(qrRestoreToKeepSnapshots)
+		if qRestoreToKeepSnapshots != "" {
+
+			if err := r.SetQueryParam("restore_to.keep_snapshots", qRestoreToKeepSnapshots); err != nil {
 				return err
 			}
 		}

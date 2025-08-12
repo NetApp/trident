@@ -35,9 +35,9 @@ type SecurityAuditLog struct {
 	// Read Only: true
 	CommandID *string `json:"command_id,omitempty"`
 
-	// Internal index for accessing records with same time/node. This is a 64 bit unsigned value.
+	// Internal index for accessing records with the same time and node. This is a 64-bit unsigned value that is used to order the audit log messages before they are displayed. If multiple entries for the same node and timestamp occur simultaneously, the index assigns an order to ensure logical consistency.
 	// Read Only: true
-	Index *int64 `json:"index,omitempty"`
+	Index *uint64 `json:"index,omitempty"`
 
 	// The request.
 	// Read Only: true
@@ -53,6 +53,10 @@ type SecurityAuditLog struct {
 
 	// node
 	Node *SecurityAuditLogInlineNode `json:"node,omitempty"`
+
+	// Role of the remote user.
+	// Read Only: true
+	Role *string `json:"role,omitempty"`
 
 	// Set to "svm" when the request is on a data SVM; otherwise set to "cluster".
 	// Enum: ["svm","cluster"]
@@ -457,6 +461,10 @@ func (m *SecurityAuditLog) ContextValidate(ctx context.Context, formats strfmt.R
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateRole(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSessionID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -560,6 +568,15 @@ func (m *SecurityAuditLog) contextValidateNode(ctx context.Context, formats strf
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SecurityAuditLog) contextValidateRole(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "role", "body", m.Role); err != nil {
+		return err
 	}
 
 	return nil

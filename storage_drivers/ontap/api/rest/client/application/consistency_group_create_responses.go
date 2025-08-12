@@ -226,7 +226,9 @@ func NewConsistencyGroupCreateDefault(code int) *ConsistencyGroupCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 5374127 | The specified LUN name is invalid. |
+| 2621707 | No SVM was specified. Either `svm.name` or `svm.uuid` must be supplied.<personalities supports=unified,asar2> |
+| 5374127 | The specified LUN name is invalid.</personalities> |
+| 5376461 | The specified name is invalid because it does not match the format requirements. |
 | 5440501 | The specified storage unit size is insufficient. |
 | 5440509 | No suitable storage can be found for the specified requirements. |
 | 53411842 | Consistency group does not exist. |
@@ -235,19 +237,19 @@ func NewConsistencyGroupCreateDefault(code int) *ConsistencyGroupCreateDefault {
 | 53411845 | The specified UUID and name refer to different consistency groups. |
 | 53411846 | Either name or UUID must be provided. |
 | 53411853 | Fields provided in the request conflict with each other. |
-| 53411856 | Field provided is only supported when provisioning new objects. |
-| 53411857 | LUNs that are not members of the application are not supported by this API. LUNs can be added to an application by adding the volume containing the LUNs to the application. |
+| 53411856 | The provided field is only supported when provisioning new objects.<personalities supports=asar2> |
+| 53411857 | LUNs that are not members of the application are not supported by this API. LUNs can be added to an application by adding the volume containing the LUNs to the application.</personalities> |
 | 53411860 | An object with the same identifier in the same scope exists. |
-| 53411861 | Volume specified does not exist in provided volume array. |
+| 53411861 | The specified volume does not exist in provided volume array. |
 | 53411862 | Modifying existing igroups is not supported using this API. |
 | 53411864 | Request content insufficient to add an existing volume to an application. |
-| 53411865 | Volumes contained in one consistency group can not be added to a different consistency group. |
-| 53411866 | LUNs are not supported on FlexGroups volumes. |
-| 53411867 | LUN name is too long after appending a unique suffix. |
-| 53411869 | Volume name is too long after appending a unique suffix. |
+| 53411865 | Volumes contained in one consistency group cannot be added to a different consistency group.<personalities supports=unified,asar2> |
+| 53411866 | LUNs are not supported on FlexGroup volumes. |
+| 53411867 | LUN name is too long after appending a unique suffix.</personalities> |
+| 53411869 | Volume name is too long after appending a unique suffix.<personalities supports=unified,asar2> |
 | 53411870 | When using the \"round_robin\" layout, the volume count must not be greater than the LUN count. |
 | 53411959 | Volumes with snapshot locking enabled cannot be added to a consistency group. |
-| 53412040 | Splitting a non-snaplock clone from a Snaplock consistency group during clone creation is not supported. |
+| 53412040 | Splitting a non-SnapLock clone from a Snaplock consistency group during clone creation is not supported.</personalities> |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ConsistencyGroupCreateDefault struct {

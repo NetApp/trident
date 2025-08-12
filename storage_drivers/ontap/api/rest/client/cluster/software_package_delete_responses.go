@@ -59,6 +59,7 @@ SoftwarePackageDeleteOK describes a response with status code 200, with default 
 OK
 */
 type SoftwarePackageDeleteOK struct {
+	Payload *models.SoftwarePackageJobLinkResponse
 }
 
 // IsSuccess returns true when this software package delete o k response has a 2xx status code
@@ -92,14 +93,27 @@ func (o *SoftwarePackageDeleteOK) Code() int {
 }
 
 func (o *SoftwarePackageDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /cluster/software/packages/{version}][%d] softwarePackageDeleteOK", 200)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/software/packages/{version}][%d] softwarePackageDeleteOK %s", 200, payload)
 }
 
 func (o *SoftwarePackageDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /cluster/software/packages/{version}][%d] softwarePackageDeleteOK", 200)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/software/packages/{version}][%d] softwarePackageDeleteOK %s", 200, payload)
+}
+
+func (o *SoftwarePackageDeleteOK) GetPayload() *models.SoftwarePackageJobLinkResponse {
+	return o.Payload
 }
 
 func (o *SoftwarePackageDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.SoftwarePackageJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }
@@ -115,6 +129,7 @@ SoftwarePackageDeleteAccepted describes a response with status code 202, with de
 Accepted
 */
 type SoftwarePackageDeleteAccepted struct {
+	Payload *models.SoftwarePackageJobLinkResponse
 }
 
 // IsSuccess returns true when this software package delete accepted response has a 2xx status code
@@ -148,14 +163,27 @@ func (o *SoftwarePackageDeleteAccepted) Code() int {
 }
 
 func (o *SoftwarePackageDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /cluster/software/packages/{version}][%d] softwarePackageDeleteAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/software/packages/{version}][%d] softwarePackageDeleteAccepted %s", 202, payload)
 }
 
 func (o *SoftwarePackageDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /cluster/software/packages/{version}][%d] softwarePackageDeleteAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /cluster/software/packages/{version}][%d] softwarePackageDeleteAccepted %s", 202, payload)
+}
+
+func (o *SoftwarePackageDeleteAccepted) GetPayload() *models.SoftwarePackageJobLinkResponse {
+	return o.Payload
 }
 
 func (o *SoftwarePackageDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.SoftwarePackageJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }
@@ -183,6 +211,7 @@ func NewSoftwarePackageDeleteDefault(code int) *SoftwarePackageDeleteDefault {
 | 10551346 | A validation is in progress, retry command after it is completed. |
 | 10551367 | The repository is busy, retry the operation later. |
 | 10551388 | The package delete operation timed out. |
+| 10551892 | Package delete failed due to an unhealthy node. Restore the node to a healthy state, then retry the operation. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SoftwarePackageDeleteDefault struct {

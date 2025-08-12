@@ -110,6 +110,12 @@ type FpolicyEngineCollectionGetParams struct {
 	*/
 	KeepAliveInterval *string
 
+	/* MaxConnectionRetries.
+
+	   Filter by max_connection_retries
+	*/
+	MaxConnectionRetries *int64
+
 	/* MaxRecords.
 
 	   Limit the number of records returned.
@@ -203,6 +209,12 @@ type FpolicyEngineCollectionGetParams struct {
 	   Filter by server_progress_timeout
 	*/
 	ServerProgressTimeout *string
+
+	/* SessionTimeout.
+
+	   Filter by session_timeout
+	*/
+	SessionTimeout *string
 
 	/* SslOption.
 
@@ -383,6 +395,17 @@ func (o *FpolicyEngineCollectionGetParams) SetKeepAliveInterval(keepAliveInterva
 	o.KeepAliveInterval = keepAliveInterval
 }
 
+// WithMaxConnectionRetries adds the maxConnectionRetries to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) WithMaxConnectionRetries(maxConnectionRetries *int64) *FpolicyEngineCollectionGetParams {
+	o.SetMaxConnectionRetries(maxConnectionRetries)
+	return o
+}
+
+// SetMaxConnectionRetries adds the maxConnectionRetries to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) SetMaxConnectionRetries(maxConnectionRetries *int64) {
+	o.MaxConnectionRetries = maxConnectionRetries
+}
+
 // WithMaxRecords adds the maxRecords to the fpolicy engine collection get params
 func (o *FpolicyEngineCollectionGetParams) WithMaxRecords(maxRecords *int64) *FpolicyEngineCollectionGetParams {
 	o.SetMaxRecords(maxRecords)
@@ -546,6 +569,17 @@ func (o *FpolicyEngineCollectionGetParams) WithServerProgressTimeout(serverProgr
 // SetServerProgressTimeout adds the serverProgressTimeout to the fpolicy engine collection get params
 func (o *FpolicyEngineCollectionGetParams) SetServerProgressTimeout(serverProgressTimeout *string) {
 	o.ServerProgressTimeout = serverProgressTimeout
+}
+
+// WithSessionTimeout adds the sessionTimeout to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) WithSessionTimeout(sessionTimeout *string) *FpolicyEngineCollectionGetParams {
+	o.SetSessionTimeout(sessionTimeout)
+	return o
+}
+
+// SetSessionTimeout adds the sessionTimeout to the fpolicy engine collection get params
+func (o *FpolicyEngineCollectionGetParams) SetSessionTimeout(sessionTimeout *string) {
+	o.SessionTimeout = sessionTimeout
 }
 
 // WithSslOption adds the sslOption to the fpolicy engine collection get params
@@ -725,6 +759,23 @@ func (o *FpolicyEngineCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qKeepAliveInterval != "" {
 
 			if err := r.SetQueryParam("keep_alive_interval", qKeepAliveInterval); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxConnectionRetries != nil {
+
+		// query param max_connection_retries
+		var qrMaxConnectionRetries int64
+
+		if o.MaxConnectionRetries != nil {
+			qrMaxConnectionRetries = *o.MaxConnectionRetries
+		}
+		qMaxConnectionRetries := swag.FormatInt64(qrMaxConnectionRetries)
+		if qMaxConnectionRetries != "" {
+
+			if err := r.SetQueryParam("max_connection_retries", qMaxConnectionRetries); err != nil {
 				return err
 			}
 		}
@@ -974,6 +1025,23 @@ func (o *FpolicyEngineCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qServerProgressTimeout != "" {
 
 			if err := r.SetQueryParam("server_progress_timeout", qServerProgressTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SessionTimeout != nil {
+
+		// query param session_timeout
+		var qrSessionTimeout string
+
+		if o.SessionTimeout != nil {
+			qrSessionTimeout = *o.SessionTimeout
+		}
+		qSessionTimeout := qrSessionTimeout
+		if qSessionTimeout != "" {
+
+			if err := r.SetQueryParam("session_timeout", qSessionTimeout); err != nil {
 				return err
 			}
 		}

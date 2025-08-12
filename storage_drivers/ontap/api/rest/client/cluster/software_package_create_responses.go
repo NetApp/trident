@@ -237,6 +237,8 @@ func NewSoftwarePackageCreateDefault(code int) *SoftwarePackageCreateDefault {
 | 10551496 | Firmware file already exists. |
 | 10551797 | Internal error. Failed to check if file upload is enabled. Contact technical support for assistance. |
 | 10551859 | Failed to set primary and secondary nodes to store new image. |
+| 10551885 | Package download failed due to invalid url. |
+| 10551892 | Package download failed due to an unhealthy node. Restore the node to a healthy state, then retry the operation. |
 | 39387137 | Invalid URL syntax was provided. Retry with a valid URL. |
 | 39387138 | Unsupported URL scheme provided. Retry with one of FILE://, FTP://, or HTTPS://. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.

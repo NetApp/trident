@@ -231,13 +231,18 @@ type ShelfModifyCollectionBody struct {
 	// module type
 	// Example: iom6
 	// Read Only: true
-	// Enum: ["unknown","iom6","iom6e","iom12","iom12b","iom12c","iom12e","iom12f","iom12g","nsm100","nsm8e","nsm16e","psm3e","nsm100b"]
+	// Enum: ["unknown","iom6","iom6e","iom12","iom12b","iom12c","iom12e","iom12f","iom12g","nsm100","nsm8e","nsm16e","psm3e","nsm100b","nsm140"]
 	ModuleType *string `json:"module_type,omitempty"`
 
 	// name
 	// Example: 1.1
 	// Read Only: true
 	Name *string `json:"name,omitempty"`
+
+	// Raw capacity of drives in shelf in 4k blocks
+	// Example: 5157308772
+	// Read Only: true
+	RawCapacity *int64 `json:"raw_capacity,omitempty"`
 
 	// serial number
 	// Example: SHFMS1514000895
@@ -548,7 +553,7 @@ var shelfModifyCollectionBodyTypeModuleTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["unknown","iom6","iom6e","iom12","iom12b","iom12c","iom12e","iom12f","iom12g","nsm100","nsm8e","nsm16e","psm3e","nsm100b"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["unknown","iom6","iom6e","iom12","iom12b","iom12c","iom12e","iom12f","iom12g","nsm100","nsm8e","nsm16e","psm3e","nsm100b","nsm140"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -697,6 +702,16 @@ const (
 	// END DEBUGGING
 	// ShelfModifyCollectionBodyModuleTypeNsm100b captures enum value "nsm100b"
 	ShelfModifyCollectionBodyModuleTypeNsm100b string = "nsm100b"
+
+	// BEGIN DEBUGGING
+	// ShelfModifyCollectionBody
+	// ShelfModifyCollectionBody
+	// module_type
+	// ModuleType
+	// nsm140
+	// END DEBUGGING
+	// ShelfModifyCollectionBodyModuleTypeNsm140 captures enum value "nsm140"
+	ShelfModifyCollectionBodyModuleTypeNsm140 string = "nsm140"
 )
 
 // prop value enum
@@ -1131,6 +1146,10 @@ func (o *ShelfModifyCollectionBody) ContextValidate(ctx context.Context, formats
 		res = append(res, err)
 	}
 
+	if err := o.contextValidateRawCapacity(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.contextValidateSerialNumber(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1281,6 +1300,15 @@ func (o *ShelfModifyCollectionBody) contextValidateModuleType(ctx context.Contex
 func (o *ShelfModifyCollectionBody) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "info"+"."+"name", "body", o.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *ShelfModifyCollectionBody) contextValidateRawCapacity(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"raw_capacity", "body", o.RawCapacity); err != nil {
 		return err
 	}
 
@@ -3905,6 +3933,10 @@ type ShelfInlinePortsInlineArrayItem struct {
 
 	// remote
 	Remote *models.ShelfInlinePortsInlineArrayItemInlineRemote `json:"remote,omitempty"`
+
+	// speed
+	// Example: 100
+	Speed *int64 `json:"speed,omitempty"`
 
 	// state
 	// Example: connected

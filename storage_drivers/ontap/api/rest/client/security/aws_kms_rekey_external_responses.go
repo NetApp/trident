@@ -59,6 +59,7 @@ AwsKmsRekeyExternalCreated describes a response with status code 201, with defau
 Created
 */
 type AwsKmsRekeyExternalCreated struct {
+	Payload *models.AwsKmsKeyJobLinkResponse
 }
 
 // IsSuccess returns true when this aws kms rekey external created response has a 2xx status code
@@ -92,14 +93,27 @@ func (o *AwsKmsRekeyExternalCreated) Code() int {
 }
 
 func (o *AwsKmsRekeyExternalCreated) Error() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-external][%d] awsKmsRekeyExternalCreated", 201)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-external][%d] awsKmsRekeyExternalCreated %s", 201, payload)
 }
 
 func (o *AwsKmsRekeyExternalCreated) String() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-external][%d] awsKmsRekeyExternalCreated", 201)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-external][%d] awsKmsRekeyExternalCreated %s", 201, payload)
+}
+
+func (o *AwsKmsRekeyExternalCreated) GetPayload() *models.AwsKmsKeyJobLinkResponse {
+	return o.Payload
 }
 
 func (o *AwsKmsRekeyExternalCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.AwsKmsKeyJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }
@@ -115,6 +129,7 @@ AwsKmsRekeyExternalAccepted describes a response with status code 202, with defa
 Accepted
 */
 type AwsKmsRekeyExternalAccepted struct {
+	Payload *models.AwsKmsKeyJobLinkResponse
 }
 
 // IsSuccess returns true when this aws kms rekey external accepted response has a 2xx status code
@@ -148,14 +163,27 @@ func (o *AwsKmsRekeyExternalAccepted) Code() int {
 }
 
 func (o *AwsKmsRekeyExternalAccepted) Error() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-external][%d] awsKmsRekeyExternalAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-external][%d] awsKmsRekeyExternalAccepted %s", 202, payload)
 }
 
 func (o *AwsKmsRekeyExternalAccepted) String() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-external][%d] awsKmsRekeyExternalAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-external][%d] awsKmsRekeyExternalAccepted %s", 202, payload)
+}
+
+func (o *AwsKmsRekeyExternalAccepted) GetPayload() *models.AwsKmsKeyJobLinkResponse {
+	return o.Payload
 }
 
 func (o *AwsKmsRekeyExternalAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.AwsKmsKeyJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }

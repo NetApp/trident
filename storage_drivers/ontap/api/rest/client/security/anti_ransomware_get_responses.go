@@ -120,9 +120,17 @@ func NewAntiRansomwareGetDefault(code int) *AntiRansomwareGetDefault {
 }
 
 /*
-AntiRansomwareGetDefault describes a response with status code -1, with default header values.
+	AntiRansomwareGetDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 917775 | Operation is not supported on offline volumes. |
+| 203161606 | Failed to check the "anti-ransomware-state" of the volume. |
+| 203162108 | Operation is not supported on volumes that contain LUNs or namespaces. |
+| 203162109 | Operation is not supported on an anti-ransomware disable-in-progress volume. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AntiRansomwareGetDefault struct {
 	_statusCode int

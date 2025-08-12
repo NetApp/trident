@@ -304,6 +304,13 @@ type NetworkIPInterfacesGetParams struct {
 	*/
 	RecommendLocationBroadcastDomainUUID *string
 
+	/* RecommendLocationPortRdmaProtocol.
+
+	   The RDMA protocol supported on locations for which to recommend IP interfaces.
+
+	*/
+	RecommendLocationPortRdmaProtocol *string
+
 	/* RecommendServicePolicyName.
 
 	   The name of an IP service policy for which to recommend IP interfaces.
@@ -955,6 +962,17 @@ func (o *NetworkIPInterfacesGetParams) WithRecommendLocationBroadcastDomainUUID(
 // SetRecommendLocationBroadcastDomainUUID adds the recommendLocationBroadcastDomainUuid to the network ip interfaces get params
 func (o *NetworkIPInterfacesGetParams) SetRecommendLocationBroadcastDomainUUID(recommendLocationBroadcastDomainUUID *string) {
 	o.RecommendLocationBroadcastDomainUUID = recommendLocationBroadcastDomainUUID
+}
+
+// WithRecommendLocationPortRdmaProtocol adds the recommendLocationPortRdmaProtocol to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithRecommendLocationPortRdmaProtocol(recommendLocationPortRdmaProtocol *string) *NetworkIPInterfacesGetParams {
+	o.SetRecommendLocationPortRdmaProtocol(recommendLocationPortRdmaProtocol)
+	return o
+}
+
+// SetRecommendLocationPortRdmaProtocol adds the recommendLocationPortRdmaProtocol to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) SetRecommendLocationPortRdmaProtocol(recommendLocationPortRdmaProtocol *string) {
+	o.RecommendLocationPortRdmaProtocol = recommendLocationPortRdmaProtocol
 }
 
 // WithRecommendServicePolicyName adds the recommendServicePolicyName to the network ip interfaces get params
@@ -1875,6 +1893,23 @@ func (o *NetworkIPInterfacesGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qRecommendLocationBroadcastDomainUUID != "" {
 
 			if err := r.SetQueryParam("recommend.location.broadcast_domain.uuid", qRecommendLocationBroadcastDomainUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RecommendLocationPortRdmaProtocol != nil {
+
+		// query param recommend.location.port.rdma_protocol
+		var qrRecommendLocationPortRdmaProtocol string
+
+		if o.RecommendLocationPortRdmaProtocol != nil {
+			qrRecommendLocationPortRdmaProtocol = *o.RecommendLocationPortRdmaProtocol
+		}
+		qRecommendLocationPortRdmaProtocol := qrRecommendLocationPortRdmaProtocol
+		if qRecommendLocationPortRdmaProtocol != "" {
+
+			if err := r.SetQueryParam("recommend.location.port.rdma_protocol", qRecommendLocationPortRdmaProtocol); err != nil {
 				return err
 			}
 		}

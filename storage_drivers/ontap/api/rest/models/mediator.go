@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -19,6 +20,12 @@ import (
 // swagger:model mediator
 type Mediator struct {
 
+	// BlueXP account token. This field is only applicable to the ONTAP cloud mediator.
+	BluexpAccountToken *string `json:"bluexp_account_token,omitempty"`
+
+	// BlueXP organization ID. This field is only applicable to the ONTAP cloud mediator.
+	BluexpOrgID *string `json:"bluexp_org_id,omitempty"`
+
 	// CA certificate for ONTAP Mediator. This is optional if the certificate is already installed.
 	CaCertificate *string `json:"ca_certificate,omitempty"`
 
@@ -29,6 +36,11 @@ type Mediator struct {
 	// Example: 10.10.10.7
 	IPAddress *string `json:"ip_address,omitempty"`
 
+	// Indicates the mediator connectivity status of the local cluster. Possible values are connected, unreachable, unusable and down-high-latency. This field is only applicable to the mediators in SnapMirror active sync configuration.
+	// Example: connected
+	// Read Only: true
+	LocalMediatorConnectivity *string `json:"local_mediator_connectivity,omitempty"`
+
 	// The password used to connect to the REST server on the mediator.
 	// Example: mypassword
 	// Format: password
@@ -37,7 +49,7 @@ type Mediator struct {
 	// peer cluster
 	PeerCluster *MediatorInlinePeerCluster `json:"peer_cluster,omitempty"`
 
-	// Indicates the mediator connectivity status of the peer cluster. Possible values are connected, unreachable, unknown.
+	// Indicates the mediator connectivity status of the peer cluster. Possible values are connected, unreachable, unknown and down-high-latency.
 	// Example: connected
 	// Read Only: true
 	PeerMediatorConnectivity *string `json:"peer_mediator_connectivity,omitempty"`
@@ -50,6 +62,28 @@ type Mediator struct {
 	// Example: true
 	// Read Only: true
 	Reachable *bool `json:"reachable,omitempty"`
+
+	// Client ID of the BlueXP service account. This field is only applicable to the ONTAP cloud mediator.
+	ServiceAccountClientID *string `json:"service_account_client_id,omitempty"`
+
+	// Client secret token of the BlueXP service account. This field is only applicable to the ONTAP cloud mediator.
+	ServiceAccountClientSecret *string `json:"service_account_client_secret,omitempty"`
+
+	// Indicates if strict validation of certificates is performed while making REST API calls to the mediator. This field is only applicable to the ONTAP Cloud Mediator.
+	// Example: true
+	StrictCertValidation *bool `json:"strict_cert_validation,omitempty"`
+
+	// Mediator type. This field is only applicable to the mediators in SnapMirror active sync configuration.
+	// Enum: ["cloud","on_prem"]
+	Type *string `json:"type,omitempty"`
+
+	// Indicates if the local cluster should use an http-proxy server while making REST API calls to the mediator. This field is only applicable to the ONTAP cloud mediator.
+	// Example: true
+	UseHTTPProxyLocal *bool `json:"use_http_proxy_local,omitempty"`
+
+	// Indicates if the remote cluster should use an http-proxy server while making REST API calls to the mediator. This field is only applicable to the ONTAP cloud mediator.
+	// Example: true
+	UseHTTPProxyRemote *bool `json:"use_http_proxy_remote,omitempty"`
 
 	// The username used to connect to the REST server on the mediator.
 	// Example: myusername
@@ -73,6 +107,10 @@ func (m *Mediator) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePeerCluster(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -128,11 +166,71 @@ func (m *Mediator) validatePeerCluster(formats strfmt.Registry) error {
 	return nil
 }
 
+var mediatorTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["cloud","on_prem"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		mediatorTypeTypePropEnum = append(mediatorTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// mediator
+	// Mediator
+	// type
+	// Type
+	// cloud
+	// END DEBUGGING
+	// MediatorTypeCloud captures enum value "cloud"
+	MediatorTypeCloud string = "cloud"
+
+	// BEGIN DEBUGGING
+	// mediator
+	// Mediator
+	// type
+	// Type
+	// on_prem
+	// END DEBUGGING
+	// MediatorTypeOnPrem captures enum value "on_prem"
+	MediatorTypeOnPrem string = "on_prem"
+)
+
+// prop value enum
+func (m *Mediator) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, mediatorTypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Mediator) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this mediator based on the context it is used
 func (m *Mediator) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDrGroup(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLocalMediatorConnectivity(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -167,6 +265,15 @@ func (m *Mediator) contextValidateDrGroup(ctx context.Context, formats strfmt.Re
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Mediator) contextValidateLocalMediatorConnectivity(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "local_mediator_connectivity", "body", m.LocalMediatorConnectivity); err != nil {
+		return err
 	}
 
 	return nil

@@ -35,6 +35,9 @@ type ClusterSpace struct {
 
 	// efficiency without snapshots flexclones
 	EfficiencyWithoutSnapshotsFlexclones *ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones `json:"efficiency_without_snapshots_flexclones,omitempty"`
+
+	// metric
+	Metric *ClusterSpaceInlineMetric `json:"metric,omitempty"`
 }
 
 // Validate validates this cluster space
@@ -58,6 +61,10 @@ func (m *ClusterSpace) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateEfficiencyWithoutSnapshotsFlexclones(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMetric(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -152,6 +159,23 @@ func (m *ClusterSpace) validateEfficiencyWithoutSnapshotsFlexclones(formats strf
 	return nil
 }
 
+func (m *ClusterSpace) validateMetric(formats strfmt.Registry) error {
+	if swag.IsZero(m.Metric) { // not required
+		return nil
+	}
+
+	if m.Metric != nil {
+		if err := m.Metric.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this cluster space based on the context it is used
 func (m *ClusterSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -173,6 +197,10 @@ func (m *ClusterSpace) ContextValidate(ctx context.Context, formats strfmt.Regis
 	}
 
 	if err := m.contextValidateEfficiencyWithoutSnapshotsFlexclones(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMetric(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -252,6 +280,20 @@ func (m *ClusterSpace) contextValidateEfficiencyWithoutSnapshotsFlexclones(ctx c
 	return nil
 }
 
+func (m *ClusterSpace) contextValidateMetric(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Metric != nil {
+		if err := m.Metric.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *ClusterSpace) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -280,37 +322,25 @@ type ClusterSpaceInlineBlockStorage struct {
 	Available *int64 `json:"available,omitempty"`
 
 	// Total delayed free space across the cluster.
-	// ### Platform Specifics
-	// * **Unified ONTAP**: This property is not available as part of `cluster_space.block_storage` object in the REST API and is not reported for GET requests.
-	// * **ASA r2**: Available for GET requests.
-	//
 	// Read Only: true
 	DelayedFrees *int64 `json:"delayed_frees,omitempty"`
 
 	// The cluster space full threshold percentage that triggers an EMS error.
-	// ### Platform Specifics
-	// * **Unified ONTAP**: This property is not available as part of `cluster_space.block_storage` object in the REST API and is not reported for GET requests.
-	// * **ASA r2**: Available for GET, POST, and PATCH requests.
-	//
 	FullThresholdPercent *int64 `json:"full_threshold_percent,omitempty"`
 
 	// Inactive data across the cluster.
-	// ### Platform Specifics
-	// * **Unified ONTAP**: Available for GET requests.
-	// * **ASA r2**: This property is not applicable, it is not available in the REST API and is not reported for GET requests.
-	//
 	// Read Only: true
 	InactiveData *int64 `json:"inactive_data,omitempty"`
+
+	// The total space consumed by system logs and cores in the cluster.
+	// Read Only: true
+	LogAndRecoveryMetadata *int64 `json:"log_and_recovery_metadata,omitempty"`
 
 	// Configuration information based on type of media. For example, SSD media type information includes the sum of all the SSD storage across the cluster.
 	// Read Only: true
 	Medias []*ClusterSpaceBlockStorageMediasItems0 `json:"medias,omitempty"`
 
 	// The cluster space nearly full threshold percentage that triggers an EMS warning.
-	// ### Platform Specifics
-	// * **Unified ONTAP**: This property is not available as part of `cluster_space.block_storage` object in the REST API and is not reported for GET requests.
-	// * **ASA r2**: Available for GET, POST, and PATCH requests.
-	//
 	NearlyFullThresholdPercent *int64 `json:"nearly_full_threshold_percent,omitempty"`
 
 	// Total physical used space across the cluster.
@@ -318,10 +348,6 @@ type ClusterSpaceInlineBlockStorage struct {
 	PhysicalUsed *int64 `json:"physical_used,omitempty"`
 
 	// The Physical space used percentage across the cluster.
-	// ### Platform Specifics
-	// * **Unified ONTAP**: This property is not available as part of the `cluster_space.block_storage` object in the REST API and is not reported for GET requests.
-	// * **ASA r2**: Available for GET requests.
-	//
 	// Read Only: true
 	PhysicalUsedPercent *int64 `json:"physical_used_percent,omitempty"`
 
@@ -329,27 +355,15 @@ type ClusterSpaceInlineBlockStorage struct {
 	// Read Only: true
 	Size *int64 `json:"size,omitempty"`
 
-	// Total metadata used in the cluster.
-	// ### Platform Specifics
-	// * **Unified ONTAP**: This property is not available as part of `cluster_space.block_storage` object in the REST API and is not reported for GET requests.
-	// * **ASA r2**: Available for GET requests.
-	//
+	// The total space consumed by metadata in the cluster, which includes log and recovery metadata, delayed frees along with filesystem metadata and performance metadata.
 	// Read Only: true
 	TotalMetadataUsed *int64 `json:"total_metadata_used,omitempty"`
 
 	// Total unusable space across the cluster due to some aggregate being unavailable.
-	// ### Platform Specifics
-	// * **Unified ONTAP**: This property is not available as part of `cluster_space.block_storage` object in the REST API and is not reported for GET requests.
-	// * **ASA r2**: Available for GET requests.
-	//
 	// Read Only: true
 	UnusableSpace *int64 `json:"unusable_space,omitempty"`
 
 	// Used space (includes volume reserves) across the cluster.
-	// ### Platform Specifics
-	// * **Unified ONTAP**: Available for GET requests.
-	// * **ASA r2**: This property is not applicable, it is not available in the REST API and is not reported for GET requests.
-	//
 	// Read Only: true
 	Used *int64 `json:"used,omitempty"`
 }
@@ -408,6 +422,10 @@ func (m *ClusterSpaceInlineBlockStorage) ContextValidate(ctx context.Context, fo
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateLogAndRecoveryMetadata(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateMedias(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -463,6 +481,15 @@ func (m *ClusterSpaceInlineBlockStorage) contextValidateDelayedFrees(ctx context
 func (m *ClusterSpaceInlineBlockStorage) contextValidateInactiveData(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "block_storage"+"."+"inactive_data", "body", m.InactiveData); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineBlockStorage) contextValidateLogAndRecoveryMetadata(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "block_storage"+"."+"log_and_recovery_metadata", "body", m.LogAndRecoveryMetadata); err != nil {
 		return err
 	}
 
@@ -591,10 +618,6 @@ type ClusterSpaceBlockStorageMediasItems0 struct {
 	Type *string `json:"type,omitempty"`
 
 	// Used space across the cluster based on media type.
-	// ### Platform Specifics
-	// * **Unified ONTAP**: Available for GET requests.
-	// * **ASA r2**: This property is not applicable, it is not available in the REST API and is not reported for GET requests.
-	//
 	Used *int64 `json:"used,omitempty"`
 }
 
@@ -844,9 +867,6 @@ func (m *ClusterSpaceBlockStorageMediasItems0) UnmarshalBinary(b []byte) error {
 }
 
 // ClusterSpaceBlockStorageMediasItems0Efficiency Storage efficiency.
-// ### Platform Specifics
-// * **Unified ONTAP**: Available for GET requests.
-// * **ASA r2**: This property is not applicable, it is not available in the REST API and is not reported for GET requests.
 //
 // swagger:model ClusterSpaceBlockStorageMediasItems0Efficiency
 type ClusterSpaceBlockStorageMediasItems0Efficiency struct {
@@ -1027,9 +1047,6 @@ func (m *ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshots) Unmarsh
 }
 
 // ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclones Storage efficiency that does not include the savings provided by snapshots and FlexClone volumes.
-// ### Platform Specifics
-// * **Unified ONTAP**: Available for GET requests.
-// * **ASA r2**: This property is not applicable, it is not available in the REST API and is not reported for GET requests.
 //
 // swagger:model ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclones
 type ClusterSpaceBlockStorageMediasItems0EfficiencyWithoutSnapshotsFlexclones struct {
@@ -1162,9 +1179,6 @@ func (m *ClusterSpaceInlineCloudStorage) UnmarshalBinary(b []byte) error {
 }
 
 // ClusterSpaceInlineEfficiency Storage efficiency.
-// ### Platform Specifics
-// * **Unified ONTAP**: Available for GET requests.
-// * **ASA r2**: This property is not applicable, it is not available in the REST API and is not reported for GET requests.
 //
 // swagger:model cluster_space_inline_efficiency
 type ClusterSpaceInlineEfficiency struct {
@@ -1345,9 +1359,6 @@ func (m *ClusterSpaceInlineEfficiencyWithoutSnapshots) UnmarshalBinary(b []byte)
 }
 
 // ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones Storage efficiency that does not include the savings provided by snapshots and FlexClone volumes.
-// ### Platform Specifics
-// * **Unified ONTAP**: Available for GET requests.
-// * **ASA r2**: This property is not applicable, it is not available in the REST API and is not reported for GET requests.
 //
 // swagger:model cluster_space_inline_efficiency_without_snapshots_flexclones
 type ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones struct {
@@ -1430,6 +1441,546 @@ func (m *ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones) MarshalBinary()
 // UnmarshalBinary interface implementation
 func (m *ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones) UnmarshalBinary(b []byte) error {
 	var res ClusterSpaceInlineEfficiencyWithoutSnapshotsFlexclones
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterSpaceInlineMetric Cluster capacity numbers, such as total size, used size, and available size.
+//
+// swagger:model cluster_space_inline_metric
+type ClusterSpaceInlineMetric struct {
+
+	// links
+	Links *ClusterSpaceInlineMetricInlineLinks `json:"_links,omitempty"`
+
+	// The total size available in the cluster, in bytes.
+	// Example: 4096
+	// Read Only: true
+	AvailableSize *int64 `json:"available_size,omitempty"`
+
+	// The duration over which this sample is calculated. The time durations are represented in the ISO-8601 standard format. Samples can be calculated over the following durations:
+	//
+	// Example: PT15S
+	// Read Only: true
+	// Enum: ["PT15S","PT4M","PT30M","PT2H","P1D","PT5M"]
+	Duration *string `json:"duration,omitempty"`
+
+	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_ delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
+	// Example: ok
+	// Read Only: true
+	// Enum: ["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]
+	Status *string `json:"status,omitempty"`
+
+	// The timestamp of the performance and capacity data.
+	// Example: 2017-01-25 11:20:13
+	// Read Only: true
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
+
+	// The total size of the cluster, in bytes.
+	// Example: 4096
+	// Read Only: true
+	TotalSize *int64 `json:"total_size,omitempty"`
+
+	// The total size used in the cluster, in bytes.
+	// Example: 4096
+	// Read Only: true
+	UsedSize *int64 `json:"used_size,omitempty"`
+}
+
+// Validate validates this cluster space inline metric
+func (m *ClusterSpaceInlineMetric) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDuration(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterSpaceInlineMetric) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var clusterSpaceInlineMetricTypeDurationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["PT15S","PT4M","PT30M","PT2H","P1D","PT5M"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterSpaceInlineMetricTypeDurationPropEnum = append(clusterSpaceInlineMetricTypeDurationPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cluster_space_inline_metric
+	// ClusterSpaceInlineMetric
+	// duration
+	// Duration
+	// PT15S
+	// END DEBUGGING
+	// ClusterSpaceInlineMetricDurationPT15S captures enum value "PT15S"
+	ClusterSpaceInlineMetricDurationPT15S string = "PT15S"
+
+	// BEGIN DEBUGGING
+	// cluster_space_inline_metric
+	// ClusterSpaceInlineMetric
+	// duration
+	// Duration
+	// PT4M
+	// END DEBUGGING
+	// ClusterSpaceInlineMetricDurationPT4M captures enum value "PT4M"
+	ClusterSpaceInlineMetricDurationPT4M string = "PT4M"
+
+	// BEGIN DEBUGGING
+	// cluster_space_inline_metric
+	// ClusterSpaceInlineMetric
+	// duration
+	// Duration
+	// PT30M
+	// END DEBUGGING
+	// ClusterSpaceInlineMetricDurationPT30M captures enum value "PT30M"
+	ClusterSpaceInlineMetricDurationPT30M string = "PT30M"
+
+	// BEGIN DEBUGGING
+	// cluster_space_inline_metric
+	// ClusterSpaceInlineMetric
+	// duration
+	// Duration
+	// PT2H
+	// END DEBUGGING
+	// ClusterSpaceInlineMetricDurationPT2H captures enum value "PT2H"
+	ClusterSpaceInlineMetricDurationPT2H string = "PT2H"
+
+	// BEGIN DEBUGGING
+	// cluster_space_inline_metric
+	// ClusterSpaceInlineMetric
+	// duration
+	// Duration
+	// P1D
+	// END DEBUGGING
+	// ClusterSpaceInlineMetricDurationP1D captures enum value "P1D"
+	ClusterSpaceInlineMetricDurationP1D string = "P1D"
+
+	// BEGIN DEBUGGING
+	// cluster_space_inline_metric
+	// ClusterSpaceInlineMetric
+	// duration
+	// Duration
+	// PT5M
+	// END DEBUGGING
+	// ClusterSpaceInlineMetricDurationPT5M captures enum value "PT5M"
+	ClusterSpaceInlineMetricDurationPT5M string = "PT5M"
+)
+
+// prop value enum
+func (m *ClusterSpaceInlineMetric) validateDurationEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterSpaceInlineMetricTypeDurationPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterSpaceInlineMetric) validateDuration(formats strfmt.Registry) error {
+	if swag.IsZero(m.Duration) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateDurationEnum("metric"+"."+"duration", "body", *m.Duration); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var clusterSpaceInlineMetricTypeStatusPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","error","partial_no_data","partial_no_uuid","partial_no_response","partial_other_error","negative_delta","backfilled_data","inconsistent_delta_time","inconsistent_old_data"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterSpaceInlineMetricTypeStatusPropEnum = append(clusterSpaceInlineMetricTypeStatusPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cluster_space_inline_metric
+	// ClusterSpaceInlineMetric
+	// status
+	// Status
+	// ok
+	// END DEBUGGING
+	// ClusterSpaceInlineMetricStatusOk captures enum value "ok"
+	ClusterSpaceInlineMetricStatusOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// cluster_space_inline_metric
+	// ClusterSpaceInlineMetric
+	// status
+	// Status
+	// error
+	// END DEBUGGING
+	// ClusterSpaceInlineMetricStatusError captures enum value "error"
+	ClusterSpaceInlineMetricStatusError string = "error"
+
+	// BEGIN DEBUGGING
+	// cluster_space_inline_metric
+	// ClusterSpaceInlineMetric
+	// status
+	// Status
+	// partial_no_data
+	// END DEBUGGING
+	// ClusterSpaceInlineMetricStatusPartialNoData captures enum value "partial_no_data"
+	ClusterSpaceInlineMetricStatusPartialNoData string = "partial_no_data"
+
+	// BEGIN DEBUGGING
+	// cluster_space_inline_metric
+	// ClusterSpaceInlineMetric
+	// status
+	// Status
+	// partial_no_uuid
+	// END DEBUGGING
+	// ClusterSpaceInlineMetricStatusPartialNoUUID captures enum value "partial_no_uuid"
+	ClusterSpaceInlineMetricStatusPartialNoUUID string = "partial_no_uuid"
+
+	// BEGIN DEBUGGING
+	// cluster_space_inline_metric
+	// ClusterSpaceInlineMetric
+	// status
+	// Status
+	// partial_no_response
+	// END DEBUGGING
+	// ClusterSpaceInlineMetricStatusPartialNoResponse captures enum value "partial_no_response"
+	ClusterSpaceInlineMetricStatusPartialNoResponse string = "partial_no_response"
+
+	// BEGIN DEBUGGING
+	// cluster_space_inline_metric
+	// ClusterSpaceInlineMetric
+	// status
+	// Status
+	// partial_other_error
+	// END DEBUGGING
+	// ClusterSpaceInlineMetricStatusPartialOtherError captures enum value "partial_other_error"
+	ClusterSpaceInlineMetricStatusPartialOtherError string = "partial_other_error"
+
+	// BEGIN DEBUGGING
+	// cluster_space_inline_metric
+	// ClusterSpaceInlineMetric
+	// status
+	// Status
+	// negative_delta
+	// END DEBUGGING
+	// ClusterSpaceInlineMetricStatusNegativeDelta captures enum value "negative_delta"
+	ClusterSpaceInlineMetricStatusNegativeDelta string = "negative_delta"
+
+	// BEGIN DEBUGGING
+	// cluster_space_inline_metric
+	// ClusterSpaceInlineMetric
+	// status
+	// Status
+	// backfilled_data
+	// END DEBUGGING
+	// ClusterSpaceInlineMetricStatusBackfilledData captures enum value "backfilled_data"
+	ClusterSpaceInlineMetricStatusBackfilledData string = "backfilled_data"
+
+	// BEGIN DEBUGGING
+	// cluster_space_inline_metric
+	// ClusterSpaceInlineMetric
+	// status
+	// Status
+	// inconsistent_delta_time
+	// END DEBUGGING
+	// ClusterSpaceInlineMetricStatusInconsistentDeltaTime captures enum value "inconsistent_delta_time"
+	ClusterSpaceInlineMetricStatusInconsistentDeltaTime string = "inconsistent_delta_time"
+
+	// BEGIN DEBUGGING
+	// cluster_space_inline_metric
+	// ClusterSpaceInlineMetric
+	// status
+	// Status
+	// inconsistent_old_data
+	// END DEBUGGING
+	// ClusterSpaceInlineMetricStatusInconsistentOldData captures enum value "inconsistent_old_data"
+	ClusterSpaceInlineMetricStatusInconsistentOldData string = "inconsistent_old_data"
+)
+
+// prop value enum
+func (m *ClusterSpaceInlineMetric) validateStatusEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterSpaceInlineMetricTypeStatusPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterSpaceInlineMetric) validateStatus(formats strfmt.Registry) error {
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStatusEnum("metric"+"."+"status", "body", *m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineMetric) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("metric"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster space inline metric based on the context it is used
+func (m *ClusterSpaceInlineMetric) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAvailableSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDuration(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTotalSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsedSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterSpaceInlineMetric) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineMetric) contextValidateAvailableSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"available_size", "body", m.AvailableSize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineMetric) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"duration", "body", m.Duration); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineMetric) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"status", "body", m.Status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineMetric) contextValidateTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"timestamp", "body", m.Timestamp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineMetric) contextValidateTotalSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"total_size", "body", m.TotalSize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpaceInlineMetric) contextValidateUsedSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "metric"+"."+"used_size", "body", m.UsedSize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterSpaceInlineMetric) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterSpaceInlineMetric) UnmarshalBinary(b []byte) error {
+	var res ClusterSpaceInlineMetric
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterSpaceInlineMetricInlineLinks cluster space inline metric inline links
+//
+// swagger:model cluster_space_inline_metric_inline__links
+type ClusterSpaceInlineMetricInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this cluster space inline metric inline links
+func (m *ClusterSpaceInlineMetricInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterSpaceInlineMetricInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this cluster space inline metric inline links based on the context it is used
+func (m *ClusterSpaceInlineMetricInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterSpaceInlineMetricInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("metric" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterSpaceInlineMetricInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterSpaceInlineMetricInlineLinks) UnmarshalBinary(b []byte) error {
+	var res ClusterSpaceInlineMetricInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

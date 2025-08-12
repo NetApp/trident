@@ -115,6 +115,7 @@ NetworkEthernetPortDeleteAccepted describes a response with status code 202, wit
 Accepted
 */
 type NetworkEthernetPortDeleteAccepted struct {
+	Payload *models.PortJobLinkResponse
 }
 
 // IsSuccess returns true when this network ethernet port delete accepted response has a 2xx status code
@@ -148,14 +149,27 @@ func (o *NetworkEthernetPortDeleteAccepted) Code() int {
 }
 
 func (o *NetworkEthernetPortDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /network/ethernet/ports/{uuid}][%d] networkEthernetPortDeleteAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /network/ethernet/ports/{uuid}][%d] networkEthernetPortDeleteAccepted %s", 202, payload)
 }
 
 func (o *NetworkEthernetPortDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /network/ethernet/ports/{uuid}][%d] networkEthernetPortDeleteAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /network/ethernet/ports/{uuid}][%d] networkEthernetPortDeleteAccepted %s", 202, payload)
+}
+
+func (o *NetworkEthernetPortDeleteAccepted) GetPayload() *models.PortJobLinkResponse {
+	return o.Payload
 }
 
 func (o *NetworkEthernetPortDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.PortJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }

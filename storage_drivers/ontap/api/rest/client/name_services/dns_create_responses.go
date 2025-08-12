@@ -154,6 +154,7 @@ func NewDNSCreateDefault(code int) *DNSCreateDefault {
 | 13434916   | The SVM is in the process of being created. Wait a few minutes, and then try the command again. |
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 LIFs |
 | 1377682    | IPv6 is not enabled in the cluster |
+| 8847407    | The connection is refused for one or more of the specified DNS servers. |
 */
 type DNSCreateDefault struct {
 	_statusCode int

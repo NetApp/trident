@@ -616,6 +616,12 @@ type LunModifyCollectionParams struct {
 	*/
 	SerialNumber *string
 
+	/* SerialNumberHex.
+
+	   Filter by serial_number_hex
+	*/
+	SerialNumberHex *string
+
 	/* SerialRecords.
 
 	   Perform the operation on the records synchronously.
@@ -1898,6 +1904,17 @@ func (o *LunModifyCollectionParams) WithSerialNumber(serialNumber *string) *LunM
 // SetSerialNumber adds the serialNumber to the lun modify collection params
 func (o *LunModifyCollectionParams) SetSerialNumber(serialNumber *string) {
 	o.SerialNumber = serialNumber
+}
+
+// WithSerialNumberHex adds the serialNumberHex to the lun modify collection params
+func (o *LunModifyCollectionParams) WithSerialNumberHex(serialNumberHex *string) *LunModifyCollectionParams {
+	o.SetSerialNumberHex(serialNumberHex)
+	return o
+}
+
+// SetSerialNumberHex adds the serialNumberHex to the lun modify collection params
+func (o *LunModifyCollectionParams) SetSerialNumberHex(serialNumberHex *string) {
+	o.SerialNumberHex = serialNumberHex
 }
 
 // WithSerialRecords adds the serialRecords to the lun modify collection params
@@ -3821,6 +3838,23 @@ func (o *LunModifyCollectionParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qSerialNumber != "" {
 
 			if err := r.SetQueryParam("serial_number", qSerialNumber); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SerialNumberHex != nil {
+
+		// query param serial_number_hex
+		var qrSerialNumberHex string
+
+		if o.SerialNumberHex != nil {
+			qrSerialNumberHex = *o.SerialNumberHex
+		}
+		qSerialNumberHex := qrSerialNumberHex
+		if qSerialNumberHex != "" {
+
+			if err := r.SetQueryParam("serial_number_hex", qSerialNumberHex); err != nil {
 				return err
 			}
 		}

@@ -24,7 +24,7 @@ type NvmeSubsystemMap struct {
 
 	// The Asymmetric Namespace Access Group ID (ANAGRPID) of the NVMe namespace.<br/>
 	// The format for an ANAGRPID is 8 hexadecimal digits (zero-filled) followed by a lower case "h".<br/>
-	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// There is an added computational cost to retrieving this property's value. It is not populated for a GET request unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Example: 00103050h
 	// Read Only: true
@@ -362,12 +362,9 @@ type NvmeSubsystemMapInlineNamespace struct {
 	Links *NvmeSubsystemMapInlineNamespaceInlineLinks `json:"_links,omitempty"`
 
 	// The name of the NVMe namespace. Valid in POST.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
-	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.
-	// * **ASA r2**:
-	// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.
+	// <personalities supports=unified>An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.</personalities>
+	// <personalities supports=asar2>NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.</personalities>
 	//
 	// Example: /vol/vol1/namespace1
 	Name *string `json:"name,omitempty"`

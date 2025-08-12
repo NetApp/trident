@@ -228,7 +228,7 @@ func NewStorageUnitCreateDefault(code int) *StorageUnitCreateDefault {
 | ---------- | ----------- |
 | 917525 | The specified storage unit does not exist in the svm. |
 | 917526 | Duplicate storage unit name. |
-| 918232 | The specified storage unit identifier fields must be provided. |
+| 918232 | The specified storage unit identifier properties must be provided. |
 | 918243 | The specified snapshot UUID is not correct for the specified snapshot name. |
 | 1638400 | Failed to retrieve the storage unit snapshot information. |
 | 5374604 | _false_ is not a supported value for this property. |

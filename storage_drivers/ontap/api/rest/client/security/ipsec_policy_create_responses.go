@@ -173,6 +173,8 @@ func NewIpsecPolicyCreateDefault(code int) *IpsecPolicyCreateDefault {
 | 66257143 | Invalid IPsec policy provided. The subnet must be non-empty. |
 | 66257144 | The IPsec policy actions ESP TRANSPORT and ESP UDP each provide packet protection and requires a secret key or certificate for authentication. |
 | 66257148 | The policy name does not meet required ASCII-range characters length. |
+| 66257153 | The policy requires a post-quantum pre-shared key because ppk-identity is specified for this policy. |
+| 66257154 | The policy requires a post-quantum pre-shared identity because ppk-shared-key is specified for this policy. |
 | 66257199 | Not all of the nodes in the cluster are running a version that supports the IPsec feature. |
 | 66257200 | The shared key does not meet required ASCII-range characters length. |
 | 66257201 | Support for the feature available with effective cluster version or later. |

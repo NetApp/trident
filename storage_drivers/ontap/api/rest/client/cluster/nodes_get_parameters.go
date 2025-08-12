@@ -266,6 +266,18 @@ type NodesGetParams struct {
 	*/
 	ExternalCachePcsSize *int64
 
+	/* ExternalCacheBypassEnabled.
+
+	   Filter by external_cache_bypass.enabled
+	*/
+	ExternalCacheBypassEnabled *bool
+
+	/* ExternalCacheBypassLargeReadOpsAllowPercent.
+
+	   Filter by external_cache_bypass.large_read_ops_allow_percent
+	*/
+	ExternalCacheBypassLargeReadOpsAllowPercent *int64
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -277,6 +289,18 @@ type NodesGetParams struct {
 	   Filter by ha.auto_giveback
 	*/
 	HaAutoGiveback *bool
+
+	/* HaAutoGivebackOf.
+
+	   Filter by ha.auto_giveback_of
+	*/
+	HaAutoGivebackOf *bool
+
+	/* HaEnableTakeoverOf.
+
+	   Filter by ha.enable_takeover_of
+	*/
+	HaEnableTakeoverOf *bool
 
 	/* HaEnabled.
 
@@ -397,6 +421,12 @@ type NodesGetParams struct {
 	   Filter by ha.takeover_check.takeover_possible
 	*/
 	HaTakeoverCheckTakeoverPossible *bool
+
+	/* HaType.
+
+	   Filter by ha.type
+	*/
+	HaType *string
 
 	/* HwAssistStatusEnabled.
 
@@ -541,6 +571,18 @@ type NodesGetParams struct {
 	   Filter by name
 	*/
 	Name *string
+
+	/* NvlogBackingType.
+
+	   Filter by nvlog.backing_type
+	*/
+	NvlogBackingType *string
+
+	/* NvlogSwapMode.
+
+	   Filter by nvlog.swap_mode
+	*/
+	NvlogSwapMode *string
 
 	/* NvramBatteryState.
 
@@ -1371,6 +1413,28 @@ func (o *NodesGetParams) SetExternalCachePcsSize(externalCachePcsSize *int64) {
 	o.ExternalCachePcsSize = externalCachePcsSize
 }
 
+// WithExternalCacheBypassEnabled adds the externalCacheBypassEnabled to the nodes get params
+func (o *NodesGetParams) WithExternalCacheBypassEnabled(externalCacheBypassEnabled *bool) *NodesGetParams {
+	o.SetExternalCacheBypassEnabled(externalCacheBypassEnabled)
+	return o
+}
+
+// SetExternalCacheBypassEnabled adds the externalCacheBypassEnabled to the nodes get params
+func (o *NodesGetParams) SetExternalCacheBypassEnabled(externalCacheBypassEnabled *bool) {
+	o.ExternalCacheBypassEnabled = externalCacheBypassEnabled
+}
+
+// WithExternalCacheBypassLargeReadOpsAllowPercent adds the externalCacheBypassLargeReadOpsAllowPercent to the nodes get params
+func (o *NodesGetParams) WithExternalCacheBypassLargeReadOpsAllowPercent(externalCacheBypassLargeReadOpsAllowPercent *int64) *NodesGetParams {
+	o.SetExternalCacheBypassLargeReadOpsAllowPercent(externalCacheBypassLargeReadOpsAllowPercent)
+	return o
+}
+
+// SetExternalCacheBypassLargeReadOpsAllowPercent adds the externalCacheBypassLargeReadOpsAllowPercent to the nodes get params
+func (o *NodesGetParams) SetExternalCacheBypassLargeReadOpsAllowPercent(externalCacheBypassLargeReadOpsAllowPercent *int64) {
+	o.ExternalCacheBypassLargeReadOpsAllowPercent = externalCacheBypassLargeReadOpsAllowPercent
+}
+
 // WithFields adds the fields to the nodes get params
 func (o *NodesGetParams) WithFields(fields []string) *NodesGetParams {
 	o.SetFields(fields)
@@ -1391,6 +1455,28 @@ func (o *NodesGetParams) WithHaAutoGiveback(haAutoGiveback *bool) *NodesGetParam
 // SetHaAutoGiveback adds the haAutoGiveback to the nodes get params
 func (o *NodesGetParams) SetHaAutoGiveback(haAutoGiveback *bool) {
 	o.HaAutoGiveback = haAutoGiveback
+}
+
+// WithHaAutoGivebackOf adds the haAutoGivebackOf to the nodes get params
+func (o *NodesGetParams) WithHaAutoGivebackOf(haAutoGivebackOf *bool) *NodesGetParams {
+	o.SetHaAutoGivebackOf(haAutoGivebackOf)
+	return o
+}
+
+// SetHaAutoGivebackOf adds the haAutoGivebackOf to the nodes get params
+func (o *NodesGetParams) SetHaAutoGivebackOf(haAutoGivebackOf *bool) {
+	o.HaAutoGivebackOf = haAutoGivebackOf
+}
+
+// WithHaEnableTakeoverOf adds the haEnableTakeoverOf to the nodes get params
+func (o *NodesGetParams) WithHaEnableTakeoverOf(haEnableTakeoverOf *bool) *NodesGetParams {
+	o.SetHaEnableTakeoverOf(haEnableTakeoverOf)
+	return o
+}
+
+// SetHaEnableTakeoverOf adds the haEnableTakeoverOf to the nodes get params
+func (o *NodesGetParams) SetHaEnableTakeoverOf(haEnableTakeoverOf *bool) {
+	o.HaEnableTakeoverOf = haEnableTakeoverOf
 }
 
 // WithHaEnabled adds the haEnabled to the nodes get params
@@ -1611,6 +1697,17 @@ func (o *NodesGetParams) WithHaTakeoverCheckTakeoverPossible(haTakeoverCheckTake
 // SetHaTakeoverCheckTakeoverPossible adds the haTakeoverCheckTakeoverPossible to the nodes get params
 func (o *NodesGetParams) SetHaTakeoverCheckTakeoverPossible(haTakeoverCheckTakeoverPossible *bool) {
 	o.HaTakeoverCheckTakeoverPossible = haTakeoverCheckTakeoverPossible
+}
+
+// WithHaType adds the haType to the nodes get params
+func (o *NodesGetParams) WithHaType(haType *string) *NodesGetParams {
+	o.SetHaType(haType)
+	return o
+}
+
+// SetHaType adds the haType to the nodes get params
+func (o *NodesGetParams) SetHaType(haType *string) {
+	o.HaType = haType
 }
 
 // WithHwAssistStatusEnabled adds the hwAssistStatusEnabled to the nodes get params
@@ -1875,6 +1972,28 @@ func (o *NodesGetParams) WithName(name *string) *NodesGetParams {
 // SetName adds the name to the nodes get params
 func (o *NodesGetParams) SetName(name *string) {
 	o.Name = name
+}
+
+// WithNvlogBackingType adds the nvlogBackingType to the nodes get params
+func (o *NodesGetParams) WithNvlogBackingType(nvlogBackingType *string) *NodesGetParams {
+	o.SetNvlogBackingType(nvlogBackingType)
+	return o
+}
+
+// SetNvlogBackingType adds the nvlogBackingType to the nodes get params
+func (o *NodesGetParams) SetNvlogBackingType(nvlogBackingType *string) {
+	o.NvlogBackingType = nvlogBackingType
+}
+
+// WithNvlogSwapMode adds the nvlogSwapMode to the nodes get params
+func (o *NodesGetParams) WithNvlogSwapMode(nvlogSwapMode *string) *NodesGetParams {
+	o.SetNvlogSwapMode(nvlogSwapMode)
+	return o
+}
+
+// SetNvlogSwapMode adds the nvlogSwapMode to the nodes get params
+func (o *NodesGetParams) SetNvlogSwapMode(nvlogSwapMode *string) {
+	o.NvlogSwapMode = nvlogSwapMode
 }
 
 // WithNvramBatteryState adds the nvramBatteryState to the nodes get params
@@ -3167,6 +3286,40 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
+	if o.ExternalCacheBypassEnabled != nil {
+
+		// query param external_cache_bypass.enabled
+		var qrExternalCacheBypassEnabled bool
+
+		if o.ExternalCacheBypassEnabled != nil {
+			qrExternalCacheBypassEnabled = *o.ExternalCacheBypassEnabled
+		}
+		qExternalCacheBypassEnabled := swag.FormatBool(qrExternalCacheBypassEnabled)
+		if qExternalCacheBypassEnabled != "" {
+
+			if err := r.SetQueryParam("external_cache_bypass.enabled", qExternalCacheBypassEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ExternalCacheBypassLargeReadOpsAllowPercent != nil {
+
+		// query param external_cache_bypass.large_read_ops_allow_percent
+		var qrExternalCacheBypassLargeReadOpsAllowPercent int64
+
+		if o.ExternalCacheBypassLargeReadOpsAllowPercent != nil {
+			qrExternalCacheBypassLargeReadOpsAllowPercent = *o.ExternalCacheBypassLargeReadOpsAllowPercent
+		}
+		qExternalCacheBypassLargeReadOpsAllowPercent := swag.FormatInt64(qrExternalCacheBypassLargeReadOpsAllowPercent)
+		if qExternalCacheBypassLargeReadOpsAllowPercent != "" {
+
+			if err := r.SetQueryParam("external_cache_bypass.large_read_ops_allow_percent", qExternalCacheBypassLargeReadOpsAllowPercent); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.Fields != nil {
 
 		// binding items for fields
@@ -3190,6 +3343,40 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		if qHaAutoGiveback != "" {
 
 			if err := r.SetQueryParam("ha.auto_giveback", qHaAutoGiveback); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaAutoGivebackOf != nil {
+
+		// query param ha.auto_giveback_of
+		var qrHaAutoGivebackOf bool
+
+		if o.HaAutoGivebackOf != nil {
+			qrHaAutoGivebackOf = *o.HaAutoGivebackOf
+		}
+		qHaAutoGivebackOf := swag.FormatBool(qrHaAutoGivebackOf)
+		if qHaAutoGivebackOf != "" {
+
+			if err := r.SetQueryParam("ha.auto_giveback_of", qHaAutoGivebackOf); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaEnableTakeoverOf != nil {
+
+		// query param ha.enable_takeover_of
+		var qrHaEnableTakeoverOf bool
+
+		if o.HaEnableTakeoverOf != nil {
+			qrHaEnableTakeoverOf = *o.HaEnableTakeoverOf
+		}
+		qHaEnableTakeoverOf := swag.FormatBool(qrHaEnableTakeoverOf)
+		if qHaEnableTakeoverOf != "" {
+
+			if err := r.SetQueryParam("ha.enable_takeover_of", qHaEnableTakeoverOf); err != nil {
 				return err
 			}
 		}
@@ -3530,6 +3717,23 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		if qHaTakeoverCheckTakeoverPossible != "" {
 
 			if err := r.SetQueryParam("ha.takeover_check.takeover_possible", qHaTakeoverCheckTakeoverPossible); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaType != nil {
+
+		// query param ha.type
+		var qrHaType string
+
+		if o.HaType != nil {
+			qrHaType = *o.HaType
+		}
+		qHaType := qrHaType
+		if qHaType != "" {
+
+			if err := r.SetQueryParam("ha.type", qHaType); err != nil {
 				return err
 			}
 		}
@@ -3938,6 +4142,40 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		if qName != "" {
 
 			if err := r.SetQueryParam("name", qName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NvlogBackingType != nil {
+
+		// query param nvlog.backing_type
+		var qrNvlogBackingType string
+
+		if o.NvlogBackingType != nil {
+			qrNvlogBackingType = *o.NvlogBackingType
+		}
+		qNvlogBackingType := qrNvlogBackingType
+		if qNvlogBackingType != "" {
+
+			if err := r.SetQueryParam("nvlog.backing_type", qNvlogBackingType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NvlogSwapMode != nil {
+
+		// query param nvlog.swap_mode
+		var qrNvlogSwapMode string
+
+		if o.NvlogSwapMode != nil {
+			qrNvlogSwapMode = *o.NvlogSwapMode
+		}
+		qNvlogSwapMode := qrNvlogSwapMode
+		if qNvlogSwapMode != "" {
+
+			if err := r.SetQueryParam("nvlog.swap_mode", qNvlogSwapMode); err != nil {
 				return err
 			}
 		}

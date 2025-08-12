@@ -138,7 +138,8 @@ func NewS3ServiceCreateDefault(code int) *S3ServiceCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 2621706    | The specified \\\"{svm.uuid}\\\" and \\\"{svm.name}\\\" refer to different SVMs.
+| 1115127    | The cluster lacks a valid S3 license. |
+| 2621706    | The specified \\\"{svm.uuid}\\\" and \\\"{svm.name}\\\" refer to different SVMs. |
 | 92405789   | The specified object server name contains invalid characters or not a fully qualified domain name. Valid characters for an object store server name are 0-9, A-Z, a-z, \".\", and \"-\". |
 | 92405790   | Object store server names must have between 3 and 253 characters. |
 | 92405839   | Creating an object store server requires an effective cluster version of data ONTAP 9.7.0 or later. Upgrade all the nodes to 9.7.0 or later and try the operation again. |

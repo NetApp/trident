@@ -41,7 +41,14 @@ func (o *AntiRansomwareSuspectDeleteCollectionReader) ReadResponse(response runt
 		}
 		return result, nil
 	default:
-		return nil, runtime.NewAPIError("[DELETE /security/anti-ransomware/suspects] anti_ransomware_suspect_delete_collection", response, response.Code())
+		result := NewAntiRansomwareSuspectDeleteCollectionDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -176,6 +183,86 @@ func (o *AntiRansomwareSuspectDeleteCollectionAccepted) GetPayload() *models.Ant
 func (o *AntiRansomwareSuspectDeleteCollectionAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.AntiRansomwareSuspectJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewAntiRansomwareSuspectDeleteCollectionDefault creates a AntiRansomwareSuspectDeleteCollectionDefault with default headers values
+func NewAntiRansomwareSuspectDeleteCollectionDefault(code int) *AntiRansomwareSuspectDeleteCollectionDefault {
+	return &AntiRansomwareSuspectDeleteCollectionDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+	AntiRansomwareSuspectDeleteCollectionDefault describes a response with status code -1, with default header values.
+
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 203161673 | Operation is not supported on a data protection volume. |
+| 203162105 | Clearing a suspect by specifying the file format is not supported when an attack is detected by encryption_percentage_analysis. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
+*/
+type AntiRansomwareSuspectDeleteCollectionDefault struct {
+	_statusCode int
+
+	Payload *models.ErrorResponse
+}
+
+// IsSuccess returns true when this anti ransomware suspect delete collection default response has a 2xx status code
+func (o *AntiRansomwareSuspectDeleteCollectionDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this anti ransomware suspect delete collection default response has a 3xx status code
+func (o *AntiRansomwareSuspectDeleteCollectionDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this anti ransomware suspect delete collection default response has a 4xx status code
+func (o *AntiRansomwareSuspectDeleteCollectionDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this anti ransomware suspect delete collection default response has a 5xx status code
+func (o *AntiRansomwareSuspectDeleteCollectionDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this anti ransomware suspect delete collection default response a status code equal to that given
+func (o *AntiRansomwareSuspectDeleteCollectionDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the anti ransomware suspect delete collection default response
+func (o *AntiRansomwareSuspectDeleteCollectionDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *AntiRansomwareSuspectDeleteCollectionDefault) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/anti-ransomware/suspects][%d] anti_ransomware_suspect_delete_collection default %s", o._statusCode, payload)
+}
+
+func (o *AntiRansomwareSuspectDeleteCollectionDefault) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/anti-ransomware/suspects][%d] anti_ransomware_suspect_delete_collection default %s", o._statusCode, payload)
+}
+
+func (o *AntiRansomwareSuspectDeleteCollectionDefault) GetPayload() *models.ErrorResponse {
+	return o.Payload
+}
+
+func (o *AntiRansomwareSuspectDeleteCollectionDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ErrorResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

@@ -110,9 +110,14 @@ func NewSwitchDeleteCollectionDefault(code int) *SwitchDeleteCollectionDefault {
 }
 
 /*
-SwitchDeleteCollectionDefault describes a response with status code -1, with default header values.
+	SwitchDeleteCollectionDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 12517412 | Cannot remove a discovered switch. To stop monitoring the switch, set \"<monitoring.enabled>\" to \"false\". |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SwitchDeleteCollectionDefault struct {
 	_statusCode int

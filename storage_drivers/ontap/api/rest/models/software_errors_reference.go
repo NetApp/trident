@@ -26,7 +26,7 @@ type SoftwareErrorsReference struct {
 	Code *int64 `json:"code,omitempty"`
 
 	// Error message
-	// Example: Giveback of CFO aggregate is vetoed. Action: Use the \"storage failover show-giveback\" command to view detailed veto status information. Correct the vetoed update check. Use the \"storage failover giveback -ofnode \"node1\" command to complete the giveback.
+	// Example: Giveback of aggregate is vetoed. Action: Use the \"storage failover show-giveback\" command to view detailed veto status information. Correct the vetoed update check. Use the \"storage failover giveback -ofnode \"node1\" command to complete the giveback.
 	// Read Only: true
 	Message *string `json:"message,omitempty"`
 

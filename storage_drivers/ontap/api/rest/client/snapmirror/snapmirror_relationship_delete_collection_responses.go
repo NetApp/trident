@@ -215,6 +215,7 @@ func NewSnapmirrorRelationshipDeleteCollectionDefault(code int) *SnapmirrorRelat
 | 13303855    | DELETE call on a restore relationship does not support the given flags |
 | 13303865    | Deleting the specified SnapMirror policy is not supported. |
 | 6619715     | Modification of relationship is in progress. Retry the command after a few minutes. |
+| 6621470     | SnapMirror delete failed on the relationship because \"unmap-namespace\" is not set. Set the \"unmap-namespace\" to true for NVMe SnapMirror active sync relationships. |
 */
 type SnapmirrorRelationshipDeleteCollectionDefault struct {
 	_statusCode int

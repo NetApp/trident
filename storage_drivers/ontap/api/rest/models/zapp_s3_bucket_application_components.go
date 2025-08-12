@@ -56,6 +56,9 @@ type ZappS3BucketApplicationComponents struct {
 	// The total size of the S3 Bucket, split across the member components. Usage: {&lt;integer&gt;[KB|MB|GB|TB|PB]}
 	Size *int64 `json:"size,omitempty"`
 
+	// snapshot policy
+	SnapshotPolicy *ZappS3BucketApplicationComponentsInlineSnapshotPolicy `json:"snapshot_policy,omitempty"`
+
 	// storage service
 	StorageService *ZappS3BucketApplicationComponentsInlineStorageService `json:"storage_service,omitempty"`
 
@@ -101,6 +104,10 @@ func (m *ZappS3BucketApplicationComponents) Validate(formats strfmt.Registry) er
 	}
 
 	if err := m.validateRetentionMode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSnapshotPolicy(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -331,6 +338,23 @@ func (m *ZappS3BucketApplicationComponents) validateRetentionMode(formats strfmt
 	return nil
 }
 
+func (m *ZappS3BucketApplicationComponents) validateSnapshotPolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.SnapshotPolicy) { // not required
+		return nil
+	}
+
+	if m.SnapshotPolicy != nil {
+		if err := m.SnapshotPolicy.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("snapshot_policy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *ZappS3BucketApplicationComponents) validateStorageService(formats strfmt.Registry) error {
 	if swag.IsZero(m.StorageService) { // not required
 		return nil
@@ -480,6 +504,10 @@ func (m *ZappS3BucketApplicationComponents) ContextValidate(ctx context.Context,
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSnapshotPolicy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateStorageService(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -508,6 +536,20 @@ func (m *ZappS3BucketApplicationComponents) contextValidateQos(ctx context.Conte
 		if err := m.Qos.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("qos")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ZappS3BucketApplicationComponents) contextValidateSnapshotPolicy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.SnapshotPolicy != nil {
+		if err := m.SnapshotPolicy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("snapshot_policy")
 			}
 			return err
 		}
@@ -752,6 +794,46 @@ func (m *ZappS3BucketApplicationComponentsInlineQosInlinePolicy) MarshalBinary()
 // UnmarshalBinary interface implementation
 func (m *ZappS3BucketApplicationComponentsInlineQosInlinePolicy) UnmarshalBinary(b []byte) error {
 	var res ZappS3BucketApplicationComponentsInlineQosInlinePolicy
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ZappS3BucketApplicationComponentsInlineSnapshotPolicy zapp s3 bucket application components inline snapshot policy
+//
+// swagger:model zapp_s3_bucket_application_components_inline_snapshot_policy
+type ZappS3BucketApplicationComponentsInlineSnapshotPolicy struct {
+
+	// The name of the snapshot policy that is used for the S3 bucket.
+	Name *string `json:"name,omitempty"`
+
+	// The UUID of the snapshot policy that is used for the S3 bucket. Usage: &lt;UUID&gt;
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this zapp s3 bucket application components inline snapshot policy
+func (m *ZappS3BucketApplicationComponentsInlineSnapshotPolicy) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this zapp s3 bucket application components inline snapshot policy based on context it is used
+func (m *ZappS3BucketApplicationComponentsInlineSnapshotPolicy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ZappS3BucketApplicationComponentsInlineSnapshotPolicy) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ZappS3BucketApplicationComponentsInlineSnapshotPolicy) UnmarshalBinary(b []byte) error {
+	var res ZappS3BucketApplicationComponentsInlineSnapshotPolicy
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

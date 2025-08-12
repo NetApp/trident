@@ -57,6 +57,7 @@ type CifsShare struct {
 
 	// Specifies whether or not the clients connecting to this share can open files in a persistent manner.
 	// Files opened in this way are protected from disruptive events, such as, failover and giveback.
+	// If the Vscan ONTAP feature is used, it is not supported in continuous availability (CA) shares.
 	//
 	ContinuouslyAvailable *bool `json:"continuously_available,omitempty"`
 

@@ -132,6 +132,12 @@ type NfsTLSInterfaceModifyCollectionParams struct {
 	*/
 	SerialRecords *bool
 
+	/* SkipSanValidation.
+
+	   Indicates whether Subject Alternate Name (SAN) validation has to be skipped.
+	*/
+	SkipSanValidation *bool
+
 	/* SvmName.
 
 	   Filter by svm.name
@@ -338,6 +344,17 @@ func (o *NfsTLSInterfaceModifyCollectionParams) SetSerialRecords(serialRecords *
 	o.SerialRecords = serialRecords
 }
 
+// WithSkipSanValidation adds the skipSanValidation to the nfs tls interface modify collection params
+func (o *NfsTLSInterfaceModifyCollectionParams) WithSkipSanValidation(skipSanValidation *bool) *NfsTLSInterfaceModifyCollectionParams {
+	o.SetSkipSanValidation(skipSanValidation)
+	return o
+}
+
+// SetSkipSanValidation adds the skipSanValidation to the nfs tls interface modify collection params
+func (o *NfsTLSInterfaceModifyCollectionParams) SetSkipSanValidation(skipSanValidation *bool) {
+	o.SkipSanValidation = skipSanValidation
+}
+
 // WithSvmName adds the svmName to the nfs tls interface modify collection params
 func (o *NfsTLSInterfaceModifyCollectionParams) WithSvmName(svmName *string) *NfsTLSInterfaceModifyCollectionParams {
 	o.SetSvmName(svmName)
@@ -536,6 +553,23 @@ func (o *NfsTLSInterfaceModifyCollectionParams) WriteToRequest(r runtime.ClientR
 		if qSerialRecords != "" {
 
 			if err := r.SetQueryParam("serial_records", qSerialRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SkipSanValidation != nil {
+
+		// query param skip_san_validation
+		var qrSkipSanValidation bool
+
+		if o.SkipSanValidation != nil {
+			qrSkipSanValidation = *o.SkipSanValidation
+		}
+		qSkipSanValidation := swag.FormatBool(qrSkipSanValidation)
+		if qSkipSanValidation != "" {
+
+			if err := r.SetQueryParam("skip_san_validation", qSkipSanValidation); err != nil {
 				return err
 			}
 		}

@@ -63,6 +63,8 @@ type AwsKmsRestoreCreated struct {
 	/* Useful for tracking the resource location
 	 */
 	Location string
+
+	Payload *models.AwsKmsJobLinkResponse
 }
 
 // IsSuccess returns true when this aws kms restore created response has a 2xx status code
@@ -96,11 +98,17 @@ func (o *AwsKmsRestoreCreated) Code() int {
 }
 
 func (o *AwsKmsRestoreCreated) Error() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/restore][%d] awsKmsRestoreCreated", 201)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/restore][%d] awsKmsRestoreCreated %s", 201, payload)
 }
 
 func (o *AwsKmsRestoreCreated) String() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/restore][%d] awsKmsRestoreCreated", 201)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/restore][%d] awsKmsRestoreCreated %s", 201, payload)
+}
+
+func (o *AwsKmsRestoreCreated) GetPayload() *models.AwsKmsJobLinkResponse {
+	return o.Payload
 }
 
 func (o *AwsKmsRestoreCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -110,6 +118,13 @@ func (o *AwsKmsRestoreCreated) readResponse(response runtime.ClientResponse, con
 
 	if hdrLocation != "" {
 		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.AwsKmsJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
 	}
 
 	return nil
@@ -130,6 +145,8 @@ type AwsKmsRestoreAccepted struct {
 	/* Useful for tracking the resource location
 	 */
 	Location string
+
+	Payload *models.AwsKmsJobLinkResponse
 }
 
 // IsSuccess returns true when this aws kms restore accepted response has a 2xx status code
@@ -163,11 +180,17 @@ func (o *AwsKmsRestoreAccepted) Code() int {
 }
 
 func (o *AwsKmsRestoreAccepted) Error() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/restore][%d] awsKmsRestoreAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/restore][%d] awsKmsRestoreAccepted %s", 202, payload)
 }
 
 func (o *AwsKmsRestoreAccepted) String() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/restore][%d] awsKmsRestoreAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/restore][%d] awsKmsRestoreAccepted %s", 202, payload)
+}
+
+func (o *AwsKmsRestoreAccepted) GetPayload() *models.AwsKmsJobLinkResponse {
+	return o.Payload
 }
 
 func (o *AwsKmsRestoreAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -177,6 +200,13 @@ func (o *AwsKmsRestoreAccepted) readResponse(response runtime.ClientResponse, co
 
 	if hdrLocation != "" {
 		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.AwsKmsJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
 	}
 
 	return nil

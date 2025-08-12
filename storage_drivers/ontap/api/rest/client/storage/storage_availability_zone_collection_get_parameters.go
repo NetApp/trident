@@ -150,6 +150,12 @@ type StorageAvailabilityZoneCollectionGetParams struct {
 	*/
 	SpaceInactiveData *int64
 
+	/* SpaceLogAndRecoveryMetadata.
+
+	   Filter by space.log_and_recovery_metadata
+	*/
+	SpaceLogAndRecoveryMetadata *int64
+
 	/* SpaceLogicalUserDataWithoutSnapshots.
 
 	   Filter by space.logical_user_data_without_snapshots
@@ -423,6 +429,17 @@ func (o *StorageAvailabilityZoneCollectionGetParams) WithSpaceInactiveData(space
 // SetSpaceInactiveData adds the spaceInactiveData to the storage availability zone collection get params
 func (o *StorageAvailabilityZoneCollectionGetParams) SetSpaceInactiveData(spaceInactiveData *int64) {
 	o.SpaceInactiveData = spaceInactiveData
+}
+
+// WithSpaceLogAndRecoveryMetadata adds the spaceLogAndRecoveryMetadata to the storage availability zone collection get params
+func (o *StorageAvailabilityZoneCollectionGetParams) WithSpaceLogAndRecoveryMetadata(spaceLogAndRecoveryMetadata *int64) *StorageAvailabilityZoneCollectionGetParams {
+	o.SetSpaceLogAndRecoveryMetadata(spaceLogAndRecoveryMetadata)
+	return o
+}
+
+// SetSpaceLogAndRecoveryMetadata adds the spaceLogAndRecoveryMetadata to the storage availability zone collection get params
+func (o *StorageAvailabilityZoneCollectionGetParams) SetSpaceLogAndRecoveryMetadata(spaceLogAndRecoveryMetadata *int64) {
+	o.SpaceLogAndRecoveryMetadata = spaceLogAndRecoveryMetadata
 }
 
 // WithSpaceLogicalUserDataWithoutSnapshots adds the spaceLogicalUserDataWithoutSnapshots to the storage availability zone collection get params
@@ -753,6 +770,23 @@ func (o *StorageAvailabilityZoneCollectionGetParams) WriteToRequest(r runtime.Cl
 		if qSpaceInactiveData != "" {
 
 			if err := r.SetQueryParam("space.inactive_data", qSpaceInactiveData); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceLogAndRecoveryMetadata != nil {
+
+		// query param space.log_and_recovery_metadata
+		var qrSpaceLogAndRecoveryMetadata int64
+
+		if o.SpaceLogAndRecoveryMetadata != nil {
+			qrSpaceLogAndRecoveryMetadata = *o.SpaceLogAndRecoveryMetadata
+		}
+		qSpaceLogAndRecoveryMetadata := swag.FormatInt64(qrSpaceLogAndRecoveryMetadata)
+		if qSpaceLogAndRecoveryMetadata != "" {
+
+			if err := r.SetQueryParam("space.log_and_recovery_metadata", qSpaceLogAndRecoveryMetadata); err != nil {
 				return err
 			}
 		}

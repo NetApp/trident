@@ -120,6 +120,7 @@ func NewDiskModifyDefault(code int) *DiskModifyDefault {
 | 721085 | The node name was not specified. |
 | 721093 | Operation not supported on this platform. |
 | 721095 | Failed to sanitize the spare disk (non-cryptographically). |
+| 721096 | Invalid disk state. This state is not supported for a PATCH operation. |
 | 1441795 | Setting the data key ID to the manufacture secure ID is not allowed when in FIPS-compliance mode. |
 | 1441825 | The system does not support maintenance of the controls of encrypting disks. |
 | 14155777 | The operation failed on one or more disks. |

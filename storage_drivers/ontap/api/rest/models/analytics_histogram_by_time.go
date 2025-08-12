@@ -19,6 +19,10 @@ import (
 // swagger:model analytics_histogram_by_time
 type AnalyticsHistogramByTime struct {
 
+	// A score summarizing how old the data is. A higher value means the data is older.
+	// Example: 15.23
+	AgedDataMetric *float64 `json:"aged_data_metric,omitempty"`
+
 	// Percentages for this histogram
 	// Example: [0.1,11.24,0.18,15.75,0.75,83.5,0]
 	AnalyticsHistogramByTimeInlinePercentages []*float64 `json:"percentages,omitempty"`

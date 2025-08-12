@@ -236,6 +236,7 @@ func NewQosPolicyCreateDefault(code int) *QosPolicyCreateDefault {
 | 8454278 | The name specified for creating a fixed QoS policy conflicts with an existing adaptive QoS policy name. |
 | 8454379 | The name specified for creating a fixed QoS policy already exists. |
 | 8454380 | The name specified for creating an adaptive QoS policy already exists. |
+| 8454389 | One specified field cannot be used in combination with at least one other specified field. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type QosPolicyCreateDefault struct {

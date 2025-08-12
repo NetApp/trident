@@ -35,6 +35,9 @@ type Web struct {
 	// Indicates whether remote clients can connect to the web services.
 	Enabled *bool `json:"enabled,omitempty"`
 
+	// hsts
+	Hsts *WebInlineHsts `json:"hsts,omitempty"`
+
 	// Indicates whether HTTP is enabled.
 	HTTPEnabled *bool `json:"http_enabled,omitempty"`
 
@@ -75,6 +78,10 @@ func (m *Web) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateCsrf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateHsts(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -135,6 +142,23 @@ func (m *Web) validateCsrf(formats strfmt.Registry) error {
 		if err := m.Csrf.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("csrf")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Web) validateHsts(formats strfmt.Registry) error {
+	if swag.IsZero(m.Hsts) { // not required
+		return nil
+	}
+
+	if m.Hsts != nil {
+		if err := m.Hsts.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("hsts")
 			}
 			return err
 		}
@@ -261,6 +285,10 @@ func (m *Web) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateHsts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateState(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -305,6 +333,20 @@ func (m *Web) contextValidateCsrf(ctx context.Context, formats strfmt.Registry) 
 		if err := m.Csrf.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("csrf")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Web) contextValidateHsts(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Hsts != nil {
+		if err := m.Hsts.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("hsts")
 			}
 			return err
 		}
@@ -723,6 +765,74 @@ func (m *WebInlineCsrfInlineToken) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *WebInlineCsrfInlineToken) UnmarshalBinary(b []byte) error {
 	var res WebInlineCsrfInlineToken
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// WebInlineHsts web inline hsts
+//
+// swagger:model web_inline_hsts
+type WebInlineHsts struct {
+
+	// Indicates whether HTTP Strict Transport Security (HSTS) is enabled.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// HTTPS Strict Transport Security (HSTS) max-age value in seconds. The maximum time, in seconds, that the browser should remember that a site is only to be accessed using HTTPS.
+	// Example: 31536000
+	// Maximum: 4.294967295e+09
+	// Minimum: 0
+	MaxAge *int64 `json:"max_age,omitempty"`
+}
+
+// Validate validates this web inline hsts
+func (m *WebInlineHsts) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateMaxAge(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *WebInlineHsts) validateMaxAge(formats strfmt.Registry) error {
+	if swag.IsZero(m.MaxAge) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("hsts"+"."+"max_age", "body", *m.MaxAge, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("hsts"+"."+"max_age", "body", *m.MaxAge, 4.294967295e+09, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this web inline hsts based on context it is used
+func (m *WebInlineHsts) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *WebInlineHsts) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *WebInlineHsts) UnmarshalBinary(b []byte) error {
+	var res WebInlineHsts
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

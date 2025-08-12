@@ -134,6 +134,18 @@ type S3BucketSvmDeleteCollectionParams struct {
 	*/
 	Info S3BucketSvmDeleteCollectionBody
 
+	/* IsConsistentEtag.
+
+	   Filter by is_consistent_etag
+	*/
+	IsConsistentEtag *bool
+
+	/* IsNasPathMutable.
+
+	   Filter by is_nas_path_mutable
+	*/
+	IsNasPathMutable *bool
+
 	/* LifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays.
 
 	   Filter by lifecycle_management.rules.abort_incomplete_multipart_upload.after_initiation_days
@@ -338,6 +350,12 @@ type S3BucketSvmDeleteCollectionParams struct {
 	*/
 	ProtectionStatusIsProtected *bool
 
+	/* QosPolicyMaxThroughput.
+
+	   Filter by qos_policy.max_throughput
+	*/
+	QosPolicyMaxThroughput *string
+
 	/* QosPolicyMaxThroughputIops.
 
 	   Filter by qos_policy.max_throughput_iops
@@ -349,6 +367,12 @@ type S3BucketSvmDeleteCollectionParams struct {
 	   Filter by qos_policy.max_throughput_mbps
 	*/
 	QosPolicyMaxThroughputMbps *int64
+
+	/* QosPolicyMinThroughput.
+
+	   Filter by qos_policy.min_throughput
+	*/
+	QosPolicyMinThroughput *string
 
 	/* QosPolicyMinThroughputIops.
 
@@ -677,6 +701,28 @@ func (o *S3BucketSvmDeleteCollectionParams) WithInfo(info S3BucketSvmDeleteColle
 // SetInfo adds the info to the s3 bucket svm delete collection params
 func (o *S3BucketSvmDeleteCollectionParams) SetInfo(info S3BucketSvmDeleteCollectionBody) {
 	o.Info = info
+}
+
+// WithIsConsistentEtag adds the isConsistentEtag to the s3 bucket svm delete collection params
+func (o *S3BucketSvmDeleteCollectionParams) WithIsConsistentEtag(isConsistentEtag *bool) *S3BucketSvmDeleteCollectionParams {
+	o.SetIsConsistentEtag(isConsistentEtag)
+	return o
+}
+
+// SetIsConsistentEtag adds the isConsistentEtag to the s3 bucket svm delete collection params
+func (o *S3BucketSvmDeleteCollectionParams) SetIsConsistentEtag(isConsistentEtag *bool) {
+	o.IsConsistentEtag = isConsistentEtag
+}
+
+// WithIsNasPathMutable adds the isNasPathMutable to the s3 bucket svm delete collection params
+func (o *S3BucketSvmDeleteCollectionParams) WithIsNasPathMutable(isNasPathMutable *bool) *S3BucketSvmDeleteCollectionParams {
+	o.SetIsNasPathMutable(isNasPathMutable)
+	return o
+}
+
+// SetIsNasPathMutable adds the isNasPathMutable to the s3 bucket svm delete collection params
+func (o *S3BucketSvmDeleteCollectionParams) SetIsNasPathMutable(isNasPathMutable *bool) {
+	o.IsNasPathMutable = isNasPathMutable
 }
 
 // WithLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays adds the lifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays to the s3 bucket svm delete collection params
@@ -1053,6 +1099,17 @@ func (o *S3BucketSvmDeleteCollectionParams) SetProtectionStatusIsProtected(prote
 	o.ProtectionStatusIsProtected = protectionStatusIsProtected
 }
 
+// WithQosPolicyMaxThroughput adds the qosPolicyMaxThroughput to the s3 bucket svm delete collection params
+func (o *S3BucketSvmDeleteCollectionParams) WithQosPolicyMaxThroughput(qosPolicyMaxThroughput *string) *S3BucketSvmDeleteCollectionParams {
+	o.SetQosPolicyMaxThroughput(qosPolicyMaxThroughput)
+	return o
+}
+
+// SetQosPolicyMaxThroughput adds the qosPolicyMaxThroughput to the s3 bucket svm delete collection params
+func (o *S3BucketSvmDeleteCollectionParams) SetQosPolicyMaxThroughput(qosPolicyMaxThroughput *string) {
+	o.QosPolicyMaxThroughput = qosPolicyMaxThroughput
+}
+
 // WithQosPolicyMaxThroughputIops adds the qosPolicyMaxThroughputIops to the s3 bucket svm delete collection params
 func (o *S3BucketSvmDeleteCollectionParams) WithQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops *int64) *S3BucketSvmDeleteCollectionParams {
 	o.SetQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops)
@@ -1073,6 +1130,17 @@ func (o *S3BucketSvmDeleteCollectionParams) WithQosPolicyMaxThroughputMbps(qosPo
 // SetQosPolicyMaxThroughputMbps adds the qosPolicyMaxThroughputMbps to the s3 bucket svm delete collection params
 func (o *S3BucketSvmDeleteCollectionParams) SetQosPolicyMaxThroughputMbps(qosPolicyMaxThroughputMbps *int64) {
 	o.QosPolicyMaxThroughputMbps = qosPolicyMaxThroughputMbps
+}
+
+// WithQosPolicyMinThroughput adds the qosPolicyMinThroughput to the s3 bucket svm delete collection params
+func (o *S3BucketSvmDeleteCollectionParams) WithQosPolicyMinThroughput(qosPolicyMinThroughput *string) *S3BucketSvmDeleteCollectionParams {
+	o.SetQosPolicyMinThroughput(qosPolicyMinThroughput)
+	return o
+}
+
+// SetQosPolicyMinThroughput adds the qosPolicyMinThroughput to the s3 bucket svm delete collection params
+func (o *S3BucketSvmDeleteCollectionParams) SetQosPolicyMinThroughput(qosPolicyMinThroughput *string) {
+	o.QosPolicyMinThroughput = qosPolicyMinThroughput
 }
 
 // WithQosPolicyMinThroughputIops adds the qosPolicyMinThroughputIops to the s3 bucket svm delete collection params
@@ -1491,6 +1559,40 @@ func (o *S3BucketSvmDeleteCollectionParams) WriteToRequest(r runtime.ClientReque
 	}
 	if err := r.SetBodyParam(o.Info); err != nil {
 		return err
+	}
+
+	if o.IsConsistentEtag != nil {
+
+		// query param is_consistent_etag
+		var qrIsConsistentEtag bool
+
+		if o.IsConsistentEtag != nil {
+			qrIsConsistentEtag = *o.IsConsistentEtag
+		}
+		qIsConsistentEtag := swag.FormatBool(qrIsConsistentEtag)
+		if qIsConsistentEtag != "" {
+
+			if err := r.SetQueryParam("is_consistent_etag", qIsConsistentEtag); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IsNasPathMutable != nil {
+
+		// query param is_nas_path_mutable
+		var qrIsNasPathMutable bool
+
+		if o.IsNasPathMutable != nil {
+			qrIsNasPathMutable = *o.IsNasPathMutable
+		}
+		qIsNasPathMutable := swag.FormatBool(qrIsNasPathMutable)
+		if qIsNasPathMutable != "" {
+
+			if err := r.SetQueryParam("is_nas_path_mutable", qIsNasPathMutable); err != nil {
+				return err
+			}
+		}
 	}
 
 	if o.LifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays != nil {
@@ -2071,6 +2173,23 @@ func (o *S3BucketSvmDeleteCollectionParams) WriteToRequest(r runtime.ClientReque
 		}
 	}
 
+	if o.QosPolicyMaxThroughput != nil {
+
+		// query param qos_policy.max_throughput
+		var qrQosPolicyMaxThroughput string
+
+		if o.QosPolicyMaxThroughput != nil {
+			qrQosPolicyMaxThroughput = *o.QosPolicyMaxThroughput
+		}
+		qQosPolicyMaxThroughput := qrQosPolicyMaxThroughput
+		if qQosPolicyMaxThroughput != "" {
+
+			if err := r.SetQueryParam("qos_policy.max_throughput", qQosPolicyMaxThroughput); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.QosPolicyMaxThroughputIops != nil {
 
 		// query param qos_policy.max_throughput_iops
@@ -2100,6 +2219,23 @@ func (o *S3BucketSvmDeleteCollectionParams) WriteToRequest(r runtime.ClientReque
 		if qQosPolicyMaxThroughputMbps != "" {
 
 			if err := r.SetQueryParam("qos_policy.max_throughput_mbps", qQosPolicyMaxThroughputMbps); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyMinThroughput != nil {
+
+		// query param qos_policy.min_throughput
+		var qrQosPolicyMinThroughput string
+
+		if o.QosPolicyMinThroughput != nil {
+			qrQosPolicyMinThroughput = *o.QosPolicyMinThroughput
+		}
+		qQosPolicyMinThroughput := qrQosPolicyMinThroughput
+		if qQosPolicyMinThroughput != "" {
+
+			if err := r.SetQueryParam("qos_policy.min_throughput", qQosPolicyMinThroughput); err != nil {
 				return err
 			}
 		}

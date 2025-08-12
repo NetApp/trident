@@ -226,7 +226,7 @@ func NewSnapmirrorRelationshipModifyCollectionDefault(code int) *SnapmirrorRelat
 | 13303821    | Invalid SnapMirror policy name/UUID |
 | 13303819    | Could not retrieve SnapMirror policy information |
 | 13303851    | Cannot modify attributes of SnapMirror restore relationship |
-| 13303816    | Could not retrieve state or status values |
+| 13303816    | Could not retrieve the state or status values for the relationship. Wait a few minutes and try the operation again |
 | 13303837    | Given flags are valid only if SnapMirror state change is requested |
 | 6619546     | Destination must be a dp volume |
 | 13303808    | Transition to broken_off state failed |
@@ -264,6 +264,7 @@ func NewSnapmirrorRelationshipModifyCollectionDefault(code int) *SnapmirrorRelat
 | 13304093    | The property specified is not supported for the specified relationships. |
 | 6622077     | The expand operation has failed on the SnapMirror active sync relationship with specified destination path. |
 | 6619720     | Relationship information has been updated and is being propagated. Wait a few minutes and try the operation again. |
+| 13304159    | Could not retrieve the state or status values for the relationship. Wait a few minutes and try the operation again. If the error persists, address the error condition shown. |
 */
 type SnapmirrorRelationshipModifyCollectionDefault struct {
 	_statusCode int
@@ -428,9 +429,9 @@ type SnapmirrorRelationshipModifyCollectionBody struct {
 	// This property is the source endpoint of the relationship. The source endpoint can be a FlexVol volume, FlexGroup volume, Consistency Group, or SVM. To establish a SnapMirror relationship with SVM as source endpoint, the SVM must have only FlexVol volumes. For a Consistency Group this property identifies the source Consistency Group name. When specifying a Consistency Group as the source endpoint, the "source.consistency_group_volumes" property must be specified with the FlexVol volumes of type "RW". FlexVol volumes of type "DP" cannot be specified in the "source.consistency_group_volumes" list. Optionally, "source.luns" property of source endpoint can be specified with source LUN names during SnapMirror Consistency Group LUN Restore Operation.
 	Source *models.SnapmirrorSourceEndpoint `json:"source,omitempty"`
 
-	// State of the relationship.<br>To initialize the relationship, PATCH the state to "snapmirrored" for relationships with a policy of type "async" or to state "in_sync" for relationships with a policy of type "sync".<br>To break the relationship, PATCH the state to "broken_off" for relationships with a policy of type "async" or "sync". SnapMirror relationships with the policy type as "sync" and "sync_type" as "automated_failover" cannot be "broken_off".<br>To resync the relationship, PATCH the state to "snapmirrored" for relationships with a policy of type "async" or to state "in_sync" for relationships with a policy of type "sync". SnapMirror relationships with the policy type as "sync" and "sync_type" as "automated_failover" can be in "broken_off" state due to a failed attempt of SnapMirror failover.<br>To pause the relationship, suspending further transfers, PATCH the state to "paused" for relationships with a policy of type "async" or "sync". SnapMirror relationships with the policy type as "sync" and "sync_type" as "automated_failover" cannot be "paused".<br>To resume transfers for a paused relationship, PATCH the state to "snapmirrored" for relationships with a policy of type "async" or to state "in_sync" for relationships with a policy of type "sync".<br>The entries "in_sync", "out_of_sync", "synchronizing", and "expanding" are only applicable to relationships with a policy of type "sync". A PATCH call on the state change only triggers the transition to the specified state. You must poll on the "state", "healthy" and "unhealthy_reason" properties using a GET request to determine if the transition is successful. To automatically initialize the relationship when specifying "create_destination" property, set the state to "snapmirrored" for relationships with a policy of type "async" or to state "in_sync" for relationships with a policy of type "sync".
+	// State of the relationship.<br>To initialize the relationship, PATCH the state to "snapmirrored" for relationships with a policy of type "async" or to state "in_sync" for relationships with a policy of type "sync".<br>To break the relationship, PATCH the state to "broken_off" for relationships with a policy of type "async" or "sync". SnapMirror relationships with the policy type as "sync" and "sync_type" as "automated_failover" cannot be "broken_off".<br>To resync the relationship, PATCH the state to "snapmirrored" for relationships with a policy of type "async" or to state "in_sync" for relationships with a policy of type "sync". SnapMirror relationships with the policy type as "sync" and "sync_type" as "automated_failover" can be in "broken_off" state due to a failed attempt of SnapMirror failover.<br>To pause the relationship, suspending further transfers, PATCH the state to "paused" for relationships with a policy of type "async" or "sync". SnapMirror relationships with the policy type as "sync" and "sync_type" as "automated_failover" cannot be "paused".<br>To resume transfers for a paused relationship, PATCH the state to "snapmirrored" for relationships with a policy of type "async" or to state "in_sync" for relationships with a policy of type "sync".<br>The entries "in_sync", "out_of_sync", "synchronizing", "expanding", and "shrinking" are only applicable to relationships with a policy of type "sync". A PATCH call on the state change only triggers the transition to the specified state. You must poll on the "state", "healthy" and "unhealthy_reason" properties using a GET request to determine if the transition is successful. To automatically initialize the relationship when specifying "create_destination" property, set the state to "snapmirrored" for relationships with a policy of type "async" or to state "in_sync" for relationships with a policy of type "sync".
 	// Example: snapmirrored
-	// Enum: ["broken_off","paused","snapmirrored","uninitialized","in_sync","out_of_sync","synchronizing","expanding"]
+	// Enum: ["broken_off","paused","snapmirrored","uninitialized","in_sync","out_of_sync","synchronizing","expanding","shrinking"]
 	State *string `json:"state,omitempty"`
 
 	// Throttle, in KBs per second. This "throttle" overrides the "throttle" set on the SnapMirror relationship's policy. If neither of these are set, defaults to 0, which is interpreted as unlimited.
@@ -999,7 +1000,7 @@ var snapmirrorRelationshipModifyCollectionBodyTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["broken_off","paused","snapmirrored","uninitialized","in_sync","out_of_sync","synchronizing","expanding"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["broken_off","paused","snapmirrored","uninitialized","in_sync","out_of_sync","synchronizing","expanding","shrinking"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1088,6 +1089,16 @@ const (
 	// END DEBUGGING
 	// SnapmirrorRelationshipModifyCollectionBodyStateExpanding captures enum value "expanding"
 	SnapmirrorRelationshipModifyCollectionBodyStateExpanding string = "expanding"
+
+	// BEGIN DEBUGGING
+	// SnapmirrorRelationshipModifyCollectionBody
+	// SnapmirrorRelationshipModifyCollectionBody
+	// state
+	// State
+	// shrinking
+	// END DEBUGGING
+	// SnapmirrorRelationshipModifyCollectionBodyStateShrinking captures enum value "shrinking"
+	SnapmirrorRelationshipModifyCollectionBodyStateShrinking string = "shrinking"
 )
 
 // prop value enum

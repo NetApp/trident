@@ -70,6 +70,12 @@ type S3ServiceDeleteParams struct {
 	*/
 	DeleteAll *bool
 
+	/* ReturnTimeout.
+
+	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
+	*/
+	ReturnTimeout *int64
+
 	/* SvmUUID.
 
 	   UUID of the SVM to which this object belongs.
@@ -95,10 +101,13 @@ func (o *S3ServiceDeleteParams) WithDefaults() *S3ServiceDeleteParams {
 func (o *S3ServiceDeleteParams) SetDefaults() {
 	var (
 		deleteAllDefault = bool(true)
+
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := S3ServiceDeleteParams{
-		DeleteAll: &deleteAllDefault,
+		DeleteAll:     &deleteAllDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -151,6 +160,17 @@ func (o *S3ServiceDeleteParams) SetDeleteAll(deleteAll *bool) {
 	o.DeleteAll = deleteAll
 }
 
+// WithReturnTimeout adds the returnTimeout to the s3 service delete params
+func (o *S3ServiceDeleteParams) WithReturnTimeout(returnTimeout *int64) *S3ServiceDeleteParams {
+	o.SetReturnTimeout(returnTimeout)
+	return o
+}
+
+// SetReturnTimeout adds the returnTimeout to the s3 service delete params
+func (o *S3ServiceDeleteParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
+}
+
 // WithSvmUUID adds the svmUUID to the s3 service delete params
 func (o *S3ServiceDeleteParams) WithSvmUUID(svmUUID string) *S3ServiceDeleteParams {
 	o.SetSvmUUID(svmUUID)
@@ -182,6 +202,23 @@ func (o *S3ServiceDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strf
 		if qDeleteAll != "" {
 
 			if err := r.SetQueryParam("delete_all", qDeleteAll); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReturnTimeout != nil {
+
+		// query param return_timeout
+		var qrReturnTimeout int64
+
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
+		}
+		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
+		if qReturnTimeout != "" {
+
+			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
 				return err
 			}
 		}

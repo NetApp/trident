@@ -29,13 +29,28 @@ type AntiRansomwareVolume struct {
 	// Read Only: true
 	AntiRansomwareVolumeInlineSuspectFiles []*AntiRansomwareVolumeInlineSuspectFilesInlineArrayItem `json:"suspect_files,omitempty"`
 
+	// This field specifies whether the attack was reported by `File Analysis` or `Encrypted data percentage analysis`.
+	// Read Only: true
+	// Enum: ["file_analysis","encryption_percentage_analysis"]
+	AttackDetectedBy *string `json:"attack_detected_by,omitempty"`
+
 	// attack detection parameters
 	AttackDetectionParameters *AntiRansomwareVolumeAttackDetectionParameters `json:"attack_detection_parameters,omitempty"`
 
-	// Probability of a ransomware attack.<br>`none` No files are suspected of ransomware activity.<br>`low` A number of files are suspected of ransomware activity.<br>`moderate` A moderate number of files are suspected of ransomware activity.<br>`high` A large number of files are suspected of ransomware activity.
+	// Probability of a ransomware attack.<br>`none` No suspected ransomware activity.<br>`low` Minimally suspected ransomware activity.<br>`moderate` Moderately suspected ransomware activity.<br>`high` Significantly suspected ransomware activity.
 	// Read Only: true
 	// Enum: ["none","low","moderate","high"]
 	AttackProbability *string `json:"attack_probability,omitempty"`
+
+	// This field specifies the block device evaluation start time.
+	// Read Only: true
+	// Format: date-time
+	BlockDeviceDetectionStartTime *strfmt.DateTime `json:"block_device_detection_start_time,omitempty"`
+
+	// This field specifies the block device attack detection status. <br> `evaluation_period` Attack detection is currently in its evaluation phase. <br> `active_unsuitable_workload` Attack detection is active, but the current workload is not suitable for Anti-ransomware protection. <br> `active_suitable_workload` Attack detection is active, and the current workload is appropriate for Anti-ransomware protection.
+	// Read Only: true
+	// Enum: ["evaluation_period","active_unsuitable_workload","active_suitable_workload"]
+	BlockDeviceDetectionState *string `json:"block_device_detection_state,omitempty"`
 
 	// Time when Anti-ransomware monitoring `state` is set to dry-run value for starting evaluation mode.
 	// Read Only: true
@@ -48,7 +63,7 @@ type AntiRansomwareVolume struct {
 	// space
 	Space *AntiRansomwareVolumeInlineSpace `json:"space,omitempty"`
 
-	// Anti-ransomware state.<br>`disabled` Anti-ransomware monitoring is disabled on the volume.  This is the default state in a POST operation.<br>`disable_in_progress` Anti-ransomware monitoring is being disabled and a cleanup operation is in effect. Valid in GET operation.<br>`dry_run` Anti-ransomware monitoring is enabled in the evaluation mode.<br>`enabled` Anti-ransomware monitoring is active on the volume.<br>`paused` Anti-ransomware monitoring is paused on the volume.<br>`enable_paused` Anti-ransomware monitoring is paused on the volume from its earlier enabled state. Valid in GET operation. <br>`dry_run_paused` Anti-ransomware monitoring is paused on the volume from its earlier dry_run state. Valid in GET operation. <br>For POST, the valid Anti-ransomware states are only `disabled`, `enabled` and `dry_run`, whereas for PATCH, `paused` is also valid along with the three valid states for POST.
+	// Anti-ransomware state.<br>`disabled` Anti-ransomware monitoring is disabled on the volume. This is the default state in a POST operation.<br>`disable_in_progress` Anti-ransomware monitoring is being disabled and a cleanup operation is in effect. Valid in GET operation.<br>`dry_run` Anti-ransomware monitoring is enabled in the evaluation mode.<br>`enabled` Anti-ransomware monitoring is active on the volume.<br>`paused` Anti-ransomware monitoring is paused on the volume.<br>`enable_paused` Anti-ransomware monitoring is paused on the volume from its earlier enabled state. Valid in GET operation. <br>`dry_run_paused` Anti-ransomware monitoring is paused on the volume from its earlier dry_run state. Valid in GET operation. <br>For POST, the valid Anti-ransomware states are only `disabled`, `enabled` and `dry_run`, whereas for PATCH, `paused` is also valid along with the three valid states for POST.
 	// Enum: ["disabled","disable_in_progress","dry_run","enabled","paused","enable_paused","dry_run_paused"]
 	State *string `json:"state,omitempty"`
 
@@ -80,11 +95,23 @@ func (m *AntiRansomwareVolume) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateAttackDetectedBy(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateAttackDetectionParameters(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateAttackProbability(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateBlockDeviceDetectionStartTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateBlockDeviceDetectionState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -165,6 +192,62 @@ func (m *AntiRansomwareVolume) validateAntiRansomwareVolumeInlineSuspectFiles(fo
 			}
 		}
 
+	}
+
+	return nil
+}
+
+var antiRansomwareVolumeTypeAttackDetectedByPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["file_analysis","encryption_percentage_analysis"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		antiRansomwareVolumeTypeAttackDetectedByPropEnum = append(antiRansomwareVolumeTypeAttackDetectedByPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// anti_ransomware_volume
+	// AntiRansomwareVolume
+	// attack_detected_by
+	// AttackDetectedBy
+	// file_analysis
+	// END DEBUGGING
+	// AntiRansomwareVolumeAttackDetectedByFileAnalysis captures enum value "file_analysis"
+	AntiRansomwareVolumeAttackDetectedByFileAnalysis string = "file_analysis"
+
+	// BEGIN DEBUGGING
+	// anti_ransomware_volume
+	// AntiRansomwareVolume
+	// attack_detected_by
+	// AttackDetectedBy
+	// encryption_percentage_analysis
+	// END DEBUGGING
+	// AntiRansomwareVolumeAttackDetectedByEncryptionPercentageAnalysis captures enum value "encryption_percentage_analysis"
+	AntiRansomwareVolumeAttackDetectedByEncryptionPercentageAnalysis string = "encryption_percentage_analysis"
+)
+
+// prop value enum
+func (m *AntiRansomwareVolume) validateAttackDetectedByEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, antiRansomwareVolumeTypeAttackDetectedByPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *AntiRansomwareVolume) validateAttackDetectedBy(formats strfmt.Registry) error {
+	if swag.IsZero(m.AttackDetectedBy) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAttackDetectedByEnum("attack_detected_by", "body", *m.AttackDetectedBy); err != nil {
+		return err
 	}
 
 	return nil
@@ -257,6 +340,84 @@ func (m *AntiRansomwareVolume) validateAttackProbability(formats strfmt.Registry
 
 	// value enum
 	if err := m.validateAttackProbabilityEnum("attack_probability", "body", *m.AttackProbability); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolume) validateBlockDeviceDetectionStartTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.BlockDeviceDetectionStartTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("block_device_detection_start_time", "body", "date-time", m.BlockDeviceDetectionStartTime.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var antiRansomwareVolumeTypeBlockDeviceDetectionStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["evaluation_period","active_unsuitable_workload","active_suitable_workload"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		antiRansomwareVolumeTypeBlockDeviceDetectionStatePropEnum = append(antiRansomwareVolumeTypeBlockDeviceDetectionStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// anti_ransomware_volume
+	// AntiRansomwareVolume
+	// block_device_detection_state
+	// BlockDeviceDetectionState
+	// evaluation_period
+	// END DEBUGGING
+	// AntiRansomwareVolumeBlockDeviceDetectionStateEvaluationPeriod captures enum value "evaluation_period"
+	AntiRansomwareVolumeBlockDeviceDetectionStateEvaluationPeriod string = "evaluation_period"
+
+	// BEGIN DEBUGGING
+	// anti_ransomware_volume
+	// AntiRansomwareVolume
+	// block_device_detection_state
+	// BlockDeviceDetectionState
+	// active_unsuitable_workload
+	// END DEBUGGING
+	// AntiRansomwareVolumeBlockDeviceDetectionStateActiveUnsuitableWorkload captures enum value "active_unsuitable_workload"
+	AntiRansomwareVolumeBlockDeviceDetectionStateActiveUnsuitableWorkload string = "active_unsuitable_workload"
+
+	// BEGIN DEBUGGING
+	// anti_ransomware_volume
+	// AntiRansomwareVolume
+	// block_device_detection_state
+	// BlockDeviceDetectionState
+	// active_suitable_workload
+	// END DEBUGGING
+	// AntiRansomwareVolumeBlockDeviceDetectionStateActiveSuitableWorkload captures enum value "active_suitable_workload"
+	AntiRansomwareVolumeBlockDeviceDetectionStateActiveSuitableWorkload string = "active_suitable_workload"
+)
+
+// prop value enum
+func (m *AntiRansomwareVolume) validateBlockDeviceDetectionStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, antiRansomwareVolumeTypeBlockDeviceDetectionStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *AntiRansomwareVolume) validateBlockDeviceDetectionState(formats strfmt.Registry) error {
+	if swag.IsZero(m.BlockDeviceDetectionState) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateBlockDeviceDetectionStateEnum("block_device_detection_state", "body", *m.BlockDeviceDetectionState); err != nil {
 		return err
 	}
 
@@ -478,11 +639,23 @@ func (m *AntiRansomwareVolume) ContextValidate(ctx context.Context, formats strf
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAttackDetectedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateAttackDetectionParameters(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateAttackProbability(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateBlockDeviceDetectionStartTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateBlockDeviceDetectionState(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -560,6 +733,15 @@ func (m *AntiRansomwareVolume) contextValidateAntiRansomwareVolumeInlineSuspectF
 	return nil
 }
 
+func (m *AntiRansomwareVolume) contextValidateAttackDetectedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "attack_detected_by", "body", m.AttackDetectedBy); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *AntiRansomwareVolume) contextValidateAttackDetectionParameters(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.AttackDetectionParameters != nil {
@@ -577,6 +759,24 @@ func (m *AntiRansomwareVolume) contextValidateAttackDetectionParameters(ctx cont
 func (m *AntiRansomwareVolume) contextValidateAttackProbability(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "attack_probability", "body", m.AttackProbability); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolume) contextValidateBlockDeviceDetectionStartTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "block_device_detection_start_time", "body", m.BlockDeviceDetectionStartTime); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolume) contextValidateBlockDeviceDetectionState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "block_device_detection_state", "body", m.BlockDeviceDetectionState); err != nil {
 		return err
 	}
 

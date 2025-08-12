@@ -273,6 +273,7 @@ func NewCloudTargetCreateDefault(code int) *CloudTargetCreateDefault {
 | 787301 | ONTAP S3 Bucket is of type NAS and is not supported as a target for FabricPool. |
 | 787302 | Cannot use HTTP port with \"-is-ssl-enabled\" set to true. |
 | 787303 | Cannot use HTTPS port with \"-is-ssl-enabled\" set to false. |
+| 787325 | FabricPool is not supported on this platform. |
 | 787350 | Creating an object store configuration with a Managed Service Identity (MSI) token is only supported on Azure NetApp files. |
 | 787351 | Internal Error. Invalid authentication type. |
 | 787352 | Creating an object store configuration with a Managed Service Identity (MSI) token requires an effective cluster version of ONTAP 9.16.1 or later. |

@@ -68,6 +68,12 @@ type FileDirectorySecurityGetParams struct {
 	*/
 	Fields []string
 
+	/* LookupNames.
+
+	   Translate security identifiers into names.
+	*/
+	LookupNames *bool
+
 	/* Path.
 
 	   target path
@@ -144,6 +150,17 @@ func (o *FileDirectorySecurityGetParams) SetFields(fields []string) {
 	o.Fields = fields
 }
 
+// WithLookupNames adds the lookupNames to the file directory security get params
+func (o *FileDirectorySecurityGetParams) WithLookupNames(lookupNames *bool) *FileDirectorySecurityGetParams {
+	o.SetLookupNames(lookupNames)
+	return o
+}
+
+// SetLookupNames adds the lookupNames to the file directory security get params
+func (o *FileDirectorySecurityGetParams) SetLookupNames(lookupNames *bool) {
+	o.LookupNames = lookupNames
+}
+
 // WithPath adds the path to the file directory security get params
 func (o *FileDirectorySecurityGetParams) WithPath(path string) *FileDirectorySecurityGetParams {
 	o.SetPath(path)
@@ -182,6 +199,23 @@ func (o *FileDirectorySecurityGetParams) WriteToRequest(r runtime.ClientRequest,
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.LookupNames != nil {
+
+		// query param lookup_names
+		var qrLookupNames bool
+
+		if o.LookupNames != nil {
+			qrLookupNames = *o.LookupNames
+		}
+		qLookupNames := swag.FormatBool(qrLookupNames)
+		if qLookupNames != "" {
+
+			if err := r.SetQueryParam("lookup_names", qLookupNames); err != nil {
+				return err
+			}
 		}
 	}
 

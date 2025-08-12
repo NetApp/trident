@@ -524,6 +524,24 @@ type ConsistencyGroupModifyCollectionParams struct {
 	*/
 	ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority *string
 
+	/* ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm.
+
+	   Filter by consistency_groups.namespaces.subsystem_map.subsystem.hosts.proximity.local_svm
+	*/
+	ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm *bool
+
+	/* ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName.
+
+	   Filter by consistency_groups.namespaces.subsystem_map.subsystem.hosts.proximity.peer_svms.name
+	*/
+	ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName *string
+
+	/* ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID.
+
+	   Filter by consistency_groups.namespaces.subsystem_map.subsystem.hosts.proximity.peer_svms.uuid
+	*/
+	ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID *string
+
 	/* ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType.
 
 	   Filter by consistency_groups.namespaces.subsystem_map.subsystem.hosts.tls.key_type
@@ -1369,6 +1387,24 @@ type ConsistencyGroupModifyCollectionParams struct {
 	   Filter by namespaces.subsystem_map.subsystem.hosts.priority
 	*/
 	NamespacesSubsystemMapSubsystemHostsPriority *string
+
+	/* NamespacesSubsystemMapSubsystemHostsProximityLocalSvm.
+
+	   Filter by namespaces.subsystem_map.subsystem.hosts.proximity.local_svm
+	*/
+	NamespacesSubsystemMapSubsystemHostsProximityLocalSvm *bool
+
+	/* NamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName.
+
+	   Filter by namespaces.subsystem_map.subsystem.hosts.proximity.peer_svms.name
+	*/
+	NamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName *string
+
+	/* NamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID.
+
+	   Filter by namespaces.subsystem_map.subsystem.hosts.proximity.peer_svms.uuid
+	*/
+	NamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID *string
 
 	/* NamespacesSubsystemMapSubsystemHostsTLSKeyType.
 
@@ -2904,6 +2940,39 @@ func (o *ConsistencyGroupModifyCollectionParams) WithConsistencyGroupsNamespaces
 // SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority to the consistency group modify collection params
 func (o *ConsistencyGroupModifyCollectionParams) SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority(consistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority *string) {
 	o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority = consistencyGroupsNamespacesSubsystemMapSubsystemHostsPriority
+}
+
+// WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm(consistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm *bool) *ConsistencyGroupModifyCollectionParams {
+	o.SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm(consistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm)
+	return o
+}
+
+// SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm(consistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm *bool) {
+	o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm = consistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm
+}
+
+// WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName(consistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName *string) *ConsistencyGroupModifyCollectionParams {
+	o.SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName(consistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName)
+	return o
+}
+
+// SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName(consistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName *string) {
+	o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName = consistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName
+}
+
+// WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID(consistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID *string) *ConsistencyGroupModifyCollectionParams {
+	o.SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID(consistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID)
+	return o
+}
+
+// SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUuid to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID(consistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID *string) {
+	o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID = consistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID
 }
 
 // WithConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType adds the consistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType to the consistency group modify collection params
@@ -4455,6 +4524,39 @@ func (o *ConsistencyGroupModifyCollectionParams) WithNamespacesSubsystemMapSubsy
 // SetNamespacesSubsystemMapSubsystemHostsPriority adds the namespacesSubsystemMapSubsystemHostsPriority to the consistency group modify collection params
 func (o *ConsistencyGroupModifyCollectionParams) SetNamespacesSubsystemMapSubsystemHostsPriority(namespacesSubsystemMapSubsystemHostsPriority *string) {
 	o.NamespacesSubsystemMapSubsystemHostsPriority = namespacesSubsystemMapSubsystemHostsPriority
+}
+
+// WithNamespacesSubsystemMapSubsystemHostsProximityLocalSvm adds the namespacesSubsystemMapSubsystemHostsProximityLocalSvm to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithNamespacesSubsystemMapSubsystemHostsProximityLocalSvm(namespacesSubsystemMapSubsystemHostsProximityLocalSvm *bool) *ConsistencyGroupModifyCollectionParams {
+	o.SetNamespacesSubsystemMapSubsystemHostsProximityLocalSvm(namespacesSubsystemMapSubsystemHostsProximityLocalSvm)
+	return o
+}
+
+// SetNamespacesSubsystemMapSubsystemHostsProximityLocalSvm adds the namespacesSubsystemMapSubsystemHostsProximityLocalSvm to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetNamespacesSubsystemMapSubsystemHostsProximityLocalSvm(namespacesSubsystemMapSubsystemHostsProximityLocalSvm *bool) {
+	o.NamespacesSubsystemMapSubsystemHostsProximityLocalSvm = namespacesSubsystemMapSubsystemHostsProximityLocalSvm
+}
+
+// WithNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName adds the namespacesSubsystemMapSubsystemHostsProximityPeerSvmsName to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName(namespacesSubsystemMapSubsystemHostsProximityPeerSvmsName *string) *ConsistencyGroupModifyCollectionParams {
+	o.SetNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName(namespacesSubsystemMapSubsystemHostsProximityPeerSvmsName)
+	return o
+}
+
+// SetNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName adds the namespacesSubsystemMapSubsystemHostsProximityPeerSvmsName to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName(namespacesSubsystemMapSubsystemHostsProximityPeerSvmsName *string) {
+	o.NamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName = namespacesSubsystemMapSubsystemHostsProximityPeerSvmsName
+}
+
+// WithNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID adds the namespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID(namespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID *string) *ConsistencyGroupModifyCollectionParams {
+	o.SetNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID(namespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID)
+	return o
+}
+
+// SetNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID adds the namespacesSubsystemMapSubsystemHostsProximityPeerSvmsUuid to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID(namespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID *string) {
+	o.NamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID = namespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID
 }
 
 // WithNamespacesSubsystemMapSubsystemHostsTLSKeyType adds the namespacesSubsystemMapSubsystemHostsTLSKeyType to the consistency group modify collection params
@@ -6896,6 +6998,57 @@ func (o *ConsistencyGroupModifyCollectionParams) WriteToRequest(r runtime.Client
 		}
 	}
 
+	if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm != nil {
+
+		// query param consistency_groups.namespaces.subsystem_map.subsystem.hosts.proximity.local_svm
+		var qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm bool
+
+		if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm != nil {
+			qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm = *o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm
+		}
+		qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm := swag.FormatBool(qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm)
+		if qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.subsystem_map.subsystem.hosts.proximity.local_svm", qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityLocalSvm); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName != nil {
+
+		// query param consistency_groups.namespaces.subsystem_map.subsystem.hosts.proximity.peer_svms.name
+		var qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName string
+
+		if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName != nil {
+			qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName = *o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName
+		}
+		qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName := qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName
+		if qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.subsystem_map.subsystem.hosts.proximity.peer_svms.name", qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID != nil {
+
+		// query param consistency_groups.namespaces.subsystem_map.subsystem.hosts.proximity.peer_svms.uuid
+		var qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID string
+
+		if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID != nil {
+			qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID = *o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID
+		}
+		qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID := qrConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID
+		if qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.subsystem_map.subsystem.hosts.proximity.peer_svms.uuid", qConsistencyGroupsNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ConsistencyGroupsNamespacesSubsystemMapSubsystemHostsTLSKeyType != nil {
 
 		// query param consistency_groups.namespaces.subsystem_map.subsystem.hosts.tls.key_type
@@ -9274,6 +9427,57 @@ func (o *ConsistencyGroupModifyCollectionParams) WriteToRequest(r runtime.Client
 		if qNamespacesSubsystemMapSubsystemHostsPriority != "" {
 
 			if err := r.SetQueryParam("namespaces.subsystem_map.subsystem.hosts.priority", qNamespacesSubsystemMapSubsystemHostsPriority); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSubsystemMapSubsystemHostsProximityLocalSvm != nil {
+
+		// query param namespaces.subsystem_map.subsystem.hosts.proximity.local_svm
+		var qrNamespacesSubsystemMapSubsystemHostsProximityLocalSvm bool
+
+		if o.NamespacesSubsystemMapSubsystemHostsProximityLocalSvm != nil {
+			qrNamespacesSubsystemMapSubsystemHostsProximityLocalSvm = *o.NamespacesSubsystemMapSubsystemHostsProximityLocalSvm
+		}
+		qNamespacesSubsystemMapSubsystemHostsProximityLocalSvm := swag.FormatBool(qrNamespacesSubsystemMapSubsystemHostsProximityLocalSvm)
+		if qNamespacesSubsystemMapSubsystemHostsProximityLocalSvm != "" {
+
+			if err := r.SetQueryParam("namespaces.subsystem_map.subsystem.hosts.proximity.local_svm", qNamespacesSubsystemMapSubsystemHostsProximityLocalSvm); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName != nil {
+
+		// query param namespaces.subsystem_map.subsystem.hosts.proximity.peer_svms.name
+		var qrNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName string
+
+		if o.NamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName != nil {
+			qrNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName = *o.NamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName
+		}
+		qNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName := qrNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName
+		if qNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName != "" {
+
+			if err := r.SetQueryParam("namespaces.subsystem_map.subsystem.hosts.proximity.peer_svms.name", qNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID != nil {
+
+		// query param namespaces.subsystem_map.subsystem.hosts.proximity.peer_svms.uuid
+		var qrNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID string
+
+		if o.NamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID != nil {
+			qrNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID = *o.NamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID
+		}
+		qNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID := qrNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID
+		if qNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID != "" {
+
+			if err := r.SetQueryParam("namespaces.subsystem_map.subsystem.hosts.proximity.peer_svms.uuid", qNamespacesSubsystemMapSubsystemHostsProximityPeerSvmsUUID); err != nil {
 				return err
 			}
 		}

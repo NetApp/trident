@@ -121,7 +121,7 @@ func NewMultiAdminVerifyRuleModifyCollectionDefault(code int) *MultiAdminVerifyR
 | 262311 | Value must be greater than zero. |
 | 262312 | Number of required approvers must be less than the total number of unique approvers in the approval-groups. |
 | 262313 | Number of unique approvers in the approval-groups must be greater than the number of required approvers. |
-| 262316 | Value must be in the range one second to two weeks. |
+| 262316 | Value must be in the range two minutes to two weeks. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type MultiAdminVerifyRuleModifyCollectionDefault struct {

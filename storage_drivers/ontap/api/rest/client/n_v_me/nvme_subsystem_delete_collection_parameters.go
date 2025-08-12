@@ -124,6 +124,24 @@ type NvmeSubsystemDeleteCollectionParams struct {
 	*/
 	HostsPriority *string
 
+	/* HostsProximityLocalSvm.
+
+	   Filter by hosts.proximity.local_svm
+	*/
+	HostsProximityLocalSvm *bool
+
+	/* HostsProximityPeerSvmsName.
+
+	   Filter by hosts.proximity.peer_svms.name
+	*/
+	HostsProximityPeerSvmsName *string
+
+	/* HostsProximityPeerSvmsUUID.
+
+	   Filter by hosts.proximity.peer_svms.uuid
+	*/
+	HostsProximityPeerSvmsUUID *string
+
 	/* HostsTLSKeyType.
 
 	   Filter by hosts.tls.key_type
@@ -159,6 +177,72 @@ type NvmeSubsystemDeleteCollectionParams struct {
 	   Filter by os_type
 	*/
 	OsType *string
+
+	/* ReplicationErrorSubsystemLocalSvm.
+
+	   Filter by replication.error.subsystem.local_svm
+	*/
+	ReplicationErrorSubsystemLocalSvm *bool
+
+	/* ReplicationErrorSubsystemName.
+
+	   Filter by replication.error.subsystem.name
+	*/
+	ReplicationErrorSubsystemName *string
+
+	/* ReplicationErrorSubsystemUUID.
+
+	   Filter by replication.error.subsystem.uuid
+	*/
+	ReplicationErrorSubsystemUUID *string
+
+	/* ReplicationErrorSummaryArgumentsCode.
+
+	   Filter by replication.error.summary.arguments.code
+	*/
+	ReplicationErrorSummaryArgumentsCode *string
+
+	/* ReplicationErrorSummaryArgumentsMessage.
+
+	   Filter by replication.error.summary.arguments.message
+	*/
+	ReplicationErrorSummaryArgumentsMessage *string
+
+	/* ReplicationErrorSummaryCode.
+
+	   Filter by replication.error.summary.code
+	*/
+	ReplicationErrorSummaryCode *string
+
+	/* ReplicationErrorSummaryMessage.
+
+	   Filter by replication.error.summary.message
+	*/
+	ReplicationErrorSummaryMessage *string
+
+	/* ReplicationPeerSubsystemUUID.
+
+	   Filter by replication.peer_subsystem.uuid
+	*/
+	ReplicationPeerSubsystemUUID *string
+
+	/* ReplicationPeerSvmName.
+
+	   Filter by replication.peer_svm.name
+	*/
+	ReplicationPeerSvmName *string
+
+	/* ReplicationPeerSvmUUID.
+
+	   Filter by replication.peer_svm.uuid
+	*/
+	ReplicationPeerSvmUUID *string
+
+	/* ReplicationState.
+
+	   Filter by replication.state
+	*/
+	ReplicationState *string
 
 	/* ReturnRecords.
 
@@ -425,6 +509,39 @@ func (o *NvmeSubsystemDeleteCollectionParams) SetHostsPriority(hostsPriority *st
 	o.HostsPriority = hostsPriority
 }
 
+// WithHostsProximityLocalSvm adds the hostsProximityLocalSvm to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) WithHostsProximityLocalSvm(hostsProximityLocalSvm *bool) *NvmeSubsystemDeleteCollectionParams {
+	o.SetHostsProximityLocalSvm(hostsProximityLocalSvm)
+	return o
+}
+
+// SetHostsProximityLocalSvm adds the hostsProximityLocalSvm to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) SetHostsProximityLocalSvm(hostsProximityLocalSvm *bool) {
+	o.HostsProximityLocalSvm = hostsProximityLocalSvm
+}
+
+// WithHostsProximityPeerSvmsName adds the hostsProximityPeerSvmsName to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) WithHostsProximityPeerSvmsName(hostsProximityPeerSvmsName *string) *NvmeSubsystemDeleteCollectionParams {
+	o.SetHostsProximityPeerSvmsName(hostsProximityPeerSvmsName)
+	return o
+}
+
+// SetHostsProximityPeerSvmsName adds the hostsProximityPeerSvmsName to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) SetHostsProximityPeerSvmsName(hostsProximityPeerSvmsName *string) {
+	o.HostsProximityPeerSvmsName = hostsProximityPeerSvmsName
+}
+
+// WithHostsProximityPeerSvmsUUID adds the hostsProximityPeerSvmsUUID to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) WithHostsProximityPeerSvmsUUID(hostsProximityPeerSvmsUUID *string) *NvmeSubsystemDeleteCollectionParams {
+	o.SetHostsProximityPeerSvmsUUID(hostsProximityPeerSvmsUUID)
+	return o
+}
+
+// SetHostsProximityPeerSvmsUUID adds the hostsProximityPeerSvmsUuid to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) SetHostsProximityPeerSvmsUUID(hostsProximityPeerSvmsUUID *string) {
+	o.HostsProximityPeerSvmsUUID = hostsProximityPeerSvmsUUID
+}
+
 // WithHostsTLSKeyType adds the hostsTLSKeyType to the nvme subsystem delete collection params
 func (o *NvmeSubsystemDeleteCollectionParams) WithHostsTLSKeyType(hostsTLSKeyType *string) *NvmeSubsystemDeleteCollectionParams {
 	o.SetHostsTLSKeyType(hostsTLSKeyType)
@@ -489,6 +606,127 @@ func (o *NvmeSubsystemDeleteCollectionParams) WithOsType(osType *string) *NvmeSu
 // SetOsType adds the osType to the nvme subsystem delete collection params
 func (o *NvmeSubsystemDeleteCollectionParams) SetOsType(osType *string) {
 	o.OsType = osType
+}
+
+// WithReplicationErrorSubsystemLocalSvm adds the replicationErrorSubsystemLocalSvm to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) WithReplicationErrorSubsystemLocalSvm(replicationErrorSubsystemLocalSvm *bool) *NvmeSubsystemDeleteCollectionParams {
+	o.SetReplicationErrorSubsystemLocalSvm(replicationErrorSubsystemLocalSvm)
+	return o
+}
+
+// SetReplicationErrorSubsystemLocalSvm adds the replicationErrorSubsystemLocalSvm to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) SetReplicationErrorSubsystemLocalSvm(replicationErrorSubsystemLocalSvm *bool) {
+	o.ReplicationErrorSubsystemLocalSvm = replicationErrorSubsystemLocalSvm
+}
+
+// WithReplicationErrorSubsystemName adds the replicationErrorSubsystemName to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) WithReplicationErrorSubsystemName(replicationErrorSubsystemName *string) *NvmeSubsystemDeleteCollectionParams {
+	o.SetReplicationErrorSubsystemName(replicationErrorSubsystemName)
+	return o
+}
+
+// SetReplicationErrorSubsystemName adds the replicationErrorSubsystemName to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) SetReplicationErrorSubsystemName(replicationErrorSubsystemName *string) {
+	o.ReplicationErrorSubsystemName = replicationErrorSubsystemName
+}
+
+// WithReplicationErrorSubsystemUUID adds the replicationErrorSubsystemUUID to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) WithReplicationErrorSubsystemUUID(replicationErrorSubsystemUUID *string) *NvmeSubsystemDeleteCollectionParams {
+	o.SetReplicationErrorSubsystemUUID(replicationErrorSubsystemUUID)
+	return o
+}
+
+// SetReplicationErrorSubsystemUUID adds the replicationErrorSubsystemUuid to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) SetReplicationErrorSubsystemUUID(replicationErrorSubsystemUUID *string) {
+	o.ReplicationErrorSubsystemUUID = replicationErrorSubsystemUUID
+}
+
+// WithReplicationErrorSummaryArgumentsCode adds the replicationErrorSummaryArgumentsCode to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) WithReplicationErrorSummaryArgumentsCode(replicationErrorSummaryArgumentsCode *string) *NvmeSubsystemDeleteCollectionParams {
+	o.SetReplicationErrorSummaryArgumentsCode(replicationErrorSummaryArgumentsCode)
+	return o
+}
+
+// SetReplicationErrorSummaryArgumentsCode adds the replicationErrorSummaryArgumentsCode to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) SetReplicationErrorSummaryArgumentsCode(replicationErrorSummaryArgumentsCode *string) {
+	o.ReplicationErrorSummaryArgumentsCode = replicationErrorSummaryArgumentsCode
+}
+
+// WithReplicationErrorSummaryArgumentsMessage adds the replicationErrorSummaryArgumentsMessage to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) WithReplicationErrorSummaryArgumentsMessage(replicationErrorSummaryArgumentsMessage *string) *NvmeSubsystemDeleteCollectionParams {
+	o.SetReplicationErrorSummaryArgumentsMessage(replicationErrorSummaryArgumentsMessage)
+	return o
+}
+
+// SetReplicationErrorSummaryArgumentsMessage adds the replicationErrorSummaryArgumentsMessage to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) SetReplicationErrorSummaryArgumentsMessage(replicationErrorSummaryArgumentsMessage *string) {
+	o.ReplicationErrorSummaryArgumentsMessage = replicationErrorSummaryArgumentsMessage
+}
+
+// WithReplicationErrorSummaryCode adds the replicationErrorSummaryCode to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) WithReplicationErrorSummaryCode(replicationErrorSummaryCode *string) *NvmeSubsystemDeleteCollectionParams {
+	o.SetReplicationErrorSummaryCode(replicationErrorSummaryCode)
+	return o
+}
+
+// SetReplicationErrorSummaryCode adds the replicationErrorSummaryCode to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) SetReplicationErrorSummaryCode(replicationErrorSummaryCode *string) {
+	o.ReplicationErrorSummaryCode = replicationErrorSummaryCode
+}
+
+// WithReplicationErrorSummaryMessage adds the replicationErrorSummaryMessage to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) WithReplicationErrorSummaryMessage(replicationErrorSummaryMessage *string) *NvmeSubsystemDeleteCollectionParams {
+	o.SetReplicationErrorSummaryMessage(replicationErrorSummaryMessage)
+	return o
+}
+
+// SetReplicationErrorSummaryMessage adds the replicationErrorSummaryMessage to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) SetReplicationErrorSummaryMessage(replicationErrorSummaryMessage *string) {
+	o.ReplicationErrorSummaryMessage = replicationErrorSummaryMessage
+}
+
+// WithReplicationPeerSubsystemUUID adds the replicationPeerSubsystemUUID to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) WithReplicationPeerSubsystemUUID(replicationPeerSubsystemUUID *string) *NvmeSubsystemDeleteCollectionParams {
+	o.SetReplicationPeerSubsystemUUID(replicationPeerSubsystemUUID)
+	return o
+}
+
+// SetReplicationPeerSubsystemUUID adds the replicationPeerSubsystemUuid to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) SetReplicationPeerSubsystemUUID(replicationPeerSubsystemUUID *string) {
+	o.ReplicationPeerSubsystemUUID = replicationPeerSubsystemUUID
+}
+
+// WithReplicationPeerSvmName adds the replicationPeerSvmName to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) WithReplicationPeerSvmName(replicationPeerSvmName *string) *NvmeSubsystemDeleteCollectionParams {
+	o.SetReplicationPeerSvmName(replicationPeerSvmName)
+	return o
+}
+
+// SetReplicationPeerSvmName adds the replicationPeerSvmName to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) SetReplicationPeerSvmName(replicationPeerSvmName *string) {
+	o.ReplicationPeerSvmName = replicationPeerSvmName
+}
+
+// WithReplicationPeerSvmUUID adds the replicationPeerSvmUUID to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) WithReplicationPeerSvmUUID(replicationPeerSvmUUID *string) *NvmeSubsystemDeleteCollectionParams {
+	o.SetReplicationPeerSvmUUID(replicationPeerSvmUUID)
+	return o
+}
+
+// SetReplicationPeerSvmUUID adds the replicationPeerSvmUuid to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) SetReplicationPeerSvmUUID(replicationPeerSvmUUID *string) {
+	o.ReplicationPeerSvmUUID = replicationPeerSvmUUID
+}
+
+// WithReplicationState adds the replicationState to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) WithReplicationState(replicationState *string) *NvmeSubsystemDeleteCollectionParams {
+	o.SetReplicationState(replicationState)
+	return o
+}
+
+// SetReplicationState adds the replicationState to the nvme subsystem delete collection params
+func (o *NvmeSubsystemDeleteCollectionParams) SetReplicationState(replicationState *string) {
+	o.ReplicationState = replicationState
 }
 
 // WithReturnRecords adds the returnRecords to the nvme subsystem delete collection params
@@ -812,6 +1050,57 @@ func (o *NvmeSubsystemDeleteCollectionParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
+	if o.HostsProximityLocalSvm != nil {
+
+		// query param hosts.proximity.local_svm
+		var qrHostsProximityLocalSvm bool
+
+		if o.HostsProximityLocalSvm != nil {
+			qrHostsProximityLocalSvm = *o.HostsProximityLocalSvm
+		}
+		qHostsProximityLocalSvm := swag.FormatBool(qrHostsProximityLocalSvm)
+		if qHostsProximityLocalSvm != "" {
+
+			if err := r.SetQueryParam("hosts.proximity.local_svm", qHostsProximityLocalSvm); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HostsProximityPeerSvmsName != nil {
+
+		// query param hosts.proximity.peer_svms.name
+		var qrHostsProximityPeerSvmsName string
+
+		if o.HostsProximityPeerSvmsName != nil {
+			qrHostsProximityPeerSvmsName = *o.HostsProximityPeerSvmsName
+		}
+		qHostsProximityPeerSvmsName := qrHostsProximityPeerSvmsName
+		if qHostsProximityPeerSvmsName != "" {
+
+			if err := r.SetQueryParam("hosts.proximity.peer_svms.name", qHostsProximityPeerSvmsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HostsProximityPeerSvmsUUID != nil {
+
+		// query param hosts.proximity.peer_svms.uuid
+		var qrHostsProximityPeerSvmsUUID string
+
+		if o.HostsProximityPeerSvmsUUID != nil {
+			qrHostsProximityPeerSvmsUUID = *o.HostsProximityPeerSvmsUUID
+		}
+		qHostsProximityPeerSvmsUUID := qrHostsProximityPeerSvmsUUID
+		if qHostsProximityPeerSvmsUUID != "" {
+
+			if err := r.SetQueryParam("hosts.proximity.peer_svms.uuid", qHostsProximityPeerSvmsUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.HostsTLSKeyType != nil {
 
 		// query param hosts.tls.key_type
@@ -895,6 +1184,193 @@ func (o *NvmeSubsystemDeleteCollectionParams) WriteToRequest(r runtime.ClientReq
 		if qOsType != "" {
 
 			if err := r.SetQueryParam("os_type", qOsType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorSubsystemLocalSvm != nil {
+
+		// query param replication.error.subsystem.local_svm
+		var qrReplicationErrorSubsystemLocalSvm bool
+
+		if o.ReplicationErrorSubsystemLocalSvm != nil {
+			qrReplicationErrorSubsystemLocalSvm = *o.ReplicationErrorSubsystemLocalSvm
+		}
+		qReplicationErrorSubsystemLocalSvm := swag.FormatBool(qrReplicationErrorSubsystemLocalSvm)
+		if qReplicationErrorSubsystemLocalSvm != "" {
+
+			if err := r.SetQueryParam("replication.error.subsystem.local_svm", qReplicationErrorSubsystemLocalSvm); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorSubsystemName != nil {
+
+		// query param replication.error.subsystem.name
+		var qrReplicationErrorSubsystemName string
+
+		if o.ReplicationErrorSubsystemName != nil {
+			qrReplicationErrorSubsystemName = *o.ReplicationErrorSubsystemName
+		}
+		qReplicationErrorSubsystemName := qrReplicationErrorSubsystemName
+		if qReplicationErrorSubsystemName != "" {
+
+			if err := r.SetQueryParam("replication.error.subsystem.name", qReplicationErrorSubsystemName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorSubsystemUUID != nil {
+
+		// query param replication.error.subsystem.uuid
+		var qrReplicationErrorSubsystemUUID string
+
+		if o.ReplicationErrorSubsystemUUID != nil {
+			qrReplicationErrorSubsystemUUID = *o.ReplicationErrorSubsystemUUID
+		}
+		qReplicationErrorSubsystemUUID := qrReplicationErrorSubsystemUUID
+		if qReplicationErrorSubsystemUUID != "" {
+
+			if err := r.SetQueryParam("replication.error.subsystem.uuid", qReplicationErrorSubsystemUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorSummaryArgumentsCode != nil {
+
+		// query param replication.error.summary.arguments.code
+		var qrReplicationErrorSummaryArgumentsCode string
+
+		if o.ReplicationErrorSummaryArgumentsCode != nil {
+			qrReplicationErrorSummaryArgumentsCode = *o.ReplicationErrorSummaryArgumentsCode
+		}
+		qReplicationErrorSummaryArgumentsCode := qrReplicationErrorSummaryArgumentsCode
+		if qReplicationErrorSummaryArgumentsCode != "" {
+
+			if err := r.SetQueryParam("replication.error.summary.arguments.code", qReplicationErrorSummaryArgumentsCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorSummaryArgumentsMessage != nil {
+
+		// query param replication.error.summary.arguments.message
+		var qrReplicationErrorSummaryArgumentsMessage string
+
+		if o.ReplicationErrorSummaryArgumentsMessage != nil {
+			qrReplicationErrorSummaryArgumentsMessage = *o.ReplicationErrorSummaryArgumentsMessage
+		}
+		qReplicationErrorSummaryArgumentsMessage := qrReplicationErrorSummaryArgumentsMessage
+		if qReplicationErrorSummaryArgumentsMessage != "" {
+
+			if err := r.SetQueryParam("replication.error.summary.arguments.message", qReplicationErrorSummaryArgumentsMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorSummaryCode != nil {
+
+		// query param replication.error.summary.code
+		var qrReplicationErrorSummaryCode string
+
+		if o.ReplicationErrorSummaryCode != nil {
+			qrReplicationErrorSummaryCode = *o.ReplicationErrorSummaryCode
+		}
+		qReplicationErrorSummaryCode := qrReplicationErrorSummaryCode
+		if qReplicationErrorSummaryCode != "" {
+
+			if err := r.SetQueryParam("replication.error.summary.code", qReplicationErrorSummaryCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationErrorSummaryMessage != nil {
+
+		// query param replication.error.summary.message
+		var qrReplicationErrorSummaryMessage string
+
+		if o.ReplicationErrorSummaryMessage != nil {
+			qrReplicationErrorSummaryMessage = *o.ReplicationErrorSummaryMessage
+		}
+		qReplicationErrorSummaryMessage := qrReplicationErrorSummaryMessage
+		if qReplicationErrorSummaryMessage != "" {
+
+			if err := r.SetQueryParam("replication.error.summary.message", qReplicationErrorSummaryMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationPeerSubsystemUUID != nil {
+
+		// query param replication.peer_subsystem.uuid
+		var qrReplicationPeerSubsystemUUID string
+
+		if o.ReplicationPeerSubsystemUUID != nil {
+			qrReplicationPeerSubsystemUUID = *o.ReplicationPeerSubsystemUUID
+		}
+		qReplicationPeerSubsystemUUID := qrReplicationPeerSubsystemUUID
+		if qReplicationPeerSubsystemUUID != "" {
+
+			if err := r.SetQueryParam("replication.peer_subsystem.uuid", qReplicationPeerSubsystemUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationPeerSvmName != nil {
+
+		// query param replication.peer_svm.name
+		var qrReplicationPeerSvmName string
+
+		if o.ReplicationPeerSvmName != nil {
+			qrReplicationPeerSvmName = *o.ReplicationPeerSvmName
+		}
+		qReplicationPeerSvmName := qrReplicationPeerSvmName
+		if qReplicationPeerSvmName != "" {
+
+			if err := r.SetQueryParam("replication.peer_svm.name", qReplicationPeerSvmName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationPeerSvmUUID != nil {
+
+		// query param replication.peer_svm.uuid
+		var qrReplicationPeerSvmUUID string
+
+		if o.ReplicationPeerSvmUUID != nil {
+			qrReplicationPeerSvmUUID = *o.ReplicationPeerSvmUUID
+		}
+		qReplicationPeerSvmUUID := qrReplicationPeerSvmUUID
+		if qReplicationPeerSvmUUID != "" {
+
+			if err := r.SetQueryParam("replication.peer_svm.uuid", qReplicationPeerSvmUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ReplicationState != nil {
+
+		// query param replication.state
+		var qrReplicationState string
+
+		if o.ReplicationState != nil {
+			qrReplicationState = *o.ReplicationState
+		}
+		qReplicationState := qrReplicationState
+		if qReplicationState != "" {
+
+			if err := r.SetQueryParam("replication.state", qReplicationState); err != nil {
 				return err
 			}
 		}

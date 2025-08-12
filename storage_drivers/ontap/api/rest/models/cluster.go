@@ -871,6 +871,9 @@ type ClusterInlineActiveDirectory struct {
 	// Min Length: 1
 	Password *string `json:"password,omitempty"`
 
+	// security
+	Security *ActiveDirectorySecurity `json:"security,omitempty"`
+
 	// Administrator username required for Active Directory account creation, modification, and deletion.
 	// Example: admin
 	// Min Length: 1
@@ -890,6 +893,10 @@ func (m *ClusterInlineActiveDirectory) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePassword(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSecurity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -939,6 +946,23 @@ func (m *ClusterInlineActiveDirectory) validatePassword(formats strfmt.Registry)
 	return nil
 }
 
+func (m *ClusterInlineActiveDirectory) validateSecurity(formats strfmt.Registry) error {
+	if swag.IsZero(m.Security) { // not required
+		return nil
+	}
+
+	if m.Security != nil {
+		if err := m.Security.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("active_directory" + "." + "security")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *ClusterInlineActiveDirectory) validateUsername(formats strfmt.Registry) error {
 	if swag.IsZero(m.Username) { // not required
 		return nil
@@ -951,8 +975,31 @@ func (m *ClusterInlineActiveDirectory) validateUsername(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validates this cluster inline active directory based on context it is used
+// ContextValidate validate this cluster inline active directory based on the context it is used
 func (m *ClusterInlineActiveDirectory) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSecurity(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterInlineActiveDirectory) contextValidateSecurity(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Security != nil {
+		if err := m.Security.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("active_directory" + "." + "security")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -2655,6 +2702,9 @@ type ClusterInlineNodesInlineArrayItem struct {
 	// external cache
 	ExternalCache *ClusterInlineNodesInlineArrayItemInlineExternalCache `json:"external_cache,omitempty"`
 
+	// external cache bypass
+	ExternalCacheBypass *ClusterInlineNodesInlineArrayItemInlineExternalCacheBypass `json:"external_cache_bypass,omitempty"`
+
 	// ha
 	Ha *ClusterInlineNodesInlineArrayItemInlineHa `json:"ha,omitempty"`
 
@@ -2700,6 +2750,9 @@ type ClusterInlineNodesInlineArrayItem struct {
 	// Example: node-01
 	Name *string `json:"name,omitempty"`
 
+	// nvlog
+	Nvlog *ClusterInlineNodesInlineArrayItemInlineNvlog `json:"nvlog,omitempty"`
+
 	// nvram
 	Nvram *ClusterInlineNodesInlineArrayItemInlineNvram `json:"nvram,omitempty"`
 
@@ -2736,7 +2789,7 @@ type ClusterInlineNodesInlineArrayItem struct {
 
 	// Storage availability zones associated with the node.
 	// Read Only: true
-	StorageAvailabilityZones []*ClusterNodesItems0StorageAvailabilityZonesItems0 `json:"storage_availability_zones"`
+	StorageAvailabilityZones []*StorageAvailabilityZoneReference `json:"storage_availability_zones"`
 
 	// The storage configuration in the system. Possible values:
 	// * <i>mixed_path</i>
@@ -2820,6 +2873,10 @@ func (m *ClusterInlineNodesInlineArrayItem) Validate(formats strfmt.Registry) er
 		res = append(res, err)
 	}
 
+	if err := m.validateExternalCacheBypass(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateHa(formats); err != nil {
 		res = append(res, err)
 	}
@@ -2845,6 +2902,10 @@ func (m *ClusterInlineNodesInlineArrayItem) Validate(formats strfmt.Registry) er
 	}
 
 	if err := m.validateMetrocluster(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNvlog(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -2994,6 +3055,23 @@ func (m *ClusterInlineNodesInlineArrayItem) validateExternalCache(formats strfmt
 		if err := m.ExternalCache.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("external_cache")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterInlineNodesInlineArrayItem) validateExternalCacheBypass(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExternalCacheBypass) { // not required
+		return nil
+	}
+
+	if m.ExternalCacheBypass != nil {
+		if err := m.ExternalCacheBypass.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("external_cache_bypass")
 			}
 			return err
 		}
@@ -3169,6 +3247,23 @@ func (m *ClusterInlineNodesInlineArrayItem) validateMetrocluster(formats strfmt.
 		if err := m.Metrocluster.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("metrocluster")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ClusterInlineNodesInlineArrayItem) validateNvlog(formats strfmt.Registry) error {
+	if swag.IsZero(m.Nvlog) { // not required
+		return nil
+	}
+
+	if m.Nvlog != nil {
+		if err := m.Nvlog.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nvlog")
 			}
 			return err
 		}
@@ -3626,6 +3721,10 @@ func (m *ClusterInlineNodesInlineArrayItem) ContextValidate(ctx context.Context,
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateExternalCacheBypass(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateHa(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -3659,6 +3758,10 @@ func (m *ClusterInlineNodesInlineArrayItem) ContextValidate(ctx context.Context,
 	}
 
 	if err := m.contextValidateModel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNvlog(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3828,6 +3931,20 @@ func (m *ClusterInlineNodesInlineArrayItem) contextValidateExternalCache(ctx con
 	return nil
 }
 
+func (m *ClusterInlineNodesInlineArrayItem) contextValidateExternalCacheBypass(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ExternalCacheBypass != nil {
+		if err := m.ExternalCacheBypass.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("external_cache_bypass")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *ClusterInlineNodesInlineArrayItem) contextValidateHa(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Ha != nil {
@@ -3947,6 +4064,20 @@ func (m *ClusterInlineNodesInlineArrayItem) contextValidateModel(ctx context.Con
 	return nil
 }
 
+func (m *ClusterInlineNodesInlineArrayItem) contextValidateNvlog(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Nvlog != nil {
+		if err := m.Nvlog.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nvlog")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *ClusterInlineNodesInlineArrayItem) contextValidateNvram(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Nvram != nil {
@@ -4023,7 +4154,7 @@ func (m *ClusterInlineNodesInlineArrayItem) contextValidateStatistics(ctx contex
 
 func (m *ClusterInlineNodesInlineArrayItem) contextValidateStorageAvailabilityZones(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "storage_availability_zones", "body", []*ClusterNodesItems0StorageAvailabilityZonesItems0(m.StorageAvailabilityZones)); err != nil {
+	if err := validate.ReadOnly(ctx, "storage_availability_zones", "body", []*StorageAvailabilityZoneReference(m.StorageAvailabilityZones)); err != nil {
 		return err
 	}
 
@@ -6032,6 +6163,52 @@ func (m *ClusterInlineNodesInlineArrayItemInlineExternalCache) UnmarshalBinary(b
 	return nil
 }
 
+// ClusterInlineNodesInlineArrayItemInlineExternalCacheBypass External cache bypass management.
+//
+// swagger:model cluster_inline_nodes_inline_array_item_inline_external_cache_bypass
+type ClusterInlineNodesInlineArrayItemInlineExternalCacheBypass struct {
+
+	// Indicates whether external cache bypass is enabled.
+	// Example: true
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// External cache bypass allowed operations percentage for large reads.
+	// Example: 100
+	LargeReadOpsAllowPercent *int64 `json:"large_read_ops_allow_percent,omitempty"`
+
+	// Initiates an external cache bypass threshold reset action.
+	// Example: true
+	Reset *bool `json:"reset,omitempty"`
+}
+
+// Validate validates this cluster inline nodes inline array item inline external cache bypass
+func (m *ClusterInlineNodesInlineArrayItemInlineExternalCacheBypass) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this cluster inline nodes inline array item inline external cache bypass based on context it is used
+func (m *ClusterInlineNodesInlineArrayItemInlineExternalCacheBypass) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterInlineNodesInlineArrayItemInlineExternalCacheBypass) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterInlineNodesInlineArrayItemInlineExternalCacheBypass) UnmarshalBinary(b []byte) error {
+	var res ClusterInlineNodesInlineArrayItemInlineExternalCacheBypass
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // ClusterInlineNodesInlineArrayItemInlineHa cluster inline nodes inline array item inline ha
 //
 // swagger:model cluster_inline_nodes_inline_array_item_inline_ha
@@ -6039,6 +6216,13 @@ type ClusterInlineNodesInlineArrayItemInlineHa struct {
 
 	// Specifies whether giveback is automatically initiated when the node that owns the storage is ready.
 	AutoGiveback *bool `json:"auto_giveback,omitempty"`
+
+	// Specifies whether giveback is automatically initiated when the node that owns the storage is ready.
+	AutoGivebackOf *bool `json:"auto_giveback_of,omitempty"`
+
+	// Specifies whether or not storage failover is enabled.
+	// Read Only: true
+	EnableTakeoverOf *bool `json:"enable_takeover_of,omitempty"`
 
 	// Specifies whether or not storage failover is enabled.
 	Enabled *bool `json:"enabled,omitempty"`
@@ -6062,6 +6246,11 @@ type ClusterInlineNodesInlineArrayItemInlineHa struct {
 
 	// takeover check
 	TakeoverCheck *ClusterInlineNodesInlineArrayItemInlineHaInlineTakeoverCheck `json:"takeover_check,omitempty"`
+
+	// Type of storage.
+	// Read Only: true
+	// Enum: ["shared_storage","non_shared_storage"]
+	Type *string `json:"type,omitempty"`
 }
 
 // Validate validates this cluster inline nodes inline array item inline ha
@@ -6089,6 +6278,10 @@ func (m *ClusterInlineNodesInlineArrayItemInlineHa) Validate(formats strfmt.Regi
 	}
 
 	if err := m.validateTakeoverCheck(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -6214,9 +6407,69 @@ func (m *ClusterInlineNodesInlineArrayItemInlineHa) validateTakeoverCheck(format
 	return nil
 }
 
+var clusterInlineNodesInlineArrayItemInlineHaTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["shared_storage","non_shared_storage"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterInlineNodesInlineArrayItemInlineHaTypeTypePropEnum = append(clusterInlineNodesInlineArrayItemInlineHaTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cluster_inline_nodes_inline_array_item_inline_ha
+	// ClusterInlineNodesInlineArrayItemInlineHa
+	// type
+	// Type
+	// shared_storage
+	// END DEBUGGING
+	// ClusterInlineNodesInlineArrayItemInlineHaTypeSharedStorage captures enum value "shared_storage"
+	ClusterInlineNodesInlineArrayItemInlineHaTypeSharedStorage string = "shared_storage"
+
+	// BEGIN DEBUGGING
+	// cluster_inline_nodes_inline_array_item_inline_ha
+	// ClusterInlineNodesInlineArrayItemInlineHa
+	// type
+	// Type
+	// non_shared_storage
+	// END DEBUGGING
+	// ClusterInlineNodesInlineArrayItemInlineHaTypeNonSharedStorage captures enum value "non_shared_storage"
+	ClusterInlineNodesInlineArrayItemInlineHaTypeNonSharedStorage string = "non_shared_storage"
+)
+
+// prop value enum
+func (m *ClusterInlineNodesInlineArrayItemInlineHa) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterInlineNodesInlineArrayItemInlineHaTypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterInlineNodesInlineArrayItemInlineHa) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("ha"+"."+"type", "body", *m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this cluster inline nodes inline array item inline ha based on the context it is used
 func (m *ClusterInlineNodesInlineArrayItemInlineHa) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.contextValidateEnableTakeoverOf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.contextValidateGiveback(ctx, formats); err != nil {
 		res = append(res, err)
@@ -6242,9 +6495,22 @@ func (m *ClusterInlineNodesInlineArrayItemInlineHa) ContextValidate(ctx context.
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ClusterInlineNodesInlineArrayItemInlineHa) contextValidateEnableTakeoverOf(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ha"+"."+"enable_takeover_of", "body", m.EnableTakeoverOf); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -6343,6 +6609,15 @@ func (m *ClusterInlineNodesInlineArrayItemInlineHa) contextValidateTakeoverCheck
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *ClusterInlineNodesInlineArrayItemInlineHa) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ha"+"."+"type", "body", m.Type); err != nil {
+		return err
 	}
 
 	return nil
@@ -7659,7 +7934,7 @@ type ClusterNodesItems0HaPortsItems0 struct {
 
 	// HA port state:
 	// * <i>down</i> - Logical HA link is down.
-	// * <i>initialized</i> - Logical HA link is initialized. The physical link is up, but the subnet manager hasn’t started to configure the port.
+	// * <i>initialized</i> - Logical HA link is initialized. The physical link is up, but the subnet manager hasn't started to configure the port.
 	// * <i>armed</i> - Logical HA link is armed. The physical link is up and the subnet manager started but did not yet complete configuring the port.
 	// * <i>active</i> - Logical HA link is active.
 	// * <i>reserved</i> - Logical HA link is active, but the physical link is down.
@@ -9737,6 +10012,173 @@ func (m *ClusterNodesItems0MetroclusterPortsItems0) UnmarshalBinary(b []byte) er
 	return nil
 }
 
+// ClusterInlineNodesInlineArrayItemInlineNvlog Non-volatile write log settings.
+//
+// swagger:model cluster_inline_nodes_inline_array_item_inline_nvlog
+type ClusterInlineNodesInlineArrayItemInlineNvlog struct {
+
+	// Indicates the current NVLog journal backing type.
+	// Enum: ["ephemeral_memory","ephemeral_disk"]
+	BackingType *string `json:"backing_type,omitempty"`
+
+	// Indicates the current NVLog journal swap mode.
+	// Enum: ["dynamic","manual"]
+	SwapMode *string `json:"swap_mode,omitempty"`
+}
+
+// Validate validates this cluster inline nodes inline array item inline nvlog
+func (m *ClusterInlineNodesInlineArrayItemInlineNvlog) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateBackingType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSwapMode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var clusterInlineNodesInlineArrayItemInlineNvlogTypeBackingTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ephemeral_memory","ephemeral_disk"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterInlineNodesInlineArrayItemInlineNvlogTypeBackingTypePropEnum = append(clusterInlineNodesInlineArrayItemInlineNvlogTypeBackingTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cluster_inline_nodes_inline_array_item_inline_nvlog
+	// ClusterInlineNodesInlineArrayItemInlineNvlog
+	// backing_type
+	// BackingType
+	// ephemeral_memory
+	// END DEBUGGING
+	// ClusterInlineNodesInlineArrayItemInlineNvlogBackingTypeEphemeralMemory captures enum value "ephemeral_memory"
+	ClusterInlineNodesInlineArrayItemInlineNvlogBackingTypeEphemeralMemory string = "ephemeral_memory"
+
+	// BEGIN DEBUGGING
+	// cluster_inline_nodes_inline_array_item_inline_nvlog
+	// ClusterInlineNodesInlineArrayItemInlineNvlog
+	// backing_type
+	// BackingType
+	// ephemeral_disk
+	// END DEBUGGING
+	// ClusterInlineNodesInlineArrayItemInlineNvlogBackingTypeEphemeralDisk captures enum value "ephemeral_disk"
+	ClusterInlineNodesInlineArrayItemInlineNvlogBackingTypeEphemeralDisk string = "ephemeral_disk"
+)
+
+// prop value enum
+func (m *ClusterInlineNodesInlineArrayItemInlineNvlog) validateBackingTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterInlineNodesInlineArrayItemInlineNvlogTypeBackingTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterInlineNodesInlineArrayItemInlineNvlog) validateBackingType(formats strfmt.Registry) error {
+	if swag.IsZero(m.BackingType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateBackingTypeEnum("nvlog"+"."+"backing_type", "body", *m.BackingType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var clusterInlineNodesInlineArrayItemInlineNvlogTypeSwapModePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["dynamic","manual"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterInlineNodesInlineArrayItemInlineNvlogTypeSwapModePropEnum = append(clusterInlineNodesInlineArrayItemInlineNvlogTypeSwapModePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cluster_inline_nodes_inline_array_item_inline_nvlog
+	// ClusterInlineNodesInlineArrayItemInlineNvlog
+	// swap_mode
+	// SwapMode
+	// dynamic
+	// END DEBUGGING
+	// ClusterInlineNodesInlineArrayItemInlineNvlogSwapModeDynamic captures enum value "dynamic"
+	ClusterInlineNodesInlineArrayItemInlineNvlogSwapModeDynamic string = "dynamic"
+
+	// BEGIN DEBUGGING
+	// cluster_inline_nodes_inline_array_item_inline_nvlog
+	// ClusterInlineNodesInlineArrayItemInlineNvlog
+	// swap_mode
+	// SwapMode
+	// manual
+	// END DEBUGGING
+	// ClusterInlineNodesInlineArrayItemInlineNvlogSwapModeManual captures enum value "manual"
+	ClusterInlineNodesInlineArrayItemInlineNvlogSwapModeManual string = "manual"
+)
+
+// prop value enum
+func (m *ClusterInlineNodesInlineArrayItemInlineNvlog) validateSwapModeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterInlineNodesInlineArrayItemInlineNvlogTypeSwapModePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterInlineNodesInlineArrayItemInlineNvlog) validateSwapMode(formats strfmt.Registry) error {
+	if swag.IsZero(m.SwapMode) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateSwapModeEnum("nvlog"+"."+"swap_mode", "body", *m.SwapMode); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this cluster inline nodes inline array item inline nvlog based on context it is used
+func (m *ClusterInlineNodesInlineArrayItemInlineNvlog) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterInlineNodesInlineArrayItemInlineNvlog) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterInlineNodesInlineArrayItemInlineNvlog) UnmarshalBinary(b []byte) error {
+	var res ClusterInlineNodesInlineArrayItemInlineNvlog
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // ClusterInlineNodesInlineArrayItemInlineNvram cluster inline nodes inline array item inline nvram
 //
 // swagger:model cluster_inline_nodes_inline_array_item_inline_nvram
@@ -11805,7 +12247,8 @@ type ClusterInlineNodesInlineArrayItemInlineStatistics struct {
 	// Example: 12345123
 	ProcessorUtilizationBase *int64 `json:"processor_utilization_base,omitempty"`
 
-	// Raw CPU Utilization for the node. This should be divided by the processor_utilization_base to calculate the percentage CPU utilization for the node.
+	// Raw CPU utilization for the node. The change in this value over time should be divided by corresponding change in processor_utilization_base, then multiplied by 100 to calculate the percentage CPU utilization for the node. For example: ((processor_utilization_raw_t2 - processor_utilization_raw_t1) / (processor_utilization_base_t2 - processor_utilization_base_t1)) * 100.
+	//
 	// Example: 13
 	ProcessorUtilizationRaw *int64 `json:"processor_utilization_raw,omitempty"`
 
@@ -12002,186 +12445,6 @@ func (m *ClusterInlineNodesInlineArrayItemInlineStatistics) MarshalBinary() ([]b
 // UnmarshalBinary interface implementation
 func (m *ClusterInlineNodesInlineArrayItemInlineStatistics) UnmarshalBinary(b []byte) error {
 	var res ClusterInlineNodesInlineArrayItemInlineStatistics
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// ClusterNodesItems0StorageAvailabilityZonesItems0 cluster nodes items0 storage availability zones items0
-//
-// swagger:model ClusterNodesItems0StorageAvailabilityZonesItems0
-type ClusterNodesItems0StorageAvailabilityZonesItems0 struct {
-
-	// links
-	Links *ClusterNodesItems0StorageAvailabilityZonesItems0Links `json:"_links,omitempty"`
-
-	// The name of the storage availability zone.
-	// Example: storage_availability_zone_1
-	Name *string `json:"name,omitempty"`
-
-	// The unique identifier of the storage availability zone.
-	// Example: 9b3ff559-3333-11ef-b420-005056ae6060
-	UUID *string `json:"uuid,omitempty"`
-}
-
-// Validate validates this cluster nodes items0 storage availability zones items0
-func (m *ClusterNodesItems0StorageAvailabilityZonesItems0) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *ClusterNodesItems0StorageAvailabilityZonesItems0) validateLinks(formats strfmt.Registry) error {
-	if swag.IsZero(m.Links) { // not required
-		return nil
-	}
-
-	if m.Links != nil {
-		if err := m.Links.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this cluster nodes items0 storage availability zones items0 based on the context it is used
-func (m *ClusterNodesItems0StorageAvailabilityZonesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateLinks(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *ClusterNodesItems0StorageAvailabilityZonesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Links != nil {
-		if err := m.Links.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *ClusterNodesItems0StorageAvailabilityZonesItems0) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *ClusterNodesItems0StorageAvailabilityZonesItems0) UnmarshalBinary(b []byte) error {
-	var res ClusterNodesItems0StorageAvailabilityZonesItems0
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// ClusterNodesItems0StorageAvailabilityZonesItems0Links cluster nodes items0 storage availability zones items0 links
-//
-// swagger:model ClusterNodesItems0StorageAvailabilityZonesItems0Links
-type ClusterNodesItems0StorageAvailabilityZonesItems0Links struct {
-
-	// self
-	Self *Href `json:"self,omitempty"`
-}
-
-// Validate validates this cluster nodes items0 storage availability zones items0 links
-func (m *ClusterNodesItems0StorageAvailabilityZonesItems0Links) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateSelf(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *ClusterNodesItems0StorageAvailabilityZonesItems0Links) validateSelf(formats strfmt.Registry) error {
-	if swag.IsZero(m.Self) { // not required
-		return nil
-	}
-
-	if m.Self != nil {
-		if err := m.Self.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this cluster nodes items0 storage availability zones items0 links based on the context it is used
-func (m *ClusterNodesItems0StorageAvailabilityZonesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateSelf(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *ClusterNodesItems0StorageAvailabilityZonesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Self != nil {
-		if err := m.Self.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *ClusterNodesItems0StorageAvailabilityZonesItems0Links) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *ClusterNodesItems0StorageAvailabilityZonesItems0Links) UnmarshalBinary(b []byte) error {
-	var res ClusterNodesItems0StorageAvailabilityZonesItems0Links
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

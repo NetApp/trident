@@ -92,6 +92,12 @@ type FlexcacheCollectionGetParams struct {
 	*/
 	CifsChangeNotifyEnabled *bool
 
+	/* ConstituentCount.
+
+	   Filter by constituent_count
+	*/
+	ConstituentCount *int64
+
 	/* ConstituentsPerAggregate.
 
 	   Filter by constituents_per_aggregate
@@ -396,6 +402,17 @@ func (o *FlexcacheCollectionGetParams) WithCifsChangeNotifyEnabled(cifsChangeNot
 // SetCifsChangeNotifyEnabled adds the cifsChangeNotifyEnabled to the flexcache collection get params
 func (o *FlexcacheCollectionGetParams) SetCifsChangeNotifyEnabled(cifsChangeNotifyEnabled *bool) {
 	o.CifsChangeNotifyEnabled = cifsChangeNotifyEnabled
+}
+
+// WithConstituentCount adds the constituentCount to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithConstituentCount(constituentCount *int64) *FlexcacheCollectionGetParams {
+	o.SetConstituentCount(constituentCount)
+	return o
+}
+
+// SetConstituentCount adds the constituentCount to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetConstituentCount(constituentCount *int64) {
+	o.ConstituentCount = constituentCount
 }
 
 // WithConstituentsPerAggregate adds the constituentsPerAggregate to the flexcache collection get params
@@ -816,6 +833,23 @@ func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qCifsChangeNotifyEnabled != "" {
 
 			if err := r.SetQueryParam("cifs_change_notify.enabled", qCifsChangeNotifyEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentCount != nil {
+
+		// query param constituent_count
+		var qrConstituentCount int64
+
+		if o.ConstituentCount != nil {
+			qrConstituentCount = *o.ConstituentCount
+		}
+		qConstituentCount := swag.FormatInt64(qrConstituentCount)
+		if qConstituentCount != "" {
+
+			if err := r.SetQueryParam("constituent_count", qConstituentCount); err != nil {
 				return err
 			}
 		}

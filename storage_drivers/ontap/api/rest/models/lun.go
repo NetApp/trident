@@ -18,16 +18,13 @@ import (
 
 // Lun A LUN is the logical representation of storage in a storage area network (SAN).<br/>
 // A LUN must be mapped to an initiator group to grant access to the initiator group's initiators (client hosts). Initiators can then access the LUN and perform I/O over a Fibre Channel (FC) fabric using the FC Protocol or a TCP/IP network using iSCSI.<br/>
-// See the LUN object model to learn more about each of the properties supported by the LUN REST API.
-// ## Platform Specifics
-// ### Unified ONTAP
-// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+// See the LUN object model to learn more about each of the properties supported by the LUN REST API.<br/>
+// <personalities supports=unified>A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 // LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<lun>" where the qtree name is optional.<br/>
-// A LUN can be created to a specified size using thin or thick provisioning. A LUN can then be renamed, resized, cloned, moved to a different volume and copied. LUNs support the assignment of a QoS policy for performance management or a QoS policy can be assigned to a volume containing one or more LUNs.
-// ### ASA r2
-// LUN names are simple names that share a namespace with NVMe namespaces within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+// A LUN can be created to a specified size using thin or thick provisioning. A LUN can then be renamed, resized, cloned, moved to a different volume and copied. LUNs support the assignment of a QoS policy for performance management or a QoS policy can be assigned to a volume containing one or more LUNs.</personalities>
+// <personalities supports=asar2>LUN names are simple names that share a namespace with NVMe namespaces within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
 // A LUN can be created to a specified size. A LUN can then be renamed, resized, or cloned. LUNs support the assignment of a QoS policy for performance management.<br/>
-// **Note**: LUN related REST API examples use the Unified ONTAP form for LUN names. On ASA r2, the ASA r2 format must be used.
+// **Note**: LUN related REST API examples use the Unified ONTAP form for LUN names. On ASA r2, the ASA r2 format must be used.</personalities>
 //
 // swagger:model lun
 type Lun struct {
@@ -35,33 +32,36 @@ type Lun struct {
 	// links
 	Links *LunInlineLinks `json:"_links,omitempty"`
 
-	// * **Unified ONTAP**:
-	// This property marks the LUN for auto deletion when the volume containing the LUN runs out of space. This is most commonly set on LUN clones.<br/>
+	// <personalities supports=unified>This property marks the LUN for auto deletion when the volume containing the LUN runs out of space. This is most commonly set on LUN clones.<br/>
 	// When set to _true_, the LUN becomes eligible for automatic deletion when the volume runs out of space. Auto deletion only occurs when the volume containing the LUN is also configured for auto deletion and free space in the volume decreases below a particular threshold.<br/>
 	// This property is optional in POST and PATCH. The default value for a new LUN is _false_.<br/>
-	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-	// * **ASA r2**:
-	// This property is not supported. It cannot be set in POST or PATCH and will not be returned by GET.
+	// There is an added computational cost to retrieving this property's value. It is not populated for a GET request unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.</personalities>
+	// <personalities supports=asar2>This property is not supported. It cannot be set in POST or PATCH and will not be returned by GET.</personalities>
 	//
 	AutoDelete *bool `json:"auto_delete,omitempty"`
 
 	// The class of LUN.<br/>
-	// Optional in POST.
-	// ### Platform Specifics
-	// * **ASA r2**: When set to _protocol_endpoint_, most other properties are not supported in POST, and the operation can be asynchronous. The LUN is provisioned with a generated name. Protocol endpoints are provisioned in a round robin pattern across all nodes in the cluster.<br/>
-	// The following properties are supported in POST:<br/>
+	// Optional in POST.<br/>
+	// <personalities supports=asar2>
+	// When set to _protocol_endpoint_, most other properties are not supported in POST and the operation can be asynchronous. The LUN is provisioned with a generated name. Protocol endpoints are provisioned in a round robin pattern across all nodes in the cluster.<br/>
+	// The following properties are supported in POST:
 	// * `class`
 	// * `svm`
 	// * `provisioning_options.count`
 	// * `lun_maps`
 	// * `comment`
-	// POST is asynchronous in these cases:<br/>
+	// </personalities>
+	// <personalities supports=asar2>
+	// POST is asynchronous in these cases:
 	// * There are nodes in the cluster not already hosting a protocol endpoint.
 	// * The request includes either the `lun_maps` or `provisioning_options.count` properties.
-	// * The `records` array is used for bulk provisioning.
-	// <br/>DELETE is asynchronous when calling DELETE on the last protocol endpoint on a node.
-	// <br/>Calling implementations should not attempt to track these conditions. Instead, check the HTTP status code. A 200 or 201 status code indicates the operation is already complete. A 202 status code indicates there is an asynchronous job that can be tracked. If asynchronous requests are always preferred, wrap individual POST and DELETE requests in a `records` array to force the operation to be asynchronous.
-	// <br/>For more details, see [`Asynchronous operations`](#Synchronous_and_asynchronous_operations)
+	// * The `records` array is used for bulk provisioning.<br/>
+	// </personalities>
+	// <personalities supports=asar2>
+	// DELETE is asynchronous when calling DELETE on the last protocol endpoint on a node.<br/>
+	// Calling implementations should not attempt to track these conditions. Instead, check the HTTP status code. A 200 or 201 status code indicates the operation is already complete. A 202 status code indicates there is an asynchronous job that can be tracked. If asynchronous requests are always preferred, wrap individual POST and DELETE requests in a `records` array to force the operation to be asynchronous.<br/>
+	// For more details, see [`Asynchronous operations`](#Synchronous_and_asynchronous_operations)
+	// </personalities>
 	//
 	// Enum: ["regular","protocol_endpoint","vvol"]
 	Class *string `json:"class,omitempty"`
@@ -104,15 +104,14 @@ type Lun struct {
 	// Attribute names and values must be at least one byte and no more than 4091 bytes in length. The sum of the name and value lengths must be no more than 4092 bytes.<br/>
 	// Valid in POST except when creating a LUN clone. A cloned can already have attributes from its source. You can add, modify, and delete the attributes of a LUN clone in separate requests after creation of the LUN.<br/>
 	// Attributes can be added/modified/removed for an existing LUN using the /api/storage/luns/{lun.uuid}/attributes endpoint. For further information, see [`DOC /storage/luns/{lun.uuid}/attributes`](#docs-SAN-storage_luns_{lun.uuid}_attributes).<br/>
-	// There is an added computational cost to retrieving property values for `attributes`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// There is an added computational cost to retrieving property values for `attributes`. They are not populated for a GET request unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	LunInlineAttributes []*LunInlineAttributesInlineArrayItem `json:"attributes,omitempty"`
 
 	// The LUN maps with which the LUN is associated.<br/>
-	// There is an added computational cost to retrieving property values for `lun_maps`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-	// ### Platform Specifics
-	// * **Unified ONTAP**: These properties are supported for GET only.
-	// * **ASA r2**: These properties are supported for GET and POST. During POST, a new or existing initiator group can be referenced. When referencing an existing initiator group, only the `name` and `uuid` properties are supported.
+	// There is an added computational cost to retrieving property values for `lun_maps`. They are not populated for a GET request unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// <personalities supports=unified>These properties are supported for GET only.</personalities>
+	// <personalities supports=asar2>These properties are supported for GET and POST. During POST, a new or existing initiator group can be referenced. When referencing an existing initiator group, only the `name` and `uuid` properties are supported.</personalities>
 	//
 	LunInlineLunMaps []*LunInlineLunMapsInlineArrayItem `json:"lun_maps,omitempty"`
 
@@ -122,15 +121,13 @@ type Lun struct {
 	// movement
 	Movement *LunInlineMovement `json:"movement,omitempty"`
 
-	// The name of the LUN. Valid in POST and PATCH.
-	// * **Unified ONTAP**:
-	// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// The name of the LUN. Valid in POST and PATCH.<br/>
+	// <personalities supports=unified>A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 	// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<lun>" where the qtree name is optional.<br/>
 	// A PATCH that modifies the qtree and/or base name portion of the LUN path is considered a rename operation.<br/>
-	// A PATCH that modifies the volume portion of the LUN path begins an asynchronous LUN movement operation.
-	// * **ASA r2**:
-	// LUN names are simple names that share a namespace with NVMe namespaces within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
-	// A PATCH that modifies the name of the LUN is considered a rename operation.
+	// A PATCH that modifies the volume portion of the LUN path begins an asynchronous LUN movement operation.</personalities>
+	// <personalities supports=asar2>LUN names are simple names that share a namespace with NVMe namespaces within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+	// A PATCH that modifies the name of the LUN is considered a rename operation.</personalities>
 	//
 	// Example: /vol/volume1/qtree1/lun1
 	Name *string `json:"name,omitempty"`
@@ -153,6 +150,11 @@ type Lun struct {
 	// Max Length: 12
 	// Min Length: 12
 	SerialNumber *string `json:"serial_number,omitempty"`
+
+	// The LUN serial number encoded in hexadecimal format. The serial number is generated by ONTAP when the LUN is created.
+	//
+	// Read Only: true
+	SerialNumberHex *string `json:"serial_number_hex,omitempty"`
 
 	// space
 	Space *LunInlineSpace `json:"space,omitempty"`
@@ -938,6 +940,10 @@ func (m *Lun) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSerialNumberHex(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSpace(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1170,6 +1176,15 @@ func (m *Lun) contextValidateQosPolicy(ctx context.Context, formats strfmt.Regis
 func (m *Lun) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "serial_number", "body", m.SerialNumber); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Lun) contextValidateSerialNumberHex(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "serial_number_hex", "body", m.SerialNumberHex); err != nil {
 		return err
 	}
 
@@ -1501,13 +1516,11 @@ func (m *LunInlineAttributesInlineArrayItemInlineLinks) UnmarshalBinary(b []byte
 	return nil
 }
 
-// LunInlineClone * **Unified ONTAP**:
-// This sub-object is used in POST to create a new LUN as a clone of an existing LUN, or PATCH to overwrite an existing LUN as a clone of another. Setting a property in this sub-object indicates that a LUN clone is desired. Consider the following other properties when cloning a LUN: `auto_delete`, `qos_policy`, `space.guarantee.requested` and `space.scsi_thin_provisioning_support_enabled`.<br/>
+// LunInlineClone <personalities supports=unified>This sub-object is used in POST to create a new LUN as a clone of an existing LUN, or PATCH to overwrite an existing LUN as a clone of another. Setting a property in this sub-object indicates that a LUN clone is desired. Consider the following other properties when cloning a LUN: `auto_delete`, `qos_policy`, `space.guarantee.requested` and `space.scsi_thin_provisioning_support_enabled`.<br/>
 // When used in a PATCH, the patched LUN's data is over-written as a clone of the source and the following properties are preserved from the patched LUN unless otherwise specified as part of the PATCH: `class`, `auto_delete`, `lun_maps`, `serial_number`, `status.state`, and `uuid`.<br/>
-// Persistent reservations for the patched LUN are also preserved.
-// * **ASA r2**:
-// This endpoint does not support clones. No properties in this sub-object can be set for POST or PATCH and none will be returned by GET.<br/>
-// Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
+// Persistent reservations for the patched LUN are also preserved.</personalities>
+// <personalities supports=asar2>This endpoint does not support clones. No properties in this sub-object can be set for POST or PATCH and none will be returned by GET.<br/>
+// Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.</personalities>
 //
 // swagger:model lun_inline_clone
 type LunInlineClone struct {
@@ -1601,23 +1614,17 @@ func (m *LunInlineClone) UnmarshalBinary(b []byte) error {
 type LunInlineCloneInlineSource struct {
 
 	// The name of the clone source LUN.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// <personalities supports=unified>A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 	// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
-	// Valid in POST and PATCH.
-	// * **ASA r2**:
-	// This property is not supported. Cloning is supported through the /ap/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
+	// Valid in POST and PATCH.</personalities>
+	// <personalities supports=asar2>This property is not supported. Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.</personalities>
 	//
 	// Example: /vol/volume1/lun1
 	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the clone source LUN.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// Valid in POST and PATCH.
-	// * **ASA r2**:
-	// This property is not supported. Cloning is supported through the /ap/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
+	// <personalities supports=unified>Valid in POST and PATCH.</personalities>
+	// <personalities supports=asar2>This property is not supported. Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.</personalities>
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	UUID *string `json:"uuid,omitempty"`
@@ -1652,9 +1659,8 @@ func (m *LunInlineCloneInlineSource) UnmarshalBinary(b []byte) error {
 }
 
 // LunInlineConsistencyGroup The LUN's consistency group. This property is populated for LUNs that are members of a consistency group. If the LUN is a member of a child consistency group, the parent consistency group is reported.
-// ### Platform Specifics
-// * **Unified ONTAP**: A LUN's consistency group is the consistency group of its containing volume.
-// * **ASA r2**: A LUN is optionally associated directly with a consistency group.
+// <personalities supports=unified>A LUN's consistency group is the consistency group of its containing volume.</personalities>
+// <personalities supports=asar2>A LUN is optionally associated directly with a consistency group.</personalities>
 //
 // swagger:model lun_inline_consistency_group
 type LunInlineConsistencyGroup struct {
@@ -1957,12 +1963,9 @@ func (m *LunInlineConvert) UnmarshalBinary(b []byte) error {
 type LunInlineConvertInlineNamespace struct {
 
 	// The name of the source NVMe namespace. Valid in POST.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
-	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<NVMe namespace>" where the qtree name is optional.
-	// * **ASA r2**:
-	// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.
+	// <personalities supports=unified>An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<NVMe namespace>" where the qtree name is optional.</personalities>
+	// <personalities supports=asar2>NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.</personalities>
 	//
 	// Example: /vol/volume1/namespace1
 	Name *string `json:"name,omitempty"`
@@ -2001,13 +2004,11 @@ func (m *LunInlineConvertInlineNamespace) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunInlineCopy * **Unified ONTAP**:
-// This sub-object applies to LUN copy operations. A LUN can be copied with a POST request that supplies `copy.source` properties.<br/>
+// LunInlineCopy <personalities supports=unified>This sub-object applies to LUN copy operations. A LUN can be copied with a POST request that supplies `copy.source` properties.<br/>
 // Copying a LUN is an asynchronous activity begun by a POST request that specifies the source of the copy in the `copy.source` properties. The data for the LUN is then asynchronously copied from the source to the destination. The time required to complete the copy depends on the size of the LUN and the load on the cluster. The `copy` sub-object is populated while a LUN copy is in progress and for two (2) minutes following completion of a copy.<br/>
 // While LUNs are being copied, the status of the LUN copy operations can be obtained using a GET of the source or destination LUN that requests the `copy` properties. If the LUN is the source LUN for one or more copy operations, the `copy.destinations` array is populated in GET. If the containing LUN is the destination LUN for a copy operation, the `copy.source` sub-object is populated in GET. The LUN copy operation can be further modified using a PATCH on the properties on the `copy.source` sub-object of the copy destination LUN.<br/>
-// There is an added computational cost to retrieving property values for `copy`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-// * **ASA r2**:
-// LUN copies are not supported. No properties in this sub-object can be set in POST or PATCH and none will be returned by GET.
+// There is an added computational cost to retrieving property values for `copy`. They are not populated for a GET request unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.</personalities>
+// <personalities supports=asar2>LUN copies are not supported. No properties in this sub-object can be set in POST or PATCH and none will be returned by GET.</personalities>
 //
 // swagger:model lun_inline_copy
 type LunInlineCopy struct {
@@ -3766,21 +3767,16 @@ func (m *LunInlineLinks) UnmarshalBinary(b []byte) error {
 }
 
 // LunInlineLocation The location of the LUN within the ONTAP cluster.
-// ### Platform Specifics
-// * **Unified ONTAP**:
-// LUNs support rename and move between volumes. Valid in POST and PATCH.
-// * **ASA r2**:
-// The LUN name can be changed by PATCHing the `name` property. The `location` properties are read-only.
+// <personalities supports=unified>LUNs support rename and move between volumes. Valid in POST and PATCH.</personalities>
+// <personalities supports=asar2>The LUN name can be changed by PATCHing the `name` property. The `location` properties are read-only.</personalities>
 //
 // swagger:model lun_inline_location
 type LunInlineLocation struct {
 
-	// * **Unified ONTAP**:
-	// The base name component of the LUN. Valid in POST and PATCH.<br/>
+	// <personalities supports=unified>The base name component of the LUN. Valid in POST and PATCH.<br/>
 	// If properties `name` and `location.logical_unit` are specified in the same request, they must refer to the base name.<br/>
-	// A PATCH that modifies the base name of the LUN is considered a rename operation.
-	// * **ASA r2**:
-	// The volume logical unit property is read-only and cannot be set in POST or PATCH. Use the `name` property for POST.
+	// A PATCH that modifies the base name of the LUN is considered a rename operation.</personalities>
+	// <personalities supports=asar2>The volume logical unit property is read-only and cannot be set in POST or PATCH. Use the `name` property for POST.</personalities>
 	//
 	// Example: lun1
 	LogicalUnit *string `json:"logical_unit,omitempty"`
@@ -4172,12 +4168,10 @@ func (m *LunInlineLocationInlineNodeInlineLinks) UnmarshalBinary(b []byte) error
 	return nil
 }
 
-// LunInlineLocationInlineQtree * **Unified ONTAP**:
-// The qtree in which the LUN is optionally located. Valid in POST and PATCH.<br/>
+// LunInlineLocationInlineQtree <personalities supports=unified>The qtree in which the LUN is optionally located. Valid in POST and PATCH.<br/>
 // If properties `name` and `location.qtree.name` and/or `location.qtree.id` are specified in the same request, they must refer to the same qtree.<br/>
-// A PATCH that modifies the qtree of the LUN is considered a rename operation.
-// * **ASA r2**:
-// The qtrees are not supported. The properties of the qtree sub-object cannot be set in POST or PATCH.
+// A PATCH that modifies the qtree of the LUN is considered a rename operation.</personalities>
+// <personalities supports=asar2>The qtrees are not supported. The properties of the qtree sub-object cannot be set in POST or PATCH.</personalities>
 //
 // swagger:model lun_inline_location_inline_qtree
 type LunInlineLocationInlineQtree struct {
@@ -4381,10 +4375,6 @@ func (m *LunInlineLocationInlineQtreeInlineLinks) UnmarshalBinary(b []byte) erro
 }
 
 // LunInlineLocationInlineStorageAvailabilityZone The storage availability zone that contains the LUN.
-// ### Platform Specifics
-// * **Unified ONTAP**:
-// This property is not supported.
-// * **ASA r2**:
 // Valid in POST when creating LUNs of class `protocol_endpoint` only, otherwise read-only.
 //
 // swagger:model lun_inline_location_inline_storage_availability_zone
@@ -4565,12 +4555,10 @@ func (m *LunInlineLocationInlineStorageAvailabilityZoneInlineLinks) UnmarshalBin
 	return nil
 }
 
-// LunInlineLocationInlineVolume * **Unified ONTAP**:
-// The volume in which the LUN is located. Valid in POST and PATCH.<br/>
+// LunInlineLocationInlineVolume <personalities supports=unified>The volume in which the LUN is located. Valid in POST and PATCH.<br/>
 // If properties `name` and `location.volume.name` and/or `location.volume.uuid` are specified in the same request, they must refer to the same volume.<br/>
-// A PATCH that modifies the volume of the LUN begins an asynchronous LUN movement operation.
-// * **ASA r2**:
-// The volume sub-object is read-only and its properties cannot be set in POST or PATCH. Use the `name` property for POST.
+// A PATCH that modifies the volume of the LUN begins an asynchronous LUN movement operation.</personalities>
+// <personalities supports=asar2>The volume sub-object is read-only and its properties cannot be set in POST or PATCH. Use the `name` property for POST.</personalities>
 //
 // swagger:model lun_inline_location_inline_volume
 type LunInlineLocationInlineVolume struct {
@@ -6483,13 +6471,11 @@ func (m *LunInlineMetricInlineThroughput) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// LunInlineMovement * **Unified ONTAP**:
-// This sub-object applies to LUN movement between volumes. A LUN can be moved to a new volume with a PATCH request that changes either the volume portion of property `name`, `location.volume.uuid`, or `location.volume.name`. If the volume is changed using more than one of these properties, the supplied properties used must refer to the same volume.<br/>
+// LunInlineMovement <personalities supports=unified>This sub-object applies to LUN movement between volumes. A LUN can be moved to a new volume with a PATCH request that changes either the volume portion of property `name`, `location.volume.uuid`, or `location.volume.name`. If the volume is changed using more than one of these properties, the supplied properties used must refer to the same volume.<br/>
 // Moving a LUN between volumes is an asynchronous activity begun by a PATCH request. The data for the LUN is then asynchronously copied from the source volume to the destination volume. The time required to complete the move depends on the size of the LUN and the load on the cluster. The `movement` sub-object is populated while a LUN movement is in progress and for two (2) minutes following completion of a movement.<br/>
 // While the LUN is being moved, the status of the LUN movement operation can be obtained using a GET for the LUN that requests the `movement` properties. The LUN movement operation can be further modified using a PATCH on the properties on the `movement` sub-object.<br/>
-// There is an added computational cost to retrieving property values for `movement`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-// * **ASA r2**:
-// LUN movement is not supported. No properties in this sub-object can be set in POST or PATCH and none will be returned by GET.
+// There is an added computational cost to retrieving property values for `movement`. They are not populated for a GET request unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.</personalities>
+// <personalities supports=asar2>LUN movement is not supported. No properties in this sub-object can be set in POST or PATCH and none will be returned by GET.</personalities>
 //
 // swagger:model lun_inline_movement
 type LunInlineMovement struct {
@@ -7007,6 +6993,10 @@ type LunInlineProvisioningOptions struct {
 	// qos policy
 	QosPolicy *LunInlineProvisioningOptionsInlineQosPolicy `json:"qos_policy,omitempty"`
 
+	// This must be set to _true_ to provision a secondary LUN. A secondary LUN must refer to a primary LUN and will be included in snapshots of the primary LUN. Valid in POST when creating LUNs of class `vvol` only.
+	//
+	Secondary *bool `json:"secondary,omitempty"`
+
 	// The snapshot policy for the volume provisioned to host the LUN. This property is only supported when the request provisions a new volume.
 	//
 	SnapshotPolicy *SnapshotPolicyReference `json:"snapshot_policy,omitempty"`
@@ -7329,7 +7319,7 @@ func (m *LunInlineProvisioningOptionsInlineQosPolicy) UnmarshalBinary(b []byte) 
 	return nil
 }
 
-// LunInlineProvisioningOptionsInlineStorageService Determines the placement of the volume provisioned to host the LUN.
+// LunInlineProvisioningOptionsInlineStorageService Determines the placement of the LUN based on the value specified. This property is only supported for regular and vvol LUNs. Valid in POST.
 //
 // swagger:model lun_inline_provisioning_options_inline_storage_service
 type LunInlineProvisioningOptionsInlineStorageService struct {
@@ -7772,8 +7762,7 @@ func (m *LunProvisioningOptionsTieringObjectStoresItems0) UnmarshalBinary(b []by
 }
 
 // LunInlineQosPolicy The QoS policy for the LUN. Both traditional and adaptive QoS policies are supported. If both property `qos_policy.uuid` and `qos_policy.name` are specified in the same request, they must refer to the same QoS policy. To remove the QoS policy from a LUN, leaving it with no QoS policy, set the property `qos_policy.name` to an empty string ("") in a PATCH request. Valid in POST and PATCH.
-// ### Platform Specifics
-// * **ASA r2**: To remove the QoS policy, set it to `null` in a PATCH request.
+// <personalities supports=asar2>To remove the QoS policy, set it to `null` in a PATCH request.</personalities>
 //
 // swagger:model lun_inline_qos_policy
 type LunInlineQosPolicy struct {
@@ -7961,9 +7950,8 @@ func (m *LunInlineQosPolicyInlineLinks) UnmarshalBinary(b []byte) error {
 type LunInlineSpace struct {
 
 	// The storage efficiency ratio of the LUN without snapshots. (Logical Used / Used)
-	// ### Platform Specifics
-	// * **Unified ONTAP**: This property is not available on the LUN object in the REST API and is not reported for GET requests. See the containing volume object for this information.
-	// * **ASA r2**: Available for GET.
+	// <personalities supports=unified>This property is not available on the LUN object in the REST API and is not reported for GET requests. See the containing volume object for this information.</personalities>
+	// <personalities supports=asar2>Available for GET.</personalities>
 	//
 	// Example: 2.5
 	// Read Only: true
@@ -7973,18 +7961,16 @@ type LunInlineSpace struct {
 	Guarantee *LunInlineSpaceInlineGuarantee `json:"guarantee,omitempty"`
 
 	// The number of bytes consumed on the disk by the LUN, excluding snapshots.
-	// ### Platform Specifics
-	// * **Unified ONTAP**: This property is not available on the LUN object in the REST API and is not reported for GET requests. See the containing volume object for this information.
-	// * **ASA r2**: Available for GET.
+	// <personalities supports=unified>This property is not available on the LUN object in the REST API and is not reported for GET requests. See the containing volume object for this information.</personalities>
+	// <personalities supports=asar2>Available for GET.</personalities>
 	//
 	// Example: 1073741824
 	// Read Only: true
 	PhysicalUsed *int64 `json:"physical_used,omitempty"`
 
 	// The number of bytes consumed on the disk by the LUN's snapshots.
-	// ### Platform Specifics
-	// * **Unified ONTAP**: This property is not available on the LUN object in the REST API and is not reported for GET requests. See the containing volume object for this information.
-	// * **ASA r2**: Available for GET.
+	// <personalities supports=unified>This property is not available on the LUN object in the REST API and is not reported for GET requests. See the containing volume object for this information.</personalities>
+	// <personalities supports=asar2>Available for GET.</personalities>
 	//
 	// Example: 1073741824
 	// Read Only: true
@@ -7996,11 +7982,8 @@ type LunInlineSpace struct {
 	// - Reporting resource exhaustion errors
 	// <p/>
 	// The value of this property is not propagated to the destination when a LUN is cloned as a new LUN or copied; it is reset to false. The value of this property is maintained from the destination LUN when a LUN is overwritten as a clone.<br/>
-	// <h3>Platform Specifics</h3>
-	// <ul>
-	//   <li>Unified ONTAP: Valid in POST and PATCH.</li>
-	//   <li>ASA r2: This property cannot be set. All LUNs are provisioned with SCSI thin provisioning enabled.</li>
-	// </ul>
+	// <personalities supports=unified>Valid in POST and PATCH.</personalities>
+	// <personalities supports=asar2>This property cannot be set. All LUNs are provisioned with SCSI thin provisioning enabled.</personalities>
 	//
 	ScsiThinProvisioningSupportEnabled *bool `json:"scsi_thin_provisioning_support_enabled,omitempty"`
 
@@ -8176,9 +8159,8 @@ func (m *LunInlineSpace) UnmarshalBinary(b []byte) error {
 type LunInlineSpaceInlineGuarantee struct {
 
 	// The requested space reservation policy for the LUN. If _true_, a space reservation is requested for the LUN; if _false_, the LUN is thin provisioned. Guaranteeing a space reservation request for a LUN requires that the volume in which the LUN resides is also space reserved and that the fractional reserve for the volume is 100%. Valid in POST and PATCH.
-	// ### Platform Specifics
-	// * **Unified ONTAP**: This property is caller settable as described above.
-	// * **ASA r2**: This property cannot be set. All LUNs are provisioned without a space reservation.
+	// <personalities supports=unified>This property is caller settable as described above.</personalities>
+	// <personalities supports=asar2>This property cannot be set. All LUNs are provisioned without a space reservation.</personalities>
 	//
 	Requested *bool `json:"requested,omitempty"`
 
@@ -8783,7 +8765,7 @@ type LunInlineStatus struct {
 	ContainerState *string `json:"container_state,omitempty"`
 
 	// Reports if the LUN is mapped to one or more initiator groups.<br/>
-	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// There is an added computational cost to retrieving this property's value. It is not populated for a GET request unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Read Only: true
 	Mapped *bool `json:"mapped,omitempty"`
@@ -9235,7 +9217,7 @@ func (m *LunInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
 
 // LunInlineVvol A VMware virtual volume (vVol) binding is an association between a LUN of class `protocol_endpoint` and a LUN of class `vvol`. Class `protocol_endpoint` LUNs are mapped to igroups and granted access using the same configuration as class `regular` LUNs. When a class `vvol` LUN is bound to a mapped class `protocol_endpoint` LUN, VMware can access the class `vvol` LUN through the class `protocol_endpoint` LUN mapping.<br/>
 // See [`POST /protocols/san/vvol-bindings`](#/SAN/vvol_binding_create) to learn more about creating vVol bindings and [`DELETE /protocols/san/vvol-bindings`](#/SAN/vvol_binding_delete) to learn more about deleting vVol bindings.<br/>
-// There is an added computational cost to retrieving property values for `vvol`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+// There is an added computational cost to retrieving property values for `vvol`. They are not populated for a GET request unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 //
 // swagger:model lun_inline_vvol
 type LunInlineVvol struct {
@@ -9243,7 +9225,7 @@ type LunInlineVvol struct {
 	// Bindings between the LUN, which must be of class `protocol_endpoint` or `vvol`, and LUNs of the opposite class.<br/>
 	// A class `vvol` LUN must be bound to a class `protocol_endpoint` LUN in order to be accessed. Class `protocol_endpoint` and `vvol` LUNs allow many-to-many bindings. A LUN of one class is allowed to be bound to zero or more LUNs of the opposite class. The binding between any two specific LUNs is reference counted. When a binding is created that already exists, the binding count is incremented. When a binding is deleted, the binding count is decremented, but the LUNs remain bound if the resultant reference count is greater than zero. When the binding count reaches zero, the binding is destroyed.<br/>
 	// The bindings array contains LUNs of the opposite class of the containing LUN object.<br/>
-	// There is an added computational cost to retrieving property values for `vvol.bindings`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// There is an added computational cost to retrieving property values for `vvol.bindings`. They are not populated for a GET request unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Read Only: true
 	Bindings []*LunVvolBindingsItems0 `json:"bindings,omitempty"`

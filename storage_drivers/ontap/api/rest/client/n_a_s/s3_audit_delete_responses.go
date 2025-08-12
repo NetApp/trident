@@ -59,6 +59,7 @@ S3AuditDeleteOK describes a response with status code 200, with default header v
 OK
 */
 type S3AuditDeleteOK struct {
+	Payload *models.S3AuditJobLinkResponse
 }
 
 // IsSuccess returns true when this s3 audit delete o k response has a 2xx status code
@@ -92,14 +93,27 @@ func (o *S3AuditDeleteOK) Code() int {
 }
 
 func (o *S3AuditDeleteOK) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3AuditDeleteOK", 200)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3AuditDeleteOK %s", 200, payload)
 }
 
 func (o *S3AuditDeleteOK) String() string {
-	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3AuditDeleteOK", 200)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3AuditDeleteOK %s", 200, payload)
+}
+
+func (o *S3AuditDeleteOK) GetPayload() *models.S3AuditJobLinkResponse {
+	return o.Payload
 }
 
 func (o *S3AuditDeleteOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.S3AuditJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }
@@ -115,6 +129,7 @@ S3AuditDeleteAccepted describes a response with status code 202, with default he
 Accepted
 */
 type S3AuditDeleteAccepted struct {
+	Payload *models.S3AuditJobLinkResponse
 }
 
 // IsSuccess returns true when this s3 audit delete accepted response has a 2xx status code
@@ -148,14 +163,27 @@ func (o *S3AuditDeleteAccepted) Code() int {
 }
 
 func (o *S3AuditDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3AuditDeleteAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3AuditDeleteAccepted %s", 202, payload)
 }
 
 func (o *S3AuditDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3AuditDeleteAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/audit/{svm.uuid}/object-store][%d] s3AuditDeleteAccepted %s", 202, payload)
+}
+
+func (o *S3AuditDeleteAccepted) GetPayload() *models.S3AuditJobLinkResponse {
+	return o.Payload
 }
 
 func (o *S3AuditDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.S3AuditJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }

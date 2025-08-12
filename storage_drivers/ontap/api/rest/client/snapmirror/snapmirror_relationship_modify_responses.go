@@ -221,7 +221,7 @@ func NewSnapmirrorRelationshipModifyDefault(code int) *SnapmirrorRelationshipMod
 | 13303821    | Invalid SnapMirror policy name/UUID |
 | 13303819    | Could not retrieve SnapMirror policy information |
 | 13303851    | Cannot modify attributes of SnapMirror restore relationship |
-| 13303816    | Could not retrieve state or status values |
+| 13303816    | Could not retrieve the state or status values for the relationship. Wait a few minutes and try the operation again |
 | 13303837    | Given flags are valid only if SnapMirror state change is requested |
 | 6619546     | Destination must be a dp volume |
 | 13303808    | Transition to broken_off state failed |
@@ -259,6 +259,7 @@ func NewSnapmirrorRelationshipModifyDefault(code int) *SnapmirrorRelationshipMod
 | 13304093    | The property specified is not supported for the specified relationships. |
 | 6622077     | The expand operation has failed on the SnapMirror active sync relationship with specified destination path. |
 | 6619720     | Relationship information has been updated and is being propagated. Wait a few minutes and try the operation again. |
+| 13304159    | Could not retrieve the state or status values for the relationship. Wait a few minutes and try the operation again. If the error persists, address the error condition shown. |
 */
 type SnapmirrorRelationshipModifyDefault struct {
 	_statusCode int

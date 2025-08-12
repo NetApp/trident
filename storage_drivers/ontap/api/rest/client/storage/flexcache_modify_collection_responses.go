@@ -314,7 +314,13 @@ type FlexcacheModifyCollectionBody struct {
 	// cifs change notify
 	CifsChangeNotify *models.FlexcacheInlineCifsChangeNotify `json:"cifs_change_notify,omitempty"`
 
+	// Specifies the number of constituents in the FlexGroup volume upon FlexCache create (POST).
+	// Example: 8
+	// Minimum: 1
+	ConstituentCount *int64 `json:"constituent_count,omitempty"`
+
 	// Number of FlexCache constituents per aggregate when the 'aggregates' field is mentioned.
+	// Example: 1
 	ConstituentsPerAggregate *int64 `json:"constituents_per_aggregate,omitempty"`
 
 	// If set to true, a DR cache is created.
@@ -385,6 +391,10 @@ func (o *FlexcacheModifyCollectionBody) Validate(formats strfmt.Registry) error 
 	}
 
 	if err := o.validateCifsChangeNotify(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateConstituentCount(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -476,6 +486,18 @@ func (o *FlexcacheModifyCollectionBody) validateCifsChangeNotify(formats strfmt.
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (o *FlexcacheModifyCollectionBody) validateConstituentCount(formats strfmt.Registry) error {
+	if swag.IsZero(o.ConstituentCount) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("info"+"."+"constituent_count", "body", *o.ConstituentCount, 1, false); err != nil {
+		return err
 	}
 
 	return nil

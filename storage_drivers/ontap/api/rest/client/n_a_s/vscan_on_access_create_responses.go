@@ -138,7 +138,7 @@ func NewVscanOnAccessCreateDefault(code int) *VscanOnAccessCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 10027043   | The new On-Access policy cannot be created as the SVM has reached the maximum number of On-Access policies allowed. Delete an existing policy in order to create a new policy |
+| 10027043   | The new On-Access policy cannot be created because the SVM has reached the maximum limit of 10 On-Access policies. Delete an existing policy in order to create a new policy |
 | 10027101   | The file size must be in the range 1KB to 1TB |
 | 10027107   | The include extensions list cannot be empty. Specify at least one extension for inclusion |
 | 10027109   | The specified CIFS path is invalid. It must be in the form \"\\dir1\\dir2\" or \"\\dir1\\dir2\\\" |

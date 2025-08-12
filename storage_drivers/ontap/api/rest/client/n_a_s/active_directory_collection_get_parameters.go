@@ -174,6 +174,12 @@ type ActiveDirectoryCollectionGetParams struct {
 	*/
 	ReturnTimeout *int64
 
+	/* SecurityAdvertisedKdcEncryptions.
+
+	   Filter by security.advertised_kdc_encryptions
+	*/
+	SecurityAdvertisedKdcEncryptions *string
+
 	/* SvmName.
 
 	   Filter by svm.name
@@ -449,6 +455,17 @@ func (o *ActiveDirectoryCollectionGetParams) WithReturnTimeout(returnTimeout *in
 // SetReturnTimeout adds the returnTimeout to the active directory collection get params
 func (o *ActiveDirectoryCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
 	o.ReturnTimeout = returnTimeout
+}
+
+// WithSecurityAdvertisedKdcEncryptions adds the securityAdvertisedKdcEncryptions to the active directory collection get params
+func (o *ActiveDirectoryCollectionGetParams) WithSecurityAdvertisedKdcEncryptions(securityAdvertisedKdcEncryptions *string) *ActiveDirectoryCollectionGetParams {
+	o.SetSecurityAdvertisedKdcEncryptions(securityAdvertisedKdcEncryptions)
+	return o
+}
+
+// SetSecurityAdvertisedKdcEncryptions adds the securityAdvertisedKdcEncryptions to the active directory collection get params
+func (o *ActiveDirectoryCollectionGetParams) SetSecurityAdvertisedKdcEncryptions(securityAdvertisedKdcEncryptions *string) {
+	o.SecurityAdvertisedKdcEncryptions = securityAdvertisedKdcEncryptions
 }
 
 // WithSvmName adds the svmName to the active directory collection get params
@@ -770,6 +787,23 @@ func (o *ActiveDirectoryCollectionGetParams) WriteToRequest(r runtime.ClientRequ
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SecurityAdvertisedKdcEncryptions != nil {
+
+		// query param security.advertised_kdc_encryptions
+		var qrSecurityAdvertisedKdcEncryptions string
+
+		if o.SecurityAdvertisedKdcEncryptions != nil {
+			qrSecurityAdvertisedKdcEncryptions = *o.SecurityAdvertisedKdcEncryptions
+		}
+		qSecurityAdvertisedKdcEncryptions := qrSecurityAdvertisedKdcEncryptions
+		if qSecurityAdvertisedKdcEncryptions != "" {
+
+			if err := r.SetQueryParam("security.advertised_kdc_encryptions", qSecurityAdvertisedKdcEncryptions); err != nil {
 				return err
 			}
 		}

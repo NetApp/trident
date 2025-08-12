@@ -152,6 +152,12 @@ type IpsecPolicyDeleteCollectionParams struct {
 	*/
 	Name *string
 
+	/* PpkIdentity.
+
+	   Filter by ppk.identity
+	*/
+	PpkIdentity *string
+
 	/* Protocol.
 
 	   Filter by protocol
@@ -470,6 +476,17 @@ func (o *IpsecPolicyDeleteCollectionParams) WithName(name *string) *IpsecPolicyD
 // SetName adds the name to the ipsec policy delete collection params
 func (o *IpsecPolicyDeleteCollectionParams) SetName(name *string) {
 	o.Name = name
+}
+
+// WithPpkIdentity adds the ppkIdentity to the ipsec policy delete collection params
+func (o *IpsecPolicyDeleteCollectionParams) WithPpkIdentity(ppkIdentity *string) *IpsecPolicyDeleteCollectionParams {
+	o.SetPpkIdentity(ppkIdentity)
+	return o
+}
+
+// SetPpkIdentity adds the ppkIdentity to the ipsec policy delete collection params
+func (o *IpsecPolicyDeleteCollectionParams) SetPpkIdentity(ppkIdentity *string) {
+	o.PpkIdentity = ppkIdentity
 }
 
 // WithProtocol adds the protocol to the ipsec policy delete collection params
@@ -859,6 +876,23 @@ func (o *IpsecPolicyDeleteCollectionParams) WriteToRequest(r runtime.ClientReque
 		if qName != "" {
 
 			if err := r.SetQueryParam("name", qName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PpkIdentity != nil {
+
+		// query param ppk.identity
+		var qrPpkIdentity string
+
+		if o.PpkIdentity != nil {
+			qrPpkIdentity = *o.PpkIdentity
+		}
+		qPpkIdentity := qrPpkIdentity
+		if qPpkIdentity != "" {
+
+			if err := r.SetQueryParam("ppk.identity", qPpkIdentity); err != nil {
 				return err
 			}
 		}

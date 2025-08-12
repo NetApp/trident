@@ -219,6 +219,7 @@ func NewQosPolicyModifyCollectionDefault(code int) *QosPolicyModifyCollectionDef
 | 8454328 | The existing adaptive QoS policy cannot be modified to a fixed QoS policy. |
 | 8454379 | The name specified for creating a fixed QoS policy already exists. |
 | 8454380 | The name specified for creating an adaptive QoS policy already exists. |
+| 8454389 | One specified field cannot be used in combination with at least one other specified field. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type QosPolicyModifyCollectionDefault struct {
@@ -1230,22 +1231,30 @@ type QosPolicyInlineFixed struct {
 	// Specifies whether the capacities are shared across all objects that use this QoS policy-group. Default is false.
 	CapacityShared *bool `json:"capacity_shared,omitempty"`
 
-	// Maximum throughput defined by this policy.  It is specified in terms of IOPS. 0 means no maximum throughput is enforced.
+	// Maximum throughput defined by this policy. It is specified in terms of Kbps, Mbps or Gbps along with or without IOPS. 0 means no maximum throughput is enforced.
+	// Example: ["900KB/s","500MB/s","120GB/s","5000IOPS","5000IOPS,500KB/s","2500IOPS,100MB/s","1000IOPS,25MB/s"]
+	MaxThroughput *string `json:"max_throughput,omitempty"`
+
+	// Maximum throughput defined by this policy. It is specified in terms of IOPS. 0 means no maximum throughput is enforced.
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
-	// Maximum throughput defined by this policy.  It is specified in terms of Mbps. 0 means no maximum throughput is enforced.
+	// Maximum throughput defined by this policy. It is specified in terms of Mbps. 0 means no maximum throughput is enforced.
 	// Maximum: 4.194303e+06
 	// Minimum: 0
 	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
-	// Minimum throughput defined by this policy.  It is specified in terms of IOPS. 0 means no minimum throughput is enforced. These floors are not guaranteed on non-AFF platforms or when FabricPool tiering policies are set.
+	// Minimum throughput defined by this policy. It is specified in terms of Kbps, Mbps or Gbps along with or without IOPS. 0 means no minimum throughput is enforced.
+	// Example: ["900KB/s","500MB/s","120GB/s","5000IOPS","5000IOPS,500KB/s","2500IOPS,100MB/s","1000IOPS,25MB/s"]
+	MinThroughput *string `json:"min_throughput,omitempty"`
+
+	// Minimum throughput defined by this policy. It is specified in terms of IOPS. 0 means no minimum throughput is enforced. These floors are not guaranteed on non-AFF platforms or when FabricPool tiering policies are set.
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
-	// Minimum throughput defined by this policy.  It is specified in terms of Mbps. 0 means no minimum throughput is enforced.
+	// Minimum throughput defined by this policy. It is specified in terms of Mbps. 0 means no minimum throughput is enforced.
 	// Maximum: 4.194303e+06
 	// Minimum: 0
 	MinThroughputMbps *int64 `json:"min_throughput_mbps,omitempty"`

@@ -226,13 +226,18 @@ func NewSwitchCreateDefault(code int) *SwitchCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 5636149 | \"{snmp.user}\" must be a valid SNMPv3 user belonging to remote switch with IP address \"{address}\" and must also be configured in ONTAP. |
-| 12517377 | Model number validation failed. Specify correct model number and try the command again. |
-| 12517378 | IP address \"{address}\" is not reachable. Verify that the address is valid or check the network path. |
-| 12517380 | SNMP validation request timed out. Verify that the \"snmp.user\" parameter is valid. |
-| 12517382 | SNMP validation request timed out. Verify that the \"snmp.user\" parameter is valid (i.e., the SNMPv3 user exists in ONTAP and on the remote switch). If the \"snmp.user\" parameter is valid, verify that the SNMPv3 user's credentials are the same both in ONTAP as well as in the remote switch. If a custom engine-id was provided for the SNMPv3 user, ensure it is the same as that of the remote switch. |
-| 12517384 | SHM is already monitoring a switch with IP address \"{address}\". |
-| 12517385 | Model \"{model}\" is unknown. Use \"OTHER\" if the switch model is not one of the following&#58; {models}. |
+| 5636148 | Failed to discover SNMPv3 engine ID of the remote switch. |
+| 5636149 | The \"<snmp.user>\" must be a valid SNMPv3 user belonging to remote switch \"<name.>\" and must also be configured in ONTAP. |
+| 5636152 | 0.0.0.0 cannot be specified as the IP address for the \"<address.>\" parameter. |
+| 8912900 | Invalid IP address. |
+| 9044009 | SNMPv3 client feature is not available until the effective cluster version is ONTAP 9.3 or later. |
+| 12517377 | Model number validation failed. Specify the correct model number and try the command again. |
+| 12517378 | The IP \"<address.>\" is not reachable. Verify that the address is valid, or check the network path. |
+| 12517380 | SNMP validation request timed out. Verify that the \"<snmp.user>\" parameter is valid. |
+| 12517382 | SNMPv3 validation request timed out. Verify that the \"<snmp.user>\" parameter is valid (i.e., the SNMPv3 user exists in ONTAP and on the remote switch). If the \"<snmp.user>\" parameter is valid, verify that the SNMPv3 user's credentials are the same both in ONTAP as well as in the remote switch. If a custom engine-id was provided for the SNMPv3 user, ensure it is the same as that of the remote switch. |
+| 12517384 | A switch with the same IP address is already being monitored. |
+| 12517385 | The \"<model.>\" is unknown. Use \"OTHER\" if the switch model is not one of the following&#58; {models}. |
+| 12517411 | The input value for \"<name.>\", \"<address.>\" and/or \"<network.>\" must match its discovered value. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SwitchCreateDefault struct {

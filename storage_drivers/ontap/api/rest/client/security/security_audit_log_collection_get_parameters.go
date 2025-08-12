@@ -144,6 +144,12 @@ type SecurityAuditLogCollectionGetParams struct {
 	*/
 	ReturnTimeout *int64
 
+	/* Role.
+
+	   Filter by role
+	*/
+	Role *string
+
 	/* Scope.
 
 	   Filter by scope
@@ -388,6 +394,17 @@ func (o *SecurityAuditLogCollectionGetParams) WithReturnTimeout(returnTimeout *i
 // SetReturnTimeout adds the returnTimeout to the security audit log collection get params
 func (o *SecurityAuditLogCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
 	o.ReturnTimeout = returnTimeout
+}
+
+// WithRole adds the role to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) WithRole(role *string) *SecurityAuditLogCollectionGetParams {
+	o.SetRole(role)
+	return o
+}
+
+// SetRole adds the role to the security audit log collection get params
+func (o *SecurityAuditLogCollectionGetParams) SetRole(role *string) {
+	o.Role = role
 }
 
 // WithScope adds the scope to the security audit log collection get params
@@ -668,6 +685,23 @@ func (o *SecurityAuditLogCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Role != nil {
+
+		// query param role
+		var qrRole string
+
+		if o.Role != nil {
+			qrRole = *o.Role
+		}
+		qRole := qrRole
+		if qRole != "" {
+
+			if err := r.SetQueryParam("role", qRole); err != nil {
 				return err
 			}
 		}

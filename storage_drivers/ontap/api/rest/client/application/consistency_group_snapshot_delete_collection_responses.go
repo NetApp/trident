@@ -120,6 +120,7 @@ ConsistencyGroupSnapshotDeleteCollectionAccepted describes a response with statu
 Accepted
 */
 type ConsistencyGroupSnapshotDeleteCollectionAccepted struct {
+	Payload *models.ConsistencyGroupSnapshotJobLinkResponse
 }
 
 // IsSuccess returns true when this consistency group snapshot delete collection accepted response has a 2xx status code
@@ -153,14 +154,27 @@ func (o *ConsistencyGroupSnapshotDeleteCollectionAccepted) Code() int {
 }
 
 func (o *ConsistencyGroupSnapshotDeleteCollectionAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistencyGroupSnapshotDeleteCollectionAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistencyGroupSnapshotDeleteCollectionAccepted %s", 202, payload)
 }
 
 func (o *ConsistencyGroupSnapshotDeleteCollectionAccepted) String() string {
-	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistencyGroupSnapshotDeleteCollectionAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots][%d] consistencyGroupSnapshotDeleteCollectionAccepted %s", 202, payload)
+}
+
+func (o *ConsistencyGroupSnapshotDeleteCollectionAccepted) GetPayload() *models.ConsistencyGroupSnapshotJobLinkResponse {
+	return o.Payload
 }
 
 func (o *ConsistencyGroupSnapshotDeleteCollectionAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ConsistencyGroupSnapshotJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }
@@ -354,12 +368,9 @@ type ConsistencyGroupSnapshotDeleteCollectionParamsBodyRecordsItems0LunsItems0 s
 	Links *ConsistencyGroupSnapshotDeleteCollectionParamsBodyRecordsItems0LunsItems0Links `json:"_links,omitempty"`
 
 	// The name of a LUN.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
-	// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.
-	// * **ASA r2**:
-	// LUN names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.
+	// <personalities supports=unified>A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.</personalities>
+	// <personalities supports=asar2>LUN names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.</personalities>
 	//
 	// Example: /vol/volume1/lun1
 	Name *string `json:"name,omitempty"`
@@ -545,12 +556,9 @@ type ConsistencyGroupSnapshotDeleteCollectionParamsBodyRecordsItems0MissingNames
 	Links *ConsistencyGroupSnapshotDeleteCollectionParamsBodyRecordsItems0MissingNamespacesItems0Links `json:"_links,omitempty"`
 
 	// The name of an NVMe namespace.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
-	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.
-	// * **ASA r2**:
-	// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.
+	// <personalities supports=unified>An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.</personalities>
+	// <personalities supports=asar2>NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.</personalities>
 	//
 	// Example: /vol/volume1/namespace1
 	Name *string `json:"name,omitempty"`
@@ -735,12 +743,9 @@ type ConsistencyGroupSnapshotDeleteCollectionParamsBodyRecordsItems0NamespacesIt
 	Links *ConsistencyGroupSnapshotDeleteCollectionParamsBodyRecordsItems0NamespacesItems0Links `json:"_links,omitempty"`
 
 	// The name of an NVMe namespace.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
-	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.
-	// * **ASA r2**:
-	// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.
+	// <personalities supports=unified>An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.</personalities>
+	// <personalities supports=asar2>NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.</personalities>
 	//
 	// Example: /vol/volume1/namespace1
 	Name *string `json:"name,omitempty"`

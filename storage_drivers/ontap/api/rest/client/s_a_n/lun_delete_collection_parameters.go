@@ -89,6 +89,14 @@ type LunDeleteCollectionParams struct {
 	*/
 	AutoDelete *bool
 
+	/* BypassRecoveryQueue.
+
+	     Bypasses the volume recovery queue. This makes the volume hosting the LUN non-recoverable.<br/>
+	**This parameter should be used with caution.**
+
+	*/
+	BypassRecoveryQueue *bool
+
 	/* Class.
 
 	   Filter by class
@@ -615,6 +623,12 @@ type LunDeleteCollectionParams struct {
 	*/
 	SerialNumber *string
 
+	/* SerialNumberHex.
+
+	   Filter by serial_number_hex
+	*/
+	SerialNumberHex *string
+
 	/* SerialRecords.
 
 	   Perform the operation on the records synchronously.
@@ -845,6 +859,8 @@ func (o *LunDeleteCollectionParams) SetDefaults() {
 	var (
 		allowDeleteWhileMappedDefault = bool(false)
 
+		bypassRecoveryQueueDefault = bool(false)
+
 		continueOnFailureDefault = bool(false)
 
 		returnRecordsDefault = bool(true)
@@ -856,6 +872,7 @@ func (o *LunDeleteCollectionParams) SetDefaults() {
 
 	val := LunDeleteCollectionParams{
 		AllowDeleteWhileMapped: &allowDeleteWhileMappedDefault,
+		BypassRecoveryQueue:    &bypassRecoveryQueueDefault,
 		ContinueOnFailure:      &continueOnFailureDefault,
 		ReturnRecords:          &returnRecordsDefault,
 		ReturnTimeout:          &returnTimeoutDefault,
@@ -943,6 +960,17 @@ func (o *LunDeleteCollectionParams) WithAutoDelete(autoDelete *bool) *LunDeleteC
 // SetAutoDelete adds the autoDelete to the lun delete collection params
 func (o *LunDeleteCollectionParams) SetAutoDelete(autoDelete *bool) {
 	o.AutoDelete = autoDelete
+}
+
+// WithBypassRecoveryQueue adds the bypassRecoveryQueue to the lun delete collection params
+func (o *LunDeleteCollectionParams) WithBypassRecoveryQueue(bypassRecoveryQueue *bool) *LunDeleteCollectionParams {
+	o.SetBypassRecoveryQueue(bypassRecoveryQueue)
+	return o
+}
+
+// SetBypassRecoveryQueue adds the bypassRecoveryQueue to the lun delete collection params
+func (o *LunDeleteCollectionParams) SetBypassRecoveryQueue(bypassRecoveryQueue *bool) {
+	o.BypassRecoveryQueue = bypassRecoveryQueue
 }
 
 // WithClass adds the class to the lun delete collection params
@@ -1902,6 +1930,17 @@ func (o *LunDeleteCollectionParams) SetSerialNumber(serialNumber *string) {
 	o.SerialNumber = serialNumber
 }
 
+// WithSerialNumberHex adds the serialNumberHex to the lun delete collection params
+func (o *LunDeleteCollectionParams) WithSerialNumberHex(serialNumberHex *string) *LunDeleteCollectionParams {
+	o.SetSerialNumberHex(serialNumberHex)
+	return o
+}
+
+// SetSerialNumberHex adds the serialNumberHex to the lun delete collection params
+func (o *LunDeleteCollectionParams) SetSerialNumberHex(serialNumberHex *string) {
+	o.SerialNumberHex = serialNumberHex
+}
+
 // WithSerialRecords adds the serialRecords to the lun delete collection params
 func (o *LunDeleteCollectionParams) WithSerialRecords(serialRecords *bool) *LunDeleteCollectionParams {
 	o.SetSerialRecords(serialRecords)
@@ -2358,6 +2397,23 @@ func (o *LunDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qAutoDelete != "" {
 
 			if err := r.SetQueryParam("auto_delete", qAutoDelete); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BypassRecoveryQueue != nil {
+
+		// query param bypass_recovery_queue
+		var qrBypassRecoveryQueue bool
+
+		if o.BypassRecoveryQueue != nil {
+			qrBypassRecoveryQueue = *o.BypassRecoveryQueue
+		}
+		qBypassRecoveryQueue := swag.FormatBool(qrBypassRecoveryQueue)
+		if qBypassRecoveryQueue != "" {
+
+			if err := r.SetQueryParam("bypass_recovery_queue", qBypassRecoveryQueue); err != nil {
 				return err
 			}
 		}
@@ -3823,6 +3879,23 @@ func (o *LunDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qSerialNumber != "" {
 
 			if err := r.SetQueryParam("serial_number", qSerialNumber); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SerialNumberHex != nil {
+
+		// query param serial_number_hex
+		var qrSerialNumberHex string
+
+		if o.SerialNumberHex != nil {
+			qrSerialNumberHex = *o.SerialNumberHex
+		}
+		qSerialNumberHex := qrSerialNumberHex
+		if qSerialNumberHex != "" {
+
+			if err := r.SetQueryParam("serial_number_hex", qSerialNumberHex); err != nil {
 				return err
 			}
 		}

@@ -134,6 +134,18 @@ type AllSvmBucketsCollectionGetParams struct {
 	*/
 	Fields []string
 
+	/* IsConsistentEtag.
+
+	   Filter by is_consistent_etag
+	*/
+	IsConsistentEtag *bool
+
+	/* IsNasPathMutable.
+
+	   Filter by is_nas_path_mutable
+	*/
+	IsNasPathMutable *bool
+
 	/* LifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays.
 
 	   Filter by lifecycle_management.rules.abort_incomplete_multipart_upload.after_initiation_days
@@ -350,6 +362,12 @@ type AllSvmBucketsCollectionGetParams struct {
 	*/
 	ProtectionStatusIsProtected *bool
 
+	/* QosPolicyMaxThroughput.
+
+	   Filter by qos_policy.max_throughput
+	*/
+	QosPolicyMaxThroughput *string
+
 	/* QosPolicyMaxThroughputIops.
 
 	   Filter by qos_policy.max_throughput_iops
@@ -361,6 +379,12 @@ type AllSvmBucketsCollectionGetParams struct {
 	   Filter by qos_policy.max_throughput_mbps
 	*/
 	QosPolicyMaxThroughputMbps *int64
+
+	/* QosPolicyMinThroughput.
+
+	   Filter by qos_policy.min_throughput
+	*/
+	QosPolicyMinThroughput *string
 
 	/* QosPolicyMinThroughputIops.
 
@@ -677,6 +701,28 @@ func (o *AllSvmBucketsCollectionGetParams) WithFields(fields []string) *AllSvmBu
 // SetFields adds the fields to the all svm buckets collection get params
 func (o *AllSvmBucketsCollectionGetParams) SetFields(fields []string) {
 	o.Fields = fields
+}
+
+// WithIsConsistentEtag adds the isConsistentEtag to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithIsConsistentEtag(isConsistentEtag *bool) *AllSvmBucketsCollectionGetParams {
+	o.SetIsConsistentEtag(isConsistentEtag)
+	return o
+}
+
+// SetIsConsistentEtag adds the isConsistentEtag to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetIsConsistentEtag(isConsistentEtag *bool) {
+	o.IsConsistentEtag = isConsistentEtag
+}
+
+// WithIsNasPathMutable adds the isNasPathMutable to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithIsNasPathMutable(isNasPathMutable *bool) *AllSvmBucketsCollectionGetParams {
+	o.SetIsNasPathMutable(isNasPathMutable)
+	return o
+}
+
+// SetIsNasPathMutable adds the isNasPathMutable to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetIsNasPathMutable(isNasPathMutable *bool) {
+	o.IsNasPathMutable = isNasPathMutable
 }
 
 // WithLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays adds the lifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays to the all svm buckets collection get params
@@ -1075,6 +1121,17 @@ func (o *AllSvmBucketsCollectionGetParams) SetProtectionStatusIsProtected(protec
 	o.ProtectionStatusIsProtected = protectionStatusIsProtected
 }
 
+// WithQosPolicyMaxThroughput adds the qosPolicyMaxThroughput to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithQosPolicyMaxThroughput(qosPolicyMaxThroughput *string) *AllSvmBucketsCollectionGetParams {
+	o.SetQosPolicyMaxThroughput(qosPolicyMaxThroughput)
+	return o
+}
+
+// SetQosPolicyMaxThroughput adds the qosPolicyMaxThroughput to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetQosPolicyMaxThroughput(qosPolicyMaxThroughput *string) {
+	o.QosPolicyMaxThroughput = qosPolicyMaxThroughput
+}
+
 // WithQosPolicyMaxThroughputIops adds the qosPolicyMaxThroughputIops to the all svm buckets collection get params
 func (o *AllSvmBucketsCollectionGetParams) WithQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops *int64) *AllSvmBucketsCollectionGetParams {
 	o.SetQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops)
@@ -1095,6 +1152,17 @@ func (o *AllSvmBucketsCollectionGetParams) WithQosPolicyMaxThroughputMbps(qosPol
 // SetQosPolicyMaxThroughputMbps adds the qosPolicyMaxThroughputMbps to the all svm buckets collection get params
 func (o *AllSvmBucketsCollectionGetParams) SetQosPolicyMaxThroughputMbps(qosPolicyMaxThroughputMbps *int64) {
 	o.QosPolicyMaxThroughputMbps = qosPolicyMaxThroughputMbps
+}
+
+// WithQosPolicyMinThroughput adds the qosPolicyMinThroughput to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) WithQosPolicyMinThroughput(qosPolicyMinThroughput *string) *AllSvmBucketsCollectionGetParams {
+	o.SetQosPolicyMinThroughput(qosPolicyMinThroughput)
+	return o
+}
+
+// SetQosPolicyMinThroughput adds the qosPolicyMinThroughput to the all svm buckets collection get params
+func (o *AllSvmBucketsCollectionGetParams) SetQosPolicyMinThroughput(qosPolicyMinThroughput *string) {
+	o.QosPolicyMinThroughput = qosPolicyMinThroughput
 }
 
 // WithQosPolicyMinThroughputIops adds the qosPolicyMinThroughputIops to the all svm buckets collection get params
@@ -1509,6 +1577,40 @@ func (o *AllSvmBucketsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.IsConsistentEtag != nil {
+
+		// query param is_consistent_etag
+		var qrIsConsistentEtag bool
+
+		if o.IsConsistentEtag != nil {
+			qrIsConsistentEtag = *o.IsConsistentEtag
+		}
+		qIsConsistentEtag := swag.FormatBool(qrIsConsistentEtag)
+		if qIsConsistentEtag != "" {
+
+			if err := r.SetQueryParam("is_consistent_etag", qIsConsistentEtag); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IsNasPathMutable != nil {
+
+		// query param is_nas_path_mutable
+		var qrIsNasPathMutable bool
+
+		if o.IsNasPathMutable != nil {
+			qrIsNasPathMutable = *o.IsNasPathMutable
+		}
+		qIsNasPathMutable := swag.FormatBool(qrIsNasPathMutable)
+		if qIsNasPathMutable != "" {
+
+			if err := r.SetQueryParam("is_nas_path_mutable", qIsNasPathMutable); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -2118,6 +2220,23 @@ func (o *AllSvmBucketsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.QosPolicyMaxThroughput != nil {
+
+		// query param qos_policy.max_throughput
+		var qrQosPolicyMaxThroughput string
+
+		if o.QosPolicyMaxThroughput != nil {
+			qrQosPolicyMaxThroughput = *o.QosPolicyMaxThroughput
+		}
+		qQosPolicyMaxThroughput := qrQosPolicyMaxThroughput
+		if qQosPolicyMaxThroughput != "" {
+
+			if err := r.SetQueryParam("qos_policy.max_throughput", qQosPolicyMaxThroughput); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.QosPolicyMaxThroughputIops != nil {
 
 		// query param qos_policy.max_throughput_iops
@@ -2147,6 +2266,23 @@ func (o *AllSvmBucketsCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qQosPolicyMaxThroughputMbps != "" {
 
 			if err := r.SetQueryParam("qos_policy.max_throughput_mbps", qQosPolicyMaxThroughputMbps); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyMinThroughput != nil {
+
+		// query param qos_policy.min_throughput
+		var qrQosPolicyMinThroughput string
+
+		if o.QosPolicyMinThroughput != nil {
+			qrQosPolicyMinThroughput = *o.QosPolicyMinThroughput
+		}
+		qQosPolicyMinThroughput := qrQosPolicyMinThroughput
+		if qQosPolicyMinThroughput != "" {
+
+			if err := r.SetQueryParam("qos_policy.min_throughput", qQosPolicyMinThroughput); err != nil {
 				return err
 			}
 		}

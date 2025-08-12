@@ -3851,7 +3851,7 @@ func (a *Client) PortMetricsCollectionGet(params *PortMetricsCollectionGetParams
 }
 
 /*
-	SwitchCollectionGet Retrieves the ethernet switches attached to the chassis.
+	SwitchCollectionGet Retrieves a collection of Ethernet switches.
 
 ### Related ONTAP commands
 * `system switch ethernet show`
@@ -3894,7 +3894,7 @@ func (a *Client) SwitchCollectionGet(params *SwitchCollectionGetParams, authInfo
 }
 
 /*
-	SwitchCreate Creates an ethernet switch.
+	SwitchCreate Adds an Ethernet switch.
 
 ### Required properties
 * `name` - Name of the switch to create.
@@ -4074,7 +4074,7 @@ func (a *Client) SwitchGet(params *SwitchGetParams, authInfo runtime.ClientAuthI
 }
 
 /*
-	SwitchModify Updates the switch state.
+	SwitchModify Configures monitoring settings for an Ethernet switch.
 
 ### Related ONTAP commands
 * `system switch ethernet modify`

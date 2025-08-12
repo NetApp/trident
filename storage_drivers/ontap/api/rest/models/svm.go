@@ -31,7 +31,7 @@ type Svm struct {
 	// Anti-ransomware related information for the SVM.
 	AntiRansomware *ArwVserver `json:"anti_ransomware,omitempty"`
 
-	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that no new file-extensions are observed in the volume in recent time. This parameter optionally specifies the recent time duration (in days) to be considered during which no new file-extension should be observed in a given volume to automatically switch the anti-ransomware state from ‘learning” to “enabled”.
+	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that no new file-extensions are observed in the volume in recent time. This parameter optionally specifies the recent time duration (in days) to be considered during which no new file-extension should be observed in a given volume to automatically switch the anti-ransomware state from “learning” to “enabled”.
 	AntiRansomwareAutoSwitchDurationWithoutNewFileExtension *int64 `json:"anti_ransomware_auto_switch_duration_without_new_file_extension,omitempty"`
 
 	// This property specifies whether anti-ransomware state of the volumes in this SVM are automatically switched by the system from “learning” (dry-run) to “enabled” (active) state after sufficient learning.
@@ -3614,9 +3614,12 @@ func (m *SvmInlineDNSInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmInlineFcp ### Platform Specifics
-// * **Unified ONTAP**: Available for GET, POST and PATCH.
-// * **ASA r2**: Available for GET. All SVMs are provisioned with the FCP service configured.
+// SvmInlineFcp <personalities supports=unified>
+// Available for GET, POST, and PATCH requests.
+// </personalities>
+// <personalities supports=asar2>
+// Available for GET requests. All SVMs are provisioned with the FCP service configured.
+// </personalities>
 //
 // swagger:model svm_inline_fcp
 type SvmInlineFcp struct {
@@ -3974,9 +3977,12 @@ func (m *SvmInlineIpspaceInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmInlineIscsi ### Platform Specifics
-// * **Unified ONTAP**: Available for GET, POST and PATCH.
-// * **ASA r2**: Available for GET. All SVMs are provisioned with the iSCSI service configured.
+// SvmInlineIscsi <personalities supports=unified>
+// Available for GET, POST, and PATCH requests.
+// </personalities>
+// <personalities supports=asar2>
+// Available for GET requests. All SVMs are provisioned with the iSCSI service configured.
+// </personalities>
 //
 // swagger:model svm_inline_iscsi
 type SvmInlineIscsi struct {
@@ -5075,9 +5081,12 @@ func (m *SvmInlineNsswitch) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// SvmInlineNvme ### Platform Specifics
-// * **Unified ONTAP**: Available for GET, POST and PATCH.
-// * **ASA r2**: Available for GET. All SVMs are provisioned with the NVMe service configured.
+// SvmInlineNvme <personalities supports=unified>
+// Available for GET, POST, and PATCH requests.
+// </personalities>
+// <personalities supports=asar2>
+// Available for GET requests. All SVMs are provisioned with the NVMe service configured.
+// </personalities>
 //
 // swagger:model svm_inline_nvme
 type SvmInlineNvme struct {
@@ -5263,25 +5272,33 @@ type SvmInlineQosAdaptivePolicyGroupTemplate struct {
 	// links
 	Links *SvmInlineQosAdaptivePolicyGroupTemplateInlineLinks `json:"_links,omitempty"`
 
-	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in Kilobytes per sec, Megabytes per sec or Gigabytes per sec along with or without IOPS. 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when either max_throughput_mbps or max_throughput_iops are set during POST or PATCH. During GET, the returned value is rounded to the largest unit with a value greater than 1.
+	// Example: ["900KB/s","500MB/s","120GB/s","5000IOPS","5000IOPS,500KB/s","2500IOPS,100MB/s","1000IOPS,25MB/s"]
+	MaxThroughput *string `json:"max_throughput,omitempty"`
+
+	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 10000
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
-	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 500
 	// Maximum: 4.194303e+06
 	// Minimum: 0
 	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
-	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in Kilobytes per sec, Megabytes per sec or Gigabytes per sec along with or without IOPS. 0 means none.Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when either min_throughput_mbps or min_throughput_iops are set during POST or PATCH. During GET, the returned value is rounded to the largest unit with a value greater than 1.
+	// Example: ["900KB/s","500MB/s","120GB/s","5000IOPS","5000IOPS,500KB/s","2500IOPS,100MB/s","1000IOPS,25MB/s"]
+	MinThroughput *string `json:"min_throughput,omitempty"`
+
+	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 2000
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
-	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 500
 	// Maximum: 4.194303e+06
 	// Minimum: 0
@@ -5547,25 +5564,33 @@ type SvmInlineQosPolicy struct {
 	// links
 	Links *SvmInlineQosPolicyInlineLinks `json:"_links,omitempty"`
 
-	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in Kilobytes per sec, Megabytes per sec or Gigabytes per sec along with or without IOPS. 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when either max_throughput_mbps or max_throughput_iops are set during POST or PATCH. During GET, the returned value is rounded to the largest unit with a value greater than 1.
+	// Example: ["900KB/s","500MB/s","120GB/s","5000IOPS","5000IOPS,500KB/s","2500IOPS,100MB/s","1000IOPS,25MB/s"]
+	MaxThroughput *string `json:"max_throughput,omitempty"`
+
+	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 10000
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
-	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 500
 	// Maximum: 4.194303e+06
 	// Minimum: 0
 	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
-	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in Kilobytes per sec, Megabytes per sec or Gigabytes per sec along with or without IOPS. 0 means none.Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when either min_throughput_mbps or min_throughput_iops are set during POST or PATCH. During GET, the returned value is rounded to the largest unit with a value greater than 1.
+	// Example: ["900KB/s","500MB/s","120GB/s","5000IOPS","5000IOPS,500KB/s","2500IOPS,100MB/s","1000IOPS,25MB/s"]
+	MinThroughput *string `json:"min_throughput,omitempty"`
+
+	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 2000
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
-	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 500
 	// Maximum: 4.194303e+06
 	// Minimum: 0
@@ -5745,25 +5770,33 @@ type SvmInlineQosPolicyGroupTemplate struct {
 	// links
 	Links *SvmInlineQosPolicyGroupTemplateInlineLinks `json:"_links,omitempty"`
 
-	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in Kilobytes per sec, Megabytes per sec or Gigabytes per sec along with or without IOPS. 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when either max_throughput_mbps or max_throughput_iops are set during POST or PATCH. During GET, the returned value is rounded to the largest unit with a value greater than 1.
+	// Example: ["900KB/s","500MB/s","120GB/s","5000IOPS","5000IOPS,500KB/s","2500IOPS,100MB/s","1000IOPS,25MB/s"]
+	MaxThroughput *string `json:"max_throughput,omitempty"`
+
+	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 10000
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
-	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 500
 	// Maximum: 4.194303e+06
 	// Minimum: 0
 	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
-	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in Kilobytes per sec, Megabytes per sec or Gigabytes per sec along with or without IOPS. 0 means none.Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when either min_throughput_mbps or min_throughput_iops are set during POST or PATCH. During GET, the returned value is rounded to the largest unit with a value greater than 1.
+	// Example: ["900KB/s","500MB/s","120GB/s","5000IOPS","5000IOPS,500KB/s","2500IOPS,100MB/s","1000IOPS,25MB/s"]
+	MinThroughput *string `json:"min_throughput,omitempty"`
+
+	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 2000
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
-	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 500
 	// Maximum: 4.194303e+06
 	// Minimum: 0

@@ -138,6 +138,7 @@ func NewVscanScannerCreateDefault(code int) *VscanScannerCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 10027076   | The new scanner-pool cannot be created because the SVM has reached the maximum limit of 20 scanner-pools. Delete an existing scanner-pool in order to create a new scanner-pool
 | 10027086   | The specified list of servers contains one or more entries that cannot be resolved
 | 10027258   | The specified cluster_name does not exist
 | 10027256   | The specified cluster_uuid does not exist
@@ -148,6 +149,8 @@ func NewVscanScannerCreateDefault(code int) *VscanScannerCreateDefault {
 | 10027063   | Attempting to modify a scanner-pool on an SVM owned by the cluster with a data SVM
 | 10027086   | DNS resolution failed for one or more hostnames
 | 10027119   | The privileged user contains characters that are not allowed
+| 10027261   | One of the specified IPv4 addresses in the \\"-hostnames\\" is either a multicast, loopback, broadcast, or '0.0.0.0' address.
+| 10027262   | One of the specified IPv6 addresses in the \\"-hostnames\\" is either a link-local, multicast, v4-compatible, v4-mapped, loopback or '::/0' address.
 */
 type VscanScannerCreateDefault struct {
 	_statusCode int

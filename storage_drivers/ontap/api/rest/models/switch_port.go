@@ -67,6 +67,10 @@ type SwitchPort struct {
 	// switch
 	Switch *SwitchPortInlineSwitch `json:"switch,omitempty"`
 
+	// switch port inline roles
+	// Read Only: true
+	SwitchPortInlineRoles []*SwitchPortInlineRolesInlineArrayItem `json:"roles,omitempty"`
+
 	// switch port inline vlan id
 	SwitchPortInlineVlanID []*int64 `json:"vlan_id,omitempty"`
 
@@ -113,6 +117,10 @@ func (m *SwitchPort) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSwitch(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSwitchPortInlineRoles(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -449,6 +457,30 @@ func (m *SwitchPort) validateSwitch(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *SwitchPort) validateSwitchPortInlineRoles(formats strfmt.Registry) error {
+	if swag.IsZero(m.SwitchPortInlineRoles) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SwitchPortInlineRoles); i++ {
+		if swag.IsZero(m.SwitchPortInlineRoles[i]) { // not required
+			continue
+		}
+
+		if m.SwitchPortInlineRoles[i] != nil {
+			if err := m.SwitchPortInlineRoles[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("roles" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 var switchPortTypeTypePropEnum []interface{}
 
 func init() {
@@ -627,6 +659,10 @@ func (m *SwitchPort) ContextValidate(ctx context.Context, formats strfmt.Registr
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateSwitchPortInlineRoles(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSwitchPortInlineVlanID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -778,6 +814,28 @@ func (m *SwitchPort) contextValidateSwitch(ctx context.Context, formats strfmt.R
 	return nil
 }
 
+func (m *SwitchPort) contextValidateSwitchPortInlineRoles(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "roles", "body", []*SwitchPortInlineRolesInlineArrayItem(m.SwitchPortInlineRoles)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.SwitchPortInlineRoles); i++ {
+
+		if m.SwitchPortInlineRoles[i] != nil {
+			if err := m.SwitchPortInlineRoles[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("roles" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *SwitchPort) contextValidateSwitchPortInlineVlanID(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.SwitchPortInlineVlanID); i++ {
@@ -832,6 +890,9 @@ func (m *SwitchPort) UnmarshalBinary(b []byte) error {
 // swagger:model switch_port_inline_identity
 type SwitchPortInlineIdentity struct {
 
+	// breakout
+	Breakout *SwitchPortInlineIdentityInlineBreakout `json:"breakout,omitempty"`
+
 	// Interface Index.
 	// Read Only: true
 	Index *int64 `json:"index,omitempty"`
@@ -847,12 +908,42 @@ type SwitchPortInlineIdentity struct {
 
 // Validate validates this switch port inline identity
 func (m *SwitchPortInlineIdentity) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateBreakout(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SwitchPortInlineIdentity) validateBreakout(formats strfmt.Registry) error {
+	if swag.IsZero(m.Breakout) { // not required
+		return nil
+	}
+
+	if m.Breakout != nil {
+		if err := m.Breakout.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("identity" + "." + "breakout")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
 // ContextValidate validate this switch port inline identity based on the context it is used
 func (m *SwitchPortInlineIdentity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.contextValidateBreakout(ctx, formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.contextValidateIndex(ctx, formats); err != nil {
 		res = append(res, err)
@@ -869,6 +960,20 @@ func (m *SwitchPortInlineIdentity) ContextValidate(ctx context.Context, formats 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *SwitchPortInlineIdentity) contextValidateBreakout(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Breakout != nil {
+		if err := m.Breakout.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("identity" + "." + "breakout")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -917,6 +1022,81 @@ func (m *SwitchPortInlineIdentity) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// SwitchPortInlineIdentityInlineBreakout switch port inline identity inline breakout
+//
+// swagger:model switch_port_inline_identity_inline_breakout
+type SwitchPortInlineIdentityInlineBreakout struct {
+
+	// Breakout port sub-interface number.
+	// Example: 1
+	// Read Only: true
+	Number *int64 `json:"number,omitempty"`
+
+	// Breakout physical port name.
+	// Example: Ethernet1/9
+	// Read Only: true
+	PhysicalPort *string `json:"physical_port,omitempty"`
+}
+
+// Validate validates this switch port inline identity inline breakout
+func (m *SwitchPortInlineIdentityInlineBreakout) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this switch port inline identity inline breakout based on the context it is used
+func (m *SwitchPortInlineIdentityInlineBreakout) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateNumber(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePhysicalPort(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SwitchPortInlineIdentityInlineBreakout) contextValidateNumber(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "identity"+"."+"breakout"+"."+"number", "body", m.Number); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SwitchPortInlineIdentityInlineBreakout) contextValidatePhysicalPort(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "identity"+"."+"breakout"+"."+"physical_port", "body", m.PhysicalPort); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SwitchPortInlineIdentityInlineBreakout) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SwitchPortInlineIdentityInlineBreakout) UnmarshalBinary(b []byte) error {
+	var res SwitchPortInlineIdentityInlineBreakout
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // SwitchPortInlineRemotePort Remote port.
 //
 // swagger:model switch_port_inline_remote_port
@@ -925,11 +1105,14 @@ type SwitchPortInlineRemotePort struct {
 	// device
 	Device *SwitchPortInlineRemotePortInlineDevice `json:"device,omitempty"`
 
+	// functional roles
+	FunctionalRoles []*string `json:"functional_roles,omitempty"`
+
 	// MTU in octets.
 	// Read Only: true
 	Mtu *int64 `json:"mtu,omitempty"`
 
-	// Port Name.
+	// Remote port name.
 	// Read Only: true
 	Name *string `json:"name,omitempty"`
 }
@@ -939,6 +1122,10 @@ func (m *SwitchPortInlineRemotePort) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDevice(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateFunctionalRoles(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -965,11 +1152,54 @@ func (m *SwitchPortInlineRemotePort) validateDevice(formats strfmt.Registry) err
 	return nil
 }
 
+var switchPortInlineRemotePortFunctionalRolesItemsEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["cluster","ha","storage_ontap","storage_shelf"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		switchPortInlineRemotePortFunctionalRolesItemsEnum = append(switchPortInlineRemotePortFunctionalRolesItemsEnum, v)
+	}
+}
+
+func (m *SwitchPortInlineRemotePort) validateFunctionalRolesItemsEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, switchPortInlineRemotePortFunctionalRolesItemsEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SwitchPortInlineRemotePort) validateFunctionalRoles(formats strfmt.Registry) error {
+	if swag.IsZero(m.FunctionalRoles) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.FunctionalRoles); i++ {
+		if swag.IsZero(m.FunctionalRoles[i]) { // not required
+			continue
+		}
+
+		// value enum
+		if err := m.validateFunctionalRolesItemsEnum("remote_port"+"."+"functional_roles"+"."+strconv.Itoa(i), "body", *m.FunctionalRoles[i]); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
 // ContextValidate validate this switch port inline remote port based on the context it is used
 func (m *SwitchPortInlineRemotePort) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDevice(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFunctionalRoles(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -996,6 +1226,19 @@ func (m *SwitchPortInlineRemotePort) contextValidateDevice(ctx context.Context, 
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SwitchPortInlineRemotePort) contextValidateFunctionalRoles(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.FunctionalRoles); i++ {
+
+		if err := validate.ReadOnly(ctx, "remote_port"+"."+"functional_roles"+"."+strconv.Itoa(i), "body", m.FunctionalRoles[i]); err != nil {
+			return err
+		}
+
 	}
 
 	return nil
@@ -1041,6 +1284,11 @@ func (m *SwitchPortInlineRemotePort) UnmarshalBinary(b []byte) error {
 //
 // swagger:model switch_port_inline_remote_port_inline_device
 type SwitchPortInlineRemotePortInlineDevice struct {
+
+	// Raw name of the discovered device.
+	// Example: stiA400-311
+	// Read Only: true
+	DiscoveredName *string `json:"discovered_name,omitempty"`
 
 	// node
 	Node *SwitchPortInlineRemotePortInlineDeviceInlineNode `json:"node,omitempty"`
@@ -1105,6 +1353,10 @@ func (m *SwitchPortInlineRemotePortInlineDevice) validateShelf(formats strfmt.Re
 func (m *SwitchPortInlineRemotePortInlineDevice) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateDiscoveredName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateNode(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1116,6 +1368,15 @@ func (m *SwitchPortInlineRemotePortInlineDevice) ContextValidate(ctx context.Con
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *SwitchPortInlineRemotePortInlineDevice) contextValidateDiscoveredName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "remote_port"+"."+"device"+"."+"discovered_name", "body", m.DiscoveredName); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -1589,6 +1850,172 @@ func (m *SwitchPortInlineRemotePortInlineDeviceInlineShelfInlineLinks) Unmarshal
 	return nil
 }
 
+// SwitchPortInlineRolesInlineArrayItem Allowed use for this port.
+//
+// swagger:model switch_port_inline_roles_inline_array_item
+type SwitchPortInlineRolesInlineArrayItem struct {
+
+	// DR group.
+	DrGroup *string `json:"dr_group,omitempty"`
+
+	// Allowed use type.
+	// Enum: ["cluster","storage","metrocluster","local_isl","remote_isl","vpc_peer_link"]
+	Type *string `json:"type,omitempty"`
+
+	// Zone ID to differentiate between roles with the same type.
+	// Minimum: 1
+	Zone *int64 `json:"zone,omitempty"`
+}
+
+// Validate validates this switch port inline roles inline array item
+func (m *SwitchPortInlineRolesInlineArrayItem) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateZone(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var switchPortInlineRolesInlineArrayItemTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["cluster","storage","metrocluster","local_isl","remote_isl","vpc_peer_link"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		switchPortInlineRolesInlineArrayItemTypeTypePropEnum = append(switchPortInlineRolesInlineArrayItemTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// switch_port_inline_roles_inline_array_item
+	// SwitchPortInlineRolesInlineArrayItem
+	// type
+	// Type
+	// cluster
+	// END DEBUGGING
+	// SwitchPortInlineRolesInlineArrayItemTypeCluster captures enum value "cluster"
+	SwitchPortInlineRolesInlineArrayItemTypeCluster string = "cluster"
+
+	// BEGIN DEBUGGING
+	// switch_port_inline_roles_inline_array_item
+	// SwitchPortInlineRolesInlineArrayItem
+	// type
+	// Type
+	// storage
+	// END DEBUGGING
+	// SwitchPortInlineRolesInlineArrayItemTypeStorage captures enum value "storage"
+	SwitchPortInlineRolesInlineArrayItemTypeStorage string = "storage"
+
+	// BEGIN DEBUGGING
+	// switch_port_inline_roles_inline_array_item
+	// SwitchPortInlineRolesInlineArrayItem
+	// type
+	// Type
+	// metrocluster
+	// END DEBUGGING
+	// SwitchPortInlineRolesInlineArrayItemTypeMetrocluster captures enum value "metrocluster"
+	SwitchPortInlineRolesInlineArrayItemTypeMetrocluster string = "metrocluster"
+
+	// BEGIN DEBUGGING
+	// switch_port_inline_roles_inline_array_item
+	// SwitchPortInlineRolesInlineArrayItem
+	// type
+	// Type
+	// local_isl
+	// END DEBUGGING
+	// SwitchPortInlineRolesInlineArrayItemTypeLocalIsl captures enum value "local_isl"
+	SwitchPortInlineRolesInlineArrayItemTypeLocalIsl string = "local_isl"
+
+	// BEGIN DEBUGGING
+	// switch_port_inline_roles_inline_array_item
+	// SwitchPortInlineRolesInlineArrayItem
+	// type
+	// Type
+	// remote_isl
+	// END DEBUGGING
+	// SwitchPortInlineRolesInlineArrayItemTypeRemoteIsl captures enum value "remote_isl"
+	SwitchPortInlineRolesInlineArrayItemTypeRemoteIsl string = "remote_isl"
+
+	// BEGIN DEBUGGING
+	// switch_port_inline_roles_inline_array_item
+	// SwitchPortInlineRolesInlineArrayItem
+	// type
+	// Type
+	// vpc_peer_link
+	// END DEBUGGING
+	// SwitchPortInlineRolesInlineArrayItemTypeVpcPeerLink captures enum value "vpc_peer_link"
+	SwitchPortInlineRolesInlineArrayItemTypeVpcPeerLink string = "vpc_peer_link"
+)
+
+// prop value enum
+func (m *SwitchPortInlineRolesInlineArrayItem) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, switchPortInlineRolesInlineArrayItemTypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SwitchPortInlineRolesInlineArrayItem) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("type", "body", *m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SwitchPortInlineRolesInlineArrayItem) validateZone(formats strfmt.Registry) error {
+	if swag.IsZero(m.Zone) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("zone", "body", *m.Zone, 1, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this switch port inline roles inline array item based on context it is used
+func (m *SwitchPortInlineRolesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SwitchPortInlineRolesInlineArrayItem) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SwitchPortInlineRolesInlineArrayItem) UnmarshalBinary(b []byte) error {
+	var res SwitchPortInlineRolesInlineArrayItem
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // SwitchPortInlineStatistics These are raw counters for the device associated with the Ethernet port.
 //
 // swagger:model switch_port_inline_statistics
@@ -1596,6 +2023,11 @@ type SwitchPortInlineStatistics struct {
 
 	// receive raw
 	ReceiveRaw *SwitchPortInlineStatisticsInlineReceiveRaw `json:"receive_raw,omitempty"`
+
+	// The time the statistics were gathered.
+	// Example: 2024-11-18 15:52:17
+	// Format: date-time
+	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 
 	// transmit raw
 	TransmitRaw *SwitchPortInlineStatisticsInlineTransmitRaw `json:"transmit_raw,omitempty"`
@@ -1606,6 +2038,10 @@ func (m *SwitchPortInlineStatistics) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateReceiveRaw(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTimestamp(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1631,6 +2067,18 @@ func (m *SwitchPortInlineStatistics) validateReceiveRaw(formats strfmt.Registry)
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SwitchPortInlineStatistics) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("statistics"+"."+"timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
 	}
 
 	return nil

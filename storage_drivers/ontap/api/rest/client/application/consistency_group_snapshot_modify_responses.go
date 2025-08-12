@@ -115,6 +115,7 @@ ConsistencyGroupSnapshotModifyAccepted describes a response with status code 202
 Accepted
 */
 type ConsistencyGroupSnapshotModifyAccepted struct {
+	Payload *models.ConsistencyGroupSnapshotJobLinkResponse
 }
 
 // IsSuccess returns true when this consistency group snapshot modify accepted response has a 2xx status code
@@ -148,14 +149,27 @@ func (o *ConsistencyGroupSnapshotModifyAccepted) Code() int {
 }
 
 func (o *ConsistencyGroupSnapshotModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotModifyAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotModifyAccepted %s", 202, payload)
 }
 
 func (o *ConsistencyGroupSnapshotModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotModifyAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotModifyAccepted %s", 202, payload)
+}
+
+func (o *ConsistencyGroupSnapshotModifyAccepted) GetPayload() *models.ConsistencyGroupSnapshotJobLinkResponse {
+	return o.Payload
 }
 
 func (o *ConsistencyGroupSnapshotModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ConsistencyGroupSnapshotJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }
@@ -177,7 +191,7 @@ func NewConsistencyGroupSnapshotModifyDefault(code int) *ConsistencyGroupSnapsho
 | 53411925 | Failed to find a previously initiated two-phase snapshot operation for consistency group. |
 | 53412015 | SnapLock expiry time cannot be before the current expiry time. |
 | 53412016 | Snapshot is not retained by SnapLock. |
-| 53412017 | The operation is not supported on this platform. |
+| 53412017 | The operation is not supported on this platform.</personalities> |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ConsistencyGroupSnapshotModifyDefault struct {

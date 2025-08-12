@@ -58,7 +58,7 @@ type Coredump struct {
 	// Core type, kernel or application
 	// Example: kernel
 	// Read Only: true
-	// Enum: ["kernel","application"]
+	// Enum: ["kernel","application","ancillary_kernel_segment"]
 	Type *string `json:"type,omitempty"`
 }
 
@@ -138,7 +138,7 @@ var coredumpTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["kernel","application"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["kernel","application","ancillary_kernel_segment"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -167,6 +167,16 @@ const (
 	// END DEBUGGING
 	// CoredumpTypeApplication captures enum value "application"
 	CoredumpTypeApplication string = "application"
+
+	// BEGIN DEBUGGING
+	// coredump
+	// Coredump
+	// type
+	// Type
+	// ancillary_kernel_segment
+	// END DEBUGGING
+	// CoredumpTypeAncillaryKernelSegment captures enum value "ancillary_kernel_segment"
+	CoredumpTypeAncillaryKernelSegment string = "ancillary_kernel_segment"
 )
 
 // prop value enum

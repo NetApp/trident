@@ -230,6 +230,12 @@ type QtreeCollectionGetParams struct {
 	*/
 	Path *string
 
+	/* QosPolicyMaxThroughput.
+
+	   Filter by qos_policy.max_throughput
+	*/
+	QosPolicyMaxThroughput *string
+
 	/* QosPolicyMaxThroughputIops.
 
 	   Filter by qos_policy.max_throughput_iops
@@ -241,6 +247,12 @@ type QtreeCollectionGetParams struct {
 	   Filter by qos_policy.max_throughput_mbps
 	*/
 	QosPolicyMaxThroughputMbps *int64
+
+	/* QosPolicyMinThroughput.
+
+	   Filter by qos_policy.min_throughput
+	*/
+	QosPolicyMinThroughput *string
 
 	/* QosPolicyMinThroughputIops.
 
@@ -789,6 +801,17 @@ func (o *QtreeCollectionGetParams) SetPath(path *string) {
 	o.Path = path
 }
 
+// WithQosPolicyMaxThroughput adds the qosPolicyMaxThroughput to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithQosPolicyMaxThroughput(qosPolicyMaxThroughput *string) *QtreeCollectionGetParams {
+	o.SetQosPolicyMaxThroughput(qosPolicyMaxThroughput)
+	return o
+}
+
+// SetQosPolicyMaxThroughput adds the qosPolicyMaxThroughput to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetQosPolicyMaxThroughput(qosPolicyMaxThroughput *string) {
+	o.QosPolicyMaxThroughput = qosPolicyMaxThroughput
+}
+
 // WithQosPolicyMaxThroughputIops adds the qosPolicyMaxThroughputIops to the qtree collection get params
 func (o *QtreeCollectionGetParams) WithQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops *int64) *QtreeCollectionGetParams {
 	o.SetQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops)
@@ -809,6 +832,17 @@ func (o *QtreeCollectionGetParams) WithQosPolicyMaxThroughputMbps(qosPolicyMaxTh
 // SetQosPolicyMaxThroughputMbps adds the qosPolicyMaxThroughputMbps to the qtree collection get params
 func (o *QtreeCollectionGetParams) SetQosPolicyMaxThroughputMbps(qosPolicyMaxThroughputMbps *int64) {
 	o.QosPolicyMaxThroughputMbps = qosPolicyMaxThroughputMbps
+}
+
+// WithQosPolicyMinThroughput adds the qosPolicyMinThroughput to the qtree collection get params
+func (o *QtreeCollectionGetParams) WithQosPolicyMinThroughput(qosPolicyMinThroughput *string) *QtreeCollectionGetParams {
+	o.SetQosPolicyMinThroughput(qosPolicyMinThroughput)
+	return o
+}
+
+// SetQosPolicyMinThroughput adds the qosPolicyMinThroughput to the qtree collection get params
+func (o *QtreeCollectionGetParams) SetQosPolicyMinThroughput(qosPolicyMinThroughput *string) {
+	o.QosPolicyMinThroughput = qosPolicyMinThroughput
 }
 
 // WithQosPolicyMinThroughputIops adds the qosPolicyMinThroughputIops to the qtree collection get params
@@ -1591,6 +1625,23 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		}
 	}
 
+	if o.QosPolicyMaxThroughput != nil {
+
+		// query param qos_policy.max_throughput
+		var qrQosPolicyMaxThroughput string
+
+		if o.QosPolicyMaxThroughput != nil {
+			qrQosPolicyMaxThroughput = *o.QosPolicyMaxThroughput
+		}
+		qQosPolicyMaxThroughput := qrQosPolicyMaxThroughput
+		if qQosPolicyMaxThroughput != "" {
+
+			if err := r.SetQueryParam("qos_policy.max_throughput", qQosPolicyMaxThroughput); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.QosPolicyMaxThroughputIops != nil {
 
 		// query param qos_policy.max_throughput_iops
@@ -1620,6 +1671,23 @@ func (o *QtreeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		if qQosPolicyMaxThroughputMbps != "" {
 
 			if err := r.SetQueryParam("qos_policy.max_throughput_mbps", qQosPolicyMaxThroughputMbps); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyMinThroughput != nil {
+
+		// query param qos_policy.min_throughput
+		var qrQosPolicyMinThroughput string
+
+		if o.QosPolicyMinThroughput != nil {
+			qrQosPolicyMinThroughput = *o.QosPolicyMinThroughput
+		}
+		qQosPolicyMinThroughput := qrQosPolicyMinThroughput
+		if qQosPolicyMinThroughput != "" {
+
+			if err := r.SetQueryParam("qos_policy.min_throughput", qQosPolicyMinThroughput); err != nil {
 				return err
 			}
 		}

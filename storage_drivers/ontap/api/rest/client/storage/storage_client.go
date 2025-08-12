@@ -240,8 +240,6 @@ type ClientService interface {
 
 	SplitStatusGet(params *SplitStatusGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SplitStatusGetOK, error)
 
-	StartDirectoryRestore(params *StartDirectoryRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StartDirectoryRestoreCreated, *StartDirectoryRestoreAccepted, error)
-
 	StorageAvailabilityZoneCollectionGet(params *StorageAvailabilityZoneCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageAvailabilityZoneCollectionGetOK, error)
 
 	StorageAvailabilityZoneGet(params *StorageAvailabilityZoneGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageAvailabilityZoneGetOK, error)
@@ -394,8 +392,6 @@ func (a *Client) AggregateCollectionGet(params *AggregateCollectionGetParams, au
 	AggregateCreate Automatically creates aggregates based on an optimal layout recommended by the system. Alternatively, properties can be provided to create an aggregate according to the requested specification. This request starts a job and returns a link to that job.
 
 POST operations will be blocked while one or more nodes in the cluster are simulating or implementing automatic aggregate creation.
-### Platform Specifics
-* **ASA r2**: POST is not supported.
 ### Required properties
 Properties are not required for this API. The following properties are only required if you want to specify properties for aggregate creation:
 * `name` - Name of the aggregate.
@@ -453,8 +449,6 @@ func (a *Client) AggregateCreate(params *AggregateCreateParams, authInfo runtime
 /*
 	AggregateDelete Deletes the aggregate specified by the UUID. This request starts a job and returns a link to that job.
 
-### Platform Specifics
-* **ASA r2**: DELETE is not supported.
 ### Related ONTAP commands
 * `storage aggregate delete`
 */
@@ -587,8 +581,6 @@ func (a *Client) AggregateGet(params *AggregateGetParams, authInfo runtime.Clien
 /*
 	AggregateModify Updates the aggregate specified by the UUID with the properties in the body. This request starts a job and returns a link to that job.
 
-### Platform Specifics
-* **ASA r2**: PATCH is not supported.
 ### Related ONTAP commands
 * `storage aggregate add-disks`
 * `storage aggregate mirror`
@@ -1851,7 +1843,7 @@ func (a *Client) FlexcacheCollectionGet(params *FlexcacheCollectionGetParams, au
 
 ### Required properties
 * `name` - Name of FlexCache volume.
-* `origins.volume.name` or `origins.volume.uuid` - Name or UUID of origin volume.
+* `origins.volume.name` - Name of the origin volume. This volume can only be identified by its name, not by its UUID.
 * `origins.svm.name` - Name of origin Vserver.
 * `svm.name` or `svm.uuid` - Name or UUID of Vserver where FlexCache will be created.
 ### Recommended optional properties
@@ -1873,7 +1865,8 @@ If not specified in POST, the following default property values are assigned:
 * `override_encryption` - false. If true, this property is used to create a plaintext FlexCache volume for an encrypted origin volume.
 * `atime_scrub.enabled` - false. This property specifies whether scrubbing of inactive files based on atime is enabled for the FlexCache volume.
 * `atime_scrub.period` - 30. This property specifies the atime duration in days after which the file can be scrubbed from the FlexCache volume if it stays unused beyond the duration.
-* `cifs_change_notify.enabled` - false. This property specifies whether a CIFS change notification is enabled for the FlexCache volume.
+* `cifs_change_notify.enabled` - false. This property specifies whether a CIFS change notification is enabled for the FlexCache volume. <personalities supports=aiml>
+* `constituent_count` - 1. This property specifies the number of constituents in the FlexGroup volume upon Flexcache create. </personalities>
 ### Related ONTAP commands
 * `volume flexcache create`
 * `volume flexcache prepopulate start`
@@ -2057,9 +2050,8 @@ func (a *Client) FlexcacheGet(params *FlexcacheGetParams, authInfo runtime.Clien
 /*
 	FlexcacheModify Prepopulates a FlexCache volume in the cluster, or modifies configuration of the FlexCache volume.
 
-### Required properties
-* `uuid` - FlexCache volume UUID.
 ### Recommended optional properties
+* `uuid` - FlexCache volume UUID.
 * `prepopulate.exclude_dir_paths` - List of directory-paths to be excluded from prepopulation for the FlexCache volume.
 * `prepopulate.dir_paths` - List of directory-paths to be prepopulated for the FlexCache volume.
 * `writeback.enabled` - false. This property specifies whether writeback is enabled for the FlexCache volume.
@@ -3938,8 +3930,6 @@ func (a *Client) SnapshotCollectionGet(params *SnapshotCollectionGetParams, auth
 /*
 	SnapshotCreate Creates a volume snapshot.
 
-### Platform Specifics
-* **ASA r2**: POST is not supported.
 ### Required properties
 * `name` - Name of the snapshot to be created.
 ### Recommended optional properties
@@ -3992,8 +3982,6 @@ func (a *Client) SnapshotCreate(params *SnapshotCreateParams, authInfo runtime.C
 /*
 	SnapshotDelete Deletes a Volume snapshot.
 
-### Platform Specifics
-* **ASA r2**: POST is not supported.
 ### Related ONTAP commands
 * `snapshot delete`
 ### Learn more
@@ -4122,8 +4110,6 @@ func (a *Client) SnapshotGet(params *SnapshotGetParams, authInfo runtime.ClientA
 /*
 	SnapshotModify Updates a Volume snapshot.
 
-### Platform Specifics
-* **ASA r2**: POST is not supported.
 ### Related ONTAP commands
 * `snapshot modify`
 * `snapshot rename`
@@ -4256,7 +4242,7 @@ func (a *Client) SnapshotPolicyCollectionGet(params *SnapshotPolicyCollectionGet
 ### Required properties
 * `svm.uuid` or `svm.name` - Specifies an SVM for policy creation. If not specified, the snapshot policy will be created on the cluster admin SVM.
 * `name` - Name for the snapshot policy.
-* `copies.schedule` - Schedule at which snapshots are captured on the volume.
+* `copies.schedule` - Schedule name at which snapshots are captured on the volume.
 * `copies.count` - Number of snapshots to maintain for this schedule.
 ### Recommended optional properties
 * `copies.prefix` - Prefix to use when creating snapshots at regular intervals.
@@ -5236,74 +5222,6 @@ func (a *Client) SplitStatusGet(params *SplitStatusGetParams, authInfo runtime.C
 	// unexpected success response
 	unexpectedSuccess := result.(*SplitStatusGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
-}
-
-/*
-	StartDirectoryRestore Restores the source directory from the volume snapshot on the destination directory.
-
-### Required Properties
-* `vserver`
-* `volume.name`
-* `snapshot.name`
-* `source_path`
-* `restore_path`
-### Related ONTAP commands
-* `volume snapshot directory-restore start`
-```
-# The API:
-/api/storage/directory-restore
-# The call:
-curl -X POST "https://<mgmt_ip>/api/storage/directory-restore" -H "accept: application/hal+json" -d '{"svm":"vs1", "volume": "vol1", "snapshot": "sp1", "path": "/aaaa", "restore_path": "/bbbb"}'
-# The response:
-
-	{
-	  "job": {
-	    "uuid": "23b5ff3a-4743-11ee-a08d-005056bb9d00",
-	    "_links": {
-	      "self": {
-	        "href": "/api/cluster/jobs/23b5ff3a-4743-11ee-a08d-005056bb9d00"
-	      }
-	    }
-	  }
-	}
-
-```
-*/
-func (a *Client) StartDirectoryRestore(params *StartDirectoryRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StartDirectoryRestoreCreated, *StartDirectoryRestoreAccepted, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewStartDirectoryRestoreParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "start_directory_restore",
-		Method:             "POST",
-		PathPattern:        "/storage/directory-restore",
-		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
-		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
-		Schemes:            []string{"https"},
-		Params:             params,
-		Reader:             &StartDirectoryRestoreReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, nil, err
-	}
-	switch value := result.(type) {
-	case *StartDirectoryRestoreCreated:
-		return value, nil, nil
-	case *StartDirectoryRestoreAccepted:
-		return nil, value, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*StartDirectoryRestoreDefault)
-	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -6655,11 +6573,7 @@ func (a *Client) TokenModifyCollection(params *TokenModifyCollectionParams, auth
 }
 
 /*
-	TopMetricsClientCollectionGet Retrieves a list of clients with the most I/O activity.
-
-### Platform Specifics
-* **Unified ONTAP**: GET must be used to retrieve a list of clients with the most I/O activity.
-* **ASA**: GET is not supported.
+TopMetricsClientCollectionGet Retrieves a list of clients with the most I/O activity.
 */
 func (a *Client) TopMetricsClientCollectionGet(params *TopMetricsClientCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsClientCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -6697,11 +6611,7 @@ func (a *Client) TopMetricsClientCollectionGet(params *TopMetricsClientCollectio
 }
 
 /*
-	TopMetricsDirectoryCollectionGet Retrieves a list of directories with the greatest value performance metric or capacity metric.
-
-### Platform Specifics
-* **Unified ONTAP**: GET must be used to retrieve a list of directories with the greatest value performance metric or capacity metric.
-* **ASA**: GET is not supported.
+TopMetricsDirectoryCollectionGet Retrieves a list of directories with the greatest value performance metric or capacity metric.
 */
 func (a *Client) TopMetricsDirectoryCollectionGet(params *TopMetricsDirectoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsDirectoryCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -6739,11 +6649,7 @@ func (a *Client) TopMetricsDirectoryCollectionGet(params *TopMetricsDirectoryCol
 }
 
 /*
-	TopMetricsFileCollectionGet Retrieves a list of files with the most I/O activity.
-
-### Platform Specifics
-* **Unified ONTAP**: GET must be used to retrieve a list of files with the most I/O activity.
-* **ASA**: GET is not supported.
+TopMetricsFileCollectionGet Retrieves a list of files with the most I/O activity.
 */
 func (a *Client) TopMetricsFileCollectionGet(params *TopMetricsFileCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsFileCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -6781,11 +6687,7 @@ func (a *Client) TopMetricsFileCollectionGet(params *TopMetricsFileCollectionGet
 }
 
 /*
-	TopMetricsUserCollectionGet Retrieves a list of users with the most I/O activity.
-
-### Platform Specifics
-* **Unified ONTAP**: GET must be used to retrieve a list of users with the most I/O activity.
-* **ASA**: GET is not supported.
+TopMetricsUserCollectionGet Retrieves a list of users with the most I/O activity.
 */
 func (a *Client) TopMetricsUserCollectionGet(params *TopMetricsUserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*TopMetricsUserCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -6829,7 +6731,16 @@ func (a *Client) TopMetricsUserCollectionGet(params *TopMetricsUserCollectionGet
 There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 * `is_svm_root`
 * `aggressive_readahead_mode`
-* `analytics.*`
+* `analytics.by_accessed_time.bytes_used`
+* `analytics.by_modified_time.bytes_used`
+* `analytics.bytes_used`
+* `analytics.file_count`
+* `analytics.histogram_by_time_labels`
+* `analytics.incomplete_data`
+* `analytics.report_time`
+* `analytics.subdir_count`
+* `analytics.supported`
+* `analytics.unsupported_reason`
 * `anti_ransomware.*`
 * `application.*`
 * `encryption.*`
@@ -6901,9 +6812,13 @@ There is an added computational cost to retrieving values for these properties. 
 * `space.filesystem_size_fixed`
 * `guarantee.*`
 * `autosize.*`
+<personalities supports=unified>
 * `movement.*`
+</personalities>
 * `statistics.*`
 * `constituents.name`
+* `constituents.node.name`
+* `constituents.node.uuid`
 * `constituents.space.size`
 * `constituents.space.available`
 * `constituents.space.used`
@@ -6930,12 +6845,14 @@ There is an added computational cost to retrieving values for these properties. 
 * `constituents.space.total_metadata_footprint`
 * `constituents.aggregates.name`
 * `constituents.aggregates.uuid`
+<personalities supports=unified>
 * `constituents.movement.destination_aggregate.name`
 * `constituents.movement.destination_aggregate.uuid`
 * `constituents.movement.state`
 * `constituents.movement.percent_complete`
 * `constituents.movement.cutover_window`
 * `constituents.movement.tiering_policy`
+</personalities>
 * `asynchronous_directory_delete.*`
 * `rebalancing.*`
 * `metric.*`
@@ -6947,7 +6864,9 @@ There is an added computational cost to retrieving values for these properties. 
 * `volume encryption show`
 * `volume flexcache show`
 * `volume flexgroup show`
+<personalities supports=unified,aiml>
 * `volume move show`
+</personalities>
 * `volume quota show`
 * `volume show-space`
 * `volume snaplock show`
@@ -6994,9 +6913,6 @@ func (a *Client) VolumeCollectionGet(params *VolumeCollectionGetParams, authInfo
 /*
 	VolumeCreate Creates a volume on a specified SVM and storage aggregates.
 
-### Platform Specifics
-* **Unified ONTAP**: POST must be used to create a volume.
-* **ASA r2**: POST is not supported.
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the volume.
 * `name` - Name of the volume.
@@ -7054,9 +6970,6 @@ func (a *Client) VolumeCreate(params *VolumeCreateParams, authInfo runtime.Clien
 /*
 	VolumeDelete Deletes a volume. If the UUID belongs to a volume, all of its blocks are freed and returned to its containing aggregate. If a volume is online, it is offlined before deletion. If a volume is mounted, unmount the volume by specifying the nas.path as empty before deleting it using the DELETE operation.
 
-### Platform Specifics
-* **Unified ONTAP**: DELETE must be used to delete a volume.
-* **ASA r2**: DELETE is not supported.
 ### Optional parameters:
 * `force` - Bypasses the recovery-queue and completely removes the volume from the aggregate making it non-recoverable. By default, this flag is set to "false".
 ### Related ONTAP commands
@@ -7186,9 +7099,6 @@ func (a *Client) VolumeEfficiencyPolicyCollectionGet(params *VolumeEfficiencyPol
 /*
 	VolumeEfficiencyPolicyCreate Creates a volume efficiency policy.
 
-### Platform Specifics
-* **Unified ONTAP**: POST must be used to create a volume efficiency policy.
-* **ASA r2**: POST is not supported.
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the volume efficiency policy.
 * `name` - Name for the volume efficiency policy.
@@ -7250,9 +7160,6 @@ func (a *Client) VolumeEfficiencyPolicyCreate(params *VolumeEfficiencyPolicyCrea
 /*
 	VolumeEfficiencyPolicyDelete Deletes a volume efficiency policy.
 
-### Platform Specifics
-* **Unified ONTAP**: DELETE must be used to delete a volume efficiency policy.
-* **ASA r2**: DELETE is not supported.
 ### Related ONTAP commands
 * `volume efficiency policy delete`
 ### Learn more
@@ -7377,9 +7284,6 @@ func (a *Client) VolumeEfficiencyPolicyGet(params *VolumeEfficiencyPolicyGetPara
 /*
 	VolumeEfficiencyPolicyModify Updates a volume efficiency policy.
 
-### Platform Specifics
-* **Unified ONTAP**: PATCH must be used to update the attributes of a volume efficiency policy.
-* **ASA r2**: PATCH is not supported.
 ### Related ONTAP commands
 * `volume efficiency policy modify`
 ### Learn more
@@ -7539,7 +7443,9 @@ There is an added computational cost to retrieving values for these properties. 
 * `space.filesystem_size_fixed`
 * `guarantee.*`
 * `autosize.*`
+<personalities supports=unified>
 * `movement.*`
+</personalities>
 * `statistics.*`
 * `asynchronous_directory_delete.*`
 * `rebalancing.*`
@@ -7552,7 +7458,9 @@ There is an added computational cost to retrieving values for these properties. 
 * `volume encryption show`
 * `volume flexcache show`
 * `volume flexgroup show`
+<personalities supports=unified,aiml>
 * `volume move show`
+</personalities>
 * `volume quota show`
 * `volume show-space`
 * `volume snaplock show`
@@ -7636,12 +7544,11 @@ func (a *Client) VolumeMetricsCollectionGet(params *VolumeMetricsCollectionGetPa
 }
 
 /*
-	VolumeModify Updates the attributes of a volume. For movement, use the "validate_only" field on the request to validate but not perform the operation. The PATCH API can be used to enable or disable quotas for a FlexVol or a FlexGroup volume. The PATCH API can also be used to start or stop non-disruptive volume capacity rebalancing for FlexGroup volumes in addition to modifying capacity rebalancing properties. An empty path in PATCH deactivates and unmounts the volume. Taking a volume offline removes its junction path.
+	VolumeModify Updates the attributes of a volume. <personalities supports=unified>For movement, use the "validate_only" field on the request to validate but not perform the operation. </personalities>The PATCH API can be used to enable or disable quotas for a FlexVol or a FlexGroup volume. The PATCH API can also be used to start or stop non-disruptive volume capacity rebalancing for FlexGroup volumes in addition to modifying capacity rebalancing properties. An empty path in PATCH deactivates and unmounts the volume. Taking a volume offline removes its junction path.
 
 <br>A PATCH request for volume encryption performs conversion/rekey operations asynchronously. You can retrieve the conversion/rekey progress details by calling a GET request on the corresponding volume endpoint.
-### Platform Specifics
-**Unified ONTAP**: PATCH must be used to update the attributes of a volume.
-**ASA r2**: PATCH is not supported for the following immutable properties.
+<personalities supports=asar2>
+PATCH is not supported for the following immutable properties:
 * `autosize.maximum`
 * `autosize.minimum`
 * `autosize.grow_threshold`
@@ -7694,6 +7601,14 @@ func (a *Client) VolumeMetricsCollectionGet(params *VolumeMetricsCollectionGetPa
 * `encryption.rekey`
 * `encryption.action`
 * `queue_for_encryption`
+* `movement.destination_aggregate`
+* `movement.state`
+* `movement.percent_complete`
+* `movement.cutover_window`
+* `movement.tiering_policy`
+* `movement.capacity_tier_optimized`
+* `movement.copy_free`
+</personalities>
 ### Optional properties
 * `queue_for_encryption` - Queue volumes for encryption when `encryption.enabled=true`.  If this option is not provided or is false, conversion of volumes starts immediately. When there are volumes in the queue and less than four encryptions are running, volumes are encrypted in the order in which they are queued.
 * `encryption.action` - You can pause an ongoing rekey/conversion operation or resume a paused rekey/conversion operation using this field.  The following actions are supported for this field: &dash; conversion_pause - Pause an encryption conversion operation currently in progress &dash; conversion_resume - Resume a paused encryption conversion operation &dash; rekey_pause - Pause an encryption rekey operation currently in progress &dash; rekey_resume - Resume a paused encryption rekey operation
@@ -7724,6 +7639,7 @@ func (a *Client) VolumeMetricsCollectionGet(params *VolumeMetricsCollectionGetPa
 * `security anti-ransomware volume resume`
 * `volume file async-delete client disable`
 * `volume file async-delete client enable`
+* `volume move`
 */
 func (a *Client) VolumeModify(params *VolumeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*VolumeModifyOK, *VolumeModifyAccepted, error) {
 	// TODO: Validate the params before sending

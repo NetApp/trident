@@ -74,6 +74,12 @@ type MediatorCollectionGetParams struct {
 	*/
 	IPAddress *string
 
+	/* LocalMediatorConnectivity.
+
+	   Filter by local_mediator_connectivity
+	*/
+	LocalMediatorConnectivity *string
+
 	/* MaxRecords.
 
 	   Limit the number of records returned.
@@ -131,6 +137,24 @@ type MediatorCollectionGetParams struct {
 	   Default: 15
 	*/
 	ReturnTimeout *int64
+
+	/* StrictCertValidation.
+
+	   Filter by strict_cert_validation
+	*/
+	StrictCertValidation *bool
+
+	/* Type.
+
+	   Filter by type
+	*/
+	Type *string
+
+	/* UseHTTPProxyLocal.
+
+	   Filter by use_http_proxy_local
+	*/
+	UseHTTPProxyLocal *bool
 
 	/* UUID.
 
@@ -225,6 +249,17 @@ func (o *MediatorCollectionGetParams) WithIPAddress(iPAddress *string) *Mediator
 // SetIPAddress adds the ipAddress to the mediator collection get params
 func (o *MediatorCollectionGetParams) SetIPAddress(iPAddress *string) {
 	o.IPAddress = iPAddress
+}
+
+// WithLocalMediatorConnectivity adds the localMediatorConnectivity to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithLocalMediatorConnectivity(localMediatorConnectivity *string) *MediatorCollectionGetParams {
+	o.SetLocalMediatorConnectivity(localMediatorConnectivity)
+	return o
+}
+
+// SetLocalMediatorConnectivity adds the localMediatorConnectivity to the mediator collection get params
+func (o *MediatorCollectionGetParams) SetLocalMediatorConnectivity(localMediatorConnectivity *string) {
+	o.LocalMediatorConnectivity = localMediatorConnectivity
 }
 
 // WithMaxRecords adds the maxRecords to the mediator collection get params
@@ -326,6 +361,39 @@ func (o *MediatorCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
 	o.ReturnTimeout = returnTimeout
 }
 
+// WithStrictCertValidation adds the strictCertValidation to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithStrictCertValidation(strictCertValidation *bool) *MediatorCollectionGetParams {
+	o.SetStrictCertValidation(strictCertValidation)
+	return o
+}
+
+// SetStrictCertValidation adds the strictCertValidation to the mediator collection get params
+func (o *MediatorCollectionGetParams) SetStrictCertValidation(strictCertValidation *bool) {
+	o.StrictCertValidation = strictCertValidation
+}
+
+// WithType adds the typeVar to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithType(typeVar *string) *MediatorCollectionGetParams {
+	o.SetType(typeVar)
+	return o
+}
+
+// SetType adds the type to the mediator collection get params
+func (o *MediatorCollectionGetParams) SetType(typeVar *string) {
+	o.Type = typeVar
+}
+
+// WithUseHTTPProxyLocal adds the useHTTPProxyLocal to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithUseHTTPProxyLocal(useHTTPProxyLocal *bool) *MediatorCollectionGetParams {
+	o.SetUseHTTPProxyLocal(useHTTPProxyLocal)
+	return o
+}
+
+// SetUseHTTPProxyLocal adds the useHttpProxyLocal to the mediator collection get params
+func (o *MediatorCollectionGetParams) SetUseHTTPProxyLocal(useHTTPProxyLocal *bool) {
+	o.UseHTTPProxyLocal = useHTTPProxyLocal
+}
+
 // WithUUID adds the uuid to the mediator collection get params
 func (o *MediatorCollectionGetParams) WithUUID(uuid *string) *MediatorCollectionGetParams {
 	o.SetUUID(uuid)
@@ -368,6 +436,23 @@ func (o *MediatorCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qIPAddress != "" {
 
 			if err := r.SetQueryParam("ip_address", qIPAddress); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LocalMediatorConnectivity != nil {
+
+		// query param local_mediator_connectivity
+		var qrLocalMediatorConnectivity string
+
+		if o.LocalMediatorConnectivity != nil {
+			qrLocalMediatorConnectivity = *o.LocalMediatorConnectivity
+		}
+		qLocalMediatorConnectivity := qrLocalMediatorConnectivity
+		if qLocalMediatorConnectivity != "" {
+
+			if err := r.SetQueryParam("local_mediator_connectivity", qLocalMediatorConnectivity); err != nil {
 				return err
 			}
 		}
@@ -515,6 +600,57 @@ func (o *MediatorCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StrictCertValidation != nil {
+
+		// query param strict_cert_validation
+		var qrStrictCertValidation bool
+
+		if o.StrictCertValidation != nil {
+			qrStrictCertValidation = *o.StrictCertValidation
+		}
+		qStrictCertValidation := swag.FormatBool(qrStrictCertValidation)
+		if qStrictCertValidation != "" {
+
+			if err := r.SetQueryParam("strict_cert_validation", qStrictCertValidation); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Type != nil {
+
+		// query param type
+		var qrType string
+
+		if o.Type != nil {
+			qrType = *o.Type
+		}
+		qType := qrType
+		if qType != "" {
+
+			if err := r.SetQueryParam("type", qType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UseHTTPProxyLocal != nil {
+
+		// query param use_http_proxy_local
+		var qrUseHTTPProxyLocal bool
+
+		if o.UseHTTPProxyLocal != nil {
+			qrUseHTTPProxyLocal = *o.UseHTTPProxyLocal
+		}
+		qUseHTTPProxyLocal := swag.FormatBool(qrUseHTTPProxyLocal)
+		if qUseHTTPProxyLocal != "" {
+
+			if err := r.SetQueryParam("use_http_proxy_local", qUseHTTPProxyLocal); err != nil {
 				return err
 			}
 		}

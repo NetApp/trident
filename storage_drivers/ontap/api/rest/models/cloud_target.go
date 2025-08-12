@@ -65,14 +65,14 @@ type CloudTarget struct {
 	// Cloud target name
 	Name *string `json:"name,omitempty"`
 
-	// Owner of the target. Allowed values are FabricPool, SnapMirror or S3_SnapMirror. A target can be used by only one feature.
+	// Owner of the target. Allowed values are <personalities supports=unified> FabricPool, </personalities> SnapMirror or S3_SnapMirror. A target can be used by only one feature.
 	// Enum: ["fabricpool","snapmirror","s3_snapmirror"]
 	Owner *string `json:"owner,omitempty"`
 
 	// Port number of the object store that ONTAP uses when establishing a connection. Required in POST.
 	Port *int64 `json:"port,omitempty"`
 
-	// Type of cloud provider. Allowed values depend on owner type. For FabricPool, AliCloud, AWS_S3, Azure_Cloud, GoogleCloud, IBM_COS, SGWS, and ONTAP_S3 are allowed. For SnapMirror, the valid values are AWS_S3 or SGWS. For FabricLink, AWS_S3, SGWS, S3_Compatible, S3EMU, LOOPBACK and ONTAP_S3 are allowed.
+	// Type of cloud provider. Allowed values depend on owner type. <personalities supports=unified> For FabricPool, AliCloud, AWS_S3, Azure_Cloud, GoogleCloud, IBM_COS, SGWS, and ONTAP_S3 are allowed. </personalities> For SnapMirror, the valid values are AWS_S3 or SGWS. For FabricLink, AWS_S3, SGWS, S3_Compatible, S3EMU, LOOPBACK and ONTAP_S3 are allowed.
 	ProviderType *string `json:"provider_type,omitempty"`
 
 	// The warning threshold for read latency that is used to determine when an alert ems for a read operation from an object store should be issued.

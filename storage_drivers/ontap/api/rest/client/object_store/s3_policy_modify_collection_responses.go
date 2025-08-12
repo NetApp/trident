@@ -119,7 +119,7 @@ func NewS3PolicyModifyCollectionDefault(code int) *S3PolicyModifyCollectionDefau
 | ---------- | ----------- |
 | 92405906   | The specified action name is invalid.
 | 92405963   | Failed to create s3 policy statements \\\"{policy name}\\\". Reason: "{reason of failure}". Resolve all issues and retry the operation.
-| 92405953   | Object store server read-only policies do not support create, modify, delete, add-statement, delete-statement and modify-statement operations.
+| 92405953   | Object store server read-only policies do not support create, modify, delete, add-statement, remove-statement and modify-statement operations.
 | 92406075   | Failed to modify policy statement for policy \\\"{policy name}\\\". Reason: "{reason of failure}". Valid ways to specify a resource are \"*\", \"<bucket-name>\", \"<bucket-name>/.../...\".\".
 */
 type S3PolicyModifyCollectionDefault struct {

@@ -159,6 +159,7 @@ func NewLunMapCreateDefault(code int) *LunMapCreateDefault {
 | 5374902 | Either `igroup.uuid` or `igroup.name` must be provided to create a LUN map. |
 | 5374920 | The cluster node specified in additional_reporting_node does not exist. |
 | 5374921 | The cluster node name and UUID specified in additional_reporting_node do not refer to the same cluster node. |
+| 5376356 | The LUN is part of a SnapMirror active sync relationship that has a different SVM peering relationship than the igroup. |
 | 5376461 | The specified LUN name is invalid. |
 | 5376462 | The specified LUN name is too long. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.

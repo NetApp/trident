@@ -128,6 +128,18 @@ type BucketsCollectionGetParams struct {
 	*/
 	Fields []string
 
+	/* IsConsistentEtag.
+
+	   Filter by is_consistent_etag
+	*/
+	IsConsistentEtag *bool
+
+	/* IsNasPathMutable.
+
+	   Filter by is_nas_path_mutable
+	*/
+	IsNasPathMutable *bool
+
 	/* LifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays.
 
 	   Filter by lifecycle_management.rules.abort_incomplete_multipart_upload.after_initiation_days
@@ -344,6 +356,12 @@ type BucketsCollectionGetParams struct {
 	*/
 	ProtectionStatusIsProtected *bool
 
+	/* QosPolicyMaxThroughput.
+
+	   Filter by qos_policy.max_throughput
+	*/
+	QosPolicyMaxThroughput *string
+
 	/* QosPolicyMaxThroughputIops.
 
 	   Filter by qos_policy.max_throughput_iops
@@ -355,6 +373,12 @@ type BucketsCollectionGetParams struct {
 	   Filter by qos_policy.max_throughput_mbps
 	*/
 	QosPolicyMaxThroughputMbps *int64
+
+	/* QosPolicyMinThroughput.
+
+	   Filter by qos_policy.min_throughput
+	*/
+	QosPolicyMinThroughput *string
 
 	/* QosPolicyMinThroughputIops.
 
@@ -660,6 +684,28 @@ func (o *BucketsCollectionGetParams) WithFields(fields []string) *BucketsCollect
 // SetFields adds the fields to the buckets collection get params
 func (o *BucketsCollectionGetParams) SetFields(fields []string) {
 	o.Fields = fields
+}
+
+// WithIsConsistentEtag adds the isConsistentEtag to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithIsConsistentEtag(isConsistentEtag *bool) *BucketsCollectionGetParams {
+	o.SetIsConsistentEtag(isConsistentEtag)
+	return o
+}
+
+// SetIsConsistentEtag adds the isConsistentEtag to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetIsConsistentEtag(isConsistentEtag *bool) {
+	o.IsConsistentEtag = isConsistentEtag
+}
+
+// WithIsNasPathMutable adds the isNasPathMutable to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithIsNasPathMutable(isNasPathMutable *bool) *BucketsCollectionGetParams {
+	o.SetIsNasPathMutable(isNasPathMutable)
+	return o
+}
+
+// SetIsNasPathMutable adds the isNasPathMutable to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetIsNasPathMutable(isNasPathMutable *bool) {
+	o.IsNasPathMutable = isNasPathMutable
 }
 
 // WithLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays adds the lifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays to the buckets collection get params
@@ -1058,6 +1104,17 @@ func (o *BucketsCollectionGetParams) SetProtectionStatusIsProtected(protectionSt
 	o.ProtectionStatusIsProtected = protectionStatusIsProtected
 }
 
+// WithQosPolicyMaxThroughput adds the qosPolicyMaxThroughput to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithQosPolicyMaxThroughput(qosPolicyMaxThroughput *string) *BucketsCollectionGetParams {
+	o.SetQosPolicyMaxThroughput(qosPolicyMaxThroughput)
+	return o
+}
+
+// SetQosPolicyMaxThroughput adds the qosPolicyMaxThroughput to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetQosPolicyMaxThroughput(qosPolicyMaxThroughput *string) {
+	o.QosPolicyMaxThroughput = qosPolicyMaxThroughput
+}
+
 // WithQosPolicyMaxThroughputIops adds the qosPolicyMaxThroughputIops to the buckets collection get params
 func (o *BucketsCollectionGetParams) WithQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops *int64) *BucketsCollectionGetParams {
 	o.SetQosPolicyMaxThroughputIops(qosPolicyMaxThroughputIops)
@@ -1078,6 +1135,17 @@ func (o *BucketsCollectionGetParams) WithQosPolicyMaxThroughputMbps(qosPolicyMax
 // SetQosPolicyMaxThroughputMbps adds the qosPolicyMaxThroughputMbps to the buckets collection get params
 func (o *BucketsCollectionGetParams) SetQosPolicyMaxThroughputMbps(qosPolicyMaxThroughputMbps *int64) {
 	o.QosPolicyMaxThroughputMbps = qosPolicyMaxThroughputMbps
+}
+
+// WithQosPolicyMinThroughput adds the qosPolicyMinThroughput to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithQosPolicyMinThroughput(qosPolicyMinThroughput *string) *BucketsCollectionGetParams {
+	o.SetQosPolicyMinThroughput(qosPolicyMinThroughput)
+	return o
+}
+
+// SetQosPolicyMinThroughput adds the qosPolicyMinThroughput to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetQosPolicyMinThroughput(qosPolicyMinThroughput *string) {
+	o.QosPolicyMinThroughput = qosPolicyMinThroughput
 }
 
 // WithQosPolicyMinThroughputIops adds the qosPolicyMinThroughputIops to the buckets collection get params
@@ -1475,6 +1543,40 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.IsConsistentEtag != nil {
+
+		// query param is_consistent_etag
+		var qrIsConsistentEtag bool
+
+		if o.IsConsistentEtag != nil {
+			qrIsConsistentEtag = *o.IsConsistentEtag
+		}
+		qIsConsistentEtag := swag.FormatBool(qrIsConsistentEtag)
+		if qIsConsistentEtag != "" {
+
+			if err := r.SetQueryParam("is_consistent_etag", qIsConsistentEtag); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IsNasPathMutable != nil {
+
+		// query param is_nas_path_mutable
+		var qrIsNasPathMutable bool
+
+		if o.IsNasPathMutable != nil {
+			qrIsNasPathMutable = *o.IsNasPathMutable
+		}
+		qIsNasPathMutable := swag.FormatBool(qrIsNasPathMutable)
+		if qIsNasPathMutable != "" {
+
+			if err := r.SetQueryParam("is_nas_path_mutable", qIsNasPathMutable); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -2084,6 +2186,23 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
+	if o.QosPolicyMaxThroughput != nil {
+
+		// query param qos_policy.max_throughput
+		var qrQosPolicyMaxThroughput string
+
+		if o.QosPolicyMaxThroughput != nil {
+			qrQosPolicyMaxThroughput = *o.QosPolicyMaxThroughput
+		}
+		qQosPolicyMaxThroughput := qrQosPolicyMaxThroughput
+		if qQosPolicyMaxThroughput != "" {
+
+			if err := r.SetQueryParam("qos_policy.max_throughput", qQosPolicyMaxThroughput); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.QosPolicyMaxThroughputIops != nil {
 
 		// query param qos_policy.max_throughput_iops
@@ -2113,6 +2232,23 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		if qQosPolicyMaxThroughputMbps != "" {
 
 			if err := r.SetQueryParam("qos_policy.max_throughput_mbps", qQosPolicyMaxThroughputMbps); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyMinThroughput != nil {
+
+		// query param qos_policy.min_throughput
+		var qrQosPolicyMinThroughput string
+
+		if o.QosPolicyMinThroughput != nil {
+			qrQosPolicyMinThroughput = *o.QosPolicyMinThroughput
+		}
+		qQosPolicyMinThroughput := qrQosPolicyMinThroughput
+		if qQosPolicyMinThroughput != "" {
+
+			if err := r.SetQueryParam("qos_policy.min_throughput", qQosPolicyMinThroughput); err != nil {
 				return err
 			}
 		}

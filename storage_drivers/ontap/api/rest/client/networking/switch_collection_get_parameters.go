@@ -128,6 +128,12 @@ type SwitchCollectionGetParams struct {
 	*/
 	OrderBy []string
 
+	/* RcfVersion.
+
+	   Filter by rcf_version
+	*/
+	RcfVersion *string
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -143,6 +149,12 @@ type SwitchCollectionGetParams struct {
 	   Default: 15
 	*/
 	ReturnTimeout *int64
+
+	/* Role.
+
+	   Filter by role
+	*/
+	Role *string
 
 	/* SerialNumber.
 
@@ -356,6 +368,17 @@ func (o *SwitchCollectionGetParams) SetOrderBy(orderBy []string) {
 	o.OrderBy = orderBy
 }
 
+// WithRcfVersion adds the rcfVersion to the switch collection get params
+func (o *SwitchCollectionGetParams) WithRcfVersion(rcfVersion *string) *SwitchCollectionGetParams {
+	o.SetRcfVersion(rcfVersion)
+	return o
+}
+
+// SetRcfVersion adds the rcfVersion to the switch collection get params
+func (o *SwitchCollectionGetParams) SetRcfVersion(rcfVersion *string) {
+	o.RcfVersion = rcfVersion
+}
+
 // WithReturnRecords adds the returnRecords to the switch collection get params
 func (o *SwitchCollectionGetParams) WithReturnRecords(returnRecords *bool) *SwitchCollectionGetParams {
 	o.SetReturnRecords(returnRecords)
@@ -376,6 +399,17 @@ func (o *SwitchCollectionGetParams) WithReturnTimeout(returnTimeout *int64) *Swi
 // SetReturnTimeout adds the returnTimeout to the switch collection get params
 func (o *SwitchCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
 	o.ReturnTimeout = returnTimeout
+}
+
+// WithRole adds the role to the switch collection get params
+func (o *SwitchCollectionGetParams) WithRole(role *string) *SwitchCollectionGetParams {
+	o.SetRole(role)
+	return o
+}
+
+// SetRole adds the role to the switch collection get params
+func (o *SwitchCollectionGetParams) SetRole(role *string) {
+	o.Role = role
 }
 
 // WithSerialNumber adds the serialNumber to the switch collection get params
@@ -605,6 +639,23 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.RcfVersion != nil {
+
+		// query param rcf_version
+		var qrRcfVersion string
+
+		if o.RcfVersion != nil {
+			qrRcfVersion = *o.RcfVersion
+		}
+		qRcfVersion := qrRcfVersion
+		if qRcfVersion != "" {
+
+			if err := r.SetQueryParam("rcf_version", qRcfVersion); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ReturnRecords != nil {
 
 		// query param return_records
@@ -634,6 +685,23 @@ func (o *SwitchCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Role != nil {
+
+		// query param role
+		var qrRole string
+
+		if o.Role != nil {
+			qrRole = *o.Role
+		}
+		qRole := qrRole
+		if qRole != "" {
+
+			if err := r.SetQueryParam("role", qRole); err != nil {
 				return err
 			}
 		}

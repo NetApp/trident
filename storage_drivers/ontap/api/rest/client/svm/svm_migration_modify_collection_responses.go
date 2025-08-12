@@ -315,6 +315,10 @@ type SvmMigrationModifyCollectionBody struct {
 	// Read Only: true
 	PointOfNoReturn *bool `json:"point_of_no_return,omitempty"`
 
+	// Number of times the migration restarted after the point of no return.
+	// Read Only: true
+	PostPonrRetryCount *int64 `json:"post_ponr_retry_count,omitempty"`
+
 	// Number of times migrate restarted the transfer, for example, rollback to transfer after starting the cutover.
 	// Read Only: true
 	RestartCount *int64 `json:"restart_count,omitempty"`
@@ -703,6 +707,10 @@ func (o *SvmMigrationModifyCollectionBody) ContextValidate(ctx context.Context, 
 		res = append(res, err)
 	}
 
+	if err := o.contextValidatePostPonrRetryCount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.contextValidateRestartCount(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -805,6 +813,15 @@ func (o *SvmMigrationModifyCollectionBody) contextValidateLastOperation(ctx cont
 func (o *SvmMigrationModifyCollectionBody) contextValidatePointOfNoReturn(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "info"+"."+"point_of_no_return", "body", o.PointOfNoReturn); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *SvmMigrationModifyCollectionBody) contextValidatePostPonrRetryCount(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"post_ponr_retry_count", "body", o.PostPonrRetryCount); err != nil {
 		return err
 	}
 
@@ -2688,6 +2705,12 @@ type SvmMigrationInlineTimeMetrics struct {
 	// Format: date-time
 	LastPauseTime *strfmt.DateTime `json:"last_pause_time,omitempty"`
 
+	// Last post point of no return retry time
+	// Example: 2020-12-03 03:30:19
+	// Read Only: true
+	// Format: date-time
+	LastPostPonrRetryTime *strfmt.DateTime `json:"last_post_ponr_retry_time,omitempty"`
+
 	// Last migration resume time
 	// Example: 2020-12-03 02:54:19
 	// Read Only: true
@@ -2722,6 +2745,10 @@ func (o *SvmMigrationInlineTimeMetrics) Validate(formats strfmt.Registry) error 
 	}
 
 	if err := o.validateLastPauseTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateLastPostPonrRetryTime(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -2799,6 +2826,18 @@ func (o *SvmMigrationInlineTimeMetrics) validateLastPauseTime(formats strfmt.Reg
 	return nil
 }
 
+func (o *SvmMigrationInlineTimeMetrics) validateLastPostPonrRetryTime(formats strfmt.Registry) error {
+	if swag.IsZero(o.LastPostPonrRetryTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("info"+"."+"time_metrics"+"."+"last_post_ponr_retry_time", "body", "date-time", o.LastPostPonrRetryTime.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (o *SvmMigrationInlineTimeMetrics) validateLastResumeTime(formats strfmt.Registry) error {
 	if swag.IsZero(o.LastResumeTime) { // not required
 		return nil
@@ -2844,6 +2883,10 @@ func (o *SvmMigrationInlineTimeMetrics) ContextValidate(ctx context.Context, for
 	}
 
 	if err := o.contextValidateLastPauseTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateLastPostPonrRetryTime(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -2900,6 +2943,15 @@ func (o *SvmMigrationInlineTimeMetrics) contextValidateEndTime(ctx context.Conte
 func (o *SvmMigrationInlineTimeMetrics) contextValidateLastPauseTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "info"+"."+"time_metrics"+"."+"last_pause_time", "body", o.LastPauseTime); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *SvmMigrationInlineTimeMetrics) contextValidateLastPostPonrRetryTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"time_metrics"+"."+"last_post_ponr_retry_time", "body", o.LastPostPonrRetryTime); err != nil {
 		return err
 	}
 

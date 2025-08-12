@@ -17,27 +17,22 @@ import (
 
 // ConsistencyGroupNamespace An NVMe namespace is a collection of addressable logical blocks presented to hosts connected to the storage virtual machine using the NVMe over Fabrics protocol.<br/>
 // An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.<br/>
-// See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.
-// ## Platform Specifics
-// ### Unified ONTAP
-// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+// See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.<br/>
+// <personalities supports=unified>An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 // NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
-// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. An NVMe namespace can then be resized or cloned. An NVMe namespace cannot be renamed, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace.
-// ### ASA r2
-// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. An NVMe namespace can then be resized or cloned. An NVMe namespace cannot be renamed, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace.</personalities>
+// <personalities supports=asar2>NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
 // An NVMe namespace can be created to a specified size. An NVMe namespace can then be renamed, resized, or cloned. NVMe namespaces support the assignment of a QoS policy for performance management.<br/>
-// **Note**: NVMe namespace related REST API examples use the Unified ONTAP form for NVMe namespace names. On ASA r2, the ASA r2 format must be used.
+// **Note**: NVMe namespace related REST API examples use the Unified ONTAP form for NVMe namespace names. On ASA r2, the ASA r2 format must be used.</personalities>
 //
 // swagger:model consistency_group_namespace
 type ConsistencyGroupNamespace struct {
 
-	// * **Unified ONTAP**:
-	// This property marks the NVMe namespace for auto deletion when the volume containing the namespace runs out of space. This is most commonly set on namespace clones.<br/>
+	// <personalities supports=unified>This property marks the NVMe namespace for auto deletion when the volume containing the namespace runs out of space. This is most commonly set on namespace clones.<br/>
 	// When set to _true_, the NVMe namespace becomes eligible for automatic deletion when the volume runs out of space. Auto deletion only occurs when the volume containing the namespace is also configured for auto deletion and free space in the volume decreases below a particular threshold.<br/>
 	// This property is optional in POST and PATCH. The default value for a new NVMe namespace is _false_.<br/>
-	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-	// * **ASA r2**:
-	// This property is not supported. It cannot be set in POST or PATCH and will not be returned by GET.
+	// There is an added computational cost to retrieving this property's value. It is not populated for a GET request unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.</personalities>
+	// <personalities supports=asar2>This property is not supported. It cannot be set in POST or PATCH and will not be returned by GET.</personalities>
 	//
 	AutoDelete *bool `json:"auto_delete,omitempty"`
 
@@ -59,14 +54,11 @@ type ConsistencyGroupNamespace struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// The name of the NVMe namespace.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// <personalities supports=unified>An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
-	// Renaming an NVMe namespace is not supported. Valid in POST.
-	// * **ASA r2**:
-	// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
-	// Renaming an NVMe namespace is supported. Valid in POST and PATCH.
+	// Renaming an NVMe namespace is not supported. Valid in POST.</personalities>
+	// <personalities supports=asar2>NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+	// Renaming an NVMe namespace is supported. Valid in POST and PATCH.</personalities>
 	//
 	// Example: /vol/volume1/qtree1/namespace1
 	Name *string `json:"name,omitempty"`
@@ -1004,7 +996,7 @@ type ConsistencyGroupNamespaceInlineSubsystemMap struct {
 
 	// The Asymmetric Namespace Access Group ID (ANAGRPID) of the NVMe namespace.<br/>
 	// The format for an ANAGRPID is 8 hexadecimal digits (zero-filled) followed by a lower case "h".<br/>
-	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// There is an added computational cost to retrieving this property's value. It is not populated for a GET request unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Example: 00103050h
 	// Read Only: true

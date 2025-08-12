@@ -228,6 +228,8 @@ func NewApplicationCreateDefault(code int) *ApplicationCreateDefault {
 | ---------- | ----------- |
 | 65995775 | The size provided is too small. |
 | 65995776 | The size provided is too large. |
+| 92406300 | The "-capacity-tier" parameter cannot be set to "true" because tiering is not supported on the platform. |
+| 92406301 | The "-storage_service" parameter cannot be specified because it is not supported on the platform." |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ApplicationCreateDefault struct {

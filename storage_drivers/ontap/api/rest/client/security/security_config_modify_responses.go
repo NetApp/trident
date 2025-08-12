@@ -216,7 +216,8 @@ func NewSecurityConfigModifyDefault(code int) *SecurityConfigModifyDefault {
 | 196608082 | The operation is not valid when the MetroCluster is in switchover mode. |
 | 196608368 | Failed to perform the requested operation. One or more data volume in offline state. |
 | 196608369 | Conversion cannot be enabled because the cluster contains read-only or primordial logical data-protection volumes. Retry the patch operation after deleting those volumes. |
-| 196608370 | The PATCH request to enable conversion failed because one or more volumes are already queued for the encryption conversion operation. |
+| 196608370 | The conversion of non-encrypted volumes to NVE (NetApp Volume Encryption) volumes is already running. Monitor the NVE conversion status by querying the \"software_data_encryption.encryption_state\" field on the \"/api/security\" endpoint. |
+| 196608371 | NVE (NetApp Volume Encryption) volumes are already being rekeyed. Monitor the NVE rekey status by querying the \"software_data_encryption.encryption_state\" field on the \"/api/security\" endpoint. |
 | 196608372 | An automated ONTAP update is in progress, retry the PATCH request after it is completed. |
 | 196608373 | Unable to perform the encryption operation because of a mixed-release cluster. Complete the upgrade or revert operation, then try the PATCH request again. |
 | 196608374 | Failed to perform the requested operation. One or more SVMs not in admin running state. |

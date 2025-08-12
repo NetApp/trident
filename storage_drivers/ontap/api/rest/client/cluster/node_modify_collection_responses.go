@@ -209,6 +209,7 @@ func NewNodeModifyCollectionDefault(code int) *NodeModifyCollectionDefault {
 | ---------- | ----------- |
 | 852046 | HA partner node is not running to do takeover. |
 | 852115 | The reboot/shutdown is prevented because LIFs cannot be moved away from the node. |
+| 852269 | This operation is not supported on this platform. |
 | 3604514 | A reboot or shutdown request is already in progress. |
 | 3604515 | Reboot or shutdown of all nodes results in data service failure and client disruption for the entire cluster. Use "allow-data-outage=true" to bypass this check. |
 | 9240591 | The name is not valid. The name is already in use by a cluster node, SVM, or it is the name of the local cluster. |
@@ -312,6 +313,9 @@ type NodeModifyCollectionBody struct {
 	// external cache
 	ExternalCache *models.NodeResponseInlineRecordsInlineArrayItemInlineExternalCache `json:"external_cache,omitempty"`
 
+	// external cache bypass
+	ExternalCacheBypass *models.NodeResponseInlineRecordsInlineArrayItemInlineExternalCacheBypass `json:"external_cache_bypass,omitempty"`
+
 	// ha
 	Ha *models.NodeResponseInlineRecordsInlineArrayItemInlineHa `json:"ha,omitempty"`
 
@@ -360,6 +364,9 @@ type NodeModifyCollectionBody struct {
 	// node response inline records
 	NodeResponseInlineRecords []*models.NodeResponseInlineRecordsInlineArrayItem `json:"records,omitempty"`
 
+	// nvlog
+	Nvlog *models.NodeResponseInlineRecordsInlineArrayItemInlineNvlog `json:"nvlog,omitempty"`
+
 	// nvram
 	Nvram *models.NodeResponseInlineRecordsInlineArrayItemInlineNvram `json:"nvram,omitempty"`
 
@@ -396,7 +403,7 @@ type NodeModifyCollectionBody struct {
 
 	// Storage availability zones associated with the node.
 	// Read Only: true
-	StorageAvailabilityZones []*NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0 `json:"storage_availability_zones"`
+	StorageAvailabilityZones []*models.StorageAvailabilityZoneReference `json:"storage_availability_zones"`
 
 	// The storage configuration in the system. Possible values:
 	// * <i>mixed_path</i>
@@ -480,6 +487,10 @@ func (o *NodeModifyCollectionBody) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := o.validateExternalCacheBypass(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.validateHa(formats); err != nil {
 		res = append(res, err)
 	}
@@ -509,6 +520,10 @@ func (o *NodeModifyCollectionBody) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := o.validateNodeResponseInlineRecords(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateNvlog(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -658,6 +673,23 @@ func (o *NodeModifyCollectionBody) validateExternalCache(formats strfmt.Registry
 		if err := o.ExternalCache.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("info" + "." + "external_cache")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *NodeModifyCollectionBody) validateExternalCacheBypass(formats strfmt.Registry) error {
+	if swag.IsZero(o.ExternalCacheBypass) { // not required
+		return nil
+	}
+
+	if o.ExternalCacheBypass != nil {
+		if err := o.ExternalCacheBypass.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "external_cache_bypass")
 			}
 			return err
 		}
@@ -860,6 +892,23 @@ func (o *NodeModifyCollectionBody) validateNodeResponseInlineRecords(formats str
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (o *NodeModifyCollectionBody) validateNvlog(formats strfmt.Registry) error {
+	if swag.IsZero(o.Nvlog) { // not required
+		return nil
+	}
+
+	if o.Nvlog != nil {
+		if err := o.Nvlog.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "nvlog")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -1314,6 +1363,10 @@ func (o *NodeModifyCollectionBody) ContextValidate(ctx context.Context, formats 
 		res = append(res, err)
 	}
 
+	if err := o.contextValidateExternalCacheBypass(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.contextValidateHa(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1351,6 +1404,10 @@ func (o *NodeModifyCollectionBody) ContextValidate(ctx context.Context, formats 
 	}
 
 	if err := o.contextValidateNodeResponseInlineRecords(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateNvlog(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1520,6 +1577,20 @@ func (o *NodeModifyCollectionBody) contextValidateExternalCache(ctx context.Cont
 	return nil
 }
 
+func (o *NodeModifyCollectionBody) contextValidateExternalCacheBypass(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.ExternalCacheBypass != nil {
+		if err := o.ExternalCacheBypass.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "external_cache_bypass")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (o *NodeModifyCollectionBody) contextValidateHa(ctx context.Context, formats strfmt.Registry) error {
 
 	if o.Ha != nil {
@@ -1657,6 +1728,20 @@ func (o *NodeModifyCollectionBody) contextValidateNodeResponseInlineRecords(ctx 
 	return nil
 }
 
+func (o *NodeModifyCollectionBody) contextValidateNvlog(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Nvlog != nil {
+		if err := o.Nvlog.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "nvlog")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (o *NodeModifyCollectionBody) contextValidateNvram(ctx context.Context, formats strfmt.Registry) error {
 
 	if o.Nvram != nil {
@@ -1733,7 +1818,7 @@ func (o *NodeModifyCollectionBody) contextValidateStatistics(ctx context.Context
 
 func (o *NodeModifyCollectionBody) contextValidateStorageAvailabilityZones(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "info"+"."+"storage_availability_zones", "body", []*NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0(o.StorageAvailabilityZones)); err != nil {
+	if err := validate.ReadOnly(ctx, "info"+"."+"storage_availability_zones", "body", []*models.StorageAvailabilityZoneReference(o.StorageAvailabilityZones)); err != nil {
 		return err
 	}
 
@@ -3647,7 +3732,7 @@ type NodeModifyCollectionParamsBodyHaPortsItems0 struct {
 
 	// HA port state:
 	// * <i>down</i> - Logical HA link is down.
-	// * <i>initialized</i> - Logical HA link is initialized. The physical link is up, but the subnet manager hasn’t started to configure the port.
+	// * <i>initialized</i> - Logical HA link is initialized. The physical link is up, but the subnet manager hasn't started to configure the port.
 	// * <i>armed</i> - Logical HA link is armed. The physical link is up and the subnet manager started but did not yet complete configuring the port.
 	// * <i>active</i> - Logical HA link is active.
 	// * <i>reserved</i> - Logical HA link is active, but the physical link is down.
@@ -5944,7 +6029,7 @@ type NodeModifyCollectionParamsBodyRecordsItems0HaPortsItems0 struct {
 
 	// HA port state:
 	// * <i>down</i> - Logical HA link is down.
-	// * <i>initialized</i> - Logical HA link is initialized. The physical link is up, but the subnet manager hasn’t started to configure the port.
+	// * <i>initialized</i> - Logical HA link is initialized. The physical link is up, but the subnet manager hasn't started to configure the port.
 	// * <i>armed</i> - Logical HA link is armed. The physical link is up and the subnet manager started but did not yet complete configuring the port.
 	// * <i>active</i> - Logical HA link is active.
 	// * <i>reserved</i> - Logical HA link is active, but the physical link is down.
@@ -6454,370 +6539,6 @@ func (o *NodeModifyCollectionParamsBodyRecordsItems0MetroclusterPortsItems0) Mar
 // UnmarshalBinary interface implementation
 func (o *NodeModifyCollectionParamsBodyRecordsItems0MetroclusterPortsItems0) UnmarshalBinary(b []byte) error {
 	var res NodeModifyCollectionParamsBodyRecordsItems0MetroclusterPortsItems0
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
-	return nil
-}
-
-/*
-NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0 node modify collection params body records items0 storage availability zones items0
-swagger:model NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0
-*/
-type NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0 struct {
-
-	// links
-	Links *NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0Links `json:"_links,omitempty"`
-
-	// The name of the storage availability zone.
-	// Example: storage_availability_zone_1
-	Name *string `json:"name,omitempty"`
-
-	// The unique identifier of the storage availability zone.
-	// Example: 9b3ff559-3333-11ef-b420-005056ae6060
-	UUID *string `json:"uuid,omitempty"`
-}
-
-// Validate validates this node modify collection params body records items0 storage availability zones items0
-func (o *NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0) validateLinks(formats strfmt.Registry) error {
-	if swag.IsZero(o.Links) { // not required
-		return nil
-	}
-
-	if o.Links != nil {
-		if err := o.Links.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this node modify collection params body records items0 storage availability zones items0 based on the context it is used
-func (o *NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.contextValidateLinks(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
-
-	if o.Links != nil {
-		if err := o.Links.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (o *NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0) UnmarshalBinary(b []byte) error {
-	var res NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
-	return nil
-}
-
-/*
-NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0Links node modify collection params body records items0 storage availability zones items0 links
-swagger:model NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0Links
-*/
-type NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0Links struct {
-
-	// self
-	Self *models.Href `json:"self,omitempty"`
-}
-
-// Validate validates this node modify collection params body records items0 storage availability zones items0 links
-func (o *NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0Links) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.validateSelf(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0Links) validateSelf(formats strfmt.Registry) error {
-	if swag.IsZero(o.Self) { // not required
-		return nil
-	}
-
-	if o.Self != nil {
-		if err := o.Self.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this node modify collection params body records items0 storage availability zones items0 links based on the context it is used
-func (o *NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.contextValidateSelf(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
-
-	if o.Self != nil {
-		if err := o.Self.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (o *NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0Links) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0Links) UnmarshalBinary(b []byte) error {
-	var res NodeModifyCollectionParamsBodyRecordsItems0StorageAvailabilityZonesItems0Links
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
-	return nil
-}
-
-/*
-NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0 node modify collection params body storage availability zones items0
-swagger:model NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0
-*/
-type NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0 struct {
-
-	// links
-	Links *NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0Links `json:"_links,omitempty"`
-
-	// The name of the storage availability zone.
-	// Example: storage_availability_zone_1
-	Name *string `json:"name,omitempty"`
-
-	// The unique identifier of the storage availability zone.
-	// Example: 9b3ff559-3333-11ef-b420-005056ae6060
-	UUID *string `json:"uuid,omitempty"`
-}
-
-// Validate validates this node modify collection params body storage availability zones items0
-func (o *NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0) validateLinks(formats strfmt.Registry) error {
-	if swag.IsZero(o.Links) { // not required
-		return nil
-	}
-
-	if o.Links != nil {
-		if err := o.Links.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this node modify collection params body storage availability zones items0 based on the context it is used
-func (o *NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.contextValidateLinks(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
-
-	if o.Links != nil {
-		if err := o.Links.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (o *NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0) UnmarshalBinary(b []byte) error {
-	var res NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
-	return nil
-}
-
-/*
-NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0Links node modify collection params body storage availability zones items0 links
-swagger:model NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0Links
-*/
-type NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0Links struct {
-
-	// self
-	Self *models.Href `json:"self,omitempty"`
-}
-
-// Validate validates this node modify collection params body storage availability zones items0 links
-func (o *NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0Links) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.validateSelf(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0Links) validateSelf(formats strfmt.Registry) error {
-	if swag.IsZero(o.Self) { // not required
-		return nil
-	}
-
-	if o.Self != nil {
-		if err := o.Self.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this node modify collection params body storage availability zones items0 links based on the context it is used
-func (o *NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.contextValidateSelf(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
-
-	if o.Self != nil {
-		if err := o.Self.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (o *NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0Links) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0Links) UnmarshalBinary(b []byte) error {
-	var res NodeModifyCollectionParamsBodyStorageAvailabilityZonesItems0Links
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

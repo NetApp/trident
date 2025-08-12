@@ -216,7 +216,7 @@ type NvmeSubsystemModifyCollectionBody struct {
 	NvmeSubsystemInlineHosts []*models.NvmeSubsystemInlineHostsInlineArrayItem `json:"hosts,omitempty"`
 
 	// The NVMe namespaces mapped to the NVMe subsystem.<br/>
-	// There is an added computational cost to retrieving property values for `subsystem_maps`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// There is an added computational cost to retrieving property values for `subsystem_maps`. They are not populated for a GET request unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Read Only: true
 	NvmeSubsystemInlineSubsystemMaps []*models.NvmeSubsystemInlineSubsystemMapsInlineArrayItem `json:"subsystem_maps,omitempty"`
@@ -232,6 +232,9 @@ type NvmeSubsystemModifyCollectionBody struct {
 	//
 	// Enum: ["aix","linux","vmware","windows"]
 	OsType *string `json:"os_type,omitempty"`
+
+	// replication
+	Replication *models.NvmeSubsystemInlineReplication `json:"replication,omitempty"`
 
 	// The serial number of the NVMe subsystem.
 	//
@@ -292,6 +295,10 @@ func (o *NvmeSubsystemModifyCollectionBody) Validate(formats strfmt.Registry) er
 	}
 
 	if err := o.validateOsType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateReplication(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -527,6 +534,23 @@ func (o *NvmeSubsystemModifyCollectionBody) validateOsType(formats strfmt.Regist
 	return nil
 }
 
+func (o *NvmeSubsystemModifyCollectionBody) validateReplication(formats strfmt.Registry) error {
+	if swag.IsZero(o.Replication) { // not required
+		return nil
+	}
+
+	if o.Replication != nil {
+		if err := o.Replication.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "replication")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (o *NvmeSubsystemModifyCollectionBody) validateSerialNumber(formats strfmt.Registry) error {
 	if swag.IsZero(o.SerialNumber) { // not required
 		return nil
@@ -597,6 +621,10 @@ func (o *NvmeSubsystemModifyCollectionBody) ContextValidate(ctx context.Context,
 	}
 
 	if err := o.contextValidateNvmeSubsystemResponseInlineRecords(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateReplication(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -708,6 +736,20 @@ func (o *NvmeSubsystemModifyCollectionBody) contextValidateNvmeSubsystemResponse
 	return nil
 }
 
+func (o *NvmeSubsystemModifyCollectionBody) contextValidateReplication(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Replication != nil {
+		if err := o.Replication.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "replication")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (o *NvmeSubsystemModifyCollectionBody) contextValidateSerialNumber(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "info"+"."+"serial_number", "body", o.SerialNumber); err != nil {
@@ -760,6 +802,190 @@ func (o *NvmeSubsystemModifyCollectionBody) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (o *NvmeSubsystemModifyCollectionBody) UnmarshalBinary(b []byte) error {
 	var res NvmeSubsystemModifyCollectionBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0 A reference to an SVM peer relationship.
+swagger:model NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0
+*/
+type NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0 struct {
+
+	// links
+	Links *NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0Links `json:"_links,omitempty"`
+
+	// The local name of the peer SVM. This name is unique among all local and peer SVMs.
+	//
+	// Example: peer1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM peer relationship. This is the UUID of the relationship, not the UUID of the peer SVM itself.
+	//
+	// Example: 4204cf77-4c82-9bdb-5644-b5a841c097a9
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this nvme subsystem modify collection params body hosts items0 proximity peer svms items0
+func (o *NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(o.Links) { // not required
+		return nil
+	}
+
+	if o.Links != nil {
+		if err := o.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme subsystem modify collection params body hosts items0 proximity peer svms items0 based on the context it is used
+func (o *NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Links != nil {
+		if err := o.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0Links nvme subsystem modify collection params body hosts items0 proximity peer svms items0 links
+swagger:model NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0Links
+*/
+type NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0Links struct {
+
+	// self
+	Self *models.Href `json:"self,omitempty"`
+}
+
+// Validate validates this nvme subsystem modify collection params body hosts items0 proximity peer svms items0 links
+func (o *NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(o.Self) { // not required
+		return nil
+	}
+
+	if o.Self != nil {
+		if err := o.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme subsystem modify collection params body hosts items0 proximity peer svms items0 links based on the context it is used
+func (o *NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Self != nil {
+		if err := o.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0Links) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0Links) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0Links
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -876,6 +1102,9 @@ type NvmeSubsystemInlineHostsInlineArrayItem struct {
 	// Enum: ["regular","high"]
 	Priority *string `json:"priority,omitempty"`
 
+	// proximity
+	Proximity *models.NvmeSubsystemInlineHostsInlineArrayItemInlineProximity `json:"proximity,omitempty"`
+
 	// tls
 	TLS *models.NvmeSubsystemInlineHostsInlineArrayItemInlineTLS `json:"tls,omitempty"`
 }
@@ -893,6 +1122,10 @@ func (o *NvmeSubsystemInlineHostsInlineArrayItem) Validate(formats strfmt.Regist
 	}
 
 	if err := o.validatePriority(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateProximity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -996,6 +1229,23 @@ func (o *NvmeSubsystemInlineHostsInlineArrayItem) validatePriority(formats strfm
 	return nil
 }
 
+func (o *NvmeSubsystemInlineHostsInlineArrayItem) validateProximity(formats strfmt.Registry) error {
+	if swag.IsZero(o.Proximity) { // not required
+		return nil
+	}
+
+	if o.Proximity != nil {
+		if err := o.Proximity.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("proximity")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (o *NvmeSubsystemInlineHostsInlineArrayItem) validateTLS(formats strfmt.Registry) error {
 	if swag.IsZero(o.TLS) { // not required
 		return nil
@@ -1022,6 +1272,10 @@ func (o *NvmeSubsystemInlineHostsInlineArrayItem) ContextValidate(ctx context.Co
 	}
 
 	if err := o.contextValidateDhHmacChap(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateProximity(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1055,6 +1309,20 @@ func (o *NvmeSubsystemInlineHostsInlineArrayItem) contextValidateDhHmacChap(ctx 
 		if err := o.DhHmacChap.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("dh_hmac_chap")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *NvmeSubsystemInlineHostsInlineArrayItem) contextValidateProximity(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Proximity != nil {
+		if err := o.Proximity.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("proximity")
 			}
 			return err
 		}
@@ -1504,6 +1772,111 @@ func (o *NvmeSubsystemInlineHostsInlineArrayItemInlineDhHmacChap) UnmarshalBinar
 }
 
 /*
+NvmeSubsystemInlineHostsInlineArrayItemInlineProximity Properties that define the SVMs to which the host is proximal. This information is used to properly report active optimized and active non-optimized network paths using an NVMe controller. If no configuration has been specified for the host, the sub-object is not present in GET requests.<br/>
+// These properties apply to all instances of the host in the NVMe subsystem in the SVM and its peers.
+//
+swagger:model nvme_subsystem_inline_hosts_inline_array_item_inline_proximity
+*/
+type NvmeSubsystemInlineHostsInlineArrayItemInlineProximity struct {
+
+	// A boolean that indicates if the host is proximal to the SVM for which it is configured.
+	//
+	LocalSvm *bool `json:"local_svm,omitempty"`
+
+	// An array of remote peer SVMs to which the host is proximal.
+	//
+	PeerSvms []*NvmeSubsystemModifyCollectionParamsBodyHostsItems0ProximityPeerSvmsItems0 `json:"peer_svms"`
+}
+
+// Validate validates this nvme subsystem inline hosts inline array item inline proximity
+func (o *NvmeSubsystemInlineHostsInlineArrayItemInlineProximity) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validatePeerSvms(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemInlineHostsInlineArrayItemInlineProximity) validatePeerSvms(formats strfmt.Registry) error {
+	if swag.IsZero(o.PeerSvms) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(o.PeerSvms); i++ {
+		if swag.IsZero(o.PeerSvms[i]) { // not required
+			continue
+		}
+
+		if o.PeerSvms[i] != nil {
+			if err := o.PeerSvms[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("proximity" + "." + "peer_svms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme subsystem inline hosts inline array item inline proximity based on the context it is used
+func (o *NvmeSubsystemInlineHostsInlineArrayItemInlineProximity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidatePeerSvms(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemInlineHostsInlineArrayItemInlineProximity) contextValidatePeerSvms(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(o.PeerSvms); i++ {
+
+		if o.PeerSvms[i] != nil {
+			if err := o.PeerSvms[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("proximity" + "." + "peer_svms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *NvmeSubsystemInlineHostsInlineArrayItemInlineProximity) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *NvmeSubsystemInlineHostsInlineArrayItemInlineProximity) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineHostsInlineArrayItemInlineProximity
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
 NvmeSubsystemInlineHostsInlineArrayItemInlineTLS A container for the configuration for NVMe/TCP-TLS transport session for the host.
 //
 swagger:model nvme_subsystem_inline_hosts_inline_array_item_inline_tls
@@ -1832,6 +2205,877 @@ func (o *NvmeSubsystemInlineIoQueueInlineDefault) MarshalBinary() ([]byte, error
 // UnmarshalBinary interface implementation
 func (o *NvmeSubsystemInlineIoQueueInlineDefault) UnmarshalBinary(b []byte) error {
 	var res NvmeSubsystemInlineIoQueueInlineDefault
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+NvmeSubsystemInlineReplication Properties related to subsystem replication.
+//
+swagger:model nvme_subsystem_inline_replication
+*/
+type NvmeSubsystemInlineReplication struct {
+
+	// error
+	Error *models.NvmeSubsystemInlineReplicationInlineError `json:"error,omitempty"`
+
+	// peer subsystem
+	PeerSubsystem *models.NvmeSubsystemInlineReplicationInlinePeerSubsystem `json:"peer_subsystem,omitempty"`
+
+	// peer svm
+	PeerSvm *models.NvmeSubsystemInlineReplicationInlinePeerSvm `json:"peer_svm,omitempty"`
+
+	// The state of the replication queue associated with this subsystem. If this subsystem is not in the replication queue, the state is reported as _ok_. If this subsystem is in the replication queue, but no errors have been encountered, the state is reported as _replicating_. If this subsystem is in the replication queue and the queue is blocked by an error, the state is reported as _error_. When in the _error_ state, additional context is provided by the `replication.error` property.
+	//
+	// Read Only: true
+	// Enum: ["ok","replicating","error"]
+	State *string `json:"state,omitempty"`
+}
+
+// Validate validates this nvme subsystem inline replication
+func (o *NvmeSubsystemInlineReplication) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateError(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validatePeerSubsystem(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validatePeerSvm(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplication) validateError(formats strfmt.Registry) error {
+	if swag.IsZero(o.Error) { // not required
+		return nil
+	}
+
+	if o.Error != nil {
+		if err := o.Error.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "replication" + "." + "error")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplication) validatePeerSubsystem(formats strfmt.Registry) error {
+	if swag.IsZero(o.PeerSubsystem) { // not required
+		return nil
+	}
+
+	if o.PeerSubsystem != nil {
+		if err := o.PeerSubsystem.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "replication" + "." + "peer_subsystem")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplication) validatePeerSvm(formats strfmt.Registry) error {
+	if swag.IsZero(o.PeerSvm) { // not required
+		return nil
+	}
+
+	if o.PeerSvm != nil {
+		if err := o.PeerSvm.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "replication" + "." + "peer_svm")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var nvmeSubsystemInlineReplicationTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ok","replicating","error"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nvmeSubsystemInlineReplicationTypeStatePropEnum = append(nvmeSubsystemInlineReplicationTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_inline_replication
+	// NvmeSubsystemInlineReplication
+	// state
+	// State
+	// ok
+	// END DEBUGGING
+	// NvmeSubsystemInlineReplicationStateOk captures enum value "ok"
+	NvmeSubsystemInlineReplicationStateOk string = "ok"
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_inline_replication
+	// NvmeSubsystemInlineReplication
+	// state
+	// State
+	// replicating
+	// END DEBUGGING
+	// NvmeSubsystemInlineReplicationStateReplicating captures enum value "replicating"
+	NvmeSubsystemInlineReplicationStateReplicating string = "replicating"
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_inline_replication
+	// NvmeSubsystemInlineReplication
+	// state
+	// State
+	// error
+	// END DEBUGGING
+	// NvmeSubsystemInlineReplicationStateError captures enum value "error"
+	NvmeSubsystemInlineReplicationStateError string = "error"
+)
+
+// prop value enum
+func (o *NvmeSubsystemInlineReplication) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nvmeSubsystemInlineReplicationTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplication) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(o.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := o.validateStateEnum("info"+"."+"replication"+"."+"state", "body", *o.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme subsystem inline replication based on the context it is used
+func (o *NvmeSubsystemInlineReplication) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateError(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidatePeerSubsystem(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidatePeerSvm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplication) contextValidateError(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Error != nil {
+		if err := o.Error.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "replication" + "." + "error")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplication) contextValidatePeerSubsystem(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.PeerSubsystem != nil {
+		if err := o.PeerSubsystem.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "replication" + "." + "peer_subsystem")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplication) contextValidatePeerSvm(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.PeerSvm != nil {
+		if err := o.PeerSvm.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "replication" + "." + "peer_svm")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplication) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"replication"+"."+"state", "body", o.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *NvmeSubsystemInlineReplication) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *NvmeSubsystemInlineReplication) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineReplication
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+NvmeSubsystemInlineReplicationInlineError Information about asynchronous errors encountered while replicating this subsystem. Subsystems within a peering relationship are replicated in the same stream, so the error reported here might be related to this subsystem or a prior replicated subsystem that is now blocking the replication of this subsystem. Both the error information and the subsystem encountering the error are reported. If the error is configuration related, it can be corrected on the referenced subsystem. The replication is retried using exponential backoff up to a maximum of one retry every 5 minutes. Every operation on the same stream triggers an immediate retry and restarts the exponential backoff starting with a 1 second delay. If the error is system related, the retries should correct the error when the system enters a healthy state.
+//
+swagger:model nvme_subsystem_inline_replication_inline_error
+*/
+type NvmeSubsystemInlineReplicationInlineError struct {
+
+	// subsystem
+	Subsystem *models.NvmeSubsystemInlineReplicationInlineErrorInlineSubsystem `json:"subsystem,omitempty"`
+
+	// summary
+	Summary *models.NvmeSubsystemInlineReplicationInlineErrorInlineSummary `json:"summary,omitempty"`
+}
+
+// Validate validates this nvme subsystem inline replication inline error
+func (o *NvmeSubsystemInlineReplicationInlineError) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateSubsystem(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateSummary(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplicationInlineError) validateSubsystem(formats strfmt.Registry) error {
+	if swag.IsZero(o.Subsystem) { // not required
+		return nil
+	}
+
+	if o.Subsystem != nil {
+		if err := o.Subsystem.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "replication" + "." + "error" + "." + "subsystem")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplicationInlineError) validateSummary(formats strfmt.Registry) error {
+	if swag.IsZero(o.Summary) { // not required
+		return nil
+	}
+
+	if o.Summary != nil {
+		if err := o.Summary.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "replication" + "." + "error" + "." + "summary")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme subsystem inline replication inline error based on the context it is used
+func (o *NvmeSubsystemInlineReplicationInlineError) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateSubsystem(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateSummary(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplicationInlineError) contextValidateSubsystem(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Subsystem != nil {
+		if err := o.Subsystem.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "replication" + "." + "error" + "." + "subsystem")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplicationInlineError) contextValidateSummary(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Summary != nil {
+		if err := o.Summary.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "replication" + "." + "error" + "." + "summary")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *NvmeSubsystemInlineReplicationInlineError) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *NvmeSubsystemInlineReplicationInlineError) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineReplicationInlineError
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+NvmeSubsystemInlineReplicationInlineErrorInlineSubsystem An NVMe subsystem maintains configuration state and NVMe namespace access control for a set of NVMe-connected hosts.
+//
+swagger:model nvme_subsystem_inline_replication_inline_error_inline_subsystem
+*/
+type NvmeSubsystemInlineReplicationInlineErrorInlineSubsystem struct {
+
+	// Indicates whether the reported subsystem is on the local SVM or the peer SVM. When deleting a replicated subsystem, the local copy is deleted first and then the peer copy is deleted. If the error is encountered between these two operations and only the peer subsystem remains, the peer subsystem is reported and the problem might need to be corrected on the peer cluster.
+	//
+	// Read Only: true
+	LocalSvm *bool `json:"local_svm,omitempty"`
+
+	// The name of the NVMe subsystem.
+	//
+	// Example: subsystem1
+	// Max Length: 64
+	// Min Length: 1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the NVMe subsystem.
+	//
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this nvme subsystem inline replication inline error inline subsystem
+func (o *NvmeSubsystemInlineReplicationInlineErrorInlineSubsystem) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplicationInlineErrorInlineSubsystem) validateName(formats strfmt.Registry) error {
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("info"+"."+"replication"+"."+"error"+"."+"subsystem"+"."+"name", "body", *o.Name, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("info"+"."+"replication"+"."+"error"+"."+"subsystem"+"."+"name", "body", *o.Name, 64); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme subsystem inline replication inline error inline subsystem based on the context it is used
+func (o *NvmeSubsystemInlineReplicationInlineErrorInlineSubsystem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateLocalSvm(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplicationInlineErrorInlineSubsystem) contextValidateLocalSvm(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"replication"+"."+"error"+"."+"subsystem"+"."+"local_svm", "body", o.LocalSvm); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *NvmeSubsystemInlineReplicationInlineErrorInlineSubsystem) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *NvmeSubsystemInlineReplicationInlineErrorInlineSubsystem) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineReplicationInlineErrorInlineSubsystem
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+NvmeSubsystemInlineReplicationInlineErrorInlineSummary A user friendly message describing the error.
+//
+swagger:model nvme_subsystem_inline_replication_inline_error_inline_summary
+*/
+type NvmeSubsystemInlineReplicationInlineErrorInlineSummary struct {
+
+	// Message arguments
+	// Read Only: true
+	Arguments []*models.ErrorArguments `json:"arguments,omitempty"`
+
+	// Error code
+	// Example: 4
+	// Read Only: true
+	Code *string `json:"code,omitempty"`
+
+	// Error message
+	// Example: entry doesn't exist
+	// Read Only: true
+	Message *string `json:"message,omitempty"`
+}
+
+// Validate validates this nvme subsystem inline replication inline error inline summary
+func (o *NvmeSubsystemInlineReplicationInlineErrorInlineSummary) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateArguments(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplicationInlineErrorInlineSummary) validateArguments(formats strfmt.Registry) error {
+	if swag.IsZero(o.Arguments) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(o.Arguments); i++ {
+		if swag.IsZero(o.Arguments[i]) { // not required
+			continue
+		}
+
+		if o.Arguments[i] != nil {
+			if err := o.Arguments[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("info" + "." + "replication" + "." + "error" + "." + "summary" + "." + "arguments" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme subsystem inline replication inline error inline summary based on the context it is used
+func (o *NvmeSubsystemInlineReplicationInlineErrorInlineSummary) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateArguments(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplicationInlineErrorInlineSummary) contextValidateArguments(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"replication"+"."+"error"+"."+"summary"+"."+"arguments", "body", []*models.ErrorArguments(o.Arguments)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(o.Arguments); i++ {
+
+		if o.Arguments[i] != nil {
+			if err := o.Arguments[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("info" + "." + "replication" + "." + "error" + "." + "summary" + "." + "arguments" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplicationInlineErrorInlineSummary) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"replication"+"."+"error"+"."+"summary"+"."+"code", "body", o.Code); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplicationInlineErrorInlineSummary) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"replication"+"."+"error"+"."+"summary"+"."+"message", "body", o.Message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *NvmeSubsystemInlineReplicationInlineErrorInlineSummary) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *NvmeSubsystemInlineReplicationInlineErrorInlineSummary) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineReplicationInlineErrorInlineSummary
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+NvmeSubsystemInlineReplicationInlinePeerSubsystem nvme subsystem inline replication inline peer subsystem
+swagger:model nvme_subsystem_inline_replication_inline_peer_subsystem
+*/
+type NvmeSubsystemInlineReplicationInlinePeerSubsystem struct {
+
+	// The unique identifier of the peer subsystem.
+	//
+	// Example: 1cd8a443-86d2-11e0-ae1c-123478563412
+	// Read Only: true
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this nvme subsystem inline replication inline peer subsystem
+func (o *NvmeSubsystemInlineReplicationInlinePeerSubsystem) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this nvme subsystem inline replication inline peer subsystem based on the context it is used
+func (o *NvmeSubsystemInlineReplicationInlinePeerSubsystem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplicationInlinePeerSubsystem) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"replication"+"."+"peer_subsystem"+"."+"uuid", "body", o.UUID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *NvmeSubsystemInlineReplicationInlinePeerSubsystem) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *NvmeSubsystemInlineReplicationInlinePeerSubsystem) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineReplicationInlinePeerSubsystem
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+NvmeSubsystemInlineReplicationInlinePeerSvm The peered SVM to which the subsystem is replicated. Subsystem are are automatically replicated when mapped to a namespace in a SnapMirror active sync relationship. When a subsystem is mapped to a namespace in an active sync relationship, the subsystem is restricted to only be mapped to namespaces that are members of the same consistency group.
+//
+swagger:model nvme_subsystem_inline_replication_inline_peer_svm
+*/
+type NvmeSubsystemInlineReplicationInlinePeerSvm struct {
+
+	// links
+	Links *models.NvmeSubsystemInlineReplicationInlinePeerSvmInlineLinks `json:"_links,omitempty"`
+
+	// The local name of the peer SVM. This name is unique among all local and peer SVMs.
+	//
+	// Example: peer1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM peer relationship. This is the UUID of the relationship, not the UUID of the peer SVM itself.
+	//
+	// Example: 4204cf77-4c82-9bdb-5644-b5a841c097a9
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this nvme subsystem inline replication inline peer svm
+func (o *NvmeSubsystemInlineReplicationInlinePeerSvm) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplicationInlinePeerSvm) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(o.Links) { // not required
+		return nil
+	}
+
+	if o.Links != nil {
+		if err := o.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "replication" + "." + "peer_svm" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme subsystem inline replication inline peer svm based on the context it is used
+func (o *NvmeSubsystemInlineReplicationInlinePeerSvm) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplicationInlinePeerSvm) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Links != nil {
+		if err := o.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "replication" + "." + "peer_svm" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *NvmeSubsystemInlineReplicationInlinePeerSvm) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *NvmeSubsystemInlineReplicationInlinePeerSvm) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineReplicationInlinePeerSvm
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+NvmeSubsystemInlineReplicationInlinePeerSvmInlineLinks nvme subsystem inline replication inline peer svm inline links
+swagger:model nvme_subsystem_inline_replication_inline_peer_svm_inline__links
+*/
+type NvmeSubsystemInlineReplicationInlinePeerSvmInlineLinks struct {
+
+	// self
+	Self *models.Href `json:"self,omitempty"`
+}
+
+// Validate validates this nvme subsystem inline replication inline peer svm inline links
+func (o *NvmeSubsystemInlineReplicationInlinePeerSvmInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplicationInlinePeerSvmInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(o.Self) { // not required
+		return nil
+	}
+
+	if o.Self != nil {
+		if err := o.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "replication" + "." + "peer_svm" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme subsystem inline replication inline peer svm inline links based on the context it is used
+func (o *NvmeSubsystemInlineReplicationInlinePeerSvmInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeSubsystemInlineReplicationInlinePeerSvmInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Self != nil {
+		if err := o.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "replication" + "." + "peer_svm" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *NvmeSubsystemInlineReplicationInlinePeerSvmInlineLinks) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *NvmeSubsystemInlineReplicationInlinePeerSvmInlineLinks) UnmarshalBinary(b []byte) error {
+	var res NvmeSubsystemInlineReplicationInlinePeerSvmInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

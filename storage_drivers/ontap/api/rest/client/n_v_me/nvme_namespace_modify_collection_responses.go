@@ -284,13 +284,11 @@ type NvmeNamespaceModifyCollectionBody struct {
 	// links
 	Links *models.NvmeNamespaceInlineLinks `json:"_links,omitempty"`
 
-	// * **Unified ONTAP**:
-	// This property marks the NVMe namespace for auto deletion when the volume containing the namespace runs out of space. This is most commonly set on namespace clones.<br/>
+	// <personalities supports=unified>This property marks the NVMe namespace for auto deletion when the volume containing the namespace runs out of space. This is most commonly set on namespace clones.<br/>
 	// When set to _true_, the NVMe namespace becomes eligible for automatic deletion when the volume runs out of space. Auto deletion only occurs when the volume containing the namespace is also configured for auto deletion and free space in the volume decreases below a particular threshold.<br/>
 	// This property is optional in POST and PATCH. The default value for a new NVMe namespace is _false_.<br/>
-	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-	// * **ASA r2**:
-	// This property is not supported. It cannot be set in POST or PATCH and will not be returned by GET.
+	// There is an added computational cost to retrieving this property's value. It is not populated for a GET request unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.</personalities>
+	// <personalities supports=asar2>This property is not supported. It cannot be set in POST or PATCH and will not be returned by GET.</personalities>
 	//
 	AutoDelete *bool `json:"auto_delete,omitempty"`
 
@@ -330,14 +328,11 @@ type NvmeNamespaceModifyCollectionBody struct {
 	Metric *models.NvmeNamespaceInlineMetric `json:"metric,omitempty"`
 
 	// The name of the NVMe namespace.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// <personalities supports=unified>An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
-	// Renaming an NVMe namespace is not supported. Valid in POST.
-	// * **ASA r2**:
-	// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
-	// Renaming an NVMe namespace is supported. Valid in POST and PATCH.
+	// Renaming an NVMe namespace is not supported. Valid in POST.</personalities>
+	// <personalities supports=asar2>NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+	// Renaming an NVMe namespace is supported. Valid in POST and PATCH.</personalities>
 	//
 	// Example: /vol/volume1/qtree1/namespace1
 	Name *string `json:"name,omitempty"`
@@ -1226,6 +1221,9 @@ type NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0 str
 	// Enum: ["regular","high"]
 	Priority *string `json:"priority,omitempty"`
 
+	// proximity
+	Proximity *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0Proximity `json:"proximity,omitempty"`
+
 	// tls
 	TLS *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0TLS `json:"tls,omitempty"`
 }
@@ -1239,6 +1237,10 @@ func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0
 	}
 
 	if err := o.validatePriority(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateProximity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1325,6 +1327,23 @@ func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0
 	return nil
 }
 
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0) validateProximity(formats strfmt.Registry) error {
+	if swag.IsZero(o.Proximity) { // not required
+		return nil
+	}
+
+	if o.Proximity != nil {
+		if err := o.Proximity.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("proximity")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0) validateTLS(formats strfmt.Registry) error {
 	if swag.IsZero(o.TLS) { // not required
 		return nil
@@ -1350,6 +1369,10 @@ func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0
 		res = append(res, err)
 	}
 
+	if err := o.contextValidateProximity(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.contextValidateTLS(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1366,6 +1389,20 @@ func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0
 		if err := o.DhHmacChap.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("dh_hmac_chap")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0) contextValidateProximity(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Proximity != nil {
+		if err := o.Proximity.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("proximity")
 			}
 			return err
 		}
@@ -1399,6 +1436,295 @@ func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0
 // UnmarshalBinary interface implementation
 func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0) UnmarshalBinary(b []byte) error {
 	var res NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0Proximity Properties that define the SVMs to which the host is proximal. This information is used to properly report active optimized and active non-optimized network paths using an NVMe controller. If no configuration has been specified for the host, the sub-object is not present in GET requests.<br/>
+// These properties apply to all instances of the host in the NVMe subsystem in the SVM and its peers.
+//
+swagger:model NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0Proximity
+*/
+type NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0Proximity struct {
+
+	// A boolean that indicates if the host is proximal to the SVM for which it is configured.
+	//
+	LocalSvm *bool `json:"local_svm,omitempty"`
+
+	// An array of remote peer SVMs to which the host is proximal.
+	//
+	PeerSvms []*NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0 `json:"peer_svms"`
+}
+
+// Validate validates this nvme namespace modify collection params body subsystem map subsystem hosts items0 proximity
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0Proximity) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validatePeerSvms(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0Proximity) validatePeerSvms(formats strfmt.Registry) error {
+	if swag.IsZero(o.PeerSvms) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(o.PeerSvms); i++ {
+		if swag.IsZero(o.PeerSvms[i]) { // not required
+			continue
+		}
+
+		if o.PeerSvms[i] != nil {
+			if err := o.PeerSvms[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("proximity" + "." + "peer_svms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme namespace modify collection params body subsystem map subsystem hosts items0 proximity based on the context it is used
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0Proximity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidatePeerSvms(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0Proximity) contextValidatePeerSvms(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(o.PeerSvms); i++ {
+
+		if o.PeerSvms[i] != nil {
+			if err := o.PeerSvms[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("proximity" + "." + "peer_svms" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0Proximity) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0Proximity) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0Proximity
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0 A reference to an SVM peer relationship.
+swagger:model NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0
+*/
+type NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0 struct {
+
+	// links
+	Links *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0Links `json:"_links,omitempty"`
+
+	// The local name of the peer SVM. This name is unique among all local and peer SVMs.
+	//
+	// Example: peer1
+	Name *string `json:"name,omitempty"`
+
+	// The unique identifier of the SVM peer relationship. This is the UUID of the relationship, not the UUID of the peer SVM itself.
+	//
+	// Example: 4204cf77-4c82-9bdb-5644-b5a841c097a9
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this nvme namespace modify collection params body subsystem map subsystem hosts items0 proximity peer svms items0
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(o.Links) { // not required
+		return nil
+	}
+
+	if o.Links != nil {
+		if err := o.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme namespace modify collection params body subsystem map subsystem hosts items0 proximity peer svms items0 based on the context it is used
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Links != nil {
+		if err := o.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0Links nvme namespace modify collection params body subsystem map subsystem hosts items0 proximity peer svms items0 links
+swagger:model NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0Links
+*/
+type NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0Links struct {
+
+	// self
+	Self *models.Href `json:"self,omitempty"`
+}
+
+// Validate validates this nvme namespace modify collection params body subsystem map subsystem hosts items0 proximity peer svms items0 links
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(o.Self) { // not required
+		return nil
+	}
+
+	if o.Self != nil {
+		if err := o.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this nvme namespace modify collection params body subsystem map subsystem hosts items0 proximity peer svms items0 links based on the context it is used
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Self != nil {
+		if err := o.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0Links) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0Links) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceModifyCollectionParamsBodySubsystemMapSubsystemHostsItems0ProximityPeerSvmsItems0Links
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1614,12 +1940,10 @@ func (o *NvmeNamespaceInlineLinks) UnmarshalBinary(b []byte) error {
 }
 
 /*
-NvmeNamespaceInlineClone * **Unified ONTAP**:
-// This sub-object is used in POST to create a new NVMe namespace as a clone of an existing namespace, or PATCH to overwrite an existing namespace as a clone of another. Setting a property in this sub-object indicates that a namespace clone is desired.<br/>
-// When used in a PATCH, the patched NVMe namespace's data is over-written as a clone of the source and the following properties are preserved from the patched namespace unless otherwise specified as part of the PATCH: `auto_delete` (unless specified in the request), `subsystem_map`, `status.state`, and `uuid`.
-// * **ASA r2**:
-// This endpoint does not support clones. No properties in this sub-object can be set for POST or PATCH and none will be returned by GET.<br/>
-// Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning NVMe namespaces.
+NvmeNamespaceInlineClone <personalities supports=unified>This sub-object is used in POST to create a new NVMe namespace as a clone of an existing namespace, or PATCH to overwrite an existing namespace as a clone of another. Setting a property in this sub-object indicates that a namespace clone is desired.<br/>
+// When used in a PATCH, the patched NVMe namespace's data is over-written as a clone of the source and the following properties are preserved from the patched namespace unless otherwise specified as part of the PATCH: `auto_delete` (unless specified in the request), `subsystem_map`, `status.state`, and `uuid`.</personalities>
+// <personalities supports=asar2>This endpoint does not support clones. No properties in this sub-object can be set for POST or PATCH and none will be returned by GET.<br/>
+// Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning NVMe namespaces.</personalities>
 //
 swagger:model nvme_namespace_inline_clone
 */
@@ -1716,23 +2040,17 @@ swagger:model nvme_namespace_inline_clone_inline_source
 type NvmeNamespaceInlineCloneInlineSource struct {
 
 	// The name of the clone source NVMe namespace.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// <personalities supports=unified>An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
-	// Valid in POST and PATCH.
-	// * **ASA r2**:
-	// This property is not supported. Cloning is supported through the /ap/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning NVMe namespaces.
+	// Valid in POST and PATCH.</personalities>
+	// <personalities supports=asar2>This property is not supported. Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning NVMe namespaces.</personalities>
 	//
 	// Example: /vol/volume1/namespace1
 	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the clone source NVMe namespace.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// Valid in POST and PATCH.
-	// * **ASA r2**:
-	// This property is not supported. Cloning is supported through the /ap/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning NVMe namespaces.
+	// <personalities supports=unified>Valid in POST and PATCH.</personalities>
+	// <personalities supports=asar2>This property is not supported. Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning NVMe namespaces.</personalities>
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	UUID *string `json:"uuid,omitempty"`
@@ -1768,9 +2086,8 @@ func (o *NvmeNamespaceInlineCloneInlineSource) UnmarshalBinary(b []byte) error {
 
 /*
 NvmeNamespaceInlineConsistencyGroup The namespace's consistency group. This property is populated for namespaces that are members of a consistency group. If the namespace is a member of a child consistency group, the parent consistency group is reported.
-// ### Platform Specifics
-// * **Unified ONTAP**: A namespace's consistency group is the consistency group of its containing volume.
-// * **ASA r2**: A namespace is optionally associated directly with a consistency group.
+// <personalities supports=unified>A namespace's consistency group is the consistency group of its containing volume.</personalities>
+// <personalities supports=asar2>A namespace is optionally associated directly with a consistency group.</personalities>
 //
 swagger:model nvme_namespace_inline_consistency_group
 */
@@ -2079,12 +2396,9 @@ swagger:model nvme_namespace_inline_convert_inline_lun
 type NvmeNamespaceInlineConvertInlineLun struct {
 
 	// The name of the source LUN. Valid in POST.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
-	// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<lun>" where the qtree name is optional.
-	// * **ASA r2**:
-	// LUN names are simple names that share a namespace with NVMe namespaces within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.
+	// <personalities supports=unified>A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<lun>" where the qtree name is optional.</personalities>
+	// <personalities supports=asar2>LUN names are simple names that share a namespace with NVMe namespaces within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.</personalities>
 	//
 	// Example: /vol/volume1/lun1
 	Name *string `json:"name,omitempty"`
@@ -2125,22 +2439,17 @@ func (o *NvmeNamespaceInlineConvertInlineLun) UnmarshalBinary(b []byte) error {
 
 /*
 NvmeNamespaceInlineLocation The location of the NVMe namespace within the ONTAP cluster.
-// ### Platform Specifics
-// * **Unified ONTAP**:
-// NVMe namespaces do not support rename, or movement between volumes. Valid in POST.
-// * **ASA r2**:
-// The NVMe namespace name can be changed by PATCHing the `name` property. The `location` properties are read-only.
+// <personalities supports=unified>NVMe namespaces do not support rename, or movement between volumes. Valid in POST.</personalities>
+// <personalities supports=asar2>The NVMe namespace name can be changed by PATCHing the `name` property. The `location` properties are read-only.</personalities>
 //
 swagger:model nvme_namespace_inline_location
 */
 type NvmeNamespaceInlineLocation struct {
 
-	// * **Unified ONTAP**:
-	// The base name component of the NVMe namespace. Valid in POST.<br/>
+	// <personalities supports=unified>The base name component of the NVMe namespace. Valid in POST.<br/>
 	// If properties `name` and `location.namespace` are specified in the same request, they must refer to the base name.<br/>
-	// NVMe namespaces do not support rename.
-	// * **ASA r2**:
-	// The namespace property is read-only and cannot be set in POST or PATCH. Use the `name` property for POST and PATCH.
+	// NVMe namespaces do not support rename.</personalities>
+	// <personalities supports=asar2>The namespace property is read-only and cannot be set in POST or PATCH. Use the `name` property for POST and PATCH.</personalities>
 	//
 	// Example: namespace1
 	Namespace *string `json:"namespace,omitempty"`
@@ -2536,12 +2845,10 @@ func (o *NvmeNamespaceInlineLocationInlineNodeInlineLinks) UnmarshalBinary(b []b
 }
 
 /*
-NvmeNamespaceInlineLocationInlineQtree * **Unified ONTAP**:
-// The qtree in which the NVMe namespace is optionally located. Valid in POST.<br/>
+NvmeNamespaceInlineLocationInlineQtree <personalities supports=unified>The qtree in which the NVMe namespace is optionally located. Valid in POST.<br/>
 // If properties `name` and `location.qtree.name` and/or `location.qtree.uuid` are specified in the same request, they must refer to the same qtree.<br/>
-// NVMe namespaces do not support rename.
-// * **ASA r2**:
-// Qtrees are not supported. The properties of the qtree sub-object cannot be set in POST or PATCH.
+// NVMe namespaces do not support rename.</personalities>
+// <personalities supports=asar2>Qtrees are not supported. The properties of the qtree sub-object cannot be set in POST or PATCH.</personalities>
 //
 swagger:model nvme_namespace_inline_location_inline_qtree
 */
@@ -2748,11 +3055,6 @@ func (o *NvmeNamespaceInlineLocationInlineQtreeInlineLinks) UnmarshalBinary(b []
 
 /*
 NvmeNamespaceInlineLocationInlineStorageAvailabilityZone The storage availability zone that contains the NVMe namespace.
-// ### Platform Specifics
-// * **Unified ONTAP**:
-// This property is not supported.
-// * **ASA r2**:
-// This property is supported for read-only access.
 //
 swagger:model nvme_namespace_inline_location_inline_storage_availability_zone
 */
@@ -2935,12 +3237,10 @@ func (o *NvmeNamespaceInlineLocationInlineStorageAvailabilityZoneInlineLinks) Un
 }
 
 /*
-NvmeNamespaceInlineLocationInlineVolume * **Unified ONTAP**:
-// The volume in which the NVMe namespace is located. Valid in POST.<br/>
+NvmeNamespaceInlineLocationInlineVolume <personalities supports=unified>The volume in which the NVMe namespace is located. Valid in POST.<br/>
 // If properties `name` and `location.volume.name` and/or `location.volume.uuid` are specified in the same request, they must refer to the same volume.<br/>
-// NVMe namespaces do not support movement between volumes.
-// * **ASA r2**:
-// The volume sub-object is read-only and its properties cannot be set in POST or PATCH. Use the `name` property for POST.
+// NVMe namespaces do not support movement between volumes.</personalities>
+// <personalities supports=asar2>The volume sub-object is read-only and its properties cannot be set in POST or PATCH. Use the `name` property for POST.</personalities>
 //
 swagger:model nvme_namespace_inline_location_inline_volume
 */
@@ -4260,7 +4560,7 @@ func (o *NvmeNamespaceInlineProvisioningOptionsInlineQosPolicy) UnmarshalBinary(
 }
 
 /*
-NvmeNamespaceInlineProvisioningOptionsInlineStorageService Determines the placement of the volume provisioned to host the namespace.
+NvmeNamespaceInlineProvisioningOptionsInlineStorageService Determines the placement of the namespace based on the value specified. Valid in POST.
 //
 swagger:model nvme_namespace_inline_provisioning_options_inline_storage_service
 */
@@ -4669,10 +4969,7 @@ func (o *NvmeNamespaceInlineProvisioningOptionsInlineTiering) UnmarshalBinary(b 
 }
 
 /*
-NvmeNamespaceInlineQosPolicy The QoS policy for the NVMe namspace. Both traditional and adaptive QoS policies are supported. If both property `qos_policy.uuid` and `qos_policy.name` are specified in the same request, they must refer to the same QoS policy. To remove the QoS policy from an NVMe namspace, leaving it with no QoS policy, set property `qos_policy.name` to an empty string ("") in a PATCH request. Valid in POST and PATCH.
-// ### Platform Specifics
-// * **Unified ONTAP**: These properties are not available on the NVMe namespace object in the REST API and are not reported for GET requests. You can set a QoS policy on the containing volume.
-// * **ASA r2**: An NVMe namespace is optionally associated directly with a QoS policy. To remove the QoS policy, set it to `null` in a PATCH request.
+NvmeNamespaceInlineQosPolicy The QoS policy for the NVMe namespace. Both traditional and adaptive QoS policies are supported. If both property `qos_policy.uuid` and `qos_policy.name` are specified in the same request, they must refer to the same QoS policy. To remove the QoS policy from an NVMe namespace, leaving it with no QoS policy, set property `qos_policy.name` to an empty string ("") in a PATCH request. An NVMe namespace is optionally associated directly with a QoS policy. To remove the QoS policy, set it to `null` in a PATCH request. Valid in POST and PATCH.
 //
 swagger:model nvme_namespace_inline_qos_policy
 */
@@ -4871,9 +5168,8 @@ type NvmeNamespaceInlineSpace struct {
 	BlockSize *int64 `json:"block_size,omitempty"`
 
 	// The storage efficiency ratio of the namespace without snapshots. (Logical Used / Used)
-	// ### Platform Specifics
-	// * **Unified ONTAP**: This property is not available on the namespace object in the REST API and is not reported for GET requests. See the containing volume object for this information.
-	// * **ASA r2**: Available for GET.
+	// <personalities supports=unified>This property is not available on the namespace object in the REST API and is not reported for GET requests. See the containing volume object for this information.</personalities>
+	// <personalities supports=asar2>Available for GET.</personalities>
 	//
 	// Example: 2.5
 	// Read Only: true
@@ -4883,18 +5179,16 @@ type NvmeNamespaceInlineSpace struct {
 	Guarantee *models.NvmeNamespaceInlineSpaceInlineGuarantee `json:"guarantee,omitempty"`
 
 	// The number of bytes consumed on the disk by the namespace, excluding snapshots.
-	// ### Platform Specifics
-	// * **Unified ONTAP**: This property is not available on the namespace object in the REST API and is not reported for GET requests. See the containing volume object for this information.
-	// * **ASA r2**: Available for GET.
+	// <personalities supports=unified>This property is not available on the namespace object in the REST API and is not reported for GET requests. See the containing volume object for this information.</personalities>
+	// <personalities supports=asar2>Available for GET.</personalities>
 	//
 	// Example: 1073741824
 	// Read Only: true
 	PhysicalUsed *int64 `json:"physical_used,omitempty"`
 
 	// The number of bytes consumed on the disk by the namespace's snapshots.
-	// ### Platform Specifics
-	// * **Unified ONTAP**: This property is not available on the namespace object in the REST API and is not reported for GET requests. See the containing volume object for this information.
-	// * **ASA r2**: Available for GET.
+	// <personalities supports=unified>This property is not available on the namespace object in the REST API and is not reported for GET requests. See the containing volume object for this information.</personalities>
+	// <personalities supports=asar2>Available for GET.</personalities>
 	//
 	// Example: 1073741824
 	// Read Only: true
@@ -5733,7 +6027,7 @@ type NvmeNamespaceInlineStatus struct {
 	ContainerState *string `json:"container_state,omitempty"`
 
 	// Reports if the NVMe namespace is mapped to an NVMe subsystem.<br/>
-	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// There is an added computational cost to retrieving this property's value. It is not populated for a GET request unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Read Only: true
 	Mapped *bool `json:"mapped,omitempty"`
@@ -5993,10 +6287,9 @@ func (o *NvmeNamespaceInlineStatus) UnmarshalBinary(b []byte) error {
 
 /*
 NvmeNamespaceInlineSubsystemMap The NVMe subsystem with which the NVMe namespace is associated. A namespace can be mapped to zero (0) or one (1) subsystems.<br/>
-// There is an added computational cost to retrieving property values for `subsystem_map`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-// ### Platform Specifics
-// * **Unified ONTAP**: These properties are supported only for GET.
-// * **ASA r2**: These properties are supported for GET and POST. During POST, a new or existing subsystem can be referenced. When referencing an existing subsystem, only the `name` and `uuid` properties are supported.
+// There is an added computational cost to retrieving property values for `subsystem_map`. They are not populated for a GET request unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+// <personalities supports=unified>These properties are supported only for GET.</personalities>
+// <personalities supports=asar2>These properties are supported for GET and POST. During POST, a new or existing subsystem can be referenced. When referencing an existing subsystem, only the `name` and `uuid` properties are supported.</personalities>
 //
 swagger:model nvme_namespace_inline_subsystem_map
 */

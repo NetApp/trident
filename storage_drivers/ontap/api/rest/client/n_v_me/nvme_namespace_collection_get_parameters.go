@@ -498,6 +498,24 @@ type NvmeNamespaceCollectionGetParams struct {
 	*/
 	SubsystemMapSubsystemHostsPriority *string
 
+	/* SubsystemMapSubsystemHostsProximityLocalSvm.
+
+	   Filter by subsystem_map.subsystem.hosts.proximity.local_svm
+	*/
+	SubsystemMapSubsystemHostsProximityLocalSvm *bool
+
+	/* SubsystemMapSubsystemHostsProximityPeerSvmsName.
+
+	   Filter by subsystem_map.subsystem.hosts.proximity.peer_svms.name
+	*/
+	SubsystemMapSubsystemHostsProximityPeerSvmsName *string
+
+	/* SubsystemMapSubsystemHostsProximityPeerSvmsUUID.
+
+	   Filter by subsystem_map.subsystem.hosts.proximity.peer_svms.uuid
+	*/
+	SubsystemMapSubsystemHostsProximityPeerSvmsUUID *string
+
 	/* SubsystemMapSubsystemHostsTLSKeyType.
 
 	   Filter by subsystem_map.subsystem.hosts.tls.key_type
@@ -1397,6 +1415,39 @@ func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapSubsystemHostsPriorit
 // SetSubsystemMapSubsystemHostsPriority adds the subsystemMapSubsystemHostsPriority to the nvme namespace collection get params
 func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapSubsystemHostsPriority(subsystemMapSubsystemHostsPriority *string) {
 	o.SubsystemMapSubsystemHostsPriority = subsystemMapSubsystemHostsPriority
+}
+
+// WithSubsystemMapSubsystemHostsProximityLocalSvm adds the subsystemMapSubsystemHostsProximityLocalSvm to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapSubsystemHostsProximityLocalSvm(subsystemMapSubsystemHostsProximityLocalSvm *bool) *NvmeNamespaceCollectionGetParams {
+	o.SetSubsystemMapSubsystemHostsProximityLocalSvm(subsystemMapSubsystemHostsProximityLocalSvm)
+	return o
+}
+
+// SetSubsystemMapSubsystemHostsProximityLocalSvm adds the subsystemMapSubsystemHostsProximityLocalSvm to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapSubsystemHostsProximityLocalSvm(subsystemMapSubsystemHostsProximityLocalSvm *bool) {
+	o.SubsystemMapSubsystemHostsProximityLocalSvm = subsystemMapSubsystemHostsProximityLocalSvm
+}
+
+// WithSubsystemMapSubsystemHostsProximityPeerSvmsName adds the subsystemMapSubsystemHostsProximityPeerSvmsName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapSubsystemHostsProximityPeerSvmsName(subsystemMapSubsystemHostsProximityPeerSvmsName *string) *NvmeNamespaceCollectionGetParams {
+	o.SetSubsystemMapSubsystemHostsProximityPeerSvmsName(subsystemMapSubsystemHostsProximityPeerSvmsName)
+	return o
+}
+
+// SetSubsystemMapSubsystemHostsProximityPeerSvmsName adds the subsystemMapSubsystemHostsProximityPeerSvmsName to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapSubsystemHostsProximityPeerSvmsName(subsystemMapSubsystemHostsProximityPeerSvmsName *string) {
+	o.SubsystemMapSubsystemHostsProximityPeerSvmsName = subsystemMapSubsystemHostsProximityPeerSvmsName
+}
+
+// WithSubsystemMapSubsystemHostsProximityPeerSvmsUUID adds the subsystemMapSubsystemHostsProximityPeerSvmsUUID to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) WithSubsystemMapSubsystemHostsProximityPeerSvmsUUID(subsystemMapSubsystemHostsProximityPeerSvmsUUID *string) *NvmeNamespaceCollectionGetParams {
+	o.SetSubsystemMapSubsystemHostsProximityPeerSvmsUUID(subsystemMapSubsystemHostsProximityPeerSvmsUUID)
+	return o
+}
+
+// SetSubsystemMapSubsystemHostsProximityPeerSvmsUUID adds the subsystemMapSubsystemHostsProximityPeerSvmsUuid to the nvme namespace collection get params
+func (o *NvmeNamespaceCollectionGetParams) SetSubsystemMapSubsystemHostsProximityPeerSvmsUUID(subsystemMapSubsystemHostsProximityPeerSvmsUUID *string) {
+	o.SubsystemMapSubsystemHostsProximityPeerSvmsUUID = subsystemMapSubsystemHostsProximityPeerSvmsUUID
 }
 
 // WithSubsystemMapSubsystemHostsTLSKeyType adds the subsystemMapSubsystemHostsTLSKeyType to the nvme namespace collection get params
@@ -2691,6 +2742,57 @@ func (o *NvmeNamespaceCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qSubsystemMapSubsystemHostsPriority != "" {
 
 			if err := r.SetQueryParam("subsystem_map.subsystem.hosts.priority", qSubsystemMapSubsystemHostsPriority); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubsystemMapSubsystemHostsProximityLocalSvm != nil {
+
+		// query param subsystem_map.subsystem.hosts.proximity.local_svm
+		var qrSubsystemMapSubsystemHostsProximityLocalSvm bool
+
+		if o.SubsystemMapSubsystemHostsProximityLocalSvm != nil {
+			qrSubsystemMapSubsystemHostsProximityLocalSvm = *o.SubsystemMapSubsystemHostsProximityLocalSvm
+		}
+		qSubsystemMapSubsystemHostsProximityLocalSvm := swag.FormatBool(qrSubsystemMapSubsystemHostsProximityLocalSvm)
+		if qSubsystemMapSubsystemHostsProximityLocalSvm != "" {
+
+			if err := r.SetQueryParam("subsystem_map.subsystem.hosts.proximity.local_svm", qSubsystemMapSubsystemHostsProximityLocalSvm); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubsystemMapSubsystemHostsProximityPeerSvmsName != nil {
+
+		// query param subsystem_map.subsystem.hosts.proximity.peer_svms.name
+		var qrSubsystemMapSubsystemHostsProximityPeerSvmsName string
+
+		if o.SubsystemMapSubsystemHostsProximityPeerSvmsName != nil {
+			qrSubsystemMapSubsystemHostsProximityPeerSvmsName = *o.SubsystemMapSubsystemHostsProximityPeerSvmsName
+		}
+		qSubsystemMapSubsystemHostsProximityPeerSvmsName := qrSubsystemMapSubsystemHostsProximityPeerSvmsName
+		if qSubsystemMapSubsystemHostsProximityPeerSvmsName != "" {
+
+			if err := r.SetQueryParam("subsystem_map.subsystem.hosts.proximity.peer_svms.name", qSubsystemMapSubsystemHostsProximityPeerSvmsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubsystemMapSubsystemHostsProximityPeerSvmsUUID != nil {
+
+		// query param subsystem_map.subsystem.hosts.proximity.peer_svms.uuid
+		var qrSubsystemMapSubsystemHostsProximityPeerSvmsUUID string
+
+		if o.SubsystemMapSubsystemHostsProximityPeerSvmsUUID != nil {
+			qrSubsystemMapSubsystemHostsProximityPeerSvmsUUID = *o.SubsystemMapSubsystemHostsProximityPeerSvmsUUID
+		}
+		qSubsystemMapSubsystemHostsProximityPeerSvmsUUID := qrSubsystemMapSubsystemHostsProximityPeerSvmsUUID
+		if qSubsystemMapSubsystemHostsProximityPeerSvmsUUID != "" {
+
+			if err := r.SetQueryParam("subsystem_map.subsystem.hosts.proximity.peer_svms.uuid", qSubsystemMapSubsystemHostsProximityPeerSvmsUUID); err != nil {
 				return err
 			}
 		}

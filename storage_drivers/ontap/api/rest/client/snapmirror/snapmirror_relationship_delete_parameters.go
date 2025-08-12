@@ -92,6 +92,12 @@ type SnapmirrorRelationshipDeleteParams struct {
 	*/
 	SourceOnly *bool
 
+	/* UnmapNamespace.
+
+	   Deletes namespace mapping and then deletes the subsystems.
+	*/
+	UnmapNamespace *bool
+
 	/* UUID.
 
 	   SnapMirror relationship UUID
@@ -119,11 +125,14 @@ func (o *SnapmirrorRelationshipDeleteParams) SetDefaults() {
 		deleteLunMapsInDestinationDefault = bool(false)
 
 		returnTimeoutDefault = int64(0)
+
+		unmapNamespaceDefault = bool(false)
 	)
 
 	val := SnapmirrorRelationshipDeleteParams{
 		DeleteLunMapsInDestination: &deleteLunMapsInDestinationDefault,
 		ReturnTimeout:              &returnTimeoutDefault,
+		UnmapNamespace:             &unmapNamespaceDefault,
 	}
 
 	val.timeout = o.timeout
@@ -218,6 +227,17 @@ func (o *SnapmirrorRelationshipDeleteParams) WithSourceOnly(sourceOnly *bool) *S
 // SetSourceOnly adds the sourceOnly to the snapmirror relationship delete params
 func (o *SnapmirrorRelationshipDeleteParams) SetSourceOnly(sourceOnly *bool) {
 	o.SourceOnly = sourceOnly
+}
+
+// WithUnmapNamespace adds the unmapNamespace to the snapmirror relationship delete params
+func (o *SnapmirrorRelationshipDeleteParams) WithUnmapNamespace(unmapNamespace *bool) *SnapmirrorRelationshipDeleteParams {
+	o.SetUnmapNamespace(unmapNamespace)
+	return o
+}
+
+// SetUnmapNamespace adds the unmapNamespace to the snapmirror relationship delete params
+func (o *SnapmirrorRelationshipDeleteParams) SetUnmapNamespace(unmapNamespace *bool) {
+	o.UnmapNamespace = unmapNamespace
 }
 
 // WithUUID adds the uuid to the snapmirror relationship delete params
@@ -319,6 +339,23 @@ func (o *SnapmirrorRelationshipDeleteParams) WriteToRequest(r runtime.ClientRequ
 		if qSourceOnly != "" {
 
 			if err := r.SetQueryParam("source_only", qSourceOnly); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UnmapNamespace != nil {
+
+		// query param unmap_namespace
+		var qrUnmapNamespace bool
+
+		if o.UnmapNamespace != nil {
+			qrUnmapNamespace = *o.UnmapNamespace
+		}
+		qUnmapNamespace := swag.FormatBool(qrUnmapNamespace)
+		if qUnmapNamespace != "" {
+
+			if err := r.SetQueryParam("unmap_namespace", qUnmapNamespace); err != nil {
 				return err
 			}
 		}

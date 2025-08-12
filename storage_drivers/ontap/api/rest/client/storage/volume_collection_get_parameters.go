@@ -116,17 +116,113 @@ type VolumeCollectionGetParams struct {
 	*/
 	AggressiveReadaheadMode *string
 
+	/* AnalyticsByAccessedTimeBytesUsedAgedDataMetric.
+
+	   Filter by analytics.by_accessed_time.bytes_used.aged_data_metric
+	*/
+	AnalyticsByAccessedTimeBytesUsedAgedDataMetric *float64
+
+	/* AnalyticsByAccessedTimeBytesUsedLabels.
+
+	   Filter by analytics.by_accessed_time.bytes_used.labels
+	*/
+	AnalyticsByAccessedTimeBytesUsedLabels *string
+
+	/* AnalyticsByAccessedTimeBytesUsedNewestLabel.
+
+	   Filter by analytics.by_accessed_time.bytes_used.newest_label
+	*/
+	AnalyticsByAccessedTimeBytesUsedNewestLabel *string
+
+	/* AnalyticsByAccessedTimeBytesUsedOldestLabel.
+
+	   Filter by analytics.by_accessed_time.bytes_used.oldest_label
+	*/
+	AnalyticsByAccessedTimeBytesUsedOldestLabel *string
+
+	/* AnalyticsByAccessedTimeBytesUsedPercentages.
+
+	   Filter by analytics.by_accessed_time.bytes_used.percentages
+	*/
+	AnalyticsByAccessedTimeBytesUsedPercentages *float64
+
+	/* AnalyticsByAccessedTimeBytesUsedValues.
+
+	   Filter by analytics.by_accessed_time.bytes_used.values
+	*/
+	AnalyticsByAccessedTimeBytesUsedValues *int64
+
+	/* AnalyticsByModifiedTimeBytesUsedAgedDataMetric.
+
+	   Filter by analytics.by_modified_time.bytes_used.aged_data_metric
+	*/
+	AnalyticsByModifiedTimeBytesUsedAgedDataMetric *float64
+
+	/* AnalyticsByModifiedTimeBytesUsedLabels.
+
+	   Filter by analytics.by_modified_time.bytes_used.labels
+	*/
+	AnalyticsByModifiedTimeBytesUsedLabels *string
+
+	/* AnalyticsByModifiedTimeBytesUsedNewestLabel.
+
+	   Filter by analytics.by_modified_time.bytes_used.newest_label
+	*/
+	AnalyticsByModifiedTimeBytesUsedNewestLabel *string
+
+	/* AnalyticsByModifiedTimeBytesUsedOldestLabel.
+
+	   Filter by analytics.by_modified_time.bytes_used.oldest_label
+	*/
+	AnalyticsByModifiedTimeBytesUsedOldestLabel *string
+
+	/* AnalyticsByModifiedTimeBytesUsedPercentages.
+
+	   Filter by analytics.by_modified_time.bytes_used.percentages
+	*/
+	AnalyticsByModifiedTimeBytesUsedPercentages *float64
+
+	/* AnalyticsByModifiedTimeBytesUsedValues.
+
+	   Filter by analytics.by_modified_time.bytes_used.values
+	*/
+	AnalyticsByModifiedTimeBytesUsedValues *int64
+
+	/* AnalyticsBytesUsed.
+
+	   Filter by analytics.bytes_used
+	*/
+	AnalyticsBytesUsed *int64
+
+	/* AnalyticsFileCount.
+
+	   Filter by analytics.file_count
+	*/
+	AnalyticsFileCount *int64
+
 	/* AnalyticsFilesScanned.
 
 	   Filter by analytics.files_scanned
 	*/
 	AnalyticsFilesScanned *int64
 
+	/* AnalyticsIncompleteData.
+
+	   Filter by analytics.incomplete_data
+	*/
+	AnalyticsIncompleteData *bool
+
 	/* AnalyticsInitializationState.
 
 	   Filter by analytics.initialization.state
 	*/
 	AnalyticsInitializationState *string
+
+	/* AnalyticsReportTime.
+
+	   Filter by analytics.report_time
+	*/
+	AnalyticsReportTime *string
 
 	/* AnalyticsScanProgress.
 
@@ -158,6 +254,12 @@ type VolumeCollectionGetParams struct {
 	*/
 	AnalyticsState *string
 
+	/* AnalyticsSubdirCount.
+
+	   Filter by analytics.subdir_count
+	*/
+	AnalyticsSubdirCount *int64
+
 	/* AnalyticsSupported.
 
 	   Filter by analytics.supported
@@ -181,6 +283,12 @@ type VolumeCollectionGetParams struct {
 	   Filter by analytics.unsupported_reason.message
 	*/
 	AnalyticsUnsupportedReasonMessage *string
+
+	/* AntiRansomwareAttackDetectedBy.
+
+	   Filter by anti_ransomware.attack_detected_by
+	*/
+	AntiRansomwareAttackDetectedBy *string
 
 	/* AntiRansomwareAttackDetectionParametersBasedOnFileCreateOpRate.
 
@@ -211,6 +319,12 @@ type VolumeCollectionGetParams struct {
 	   Filter by anti_ransomware.attack_detection_parameters.based_on_never_seen_before_file_extension
 	*/
 	AntiRansomwareAttackDetectionParametersBasedOnNeverSeenBeforeFileExtension *bool
+
+	/* AntiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold.
+
+	   Filter by anti_ransomware.attack_detection_parameters.block_device_auto_learned_encryption_threshold
+	*/
+	AntiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold *int64
 
 	/* AntiRansomwareAttackDetectionParametersFileCreateOpRateSurgeNotifyPercent.
 
@@ -265,6 +379,18 @@ type VolumeCollectionGetParams struct {
 	   Filter by anti_ransomware.attack_reports.time
 	*/
 	AntiRansomwareAttackReportsTime *string
+
+	/* AntiRansomwareBlockDeviceDetectionStartTime.
+
+	   Filter by anti_ransomware.block_device_detection_start_time
+	*/
+	AntiRansomwareBlockDeviceDetectionStartTime *string
+
+	/* AntiRansomwareBlockDeviceDetectionState.
+
+	   Filter by anti_ransomware.block_device_detection_state
+	*/
+	AntiRansomwareBlockDeviceDetectionState *string
 
 	/* AntiRansomwareDryRunStartTime.
 
@@ -740,6 +866,12 @@ type VolumeCollectionGetParams struct {
 	*/
 	ConsistencyGroupUUID *string
 
+	/* ConstituentCount.
+
+	   Filter by constituent_count
+	*/
+	ConstituentCount *int64
+
 	/* ConstituentsAggregatesName.
 
 	   Filter by constituents.aggregates.name
@@ -787,6 +919,18 @@ type VolumeCollectionGetParams struct {
 	   Filter by constituents.name
 	*/
 	ConstituentsName *string
+
+	/* ConstituentsNodeName.
+
+	   Filter by constituents.node.name
+	*/
+	ConstituentsNodeName *string
+
+	/* ConstituentsNodeUUID.
+
+	   Filter by constituents.node.uuid
+	*/
+	ConstituentsNodeUUID *string
 
 	/* ConstituentsSpaceAfsTotal.
 
@@ -1082,6 +1226,12 @@ type VolumeCollectionGetParams struct {
 	*/
 	EfficiencyProgress *string
 
+	/* EfficiencyRatio.
+
+	   Filter by efficiency.ratio
+	*/
+	EfficiencyRatio *float64
+
 	/* EfficiencyScannerCompression.
 
 	   Filter by efficiency.scanner.compression
@@ -1250,6 +1400,12 @@ type VolumeCollectionGetParams struct {
 	*/
 	Fields []string
 
+	/* FilesInodefileCapacity.
+
+	   Filter by files.inodefile_capacity
+	*/
+	FilesInodefileCapacity *int64
+
 	/* FilesMaximum.
 
 	   Filter by files.maximum
@@ -1322,11 +1478,23 @@ type VolumeCollectionGetParams struct {
 	*/
 	GuaranteeType *string
 
+	/* HasDirIndexPublic.
+
+	   Filter by has_dir_index_public
+	*/
+	HasDirIndexPublic *bool
+
 	/* IsConstituent.
 
 	   When set to false, only FlexVol and FlexGroup volumes are returned.  When set to true, only FlexGroup constituent volumes are returned. Default for GET calls is false.
 	*/
 	IsConstituent *bool
+
+	/* IsDirIndexTransferEnabled.
+
+	   Filter by is_dir_index_transfer_enabled
+	*/
+	IsDirIndexTransferEnabled *bool
 
 	/* IsObjectStore.
 
@@ -1646,11 +1814,29 @@ type VolumeCollectionGetParams struct {
 	*/
 	NasUnixPermissions *int64
 
+	/* NodesName.
+
+	   Filter by nodes.name
+	*/
+	NodesName *string
+
+	/* NodesUUID.
+
+	   Filter by nodes.uuid
+	*/
+	NodesUUID *string
+
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
 	OrderBy []string
+
+	/* QosPolicyMaxThroughput.
+
+	   Filter by qos.policy.max_throughput
+	*/
+	QosPolicyMaxThroughput *string
 
 	/* QosPolicyMaxThroughputIops.
 
@@ -1663,6 +1849,12 @@ type VolumeCollectionGetParams struct {
 	   Filter by qos.policy.max_throughput_mbps
 	*/
 	QosPolicyMaxThroughputMbps *int64
+
+	/* QosPolicyMinThroughput.
+
+	   Filter by qos.policy.min_throughput
+	*/
+	QosPolicyMinThroughput *string
 
 	/* QosPolicyMinThroughputIops.
 
@@ -2474,7 +2666,7 @@ type VolumeCollectionGetParams struct {
 
 	/* SpaceSnapshotAutodeleteTrigger.
 
-	   Filter by space.snapshot.autodelete.trigger
+	   Filter by space.snapshot.autodelete_trigger
 	*/
 	SpaceSnapshotAutodeleteTrigger *string
 
@@ -3517,6 +3709,160 @@ func (o *VolumeCollectionGetParams) SetAggressiveReadaheadMode(aggressiveReadahe
 	o.AggressiveReadaheadMode = aggressiveReadaheadMode
 }
 
+// WithAnalyticsByAccessedTimeBytesUsedAgedDataMetric adds the analyticsByAccessedTimeBytesUsedAgedDataMetric to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsByAccessedTimeBytesUsedAgedDataMetric(analyticsByAccessedTimeBytesUsedAgedDataMetric *float64) *VolumeCollectionGetParams {
+	o.SetAnalyticsByAccessedTimeBytesUsedAgedDataMetric(analyticsByAccessedTimeBytesUsedAgedDataMetric)
+	return o
+}
+
+// SetAnalyticsByAccessedTimeBytesUsedAgedDataMetric adds the analyticsByAccessedTimeBytesUsedAgedDataMetric to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsByAccessedTimeBytesUsedAgedDataMetric(analyticsByAccessedTimeBytesUsedAgedDataMetric *float64) {
+	o.AnalyticsByAccessedTimeBytesUsedAgedDataMetric = analyticsByAccessedTimeBytesUsedAgedDataMetric
+}
+
+// WithAnalyticsByAccessedTimeBytesUsedLabels adds the analyticsByAccessedTimeBytesUsedLabels to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsByAccessedTimeBytesUsedLabels(analyticsByAccessedTimeBytesUsedLabels *string) *VolumeCollectionGetParams {
+	o.SetAnalyticsByAccessedTimeBytesUsedLabels(analyticsByAccessedTimeBytesUsedLabels)
+	return o
+}
+
+// SetAnalyticsByAccessedTimeBytesUsedLabels adds the analyticsByAccessedTimeBytesUsedLabels to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsByAccessedTimeBytesUsedLabels(analyticsByAccessedTimeBytesUsedLabels *string) {
+	o.AnalyticsByAccessedTimeBytesUsedLabels = analyticsByAccessedTimeBytesUsedLabels
+}
+
+// WithAnalyticsByAccessedTimeBytesUsedNewestLabel adds the analyticsByAccessedTimeBytesUsedNewestLabel to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsByAccessedTimeBytesUsedNewestLabel(analyticsByAccessedTimeBytesUsedNewestLabel *string) *VolumeCollectionGetParams {
+	o.SetAnalyticsByAccessedTimeBytesUsedNewestLabel(analyticsByAccessedTimeBytesUsedNewestLabel)
+	return o
+}
+
+// SetAnalyticsByAccessedTimeBytesUsedNewestLabel adds the analyticsByAccessedTimeBytesUsedNewestLabel to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsByAccessedTimeBytesUsedNewestLabel(analyticsByAccessedTimeBytesUsedNewestLabel *string) {
+	o.AnalyticsByAccessedTimeBytesUsedNewestLabel = analyticsByAccessedTimeBytesUsedNewestLabel
+}
+
+// WithAnalyticsByAccessedTimeBytesUsedOldestLabel adds the analyticsByAccessedTimeBytesUsedOldestLabel to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsByAccessedTimeBytesUsedOldestLabel(analyticsByAccessedTimeBytesUsedOldestLabel *string) *VolumeCollectionGetParams {
+	o.SetAnalyticsByAccessedTimeBytesUsedOldestLabel(analyticsByAccessedTimeBytesUsedOldestLabel)
+	return o
+}
+
+// SetAnalyticsByAccessedTimeBytesUsedOldestLabel adds the analyticsByAccessedTimeBytesUsedOldestLabel to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsByAccessedTimeBytesUsedOldestLabel(analyticsByAccessedTimeBytesUsedOldestLabel *string) {
+	o.AnalyticsByAccessedTimeBytesUsedOldestLabel = analyticsByAccessedTimeBytesUsedOldestLabel
+}
+
+// WithAnalyticsByAccessedTimeBytesUsedPercentages adds the analyticsByAccessedTimeBytesUsedPercentages to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsByAccessedTimeBytesUsedPercentages(analyticsByAccessedTimeBytesUsedPercentages *float64) *VolumeCollectionGetParams {
+	o.SetAnalyticsByAccessedTimeBytesUsedPercentages(analyticsByAccessedTimeBytesUsedPercentages)
+	return o
+}
+
+// SetAnalyticsByAccessedTimeBytesUsedPercentages adds the analyticsByAccessedTimeBytesUsedPercentages to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsByAccessedTimeBytesUsedPercentages(analyticsByAccessedTimeBytesUsedPercentages *float64) {
+	o.AnalyticsByAccessedTimeBytesUsedPercentages = analyticsByAccessedTimeBytesUsedPercentages
+}
+
+// WithAnalyticsByAccessedTimeBytesUsedValues adds the analyticsByAccessedTimeBytesUsedValues to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsByAccessedTimeBytesUsedValues(analyticsByAccessedTimeBytesUsedValues *int64) *VolumeCollectionGetParams {
+	o.SetAnalyticsByAccessedTimeBytesUsedValues(analyticsByAccessedTimeBytesUsedValues)
+	return o
+}
+
+// SetAnalyticsByAccessedTimeBytesUsedValues adds the analyticsByAccessedTimeBytesUsedValues to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsByAccessedTimeBytesUsedValues(analyticsByAccessedTimeBytesUsedValues *int64) {
+	o.AnalyticsByAccessedTimeBytesUsedValues = analyticsByAccessedTimeBytesUsedValues
+}
+
+// WithAnalyticsByModifiedTimeBytesUsedAgedDataMetric adds the analyticsByModifiedTimeBytesUsedAgedDataMetric to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsByModifiedTimeBytesUsedAgedDataMetric(analyticsByModifiedTimeBytesUsedAgedDataMetric *float64) *VolumeCollectionGetParams {
+	o.SetAnalyticsByModifiedTimeBytesUsedAgedDataMetric(analyticsByModifiedTimeBytesUsedAgedDataMetric)
+	return o
+}
+
+// SetAnalyticsByModifiedTimeBytesUsedAgedDataMetric adds the analyticsByModifiedTimeBytesUsedAgedDataMetric to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsByModifiedTimeBytesUsedAgedDataMetric(analyticsByModifiedTimeBytesUsedAgedDataMetric *float64) {
+	o.AnalyticsByModifiedTimeBytesUsedAgedDataMetric = analyticsByModifiedTimeBytesUsedAgedDataMetric
+}
+
+// WithAnalyticsByModifiedTimeBytesUsedLabels adds the analyticsByModifiedTimeBytesUsedLabels to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsByModifiedTimeBytesUsedLabels(analyticsByModifiedTimeBytesUsedLabels *string) *VolumeCollectionGetParams {
+	o.SetAnalyticsByModifiedTimeBytesUsedLabels(analyticsByModifiedTimeBytesUsedLabels)
+	return o
+}
+
+// SetAnalyticsByModifiedTimeBytesUsedLabels adds the analyticsByModifiedTimeBytesUsedLabels to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsByModifiedTimeBytesUsedLabels(analyticsByModifiedTimeBytesUsedLabels *string) {
+	o.AnalyticsByModifiedTimeBytesUsedLabels = analyticsByModifiedTimeBytesUsedLabels
+}
+
+// WithAnalyticsByModifiedTimeBytesUsedNewestLabel adds the analyticsByModifiedTimeBytesUsedNewestLabel to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsByModifiedTimeBytesUsedNewestLabel(analyticsByModifiedTimeBytesUsedNewestLabel *string) *VolumeCollectionGetParams {
+	o.SetAnalyticsByModifiedTimeBytesUsedNewestLabel(analyticsByModifiedTimeBytesUsedNewestLabel)
+	return o
+}
+
+// SetAnalyticsByModifiedTimeBytesUsedNewestLabel adds the analyticsByModifiedTimeBytesUsedNewestLabel to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsByModifiedTimeBytesUsedNewestLabel(analyticsByModifiedTimeBytesUsedNewestLabel *string) {
+	o.AnalyticsByModifiedTimeBytesUsedNewestLabel = analyticsByModifiedTimeBytesUsedNewestLabel
+}
+
+// WithAnalyticsByModifiedTimeBytesUsedOldestLabel adds the analyticsByModifiedTimeBytesUsedOldestLabel to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsByModifiedTimeBytesUsedOldestLabel(analyticsByModifiedTimeBytesUsedOldestLabel *string) *VolumeCollectionGetParams {
+	o.SetAnalyticsByModifiedTimeBytesUsedOldestLabel(analyticsByModifiedTimeBytesUsedOldestLabel)
+	return o
+}
+
+// SetAnalyticsByModifiedTimeBytesUsedOldestLabel adds the analyticsByModifiedTimeBytesUsedOldestLabel to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsByModifiedTimeBytesUsedOldestLabel(analyticsByModifiedTimeBytesUsedOldestLabel *string) {
+	o.AnalyticsByModifiedTimeBytesUsedOldestLabel = analyticsByModifiedTimeBytesUsedOldestLabel
+}
+
+// WithAnalyticsByModifiedTimeBytesUsedPercentages adds the analyticsByModifiedTimeBytesUsedPercentages to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsByModifiedTimeBytesUsedPercentages(analyticsByModifiedTimeBytesUsedPercentages *float64) *VolumeCollectionGetParams {
+	o.SetAnalyticsByModifiedTimeBytesUsedPercentages(analyticsByModifiedTimeBytesUsedPercentages)
+	return o
+}
+
+// SetAnalyticsByModifiedTimeBytesUsedPercentages adds the analyticsByModifiedTimeBytesUsedPercentages to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsByModifiedTimeBytesUsedPercentages(analyticsByModifiedTimeBytesUsedPercentages *float64) {
+	o.AnalyticsByModifiedTimeBytesUsedPercentages = analyticsByModifiedTimeBytesUsedPercentages
+}
+
+// WithAnalyticsByModifiedTimeBytesUsedValues adds the analyticsByModifiedTimeBytesUsedValues to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsByModifiedTimeBytesUsedValues(analyticsByModifiedTimeBytesUsedValues *int64) *VolumeCollectionGetParams {
+	o.SetAnalyticsByModifiedTimeBytesUsedValues(analyticsByModifiedTimeBytesUsedValues)
+	return o
+}
+
+// SetAnalyticsByModifiedTimeBytesUsedValues adds the analyticsByModifiedTimeBytesUsedValues to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsByModifiedTimeBytesUsedValues(analyticsByModifiedTimeBytesUsedValues *int64) {
+	o.AnalyticsByModifiedTimeBytesUsedValues = analyticsByModifiedTimeBytesUsedValues
+}
+
+// WithAnalyticsBytesUsed adds the analyticsBytesUsed to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsBytesUsed(analyticsBytesUsed *int64) *VolumeCollectionGetParams {
+	o.SetAnalyticsBytesUsed(analyticsBytesUsed)
+	return o
+}
+
+// SetAnalyticsBytesUsed adds the analyticsBytesUsed to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsBytesUsed(analyticsBytesUsed *int64) {
+	o.AnalyticsBytesUsed = analyticsBytesUsed
+}
+
+// WithAnalyticsFileCount adds the analyticsFileCount to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsFileCount(analyticsFileCount *int64) *VolumeCollectionGetParams {
+	o.SetAnalyticsFileCount(analyticsFileCount)
+	return o
+}
+
+// SetAnalyticsFileCount adds the analyticsFileCount to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsFileCount(analyticsFileCount *int64) {
+	o.AnalyticsFileCount = analyticsFileCount
+}
+
 // WithAnalyticsFilesScanned adds the analyticsFilesScanned to the volume collection get params
 func (o *VolumeCollectionGetParams) WithAnalyticsFilesScanned(analyticsFilesScanned *int64) *VolumeCollectionGetParams {
 	o.SetAnalyticsFilesScanned(analyticsFilesScanned)
@@ -3528,6 +3874,17 @@ func (o *VolumeCollectionGetParams) SetAnalyticsFilesScanned(analyticsFilesScann
 	o.AnalyticsFilesScanned = analyticsFilesScanned
 }
 
+// WithAnalyticsIncompleteData adds the analyticsIncompleteData to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsIncompleteData(analyticsIncompleteData *bool) *VolumeCollectionGetParams {
+	o.SetAnalyticsIncompleteData(analyticsIncompleteData)
+	return o
+}
+
+// SetAnalyticsIncompleteData adds the analyticsIncompleteData to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsIncompleteData(analyticsIncompleteData *bool) {
+	o.AnalyticsIncompleteData = analyticsIncompleteData
+}
+
 // WithAnalyticsInitializationState adds the analyticsInitializationState to the volume collection get params
 func (o *VolumeCollectionGetParams) WithAnalyticsInitializationState(analyticsInitializationState *string) *VolumeCollectionGetParams {
 	o.SetAnalyticsInitializationState(analyticsInitializationState)
@@ -3537,6 +3894,17 @@ func (o *VolumeCollectionGetParams) WithAnalyticsInitializationState(analyticsIn
 // SetAnalyticsInitializationState adds the analyticsInitializationState to the volume collection get params
 func (o *VolumeCollectionGetParams) SetAnalyticsInitializationState(analyticsInitializationState *string) {
 	o.AnalyticsInitializationState = analyticsInitializationState
+}
+
+// WithAnalyticsReportTime adds the analyticsReportTime to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsReportTime(analyticsReportTime *string) *VolumeCollectionGetParams {
+	o.SetAnalyticsReportTime(analyticsReportTime)
+	return o
+}
+
+// SetAnalyticsReportTime adds the analyticsReportTime to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsReportTime(analyticsReportTime *string) {
+	o.AnalyticsReportTime = analyticsReportTime
 }
 
 // WithAnalyticsScanProgress adds the analyticsScanProgress to the volume collection get params
@@ -3594,6 +3962,17 @@ func (o *VolumeCollectionGetParams) SetAnalyticsState(analyticsState *string) {
 	o.AnalyticsState = analyticsState
 }
 
+// WithAnalyticsSubdirCount adds the analyticsSubdirCount to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAnalyticsSubdirCount(analyticsSubdirCount *int64) *VolumeCollectionGetParams {
+	o.SetAnalyticsSubdirCount(analyticsSubdirCount)
+	return o
+}
+
+// SetAnalyticsSubdirCount adds the analyticsSubdirCount to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAnalyticsSubdirCount(analyticsSubdirCount *int64) {
+	o.AnalyticsSubdirCount = analyticsSubdirCount
+}
+
 // WithAnalyticsSupported adds the analyticsSupported to the volume collection get params
 func (o *VolumeCollectionGetParams) WithAnalyticsSupported(analyticsSupported *bool) *VolumeCollectionGetParams {
 	o.SetAnalyticsSupported(analyticsSupported)
@@ -3636,6 +4015,17 @@ func (o *VolumeCollectionGetParams) WithAnalyticsUnsupportedReasonMessage(analyt
 // SetAnalyticsUnsupportedReasonMessage adds the analyticsUnsupportedReasonMessage to the volume collection get params
 func (o *VolumeCollectionGetParams) SetAnalyticsUnsupportedReasonMessage(analyticsUnsupportedReasonMessage *string) {
 	o.AnalyticsUnsupportedReasonMessage = analyticsUnsupportedReasonMessage
+}
+
+// WithAntiRansomwareAttackDetectedBy adds the antiRansomwareAttackDetectedBy to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAntiRansomwareAttackDetectedBy(antiRansomwareAttackDetectedBy *string) *VolumeCollectionGetParams {
+	o.SetAntiRansomwareAttackDetectedBy(antiRansomwareAttackDetectedBy)
+	return o
+}
+
+// SetAntiRansomwareAttackDetectedBy adds the antiRansomwareAttackDetectedBy to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAntiRansomwareAttackDetectedBy(antiRansomwareAttackDetectedBy *string) {
+	o.AntiRansomwareAttackDetectedBy = antiRansomwareAttackDetectedBy
 }
 
 // WithAntiRansomwareAttackDetectionParametersBasedOnFileCreateOpRate adds the antiRansomwareAttackDetectionParametersBasedOnFileCreateOpRate to the volume collection get params
@@ -3691,6 +4081,17 @@ func (o *VolumeCollectionGetParams) WithAntiRansomwareAttackDetectionParametersB
 // SetAntiRansomwareAttackDetectionParametersBasedOnNeverSeenBeforeFileExtension adds the antiRansomwareAttackDetectionParametersBasedOnNeverSeenBeforeFileExtension to the volume collection get params
 func (o *VolumeCollectionGetParams) SetAntiRansomwareAttackDetectionParametersBasedOnNeverSeenBeforeFileExtension(antiRansomwareAttackDetectionParametersBasedOnNeverSeenBeforeFileExtension *bool) {
 	o.AntiRansomwareAttackDetectionParametersBasedOnNeverSeenBeforeFileExtension = antiRansomwareAttackDetectionParametersBasedOnNeverSeenBeforeFileExtension
+}
+
+// WithAntiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold adds the antiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAntiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold(antiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold *int64) *VolumeCollectionGetParams {
+	o.SetAntiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold(antiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold)
+	return o
+}
+
+// SetAntiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold adds the antiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAntiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold(antiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold *int64) {
+	o.AntiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold = antiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold
 }
 
 // WithAntiRansomwareAttackDetectionParametersFileCreateOpRateSurgeNotifyPercent adds the antiRansomwareAttackDetectionParametersFileCreateOpRateSurgeNotifyPercent to the volume collection get params
@@ -3790,6 +4191,28 @@ func (o *VolumeCollectionGetParams) WithAntiRansomwareAttackReportsTime(antiRans
 // SetAntiRansomwareAttackReportsTime adds the antiRansomwareAttackReportsTime to the volume collection get params
 func (o *VolumeCollectionGetParams) SetAntiRansomwareAttackReportsTime(antiRansomwareAttackReportsTime *string) {
 	o.AntiRansomwareAttackReportsTime = antiRansomwareAttackReportsTime
+}
+
+// WithAntiRansomwareBlockDeviceDetectionStartTime adds the antiRansomwareBlockDeviceDetectionStartTime to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAntiRansomwareBlockDeviceDetectionStartTime(antiRansomwareBlockDeviceDetectionStartTime *string) *VolumeCollectionGetParams {
+	o.SetAntiRansomwareBlockDeviceDetectionStartTime(antiRansomwareBlockDeviceDetectionStartTime)
+	return o
+}
+
+// SetAntiRansomwareBlockDeviceDetectionStartTime adds the antiRansomwareBlockDeviceDetectionStartTime to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAntiRansomwareBlockDeviceDetectionStartTime(antiRansomwareBlockDeviceDetectionStartTime *string) {
+	o.AntiRansomwareBlockDeviceDetectionStartTime = antiRansomwareBlockDeviceDetectionStartTime
+}
+
+// WithAntiRansomwareBlockDeviceDetectionState adds the antiRansomwareBlockDeviceDetectionState to the volume collection get params
+func (o *VolumeCollectionGetParams) WithAntiRansomwareBlockDeviceDetectionState(antiRansomwareBlockDeviceDetectionState *string) *VolumeCollectionGetParams {
+	o.SetAntiRansomwareBlockDeviceDetectionState(antiRansomwareBlockDeviceDetectionState)
+	return o
+}
+
+// SetAntiRansomwareBlockDeviceDetectionState adds the antiRansomwareBlockDeviceDetectionState to the volume collection get params
+func (o *VolumeCollectionGetParams) SetAntiRansomwareBlockDeviceDetectionState(antiRansomwareBlockDeviceDetectionState *string) {
+	o.AntiRansomwareBlockDeviceDetectionState = antiRansomwareBlockDeviceDetectionState
 }
 
 // WithAntiRansomwareDryRunStartTime adds the antiRansomwareDryRunStartTime to the volume collection get params
@@ -4661,6 +5084,17 @@ func (o *VolumeCollectionGetParams) SetConsistencyGroupUUID(consistencyGroupUUID
 	o.ConsistencyGroupUUID = consistencyGroupUUID
 }
 
+// WithConstituentCount adds the constituentCount to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentCount(constituentCount *int64) *VolumeCollectionGetParams {
+	o.SetConstituentCount(constituentCount)
+	return o
+}
+
+// SetConstituentCount adds the constituentCount to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentCount(constituentCount *int64) {
+	o.ConstituentCount = constituentCount
+}
+
 // WithConstituentsAggregatesName adds the constituentsAggregatesName to the volume collection get params
 func (o *VolumeCollectionGetParams) WithConstituentsAggregatesName(constituentsAggregatesName *string) *VolumeCollectionGetParams {
 	o.SetConstituentsAggregatesName(constituentsAggregatesName)
@@ -4747,6 +5181,28 @@ func (o *VolumeCollectionGetParams) WithConstituentsName(constituentsName *strin
 // SetConstituentsName adds the constituentsName to the volume collection get params
 func (o *VolumeCollectionGetParams) SetConstituentsName(constituentsName *string) {
 	o.ConstituentsName = constituentsName
+}
+
+// WithConstituentsNodeName adds the constituentsNodeName to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsNodeName(constituentsNodeName *string) *VolumeCollectionGetParams {
+	o.SetConstituentsNodeName(constituentsNodeName)
+	return o
+}
+
+// SetConstituentsNodeName adds the constituentsNodeName to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsNodeName(constituentsNodeName *string) {
+	o.ConstituentsNodeName = constituentsNodeName
+}
+
+// WithConstituentsNodeUUID adds the constituentsNodeUUID to the volume collection get params
+func (o *VolumeCollectionGetParams) WithConstituentsNodeUUID(constituentsNodeUUID *string) *VolumeCollectionGetParams {
+	o.SetConstituentsNodeUUID(constituentsNodeUUID)
+	return o
+}
+
+// SetConstituentsNodeUUID adds the constituentsNodeUuid to the volume collection get params
+func (o *VolumeCollectionGetParams) SetConstituentsNodeUUID(constituentsNodeUUID *string) {
+	o.ConstituentsNodeUUID = constituentsNodeUUID
 }
 
 // WithConstituentsSpaceAfsTotal adds the constituentsSpaceAfsTotal to the volume collection get params
@@ -5288,6 +5744,17 @@ func (o *VolumeCollectionGetParams) SetEfficiencyProgress(efficiencyProgress *st
 	o.EfficiencyProgress = efficiencyProgress
 }
 
+// WithEfficiencyRatio adds the efficiencyRatio to the volume collection get params
+func (o *VolumeCollectionGetParams) WithEfficiencyRatio(efficiencyRatio *float64) *VolumeCollectionGetParams {
+	o.SetEfficiencyRatio(efficiencyRatio)
+	return o
+}
+
+// SetEfficiencyRatio adds the efficiencyRatio to the volume collection get params
+func (o *VolumeCollectionGetParams) SetEfficiencyRatio(efficiencyRatio *float64) {
+	o.EfficiencyRatio = efficiencyRatio
+}
+
 // WithEfficiencyScannerCompression adds the efficiencyScannerCompression to the volume collection get params
 func (o *VolumeCollectionGetParams) WithEfficiencyScannerCompression(efficiencyScannerCompression *bool) *VolumeCollectionGetParams {
 	o.SetEfficiencyScannerCompression(efficiencyScannerCompression)
@@ -5596,6 +6063,17 @@ func (o *VolumeCollectionGetParams) SetFields(fields []string) {
 	o.Fields = fields
 }
 
+// WithFilesInodefileCapacity adds the filesInodefileCapacity to the volume collection get params
+func (o *VolumeCollectionGetParams) WithFilesInodefileCapacity(filesInodefileCapacity *int64) *VolumeCollectionGetParams {
+	o.SetFilesInodefileCapacity(filesInodefileCapacity)
+	return o
+}
+
+// SetFilesInodefileCapacity adds the filesInodefileCapacity to the volume collection get params
+func (o *VolumeCollectionGetParams) SetFilesInodefileCapacity(filesInodefileCapacity *int64) {
+	o.FilesInodefileCapacity = filesInodefileCapacity
+}
+
 // WithFilesMaximum adds the filesMaximum to the volume collection get params
 func (o *VolumeCollectionGetParams) WithFilesMaximum(filesMaximum *int64) *VolumeCollectionGetParams {
 	o.SetFilesMaximum(filesMaximum)
@@ -5728,6 +6206,17 @@ func (o *VolumeCollectionGetParams) SetGuaranteeType(guaranteeType *string) {
 	o.GuaranteeType = guaranteeType
 }
 
+// WithHasDirIndexPublic adds the hasDirIndexPublic to the volume collection get params
+func (o *VolumeCollectionGetParams) WithHasDirIndexPublic(hasDirIndexPublic *bool) *VolumeCollectionGetParams {
+	o.SetHasDirIndexPublic(hasDirIndexPublic)
+	return o
+}
+
+// SetHasDirIndexPublic adds the hasDirIndexPublic to the volume collection get params
+func (o *VolumeCollectionGetParams) SetHasDirIndexPublic(hasDirIndexPublic *bool) {
+	o.HasDirIndexPublic = hasDirIndexPublic
+}
+
 // WithIsConstituent adds the isConstituent to the volume collection get params
 func (o *VolumeCollectionGetParams) WithIsConstituent(isConstituent *bool) *VolumeCollectionGetParams {
 	o.SetIsConstituent(isConstituent)
@@ -5737,6 +6226,17 @@ func (o *VolumeCollectionGetParams) WithIsConstituent(isConstituent *bool) *Volu
 // SetIsConstituent adds the isConstituent to the volume collection get params
 func (o *VolumeCollectionGetParams) SetIsConstituent(isConstituent *bool) {
 	o.IsConstituent = isConstituent
+}
+
+// WithIsDirIndexTransferEnabled adds the isDirIndexTransferEnabled to the volume collection get params
+func (o *VolumeCollectionGetParams) WithIsDirIndexTransferEnabled(isDirIndexTransferEnabled *bool) *VolumeCollectionGetParams {
+	o.SetIsDirIndexTransferEnabled(isDirIndexTransferEnabled)
+	return o
+}
+
+// SetIsDirIndexTransferEnabled adds the isDirIndexTransferEnabled to the volume collection get params
+func (o *VolumeCollectionGetParams) SetIsDirIndexTransferEnabled(isDirIndexTransferEnabled *bool) {
+	o.IsDirIndexTransferEnabled = isDirIndexTransferEnabled
 }
 
 // WithIsObjectStore adds the isObjectStore to the volume collection get params
@@ -6322,6 +6822,28 @@ func (o *VolumeCollectionGetParams) SetNasUnixPermissions(nasUnixPermissions *in
 	o.NasUnixPermissions = nasUnixPermissions
 }
 
+// WithNodesName adds the nodesName to the volume collection get params
+func (o *VolumeCollectionGetParams) WithNodesName(nodesName *string) *VolumeCollectionGetParams {
+	o.SetNodesName(nodesName)
+	return o
+}
+
+// SetNodesName adds the nodesName to the volume collection get params
+func (o *VolumeCollectionGetParams) SetNodesName(nodesName *string) {
+	o.NodesName = nodesName
+}
+
+// WithNodesUUID adds the nodesUUID to the volume collection get params
+func (o *VolumeCollectionGetParams) WithNodesUUID(nodesUUID *string) *VolumeCollectionGetParams {
+	o.SetNodesUUID(nodesUUID)
+	return o
+}
+
+// SetNodesUUID adds the nodesUuid to the volume collection get params
+func (o *VolumeCollectionGetParams) SetNodesUUID(nodesUUID *string) {
+	o.NodesUUID = nodesUUID
+}
+
 // WithOrderBy adds the orderBy to the volume collection get params
 func (o *VolumeCollectionGetParams) WithOrderBy(orderBy []string) *VolumeCollectionGetParams {
 	o.SetOrderBy(orderBy)
@@ -6331,6 +6853,17 @@ func (o *VolumeCollectionGetParams) WithOrderBy(orderBy []string) *VolumeCollect
 // SetOrderBy adds the orderBy to the volume collection get params
 func (o *VolumeCollectionGetParams) SetOrderBy(orderBy []string) {
 	o.OrderBy = orderBy
+}
+
+// WithQosPolicyMaxThroughput adds the qosPolicyMaxThroughput to the volume collection get params
+func (o *VolumeCollectionGetParams) WithQosPolicyMaxThroughput(qosPolicyMaxThroughput *string) *VolumeCollectionGetParams {
+	o.SetQosPolicyMaxThroughput(qosPolicyMaxThroughput)
+	return o
+}
+
+// SetQosPolicyMaxThroughput adds the qosPolicyMaxThroughput to the volume collection get params
+func (o *VolumeCollectionGetParams) SetQosPolicyMaxThroughput(qosPolicyMaxThroughput *string) {
+	o.QosPolicyMaxThroughput = qosPolicyMaxThroughput
 }
 
 // WithQosPolicyMaxThroughputIops adds the qosPolicyMaxThroughputIops to the volume collection get params
@@ -6353,6 +6886,17 @@ func (o *VolumeCollectionGetParams) WithQosPolicyMaxThroughputMbps(qosPolicyMaxT
 // SetQosPolicyMaxThroughputMbps adds the qosPolicyMaxThroughputMbps to the volume collection get params
 func (o *VolumeCollectionGetParams) SetQosPolicyMaxThroughputMbps(qosPolicyMaxThroughputMbps *int64) {
 	o.QosPolicyMaxThroughputMbps = qosPolicyMaxThroughputMbps
+}
+
+// WithQosPolicyMinThroughput adds the qosPolicyMinThroughput to the volume collection get params
+func (o *VolumeCollectionGetParams) WithQosPolicyMinThroughput(qosPolicyMinThroughput *string) *VolumeCollectionGetParams {
+	o.SetQosPolicyMinThroughput(qosPolicyMinThroughput)
+	return o
+}
+
+// SetQosPolicyMinThroughput adds the qosPolicyMinThroughput to the volume collection get params
+func (o *VolumeCollectionGetParams) SetQosPolicyMinThroughput(qosPolicyMinThroughput *string) {
+	o.QosPolicyMinThroughput = qosPolicyMinThroughput
 }
 
 // WithQosPolicyMinThroughputIops adds the qosPolicyMinThroughputIops to the volume collection get params
@@ -9596,6 +10140,244 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.AnalyticsByAccessedTimeBytesUsedAgedDataMetric != nil {
+
+		// query param analytics.by_accessed_time.bytes_used.aged_data_metric
+		var qrAnalyticsByAccessedTimeBytesUsedAgedDataMetric float64
+
+		if o.AnalyticsByAccessedTimeBytesUsedAgedDataMetric != nil {
+			qrAnalyticsByAccessedTimeBytesUsedAgedDataMetric = *o.AnalyticsByAccessedTimeBytesUsedAgedDataMetric
+		}
+		qAnalyticsByAccessedTimeBytesUsedAgedDataMetric := swag.FormatFloat64(qrAnalyticsByAccessedTimeBytesUsedAgedDataMetric)
+		if qAnalyticsByAccessedTimeBytesUsedAgedDataMetric != "" {
+
+			if err := r.SetQueryParam("analytics.by_accessed_time.bytes_used.aged_data_metric", qAnalyticsByAccessedTimeBytesUsedAgedDataMetric); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByAccessedTimeBytesUsedLabels != nil {
+
+		// query param analytics.by_accessed_time.bytes_used.labels
+		var qrAnalyticsByAccessedTimeBytesUsedLabels string
+
+		if o.AnalyticsByAccessedTimeBytesUsedLabels != nil {
+			qrAnalyticsByAccessedTimeBytesUsedLabels = *o.AnalyticsByAccessedTimeBytesUsedLabels
+		}
+		qAnalyticsByAccessedTimeBytesUsedLabels := qrAnalyticsByAccessedTimeBytesUsedLabels
+		if qAnalyticsByAccessedTimeBytesUsedLabels != "" {
+
+			if err := r.SetQueryParam("analytics.by_accessed_time.bytes_used.labels", qAnalyticsByAccessedTimeBytesUsedLabels); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByAccessedTimeBytesUsedNewestLabel != nil {
+
+		// query param analytics.by_accessed_time.bytes_used.newest_label
+		var qrAnalyticsByAccessedTimeBytesUsedNewestLabel string
+
+		if o.AnalyticsByAccessedTimeBytesUsedNewestLabel != nil {
+			qrAnalyticsByAccessedTimeBytesUsedNewestLabel = *o.AnalyticsByAccessedTimeBytesUsedNewestLabel
+		}
+		qAnalyticsByAccessedTimeBytesUsedNewestLabel := qrAnalyticsByAccessedTimeBytesUsedNewestLabel
+		if qAnalyticsByAccessedTimeBytesUsedNewestLabel != "" {
+
+			if err := r.SetQueryParam("analytics.by_accessed_time.bytes_used.newest_label", qAnalyticsByAccessedTimeBytesUsedNewestLabel); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByAccessedTimeBytesUsedOldestLabel != nil {
+
+		// query param analytics.by_accessed_time.bytes_used.oldest_label
+		var qrAnalyticsByAccessedTimeBytesUsedOldestLabel string
+
+		if o.AnalyticsByAccessedTimeBytesUsedOldestLabel != nil {
+			qrAnalyticsByAccessedTimeBytesUsedOldestLabel = *o.AnalyticsByAccessedTimeBytesUsedOldestLabel
+		}
+		qAnalyticsByAccessedTimeBytesUsedOldestLabel := qrAnalyticsByAccessedTimeBytesUsedOldestLabel
+		if qAnalyticsByAccessedTimeBytesUsedOldestLabel != "" {
+
+			if err := r.SetQueryParam("analytics.by_accessed_time.bytes_used.oldest_label", qAnalyticsByAccessedTimeBytesUsedOldestLabel); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByAccessedTimeBytesUsedPercentages != nil {
+
+		// query param analytics.by_accessed_time.bytes_used.percentages
+		var qrAnalyticsByAccessedTimeBytesUsedPercentages float64
+
+		if o.AnalyticsByAccessedTimeBytesUsedPercentages != nil {
+			qrAnalyticsByAccessedTimeBytesUsedPercentages = *o.AnalyticsByAccessedTimeBytesUsedPercentages
+		}
+		qAnalyticsByAccessedTimeBytesUsedPercentages := swag.FormatFloat64(qrAnalyticsByAccessedTimeBytesUsedPercentages)
+		if qAnalyticsByAccessedTimeBytesUsedPercentages != "" {
+
+			if err := r.SetQueryParam("analytics.by_accessed_time.bytes_used.percentages", qAnalyticsByAccessedTimeBytesUsedPercentages); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByAccessedTimeBytesUsedValues != nil {
+
+		// query param analytics.by_accessed_time.bytes_used.values
+		var qrAnalyticsByAccessedTimeBytesUsedValues int64
+
+		if o.AnalyticsByAccessedTimeBytesUsedValues != nil {
+			qrAnalyticsByAccessedTimeBytesUsedValues = *o.AnalyticsByAccessedTimeBytesUsedValues
+		}
+		qAnalyticsByAccessedTimeBytesUsedValues := swag.FormatInt64(qrAnalyticsByAccessedTimeBytesUsedValues)
+		if qAnalyticsByAccessedTimeBytesUsedValues != "" {
+
+			if err := r.SetQueryParam("analytics.by_accessed_time.bytes_used.values", qAnalyticsByAccessedTimeBytesUsedValues); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByModifiedTimeBytesUsedAgedDataMetric != nil {
+
+		// query param analytics.by_modified_time.bytes_used.aged_data_metric
+		var qrAnalyticsByModifiedTimeBytesUsedAgedDataMetric float64
+
+		if o.AnalyticsByModifiedTimeBytesUsedAgedDataMetric != nil {
+			qrAnalyticsByModifiedTimeBytesUsedAgedDataMetric = *o.AnalyticsByModifiedTimeBytesUsedAgedDataMetric
+		}
+		qAnalyticsByModifiedTimeBytesUsedAgedDataMetric := swag.FormatFloat64(qrAnalyticsByModifiedTimeBytesUsedAgedDataMetric)
+		if qAnalyticsByModifiedTimeBytesUsedAgedDataMetric != "" {
+
+			if err := r.SetQueryParam("analytics.by_modified_time.bytes_used.aged_data_metric", qAnalyticsByModifiedTimeBytesUsedAgedDataMetric); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByModifiedTimeBytesUsedLabels != nil {
+
+		// query param analytics.by_modified_time.bytes_used.labels
+		var qrAnalyticsByModifiedTimeBytesUsedLabels string
+
+		if o.AnalyticsByModifiedTimeBytesUsedLabels != nil {
+			qrAnalyticsByModifiedTimeBytesUsedLabels = *o.AnalyticsByModifiedTimeBytesUsedLabels
+		}
+		qAnalyticsByModifiedTimeBytesUsedLabels := qrAnalyticsByModifiedTimeBytesUsedLabels
+		if qAnalyticsByModifiedTimeBytesUsedLabels != "" {
+
+			if err := r.SetQueryParam("analytics.by_modified_time.bytes_used.labels", qAnalyticsByModifiedTimeBytesUsedLabels); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByModifiedTimeBytesUsedNewestLabel != nil {
+
+		// query param analytics.by_modified_time.bytes_used.newest_label
+		var qrAnalyticsByModifiedTimeBytesUsedNewestLabel string
+
+		if o.AnalyticsByModifiedTimeBytesUsedNewestLabel != nil {
+			qrAnalyticsByModifiedTimeBytesUsedNewestLabel = *o.AnalyticsByModifiedTimeBytesUsedNewestLabel
+		}
+		qAnalyticsByModifiedTimeBytesUsedNewestLabel := qrAnalyticsByModifiedTimeBytesUsedNewestLabel
+		if qAnalyticsByModifiedTimeBytesUsedNewestLabel != "" {
+
+			if err := r.SetQueryParam("analytics.by_modified_time.bytes_used.newest_label", qAnalyticsByModifiedTimeBytesUsedNewestLabel); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByModifiedTimeBytesUsedOldestLabel != nil {
+
+		// query param analytics.by_modified_time.bytes_used.oldest_label
+		var qrAnalyticsByModifiedTimeBytesUsedOldestLabel string
+
+		if o.AnalyticsByModifiedTimeBytesUsedOldestLabel != nil {
+			qrAnalyticsByModifiedTimeBytesUsedOldestLabel = *o.AnalyticsByModifiedTimeBytesUsedOldestLabel
+		}
+		qAnalyticsByModifiedTimeBytesUsedOldestLabel := qrAnalyticsByModifiedTimeBytesUsedOldestLabel
+		if qAnalyticsByModifiedTimeBytesUsedOldestLabel != "" {
+
+			if err := r.SetQueryParam("analytics.by_modified_time.bytes_used.oldest_label", qAnalyticsByModifiedTimeBytesUsedOldestLabel); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByModifiedTimeBytesUsedPercentages != nil {
+
+		// query param analytics.by_modified_time.bytes_used.percentages
+		var qrAnalyticsByModifiedTimeBytesUsedPercentages float64
+
+		if o.AnalyticsByModifiedTimeBytesUsedPercentages != nil {
+			qrAnalyticsByModifiedTimeBytesUsedPercentages = *o.AnalyticsByModifiedTimeBytesUsedPercentages
+		}
+		qAnalyticsByModifiedTimeBytesUsedPercentages := swag.FormatFloat64(qrAnalyticsByModifiedTimeBytesUsedPercentages)
+		if qAnalyticsByModifiedTimeBytesUsedPercentages != "" {
+
+			if err := r.SetQueryParam("analytics.by_modified_time.bytes_used.percentages", qAnalyticsByModifiedTimeBytesUsedPercentages); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsByModifiedTimeBytesUsedValues != nil {
+
+		// query param analytics.by_modified_time.bytes_used.values
+		var qrAnalyticsByModifiedTimeBytesUsedValues int64
+
+		if o.AnalyticsByModifiedTimeBytesUsedValues != nil {
+			qrAnalyticsByModifiedTimeBytesUsedValues = *o.AnalyticsByModifiedTimeBytesUsedValues
+		}
+		qAnalyticsByModifiedTimeBytesUsedValues := swag.FormatInt64(qrAnalyticsByModifiedTimeBytesUsedValues)
+		if qAnalyticsByModifiedTimeBytesUsedValues != "" {
+
+			if err := r.SetQueryParam("analytics.by_modified_time.bytes_used.values", qAnalyticsByModifiedTimeBytesUsedValues); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsBytesUsed != nil {
+
+		// query param analytics.bytes_used
+		var qrAnalyticsBytesUsed int64
+
+		if o.AnalyticsBytesUsed != nil {
+			qrAnalyticsBytesUsed = *o.AnalyticsBytesUsed
+		}
+		qAnalyticsBytesUsed := swag.FormatInt64(qrAnalyticsBytesUsed)
+		if qAnalyticsBytesUsed != "" {
+
+			if err := r.SetQueryParam("analytics.bytes_used", qAnalyticsBytesUsed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsFileCount != nil {
+
+		// query param analytics.file_count
+		var qrAnalyticsFileCount int64
+
+		if o.AnalyticsFileCount != nil {
+			qrAnalyticsFileCount = *o.AnalyticsFileCount
+		}
+		qAnalyticsFileCount := swag.FormatInt64(qrAnalyticsFileCount)
+		if qAnalyticsFileCount != "" {
+
+			if err := r.SetQueryParam("analytics.file_count", qAnalyticsFileCount); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.AnalyticsFilesScanned != nil {
 
 		// query param analytics.files_scanned
@@ -9613,6 +10395,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.AnalyticsIncompleteData != nil {
+
+		// query param analytics.incomplete_data
+		var qrAnalyticsIncompleteData bool
+
+		if o.AnalyticsIncompleteData != nil {
+			qrAnalyticsIncompleteData = *o.AnalyticsIncompleteData
+		}
+		qAnalyticsIncompleteData := swag.FormatBool(qrAnalyticsIncompleteData)
+		if qAnalyticsIncompleteData != "" {
+
+			if err := r.SetQueryParam("analytics.incomplete_data", qAnalyticsIncompleteData); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.AnalyticsInitializationState != nil {
 
 		// query param analytics.initialization.state
@@ -9625,6 +10424,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qAnalyticsInitializationState != "" {
 
 			if err := r.SetQueryParam("analytics.initialization.state", qAnalyticsInitializationState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AnalyticsReportTime != nil {
+
+		// query param analytics.report_time
+		var qrAnalyticsReportTime string
+
+		if o.AnalyticsReportTime != nil {
+			qrAnalyticsReportTime = *o.AnalyticsReportTime
+		}
+		qAnalyticsReportTime := qrAnalyticsReportTime
+		if qAnalyticsReportTime != "" {
+
+			if err := r.SetQueryParam("analytics.report_time", qAnalyticsReportTime); err != nil {
 				return err
 			}
 		}
@@ -9715,6 +10531,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.AnalyticsSubdirCount != nil {
+
+		// query param analytics.subdir_count
+		var qrAnalyticsSubdirCount int64
+
+		if o.AnalyticsSubdirCount != nil {
+			qrAnalyticsSubdirCount = *o.AnalyticsSubdirCount
+		}
+		qAnalyticsSubdirCount := swag.FormatInt64(qrAnalyticsSubdirCount)
+		if qAnalyticsSubdirCount != "" {
+
+			if err := r.SetQueryParam("analytics.subdir_count", qAnalyticsSubdirCount); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.AnalyticsSupported != nil {
 
 		// query param analytics.supported
@@ -9778,6 +10611,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qAnalyticsUnsupportedReasonMessage != "" {
 
 			if err := r.SetQueryParam("analytics.unsupported_reason.message", qAnalyticsUnsupportedReasonMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AntiRansomwareAttackDetectedBy != nil {
+
+		// query param anti_ransomware.attack_detected_by
+		var qrAntiRansomwareAttackDetectedBy string
+
+		if o.AntiRansomwareAttackDetectedBy != nil {
+			qrAntiRansomwareAttackDetectedBy = *o.AntiRansomwareAttackDetectedBy
+		}
+		qAntiRansomwareAttackDetectedBy := qrAntiRansomwareAttackDetectedBy
+		if qAntiRansomwareAttackDetectedBy != "" {
+
+			if err := r.SetQueryParam("anti_ransomware.attack_detected_by", qAntiRansomwareAttackDetectedBy); err != nil {
 				return err
 			}
 		}
@@ -9863,6 +10713,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qAntiRansomwareAttackDetectionParametersBasedOnNeverSeenBeforeFileExtension != "" {
 
 			if err := r.SetQueryParam("anti_ransomware.attack_detection_parameters.based_on_never_seen_before_file_extension", qAntiRansomwareAttackDetectionParametersBasedOnNeverSeenBeforeFileExtension); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AntiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold != nil {
+
+		// query param anti_ransomware.attack_detection_parameters.block_device_auto_learned_encryption_threshold
+		var qrAntiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold int64
+
+		if o.AntiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold != nil {
+			qrAntiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold = *o.AntiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold
+		}
+		qAntiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold := swag.FormatInt64(qrAntiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold)
+		if qAntiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold != "" {
+
+			if err := r.SetQueryParam("anti_ransomware.attack_detection_parameters.block_device_auto_learned_encryption_threshold", qAntiRansomwareAttackDetectionParametersBlockDeviceAutoLearnedEncryptionThreshold); err != nil {
 				return err
 			}
 		}
@@ -10016,6 +10883,40 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qAntiRansomwareAttackReportsTime != "" {
 
 			if err := r.SetQueryParam("anti_ransomware.attack_reports.time", qAntiRansomwareAttackReportsTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AntiRansomwareBlockDeviceDetectionStartTime != nil {
+
+		// query param anti_ransomware.block_device_detection_start_time
+		var qrAntiRansomwareBlockDeviceDetectionStartTime string
+
+		if o.AntiRansomwareBlockDeviceDetectionStartTime != nil {
+			qrAntiRansomwareBlockDeviceDetectionStartTime = *o.AntiRansomwareBlockDeviceDetectionStartTime
+		}
+		qAntiRansomwareBlockDeviceDetectionStartTime := qrAntiRansomwareBlockDeviceDetectionStartTime
+		if qAntiRansomwareBlockDeviceDetectionStartTime != "" {
+
+			if err := r.SetQueryParam("anti_ransomware.block_device_detection_start_time", qAntiRansomwareBlockDeviceDetectionStartTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AntiRansomwareBlockDeviceDetectionState != nil {
+
+		// query param anti_ransomware.block_device_detection_state
+		var qrAntiRansomwareBlockDeviceDetectionState string
+
+		if o.AntiRansomwareBlockDeviceDetectionState != nil {
+			qrAntiRansomwareBlockDeviceDetectionState = *o.AntiRansomwareBlockDeviceDetectionState
+		}
+		qAntiRansomwareBlockDeviceDetectionState := qrAntiRansomwareBlockDeviceDetectionState
+		if qAntiRansomwareBlockDeviceDetectionState != "" {
+
+			if err := r.SetQueryParam("anti_ransomware.block_device_detection_state", qAntiRansomwareBlockDeviceDetectionState); err != nil {
 				return err
 			}
 		}
@@ -11364,6 +12265,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.ConstituentCount != nil {
+
+		// query param constituent_count
+		var qrConstituentCount int64
+
+		if o.ConstituentCount != nil {
+			qrConstituentCount = *o.ConstituentCount
+		}
+		qConstituentCount := swag.FormatInt64(qrConstituentCount)
+		if qConstituentCount != "" {
+
+			if err := r.SetQueryParam("constituent_count", qConstituentCount); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ConstituentsAggregatesName != nil {
 
 		// query param constituents.aggregates.name
@@ -11495,6 +12413,40 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qConstituentsName != "" {
 
 			if err := r.SetQueryParam("constituents.name", qConstituentsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsNodeName != nil {
+
+		// query param constituents.node.name
+		var qrConstituentsNodeName string
+
+		if o.ConstituentsNodeName != nil {
+			qrConstituentsNodeName = *o.ConstituentsNodeName
+		}
+		qConstituentsNodeName := qrConstituentsNodeName
+		if qConstituentsNodeName != "" {
+
+			if err := r.SetQueryParam("constituents.node.name", qConstituentsNodeName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConstituentsNodeUUID != nil {
+
+		// query param constituents.node.uuid
+		var qrConstituentsNodeUUID string
+
+		if o.ConstituentsNodeUUID != nil {
+			qrConstituentsNodeUUID = *o.ConstituentsNodeUUID
+		}
+		qConstituentsNodeUUID := qrConstituentsNodeUUID
+		if qConstituentsNodeUUID != "" {
+
+			if err := r.SetQueryParam("constituents.node.uuid", qConstituentsNodeUUID); err != nil {
 				return err
 			}
 		}
@@ -12333,6 +13285,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.EfficiencyRatio != nil {
+
+		// query param efficiency.ratio
+		var qrEfficiencyRatio float64
+
+		if o.EfficiencyRatio != nil {
+			qrEfficiencyRatio = *o.EfficiencyRatio
+		}
+		qEfficiencyRatio := swag.FormatFloat64(qrEfficiencyRatio)
+		if qEfficiencyRatio != "" {
+
+			if err := r.SetQueryParam("efficiency.ratio", qEfficiencyRatio); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.EfficiencyScannerCompression != nil {
 
 		// query param efficiency.scanner.compression
@@ -12803,6 +13772,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.FilesInodefileCapacity != nil {
+
+		// query param files.inodefile_capacity
+		var qrFilesInodefileCapacity int64
+
+		if o.FilesInodefileCapacity != nil {
+			qrFilesInodefileCapacity = *o.FilesInodefileCapacity
+		}
+		qFilesInodefileCapacity := swag.FormatInt64(qrFilesInodefileCapacity)
+		if qFilesInodefileCapacity != "" {
+
+			if err := r.SetQueryParam("files.inodefile_capacity", qFilesInodefileCapacity); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.FilesMaximum != nil {
 
 		// query param files.maximum
@@ -13007,6 +13993,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.HasDirIndexPublic != nil {
+
+		// query param has_dir_index_public
+		var qrHasDirIndexPublic bool
+
+		if o.HasDirIndexPublic != nil {
+			qrHasDirIndexPublic = *o.HasDirIndexPublic
+		}
+		qHasDirIndexPublic := swag.FormatBool(qrHasDirIndexPublic)
+		if qHasDirIndexPublic != "" {
+
+			if err := r.SetQueryParam("has_dir_index_public", qHasDirIndexPublic); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.IsConstituent != nil {
 
 		// query param is_constituent
@@ -13019,6 +14022,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qIsConstituent != "" {
 
 			if err := r.SetQueryParam("is_constituent", qIsConstituent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IsDirIndexTransferEnabled != nil {
+
+		// query param is_dir_index_transfer_enabled
+		var qrIsDirIndexTransferEnabled bool
+
+		if o.IsDirIndexTransferEnabled != nil {
+			qrIsDirIndexTransferEnabled = *o.IsDirIndexTransferEnabled
+		}
+		qIsDirIndexTransferEnabled := swag.FormatBool(qrIsDirIndexTransferEnabled)
+		if qIsDirIndexTransferEnabled != "" {
+
+			if err := r.SetQueryParam("is_dir_index_transfer_enabled", qIsDirIndexTransferEnabled); err != nil {
 				return err
 			}
 		}
@@ -13925,6 +14945,40 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.NodesName != nil {
+
+		// query param nodes.name
+		var qrNodesName string
+
+		if o.NodesName != nil {
+			qrNodesName = *o.NodesName
+		}
+		qNodesName := qrNodesName
+		if qNodesName != "" {
+
+			if err := r.SetQueryParam("nodes.name", qNodesName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NodesUUID != nil {
+
+		// query param nodes.uuid
+		var qrNodesUUID string
+
+		if o.NodesUUID != nil {
+			qrNodesUUID = *o.NodesUUID
+		}
+		qNodesUUID := qrNodesUUID
+		if qNodesUUID != "" {
+
+			if err := r.SetQueryParam("nodes.uuid", qNodesUUID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.OrderBy != nil {
 
 		// binding items for order_by
@@ -13933,6 +14987,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.QosPolicyMaxThroughput != nil {
+
+		// query param qos.policy.max_throughput
+		var qrQosPolicyMaxThroughput string
+
+		if o.QosPolicyMaxThroughput != nil {
+			qrQosPolicyMaxThroughput = *o.QosPolicyMaxThroughput
+		}
+		qQosPolicyMaxThroughput := qrQosPolicyMaxThroughput
+		if qQosPolicyMaxThroughput != "" {
+
+			if err := r.SetQueryParam("qos.policy.max_throughput", qQosPolicyMaxThroughput); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -13965,6 +15036,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qQosPolicyMaxThroughputMbps != "" {
 
 			if err := r.SetQueryParam("qos.policy.max_throughput_mbps", qQosPolicyMaxThroughputMbps); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.QosPolicyMinThroughput != nil {
+
+		// query param qos.policy.min_throughput
+		var qrQosPolicyMinThroughput string
+
+		if o.QosPolicyMinThroughput != nil {
+			qrQosPolicyMinThroughput = *o.QosPolicyMinThroughput
+		}
+		qQosPolicyMinThroughput := qrQosPolicyMinThroughput
+		if qQosPolicyMinThroughput != "" {
+
+			if err := r.SetQueryParam("qos.policy.min_throughput", qQosPolicyMinThroughput); err != nil {
 				return err
 			}
 		}
@@ -16250,7 +17338,7 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 
 	if o.SpaceSnapshotAutodeleteTrigger != nil {
 
-		// query param space.snapshot.autodelete.trigger
+		// query param space.snapshot.autodelete_trigger
 		var qrSpaceSnapshotAutodeleteTrigger string
 
 		if o.SpaceSnapshotAutodeleteTrigger != nil {
@@ -16259,7 +17347,7 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		qSpaceSnapshotAutodeleteTrigger := qrSpaceSnapshotAutodeleteTrigger
 		if qSpaceSnapshotAutodeleteTrigger != "" {
 
-			if err := r.SetQueryParam("space.snapshot.autodelete.trigger", qSpaceSnapshotAutodeleteTrigger); err != nil {
+			if err := r.SetQueryParam("space.snapshot.autodelete_trigger", qSpaceSnapshotAutodeleteTrigger); err != nil {
 				return err
 			}
 		}

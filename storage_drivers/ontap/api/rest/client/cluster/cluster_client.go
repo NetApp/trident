@@ -28,6 +28,8 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
+	MediatorPing(params *MediatorPingParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorPingOK, error)
+
 	CapacityPoolCollectionGet(params *CapacityPoolCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CapacityPoolCollectionGetOK, error)
 
 	CapacityPoolGet(params *CapacityPoolGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CapacityPoolGetOK, error)
@@ -131,6 +133,10 @@ type ClientService interface {
 	MediatorDeleteCollection(params *MediatorDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorDeleteCollectionOK, *MediatorDeleteCollectionAccepted, error)
 
 	MediatorGet(params *MediatorGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorGetOK, error)
+
+	MediatorModify(params *MediatorModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorModifyOK, *MediatorModifyAccepted, error)
+
+	MediatorModifyCollection(params *MediatorModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorModifyCollectionOK, *MediatorModifyCollectionAccepted, error)
 
 	MetroclusterCreate(params *MetroclusterCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetroclusterCreateCreated, *MetroclusterCreateAccepted, error)
 
@@ -245,6 +251,44 @@ type ClientService interface {
 	WebModify(params *WebModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebModifyOK, *WebModifyAccepted, error)
 
 	SetTransport(transport runtime.ClientTransport)
+}
+
+/*
+MediatorPing Pings BlueXP cloud service.
+*/
+func (a *Client) MediatorPing(params *MediatorPingParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorPingOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMediatorPingParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "_mediator_ping_",
+		Method:             "POST",
+		PathPattern:        "/cluster/mediator-ping",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MediatorPingReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*MediatorPingOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MediatorPingDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -569,6 +613,7 @@ func (a *Client) ClusterGet(params *ClusterGetParams, authInfo runtime.ClientAut
 * `vserver active-directory create`
 * `vserver active-directory modify`
 * `vserver active-directory delete`
+* `vserver cifs security modify`
 */
 func (a *Client) ClusterModify(params *ClusterModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterModifyOK, *ClusterModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2447,6 +2492,86 @@ func (a *Client) MediatorGet(params *MediatorGetParams, authInfo runtime.ClientA
 }
 
 /*
+MediatorModify Modifies the mediator configuration.
+*/
+func (a *Client) MediatorModify(params *MediatorModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorModifyOK, *MediatorModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMediatorModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "mediator_modify",
+		Method:             "PATCH",
+		PathPattern:        "/cluster/mediators/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MediatorModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *MediatorModifyOK:
+		return value, nil, nil
+	case *MediatorModifyAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MediatorModifyDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+MediatorModifyCollection mediator modify collection API
+*/
+func (a *Client) MediatorModifyCollection(params *MediatorModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorModifyCollectionOK, *MediatorModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewMediatorModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "mediator_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/cluster/mediators",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &MediatorModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *MediatorModifyCollectionOK:
+		return value, nil, nil
+	case *MediatorModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*MediatorModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	MetroclusterCreate Sets up a MetroCluster.
 
 ### Required properties
@@ -4282,10 +4407,8 @@ func (a *Client) SensorsGet(params *SensorsGetParams, authInfo runtime.ClientAut
 /*
 	SoftwareDownloadGet Retrieves the software or firmware download status.
 
-### Related ONTAP commands
-* `cluster image package check-download-progress`
 ### Learn more
-* [`DOC /cluster/software`](#docs-cluster-cluster_software)
+* [`DOC /cluster/software/download`](#docs-cluster-cluster_software_download)
 */
 func (a *Client) SoftwareDownloadGet(params *SoftwareDownloadGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareDownloadGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4373,7 +4496,7 @@ func (a *Client) SoftwareGet(params *SoftwareGetParams, authInfo runtime.ClientA
 ### Related ONTAP commands
 * `cluster image show-update-history`
 ### Learn more
-* [`DOC /cluster/software`](#docs-cluster-cluster_software)
+* [`DOC /cluster/software/history`](#docs-cluster-cluster_software_history)
 */
 func (a *Client) SoftwareHistoryCollectionGet(params *SoftwareHistoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwareHistoryCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4485,7 +4608,7 @@ func (a *Client) SoftwareModify(params *SoftwareModifyParams, authInfo runtime.C
 ### Related ONTAP commands
 * `cluster image package get`
 ### Learn more
-* [`DOC /cluster/software`](#docs-cluster-cluster_software)
+* [`DOC /cluster/software/download`](#docs-cluster-cluster_software_download)
 */
 func (a *Client) SoftwarePackageCreate(params *SoftwarePackageCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackageCreateCreated, *SoftwarePackageCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -4530,7 +4653,7 @@ func (a *Client) SoftwarePackageCreate(params *SoftwarePackageCreateParams, auth
 ### Related ONTAP commands
 * `cluster image package delete`
 ### Learn more
-* [`DOC /cluster/software`](#docs-cluster-cluster_software)
+* [`DOC /cluster/software/packages`](#docs-cluster-cluster_software_packages)
 */
 func (a *Client) SoftwarePackageDelete(params *SoftwarePackageDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackageDeleteOK, *SoftwarePackageDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -4615,7 +4738,7 @@ func (a *Client) SoftwarePackageDeleteCollection(params *SoftwarePackageDeleteCo
 ### Related ONTAP commands
 * `cluster image package show-repository`
 ### Learn more
-* [`DOC /cluster/software`](#docs-cluster-cluster_software)
+* [`DOC /cluster/software/packages`](#docs-cluster-cluster_software_packages)
 */
 func (a *Client) SoftwarePackageGet(params *SoftwarePackageGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackageGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4658,7 +4781,7 @@ func (a *Client) SoftwarePackageGet(params *SoftwarePackageGetParams, authInfo r
 ### Related ONTAP commands
 * `cluster image package show-repository`
 ### Learn more
-* [`DOC /cluster/software`](#docs-cluster-cluster_software)
+* [`DOC /cluster/software/packages`](#docs-cluster-cluster_software_packages)
 */
 func (a *Client) SoftwarePackagesCollectionGet(params *SoftwarePackagesCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SoftwarePackagesCollectionGetOK, error) {
 	// TODO: Validate the params before sending

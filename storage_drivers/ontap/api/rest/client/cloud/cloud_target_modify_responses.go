@@ -236,6 +236,7 @@ func NewCloudTargetModifyDefault(code int) *CloudTargetModifyDefault {
 | 787302 | Cannot use HTTP port with \"-is-ssl-enabled\" set to true. |
 | 787303 | Cannot use HTTPS port with \"-is-ssl-enabled\" set to false. |
 | 787306 | Object store is not accessible from the partner cluster in a MetroCluster configuration. |
+| 787325 | FabricPool is not supported on this platform. |
 | 787350 | Modifying an object store configuration with a Managed Service Identity (MSI) token is only supported on Azure NetApp Files. |
 | 787351 | Internal Error. Invalid authentication type. |
 | 787352 | Modifying an object store configuration with a Managed Service Identity (MSI) token requires an effective cluster version of ONTAP 9.16.1 or later. |

@@ -242,6 +242,7 @@ func NewSnapshotCreateDefault(code int) *SnapshotCreateDefault {
 | 1638618    | The property cannot be specified for snapshot create. |
 | 1638630    | Snapshot create operation is not supported on destination of SnapMirror active sync relationship with policy-type "automated-failover-duplex". |
 | 1638644    | POST, DELETE, and PATCH requests on the snapshot session endpoint are not supported on this platform. |
+| 92405873   | Unable to create the snapshot for object store volumes. |
 */
 type SnapshotCreateDefault struct {
 	_statusCode int

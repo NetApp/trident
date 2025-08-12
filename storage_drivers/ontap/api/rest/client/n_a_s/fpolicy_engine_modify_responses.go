@@ -120,6 +120,8 @@ func NewFpolicyEngineModifyDefault(code int) *FpolicyEngineModifyDefault {
 | 9765042    | The specified send buffer size exceeds the maximum limit |
 | 9765043    | The specified receive buffer size exceeds the maximum limit |
 | 9765063    | Policy with Persistent Store feature does not support a "synchronous" |
+| 9765004    | The specified session timeout exceeds the maximum limit |
+| 9764935    | The specified max connection retries exceeds the maximum limit |
 */
 type FpolicyEngineModifyDefault struct {
 	_statusCode int

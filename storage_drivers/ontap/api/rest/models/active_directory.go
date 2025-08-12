@@ -52,6 +52,9 @@ type ActiveDirectory struct {
 	// Min Length: 1
 	Password *string `json:"password,omitempty"`
 
+	// security
+	Security *ActiveDirectorySecurity `json:"security,omitempty"`
+
 	// svm
 	Svm *ActiveDirectoryInlineSvm `json:"svm,omitempty"`
 
@@ -82,6 +85,10 @@ func (m *ActiveDirectory) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePassword(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSecurity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -183,6 +190,23 @@ func (m *ActiveDirectory) validatePassword(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *ActiveDirectory) validateSecurity(formats strfmt.Registry) error {
+	if swag.IsZero(m.Security) { // not required
+		return nil
+	}
+
+	if m.Security != nil {
+		if err := m.Security.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("security")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *ActiveDirectory) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
@@ -221,6 +245,10 @@ func (m *ActiveDirectory) ContextValidate(ctx context.Context, formats strfmt.Re
 	}
 
 	if err := m.contextValidateActiveDirectoryInlinePreferredDcs(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSecurity(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -273,6 +301,20 @@ func (m *ActiveDirectory) contextValidateActiveDirectoryInlinePreferredDcs(ctx c
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *ActiveDirectory) contextValidateSecurity(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Security != nil {
+		if err := m.Security.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("security")
+			}
+			return err
+		}
 	}
 
 	return nil

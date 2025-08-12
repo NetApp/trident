@@ -162,8 +162,10 @@ func NewSnmpUsersCreateDefault(code int) *SnmpUsersCreateDefault {
 | 7077906 | Cannot use given role with this SVM because a role with that name has not been defined for the SVM. |
 | 9043995 | Failed to create SNMP community. Reason\":\" SNMPv1 and SNMPv2c are not supported when cluster FIPS mode is enabled. |
 | 9043999 | ONTAP failed to create an SNMPv3 user because SNMPv3 is disabled in the cluster. |
+| 9044020 | Customized engine-id cannot be specified for community users. |
 | 9044021 | The specified authentication protocol is not supported when cluster FIPS mode is enabled. |
 | 9044022 | The specified privacy protocol is not supported when cluster FIPS mode is enabled. |
+| 9044023 | The switch_address parameter can be specified only for creating remote SNMPv3 users. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SnmpUsersCreateDefault struct {

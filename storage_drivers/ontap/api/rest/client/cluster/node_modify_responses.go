@@ -204,6 +204,7 @@ func NewNodeModifyDefault(code int) *NodeModifyDefault {
 | ---------- | ----------- |
 | 852046 | HA partner node is not running to do takeover. |
 | 852115 | The reboot/shutdown is prevented because LIFs cannot be moved away from the node. |
+| 852269 | This operation is not supported on this platform. |
 | 3604514 | A reboot or shutdown request is already in progress. |
 | 3604515 | Reboot or shutdown of all nodes results in data service failure and client disruption for the entire cluster. Use "allow-data-outage=true" to bypass this check. |
 | 9240591 | The name is not valid. The name is already in use by a cluster node, SVM, or it is the name of the local cluster. |

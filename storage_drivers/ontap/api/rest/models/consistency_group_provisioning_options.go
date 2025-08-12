@@ -24,6 +24,11 @@ type ConsistencyGroupProvisioningOptions struct {
 	// Enum: ["create","add","remove","promote","demote"]
 	Action *string `json:"action,omitempty"`
 
+	// Resource tags to confirm before an update.
+	// Example: ["team:csi","environment:test"]
+	// Max Items: 64
+	ConsistencyGroupProvisioningOptionsInlineVerifyTags []*string `json:"verify_tags,omitempty"`
+
 	// New name for consistency group. Required to resolve naming collisions.
 	//
 	Name *string `json:"name,omitempty"`
@@ -37,6 +42,10 @@ func (m *ConsistencyGroupProvisioningOptions) Validate(formats strfmt.Registry) 
 	var res []error
 
 	if err := m.validateAction(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateConsistencyGroupProvisioningOptionsInlineVerifyTags(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -130,6 +139,20 @@ func (m *ConsistencyGroupProvisioningOptions) validateAction(formats strfmt.Regi
 
 	// value enum
 	if err := m.validateActionEnum("action", "body", *m.Action); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupProvisioningOptions) validateConsistencyGroupProvisioningOptionsInlineVerifyTags(formats strfmt.Registry) error {
+	if swag.IsZero(m.ConsistencyGroupProvisioningOptionsInlineVerifyTags) { // not required
+		return nil
+	}
+
+	iConsistencyGroupProvisioningOptionsInlineVerifyTagsSize := int64(len(m.ConsistencyGroupProvisioningOptionsInlineVerifyTags))
+
+	if err := validate.MaxItems("verify_tags", "body", iConsistencyGroupProvisioningOptionsInlineVerifyTagsSize, 64); err != nil {
 		return err
 	}
 

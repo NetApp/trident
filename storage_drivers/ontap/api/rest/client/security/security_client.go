@@ -6,8 +6,6 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"fmt"
-
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 )
@@ -72,6 +70,10 @@ type ClientService interface {
 
 	AntiRansomwareSuspectDeleteCollection(params *AntiRansomwareSuspectDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareSuspectDeleteCollectionOK, *AntiRansomwareSuspectDeleteCollectionAccepted, error)
 
+	AntiRansomwareVolumeEntropyStatsCollectionGet(params *AntiRansomwareVolumeEntropyStatsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareVolumeEntropyStatsCollectionGetOK, error)
+
+	AntiRansomwareVolumeEntropyStatsGet(params *AntiRansomwareVolumeEntropyStatsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareVolumeEntropyStatsGetOK, error)
+
 	AuditLogForwardingGet(params *AuditLogForwardingGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AuditLogForwardingGetOK, error)
 
 	AwsKmsCollectionGet(params *AwsKmsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AwsKmsCollectionGetOK, error)
@@ -113,6 +115,20 @@ type ClientService interface {
 	AzureKeyVaultRekeyInternal(params *AzureKeyVaultRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRekeyInternalCreated, *AzureKeyVaultRekeyInternalAccepted, error)
 
 	AzureKeyVaultRestore(params *AzureKeyVaultRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultRestoreCreated, *AzureKeyVaultRestoreAccepted, error)
+
+	BarbicanCollectionGet(params *BarbicanCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*BarbicanCollectionGetOK, error)
+
+	BarbicanCreate(params *BarbicanCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*BarbicanCreateCreated, *BarbicanCreateAccepted, error)
+
+	BarbicanGet(params *BarbicanGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*BarbicanGetOK, error)
+
+	BarbicanModify(params *BarbicanModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*BarbicanModifyOK, *BarbicanModifyAccepted, error)
+
+	BarbicanModifyCollection(params *BarbicanModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*BarbicanModifyCollectionOK, *BarbicanModifyCollectionAccepted, error)
+
+	BarbicanRekeyInternal(params *BarbicanRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*BarbicanRekeyInternalCreated, *BarbicanRekeyInternalAccepted, error)
+
+	BarbicanRestore(params *BarbicanRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*BarbicanRestoreCreated, *BarbicanRestoreAccepted, error)
 
 	ClusterAccountAdProxyCreate(params *ClusterAccountAdProxyCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterAccountAdProxyCreateCreated, error)
 
@@ -382,6 +398,24 @@ type ClientService interface {
 
 	SecurityGroupModifyCollection(params *SecurityGroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityGroupModifyCollectionOK, error)
 
+	SecurityJitPrivilegeCollectionGet(params *SecurityJitPrivilegeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeCollectionGetOK, error)
+
+	SecurityJitPrivilegeGet(params *SecurityJitPrivilegeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeGetOK, error)
+
+	SecurityJitPrivilegeModify(params *SecurityJitPrivilegeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeModifyOK, error)
+
+	SecurityJitPrivilegeModifyCollection(params *SecurityJitPrivilegeModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeModifyCollectionOK, error)
+
+	SecurityJitPrivilegeUserCollectionGet(params *SecurityJitPrivilegeUserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeUserCollectionGetOK, error)
+
+	SecurityJitPrivilegeUserCreate(params *SecurityJitPrivilegeUserCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeUserCreateCreated, error)
+
+	SecurityJitPrivilegeUserDelete(params *SecurityJitPrivilegeUserDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeUserDeleteOK, error)
+
+	SecurityJitPrivilegeUserDeleteCollection(params *SecurityJitPrivilegeUserDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeUserDeleteCollectionOK, error)
+
+	SecurityJitPrivilegeUserGet(params *SecurityJitPrivilegeUserGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeUserGetOK, error)
+
 	SecurityKeyManagerCollectionGet(params *SecurityKeyManagerCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerCollectionGetOK, error)
 
 	SecurityKeyManagerCreate(params *SecurityKeyManagerCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeyManagerCreateCreated, *SecurityKeyManagerCreateAccepted, error)
@@ -452,6 +486,12 @@ type ClientService interface {
 
 	SecurityOauth2GlobalModify(params *SecurityOauth2GlobalModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOauth2GlobalModifyOK, error)
 
+	SecuritySamlDefMetadataCreate(params *SecuritySamlDefMetadataCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlDefMetadataCreateCreated, *SecuritySamlDefMetadataCreateAccepted, error)
+
+	SecuritySamlDefMetadataDelete(params *SecuritySamlDefMetadataDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlDefMetadataDeleteOK, error)
+
+	SecuritySamlDefMetadataGet(params *SecuritySamlDefMetadataGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlDefMetadataGetOK, error)
+
 	SecuritySamlSpCreate(params *SecuritySamlSpCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlSpCreateCreated, *SecuritySamlSpCreateAccepted, error)
 
 	SecuritySamlSpDelete(params *SecuritySamlSpDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlSpDeleteOK, error)
@@ -463,6 +503,18 @@ type ClientService interface {
 	SSHGet(params *SSHGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SSHGetOK, error)
 
 	SSHModify(params *SSHModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SSHModifyOK, error)
+
+	StorageUnitAntiRansomwareEntropyStatsCollectionGet(params *StorageUnitAntiRansomwareEntropyStatsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitAntiRansomwareEntropyStatsCollectionGetOK, error)
+
+	StorageUnitAntiRansomwareEntropyStatsGet(params *StorageUnitAntiRansomwareEntropyStatsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitAntiRansomwareEntropyStatsGetOK, error)
+
+	StorageUnitAntiRansomwareSuspectCollectionGet(params *StorageUnitAntiRansomwareSuspectCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitAntiRansomwareSuspectCollectionGetOK, error)
+
+	StorageUnitAntiRansomwareSuspectDelete(params *StorageUnitAntiRansomwareSuspectDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitAntiRansomwareSuspectDeleteOK, *StorageUnitAntiRansomwareSuspectDeleteAccepted, error)
+
+	StorageUnitAntiRansomwareSuspectDeleteCollection(params *StorageUnitAntiRansomwareSuspectDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitAntiRansomwareSuspectDeleteCollectionOK, *StorageUnitAntiRansomwareSuspectDeleteCollectionAccepted, error)
+
+	StorageUnitAntiRansomwareSuspectGet(params *StorageUnitAntiRansomwareSuspectGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitAntiRansomwareSuspectGetOK, error)
 
 	SupportedAlgorithmsCollectionGet(params *SupportedAlgorithmsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SupportedAlgorithmsCollectionGetOK, error)
 
@@ -1205,7 +1257,7 @@ func (a *Client) AccountTotpDeleteCollection(params *AccountTotpDeleteCollection
 }
 
 /*
-	AntiRansomwareGet Retrieves the anti-ransomware version of the nodes in the cluster.
+	AntiRansomwareGet Retrieves the anti-ransomware package version of the nodes in the cluster.
 
 ### Related ONTAP commands
 * `security anti-ransomware show`
@@ -1369,9 +1421,9 @@ func (a *Client) AntiRansomwareSuspectDelete(params *AntiRansomwareSuspectDelete
 	case *AntiRansomwareSuspectDeleteAccepted:
 		return nil, value, nil
 	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for security: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	// unexpected success response
+	unexpectedSuccess := result.(*AntiRansomwareSuspectDeleteDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1409,9 +1461,85 @@ func (a *Client) AntiRansomwareSuspectDeleteCollection(params *AntiRansomwareSus
 	case *AntiRansomwareSuspectDeleteCollectionAccepted:
 		return nil, value, nil
 	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for security: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	// unexpected success response
+	unexpectedSuccess := result.(*AntiRansomwareSuspectDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+AntiRansomwareVolumeEntropyStatsCollectionGet Retrieves the data-entropy statistics for the volumes.
+*/
+func (a *Client) AntiRansomwareVolumeEntropyStatsCollectionGet(params *AntiRansomwareVolumeEntropyStatsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareVolumeEntropyStatsCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAntiRansomwareVolumeEntropyStatsCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "anti_ransomware_volume_entropy_stats_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/anti-ransomware/volume/entropy-stats",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AntiRansomwareVolumeEntropyStatsCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AntiRansomwareVolumeEntropyStatsCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AntiRansomwareVolumeEntropyStatsCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+AntiRansomwareVolumeEntropyStatsGet Retrieves a data-entropy statistic for the volumes.
+*/
+func (a *Client) AntiRansomwareVolumeEntropyStatsGet(params *AntiRansomwareVolumeEntropyStatsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareVolumeEntropyStatsGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAntiRansomwareVolumeEntropyStatsGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "anti_ransomware_volume_entropy_stats_get",
+		Method:             "GET",
+		PathPattern:        "/security/anti-ransomware/volume/entropy-stats/{volume.uuid}/{entropy_stats_type}/{timestamp}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AntiRansomwareVolumeEntropyStatsGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AntiRansomwareVolumeEntropyStatsGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AntiRansomwareVolumeEntropyStatsGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -2372,6 +2500,330 @@ func (a *Client) AzureKeyVaultRestore(params *AzureKeyVaultRestoreParams, authIn
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AzureKeyVaultRestoreDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	BarbicanCollectionGet Retrieves Barbican KMS configurations for all SVMs.
+
+### Related ONTAP commands
+* `security key-manager external barbican show`
+* `security key-manager external barbican check`
+*/
+func (a *Client) BarbicanCollectionGet(params *BarbicanCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*BarbicanCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewBarbicanCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "barbican_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/barbican-kms",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &BarbicanCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*BarbicanCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*BarbicanCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	BarbicanCreate Creates a Barbican KMS configuration for the specified SVM.
+
+### Required properties
+* `configuration.name` - Name for the new Barbican configuration.
+* `svm.uuid` or `svm.name` - Existing SVM in which to create a Barbican KMS.
+* `key_id` - Barbican key URL.
+* `keystone_url` - Keystone authentication URL.
+* `application_cred_id` - Keystone authentication application ID with access to the Barbican KMS.
+* `application_cred_secret`- Application credentials secret to authenticate the application credentials ID with Keystone.
+### Optional properties
+* `proxy_type` - Type of proxy (http/https) if proxy configuration is used.
+* `proxy_host` - Proxy hostname if proxy configuration is used.
+* `proxy_port` - Proxy port number if proxy configuration is used.
+* `proxy_username` - Proxy username if proxy configuration is used.
+* `proxy_password` - Proxy password if proxy configuration is used.
+* `verify` - Verify the identity of the Barbican KMS?
+* `verify_host` - Verify the identity of the Barbican KMS host name?
+* `timeout` - Connection timeout in seconds.
+### Related ONTAP commands
+* `security key-manager external barbican create-config`
+*/
+func (a *Client) BarbicanCreate(params *BarbicanCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*BarbicanCreateCreated, *BarbicanCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewBarbicanCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "barbican_create",
+		Method:             "POST",
+		PathPattern:        "/security/barbican-kms",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &BarbicanCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *BarbicanCreateCreated:
+		return value, nil, nil
+	case *BarbicanCreateAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*BarbicanCreateDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	BarbicanGet Retrieves the Barbican KMS configuration for the SVM specified by the UUID.
+
+### Related ONTAP commands
+* `security key-manager external barbican show`
+* `security key-manager external barbican check`
+*/
+func (a *Client) BarbicanGet(params *BarbicanGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*BarbicanGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewBarbicanGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "barbican_get",
+		Method:             "GET",
+		PathPattern:        "/security/barbican-kms/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &BarbicanGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*BarbicanGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*BarbicanGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	BarbicanModify Updates the Barbican KMS configuration.
+
+### Optional properties
+* `application_cred_id` - New credentials used to verify the application's identity to the Barbican KMS. You must provide both `application_cred_id` and `application_cred_secret` to update the credentials.
+* `application_cred_secret` - New credentials secret used to verify the application's identity to the Barbican KMS. You must provide both `application_cred_id` and `application_cred_secret` to update the credentials.
+* `proxy_type` - Type of proxy (http/https) if proxy configuration is used.
+* `proxy_host` - Proxy hostname if proxy configuration is used.
+* `proxy_port` - Proxy port number if proxy configuration is used.
+* `proxy_username` - Proxy username if proxy configuration is used.
+* `proxy_password` - Proxy password if proxy configuration is used.
+* `verify` - Verify the identity of the Barbican KMS?
+* `verify_host` - Verify the identity of the Barbican KMS host name?
+* `timeout` - Connection timeout in seconds.
+### Related ONTAP commands
+* `security key-manager external barbican update-credentials`
+* `security key-manager external barbican update-config`
+*/
+func (a *Client) BarbicanModify(params *BarbicanModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*BarbicanModifyOK, *BarbicanModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewBarbicanModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "barbican_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/barbican-kms/{uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &BarbicanModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *BarbicanModifyOK:
+		return value, nil, nil
+	case *BarbicanModifyAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*BarbicanModifyDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+BarbicanModifyCollection barbican modify collection API
+*/
+func (a *Client) BarbicanModifyCollection(params *BarbicanModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*BarbicanModifyCollectionOK, *BarbicanModifyCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewBarbicanModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "barbican_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/barbican-kms",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &BarbicanModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *BarbicanModifyCollectionOK:
+		return value, nil, nil
+	case *BarbicanModifyCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*BarbicanModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	BarbicanRekeyInternal Rekeys the internal key in the key hierarchy for an SVM with a Barbican KMS configuration.
+
+### Related ONTAP commands
+* `security key-manager external barbican rekey-internal`
+*/
+func (a *Client) BarbicanRekeyInternal(params *BarbicanRekeyInternalParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*BarbicanRekeyInternalCreated, *BarbicanRekeyInternalAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewBarbicanRekeyInternalParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "barbican_rekey_internal",
+		Method:             "POST",
+		PathPattern:        "/security/barbican-kms/{uuid}/rekey-internal",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &BarbicanRekeyInternalReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *BarbicanRekeyInternalCreated:
+		return value, nil, nil
+	case *BarbicanRekeyInternalAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*BarbicanRekeyInternalDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	BarbicanRestore Restores the keys for an SVM from a configured Barbican KMS.
+
+### Related ONTAP commands
+* `security key-manager external barbican restore`
+*/
+func (a *Client) BarbicanRestore(params *BarbicanRestoreParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*BarbicanRestoreCreated, *BarbicanRestoreAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewBarbicanRestoreParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "barbican_restore",
+		Method:             "POST",
+		PathPattern:        "/security/barbican-kms/{uuid}/restore",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &BarbicanRestoreReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *BarbicanRestoreCreated:
+		return value, nil, nil
+	case *BarbicanRestoreAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*BarbicanRestoreDefault)
 	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -3466,7 +3918,7 @@ func (a *Client) GcpKmsCollectionGet(params *GcpKmsCollectionGetParams, authInfo
 * `key_ring_name` - Google Cloud KMS key ring name of the deployed Google Cloud application with appropriate access to the specified Google Cloud KMS.
 * `key_ring_location` - Google Cloud KMS key ring location.
 * `key_name`- Key Identifier of the Google Cloud KMS key encryption key.
-* `application_credentials` - Google Cloud application's service account credentials required to access the specified KMS. It is a JSON file containing an email address and the private key of the service account holder.
+* `application_credentials` - The Google Cloud application's service account credentials required to access the specified KMS. This is a JSON file containing an email address and the private key of the service account holder. The field is required if the `authentication_method` is set to `application_credentials_key`.
 ### Optional properties
 * `proxy_type` - Type of proxy (http/https) if proxy configuration is used.
 * `proxy_host` - Proxy hostname if proxy configuration is used.
@@ -3480,6 +3932,8 @@ func (a *Client) GcpKmsCollectionGet(params *GcpKmsCollectionGetParams, authInfo
 * `privileged_account` - Account used to impersonate Google Cloud KMS requests.
 * `verify_ip` - Verify identity of Google Cloud KMS IP address.
 * `verify_host` - Verify the identity of the Google Cloud KMS host name.
+* `authentication_method` - The authentication method to use for retrieving short lived authentication tokens.
+* `gce_metadata_server` - A custom metadata server URL used for retrieving short lived authentication tokens if the default service account is not used. This is only applicable when the `authentication_method` is set to `sa_credentials_attachment`.
 ### Related ONTAP commands
 * `security key-manager external gcp enable`
 */
@@ -3665,6 +4119,8 @@ func (a *Client) GcpKmsGet(params *GcpKmsGetParams, authInfo runtime.ClientAuthI
 * `verify_host` - Verify the identity of the Google Cloud KMS host name.
 * `verify_ip ` - Verify identity of Google Cloud KMS IP address.
 * `privileged_account` - Account used to impersonate Google Cloud KMS requests.
+* `authentication_method` - The authentication method to use for retrieving short lived authentication tokens.
+* `gce_metadata_server` - A custom metadata server URL used for retrieving short lived authentication tokens if the default service account is not used. This is only applicable when the `authentication_method` is set to `sa_credentials_attachment`.
 ### Related ONTAP commands
 * `security key-manager external gcp update-credentials`
 * `security key-manager external gcp update-config`
@@ -7500,12 +7956,11 @@ func (a *Client) SecurityConfigGet(params *SecurityConfigGetParams, authInfo run
 /*
 	SecurityConfigModify Updates the software FIPS mode or modifies software data encryption.
 
-## Platform Specifics
-### Unified ONTAP
-The PATCH request can be used to enable conversion of non-encrypted metadata volumes to encrypted metadata volumes and non-NAE aggregates to NAE aggregates.
-### ASA r2
+<personalities supports=unified>The PATCH request can be used to enable conversion of non-encrypted metadata volumes to encrypted metadata volumes and non-NAE aggregates to NAE aggregates.</personalities>
+<personalities supports=asar2,aiml>
 The PATCH request can be used to enable conversion of all non-encrypted volumes and LUNs to encrypted volumes and LUNs.
 The PATCH request can also be used to start the rekey of all encrypted volumes and LUNs.
+</personalities>
 ### Related ONTAP commands
 * `security config modify`
 */
@@ -8122,16 +8577,393 @@ func (a *Client) SecurityGroupModifyCollection(params *SecurityGroupModifyCollec
 }
 
 /*
+	SecurityJitPrivilegeCollectionGet Retrieves global JIT privilege configurations on an SVM.
+
+### Related ONTAP commands
+* `security jit-privilege show`
+*/
+func (a *Client) SecurityJitPrivilegeCollectionGet(params *SecurityJitPrivilegeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityJitPrivilegeCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_jit_privilege_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/jit-privileges",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityJitPrivilegeCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityJitPrivilegeCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityJitPrivilegeCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityJitPrivilegeGet Retrieves the JIT privilege configurations for an SVM.
+
+### Related ONTAP commands
+* `security jit-privilege show`
+*/
+func (a *Client) SecurityJitPrivilegeGet(params *SecurityJitPrivilegeGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityJitPrivilegeGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_jit_privilege_get",
+		Method:             "GET",
+		PathPattern:        "/security/jit-privileges/{owner.uuid}/{application}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityJitPrivilegeGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityJitPrivilegeGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityJitPrivilegeGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityJitPrivilegeModify Modifies the JIT privilege configurations for an SVM.
+
+### Related ONTAP commands
+* `security jit-privilege modify`
+*/
+func (a *Client) SecurityJitPrivilegeModify(params *SecurityJitPrivilegeModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityJitPrivilegeModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_jit_privilege_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/jit-privileges/{owner.uuid}/{application}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityJitPrivilegeModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityJitPrivilegeModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityJitPrivilegeModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SecurityJitPrivilegeModifyCollection security jit privilege modify collection API
+*/
+func (a *Client) SecurityJitPrivilegeModifyCollection(params *SecurityJitPrivilegeModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityJitPrivilegeModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_jit_privilege_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/jit-privileges",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityJitPrivilegeModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityJitPrivilegeModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityJitPrivilegeModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityJitPrivilegeUserCollectionGet Retrieves the JIT privilege user configurations for an SVM.
+
+### Related ONTAP commands
+* `security jit-privilege user show`
+*/
+func (a *Client) SecurityJitPrivilegeUserCollectionGet(params *SecurityJitPrivilegeUserCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeUserCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityJitPrivilegeUserCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_jit_privilege_user_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/jit-privilege-users",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityJitPrivilegeUserCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityJitPrivilegeUserCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityJitPrivilegeUserCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityJitPrivilegeUserCreate Creates the JIT privilege user configurations for an SVM.
+
+### Required properties
+* `owner.uuid` - Account owner UUID.
+* `account.name` - User name.
+* `application` - Application
+### Related ONTAP commands
+* `security jit-privilege user create`
+*/
+func (a *Client) SecurityJitPrivilegeUserCreate(params *SecurityJitPrivilegeUserCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeUserCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityJitPrivilegeUserCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_jit_privilege_user_create",
+		Method:             "POST",
+		PathPattern:        "/security/jit-privilege-users",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityJitPrivilegeUserCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityJitPrivilegeUserCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityJitPrivilegeUserCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityJitPrivilegeUserDelete Deletes the JIT privilege user configurations for an SVM.
+
+### Related ONTAP commands
+* `security jit-privilege user delete`
+### Required properties
+* `owner.uuid`
+* `application`
+* `account.name`
+*/
+func (a *Client) SecurityJitPrivilegeUserDelete(params *SecurityJitPrivilegeUserDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeUserDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityJitPrivilegeUserDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_jit_privilege_user_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/jit-privilege-users/{owner.uuid}/{account.name}/{application}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityJitPrivilegeUserDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityJitPrivilegeUserDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityJitPrivilegeUserDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SecurityJitPrivilegeUserDeleteCollection security jit privilege user delete collection API
+*/
+func (a *Client) SecurityJitPrivilegeUserDeleteCollection(params *SecurityJitPrivilegeUserDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeUserDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityJitPrivilegeUserDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_jit_privilege_user_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/jit-privilege-users",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityJitPrivilegeUserDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityJitPrivilegeUserDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityJitPrivilegeUserDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityJitPrivilegeUserGet Retrieves the JIT privilege user configurations for an SVM.
+
+### Related ONTAP commands
+* `security jit-privilege user show`
+*/
+func (a *Client) SecurityJitPrivilegeUserGet(params *SecurityJitPrivilegeUserGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeUserGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityJitPrivilegeUserGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_jit_privilege_user_get",
+		Method:             "GET",
+		PathPattern:        "/security/jit-privilege-users/{owner.uuid}/{account.name}/{application}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityJitPrivilegeUserGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityJitPrivilegeUserGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityJitPrivilegeUserGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	SecurityKeyManagerCollectionGet Retrieves key managers.
 
 ### Expensive properties
-There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-* `connectivity.cluster_availability`
-* `connectivity.node_states.node.name`
-* `connectivity.node_states.node.uuid`
-* `connectivity.node_states.state`
+There is an added computational cost to retrieving these properties. They are excluded from default GET results and must be explicitly requested using the `fields` query parameter. For more details, see [`Requesting specific fields`](#Requesting_specific_fields). Additionally, these fields are unavailable for inactive configurations as they are only relevant to active configurations.
 * `status.message`
 * `status.code`
+### Examples
+  - To retrieve basic information about a key manager:
+    ```
+    GET /security/key-managers
+    ```
+  - To retrieve specific fields, including expensive properties:
+    ```
+    GET /security/key-managers/?fields=status.code,status.message
+    ```
+
 ### Related ONTAP commands
 * `security key-manager show-key-store`
 * `security key-manager external show`
@@ -8310,26 +9142,20 @@ func (a *Client) SecurityKeyManagerDeleteCollection(params *SecurityKeyManagerDe
 /*
 	SecurityKeyManagerGet Retrieves key managers.
 
-### Examples:
-  - To retrieve basic information about a key server:
+### Expensive properties
+There is an added computational cost to retrieving these properties. They are excluded from default GET results and must be explicitly requested using the `fields` query parameter. For more details, see [`Requesting specific fields`](#Requesting_specific_fields). Additionally, these fields are unavailable for inactive configurations as they are only relevant to active configurations.
+* `status.message`
+* `status.code`
+### Examples
+  - To retrieve basic information about a key manager:
     ```
     GET /security/key-managers/{uuid}
     ```
   - To retrieve specific fields, including expensive properties:
     ```
-    GET /security/key-managers/{uuid}?fields=connectivity.cluster_availability,connectivity.node_states.node.name
+    GET /security/key-managers/{uuid}?fields=status.message
     ```
 
-### Note:
-These fields are not available for inactive configurations due to the additional computational cost and the relevance of these fields is exclusive to active configurations.
-### Expensive properties
-There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-* `connectivity.cluster_availability`
-* `connectivity.node_states.node.name`
-* `connectivity.node_states.node.uuid`
-* `connectivity.node_states.state`
-* `status.message`
-* `status.code`
 ### Related ONTAP commands
 * `security key-manager show-key-store`
 * `security key-manager external show`
@@ -8375,11 +9201,21 @@ func (a *Client) SecurityKeyManagerGet(params *SecurityKeyManagerGetParams, auth
 	SecurityKeyManagerKeyServersCollectionGet Retrieves the list of key servers configured in an external key manager.
 
 ### Expensive properties
-There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving these properties. They are excluded from default GET results and must be explicitly requested using the `fields` query parameter. For more details, see [`Requesting specific fields`](#Requesting_specific_fields). Additionally, these fields are unavailable for inactive configurations as they are only relevant to active configurations.
 * `connectivity.cluster_availability`
 * `connectivity.node_states.node.name`
 * `connectivity.node_states.node.uuid`
 * `connectivity.node_states.state`
+### Examples
+  - To retrieve basic information about a key server:
+    ```
+    GET /security/key-managers/{uuid}/key-servers
+    ```
+  - To retrieve specific fields, including expensive properties:
+    ```
+    GET /security/key-managers/{uuid}/key-servers?fields=connectivity.cluster_availability,connectivity.node_states.node.name
+    ```
+
 ### Related ONTAP commands
 * `security key-manager external show`
 * `security key-manager external show-status`
@@ -8548,11 +9384,21 @@ func (a *Client) SecurityKeyManagerKeyServersDeleteCollection(params *SecurityKe
 	SecurityKeyManagerKeyServersGet Retrieves key servers configured in an external key manager.
 
 ### Expensive properties
-There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+There is an added computational cost to retrieving these properties. They are excluded from default GET results and must be explicitly requested using the `fields` query parameter. For more details, see [`Requesting specific fields`](#Requesting_specific_fields). Additionally, these fields are unavailable for inactive configurations as they are only relevant to active configurations.
 * `connectivity.cluster_availability`
 * `connectivity.node_states.node.name`
 * `connectivity.node_states.node.uuid`
 * `connectivity.node_states.state`
+### Examples
+  - To retrieve basic information about a key server:
+    ```
+    GET /security/key-managers/{uuid}/key-servers/{server}
+    ```
+  - To retrieve specific fields, including expensive properties:
+    ```
+    GET /security/key-managers/{uuid}/key-servers/{server}?fields=connectivity.cluster_availability,connectivity.node_states.node.name
+    ```
+
 ### Related ONTAP commands
 * `security key-manager external show`
 * `security key-manager external show-status`
@@ -8724,7 +9570,7 @@ func (a *Client) SecurityKeyManagerMigrate(params *SecurityKeyManagerMigratePara
 /*
 	SecurityKeyManagerModify Updates a key manager.
 
-NOTE: When validate_certificates is set, the API returns a 202 status code for successful creation of the job, otherwise an error is returned.
+**Note:** When validate_certificates is set, the API returns a 202 status code for successful creation of the job, otherwise an error is returned.
 ### Required properties (when patching the Onboard Key Manager)
 * `onboard.existing_passphrase` - Cluster-wide passphrase. Required only when synchronizing the passphrase of the Onboard Key Manager.
 * `synchronize` - Synchronizes missing Onboard Key Manager keys on any node in the cluster. Required only when synchronizing the Onboard Key Manager keys in a local cluster.
@@ -9027,6 +9873,7 @@ func (a *Client) SecurityKeystoreGet(params *SecurityKeystoreGetParams, authInfo
 
 ### Related ONTAP commands
 * `security key-manager keystore enable`
+* `security key-manager keystore disable`
 */
 func (a *Client) SecurityKeystoreModify(params *SecurityKeystoreModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityKeystoreModifyOK, *SecurityKeystoreModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -9657,6 +10504,126 @@ func (a *Client) SecurityOauth2GlobalModify(params *SecurityOauth2GlobalModifyPa
 }
 
 /*
+	SecuritySamlDefMetadataCreate Creates the SAML default metadata configuration. Note that `common_name` is mutually exclusive with `serial_number` and `ca` in POST requests.
+
+### Optional properties
+* `certificate`
+* `host`
+*/
+func (a *Client) SecuritySamlDefMetadataCreate(params *SecuritySamlDefMetadataCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlDefMetadataCreateCreated, *SecuritySamlDefMetadataCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecuritySamlDefMetadataCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_saml_def_metadata_create",
+		Method:             "POST",
+		PathPattern:        "/security/authentication/cluster/saml-sp/default-metadata",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecuritySamlDefMetadataCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *SecuritySamlDefMetadataCreateCreated:
+		return value, nil, nil
+	case *SecuritySamlDefMetadataCreateAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecuritySamlDefMetadataCreateDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SecuritySamlDefMetadataDelete Deletes the SAML default metadata configuration.
+*/
+func (a *Client) SecuritySamlDefMetadataDelete(params *SecuritySamlDefMetadataDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlDefMetadataDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecuritySamlDefMetadataDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_saml_def_metadata_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/authentication/cluster/saml-sp/default-metadata",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecuritySamlDefMetadataDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecuritySamlDefMetadataDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecuritySamlDefMetadataDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SecuritySamlDefMetadataGet Retrieves the SAML default metadata configuration.
+*/
+func (a *Client) SecuritySamlDefMetadataGet(params *SecuritySamlDefMetadataGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlDefMetadataGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecuritySamlDefMetadataGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_saml_def_metadata_get",
+		Method:             "GET",
+		PathPattern:        "/security/authentication/cluster/saml-sp/default-metadata",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecuritySamlDefMetadataGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecuritySamlDefMetadataGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecuritySamlDefMetadataGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	SecuritySamlSpCreate Creates a SAML service provider configuration. Note that "common_name" is mutually exclusive with "serial_number" and "ca" in POST. SAML will initially be disabled, requiring a patch to set "enabled" to "true", so that the user has time to complete the setup of the IdP.
 
 ### Required properties
@@ -9908,6 +10875,238 @@ func (a *Client) SSHModify(params *SSHModifyParams, authInfo runtime.ClientAuthI
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SSHModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+StorageUnitAntiRansomwareEntropyStatsCollectionGet Retrieves the data-entropy statistics for the storage units.
+*/
+func (a *Client) StorageUnitAntiRansomwareEntropyStatsCollectionGet(params *StorageUnitAntiRansomwareEntropyStatsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitAntiRansomwareEntropyStatsCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStorageUnitAntiRansomwareEntropyStatsCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_unit_anti_ransomware_entropy_stats_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/anti-ransomware/storage-unit/entropy-stats",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StorageUnitAntiRansomwareEntropyStatsCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*StorageUnitAntiRansomwareEntropyStatsCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StorageUnitAntiRansomwareEntropyStatsCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+StorageUnitAntiRansomwareEntropyStatsGet Retrieves a data-entropy statistic for the storage unit.
+*/
+func (a *Client) StorageUnitAntiRansomwareEntropyStatsGet(params *StorageUnitAntiRansomwareEntropyStatsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitAntiRansomwareEntropyStatsGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStorageUnitAntiRansomwareEntropyStatsGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_unit_anti_ransomware_entropy_stats_get",
+		Method:             "GET",
+		PathPattern:        "/security/anti-ransomware/storage-unit/entropy-stats/{storage_unit.uuid}/{entropy_stats_type}/{timestamp}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StorageUnitAntiRansomwareEntropyStatsGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*StorageUnitAntiRansomwareEntropyStatsGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StorageUnitAntiRansomwareEntropyStatsGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+StorageUnitAntiRansomwareSuspectCollectionGet Retrieves information about the storage units on which a ransomware attack is detected.
+*/
+func (a *Client) StorageUnitAntiRansomwareSuspectCollectionGet(params *StorageUnitAntiRansomwareSuspectCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitAntiRansomwareSuspectCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStorageUnitAntiRansomwareSuspectCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_unit_anti_ransomware_suspect_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/anti-ransomware/storage-unit/suspects",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StorageUnitAntiRansomwareSuspectCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*StorageUnitAntiRansomwareSuspectCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StorageUnitAntiRansomwareSuspectCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+StorageUnitAntiRansomwareSuspectDelete Clear the ransomware attack detected on a storage unit specified by the UUID.
+*/
+func (a *Client) StorageUnitAntiRansomwareSuspectDelete(params *StorageUnitAntiRansomwareSuspectDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitAntiRansomwareSuspectDeleteOK, *StorageUnitAntiRansomwareSuspectDeleteAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStorageUnitAntiRansomwareSuspectDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_unit_anti_ransomware_suspect_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/anti-ransomware/storage-unit/suspects/{storage_unit.uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StorageUnitAntiRansomwareSuspectDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *StorageUnitAntiRansomwareSuspectDeleteOK:
+		return value, nil, nil
+	case *StorageUnitAntiRansomwareSuspectDeleteAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StorageUnitAntiRansomwareSuspectDeleteDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+StorageUnitAntiRansomwareSuspectDeleteCollection storage unit anti ransomware suspect delete collection API
+*/
+func (a *Client) StorageUnitAntiRansomwareSuspectDeleteCollection(params *StorageUnitAntiRansomwareSuspectDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitAntiRansomwareSuspectDeleteCollectionOK, *StorageUnitAntiRansomwareSuspectDeleteCollectionAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStorageUnitAntiRansomwareSuspectDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_unit_anti_ransomware_suspect_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/anti-ransomware/storage-unit/suspects",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StorageUnitAntiRansomwareSuspectDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *StorageUnitAntiRansomwareSuspectDeleteCollectionOK:
+		return value, nil, nil
+	case *StorageUnitAntiRansomwareSuspectDeleteCollectionAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StorageUnitAntiRansomwareSuspectDeleteCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+StorageUnitAntiRansomwareSuspectGet Retrieves information about the storage unit specified by the UUID.
+*/
+func (a *Client) StorageUnitAntiRansomwareSuspectGet(params *StorageUnitAntiRansomwareSuspectGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageUnitAntiRansomwareSuspectGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStorageUnitAntiRansomwareSuspectGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "storage_unit_anti_ransomware_suspect_get",
+		Method:             "GET",
+		PathPattern:        "/security/anti-ransomware/storage-unit/suspects/{storage_unit.uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &StorageUnitAntiRansomwareSuspectGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*StorageUnitAntiRansomwareSuspectGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*StorageUnitAntiRansomwareSuspectGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

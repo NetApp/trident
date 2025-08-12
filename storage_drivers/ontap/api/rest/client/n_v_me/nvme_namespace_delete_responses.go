@@ -188,7 +188,8 @@ func NewNvmeNamespaceDeleteDefault(code int) *NvmeNamespaceDeleteDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 4 | The specified namespace was not found. |
+| 4 | The specified namespace was not found.<personalities supports=asar2> |
+| 5376520 | Deleting a namespace that is the parent of a clone is not allowed. To allow deletion of the parent, split or delete the child clone.</personalities> |
 | 72089796 | The namespace must be unmapped before deletion. |
 | 72090016 | The namespace's aggregate is offline. The aggregate must be online to modify or remove the namespace. |
 | 72090017 | The namespace's volume is offline. The volume must be online to modify or remove the namespace. |

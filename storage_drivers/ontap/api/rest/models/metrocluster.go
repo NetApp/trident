@@ -2198,6 +2198,12 @@ func (m *MetroclusterInlineMccipPortsInlineArrayItemInlineNodeInlineLinks) Unmar
 // swagger:model metrocluster_inline_mediator
 type MetroclusterInlineMediator struct {
 
+	// BlueXP account token. This field is only applicable to the ONTAP cloud mediator.
+	BluexpAccountToken *string `json:"bluexp_account_token,omitempty"`
+
+	// BlueXP organization ID. This field is only applicable to the ONTAP cloud mediator.
+	BluexpOrgID *string `json:"bluexp_org_id,omitempty"`
+
 	// CA certificate for ONTAP Mediator. This is optional if the certificate is already installed.
 	CaCertificate *string `json:"ca_certificate,omitempty"`
 
@@ -2208,6 +2214,11 @@ type MetroclusterInlineMediator struct {
 	// Example: 10.10.10.7
 	IPAddress *string `json:"ip_address,omitempty"`
 
+	// Indicates the mediator connectivity status of the local cluster. Possible values are connected, unreachable, unusable and down-high-latency. This field is only applicable to the mediators in SnapMirror active sync configuration.
+	// Example: connected
+	// Read Only: true
+	LocalMediatorConnectivity *string `json:"local_mediator_connectivity,omitempty"`
+
 	// The password used to connect to the REST server on the mediator.
 	// Example: mypassword
 	// Format: password
@@ -2216,7 +2227,7 @@ type MetroclusterInlineMediator struct {
 	// peer cluster
 	PeerCluster *MetroclusterInlineMediatorInlinePeerCluster `json:"peer_cluster,omitempty"`
 
-	// Indicates the mediator connectivity status of the peer cluster. Possible values are connected, unreachable, unknown.
+	// Indicates the mediator connectivity status of the peer cluster. Possible values are connected, unreachable, unknown and down-high-latency.
 	// Example: connected
 	// Read Only: true
 	PeerMediatorConnectivity *string `json:"peer_mediator_connectivity,omitempty"`
@@ -2229,6 +2240,28 @@ type MetroclusterInlineMediator struct {
 	// Example: true
 	// Read Only: true
 	Reachable *bool `json:"reachable,omitempty"`
+
+	// Client ID of the BlueXP service account. This field is only applicable to the ONTAP cloud mediator.
+	ServiceAccountClientID *string `json:"service_account_client_id,omitempty"`
+
+	// Client secret token of the BlueXP service account. This field is only applicable to the ONTAP cloud mediator.
+	ServiceAccountClientSecret *string `json:"service_account_client_secret,omitempty"`
+
+	// Indicates if strict validation of certificates is performed while making REST API calls to the mediator. This field is only applicable to the ONTAP Cloud Mediator.
+	// Example: true
+	StrictCertValidation *bool `json:"strict_cert_validation,omitempty"`
+
+	// Mediator type. This field is only applicable to the mediators in SnapMirror active sync configuration.
+	// Enum: ["cloud","on_prem"]
+	Type *string `json:"type,omitempty"`
+
+	// Indicates if the local cluster should use an http-proxy server while making REST API calls to the mediator. This field is only applicable to the ONTAP cloud mediator.
+	// Example: true
+	UseHTTPProxyLocal *bool `json:"use_http_proxy_local,omitempty"`
+
+	// Indicates if the remote cluster should use an http-proxy server while making REST API calls to the mediator. This field is only applicable to the ONTAP cloud mediator.
+	// Example: true
+	UseHTTPProxyRemote *bool `json:"use_http_proxy_remote,omitempty"`
 
 	// The username used to connect to the REST server on the mediator.
 	// Example: myusername
@@ -2252,6 +2285,10 @@ func (m *MetroclusterInlineMediator) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePeerCluster(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -2307,11 +2344,71 @@ func (m *MetroclusterInlineMediator) validatePeerCluster(formats strfmt.Registry
 	return nil
 }
 
+var metroclusterInlineMediatorTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["cloud","on_prem"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		metroclusterInlineMediatorTypeTypePropEnum = append(metroclusterInlineMediatorTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// metrocluster_inline_mediator
+	// MetroclusterInlineMediator
+	// type
+	// Type
+	// cloud
+	// END DEBUGGING
+	// MetroclusterInlineMediatorTypeCloud captures enum value "cloud"
+	MetroclusterInlineMediatorTypeCloud string = "cloud"
+
+	// BEGIN DEBUGGING
+	// metrocluster_inline_mediator
+	// MetroclusterInlineMediator
+	// type
+	// Type
+	// on_prem
+	// END DEBUGGING
+	// MetroclusterInlineMediatorTypeOnPrem captures enum value "on_prem"
+	MetroclusterInlineMediatorTypeOnPrem string = "on_prem"
+)
+
+// prop value enum
+func (m *MetroclusterInlineMediator) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, metroclusterInlineMediatorTypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MetroclusterInlineMediator) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("mediator"+"."+"type", "body", *m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this metrocluster inline mediator based on the context it is used
 func (m *MetroclusterInlineMediator) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateDrGroup(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLocalMediatorConnectivity(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -2346,6 +2443,15 @@ func (m *MetroclusterInlineMediator) contextValidateDrGroup(ctx context.Context,
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *MetroclusterInlineMediator) contextValidateLocalMediatorConnectivity(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "mediator"+"."+"local_mediator_connectivity", "body", m.LocalMediatorConnectivity); err != nil {
+		return err
 	}
 
 	return nil

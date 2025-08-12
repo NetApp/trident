@@ -32,6 +32,9 @@ type AntiRansomwareVolumeAttackDetectionParameters struct {
 	// Specifies whether file extensions never seen before should be considered for attack detection.
 	BasedOnNeverSeenBeforeFileExtension *bool `json:"based_on_never_seen_before_file_extension,omitempty"`
 
+	// Specifies the block device auto learned encryption threshold.
+	BlockDeviceAutoLearnedEncryptionThreshold *int64 `json:"block_device_auto_learned_encryption_threshold,omitempty"`
+
 	// Specifies the percentage of surge in the file create rate up to which it is considered normal behavior.
 	// Example: 100
 	FileCreateOpRateSurgeNotifyPercent *int64 `json:"file_create_op_rate_surge_notify_percent,omitempty"`

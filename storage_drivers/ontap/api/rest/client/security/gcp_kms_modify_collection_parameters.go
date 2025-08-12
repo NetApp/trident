@@ -62,6 +62,12 @@ GcpKmsModifyCollectionParams contains all the parameters to send to the API endp
 */
 type GcpKmsModifyCollectionParams struct {
 
+	/* AuthenticationMethod.
+
+	   Filter by authentication_method
+	*/
+	AuthenticationMethod *string
+
 	/* CallerAccount.
 
 	   Filter by caller_account
@@ -109,6 +115,12 @@ type GcpKmsModifyCollectionParams struct {
 	   Filter by ekmip_reachability.reachable
 	*/
 	EkmipReachabilityReachable *bool
+
+	/* GceMetadataServer.
+
+	   Filter by gce_metadata_server
+	*/
+	GceMetadataServer *string
 
 	/* GoogleReachabilityCode.
 
@@ -355,6 +367,17 @@ func (o *GcpKmsModifyCollectionParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithAuthenticationMethod adds the authenticationMethod to the gcp kms modify collection params
+func (o *GcpKmsModifyCollectionParams) WithAuthenticationMethod(authenticationMethod *string) *GcpKmsModifyCollectionParams {
+	o.SetAuthenticationMethod(authenticationMethod)
+	return o
+}
+
+// SetAuthenticationMethod adds the authenticationMethod to the gcp kms modify collection params
+func (o *GcpKmsModifyCollectionParams) SetAuthenticationMethod(authenticationMethod *string) {
+	o.AuthenticationMethod = authenticationMethod
+}
+
 // WithCallerAccount adds the callerAccount to the gcp kms modify collection params
 func (o *GcpKmsModifyCollectionParams) WithCallerAccount(callerAccount *string) *GcpKmsModifyCollectionParams {
 	o.SetCallerAccount(callerAccount)
@@ -441,6 +464,17 @@ func (o *GcpKmsModifyCollectionParams) WithEkmipReachabilityReachable(ekmipReach
 // SetEkmipReachabilityReachable adds the ekmipReachabilityReachable to the gcp kms modify collection params
 func (o *GcpKmsModifyCollectionParams) SetEkmipReachabilityReachable(ekmipReachabilityReachable *bool) {
 	o.EkmipReachabilityReachable = ekmipReachabilityReachable
+}
+
+// WithGceMetadataServer adds the gceMetadataServer to the gcp kms modify collection params
+func (o *GcpKmsModifyCollectionParams) WithGceMetadataServer(gceMetadataServer *string) *GcpKmsModifyCollectionParams {
+	o.SetGceMetadataServer(gceMetadataServer)
+	return o
+}
+
+// SetGceMetadataServer adds the gceMetadataServer to the gcp kms modify collection params
+func (o *GcpKmsModifyCollectionParams) SetGceMetadataServer(gceMetadataServer *string) {
+	o.GceMetadataServer = gceMetadataServer
 }
 
 // WithGoogleReachabilityCode adds the googleReachabilityCode to the gcp kms modify collection params
@@ -759,6 +793,23 @@ func (o *GcpKmsModifyCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 	}
 	var res []error
 
+	if o.AuthenticationMethod != nil {
+
+		// query param authentication_method
+		var qrAuthenticationMethod string
+
+		if o.AuthenticationMethod != nil {
+			qrAuthenticationMethod = *o.AuthenticationMethod
+		}
+		qAuthenticationMethod := qrAuthenticationMethod
+		if qAuthenticationMethod != "" {
+
+			if err := r.SetQueryParam("authentication_method", qAuthenticationMethod); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.CallerAccount != nil {
 
 		// query param caller_account
@@ -890,6 +941,23 @@ func (o *GcpKmsModifyCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 		if qEkmipReachabilityReachable != "" {
 
 			if err := r.SetQueryParam("ekmip_reachability.reachable", qEkmipReachabilityReachable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.GceMetadataServer != nil {
+
+		// query param gce_metadata_server
+		var qrGceMetadataServer string
+
+		if o.GceMetadataServer != nil {
+			qrGceMetadataServer = *o.GceMetadataServer
+		}
+		qGceMetadataServer := qrGceMetadataServer
+		if qGceMetadataServer != "" {
+
+			if err := r.SetQueryParam("gce_metadata_server", qGceMetadataServer); err != nil {
 				return err
 			}
 		}

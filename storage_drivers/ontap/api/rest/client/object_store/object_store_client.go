@@ -114,9 +114,9 @@ type ClientService interface {
 
 	S3ServiceCreate(params *S3ServiceCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceCreateCreated, error)
 
-	S3ServiceDelete(params *S3ServiceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceDeleteOK, error)
+	S3ServiceDelete(params *S3ServiceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceDeleteOK, *S3ServiceDeleteAccepted, error)
 
-	S3ServiceDeleteCollection(params *S3ServiceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceDeleteCollectionOK, error)
+	S3ServiceDeleteCollection(params *S3ServiceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceDeleteCollectionOK, *S3ServiceDeleteCollectionAccepted, error)
 
 	S3ServiceGet(params *S3ServiceGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceGetOK, error)
 
@@ -275,6 +275,7 @@ func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCol
 /*
 	S3BucketCreate Creates the S3 bucket configuration of an SVM.
 
+<personalities supports=unified,asar2>
 ### Important notes
 - Each SVM can have one or more bucket configurations.
 - Aggregate lists should be specified explicitly. If not specified, then the bucket is auto-provisioned as a FlexGroup volume.
@@ -283,9 +284,19 @@ func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCol
 - "qos_policy" can be specified if a bucket needs to be attached to a QoS group policy during creation time.
 - "audit_event_selector" can be specified if a bucket needs to be specify access and permission type for auditing.
 - A CORS configuration can be specified along with bucket creation.
+</personalities>
+<personalities supports=aiml>
+### Important notes
+- Each SVM can have one or more bucket configurations.
+- An access policy can be created along with a bucket create. If creating an access policy fails, bucket configurations are saved and the access policy can be created using the PATCH endpoint.
+- "qos_policy" can be specified if a bucket needs to be attached to a QoS group policy during creation time.
+- "audit_event_selector" can be specified if a bucket needs to be specify access and permission type for auditing.
+- A CORS configuration can be specified along with bucket creation.
+</personalities>
 ### Required properties
 * `svm.uuid or svm.name` - Existing SVM in which to create the bucket configuration.
 * `name` - Bucket name that is to be created.
+<personalities supports=unified,asar2>
 ### Recommended optional properties
 * `aggregates` - List of aggregates for the FlexGroup volume on which the bucket is hosted on.
 * `constituents_per_aggregate` - Number of constituents per aggregate.
@@ -300,8 +311,9 @@ func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCol
 * `lifecycle_management` - Object store server lifecycle management policy.
 * `retention.mode` - Object lock mode supported on the bucket.
 * `retention.default_period` - Specifies the duration of default-retention applicable for objects on the object store bucket.
-* `cors' - Specifying CORS rules enables the bucket to service the cross-origin requests.
+* `cors` - Specifying CORS rules enables the bucket to service the cross-origin requests.
 * `snapshot_policy` - Snapshot policy for the bucket.
+* `is_nas_path_mutable` - Specifies whether the NAS bucket mapping with a NAS volume can change according to the changes in the NAS volume junction-path due to volume operations like mount and unmount.
 ### Default property values
 * `size` - 800MB
 * `comment` - ""
@@ -315,6 +327,33 @@ func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCol
 * `use_mirrored_aggregates` - _true_ for a MetroCluster configuration and _false_ for a non-MetroCluster configuration.
 * `type` - S3
 * `retention.mode` - no_lock
+</personalities>
+<personalities supports=aiml>
+### Recommended optional properties
+* `size` - Specifying the bucket size is recommended.
+* `policy` - Specifying a policy enables users to perform operations on buckets; specifying the resource permissions is recommended.
+* `qos_policy` - A QoS policy for buckets.
+* `audit_event_selector` - Audit policy for buckets.
+* `versioning_state` - Versioning state for buckets.
+* `type` - Type of bucket.
+* `nas_path` - NAS path to which the bucket corresponds to.
+* `lifecycle_management` - Object store server lifecycle management policy.
+* `retention.mode` - Object lock mode supported on the bucket.
+* `retention.default_period` - Specifies the duration of default-retention applicable for objects on the object store bucket.
+* `cors` - Specifying CORS rules enables the bucket to service the cross-origin requests.
+* `snapshot_policy` - Snapshot policy for the bucket.
+* `is_nas_path_mutable` - Specifies whether the NAS bucket mapping with a NAS volume can change according to the changes in the NAS volume junction-path due to volume operations like mount and unmount.
+### Default property values
+* `size` - 800MB
+* `comment` - ""
+* `policy.statements.actions` - GetObject, PutObject, DeleteObject, ListBucket, ListBucketMultipartUploads, ListMultipartUploadParts, GetObjectTagging, PutObjectTagging, DeleteObjectTagging, GetBucketVersioning, PutBucketVersioning.
+* `policy.statements.principals` - all S3 users and groups in the SVM or the NAS groups.
+* `policy.statements.resources` - all objects in the bucket.
+* `policy.statements.conditions` - list of bucket policy conditions.
+* `versioning_state` - disabled.
+* `type` - S3
+* `retention.mode` - no_lock
+</personalities>
 ### Related ONTAP commands
 * `vserver object-store-server bucket create`
 * `vserver object-store-server bucket policy statement create`
@@ -831,7 +870,7 @@ func (a *Client) S3BucketLifecycleRuleModifyCollection(params *S3BucketLifecycle
   - `versioning-state` - Versioning state of the buckets.
   - `nas_path` - NAS path to which the bucket corresponds to.
   - `retention.default_period` - Specifies the duration of default-retention applicable for objects on the object store bucket.
-  - `cors' - Specifying CORS rules enables the bucket to service the cross-origin requests. Note that the new CORS configuration specified will replace the existing one. If you need to retain any of the existing CORS rules, specify those rules again as part of the new CORS rules. To remove all the existing rules, specify an empty CORS configuration as input.
+  - `cors` - Specifying CORS rules enables the bucket to service the cross-origin requests. Note that the new CORS configuration specified will replace the existing one. If you need to retain any of the existing CORS rules, specify those rules again as part of the new CORS rules. To remove all the existing rules, specify an empty CORS configuration as input.
   - `snapshot_policy` - Snapshot policy for the bucket.
 
 ### Related ONTAP commands
@@ -1137,6 +1176,7 @@ func (a *Client) S3BucketSnapshotGet(params *S3BucketSnapshotGetParams, authInfo
 /*
 	S3BucketSvmCreate Creates the S3 bucket configuration of an SVM.
 
+<personalities supports=unified,asar2>
 ### Important notes
 - Each SVM can have one or more bucket configurations.
 - Aggregate lists should be specified explicitly. If not specified, then the bucket is auto-provisioned as a FlexGroup.
@@ -1145,14 +1185,24 @@ func (a *Client) S3BucketSnapshotGet(params *S3BucketSnapshotGetParams, authInfo
 - "qos_policy" can be specified if a bucket needs to be attached to a QoS group policy during creation time.
 - "audit_event_selector" can be specified if a bucket needs to be specify access and permission type for auditing.
 - Cross-origin resource sharing (CORS) configuration can be specified when a bucket is created.
+</personalities>
+<personalities supports=aiml>
+### Important notes
+- Each SVM can have one or more bucket configurations.
+- An access policy can be created when a bucket is created.
+- "qos_policy" can be specified if a bucket needs to be attached to a QoS group policy during creation time.
+- "audit_event_selector" can be specified if a bucket needs to be specify access and permission type for auditing.
+- Cross-origin resource sharing (CORS) configuration can be specified when a bucket is created.
+</personalities>
 ### Required properties
 * `svm.uuid` - Existing SVM in which to create the bucket configuration.
 * `name` - Bucket name that is to be created.
+<personalities supports=unified,asar2>
 ### Recommended optional properties
 * `aggregates` - List of aggregates for the FlexGroup on which the bucket is hosted on.
 * `constituents_per_aggregate` - Number of constituents per aggregate.
 * `size` - Specifying the bucket size is recommended.
-* `policy` - Specifying policy enables users to perform operations on buckets. Hence specifying the resource permissions is recommended.
+* `policy` - Specifying policy enables users to perform operations on buckets; specifying the resource permissions is recommended.
 * `qos_policy` - A QoS policy for buckets.
 * `audit_event_selector` - Audit policy for buckets.
 * `versioning_state` - Versioning state for buckets.
@@ -1164,6 +1214,8 @@ func (a *Client) S3BucketSnapshotGet(params *S3BucketSnapshotGetParams, authInfo
 * `retention.default_period` - Specifies the duration of default-retention applicable for objects on the object store bucket.
 * `cors` - Specifying CORS rules enables the bucket to service the cross-origin requests.
 * `snapshot_policy` - Snapshot policy for the bucket.
+* `is_consistent_etag` - Return a consistent ETag for NAS buckets.
+* `is_nas_path_mutable` - Specifies whether the NAS bucket mapping with a NAS volume can change according to the changes in the NAS volume junction-path due to volume operations like mount and unmount.
 ### Default property values
 * `size` - 800MB
 * `comment` - ""
@@ -1178,6 +1230,37 @@ func (a *Client) S3BucketSnapshotGet(params *S3BucketSnapshotGetParams, authInfo
 * `use_mirrored_aggregates` - _true_ for a MetroCluster configuration and _false_ for a non-MetroCluster configuration.
 * `type` - S3.
 * `retention.mode` - no_lock
+* `is_consistent_etag` - false
+</personalities>
+<personalities supports=aiml>
+### Recommended optional properties
+* `size` - Specifying the bucket size is recommended.
+* `policy` - Specifying policy enables users to perform operations on buckets; specifying the resource permissions is recommended.
+* `qos_policy` - A QoS policy for buckets.
+* `audit_event_selector` - Audit policy for buckets.
+* `versioning_state` - Versioning state for buckets.
+* `type` - Type of bucket.
+* `nas_path` - The NAS path to which the NAS bucket corresponds to.
+* `lifecycle_management` - Object store server lifecycle management policy.
+* `retention.mode` - Object lock mode supported on the bucket.
+* `retention.default_period` - Specifies the duration of default-retention applicable for objects on the object store bucket.
+* `cors` - Specifying CORS rules enables the bucket to service the cross-origin requests.
+* `snapshot_policy` - Snapshot policy for the bucket.
+* `is_consistent_etag` - Return a consistent ETag for NAS buckets.
+* `is_nas_path_mutable` - Specifies whether the NAS bucket mapping with a NAS volume can change according to the changes in the NAS volume junction-path due to volume operations like mount and unmount.
+### Default property values
+* `size` - 800MB
+* `comment` - ""
+* `policy.statements.actions` - GetObject, PutObject, DeleteObject, ListBucket, ListBucketMultipartUploads, ListMultipartUploadParts, GetObjectTagging, PutObjectTagging, DeleteObjectTagging, GetBucketVersioning, PutBucketVersioning.
+* `policy.statements.principals` - all S3 users and groups in the SVM or the NAS groups.
+* `policy.statements.resources` - all objects in the bucket.
+* `policy.statements.conditions` - list of bucket policy conditions.
+* `qos-policy` - No default value.
+* `versioning_state` - disabled.
+* `type` - S3.
+* `retention.mode` - no_lock
+* `is_consistent_etag` - false
+</personalities>
 ### Related ONTAP commands
 * `vserver object-store-server bucket create`
 * `vserver object-store-server bucket policy statement create`
@@ -1373,8 +1456,9 @@ func (a *Client) S3BucketSvmGet(params *S3BucketSvmGetParams, authInfo runtime.C
   - `versioning_state` - Versioning state for buckets.
   - `nas_path` - NAS path to which the NAS bucket corresponds to.
   - `retention.default_period` - Specifies the duration of default-retention applicable for objects on the object store bucket.
-  - `cors' - Specifying CORS rules enables the bucket to service the cross-origin requests. New CORS rules are created after existing rules are deleted. To retain any of the existing rules, you need to specify those CORS rules again. To remove all the existing CORS rules, specify an empty CORS rules list.
+  - `cors` - Specifying CORS rules enables the bucket to service the cross-origin requests. New CORS rules are created after existing rules are deleted. To retain any of the existing rules, you need to specify those CORS rules again. To remove all the existing CORS rules, specify an empty CORS rules list.
   - `snapshot_policy` - Snapshot policy for the bucket.
+  - `is_consistent_etag` - Return a consistent ETag for NAS buckets.
 
 ### Related ONTAP commands
 * `vserver object-store-server bucket modify`
@@ -2195,7 +2279,7 @@ func (a *Client) S3ServiceCreate(params *S3ServiceCreateParams, authInfo runtime
 ### Learn more
 * [`DOC /protocols/s3/services`](#docs-object-store-protocols_s3_services)
 */
-func (a *Client) S3ServiceDelete(params *S3ServiceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceDeleteOK, error) {
+func (a *Client) S3ServiceDelete(params *S3ServiceDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceDeleteOK, *S3ServiceDeleteAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewS3ServiceDeleteParams()
@@ -2219,21 +2303,23 @@ func (a *Client) S3ServiceDelete(params *S3ServiceDeleteParams, authInfo runtime
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*S3ServiceDeleteOK)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *S3ServiceDeleteOK:
+		return value, nil, nil
+	case *S3ServiceDeleteAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*S3ServiceDeleteDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
 S3ServiceDeleteCollection s3 service delete collection API
 */
-func (a *Client) S3ServiceDeleteCollection(params *S3ServiceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceDeleteCollectionOK, error) {
+func (a *Client) S3ServiceDeleteCollection(params *S3ServiceDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*S3ServiceDeleteCollectionOK, *S3ServiceDeleteCollectionAccepted, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewS3ServiceDeleteCollectionParams()
@@ -2257,15 +2343,17 @@ func (a *Client) S3ServiceDeleteCollection(params *S3ServiceDeleteCollectionPara
 
 	result, err := a.transport.Submit(op)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	success, ok := result.(*S3ServiceDeleteCollectionOK)
-	if ok {
-		return success, nil
+	switch value := result.(type) {
+	case *S3ServiceDeleteCollectionOK:
+		return value, nil, nil
+	case *S3ServiceDeleteCollectionAccepted:
+		return nil, value, nil
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*S3ServiceDeleteCollectionDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*

@@ -142,6 +142,8 @@ func NewFpolicyEngineCreateDefault(code int) *FpolicyEngineCreateDefault {
 | 9764953    | The name of the FPolicy engine is "native" which is reserved by the system |
 | 9765011    | The resiliency feature is not supported with mandatory screening |
 | 9765012    | The specified resiliency directory path does not exist |
+| 9765004    | The specified session timeout exceeds the maximum limit |
+| 9764935    | The specified max connection retries exceeds the maximum limit |
 */
 type FpolicyEngineCreateDefault struct {
 	_statusCode int

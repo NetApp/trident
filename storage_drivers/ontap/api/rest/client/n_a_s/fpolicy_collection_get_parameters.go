@@ -104,6 +104,12 @@ type FpolicyCollectionGetParams struct {
 	*/
 	EnginesKeepAliveInterval *string
 
+	/* EnginesMaxConnectionRetries.
+
+	   Filter by engines.max_connection_retries
+	*/
+	EnginesMaxConnectionRetries *int64
+
 	/* EnginesMaxServerRequests.
 
 	   Filter by engines.max_server_requests
@@ -169,6 +175,12 @@ type FpolicyCollectionGetParams struct {
 	   Filter by engines.server_progress_timeout
 	*/
 	EnginesServerProgressTimeout *string
+
+	/* EnginesSessionTimeout.
+
+	   Filter by engines.session_timeout
+	*/
+	EnginesSessionTimeout *string
 
 	/* EnginesSslOption.
 
@@ -768,6 +780,17 @@ func (o *FpolicyCollectionGetParams) SetEnginesKeepAliveInterval(enginesKeepAliv
 	o.EnginesKeepAliveInterval = enginesKeepAliveInterval
 }
 
+// WithEnginesMaxConnectionRetries adds the enginesMaxConnectionRetries to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEnginesMaxConnectionRetries(enginesMaxConnectionRetries *int64) *FpolicyCollectionGetParams {
+	o.SetEnginesMaxConnectionRetries(enginesMaxConnectionRetries)
+	return o
+}
+
+// SetEnginesMaxConnectionRetries adds the enginesMaxConnectionRetries to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEnginesMaxConnectionRetries(enginesMaxConnectionRetries *int64) {
+	o.EnginesMaxConnectionRetries = enginesMaxConnectionRetries
+}
+
 // WithEnginesMaxServerRequests adds the enginesMaxServerRequests to the fpolicy collection get params
 func (o *FpolicyCollectionGetParams) WithEnginesMaxServerRequests(enginesMaxServerRequests *int64) *FpolicyCollectionGetParams {
 	o.SetEnginesMaxServerRequests(enginesMaxServerRequests)
@@ -887,6 +910,17 @@ func (o *FpolicyCollectionGetParams) WithEnginesServerProgressTimeout(enginesSer
 // SetEnginesServerProgressTimeout adds the enginesServerProgressTimeout to the fpolicy collection get params
 func (o *FpolicyCollectionGetParams) SetEnginesServerProgressTimeout(enginesServerProgressTimeout *string) {
 	o.EnginesServerProgressTimeout = enginesServerProgressTimeout
+}
+
+// WithEnginesSessionTimeout adds the enginesSessionTimeout to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEnginesSessionTimeout(enginesSessionTimeout *string) *FpolicyCollectionGetParams {
+	o.SetEnginesSessionTimeout(enginesSessionTimeout)
+	return o
+}
+
+// SetEnginesSessionTimeout adds the enginesSessionTimeout to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEnginesSessionTimeout(enginesSessionTimeout *string) {
+	o.EnginesSessionTimeout = enginesSessionTimeout
 }
 
 // WithEnginesSslOption adds the enginesSslOption to the fpolicy collection get params
@@ -1841,6 +1875,23 @@ func (o *FpolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
+	if o.EnginesMaxConnectionRetries != nil {
+
+		// query param engines.max_connection_retries
+		var qrEnginesMaxConnectionRetries int64
+
+		if o.EnginesMaxConnectionRetries != nil {
+			qrEnginesMaxConnectionRetries = *o.EnginesMaxConnectionRetries
+		}
+		qEnginesMaxConnectionRetries := swag.FormatInt64(qrEnginesMaxConnectionRetries)
+		if qEnginesMaxConnectionRetries != "" {
+
+			if err := r.SetQueryParam("engines.max_connection_retries", qEnginesMaxConnectionRetries); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.EnginesMaxServerRequests != nil {
 
 		// query param engines.max_server_requests
@@ -2023,6 +2074,23 @@ func (o *FpolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		if qEnginesServerProgressTimeout != "" {
 
 			if err := r.SetQueryParam("engines.server_progress_timeout", qEnginesServerProgressTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EnginesSessionTimeout != nil {
+
+		// query param engines.session_timeout
+		var qrEnginesSessionTimeout string
+
+		if o.EnginesSessionTimeout != nil {
+			qrEnginesSessionTimeout = *o.EnginesSessionTimeout
+		}
+		qEnginesSessionTimeout := qrEnginesSessionTimeout
+		if qEnginesSessionTimeout != "" {
+
+			if err := r.SetQueryParam("engines.session_timeout", qEnginesSessionTimeout); err != nil {
 				return err
 			}
 		}

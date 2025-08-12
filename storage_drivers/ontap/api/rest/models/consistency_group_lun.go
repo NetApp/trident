@@ -18,16 +18,13 @@ import (
 
 // ConsistencyGroupLun A LUN is the logical representation of storage in a storage area network (SAN).<br/>
 // A LUN must be mapped to an initiator group to grant access to the initiator group's initiators (client hosts). Initiators can then access the LUN and perform I/O over a Fibre Channel (FC) fabric using the FC Protocol or a TCP/IP network using iSCSI.<br/>
-// See the LUN object model to learn more about each of the properties supported by the LUN REST API.
-// ## Platform Specifics
-// ### Unified ONTAP
-// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+// See the LUN object model to learn more about each of the properties supported by the LUN REST API.<br/>
+// <personalities supports=unified>A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 // LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<lun>" where the qtree name is optional.<br/>
-// A LUN can be created to a specified size using thin or thick provisioning. A LUN can then be renamed, resized, cloned, moved to a different volume and copied. LUNs support the assignment of a QoS policy for performance management or a QoS policy can be assigned to a volume containing one or more LUNs.
-// ### ASA r2
-// LUN names are simple names that share a namespace with NVMe namespaces within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+// A LUN can be created to a specified size using thin or thick provisioning. A LUN can then be renamed, resized, cloned, moved to a different volume and copied. LUNs support the assignment of a QoS policy for performance management or a QoS policy can be assigned to a volume containing one or more LUNs.</personalities>
+// <personalities supports=asar2>LUN names are simple names that share a namespace with NVMe namespaces within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
 // A LUN can be created to a specified size. A LUN can then be renamed, resized, or cloned. LUNs support the assignment of a QoS policy for performance management.<br/>
-// **Note**: LUN related REST API examples use the Unified ONTAP form for LUN names. On ASA r2, the ASA r2 format must be used.
+// **Note**: LUN related REST API examples use the Unified ONTAP form for LUN names. On ASA r2, the ASA r2 format must be used.</personalities>
 //
 // swagger:model consistency_group_lun
 type ConsistencyGroupLun struct {
@@ -613,13 +610,11 @@ func (m *ConsistencyGroupLun) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// ConsistencyGroupLunInlineClone * **Unified ONTAP**:
-// This sub-object is used in POST to create a new LUN as a clone of an existing LUN, or PATCH to overwrite an existing LUN as a clone of another. Setting a property in this sub-object indicates that a LUN clone is desired. Consider the following other properties when cloning a LUN: `auto_delete`, `qos_policy`, `space.guarantee.requested` and `space.scsi_thin_provisioning_support_enabled`.<br/>
+// ConsistencyGroupLunInlineClone <personalities supports=unified>This sub-object is used in POST to create a new LUN as a clone of an existing LUN, or PATCH to overwrite an existing LUN as a clone of another. Setting a property in this sub-object indicates that a LUN clone is desired. Consider the following other properties when cloning a LUN: `auto_delete`, `qos_policy`, `space.guarantee.requested` and `space.scsi_thin_provisioning_support_enabled`.<br/>
 // When used in a PATCH, the patched LUN's data is over-written as a clone of the source and the following properties are preserved from the patched LUN unless otherwise specified as part of the PATCH: `class`, `auto_delete`, `lun_maps`, `serial_number`, `status.state`, and `uuid`.<br/>
-// Persistent reservations for the patched LUN are also preserved.
-// * **ASA r2**:
-// This endpoint does not support clones. No properties in this sub-object can be set for POST or PATCH and none will be returned by GET.<br/>
-// Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
+// Persistent reservations for the patched LUN are also preserved.</personalities>
+// <personalities supports=asar2>This endpoint does not support clones. No properties in this sub-object can be set for POST or PATCH and none will be returned by GET.<br/>
+// Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.</personalities>
 //
 // swagger:model consistency_group_lun_inline_clone
 type ConsistencyGroupLunInlineClone struct {
@@ -713,23 +708,17 @@ func (m *ConsistencyGroupLunInlineClone) UnmarshalBinary(b []byte) error {
 type ConsistencyGroupLunInlineCloneInlineSource struct {
 
 	// The name of the clone source LUN.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// <personalities supports=unified>A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 	// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
-	// Valid in POST and PATCH.
-	// * **ASA r2**:
-	// This property is not supported. Cloning is supported through the /ap/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
+	// Valid in POST and PATCH.</personalities>
+	// <personalities supports=asar2>This property is not supported. Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.</personalities>
 	//
 	// Example: /vol/volume1/lun1
 	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the clone source LUN.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// Valid in POST and PATCH.
-	// * **ASA r2**:
-	// This property is not supported. Cloning is supported through the /ap/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
+	// <personalities supports=unified>Valid in POST and PATCH.</personalities>
+	// <personalities supports=asar2>This property is not supported. Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.</personalities>
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	UUID *string `json:"uuid,omitempty"`
@@ -1682,28 +1671,28 @@ type ConsistencyGroupLunInlineQosInlinePolicy struct {
 	// links
 	Links *SelfLink `json:"_links,omitempty"`
 
-	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 10000
 	// Read Only: true
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
-	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 500
 	// Read Only: true
 	// Maximum: 4.194303e+06
 	// Minimum: 0
 	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
-	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 2000
 	// Read Only: true
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
-	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 500
 	// Read Only: true
 	// Maximum: 4.194303e+06
@@ -2097,7 +2086,7 @@ func (m *ConsistencyGroupLunInlineSpace) UnmarshalBinary(b []byte) error {
 type ConsistencyGroupLunInlineSpaceInlineGuarantee struct {
 
 	// The requested space reservation policy for the LUN. If _true_, a space reservation is requested for the LUN; if _false_, the LUN is thin provisioned. Guaranteeing a space reservation request for a LUN requires that the volume in which the LUN resides is also space reserved and that the fractional reserve for the volume is 100%. Valid in POST and PATCH.
-	//
+	// <personalities supports=asar2>All LUNs are provisioned without a space reservation.</personalities>
 	//
 	Requested *bool `json:"requested,omitempty"`
 

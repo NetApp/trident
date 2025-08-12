@@ -70,7 +70,7 @@ type NvmeSubsystemController struct {
 
 	// Transport Protocol
 	// Read Only: true
-	// Enum: ["fc_nvme","nvme_tcp"]
+	// Enum: ["fc_nvme","nvme_tcp","nvme_roce"]
 	TransportProtocol *string `json:"transport_protocol,omitempty"`
 }
 
@@ -323,7 +323,7 @@ var nvmeSubsystemControllerTypeTransportProtocolPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["fc_nvme","nvme_tcp"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["fc_nvme","nvme_tcp","nvme_roce"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -352,6 +352,16 @@ const (
 	// END DEBUGGING
 	// NvmeSubsystemControllerTransportProtocolNvmeTCP captures enum value "nvme_tcp"
 	NvmeSubsystemControllerTransportProtocolNvmeTCP string = "nvme_tcp"
+
+	// BEGIN DEBUGGING
+	// nvme_subsystem_controller
+	// NvmeSubsystemController
+	// transport_protocol
+	// TransportProtocol
+	// nvme_roce
+	// END DEBUGGING
+	// NvmeSubsystemControllerTransportProtocolNvmeRoce captures enum value "nvme_roce"
+	NvmeSubsystemControllerTransportProtocolNvmeRoce string = "nvme_roce"
 )
 
 // prop value enum

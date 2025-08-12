@@ -69,6 +69,9 @@ type NodeModifyCollectionParams struct {
 	The giveback action transfers storage control back to the owner from its HA group.
 	The "power_off" action shuts the node down with the assistance of the service processor.
 	The "power_on" action restores power to the node with the assistance of the service processor.
+	<personalities supports=aiml>
+	The takeover_check action is not supported on this platform.
+	</personalities>
 
 	*/
 	Action *string
@@ -297,11 +300,35 @@ type NodeModifyCollectionParams struct {
 	*/
 	ExternalCachePcsSize *int64
 
+	/* ExternalCacheBypassEnabled.
+
+	   Filter by external_cache_bypass.enabled
+	*/
+	ExternalCacheBypassEnabled *bool
+
+	/* ExternalCacheBypassLargeReadOpsAllowPercent.
+
+	   Filter by external_cache_bypass.large_read_ops_allow_percent
+	*/
+	ExternalCacheBypassLargeReadOpsAllowPercent *int64
+
 	/* HaAutoGiveback.
 
 	   Filter by ha.auto_giveback
 	*/
 	HaAutoGiveback *bool
+
+	/* HaAutoGivebackOf.
+
+	   Filter by ha.auto_giveback_of
+	*/
+	HaAutoGivebackOf *bool
+
+	/* HaEnableTakeoverOf.
+
+	   Filter by ha.enable_takeover_of
+	*/
+	HaEnableTakeoverOf *bool
 
 	/* HaEnabled.
 
@@ -422,6 +449,12 @@ type NodeModifyCollectionParams struct {
 	   Filter by ha.takeover_check.takeover_possible
 	*/
 	HaTakeoverCheckTakeoverPossible *bool
+
+	/* HaType.
+
+	   Filter by ha.type
+	*/
+	HaType *string
 
 	/* HwAssistStatusEnabled.
 
@@ -566,6 +599,18 @@ type NodeModifyCollectionParams struct {
 	   Filter by name
 	*/
 	Name *string
+
+	/* NvlogBackingType.
+
+	   Filter by nvlog.backing_type
+	*/
+	NvlogBackingType *string
+
+	/* NvlogSwapMode.
+
+	   Filter by nvlog.swap_mode
+	*/
+	NvlogSwapMode *string
 
 	/* NvramBatteryState.
 
@@ -1483,6 +1528,28 @@ func (o *NodeModifyCollectionParams) SetExternalCachePcsSize(externalCachePcsSiz
 	o.ExternalCachePcsSize = externalCachePcsSize
 }
 
+// WithExternalCacheBypassEnabled adds the externalCacheBypassEnabled to the node modify collection params
+func (o *NodeModifyCollectionParams) WithExternalCacheBypassEnabled(externalCacheBypassEnabled *bool) *NodeModifyCollectionParams {
+	o.SetExternalCacheBypassEnabled(externalCacheBypassEnabled)
+	return o
+}
+
+// SetExternalCacheBypassEnabled adds the externalCacheBypassEnabled to the node modify collection params
+func (o *NodeModifyCollectionParams) SetExternalCacheBypassEnabled(externalCacheBypassEnabled *bool) {
+	o.ExternalCacheBypassEnabled = externalCacheBypassEnabled
+}
+
+// WithExternalCacheBypassLargeReadOpsAllowPercent adds the externalCacheBypassLargeReadOpsAllowPercent to the node modify collection params
+func (o *NodeModifyCollectionParams) WithExternalCacheBypassLargeReadOpsAllowPercent(externalCacheBypassLargeReadOpsAllowPercent *int64) *NodeModifyCollectionParams {
+	o.SetExternalCacheBypassLargeReadOpsAllowPercent(externalCacheBypassLargeReadOpsAllowPercent)
+	return o
+}
+
+// SetExternalCacheBypassLargeReadOpsAllowPercent adds the externalCacheBypassLargeReadOpsAllowPercent to the node modify collection params
+func (o *NodeModifyCollectionParams) SetExternalCacheBypassLargeReadOpsAllowPercent(externalCacheBypassLargeReadOpsAllowPercent *int64) {
+	o.ExternalCacheBypassLargeReadOpsAllowPercent = externalCacheBypassLargeReadOpsAllowPercent
+}
+
 // WithHaAutoGiveback adds the haAutoGiveback to the node modify collection params
 func (o *NodeModifyCollectionParams) WithHaAutoGiveback(haAutoGiveback *bool) *NodeModifyCollectionParams {
 	o.SetHaAutoGiveback(haAutoGiveback)
@@ -1492,6 +1559,28 @@ func (o *NodeModifyCollectionParams) WithHaAutoGiveback(haAutoGiveback *bool) *N
 // SetHaAutoGiveback adds the haAutoGiveback to the node modify collection params
 func (o *NodeModifyCollectionParams) SetHaAutoGiveback(haAutoGiveback *bool) {
 	o.HaAutoGiveback = haAutoGiveback
+}
+
+// WithHaAutoGivebackOf adds the haAutoGivebackOf to the node modify collection params
+func (o *NodeModifyCollectionParams) WithHaAutoGivebackOf(haAutoGivebackOf *bool) *NodeModifyCollectionParams {
+	o.SetHaAutoGivebackOf(haAutoGivebackOf)
+	return o
+}
+
+// SetHaAutoGivebackOf adds the haAutoGivebackOf to the node modify collection params
+func (o *NodeModifyCollectionParams) SetHaAutoGivebackOf(haAutoGivebackOf *bool) {
+	o.HaAutoGivebackOf = haAutoGivebackOf
+}
+
+// WithHaEnableTakeoverOf adds the haEnableTakeoverOf to the node modify collection params
+func (o *NodeModifyCollectionParams) WithHaEnableTakeoverOf(haEnableTakeoverOf *bool) *NodeModifyCollectionParams {
+	o.SetHaEnableTakeoverOf(haEnableTakeoverOf)
+	return o
+}
+
+// SetHaEnableTakeoverOf adds the haEnableTakeoverOf to the node modify collection params
+func (o *NodeModifyCollectionParams) SetHaEnableTakeoverOf(haEnableTakeoverOf *bool) {
+	o.HaEnableTakeoverOf = haEnableTakeoverOf
 }
 
 // WithHaEnabled adds the haEnabled to the node modify collection params
@@ -1712,6 +1801,17 @@ func (o *NodeModifyCollectionParams) WithHaTakeoverCheckTakeoverPossible(haTakeo
 // SetHaTakeoverCheckTakeoverPossible adds the haTakeoverCheckTakeoverPossible to the node modify collection params
 func (o *NodeModifyCollectionParams) SetHaTakeoverCheckTakeoverPossible(haTakeoverCheckTakeoverPossible *bool) {
 	o.HaTakeoverCheckTakeoverPossible = haTakeoverCheckTakeoverPossible
+}
+
+// WithHaType adds the haType to the node modify collection params
+func (o *NodeModifyCollectionParams) WithHaType(haType *string) *NodeModifyCollectionParams {
+	o.SetHaType(haType)
+	return o
+}
+
+// SetHaType adds the haType to the node modify collection params
+func (o *NodeModifyCollectionParams) SetHaType(haType *string) {
+	o.HaType = haType
 }
 
 // WithHwAssistStatusEnabled adds the hwAssistStatusEnabled to the node modify collection params
@@ -1976,6 +2076,28 @@ func (o *NodeModifyCollectionParams) WithName(name *string) *NodeModifyCollectio
 // SetName adds the name to the node modify collection params
 func (o *NodeModifyCollectionParams) SetName(name *string) {
 	o.Name = name
+}
+
+// WithNvlogBackingType adds the nvlogBackingType to the node modify collection params
+func (o *NodeModifyCollectionParams) WithNvlogBackingType(nvlogBackingType *string) *NodeModifyCollectionParams {
+	o.SetNvlogBackingType(nvlogBackingType)
+	return o
+}
+
+// SetNvlogBackingType adds the nvlogBackingType to the node modify collection params
+func (o *NodeModifyCollectionParams) SetNvlogBackingType(nvlogBackingType *string) {
+	o.NvlogBackingType = nvlogBackingType
+}
+
+// WithNvlogSwapMode adds the nvlogSwapMode to the node modify collection params
+func (o *NodeModifyCollectionParams) WithNvlogSwapMode(nvlogSwapMode *string) *NodeModifyCollectionParams {
+	o.SetNvlogSwapMode(nvlogSwapMode)
+	return o
+}
+
+// SetNvlogSwapMode adds the nvlogSwapMode to the node modify collection params
+func (o *NodeModifyCollectionParams) SetNvlogSwapMode(nvlogSwapMode *string) {
+	o.NvlogSwapMode = nvlogSwapMode
 }
 
 // WithNvramBatteryState adds the nvramBatteryState to the node modify collection params
@@ -3380,6 +3502,40 @@ func (o *NodeModifyCollectionParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
+	if o.ExternalCacheBypassEnabled != nil {
+
+		// query param external_cache_bypass.enabled
+		var qrExternalCacheBypassEnabled bool
+
+		if o.ExternalCacheBypassEnabled != nil {
+			qrExternalCacheBypassEnabled = *o.ExternalCacheBypassEnabled
+		}
+		qExternalCacheBypassEnabled := swag.FormatBool(qrExternalCacheBypassEnabled)
+		if qExternalCacheBypassEnabled != "" {
+
+			if err := r.SetQueryParam("external_cache_bypass.enabled", qExternalCacheBypassEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ExternalCacheBypassLargeReadOpsAllowPercent != nil {
+
+		// query param external_cache_bypass.large_read_ops_allow_percent
+		var qrExternalCacheBypassLargeReadOpsAllowPercent int64
+
+		if o.ExternalCacheBypassLargeReadOpsAllowPercent != nil {
+			qrExternalCacheBypassLargeReadOpsAllowPercent = *o.ExternalCacheBypassLargeReadOpsAllowPercent
+		}
+		qExternalCacheBypassLargeReadOpsAllowPercent := swag.FormatInt64(qrExternalCacheBypassLargeReadOpsAllowPercent)
+		if qExternalCacheBypassLargeReadOpsAllowPercent != "" {
+
+			if err := r.SetQueryParam("external_cache_bypass.large_read_ops_allow_percent", qExternalCacheBypassLargeReadOpsAllowPercent); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.HaAutoGiveback != nil {
 
 		// query param ha.auto_giveback
@@ -3392,6 +3548,40 @@ func (o *NodeModifyCollectionParams) WriteToRequest(r runtime.ClientRequest, reg
 		if qHaAutoGiveback != "" {
 
 			if err := r.SetQueryParam("ha.auto_giveback", qHaAutoGiveback); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaAutoGivebackOf != nil {
+
+		// query param ha.auto_giveback_of
+		var qrHaAutoGivebackOf bool
+
+		if o.HaAutoGivebackOf != nil {
+			qrHaAutoGivebackOf = *o.HaAutoGivebackOf
+		}
+		qHaAutoGivebackOf := swag.FormatBool(qrHaAutoGivebackOf)
+		if qHaAutoGivebackOf != "" {
+
+			if err := r.SetQueryParam("ha.auto_giveback_of", qHaAutoGivebackOf); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaEnableTakeoverOf != nil {
+
+		// query param ha.enable_takeover_of
+		var qrHaEnableTakeoverOf bool
+
+		if o.HaEnableTakeoverOf != nil {
+			qrHaEnableTakeoverOf = *o.HaEnableTakeoverOf
+		}
+		qHaEnableTakeoverOf := swag.FormatBool(qrHaEnableTakeoverOf)
+		if qHaEnableTakeoverOf != "" {
+
+			if err := r.SetQueryParam("ha.enable_takeover_of", qHaEnableTakeoverOf); err != nil {
 				return err
 			}
 		}
@@ -3732,6 +3922,23 @@ func (o *NodeModifyCollectionParams) WriteToRequest(r runtime.ClientRequest, reg
 		if qHaTakeoverCheckTakeoverPossible != "" {
 
 			if err := r.SetQueryParam("ha.takeover_check.takeover_possible", qHaTakeoverCheckTakeoverPossible); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaType != nil {
+
+		// query param ha.type
+		var qrHaType string
+
+		if o.HaType != nil {
+			qrHaType = *o.HaType
+		}
+		qHaType := qrHaType
+		if qHaType != "" {
+
+			if err := r.SetQueryParam("ha.type", qHaType); err != nil {
 				return err
 			}
 		}
@@ -4126,6 +4333,40 @@ func (o *NodeModifyCollectionParams) WriteToRequest(r runtime.ClientRequest, reg
 		if qName != "" {
 
 			if err := r.SetQueryParam("name", qName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NvlogBackingType != nil {
+
+		// query param nvlog.backing_type
+		var qrNvlogBackingType string
+
+		if o.NvlogBackingType != nil {
+			qrNvlogBackingType = *o.NvlogBackingType
+		}
+		qNvlogBackingType := qrNvlogBackingType
+		if qNvlogBackingType != "" {
+
+			if err := r.SetQueryParam("nvlog.backing_type", qNvlogBackingType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NvlogSwapMode != nil {
+
+		// query param nvlog.swap_mode
+		var qrNvlogSwapMode string
+
+		if o.NvlogSwapMode != nil {
+			qrNvlogSwapMode = *o.NvlogSwapMode
+		}
+		qNvlogSwapMode := qrNvlogSwapMode
+		if qNvlogSwapMode != "" {
+
+			if err := r.SetQueryParam("nvlog.swap_mode", qNvlogSwapMode); err != nil {
 				return err
 			}
 		}

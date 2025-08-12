@@ -192,8 +192,8 @@ func NewConsistencyGroupDeleteDefault(code int) *ConsistencyGroupDeleteDefault {
 | 53411843 | A consistency group with specified UUID was not found. |
 | 53411844 | Specified consistency group was not found in the specified SVM. |
 | 53411845 | The specified UUID and name refer to different consistency groups. |
-| 53411846 | Either name or UUID must be provided. |
-| 53412041 | Cannot delete a consistency group because it contains one or more storage units that are part of replication relationships. |
+| 53411846 | Either name or UUID must be provided.<personalities supports=unified,asar2> |
+| 53412041 | Cannot delete a consistency group because it contains one or more storage units that are part of replication relationships.</personalities> |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ConsistencyGroupDeleteDefault struct {

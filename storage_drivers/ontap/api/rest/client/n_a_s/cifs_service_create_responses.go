@@ -237,7 +237,7 @@ func NewCifsServiceCreateDefault(code int) *CifsServiceCreateDefault {
 | 3735762    | The provided Azure Key Vault configuration is incorrect. |
 | 3735763    | The provided Azure Key Vault configuration is incomplete. |
 | 3735764    | Request to Azure failed. Reason - Azure error code and Azure error message. |
-| 655388     | STARTTLS and LDAPS cannot be used together.|
+| 655388     | Failed to create the CIFS server. Failure can occur due to multiple reasons. For example: STARTTLS and LDAPS cannot be used together or a password update failed or error from LDAP server or Kerberos Error: KDC has no support for encryption type. |
 | 655524     | CIFS server creation failed. |
 | 655538     | CIFS server creation failed because a server with the same name already exists. |
 | 655562     | NetBIOS name is longer than 15 characters. |

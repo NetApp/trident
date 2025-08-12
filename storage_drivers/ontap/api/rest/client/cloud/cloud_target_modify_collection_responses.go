@@ -241,6 +241,7 @@ func NewCloudTargetModifyCollectionDefault(code int) *CloudTargetModifyCollectio
 | 787302 | Cannot use HTTP port with \"-is-ssl-enabled\" set to true. |
 | 787303 | Cannot use HTTPS port with \"-is-ssl-enabled\" set to false. |
 | 787306 | Object store is not accessible from the partner cluster in a MetroCluster configuration. |
+| 787325 | FabricPool is not supported on this platform. |
 | 787350 | Modifying an object store configuration with a Managed Service Identity (MSI) token is only supported on Azure NetApp Files. |
 | 787351 | Internal Error. Invalid authentication type. |
 | 787352 | Modifying an object store configuration with a Managed Service Identity (MSI) token requires an effective cluster version of ONTAP 9.16.1 or later. |
@@ -367,14 +368,14 @@ type CloudTargetModifyCollectionBody struct {
 	// Cloud target name
 	Name *string `json:"name,omitempty"`
 
-	// Owner of the target. Allowed values are FabricPool, SnapMirror or S3_SnapMirror. A target can be used by only one feature.
+	// Owner of the target. Allowed values are <personalities supports=unified> FabricPool, </personalities> SnapMirror or S3_SnapMirror. A target can be used by only one feature.
 	// Enum: ["fabricpool","snapmirror","s3_snapmirror"]
 	Owner *string `json:"owner,omitempty"`
 
 	// Port number of the object store that ONTAP uses when establishing a connection. Required in POST.
 	Port *int64 `json:"port,omitempty"`
 
-	// Type of cloud provider. Allowed values depend on owner type. For FabricPool, AliCloud, AWS_S3, Azure_Cloud, GoogleCloud, IBM_COS, SGWS, and ONTAP_S3 are allowed. For SnapMirror, the valid values are AWS_S3 or SGWS. For FabricLink, AWS_S3, SGWS, S3_Compatible, S3EMU, LOOPBACK and ONTAP_S3 are allowed.
+	// Type of cloud provider. Allowed values depend on owner type. <personalities supports=unified> For FabricPool, AliCloud, AWS_S3, Azure_Cloud, GoogleCloud, IBM_COS, SGWS, and ONTAP_S3 are allowed. </personalities> For SnapMirror, the valid values are AWS_S3 or SGWS. For FabricLink, AWS_S3, SGWS, S3_Compatible, S3EMU, LOOPBACK and ONTAP_S3 are allowed.
 	ProviderType *string `json:"provider_type,omitempty"`
 
 	// The warning threshold for read latency that is used to determine when an alert ems for a read operation from an object store should be issued.

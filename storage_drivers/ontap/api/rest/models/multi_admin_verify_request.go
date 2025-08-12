@@ -79,7 +79,7 @@ type MultiAdminVerifyRequest struct {
 	RequiredApprovers *int64 `json:"required_approvers,omitempty"`
 
 	// The state of the request. PATCH supports approved and vetoed. The state only changes after setting to approved once no more approvers are required.
-	// Enum: ["pending","approved","vetoed","expired","executed"]
+	// Enum: ["approved","vetoed","pending","expired","executed"]
 	State *string `json:"state,omitempty"`
 
 	// The user that created the request. Automatically set by ONTAP.
@@ -194,7 +194,7 @@ var multiAdminVerifyRequestTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["pending","approved","vetoed","expired","executed"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["approved","vetoed","pending","expired","executed"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -203,16 +203,6 @@ func init() {
 }
 
 const (
-
-	// BEGIN DEBUGGING
-	// multi_admin_verify_request
-	// MultiAdminVerifyRequest
-	// state
-	// State
-	// pending
-	// END DEBUGGING
-	// MultiAdminVerifyRequestStatePending captures enum value "pending"
-	MultiAdminVerifyRequestStatePending string = "pending"
 
 	// BEGIN DEBUGGING
 	// multi_admin_verify_request
@@ -233,6 +223,16 @@ const (
 	// END DEBUGGING
 	// MultiAdminVerifyRequestStateVetoed captures enum value "vetoed"
 	MultiAdminVerifyRequestStateVetoed string = "vetoed"
+
+	// BEGIN DEBUGGING
+	// multi_admin_verify_request
+	// MultiAdminVerifyRequest
+	// state
+	// State
+	// pending
+	// END DEBUGGING
+	// MultiAdminVerifyRequestStatePending captures enum value "pending"
+	MultiAdminVerifyRequestStatePending string = "pending"
 
 	// BEGIN DEBUGGING
 	// multi_admin_verify_request

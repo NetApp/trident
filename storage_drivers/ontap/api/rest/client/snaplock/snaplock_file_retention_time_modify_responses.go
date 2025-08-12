@@ -118,7 +118,7 @@ func NewSnaplockFileRetentionTimeModifyDefault(code int) *SnaplockFileRetentionT
 | 13763279    | The resulting expiry time due to the specified retention period is earlier than the current expiry time  |
 | 14090348    | Invalid Expiry time  |
 | 14090347    | File path must be in the format \"\/\<dir\>\/\<file path\>\"  |
-| 917804      | Path should be given in the format \"\/\vol\/\<volume name>\/\<file path>\".
+| 917804      | Path should be given in the format \"\/\vol\/\<volume name>\/\<file path>\".  |
 */
 type SnaplockFileRetentionTimeModifyDefault struct {
 	_statusCode int

@@ -92,7 +92,7 @@ func (a *Client) CloudTargetCollectionGet(params *CloudTargetCollectionGetParams
 
 ### Required properties
 * `name` - Name for the cloud target.
-* `owner` - Owner of the target: _fabricpool_, _snapmirror_.
+* `owner` - Owner of the target: <personalities supports=unified> _fabricpool_,</personalities> _snapmirror_.
 * `provider_type` - Type of cloud provider: _AWS_S3_, _Azure_Cloud_, _SGWS_, _IBM_COS_, _AliCloud_, _GoogleCloud_, _ONTAP_S3_.
 * `server` - Fully qualified domain name of the object store server. Required when `provider_type` is one of the following: _SGWS_, _IBM_COS_, _AliCloud_.
 * `container` - Data bucket/container name.

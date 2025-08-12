@@ -74,6 +74,12 @@ type SvmPeerDeleteCollectionParams struct {
 	*/
 	ContinueOnFailure *bool
 
+	/* Force.
+
+	   Use this parameter to delete the SVM peer relationship even when the remote cluster is not accessible. For example, if there are network connectivity issues.
+	*/
+	Force *bool
+
 	/* Info.
 
 	   Info specification
@@ -249,6 +255,17 @@ func (o *SvmPeerDeleteCollectionParams) WithContinueOnFailure(continueOnFailure 
 // SetContinueOnFailure adds the continueOnFailure to the svm peer delete collection params
 func (o *SvmPeerDeleteCollectionParams) SetContinueOnFailure(continueOnFailure *bool) {
 	o.ContinueOnFailure = continueOnFailure
+}
+
+// WithForce adds the force to the svm peer delete collection params
+func (o *SvmPeerDeleteCollectionParams) WithForce(force *bool) *SvmPeerDeleteCollectionParams {
+	o.SetForce(force)
+	return o
+}
+
+// SetForce adds the force to the svm peer delete collection params
+func (o *SvmPeerDeleteCollectionParams) SetForce(force *bool) {
+	o.Force = force
 }
 
 // WithInfo adds the info to the svm peer delete collection params
@@ -431,6 +448,23 @@ func (o *SvmPeerDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, 
 		if qContinueOnFailure != "" {
 
 			if err := r.SetQueryParam("continue_on_failure", qContinueOnFailure); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Force != nil {
+
+		// query param force
+		var qrForce bool
+
+		if o.Force != nil {
+			qrForce = *o.Force
+		}
+		qForce := swag.FormatBool(qrForce)
+		if qForce != "" {
+
+			if err := r.SetQueryParam("force", qForce); err != nil {
 				return err
 			}
 		}

@@ -234,6 +234,7 @@ func NewClusterCreateDefault(code int) *ClusterCreateDefault {
 | 656466 | Failed to create the Active Directory machine account. Reason: Unable to connect to any domain controllers. |
 | 656467 | Failed to create the Active Directory machine account. Reason: Organizational-Unit not found. |
 | 656483 | Active Directory account creation for the admin SVM requires an effective cluster version of 9.16.0 or later. |
+| 1179812 | This node cannot be configured as a single node cluster. |
 | 1179813 | Fields set for one node must be set for all nodes. |
 | 1179817 | The IP address, subnet mask, and gateway must all be provided for cluster management interface. |
 | 1179818 | The IP address and gateway must be of the same family. |
@@ -241,6 +242,7 @@ func NewClusterCreateDefault(code int) *ClusterCreateDefault {
 | 1179823 | An invalid netmask was provided. |
 | 1179824 | An invalid gateway was provided. |
 | 1179825 | All management and cluster config IP addresses must belong to the same address family. |
+| 1182809 | Cluster creation is already complete. |
 | 2097165 | An NTP server could not be reached. |
 | 7077919 | The minimum length for the new password does not meet the policy. |
 | 8847361 | Too many DNS domains provided. |

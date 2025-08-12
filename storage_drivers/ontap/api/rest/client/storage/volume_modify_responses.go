@@ -204,7 +204,7 @@ func NewVolumeModifyDefault(code int) *VolumeModifyDefault {
 | ---------- | ----------- |
 | 262256 | Tags cannot be modified for the volume because of the specified reason. |
 | 524511 | Failed to restore snapshot \"restore_to.snapshot.name\". |
-| 524849 | Attribute cannot be modified for the target volume because of the specified reason. |
+| 524849 | Attribute cannot be modified for the target volume because of the specified reason.<personalities supports=unified> |
 | 787141 | The specified \"aggregates.name\" and \"aggregates.uuid\" refer to different aggregates. |
 | 787144 | The volume is on an aggregate that is not part of a FabricPool. |
 | 917505 | SVM not found. |
@@ -216,8 +216,8 @@ func NewVolumeModifyDefault(code int) *VolumeModifyDefault {
 | 917831 | Volume minimum autosize must be smaller than the maximum autosize. |
 | 917888 | Invalid character in volume name. It can have '_' and alphanumeric characters.; |
 | 918183 | The specified tiering policy is not supported for the current system configuration. |
-| 918193 | Cannot modify tiering min cooling days when vol move is in progress. |
-| 918194 | Tiering min cooling days not supported for SVMDR. |
+| 918193 | Cannot modify tiering min cooling days when vol move is in progress.</personalities> |
+| 918194 | Tiering min cooling days not supported for SVMDR.<personalities supports=unified> |
 | 918195 | Tiering min cooling days not supported for non data volumes. |
 | 918196 | Tiering min cooling days not allowed for the provided tiering policy. |
 | 918248 | Specifying a value is not valid for initiating volume FlexClone split operation. |
@@ -225,10 +225,10 @@ func NewVolumeModifyDefault(code int) *VolumeModifyDefault {
 | 918252 | specified \"nas.path\" is invalid. |
 | 918265 | Volume is on the same aggregate. |
 | 918266 | \"movement.destination_aggregate\" and \"movement.state\" are mutually exclusive, unless the state is \"cutover-wait\". |
-| 918267 | The specified \"movement.destination_aggregate\" does not exist. |
+| 918267 | The specified \"movement.destination_aggregate\" does not exist.</personalities> |
 | 918291 | Invalid volume cloud retrieval policy for the provided tiering policy. |
-| 918292 | cloud retrieval policy not supported for non data volume. |
-| 918293 | Cannot modify cloud retrieval policy when vol move is in progress. |
+| 918292 | cloud retrieval policy not supported for non data volume.<personalities supports=unified> |
+| 918293 | Cannot modify cloud retrieval policy when vol move is in progress.</personalities> |
 | 918334 | Cache cloud retrieval policy requires an effective cluster version of 9.14 or later. |
 | 918521 | The volume maximum autosize must be smaller than or equal to the maximum volume size. |
 | 918532 | The FlexClone match-parent-storage-tier option requires an effective cluster version of 9.9.1 or later. |
@@ -241,8 +241,8 @@ func NewVolumeModifyDefault(code int) *VolumeModifyDefault {
 | 918583 | Disabling large volume size is not supported because the volume contains files larger than 16TB or the volume size is larger than 100TB. |
 | 918599 | Cloud write requires an effective cluster version of 9.13.1 or later. |
 | 918600 | Cloud write is only supported for volumes in a FabricPool on FSx for ONTAP or Cloud Volumes ONTAP. |
-| 918601 | Only the \\\"all\\\" tiering policy is allowed on a volume with cloud write. |
-| 918602 | Cannot move volume when cloud write is enabled. |
+| 918601 | Only the \\\"all\\\" tiering policy is allowed on a volume with cloud write.<personalities supports=unified> |
+| 918602 | Cannot move volume when cloud write is enabled.</personalities> |
 | 918603 | Cloud write is only supported on volumes with Read-Write access. |
 | 918604 | Cloud write is not supported because the volume is the destination or source endpoint of one or more SnapMirror relationships. |
 | 918605 | Cloud write cannot be enabled on a clone volume. |
@@ -260,9 +260,12 @@ func NewVolumeModifyDefault(code int) *VolumeModifyDefault {
 | 918652 | \"error\" is an invalid value for field \"-state\". Valid values are \"online\", \"offline\" and \"restricted\". |
 | 918655 | Cloud write is not supported on the current configuration. |
 | 918658 | Volume is on a FabricPool-enabled aggregate. CIFS applications might time out when cloud write is enabled on a volume that is on a FabricPool-enabled aggregate. |
-| 918659 | Cloud write can only be enabled on FabricPool-enabled aggregates. |
-| 918660 | Cloud write enabled volumes can only be moved to FabricPool-enabled aggregates. Disable cloud write to move the volume to a non-FabricPool aggregates. |
+| 918659 | Cloud write can only be enabled on FabricPool-enabled aggregates.<personalities supports=unified> |
+| 918660 | Cloud write enabled volumes can only be moved to FabricPool-enabled aggregates. Disable cloud write to move the volume to a non-FabricPool aggregates.</personalities> |
 | 918703 | Modification of the specified volume properties are not supported on this platform. |
+| 918775 | The \"constituent_count\" parameter must be greater than the current number of constituents in the FlexGroup volume. |
+| 918776 | The \"constituent_count\" and \"size\" parameters cannot both be specified. |
+| 918777 | The \"aggregates\" parameter cannot contain both storage pods and aggregates. |
 | 1638480 | Failed to promote snapshot \"restore_to.snapshot.name\" because one or more newer snapshots are currently used as a reference snapshot for data protection operations. |
 | 1638590 | Promoting a \"-pre-conversion\" snapshot is not supported. |
 | 2424998 | Unable to determine whether MetroCluster is configured. |

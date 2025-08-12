@@ -227,6 +227,9 @@ func NewNodeDeleteDefault(code int) *NodeDeleteDefault {
 | 2293814 | The DELETE operation is not supported until the cluster is upgraded. |
 | 2293816 | Cannot remove node because its Storage Encryption devices use authentication keys (AKs) that will not be available to the node after it leaves the cluster. |
 | 2293821 | Cannot remove a node that is offline. |
+| 2293842 | A node can only be removed if all of its aggregates are home. |
+| 2293843 | Cannot determine if all aggregates belonging to the node to be removed are home. |
+| 2293844 | Cannot determine if storage failover is enabled. |
 | 10551347 | An update is in progress. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */

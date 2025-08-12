@@ -48,7 +48,7 @@ type KeyManagerKeys struct {
 	KeyStore *string `json:"key_store,omitempty"`
 
 	// Security key manager keystore type. Keystore type can be onboard, external, or supported cloud key manager.
-	// Enum: ["okm","kmip","akv","unset","gcp","aws","ikp"]
+	// Enum: ["okm","kmip","akv","unset","gcp","aws","ikp","barbican"]
 	KeyStoreType *string `json:"key_store_type,omitempty"`
 
 	// Additional information associated with the key.
@@ -203,7 +203,7 @@ var keyManagerKeysTypeKeyStoreTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["okm","kmip","akv","unset","gcp","aws","ikp"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["okm","kmip","akv","unset","gcp","aws","ikp","barbican"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -282,6 +282,16 @@ const (
 	// END DEBUGGING
 	// KeyManagerKeysKeyStoreTypeIkp captures enum value "ikp"
 	KeyManagerKeysKeyStoreTypeIkp string = "ikp"
+
+	// BEGIN DEBUGGING
+	// key_manager_keys
+	// KeyManagerKeys
+	// key_store_type
+	// KeyStoreType
+	// barbican
+	// END DEBUGGING
+	// KeyManagerKeysKeyStoreTypeBarbican captures enum value "barbican"
+	KeyManagerKeysKeyStoreTypeBarbican string = "barbican"
 )
 
 // prop value enum

@@ -116,56 +116,58 @@ There is an added computational cost to retrieving values for these properties. 
 ### Related ONTAP commands
 * `vserver show`
 ### Examples
- 1. Retrieves a list of SVMs in the cluster sorted by name
+  - Retrieves a list of SVMs in the cluster sorted by name.
     <br/>
     ```
     GET "/api/svm/svms?order_by=name"
     ```
     <br/>
- 2. Retrieves a list of SVMs in the cluster that have the NFS protocol enabled
+  - Retrieves a list of SVMs in the cluster that have the NFS protocol enabled.
     <br/>
     ```
     GET "/api/svm/svms?nfs.enabled=true"
     ```
     <br/>
- 3. Retrieves a list of SVMs in the cluster that have the CIFS protocol enabled
+  - Retrieves a list of SVMs in the cluster that have the CIFS protocol enabled.
     <br/>
     ```
     GET "/api/svm/svms?cifs.enabled=true"
     ```
     <br/>
- 4. Retrieves a list of SVMs in the cluster that have the S3 protocol enabled
+  - Retrieves a list of SVMs in the cluster that have the S3 protocol enabled.
     <br/>
     ```
     GET "/api/svm/svms?s3.enabled=true"
     ```
     <br/>
 
-5 Retrieves a list of SVMs in the cluster that have the FCP protocol allowed
+<personalities supports=asar2,unified>
+  - Retrieves a list of SVMs in the cluster that have the FCP protocol allowed.
+    <br/>
+    ```
+    GET "/api/svm/svms?fcp.allowed=true"
+    ```
+    <br/>
 
-		<br/>
-		```
-		GET "/api/svm/svms?fcp.allowed=true"
-		```
-		<br/>
-	 6. Retrieves a list of SVMs in the cluster that have the CIFS protocol allowed
-	    <br/>
-	    ```
-	    GET "/api/svm/svms?cifs.allowed=true"
-	    ```
-	    <br/>
-	 7. Retrieves a list of SVMs in the cluster where the NDMP protocol is specified as allowed
-	    <br/>
-	    ```
-	    GET "/api/svm/svms?ndmp.allowed=true"
-	    ```
-	    <br/>
-	 8. Retrieves a list of SVMs in the cluster that have the s3 protocol allowed
-	    <br/>
-	    ```
-	    GET "/api/svm/svms?s3.allowed=true"
-	    ```
-	    <br/>
+</personalities>
+  - Retrieves a list of SVMs in the cluster that have the CIFS protocol allowed.
+    <br/>
+    ```
+    GET "/api/svm/svms?cifs.allowed=true"
+    ```
+    <br/>
+  - Retrieves a list of SVMs in the cluster where the NDMP protocol is specified as allowed.
+    <br/>
+    ```
+    GET "/api/svm/svms?ndmp.allowed=true"
+    ```
+    <br/>
+  - Retrieves a list of SVMs in the cluster that have the s3 protocol allowed.
+    <br/>
+    ```
+    GET "/api/svm/svms?s3.allowed=true"
+    ```
+    <br/>
 
 ### Learn more
 * [`DOC /svm/svms`](#docs-svm-svm_svms)
@@ -245,11 +247,13 @@ func (a *Client) SvmCollectionGet(params *SvmCollectionGetParams, authInfo runti
 * `dns` - If provided, the following fields are required:
   - `dns.servers` - Name servers
   - `dns.domains` - Domains
+    <personalities supports=asar2,unified>
 
 * `fc_interfaces` - If provided, the following fields are required:
   - `fc_interfaces.name` - Fibre Channel interface name
   - `fc_interfaces.data_protocol` - Fibre Channel interface data protocol
   - `fc_interfaces.location.port.uuid` or `fc_interfaces.location.port.name` and `fc_interfaces.location.port.node.name` - Either port UUID or port name and node name together must be provided.
+    </personalities>
 
 * `s3` - If provided, the following field should also be specified:
   - `s3.name` - Name of the S3 server. If `s3.name' is not specified while `s3.enabled` is set to 'true', the S3 server will be created with the default name '<svm.name>_S3Server'.
@@ -271,7 +275,7 @@ If not specified in POST, the following default property values are assigned:
 * `snapshot_policy.name` - _Default_
 * `subtype` - _Default_ ( _sync-source_ if MetroCluster configuration )
 * `anti_ransomware_default_volume_state` - _disabled_
-* `qos_adaptive_policy_group_template` - _extreme_ ( if running ONTAP X and neither qos_policy_group_template nor qos_adaptive_policy_group_template are provided)
+* `qos_adaptive_policy_group_template` - _extreme_ ( if using a platform with disaggregated storage and neither qos_policy_group_template nor qos_adaptive_policy_group_template are provided)
 ### Related ONTAP commands
 * `vserver create`
 * `vserver add-aggregates`
@@ -282,147 +286,160 @@ If not specified in POST, the following default property values are assigned:
 * `vserver services name-service ldap client create`
 * `vserver cifs create`
 * `vserver services name-service nis-domain create`
+<personalities supports=asar2,unified>
 * `vserver iscsi create`
 * `vserver nvme create`
 * `vserver fcp create`
+</personalities>
 * `vserver services name-service ns-switch create`
 * `vserver object-store-server create`
 * `vserver add-protocols`
 * `vserver remove-protocols`
 ### Examples
- 1. Creates an SVM with default "snapshot_policy"
+  - Creates an SVM with default "snapshot_policy".
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "snapshot_policy":{"name":"default"}}'
     ```
     <br/>
- 2. Creates an SVM and configures NFS, ISCSI and FCP
+  - Creates an SVM and configures NFS, CIFS, and S3.
     <br/>
     ```
-    POST "/api/svm/svms" '{"name":"testVs", "nfs":{"enabled":"true"}, "fcp":{"enabled":"true"}, "iscsi":{"enabled":"true"}}'
+    POST "/api/svm/svms" '{"name":"testVs", "nfs":{"enabled":"true"}, "cifs":{"enabled":"true"}, "s3":{"enabled":"true"}}'
     ```
     <br/>
- 3. Creates an SVM and configures NVMe
+
+<personalities supports=asar2,unified>
+  - Creates an SVM and configures NVMe.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "nvme":{"enabled":"true"}}'
     ```
     <br/>
- 4. Creates an SVM and configures LDAP
+
+</personalities>
+  - Creates an SVM and configures LDAP.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "snapshot_policy":{"name":"default"}, "ldap":{"servers":["10.140.101.1","10.140.101.2"], "ad_domain":"abc.com", "base_dn":"dc=netapp,dc=com", "bind_dn":"dc=netapp,dc=com"}}'
     ```
     <br/>
- 5. Creates an SVM and configures NIS
+  - Creates an SVM and configures NIS.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "snapshot_policy":{"name":"default"}, "nis":{"enabled":"true", "domain":"def.com","servers":["10.224.223.130", "10.224.223.131"]}}'
     ```
     <br/>
- 6. Creates an SVM and configures DNS
+  - Creates an SVM and configures DNS.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "snapshot_policy":{"name":"default"}, "dns":{"domains":["abc.com","def.com"], "servers":["10.224.223.130", "10.224.223.131"]}}'
     ```
     <br/>
- 7. Creates an SVM and configures a LIF
+  - Creates an SVM and configures a LIF.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "ip_interfaces": [{"name":"lif1", "ip":{"address":"10.10.10.7", "netmask": "255.255.255.0"}, "location":{"broadcast_domain":{"name":"bd1"}, "home_node":{"name":"node1"}}, "service_policy": "default-management"}]}'
     ```
     <br/>
- 8. Creates an SVM and configures a LIF with IPV6 address
+  - Creates an SVM and configures a LIF with IPV6 address.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "ip_interfaces": [{"name":"lif2", "ip":{"address":"fd22:8b1e:b255:202:2a0:98ff:fe01:7d5b", "netmask":"24"}, "location":{"broadcast_domain":{"name":"bd1"}, "home_node":{"name":"node1"}}, "service_policy": "default-management"}]}'
     ```
     <br/>
- 9. Creates an SVM and configures CIFS
+  - Creates an SVM and configures CIFS.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "cifs":{"name":"CIFDOC", "ad_domain":{"fqdn":"abc.def.com", "organizational_unit":"CN=Computers", "user":"cif_admin", "password":"abc123"}}, "ip_interfaces":[{"name":"lif1", "ip":{"address":"10.10.10.7", "netmask": "255.255.255.0"}, "location":{"broadcast_domain":{"name":"bd1"}, "home_node":{"name":"node1"}}, "service_policy": "default-management"}],"routes": [{"destination": {"address": "0.0.0.0", "netmask": "0"}, "gateway": "10.10.10.7"}], "dns":{"domains":["abc.def.com", "def.com"], "servers":["10.224.223.130", "10.224.223.131"]}}'
     ```
     <br/>
- 10. Creates an SVM with an S3 server enabled and configured
+  - Creates an SVM with an S3 server enabled and configured.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"svm5", "s3":{"name":"s3-server-1", "enabled":true, "allowed":true, "is_http_enabled": true, "is_https_enabled":false}}'
     ```
     <br/>
- 11. Creates an SVM and disallows NVMe service for the SVM
+
+<personalities supports=asar2,unified>
+  - Creates an SVM and disallows NVMe service for the SVM.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "nvme":{"allowed":"false"}}'
     ```
     <br/>
- 12. Creates an SVM, allows and configures the NFS service for the SVM
+
+</personalities>
+  - Creates an SVM, allows and configures the NFS service for the SVM.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "nfs":{"allowed":"true", "enabled":true}}'
     ```
     <br/>
- 13. Create an SVM and set the max volume limit for the SVM
+  - Create an SVM and set the max volume limit for the SVM.
     <br/>
     ```
     POST "/api/svm/svms/" '{"name":"testVs", "max_volumes":"200"}'
     ```
     <br/>
- 14. Creates an SVM and disallows the NDMP service for the SVM.
+  - Creates an SVM and disallows the NDMP service for the SVM.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "ndmp":{"allowed":"false"}}'
     ```
     <br/>
- 15. Creates an SVM and specifies whether file system analytics is enabled on all newly created volumes in the SVM.
+  - Creates an SVM and specifies whether file system analytics is enabled on all newly created volumes in the SVM.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "auto_enable_analytics":true}}'
     ```
     <br/>
- 16. Creates an SVM and specifies whether volume_activity_tracking is enabled on all newly created volumes in the SVM.
+  - Creates an SVM and specifies whether volume_activity_tracking is enabled on all newly created volumes in the SVM.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "auto_enable_activity_tracking":true}}'
     ```
     <br/>
- 17. Creates an SVM and specifies whether file system analytics is enabled on all newly created volumes in the SVM.
+  - Creates an SVM and specifies whether file system analytics is enabled on all newly created volumes in the SVM.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "auto_enable_analytics":true}}'
     ```
     <br/>
- 18. Creates an SVM and specifies the maximum storage limit for a single SVM.
+  - Creates an SVM and specifies the maximum storage limit for a single SVM.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "storage": {"limit":"4GB"}}'
     ```
     <br/>
- 19. Creates an SVM and specifies at what percentage of storage capacity an alert message is sent. Default value is 90.
+  - Creates an SVM and specifies at what percentage of storage capacity an alert message is sent. Default value is 90.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "storage": {"limit":"20GB", "limit_threshold_alert":"95"}}'
     ```
     <br/>
- 20. Creates an SVM and specifies the QoS policy group template to be assigned to the SVM.
+  - Creates an SVM and specifies the QoS policy group template to be assigned to the SVM.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "qos_policy_group_template":{"name":"performance-fixed"}}'
     ```
     <br/>
- 21. Creates an SVM and specifies the QoS adaptive policy group template to be assigned to the SVM.
+  - Creates an SVM and specifies the QoS adaptive policy group template to be assigned to the SVM.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs", "qos_adaptive_policy_group_template":{"name":"performance"}}'
     ```
     <br/>
- 22. On ASA r2 platforms, _fcp_, _iscsi_, and _nvme_ services are enabled and allowed by default, and are not necessary in the POST request.
+
+<personalities supports=asar2>
+  - On ASA r2 platforms, _fcp_, _iscsi_, and _nvme_ services are enabled and allowed by default, and are not necessary in the POST request.
     <br/>
     ```
     POST "/api/svm/svms" '{"name":"testVs"}'
     ```
     <br/>
 
+</personalities>
 ### Learn more
 * [`DOC /svm/svms`](#docs-svm-svm_svms)
 */
@@ -656,14 +673,14 @@ func (a *Client) SvmMigrationCollectionGet(params *SvmMigrationCollectionGetPara
 /*
 	SvmMigrationCreate Creates an SVM migration operation. This API must be executed on the destination cluster. This API creates an SVM on the destination cluster and preserves the SVM's identity specified in the source cluster.
 
-Optionally, you can specify the aggregate list for creating the volumes, and IPspace. You can perform pre-checks to verify if SVM migration is possible, by setting the "check-only" option to "true". By default the values for auto-source-cleanup and auto-cutover is true.
+Optionally, you can specify the <personalities supports=unified>aggregate list for creating the volumes, and </personalities>IPspace. You can perform pre-checks to verify if SVM migration is possible, by setting the "check-only" option to "true". By default the values for auto-source-cleanup and auto-cutover is true.
 ### Required properties
 * `source.svm.name` or `source.svm.uuid` - Source SVM name or source SVM UUID.
 * `source.cluster.name` or `source.cluster.uuid` - Source cluster name or source cluster UUID
 ### Optional properties
-* `destination.ipspace.name` or `destination.ipspace.uuid` - Destination IP Space name or UUID where the vserver will be migrated to.
+* `destination.ipspace.name` or `destination.ipspace.uuid` - Destination IP Space name or UUID where the SVM will be migrated to.<personalities supports=unified>
 * `destination.volume_placement.aggregates` - List of aggregates where the migrating volumes should go on the destination.
-* `destination.volume_placement.volume_aggregate_pairs` - List of volume aggregate pairs indicating where the migrating volumes should go on the destination.
+* `destination.volume_placement.volume_aggregate_pairs` - List of volume aggregate pairs indicating where the migrating volumes should go on the destination.</personalities>
 * `ip_interface_placement` -  List of source SVM's IP interface and port pairs on the destination for migrating the SVM's IP interfaces.
 * `auto_cutover` - Option to specify whether to perform cutover automatically. Default is true.
 * `auto_source_cleanup` - Option to specify whether to perform source cleanup automatically. Default is true.
@@ -1117,6 +1134,12 @@ func (a *Client) SvmMigrationVolumeGet(params *SvmMigrationVolumeGetParams, auth
     <br/>
     ```
     PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"qos_policy_group_template":{"name":"policy1"}}'
+    ```
+    <br/>
+ 17. Updates the S3 protocol that was previously disallowed for the SVM
+    <br/>
+    ```
+    PATCH "/api/svm/svms/f16f0935-5281-11e8-b94d-005056b46485" '{"s3":{"allowed":"true"}}'
     ```
     <br/>
 

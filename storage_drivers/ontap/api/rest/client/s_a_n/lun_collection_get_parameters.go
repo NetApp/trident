@@ -612,6 +612,12 @@ type LunCollectionGetParams struct {
 	*/
 	SerialNumber *string
 
+	/* SerialNumberHex.
+
+	   Filter by serial_number_hex
+	*/
+	SerialNumberHex *string
+
 	/* SpaceEfficiencyRatio.
 
 	   Filter by space.efficiency_ratio
@@ -1882,6 +1888,17 @@ func (o *LunCollectionGetParams) WithSerialNumber(serialNumber *string) *LunColl
 // SetSerialNumber adds the serialNumber to the lun collection get params
 func (o *LunCollectionGetParams) SetSerialNumber(serialNumber *string) {
 	o.SerialNumber = serialNumber
+}
+
+// WithSerialNumberHex adds the serialNumberHex to the lun collection get params
+func (o *LunCollectionGetParams) WithSerialNumberHex(serialNumberHex *string) *LunCollectionGetParams {
+	o.SetSerialNumberHex(serialNumberHex)
+	return o
+}
+
+// SetSerialNumberHex adds the serialNumberHex to the lun collection get params
+func (o *LunCollectionGetParams) SetSerialNumberHex(serialNumberHex *string) {
+	o.SerialNumberHex = serialNumberHex
 }
 
 // WithSpaceEfficiencyRatio adds the spaceEfficiencyRatio to the lun collection get params
@@ -3796,6 +3813,23 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qSerialNumber != "" {
 
 			if err := r.SetQueryParam("serial_number", qSerialNumber); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SerialNumberHex != nil {
+
+		// query param serial_number_hex
+		var qrSerialNumberHex string
+
+		if o.SerialNumberHex != nil {
+			qrSerialNumberHex = *o.SerialNumberHex
+		}
+		qSerialNumberHex := qrSerialNumberHex
+		if qSerialNumberHex != "" {
+
+			if err := r.SetQueryParam("serial_number_hex", qSerialNumberHex); err != nil {
 				return err
 			}
 		}

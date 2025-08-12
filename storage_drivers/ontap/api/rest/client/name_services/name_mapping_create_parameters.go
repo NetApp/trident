@@ -70,6 +70,12 @@ type NameMappingCreateParams struct {
 	*/
 	Info *models.NameMapping
 
+	/* InsertNameMap.
+
+	   Create a name mapping at a specified position
+	*/
+	InsertNameMap *bool
+
 	/* ReturnRecords.
 
 	   The default is false.  If set to true, the records are returned.
@@ -94,10 +100,13 @@ func (o *NameMappingCreateParams) WithDefaults() *NameMappingCreateParams {
 // All values with no default are reset to their zero value.
 func (o *NameMappingCreateParams) SetDefaults() {
 	var (
+		insertNameMapDefault = bool(false)
+
 		returnRecordsDefault = bool(false)
 	)
 
 	val := NameMappingCreateParams{
+		InsertNameMap: &insertNameMapDefault,
 		ReturnRecords: &returnRecordsDefault,
 	}
 
@@ -151,6 +160,17 @@ func (o *NameMappingCreateParams) SetInfo(info *models.NameMapping) {
 	o.Info = info
 }
 
+// WithInsertNameMap adds the insertNameMap to the name mapping create params
+func (o *NameMappingCreateParams) WithInsertNameMap(insertNameMap *bool) *NameMappingCreateParams {
+	o.SetInsertNameMap(insertNameMap)
+	return o
+}
+
+// SetInsertNameMap adds the insertNameMap to the name mapping create params
+func (o *NameMappingCreateParams) SetInsertNameMap(insertNameMap *bool) {
+	o.InsertNameMap = insertNameMap
+}
+
 // WithReturnRecords adds the returnRecords to the name mapping create params
 func (o *NameMappingCreateParams) WithReturnRecords(returnRecords *bool) *NameMappingCreateParams {
 	o.SetReturnRecords(returnRecords)
@@ -172,6 +192,23 @@ func (o *NameMappingCreateParams) WriteToRequest(r runtime.ClientRequest, reg st
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err
+		}
+	}
+
+	if o.InsertNameMap != nil {
+
+		// query param insert_name_map
+		var qrInsertNameMap bool
+
+		if o.InsertNameMap != nil {
+			qrInsertNameMap = *o.InsertNameMap
+		}
+		qInsertNameMap := swag.FormatBool(qrInsertNameMap)
+		if qInsertNameMap != "" {
+
+			if err := r.SetQueryParam("insert_name_map", qInsertNameMap); err != nil {
+				return err
+			}
 		}
 	}
 

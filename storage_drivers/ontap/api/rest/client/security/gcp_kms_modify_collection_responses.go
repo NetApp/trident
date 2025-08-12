@@ -274,10 +274,15 @@ type GcpKmsModifyCollectionBody struct {
 	// links
 	Links *models.GcpKmsInlineLinks `json:"_links,omitempty"`
 
-	// Google Cloud application's service account credentials required to access the specified KMS. The client_email and private_key fields of the service account holder are required.
+	// The Google Cloud application's service account credentials required to access the specified KMS. The client_email and private_key fields of the service account holder are required. The credentials are required if the `authentication_method` is set to `application_credentials_key`.
 	// Example: {\"private_key\":\"ValidPrivateKey\",\"client_email\":\"my@account.email.com\"}
 	// Format: password
 	ApplicationCredentials *strfmt.Password `json:"application_credentials,omitempty"`
+
+	// Google Cloud KMS authentication method.
+	// Example: application_credentials_key
+	// Enum: ["application_credentials_key","sa_credentials_attachment"]
+	AuthenticationMethod *string `json:"authentication_method,omitempty"`
 
 	// Google Cloud KMS caller account email
 	// Example: myaccount@myproject.com
@@ -287,6 +292,11 @@ type GcpKmsModifyCollectionBody struct {
 	// Google Cloud KMS host subdomain.
 	// Example: cloudkms.googleapis.com
 	CloudkmsHost *string `json:"cloudkms_host,omitempty"`
+
+	// A custom metadata server URL used for retrieving short lived authentication tokens if the default service account is not used. This is only applicable when the `authentication_method` is set to `sa_credentials_attachment`.
+	// Example: http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token
+	// Format: uri
+	GceMetadataServer *strfmt.URI `json:"gce_metadata_server,omitempty"`
 
 	// gcp kms inline ekmip reachability
 	// Read Only: true
@@ -386,6 +396,14 @@ func (o *GcpKmsModifyCollectionBody) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := o.validateAuthenticationMethod(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateGceMetadataServer(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.validateGcpKmsInlineEkmipReachability(formats); err != nil {
 		res = append(res, err)
 	}
@@ -443,6 +461,74 @@ func (o *GcpKmsModifyCollectionBody) validateApplicationCredentials(formats strf
 	}
 
 	if err := validate.FormatOf("info"+"."+"application_credentials", "body", "password", o.ApplicationCredentials.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var gcpKmsModifyCollectionBodyTypeAuthenticationMethodPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["application_credentials_key","sa_credentials_attachment"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		gcpKmsModifyCollectionBodyTypeAuthenticationMethodPropEnum = append(gcpKmsModifyCollectionBodyTypeAuthenticationMethodPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// GcpKmsModifyCollectionBody
+	// GcpKmsModifyCollectionBody
+	// authentication_method
+	// AuthenticationMethod
+	// application_credentials_key
+	// END DEBUGGING
+	// GcpKmsModifyCollectionBodyAuthenticationMethodApplicationCredentialsKey captures enum value "application_credentials_key"
+	GcpKmsModifyCollectionBodyAuthenticationMethodApplicationCredentialsKey string = "application_credentials_key"
+
+	// BEGIN DEBUGGING
+	// GcpKmsModifyCollectionBody
+	// GcpKmsModifyCollectionBody
+	// authentication_method
+	// AuthenticationMethod
+	// sa_credentials_attachment
+	// END DEBUGGING
+	// GcpKmsModifyCollectionBodyAuthenticationMethodSaCredentialsAttachment captures enum value "sa_credentials_attachment"
+	GcpKmsModifyCollectionBodyAuthenticationMethodSaCredentialsAttachment string = "sa_credentials_attachment"
+)
+
+// prop value enum
+func (o *GcpKmsModifyCollectionBody) validateAuthenticationMethodEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, gcpKmsModifyCollectionBodyTypeAuthenticationMethodPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (o *GcpKmsModifyCollectionBody) validateAuthenticationMethod(formats strfmt.Registry) error {
+	if swag.IsZero(o.AuthenticationMethod) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := o.validateAuthenticationMethodEnum("info"+"."+"authentication_method", "body", *o.AuthenticationMethod); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *GcpKmsModifyCollectionBody) validateGceMetadataServer(formats strfmt.Registry) error {
+	if swag.IsZero(o.GceMetadataServer) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("info"+"."+"gce_metadata_server", "body", "uri", o.GceMetadataServer.String(), formats); err != nil {
 		return err
 	}
 

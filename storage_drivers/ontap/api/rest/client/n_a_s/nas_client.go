@@ -536,6 +536,7 @@ type ClientService interface {
 * `vserver active-directory show`
 * `vserver active-directory preferred-dc show`
 * `vserver active-directory discovered-servers show`
+* `vserver cifs security show`
 */
 func (a *Client) ActiveDirectoryCollectionGet(params *ActiveDirectoryCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -704,6 +705,7 @@ func (a *Client) ActiveDirectoryDeleteCollection(params *ActiveDirectoryDeleteCo
 * `vserver active-directory preferred-dc show`
 * `vserver active-directory discovered-servers show`
 * `vserver active-directory discovered-servers reset-servers`
+* `vserver cifs security show`
 */
 func (a *Client) ActiveDirectoryGet(params *ActiveDirectoryGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ActiveDirectoryGetOK, error) {
 	// TODO: Validate the params before sending
@@ -745,6 +747,7 @@ func (a *Client) ActiveDirectoryGet(params *ActiveDirectoryGetParams, authInfo r
 
 ### Related ONTAP commands
 * `vserver active-directory modify`
+* `vserver cifs security modify`
 ### Important notes
 * Patching Active Directory account is asynchronous. Response contains Task UUID and Link that can be queried to get the status.
 */
@@ -867,7 +870,7 @@ func (a *Client) ActiveDirectoryPreferredDcCollectionGet(params *ActiveDirectory
 
 ### Required properties
 * `svm.uuid` - Existing SVM in which to create the preferred DC.
-* `domain` - Fully Qualified Domain Name.
+* `fqdn` - Fully Qualified Domain Name.
 * `server_ip` - IPv4/IPv6 address of the preferred DC.
 #### The following parameters are optional:
 - skip_config_validation
@@ -2586,6 +2589,7 @@ func (a *Client) CifsServiceGet(params *CifsServiceGetParams, authInfo runtime.C
 * `vserver cifs security modify`
 * `vserver cifs server add-netbios-aliases`
 * `vserver cifs server remove-netbios-aliases`
+* `vserver cifs group-policy modify`
 ### Learn more
 * [`DOC /protocols/cifs/services`](#docs-NAS-protocols_cifs_services)
 */
@@ -4982,7 +4986,7 @@ func (a *Client) FileDirectorySecurityDelete(params *FileDirectorySecurityDelete
 }
 
 /*
-	FileDirectorySecurityGet Retrieves  file permissions
+	FileDirectorySecurityGet Retrieves file permissions.
 
 ### Related ONTAP commands
 * `vserver security file-directory show`
@@ -6712,8 +6716,9 @@ func (a *Client) FpolicyPolicyModifyCollection(params *FpolicyPolicyModifyCollec
 }
 
 /*
-	GroupPoliciesToBeAppliedModify Will create a background task to update the GPO settings for specified SVM.
+	GroupPoliciesToBeAppliedModify Creates a background task to update the GPO settings for the specified SVM.
 
+Note: The group policy can be enabled or disabled using "group_policy_object_enabled" field in PATCH "/protocols/cifs/services/{svm.uuid}" API.
 ### Related ONTAP commands
 * `vserver cifs group-policy update`
 */
@@ -8820,6 +8825,7 @@ There is an added computational cost to retrieving values for these properties. 
 ### Related ONTAP commands
 * `vserver nfs show`
 * `vserver nfs status`
+* `vserver export-policy check-access`
 ### Learn more
 * [`DOC /protocols/nfs/services`](#docs-NAS-protocols_nfs_services)
 */
@@ -9309,6 +9315,8 @@ func (a *Client) NfsTLSInterfaceGet(params *NfsTLSInterfaceGetParams, authInfo r
 /*
 	NfsTLSInterfaceModify Updates the properties of an NFS over TLS interface.
 
+### Optional query parameter
+* `skip-san-validation` - Specifies whether the server should ignore validating the certificate for Subject Alternate Name.
 ### Related ONTAP commands
 * `vserver nfs tls interface modify`
 * `vserver nfs tls interface enable`
@@ -10365,6 +10373,7 @@ Important notes:
 * There needs to be at least one active scanner-pool and one enabled On-Access policy to enable Vscan successfully.
 * By default, a Vscan is enabled when it’s created.
 * By default, the Vscan On-Access policies created from this endpoint are in the disabled state. You can use the On-Access policy PATCH endpoint to enable a particular On-Access policy. In ONTAP 9.6, only one Vscan On-Access policy can be enabled and only one Vscan On-Demand policy can be scheduled on an SVM.
+* Vscan is not supported on continuous availability (CA) shares.
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the Vscan configuration.
 ### Recommended optional properties

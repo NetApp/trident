@@ -219,6 +219,7 @@ func NewSoftwareUploadDefault(code int) *SoftwareUploadDefault {
 | 10551806 | Internal error. Failed to write to file in the webjail directory. Contact technical support for assistance. |
 | 10551807 | The request must only contain a single file. More than one file per request is not supported. |
 | 10551808 | The request must be of type multipart/form-data. |
+| 10551892 | Package upload failed due to an unhealthy node. Restore the node to a healthy state, then retry the operation. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SoftwareUploadDefault struct {

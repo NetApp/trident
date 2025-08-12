@@ -44,10 +44,10 @@ type SecurityKeystore struct {
 	// svm
 	Svm *SecurityKeystoreInlineSvm `json:"svm,omitempty"`
 
-	// Type of keystore that is configured: * 'okm' - Onboard Key Manager * 'kmip' - External Key Manager * 'akv' - Azure Key Vault Key Management Service * 'gcp' - Google Cloud Platform Key Management Service * 'aws' - Amazon Web Service Key Management Service * 'ikp' - IBM Key Protect Key Management Service
+	// Type of keystore that is configured: * 'okm' - Onboard Key Manager * 'kmip' - External Key Manager * 'akv' - Azure Key Vault Key Management Service * 'gcp' - Google Cloud Platform Key Management Service * 'aws' - Amazon Web Service Key Management Service * 'ikp' - IBM Key Protect Key Management Service * 'barbican' - Barbican Key Management Service
 	//
 	// Read Only: true
-	// Enum: ["okm","kmip","akv","gcp","aws","ikp"]
+	// Enum: ["okm","kmip","akv","gcp","aws","ikp","barbican"]
 	Type *string `json:"type,omitempty"`
 
 	// uuid
@@ -306,7 +306,7 @@ var securityKeystoreTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["okm","kmip","akv","gcp","aws","ikp"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["okm","kmip","akv","gcp","aws","ikp","barbican"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -375,6 +375,16 @@ const (
 	// END DEBUGGING
 	// SecurityKeystoreTypeIkp captures enum value "ikp"
 	SecurityKeystoreTypeIkp string = "ikp"
+
+	// BEGIN DEBUGGING
+	// security_keystore
+	// SecurityKeystore
+	// type
+	// Type
+	// barbican
+	// END DEBUGGING
+	// SecurityKeystoreTypeBarbican captures enum value "barbican"
+	SecurityKeystoreTypeBarbican string = "barbican"
 )
 
 // prop value enum

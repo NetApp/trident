@@ -84,6 +84,10 @@ type ClientService interface {
 
 	NvmeSubsystemHostGet(params *NvmeSubsystemHostGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemHostGetOK, error)
 
+	NvmeSubsystemHostModify(params *NvmeSubsystemHostModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemHostModifyOK, error)
+
+	NvmeSubsystemHostModifyCollection(params *NvmeSubsystemHostModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemHostModifyCollectionOK, error)
+
 	NvmeSubsystemMapCollectionGet(params *NvmeSubsystemMapCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemMapCollectionGetOK, error)
 
 	NvmeSubsystemMapCreate(params *NvmeSubsystemMapCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemMapCreateCreated, error)
@@ -267,8 +271,9 @@ If not specified in POST, the following default property values are assigned:
 * `volume file clone create`
 * `vserver nvme namespace convert-from-lun`
 * `vserver nvme namespace create`
-### Platform Specifics
-* **ASA r2**: The `name` property is required when creating a new namespace. The name must start with an alphabetic character (a to z or A to Z) or an underscore (_). The name must be 203 characters or less in length. The `location` properties are not supported.
+<personalities supports=asar2>
+The `name` property is required when creating a new namespace. The name must start with an alphabetic character (a to z or A to Z) or an underscore (_). The name must be 203 characters or less in length. The `location` properties are not supported.
+</personalities>
 POST is asynchronous when creating a new namespace. It is synchronous when converting a LUN to a namespace via the `convert` property.
 ### Learn more
 * [`DOC /storage/namespaces`](#docs-NVMe-storage_namespaces)
@@ -315,8 +320,9 @@ func (a *Client) NvmeNamespaceCreate(params *NvmeNamespaceCreateParams, authInfo
 
 ### Related ONTAP commands
 * `vserver nvme namespace delete`
-### Platform Specifics
-* **ASA r2**: DELETE is asynchronous.
+<personalities supports=asar2>
+DELETE is asynchronous.
+</personalities>
 ### Learn more
 * [`DOC /storage/namespaces`](#docs-NVMe-storage_namespaces)
 */
@@ -457,8 +463,9 @@ func (a *Client) NvmeNamespaceGet(params *NvmeNamespaceGetParams, authInfo runti
 ### Related ONTAP commands
 * `volume file clone autodelete`
 * `vserver nvme namespace modify`
-### Platform Specifics
-* **ASA r2**: PATCH is asynchronous when modifying `name` or `qos_policy`.
+<personalities supports=asar2>
+PATCH is asynchronous when modifying `name` or `qos_policy`.
+</personalities>
 ### Learn more
 * [`DOC /storage/namespaces`](#docs-NVMe-storage_namespaces)
 */
@@ -589,9 +596,6 @@ func (a *Client) NvmeServiceCollectionGet(params *NvmeServiceCollectionGetParams
 /*
 	NvmeServiceCreate Creates an NVMe service.
 
-### Platform Specifics
-* **Unified ONTAP**: POST and DELETE must be used to manage the NVMe service for access to the NVMe protocol.
-* **ASA r2**: POST and DELETE are not supported. The NVMe service is automatically created and deleted with the SVM.
 ### Required properties
 * `svm.uuid` or `svm.name` - The existing SVM in which to create the NVMe service.
 ### Related ONTAP commands
@@ -637,9 +641,6 @@ func (a *Client) NvmeServiceCreate(params *NvmeServiceCreateParams, authInfo run
 /*
 	NvmeServiceDelete Deletes an NVMe service. An NVMe service must be disabled before it can be deleted. In addition, all NVMe interfaces, subsystems, and subsystem maps associated with the SVM must first be deleted.
 
-### Platform Specifics
-* **Unified ONTAP**: POST and DELETE must be used to manage the NVMe service for access to the NVMe protocol.
-* **ASA r2**: POST and DELETE are not supported. The NVMe service is automatically created and deleted with the SVM.
 ### Related ONTAP commands
 * `vserver nvme delete`
 ### Learn more
@@ -978,7 +979,7 @@ func (a *Client) NvmeSubsystemControllerGet(params *NvmeSubsystemControllerGetPa
 
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the NVMe subsystem.
-* `name` - Name for NVMe subsystem. Once created, an NVMe subsytem cannot be renamed.
+* `name` - Name for NVMe subsystem. Once created, an NVMe subsystem cannot be renamed.
 * `os_type` - Operating system of the NVMe subsystem's hosts.
 ### Related ONTAP commands
 * `vserver nvme subsystem create`
@@ -1362,6 +1363,88 @@ func (a *Client) NvmeSubsystemHostGet(params *NvmeSubsystemHostGetParams, authIn
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*NvmeSubsystemHostGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	NvmeSubsystemHostModify Updates an NVMe subsystem host.
+
+### Related ONTAP commands
+* `vserver nvme subsystem host add-proximal-vserver`
+* `vserver nvme subsystem host remove-proximal-vserver`
+### Learn more
+* [`DOC /protocols/nvme/subsystems`](#docs-NVMe-protocols_nvme_subsystems)
+*/
+func (a *Client) NvmeSubsystemHostModify(params *NvmeSubsystemHostModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemHostModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNvmeSubsystemHostModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nvme_subsystem_host_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/nvme/subsystems/{subsystem.uuid}/hosts/{nqn}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NvmeSubsystemHostModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NvmeSubsystemHostModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NvmeSubsystemHostModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+NvmeSubsystemHostModifyCollection nvme subsystem host modify collection API
+*/
+func (a *Client) NvmeSubsystemHostModifyCollection(params *NvmeSubsystemHostModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*NvmeSubsystemHostModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewNvmeSubsystemHostModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "nvme_subsystem_host_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/nvme/subsystems/{subsystem.uuid}/hosts",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &NvmeSubsystemHostModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*NvmeSubsystemHostModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*NvmeSubsystemHostModifyCollectionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

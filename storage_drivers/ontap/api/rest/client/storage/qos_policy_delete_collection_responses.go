@@ -110,9 +110,14 @@ func NewQosPolicyDeleteCollectionDefault(code int) *QosPolicyDeleteCollectionDef
 }
 
 /*
-QosPolicyDeleteCollectionDefault describes a response with status code -1, with default header values.
+	QosPolicyDeleteCollectionDefault describes a response with status code -1, with default header values.
 
-Error
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 8454286 | Modifications to these cluster-scoped preset policies is prohibited. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type QosPolicyDeleteCollectionDefault struct {
 	_statusCode int

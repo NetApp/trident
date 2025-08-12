@@ -234,6 +234,7 @@ func NewGcpKmsCreateDefault(code int) *GcpKmsCreateDefault {
 | 65537720 | Failed to configure Google Cloud Key Management Service for SVM <svm-name> because a key manager has already been configured for this SVM. Use the REST API GET method \"/api/security/gcp-kms\" to view all of the configured key managers. |
 | 65537740 | The privileged account must be an email address or an empty string. |
 | 65537749 | The application credentials field must be in valid JSON format. |
+| 65539704 | The key manager cannot be configured because the SVM has NAE volumes. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type GcpKmsCreateDefault struct {

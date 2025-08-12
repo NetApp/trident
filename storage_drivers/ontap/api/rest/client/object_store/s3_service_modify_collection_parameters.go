@@ -128,6 +128,18 @@ type S3ServiceModifyCollectionParams struct {
 	*/
 	BucketsEncryptionEnabled *bool
 
+	/* BucketsIsConsistentEtag.
+
+	   Filter by buckets.is_consistent_etag
+	*/
+	BucketsIsConsistentEtag *bool
+
+	/* BucketsIsNasPathMutable.
+
+	   Filter by buckets.is_nas_path_mutable
+	*/
+	BucketsIsNasPathMutable *bool
+
 	/* BucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays.
 
 	   Filter by buckets.lifecycle_management.rules.abort_incomplete_multipart_upload.after_initiation_days
@@ -332,6 +344,12 @@ type S3ServiceModifyCollectionParams struct {
 	*/
 	BucketsProtectionStatusIsProtected *bool
 
+	/* BucketsQosPolicyMaxThroughput.
+
+	   Filter by buckets.qos_policy.max_throughput
+	*/
+	BucketsQosPolicyMaxThroughput *string
+
 	/* BucketsQosPolicyMaxThroughputIops.
 
 	   Filter by buckets.qos_policy.max_throughput_iops
@@ -343,6 +361,12 @@ type S3ServiceModifyCollectionParams struct {
 	   Filter by buckets.qos_policy.max_throughput_mbps
 	*/
 	BucketsQosPolicyMaxThroughputMbps *int64
+
+	/* BucketsQosPolicyMinThroughput.
+
+	   Filter by buckets.qos_policy.min_throughput
+	*/
+	BucketsQosPolicyMinThroughput *string
 
 	/* BucketsQosPolicyMinThroughputIops.
 
@@ -974,6 +998,28 @@ func (o *S3ServiceModifyCollectionParams) SetBucketsEncryptionEnabled(bucketsEnc
 	o.BucketsEncryptionEnabled = bucketsEncryptionEnabled
 }
 
+// WithBucketsIsConsistentEtag adds the bucketsIsConsistentEtag to the s3 service modify collection params
+func (o *S3ServiceModifyCollectionParams) WithBucketsIsConsistentEtag(bucketsIsConsistentEtag *bool) *S3ServiceModifyCollectionParams {
+	o.SetBucketsIsConsistentEtag(bucketsIsConsistentEtag)
+	return o
+}
+
+// SetBucketsIsConsistentEtag adds the bucketsIsConsistentEtag to the s3 service modify collection params
+func (o *S3ServiceModifyCollectionParams) SetBucketsIsConsistentEtag(bucketsIsConsistentEtag *bool) {
+	o.BucketsIsConsistentEtag = bucketsIsConsistentEtag
+}
+
+// WithBucketsIsNasPathMutable adds the bucketsIsNasPathMutable to the s3 service modify collection params
+func (o *S3ServiceModifyCollectionParams) WithBucketsIsNasPathMutable(bucketsIsNasPathMutable *bool) *S3ServiceModifyCollectionParams {
+	o.SetBucketsIsNasPathMutable(bucketsIsNasPathMutable)
+	return o
+}
+
+// SetBucketsIsNasPathMutable adds the bucketsIsNasPathMutable to the s3 service modify collection params
+func (o *S3ServiceModifyCollectionParams) SetBucketsIsNasPathMutable(bucketsIsNasPathMutable *bool) {
+	o.BucketsIsNasPathMutable = bucketsIsNasPathMutable
+}
+
 // WithBucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays adds the bucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays to the s3 service modify collection params
 func (o *S3ServiceModifyCollectionParams) WithBucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays(bucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays *int64) *S3ServiceModifyCollectionParams {
 	o.SetBucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays(bucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays)
@@ -1348,6 +1394,17 @@ func (o *S3ServiceModifyCollectionParams) SetBucketsProtectionStatusIsProtected(
 	o.BucketsProtectionStatusIsProtected = bucketsProtectionStatusIsProtected
 }
 
+// WithBucketsQosPolicyMaxThroughput adds the bucketsQosPolicyMaxThroughput to the s3 service modify collection params
+func (o *S3ServiceModifyCollectionParams) WithBucketsQosPolicyMaxThroughput(bucketsQosPolicyMaxThroughput *string) *S3ServiceModifyCollectionParams {
+	o.SetBucketsQosPolicyMaxThroughput(bucketsQosPolicyMaxThroughput)
+	return o
+}
+
+// SetBucketsQosPolicyMaxThroughput adds the bucketsQosPolicyMaxThroughput to the s3 service modify collection params
+func (o *S3ServiceModifyCollectionParams) SetBucketsQosPolicyMaxThroughput(bucketsQosPolicyMaxThroughput *string) {
+	o.BucketsQosPolicyMaxThroughput = bucketsQosPolicyMaxThroughput
+}
+
 // WithBucketsQosPolicyMaxThroughputIops adds the bucketsQosPolicyMaxThroughputIops to the s3 service modify collection params
 func (o *S3ServiceModifyCollectionParams) WithBucketsQosPolicyMaxThroughputIops(bucketsQosPolicyMaxThroughputIops *int64) *S3ServiceModifyCollectionParams {
 	o.SetBucketsQosPolicyMaxThroughputIops(bucketsQosPolicyMaxThroughputIops)
@@ -1368,6 +1425,17 @@ func (o *S3ServiceModifyCollectionParams) WithBucketsQosPolicyMaxThroughputMbps(
 // SetBucketsQosPolicyMaxThroughputMbps adds the bucketsQosPolicyMaxThroughputMbps to the s3 service modify collection params
 func (o *S3ServiceModifyCollectionParams) SetBucketsQosPolicyMaxThroughputMbps(bucketsQosPolicyMaxThroughputMbps *int64) {
 	o.BucketsQosPolicyMaxThroughputMbps = bucketsQosPolicyMaxThroughputMbps
+}
+
+// WithBucketsQosPolicyMinThroughput adds the bucketsQosPolicyMinThroughput to the s3 service modify collection params
+func (o *S3ServiceModifyCollectionParams) WithBucketsQosPolicyMinThroughput(bucketsQosPolicyMinThroughput *string) *S3ServiceModifyCollectionParams {
+	o.SetBucketsQosPolicyMinThroughput(bucketsQosPolicyMinThroughput)
+	return o
+}
+
+// SetBucketsQosPolicyMinThroughput adds the bucketsQosPolicyMinThroughput to the s3 service modify collection params
+func (o *S3ServiceModifyCollectionParams) SetBucketsQosPolicyMinThroughput(bucketsQosPolicyMinThroughput *string) {
+	o.BucketsQosPolicyMinThroughput = bucketsQosPolicyMinThroughput
 }
 
 // WithBucketsQosPolicyMinThroughputIops adds the bucketsQosPolicyMinThroughputIops to the s3 service modify collection params
@@ -2357,6 +2425,40 @@ func (o *S3ServiceModifyCollectionParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
+	if o.BucketsIsConsistentEtag != nil {
+
+		// query param buckets.is_consistent_etag
+		var qrBucketsIsConsistentEtag bool
+
+		if o.BucketsIsConsistentEtag != nil {
+			qrBucketsIsConsistentEtag = *o.BucketsIsConsistentEtag
+		}
+		qBucketsIsConsistentEtag := swag.FormatBool(qrBucketsIsConsistentEtag)
+		if qBucketsIsConsistentEtag != "" {
+
+			if err := r.SetQueryParam("buckets.is_consistent_etag", qBucketsIsConsistentEtag); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsIsNasPathMutable != nil {
+
+		// query param buckets.is_nas_path_mutable
+		var qrBucketsIsNasPathMutable bool
+
+		if o.BucketsIsNasPathMutable != nil {
+			qrBucketsIsNasPathMutable = *o.BucketsIsNasPathMutable
+		}
+		qBucketsIsNasPathMutable := swag.FormatBool(qrBucketsIsNasPathMutable)
+		if qBucketsIsNasPathMutable != "" {
+
+			if err := r.SetQueryParam("buckets.is_nas_path_mutable", qBucketsIsNasPathMutable); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.BucketsLifecycleManagementRulesAbortIncompleteMultipartUploadAfterInitiationDays != nil {
 
 		// query param buckets.lifecycle_management.rules.abort_incomplete_multipart_upload.after_initiation_days
@@ -2935,6 +3037,23 @@ func (o *S3ServiceModifyCollectionParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
+	if o.BucketsQosPolicyMaxThroughput != nil {
+
+		// query param buckets.qos_policy.max_throughput
+		var qrBucketsQosPolicyMaxThroughput string
+
+		if o.BucketsQosPolicyMaxThroughput != nil {
+			qrBucketsQosPolicyMaxThroughput = *o.BucketsQosPolicyMaxThroughput
+		}
+		qBucketsQosPolicyMaxThroughput := qrBucketsQosPolicyMaxThroughput
+		if qBucketsQosPolicyMaxThroughput != "" {
+
+			if err := r.SetQueryParam("buckets.qos_policy.max_throughput", qBucketsQosPolicyMaxThroughput); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.BucketsQosPolicyMaxThroughputIops != nil {
 
 		// query param buckets.qos_policy.max_throughput_iops
@@ -2964,6 +3083,23 @@ func (o *S3ServiceModifyCollectionParams) WriteToRequest(r runtime.ClientRequest
 		if qBucketsQosPolicyMaxThroughputMbps != "" {
 
 			if err := r.SetQueryParam("buckets.qos_policy.max_throughput_mbps", qBucketsQosPolicyMaxThroughputMbps); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsQosPolicyMinThroughput != nil {
+
+		// query param buckets.qos_policy.min_throughput
+		var qrBucketsQosPolicyMinThroughput string
+
+		if o.BucketsQosPolicyMinThroughput != nil {
+			qrBucketsQosPolicyMinThroughput = *o.BucketsQosPolicyMinThroughput
+		}
+		qBucketsQosPolicyMinThroughput := qrBucketsQosPolicyMinThroughput
+		if qBucketsQosPolicyMinThroughput != "" {
+
+			if err := r.SetQueryParam("buckets.qos_policy.min_throughput", qBucketsQosPolicyMinThroughput); err != nil {
 				return err
 			}
 		}

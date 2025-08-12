@@ -123,24 +123,22 @@ func NewAccountModifyCollectionDefault(code int) *AccountModifyCollectionDefault
 | 5636096 | Cannot perform the operation for this user account since the password is not set. |
 | 5636097 | The operation for user account failed since user password is not set. |
 | 5636100 | Modification of a service-processor user's role to a non-admin role is not supported. |
-| 5636125 | The operation not supported on AutoSupport user account which is reserved. |
+| 5636125 | The operation not supported on autosupport user account which is reserved. |
 | 5636129 | The role does not exist. |
 | 5636136 | Specifying "is_ns_switch_group" as "true" is supported only for authentication method "nsswitch". |
-| 5636154 | The second authentication method parameter is supported for SSH and Service Processor (SP) applications only. |
-| 5636155 | The second-authentication-method parameter can be specified only if the authentication-method password or public key nsswitch. |
-| 5636156 | Same value cannot be specified for the second-authentication-method and the authentication-method. |
+| 5636154 | For mixed-version cluster the second authentication method parameter is supported for SSH and Service Processor (SP) applications only. |
 | 5636159 | For a given user and application, if the second-authentication-method is specified, only one such login entry is supported. |
-| 5636164 | If the value for either the authentication-method second-authentication-method is nsswitch or password, the other parameter must differ. |
+| 5636164 | The authentication method and the second authentication method cannot be any combination of 'nsswitch' and 'password'. |
 | 5636165 | Second authentication method is not supported for NIS or LDAP group based accounts. |
 | 5636197 | LDAP fastbind combination for application and authentication method is not supported. |
 | 5636198 | LDAP fastbind authentication is supported only for nsswitch. |
-| 5636210 | User creation failed because LDAP is not configured for the SVM or the LDAP connection is not secure. |
 | 5636212 | TOTP is supported only when the primary authentication method is password or public key. |
-| 5636214 | Configuring the user with TOTP as secondary authentication method requires an effective cluster version of 9.13.1 or later |
+| 5636214 | Configuring the user with TOTP as a secondary authentication method requires an effective cluster version of 9.13.1 or later. |
 | 5636223 | Specifying "is_ns_switch_group" as "true" is supported only for SSH, ONTAPI and HTTP applications. |
 | 5636224 | Configuring a Service Processor (SP) user with two-factor authentication requires an effective cluster version of 9.15.1 or later. |
 | 5636225 | For a Service Processor (SP) user, the second factor of authentication must be one of publickey or none. |
 | 5636226 | Internal error. Failed to check for ONTAP capability. |
+| 5636233 | User modification failed because LDAP is not configured for the SVM or the LDAP connection is not secure. |
 | 7077896 | Cannot lock the account of the last console admin user. |
 | 7077906 | A role with that name has not been defined for the Vserver. |
 | 7077911 | The user is not configured to use the password authentication method. |

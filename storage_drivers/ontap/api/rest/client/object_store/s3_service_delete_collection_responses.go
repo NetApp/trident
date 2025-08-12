@@ -34,6 +34,12 @@ func (o *S3ServiceDeleteCollectionReader) ReadResponse(response runtime.ClientRe
 			return nil, err
 		}
 		return result, nil
+	case 202:
+		result := NewS3ServiceDeleteCollectionAccepted()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return result, nil
 	default:
 		result := NewS3ServiceDeleteCollectionDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -57,7 +63,7 @@ S3ServiceDeleteCollectionOK describes a response with status code 200, with defa
 OK
 */
 type S3ServiceDeleteCollectionOK struct {
-	Payload *models.S3ServiceDeleteResponse
+	Payload *models.S3ServiceJobLinkResponse
 }
 
 // IsSuccess returns true when this s3 service delete collection o k response has a 2xx status code
@@ -100,13 +106,83 @@ func (o *S3ServiceDeleteCollectionOK) String() string {
 	return fmt.Sprintf("[DELETE /protocols/s3/services][%d] s3ServiceDeleteCollectionOK %s", 200, payload)
 }
 
-func (o *S3ServiceDeleteCollectionOK) GetPayload() *models.S3ServiceDeleteResponse {
+func (o *S3ServiceDeleteCollectionOK) GetPayload() *models.S3ServiceJobLinkResponse {
 	return o.Payload
 }
 
 func (o *S3ServiceDeleteCollectionOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.S3ServiceDeleteResponse)
+	o.Payload = new(models.S3ServiceJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewS3ServiceDeleteCollectionAccepted creates a S3ServiceDeleteCollectionAccepted with default headers values
+func NewS3ServiceDeleteCollectionAccepted() *S3ServiceDeleteCollectionAccepted {
+	return &S3ServiceDeleteCollectionAccepted{}
+}
+
+/*
+S3ServiceDeleteCollectionAccepted describes a response with status code 202, with default header values.
+
+Accepted
+*/
+type S3ServiceDeleteCollectionAccepted struct {
+	Payload *models.S3ServiceJobLinkResponse
+}
+
+// IsSuccess returns true when this s3 service delete collection accepted response has a 2xx status code
+func (o *S3ServiceDeleteCollectionAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this s3 service delete collection accepted response has a 3xx status code
+func (o *S3ServiceDeleteCollectionAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this s3 service delete collection accepted response has a 4xx status code
+func (o *S3ServiceDeleteCollectionAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this s3 service delete collection accepted response has a 5xx status code
+func (o *S3ServiceDeleteCollectionAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this s3 service delete collection accepted response a status code equal to that given
+func (o *S3ServiceDeleteCollectionAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
+// Code gets the status code for the s3 service delete collection accepted response
+func (o *S3ServiceDeleteCollectionAccepted) Code() int {
+	return 202
+}
+
+func (o *S3ServiceDeleteCollectionAccepted) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/s3/services][%d] s3ServiceDeleteCollectionAccepted %s", 202, payload)
+}
+
+func (o *S3ServiceDeleteCollectionAccepted) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /protocols/s3/services][%d] s3ServiceDeleteCollectionAccepted %s", 202, payload)
+}
+
+func (o *S3ServiceDeleteCollectionAccepted) GetPayload() *models.S3ServiceJobLinkResponse {
+	return o.Payload
+}
+
+func (o *S3ServiceDeleteCollectionAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.S3ServiceJobLinkResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

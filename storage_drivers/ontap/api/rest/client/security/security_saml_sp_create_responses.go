@@ -237,6 +237,10 @@ func NewSecuritySamlSpCreateDefault(code int) *SecuritySamlSpCreateDefault {
 | 12320820 | No certificate is installed with the specified “certificate.ca“ and “certificate.serial“. |
 | 12320821 | No certificate is installed with the specified “certificate.common_name“. |
 | 12320823 | The host parameter provided must be the cluster management interface's IP address. If the cluster management interface is not available, the node management interface's IP address must be used. |
+| 12320827 | The certificate authority specified in the default metadata configuration does not match the provided certificate authority. |
+| 12320828 | The SAML service provider host specified in the default metadata configuration does not match the provided SAML service provider host. |
+| 12320829 | The certificate serial number specified in the default metadata configuration does not match the provided certificate serial number. |
+| 12320830 | The certificate common name specified in the default metadata configuration does not match the provided certificate common name. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SecuritySamlSpCreateDefault struct {

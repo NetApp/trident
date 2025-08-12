@@ -46,6 +46,12 @@ type FpolicyEngines struct {
 	// Example: PT2M
 	KeepAliveInterval *string `json:"keep_alive_interval,omitempty"`
 
+	// This parameter specifies the maximum number of attempts to reconnect to the FPolicy server from an SVM. It is used to specify the number of times a broken connection will be retried. The value for this field must be between 0 and 20. By default, it is 5.
+	// Example: 5
+	// Maximum: 20
+	// Minimum: 0
+	MaxConnectionRetries *int64 `json:"max_connection_retries,omitempty"`
+
 	// Specifies the maximum number of outstanding requests for the FPolicy server. It is used to specify maximum outstanding requests that will be queued up for the FPolicy server. The value for this field must be between 1 and 10000.  The default values are 500, 1000 or 2000 for Low-end(<64 GB memory), Mid-end(>=64 GB memory) and High-end(>=128 GB memory) Platforms respectively.
 	// Example: 500
 	// Maximum: 10000
@@ -74,6 +80,10 @@ type FpolicyEngines struct {
 	// Specifies the ISO-8601 timeout duration in which a throttled FPolicy server must complete at least one screen request. If no request is processed within the timeout, connection to the FPolicy server is terminated. The allowed range is between 0 to 100 seconds.
 	// Example: PT1M
 	ServerProgressTimeout *string `json:"server_progress_timeout,omitempty"`
+
+	// This parameter specifies the interval after which a new session ID is sent to the FPolicy server during reconnection attempts. The default value is set to 10 seconds. If the connection between the storage controller and the FPolicy server is terminated and reconnection is made within the -session-timeout interval, the old session ID is sent to the FPolicy server so that it can send responses for old notifications.
+	// Example: PT10S
+	SessionTimeout *string `json:"session_timeout,omitempty"`
 
 	// Specifies the SSL option for external communication with the FPolicy server. Possible values include the following:
 	// * no_auth       When set to "no_auth", no authentication takes place.
@@ -109,6 +119,10 @@ func (m *FpolicyEngines) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateFormat(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMaxConnectionRetries(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -218,6 +232,22 @@ func (m *FpolicyEngines) validateFormat(formats strfmt.Registry) error {
 
 	// value enum
 	if err := m.validateFormatEnum("format", "body", *m.Format); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *FpolicyEngines) validateMaxConnectionRetries(formats strfmt.Registry) error {
+	if swag.IsZero(m.MaxConnectionRetries) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("max_connection_retries", "body", *m.MaxConnectionRetries, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("max_connection_retries", "body", *m.MaxConnectionRetries, 20, false); err != nil {
 		return err
 	}
 

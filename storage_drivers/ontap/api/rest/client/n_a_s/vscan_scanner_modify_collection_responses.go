@@ -125,6 +125,8 @@ func NewVscanScannerModifyCollectionDefault(code int) *VscanScannerModifyCollect
 | 10027108   | The list of privileged users specified contains an invalid entry
 | 10027063   | Attempting to modify a scanner-pool on an SVM owned by the cluster with a data SVM
 | 10027119   | The privileged user contains characters that are not allowed
+| 10027261   | One of the specified IPv4 addresses in the \\"-hostnames\\" is either a multicast, loopback, broadcast, or '0.0.0.0' address.
+| 10027262   | One of the specified IPv6 addresses in the \\"-hostnames\\" is either a link-local, multicast, v4-compatible, v4-mapped, loopback or '::/0' address.
 */
 type VscanScannerModifyCollectionDefault struct {
 	_statusCode int

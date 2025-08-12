@@ -132,6 +132,9 @@ func NewSnapmirrorRelationshipTransferCreateDefault(code int) *SnapmirrorRelatio
 | 6620237     | SnapMirror relationship database write failed |
 | 6620238     | SnapMirror relationship database read failed |
 | 13304134    | The overwrite property specified does not match the value specified in the previous request. ||
+| 6619720     | Relationship information has been updated and is being propagated. Wait a few minutes and try the operation again. |
+| 13303816    | Could not retrieve the state or status values for the relationship. Wait a few minutes and try the operation again. |
+| 13304159    | Could not retrieve the state or status values for the relationship. Wait a few minutes and try the operation again. If the error persists, address the error condition shown. |
 */
 type SnapmirrorRelationshipTransferCreateDefault struct {
 	_statusCode int

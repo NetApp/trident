@@ -1659,6 +1659,8 @@ func (a *Client) EmsDestinationModifyCollection(params *EmsDestinationModifyColl
 /*
 	EmsEventCollectionGet Retrieves a collection of observed events.
 
+###
+Note: The default behavior is to filter 'DEBUG' severity events. If those events are required, a severity query must be provided.
 ### Related ONTAP commands
 * `event log show`
 */
@@ -2966,11 +2968,11 @@ func (a *Client) SnmpUsersCollectionGet(params *SnmpUsersCollectionGetParams, au
 	SnmpUsersCreate Creates either a cluster-scoped or an SVM-scoped SNMP user. This user can be an SNMPv1 or SNMPv2c community user or an SNMPv3 user. An SNMPv3 user can be a local SNMPv3 user or a remote SNMPv3 user.
 
 ### Required properties
+* `name` - SNMP user name
+### Optional properties
 * `owner` - Name and UUID of owning SVM.
 * `engine_id` - Engine ID of owning SVM or remote switch.
-* `name` - SNMP user name
 * `authentication_method` - Authentication method
-### Optional properties
 * `switch_address` - Optional remote switch address
 * `snmpv3` - SNMPv3-specific credentials
 * `comment` - Comment text

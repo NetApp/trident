@@ -116,6 +116,12 @@ type FpolicyEngineDeleteCollectionParams struct {
 	*/
 	KeepAliveInterval *string
 
+	/* MaxConnectionRetries.
+
+	   Filter by max_connection_retries
+	*/
+	MaxConnectionRetries *int64
+
 	/* MaxServerRequests.
 
 	   Filter by max_server_requests
@@ -203,6 +209,12 @@ type FpolicyEngineDeleteCollectionParams struct {
 	   Filter by server_progress_timeout
 	*/
 	ServerProgressTimeout *string
+
+	/* SessionTimeout.
+
+	   Filter by session_timeout
+	*/
+	SessionTimeout *string
 
 	/* SslOption.
 
@@ -400,6 +412,17 @@ func (o *FpolicyEngineDeleteCollectionParams) SetKeepAliveInterval(keepAliveInte
 	o.KeepAliveInterval = keepAliveInterval
 }
 
+// WithMaxConnectionRetries adds the maxConnectionRetries to the fpolicy engine delete collection params
+func (o *FpolicyEngineDeleteCollectionParams) WithMaxConnectionRetries(maxConnectionRetries *int64) *FpolicyEngineDeleteCollectionParams {
+	o.SetMaxConnectionRetries(maxConnectionRetries)
+	return o
+}
+
+// SetMaxConnectionRetries adds the maxConnectionRetries to the fpolicy engine delete collection params
+func (o *FpolicyEngineDeleteCollectionParams) SetMaxConnectionRetries(maxConnectionRetries *int64) {
+	o.MaxConnectionRetries = maxConnectionRetries
+}
+
 // WithMaxServerRequests adds the maxServerRequests to the fpolicy engine delete collection params
 func (o *FpolicyEngineDeleteCollectionParams) WithMaxServerRequests(maxServerRequests *int64) *FpolicyEngineDeleteCollectionParams {
 	o.SetMaxServerRequests(maxServerRequests)
@@ -552,6 +575,17 @@ func (o *FpolicyEngineDeleteCollectionParams) WithServerProgressTimeout(serverPr
 // SetServerProgressTimeout adds the serverProgressTimeout to the fpolicy engine delete collection params
 func (o *FpolicyEngineDeleteCollectionParams) SetServerProgressTimeout(serverProgressTimeout *string) {
 	o.ServerProgressTimeout = serverProgressTimeout
+}
+
+// WithSessionTimeout adds the sessionTimeout to the fpolicy engine delete collection params
+func (o *FpolicyEngineDeleteCollectionParams) WithSessionTimeout(sessionTimeout *string) *FpolicyEngineDeleteCollectionParams {
+	o.SetSessionTimeout(sessionTimeout)
+	return o
+}
+
+// SetSessionTimeout adds the sessionTimeout to the fpolicy engine delete collection params
+func (o *FpolicyEngineDeleteCollectionParams) SetSessionTimeout(sessionTimeout *string) {
+	o.SessionTimeout = sessionTimeout
 }
 
 // WithSslOption adds the sslOption to the fpolicy engine delete collection params
@@ -740,6 +774,23 @@ func (o *FpolicyEngineDeleteCollectionParams) WriteToRequest(r runtime.ClientReq
 		if qKeepAliveInterval != "" {
 
 			if err := r.SetQueryParam("keep_alive_interval", qKeepAliveInterval); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxConnectionRetries != nil {
+
+		// query param max_connection_retries
+		var qrMaxConnectionRetries int64
+
+		if o.MaxConnectionRetries != nil {
+			qrMaxConnectionRetries = *o.MaxConnectionRetries
+		}
+		qMaxConnectionRetries := swag.FormatInt64(qrMaxConnectionRetries)
+		if qMaxConnectionRetries != "" {
+
+			if err := r.SetQueryParam("max_connection_retries", qMaxConnectionRetries); err != nil {
 				return err
 			}
 		}
@@ -978,6 +1029,23 @@ func (o *FpolicyEngineDeleteCollectionParams) WriteToRequest(r runtime.ClientReq
 		if qServerProgressTimeout != "" {
 
 			if err := r.SetQueryParam("server_progress_timeout", qServerProgressTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SessionTimeout != nil {
+
+		// query param session_timeout
+		var qrSessionTimeout string
+
+		if o.SessionTimeout != nil {
+			qrSessionTimeout = *o.SessionTimeout
+		}
+		qSessionTimeout := qrSessionTimeout
+		if qSessionTimeout != "" {
+
+			if err := r.SetQueryParam("session_timeout", qSessionTimeout); err != nil {
 				return err
 			}
 		}

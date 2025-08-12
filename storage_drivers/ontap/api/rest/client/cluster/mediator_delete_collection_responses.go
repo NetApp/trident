@@ -375,6 +375,12 @@ swagger:model mediator_response_inline_records_inline_array_item
 */
 type MediatorResponseInlineRecordsInlineArrayItem struct {
 
+	// BlueXP account token. This field is only applicable to the ONTAP cloud mediator.
+	BluexpAccountToken *string `json:"bluexp_account_token,omitempty"`
+
+	// BlueXP organization ID. This field is only applicable to the ONTAP cloud mediator.
+	BluexpOrgID *string `json:"bluexp_org_id,omitempty"`
+
 	// CA certificate for ONTAP Mediator. This is optional if the certificate is already installed.
 	CaCertificate *string `json:"ca_certificate,omitempty"`
 
@@ -385,6 +391,11 @@ type MediatorResponseInlineRecordsInlineArrayItem struct {
 	// Example: 10.10.10.7
 	IPAddress *string `json:"ip_address,omitempty"`
 
+	// Indicates the mediator connectivity status of the local cluster. Possible values are connected, unreachable, unusable and down-high-latency. This field is only applicable to the mediators in SnapMirror active sync configuration.
+	// Example: connected
+	// Read Only: true
+	LocalMediatorConnectivity *string `json:"local_mediator_connectivity,omitempty"`
+
 	// The password used to connect to the REST server on the mediator.
 	// Example: mypassword
 	// Format: password
@@ -393,7 +404,7 @@ type MediatorResponseInlineRecordsInlineArrayItem struct {
 	// peer cluster
 	PeerCluster *models.MediatorResponseInlineRecordsInlineArrayItemInlinePeerCluster `json:"peer_cluster,omitempty"`
 
-	// Indicates the mediator connectivity status of the peer cluster. Possible values are connected, unreachable, unknown.
+	// Indicates the mediator connectivity status of the peer cluster. Possible values are connected, unreachable, unknown and down-high-latency.
 	// Example: connected
 	// Read Only: true
 	PeerMediatorConnectivity *string `json:"peer_mediator_connectivity,omitempty"`
@@ -406,6 +417,28 @@ type MediatorResponseInlineRecordsInlineArrayItem struct {
 	// Example: true
 	// Read Only: true
 	Reachable *bool `json:"reachable,omitempty"`
+
+	// Client ID of the BlueXP service account. This field is only applicable to the ONTAP cloud mediator.
+	ServiceAccountClientID *string `json:"service_account_client_id,omitempty"`
+
+	// Client secret token of the BlueXP service account. This field is only applicable to the ONTAP cloud mediator.
+	ServiceAccountClientSecret *string `json:"service_account_client_secret,omitempty"`
+
+	// Indicates if strict validation of certificates is performed while making REST API calls to the mediator. This field is only applicable to the ONTAP Cloud Mediator.
+	// Example: true
+	StrictCertValidation *bool `json:"strict_cert_validation,omitempty"`
+
+	// Mediator type. This field is only applicable to the mediators in SnapMirror active sync configuration.
+	// Enum: ["cloud","on_prem"]
+	Type *string `json:"type,omitempty"`
+
+	// Indicates if the local cluster should use an http-proxy server while making REST API calls to the mediator. This field is only applicable to the ONTAP cloud mediator.
+	// Example: true
+	UseHTTPProxyLocal *bool `json:"use_http_proxy_local,omitempty"`
+
+	// Indicates if the remote cluster should use an http-proxy server while making REST API calls to the mediator. This field is only applicable to the ONTAP cloud mediator.
+	// Example: true
+	UseHTTPProxyRemote *bool `json:"use_http_proxy_remote,omitempty"`
 
 	// The username used to connect to the REST server on the mediator.
 	// Example: myusername
@@ -429,6 +462,10 @@ func (o *MediatorResponseInlineRecordsInlineArrayItem) Validate(formats strfmt.R
 	}
 
 	if err := o.validatePeerCluster(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -484,11 +521,71 @@ func (o *MediatorResponseInlineRecordsInlineArrayItem) validatePeerCluster(forma
 	return nil
 }
 
+var mediatorResponseInlineRecordsInlineArrayItemTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["cloud","on_prem"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		mediatorResponseInlineRecordsInlineArrayItemTypeTypePropEnum = append(mediatorResponseInlineRecordsInlineArrayItemTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// mediator_response_inline_records_inline_array_item
+	// MediatorResponseInlineRecordsInlineArrayItem
+	// type
+	// Type
+	// cloud
+	// END DEBUGGING
+	// MediatorResponseInlineRecordsInlineArrayItemTypeCloud captures enum value "cloud"
+	MediatorResponseInlineRecordsInlineArrayItemTypeCloud string = "cloud"
+
+	// BEGIN DEBUGGING
+	// mediator_response_inline_records_inline_array_item
+	// MediatorResponseInlineRecordsInlineArrayItem
+	// type
+	// Type
+	// on_prem
+	// END DEBUGGING
+	// MediatorResponseInlineRecordsInlineArrayItemTypeOnPrem captures enum value "on_prem"
+	MediatorResponseInlineRecordsInlineArrayItemTypeOnPrem string = "on_prem"
+)
+
+// prop value enum
+func (o *MediatorResponseInlineRecordsInlineArrayItem) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, mediatorResponseInlineRecordsInlineArrayItemTypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (o *MediatorResponseInlineRecordsInlineArrayItem) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(o.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := o.validateTypeEnum("type", "body", *o.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this mediator response inline records inline array item based on the context it is used
 func (o *MediatorResponseInlineRecordsInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := o.contextValidateDrGroup(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateLocalMediatorConnectivity(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -523,6 +620,15 @@ func (o *MediatorResponseInlineRecordsInlineArrayItem) contextValidateDrGroup(ct
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (o *MediatorResponseInlineRecordsInlineArrayItem) contextValidateLocalMediatorConnectivity(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "local_mediator_connectivity", "body", o.LocalMediatorConnectivity); err != nil {
+		return err
 	}
 
 	return nil

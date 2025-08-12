@@ -252,7 +252,7 @@ type MultiAdminVerifyRequestModifyCollectionBody struct {
 	RequiredApprovers *int64 `json:"required_approvers,omitempty"`
 
 	// The state of the request. PATCH supports approved and vetoed. The state only changes after setting to approved once no more approvers are required.
-	// Enum: ["pending","approved","vetoed","expired","executed"]
+	// Enum: ["approved","vetoed","pending","expired","executed"]
 	State *string `json:"state,omitempty"`
 
 	// The user that created the request. Automatically set by ONTAP.
@@ -395,7 +395,7 @@ var multiAdminVerifyRequestModifyCollectionBodyTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["pending","approved","vetoed","expired","executed"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["approved","vetoed","pending","expired","executed"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -404,16 +404,6 @@ func init() {
 }
 
 const (
-
-	// BEGIN DEBUGGING
-	// MultiAdminVerifyRequestModifyCollectionBody
-	// MultiAdminVerifyRequestModifyCollectionBody
-	// state
-	// State
-	// pending
-	// END DEBUGGING
-	// MultiAdminVerifyRequestModifyCollectionBodyStatePending captures enum value "pending"
-	MultiAdminVerifyRequestModifyCollectionBodyStatePending string = "pending"
 
 	// BEGIN DEBUGGING
 	// MultiAdminVerifyRequestModifyCollectionBody
@@ -434,6 +424,16 @@ const (
 	// END DEBUGGING
 	// MultiAdminVerifyRequestModifyCollectionBodyStateVetoed captures enum value "vetoed"
 	MultiAdminVerifyRequestModifyCollectionBodyStateVetoed string = "vetoed"
+
+	// BEGIN DEBUGGING
+	// MultiAdminVerifyRequestModifyCollectionBody
+	// MultiAdminVerifyRequestModifyCollectionBody
+	// state
+	// State
+	// pending
+	// END DEBUGGING
+	// MultiAdminVerifyRequestModifyCollectionBodyStatePending captures enum value "pending"
+	MultiAdminVerifyRequestModifyCollectionBodyStatePending string = "pending"
 
 	// BEGIN DEBUGGING
 	// MultiAdminVerifyRequestModifyCollectionBody

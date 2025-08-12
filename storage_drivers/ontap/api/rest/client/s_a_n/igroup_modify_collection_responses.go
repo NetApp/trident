@@ -243,7 +243,7 @@ type IgroupModifyCollectionBody struct {
 
 	// All LUN maps with which the initiator is associated.<br/>
 	// If the requested igroup is part of a remote, non-local, MetroCluster SVM, the LUN maps are not retrieved.<br/>
-	// There is an added computational cost to retrieving property values for `lun_maps`. They are not populated for either a collection GET or an instance GET unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// There is an added computational cost to retrieving property values for `lun_maps`. They are not populated for a GET request unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Read Only: true
 	IgroupInlineLunMaps []*models.IgroupInlineLunMapsInlineArrayItem `json:"lun_maps,omitempty"`

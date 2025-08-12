@@ -68,6 +68,12 @@ type SnapshotModifyCollectionParams struct {
 	*/
 	Comment *string
 
+	/* CompressSavings.
+
+	   Filter by compress_savings
+	*/
+	CompressSavings *int64
+
 	/* ContinueOnFailure.
 
 	   Continue even when the operation fails on one of the records.
@@ -79,6 +85,12 @@ type SnapshotModifyCollectionParams struct {
 	   Filter by create_time
 	*/
 	CreateTime *string
+
+	/* DedupSavings.
+
+	   Filter by dedup_savings
+	*/
+	DedupSavings *int64
 
 	/* DeltaSizeConsumed.
 
@@ -168,17 +180,17 @@ type SnapshotModifyCollectionParams struct {
 	*/
 	SnaplockExpired *bool
 
-	/* SnaplockExpiryTime.
-
-	   Filter by snaplock.expiry_time
-	*/
-	SnaplockExpiryTime *string
-
 	/* SnaplockTimeUntilExpiry.
 
 	   Filter by snaplock.time_until_expiry
 	*/
 	SnaplockTimeUntilExpiry *string
+
+	/* SnaplockExpiryTime.
+
+	   Filter by snaplock_expiry_time
+	*/
+	SnaplockExpiryTime *string
 
 	/* SnapmirrorLabel.
 
@@ -209,6 +221,12 @@ type SnapshotModifyCollectionParams struct {
 	   Filter by uuid
 	*/
 	UUID *string
+
+	/* Vbn0Savings.
+
+	   Filter by vbn0_savings
+	*/
+	Vbn0Savings *int64
 
 	/* VersionUUID.
 
@@ -312,6 +330,17 @@ func (o *SnapshotModifyCollectionParams) SetComment(comment *string) {
 	o.Comment = comment
 }
 
+// WithCompressSavings adds the compressSavings to the snapshot modify collection params
+func (o *SnapshotModifyCollectionParams) WithCompressSavings(compressSavings *int64) *SnapshotModifyCollectionParams {
+	o.SetCompressSavings(compressSavings)
+	return o
+}
+
+// SetCompressSavings adds the compressSavings to the snapshot modify collection params
+func (o *SnapshotModifyCollectionParams) SetCompressSavings(compressSavings *int64) {
+	o.CompressSavings = compressSavings
+}
+
 // WithContinueOnFailure adds the continueOnFailure to the snapshot modify collection params
 func (o *SnapshotModifyCollectionParams) WithContinueOnFailure(continueOnFailure *bool) *SnapshotModifyCollectionParams {
 	o.SetContinueOnFailure(continueOnFailure)
@@ -332,6 +361,17 @@ func (o *SnapshotModifyCollectionParams) WithCreateTime(createTime *string) *Sna
 // SetCreateTime adds the createTime to the snapshot modify collection params
 func (o *SnapshotModifyCollectionParams) SetCreateTime(createTime *string) {
 	o.CreateTime = createTime
+}
+
+// WithDedupSavings adds the dedupSavings to the snapshot modify collection params
+func (o *SnapshotModifyCollectionParams) WithDedupSavings(dedupSavings *int64) *SnapshotModifyCollectionParams {
+	o.SetDedupSavings(dedupSavings)
+	return o
+}
+
+// SetDedupSavings adds the dedupSavings to the snapshot modify collection params
+func (o *SnapshotModifyCollectionParams) SetDedupSavings(dedupSavings *int64) {
+	o.DedupSavings = dedupSavings
 }
 
 // WithDeltaSizeConsumed adds the deltaSizeConsumed to the snapshot modify collection params
@@ -488,17 +528,6 @@ func (o *SnapshotModifyCollectionParams) SetSnaplockExpired(snaplockExpired *boo
 	o.SnaplockExpired = snaplockExpired
 }
 
-// WithSnaplockExpiryTime adds the snaplockExpiryTime to the snapshot modify collection params
-func (o *SnapshotModifyCollectionParams) WithSnaplockExpiryTime(snaplockExpiryTime *string) *SnapshotModifyCollectionParams {
-	o.SetSnaplockExpiryTime(snaplockExpiryTime)
-	return o
-}
-
-// SetSnaplockExpiryTime adds the snaplockExpiryTime to the snapshot modify collection params
-func (o *SnapshotModifyCollectionParams) SetSnaplockExpiryTime(snaplockExpiryTime *string) {
-	o.SnaplockExpiryTime = snaplockExpiryTime
-}
-
 // WithSnaplockTimeUntilExpiry adds the snaplockTimeUntilExpiry to the snapshot modify collection params
 func (o *SnapshotModifyCollectionParams) WithSnaplockTimeUntilExpiry(snaplockTimeUntilExpiry *string) *SnapshotModifyCollectionParams {
 	o.SetSnaplockTimeUntilExpiry(snaplockTimeUntilExpiry)
@@ -508,6 +537,17 @@ func (o *SnapshotModifyCollectionParams) WithSnaplockTimeUntilExpiry(snaplockTim
 // SetSnaplockTimeUntilExpiry adds the snaplockTimeUntilExpiry to the snapshot modify collection params
 func (o *SnapshotModifyCollectionParams) SetSnaplockTimeUntilExpiry(snaplockTimeUntilExpiry *string) {
 	o.SnaplockTimeUntilExpiry = snaplockTimeUntilExpiry
+}
+
+// WithSnaplockExpiryTime adds the snaplockExpiryTime to the snapshot modify collection params
+func (o *SnapshotModifyCollectionParams) WithSnaplockExpiryTime(snaplockExpiryTime *string) *SnapshotModifyCollectionParams {
+	o.SetSnaplockExpiryTime(snaplockExpiryTime)
+	return o
+}
+
+// SetSnaplockExpiryTime adds the snaplockExpiryTime to the snapshot modify collection params
+func (o *SnapshotModifyCollectionParams) SetSnaplockExpiryTime(snaplockExpiryTime *string) {
+	o.SnaplockExpiryTime = snaplockExpiryTime
 }
 
 // WithSnapmirrorLabel adds the snapmirrorLabel to the snapshot modify collection params
@@ -563,6 +603,17 @@ func (o *SnapshotModifyCollectionParams) WithUUID(uuid *string) *SnapshotModifyC
 // SetUUID adds the uuid to the snapshot modify collection params
 func (o *SnapshotModifyCollectionParams) SetUUID(uuid *string) {
 	o.UUID = uuid
+}
+
+// WithVbn0Savings adds the vbn0Savings to the snapshot modify collection params
+func (o *SnapshotModifyCollectionParams) WithVbn0Savings(vbn0Savings *int64) *SnapshotModifyCollectionParams {
+	o.SetVbn0Savings(vbn0Savings)
+	return o
+}
+
+// SetVbn0Savings adds the vbn0Savings to the snapshot modify collection params
+func (o *SnapshotModifyCollectionParams) SetVbn0Savings(vbn0Savings *int64) {
+	o.Vbn0Savings = vbn0Savings
 }
 
 // WithVersionUUID adds the versionUUID to the snapshot modify collection params
@@ -623,6 +674,23 @@ func (o *SnapshotModifyCollectionParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
+	if o.CompressSavings != nil {
+
+		// query param compress_savings
+		var qrCompressSavings int64
+
+		if o.CompressSavings != nil {
+			qrCompressSavings = *o.CompressSavings
+		}
+		qCompressSavings := swag.FormatInt64(qrCompressSavings)
+		if qCompressSavings != "" {
+
+			if err := r.SetQueryParam("compress_savings", qCompressSavings); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ContinueOnFailure != nil {
 
 		// query param continue_on_failure
@@ -652,6 +720,23 @@ func (o *SnapshotModifyCollectionParams) WriteToRequest(r runtime.ClientRequest,
 		if qCreateTime != "" {
 
 			if err := r.SetQueryParam("create_time", qCreateTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.DedupSavings != nil {
+
+		// query param dedup_savings
+		var qrDedupSavings int64
+
+		if o.DedupSavings != nil {
+			qrDedupSavings = *o.DedupSavings
+		}
+		qDedupSavings := swag.FormatInt64(qrDedupSavings)
+		if qDedupSavings != "" {
+
+			if err := r.SetQueryParam("dedup_savings", qDedupSavings); err != nil {
 				return err
 			}
 		}
@@ -881,23 +966,6 @@ func (o *SnapshotModifyCollectionParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
-	if o.SnaplockExpiryTime != nil {
-
-		// query param snaplock.expiry_time
-		var qrSnaplockExpiryTime string
-
-		if o.SnaplockExpiryTime != nil {
-			qrSnaplockExpiryTime = *o.SnaplockExpiryTime
-		}
-		qSnaplockExpiryTime := qrSnaplockExpiryTime
-		if qSnaplockExpiryTime != "" {
-
-			if err := r.SetQueryParam("snaplock.expiry_time", qSnaplockExpiryTime); err != nil {
-				return err
-			}
-		}
-	}
-
 	if o.SnaplockTimeUntilExpiry != nil {
 
 		// query param snaplock.time_until_expiry
@@ -910,6 +978,23 @@ func (o *SnapshotModifyCollectionParams) WriteToRequest(r runtime.ClientRequest,
 		if qSnaplockTimeUntilExpiry != "" {
 
 			if err := r.SetQueryParam("snaplock.time_until_expiry", qSnaplockTimeUntilExpiry); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnaplockExpiryTime != nil {
+
+		// query param snaplock_expiry_time
+		var qrSnaplockExpiryTime string
+
+		if o.SnaplockExpiryTime != nil {
+			qrSnaplockExpiryTime = *o.SnaplockExpiryTime
+		}
+		qSnaplockExpiryTime := qrSnaplockExpiryTime
+		if qSnaplockExpiryTime != "" {
+
+			if err := r.SetQueryParam("snaplock_expiry_time", qSnaplockExpiryTime); err != nil {
 				return err
 			}
 		}
@@ -995,6 +1080,23 @@ func (o *SnapshotModifyCollectionParams) WriteToRequest(r runtime.ClientRequest,
 		if qUUID != "" {
 
 			if err := r.SetQueryParam("uuid", qUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Vbn0Savings != nil {
+
+		// query param vbn0_savings
+		var qrVbn0Savings int64
+
+		if o.Vbn0Savings != nil {
+			qrVbn0Savings = *o.Vbn0Savings
+		}
+		qVbn0Savings := swag.FormatInt64(qrVbn0Savings)
+		if qVbn0Savings != "" {
+
+			if err := r.SetQueryParam("vbn0_savings", qVbn0Savings); err != nil {
 				return err
 			}
 		}

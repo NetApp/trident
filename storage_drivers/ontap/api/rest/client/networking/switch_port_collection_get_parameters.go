@@ -80,6 +80,18 @@ type SwitchPortCollectionGetParams struct {
 	*/
 	Fields []string
 
+	/* IdentityBreakoutNumber.
+
+	   Filter by identity.breakout.number
+	*/
+	IdentityBreakoutNumber *int64
+
+	/* IdentityBreakoutPhysicalPort.
+
+	   Filter by identity.breakout.physical_port
+	*/
+	IdentityBreakoutPhysicalPort *string
+
 	/* IdentityIndex.
 
 	   Filter by identity.index
@@ -128,6 +140,12 @@ type SwitchPortCollectionGetParams struct {
 	*/
 	OrderBy []string
 
+	/* RemotePortDeviceDiscoveredName.
+
+	   Filter by remote_port.device.discovered_name
+	*/
+	RemotePortDeviceDiscoveredName *string
+
 	/* RemotePortDeviceNodeName.
 
 	   Filter by remote_port.device.node.name
@@ -158,6 +176,12 @@ type SwitchPortCollectionGetParams struct {
 	*/
 	RemotePortDeviceShelfUID *string
 
+	/* RemotePortFunctionalRoles.
+
+	   Filter by remote_port.functional_roles
+	*/
+	RemotePortFunctionalRoles *string
+
 	/* RemotePortMtu.
 
 	   Filter by remote_port.mtu
@@ -185,6 +209,24 @@ type SwitchPortCollectionGetParams struct {
 	   Default: 15
 	*/
 	ReturnTimeout *int64
+
+	/* RolesDrGroup.
+
+	   Filter by roles.dr_group
+	*/
+	RolesDrGroup *string
+
+	/* RolesType.
+
+	   Filter by roles.type
+	*/
+	RolesType *string
+
+	/* RolesZone.
+
+	   Filter by roles.zone
+	*/
+	RolesZone *int64
 
 	/* Speed.
 
@@ -215,6 +257,12 @@ type SwitchPortCollectionGetParams struct {
 	   Filter by statistics.receive_raw.packets
 	*/
 	StatisticsReceiveRawPackets *int64
+
+	/* StatisticsTimestamp.
+
+	   Filter by statistics.timestamp
+	*/
+	StatisticsTimestamp *string
 
 	/* StatisticsTransmitRawDiscards.
 
@@ -358,6 +406,28 @@ func (o *SwitchPortCollectionGetParams) SetFields(fields []string) {
 	o.Fields = fields
 }
 
+// WithIdentityBreakoutNumber adds the identityBreakoutNumber to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithIdentityBreakoutNumber(identityBreakoutNumber *int64) *SwitchPortCollectionGetParams {
+	o.SetIdentityBreakoutNumber(identityBreakoutNumber)
+	return o
+}
+
+// SetIdentityBreakoutNumber adds the identityBreakoutNumber to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetIdentityBreakoutNumber(identityBreakoutNumber *int64) {
+	o.IdentityBreakoutNumber = identityBreakoutNumber
+}
+
+// WithIdentityBreakoutPhysicalPort adds the identityBreakoutPhysicalPort to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithIdentityBreakoutPhysicalPort(identityBreakoutPhysicalPort *string) *SwitchPortCollectionGetParams {
+	o.SetIdentityBreakoutPhysicalPort(identityBreakoutPhysicalPort)
+	return o
+}
+
+// SetIdentityBreakoutPhysicalPort adds the identityBreakoutPhysicalPort to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetIdentityBreakoutPhysicalPort(identityBreakoutPhysicalPort *string) {
+	o.IdentityBreakoutPhysicalPort = identityBreakoutPhysicalPort
+}
+
 // WithIdentityIndex adds the identityIndex to the switch port collection get params
 func (o *SwitchPortCollectionGetParams) WithIdentityIndex(identityIndex *int64) *SwitchPortCollectionGetParams {
 	o.SetIdentityIndex(identityIndex)
@@ -446,6 +516,17 @@ func (o *SwitchPortCollectionGetParams) SetOrderBy(orderBy []string) {
 	o.OrderBy = orderBy
 }
 
+// WithRemotePortDeviceDiscoveredName adds the remotePortDeviceDiscoveredName to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithRemotePortDeviceDiscoveredName(remotePortDeviceDiscoveredName *string) *SwitchPortCollectionGetParams {
+	o.SetRemotePortDeviceDiscoveredName(remotePortDeviceDiscoveredName)
+	return o
+}
+
+// SetRemotePortDeviceDiscoveredName adds the remotePortDeviceDiscoveredName to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetRemotePortDeviceDiscoveredName(remotePortDeviceDiscoveredName *string) {
+	o.RemotePortDeviceDiscoveredName = remotePortDeviceDiscoveredName
+}
+
 // WithRemotePortDeviceNodeName adds the remotePortDeviceNodeName to the switch port collection get params
 func (o *SwitchPortCollectionGetParams) WithRemotePortDeviceNodeName(remotePortDeviceNodeName *string) *SwitchPortCollectionGetParams {
 	o.SetRemotePortDeviceNodeName(remotePortDeviceNodeName)
@@ -501,6 +582,17 @@ func (o *SwitchPortCollectionGetParams) SetRemotePortDeviceShelfUID(remotePortDe
 	o.RemotePortDeviceShelfUID = remotePortDeviceShelfUID
 }
 
+// WithRemotePortFunctionalRoles adds the remotePortFunctionalRoles to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithRemotePortFunctionalRoles(remotePortFunctionalRoles *string) *SwitchPortCollectionGetParams {
+	o.SetRemotePortFunctionalRoles(remotePortFunctionalRoles)
+	return o
+}
+
+// SetRemotePortFunctionalRoles adds the remotePortFunctionalRoles to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetRemotePortFunctionalRoles(remotePortFunctionalRoles *string) {
+	o.RemotePortFunctionalRoles = remotePortFunctionalRoles
+}
+
 // WithRemotePortMtu adds the remotePortMtu to the switch port collection get params
 func (o *SwitchPortCollectionGetParams) WithRemotePortMtu(remotePortMtu *int64) *SwitchPortCollectionGetParams {
 	o.SetRemotePortMtu(remotePortMtu)
@@ -543,6 +635,39 @@ func (o *SwitchPortCollectionGetParams) WithReturnTimeout(returnTimeout *int64) 
 // SetReturnTimeout adds the returnTimeout to the switch port collection get params
 func (o *SwitchPortCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
 	o.ReturnTimeout = returnTimeout
+}
+
+// WithRolesDrGroup adds the rolesDrGroup to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithRolesDrGroup(rolesDrGroup *string) *SwitchPortCollectionGetParams {
+	o.SetRolesDrGroup(rolesDrGroup)
+	return o
+}
+
+// SetRolesDrGroup adds the rolesDrGroup to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetRolesDrGroup(rolesDrGroup *string) {
+	o.RolesDrGroup = rolesDrGroup
+}
+
+// WithRolesType adds the rolesType to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithRolesType(rolesType *string) *SwitchPortCollectionGetParams {
+	o.SetRolesType(rolesType)
+	return o
+}
+
+// SetRolesType adds the rolesType to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetRolesType(rolesType *string) {
+	o.RolesType = rolesType
+}
+
+// WithRolesZone adds the rolesZone to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithRolesZone(rolesZone *int64) *SwitchPortCollectionGetParams {
+	o.SetRolesZone(rolesZone)
+	return o
+}
+
+// SetRolesZone adds the rolesZone to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetRolesZone(rolesZone *int64) {
+	o.RolesZone = rolesZone
 }
 
 // WithSpeed adds the speed to the switch port collection get params
@@ -598,6 +723,17 @@ func (o *SwitchPortCollectionGetParams) WithStatisticsReceiveRawPackets(statisti
 // SetStatisticsReceiveRawPackets adds the statisticsReceiveRawPackets to the switch port collection get params
 func (o *SwitchPortCollectionGetParams) SetStatisticsReceiveRawPackets(statisticsReceiveRawPackets *int64) {
 	o.StatisticsReceiveRawPackets = statisticsReceiveRawPackets
+}
+
+// WithStatisticsTimestamp adds the statisticsTimestamp to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithStatisticsTimestamp(statisticsTimestamp *string) *SwitchPortCollectionGetParams {
+	o.SetStatisticsTimestamp(statisticsTimestamp)
+	return o
+}
+
+// SetStatisticsTimestamp adds the statisticsTimestamp to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetStatisticsTimestamp(statisticsTimestamp *string) {
+	o.StatisticsTimestamp = statisticsTimestamp
 }
 
 // WithStatisticsTransmitRawDiscards adds the statisticsTransmitRawDiscards to the switch port collection get params
@@ -727,6 +863,40 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.IdentityBreakoutNumber != nil {
+
+		// query param identity.breakout.number
+		var qrIdentityBreakoutNumber int64
+
+		if o.IdentityBreakoutNumber != nil {
+			qrIdentityBreakoutNumber = *o.IdentityBreakoutNumber
+		}
+		qIdentityBreakoutNumber := swag.FormatInt64(qrIdentityBreakoutNumber)
+		if qIdentityBreakoutNumber != "" {
+
+			if err := r.SetQueryParam("identity.breakout.number", qIdentityBreakoutNumber); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IdentityBreakoutPhysicalPort != nil {
+
+		// query param identity.breakout.physical_port
+		var qrIdentityBreakoutPhysicalPort string
+
+		if o.IdentityBreakoutPhysicalPort != nil {
+			qrIdentityBreakoutPhysicalPort = *o.IdentityBreakoutPhysicalPort
+		}
+		qIdentityBreakoutPhysicalPort := qrIdentityBreakoutPhysicalPort
+		if qIdentityBreakoutPhysicalPort != "" {
+
+			if err := r.SetQueryParam("identity.breakout.physical_port", qIdentityBreakoutPhysicalPort); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -860,6 +1030,23 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
+	if o.RemotePortDeviceDiscoveredName != nil {
+
+		// query param remote_port.device.discovered_name
+		var qrRemotePortDeviceDiscoveredName string
+
+		if o.RemotePortDeviceDiscoveredName != nil {
+			qrRemotePortDeviceDiscoveredName = *o.RemotePortDeviceDiscoveredName
+		}
+		qRemotePortDeviceDiscoveredName := qrRemotePortDeviceDiscoveredName
+		if qRemotePortDeviceDiscoveredName != "" {
+
+			if err := r.SetQueryParam("remote_port.device.discovered_name", qRemotePortDeviceDiscoveredName); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.RemotePortDeviceNodeName != nil {
 
 		// query param remote_port.device.node.name
@@ -945,6 +1132,23 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
+	if o.RemotePortFunctionalRoles != nil {
+
+		// query param remote_port.functional_roles
+		var qrRemotePortFunctionalRoles string
+
+		if o.RemotePortFunctionalRoles != nil {
+			qrRemotePortFunctionalRoles = *o.RemotePortFunctionalRoles
+		}
+		qRemotePortFunctionalRoles := qrRemotePortFunctionalRoles
+		if qRemotePortFunctionalRoles != "" {
+
+			if err := r.SetQueryParam("remote_port.functional_roles", qRemotePortFunctionalRoles); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.RemotePortMtu != nil {
 
 		// query param remote_port.mtu
@@ -1008,6 +1212,57 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RolesDrGroup != nil {
+
+		// query param roles.dr_group
+		var qrRolesDrGroup string
+
+		if o.RolesDrGroup != nil {
+			qrRolesDrGroup = *o.RolesDrGroup
+		}
+		qRolesDrGroup := qrRolesDrGroup
+		if qRolesDrGroup != "" {
+
+			if err := r.SetQueryParam("roles.dr_group", qRolesDrGroup); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RolesType != nil {
+
+		// query param roles.type
+		var qrRolesType string
+
+		if o.RolesType != nil {
+			qrRolesType = *o.RolesType
+		}
+		qRolesType := qrRolesType
+		if qRolesType != "" {
+
+			if err := r.SetQueryParam("roles.type", qRolesType); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RolesZone != nil {
+
+		// query param roles.zone
+		var qrRolesZone int64
+
+		if o.RolesZone != nil {
+			qrRolesZone = *o.RolesZone
+		}
+		qRolesZone := swag.FormatInt64(qrRolesZone)
+		if qRolesZone != "" {
+
+			if err := r.SetQueryParam("roles.zone", qRolesZone); err != nil {
 				return err
 			}
 		}
@@ -1093,6 +1348,23 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		if qStatisticsReceiveRawPackets != "" {
 
 			if err := r.SetQueryParam("statistics.receive_raw.packets", qStatisticsReceiveRawPackets); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatisticsTimestamp != nil {
+
+		// query param statistics.timestamp
+		var qrStatisticsTimestamp string
+
+		if o.StatisticsTimestamp != nil {
+			qrStatisticsTimestamp = *o.StatisticsTimestamp
+		}
+		qStatisticsTimestamp := qrStatisticsTimestamp
+		if qStatisticsTimestamp != "" {
+
+			if err := r.SetQueryParam("statistics.timestamp", qStatisticsTimestamp); err != nil {
 				return err
 			}
 		}

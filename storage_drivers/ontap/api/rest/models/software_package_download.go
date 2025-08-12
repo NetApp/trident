@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -19,10 +20,26 @@ import (
 // swagger:model software_package_download
 type SoftwarePackageDownload struct {
 
+	// Code returned corresponds to a download message.
+	// Example: 10551382
+	// Read Only: true
+	Code *int64 `json:"code,omitempty"`
+
+	// Download progress details.
+	// Example: Package download in progress
+	// Read Only: true
+	Message *string `json:"message,omitempty"`
+
 	// Password for download
 	// Example: admin_password
 	// Format: password
 	Password *strfmt.Password `json:"password,omitempty"`
+
+	// Download status of the package.
+	// Example: success
+	// Read Only: true
+	// Enum: ["not_started","running","success","failure"]
+	State *string `json:"state,omitempty"`
 
 	// HTTP or FTP URL of the package through a server
 	// Example: http://server/package
@@ -38,6 +55,10 @@ func (m *SoftwarePackageDownload) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validatePassword(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -59,8 +80,128 @@ func (m *SoftwarePackageDownload) validatePassword(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validates this software package download based on context it is used
+var softwarePackageDownloadTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["not_started","running","success","failure"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		softwarePackageDownloadTypeStatePropEnum = append(softwarePackageDownloadTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// software_package_download
+	// SoftwarePackageDownload
+	// state
+	// State
+	// not_started
+	// END DEBUGGING
+	// SoftwarePackageDownloadStateNotStarted captures enum value "not_started"
+	SoftwarePackageDownloadStateNotStarted string = "not_started"
+
+	// BEGIN DEBUGGING
+	// software_package_download
+	// SoftwarePackageDownload
+	// state
+	// State
+	// running
+	// END DEBUGGING
+	// SoftwarePackageDownloadStateRunning captures enum value "running"
+	SoftwarePackageDownloadStateRunning string = "running"
+
+	// BEGIN DEBUGGING
+	// software_package_download
+	// SoftwarePackageDownload
+	// state
+	// State
+	// success
+	// END DEBUGGING
+	// SoftwarePackageDownloadStateSuccess captures enum value "success"
+	SoftwarePackageDownloadStateSuccess string = "success"
+
+	// BEGIN DEBUGGING
+	// software_package_download
+	// SoftwarePackageDownload
+	// state
+	// State
+	// failure
+	// END DEBUGGING
+	// SoftwarePackageDownloadStateFailure captures enum value "failure"
+	SoftwarePackageDownloadStateFailure string = "failure"
+)
+
+// prop value enum
+func (m *SoftwarePackageDownload) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, softwarePackageDownloadTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *SoftwarePackageDownload) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("state", "body", *m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this software package download based on the context it is used
 func (m *SoftwarePackageDownload) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SoftwarePackageDownload) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "code", "body", m.Code); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SoftwarePackageDownload) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "message", "body", m.Message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SoftwarePackageDownload) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "state", "body", m.State); err != nil {
+		return err
+	}
+
 	return nil
 }
 

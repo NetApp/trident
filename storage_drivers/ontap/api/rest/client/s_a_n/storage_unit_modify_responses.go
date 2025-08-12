@@ -207,12 +207,30 @@ func NewStorageUnitModifyDefault(code int) *StorageUnitModifyDefault {
 | 5376497 | The storage unit move operation is not ready for cutover. |
 | 5376499 | The storage unit move operation cannot be paused. |
 | 5376500 | The storage unit move operation is not paused. |
-| 5376508 | A storage unit move of a secondary LUN or NVMe namespace is not supported. To move a secondary, you must move the associated primary LUN or NVMe namespace which will move all of the secondaries. |
-| 5376509 | Storage unit move related operations are not allowed for a SVM administrator. |
-| 5376510 | Storage unit move is not allowed for protocol endpoints. |
-| 5376511 | A storage unit move is already in progress for the storage unit. |
-| 5376512 | A storage unit move is not in progress for the storage unit. |
-| 5376513 | An attempt was made to patch a storage unit move state to an unsupported state. Allowed states are aborted, cutover, paused, replicating, and cutover_wait. |
+| 5376508 | A storage unit move operation of a secondary storage unit is not supported. To move a secondary storage unit, you must move the associated primary storage unit which moves all of the secondary storage units. |
+| 5376509 | Storage unit move operations are not allowed for an SVM administrator. |
+| 5376510 | Storage unit move operation is not allowed for protocol endpoints. |
+| 5376511 | A storage unit move operation is already in progress for the storage unit. |
+| 5376512 | A storage unit move operation is not in progress for the storage unit. |
+| 5376513 | An attempt was made to patch a storage unit move operation state to an unsupported state. Allowed states are aborted, cutover, paused, replicating, and cutover_wait. |
+| 5376518 | The storage unit move operation cannot be paused at the current time. Wait and try again. |
+| 5376521 | An attempt was made to modify a property of a secondary storage unit that can only be modified via the primary storage unit. |
+| 5376522 | Storage unit clone-related operations are not supported on a secondary storage unit. You must perform a clone-related operation on the associated primary storage unit which is then applied to all of the secondary storage units. |
+| 5376523 | Query parameter `restore_to.snapshot.name` or `restore_to.snapshot.uuid` must be supplied when supplying other `restore_to` query parameters. |
+| 5376524 | The specified query parameter requires `restore_to.keep_snapshots` to be `true`. |
+| 5376525 | Query parameter `restore_to.keep_snapshots` must be `true` for secondary storage units. |
+| 5376526 | Query parameter `restore_to.start_byte` and `restore_to.byte_count` must both be supplied to request a partial storage unit snapshot restore. |
+| 5376527 | Query parameter `restore_to.start_byte` and `restore_to.byte_count` must both be increments of 4096. |
+| 203161607 | An attempt to set the anti-ransomware state to dry-run when it is already enabled. |
+| 203161610 | An attempt pause anti-ransomware checking when it is in a conflicting state. |
+| 203161611 | An attempt to resume anti-ransomware checking when it is in a conflicting state. |
+| 203161613 | Anti-ransomware is disabled. |
+| 203161623 | Anti-ransomware is being disabled. |
+| 203161633 | An attempt to resume anti-ransomware checking when it is paused in a conflicting state. |
+| 203161642 | An attempt to set the anti-ransomware state to dry-run-paused when it is already enabled. |
+| 203161643 | An attempt to set the anti-ransomware state to enable-paused when it is already enabled. |
+| 203161644 | An attempt to set the anti-ransomware state to a disallowed value. |
+| 203161645 | An attempt to set the anti-ransomware on a storage unit that is moving. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type StorageUnitModifyDefault struct {

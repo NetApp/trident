@@ -144,7 +144,7 @@ func NewVscanOnDemandCreateDefault(code int) *VscanOnDemandCreateDefault {
 | 10027167   | The specified schedule does not exist. Create the schedule or create a policy without specifying the schedule. |
 | 10027168   | The specified scan path does not exist. The scan path must be specified from the root of the SVM, and must begin with UNIX path delimiters (use “/” not “\\”) |
 | 10027169   | The specified scan path is not supported for scanning. |
-| 10027173   | The new On-Demand policy cannot be created as the SVM has reached the maximum number of On-Demand policies allowed. Delete an existing policy in order to create a new policy. |
+| 10027173   | The new On-Demand policy cannot be created because the SVM has reached the maximum limit of 10 On-Demand policies. Delete an existing policy in order to create a new policy. |
 | 10027174   | The specified exclude path is invalid. The path must be specified from the root of the SVM, and must begin with UNIX path delimiters (use "/" not "\\") |
 | 10027175   | An On-Demand policy cannot be scheduled as the Vserver is not in an operational state. |
 | 10027176   | The log-path specified does not exist. The log path must be specified from the root of the SVM, and must begin with UNIX path delimiters (use “/” not “\”). |

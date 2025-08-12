@@ -123,6 +123,7 @@ func NewNetworkEthernetPortModifyCollectionDefault(code int) *NetworkEthernetPor
 | 1376492 | Cannot change the MTU of a VLAN to be greater than the MTU of the port hosting it. |
 | 1377563 | Port is already a member of a LAG. |
 | 1377608 | Port cannot be used because it is currently the home port or current port of an interface. |
+| 1377609 | The update is partially complete. Updating broadcast domain attributes on this port has failed. |
 | 1966288 | Disabling the cluster ports can only be done on the local node. |
 | 1967087 | The specified broadcast domain UUID is not valid. |
 | 1967088 | The specified broadcast domain name does not exist in the specified IPspace. |
@@ -3987,7 +3988,7 @@ type PortInlineStatisticsInlineDevice struct {
 	LinkDownCountRaw *int64 `json:"link_down_count_raw,omitempty"`
 
 	// receive raw
-	ReceiveRaw *models.PortInlineStatisticsInlineDeviceInlineReceiveRaw `json:"receive_raw,omitempty"`
+	ReceiveRaw *PortInlineStatisticsInlineDeviceInlineReceiveRaw `json:"receive_raw,omitempty"`
 
 	// The timestamp when the device specific counters were collected.
 	// Example: 2017-01-25 11:20:13
@@ -3995,7 +3996,7 @@ type PortInlineStatisticsInlineDevice struct {
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 
 	// transmit raw
-	TransmitRaw *models.PortInlineStatisticsInlineDeviceInlineTransmitRaw `json:"transmit_raw,omitempty"`
+	TransmitRaw *PortInlineStatisticsInlineDeviceInlineTransmitRaw `json:"transmit_raw,omitempty"`
 }
 
 // Validate validates this port inline statistics inline device

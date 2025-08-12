@@ -158,6 +158,12 @@ type IpsecPolicyCollectionGetParams struct {
 	*/
 	OrderBy []string
 
+	/* PpkIdentity.
+
+	   Filter by ppk.identity
+	*/
+	PpkIdentity *string
+
 	/* Protocol.
 
 	   Filter by protocol
@@ -475,6 +481,17 @@ func (o *IpsecPolicyCollectionGetParams) WithOrderBy(orderBy []string) *IpsecPol
 // SetOrderBy adds the orderBy to the ipsec policy collection get params
 func (o *IpsecPolicyCollectionGetParams) SetOrderBy(orderBy []string) {
 	o.OrderBy = orderBy
+}
+
+// WithPpkIdentity adds the ppkIdentity to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithPpkIdentity(ppkIdentity *string) *IpsecPolicyCollectionGetParams {
+	o.SetPpkIdentity(ppkIdentity)
+	return o
+}
+
+// SetPpkIdentity adds the ppkIdentity to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetPpkIdentity(ppkIdentity *string) {
+	o.PpkIdentity = ppkIdentity
 }
 
 // WithProtocol adds the protocol to the ipsec policy collection get params
@@ -874,6 +891,23 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.PpkIdentity != nil {
+
+		// query param ppk.identity
+		var qrPpkIdentity string
+
+		if o.PpkIdentity != nil {
+			qrPpkIdentity = *o.PpkIdentity
+		}
+		qPpkIdentity := qrPpkIdentity
+		if qPpkIdentity != "" {
+
+			if err := r.SetQueryParam("ppk.identity", qPpkIdentity); err != nil {
+				return err
+			}
 		}
 	}
 

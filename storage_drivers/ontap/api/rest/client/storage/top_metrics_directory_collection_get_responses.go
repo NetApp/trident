@@ -139,6 +139,7 @@ func NewTopMetricsDirectoryCollectionGetDefault(code int) *TopMetricsDirectoryCo
 | 124518417 | Volume wildcard queries are not supported for activity tracking reports. |
 | 124518418 | The activity tracking report for volume volume.name in SVM svm.name returned zero records. Check whether the volume has read/write traffic. Refer to the REST API documentation for more information. |
 | 124518422 | Volume activity tracking is not supported on All SAN Array clusters. |
+| 124518423 | Volume activity tracking is not supported on the volume. |
 | 124519410 | The large directory report for volume volume.name in SVM svm.name is not available because the file system analytics database version doesn't support this report. |
 | 124519411 | Volume activity tracking is not enabled on the volume. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.

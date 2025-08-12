@@ -208,22 +208,58 @@ func NewSecurityKeystoreModifyCollectionDefault(code int) *SecurityKeystoreModif
 | Error Code | Description |
 | ---------- | ----------- |
 | 262155 | This operation requires an effective cluster version of 9.14.0 or later. |
+| 65536203 | Internal error. Failed to generate SVM key. Cluster key database is not initialized. |
+| 65536204 | Internal error. Failed to generate SVM key. Cluster key encryption key is not found. |
+| 65536207 | Internal error. Failed to store SVM key. |
+| 65536212 | Internal error. Failed to delete SVM volume key. |
+| 65536217 | Internal error. Failed to delete key from cryptomod. |
+| 65536602 | Cannot perform enable/switch while nodes are out of quorum. |
+| 65536856 | No external key management server configured for SVM. |
+| 65536882 | Internal error. UUID is missing for the volume. |
+| 65536883 | Internal error. Volume encryption key is missing. |
+| 65536884 | Internal error. Volume encryption key is invalid for the volume. |
+| 65536889 | Internal error. The volume has an invalid encryption blob. |
+| 65536890 | Internal error. Failed to generate VDEK blob. |
+| 65536973 | Internal error. Volume DSID is missing for the volume. |
+| 65536987 | One or more key servers are unavailable. |
+| 65537527 | Internal error. Failed to rewrap SVM key encryption key. |
+| 65537533 | Internal error. Failed to unwrap SVM key encryption key. |
 | 65537605 | Failed to establish connectivity with the cloud key management service. |
 | 65538908 | The specified keystore configuration UUID either does not exist or corresponds to a keystore configuration that is not supported by this operation. |
 | 65538909 | A value for enabled is required. |
 | 65538910 | Disabling an enabled configuration through this method is currently not supported. |
+| 65539200 | The key custodian was not provided with an external key value store. |
+| 65539201 | Failed to encrypt. |
+| 65539205 | This command does not support enabling key manager configurations with the specified keystore type. |
 | 65539206 | The SVM associated with the supplied keystore UUID already has a keystore configuration enabled. This command does not support migrating from configurations of that keystore type". |
+| 65539207 | The specified keystore configuration does not exist. |
 | 65539212 | Cannot switch the enabled keystore configuration when it is not in the 'active' or 'switching' state. |
+| 65539218 | The specified keystore configuration is already enabled. |
+| 65539222 | Switching between configurations of different keystore types is not supported for data SVMs. |
+| 65539416 | Internal error. Failed to parse key value store response. |
+| 65539442 | Internal error. Failed to generate AES blob. |
+| 65539444 | Internal error. Failed to update the VDEK blob. |
 | 65539513 | An effective cluster version of ONTAP 9.16.1 or later is required to enable an inactive key manager on the admin SVM. |
 | 65539514 | This command does not support enabling key manager configurations with the specified keystore type on the admin SVM. |
 | 65539515 | Cannot switch keystore types on the admin SVM. The keystore type for the invalid configuration must be OKM and the enabled configuration must be KMIP, or vice versa. |
 | 65539518 | Internal error. Cannot find the enabled configuration. |
 | 65539520 | Cannot enable the Onboard Key Manager on the admin SVM because an inactive Onboard Key Manager already exists on the admin SVM. |
 | 65539534 | Cannot switch admin SVM Key Manager when system root volumes are present. |
+| 65539535 | Failed to find unwrapped key on any nodes. |
+| 65539536 | Internal error. Failed to find the existing wrapped key blob for the volume. |
+| 65539538 | SVM-KEK not created for the SVM. |
+| 65539539 | SVM-KEK not restored for SVM. |
 | 65539583 | Cannot switch to the Onboard Key Manager when the external key manager has a policy associated with it |
 | 65539585 | Cannot enable an external key manager on the admin SVM because an inactive external key manager already exists on the admin SVM. |
 | 65539590 | Cannot switch to the Onboard Key Manager if there are more than two NSE-AKs in the cluster. |
 | 65539591 | Cannot switch to the Onboard Key Manager if there are fewer than two NSE-AKs in the cluster. |
+| 65539704 | The key manager cannot be configured because the SVM has NAE volumes. |
+| 65539837 | The key manager configured does not have any volumes to migrate. |
+| 65539838 | Cannot migrate to a cloud key manager when the external key manager has a policy associated with it. |
+| 65539839 | Cannot migrate to a cloud key manager when the key manager is not in a mixed state. |
+| 65539840 | Failed to clean up the keys stored on the external key servers. |
+| 65539842 | Failed to restore the SVM-KEK. |
+| 65539845 | Cannot migrate SVM volumes to the Onboard Key Manager when the key manager is not in the mixed or active state. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SecurityKeystoreModifyCollectionDefault struct {
@@ -321,10 +357,10 @@ type SecurityKeystoreModifyCollectionBody struct {
 	// svm
 	Svm *models.SecurityKeystoreInlineSvm `json:"svm,omitempty"`
 
-	// Type of keystore that is configured: * 'okm' - Onboard Key Manager * 'kmip' - External Key Manager * 'akv' - Azure Key Vault Key Management Service * 'gcp' - Google Cloud Platform Key Management Service * 'aws' - Amazon Web Service Key Management Service * 'ikp' - IBM Key Protect Key Management Service
+	// Type of keystore that is configured: * 'okm' - Onboard Key Manager * 'kmip' - External Key Manager * 'akv' - Azure Key Vault Key Management Service * 'gcp' - Google Cloud Platform Key Management Service * 'aws' - Amazon Web Service Key Management Service * 'ikp' - IBM Key Protect Key Management Service * 'barbican' - Barbican Key Management Service
 	//
 	// Read Only: true
-	// Enum: ["okm","kmip","akv","gcp","aws","ikp"]
+	// Enum: ["okm","kmip","akv","gcp","aws","ikp","barbican"]
 	Type *string `json:"type,omitempty"`
 
 	// uuid
@@ -611,7 +647,7 @@ var securityKeystoreModifyCollectionBodyTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["okm","kmip","akv","gcp","aws","ikp"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["okm","kmip","akv","gcp","aws","ikp","barbican"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -680,6 +716,16 @@ const (
 	// END DEBUGGING
 	// SecurityKeystoreModifyCollectionBodyTypeIkp captures enum value "ikp"
 	SecurityKeystoreModifyCollectionBodyTypeIkp string = "ikp"
+
+	// BEGIN DEBUGGING
+	// SecurityKeystoreModifyCollectionBody
+	// SecurityKeystoreModifyCollectionBody
+	// type
+	// Type
+	// barbican
+	// END DEBUGGING
+	// SecurityKeystoreModifyCollectionBodyTypeBarbican captures enum value "barbican"
+	SecurityKeystoreModifyCollectionBodyTypeBarbican string = "barbican"
 )
 
 // prop value enum
@@ -866,7 +912,7 @@ swagger:model security_keystore_inline_configuration
 type SecurityKeystoreInlineConfiguration struct {
 
 	// links
-	Links *SecurityKeystoreInlineConfigurationInlineLinks `json:"_links,omitempty"`
+	Links *models.SecurityKeystoreInlineConfigurationInlineLinks `json:"_links,omitempty"`
 
 	// Name of the configuration.
 	// Example: default

@@ -145,6 +145,10 @@ func NewActiveDirectoryCreateDefault(code int) *ActiveDirectoryCreateDefault {
 | 656466 | Failed to create the Active Directory machine account. Reason: Unable to connect to any domain controllers. |
 | 656467 | Failed to create the Active Directory machine account. Reason: Organizational-Unit not found. |
 | 656490 | Unable to create the Active Directory account. The Active Directory account name is already used by another SVM. |
+| 656491 | Failed to create the Active Directory machine account. Reason: This operation is supported only on data SVMs. |
+| 656494 | The Active Directory was created but was not fully configured. |
+| 656495 | Failed to update Active Directory security settings for SVM. |
+| 656496 | Failed to update Active Directory security settings for SVM. Reason: KDC has no support for encryption type. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ActiveDirectoryCreateDefault struct {

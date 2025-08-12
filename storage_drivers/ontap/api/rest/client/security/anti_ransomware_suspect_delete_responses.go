@@ -37,7 +37,14 @@ func (o *AntiRansomwareSuspectDeleteReader) ReadResponse(response runtime.Client
 		}
 		return result, nil
 	default:
-		return nil, runtime.NewAPIError("[DELETE /security/anti-ransomware/suspects/{volume.uuid}] anti_ransomware_suspect_delete", response, response.Code())
+		result := NewAntiRansomwareSuspectDeleteDefault(response.Code())
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		if response.Code()/100 == 2 {
+			return result, nil
+		}
+		return nil, result
 	}
 }
 
@@ -172,6 +179,86 @@ func (o *AntiRansomwareSuspectDeleteAccepted) GetPayload() *models.AntiRansomwar
 func (o *AntiRansomwareSuspectDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.AntiRansomwareSuspectJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewAntiRansomwareSuspectDeleteDefault creates a AntiRansomwareSuspectDeleteDefault with default headers values
+func NewAntiRansomwareSuspectDeleteDefault(code int) *AntiRansomwareSuspectDeleteDefault {
+	return &AntiRansomwareSuspectDeleteDefault{
+		_statusCode: code,
+	}
+}
+
+/*
+	AntiRansomwareSuspectDeleteDefault describes a response with status code -1, with default header values.
+
+	ONTAP Error Response Codes
+
+| Error Code | Description |
+| ---------- | ----------- |
+| 203161673 | Operation is not supported on a data protection volume. |
+| 203162105 | Clearing a suspect by specifying the file format is not supported when an attack is detected by encryption_percentage_analysis. |
+Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
+*/
+type AntiRansomwareSuspectDeleteDefault struct {
+	_statusCode int
+
+	Payload *models.ErrorResponse
+}
+
+// IsSuccess returns true when this anti ransomware suspect delete default response has a 2xx status code
+func (o *AntiRansomwareSuspectDeleteDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this anti ransomware suspect delete default response has a 3xx status code
+func (o *AntiRansomwareSuspectDeleteDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this anti ransomware suspect delete default response has a 4xx status code
+func (o *AntiRansomwareSuspectDeleteDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this anti ransomware suspect delete default response has a 5xx status code
+func (o *AntiRansomwareSuspectDeleteDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this anti ransomware suspect delete default response a status code equal to that given
+func (o *AntiRansomwareSuspectDeleteDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
+// Code gets the status code for the anti ransomware suspect delete default response
+func (o *AntiRansomwareSuspectDeleteDefault) Code() int {
+	return o._statusCode
+}
+
+func (o *AntiRansomwareSuspectDeleteDefault) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/anti-ransomware/suspects/{volume.uuid}][%d] anti_ransomware_suspect_delete default %s", o._statusCode, payload)
+}
+
+func (o *AntiRansomwareSuspectDeleteDefault) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /security/anti-ransomware/suspects/{volume.uuid}][%d] anti_ransomware_suspect_delete default %s", o._statusCode, payload)
+}
+
+func (o *AntiRansomwareSuspectDeleteDefault) GetPayload() *models.ErrorResponse {
+	return o.Payload
+}
+
+func (o *AntiRansomwareSuspectDeleteDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ErrorResponse)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

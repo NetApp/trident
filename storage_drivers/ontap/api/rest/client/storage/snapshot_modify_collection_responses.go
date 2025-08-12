@@ -295,11 +295,21 @@ type SnapshotModifyCollectionBody struct {
 	// A comment associated with the snapshot. This is an optional attribute for POST or PATCH.
 	Comment *string `json:"comment,omitempty"`
 
+	// Savings due to compression at the time the snapshot was taken in bytes.
+	// Example: 1131223
+	// Read Only: true
+	CompressSavings *int64 `json:"compress_savings,omitempty"`
+
 	// Creation time of the snapshot. It is the volume access time when the snapshot was created.
 	// Example: 2019-02-04 19:00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
+
+	// Savings due to dedup at the time the snapshot was taken in bytes.
+	// Example: 1131223
+	// Read Only: true
+	DedupSavings *int64 `json:"dedup_savings,omitempty"`
 
 	// delta
 	Delta *models.SnapshotDelta `json:"delta,omitempty"`
@@ -359,6 +369,11 @@ type SnapshotModifyCollectionBody struct {
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	// Read Only: true
 	UUID *string `json:"uuid,omitempty"`
+
+	// Savings due vbn0 at the time the snapshot was taken in bytes.
+	// Example: 1131223
+	// Read Only: true
+	Vbn0Savings *int64 `json:"vbn0_savings,omitempty"`
 
 	// The 128 bit identifier that uniquely identifies a snapshot and its logical data layout.
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
@@ -722,7 +737,15 @@ func (o *SnapshotModifyCollectionBody) ContextValidate(ctx context.Context, form
 		res = append(res, err)
 	}
 
+	if err := o.contextValidateCompressSavings(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.contextValidateCreateTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateDedupSavings(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -766,6 +789,10 @@ func (o *SnapshotModifyCollectionBody) ContextValidate(ctx context.Context, form
 		res = append(res, err)
 	}
 
+	if err := o.contextValidateVbn0Savings(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.contextValidateVersionUUID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -794,9 +821,27 @@ func (o *SnapshotModifyCollectionBody) contextValidateLinks(ctx context.Context,
 	return nil
 }
 
+func (o *SnapshotModifyCollectionBody) contextValidateCompressSavings(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"compress_savings", "body", o.CompressSavings); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (o *SnapshotModifyCollectionBody) contextValidateCreateTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "info"+"."+"create_time", "body", o.CreateTime); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *SnapshotModifyCollectionBody) contextValidateDedupSavings(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"dedup_savings", "body", o.DedupSavings); err != nil {
 		return err
 	}
 
@@ -916,6 +961,15 @@ func (o *SnapshotModifyCollectionBody) contextValidateSvm(ctx context.Context, f
 func (o *SnapshotModifyCollectionBody) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "info"+"."+"uuid", "body", o.UUID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *SnapshotModifyCollectionBody) contextValidateVbn0Savings(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"vbn0_savings", "body", o.Vbn0Savings); err != nil {
 		return err
 	}
 

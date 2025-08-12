@@ -119,6 +119,7 @@ NetworkEthernetPortDeleteCollectionAccepted describes a response with status cod
 Accepted
 */
 type NetworkEthernetPortDeleteCollectionAccepted struct {
+	Payload *models.PortJobLinkResponse
 }
 
 // IsSuccess returns true when this network ethernet port delete collection accepted response has a 2xx status code
@@ -152,14 +153,27 @@ func (o *NetworkEthernetPortDeleteCollectionAccepted) Code() int {
 }
 
 func (o *NetworkEthernetPortDeleteCollectionAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /network/ethernet/ports][%d] networkEthernetPortDeleteCollectionAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /network/ethernet/ports][%d] networkEthernetPortDeleteCollectionAccepted %s", 202, payload)
 }
 
 func (o *NetworkEthernetPortDeleteCollectionAccepted) String() string {
-	return fmt.Sprintf("[DELETE /network/ethernet/ports][%d] networkEthernetPortDeleteCollectionAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /network/ethernet/ports][%d] networkEthernetPortDeleteCollectionAccepted %s", 202, payload)
+}
+
+func (o *NetworkEthernetPortDeleteCollectionAccepted) GetPayload() *models.PortJobLinkResponse {
+	return o.Payload
 }
 
 func (o *NetworkEthernetPortDeleteCollectionAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.PortJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }

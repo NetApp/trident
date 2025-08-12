@@ -6,6 +6,8 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"fmt"
+
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 )
@@ -103,6 +105,8 @@ type ClientService interface {
 	ConsistencyGroupSnapshotModify(params *ConsistencyGroupSnapshotModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotModifyOK, *ConsistencyGroupSnapshotModifyAccepted, error)
 
 	ConsistencyGroupSnapshotModifyCollection(params *ConsistencyGroupSnapshotModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotModifyCollectionOK, *ConsistencyGroupSnapshotModifyCollectionAccepted, error)
+
+	ContainerCreate(params *ContainerCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ContainerCreateCreated, *ContainerCreateAccepted, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -556,6 +560,24 @@ func (a *Client) ApplicationComponentSnapshotRestore(params *ApplicationComponen
 /*
 	ApplicationCreate Creates an application.
 
+### Supported templates
+* MongoDBOnSAN
+* MultiComponentNAS
+* NAS
+* NVME
+* OracleOnNFS
+* OracleOnSAN
+* OracleRACOnNFS
+* OracleRACOnSAN
+* S3
+* SAN
+* SAPHANAOnNFS
+* SQLOnSAN
+* SQLOnSMB
+* VDIOnNAS
+* VDIOnSAN
+* VSIOnNAS
+* VSIOnSAN
 ### Template properties
 The application APIs appear to be complex and long in this documentation because we document every possible template, of which there are currently 14. When creating an application, only a single template is used, so it is best to focus only on the template of interest. Other than the properties for the chosen template, only the `name` and `svm` of the application must be provided. The following three sections provided guidelines on using the properties of the templates, but the whole idea behind the templates is to automatically follow the best practices of the given application, so the only way to determine the exact list of required properties and default values is to dig in to the model section of the template. The templates are all top level properties of the application object with names matching the values returned by [`GET /application/templates`](#operations-application-application_template_collection_get).
 ### Required properties
@@ -1294,7 +1316,7 @@ func (a *Client) ApplicationTemplateCollectionGet(params *ApplicationTemplateCol
 	ApplicationTemplateGet Retrieves an application template.
 
 ### Template properties
-Each application template has a set of properties. These properties are always nested under a property with the same name as the template. For example, when using the `mongo_db_on_san` template, the properties are found nested inside the `mongo_db_on_san` property. The properties nested under the template property are all specific to the template. The model for the application template object includes all the available templates, but only the object that corresponds to the template's name is returned, and only one is provided in any application API.<br/>
+Each application template has a set of properties. These properties are always nested under a property with the same name as the template. <personalities supports=unified> For example, when using the `s3_bucket` template, the properties are found nested inside the `s3_bucket` property.</personalities> The properties nested under the template property are all specific to the template. The model for the application template object includes all the available templates, but only the object that corresponds to the template's name is returned, and only one is provided in any application API.<br/>
 The model of each template includes a description of each property and its allowed values or usage. Default values are also indicated when available. The template properties returned by this API include an example value for each property.
 ### Template prerequisites
 Each template has a set of prerequisites required for its use. If any of these prerequisites are not met, the `missing_prerequisites` property indicates which prerequisite is missing.
@@ -1346,9 +1368,15 @@ If this consistency group instance has 1 or more replication relationships, the 
 Note that this parameter is an array and as such it has as many elements as the number of replication relationships associated with this consistency group. Each element of the array describes properties of one replication relationship associated with this consistency group. The "uuid" parameter identifies a specific replication relationship and the "href" parameter is a link to the corresponding SnapMirror relationship. The "is_source" parameter is true if this consistency group is the source in that relationship, otherwise it is false.
 ## Expensive properties
 There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
+<personalities supports=aiml,unified>
 * `volumes`
+</personalities>
+<personalities supports=unified,asar2>
 * `luns`
 * `namespaces`
+</personalities>
+## Related ONTAP commands
+* `vserver consistency-group show'
 */
 func (a *Client) ConsistencyGroupCollectionGet(params *ConsistencyGroupCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1392,18 +1420,26 @@ func (a *Client) ConsistencyGroupCollectionGet(params *ConsistencyGroupCollectio
 * existing SAN, NVMe or NAS FlexVol volumes in a new or existing consistency group
 ## Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the group.
-* `volumes`, `luns` or `namespaces`
+<personalities supports=aiml,unified>
+* `volumes`
+</personalities>
+<personalities supports=unified,asar2>
+* `luns` or `namespaces`
+</personalities>
 ## Naming Conventions
 ### Consistency groups
   - name or consistency_groups[].name, if specified
   - derived from volumes[0].name, if only one volume is specified, same as volume name
 
+<personalities supports=aiml,unified>
 ### Volume
   - volumes[].name, if specified
   - derived from volume prefix in luns[].name
   - derived from cg[].name, suffixed by "_#" where "#" is a system generated unique number
   - suffixed by "_#" where "#" is a system generated unique number, if provisioning_options.count is provided
 
+</personalities>
+<personalities supports=unified,asar2>
 ### LUN
   - luns[].name, if specified
   - derived from volumes[].name, suffixed by "_#" where "#" is a system generated unique number
@@ -1414,8 +1450,9 @@ func (a *Client) ConsistencyGroupCollectionGet(params *ConsistencyGroupCollectio
   - derived from volumes[].name, suffixed by "_#" where "#" is a system generated unique number
   - suffixed by "_#" where "#" is a system generated unique number, if provisioning_options.count is provided
 
+</personalities>
 ## Related ONTAP commands
-There are no ONTAP commands for managing consistency group.
+* `vserver consistency-group create`
 */
 func (a *Client) ConsistencyGroupCreate(params *ConsistencyGroupCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupCreateCreated, *ConsistencyGroupCreateAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1459,7 +1496,7 @@ func (a *Client) ConsistencyGroupCreate(params *ConsistencyGroupCreateParams, au
 
 <br>Note this will not delete any associated volumes or LUNs. To delete those elements, use the appropriate object endpoint.
 ## Related ONTAP commands
-There are no ONTAP commands for managing consistency groups.
+* `vserver consistency-group delete`
 */
 func (a *Client) ConsistencyGroupDelete(params *ConsistencyGroupDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupDeleteOK, *ConsistencyGroupDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1544,10 +1581,12 @@ func (a *Client) ConsistencyGroupDeleteCollection(params *ConsistencyGroupDelete
 ### Expensive properties
 There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`DOC Requesting specific fields`](#docs-docs-Requesting-specific-fields) to learn more.
 * `volumes`
+<personalities supports=asar2,unified>
 * `luns`
 * `namespaces`
+</personalities>
 ## Related ONTAP commands
-There are no ONTAP commands for managing consistency groups.
+* `vserver consistency-group show`
 */
 func (a *Client) ConsistencyGroupGet(params *ConsistencyGroupGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupGetOK, error) {
 	// TODO: Validate the params before sending
@@ -1626,7 +1665,7 @@ func (a *Client) ConsistencyGroupMetricsCollectionGet(params *ConsistencyGroupMe
 	ConsistencyGroupModify Updates a consistency group.
 
 <br>Note that this operation will never delete storage elements. You can specify only elements that should be added to the consistency group regardless of existing storage objects.
-
+<personalities supports=unified>Mapping or unmapping a consistency group from igroups or subsystems is not supported.</personalities>
 ## Related ONTAP commands
 * `vserver consistency-group modify`
 */
@@ -1921,8 +1960,11 @@ func (a *Client) ConsistencyGroupSnapshotGet(params *ConsistencyGroupSnapshotGet
 }
 
 /*
-	ConsistencyGroupSnapshotModify Completes a snapshot operation of a consistency group. This can also be used to modify the SnapLock expiry time of a locked snapshot in SnapLock for SnapVault destination.
+	ConsistencyGroupSnapshotModify Completes a snapshot operation of a consistency group.
 
+<personalities supports=asar2>
+This can also be used to modify the SnapLock expiry time of a locked snapshot in SnapLock for SnapVault destination.
+</personalities>
 ## Example
 ### Completing a snapshot operation
 
@@ -2035,6 +2077,64 @@ func (a *Client) ConsistencyGroupSnapshotModifyCollection(params *ConsistencyGro
 	// unexpected success response
 	unexpectedSuccess := result.(*ConsistencyGroupSnapshotModifyCollectionDefault)
 	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	ContainerCreate <personalities supports=asar2,unified>
+
+* POST is not supported
+</personalities>
+<personalities supports=aiml>
+Creates one or more of the following:
+* New NAS FlexVol or FlexGroup volumes
+* S3 buckets
+* Access policies for NFS, CIFS and S3
+* FlexCache volumes
+## Required properties
+* `svm.uuid` or `svm.name` - Existing SVM in which to create the container.
+* `volumes`
+## Naming Conventions
+### Volume
+  - volumes[].name, if specified
+  - suffixed by "_#" where "#" is a system generated unique number, if provisioning_options.count is provided
+
+</personalities>
+*/
+func (a *Client) ContainerCreate(params *ContainerCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ContainerCreateCreated, *ContainerCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewContainerCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "container_create",
+		Method:             "POST",
+		PathPattern:        "/application/containers",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ContainerCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *ContainerCreateCreated:
+		return value, nil, nil
+	case *ContainerCreateAccepted:
+		return nil, value, nil
+	}
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for application: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 // SetTransport changes the transport on the client

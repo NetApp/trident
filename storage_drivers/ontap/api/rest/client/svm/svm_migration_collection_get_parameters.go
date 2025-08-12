@@ -140,6 +140,12 @@ type SvmMigrationCollectionGetParams struct {
 	*/
 	PointOfNoReturn *bool
 
+	/* PostPonrRetryCount.
+
+	   Filter by post_ponr_retry_count
+	*/
+	PostPonrRetryCount *int64
+
 	/* RestartCount.
 
 	   Filter by restart_count
@@ -227,6 +233,12 @@ type SvmMigrationCollectionGetParams struct {
 	   Filter by time_metrics.last_pause_time
 	*/
 	TimeMetricsLastPauseTime *string
+
+	/* TimeMetricsLastPostPonrRetryTime.
+
+	   Filter by time_metrics.last_post_ponr_retry_time
+	*/
+	TimeMetricsLastPostPonrRetryTime *string
 
 	/* TimeMetricsLastResumeTime.
 
@@ -456,6 +468,17 @@ func (o *SvmMigrationCollectionGetParams) SetPointOfNoReturn(pointOfNoReturn *bo
 	o.PointOfNoReturn = pointOfNoReturn
 }
 
+// WithPostPonrRetryCount adds the postPonrRetryCount to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithPostPonrRetryCount(postPonrRetryCount *int64) *SvmMigrationCollectionGetParams {
+	o.SetPostPonrRetryCount(postPonrRetryCount)
+	return o
+}
+
+// SetPostPonrRetryCount adds the postPonrRetryCount to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetPostPonrRetryCount(postPonrRetryCount *int64) {
+	o.PostPonrRetryCount = postPonrRetryCount
+}
+
 // WithRestartCount adds the restartCount to the svm migration collection get params
 func (o *SvmMigrationCollectionGetParams) WithRestartCount(restartCount *int64) *SvmMigrationCollectionGetParams {
 	o.SetRestartCount(restartCount)
@@ -608,6 +631,17 @@ func (o *SvmMigrationCollectionGetParams) WithTimeMetricsLastPauseTime(timeMetri
 // SetTimeMetricsLastPauseTime adds the timeMetricsLastPauseTime to the svm migration collection get params
 func (o *SvmMigrationCollectionGetParams) SetTimeMetricsLastPauseTime(timeMetricsLastPauseTime *string) {
 	o.TimeMetricsLastPauseTime = timeMetricsLastPauseTime
+}
+
+// WithTimeMetricsLastPostPonrRetryTime adds the timeMetricsLastPostPonrRetryTime to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) WithTimeMetricsLastPostPonrRetryTime(timeMetricsLastPostPonrRetryTime *string) *SvmMigrationCollectionGetParams {
+	o.SetTimeMetricsLastPostPonrRetryTime(timeMetricsLastPostPonrRetryTime)
+	return o
+}
+
+// SetTimeMetricsLastPostPonrRetryTime adds the timeMetricsLastPostPonrRetryTime to the svm migration collection get params
+func (o *SvmMigrationCollectionGetParams) SetTimeMetricsLastPostPonrRetryTime(timeMetricsLastPostPonrRetryTime *string) {
+	o.TimeMetricsLastPostPonrRetryTime = timeMetricsLastPostPonrRetryTime
 }
 
 // WithTimeMetricsLastResumeTime adds the timeMetricsLastResumeTime to the svm migration collection get params
@@ -860,6 +894,23 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
+	if o.PostPonrRetryCount != nil {
+
+		// query param post_ponr_retry_count
+		var qrPostPonrRetryCount int64
+
+		if o.PostPonrRetryCount != nil {
+			qrPostPonrRetryCount = *o.PostPonrRetryCount
+		}
+		qPostPonrRetryCount := swag.FormatInt64(qrPostPonrRetryCount)
+		if qPostPonrRetryCount != "" {
+
+			if err := r.SetQueryParam("post_ponr_retry_count", qPostPonrRetryCount); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.RestartCount != nil {
 
 		// query param restart_count
@@ -1093,6 +1144,23 @@ func (o *SvmMigrationCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		if qTimeMetricsLastPauseTime != "" {
 
 			if err := r.SetQueryParam("time_metrics.last_pause_time", qTimeMetricsLastPauseTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TimeMetricsLastPostPonrRetryTime != nil {
+
+		// query param time_metrics.last_post_ponr_retry_time
+		var qrTimeMetricsLastPostPonrRetryTime string
+
+		if o.TimeMetricsLastPostPonrRetryTime != nil {
+			qrTimeMetricsLastPostPonrRetryTime = *o.TimeMetricsLastPostPonrRetryTime
+		}
+		qTimeMetricsLastPostPonrRetryTime := qrTimeMetricsLastPostPonrRetryTime
+		if qTimeMetricsLastPostPonrRetryTime != "" {
+
+			if err := r.SetQueryParam("time_metrics.last_post_ponr_retry_time", qTimeMetricsLastPostPonrRetryTime); err != nil {
 				return err
 			}
 		}

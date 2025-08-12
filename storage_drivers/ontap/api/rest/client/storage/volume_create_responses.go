@@ -246,6 +246,8 @@ func NewVolumeCreateDefault(code int) *VolumeCreateDefault {
 | 917835 | Maximum allowed snapshot.reserve_percent value during a volume creation is 90. Use PATCH to set it to a higher value after the volume has been created. |
 | 917886 | Volume name is too long. It must be 203 characters or less. |
 | 917887 | The first character of the volume name must be a letter or underscore. |
+| 918157 | Node  \\\"{0}\\\" in cluster \\\"{1}\\\" failed to allocate encryption resources. Wait a few minutes, and try the operation again. If the issue persists, reboot the node and try the operation again. |
+| 918162 | Node \\\"{0}\\\" in cluster \\\"{1}\\\" is not reachable. Creation of the first encrypted volume requires encryption resources to be allocated on both node \\\"{2}\\\" and its HA partner node \\\"{0}\\\". Make sure that the node and its partner are healthy, and then try the operation again. |
 | 918191 | Flexvol tiering min cooling days requires an effective cluster version of ONTAP 9.4 or later. |
 | 918194 | Tiering min cooling days not supported for SVMDR. |
 | 918195 | Tiering min cooling days not supported for non data volumes. |
@@ -287,12 +289,16 @@ func NewVolumeCreateDefault(code int) *VolumeCreateDefault {
 | 13107413 | Creating a FlexGroup volume is not supported on All SAN Arrays and systems that support large LUNs. |
 | 13109258 | Cannot enable granular data on volume \"name\" in Vserver \"svm.name\". This setting can only be enabled on FlexGroups. |
 | 13109260 | Failed to enable granular data on the volume. |
+| 13109290 | Specifying the \"aggregates\" parameter on this platform requires that the \"constituents_per_aggregate\" parameter is also specified. Instead, consider using the \"constituent_count\" parameter to specify how many constituents to create, and the system will automatically select where to place them. |
+| 13109291 | Specifying the \"constituents_per_aggregate\" parameter requires that the \"aggregates\" parameter is also specified. |
 | 13565983 | A value of zero is not supported for \\\"-uid\\\" or \\\"-gid\\\". |
 | 65537463 | Volume encryption keys (VEK) cannot be created or deleted for data Vserver \\\"{0}\\\". External key management has been configured for data Vserver \\\"{0}\\\" but ONTAP is not able to encrypt or decrypt with the key manager. Resolve the external key manager key issues at the key manager's portal before creating any new encrypted volumes. |
 | 65537529 | Encrypted volumes cannot be created or deleted for Vserver \\\"{0}\\\" as a rekey operation for the vserver is in progress. Try creating the encrypted volume again after some time. If the problem persists, run the rekey operation again after some time. |
 | 65537600 | Encrypted volumes cannot be created or deleted for Vserver \\\"{0}\\\" while the enabled keystore configuration is being switched. If a previous attempt to switch the keystore configuration failed, or was interrupted, the system will continue to prevent encrypted volume creation for Vserver \\\"{0}\\\". Use the \\\"security key-manager keystore enable\\\" command to re-run and complete the operation. |
 | 65539430 | Cannot create or delete volumes on Vserver \\\"{0}\\\" while the keystore is being initialized. Wait until the keystore is in the active state, and rerun the volume operation. |
 | 65539431 | Cannot create or delete volumes on Vserver \\\"{0}\\\" while the keystore is being disabled. |
+| 111411203 | Failed to retrieve the volume file system analytics report on the volume. |
+| 111411204 | Internal error. Failed to retrieve the volume file system analytics report on the volume. |
 | 111411205 | File system analytics requires an effective cluster version of 9.8 or later. |
 | 111411206 | The specified \"analytics.state\" is invalid. |
 | 111411207 | File system analytics cannot be enabled on volumes that contain LUNs. |
@@ -301,6 +307,7 @@ func NewVolumeCreateDefault(code int) *VolumeCreateDefault {
 | 111411210 | Volume file system analytics is not supported on audit staging volumes. |
 | 111411211 | Volume file system analytics is not supported on object store server volumes. |
 | 111411212 | Volume file system analytics is not supported on SnapMirror destination volumes. |
+| 111411215 | Internal error. Volume file system analytics report timed out for volume volume.name in SVM svm.name. |
 | 111411216 | Enabling or disabling volume file system analytics is not supported on individual FlexGroup constituents. |
 | 111411217 | Volume file system analytics is not supported on SnapLock volumes. |
 | 111411230 | Volume file system analytics is not supported on volumes that contain NVMe namespaces. |
@@ -308,6 +315,7 @@ func NewVolumeCreateDefault(code int) *VolumeCreateDefault {
 | 111411252 | Failed to enable file system analytics on volume \"name\" in SVM \"svm.name\" because there is insufficient available space. Ensure there is at least \"space.available_percent`\" available space in the volume, then try the operation again. |
 | 111411253 | Failed to enable file system analytics on volume \"name\" in SVM \"svm.name\" because there is insufficient available space. Ensure there is at least \"space.available_percent\" available space in all constituents of the FlexGroup, then try the operation again." |
 | 111411257 | Failed to enable file system analytics on volume \"name\" in SVM \"svm.name\" because there is insufficient available space. Increase the volume size to \"size\", then try the operation again." |
+| 111412203 | Volume file system analytics is not enabled on the volume. |
 | 111415208 | Cannot create a clone of volume "name" in SVM "svm.name" because the file system analytics state is not set to "off" or "on". Use REST API GET method "/api/storage/volumes/uuid?fields=analytics.state" to check the analytics state. |
 | 124518405 | Volume activity tracking is not supported on volumes that contain LUNs. |
 | 124518407 | Volume activity tracking is not supported on FlexCache volumes. |
@@ -318,6 +326,11 @@ func NewVolumeCreateDefault(code int) *VolumeCreateDefault {
 | 124518412 | Volume activity tracking is not supported on SnapLock volumes. |
 | 124518414 | Volume activity tracking is not supported on volumes that contain NVMe namespaces. |
 | 124518422 | Volume activity tracking is not supported on All SAN Array clusters. |
+| 196608308 | Node \\\"{0}\\\" in cluster \\\"{1}\\\" is not reachable. Creation of the first NAE (NetApp Aggregate Encryption) aggregate requires encryption resources to be allocated on both node \\\"{2}\\\" and its HA partner node \\\"{0}\\\". Make sure that the node and its partner are healthy, and then try the operation again. |
+| 196608399 | One or more nodes in cluster \\\"{0}\\\" are not reachable. Creation of the first NAE (NetApp Aggregate Encryption) aggregate requires encryption resources to be allocated on all nodes in DR group \\\"{1}\\\". Ensure that all the nodes are healthy and then try the operation again. |
+| 196608400 | One or more nodes in cluster \\\"{0}\\\" are not reachable. Creation of the first encrypted volume requires encryption resources to be allocated on all nodes in DR group \\\"{1}\\\". Ensure that all the nodes are healthy and then try the operation again. |
+| 196608401 | Node \\\"{0}\\\" in cluster \\\"{1}\\\" is not reachable. Creation of the first NAE (NetApp Aggregate Encryption) aggregate requires encryption resources to be allocated on node \\\"{0}\\\". Make sure that the node is healthy, and then try the operation again. |
+| 196608402 | Node \\\"{0}\\\" in cluster \\\"{1}\\\" is not reachable. Creation of the first encrypted volume requires encryption resources to be allocated on node \\\"{0}\\\". Make sure that the node is healthy, and then try the operation again. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type VolumeCreateDefault struct {

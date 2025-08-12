@@ -265,7 +265,10 @@ func NewS3BucketCreateDefault(code int) *S3BucketCreateDefault {
 | 92406222   | "Cannot specify Cross-Origin Resource Sharing (CORS) configuration for object store bucket \\\"<bucket>\\\" on SVM \\\"<SVM>\\\". Specifying such configuration is supported on object store volumes created in ONTAP 9.8 or later releases only.";
 | 92406211   | "The specified method \"DONE\" is not valid. Valid methods are GET, PUT, DELETE, HEAD, and POST.";
 | 92405863   | "Failed to create CORS rules for bucket \"bb1\". Reason: \"Field \"index\" cannot be specified for this operation.\". Resolve all the issues and retry the operation.";
-| 92406228   | "Cannot exceed the maximum limit of 100 Cross-Origin Resource Sharing (CORS) rules per S3 bucket \\\"<bucket>\\\" in SVM \\\"<SVM>\\\".";;
+| 92406228   | "Cannot exceed the maximum limit of 100 Cross-Origin Resource Sharing (CORS) rules per S3 bucket \\\"<bucket>\\\" in SVM \\\"<SVM>\\\".";
+| 92405940   | "The specified condition key is not valid for operator \"ip-address\". Valid choices of keys for this operator: source-ips.";
+| 8454346    | "Invalid QoS policy group \"performance\" specified. The specified QoS policy group is an adaptive policy. Buckets do not support being placed in an adaptive policy group.";
+| 262186     | "The field \\"qos_policy.name\\" cannot be used with the field \\"qos_policy.max_throughput_mbps\\".";
 */
 type S3BucketCreateDefault struct {
 	_statusCode int

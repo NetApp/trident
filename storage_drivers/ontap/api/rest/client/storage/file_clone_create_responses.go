@@ -226,11 +226,13 @@ func NewFileCloneCreateDefault(code int) *FileCloneCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 917812 | A relative path must be used for `destination_path` when a volume is specified. |
 | 917864 | Failed to get the file handle. |
 | 917898 | Invalid `value` for the field -range. Value must be provided in the format \<source start block\>:\<destination start block\>:\<block length\>. |
 | 918236 | The specified `volume.uuid` and `volume.name` refer to different volumes. |
 | 13565952 | Clone start failed. |
 | 13565988 | The destination file cannot be marked as a backup clone as only a full-file clone can be a backup clone. |
+| 13565998 | File clone using autodelete is not supported on a FlexGroup volume. Try the operation again without specifying the \"autodelete\" parameter. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type FileCloneCreateDefault struct {

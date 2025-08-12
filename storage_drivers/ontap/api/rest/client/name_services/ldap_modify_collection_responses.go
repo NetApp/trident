@@ -134,7 +134,7 @@ func NewLdapModifyCollectionDefault(code int) *LdapModifyCollectionDefault {
 | 23724130   | Cannot use an IPv6 name server address because there are no IPv6 LIFs |
 | 4915252    | LDAP Referral is not supported with STARTTLS, with session security levels sign, seal or with LDAPS. |
 | 4915266    | LDAP site discovery restriction cannot be applied to a mixed version cluster. |
-| 656477     | Need default site to be specified to enable site restriction. |
+| 656484     | The default site needs to be specified to enable site restriction. |
 | 4915206    | CIFS server is not configured for the vserver. LDAP client configuration requires CIFS server for binding. |
 | 4915244    | RPC failure occurred during validation of the LDAP configuration. |
 | 4915268    | The bind_as_cifs_server field cannot be set to true when the CIFS server is in workgroup mode. |

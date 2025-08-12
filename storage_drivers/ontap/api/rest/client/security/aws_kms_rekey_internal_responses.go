@@ -63,6 +63,8 @@ type AwsKmsRekeyInternalCreated struct {
 	/* Useful for tracking the resource location
 	 */
 	Location string
+
+	Payload *models.AwsKmsKeyJobLinkResponse
 }
 
 // IsSuccess returns true when this aws kms rekey internal created response has a 2xx status code
@@ -96,11 +98,17 @@ func (o *AwsKmsRekeyInternalCreated) Code() int {
 }
 
 func (o *AwsKmsRekeyInternalCreated) Error() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-internal][%d] awsKmsRekeyInternalCreated", 201)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-internal][%d] awsKmsRekeyInternalCreated %s", 201, payload)
 }
 
 func (o *AwsKmsRekeyInternalCreated) String() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-internal][%d] awsKmsRekeyInternalCreated", 201)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-internal][%d] awsKmsRekeyInternalCreated %s", 201, payload)
+}
+
+func (o *AwsKmsRekeyInternalCreated) GetPayload() *models.AwsKmsKeyJobLinkResponse {
+	return o.Payload
 }
 
 func (o *AwsKmsRekeyInternalCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -110,6 +118,13 @@ func (o *AwsKmsRekeyInternalCreated) readResponse(response runtime.ClientRespons
 
 	if hdrLocation != "" {
 		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.AwsKmsKeyJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
 	}
 
 	return nil
@@ -130,6 +145,8 @@ type AwsKmsRekeyInternalAccepted struct {
 	/* Useful for tracking the resource location
 	 */
 	Location string
+
+	Payload *models.AwsKmsKeyJobLinkResponse
 }
 
 // IsSuccess returns true when this aws kms rekey internal accepted response has a 2xx status code
@@ -163,11 +180,17 @@ func (o *AwsKmsRekeyInternalAccepted) Code() int {
 }
 
 func (o *AwsKmsRekeyInternalAccepted) Error() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-internal][%d] awsKmsRekeyInternalAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-internal][%d] awsKmsRekeyInternalAccepted %s", 202, payload)
 }
 
 func (o *AwsKmsRekeyInternalAccepted) String() string {
-	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-internal][%d] awsKmsRekeyInternalAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /security/aws-kms/{aws_kms.uuid}/rekey-internal][%d] awsKmsRekeyInternalAccepted %s", 202, payload)
+}
+
+func (o *AwsKmsRekeyInternalAccepted) GetPayload() *models.AwsKmsKeyJobLinkResponse {
+	return o.Payload
 }
 
 func (o *AwsKmsRekeyInternalAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -177,6 +200,13 @@ func (o *AwsKmsRekeyInternalAccepted) readResponse(response runtime.ClientRespon
 
 	if hdrLocation != "" {
 		o.Location = hdrLocation
+	}
+
+	o.Payload = new(models.AwsKmsKeyJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
 	}
 
 	return nil

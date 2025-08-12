@@ -128,6 +128,7 @@ func NewFileInfoCreateDefault(code int) *FileInfoCreateDefault {
 | 917698 | Volume (vol name) in SVM (vserver) is not mounted in the namespace. |
 | 917698 | The volume in the symlink path is not mounted in the namespace. |
 | 918235 | A volume with UUID {volume.uuid} was not found. |
+| 918757 | The specified clone parent volume with UUID {volume.uuid} does not exist. |
 | 6488064 | This command is not supported. |
 | 6488065 | The volume in the symlink path is invalid. |
 | 6488066 | Mounting the unjunctioned volume in the symlink path failed. |

@@ -217,7 +217,7 @@ func NewCifsServiceModifyCollectionDefault(code int) *CifsServiceModifyCollectio
 | 3735762    | The provided Azure Key Vault configuration is incorrect. |
 | 3735763    | The provided Azure Key Vault configuration is incomplete. |
 | 3735764    | Request to Azure failed. Reason - Azure error code and Azure error message. |
-| 655390     | STARTTLS and LDAPS cannot be used together.|
+| 655390     | Failed to modify the CIFS server. Failure can occur due to multiple reasons. For example: STARTTLS and LDAPS cannot be used together or the group policy is already enabled for the SVM. |
 | 655562     | NetBIOS name is longer than 15 characters. |
 | 655538     | Unable to modify the CIFS server. The server name is already used by another SVM.|
 | 655563     | NetBIOS name contains characters that are not allowed. |

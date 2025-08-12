@@ -234,12 +234,13 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 | 6619699 | Schedule not found. |
 | 6620374 | Internal error. Failed to get SVM information. |
 | 6620478 | Internal error. Failed to check SnapMirror capability. |
+| 6620608 | Child consistency group cannot be a destination endpoint for SnapMirror relationship creation. |
 | 6620654 | Invalid SnapMirror Consistency Group name. |
 | 6621125 | The policy is not valid for relationships with FlexGroup volume endpoints. Only policies without snapshot creation schedules are supported for these relationships. |
 | 6621128 | Policy is not valid because it has snapshot creation schedules associated with it. Such policies cannot be used for relationships with Consistency Group endpoints. |
 | 6621458 | The destination Consistency Group is the source of a SnapMirror Synchronous (SM-S) relationship. Sources of SM-S relationships cannot be the destination of any other SnapMirror relationship. |
 | 6621782 | A property of the policy is not valid for relationships between these endpoints. |
-| 6621834 | Object store configuration does not exist for specified SVM. |
+| 6621834 | Object store configuration does not exist for the specified SVM. |
 | 6622088 | SnapMirror Asynchronous relationship is not supported on a Consistency Group volume that has snapshot locking enabled. |
 | 13303819 | Could not retrieve SnapMirror policy information. |
 | 13303821 | Invalid SnapMirror policy UUID. |
@@ -313,6 +314,7 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 | 13304112 | File restore from a Consistency Group asynchronous SnapMirror relationship endpoint is not supported. |
 | 13304132 | Creating a destination endpoint is not supported with the \"backoff_level\" property. |
 | 13304144 | SnapLock is not licensed on the destination cluster. |
+| 13304155 | Invalid SnapMirror consistency group name. The name must be from 1 to 30 characters in length. The first letter must be one of A-Z, a-z or "_". The remaining characters must be A-Z, a-z, 0-9 or "_". |
 | 53411897 | The specified source volumes do not match the volumes contained in the source consistency group. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 ##### Above error msgs have been added in sorted(ascending) order

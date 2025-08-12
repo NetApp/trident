@@ -126,6 +126,7 @@ func NewS3GroupModifyCollectionDefault(code int) *S3GroupModifyCollectionDefault
 | 262222     | User name is present more than once in the users field.
 | 2621706    | The specified \\\"{svm.uuid}\\\" and \\\"{svm.name}\\\" refer to different SVMs.
 | 92406154   | Users {user} specified in the user list do not exist for SVM "vs1". Use the "/protocols/s3/services/{svm.uuid}/users" endpoint to create a user.
+| 92406307   | Cannot add object store user \"user1\" in SVM \"vs1\" to the group. Reason: The user is disabled, because it does not have keys generated.
 */
 type S3GroupModifyCollectionDefault struct {
 	_statusCode int

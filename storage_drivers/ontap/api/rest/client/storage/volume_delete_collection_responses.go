@@ -288,6 +288,9 @@ swagger:model VolumeDeleteCollectionBody
 */
 type VolumeDeleteCollectionBody struct {
 
+	// analytics
+	Analytics *models.VolumeResponseInlineAnalytics `json:"analytics,omitempty"`
+
 	// volume response inline records
 	VolumeResponseInlineRecords []*models.Volume `json:"records,omitempty"`
 }
@@ -296,6 +299,10 @@ type VolumeDeleteCollectionBody struct {
 func (o *VolumeDeleteCollectionBody) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := o.validateAnalytics(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.validateVolumeResponseInlineRecords(formats); err != nil {
 		res = append(res, err)
 	}
@@ -303,6 +310,23 @@ func (o *VolumeDeleteCollectionBody) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (o *VolumeDeleteCollectionBody) validateAnalytics(formats strfmt.Registry) error {
+	if swag.IsZero(o.Analytics) { // not required
+		return nil
+	}
+
+	if o.Analytics != nil {
+		if err := o.Analytics.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "analytics")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -334,6 +358,10 @@ func (o *VolumeDeleteCollectionBody) validateVolumeResponseInlineRecords(formats
 func (o *VolumeDeleteCollectionBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := o.contextValidateAnalytics(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.contextValidateVolumeResponseInlineRecords(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -341,6 +369,20 @@ func (o *VolumeDeleteCollectionBody) ContextValidate(ctx context.Context, format
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (o *VolumeDeleteCollectionBody) contextValidateAnalytics(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Analytics != nil {
+		if err := o.Analytics.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "analytics")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -373,6 +415,477 @@ func (o *VolumeDeleteCollectionBody) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (o *VolumeDeleteCollectionBody) UnmarshalBinary(b []byte) error {
 	var res VolumeDeleteCollectionBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+VolumeResponseInlineAnalytics Additional file system analytics information that is non-modifiable amongst all elements in the collection. <br/>
+// This property is only populated if file system analytics is enabled on the containing volume. <br/>
+// This analytics object captures properties that are non-modifiable amongst all elements included in the `records` array. The non-modifiable properties are included here, rather than within the information for each element, to avoid returning an excessive amount of duplicated information when the collection is large.
+swagger:model volume_response_inline_analytics
+*/
+type VolumeResponseInlineAnalytics struct {
+
+	// by accessed time
+	ByAccessedTime *models.VolumeResponseInlineAnalyticsInlineByAccessedTime `json:"by_accessed_time,omitempty"`
+
+	// by modified time
+	ByModifiedTime *models.VolumeResponseInlineAnalyticsInlineByModifiedTime `json:"by_modified_time,omitempty"`
+}
+
+// Validate validates this volume response inline analytics
+func (o *VolumeResponseInlineAnalytics) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateByAccessedTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateByModifiedTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *VolumeResponseInlineAnalytics) validateByAccessedTime(formats strfmt.Registry) error {
+	if swag.IsZero(o.ByAccessedTime) { // not required
+		return nil
+	}
+
+	if o.ByAccessedTime != nil {
+		if err := o.ByAccessedTime.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "analytics" + "." + "by_accessed_time")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *VolumeResponseInlineAnalytics) validateByModifiedTime(formats strfmt.Registry) error {
+	if swag.IsZero(o.ByModifiedTime) { // not required
+		return nil
+	}
+
+	if o.ByModifiedTime != nil {
+		if err := o.ByModifiedTime.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "analytics" + "." + "by_modified_time")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume response inline analytics based on the context it is used
+func (o *VolumeResponseInlineAnalytics) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateByAccessedTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateByModifiedTime(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *VolumeResponseInlineAnalytics) contextValidateByAccessedTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.ByAccessedTime != nil {
+		if err := o.ByAccessedTime.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "analytics" + "." + "by_accessed_time")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *VolumeResponseInlineAnalytics) contextValidateByModifiedTime(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.ByModifiedTime != nil {
+		if err := o.ByModifiedTime.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "analytics" + "." + "by_modified_time")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *VolumeResponseInlineAnalytics) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *VolumeResponseInlineAnalytics) UnmarshalBinary(b []byte) error {
+	var res VolumeResponseInlineAnalytics
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+VolumeResponseInlineAnalyticsInlineByAccessedTime File system analytics information, broken down by date of last access.
+swagger:model volume_response_inline_analytics_inline_by_accessed_time
+*/
+type VolumeResponseInlineAnalyticsInlineByAccessedTime struct {
+
+	// bytes used
+	BytesUsed *models.VolumeResponseInlineAnalyticsInlineByAccessedTimeInlineBytesUsed `json:"bytes_used,omitempty"`
+}
+
+// Validate validates this volume response inline analytics inline by accessed time
+func (o *VolumeResponseInlineAnalyticsInlineByAccessedTime) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateBytesUsed(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *VolumeResponseInlineAnalyticsInlineByAccessedTime) validateBytesUsed(formats strfmt.Registry) error {
+	if swag.IsZero(o.BytesUsed) { // not required
+		return nil
+	}
+
+	if o.BytesUsed != nil {
+		if err := o.BytesUsed.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "analytics" + "." + "by_accessed_time" + "." + "bytes_used")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume response inline analytics inline by accessed time based on the context it is used
+func (o *VolumeResponseInlineAnalyticsInlineByAccessedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateBytesUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *VolumeResponseInlineAnalyticsInlineByAccessedTime) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.BytesUsed != nil {
+		if err := o.BytesUsed.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "analytics" + "." + "by_accessed_time" + "." + "bytes_used")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *VolumeResponseInlineAnalyticsInlineByAccessedTime) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *VolumeResponseInlineAnalyticsInlineByAccessedTime) UnmarshalBinary(b []byte) error {
+	var res VolumeResponseInlineAnalyticsInlineByAccessedTime
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+VolumeResponseInlineAnalyticsInlineByAccessedTimeInlineBytesUsed Number of bytes used on-disk, broken down by date of last access.
+swagger:model volume_response_inline_analytics_inline_by_accessed_time_inline_bytes_used
+*/
+type VolumeResponseInlineAnalyticsInlineByAccessedTimeInlineBytesUsed struct {
+
+	// labels
+	Labels models.AnalyticsHistogramByTimeLabelsArrayInline `json:"labels,omitempty"`
+}
+
+// Validate validates this volume response inline analytics inline by accessed time inline bytes used
+func (o *VolumeResponseInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateLabels(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *VolumeResponseInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) validateLabels(formats strfmt.Registry) error {
+	if swag.IsZero(o.Labels) { // not required
+		return nil
+	}
+
+	if err := o.Labels.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("info" + "." + "analytics" + "." + "by_accessed_time" + "." + "bytes_used" + "." + "labels")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume response inline analytics inline by accessed time inline bytes used based on the context it is used
+func (o *VolumeResponseInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateLabels(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *VolumeResponseInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) contextValidateLabels(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := o.Labels.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("info" + "." + "analytics" + "." + "by_accessed_time" + "." + "bytes_used" + "." + "labels")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *VolumeResponseInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *VolumeResponseInlineAnalyticsInlineByAccessedTimeInlineBytesUsed) UnmarshalBinary(b []byte) error {
+	var res VolumeResponseInlineAnalyticsInlineByAccessedTimeInlineBytesUsed
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+VolumeResponseInlineAnalyticsInlineByModifiedTime File system analytics information, broken down by date of last modification.
+swagger:model volume_response_inline_analytics_inline_by_modified_time
+*/
+type VolumeResponseInlineAnalyticsInlineByModifiedTime struct {
+
+	// bytes used
+	BytesUsed *models.VolumeResponseInlineAnalyticsInlineByModifiedTimeInlineBytesUsed `json:"bytes_used,omitempty"`
+}
+
+// Validate validates this volume response inline analytics inline by modified time
+func (o *VolumeResponseInlineAnalyticsInlineByModifiedTime) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateBytesUsed(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *VolumeResponseInlineAnalyticsInlineByModifiedTime) validateBytesUsed(formats strfmt.Registry) error {
+	if swag.IsZero(o.BytesUsed) { // not required
+		return nil
+	}
+
+	if o.BytesUsed != nil {
+		if err := o.BytesUsed.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "analytics" + "." + "by_modified_time" + "." + "bytes_used")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume response inline analytics inline by modified time based on the context it is used
+func (o *VolumeResponseInlineAnalyticsInlineByModifiedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateBytesUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *VolumeResponseInlineAnalyticsInlineByModifiedTime) contextValidateBytesUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.BytesUsed != nil {
+		if err := o.BytesUsed.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "analytics" + "." + "by_modified_time" + "." + "bytes_used")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *VolumeResponseInlineAnalyticsInlineByModifiedTime) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *VolumeResponseInlineAnalyticsInlineByModifiedTime) UnmarshalBinary(b []byte) error {
+	var res VolumeResponseInlineAnalyticsInlineByModifiedTime
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+VolumeResponseInlineAnalyticsInlineByModifiedTimeInlineBytesUsed Number of bytes used on-disk, broken down by date of last modification.
+swagger:model volume_response_inline_analytics_inline_by_modified_time_inline_bytes_used
+*/
+type VolumeResponseInlineAnalyticsInlineByModifiedTimeInlineBytesUsed struct {
+
+	// labels
+	Labels models.AnalyticsHistogramByTimeLabelsArrayInline `json:"labels,omitempty"`
+}
+
+// Validate validates this volume response inline analytics inline by modified time inline bytes used
+func (o *VolumeResponseInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateLabels(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *VolumeResponseInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) validateLabels(formats strfmt.Registry) error {
+	if swag.IsZero(o.Labels) { // not required
+		return nil
+	}
+
+	if err := o.Labels.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("info" + "." + "analytics" + "." + "by_modified_time" + "." + "bytes_used" + "." + "labels")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this volume response inline analytics inline by modified time inline bytes used based on the context it is used
+func (o *VolumeResponseInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateLabels(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *VolumeResponseInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) contextValidateLabels(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := o.Labels.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("info" + "." + "analytics" + "." + "by_modified_time" + "." + "bytes_used" + "." + "labels")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *VolumeResponseInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *VolumeResponseInlineAnalyticsInlineByModifiedTimeInlineBytesUsed) UnmarshalBinary(b []byte) error {
+	var res VolumeResponseInlineAnalyticsInlineByModifiedTimeInlineBytesUsed
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

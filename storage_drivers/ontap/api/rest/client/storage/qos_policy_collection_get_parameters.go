@@ -110,6 +110,12 @@ type QosPolicyCollectionGetParams struct {
 	*/
 	FixedCapacityShared *bool
 
+	/* FixedMaxThroughput.
+
+	   Filter by fixed.max_throughput
+	*/
+	FixedMaxThroughput *string
+
 	/* FixedMaxThroughputIops.
 
 	   Filter by fixed.max_throughput_iops
@@ -121,6 +127,12 @@ type QosPolicyCollectionGetParams struct {
 	   Filter by fixed.max_throughput_mbps
 	*/
 	FixedMaxThroughputMbps *int64
+
+	/* FixedMinThroughput.
+
+	   Filter by fixed.min_throughput
+	*/
+	FixedMinThroughput *string
 
 	/* FixedMinThroughputIops.
 
@@ -365,6 +377,17 @@ func (o *QosPolicyCollectionGetParams) SetFixedCapacityShared(fixedCapacityShare
 	o.FixedCapacityShared = fixedCapacityShared
 }
 
+// WithFixedMaxThroughput adds the fixedMaxThroughput to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) WithFixedMaxThroughput(fixedMaxThroughput *string) *QosPolicyCollectionGetParams {
+	o.SetFixedMaxThroughput(fixedMaxThroughput)
+	return o
+}
+
+// SetFixedMaxThroughput adds the fixedMaxThroughput to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) SetFixedMaxThroughput(fixedMaxThroughput *string) {
+	o.FixedMaxThroughput = fixedMaxThroughput
+}
+
 // WithFixedMaxThroughputIops adds the fixedMaxThroughputIops to the qos policy collection get params
 func (o *QosPolicyCollectionGetParams) WithFixedMaxThroughputIops(fixedMaxThroughputIops *int64) *QosPolicyCollectionGetParams {
 	o.SetFixedMaxThroughputIops(fixedMaxThroughputIops)
@@ -385,6 +408,17 @@ func (o *QosPolicyCollectionGetParams) WithFixedMaxThroughputMbps(fixedMaxThroug
 // SetFixedMaxThroughputMbps adds the fixedMaxThroughputMbps to the qos policy collection get params
 func (o *QosPolicyCollectionGetParams) SetFixedMaxThroughputMbps(fixedMaxThroughputMbps *int64) {
 	o.FixedMaxThroughputMbps = fixedMaxThroughputMbps
+}
+
+// WithFixedMinThroughput adds the fixedMinThroughput to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) WithFixedMinThroughput(fixedMinThroughput *string) *QosPolicyCollectionGetParams {
+	o.SetFixedMinThroughput(fixedMinThroughput)
+	return o
+}
+
+// SetFixedMinThroughput adds the fixedMinThroughput to the qos policy collection get params
+func (o *QosPolicyCollectionGetParams) SetFixedMinThroughput(fixedMinThroughput *string) {
+	o.FixedMinThroughput = fixedMinThroughput
 }
 
 // WithFixedMinThroughputIops adds the fixedMinThroughputIops to the qos policy collection get params
@@ -679,6 +713,23 @@ func (o *QosPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.FixedMaxThroughput != nil {
+
+		// query param fixed.max_throughput
+		var qrFixedMaxThroughput string
+
+		if o.FixedMaxThroughput != nil {
+			qrFixedMaxThroughput = *o.FixedMaxThroughput
+		}
+		qFixedMaxThroughput := qrFixedMaxThroughput
+		if qFixedMaxThroughput != "" {
+
+			if err := r.SetQueryParam("fixed.max_throughput", qFixedMaxThroughput); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.FixedMaxThroughputIops != nil {
 
 		// query param fixed.max_throughput_iops
@@ -708,6 +759,23 @@ func (o *QosPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qFixedMaxThroughputMbps != "" {
 
 			if err := r.SetQueryParam("fixed.max_throughput_mbps", qFixedMaxThroughputMbps); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FixedMinThroughput != nil {
+
+		// query param fixed.min_throughput
+		var qrFixedMinThroughput string
+
+		if o.FixedMinThroughput != nil {
+			qrFixedMinThroughput = *o.FixedMinThroughput
+		}
+		qFixedMinThroughput := qrFixedMinThroughput
+		if qFixedMinThroughput != "" {
+
+			if err := r.SetQueryParam("fixed.min_throughput", qFixedMinThroughput); err != nil {
 				return err
 			}
 		}

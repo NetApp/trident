@@ -62,6 +62,12 @@ SvmPeerDeleteParams contains all the parameters to send to the API endpoint
 */
 type SvmPeerDeleteParams struct {
 
+	/* Force.
+
+	   Use this parameter to delete the SVM peer relationship even when the remote cluster is not accessible. For example, if there are network connectivity issues.
+	*/
+	Force *bool
+
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
@@ -138,6 +144,17 @@ func (o *SvmPeerDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithForce adds the force to the svm peer delete params
+func (o *SvmPeerDeleteParams) WithForce(force *bool) *SvmPeerDeleteParams {
+	o.SetForce(force)
+	return o
+}
+
+// SetForce adds the force to the svm peer delete params
+func (o *SvmPeerDeleteParams) SetForce(force *bool) {
+	o.Force = force
+}
+
 // WithReturnTimeout adds the returnTimeout to the svm peer delete params
 func (o *SvmPeerDeleteParams) WithReturnTimeout(returnTimeout *int64) *SvmPeerDeleteParams {
 	o.SetReturnTimeout(returnTimeout)
@@ -167,6 +184,23 @@ func (o *SvmPeerDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		return err
 	}
 	var res []error
+
+	if o.Force != nil {
+
+		// query param force
+		var qrForce bool
+
+		if o.Force != nil {
+			qrForce = *o.Force
+		}
+		qForce := swag.FormatBool(qrForce)
+		if qForce != "" {
+
+			if err := r.SetQueryParam("force", qForce); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.ReturnTimeout != nil {
 

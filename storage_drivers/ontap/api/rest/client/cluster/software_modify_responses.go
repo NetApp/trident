@@ -247,6 +247,7 @@ func NewSoftwareModifyDefault(code int) *SoftwareModifyDefault {
 | 10551841 | An internal error occurred while generating the AutoSupport prior to starting ANDU. |
 | 10551854 | All specified nodes are already running the specified package version. |
 | 10551859 | Failed to access the package repository and its backup copy. |
+| 10551872 | Package version is not mentioned. |
 | 10551897 | All nodes are already running the requested version. |
 | 10551898 | Failed to get nodes-to-update list. |
 | 10551899 | skip_nodes_at_target_version cannot be specified in a validate_only, pause, resume, or cancel operations. |

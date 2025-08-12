@@ -226,9 +226,9 @@ func NewSvmMigrationCreateDefault(code int) *SvmMigrationCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 262245 | The value provided is invalid. |
+| 262245 | The value provided is invalid.<personalities supports=asar2,unified> |
 | 13172746 | SVM migration cannot be started. This is a generic code, see the response message for details. |
-| 13173748 | Migrate request cannot contain both \\"aggregates\\" and \\"volume_aggregate_pairs\\" within the \\"volume_placement\\" object. |
+| 13173748 | Migrate request cannot contain both \\"aggregates\\" and \\"volume_aggregate_pairs\\" within the \\"volume_placement\\" object.</personalities> |
 | 13173758 | The property \\"{property}\\" is not supported for this operation. |
 | 13173759 | Migrate operation failed. To use LIF placement specify either the port UUID, or both the port name and the port node name. |
 | 13173760 | Migrate operation failed. LIF placement requires either the port node name or the port UUID to be specified if the port name is specified. |

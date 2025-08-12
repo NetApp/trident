@@ -247,8 +247,8 @@ func NewSvmCreateDefault(code int) *SvmCreateDefault {
 | 13434916    | SVM is in the process of being created. Wait a few minutes, and then try the command again. |
 | 13434917    | SVM creation successful. |
 | 13434918    | IPspace name not provided for creating an SVM. |
-| 458753      | Destination and gateway must belong to the same address family. |
-| 13434935    | FCP, iSCSI and NVMe cannot be disabled or disallowed on this platform. |
+| 458753      | Destination and gateway must belong to the same address family. |<personalities supports=asar2>
+| 13434935    | FCP, iSCSI and NVMe cannot be disabled or disallowed on this platform. |</personalities>
 | 23724038    | Invalid source for the provided ns-switch database. |
 ```
 <br/>

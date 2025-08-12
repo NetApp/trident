@@ -207,7 +207,7 @@ func NewSnaplockFilePrivilegedDeleteDefault(code int) *SnaplockFilePrivilegedDel
 | 13763162    | SnapLock audit log volume is not configured for the SVM |
 | 13763280    | Only a user with the security login role \"vsadmin-snaplock\" is allowed to perform this operation |
 | 14090347    | File path must be in the format \"\/\<dir\>\/\<file path\>\"  |
-| 917804      | Path should be given in the format \"\/\vol\/\<volume name>\/\<file path>\".
+| 917804      | Path should be given in the format \"\/\vol\/\<volume name>\/\<file path>\". |
 */
 type SnaplockFilePrivilegedDeleteDefault struct {
 	_statusCode int

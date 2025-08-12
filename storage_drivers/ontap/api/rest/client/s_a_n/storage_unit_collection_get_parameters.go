@@ -62,6 +62,24 @@ StorageUnitCollectionGetParams contains all the parameters to send to the API en
 */
 type StorageUnitCollectionGetParams struct {
 
+	/* AntiRansomwareAttackProbability.
+
+	   Filter by anti_ransomware.attack_probability
+	*/
+	AntiRansomwareAttackProbability *string
+
+	/* AntiRansomwareAttackReportsTime.
+
+	   Filter by anti_ransomware.attack_reports.time
+	*/
+	AntiRansomwareAttackReportsTime *string
+
+	/* AntiRansomwareState.
+
+	   Filter by anti_ransomware.state
+	*/
+	AntiRansomwareState *string
+
 	/* Class.
 
 	   Filter by class
@@ -456,6 +474,12 @@ type StorageUnitCollectionGetParams struct {
 	*/
 	SerialNumber *string
 
+	/* SerialNumberHex.
+
+	   Filter by serial_number_hex
+	*/
+	SerialNumberHex *string
+
 	/* SpaceEfficiencyRatio.
 
 	   Filter by space.efficiency_ratio
@@ -683,6 +707,39 @@ func (o *StorageUnitCollectionGetParams) WithHTTPClient(client *http.Client) *St
 // SetHTTPClient adds the HTTPClient to the storage unit collection get params
 func (o *StorageUnitCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithAntiRansomwareAttackProbability adds the antiRansomwareAttackProbability to the storage unit collection get params
+func (o *StorageUnitCollectionGetParams) WithAntiRansomwareAttackProbability(antiRansomwareAttackProbability *string) *StorageUnitCollectionGetParams {
+	o.SetAntiRansomwareAttackProbability(antiRansomwareAttackProbability)
+	return o
+}
+
+// SetAntiRansomwareAttackProbability adds the antiRansomwareAttackProbability to the storage unit collection get params
+func (o *StorageUnitCollectionGetParams) SetAntiRansomwareAttackProbability(antiRansomwareAttackProbability *string) {
+	o.AntiRansomwareAttackProbability = antiRansomwareAttackProbability
+}
+
+// WithAntiRansomwareAttackReportsTime adds the antiRansomwareAttackReportsTime to the storage unit collection get params
+func (o *StorageUnitCollectionGetParams) WithAntiRansomwareAttackReportsTime(antiRansomwareAttackReportsTime *string) *StorageUnitCollectionGetParams {
+	o.SetAntiRansomwareAttackReportsTime(antiRansomwareAttackReportsTime)
+	return o
+}
+
+// SetAntiRansomwareAttackReportsTime adds the antiRansomwareAttackReportsTime to the storage unit collection get params
+func (o *StorageUnitCollectionGetParams) SetAntiRansomwareAttackReportsTime(antiRansomwareAttackReportsTime *string) {
+	o.AntiRansomwareAttackReportsTime = antiRansomwareAttackReportsTime
+}
+
+// WithAntiRansomwareState adds the antiRansomwareState to the storage unit collection get params
+func (o *StorageUnitCollectionGetParams) WithAntiRansomwareState(antiRansomwareState *string) *StorageUnitCollectionGetParams {
+	o.SetAntiRansomwareState(antiRansomwareState)
+	return o
+}
+
+// SetAntiRansomwareState adds the antiRansomwareState to the storage unit collection get params
+func (o *StorageUnitCollectionGetParams) SetAntiRansomwareState(antiRansomwareState *string) {
+	o.AntiRansomwareState = antiRansomwareState
 }
 
 // WithClass adds the class to the storage unit collection get params
@@ -1400,6 +1457,17 @@ func (o *StorageUnitCollectionGetParams) SetSerialNumber(serialNumber *string) {
 	o.SerialNumber = serialNumber
 }
 
+// WithSerialNumberHex adds the serialNumberHex to the storage unit collection get params
+func (o *StorageUnitCollectionGetParams) WithSerialNumberHex(serialNumberHex *string) *StorageUnitCollectionGetParams {
+	o.SetSerialNumberHex(serialNumberHex)
+	return o
+}
+
+// SetSerialNumberHex adds the serialNumberHex to the storage unit collection get params
+func (o *StorageUnitCollectionGetParams) SetSerialNumberHex(serialNumberHex *string) {
+	o.SerialNumberHex = serialNumberHex
+}
+
 // WithSpaceEfficiencyRatio adds the spaceEfficiencyRatio to the storage unit collection get params
 func (o *StorageUnitCollectionGetParams) WithSpaceEfficiencyRatio(spaceEfficiencyRatio *float64) *StorageUnitCollectionGetParams {
 	o.SetSpaceEfficiencyRatio(spaceEfficiencyRatio)
@@ -1704,6 +1772,57 @@ func (o *StorageUnitCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		return err
 	}
 	var res []error
+
+	if o.AntiRansomwareAttackProbability != nil {
+
+		// query param anti_ransomware.attack_probability
+		var qrAntiRansomwareAttackProbability string
+
+		if o.AntiRansomwareAttackProbability != nil {
+			qrAntiRansomwareAttackProbability = *o.AntiRansomwareAttackProbability
+		}
+		qAntiRansomwareAttackProbability := qrAntiRansomwareAttackProbability
+		if qAntiRansomwareAttackProbability != "" {
+
+			if err := r.SetQueryParam("anti_ransomware.attack_probability", qAntiRansomwareAttackProbability); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AntiRansomwareAttackReportsTime != nil {
+
+		// query param anti_ransomware.attack_reports.time
+		var qrAntiRansomwareAttackReportsTime string
+
+		if o.AntiRansomwareAttackReportsTime != nil {
+			qrAntiRansomwareAttackReportsTime = *o.AntiRansomwareAttackReportsTime
+		}
+		qAntiRansomwareAttackReportsTime := qrAntiRansomwareAttackReportsTime
+		if qAntiRansomwareAttackReportsTime != "" {
+
+			if err := r.SetQueryParam("anti_ransomware.attack_reports.time", qAntiRansomwareAttackReportsTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AntiRansomwareState != nil {
+
+		// query param anti_ransomware.state
+		var qrAntiRansomwareState string
+
+		if o.AntiRansomwareState != nil {
+			qrAntiRansomwareState = *o.AntiRansomwareState
+		}
+		qAntiRansomwareState := qrAntiRansomwareState
+		if qAntiRansomwareState != "" {
+
+			if err := r.SetQueryParam("anti_ransomware.state", qAntiRansomwareState); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.Class != nil {
 
@@ -2793,6 +2912,23 @@ func (o *StorageUnitCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qSerialNumber != "" {
 
 			if err := r.SetQueryParam("serial_number", qSerialNumber); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SerialNumberHex != nil {
+
+		// query param serial_number_hex
+		var qrSerialNumberHex string
+
+		if o.SerialNumberHex != nil {
+			qrSerialNumberHex = *o.SerialNumberHex
+		}
+		qSerialNumberHex := qrSerialNumberHex
+		if qSerialNumberHex != "" {
+
+			if err := r.SetQueryParam("serial_number_hex", qSerialNumberHex); err != nil {
 				return err
 			}
 		}

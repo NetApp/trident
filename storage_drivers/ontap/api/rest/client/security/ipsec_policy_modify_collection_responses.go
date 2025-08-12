@@ -139,6 +139,8 @@ func NewIpsecPolicyModifyCollectionDefault(code int) *IpsecPolicyModifyCollectio
 | 66257140 | Only certificates with a client or server type are supported. |
 | 66257142 | Failed to create IPsec policy because the specified SVM is being migrated. |
 | 66257143 | Invalid IPsec policy provided. The subnet must be non-empty. |
+| 66257153 | The policy requires a post-quantum pre-shared key because ppk-identity is specified for this policy. |
+| 66257154 | The policy requires a post-quantum pre-shared identity because ppk-shared-key is specified for this policy. |
 | 66257199 | Not all of the nodes in the cluster are running a version that supports the IPsec feature. |
 | 66257200 | The shared key does not meet required ASCII-range characters length. |
 | 66257201 | Support for the feature available with effective cluster version or later. |
@@ -247,6 +249,9 @@ type IpsecPolicyModifyCollectionBody struct {
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
 
+	// ppk
+	Ppk *models.IpsecPolicyResponseInlineRecordsInlineArrayItemInlinePpk `json:"ppk,omitempty"`
+
 	// Lower layer protocol to be covered by the IPsec policy.
 	// Example: 17
 	Protocol *string `json:"protocol,omitempty"`
@@ -307,6 +312,10 @@ func (o *IpsecPolicyModifyCollectionBody) Validate(formats strfmt.Registry) erro
 	}
 
 	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validatePpk(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -582,6 +591,23 @@ func (o *IpsecPolicyModifyCollectionBody) validateName(formats strfmt.Registry) 
 	return nil
 }
 
+func (o *IpsecPolicyModifyCollectionBody) validatePpk(formats strfmt.Registry) error {
+	if swag.IsZero(o.Ppk) { // not required
+		return nil
+	}
+
+	if o.Ppk != nil {
+		if err := o.Ppk.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "ppk")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (o *IpsecPolicyModifyCollectionBody) validateRemoteEndpoint(formats strfmt.Registry) error {
 	if swag.IsZero(o.RemoteEndpoint) { // not required
 		return nil
@@ -673,6 +699,10 @@ func (o *IpsecPolicyModifyCollectionBody) ContextValidate(ctx context.Context, f
 		res = append(res, err)
 	}
 
+	if err := o.contextValidatePpk(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.contextValidateRemoteEndpoint(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -761,6 +791,20 @@ func (o *IpsecPolicyModifyCollectionBody) contextValidateLocalEndpoint(ctx conte
 		if err := o.LocalEndpoint.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("info" + "." + "local_endpoint")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *IpsecPolicyModifyCollectionBody) contextValidatePpk(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Ppk != nil {
+		if err := o.Ppk.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "ppk")
 			}
 			return err
 		}

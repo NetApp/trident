@@ -391,9 +391,6 @@ func (a *Client) FcpServiceCollectionGet(params *FcpServiceCollectionGetParams, 
 /*
 	FcpServiceCreate Creates an FC Protocol service.
 
-### Platform Specifics
-* **Unified ONTAP**: POST and DELETE must be used to manage the FC Protocol service for access to the FC Protocol.
-* **ASA r2**: POST and DELETE are not supported. The FC Protocol service is automatically created and deleted with the SVM.
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the FC Protocol service.
 ### Related ONTAP commands
@@ -439,9 +436,6 @@ func (a *Client) FcpServiceCreate(params *FcpServiceCreateParams, authInfo runti
 /*
 	FcpServiceDelete Deletes an FC Protocol service. An FC Protocol service must be disabled before it can be deleted.
 
-### Platform Specifics
-* **Unified ONTAP**: POST and DELETE must be used to manage the FC Protocol service for access to the FC Protocol.
-* **ASA r2**: POST and DELETE are not supported. The FC Protocol service is automatically created and deleted with the SVM.
 ### Related ONTAP commands
 * `vserver fcp delete`
 ### Learn more
@@ -1922,9 +1916,6 @@ func (a *Client) IscsiServiceCollectionGet(params *IscsiServiceCollectionGetPara
 /*
 	IscsiServiceCreate Creates an iSCSI service.
 
-### Platform Specifics
-* **Unified ONTAP**: POST and DELETE must be used to manage the iSCSI service for access to the iSCSI protocol.
-* **ASA r2**: POST and DELETE are not supported. The iSCSI service is automatically created and deleted with the SVM.
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the iSCSI service.
 ### Related ONTAP commands
@@ -1970,9 +1961,6 @@ func (a *Client) IscsiServiceCreate(params *IscsiServiceCreateParams, authInfo r
 /*
 	IscsiServiceDelete Deletes an iSCSI service. An iSCSI service must be disabled before it can be deleted.
 
-### Platform Specifics
-* **Unified ONTAP**: POST and DELETE must be used to manage the iSCSI service for access to the iSCSI protocol.
-* **ASA r2**: POST and DELETE are not supported. The iSCSI service is automatically created and deleted with the SVM.
 ### Related ONTAP commands
 * `vserver iscsi delete`
 ### Learn more
@@ -2634,8 +2622,9 @@ If not specified in POST, the follow default property values are assigned.
 * `lun copy start`
 * `volume file clone autodelete`
 * `volume file clone create`
-### Platform Specifics
-* **ASA r2**: The `name` property is required when creating a new LUN. The name must start with an alphabetic character (a to z or A to Z) or an underscore (_). The name must be 203 characters or less in length. The `location` properties are not supported.
+<personalities supports=asar2>
+The `name` property is required when creating a new LUN. The name must start with an alphabetic character (a to z or A to Z) or an underscore (_). The name must be 203 characters or less in length. The `location` properties are not supported.
+</personalities>
 POST is asynchronous when creating a new LUN. It is synchronous when converting a namespace to a LUN via the `convert` property.
 ### Learn more
 * [`DOC /storage/luns`](#docs-SAN-storage_luns)
@@ -2683,8 +2672,9 @@ func (a *Client) LunCreate(params *LunCreateParams, authInfo runtime.ClientAuthI
 ### Related ONTAP commands
 * `lun copy cancel`
 * `lun delete`
-### Platform Specifics
-* **ASA r2**: DELETE is asynchronous.
+<personalities supports=asar2>
+DELETE is asynchronous.
+</personalities>
 ### Learn more
 * [`DOC /storage/luns`](#docs-SAN-storage_luns)
 */
@@ -2771,8 +2761,9 @@ func (a *Client) LunDeleteCollection(params *LunDeleteCollectionParams, authInfo
 ### Related ONTAP commands
 * `lun copy cancel`
 * `lun delete`
-### Platform Specifics
-* **ASA r2**: DELETE is asynchronous.
+<personalities supports=asar2>
+DELETE is asynchronous.
+</personalities>
 ### Learn more
 * [`DOC /storage/luns`](#docs-SAN-storage_luns)
 */
@@ -2894,8 +2885,9 @@ func (a *Client) LunFormDataGet(params *LunFormDataGetParams, authInfo runtime.C
 * `lun move start`
 * `lun resize`
 * `volume file clone autodelete`
-### Platform Specifics
-* **ASA r2**: PATCH is asynchronous when modifying `name` or `qos_policy`.
+<personalities supports=asar2>
+PATCH is asynchronous when modifying `name` or `qos_policy`.
+</personalities>
 ### Learn more
 * [`DOC /storage/luns`](#docs-SAN-storage_luns)
 */
@@ -3446,8 +3438,9 @@ func (a *Client) LunMapReportingNodeGet(params *LunMapReportingNodeGetParams, au
 * `lun move start`
 * `lun resize`
 * `volume file clone autodelete`
-### Platform Specifics
-* **ASA r2**: PATCH is asynchronous when modifying `name` or `qos_policy`.
+<personalities supports=asar2>
+PATCH is asynchronous when modifying `name` or `qos_policy`.
+</personalities>
 ### Learn more
 * [`DOC /storage/luns`](#docs-SAN-storage_luns)
 */
@@ -4204,6 +4197,7 @@ There is an added computational cost to retrieving values for these properties. 
 * `metric.*`
 * `movement.percent_complete`
 * `movement.start_time`
+* `movement.state`
 * `space.physical_used_by_snapshots`
 * `space.physical_used`
 * `statistics.*`
@@ -4310,6 +4304,7 @@ There is an added computational cost to retrieving values for these properties. 
 * `metric.*`
 * `movement.percent_complete`
 * `movement.start_time`
+* `movement.state`
 * `space.physical_used_by_snapshots`
 * `space.physical_used`
 * `statistics.*`

@@ -113,6 +113,7 @@ func NewSecuritySamlSpDeleteDefault(code int) *SecuritySamlSpDeleteDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 12320803 | SAML must be disabled before the configuration can be removed. |
+| 12320832 | Internal Error. Failed to execute the command, web server setup is in progress. Retry after some time. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SecuritySamlSpDeleteDefault struct {

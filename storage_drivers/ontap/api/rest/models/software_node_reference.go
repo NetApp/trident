@@ -22,6 +22,11 @@ type SoftwareNodeReference struct {
 	// firmware
 	Firmware *Firmware `json:"firmware,omitempty"`
 
+	// Model number of the node.
+	// Example: AFF-A800
+	// Read Only: true
+	Model *string `json:"model,omitempty"`
+
 	// Name of the node.
 	// Example: node1
 	// Read Only: true
@@ -94,6 +99,10 @@ func (m *SoftwareNodeReference) ContextValidate(ctx context.Context, formats str
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateModel(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateName(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -121,6 +130,15 @@ func (m *SoftwareNodeReference) contextValidateFirmware(ctx context.Context, for
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *SoftwareNodeReference) contextValidateModel(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "model", "body", m.Model); err != nil {
+		return err
 	}
 
 	return nil

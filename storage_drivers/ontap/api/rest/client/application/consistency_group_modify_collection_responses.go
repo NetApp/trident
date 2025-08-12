@@ -199,25 +199,26 @@ func NewConsistencyGroupModifyCollectionDefault(code int) *ConsistencyGroupModif
 | 53411843 | A consistency group with specified UUID was not found. |
 | 53411844 | Specified consistency group was not found in the specified SVM. |
 | 53411845 | The specified UUID and name refer to different consistency groups. |
-| 53411846 | Either name or UUID must be provided. |
+| 53411846 | Either name or UUID must be provided.<personalities supports=unified,asar2> |
 | 53411852 | A consistency group with the same identifier in the same scope exists. |
 | 53411853 | Fields provided in the request conflict with each other. |
 | 53411856 | Field provided is only supported when provisioning new objects. |
-| 53411857 | LUNs that are not members of the application are not supported by this API. LUNs can be added to an application by adding the volume containing the LUNs to the application. |
+| 53411857 | LUNs that are not members of the application are not supported by this API. LUNs can be added to an application by adding the volume containing the LUNs to the application.</personalities> |
 | 53411860 | An object with the same identifier in the same scope exists. |
-| 53411861 | Volume specified does not exist in provided volume array. |
+| 53411861 | The specified volume does not exist in provided volume array. |
 | 53411862 | Modifying existing igroups is not supported using this API. |
 | 53411864 | Request content insufficient to add an existing volume to an application. |
-| 53411865 | Volumes contained in one consistency group cannot be added to a different consistency group. |
+| 53411865 | Volumes contained in one consistency group cannot be added to a different consistency group.<personalities supports=unified,asar2> |
 | 53411866 | LUNs are not supported on FlexGroup volumes. |
-| 53411867 | LUN name is too long after appending a unique suffix. |
-| 53411869 | Volume name is too long after appending a unique suffix. |
-| 53411870 | When using the \"round_robin\" layout, the volume count must not be greater than the LUN count. |
-| 53411942 | The application or component type of a consistency group that has an associated SnapMirror relationship cannot be changed. |
-| 53411959 | Volumes with snapshot locking enabled cannot be added to a consistency group. |
+| 53411867 | LUN name is too long after appending a unique suffix.</personalities> |
+| 53411869 | Volume name is too long after appending a unique suffix.<personalities supports=unified,asar2> |
+| 53411870 | When using the \"round_robin\" layout, the volume count must not be greater than the LUN count.</personalities> |
+| 53411942 | The application or component type of a consistency group that has an associated SnapMirror relationship cannot be changed.<personalities supports=unified,asar2> |
+| 53411959 | Volumes with snapshot locking enabled cannot be added to a consistency group.</personalities> |
 | 53412027 | Failed to update the snapshot policy because the snapshot policies are not supported on the destination consistency group of SnapMirror active sync relationships. |
 | 53412056 | The consistency group is not a FlexClone. |
-| 53412057 | Consistency group split operation failed. |
+| 53412057 | Consistency group split operation failed.<personalities supports=unified,asar2> |
+| 53412058 | Failed to map or unmap because the consistency group consists of both 'luns' and 'namespaces'.</personalities> |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type ConsistencyGroupModifyCollectionDefault struct {
@@ -313,7 +314,8 @@ type ConsistencyGroupModifyCollectionBody struct {
 	ConsistencyGroups []*ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0 `json:"consistency_groups"`
 
 	// The LUNs array can be used to create or modify LUNs in a consistency group on a new or existing volume that is a member of the consistency group. LUNs are considered members of a consistency group if they are located on a volume that is a member of the consistency group.
-	//
+	// <personalities supports=unified>The maximum number of items for this array is 16.</personalities>
+	// <personalities supports=asar2>The maximum number of items for this array is 256.</personalities>
 	//
 	// Min Items: 0
 	// Unique: true
@@ -326,7 +328,7 @@ type ConsistencyGroupModifyCollectionBody struct {
 	Metric *models.ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineMetric `json:"metric,omitempty"`
 
 	// Name of the consistency group. The consistency group name must be unique within an SVM.<br/>
-	//
+	// <personalities supports=unified>If not provided and the consistency group contains only one volume, the name will be generated based on the volume name. If the consistency group contains more than one volume, the name is required.</personalities>
 	//
 	Name *string `json:"name,omitempty"`
 
@@ -334,7 +336,8 @@ type ConsistencyGroupModifyCollectionBody struct {
 	// In ONTAP, an NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 	// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. NVMe namespaces support being cloned. An NVMe namespace cannot be renamed, resized, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace. See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.<br/>
 	// An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.
-	//
+	// <personalities supports=unified>The maximum number of items for this array is 16.</personalities>
+	// <personalities supports=asar2>The maximum number of items for this array is 256.</personalities>
 	//
 	// Min Items: 0
 	// Unique: true
@@ -402,7 +405,7 @@ type ConsistencyGroupModifyCollectionBody struct {
 	VdiskType *string `json:"vdisk_type,omitempty"`
 
 	// A consistency group is a mutually exclusive aggregation of volumes or other consistency groups. A volume can only be associated with one direct parent consistency group.<br/>
-	//
+	// <personalities supports=unified>The volumes array can be used to create new volumes in the consistency group, add existing volumes to the consistency group, or modify existing volumes that are already members of the consistency group.<br/></personalities>
 	// The total number of volumes across all child consistency groups contained in a consistency group is constrained by the same limit.
 	//
 	// Max Items: 80
@@ -1570,14 +1573,15 @@ type ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0 struct {
 	Application *ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0Application `json:"application,omitempty"`
 
 	// The LUNs array can be used to create or modify LUNs in a consistency group on a new or existing volume that is a member of the consistency group. LUNs are considered members of a consistency group if they are located on a volume that is a member of the consistency group.
-	//
+	// <personalities supports=unified>The maximum number of items for this array is 16.</personalities>
+	// <personalities supports=asar2>The maximum number of items for this array is 256.</personalities>
 	//
 	// Min Items: 0
 	// Unique: true
 	Luns []*ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0LunsItems0 `json:"luns"`
 
 	// Name of the consistency group. The consistency group name must be unique within an SVM.<br/>
-	//
+	// <personalities supports=unified>If not provided and the consistency group contains only one volume, the name will be generated based on the volume name. If the consistency group contains more than one volume, the name is required.</personalities>
 	//
 	Name *string `json:"name,omitempty"`
 
@@ -1585,7 +1589,8 @@ type ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0 struct {
 	// In ONTAP, an NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 	// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. NVMe namespaces support being cloned. An NVMe namespace cannot be renamed, resized, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace. See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.<br/>
 	// An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.
-	//
+	// <personalities supports=unified>The maximum number of items for this array is 16.</personalities>
+	// <personalities supports=asar2>The maximum number of items for this array is 256.</personalities>
 	//
 	// Min Items: 0
 	// Unique: true
@@ -1624,7 +1629,7 @@ type ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0 struct {
 	UUID *string `json:"uuid,omitempty"`
 
 	// A consistency group is a mutually exclusive aggregation of volumes or other consistency groups. A volume can only be associated with one direct parent consistency group.<br/>
-	//
+	// <personalities supports=unified>The volumes array can be used to create new volumes in the consistency group, add existing volumes to the consistency group, or modify existing volumes that are already members of the consistency group.<br/></personalities>
 	// The total number of volumes across all child consistency groups contained in a consistency group is constrained by the same limit.
 	//
 	// Max Items: 80
@@ -2557,16 +2562,13 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0Applic
 /*
 ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0LunsItems0 A LUN is the logical representation of storage in a storage area network (SAN).<br/>
 // A LUN must be mapped to an initiator group to grant access to the initiator group's initiators (client hosts). Initiators can then access the LUN and perform I/O over a Fibre Channel (FC) fabric using the FC Protocol or a TCP/IP network using iSCSI.<br/>
-// See the LUN object model to learn more about each of the properties supported by the LUN REST API.
-// ## Platform Specifics
-// ### Unified ONTAP
-// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+// See the LUN object model to learn more about each of the properties supported by the LUN REST API.<br/>
+// <personalities supports=unified>A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 // LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<lun>" where the qtree name is optional.<br/>
-// A LUN can be created to a specified size using thin or thick provisioning. A LUN can then be renamed, resized, cloned, moved to a different volume and copied. LUNs support the assignment of a QoS policy for performance management or a QoS policy can be assigned to a volume containing one or more LUNs.
-// ### ASA r2
-// LUN names are simple names that share a namespace with NVMe namespaces within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+// A LUN can be created to a specified size using thin or thick provisioning. A LUN can then be renamed, resized, cloned, moved to a different volume and copied. LUNs support the assignment of a QoS policy for performance management or a QoS policy can be assigned to a volume containing one or more LUNs.</personalities>
+// <personalities supports=asar2>LUN names are simple names that share a namespace with NVMe namespaces within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
 // A LUN can be created to a specified size. A LUN can then be renamed, resized, or cloned. LUNs support the assignment of a QoS policy for performance management.<br/>
-// **Note**: LUN related REST API examples use the Unified ONTAP form for LUN names. On ASA r2, the ASA r2 format must be used.
+// **Note**: LUN related REST API examples use the Unified ONTAP form for LUN names. On ASA r2, the ASA r2 format must be used.</personalities>
 //
 swagger:model ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0LunsItems0
 */
@@ -3154,13 +3156,11 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0LunsIt
 }
 
 /*
-ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0LunsItems0Clone * **Unified ONTAP**:
-// This sub-object is used in POST to create a new LUN as a clone of an existing LUN, or PATCH to overwrite an existing LUN as a clone of another. Setting a property in this sub-object indicates that a LUN clone is desired. Consider the following other properties when cloning a LUN: `auto_delete`, `qos_policy`, `space.guarantee.requested` and `space.scsi_thin_provisioning_support_enabled`.<br/>
+ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0LunsItems0Clone <personalities supports=unified>This sub-object is used in POST to create a new LUN as a clone of an existing LUN, or PATCH to overwrite an existing LUN as a clone of another. Setting a property in this sub-object indicates that a LUN clone is desired. Consider the following other properties when cloning a LUN: `auto_delete`, `qos_policy`, `space.guarantee.requested` and `space.scsi_thin_provisioning_support_enabled`.<br/>
 // When used in a PATCH, the patched LUN's data is over-written as a clone of the source and the following properties are preserved from the patched LUN unless otherwise specified as part of the PATCH: `class`, `auto_delete`, `lun_maps`, `serial_number`, `status.state`, and `uuid`.<br/>
-// Persistent reservations for the patched LUN are also preserved.
-// * **ASA r2**:
-// This endpoint does not support clones. No properties in this sub-object can be set for POST or PATCH and none will be returned by GET.<br/>
-// Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
+// Persistent reservations for the patched LUN are also preserved.</personalities>
+// <personalities supports=asar2>This endpoint does not support clones. No properties in this sub-object can be set for POST or PATCH and none will be returned by GET.<br/>
+// Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.</personalities>
 //
 swagger:model ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0LunsItems0Clone
 */
@@ -3257,23 +3257,17 @@ swagger:model ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0L
 type ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0LunsItems0CloneSource struct {
 
 	// The name of the clone source LUN.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// <personalities supports=unified>A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 	// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
-	// Valid in POST and PATCH.
-	// * **ASA r2**:
-	// This property is not supported. Cloning is supported through the /ap/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
+	// Valid in POST and PATCH.</personalities>
+	// <personalities supports=asar2>This property is not supported. Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.</personalities>
 	//
 	// Example: /vol/volume1/lun1
 	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the clone source LUN.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// Valid in POST and PATCH.
-	// * **ASA r2**:
-	// This property is not supported. Cloning is supported through the /ap/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
+	// <personalities supports=unified>Valid in POST and PATCH.</personalities>
+	// <personalities supports=asar2>This property is not supported. Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.</personalities>
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	UUID *string `json:"uuid,omitempty"`
@@ -4236,28 +4230,28 @@ type ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0LunsItems0
 	// links
 	Links *models.SelfLink `json:"_links,omitempty"`
 
-	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 10000
 	// Read Only: true
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
-	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 500
 	// Read Only: true
 	// Maximum: 4.194303e+06
 	// Minimum: 0
 	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
-	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 2000
 	// Read Only: true
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
-	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 500
 	// Read Only: true
 	// Maximum: 4.194303e+06
@@ -4655,7 +4649,7 @@ swagger:model ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0L
 type ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0LunsItems0SpaceGuarantee struct {
 
 	// The requested space reservation policy for the LUN. If _true_, a space reservation is requested for the LUN; if _false_, the LUN is thin provisioned. Guaranteeing a space reservation request for a LUN requires that the volume in which the LUN resides is also space reserved and that the fractional reserve for the volume is 100%. Valid in POST and PATCH.
-	//
+	// <personalities supports=asar2>All LUNs are provisioned without a space reservation.</personalities>
 	//
 	Requested *bool `json:"requested,omitempty"`
 
@@ -4715,28 +4709,23 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0LunsIt
 /*
 ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0NamespacesItems0 An NVMe namespace is a collection of addressable logical blocks presented to hosts connected to the storage virtual machine using the NVMe over Fabrics protocol.<br/>
 // An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.<br/>
-// See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.
-// ## Platform Specifics
-// ### Unified ONTAP
-// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+// See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.<br/>
+// <personalities supports=unified>An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 // NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
-// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. An NVMe namespace can then be resized or cloned. An NVMe namespace cannot be renamed, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace.
-// ### ASA r2
-// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. An NVMe namespace can then be resized or cloned. An NVMe namespace cannot be renamed, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace.</personalities>
+// <personalities supports=asar2>NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
 // An NVMe namespace can be created to a specified size. An NVMe namespace can then be renamed, resized, or cloned. NVMe namespaces support the assignment of a QoS policy for performance management.<br/>
-// **Note**: NVMe namespace related REST API examples use the Unified ONTAP form for NVMe namespace names. On ASA r2, the ASA r2 format must be used.
+// **Note**: NVMe namespace related REST API examples use the Unified ONTAP form for NVMe namespace names. On ASA r2, the ASA r2 format must be used.</personalities>
 //
 swagger:model ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0NamespacesItems0
 */
 type ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0NamespacesItems0 struct {
 
-	// * **Unified ONTAP**:
-	// This property marks the NVMe namespace for auto deletion when the volume containing the namespace runs out of space. This is most commonly set on namespace clones.<br/>
+	// <personalities supports=unified>This property marks the NVMe namespace for auto deletion when the volume containing the namespace runs out of space. This is most commonly set on namespace clones.<br/>
 	// When set to _true_, the NVMe namespace becomes eligible for automatic deletion when the volume runs out of space. Auto deletion only occurs when the volume containing the namespace is also configured for auto deletion and free space in the volume decreases below a particular threshold.<br/>
 	// This property is optional in POST and PATCH. The default value for a new NVMe namespace is _false_.<br/>
-	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-	// * **ASA r2**:
-	// This property is not supported. It cannot be set in POST or PATCH and will not be returned by GET.
+	// There is an added computational cost to retrieving this property's value. It is not populated for a GET request unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.</personalities>
+	// <personalities supports=asar2>This property is not supported. It cannot be set in POST or PATCH and will not be returned by GET.</personalities>
 	//
 	AutoDelete *bool `json:"auto_delete,omitempty"`
 
@@ -4758,14 +4747,11 @@ type ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0Namespaces
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// The name of the NVMe namespace.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// <personalities supports=unified>An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
-	// Renaming an NVMe namespace is not supported. Valid in POST.
-	// * **ASA r2**:
-	// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
-	// Renaming an NVMe namespace is supported. Valid in POST and PATCH.
+	// Renaming an NVMe namespace is not supported. Valid in POST.</personalities>
+	// <personalities supports=asar2>NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+	// Renaming an NVMe namespace is supported. Valid in POST and PATCH.</personalities>
 	//
 	// Example: /vol/volume1/qtree1/namespace1
 	Name *string `json:"name,omitempty"`
@@ -5712,7 +5698,7 @@ type ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0Namespaces
 
 	// The Asymmetric Namespace Access Group ID (ANAGRPID) of the NVMe namespace.<br/>
 	// The format for an ANAGRPID is 8 hexadecimal digits (zero-filled) followed by a lower case "h".<br/>
-	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// There is an added computational cost to retrieving this property's value. It is not populated for a GET request unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Example: 00103050h
 	// Read Only: true
@@ -5984,6 +5970,11 @@ type ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0Provisioni
 
 	// storage service
 	StorageService *ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0ProvisioningOptionsStorageService `json:"storage_service,omitempty"`
+
+	// Resource tags to confirm before an update.
+	// Example: ["team:csi","environment:test"]
+	// Max Items: 64
+	VerifyTags []*string `json:"verify_tags"`
 }
 
 // Validate validates this consistency group modify collection params body consistency groups items0 provisioning options
@@ -5995,6 +5986,10 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0Provis
 	}
 
 	if err := o.validateStorageService(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateVerifyTags(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -6102,6 +6097,20 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0Provis
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (o *ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0ProvisioningOptions) validateVerifyTags(formats strfmt.Registry) error {
+	if swag.IsZero(o.VerifyTags) { // not required
+		return nil
+	}
+
+	iVerifyTagsSize := int64(len(o.VerifyTags))
+
+	if err := validate.MaxItems("provisioning_options"+"."+"verify_tags", "body", iVerifyTagsSize, 64); err != nil {
+		return err
 	}
 
 	return nil
@@ -9023,16 +9032,13 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyConsistencyGroupsItems0Volume
 /*
 ConsistencyGroupModifyCollectionParamsBodyLunsItems0 A LUN is the logical representation of storage in a storage area network (SAN).<br/>
 // A LUN must be mapped to an initiator group to grant access to the initiator group's initiators (client hosts). Initiators can then access the LUN and perform I/O over a Fibre Channel (FC) fabric using the FC Protocol or a TCP/IP network using iSCSI.<br/>
-// See the LUN object model to learn more about each of the properties supported by the LUN REST API.
-// ## Platform Specifics
-// ### Unified ONTAP
-// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+// See the LUN object model to learn more about each of the properties supported by the LUN REST API.<br/>
+// <personalities supports=unified>A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 // LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<lun>" where the qtree name is optional.<br/>
-// A LUN can be created to a specified size using thin or thick provisioning. A LUN can then be renamed, resized, cloned, moved to a different volume and copied. LUNs support the assignment of a QoS policy for performance management or a QoS policy can be assigned to a volume containing one or more LUNs.
-// ### ASA r2
-// LUN names are simple names that share a namespace with NVMe namespaces within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+// A LUN can be created to a specified size using thin or thick provisioning. A LUN can then be renamed, resized, cloned, moved to a different volume and copied. LUNs support the assignment of a QoS policy for performance management or a QoS policy can be assigned to a volume containing one or more LUNs.</personalities>
+// <personalities supports=asar2>LUN names are simple names that share a namespace with NVMe namespaces within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
 // A LUN can be created to a specified size. A LUN can then be renamed, resized, or cloned. LUNs support the assignment of a QoS policy for performance management.<br/>
-// **Note**: LUN related REST API examples use the Unified ONTAP form for LUN names. On ASA r2, the ASA r2 format must be used.
+// **Note**: LUN related REST API examples use the Unified ONTAP form for LUN names. On ASA r2, the ASA r2 format must be used.</personalities>
 //
 swagger:model ConsistencyGroupModifyCollectionParamsBodyLunsItems0
 */
@@ -9620,13 +9626,11 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyLunsItems0) UnmarshalBinary(b
 }
 
 /*
-ConsistencyGroupModifyCollectionParamsBodyLunsItems0Clone * **Unified ONTAP**:
-// This sub-object is used in POST to create a new LUN as a clone of an existing LUN, or PATCH to overwrite an existing LUN as a clone of another. Setting a property in this sub-object indicates that a LUN clone is desired. Consider the following other properties when cloning a LUN: `auto_delete`, `qos_policy`, `space.guarantee.requested` and `space.scsi_thin_provisioning_support_enabled`.<br/>
+ConsistencyGroupModifyCollectionParamsBodyLunsItems0Clone <personalities supports=unified>This sub-object is used in POST to create a new LUN as a clone of an existing LUN, or PATCH to overwrite an existing LUN as a clone of another. Setting a property in this sub-object indicates that a LUN clone is desired. Consider the following other properties when cloning a LUN: `auto_delete`, `qos_policy`, `space.guarantee.requested` and `space.scsi_thin_provisioning_support_enabled`.<br/>
 // When used in a PATCH, the patched LUN's data is over-written as a clone of the source and the following properties are preserved from the patched LUN unless otherwise specified as part of the PATCH: `class`, `auto_delete`, `lun_maps`, `serial_number`, `status.state`, and `uuid`.<br/>
-// Persistent reservations for the patched LUN are also preserved.
-// * **ASA r2**:
-// This endpoint does not support clones. No properties in this sub-object can be set for POST or PATCH and none will be returned by GET.<br/>
-// Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
+// Persistent reservations for the patched LUN are also preserved.</personalities>
+// <personalities supports=asar2>This endpoint does not support clones. No properties in this sub-object can be set for POST or PATCH and none will be returned by GET.<br/>
+// Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.</personalities>
 //
 swagger:model ConsistencyGroupModifyCollectionParamsBodyLunsItems0Clone
 */
@@ -9723,23 +9727,17 @@ swagger:model ConsistencyGroupModifyCollectionParamsBodyLunsItems0CloneSource
 type ConsistencyGroupModifyCollectionParamsBodyLunsItems0CloneSource struct {
 
 	// The name of the clone source LUN.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// <personalities supports=unified>A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 	// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
-	// Valid in POST and PATCH.
-	// * **ASA r2**:
-	// This property is not supported. Cloning is supported through the /ap/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
+	// Valid in POST and PATCH.</personalities>
+	// <personalities supports=asar2>This property is not supported. Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.</personalities>
 	//
 	// Example: /vol/volume1/lun1
 	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the clone source LUN.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// Valid in POST and PATCH.
-	// * **ASA r2**:
-	// This property is not supported. Cloning is supported through the /ap/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
+	// <personalities supports=unified>Valid in POST and PATCH.</personalities>
+	// <personalities supports=asar2>This property is not supported. Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.</personalities>
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	UUID *string `json:"uuid,omitempty"`
@@ -10702,28 +10700,28 @@ type ConsistencyGroupModifyCollectionParamsBodyLunsItems0QosPolicy struct {
 	// links
 	Links *models.SelfLink `json:"_links,omitempty"`
 
-	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 10000
 	// Read Only: true
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
-	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 500
 	// Read Only: true
 	// Maximum: 4.194303e+06
 	// Minimum: 0
 	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
-	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 2000
 	// Read Only: true
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
-	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 500
 	// Read Only: true
 	// Maximum: 4.194303e+06
@@ -11121,7 +11119,7 @@ swagger:model ConsistencyGroupModifyCollectionParamsBodyLunsItems0SpaceGuarantee
 type ConsistencyGroupModifyCollectionParamsBodyLunsItems0SpaceGuarantee struct {
 
 	// The requested space reservation policy for the LUN. If _true_, a space reservation is requested for the LUN; if _false_, the LUN is thin provisioned. Guaranteeing a space reservation request for a LUN requires that the volume in which the LUN resides is also space reserved and that the fractional reserve for the volume is 100%. Valid in POST and PATCH.
-	//
+	// <personalities supports=asar2>All LUNs are provisioned without a space reservation.</personalities>
 	//
 	Requested *bool `json:"requested,omitempty"`
 
@@ -11181,28 +11179,23 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyLunsItems0SpaceGuarantee) Unm
 /*
 ConsistencyGroupModifyCollectionParamsBodyNamespacesItems0 An NVMe namespace is a collection of addressable logical blocks presented to hosts connected to the storage virtual machine using the NVMe over Fabrics protocol.<br/>
 // An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.<br/>
-// See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.
-// ## Platform Specifics
-// ### Unified ONTAP
-// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+// See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.<br/>
+// <personalities supports=unified>An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 // NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
-// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. An NVMe namespace can then be resized or cloned. An NVMe namespace cannot be renamed, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace.
-// ### ASA r2
-// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. An NVMe namespace can then be resized or cloned. An NVMe namespace cannot be renamed, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace.</personalities>
+// <personalities supports=asar2>NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
 // An NVMe namespace can be created to a specified size. An NVMe namespace can then be renamed, resized, or cloned. NVMe namespaces support the assignment of a QoS policy for performance management.<br/>
-// **Note**: NVMe namespace related REST API examples use the Unified ONTAP form for NVMe namespace names. On ASA r2, the ASA r2 format must be used.
+// **Note**: NVMe namespace related REST API examples use the Unified ONTAP form for NVMe namespace names. On ASA r2, the ASA r2 format must be used.</personalities>
 //
 swagger:model ConsistencyGroupModifyCollectionParamsBodyNamespacesItems0
 */
 type ConsistencyGroupModifyCollectionParamsBodyNamespacesItems0 struct {
 
-	// * **Unified ONTAP**:
-	// This property marks the NVMe namespace for auto deletion when the volume containing the namespace runs out of space. This is most commonly set on namespace clones.<br/>
+	// <personalities supports=unified>This property marks the NVMe namespace for auto deletion when the volume containing the namespace runs out of space. This is most commonly set on namespace clones.<br/>
 	// When set to _true_, the NVMe namespace becomes eligible for automatic deletion when the volume runs out of space. Auto deletion only occurs when the volume containing the namespace is also configured for auto deletion and free space in the volume decreases below a particular threshold.<br/>
 	// This property is optional in POST and PATCH. The default value for a new NVMe namespace is _false_.<br/>
-	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-	// * **ASA r2**:
-	// This property is not supported. It cannot be set in POST or PATCH and will not be returned by GET.
+	// There is an added computational cost to retrieving this property's value. It is not populated for a GET request unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.</personalities>
+	// <personalities supports=asar2>This property is not supported. It cannot be set in POST or PATCH and will not be returned by GET.</personalities>
 	//
 	AutoDelete *bool `json:"auto_delete,omitempty"`
 
@@ -11224,14 +11217,11 @@ type ConsistencyGroupModifyCollectionParamsBodyNamespacesItems0 struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// The name of the NVMe namespace.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// <personalities supports=unified>An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
-	// Renaming an NVMe namespace is not supported. Valid in POST.
-	// * **ASA r2**:
-	// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
-	// Renaming an NVMe namespace is supported. Valid in POST and PATCH.
+	// Renaming an NVMe namespace is not supported. Valid in POST.</personalities>
+	// <personalities supports=asar2>NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+	// Renaming an NVMe namespace is supported. Valid in POST and PATCH.</personalities>
 	//
 	// Example: /vol/volume1/qtree1/namespace1
 	Name *string `json:"name,omitempty"`
@@ -12178,7 +12168,7 @@ type ConsistencyGroupModifyCollectionParamsBodyNamespacesItems0SubsystemMap stru
 
 	// The Asymmetric Namespace Access Group ID (ANAGRPID) of the NVMe namespace.<br/>
 	// The format for an ANAGRPID is 8 hexadecimal digits (zero-filled) followed by a lower case "h".<br/>
-	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// There is an added computational cost to retrieving this property's value. It is not populated for a GET request unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Example: 00103050h
 	// Read Only: true
@@ -12356,14 +12346,15 @@ type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsIte
 	Application *ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0Application `json:"application,omitempty"`
 
 	// The LUNs array can be used to create or modify LUNs in a consistency group on a new or existing volume that is a member of the consistency group. LUNs are considered members of a consistency group if they are located on a volume that is a member of the consistency group.
-	//
+	// <personalities supports=unified>The maximum number of items for this array is 16.</personalities>
+	// <personalities supports=asar2>The maximum number of items for this array is 256.</personalities>
 	//
 	// Min Items: 0
 	// Unique: true
 	Luns []*ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0LunsItems0 `json:"luns"`
 
 	// Name of the consistency group. The consistency group name must be unique within an SVM.<br/>
-	//
+	// <personalities supports=unified>If not provided and the consistency group contains only one volume, the name will be generated based on the volume name. If the consistency group contains more than one volume, the name is required.</personalities>
 	//
 	Name *string `json:"name,omitempty"`
 
@@ -12371,7 +12362,8 @@ type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsIte
 	// In ONTAP, an NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 	// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. NVMe namespaces support being cloned. An NVMe namespace cannot be renamed, resized, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace. See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.<br/>
 	// An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.
-	//
+	// <personalities supports=unified>The maximum number of items for this array is 16.</personalities>
+	// <personalities supports=asar2>The maximum number of items for this array is 256.</personalities>
 	//
 	// Min Items: 0
 	// Unique: true
@@ -12410,7 +12402,7 @@ type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsIte
 	UUID *string `json:"uuid,omitempty"`
 
 	// A consistency group is a mutually exclusive aggregation of volumes or other consistency groups. A volume can only be associated with one direct parent consistency group.<br/>
-	//
+	// <personalities supports=unified>The volumes array can be used to create new volumes in the consistency group, add existing volumes to the consistency group, or modify existing volumes that are already members of the consistency group.<br/></personalities>
 	// The total number of volumes across all child consistency groups contained in a consistency group is constrained by the same limit.
 	//
 	// Max Items: 80
@@ -13343,16 +13335,13 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroup
 /*
 ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0LunsItems0 A LUN is the logical representation of storage in a storage area network (SAN).<br/>
 // A LUN must be mapped to an initiator group to grant access to the initiator group's initiators (client hosts). Initiators can then access the LUN and perform I/O over a Fibre Channel (FC) fabric using the FC Protocol or a TCP/IP network using iSCSI.<br/>
-// See the LUN object model to learn more about each of the properties supported by the LUN REST API.
-// ## Platform Specifics
-// ### Unified ONTAP
-// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+// See the LUN object model to learn more about each of the properties supported by the LUN REST API.<br/>
+// <personalities supports=unified>A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 // LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<lun>" where the qtree name is optional.<br/>
-// A LUN can be created to a specified size using thin or thick provisioning. A LUN can then be renamed, resized, cloned, moved to a different volume and copied. LUNs support the assignment of a QoS policy for performance management or a QoS policy can be assigned to a volume containing one or more LUNs.
-// ### ASA r2
-// LUN names are simple names that share a namespace with NVMe namespaces within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+// A LUN can be created to a specified size using thin or thick provisioning. A LUN can then be renamed, resized, cloned, moved to a different volume and copied. LUNs support the assignment of a QoS policy for performance management or a QoS policy can be assigned to a volume containing one or more LUNs.</personalities>
+// <personalities supports=asar2>LUN names are simple names that share a namespace with NVMe namespaces within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
 // A LUN can be created to a specified size. A LUN can then be renamed, resized, or cloned. LUNs support the assignment of a QoS policy for performance management.<br/>
-// **Note**: LUN related REST API examples use the Unified ONTAP form for LUN names. On ASA r2, the ASA r2 format must be used.
+// **Note**: LUN related REST API examples use the Unified ONTAP form for LUN names. On ASA r2, the ASA r2 format must be used.</personalities>
 //
 swagger:model ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0LunsItems0
 */
@@ -13940,13 +13929,11 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroup
 }
 
 /*
-ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0LunsItems0Clone * **Unified ONTAP**:
-// This sub-object is used in POST to create a new LUN as a clone of an existing LUN, or PATCH to overwrite an existing LUN as a clone of another. Setting a property in this sub-object indicates that a LUN clone is desired. Consider the following other properties when cloning a LUN: `auto_delete`, `qos_policy`, `space.guarantee.requested` and `space.scsi_thin_provisioning_support_enabled`.<br/>
+ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0LunsItems0Clone <personalities supports=unified>This sub-object is used in POST to create a new LUN as a clone of an existing LUN, or PATCH to overwrite an existing LUN as a clone of another. Setting a property in this sub-object indicates that a LUN clone is desired. Consider the following other properties when cloning a LUN: `auto_delete`, `qos_policy`, `space.guarantee.requested` and `space.scsi_thin_provisioning_support_enabled`.<br/>
 // When used in a PATCH, the patched LUN's data is over-written as a clone of the source and the following properties are preserved from the patched LUN unless otherwise specified as part of the PATCH: `class`, `auto_delete`, `lun_maps`, `serial_number`, `status.state`, and `uuid`.<br/>
-// Persistent reservations for the patched LUN are also preserved.
-// * **ASA r2**:
-// This endpoint does not support clones. No properties in this sub-object can be set for POST or PATCH and none will be returned by GET.<br/>
-// Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
+// Persistent reservations for the patched LUN are also preserved.</personalities>
+// <personalities supports=asar2>This endpoint does not support clones. No properties in this sub-object can be set for POST or PATCH and none will be returned by GET.<br/>
+// Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.</personalities>
 //
 swagger:model ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0LunsItems0Clone
 */
@@ -14043,23 +14030,17 @@ swagger:model ConsistencyGroupModifyCollectionParamsBodyRecordsItems0Consistency
 type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0LunsItems0CloneSource struct {
 
 	// The name of the clone source LUN.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// <personalities supports=unified>A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 	// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
-	// Valid in POST and PATCH.
-	// * **ASA r2**:
-	// This property is not supported. Cloning is supported through the /ap/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
+	// Valid in POST and PATCH.</personalities>
+	// <personalities supports=asar2>This property is not supported. Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.</personalities>
 	//
 	// Example: /vol/volume1/lun1
 	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the clone source LUN.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// Valid in POST and PATCH.
-	// * **ASA r2**:
-	// This property is not supported. Cloning is supported through the /ap/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
+	// <personalities supports=unified>Valid in POST and PATCH.</personalities>
+	// <personalities supports=asar2>This property is not supported. Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.</personalities>
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	UUID *string `json:"uuid,omitempty"`
@@ -15022,28 +15003,28 @@ type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsIte
 	// links
 	Links *models.SelfLink `json:"_links,omitempty"`
 
-	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 10000
 	// Read Only: true
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
-	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 500
 	// Read Only: true
 	// Maximum: 4.194303e+06
 	// Minimum: 0
 	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
-	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 2000
 	// Read Only: true
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
-	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 500
 	// Read Only: true
 	// Maximum: 4.194303e+06
@@ -15441,7 +15422,7 @@ swagger:model ConsistencyGroupModifyCollectionParamsBodyRecordsItems0Consistency
 type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0LunsItems0SpaceGuarantee struct {
 
 	// The requested space reservation policy for the LUN. If _true_, a space reservation is requested for the LUN; if _false_, the LUN is thin provisioned. Guaranteeing a space reservation request for a LUN requires that the volume in which the LUN resides is also space reserved and that the fractional reserve for the volume is 100%. Valid in POST and PATCH.
-	//
+	// <personalities supports=asar2>All LUNs are provisioned without a space reservation.</personalities>
 	//
 	Requested *bool `json:"requested,omitempty"`
 
@@ -15501,28 +15482,23 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroup
 /*
 ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0NamespacesItems0 An NVMe namespace is a collection of addressable logical blocks presented to hosts connected to the storage virtual machine using the NVMe over Fabrics protocol.<br/>
 // An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.<br/>
-// See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.
-// ## Platform Specifics
-// ### Unified ONTAP
-// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+// See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.<br/>
+// <personalities supports=unified>An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 // NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
-// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. An NVMe namespace can then be resized or cloned. An NVMe namespace cannot be renamed, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace.
-// ### ASA r2
-// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. An NVMe namespace can then be resized or cloned. An NVMe namespace cannot be renamed, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace.</personalities>
+// <personalities supports=asar2>NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
 // An NVMe namespace can be created to a specified size. An NVMe namespace can then be renamed, resized, or cloned. NVMe namespaces support the assignment of a QoS policy for performance management.<br/>
-// **Note**: NVMe namespace related REST API examples use the Unified ONTAP form for NVMe namespace names. On ASA r2, the ASA r2 format must be used.
+// **Note**: NVMe namespace related REST API examples use the Unified ONTAP form for NVMe namespace names. On ASA r2, the ASA r2 format must be used.</personalities>
 //
 swagger:model ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0NamespacesItems0
 */
 type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0NamespacesItems0 struct {
 
-	// * **Unified ONTAP**:
-	// This property marks the NVMe namespace for auto deletion when the volume containing the namespace runs out of space. This is most commonly set on namespace clones.<br/>
+	// <personalities supports=unified>This property marks the NVMe namespace for auto deletion when the volume containing the namespace runs out of space. This is most commonly set on namespace clones.<br/>
 	// When set to _true_, the NVMe namespace becomes eligible for automatic deletion when the volume runs out of space. Auto deletion only occurs when the volume containing the namespace is also configured for auto deletion and free space in the volume decreases below a particular threshold.<br/>
 	// This property is optional in POST and PATCH. The default value for a new NVMe namespace is _false_.<br/>
-	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-	// * **ASA r2**:
-	// This property is not supported. It cannot be set in POST or PATCH and will not be returned by GET.
+	// There is an added computational cost to retrieving this property's value. It is not populated for a GET request unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.</personalities>
+	// <personalities supports=asar2>This property is not supported. It cannot be set in POST or PATCH and will not be returned by GET.</personalities>
 	//
 	AutoDelete *bool `json:"auto_delete,omitempty"`
 
@@ -15544,14 +15520,11 @@ type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsIte
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// The name of the NVMe namespace.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// <personalities supports=unified>An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
-	// Renaming an NVMe namespace is not supported. Valid in POST.
-	// * **ASA r2**:
-	// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
-	// Renaming an NVMe namespace is supported. Valid in POST and PATCH.
+	// Renaming an NVMe namespace is not supported. Valid in POST.</personalities>
+	// <personalities supports=asar2>NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+	// Renaming an NVMe namespace is supported. Valid in POST and PATCH.</personalities>
 	//
 	// Example: /vol/volume1/qtree1/namespace1
 	Name *string `json:"name,omitempty"`
@@ -16498,7 +16471,7 @@ type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsIte
 
 	// The Asymmetric Namespace Access Group ID (ANAGRPID) of the NVMe namespace.<br/>
 	// The format for an ANAGRPID is 8 hexadecimal digits (zero-filled) followed by a lower case "h".<br/>
-	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// There is an added computational cost to retrieving this property's value. It is not populated for a GET request unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Example: 00103050h
 	// Read Only: true
@@ -16770,6 +16743,11 @@ type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsIte
 
 	// storage service
 	StorageService *ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0ProvisioningOptionsStorageService `json:"storage_service,omitempty"`
+
+	// Resource tags to confirm before an update.
+	// Example: ["team:csi","environment:test"]
+	// Max Items: 64
+	VerifyTags []*string `json:"verify_tags"`
 }
 
 // Validate validates this consistency group modify collection params body records items0 consistency groups items0 provisioning options
@@ -16781,6 +16759,10 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroup
 	}
 
 	if err := o.validateStorageService(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateVerifyTags(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -16888,6 +16870,20 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroup
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (o *ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0ProvisioningOptions) validateVerifyTags(formats strfmt.Registry) error {
+	if swag.IsZero(o.VerifyTags) { // not required
+		return nil
+	}
+
+	iVerifyTagsSize := int64(len(o.VerifyTags))
+
+	if err := validate.MaxItems("provisioning_options"+"."+"verify_tags", "body", iVerifyTagsSize, 64); err != nil {
+		return err
 	}
 
 	return nil
@@ -19809,16 +19805,13 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyRecordsItems0ConsistencyGroup
 /*
 ConsistencyGroupModifyCollectionParamsBodyRecordsItems0LunsItems0 A LUN is the logical representation of storage in a storage area network (SAN).<br/>
 // A LUN must be mapped to an initiator group to grant access to the initiator group's initiators (client hosts). Initiators can then access the LUN and perform I/O over a Fibre Channel (FC) fabric using the FC Protocol or a TCP/IP network using iSCSI.<br/>
-// See the LUN object model to learn more about each of the properties supported by the LUN REST API.
-// ## Platform Specifics
-// ### Unified ONTAP
-// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+// See the LUN object model to learn more about each of the properties supported by the LUN REST API.<br/>
+// <personalities supports=unified>A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 // LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<lun>" where the qtree name is optional.<br/>
-// A LUN can be created to a specified size using thin or thick provisioning. A LUN can then be renamed, resized, cloned, moved to a different volume and copied. LUNs support the assignment of a QoS policy for performance management or a QoS policy can be assigned to a volume containing one or more LUNs.
-// ### ASA r2
-// LUN names are simple names that share a namespace with NVMe namespaces within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+// A LUN can be created to a specified size using thin or thick provisioning. A LUN can then be renamed, resized, cloned, moved to a different volume and copied. LUNs support the assignment of a QoS policy for performance management or a QoS policy can be assigned to a volume containing one or more LUNs.</personalities>
+// <personalities supports=asar2>LUN names are simple names that share a namespace with NVMe namespaces within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
 // A LUN can be created to a specified size. A LUN can then be renamed, resized, or cloned. LUNs support the assignment of a QoS policy for performance management.<br/>
-// **Note**: LUN related REST API examples use the Unified ONTAP form for LUN names. On ASA r2, the ASA r2 format must be used.
+// **Note**: LUN related REST API examples use the Unified ONTAP form for LUN names. On ASA r2, the ASA r2 format must be used.</personalities>
 //
 swagger:model ConsistencyGroupModifyCollectionParamsBodyRecordsItems0LunsItems0
 */
@@ -20406,13 +20399,11 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyRecordsItems0LunsItems0) Unma
 }
 
 /*
-ConsistencyGroupModifyCollectionParamsBodyRecordsItems0LunsItems0Clone * **Unified ONTAP**:
-// This sub-object is used in POST to create a new LUN as a clone of an existing LUN, or PATCH to overwrite an existing LUN as a clone of another. Setting a property in this sub-object indicates that a LUN clone is desired. Consider the following other properties when cloning a LUN: `auto_delete`, `qos_policy`, `space.guarantee.requested` and `space.scsi_thin_provisioning_support_enabled`.<br/>
+ConsistencyGroupModifyCollectionParamsBodyRecordsItems0LunsItems0Clone <personalities supports=unified>This sub-object is used in POST to create a new LUN as a clone of an existing LUN, or PATCH to overwrite an existing LUN as a clone of another. Setting a property in this sub-object indicates that a LUN clone is desired. Consider the following other properties when cloning a LUN: `auto_delete`, `qos_policy`, `space.guarantee.requested` and `space.scsi_thin_provisioning_support_enabled`.<br/>
 // When used in a PATCH, the patched LUN's data is over-written as a clone of the source and the following properties are preserved from the patched LUN unless otherwise specified as part of the PATCH: `class`, `auto_delete`, `lun_maps`, `serial_number`, `status.state`, and `uuid`.<br/>
-// Persistent reservations for the patched LUN are also preserved.
-// * **ASA r2**:
-// This endpoint does not support clones. No properties in this sub-object can be set for POST or PATCH and none will be returned by GET.<br/>
-// Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
+// Persistent reservations for the patched LUN are also preserved.</personalities>
+// <personalities supports=asar2>This endpoint does not support clones. No properties in this sub-object can be set for POST or PATCH and none will be returned by GET.<br/>
+// Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.</personalities>
 //
 swagger:model ConsistencyGroupModifyCollectionParamsBodyRecordsItems0LunsItems0Clone
 */
@@ -20509,23 +20500,17 @@ swagger:model ConsistencyGroupModifyCollectionParamsBodyRecordsItems0LunsItems0C
 type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0LunsItems0CloneSource struct {
 
 	// The name of the clone source LUN.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// <personalities supports=unified>A LUN is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 	// LUN names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
-	// Valid in POST and PATCH.
-	// * **ASA r2**:
-	// This property is not supported. Cloning is supported through the /ap/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
+	// Valid in POST and PATCH.</personalities>
+	// <personalities supports=asar2>This property is not supported. Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.</personalities>
 	//
 	// Example: /vol/volume1/lun1
 	Name *string `json:"name,omitempty"`
 
 	// The unique identifier of the clone source LUN.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// Valid in POST and PATCH.
-	// * **ASA r2**:
-	// This property is not supported. Cloning is supported through the /ap/storage/storage-units endpoint. See the [`POST /ap/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.
+	// <personalities supports=unified>Valid in POST and PATCH.</personalities>
+	// <personalities supports=asar2>This property is not supported. Cloning is supported through the /api/storage/storage-units endpoint. See the [`POST /api/storage/storage-units`](#/SAN/storage_unit_create) to learn more about cloning LUNs.</personalities>
 	//
 	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
 	UUID *string `json:"uuid,omitempty"`
@@ -21488,28 +21473,28 @@ type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0LunsItems0QosPolicy 
 	// links
 	Links *models.SelfLink `json:"_links,omitempty"`
 
-	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in IOPS, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 10000
 	// Read Only: true
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MaxThroughputIops *int64 `json:"max_throughput_iops,omitempty"`
 
-	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the maximum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when max_throughput is set during POST or PATCH.
 	// Example: 500
 	// Read Only: true
 	// Maximum: 4.194303e+06
 	// Minimum: 0
 	MaxThroughputMbps *int64 `json:"max_throughput_mbps,omitempty"`
 
-	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in IOPS, 0 means none. Setting "min_throughput" is supported on AFF platforms only, unless FabricPool tiering policies are set. This is mutually exclusive with name and UUID during POST and PATCH. This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 2000
 	// Read Only: true
 	// Maximum: 2.147483647e+09
 	// Minimum: 0
 	MinThroughputIops *int64 `json:"min_throughput_iops,omitempty"`
 
-	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.
+	// Specifies the minimum throughput in Megabytes per sec, 0 means none. This is mutually exclusive with name and UUID during POST and PATCH.This cannot be set when min_throughput is set during POST or PATCH.
 	// Example: 500
 	// Read Only: true
 	// Maximum: 4.194303e+06
@@ -21907,7 +21892,7 @@ swagger:model ConsistencyGroupModifyCollectionParamsBodyRecordsItems0LunsItems0S
 type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0LunsItems0SpaceGuarantee struct {
 
 	// The requested space reservation policy for the LUN. If _true_, a space reservation is requested for the LUN; if _false_, the LUN is thin provisioned. Guaranteeing a space reservation request for a LUN requires that the volume in which the LUN resides is also space reserved and that the fractional reserve for the volume is 100%. Valid in POST and PATCH.
-	//
+	// <personalities supports=asar2>All LUNs are provisioned without a space reservation.</personalities>
 	//
 	Requested *bool `json:"requested,omitempty"`
 
@@ -21967,28 +21952,23 @@ func (o *ConsistencyGroupModifyCollectionParamsBodyRecordsItems0LunsItems0SpaceG
 /*
 ConsistencyGroupModifyCollectionParamsBodyRecordsItems0NamespacesItems0 An NVMe namespace is a collection of addressable logical blocks presented to hosts connected to the storage virtual machine using the NVMe over Fabrics protocol.<br/>
 // An NVMe namespace must be mapped to an NVMe subsystem to grant access to the subsystem's hosts. Hosts can then access the NVMe namespace and perform I/O using the NVMe over Fabrics protocol.<br/>
-// See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.
-// ## Platform Specifics
-// ### Unified ONTAP
-// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+// See the NVMe namespace object model to learn more about each of the properties supported by the NVMe namespace REST API.<br/>
+// <personalities supports=unified>An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 // NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
-// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. An NVMe namespace can then be resized or cloned. An NVMe namespace cannot be renamed, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace.
-// ### ASA r2
-// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+// An NVMe namespace is created to a specified size using thin or thick provisioning as determined by the volume on which it is created. An NVMe namespace can then be resized or cloned. An NVMe namespace cannot be renamed, or moved to a different volume. NVMe namespaces do not support the assignment of a QoS policy for performance management, but a QoS policy can be assigned to the volume containing the namespace.</personalities>
+// <personalities supports=asar2>NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
 // An NVMe namespace can be created to a specified size. An NVMe namespace can then be renamed, resized, or cloned. NVMe namespaces support the assignment of a QoS policy for performance management.<br/>
-// **Note**: NVMe namespace related REST API examples use the Unified ONTAP form for NVMe namespace names. On ASA r2, the ASA r2 format must be used.
+// **Note**: NVMe namespace related REST API examples use the Unified ONTAP form for NVMe namespace names. On ASA r2, the ASA r2 format must be used.</personalities>
 //
 swagger:model ConsistencyGroupModifyCollectionParamsBodyRecordsItems0NamespacesItems0
 */
 type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0NamespacesItems0 struct {
 
-	// * **Unified ONTAP**:
-	// This property marks the NVMe namespace for auto deletion when the volume containing the namespace runs out of space. This is most commonly set on namespace clones.<br/>
+	// <personalities supports=unified>This property marks the NVMe namespace for auto deletion when the volume containing the namespace runs out of space. This is most commonly set on namespace clones.<br/>
 	// When set to _true_, the NVMe namespace becomes eligible for automatic deletion when the volume runs out of space. Auto deletion only occurs when the volume containing the namespace is also configured for auto deletion and free space in the volume decreases below a particular threshold.<br/>
 	// This property is optional in POST and PATCH. The default value for a new NVMe namespace is _false_.<br/>
-	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-	// * **ASA r2**:
-	// This property is not supported. It cannot be set in POST or PATCH and will not be returned by GET.
+	// There is an added computational cost to retrieving this property's value. It is not populated for a GET request unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.</personalities>
+	// <personalities supports=asar2>This property is not supported. It cannot be set in POST or PATCH and will not be returned by GET.</personalities>
 	//
 	AutoDelete *bool `json:"auto_delete,omitempty"`
 
@@ -22010,14 +21990,11 @@ type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0NamespacesItems0 str
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// The name of the NVMe namespace.
-	// ### Platform Specifics
-	// * **Unified ONTAP**:
-	// An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
+	// <personalities supports=unified>An NVMe namespace is located within a volume. Optionally, it can be located within a qtree in a volume.<br/>
 	// NVMe namespace names are paths of the form "/vol/\<volume>[/\<qtree>]/\<namespace>" where the qtree name is optional.<br/>
-	// Renaming an NVMe namespace is not supported. Valid in POST.
-	// * **ASA r2**:
-	// NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
-	// Renaming an NVMe namespace is supported. Valid in POST and PATCH.
+	// Renaming an NVMe namespace is not supported. Valid in POST.</personalities>
+	// <personalities supports=asar2>NVMe namespace names are simple names that share a namespace with LUNs within the same SVM. The name must begin with a letter or "\_" and contain only "\_" and alphanumeric characters. In specific cases, an optional snapshot-name can be used of the form "\<name>[@\<snapshot-name>]". The snapshot name must not begin or end with whitespace.<br/>
+	// Renaming an NVMe namespace is supported. Valid in POST and PATCH.</personalities>
 	//
 	// Example: /vol/volume1/qtree1/namespace1
 	Name *string `json:"name,omitempty"`
@@ -22964,7 +22941,7 @@ type ConsistencyGroupModifyCollectionParamsBodyRecordsItems0NamespacesItems0Subs
 
 	// The Asymmetric Namespace Access Group ID (ANAGRPID) of the NVMe namespace.<br/>
 	// The format for an ANAGRPID is 8 hexadecimal digits (zero-filled) followed by a lower case "h".<br/>
-	// There is an added computational cost to retrieving this property's value. It is not populated for either a collection GET or an instance GET unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
+	// There is an added computational cost to retrieving this property's value. It is not populated for a GET request unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
 	// Example: 00103050h
 	// Read Only: true

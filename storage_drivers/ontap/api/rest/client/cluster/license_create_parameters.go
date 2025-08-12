@@ -66,7 +66,7 @@ type LicenseCreateParams struct {
 
 	/* Info.
 
-	   List of NLF or 26-character keys.
+	   List of NLF or 28-character keys.
 	*/
 	Info *models.LicensePackage
 

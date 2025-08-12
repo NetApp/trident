@@ -2003,6 +2003,7 @@ func (a *Client) NameMappingCollectionGet(params *NameMappingCollectionGetParams
 * `client_match` - Hostname or IP address added to match the pattern to the client's workstation IP address.
 ### Related ONTAP commands
 * `vserver name-mapping create`
+* `vserver name-mapping insert`
 ### Learn more
 * [`DOC /name-services/name-mappings`](#docs-name-services-name-services_name-mappings)
 */

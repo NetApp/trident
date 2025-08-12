@@ -757,6 +757,10 @@ type StorageAvailabilityZoneInlineSpace struct {
 	// Read Only: true
 	InactiveData *int64 `json:"inactive_data,omitempty"`
 
+	// The total space consumed by system logs and cores in the availability zone.
+	// Read Only: true
+	LogAndRecoveryMetadata *int64 `json:"log_and_recovery_metadata,omitempty"`
+
 	// The logical space used by user data excluding snapshots in the availability zone.
 	// Read Only: true
 	LogicalUserDataWithoutSnapshots *int64 `json:"logical_user_data_without_snapshots,omitempty"`
@@ -780,7 +784,7 @@ type StorageAvailabilityZoneInlineSpace struct {
 	// Read Only: true
 	Size *int64 `json:"size,omitempty"`
 
-	// Total metadata used in the availability zone.
+	// The total space consumed by metadata in the availability zone, which includes log and recovery metadata, delayed frees along with filesystem metadata and performance metadata.
 	// Read Only: true
 	TotalMetadataUsed *int64 `json:"total_metadata_used,omitempty"`
 
@@ -837,6 +841,10 @@ func (o *StorageAvailabilityZoneInlineSpace) ContextValidate(ctx context.Context
 	}
 
 	if err := o.contextValidateInactiveData(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateLogAndRecoveryMetadata(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -909,6 +917,15 @@ func (o *StorageAvailabilityZoneInlineSpace) contextValidateEfficiencyWithoutSna
 func (o *StorageAvailabilityZoneInlineSpace) contextValidateInactiveData(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "info"+"."+"space"+"."+"inactive_data", "body", o.InactiveData); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *StorageAvailabilityZoneInlineSpace) contextValidateLogAndRecoveryMetadata(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"space"+"."+"log_and_recovery_metadata", "body", o.LogAndRecoveryMetadata); err != nil {
 		return err
 	}
 

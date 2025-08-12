@@ -216,8 +216,8 @@ func NewSvmModifyDefault(code int) *SvmModifyDefault {
 | 13434916    | SVM is in the process of being created. Wait a few minutes, and then try the command again. |
 | 13434915    | Failed to unlock the SVM because SVM create or delete job is in progress. Wait a few minutes, and then try the command again. |
 | 13434911    | Invalid SVM name. Maximum supported length is 41 if SVM is of type \\\"sync-source\\\", otherwise 47. |
-| 262179      | Unexpected argument \"storage_limit\". |
-| 13434935    | FCP, iSCSI and NVMe cannot be disabled or disallowed on this platform. |
+| 262179      | Unexpected argument \"storage_limit\". |<personalities supports=asar2>
+| 13434935    | FCP, iSCSI and NVMe cannot be disabled or disallowed on this platform. |</personalities>
 | 23724038    | Invalid source for the provided ns-switch database. |
 ```
 <br/>

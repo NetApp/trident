@@ -247,7 +247,6 @@ func NewSecurityKeyManagerCreateDefault(code int) *SecurityKeyManagerCreateDefau
 | 65536900 | The Onboard Key Manager cannot be configured because this cluster is part of a MetroCluster configuration and the partner site has the external key manager configured. |
 | 65536903 | The Onboard Key Manager has failed to configure on some nodes in the cluster. Use the CLI to sync the Onboard Key Manager configuration on failed nodes. |
 | 65536906 | The Onboard Key Manager has already been configured at the partner site. Use the CLI to sync the Onboard Key Manager with the same passphrase. |
-| 65536913 | The Onboard Key Manager is already configured. Use the CLI to sync any nodes with the Onboard Key Manager configuration. |
 | 65536916 | The Onboard Key Manager is only supported for an admin SVM. |
 | 65536920 | The Onboard Key Manager passphrase length is incorrect. |
 | 65537240 | The Onboard Key Manager passphrase must be provided when performing a POST/synchronize operation. |
@@ -270,6 +269,8 @@ func NewSecurityKeyManagerCreateDefault(code int) *SecurityKeyManagerCreateDefau
 | 65539580 | Failed to create inactive Onboard Key Manager configuration. |
 | 65539581 | Cannot create an inactive Onboard Key Manager on the admin SVM because an inactive Onboard Key Manager configuration already exists on the admin SVM. |
 | 65539582 | Cannot specify the configuration name parameter. Only one Onboard Key Manager is supported for the admin SVM. |
+| 65539704 | The key manager cannot be configured because the SVM has NAE volumes. |
+| 65539706 | The Onboard Key Manager is already configured. Use the PATCH to sync all nodes with the Onboard Key Manager configuration. |
 | 66060338 | Failed to establish secure connection for a key management server due to incorrect server_ca certificates. |
 | 66060339 | Failed to establish secure connection for a key management server due to incorrect client certificates. |
 | 66060340 | Failed to establish secure connection for a key management server due to Cryptsoft error. |

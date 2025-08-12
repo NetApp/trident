@@ -115,6 +115,7 @@ ConsistencyGroupSnapshotDeleteAccepted describes a response with status code 202
 Accepted
 */
 type ConsistencyGroupSnapshotDeleteAccepted struct {
+	Payload *models.ConsistencyGroupSnapshotJobLinkResponse
 }
 
 // IsSuccess returns true when this consistency group snapshot delete accepted response has a 2xx status code
@@ -148,14 +149,27 @@ func (o *ConsistencyGroupSnapshotDeleteAccepted) Code() int {
 }
 
 func (o *ConsistencyGroupSnapshotDeleteAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotDeleteAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotDeleteAccepted %s", 202, payload)
 }
 
 func (o *ConsistencyGroupSnapshotDeleteAccepted) String() string {
-	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotDeleteAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /application/consistency-groups/{consistency_group.uuid}/snapshots/{uuid}][%d] consistencyGroupSnapshotDeleteAccepted %s", 202, payload)
+}
+
+func (o *ConsistencyGroupSnapshotDeleteAccepted) GetPayload() *models.ConsistencyGroupSnapshotJobLinkResponse {
+	return o.Payload
 }
 
 func (o *ConsistencyGroupSnapshotDeleteAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.ConsistencyGroupSnapshotJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }

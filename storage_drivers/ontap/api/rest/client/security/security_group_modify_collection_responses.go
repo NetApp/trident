@@ -206,6 +206,8 @@ type SecurityGroupModifyCollectionBody struct {
 
 	// Group name.
 	// Example: AzureGroup1
+	// Max Length: 64
+	// Min Length: 1
 	Name *string `json:"name,omitempty"`
 
 	// owner
@@ -238,6 +240,10 @@ func (o *SecurityGroupModifyCollectionBody) Validate(formats strfmt.Registry) er
 	}
 
 	if err := o.validateCreateTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateName(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -290,6 +296,22 @@ func (o *SecurityGroupModifyCollectionBody) validateCreateTime(formats strfmt.Re
 	}
 
 	if err := validate.FormatOf("info"+"."+"create_time", "body", "date-time", o.CreateTime.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *SecurityGroupModifyCollectionBody) validateName(formats strfmt.Registry) error {
+	if swag.IsZero(o.Name) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("info"+"."+"name", "body", *o.Name, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("info"+"."+"name", "body", *o.Name, 64); err != nil {
 		return err
 	}
 

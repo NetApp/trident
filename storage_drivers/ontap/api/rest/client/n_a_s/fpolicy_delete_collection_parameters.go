@@ -110,6 +110,12 @@ type FpolicyDeleteCollectionParams struct {
 	*/
 	EnginesKeepAliveInterval *string
 
+	/* EnginesMaxConnectionRetries.
+
+	   Filter by engines.max_connection_retries
+	*/
+	EnginesMaxConnectionRetries *int64
+
 	/* EnginesMaxServerRequests.
 
 	   Filter by engines.max_server_requests
@@ -175,6 +181,12 @@ type FpolicyDeleteCollectionParams struct {
 	   Filter by engines.server_progress_timeout
 	*/
 	EnginesServerProgressTimeout *string
+
+	/* EnginesSessionTimeout.
+
+	   Filter by engines.session_timeout
+	*/
+	EnginesSessionTimeout *string
 
 	/* EnginesSslOption.
 
@@ -785,6 +797,17 @@ func (o *FpolicyDeleteCollectionParams) SetEnginesKeepAliveInterval(enginesKeepA
 	o.EnginesKeepAliveInterval = enginesKeepAliveInterval
 }
 
+// WithEnginesMaxConnectionRetries adds the enginesMaxConnectionRetries to the fpolicy delete collection params
+func (o *FpolicyDeleteCollectionParams) WithEnginesMaxConnectionRetries(enginesMaxConnectionRetries *int64) *FpolicyDeleteCollectionParams {
+	o.SetEnginesMaxConnectionRetries(enginesMaxConnectionRetries)
+	return o
+}
+
+// SetEnginesMaxConnectionRetries adds the enginesMaxConnectionRetries to the fpolicy delete collection params
+func (o *FpolicyDeleteCollectionParams) SetEnginesMaxConnectionRetries(enginesMaxConnectionRetries *int64) {
+	o.EnginesMaxConnectionRetries = enginesMaxConnectionRetries
+}
+
 // WithEnginesMaxServerRequests adds the enginesMaxServerRequests to the fpolicy delete collection params
 func (o *FpolicyDeleteCollectionParams) WithEnginesMaxServerRequests(enginesMaxServerRequests *int64) *FpolicyDeleteCollectionParams {
 	o.SetEnginesMaxServerRequests(enginesMaxServerRequests)
@@ -904,6 +927,17 @@ func (o *FpolicyDeleteCollectionParams) WithEnginesServerProgressTimeout(engines
 // SetEnginesServerProgressTimeout adds the enginesServerProgressTimeout to the fpolicy delete collection params
 func (o *FpolicyDeleteCollectionParams) SetEnginesServerProgressTimeout(enginesServerProgressTimeout *string) {
 	o.EnginesServerProgressTimeout = enginesServerProgressTimeout
+}
+
+// WithEnginesSessionTimeout adds the enginesSessionTimeout to the fpolicy delete collection params
+func (o *FpolicyDeleteCollectionParams) WithEnginesSessionTimeout(enginesSessionTimeout *string) *FpolicyDeleteCollectionParams {
+	o.SetEnginesSessionTimeout(enginesSessionTimeout)
+	return o
+}
+
+// SetEnginesSessionTimeout adds the enginesSessionTimeout to the fpolicy delete collection params
+func (o *FpolicyDeleteCollectionParams) SetEnginesSessionTimeout(enginesSessionTimeout *string) {
+	o.EnginesSessionTimeout = enginesSessionTimeout
 }
 
 // WithEnginesSslOption adds the enginesSslOption to the fpolicy delete collection params
@@ -1864,6 +1898,23 @@ func (o *FpolicyDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, 
 		}
 	}
 
+	if o.EnginesMaxConnectionRetries != nil {
+
+		// query param engines.max_connection_retries
+		var qrEnginesMaxConnectionRetries int64
+
+		if o.EnginesMaxConnectionRetries != nil {
+			qrEnginesMaxConnectionRetries = *o.EnginesMaxConnectionRetries
+		}
+		qEnginesMaxConnectionRetries := swag.FormatInt64(qrEnginesMaxConnectionRetries)
+		if qEnginesMaxConnectionRetries != "" {
+
+			if err := r.SetQueryParam("engines.max_connection_retries", qEnginesMaxConnectionRetries); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.EnginesMaxServerRequests != nil {
 
 		// query param engines.max_server_requests
@@ -2046,6 +2097,23 @@ func (o *FpolicyDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, 
 		if qEnginesServerProgressTimeout != "" {
 
 			if err := r.SetQueryParam("engines.server_progress_timeout", qEnginesServerProgressTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EnginesSessionTimeout != nil {
+
+		// query param engines.session_timeout
+		var qrEnginesSessionTimeout string
+
+		if o.EnginesSessionTimeout != nil {
+			qrEnginesSessionTimeout = *o.EnginesSessionTimeout
+		}
+		qEnginesSessionTimeout := qrEnginesSessionTimeout
+		if qEnginesSessionTimeout != "" {
+
+			if err := r.SetQueryParam("engines.session_timeout", qEnginesSessionTimeout); err != nil {
 				return err
 			}
 		}

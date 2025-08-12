@@ -191,6 +191,7 @@ func NewFileDeleteDefault(code int) *FileDeleteDefault {
 | 131102 | Read-only file system. |
 | 131138 | Directory not empty. |
 | 918235 | A volume with UUID {volume.uuid} was not found. |
+| 918757 | The specified clone parent volume with UUID {volume.uuid} does not exist. |
 | 6488081 | The {field} field is not supported for DELETE operations. |
 | 6488110 | A volume delete is not supported on this endpoint. |
 | 6684674 | No such file or directory. |

@@ -42,6 +42,9 @@ type ClusterActiveDirectory struct {
 	// Min Length: 1
 	Password *string `json:"password,omitempty"`
 
+	// security
+	Security *ActiveDirectorySecurity `json:"security,omitempty"`
+
 	// Administrator username required for Active Directory account creation, modification, and deletion.
 	// Example: admin
 	// Min Length: 1
@@ -61,6 +64,10 @@ func (m *ClusterActiveDirectory) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePassword(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSecurity(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -110,6 +117,23 @@ func (m *ClusterActiveDirectory) validatePassword(formats strfmt.Registry) error
 	return nil
 }
 
+func (m *ClusterActiveDirectory) validateSecurity(formats strfmt.Registry) error {
+	if swag.IsZero(m.Security) { // not required
+		return nil
+	}
+
+	if m.Security != nil {
+		if err := m.Security.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("security")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *ClusterActiveDirectory) validateUsername(formats strfmt.Registry) error {
 	if swag.IsZero(m.Username) { // not required
 		return nil
@@ -122,8 +146,31 @@ func (m *ClusterActiveDirectory) validateUsername(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validates this cluster active directory based on context it is used
+// ContextValidate validate this cluster active directory based on the context it is used
 func (m *ClusterActiveDirectory) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSecurity(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterActiveDirectory) contextValidateSecurity(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Security != nil {
+		if err := m.Security.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("security")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 

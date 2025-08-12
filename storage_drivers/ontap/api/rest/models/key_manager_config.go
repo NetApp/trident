@@ -185,6 +185,9 @@ type KeyManagerConfigInlineHealthMonitorPolicy struct {
 	// aws
 	Aws *KeyManagerConfigInlineHealthMonitorPolicyInlineAws `json:"aws,omitempty"`
 
+	// barbican
+	Barbican *KeyManagerConfigInlineHealthMonitorPolicyInlineBarbican `json:"barbican,omitempty"`
+
 	// gcp
 	Gcp *KeyManagerConfigInlineHealthMonitorPolicyInlineGcp `json:"gcp,omitempty"`
 
@@ -207,6 +210,10 @@ func (m *KeyManagerConfigInlineHealthMonitorPolicy) Validate(formats strfmt.Regi
 	}
 
 	if err := m.validateAws(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateBarbican(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -258,6 +265,23 @@ func (m *KeyManagerConfigInlineHealthMonitorPolicy) validateAws(formats strfmt.R
 		if err := m.Aws.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("health_monitor_policy" + "." + "aws")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyManagerConfigInlineHealthMonitorPolicy) validateBarbican(formats strfmt.Registry) error {
+	if swag.IsZero(m.Barbican) { // not required
+		return nil
+	}
+
+	if m.Barbican != nil {
+		if err := m.Barbican.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("health_monitor_policy" + "." + "barbican")
 			}
 			return err
 		}
@@ -346,6 +370,10 @@ func (m *KeyManagerConfigInlineHealthMonitorPolicy) ContextValidate(ctx context.
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateBarbican(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateGcp(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -388,6 +416,20 @@ func (m *KeyManagerConfigInlineHealthMonitorPolicy) contextValidateAws(ctx conte
 		if err := m.Aws.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("health_monitor_policy" + "." + "aws")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *KeyManagerConfigInlineHealthMonitorPolicy) contextValidateBarbican(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Barbican != nil {
+		if err := m.Barbican.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("health_monitor_policy" + "." + "barbican")
 			}
 			return err
 		}
@@ -543,6 +585,46 @@ func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineAws) MarshalBinary() ([]
 // UnmarshalBinary interface implementation
 func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineAws) UnmarshalBinary(b []byte) error {
 	var res KeyManagerConfigInlineHealthMonitorPolicyInlineAws
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// KeyManagerConfigInlineHealthMonitorPolicyInlineBarbican Barbican Key Management Service policy options
+//
+// swagger:model key_manager_config_inline_health_monitor_policy_inline_barbican
+type KeyManagerConfigInlineHealthMonitorPolicyInlineBarbican struct {
+
+	// Indicates whether health monitor is enabled.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Indicates whether the health monitor manages the volume offline operation.
+	ManageVolumeOffline *bool `json:"manage_volume_offline,omitempty"`
+}
+
+// Validate validates this key manager config inline health monitor policy inline barbican
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineBarbican) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this key manager config inline health monitor policy inline barbican based on context it is used
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineBarbican) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineBarbican) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *KeyManagerConfigInlineHealthMonitorPolicyInlineBarbican) UnmarshalBinary(b []byte) error {
+	var res KeyManagerConfigInlineHealthMonitorPolicyInlineBarbican
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

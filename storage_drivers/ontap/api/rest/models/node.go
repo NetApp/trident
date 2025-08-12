@@ -46,6 +46,9 @@ type Node struct {
 	// external cache
 	ExternalCache *NodeInlineExternalCache `json:"external_cache,omitempty"`
 
+	// external cache bypass
+	ExternalCacheBypass *NodeInlineExternalCacheBypass `json:"external_cache_bypass,omitempty"`
+
 	// ha
 	Ha *NodeInlineHa `json:"ha,omitempty"`
 
@@ -97,7 +100,10 @@ type Node struct {
 
 	// Storage availability zones associated with the node.
 	// Read Only: true
-	NodeInlineStorageAvailabilityZones []*NodeInlineStorageAvailabilityZonesInlineArrayItem `json:"storage_availability_zones,omitempty"`
+	NodeInlineStorageAvailabilityZones []*StorageAvailabilityZoneReference `json:"storage_availability_zones,omitempty"`
+
+	// nvlog
+	Nvlog *NodeInlineNvlog `json:"nvlog,omitempty"`
 
 	// nvram
 	Nvram *NodeInlineNvram `json:"nvram,omitempty"`
@@ -211,6 +217,10 @@ func (m *Node) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateExternalCacheBypass(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateHa(formats); err != nil {
 		res = append(res, err)
 	}
@@ -244,6 +254,10 @@ func (m *Node) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNodeInlineStorageAvailabilityZones(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNvlog(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -365,6 +379,23 @@ func (m *Node) validateExternalCache(formats strfmt.Registry) error {
 		if err := m.ExternalCache.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("external_cache")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Node) validateExternalCacheBypass(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExternalCacheBypass) { // not required
+		return nil
+	}
+
+	if m.ExternalCacheBypass != nil {
+		if err := m.ExternalCacheBypass.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("external_cache_bypass")
 			}
 			return err
 		}
@@ -591,6 +622,23 @@ func (m *Node) validateNodeInlineStorageAvailabilityZones(formats strfmt.Registr
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *Node) validateNvlog(formats strfmt.Registry) error {
+	if swag.IsZero(m.Nvlog) { // not required
+		return nil
+	}
+
+	if m.Nvlog != nil {
+		if err := m.Nvlog.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nvlog")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -1017,6 +1065,10 @@ func (m *Node) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateExternalCacheBypass(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateHa(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1058,6 +1110,10 @@ func (m *Node) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 	}
 
 	if err := m.contextValidateNodeInlineStorageAvailabilityZones(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateNvlog(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -1193,6 +1249,20 @@ func (m *Node) contextValidateExternalCache(ctx context.Context, formats strfmt.
 		if err := m.ExternalCache.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("external_cache")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Node) contextValidateExternalCacheBypass(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ExternalCacheBypass != nil {
+		if err := m.ExternalCacheBypass.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("external_cache_bypass")
 			}
 			return err
 		}
@@ -1344,7 +1414,7 @@ func (m *Node) contextValidateNodeInlineManagementInterfaces(ctx context.Context
 
 func (m *Node) contextValidateNodeInlineStorageAvailabilityZones(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "storage_availability_zones", "body", []*NodeInlineStorageAvailabilityZonesInlineArrayItem(m.NodeInlineStorageAvailabilityZones)); err != nil {
+	if err := validate.ReadOnly(ctx, "storage_availability_zones", "body", []*StorageAvailabilityZoneReference(m.NodeInlineStorageAvailabilityZones)); err != nil {
 		return err
 	}
 
@@ -1359,6 +1429,20 @@ func (m *Node) contextValidateNodeInlineStorageAvailabilityZones(ctx context.Con
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *Node) contextValidateNvlog(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Nvlog != nil {
+		if err := m.Nvlog.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nvlog")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -3427,6 +3511,52 @@ func (m *NodeInlineExternalCache) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// NodeInlineExternalCacheBypass External cache bypass management.
+//
+// swagger:model node_inline_external_cache_bypass
+type NodeInlineExternalCacheBypass struct {
+
+	// Indicates whether external cache bypass is enabled.
+	// Example: true
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// External cache bypass allowed operations percentage for large reads.
+	// Example: 100
+	LargeReadOpsAllowPercent *int64 `json:"large_read_ops_allow_percent,omitempty"`
+
+	// Initiates an external cache bypass threshold reset action.
+	// Example: true
+	Reset *bool `json:"reset,omitempty"`
+}
+
+// Validate validates this node inline external cache bypass
+func (m *NodeInlineExternalCacheBypass) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this node inline external cache bypass based on context it is used
+func (m *NodeInlineExternalCacheBypass) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeInlineExternalCacheBypass) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeInlineExternalCacheBypass) UnmarshalBinary(b []byte) error {
+	var res NodeInlineExternalCacheBypass
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // NodeInlineHa node inline ha
 //
 // swagger:model node_inline_ha
@@ -3434,6 +3564,13 @@ type NodeInlineHa struct {
 
 	// Specifies whether giveback is automatically initiated when the node that owns the storage is ready.
 	AutoGiveback *bool `json:"auto_giveback,omitempty"`
+
+	// Specifies whether giveback is automatically initiated when the node that owns the storage is ready.
+	AutoGivebackOf *bool `json:"auto_giveback_of,omitempty"`
+
+	// Specifies whether or not storage failover is enabled.
+	// Read Only: true
+	EnableTakeoverOf *bool `json:"enable_takeover_of,omitempty"`
 
 	// Specifies whether or not storage failover is enabled.
 	Enabled *bool `json:"enabled,omitempty"`
@@ -3457,6 +3594,11 @@ type NodeInlineHa struct {
 
 	// takeover check
 	TakeoverCheck *NodeInlineHaInlineTakeoverCheck `json:"takeover_check,omitempty"`
+
+	// Type of storage.
+	// Read Only: true
+	// Enum: ["shared_storage","non_shared_storage"]
+	Type *string `json:"type,omitempty"`
 }
 
 // Validate validates this node inline ha
@@ -3484,6 +3626,10 @@ func (m *NodeInlineHa) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateTakeoverCheck(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3609,9 +3755,69 @@ func (m *NodeInlineHa) validateTakeoverCheck(formats strfmt.Registry) error {
 	return nil
 }
 
+var nodeInlineHaTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["shared_storage","non_shared_storage"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nodeInlineHaTypeTypePropEnum = append(nodeInlineHaTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// node_inline_ha
+	// NodeInlineHa
+	// type
+	// Type
+	// shared_storage
+	// END DEBUGGING
+	// NodeInlineHaTypeSharedStorage captures enum value "shared_storage"
+	NodeInlineHaTypeSharedStorage string = "shared_storage"
+
+	// BEGIN DEBUGGING
+	// node_inline_ha
+	// NodeInlineHa
+	// type
+	// Type
+	// non_shared_storage
+	// END DEBUGGING
+	// NodeInlineHaTypeNonSharedStorage captures enum value "non_shared_storage"
+	NodeInlineHaTypeNonSharedStorage string = "non_shared_storage"
+)
+
+// prop value enum
+func (m *NodeInlineHa) validateTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineHaTypeTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NodeInlineHa) validateType(formats strfmt.Registry) error {
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("ha"+"."+"type", "body", *m.Type); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this node inline ha based on the context it is used
 func (m *NodeInlineHa) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.contextValidateEnableTakeoverOf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.contextValidateGiveback(ctx, formats); err != nil {
 		res = append(res, err)
@@ -3637,9 +3843,22 @@ func (m *NodeInlineHa) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *NodeInlineHa) contextValidateEnableTakeoverOf(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ha"+"."+"enable_takeover_of", "body", m.EnableTakeoverOf); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -3738,6 +3957,15 @@ func (m *NodeInlineHa) contextValidateTakeoverCheck(ctx context.Context, formats
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *NodeInlineHa) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "ha"+"."+"type", "body", m.Type); err != nil {
+		return err
 	}
 
 	return nil
@@ -5054,7 +5282,7 @@ type NodeHaPortsItems0 struct {
 
 	// HA port state:
 	// * <i>down</i> - Logical HA link is down.
-	// * <i>initialized</i> - Logical HA link is initialized. The physical link is up, but the subnet manager hasn’t started to configure the port.
+	// * <i>initialized</i> - Logical HA link is initialized. The physical link is up, but the subnet manager hasn't started to configure the port.
 	// * <i>armed</i> - Logical HA link is armed. The physical link is up and the subnet manager started but did not yet complete configuring the port.
 	// * <i>active</i> - Logical HA link is active.
 	// * <i>reserved</i> - Logical HA link is active, but the physical link is down.
@@ -7132,6 +7360,173 @@ func (m *NodeMetroclusterPortsItems0) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// NodeInlineNvlog Non-volatile write log settings.
+//
+// swagger:model node_inline_nvlog
+type NodeInlineNvlog struct {
+
+	// Indicates the current NVLog journal backing type.
+	// Enum: ["ephemeral_memory","ephemeral_disk"]
+	BackingType *string `json:"backing_type,omitempty"`
+
+	// Indicates the current NVLog journal swap mode.
+	// Enum: ["dynamic","manual"]
+	SwapMode *string `json:"swap_mode,omitempty"`
+}
+
+// Validate validates this node inline nvlog
+func (m *NodeInlineNvlog) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateBackingType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSwapMode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var nodeInlineNvlogTypeBackingTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["ephemeral_memory","ephemeral_disk"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nodeInlineNvlogTypeBackingTypePropEnum = append(nodeInlineNvlogTypeBackingTypePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// node_inline_nvlog
+	// NodeInlineNvlog
+	// backing_type
+	// BackingType
+	// ephemeral_memory
+	// END DEBUGGING
+	// NodeInlineNvlogBackingTypeEphemeralMemory captures enum value "ephemeral_memory"
+	NodeInlineNvlogBackingTypeEphemeralMemory string = "ephemeral_memory"
+
+	// BEGIN DEBUGGING
+	// node_inline_nvlog
+	// NodeInlineNvlog
+	// backing_type
+	// BackingType
+	// ephemeral_disk
+	// END DEBUGGING
+	// NodeInlineNvlogBackingTypeEphemeralDisk captures enum value "ephemeral_disk"
+	NodeInlineNvlogBackingTypeEphemeralDisk string = "ephemeral_disk"
+)
+
+// prop value enum
+func (m *NodeInlineNvlog) validateBackingTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineNvlogTypeBackingTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NodeInlineNvlog) validateBackingType(formats strfmt.Registry) error {
+	if swag.IsZero(m.BackingType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateBackingTypeEnum("nvlog"+"."+"backing_type", "body", *m.BackingType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var nodeInlineNvlogTypeSwapModePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["dynamic","manual"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		nodeInlineNvlogTypeSwapModePropEnum = append(nodeInlineNvlogTypeSwapModePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// node_inline_nvlog
+	// NodeInlineNvlog
+	// swap_mode
+	// SwapMode
+	// dynamic
+	// END DEBUGGING
+	// NodeInlineNvlogSwapModeDynamic captures enum value "dynamic"
+	NodeInlineNvlogSwapModeDynamic string = "dynamic"
+
+	// BEGIN DEBUGGING
+	// node_inline_nvlog
+	// NodeInlineNvlog
+	// swap_mode
+	// SwapMode
+	// manual
+	// END DEBUGGING
+	// NodeInlineNvlogSwapModeManual captures enum value "manual"
+	NodeInlineNvlogSwapModeManual string = "manual"
+)
+
+// prop value enum
+func (m *NodeInlineNvlog) validateSwapModeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, nodeInlineNvlogTypeSwapModePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *NodeInlineNvlog) validateSwapMode(formats strfmt.Registry) error {
+	if swag.IsZero(m.SwapMode) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateSwapModeEnum("nvlog"+"."+"swap_mode", "body", *m.SwapMode); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this node inline nvlog based on context it is used
+func (m *NodeInlineNvlog) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NodeInlineNvlog) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NodeInlineNvlog) UnmarshalBinary(b []byte) error {
+	var res NodeInlineNvlog
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // NodeInlineNvram node inline nvram
 //
 // swagger:model node_inline_nvram
@@ -9200,7 +9595,8 @@ type NodeInlineStatistics struct {
 	// Example: 12345123
 	ProcessorUtilizationBase *int64 `json:"processor_utilization_base,omitempty"`
 
-	// Raw CPU Utilization for the node. This should be divided by the processor_utilization_base to calculate the percentage CPU utilization for the node.
+	// Raw CPU utilization for the node. The change in this value over time should be divided by corresponding change in processor_utilization_base, then multiplied by 100 to calculate the percentage CPU utilization for the node. For example: ((processor_utilization_raw_t2 - processor_utilization_raw_t1) / (processor_utilization_base_t2 - processor_utilization_base_t1)) * 100.
+	//
 	// Example: 13
 	ProcessorUtilizationRaw *int64 `json:"processor_utilization_raw,omitempty"`
 
@@ -9397,186 +9793,6 @@ func (m *NodeInlineStatistics) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *NodeInlineStatistics) UnmarshalBinary(b []byte) error {
 	var res NodeInlineStatistics
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// NodeInlineStorageAvailabilityZonesInlineArrayItem node inline storage availability zones inline array item
-//
-// swagger:model node_inline_storage_availability_zones_inline_array_item
-type NodeInlineStorageAvailabilityZonesInlineArrayItem struct {
-
-	// links
-	Links *NodeInlineStorageAvailabilityZonesInlineArrayItemInlineLinks `json:"_links,omitempty"`
-
-	// The name of the storage availability zone.
-	// Example: storage_availability_zone_1
-	Name *string `json:"name,omitempty"`
-
-	// The unique identifier of the storage availability zone.
-	// Example: 9b3ff559-3333-11ef-b420-005056ae6060
-	UUID *string `json:"uuid,omitempty"`
-}
-
-// Validate validates this node inline storage availability zones inline array item
-func (m *NodeInlineStorageAvailabilityZonesInlineArrayItem) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateLinks(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *NodeInlineStorageAvailabilityZonesInlineArrayItem) validateLinks(formats strfmt.Registry) error {
-	if swag.IsZero(m.Links) { // not required
-		return nil
-	}
-
-	if m.Links != nil {
-		if err := m.Links.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this node inline storage availability zones inline array item based on the context it is used
-func (m *NodeInlineStorageAvailabilityZonesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateLinks(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *NodeInlineStorageAvailabilityZonesInlineArrayItem) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Links != nil {
-		if err := m.Links.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *NodeInlineStorageAvailabilityZonesInlineArrayItem) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *NodeInlineStorageAvailabilityZonesInlineArrayItem) UnmarshalBinary(b []byte) error {
-	var res NodeInlineStorageAvailabilityZonesInlineArrayItem
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// NodeInlineStorageAvailabilityZonesInlineArrayItemInlineLinks node inline storage availability zones inline array item inline links
-//
-// swagger:model node_inline_storage_availability_zones_inline_array_item_inline__links
-type NodeInlineStorageAvailabilityZonesInlineArrayItemInlineLinks struct {
-
-	// self
-	Self *Href `json:"self,omitempty"`
-}
-
-// Validate validates this node inline storage availability zones inline array item inline links
-func (m *NodeInlineStorageAvailabilityZonesInlineArrayItemInlineLinks) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateSelf(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *NodeInlineStorageAvailabilityZonesInlineArrayItemInlineLinks) validateSelf(formats strfmt.Registry) error {
-	if swag.IsZero(m.Self) { // not required
-		return nil
-	}
-
-	if m.Self != nil {
-		if err := m.Self.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this node inline storage availability zones inline array item inline links based on the context it is used
-func (m *NodeInlineStorageAvailabilityZonesInlineArrayItemInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateSelf(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *NodeInlineStorageAvailabilityZonesInlineArrayItemInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Self != nil {
-		if err := m.Self.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("_links" + "." + "self")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *NodeInlineStorageAvailabilityZonesInlineArrayItemInlineLinks) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *NodeInlineStorageAvailabilityZonesInlineArrayItemInlineLinks) UnmarshalBinary(b []byte) error {
-	var res NodeInlineStorageAvailabilityZonesInlineArrayItemInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

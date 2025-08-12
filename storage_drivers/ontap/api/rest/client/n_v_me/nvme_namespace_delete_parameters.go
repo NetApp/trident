@@ -71,6 +71,14 @@ type NvmeNamespaceDeleteParams struct {
 	*/
 	AllowDeleteWhileMapped *bool
 
+	/* BypassRecoveryQueue.
+
+	     Bypasses the volume recovery queue. This makes the volume hosting the namespace non-recoverable.<br/>
+	**This parameter should be used with caution.**
+
+	*/
+	BypassRecoveryQueue *bool
+
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
@@ -104,11 +112,14 @@ func (o *NvmeNamespaceDeleteParams) SetDefaults() {
 	var (
 		allowDeleteWhileMappedDefault = bool(false)
 
+		bypassRecoveryQueueDefault = bool(false)
+
 		returnTimeoutDefault = int64(0)
 	)
 
 	val := NvmeNamespaceDeleteParams{
 		AllowDeleteWhileMapped: &allowDeleteWhileMappedDefault,
+		BypassRecoveryQueue:    &bypassRecoveryQueueDefault,
 		ReturnTimeout:          &returnTimeoutDefault,
 	}
 
@@ -162,6 +173,17 @@ func (o *NvmeNamespaceDeleteParams) SetAllowDeleteWhileMapped(allowDeleteWhileMa
 	o.AllowDeleteWhileMapped = allowDeleteWhileMapped
 }
 
+// WithBypassRecoveryQueue adds the bypassRecoveryQueue to the nvme namespace delete params
+func (o *NvmeNamespaceDeleteParams) WithBypassRecoveryQueue(bypassRecoveryQueue *bool) *NvmeNamespaceDeleteParams {
+	o.SetBypassRecoveryQueue(bypassRecoveryQueue)
+	return o
+}
+
+// SetBypassRecoveryQueue adds the bypassRecoveryQueue to the nvme namespace delete params
+func (o *NvmeNamespaceDeleteParams) SetBypassRecoveryQueue(bypassRecoveryQueue *bool) {
+	o.BypassRecoveryQueue = bypassRecoveryQueue
+}
+
 // WithReturnTimeout adds the returnTimeout to the nvme namespace delete params
 func (o *NvmeNamespaceDeleteParams) WithReturnTimeout(returnTimeout *int64) *NvmeNamespaceDeleteParams {
 	o.SetReturnTimeout(returnTimeout)
@@ -204,6 +226,23 @@ func (o *NvmeNamespaceDeleteParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qAllowDeleteWhileMapped != "" {
 
 			if err := r.SetQueryParam("allow_delete_while_mapped", qAllowDeleteWhileMapped); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BypassRecoveryQueue != nil {
+
+		// query param bypass_recovery_queue
+		var qrBypassRecoveryQueue bool
+
+		if o.BypassRecoveryQueue != nil {
+			qrBypassRecoveryQueue = *o.BypassRecoveryQueue
+		}
+		qBypassRecoveryQueue := swag.FormatBool(qrBypassRecoveryQueue)
+		if qBypassRecoveryQueue != "" {
+
+			if err := r.SetQueryParam("bypass_recovery_queue", qBypassRecoveryQueue); err != nil {
 				return err
 			}
 		}

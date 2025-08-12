@@ -43,6 +43,18 @@ type Switch struct {
 	// Enum: ["cluster","storage"]
 	Network *string `json:"network,omitempty"`
 
+	// The switch reference configuration file (RCF) version.
+	// Example: RCF NX9336C-FX2 v1.13 1-CLUSTER
+	// Read Only: true
+	RcfVersion *string `json:"rcf_version,omitempty"`
+
+	// Switch role based on the interface configurations. Using '+' to combine multiple roles.
+	// Available role types are: cluster, multicluster, storage, multistorage, metrocluster.
+	//
+	// Example: ["cluster+storage"]
+	// Read Only: true
+	Role *string `json:"role,omitempty"`
+
 	// Serial Number.
 	// Read Only: true
 	SerialNumber *string `json:"serial_number,omitempty"`
@@ -204,6 +216,14 @@ func (m *Switch) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateRcfVersion(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRole(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSerialNumber(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -254,6 +274,24 @@ func (m *Switch) contextValidateMonitoring(ctx context.Context, formats strfmt.R
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Switch) contextValidateRcfVersion(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "rcf_version", "body", m.RcfVersion); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Switch) contextValidateRole(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "role", "body", m.Role); err != nil {
+		return err
 	}
 
 	return nil

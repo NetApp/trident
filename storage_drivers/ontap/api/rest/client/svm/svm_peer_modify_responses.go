@@ -59,6 +59,7 @@ SvmPeerModifyOK describes a response with status code 200, with default header v
 OK
 */
 type SvmPeerModifyOK struct {
+	Payload *models.SvmPeerJobLinkResponse
 }
 
 // IsSuccess returns true when this svm peer modify o k response has a 2xx status code
@@ -92,14 +93,27 @@ func (o *SvmPeerModifyOK) Code() int {
 }
 
 func (o *SvmPeerModifyOK) Error() string {
-	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svmPeerModifyOK", 200)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svmPeerModifyOK %s", 200, payload)
 }
 
 func (o *SvmPeerModifyOK) String() string {
-	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svmPeerModifyOK", 200)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svmPeerModifyOK %s", 200, payload)
+}
+
+func (o *SvmPeerModifyOK) GetPayload() *models.SvmPeerJobLinkResponse {
+	return o.Payload
 }
 
 func (o *SvmPeerModifyOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.SvmPeerJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }
@@ -115,6 +129,7 @@ SvmPeerModifyAccepted describes a response with status code 202, with default he
 Accepted
 */
 type SvmPeerModifyAccepted struct {
+	Payload *models.SvmPeerJobLinkResponse
 }
 
 // IsSuccess returns true when this svm peer modify accepted response has a 2xx status code
@@ -148,14 +163,27 @@ func (o *SvmPeerModifyAccepted) Code() int {
 }
 
 func (o *SvmPeerModifyAccepted) Error() string {
-	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svmPeerModifyAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svmPeerModifyAccepted %s", 202, payload)
 }
 
 func (o *SvmPeerModifyAccepted) String() string {
-	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svmPeerModifyAccepted", 202)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PATCH /svm/peers/{uuid}][%d] svmPeerModifyAccepted %s", 202, payload)
+}
+
+func (o *SvmPeerModifyAccepted) GetPayload() *models.SvmPeerJobLinkResponse {
+	return o.Payload
 }
 
 func (o *SvmPeerModifyAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(models.SvmPeerJobLinkResponse)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
 
 	return nil
 }

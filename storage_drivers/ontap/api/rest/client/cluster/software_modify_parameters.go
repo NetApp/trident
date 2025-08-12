@@ -92,7 +92,7 @@ type SoftwareModifyParams struct {
 
 	/* NodesToUpdate.
 
-	   A comma separated list of node names to be updated. The nodes must be a part of a HA Pair. The default is all nodes. If the nodes_to_update parameter is empty then upgrade will error out and will not proceed.
+	   A comma separated list of node names that are to be updated. The nodes must be a part of an HA pair. The default is all nodes. If the nodes_to_update parameter is an empty string, the upgrade errors out and does not proceed.
 
 	*/
 	NodesToUpdate *string

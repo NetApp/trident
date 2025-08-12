@@ -48,6 +48,9 @@ type IpsecPolicy struct {
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
 
+	// ppk
+	Ppk *IpsecPolicyInlinePpk `json:"ppk,omitempty"`
+
 	// Lower layer protocol to be covered by the IPsec policy.
 	// Example: 17
 	Protocol *string `json:"protocol,omitempty"`
@@ -100,6 +103,10 @@ func (m *IpsecPolicy) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePpk(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -334,6 +341,23 @@ func (m *IpsecPolicy) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *IpsecPolicy) validatePpk(formats strfmt.Registry) error {
+	if swag.IsZero(m.Ppk) { // not required
+		return nil
+	}
+
+	if m.Ppk != nil {
+		if err := m.Ppk.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ppk")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *IpsecPolicy) validateRemoteEndpoint(formats strfmt.Registry) error {
 	if swag.IsZero(m.RemoteEndpoint) { // not required
 		return nil
@@ -417,6 +441,10 @@ func (m *IpsecPolicy) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
+	if err := m.contextValidatePpk(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateRemoteEndpoint(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -473,6 +501,20 @@ func (m *IpsecPolicy) contextValidateLocalEndpoint(ctx context.Context, formats 
 		if err := m.LocalEndpoint.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("local_endpoint")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *IpsecPolicy) contextValidatePpk(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Ppk != nil {
+		if err := m.Ppk.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ppk")
 			}
 			return err
 		}
@@ -1076,6 +1118,95 @@ func (m *IpsecPolicyInlineLocalEndpoint) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *IpsecPolicyInlineLocalEndpoint) UnmarshalBinary(b []byte) error {
 	var res IpsecPolicyInlineLocalEndpoint
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// IpsecPolicyInlinePpk Post-quantum pre-shared key information.
+//
+// swagger:model ipsec_policy_inline_ppk
+type IpsecPolicyInlinePpk struct {
+
+	// Post-quantum pre-shared key identity.
+	// Max Length: 64
+	// Min Length: 6
+	Identity *string `json:"identity,omitempty"`
+
+	// Post-quantum pre-shared key.
+	// Max Length: 128
+	// Min Length: 18
+	SharedKey *string `json:"shared_key,omitempty"`
+}
+
+// Validate validates this ipsec policy inline ppk
+func (m *IpsecPolicyInlinePpk) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateIdentity(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSharedKey(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *IpsecPolicyInlinePpk) validateIdentity(formats strfmt.Registry) error {
+	if swag.IsZero(m.Identity) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("ppk"+"."+"identity", "body", *m.Identity, 6); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("ppk"+"."+"identity", "body", *m.Identity, 64); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *IpsecPolicyInlinePpk) validateSharedKey(formats strfmt.Registry) error {
+	if swag.IsZero(m.SharedKey) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("ppk"+"."+"shared_key", "body", *m.SharedKey, 18); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("ppk"+"."+"shared_key", "body", *m.SharedKey, 128); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this ipsec policy inline ppk based on context it is used
+func (m *IpsecPolicyInlinePpk) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *IpsecPolicyInlinePpk) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *IpsecPolicyInlinePpk) UnmarshalBinary(b []byte) error {
+	var res IpsecPolicyInlinePpk
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -154,6 +154,7 @@ func NewNvmeSubsystemMapCreateDefault(code int) *NvmeSubsystemMapCreateDefault {
 | 72090007 | The NVMe namespace specified by `namespace.name` was not found. |
 | 72090020 | The specified `subsystem.uuid` and `subsystem.name` refer to different NVMe subsystems. |
 | 72090021 | The NVMe subsystem specified by `subsystem.name` was not found. |
+| 72091102 | The NVMe namespace is part of a SnapMirror active sync relationship that has a different SVM peering relationship than the subsystem. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type NvmeSubsystemMapCreateDefault struct {

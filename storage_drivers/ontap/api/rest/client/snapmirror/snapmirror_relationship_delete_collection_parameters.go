@@ -462,6 +462,12 @@ type SnapmirrorRelationshipDeleteCollectionParams struct {
 	*/
 	UnhealthyReasonMessage *string
 
+	/* UnmapNamespace.
+
+	   Deletes namespace mapping and then deletes the subsystems.
+	*/
+	UnmapNamespace *bool
+
 	/* UUID.
 
 	   Filter by uuid
@@ -495,6 +501,8 @@ func (o *SnapmirrorRelationshipDeleteCollectionParams) SetDefaults() {
 		returnTimeoutDefault = int64(15)
 
 		serialRecordsDefault = bool(false)
+
+		unmapNamespaceDefault = bool(false)
 	)
 
 	val := SnapmirrorRelationshipDeleteCollectionParams{
@@ -503,6 +511,7 @@ func (o *SnapmirrorRelationshipDeleteCollectionParams) SetDefaults() {
 		ReturnRecords:              &returnRecordsDefault,
 		ReturnTimeout:              &returnTimeoutDefault,
 		SerialRecords:              &serialRecordsDefault,
+		UnmapNamespace:             &unmapNamespaceDefault,
 	}
 
 	val.timeout = o.timeout
@@ -1268,6 +1277,17 @@ func (o *SnapmirrorRelationshipDeleteCollectionParams) WithUnhealthyReasonMessag
 // SetUnhealthyReasonMessage adds the unhealthyReasonMessage to the snapmirror relationship delete collection params
 func (o *SnapmirrorRelationshipDeleteCollectionParams) SetUnhealthyReasonMessage(unhealthyReasonMessage *string) {
 	o.UnhealthyReasonMessage = unhealthyReasonMessage
+}
+
+// WithUnmapNamespace adds the unmapNamespace to the snapmirror relationship delete collection params
+func (o *SnapmirrorRelationshipDeleteCollectionParams) WithUnmapNamespace(unmapNamespace *bool) *SnapmirrorRelationshipDeleteCollectionParams {
+	o.SetUnmapNamespace(unmapNamespace)
+	return o
+}
+
+// SetUnmapNamespace adds the unmapNamespace to the snapmirror relationship delete collection params
+func (o *SnapmirrorRelationshipDeleteCollectionParams) SetUnmapNamespace(unmapNamespace *bool) {
+	o.UnmapNamespace = unmapNamespace
 }
 
 // WithUUID adds the uuid to the snapmirror relationship delete collection params
@@ -2392,6 +2412,23 @@ func (o *SnapmirrorRelationshipDeleteCollectionParams) WriteToRequest(r runtime.
 		if qUnhealthyReasonMessage != "" {
 
 			if err := r.SetQueryParam("unhealthy_reason.message", qUnhealthyReasonMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UnmapNamespace != nil {
+
+		// query param unmap_namespace
+		var qrUnmapNamespace bool
+
+		if o.UnmapNamespace != nil {
+			qrUnmapNamespace = *o.UnmapNamespace
+		}
+		qUnmapNamespace := swag.FormatBool(qrUnmapNamespace)
+		if qUnmapNamespace != "" {
+
+			if err := r.SetQueryParam("unmap_namespace", qUnmapNamespace); err != nil {
 				return err
 			}
 		}

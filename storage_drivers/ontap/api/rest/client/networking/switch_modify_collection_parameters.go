@@ -122,6 +122,12 @@ type SwitchModifyCollectionParams struct {
 	*/
 	Network *string
 
+	/* RcfVersion.
+
+	   Filter by rcf_version
+	*/
+	RcfVersion *string
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -137,6 +143,12 @@ type SwitchModifyCollectionParams struct {
 	   Default: 15
 	*/
 	ReturnTimeout *int64
+
+	/* Role.
+
+	   Filter by role
+	*/
+	Role *string
 
 	/* SerialNumber.
 
@@ -351,6 +363,17 @@ func (o *SwitchModifyCollectionParams) SetNetwork(network *string) {
 	o.Network = network
 }
 
+// WithRcfVersion adds the rcfVersion to the switch modify collection params
+func (o *SwitchModifyCollectionParams) WithRcfVersion(rcfVersion *string) *SwitchModifyCollectionParams {
+	o.SetRcfVersion(rcfVersion)
+	return o
+}
+
+// SetRcfVersion adds the rcfVersion to the switch modify collection params
+func (o *SwitchModifyCollectionParams) SetRcfVersion(rcfVersion *string) {
+	o.RcfVersion = rcfVersion
+}
+
 // WithReturnRecords adds the returnRecords to the switch modify collection params
 func (o *SwitchModifyCollectionParams) WithReturnRecords(returnRecords *bool) *SwitchModifyCollectionParams {
 	o.SetReturnRecords(returnRecords)
@@ -371,6 +394,17 @@ func (o *SwitchModifyCollectionParams) WithReturnTimeout(returnTimeout *int64) *
 // SetReturnTimeout adds the returnTimeout to the switch modify collection params
 func (o *SwitchModifyCollectionParams) SetReturnTimeout(returnTimeout *int64) {
 	o.ReturnTimeout = returnTimeout
+}
+
+// WithRole adds the role to the switch modify collection params
+func (o *SwitchModifyCollectionParams) WithRole(role *string) *SwitchModifyCollectionParams {
+	o.SetRole(role)
+	return o
+}
+
+// SetRole adds the role to the switch modify collection params
+func (o *SwitchModifyCollectionParams) SetRole(role *string) {
+	o.Role = role
 }
 
 // WithSerialNumber adds the serialNumber to the switch modify collection params
@@ -592,6 +626,23 @@ func (o *SwitchModifyCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.RcfVersion != nil {
+
+		// query param rcf_version
+		var qrRcfVersion string
+
+		if o.RcfVersion != nil {
+			qrRcfVersion = *o.RcfVersion
+		}
+		qRcfVersion := qrRcfVersion
+		if qRcfVersion != "" {
+
+			if err := r.SetQueryParam("rcf_version", qRcfVersion); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ReturnRecords != nil {
 
 		// query param return_records
@@ -621,6 +672,23 @@ func (o *SwitchModifyCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Role != nil {
+
+		// query param role
+		var qrRole string
+
+		if o.Role != nil {
+			qrRole = *o.Role
+		}
+		qRole := qrRole
+		if qRole != "" {
+
+			if err := r.SetQueryParam("role", qRole); err != nil {
 				return err
 			}
 		}

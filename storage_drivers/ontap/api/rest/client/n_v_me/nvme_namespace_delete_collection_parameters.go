@@ -77,6 +77,14 @@ type NvmeNamespaceDeleteCollectionParams struct {
 	*/
 	AutoDelete *bool
 
+	/* BypassRecoveryQueue.
+
+	     Bypasses the volume recovery queue. This makes the volume hosting the namespace non-recoverable.<br/>
+	**This parameter should be used with caution.**
+
+	*/
+	BypassRecoveryQueue *bool
+
 	/* Comment.
 
 	   Filter by comment
@@ -507,6 +515,24 @@ type NvmeNamespaceDeleteCollectionParams struct {
 	*/
 	SubsystemMapSubsystemHostsPriority *string
 
+	/* SubsystemMapSubsystemHostsProximityLocalSvm.
+
+	   Filter by subsystem_map.subsystem.hosts.proximity.local_svm
+	*/
+	SubsystemMapSubsystemHostsProximityLocalSvm *bool
+
+	/* SubsystemMapSubsystemHostsProximityPeerSvmsName.
+
+	   Filter by subsystem_map.subsystem.hosts.proximity.peer_svms.name
+	*/
+	SubsystemMapSubsystemHostsProximityPeerSvmsName *string
+
+	/* SubsystemMapSubsystemHostsProximityPeerSvmsUUID.
+
+	   Filter by subsystem_map.subsystem.hosts.proximity.peer_svms.uuid
+	*/
+	SubsystemMapSubsystemHostsProximityPeerSvmsUUID *string
+
 	/* SubsystemMapSubsystemHostsTLSKeyType.
 
 	   Filter by subsystem_map.subsystem.hosts.tls.key_type
@@ -569,6 +595,8 @@ func (o *NvmeNamespaceDeleteCollectionParams) SetDefaults() {
 	var (
 		allowDeleteWhileMappedDefault = bool(false)
 
+		bypassRecoveryQueueDefault = bool(false)
+
 		continueOnFailureDefault = bool(false)
 
 		returnRecordsDefault = bool(true)
@@ -580,6 +608,7 @@ func (o *NvmeNamespaceDeleteCollectionParams) SetDefaults() {
 
 	val := NvmeNamespaceDeleteCollectionParams{
 		AllowDeleteWhileMapped: &allowDeleteWhileMappedDefault,
+		BypassRecoveryQueue:    &bypassRecoveryQueueDefault,
 		ContinueOnFailure:      &continueOnFailureDefault,
 		ReturnRecords:          &returnRecordsDefault,
 		ReturnTimeout:          &returnTimeoutDefault,
@@ -645,6 +674,17 @@ func (o *NvmeNamespaceDeleteCollectionParams) WithAutoDelete(autoDelete *bool) *
 // SetAutoDelete adds the autoDelete to the nvme namespace delete collection params
 func (o *NvmeNamespaceDeleteCollectionParams) SetAutoDelete(autoDelete *bool) {
 	o.AutoDelete = autoDelete
+}
+
+// WithBypassRecoveryQueue adds the bypassRecoveryQueue to the nvme namespace delete collection params
+func (o *NvmeNamespaceDeleteCollectionParams) WithBypassRecoveryQueue(bypassRecoveryQueue *bool) *NvmeNamespaceDeleteCollectionParams {
+	o.SetBypassRecoveryQueue(bypassRecoveryQueue)
+	return o
+}
+
+// SetBypassRecoveryQueue adds the bypassRecoveryQueue to the nvme namespace delete collection params
+func (o *NvmeNamespaceDeleteCollectionParams) SetBypassRecoveryQueue(bypassRecoveryQueue *bool) {
+	o.BypassRecoveryQueue = bypassRecoveryQueue
 }
 
 // WithComment adds the comment to the nvme namespace delete collection params
@@ -1428,6 +1468,39 @@ func (o *NvmeNamespaceDeleteCollectionParams) SetSubsystemMapSubsystemHostsPrior
 	o.SubsystemMapSubsystemHostsPriority = subsystemMapSubsystemHostsPriority
 }
 
+// WithSubsystemMapSubsystemHostsProximityLocalSvm adds the subsystemMapSubsystemHostsProximityLocalSvm to the nvme namespace delete collection params
+func (o *NvmeNamespaceDeleteCollectionParams) WithSubsystemMapSubsystemHostsProximityLocalSvm(subsystemMapSubsystemHostsProximityLocalSvm *bool) *NvmeNamespaceDeleteCollectionParams {
+	o.SetSubsystemMapSubsystemHostsProximityLocalSvm(subsystemMapSubsystemHostsProximityLocalSvm)
+	return o
+}
+
+// SetSubsystemMapSubsystemHostsProximityLocalSvm adds the subsystemMapSubsystemHostsProximityLocalSvm to the nvme namespace delete collection params
+func (o *NvmeNamespaceDeleteCollectionParams) SetSubsystemMapSubsystemHostsProximityLocalSvm(subsystemMapSubsystemHostsProximityLocalSvm *bool) {
+	o.SubsystemMapSubsystemHostsProximityLocalSvm = subsystemMapSubsystemHostsProximityLocalSvm
+}
+
+// WithSubsystemMapSubsystemHostsProximityPeerSvmsName adds the subsystemMapSubsystemHostsProximityPeerSvmsName to the nvme namespace delete collection params
+func (o *NvmeNamespaceDeleteCollectionParams) WithSubsystemMapSubsystemHostsProximityPeerSvmsName(subsystemMapSubsystemHostsProximityPeerSvmsName *string) *NvmeNamespaceDeleteCollectionParams {
+	o.SetSubsystemMapSubsystemHostsProximityPeerSvmsName(subsystemMapSubsystemHostsProximityPeerSvmsName)
+	return o
+}
+
+// SetSubsystemMapSubsystemHostsProximityPeerSvmsName adds the subsystemMapSubsystemHostsProximityPeerSvmsName to the nvme namespace delete collection params
+func (o *NvmeNamespaceDeleteCollectionParams) SetSubsystemMapSubsystemHostsProximityPeerSvmsName(subsystemMapSubsystemHostsProximityPeerSvmsName *string) {
+	o.SubsystemMapSubsystemHostsProximityPeerSvmsName = subsystemMapSubsystemHostsProximityPeerSvmsName
+}
+
+// WithSubsystemMapSubsystemHostsProximityPeerSvmsUUID adds the subsystemMapSubsystemHostsProximityPeerSvmsUUID to the nvme namespace delete collection params
+func (o *NvmeNamespaceDeleteCollectionParams) WithSubsystemMapSubsystemHostsProximityPeerSvmsUUID(subsystemMapSubsystemHostsProximityPeerSvmsUUID *string) *NvmeNamespaceDeleteCollectionParams {
+	o.SetSubsystemMapSubsystemHostsProximityPeerSvmsUUID(subsystemMapSubsystemHostsProximityPeerSvmsUUID)
+	return o
+}
+
+// SetSubsystemMapSubsystemHostsProximityPeerSvmsUUID adds the subsystemMapSubsystemHostsProximityPeerSvmsUuid to the nvme namespace delete collection params
+func (o *NvmeNamespaceDeleteCollectionParams) SetSubsystemMapSubsystemHostsProximityPeerSvmsUUID(subsystemMapSubsystemHostsProximityPeerSvmsUUID *string) {
+	o.SubsystemMapSubsystemHostsProximityPeerSvmsUUID = subsystemMapSubsystemHostsProximityPeerSvmsUUID
+}
+
 // WithSubsystemMapSubsystemHostsTLSKeyType adds the subsystemMapSubsystemHostsTLSKeyType to the nvme namespace delete collection params
 func (o *NvmeNamespaceDeleteCollectionParams) WithSubsystemMapSubsystemHostsTLSKeyType(subsystemMapSubsystemHostsTLSKeyType *string) *NvmeNamespaceDeleteCollectionParams {
 	o.SetSubsystemMapSubsystemHostsTLSKeyType(subsystemMapSubsystemHostsTLSKeyType)
@@ -1542,6 +1615,23 @@ func (o *NvmeNamespaceDeleteCollectionParams) WriteToRequest(r runtime.ClientReq
 		if qAutoDelete != "" {
 
 			if err := r.SetQueryParam("auto_delete", qAutoDelete); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BypassRecoveryQueue != nil {
+
+		// query param bypass_recovery_queue
+		var qrBypassRecoveryQueue bool
+
+		if o.BypassRecoveryQueue != nil {
+			qrBypassRecoveryQueue = *o.BypassRecoveryQueue
+		}
+		qBypassRecoveryQueue := swag.FormatBool(qrBypassRecoveryQueue)
+		if qBypassRecoveryQueue != "" {
+
+			if err := r.SetQueryParam("bypass_recovery_queue", qBypassRecoveryQueue); err != nil {
 				return err
 			}
 		}
@@ -2735,6 +2825,57 @@ func (o *NvmeNamespaceDeleteCollectionParams) WriteToRequest(r runtime.ClientReq
 		if qSubsystemMapSubsystemHostsPriority != "" {
 
 			if err := r.SetQueryParam("subsystem_map.subsystem.hosts.priority", qSubsystemMapSubsystemHostsPriority); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubsystemMapSubsystemHostsProximityLocalSvm != nil {
+
+		// query param subsystem_map.subsystem.hosts.proximity.local_svm
+		var qrSubsystemMapSubsystemHostsProximityLocalSvm bool
+
+		if o.SubsystemMapSubsystemHostsProximityLocalSvm != nil {
+			qrSubsystemMapSubsystemHostsProximityLocalSvm = *o.SubsystemMapSubsystemHostsProximityLocalSvm
+		}
+		qSubsystemMapSubsystemHostsProximityLocalSvm := swag.FormatBool(qrSubsystemMapSubsystemHostsProximityLocalSvm)
+		if qSubsystemMapSubsystemHostsProximityLocalSvm != "" {
+
+			if err := r.SetQueryParam("subsystem_map.subsystem.hosts.proximity.local_svm", qSubsystemMapSubsystemHostsProximityLocalSvm); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubsystemMapSubsystemHostsProximityPeerSvmsName != nil {
+
+		// query param subsystem_map.subsystem.hosts.proximity.peer_svms.name
+		var qrSubsystemMapSubsystemHostsProximityPeerSvmsName string
+
+		if o.SubsystemMapSubsystemHostsProximityPeerSvmsName != nil {
+			qrSubsystemMapSubsystemHostsProximityPeerSvmsName = *o.SubsystemMapSubsystemHostsProximityPeerSvmsName
+		}
+		qSubsystemMapSubsystemHostsProximityPeerSvmsName := qrSubsystemMapSubsystemHostsProximityPeerSvmsName
+		if qSubsystemMapSubsystemHostsProximityPeerSvmsName != "" {
+
+			if err := r.SetQueryParam("subsystem_map.subsystem.hosts.proximity.peer_svms.name", qSubsystemMapSubsystemHostsProximityPeerSvmsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SubsystemMapSubsystemHostsProximityPeerSvmsUUID != nil {
+
+		// query param subsystem_map.subsystem.hosts.proximity.peer_svms.uuid
+		var qrSubsystemMapSubsystemHostsProximityPeerSvmsUUID string
+
+		if o.SubsystemMapSubsystemHostsProximityPeerSvmsUUID != nil {
+			qrSubsystemMapSubsystemHostsProximityPeerSvmsUUID = *o.SubsystemMapSubsystemHostsProximityPeerSvmsUUID
+		}
+		qSubsystemMapSubsystemHostsProximityPeerSvmsUUID := qrSubsystemMapSubsystemHostsProximityPeerSvmsUUID
+		if qSubsystemMapSubsystemHostsProximityPeerSvmsUUID != "" {
+
+			if err := r.SetQueryParam("subsystem_map.subsystem.hosts.proximity.peer_svms.uuid", qSubsystemMapSubsystemHostsProximityPeerSvmsUUID); err != nil {
 				return err
 			}
 		}

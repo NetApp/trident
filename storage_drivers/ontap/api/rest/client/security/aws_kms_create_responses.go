@@ -243,6 +243,7 @@ func NewAwsKmsCreateDefault(code int) *AwsKmsCreateDefault {
 | 65537911 | The Amazon Web Service Key Management Service is not supported in MetroCluster configurations. |
 | 65537912 | The Amazon Web Service Key Management Service cannot be configured for an SVM because one or more volume encryption keys of the SVM are stored on the admin SVM. |
 | 65537926 | The Amazon Web Service Key Management Service is not configured for this SVM. |
+| 65539704 | The key manager cannot be configured because the SVM has NAE volumes. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type AwsKmsCreateDefault struct {

@@ -118,6 +118,7 @@ func NewNetworkEthernetPortModifyDefault(code int) *NetworkEthernetPortModifyDef
 | 1376492 | Cannot change the MTU of a VLAN to be greater than the MTU of the port hosting it. |
 | 1377563 | Port is already a member of a LAG. |
 | 1377608 | Port cannot be used because it is currently the home port or current port of an interface. |
+| 1377609 | The update is partially complete. Updating broadcast domain attributes on this port has failed. |
 | 1966288 | Disabling the cluster ports can only be done on the local node. |
 | 1967087 | The specified broadcast domain UUID is not valid. |
 | 1967088 | The specified broadcast domain name does not exist in the specified IPspace. |

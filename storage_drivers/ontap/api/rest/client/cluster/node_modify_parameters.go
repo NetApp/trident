@@ -71,6 +71,9 @@ type NodeModifyParams struct {
 	The giveback action transfers storage control back to the owner from its HA group.
 	The "power_off" action shuts the node down with the assistance of the service processor.
 	The "power_on" action restores power to the node with the assistance of the service processor.
+	<personalities supports=aiml>
+	The takeover_check action is not supported on this platform.
+	</personalities>
 
 	*/
 	Action *string

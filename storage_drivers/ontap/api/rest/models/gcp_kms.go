@@ -24,10 +24,15 @@ type GcpKms struct {
 	// links
 	Links *GcpKmsInlineLinks `json:"_links,omitempty"`
 
-	// Google Cloud application's service account credentials required to access the specified KMS. The client_email and private_key fields of the service account holder are required.
+	// The Google Cloud application's service account credentials required to access the specified KMS. The client_email and private_key fields of the service account holder are required. The credentials are required if the `authentication_method` is set to `application_credentials_key`.
 	// Example: {\"private_key\":\"ValidPrivateKey\",\"client_email\":\"my@account.email.com\"}
 	// Format: password
 	ApplicationCredentials *strfmt.Password `json:"application_credentials,omitempty"`
+
+	// Google Cloud KMS authentication method.
+	// Example: application_credentials_key
+	// Enum: ["application_credentials_key","sa_credentials_attachment"]
+	AuthenticationMethod *string `json:"authentication_method,omitempty"`
 
 	// Google Cloud KMS caller account email
 	// Example: myaccount@myproject.com
@@ -37,6 +42,11 @@ type GcpKms struct {
 	// Google Cloud KMS host subdomain.
 	// Example: cloudkms.googleapis.com
 	CloudkmsHost *string `json:"cloudkms_host,omitempty"`
+
+	// A custom metadata server URL used for retrieving short lived authentication tokens if the default service account is not used. This is only applicable when the `authentication_method` is set to `sa_credentials_attachment`.
+	// Example: http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token
+	// Format: uri
+	GceMetadataServer *strfmt.URI `json:"gce_metadata_server,omitempty"`
 
 	// gcp kms inline ekmip reachability
 	// Read Only: true
@@ -133,6 +143,14 @@ func (m *GcpKms) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateAuthenticationMethod(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateGceMetadataServer(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateGcpKmsInlineEkmipReachability(formats); err != nil {
 		res = append(res, err)
 	}
@@ -186,6 +204,74 @@ func (m *GcpKms) validateApplicationCredentials(formats strfmt.Registry) error {
 	}
 
 	if err := validate.FormatOf("application_credentials", "body", "password", m.ApplicationCredentials.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var gcpKmsTypeAuthenticationMethodPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["application_credentials_key","sa_credentials_attachment"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		gcpKmsTypeAuthenticationMethodPropEnum = append(gcpKmsTypeAuthenticationMethodPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// gcp_kms
+	// GcpKms
+	// authentication_method
+	// AuthenticationMethod
+	// application_credentials_key
+	// END DEBUGGING
+	// GcpKmsAuthenticationMethodApplicationCredentialsKey captures enum value "application_credentials_key"
+	GcpKmsAuthenticationMethodApplicationCredentialsKey string = "application_credentials_key"
+
+	// BEGIN DEBUGGING
+	// gcp_kms
+	// GcpKms
+	// authentication_method
+	// AuthenticationMethod
+	// sa_credentials_attachment
+	// END DEBUGGING
+	// GcpKmsAuthenticationMethodSaCredentialsAttachment captures enum value "sa_credentials_attachment"
+	GcpKmsAuthenticationMethodSaCredentialsAttachment string = "sa_credentials_attachment"
+)
+
+// prop value enum
+func (m *GcpKms) validateAuthenticationMethodEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, gcpKmsTypeAuthenticationMethodPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *GcpKms) validateAuthenticationMethod(formats strfmt.Registry) error {
+	if swag.IsZero(m.AuthenticationMethod) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAuthenticationMethodEnum("authentication_method", "body", *m.AuthenticationMethod); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *GcpKms) validateGceMetadataServer(formats strfmt.Registry) error {
+	if swag.IsZero(m.GceMetadataServer) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("gce_metadata_server", "body", "uri", m.GceMetadataServer.String(), formats); err != nil {
 		return err
 	}
 

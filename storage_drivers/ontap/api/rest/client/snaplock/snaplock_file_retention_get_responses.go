@@ -131,7 +131,7 @@ func NewSnaplockFileRetentionGetDefault(code int) *SnaplockFileRetentionGetDefau
 | 6691623     | User is not authorized  |
 | 13762592    | Operation not supported on non-SnapLock volume |
 | 14090347    | File path must be in the format \"\/\<dir\>\/\<file path\>\" |
-| 917804      | Path should be given in the format \"\/\vol\/\<volume name>\/\<file path>\".
+| 917804      | Path should be given in the format \"\/\vol\/\<volume name>\/\<file path>\". |
 */
 type SnaplockFileRetentionGetDefault struct {
 	_statusCode int

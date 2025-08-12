@@ -115,8 +115,14 @@ func NewNfsModifyDefault(code int) *NfsModifyDefault {
 | 1534829    | The port numbers allowed are 635 (the default) and 1024 through 9999 |
 | 2621516    | This operation is only supported on a data SVM |
 | 2621574    | This operation is not permitted on a SVM that is configured as the destination of a MetroCluster SVM relationship |
+| 3276852    | NFSv4.1 implementation name length for the SVM must be less than 256 bytes.|
+| 3276872    | NFSv4 lease timeout value must not be less than 10. |
+| 3276873    | NFSv4 lease timeout value must be between 10 and (protocol.v4_grace_seconds-1). |
+| 3276874    | NFSv4 grace timeout value must not be greater than 180. |
+| 3276875    | NFSv4 grace timeout value must be between (protocol.v4_lease_seconds+1) and 180. |
 | 3276916    | Vserver is not running |
 | 3276969    | Ports cannot be modified when NFS access is enabled. Disable NFS access before changing port settings |
+| 3276994    | Kerberos must be disabled on all LIFs on the SVM before adding or removing any encryption. Disable Kerberos on the LIF and retry the operation. |
 | 3277048    | The port numbers allowed are 635 (the default) and 1024 through 9999 |
 | 3277069    | Cannot disable TCP because the SnapDiff RPC server is in the \\\"on\\\" state |
 | 3277085    | The port numbers allowed are 1024 through 9999. |

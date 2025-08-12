@@ -131,13 +131,11 @@ func NewAccountCreateDefault(code int) *AccountCreateDefault {
 | 2621706 | The specified owner.uuid and owner.name refer to different SVMs. |
 | 5636099 | User creation with a non-admin role is not supported for service-processor application. |
 | 5636121 | The user account name is reserved for use by the system. |
-| 5636126 | Cannot create a user with the username or role as AutoSupport because it is reserved by the system. |
+| 5636126 | Cannot create a user with the username or role as autosupport because it is reserved by the system. |
 | 5636136 | Specifying "is_ns_switch_group" as "true" is supported only for authentication method "nsswitch". |
 | 5636140 | Creating a login with application console for a data SVM  is not supported. |
 | 5636141 | Creating a login with application service-processor for a data SVM is not supported. |
-| 5636155 | The second-authentication-method parameter can be specified only if the authentication-method password or public key nsswitch. |
-| 5636156 | The same value cannot be specified for the second-authentication-method and the authentication-method. |
-| 5636164 | If the value for either the authentication-method second-authentication-method is nsswitch or password, the other parameter must differ. |
+| 5636164 | The authentication method and the second authentication method cannot be any combination of 'nsswitch' and 'password'. |
 | 5636165 | Second authentication method is not supported for NIS or LDAP group based accounts. |
 | 5636176 | The application and authentication-method combination is invalid. |
 | 5636178 | An invalid value is specified for field "application". |
@@ -147,7 +145,7 @@ func NewAccountCreateDefault(code int) *AccountCreateDefault {
 | 5636206 | Non-domain user cannot have a backslash in the username. |
 | 5636207 | If the value for either the authentication-method or second-authentication-method parameters is domain, the other parameter must be publickey or none. |
 | 5636212 | TOTP is supported only when the primary authentication method is password or public key. |
-| 5636214 | Configuring the user with TOTP as secondary authentication method requires an effective cluster version of 9.13.1 or later |
+| 5636214 | Configuring the user with TOTP as a secondary authentication method requires an effective cluster version of 9.13.1 or later. |
 | 5636223 | Specifying "is_ns_switch_group" as "true" is supported only for SSH, ONTAPI, and HTTP applications. |
 | 5636224 | Configuring a Service Processor (SP) user with two-factor authentication requires an effective cluster version of 9.15.1 or later. |
 | 5636225 | For a Service Processor (SP) user, the second factor of authentication must be one of publickey or none. |
