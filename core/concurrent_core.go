@@ -611,7 +611,7 @@ func (o *ConcurrentTridentOrchestrator) cleanupDeletingBackends(ctx context.Cont
 	}
 
 	for _, backendUUID := range deletingBackends {
-		results, unlocker, err = db.Lock(db.Query(db.DeleteBackend(backendUUID), db.ReadBackend("")))
+		results, unlocker, err = db.Lock(db.Query(db.DeleteBackend(backendUUID)))
 		if err != nil {
 			Logc(ctx).WithField("backendUUID", backendUUID).WithError(err).Error("Failed to lock deleting backend.")
 			unlocker()
@@ -1516,8 +1516,9 @@ func (o *ConcurrentTridentOrchestrator) updateBackendVolumes(ctx context.Context
 
 	lockQuery := make([][]db.Subquery, 0, len(volumes))
 
+	backendUUID := backend.BackendUUID()
 	// Acquire the write lock for the backend and write lock for all the volumes in the backend in a single lock call.
-	lockQuery = append(lockQuery, db.Query(db.UpsertBackend(backend.BackendUUID(), "", "")))
+	lockQuery = append(lockQuery, db.Query(db.UpsertBackend(backendUUID, "", "")))
 	for _, vol := range volumes {
 		lockQuery = append(lockQuery, db.Query(db.UpsertVolume(vol.Config.Name, vol.BackendUUID)))
 	}
@@ -1531,7 +1532,7 @@ func (o *ConcurrentTridentOrchestrator) updateBackendVolumes(ctx context.Context
 	backend = backendResult.Backend.Read
 	if backend == nil {
 		Logc(ctx).WithFields(LogFields{
-			"backend": backend.Name(),
+			"backend": backendUUID,
 		}).Warn("Backend not found.")
 
 		// this is best case effort. so return nil

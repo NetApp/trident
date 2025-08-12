@@ -1790,7 +1790,489 @@ func TestDeleteBackendConcurrentCore(t *testing.T) {
 	}
 }
 
+func TestDeleteBackendByBackendUUIDConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name           string
+		backendName    string
+		backendUUID    string
+		bootstrapError error
+		setupMocks     func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator)
+		verifyError    func(err error)
+	}{
+		{
+			name:        "Success",
+			backendName: "testBackend1",
+			backendUUID: "backend-uuid1",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().HasVolumes().Return(false).Times(1)
+
+				mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+				mockBackend.EXPECT().ConfigRef().Return("").Times(1)
+				mockBackend.EXPECT().Terminate(gomock.Any()).Times(1)
+				mockStoreClient.EXPECT().DeleteBackend(gomock.Any(), mockBackend).Return(nil).Times(1)
+
+				o.storeClient = mockStoreClient
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:           "BootstrapError",
+			backendName:    "testBackend1",
+			backendUUID:    "backend-uuid1",
+			bootstrapError: errors.New("bootstrap error"),
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.Error(t, err)
+				assert.Equal(t, "bootstrap error", err.Error())
+			},
+		},
+		{
+			name:        "BackendNotFound",
+			backendName: "nonExistentBackend",
+			backendUUID: "nonexistent-backend-uuid",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No backend added to cache
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "backend nonExistentBackend was not found")
+			},
+		},
+		{
+			name:        "BackendHasVolumes",
+			backendName: "testBackend1",
+			backendUUID: "backend-uuid1",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().ConfigRef().Return("").Times(1)
+				mockBackend.EXPECT().HasVolumes().Return(true).Times(1)
+				mockBackend.EXPECT().SetOnline(false).Times(1)
+				mockBackend.EXPECT().SetState(storage.Deleting).Times(1)
+				addBackendsToCache(t, mockBackend)
+
+				mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), mockBackend).Return(nil).Times(1)
+				o.storeClient = mockStoreClient
+			},
+			verifyError: func(err error) {
+			},
+		},
+		{
+			name:        "DeleteFromStoreError",
+			backendName: "testBackend1",
+			backendUUID: "backend-uuid1",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().HasVolumes().Return(false).Times(1)
+
+				mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+				mockBackend.EXPECT().ConfigRef().Return("").Times(1)
+				mockBackend.EXPECT().Terminate(gomock.Any()).Times(1)
+				mockStoreClient.EXPECT().DeleteBackend(gomock.Any(), mockBackend).Return(errors.New("persistence error")).Times(1)
+
+				o.storeClient = mockStoreClient
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "persistence error")
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+			o.bootstrapError = tt.bootstrapError
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, o)
+			}
+
+			err := o.DeleteBackendByBackendUUID(testCtx, tt.backendName, tt.backendUUID)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
 func Test_UpdateBackendConcurrentCore(t *testing.T) {
+	existingBackendName := "fake-backend"
+	existingBackendUuid := "fake-backend-uuid"
+
+	tests := []struct {
+		name             string
+		newBackendConfig map[string]interface{}
+		contextValue     string
+		callingConfigRef string
+		setupMocks       func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient)
+		verifyError      func(err error)
+		verifyResult     func(backend *storage.BackendExternal)
+	}{
+		{
+			name:             "BootstrapError",
+			newBackendConfig: nil,
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				o.bootstrapped = false
+				o.bootstrapError = errors.New("bootstrap error")
+
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+		},
+		{
+			name: "BackendConfigRefError",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"backendName":       existingBackendName,
+				"protocol":          config.File,
+				"volumeAccess":      "1.0.0.1",
+			},
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+
+				// Use case where Backend ConfigRef is non-empty
+				results, unlocker, err := db.Lock(db.Query(db.UpsertBackend(existingBackendUuid, "", "")))
+				require.NoError(t, err)
+				oldBackend := results[0].Backend.Read
+				require.NotNil(t, oldBackend)
+				oldBackend.SetConfigRef("test")
+				results[0].Backend.Upsert(oldBackend)
+				unlocker()
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "cannot update backend 'fake-backend' created using "+
+					"TridentBackendConfig CR; please update the TridentBackendConfig CR")
+			},
+		},
+		{
+			name: "InvalidCallingConfig",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"backendName":       existingBackendName,
+				"protocol":          config.File,
+			},
+			callingConfigRef: "test",
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "backend 'fake-backend' update initiated using an invalid "+
+					"configRef, it is associated with configRef '' and not 'test'")
+			},
+		},
+		{
+			name: "BadCredentials",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"backendName":       existingBackendName,
+				"username":          "",
+				"protocol":          config.File,
+			},
+			contextValue:     logging.ContextSourceCRD,
+			callingConfigRef: "test",
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "unsupported config error; input is missing the credentials field")
+			},
+		},
+		{
+			name: "UpdateStoragePrefixError",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"backendName":       existingBackendName,
+				"storagePrefix":     "new-prefix",
+				"protocol":          config.File,
+				"volumeAccess":      "1.0.0.1",
+			},
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "updating the storage prefix isn't currently supported")
+			},
+		},
+		{
+			name: "BackendRenameSuccess",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"backendName":       "new",
+				"protocol":          config.File,
+				"volumeAccess":      "1.0.0.1",
+			},
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+
+				mockStoreClient.EXPECT().ReplaceBackendAndUpdateVolumes(gomock.Any(), fakeBackend, gomock.Any()).
+					Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(backend *storage.BackendExternal) {
+				assert.Equal(t, "new", backend.Name)
+			},
+		},
+		{
+			name: "BackendRenameWithNameAlreadyExistsError",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"backendName":       "new",
+				"protocol":          config.File,
+				"volumeAccess":      "1.0.0.1",
+			},
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+
+				// Add a backend with the same name as newBackend to get this error
+				dupBackend := getFakeBackend("new", "new-uuid2", nil)
+				addBackendsToCache(t, dupBackend)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "key new for Backend already exists")
+			},
+		},
+		{
+			name: "BackendCRRenameError",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"backendName":       "new",
+				"protocol":          config.File,
+				"volumeAccess":      "1.0.0.1",
+			},
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockStoreClient.EXPECT().ReplaceBackendAndUpdateVolumes(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(errors.New("CR rename error"))
+
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "CR rename error")
+			},
+		},
+		{
+			name: "InvalidUpdateError",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"backendName":       existingBackendName,
+				"protocol":          config.Block,
+				"volumeAccess":      "1.0.0.1",
+			},
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "invalid backend update")
+			},
+		},
+		{
+			name: "UpdateError",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"backendName":       existingBackendName,
+				"protocol":          config.File,
+				"volumeAccess":      "1.0.0.1",
+			},
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).
+					Return(errors.New("error updating backend"))
+
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "error updating backend")
+			},
+		},
+		{
+			name: "UpdateVolumeAccessError",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"backendName":       existingBackendName,
+				"volumeAccess":      "1.1.1.1",
+				"protocol":          config.File,
+			},
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "updating the data plane IP address isn't currently supported")
+			},
+		},
+		{
+			name: "UpdateNonOrphanVolumeError",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"backendName":       existingBackendName,
+				"protocol":          config.File,
+				"volumeAccess":      "1.0.0.1",
+			},
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(),
+					gomock.Any()).Return(errors.New("error updating non-orphan volume"))
+
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+				vol := &storage.Volume{
+					Config:      &storage.VolumeConfig{InternalName: "vol1", Name: "vol1"},
+					BackendUUID: existingBackendUuid, Orphaned: false,
+				}
+				addVolumesToCache(t, vol)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name: "UpdateNonOrphanVolumeSuccess",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"backendName":       existingBackendName,
+				"protocol":          config.File,
+				"volumeAccess":      "1.0.0.1",
+			},
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(),
+					gomock.Any()).Return(nil).Times(1)
+
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+				vol := &storage.Volume{
+					Config:      &storage.VolumeConfig{InternalName: "vol1", Name: "vol1"},
+					BackendUUID: existingBackendUuid, Orphaned: false,
+				}
+				addVolumesToCache(t, vol)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(backend *storage.BackendExternal) {
+				backendInCache := getBackendByUuidFromCache(t, backend.BackendUUID)
+				volCount := 0
+				backendInCache.Volumes().Range(func(_, _ interface{}) bool {
+					volCount++
+					return true
+				})
+				require.Equal(t, 1, volCount)
+				vol, ok := backendInCache.Volumes().Load("vol1")
+				assert.True(t, ok)
+				assert.True(t, vol.(*storage.Volume).Orphaned)
+			},
+		},
+		{
+			name: "BackendUpdateSuccess",
+			newBackendConfig: map[string]interface{}{
+				"version":           1,
+				"storageDriverName": "fake",
+				"backendName":       existingBackendName,
+				"protocol":          config.File,
+				"volumeAccess":      "1.0.0.1",
+				"debugTraceFlags":   map[string]bool{"api": true, "method": true}, // turn on debug flags
+			},
+			setupMocks: func(o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				fakeBackend := getFakeBackend(existingBackendName, existingBackendUuid, nil)
+				addBackendsToCache(t, fakeBackend)
+
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(backend *storage.BackendExternal) {
+				fakeConfig, ok := backend.Config.(drivers.FakeStorageDriverConfig)
+				if !ok {
+					assert.Fail(t, "failed to cast backend config to FakeStorageDriverConfig")
+				}
+				// verify debug flags are updated
+				assert.True(t, fakeConfig.DebugTraceFlags["api"])
+				assert.True(t, fakeConfig.DebugTraceFlags["method"])
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var newBackendConfigJSON []byte
+			var err error
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(o, mockStoreClient)
+			}
+
+			c := context.WithValue(ctx(), logging.ContextKeyRequestSource, tt.contextValue)
+			newBackendConfigJSON, err = json.Marshal(tt.newBackendConfig)
+			if err != nil {
+				t.Fatal("failed to unmarshal newBackendConfig", err)
+			}
+
+			backend, err := o.UpdateBackend(c, existingBackendName, string(newBackendConfigJSON), tt.callingConfigRef)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			if tt.verifyResult != nil {
+				tt.verifyResult(backend)
+			}
+		})
+	}
+}
+
+func Test_UpdateBackendByBackendUUIDConcurrentCore(t *testing.T) {
 	existingBackendName := "fake-backend"
 	existingBackendUuid := "fake-backend-uuid"
 
@@ -2165,6 +2647,955 @@ func Test_UpdateBackendConcurrentCore(t *testing.T) {
 	}
 }
 
+func TestImportVolumeConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name         string
+		volumeConfig *storage.VolumeConfig
+		bootstrapErr error
+		setupMocks   func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller,
+			mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
+		verifyError  func(err error)
+		verifyResult func(result *storage.VolumeExternal)
+	}{
+		{
+			name: "Success_ImportManaged",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalBackendVolume",
+				ImportNotManaged:   false,
+				StorageClass:       "gold",
+				Size:               "100",
+				VolumeMode:         config.Filesystem,
+				AccessMode:         config.ReadWriteMany,
+				Protocol:           config.File,
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				originalBackendVol := &storage.VolumeExternal{
+					Config: &storage.VolumeConfig{
+						InternalName: "originalBackendVolume",
+						Size:         "100",
+					},
+				}
+
+				fakeStorageClass := getFakeStorageClass("gold")
+				fakePool1 := storage.NewStoragePool(nil, "pool1")
+				fakePool1.AddStorageClass("gold")
+				fakeConfig := getFakeStorageDriverConfig("fakeDriver")
+				fakeDriver := fakedriver.NewFakeStorageDriver(testCtx, fakeConfig)
+				fakeDriver.Volumes[originalBackendVol.Config.InternalName] = fake.Volume{
+					Name: "originalBackendVolume", SizeBytes: 100,
+				}
+				fakeBackend := getFakeBackend("testBackend", "backend-uuid1", fakeDriver)
+				fakeBackend.AddStoragePool(fakePool1)
+				fakePool1.SetBackend(fakeBackend)
+
+				addStorageClassesToCache(t, fakeStorageClass)
+				addBackendsToCache(t, fakeBackend)
+
+				o.RebuildStorageClassPoolMap(testCtx)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				require.NotNil(t, result)
+				assert.Equal(t, "testVolume", result.Config.Name)
+				assert.Equal(t, "testVolume", result.Config.InternalName)
+
+				// verify the volume is added to the cache
+				volume := getVolumeByNameFromCache(t, "testVolume")
+				assert.NotNil(t, volume)
+				assert.Equal(t, "100", volume.Config.Size)
+			},
+		},
+		{
+			name: "Success_ImportNotManaged",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalBackendVolume",
+				ImportNotManaged:   true,
+				StorageClass:       "gold",
+				Size:               "100",
+				VolumeMode:         config.Filesystem,
+				AccessMode:         config.ReadWriteMany,
+				Protocol:           config.File,
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				originalBackendVol := &storage.VolumeExternal{
+					Config: &storage.VolumeConfig{
+						InternalName: "originalBackendVolume",
+						Size:         "100",
+					},
+				}
+				fakeStorageClass := getFakeStorageClass("gold")
+				fakePool1 := storage.NewStoragePool(nil, "pool1")
+
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalBackendVolume").Return(originalBackendVol, nil).Times(1)
+				mockBackend.EXPECT().ImportVolume(gomock.Any(), gomock.Any()).Return(
+					&storage.Volume{
+						Config: &storage.VolumeConfig{
+							Name:         "testVolume",
+							InternalName: "originalBackendVolume",
+						},
+					}, nil).Times(1)
+				mockBackend.EXPECT().StoragePools().Return(
+					func() *sync.Map {
+						m := sync.Map{}
+						m.Store("pool1", fakePool1)
+						return &m
+					}(),
+				).Times(1)
+
+				fakePool1.SetBackend(mockBackend)
+				fakePool1.AddStorageClass("gold")
+
+				addStorageClassesToCache(t, fakeStorageClass)
+				addBackendsToCache(t, mockBackend)
+
+				o.RebuildStorageClassPoolMap(testCtx)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				require.NotNil(t, result)
+				assert.Equal(t, "testVolume", result.Config.Name)
+				assert.Equal(t, "originalBackendVolume", result.Config.InternalName)
+
+				// verify the volume is added to the cache
+				volume := getVolumeByNameFromCache(t, "testVolume")
+				assert.NotNil(t, volume)
+			},
+		},
+		{
+			name: "BootstrapError",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalVolume",
+			},
+			bootstrapErr: errors.New("bootstrap error"),
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.Error(t, err)
+				assert.Equal(t, "bootstrap error", err.Error())
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "VolumeAlreadyExists",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalVolume",
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+
+				// Add a volume to the cache
+				existingVolume := &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: "testVolume", InternalName: "testVolume"},
+					BackendUUID: "backend-uuid1",
+				}
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, existingVolume)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "volume testVolume already exists")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "BackendNotFound",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalVolume",
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "backend backend-uuid1 not found")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "UnknownStorageClass",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalVolume",
+				StorageClass:       "gold",
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				addBackendsToCache(t, mockBackend)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "unknown storage class: gold")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "BackendStorageVolumeNotFound",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalVolume",
+				StorageClass:       "gold",
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				fakeStorageClass := getFakeStorageClass("gold")
+
+				addBackendsToCache(t, mockBackend)
+				addStorageClassesToCache(t, fakeStorageClass)
+
+				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
+					Return(nil, errors.New("volume get error")).Times(1)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "volume originalVolume was not found: volume get error")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "RequestedSizeParseError",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalVolume",
+				StorageClass:       "gold",
+				Size:               "100Gi",
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				fakeStorageClass := getFakeStorageClass("gold")
+
+				addBackendsToCache(t, mockBackend)
+				addStorageClassesToCache(t, fakeStorageClass)
+
+				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
+					Return(&storage.VolumeExternal{
+						Config: &storage.VolumeConfig{
+							InternalName: "originalBackendVolume",
+							Size:         "100",
+						},
+					}, nil).Times(1)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "could not determine requested size to import:")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "ActualSizeParseError",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalVolume",
+				StorageClass:       "gold",
+				Size:               "100",
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				fakeStorageClass := getFakeStorageClass("gold")
+
+				addBackendsToCache(t, mockBackend)
+				addStorageClassesToCache(t, fakeStorageClass)
+
+				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
+					Return(&storage.VolumeExternal{
+						Config: &storage.VolumeConfig{
+							InternalName: "originalBackendVolume",
+							Size:         "100Gi",
+						},
+					}, nil).Times(1)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "could not determine actual size of the volume being imported:")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "RequestedSizeGreaterThanActualSize",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalVolume",
+				StorageClass:       "gold",
+				Size:               "100",
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				fakeStorageClass := getFakeStorageClass("gold")
+
+				addBackendsToCache(t, mockBackend)
+				addStorageClassesToCache(t, fakeStorageClass)
+
+				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
+					Return(&storage.VolumeExternal{
+						Config: &storage.VolumeConfig{
+							InternalName: "originalBackendVolume",
+							Size:         "50",
+						},
+					}, nil).Times(1)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "unsupported capacity range; requested size is more than actual size")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "PVAlreadyExistsForVolume",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalVolume",
+				StorageClass:       "gold",
+				Size:               "100",
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				fakeStorageClass := getFakeStorageClass("gold")
+
+				addBackendsToCache(t, mockBackend)
+				addStorageClassesToCache(t, fakeStorageClass)
+
+				// Add another volume to the cache with the same backend volume
+				anotherVolume := &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: "anotherVolume", InternalName: "originalVolume"},
+					BackendUUID: "backend-uuid1",
+				}
+				addVolumesToCache(t, anotherVolume)
+
+				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
+					Return(&storage.VolumeExternal{
+						Config: &storage.VolumeConfig{
+							InternalName: "originalVolume",
+							Size:         "100",
+						},
+					}, nil).Times(1)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "PV originalVolume already exists for volume anotherVolume")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "BackendStorageClassMismatch",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalVolume",
+				StorageClass:       "gold",
+				Size:               "100",
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				fakeStorageClass := getFakeStorageClass("gold")
+				fakePool1 := storage.NewStoragePool(nil, "pool1")
+				fakePool1.AddStorageClass("silver") // Mismatched storage class
+				fakePool1.SetBackend(mockBackend)
+
+				mockBackend.EXPECT().StoragePools().Return(
+					func() *sync.Map {
+						return &sync.Map{}
+					}(),
+				).Times(1)
+
+				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
+					Return(&storage.VolumeExternal{
+						Config: &storage.VolumeConfig{
+							InternalName: "originalVolume",
+							Size:         "100",
+						},
+					}, nil).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+				addStorageClassesToCache(t, fakeStorageClass)
+
+				o.RebuildStorageClassPoolMap(testCtx)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "storageClass gold does not match any storage pools for backend testBackend1")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "InvalidMode",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalVolume",
+				StorageClass:       "gold",
+				Size:               "100",
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				fakeStorageClass := getFakeStorageClass("gold")
+				fakePool1 := storage.NewStoragePool(nil, "pool1")
+
+				fakePool1.AddStorageClass("gold")
+				fakePool1.SetBackend(mockBackend)
+
+				mockBackend.EXPECT().StoragePools().Return(
+					func() *sync.Map {
+						m := sync.Map{}
+						m.Store("pool1", fakePool1)
+						return &m
+					}(),
+				).Times(1)
+
+				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
+					Return(&storage.VolumeExternal{
+						Config: &storage.VolumeConfig{
+							InternalName: "originalVolume",
+							Size:         "100",
+						},
+					}, nil).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+				addStorageClassesToCache(t, fakeStorageClass)
+
+				o.RebuildStorageClassPoolMap(testCtx)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "invalid volume mode (), access mode () or protocol ()")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "BackendProtocolMismatch",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalVolume",
+				StorageClass:       "gold",
+				Size:               "100",
+				Protocol:           config.Block,
+				AccessMode:         config.ReadWriteMany,
+				VolumeMode:         config.RawBlock,
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				fakeStorageClass := getFakeStorageClass("gold")
+				fakePool1 := storage.NewStoragePool(nil, "pool1")
+
+				fakePool1.AddStorageClass("gold")
+				fakePool1.SetBackend(mockBackend)
+
+				mockBackend.EXPECT().StoragePools().Return(
+					func() *sync.Map {
+						m := sync.Map{}
+						m.Store("pool1", fakePool1)
+						return &m
+					}(),
+				).Times(1)
+
+				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
+					Return(&storage.VolumeExternal{
+						Config: &storage.VolumeConfig{
+							InternalName: "originalVolume",
+							Size:         "100",
+						},
+					}, nil).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+				addStorageClassesToCache(t, fakeStorageClass)
+
+				o.RebuildStorageClassPoolMap(testCtx)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "requested volume mode (Block), access mode (ReadWriteMany), protocol (block) are incompatible with the backend testBackend1")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "NoBackendSpecified",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "",
+				ImportOriginalName: "originalVolume",
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "no backend specified for import")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "OriginalNameNotSpecified",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "",
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "original name not specified")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "AddVolumeTransactionError",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalVolume",
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(
+					errors.New("transaction error")).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "failed to add volume transaction")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "ImportVolumeError_CleanupSucceeds",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalVolume",
+				StorageClass:       "gold",
+				Size:               "100",
+				VolumeMode:         config.Filesystem,
+				AccessMode:         config.ReadWriteMany,
+				Protocol:           config.File,
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				originalBackendVol := &storage.VolumeExternal{
+					Config: &storage.VolumeConfig{
+						InternalName: "originalVolume",
+						Size:         "100",
+					},
+				}
+				fakeStorageClass := getFakeStorageClass("gold")
+				fakePool1 := storage.NewStoragePool(nil, "pool1")
+
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").Return(originalBackendVol, nil).Times(1)
+				mockBackend.EXPECT().ImportVolume(gomock.Any(), gomock.Any()).Return(
+					nil, errors.New("volume import error in backend")).Times(1)
+
+				volConfig.InternalName = "testVolume" // setting this because of trident managed import
+
+				// Make sure the cleanup routine calls volume rename and remove cached volume
+				mockBackend.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(nil).Times(1)
+				mockBackend.EXPECT().RemoveCachedVolume("testVolume").Times(1)
+
+				fakePool1.SetBackend(mockBackend)
+				fakePool1.AddStorageClass("gold")
+
+				addStorageClassesToCache(t, fakeStorageClass)
+				addBackendsToCache(t, mockBackend)
+
+				mockBackend.EXPECT().StoragePools().Return(
+					func() *sync.Map {
+						m := sync.Map{}
+						m.Store("pool1", fakePool1)
+						return &m
+					}(),
+				).Times(1)
+
+				o.RebuildStorageClassPoolMap(testCtx)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "failed to import volume originalVolume on backend backend-uuid1: volume import error in backend")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "ImportVolumeError_CleanupFailure",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalVolume",
+				StorageClass:       "gold",
+				Size:               "100",
+				VolumeMode:         config.Filesystem,
+				AccessMode:         config.ReadWriteMany,
+				Protocol:           config.File,
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				originalBackendVol := &storage.VolumeExternal{
+					Config: &storage.VolumeConfig{
+						InternalName: "originalVolume",
+						Size:         "100",
+					},
+				}
+				fakeStorageClass := getFakeStorageClass("gold")
+				fakePool1 := storage.NewStoragePool(nil, "pool1")
+
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").Return(originalBackendVol, nil).Times(1)
+				mockBackend.EXPECT().ImportVolume(gomock.Any(), gomock.Any()).Return(
+					nil, errors.New("volume import error in backend")).Times(1)
+
+				volConfig.InternalName = "testVolume" // setting this because of trident managed import
+
+				// Make sure the cleanup routine calls volume rename and fails
+				mockBackend.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").
+					Return(errors.New("failed to rename volume")).Times(1)
+				mockBackend.EXPECT().RemoveCachedVolume("testVolume").Times(1)
+
+				fakePool1.SetBackend(mockBackend)
+				fakePool1.AddStorageClass("gold")
+
+				addStorageClassesToCache(t, fakeStorageClass)
+				addBackendsToCache(t, mockBackend)
+
+				mockBackend.EXPECT().StoragePools().Return(
+					func() *sync.Map {
+						m := sync.Map{}
+						m.Store("pool1", fakePool1)
+						return &m
+					}(),
+				).Times(1)
+
+				o.RebuildStorageClassPoolMap(testCtx)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "failed to import volume originalVolume on backend backend-uuid1: volume import error in backend")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "AddVolumeToStoreError_CleanupSuccess",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalVolume",
+				StorageClass:       "gold",
+				Size:               "100",
+				VolumeMode:         config.Filesystem,
+				AccessMode:         config.ReadWriteMany,
+				Protocol:           config.File,
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				originalBackendVol := &storage.VolumeExternal{
+					Config: &storage.VolumeConfig{
+						InternalName: "originalVolume",
+						Size:         "100",
+					},
+				}
+				fakeStorageClass := getFakeStorageClass("gold")
+				fakePool1 := storage.NewStoragePool(nil, "pool1")
+
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").Return(originalBackendVol, nil).Times(1)
+				mockBackend.EXPECT().ImportVolume(gomock.Any(), gomock.Any()).Return(
+					&storage.Volume{
+						Config: &storage.VolumeConfig{
+							Name:         "testVolume",
+							InternalName: "testVolume",
+						},
+					}, nil).Times(1)
+
+				volConfig.InternalName = "testVolume" // setting this because of trident managed import
+
+				// Make sure the cleanup routine calls volume rename and remove cached volume
+				mockBackend.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(nil).Times(1)
+				mockBackend.EXPECT().RemoveCachedVolume("testVolume").Times(1)
+
+				fakePool1.SetBackend(mockBackend)
+				fakePool1.AddStorageClass("gold")
+
+				addStorageClassesToCache(t, fakeStorageClass)
+				addBackendsToCache(t, mockBackend)
+
+				mockBackend.EXPECT().StoragePools().Return(
+					func() *sync.Map {
+						m := sync.Map{}
+						m.Store("pool1", fakePool1)
+						return &m
+					}(),
+				).Times(1)
+
+				o.RebuildStorageClassPoolMap(testCtx)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(errors.New("failed to add volume to persistence")).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "failed to persist imported volume data: failed to add volume to persistence")
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "HandlePreviouslyFailedImportTxn_Success",
+			volumeConfig: &storage.VolumeConfig{
+				Name:               "testVolume",
+				ImportBackendUUID:  "backend-uuid1",
+				ImportOriginalName: "originalVolume",
+				StorageClass:       "gold",
+				Size:               "100",
+				VolumeMode:         config.Filesystem,
+				AccessMode:         config.ReadWriteMany,
+				Protocol:           config.File,
+			},
+			bootstrapErr: nil,
+			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				originalBackendVol := &storage.VolumeExternal{
+					Config: &storage.VolumeConfig{
+						InternalName: "originalVolume",
+						Size:         "100",
+					},
+				}
+				existingVolTxn := &storage.VolumeTransaction{
+					Op: storage.ImportVolume,
+					Config: &storage.VolumeConfig{
+						Name:               "testVolume",
+						InternalName:       "testVolume",
+						ImportOriginalName: "originalVolume",
+					},
+				}
+				fakeStorageClass := getFakeStorageClass("gold")
+				fakePool1 := storage.NewStoragePool(nil, "pool1")
+
+				mockBackend1 := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend2 := getMockBackend(mockCtrl, "testBackend2", "backend-uuid2")
+				mockBackend3 := getMockBackend(mockCtrl, "testBackend3", "backend-uuid3")
+				mockBackend4 := getMockBackend(mockCtrl, "testBackend4", "backend-uuid4")
+
+				mockBackend1.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").Return(originalBackendVol, nil).Times(1)
+				mockBackend1.EXPECT().ImportVolume(gomock.Any(), gomock.Any()).Return(
+					&storage.Volume{
+						Config: &storage.VolumeConfig{
+							Name:         "testVolume",
+							InternalName: "testVolume",
+						},
+					}, nil).Times(1)
+
+				volConfig.InternalName = "testVolume" // setting this because of trident managed import
+
+				mockBackend1.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(nil).Times(1)
+				mockBackend2.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(errors.New("vol not found")).AnyTimes()
+				mockBackend3.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(errors.New("vol not found")).AnyTimes()
+				mockBackend4.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(errors.New("vol not found")).AnyTimes()
+
+				fakePool1.SetBackend(mockBackend1)
+				fakePool1.AddStorageClass("gold")
+
+				addStorageClassesToCache(t, fakeStorageClass)
+				addBackendsToCache(t, mockBackend2, mockBackend3, mockBackend4, mockBackend1)
+
+				mockBackend1.EXPECT().StoragePools().Return(
+					func() *sync.Map {
+						m := sync.Map{}
+						m.Store("pool1", fakePool1)
+						return &m
+					}(),
+				).Times(1)
+
+				mockBackend2.EXPECT().StoragePools().Return(
+					func() *sync.Map {
+						m := sync.Map{}
+						m.Store("pool1", fakePool1)
+						return &m
+					}(),
+				).Times(1)
+
+				mockBackend3.EXPECT().StoragePools().Return(
+					func() *sync.Map {
+						m := sync.Map{}
+						m.Store("pool1", fakePool1)
+						return &m
+					}(),
+				).Times(1)
+
+				mockBackend4.EXPECT().StoragePools().Return(
+					func() *sync.Map {
+						m := sync.Map{}
+						m.Store("pool1", fakePool1)
+						return &m
+					}(),
+				).Times(1)
+
+				o.RebuildStorageClassPoolMap(testCtx)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(existingVolTxn, nil).Times(1)
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(2)
+				mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.Nil(t, err)
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				assert.Equal(t, result.Config.Name, "testVolume")
+
+				// verify the volume is in the cache
+				volume := getVolumeByNameFromCache(t, "testVolume")
+				assert.NotNil(t, volume)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			o.bootstrapError = tt.bootstrapErr
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(tt.volumeConfig, mockCtrl, mockStoreClient, o)
+			}
+
+			result, err := o.ImportVolume(testCtx, tt.volumeConfig)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			if tt.verifyResult != nil {
+				tt.verifyResult(result)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
 func TestAddBackendConcurrentCore(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -2264,6 +3695,23 @@ func TestAddBackendConcurrentCore(t *testing.T) {
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "persistent store error")
+			},
+		},
+		// add test cases for  handling bootstrap error
+		{
+			name:       "BootstrapError",
+			configJSON: `{"backendName": "backened1", "storageDriverName": "fake", "version": 1, "protocol": "file"}`,
+			configRef:  "",
+			setupMocks: func(t *testing.T, o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				o.bootstrapError = errors.New("bootstrap error")
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+			verifyResult: func(backend *storage.BackendExternal) {
+				assert.Nil(t, backend)
+				// Additionally verify the backend is not added to the cache
+				assert.Nil(t, getBackendByNameFromCache(t, "backened1"))
 			},
 		},
 	}
@@ -8876,955 +10324,6 @@ func TestResizeSubordinateVolumeConcurrentCore(t *testing.T) {
 	}
 }
 
-func TestImportVolumeConcurrentCore(t *testing.T) {
-	tests := []struct {
-		name         string
-		volumeConfig *storage.VolumeConfig
-		bootstrapErr error
-		setupMocks   func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller,
-			mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
-		verifyError  func(err error)
-		verifyResult func(result *storage.VolumeExternal)
-	}{
-		{
-			name: "Success_ImportManaged",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalBackendVolume",
-				ImportNotManaged:   false,
-				StorageClass:       "gold",
-				Size:               "100",
-				VolumeMode:         config.Filesystem,
-				AccessMode:         config.ReadWriteMany,
-				Protocol:           config.File,
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				originalBackendVol := &storage.VolumeExternal{
-					Config: &storage.VolumeConfig{
-						InternalName: "originalBackendVolume",
-						Size:         "100",
-					},
-				}
-
-				fakeStorageClass := getFakeStorageClass("gold")
-				fakePool1 := storage.NewStoragePool(nil, "pool1")
-				fakePool1.AddStorageClass("gold")
-				fakeConfig := getFakeStorageDriverConfig("fakeDriver")
-				fakeDriver := fakedriver.NewFakeStorageDriver(testCtx, fakeConfig)
-				fakeDriver.Volumes[originalBackendVol.Config.InternalName] = fake.Volume{
-					Name: "originalBackendVolume", SizeBytes: 100,
-				}
-				fakeBackend := getFakeBackend("testBackend", "backend-uuid1", fakeDriver)
-				fakeBackend.AddStoragePool(fakePool1)
-				fakePool1.SetBackend(fakeBackend)
-
-				addStorageClassesToCache(t, fakeStorageClass)
-				addBackendsToCache(t, fakeBackend)
-
-				o.RebuildStorageClassPoolMap(testCtx)
-
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-			},
-			verifyError: func(err error) {
-				assert.NoError(t, err)
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				require.NotNil(t, result)
-				assert.Equal(t, "testVolume", result.Config.Name)
-				assert.Equal(t, "testVolume", result.Config.InternalName)
-
-				// verify the volume is added to the cache
-				volume := getVolumeByNameFromCache(t, "testVolume")
-				assert.NotNil(t, volume)
-				assert.Equal(t, "100", volume.Config.Size)
-			},
-		},
-		{
-			name: "Success_ImportNotManaged",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalBackendVolume",
-				ImportNotManaged:   true,
-				StorageClass:       "gold",
-				Size:               "100",
-				VolumeMode:         config.Filesystem,
-				AccessMode:         config.ReadWriteMany,
-				Protocol:           config.File,
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				originalBackendVol := &storage.VolumeExternal{
-					Config: &storage.VolumeConfig{
-						InternalName: "originalBackendVolume",
-						Size:         "100",
-					},
-				}
-				fakeStorageClass := getFakeStorageClass("gold")
-				fakePool1 := storage.NewStoragePool(nil, "pool1")
-
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
-				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalBackendVolume").Return(originalBackendVol, nil).Times(1)
-				mockBackend.EXPECT().ImportVolume(gomock.Any(), gomock.Any()).Return(
-					&storage.Volume{
-						Config: &storage.VolumeConfig{
-							Name:         "testVolume",
-							InternalName: "originalBackendVolume",
-						},
-					}, nil).Times(1)
-				mockBackend.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
-
-				fakePool1.SetBackend(mockBackend)
-				fakePool1.AddStorageClass("gold")
-
-				addStorageClassesToCache(t, fakeStorageClass)
-				addBackendsToCache(t, mockBackend)
-
-				o.RebuildStorageClassPoolMap(testCtx)
-
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-			},
-			verifyError: func(err error) {
-				assert.NoError(t, err)
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				require.NotNil(t, result)
-				assert.Equal(t, "testVolume", result.Config.Name)
-				assert.Equal(t, "originalBackendVolume", result.Config.InternalName)
-
-				// verify the volume is added to the cache
-				volume := getVolumeByNameFromCache(t, "testVolume")
-				assert.NotNil(t, volume)
-			},
-		},
-		{
-			name: "BootstrapError",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalVolume",
-			},
-			bootstrapErr: errors.New("bootstrap error"),
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				// No setup needed
-			},
-			verifyError: func(err error) {
-				assert.Error(t, err)
-				assert.Equal(t, "bootstrap error", err.Error())
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Nil(t, result)
-			},
-		},
-		{
-			name: "VolumeAlreadyExists",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalVolume",
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
-
-				// Add a volume to the cache
-				existingVolume := &storage.Volume{
-					Config:      &storage.VolumeConfig{Name: "testVolume", InternalName: "testVolume"},
-					BackendUUID: "backend-uuid1",
-				}
-
-				addBackendsToCache(t, mockBackend)
-				addVolumesToCache(t, existingVolume)
-
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-			},
-			verifyError: func(err error) {
-				assert.ErrorContains(t, err, "volume testVolume already exists")
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Nil(t, result)
-			},
-		},
-		{
-			name: "BackendNotFound",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalVolume",
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-			},
-			verifyError: func(err error) {
-				assert.ErrorContains(t, err, "backend backend-uuid1 not found")
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Nil(t, result)
-			},
-		},
-		{
-			name: "UnknownStorageClass",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalVolume",
-				StorageClass:       "gold",
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
-				addBackendsToCache(t, mockBackend)
-
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-			},
-			verifyError: func(err error) {
-				assert.ErrorContains(t, err, "unknown storage class: gold")
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Nil(t, result)
-			},
-		},
-		{
-			name: "BackendStorageVolumeNotFound",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalVolume",
-				StorageClass:       "gold",
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
-				fakeStorageClass := getFakeStorageClass("gold")
-
-				addBackendsToCache(t, mockBackend)
-				addStorageClassesToCache(t, fakeStorageClass)
-
-				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
-					Return(nil, errors.New("volume get error")).Times(1)
-
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-			},
-			verifyError: func(err error) {
-				assert.ErrorContains(t, err, "volume originalVolume was not found: volume get error")
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Nil(t, result)
-			},
-		},
-		{
-			name: "RequestedSizeParseError",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalVolume",
-				StorageClass:       "gold",
-				Size:               "100Gi",
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
-				fakeStorageClass := getFakeStorageClass("gold")
-
-				addBackendsToCache(t, mockBackend)
-				addStorageClassesToCache(t, fakeStorageClass)
-
-				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
-					Return(&storage.VolumeExternal{
-						Config: &storage.VolumeConfig{
-							InternalName: "originalBackendVolume",
-							Size:         "100",
-						},
-					}, nil).Times(1)
-
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-			},
-			verifyError: func(err error) {
-				assert.ErrorContains(t, err, "could not determine requested size to import:")
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Nil(t, result)
-			},
-		},
-		{
-			name: "ActualSizeParseError",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalVolume",
-				StorageClass:       "gold",
-				Size:               "100",
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
-				fakeStorageClass := getFakeStorageClass("gold")
-
-				addBackendsToCache(t, mockBackend)
-				addStorageClassesToCache(t, fakeStorageClass)
-
-				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
-					Return(&storage.VolumeExternal{
-						Config: &storage.VolumeConfig{
-							InternalName: "originalBackendVolume",
-							Size:         "100Gi",
-						},
-					}, nil).Times(1)
-
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-			},
-			verifyError: func(err error) {
-				assert.ErrorContains(t, err, "could not determine actual size of the volume being imported:")
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Nil(t, result)
-			},
-		},
-		{
-			name: "RequestedSizeGreaterThanActualSize",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalVolume",
-				StorageClass:       "gold",
-				Size:               "100",
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
-				fakeStorageClass := getFakeStorageClass("gold")
-
-				addBackendsToCache(t, mockBackend)
-				addStorageClassesToCache(t, fakeStorageClass)
-
-				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
-					Return(&storage.VolumeExternal{
-						Config: &storage.VolumeConfig{
-							InternalName: "originalBackendVolume",
-							Size:         "50",
-						},
-					}, nil).Times(1)
-
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-			},
-			verifyError: func(err error) {
-				assert.ErrorContains(t, err, "unsupported capacity range; requested size is more than actual size")
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Nil(t, result)
-			},
-		},
-		{
-			name: "PVAlreadyExistsForVolume",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalVolume",
-				StorageClass:       "gold",
-				Size:               "100",
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
-				fakeStorageClass := getFakeStorageClass("gold")
-
-				addBackendsToCache(t, mockBackend)
-				addStorageClassesToCache(t, fakeStorageClass)
-
-				// Add another volume to the cache with the same backend volume
-				anotherVolume := &storage.Volume{
-					Config:      &storage.VolumeConfig{Name: "anotherVolume", InternalName: "originalVolume"},
-					BackendUUID: "backend-uuid1",
-				}
-				addVolumesToCache(t, anotherVolume)
-
-				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
-					Return(&storage.VolumeExternal{
-						Config: &storage.VolumeConfig{
-							InternalName: "originalVolume",
-							Size:         "100",
-						},
-					}, nil).Times(1)
-
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-			},
-			verifyError: func(err error) {
-				assert.ErrorContains(t, err, "PV originalVolume already exists for volume anotherVolume")
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Nil(t, result)
-			},
-		},
-		{
-			name: "BackendStorageClassMismatch",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalVolume",
-				StorageClass:       "gold",
-				Size:               "100",
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
-				fakeStorageClass := getFakeStorageClass("gold")
-				fakePool1 := storage.NewStoragePool(nil, "pool1")
-				fakePool1.AddStorageClass("silver") // Mismatched storage class
-				fakePool1.SetBackend(mockBackend)
-
-				mockBackend.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						return &sync.Map{}
-					}(),
-				).Times(1)
-
-				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
-					Return(&storage.VolumeExternal{
-						Config: &storage.VolumeConfig{
-							InternalName: "originalVolume",
-							Size:         "100",
-						},
-					}, nil).Times(1)
-
-				addBackendsToCache(t, mockBackend)
-				addStorageClassesToCache(t, fakeStorageClass)
-
-				o.RebuildStorageClassPoolMap(testCtx)
-
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-			},
-			verifyError: func(err error) {
-				assert.ErrorContains(t, err, "storageClass gold does not match any storage pools for backend testBackend1")
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Nil(t, result)
-			},
-		},
-		{
-			name: "InvalidMode",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalVolume",
-				StorageClass:       "gold",
-				Size:               "100",
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
-				fakeStorageClass := getFakeStorageClass("gold")
-				fakePool1 := storage.NewStoragePool(nil, "pool1")
-
-				fakePool1.AddStorageClass("gold")
-				fakePool1.SetBackend(mockBackend)
-
-				mockBackend.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
-
-				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
-					Return(&storage.VolumeExternal{
-						Config: &storage.VolumeConfig{
-							InternalName: "originalVolume",
-							Size:         "100",
-						},
-					}, nil).Times(1)
-
-				addBackendsToCache(t, mockBackend)
-				addStorageClassesToCache(t, fakeStorageClass)
-
-				o.RebuildStorageClassPoolMap(testCtx)
-
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-			},
-			verifyError: func(err error) {
-				assert.ErrorContains(t, err, "invalid volume mode (), access mode () or protocol ()")
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Nil(t, result)
-			},
-		},
-		{
-			name: "BackendProtocolMismatch",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalVolume",
-				StorageClass:       "gold",
-				Size:               "100",
-				Protocol:           config.Block,
-				AccessMode:         config.ReadWriteMany,
-				VolumeMode:         config.RawBlock,
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
-				fakeStorageClass := getFakeStorageClass("gold")
-				fakePool1 := storage.NewStoragePool(nil, "pool1")
-
-				fakePool1.AddStorageClass("gold")
-				fakePool1.SetBackend(mockBackend)
-
-				mockBackend.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
-
-				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
-					Return(&storage.VolumeExternal{
-						Config: &storage.VolumeConfig{
-							InternalName: "originalVolume",
-							Size:         "100",
-						},
-					}, nil).Times(1)
-
-				addBackendsToCache(t, mockBackend)
-				addStorageClassesToCache(t, fakeStorageClass)
-
-				o.RebuildStorageClassPoolMap(testCtx)
-
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-			},
-			verifyError: func(err error) {
-				assert.ErrorContains(t, err, "requested volume mode (Block), access mode (ReadWriteMany), protocol (block) are incompatible with the backend testBackend1")
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Nil(t, result)
-			},
-		},
-		{
-			name: "NoBackendSpecified",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "",
-				ImportOriginalName: "originalVolume",
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				// No setup needed
-			},
-			verifyError: func(err error) {
-				assert.ErrorContains(t, err, "no backend specified for import")
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Nil(t, result)
-			},
-		},
-		{
-			name: "OriginalNameNotSpecified",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "",
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				// No setup needed
-			},
-			verifyError: func(err error) {
-				assert.ErrorContains(t, err, "original name not specified")
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Nil(t, result)
-			},
-		},
-		{
-			name: "AddVolumeTransactionError",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalVolume",
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(
-					errors.New("transaction error")).Times(1)
-			},
-			verifyError: func(err error) {
-				assert.ErrorContains(t, err, "failed to add volume transaction")
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Nil(t, result)
-			},
-		},
-		{
-			name: "ImportVolumeError_CleanupSucceeds",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalVolume",
-				StorageClass:       "gold",
-				Size:               "100",
-				VolumeMode:         config.Filesystem,
-				AccessMode:         config.ReadWriteMany,
-				Protocol:           config.File,
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				originalBackendVol := &storage.VolumeExternal{
-					Config: &storage.VolumeConfig{
-						InternalName: "originalVolume",
-						Size:         "100",
-					},
-				}
-				fakeStorageClass := getFakeStorageClass("gold")
-				fakePool1 := storage.NewStoragePool(nil, "pool1")
-
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
-				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").Return(originalBackendVol, nil).Times(1)
-				mockBackend.EXPECT().ImportVolume(gomock.Any(), gomock.Any()).Return(
-					nil, errors.New("volume import error in backend")).Times(1)
-
-				volConfig.InternalName = "testVolume" // setting this because of trident managed import
-
-				// Make sure the cleanup routine calls volume rename and remove cached volume
-				mockBackend.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(nil).Times(1)
-				mockBackend.EXPECT().RemoveCachedVolume("testVolume").Times(1)
-
-				fakePool1.SetBackend(mockBackend)
-				fakePool1.AddStorageClass("gold")
-
-				addStorageClassesToCache(t, fakeStorageClass)
-				addBackendsToCache(t, mockBackend)
-
-				mockBackend.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
-
-				o.RebuildStorageClassPoolMap(testCtx)
-
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-			},
-			verifyError: func(err error) {
-				assert.ErrorContains(t, err, "failed to import volume originalVolume on backend backend-uuid1: volume import error in backend")
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Nil(t, result)
-			},
-		},
-		{
-			name: "ImportVolumeError_CleanupFailure",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalVolume",
-				StorageClass:       "gold",
-				Size:               "100",
-				VolumeMode:         config.Filesystem,
-				AccessMode:         config.ReadWriteMany,
-				Protocol:           config.File,
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				originalBackendVol := &storage.VolumeExternal{
-					Config: &storage.VolumeConfig{
-						InternalName: "originalVolume",
-						Size:         "100",
-					},
-				}
-				fakeStorageClass := getFakeStorageClass("gold")
-				fakePool1 := storage.NewStoragePool(nil, "pool1")
-
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
-				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").Return(originalBackendVol, nil).Times(1)
-				mockBackend.EXPECT().ImportVolume(gomock.Any(), gomock.Any()).Return(
-					nil, errors.New("volume import error in backend")).Times(1)
-
-				volConfig.InternalName = "testVolume" // setting this because of trident managed import
-
-				// Make sure the cleanup routine calls volume rename and fails
-				mockBackend.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").
-					Return(errors.New("failed to rename volume")).Times(1)
-				mockBackend.EXPECT().RemoveCachedVolume("testVolume").Times(1)
-
-				fakePool1.SetBackend(mockBackend)
-				fakePool1.AddStorageClass("gold")
-
-				addStorageClassesToCache(t, fakeStorageClass)
-				addBackendsToCache(t, mockBackend)
-
-				mockBackend.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
-
-				o.RebuildStorageClassPoolMap(testCtx)
-
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-			},
-			verifyError: func(err error) {
-				assert.ErrorContains(t, err, "failed to import volume originalVolume on backend backend-uuid1: volume import error in backend")
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Nil(t, result)
-			},
-		},
-		{
-			name: "AddVolumeToStoreError_CleanupSuccess",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalVolume",
-				StorageClass:       "gold",
-				Size:               "100",
-				VolumeMode:         config.Filesystem,
-				AccessMode:         config.ReadWriteMany,
-				Protocol:           config.File,
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				originalBackendVol := &storage.VolumeExternal{
-					Config: &storage.VolumeConfig{
-						InternalName: "originalVolume",
-						Size:         "100",
-					},
-				}
-				fakeStorageClass := getFakeStorageClass("gold")
-				fakePool1 := storage.NewStoragePool(nil, "pool1")
-
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
-				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").Return(originalBackendVol, nil).Times(1)
-				mockBackend.EXPECT().ImportVolume(gomock.Any(), gomock.Any()).Return(
-					&storage.Volume{
-						Config: &storage.VolumeConfig{
-							Name:         "testVolume",
-							InternalName: "testVolume",
-						},
-					}, nil).Times(1)
-
-				volConfig.InternalName = "testVolume" // setting this because of trident managed import
-
-				// Make sure the cleanup routine calls volume rename and remove cached volume
-				mockBackend.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(nil).Times(1)
-				mockBackend.EXPECT().RemoveCachedVolume("testVolume").Times(1)
-
-				fakePool1.SetBackend(mockBackend)
-				fakePool1.AddStorageClass("gold")
-
-				addStorageClassesToCache(t, fakeStorageClass)
-				addBackendsToCache(t, mockBackend)
-
-				mockBackend.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
-
-				o.RebuildStorageClassPoolMap(testCtx)
-
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(errors.New("failed to add volume to persistence")).Times(1)
-			},
-			verifyError: func(err error) {
-				assert.ErrorContains(t, err, "failed to persist imported volume data: failed to add volume to persistence")
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Nil(t, result)
-			},
-		},
-		{
-			name: "HandlePreviouslyFailedImportTxn_Success",
-			volumeConfig: &storage.VolumeConfig{
-				Name:               "testVolume",
-				ImportBackendUUID:  "backend-uuid1",
-				ImportOriginalName: "originalVolume",
-				StorageClass:       "gold",
-				Size:               "100",
-				VolumeMode:         config.Filesystem,
-				AccessMode:         config.ReadWriteMany,
-				Protocol:           config.File,
-			},
-			bootstrapErr: nil,
-			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				originalBackendVol := &storage.VolumeExternal{
-					Config: &storage.VolumeConfig{
-						InternalName: "originalVolume",
-						Size:         "100",
-					},
-				}
-				existingVolTxn := &storage.VolumeTransaction{
-					Op: storage.ImportVolume,
-					Config: &storage.VolumeConfig{
-						Name:               "testVolume",
-						InternalName:       "testVolume",
-						ImportOriginalName: "originalVolume",
-					},
-				}
-				fakeStorageClass := getFakeStorageClass("gold")
-				fakePool1 := storage.NewStoragePool(nil, "pool1")
-
-				mockBackend1 := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
-				mockBackend2 := getMockBackend(mockCtrl, "testBackend2", "backend-uuid2")
-				mockBackend3 := getMockBackend(mockCtrl, "testBackend3", "backend-uuid3")
-				mockBackend4 := getMockBackend(mockCtrl, "testBackend4", "backend-uuid4")
-
-				mockBackend1.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").Return(originalBackendVol, nil).Times(1)
-				mockBackend1.EXPECT().ImportVolume(gomock.Any(), gomock.Any()).Return(
-					&storage.Volume{
-						Config: &storage.VolumeConfig{
-							Name:         "testVolume",
-							InternalName: "testVolume",
-						},
-					}, nil).Times(1)
-
-				volConfig.InternalName = "testVolume" // setting this because of trident managed import
-
-				mockBackend1.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(nil).Times(1)
-				mockBackend2.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(errors.New("vol not found")).AnyTimes()
-				mockBackend3.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(errors.New("vol not found")).AnyTimes()
-				mockBackend4.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(errors.New("vol not found")).AnyTimes()
-
-				fakePool1.SetBackend(mockBackend1)
-				fakePool1.AddStorageClass("gold")
-
-				addStorageClassesToCache(t, fakeStorageClass)
-				addBackendsToCache(t, mockBackend2, mockBackend3, mockBackend4, mockBackend1)
-
-				mockBackend1.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
-
-				mockBackend2.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
-
-				mockBackend3.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
-
-				mockBackend4.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
-
-				o.RebuildStorageClassPoolMap(testCtx)
-
-				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(existingVolTxn, nil).Times(1)
-				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(2)
-				mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-			},
-			verifyError: func(err error) {
-				assert.Nil(t, err)
-			},
-			verifyResult: func(result *storage.VolumeExternal) {
-				assert.Equal(t, result.Config.Name, "testVolume")
-
-				// verify the volume is in the cache
-				volume := getVolumeByNameFromCache(t, "testVolume")
-				assert.NotNil(t, volume)
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
-
-			// Re-initialize the concurrent cache for each test
-			db.Initialize()
-
-			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-			o := getConcurrentOrchestrator()
-			o.storeClient = mockStoreClient
-
-			o.bootstrapError = tt.bootstrapErr
-
-			if tt.setupMocks != nil {
-				tt.setupMocks(tt.volumeConfig, mockCtrl, mockStoreClient, o)
-			}
-
-			result, err := o.ImportVolume(testCtx, tt.volumeConfig)
-
-			if tt.verifyError != nil {
-				tt.verifyError(err)
-			}
-
-			if tt.verifyResult != nil {
-				tt.verifyResult(result)
-			}
-
-			persistenceCleanup(t, o)
-		})
-	}
-}
-
 func TestGetCHAPConcurrentCore(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -10029,6 +10528,641 @@ func TestRemoveBackendConfigRef(t *testing.T) {
 
 			if tt.verifyError != nil {
 				tt.verifyError(err)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestCheckForBackendNameChange(t *testing.T) {
+	tests := []struct {
+		name        string
+		configJSON  string
+		backendName string
+		want        string
+		wantErr     bool
+	}{
+		{
+			name:        "No change in backend name",
+			configJSON:  `{"version":1,"backendName":"ontap1"}`,
+			backendName: "ontap1",
+			want:        "",
+			wantErr:     false,
+		},
+		{
+			name:        "Backend name changed",
+			configJSON:  `{"version":1,"backendName":"ontap2"}`,
+			backendName: "ontap1",
+			want:        "ontap2",
+			wantErr:     false,
+		},
+		{
+			name:        "No backend name in config",
+			configJSON:  `{"version":1}`,
+			backendName: "ontap1",
+			want:        "",
+			wantErr:     false,
+		},
+		{
+			name:        "Invalid JSON",
+			configJSON:  `{invalid`,
+			backendName: "ontap1",
+			want:        "",
+			wantErr:     true,
+		},
+	}
+
+	o := &ConcurrentTridentOrchestrator{}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := o.checkForBackendNameChange(tt.configJSON, tt.backendName)
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tt.want, got)
+			}
+		})
+	}
+}
+
+func TestCleanupDeletingBackendsConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name           string
+		setupMocks     func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient)
+		verifyBehavior func(t *testing.T, o *ConcurrentTridentOrchestrator)
+	}{
+		{
+			name: "Success_CleanupDeletingBackendsWithoutVolumes",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend1 := getFakeBackend("testBackend1", "backend-uuid1", nil)
+				mockBackend2 := getMockBackend(mockCtrl, "testBackend2", "backend-uuid2")
+
+				// Backend1 is deleting and has no volumes
+				mockBackend1.SetState(storage.Deleting)
+				mockBackend1.SetOnline(true)
+
+				// Backend2 is online, should not be cleaned up
+				mockBackend2.EXPECT().State().Return(storage.Online).AnyTimes()
+				mockBackend2.EXPECT().HasVolumes().Return(false).Times(1)
+				mockStoreClient.EXPECT().IsBackendDeleting(gomock.Any(), mockBackend2).Return(false).Times(1)
+
+				addBackendsToCache(t, mockBackend1, mockBackend2)
+
+				// Expect deletion of backend1
+				mockStoreClient.EXPECT().DeleteBackend(gomock.Any(), mockBackend1).Return(nil).Times(1)
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// Verify backend1 was removed from cache
+				backend := getBackendByUuidFromCache(t, "backend-uuid1")
+				assert.Nil(t, backend)
+
+				// Verify backend2 is still in cache
+				backend2 := getBackendByUuidFromCache(t, "backend-uuid2")
+				assert.NotNil(t, backend2)
+			},
+		},
+		{
+			name: "Success_CleanupBackendMarkedDeletingByStore",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+
+				// Backend is online but store client says it's deleting
+				mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+				mockBackend.EXPECT().HasVolumes().Return(false).Times(1)
+				mockBackend.EXPECT().Terminate(gomock.Any()).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+
+				mockStoreClient.EXPECT().IsBackendDeleting(gomock.Any(), mockBackend).Return(true).Times(1)
+				mockStoreClient.EXPECT().DeleteBackend(gomock.Any(), mockBackend).Return(nil).Times(1)
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// Verify backend was removed from cache
+				backend := getBackendByUuidFromCache(t, "backend-uuid1")
+				assert.Nil(t, backend)
+			},
+		},
+		{
+			name: "SkipFailedBackends",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend := getFakeBackend("testBackend1", "backend-uuid1", nil)
+
+				// Backend is failed - should be skipped
+				mockBackend.SetState(storage.Failed)
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// Verify backend is still in cache (not cleaned up)
+				backend := getBackendByUuidFromCache(t, "backend-uuid1")
+				assert.NotNil(t, backend)
+			},
+		},
+		{
+			name: "SkipBackendsWithVolumes",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend := mockstorage.NewMockBackend(mockCtrl)
+
+				// Backend is deleting but has volumes - should be skipped
+				mockBackend.EXPECT().Name().Return("testBackend1").AnyTimes()
+				mockBackend.EXPECT().BackendUUID().Return("backend-uuid1").AnyTimes()
+				mockBackend.EXPECT().GetProtocol(gomock.Any()).Return(config.File).AnyTimes()
+				mockBackend.EXPECT().GetDriverName().Return("ontap-nas").AnyTimes()
+				mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+				mockBackend.EXPECT().Online().Return(true).AnyTimes()
+				mockBackend.EXPECT().HasVolumes().Return(true).AnyTimes()
+				mockBackend.EXPECT().SmartCopy().Return(mockBackend).AnyTimes()
+				mockBackend.EXPECT().GetUniqueKey().Return("testBackend1").AnyTimes()
+				mockBackend.EXPECT().ConstructPersistent(gomock.Any()).Return(&storage.BackendPersistent{Name: "testBackend1", BackendUUID: "backend-uuid1"}).AnyTimes()
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// Verify backend is still in cache (not cleaned up)
+				backend := getBackendByUuidFromCache(t, "backend-uuid1")
+				assert.NotNil(t, backend)
+			},
+		},
+		{
+			name: "SkipOnlineBackendsNotMarkedDeletingByStore",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+
+				// Backend is online and store doesn't mark it as deleting
+				mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+				mockBackend.EXPECT().HasVolumes().Return(false).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+
+				mockStoreClient.EXPECT().IsBackendDeleting(gomock.Any(), mockBackend).Return(false).Times(1)
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// Verify backend is still in cache (not cleaned up)
+				backend := getBackendByUuidFromCache(t, "backend-uuid1")
+				assert.NotNil(t, backend)
+			},
+		},
+		{
+			name: "DeleteBackendStoreError_ContinueWithOthers",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend1 := getFakeBackend("testBackend1", "backend-uuid1", nil)
+				mockBackend2 := getFakeBackend("testBackend2", "backend-uuid2", nil)
+
+				// Both backends are deleting and have no volumes
+				mockBackend1.SetState(storage.Deleting)
+				mockBackend2.SetState(storage.Deleting)
+
+				addBackendsToCache(t, mockBackend1, mockBackend2)
+
+				// First backend deletion fails, second succeeds
+				mockStoreClient.EXPECT().DeleteBackend(gomock.Any(), mockBackend1).Return(errors.New("store error")).Times(1)
+				mockStoreClient.EXPECT().DeleteBackend(gomock.Any(), mockBackend2).Return(nil).Times(1)
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// Verify first backend is still in cache (deletion failed)
+				backend1 := getBackendByUuidFromCache(t, "backend-uuid1")
+				assert.NotNil(t, backend1)
+
+				// Verify second backend was removed from cache
+				backend2 := getBackendByUuidFromCache(t, "backend-uuid2")
+				assert.Nil(t, backend2)
+			},
+		},
+		{
+			name: "NoBackendsToCleanup",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+
+				// Backend is online and has volumes
+				mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+				mockBackend.EXPECT().HasVolumes().Return(true).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// Verify backend is still in cache
+				backend := getBackendByUuidFromCache(t, "backend-uuid1")
+				assert.NotNil(t, backend)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient)
+			}
+
+			o.cleanupDeletingBackends(testCtx)
+
+			if tt.verifyBehavior != nil {
+				tt.verifyBehavior(t, o)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestValidateBackendUpdateConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name        string
+		setupMocks  func(mockCtrl *gomock.Controller) (storage.Backend, storage.Backend)
+		verifyError func(err error)
+	}{
+		{
+			name: "Success_SameDriverType",
+			setupMocks: func(mockCtrl *gomock.Controller) (storage.Backend, storage.Backend) {
+				oldBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				newBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+
+				return oldBackend, newBackend
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name: "Error_DifferentDriverTypes",
+			setupMocks: func(mockCtrl *gomock.Controller) (storage.Backend, storage.Backend) {
+				oldBackend := mockstorage.NewMockBackend(mockCtrl)
+				oldBackend.EXPECT().Name().Return("testBackend1").AnyTimes()
+				oldBackend.EXPECT().BackendUUID().Return("backend-uuid1").AnyTimes()
+				oldBackend.EXPECT().GetProtocol(gomock.Any()).Return(config.File).AnyTimes()
+				oldBackend.EXPECT().GetDriverName().Return("ontap-nas").AnyTimes()
+
+				newBackend := mockstorage.NewMockBackend(mockCtrl)
+				newBackend.EXPECT().Name().Return("testBackend1").AnyTimes()
+				newBackend.EXPECT().BackendUUID().Return("backend-uuid1").AnyTimes()
+				newBackend.EXPECT().GetProtocol(gomock.Any()).Return(config.File).AnyTimes()
+				newBackend.EXPECT().GetDriverName().Return("ontap-san").AnyTimes()
+
+				return oldBackend, newBackend
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "cannot update the backend as the old backend is of type ontap-nas and the new backend is of type ontap-san")
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			o := getConcurrentOrchestrator()
+
+			oldBackend, newBackend := tt.setupMocks(mockCtrl)
+
+			err := o.validateBackendUpdate(oldBackend, newBackend)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+		})
+	}
+}
+
+func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name           string
+		setupMocks     func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend
+		verifyError    func(err error)
+		verifyBehavior func(t *testing.T, o *ConcurrentTridentOrchestrator)
+	}{
+		{
+			name: "Success_VolumeBecomesOrphaned",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockDriver := mockstorage.NewMockDriver(mockCtrl)
+
+				// Setup volume that exists in cache but not on backend (should become orphaned)
+				vol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:         "testVolume1",
+						InternalName: "testVolume1",
+					},
+					BackendUUID: "backend-uuid1",
+					Orphaned:    false,
+				}
+
+				addVolumesToCache(t, vol)
+				addBackendsToCache(t, mockBackend)
+
+				mockBackend.EXPECT().Driver().Return(mockDriver).Times(1)
+				mockDriver.EXPECT().Get(gomock.Any(), "testVolume1").Return(errors.New("volume not found")).Times(1)
+
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, volume *storage.Volume) error {
+					assert.True(t, volume.Orphaned)
+					return nil
+				}).Times(1)
+
+				mockBackend.EXPECT().Volumes().Return(&sync.Map{}).Times(1)
+
+				return mockBackend
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// Verify volume is marked as orphaned in cache
+				vol := getVolumeByNameFromCache(t, "testVolume1")
+				assert.NotNil(t, vol)
+				assert.True(t, vol.Orphaned)
+			},
+		},
+		{
+			name: "Success_OrphanedVolumeRecovered",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockDriver := mockstorage.NewMockDriver(mockCtrl)
+
+				// Setup orphaned volume that now exists on backend (should be recovered)
+				vol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:         "testVolume1",
+						InternalName: "testVolume1",
+					},
+					BackendUUID: "backend-uuid1",
+					Orphaned:    true,
+				}
+
+				addVolumesToCache(t, vol)
+				addBackendsToCache(t, mockBackend)
+
+				mockBackend.EXPECT().Driver().Return(mockDriver).Times(1)
+				mockDriver.EXPECT().Get(gomock.Any(), "testVolume1").Return(nil).Times(1)
+
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, volume *storage.Volume) error {
+					assert.False(t, volume.Orphaned)
+					return nil
+				}).Times(1)
+
+				mockBackend.EXPECT().Volumes().Return(&sync.Map{}).Times(1)
+
+				return mockBackend
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// Verify volume is no longer orphaned in cache
+				vol := getVolumeByNameFromCache(t, "testVolume1")
+				assert.NotNil(t, vol)
+				assert.False(t, vol.Orphaned)
+			},
+		},
+		{
+			name: "Success_NoStateChange",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockDriver := mockstorage.NewMockDriver(mockCtrl)
+
+				// Setup volume that exists and is not orphaned (no change needed)
+				vol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:         "testVolume1",
+						InternalName: "testVolume1",
+					},
+					BackendUUID: "backend-uuid1",
+					Orphaned:    false,
+				}
+
+				addVolumesToCache(t, vol)
+				addBackendsToCache(t, mockBackend)
+
+				mockBackend.EXPECT().Driver().Return(mockDriver).Times(1)
+				mockDriver.EXPECT().Get(gomock.Any(), "testVolume1").Return(nil).Times(1)
+
+				// No UpdateVolume call expected since state doesn't change
+				mockBackend.EXPECT().Volumes().Return(&sync.Map{}).Times(1)
+
+				return mockBackend
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// Verify volume state unchanged
+				vol := getVolumeByNameFromCache(t, "testVolume1")
+				assert.NotNil(t, vol)
+				assert.False(t, vol.Orphaned)
+			},
+		},
+		{
+			name: "Success_MultipleVolumes",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockDriver := mockstorage.NewMockDriver(mockCtrl)
+
+				// Setup multiple volumes with different states
+				vol1 := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:         "testVolume1",
+						InternalName: "testVolume1",
+					},
+					BackendUUID: "backend-uuid1",
+					Orphaned:    false,
+				}
+				vol2 := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:         "testVolume2",
+						InternalName: "testVolume2",
+					},
+					BackendUUID: "backend-uuid1",
+					Orphaned:    true,
+				}
+
+				addVolumesToCache(t, vol1, vol2)
+				addBackendsToCache(t, mockBackend)
+
+				mockBackend.EXPECT().Driver().Return(mockDriver).Times(2)
+				// Vol1 not found on backend (becomes orphaned)
+				mockDriver.EXPECT().Get(gomock.Any(), "testVolume1").Return(errors.New("not found")).Times(1)
+				// Vol2 found on backend (recovered)
+				mockDriver.EXPECT().Get(gomock.Any(), "testVolume2").Return(nil).Times(1)
+
+				// Expect two update calls
+				gomock.InOrder(
+					mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, volume *storage.Volume) error {
+						if volume.Config.Name == "testVolume1" {
+							assert.True(t, volume.Orphaned)
+						}
+						return nil
+					}).Times(1),
+					mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, volume *storage.Volume) error {
+						if volume.Config.Name == "testVolume2" {
+							assert.False(t, volume.Orphaned)
+						}
+						return nil
+					}).Times(1),
+				)
+
+				mockBackend.EXPECT().Volumes().Return(&sync.Map{}).Times(2)
+
+				return mockBackend
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				vol1 := getVolumeByNameFromCache(t, "testVolume1")
+				assert.NotNil(t, vol1)
+				assert.True(t, vol1.Orphaned)
+
+				vol2 := getVolumeByNameFromCache(t, "testVolume2")
+				assert.NotNil(t, vol2)
+				assert.False(t, vol2.Orphaned)
+			},
+		},
+		{
+			name: "Success_BackendNotFound",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+
+				vol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:         "testVolume1",
+						InternalName: "testVolume1",
+					},
+					BackendUUID: "backend-uuid1",
+					Orphaned:    false,
+				}
+
+				addVolumesToCache(t, vol)
+				// Don't add backend to cache - it will be not found after lock
+
+				return mockBackend
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// Function should return nil without error (best effort)
+			},
+		},
+		{
+			name: "Success_VolumeDeletedAfterQuery",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+
+				vol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:         "testVolume1",
+						InternalName: "testVolume1",
+					},
+					BackendUUID: "backend-uuid1",
+					Orphaned:    false,
+				}
+
+				addVolumesToCache(t, vol)
+				addBackendsToCache(t, mockBackend)
+
+				// Simulate volume being deleted after initial query by removing it from cache
+				removeVolumeFromCache(t, "testVolume1")
+
+				return mockBackend
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// Should handle gracefully when volume is nil
+			},
+		},
+		{
+			name: "Success_UpdateVolumeStoreError",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockDriver := mockstorage.NewMockDriver(mockCtrl)
+
+				vol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:         "testVolume1",
+						InternalName: "testVolume1",
+					},
+					BackendUUID: "backend-uuid1",
+					Orphaned:    false,
+				}
+
+				addVolumesToCache(t, vol)
+				addBackendsToCache(t, mockBackend)
+
+				mockBackend.EXPECT().Driver().Return(mockDriver).Times(1)
+				mockDriver.EXPECT().Get(gomock.Any(), "testVolume1").Return(errors.New("not found")).Times(1)
+
+				// Simulate store update failure
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(errors.New("store error")).Times(1)
+
+				return mockBackend
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err) // Function continues on store errors
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				vol := getVolumeByNameFromCache(t, "testVolume1")
+				assert.NotNil(t, vol)
+				// volume is not updated in cache, should still be not orphaned
+				assert.False(t, vol.Orphaned)
+			},
+		},
+		{
+			name: "Success_NoVolumesInBackend",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+
+				// Add backend but no volumes
+				addBackendsToCache(t, mockBackend)
+
+				return mockBackend
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// Should handle case with no volumes gracefully
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			var backend storage.Backend
+			if tt.setupMocks != nil {
+				backend = tt.setupMocks(mockCtrl, mockStoreClient, o)
+			}
+
+			err := o.updateBackendVolumes(testCtx, backend)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			if tt.verifyBehavior != nil {
+				tt.verifyBehavior(t, o)
 			}
 
 			persistenceCleanup(t, o)
