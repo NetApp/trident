@@ -5,6 +5,7 @@ package csi
 import (
 	"context"
 	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"math/big"
 	"os"
@@ -1259,6 +1260,26 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 			// DM device or empty.
 			publishInfo.DevicePath = publishedLUKsDevice
 		}
+	}
+
+	// Derive the device path using the LunSerial and LunID.
+	// The publishInfo.DevicePath may be incorrect due to Kernel actions.
+	// Fallback to using the publishInfo.DevicePath if the multipath device cannot be derived.
+	fields := LogFields{
+		"LunSerial": publishInfo.IscsiLunSerial,
+		"LunID":     publishInfo.IscsiLunNumber,
+	}
+	lunSerialHex := hex.EncodeToString([]byte(publishInfo.IscsiLunSerial))
+	multipathDevice, err := iscsiUtils.GetMultipathDeviceForLUN(ctx, lunSerialHex, int(publishInfo.IscsiLunNumber))
+	if err != nil {
+		Logc(ctx).WithError(err).WithFields(fields).Debug("Error finding multipath device for lun.")
+		if errors.IsNotFoundError(err) {
+			Logc(ctx).WithError(err).WithFields(fields).Debug("no multipath device is found for lun, resetting device info")
+			publishInfo.DevicePath = ""
+		}
+	} else {
+		Logc(ctx).WithFields(fields).Debugf("Found multipath device %s for lun.", multipathDevice)
+		publishInfo.DevicePath = "/dev/" + multipathDevice
 	}
 
 	// Delete the device from the host.

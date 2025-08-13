@@ -10,6 +10,7 @@ type IscsiReconcileUtils interface {
 	GetISCSIHostSessionMapForTarget(context.Context, string) map[int]int
 	GetSysfsBlockDirsForLUN(int, map[int]int) []string
 	GetMultipathDeviceUUID(string) (string, error)
+	GetMultipathDeviceForLUN(context.Context, string, int) (string, error)
 	GetMultipathDeviceBySerial(context.Context, string) (string, error)
 	GetMultipathDeviceDisks(context.Context, string) ([]string, error)
 	GetDevicesForLUN(paths []string) ([]string, error)

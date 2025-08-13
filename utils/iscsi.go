@@ -7,8 +7,10 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -478,8 +480,12 @@ func (h *IscsiReconcileHelper) GetMultipathDeviceDisks(ctx context.Context, mult
 	diskPath := chrootPathPrefix + fmt.Sprintf("/sys/block/%s/slaves/", multipathDevice)
 	diskDirs, err := os.ReadDir(diskPath)
 	if err != nil {
-		Logc(ctx).WithError(err).Errorf("Could not read %s", diskDirs)
-		return nil, fmt.Errorf("failed to identify multipath device disks; unable to read '%s'", diskDirs)
+		if errors.Is(err, fs.ErrNotExist) {
+			Logc(ctx).Warningf("multipath device directory %s does not exist, device is already gone?", diskDirs)
+			return nil, nil
+		}
+		Logc(ctx).WithError(err).Errorf("Could not read %s", diskPath)
+		return nil, fmt.Errorf("failed to identify multipath device disks; unable to read %q :%w", diskPath, err)
 	}
 
 	for _, diskDir := range diskDirs {
@@ -496,7 +502,10 @@ func (h *IscsiReconcileHelper) GetMultipathDeviceDisks(ctx context.Context, mult
 
 // GetMultipathDeviceBySerial find DM device whose UUID /sys/block/dmX/dm/uuid contains serial in hex format.
 func (h *IscsiReconcileHelper) GetMultipathDeviceBySerial(ctx context.Context, hexSerial string) (string, error) {
-	sysPath := chrootPathPrefix + "/sys/block/"
+	var (
+		sysPath             = chrootPathPrefix + "/sys/block/"
+		multipathCMDTimeout = 10 * time.Second
+	)
 
 	blockDirs, err := os.ReadDir(sysPath)
 	if err != nil {
@@ -520,16 +529,106 @@ func (h *IscsiReconcileHelper) GetMultipathDeviceBySerial(ctx context.Context, h
 			continue
 		}
 
-		if strings.Contains(uuid, hexSerial) {
+		if !strings.Contains(uuid, hexSerial) {
+			continue
+		}
+
+		// Use 'multipath -l' and check the exit code. A success return
+		// indicates that it is a not a stale device. Noted that frequently
+		// running this in a busy environment may time out, and lead to a
+		// situation that the device is not properly discovered. But it will
+		// fail the following operations and retries next time.
+		if _, err := command.ExecuteWithTimeout(ctx, "multipath", multipathCMDTimeout, true, "-l", dmDeviceName); err != nil {
 			Logc(ctx).WithFields(LogFields{
-				"UUID":            hexSerial,
-				"multipathDevice": dmDeviceName,
-			}).Debug("Found multipath device by UUID.")
+				"device": dmDeviceName,
+			}).WithError(err).Warn("Candidate is not a valid map known to multipathd, ignoring stale entry.")
+			continue
+		}
+
+		Logc(ctx).WithFields(LogFields{
+			"UUID":            hexSerial,
+			"multipathDevice": dmDeviceName,
+		}).Debug("Found multipath device by UUID.")
+		return dmDeviceName, nil
+	}
+
+	return "", errors.NotFoundError("no multipath device found")
+}
+
+// GetMultipathDeviceForLUN is the most robust method to find a multipath device.
+// It uses a three-factor check (serial, path liveness, LUN ID) to ensure the
+// correct and active device is returned, filtering out any stale entries.
+func (h *IscsiReconcileHelper) GetMultipathDeviceForLUN(ctx context.Context, hexSerial string, lunID int) (string, error) {
+	var (
+		sysPath     = chrootPathPrefix + "/sys/block/"
+		lunIDString = strconv.Itoa(lunID)
+		fields      = LogFields{
+			"lunID":     lunID,
+			"lunSerial": hexSerial,
+		}
+	)
+
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.GetMultipathDeviceForLUN")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.GetMultipathDeviceForLUN")
+
+	blockDirs, err := os.ReadDir(sysPath)
+	if err != nil {
+		Logc(ctx).WithError(err).WithFields(fields).Errorf("Could not read %s", sysPath)
+		return "", fmt.Errorf("failed to list block devices in %q", sysPath)
+	}
+
+	for _, blockDir := range blockDirs {
+		dmDeviceName := blockDir.Name()
+		if !strings.HasPrefix(dmDeviceName, "dm-") {
+			continue
+		}
+
+		// Check for a WWID match.
+		uuid, err := h.GetMultipathDeviceUUID(dmDeviceName)
+		if err != nil || !strings.Contains(uuid, hexSerial) {
+			// Not a match, or not a multipath device.
+			continue
+		}
+
+		// Perform checks whether it's a stale device by checking slaves.
+		Logc(ctx).WithFields(LogFields{
+			"serial":    hexSerial,
+			"candidate": dmDeviceName,
+			"uuid":      uuid,
+		}).Debug("Found candidate multipath device")
+
+		// A stale device should contain no slaves.
+		slavesPath := filepath.Join(sysPath, dmDeviceName, "slaves")
+		slaves, err := os.ReadDir(slavesPath)
+		if err != nil || len(slaves) == 0 {
+			Logc(ctx).WithFields(fields).Warnf("Candidate %s is a stale device with no paths, ignoring.", dmDeviceName)
+			continue
+		}
+
+		// Verify the LUN ID on an actual path using the 1st slave device info.
+		scsiDevicePath := filepath.Join(slavesPath, slaves[0].Name(), "device", "scsi_device")
+		scsiDeviceDirs, err := os.ReadDir(scsiDevicePath)
+		if err != nil || len(scsiDeviceDirs) == 0 {
+			Logc(ctx).WithFields(fields).WithError(err).Warnf("Could not read scsi_device %q info for candidate path %s.", scsiDevicePath, dmDeviceName)
+			continue
+		}
+
+		scsiDeviceAddress := scsiDeviceDirs[0].Name()
+		parts := strings.Split(scsiDeviceAddress, ":")
+		if len(parts) != 4 {
+			Logc(ctx).WithFields(fields).Warnf("Invalid SCSI device address %s.", scsiDeviceAddress)
+			continue
+		}
+
+		currentLunID := parts[3]
+		if currentLunID == lunIDString {
+			// All lun ID and serial match the multipath device.
+			Logc(ctx).WithFields(fields).Debugf("Successfully identified and verified multipath device %s.", dmDeviceName)
 			return dmDeviceName, nil
 		}
 	}
 
-	return "", errors.NotFoundError("no multipath device found")
+	return "", errors.NotFoundError(fmt.Sprintf("no active multipath device found for serial %s and LUN ID %d", hexSerial, lunID))
 }
 
 // waitForDeviceScan scans all paths to a specific LUN and waits until all
