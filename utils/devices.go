@@ -956,7 +956,7 @@ func compareWithPublishedSerialNumber(ctx context.Context, publishInfo *VolumePu
 		// Get Device based on the serial number and at the same time identify if it is a ghost device.
 		// Multipath UUID contains LUN serial in hex format
 		lunSerialHex := hex.EncodeToString([]byte(publishInfo.IscsiLunSerial))
-		multipathDevice, err := IscsiUtils.GetMultipathDeviceBySerial(ctx, lunSerialHex)
+		multipathDevice, err := IscsiUtils.GetMultipathDeviceForLUN(ctx, lunSerialHex, int(publishInfo.IscsiLunNumber))
 		if err != nil {
 			return false, fmt.Errorf("failed to verify multipath device for serial '%v'; %v ",
 				publishInfo.IscsiLunSerial, err)

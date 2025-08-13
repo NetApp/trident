@@ -10,6 +10,7 @@ import (
 	"io/fs"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -552,6 +553,82 @@ func (h *IscsiReconcileHelper) GetMultipathDeviceBySerial(ctx context.Context, h
 	}
 
 	return "", errors.NotFoundError("no multipath device found")
+}
+
+// GetMultipathDeviceForLUN is the most robust method to find a multipath device.
+// It uses a three-factor check (serial, path liveness, LUN ID) to ensure the
+// correct and active device is returned, filtering out any stale entries.
+func (h *IscsiReconcileHelper) GetMultipathDeviceForLUN(ctx context.Context, hexSerial string, lunID int) (string, error) {
+	var (
+		sysPath     = chrootPathPrefix + "/sys/block/"
+		lunIDString = strconv.Itoa(lunID)
+		fields      = LogFields{
+			"lunID":     lunID,
+			"lunSerial": hexSerial,
+		}
+	)
+
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.GetMultipathDeviceForLUN")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.GetMultipathDeviceForLUN")
+
+	blockDirs, err := os.ReadDir(sysPath)
+	if err != nil {
+		Logc(ctx).WithError(err).WithFields(fields).Errorf("Could not read %s", sysPath)
+		return "", fmt.Errorf("failed to list block devices in %q", sysPath)
+	}
+
+	for _, blockDir := range blockDirs {
+		dmDeviceName := blockDir.Name()
+		if !strings.HasPrefix(dmDeviceName, "dm-") {
+			continue
+		}
+
+		// Check for a WWID match.
+		uuid, err := h.GetMultipathDeviceUUID(dmDeviceName)
+		if err != nil || !strings.Contains(uuid, hexSerial) {
+			// Not a match, or not a multipath device.
+			continue
+		}
+
+		// Perform checks whether it's a stale device by checking slaves.
+		Logc(ctx).WithFields(LogFields{
+			"serial":    hexSerial,
+			"candidate": dmDeviceName,
+			"uuid":      uuid,
+		}).Debug("Found candidate multipath device")
+
+		// A stale device should contain no slaves.
+		slavesPath := filepath.Join(sysPath, dmDeviceName, "slaves")
+		slaves, err := os.ReadDir(slavesPath)
+		if err != nil || len(slaves) == 0 {
+			Logc(ctx).WithFields(fields).Warnf("Candidate %s is a stale device with no paths, ignoring.", dmDeviceName)
+			continue
+		}
+
+		// Verify the LUN ID on an actual path using the 1st slave device info.
+		scsiDevicePath := filepath.Join(slavesPath, slaves[0].Name(), "device", "scsi_device")
+		scsiDeviceDirs, err := os.ReadDir(scsiDevicePath)
+		if err != nil || len(scsiDeviceDirs) == 0 {
+			Logc(ctx).WithFields(fields).WithError(err).Warnf("Could not read scsi_device %q info for candidate path %s.", scsiDevicePath, dmDeviceName)
+			continue
+		}
+
+		scsiDeviceAddress := scsiDeviceDirs[0].Name()
+		parts := strings.Split(scsiDeviceAddress, ":")
+		if len(parts) != 4 {
+			Logc(ctx).WithFields(fields).Warnf("Invalid SCSI device address %s.", scsiDeviceAddress)
+			continue
+		}
+
+		currentLunID := parts[3]
+		if currentLunID == lunIDString {
+			// All lun ID and serial match the multipath device.
+			Logc(ctx).WithFields(fields).Debugf("Successfully identified and verified multipath device %s.", dmDeviceName)
+			return dmDeviceName, nil
+		}
+	}
+
+	return "", errors.NotFoundError(fmt.Sprintf("no active multipath device found for serial %s and LUN ID %d", hexSerial, lunID))
 }
 
 // waitForDeviceScan scans all paths to a specific LUN and waits until all
