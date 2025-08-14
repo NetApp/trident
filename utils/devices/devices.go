@@ -78,7 +78,6 @@ type Devices interface {
 	RemoveMultipathDeviceMappingWithRetries(ctx context.Context, devicePath string, retries uint64,
 		sleep time.Duration) error
 	ClearFormatting(ctx context.Context, devicePath string) error
-	GetMultipathDeviceBySerial(ctx context.Context, hexSerial string) (string, error)
 }
 
 type SizeGetter interface {
