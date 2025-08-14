@@ -136,7 +136,12 @@ func getSANStorageDriverBasedOnPersonality(
 			return &NVMeStorageDriver{API: api, AWSAPI: awsapi, Config: *ontapConfig}, nil
 		}
 	case sa.FCP:
-		return &SANStorageDriver{API: api, AWSAPI: awsapi, Config: *ontapConfig}, nil
+		if isASAr2 {
+			// ASAr2 FCP SAN driver
+			return &ASAStorageDriver{API: api, Config: *ontapConfig}, nil
+		} else {
+			return &SANStorageDriver{API: api, AWSAPI: awsapi, Config: *ontapConfig}, nil
+		}
 	default:
 		return nil, fmt.Errorf("unsupported SAN protocol %s", driverProtocol)
 	}

@@ -147,24 +147,56 @@ func TestBackendName(t *testing.T) {
 		name           string
 		backendName    string
 		ips            []string
+		wwpns          []string
 		expectedResult string
 	}{
 		{
 			name:           "EmptyConfigName_ReturnsOldNamingScheme",
 			backendName:    "",
 			ips:            []string{"127.0.0.1"},
+			wwpns:          []string{},
 			expectedResult: "ontapasa_127.0.0.1",
 		},
 		{
 			name:           "EmptyConfigName_NoLIFs_ReturnsNoLIFs",
 			backendName:    "",
 			ips:            []string{},
+			wwpns:          []string{},
 			expectedResult: "ontapasa_noLIFs",
 		},
 		{
 			name:           "ConfigNameProvided_ReturnsConfigName",
 			backendName:    "customBackendName",
 			ips:            []string{},
+			wwpns:          []string{},
+			expectedResult: "customBackendName",
+		},
+		{
+			name:           "EmptyConfigName_FCPWithWWPNs_ReturnsOldNamingScheme",
+			backendName:    "",
+			ips:            []string{},
+			wwpns:          []string{"20:00:00:25:b5:11:a0:01", "20:00:00:25:b5:11:a0:02"},
+			expectedResult: "ontapasa_20.00.00.25.b5.11.a0.01",
+		},
+		{
+			name:           "EmptyConfigName_FCPNoWWPNs_ReturnsNoLIFs",
+			backendName:    "",
+			ips:            []string{},
+			wwpns:          []string{},
+			expectedResult: "ontapasa_noLIFs",
+		},
+		{
+			name:           "EmptyConfigName_iSCSIPreferred_ReturnsIP",
+			backendName:    "",
+			ips:            []string{"127.0.0.1"},
+			wwpns:          []string{"20:00:00:25:b5:11:a0:01"},
+			expectedResult: "ontapasa_127.0.0.1",
+		},
+		{
+			name:           "ConfigNameProvided_FCPWithWWPNs_ReturnsConfigName",
+			backendName:    "customBackendName",
+			ips:            []string{},
+			wwpns:          []string{"20:00:00:25:b5:11:a0:01"},
 			expectedResult: "customBackendName",
 		},
 	}
@@ -172,6 +204,7 @@ func TestBackendName(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			driver.ips = tt.ips
+			driver.wwpns = tt.wwpns
 			driver.Config.BackendName = tt.backendName
 			actual := driver.BackendName()
 			assert.Equal(t, tt.expectedResult, actual, "Expected backend name to match")
@@ -454,6 +487,39 @@ func TestInitializeASA(t *testing.T) {
 			verify: func(t *testing.T, err error) {
 				driver.API = mockAPI
 				assert.Error(t, err, "Expected error during initialization")
+				assert.False(t, driver.Initialized(), "Expected driver to be not initialized")
+			},
+		},
+		{
+			name: "FCP NetFcpInterfaceGetDataLIFs returns error",
+			setupMocks: func() {
+				driver.initialized = false
+				driver.Config.SANType = sa.FCP
+				driver.ips = []string{}
+				driver.wwpns = []string{}
+				mockAPI.EXPECT().NetFcpInterfaceGetDataLIFs(ctx, sa.FCP).Return(nil, errors.New("FCP interface error")).Times(1)
+			},
+			expectedError: true,
+			verify: func(t *testing.T, err error) {
+				driver.Config.SANType = sa.ISCSI // Reset to original
+				assert.Error(t, err, "Expected error when FCP LIF discovery fails")
+				assert.False(t, driver.Initialized(), "Expected driver to be not initialized")
+			},
+		},
+		{
+			name: "FCP no WWPNs found",
+			setupMocks: func() {
+				driver.initialized = false
+				driver.Config.SANType = sa.FCP
+				driver.ips = []string{}
+				driver.wwpns = []string{}
+				mockAPI.EXPECT().NetFcpInterfaceGetDataLIFs(ctx, sa.FCP).Return([]string{}, nil).Times(1)
+				mockAPI.EXPECT().SVMName().Return(driver.Config.SVM).Times(1)
+			},
+			expectedError: true,
+			verify: func(t *testing.T, err error) {
+				driver.Config.SANType = sa.ISCSI // Reset to original
+				assert.Error(t, err, "Expected error when no WWPNs are found")
 				assert.False(t, driver.Initialized(), "Expected driver to be not initialized")
 			},
 		},
@@ -1528,6 +1594,105 @@ func TestPublishASA(t *testing.T) {
 				assert.Error(t, err, "Expected error when getting target info fails")
 			},
 		},
+		{
+			name: "FCP - Runs without any error with FCP",
+			setupMocks: func() {
+				tridentconfig.CurrentDriverContext = ""
+				driver.Config.SANType = sa.FCP
+				driver.wwpns = []string{"1000000000000001", "1000000000000002"}
+				driver.ips = []string{} // Clear iSCSI IPs for FCP
+
+				publishInfo.HostWWPNMap = map[string][]string{
+					"1000000000000001": {"1000000000000001"},
+				}
+
+				mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+				mockAPI.EXPECT().FcpNodeGetNameRequest(ctx).Return("10:00:00:00:00:00:00:01", nil).Times(1)
+				mockAPI.EXPECT().FcpInterfaceGet(ctx, driver.Config.SVM).Return([]string{"10:00:00:00:00:00:00:01"}, nil).Times(1)
+				mockAPI.EXPECT().LunGetFSType(ctx, volConfig.InternalName).Return("ext4", nil).Times(1)
+				mockAPI.EXPECT().LunGetAttribute(ctx, volConfig.InternalName, "formatOptions").Return("formatOptions", nil).Times(1)
+				mockAPI.EXPECT().LunGetByName(ctx, volConfig.InternalName).Return(lun, nil).Times(1)
+				mockAPI.EXPECT().EnsureIgroupAdded(ctx, driver.Config.IgroupName, "10:00:00:00:00:00:00:01").Return(nil).AnyTimes()
+				mockAPI.EXPECT().EnsureLunMapped(ctx, driver.Config.IgroupName, volConfig.InternalName).Return(1123, nil).AnyTimes()
+			},
+			verify: func(t *testing.T, err error) {
+				driver.Config.SANType = sa.ISCSI // Reset to original
+				assert.NoError(t, err, "Expected no error during FCP volume publish")
+				assert.Equal(t, volConfig.AccessInfo, publishInfo.VolumeAccessInfo)
+			},
+		},
+		{
+			name: "FCP - Error getting volume info",
+			setupMocks: func() {
+				driver.Config.SANType = sa.FCP
+				driver.wwpns = []string{"1000000000000001", "1000000000000002"}
+				driver.ips = []string{}
+
+				mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(nil, errors.New("volume not found"))
+			},
+			verify: func(t *testing.T, err error) {
+				driver.Config.SANType = sa.ISCSI // Reset to original
+				assert.Error(t, err, "Expected error when volume is not found")
+			},
+		},
+		{
+			name: "FCP - Volume access type is not rw",
+			setupMocks: func() {
+				driver.Config.SANType = sa.FCP
+				driver.wwpns = []string{"1000000000000001", "1000000000000002"}
+				driver.ips = []string{}
+				flexVol.AccessType = "ro"
+
+				mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil)
+			},
+			verify: func(t *testing.T, err error) {
+				driver.Config.SANType = sa.ISCSI // Reset to original
+				flexVol.AccessType = "rw"        // Reset to original
+				assert.Error(t, err, "Expected error when volume access type is not rw")
+			},
+		},
+		{
+			name: "FCP - Error getting FCP node name",
+			setupMocks: func() {
+				driver.Config.SANType = sa.FCP
+				driver.wwpns = []string{"1000000000000001", "1000000000000002"}
+				driver.ips = []string{}
+
+				mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil)
+				mockAPI.EXPECT().FcpNodeGetNameRequest(ctx).Return("", errors.New("FCP node error")).Times(1)
+			},
+			verify: func(t *testing.T, err error) {
+				driver.Config.SANType = sa.ISCSI // Reset to original
+				assert.Error(t, err, "Expected error when getting FCP node info fails")
+			},
+		},
+		{
+			name: "FCP - Context is not CSI - uses default igroup",
+			setupMocks: func() {
+				tridentconfig.CurrentDriverContext = tridentconfig.ContextDocker
+				driver.Config.SANType = sa.FCP
+				driver.wwpns = []string{"1000000000000001", "1000000000000002"}
+				driver.ips = []string{}
+
+				publishInfo.HostWWPNMap = map[string][]string{
+					"1000000000000001": {"1000000000000001"},
+				}
+
+				mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+				mockAPI.EXPECT().FcpNodeGetNameRequest(ctx).Return("10:00:00:00:00:00:00:01", nil).Times(1)
+				mockAPI.EXPECT().FcpInterfaceGet(ctx, driver.Config.SVM).Return([]string{"10:00:00:00:00:00:00:01"}, nil).Times(1)
+				mockAPI.EXPECT().LunGetFSType(ctx, volConfig.InternalName).Return("ext4", nil).Times(1)
+				mockAPI.EXPECT().LunGetAttribute(ctx, volConfig.InternalName, "formatOptions").Return("formatOptions", nil).Times(1)
+				mockAPI.EXPECT().LunGetByName(ctx, volConfig.InternalName).Return(lun, nil).Times(1)
+				mockAPI.EXPECT().EnsureLunMapped(ctx, driver.Config.IgroupName, volConfig.InternalName).Return(1123, nil).AnyTimes()
+			},
+			verify: func(t *testing.T, err error) {
+				tridentconfig.CurrentDriverContext = ""
+				driver.Config.SANType = sa.ISCSI // Reset to original
+				assert.NoError(t, err, "Expected no error during FCP volume publish in Docker context")
+				assert.Equal(t, volConfig.AccessInfo, publishInfo.VolumeAccessInfo)
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -1547,6 +1712,7 @@ func TestUnpublishASA(t *testing.T) {
 		name          string
 		setupMocks    func(*mockapi.MockOntapAPI)
 		driverContext tridentconfig.DriverContext
+		sanType       string // Add SAN type to test case
 		expectedError bool
 		verify        func(*testing.T, error)
 	}
@@ -1556,14 +1722,20 @@ func TestUnpublishASA(t *testing.T) {
 		tridentconfig.CurrentDriverContext = currentDriverContext
 	}(tridentconfig.CurrentDriverContext)
 
-	initializeFunction := func() (storage.VolumeConfig, models.VolumePublishInfo) {
+	initializeFunction := func(sanType string) (storage.VolumeConfig, models.VolumePublishInfo) {
 		volConfig := getASAVolumeConfig()
 		volConfig.InternalName = "testVol"
 		publishInfo := models.VolumePublishInfo{
 			HostName:    "testHost",
 			TridentUUID: "testUUID",
 		}
-		volConfig.AccessInfo.IscsiIgroup = publishInfo.HostName + "-" + publishInfo.TridentUUID
+
+		// Set the appropriate igroup name based on SAN type
+		if sanType == sa.FCP {
+			volConfig.AccessInfo.FCPIgroup = publishInfo.HostName + "-fcp-" + publishInfo.TridentUUID
+		} else {
+			volConfig.AccessInfo.IscsiIgroup = publishInfo.HostName + "-" + publishInfo.TridentUUID
+		}
 		return volConfig, publishInfo
 	}
 
@@ -1577,6 +1749,7 @@ func TestUnpublishASA(t *testing.T) {
 				mockAPI.EXPECT().IgroupDestroy(ctx, "testHost-testUUID").Return(nil).Times(1)
 			},
 			driverContext: tridentconfig.ContextCSI,
+			sanType:       sa.ISCSI,
 			expectedError: false,
 			verify: func(t *testing.T, err error) {
 				assert.NoError(t, err, "Expected no error during volume unpublish")
@@ -1586,40 +1759,215 @@ func TestUnpublishASA(t *testing.T) {
 			name:          "Runs without any error when context is not CSI",
 			setupMocks:    func(mockAPI *mockapi.MockOntapAPI) {},
 			driverContext: tridentconfig.ContextDocker,
+			sanType:       sa.ISCSI,
 			expectedError: false,
 			verify: func(t *testing.T, err error) {
 				assert.NoError(t, err, "Expected no error during volume unpublish when context is not CSI")
 			},
 		},
 		{
-			name: "Error unmapping LUN from igroup",
+			name: "Error when LunMapInfo fails",
 			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().LunMapInfo(ctx, "testHost-testUUID", "testVol").Return(0, errors.New("error")).Times(1)
+				mockAPI.EXPECT().LunMapInfo(ctx, "testHost-testUUID", "testVol").Return(0, errors.New("LunMapInfo failed")).Times(1)
 			},
 			driverContext: tridentconfig.ContextCSI,
+			sanType:       sa.ISCSI,
 			expectedError: true,
 			verify: func(t *testing.T, err error) {
-				assert.Error(t, err, "Expected error when unmapping LUN from igroup fails")
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "error unmapping LUN", "Expected specific error message for LunMapInfo failure")
 			},
 		},
 		{
-			name: "Error removing igroup",
+			name: "Error when LunUnmap fails",
+			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunMapInfo(ctx, "testHost-testUUID", "testVol").Return(lunID, nil).Times(1)
+				mockAPI.EXPECT().LunUnmap(ctx, "testHost-testUUID", "testVol").Return(errors.New("LunUnmap failed")).Times(1)
+			},
+			driverContext: tridentconfig.ContextCSI,
+			sanType:       sa.ISCSI,
+			expectedError: true,
+			verify: func(t *testing.T, err error) {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "error unmapping LUN", "Expected specific error message for LunUnmap failure")
+			},
+		},
+		{
+			name: "Error when IgroupListLUNsMapped fails",
 			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().LunMapInfo(ctx, "testHost-testUUID", "testVol").Return(lunID, nil).Times(1)
 				mockAPI.EXPECT().LunUnmap(ctx, "testHost-testUUID", "testVol").Return(nil).Times(1)
-				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, "testHost-testUUID").Return([]string{}, errors.New("error")).Times(1)
+				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, "testHost-testUUID").Return([]string{}, errors.New("IgroupListLUNsMapped failed")).Times(1)
 			},
 			driverContext: tridentconfig.ContextCSI,
+			sanType:       sa.ISCSI,
 			expectedError: true,
 			verify: func(t *testing.T, err error) {
-				assert.Error(t, err, "Expected error when removing igroup fails")
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "error removing empty igroup", "Expected specific error message for IgroupListLUNsMapped failure")
+			},
+		},
+		{
+			name: "Error when IgroupDestroy fails",
+			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunMapInfo(ctx, "testHost-testUUID", "testVol").Return(lunID, nil).Times(1)
+				mockAPI.EXPECT().LunUnmap(ctx, "testHost-testUUID", "testVol").Return(nil).Times(1)
+				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, "testHost-testUUID").Return([]string{}, nil).Times(1)
+				mockAPI.EXPECT().IgroupDestroy(ctx, "testHost-testUUID").Return(errors.New("IgroupDestroy failed")).Times(1)
+			},
+			driverContext: tridentconfig.ContextCSI,
+			sanType:       sa.ISCSI,
+			expectedError: true,
+			verify: func(t *testing.T, err error) {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "error removing empty igroup", "Expected specific error message for IgroupDestroy failure")
+			},
+		},
+		{
+			name: "Igroup not destroyed when LUNs still mapped",
+			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunMapInfo(ctx, "testHost-testUUID", "testVol").Return(lunID, nil).Times(1)
+				mockAPI.EXPECT().LunUnmap(ctx, "testHost-testUUID", "testVol").Return(nil).Times(1)
+				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, "testHost-testUUID").Return([]string{"otherLUN"}, nil).Times(1)
+				// IgroupDestroy should NOT be called
+			},
+			driverContext: tridentconfig.ContextCSI,
+			sanType:       sa.ISCSI,
+			expectedError: false,
+			verify: func(t *testing.T, err error) {
+				assert.NoError(t, err, "Expected no error when igroup has other LUNs mapped")
+			},
+		},
+		{
+			name: "FCP - Success with FCP protocol",
+			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunMapInfo(ctx, "testHost-fcp-testUUID", "testVol").Return(lunID, nil).Times(1)
+				mockAPI.EXPECT().LunUnmap(ctx, "testHost-fcp-testUUID", "testVol").Return(nil).Times(1)
+				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, "testHost-fcp-testUUID").Return([]string{}, nil).Times(1)
+				mockAPI.EXPECT().IgroupDestroy(ctx, "testHost-fcp-testUUID").Return(nil).Times(1)
+			},
+			driverContext: tridentconfig.ContextCSI,
+			sanType:       sa.FCP,
+			expectedError: false,
+			verify: func(t *testing.T, err error) {
+				assert.NoError(t, err, "Expected no error during FCP volume unpublish")
+			},
+		},
+		{
+			name:          "FCP - No operation when context is not CSI",
+			setupMocks:    func(mockAPI *mockapi.MockOntapAPI) {},
+			driverContext: tridentconfig.ContextDocker,
+			sanType:       sa.FCP,
+			expectedError: false,
+			verify: func(t *testing.T, err error) {
+				assert.NoError(t, err, "Expected no error during FCP volume unpublish when context is not CSI")
+			},
+		},
+		{
+			name: "FCP - Error when LunMapInfo fails",
+			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunMapInfo(ctx, "testHost-fcp-testUUID", "testVol").Return(0, errors.New("FCP LunMapInfo failed")).Times(1)
+			},
+			driverContext: tridentconfig.ContextCSI,
+			sanType:       sa.FCP,
+			expectedError: true,
+			verify: func(t *testing.T, err error) {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "error unmapping LUN", "Expected specific error message for FCP LunMapInfo failure")
+			},
+		},
+		{
+			name: "FCP - Error when LunUnmap fails",
+			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunMapInfo(ctx, "testHost-fcp-testUUID", "testVol").Return(lunID, nil).Times(1)
+				mockAPI.EXPECT().LunUnmap(ctx, "testHost-fcp-testUUID", "testVol").Return(errors.New("FCP LunUnmap failed")).Times(1)
+			},
+			driverContext: tridentconfig.ContextCSI,
+			sanType:       sa.FCP,
+			expectedError: true,
+			verify: func(t *testing.T, err error) {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "error unmapping LUN", "Expected specific error message for FCP LunUnmap failure")
+			},
+		},
+		{
+			name: "FCP - Error when IgroupListLUNsMapped fails",
+			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunMapInfo(ctx, "testHost-fcp-testUUID", "testVol").Return(lunID, nil).Times(1)
+				mockAPI.EXPECT().LunUnmap(ctx, "testHost-fcp-testUUID", "testVol").Return(nil).Times(1)
+				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, "testHost-fcp-testUUID").Return([]string{}, errors.New("FCP IgroupListLUNsMapped failed")).Times(1)
+			},
+			driverContext: tridentconfig.ContextCSI,
+			sanType:       sa.FCP,
+			expectedError: true,
+			verify: func(t *testing.T, err error) {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "error removing empty igroup", "Expected specific error message for FCP IgroupListLUNsMapped failure")
+			},
+		},
+		{
+			name: "FCP - Error when IgroupDestroy fails",
+			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunMapInfo(ctx, "testHost-fcp-testUUID", "testVol").Return(lunID, nil).Times(1)
+				mockAPI.EXPECT().LunUnmap(ctx, "testHost-fcp-testUUID", "testVol").Return(nil).Times(1)
+				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, "testHost-fcp-testUUID").Return([]string{}, nil).Times(1)
+				mockAPI.EXPECT().IgroupDestroy(ctx, "testHost-fcp-testUUID").Return(errors.New("FCP IgroupDestroy failed")).Times(1)
+			},
+			driverContext: tridentconfig.ContextCSI,
+			sanType:       sa.FCP,
+			expectedError: true,
+			verify: func(t *testing.T, err error) {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "error removing empty igroup", "Expected specific error message for FCP IgroupDestroy failure")
+			},
+		},
+		{
+			name: "LUN not mapped (negative LUN ID)",
+			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunMapInfo(ctx, "testHost-testUUID", "testVol").Return(-1, nil).Times(1)
+				// LunUnmap should not be called for unmapped LUN
+				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, "testHost-testUUID").Return([]string{}, nil).Times(1)
+				mockAPI.EXPECT().IgroupDestroy(ctx, "testHost-testUUID").Return(nil).Times(1)
+			},
+			driverContext: tridentconfig.ContextCSI,
+			sanType:       sa.ISCSI,
+			expectedError: false,
+			verify: func(t *testing.T, err error) {
+				assert.NoError(t, err, "Expected no error when LUN is not mapped")
+			},
+		},
+		{
+			name: "FCP - LUN not mapped (negative LUN ID)",
+			setupMocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunMapInfo(ctx, "testHost-fcp-testUUID", "testVol").Return(-1, nil).Times(1)
+				// LunUnmap should not be called for unmapped LUN
+				mockAPI.EXPECT().IgroupListLUNsMapped(ctx, "testHost-fcp-testUUID").Return([]string{}, nil).Times(1)
+				mockAPI.EXPECT().IgroupDestroy(ctx, "testHost-fcp-testUUID").Return(nil).Times(1)
+			},
+			driverContext: tridentconfig.ContextCSI,
+			sanType:       sa.FCP,
+			expectedError: false,
+			verify: func(t *testing.T, err error) {
+				assert.NoError(t, err, "Expected no error when FCP LUN is not mapped")
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			volConfig, publishInfo := initializeFunction()
+			volConfig, publishInfo := initializeFunction(tt.sanType)
+
+			// Configure driver for the test case
+			if tt.sanType == sa.FCP {
+				driver.Config.SANType = sa.FCP
+				driver.wwpns = []string{"1000000000000001", "1000000000000002"}
+				driver.ips = []string{}
+			} else {
+				driver.Config.SANType = sa.ISCSI
+				driver.ips = []string{"192.168.1.100"}
+				driver.wwpns = []string{}
+			}
+
 			tridentconfig.CurrentDriverContext = tt.driverContext
 			tt.setupMocks(mockAPI)
 			err := driver.Unpublish(ctx, &volConfig, &publishInfo)
@@ -2623,7 +2971,6 @@ func TestGetStorageBackendPhysicalPoolNamesASA(t *testing.T) {
 
 func TestGetBackendStateASA(t *testing.T) {
 	mockAPI, driver := newMockOntapASADriver(t)
-	dataLIFs := []string{"1.2.3.4"}
 	derivedPools := []string{ONTAPTEST_VSERVER_AGGR_NAME}
 
 	pool1 := storage.NewStoragePool(nil, ONTAPTEST_VSERVER_AGGR_NAME)
@@ -2633,19 +2980,103 @@ func TestGetBackendStateASA(t *testing.T) {
 	pool1.Attributes()[sa.Encryption] = sa.NewBoolOffer(false)
 	pool1.Attributes()[sa.Replication] = sa.NewBoolOffer(false)
 	physicalPools := map[string]storage.Pool{ONTAPTEST_VSERVER_AGGR_NAME: pool1}
-	driver.physicalPools = physicalPools
 
-	mockAPI.EXPECT().GetSVMState(ctx).Return(restAPIModels.SvmStateRunning, nil).AnyTimes().Times(1)
-	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).AnyTimes()
-	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs, nil).Times(1)
-	mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
-	mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
+	tests := []struct {
+		name           string
+		sanType        string
+		setupDriver    func()
+		setupMocks     func()
+		expectedState  string
+		expectedReason string
+	}{
+		{
+			name:    "iSCSI backend state - online",
+			sanType: sa.ISCSI,
+			setupDriver: func() {
+				driver.Config.SANType = sa.ISCSI
+				driver.ips = []string{"1.2.3.4"}
+				driver.wwpns = []string{}
+				driver.physicalPools = physicalPools
+			},
+			setupMocks: func() {
+				mockAPI.EXPECT().GetSVMState(ctx).Return(restAPIModels.SvmStateRunning, nil).Times(1)
+				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.ISCSI).Return([]string{"1.2.3.4"}, nil).Times(1)
+				mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
+				mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
+			},
+			expectedState:  "",
+			expectedReason: "Should be online",
+		},
+		{
+			name:    "FCP backend state - online",
+			sanType: sa.FCP,
+			setupDriver: func() {
+				driver.Config.SANType = sa.FCP
+				driver.wwpns = []string{"20:00:00:25:b5:11:a0:01", "20:00:00:25:b5:11:a0:02"}
+				driver.ips = []string{}
+				driver.physicalPools = physicalPools
+			},
+			setupMocks: func() {
+				mockAPI.EXPECT().GetSVMState(ctx).Return(restAPIModels.SvmStateRunning, nil).Times(1)
+				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).Times(1)
+				mockAPI.EXPECT().NetFcpInterfaceGetDataLIFs(ctx, sa.FCP).Return([]string{"20:00:00:25:b5:11:a0:01", "20:00:00:25:b5:11:a0:02"}, nil).Times(1)
+				mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
+				mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
+			},
+			expectedState:  "",
+			expectedReason: "Should be online",
+		},
+		{
+			name:    "FCP backend state - offline (no LIFs)",
+			sanType: sa.FCP,
+			setupDriver: func() {
+				driver.Config.SANType = sa.FCP
+				driver.wwpns = []string{}
+				driver.ips = []string{}
+				driver.physicalPools = physicalPools
+			},
+			setupMocks: func() {
+				mockAPI.EXPECT().GetSVMState(ctx).Return(restAPIModels.SvmStateRunning, nil).Times(1)
+				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).Times(1)
+				mockAPI.EXPECT().NetFcpInterfaceGetDataLIFs(ctx, sa.FCP).Return([]string{}, nil).Times(1)
+			},
+			expectedState:  StateReasonDataLIFsDown,
+			expectedReason: "Should be offline due to no FCP LIFs",
+		},
+		{
+			name:    "iSCSI backend state - explicit SANType",
+			sanType: sa.ISCSI,
+			setupDriver: func() {
+				driver.Config.SANType = sa.ISCSI
+				driver.ips = []string{"127.0.0.1"}
+				driver.wwpns = []string{}
+				driver.physicalPools = physicalPools
+			},
+			setupMocks: func() {
+				mockAPI.EXPECT().GetSVMState(ctx).Return(restAPIModels.SvmStateRunning, nil).Times(1)
+				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).Times(1)
+				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.ISCSI).Return([]string{"127.0.0.1"}, nil).Times(1)
+				mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
+				mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
+			},
+			expectedState:  "",
+			expectedReason: "Should be online with explicit iSCSI SANType",
+		},
+	}
 
-	state, code := driver.GetBackendState(ctx)
-	assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should not be reason change")
-	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
-	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should be no pool change")
-	assert.Equal(t, "", state, "Reason should be empty")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setupDriver()
+			tt.setupMocks()
+
+			state, code := driver.GetBackendState(ctx)
+			assert.False(t, code.Contains(storage.BackendStateReasonChange), "Should not be reason change")
+			assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
+			assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should be no pool change")
+			assert.Equal(t, tt.expectedState, state, tt.expectedReason)
+		})
+	}
 }
 
 func TestEnablePublishEnforcementASA(t *testing.T) {

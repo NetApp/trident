@@ -3362,6 +3362,8 @@ func ValidateASAStoragePools(
 		break
 	case sa.NVMe:
 		break
+	case sa.FCP:
+		break
 	default:
 		return errors.New("invalid value for sanType")
 	}

@@ -32,6 +32,7 @@ type ASAStorageDriver struct {
 	initialized bool
 	Config      drivers.OntapStorageDriverConfig
 	ips         []string
+	wwpns       []string
 	API         api.OntapAPI
 	telemetry   *Telemetry
 	iscsi       iscsi.ISCSI
@@ -70,6 +71,8 @@ func (d *ASAStorageDriver) BackendName() string {
 		lif0 := "noLIFs"
 		if len(d.ips) > 0 {
 			lif0 = d.ips[0]
+		} else if len(d.wwpns) > 0 {
+			lif0 = strings.ReplaceAll(d.wwpns[0], ":", ".")
 		}
 		return CleanBackendName("ontapasa_" + lif0)
 	} else {
@@ -121,18 +124,28 @@ func (d *ASAStorageDriver) Initialize(
 	if err = PopulateASAConfigurationDefaults(ctx, &d.Config); err != nil {
 		return fmt.Errorf("could not populate configuration defaults: %v", err)
 	}
+	if d.Config.SANType == sa.FCP {
+		if d.wwpns, err = d.API.NetFcpInterfaceGetDataLIFs(ctx, d.Config.SANType); err != nil {
+			return err
+		}
 
-	d.ips, err = d.API.NetInterfaceGetDataLIFs(ctx, "iscsi")
-	if err != nil {
-		return err
-	}
-
-	if len(d.ips) == 0 {
-		return fmt.Errorf("no iSCSI data LIFs found on SVM %s", d.API.SVMName())
+		if len(d.wwpns) == 0 {
+			return fmt.Errorf("no FC data LIFs found on SVM %s", d.API.SVMName())
+		} else {
+			Logc(ctx).WithField("dataLIFs", d.wwpns).Debug("Found FC LIFs.")
+		}
 	} else {
-		Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
-	}
+		d.ips, err = d.API.NetInterfaceGetDataLIFs(ctx, d.Config.SANType)
+		if err != nil {
+			return err
+		}
 
+		if len(d.ips) == 0 {
+			return fmt.Errorf("no iSCSI data LIFs found on SVM %s", d.API.SVMName())
+		} else {
+			Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
+		}
+	}
 	d.physicalPools, d.virtualPools, err = InitializeASAStoragePoolsCommon(ctx, d,
 		d.getStoragePoolAttributes(ctx), d.BackendName())
 	if err != nil {
@@ -713,7 +726,7 @@ func (d *ASAStorageDriver) Publish(
 	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
 	name := volConfig.InternalName
-
+	var nodeName string
 	fields := LogFields{
 		"Method": "Publish",
 		"Type":   "ASAStorageDriver",
@@ -739,18 +752,40 @@ func (d *ASAStorageDriver) Publish(
 	igroupName := d.Config.IgroupName
 
 	// Use the node specific igroup if publish enforcement is enabled and this is for CSI.
-	if tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
-		igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
-		err = ensureIGroupExists(ctx, d.GetAPI(), igroupName, d.Config.SANType)
-	}
+	if d.Config.SANType == sa.FCP {
+		// Handle FCP protocol
+		if tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
+			igroupName = getNodeSpecificFCPIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+			err = ensureIGroupExists(ctx, d.GetAPI(), igroupName, d.Config.SANType)
+			if err != nil {
+				return err
+			}
+		}
 
-	// Get target info.
-	iSCSINodeName, _, err := GetISCSITargetInfo(ctx, d.API, &d.Config)
-	if err != nil {
-		return err
-	}
+		// Get FCP target info
+		FCPNodeName, _, err := GetFCPTargetInfo(ctx, d.API, &d.Config)
+		if err != nil {
+			return err
+		}
+		nodeName = FCPNodeName
+	} else {
+		// Handle iSCSI protocol
+		if tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
+			igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+			err = ensureIGroupExists(ctx, d.GetAPI(), igroupName, d.Config.SANType)
+			if err != nil {
+				return err
+			}
+		}
 
-	err = PublishLUN(ctx, d.API, &d.Config, d.ips, publishInfo, lunPath, igroupName, iSCSINodeName)
+		// Get iSCSI target info
+		iSCSINodeName, _, err := GetISCSITargetInfo(ctx, d.API, &d.Config)
+		if err != nil {
+			return err
+		}
+		nodeName = iSCSINodeName
+	}
+	err = PublishLUN(ctx, d.API, &d.Config, d.ips, publishInfo, lunPath, igroupName, nodeName)
 	if err != nil {
 		return fmt.Errorf("error publishing %s driver: %v", d.Name(), err)
 	}
@@ -768,6 +803,7 @@ func (d *ASAStorageDriver) Unpublish(
 ) error {
 	name := volConfig.InternalName
 
+	var igroupName string
 	fields := LogFields{
 		"Method": "Unpublish",
 		"Type":   "ASAStorageDriver",
@@ -779,17 +815,27 @@ func (d *ASAStorageDriver) Unpublish(
 	if tridentconfig.CurrentDriverContext != tridentconfig.ContextCSI {
 		return nil
 	}
+	if d.Config.SANType == sa.FCP {
+		igroupName = getNodeSpecificFCPIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+		lunPath := name
+		if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath); err != nil {
+			return fmt.Errorf("error unmapping LUN %s from igroup %s; %v", lunPath, igroupName, err)
+		}
 
-	// Attempt to unmap the LUN from the per-node igroup.
-	igroupName := getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
-	lunPath := name
-	if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath); err != nil {
-		return fmt.Errorf("error unmapping LUN %s from igroup %s; %v", lunPath, igroupName, err)
+		// Remove igroup from volume config's FCP access info
+		volConfig.AccessInfo.FCPIgroup = removeIgroupFromFCPIgroupList(volConfig.AccessInfo.FCPIgroup,
+			igroupName)
+	} else {
+		// Attempt to unmap the LUN from the per-node igroup.
+		igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+		lunPath := name
+		if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath); err != nil {
+			return fmt.Errorf("error unmapping LUN %s from igroup %s; %v", lunPath, igroupName, err)
+		}
+
+		// Remove igroup from volume config's iscsi access Info
+		volConfig.AccessInfo.IscsiIgroup = removeIgroupFromIscsiIgroupList(volConfig.AccessInfo.IscsiIgroup, igroupName)
 	}
-
-	// Remove igroup from volume config's iscsi access Info
-	volConfig.AccessInfo.IscsiIgroup = removeIgroupFromIscsiIgroupList(volConfig.AccessInfo.IscsiIgroup, igroupName)
-
 	// Remove igroup if no LUNs are mapped.
 	if err := DestroyUnmappedIgroup(ctx, d.API, igroupName); err != nil {
 		return fmt.Errorf("error removing empty igroup; %v", err)
@@ -1234,7 +1280,7 @@ func (d *ASAStorageDriver) GetBackendState(ctx context.Context) (string, *roarin
 	Logc(ctx).Debug(">>>> GetBackendState")
 	defer Logc(ctx).Debug("<<<< GetBackendState")
 
-	return getSVMState(ctx, d.API, "iscsi", d.GetStorageBackendPhysicalPoolNames(ctx))
+	return getSVMState(ctx, d.API, d.Config.SANType, d.GetStorageBackendPhysicalPoolNames(ctx))
 }
 
 // String makes ASAStorageDriver satisfy the Stringer interface.
