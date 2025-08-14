@@ -1956,19 +1956,26 @@ func (p *Plugin) updateChapInfoFromController(
 func (p *Plugin) nodeUnstageISCSIVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *models.VolumePublishInfo, force bool,
 ) error {
-	// Derive the device path using the LunSerial. The publishInfo.DevicePath may be incorrect due to Kernel actions.
-	// Fallback to using the publishInfo.DevicePath if the multipath device cannot be derived.
-	multipathDevice, err := p.devices.GetMultipathDeviceBySerial(ctx, hex.EncodeToString([]byte(publishInfo.IscsiLunSerial)))
-	if err != nil {
-		Logc(ctx).WithError(err).WithField("LunSerial", publishInfo.IscsiLunSerial).Debug(
-			"Error finding multipath device by serial.")
-	} else {
-		Logc(ctx).WithFields(LogFields{
-			"multipathDevice": multipathDevice,
-			"LunSerial":       publishInfo.IscsiLunSerial,
-		}).Debug("Found multipath device by serial.")
-		publishInfo.DevicePath = iscsi.DevPrefix + multipathDevice
+	// Default the device path to the value in the tracking file.
+	devicePath := publishInfo.DevicePath
+
+	// For some iSCSI backends, Trident cannot rely on the LUN serial.
+	if publishInfo.IscsiLunSerial != "" {
+		// Derive the device path using the LunSerial. The publishInfo.DevicePath may be incorrect due to Kernel actions.
+		// Fallback to using the publishInfo.DevicePath if the multipath device cannot be derived.
+		multipathDevice, err := p.devices.GetMultipathDeviceBySerial(ctx, hex.EncodeToString([]byte(publishInfo.IscsiLunSerial)))
+		if err != nil {
+			Logc(ctx).WithError(err).WithField("LunSerial", publishInfo.IscsiLunSerial).Debug(
+				"Error finding multipath device by serial.")
+		} else {
+			Logc(ctx).WithFields(LogFields{
+				"multipathDevice": multipathDevice,
+				"LunSerial":       publishInfo.IscsiLunSerial,
+			}).Debug("Found multipath device by serial.")
+			devicePath = iscsi.DevPrefix + multipathDevice
+		}
 	}
+	publishInfo.DevicePath = devicePath
 
 	hostSessionMap := iscsiUtils.GetISCSIHostSessionMapForTarget(ctx, publishInfo.IscsiTargetIQN)
 	// TODO: (jharrod) This is a temporary fix to handle the case where the hostSessionMap is empty. We need to
