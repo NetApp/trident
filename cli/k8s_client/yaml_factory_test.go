@@ -1451,7 +1451,7 @@ func TestGetOpenShiftSCCYAML_UnprivilegedUser(t *testing.T) {
 				},
 			},
 		},
-		AllowHostDirVolumePlugin: false,
+		AllowHostDirVolumePlugin: true,
 		AllowHostIPC:             false,
 		AllowHostNetwork:         false,
 		AllowHostPID:             false,

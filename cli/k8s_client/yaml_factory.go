@@ -1656,7 +1656,7 @@ metadata:
   name: {SCC}
   {LABELS}
   {OWNER_REF}
-allowHostDirVolumePlugin: false
+allowHostDirVolumePlugin: true
 allowHostIPC: false
 allowHostNetwork: false
 allowHostPID: false
