@@ -14,8 +14,8 @@ LABEL maintainer="The NetApp Trident Team" \
       description="Trident Operator manages the lifecycle of Trident instances in a Kubernetes cluster." \
       name="trident-operator" \
       vendor="NetApp, Inc." \
-      version="25.06.1" \
-      release="25.06.1"
+      version="25.06.2" \
+      release="25.06.2"
 
 ARG BIN=trident-operator
 

@@ -2,9 +2,20 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v25.06.0
+## Changes since v25.06.1
 
 ### Trident
+
+**Fixes:**
+
+- **Kubernetes:** Fixed critical issue where incorrect iSCSI devices were discovered when detaching volumes from Kubernetes nodes.
+
+## v25.06.1
+
+### Trident
+
+**IMPORTANT:** For customers using SolidFire, please do not upgrade to 25.06.1 due to a known issue when unpublishing 
+volumes. 25.06.2 will be released soon to address this issue.
 
 **Fixes:**
 
