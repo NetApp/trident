@@ -2406,6 +2406,20 @@ func (mr *MockOntapAPIMockRecorder) VolumeSnapshotDelete(ctx, snapshotName, sour
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSnapshotDelete", reflect.TypeOf((*MockOntapAPI)(nil).VolumeSnapshotDelete), ctx, snapshotName, sourceVolume)
 }
 
+// VolumeSnapshotDeleteWithRetry mocks base method.
+func (m *MockOntapAPI) VolumeSnapshotDeleteWithRetry(ctx context.Context, snapshot, volume string, maxRetries int, timeout time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VolumeSnapshotDeleteWithRetry", ctx, snapshot, volume, maxRetries, timeout)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VolumeSnapshotDeleteWithRetry indicates an expected call of VolumeSnapshotDeleteWithRetry.
+func (mr *MockOntapAPIMockRecorder) VolumeSnapshotDeleteWithRetry(ctx, snapshot, volume, maxRetries, timeout any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VolumeSnapshotDeleteWithRetry", reflect.TypeOf((*MockOntapAPI)(nil).VolumeSnapshotDeleteWithRetry), ctx, snapshot, volume, maxRetries, timeout)
+}
+
 // VolumeSnapshotInfo mocks base method.
 func (m *MockOntapAPI) VolumeSnapshotInfo(ctx context.Context, snapshotName, sourceVolume string) (api.Snapshot, error) {
 	m.ctrl.T.Helper()

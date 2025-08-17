@@ -1,8 +1,10 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package osutils
 
 import "github.com/vishvananda/netlink"
+
+//go:generate mockgen -destination=../../mocks/mock_utils/mock_osutils/mock_netlink.go github.com/netapp/trident/utils/osutils NetLink
 
 var netLink NetLink = NewNetLinkClient()
 

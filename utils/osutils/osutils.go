@@ -1,9 +1,8 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package osutils
 
 //go:generate mockgen -destination=../../mocks/mock_utils/mock_osutils/mock_osutils.go github.com/netapp/trident/utils/osutils Utils
-//go:generate mockgen -destination=../../mocks/mock_utils/mock_osutils/mock_netlink.go github.com/netapp/trident/utils/osutils NetLink
 
 import (
 	"context"

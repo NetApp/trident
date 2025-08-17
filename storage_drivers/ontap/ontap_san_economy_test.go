@@ -5859,3 +5859,290 @@ func TestParseLunInternalIdWithMissingSVM(t *testing.T) {
 
 	assert.Error(t, err, "expected an error when SVM Name is missing")
 }
+
+func TestSANEconomyStorageDriver_ProcessGroupSnapshot(t *testing.T) {
+	ctx := context.Background()
+
+	driver := &SANEconomyStorageDriver{
+		helper: &LUNHelper{}, // fill as needed for your code
+		Config: drivers.OntapStorageDriverConfig{
+			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+				StorageDriverName: "testDriver",
+				DebugTraceFlags:   map[string]bool{},
+			},
+			SVM: "svm1",
+		},
+	}
+
+	volConfigs := []*storage.VolumeConfig{
+		{Name: "pvcA", InternalName: "volA", InternalID: "/svm/svm1/flexvol/volA/lun/lunA"},
+		{Name: "pvcB", InternalName: "volB", InternalID: "/svm/svm1/flexvol/volB/lun/lunB"},
+	}
+
+	groupCfg := &storage.GroupSnapshotConfig{
+		Name:         "groupsnapshot-12345678-1234-1234-1234-123456789abc",
+		InternalName: "groupsnapshot-12345678-1234-1234-1234-123456789abc",
+		VolumeNames:  []string{"pvcA", "pvcB"},
+	}
+
+	created := "2021-01-01T00:00:00Z"
+
+	snapName, _ := storage.ConvertGroupSnapshotID(groupCfg.ID())
+
+	type testCase struct {
+		name        string
+		setupAPI    func(mockAPI *mockapi.MockOntapAPI)
+		setupDrv    func(d *SANEconomyStorageDriver)
+		assertErr   assert.ErrorAssertionFunc
+		expectSnaps int
+	}
+
+	tests := []testCase{
+		{
+			name: "all succeed",
+			setupAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapName, "volA").Return(api.Snapshot{CreateTime: created, Name: snapName}, nil)
+				mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapName, "volB").Return(api.Snapshot{CreateTime: created, Name: snapName}, nil)
+				mockAPI.EXPECT().LunCloneCreate(ctx, "volA", gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().LunCloneCreate(ctx, "volB", gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&api.Lun{Size: "100"}, nil).AnyTimes()
+				mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{}, nil).AnyTimes()
+				mockAPI.EXPECT().VolumeSnapshotDeleteWithRetry(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{}, nil).AnyTimes()
+				mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockAPI.EXPECT().VolumeSize(ctx, gomock.Any()).Return(uint64(100), nil).AnyTimes()
+				mockAPI.EXPECT().LunSetSize(ctx, gomock.Any(), gomock.Any()).Return(uint64(100), nil).AnyTimes()
+			},
+			setupDrv:    func(d *SANEconomyStorageDriver) {},
+			assertErr:   assert.NoError,
+			expectSnaps: 2,
+		},
+		{
+			name: "snapshot info fails for one",
+			setupAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapName, "volA").Return(api.Snapshot{}, fmt.Errorf("api error"))
+				mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapName, "volB").Return(api.Snapshot{CreateTime: "2021-01-01T00:00:00Z", Name: snapName}, nil)
+				mockAPI.EXPECT().LunCloneCreate(ctx, "volB", gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&api.Lun{Size: "100"}, nil).AnyTimes()
+				mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{}, nil).AnyTimes()
+				mockAPI.EXPECT().VolumeSnapshotDeleteWithRetry(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{}, nil).AnyTimes()
+				mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockAPI.EXPECT().VolumeSize(ctx, gomock.Any()).Return(uint64(100), nil).AnyTimes()
+				mockAPI.EXPECT().LunSetSize(ctx, gomock.Any(), gomock.Any()).Return(uint64(100), nil).AnyTimes()
+			},
+			setupDrv:    func(d *SANEconomyStorageDriver) {},
+			assertErr:   assert.Error,
+			expectSnaps: 1,
+		},
+		{
+			name: "clone fails for one",
+			setupAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapName, "volA").Return(api.Snapshot{CreateTime: "2021-01-01T00:00:00Z", Name: snapName}, nil)
+				mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapName, "volB").Return(api.Snapshot{CreateTime: "2021-01-01T00:00:00Z", Name: snapName}, nil)
+				mockAPI.EXPECT().LunCloneCreate(ctx, "volA", gomock.Any(), gomock.Any(), gomock.Any()).Return(fmt.Errorf("clone error"))
+				mockAPI.EXPECT().LunCloneCreate(ctx, "volB", gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(&api.Lun{Size: "100"}, nil).AnyTimes()
+				mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(&api.Volume{}, nil).AnyTimes()
+				mockAPI.EXPECT().VolumeSnapshotDeleteWithRetry(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{}, nil).AnyTimes()
+				mockAPI.EXPECT().VolumeSetSize(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockAPI.EXPECT().VolumeSize(ctx, gomock.Any()).Return(uint64(100), nil).AnyTimes()
+				mockAPI.EXPECT().LunSetSize(ctx, gomock.Any(), gomock.Any()).Return(uint64(100), nil).AnyTimes()
+			},
+			setupDrv:    func(d *SANEconomyStorageDriver) {},
+			assertErr:   assert.Error,
+			expectSnaps: 1,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+			driver.API = mockAPI
+
+			if test.setupAPI != nil {
+				test.setupAPI(mockAPI)
+			}
+			if test.setupDrv != nil {
+				test.setupDrv(driver)
+			}
+
+			snaps, err := driver.ProcessGroupSnapshot(ctx, groupCfg, volConfigs)
+			test.assertErr(t, err)
+			assert.Equal(t, test.expectSnaps, len(snaps))
+		})
+	}
+}
+
+func TestSANEconomyStorageDriver_destroyBucketSnapshots(t *testing.T) {
+	ctx := context.Background()
+
+	driver := &SANEconomyStorageDriver{
+		Config: drivers.OntapStorageDriverConfig{
+			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+				StorageDriverName: "testDriver",
+				DebugTraceFlags:   map[string]bool{},
+			},
+			SVM: "svm1",
+		},
+	}
+
+	type testCase struct {
+		name      string
+		snapshots map[string]api.Snapshot
+		setupAPI  func(api *mockapi.MockOntapAPI)
+		expectErr bool
+	}
+
+	tests := []testCase{
+		{
+			name: "all succeed",
+			snapshots: map[string]api.Snapshot{
+				"volA": {Name: "snapA"},
+				"volB": {Name: "snapB"},
+			},
+			setupAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeSnapshotDeleteWithRetry(ctx, "snapA", "volA", gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeSnapshotDeleteWithRetry(ctx, "snapB", "volB", gomock.Any(), gomock.Any()).Return(nil)
+			},
+			expectErr: false,
+		},
+		{
+			name: "one fails, one succeeds",
+			snapshots: map[string]api.Snapshot{
+				"volA": {Name: "snapA"},
+				"volB": {Name: "snapB"},
+			},
+			setupAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeSnapshotDeleteWithRetry(ctx, "snapA", "volA", gomock.Any(), gomock.Any()).Return(fmt.Errorf("delete error"))
+				mockAPI.EXPECT().VolumeSnapshotDeleteWithRetry(ctx, "snapB", "volB", gomock.Any(), gomock.Any()).Return(nil)
+			},
+			expectErr: true,
+		},
+		{
+			name: "all fail",
+			snapshots: map[string]api.Snapshot{
+				"volA": {Name: "snapA"},
+				"volB": {Name: "snapB"},
+			},
+			setupAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeSnapshotDeleteWithRetry(ctx, "snapA", "volA", gomock.Any(), gomock.Any()).Return(fmt.Errorf("delete error"))
+				mockAPI.EXPECT().VolumeSnapshotDeleteWithRetry(ctx, "snapB", "volB", gomock.Any(), gomock.Any()).Return(fmt.Errorf("delete error"))
+			},
+			expectErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+			driver.API = mockAPI
+
+			if test.setupAPI != nil {
+				test.setupAPI(mockAPI)
+			}
+
+			err := driver.destroyBucketSnapshots(ctx, test.snapshots)
+			if test.expectErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestSANEconomyStorageDriver_cloneLUNFromSnapshot(t *testing.T) {
+	ctx := context.Background()
+
+	driver := &SANEconomyStorageDriver{
+		Config: drivers.OntapStorageDriverConfig{
+			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+				StorageDriverName: "testDriver",
+				DebugTraceFlags:   map[string]bool{},
+			},
+			SVM: "svm1",
+		},
+	}
+
+	bucketVolume := "volA"
+	sourcePath := "/vol/volA/.snapshot/snap1/lunA"
+	lunName := "lunA_clone"
+	qos := api.QosPolicyGroup{}
+
+	type testCase struct {
+		name      string
+		setupAPI  func(mockAPI *mockapi.MockOntapAPI)
+		setupDrv  func(d *SANEconomyStorageDriver)
+		expectErr bool
+	}
+
+	tests := []testCase{
+		{
+			name: "success",
+			setupAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunCloneCreate(ctx, bucketVolume, sourcePath, lunName, qos).Return(nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, bucketVolume).Return(&api.Volume{}, nil).AnyTimes()
+				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{}, nil).AnyTimes()
+				mockAPI.EXPECT().VolumeSetSize(ctx, bucketVolume, gomock.Any()).Return(nil).AnyTimes()
+				mockAPI.EXPECT().VolumeSize(ctx, bucketVolume).Return(uint64(100), nil).AnyTimes()
+				mockAPI.EXPECT().LunSetSize(ctx, gomock.Any(), gomock.Any()).Return(uint64(100), nil).AnyTimes()
+			},
+			setupDrv:  func(d *SANEconomyStorageDriver) {},
+			expectErr: false,
+		},
+		{
+			name: "clone fails",
+			setupAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunCloneCreate(ctx, bucketVolume, sourcePath, lunName, qos).Return(fmt.Errorf("clone error"))
+			},
+			setupDrv:  func(d *SANEconomyStorageDriver) {},
+			expectErr: true,
+		},
+		{
+			name: "resize fails",
+			setupAPI: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().LunCloneCreate(ctx, bucketVolume, sourcePath, lunName, qos).Return(nil)
+				mockAPI.EXPECT().VolumeInfo(ctx, bucketVolume).Return(&api.Volume{}, nil).AnyTimes()
+				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return([]api.Lun{}, nil).AnyTimes()
+				mockAPI.EXPECT().VolumeSetSize(ctx, bucketVolume, gomock.Any()).Return(fmt.Errorf("resize error")).AnyTimes()
+				mockAPI.EXPECT().VolumeSize(ctx, bucketVolume).Return(uint64(100), nil).AnyTimes()
+				mockAPI.EXPECT().LunSetSize(ctx, gomock.Any(), gomock.Any()).Return(uint64(100), nil).AnyTimes()
+			},
+			setupDrv:  func(d *SANEconomyStorageDriver) {},
+			expectErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+			driver.API = mockAPI
+
+			if test.setupAPI != nil {
+				test.setupAPI(mockAPI)
+			}
+			if test.setupDrv != nil {
+				test.setupDrv(driver)
+			}
+
+			internalID, err := driver.cloneLUNFromSnapshot(ctx, bucketVolume, sourcePath, lunName, qos)
+			if test.expectErr {
+				assert.Error(t, err)
+				assert.Empty(t, internalID)
+			} else {
+				assert.NoError(t, err)
+				assert.NotEmpty(t, internalID)
+				assert.Contains(t, internalID, bucketVolume)
+				assert.Contains(t, internalID, lunName)
+			}
+		})
+	}
+}

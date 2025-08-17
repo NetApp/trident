@@ -1742,6 +1742,55 @@ func (d OntapAPIREST) VolumeSnapshotDelete(ctx context.Context, snapshotName, so
 	return d.SnapshotDeleteByNameAndStyle(ctx, snapshotName, sourceVolume, volumeUUID)
 }
 
+func (d OntapAPIREST) VolumeSnapshotDeleteWithRetry(
+	ctx context.Context, snapshot, volume string, maxRetries int, timeout time.Duration,
+) error {
+	retries := 0
+	checkDeleted := func() error {
+		if err := d.VolumeSnapshotDelete(ctx, snapshot, volume); err != nil {
+			if IsSnapshotBusyError(err) {
+				Logc(ctx).Debugf("Could not delete snapshot %s in flexVol %s; snapshot is busy.", snapshot, volume)
+			} else {
+				Logc(ctx).WithError(err).Errorf("Failed to delete snapshot %s in flexVol %s", snapshot, volume)
+			}
+			return err
+		}
+		return nil
+	}
+
+	checkDeletedNotify := func(err error, duration time.Duration) {
+		Log().WithFields(LogFields{
+			"snapshot": snapshot,
+			"volume":   volume,
+		}).WithError(err).Debug("Snapshot not deleted yet, retrying...")
+		retries++
+	}
+
+	deleteBackoff := backoff.NewExponentialBackOff()
+	deleteBackoff.InitialInterval = 1 * time.Second
+	deleteBackoff.RandomizationFactor = 0.1
+	deleteBackoff.Multiplier = 1.414
+	deleteBackoff.MaxInterval = 10 * time.Second
+	deleteBackoff.MaxElapsedTime = timeout
+
+	// Set a maximum retry count.
+	deleteBackoffWithRetries := backoff.WithMaxRetries(deleteBackoff, uint64(maxRetries))
+
+	Log().WithField("snapshot", snapshot).Debug("Waiting for snapshot to be deleted.")
+	if err := backoff.RetryNotify(checkDeleted, deleteBackoffWithRetries, checkDeletedNotify); err != nil {
+		return fmt.Errorf("snapshot %s was not deleted after %3.2f seconds", snapshot, timeout.Seconds())
+	}
+
+	Log().WithFields(LogFields{
+		"snapshot":     snapshot,
+		"volume":       volume,
+		"elapsedTime":  fmt.Sprintf("%3.2f", deleteBackoff.GetElapsedTime().Seconds()),
+		"totalRetries": fmt.Sprintf("%d", retries),
+	}).Debugf("Snapshot deleted.")
+
+	return nil
+}
+
 func (d OntapAPIREST) VolumeListBySnapshotParent(
 	ctx context.Context, snapshotName, sourceVolume string,
 ) (VolumeNameList, error) {
@@ -2270,20 +2319,28 @@ func (d OntapAPIREST) LunCloneCreate(
 	defer Logd(ctx, d.driverName,
 		d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace("<<<< LunCloneCreate")
 
-	fields := []string{"os_type", "space.size"}
-	lunResponse, err := d.api.LunGetByName(ctx, fullSourceLunPath, fields)
-	if err != nil {
-		return err
-	}
-	lun, err := lunInfoFromRestAttrsHelper(lunResponse)
-	if err != nil {
-		return err
+	// ONTAP allows cloning from a LUN or from a LUN in a snapshot.
+	// Only gather these extra fields if we're cloning from a LUN.
+	const flexVolSnapshotDir = "/.snapshot/"
+	var osType string
+	var sizeBytes int64
+	if !strings.Contains(source, flexVolSnapshotDir) {
+		fields := []string{"os_type", "space.size"}
+		lunResponse, err := d.api.LunGetByName(ctx, fullSourceLunPath, fields)
+		if err != nil {
+			return err
+		}
+		lun, err := lunInfoFromRestAttrsHelper(lunResponse)
+		if err != nil {
+			return err
+		}
+
+		osType = lun.OsType
+		sizeBytesStr, _ := capacity.ToBytes(lun.Size)
+		sizeBytes, _ = strconv.ParseInt(sizeBytesStr, 10, 64)
 	}
 
-	sizeBytesStr, _ := capacity.ToBytes(lun.Size)
-	sizeBytes, _ := strconv.ParseInt(sizeBytesStr, 10, 64)
-
-	return d.api.LunCloneCreate(ctx, fullCloneLunPath, fullSourceLunPath, sizeBytes, lun.OsType, qosPolicyGroup)
+	return d.api.LunCloneCreate(ctx, fullCloneLunPath, fullSourceLunPath, sizeBytes, osType, qosPolicyGroup)
 }
 
 func (d OntapAPIREST) LunSetComment(ctx context.Context, lunPath, comment string) error {

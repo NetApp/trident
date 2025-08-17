@@ -5982,7 +5982,7 @@ func TestOntapStorageDriverGetMirrorTransferTime(t *testing.T) {
 	assert.NoError(t, err, "received error")
 }
 
-func TestOntapNasVolumeGroupSnapshot(t *testing.T) {
+func TestOntapNas_CreateVolumeGroupSnapshot(t *testing.T) {
 	ctx := context.Background()
 
 	mockAPI, driver := newMockOntapNASDriver(t)
@@ -6008,26 +6008,45 @@ func TestOntapNasVolumeGroupSnapshot(t *testing.T) {
 	}
 	storageVolNames := []string{"trident_vol1", "trident_vol2"}
 	snapName, _ := storage.ConvertGroupSnapshotID(groupSnapshotConfig.Name)
-	snapInfoResult := api.Snapshot{CreateTime: "1"}
 
 	mockAPI.EXPECT().ConsistencyGroupSnapshot(ctx, snapName, gomock.InAnyOrder(storageVolNames)).Return(nil).Times(1)
 
-	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapName, gomock.Any()).Return(snapInfoResult, nil).Times(2)
-	mockAPI.EXPECT().VolumeUsedSize(ctx, gomock.Any()).Return(1073741824, nil).Times(2)
-
-	groupSnapshot, snapshots, err := driver.CreateGroupSnapshot(ctx, groupSnapshotConfig, targetInfo)
-
-	assert.Equal(t, groupSnapshot.ID(), groupSnapshotConfig.ID())
-	assert.Equal(t, groupSnapshot.GetVolumeNames(), groupSnapshotConfig.GetVolumeNames())
-
-	for _, snap := range snapshots {
-		assert.Contains(t, groupSnapshot.GetSnapshotIDs(), snap.ID())
-	}
-
+	err := driver.CreateGroupSnapshot(ctx, groupSnapshotConfig, targetInfo)
 	assert.NoError(t, err, "Group snapshot creation failed")
 }
 
-func TestOntapNasVolumeGroupTarget(t *testing.T) {
+func TestOntapNas_ProcessVolumeGroupSnapshot(t *testing.T) {
+	ctx := context.Background()
+
+	mockAPI, driver := newMockOntapNASDriver(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	groupSnapshotConfig := &storage.GroupSnapshotConfig{
+		Name:         "groupsnapshot-1234",
+		InternalName: "groupsnapshot-1234",
+		VolumeNames:  []string{"vol1", "vol2"},
+	}
+	storageVols := []*storage.VolumeConfig{
+		{Name: "vol1"},
+		{Name: "vol2"},
+	}
+	snapName, _ := storage.ConvertGroupSnapshotID(groupSnapshotConfig.Name)
+	snapInfoResult := api.Snapshot{CreateTime: "1"}
+	size := 1073741824
+
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapName, gomock.Any()).Return(snapInfoResult, nil).Times(2)
+	mockAPI.EXPECT().VolumeUsedSize(ctx, gomock.Any()).Return(size, nil).Times(2)
+
+	snaps, err := driver.ProcessGroupSnapshot(ctx, groupSnapshotConfig, storageVols)
+	assert.NoError(t, err, "Group snapshot processing failed")
+	assert.NotNil(t, snaps, "Grouped snapshot extraction failed")
+	for _, snap := range snaps {
+		assert.Equal(t, snapName, snap.Config.Name)
+		assert.Equal(t, int64(size), snap.SizeBytes)
+	}
+}
+
+func TestOntapNas_GetVolumeGroupTarget(t *testing.T) {
 	ctx := context.Background()
 
 	mockAPI, driver := newMockOntapNASDriver(t)

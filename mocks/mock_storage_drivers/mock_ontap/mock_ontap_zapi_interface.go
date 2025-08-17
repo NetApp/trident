@@ -806,18 +806,18 @@ func (mr *MockZapiClientInterfaceMockRecorder) JobScheduleExists(ctx, jobName an
 }
 
 // LunCloneCreate mocks base method.
-func (m *MockZapiClientInterface) LunCloneCreate(volumeName, sourceLun, destinationLun string, qosPolicyGroup api.QosPolicyGroup) (*azgo.CloneCreateResponse, error) {
+func (m *MockZapiClientInterface) LunCloneCreate(volumeName, sourceLun, sourceSnap, destinationLun string, qosPolicyGroup api.QosPolicyGroup) (*azgo.CloneCreateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunCloneCreate", volumeName, sourceLun, destinationLun, qosPolicyGroup)
+	ret := m.ctrl.Call(m, "LunCloneCreate", volumeName, sourceLun, sourceSnap, destinationLun, qosPolicyGroup)
 	ret0, _ := ret[0].(*azgo.CloneCreateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LunCloneCreate indicates an expected call of LunCloneCreate.
-func (mr *MockZapiClientInterfaceMockRecorder) LunCloneCreate(volumeName, sourceLun, destinationLun, qosPolicyGroup any) *gomock.Call {
+func (mr *MockZapiClientInterfaceMockRecorder) LunCloneCreate(volumeName, sourceLun, sourceSnap, destinationLun, qosPolicyGroup any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunCloneCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).LunCloneCreate), volumeName, sourceLun, destinationLun, qosPolicyGroup)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunCloneCreate", reflect.TypeOf((*MockZapiClientInterface)(nil).LunCloneCreate), volumeName, sourceLun, sourceSnap, destinationLun, qosPolicyGroup)
 }
 
 // LunCount mocks base method.

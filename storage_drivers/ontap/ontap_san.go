@@ -1181,7 +1181,7 @@ func (d *SANStorageDriver) GetGroupSnapshotTarget(
 
 func (d *SANStorageDriver) CreateGroupSnapshot(
 	ctx context.Context, config *storage.GroupSnapshotConfig, target *storage.GroupSnapshotTargetInfo,
-) (*storage.GroupSnapshot, []*storage.Snapshot, error) {
+) error {
 	fields := LogFields{
 		"Method": "CreateGroupSnapshot",
 		"Type":   "SANStorageDriver",
@@ -1189,7 +1189,34 @@ func (d *SANStorageDriver) CreateGroupSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateGroupSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateGroupSnapshot")
 
-	return CreateGroupSnapshot(ctx, config, target, &d.Config, d.API, lunSizeGetterFromFlexvol(d.API.LunSize))
+	return CreateGroupSnapshot(ctx, config, target, &d.Config, d.API)
+}
+
+func (d *SANStorageDriver) ProcessGroupSnapshot(
+	ctx context.Context, config *storage.GroupSnapshotConfig, volConfigs []*storage.VolumeConfig,
+) ([]*storage.Snapshot, error) {
+	fields := LogFields{
+		"Method": "ProcessGroupSnapshot",
+		"Type":   "SANStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ProcessGroupSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ProcessGroupSnapshot")
+
+	sizeGetter := lunSizeGetterFromFlexvol(d.API.LunSize)
+	return ProcessGroupSnapshot(ctx, config, volConfigs, &d.Config, d.API, sizeGetter)
+}
+
+func (d *SANStorageDriver) ConstructGroupSnapshot(
+	ctx context.Context, config *storage.GroupSnapshotConfig, snapshots []*storage.Snapshot,
+) (*storage.GroupSnapshot, error) {
+	fields := LogFields{
+		"Method": "ConstructGroupSnapshot",
+		"Type":   "SANStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ConstructGroupSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ConstructGroupSnapshot")
+
+	return ConstructGroupSnapshot(ctx, config, snapshots, &d.Config)
 }
 
 // Get tests for the existence of a volume
@@ -1590,7 +1617,9 @@ func (d *SANStorageDriver) ReconcileNodeAccess(
 	return reconcileSANNodeAccess(ctx, d.API, nodeNames, backendUUID, tridentUUID)
 }
 
-func (d *SANStorageDriver) ReconcileVolumeNodeAccess(ctx context.Context, _ *storage.VolumeConfig, _ []*models.Node) error {
+func (d *SANStorageDriver) ReconcileVolumeNodeAccess(
+	ctx context.Context, _ *storage.VolumeConfig, _ []*models.Node,
+) error {
 	fields := LogFields{
 		"Method": "ReconcileVolumeNodeAccess",
 		"Type":   "SANStorageDriver",

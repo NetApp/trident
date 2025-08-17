@@ -1134,7 +1134,9 @@ func (o *TridentOrchestrator) validateAndCreateBackendFromConfig(
 		}
 	}
 
-	sb, err := factory.NewStorageBackendForConfig(ctx, configInJSON, configRef, backendUUID, commonConfig, backendSecret)
+	sb, err := factory.NewStorageBackendForConfig(
+		ctx, configInJSON, configRef, backendUUID, commonConfig, backendSecret,
+	)
 
 	if commonConfig.UserState != "" {
 		// If the userState field is present in tbc/backend.json, then update the userBackendState.
@@ -1502,7 +1504,9 @@ func (o *TridentOrchestrator) UpdateBackendState(
 	return backend.ConstructExternal(ctx), o.storeClient.UpdateBackend(ctx, backend)
 }
 
-func (o *TridentOrchestrator) updateUserBackendState(ctx context.Context, sb *storage.Backend, userBackendState string, isCLI bool) (err error) {
+func (o *TridentOrchestrator) updateUserBackendState(
+	ctx context.Context, sb *storage.Backend, userBackendState string, isCLI bool,
+) (err error) {
 	backend := *sb
 	Logc(ctx).WithFields(LogFields{
 		"backendName":      backend.Name(),
@@ -1538,7 +1542,8 @@ func (o *TridentOrchestrator) updateUserBackendState(ctx context.Context, sb *st
 
 	// An extra check to ensure that the user-backend state is valid.
 	if err = newUserBackendState.Validate(); err != nil {
-		return fmt.Errorf("invalid user backend state provided: %s, allowed are: `%s`, `%s`", string(newUserBackendState), storage.UserNormal, storage.UserSuspended)
+		return fmt.Errorf("invalid user backend state provided: %s, allowed are: `%s`, `%s`",
+			string(newUserBackendState), storage.UserNormal, storage.UserSuspended)
 	}
 
 	// Idempotent check.
@@ -1550,8 +1555,8 @@ func (o *TridentOrchestrator) updateUserBackendState(ctx context.Context, sb *st
 	if newUserBackendState.IsSuspended() {
 		// Backend is only suspended when its current state is either online, offline or failed.
 		if !backend.State().IsOnline() && !backend.State().IsOffline() && !backend.State().IsFailed() {
-			return fmt.Errorf("the backend '%s' is currently not in any of the expected states: offline, online, or failed. Its current state is '%s'", backend.Name(),
-				backend.State())
+			return fmt.Errorf("the backend '%s' is currently not in any of the expected states: "+
+				"offline, online, or failed. Its current state is '%s'", backend.Name(), backend.State())
 		}
 	}
 
@@ -1561,7 +1566,9 @@ func (o *TridentOrchestrator) updateUserBackendState(ctx context.Context, sb *st
 	return nil
 }
 
-func (o *TridentOrchestrator) updateBackendState(ctx context.Context, sb *storage.Backend, backendState string) (err error) {
+func (o *TridentOrchestrator) updateBackendState(
+	ctx context.Context, sb *storage.Backend, backendState string,
+) (err error) {
 	backend := *sb
 	Logc(ctx).WithFields(LogFields{
 		"backendName":      backend.Name(),
@@ -2195,7 +2202,9 @@ func (o *TridentOrchestrator) UpdateVolume(
 }
 
 // UpdateVolumeLUKSPassphraseNames updates the LUKS passphrase names stored on a volume in the cache and persistent store.
-func (o *TridentOrchestrator) UpdateVolumeLUKSPassphraseNames(ctx context.Context, volume string, passphraseNames *[]string) error {
+func (o *TridentOrchestrator) UpdateVolumeLUKSPassphraseNames(
+	ctx context.Context, volume string, passphraseNames *[]string,
+) error {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -2285,8 +2294,8 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 
 	// Check if the storage class of source and clone volume is different, only if the orchestrator is not in Docker plugin mode. In Docker plugin mode, the storage class of source and clone volume will be different.
 	if !isDockerPluginMode() && volumeConfig.StorageClass != sourceVolume.Config.StorageClass {
-		return nil, errors.MismatchedStorageClassError("clone volume %s from source volume %s with different storage classes is not allowed", volumeConfig.Name,
-			volumeConfig.CloneSourceVolume)
+		return nil, errors.MismatchedStorageClassError("clone volume %s from source volume %s with"+
+			" different storage classes is not allowed", volumeConfig.Name, volumeConfig.CloneSourceVolume)
 	}
 
 	Logc(ctx).WithFields(LogFields{
@@ -2526,8 +2535,8 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 
 	// Check if the storage class of source and clone volume is different, only if the orchestrator is not in Docker plugin mode. In Docker plugin mode, the storage class of source and clone volume will be different at times.
 	if !isDockerPluginMode() && cloneConfig.StorageClass != sourceVolume.Config.StorageClass {
-		return nil, errors.MismatchedStorageClassError("clone volume %s from source volume %s with different storage classes is not allowed",
-			cloneConfig.Name, cloneConfig.CloneSourceVolume)
+		return nil, errors.MismatchedStorageClassError("clone volume %s from source volume %s with "+
+			"different storage classes is not allowed", cloneConfig.Name, cloneConfig.CloneSourceVolume)
 	}
 
 	backend, found = o.backends[txn.VolumeCreatingConfig.BackendUUID]
@@ -4100,7 +4109,7 @@ func (o *TridentOrchestrator) CreateSnapshot(
 
 // CreateGroupSnapshot creates a snapshot of a volume group
 func (o *TridentOrchestrator) CreateGroupSnapshot(
-	ctx context.Context, groupSnapshotConfig *storage.GroupSnapshotConfig,
+	ctx context.Context, config *storage.GroupSnapshotConfig,
 ) (externalGroupSnapshot *storage.GroupSnapshotExternal, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
@@ -4123,14 +4132,14 @@ func (o *TridentOrchestrator) CreateGroupSnapshot(
 	defer o.updateMetrics()
 
 	// pvc-UUID names of all pvcs in a volume group
-	sourceVolumeIDs := groupSnapshotConfig.GetVolumeNames()
+	sourceVolumeIDs := config.GetVolumeNames()
 	if len(sourceVolumeIDs) == 0 {
 		return nil, errors.InvalidInputError("group snapshot must have at least one source volume")
 	}
 
 	// Get the backends from the volumes and determine if they support group snapshots
 	// Map [backends] -> volumes
-	backendsToVolumes = make(map[string][]*storage.VolumeConfig, 0)
+	backendsToVolumes = make(map[string][]*storage.VolumeConfig)
 	// Get the volume and do simple validation
 	for _, volumeID := range sourceVolumeIDs {
 
@@ -4138,7 +4147,7 @@ func (o *TridentOrchestrator) CreateGroupSnapshot(
 		// snapshots are stored by their ID pvc-UUID/snapshot-GroupSnapshotUUID
 		// For group snapshots, the snapshot name will be the same for every volume in the group but we'll be able to
 		// differentiate based on the pvc if needed
-		snapName, err := storage.ConvertGroupSnapshotID(groupSnapshotConfig.ID())
+		snapName, err := storage.ConvertGroupSnapshotID(config.ID())
 		if err != nil {
 			return nil, err
 		}
@@ -4217,7 +4226,7 @@ func (o *TridentOrchestrator) CreateGroupSnapshot(
 	// Add a vol transaction with enough info about the whole group
 	// Add transaction in case the operation must be rolled back later
 	txn := &storage.VolumeTransaction{
-		GroupSnapshotConfig: groupSnapshotConfig,
+		GroupSnapshotConfig: config,
 		Op:                  storage.AddGroupSnapshot,
 	}
 	if err = o.AddVolumeTransaction(ctx, txn); err != nil {
@@ -4226,18 +4235,50 @@ func (o *TridentOrchestrator) CreateGroupSnapshot(
 
 	// Recovery function in case of error
 	defer func() {
-		err = o.addGroupSnapshotCleanup(ctx, err, backendsToVolumes, groupSnapshot, snapshots, txn, groupSnapshotConfig)
+		err = o.addGroupSnapshotCleanup(ctx, err, backendsToVolumes, groupSnapshot, snapshots, txn, config)
 	}()
 
-	// Create the group snapshot
-	// TODO (TRID-16891): Do post-processing within the driver function; san-economy needs work
-	groupSnapshot, snapshots, err = groupSnapshotter.CreateGroupSnapshot(ctx, groupSnapshotConfig, groupSnapshotTarget)
+	// Create the group snapshot in the backend.
+	err = groupSnapshotter.CreateGroupSnapshot(ctx, config, groupSnapshotTarget)
 	if err != nil {
 		if errors.IsMaxLimitReachedError(err) {
 			return nil, errors.MaxLimitReachedError(fmt.Sprintf("failed to create group snapshot %s: %v",
-				groupSnapshotConfig.ID(), err))
+				config.ID(), err))
 		}
-		return nil, fmt.Errorf("failed to create group snapshot %s: %v", groupSnapshotConfig.ID(), err)
+		return nil, fmt.Errorf("failed to create group snapshot %s: %v", config.ID(), err)
+	}
+
+	// Process the group snapshot by backend and the set volumes relative to that backend.
+	// Defer handling errors until after all backends have processed their snapshots because
+	// the orchestrator needs to know which snapshots are present for each backend.
+	var processingErrs error
+	for backendUUID, volumes := range backendsToVolumes {
+		b, ok := o.backends[backendUUID]
+		if !ok {
+			return nil, errors.NotFoundError("backend not found")
+		}
+
+		// Each backend should handle backend-specific processing with its own slice of volumes.
+		snapshotsSlice, err := b.ProcessGroupSnapshot(ctx, config, volumes)
+		if err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"volumes":     volumes,
+				"backendUUID": backendUUID,
+			}).WithError(err).Debugf("Failed to process grouped snapshots for backend %s", b.Name())
+			processingErrs = errors.Join(processingErrs, err)
+		}
+
+		// Build up the set of grouped snapshots across all volumes in each backend.
+		snapshots = append(snapshots, snapshotsSlice...)
+	}
+	if processingErrs != nil {
+		return nil, errors.Join(err, processingErrs)
+	}
+
+	// Construct the group snapshot from the config and grouped snapshots across all backends.
+	groupSnapshot, err = groupSnapshotter.ConstructGroupSnapshot(ctx, config, snapshots)
+	if err != nil {
+		return nil, fmt.Errorf("failed to construct group snapshot %s: %v", config.ID(), err)
 	}
 
 	// Save references to new group snapshot and each snapshot
@@ -4273,43 +4314,41 @@ func (o *TridentOrchestrator) addGroupSnapshotCleanup(
 		//     In this case, we don't need to roll anything back.
 		// 2.  We failed to save the snapshots or group snapshot to the persistent store.
 		//     In this case, we need to remove the snapshots from the backend.
-		if backendsToVolumes != nil && snapshots != nil {
-			// We succeeded in adding the snapshots to the backends; now delete them.
-			// We need to go through each backend to delete the snapshot
-			for backendUUID, volConfigs := range backendsToVolumes {
-				backend, ok := o.backends[backendUUID]
-				if !ok {
-					cleanupErr = errors.NotFoundError("backend not found")
-				}
-				for _, volConfig := range volConfigs {
-					var volName string
-					for _, snap := range snapshots {
-						volName, _, err = storage.ParseSnapshotID(snap.ID())
-						if err != nil {
-							cleanupErr = err
-						}
-						if volName == volConfig.Name {
-							cleanupErr = backend.DeleteSnapshot(ctx, snap.Config, volConfig)
-							if cleanupErr != nil {
-								cleanupErr = fmt.Errorf("unable to delete group snapshot from backend during cleanup: %v",
-									cleanupErr)
-							}
-						}
+
+		// We may have succeeded in adding some snapshots to the backends.
+		// Because something failed, we must delete them.
+		for backendUUID, volConfigs := range backendsToVolumes {
+			backend, ok := o.backends[backendUUID]
+			if !ok {
+				cleanupErr = errors.Join(cleanupErr, errors.NotFoundError("backend not found"))
+			}
+
+			for _, volConfig := range volConfigs {
+				var volName string
+				for _, snap := range snapshots {
+					volName, _, err = storage.ParseSnapshotID(snap.ID())
+					if err != nil {
+						cleanupErr = errors.Join(cleanupErr, err)
+					} else if volName != volConfig.Name {
+						continue
+					}
+
+					if deleteErr := backend.DeleteSnapshot(ctx, snap.Config, volConfig); deleteErr != nil {
+						cleanupErr = fmt.Errorf("unable to delete snapshot from backend during cleanup: %w", deleteErr)
 					}
 				}
 			}
-			if cleanupErr != nil {
-				cleanupErr = fmt.Errorf("unable to delete group snapshot from backend during cleanup:  %v", cleanupErr)
-			}
 		}
 	}
+
 	if cleanupErr == nil {
 		// Only clean up the snapshot transaction if we've succeeded at cleaning up on the backend or if we didn't
 		// need to do so in the first place.
-		if txErr = o.DeleteVolumeTransaction(ctx, volTxn); txErr != nil {
-			txErr = fmt.Errorf("unable to clean up group snapshot transaction: %v", txErr)
+		if deleteErr := o.DeleteVolumeTransaction(ctx, volTxn); deleteErr != nil {
+			txErr = fmt.Errorf("unable to clean up group snapshot transaction: %w", deleteErr)
 		}
 	}
+
 	if cleanupErr != nil || txErr != nil {
 		// Remove the snapshot from memory, if it's there, so that the user can try to re-add.
 		// This will trigger recovery code.
@@ -4328,11 +4367,12 @@ func (o *TridentOrchestrator) addGroupSnapshotCleanup(
 				"Repeat creating the group snapshot or restart %v.",
 			err, config.OrchestratorName)
 	}
+
 	return err
 }
 
-func (o *TridentOrchestrator) GetGroupSnapshot(ctx context.Context,
-	groupSnapshotID string,
+func (o *TridentOrchestrator) GetGroupSnapshot(
+	ctx context.Context, groupSnapshotID string,
 ) (groupSnapshotExternal *storage.GroupSnapshotExternal, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 

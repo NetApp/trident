@@ -87,7 +87,7 @@ func (p *Plugin) CreateVolumeGroupSnapshot(
 			// This operation must be idempotent. Attempt to clean up any artifacts from the failed create.
 			Logc(ctx).WithFields(fields).WithError(err).Error("Failed to create group snapshot; cleaning up failed snapshots.")
 			if deleteErr := p.orchestrator.DeleteGroupSnapshot(ctx, groupName); deleteErr != nil {
-				Logc(ctx).WithFields(fields).WithError(deleteErr).Error("Failed to clean up failed snapshots.")
+				Logc(ctx).WithFields(fields).WithError(deleteErr).Debug("Could not delete failed group snapshot.")
 				err = errors.Join(err, deleteErr)
 			}
 

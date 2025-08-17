@@ -2682,6 +2682,22 @@ func (c *RestClient) LunCloneCreate(
 	params.HTTPClient = c.httpClient
 	params.ReturnRecords = convert.ToPtr(true)
 
+	// sizeInBytes isn't required for LUN cloning from a snapshot.
+	// If the value is not positive, ignore it.
+	inlineSpace := &models.LunInlineSpace{}
+	if sizeInBytes > 0 {
+		inlineSpace = &models.LunInlineSpace{
+			Size: convert.ToPtr(sizeInBytes),
+		}
+	}
+
+	inlineQoSPolicy := &models.LunInlineQosPolicy{}
+	if qosPolicyGroup.Name != "" || qosPolicyGroup.Kind != 0 {
+		inlineQoSPolicy = &models.LunInlineQosPolicy{
+			Name: convert.ToPtr(qosPolicyGroup.Name),
+		}
+	}
+
 	lunInfo := &models.Lun{
 		Clone: &models.LunInlineClone{
 			Source: &models.LunInlineCloneInlineSource{
@@ -2690,12 +2706,8 @@ func (c *RestClient) LunCloneCreate(
 		},
 		Name: convert.ToPtr(lunPath), // example:  /vol/myVolume/myLun1
 		// OsType is not supported for POST when creating a LUN clone
-		Space: &models.LunInlineSpace{
-			Size: convert.ToPtr(sizeInBytes),
-		},
-		QosPolicy: &models.LunInlineQosPolicy{
-			Name: convert.ToPtr(qosPolicyGroup.Name),
-		},
+		Space:     inlineSpace,
+		QosPolicy: inlineQoSPolicy,
 	}
 	lunInfo.Svm = &models.LunInlineSvm{UUID: convert.ToPtr(c.svmUUID)}
 

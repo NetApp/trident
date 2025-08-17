@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"runtime/debug"
 	"sort"
 	"strconv"
@@ -24,6 +25,10 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/utils/errors"
 )
+
+// lunSnapPathRegex breaks up the path of a lun within a snapshot, within a flexvol for cloning operations.
+// Example path: /vol/<flexvol>/.snapshot/<snapshot>/<lun>
+var lunSnapPathRegex = regexp.MustCompile(`^/vol/(?P<flexvol>[^/]+)/\.snapshot/(?P<snapshot>[^/]+)/(?P<lun>.+)$`)
 
 func (d OntapAPIZAPI) SVMName() string {
 	return d.api.SVMName()
@@ -381,10 +386,50 @@ func (d OntapAPIZAPI) LunGetGeometry(ctx context.Context, lunPath string) (uint6
 	return lunMaxSize, nil
 }
 
+func parseLunSnapshotPath(path string) (string, string, string, error) {
+	match := lunSnapPathRegex.FindStringSubmatch(path)
+	if match == nil {
+		return "", "", "", fmt.Errorf("path %q does not match expected pattern", path)
+	}
+
+	paramsMap := make(map[string]string)
+	for i, name := range lunSnapPathRegex.SubexpNames() {
+		if i > 0 && i < len(match) {
+			paramsMap[name] = match[i]
+		}
+	}
+
+	// Optionally, check required fields
+	if paramsMap["flexvol"] == "" || paramsMap["snapshot"] == "" || paramsMap["lun"] == "" {
+		return "", "", "", fmt.Errorf("missing required fields in path: %q", path)
+	}
+
+	return paramsMap["flexvol"], paramsMap["snapshot"], paramsMap["lun"], nil
+}
+
+// LunCloneCreate clones a LUN from a set of sources.
+// For ONTAP REST APIs, source is a complete path. For ZAPI, this is not allowed.
+// To maintain a consistent interface, this function also handles the case where
+// the supplied source may be a complete path or a LUN.
 func (d OntapAPIZAPI) LunCloneCreate(
-	ctx context.Context, flexvol, source, lunName string, qosPolicyGroup QosPolicyGroup,
+	ctx context.Context, flexvol, source, newLunName string, qosPolicyGroup QosPolicyGroup,
 ) error {
-	cloneResponse, err := d.api.LunCloneCreate(flexvol, source, lunName, qosPolicyGroup)
+	// While ONTAP REST allows specifying a full path in the source, ZAPI does not and requires extra fields.
+	// Extract them from the source path and pass them to the LunCloneCreate call.
+	// If the source is a real path in ONTAP, parse out the relevant bits for clone create ZAPI.
+	var sourceSnap string // It is OK for source snapshots to be empty.
+	if strings.HasPrefix(source, "/vol/") && strings.Contains(source, "/.snapshot/") {
+		_, snapshotName, sourceLun, err := parseLunSnapshotPath(source)
+		if err != nil {
+			return err
+		}
+
+		// In this case, the "source" must be overwritten to be the source LUN within the snapshot.
+		source = sourceLun
+		sourceSnap = snapshotName
+	}
+
+	cloneResponse, err := d.api.LunCloneCreate(flexvol, source, sourceSnap, newLunName, qosPolicyGroup)
 	if err != nil {
 		return fmt.Errorf("error creating clone: %v", err)
 	}
@@ -399,7 +444,7 @@ func (d OntapAPIZAPI) LunCloneCreate(
 				"Problem encountered during the clone create operation, " +
 					"attempting to verify the clone was actually created",
 			)
-			if volumeLookupError := d.probeForVolume(ctx, lunName); volumeLookupError != nil {
+			if volumeLookupError := d.probeForVolume(ctx, newLunName); volumeLookupError != nil {
 				return volumeLookupError
 			}
 		} else {
@@ -2254,6 +2299,55 @@ func (d OntapAPIZAPI) VolumeSnapshotDelete(_ context.Context, snapshotName, sour
 		}
 		return fmt.Errorf("error deleting snapshot: %v", zerr)
 	}
+	return nil
+}
+
+func (d OntapAPIZAPI) VolumeSnapshotDeleteWithRetry(
+	ctx context.Context, snapshot, volume string, maxRetries int, timeout time.Duration,
+) error {
+	retries := 0
+	checkDeleted := func() error {
+		if err := d.VolumeSnapshotDelete(ctx, snapshot, volume); err != nil {
+			if IsSnapshotBusyError(err) {
+				Logc(ctx).Debugf("Could not delete snapshot %s in flexVol %s; snapshot is busy.", snapshot, volume)
+			} else {
+				Logc(ctx).WithError(err).Errorf("Failed to delete snapshot %s in flexVol %s", snapshot, volume)
+			}
+			return err
+		}
+		return nil
+	}
+
+	checkDeletedNotify := func(err error, duration time.Duration) {
+		Log().WithFields(LogFields{
+			"snapshot": snapshot,
+			"volume":   volume,
+		}).WithError(err).Debug("Snapshot not deleted yet, retrying...")
+		retries++
+	}
+
+	deleteBackoff := backoff.NewExponentialBackOff()
+	deleteBackoff.InitialInterval = 1 * time.Second
+	deleteBackoff.RandomizationFactor = 0.1
+	deleteBackoff.Multiplier = 1.414
+	deleteBackoff.MaxInterval = 10 * time.Second
+	deleteBackoff.MaxElapsedTime = timeout
+
+	// Set a maximum retry count.
+	deleteBackoffWithRetries := backoff.WithMaxRetries(deleteBackoff, uint64(maxRetries))
+
+	Log().WithField("snapshot", snapshot).Debug("Waiting for snapshot to be deleted.")
+	if err := backoff.RetryNotify(checkDeleted, deleteBackoffWithRetries, checkDeletedNotify); err != nil {
+		return fmt.Errorf("snapshot %s was not deleted after %3.2f seconds", snapshot, timeout.Seconds())
+	}
+
+	Log().WithFields(LogFields{
+		"snapshot":     snapshot,
+		"volume":       volume,
+		"elapsedTime":  fmt.Sprintf("%3.2f", deleteBackoff.GetElapsedTime().Seconds()),
+		"totalRetries": fmt.Sprintf("%d", retries),
+	}).Debugf("Snapshot deleted.")
+
 	return nil
 }
 

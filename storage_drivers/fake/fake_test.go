@@ -200,10 +200,6 @@ func TestCreateGroupSnapshot(t *testing.T) {
 		},
 	}
 
-	groupSnapshot, snapshots, err := driver.CreateGroupSnapshot(context.TODO(), groupSnapshotConfig, groupSnapshotTarget)
+	err := driver.CreateGroupSnapshot(context.TODO(), groupSnapshotConfig, groupSnapshotTarget)
 	assert.NoError(t, err, "CreateGroupSnapshot should not return an error")
-	assert.NotNil(t, groupSnapshot, "GroupSnapshot should not be nil")
-	assert.Equal(t, "groupsnapshot-12345", groupSnapshot.GroupSnapshotConfig.ID(),
-		"GroupSnapshot name should match")
-	assert.Equal(t, len(groupSnapshot.GetSnapshotIDs()), len(snapshots), "There should be 2 child snapshots")
 }

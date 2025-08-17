@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/RoaringBitmap/roaring/v2"
 
@@ -40,8 +41,22 @@ const (
 	snapshotCopyNameSuffix = "_copy"
 )
 
+// GetLUNPathEconomy accepts a "bucketName" (the flexVol in ONTAP), the internal volume name (the LUN in ONTAP),
+// and returns the LUN path.
+// Example:
+//
+//	"/vol/trident_lun_pool_MACNWIILZO/pvc_954876af_3a32_4ca4_b507_d5b5424e337e"
 func GetLUNPathEconomy(bucketName, volNameInternal string) string {
 	return fmt.Sprintf("/vol/%s/%s", bucketName, volNameInternal)
+}
+
+// GetEconomyLUNPathInSnapshot accepts a "bucketName" (the flexVol in ONTAP), a flexVol snapshot name, and the name of a
+// target LUN and returns the complete path of that LUN within the snapshot.
+// Example:
+//
+//	"/vol/trident_lun_pool_MACNWIILZO/.snapshot/snap.2025-07-29_161024/pvc_954876af_3a32_4ca4_b507_d5b5424e337e"
+func GetEconomyLUNPathInSnapshot(bucketName, snapName, lunName string) string {
+	return fmt.Sprintf("/vol/%s/.snapshot/%s/%s", bucketName, snapName, lunName)
 }
 
 type LUNHelper struct {
@@ -806,20 +821,50 @@ func (d *SANEconomyStorageDriver) CreateClone(
 	return nil
 }
 
+// cloneLUNFromSnapshot clones a LUN out of an ONTAP snapshot and returns the internalID (svm path) of that new LUN.
+func (d *SANEconomyStorageDriver) cloneLUNFromSnapshot(
+	ctx context.Context, bucketVolume, sourcePath, lunName string, qosPolicyGroup api.QosPolicyGroup,
+) (string, error) {
+	fields := LogFields{
+		"Method":     "cloneLUNFromSnapshot",
+		"Type":       "SANEconomyStorageDriver",
+		"parentVol":  bucketVolume,
+		"sourcePath": sourcePath,
+		"lunName":    lunName,
+	}
+	Logd(ctx, d.Config.StorageDriverName,
+		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> cloneLUNFromSnapshot")
+	defer Logd(ctx, d.Config.StorageDriverName,
+		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< cloneLUNFromSnapshot")
+
+	// Create the clone based on given snapshot.
+	if err := d.API.LunCloneCreate(ctx, bucketVolume, sourcePath, lunName, qosPolicyGroup); err != nil {
+		return "", err
+	}
+	internalID := d.CreateLUNInternalID(d.Config.SVM, bucketVolume, lunName)
+
+	// Grow or shrink the FlexVol as needed.
+	if err := d.resizeFlexvol(ctx, bucketVolume, 0); err != nil {
+		return "", err
+	}
+
+	return internalID, nil
+}
+
 // Create a volume clone
 func (d *SANEconomyStorageDriver) createLUNClone(
 	ctx context.Context, lunName, source, snapshot string, config *drivers.OntapStorageDriverConfig,
-	client api.OntapAPI, prefix string, isLunCreateFromSnapshot bool, qosPolicyGroup api.QosPolicyGroup,
+	client api.OntapAPI, prefix string, isFromSnapLUN bool, qosPolicyGroup api.QosPolicyGroup,
 ) (string, error) {
 	fields := LogFields{
-		"Method":                  "createLUNClone",
-		"Type":                    "ontap_san_economy",
-		"lunName":                 lunName,
-		"source":                  source,
-		"snapshot":                snapshot,
-		"prefix":                  prefix,
-		"isLunCreateFromSnapshot": isLunCreateFromSnapshot,
-		"qosPolicyGroup":          qosPolicyGroup,
+		"Method":         "createLUNClone",
+		"Type":           "SANEconomyStorageDriver",
+		"lunName":        lunName,
+		"source":         source,
+		"snapshot":       snapshot,
+		"prefix":         prefix,
+		"isFromSnapLUN":  isFromSnapLUN,
+		"qosPolicyGroup": qosPolicyGroup,
 	}
 	Logd(ctx, config.StorageDriverName,
 		config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> createLUNClone")
@@ -835,8 +880,8 @@ func (d *SANEconomyStorageDriver) createLUNClone(
 		return "", fmt.Errorf("destination LUN %s already exists", lunName)
 	}
 
-	// Check if called from CreateClone and is from a snapshot
-	if isLunCreateFromSnapshot {
+	// Check if called from CreateClone and is from a snapshot LUN.
+	if isFromSnapLUN {
 		source = d.helper.GetSnapshotName(source, snapshot)
 	}
 
@@ -1665,6 +1710,265 @@ func (d *SANEconomyStorageDriver) DeleteSnapshot(
 	return d.DeleteBucketIfEmpty(ctx, bucketVol)
 }
 
+// GetGroupSnapshotTarget returns a set of information about the target of a group snapshot.
+// This information is used to gather information in a consistent way across storage drivers.
+func (d *SANEconomyStorageDriver) GetGroupSnapshotTarget(
+	ctx context.Context, volConfigs []*storage.VolumeConfig,
+) (*storage.GroupSnapshotTargetInfo, error) {
+	fields := LogFields{
+		"Method": "GetGroupSnapshotTarget",
+		"Type":   "SANEconomyStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetGroupSnapshotTarget")
+	defer Logd(ctx, d.Name(),
+		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetGroupSnapshotTarget")
+
+	targetType := PersonalityUnified
+	if d.Config.Flags != nil && d.Config.Flags[FlagPersonality] != "" {
+		targetType = d.Config.Flags[FlagPersonality]
+	}
+	targetUUID := d.API.GetSVMUUID()
+
+	// For this driver, there can be 1-many volume configs per source name.
+	// Construct a set of unique bucket volume IDs to volume names to configs for the group snapshot.
+	targetVolumes := make(storage.GroupSnapshotTargetVolumes)
+	for _, volumeConfig := range volConfigs {
+		volumeName := volumeConfig.Name
+		internalID := volumeConfig.InternalID
+		internalName := volumeConfig.InternalName
+
+		// Check if the parent volume and LUN exists; if they do, add it to the target volumes.
+		exists, bucketVol, err := d.LUNExists(ctx, internalName, internalID, d.FlexvolNamePrefix())
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Error checking for existing LUN %s.", volumeName)
+			return nil, err
+		}
+		if !exists {
+			return nil, errors.NotFoundError("LUN %s does not exist", volumeName)
+		}
+
+		if targetVolumes[bucketVol] == nil {
+			targetVolumes[bucketVol] = make(map[string]*storage.VolumeConfig)
+		}
+
+		// bucket volume name -> pv name -> volume config.
+		targetVolumes[bucketVol][volumeName] = volumeConfig
+	}
+
+	return storage.NewGroupSnapshotTargetInfo(targetType, targetUUID, targetVolumes), nil
+}
+
+func (d *SANEconomyStorageDriver) CreateGroupSnapshot(
+	ctx context.Context, config *storage.GroupSnapshotConfig, target *storage.GroupSnapshotTargetInfo,
+) error {
+	fields := LogFields{
+		"Method": "CreateGroupSnapshot",
+		"Type":   "SANEconomyStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateGroupSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateGroupSnapshot")
+
+	return CreateGroupSnapshot(ctx, config, target, &d.Config, d.API)
+}
+
+// destroyBucketSnapshots destroys a set of bucket volume snapshots, keyed by bucket volume name.
+func (d *SANEconomyStorageDriver) destroyBucketSnapshots(ctx context.Context, snapshots map[string]api.Snapshot) error {
+	fields := LogFields{
+		"Method": "destroyBucketSnapshots",
+		"Type":   "SANEconomyStorageDriver",
+	}
+	Logd(ctx, d.Name(),
+		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> destroyBucketSnapshots")
+	defer Logd(ctx, d.Name(),
+		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< destroyBucketSnapshots")
+
+	// Delete the bucket volume snapshots.
+	// The backoff retry make take time; spawn go routines to handle deleting each bucket volume snapshot.
+	var errs error
+	errCh := make(chan error, len(snapshots))
+	wg := sync.WaitGroup{}
+	for volume, snapshot := range snapshots {
+		snap := snapshot.Name
+		wg.Add(1)
+
+		go func(snap, vol string) {
+			defer wg.Done()
+
+			err := d.API.VolumeSnapshotDeleteWithRetry(ctx, snap, vol, maxSnapshotDeleteRetry, maxSnapshotDeleteWait)
+			if err != nil {
+				// The function call above should handle transient ONTAP errors like "snapshot is busy".
+				// An error at this point means there was a terminal error. Capture the error.
+				Logc(ctx).WithFields(LogFields{
+					"bucketVolume":   vol,
+					"bucketSnapshot": snap,
+				}).WithError(err).Warn("Could not remove snapshot for volume. Snapshot may require removal.")
+				errCh <- err
+			}
+
+			Logc(ctx).Debugf("Removed bucket snapshot %s for bucket volume %s", snap, vol)
+		}(snap, volume)
+	}
+
+	// Wait for all deletes to complete.
+	wg.Wait()
+	close(errCh)
+
+	// Read all errors from the channel.
+	for deleteErr := range errCh {
+		errs = errors.Join(errs, deleteErr)
+	}
+	return errs
+}
+
+// ProcessGroupSnapshot accepts a group snapshot config, a slice of volumes relative to this driver,
+// and processes as much of the group snapshot by volumes as it can. It returns a set of snapshots
+// relative to the slice of volumes that were owned by this driver.
+func (d *SANEconomyStorageDriver) ProcessGroupSnapshot(
+	ctx context.Context, config *storage.GroupSnapshotConfig, volConfigs []*storage.VolumeConfig,
+) (snapshots []*storage.Snapshot, errs error) {
+	fields := LogFields{
+		"Method": "ProcessGroupSnapshot",
+		"Type":   "SANEconomyStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ProcessGroupSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ProcessGroupSnapshot")
+
+	// Assign an internal name at the driver level.
+	config.InternalName = config.ID()
+	groupName := config.ID()
+	snapName, err := storage.ConvertGroupSnapshotID(groupName)
+	if err != nil {
+		return nil, err
+	}
+
+	snapshots = make([]*storage.Snapshot, 0)
+	bucketSnapshots := make(map[string]api.Snapshot)
+
+	defer func() {
+		// Always delete the bucket volume snapshots.
+		if err := d.destroyBucketSnapshots(ctx, bucketSnapshots); err != nil {
+			Logc(ctx).WithError(err).Error("Failed to cleanup bucket volume snapshots in failed group snapshot.")
+			errs = errors.Join(errs, err)
+		}
+	}()
+
+	// Clone snap LUNs directly out of the bucket volume snapshots.
+	// NOTE: If any failures occur, handling them should be deferred to the higher levels of Trident.
+	// Each driver should clean up the bits that the core won't know about.
+	for _, volConfig := range volConfigs {
+		volumeName := volConfig.Name
+		internalID := volConfig.InternalID
+		internalVolumeName := volConfig.InternalName
+		fields := LogFields{
+			"volumeName":         volumeName,
+			"internalVolumeID":   internalID,
+			"internalVolumeName": internalVolumeName,
+			"snapshotName":       snapName,
+			"groupName":          groupName,
+		}
+
+		// Get the bucket volume and source LUN name from the internal ID.
+		_, bucketVol, lunName, err := d.ParseLunInternalID(internalID)
+		if err != nil {
+			errs = errors.Join(errs, err)
+			continue
+		}
+		fields["bucketVolume"], fields["lunName"] = bucketVol, lunName
+
+		// A single bucket volume snapshot may contain many LUNs.
+		// Cache the snapshots as we move through the volumes to save API calls.
+		snap, ok := bucketSnapshots[bucketVol]
+		if !ok {
+			snap, err = d.API.VolumeSnapshotInfo(ctx, snapName, bucketVol)
+			if err != nil {
+				Logc(ctx).WithFields(fields).WithError(err).Error("Could not find snapshot for bucket volume.")
+				errs = errors.Join(errs, err)
+				continue
+			}
+			fields["bucketSnapshot"] = snap.Name
+			bucketSnapshots[bucketVol] = snap
+			Logc(ctx).WithFields(fields).Debug("Found snapshot for bucket volume.")
+		}
+		// Creation time is typically taken from the time a snapLUN is created, but for group snapshots
+		// this value should be set to the time the parent group snapshot was taken, which should
+		// be congruent across all snapshots at the FlexVol. Hence, pull the creation time from the snapshot.
+		creationTime := snap.CreateTime
+
+		// Build the desired clone LUN name and source path for ONTAP.
+		lunCloneName := d.helper.GetSnapshotName(internalVolumeName, snapName)
+		cloneSourcePath := GetEconomyLUNPathInSnapshot(bucketVol, snapName, lunName)
+		cloneLUNID, err := d.cloneLUNFromSnapshot(ctx, bucketVol, cloneSourcePath, lunCloneName, api.QosPolicyGroup{})
+		if err != nil {
+			// We must continue in case there are other bucketVol snapshots that need cleansing.
+			Logc(ctx).WithFields(fields).WithError(err).Error("Failed to create clone from LUN in snapshot.")
+			errs = errors.Join(errs, err)
+			continue
+		}
+		fields["cloneLUNID"] = cloneLUNID
+
+		// Check for the existence of the LUN now and get the size.
+		// The size of the original LUN may have changed from the time
+		// the group snapshot was initiated, so we can't rely on it here.
+		// Pull the size directly from the cloned LUN.
+		lunClonePath := GetLUNPathEconomy(bucketVol, lunCloneName)
+		fields["lunClonePath"] = lunClonePath
+		lunInfo, err := d.API.LunGetByName(ctx, lunClonePath)
+		if err != nil {
+			Logc(ctx).WithFields(fields).WithError(err).Error("Failed to find LUN clone from snapshot.")
+			errs = errors.Join(errs, err)
+			continue
+		}
+		sizeBytes, err := convert.ToPositiveInt64(lunInfo.Size)
+		if err != nil {
+			errs = errors.Join(errs, fmt.Errorf("%v is an invalid LUN size: %w", lunInfo.Size, err))
+			continue
+		}
+
+		// Build the snapshot and add it to the list.
+		snapConfig := &storage.SnapshotConfig{
+			Name: snapName,
+			// This is a misnomer carried over by standard snapshots.
+			// The actual internal name is the name of the LUN that plays the snapshot role.
+			// internalID of snapLUN:
+			//  "/vol/trident_lun_pool_prefix_MACNWIILZO" +
+			//  "/prefix_pvc_6ac12cb7_4224_4370_8e2d_fddb0be18e10_snapshot_snapshot_cf53c1d1_b2f8_4c6b_aa5d_1262aedc432b"
+			// internalName should be:
+			//  "prefix_pvc_6ac12cb7_4224_4370_8e2d_fddb0be18e10_snapshot_snapshot_cf53c1d1_b2f8_4c6b_aa5d_1262aedc432b"
+			InternalName:       snapName,
+			VolumeName:         volumeName,
+			VolumeInternalName: internalVolumeName,
+			ImportNotManaged:   false,
+			GroupSnapshotName:  groupName,
+		}
+		snapshot := &storage.Snapshot{
+			Config:    snapConfig,
+			Created:   creationTime,
+			SizeBytes: sizeBytes,
+			State:     storage.SnapshotStateOnline,
+		}
+		snapshots = append(snapshots, snapshot)
+	}
+
+	if errs != nil {
+		Logc(ctx).WithFields(fields).Error("Failed to process group snapshot.")
+		return
+	}
+	return snapshots, nil
+}
+
+func (d *SANEconomyStorageDriver) ConstructGroupSnapshot(
+	ctx context.Context, config *storage.GroupSnapshotConfig, snapshots []*storage.Snapshot,
+) (*storage.GroupSnapshot, error) {
+	fields := LogFields{
+		"Method": "ConstructGroupSnapshot",
+		"Type":   "SANEconomyStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ConstructGroupSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ConstructGroupSnapshot")
+
+	return ConstructGroupSnapshot(ctx, config, snapshots, &d.Config)
+}
+
 // Get tests for the existence of a volume
 func (d *SANEconomyStorageDriver) Get(ctx context.Context, name string) error {
 	fields := LogFields{"Method": "Get", "Type": "SANEconomyStorageDriver"}
@@ -2419,7 +2723,9 @@ func (d *SANEconomyStorageDriver) ReconcileNodeAccess(
 	return reconcileSANNodeAccess(ctx, d.API, nodeNames, backendUUID, tridentUUID)
 }
 
-func (d *SANEconomyStorageDriver) ReconcileVolumeNodeAccess(ctx context.Context, _ *storage.VolumeConfig, _ []*models.Node) error {
+func (d *SANEconomyStorageDriver) ReconcileVolumeNodeAccess(
+	ctx context.Context, _ *storage.VolumeConfig, _ []*models.Node,
+) error {
 	fields := LogFields{
 		"Method": "ReconcileVolumeNodeAccess",
 		"Type":   "SANEconomyStorageDriver",

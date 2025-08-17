@@ -1328,7 +1328,7 @@ func (d *NASStorageDriver) GetGroupSnapshotTarget(
 
 func (d *NASStorageDriver) CreateGroupSnapshot(
 	ctx context.Context, config *storage.GroupSnapshotConfig, target *storage.GroupSnapshotTargetInfo,
-) (*storage.GroupSnapshot, []*storage.Snapshot, error) {
+) error {
 	fields := LogFields{
 		"Method": "CreateGroupSnapshot",
 		"Type":   "NASStorageDriver",
@@ -1336,7 +1336,33 @@ func (d *NASStorageDriver) CreateGroupSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateGroupSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateGroupSnapshot")
 
-	return CreateGroupSnapshot(ctx, config, target, &d.Config, d.API, d.volumeUsedSize)
+	return CreateGroupSnapshot(ctx, config, target, &d.Config, d.API)
+}
+
+func (d *NASStorageDriver) ProcessGroupSnapshot(
+	ctx context.Context, config *storage.GroupSnapshotConfig, volConfigs []*storage.VolumeConfig,
+) ([]*storage.Snapshot, error) {
+	fields := LogFields{
+		"Method": "ProcessGroupSnapshot",
+		"Type":   "NASStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ProcessGroupSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ProcessGroupSnapshot")
+
+	return ProcessGroupSnapshot(ctx, config, volConfigs, &d.Config, d.API, d.volumeUsedSize)
+}
+
+func (d *NASStorageDriver) ConstructGroupSnapshot(
+	ctx context.Context, config *storage.GroupSnapshotConfig, snapshotIDs []*storage.Snapshot,
+) (*storage.GroupSnapshot, error) {
+	fields := LogFields{
+		"Method": "ConstructGroupSnapshot",
+		"Type":   "NASStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ConstructGroupSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ConstructGroupSnapshot")
+
+	return ConstructGroupSnapshot(ctx, config, snapshotIDs, &d.Config)
 }
 
 // Get tests for the existence of a volume
@@ -1693,7 +1719,9 @@ func (d *NASStorageDriver) reconcileNodeAccessForBackendPolicy(
 	return nil
 }
 
-func (d *NASStorageDriver) ReconcileVolumeNodeAccess(ctx context.Context, _ *storage.VolumeConfig, _ []*models.Node) error {
+func (d *NASStorageDriver) ReconcileVolumeNodeAccess(
+	ctx context.Context, _ *storage.VolumeConfig, _ []*models.Node,
+) error {
 	fields := LogFields{
 		"Method": "ReconcileVolumeNodeAccess",
 		"Type":   "NASStorageDriver",

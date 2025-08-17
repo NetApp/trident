@@ -9745,3 +9745,459 @@ func TestGetUniqueNodeSpecificSubsystemName(t *testing.T) {
 		})
 	}
 }
+
+func TestGetGroupSnapshotTarget(t *testing.T) {
+	ctx := context.Background()
+
+	baseDvr := &drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: "testDriver",
+			DebugTraceFlags:   debugTraceFlags,
+		},
+		SVM: "svm1",
+	}
+
+	volConfigs := []*storage.VolumeConfig{
+		{Name: "pvcA", InternalName: "volA"},
+		{Name: "pvcB", InternalName: "volB"},
+	}
+
+	type testCase struct {
+		name                string
+		volConfigs          []*storage.VolumeConfig
+		driverCfg           *drivers.OntapStorageDriverConfig
+		mockAPI             func(controller *gomock.Controller) api.OntapAPI
+		assertErr           assert.ErrorAssertionFunc
+		expectedStorageUUID string
+		expectedVolumes     []string
+	}
+
+	tests := []testCase{
+		{
+			name:       "when all volumes exist",
+			volConfigs: volConfigs,
+			driverCfg:  baseDvr,
+			mockAPI: func(controller *gomock.Controller) api.OntapAPI {
+				mockAPI := mock_ontap.NewMockOntapAPI(controller)
+				mockAPI.EXPECT().GetSVMUUID().Return("svm-uuid").AnyTimes()
+				mockAPI.EXPECT().VolumeExists(ctx, "volA").Return(true, nil)
+				mockAPI.EXPECT().VolumeExists(ctx, "volB").Return(true, nil)
+				return mockAPI
+			},
+			assertErr:           assert.NoError,
+			expectedStorageUUID: "svm-uuid",
+			expectedVolumes:     []string{"volA", "volB"},
+		},
+		{
+			name:       "when volume does not exist",
+			volConfigs: volConfigs,
+			driverCfg:  baseDvr,
+			mockAPI: func(controller *gomock.Controller) api.OntapAPI {
+				mockAPI := mock_ontap.NewMockOntapAPI(controller)
+				mockAPI.EXPECT().GetSVMUUID().Return("svm-uuid").AnyTimes()
+				mockAPI.EXPECT().VolumeExists(ctx, "volA").Return(true, nil)
+				mockAPI.EXPECT().VolumeExists(ctx, "volB").Return(false, nil)
+				return mockAPI
+			},
+			assertErr: assert.Error,
+		},
+		{
+			name:       "when the ONTAP API returns an error",
+			volConfigs: volConfigs,
+			driverCfg:  baseDvr,
+			mockAPI: func(controller *gomock.Controller) api.OntapAPI {
+				mockAPI := mock_ontap.NewMockOntapAPI(controller)
+				mockAPI.EXPECT().GetSVMUUID().Return("svm-uuid").AnyTimes()
+				mockAPI.EXPECT().VolumeExists(ctx, "volA").Return(false, fmt.Errorf("mockAPI error"))
+				return mockAPI
+			},
+			assertErr: assert.Error,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			mockAPI := test.mockAPI(mockCtrl)
+
+			result, err := GetGroupSnapshotTarget(ctx, test.volConfigs, test.driverCfg, mockAPI)
+			test.assertErr(t, err)
+
+			if err == nil {
+				assert.NotNil(t, result)
+				assert.Equal(t, test.expectedStorageUUID, result.GetStorageUUID())
+				for _, v := range test.expectedVolumes {
+					_, ok := result.GetVolumes()[v]
+					assert.True(t, ok, "expected volume %s in result", v)
+				}
+			}
+		})
+	}
+}
+
+func TestCreateGroupSnapshot(t *testing.T) {
+	ctx := context.Background()
+
+	testCfg := &storage.GroupSnapshotConfig{
+		Name:         "groupsnapshot-de8fb3dd-fc94-460c-ae56-79eaaabfec85",
+		InternalName: "groupsnapshot-de8fb3dd-fc94-460c-ae56-79eaaabfec85",
+		VolumeNames:  nil,
+	}
+
+	testTgt := &storage.GroupSnapshotTargetInfo{
+		StorageType: "unified",
+		StorageUUID: "de8fb3dd-fc94-460c-ae56-79eaaabfec8",
+		StorageVolumes: map[string]map[string]*storage.VolumeConfig{
+			"flexvol-A": {
+				"pvc-A": nil,
+			},
+			"flexvol-B": {
+				"pvc-B": nil,
+				"pvc-C": nil,
+			},
+		},
+	}
+
+	testDvr := &drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: "testDriver",
+			DebugTraceFlags:   debugTraceFlags,
+		},
+		SVM: "de8fb3dd-fc94-460c-ae56-79eaaabfec8",
+	}
+
+	type testCase struct {
+		name      string
+		cfg       *storage.GroupSnapshotConfig
+		tgt       *storage.GroupSnapshotTargetInfo
+		dvr       *drivers.OntapStorageDriverConfig
+		api       func(controller *gomock.Controller) api.OntapAPI
+		assertErr assert.ErrorAssertionFunc
+	}
+
+	tests := []testCase{
+		{
+			name: "flex volume group snapshot fails",
+			cfg:  testCfg,
+			tgt: &storage.GroupSnapshotTargetInfo{
+				StorageType: testTgt.GetStorageType(),
+				StorageUUID: testTgt.GetStorageUUID(),
+				StorageVolumes: map[string]map[string]*storage.VolumeConfig{
+					"flexvol-A": {
+						"pvc-A": nil,
+						"pvc-B": nil,
+					},
+				},
+			},
+			dvr: testDvr,
+			api: func(controller *gomock.Controller) api.OntapAPI {
+				mockAPI := mock_ontap.NewMockOntapAPI(controller)
+				mockAPI.EXPECT().VolumeSnapshotCreate(
+					ctx, gomock.Any(), gomock.Any(),
+				).Return(errors.New("mockAPI error")).Times(1)
+				return mockAPI
+			},
+			assertErr: assert.Error,
+		},
+		{
+			name: "cg volume group snapshot fails",
+			cfg:  testCfg,
+			tgt: &storage.GroupSnapshotTargetInfo{
+				StorageType: testTgt.GetStorageType(),
+				StorageUUID: testTgt.GetStorageUUID(),
+				StorageVolumes: map[string]map[string]*storage.VolumeConfig{
+					"flexvol-A": {
+						"pvc-A": nil,
+						"pvc-B": nil,
+					},
+					"flexvol-B": {
+						"pvc-C": nil,
+					},
+				},
+			},
+			dvr: testDvr,
+			api: func(controller *gomock.Controller) api.OntapAPI {
+				mockAPI := mock_ontap.NewMockOntapAPI(controller)
+				mockAPI.EXPECT().ConsistencyGroupSnapshot(
+					ctx, gomock.Any(), gomock.Any(),
+				).Return(errors.New("mockAPI error")).Times(1)
+				return mockAPI
+			},
+			assertErr: assert.Error,
+		},
+		{
+			name: "flex volume group snapshot succeeds with 1 internal volume",
+			cfg:  testCfg,
+			tgt: &storage.GroupSnapshotTargetInfo{
+				StorageType: testTgt.GetStorageType(),
+				StorageUUID: testTgt.GetStorageUUID(),
+				StorageVolumes: map[string]map[string]*storage.VolumeConfig{
+					"flexvol-A": {
+						"pvc-A": nil,
+						"pvc-B": nil,
+					},
+				},
+			},
+			dvr: testDvr,
+			api: func(controller *gomock.Controller) api.OntapAPI {
+				mockAPI := mock_ontap.NewMockOntapAPI(controller)
+				mockAPI.EXPECT().VolumeSnapshotCreate(
+					ctx, gomock.Any(), gomock.Any(),
+				).Return(nil).Times(1)
+				return mockAPI
+			},
+			assertErr: assert.NoError,
+		},
+		{
+			name: "cg volume group snapshot suceeds with 2 internal volConfigs",
+			cfg:  testCfg,
+			tgt: &storage.GroupSnapshotTargetInfo{
+				StorageType: testTgt.GetStorageType(),
+				StorageUUID: testTgt.GetStorageUUID(),
+				StorageVolumes: map[string]map[string]*storage.VolumeConfig{
+					"flexvol-A": {
+						"pvc-A": nil,
+						"pvc-B": nil,
+					},
+					"flexvol-B": {
+						"pvc-C": nil,
+					},
+				},
+			},
+			dvr: testDvr,
+			api: func(controller *gomock.Controller) api.OntapAPI {
+				mockAPI := mock_ontap.NewMockOntapAPI(controller)
+				mockAPI.EXPECT().ConsistencyGroupSnapshot(
+					ctx, gomock.Any(), gomock.Any(),
+				).Return(nil).Times(1)
+				return mockAPI
+			},
+			assertErr: assert.NoError,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			var mockAPI api.OntapAPI
+			if test.api != nil {
+				mockAPI = test.api(mockCtrl)
+			}
+
+			test.assertErr(t, CreateGroupSnapshot(ctx, test.cfg, test.tgt, test.dvr, mockAPI))
+		})
+	}
+}
+
+func TestProcessGroupSnapshot(t *testing.T) {
+	ctx := context.Background()
+
+	groupCfg := &storage.GroupSnapshotConfig{
+		Name:         "groupsnap-123",
+		InternalName: "groupsnap-123",
+		VolumeNames:  []string{"pvcA", "pvcB"},
+	}
+	volConfigs := []*storage.VolumeConfig{
+		{Name: "pvcA", InternalName: "volA"},
+		{Name: "pvcB", InternalName: "volB"},
+	}
+	driverCfg := &drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: "testDriver",
+			DebugTraceFlags:   map[string]bool{},
+		},
+		SVM: "svm1",
+	}
+
+	// Use a valid group snapshot ID format
+	groupID := "groupsnapshot-12345678-1234-1234-1234-123456789abc"
+	groupCfg.Name = groupID
+	groupCfg.InternalName = groupID
+
+	snapName, err := storage.ConvertGroupSnapshotID(groupCfg.Name)
+	assert.NoError(t, err)
+
+	tests := []struct {
+		name        string
+		api         func(mockAPI *mockapi.MockOntapAPI)
+		sizeGetter  func(context.Context, string) (int, error)
+		assertErr   assert.ErrorAssertionFunc
+		expectSnaps int
+	}{
+		{
+			name: "all succeed",
+			api: func(mockAPI *mockapi.MockOntapAPI) {
+				for _, vol := range volConfigs {
+					mockAPI.EXPECT().VolumeSnapshotInfo(
+						ctx, snapName, vol.InternalName,
+					).Return(api.Snapshot{CreateTime: "2021-01-01T00:00:00Z", Name: snapName}, nil)
+				}
+			},
+			sizeGetter:  func(ctx context.Context, vol string) (int, error) { return 100, nil },
+			assertErr:   assert.NoError,
+			expectSnaps: 2,
+		},
+		{
+			name: "one fails, one succeeds",
+			api: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeSnapshotInfo(
+					ctx, snapName, "volA",
+				).Return(api.Snapshot{}, fmt.Errorf("mockAPI error"))
+				mockAPI.EXPECT().VolumeSnapshotInfo(
+					ctx, snapName, "volB",
+				).Return(api.Snapshot{CreateTime: "2021-01-01T00:00:00Z", Name: snapName}, nil)
+			},
+			sizeGetter:  func(ctx context.Context, vol string) (int, error) { return 100, nil },
+			assertErr:   assert.Error,
+			expectSnaps: 1,
+		},
+		{
+			name: "all fail",
+			api: func(mockAPI *mockapi.MockOntapAPI) {
+				for _, vol := range volConfigs {
+					mockAPI.EXPECT().VolumeSnapshotInfo(
+						ctx, snapName, vol.InternalName,
+					).Return(api.Snapshot{}, fmt.Errorf("mockAPI error"))
+				}
+			},
+			sizeGetter:  func(ctx context.Context, vol string) (int, error) { return 100, nil },
+			assertErr:   assert.Error,
+			expectSnaps: 0,
+		},
+		{
+			name: "size getter fails for one",
+			api: func(mockAPI *mockapi.MockOntapAPI) {
+				for _, vol := range volConfigs {
+					mockAPI.EXPECT().VolumeSnapshotInfo(
+						ctx, snapName, vol.InternalName,
+					).Return(api.Snapshot{CreateTime: "2021-01-01T00:00:00Z", Name: snapName}, nil)
+				}
+			},
+			sizeGetter: func(ctx context.Context, vol string) (int, error) {
+				if vol == "volA" {
+					return 0, fmt.Errorf("size error")
+				}
+				return 100, nil
+			},
+			assertErr:   assert.Error,
+			expectSnaps: 1,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.assertErr == nil {
+				t.FailNow()
+			}
+
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+			// Set up all expected calls for all volConfigs
+			test.api(mockAPI)
+
+			snaps, err := ProcessGroupSnapshot(ctx, groupCfg, volConfigs, driverCfg, mockAPI, test.sizeGetter)
+			test.assertErr(t, err)
+			assert.Equal(t, test.expectSnaps, len(snaps))
+		})
+	}
+}
+
+func TestConstructGroupSnapshot(t *testing.T) {
+	ctx := context.Background()
+
+	testCfg := &storage.GroupSnapshotConfig{
+		Name:         "groupsnap-123",
+		InternalName: "groupsnap-123",
+		VolumeNames:  []string{"pvcA", "pvcB"},
+	}
+
+	testDvr := &drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: "testDriver",
+			DebugTraceFlags:   map[string]bool{},
+		},
+		SVM: "svm1",
+	}
+
+	snapA := &storage.Snapshot{
+		Config:    &storage.SnapshotConfig{Name: "snapA", VolumeName: "pvcA"},
+		Created:   "2021-01-01T00:00:00Z",
+		SizeBytes: 100,
+		State:     storage.SnapshotStateOnline,
+	}
+	snapB := &storage.Snapshot{
+		Config:    &storage.SnapshotConfig{Name: "snapB", VolumeName: "pvcB"},
+		Created:   "2021-01-01T00:00:00Z",
+		SizeBytes: 100,
+		State:     storage.SnapshotStateOnline,
+	}
+	snapC := &storage.Snapshot{
+		Config:    &storage.SnapshotConfig{Name: "snapC", VolumeName: "pvcC"},
+		Created:   "2021-01-02T00:00:00Z", // different time
+		SizeBytes: 100,
+		State:     storage.SnapshotStateOnline,
+	}
+
+	type testCase struct {
+		name       string
+		cfg        *storage.GroupSnapshotConfig
+		snapshots  []*storage.Snapshot
+		driverCfg  *drivers.OntapStorageDriverConfig
+		assertErr  assert.ErrorAssertionFunc
+		expectIDs  []string
+		expectTime string
+	}
+
+	tests := []testCase{
+		{
+			name:      "with nil config",
+			cfg:       nil,
+			snapshots: []*storage.Snapshot{snapA, snapB},
+			driverCfg: testDvr,
+			assertErr: assert.Error,
+		},
+		{
+			name:      "with empty snapshots",
+			cfg:       testCfg,
+			snapshots: []*storage.Snapshot{},
+			driverCfg: testDvr,
+			assertErr: assert.Error,
+		},
+		{
+			name:       "when all snapshots are created at the same time",
+			cfg:        testCfg,
+			snapshots:  []*storage.Snapshot{snapA, snapB},
+			driverCfg:  testDvr,
+			assertErr:  assert.NoError,
+			expectIDs:  []string{snapA.ID(), snapB.ID()},
+			expectTime: "2021-01-01T00:00:00Z",
+		},
+		{
+			name:       "when some snapshots have different times",
+			cfg:        testCfg,
+			snapshots:  []*storage.Snapshot{snapA, snapC},
+			driverCfg:  testDvr,
+			assertErr:  assert.NoError,
+			expectIDs:  []string{snapA.ID(), snapC.ID()},
+			expectTime: "2021-01-01T00:00:00Z", // first snapshot's time
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result, err := ConstructGroupSnapshot(ctx, test.cfg, test.snapshots, test.driverCfg)
+			test.assertErr(t, err)
+
+			if err == nil {
+				assert.NotNil(t, result)
+				assert.Equal(t, test.expectIDs, result.SnapshotIDs)
+				assert.Equal(t, test.expectTime, result.Created)
+			}
+		})
+	}
+}

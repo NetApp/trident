@@ -254,6 +254,21 @@ func (mr *MockBackendMockRecorder) ConstructExternalWithPoolMap(ctx, poolMap any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConstructExternalWithPoolMap", reflect.TypeOf((*MockBackend)(nil).ConstructExternalWithPoolMap), ctx, poolMap)
 }
 
+// ConstructGroupSnapshot mocks base method.
+func (m *MockBackend) ConstructGroupSnapshot(ctx context.Context, arg1 *storage.GroupSnapshotConfig, snapshots []*storage.Snapshot) (*storage.GroupSnapshot, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConstructGroupSnapshot", ctx, arg1, snapshots)
+	ret0, _ := ret[0].(*storage.GroupSnapshot)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConstructGroupSnapshot indicates an expected call of ConstructGroupSnapshot.
+func (mr *MockBackendMockRecorder) ConstructGroupSnapshot(ctx, arg1, snapshots any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConstructGroupSnapshot", reflect.TypeOf((*MockBackend)(nil).ConstructGroupSnapshot), ctx, arg1, snapshots)
+}
+
 // ConstructPersistent mocks base method.
 func (m *MockBackend) ConstructPersistent(ctx context.Context) *storage.BackendPersistent {
 	m.ctrl.T.Helper()
@@ -269,13 +284,11 @@ func (mr *MockBackendMockRecorder) ConstructPersistent(ctx any) *gomock.Call {
 }
 
 // CreateGroupSnapshot mocks base method.
-func (m *MockBackend) CreateGroupSnapshot(ctx context.Context, arg1 *storage.GroupSnapshotConfig, target *storage.GroupSnapshotTargetInfo) (*storage.GroupSnapshot, []*storage.Snapshot, error) {
+func (m *MockBackend) CreateGroupSnapshot(ctx context.Context, arg1 *storage.GroupSnapshotConfig, target *storage.GroupSnapshotTargetInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateGroupSnapshot", ctx, arg1, target)
-	ret0, _ := ret[0].(*storage.GroupSnapshot)
-	ret1, _ := ret[1].([]*storage.Snapshot)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // CreateGroupSnapshot indicates an expected call of CreateGroupSnapshot.
@@ -652,6 +665,21 @@ func (m *MockBackend) Online() bool {
 func (mr *MockBackendMockRecorder) Online() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Online", reflect.TypeOf((*MockBackend)(nil).Online))
+}
+
+// ProcessGroupSnapshot mocks base method.
+func (m *MockBackend) ProcessGroupSnapshot(ctx context.Context, arg1 *storage.GroupSnapshotConfig, volConfigs []*storage.VolumeConfig) ([]*storage.Snapshot, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProcessGroupSnapshot", ctx, arg1, volConfigs)
+	ret0, _ := ret[0].([]*storage.Snapshot)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProcessGroupSnapshot indicates an expected call of ProcessGroupSnapshot.
+func (mr *MockBackendMockRecorder) ProcessGroupSnapshot(ctx, arg1, volConfigs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessGroupSnapshot", reflect.TypeOf((*MockBackend)(nil).ProcessGroupSnapshot), ctx, arg1, volConfigs)
 }
 
 // PublishVolume mocks base method.

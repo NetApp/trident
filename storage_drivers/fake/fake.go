@@ -1084,7 +1084,7 @@ func (d *StorageDriver) GetGroupSnapshotTarget(
 
 func (d *StorageDriver) CreateGroupSnapshot(
 	ctx context.Context, config *storage.GroupSnapshotConfig, target *storage.GroupSnapshotTargetInfo,
-) (*storage.GroupSnapshot, []*storage.Snapshot, error) {
+) error {
 	fields := LogFields{
 		"Method": "CreateGroupSnapshot",
 		"Type":   "FakeStorageDriver",
@@ -1094,75 +1094,107 @@ func (d *StorageDriver) CreateGroupSnapshot(
 
 	_, ok := d.GroupSnapshots[config.ID()]
 	if ok {
-		return nil, nil, fmt.Errorf("staged group snapshot %s already exists", config.ID())
+		return fmt.Errorf("staged group snapshot %s already exists", config.ID())
 	}
 
 	// Assign an internal name at the driver level.
 	config.InternalName = config.ID()
-	groupName := config.ID()
+	return nil
+}
+
+func (d *StorageDriver) ProcessGroupSnapshot(
+	ctx context.Context, config *storage.GroupSnapshotConfig, volConfigs []*storage.VolumeConfig,
+) ([]*storage.Snapshot, error) {
+	fields := LogFields{
+		"Method": "ProcessGroupSnapshot",
+		"Type":   "FakeStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ProcessGroupSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ProcessGroupSnapshot")
 
 	// Track the individual snapshots for each volume config in the config snapshot target.
-	groupedSnapshots := make([]*storage.Snapshot, 0)
-	snapshotIDs := make([]string, 0)
+	snapshots := make([]*storage.Snapshot, 0, len(volConfigs))
 	creationTime := time.Now().Format(time.RFC3339)
+
+	// Set up the snap name and internal name.
+	groupName := config.ID()
+	snapName, err := storage.ConvertGroupSnapshotID(groupName)
+	if err != nil {
+		return nil, err
+	}
+	snapInternalName := snapName
 
 	// Look at all target source volumes and build a list of snapshots.
 	// The sourceVolumeID here correlates to a parent FlexVolume.
 	// The list of constituentVolumes is a set of volumes that exist under the source volume ID.
-	for _, volumesToConfigs := range target.GetVolumes() {
-		// Set up the snap name and internal name.
-		snapName, err := storage.ConvertGroupSnapshotID(groupName)
-		if err != nil {
-			return nil, nil, err
-		}
-		snapInternalName := snapName
-
+	for _, volume := range volConfigs {
 		// The constituent volumes correlate to the "persistent volumes" in the CO. Each needs a unique snapshot object.
-		snapshots := make([]*storage.Snapshot, 0, len(volumesToConfigs))
-		for _, volume := range volumesToConfigs {
-			volumeName := volume.Name
-			internalVolumeName := volume.InternalName
-			sizeBytes, _ := convert.ToPositiveInt64(volume.Size)
+		volumeName := volume.Name
+		internalVolumeName := volume.InternalName
+		sizeBytes, _ := convert.ToPositiveInt64(volume.Size)
 
-			// Create a snapshot for each volume in the group snapshot
-			snapshot := &storage.Snapshot{
-				Config: &storage.SnapshotConfig{
-					Name:               snapName,
-					InternalName:       snapInternalName,
-					VolumeName:         volumeName,
-					VolumeInternalName: internalVolumeName,
-					GroupSnapshotName:  groupName,
-				},
-				Created:   creationTime,
-				SizeBytes: sizeBytes,
-				State:     storage.SnapshotStateOnline,
-			}
-			snapshots = append(snapshots, snapshot)
-			snapshotIDs = append(snapshotIDs, snapshot.ID())
-
-			// Initialize the snapshot map if necessary.
-			// [internalVolume][internalSnapshotName]->snapshot
-			if _, ok = d.Snapshots[internalVolumeName]; !ok {
-				d.Snapshots[internalVolumeName] = make(map[string]*storage.Snapshot)
-			}
-			d.Snapshots[internalVolumeName][snapshot.Config.InternalName] = snapshot
-			d.DestroyedSnapshots[snapshot.ID()] = false
-
-			Logc(ctx).WithFields(LogFields{
-				"groupName":              groupName,
-				"snapshotName":           snapName,
-				"snapshotID":             snapshot.ID(),
-				"groupSnapshotReference": snapshot.Config.GroupSnapshotName,
-			}).Debug("Added group snapshot to fake driver.")
+		// Create a snapshot for each volume in the group snapshot
+		snapshot := &storage.Snapshot{
+			Config: &storage.SnapshotConfig{
+				Name:               snapName,
+				InternalName:       snapInternalName,
+				VolumeName:         volumeName,
+				VolumeInternalName: internalVolumeName,
+				GroupSnapshotName:  groupName,
+			},
+			Created:   creationTime,
+			SizeBytes: sizeBytes,
+			State:     storage.SnapshotStateOnline,
 		}
+		snapshots = append(snapshots, snapshot)
+
+		// Initialize the snapshot map if necessary.
+		// [internalVolume][internalSnapshotName]->snapshot
+		if _, ok := d.Snapshots[internalVolumeName]; !ok {
+			d.Snapshots[internalVolumeName] = make(map[string]*storage.Snapshot)
+		}
+		d.Snapshots[internalVolumeName][snapshot.Config.InternalName] = snapshot
+		d.DestroyedSnapshots[snapshot.ID()] = false
+
+		Logc(ctx).WithFields(LogFields{
+			"groupName":              groupName,
+			"snapshotName":           snapName,
+			"snapshotID":             snapshot.ID(),
+			"groupSnapshotReference": snapshot.Config.GroupSnapshotName,
+		}).Debug("Added group snapshot to fake driver.")
 
 		// Add the constituent snapshots to the list of snapshots for this group snapshot.
 		// Remember! These are unique the VolumeConfigs, not the source volume IDs.
-		groupedSnapshots = append(groupedSnapshots, snapshots...)
+		snapshots = append(snapshots, snapshot)
 	}
 
-	// Create the group snapshot object. This is a logical grouping of the constituent snapshots.
-	return storage.NewGroupSnapshot(config, snapshotIDs, creationTime), groupedSnapshots, nil
+	return snapshots, nil
+}
+
+func (d *StorageDriver) ConstructGroupSnapshot(
+	ctx context.Context, config *storage.GroupSnapshotConfig, snapshots []*storage.Snapshot,
+) (*storage.GroupSnapshot, error) {
+	fields := LogFields{
+		"Method": "ConstructGroupSnapshot",
+		"Type":   "FakeStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ConstructGroupSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ConstructGroupSnapshot")
+
+	// Build the group snapshot parameters from the snapshots.
+	dateCreated := ""
+	snapshotIDs := make([]string, 0, len(snapshots))
+	for _, snapshot := range snapshots {
+		if dateCreated == "" {
+			dateCreated = snapshot.Created
+		}
+		snapshotIDs = append(snapshotIDs, snapshot.ID())
+	}
+
+	// Build the group snapshot
+	groupSnapshot := storage.NewGroupSnapshot(config, snapshotIDs, dateCreated)
+	d.GroupSnapshots[config.ID()] = groupSnapshot
+	return groupSnapshot.ConstructClone(), nil
 }
 
 func (d *StorageDriver) Get(_ context.Context, name string) error {

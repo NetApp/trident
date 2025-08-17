@@ -368,10 +368,11 @@ func (c Client) LunCreate(
 
 // LunCloneCreate clones a LUN from a snapshot
 func (c Client) LunCloneCreate(
-	volumeName, sourceLun, destinationLun string, qosPolicyGroup QosPolicyGroup,
+	volumeName, sourceLun, sourceSnap, destinationLun string, qosPolicyGroup QosPolicyGroup,
 ) (*azgo.CloneCreateResponse, error) {
 	request := azgo.NewCloneCreateRequest().
 		SetVolume(volumeName).
+		SetSnapshotName(sourceSnap).
 		SetSourcePath(sourceLun).
 		SetDestinationPath(destinationLun)
 

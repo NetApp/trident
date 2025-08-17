@@ -222,6 +222,9 @@ type OntapAPI interface {
 	VolumeSnapshotInfo(ctx context.Context, snapshotName, sourceVolume string) (Snapshot, error)
 	VolumeSnapshotList(ctx context.Context, sourceVolume string) (Snapshots, error)
 	VolumeSnapshotDelete(ctx context.Context, snapshotName, sourceVolume string) error
+	VolumeSnapshotDeleteWithRetry(
+		ctx context.Context, snapshot, volume string, maxRetries int, timeout time.Duration,
+	) error
 	VolumeWaitForStates(
 		ctx context.Context, volumeName string, desiredStates, abortStates []string,
 		maxElapsedTime time.Duration,
