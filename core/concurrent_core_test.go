@@ -19,6 +19,7 @@ import (
 	mockstorage "github.com/netapp/trident/mocks/mock_storage"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/fake"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -9695,7 +9696,6 @@ func TestListStorageClassesConcurrentCore(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			db.Initialize()
 
@@ -9719,6 +9719,925 @@ func TestListStorageClassesConcurrentCore(t *testing.T) {
 			}
 
 			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestAddNodeConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name         string
+		setup        func(*testing.T, *gomock.Controller) persistentstore.Client
+		newNode      *models.Node
+		expectedNode *models.Node
+		verifyError  func(*testing.T, error)
+	}{
+		{
+			name: "Success with new node",
+			setup: func(t *testing.T, mockCtrl *gomock.Controller) persistentstore.Client {
+				t.Helper()
+				mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+				mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				return mockStoreClient
+			},
+			newNode: &models.Node{
+				Name: "node1",
+				HostInfo: &models.HostSystem{
+					Services: []string{"iscsi", "nfs"},
+				},
+			},
+			expectedNode: &models.Node{
+				Name: "node1",
+				HostInfo: &models.HostSystem{
+					Services: []string{"iscsi", "nfs"},
+				},
+				LogLevel: "debug",
+			},
+			verifyError: func(t *testing.T, err error) {
+				t.Helper()
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name: "Success with existing node",
+			setup: func(t *testing.T, mockCtrl *gomock.Controller) persistentstore.Client {
+				t.Helper()
+				mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+				mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+				results, unlocker, _ := db.Lock(db.Query(db.UpsertNode("node1")))
+				defer unlocker()
+
+				results[0].Node.Upsert(&models.Node{
+					Name: "node1",
+					HostInfo: &models.HostSystem{
+						Services: []string{"iscsi", "nfs"},
+					},
+					PublicationState: models.NodeCleanable,
+				})
+				return mockStoreClient
+			},
+			newNode: &models.Node{
+				Name: "node1",
+			},
+			expectedNode: &models.Node{
+				Name:             "node1",
+				PublicationState: models.NodeCleanable,
+				LogLevel:         "debug",
+			},
+			verifyError: func(t *testing.T, err error) {
+				t.Helper()
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name: "Failure in store",
+			setup: func(t *testing.T, mockCtrl *gomock.Controller) persistentstore.Client {
+				t.Helper()
+				mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+				mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(),
+					gomock.Any()).Return(fmt.Errorf("persistent store error")).Times(1)
+
+				return mockStoreClient
+			},
+			newNode: &models.Node{
+				Name: "node1",
+				HostInfo: &models.HostSystem{
+					Services: []string{"iscsi", "nfs"},
+				},
+			},
+			expectedNode: nil,
+			verifyError: func(t *testing.T, err error) {
+				t.Helper()
+				assert.ErrorContains(t, err, "persistent store error")
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			db.Initialize()
+
+			mockStoreClient := tt.setup(t, mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			err := o.AddNode(testCtx, tt.newNode, func(_, _, _ string) {})
+			tt.verifyError(t, err)
+
+			results, unlocker, _ := db.Lock(db.Query(db.ReadNode(tt.newNode.Name)))
+			defer unlocker()
+
+			assert.NotNil(t, results)
+			assert.Equal(t, results[0].Node.Read, tt.expectedNode)
+		})
+	}
+}
+
+func TestUpdateNodeConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name          string
+		setup         func(*testing.T, *gomock.Controller) persistentstore.Client
+		verifyError   func(*testing.T, error)
+		flags         *models.NodePublicationStateFlags
+		node          *models.Node
+		expectedState models.NodePublicationState
+	}{
+		{
+			name: "Failure when node does not exist",
+			setup: func(t *testing.T, mockCtrl *gomock.Controller) persistentstore.Client {
+				t.Helper()
+				mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+				mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Times(0)
+				return mockStoreClient
+			},
+			verifyError: func(t *testing.T, err error) {
+				t.Helper()
+				assert.Equal(t, err, errors.NotFoundError("node node1 was not found"))
+			},
+		},
+		{
+			// a "clean" flag set will only transition to cleanable, not clean
+			name: "invalid transition dirty->clean",
+			setup: func(t *testing.T, mockCtrl *gomock.Controller) persistentstore.Client {
+				t.Helper()
+				mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+				mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				return mockStoreClient
+			},
+			flags: &models.NodePublicationStateFlags{
+				OrchestratorReady:  convert.ToPtr(true),
+				AdministratorReady: convert.ToPtr(true),
+				ProvisionerReady:   convert.ToPtr(true),
+			},
+			node: &models.Node{
+				Name:             "node1",
+				PublicationState: models.NodeDirty,
+			},
+			verifyError: func(t *testing.T, err error) {
+				t.Helper()
+				assert.NoError(t, err)
+			},
+			expectedState: models.NodeCleanable,
+		},
+		{
+			name: "clean->dirty",
+			setup: func(t *testing.T, mockCtrl *gomock.Controller) persistentstore.Client {
+				t.Helper()
+				mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+				mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				return mockStoreClient
+			},
+			flags: &models.NodePublicationStateFlags{
+				OrchestratorReady:  convert.ToPtr(false),
+				AdministratorReady: convert.ToPtr(false),
+			},
+			verifyError: func(t *testing.T, err error) {
+				t.Helper()
+				assert.NoError(t, err)
+			},
+			node: &models.Node{
+				Name:             "node1",
+				PublicationState: models.NodeClean,
+			},
+			expectedState: models.NodeDirty,
+		},
+		{
+			name: "cleanable->clean",
+			setup: func(t *testing.T, mockCtrl *gomock.Controller) persistentstore.Client {
+				t.Helper()
+				mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+				mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				return mockStoreClient
+			},
+			flags: &models.NodePublicationStateFlags{
+				OrchestratorReady:  convert.ToPtr(true),
+				AdministratorReady: convert.ToPtr(true),
+				ProvisionerReady:   convert.ToPtr(true),
+			},
+			verifyError: func(t *testing.T, err error) {
+				t.Helper()
+				assert.NoError(t, err)
+			},
+			node: &models.Node{
+				Name:             "node1",
+				PublicationState: models.NodeCleanable,
+			},
+			expectedState: models.NodeClean,
+		},
+		{
+			name: "cleanable->dirty",
+			setup: func(t *testing.T, mockCtrl *gomock.Controller) persistentstore.Client {
+				t.Helper()
+				mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+				mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				return mockStoreClient
+			},
+			flags: &models.NodePublicationStateFlags{
+				OrchestratorReady:  convert.ToPtr(false),
+				AdministratorReady: convert.ToPtr(false),
+			},
+			verifyError: func(t *testing.T, err error) {
+				t.Helper()
+				assert.NoError(t, err)
+			},
+			node: &models.Node{
+				Name:             "node1",
+				PublicationState: models.NodeCleanable,
+			},
+			expectedState: models.NodeDirty,
+		},
+		{
+			name: "dirty->cleanable",
+			setup: func(t *testing.T, mockCtrl *gomock.Controller) persistentstore.Client {
+				t.Helper()
+				mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+				mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				return mockStoreClient
+			},
+			flags: &models.NodePublicationStateFlags{
+				OrchestratorReady:  convert.ToPtr(true),
+				AdministratorReady: convert.ToPtr(true),
+			},
+			verifyError: func(t *testing.T, err error) {
+				t.Helper()
+				assert.NoError(t, err)
+			},
+			node: &models.Node{
+				Name:             "node1",
+				PublicationState: models.NodeDirty,
+			},
+			expectedState: models.NodeCleanable,
+		},
+		{
+			name: "invalid transition clean->cleanable",
+			setup: func(t *testing.T, mockCtrl *gomock.Controller) persistentstore.Client {
+				t.Helper()
+				mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+				mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				return mockStoreClient
+			},
+			flags: &models.NodePublicationStateFlags{
+				OrchestratorReady:  convert.ToPtr(true),
+				AdministratorReady: convert.ToPtr(true),
+			},
+			verifyError: func(t *testing.T, err error) {
+				t.Helper()
+				assert.NoError(t, err)
+			},
+			node: &models.Node{
+				Name:             "node1",
+				PublicationState: models.NodeClean,
+			},
+			expectedState: models.NodeClean,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			db.Initialize()
+			mockStoreClient := tt.setup(t, mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			if tt.node != nil {
+				results, unlocker, _ := db.Lock(db.Query(db.UpsertNode(tt.node.Name)))
+				results[0].Node.Upsert(tt.node)
+				unlocker()
+			}
+
+			err := o.UpdateNode(context.Background(), "node1", tt.flags)
+
+			if tt.verifyError != nil {
+				tt.verifyError(t, err)
+			}
+			if tt.expectedState != "" {
+				results, unlocker, _ := db.Lock(db.Query(db.ReadNode("node1")))
+				defer unlocker()
+				assert.NotNil(t, results)
+				assert.Equal(t, tt.expectedState, results[0].Node.Read.PublicationState)
+			}
+		})
+	}
+}
+
+func TestGetNodeConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name         string
+		setup        func(*testing.T)
+		verifyError  func(*testing.T, error)
+		expectedNode *models.NodeExternal
+	}{
+		{
+			name: "success",
+			setup: func(t *testing.T) {
+				t.Helper()
+				results, unlocker, _ := db.Lock(db.Query(db.UpsertNode("node1")))
+				defer unlocker()
+				results[0].Node.Upsert(getFakeNode("node1"))
+			},
+			verifyError: func(t *testing.T, err error) {
+				t.Helper()
+				assert.NoError(t, err)
+			},
+			expectedNode: getFakeNode("node1").ConstructExternal(),
+		},
+		{
+			name:  "node not found",
+			setup: func(t *testing.T) {},
+			verifyError: func(t *testing.T, err error) {
+				t.Helper()
+				assert.Error(t, err)
+				assert.ErrorContains(t, err, "node node1 was not found")
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+			tt.setup(t)
+			o := getConcurrentOrchestrator()
+			node, err := o.GetNode(testCtx, "node1")
+			if tt.verifyError != nil {
+				tt.verifyError(t, err)
+			}
+			assert.Equal(t, tt.expectedNode, node)
+		})
+	}
+}
+
+func TestListNodesConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name          string
+		setup         func(*testing.T)
+		expectedNodes []*models.NodeExternal
+	}{
+		{
+			name: "list multiple nodes",
+			setup: func(t *testing.T) {
+				// maps are always iterated randomly
+				for name := range map[string]struct{}{"node1": {}, "node2": {}} {
+					results, unlocker, _ := db.Lock(db.Query(db.UpsertNode(name)))
+					results[0].Node.Upsert(getFakeNode(name))
+					unlocker()
+				}
+			},
+			expectedNodes: []*models.NodeExternal{
+				getFakeNode("node1").ConstructExternal(),
+				getFakeNode("node2").ConstructExternal(),
+			},
+		},
+		{
+			name: "list no nodes",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+			if tt.setup != nil {
+				tt.setup(t)
+			}
+			o := getConcurrentOrchestrator()
+			nodes, err := o.ListNodes(testCtx)
+			assert.NoError(t, err)
+			for _, expectedNode := range tt.expectedNodes {
+				assert.Contains(t, nodes, expectedNode)
+			}
+		})
+	}
+}
+
+func TestDeleteNodeConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name           string
+		nodeName       string
+		bootstrapError error
+		setupMocks     func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
+		verifyError    func(err error)
+		verifyBehavior func(t *testing.T, o *ConcurrentTridentOrchestrator)
+	}{
+		{
+			name:           "Success",
+			nodeName:       "testNode",
+			bootstrapError: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				node := &models.Node{Name: "testNode"}
+				addNodesToCache(t, node)
+
+				mockStoreClient.EXPECT().DeleteNode(gomock.Any(), node).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// Verify node is removed from cache
+				nodes, err := o.ListNodes(context.Background())
+				assert.NoError(t, err)
+				assert.Empty(t, nodes)
+			},
+		},
+		{
+			name:           "NodeNotFound",
+			nodeName:       "nonExistentNode",
+			bootstrapError: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				// No node added to cache
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "node nonExistentNode was not found")
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// No behavior to verify
+			},
+		},
+		{
+			name:           "DeleteNodeError",
+			nodeName:       "testNode",
+			bootstrapError: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				node := &models.Node{Name: "testNode"}
+				addNodesToCache(t, node)
+
+				mockStoreClient.EXPECT().DeleteNode(gomock.Any(), node).Return(errors.New("delete error")).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "failed to delete node testNode in store")
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// Node should still exist in cache
+				nodes, err := o.ListNodes(context.Background())
+				assert.NoError(t, err)
+				assert.Len(t, nodes, 1)
+			},
+		},
+		{
+			name:           "BootstrapError",
+			nodeName:       "testNode",
+			bootstrapError: errors.New("bootstrap error"),
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// No behavior to verify
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+			o.bootstrapError = tt.bootstrapError
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient, o)
+			}
+
+			err := o.DeleteNode(testCtx, tt.nodeName)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			if tt.verifyBehavior != nil {
+				tt.verifyBehavior(t, o)
+			}
+		})
+	}
+}
+
+func TestReconcileVolumePublicationsConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name           string
+		bootstrapError error
+		verifyError    func(err error)
+	}{
+		{
+			name:           "Success_WithOrphanedPublication",
+			bootstrapError: nil,
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:           "BootstrapError",
+			bootstrapError: errors.New("bootstrap error"),
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+			o.bootstrapError = tt.bootstrapError
+
+			err := o.ReconcileVolumePublications(context.Background(), nil)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+		})
+	}
+}
+
+func TestGetVolumePublicationConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name           string
+		volumeName     string
+		nodeName       string
+		bootstrapError error
+		setupMocks     func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator)
+		verifyError    func(err error)
+		verifyResult   func(pub *models.VolumePublication)
+	}{
+		{
+			name:           "Success",
+			volumeName:     "testVolume",
+			nodeName:       "testNode",
+			bootstrapError: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				pub := &models.VolumePublication{
+					Name:       models.GenerateVolumePublishName("testVolume", "testNode"),
+					VolumeName: "testVolume",
+					NodeName:   "testNode",
+				}
+				addVolumePublicationsToCache(t, pub)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(pub *models.VolumePublication) {
+				assert.NotNil(t, pub)
+				assert.Equal(t, "testVolume", pub.VolumeName)
+				assert.Equal(t, "testNode", pub.NodeName)
+			},
+		},
+		{
+			name:           "NotFound",
+			volumeName:     "nonExistentVolume",
+			nodeName:       "testNode",
+			bootstrapError: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No publication added
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "volume publication")
+				assert.ErrorContains(t, err, "not found")
+			},
+			verifyResult: func(pub *models.VolumePublication) {
+				assert.Nil(t, pub)
+			},
+		},
+		{
+			name:           "BootstrapError",
+			volumeName:     "testVolume",
+			nodeName:       "testNode",
+			bootstrapError: errors.New("bootstrap error"),
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+			verifyResult: func(pub *models.VolumePublication) {
+				assert.Nil(t, pub)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+			o.bootstrapError = tt.bootstrapError
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, o)
+			}
+
+			result, err := o.GetVolumePublication(testCtx, tt.volumeName, tt.nodeName)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			if tt.verifyResult != nil {
+				tt.verifyResult(result)
+			}
+		})
+	}
+}
+
+func TestListVolumePublicationsConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name           string
+		bootstrapError error
+		setupMocks     func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator)
+		verifyError    func(err error)
+		verifyResult   func(pubs []*models.VolumePublicationExternal)
+	}{
+		{
+			name:           "Success",
+			bootstrapError: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				pub1 := &models.VolumePublication{
+					Name:       "pub1",
+					VolumeName: "volume1",
+					NodeName:   "node1",
+				}
+				pub2 := &models.VolumePublication{
+					Name:       "pub2",
+					VolumeName: "volume2",
+					NodeName:   "node2",
+				}
+				addVolumePublicationsToCache(t, pub1, pub2)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(pubs []*models.VolumePublicationExternal) {
+				assert.Len(t, pubs, 2)
+			},
+		},
+		{
+			name:           "EmptyList",
+			bootstrapError: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No publications added
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(pubs []*models.VolumePublicationExternal) {
+				assert.Empty(t, pubs)
+			},
+		},
+		{
+			name:           "BootstrapError",
+			bootstrapError: errors.New("bootstrap error"),
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+			verifyResult: func(pubs []*models.VolumePublicationExternal) {
+				assert.Nil(t, pubs)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+			o.bootstrapError = tt.bootstrapError
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, o)
+			}
+
+			result, err := o.ListVolumePublications(testCtx)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			if tt.verifyResult != nil {
+				tt.verifyResult(result)
+			}
+		})
+	}
+}
+
+func TestListVolumePublicationsForVolumeConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name           string
+		volumeName     string
+		bootstrapError error
+		setupMocks     func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator)
+		verifyError    func(err error)
+		verifyResult   func(pubs []*models.VolumePublicationExternal)
+	}{
+		{
+			name:           "Success",
+			volumeName:     "testVolume",
+			bootstrapError: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				pub1 := &models.VolumePublication{
+					Name:       "pub1",
+					VolumeName: "testVolume",
+					NodeName:   "node1",
+				}
+				pub2 := &models.VolumePublication{
+					Name:       "pub2",
+					VolumeName: "testVolume",
+					NodeName:   "node2",
+				}
+				pub3 := &models.VolumePublication{
+					Name:       "pub3",
+					VolumeName: "otherVolume",
+					NodeName:   "node3",
+				}
+				addVolumePublicationsToCache(t, pub1, pub2, pub3)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(pubs []*models.VolumePublicationExternal) {
+				assert.Len(t, pubs, 2)
+				for _, pub := range pubs {
+					assert.Equal(t, "testVolume", pub.VolumeName)
+				}
+			},
+		},
+		{
+			name:           "NoPublicationsForVolume",
+			volumeName:     "testVolume",
+			bootstrapError: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				pub := &models.VolumePublication{
+					Name:       "pub1",
+					VolumeName: "otherVolume",
+					NodeName:   "node1",
+				}
+				addVolumePublicationsToCache(t, pub)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(pubs []*models.VolumePublicationExternal) {
+				assert.Empty(t, pubs)
+			},
+		},
+		{
+			name:           "BootstrapError",
+			volumeName:     "testVolume",
+			bootstrapError: errors.New("bootstrap error"),
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+			verifyResult: func(pubs []*models.VolumePublicationExternal) {
+				assert.Nil(t, pubs)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+			o.bootstrapError = tt.bootstrapError
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, o)
+			}
+
+			result, err := o.ListVolumePublicationsForVolume(testCtx, tt.volumeName)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			if tt.verifyResult != nil {
+				tt.verifyResult(result)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestListVolumePublicationsForNodeConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name           string
+		nodeName       string
+		bootstrapError error
+		setupMocks     func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator)
+		verifyError    func(err error)
+		verifyResult   func(pubs []*models.VolumePublicationExternal)
+	}{
+		{
+			name:           "Success",
+			nodeName:       "testNode",
+			bootstrapError: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				pub1 := &models.VolumePublication{
+					Name:       "pub1",
+					VolumeName: "volume1",
+					NodeName:   "testNode",
+				}
+				pub2 := &models.VolumePublication{
+					Name:       "pub2",
+					VolumeName: "volume2",
+					NodeName:   "testNode",
+				}
+				pub3 := &models.VolumePublication{
+					Name:       "pub3",
+					VolumeName: "volume3",
+					NodeName:   "otherNode",
+				}
+				addVolumePublicationsToCache(t, pub1, pub2, pub3)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(pubs []*models.VolumePublicationExternal) {
+				assert.Len(t, pubs, 2)
+				for _, pub := range pubs {
+					assert.Equal(t, "testNode", pub.NodeName)
+				}
+			},
+		},
+		{
+			name:           "NoPublicationsForNode",
+			nodeName:       "testNode",
+			bootstrapError: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				pub := &models.VolumePublication{
+					Name:       "pub1",
+					VolumeName: "volume1",
+					NodeName:   "otherNode",
+				}
+				addVolumePublicationsToCache(t, pub)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(pubs []*models.VolumePublicationExternal) {
+				assert.Empty(t, pubs)
+			},
+		},
+		{
+			name:           "BootstrapError",
+			nodeName:       "testNode",
+			bootstrapError: errors.New("bootstrap error"),
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+			verifyResult: func(pubs []*models.VolumePublicationExternal) {
+				assert.Nil(t, pubs)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+			o.bootstrapError = tt.bootstrapError
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, o)
+			}
+
+			result, err := o.ListVolumePublicationsForNode(testCtx, tt.nodeName)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			if tt.verifyResult != nil {
+				tt.verifyResult(result)
+			}
 		})
 	}
 }

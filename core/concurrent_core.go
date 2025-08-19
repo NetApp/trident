@@ -4873,6 +4873,7 @@ func (o *ConcurrentTridentOrchestrator) AddNode(
 	return
 }
 
+// UpdateNode updates the publication state of a node. It does not create a new node if it does not exist.
 func (o *ConcurrentTridentOrchestrator) UpdateNode(
 	ctx context.Context, nodeName string, flags *models.NodePublicationStateFlags,
 ) (err error) {
@@ -4888,6 +4889,9 @@ func (o *ConcurrentTridentOrchestrator) UpdateNode(
 		return err
 	}
 	node := results[0].Node.Read
+	if node == nil {
+		return errors.NotFoundError("node %v was not found", nodeName)
+	}
 
 	// Update node publication state based on state flags
 	if flags != nil {
