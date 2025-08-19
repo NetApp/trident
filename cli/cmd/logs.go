@@ -212,7 +212,7 @@ func consoleLogs() error {
 	return nil
 }
 
-func getLogs() error {
+var getLogs = func() error {
 	var err error
 
 	if OperatingMode != ModeTunnel {
@@ -534,7 +534,7 @@ func getTridentOperatorLogs(logName string) error {
 	return err
 }
 
-func getAllTridentResources() {
+var getAllTridentResources = func() {
 	if err := getAllTridentBackendConfigs(logNameTridentBackendConfig); err != nil {
 		logErrors = appendErrorf(logErrors, "error retrieving TridentBackendConfig logs : %v", err)
 	}
@@ -592,7 +592,7 @@ func getAllTridentResources() {
 	}
 }
 
-func getOtherResources() {
+var getOtherResources = func() {
 	if err := getAllPersistentVolumes(logNamePersistentVolume); err != nil {
 		logErrors = appendErrorf(logErrors, "error retrieving PersistentVolume logs : %v", err)
 	}

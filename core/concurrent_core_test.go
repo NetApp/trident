@@ -5,7 +5,6 @@ package core
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"sync"
 	"testing"
 
@@ -9081,7 +9080,7 @@ func TestAddStorageClassConcurrentCore(t *testing.T) {
 		{
 			name:         "BootstrapError",
 			scConfig:     scConfig,
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks:   nil,
 			verifyResult: func(result *storageclass.External, o *ConcurrentTridentOrchestrator) {
 				assert.Nil(t, result)
@@ -9248,7 +9247,7 @@ func TestUpdateStorageClassConcurrentCore(t *testing.T) {
 		{
 			name:         "BootstrapError",
 			scConfig:     scConfigUpdated,
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks:   nil,
 			verifyResult: func(result *storageclass.External, o *ConcurrentTridentOrchestrator) {
 				assert.Nil(t, result)
@@ -9411,7 +9410,7 @@ func TestDeleteStorageClassConcurrentCore(t *testing.T) {
 		},
 		{
 			name:         "BootstrapError",
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks:   nil,
 			verifyError: func(t *testing.T, err error, o *ConcurrentTridentOrchestrator) {
 				assert.ErrorContains(t, err, "bootstrap error")
@@ -9550,7 +9549,7 @@ func TestGetStorageClassConcurrentCore(t *testing.T) {
 		{
 			name:         "BootstrapError",
 			scName:       "sc1",
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 			},
 			verifyError: func(err error) {
@@ -9666,7 +9665,7 @@ func TestListStorageClassesConcurrentCore(t *testing.T) {
 		},
 		{
 			name:         "BootstrapError",
-			bootstrapErr: fmt.Errorf("bootstrap error"),
+			bootstrapErr: errors.New("bootstrap error"),
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 				// No setup needed
 			},

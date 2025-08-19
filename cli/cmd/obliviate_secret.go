@@ -115,7 +115,7 @@ func waitForSecretDeletion(name string, timeout time.Duration) error {
 	retries := 0
 
 	checkDeleted := func() error {
-		exists, err := k8sClient.CheckCRDExists(name)
+		exists, err := k8sClient.CheckSecretExists(name)
 		if !exists || isNotFoundError(err) {
 			return nil
 		}

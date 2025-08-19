@@ -3,7 +3,6 @@
 package cmd
 
 import (
-	"io"
 	"os"
 	"testing"
 
@@ -32,7 +31,6 @@ func TestCheckOperatorStatusRunE(t *testing.T) {
 
 	command = mockCommand
 
-	// Test for ModeDirect where pod namespace is not set.
 	OperatingMode = ModeDirect
 	_ = os.Unsetenv(podNamespace)
 	err := checkOperatorStatusRunE(&cobra.Command{}, nil)
@@ -174,14 +172,12 @@ func TestWriteStatus(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			OutputFormat = test.outputFormat
 
-			changeSTDOUT()
-			writeStatus(test.status)
-			restoreSTDOUT()
-
-			o, _ := io.ReadAll(r)
+			output := captureOutput(t, func() {
+				writeStatus(test.status)
+			})
 
 			for _, c := range test.contains {
-				assert.Contains(t, string(o), c, "unexpected output")
+				assert.Contains(t, output, c, "unexpected output")
 			}
 		})
 	}

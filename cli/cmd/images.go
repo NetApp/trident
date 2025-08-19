@@ -13,6 +13,7 @@ import (
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	tridentconfig "github.com/netapp/trident/config"
+	"github.com/netapp/trident/logging"
 	. "github.com/netapp/trident/logging"
 	operatorconfig "github.com/netapp/trident/operator/config"
 	"github.com/netapp/trident/utils/errors"
@@ -29,6 +30,11 @@ type ImageSet struct {
 	Images     []string `json:"images"`
 	K8sVersion string   `json:"k8sVersion"`
 }
+
+var initClientfunc = func() (k8sclient.KubernetesClient, error) {
+	return initClient()
+}
+var Log1 = logging.Log
 
 type ImageList struct {
 	ImageSets []ImageSet `json:"imageSets"`
@@ -58,8 +64,8 @@ var getImageCmd = &cobra.Command{
 
 			// Create the Kubernetes client
 			var err error
-			if client, err = initClient(); err != nil {
-				Log().Fatalf("could not initialize Kubernetes client; %v", err)
+			if client, err = initClientfunc(); err != nil {
+				Log1().Fatalf("could not initialize Kubernetes client; %v", err)
 			}
 			return printImages()
 		}
@@ -70,16 +76,16 @@ func printImages() error {
 	err := listImages()
 	if err != nil {
 		if err.Error() == versionNotSupported {
-			Log().Fatal(fmt.Sprintln(versionNotSupported, K8sVersion))
+			Log1().Fatal(fmt.Sprintln(versionNotSupported, K8sVersion))
 		} else {
-			Log().Fatal(fmt.Sprintln(versionNotSemantic, K8sVersion))
+			Log1().Fatal(fmt.Sprintln(versionNotSemantic, K8sVersion))
 		}
 	}
 
 	return nil
 }
 
-func listImages() error {
+var listImages = func() error {
 	var err error
 	var semVersion *versionutils.Version
 	k8sVersions := make([]string, 0)

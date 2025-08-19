@@ -222,14 +222,14 @@ func discoverJustOperatingMode(_ *cobra.Command) error {
 	return nil
 }
 
-func execKubernetesCLI(args ...string) ([]byte, error) {
+var execKubernetesCLI = func(args ...string) ([]byte, error) {
 	if KubeConfigPath != "" {
 		args = append([]string{"--kubeconfig", KubeConfigPath}, args...)
 	}
 	return command.ExecuteWithoutLog(ctx(), KubernetesCLI, args...)
 }
 
-func execKubernetesCLIRaw(args ...string) *exec.Cmd {
+var execKubernetesCLIRaw = func(args ...string) *exec.Cmd {
 	if KubeConfigPath != "" {
 		args = append([]string{"--kubeconfig", KubeConfigPath}, args...)
 	}
@@ -363,7 +363,7 @@ func getTridentOperatorPod(appLabel string) (string, string, error) {
 }
 
 // listTridentSidecars returns a list of sidecar container names inside the trident controller pod
-func listTridentSidecars(podName, podNameSpace string) ([]string, error) {
+var listTridentSidecars = func(podName, podNameSpace string) ([]string, error) {
 	// Get 'trident' pod info
 	var sidecarNames []string
 	cmd := execKubernetesCLIRaw("get", "pod", podName, "-n", podNameSpace, "-o=json")
@@ -389,7 +389,7 @@ func listTridentSidecars(podName, podNameSpace string) ([]string, error) {
 	return sidecarNames, nil
 }
 
-func getTridentNode(nodeName, namespace string) (string, error) {
+var getTridentNode = func(nodeName, namespace string) (string, error) {
 	selector := fmt.Sprintf("--field-selector=spec.nodeName=%s", nodeName)
 	cmd := execKubernetesCLIRaw("get", "pod", "-n", namespace, "-l", TridentNodeLabel, "-o=json", selector)
 	var outbuff bytes.Buffer
@@ -416,7 +416,7 @@ func getTridentNode(nodeName, namespace string) (string, error) {
 }
 
 // listTridentNodes returns a list of names of the Trident node pods in the specified namespace
-func listTridentNodes(namespace string) (map[string]string, error) {
+var listTridentNodes = func(namespace string) (map[string]string, error) {
 	// Get trident node pods info
 	tridentNodes := make(map[string]string)
 	cmd := execKubernetesCLIRaw(
@@ -513,7 +513,7 @@ func printOutput(cmd *cobra.Command, out []byte, err error) {
 	}
 }
 
-func TunnelCommandRaw(commandArgs []string) ([]byte, []byte, error) {
+var TunnelCommandRaw = func(commandArgs []string) ([]byte, []byte, error) {
 	// Build tunnel command to exec command in container
 	execCommand := []string{"exec", TridentPodName, "-n", TridentPodNamespace, "-c", config.ContainerTrident, "--"}
 

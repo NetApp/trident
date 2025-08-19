@@ -35,7 +35,7 @@ var (
 	}
 )
 
-func init() {
+func initializePlugins() {
 	// search PATH for all binaries starting with "tridentctl-"
 	binaries := findBinaries(tridentctlPrefix)
 
@@ -88,6 +88,10 @@ func init() {
 	for _, pluginCmd := range plugins {
 		RootCmd.AddCommand(pluginCmd)
 	}
+}
+
+func init() {
+	initializePlugins()
 }
 
 func findBinaries(prefix string) []string {
