@@ -384,11 +384,26 @@ func ensureNodeAccessForPolicy(
 	}
 
 	desiredRules, err := network.FilterIPs(ctx, targetNode.IPs, config.AutoExportCIDRs)
+
 	if err != nil {
 		err = fmt.Errorf("unable to determine desired export policy rules; %v", err)
 		Logc(ctx).Error(err)
 		return err
 	}
+
+	// Add CustomExtraExportCIDRs if they exist
+	if len(config.CustomExtraExportCIDRs) > 0 {
+		extraCustomRules, err := network.FilterIPs(ctx, config.CustomExtraExportCIDRs, config.AutoExportCIDRs)
+		if err != nil {
+			err = fmt.Errorf("unable to filter customExportPolicyCIDRs; %v", err)
+			Logc(ctx).Error(err)
+			return err
+		}
+
+		// Append the extraCustomRules to desiredRules
+		desiredRules = append(desiredRules, extraCustomRules...)
+	}
+
 	Logc(ctx).WithField("desiredRules", desiredRules).Debug("Desired export policy rules.")
 
 	// first grab all existing rules
@@ -456,14 +471,31 @@ func ensureNodeAccessForPolicy(
 func getDesiredExportPolicyRules(
 	ctx context.Context, nodes []*tridentmodels.Node, config *drivers.OntapStorageDriverConfig,
 ) ([]string, error) {
+
 	uniqueRules := make(map[string]struct{})
+
 	for _, node := range nodes {
-		// Filter the IPs based on the CIDRs provided by user
-		filteredIPs, err := network.FilterIPs(ctx, node.IPs, config.AutoExportCIDRs)
+
+		// Filter the Node IPs based on the AutoExportCIDRs provided by user
+		nodeFilteredIPs, err := network.FilterIPs(ctx, node.IPs, config.AutoExportCIDRs)
 		if err != nil {
 			return nil, err
 		}
-		for _, ip := range filteredIPs {
+
+		for _, ip := range nodeFilteredIPs {
+			uniqueRules[ip] = struct{}{}
+		}
+	}
+
+	if len(config.CustomExtraExportCIDRs) > 0 {
+		
+		// Filter the CustomExtraExportCIDRs based on the AutoExportCIDRs provided by user
+		customExtraIPs, err := network.FilterIPs(ctx, config.CustomExtraExportCIDRs, config.AutoExportCIDRs)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, ip := range customExtraIPs {
 			uniqueRules[ip] = struct{}{}
 		}
 	}
@@ -1689,6 +1721,11 @@ func ValidateNASDriver(
 		return fmt.Errorf("failed to validate auto-export CIDR(s): %w", err)
 	}
 
+	// Ensure config has a set of valid customExportCIDRs
+	if err := network.ValidateCIDRs(ctx, config.CustomExtraExportCIDRs); err != nil {
+		return fmt.Errorf("failed to validate custom-export CIDR(s): %w", err)
+	}
+
 	return nil
 }
 
@@ -1865,6 +1902,10 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		config.AutoExportCIDRs = []string{"0.0.0.0/0", "::/0"}
 	}
 
+	if len(config.CustomExtraExportCIDRs) == 0 {
+		config.CustomExtraExportCIDRs = []string{}
+	}
+
 	if len(config.FlexGroupAggregateList) == 0 {
 		config.FlexGroupAggregateList = []string{}
 	}
@@ -1935,6 +1976,7 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		"TieringPolicy":          config.TieringPolicy,
 		"AutoExportPolicy":       config.AutoExportPolicy,
 		"AutoExportCIDRs":        config.AutoExportCIDRs,
+		"CustomExtraExportCIDRs": config.CustomExtraExportCIDRs,
 		"FlexgroupAggregateList": config.FlexGroupAggregateList,
 		"ADAdminUser":            config.ADAdminUser,
 		"NameTemplate":           config.NameTemplate,
@@ -3365,7 +3407,7 @@ func ValidateASAStoragePools(
 	if len(config.AutoExportCIDRs) > 0 {
 		return errors.New("invalid value for autoExportCIDRs")
 	}
-
+	
 	switch config.SANType {
 	case sa.ISCSI:
 		break
