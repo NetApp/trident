@@ -11,6 +11,7 @@ on:
       - master
       - stable/**
 permissions:
+  pull-requests: write
   contents: read
     # Optional: allow read access to pull request. Use with `only-new-issues` option.
     # pull-requests: read
@@ -120,3 +121,82 @@ jobs:
         with:
           name: "coverage-report-${{ runner.os }}-${{ github.run_number }}.html"
           path: ${{ runner.os }}-coverage.html
+
+  coveragecomment:
+      name: UT Code Coverage Report
+      runs-on: ubuntu-latest
+      steps:
+        - name: Check out code
+          uses: actions/checkout@v4
+
+        - name: Setup Golang for unit test
+          uses: actions/setup-go@v5
+          with:
+            go-version-file: "${{ github.workspace }}/go.mod"
+            cache: false
+
+        - name: Install dependencies
+          run: |
+            go install github.com/t-yuki/gocover-cobertura@latest
+        # ToDo: run tests in /cmd directory
+        - name: Run the tests (not on Windows)
+          run: |
+            set -x
+            go version
+            
+            # Define packages to exclude
+            EXCLUDE_PACKAGES=(
+                "client/clientset"                     # Auto-generated client code
+                "client/informers"                     # Auto-generated informer code
+                "client/listers"                       # Auto-generated lister code
+                "storage/external_test"                # Test code, excluded from production
+                "ontap/api/azgo"                       # Auto-generated code for ONTAP API (AZGO)
+                "ontap/api/rest"                       # Auto-generated code for ONTAP REST API
+                "fake"                                 # Mock code for testing purposes
+                "github.com/netapp/trident/mocks/"     # Mock code for unit tests
+                "github.com/netapp/trident/operator/controllers/provisioner"  # Auto-generated operator code
+                "github.com/netapp/trident/operator/controllers/provisioner/apis/netapp/v1"  # Auto-generated API definitions
+            )
+            
+            # Build regex pattern from exclusion list
+            EXCLUDE_REGEX=$(IFS="|"; echo "${EXCLUDE_PACKAGES[*]}")
+            
+            # Run tests excluding the specified packages
+            echo mkdir ${{ runner.temp }}/${{ runner.os }}-coverage-binary.out
+            mkdir ${{ runner.temp }}/${{ runner.os }}-coverage-binary.out
+            go test $(go list ./... | grep -v -E "$EXCLUDE_REGEX") -covermode=count -test.gocoverdir=${{ runner.temp }}/${{ runner.os }}-coverage-binary.out
+            go tool covdata textfmt -i=${{ runner.temp }}/${{ runner.os }}-coverage-binary.out -o ${{ runner.os }}-coverage.out
+            
+        - name: Convert Go coverage to Cobertura XML
+          run: |
+            gocover-cobertura < ${{ runner.os }}-coverage.out > cobertura-coverage.xml
+            
+        - name: Summarize code coverage
+          uses: irongut/CodeCoverageSummary@v1.3.0
+          with:
+            filename: cobertura-coverage.xml
+            badge: true
+            fail_below_min: true
+            format: markdown
+            hide_complexity: true
+            indicators: false
+            output: both
+            thresholds: '62 80'
+
+        - name: Add coverage PR comment
+          uses: marocchino/sticky-pull-request-comment@v2
+          if: github.event_name == 'pull_request'
+          with:
+            recreate: true
+            path: code-coverage-results.md
+
+        - name: Upload coverage as artifacts
+          uses: actions/upload-artifact@v4
+          if: always()
+          with:
+            name: code-coverage
+            path: |
+              ${{ runner.os }}-coverage.out
+              cobertura-coverage.xml
+              code-coverage-results.md
+            retention-days: 5
