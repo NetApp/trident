@@ -18,8 +18,5 @@ spec:
   dataLIF: 10.0.0.2
   backendName: tbc-ontap-nas
   svm: trident_svm
-  # useRest: true
-  # customExportClientIPs:
-  # - 192.168.0.0/24
   credentials: 
     name: backend-tbc-ontap-nas-secret
