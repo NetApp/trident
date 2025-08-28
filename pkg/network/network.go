@@ -42,15 +42,14 @@ func ValidateCIDRs(ctx context.Context, cidrs []string) error {
 	return err
 }
 
-// ValidateIPs parses a slice of strings, attempting to convert each into a net.IP.
-// It returns a slice of parsed net.IP addresses and a multi-error for any parsing failures.
+// ValidateIPs parses a list of IPs, attempting to validate them with net.ParseIP.
+// It returns error in case the IPs are not valid.
 func ValidateIPs(ctx context.Context, ipStrings []string) error {
 	var err error
 	errors := make([]error, 0)
 
     for _, ipStr := range ipStrings {
-        // net.ParseIP parses s as an IP address, returning the result.
-        // If s is not a valid IP address, ParseIP returns nil.
+        // net.ParseIP parses strings as an IP address, returning nil if error.
         ip := net.ParseIP(ipStr)
         if ip == nil {
 			errors = append(errors, fmt.Errorf("found an invalid IP: %s", ipStr))
