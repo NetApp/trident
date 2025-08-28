@@ -335,14 +335,7 @@ func ensureNodeAccess(
 	config *drivers.OntapStorageDriverConfig,
 ) error {
 	policyName := getExportPolicyName(publishInfo.BackendUUID)
-	if exists, err := clientAPI.ExportPolicyExists(ctx, policyName); err != nil {
-		return err
-	} else if !exists {
-		Logc(ctx).WithField("exportPolicy", policyName).Debug("Export policy missing, will create it.")
-		return reconcileNASNodeAccess(ctx, publishInfo.Nodes, config, clientAPI, policyName)
-	}
-	Logc(ctx).WithField("exportPolicy", policyName).Debug("Export policy exists.")
-	return nil
+	return reconcileNASNodeAccess(ctx, publishInfo.Nodes, config, clientAPI, policyName)
 }
 
 func reconcileNASNodeAccess(
@@ -4952,7 +4945,7 @@ func deleteAutomaticSnapshot(
 // retrieves its rules and matches the rules that exist to the IP addresses from the node.
 // Any matched IP addresses will be removed from the export policy.
 func removeExportPolicyRules(
-	ctx context.Context, exportPolicy string, publishInfo *tridentmodels.VolumePublishInfo, clientAPI api.OntapAPI,
+	ctx context.Context, exportPolicy string, publishInfo *tridentmodels.VolumePublishInfo, clientAPI api.OntapAPI, config drivers.OntapStorageDriverConfig
 ) error {
 	fields := LogFields{
 		"Method":     "removeExportPolicyRules",
@@ -4968,10 +4961,18 @@ func removeExportPolicyRules(
 
 	var removeRuleIndexes []int
 
-	nodeIPRules := make(map[string]struct{})
+	finalNodes := make(map[string]struct{})
+
+	//parse host / node ips
 	for _, ip := range publishInfo.HostIP {
 		ip = strings.TrimSpace(ip)
-		nodeIPRules[ip] = struct{}{}
+		finalNodes[ip] = struct{}{}
+	}
+
+	// parse custom export ips
+	for _, ip := range config.CustomExportClientIPs {
+		ip = strings.TrimSpace(ip)
+		finalNodes[ip] = struct{}{}
 	}
 
 	// Get export policy rules from given policy
@@ -5006,7 +5007,7 @@ func removeExportPolicyRules(
 		allMatch := true
 		for _, singleClientMatch := range strings.Split(clientMatch, ",") {
 			singleClientMatch = strings.TrimSpace(singleClientMatch)
-			if _, match := nodeIPRules[singleClientMatch]; !match {
+			if _, match := finalNodes[singleClientMatch]; !match {
 				allMatch = false
 				break
 			}

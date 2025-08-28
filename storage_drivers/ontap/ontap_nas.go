@@ -945,7 +945,7 @@ func (d *NASStorageDriver) Unpublish(
 	exportPolicy := volConfig.ExportPolicy
 	if exportPolicy == volExportPolicyName {
 		// Remove export policy rules matching the node IP address from the volume level policy
-		if err = removeExportPolicyRules(ctx, exportPolicy, publishInfo, d.API); err != nil {
+		if err = removeExportPolicyRules(ctx, exportPolicy, publishInfo, d.API, d.Config); err != nil {
 			Logc(ctx).WithError(err).Errorf("Error cleaning up export policy rules in %s.", exportPolicy)
 			return err
 		}
