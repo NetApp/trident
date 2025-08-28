@@ -392,11 +392,11 @@ func ensureNodeAccessForPolicy(
 	} else if !exists {
 		Logc(ctx).WithField("exportPolicy", policyName).Debug("Export policy missing, will create it.")
 
-		if err = clientAPI.ExportPolicyCreate(ctx, policyName); err != nil {
+		if err = ensureExportPolicyExists(ctx, policyName, clientAPI); err != nil {
 			return err
 		}
 	}
-
+	
 	desiredRules, err := network.FilterIPs(ctx, targetNode.IPs, config.AutoExportCIDRs)
 
 	if err != nil {
@@ -4945,7 +4945,7 @@ func deleteAutomaticSnapshot(
 // retrieves its rules and matches the rules that exist to the IP addresses from the node.
 // Any matched IP addresses will be removed from the export policy.
 func removeExportPolicyRules(
-	ctx context.Context, exportPolicy string, publishInfo *tridentmodels.VolumePublishInfo, clientAPI api.OntapAPI, config drivers.OntapStorageDriverConfig
+	ctx context.Context, exportPolicy string, publishInfo *tridentmodels.VolumePublishInfo, clientAPI api.OntapAPI, config drivers.OntapStorageDriverConfig,
 ) error {
 	fields := LogFields{
 		"Method":     "removeExportPolicyRules",
