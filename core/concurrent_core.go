@@ -1596,6 +1596,9 @@ func (o *ConcurrentTridentOrchestrator) updateBackendVolumes(ctx context.Context
 
 		// Update volume cache on backend.
 		backend.Volumes().Store(vol.Config.Name, vol)
+
+		// Update volume based access policy when backend reloads.
+		backend.ReconcileVolumeNodeAccess(ctx, vol.Config, volResult.Nodes)
 	}
 
 	// update the backend cache

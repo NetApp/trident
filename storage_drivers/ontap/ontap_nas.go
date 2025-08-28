@@ -1726,14 +1726,45 @@ func (d *NASStorageDriver) reconcileNodeAccessForBackendPolicy(
 }
 
 func (d *NASStorageDriver) ReconcileVolumeNodeAccess(
-	ctx context.Context, _ *storage.VolumeConfig, _ []*models.Node,
+	ctx context.Context, volConfig *storage.VolumeConfig, nodes []*models.Node,
 ) error {
+
+	if !d.Config.AutoExportPolicy {
+		return nil
+	}
+
+	policyName := volConfig.ExportPolicy
+
 	fields := LogFields{
 		"Method": "ReconcileVolumeNodeAccess",
 		"Type":   "NASStorageDriver",
+		"policyName":   policyName,
 	}
-	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileVolumeNodeAccess")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileVolumeNodeAccess")
+	
+	Logc(ctx).WithFields(fields).Debug(">>>>>> ReconcileVolumeNodeAccess")
+	defer Logc(ctx).Debug("<<<<<< ReconcileVolumeNodeAccess")
+
+
+	// Ensure the export policy exists. If it doesn't, create it.
+	// This also handles the case where it might have been deleted out-of-band.
+	if err := ensureExportPolicyExists(ctx, policyName, d.API); err != nil {
+		Logc(ctx).WithError(err).WithField("ExportPolicy", policyName).Error("Error ensuring export policy exists during volume node access reconciliation.")
+		return fmt.Errorf("error ensuring export policy %s exists: %v", policyName, err)
+	}
+
+	desiredRules, err := getDesiredExportPolicyRules(ctx, nodes, &d.Config)
+	if err != nil {
+		err = fmt.Errorf("unable to determine desired export policy rules; %v", err)
+		Logc(ctx).Error(err)
+		return err
+	}
+	
+	err = reconcileExportPolicyRules(ctx, policyName, desiredRules, d.API, &d.Config)
+	if err != nil {
+		err = fmt.Errorf("unabled to reconcile export policy rules; %v", err)
+		Logc(ctx).WithField("ExportPolicy", policyName).Error(err)
+		return err
+	}
 
 	return nil
 }
