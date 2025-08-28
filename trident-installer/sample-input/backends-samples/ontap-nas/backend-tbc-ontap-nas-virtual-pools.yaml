@@ -17,7 +17,6 @@ spec:
   managementLIF: 10.0.0.1
   dataLIF: 10.0.0.2
   backendName: tbc-ontap-nas-virtual-pools
-  useRest: true
   svm: trident_svm
   credentials: 
     name: backend-tbc-ontap-nas-virtual-pools-secret
