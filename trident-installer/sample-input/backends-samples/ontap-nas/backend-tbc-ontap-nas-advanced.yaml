@@ -25,6 +25,7 @@ spec:
   nfsMountOptions: nfsvers=4
   useRest: true
   # useRest: true
+  # enableCustomExportPolicySettings: true
   # customExportClientIPs:
   # - 192.168.0.1
   defaults:

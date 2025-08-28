@@ -1810,7 +1810,7 @@ func (d *NASQtreeStorageDriver) reapDeletedQtrees(ctx context.Context) {
 func (d *NASQtreeStorageDriver) ensureDefaultExportPolicy(ctx context.Context) error {
 	err := d.API.ExportPolicyCreate(ctx, d.flexvolExportPolicy)
 	if err != nil {
-		return fmt.Errorf("error creating export policy %s: %v", d.flexvolExportPolicy, err)
+		return fmt.Errorf("error creating default export policy %s: %v", d.flexvolExportPolicy, err)
 	}
 	return d.ensureDefaultExportPolicyRule(ctx)
 }
@@ -1821,7 +1821,7 @@ func (d *NASQtreeStorageDriver) ensureDefaultExportPolicy(ctx context.Context) e
 func (d *NASQtreeStorageDriver) ensureDefaultExportPolicyRule(ctx context.Context) error {
 	ruleList, err := d.API.ExportRuleList(ctx, d.flexvolExportPolicy)
 	if err != nil {
-		return fmt.Errorf("error listing export policy rules: %v", err)
+		return fmt.Errorf("error listing default export policy rules: %v", err)
 	}
 
 	if len(ruleList) == 0 {

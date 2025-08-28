@@ -1702,13 +1702,12 @@ func (d *NASStorageDriver) reconcileNodeAccessForBackendPolicy(
 		return nil
 	}
 
-    // Ensure the export policy exists. If it doesn't, create it.
-    // This also handles the case where it might have been deleted out-of-band.
-    if err := ensureExportPolicyExists(ctx, policyName, d.API); err != nil {
-        Logc(ctx).WithError(err).WithField("ExportPolicy", policyName).
-            Error("Error ensuring export policy exists during backend node access reconciliation.")
-        return fmt.Errorf("error ensuring export policy %s exists: %v", policyName, err)
-    }
+	// Ensure the export policy exists. If it doesn't, create it.
+	// This also handles the case where it might have been deleted out-of-band.
+	if err := ensureExportPolicyExists(ctx, policyName, d.API); err != nil {
+		Logc(ctx).WithError(err).WithField("ExportPolicy", policyName).Error("Error ensuring export policy exists during backend node access reconciliation.")
+		return fmt.Errorf("error ensuring export policy %s exists: %v", policyName, err)
+	}
 
 	desiredRules, err := getDesiredExportPolicyRules(ctx, nodes, &d.Config)
 	if err != nil {
