@@ -412,11 +412,11 @@ func ensureNodeAccessForPolicy(
 		return err
 	}
 
-	// Add CustomExtraExportCIDRs if they exist
-	if len(config.CustomExtraExportCIDRs) > 0 {
-		extraCustomRules, err := network.FilterIPs(ctx, config.CustomExtraExportCIDRs, config.AutoExportCIDRs)
+	// Add CustomExportClientIPs if they exist
+	if len(config.CustomExportClientIPs) > 0 {
+		extraCustomRules, err := network.FilterIPs(ctx, config.CustomExportClientIPs, config.AutoExportCIDRs)
 		if err != nil {
-			err = fmt.Errorf("unable to filter customExportPolicyCIDRs; %v", err)
+			err = fmt.Errorf("unable to filter customExportClientIPs; %v", err)
 			Logc(ctx).Error(err)
 			return err
 		}
@@ -508,10 +508,10 @@ func getDesiredExportPolicyRules(
 		}
 	}
 
-	if len(config.CustomExtraExportCIDRs) > 0 {
+	if len(config.CustomExportClientIPs) > 0 {
 		
-		// Filter the CustomExtraExportCIDRs based on the AutoExportCIDRs provided by user
-		customExtraIPs, err := network.FilterIPs(ctx, config.CustomExtraExportCIDRs, config.AutoExportCIDRs)
+		// Filter the CustomExportClientIPs based on the AutoExportCIDRs provided by user
+		customExtraIPs, err := network.FilterIPs(ctx, config.CustomExportClientIPs, config.AutoExportCIDRs)
 		if err != nil {
 			return nil, err
 		}
@@ -1750,8 +1750,8 @@ func ValidateNASDriver(
 	}
 
 	// Ensure config has a set of valid customExportCIDRs
-	if err := network.ValidateCIDRs(ctx, config.CustomExtraExportCIDRs); err != nil {
-		return fmt.Errorf("failed to validate custom-export CIDR(s): %w", err)
+	if err := network.ValidateIPs(ctx, config.CustomExportClientIPs); err != nil {
+		return fmt.Errorf("failed to validate custom export policy client IP(s): %w", err)
 	}
 
 	return nil
@@ -1930,8 +1930,8 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		config.AutoExportCIDRs = []string{"0.0.0.0/0", "::/0"}
 	}
 
-	if len(config.CustomExtraExportCIDRs) == 0 {
-		config.CustomExtraExportCIDRs = []string{}
+	if len(config.CustomExportClientIPs) == 0 {
+		config.CustomExportClientIPs = []string{}
 	}
 
 	if len(config.FlexGroupAggregateList) == 0 {
@@ -2004,7 +2004,7 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		"TieringPolicy":          config.TieringPolicy,
 		"AutoExportPolicy":       config.AutoExportPolicy,
 		"AutoExportCIDRs":        config.AutoExportCIDRs,
-		"CustomExtraExportCIDRs": config.CustomExtraExportCIDRs,
+		"CustomExportClientIPs":  config.CustomExportClientIPs,
 		"FlexgroupAggregateList": config.FlexGroupAggregateList,
 		"ADAdminUser":            config.ADAdminUser,
 		"NameTemplate":           config.NameTemplate,

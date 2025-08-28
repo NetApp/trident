@@ -20,7 +20,7 @@ spec:
   svm: trident_svm
   autoExportCIDRs:
   - 192.168.0.0/24
-  # customExtraExportCIDRs:
+  # customExportClientIPs:
   # - 192.168.0.0/24
   autoExportPolicy: true
   # useRest: true
