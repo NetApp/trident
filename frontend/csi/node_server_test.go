@@ -2991,6 +2991,144 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 
 		wg.Wait()
 	})
+
+	// Test 6 (FCP):
+	// Sending requests within the limit of the limiter
+	t.Run("Test Case 6: Sending n num of FCP requests with different volume.uuid and asserting noError", func(t *testing.T) {
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		requests, publishInfos := createFCPStageRequests(numOfRequests)
+
+		csiNodeLockTimeout = 500 * time.Millisecond
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockFCPClient := mock_fcp.NewMockFCP(ctrl)
+
+		// Setting up expectations for each request
+		for i := 0; i < numOfRequests; i++ {
+			mockFCPClient.EXPECT().AttachVolumeRetry(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(int64(0), nil).Times(1)
+			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
+		}
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockTrackingClient,
+			fcp:              mockFCPClient,
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		// Modifying the limiter limit
+		plugin.limiterSharedMap[NodeStageFCPVolume], _ = limiter.New(ctx,
+			NodeStageFCPVolume,
+			limiter.TypeSemaphoreN,
+			limiter.WithSemaphoreNSize(ctx, numOfRequests),
+		)
+
+		var wg sync.WaitGroup
+		wg.Add(len(requests))
+
+		for i := 0; i < len(requests); i++ {
+			go func(idx int) {
+				defer wg.Done()
+				err := plugin.nodeStageFCPVolume(ctx, requests[idx], publishInfos[idx])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+
+	// Test 7 (FCP):
+	// Sending n requests at the same time with the same volume.uuid.
+	// First one should pass and all the rest should fail.
+	t.Run("Test Case 7: Sending n FCP request with same volume.uuid at the same time.", func(t *testing.T) {
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		requests, _ := createFCPStageRequests(numOfRequests)
+		csiNodeLockTimeout = 500 * time.Millisecond
+
+		signalChan := make(chan struct{})
+
+		volumeID := "1234-5678" // Making volume.uuid same for all the requests.
+		for i := 0; i < numOfRequests; i++ {
+			requests[i].VolumeId = volumeID
+		}
+
+		// Setting up mock clients.
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockFCPClient := mock_fcp.NewMockFCP(ctrl)
+
+		// Setting up expectations for the first request, and we do not need to set expectations for other calls.
+		mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(context.Context, string, *models.VolumeTrackingInfo) error {
+			signalChan <- struct{}{}
+			time.Sleep(600 * time.Millisecond)
+			return nil
+		}).Times(1)
+		mockFCPClient.EXPECT().AttachVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(0), nil).Times(1)
+		mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockTrackingClient,
+			fcp:              mockFCPClient,
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		// Modifying the limiter limit
+		plugin.limiterSharedMap[NodeStageFCPVolume], _ = limiter.New(ctx,
+			NodeStageFCPVolume,
+			limiter.TypeSemaphoreN,
+			limiter.WithSemaphoreNSize(ctx, numOfRequests),
+		)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		// Spinning up go-routine for the first request.
+		go func() {
+			defer wg.Done()
+			_, err := plugin.NodeStageVolume(ctx, requests[0])
+			assert.NoError(t, err)
+		}()
+
+		// Waiting on signal to ensure the first requests acquires the lock.
+		<-signalChan
+
+		for i := 1; i < numOfRequests; i++ {
+			go func(index int) {
+				defer wg.Done()
+				_, err := plugin.NodeStageVolume(ctx, requests[index])
+				assert.Error(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
 }
 
 func TestNodeStageNFSVolume_Multithreaded(t *testing.T) {
@@ -3862,6 +4000,157 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 
 		wg.Wait()
 	})
+
+	// Test 6 (FCP):
+	t.Run("Test Case 6: Sending n num of FCP with different volume.uuid and asserting noError", func(t *testing.T) {
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		defer func(fcUtils fcp.FcpReconcileUtils) {
+			fcpUtils = fcUtils
+		}(fcpUtils)
+
+		requests, publishInfos := createFCPUnstageRequests(numOfRequests)
+
+		csiNodeLockTimeout = 500 * time.Millisecond
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockFCPReconcileUtilsClient := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+		mockFCP := mock_fcp.NewMockFCP(ctrl)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+
+		// Setting up mocks expectation for each request.
+		for i := 0; i < numOfRequests; i++ {
+			mockFCPReconcileUtilsClient.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			mockFCPReconcileUtilsClient.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			mockFCPReconcileUtilsClient.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{"sda", "sdb"}, nil).Times(1)
+			mockFCP.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(nil, nil).Times(1)
+
+			volumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: *publishInfos[i],
+			}
+			mockTrackingClient.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(volumeTrackingInfo, nil).Times(1)
+		}
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			fcp:              mockFCP,
+			nodeHelper:       mockTrackingClient,
+		}
+
+		fcpUtils = mockFCPReconcileUtilsClient
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		// Spinning up the go-routines for each request
+		for i := 0; i < numOfRequests; i++ {
+			go func() {
+				defer wg.Done()
+				_, err := plugin.NodeUnstageVolume(context.Background(), requests[i])
+				assert.NoError(t, err)
+			}()
+		}
+
+		wg.Wait()
+	})
+
+	// Test 7 (FCP):
+	t.Run("Test Case 7: Sending n num of FCP with same volume.uuid and asserting error", func(t *testing.T) {
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		defer func(fcUtils fcp.FcpReconcileUtils) {
+			fcpUtils = fcUtils
+		}(fcpUtils)
+
+		requests, publishInfos := createFCPUnstageRequests(numOfRequests)
+
+		volumeID := "1234-5678"
+		for i := 0; i < numOfRequests; i++ {
+			requests[i].VolumeId = volumeID
+		}
+
+		csiNodeLockTimeout = 500 * time.Millisecond
+
+		signalChan := make(chan struct{})
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockFCPReconcileUtilsClient := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+		mockFCP := mock_fcp.NewMockFCP(ctrl)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+
+		mockFCPReconcileUtilsClient.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		mockFCPReconcileUtilsClient.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		mockFCPReconcileUtilsClient.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{"sda", "sdb"}, nil).Times(1)
+		mockFCP.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(nil, nil).Times(1)
+
+		volumeTrackingInfo := &models.VolumeTrackingInfo{
+			VolumePublishInfo: *publishInfos[0],
+		}
+		//	ReadTrackingInfo(context.Context, string) (*models.VolumeTrackingInfo, error)
+		mockTrackingClient.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).DoAndReturn(func(context.Context, string) (*models.VolumeTrackingInfo, error) {
+			signalChan <- struct{}{}
+			time.Sleep(600 * time.Millisecond)
+			return volumeTrackingInfo, nil
+		}).Times(1)
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			fcp:              mockFCP,
+			nodeHelper:       mockTrackingClient,
+		}
+
+		fcpUtils = mockFCPReconcileUtilsClient
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		// Modifying the limiter limit
+		plugin.limiterSharedMap[NodeUnstageFCPVolume], _ = limiter.New(ctx,
+			NodeUnstageFCPVolume,
+			limiter.TypeSemaphoreN,
+			limiter.WithSemaphoreNSize(ctx, numOfRequests),
+		)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		// Spinning up the go-routines for each request
+		go func() {
+			defer wg.Done()
+			_, err := plugin.NodeUnstageVolume(context.Background(), requests[0])
+			assert.NoError(t, err)
+		}()
+
+		// Waiting on signal to ensure the first requests acquires the lock.
+		<-signalChan
+
+		for i := 1; i < numOfRequests; i++ {
+			go func(index int) {
+				defer wg.Done()
+				_, err := plugin.NodeUnstageVolume(context.Background(), requests[i])
+				assert.Error(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
 }
 
 func TestNodeUnstageNFSVolume_Multithreaded(t *testing.T) {
@@ -4686,6 +4975,138 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 
 		wg.Wait()
 	})
+
+	// Test 6 (FCP):
+	t.Run("Test Case 6: Sending n num of FCP requests with different volume.uuid and asserting noError", func(t *testing.T) {
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		defer func(fcUtils fcp.FcpReconcileUtils) {
+			fcpUtils = fcUtils
+		}(fcpUtils)
+
+		requests := createFCPPublishRequests(numOfRequests, false)
+
+		csiNodeLockTimeout = 500 * time.Millisecond
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+
+		// Setting up expectations for each request
+		for i := 0; i < numOfRequests; i++ {
+			volumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeFCPVolumePublishInfo).Build(),
+			}
+			mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), requests[i].VolumeId).Return(volumeTrackingInfo, nil).Times(1)
+			mockMount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		}
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			fs:               filesystem.New(mockMount),
+			nodeHelper:       mockNodeHelper,
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		for i := 0; i < len(requests); i++ {
+			go func(idx int) {
+				defer wg.Done()
+				_, err := plugin.NodePublishVolume(ctx, requests[idx])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+
+	// Test 7 (FCP):
+	t.Run("Test Case 7: Sending n num of FCP requests with same volume.uuid and asserting error", func(t *testing.T) {
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		defer func(fcUtils fcp.FcpReconcileUtils) {
+			fcpUtils = fcUtils
+		}(fcpUtils)
+
+		requests := createFCPPublishRequests(numOfRequests, false)
+
+		volID := "1234-5678"
+		for i := 0; i < numOfRequests; i++ {
+			requests[i].VolumeId = volID
+		}
+
+		csiNodeLockTimeout = 100 * time.Millisecond
+
+		signalChan := make(chan struct{})
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+
+		// Setting up expectations for each request
+		volumeTrackingInfo := &models.VolumeTrackingInfo{
+			VolumePublishInfo: NewVolumePublishInfoBuilder(TypeFCPVolumePublishInfo).Build(),
+		}
+		//	ReadTrackingInfo(context.Context, string) (*models.VolumeTrackingInfo, error)
+		mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).DoAndReturn(func(context.Context, string) (*models.VolumeTrackingInfo, error) {
+			signalChan <- struct{}{}
+			time.Sleep(600 * time.Millisecond)
+			return volumeTrackingInfo, nil
+		}).Times(1)
+		mockMount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			fs:               filesystem.New(mockMount),
+			nodeHelper:       mockNodeHelper,
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		go func() {
+			defer wg.Done()
+			_, err := plugin.NodePublishVolume(ctx, requests[0])
+			assert.NoError(t, err)
+		}()
+
+		<-signalChan
+
+		for i := 1; i < numOfRequests; i++ {
+			go func(index int) {
+				defer wg.Done()
+				_, err := plugin.NodePublishVolume(ctx, requests[i])
+				assert.Error(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
 }
 
 func TestNodePublishNFSVolume_Multithreaded(t *testing.T) {
@@ -5427,6 +5848,709 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 	})
 }
 
+// ---------------------------------- FCP Volume Multithreaded Tests ----------------------------------
+
+// TestNodeStageFCPVolume_Multithreaded tests the multithreaded behavior of NodeStageFCPVolume
+func TestNodeStageFCPVolume_Multithreaded(t *testing.T) {
+	// Test 1: Sending more than what can be parallelized
+	t.Run("Test Case 1: Sending requests within the limit of the limiter.", func(t *testing.T) {
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		requests, publishInfos := createFCPStageRequests(numOfRequests)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockFCPClient := mock_fcp.NewMockFCP(ctrl)
+		mountClient, _ := mount.New()
+
+		// Setting up expectations for numOfParallelRequestsAllowed requests
+		mockFCPClient.EXPECT().AttachVolumeRetry(
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		).Return(int64(0), nil).Times(numOfRequests)
+		mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2 * numOfRequests)
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockTrackingClient,
+			fcp:              mockFCPClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		// Modifying the limit of the limiter.
+		plugin.limiterSharedMap[NodeStageFCPVolume], _ = limiter.New(ctx,
+			NodeStageFCPVolume,
+			limiter.TypeSemaphoreN,
+			limiter.WithSemaphoreNSize(ctx, numOfRequests),
+		)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		// Spinning up go-routines for each request.
+		for i := 0; i < numOfRequests; i++ {
+			go func(index int) {
+				defer wg.Done()
+				err := plugin.nodeStageFCPVolume(ctx, requests[i], publishInfos[index])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+
+	// Test 2: Initializing SemahaphoreN, Sending more than what can be parallelized.
+	t.Run("Test Case 2: Sending more than what can be parallelized.", func(t *testing.T) {
+		numOfRequests := 100
+		numOfParallelRequestsAllowed := maxNodeStageFCPVolumeOperations
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiKubeletTimeout = 100 * time.Millisecond
+
+		timedContext := func() (context.Context, context.CancelFunc) {
+			return context.WithTimeout(ctx, csiKubeletTimeout)
+		}
+
+		requests, publishInfos := createFCPStageRequests(numOfRequests)
+
+		startedChan := make(chan struct{}, numOfParallelRequestsAllowed)
+		signalChan := make(chan struct{})
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockFCPClient := mock_fcp.NewMockFCP(ctrl)
+		mountClient, _ := mount.New()
+
+		// Setting up expectations for numOfParallelRequestsAllowed requests
+		mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(context.Context, string, *models.VolumeTrackingInfo) error {
+			startedChan <- struct{}{} // At this point limiter has been already acquired.
+			<-signalChan              // Waiting for the rest of the requests to error out.
+			return nil
+		}).Times(numOfParallelRequestsAllowed)
+		mockFCPClient.EXPECT().AttachVolumeRetry(
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		).Return(int64(0), nil).Times(numOfParallelRequestsAllowed)
+		mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(numOfParallelRequestsAllowed)
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockTrackingClient,
+			fcp:              mockFCPClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		var wg1, wg2 sync.WaitGroup
+
+		// Spinning up the go-routine for the first numOfParallelRequestsAllowed requests.
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			wg1.Add(1)
+			go func(index int) {
+				defer wg1.Done()
+				ctx, cancel := timedContext()
+				defer cancel()
+				err := plugin.nodeStageFCPVolume(ctx, requests[index], publishInfos[index])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		// Waiting on the signal to ensure that the first numOfParallelRequestsAllowed requests acquire the limiter.
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			<-startedChan
+		}
+
+		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
+			wg2.Add(1)
+			go func(index int) {
+				defer wg2.Done()
+				ctx, cancel := timedContext()
+				defer cancel()
+				err := plugin.nodeStageFCPVolume(ctx, requests[index], publishInfos[index])
+				assert.Error(t, err)
+			}(i)
+		}
+
+		wg2.Wait()
+
+		close(signalChan)
+
+		wg1.Wait()
+	})
+
+	// Test 3: Initializing SemahaphoreN, Sending more than what can be parallelized, but the extra one waits and succeeds.
+	t.Run("Test Case 3: Sending more than what can be parallelized, but the additional ones waits and succeeds.", func(t *testing.T) {
+		numOfRequests := 100
+		numOfParallelRequestsAllowed := maxNodeStageFCPVolumeOperations
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+
+		timedContext := func() (context.Context, context.CancelFunc) {
+			return context.WithTimeout(ctx, csiKubeletTimeout)
+		}
+
+		requests, publishInfos := createFCPStageRequests(numOfRequests)
+
+		startChan := make(chan struct{}, numOfParallelRequestsAllowed) // For synchronization only.
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockFCPClient := mock_fcp.NewMockFCP(ctrl)
+		mountClient, _ := mount.New()
+
+		// In multiple matching expectations, gomock picks the one which was declared first.
+		mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(context.Context, string, *models.VolumeTrackingInfo) error {
+			startChan <- struct{}{} // At this point limiter has been already acquired.
+			return nil
+		}).Times(numOfParallelRequestsAllowed)
+		mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(numOfRequests - numOfParallelRequestsAllowed)
+		mockFCPClient.EXPECT().AttachVolumeRetry(
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(0), nil).Times(numOfRequests)
+		mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(numOfRequests)
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockTrackingClient,
+			fcp:              mockFCPClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		for i := 0; i < numOfRequests; i++ {
+			go func(index int) {
+				defer wg.Done()
+				ctx, cancel := timedContext()
+				defer cancel()
+				err := plugin.nodeStageFCPVolume(ctx, requests[index], publishInfos[index])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		// Waiting on signal to ensure that the first numOfParallelRequestsAllowed requests acquire the lock.
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			<-startChan
+		}
+
+		wg.Wait()
+	})
+}
+
+// TestNodeUnstageFCPVolume_Multithreaded tests the multithreaded behavior of NodeUnstageFCPVolume
+func TestNodeUnstageFCPVolume_Multithreaded(t *testing.T) {
+	// Test 1: Sending requests within the limit of the limiter
+	t.Run("Test Case 1: Sending requests within the limit of the limiter", func(t *testing.T) {
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		defer func(fcUtils fcp.FcpReconcileUtils) {
+			fcpUtils = fcUtils
+		}(fcpUtils)
+
+		timedContext := func() (context.Context, context.CancelFunc) {
+			return context.WithTimeout(ctx, csiKubeletTimeout)
+		}
+
+		csiKubeletTimeout = 500 * time.Millisecond
+
+		requests, publishInfos := createFCPUnstageRequests(numOfRequests)
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockFCPReconcileUtilsClient := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+		mockFCP := mock_fcp.NewMockFCP(ctrl)
+
+		// Setting up expectations for each request
+		mockFCPReconcileUtilsClient.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(), gomock.Any()).Return(nil).Times(numOfRequests)
+		mockFCPReconcileUtilsClient.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(), gomock.Any()).Return(nil).Times(numOfRequests)
+		mockFCPReconcileUtilsClient.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{"sda", "sdb"}, nil).Times(numOfRequests)
+		mockFCP.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(nil, nil).Times(numOfRequests)
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			fcp:              mockFCP,
+		}
+
+		fcpUtils = mockFCPReconcileUtilsClient
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		// Modifying the limiter limit
+		plugin.limiterSharedMap[NodeUnstageFCPVolume], _ = limiter.New(ctx,
+			NodeUnstageFCPVolume,
+			limiter.TypeSemaphoreN,
+			limiter.WithSemaphoreNSize(ctx, numOfRequests),
+		)
+
+		for i := 0; i < numOfRequests; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				ctx, cancel := timedContext()
+				defer cancel()
+				_, err := plugin.nodeUnstageFCPVolumeRetry(ctx, requests[idx], publishInfos[idx], false)
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+
+	// Test 2: Sending more than what can be parallelized
+	t.Run("Test Case 2: Sending more than what can be parallelized", func(t *testing.T) {
+		numOfRequests := 100
+		numOfParallelRequestsAllowed := maxNodeUnstageFCPVolumeOperations
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		defer func(fcUtils fcp.FcpReconcileUtils) {
+			fcpUtils = fcUtils
+		}(fcpUtils)
+
+		timedContext := func() (context.Context, context.CancelFunc) {
+			return context.WithTimeout(ctx, csiKubeletTimeout)
+		}
+
+		csiKubeletTimeout = 100 * time.Millisecond
+
+		signalChan := make(chan struct{}, numOfParallelRequestsAllowed) // For synchronization only.
+		startChan := make(chan struct{})
+
+		requests, publishInfos := createFCPUnstageRequests(numOfRequests)
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockFCPReconcileUtilsClient := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+		mockFCP := mock_fcp.NewMockFCP(ctrl)
+
+		// Setting up expectations for numOfParallelRequestsAllowed requests
+		mockFCPReconcileUtilsClient.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(), gomock.Any()).Return(nil).Times(numOfParallelRequestsAllowed)
+		mockFCPReconcileUtilsClient.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(), gomock.Any()).Return(nil).Times(numOfParallelRequestsAllowed)
+		mockFCPReconcileUtilsClient.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{"sda", "sdb"}, nil).Times(numOfParallelRequestsAllowed)
+		mockFCP.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).
+			DoAndReturn(func(ctx context.Context, hostSessionMap []map[string]int, lunID int, fcpNodeName string, needFSType bool) (*models.ScsiDeviceInfo, error) {
+				startChan <- struct{}{} // At this point limiter has been already acquired.
+				<-signalChan
+				return nil, nil
+			}).Times(numOfParallelRequestsAllowed)
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			fcp:              mockFCP,
+		}
+
+		fcpUtils = mockFCPReconcileUtilsClient
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		var wg1, wg2 sync.WaitGroup
+
+		// Spinning up the go-routine for the first numOfParallelRequestsAllowed requests.
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			wg1.Add(1)
+			go func(index int) {
+				defer wg1.Done()
+				ctx, cancel := timedContext()
+				defer cancel()
+				_, err := plugin.nodeUnstageFCPVolumeRetry(ctx, requests[index], publishInfos[index], false)
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		// Waiting for the first numOfParallelRequestsAllowed requests to acquire the limiter
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			<-startChan
+		}
+
+		// Spinning up the rest of the requests, which should error out
+		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
+			wg2.Add(1)
+			go func(idx int) {
+				defer wg2.Done()
+				ctx, cancel := timedContext()
+				defer cancel()
+				_, err := plugin.nodeUnstageFCPVolumeRetry(ctx, requests[idx], publishInfos[idx], false)
+				assert.Error(t, err)
+			}(i)
+		}
+
+		wg2.Wait()
+
+		close(signalChan)
+
+		wg1.Wait()
+	})
+
+	// Test 3: Sending more than what can be parallelized, but additional ones wait and succeed
+	t.Run("Test Case 3: Sending more than what can be parallelized, but additional ones wait and succeed", func(t *testing.T) {
+		numOfRequests := 100
+		numOfParallelRequestsAllowed := maxNodeUnstageFCPVolumeOperations
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		defer func(fcUtils fcp.FcpReconcileUtils) {
+			fcpUtils = fcUtils
+		}(fcpUtils)
+
+		timedContext := func() (context.Context, context.CancelFunc) {
+			return context.WithTimeout(ctx, csiKubeletTimeout)
+		}
+
+		csiKubeletTimeout = 500 * time.Millisecond
+
+		startChan := make(chan struct{}, numOfParallelRequestsAllowed) // For synchronization only.
+
+		requests, publishInfos := createFCPUnstageRequests(numOfRequests)
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockFCPReconcileUtilsClient := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+		mockFCP := mock_fcp.NewMockFCP(ctrl)
+
+		// Setting up expectations for numOfParallelRequestsAllowed requests
+		mockFCPReconcileUtilsClient.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(), gomock.Any()).Return(nil).Times(numOfRequests)
+		mockFCPReconcileUtilsClient.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(), gomock.Any()).Return(nil).Times(numOfRequests)
+		mockFCPReconcileUtilsClient.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{"sda", "sdb"}, nil).Times(numOfRequests)
+		mockFCP.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).
+			DoAndReturn(func(ctx context.Context, hostSessionMap []map[string]int, lunID int, fcpNodeName string, needFSType bool) (*models.ScsiDeviceInfo, error) {
+				startChan <- struct{}{} // At this point limiter has been already acquired.
+				return nil, nil
+			}).Times(numOfParallelRequestsAllowed)
+		mockFCP.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(nil, nil).Times(numOfRequests - numOfParallelRequestsAllowed)
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			fcp:              mockFCP,
+		}
+
+		fcpUtils = mockFCPReconcileUtilsClient
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		// Spinning up go-routines for the first numOfParallelRequestsAllowed requests
+		for i := 0; i < numOfRequests; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				ctx, cancel := timedContext()
+				defer cancel()
+				_, err := plugin.nodeUnstageFCPVolumeRetry(ctx, requests[idx], publishInfos[idx], false)
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		// Waiting for the first numOfParallelRequestsAllowed requests to acquire the limiter
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			<-startChan
+		}
+
+		wg.Wait()
+	})
+}
+
+// TestNodePublishFCPVolume_Multithreaded tests the multithreaded behavior of NodePublishFCPVolume
+func TestNodePublishFCPVolume_Multithreaded(t *testing.T) {
+	// Test 1: Sending requests within the limit of the limiter
+	t.Run("Test Case 1: Sending requests within the limit of the limiter", func(t *testing.T) {
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		defer func(fcUtils fcp.FcpReconcileUtils) {
+			fcpUtils = fcUtils
+		}(fcpUtils)
+
+		timedContext := func() (context.Context, context.CancelFunc) {
+			return context.WithTimeout(ctx, csiKubeletTimeout)
+		}
+
+		csiKubeletTimeout = 500 * time.Millisecond
+
+		requests := createFCPPublishRequests(numOfRequests, false)
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+
+		// Setting up expectations for each request
+		for i := 0; i < numOfRequests; i++ {
+			volumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeFCPVolumePublishInfo).Build(),
+			}
+			mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), requests[i].VolumeId).Return(volumeTrackingInfo, nil).Times(1)
+		}
+		mockMount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(numOfRequests)
+		mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(numOfRequests)
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			fs:               filesystem.New(mockMount),
+			nodeHelper:       mockNodeHelper,
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		// Modifying the limiter limit
+		plugin.limiterSharedMap[NodePublishFCPVolume], _ = limiter.New(ctx,
+			NodePublishFCPVolume,
+			limiter.TypeSemaphoreN,
+			limiter.WithSemaphoreNSize(ctx, numOfRequests),
+		)
+
+		var wg sync.WaitGroup
+		wg.Add(len(requests))
+
+		for i := 0; i < len(requests); i++ {
+			go func(idx int) {
+				defer wg.Done()
+				ctx, cancel := timedContext()
+				defer cancel()
+				_, err := plugin.nodePublishFCPVolume(ctx, requests[idx])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+
+	// Test 2: Sending more than what can be parallelized
+	t.Run("Test Case 2: Sending more than what can be parallelized", func(t *testing.T) {
+		numOfRequests := 100
+		numOfParallelRequestsAllowed := maxNodePublishFCPVolumeOperations
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		defer func(fcUtils fcp.FcpReconcileUtils) {
+			fcpUtils = fcUtils
+		}(fcpUtils)
+
+		timedContext := func() (context.Context, context.CancelFunc) {
+			return context.WithTimeout(ctx, csiKubeletTimeout)
+		}
+
+		csiKubeletTimeout = 100 * time.Millisecond
+
+		requests := createFCPPublishRequests(numOfRequests, false)
+
+		startedChan := make(chan struct{}, numOfParallelRequestsAllowed)
+		signalChan := make(chan struct{})
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+
+		// Setting up expectations for each request
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			volumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeFCPVolumePublishInfo).Build(),
+			}
+			mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), requests[i].VolumeId).DoAndReturn(func(context.Context, string) (*models.VolumeTrackingInfo, error) {
+				startedChan <- struct{}{} // At this point limiter has been already acquired.
+				<-signalChan              // Waiting for the rest of the requests to error out.
+				return volumeTrackingInfo, nil
+			}).Times(1)
+		}
+
+		mockMount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(numOfParallelRequestsAllowed)
+		mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(numOfParallelRequestsAllowed)
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			fs:               filesystem.New(mockMount),
+			nodeHelper:       mockNodeHelper,
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		var wg1, wg2 sync.WaitGroup
+
+		// Spinning up the go-routine for the first numOfParallelRequestsAllowed requests.
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			wg1.Add(1)
+			go func(index int) {
+				defer wg1.Done()
+				ctx, cancel := timedContext()
+				defer cancel()
+				_, err := plugin.nodePublishFCPVolume(ctx, requests[index])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		// Waiting on the signal to ensure that the first numOfParallelRequestsAllowed requests acquire the limiter.
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			<-startedChan
+		}
+
+		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
+			wg2.Add(1)
+			go func(index int) {
+				defer wg2.Done()
+				ctx, cancel := timedContext()
+				defer cancel()
+				_, err := plugin.nodePublishFCPVolume(ctx, requests[index])
+				assert.Error(t, err)
+			}(i)
+		}
+
+		wg2.Wait()
+
+		close(signalChan)
+
+		wg1.Wait()
+	})
+
+	// Test 3: Sending more than what can be parallelized, but additional ones wait and succeed
+	t.Run("Test Case 3: Sending more than what can be parallelized, but additional ones wait and succeed", func(t *testing.T) {
+		numOfRequests := 100
+		numOfParallelRequestsAllowed := maxNodePublishFCPVolumeOperations
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		defer func(fcUtils fcp.FcpReconcileUtils) {
+			fcpUtils = fcUtils
+		}(fcpUtils)
+
+		timedContext := func() (context.Context, context.CancelFunc) {
+			return context.WithTimeout(ctx, csiKubeletTimeout)
+		}
+
+		csiKubeletTimeout = 500 * time.Millisecond
+
+		requests := createFCPPublishRequests(numOfRequests, false)
+
+		startChan := make(chan struct{}, numOfParallelRequestsAllowed) // For synchronization only.
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+
+		// Setting up expectations for each request
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			volumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeFCPVolumePublishInfo).Build(),
+			}
+			mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), requests[i].VolumeId).DoAndReturn(func(context.Context, string) (*models.VolumeTrackingInfo, error) {
+				startChan <- struct{}{}
+				return volumeTrackingInfo, nil
+			}).Times(1)
+		}
+
+		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
+			volumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeFCPVolumePublishInfo).Build(),
+			}
+			mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), requests[i].VolumeId).Return(volumeTrackingInfo, nil).Times(1)
+		}
+
+		mockMount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(numOfRequests)
+		mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(numOfRequests)
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			fs:               filesystem.New(mockMount),
+			nodeHelper:       mockNodeHelper,
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		var wg sync.WaitGroup
+		wg.Add(len(requests))
+
+		for i := 0; i < numOfRequests; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				ctx, cancel := timedContext()
+				defer cancel()
+				_, err := plugin.nodePublishFCPVolume(ctx, requests[idx])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		// Waiting on the signal to ensure that the first maxNodeStageNFSVolumeOperations requests acquire the limiter.
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			<-startChan
+		}
+
+		wg.Wait()
+	})
+}
+
 // --------------------- Mix-Workflows multithreaded Unit Tests ---------------------
 
 func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
@@ -5861,6 +6985,152 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 			mockTrackingClient.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(volumeTrackingInfo, nil)
 			mockTrackingClient.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).Return(nil)
 		}
+		wg.Add(numOfRequests)
+		volumeIDs = rand.Perm(numOfRequests) // Randomizing the requests.
+		for i := 0; i < numOfRequests; i++ {
+			go func() {
+				defer wg.Done()
+				_, err := plugin.NodeUnstageVolume(context.Background(), nodeUnstageRequests2[volumeIDs[i]])
+				assert.NoError(t, err)
+			}()
+		}
+		wg.Wait()
+	})
+
+	t.Run("Test Case 4: Testing with FCP requests", func(t *testing.T) {
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		defer func(fcUtils fcp.FcpReconcileUtils) {
+			fcpUtils = fcUtils
+		}(fcpUtils)
+
+		csiNodeLockTimeout = 500 * time.Millisecond
+		csiKubeletTimeout = 500 * time.Millisecond
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockFCPClient := mock_fcp.NewMockFCP(ctrl)
+		mockFCPReconcileUtilsClient := mock_fcp.NewMockFcpReconcileUtils(gomock.NewController(t))
+		mountClient, _ := mount.New()
+
+		// ---- NodeStage nodeStageRequests ----
+		nodeStageRequests, publishInfos := createFCPStageRequests(numOfRequests)
+
+		// Setting up expectations for each requests
+		for i := 0; i < numOfRequests; i++ {
+			mockFCPClient.EXPECT().AttachVolumeRetry(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(int64(0), nil).Times(1)
+			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
+		}
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockTrackingClient,
+			fcp:              mockFCPClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		fcpUtils = mockFCPReconcileUtilsClient
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		// Spinning up go-routines for each request.
+		for i := 0; i < numOfRequests; i++ {
+			go func(index int) {
+				defer wg.Done()
+				_, err := plugin.NodeStageVolume(context.Background(), nodeStageRequests[index])
+				assert.NoError(t, err)
+			}(i)
+		}
+		wg.Wait()
+
+		// ---- Unstaging all those previously staged nodeStageRequests ----
+		nodeUnstageRequests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			// Using the same volumeID as nodeStage requests.
+			nodeUnstageRequests[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(nodeStageRequests[i].VolumeId).Build()
+		}
+
+		// Setting up mocks expectation for each request.
+		for i := 0; i < numOfRequests; i++ {
+			mockFCPReconcileUtilsClient.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			mockFCPReconcileUtilsClient.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			mockFCPReconcileUtilsClient.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{"sda", "sdb"}, nil).Times(1)
+			mockFCPClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(nil, nil).Times(1)
+
+			volumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: *publishInfos[i],
+			}
+			mockTrackingClient.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(volumeTrackingInfo, nil).Times(1)
+		}
+
+		wg.Add(numOfRequests)
+		volumeIDs := rand.Perm(numOfRequests) // Randomizing the requests.
+		for i := 0; i < numOfRequests; i++ {
+			// Spinning up go-routines for each request.
+			go func(index int) {
+				defer wg.Done()
+				_, err := plugin.NodeUnstageVolume(context.Background(), nodeUnstageRequests[volumeIDs[index]])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		// ---- Parallely creating another batch of 100 nodeStage requests ----
+		nodeStageRequests2, publishInfos2 := createFCPStageRequests(numOfRequests)
+
+		// Setting up expectations for each requests
+		for i := 0; i < numOfRequests; i++ {
+			mockFCPClient.EXPECT().AttachVolumeRetry(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(int64(0), nil).Times(1)
+			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
+		}
+
+		wg.Add(numOfRequests)
+		// Spinning up go-routines for each request.
+		for i := 0; i < numOfRequests; i++ {
+			go func(index int) {
+				defer wg.Done()
+				_, err := plugin.NodeStageVolume(context.Background(), nodeStageRequests2[index])
+				assert.NoError(t, err)
+			}(i)
+		}
+		wg.Wait()
+
+		// ---- Unstaging all those previously staged nodeStageRequests of 2nd batch ----
+		nodeUnstageRequests2 := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			// Using the same volumeID as nodeStage requests.
+			nodeUnstageRequests2[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(nodeStageRequests2[i].VolumeId).Build()
+		}
+
+		// Setting up mocks expectation for each request.
+		for i := 0; i < numOfRequests; i++ {
+			mockFCPReconcileUtilsClient.EXPECT().GetFCPHostSessionMapForTarget(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			mockFCPReconcileUtilsClient.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			mockFCPReconcileUtilsClient.EXPECT().GetDevicesForLUN(gomock.Any()).Return([]string{"sda", "sdb"}, nil).Times(1)
+			mockFCPClient.EXPECT().GetDeviceInfoForLUN(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(nil, nil).Times(1)
+
+			volumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: *publishInfos2[i],
+			}
+			mockTrackingClient.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(volumeTrackingInfo, nil).Times(1)
+		}
+
 		wg.Add(numOfRequests)
 		volumeIDs = rand.Perm(numOfRequests) // Randomizing the requests.
 		for i := 0; i < numOfRequests; i++ {
@@ -6979,9 +8249,9 @@ func NewVolumePublishInfoBuilder(volumePublishInfoType VolumePublishInfoType) *V
 				SANType:        sa.FCP,
 				VolumeAccessInfo: models.VolumeAccessInfo{
 					FCPAccessInfo: models.FCPAccessInfo{
-						FCPLunNumber:           0,
+						FCPLunNumber:           rand.Int31n(100),
 						FCPIgroup:              "ubuntu-linux-22-04-02-desktop-13064d2e-2415-452e-870b-2c08c94f9447",
-						FCPLunSerial:           "yocwC+Ws3R1K",
+						FCPLunSerial:           uuid.New().String(),
 						FibreChannelAccessInfo: models.FibreChannelAccessInfo{FCTargetWWNN: "20:00:00:00:00:00:00:01"},
 					},
 				},
@@ -7121,7 +8391,7 @@ func NewNodePublishVolumeRequestBuilder(requestType NodePublishVolumeRequestType
 					"password": "password",
 				},
 				VolumeContext: map[string]string{
-					"internalName": "pvc-12345-123",
+					"internalName": fmt.Sprintf("pvc-%s", uuid.New().String()),
 				},
 				Readonly: false,
 			},
@@ -7201,6 +8471,49 @@ func (u *NodeUnpublishVolumeRequestBuilder) Build() *csi.NodeUnpublishVolumeRequ
 	return u.request
 }
 
+// ------------------------ FCP Volume Multithreaded Tests Helper Functions ------------------------
+
+// createFCPStageRequests creates an array of FCP stage volume requests
+func createFCPStageRequests(numRequests int) ([]*csi.NodeStageVolumeRequest, []*models.VolumePublishInfo) {
+	requests := make([]*csi.NodeStageVolumeRequest, numRequests)
+	publishInfos := make([]*models.VolumePublishInfo, numRequests)
+	for i := 0; i < numRequests; i++ {
+		requests[i] = NewNodeStageVolumeRequestBuilder(TypeFCPRequest).Build()
+		publishInfo := NewVolumePublishInfoBuilder(TypeFCPVolumePublishInfo).Build()
+		publishInfos[i] = &publishInfo
+	}
+	return requests, publishInfos
+}
+
+// createFCPUnstageRequests creates an array of FCP unstage volume requests
+func createFCPUnstageRequests(numRequests int) ([]*csi.NodeUnstageVolumeRequest, []*models.VolumePublishInfo) {
+	requests := make([]*csi.NodeUnstageVolumeRequest, numRequests)
+	publishInfos := make([]*models.VolumePublishInfo, numRequests)
+	for i := 0; i < numRequests; i++ {
+		requests[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(uuid.NewString()).Build()
+		publishInfo := NewVolumePublishInfoBuilder(TypeFCPVolumePublishInfo).Build()
+		publishInfos[i] = &publishInfo
+	}
+	return requests, publishInfos
+}
+
+// createFCPPublishRequests creates an array of FCP publish volume requests
+func createFCPPublishRequests(numRequests int, isRawBlock bool) []*csi.NodePublishVolumeRequest {
+	requests := make([]*csi.NodePublishVolumeRequest, numRequests)
+	for i := 0; i < numRequests; i++ {
+		request := NewNodePublishVolumeRequestBuilder(FCPNodePublishVolumeRequestType).Build()
+		if isRawBlock {
+			request.VolumeCapability = &csi.VolumeCapability{
+				AccessType: &csi.VolumeCapability_Block{
+					Block: &csi.VolumeCapability_BlockVolume{},
+				},
+			}
+		}
+		requests[i] = request
+	}
+	return requests
+}
+
 func TestNodeStageFCPVolume(t *testing.T) {
 	type parameters struct {
 		getFCPClient           func() fcp.FCP
@@ -7238,11 +8551,14 @@ func TestNodeStageFCPVolume(t *testing.T) {
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			plugin := &Plugin{
-				command: execCmd.NewCommand(),
-				role:    CSINode,
-				aesKey:  params.aesKey,
-				fs:      filesystem.New(mountClient),
+				command:          execCmd.NewCommand(),
+				limiterSharedMap: make(map[string]limiter.Limiter),
+				role:             CSINode,
+				aesKey:           params.aesKey,
+				fs:               filesystem.New(mountClient),
 			}
+
+			plugin.InitializeNodeLimiter(ctx)
 
 			if params.getFCPClient != nil {
 				plugin.fcp = params.getFCPClient()

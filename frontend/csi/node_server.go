@@ -72,6 +72,9 @@ const (
 	maxNodeStageISCSIVolumeOperations   = 5
 	maxNodeUnstageISCSIVolumeOperations = 10
 	maxNodePublishISCSIVolumeOperations = 10
+	maxNodeStageFCPVolumeOperations     = 5
+	maxNodeUnstageFCPVolumeOperations   = 10
+	maxNodePublishFCPVolumeOperations   = 10
 	maxNodeExpandVolumeOperations       = 10
 
 	NodeStageNFSVolume   = "NodeStageNFSVolume"
@@ -85,6 +88,11 @@ const (
 	NodeStageISCSIVolume   = "NodeStageISCSIVolume"
 	NodeUnstageISCSIVolume = "NodeUnstageISCSIVolume"
 	NodePublishISCSIVolume = "NodePublishISCSIVolume"
+
+	// FCP Constants
+	NodeStageFCPVolume   = "NodeStageFCPVolume"
+	NodeUnstageFCPVolume = "NodeUnstageFCPVolume"
+	NodePublishFCPVolume = "NodePublishFCPVolume"
 
 	NodeUnpublishVolume = "NodeUnpublishVolume"
 	NodeExpandVolume    = "NodeExpandVolume"
@@ -562,8 +570,8 @@ func (p *Plugin) NodeExpandVolume(
 	}
 
 	{
-		// TODO(pshashan): Remove this POC once the FCP and NVMe protocols are parallelized.
-		// It currently enables parallelization for the iSCSI protocol while keeping FCP and NVMe serialized.
+		// TODO(pshashan): Remove this POC once the NVMe protocol is parallelized.
+		// It currently enables parallelization for the iSCSI and FCP protocol while keeping NVMe serialized.
 		protocol, err := getVolumeProtocolFromPublishInfo(&trackingInfo.VolumePublishInfo)
 		if err != nil {
 			return nil, status.Errorf(codes.FailedPrecondition, "unable to read protocol info from publish info; %s", err)
@@ -572,7 +580,7 @@ func (p *Plugin) NodeExpandVolume(
 		lockContext := "NodeExpandVolume"
 		if protocol == tridentconfig.Block {
 			switch trackingInfo.VolumePublishInfo.SANType {
-			case sa.NVMe, sa.FCP:
+			case sa.NVMe:
 				lockID = nodeLockID
 				lockContext = "NodeExpandVolume-" + req.GetVolumeId()
 			}
@@ -1303,15 +1311,13 @@ func (p *Plugin) readAllTrackingFiles(ctx context.Context) []models.VolumePublis
 func (p *Plugin) nodeStageFCPVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest, publishInfo *models.VolumePublishInfo,
 ) (err error) {
-	// Serializing all the parallel requests by relying on the constant var.
-	lockContext := "NodeStageSANFCPVolume-" + req.GetVolumeId()
-	defer locks.Unlock(ctx, lockContext, nodeLockID)
-	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
-		return status.Error(codes.Aborted, "request waited too long for the lock")
-	}
-
 	Logc(ctx).Debug(">>>> nodeStageFCPVolume")
 	defer Logc(ctx).Debug("<<<< nodeStageFCPVolume")
+
+	if err = p.limiterSharedMap[NodeStageFCPVolume].Wait(ctx); err != nil {
+		return err
+	}
+	defer p.limiterSharedMap[NodeStageFCPVolume].Release(ctx)
 
 	var lunID int32
 	lunID, err = convert.ToPositiveInt32(req.PublishContext["fcpLunNumber"])
@@ -1607,12 +1613,13 @@ func (p *Plugin) nodeUnstageFCPVolume(
 func (p *Plugin) nodeUnstageFCPVolumeRetry(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *models.VolumePublishInfo, force bool,
 ) (*csi.NodeUnstageVolumeResponse, error) {
-	// Serializing all the parallel requests by relying on the constant var.
-	lockContext := "NodeUnstageFCPVolume-" + req.GetVolumeId()
-	defer locks.Unlock(ctx, lockContext, nodeLockID)
-	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
-		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	Logc(ctx).Debug(">>>> nodeUnstageFCPVolumeRetry")
+	defer Logc(ctx).Debug("<<<< nodeUnstageFCPVolumeRetry")
+
+	if err := p.limiterSharedMap[NodeUnstageFCPVolume].Wait(ctx); err != nil {
+		return nil, err
 	}
+	defer p.limiterSharedMap[NodeUnstageFCPVolume].Release(ctx)
 
 	nodeUnstageFCPVolumeNotify := func(err error, duration time.Duration) {
 		Logc(ctx).WithField("increment", duration).Debug("Failed to unstage the volume, retrying.")
@@ -1641,12 +1648,13 @@ func (p *Plugin) nodeUnstageFCPVolumeRetry(
 func (p *Plugin) nodePublishFCPVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
-	// Serializing all the parallel requests by relying on the constant var.
-	lockContext := "NodePublishFCPVolume-" + req.GetVolumeId()
-	defer locks.Unlock(ctx, lockContext, nodeLockID)
-	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
-		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	Logc(ctx).Debug(">>>> nodePublishFCPVolume")
+	defer Logc(ctx).Debug("<<<< nodePublishFCPVolume")
+
+	if err := p.limiterSharedMap[NodePublishFCPVolume].Wait(ctx); err != nil {
+		return nil, err
 	}
+	defer p.limiterSharedMap[NodePublishFCPVolume].Release(ctx)
 
 	var err error
 
@@ -2968,6 +2976,9 @@ func (p *Plugin) nodeStageNVMeVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
 	publishInfo *models.VolumePublishInfo,
 ) error {
+	Logc(ctx).Debug(">>>> nodeStageNVMeVolume")
+	defer Logc(ctx).Debug("<<<< nodeStageNVMeVolume")
+
 	// Serializing all the parallel requests by relying on the constant var.
 	lockContext := "NodeStageSANNVMeVolume-" + req.GetVolumeId()
 	defer locks.Unlock(ctx, lockContext, nodeLockID)
@@ -3041,6 +3052,9 @@ func (p *Plugin) nodeStageNVMeVolume(
 func (p *Plugin) nodeUnstageNVMeVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest, publishInfo *models.VolumePublishInfo, force bool,
 ) (*csi.NodeUnstageVolumeResponse, error) {
+	Logc(ctx).Debug(">>>> nodeUnstageNVMeVolume")
+	defer Logc(ctx).Debug("<<<< nodeUnstageNVMeVolume")
+
 	// Serializing all the parallel requests by relying on the constant var.
 	lockContext := "NodeUnstageNVMeVolume-" + req.GetVolumeId()
 	defer locks.Unlock(ctx, lockContext, nodeLockID)
@@ -3184,6 +3198,9 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 func (p *Plugin) nodePublishNVMeVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
 ) (*csi.NodePublishVolumeResponse, error) {
+	Logc(ctx).Debug(">>>> nodePublishNVMeVolume")
+	defer Logc(ctx).Debug("<<<< nodePublishNVMeVolume")
+
 	// Serializing all the parallel requests by relying on the constant var.
 	lockContext := "NodePublishNVMeVolume-" + req.GetVolumeId()
 	defer locks.Unlock(ctx, lockContext, nodeLockID)

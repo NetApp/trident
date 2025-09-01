@@ -720,7 +720,7 @@ func (p *Plugin) InitializeNodeLimiter(ctx context.Context) {
 		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodePublishSMBVolume, err)
 	}
 
-	// Initializing iscsi limiters:
+	// Initializing iSCSI limiters:
 	if p.limiterSharedMap[NodeStageISCSIVolume], err = limiter.New(ctx,
 		NodeStageISCSIVolume,
 		limiter.TypeSemaphoreN,
@@ -743,6 +743,31 @@ func (p *Plugin) InitializeNodeLimiter(ctx context.Context) {
 		limiter.WithSemaphoreNSize(ctx, maxNodePublishISCSIVolumeOperations),
 	); err != nil {
 		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodePublishISCSIVolume, err)
+	}
+
+	// Initializing FCP limiters:
+	if p.limiterSharedMap[NodeStageFCPVolume], err = limiter.New(ctx,
+		NodeStageFCPVolume,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodeStageFCPVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodeStageFCPVolume, err)
+	}
+
+	if p.limiterSharedMap[NodeUnstageFCPVolume], err = limiter.New(ctx,
+		NodeUnstageFCPVolume,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodeUnstageFCPVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodeUnstageFCPVolume, err)
+	}
+
+	if p.limiterSharedMap[NodePublishFCPVolume], err = limiter.New(ctx,
+		NodePublishFCPVolume,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodePublishFCPVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodePublishFCPVolume, err)
 	}
 
 	// NodeUnpublish is common for all protocols
