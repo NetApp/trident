@@ -29,6 +29,7 @@ import (
 	"github.com/google/uuid"
 
 	tridentconfig "github.com/netapp/trident/config"
+	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/capacity"
 	"github.com/netapp/trident/pkg/collection"
@@ -150,6 +151,9 @@ var (
 	smbShareDeleteACL        = map[string]string{DefaultSMBAccessControlUser: DefaultSMBAccessControlUserType}
 	lunMutex                 = locks.NewGCNamedMutex()
 	igroupMutex              = locks.NewGCNamedMutex()
+
+	duringVolCloneAfterSnapCreation1 = fiji.Register("duringVolCloneAfterSnapCreation1", "ontap_common")
+	duringVolCloneAfterSnapCreation2 = fiji.Register("duringVolCloneAfterSnapCreation2", "ontap_common")
 )
 
 // CleanBackendName removes brackets and replaces colons with periods to avoid regex parsing errors.
@@ -4271,14 +4275,59 @@ func ConstructGroupSnapshot(
 	return storage.NewGroupSnapshot(config, snapshotIDs, dateCreated), nil
 }
 
+func cleanupFailedCloneFlexVol(ctx context.Context, client api.OntapAPI, err error, clonedVolName, sourceVol,
+	createdSnapName string,
+) {
+	// Return if err is nil or if the error is a volume exists error.
+	if err == nil || drivers.IsVolumeExistsError(err) {
+		return
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"clonedVolume": clonedVolName,
+		"sourceVol":    sourceVol,
+		"snapshot":     createdSnapName,
+	}).Debug("Cleaning up after failed flexvol clone.")
+
+	if clonedVolName != "" {
+		Logc(ctx).WithFields(LogFields{
+			"volume": clonedVolName,
+		}).Debug("Deleting volume after failed flexvol clone.")
+
+		if destroyErr := client.VolumeDestroy(ctx, clonedVolName, true, true); destroyErr != nil {
+			Logc(ctx).WithError(destroyErr).Warn("Unable to delete volume after failed volume clone.")
+		}
+	}
+
+	if createdSnapName != "" {
+		Logc(ctx).WithFields(LogFields{
+			"snapshot": createdSnapName,
+		}).Debug("Deleting snapshot after failed flexvol clone.")
+
+		if snapDeleteErr := client.VolumeSnapshotDelete(ctx, createdSnapName, sourceVol); snapDeleteErr != nil {
+			Logc(ctx).WithError(snapDeleteErr).Warn("Unable to delete snapshot after failed volume clone.")
+		}
+	}
+}
+
 // cloneFlexvol creates a volume clone
 func cloneFlexvol(
 	ctx context.Context, cloneVolConfig *storage.VolumeConfig, labels string, split bool,
 	config *drivers.OntapStorageDriverConfig, client api.OntapAPI, qosPolicyGroup api.QosPolicyGroup,
 ) error {
+	// Vars used in failed clone cleanup
+	var err error
+	var clonedVolName string   // Holds the cloned volume name
+	var createdSnapName string // Holds the snapshot name of a Trident created snapshot
+
 	name := cloneVolConfig.InternalName
 	source := cloneVolConfig.CloneSourceVolumeInternal
 	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
+
+	// Cleanup cloned volume and snapshots we created if we error
+	defer func() {
+		cleanupFailedCloneFlexVol(ctx, client, err, clonedVolName, source, createdSnapName)
+	}()
 
 	fields := LogFields{
 		"Method":   "cloneFlexvol",
@@ -4308,13 +4357,19 @@ func cloneFlexvol(
 		if err = client.VolumeSnapshotCreate(ctx, snapshot, source); err != nil {
 			return err
 		}
+		createdSnapName = snapshot
 		cloneVolConfig.CloneSourceSnapshotInternal = snapshot
+	}
+
+	if err = duringVolCloneAfterSnapCreation1.Inject(); err != nil {
+		return err
 	}
 
 	// Create the clone based on a snapshot
 	if err = client.VolumeCloneCreate(ctx, name, source, snapshot, false); err != nil {
 		return err
 	}
+	clonedVolName = name
 
 	desiredStates, abortStates := []string{"online"}, []string{"error"}
 	volState, err := client.VolumeWaitForStates(ctx, name, desiredStates, abortStates, maxFlexvolCloneWait)
@@ -4335,14 +4390,18 @@ func cloneFlexvol(
 
 	// Set the QoS Policy if necessary
 	if qosPolicyGroup.Kind != api.InvalidQosPolicyGroupKind {
-		if err := client.VolumeSetQosPolicyGroupName(ctx, name, qosPolicyGroup); err != nil {
+		if err = client.VolumeSetQosPolicyGroupName(ctx, name, qosPolicyGroup); err != nil {
 			return err
 		}
 	}
 
+	if err = duringVolCloneAfterSnapCreation2.Inject(); err != nil {
+		return err
+	}
+
 	// Split the clone if requested
 	if split {
-		if err := client.VolumeCloneSplitStart(ctx, name); err != nil {
+		if err = client.VolumeCloneSplitStart(ctx, name); err != nil {
 			return fmt.Errorf("error splitting clone: %v", err)
 		}
 	}

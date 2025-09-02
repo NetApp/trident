@@ -12789,6 +12789,7 @@ func TestNodeUnstageFCPVolume(t *testing.T) {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
 				mockNodeHelper.EXPECT().DeleteTrackingInfo(gomock.Any(),
 					gomock.Any()).Return(nil).AnyTimes()
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(&models.VolumeTrackingInfo{}, nil).AnyTimes()
 				return mockNodeHelper
 			},
 			setupFCPMock: func() fcp.FCP {
