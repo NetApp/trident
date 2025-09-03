@@ -4257,7 +4257,7 @@ func TestInitializeSANDriver(t *testing.T) {
 
 func TestEMSHeartbeat(t *testing.T) {
 	ctx := context.Background()
-	mockAPI, driver := newMockOntapNASDriver(t)
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	driver.telemetry = &Telemetry{
 		Plugin: driver.Name(),
@@ -5275,7 +5275,7 @@ func TestGetVolumeOptsCommon_NoVolumeOptsReturned(t *testing.T) {
 }
 
 func TestTelemetryString(t *testing.T) {
-	mockAPI, driver := newMockOntapNASDriver(t)
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	driver.telemetry = &Telemetry{
 		Plugin: driver.Name(),
@@ -5293,7 +5293,7 @@ func TestTelemetryString(t *testing.T) {
 }
 
 func TestGoString(t *testing.T) {
-	mockAPI, driver := newMockOntapNASDriver(t)
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	driver.telemetry = &Telemetry{
 		Plugin: driver.Name(),
@@ -9340,7 +9340,7 @@ func TestDeleteAutomaticSnapshot(t *testing.T) {
 				snapshotDeleteAPIFunctionCalled = true
 				return params.snapshotDeleteError
 			}
-			_, storageDriver := newMockOntapNASDriver(t)
+			_, storageDriver := newMockOntapNASDriverWithSVM(t, "SVM1")
 
 			deleteAutomaticSnapshot(context.Background(), storageDriver, params.volDeleteError,
 				&params.volConfig, mockAPISnapshotDeleteFunction)

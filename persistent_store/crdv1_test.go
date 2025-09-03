@@ -1270,3 +1270,832 @@ func TestBackend_RemoveFinalizers(t *testing.T) {
 	}
 }
 */
+
+// Test GetType method
+func TestCRDClientV1_GetType(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	storeType := crdClient.GetType()
+	assert.Equal(t, CRDV1Store, storeType)
+}
+
+// Test GetConfig method
+func TestCRDClientV1_GetConfig(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	config := crdClient.GetConfig()
+	assert.NotNil(t, config)
+}
+
+// Test Stop method
+func TestCRDClientV1_Stop(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	err := crdClient.Stop()
+	assert.NoError(t, err)
+}
+
+// Test Has* methods
+func TestCRDClientV1_HasBackends_True(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	// Add a backend using existing pattern
+	nfsConfig := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: config.OntapNASStorageDriverName,
+		},
+		ManagementLIF: "10.0.0.4",
+		DataLIF:       "10.0.0.100",
+		SVM:           "svm1",
+		Username:      "admin",
+		Password:      "netapp",
+	}
+	nfsBackend := &storage.StorageBackend{}
+	nfsBackend.SetDriver(&ontap.NASStorageDriver{Config: nfsConfig})
+	nfsBackend.SetName("test-backend")
+	nfsBackend.SetBackendUUID(uuid.New().String())
+
+	err := crdClient.AddBackend(ctx(), nfsBackend)
+	assert.NoError(t, err)
+
+	hasBackends, err := crdClient.HasBackends(ctx())
+	assert.NoError(t, err)
+	assert.True(t, hasBackends)
+}
+
+func TestCRDClientV1_HasBackends_False(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	hasBackends, err := crdClient.HasBackends(ctx())
+	assert.NoError(t, err)
+	assert.False(t, hasBackends)
+}
+
+func TestCRDClientV1_HasVolumes_True(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	// Add a volume using existing pattern
+	volConfig := &storage.VolumeConfig{
+		Version:      config.OrchestratorAPIVersion,
+		Name:         "test-volume",
+		Size:         "1GB",
+		Protocol:     config.File,
+		StorageClass: "gold",
+	}
+	vol := &storage.Volume{
+		Config:      volConfig,
+		BackendUUID: uuid.New().String(),
+		Pool:        storagePool,
+	}
+
+	err := crdClient.AddVolume(ctx(), vol)
+	assert.NoError(t, err)
+
+	hasVolumes, err := crdClient.HasVolumes(ctx())
+	assert.NoError(t, err)
+	assert.True(t, hasVolumes)
+}
+
+func TestCRDClientV1_HasVolumes_False(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	hasVolumes, err := crdClient.HasVolumes(ctx())
+	assert.NoError(t, err)
+	assert.False(t, hasVolumes)
+}
+
+func TestCRDClientV1_HasStorageClasses_True(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	// Add a storage class using existing pattern
+	scConfig := &storageclass.Config{
+		Version: config.OrchestratorAPIVersion,
+		Name:    "test-sc",
+		Attributes: map[string]storageattribute.Request{
+			storageattribute.IOPS:             storageattribute.NewIntRequest(40),
+			storageattribute.Snapshots:        storageattribute.NewBoolRequest(true),
+			storageattribute.ProvisioningType: storageattribute.NewStringRequest("thin"),
+		},
+	}
+	sc := storageclass.New(scConfig)
+
+	err := crdClient.AddStorageClass(ctx(), sc)
+	assert.NoError(t, err)
+
+	hasStorageClasses, err := crdClient.HasStorageClasses(ctx())
+	assert.NoError(t, err)
+	assert.True(t, hasStorageClasses)
+}
+
+func TestCRDClientV1_HasStorageClasses_False(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	hasStorageClasses, err := crdClient.HasStorageClasses(ctx())
+	assert.NoError(t, err)
+	assert.False(t, hasStorageClasses)
+}
+
+func TestCRDClientV1_HasVolumeTransactions_True(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	// Add a volume transaction using existing pattern
+	volConfig := &storage.VolumeConfig{
+		Version:      config.OrchestratorAPIVersion,
+		Name:         "test-txn-volume",
+		Size:         "1GB",
+		Protocol:     config.File,
+		StorageClass: "gold",
+	}
+	txn := &storage.VolumeTransaction{
+		Config: volConfig,
+		Op:     storage.AddVolume,
+	}
+
+	err := crdClient.AddVolumeTransaction(ctx(), txn)
+	assert.NoError(t, err)
+
+	hasTransactions, err := crdClient.HasVolumeTransactions(ctx())
+	assert.NoError(t, err)
+	assert.True(t, hasTransactions)
+}
+
+func TestCRDClientV1_HasVolumeTransactions_False(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	hasTransactions, err := crdClient.HasVolumeTransactions(ctx())
+	assert.NoError(t, err)
+	assert.False(t, hasTransactions)
+}
+
+// Test IsBackendDeleting method
+func TestCRDClientV1_IsBackendDeleting_False(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	nfsConfig := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: config.OntapNASStorageDriverName,
+		},
+		ManagementLIF: "10.0.0.4",
+		DataLIF:       "10.0.0.100",
+		SVM:           "svm1",
+		Username:      "admin",
+		Password:      "netapp",
+	}
+	nfsBackend := &storage.StorageBackend{}
+	nfsBackend.SetDriver(&ontap.NASStorageDriver{Config: nfsConfig})
+	nfsBackend.SetName("test-backend")
+	nfsBackend.SetBackendUUID(uuid.New().String())
+
+	err := crdClient.AddBackend(ctx(), nfsBackend)
+	assert.NoError(t, err)
+
+	isDeleting := crdClient.IsBackendDeleting(ctx(), nfsBackend)
+	assert.False(t, isDeleting)
+}
+
+func TestCRDClientV1_IsBackendDeleting_NotFound(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	nfsConfig := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: config.OntapNASStorageDriverName,
+		},
+		ManagementLIF: "10.0.0.4",
+		DataLIF:       "10.0.0.100",
+		SVM:           "svm1",
+		Username:      "admin",
+		Password:      "netapp",
+	}
+	nfsBackend := &storage.StorageBackend{}
+	nfsBackend.SetDriver(&ontap.NASStorageDriver{Config: nfsConfig})
+	nfsBackend.SetName("test-backend")
+	nfsBackend.SetBackendUUID(uuid.New().String())
+
+	isDeleting := crdClient.IsBackendDeleting(ctx(), nfsBackend)
+	assert.False(t, isDeleting)
+}
+
+// Test GetNodes method
+func TestCRDClientV1_GetNodes_Success(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	// Add some nodes
+	node1 := &models.Node{
+		Name:    "node1",
+		IQN:     "iqn.test1",
+		IPs:     []string{"192.168.1.1"},
+		Deleted: false,
+	}
+	node2 := &models.Node{
+		Name:    "node2",
+		IQN:     "iqn.test2",
+		IPs:     []string{"192.168.1.2"},
+		Deleted: false,
+	}
+
+	err := crdClient.AddOrUpdateNode(ctx(), node1)
+	assert.NoError(t, err)
+	err = crdClient.AddOrUpdateNode(ctx(), node2)
+	assert.NoError(t, err)
+
+	nodes, err := crdClient.GetNodes(ctx())
+	assert.NoError(t, err)
+	assert.Len(t, nodes, 2)
+
+	nodeNames := []string{nodes[0].Name, nodes[1].Name}
+	assert.Contains(t, nodeNames, "node1")
+	assert.Contains(t, nodeNames, "node2")
+}
+
+func TestCRDClientV1_GetNodes_Empty(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	nodes, err := crdClient.GetNodes(ctx())
+	assert.NoError(t, err)
+	assert.Empty(t, nodes)
+}
+
+// Test DeleteBackends method
+func TestCRDClientV1_DeleteBackends_Success(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	// Add some backends
+	nfsConfig1 := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: config.OntapNASStorageDriverName,
+		},
+		ManagementLIF: "10.0.0.4",
+		DataLIF:       "10.0.0.100",
+		SVM:           "svm1",
+		Username:      "admin",
+		Password:      "netapp",
+	}
+	backend1 := &storage.StorageBackend{}
+	backend1.SetDriver(&ontap.NASStorageDriver{Config: nfsConfig1})
+	backend1.SetName("backend1")
+	backend1.SetBackendUUID(uuid.New().String())
+
+	nfsConfig2 := drivers.OntapStorageDriverConfig{
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			StorageDriverName: config.OntapNASStorageDriverName,
+		},
+		ManagementLIF: "10.0.0.5",
+		DataLIF:       "10.0.0.101",
+		SVM:           "svm2",
+		Username:      "admin",
+		Password:      "netapp",
+	}
+	backend2 := &storage.StorageBackend{}
+	backend2.SetDriver(&ontap.NASStorageDriver{Config: nfsConfig2})
+	backend2.SetName("backend2")
+	backend2.SetBackendUUID(uuid.New().String())
+
+	err := crdClient.AddBackend(ctx(), backend1)
+	assert.NoError(t, err)
+	err = crdClient.AddBackend(ctx(), backend2)
+	assert.NoError(t, err)
+
+	err = crdClient.DeleteBackends(ctx())
+	assert.NoError(t, err)
+}
+
+// Test GetStorageClasses method
+func TestCRDClientV1_GetStorageClasses_Success(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	// Add some storage classes
+	scConfig1 := &storageclass.Config{
+		Version: config.OrchestratorAPIVersion,
+		Name:    "sc1",
+		Attributes: map[string]storageattribute.Request{
+			storageattribute.IOPS:             storageattribute.NewIntRequest(40),
+			storageattribute.Snapshots:        storageattribute.NewBoolRequest(true),
+			storageattribute.ProvisioningType: storageattribute.NewStringRequest("thin"),
+		},
+	}
+	sc1 := storageclass.New(scConfig1)
+
+	scConfig2 := &storageclass.Config{
+		Version: config.OrchestratorAPIVersion,
+		Name:    "sc2",
+		Attributes: map[string]storageattribute.Request{
+			storageattribute.IOPS:             storageattribute.NewIntRequest(80),
+			storageattribute.Snapshots:        storageattribute.NewBoolRequest(false),
+			storageattribute.ProvisioningType: storageattribute.NewStringRequest("thick"),
+		},
+	}
+	sc2 := storageclass.New(scConfig2)
+
+	err := crdClient.AddStorageClass(ctx(), sc1)
+	assert.NoError(t, err)
+	err = crdClient.AddStorageClass(ctx(), sc2)
+	assert.NoError(t, err)
+
+	storageClasses, err := crdClient.GetStorageClasses(ctx())
+	assert.NoError(t, err)
+	assert.Len(t, storageClasses, 2)
+
+	scNames := []string{storageClasses[0].GetName(), storageClasses[1].GetName()}
+	assert.Contains(t, scNames, "sc1")
+	assert.Contains(t, scNames, "sc2")
+}
+
+func TestCRDClientV1_GetStorageClasses_Empty(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	storageClasses, err := crdClient.GetStorageClasses(ctx())
+	assert.NoError(t, err)
+	assert.Empty(t, storageClasses)
+}
+
+// Test UpdateVolumeTransaction method
+func TestCRDClientV1_UpdateVolumeTransaction_Success(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	// Create initial transaction
+	volConfig := &storage.VolumeConfig{
+		Version:      config.OrchestratorAPIVersion,
+		Name:         "test-txn-volume",
+		Size:         "1GB",
+		Protocol:     config.File,
+		StorageClass: "gold",
+	}
+	txn := &storage.VolumeTransaction{
+		Config: volConfig,
+		Op:     storage.AddVolume,
+	}
+
+	err := crdClient.AddVolumeTransaction(ctx(), txn)
+	assert.NoError(t, err)
+
+	// Update the transaction
+	txn.Op = storage.DeleteVolume
+	err = crdClient.UpdateVolumeTransaction(ctx(), txn)
+	assert.NoError(t, err)
+
+	// Verify update
+	retrievedTxn, err := crdClient.GetVolumeTransaction(ctx(), txn)
+	assert.NoError(t, err)
+	assert.Equal(t, storage.DeleteVolume, retrievedTxn.Op)
+}
+
+func TestCRDClientV1_UpdateVolumeTransaction_NotFound(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	volConfig := &storage.VolumeConfig{
+		Version:      config.OrchestratorAPIVersion,
+		Name:         "test-txn-volume",
+		Size:         "1GB",
+		Protocol:     config.File,
+		StorageClass: "gold",
+	}
+	txn := &storage.VolumeTransaction{
+		Config: volConfig,
+		Op:     storage.AddVolume,
+	}
+
+	err := crdClient.UpdateVolumeTransaction(ctx(), txn)
+	assert.Error(t, err)
+}
+
+// Test Volume Publication methods
+func TestCRDClientV1_AddVolumePublication_Success(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	volumePublication := &models.VolumePublication{
+		Name:       "test-volume-publication",
+		VolumeName: "test-volume",
+		NodeName:   "test-node",
+		ReadOnly:   false,
+		AccessMode: 1,
+	}
+
+	err := crdClient.AddVolumePublication(ctx(), volumePublication)
+	assert.NoError(t, err)
+
+	// Verify it was added
+	retrieved, err := crdClient.GetVolumePublication(ctx(), volumePublication.Name)
+	assert.NoError(t, err)
+	assert.Equal(t, volumePublication.Name, retrieved.Name)
+	assert.Equal(t, volumePublication.VolumeName, retrieved.VolumeName)
+	assert.Equal(t, volumePublication.NodeName, retrieved.NodeName)
+}
+
+func TestCRDClientV1_UpdateVolumePublication_Success(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	volumePublication := &models.VolumePublication{
+		Name:       "test-volume-publication",
+		VolumeName: "test-volume",
+		NodeName:   "test-node",
+		ReadOnly:   false,
+		AccessMode: 1,
+	}
+
+	// Add initial publication
+	err := crdClient.AddVolumePublication(ctx(), volumePublication)
+	assert.NoError(t, err)
+
+	// Update it
+	volumePublication.ReadOnly = true
+	err = crdClient.UpdateVolumePublication(ctx(), volumePublication)
+	assert.NoError(t, err)
+
+	// Verify update
+	retrieved, err := crdClient.GetVolumePublication(ctx(), volumePublication.Name)
+	assert.NoError(t, err)
+	assert.True(t, retrieved.ReadOnly)
+}
+
+func TestCRDClientV1_UpdateVolumePublication_NotFound(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	volumePublication := &models.VolumePublication{
+		Name:       "test-volume-publication",
+		VolumeName: "test-volume",
+		NodeName:   "test-node",
+		ReadOnly:   false,
+		AccessMode: 1,
+	}
+
+	err := crdClient.UpdateVolumePublication(ctx(), volumePublication)
+	assert.Error(t, err)
+}
+
+func TestCRDClientV1_GetVolumePublication_Success(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	volumePublication := &models.VolumePublication{
+		Name:       "test-volume-publication",
+		VolumeName: "test-volume",
+		NodeName:   "test-node",
+		ReadOnly:   false,
+		AccessMode: 1,
+	}
+
+	err := crdClient.AddVolumePublication(ctx(), volumePublication)
+	assert.NoError(t, err)
+
+	retrieved, err := crdClient.GetVolumePublication(ctx(), volumePublication.Name)
+	assert.NoError(t, err)
+	assert.Equal(t, volumePublication.Name, retrieved.Name)
+}
+
+func TestCRDClientV1_GetVolumePublication_NotFound(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	retrieved, err := crdClient.GetVolumePublication(ctx(), "nonexistent")
+	assert.Error(t, err)
+	assert.Nil(t, retrieved)
+}
+
+func TestCRDClientV1_GetVolumePublications_Success(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	// Add multiple volume publications
+	vp1 := &models.VolumePublication{
+		Name:       "vp1",
+		VolumeName: "test-volume1",
+		NodeName:   "test-node1",
+		ReadOnly:   false,
+		AccessMode: 1,
+	}
+	vp2 := &models.VolumePublication{
+		Name:       "vp2",
+		VolumeName: "test-volume2",
+		NodeName:   "test-node2",
+		ReadOnly:   false,
+		AccessMode: 1,
+	}
+
+	err := crdClient.AddVolumePublication(ctx(), vp1)
+	assert.NoError(t, err)
+	err = crdClient.AddVolumePublication(ctx(), vp2)
+	assert.NoError(t, err)
+
+	publications, err := crdClient.GetVolumePublications(ctx())
+	assert.NoError(t, err)
+	assert.Len(t, publications, 2)
+
+	pubNames := []string{publications[0].Name, publications[1].Name}
+	assert.Contains(t, pubNames, "vp1")
+	assert.Contains(t, pubNames, "vp2")
+}
+
+func TestCRDClientV1_GetVolumePublications_Empty(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	publications, err := crdClient.GetVolumePublications(ctx())
+	assert.NoError(t, err)
+	assert.Empty(t, publications)
+}
+
+func TestCRDClientV1_DeleteVolumePublication_Success(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	volumePublication := &models.VolumePublication{
+		Name:       "test-volume-publication",
+		VolumeName: "test-volume",
+		NodeName:   "test-node",
+		ReadOnly:   false,
+		AccessMode: 1,
+	}
+
+	err := crdClient.AddVolumePublication(ctx(), volumePublication)
+	assert.NoError(t, err)
+
+	err = crdClient.DeleteVolumePublication(ctx(), volumePublication)
+	assert.NoError(t, err)
+}
+
+func TestCRDClientV1_DeleteVolumePublication_NotFound(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	volumePublication := &models.VolumePublication{
+		Name:       "test-volume-publication",
+		VolumeName: "test-volume",
+		NodeName:   "test-node",
+		ReadOnly:   false,
+		AccessMode: 1,
+	}
+
+	err := crdClient.DeleteVolumePublication(ctx(), volumePublication)
+	assert.Error(t, err)
+}
+
+// Test UpdateSnapshot method
+func TestCRDClientV1_UpdateSnapshot_Success(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	// Create initial snapshot
+	snapConfig := &storage.SnapshotConfig{
+		Version:            config.OrchestratorAPIVersion,
+		Name:               "test-snapshot",
+		InternalName:       "test-snapshot-internal",
+		VolumeName:         "test-volume",
+		VolumeInternalName: "test-volume-internal",
+	}
+	snapshot := &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   time.Now().UTC().Format(time.RFC3339),
+		SizeBytes: 1000000000,
+		State:     storage.SnapshotStateOnline,
+	}
+
+	err := crdClient.AddSnapshot(ctx(), snapshot)
+	assert.NoError(t, err)
+
+	// Update the snapshot
+	snapshot.State = storage.SnapshotStateMissingVolume
+	err = crdClient.UpdateSnapshot(ctx(), snapshot)
+	assert.NoError(t, err)
+
+	// Verify update
+	retrieved, err := crdClient.GetSnapshot(ctx(), snapshot.Config.VolumeName, snapshot.Config.Name)
+	assert.NoError(t, err)
+	assert.Equal(t, storage.SnapshotStateMissingVolume, retrieved.State)
+}
+
+func TestCRDClientV1_UpdateSnapshot_NotFound(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	snapConfig := &storage.SnapshotConfig{
+		Version:            config.OrchestratorAPIVersion,
+		Name:               "test-snapshot",
+		InternalName:       "test-snapshot-internal",
+		VolumeName:         "test-volume",
+		VolumeInternalName: "test-volume-internal",
+	}
+	snapshot := &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   time.Now().UTC().Format(time.RFC3339),
+		SizeBytes: 1000000000,
+		State:     storage.SnapshotStateOnline,
+	}
+
+	err := crdClient.UpdateSnapshot(ctx(), snapshot)
+	assert.Error(t, err)
+}
+
+// Test Group Snapshot methods
+func TestCRDClientV1_AddGroupSnapshot_Success(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	groupSnapshot := &storage.GroupSnapshot{
+		GroupSnapshotConfig: &storage.GroupSnapshotConfig{
+			Version:     config.OrchestratorAPIVersion,
+			Name:        "test-group-snapshot",
+			VolumeNames: []string{"test-volume1", "test-volume2"},
+		},
+		SnapshotIDs: []string{"snapshot1", "snapshot2"},
+		Created:     time.Now().UTC().Format(time.RFC3339),
+	}
+
+	err := crdClient.AddGroupSnapshot(ctx(), groupSnapshot)
+	assert.NoError(t, err)
+
+	// Verify it was added
+	retrieved, err := crdClient.GetGroupSnapshot(ctx(), groupSnapshot.ID())
+	assert.NoError(t, err)
+	assert.Equal(t, groupSnapshot.ID(), retrieved.ID())
+}
+
+func TestCRDClientV1_GetGroupSnapshot_Success(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	groupSnapshot := &storage.GroupSnapshot{
+		GroupSnapshotConfig: &storage.GroupSnapshotConfig{
+			Version:     config.OrchestratorAPIVersion,
+			Name:        "test-group-snapshot",
+			VolumeNames: []string{"test-volume1", "test-volume2"},
+		},
+		SnapshotIDs: []string{"snapshot1", "snapshot2"},
+		Created:     time.Now().UTC().Format(time.RFC3339),
+	}
+
+	err := crdClient.AddGroupSnapshot(ctx(), groupSnapshot)
+	assert.NoError(t, err)
+
+	retrieved, err := crdClient.GetGroupSnapshot(ctx(), groupSnapshot.ID())
+	assert.NoError(t, err)
+	assert.Equal(t, groupSnapshot.ID(), retrieved.ID())
+}
+
+func TestCRDClientV1_GetGroupSnapshot_NotFound(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	retrieved, err := crdClient.GetGroupSnapshot(ctx(), "nonexistent")
+	assert.Error(t, err)
+	assert.Nil(t, retrieved)
+}
+
+func TestCRDClientV1_GetGroupSnapshots_Success(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	// Add multiple group snapshots
+	gs1 := &storage.GroupSnapshot{
+		GroupSnapshotConfig: &storage.GroupSnapshotConfig{
+			Version:     config.OrchestratorAPIVersion,
+			Name:        "gs1",
+			VolumeNames: []string{"test-volume1", "test-volume2"},
+		},
+		SnapshotIDs: []string{"snapshot1", "snapshot2"},
+		Created:     time.Now().UTC().Format(time.RFC3339),
+	}
+	gs2 := &storage.GroupSnapshot{
+		GroupSnapshotConfig: &storage.GroupSnapshotConfig{
+			Version:     config.OrchestratorAPIVersion,
+			Name:        "gs2",
+			VolumeNames: []string{"test-volume3", "test-volume4"},
+		},
+		SnapshotIDs: []string{"snapshot3", "snapshot4"},
+		Created:     time.Now().UTC().Format(time.RFC3339),
+	}
+
+	err := crdClient.AddGroupSnapshot(ctx(), gs1)
+	assert.NoError(t, err)
+	err = crdClient.AddGroupSnapshot(ctx(), gs2)
+	assert.NoError(t, err)
+
+	groupSnapshots, err := crdClient.GetGroupSnapshots(ctx())
+	assert.NoError(t, err)
+	assert.Len(t, groupSnapshots, 2)
+
+	gsIDs := []string{groupSnapshots[0].ID(), groupSnapshots[1].ID()}
+	assert.Contains(t, gsIDs, gs1.ID())
+	assert.Contains(t, gsIDs, gs2.ID())
+}
+
+func TestCRDClientV1_GetGroupSnapshots_Empty(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	groupSnapshots, err := crdClient.GetGroupSnapshots(ctx())
+	assert.NoError(t, err)
+	assert.Empty(t, groupSnapshots)
+}
+
+func TestCRDClientV1_UpdateGroupSnapshot_Success(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	// Create initial group snapshot
+	groupSnapshot := &storage.GroupSnapshot{
+		GroupSnapshotConfig: &storage.GroupSnapshotConfig{
+			Version:     config.OrchestratorAPIVersion,
+			Name:        "test-group-snapshot",
+			VolumeNames: []string{"test-volume1", "test-volume2"},
+		},
+		SnapshotIDs: []string{"snapshot1", "snapshot2"},
+		Created:     time.Now().UTC().Format(time.RFC3339),
+	}
+
+	err := crdClient.AddGroupSnapshot(ctx(), groupSnapshot)
+	assert.NoError(t, err)
+
+	// Update the group snapshot
+	groupSnapshot.SnapshotIDs = append(groupSnapshot.SnapshotIDs, "snapshot3")
+	err = crdClient.UpdateGroupSnapshot(ctx(), groupSnapshot)
+	assert.NoError(t, err)
+
+	// Verify update
+	retrieved, err := crdClient.GetGroupSnapshot(ctx(), groupSnapshot.ID())
+	assert.NoError(t, err)
+	assert.Contains(t, retrieved.SnapshotIDs, "snapshot3")
+}
+
+func TestCRDClientV1_UpdateGroupSnapshot_NotFound(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	groupSnapshot := &storage.GroupSnapshot{
+		GroupSnapshotConfig: &storage.GroupSnapshotConfig{
+			Version:     config.OrchestratorAPIVersion,
+			Name:        "test-group-snapshot",
+			VolumeNames: []string{"test-volume1", "test-volume2"},
+		},
+		SnapshotIDs: []string{"snapshot1", "snapshot2"},
+		Created:     time.Now().UTC().Format(time.RFC3339),
+	}
+
+	err := crdClient.UpdateGroupSnapshot(ctx(), groupSnapshot)
+	assert.Error(t, err)
+}
+
+func TestCRDClientV1_DeleteGroupSnapshot_Success(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	groupSnapshot := &storage.GroupSnapshot{
+		GroupSnapshotConfig: &storage.GroupSnapshotConfig{
+			Version:     config.OrchestratorAPIVersion,
+			Name:        "test-group-snapshot",
+			VolumeNames: []string{"test-volume1", "test-volume2"},
+		},
+		SnapshotIDs: []string{"snapshot1", "snapshot2"},
+		Created:     time.Now().UTC().Format(time.RFC3339),
+	}
+
+	err := crdClient.AddGroupSnapshot(ctx(), groupSnapshot)
+	assert.NoError(t, err)
+
+	err = crdClient.DeleteGroupSnapshot(ctx(), groupSnapshot)
+	assert.NoError(t, err)
+
+	// Verify deletion
+	retrieved, err := crdClient.GetGroupSnapshot(ctx(), groupSnapshot.ID())
+	assert.Error(t, err)
+	assert.Nil(t, retrieved)
+}
+
+func TestCRDClientV1_DeleteGroupSnapshot_NotFound(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	groupSnapshot := &storage.GroupSnapshot{
+		GroupSnapshotConfig: &storage.GroupSnapshotConfig{
+			Version:     config.OrchestratorAPIVersion,
+			Name:        "test-group-snapshot",
+			VolumeNames: []string{"test-volume1", "test-volume2"},
+		},
+		SnapshotIDs: []string{"snapshot1", "snapshot2"},
+		Created:     time.Now().UTC().Format(time.RFC3339),
+	}
+
+	err := crdClient.DeleteGroupSnapshot(ctx(), groupSnapshot)
+	assert.Error(t, err)
+}
+
+func TestCRDClientV1_DeleteGroupSnapshots_Success(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	// Add multiple group snapshots
+	gs1 := &storage.GroupSnapshot{
+		GroupSnapshotConfig: &storage.GroupSnapshotConfig{
+			Version:     config.OrchestratorAPIVersion,
+			Name:        "gs1",
+			VolumeNames: []string{"test-volume1", "test-volume2"},
+		},
+		SnapshotIDs: []string{"snapshot1", "snapshot2"},
+		Created:     time.Now().UTC().Format(time.RFC3339),
+	}
+	gs2 := &storage.GroupSnapshot{
+		GroupSnapshotConfig: &storage.GroupSnapshotConfig{
+			Version:     config.OrchestratorAPIVersion,
+			Name:        "gs2",
+			VolumeNames: []string{"test-volume3", "test-volume4"},
+		},
+		SnapshotIDs: []string{"snapshot3", "snapshot4"},
+		Created:     time.Now().UTC().Format(time.RFC3339),
+	}
+
+	err := crdClient.AddGroupSnapshot(ctx(), gs1)
+	assert.NoError(t, err)
+	err = crdClient.AddGroupSnapshot(ctx(), gs2)
+	assert.NoError(t, err)
+
+	err = crdClient.DeleteGroupSnapshots(ctx())
+	assert.NoError(t, err)
+}
+
+func TestCRDClientV1_DeleteGroupSnapshots_Empty(t *testing.T) {
+	crdClient, _ := GetTestKubernetesClient()
+
+	err := crdClient.DeleteGroupSnapshots(ctx())
+	assert.NoError(t, err) // Should not error even if no group snapshots exist
+}

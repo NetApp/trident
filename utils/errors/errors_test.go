@@ -15,6 +15,497 @@ import (
 	"go.uber.org/multierr"
 )
 
+// Helper functions for testing errors
+func assertErrorIs(t *testing.T, err, target error) {
+	t.Helper()
+	assert.True(t, Is(err, target), "expected error to be %v, got %v", target, err)
+}
+
+func assertErrorIsNot(t *testing.T, err, target error) {
+	t.Helper()
+	assert.False(t, Is(err, target), "expected error not to be %v", target)
+}
+
+func assertErrorAs(t *testing.T, err error, target interface{}) {
+	t.Helper()
+	assert.True(t, As(err, target), "expected error to be assignable to %T", target)
+}
+
+func assertErrorNotAs(t *testing.T, err error, target interface{}) {
+	t.Helper()
+	assert.False(t, As(err, target), "expected error not to be assignable to %T", target)
+}
+
+// createDeepWrappedError creates an error wrapped multiple levels deep for testing error wrapping behavior.
+// It returns both the original error and the final wrapped error.
+func createDeepWrappedError(msg string, wrapDepth int) (original, wrapped error) {
+	original = New(msg)
+	wrapped = original
+	for i := 0; i < wrapDepth; i++ {
+		wrapped = fmt.Errorf("level %d: %w", i+1, wrapped)
+	}
+	return original, wrapped
+}
+
+// TestStandardLibraryWrappers verifies that our error package's wrapper functions
+// around the standard library behave identically to the original functions.
+func TestStandardLibraryWrappers(t *testing.T) {
+	tests := []struct {
+		name     string
+		testFunc func(*testing.T)
+	}{
+		{
+			name: "New creates error with correct message",
+			testFunc: func(t *testing.T) {
+				err := New("test error")
+				assert.Equal(t, "test error", err.Error())
+			},
+		},
+		{
+			name: "Is correctly identifies error equality",
+			testFunc: func(t *testing.T) {
+				err1 := New("error")
+				err2 := New("different error")
+				assertErrorIs(t, err1, err1)
+				assertErrorIsNot(t, err1, err2)
+			},
+		},
+		{
+			name: "As correctly assigns error types",
+			testFunc: func(t *testing.T) {
+				var target *json.UnmarshalTypeError
+				jsonErr := &json.UnmarshalTypeError{Value: "test"}
+				standardErr := New("standard error")
+				assertErrorAs(t, jsonErr, &target)
+				assertErrorNotAs(t, standardErr, &target)
+			},
+		},
+		{
+			name: "Unwrap correctly unwraps errors",
+			testFunc: func(t *testing.T) {
+				originalErr := New("original error")
+				wrappedErr := fmt.Errorf("wrapped: %w", originalErr)
+				assert.Equal(t, originalErr, Unwrap(wrappedErr))
+				assert.Nil(t, Unwrap(originalErr))
+			},
+		},
+		{
+			name: "Join combines multiple errors",
+			testFunc: func(t *testing.T) {
+				err1 := New("error 1")
+				err2 := New("error 2")
+				joinedErr := Join(err1, err2)
+				assertErrorIs(t, joinedErr, err1)
+				assertErrorIs(t, joinedErr, err2)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, tt.testFunc)
+	}
+}
+
+// TestDeepErrorWrapping verifies that error wrapping works correctly at multiple levels
+// of nesting using both our package's wrapper functions and the standard library.
+func TestDeepErrorWrapping(t *testing.T) {
+	tests := []struct {
+		name     string
+		depth    int
+		message  string
+		testFunc func(*testing.T, error, error)
+	}{
+		{
+			name:    "Single level wrapping",
+			depth:   1,
+			message: "root error",
+			testFunc: func(t *testing.T, original, wrapped error) {
+				assertErrorIs(t, wrapped, original)
+				assert.Equal(t, original, Unwrap(wrapped))
+			},
+		},
+		{
+			name:    "Deep wrapping (5 levels)",
+			depth:   5,
+			message: "deep root error",
+			testFunc: func(t *testing.T, original, wrapped error) {
+				// Should still be able to find original error
+				assertErrorIs(t, wrapped, original)
+
+				// Should be able to unwrap all the way down
+				current := wrapped
+				for i := 0; i < 5; i++ {
+					current = Unwrap(current)
+					assert.NotNil(t, current, "unwrap chain broken at level %d", i+1)
+				}
+				assert.Equal(t, original, current)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			original, wrapped := createDeepWrappedError(tt.message, tt.depth)
+			tt.testFunc(t, original, wrapped)
+		})
+	}
+}
+
+// TestSimpleErrorTypes verifies that all simple error types (those without additional
+// context or parameters) are created correctly and can be identified using their
+// respective Is functions. These errors represent common operational states that
+// don't require additional context.
+func TestSimpleErrorTypes(t *testing.T) {
+	tests := []struct {
+		name        string
+		createErr   func() error
+		isErrFunc   func(error) bool
+		expectedMsg string
+		description string // documents the purpose/use case of this error type
+	}{
+		{
+			name:        "NotReadyError",
+			createErr:   func() error { return NotReadyError() },
+			isErrFunc:   IsNotReadyError,
+			description: "Used when a component or system is temporarily not ready to handle requests",
+			expectedMsg: "Trident is initializing, please try again later",
+		},
+		{
+			name:        "UnsupportedError_WithArgs",
+			createErr:   func() error { return UnsupportedError("unsupported operation %s", "test") },
+			isErrFunc:   IsUnsupportedError,
+			expectedMsg: "unsupported operation test",
+		},
+		{
+			name:        "UnsupportedError_NoArgs",
+			createErr:   func() error { return UnsupportedError("simple message") },
+			isErrFunc:   IsUnsupportedError,
+			expectedMsg: "simple message",
+		},
+		{
+			name:        "VolumeCreatingError_WithArgs",
+			createErr:   func() error { return VolumeCreatingError("volume %s is creating", "vol1") },
+			isErrFunc:   IsVolumeCreatingError,
+			expectedMsg: "volume vol1 is creating",
+		},
+		{
+			name:        "VolumeCreatingError_NoArgs",
+			createErr:   func() error { return VolumeCreatingError("simple creating message") },
+			isErrFunc:   IsVolumeCreatingError,
+			expectedMsg: "simple creating message",
+		},
+		{
+			name:        "VolumeDeletingError_WithArgs",
+			createErr:   func() error { return VolumeDeletingError("volume %s is deleting", "vol1") },
+			isErrFunc:   IsVolumeDeletingError,
+			expectedMsg: "volume vol1 is deleting",
+		},
+		{
+			name:        "VolumeDeletingError_NoArgs",
+			createErr:   func() error { return VolumeDeletingError("simple deleting message") },
+			isErrFunc:   IsVolumeDeletingError,
+			expectedMsg: "simple deleting message",
+		},
+		{
+			name:        "VolumeStateError_WithArgs",
+			createErr:   func() error { return VolumeStateError("volume %s in invalid state", "vol1") },
+			isErrFunc:   IsVolumeStateError,
+			expectedMsg: "volume vol1 in invalid state",
+		},
+		{
+			name:        "VolumeStateError_NoArgs",
+			createErr:   func() error { return VolumeStateError("simple state message") },
+			isErrFunc:   IsVolumeStateError,
+			expectedMsg: "simple state message",
+		},
+		{
+			name:        "MaxWaitExceededError_WithArgs",
+			createErr:   func() error { return MaxWaitExceededError("max wait exceeded for %s", "operation") },
+			isErrFunc:   IsMaxWaitExceededError,
+			expectedMsg: "max wait exceeded for operation",
+		},
+		{
+			name:        "MaxWaitExceededError_NoArgs",
+			createErr:   func() error { return MaxWaitExceededError("simple wait message") },
+			isErrFunc:   IsMaxWaitExceededError,
+			expectedMsg: "simple wait message",
+		},
+		{
+			name:        "InvalidInputError_WithArgs",
+			createErr:   func() error { return InvalidInputError("invalid input: %s", "test") },
+			isErrFunc:   IsInvalidInputError,
+			expectedMsg: "invalid input: test",
+		},
+		{
+			name:        "InvalidInputError_NoArgs",
+			createErr:   func() error { return InvalidInputError("simple input message") },
+			isErrFunc:   IsInvalidInputError,
+			expectedMsg: "simple input message",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.createErr()
+
+			// Test error creation and message
+			assert.Equal(t, tt.expectedMsg, err.Error())
+
+			// Test detection function
+			assert.True(t, tt.isErrFunc(err))
+			assert.False(t, tt.isErrFunc(nil))
+			assert.False(t, tt.isErrFunc(errors.New("generic error")))
+		})
+	}
+}
+
+// Test TempOperatorError separately due to different signature
+func TestTempOperatorError(t *testing.T) {
+	originalErr := errors.New("connection failed")
+	err := TempOperatorError(originalErr)
+
+	assert.True(t, IsTempOperatorError(err))
+	assert.Equal(t, "temporary operator error; connection failed", err.Error())
+	assert.False(t, IsTempOperatorError(nil))
+	assert.False(t, IsTempOperatorError(errors.New("generic error")))
+}
+
+// Test additional simple error types with different signatures
+func TestAdditionalSimpleErrorTypes(t *testing.T) {
+	tests := []struct {
+		name        string
+		createErr   func() error
+		isErrFunc   func(error) bool
+		expectedMsg string
+	}{
+		{
+			name:        "MaxLimitReachedError",
+			createErr:   func() error { return MaxLimitReachedError("limit reached for %s", "volumes") },
+			isErrFunc:   IsMaxLimitReachedError,
+			expectedMsg: "limit reached for volumes",
+		},
+		{
+			name:        "MaxLimitReachedError_NoArgs",
+			createErr:   func() error { return MaxLimitReachedError("simple limit message") },
+			isErrFunc:   IsMaxLimitReachedError,
+			expectedMsg: "simple limit message",
+		},
+		{
+			name:        "AuthError",
+			createErr:   func() error { return AuthError("authentication failed for %s", "user") },
+			isErrFunc:   IsAuthError,
+			expectedMsg: "authentication failed for user",
+		},
+		{
+			name:        "AuthError_NoArgs",
+			createErr:   func() error { return AuthError("simple auth message") },
+			isErrFunc:   IsAuthError,
+			expectedMsg: "simple auth message",
+		},
+		{
+			name:        "ISCSIDeviceFlushError",
+			createErr:   func() error { return ISCSIDeviceFlushError("failed to flush device %s", "sda") },
+			isErrFunc:   IsISCSIDeviceFlushError,
+			expectedMsg: "failed to flush device sda",
+		},
+		{
+			name:        "ISCSIDeviceFlushError_NoArgs",
+			createErr:   func() error { return ISCSIDeviceFlushError("simple flush message") },
+			isErrFunc:   IsISCSIDeviceFlushError,
+			expectedMsg: "simple flush message",
+		},
+		{
+			name:        "ISCSISameLunNumberError",
+			createErr:   func() error { return ISCSISameLunNumberError("LUN %d already exists", 1) },
+			isErrFunc:   IsISCSISameLunNumberError,
+			expectedMsg: "LUN 1 already exists",
+		},
+		{
+			name:        "ISCSISameLunNumberError_NoArgs",
+			createErr:   func() error { return ISCSISameLunNumberError("simple LUN message") },
+			isErrFunc:   IsISCSISameLunNumberError,
+			expectedMsg: "simple LUN message",
+		},
+		{
+			name:        "FCPSameLunNumberError",
+			createErr:   func() error { return FCPSameLunNumberError("FCP LUN %d conflict", 2) },
+			isErrFunc:   IsFCPSameLunNumberError,
+			expectedMsg: "FCP LUN 2 conflict",
+		},
+		{
+			name:        "FCPSameLunNumberError_NoArgs",
+			createErr:   func() error { return FCPSameLunNumberError("simple FCP message") },
+			isErrFunc:   IsFCPSameLunNumberError,
+			expectedMsg: "simple FCP message",
+		},
+		{
+			name:        "TooManyRequestsError",
+			createErr:   func() error { return TooManyRequestsError("rate limit exceeded") },
+			isErrFunc:   IsTooManyRequestsError,
+			expectedMsg: "rate limit exceeded",
+		},
+		{
+			name:        "TooManyRequestsError_NoArgs",
+			createErr:   func() error { return TooManyRequestsError("simple rate limit") },
+			isErrFunc:   IsTooManyRequestsError,
+			expectedMsg: "simple rate limit",
+		},
+		{
+			name:        "IncorrectLUKSPassphraseError",
+			createErr:   func() error { return IncorrectLUKSPassphraseError("incorrect passphrase") },
+			isErrFunc:   IsIncorrectLUKSPassphraseError,
+			expectedMsg: "incorrect passphrase",
+		},
+		{
+			name:        "IncorrectLUKSPassphraseError_NoArgs",
+			createErr:   func() error { return IncorrectLUKSPassphraseError("simple passphrase error") },
+			isErrFunc:   IsIncorrectLUKSPassphraseError,
+			expectedMsg: "simple passphrase error",
+		},
+		{
+			name:        "NodeNotSafeToPublishForBackendError",
+			createErr:   func() error { return NodeNotSafeToPublishForBackendError("node1", "ontap") },
+			isErrFunc:   IsNodeNotSafeToPublishForBackendError,
+			expectedMsg: "not safe to publish ontap volume to node node1",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.createErr()
+
+			// Test error creation and message
+			assert.Equal(t, tt.expectedMsg, err.Error())
+
+			// Test detection function
+			assert.True(t, tt.isErrFunc(err))
+			assert.False(t, tt.isErrFunc(nil))
+			assert.False(t, tt.isErrFunc(errors.New("generic error")))
+		})
+	}
+}
+
+// Test InProgressError separately due to different signature
+func TestInProgressError(t *testing.T) {
+	err := InProgressError("operation in progress")
+	assert.True(t, IsInProgressError(err))
+	assert.Equal(t, "in progress error; operation in progress", err.Error())
+	assert.False(t, IsInProgressError(nil))
+	assert.False(t, IsInProgressError(errors.New("generic error")))
+}
+
+// Test TypeAssertionError separately
+func TestTypeAssertionError(t *testing.T) {
+	err := TypeAssertionError("string to int")
+	assert.Equal(t, "could not perform assertion: string to int", err.Error())
+}
+
+// Test Unwrap methods
+func TestUnwrapMethods(t *testing.T) {
+	innerErr := errors.New("inner error")
+
+	tests := []struct {
+		name        string
+		createErr   func(error) error
+		description string
+	}{
+		{
+			name:        "FoundError_Unwrap",
+			createErr:   func(inner error) error { return WrapWithFoundError(inner, "found") },
+			description: "foundError should unwrap correctly",
+		},
+		{
+			name:        "ConnectionError_Unwrap",
+			createErr:   func(inner error) error { return WrapWithConnectionError(inner, "connection") },
+			description: "connectionError should unwrap correctly",
+		},
+		{
+			name:        "ReconcileDeferredError_Unwrap",
+			createErr:   func(inner error) error { return WrapWithReconcileDeferredError(inner, "deferred") },
+			description: "reconcileDeferredError should unwrap correctly",
+		},
+		{
+			name:        "ReconcileIncompleteError_Unwrap",
+			createErr:   func(inner error) error { return WrapWithReconcileIncompleteError(inner, "incomplete") },
+			description: "reconcileIncompleteError should unwrap correctly",
+		},
+		{
+			name:        "ReconcileFailedError_Unwrap",
+			createErr:   func(inner error) error { return WrapWithReconcileFailedError(inner, "failed") },
+			description: "reconcileFailedError should unwrap correctly",
+		},
+		{
+			name:        "NotManagedError_Unwrap",
+			createErr:   func(inner error) error { return WrapWithNotManagedError(inner, "not managed") },
+			description: "notManagedError should unwrap correctly",
+		},
+		{
+			name:        "ConflictError_Unwrap",
+			createErr:   func(inner error) error { return WrapWithConflictError(inner, "conflict") },
+			description: "conflictError should unwrap correctly",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			wrappedErr := tt.createErr(innerErr)
+			unwrapped := errors.Unwrap(wrappedErr)
+			assert.Equal(t, innerErr, unwrapped, tt.description)
+		})
+	}
+}
+
+// Test UnsupportedCapacityRangeError Unwrap and edge cases
+func TestUnsupportedCapacityRangeErrorUnwrap(t *testing.T) {
+	innerErr := errors.New("capacity error")
+	err := UnsupportedCapacityRangeError(innerErr)
+
+	// Test unwrap
+	unwrapped := errors.Unwrap(err)
+	assert.Equal(t, innerErr, unwrapped)
+
+	// Test edge case in HasUnsupportedCapacityRangeError
+	_, targetErr := HasUnsupportedCapacityRangeError(nil)
+	assert.Nil(t, targetErr)
+}
+
+// Test ResourceExhaustedError Unwrap and edge cases
+func TestResourceExhaustedErrorUnwrap(t *testing.T) {
+	innerErr := errors.New("resource limit")
+	err := ResourceExhaustedError(innerErr)
+
+	// Test unwrap
+	unwrapped := errors.Unwrap(err)
+	assert.Equal(t, innerErr, unwrapped)
+
+	// Test edge case in HasResourceExhaustedError
+	_, targetErr := HasResourceExhaustedError(nil)
+	assert.Nil(t, targetErr)
+}
+
+// Test IsResourceNotFoundError
+func TestIsResourceNotFoundError(t *testing.T) {
+	tests := []struct {
+		name     string
+		err      error
+		expected bool
+	}{
+		{"nil error", nil, false},
+		{"not found lowercase", errors.New("resource not found"), true},
+		{"not found uppercase", errors.New("Resource NOT FOUND"), true},
+		{"not found mixed case", errors.New("Item Not Found"), true},
+		{"different error", errors.New("connection failed"), false},
+		{"empty error", errors.New(""), false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := IsResourceNotFoundError(tt.err)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
 func TestUnsupportedCapacityRangeError(t *testing.T) {
 	// test setup
 	err := errors.New("a generic error")
@@ -39,164 +530,129 @@ func TestUnsupportedCapacityRangeError(t *testing.T) {
 	})
 }
 
-func TestNotFoundError(t *testing.T) {
-	err := NotFoundError("not found error with formatting %s, %s", "foo", "bar")
-	assert.True(t, strings.Contains("not found error with formatting foo, bar", err.Error()))
+// Unified test for wrapping error types that follow similar patterns
+func TestWrappingErrorTypes(t *testing.T) {
+	genericErr := errors.New("a generic error")
 
-	err = errors.New("a generic error")
-	assert.False(t, IsNotFoundError(err))
+	tests := []struct {
+		name        string
+		createErr   func(string, ...any) error
+		wrapWithErr func(error, string, ...any) error
+		isErrFunc   func(error) bool
+		errorType   string
+	}{
+		{
+			name:        "NotFoundError",
+			createErr:   NotFoundError,
+			wrapWithErr: WrapWithNotFoundError,
+			isErrFunc:   IsNotFoundError,
+			errorType:   "not found",
+		},
+		{
+			name:        "FoundError",
+			createErr:   FoundError,
+			wrapWithErr: WrapWithFoundError,
+			isErrFunc:   IsFoundError,
+			errorType:   "found",
+		},
+		{
+			name:        "NotManagedError",
+			createErr:   NotManagedError,
+			wrapWithErr: WrapWithNotManagedError,
+			isErrFunc:   IsNotManagedError,
+			errorType:   "not managed",
+		},
+		{
+			name:        "ConnectionError",
+			createErr:   ConnectionError,
+			wrapWithErr: WrapWithConnectionError,
+			isErrFunc:   IsConnectionError,
+			errorType:   "connection",
+		},
+		{
+			name:        "ReconcileDeferredError",
+			createErr:   ReconcileDeferredError,
+			wrapWithErr: WrapWithReconcileDeferredError,
+			isErrFunc:   IsReconcileDeferredError,
+			errorType:   "reconcile deferred",
+		},
+		{
+			name:        "ReconcileIncompleteError",
+			createErr:   ReconcileIncompleteError,
+			wrapWithErr: WrapWithReconcileIncompleteError,
+			isErrFunc:   IsReconcileIncompleteError,
+			errorType:   "reconcile incomplete",
+		},
+		{
+			name:        "ReconcileFailedError",
+			createErr:   ReconcileFailedError,
+			wrapWithErr: WrapWithReconcileFailedError,
+			isErrFunc:   IsReconcileFailedError,
+			errorType:   "reconcile failed",
+		},
+		{
+			name:        "ConflictError",
+			createErr:   ConflictError,
+			wrapWithErr: WrapWithConflictError,
+			isErrFunc:   IsConflictError,
+			errorType:   "conflict",
+		},
+		{
+			name:        "AlreadyExistsError",
+			createErr:   AlreadyExistsError,
+			wrapWithErr: WrapWithAlreadyExistsError,
+			isErrFunc:   IsAlreadyExistsError,
+			errorType:   "already exists",
+		},
+	}
 
-	assert.False(t, IsNotFoundError(nil))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Test basic error creation
+			err := tt.createErr("test error with formatting %s, %s", "foo", "bar")
+			assert.True(t, strings.Contains(err.Error(), "foo"))
+			assert.True(t, strings.Contains(err.Error(), "bar"))
+			assert.True(t, tt.isErrFunc(err))
 
-	err = NotFoundError("")
-	assert.True(t, IsNotFoundError(err))
+			// Test with generic error (should be false)
+			assert.False(t, tt.isErrFunc(genericErr))
 
-	// Test wrapping
-	err = WrapWithNotFoundError(errors.New("not a not found err"), "not found")
-	assert.True(t, IsNotFoundError(err))
-	assert.Equal(t, "not found; not a not found err", err.Error())
+			// Test with nil (should be false)
+			assert.False(t, tt.isErrFunc(nil))
 
-	err = WrapWithNotFoundError(nil, "not found")
-	assert.Equal(t, "not found", err.Error())
+			// Test empty error
+			err = tt.createErr("")
+			assert.True(t, tt.isErrFunc(err))
 
-	err = WrapWithNotFoundError(errors.New("not a not found err"), "")
-	assert.True(t, IsNotFoundError(err))
-	assert.Equal(t, "not a not found err", err.Error())
+			// Test wrapping with non-nil error and message
+			err = tt.wrapWithErr(errors.New("inner error"), tt.errorType)
+			assert.True(t, tt.isErrFunc(err))
+			expectedMsg := fmt.Sprintf("%s; inner error", tt.errorType)
+			assert.Equal(t, expectedMsg, err.Error())
 
-	err = WrapWithNotFoundError(errors.New(""), "not found")
-	assert.True(t, IsNotFoundError(err))
-	assert.Equal(t, "not found", err.Error())
+			// Test wrapping with nil error
+			err = tt.wrapWithErr(nil, tt.errorType)
+			assert.Equal(t, tt.errorType, err.Error())
 
-	err = NotFoundError("")
-	err = fmt.Errorf("custom message: %w", err)
-	assert.True(t, IsNotFoundError(err))
-	assert.Equal(t, "custom message: ", err.Error())
+			// Test wrapping with empty message
+			err = tt.wrapWithErr(errors.New("inner error"), "")
+			assert.True(t, tt.isErrFunc(err))
+			assert.Equal(t, "inner error", err.Error())
 
-	// wrap multi levels deep
-	err = NotFoundError("")
-	err = fmt.Errorf("outer; %w", fmt.Errorf("inner; %w", err))
-	assert.True(t, IsNotFoundError(err))
-	assert.Equal(t, "outer; inner; ", err.Error())
-}
+			// Test wrapping with empty error and message
+			err = tt.wrapWithErr(errors.New(""), tt.errorType)
+			assert.True(t, tt.isErrFunc(err))
+			assert.Equal(t, tt.errorType, err.Error())
 
-func TestFoundError(t *testing.T) {
-	err := FoundError("found error with formatting %s, %s", "foo", "bar")
-	assert.True(t, strings.Contains("found error with formatting foo, bar", err.Error()))
+			// Test wrapped error detection
+			wrappedErr := fmt.Errorf("custom message: %w", tt.createErr(""))
+			assert.True(t, tt.isErrFunc(wrappedErr))
 
-	err = errors.New("a generic error")
-	assert.False(t, IsFoundError(err))
-
-	assert.False(t, IsFoundError(nil))
-
-	err = FoundError("")
-	assert.True(t, IsFoundError(err))
-
-	// Test wrapping
-	err = WrapWithFoundError(errors.New("not a found err"), "found")
-	assert.True(t, IsFoundError(err))
-	assert.Equal(t, "found; not a found err", err.Error())
-
-	err = WrapWithFoundError(nil, "found")
-	assert.Equal(t, "found", err.Error())
-
-	err = WrapWithFoundError(errors.New("not a found err"), "")
-	assert.True(t, IsFoundError(err))
-	assert.Equal(t, "not a found err", err.Error())
-
-	err = WrapWithFoundError(errors.New(""), "found")
-	assert.True(t, IsFoundError(err))
-	assert.Equal(t, "found", err.Error())
-
-	err = FoundError("")
-	err = fmt.Errorf("custom message: %w", err)
-	assert.True(t, IsFoundError(err))
-	assert.Equal(t, "custom message: ", err.Error())
-
-	// wrap multi levels deep
-	err = FoundError("")
-	err = fmt.Errorf("outer; %w", fmt.Errorf("inner; %w", err))
-	assert.True(t, IsFoundError(err))
-	assert.Equal(t, "outer; inner; ", err.Error())
-}
-
-func TestNotManagedError(t *testing.T) {
-	err := NotManagedError("not managed error with formatting %s, %s", "foo", "bar")
-	assert.True(t, strings.Contains("not managed error with formatting foo, bar", err.Error()))
-
-	err = errors.New("a generic error")
-	assert.False(t, IsNotManagedError(err))
-
-	assert.False(t, IsNotManagedError(nil))
-
-	err = NotManagedError("")
-	assert.True(t, IsNotManagedError(err))
-
-	// Test wrapping
-	err = WrapWithNotManagedError(errors.New("not a not managed err"), "not managed")
-	assert.True(t, IsNotManagedError(err))
-	assert.Equal(t, "not managed; not a not managed err", err.Error())
-
-	err = WrapWithNotManagedError(nil, "not managed")
-	assert.Equal(t, "not managed", err.Error())
-
-	err = WrapWithNotManagedError(errors.New("not a not managed err"), "")
-	assert.True(t, IsNotManagedError(err))
-	assert.Equal(t, "not a not managed err", err.Error())
-
-	err = WrapWithNotManagedError(errors.New(""), "not managed")
-	assert.True(t, IsNotManagedError(err))
-	assert.Equal(t, "not managed", err.Error())
-
-	err = NotManagedError("")
-	err = fmt.Errorf("custom message: %w", err)
-	assert.True(t, IsNotManagedError(err))
-	assert.Equal(t, "custom message: ", err.Error())
-
-	// wrap multi levels deep
-	err = NotManagedError("")
-	err = fmt.Errorf("outer; %w", fmt.Errorf("inner; %w", err))
-	assert.True(t, IsNotManagedError(err))
-	assert.Equal(t, "outer; inner; ", err.Error())
-}
-
-func TestConnectionError(t *testing.T) {
-	err := ConnectionError("connection error with formatting %s, %s", "foo", "bar")
-	assert.True(t, strings.Contains("connection error with formatting foo, bar", err.Error()))
-
-	err = errors.New("a generic error")
-	assert.False(t, IsConnectionError(err))
-
-	assert.False(t, IsConnectionError(nil))
-
-	err = ConnectionError("")
-	assert.True(t, IsConnectionError(err))
-
-	// Test wrapping
-	err = WrapWithConnectionError(errors.New("not a connection err"), "not found")
-	assert.True(t, IsConnectionError(err))
-	assert.Equal(t, "not found; not a connection err", err.Error())
-
-	err = WrapWithConnectionError(nil, "connection")
-	assert.Equal(t, "connection", err.Error())
-
-	err = WrapWithConnectionError(errors.New("not a connection err"), "")
-	assert.True(t, IsConnectionError(err))
-	assert.Equal(t, "not a connection err", err.Error())
-
-	err = WrapWithConnectionError(errors.New(""), "connection")
-	assert.True(t, IsConnectionError(err))
-	assert.Equal(t, "connection", err.Error())
-
-	err = ConnectionError("")
-	err = fmt.Errorf("custom message: %w", err)
-	assert.True(t, IsConnectionError(err))
-	assert.Equal(t, "custom message: ", err.Error())
-
-	// wrap multi levels deep
-	err = ConnectionError("")
-	err = fmt.Errorf("outer; %w", fmt.Errorf("inner; %w", err))
-	assert.True(t, IsConnectionError(err))
-	assert.Equal(t, "outer; inner; ", err.Error())
+			// Test multi-level wrapping
+			deepErr := fmt.Errorf("outer; %w", fmt.Errorf("inner; %w", tt.createErr("")))
+			assert.True(t, tt.isErrFunc(deepErr))
+		})
+	}
 }
 
 func TestAsInvalidJSONError(t *testing.T) {
@@ -243,6 +699,73 @@ func TestAsInvalidJSONError(t *testing.T) {
 	}
 }
 
+// Test constructor functions
+func TestConstructorCoverage(t *testing.T) {
+	tests := []struct {
+		name        string
+		createErr   func() error
+		isErrFunc   func(error) bool
+		expectedMsg string
+	}{
+		// InvalidJSONError tests
+		{
+			name:        "InvalidJSONError_WithArgs",
+			createErr:   func() error { return InvalidJSONError("JSON error with %s", "details") },
+			isErrFunc:   IsInvalidJSONError,
+			expectedMsg: "JSON error with details",
+		},
+		{
+			name:        "InvalidJSONError_NoArgs",
+			createErr:   func() error { return InvalidJSONError("simple JSON error") },
+			isErrFunc:   IsInvalidJSONError,
+			expectedMsg: "simple JSON error",
+		},
+		// MismatchedStorageClassError tests
+		{
+			name:        "MismatchedStorageClassError_WithArgs",
+			createErr:   func() error { return MismatchedStorageClassError("Storage class error with %s", "details") },
+			isErrFunc:   IsMismatchedStorageClassError,
+			expectedMsg: "Storage class error with details",
+		},
+		{
+			name:        "MismatchedStorageClassError_NoArgs",
+			createErr:   func() error { return MismatchedStorageClassError("simple storage class error") },
+			isErrFunc:   IsMismatchedStorageClassError,
+			expectedMsg: "simple storage class error",
+		},
+		// Additional constructor tests
+		{
+			name:        "TooManyRequestsError_NoArgs",
+			createErr:   func() error { return TooManyRequestsError("rate limit") },
+			isErrFunc:   IsTooManyRequestsError,
+			expectedMsg: "rate limit",
+		},
+		{
+			name:        "IncorrectLUKSPassphraseError_NoArgs",
+			createErr:   func() error { return IncorrectLUKSPassphraseError("wrong passphrase") },
+			isErrFunc:   IsIncorrectLUKSPassphraseError,
+			expectedMsg: "wrong passphrase",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.createErr()
+			assert.Equal(t, tt.expectedMsg, err.Error())
+			assert.True(t, tt.isErrFunc(err))
+			assert.False(t, tt.isErrFunc(nil))
+		})
+	}
+
+	// Test direct Error() methods and nil checks
+	jsonErr := &invalidJSONError{message: "direct test"}
+	assert.Equal(t, "direct test", jsonErr.Error())
+	assert.False(t, IsInvalidJSONError(nil))
+
+	scErr := &mismatchedStorageClassError{message: "direct test"}
+	assert.Equal(t, "direct test", scErr.Error())
+}
+
 func TestResourceExhaustedError(t *testing.T) {
 	resExhaustedErr := ResourceExhaustedError(errors.New("volume limit reached"))
 
@@ -276,283 +799,114 @@ func TestResourceExhaustedError(t *testing.T) {
 	}
 }
 
-func TestReconcileDeferredError(t *testing.T) {
-	err := ReconcileDeferredError("deferred error with formatting %s, %s", "foo", "bar")
-	assert.True(t, strings.Contains("deferred error with formatting foo, bar", err.Error()))
+// Test specific error types with unique behavior
+func TestSpecialErrorTypes(t *testing.T) {
+	// Test UnsupportedConfigError with multierr support
+	t.Run("UnsupportedConfigError", func(t *testing.T) {
+		err := UnsupportedConfigError("error with formatting %s, %s", "foo", "bar")
+		assert.True(t, strings.Contains("error with formatting foo, bar", err.Error()))
+		assert.True(t, IsUnsupportedConfigError(err))
+		assert.False(t, IsUnsupportedConfigError(nil))
+		assert.False(t, IsUnsupportedConfigError(errors.New("generic")))
 
-	err = errors.New("a generic error")
-	assert.False(t, IsReconcileDeferredError(err))
+		// Multierr tests
+		err = multierr.Combine(
+			errors.New("not unsupported config err"),
+			UnsupportedConfigError("is unsupported config error"),
+		)
+		assert.True(t, IsUnsupportedConfigError(err))
 
-	assert.False(t, IsReconcileDeferredError(nil))
+		err = multierr.Combine(
+			errors.New("not unsupported config err"),
+			errors.New("not unsupported config err"),
+		)
+		assert.False(t, IsUnsupportedConfigError(err))
 
-	err = ReconcileDeferredError("")
-	assert.True(t, IsReconcileDeferredError(err))
+		err = WrapUnsupportedConfigError(errors.New("not unsupported config err"))
+		assert.True(t, IsUnsupportedConfigError(err))
 
-	// Test wrapping
-	err = WrapWithReconcileDeferredError(errors.New("not reconcile deferred err"), "reconcile deferred")
-	assert.True(t, IsReconcileDeferredError(err))
-	assert.Equal(t, "reconcile deferred; not reconcile deferred err", err.Error())
+		err = WrapUnsupportedConfigError(nil)
+		assert.Nil(t, err)
+	})
 
-	err = WrapWithReconcileDeferredError(nil, "reconcile deferred")
-	assert.Equal(t, "reconcile deferred", err.Error())
+	// Test UnlicensedError with multierr support
+	t.Run("UnlicensedError", func(t *testing.T) {
+		err := UnlicensedError("error with formatting %s, %s", "foo", "bar")
+		assert.True(t, strings.Contains("error with formatting foo, bar", err.Error()))
+		assert.True(t, IsUnlicensedError(err))
+		assert.False(t, IsUnlicensedError(nil))
+		assert.False(t, IsUnlicensedError(errors.New("generic")))
 
-	err = WrapWithReconcileDeferredError(errors.New("not reconcile deferred err"), "")
-	assert.True(t, IsReconcileDeferredError(err))
-	assert.Equal(t, "not reconcile deferred err", err.Error())
+		// Multierr tests
+		err = multierr.Combine(
+			errors.New("not unlicensed err"),
+			UnlicensedError("is unlicensed error"),
+		)
+		assert.True(t, IsUnlicensedError(err))
 
-	err = WrapWithReconcileDeferredError(errors.New(""), "reconcile deferred")
-	assert.True(t, IsReconcileDeferredError(err))
-	assert.Equal(t, "reconcile deferred", err.Error())
+		err = multierr.Combine(
+			errors.New("not unlicensed err"),
+			errors.New("not unlicensed err"),
+		)
+		assert.False(t, IsUnlicensedError(err))
 
-	err = ReconcileDeferredError("")
-	err = fmt.Errorf("custom message: %w", err)
-	assert.True(t, IsReconcileDeferredError(err))
-	assert.Equal(t, "custom message: ", err.Error())
+		err = WrapUnlicensedError(errors.New("not unlicensed err"))
+		assert.True(t, IsUnlicensedError(err))
 
-	// wrap multi levels deep
-	err = ReconcileDeferredError("")
-	err = fmt.Errorf("outer; %w", fmt.Errorf("inner; %w", err))
-	assert.True(t, IsReconcileDeferredError(err))
-	assert.Equal(t, "outer; inner; ", err.Error())
+		err = WrapUnlicensedError(nil)
+		assert.Nil(t, err)
+	})
+
+	// Test FormatError
+	t.Run("FormatError", func(t *testing.T) {
+		err := FormatError(errors.New("formatting error"))
+		assert.True(t, IsFormatError(err))
+		assert.Equal(t, "Formatting failed; formatting error", err.Error())
+		assert.False(t, IsFormatError(errors.New("generic")))
+
+		// Test wrapped format error
+		wrappedErr := fmt.Errorf("wrapping formatError; %w", err)
+		assert.True(t, IsFormatError(wrappedErr))
+	})
 }
 
-func TestReconcileIncompleteError(t *testing.T) {
-	err := ReconcileIncompleteError("deferred error with formatting %s, %s", "foo", "bar")
-	assert.True(t, strings.Contains("deferred error with formatting foo, bar", err.Error()))
+// Consolidate simple error tests
+func TestRemainingSimpleErrors(t *testing.T) {
+	// Test MismatchedStorageClassError
+	t.Run("MismatchedStorageClassError", func(t *testing.T) {
+		err := MismatchedStorageClassError("clone volume test-clone from source volume test-source with different storage classes is not allowed")
+		assert.True(t, strings.Contains("clone volume test-clone from source volume test-source with different storage classes is not allowed", err.Error()))
+		assert.True(t, IsMismatchedStorageClassError(err))
+		assert.False(t, IsMismatchedStorageClassError(errors.New("generic")))
+		assert.False(t, IsMismatchedStorageClassError(nil))
 
-	err = errors.New("a generic error")
-	assert.False(t, IsReconcileIncompleteError(err))
+		// Test no-args path
+		err = MismatchedStorageClassError("simple message")
+		assert.True(t, IsMismatchedStorageClassError(err))
+		assert.Equal(t, "simple message", err.Error())
+	})
 
-	assert.False(t, IsReconcileIncompleteError(nil))
+	// Test BootstrapError
+	t.Run("BootstrapError", func(t *testing.T) {
+		originalErr := errors.New("database connection failed")
+		err := BootstrapError(originalErr)
+		assert.True(t, IsBootstrapError(err))
+		assert.Equal(t, "Trident initialization failed; database connection failed", err.Error())
+		assert.False(t, IsBootstrapError(errors.New("generic")))
+		assert.False(t, IsBootstrapError(nil))
+	})
 
-	err = ReconcileIncompleteError("")
-	assert.True(t, IsReconcileIncompleteError(err))
+	// Test TimeoutError
+	t.Run("TimeoutError", func(t *testing.T) {
+		err := TimeoutError("timeout error with formatting %s, %s", "foo", "bar")
+		assert.True(t, strings.Contains("timeout error with formatting foo, bar", err.Error()))
+		assert.True(t, IsTimeoutError(err))
+		assert.False(t, IsTimeoutError(errors.New("generic")))
+		assert.False(t, IsTimeoutError(nil))
 
-	// Test wrapping
-	err = WrapWithReconcileIncompleteError(errors.New("not reconcile deferred err"), "reconcile deferred")
-	assert.True(t, IsReconcileIncompleteError(err))
-	assert.Equal(t, "reconcile deferred; not reconcile deferred err", err.Error())
-
-	err = WrapWithReconcileIncompleteError(nil, "reconcile deferred")
-	assert.Equal(t, "reconcile deferred", err.Error())
-
-	err = WrapWithReconcileIncompleteError(errors.New("not reconcile deferred err"), "")
-	assert.True(t, IsReconcileIncompleteError(err))
-	assert.Equal(t, "not reconcile deferred err", err.Error())
-
-	err = WrapWithReconcileIncompleteError(errors.New(""), "reconcile deferred")
-	assert.True(t, IsReconcileIncompleteError(err))
-	assert.Equal(t, "reconcile deferred", err.Error())
-
-	err = ReconcileIncompleteError("")
-	err = fmt.Errorf("custom message: %w", err)
-	assert.True(t, IsReconcileIncompleteError(err))
-	assert.Equal(t, "custom message: ", err.Error())
-
-	// wrap multi levels deep
-	err = ReconcileIncompleteError("")
-	err = fmt.Errorf("outer; %w", fmt.Errorf("inner; %w", err))
-	assert.True(t, IsReconcileIncompleteError(err))
-	assert.Equal(t, "outer; inner; ", err.Error())
-}
-
-func TestUnsupportedConfigError(t *testing.T) {
-	err := UnsupportedConfigError("error with formatting %s, %s", "foo", "bar")
-	assert.True(t, strings.Contains("error with formatting foo, bar", err.Error()))
-
-	err = errors.New("a generic error")
-	assert.False(t, IsUnsupportedConfigError(err))
-
-	assert.False(t, IsUnsupportedConfigError(nil))
-
-	err = UnsupportedConfigError("")
-	assert.True(t, IsUnsupportedConfigError(err))
-
-	// Multierr tests
-	err = multierr.Combine(
-		errors.New("not unsupported config err"),
-		UnsupportedConfigError("is unsupported config error"),
-	)
-	assert.True(t, IsUnsupportedConfigError(err))
-
-	err = multierr.Combine(
-		errors.New("not unsupported config err"),
-		errors.New("not unsupported config err"),
-	)
-	assert.False(t, IsUnsupportedConfigError(err))
-
-	err = WrapUnsupportedConfigError(errors.New("not unsupported config err"))
-	assert.True(t, IsUnsupportedConfigError(err))
-
-	err = WrapUnsupportedConfigError(nil)
-	assert.Nil(t, err)
-}
-
-func TestUnlicensedError(t *testing.T) {
-	err := UnlicensedError("error with formatting %s, %s", "foo", "bar")
-	assert.True(t, strings.Contains("error with formatting foo, bar", err.Error()))
-
-	err = errors.New("a generic error")
-	assert.False(t, IsUnlicensedError(err))
-
-	assert.False(t, IsUnlicensedError(nil))
-
-	err = UnlicensedError("")
-	assert.True(t, IsUnlicensedError(err))
-
-	// Multierr tests
-	err = multierr.Combine(
-		errors.New("not unlicensed err"),
-		UnlicensedError("is unlicensed error"),
-	)
-	assert.True(t, IsUnlicensedError(err))
-
-	err = multierr.Combine(
-		errors.New("not unlicensed err"),
-		errors.New("not unlicensed err"),
-	)
-	assert.False(t, IsUnlicensedError(err))
-
-	err = WrapUnlicensedError(errors.New("not unlicensed err"))
-	assert.True(t, IsUnlicensedError(err))
-
-	err = WrapUnlicensedError(nil)
-	assert.Nil(t, err)
-}
-
-func TestReconcileFailedError(t *testing.T) {
-	err := ReconcileFailedError("deferred error with formatting %s, %s", "foo", "bar")
-	assert.True(t, strings.Contains("deferred error with formatting foo, bar", err.Error()))
-
-	err = errors.New("a generic error")
-	assert.False(t, IsReconcileFailedError(err))
-
-	assert.False(t, IsReconcileFailedError(nil))
-
-	err = ReconcileFailedError("")
-	assert.True(t, IsReconcileFailedError(err))
-
-	// Test wrapping
-	err = WrapWithReconcileFailedError(errors.New("not reconcile deferred err"), "reconcile deferred")
-	assert.True(t, IsReconcileFailedError(err))
-	assert.Equal(t, "reconcile deferred; not reconcile deferred err", err.Error())
-
-	err = WrapWithReconcileFailedError(nil, "reconcile deferred")
-	assert.Equal(t, "reconcile deferred", err.Error())
-
-	err = WrapWithReconcileFailedError(errors.New("not reconcile deferred err"), "")
-	assert.True(t, IsReconcileFailedError(err))
-	assert.Equal(t, "not reconcile deferred err", err.Error())
-
-	err = WrapWithReconcileFailedError(errors.New(""), "reconcile deferred")
-	assert.True(t, IsReconcileFailedError(err))
-	assert.Equal(t, "reconcile deferred", err.Error())
-
-	err = ReconcileFailedError("")
-	err = fmt.Errorf("custom message: %w", err)
-	assert.True(t, IsReconcileFailedError(err))
-	assert.Equal(t, "custom message: ", err.Error())
-
-	// wrap multi levels deep
-	err = ReconcileFailedError("")
-	err = fmt.Errorf("outer; %w", fmt.Errorf("inner; %w", err))
-	assert.True(t, IsReconcileFailedError(err))
-	assert.Equal(t, "outer; inner; ", err.Error())
-}
-
-func TestFormatError(t *testing.T) {
-	err := FormatError(errors.New("formatting error"))
-	assert.True(t, IsFormatError(err))
-	assert.Equal(t, "Formatting failed; formatting error", err.Error())
-}
-
-func TestIsFormatError(t *testing.T) {
-	formatErr := &formatError{
-		message: "format error",
-	}
-
-	tests := []struct {
-		Name    string
-		Err     error
-		wantErr assert.BoolAssertionFunc
-	}{
-		{
-			Name:    "NotFormatError",
-			Err:     errors.New("a generic error"),
-			wantErr: assert.False,
-		},
-		{
-			Name:    "FormatError",
-			Err:     formatErr,
-			wantErr: assert.True,
-		},
-		{
-			Name:    "WrappedFormatError",
-			Err:     fmt.Errorf("wrapping formatError; %w", formatErr),
-			wantErr: assert.True,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.Name, func(t *testing.T) {
-			tt.wantErr(t, IsFormatError(tt.Err), "Unexpected error")
-		})
-	}
-}
-
-func TestConflictError(t *testing.T) {
-	err := ConflictError("conflict error with formatting %s, %s", "foo", "bar")
-	assert.True(t, strings.Contains("conflict error with formatting foo, bar", err.Error()))
-
-	err = errors.New("a generic error")
-	assert.False(t, IsConflictError(err))
-
-	assert.False(t, IsConflictError(nil))
-
-	err = ConflictError("")
-	assert.True(t, IsConflictError(err))
-
-	// Test wrapping
-	err = WrapWithConflictError(errors.New("not conflict err"), "conflict err")
-	assert.True(t, IsConflictError(err))
-	assert.Equal(t, "conflict err; not conflict err", err.Error())
-
-	err = WrapWithConflictError(nil, "conflict err")
-	assert.Equal(t, "conflict err", err.Error())
-
-	err = WrapWithConflictError(errors.New("not reconcile deferred err"), "")
-	assert.True(t, IsConflictError(err))
-	assert.Equal(t, "not reconcile deferred err", err.Error())
-
-	err = WrapWithConflictError(errors.New(""), "conflict err")
-	assert.True(t, IsConflictError(err))
-	assert.Equal(t, "conflict err", err.Error())
-
-	err = ConflictError("")
-	err = fmt.Errorf("custom message: %w", err)
-	assert.True(t, IsConflictError(err))
-	assert.Equal(t, "custom message: ", err.Error())
-
-	// wrap multi levels deep
-	err = ConflictError("")
-	err = fmt.Errorf("outer; %w", fmt.Errorf("inner; %w", err))
-	assert.True(t, IsConflictError(err))
-	assert.Equal(t, "outer; inner; ", err.Error())
-}
-
-func TestMismatchedStorageClassError(t *testing.T) {
-	err := MismatchedStorageClassError("clone volume test-clone from source volume test-source with different storage classes is not allowed")
-	assert.True(t, strings.Contains("clone volume test-clone from source volume test-source with different storage classes is not allowed", err.Error()))
-
-	err = errors.New("clone volume test-clone from source volume test-source with different storage classes is not allowed")
-	assert.False(t, IsMismatchedStorageClassError(err))
-
-	assert.False(t, IsMismatchedStorageClassError(nil))
-
-	err = MismatchedStorageClassError("")
-	assert.True(t, IsMismatchedStorageClassError(err))
-
-	err = MismatchedStorageClassError("clone volume test-clone from source volume test-source with different storage classes is not allowed")
-	assert.True(t, IsMismatchedStorageClassError(err))
-	assert.Equal(t, "clone volume test-clone from source volume test-source with different storage classes is not allowed", err.Error())
+		// Test without formatting
+		err = TimeoutError("simple timeout")
+		assert.True(t, IsTimeoutError(err))
+		assert.Equal(t, "simple timeout", err.Error())
+	})
 }
