@@ -333,8 +333,10 @@ func dedupe(query []Subquery) (map[resource]int, error) {
 		resourceIndices[subquery.res] = 0
 	}
 	for i := 1; i < len(query); i++ {
-		if query[i].res == subquery.res {
-			return nil, fmt.Errorf("duplicate %s operation", subquery.res)
+		// If there is only one resource in the query, a list and RUD operation will appear duplicate without the second
+		// clause
+		if query[i].res == subquery.res && !(subquery.op == list && query[i].op != list) {
+			return nil, fmt.Errorf("duplicate %s operation (%s and %s)", subquery.res, query[i].op, subquery.op)
 		}
 		subquery = query[i]
 		if subquery.op != list {
@@ -418,8 +420,8 @@ func fillInIDs(root int, query []Subquery) error {
 			if !ok && !c.allowBlankID {
 				return errors.NotFoundError("no %s found with key %s", query[root].res, query[root].key)
 			}
-			if query[root].id != "" && query[root].id != id {
-				return fmt.Errorf("conflicting ids for %s: %s and %s", query[root].res, id, query[root].id)
+			if id != "" && query[root].id != "" && query[root].id != id {
+				return fmt.Errorf("conflicting ids for %s: [%s] and [%s]", query[root].res, id, query[root].id)
 			}
 			query[root].id = id
 		} else {
@@ -448,8 +450,8 @@ func fillInIDs(root int, query []Subquery) error {
 			if err != nil {
 				return err
 			}
-			if query[owner].id != "" && id != query[owner].id {
-				return fmt.Errorf("conflicting ids for %s: %s and %s", query[owner].res, id, query[owner].id)
+			if id != "" && query[owner].id != "" && id != query[owner].id {
+				return fmt.Errorf("conflicting ids for %s: (%s) and (%s)", query[owner].res, id, query[owner].id)
 			}
 			query[owner].id = id
 		}
@@ -742,7 +744,10 @@ type SnapshotResult struct {
 type resource int
 
 func (r resource) String() string {
-	return resourceNames[r]
+	if n, ok := resourceNames[r]; ok {
+		return n
+	}
+	return "Unknown"
 }
 
 var resourceNames = map[resource]string{
@@ -768,6 +773,21 @@ const (
 )
 
 type operation int
+
+func (o operation) String() string {
+	if n, ok := operationNames[o]; ok {
+		return n
+	}
+	return "Unknown"
+}
+
+var operationNames = map[operation]string{
+	list:             "List",
+	upsert:           "Upsert",
+	del:              "Delete",
+	read:             "Read",
+	inconsistentRead: "Inconsistent Read",
+}
 
 const (
 	list = operation(iota)

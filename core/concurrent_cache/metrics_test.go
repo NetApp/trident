@@ -39,6 +39,10 @@ func getMockBackendWithMap(mockCtrl *gomock.Controller, attributes map[string]st
 		mockBackend.EXPECT().Online().Return(online == "true").AnyTimes()
 	}
 
+	if uniqueKey, ok := attributes["uniqueKey"]; ok {
+		mockBackend.EXPECT().GetUniqueKey().Return(uniqueKey).AnyTimes()
+	}
+
 	mockBackend.EXPECT().SmartCopy().Return(mockBackend).AnyTimes()
 
 	mockBackend.EXPECT().ConstructPersistent(gomock.Any()).Return(&storage.BackendPersistent{
