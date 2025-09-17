@@ -915,6 +915,11 @@ func (d *ASANVMeStorageDriver) Publish(
 
 	publishInfo.VolumeAccessInfo.NVMeTargetIPs = d.ips
 
+	// xfs volumes are always mounted with '-o nouuid' to allow clones to be mounted to the same node as the source
+	if publishInfo.FilesystemType == filesystem.Xfs {
+		publishInfo.MountOptions = drivers.EnsureMountOption(publishInfo.MountOptions, drivers.MountOptionNoUUID)
+	}
+
 	// Fill in the volume config fields as well
 	volConfig.AccessInfo = publishInfo.VolumeAccessInfo
 

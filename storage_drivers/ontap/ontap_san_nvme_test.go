@@ -1632,6 +1632,60 @@ func TestPublish(t *testing.T) {
 	err = d.Publish(ctx, volConfig, publishInfo)
 
 	assert.NoError(t, err)
+
+	// case 11: XFS filesystem should add nouuid mount option
+	volConfig.FileSystem = filesystem.Xfs
+	publishInfo.MountOptions = ""
+	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
+	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+	err = d.Publish(ctx, volConfig, publishInfo)
+
+	assert.NoError(t, err)
+	assert.Contains(t, publishInfo.MountOptions, "nouuid", "XFS volumes should have nouuid mount option")
+
+	// case 12: XFS filesystem with existing mount options should preserve them and add nouuid
+	volConfig.FileSystem = filesystem.Xfs
+	publishInfo.MountOptions = "rw,relatime"
+	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
+	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+	err = d.Publish(ctx, volConfig, publishInfo)
+
+	assert.NoError(t, err)
+	assert.Contains(t, publishInfo.MountOptions, "rw,relatime", "Existing mount options should be preserved")
+	assert.Contains(t, publishInfo.MountOptions, "nouuid", "XFS volumes should have nouuid mount option added")
+	assert.Equal(t, "rw,relatime,nouuid", publishInfo.MountOptions, "Mount options should be properly formatted")
+
+	// case 13: Non-XFS filesystem should not add nouuid mount option
+	volConfig.FileSystem = filesystem.Ext4
+	publishInfo.MountOptions = ""
+	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
+	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+	err = d.Publish(ctx, volConfig, publishInfo)
+
+	assert.NoError(t, err)
+	assert.NotContains(t, publishInfo.MountOptions, "nouuid", "Non-XFS volumes should not have nouuid mount option")
+
+	// case 14: XFS filesystem with nouuid already present should not duplicate it
+	volConfig.FileSystem = filesystem.Xfs
+	publishInfo.MountOptions = "rw,nouuid,relatime"
+	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
+	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+	err = d.Publish(ctx, volConfig, publishInfo)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "rw,nouuid,relatime", publishInfo.MountOptions, "Mount options should not duplicate nouuid")
 }
 
 func TestUnpublish(t *testing.T) {
