@@ -6324,8 +6324,8 @@ func (o *TridentOrchestrator) replaceBackendAndUpdateVolumesOnPersistentStore(
 
 // EstablishMirror creates a net-new replication mirror relationship between 2 volumes on a backend
 func (o *TridentOrchestrator) EstablishMirror(
-	ctx context.Context,
-	backendUUID, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
+	ctx context.Context, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy,
+	replicationSchedule string,
 ) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
@@ -6351,8 +6351,8 @@ func (o *TridentOrchestrator) EstablishMirror(
 
 // ReestablishMirror recreates a previously existing replication mirror relationship between 2 volumes on a backend
 func (o *TridentOrchestrator) ReestablishMirror(
-	ctx context.Context,
-	backendUUID, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string,
+	ctx context.Context, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy,
+	replicationSchedule string,
 ) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
@@ -6378,7 +6378,7 @@ func (o *TridentOrchestrator) ReestablishMirror(
 
 // PromoteMirror makes the local volume the primary
 func (o *TridentOrchestrator) PromoteMirror(
-	ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle, snapshotHandle string,
+	ctx context.Context, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, snapshotHandle string,
 ) (waitingForSnapshot bool, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
@@ -6446,7 +6446,7 @@ func (o *TridentOrchestrator) CanBackendMirror(ctx context.Context, backendUUID 
 
 // ReleaseMirror removes snapmirror relationship infromation and snapshots for a source volume in ONTAP
 func (o *TridentOrchestrator) ReleaseMirror(
-	ctx context.Context, backendUUID, localInternalVolumeName string,
+	ctx context.Context, backendUUID, volumeName, localInternalVolumeName string,
 ) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
@@ -6496,7 +6496,7 @@ func (o *TridentOrchestrator) GetReplicationDetails(
 
 // UpdateMirror ensures the specified snapshot is copied to the destination, if specified.
 // If snapshot name is empty, the current state of the source is sent instead.
-func (o *TridentOrchestrator) UpdateMirror(ctx context.Context, pvcVolumeName, snapshotName string) (err error) {
+func (o *TridentOrchestrator) UpdateMirror(ctx context.Context, volumeName, snapshotName string) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	if o.bootstrapError != nil {
@@ -6508,9 +6508,9 @@ func (o *TridentOrchestrator) UpdateMirror(ctx context.Context, pvcVolumeName, s
 	defer o.updateMetrics()
 
 	// Get volume
-	tridentVolume, err := o.getVolume(ctx, pvcVolumeName)
+	tridentVolume, err := o.getVolume(ctx, volumeName)
 	if err != nil {
-		return fmt.Errorf("could not find volume '%v' in Trident; %v", pvcVolumeName, err)
+		return fmt.Errorf("could not find volume '%v' in Trident; %v", volumeName, err)
 	}
 
 	// Get backend to ensure it can mirror
@@ -6523,7 +6523,7 @@ func (o *TridentOrchestrator) UpdateMirror(ctx context.Context, pvcVolumeName, s
 	}
 
 	logFields := LogFields{
-		"volume":   pvcVolumeName,
+		"volume":   volumeName,
 		"snapshot": snapshotName,
 	}
 
@@ -6535,7 +6535,7 @@ func (o *TridentOrchestrator) UpdateMirror(ctx context.Context, pvcVolumeName, s
 // CheckMirrorTransferState returns the last completed transfer time and an error if mirror relationship transfer
 // is failed or in progress
 func (o *TridentOrchestrator) CheckMirrorTransferState(
-	ctx context.Context, pvcVolumeName string,
+	ctx context.Context, volumeName string,
 ) (endTime *time.Time, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
@@ -6548,9 +6548,9 @@ func (o *TridentOrchestrator) CheckMirrorTransferState(
 	defer o.updateMetrics()
 
 	// Get volume
-	tridentVolume, err := o.getVolume(ctx, pvcVolumeName)
+	tridentVolume, err := o.getVolume(ctx, volumeName)
 	if err != nil {
-		return nil, fmt.Errorf("could not find volume '%v' in Trident; %v", pvcVolumeName, err)
+		return nil, fmt.Errorf("could not find volume '%v' in Trident; %v", volumeName, err)
 	}
 
 	// Get backend to ensure it can mirror
@@ -6568,7 +6568,7 @@ func (o *TridentOrchestrator) CheckMirrorTransferState(
 
 // GetMirrorTransferTime returns the last completed transfer time
 func (o *TridentOrchestrator) GetMirrorTransferTime(
-	ctx context.Context, pvcVolumeName string,
+	ctx context.Context, volumeName string,
 ) (endTime *time.Time, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
@@ -6581,9 +6581,9 @@ func (o *TridentOrchestrator) GetMirrorTransferTime(
 	defer o.updateMetrics()
 
 	// Get volume
-	tridentVolume, err := o.getVolume(ctx, pvcVolumeName)
+	tridentVolume, err := o.getVolume(ctx, volumeName)
 	if err != nil {
-		return nil, fmt.Errorf("could not find volume '%v' in Trident; %v", pvcVolumeName, err)
+		return nil, fmt.Errorf("could not find volume '%v' in Trident; %v", volumeName, err)
 	}
 
 	// Get backend to ensure it can mirror

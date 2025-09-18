@@ -7,7 +7,6 @@ package storage
 import (
 	"context"
 	"sync"
-	"time"
 
 	"github.com/RoaringBitmap/roaring/v2"
 
@@ -84,12 +83,10 @@ type Backend interface {
 	ConstructExternalWithPoolMap(ctx context.Context, poolMap map[string][]string) *BackendExternal
 	ConstructPersistent(ctx context.Context) *BackendPersistent
 	CanMirror() bool
-	UpdateMirror(ctx context.Context, localInternalVolumeName, snapshotName string) error
-	CheckMirrorTransferState(ctx context.Context, pvcVolumeName string) (*time.Time, error)
-	GetMirrorTransferTime(ctx context.Context, pvcVolumeName string) (*time.Time, error)
 	SmartCopy() interface{}
 	DeepCopyType() Backend
 	GetUniqueKey() string
+	Mirrorer
 	ChapEnabled
 	PublishEnforceable
 	GroupSnapshotter

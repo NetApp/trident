@@ -380,6 +380,20 @@ func (mr *MockBackendMockRecorder) EnablePublishEnforcement(ctx, volume any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnablePublishEnforcement", reflect.TypeOf((*MockBackend)(nil).EnablePublishEnforcement), ctx, volume)
 }
 
+// EstablishMirror mocks base method.
+func (m *MockBackend) EstablishMirror(ctx context.Context, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EstablishMirror", ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EstablishMirror indicates an expected call of EstablishMirror.
+func (mr *MockBackendMockRecorder) EstablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EstablishMirror", reflect.TypeOf((*MockBackend)(nil).EstablishMirror), ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule)
+}
+
 // GetBackendState mocks base method.
 func (m *MockBackend) GetBackendState(ctx context.Context) (string, *roaring.Bitmap) {
 	m.ctrl.T.Helper()
@@ -453,6 +467,21 @@ func (mr *MockBackendMockRecorder) GetGroupSnapshotTarget(ctx, volConfigs any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupSnapshotTarget", reflect.TypeOf((*MockBackend)(nil).GetGroupSnapshotTarget), ctx, volConfigs)
 }
 
+// GetMirrorStatus mocks base method.
+func (m *MockBackend) GetMirrorStatus(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMirrorStatus", ctx, localInternalVolumeName, remoteVolumeHandle)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMirrorStatus indicates an expected call of GetMirrorStatus.
+func (mr *MockBackendMockRecorder) GetMirrorStatus(ctx, localInternalVolumeName, remoteVolumeHandle any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMirrorStatus", reflect.TypeOf((*MockBackend)(nil).GetMirrorStatus), ctx, localInternalVolumeName, remoteVolumeHandle)
+}
+
 // GetMirrorTransferTime mocks base method.
 func (m *MockBackend) GetMirrorTransferTime(ctx context.Context, pvcVolumeName string) (*time.Time, error) {
 	m.ctrl.T.Helper()
@@ -494,6 +523,23 @@ func (m *MockBackend) GetProtocol(ctx context.Context) config.Protocol {
 func (mr *MockBackendMockRecorder) GetProtocol(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProtocol", reflect.TypeOf((*MockBackend)(nil).GetProtocol), ctx)
+}
+
+// GetReplicationDetails mocks base method.
+func (m *MockBackend) GetReplicationDetails(ctx context.Context, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetReplicationDetails", ctx, localInternalVolumeName, remoteVolumeHandle)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(string)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
+}
+
+// GetReplicationDetails indicates an expected call of GetReplicationDetails.
+func (mr *MockBackendMockRecorder) GetReplicationDetails(ctx, localInternalVolumeName, remoteVolumeHandle any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReplicationDetails", reflect.TypeOf((*MockBackend)(nil).GetReplicationDetails), ctx, localInternalVolumeName, remoteVolumeHandle)
 }
 
 // GetSnapshot mocks base method.
@@ -682,6 +728,21 @@ func (mr *MockBackendMockRecorder) ProcessGroupSnapshot(ctx, arg1, volConfigs an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessGroupSnapshot", reflect.TypeOf((*MockBackend)(nil).ProcessGroupSnapshot), ctx, arg1, volConfigs)
 }
 
+// PromoteMirror mocks base method.
+func (m *MockBackend) PromoteMirror(ctx context.Context, localInternalVolumeName, remoteVolumeHandle, snapshotName string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PromoteMirror", ctx, localInternalVolumeName, remoteVolumeHandle, snapshotName)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PromoteMirror indicates an expected call of PromoteMirror.
+func (mr *MockBackendMockRecorder) PromoteMirror(ctx, localInternalVolumeName, remoteVolumeHandle, snapshotName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PromoteMirror", reflect.TypeOf((*MockBackend)(nil).PromoteMirror), ctx, localInternalVolumeName, remoteVolumeHandle, snapshotName)
+}
+
 // PublishVolume mocks base method.
 func (m *MockBackend) PublishVolume(ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo) error {
 	m.ctrl.T.Helper()
@@ -722,6 +783,34 @@ func (m *MockBackend) ReconcileVolumeNodeAccess(ctx context.Context, volConfig *
 func (mr *MockBackendMockRecorder) ReconcileVolumeNodeAccess(ctx, volConfig, nodes any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVolumeNodeAccess", reflect.TypeOf((*MockBackend)(nil).ReconcileVolumeNodeAccess), ctx, volConfig, nodes)
+}
+
+// ReestablishMirror mocks base method.
+func (m *MockBackend) ReestablishMirror(ctx context.Context, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReestablishMirror", ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReestablishMirror indicates an expected call of ReestablishMirror.
+func (mr *MockBackendMockRecorder) ReestablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReestablishMirror", reflect.TypeOf((*MockBackend)(nil).ReestablishMirror), ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule)
+}
+
+// ReleaseMirror mocks base method.
+func (m *MockBackend) ReleaseMirror(ctx context.Context, localInternalVolumeName string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReleaseMirror", ctx, localInternalVolumeName)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReleaseMirror indicates an expected call of ReleaseMirror.
+func (mr *MockBackendMockRecorder) ReleaseMirror(ctx, localInternalVolumeName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReleaseMirror", reflect.TypeOf((*MockBackend)(nil).ReleaseMirror), ctx, localInternalVolumeName)
 }
 
 // RemoveCachedVolume mocks base method.

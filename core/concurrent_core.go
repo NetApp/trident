@@ -57,7 +57,7 @@ type ConcurrentTridentOrchestrator struct {
 
 var (
 	_                 Orchestrator = &ConcurrentTridentOrchestrator{}
-	supportedBackends              = []string{"ontap-san", "fake"}
+	supportedBackends              = []string{"ontap-san", "fake", "ontap-nas"}
 )
 
 func NewConcurrentTridentOrchestrator(client persistentstore.Client) (Orchestrator, error) {
@@ -1084,15 +1084,9 @@ func (o *ConcurrentTridentOrchestrator) GetBackendByBackendUUID(
 
 	defer recordTiming("backend_get", &err)()
 
-	results, unlocker, err := db.Lock(db.Query(db.ReadBackend(backendUUID)))
-	defer unlocker()
+	backend, err := getInconsistentBackendByUUID(backendUUID)
 	if err != nil {
 		return nil, err
-	}
-
-	backend := results[0].Backend.Read
-	if backend == nil {
-		return nil, errors.NotFoundError("backend with UUID %v was not found", backendUUID)
 	}
 
 	backendExternal = backend.ConstructExternalWithPoolMap(ctx,
@@ -1106,6 +1100,24 @@ func (o *ConcurrentTridentOrchestrator) GetBackendByBackendUUID(
 		"backendExternal.State": backendExternal.State.String(),
 	}).Trace("GetBackend information.")
 	return backendExternal, nil
+}
+
+// NOTE: DO NOT USE THIS FUNCTION INSIDE ANOTHER LOCK CONTEXT
+func getInconsistentBackendByUUID(
+	backendUUID string,
+) (storage.Backend, error) {
+	results, unlocker, err := db.Lock(db.Query(db.InconsistentReadBackend(backendUUID)))
+	defer unlocker()
+	if err != nil {
+		return nil, err
+	}
+
+	backend := results[0].Backend.Read
+	if backend == nil {
+		return nil, errors.NotFoundError("backend with UUID %v was not found", backendUUID)
+	}
+
+	return backend, nil
 }
 
 func (o *ConcurrentTridentOrchestrator) ListBackends(
@@ -5642,44 +5654,302 @@ func (o *ConcurrentTridentOrchestrator) DeleteVolumeTransaction(ctx context.Cont
 	return o.storeClient.DeleteVolumeTransaction(ctx, volTxn)
 }
 
-func (o *ConcurrentTridentOrchestrator) EstablishMirror(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string) error {
-	return fmt.Errorf("EstablishMirror is not implemented in concurrent core")
+func (o *ConcurrentTridentOrchestrator) EstablishMirror(
+	ctx context.Context, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy,
+	replicationSchedule string,
+) error {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	var err error
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+	defer recordTiming("mirror_establish", &err)()
+
+	backend, err := getInconsistentBackendByUUID(backendUUID)
+	if err != nil {
+		return err
+	}
+
+	if !backend.CanMirror() {
+		return fmt.Errorf("backend does not support mirroring")
+	}
+
+	_, unlocker, err := db.Lock(db.Query(
+		db.UpsertVolume(volumeName, backendUUID),
+	))
+	defer unlocker()
+	if err != nil {
+		Logc(ctx).WithField("volume", volumeName).WithError(err).Error(
+			"Failed to lock volume for upsert.")
+		return err
+	}
+
+	return backend.EstablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy,
+		replicationSchedule)
 }
 
-func (o *ConcurrentTridentOrchestrator) ReestablishMirror(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string) error {
-	return fmt.Errorf("ReestablishMirror is not implemented in concurrent core")
+func (o *ConcurrentTridentOrchestrator) ReestablishMirror(
+	ctx context.Context, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy,
+	replicationSchedule string,
+) error {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	var err error
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+	defer recordTiming("mirror_reestablish", &err)()
+
+	backend, err := getInconsistentBackendByUUID(backendUUID)
+	if err != nil {
+		return err
+	}
+
+	if !backend.CanMirror() {
+		return fmt.Errorf("backend does not support mirroring")
+	}
+
+	_, unlocker, err := db.Lock(db.Query(
+		db.UpsertVolume(volumeName, backendUUID),
+	))
+	defer unlocker()
+	if err != nil {
+		Logc(ctx).WithField("volume", volumeName).WithError(err).Error(
+			"Failed to lock volume for upsert.")
+		return err
+	}
+
+	return backend.ReestablishMirror(ctx, localInternalVolumeName, remoteVolumeHandle, replicationPolicy,
+		replicationSchedule)
 }
 
-func (o *ConcurrentTridentOrchestrator) PromoteMirror(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle, snapshotHandle string) (bool, error) {
-	return false, fmt.Errorf("PromoteMirror is not implemented in concurrent core")
+func (o *ConcurrentTridentOrchestrator) PromoteMirror(
+	ctx context.Context, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, snapshotHandle string,
+) (bool, error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	var err error
+	if o.bootstrapError != nil {
+		return false, o.bootstrapError
+	}
+	defer recordTiming("mirror_promote", &err)()
+
+	backend, err := getInconsistentBackendByUUID(backendUUID)
+	if err != nil {
+		return false, err
+	}
+
+	if !backend.CanMirror() {
+		return false, fmt.Errorf("backend does not support mirroring")
+	}
+
+	_, unlocker, err := db.Lock(db.Query(
+		db.UpsertVolume(volumeName, backendUUID),
+	))
+	defer unlocker()
+	if err != nil {
+		Logc(ctx).WithField("volume", volumeName).WithError(err).Error(
+			"Failed to lock volume for upsert.")
+		return false, err
+	}
+
+	return backend.PromoteMirror(ctx, localInternalVolumeName, remoteVolumeHandle, snapshotHandle)
 }
 
 func (o *ConcurrentTridentOrchestrator) GetMirrorStatus(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string) (string, error) {
-	return "", fmt.Errorf("GetMirrorStatus is not implemented in concurrent core")
+	var err error
+
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return "", o.bootstrapError
+	}
+	defer recordTiming("mirror_status", &err)()
+
+	backend, err := getInconsistentBackendByUUID(backendUUID)
+	if err != nil {
+		return "", err
+	}
+
+	if !backend.CanMirror() {
+		return "", fmt.Errorf("backend does not support mirroring")
+	}
+	return backend.GetMirrorStatus(ctx, localInternalVolumeName, remoteVolumeHandle)
 }
 
 func (o *ConcurrentTridentOrchestrator) CanBackendMirror(ctx context.Context, backendUUID string) (bool, error) {
-	return false, fmt.Errorf("CanBackendMirror is not implemented in concurrent core")
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	var err error
+
+	if o.bootstrapError != nil {
+		return false, o.bootstrapError
+	}
+	defer recordTiming("mirror_capable", &err)()
+
+	backend, err := getInconsistentBackendByUUID(backendUUID)
+	if err != nil {
+		return false, err
+	}
+	return backend.CanMirror(), nil
 }
 
-func (o *ConcurrentTridentOrchestrator) ReleaseMirror(ctx context.Context, backendUUID, localInternalVolumeName string) error {
-	return fmt.Errorf("ReleaseMirror is not implemented in concurrent core")
+func (o *ConcurrentTridentOrchestrator) ReleaseMirror(ctx context.Context, backendUUID, volumeName, localInternalVolumeName string) error {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	var err error
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+	defer recordTiming("mirror_release", &err)()
+
+	backend, err := getInconsistentBackendByUUID(backendUUID)
+	if err != nil {
+		return err
+	}
+
+	if !backend.CanMirror() {
+		return fmt.Errorf("backend does not support mirroring")
+	}
+
+	_, unlocker, err := db.Lock(db.Query(
+		db.UpsertVolume(volumeName, backendUUID),
+	))
+	defer unlocker()
+	if err != nil {
+		Logc(ctx).WithField("volume", volumeName).WithError(err).Error(
+			"Failed to lock volume for upsert.")
+		return err
+	}
+
+	return backend.ReleaseMirror(ctx, localInternalVolumeName)
 }
 
 func (o *ConcurrentTridentOrchestrator) GetReplicationDetails(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error) {
-	return "", "", "", fmt.Errorf("GetReplicationDetails is not implemented in concurrent core")
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	var err error
+	if o.bootstrapError != nil {
+		return "", "", "", o.bootstrapError
+	}
+	defer recordTiming("replication_details", &err)()
+
+	backend, err := getInconsistentBackendByUUID(backendUUID)
+	if err != nil {
+		return "", "", "", err
+	}
+
+	if !backend.CanMirror() {
+		return "", "", "", fmt.Errorf("backend does not support mirroring")
+	}
+
+	return backend.GetReplicationDetails(ctx, localInternalVolumeName, remoteVolumeHandle)
 }
 
-func (o *ConcurrentTridentOrchestrator) UpdateMirror(ctx context.Context, pvcVolumeName, snapshotName string) error {
-	return fmt.Errorf("UpdateMirror is not implemented in concurrent core")
+func (o *ConcurrentTridentOrchestrator) UpdateMirror(ctx context.Context, volumeName, snapshotName string) error {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	var err error
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+	defer recordTiming("update_mirror", &err)()
+
+	// Get volume
+	tridentVolume, err := o.getVolume(ctx, volumeName)
+	if err != nil {
+		return fmt.Errorf("could not find volume '%v' in Trident; %v", volumeName, err)
+	}
+
+	backendUUID := tridentVolume.BackendUUID
+
+	backend, err := getInconsistentBackendByUUID(backendUUID)
+	if err != nil {
+		return fmt.Errorf("backend %s not found", backendUUID)
+	}
+
+	if !backend.CanMirror() {
+		return fmt.Errorf("backend does not support mirroring")
+	}
+
+	_, unlocker, err := db.Lock(db.Query(
+		db.UpsertVolume(volumeName, backendUUID),
+	))
+	defer unlocker()
+	if err != nil {
+		Logc(ctx).WithField("volume", volumeName).WithError(err).Error(
+			"Failed to lock volume for upsert.")
+		return err
+	}
+
+	logFields := LogFields{
+		"volume":   volumeName,
+		"snapshot": snapshotName,
+	}
+
+	// Mirror update
+	Logc(ctx).WithFields(logFields).Info("Mirror update in progress.")
+	return backend.UpdateMirror(ctx, tridentVolume.Config.InternalName, snapshotName)
 }
 
-func (o *ConcurrentTridentOrchestrator) CheckMirrorTransferState(ctx context.Context, pvcVolumeName string) (*time.Time, error) {
-	return nil, fmt.Errorf("CheckMirrorTransferState is not implemented in concurrent core")
+func (o *ConcurrentTridentOrchestrator) CheckMirrorTransferState(ctx context.Context, volumeName string) (*time.Time, error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	var err error
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+	defer recordTiming("check_mirror_transfer_state", &err)()
+
+	// Get volume
+	tridentVolume, err := o.getVolume(ctx, volumeName)
+	if err != nil {
+		return nil, fmt.Errorf("could not find volume '%v' in Trident; %v", volumeName, err)
+	}
+
+	// Get backend to ensure it can mirror
+	backend, err := getInconsistentBackendByUUID(tridentVolume.BackendUUID)
+	if err != nil {
+		return nil, fmt.Errorf("backend %s not found", tridentVolume.BackendUUID)
+	}
+
+	if !backend.CanMirror() {
+		return nil, fmt.Errorf("backend does not support mirroring")
+	}
+
+	// Check transfer state of mirror relationship
+	return backend.CheckMirrorTransferState(ctx, tridentVolume.Config.InternalName)
 }
 
-func (o *ConcurrentTridentOrchestrator) GetMirrorTransferTime(ctx context.Context, pvcVolumeName string) (*time.Time, error) {
-	return nil, fmt.Errorf("GetMirrorTransferTime is not implemented in concurrent core")
+func (o *ConcurrentTridentOrchestrator) GetMirrorTransferTime(ctx context.Context, volumeName string) (*time.Time, error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	var err error
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+	defer recordTiming("get_mirror_transfer_time", &err)()
+
+	// Get volume
+	tridentVolume, err := o.getVolume(ctx, volumeName)
+	if err != nil {
+		return nil, fmt.Errorf("could not find volume '%v' in Trident; %v", volumeName, err)
+	}
+
+	// Get backend to ensure it can mirror
+	backend, err := getInconsistentBackendByUUID(tridentVolume.BackendUUID)
+	if err != nil {
+		return nil, fmt.Errorf("backend %s not found", tridentVolume.BackendUUID)
+	}
+
+	if !backend.CanMirror() {
+		return nil, fmt.Errorf("backend does not support mirroring")
+	}
+
+	// Get last transfer time of mirror relationship
+	return backend.GetMirrorTransferTime(ctx, tridentVolume.Config.InternalName)
 }
 
 func (o *ConcurrentTridentOrchestrator) GetCHAP(

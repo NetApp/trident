@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -12082,6 +12083,1706 @@ func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
 
 			if tt.verifyBehavior != nil {
 				tt.verifyBehavior(t, o)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestReleaseMirrorConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name                    string
+		backendUUID             string
+		pvcVolumeName           string
+		localInternalVolumeName string
+		bootstrapError          error
+		setupMocks              func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator)
+		verifyError             func(err error)
+	}{
+		{
+			name:                    "Success",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().ReleaseMirror(gomock.Any(), "testLocalVolume").
+					Return(nil).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:                    "BootstrapError",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			bootstrapError:          errors.New("bootstrap error"),
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+		},
+		{
+			name:                    "BackendNotSupportMirroring",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(false)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "backend does not support mirroring")
+			},
+		},
+		{
+			name:                    "ReleaseMirrorError",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().ReleaseMirror(gomock.Any(), "testLocalVolume").
+					Return(errors.New("release mirror failed")).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "release mirror failed")
+			},
+		},
+		{
+			name:                    "BackendNotFound",
+			backendUUID:             "nonExistentBackend",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				fakeVolume := getFakeVolume("testPVCVolume", "nonExistentBackend-Uuid1")
+
+				addVolumesToCache(t, fakeVolume)
+				// Don't add any backend to simulate not found scenario
+			},
+			verifyError: func(err error) {
+				// The error will come from the db.Lock operation when backend is not found
+				assert.Error(t, err)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+			o.bootstrapError = tt.bootstrapError
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, o)
+			}
+
+			err := o.ReleaseMirror(testCtx, tt.backendUUID, tt.pvcVolumeName, tt.localInternalVolumeName)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestCanBackendMirrorConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name           string
+		backendUUID    string
+		bootstrapError error
+		setupMocks     func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator)
+		verifyError    func(err error)
+		verifyResult   func(canMirror bool)
+	}{
+		{
+			name:        "Success_BackendCanMirror",
+			backendUUID: "backend-uuid1",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(canMirror bool) {
+				assert.True(t, canMirror)
+			},
+		},
+		{
+			name:        "Success_BackendCannotMirror",
+			backendUUID: "backend-uuid1",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(false)
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(canMirror bool) {
+				assert.False(t, canMirror)
+			},
+		},
+		{
+			name:           "BootstrapError",
+			backendUUID:    "backend-uuid1",
+			bootstrapError: errors.New("bootstrap error"),
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+			verifyResult: func(canMirror bool) {
+				assert.False(t, canMirror)
+			},
+		},
+		{
+			name:        "BackendNotFound",
+			backendUUID: "nonExistentBackend",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// Don't add any backend to simulate not found scenario
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "backend with UUID nonExistentBackend was not found")
+			},
+			verifyResult: func(canMirror bool) {
+				assert.False(t, canMirror)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+			o.bootstrapError = tt.bootstrapError
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, o)
+			}
+
+			result, err := o.CanBackendMirror(testCtx, tt.backendUUID)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			if tt.verifyResult != nil {
+				tt.verifyResult(result)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestGetMirrorStatusConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name                    string
+		backendUUID             string
+		localInternalVolumeName string
+		remoteVolumeHandle      string
+		bootstrapError          error
+		setupMocks              func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator)
+		verifyError             func(err error)
+		verifyResult            func(status string)
+	}{
+		{
+			name:                    "Success",
+			backendUUID:             "backend-uuid1",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().GetMirrorStatus(gomock.Any(), "testLocalVolume", "testRemoteVolume").
+					Return("established", nil).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(status string) {
+				assert.Equal(t, "established", status)
+			},
+		},
+		{
+			name:                    "BootstrapError",
+			backendUUID:             "backend-uuid1",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			bootstrapError:          errors.New("bootstrap error"),
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+			verifyResult: func(status string) {
+				assert.Empty(t, status)
+			},
+		},
+		{
+			name:                    "BackendNotFound",
+			backendUUID:             "nonExistentBackend",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// Don't add any backend to simulate not found scenario
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "backend with UUID nonExistentBackend was not found")
+			},
+			verifyResult: func(status string) {
+				assert.Empty(t, status)
+			},
+		},
+		{
+			name:                    "BackendNotSupportMirroring",
+			backendUUID:             "backend-uuid1",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(false)
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "backend does not support mirroring")
+			},
+			verifyResult: func(status string) {
+				assert.Empty(t, status)
+			},
+		},
+		{
+			name:                    "GetMirrorStatusError",
+			backendUUID:             "backend-uuid1",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().GetMirrorStatus(gomock.Any(), "testLocalVolume", "testRemoteVolume").
+					Return("", errors.New("mirror status retrieval failed")).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "mirror status retrieval failed")
+			},
+			verifyResult: func(status string) {
+				assert.Empty(t, status)
+			},
+		},
+		{
+			name:                    "VariousMirrorStatuses",
+			backendUUID:             "backend-uuid1",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().GetMirrorStatus(gomock.Any(), "testLocalVolume", "testRemoteVolume").
+					Return("replicating", nil).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(status string) {
+				assert.Equal(t, "replicating", status)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+			o.bootstrapError = tt.bootstrapError
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, o)
+			}
+
+			result, err := o.GetMirrorStatus(testCtx, tt.backendUUID, tt.localInternalVolumeName, tt.remoteVolumeHandle)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			if tt.verifyResult != nil {
+				tt.verifyResult(result)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestPromoteMirrorConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name                    string
+		backendUUID             string
+		pvcVolumeName           string
+		localInternalVolumeName string
+		remoteVolumeHandle      string
+		snapshotHandle          string
+		bootstrapError          error
+		setupMocks              func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator)
+		verifyError             func(err error)
+		verifyResult            func(promoted bool)
+	}{
+		{
+			name:                    "Success",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			snapshotHandle:          "testSnapshot",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().PromoteMirror(gomock.Any(), "testLocalVolume", "testRemoteVolume", "testSnapshot").
+					Return(true, nil).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(promoted bool) {
+				assert.True(t, promoted)
+			},
+		},
+		{
+			name:                    "BootstrapError",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			snapshotHandle:          "testSnapshot",
+			bootstrapError:          errors.New("bootstrap error"),
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+			verifyResult: func(promoted bool) {
+				assert.False(t, promoted)
+			},
+		},
+		{
+			name:                    "BackendNotSupportMirroring",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			snapshotHandle:          "testSnapshot",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(false)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "backend does not support mirroring")
+			},
+			verifyResult: func(promoted bool) {
+				assert.False(t, promoted)
+			},
+		},
+		{
+			name:                    "PromoteMirrorError",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			snapshotHandle:          "testSnapshot",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().PromoteMirror(gomock.Any(), "testLocalVolume", "testRemoteVolume", "testSnapshot").
+					Return(false, errors.New("promote mirror failed")).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "promote mirror failed")
+			},
+			verifyResult: func(promoted bool) {
+				assert.False(t, promoted)
+			},
+		},
+		{
+			name:                    "BackendNotFound",
+			backendUUID:             "nonExistentBackend",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			snapshotHandle:          "testSnapshot",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				fakeVolume := getFakeVolume("testPVCVolume", "nonExistentBackend-Uuid1")
+
+				addVolumesToCache(t, fakeVolume)
+				// Don't add any backend to simulate not found scenario
+			},
+			verifyError: func(err error) {
+				// The error will come from the db.Lock operation when backend is not found
+				assert.ErrorContains(t, err, "backend with UUID nonExistentBackend was not found")
+			},
+			verifyResult: func(promoted bool) {
+				assert.False(t, promoted)
+			},
+		},
+		{
+			name:                    "PromoteMirrorReturnsFalse",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			snapshotHandle:          "testSnapshot",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().PromoteMirror(gomock.Any(), "testLocalVolume", "testRemoteVolume", "testSnapshot").
+					Return(false, nil).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(promoted bool) {
+				assert.False(t, promoted)
+			},
+		},
+		{
+			name:                    "EmptySnapshotHandle",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			snapshotHandle:          "",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().PromoteMirror(gomock.Any(), "testLocalVolume", "testRemoteVolume", "").
+					Return(true, nil).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(promoted bool) {
+				assert.True(t, promoted)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+			o.bootstrapError = tt.bootstrapError
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, o)
+			}
+
+			result, err := o.PromoteMirror(testCtx, tt.backendUUID, tt.pvcVolumeName,
+				tt.localInternalVolumeName, tt.remoteVolumeHandle, tt.snapshotHandle)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			if tt.verifyResult != nil {
+				tt.verifyResult(result)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestReestablishMirrorConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name                    string
+		backendUUID             string
+		pvcVolumeName           string
+		localInternalVolumeName string
+		remoteVolumeHandle      string
+		replicationPolicy       string
+		replicationSchedule     string
+		bootstrapError          error
+		setupMocks              func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator)
+		verifyError             func(err error)
+	}{
+		{
+			name:                    "Success",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			replicationPolicy:       "MirrorAllSnapshots",
+			replicationSchedule:     "5minutely",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().ReestablishMirror(gomock.Any(), "testLocalVolume", "testRemoteVolume",
+					"MirrorAllSnapshots", "5minutely").Return(nil).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:                    "BootstrapError",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			replicationPolicy:       "MirrorAllSnapshots",
+			replicationSchedule:     "5minutely",
+			bootstrapError:          errors.New("bootstrap error"),
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+		},
+		{
+			name:                    "BackendNotFound",
+			backendUUID:             "nonExistentBackend",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			replicationPolicy:       "MirrorAllSnapshots",
+			replicationSchedule:     "5minutely",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				fakeVolume := getFakeVolume("testPVCVolume", "nonExistentBackend-Uuid1")
+				addVolumesToCache(t, fakeVolume)
+				// Don't add any backend to simulate not found scenario
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "backend with UUID nonExistentBackend was not found")
+			},
+		},
+		{
+			name:                    "BackendNotSupportMirroring",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			replicationPolicy:       "MirrorAllSnapshots",
+			replicationSchedule:     "5minutely",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(false)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "backend does not support mirroring")
+			},
+		},
+		{
+			name:                    "ReestablishMirrorError",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			replicationPolicy:       "MirrorAllSnapshots",
+			replicationSchedule:     "5minutely",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().ReestablishMirror(gomock.Any(), "testLocalVolume", "testRemoteVolume",
+					"MirrorAllSnapshots", "5minutely").Return(errors.New("reestablish mirror failed")).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "reestablish mirror failed")
+			},
+		},
+		{
+			name:                    "EmptyReplicationPolicy",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			replicationPolicy:       "",
+			replicationSchedule:     "5minutely",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().ReestablishMirror(gomock.Any(), "testLocalVolume", "testRemoteVolume",
+					"", "5minutely").Return(nil).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:                    "EmptyReplicationSchedule",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			replicationPolicy:       "MirrorAllSnapshots",
+			replicationSchedule:     "",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().ReestablishMirror(gomock.Any(), "testLocalVolume", "testRemoteVolume",
+					"MirrorAllSnapshots", "").Return(nil).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:                    "DifferentReplicationPolicies",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			replicationPolicy:       "MirrorLatest",
+			replicationSchedule:     "hourly",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().ReestablishMirror(gomock.Any(), "testLocalVolume", "testRemoteVolume",
+					"MirrorLatest", "hourly").Return(nil).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+			o.bootstrapError = tt.bootstrapError
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, o)
+			}
+
+			err := o.ReestablishMirror(testCtx, tt.backendUUID, tt.pvcVolumeName,
+				tt.localInternalVolumeName, tt.remoteVolumeHandle,
+				tt.replicationPolicy, tt.replicationSchedule)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestEstablishMirrorConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name                    string
+		backendUUID             string
+		pvcVolumeName           string
+		localInternalVolumeName string
+		remoteVolumeHandle      string
+		replicationPolicy       string
+		replicationSchedule     string
+		bootstrapError          error
+		setupMocks              func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator)
+		verifyError             func(err error)
+	}{
+		{
+			name:                    "Success",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			replicationPolicy:       "MirrorAllSnapshots",
+			replicationSchedule:     "5minutely",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().EstablishMirror(gomock.Any(), "testLocalVolume", "testRemoteVolume",
+					"MirrorAllSnapshots", "5minutely").Return(nil).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:                    "BootstrapError",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			replicationPolicy:       "MirrorAllSnapshots",
+			replicationSchedule:     "5minutely",
+			bootstrapError:          errors.New("bootstrap error"),
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+		},
+		{
+			name:                    "BackendNotSupportMirroring",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			replicationPolicy:       "MirrorAllSnapshots",
+			replicationSchedule:     "5minutely",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(false)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "backend does not support mirroring")
+			},
+		},
+		{
+			name:                    "EstablishMirrorError",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			replicationPolicy:       "MirrorAllSnapshots",
+			replicationSchedule:     "5minutely",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().EstablishMirror(gomock.Any(), "testLocalVolume", "testRemoteVolume",
+					"MirrorAllSnapshots", "5minutely").Return(errors.New("establish mirror failed")).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "establish mirror failed")
+			},
+		},
+		{
+			name:                    "BackendNotFound",
+			backendUUID:             "nonExistentBackend",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			replicationPolicy:       "MirrorAllSnapshots",
+			replicationSchedule:     "5minutely",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				fakeVolume := getFakeVolume("testPVCVolume", "nonExistentBackend-Uuid1")
+
+				addVolumesToCache(t, fakeVolume)
+				// Don't add any backend to simulate not found scenario
+			},
+			verifyError: func(err error) {
+				// The error will come from the db.Lock operation when backend is not found
+				assert.ErrorContains(t, err, "backend with UUID nonExistentBackend was not found")
+			},
+		},
+		{
+			name:                    "EmptyReplicationPolicy",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			replicationPolicy:       "",
+			replicationSchedule:     "5minutely",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().EstablishMirror(gomock.Any(), "testLocalVolume", "testRemoteVolume",
+					"", "5minutely").Return(nil).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:                    "EmptyReplicationSchedule",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			replicationPolicy:       "MirrorAllSnapshots",
+			replicationSchedule:     "",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().EstablishMirror(gomock.Any(), "testLocalVolume", "testRemoteVolume",
+					"MirrorAllSnapshots", "").Return(nil).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:                    "InvalidReplicationSchedule",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			replicationPolicy:       "MirrorAllSnapshots",
+			replicationSchedule:     "invalid-schedule",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().EstablishMirror(gomock.Any(), "testLocalVolume", "testRemoteVolume",
+					"MirrorAllSnapshots", "invalid-schedule").Return(errors.New("invalid replication schedule")).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "invalid replication schedule")
+			},
+		},
+		{
+			name:                    "EmptyLocalInternalVolumeName",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "",
+			remoteVolumeHandle:      "testRemoteVolume",
+			replicationPolicy:       "MirrorAllSnapshots",
+			replicationSchedule:     "5minutely",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().EstablishMirror(gomock.Any(), "", "testRemoteVolume",
+					"MirrorAllSnapshots", "5minutely").Return(errors.New("invalid local volume name")).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "invalid local volume name")
+			},
+		},
+		{
+			name:                    "EmptyRemoteVolumeHandle",
+			backendUUID:             "backend-uuid1",
+			pvcVolumeName:           "testPVCVolume",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "",
+			replicationPolicy:       "MirrorAllSnapshots",
+			replicationSchedule:     "5minutely",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().EstablishMirror(gomock.Any(), "testLocalVolume", "",
+					"MirrorAllSnapshots", "5minutely").Return(errors.New("invalid remote volume handle")).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "invalid remote volume handle")
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+			o.bootstrapError = tt.bootstrapError
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, o)
+			}
+
+			err := o.EstablishMirror(testCtx, tt.backendUUID, tt.pvcVolumeName,
+				tt.localInternalVolumeName, tt.remoteVolumeHandle,
+				tt.replicationPolicy, tt.replicationSchedule)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestGetReplicationDetailsConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name                    string
+		backendUUID             string
+		localInternalVolumeName string
+		remoteVolumeHandle      string
+		bootstrapError          error
+		setupMocks              func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator)
+		verifyError             func(err error)
+		verifyResult            func(replicationPolicy, replicationSchedule, remoteVolumeState string)
+	}{
+		{
+			name:                    "Success",
+			backendUUID:             "backend-uuid1",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().GetReplicationDetails(gomock.Any(), "testLocalVolume", "testRemoteVolume").
+					Return("MirrorAllSnapshots", "5minutely", "established", nil).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(replicationPolicy, replicationSchedule, remoteVolumeState string) {
+				assert.Equal(t, "MirrorAllSnapshots", replicationPolicy)
+				assert.Equal(t, "5minutely", replicationSchedule)
+				assert.Equal(t, "established", remoteVolumeState)
+			},
+		},
+		{
+			name:                    "BootstrapError",
+			backendUUID:             "backend-uuid1",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			bootstrapError:          errors.New("bootstrap error"),
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+			verifyResult: func(replicationPolicy, replicationSchedule, remoteVolumeState string) {
+				assert.Empty(t, replicationPolicy)
+				assert.Empty(t, replicationSchedule)
+				assert.Empty(t, remoteVolumeState)
+			},
+		},
+		{
+			name:                    "BackendNotFound",
+			backendUUID:             "nonExistentBackend",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// Don't add any backend to simulate not found scenario
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "backend with UUID nonExistentBackend was not found")
+			},
+			verifyResult: func(replicationPolicy, replicationSchedule, remoteVolumeState string) {
+				assert.Empty(t, replicationPolicy)
+				assert.Empty(t, replicationSchedule)
+				assert.Empty(t, remoteVolumeState)
+			},
+		},
+		{
+			name:                    "BackendNotSupportMirroring",
+			backendUUID:             "backend-uuid1",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(false)
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "backend does not support mirroring")
+			},
+			verifyResult: func(replicationPolicy, replicationSchedule, remoteVolumeState string) {
+				assert.Empty(t, replicationPolicy)
+				assert.Empty(t, replicationSchedule)
+				assert.Empty(t, remoteVolumeState)
+			},
+		},
+		{
+			name:                    "GetReplicationDetailsError",
+			backendUUID:             "backend-uuid1",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().GetReplicationDetails(gomock.Any(), "testLocalVolume", "testRemoteVolume").
+					Return("", "", "", errors.New("get replication details failed")).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "get replication details failed")
+			},
+			verifyResult: func(replicationPolicy, replicationSchedule, remoteVolumeState string) {
+				assert.Empty(t, replicationPolicy)
+				assert.Empty(t, replicationSchedule)
+				assert.Empty(t, remoteVolumeState)
+			},
+		},
+		{
+			name:                    "EmptyLocalInternalVolumeName",
+			backendUUID:             "backend-uuid1",
+			localInternalVolumeName: "",
+			remoteVolumeHandle:      "testRemoteVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().GetReplicationDetails(gomock.Any(), "", "testRemoteVolume").
+					Return("", "", "", errors.New("invalid local volume name")).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "invalid local volume name")
+			},
+			verifyResult: func(replicationPolicy, replicationSchedule, remoteVolumeState string) {
+				assert.Empty(t, replicationPolicy)
+				assert.Empty(t, replicationSchedule)
+				assert.Empty(t, remoteVolumeState)
+			},
+		},
+		{
+			name:                    "EmptyRemoteVolumeHandle",
+			backendUUID:             "backend-uuid1",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().GetReplicationDetails(gomock.Any(), "testLocalVolume", "").
+					Return("", "", "", errors.New("invalid remote volume handle")).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "invalid remote volume handle")
+			},
+			verifyResult: func(replicationPolicy, replicationSchedule, remoteVolumeState string) {
+				assert.Empty(t, replicationPolicy)
+				assert.Empty(t, replicationSchedule)
+				assert.Empty(t, remoteVolumeState)
+			},
+		},
+		{
+			name:                    "DifferentReplicationPolicies",
+			backendUUID:             "backend-uuid1",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().GetReplicationDetails(gomock.Any(), "testLocalVolume", "testRemoteVolume").
+					Return("MirrorLatest", "hourly", "replicating", nil).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(replicationPolicy, replicationSchedule, remoteVolumeState string) {
+				assert.Equal(t, "MirrorLatest", replicationPolicy)
+				assert.Equal(t, "hourly", replicationSchedule)
+				assert.Equal(t, "replicating", remoteVolumeState)
+			},
+		},
+		{
+			name:                    "VariousRemoteVolumeStates",
+			backendUUID:             "backend-uuid1",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().GetReplicationDetails(gomock.Any(), "testLocalVolume", "testRemoteVolume").
+					Return("MirrorAllSnapshots", "10minutely", "broken", nil).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(replicationPolicy, replicationSchedule, remoteVolumeState string) {
+				assert.Equal(t, "MirrorAllSnapshots", replicationPolicy)
+				assert.Equal(t, "10minutely", replicationSchedule)
+				assert.Equal(t, "broken", remoteVolumeState)
+			},
+		},
+		{
+			name:                    "EmptyReplicationDetails",
+			backendUUID:             "backend-uuid1",
+			localInternalVolumeName: "testLocalVolume",
+			remoteVolumeHandle:      "testRemoteVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().GetReplicationDetails(gomock.Any(), "testLocalVolume", "testRemoteVolume").
+					Return("", "", "", nil).Times(1)
+
+				addBackendsToCache(t, mockBackend)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(replicationPolicy, replicationSchedule, remoteVolumeState string) {
+				assert.Empty(t, replicationPolicy)
+				assert.Empty(t, replicationSchedule)
+				assert.Empty(t, remoteVolumeState)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+			o.bootstrapError = tt.bootstrapError
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, o)
+			}
+
+			replicationPolicy, replicationSchedule, remoteVolumeState, err := o.GetReplicationDetails(testCtx,
+				tt.backendUUID, tt.localInternalVolumeName, tt.remoteVolumeHandle)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			if tt.verifyResult != nil {
+				tt.verifyResult(replicationPolicy, replicationSchedule, remoteVolumeState)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestUpdateMirrorConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name           string
+		pvcVolumeName  string
+		snapshotName   string
+		bootstrapError error
+		setupMocks     func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator)
+		verifyError    func(err error)
+	}{
+		{
+			name:          "Success",
+			pvcVolumeName: "testPVCVolume",
+			snapshotName:  "testSnapshot",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().UpdateMirror(gomock.Any(), "testPVCVolume", "testSnapshot").
+					Return(nil).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:           "BootstrapError",
+			pvcVolumeName:  "testPVCVolume",
+			snapshotName:   "testSnapshot",
+			bootstrapError: errors.New("bootstrap error"),
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+		},
+		{
+			name:          "VolumeNotFound",
+			pvcVolumeName: "nonExistentVolume",
+			snapshotName:  "testSnapshot",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// Don't add any volume to simulate not found scenario
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "could not find volume 'nonExistentVolume' in Trident")
+			},
+		},
+		{
+			name:          "BackendNotSupportMirroring",
+			pvcVolumeName: "testPVCVolume",
+			snapshotName:  "testSnapshot",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(false)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "backend does not support mirroring")
+			},
+		},
+		{
+			name:          "UpdateMirrorError",
+			pvcVolumeName: "testPVCVolume",
+			snapshotName:  "testSnapshot",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().UpdateMirror(gomock.Any(), "testPVCVolume", "testSnapshot").
+					Return(errors.New("update mirror failed")).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "update mirror failed")
+			},
+		},
+		{
+			name:          "BackendNotFound",
+			pvcVolumeName: "testPVCVolume",
+			snapshotName:  "testSnapshot",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "nonExistentBackend"
+
+				addVolumesToCache(t, fakeVolume)
+				// Don't add any backend to simulate not found scenario
+			},
+			verifyError: func(err error) {
+				// The error will come from the db.Lock operation when backend is not found
+				assert.ErrorContains(t, err, "backend nonExistentBackend not found")
+			},
+		},
+		{
+			name:          "EmptySnapshotName",
+			pvcVolumeName: "testPVCVolume",
+			snapshotName:  "",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().UpdateMirror(gomock.Any(), "testPVCVolume", "").
+					Return(nil).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:          "EmptyPVCVolumeName",
+			pvcVolumeName: "",
+			snapshotName:  "testSnapshot",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No setup needed as it should fail at getVolume
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "could not find volume '' in Trident")
+			},
+		},
+		{
+			name:          "DifferentInternalVolumeName",
+			pvcVolumeName: "testPVCVolume",
+			snapshotName:  "testSnapshot",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().UpdateMirror(gomock.Any(), "internal-testPVCVolume", "testSnapshot").
+					Return(nil).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+				fakeVolume.Config.InternalName = "internal-testPVCVolume"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+			o.bootstrapError = tt.bootstrapError
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, o)
+			}
+
+			err := o.UpdateMirror(testCtx, tt.pvcVolumeName, tt.snapshotName)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestCheckMirrorTransferStateConcurrentCore(t *testing.T) {
+	transferTime := time.Now()
+
+	tests := []struct {
+		name           string
+		pvcVolumeName  string
+		bootstrapError error
+		setupMocks     func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator)
+		verifyError    func(err error)
+		verifyResult   func(transferTime *time.Time)
+	}{
+		{
+			name:          "Success",
+			pvcVolumeName: "testPVCVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().CheckMirrorTransferState(gomock.Any(), "testPVCVolume").
+					Return(&transferTime, nil).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result *time.Time) {
+				assert.NotNil(t, result)
+				assert.Equal(t, transferTime, *result)
+			},
+		},
+		{
+			name:           "BootstrapError",
+			pvcVolumeName:  "testPVCVolume",
+			bootstrapError: errors.New("bootstrap error"),
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "bootstrap error")
+			},
+			verifyResult: func(result *time.Time) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name:          "VolumeNotFound",
+			pvcVolumeName: "nonExistentVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// Don't add any volume to simulate not found scenario
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "could not find volume 'nonExistentVolume' in Trident")
+			},
+			verifyResult: func(result *time.Time) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name:          "BackendNotFound",
+			pvcVolumeName: "testPVCVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "nonExistentBackend"
+
+				addVolumesToCache(t, fakeVolume)
+				// Don't add any backend to simulate not found scenario
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "backend nonExistentBackend not found")
+			},
+			verifyResult: func(result *time.Time) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name:          "BackendNotSupportMirroring",
+			pvcVolumeName: "testPVCVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(false)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "backend does not support mirroring")
+			},
+			verifyResult: func(result *time.Time) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name:          "CheckMirrorTransferStateError",
+			pvcVolumeName: "testPVCVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().CheckMirrorTransferState(gomock.Any(), "testPVCVolume").
+					Return(nil, errors.New("check transfer state failed")).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "check transfer state failed")
+			},
+			verifyResult: func(result *time.Time) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name:          "NilTransferTime",
+			pvcVolumeName: "testPVCVolume",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				mockBackend.EXPECT().CanMirror().Return(true)
+				mockBackend.EXPECT().CheckMirrorTransferState(gomock.Any(), "testPVCVolume").
+					Return(nil, nil).Times(1)
+
+				fakeVolume := getFakeVolume("testPVCVolume", "volume-uuid1")
+				fakeVolume.BackendUUID = "backend-uuid1"
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, fakeVolume)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result *time.Time) {
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name:          "EmptyPVCVolumeName",
+			pvcVolumeName: "",
+			setupMocks: func(mockCtrl *gomock.Controller, o *ConcurrentTridentOrchestrator) {
+				// No setup needed as it should fail at getVolume
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "could not find volume '' in Trident")
+			},
+			verifyResult: func(result *time.Time) {
+				assert.Nil(t, result)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			o := getConcurrentOrchestrator()
+			o.bootstrapError = tt.bootstrapError
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, o)
+			}
+
+			result, err := o.CheckMirrorTransferState(testCtx, tt.pvcVolumeName)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			if tt.verifyResult != nil {
+				tt.verifyResult(result)
 			}
 
 			persistenceCleanup(t, o)

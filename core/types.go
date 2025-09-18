@@ -103,19 +103,19 @@ type Orchestrator interface {
 	GetVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error)
 	DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
 
-	EstablishMirror(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle, replicationPolicy,
+	EstablishMirror(ctx context.Context, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy,
 		replicationSchedule string) error
-	ReestablishMirror(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle,
+	ReestablishMirror(ctx context.Context, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle,
 		replicationPolicy, replicationSchedule string) error
-	PromoteMirror(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle,
+	PromoteMirror(ctx context.Context, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle,
 		snapshotHandle string) (bool, error)
 	GetMirrorStatus(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string) (string, error)
 	CanBackendMirror(ctx context.Context, backendUUID string) (bool, error)
-	ReleaseMirror(ctx context.Context, backendUUID, localInternalVolumeName string) error
+	ReleaseMirror(ctx context.Context, backendUUID, volumeName, localInternalVolumeName string) error
 	GetReplicationDetails(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error)
-	UpdateMirror(ctx context.Context, pvcVolumeName, snapshotName string) error
-	CheckMirrorTransferState(ctx context.Context, pvcVolumeName string) (*time.Time, error)
-	GetMirrorTransferTime(ctx context.Context, pvcVolumeName string) (*time.Time, error)
+	UpdateMirror(ctx context.Context, volumeName, snapshotName string) error
+	CheckMirrorTransferState(ctx context.Context, volumeName string) (*time.Time, error)
+	GetMirrorTransferTime(ctx context.Context, volumeName string) (*time.Time, error)
 
 	GetCHAP(ctx context.Context, volumeName, nodeName string) (*models.IscsiChapInfo, error)
 

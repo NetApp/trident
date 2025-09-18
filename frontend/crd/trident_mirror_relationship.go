@@ -458,7 +458,8 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 	// Release any previous snapmirror relationship
 	if relationship.Spec.MirrorState == netappv1.MirrorStateReleased {
 		statusCondition.Message = "Releasing snapmirror metadata"
-		if err := c.orchestrator.ReleaseMirror(ctx, existingVolume.BackendUUID, localInternalVolumeName); err != nil {
+		if err := c.orchestrator.ReleaseMirror(
+			ctx, existingVolume.BackendUUID, existingVolume.Config.Name, localInternalVolumeName); err != nil {
 			Logx(ctx).WithError(err).Error("Error releasing snapmirror")
 		}
 
@@ -488,8 +489,8 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			// Pass in the replicationPolicy and replicationSchedule to establish mirror
 			// Initialize snapmirror relationship
 			err = c.orchestrator.EstablishMirror(
-				ctx, existingVolume.BackendUUID, localInternalVolumeName, remoteVolumeHandle,
-				relationship.Spec.ReplicationPolicy, relationship.Spec.ReplicationSchedule)
+				ctx, existingVolume.BackendUUID, existingVolume.Config.Name, localInternalVolumeName,
+				remoteVolumeHandle, relationship.Spec.ReplicationPolicy, relationship.Spec.ReplicationSchedule)
 			if err != nil && !api.IsNotReadyError(err) {
 				currentMirrorState = netappv1.MirrorStateFailed
 				statusCondition.Message = "Could not establish mirror"
@@ -513,8 +514,8 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 			Logx(ctx).WithFields(logFields).Debugf("Attempting to reestablish mirror")
 			// Resync snapmirror relationship
 			err = c.orchestrator.ReestablishMirror(
-				ctx, existingVolume.BackendUUID, localInternalVolumeName, remoteVolumeHandle,
-				relationship.Spec.ReplicationPolicy, relationship.Spec.ReplicationSchedule)
+				ctx, existingVolume.BackendUUID, existingVolume.Config.Name, localInternalVolumeName,
+				remoteVolumeHandle, relationship.Spec.ReplicationPolicy, relationship.Spec.ReplicationSchedule)
 			if err != nil {
 				currentMirrorState = netappv1.MirrorStateFailed
 				statusCondition.Message = "Could not reestablish mirror"
@@ -534,8 +535,8 @@ func (c *TridentCrdController) handleIndividualVolumeMapping(
 				"Attempting to promote volume for mirror",
 			)
 			waitingForSnapshot, err := c.orchestrator.PromoteMirror(
-				ctx, existingVolume.BackendUUID, localInternalVolumeName, remoteVolumeHandle,
-				volumeMapping.PromotedSnapshotHandle,
+				ctx, existingVolume.BackendUUID, existingVolume.Config.Name, localInternalVolumeName,
+				remoteVolumeHandle, volumeMapping.PromotedSnapshotHandle,
 			)
 			if err != nil && !api.IsNotReadyError(err) {
 				currentMirrorState = netappv1.MirrorStateFailed
