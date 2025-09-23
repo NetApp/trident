@@ -192,3 +192,6 @@ ontapConfigurator:
 
 # enableConcurrency enables the concurrent core feature in Trident **TECH PREVIEW**
 enableConcurrency: false
+
+# k8sAPIQPS sets the maximum QPS to the Kubernetes API server from the Trident operator. (default 100)
+k8sAPIQPS: 100

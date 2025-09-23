@@ -724,6 +724,7 @@ func prepareYAMLFiles() error {
 		ISCSISelfHealingInterval: iscsiSelfHealingInterval.String(),
 		ISCSISelfHealingWaitTime: iscsiSelfHealingWaitTime.String(),
 		NodePrep:                 nodePrep,
+		K8sAPIQPS:                k8sAPIQPS,
 	}
 	daemonSetYAML := k8sclient.GetCSIDaemonSetYAMLLinux(daemonArgs)
 	if err = writeFile(daemonsetPath, daemonSetYAML); err != nil {
@@ -1116,6 +1117,7 @@ func installTrident() (returnError error) {
 				ServiceAccountName:   getNodeRBACResourceName(true),
 				ImagePullPolicy:      imagePullPolicy,
 				NodePrep:             nodePrep,
+				K8sAPIQPS:            k8sAPIQPS,
 			}
 			returnError = client.CreateObjectByYAML(
 				k8sclient.GetCSIDaemonSetYAMLWindows(daemonSetArgs))
@@ -1171,6 +1173,7 @@ func installTrident() (returnError error) {
 			ISCSISelfHealingInterval: iscsiSelfHealingInterval.String(),
 			ISCSISelfHealingWaitTime: iscsiSelfHealingWaitTime.String(),
 			NodePrep:                 nodePrep,
+			K8sAPIQPS:                k8sAPIQPS,
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDaemonSetYAMLLinux(daemonSetArgs))

@@ -203,6 +203,7 @@ type DaemonsetYAMLArguments struct {
 	ISCSISelfHealingInterval           string                `json:"iscsiSelfHealingInterval"`
 	ISCSISelfHealingWaitTime           string                `json:"iscsiSelfHealingWaitTime"`
 	NodePrep                           []string              `json:"nodePrep"`
+	K8sAPIQPS                          int                   `json:"k8sAPIQPS"`
 }
 
 type TridentVersionPodYAMLArguments struct {

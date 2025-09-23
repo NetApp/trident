@@ -1601,6 +1601,7 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 		ISCSISelfHealingInterval:           iscsiSelfHealingInterval,
 		ISCSISelfHealingWaitTime:           iscsiSelfHealingWaitTime,
 		NodePrep:                           nodePrep,
+		K8sAPIQPS:                          k8sAPIQPS,
 	}
 
 	var newDaemonSetYAML string
