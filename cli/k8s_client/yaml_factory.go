@@ -1151,6 +1151,7 @@ spec:
         - "--disable_audit_log={DISABLE_AUDIT_LOG}"
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--https_rest"
+        - "--https_address=[::1]"
         - "--https_port={PROBE_PORT}"
         - "--enable_force_detach={FORCE_DETACH_BOOL}"
         - "--iscsi_self_healing_interval={ISCSI_SELF_HEALING_INTERVAL}"
@@ -1159,6 +1160,7 @@ spec:
         {K8S_API_CLIENT_TRIDENT_THROTTLE}
         startupProbe:
           httpGet:
+            host: localhost
             path: /liveness
             scheme: HTTPS
             port: {PROBE_PORT}
@@ -1167,6 +1169,7 @@ spec:
           periodSeconds: 10
         livenessProbe:
           httpGet:
+            host: localhost
             path: /liveness
             scheme: HTTPS
             port: {PROBE_PORT}
@@ -1175,6 +1178,7 @@ spec:
           periodSeconds: 10
         readinessProbe:
           httpGet:
+            host: localhost
             path: /readiness
             scheme: HTTPS
             port: {PROBE_PORT}
@@ -1350,6 +1354,7 @@ spec:
         - "--disable_audit_log={DISABLE_AUDIT_LOG}"
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--https_rest"
+        - "--https_address=127.0.0.1"
         - "--https_port={PROBE_PORT}"
         {DEBUG}
         {K8S_API_CLIENT_TRIDENT_THROTTLE}
@@ -1360,6 +1365,7 @@ spec:
             protocol: TCP
         startupProbe:
           httpGet:
+            host: localhost
             path: /liveness
             scheme: HTTPS
             port: healthz
@@ -1368,6 +1374,7 @@ spec:
           periodSeconds: 10
         livenessProbe:
           httpGet:
+            host: localhost
             path: /liveness
             scheme: HTTPS
             port: healthz
@@ -1376,6 +1383,7 @@ spec:
           periodSeconds: 10
         readinessProbe:
           httpGet:
+            host: localhost
             path: /readiness
             scheme: HTTPS
             port: healthz
