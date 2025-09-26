@@ -865,12 +865,11 @@ func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
 		debugLine = "#- -debug"
 	}
 
-	var K8sAPITridentThrottle, K8sAPISidecarThrottle string
+	var K8sAPITridentThrottle string
 	if args.K8sAPIQPS != 0 {
 		queriesPerSecond := args.K8sAPIQPS
 		burst := getBurstValueForQPS(queriesPerSecond)
 		K8sAPITridentThrottle = fmt.Sprintf("- --k8s_api_qps=%d\n        - --k8s_api_burst=%d", queriesPerSecond, burst)
-		K8sAPISidecarThrottle = fmt.Sprintf("- --kube-api-qps=%d\n        - --kube-api-burst=%d", queriesPerSecond, burst)
 	}
 
 	if IsLogLevelDebugOrHigher(args.LogLevel) || args.Debug {
@@ -936,7 +935,6 @@ func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{SERVICE_ACCOUNT}", args.ServiceAccountName)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{IMAGE_PULL_POLICY}", args.ImagePullPolicy)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{K8S_API_CLIENT_TRIDENT_THROTTLE}", K8sAPITridentThrottle)
-	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{K8S_API_CLIENT_SIDECAR_THROTTLE}", K8sAPISidecarThrottle)
 	daemonSetYAML = yaml.ReplaceMultilineTag(daemonSetYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
 	daemonSetYAML = yaml.ReplaceMultilineTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
 	daemonSetYAML = yaml.ReplaceMultilineTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
@@ -989,12 +987,11 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 		}
 	}
 
-	var K8sAPITridentThrottle, K8sAPISidecarThrottle string
+	var K8sAPITridentThrottle string
 	if args.K8sAPIQPS != 0 {
 		queriesPerSecond := args.K8sAPIQPS
 		burst := getBurstValueForQPS(queriesPerSecond)
 		K8sAPITridentThrottle = fmt.Sprintf("- --k8s_api_qps=%d\n        - --k8s_api_burst=%d", queriesPerSecond, burst)
-		K8sAPISidecarThrottle = fmt.Sprintf("- --kube-api-qps=%d\n        - --kube-api-burst=%d", queriesPerSecond, burst)
 	}
 
 	if args.ImageRegistry == "" {
@@ -1029,7 +1026,6 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{ISCSI_SELF_HEALING_INTERVAL}", args.ISCSISelfHealingInterval)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{ISCSI_SELF_HEALING_WAIT_TIME}", args.ISCSISelfHealingWaitTime)
 	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{K8S_API_CLIENT_TRIDENT_THROTTLE}", K8sAPITridentThrottle)
-	daemonSetYAML = strings.ReplaceAll(daemonSetYAML, "{K8S_API_CLIENT_SIDECAR_THROTTLE}", K8sAPISidecarThrottle)
 	daemonSetYAML = yaml.ReplaceMultilineTag(daemonSetYAML, "NODE_SELECTOR", constructNodeSelector(args.NodeSelector))
 	daemonSetYAML = yaml.ReplaceMultilineTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
 	daemonSetYAML = yaml.ReplaceMultilineTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
@@ -1223,7 +1219,6 @@ spec:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--csi-address=$(ADDRESS)"
         - "--kubelet-registration-path=$(REGISTRATION_PATH)"
-        {K8S_API_CLIENT_SIDECAR_THROTTLE}
         env:
         - name: ADDRESS
           value: /plugin/csi.sock
@@ -1429,7 +1424,6 @@ spec:
         - --v=2
         - --csi-address=$(CSI_ENDPOINT)
         - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
-        {K8S_API_CLIENT_SIDECAR_THROTTLE}
         livenessProbe:
           exec:
             command:
