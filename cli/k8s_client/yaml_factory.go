@@ -349,6 +349,10 @@ spec:
     protocol: TCP
     port: 9220
     targetPort: 8001
+  - name: https-metrics
+    protocol: TCP
+    port: 8444
+    targetPort: 8444
 `
 
 func GetResourceQuotaYAML(resourceQuotaName, namespace string, labels, controllingCRDetails map[string]string) string {
@@ -506,7 +510,7 @@ func getCSIDeploymentAutosupportVolumeYAML(args *DeploymentYAMLArguments) string
 }
 
 func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
-	var debugLine, sideCarLogLevel, ipLocalhost, enableACP, K8sAPISidecarThrottle, K8sAPITridentThrottle string
+	var debugLine, sideCarLogLevel, ipLocalhost, enableACP, httpsMetrics, metrics, K8sAPISidecarThrottle, K8sAPITridentThrottle string
 	Log().WithFields(LogFields{
 		"Args": args,
 	}).Trace(">>>> GetCSIDeploymentYAML")
@@ -565,6 +569,12 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 
 	if args.EnableACP {
 		enableACP = "- \"-enable_acp\""
+	}
+
+	if args.HTTPSMetrics {
+		httpsMetrics = "- \"--https_metrics\""
+	} else {
+		metrics = "- \"--metrics\""
 	}
 
 	if strings.EqualFold(args.CloudProvider, CloudProviderAzure) {
@@ -633,6 +643,8 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{K8S_API_CLIENT_TRIDENT_THROTTLE}", K8sAPITridentThrottle)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{K8S_API_CLIENT_SIDECAR_THROTTLE}", K8sAPISidecarThrottle)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_CONCURRENCY}", strconv.FormatBool(args.EnableConcurrency))
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{METRICS}", metrics)
+	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{HTTPS_METRICS}", httpsMetrics)
 
 	// Log before secrets are inserted into YAML.
 	Log().WithField("yaml", deploymentYAML).Trace("CSI Deployment YAML.")
@@ -696,7 +708,8 @@ spec:
         - "--http_request_timeout={HTTP_REQUEST_TIMEOUT}"
         - "--enable_force_detach={ENABLE_FORCE_DETACH}"
         - "--enable_concurrency={ENABLE_CONCURRENCY}"
-        - "--metrics"
+        {METRICS}
+        {HTTPS_METRICS}
         {ENABLE_ACP}
         {DEBUG}
         {K8S_API_CLIENT_TRIDENT_THROTTLE}

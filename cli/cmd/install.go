@@ -123,6 +123,7 @@ var (
 	httpRequestTimeout       time.Duration
 	acpImage                 string // TODO: Remove after 26.04.
 	enableACP                bool   // TODO: Remove after 26.04.
+	httpsMetrics             bool
 	cloudProvider            string
 	cloudIdentity            string
 	iscsiSelfHealingInterval time.Duration
@@ -240,7 +241,7 @@ func init() {
 	installCmd.Flags().DurationVar(&k8sTimeout, "k8s-timeout", 180*time.Second,
 		"The timeout for all Kubernetes operations.")
 	installCmd.Flags().DurationVar(&httpRequestTimeout, "http-request-timeout", tridentconfig.HTTPTimeout,
-		"Override the HTTP request timeout for Trident controller’s REST API")
+		"Override the HTTP request timeout for Trident controller's REST API")
 	installCmd.Flags().DurationVar(&iscsiSelfHealingInterval, "iscsi-self-healing-interval", tridentconfig.IscsiSelfHealingInterval,
 		"Override the default iSCSI self-healing interval.")
 	installCmd.Flags().DurationVar(&iscsiSelfHealingWaitTime, "iscsi-self-healing-wait-time", tridentconfig.ISCSISelfHealingWaitTime,
@@ -249,6 +250,8 @@ func init() {
 	installCmd.Flags().BoolVar(&enableACP, "enable-acp", false, "Enable the Trident-ACP premium features (obsolete).")
 	installCmd.Flags().StringVar(&acpImage, "acp-image", "",
 		"Override the default trident-acp container image (obsolete).")
+
+	installCmd.Flags().BoolVar(&httpsMetrics, "https-metrics", false, "Enable HTTPS metrics endpoint for Trident controller.")
 
 	installCmd.Flags().StringVar(&cloudProvider, "cloud-provider", "", "Name of the cloud provider")
 	installCmd.Flags().StringVar(&cloudIdentity, "cloud-identity", "", "Cloud identity to be set on service account")
@@ -695,6 +698,7 @@ func prepareYAMLFiles() error {
 		IdentityLabel:           identityLabel,
 		K8sAPIQPS:               k8sAPIQPS,
 		EnableConcurrency:       enableConcurrency,
+		HTTPSMetrics:            httpsMetrics,
 	}
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
@@ -1067,6 +1071,7 @@ func installTrident() (returnError error) {
 			IdentityLabel:           identityLabel,
 			K8sAPIQPS:               k8sAPIQPS,
 			EnableConcurrency:       enableConcurrency,
+			HTTPSMetrics:            httpsMetrics,
 			CSIFeatureGates:         csiFeatureGateYAMLSnippets,
 		}
 		returnError = client.CreateObjectByYAML(

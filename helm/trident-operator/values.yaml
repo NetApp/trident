@@ -154,6 +154,9 @@ enableACP: false
 # acpImage indicates the image the Trident-ACP container should pull.
 acpImage: ""
 
+# httpsMetrics allows enabling the HTTPS metrics.
+httpsMetrics: false
+
 # iscsiSelfHealingInterval is the interval at which the iSCSI self-healing job is invoked
 iscsiSelfHealingInterval: "5m0s"
 

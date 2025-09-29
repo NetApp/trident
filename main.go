@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package main
 
@@ -113,6 +113,11 @@ var (
 	metricsAddress = flag.String("metrics_address", "", "Storage orchestrator metrics address")
 	metricsPort    = flag.String("metrics_port", "8001", "Storage orchestrator metrics port")
 	enableMetrics  = flag.Bool("metrics", false, "Enable metrics interface")
+
+	// HTTPS metrics interface
+	httpsMetricsAddress = flag.String("https_metrics_address", "", "Storage orchestrator HTTPS metrics address")
+	httpsMetricsPort    = flag.String("https_metrics_port", "8444", "Storage orchestrator HTTPS metrics port")
+	httpsMetrics        = flag.Bool("https_metrics", false, "Enable HTTPS metrics interface")
 
 	// iSCSI
 	iSCSISelfHealingInterval = flag.Duration("iscsi_self_healing_interval", config.IscsiSelfHealingInterval,
@@ -299,6 +304,10 @@ func main() {
 	preBootstrapFrontends := make([]frontend.Plugin, 0)
 	postBootstrapFrontends := make([]frontend.Plugin, 0)
 
+	if *httpRequestTimeout < 0 {
+		Log().Fatalf("HTTP request timeout cannot be a negative duration, cannot continue.")
+	}
+
 	// Seed RNG one time
 	rand.Seed(time.Now().UnixNano())
 
@@ -390,6 +399,22 @@ func main() {
 	}
 
 	enableMutualTLS := true
+
+	// Create HTTPS metrics frontend
+	if *httpsMetrics {
+		if *httpsMetricsPort == "" {
+			Log().Warning("HTTPS metrics interface will not be available (httpsMetricsPort not specified).")
+		} else {
+			httpsMetricsServer, err := metrics.NewHTTPSMetricsServer(
+				*httpsMetricsAddress, *httpsMetricsPort, *httpsCACert, *httpsServerCert, *httpsServerKey,
+				enableMutualTLS, *httpRequestTimeout)
+			if err != nil {
+				Log().Fatalf("Unable to start the HTTPS metrics frontend. %v", err)
+			}
+			preBootstrapFrontends = append(preBootstrapFrontends, httpsMetricsServer)
+			Log().WithFields(LogFields{"name": httpsMetricsServer.GetName()}).Info("Added frontend.")
+		}
+	}
 	handler := rest.NewRouter(true)
 
 	// Create Docker *or* CSI/K8S frontend
@@ -519,11 +544,6 @@ func main() {
 
 	// Create HTTP REST frontend
 	if *enableREST {
-
-		if *httpRequestTimeout < 0 {
-			Log().Fatalf("HTTP request timeout cannot be a negative duration, cannot continue")
-		}
-
 		if *port == "" {
 			Log().Warning("HTTP REST interface will not be available (port not specified).")
 		} else {
@@ -542,10 +562,6 @@ func main() {
 		if *httpsPort == "" {
 			Log().Warning("HTTPS REST interface will not be available (httpsPort not specified).")
 		} else {
-			if *httpRequestTimeout < 0 {
-				Log().Fatalf("HTTP request timeout cannot be a negative duration, cannot continue")
-			}
-
 			httpsServer, err := rest.NewHTTPSServer(
 				orchestrator, *httpsAddress, *httpsPort, *httpsCACert, *httpsServerCert, *httpsServerKey,
 				enableMutualTLS, handler, *httpRequestTimeout)

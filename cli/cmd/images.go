@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package cmd
 
@@ -149,6 +149,7 @@ func getInstallYaml(semVersion *versionutils.Version) (string, error) {
 		Version:                 semVersion,
 		HTTPRequestTimeout:      tridentconfig.HTTPTimeoutString,
 		ServiceAccountName:      getControllerRBACResourceName(),
+		HTTPSMetrics:            false,
 	}
 	// Get Deployment and Daemonset YAML and collect the names of the container images Trident needs to run.
 	yaml := k8sclient.GetCSIDeploymentYAML(deploymentArgs)

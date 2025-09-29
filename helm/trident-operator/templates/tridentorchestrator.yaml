@@ -69,6 +69,7 @@ spec:
   cloudIdentity: {{ .Values.cloudIdentity }}
   enableACP: {{ .Values.enableACP }}
   acpImage: {{ .Values.acpImage }}
+  httpsMetrics: {{ .Values.httpsMetrics }}
   enableAutoBackendConfig: {{ or .Values.ontapConfigurator.enabled .Values.anfConfigurator.enabled }}
   iscsiSelfHealingInterval: {{ .Values.iscsiSelfHealingInterval }}
   iscsiSelfHealingWaitTime: {{ .Values.iscsiSelfHealingWaitTime }}

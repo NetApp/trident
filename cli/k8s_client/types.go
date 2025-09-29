@@ -173,6 +173,7 @@ type DeploymentYAMLArguments struct {
 	IdentityLabel              bool                  `json:"identityLabel"`
 	K8sAPIQPS                  int                   `json:"k8sAPIQPS"`
 	EnableConcurrency          bool                  `json:"enableConcurrency"`
+	HTTPSMetrics               bool                  `json:"httpsMetrics"`
 	CSIFeatureGates            map[string]string     `json:"csiFeatureGates"`
 }
 

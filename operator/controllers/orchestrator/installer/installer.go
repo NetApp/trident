@@ -66,6 +66,7 @@ var (
 	excludeAutosupport bool
 	windows            bool
 	enableConcurrency  bool
+	httpsMetrics       bool
 
 	logLevel                           string
 	logWorkflows                       string
@@ -408,6 +409,7 @@ func (i *Installer) setInstallationParams(
 		disableAuditLog = *cr.Spec.DisableAuditLog
 	}
 	enableConcurrency = cr.Spec.EnableConcurrency
+	httpsMetrics = cr.Spec.HTTPSMetrics
 
 	// ACP is obsolete now, so log a message and move on.
 	enableACP = cr.Spec.EnableACP
@@ -811,6 +813,7 @@ func (i *Installer) InstallOrPatchTrident(
 		FSGroupPolicy:            fsGroupPolicy,
 		NodePrep:                 nodePrep,
 		EnableConcurrency:        strconv.FormatBool(enableConcurrency),
+		HTTPSMetrics:             strconv.FormatBool(httpsMetrics),
 	}
 
 	Log().WithFields(LogFields{
@@ -1518,6 +1521,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		IdentityLabel:              identityLabel,
 		K8sAPIQPS:                  k8sAPIQPS,
 		EnableConcurrency:          enableConcurrency,
+		HTTPSMetrics:               httpsMetrics,
 		CSIFeatureGates:            csiFeatureGateYAMLSnippets,
 	}
 

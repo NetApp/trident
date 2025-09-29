@@ -92,6 +92,7 @@ func TestYAMLFactory(t *testing.T) {
 		Version:                 version,
 		HTTPRequestTimeout:      config.HTTPTimeoutString,
 		EnableACP:               true,
+		HTTPSMetrics:            true,
 		IdentityLabel:           true,
 		K8sAPIQPS:               100,
 	}
@@ -191,6 +192,7 @@ func TestGetCSIDeploymentYAML_WithExcludeAutosupport(t *testing.T) {
 		SilenceAutosupport:      false,
 		ExcludeAutosupport:      true,
 		EnableACP:               true,
+		HTTPSMetrics:            true,
 		K8sAPIQPS:               100,
 	}
 	installASUPDeploymentArgs := &DeploymentYAMLArguments{
@@ -215,6 +217,7 @@ func TestGetCSIDeploymentYAML_WithExcludeAutosupport(t *testing.T) {
 		SilenceAutosupport:      false,
 		ExcludeAutosupport:      false,
 		EnableACP:               true,
+		HTTPSMetrics:            true,
 		K8sAPIQPS:               100,
 	}
 
@@ -259,6 +262,7 @@ func TestValidateGetCSIDeploymentYAMLSuccess(t *testing.T) {
 		SilenceAutosupport:      false,
 		ExcludeAutosupport:      false,
 		EnableACP:               true,
+		HTTPSMetrics:            true,
 		K8sAPIQPS:               100,
 	}
 
@@ -593,6 +597,7 @@ func TestGetCSIDeploymentYAML_AutosupportYAML_ExcludeAutosupport(t *testing.T) {
 		SilenceAutosupport:      false,
 		ExcludeAutosupport:      true,
 		EnableACP:               true,
+		HTTPSMetrics:            true,
 		K8sAPIQPS:               100,
 	}
 
@@ -640,6 +645,7 @@ func TestGetCSIDeploymentYAML_AutosupportYAML_EnableButSilenceAutosupport(t *tes
 		SilenceAutosupport:      silenceASUP,
 		ExcludeAutosupport:      false,
 		EnableACP:               true,
+		HTTPSMetrics:            true,
 		K8sAPIQPS:               100,
 	}
 
