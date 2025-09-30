@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -408,6 +408,111 @@ func parseInitiatorIQNs(ctx context.Context, contents string) []string {
 	}
 
 	return iqns
+}
+
+// resizeVolume accepts a LUN ID, target IQN, and list of portals.
+// It reads the sysfs paths for the LUN and ensures that all devices are readable.
+// If sessions are not found for the LUN, it attempts to heal the attachment by establishing sessions on all portals.
+// It verifies that the devices are readable and that there is disk to path to portal parity.
+// If all checks pass, it initiates rescans on all devices or disks. If any step fails, it returns an error.
+func resizeVolume(ctx context.Context, publishInfo *VolumePublishInfo, minSize int64) error {
+	// Extract the LUN ID, target IQN, and portals from the publish info.
+	lunID, targetIQN := int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN
+	portals := make([]string, 0)
+	for _, p := range publishInfo.IscsiPortals {
+		portals = append(portals, ensureHostportFormatted(p))
+	}
+	portals = append(portals, ensureHostportFormatted(publishInfo.IscsiTargetPortal))
+
+	// Set up logging fields with entry and exit log messages.
+	fields := LogFields{
+		"lunID":     lunID,
+		"targetIQN": targetIQN,
+		"portals":   portals,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.resizeVolume")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.resizeVolume")
+
+	// Build a set of host sessions.
+	// From the host sessions, ensure the number of paths in sysfs is congruent with the number of portals.
+	hostSessions := IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, targetIQN)
+	paths := IscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessions)
+
+	// Ensure the number of visible paths is congruent with the number of portals.
+	// If not, attempt to heal the sessions and initiate a SCSI rescan to recover the path.
+	// NOTE: Hypothetically, this can lead to momentarily incongruence between device sizes for the same LUN
+	// on the host, but it should correct itself after the later rescans complete.
+	if len(paths) != len(portals) {
+		// If we're missing a session, attempt to heal it. If we can't establish the sessions, return an error.
+		Logc(ctx).WithFields(fields).Debug("Paths are missing for LUN; attempting to establish missing paths.")
+		if _, err := EnsureISCSISessions(ctx, publishInfo, portals); err != nil {
+			return fmt.Errorf("failed to establish sessions for LUN %v; %w", lunID, err)
+		}
+
+		// Grant some time for the SCSI subsystem to process the recovered sessions and paths.
+		time.Sleep(time.Second)
+
+		// Reread the host session map to detect new host session entries.
+		hostSessions = IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, targetIQN)
+		paths = IscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessions)
+	}
+
+	// Parity should exist between the number of paths and the number of portals.
+	// If it doesn't fail and retry. If this never resolves, it implies a network connectivity issue.
+	if len(paths) != len(portals) {
+		return fmt.Errorf("paths missing for LUN %v; current paths: %v; expected portals: %v", lunID, paths, portals)
+	}
+	fields["paths"] = paths
+
+	// Scan the target and wait for the device(s) to appear.
+	if err := waitForDeviceScan(ctx, lunID, targetIQN); err != nil {
+		return fmt.Errorf("failed to scan for devices for LUN %v; %w", lunID, err)
+	}
+
+	// Ensure that all devices are present and readable.
+	devices, err := IscsiUtils.GetDevicesForLUN(paths)
+	if err != nil {
+		return fmt.Errorf("failed to get devices for LUN %v; %w", lunID, err)
+	}
+	fields["devices"] = devices
+
+	// At this point, parity should exist between the number of devices and the number of paths.
+	if len(devices) != len(paths) {
+		return fmt.Errorf("device and path count are incongruent for LUN %v", lunID)
+	}
+
+	// Initiate rescans across all devices for the LUN.
+	if err = ISCSIRescanDevices(ctx, targetIQN, int32(lunID), minSize); err != nil {
+		return fmt.Errorf("failed to rescan devices for LUN %v; %w", lunID, err)
+	}
+
+	return nil
+}
+
+func ResizeVolumeRetry(
+	ctx context.Context, publishInfo *VolumePublishInfo, minSize int64, timeout time.Duration,
+) error {
+	Logc(ctx).Debug(">>>> iscsi.ResizeVolumeRetry")
+	defer Logc(ctx).Debug("<<<< iscsi.ResizeVolumeRetry")
+
+	checkPreconditions := func() error {
+		return resizeVolume(ctx, publishInfo, minSize)
+	}
+
+	checkNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithFields(LogFields{
+			"increment": duration,
+			"error":     err,
+		}).Debug("Resize iSCSI volume is not complete, waiting.")
+	}
+
+	checkBackoff := backoff.NewExponentialBackOff()
+	checkBackoff.InitialInterval = 1 * time.Second
+	checkBackoff.Multiplier = 1.414 // approx sqrt(2)
+	checkBackoff.RandomizationFactor = 0.1
+	checkBackoff.MaxElapsedTime = timeout
+
+	return backoff.RetryNotify(checkPreconditions, checkBackoff, checkNotify)
 }
 
 // GetSysfsBlockDirsForLUN returns the list of directories in sysfs where the block devices should appear
