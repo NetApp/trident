@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package utils
 
@@ -141,50 +141,98 @@ func isDeviceUnformatted(ctx context.Context, device string) (bool, error) {
 	return true, nil
 }
 
+// filterDevicesBySize builds a map of disk devices to their size, filtered by a minimum size requirement.
+// If any errors occur when checking the size of a device, it captures the error and moves onto the next device.
+func filterDevicesBySize(
+	ctx context.Context, deviceInfo *ScsiDeviceInfo, minSize int64,
+) (map[string]int64, error) {
+	errs := make([]string, 0)
+	deviceSizeMap := make(map[string]int64, 0)
+	for _, diskDevice := range deviceInfo.Devices {
+		size, err := getISCSIDiskSize(ctx, devPrefix+diskDevice)
+		if err != nil {
+			errs = append(errs, fmt.Sprintf("failed to get size for disk %s: %s", diskDevice, err))
+			// Only consider devices whose size can be gathered.
+			continue
+		}
+
+		if size < minSize {
+			// Only consider devices that are undersized.
+			deviceSizeMap[diskDevice] = size
+		}
+	}
+
+	if len(errs) != 0 {
+		return nil, fmt.Errorf(strings.Join(errs, ", "))
+	}
+	return deviceSizeMap, nil
+}
+
+// rescanDevices accepts a map of disk devices to sizes and initiates a rescan for each device.
+// If any rescan fails it captures the error and moves onto the next rescanning the next device.
+func rescanDevices(ctx context.Context, deviceSizeMap map[string]int64) error {
+	errs := make([]string, 0)
+	for diskDevice := range deviceSizeMap {
+		if err := iSCSIRescanDisk(ctx, diskDevice); err != nil {
+			errs = append(errs, fmt.Sprintf("failed to rescan disk %s: %s", diskDevice, err))
+		}
+	}
+
+	if len(errs) != 0 {
+		return fmt.Errorf(strings.Join(errs, ", "))
+	}
+	return nil
+}
+
 func ISCSIRescanDevices(ctx context.Context, targetIQN string, lunID int32, minSize int64) error {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
 	fields := LogFields{"targetIQN": targetIQN, "lunID": lunID}
-	Logc(ctx).WithFields(fields).Debug(">>>> devices.ISCSIRescanDevices")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.ISCSIRescanDevices")
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.RescanDevices")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.RescanDevices")
 
+	hostSessionMap := IscsiUtils.GetISCSIHostSessionMapForTarget(ctx, targetIQN)
+	if len(hostSessionMap) == 0 {
+		return fmt.Errorf("error getting iSCSI device information: no host session found")
+	}
 	deviceInfo, err := getDeviceInfoForLUN(ctx, int(lunID), targetIQN, false, false)
 	if err != nil {
 		return fmt.Errorf("error getting iSCSI device information: %s", err)
-	} else if deviceInfo == nil {
-		return fmt.Errorf("could not get iSCSI device information for LUN: %d", lunID)
 	}
 
-	allLargeEnough := true
-	for _, diskDevice := range deviceInfo.Devices {
-		size, err := getISCSIDiskSize(ctx, devPrefix+diskDevice)
-		if err != nil {
+	// Get all disk devices that require a rescan.
+	devicesBySize, err := filterDevicesBySize(ctx, deviceInfo, minSize)
+	if err != nil {
+		Logc(ctx).WithError(err).Error("Failed to read disk size for devices.")
+		return err
+	}
+
+	if len(devicesBySize) != 0 {
+		fields = LogFields{
+			"lunID":   lunID,
+			"devices": devicesBySize,
+			"minSize": minSize,
+		}
+
+		Logc(ctx).WithFields(fields).Debug("Found devices that require a rescan.")
+		if err := rescanDevices(ctx, devicesBySize); err != nil {
+			Logc(ctx).WithError(err).Error("Failed to initiate rescanning for devices.")
 			return err
 		}
-		if size < minSize {
-			allLargeEnough = false
-		} else {
-			continue
-		}
 
-		err = iSCSIRescanDisk(ctx, diskDevice)
-		if err != nil {
-			Logc(ctx).WithField("diskDevice", diskDevice).Error("Failed to rescan disk.")
-			return fmt.Errorf("failed to rescan disk %s: %s", diskDevice, err)
-		}
-	}
-
-	if !allLargeEnough {
+		// Sleep for a second to give the SCSI subsystem time to rescan the devices.
 		time.Sleep(time.Second)
-		for _, diskDevice := range deviceInfo.Devices {
-			size, err := getISCSIDiskSize(ctx, devPrefix+diskDevice)
-			if err != nil {
-				return err
-			}
-			if size < minSize {
-				Logc(ctx).Error("Disk size not large enough after resize.")
-				return fmt.Errorf("disk size not large enough after resize: %d, %d", size, minSize)
-			}
+
+		// Reread the devices to check if any are undersized.
+		devicesBySize, err = filterDevicesBySize(ctx, deviceInfo, minSize)
+		if err != nil {
+			Logc(ctx).WithError(err).Error("Failed to read disk size for devices after rescan.")
+			return err
+		}
+
+		if len(devicesBySize) != 0 {
+			Logc(ctx).WithFields(fields).Error("Some devices are still undersized after rescan.")
+			return errors.New("devices are still undersized after rescan")
 		}
 	}
 
@@ -198,15 +246,16 @@ func ISCSIRescanDevices(ctx context.Context, targetIQN string, lunID int32, minS
 		fields = LogFields{"size": size, "minSize": minSize}
 		if size < minSize {
 			Logc(ctx).WithFields(fields).Debug("Reloading the multipath device.")
-			err := reloadMultipathDevice(ctx, multipathDevice)
-			if err != nil {
+			if err := reloadMultipathDevice(ctx, multipathDevice); err != nil {
 				return err
 			}
 			time.Sleep(time.Second)
-			size, err = getISCSIDiskSize(ctx, devPrefix+multipathDevice)
+
+			size, err := getISCSIDiskSize(ctx, devPrefix+multipathDevice)
 			if err != nil {
 				return err
 			}
+
 			if size < minSize {
 				Logc(ctx).Error("Multipath device not large enough after resize.")
 				return fmt.Errorf("multipath device not large enough after resize: %d < %d", size, minSize)
