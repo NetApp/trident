@@ -39,11 +39,20 @@ ADD ${CHWRAP_BIN} /rootfs/
 
 FROM scratch
 
-LABEL maintainers="The NetApp Trident Team" \
-    app="trident.netapp.io" \
-    description="Trident Storage Orchestrator"
+ARG VERSION
+
+LABEL maintainer="The NetApp Trident Team" \
+      app="trident.netapp.io" \
+      summary="Trident Storage Orchestrator" \
+      description="Trident Storage Orchestrator manages persistent storage for containerized applications." \
+      name="trident" \
+      vendor="NetApp, Inc." \
+      version="${VERSION}" \
+      release="${VERSION}"
 
 COPY --from=deps /rootfs /
+
+COPY LICENSE NOTICE.txt /licenses/
 
 ENTRYPOINT ["/bin/tridentctl"]
 CMD ["version"]

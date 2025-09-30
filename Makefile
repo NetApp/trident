@@ -239,6 +239,7 @@ buildx_create_instance = $(DOCKER_BUILDX_BUILD_CLI) create --name $(DOCKER_BUILD
 docker_build_linux = $1 build \
 	--platform $2 \
 	--build-arg ARCH=$(call arch,$2) \
+	--build-arg VERSION=$(VERSION) \
 	--build-arg BIN=$(call binary_path,trident_orchestrator,$2) \
 	--build-arg CLI_BIN=$(call binary_path,tridentctl,$2) \
 	--build-arg NODE_PREP_BIN=$(call binary_path,node_prep,$2) \
@@ -276,6 +277,7 @@ docker_build_operator = $1 build \
 	--platform $2 \
 	--file operator/Dockerfile \
 	--build-arg BIN=$(call binary_path,trident-operator,$2) \
+	--build-arg VERSION=$(VERSION) \
 	$(if $(TRIDENT_DEPS_IMAGE),--build-arg DEPS_IMAGE=$(TRIDENT_DEPS_IMAGE)) \
 	--tag $3 \
 	--rm \

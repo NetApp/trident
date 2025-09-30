@@ -8,19 +8,21 @@ RUN mkdir /real-certs; \
 
 FROM scratch
 
+ARG VERSION
+
 LABEL maintainer="The NetApp Trident Team" \
       app="trident-operator.netapp.io" \
       summary="Trident Operator" \
       description="Trident Operator manages the lifecycle of Trident instances in a Kubernetes cluster." \
       name="trident-operator" \
       vendor="NetApp, Inc." \
-      version="25.10.0" \
-      release="25.10.0"
+      version="${VERSION}" \
+      release="${VERSION}"
 
 ARG BIN=trident-operator
 
 COPY --from=deps /real-certs/ /etc/ssl/certs/
-COPY NOTICE.txt NOTICE_ASUP_module.txt /licenses/
+COPY LICENSE NOTICE.txt /licenses/
 COPY ${BIN} /trident-operator
 
 ENTRYPOINT ["/trident-operator"]
