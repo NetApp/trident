@@ -99,7 +99,7 @@ func (o *ConcurrentTridentOrchestrator) RebuildStorageClassPoolMap(ctx context.C
 	o.scPoolMapMutex.Lock()
 	defer o.scPoolMapMutex.Unlock()
 
-	results, unlocker, err := db.Lock(db.Query(db.ListBackends(), db.ListStorageClasses()))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ListBackends(), db.ListStorageClasses()))
 	defer unlocker()
 	if err != nil {
 		return
@@ -261,7 +261,7 @@ func (o *ConcurrentTridentOrchestrator) bootstrapBackends(ctx context.Context) e
 			return backendErr
 		}
 
-		results, unlocker, lockErr := db.Lock(db.Query(db.UpsertBackend(backend.BackendUUID(), "", backend.Name())))
+		results, unlocker, lockErr := db.Lock(ctx, db.Query(db.UpsertBackend(backend.BackendUUID(), "", backend.Name())))
 		if lockErr != nil {
 			Logc(ctx).WithFields(LogFields{
 				"backend":     storageBackend.Name,
@@ -299,7 +299,7 @@ func (o *ConcurrentTridentOrchestrator) bootstrapStorageClasses(ctx context.Cont
 	for _, psc := range persistentStorageClasses {
 		sc := storageclass.NewFromPersistent(psc)
 
-		results, unlocker, upsertErr := db.Lock(db.Query(db.UpsertStorageClass(psc.GetName())))
+		results, unlocker, upsertErr := db.Lock(ctx, db.Query(db.UpsertStorageClass(psc.GetName())))
 		if upsertErr != nil {
 			Logc(ctx).WithField("name", sc.GetName()).WithError(upsertErr).Error(
 				"Failed to lock storage class for upsert.")
@@ -337,8 +337,7 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumes(ctx context.Context) er
 
 		if vol.IsSubordinate() {
 
-			results, unlocker, upsertErr := db.Lock(
-				db.Query(db.UpsertSubordinateVolume(vol.Config.Name, vol.Config.ShareSourceVolume)))
+			results, unlocker, upsertErr := db.Lock(ctx, db.Query(db.UpsertSubordinateVolume(vol.Config.Name, vol.Config.ShareSourceVolume)))
 			if upsertErr != nil {
 				Logc(ctx).WithFields(LogFields{
 					"subordinateVolume": vol.Config.Name,
@@ -353,7 +352,7 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumes(ctx context.Context) er
 
 		} else {
 
-			results, unlocker, upsertErr := db.Lock(db.Query(
+			results, unlocker, upsertErr := db.Lock(ctx, db.Query(
 				db.UpsertVolume(vol.Config.Name, vol.BackendUUID),
 				db.ReadBackend(""),
 			))
@@ -404,7 +403,7 @@ func (o *ConcurrentTridentOrchestrator) bootstrapSnapshots(ctx context.Context) 
 	for _, s := range snapshots {
 		snapshot := storage.NewSnapshot(s.Config, s.Created, s.SizeBytes, s.State)
 
-		results, unlocker, upsertErr := db.Lock(db.Query(
+		results, unlocker, upsertErr := db.Lock(ctx, db.Query(
 			db.UpsertSnapshot(snapshot.Config.VolumeName, snapshot.Config.ID()),
 			db.ReadBackend(""),
 			db.ReadVolume(""),
@@ -483,7 +482,7 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumePublications(ctx context.
 
 	for _, vp := range volumePublications {
 
-		results, unlocker, upsertErr := db.Lock(db.Query(db.UpsertVolumePublication(vp.VolumeName, vp.NodeName)))
+		results, unlocker, upsertErr := db.Lock(ctx, db.Query(db.UpsertVolumePublication(vp.VolumeName, vp.NodeName)))
 		if upsertErr != nil {
 			Logc(ctx).WithField("publication", vp.Name).WithError(upsertErr).Error(
 				"Failed to lock volume publication for upsert.")
@@ -516,7 +515,7 @@ func (o *ConcurrentTridentOrchestrator) bootstrapNodes(ctx context.Context) erro
 	nodeCount := 0
 
 	for _, node := range nodes {
-		results, unlocker, upsertErr := db.Lock(db.Query(db.UpsertNode(node.Name)))
+		results, unlocker, upsertErr := db.Lock(ctx, db.Query(db.UpsertNode(node.Name)))
 		if upsertErr != nil {
 			Logc(ctx).WithField("node", node.Name).WithError(upsertErr).Error("Failed to lock node for upsert.")
 			unlocker()
@@ -541,7 +540,7 @@ func (o *ConcurrentTridentOrchestrator) bootstrapNodes(ctx context.Context) erro
 // bootstrapSubordinateVolumes updates the source volumes to point to their subordinates.  Updating the
 // super->sub references here allows us to persist only the scalar sub->super references.
 func (o *ConcurrentTridentOrchestrator) bootstrapSubordinateVolumes(ctx context.Context) error {
-	results, unlocker, listErr := db.Lock(db.Query(db.ListSubordinateVolumes()))
+	results, unlocker, listErr := db.Lock(ctx, db.Query(db.ListSubordinateVolumes()))
 	unlocker()
 	if listErr != nil {
 		Logc(ctx).WithError(listErr).Error("Failed to list subordinate volumes.")
@@ -552,7 +551,7 @@ func (o *ConcurrentTridentOrchestrator) bootstrapSubordinateVolumes(ctx context.
 
 	for _, subVol := range subVols {
 
-		results, unlocker, upsertErr := db.Lock(db.Query(db.UpsertVolume(subVol.Config.ShareSourceVolume, "")))
+		results, unlocker, upsertErr := db.Lock(ctx, db.Query(db.UpsertVolume(subVol.Config.ShareSourceVolume, "")))
 		if upsertErr != nil {
 			Logc(ctx).WithFields(LogFields{
 				"subordinateVolume": subVol.Config.Name,
@@ -593,7 +592,7 @@ func (o *ConcurrentTridentOrchestrator) bootstrapSubordinateVolumes(ctx context.
 // a connection to the store fails when attempting to delete a backend.  This function is designed to
 // run only during bootstrapping.
 func (o *ConcurrentTridentOrchestrator) cleanupDeletingBackends(ctx context.Context) {
-	results, unlocker, err := db.Lock(db.Query(db.ListBackends()))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ListBackends()))
 	unlocker()
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Failed to list backends.")
@@ -611,7 +610,7 @@ func (o *ConcurrentTridentOrchestrator) cleanupDeletingBackends(ctx context.Cont
 	}
 
 	for _, backendUUID := range deletingBackends {
-		results, unlocker, err = db.Lock(db.Query(db.DeleteBackend(backendUUID)))
+		results, unlocker, err = db.Lock(ctx, db.Query(db.DeleteBackend(backendUUID)))
 		if err != nil {
 			Logc(ctx).WithField("backendUUID", backendUUID).WithError(err).Error("Failed to lock deleting backend.")
 			unlocker()
@@ -769,7 +768,7 @@ func (o *ConcurrentTridentOrchestrator) reconcileNodeAccessOnAllBackends(ctx con
 	Logc(ctx).Debug("Reconciling node access on current backends.")
 	errored := false
 	allBackends, err := func() ([]storage.Backend, error) {
-		results, unlocker, err := db.Lock(db.Query(db.ListBackends()))
+		results, unlocker, err := db.Lock(ctx, db.Query(db.ListBackends()))
 		defer unlocker()
 		if err != nil {
 			return nil, err
@@ -781,7 +780,7 @@ func (o *ConcurrentTridentOrchestrator) reconcileNodeAccessOnAllBackends(ctx con
 	}
 	for _, b := range allBackends {
 		err := func() error {
-			results, unlocker, err := db.Lock(db.Query(db.ListVolumePublications(), db.ListNodes(),
+			results, unlocker, err := db.Lock(ctx, db.Query(db.ListVolumePublications(), db.ListNodes(),
 				db.UpsertBackend(b.BackendUUID(), "", "")))
 			defer unlocker()
 			if err != nil {
@@ -927,7 +926,7 @@ func (o *ConcurrentTridentOrchestrator) DeleteBackend(ctx context.Context, backe
 
 	defer recordTiming("backend_delete", &err)()
 
-	results, unlocker, err := db.Lock(db.Query(db.ReadBackendByName(backendName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ReadBackendByName(backendName)))
 	if err != nil {
 		unlocker()
 		if errors.IsNotFoundError(err) {
@@ -971,6 +970,7 @@ func (o *ConcurrentTridentOrchestrator) deleteBackendByBackendUUID(
 	}).Debug("deleteBackendByBackendUUID")
 
 	results, unlocker, err := db.Lock(
+		ctx,
 		db.Query(db.DeleteBackend(backendUUID)),
 		db.Query(db.UpsertBackend(backendUUID, "", "")),
 	)
@@ -1046,7 +1046,7 @@ func (o *ConcurrentTridentOrchestrator) GetBackend(
 
 	defer recordTiming("backend_get", &err)()
 
-	results, unlocker, err := db.Lock(db.Query(db.ReadBackendByName(backendName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ReadBackendByName(backendName)))
 	defer unlocker()
 	if err != nil {
 		if strings.Contains(err.Error(), "no Backend found with key") {
@@ -1106,7 +1106,7 @@ func (o *ConcurrentTridentOrchestrator) GetBackendByBackendUUID(
 func getInconsistentBackendByUUID(
 	backendUUID string,
 ) (storage.Backend, error) {
-	results, unlocker, err := db.Lock(db.Query(db.InconsistentReadBackend(backendUUID)))
+	results, unlocker, err := db.Lock(context.Background(), db.Query(db.InconsistentReadBackend(backendUUID)))
 	defer unlocker()
 	if err != nil {
 		return nil, err
@@ -1135,7 +1135,7 @@ func (o *ConcurrentTridentOrchestrator) ListBackends(
 	defer recordTiming("backend_list", &err)()
 
 	poolMap := o.GetStorageClassPoolMap()
-	results, unlocker, err := db.Lock(db.Query(db.ListBackends()))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ListBackends()))
 	defer unlocker()
 	if err != nil {
 		return nil, err
@@ -1242,7 +1242,7 @@ func (o *ConcurrentTridentOrchestrator) upsertBackend(
 		return nil, err
 	}
 
-	results, unlocker, err := db.Lock(db.Query(db.UpsertBackend("", backendName, newBackendName),
+	results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertBackend("", backendName, newBackendName),
 		db.ListVolumePublications(), db.ListNodes()))
 	defer unlocker()
 	if err != nil {
@@ -1518,7 +1518,7 @@ func (o *ConcurrentTridentOrchestrator) updateBackendVolumes(ctx context.Context
 	// so it doesn't have to be part of the persistent store transaction.
 
 	// Get a list of volumes in the backend
-	results, unlocker, err := db.Lock(db.Query(db.ListVolumesForBackend(backend.BackendUUID())))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ListVolumesForBackend(backend.BackendUUID())))
 	if err != nil {
 		unlocker()
 		return err
@@ -1534,7 +1534,7 @@ func (o *ConcurrentTridentOrchestrator) updateBackendVolumes(ctx context.Context
 	for _, vol := range volumes {
 		lockQuery = append(lockQuery, db.Query(db.UpsertVolume(vol.Config.Name, vol.BackendUUID)))
 	}
-	results, unlocker, err = db.Lock(lockQuery...)
+	results, unlocker, err = db.Lock(ctx, lockQuery...)
 	defer unlocker()
 	if err != nil {
 		return err
@@ -1627,7 +1627,7 @@ func (o *ConcurrentTridentOrchestrator) RemoveBackendConfigRef(
 
 	defer recordTiming("backend_update", &err)()
 
-	results, unlocker, err := db.Lock(db.Query(db.UpsertBackend(backendUUID, "", "")))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertBackend(backendUUID, "", "")))
 	defer unlocker()
 	if err != nil {
 		return fmt.Errorf("error locking backend with UUID '%s'; %w", backendUUID, err)
@@ -1699,6 +1699,7 @@ func (o *ConcurrentTridentOrchestrator) addVolume(
 	// Ensure volume doesn't exist
 	if err = func(volumeName string) error {
 		results, unlocker, err = db.Lock(
+			ctx,
 			db.Query(db.InconsistentReadVolume(volConfig.Name)),
 			db.Query(db.InconsistentReadSubordinateVolume(volConfig.Name)))
 		defer unlocker()
@@ -1721,7 +1722,7 @@ func (o *ConcurrentTridentOrchestrator) addVolume(
 	}
 
 	// Get an independent scratch copy of the storage class
-	results, unlocker, err = db.Lock(db.Query(db.InconsistentReadStorageClass(volConfig.StorageClass)))
+	results, unlocker, err = db.Lock(ctx, db.Query(db.InconsistentReadStorageClass(volConfig.StorageClass)))
 	unlocker()
 	if err != nil {
 		return nil, err
@@ -1767,7 +1768,7 @@ func (o *ConcurrentTridentOrchestrator) addVolume(
 	for backendName, poolNames := range matchingBackendPools {
 
 		// Get a lock on the backend as well as the volume name
-		results, unlocker, err = db.Lock(db.Query(
+		results, unlocker, err = db.Lock(ctx, db.Query(
 			db.UpsertVolumeByBackendName(volConfig.Name, backendName), db.ReadBackendByName(backendName)))
 		if err != nil {
 			return nil, fmt.Errorf("error locking backend for volume create; %w", err)
@@ -2023,7 +2024,7 @@ func (o *ConcurrentTridentOrchestrator) UpdateVolumeLUKSPassphraseNames(
 	}
 
 	// Get write lock for volume
-	results, unlocker, err := db.Lock(db.Query(db.UpsertVolume(volumeName, "")))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertVolume(volumeName, "")))
 	defer unlocker()
 	if err != nil {
 		return fmt.Errorf("error checking for existing volume; %w", err)
@@ -2088,6 +2089,7 @@ func (o *ConcurrentTridentOrchestrator) cloneVolume(
 	// Get backend UUID from the source volume, plus other objects for initial checks
 	backendUUID, err := func(volConfig *storage.VolumeConfig) (backendUUID string, returnErr error) {
 		results, unlocker, returnErr := db.Lock(
+			ctx,
 			db.Query(
 				db.InconsistentReadVolume(volConfig.Name),
 				db.InconsistentReadSubordinateVolume(volConfig.Name),
@@ -2155,7 +2157,7 @@ func (o *ConcurrentTridentOrchestrator) cloneVolume(
 		queries = append(queries, db.Query(db.ReadSnapshot(snapshotID)))
 	}
 
-	results, unlocker, err := db.Lock(queries...)
+	results, unlocker, err := db.Lock(ctx, queries...)
 	defer unlocker()
 	if err != nil {
 		return nil, err
@@ -2427,7 +2429,7 @@ func (o *ConcurrentTridentOrchestrator) DeleteVolume(ctx context.Context, volume
 	defer recordTiming("volume_delete", &err)()
 
 	// Check for subordinate volume
-	results, unlocker, err := db.Lock(db.Query(db.InconsistentReadSubordinateVolume(volumeName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.InconsistentReadSubordinateVolume(volumeName)))
 	unlocker()
 	if err != nil {
 		return fmt.Errorf("error checking for existing subordinate volume; %w", err)
@@ -2436,7 +2438,7 @@ func (o *ConcurrentTridentOrchestrator) DeleteVolume(ctx context.Context, volume
 		return o.deleteSubordinateVolume(ctx, volumeName)
 	}
 
-	results, unlocker, err = db.Lock(db.Query(db.InconsistentReadVolume(volumeName)))
+	results, unlocker, err = db.Lock(ctx, db.Query(db.InconsistentReadVolume(volumeName)))
 	unlocker()
 	if err != nil {
 		return fmt.Errorf("error checking for existing volume; %w", err)
@@ -2486,9 +2488,8 @@ func (o *ConcurrentTridentOrchestrator) DeleteVolume(ctx context.Context, volume
 
 func (o *ConcurrentTridentOrchestrator) deleteVolume(ctx context.Context, volumeName string) error {
 	// Grab locks suitable for deleting a volume or updating a volume after soft-deleting it
-	results, unlocker, err := db.Lock(
-		db.Query(db.DeleteVolume(volumeName), db.ReadBackend("")),
-		db.Query(db.UpsertVolume(volumeName, "")),
+	results, unlocker, err := db.Lock(ctx,
+		db.Query(db.DeleteVolume(volumeName), db.ReadBackend("")), db.Query(db.UpsertVolume(volumeName, "")),
 		db.Query(db.ListSnapshotsForVolume(volumeName), db.ListSubordinateVolumesForVolume(volumeName)),
 	)
 	if err != nil {
@@ -2581,7 +2582,7 @@ func (o *ConcurrentTridentOrchestrator) deleteVolume(ctx context.Context, volume
 // cleanupDeletingBackend deletes a soft-deleted backend that lacks volumes.
 func (o *ConcurrentTridentOrchestrator) cleanupDeletingBackend(ctx context.Context, backendUUID string) error {
 	// Before grabbing a write lock, confirm backend exists, has no volumes, and is in Deleting state
-	results, unlocker, err := db.Lock(db.Query(db.InconsistentReadBackend(backendUUID)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.InconsistentReadBackend(backendUUID)))
 	unlocker()
 	if err != nil {
 		return err
@@ -2593,7 +2594,7 @@ func (o *ConcurrentTridentOrchestrator) cleanupDeletingBackend(ctx context.Conte
 	}
 
 	// Grab locks suitable for deleting a soft-deleted backend
-	results, unlocker, err = db.Lock(db.Query(db.DeleteBackend(backendUUID)))
+	results, unlocker, err = db.Lock(ctx, db.Query(db.DeleteBackend(backendUUID)))
 	defer unlocker()
 	if err != nil {
 		return err
@@ -2632,10 +2633,11 @@ func (o *ConcurrentTridentOrchestrator) GetVolume(
 }
 
 func (o *ConcurrentTridentOrchestrator) getVolume(
-	_ context.Context, volumeName string,
+	ctx context.Context, volumeName string,
 ) (volExternal *storage.VolumeExternal, err error) {
 	// Check for both types of volumes
 	results, unlocker, err := db.Lock(
+		ctx,
 		db.Query(db.InconsistentReadVolume(volumeName)),
 		db.Query(db.InconsistentReadSubordinateVolume(volumeName)))
 	defer unlocker()
@@ -2656,7 +2658,7 @@ func (o *ConcurrentTridentOrchestrator) GetVolumeByInternalName(ctx context.Cont
 
 	defer recordTiming("volume_internal_get", &err)()
 
-	results, unlocker, err := db.Lock(db.Query(db.ListVolumesByInternalName(volumeInternal)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ListVolumesByInternalName(volumeInternal)))
 	unlocker()
 	if err != nil {
 		return "", fmt.Errorf("error listing existing volumes; %w", err)
@@ -2687,7 +2689,7 @@ func (o *ConcurrentTridentOrchestrator) GetVolumeForImport(
 		"backendName": backendName,
 	}).Debug("Orchestrator#GetVolumeForImport")
 
-	results, unlocker, err := db.Lock(db.Query(db.ReadBackendByName(backendName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ReadBackendByName(backendName)))
 	defer unlocker()
 	if err != nil {
 		return nil, err
@@ -2731,7 +2733,7 @@ func (o *ConcurrentTridentOrchestrator) ImportVolume(
 		// we successfully renamed the backend volume as part of the import operation. We need to update the volume
 		// cache's uniqueKey with new internal volume name.
 
-		results, unlocker, err := db.Lock(db.Query(db.UpsertVolumeByInternalName(
+		results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertVolumeByInternalName(
 			volumeConfig.Name,
 			volumeConfig.ImportOriginalName,
 			volumeConfig.InternalName,
@@ -2790,6 +2792,7 @@ func (o *ConcurrentTridentOrchestrator) importVolume(ctx context.Context,
 	// Acquire a write lock on the PV name and write lock on the backend volume name that being imported. This is to avoid the race condition
 	// Acquire read lock on the storage class.
 	results, unlocker, err := db.Lock(
+		ctx,
 		db.Query(
 			db.UpsertVolumeByInternalName(volumeConfig.Name, "", volumeConfig.ImportOriginalName, volumeConfig.ImportBackendUUID),
 			db.ReadBackend(""),
@@ -2883,7 +2886,7 @@ func (o *ConcurrentTridentOrchestrator) validateImportVolume(ctx context.Context
 		return errors.UnsupportedCapacityRangeError(errors.New("requested size is more than actual size"))
 	}
 
-	results, unlocker, err := db.Lock(db.Query(db.ListVolumes()))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ListVolumes()))
 	unlocker()
 	if err != nil {
 		return err
@@ -2956,7 +2959,7 @@ func (o *ConcurrentTridentOrchestrator) importVolumeCleanup(
 		backend.RemoveCachedVolume(volumeConfig.Name)
 
 		// Remove volume from orchestrator cache
-		results, unlocker, err := db.Lock(db.Query(db.InconsistentReadVolume(volumeConfig.Name)))
+		results, unlocker, err := db.Lock(ctx, db.Query(db.InconsistentReadVolume(volumeConfig.Name)))
 		unlocker()
 		if err != nil {
 			return fmt.Errorf("error checking for existing volume; %w", err)
@@ -3000,6 +3003,7 @@ func (o *ConcurrentTridentOrchestrator) ListVolumes(
 
 	// Check for both types of volumes
 	results, unlocker, err := db.Lock(
+		ctx,
 		db.Query(db.ListVolumes()),
 		db.Query(db.ListSubordinateVolumes()))
 	defer unlocker()
@@ -3048,7 +3052,7 @@ func (o *ConcurrentTridentOrchestrator) PublishVolume(ctx context.Context, volum
 func (o *ConcurrentTridentOrchestrator) publishVolume(ctx context.Context, volumeName string,
 	publishInfo *models.VolumePublishInfo,
 ) error {
-	results, unlocker, err := db.Lock(db.Query(
+	results, unlocker, err := db.Lock(ctx, db.Query(
 		db.ListVolumePublications(),
 		db.ListNodes(),
 		db.UpsertVolumePublication(volumeName, publishInfo.HostName),
@@ -3201,7 +3205,7 @@ func (o *ConcurrentTridentOrchestrator) unpublishVolume(
 	Logc(ctx).WithFields(fields).Debug(">>>>>> Orchestrator#unpublishVolume")
 	defer Logc(ctx).Debug("<<<<<< Orchestrator#unpublishVolume")
 
-	results, unlocker, err := db.Lock(db.Query(db.ListVolumePublicationsForVolume(volumeName), db.ReadNode(""),
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ListVolumePublicationsForVolume(volumeName), db.ReadNode(""),
 		db.ReadBackend(""), db.UpsertVolume("", ""),
 		db.DeleteVolumePublication(volumeName, nodeName)))
 	defer unlocker()
@@ -3283,7 +3287,7 @@ func (o *ConcurrentTridentOrchestrator) unpublishVolume(
 
 func (o *ConcurrentTridentOrchestrator) tryDeleteSoftDeletedNode(ctx context.Context, nodeName string) error {
 	// Check that the node is still soft-deleted.
-	results, unlocker, err := db.Lock(db.Query(db.DeleteNode(nodeName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.DeleteNode(nodeName)))
 	defer unlocker()
 	if err != nil {
 		return err
@@ -3296,7 +3300,7 @@ func (o *ConcurrentTridentOrchestrator) tryDeleteSoftDeletedNode(ctx context.Con
 	}
 
 	// Check if the node has any publications left
-	listResults, listUnlocker, err := db.Lock(db.Query(db.ListVolumePublicationsForNode(nodeName)))
+	listResults, listUnlocker, err := db.Lock(ctx, db.Query(db.ListVolumePublicationsForNode(nodeName)))
 	defer listUnlocker()
 	if err != nil {
 		return err
@@ -3318,7 +3322,7 @@ func (o *ConcurrentTridentOrchestrator) resizeVolume(ctx context.Context, volume
 	backendUUID := volume.BackendUUID
 
 	// Acquire write lock on the volume to resize it.
-	results, unlocker, err := db.Lock(db.Query(
+	results, unlocker, err := db.Lock(ctx, db.Query(
 		db.UpsertVolume(volume.Config.Name, volume.BackendUUID),
 		db.ReadBackend(""), // this is for populating the parent backend in the results
 	))
@@ -3378,7 +3382,7 @@ func (o *ConcurrentTridentOrchestrator) resizeVolume(ctx context.Context, volume
 }
 
 func (o *ConcurrentTridentOrchestrator) resizeSubordinateVolume(ctx context.Context, volumeName, newSize string) error {
-	results, unlocker, err := db.Lock(db.Query(
+	results, unlocker, err := db.Lock(ctx, db.Query(
 		db.InconsistentReadSubordinateVolume(volumeName),
 	))
 	unlocker()
@@ -3393,7 +3397,7 @@ func (o *ConcurrentTridentOrchestrator) resizeSubordinateVolume(ctx context.Cont
 
 	sourceVolumeName := subordinateVolume.Config.ShareSourceVolume
 
-	results, unlocker, err = db.Lock(db.Query(
+	results, unlocker, err = db.Lock(ctx, db.Query(
 		db.UpsertSubordinateVolume(volumeName, sourceVolumeName),
 		db.ReadVolume(""),
 	))
@@ -3503,7 +3507,7 @@ func (o *ConcurrentTridentOrchestrator) ResizeVolume(ctx context.Context, volume
 
 	defer recordTiming("volume_resize", &err)()
 
-	results, unlocker, err := db.Lock(db.Query(
+	results, unlocker, err := db.Lock(ctx, db.Query(
 		db.InconsistentReadVolume(volumeName),
 		db.InconsistentReadSubordinateVolume(volumeName),
 	))
@@ -3577,10 +3581,9 @@ func (o *ConcurrentTridentOrchestrator) addSubordinateVolume(
 ) (externalVol *storage.VolumeExternal, err error) {
 	// Check for existing volumes
 	if err = func(volumeName string) error {
-		results, unlocker, err := db.Lock(db.Query(
+		results, unlocker, err := db.Lock(ctx, db.Query(
 			db.InconsistentReadVolume(volumeName),
-			db.InconsistentReadSubordinateVolume(volumeName)),
-		)
+			db.InconsistentReadSubordinateVolume(volumeName)))
 		defer unlocker()
 		if err != nil {
 			return fmt.Errorf("error checking for existing volume %s; %w", volumeName, err)
@@ -3624,6 +3627,7 @@ func (o *ConcurrentTridentOrchestrator) addSubordinateVolume(
 
 	// Get locks for the subordinate volume creation
 	results, unlocker, err := db.Lock(
+		ctx,
 		db.Query(
 			db.UpsertSubordinateVolume(volumeConfig.Name, volumeConfig.ShareSourceVolume),
 			db.UpsertVolume("", ""),
@@ -3721,9 +3725,7 @@ func (o *ConcurrentTridentOrchestrator) addSubordinateVolume(
 // backing storage resources.
 func (o *ConcurrentTridentOrchestrator) deleteSubordinateVolume(ctx context.Context, volumeName string) (err error) {
 	// Get locks for the subordinate volume deletion
-	results, unlocker, err := db.Lock(
-		db.Query(db.DeleteSubordinateVolume(volumeName), db.UpsertVolume("", "")),
-	)
+	results, unlocker, err := db.Lock(ctx, db.Query(db.DeleteSubordinateVolume(volumeName), db.UpsertVolume("", "")))
 	if err != nil {
 		unlocker()
 		return fmt.Errorf("error getting locks for volume %s; %w", volumeName, err)
@@ -3800,16 +3802,14 @@ func (o *ConcurrentTridentOrchestrator) ListSubordinateVolumes(
 
 	if sourceVolumeName == "" {
 		// List all subordinate volumes
-		results, unlocker, err = db.Lock(db.Query(db.ListSubordinateVolumes()))
+		results, unlocker, err = db.Lock(ctx, db.Query(db.ListSubordinateVolumes()))
 		defer unlocker()
 		if err != nil {
 			return nil, err
 		}
 	} else {
 		// List subordinate volumes for a single source volume
-		results, unlocker, err = db.Lock(
-			db.Query(db.ListSubordinateVolumesForVolume(sourceVolumeName), db.InconsistentReadVolume(sourceVolumeName)),
-		)
+		results, unlocker, err = db.Lock(ctx, db.Query(db.ListSubordinateVolumesForVolume(sourceVolumeName), db.InconsistentReadVolume(sourceVolumeName)))
 		defer unlocker()
 		if err != nil {
 			return nil, err
@@ -3844,7 +3844,7 @@ func (o *ConcurrentTridentOrchestrator) GetSubordinateSourceVolume(
 	defer recordTiming("subordinate_source_volume_get", &err)()
 
 	// Get subordinate volume
-	results, subordinateUnlocker, err := db.Lock(db.Query(db.InconsistentReadSubordinateVolume(subordinateVolumeName)))
+	results, subordinateUnlocker, err := db.Lock(ctx, db.Query(db.InconsistentReadSubordinateVolume(subordinateVolumeName)))
 	defer subordinateUnlocker()
 	if err != nil {
 		return nil, err
@@ -3856,7 +3856,7 @@ func (o *ConcurrentTridentOrchestrator) GetSubordinateSourceVolume(
 
 	parentVolumeName := subordinateVolume.Config.ShareSourceVolume
 
-	results, parentUnlocker, err := db.Lock(db.Query(db.InconsistentReadVolume(parentVolumeName)))
+	results, parentUnlocker, err := db.Lock(ctx, db.Query(db.InconsistentReadVolume(parentVolumeName)))
 	defer parentUnlocker()
 	if err != nil {
 		return nil, err
@@ -3929,7 +3929,7 @@ func (o *ConcurrentTridentOrchestrator) CreateSnapshot(
 	defer recordTiming("snapshot_create", &err)()
 
 	// inconsistent read volume
-	results, unlocker, err := db.Lock(db.Query(
+	results, unlocker, err := db.Lock(ctx, db.Query(
 		db.InconsistentReadVolume(snapshotConfig.VolumeName),
 		db.InconsistentReadSubordinateVolume(snapshotConfig.VolumeName),
 	))
@@ -3967,7 +3967,7 @@ func (o *ConcurrentTridentOrchestrator) CreateSnapshot(
 	// Acquire the read lock on backend and parent volume.
 	// Acquire the write lock on the snapshot.
 	// Snapshots are independent resources. It is ok to allow multiple snapshot requests for the same volume.
-	results, unlocker, err = db.Lock(db.Query(
+	results, unlocker, err = db.Lock(ctx, db.Query(
 		db.UpsertSnapshot(snapshotConfig.VolumeName, snapshotConfig.ID()),
 		db.ReadBackend(""), // this is for populating the parent backend in the results
 		db.ReadVolume(""),  // this is for populating the parent volume in the results
@@ -4074,7 +4074,7 @@ func (o *ConcurrentTridentOrchestrator) ImportSnapshot(
 
 	// Acquire the read lock on backend and parent volume.
 	// Acquire the write lock on the snapshot.
-	results, unlocker, err := db.Lock(db.Query(
+	results, unlocker, err := db.Lock(ctx, db.Query(
 		db.UpsertSnapshot(snapshotConfig.VolumeName, snapshotConfig.ID()),
 		db.ReadBackend(""), // this is for populating the parent backend in the results
 		db.ReadVolume(""),  // this is for populating the parent volume in the results
@@ -4151,7 +4151,7 @@ func (o *ConcurrentTridentOrchestrator) GetSnapshot(ctx context.Context, volumeN
 
 	snapshotID := storage.MakeSnapshotID(volumeName, snapshotName)
 
-	results, unlocker, err := db.Lock(db.Query(db.InconsistentReadSnapshot(snapshotID)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.InconsistentReadSnapshot(snapshotID)))
 	unlocker()
 	if err != nil {
 		return nil, err
@@ -4181,7 +4181,7 @@ func (o *ConcurrentTridentOrchestrator) fetchAndUpdateSnapshot(
 
 	// Acquire the read lock on backend and parent volume.
 	// Acquire the write lock on the snapshot.
-	results, unlocker, err := db.Lock(db.Query(
+	results, unlocker, err := db.Lock(ctx, db.Query(
 		db.UpsertSnapshot(snapshot.Config.VolumeName, snapshotID),
 		db.ReadBackend(""), // this is for populating the parent backend in the results
 		db.ReadVolume(""),  // this is for populating the parent volume in the results
@@ -4242,7 +4242,7 @@ func (o *ConcurrentTridentOrchestrator) ListSnapshots(
 
 	defer recordTiming("snapshot_list", &err)()
 
-	results, unlocker, err := db.Lock(db.Query(db.ListSnapshots()))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ListSnapshots()))
 	defer unlocker()
 	if err != nil {
 		return nil, err
@@ -4268,7 +4268,7 @@ func (o *ConcurrentTridentOrchestrator) ListSnapshotsByName(
 	}
 	defer recordTiming("snapshot_list_by_snapshot_name", &err)()
 
-	results, unlocker, err := db.Lock(db.Query(db.ListSnapshotsByName(snapshotName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ListSnapshotsByName(snapshotName)))
 	defer unlocker()
 	if err != nil {
 		return nil, err
@@ -4294,7 +4294,7 @@ func (o *ConcurrentTridentOrchestrator) ListSnapshotsForVolume(
 	}
 	defer recordTiming("snapshot_list_by_volume_name", &err)()
 
-	results, unlocker, err := db.Lock(db.Query(db.ReadVolume(volumeName), db.ListSnapshotsForVolume(volumeName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ReadVolume(volumeName), db.ListSnapshotsForVolume(volumeName)))
 	defer unlocker()
 	if err != nil {
 		return nil, err
@@ -4326,7 +4326,7 @@ func (o *ConcurrentTridentOrchestrator) ReadSnapshotsForVolume(
 	}
 	defer recordTiming("snapshot_read_by_volume", &err)()
 
-	results, unlocker, err := db.Lock(db.Query(db.InconsistentReadVolume(volumeName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.InconsistentReadVolume(volumeName)))
 	unlocker()
 	if err != nil {
 		return nil, err
@@ -4338,7 +4338,7 @@ func (o *ConcurrentTridentOrchestrator) ReadSnapshotsForVolume(
 		return nil, errors.NotFoundError("volume %s not found", volumeName)
 	}
 
-	results, unlocker, err = db.Lock(db.Query(db.ReadBackend(volume.BackendUUID)))
+	results, unlocker, err = db.Lock(ctx, db.Query(db.ReadBackend(volume.BackendUUID)))
 	defer unlocker()
 	if err != nil {
 		return nil, err
@@ -4380,7 +4380,7 @@ func (o *ConcurrentTridentOrchestrator) RestoreSnapshot(
 
 	defer recordTiming("snapshot_restore", &err)()
 
-	results, unlocker, err := db.Lock(db.Query(db.InconsistentReadVolume(volumeName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.InconsistentReadVolume(volumeName)))
 	unlocker()
 	if err != nil {
 		return err
@@ -4398,6 +4398,7 @@ func (o *ConcurrentTridentOrchestrator) RestoreSnapshot(
 	// Acquire read lock on snapshot
 	// Acquire write lock on parent volume because we are restoring the volume to a snapshot
 	results, unlocker, err = db.Lock(
+		ctx,
 		db.Query(
 			db.ListVolumePublicationsForVolume(volumeName),
 			db.ReadSnapshot(snapshotID),
@@ -4458,7 +4459,7 @@ func (o *ConcurrentTridentOrchestrator) deleteSnapshot(ctx context.Context, volu
 	// Acquire read lock on parent volume
 	// Acquire write lock on snapshot
 	// We also need the entire list of volumes and the list of snapshots for the parent volume.
-	results, unlocker, err := db.Lock(db.Query(
+	results, unlocker, err := db.Lock(ctx, db.Query(
 		db.ListReadOnlyCloneVolumes(),
 		db.ReadBackend(""), // this is for populating the parent backend in the results
 		db.ReadVolume(""),  // this is for populating the parent volume in the results
@@ -4586,7 +4587,7 @@ func (o *ConcurrentTridentOrchestrator) DeleteSnapshot(
 
 	snapshotID := storage.MakeSnapshotID(volumeName, snapshotName)
 
-	results, unlocker, err := db.Lock(db.Query(
+	results, unlocker, err := db.Lock(ctx, db.Query(
 		db.InconsistentReadSnapshot(snapshotID),
 	))
 	unlocker()
@@ -4625,7 +4626,7 @@ func (o *ConcurrentTridentOrchestrator) DeleteSnapshot(
 	}
 
 	// If the volume state is "deleting" and if the volume does not have any snapshots, delete the volume.
-	results, unlocker, err = db.Lock(db.Query(
+	results, unlocker, err = db.Lock(ctx, db.Query(
 		db.InconsistentReadVolume(volumeName),
 		db.ListSnapshotsForVolume(volumeName),
 	))
@@ -4664,7 +4665,7 @@ func (o *ConcurrentTridentOrchestrator) AddStorageClass(
 	scName := scConfig.Name
 
 	// Lock what we need
-	results, unlocker, err := db.Lock(db.Query(db.UpsertStorageClass(scName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertStorageClass(scName)))
 	if err != nil {
 		unlocker()
 		return nil, err
@@ -4707,7 +4708,7 @@ func (o *ConcurrentTridentOrchestrator) UpdateStorageClass(
 	scName := newSC.GetName()
 
 	// Lock what we need
-	results, unlocker, err := db.Lock(db.Query(db.UpsertStorageClass(scName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertStorageClass(scName)))
 	if err != nil {
 		unlocker()
 		return nil, err
@@ -4745,7 +4746,7 @@ func (o *ConcurrentTridentOrchestrator) DeleteStorageClass(ctx context.Context, 
 	defer recordTiming("storageclass_delete", &err)()
 
 	// Prepare cache for storage class delete
-	results, unlocker, err := db.Lock(db.Query(db.DeleteStorageClass(scName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.DeleteStorageClass(scName)))
 	if err != nil {
 		unlocker()
 		return err
@@ -4788,7 +4789,7 @@ func (o *ConcurrentTridentOrchestrator) GetStorageClass(
 	defer recordTiming("storageclass_get", &err)()
 
 	// Get storage class from cache
-	results, unlocker, err := db.Lock(db.Query(db.InconsistentReadStorageClass(scName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.InconsistentReadStorageClass(scName)))
 	defer unlocker()
 	if err != nil {
 		return nil, err
@@ -4815,7 +4816,7 @@ func (o *ConcurrentTridentOrchestrator) ListStorageClasses(ctx context.Context) 
 	defer recordTiming("storageclass_list", &err)()
 
 	// Get storage classes from cache
-	results, unlocker, err := db.Lock(db.Query(db.ListStorageClasses()))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ListStorageClasses()))
 	defer unlocker()
 	if err != nil {
 		return nil, err
@@ -4849,7 +4850,7 @@ func (o *ConcurrentTridentOrchestrator) AddNode(
 			fmt.Sprintf("%s detected on host.", node.HostInfo.Services))
 	}
 
-	results, unlocker, err := db.Lock(db.Query(db.UpsertNode(node.Name)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertNode(node.Name)))
 	defer unlocker()
 	if err != nil {
 		return err
@@ -4895,7 +4896,7 @@ func (o *ConcurrentTridentOrchestrator) UpdateNode(
 	}
 	defer recordTiming("node_update", &err)()
 
-	results, unlocker, err := db.Lock(db.Query(db.UpsertNode(nodeName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertNode(nodeName)))
 	defer unlocker()
 	if err != nil {
 		return err
@@ -4957,7 +4958,7 @@ func (o *ConcurrentTridentOrchestrator) GetNode(
 	}
 	defer recordTiming("node_get", &err)()
 
-	results, unlocker, e := db.Lock(db.Query(db.InconsistentReadNode(nodeName)))
+	results, unlocker, e := db.Lock(ctx, db.Query(db.InconsistentReadNode(nodeName)))
 	defer unlocker()
 	if e != nil {
 		err = e
@@ -4982,7 +4983,7 @@ func (o *ConcurrentTridentOrchestrator) ListNodes(
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 	defer recordTiming("node_list", &err)()
 
-	results, unlocker, err := db.Lock(db.Query(db.ListNodes()))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ListNodes()))
 	defer unlocker()
 	if err != nil {
 		return nil, err
@@ -5005,6 +5006,7 @@ func (o *ConcurrentTridentOrchestrator) DeleteNode(ctx context.Context, nodeName
 	defer recordTiming("node_delete", &err)()
 
 	results, unlocker, err := db.Lock(
+		ctx,
 		db.Query(db.ListVolumePublications(), db.DeleteNode(nodeName)),
 		db.Query(db.UpsertNode(nodeName)),
 	)
@@ -5081,7 +5083,7 @@ func (o *ConcurrentTridentOrchestrator) GetVolumePublication(
 
 	defer recordTiming("vol_pub_get", &err)()
 
-	results, unlocker, err := db.Lock(db.Query(db.InconsistentReadVolumePublication(volumeName, nodeName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.InconsistentReadVolumePublication(volumeName, nodeName)))
 	defer unlocker()
 	if err != nil {
 		return nil, err
@@ -5110,7 +5112,7 @@ func (o *ConcurrentTridentOrchestrator) ListVolumePublications(
 
 	defer recordTiming("vol_pub_list", &err)()
 
-	results, unlocker, err := db.Lock(db.Query(db.ListVolumePublications()))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ListVolumePublications()))
 	defer unlocker()
 	if err != nil {
 		return nil, err
@@ -5138,7 +5140,7 @@ func (o *ConcurrentTridentOrchestrator) ListVolumePublicationsForVolume(
 
 	defer recordTiming("vol_pub_list_for_vol", &err)()
 
-	results, unlocker, err := db.Lock(db.Query(db.ListVolumePublicationsForVolume(volumeName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ListVolumePublicationsForVolume(volumeName)))
 	defer unlocker()
 	if err != nil {
 		return nil, err
@@ -5165,7 +5167,7 @@ func (o *ConcurrentTridentOrchestrator) ListVolumePublicationsForNode(
 
 	defer recordTiming("vol_pub_list_for_node", &err)()
 
-	results, unlocker, err := db.Lock(db.Query(db.ListVolumePublicationsForNode(nodeName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ListVolumePublicationsForNode(nodeName)))
 	defer unlocker()
 	if err != nil {
 		return nil, err
@@ -5178,7 +5180,8 @@ func (o *ConcurrentTridentOrchestrator) ListVolumePublicationsForNode(
 }
 
 func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Context, v *storage.VolumeTransaction) error {
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+	// Remove any deadlines or timeouts from the context so we can clean up
+	ctx = context.WithoutCancel(GenerateRequestContextForLayer(ctx, LogLayerCore))
 
 	switch v.Op {
 	case storage.AddVolume, storage.DeleteVolume,
@@ -5212,7 +5215,7 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 	switch v.Op {
 	case storage.AddVolume:
 
-		results, unlocker, dbErr = db.Lock(db.Query(db.InconsistentReadVolume(v.Config.Name)))
+		results, unlocker, dbErr = db.Lock(ctx, db.Query(db.InconsistentReadVolume(v.Config.Name)))
 		unlocker()
 		if dbErr != nil {
 			return fmt.Errorf("unable to get volume %s from cache: %w", v.Config.Name, dbErr)
@@ -5241,7 +5244,7 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 			// so this should be idempotent.
 			// Handles case 2)
 
-			results, unlocker, dbErr = db.Lock(db.Query(db.ListBackends()))
+			results, unlocker, dbErr = db.Lock(ctx, db.Query(db.ListBackends()))
 			unlocker()
 			if dbErr != nil {
 				return fmt.Errorf("unable to list backends from cache: %w", dbErr)
@@ -5259,7 +5262,7 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 				// name to ensure that no other workflow is trying to access the
 				// volume on the backend storage system.
 
-				results, unlocker, dbErr = db.Lock(db.Query(
+				results, unlocker, dbErr = db.Lock(ctx, db.Query(
 					db.UpsertBackend(b.BackendUUID(), "", ""),
 					db.UpsertVolumeByInternalName(v.Config.Name, v.Config.InternalName, "", ""),
 				))
@@ -5294,7 +5297,7 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 
 	case storage.DeleteVolume:
 
-		results, unlocker, dbErr = db.Lock(db.Query(db.InconsistentReadVolume(v.Config.Name)))
+		results, unlocker, dbErr = db.Lock(ctx, db.Query(db.InconsistentReadVolume(v.Config.Name)))
 		unlocker()
 		if dbErr != nil {
 			return fmt.Errorf("unable to get volume %s from cache: %w", v.Config.Name, dbErr)
@@ -5327,7 +5330,7 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 		// 3) Snapshot created in persistent store
 
 		// do inconsistent read of snapshot
-		results, unlocker, dbErr = db.Lock(db.Query(
+		results, unlocker, dbErr = db.Lock(ctx, db.Query(
 			db.InconsistentReadSnapshot(v.SnapshotConfig.ID()),
 		))
 		unlocker()
@@ -5350,7 +5353,7 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 			// thanks to the StoragePrefix field, so this should be idempotent.
 			// Handles case 2)
 
-			results, unlocker, dbErr = db.Lock(db.Query(db.ListBackends()))
+			results, unlocker, dbErr = db.Lock(ctx, db.Query(db.ListBackends()))
 			unlocker()
 
 			if dbErr != nil {
@@ -5374,6 +5377,7 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 				backendUUID := backend.BackendUUID()
 
 				results, unlocker, err := db.Lock(
+					ctx,
 					db.Query(db.DeleteSnapshot(v.SnapshotConfig.ID())),
 					db.Query(db.ReadBackend(backendUUID)),
 				)
@@ -5435,7 +5439,7 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 		//        transaction object.
 		var err error
 
-		results, unlocker, dbErr = db.Lock(db.Query(db.InconsistentReadVolume(v.Config.Name)))
+		results, unlocker, dbErr = db.Lock(ctx, db.Query(db.InconsistentReadVolume(v.Config.Name)))
 		unlocker()
 		if dbErr != nil {
 			Logc(ctx).WithFields(LogFields{
@@ -5493,7 +5497,7 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 			and in the legacy import case it is also not persisted.
 		*/
 
-		results, unlocker, dbErr = db.Lock(db.Query(db.DeleteVolume(v.Config.Name)))
+		results, unlocker, dbErr = db.Lock(ctx, db.Query(db.DeleteVolume(v.Config.Name)))
 		if dbErr != nil {
 			unlocker()
 			Logc(ctx).WithFields(LogFields{
@@ -5523,7 +5527,7 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 			// guaranteed that the volume name will be unique across backends, thanks to the StoragePrefix field,
 			// so this should be idempotent.
 
-			results, unlocker, dbErr = db.Lock(db.Query(db.ListBackends()))
+			results, unlocker, dbErr = db.Lock(ctx, db.Query(db.ListBackends()))
 			unlocker()
 
 			if dbErr != nil {
@@ -5545,6 +5549,7 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 					// while we are trying to rename the backend volume back to its original name.
 
 					results, unlocker, dbErr = db.Lock(
+						ctx,
 						db.Query(db.ReadBackend(backend.BackendUUID())),
 						db.Query(db.DeleteVolume(v.Config.Name)),
 					)
@@ -5676,7 +5681,7 @@ func (o *ConcurrentTridentOrchestrator) EstablishMirror(
 		return fmt.Errorf("backend does not support mirroring")
 	}
 
-	_, unlocker, err := db.Lock(db.Query(
+	_, unlocker, err := db.Lock(ctx, db.Query(
 		db.UpsertVolume(volumeName, backendUUID),
 	))
 	defer unlocker()
@@ -5711,7 +5716,7 @@ func (o *ConcurrentTridentOrchestrator) ReestablishMirror(
 		return fmt.Errorf("backend does not support mirroring")
 	}
 
-	_, unlocker, err := db.Lock(db.Query(
+	_, unlocker, err := db.Lock(ctx, db.Query(
 		db.UpsertVolume(volumeName, backendUUID),
 	))
 	defer unlocker()
@@ -5745,7 +5750,7 @@ func (o *ConcurrentTridentOrchestrator) PromoteMirror(
 		return false, fmt.Errorf("backend does not support mirroring")
 	}
 
-	_, unlocker, err := db.Lock(db.Query(
+	_, unlocker, err := db.Lock(ctx, db.Query(
 		db.UpsertVolume(volumeName, backendUUID),
 	))
 	defer unlocker()
@@ -5814,7 +5819,7 @@ func (o *ConcurrentTridentOrchestrator) ReleaseMirror(ctx context.Context, backe
 		return fmt.Errorf("backend does not support mirroring")
 	}
 
-	_, unlocker, err := db.Lock(db.Query(
+	_, unlocker, err := db.Lock(ctx, db.Query(
 		db.UpsertVolume(volumeName, backendUUID),
 	))
 	defer unlocker()
@@ -5874,7 +5879,7 @@ func (o *ConcurrentTridentOrchestrator) UpdateMirror(ctx context.Context, volume
 		return fmt.Errorf("backend does not support mirroring")
 	}
 
-	_, unlocker, err := db.Lock(db.Query(
+	_, unlocker, err := db.Lock(ctx, db.Query(
 		db.UpsertVolume(volumeName, backendUUID),
 	))
 	defer unlocker()
@@ -5968,7 +5973,7 @@ func (o *ConcurrentTridentOrchestrator) GetCHAP(
 		return nil, err
 	}
 
-	results, unlocker, err := db.Lock(db.Query(db.InconsistentReadBackend(volume.BackendUUID)))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.InconsistentReadBackend(volume.BackendUUID)))
 	defer unlocker()
 	if err != nil {
 		return nil, err

@@ -88,7 +88,8 @@ func makeSyncMapFromMap[K comparable, V any](m map[K]V) *sync.Map {
 func addBackendsToCache(t *testing.T, backends ...storage.Backend) {
 	t.Helper()
 	for _, backend := range backends {
-		results, unlocker, err := db.Lock(db.Query(db.UpsertBackend(backend.BackendUUID(), "", backend.Name())))
+		results, unlocker, err := db.Lock(context.Background(), db.Query(db.UpsertBackend(backend.BackendUUID(), "",
+			backend.Name())))
 		require.NoError(t, err)
 		results[0].Backend.Upsert(backend)
 		unlocker()
@@ -97,7 +98,7 @@ func addBackendsToCache(t *testing.T, backends ...storage.Backend) {
 
 func removeBackendFromCache(t *testing.T, backendUUID string) {
 	t.Helper()
-	results, unlocker, err := db.Lock(db.Query(db.DeleteBackend(backendUUID)))
+	results, unlocker, err := db.Lock(testCtx, db.Query(db.DeleteBackend(backendUUID)))
 	defer unlocker()
 	require.NoError(t, err)
 	results[0].Backend.Delete()
@@ -106,7 +107,7 @@ func removeBackendFromCache(t *testing.T, backendUUID string) {
 func addStorageClassesToCache(t *testing.T, storageClasses ...*storageclass.StorageClass) {
 	t.Helper()
 	for _, sc := range storageClasses {
-		results, unlocker, err := db.Lock(db.Query(db.UpsertStorageClass(sc.GetName())))
+		results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertStorageClass(sc.GetName())))
 		require.NoError(t, err)
 		results[0].StorageClass.Upsert(sc)
 		unlocker()
@@ -116,7 +117,7 @@ func addStorageClassesToCache(t *testing.T, storageClasses ...*storageclass.Stor
 func addSnapshotsToCache(t *testing.T, snapshots ...*storage.Snapshot) {
 	t.Helper()
 	for _, snapshot := range snapshots {
-		results, unlocker, err := db.Lock(db.Query(db.UpsertSnapshot(snapshot.Config.VolumeName, snapshot.Config.ID())))
+		results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertSnapshot(snapshot.Config.VolumeName, snapshot.Config.ID())))
 		require.NoError(t, err)
 		results[0].Snapshot.Upsert(snapshot)
 		unlocker()
@@ -126,7 +127,7 @@ func addSnapshotsToCache(t *testing.T, snapshots ...*storage.Snapshot) {
 func addVolumePublicationsToCache(t *testing.T, publications ...*models.VolumePublication) {
 	t.Helper()
 	for _, publication := range publications {
-		results, unlocker, err := db.Lock(db.Query(db.UpsertVolumePublication(publication.VolumeName, publication.NodeName)))
+		results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertVolumePublication(publication.VolumeName, publication.NodeName)))
 		require.NoError(t, err)
 		results[0].VolumePublication.Upsert(publication)
 		unlocker()
@@ -135,7 +136,7 @@ func addVolumePublicationsToCache(t *testing.T, publications ...*models.VolumePu
 
 func getBackendByUuidFromCache(t *testing.T, backendUuid string) storage.Backend {
 	t.Helper()
-	results, unlocker, err := db.Lock(db.Query(db.ReadBackend(backendUuid)))
+	results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadBackend(backendUuid)))
 	defer unlocker()
 	require.NoError(t, err)
 	backend := results[0].Backend.Read
@@ -144,7 +145,7 @@ func getBackendByUuidFromCache(t *testing.T, backendUuid string) storage.Backend
 
 func getSnapshotByIDFromCache(t *testing.T, snapshotId string) *storage.Snapshot {
 	t.Helper()
-	results, unlocker, err := db.Lock(db.Query(db.ReadSnapshot(snapshotId)))
+	results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadSnapshot(snapshotId)))
 	defer unlocker()
 	require.NoError(t, err)
 	snapshot := results[0].Snapshot.Read
@@ -153,7 +154,7 @@ func getSnapshotByIDFromCache(t *testing.T, snapshotId string) *storage.Snapshot
 
 func getBackendByNameFromCache(t *testing.T, backendName string) storage.Backend {
 	t.Helper()
-	results, unlocker, err := db.Lock(db.Query(db.ReadBackendByName(backendName)))
+	results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadBackendByName(backendName)))
 	defer unlocker()
 	require.NoError(t, err)
 	backend := results[0].Backend.Read
@@ -162,7 +163,7 @@ func getBackendByNameFromCache(t *testing.T, backendName string) storage.Backend
 
 func getStorageClassByNameFromCache(t *testing.T, scName string) *storageclass.StorageClass {
 	t.Helper()
-	results, unlocker, err := db.Lock(db.Query(db.ReadStorageClass(scName)))
+	results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadStorageClass(scName)))
 	defer unlocker()
 	require.NoError(t, err)
 	sc := results[0].StorageClass.Read
@@ -171,7 +172,7 @@ func getStorageClassByNameFromCache(t *testing.T, scName string) *storageclass.S
 
 func getVolumeByNameFromCache(t *testing.T, volumeName string) *storage.Volume {
 	t.Helper()
-	results, unlocker, err := db.Lock(db.Query(db.ReadVolume(volumeName)))
+	results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadVolume(volumeName)))
 	defer unlocker()
 	require.NoError(t, err)
 	volume := results[0].Volume.Read
@@ -180,7 +181,7 @@ func getVolumeByNameFromCache(t *testing.T, volumeName string) *storage.Volume {
 
 func getSubVolumeByNameFromCache(t *testing.T, volumeName string) *storage.Volume {
 	t.Helper()
-	results, unlocker, err := db.Lock(db.Query(db.ReadSubordinateVolume(volumeName)))
+	results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadSubordinateVolume(volumeName)))
 	defer unlocker()
 	require.NoError(t, err)
 	volume := results[0].SubordinateVolume.Read
@@ -198,7 +199,7 @@ func addBackendsToPersistence(t *testing.T, o *ConcurrentTridentOrchestrator, ba
 func addVolumesToCache(t *testing.T, vols ...*storage.Volume) {
 	t.Helper()
 	for _, vol := range vols {
-		results, unlocker, err := db.Lock(db.Query(db.UpsertVolume(vol.Config.Name, vol.BackendUUID)))
+		results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertVolume(vol.Config.Name, vol.BackendUUID)))
 		require.NoError(t, err)
 		results[0].Volume.Upsert(vol)
 		unlocker()
@@ -215,7 +216,7 @@ func addVolumesToPersistence(t *testing.T, o *ConcurrentTridentOrchestrator, vol
 
 func getNodeByNameFromCache(t *testing.T, nodeName string) *models.Node {
 	t.Helper()
-	results, unlocker, err := db.Lock(db.Query(db.ReadNode(nodeName)))
+	results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadNode(nodeName)))
 	defer unlocker()
 	require.NoError(t, err)
 	node := results[0].Node.Read
@@ -225,7 +226,7 @@ func getNodeByNameFromCache(t *testing.T, nodeName string) *models.Node {
 func addNodesToCache(t *testing.T, nodes ...*models.Node) {
 	t.Helper()
 	for _, node := range nodes {
-		results, unlocker, err := db.Lock(db.Query(db.UpsertNode(node.Name)))
+		results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertNode(node.Name)))
 		require.NoError(t, err)
 		results[0].Node.Upsert(node)
 		unlocker()
@@ -234,7 +235,7 @@ func addNodesToCache(t *testing.T, nodes ...*models.Node) {
 
 func getVolumePublicationByIDFromCache(t *testing.T, volumeID, nodeID string) *models.VolumePublication {
 	t.Helper()
-	results, unlocker, err := db.Lock(db.Query(db.ReadVolumePublication(volumeID, nodeID)))
+	results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadVolumePublication(volumeID, nodeID)))
 	defer unlocker()
 	require.NoError(t, err)
 	vp := results[0].VolumePublication.Read
@@ -253,7 +254,7 @@ func addVolumePublicationsToPersistence(t *testing.T, o *ConcurrentTridentOrches
 func addSubordinateVolumesToCache(t *testing.T, subVols ...*storage.Volume) {
 	t.Helper()
 	for _, subVol := range subVols {
-		results, unlocker, err := db.Lock(db.Query(db.UpsertSubordinateVolume(subVol.Config.Name, subVol.Config.ShareSourceVolume)))
+		results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertSubordinateVolume(subVol.Config.Name, subVol.Config.ShareSourceVolume)))
 		require.NoError(t, err)
 		results[0].SubordinateVolume.Upsert(subVol)
 		unlocker()
@@ -262,7 +263,7 @@ func addSubordinateVolumesToCache(t *testing.T, subVols ...*storage.Volume) {
 
 func getSubordinateVolumeByNameFromCache(t *testing.T, volumeId string) *storage.Volume {
 	t.Helper()
-	results, unlocker, err := db.Lock(db.Query(db.ReadSubordinateVolume(volumeId)))
+	results, unlocker, err := db.Lock(testCtx, db.Query(db.ReadSubordinateVolume(volumeId)))
 	defer unlocker()
 	require.NoError(t, err)
 	volume := results[0].SubordinateVolume.Read
@@ -271,7 +272,7 @@ func getSubordinateVolumeByNameFromCache(t *testing.T, volumeId string) *storage
 
 func removeVolumeFromCache(t *testing.T, volumeName string) {
 	t.Helper()
-	results, unlocker, err := db.Lock(db.Query(db.DeleteVolume(volumeName)))
+	results, unlocker, err := db.Lock(testCtx, db.Query(db.DeleteVolume(volumeName)))
 	defer unlocker()
 	require.NoError(t, err)
 	results[0].Volume.Delete()
@@ -1955,7 +1956,7 @@ func Test_UpdateBackendConcurrentCore(t *testing.T) {
 				addBackendsToCache(t, fakeBackend)
 
 				// Use case where Backend ConfigRef is non-empty
-				results, unlocker, err := db.Lock(db.Query(db.UpsertBackend(existingBackendUuid, "", "")))
+				results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertBackend(existingBackendUuid, "", "")))
 				require.NoError(t, err)
 				oldBackend := results[0].Backend.Read
 				require.NotNil(t, oldBackend)
@@ -2330,7 +2331,7 @@ func Test_UpdateBackendByBackendUUIDConcurrentCore(t *testing.T) {
 				addBackendsToCache(t, fakeBackend)
 
 				// Use case where Backend ConfigRef is non-empty
-				results, unlocker, err := db.Lock(db.Query(db.UpsertBackend(existingBackendUuid, "", "")))
+				results, unlocker, err := db.Lock(testCtx, db.Query(db.UpsertBackend(existingBackendUuid, "", "")))
 				require.NoError(t, err)
 				oldBackend := results[0].Backend.Read
 				require.NotNil(t, oldBackend)
@@ -9766,7 +9767,7 @@ func TestAddNodeConcurrentCore(t *testing.T) {
 				mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
 				mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
-				results, unlocker, _ := db.Lock(db.Query(db.UpsertNode("node1")))
+				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertNode("node1")))
 				defer unlocker()
 
 				results[0].Node.Upsert(&models.Node{
@@ -9827,7 +9828,7 @@ func TestAddNodeConcurrentCore(t *testing.T) {
 			err := o.AddNode(testCtx, tt.newNode, func(_, _, _ string) {})
 			tt.verifyError(t, err)
 
-			results, unlocker, _ := db.Lock(db.Query(db.ReadNode(tt.newNode.Name)))
+			results, unlocker, _ := db.Lock(testCtx, db.Query(db.ReadNode(tt.newNode.Name)))
 			defer unlocker()
 
 			assert.NotNil(t, results)
@@ -10004,7 +10005,7 @@ func TestUpdateNodeConcurrentCore(t *testing.T) {
 			o.storeClient = mockStoreClient
 
 			if tt.node != nil {
-				results, unlocker, _ := db.Lock(db.Query(db.UpsertNode(tt.node.Name)))
+				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertNode(tt.node.Name)))
 				results[0].Node.Upsert(tt.node)
 				unlocker()
 			}
@@ -10015,7 +10016,7 @@ func TestUpdateNodeConcurrentCore(t *testing.T) {
 				tt.verifyError(t, err)
 			}
 			if tt.expectedState != "" {
-				results, unlocker, _ := db.Lock(db.Query(db.ReadNode("node1")))
+				results, unlocker, _ := db.Lock(testCtx, db.Query(db.ReadNode("node1")))
 				defer unlocker()
 				assert.NotNil(t, results)
 				assert.Equal(t, tt.expectedState, results[0].Node.Read.PublicationState)
@@ -10035,7 +10036,7 @@ func TestGetNodeConcurrentCore(t *testing.T) {
 			name: "success",
 			setup: func(t *testing.T) {
 				t.Helper()
-				results, unlocker, _ := db.Lock(db.Query(db.UpsertNode("node1")))
+				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertNode("node1")))
 				defer unlocker()
 				results[0].Node.Upsert(getFakeNode("node1"))
 			},
@@ -10080,7 +10081,7 @@ func TestListNodesConcurrentCore(t *testing.T) {
 			setup: func(t *testing.T) {
 				// maps are always iterated randomly
 				for name := range map[string]struct{}{"node1": {}, "node2": {}} {
-					results, unlocker, _ := db.Lock(db.Query(db.UpsertNode(name)))
+					results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertNode(name)))
 					results[0].Node.Upsert(getFakeNode(name))
 					unlocker()
 				}

@@ -7,6 +7,7 @@
 package concurrent_cache
 
 import (
+	"context"
 	"fmt"
 	"slices"
 	"sync"
@@ -196,7 +197,7 @@ func Query(query ...Subquery) []Subquery {
 //  5. Merge all queries
 //     Returns sorted list of subqueries
 //  6. Acquire locks and fill in Results
-func Lock(queries ...[]Subquery) ([]Result, func(), error) {
+func Lock(ctx context.Context, queries ...[]Subquery) ([]Result, func(), error) {
 	roots := make([][]int, len(queries))
 	cachesPresent := make(map[resource]struct{}, resourceCount)
 	// phase 1, requires no locks, check errors, dedupe, and build trees
@@ -211,7 +212,11 @@ func Lock(queries ...[]Subquery) ([]Result, func(), error) {
 
 	// phase 3, takes per-resource locks
 	merged := mergeQueries(queries)
-	return lockQuery(merged, len(queries))
+	results, unlocker, err := lockQuery(merged, len(queries))
+	if err == nil && ctx.Err() != nil {
+		err = ctx.Err()
+	}
+	return results, unlocker, err
 }
 
 func assembleQueries(queries [][]Subquery, roots [][]int, cachesPresent map[resource]struct{}) error {

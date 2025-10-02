@@ -1,6 +1,7 @@
 package concurrent_cache
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"reflect"
@@ -266,7 +267,7 @@ func TestLock(t *testing.T) {
 	for i := 0; i < n; i++ {
 		go func() {
 			defer wg.Done()
-			results, unlocker, err := Lock(makeQueries()...)
+			results, unlocker, err := Lock(context.Background(), makeQueries()...)
 			defer unlocker()
 			assert.NoError(t, err)
 			assert.NotNil(t, results[2].VolumePublication.Upsert)
@@ -479,7 +480,7 @@ func TestLockNeverDeadlocks(t *testing.T) {
 					for i := 0; i < tc.numQueries; i++ {
 						queries[i] = generateRandomQuery(queryGenerators[rand.Intn(len(queryGenerators))], tc.maxSubqueriesPerQuery)
 					}
-					results, unlock, err := Lock(queries...)
+					results, unlock, err := Lock(context.Background(), queries...)
 					defer unlock()
 					time.Sleep(time.Duration(10+rand.Intn(40)) * time.Millisecond) // Simulate some processing time
 					for _, operation := range []string{"Upsert", "Delete"} {
@@ -616,7 +617,7 @@ func TestLockWithDependencyChains(t *testing.T) {
 			var err error
 
 			go func() {
-				results, unlock, err = Lock(tc.querySets...)
+				results, unlock, err = Lock(context.Background(), tc.querySets...)
 				time.Sleep(10 * time.Millisecond) // Simulate some processing time
 				for _, operation := range []string{"Upsert", "Delete"} {
 					doOperation(t, operation, results)
@@ -775,4 +776,12 @@ func cleanupTestData() {
 	volumePublications.lock()
 	volumePublications.data = make(map[string]SmartCopier)
 	volumePublications.unlock()
+}
+
+func TestLockCancel(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), -1*time.Second)
+	defer cancel()
+	_, unlocker, err := Lock(ctx, Query(UpsertNode("node1")))
+	defer unlocker()
+	assert.ErrorContains(t, err, "context deadline exceeded")
 }
