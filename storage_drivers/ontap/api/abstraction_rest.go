@@ -1093,6 +1093,14 @@ func (d OntapAPIREST) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume
 		"guarantee.type",
 		"snapshot_policy.name",
 	}
+
+	// Work around ONTAP REST bug where guarantee type is not filtered properly by ignoring it in the query.
+	guaranteeType := volumeAttrs.SpaceReserve
+	defer func() {
+		volumeAttrs.SpaceReserve = guaranteeType
+	}()
+	volumeAttrs.SpaceReserve = ""
+
 	volumesResponse, err := d.api.VolumeListByAttrs(ctx, volumeAttrs, fields)
 	if err != nil {
 		return nil, err
@@ -1115,6 +1123,12 @@ func (d OntapAPIREST) VolumeListByAttrs(ctx context.Context, volumeAttrs *Volume
 			if err != nil {
 				return nil, err
 			}
+
+			// Work around ONTAP REST bug where guarantee type is not filtered properly by filtering it here.
+			if guaranteeType != "" && volumeInfo.SpaceReserve != guaranteeType {
+				continue
+			}
+
 			volumes = append(volumes, volumeInfo)
 		}
 	}

@@ -53,6 +53,8 @@ import (
 // REST layer
 // //////////////////////////////////////////////////////////////////////////////////////////////////////
 
+var returnTimeout = convert.ToPtr(int64(2)) // seconds
+
 // RestClient is the object to use for interacting with ONTAP controllers via the REST API
 type RestClient struct {
 	config        ClientConfig
@@ -705,6 +707,7 @@ func (c *RestClient) setVolumeSizeByNameAndStyle(ctx context.Context, volumeName
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 	params.UUID = uuid
+	params.SetReturnTimeout(returnTimeout)
 
 	sizeBytesStr, _ := capacity.ToBytes(newSize)
 	sizeBytes, err := convert.ToPositiveInt64(sizeBytesStr)
@@ -719,16 +722,17 @@ func (c *RestClient) setVolumeSizeByNameAndStyle(ctx context.Context, volumeName
 
 	params.SetInfo(volumeInfo)
 
-	_, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	volumeModifyOK, volumeModifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
 	if err != nil {
 		return err
+	} else if volumeModifyOK != nil {
+		Logc(ctx).WithField("name", volumeName).Debug("Volume resized synchronously.")
+		return nil
+	} else if volumeModifyAccepted != nil {
+		jobLink := getGenericJobLinkFromVolumeJobLink(volumeModifyAccepted.Payload)
+		return c.PollJobStatus(ctx, jobLink)
 	}
-	if volumeModifyAccepted == nil {
-		return fmt.Errorf("unexpected response from volume modify")
-	}
-
-	jobLink := getGenericJobLinkFromVolumeJobLink(volumeModifyAccepted.Payload)
-	return c.PollJobStatus(ctx, jobLink)
+	return fmt.Errorf("unexpected response from volume modify")
 }
 
 // mountVolumeByNameAndStyle mounts a volume at the specified junction
@@ -1405,7 +1409,8 @@ func (c *RestClient) waitForVolume(ctx context.Context, volumeName string) error
 	}
 	statusBackoff := backoff.NewExponentialBackOff()
 	statusBackoff.InitialInterval = 1 * time.Second
-	statusBackoff.Multiplier = 2
+	statusBackoff.MaxInterval = 2 * time.Second
+	statusBackoff.Multiplier = 1.414
 	statusBackoff.RandomizationFactor = 0.1
 	statusBackoff.MaxElapsedTime = 1 * time.Minute
 
@@ -1415,6 +1420,9 @@ func (c *RestClient) waitForVolume(ctx context.Context, volumeName string) error
 			statusBackoff.MaxElapsedTime.Seconds())
 		return err
 	}
+
+	Logc(ctx).WithField("Name", volumeName).Debugf("Flexvol created after %3.2f seconds.",
+		statusBackoff.GetElapsedTime().Seconds())
 
 	return nil
 }
@@ -1433,9 +1441,10 @@ func (c *RestClient) waitForFlexgroup(ctx context.Context, volumeName string) er
 	}
 	statusBackoff := backoff.NewExponentialBackOff()
 	statusBackoff.InitialInterval = 1 * time.Second
+	statusBackoff.MaxInterval = 5 * time.Second
 	statusBackoff.Multiplier = 2
 	statusBackoff.RandomizationFactor = 0.1
-	statusBackoff.MaxElapsedTime = 1 * time.Minute
+	statusBackoff.MaxElapsedTime = 2 * time.Minute
 
 	// Run the existence check using an exponential backoff
 	if err := backoff.RetryNotify(checkStatus, statusBackoff, statusNotify); err != nil {
@@ -1443,6 +1452,9 @@ func (c *RestClient) waitForFlexgroup(ctx context.Context, volumeName string) er
 			statusBackoff.MaxElapsedTime.Seconds())
 		return err
 	}
+
+	Logc(ctx).WithField("Name", volumeName).Debugf("FlexGroup created after %3.2f seconds.",
+		statusBackoff.GetElapsedTime().Seconds())
 
 	return nil
 }
@@ -2045,7 +2057,8 @@ func (c *RestClient) SnapshotGet(ctx context.Context, volumeUUID, snapshotUUID s
 // SnapshotGetByName finds the snapshot by name
 func (c *RestClient) SnapshotGetByName(ctx context.Context, volumeUUID, snapshotName string) (*models.Snapshot, error) {
 	result, err := c.SnapshotListByName(ctx, volumeUUID, snapshotName)
-	if result.Payload != nil && result.Payload.NumRecords != nil && *result.Payload.NumRecords == 1 && result.Payload.SnapshotResponseInlineRecords != nil {
+	if result != nil && result.Payload != nil && result.Payload.NumRecords != nil && *result.Payload.NumRecords == 1 &&
+		result.Payload.SnapshotResponseInlineRecords != nil {
 		return result.Payload.SnapshotResponseInlineRecords[0], nil
 	}
 	return nil, err
@@ -3662,7 +3675,9 @@ func (c *RestClient) PollJobStatus(ctx context.Context, payload *models.JobLinkR
 		return err
 	}
 
-	Logc(ctx).WithField("UUID", jobUUID).Debug("Job completed.")
+	Logc(ctx).WithField("UUID", jobUUID).Debugf("Job completed after %3.2f seconds.",
+		jobStatusBackoff.GetElapsedTime().Seconds())
+
 	fields := []string{"**"} // we need to get all available fields
 	jobResult, err := c.JobGet(ctx, string(jobUUID), fields)
 	if err != nil {
@@ -4783,6 +4798,7 @@ func (c *RestClient) QtreeCreate(
 	params := storage.NewQtreeCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
+	params.SetReturnTimeout(returnTimeout)
 
 	qtreeInfo := &models.Qtree{
 		Name:   convert.ToPtr(name),
@@ -4811,20 +4827,20 @@ func (c *RestClient) QtreeCreate(
 
 	params.SetInfo(qtreeInfo)
 
-	_, createAccepted, err := c.api.Storage.QtreeCreate(params, c.authInfo)
+	created, accepted, err := c.api.Storage.QtreeCreate(params, c.authInfo)
 	if err != nil {
 		return err
+	} else if created != nil {
+		Logc(ctx).WithField("name", name).Debug("Qtree created synchronously.")
+		return nil
+	} else if accepted != nil {
+		jobLink := getGenericJobLinkFromQtreeJobLink(accepted.Payload)
+		if pollErr := c.PollJobStatus(ctx, jobLink); pollErr != nil {
+			return pollErr
+		}
+		return c.waitForQtree(ctx, volumeName, name)
 	}
-	if createAccepted == nil {
-		return fmt.Errorf("unexpected response from qtree create")
-	}
-
-	jobLink := getGenericJobLinkFromQtreeJobLink(createAccepted.Payload)
-	if pollErr := c.PollJobStatus(ctx, jobLink); pollErr != nil {
-		return pollErr
-	}
-
-	return c.waitForQtree(ctx, volumeName, name)
+	return fmt.Errorf("unexpected response from qtree create")
 }
 
 // waitForQtree polls for the ONTAP qtree to exist, with backoff retry logic
@@ -4841,8 +4857,9 @@ func (c *RestClient) waitForQtree(ctx context.Context, volumeName, qtreeName str
 		Logc(ctx).WithField("increment", duration).Debug("Qtree not found, waiting.")
 	}
 	statusBackoff := backoff.NewExponentialBackOff()
-	statusBackoff.InitialInterval = 1 * time.Second
-	statusBackoff.Multiplier = 2
+	statusBackoff.InitialInterval = 500 * time.Millisecond
+	statusBackoff.MaxInterval = 2 * time.Second
+	statusBackoff.Multiplier = 1.414
 	statusBackoff.RandomizationFactor = 0.1
 	statusBackoff.MaxElapsedTime = 1 * time.Minute
 
@@ -4852,6 +4869,9 @@ func (c *RestClient) waitForQtree(ctx context.Context, volumeName, qtreeName str
 			statusBackoff.MaxElapsedTime.Seconds())
 		return err
 	}
+
+	Logc(ctx).WithField("Name", qtreeName).Debugf("Qtree created after %3.2f seconds.",
+		statusBackoff.GetElapsedTime().Seconds())
 
 	return nil
 }
@@ -4880,6 +4900,7 @@ func (c *RestClient) QtreeRename(ctx context.Context, path, newPath string) erro
 	params.SetHTTPClient(c.httpClient)
 	params.SetID(strconv.FormatInt(*qtree.ID, 10))
 	params.SetVolumeUUID(*qtree.Volume.UUID)
+	params.SetReturnTimeout(returnTimeout)
 
 	qtreeInfo := &models.Qtree{
 		Name: convert.ToPtr(strings.TrimPrefix(newPath, "/"+*qtree.Volume.Name+"/")),
@@ -4887,16 +4908,17 @@ func (c *RestClient) QtreeRename(ctx context.Context, path, newPath string) erro
 
 	params.SetInfo(qtreeInfo)
 
-	_, modifyAccepted, err := c.api.Storage.QtreeModify(params, c.authInfo)
+	modifyOK, modifyAccepted, err := c.api.Storage.QtreeModify(params, c.authInfo)
 	if err != nil {
 		return err
+	} else if modifyOK != nil {
+		Logc(ctx).WithField("newPath", newPath).Debug("Qtree renamed synchronously.")
+		return nil
+	} else if modifyAccepted != nil {
+		jobLink := getGenericJobLinkFromQtreeJobLink(modifyAccepted.Payload)
+		return c.PollJobStatus(ctx, jobLink)
 	}
-	if modifyAccepted == nil {
-		return fmt.Errorf("unexpected response from qtree modify")
-	}
-
-	jobLink := getGenericJobLinkFromQtreeJobLink(modifyAccepted.Payload)
-	return c.PollJobStatus(ctx, jobLink)
+	return fmt.Errorf("unexpected response from qtree modify")
 }
 
 // QtreeDestroyAsync destroys a qtree in the background
@@ -4923,17 +4945,19 @@ func (c *RestClient) QtreeDestroyAsync(ctx context.Context, path string, force b
 	params.SetHTTPClient(c.httpClient)
 	params.SetID(strconv.FormatInt(*qtree.ID, 10))
 	params.SetVolumeUUID(*qtree.Volume.UUID)
+	params.SetReturnTimeout(returnTimeout)
 
-	_, deleteAccepted, err := c.api.Storage.QtreeDelete(params, c.authInfo)
+	deleteOK, deleteAccepted, err := c.api.Storage.QtreeDelete(params, c.authInfo)
 	if err != nil {
 		return err
+	} else if deleteOK != nil {
+		Logc(ctx).WithField("path", path).Debug("Qtree deleted synchronously.")
+		return nil
+	} else if deleteAccepted != nil {
+		jobLink := getGenericJobLinkFromQtreeJobLink(deleteAccepted.Payload)
+		return c.PollJobStatus(ctx, jobLink)
 	}
-	if deleteAccepted == nil {
-		return fmt.Errorf("unexpected response from quota delete")
-	}
-
-	jobLink := getGenericJobLinkFromQtreeJobLink(deleteAccepted.Payload)
-	return c.PollJobStatus(ctx, jobLink)
+	return fmt.Errorf("unexpected response from qtree delete")
 }
 
 // QtreeList returns the names of all Qtrees whose names match the supplied prefix
@@ -5336,6 +5360,7 @@ func (c *RestClient) QtreeModifyExportPolicy(ctx context.Context, name, volumeNa
 	params.SetHTTPClient(c.httpClient)
 	params.SetID(strconv.FormatInt(*qtree.ID, 10))
 	params.SetVolumeUUID(*qtree.Volume.UUID)
+	params.SetReturnTimeout(returnTimeout)
 
 	qtreeInfo := &models.Qtree{
 		ExportPolicy: &models.QtreeInlineExportPolicy{
@@ -5345,24 +5370,24 @@ func (c *RestClient) QtreeModifyExportPolicy(ctx context.Context, name, volumeNa
 
 	params.SetInfo(qtreeInfo)
 
-	_, modifyAccepted, err := c.api.Storage.QtreeModify(params, c.authInfo)
+	modifyOK, modifyAccepted, err := c.api.Storage.QtreeModify(params, c.authInfo)
 	if err != nil {
 		return err
-	}
-	if modifyAccepted == nil {
-		return fmt.Errorf("unexpected response from qtree modify")
-	}
-
-	jobLink := getGenericJobLinkFromQtreeJobLink(modifyAccepted.Payload)
-	if pollErr := c.PollJobStatus(ctx, jobLink); pollErr != nil {
-		apiError, message, code := ExtractError(pollErr)
-		if apiError == "failure" && code == EXPORT_POLICY_NOT_FOUND {
-			return errors.NotFoundError(message)
+	} else if modifyOK != nil {
+		Logc(ctx).WithField("name", name).Debug("Qtree export policy modified synchronously.")
+		return nil
+	} else if modifyAccepted != nil {
+		jobLink := getGenericJobLinkFromQtreeJobLink(modifyAccepted.Payload)
+		if pollErr := c.PollJobStatus(ctx, jobLink); pollErr != nil {
+			apiError, message, code := ExtractError(pollErr)
+			if apiError == "failure" && code == EXPORT_POLICY_NOT_FOUND {
+				return errors.NotFoundError(message)
+			}
+			return pollErr
 		}
-		return pollErr
+		return nil
 	}
-
-	return nil
+	return fmt.Errorf("unexpected response from qtree modify")
 }
 
 // QuotaOn enables quotas on a Flexvol
@@ -5400,6 +5425,7 @@ func (c *RestClient) quotaModify(ctx context.Context, volumeName string, quotaEn
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 	params.SetUUID(*volume.UUID)
+	params.SetReturnTimeout(returnTimeout)
 
 	volumeInfo := &models.Volume{
 		Quota: &models.VolumeInlineQuota{
@@ -5409,16 +5435,17 @@ func (c *RestClient) quotaModify(ctx context.Context, volumeName string, quotaEn
 
 	params.SetInfo(volumeInfo)
 
-	_, modifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
+	modifyOK, modifyAccepted, err := c.api.Storage.VolumeModify(params, c.authInfo)
 	if err != nil {
 		return err
+	} else if modifyOK != nil {
+		Logc(ctx).WithField("volume", volumeName).Debug("Volume quota modified synchronously.")
+		return nil
+	} else if modifyAccepted != nil {
+		jobLink := getGenericJobLinkFromVolumeJobLink(modifyAccepted.Payload)
+		return c.PollJobStatus(ctx, jobLink)
 	}
-	if modifyAccepted == nil {
-		return fmt.Errorf("unexpected response from volume modify")
-	}
-
-	jobLink := getGenericJobLinkFromVolumeJobLink(modifyAccepted.Payload)
-	return c.PollJobStatus(ctx, jobLink)
+	return fmt.Errorf("unexpected response from volume modify")
 }
 
 // QuotaSetEntry updates (or creates) a quota rule with an optional hard disk limit
@@ -5444,6 +5471,7 @@ func (c *RestClient) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, q
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 	params.SetUUID(*quotaRule.UUID)
+	params.SetReturnTimeout(returnTimeout)
 
 	// determine the new hard disk limit value
 	if diskLimit == "" {
@@ -5461,16 +5489,17 @@ func (c *RestClient) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, q
 	}
 	params.SetInfo(quotaRuleInfo)
 
-	_, modifyAccepted, err := c.api.Storage.QuotaRuleModify(params, c.authInfo)
+	modifyOK, modifyAccepted, err := c.api.Storage.QuotaRuleModify(params, c.authInfo)
 	if err != nil {
 		return err
+	} else if modifyOK != nil {
+		Logc(ctx).WithField("qtree", qtreeName).Debug("Quota rule modified synchronously.")
+		return nil
+	} else if modifyAccepted != nil {
+		jobLink := getGenericJobLinkFromQuotaRuleJobLink(modifyAccepted.Payload)
+		return c.PollJobStatus(ctx, jobLink)
 	}
-	if modifyAccepted == nil {
-		return fmt.Errorf("unexpected response from quota rule modify")
-	}
-
-	jobLink := getGenericJobLinkFromQuotaRuleJobLink(modifyAccepted.Payload)
-	return c.PollJobStatus(ctx, jobLink)
+	return fmt.Errorf("unexpected response from quota rule modify")
 }
 
 // QuotaAddEntry creates a quota rule with an optional hard disk limit
@@ -5479,6 +5508,7 @@ func (c *RestClient) QuotaAddEntry(ctx context.Context, volumeName, qtreeName, q
 	params := storage.NewQuotaRuleCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
+	params.SetReturnTimeout(convert.ToPtr(int64(3)))
 
 	quotaRuleInfo := &models.QuotaRule{
 		Qtree: &models.QuotaRuleInlineQtree{
@@ -5505,16 +5535,17 @@ func (c *RestClient) QuotaAddEntry(ctx context.Context, volumeName, qtreeName, q
 
 	params.SetInfo(quotaRuleInfo)
 
-	_, createAccepted, err := c.api.Storage.QuotaRuleCreate(params, c.authInfo)
+	created, accepted, err := c.api.Storage.QuotaRuleCreate(params, c.authInfo)
 	if err != nil {
 		return err
+	} else if created != nil {
+		Logc(ctx).WithField("qtree", qtreeName).Debug("Quota rule created synchronously.")
+		return nil
+	} else if accepted != nil {
+		jobLink := getGenericJobLinkFromQuotaRuleJobLink(accepted.Payload)
+		return c.PollJobStatus(ctx, jobLink)
 	}
-	if createAccepted == nil {
-		return fmt.Errorf("unexpected response from quota rule create")
-	}
-
-	jobLink := getGenericJobLinkFromQuotaRuleJobLink(createAccepted.Payload)
-	return c.PollJobStatus(ctx, jobLink)
+	return fmt.Errorf("unexpected response from quota rule create")
 }
 
 // QuotaGetEntry returns the disk limit for a single qtree

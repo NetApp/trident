@@ -469,7 +469,7 @@ func (d *NASQtreeStorageDriver) Create(
 			continue
 		}
 		volConfig.InternalID = d.CreateQtreeInternalID(d.Config.SVM, flexvol, name)
-		Logc(ctx).WithFields(LogFields{"InternalID": volConfig.InternalID}).Debug("Created new qtree.")
+		Logc(ctx).WithFields(LogFields{"InternalID": volConfig.InternalID}).Debug("Creating new qtree.")
 
 		// Grow or shrink the Flexvol as needed
 		err = d.resizeFlexvol(ctx, flexvol, sizeBytes)

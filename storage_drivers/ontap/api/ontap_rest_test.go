@@ -6214,6 +6214,30 @@ func mockQtreeResponse(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func mockQtreeOKResponse(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "POST", "DELETE", "PATCH":
+		setHTTPResponseHeader(w, http.StatusOK)
+	case "GET":
+		if r.URL.Path == "/api/cluster/jobs/1234" {
+			mockQtreeJobResponse(w, r)
+		} else {
+			qtree := getQtree()
+			numRecords := int64(1)
+			qtreeResponse := &models.QtreeResponse{
+				QtreeResponseInlineRecords: []*models.Qtree{&qtree},
+				NumRecords:                 &numRecords,
+			}
+			setHTTPResponseHeader(w, http.StatusOK)
+			json.NewEncoder(w).Encode(qtreeResponse)
+		}
+	}
+}
+
+func mockQtreeCreatedResponse(w http.ResponseWriter, r *http.Request) {
+	setHTTPResponseHeader(w, http.StatusCreated)
+}
+
 func mockJobResponseFailure(w http.ResponseWriter, r *http.Request) {
 	jobId := strfmt.UUID("1234")
 	jobLink := models.JobLink{UUID: &jobId}
@@ -6306,6 +6330,30 @@ func mockQuotaRuleResponse(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func mockQuotaRuleOKResponse(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/api/cluster/jobs/1234" {
+		mockQtreeJobResponse(w, r)
+	} else if r.Method == "PATCH" || r.Method == "POST" {
+		setHTTPResponseHeader(w, http.StatusOK)
+	} else {
+		quotaRuleResponse := getQuotaRule()
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(quotaRuleResponse)
+	}
+}
+
+func mockQuotaRuleCreatedResponse(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/api/cluster/jobs/1234" {
+		mockQtreeJobResponse(w, r)
+	} else if r.Method == "PATCH" || r.Method == "POST" {
+		setHTTPResponseHeader(w, http.StatusCreated)
+	} else {
+		quotaRuleResponse := getQuotaRule()
+		setHTTPResponseHeader(w, http.StatusOK)
+		json.NewEncoder(w).Encode(quotaRuleResponse)
+	}
+}
+
 func mockQuotaRuleResponseFailure(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/api/cluster/jobs/1234" {
 		mockQtreeJobResponse(w, r)
@@ -6319,13 +6367,6 @@ func mockQuotaRuleResponseFailure(w http.ResponseWriter, r *http.Request) {
 			json.NewEncoder(w).Encode(quotaRuleResponse)
 		}
 	}
-}
-
-func mockQuotaRuleResponseNumRecordsNil(w http.ResponseWriter, r *http.Request) {
-	quotaRuleResponse := getQuotaRule()
-	quotaRuleResponse.NumRecords = nil
-	setHTTPResponseHeader(w, http.StatusOK)
-	json.NewEncoder(w).Encode(quotaRuleResponse)
 }
 
 func mockQuotaRuleResponseUUIDNil(w http.ResponseWriter, r *http.Request) {
@@ -6461,6 +6502,7 @@ func TestOntapREST_QtreeCreate(t *testing.T) {
 		isErrorExpected bool
 	}{
 		{"PositiveTest", mockQtreeResponse, "---rwxr--rwx", false},
+		{"PositiveTestSync", mockQtreeCreatedResponse, "---rwxr--rwx", false},
 		{"UnixPermissionValueInvalid", mockQtreeResponse, "invalidValue", true},
 		{"NegativeTest_BackendReturnError", mockQtreeResourceNotFound, "---rwxr--rwx", true},
 	}
@@ -6518,6 +6560,7 @@ func TestOntapREST_QtreeRename(t *testing.T) {
 		isErrorExpected bool
 	}{
 		{"PositiveTest", mockQtreeResponse, false},
+		{"PositiveTestSync", mockQtreeOKResponse, false},
 		{"ResposeContainUUIDNil", mockQtreeResponseUUIDNil, true},
 		{"ResposeContainVolumeIdNil", mockQtreeResponseVolumeUUIdNil, true},
 		{"NegativeTest_BackendReturnError", mockQtreeResourceNotFound, true},
@@ -6546,6 +6589,7 @@ func TestOntapQtree_DestroyAsync(t *testing.T) {
 		isErrorExpected bool
 	}{
 		{"PositiveTest", mockQtreeResponse, false},
+		{"PositiveTestSync", mockQtreeOKResponse, false},
 		{"NegativeTest_BackendReturnError", mockQtreeResourceNotFound, true},
 		{"ResposeContainUUIDNil", mockQtreeResponseUUIDNil, true},
 		{"ResposeContainVolumeIdNil", mockQtreeResponseVolumeUUIdNil, true},
@@ -6758,6 +6802,7 @@ func TestOntapREST_QtreeModifyExportPolicy(t *testing.T) {
 		isErrorExpected bool
 	}{
 		{"PositiveTest", mockQtreeResponse, false},
+		{"PositiveTestSync", mockQtreeOKResponse, false},
 		{"NegativeTest_BackendReturnError", mockQtreeResourceNotFound, true},
 		{"UUIDNilInResponse", mockQtreeResponseUUIDNil, true},
 		{"ParentVolumeIdNil", mockQtreeResponseVolumeUUIdNil, true},
@@ -6844,6 +6889,7 @@ func TestOntapREST_QuotaModify(t *testing.T) {
 		isErrorExpected bool
 	}{
 		{"PositiveTest", mockQuotaRuleResponse, false},
+		{"PositiveTestSync", mockQuotaRuleOKResponse, false},
 		{"NegativeTest_BackendReturnError", mockQuotaResourceNotFound, true},
 		{"QuotaModifyFailed", mockQuotaRuleResponseFailure, true},
 	}
@@ -6872,8 +6918,8 @@ func TestOntapRest_QuotaSetEntry(t *testing.T) {
 		isErrorExpected bool
 	}{
 		{"PositiveTest", mockQuotaRuleResponse, "1073741810", false},
+		{"PositiveTestSync", mockQuotaRuleOKResponse, "1073741810", false},
 		{"NegativeTest_BackendReturnError", mockQuotaResourceNotFound, "1073741810", true},
-		{"NumRecordsFieldNilInResponse", mockQuotaRuleResponseNumRecordsNil, "1073741810", true},
 		{"UUIDNilInResponse", mockQuotaRuleResponseUUIDNil, "1073741810", true},
 		{"ModifyQuotaRuleFail_DiskLimitNotEmpty", mockQuotaRuleResponseFailure, "1073741810", true},
 		{"ModifyQuotaRuleFail_DiskLimitEmpty", mockQuotaRuleResponseFailure, "", true},
@@ -6904,6 +6950,7 @@ func TestOntapRest_QuotaAddEntry(t *testing.T) {
 		isErrorExpected bool
 	}{
 		{"PositiveTest", mockQuotaRuleResponse, "1073741810", false},
+		{"PositiveTestSync", mockQuotaRuleCreatedResponse, "1073741810", false},
 		{"InvalidDiskLimit", mockQuotaRuleResponse, "invalidValue", true},
 		{"NegativeTest_BackendReturnError", mockQuotaResourceNotFound, "1073741810", true},
 	}
