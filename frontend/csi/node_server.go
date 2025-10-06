@@ -3305,10 +3305,6 @@ func (p *Plugin) nodeStageSANVolume(
 	}
 
 	switch req.PublishContext["SANType"] {
-	case sa.ISCSI:
-		if err = p.nodeStageISCSIVolume(ctx, req, publishInfo); err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
 	case sa.FCP:
 		if err = p.nodeStageFCPVolume(ctx, req, publishInfo); err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
@@ -3318,7 +3314,9 @@ func (p *Plugin) nodeStageSANVolume(
 			return nil, status.Error(codes.Internal, fmt.Sprintf("failed to stage volume: %s", err.Error()))
 		}
 	default:
-		return nil, status.Error(codes.InvalidArgument, "invalid SANType")
+		if err = p.nodeStageISCSIVolume(ctx, req, publishInfo); err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
 	}
 
 	return &csi.NodeStageVolumeResponse{}, nil

@@ -9101,7 +9101,7 @@ func TestNodeStageVolume1(t *testing.T) {
 				},
 			},
 			expectedResponse: nil,
-			expErrCode:       codes.InvalidArgument,
+			expErrCode:       codes.Internal,
 			setupMount: func() mount.Mount {
 				mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
 				mockMountClient.EXPECT().IsCompatible(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
