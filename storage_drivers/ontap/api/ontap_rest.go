@@ -77,18 +77,26 @@ func (c *RestClient) ClientConfig() ClientConfig {
 }
 
 func (c *RestClient) SetSVMUUID(svmUUID string) {
+	c.m.Lock()
+	defer c.m.Unlock()
 	c.svmUUID = svmUUID
 }
 
 func (c *RestClient) SVMUUID() string {
+	c.m.RLock()
+	defer c.m.RUnlock()
 	return c.svmUUID
 }
 
 func (c *RestClient) SetSVMName(svmName string) {
+	c.m.Lock()
+	defer c.m.Unlock()
 	c.svmName = svmName
 }
 
 func (c *RestClient) SVMName() string {
+	c.m.RLock()
+	defer c.m.RUnlock()
 	return c.svmName
 }
 

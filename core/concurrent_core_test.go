@@ -10663,7 +10663,6 @@ func TestPublishVolumeConcurrentCore(t *testing.T) {
 				driver.EXPECT().GetStorageBackendSpecs(gomock.Any(), gomock.Any()).Return(nil)
 				driver.EXPECT().CreateFollowup(gomock.Any(), gomock.Any()).Return(nil)
 				driver.EXPECT().Publish(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				driver.EXPECT().ReconcileNodeAccess(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 				fakeNode := getFakeNode("testNode")
 				addNodesToCache(t, fakeNode)

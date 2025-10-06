@@ -3124,11 +3124,6 @@ func (o *ConcurrentTridentOrchestrator) publishVolume(ctx context.Context, volum
 	// Fill in what we already know
 	publishInfo.VolumeAccessInfo = volume.Config.AccessInfo
 	publishInfo.Nodes = results[0].Nodes
-	if err := o.reconcileNodeAccessOnBackend(ctx, backend, results[0].VolumePublications, results[0].Nodes); err != nil {
-		err = fmt.Errorf("unable to update node access rules on backend %s; %v", backend.Name(), err)
-		Logc(ctx).Error(err)
-		return err
-	}
 
 	if err := backend.PublishVolume(ctx, volume.Config, publishInfo); err != nil {
 		return err
@@ -5043,6 +5038,10 @@ func (o *ConcurrentTridentOrchestrator) DeleteNode(ctx context.Context, nodeName
 		return fmt.Errorf("failed to delete node %s in store: %v", nodeName, err)
 	}
 	deleteNode()
+
+	// TODO: enable this with periodic node reconciliation
+	// o.invalidateAllBackendNodeAccess(ctx)
+
 	return
 }
 

@@ -62,11 +62,11 @@ type NASStorageDriver struct {
 }
 
 func (d *NASStorageDriver) GetConfig() drivers.DriverConfig {
-	return &d.Config
+	return d.Config.SmartCopy()
 }
 
 func (d *NASStorageDriver) GetOntapConfig() *drivers.OntapStorageDriverConfig {
-	return &d.Config
+	return d.Config.SmartCopy()
 }
 
 func (d *NASStorageDriver) GetAPI() api.OntapAPI {
@@ -185,7 +185,7 @@ func (d *NASStorageDriver) Terminate(ctx context.Context, backendUUID string) {
 	if d.Config.AutoExportPolicy {
 		policyName := getExportPolicyName(backendUUID)
 
-		if err := d.API.ExportPolicyDestroy(ctx, policyName); err != nil {
+		if err := destroyExportPolicy(ctx, policyName, d.API); err != nil {
 			Logc(ctx).Warn(err)
 		}
 	}
@@ -965,8 +965,9 @@ func (d *NASStorageDriver) Unpublish(
 			volConfig.ExportPolicy = getEmptyExportPolicyName(*d.Config.StoragePrefix)
 
 			// Remove export policy if no rules exist
-			if err = d.API.ExportPolicyDestroy(ctx, exportPolicy); err != nil {
-				Logc(ctx).WithError(err).Errorf("Error deleting export policy %s.", exportPolicy)
+			if err = destroyExportPolicy(ctx, exportPolicy, d.API); err != nil {
+				Logc(ctx).WithError(err).Errorf("Could not delete export policy %s.", exportPolicy)
+				return err
 			}
 		}
 
@@ -986,6 +987,7 @@ func (d *NASStorageDriver) Unpublish(
 // setVolToEmptyPolicy  set export policy to the empty policy.
 func (d *NASStorageDriver) setVolToEmptyPolicy(ctx context.Context, volName string) error {
 	emptyExportPolicy := getEmptyExportPolicyName(*d.Config.StoragePrefix)
+
 	exists, err := d.API.ExportPolicyExists(ctx, emptyExportPolicy)
 	if err != nil {
 		return err
@@ -1713,6 +1715,7 @@ func (d *NASStorageDriver) reconcileNodeAccessForBackendPolicy(
 		Logc(ctx).Error(err)
 		return err
 	}
+
 	err = reconcileExportPolicyRules(ctx, policyName, desiredRules, d.API, &d.Config)
 	if err != nil {
 		err = fmt.Errorf("unabled to reconcile export policy rules; %v", err)

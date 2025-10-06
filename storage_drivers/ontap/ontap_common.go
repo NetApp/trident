@@ -154,6 +154,7 @@ var (
 	smbShareDeleteACL        = map[string]string{DefaultSMBAccessControlUser: DefaultSMBAccessControlUserType}
 	lunMutex                 = locks.NewGCNamedMutex()
 	igroupMutex              = locks.NewGCNamedMutex()
+	exportPolicyMutex        = locks.NewGCNamedMutex()
 
 	duringVolCloneAfterSnapCreation1 = fiji.Register("duringVolCloneAfterSnapCreation1", "ontap_common")
 	duringVolCloneAfterSnapCreation2 = fiji.Register("duringVolCloneAfterSnapCreation2", "ontap_common")
@@ -305,7 +306,17 @@ func InitializeOntapConfig(
 }
 
 func ensureExportPolicyExists(ctx context.Context, policyName string, clientAPI api.OntapAPI) error {
+	exportPolicyMutex.Lock(policyName)
+	defer exportPolicyMutex.Unlock(policyName)
+
 	return clientAPI.ExportPolicyCreate(ctx, policyName)
+}
+
+func destroyExportPolicy(ctx context.Context, policyName string, clientAPI api.OntapAPI) error {
+	exportPolicyMutex.Lock(policyName)
+	defer exportPolicyMutex.Unlock(policyName)
+
+	return clientAPI.ExportPolicyDestroy(ctx, policyName)
 }
 
 func getExportPolicyName(backendUUID string) string {
@@ -380,12 +391,15 @@ func ensureNodeAccessForPolicy(
 	Logc(ctx).WithFields(fields).Debug(">>>> ensureNodeAccessForPolicy")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< ensureNodeAccessForPolicy")
 
+	exportPolicyMutex.Lock(policyName)
+	defer exportPolicyMutex.Unlock(policyName)
+
 	if exists, err := clientAPI.ExportPolicyExists(ctx, policyName); err != nil {
 		return err
 	} else if !exists {
 		Logc(ctx).WithField("exportPolicy", policyName).Debug("Export policy missing, will create it.")
 
-		if err = ensureExportPolicyExists(ctx, policyName, clientAPI); err != nil {
+		if err = clientAPI.ExportPolicyCreate(ctx, policyName); err != nil {
 			return err
 		}
 	}
@@ -495,6 +509,9 @@ func reconcileExportPolicyRules(
 	}
 	Logc(ctx).WithFields(fields).Debug(">>>> reconcileExportPolicyRules")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< reconcileExportPolicyRules")
+
+	exportPolicyMutex.Lock(policyName)
+	defer exportPolicyMutex.Unlock(policyName)
 
 	// first grab all existing rules
 	existingRules, err := clientAPI.ExportRuleList(ctx, policyName)
@@ -4903,6 +4920,9 @@ func removeExportPolicyRules(
 
 	Logc(ctx).WithFields(fields).Debug(">>>> removeExportPolicyRules")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< removeExportPolicyRules")
+
+	exportPolicyMutex.Lock(exportPolicy)
+	defer exportPolicyMutex.Unlock(exportPolicy)
 
 	var removeRuleIndexes []int
 
