@@ -6525,12 +6525,12 @@ func TestHandleFailedTranxResizeVolume(t *testing.T) {
 			// Create a fake backend with UUID
 			mockBackend := mockstorage.NewMockBackend(mockCtrl)
 			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-			mockStoreClient.EXPECT().UpdateVolume(coreCtx, gomock.Any()).Return(nil).AnyTimes()
+			mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			if tt.name == "VolumeNotPresent" {
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx,
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(),
 					gomock.Any()).Return(errors.New("delete failed"))
 			} else {
-				mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx, gomock.Any()).Return(nil).AnyTimes()
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			}
 			o := getOrchestrator(t, false)
 			o.storeClient = mockStoreClient
@@ -6820,11 +6820,11 @@ func TestHandleFailedDeleteVolumeError(t *testing.T) {
 	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
 	mockBackend.EXPECT().GetDriverName().Return("baz").AnyTimes()
 	mockBackend.EXPECT().Name().Return("mockBackend").AnyTimes()
-	mockBackend.EXPECT().RemoveVolume(coreCtx, gomock.Any()).Return(nil)
+	mockBackend.EXPECT().RemoveVolume(gomock.Any(), gomock.Any()).Return(nil)
 
 	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-	mockStoreClient.EXPECT().DeleteVolume(coreCtx, gomock.Any()).Return(errors.New("unable to delete volume"))
-	mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx,
+	mockStoreClient.EXPECT().DeleteVolume(gomock.Any(), gomock.Any()).Return(errors.New("unable to delete volume"))
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(),
 		gomock.Any()).Return(errors.New("unable to delete transaction"))
 
 	o := getOrchestrator(t, false)
@@ -7736,7 +7736,7 @@ func TestHandleFailedSnapshot(t *testing.T) {
 	// storage.AddSnapshot switch case tests
 	vt.Op = storage.AddSnapshot
 
-	mockBackend.EXPECT().DeleteSnapshot(coreCtx, gomock.Any(),
+	mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(),
 		gomock.Any()).Return(errors.New("failed to delete snapshot"))
 	mockBackend.EXPECT().Name().Return("abc")
 	err := o.handleFailedTransaction(ctx(), vt)
@@ -7747,7 +7747,7 @@ func TestHandleFailedSnapshot(t *testing.T) {
 	mockBackend2.EXPECT().State().Return(storage.Unknown).AnyTimes()
 	mockBackend.EXPECT().State().Return(storage.Online)
 	mockBackend.EXPECT().Name().Return("abc")
-	mockBackend.EXPECT().DeleteSnapshot(coreCtx, gomock.Any(),
+	mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(),
 		gomock.Any()).Return(errors.New("failed to delete snapshot"))
 	err = o.handleFailedTransaction(ctx(), vt)
 	assert.Error(t, err, "Delete snapshot error")
@@ -7755,9 +7755,9 @@ func TestHandleFailedSnapshot(t *testing.T) {
 	// DeleteSnapshot returns UnSupported error
 	mockBackend2.EXPECT().State().Return(storage.Unknown).AnyTimes()
 	mockBackend.EXPECT().State().Return(storage.Online)
-	mockBackend.EXPECT().DeleteSnapshot(coreCtx, gomock.Any(),
+	mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(),
 		gomock.Any()).Return(errors.UnsupportedError("failed to delete snapshot"))
-	mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx,
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(),
 		gomock.Any()).Return(errors.New("failed to delete transaction"))
 	err = o.handleFailedTransaction(ctx(), vt)
 	assert.Error(t, err, "Delete snapshot error")
@@ -7765,17 +7765,17 @@ func TestHandleFailedSnapshot(t *testing.T) {
 	// DeleteSnapshot returns NotFound error
 	mockBackend2.EXPECT().State().Return(storage.Unknown).AnyTimes()
 	mockBackend.EXPECT().State().Return(storage.Online)
-	mockBackend.EXPECT().DeleteSnapshot(coreCtx, gomock.Any(),
+	mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(),
 		gomock.Any()).Return(errors.NotFoundError("failed to delete snapshot"))
-	mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx,
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(),
 		gomock.Any()).Return(errors.New("failed to delete transaction"))
 	err = o.handleFailedTransaction(ctx(), vt)
 	assert.Error(t, err, "Delete snapshot error")
 
 	delete(o.backends, "xyz")
 	mockBackend.EXPECT().State().Return(storage.Online)
-	mockBackend.EXPECT().DeleteSnapshot(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
-	mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx,
+	mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(),
 		gomock.Any()).Return(errors.New("failed to delete transaction"))
 	err = o.handleFailedTransaction(ctx(), vt)
 	assert.Error(t, err, "Delete volume transaction error")
@@ -7784,10 +7784,10 @@ func TestHandleFailedSnapshot(t *testing.T) {
 	vt.Op = storage.DeleteSnapshot
 
 	o.snapshots[snapID] = &storage.Snapshot{Config: snapConfig}
-	mockBackend.EXPECT().DeleteSnapshot(coreCtx, gomock.Any(),
+	mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(),
 		gomock.Any()).Return(errors.New("failed to delete snapshot"))
 	mockBackend.EXPECT().Name().Return("abc")
-	mockStoreClient.EXPECT().DeleteVolumeTransaction(coreCtx,
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(),
 		gomock.Any()).Return(errors.New("failed to delete transaction"))
 	err = o.handleFailedTransaction(ctx(), vt)
 	assert.Error(t, err, "Delete volume transaction error")

@@ -673,7 +673,8 @@ func (o *TridentOrchestrator) updateMetrics() {
 }
 
 func (o *TridentOrchestrator) handleFailedTransaction(ctx context.Context, v *storage.VolumeTransaction) error {
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+	// Remove any deadlines or timeouts from the context so we can clean up
+	ctx = context.WithoutCancel(GenerateRequestContextForLayer(ctx, LogLayerCore))
 
 	switch v.Op {
 	case storage.AddVolume, storage.DeleteVolume,
@@ -975,6 +976,9 @@ func (o *TridentOrchestrator) AddBackend(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	backend, err := o.addBackend(ctx, configJSON, uuid.New().String(), configRef)
@@ -1162,6 +1166,9 @@ func (o *TridentOrchestrator) UpdateBackend(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	backend, err := o.updateBackend(ctx, backendName, configJSON, configRef)
@@ -1210,6 +1217,9 @@ func (o *TridentOrchestrator) UpdateBackendByBackendUUID(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	backend, err = o.updateBackendByBackendUUID(ctx, backendName, configJSON, backendUUID, configRef)
@@ -1477,6 +1487,9 @@ func (o *TridentOrchestrator) UpdateBackendState(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	// First, check whether the backend exists.
@@ -1641,6 +1654,9 @@ func (o *TridentOrchestrator) GetBackend(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	backendUUID, err := o.getBackendUUIDByBackendName(backendName)
 	if err != nil {
@@ -1674,6 +1690,9 @@ func (o *TridentOrchestrator) GetBackendByBackendUUID(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	backend, err := o.getBackendByBackendUUID(backendUUID)
 	if err != nil {
@@ -1707,6 +1726,9 @@ func (o *TridentOrchestrator) ListBackends(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	Logc(ctx).Debugf("About to list backends: %v", o.backends)
 	backends := make([]*storage.BackendExternal, 0)
@@ -1730,6 +1752,9 @@ func (o *TridentOrchestrator) DeleteBackend(ctx context.Context, backendName str
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	backendUUID, err := o.getBackendUUIDByBackendName(backendName)
@@ -1755,6 +1780,9 @@ func (o *TridentOrchestrator) DeleteBackendByBackendUUID(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	return o.deleteBackendByBackendUUID(ctx, backendName, backendUUID)
@@ -1823,6 +1851,9 @@ func (o *TridentOrchestrator) RemoveBackendConfigRef(ctx context.Context, backen
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	var b storage.Backend
@@ -1855,6 +1886,9 @@ func (o *TridentOrchestrator) AddVolume(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	volumeConfig.Version = config.OrchestratorAPIVersion
@@ -2150,6 +2184,9 @@ func (o *TridentOrchestrator) UpdateVolume(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	if volumeUpdateInfo == nil {
@@ -2213,6 +2250,9 @@ func (o *TridentOrchestrator) UpdateVolumeLUKSPassphraseNames(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 	vol, err := o.storeClient.GetVolume(ctx, volume)
 	if err != nil {
@@ -2246,6 +2286,9 @@ func (o *TridentOrchestrator) CloneVolume(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	if _, ok := o.volumes[volumeConfig.Name]; ok {
@@ -2610,6 +2653,9 @@ func (o *TridentOrchestrator) GetVolumeForImport(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	Logc(ctx).WithFields(LogFields{
 		"volumeID":    volumeID,
@@ -2643,6 +2689,9 @@ func (o *TridentOrchestrator) GetVolumeByInternalName(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return "", ctx.Err()
+	}
 
 	for _, vol := range o.volumes {
 		if vol.Config.InternalName == volumeInternal {
@@ -2748,6 +2797,9 @@ func (o *TridentOrchestrator) ImportVolume(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	Logc(ctx).WithFields(LogFields{
@@ -3080,6 +3132,9 @@ func (o *TridentOrchestrator) GetVolume(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	return o.getVolume(ctx, volumeName)
 }
@@ -3118,6 +3173,9 @@ func (o *TridentOrchestrator) ListVolumes(ctx context.Context) (volumes []*stora
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	volumes = make([]*storage.VolumeExternal, 0, len(o.volumes)+len(o.subordinateVolumes))
 	for _, v := range o.volumes {
 		volumes = append(volumes, v.ConstructExternal())
@@ -3254,6 +3312,9 @@ func (o *TridentOrchestrator) DeleteVolume(ctx context.Context, volumeName strin
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	if _, ok := o.subordinateVolumes[volumeName]; ok {
@@ -3322,6 +3383,9 @@ func (o *TridentOrchestrator) PublishVolume(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 
 	return o.publishVolume(ctx, volumeName, publishInfo)
 }
@@ -3493,6 +3557,9 @@ func (o *TridentOrchestrator) UnpublishVolume(ctx context.Context, volumeName, n
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 
 	return o.unpublishVolume(ctx, volumeName, nodeName)
 }
@@ -3618,6 +3685,9 @@ func (o *TridentOrchestrator) AttachVolume(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 
 	volume, ok := o.volumes[volumeName]
 	if !ok {
@@ -3893,6 +3963,9 @@ func (o *TridentOrchestrator) ListSubordinateVolumes(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	var sourceVolumes map[string]*storage.Volume
 
@@ -3938,6 +4011,9 @@ func (o *TridentOrchestrator) GetSubordinateSourceVolume(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	if subordinateVolume, ok := o.subordinateVolumes[subordinateVolumeName]; !ok {
 		return nil, errors.NotFoundError("subordinate volume %s not found", subordinateVolumeName)
@@ -4026,6 +4102,9 @@ func (o *TridentOrchestrator) CreateSnapshot(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	// Check if the snapshot already exists
@@ -4129,6 +4208,9 @@ func (o *TridentOrchestrator) CreateGroupSnapshot(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	// pvc-UUID names of all pvcs in a volume group
@@ -4384,6 +4466,9 @@ func (o *TridentOrchestrator) GetGroupSnapshot(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	return o.getGroupSnapshot(ctx, groupSnapshotID)
 }
@@ -4414,6 +4499,9 @@ func (o *TridentOrchestrator) ListGroupSnapshots(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	var errs error
 	groupSnapshots = make([]*storage.GroupSnapshotExternal, 0, len(o.groupSnapshots))
@@ -4446,6 +4534,9 @@ func (o *TridentOrchestrator) DeleteGroupSnapshot(ctx context.Context, groupName
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	// Check if the group snapshot exists. If it doesn't, log an error and fail early.
@@ -4644,6 +4735,9 @@ func (o *TridentOrchestrator) ImportSnapshot(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	// Fail immediately if the internal name isn't set.
@@ -4759,6 +4853,9 @@ func (o *TridentOrchestrator) GetSnapshot(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	return o.getSnapshot(ctx, volumeName, snapshotName)
 }
@@ -4836,6 +4933,9 @@ func (o *TridentOrchestrator) RestoreSnapshot(ctx context.Context, volumeName, s
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	volume, ok := o.volumes[volumeName]
@@ -4948,6 +5048,9 @@ func (o *TridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, sn
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	snapshotID := storage.MakeSnapshotID(volumeName, snapshotName)
@@ -5072,6 +5175,9 @@ func (o *TridentOrchestrator) ListSnapshots(ctx context.Context) (snapshots []*s
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	snapshots = make([]*storage.SnapshotExternal, 0, len(o.snapshots))
 	for _, s := range o.snapshots {
@@ -5094,6 +5200,9 @@ func (o *TridentOrchestrator) ListSnapshotsByName(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	snapshots = make([]*storage.SnapshotExternal, 0)
 	for _, s := range o.snapshots {
@@ -5118,6 +5227,9 @@ func (o *TridentOrchestrator) ListSnapshotsForGroup(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	fields := LogFields{"groupName": groupName}
 
@@ -5156,6 +5268,9 @@ func (o *TridentOrchestrator) ListSnapshotsForVolume(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	if _, ok := o.volumes[volumeName]; !ok {
 		return nil, errors.NotFoundError("volume %s not found", volumeName)
@@ -5212,6 +5327,9 @@ func (o *TridentOrchestrator) ReloadVolumes(ctx context.Context) (err error) {
 	// Lock out all other workflows while we reload the volumes
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	// Make a temporary copy of backends in case anything goes wrong
@@ -5254,6 +5372,9 @@ func (o *TridentOrchestrator) ResizeVolume(ctx context.Context, volumeName, newS
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	if _, ok := o.subordinateVolumes[volumeName]; ok {
@@ -5393,6 +5514,9 @@ func (o *TridentOrchestrator) AddStorageClass(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	sc := storageclass.New(scConfig)
@@ -5433,6 +5557,9 @@ func (o *TridentOrchestrator) UpdateStorageClass(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	newSC := storageclass.New(scConfig)
@@ -5477,6 +5604,9 @@ func (o *TridentOrchestrator) GetStorageClass(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	sc, found := o.storageClasses[scName]
 	if !found {
@@ -5500,6 +5630,9 @@ func (o *TridentOrchestrator) ListStorageClasses(ctx context.Context) (
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	storageClasses := make([]*storageclass.External, 0, len(o.storageClasses))
 	for _, sc := range o.storageClasses {
@@ -5519,6 +5652,9 @@ func (o *TridentOrchestrator) DeleteStorageClass(ctx context.Context, scName str
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	sc, found := o.storageClasses[scName]
@@ -5661,6 +5797,9 @@ func (o *TridentOrchestrator) reconcileBackendState(ctx context.Context, b stora
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	reason, changeMap := b.GetBackendState(ctx)
@@ -5721,6 +5860,9 @@ func (o *TridentOrchestrator) reconcileBackendState(ctx context.Context, b stora
 func (o *TridentOrchestrator) safeReconcileNodeAccessOnBackend(ctx context.Context, b storage.Backend) error {
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	return o.reconcileNodeAccessOnBackend(ctx, b)
 }
 
@@ -5819,6 +5961,9 @@ func (o *TridentOrchestrator) AddNode(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 	// Check if node services have changed
 	if node.HostInfo != nil && len(node.HostInfo.Services) > 0 {
@@ -5867,6 +6012,9 @@ func (o *TridentOrchestrator) UpdateNode(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	node := o.nodes.Get(nodeName)
@@ -5972,6 +6120,9 @@ func (o *TridentOrchestrator) DeleteNode(ctx context.Context, nodeName string) (
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	node := o.nodes.Get(nodeName)
@@ -6042,6 +6193,9 @@ func (o *TridentOrchestrator) ReconcileVolumePublications(
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	for _, attachedLegacyVolume := range attachedLegacyVolumes {
@@ -6335,6 +6489,9 @@ func (o *TridentOrchestrator) EstablishMirror(
 	defer recordTiming("mirror_establish", &err)()
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	backend, err := o.getBackendByBackendUUID(backendUUID)
@@ -6362,6 +6519,9 @@ func (o *TridentOrchestrator) ReestablishMirror(
 	defer recordTiming("mirror_reestablish", &err)()
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	backend, err := o.getBackendByBackendUUID(backendUUID)
@@ -6388,6 +6548,9 @@ func (o *TridentOrchestrator) PromoteMirror(
 	defer recordTiming("mirror_promote", &err)()
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return false, ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	backend, err := o.getBackendByBackendUUID(backendUUID)
@@ -6413,6 +6576,9 @@ func (o *TridentOrchestrator) GetMirrorStatus(
 	defer recordTiming("mirror_status", &err)()
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return "", ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	backend, err := o.getBackendByBackendUUID(backendUUID)
@@ -6435,6 +6601,9 @@ func (o *TridentOrchestrator) CanBackendMirror(ctx context.Context, backendUUID 
 	defer recordTiming("mirror_capable", &err)()
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return false, ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	backend, err := o.getBackendByBackendUUID(backendUUID)
@@ -6456,6 +6625,9 @@ func (o *TridentOrchestrator) ReleaseMirror(
 	defer recordTiming("mirror_release", &err)()
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	backend, err := o.getBackendByBackendUUID(backendUUID)
@@ -6481,6 +6653,9 @@ func (o *TridentOrchestrator) GetReplicationDetails(
 	defer recordTiming("replication_details", &err)()
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return "", "", "", ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	backend, err := o.getBackendByBackendUUID(backendUUID)
@@ -6505,6 +6680,9 @@ func (o *TridentOrchestrator) UpdateMirror(ctx context.Context, volumeName, snap
 	defer recordTiming("update_mirror", &err)()
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	// Get volume
@@ -6545,6 +6723,9 @@ func (o *TridentOrchestrator) CheckMirrorTransferState(
 	defer recordTiming("check_mirror_transfer_state", &err)()
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	// Get volume
@@ -6578,6 +6759,9 @@ func (o *TridentOrchestrator) GetMirrorTransferTime(
 	defer recordTiming("check_mirror_transfer_state", &err)()
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	defer o.updateMetrics()
 
 	// Get volume
@@ -6611,6 +6795,9 @@ func (o *TridentOrchestrator) GetCHAP(
 	defer recordTiming("get_chap", &err)()
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	volume, err := o.getVolume(ctx, volumeName)
 	if err != nil {
@@ -6638,6 +6825,9 @@ func (o *TridentOrchestrator) GetLogLevel(ctx context.Context) (string, error) {
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return "", ctx.Err()
+	}
 
 	return GetDefaultLogLevel(), nil
 }
@@ -6651,6 +6841,9 @@ func (o *TridentOrchestrator) SetLogLevel(ctx context.Context, level string) err
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 
 	if err := SetDefaultLogLevel(level); err != nil {
 		return err
@@ -6668,6 +6861,9 @@ func (o *TridentOrchestrator) GetSelectedLoggingWorkflows(ctx context.Context) (
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return "", ctx.Err()
+	}
 
 	return GetSelectedWorkFlows(), nil
 }
@@ -6681,6 +6877,9 @@ func (o *TridentOrchestrator) ListLoggingWorkflows(ctx context.Context) ([]strin
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	return ListWorkflowTypes(), nil
 }
@@ -6694,6 +6893,9 @@ func (o *TridentOrchestrator) SetLoggingWorkflows(ctx context.Context, flows str
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 
 	err := SetWorkflows(flows)
 	if err != nil {
@@ -6712,6 +6914,9 @@ func (o *TridentOrchestrator) GetSelectedLogLayers(ctx context.Context) (string,
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return "", ctx.Err()
+	}
 
 	return GetSelectedLogLayers(), nil
 }
@@ -6725,6 +6930,9 @@ func (o *TridentOrchestrator) ListLogLayers(ctx context.Context) ([]string, erro
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
 	return ListLogLayers(), nil
 }
@@ -6738,6 +6946,9 @@ func (o *TridentOrchestrator) SetLogLayers(ctx context.Context, layers string) e
 
 	o.mutex.Lock()
 	defer o.mutex.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 
 	err := SetLogLayers(layers)
 	if err != nil {
