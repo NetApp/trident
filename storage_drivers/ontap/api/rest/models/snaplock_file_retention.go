@@ -23,7 +23,7 @@ type SnaplockFileRetention struct {
 	Links *SnaplockFileRetentionInlineLinks `json:"_links,omitempty"`
 
 	// Expiry time of the file in date-time format, "infinite", "indefinite", or "unspecified". An "infinite" retention time indicates that the file will be retained forever. An "unspecified" retention time indicates that the file will be retained forever; however, the retention time of the file can be changed to an absolute value. An "indefinite" retention time indicates that the file is under Legal-Hold.
-	// Example: 2058-06-04 19:00:00
+	// Example: 2058-06-04 19:00:00+00:00
 	ExpiryTime *string `json:"expiry_time,omitempty"`
 
 	// Specifies the volume relative path of the file

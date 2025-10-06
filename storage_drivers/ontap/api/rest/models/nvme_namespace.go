@@ -56,7 +56,7 @@ type NvmeNamespace struct {
 	Convert *NvmeNamespaceInlineConvert `json:"convert,omitempty"`
 
 	// The time the NVMe namespace was created.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
@@ -2433,7 +2433,7 @@ type NvmeNamespaceInlineMetric struct {
 	Throughput *NvmeNamespaceInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -3206,6 +3206,12 @@ type NvmeNamespaceInlineProvisioningOptions struct {
 	// Minimum: 1
 	Count *int64 `json:"count,omitempty"`
 
+	// A list of aggregates to exclude when determining the placement of the volume. <br/>
+	//
+	// Max Items: 100
+	// Min Items: 0
+	ExcludeAggregates []*NvmeNamespaceProvisioningOptionsExcludeAggregatesItems0 `json:"exclude_aggregates,omitempty"`
+
 	// qos policy
 	QosPolicy *NvmeNamespaceInlineProvisioningOptionsInlineQosPolicy `json:"qos_policy,omitempty"`
 
@@ -3228,6 +3234,10 @@ func (m *NvmeNamespaceInlineProvisioningOptions) Validate(formats strfmt.Registr
 	var res []error
 
 	if err := m.validateCount(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateExcludeAggregates(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3264,6 +3274,40 @@ func (m *NvmeNamespaceInlineProvisioningOptions) validateCount(formats strfmt.Re
 
 	if err := validate.MaximumInt("provisioning_options"+"."+"count", "body", *m.Count, 80, false); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceInlineProvisioningOptions) validateExcludeAggregates(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExcludeAggregates) { // not required
+		return nil
+	}
+
+	iExcludeAggregatesSize := int64(len(m.ExcludeAggregates))
+
+	if err := validate.MinItems("provisioning_options"+"."+"exclude_aggregates", "body", iExcludeAggregatesSize, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("provisioning_options"+"."+"exclude_aggregates", "body", iExcludeAggregatesSize, 100); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ExcludeAggregates); i++ {
+		if swag.IsZero(m.ExcludeAggregates[i]) { // not required
+			continue
+		}
+
+		if m.ExcludeAggregates[i] != nil {
+			if err := m.ExcludeAggregates[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("provisioning_options" + "." + "exclude_aggregates" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -3341,6 +3385,10 @@ func (m *NvmeNamespaceInlineProvisioningOptions) validateTiering(formats strfmt.
 func (m *NvmeNamespaceInlineProvisioningOptions) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateExcludeAggregates(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateQosPolicy(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -3360,6 +3408,24 @@ func (m *NvmeNamespaceInlineProvisioningOptions) ContextValidate(ctx context.Con
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *NvmeNamespaceInlineProvisioningOptions) contextValidateExcludeAggregates(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ExcludeAggregates); i++ {
+
+		if m.ExcludeAggregates[i] != nil {
+			if err := m.ExcludeAggregates[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("provisioning_options" + "." + "exclude_aggregates" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -3430,6 +3496,45 @@ func (m *NvmeNamespaceInlineProvisioningOptions) MarshalBinary() ([]byte, error)
 // UnmarshalBinary interface implementation
 func (m *NvmeNamespaceInlineProvisioningOptions) UnmarshalBinary(b []byte) error {
 	var res NvmeNamespaceInlineProvisioningOptions
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NvmeNamespaceProvisioningOptionsExcludeAggregatesItems0 nvme namespace provisioning options exclude aggregates items0
+//
+// swagger:model NvmeNamespaceProvisioningOptionsExcludeAggregatesItems0
+type NvmeNamespaceProvisioningOptionsExcludeAggregatesItems0 struct {
+
+	// The aggregate name.
+	//
+	// Example: aggr1
+	Name *string `json:"name,omitempty"`
+}
+
+// Validate validates this nvme namespace provisioning options exclude aggregates items0
+func (m *NvmeNamespaceProvisioningOptionsExcludeAggregatesItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this nvme namespace provisioning options exclude aggregates items0 based on context it is used
+func (m *NvmeNamespaceProvisioningOptionsExcludeAggregatesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NvmeNamespaceProvisioningOptionsExcludeAggregatesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NvmeNamespaceProvisioningOptionsExcludeAggregatesItems0) UnmarshalBinary(b []byte) error {
+	var res NvmeNamespaceProvisioningOptionsExcludeAggregatesItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -4187,6 +4292,7 @@ type NvmeNamespaceInlineSpace struct {
 	PhysicalUsed *int64 `json:"physical_used,omitempty"`
 
 	// The number of bytes consumed on the disk by the namespace's snapshots.
+	// This property has been replaced by `space.snapshot.used`.
 	// <personalities supports=unified>This property is not available on the namespace object in the REST API and is not reported for GET requests. See the containing volume object for this information.</personalities>
 	// <personalities supports=asar2>Available for GET.</personalities>
 	//
@@ -4202,6 +4308,9 @@ type NvmeNamespaceInlineSpace struct {
 	// Maximum: 1.40737488355328e+14
 	// Minimum: 4096
 	Size *int64 `json:"size,omitempty"`
+
+	// snapshot
+	Snapshot *VdiskSpaceSnapshot `json:"snapshot,omitempty"`
 
 	// The amount of space consumed by the main data stream of the NVMe namespace.<br/>
 	// This value is the total space consumed in the volume by the NVMe namespace, including filesystem overhead, but excluding prefix and suffix streams. Due to internal filesystem overhead and the many ways NVMe filesystems and applications utilize blocks within a namespace, this value does not necessarily reflect actual consumption/availability from the perspective of the filesystem or application. Without specific knowledge of how the namespace blocks are utilized outside of ONTAP, this property should not be used and an indicator for an out-of-space condition.<br/>
@@ -4224,6 +4333,10 @@ func (m *NvmeNamespaceInlineSpace) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSnapshot(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -4299,6 +4412,23 @@ func (m *NvmeNamespaceInlineSpace) validateSize(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *NvmeNamespaceInlineSpace) validateSnapshot(formats strfmt.Registry) error {
+	if swag.IsZero(m.Snapshot) { // not required
+		return nil
+	}
+
+	if m.Snapshot != nil {
+		if err := m.Snapshot.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "snapshot")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this nvme namespace inline space based on the context it is used
 func (m *NvmeNamespaceInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -4316,6 +4446,10 @@ func (m *NvmeNamespaceInlineSpace) ContextValidate(ctx context.Context, formats 
 	}
 
 	if err := m.contextValidatePhysicalUsedBySnapshots(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSnapshot(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -4365,6 +4499,20 @@ func (m *NvmeNamespaceInlineSpace) contextValidatePhysicalUsedBySnapshots(ctx co
 
 	if err := validate.ReadOnly(ctx, "space"+"."+"physical_used_by_snapshots", "body", m.PhysicalUsedBySnapshots); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *NvmeNamespaceInlineSpace) contextValidateSnapshot(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Snapshot != nil {
+		if err := m.Snapshot.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "snapshot")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -4495,7 +4643,7 @@ type NvmeNamespaceInlineStatistics struct {
 	ThroughputRaw *NvmeNamespaceInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -5279,7 +5427,8 @@ func (m *NvmeNamespaceInlineStatus) UnmarshalBinary(b []byte) error {
 
 // NvmeNamespaceInlineSubsystemMap The NVMe subsystem with which the NVMe namespace is associated. A namespace can be mapped to zero (0) or one (1) subsystems.<br/>
 // There is an added computational cost to retrieving property values for `subsystem_map`. They are not populated for a GET request unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-// <personalities supports=unified>These properties are supported only for GET.</personalities>
+// <personalities supports=unified>These properties are supported for GET and POST. During POST, it requires the `provisioning_options.auto` property to be set to true.
+// See the `provisioning_options.auto` property for full details.</personalities>
 // <personalities supports=asar2>These properties are supported for GET and POST. During POST, a new or existing subsystem can be referenced. When referencing an existing subsystem, only the `name` and `uuid` properties are supported.</personalities>
 //
 // swagger:model nvme_namespace_inline_subsystem_map

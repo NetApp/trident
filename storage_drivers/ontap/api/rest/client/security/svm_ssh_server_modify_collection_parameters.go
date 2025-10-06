@@ -98,6 +98,12 @@ type SvmSSHServerModifyCollectionParams struct {
 	*/
 	KeyExchangeAlgorithms *string
 
+	/* LoginGraceTime.
+
+	   Filter by login_grace_time
+	*/
+	LoginGraceTime *int64
+
 	/* MacAlgorithms.
 
 	   Filter by mac_algorithms
@@ -283,6 +289,17 @@ func (o *SvmSSHServerModifyCollectionParams) SetKeyExchangeAlgorithms(keyExchang
 	o.KeyExchangeAlgorithms = keyExchangeAlgorithms
 }
 
+// WithLoginGraceTime adds the loginGraceTime to the svm ssh server modify collection params
+func (o *SvmSSHServerModifyCollectionParams) WithLoginGraceTime(loginGraceTime *int64) *SvmSSHServerModifyCollectionParams {
+	o.SetLoginGraceTime(loginGraceTime)
+	return o
+}
+
+// SetLoginGraceTime adds the loginGraceTime to the svm ssh server modify collection params
+func (o *SvmSSHServerModifyCollectionParams) SetLoginGraceTime(loginGraceTime *int64) {
+	o.LoginGraceTime = loginGraceTime
+}
+
 // WithMacAlgorithms adds the macAlgorithms to the svm ssh server modify collection params
 func (o *SvmSSHServerModifyCollectionParams) WithMacAlgorithms(macAlgorithms *string) *SvmSSHServerModifyCollectionParams {
 	o.SetMacAlgorithms(macAlgorithms)
@@ -451,6 +468,23 @@ func (o *SvmSSHServerModifyCollectionParams) WriteToRequest(r runtime.ClientRequ
 		if qKeyExchangeAlgorithms != "" {
 
 			if err := r.SetQueryParam("key_exchange_algorithms", qKeyExchangeAlgorithms); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LoginGraceTime != nil {
+
+		// query param login_grace_time
+		var qrLoginGraceTime int64
+
+		if o.LoginGraceTime != nil {
+			qrLoginGraceTime = *o.LoginGraceTime
+		}
+		qLoginGraceTime := swag.FormatInt64(qrLoginGraceTime)
+		if qLoginGraceTime != "" {
+
+			if err := r.SetQueryParam("login_grace_time", qLoginGraceTime); err != nil {
 				return err
 			}
 		}

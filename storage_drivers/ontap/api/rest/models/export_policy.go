@@ -23,6 +23,10 @@ type ExportPolicy struct {
 	// links
 	Links *ExportPolicyInlineLinks `json:"_links,omitempty"`
 
+	// Indicates whether or not export-policy rules are truncated.
+	// Read Only: true
+	AreRulesTruncated *bool `json:"are_rules_truncated,omitempty"`
+
 	// Rules of the Export Policy.
 	ExportPolicyInlineRules []*ExportRules `json:"rules,omitempty"`
 
@@ -142,6 +146,10 @@ func (m *ExportPolicy) ContextValidate(ctx context.Context, formats strfmt.Regis
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateAreRulesTruncated(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateExportPolicyInlineRules(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -169,6 +177,15 @@ func (m *ExportPolicy) contextValidateLinks(ctx context.Context, formats strfmt.
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *ExportPolicy) contextValidateAreRulesTruncated(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "are_rules_truncated", "body", m.AreRulesTruncated); err != nil {
+		return err
 	}
 
 	return nil

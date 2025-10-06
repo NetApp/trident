@@ -162,7 +162,7 @@ type AutoUpdateInfoInlineEula struct {
 	AcceptedIPAddress *string `json:"accepted_ip_address,omitempty"`
 
 	// Date and time when the EULA was accepted.
-	// Example: 2020-12-01 13:12:23
+	// Example: 2020-12-01 09:12:23-04:00
 	// Read Only: true
 	// Format: date-time
 	AcceptedTimestamp *strfmt.DateTime `json:"accepted_timestamp,omitempty"`

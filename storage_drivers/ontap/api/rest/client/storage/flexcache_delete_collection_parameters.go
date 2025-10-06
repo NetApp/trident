@@ -86,6 +86,12 @@ type FlexcacheDeleteCollectionParams struct {
 	*/
 	AtimeScrubPeriod *int64
 
+	/* CifsEnabled.
+
+	   Filter by cifs.enabled
+	*/
+	CifsEnabled *bool
+
 	/* CifsChangeNotifyEnabled.
 
 	   Filter by cifs_change_notify.enabled
@@ -139,6 +145,12 @@ type FlexcacheDeleteCollectionParams struct {
 	   Filter by name
 	*/
 	Name *string
+
+	/* Nfsv4Enabled.
+
+	   Filter by nfsv4.enabled
+	*/
+	Nfsv4Enabled *bool
 
 	/* OriginsClusterName.
 
@@ -239,6 +251,12 @@ type FlexcacheDeleteCollectionParams struct {
 	   Default: 15
 	*/
 	ReturnTimeout *int64
+
+	/* S3Enabled.
+
+	   Filter by s3.enabled
+	*/
+	S3Enabled *bool
 
 	/* SerialRecords.
 
@@ -399,6 +417,17 @@ func (o *FlexcacheDeleteCollectionParams) SetAtimeScrubPeriod(atimeScrubPeriod *
 	o.AtimeScrubPeriod = atimeScrubPeriod
 }
 
+// WithCifsEnabled adds the cifsEnabled to the flexcache delete collection params
+func (o *FlexcacheDeleteCollectionParams) WithCifsEnabled(cifsEnabled *bool) *FlexcacheDeleteCollectionParams {
+	o.SetCifsEnabled(cifsEnabled)
+	return o
+}
+
+// SetCifsEnabled adds the cifsEnabled to the flexcache delete collection params
+func (o *FlexcacheDeleteCollectionParams) SetCifsEnabled(cifsEnabled *bool) {
+	o.CifsEnabled = cifsEnabled
+}
+
 // WithCifsChangeNotifyEnabled adds the cifsChangeNotifyEnabled to the flexcache delete collection params
 func (o *FlexcacheDeleteCollectionParams) WithCifsChangeNotifyEnabled(cifsChangeNotifyEnabled *bool) *FlexcacheDeleteCollectionParams {
 	o.SetCifsChangeNotifyEnabled(cifsChangeNotifyEnabled)
@@ -496,6 +525,17 @@ func (o *FlexcacheDeleteCollectionParams) WithName(name *string) *FlexcacheDelet
 // SetName adds the name to the flexcache delete collection params
 func (o *FlexcacheDeleteCollectionParams) SetName(name *string) {
 	o.Name = name
+}
+
+// WithNfsv4Enabled adds the nfsv4Enabled to the flexcache delete collection params
+func (o *FlexcacheDeleteCollectionParams) WithNfsv4Enabled(nfsv4Enabled *bool) *FlexcacheDeleteCollectionParams {
+	o.SetNfsv4Enabled(nfsv4Enabled)
+	return o
+}
+
+// SetNfsv4Enabled adds the nfsv4Enabled to the flexcache delete collection params
+func (o *FlexcacheDeleteCollectionParams) SetNfsv4Enabled(nfsv4Enabled *bool) {
+	o.Nfsv4Enabled = nfsv4Enabled
 }
 
 // WithOriginsClusterName adds the originsClusterName to the flexcache delete collection params
@@ -674,6 +714,17 @@ func (o *FlexcacheDeleteCollectionParams) SetReturnTimeout(returnTimeout *int64)
 	o.ReturnTimeout = returnTimeout
 }
 
+// WithS3Enabled adds the s3Enabled to the flexcache delete collection params
+func (o *FlexcacheDeleteCollectionParams) WithS3Enabled(s3Enabled *bool) *FlexcacheDeleteCollectionParams {
+	o.SetS3Enabled(s3Enabled)
+	return o
+}
+
+// SetS3Enabled adds the s3Enabled to the flexcache delete collection params
+func (o *FlexcacheDeleteCollectionParams) SetS3Enabled(s3Enabled *bool) {
+	o.S3Enabled = s3Enabled
+}
+
 // WithSerialRecords adds the serialRecords to the flexcache delete collection params
 func (o *FlexcacheDeleteCollectionParams) WithSerialRecords(serialRecords *bool) *FlexcacheDeleteCollectionParams {
 	o.SetSerialRecords(serialRecords)
@@ -827,6 +878,23 @@ func (o *FlexcacheDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
+	if o.CifsEnabled != nil {
+
+		// query param cifs.enabled
+		var qrCifsEnabled bool
+
+		if o.CifsEnabled != nil {
+			qrCifsEnabled = *o.CifsEnabled
+		}
+		qCifsEnabled := swag.FormatBool(qrCifsEnabled)
+		if qCifsEnabled != "" {
+
+			if err := r.SetQueryParam("cifs.enabled", qCifsEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.CifsChangeNotifyEnabled != nil {
 
 		// query param cifs_change_notify.enabled
@@ -961,6 +1029,23 @@ func (o *FlexcacheDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest
 		if qName != "" {
 
 			if err := r.SetQueryParam("name", qName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Nfsv4Enabled != nil {
+
+		// query param nfsv4.enabled
+		var qrNfsv4Enabled bool
+
+		if o.Nfsv4Enabled != nil {
+			qrNfsv4Enabled = *o.Nfsv4Enabled
+		}
+		qNfsv4Enabled := swag.FormatBool(qrNfsv4Enabled)
+		if qNfsv4Enabled != "" {
+
+			if err := r.SetQueryParam("nfsv4.enabled", qNfsv4Enabled); err != nil {
 				return err
 			}
 		}
@@ -1233,6 +1318,23 @@ func (o *FlexcacheDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.S3Enabled != nil {
+
+		// query param s3.enabled
+		var qrS3Enabled bool
+
+		if o.S3Enabled != nil {
+			qrS3Enabled = *o.S3Enabled
+		}
+		qS3Enabled := swag.FormatBool(qrS3Enabled)
+		if qS3Enabled != "" {
+
+			if err := r.SetQueryParam("s3.enabled", qS3Enabled); err != nil {
 				return err
 			}
 		}

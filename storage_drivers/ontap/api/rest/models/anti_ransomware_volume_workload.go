@@ -556,7 +556,7 @@ type AntiRansomwareVolumeWorkloadInlineSurgeStatistics struct {
 	HighEntropyDataWritePeakRateKbPerMinute *int64 `json:"high_entropy_data_write_peak_rate_kb_per_minute,omitempty"`
 
 	// Timestamp at which the first surge in the volume's workload is observed.
-	// Example: 2021-12-01 17:46:20
+	// Example: 2021-12-01 23:16:20+05:30
 	// Read Only: true
 	// Format: date-time
 	Time *strfmt.DateTime `json:"time,omitempty"`
@@ -729,7 +729,7 @@ type AntiRansomwareVolumeWorkloadInlineSurgeUsage struct {
 	NewlyObservedFileExtensions []*AntiRansomwareVolumeWorkloadSurgeUsageNewlyObservedFileExtensionsItems0 `json:"newly_observed_file_extensions,omitempty"`
 
 	// Timestamp at which the first surge in the volume's workload is observed.
-	// Example: 2021-12-01 17:46:20
+	// Example: 2021-12-01 23:16:20+05:30
 	// Read Only: true
 	// Format: date-time
 	Time *strfmt.DateTime `json:"time,omitempty"`

@@ -169,9 +169,6 @@ func NewLicenseCreateDefault(code int) *LicenseCreateDefault {
 | 1115618 | NLFv2 license install failed as a license with newer timestamp already exists |
 | 5375355 | The cluster has more nodes than are supported by All SAN Array. |
 | 5375366 | The cluster has one or more nodes that do not support All SAN Array. |
-| 66846818 | Failed to interpret FlexCache license information |
-| 66846821 | FlexCache is not supported on cloud systems |
-| 66846822 | Invalid FlexCache capacity information provided |
 | 655294464 | Failed to extract license contents |
 | 655294465 | License key is invalid |
 | 655294466 | Serial number is invalid |

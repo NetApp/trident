@@ -195,7 +195,7 @@ func NewGcpKmsModifyDefault(code int) *GcpKmsModifyDefault {
 | 65537714 | The \"application_credentials\" field must be specified. |
 | 65537721 | The Google Cloud Key Management Service is not configured for the SVM. |
 | 65537724 | Failed to update the Google Cloud Key Management Service because invalid application credentials were provided. |
-| 65537732 | ONTAP 9.9.1 does not allow modification of the following fields, \"project_id\", \"key_ring_name\" and \"key_ring_location\". |
+| 65537757 | The \"key_name\", \"project_id\", \"key_ring_name\" and \"key_ring_location\" fields cannot be modified directly. Use the REST API POST method \"/api/security/gcp-kms/{uuid}/rekey-external\" to modify these fields. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type GcpKmsModifyDefault struct {

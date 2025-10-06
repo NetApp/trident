@@ -134,6 +134,7 @@ func NewSvmSSHServerModifyCollectionDefault(code int) *SvmSSHServerModifyCollect
 | 10682426 | Failed to modify _ssh-rsa_ enabled status for publickey algorithms configuration. |
 | 10682428 | Cipher not supported in FIPS enabled mode. |
 | 10682429 | Adding 'diffie_hellman_group16_sha512' or 'diffie_hellman_group18_sha512' to the SSH key exchange algorithms list requires an effective cluster version of ONTAP 9.16.1 or later. |
+| 10682430 | Failed to modify the login grace time. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type SvmSSHServerModifyCollectionDefault struct {
@@ -211,6 +212,9 @@ type SvmSSHServerModifyCollectionBody struct {
 	//
 	IsRsaInPublickeyAlgorithmsEnabled *bool `json:"is_rsa_in_publickey_algorithms_enabled,omitempty"`
 
+	// The login grace time allowed for SSH connection request timeout.
+	LoginGraceTime *int64 `json:"login_grace_time,omitempty"`
+
 	// Maximum authentication retries allowed before closing the connection.
 	// Maximum: 6
 	// Minimum: 2
@@ -223,8 +227,8 @@ type SvmSSHServerModifyCollectionBody struct {
 	// Example: ["aes256_ctr","aes192_ctr","aes128_ctr"]
 	SvmSSHServerInlineCiphers []*models.Cipher `json:"ciphers,omitempty"`
 
-	// Host key algorithms. The host key algorithm 'ssh_ed25519' can be configured only in non-FIPS mode.
-	// Example: ["ecdsa_sha2_nistp256","ssh_ed25519","ssh_rsa"]
+	// Host key algorithms. The host key algorithms 'ssh_ed25519' and 'ssh_rsa' can be configured only in non-FIPS mode.
+	// Example: ["ecdsa_sha2_nistp256","ssh_ed25519","ssh_rsa","rsa_sha2_256","rsa_sha2_512"]
 	SvmSSHServerInlineHostKeyAlgorithms []*models.HostKeyAlgorithm `json:"host_key_algorithms,omitempty"`
 
 	// Key exchange algorithms.

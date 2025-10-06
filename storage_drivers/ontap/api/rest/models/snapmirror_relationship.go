@@ -1582,12 +1582,12 @@ type SnapmirrorRelationshipInlineTransfer struct {
 	BytesTransferred *int64 `json:"bytes_transferred,omitempty"`
 
 	// End time of the last transfer.
-	// Example: 2020-12-03 02:36:19
+	// Example: 2020-12-02 18:36:19-08:00
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
 
 	// Last updated time of the bytes transferred in the current transfer.
-	// Example: 2023-09-14 22:39:19
+	// Example: 2023-09-14 15:39:19-07:00
 	// Format: date-time
 	LastUpdatedTime *strfmt.DateTime `json:"last_updated_time,omitempty"`
 

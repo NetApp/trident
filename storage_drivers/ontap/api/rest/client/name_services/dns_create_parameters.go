@@ -64,6 +64,12 @@ DNSCreateParams contains all the parameters to send to the API endpoint
 */
 type DNSCreateParams struct {
 
+	/* Async.
+
+	   An asynchronous task.
+	*/
+	Async *bool
+
 	/* Info.
 
 	   Info specification
@@ -94,10 +100,13 @@ func (o *DNSCreateParams) WithDefaults() *DNSCreateParams {
 // All values with no default are reset to their zero value.
 func (o *DNSCreateParams) SetDefaults() {
 	var (
+		asyncDefault = bool(false)
+
 		returnRecordsDefault = bool(false)
 	)
 
 	val := DNSCreateParams{
+		Async:         &asyncDefault,
 		ReturnRecords: &returnRecordsDefault,
 	}
 
@@ -140,6 +149,17 @@ func (o *DNSCreateParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithAsync adds the async to the dns create params
+func (o *DNSCreateParams) WithAsync(async *bool) *DNSCreateParams {
+	o.SetAsync(async)
+	return o
+}
+
+// SetAsync adds the async to the dns create params
+func (o *DNSCreateParams) SetAsync(async *bool) {
+	o.Async = async
+}
+
 // WithInfo adds the info to the dns create params
 func (o *DNSCreateParams) WithInfo(info *models.DNS) *DNSCreateParams {
 	o.SetInfo(info)
@@ -169,6 +189,23 @@ func (o *DNSCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 		return err
 	}
 	var res []error
+
+	if o.Async != nil {
+
+		// query param async
+		var qrAsync bool
+
+		if o.Async != nil {
+			qrAsync = *o.Async
+		}
+		qAsync := swag.FormatBool(qrAsync)
+		if qAsync != "" {
+
+			if err := r.SetQueryParam("async", qAsync); err != nil {
+				return err
+			}
+		}
+	}
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err

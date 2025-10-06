@@ -124,6 +124,9 @@ func NewRoleDeleteDefault(code int) *RoleDeleteDefault {
 | 5636246 | Failed to delete the rest role because it is part of the group role-mapping configuration. |
 | 5636247 | Failed to delete the rest role because it is part of the external-role-mapping configuration. |
 | 5636249 | Failed to delete the role because it is part of the external-role-mapping configuration. |
+| 5636258 | The maximum allowed length for a role name is 256 characters.<personalities supports=aiml> |
+| 5636259 | The specified child AIDE object was not found within the specified parent AIDE object. |
+| 5636261 | The specified grandchild AIDE object was not found within the specified child AIDE object that belongs to the specified parent AIDE object.</personalities> |
 | 13434890 | Vserver-ID failed for Vserver roles. |
 | 13434893 | The SVM does not exist. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.

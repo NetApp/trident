@@ -419,7 +419,7 @@ type AggregateModifyCollectionBody struct {
 	CloudStorage *models.AggregateInlineCloudStorage `json:"cloud_storage,omitempty"`
 
 	// Timestamp of aggregate creation.
-	// Example: 2018-01-01 16:00:00
+	// Example: 2018-01-01 12:00:00-04:00
 	// Read Only: true
 	CreateTime *string `json:"create_time,omitempty"`
 
@@ -3893,7 +3893,7 @@ type AggregateInlineInactiveDataReporting struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// Timestamp at which inactive data reporting was enabled on the aggregate.
-	// Example: 2019-12-12 16:00:00
+	// Example: 2019-12-12 12:00:00-04:00
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
@@ -4113,7 +4113,7 @@ type AggregateInlineMetric struct {
 	Throughput *models.AggregateInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -5194,6 +5194,13 @@ type AggregateInlineSpace struct {
 
 	// snapshot
 	Snapshot *models.AggregateInlineSpaceInlineSnapshot `json:"snapshot,omitempty"`
+
+	// A summation of volume size, in bytes. This includes all of the volumes inside the aggregate.
+	// This is an advanced property; there is an added computational cost to retrieving its value. The field is not populated for either a collection GET or an instance GET unless it is explicitly requested using the <i>fields</i> query parameter containing either total_provisioned_space or **.
+	//
+	// Example: 20971520
+	// Read Only: true
+	TotalProvisionedSpace *int64 `json:"total_provisioned_space,omitempty"`
 }
 
 // Validate validates this aggregate inline space
@@ -5364,6 +5371,10 @@ func (o *AggregateInlineSpace) ContextValidate(ctx context.Context, formats strf
 		res = append(res, err)
 	}
 
+	if err := o.contextValidateTotalProvisionedSpace(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -5458,6 +5469,15 @@ func (o *AggregateInlineSpace) contextValidateSnapshot(ctx context.Context, form
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (o *AggregateInlineSpace) contextValidateTotalProvisionedSpace(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"space"+"."+"total_provisioned_space", "body", o.TotalProvisionedSpace); err != nil {
+		return err
 	}
 
 	return nil
@@ -6440,7 +6460,7 @@ type AggregateInlineStatistics struct {
 	ThroughputRaw *models.AggregateInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`

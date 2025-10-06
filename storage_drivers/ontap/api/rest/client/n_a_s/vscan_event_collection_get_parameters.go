@@ -62,6 +62,12 @@ VscanEventCollectionGetParams contains all the parameters to send to the API end
 */
 type VscanEventCollectionGetParams struct {
 
+	/* ConsecutiveOccurrenceCount.
+
+	   Filter by consecutive_occurrence_count
+	*/
+	ConsecutiveOccurrenceCount *int64
+
 	/* DisconnectReason.
 
 	   Filter by disconnect_reason
@@ -143,6 +149,12 @@ type VscanEventCollectionGetParams struct {
 	   Default: 15
 	*/
 	ReturnTimeout *int64
+
+	/* ScanEngineStatus.
+
+	   Filter by scan_engine_status
+	*/
+	ScanEngineStatus *int64
 
 	/* Server.
 
@@ -245,6 +257,17 @@ func (o *VscanEventCollectionGetParams) WithHTTPClient(client *http.Client) *Vsc
 // SetHTTPClient adds the HTTPClient to the vscan event collection get params
 func (o *VscanEventCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithConsecutiveOccurrenceCount adds the consecutiveOccurrenceCount to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithConsecutiveOccurrenceCount(consecutiveOccurrenceCount *int64) *VscanEventCollectionGetParams {
+	o.SetConsecutiveOccurrenceCount(consecutiveOccurrenceCount)
+	return o
+}
+
+// SetConsecutiveOccurrenceCount adds the consecutiveOccurrenceCount to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetConsecutiveOccurrenceCount(consecutiveOccurrenceCount *int64) {
+	o.ConsecutiveOccurrenceCount = consecutiveOccurrenceCount
 }
 
 // WithDisconnectReason adds the disconnectReason to the vscan event collection get params
@@ -390,6 +413,17 @@ func (o *VscanEventCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
 	o.ReturnTimeout = returnTimeout
 }
 
+// WithScanEngineStatus adds the scanEngineStatus to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) WithScanEngineStatus(scanEngineStatus *int64) *VscanEventCollectionGetParams {
+	o.SetScanEngineStatus(scanEngineStatus)
+	return o
+}
+
+// SetScanEngineStatus adds the scanEngineStatus to the vscan event collection get params
+func (o *VscanEventCollectionGetParams) SetScanEngineStatus(scanEngineStatus *int64) {
+	o.ScanEngineStatus = scanEngineStatus
+}
+
 // WithServer adds the server to the vscan event collection get params
 func (o *VscanEventCollectionGetParams) WithServer(server *string) *VscanEventCollectionGetParams {
 	o.SetServer(server)
@@ -463,6 +497,23 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		return err
 	}
 	var res []error
+
+	if o.ConsecutiveOccurrenceCount != nil {
+
+		// query param consecutive_occurrence_count
+		var qrConsecutiveOccurrenceCount int64
+
+		if o.ConsecutiveOccurrenceCount != nil {
+			qrConsecutiveOccurrenceCount = *o.ConsecutiveOccurrenceCount
+		}
+		qConsecutiveOccurrenceCount := swag.FormatInt64(qrConsecutiveOccurrenceCount)
+		if qConsecutiveOccurrenceCount != "" {
+
+			if err := r.SetQueryParam("consecutive_occurrence_count", qConsecutiveOccurrenceCount); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.DisconnectReason != nil {
 
@@ -668,6 +719,23 @@ func (o *VscanEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ScanEngineStatus != nil {
+
+		// query param scan_engine_status
+		var qrScanEngineStatus int64
+
+		if o.ScanEngineStatus != nil {
+			qrScanEngineStatus = *o.ScanEngineStatus
+		}
+		qScanEngineStatus := swag.FormatInt64(qrScanEngineStatus)
+		if qScanEngineStatus != "" {
+
+			if err := r.SetQueryParam("scan_engine_status", qScanEngineStatus); err != nil {
 				return err
 			}
 		}

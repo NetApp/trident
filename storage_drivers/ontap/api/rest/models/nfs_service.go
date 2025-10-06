@@ -881,20 +881,26 @@ func (m *NfsServiceInlineAccessCacheConfig) UnmarshalBinary(b []byte) error {
 // swagger:model nfs_service_inline_credential_cache
 type NfsServiceInlineCredentialCache struct {
 
+	// Specifies the age of the unused cached entries, in milliseconds, after which they are cleared from the cache.
+	// Example: 86400000
+	// Maximum: 6.048e+08
+	// Minimum: 60000
+	HarvestTimeout *int64 `json:"harvest_timeout,omitempty"`
+
 	// Specifies the age in milliseconds, of the negative cached credentials after which they are cleared from the cache.
-	// Example: 7200000
+	// Example: 3600000
 	// Maximum: 6.048e+08
 	// Minimum: 60000
 	NegativeTTL *int64 `json:"negative_ttl,omitempty"`
 
 	// Specifies the age in milliseconds, of the positive cached credentials after which they are cleared from the cache.
-	// Example: 7200000
+	// Example: 3600000
 	// Maximum: 6.048e+08
 	// Minimum: 60000
 	PositiveTTL *int64 `json:"positive_ttl,omitempty"`
 
 	// Specifies the age in milliseconds, of the cached entries during a transient error situation.
-	// Example: 72000
+	// Example: 30000
 	// Maximum: 300000
 	// Minimum: 30000
 	TransientErrorTTL *int64 `json:"transient_error_ttl,omitempty"`
@@ -903,6 +909,10 @@ type NfsServiceInlineCredentialCache struct {
 // Validate validates this nfs service inline credential cache
 func (m *NfsServiceInlineCredentialCache) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateHarvestTimeout(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateNegativeTTL(formats); err != nil {
 		res = append(res, err)
@@ -919,6 +929,22 @@ func (m *NfsServiceInlineCredentialCache) Validate(formats strfmt.Registry) erro
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *NfsServiceInlineCredentialCache) validateHarvestTimeout(formats strfmt.Registry) error {
+	if swag.IsZero(m.HarvestTimeout) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("credential_cache"+"."+"harvest_timeout", "body", *m.HarvestTimeout, 60000, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("credential_cache"+"."+"harvest_timeout", "body", *m.HarvestTimeout, 6.048e+08, false); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -1386,7 +1412,7 @@ type NfsServiceInlineMetricInlineV3 struct {
 	Throughput *NfsServiceInlineMetricInlineV3InlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -2167,7 +2193,7 @@ type NfsServiceInlineMetricInlineV4 struct {
 	Throughput *NfsServiceInlineMetricInlineV4InlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -2703,7 +2729,7 @@ type NfsServiceInlineMetricInlineV41 struct {
 	Throughput *NfsServiceInlineMetricInlineV41InlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -3753,6 +3779,9 @@ type NfsServiceInlineProtocol struct {
 	// Maximum: 2000
 	// Minimum: 1
 	V4SessionSlots *int64 `json:"v4_session_slots,omitempty"`
+
+	// Specifies whether NFSv4 subnet filtering is enabled.
+	V4SubnetFilterEnabled *bool `json:"v4_subnet_filter_enabled,omitempty"`
 }
 
 // Validate validates this nfs service inline protocol
@@ -5068,7 +5097,7 @@ type NfsServiceInlineStatisticsInlineV3 struct {
 	ThroughputRaw *NfsServiceInlineStatisticsInlineV3InlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -5601,7 +5630,7 @@ type NfsServiceInlineStatisticsInlineV4 struct {
 	ThroughputRaw *NfsServiceInlineStatisticsInlineV4InlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -5975,7 +6004,7 @@ type NfsServiceInlineStatisticsInlineV41 struct {
 	ThroughputRaw *NfsServiceInlineStatisticsInlineV41InlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`

@@ -21,7 +21,7 @@ import (
 type SoftwareHistory struct {
 
 	// Completion time of this installation request.
-	// Example: 2019-02-02 20:00:00
+	// Example: 2019-02-02 20:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
@@ -35,7 +35,7 @@ type SoftwareHistory struct {
 	Node *SoftwareHistoryInlineNode `json:"node,omitempty"`
 
 	// Start time of this installation request.
-	// Example: 2019-02-02 19:00:00
+	// Example: 2019-02-02 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`

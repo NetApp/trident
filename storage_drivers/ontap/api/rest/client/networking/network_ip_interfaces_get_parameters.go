@@ -271,8 +271,6 @@ type NetworkIPInterfacesGetParams struct {
 
 	   The name of an IP Address Family for which to recommend IP interfaces. Unless ipv6 is specified, the default value is ipv4.
 
-
-	   Default: "ipv4"
 	*/
 	RecommendIPFamily *string
 
@@ -483,17 +481,14 @@ func (o *NetworkIPInterfacesGetParams) WithDefaults() *NetworkIPInterfacesGetPar
 // All values with no default are reset to their zero value.
 func (o *NetworkIPInterfacesGetParams) SetDefaults() {
 	var (
-		recommendIPFamilyDefault = string("ipv4")
-
 		returnRecordsDefault = bool(true)
 
 		returnTimeoutDefault = int64(15)
 	)
 
 	val := NetworkIPInterfacesGetParams{
-		RecommendIPFamily: &recommendIPFamilyDefault,
-		ReturnRecords:     &returnRecordsDefault,
-		ReturnTimeout:     &returnTimeoutDefault,
+		ReturnRecords: &returnRecordsDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout

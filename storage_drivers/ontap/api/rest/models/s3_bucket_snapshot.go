@@ -29,7 +29,7 @@ type S3BucketSnapshot struct {
 	BucketUUID *strfmt.UUID `json:"bucket_uuid,omitempty"`
 
 	// Creation time of the snapshot. It is the storage unit access time when the snapshot was created.
-	// Example: 2024-08-22 00:18:04
+	// Example: 2024-08-21 20:18:04-04:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`

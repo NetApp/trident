@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -23,6 +24,11 @@ type ConfigurationBackup struct {
 	// Example: yourpassword
 	// Format: password
 	Password *strfmt.Password `json:"password,omitempty"`
+
+	// The REST API HTTP method (POST/PUT).
+	// Example: post
+	// Enum: ["post","put"]
+	RestMethod *string `json:"rest_method,omitempty"`
 
 	// An external backup location for the cluster configuration. This is mostly required for single node clusters where node and cluster configuration backups cannot be copied to other nodes in the cluster.
 	// Example: http://10.224.65.198/backups
@@ -44,6 +50,10 @@ func (m *ConfigurationBackup) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateRestMethod(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -56,6 +66,62 @@ func (m *ConfigurationBackup) validatePassword(formats strfmt.Registry) error {
 	}
 
 	if err := validate.FormatOf("password", "body", "password", m.Password.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var configurationBackupTypeRestMethodPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["post","put"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		configurationBackupTypeRestMethodPropEnum = append(configurationBackupTypeRestMethodPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// configuration_backup
+	// ConfigurationBackup
+	// rest_method
+	// RestMethod
+	// post
+	// END DEBUGGING
+	// ConfigurationBackupRestMethodPost captures enum value "post"
+	ConfigurationBackupRestMethodPost string = "post"
+
+	// BEGIN DEBUGGING
+	// configuration_backup
+	// ConfigurationBackup
+	// rest_method
+	// RestMethod
+	// put
+	// END DEBUGGING
+	// ConfigurationBackupRestMethodPut captures enum value "put"
+	ConfigurationBackupRestMethodPut string = "put"
+)
+
+// prop value enum
+func (m *ConfigurationBackup) validateRestMethodEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, configurationBackupTypeRestMethodPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ConfigurationBackup) validateRestMethod(formats strfmt.Registry) error {
+	if swag.IsZero(m.RestMethod) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateRestMethodEnum("rest_method", "body", *m.RestMethod); err != nil {
 		return err
 	}
 

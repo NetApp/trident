@@ -231,6 +231,9 @@ func NewFlexcacheModifyDefault(code int) *FlexcacheModifyDefault {
 | 66847010   | Failed to modify the relative-size-percentage property of FlexCache volume because autosize is enabled on the FlexCache volume |
 | 66847026   | Failed to enable the atime-scrub-enabled property for the FlexCache volume because the atime-update-property is false |
 | 66847027   | Failed to modify atime-scrub-period property of the FlexCache volume because the atime-scrub-enabled property is false |
+| 66846720   | Using FlexCache nfsv4 access requires an effective cluster version of 9.10.0 or later |
+| 66846720   | Using FlexCache cifs access requires an effective cluster version of 9.8.0 or later |
+| 66847093   | Using FlexCache S3 access requires an effective cluster version of 9.18.1 or later |
 */
 type FlexcacheModifyDefault struct {
 	_statusCode int

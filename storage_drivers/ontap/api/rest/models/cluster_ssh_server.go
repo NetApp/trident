@@ -27,8 +27,8 @@ type ClusterSSHServer struct {
 	// Example: ["aes256_ctr","aes192_ctr","aes128_ctr"]
 	ClusterSSHServerInlineCiphers []*Cipher `json:"ciphers,omitempty"`
 
-	// Host key algorithms. The host key algorithm 'ssh_ed25519' can be configured only in non-FIPS mode.
-	// Example: ["ecdsa_sha2_nistp256","ssh_rsa"]
+	// Host key algorithms. The host key algorithms 'ssh_ed25519' and 'ssh_rsa' can be configured only in non-FIPS mode.
+	// Example: ["ecdsa_sha2_nistp256","ssh_rsa","rsa_sha2_256","rsa_sha2_512"]
 	ClusterSSHServerInlineHostKeyAlgorithms []*HostKeyAlgorithm `json:"host_key_algorithms,omitempty"`
 
 	// Key exchange algorithms.
@@ -47,6 +47,11 @@ type ClusterSSHServer struct {
 	// Enables or disables the _ssh-rsa_ signature scheme, which uses the SHA-1 hash algorithm, for RSA keys in public key algorithms. If this flag is _false_, older SSH implementations might fail to authenticate using RSA keys. This flag should be enabled only as a temporary measure until legacy SSH client implementations can be upgraded or reconfigured with another key type, for example: ECDSA.
 	//
 	IsRsaInPublickeyAlgorithmsEnabled *bool `json:"is_rsa_in_publickey_algorithms_enabled,omitempty"`
+
+	// The SSH connection login grace time allowed for the connection.
+	// Maximum: 90
+	// Minimum: 30
+	LoginGraceTime *int64 `json:"login_grace_time,omitempty"`
 
 	// Maximum authentication retries allowed before closing the connection.
 	// Maximum: 6
@@ -89,6 +94,10 @@ func (m *ClusterSSHServer) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateConnectionsPerSecond(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLoginGraceTime(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -233,6 +242,22 @@ func (m *ClusterSSHServer) validateConnectionsPerSecond(formats strfmt.Registry)
 	}
 
 	if err := validate.MaximumInt("connections_per_second", "body", *m.ConnectionsPerSecond, 70, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSSHServer) validateLoginGraceTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.LoginGraceTime) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("login_grace_time", "body", *m.LoginGraceTime, 30, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("login_grace_time", "body", *m.LoginGraceTime, 90, false); err != nil {
 		return err
 	}
 

@@ -36,7 +36,7 @@ type SecurityJitPrivilegeUser struct {
 
 	// The end date and time of the JIT privilege session in UTC.
 	//
-	// Example: 2024-11-08 11:15:31
+	// Example: 2024-11-08 11:15:31+00:00
 	// Read Only: true
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
@@ -66,7 +66,7 @@ type SecurityJitPrivilegeUser struct {
 
 	// The start date and time of the JIT privilege session in UTC.
 	//
-	// Example: 2024-11-08 10:15:31
+	// Example: 2024-11-08 10:15:31+00:00
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
 }

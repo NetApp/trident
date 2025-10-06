@@ -396,7 +396,7 @@ func TestInitializeASANVMe(t *testing.T) {
 			},
 		},
 		{
-			name: "InitializeASAStoragePoolsCommon returns an error",
+			name: "InitializeDisaggregatedStoragePoolsCommon returns an error",
 			setupMocks: func() {
 				driver.Config.SnapshotDir = "not-boolean"
 				driver.initialized = false
@@ -2577,6 +2577,7 @@ func TestCreatePrepareASANVMe_NilPool(t *testing.T) {
 	driver.Config.NameTemplate = `{{.volume.Name}}_{{.volume.Namespace}}_{{.volume.StorageClass}}`
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
@@ -2603,6 +2604,7 @@ func TestCreatePrepareASANVMe_NilPool_TemplateNotContainVolumeName(t *testing.T)
 	driver.Config.NameTemplate = `{{.volume.Namespace}}_{{.volume.StorageClass}}_{{slice .volume.Name 4 9}}`
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
@@ -2783,6 +2785,8 @@ func TestGetBackendStateASANVMe(t *testing.T) {
 
 	mockAPI.EXPECT().GetSVMState(ctx).Return(restAPIModels.SvmStateRunning, nil).AnyTimes().Times(1)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).AnyTimes()
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).Return(dataLIFs, nil).Times(1)
 	mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 	mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)

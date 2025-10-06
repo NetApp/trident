@@ -193,7 +193,7 @@ func NewConsistencyGroupSnapshotModifyCollectionDefault(code int) *ConsistencyGr
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 53411925 | Failed to find a previously initiated two-phase snapshot operation for consistency group. |
+| 53411925 | Failed to find a previously initiated two-phase snapshot operation for consistency group.<personalities supports=asar2> |
 | 53412015 | SnapLock expiry time cannot be before the current expiry time. |
 | 53412016 | Snapshot is not retained by SnapLock. |
 | 53412017 | The operation is not supported on this platform.</personalities> |
@@ -289,7 +289,7 @@ type ConsistencyGroupSnapshotModifyCollectionBody struct {
 
 	// Time the snapshot copy was created
 	//
-	// Example: 2020-10-25 11:20:00
+	// Example: 2020-10-25 11:20:00+00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`

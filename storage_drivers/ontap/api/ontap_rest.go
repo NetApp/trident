@@ -4623,6 +4623,10 @@ func (c *RestClient) ExportRuleDestroy(
 func ToSliceVolumeAggregatesItems(aggrs []string) []*models.VolumeInlineAggregatesInlineArrayItem {
 	var result []*models.VolumeInlineAggregatesInlineArrayItem
 	for _, aggregateName := range aggrs {
+		// Skip empty aggregate names
+		if strings.TrimSpace(aggregateName) == "" {
+			continue
+		}
 		item := &models.VolumeInlineAggregatesInlineArrayItem{
 			Name: convert.ToPtr(aggregateName),
 		}

@@ -62,6 +62,12 @@ AntiRansomwareSuspectDeleteParams contains all the parameters to send to the API
 */
 type AntiRansomwareSuspectDeleteParams struct {
 
+	/* FileFormat.
+
+	   Specifies the file format of the suspect file.
+	*/
+	FileFormat *string
+
 	/* IsFalsePositive.
 
 	   Specifies whether the suspected ransomware activity is a false positive or not.
@@ -158,6 +164,17 @@ func (o *AntiRansomwareSuspectDeleteParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithFileFormat adds the fileFormat to the anti ransomware suspect delete params
+func (o *AntiRansomwareSuspectDeleteParams) WithFileFormat(fileFormat *string) *AntiRansomwareSuspectDeleteParams {
+	o.SetFileFormat(fileFormat)
+	return o
+}
+
+// SetFileFormat adds the fileFormat to the anti ransomware suspect delete params
+func (o *AntiRansomwareSuspectDeleteParams) SetFileFormat(fileFormat *string) {
+	o.FileFormat = fileFormat
+}
+
 // WithIsFalsePositive adds the isFalsePositive to the anti ransomware suspect delete params
 func (o *AntiRansomwareSuspectDeleteParams) WithIsFalsePositive(isFalsePositive *bool) *AntiRansomwareSuspectDeleteParams {
 	o.SetIsFalsePositive(isFalsePositive)
@@ -209,6 +226,23 @@ func (o *AntiRansomwareSuspectDeleteParams) WriteToRequest(r runtime.ClientReque
 		return err
 	}
 	var res []error
+
+	if o.FileFormat != nil {
+
+		// query param file.format
+		var qrFileFormat string
+
+		if o.FileFormat != nil {
+			qrFileFormat = *o.FileFormat
+		}
+		qFileFormat := qrFileFormat
+		if qFileFormat != "" {
+
+			if err := r.SetQueryParam("file.format", qFileFormat); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.IsFalsePositive != nil {
 

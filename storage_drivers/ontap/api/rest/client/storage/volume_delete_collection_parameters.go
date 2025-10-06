@@ -74,6 +74,18 @@ type VolumeDeleteCollectionParams struct {
 	*/
 	AccessTimeEnabled *bool
 
+	/* ActivityTrackingNoticesCode.
+
+	   Filter by activity_tracking.notices.code
+	*/
+	ActivityTrackingNoticesCode *string
+
+	/* ActivityTrackingNoticesMessage.
+
+	   Filter by activity_tracking.notices.message
+	*/
+	ActivityTrackingNoticesMessage *string
+
 	/* ActivityTrackingState.
 
 	   Filter by activity_tracking.state
@@ -391,6 +403,18 @@ type VolumeDeleteCollectionParams struct {
 	   Filter by anti_ransomware.block_device_detection_state
 	*/
 	AntiRansomwareBlockDeviceDetectionState *string
+
+	/* AntiRansomwareClearSuspectPhase.
+
+	   Filter by anti_ransomware.clear_suspect.phase
+	*/
+	AntiRansomwareClearSuspectPhase *string
+
+	/* AntiRansomwareClearSuspectStartTime.
+
+	   Filter by anti_ransomware.clear_suspect.start_time
+	*/
+	AntiRansomwareClearSuspectStartTime *string
 
 	/* AntiRansomwareDryRunStartTime.
 
@@ -782,6 +806,12 @@ type VolumeDeleteCollectionParams struct {
 	*/
 	CloneIsFlexclone *bool
 
+	/* CloneLunName.
+
+	   Filter by clone.lun_name
+	*/
+	CloneLunName *string
+
 	/* CloneParentSnapshotName.
 
 	   Filter by clone.parent_snapshot.name
@@ -817,6 +847,12 @@ type VolumeDeleteCollectionParams struct {
 	   Filter by clone.parent_volume.uuid
 	*/
 	CloneParentVolumeUUID *string
+
+	/* CloneQtreeName.
+
+	   Filter by clone.qtree_name
+	*/
+	CloneQtreeName *string
 
 	/* CloneSplitCompletePercent.
 
@@ -1491,6 +1527,12 @@ type VolumeDeleteCollectionParams struct {
 	*/
 	HasDirIndexPublic *bool
 
+	/* HasLargeDir.
+
+	   Filter by has_large_dir
+	*/
+	HasLargeDir *bool
+
 	/* Info.
 
 	   Info specification
@@ -1509,11 +1551,23 @@ type VolumeDeleteCollectionParams struct {
 	*/
 	IsDirIndexTransferEnabled *bool
 
+	/* IsLargeDirEnabled.
+
+	   Filter by is_large_dir_enabled
+	*/
+	IsLargeDirEnabled *bool
+
 	/* IsObjectStore.
 
 	   Filter by is_object_store
 	*/
 	IsObjectStore *bool
+
+	/* IsS3ArbitraryPartSizeEnabled.
+
+	   Filter by is_s3_arbitrary_part_size_enabled
+	*/
+	IsS3ArbitraryPartSizeEnabled *bool
 
 	/* IsSvmRoot.
 
@@ -1719,6 +1773,12 @@ type VolumeDeleteCollectionParams struct {
 	*/
 	MetricTimestamp *string
 
+	/* MovementCapacityTierOptimized.
+
+	   Filter by movement.capacity_tier_optimized
+	*/
+	MovementCapacityTierOptimized *bool
+
 	/* MovementCutoverWindow.
 
 	   Filter by movement.cutover_window
@@ -1754,6 +1814,12 @@ type VolumeDeleteCollectionParams struct {
 	   Filter by movement.state
 	*/
 	MovementState *string
+
+	/* MovementTieringPolicy.
+
+	   Filter by movement.tiering_policy
+	*/
+	MovementTieringPolicy *string
 
 	/* Msid.
 
@@ -3648,6 +3714,28 @@ func (o *VolumeDeleteCollectionParams) SetAccessTimeEnabled(accessTimeEnabled *b
 	o.AccessTimeEnabled = accessTimeEnabled
 }
 
+// WithActivityTrackingNoticesCode adds the activityTrackingNoticesCode to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) WithActivityTrackingNoticesCode(activityTrackingNoticesCode *string) *VolumeDeleteCollectionParams {
+	o.SetActivityTrackingNoticesCode(activityTrackingNoticesCode)
+	return o
+}
+
+// SetActivityTrackingNoticesCode adds the activityTrackingNoticesCode to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) SetActivityTrackingNoticesCode(activityTrackingNoticesCode *string) {
+	o.ActivityTrackingNoticesCode = activityTrackingNoticesCode
+}
+
+// WithActivityTrackingNoticesMessage adds the activityTrackingNoticesMessage to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) WithActivityTrackingNoticesMessage(activityTrackingNoticesMessage *string) *VolumeDeleteCollectionParams {
+	o.SetActivityTrackingNoticesMessage(activityTrackingNoticesMessage)
+	return o
+}
+
+// SetActivityTrackingNoticesMessage adds the activityTrackingNoticesMessage to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) SetActivityTrackingNoticesMessage(activityTrackingNoticesMessage *string) {
+	o.ActivityTrackingNoticesMessage = activityTrackingNoticesMessage
+}
+
 // WithActivityTrackingState adds the activityTrackingState to the volume delete collection params
 func (o *VolumeDeleteCollectionParams) WithActivityTrackingState(activityTrackingState *string) *VolumeDeleteCollectionParams {
 	o.SetActivityTrackingState(activityTrackingState)
@@ -4229,6 +4317,28 @@ func (o *VolumeDeleteCollectionParams) WithAntiRansomwareBlockDeviceDetectionSta
 // SetAntiRansomwareBlockDeviceDetectionState adds the antiRansomwareBlockDeviceDetectionState to the volume delete collection params
 func (o *VolumeDeleteCollectionParams) SetAntiRansomwareBlockDeviceDetectionState(antiRansomwareBlockDeviceDetectionState *string) {
 	o.AntiRansomwareBlockDeviceDetectionState = antiRansomwareBlockDeviceDetectionState
+}
+
+// WithAntiRansomwareClearSuspectPhase adds the antiRansomwareClearSuspectPhase to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) WithAntiRansomwareClearSuspectPhase(antiRansomwareClearSuspectPhase *string) *VolumeDeleteCollectionParams {
+	o.SetAntiRansomwareClearSuspectPhase(antiRansomwareClearSuspectPhase)
+	return o
+}
+
+// SetAntiRansomwareClearSuspectPhase adds the antiRansomwareClearSuspectPhase to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) SetAntiRansomwareClearSuspectPhase(antiRansomwareClearSuspectPhase *string) {
+	o.AntiRansomwareClearSuspectPhase = antiRansomwareClearSuspectPhase
+}
+
+// WithAntiRansomwareClearSuspectStartTime adds the antiRansomwareClearSuspectStartTime to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) WithAntiRansomwareClearSuspectStartTime(antiRansomwareClearSuspectStartTime *string) *VolumeDeleteCollectionParams {
+	o.SetAntiRansomwareClearSuspectStartTime(antiRansomwareClearSuspectStartTime)
+	return o
+}
+
+// SetAntiRansomwareClearSuspectStartTime adds the antiRansomwareClearSuspectStartTime to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) SetAntiRansomwareClearSuspectStartTime(antiRansomwareClearSuspectStartTime *string) {
+	o.AntiRansomwareClearSuspectStartTime = antiRansomwareClearSuspectStartTime
 }
 
 // WithAntiRansomwareDryRunStartTime adds the antiRansomwareDryRunStartTime to the volume delete collection params
@@ -4946,6 +5056,17 @@ func (o *VolumeDeleteCollectionParams) SetCloneIsFlexclone(cloneIsFlexclone *boo
 	o.CloneIsFlexclone = cloneIsFlexclone
 }
 
+// WithCloneLunName adds the cloneLunName to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) WithCloneLunName(cloneLunName *string) *VolumeDeleteCollectionParams {
+	o.SetCloneLunName(cloneLunName)
+	return o
+}
+
+// SetCloneLunName adds the cloneLunName to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) SetCloneLunName(cloneLunName *string) {
+	o.CloneLunName = cloneLunName
+}
+
 // WithCloneParentSnapshotName adds the cloneParentSnapshotName to the volume delete collection params
 func (o *VolumeDeleteCollectionParams) WithCloneParentSnapshotName(cloneParentSnapshotName *string) *VolumeDeleteCollectionParams {
 	o.SetCloneParentSnapshotName(cloneParentSnapshotName)
@@ -5010,6 +5131,17 @@ func (o *VolumeDeleteCollectionParams) WithCloneParentVolumeUUID(cloneParentVolu
 // SetCloneParentVolumeUUID adds the cloneParentVolumeUuid to the volume delete collection params
 func (o *VolumeDeleteCollectionParams) SetCloneParentVolumeUUID(cloneParentVolumeUUID *string) {
 	o.CloneParentVolumeUUID = cloneParentVolumeUUID
+}
+
+// WithCloneQtreeName adds the cloneQtreeName to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) WithCloneQtreeName(cloneQtreeName *string) *VolumeDeleteCollectionParams {
+	o.SetCloneQtreeName(cloneQtreeName)
+	return o
+}
+
+// SetCloneQtreeName adds the cloneQtreeName to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) SetCloneQtreeName(cloneQtreeName *string) {
+	o.CloneQtreeName = cloneQtreeName
 }
 
 // WithCloneSplitCompletePercent adds the cloneSplitCompletePercent to the volume delete collection params
@@ -6244,6 +6376,17 @@ func (o *VolumeDeleteCollectionParams) SetHasDirIndexPublic(hasDirIndexPublic *b
 	o.HasDirIndexPublic = hasDirIndexPublic
 }
 
+// WithHasLargeDir adds the hasLargeDir to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) WithHasLargeDir(hasLargeDir *bool) *VolumeDeleteCollectionParams {
+	o.SetHasLargeDir(hasLargeDir)
+	return o
+}
+
+// SetHasLargeDir adds the hasLargeDir to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) SetHasLargeDir(hasLargeDir *bool) {
+	o.HasLargeDir = hasLargeDir
+}
+
 // WithInfo adds the info to the volume delete collection params
 func (o *VolumeDeleteCollectionParams) WithInfo(info VolumeDeleteCollectionBody) *VolumeDeleteCollectionParams {
 	o.SetInfo(info)
@@ -6277,6 +6420,17 @@ func (o *VolumeDeleteCollectionParams) SetIsDirIndexTransferEnabled(isDirIndexTr
 	o.IsDirIndexTransferEnabled = isDirIndexTransferEnabled
 }
 
+// WithIsLargeDirEnabled adds the isLargeDirEnabled to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) WithIsLargeDirEnabled(isLargeDirEnabled *bool) *VolumeDeleteCollectionParams {
+	o.SetIsLargeDirEnabled(isLargeDirEnabled)
+	return o
+}
+
+// SetIsLargeDirEnabled adds the isLargeDirEnabled to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) SetIsLargeDirEnabled(isLargeDirEnabled *bool) {
+	o.IsLargeDirEnabled = isLargeDirEnabled
+}
+
 // WithIsObjectStore adds the isObjectStore to the volume delete collection params
 func (o *VolumeDeleteCollectionParams) WithIsObjectStore(isObjectStore *bool) *VolumeDeleteCollectionParams {
 	o.SetIsObjectStore(isObjectStore)
@@ -6286,6 +6440,17 @@ func (o *VolumeDeleteCollectionParams) WithIsObjectStore(isObjectStore *bool) *V
 // SetIsObjectStore adds the isObjectStore to the volume delete collection params
 func (o *VolumeDeleteCollectionParams) SetIsObjectStore(isObjectStore *bool) {
 	o.IsObjectStore = isObjectStore
+}
+
+// WithIsS3ArbitraryPartSizeEnabled adds the isS3ArbitraryPartSizeEnabled to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) WithIsS3ArbitraryPartSizeEnabled(isS3ArbitraryPartSizeEnabled *bool) *VolumeDeleteCollectionParams {
+	o.SetIsS3ArbitraryPartSizeEnabled(isS3ArbitraryPartSizeEnabled)
+	return o
+}
+
+// SetIsS3ArbitraryPartSizeEnabled adds the isS3ArbitraryPartSizeEnabled to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) SetIsS3ArbitraryPartSizeEnabled(isS3ArbitraryPartSizeEnabled *bool) {
+	o.IsS3ArbitraryPartSizeEnabled = isS3ArbitraryPartSizeEnabled
 }
 
 // WithIsSvmRoot adds the isSvmRoot to the volume delete collection params
@@ -6662,6 +6827,17 @@ func (o *VolumeDeleteCollectionParams) SetMetricTimestamp(metricTimestamp *strin
 	o.MetricTimestamp = metricTimestamp
 }
 
+// WithMovementCapacityTierOptimized adds the movementCapacityTierOptimized to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) WithMovementCapacityTierOptimized(movementCapacityTierOptimized *bool) *VolumeDeleteCollectionParams {
+	o.SetMovementCapacityTierOptimized(movementCapacityTierOptimized)
+	return o
+}
+
+// SetMovementCapacityTierOptimized adds the movementCapacityTierOptimized to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) SetMovementCapacityTierOptimized(movementCapacityTierOptimized *bool) {
+	o.MovementCapacityTierOptimized = movementCapacityTierOptimized
+}
+
 // WithMovementCutoverWindow adds the movementCutoverWindow to the volume delete collection params
 func (o *VolumeDeleteCollectionParams) WithMovementCutoverWindow(movementCutoverWindow *int64) *VolumeDeleteCollectionParams {
 	o.SetMovementCutoverWindow(movementCutoverWindow)
@@ -6726,6 +6902,17 @@ func (o *VolumeDeleteCollectionParams) WithMovementState(movementState *string) 
 // SetMovementState adds the movementState to the volume delete collection params
 func (o *VolumeDeleteCollectionParams) SetMovementState(movementState *string) {
 	o.MovementState = movementState
+}
+
+// WithMovementTieringPolicy adds the movementTieringPolicy to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) WithMovementTieringPolicy(movementTieringPolicy *string) *VolumeDeleteCollectionParams {
+	o.SetMovementTieringPolicy(movementTieringPolicy)
+	return o
+}
+
+// SetMovementTieringPolicy adds the movementTieringPolicy to the volume delete collection params
+func (o *VolumeDeleteCollectionParams) SetMovementTieringPolicy(movementTieringPolicy *string) {
+	o.MovementTieringPolicy = movementTieringPolicy
 }
 
 // WithMsid adds the msid to the volume delete collection params
@@ -10048,6 +10235,40 @@ func (o *VolumeDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.ActivityTrackingNoticesCode != nil {
+
+		// query param activity_tracking.notices.code
+		var qrActivityTrackingNoticesCode string
+
+		if o.ActivityTrackingNoticesCode != nil {
+			qrActivityTrackingNoticesCode = *o.ActivityTrackingNoticesCode
+		}
+		qActivityTrackingNoticesCode := qrActivityTrackingNoticesCode
+		if qActivityTrackingNoticesCode != "" {
+
+			if err := r.SetQueryParam("activity_tracking.notices.code", qActivityTrackingNoticesCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ActivityTrackingNoticesMessage != nil {
+
+		// query param activity_tracking.notices.message
+		var qrActivityTrackingNoticesMessage string
+
+		if o.ActivityTrackingNoticesMessage != nil {
+			qrActivityTrackingNoticesMessage = *o.ActivityTrackingNoticesMessage
+		}
+		qActivityTrackingNoticesMessage := qrActivityTrackingNoticesMessage
+		if qActivityTrackingNoticesMessage != "" {
+
+			if err := r.SetQueryParam("activity_tracking.notices.message", qActivityTrackingNoticesMessage); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ActivityTrackingState != nil {
 
 		// query param activity_tracking.state
@@ -10944,6 +11165,40 @@ func (o *VolumeDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 		if qAntiRansomwareBlockDeviceDetectionState != "" {
 
 			if err := r.SetQueryParam("anti_ransomware.block_device_detection_state", qAntiRansomwareBlockDeviceDetectionState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AntiRansomwareClearSuspectPhase != nil {
+
+		// query param anti_ransomware.clear_suspect.phase
+		var qrAntiRansomwareClearSuspectPhase string
+
+		if o.AntiRansomwareClearSuspectPhase != nil {
+			qrAntiRansomwareClearSuspectPhase = *o.AntiRansomwareClearSuspectPhase
+		}
+		qAntiRansomwareClearSuspectPhase := qrAntiRansomwareClearSuspectPhase
+		if qAntiRansomwareClearSuspectPhase != "" {
+
+			if err := r.SetQueryParam("anti_ransomware.clear_suspect.phase", qAntiRansomwareClearSuspectPhase); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AntiRansomwareClearSuspectStartTime != nil {
+
+		// query param anti_ransomware.clear_suspect.start_time
+		var qrAntiRansomwareClearSuspectStartTime string
+
+		if o.AntiRansomwareClearSuspectStartTime != nil {
+			qrAntiRansomwareClearSuspectStartTime = *o.AntiRansomwareClearSuspectStartTime
+		}
+		qAntiRansomwareClearSuspectStartTime := qrAntiRansomwareClearSuspectStartTime
+		if qAntiRansomwareClearSuspectStartTime != "" {
+
+			if err := r.SetQueryParam("anti_ransomware.clear_suspect.start_time", qAntiRansomwareClearSuspectStartTime); err != nil {
 				return err
 			}
 		}
@@ -12054,6 +12309,23 @@ func (o *VolumeDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.CloneLunName != nil {
+
+		// query param clone.lun_name
+		var qrCloneLunName string
+
+		if o.CloneLunName != nil {
+			qrCloneLunName = *o.CloneLunName
+		}
+		qCloneLunName := qrCloneLunName
+		if qCloneLunName != "" {
+
+			if err := r.SetQueryParam("clone.lun_name", qCloneLunName); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.CloneParentSnapshotName != nil {
 
 		// query param clone.parent_snapshot.name
@@ -12151,6 +12423,23 @@ func (o *VolumeDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 		if qCloneParentVolumeUUID != "" {
 
 			if err := r.SetQueryParam("clone.parent_volume.uuid", qCloneParentVolumeUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneQtreeName != nil {
+
+		// query param clone.qtree_name
+		var qrCloneQtreeName string
+
+		if o.CloneQtreeName != nil {
+			qrCloneQtreeName = *o.CloneQtreeName
+		}
+		qCloneQtreeName := qrCloneQtreeName
+		if qCloneQtreeName != "" {
+
+			if err := r.SetQueryParam("clone.qtree_name", qCloneQtreeName); err != nil {
 				return err
 			}
 		}
@@ -14059,6 +14348,23 @@ func (o *VolumeDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 			}
 		}
 	}
+
+	if o.HasLargeDir != nil {
+
+		// query param has_large_dir
+		var qrHasLargeDir bool
+
+		if o.HasLargeDir != nil {
+			qrHasLargeDir = *o.HasLargeDir
+		}
+		qHasLargeDir := swag.FormatBool(qrHasLargeDir)
+		if qHasLargeDir != "" {
+
+			if err := r.SetQueryParam("has_large_dir", qHasLargeDir); err != nil {
+				return err
+			}
+		}
+	}
 	if err := r.SetBodyParam(o.Info); err != nil {
 		return err
 	}
@@ -14097,6 +14403,23 @@ func (o *VolumeDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.IsLargeDirEnabled != nil {
+
+		// query param is_large_dir_enabled
+		var qrIsLargeDirEnabled bool
+
+		if o.IsLargeDirEnabled != nil {
+			qrIsLargeDirEnabled = *o.IsLargeDirEnabled
+		}
+		qIsLargeDirEnabled := swag.FormatBool(qrIsLargeDirEnabled)
+		if qIsLargeDirEnabled != "" {
+
+			if err := r.SetQueryParam("is_large_dir_enabled", qIsLargeDirEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.IsObjectStore != nil {
 
 		// query param is_object_store
@@ -14109,6 +14432,23 @@ func (o *VolumeDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 		if qIsObjectStore != "" {
 
 			if err := r.SetQueryParam("is_object_store", qIsObjectStore); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IsS3ArbitraryPartSizeEnabled != nil {
+
+		// query param is_s3_arbitrary_part_size_enabled
+		var qrIsS3ArbitraryPartSizeEnabled bool
+
+		if o.IsS3ArbitraryPartSizeEnabled != nil {
+			qrIsS3ArbitraryPartSizeEnabled = *o.IsS3ArbitraryPartSizeEnabled
+		}
+		qIsS3ArbitraryPartSizeEnabled := swag.FormatBool(qrIsS3ArbitraryPartSizeEnabled)
+		if qIsS3ArbitraryPartSizeEnabled != "" {
+
+			if err := r.SetQueryParam("is_s3_arbitrary_part_size_enabled", qIsS3ArbitraryPartSizeEnabled); err != nil {
 				return err
 			}
 		}
@@ -14692,6 +15032,23 @@ func (o *VolumeDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.MovementCapacityTierOptimized != nil {
+
+		// query param movement.capacity_tier_optimized
+		var qrMovementCapacityTierOptimized bool
+
+		if o.MovementCapacityTierOptimized != nil {
+			qrMovementCapacityTierOptimized = *o.MovementCapacityTierOptimized
+		}
+		qMovementCapacityTierOptimized := swag.FormatBool(qrMovementCapacityTierOptimized)
+		if qMovementCapacityTierOptimized != "" {
+
+			if err := r.SetQueryParam("movement.capacity_tier_optimized", qMovementCapacityTierOptimized); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.MovementCutoverWindow != nil {
 
 		// query param movement.cutover_window
@@ -14789,6 +15146,23 @@ func (o *VolumeDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 		if qMovementState != "" {
 
 			if err := r.SetQueryParam("movement.state", qMovementState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MovementTieringPolicy != nil {
+
+		// query param movement.tiering_policy
+		var qrMovementTieringPolicy string
+
+		if o.MovementTieringPolicy != nil {
+			qrMovementTieringPolicy = *o.MovementTieringPolicy
+		}
+		qMovementTieringPolicy := qrMovementTieringPolicy
+		if qMovementTieringPolicy != "" {
+
+			if err := r.SetQueryParam("movement.tiering_policy", qMovementTieringPolicy); err != nil {
 				return err
 			}
 		}

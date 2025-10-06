@@ -116,9 +116,11 @@ func NewRolePrivilegeModifyCollectionDefault(code int) *RolePrivilegeModifyColle
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 5636168 | This role is mapped to a rest-role and cannot be modified directly. Modifications must be done with rest-role. |
+| 5636168 | This role is mapped to a REST role and can only be modified by updating the REST role. |
 | 5636192 | The query parameter cannot be specified for the privileges tuple with API endpoint entries. |
-| 5636200 | The specified value of the access parameter is invalid, if a command or command directory is specified in the path parameter. |
+| 5636200 | The specified value of the access parameter is invalid, if a command or command directory is specified in the path parameter.<personalities supports=aiml> |
+| 5636259 | The specified child AIDE object was not found within the specified parent AIDE object. |
+| 5636261 | The specified grandchild AIDE object was not found within the specified child AIDE object that belongs to the specified parent AIDE object.</personalities> |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type RolePrivilegeModifyCollectionDefault struct {

@@ -219,7 +219,7 @@ type AutoUpdateStatusModifyCollectionBody struct {
 	ContentType *string `json:"content_type,omitempty"`
 
 	// The date and time at which the update request was received.
-	// Example: 2020-12-01 09:12:23
+	// Example: 2020-12-01 09:12:23+00:00
 	// Read Only: true
 	// Format: date-time
 	CreationTime *strfmt.DateTime `json:"creation_time,omitempty"`
@@ -230,19 +230,19 @@ type AutoUpdateStatusModifyCollectionBody struct {
 	Description *string `json:"description,omitempty"`
 
 	// The date and time at which the update request processing ended.
-	// Example: 2020-12-01 09:12:23
+	// Example: 2020-12-01 09:12:23+00:00
 	// Read Only: true
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
 
 	// The date and time at which the update request will expire.
-	// Example: 2021-06-01 09:12:23
+	// Example: 2021-06-01 09:12:23+00:00
 	// Read Only: true
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
 
 	// The date and time at which the state of the update changed last.
-	// Example: 2020-12-01 09:12:23
+	// Example: 2020-12-01 09:12:23+00:00
 	// Read Only: true
 	// Format: date-time
 	LastStateChangeTime *strfmt.DateTime `json:"last_state_change_time,omitempty"`
@@ -265,18 +265,18 @@ type AutoUpdateStatusModifyCollectionBody struct {
 	// Date and time when an automatic update action is scheduled.
 	// This field is required when the action field is set to "schedule".
 	//
-	// Example: 2020-12-20 21:00:00
+	// Example: 2020-12-20 21:00:00+00:00
 	// Format: date-time
 	ScheduleTime *strfmt.DateTime `json:"schedule_time,omitempty"`
 
 	// The date and time at which the update request is currently scheduled for.
-	// Example: 2020-12-05 09:12:23
+	// Example: 2020-12-05 09:12:23+00:00
 	// Read Only: true
 	// Format: date-time
 	ScheduledTime *strfmt.DateTime `json:"scheduled_time,omitempty"`
 
 	// The date and time at which the update request processing started.
-	// Example: 2020-12-01 09:12:23
+	// Example: 2020-12-01 09:12:23+00:00
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`

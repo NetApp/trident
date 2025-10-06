@@ -29,7 +29,7 @@ type VolumeSnaplock struct {
 	AutocommitPeriod *string `json:"autocommit_period,omitempty"`
 
 	// This is the volume compliance clock time which is used to manage the SnapLock objects in the volume.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	ComplianceClockTime *strfmt.DateTime `json:"compliance_clock_time,omitempty"`

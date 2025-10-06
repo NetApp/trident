@@ -29,7 +29,7 @@ type SnaplockLogFile struct {
 	BaseName *string `json:"base_name,omitempty"`
 
 	// Expiry time of the log file in date-time format. Value '9999-12-31T00:00:00Z' indicates infinite expiry time.
-	// Example: 2058-06-04 19:00:00
+	// Example: 2058-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`

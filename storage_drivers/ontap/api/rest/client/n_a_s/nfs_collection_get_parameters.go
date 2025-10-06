@@ -98,6 +98,12 @@ type NfsCollectionGetParams struct {
 	*/
 	AuthSysExtendedGroupsEnabled *bool
 
+	/* CredentialCacheHarvestTimeout.
+
+	   Filter by credential_cache.harvest_timeout
+	*/
+	CredentialCacheHarvestTimeout *int64
+
 	/* CredentialCacheNegativeTTL.
 
 	   Filter by credential_cache.negative_ttl
@@ -643,6 +649,12 @@ type NfsCollectionGetParams struct {
 	   Filter by protocol.v4_session_slots
 	*/
 	ProtocolV4SessionSlots *int64
+
+	/* ProtocolV4SubnetFilterEnabled.
+
+	   Filter by protocol.v4_subnet_filter_enabled
+	*/
+	ProtocolV4SubnetFilterEnabled *bool
 
 	/* ProtocolAccessRulesAuthType.
 
@@ -1198,6 +1210,17 @@ func (o *NfsCollectionGetParams) WithAuthSysExtendedGroupsEnabled(authSysExtende
 // SetAuthSysExtendedGroupsEnabled adds the authSysExtendedGroupsEnabled to the nfs collection get params
 func (o *NfsCollectionGetParams) SetAuthSysExtendedGroupsEnabled(authSysExtendedGroupsEnabled *bool) {
 	o.AuthSysExtendedGroupsEnabled = authSysExtendedGroupsEnabled
+}
+
+// WithCredentialCacheHarvestTimeout adds the credentialCacheHarvestTimeout to the nfs collection get params
+func (o *NfsCollectionGetParams) WithCredentialCacheHarvestTimeout(credentialCacheHarvestTimeout *int64) *NfsCollectionGetParams {
+	o.SetCredentialCacheHarvestTimeout(credentialCacheHarvestTimeout)
+	return o
+}
+
+// SetCredentialCacheHarvestTimeout adds the credentialCacheHarvestTimeout to the nfs collection get params
+func (o *NfsCollectionGetParams) SetCredentialCacheHarvestTimeout(credentialCacheHarvestTimeout *int64) {
+	o.CredentialCacheHarvestTimeout = credentialCacheHarvestTimeout
 }
 
 // WithCredentialCacheNegativeTTL adds the credentialCacheNegativeTTL to the nfs collection get params
@@ -2201,6 +2224,17 @@ func (o *NfsCollectionGetParams) SetProtocolV4SessionSlots(protocolV4SessionSlot
 	o.ProtocolV4SessionSlots = protocolV4SessionSlots
 }
 
+// WithProtocolV4SubnetFilterEnabled adds the protocolV4SubnetFilterEnabled to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV4SubnetFilterEnabled(protocolV4SubnetFilterEnabled *bool) *NfsCollectionGetParams {
+	o.SetProtocolV4SubnetFilterEnabled(protocolV4SubnetFilterEnabled)
+	return o
+}
+
+// SetProtocolV4SubnetFilterEnabled adds the protocolV4SubnetFilterEnabled to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV4SubnetFilterEnabled(protocolV4SubnetFilterEnabled *bool) {
+	o.ProtocolV4SubnetFilterEnabled = protocolV4SubnetFilterEnabled
+}
+
 // WithProtocolAccessRulesAuthType adds the protocolAccessRulesAuthType to the nfs collection get params
 func (o *NfsCollectionGetParams) WithProtocolAccessRulesAuthType(protocolAccessRulesAuthType *string) *NfsCollectionGetParams {
 	o.SetProtocolAccessRulesAuthType(protocolAccessRulesAuthType)
@@ -3065,6 +3099,23 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qAuthSysExtendedGroupsEnabled != "" {
 
 			if err := r.SetQueryParam("auth_sys_extended_groups_enabled", qAuthSysExtendedGroupsEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CredentialCacheHarvestTimeout != nil {
+
+		// query param credential_cache.harvest_timeout
+		var qrCredentialCacheHarvestTimeout int64
+
+		if o.CredentialCacheHarvestTimeout != nil {
+			qrCredentialCacheHarvestTimeout = *o.CredentialCacheHarvestTimeout
+		}
+		qCredentialCacheHarvestTimeout := swag.FormatInt64(qrCredentialCacheHarvestTimeout)
+		if qCredentialCacheHarvestTimeout != "" {
+
+			if err := r.SetQueryParam("credential_cache.harvest_timeout", qCredentialCacheHarvestTimeout); err != nil {
 				return err
 			}
 		}
@@ -4600,6 +4651,23 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qProtocolV4SessionSlots != "" {
 
 			if err := r.SetQueryParam("protocol.v4_session_slots", qProtocolV4SessionSlots); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolV4SubnetFilterEnabled != nil {
+
+		// query param protocol.v4_subnet_filter_enabled
+		var qrProtocolV4SubnetFilterEnabled bool
+
+		if o.ProtocolV4SubnetFilterEnabled != nil {
+			qrProtocolV4SubnetFilterEnabled = *o.ProtocolV4SubnetFilterEnabled
+		}
+		qProtocolV4SubnetFilterEnabled := swag.FormatBool(qrProtocolV4SubnetFilterEnabled)
+		if qProtocolV4SubnetFilterEnabled != "" {
+
+			if err := r.SetQueryParam("protocol.v4_subnet_filter_enabled", qProtocolV4SubnetFilterEnabled); err != nil {
 				return err
 			}
 		}

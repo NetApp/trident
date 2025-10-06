@@ -20,6 +20,9 @@ import (
 // swagger:model autosupport_message
 type AutosupportMessage struct {
 
+	// links
+	Links *SelfLink `json:"_links,omitempty"`
+
 	// Destination for the AutoSupport
 	// Example: http
 	// Read Only: true
@@ -30,7 +33,7 @@ type AutosupportMessage struct {
 	Error *AutosupportMessageInlineError `json:"error,omitempty"`
 
 	// Date and Time of AutoSupport generation in ISO-8601 format
-	// Example: 2019-03-25 21:30:04
+	// Example: 2019-03-25 17:30:04-04:00
 	// Read Only: true
 	// Format: date-time
 	GeneratedOn *strfmt.DateTime `json:"generated_on,omitempty"`
@@ -73,6 +76,10 @@ type AutosupportMessage struct {
 func (m *AutosupportMessage) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateDestination(formats); err != nil {
 		res = append(res, err)
 	}
@@ -104,6 +111,23 @@ func (m *AutosupportMessage) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *AutosupportMessage) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -457,6 +481,10 @@ func (m *AutosupportMessage) validateURI(formats strfmt.Registry) error {
 func (m *AutosupportMessage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateDestination(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -488,6 +516,20 @@ func (m *AutosupportMessage) ContextValidate(ctx context.Context, formats strfmt
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *AutosupportMessage) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 

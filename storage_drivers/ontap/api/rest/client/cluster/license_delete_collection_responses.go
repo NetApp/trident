@@ -125,7 +125,6 @@ func NewLicenseDeleteCollectionDefault(code int) *LicenseDeleteCollectionDefault
 | 1115213 | License is still in use and cannot be removed |
 | 1115406 | Capacity pool licenses cannot be deleted |
 | 1115564 | Package is part of a NLFv2 license and cannot be removed individually |
-| 66846823 | A FlexCache license that is still in use cannot be deleted |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type LicenseDeleteCollectionDefault struct {
@@ -309,7 +308,7 @@ type LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0 struct {
 	Evaluation *bool `json:"evaluation,omitempty"`
 
 	// Date and time when the license expires.
-	// Example: 2019-03-02 19:00:00
+	// Example: 2019-03-02 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
@@ -339,7 +338,7 @@ type LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0 struct {
 	ShutdownImminent *bool `json:"shutdown_imminent,omitempty"`
 
 	// Date and time when the license starts.
-	// Example: 2019-02-02 19:00:00
+	// Example: 2019-02-02 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
@@ -616,17 +615,91 @@ swagger:model LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0Capaci
 */
 type LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0Capacity struct {
 
-	// Licensed capacity size (in bytes) that can be used.
+	// Capacity that is currently disabled due to license limits. Its unit of measure is specified in the measurement_unit field.
+	// Read Only: true
+	DisabledSize *int64 `json:"disabled_size,omitempty"`
+
+	// Licensed capacity size that can be used. Its unit of measure is specified in the measurement_unit field.
 	// Read Only: true
 	MaximumSize *int64 `json:"maximum_size,omitempty"`
 
-	// Capacity that is currently used (in bytes).
+	// Unit of measure for capacity based licenses.
+	// Read Only: true
+	// Enum: ["bytes","gpu_count"]
+	MeasurementUnit *string `json:"measurement_unit,omitempty"`
+
+	// Specifies the total number of GPUs in the system when measurement_unit is GPUs, else specifies the bytes used.
 	// Read Only: true
 	UsedSize *int64 `json:"used_size,omitempty"`
 }
 
 // Validate validates this license delete collection params body records items0 licenses items0 capacity
 func (o *LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0Capacity) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateMeasurementUnit(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var licenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0CapacityTypeMeasurementUnitPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["bytes","gpu_count"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		licenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0CapacityTypeMeasurementUnitPropEnum = append(licenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0CapacityTypeMeasurementUnitPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0Capacity
+	// LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0Capacity
+	// measurement_unit
+	// MeasurementUnit
+	// bytes
+	// END DEBUGGING
+	// LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0CapacityMeasurementUnitBytes captures enum value "bytes"
+	LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0CapacityMeasurementUnitBytes string = "bytes"
+
+	// BEGIN DEBUGGING
+	// LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0Capacity
+	// LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0Capacity
+	// measurement_unit
+	// MeasurementUnit
+	// gpu_count
+	// END DEBUGGING
+	// LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0CapacityMeasurementUnitGpuCount captures enum value "gpu_count"
+	LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0CapacityMeasurementUnitGpuCount string = "gpu_count"
+)
+
+// prop value enum
+func (o *LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0Capacity) validateMeasurementUnitEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, licenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0CapacityTypeMeasurementUnitPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (o *LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0Capacity) validateMeasurementUnit(formats strfmt.Registry) error {
+	if swag.IsZero(o.MeasurementUnit) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := o.validateMeasurementUnitEnum("capacity"+"."+"measurement_unit", "body", *o.MeasurementUnit); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -634,7 +707,15 @@ func (o *LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0Capacity) V
 func (o *LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0Capacity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := o.contextValidateDisabledSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.contextValidateMaximumSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateMeasurementUnit(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -648,9 +729,27 @@ func (o *LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0Capacity) C
 	return nil
 }
 
+func (o *LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0Capacity) contextValidateDisabledSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "capacity"+"."+"disabled_size", "body", o.DisabledSize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (o *LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0Capacity) contextValidateMaximumSize(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "capacity"+"."+"maximum_size", "body", o.MaximumSize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *LicenseDeleteCollectionParamsBodyRecordsItems0LicensesItems0Capacity) contextValidateMeasurementUnit(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "capacity"+"."+"measurement_unit", "body", o.MeasurementUnit); err != nil {
 		return err
 	}
 

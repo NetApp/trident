@@ -1765,7 +1765,8 @@ func (m *NvmeSubsystemInlineIoQueue) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
-// NvmeSubsystemInlineIoQueueInlineDefault The default I/O queue parameters inherited by NVMe hosts in the NVMe subsystem.
+// NvmeSubsystemInlineIoQueueInlineDefault Important: Support for this field will be removed in a future release.
+// The default I/O queue parameters inherited by NVMe hosts in the NVMe subsystem.
 //
 // swagger:model nvme_subsystem_inline_io_queue_inline_default
 type NvmeSubsystemInlineIoQueueInlineDefault struct {

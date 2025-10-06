@@ -200,7 +200,7 @@ type SnapmirrorRelationshipTransferModifyCollectionBody struct {
 	CheckpointSize *int64 `json:"checkpoint_size,omitempty"`
 
 	// End time of the transfer.
-	// Example: 2020-12-03 02:36:19
+	// Example: 2020-12-02 18:36:19-08:00
 	// Read Only: true
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
@@ -209,7 +209,7 @@ type SnapmirrorRelationshipTransferModifyCollectionBody struct {
 	ErrorInfo *models.SnapmirrorTransferInlineErrorInfo `json:"error_info,omitempty"`
 
 	// Last updated time of the bytes transferred in an active transfer.
-	// Example: 2023-09-15 23:58:39
+	// Example: 2023-09-15 16:58:39-07:00
 	// Read Only: true
 	// Format: date-time
 	LastUpdatedTime *strfmt.DateTime `json:"last_updated_time,omitempty"`

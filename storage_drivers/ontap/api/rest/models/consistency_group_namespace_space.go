@@ -39,6 +39,9 @@ type ConsistencyGroupNamespaceSpace struct {
 	// Minimum: 4096
 	Size *int64 `json:"size,omitempty"`
 
+	// snapshot
+	Snapshot *VdiskSpaceSnapshot `json:"snapshot,omitempty"`
+
 	// The amount of space consumed by the main data stream of the NVMe namespace.<br/>
 	// This value is the total space consumed in the volume by the NVMe namespace, including filesystem overhead, but excluding prefix and suffix streams. Due to internal filesystem overhead and the many ways NVMe filesystems and applications utilize blocks within a namespace, this value does not necessarily reflect actual consumption/availability from the perspective of the filesystem or application. Without specific knowledge of how the namespace blocks are utilized outside of ONTAP, this property should not be used as an indicator for an out-of-space condition.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
@@ -60,6 +63,10 @@ func (m *ConsistencyGroupNamespaceSpace) Validate(formats strfmt.Registry) error
 	}
 
 	if err := m.validateSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSnapshot(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -135,11 +142,32 @@ func (m *ConsistencyGroupNamespaceSpace) validateSize(formats strfmt.Registry) e
 	return nil
 }
 
+func (m *ConsistencyGroupNamespaceSpace) validateSnapshot(formats strfmt.Registry) error {
+	if swag.IsZero(m.Snapshot) { // not required
+		return nil
+	}
+
+	if m.Snapshot != nil {
+		if err := m.Snapshot.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("snapshot")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this consistency group namespace space based on the context it is used
 func (m *ConsistencyGroupNamespaceSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateGuarantee(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSnapshot(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -159,6 +187,20 @@ func (m *ConsistencyGroupNamespaceSpace) contextValidateGuarantee(ctx context.Co
 		if err := m.Guarantee.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("guarantee")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupNamespaceSpace) contextValidateSnapshot(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Snapshot != nil {
+		if err := m.Snapshot.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("snapshot")
 			}
 			return err
 		}

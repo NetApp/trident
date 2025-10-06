@@ -76,6 +76,9 @@ type Cluster struct {
 	// Example: ["time.nist.gov","10.98.19.20","2610:20:6F15:15::27"]
 	ClusterInlineNtpServers []*string `json:"ntp_servers,omitempty"`
 
+	// Indicates whether the cluster network overlay is enabled.
+	ClusterNetworkOverlayEnabled *bool `json:"cluster_network_overlay_enabled,omitempty"`
+
 	// configuration backup
 	ConfigurationBackup *ClusterInlineConfigurationBackup `json:"configuration_backup,omitempty"`
 
@@ -1210,6 +1213,11 @@ type ClusterInlineConfigurationBackup struct {
 	// Format: password
 	Password *strfmt.Password `json:"password,omitempty"`
 
+	// The REST API HTTP method (POST/PUT).
+	// Example: post
+	// Enum: ["post","put"]
+	RestMethod *string `json:"rest_method,omitempty"`
+
 	// An external backup location for the cluster configuration. This is mostly required for single node clusters where node and cluster configuration backups cannot be copied to other nodes in the cluster.
 	// Example: http://10.224.65.198/backups
 	URL *string `json:"url,omitempty"`
@@ -1230,6 +1238,10 @@ func (m *ClusterInlineConfigurationBackup) Validate(formats strfmt.Registry) err
 		res = append(res, err)
 	}
 
+	if err := m.validateRestMethod(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -1242,6 +1254,62 @@ func (m *ClusterInlineConfigurationBackup) validatePassword(formats strfmt.Regis
 	}
 
 	if err := validate.FormatOf("configuration_backup"+"."+"password", "body", "password", m.Password.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var clusterInlineConfigurationBackupTypeRestMethodPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["post","put"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		clusterInlineConfigurationBackupTypeRestMethodPropEnum = append(clusterInlineConfigurationBackupTypeRestMethodPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// cluster_inline_configuration_backup
+	// ClusterInlineConfigurationBackup
+	// rest_method
+	// RestMethod
+	// post
+	// END DEBUGGING
+	// ClusterInlineConfigurationBackupRestMethodPost captures enum value "post"
+	ClusterInlineConfigurationBackupRestMethodPost string = "post"
+
+	// BEGIN DEBUGGING
+	// cluster_inline_configuration_backup
+	// ClusterInlineConfigurationBackup
+	// rest_method
+	// RestMethod
+	// put
+	// END DEBUGGING
+	// ClusterInlineConfigurationBackupRestMethodPut captures enum value "put"
+	ClusterInlineConfigurationBackupRestMethodPut string = "put"
+)
+
+// prop value enum
+func (m *ClusterInlineConfigurationBackup) validateRestMethodEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, clusterInlineConfigurationBackupTypeRestMethodPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ClusterInlineConfigurationBackup) validateRestMethod(formats strfmt.Registry) error {
+	if swag.IsZero(m.RestMethod) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateRestMethodEnum("configuration_backup"+"."+"rest_method", "body", *m.RestMethod); err != nil {
 		return err
 	}
 
@@ -1915,7 +1983,7 @@ type ClusterInlineMetric struct {
 	Throughput *ClusterInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -2694,7 +2762,7 @@ type ClusterInlineNodesInlineArrayItem struct {
 	// The current or "wall clock" time of the node in ISO-8601 date, time, and time zone format.
 	// The ISO-8601 date and time are localized based on the ONTAP cluster's timezone setting.
 	//
-	// Example: 2019-04-17 15:49:26
+	// Example: 2019-04-17 11:49:26-04:00
 	// Read Only: true
 	// Format: date-time
 	Date *strfmt.DateTime `json:"date,omitempty"`
@@ -9349,7 +9417,7 @@ type ClusterInlineNodesInlineArrayItemInlineMetric struct {
 	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 
@@ -12179,7 +12247,7 @@ func (m *ClusterInlineNodesInlineArrayItemInlineServiceProcessorInlineWebService
 type ClusterInlineNodesInlineArrayItemInlineSnaplock struct {
 
 	// SnapLock compliance clock time.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Format: date-time
 	ComplianceClockTime *strfmt.DateTime `json:"compliance_clock_time,omitempty"`
 }
@@ -12258,7 +12326,7 @@ type ClusterInlineNodesInlineArrayItemInlineStatistics struct {
 	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
@@ -12777,17 +12845,17 @@ type ClusterInlineNodesInlineArrayItemInlineVersion struct {
 	// The generation portion of the version.
 	// Example: 9
 	// Read Only: true
-	Generation *int64 `json:"generation,omitempty"`
+	Generation *int64 `json:"generation"`
 
 	// The major portion of the version.
 	// Example: 4
 	// Read Only: true
-	Major *int64 `json:"major,omitempty"`
+	Major *int64 `json:"major"`
 
 	// The minor portion of the version.
 	// Example: 0
 	// Read Only: true
-	Minor *int64 `json:"minor,omitempty"`
+	Minor *int64 `json:"minor"`
 }
 
 // Validate validates this cluster inline nodes inline array item inline version
@@ -13013,7 +13081,7 @@ type ClusterInlineStatistics struct {
 	ThroughputRaw *ClusterInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -13598,17 +13666,17 @@ type ClusterInlineVersion struct {
 	// The generation portion of the version.
 	// Example: 9
 	// Read Only: true
-	Generation *int64 `json:"generation,omitempty"`
+	Generation *int64 `json:"generation"`
 
 	// The major portion of the version.
 	// Example: 4
 	// Read Only: true
-	Major *int64 `json:"major,omitempty"`
+	Major *int64 `json:"major"`
 
 	// The minor portion of the version.
 	// Example: 0
 	// Read Only: true
-	Minor *int64 `json:"minor,omitempty"`
+	Minor *int64 `json:"minor"`
 }
 
 // Validate validates this cluster inline version

@@ -132,6 +132,9 @@ const (
 	artifactPrefixDocker     = "ndvp"
 	artifactPrefixKubernetes = "trident"
 	LUNAttributeFSType       = "com.netapp.ndvp.fstype"
+
+	// Default storage pool name when aggregates are managed automatically
+	managedStoragePoolName = "managed_storage_pool"
 )
 
 // StateReason, Change in these strings require change in test automation.
@@ -598,23 +601,27 @@ func getSVMState(
 	}
 
 	// Get Aggregates list and verify if there is any change.
-	aggrList, err := client.GetSVMAggregateNames(ctx)
-	if err != nil {
-		Logc(ctx).WithField("error", err).Debug("Error getting the physical pools from backend.")
+	if !client.IsSANOptimized() && client.IsDisaggregated() {
+		Logc(ctx).Debug("Disaggregated system detected, skipping aggregate checks.")
 	} else {
-		if len(aggrList) == 0 {
-			changeMap.Add(storage.BackendStatePoolsChange)
-			return StateReasonNoAggregates, changeMap
-		}
-		sort.Strings(aggrList)
-		sort.Strings(pools)
-		if !cmp.Equal(pools, aggrList) {
-			changeMap.Add(storage.BackendStatePoolsChange)
-			// For the case where config.Aggregate is "", but due to configAggrs being a variadic parameter,
-			// it will be passed as []string{""}.
-			if strings.Join(configAggrs, "") != "" {
-				if containsAll, _ := collection.ContainsElements(aggrList, configAggrs); !containsAll {
-					return StateReasonMissingAggregate, changeMap
+		aggrList, err := client.GetSVMAggregateNames(ctx)
+		if err != nil {
+			Logc(ctx).WithField("error", err).Debug("Error getting the physical pools from backend.")
+		} else {
+			if len(aggrList) == 0 {
+				changeMap.Add(storage.BackendStatePoolsChange)
+				return StateReasonNoAggregates, changeMap
+			}
+			sort.Strings(aggrList)
+			sort.Strings(pools)
+			if !cmp.Equal(pools, aggrList) {
+				changeMap.Add(storage.BackendStatePoolsChange)
+				// For the case where config.Aggregate is "", but due to configAggrs being a variadic parameter,
+				// it will be passed as []string{""}.
+				if strings.Join(configAggrs, "") != "" {
+					if containsAll, _ := collection.ContainsElements(aggrList, configAggrs); !containsAll {
+						return StateReasonMissingAggregate, changeMap
+					}
 				}
 			}
 		}
@@ -2095,6 +2102,11 @@ func checkAggregateLimits(
 	ctx context.Context, aggregate, spaceReserve string, requestedSizeInt uint64,
 	config drivers.OntapStorageDriverConfig, client api.OntapAPI,
 ) error {
+	if aggregate == managedStoragePoolName {
+		Logc(ctx).Debug("Skipping aggregate limit checks for disaggregated storage")
+		return nil // No-op for dummy storage pool aggregates
+	}
+
 	requestedSize := float64(requestedSizeInt)
 
 	limitAggregateUsage := config.LimitAggregateUsage
@@ -2727,6 +2739,17 @@ func validateFormatOptions(formatOptions string) error {
 func InitializeStoragePoolsCommon(
 	ctx context.Context, d StorageDriver, poolAttributes map[string]sa.Offer, backendName string,
 ) (map[string]storage.Pool, map[string]storage.Pool, error) {
+	if d.GetAPI().IsDisaggregated() {
+		// For Disaggregated systems, override media type to reflect all-flash nature
+		poolAttributes[sa.Media] = sa.NewStringOffer(sa.SSD)
+		return InitializeManagedStoragePoolsCommon(ctx, d, poolAttributes, backendName)
+	}
+	return InitializeAggregatedStoragePoolsCommon(ctx, d, poolAttributes, backendName)
+}
+
+func InitializeAggregatedStoragePoolsCommon(
+	ctx context.Context, d StorageDriver, poolAttributes map[string]sa.Offer, backendName string,
+) (map[string]storage.Pool, map[string]storage.Pool, error) {
 	config := d.GetOntapConfig()
 	physicalPools := make(map[string]storage.Pool)
 	virtualPools := make(map[string]storage.Pool)
@@ -2784,58 +2807,10 @@ func InitializeStoragePoolsCommon(
 			}
 		}
 
-		if config.Region != "" {
-			pool.Attributes()[sa.Region] = sa.NewStringOffer(config.Region)
+		err = setStoragePoolAttributes(ctx, pool, config, poolAttributes, d.Name())
+		if err != nil {
+			return nil, nil, err
 		}
-		if config.Zone != "" {
-			pool.Attributes()[sa.Zone] = sa.NewStringOffer(config.Zone)
-		}
-
-		if config.SnapshotDir != "" {
-			config.SnapshotDir, err = convert.ToFormattedBool(config.SnapshotDir)
-			if err != nil {
-				Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", config.SnapshotDir)
-				return nil, nil, fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
-			}
-		}
-
-		pool.Attributes()[sa.Labels] = sa.NewLabelOffer(config.Labels)
-		pool.Attributes()[sa.NASType] = sa.NewStringOffer(config.NASType)
-		pool.Attributes()[sa.SANType] = sa.NewStringOffer(config.SANType)
-
-		pool.InternalAttributes()[Size] = config.Size
-		pool.InternalAttributes()[NameTemplate] = config.NameTemplate
-		pool.InternalAttributes()[Region] = config.Region
-		pool.InternalAttributes()[Zone] = config.Zone
-		pool.InternalAttributes()[SpaceReserve] = config.SpaceReserve
-		pool.InternalAttributes()[SnapshotPolicy] = config.SnapshotPolicy
-		pool.InternalAttributes()[SnapshotReserve] = config.SnapshotReserve
-		pool.InternalAttributes()[SplitOnClone] = config.SplitOnClone
-		pool.InternalAttributes()[Encryption] = config.Encryption
-		pool.InternalAttributes()[LUKSEncryption] = config.LUKSEncryption
-		pool.InternalAttributes()[UnixPermissions] = config.UnixPermissions
-		pool.InternalAttributes()[SnapshotDir] = config.SnapshotDir
-		pool.InternalAttributes()[ExportPolicy] = config.ExportPolicy
-		pool.InternalAttributes()[SecurityStyle] = config.SecurityStyle
-		pool.InternalAttributes()[TieringPolicy] = config.TieringPolicy
-		pool.InternalAttributes()[SkipRecoveryQueue] = config.SkipRecoveryQueue
-		pool.InternalAttributes()[QosPolicy] = config.QosPolicy
-		pool.InternalAttributes()[AdaptiveQosPolicy] = config.AdaptiveQosPolicy
-		pool.InternalAttributes()[ADAdminUser] = config.ADAdminUser
-
-		pool.SetSupportedTopologies(config.SupportedTopologies)
-
-		if d.Name() == tridentconfig.OntapSANStorageDriverName || d.Name() == tridentconfig.OntapSANEconomyStorageDriverName {
-			pool.InternalAttributes()[SpaceAllocation] = config.SpaceAllocation
-			pool.InternalAttributes()[FileSystemType] = config.FileSystemType
-			if config.FormatOptions != "" {
-				if err = validateFormatOptions(config.FormatOptions); err != nil {
-					return nil, nil, err
-				}
-			}
-			pool.InternalAttributes()[FormatOptions] = strings.TrimSpace(config.FormatOptions)
-		}
-
 		physicalPools[pool.Name()] = pool
 	}
 
@@ -2844,23 +2819,10 @@ func InitializeStoragePoolsCommon(
 	return physicalPools, virtualPools, err
 }
 
-func InitializeASAStoragePoolsCommon(
-	ctx context.Context, d StorageDriver, poolAttributes map[string]sa.Offer, backendName string,
-) (map[string]storage.Pool, map[string]storage.Pool, error) {
-	var err error
-	config := d.GetOntapConfig()
-
-	mediaOffers := make([]sa.Offer, 0)
-	if mediaOffer, ok := poolAttributes[sa.Media]; ok {
-		mediaOffers = append(mediaOffers, mediaOffer)
-	}
-
-	pool := storage.NewStoragePool(nil, backendName)
-
-	// Update pool with attributes set by default for this backend
-	// We do not set internal attributes with these values as this
-	// merely means that pools supports these capabilities like
-	// encryption, cloning, thick/thin provisioning
+func setStoragePoolAttributes(
+	ctx context.Context, pool storage.Pool, config *drivers.OntapStorageDriverConfig,
+	poolAttributes map[string]sa.Offer, driverName string,
+) error {
 	for attrName, offer := range poolAttributes {
 		pool.Attributes()[attrName] = offer
 	}
@@ -2871,12 +2833,12 @@ func InitializeASAStoragePoolsCommon(
 	if config.Zone != "" {
 		pool.Attributes()[sa.Zone] = sa.NewStringOffer(config.Zone)
 	}
-
+	var err error
 	if config.SnapshotDir != "" {
 		config.SnapshotDir, err = convert.ToFormattedBool(config.SnapshotDir)
 		if err != nil {
 			Logc(ctx).WithError(err).Errorf("Invalid boolean value for snapshotDir: %v.", config.SnapshotDir)
-			return nil, nil, fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
+			return fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
 		}
 	}
 
@@ -2899,14 +2861,55 @@ func InitializeASAStoragePoolsCommon(
 	pool.InternalAttributes()[ExportPolicy] = config.ExportPolicy
 	pool.InternalAttributes()[SecurityStyle] = config.SecurityStyle
 	pool.InternalAttributes()[TieringPolicy] = config.TieringPolicy
+	pool.InternalAttributes()[SkipRecoveryQueue] = config.SkipRecoveryQueue
 	pool.InternalAttributes()[QosPolicy] = config.QosPolicy
 	pool.InternalAttributes()[AdaptiveQosPolicy] = config.AdaptiveQosPolicy
-	pool.InternalAttributes()[SpaceAllocation] = config.SpaceAllocation
-	pool.InternalAttributes()[FileSystemType] = config.FileSystemType
-	pool.InternalAttributes()[SkipRecoveryQueue] = config.SkipRecoveryQueue
-	pool.InternalAttributes()[FormatOptions] = strings.TrimSpace(config.FormatOptions)
+	pool.InternalAttributes()[ADAdminUser] = config.ADAdminUser
 
 	pool.SetSupportedTopologies(config.SupportedTopologies)
+
+	if driverName == tridentconfig.OntapSANStorageDriverName || driverName == tridentconfig.OntapSANEconomyStorageDriverName {
+		pool.InternalAttributes()[SpaceAllocation] = config.SpaceAllocation
+		pool.InternalAttributes()[FileSystemType] = config.FileSystemType
+		if config.FormatOptions != "" {
+			if err = validateFormatOptions(config.FormatOptions); err != nil {
+				return err
+			}
+		}
+		pool.InternalAttributes()[FormatOptions] = strings.TrimSpace(config.FormatOptions)
+	}
+	return nil
+}
+
+// InitializeManagedStoragePoolsCommon initializes storage pools for systems where aggregate
+// selection and placement is managed automatically by the storage system rather than explicitly
+// by Trident. This includes disaggregated ONTAP systems and other unified storage
+// architectures where Trident doesn't need to be aware of individual aggregates.
+func InitializeManagedStoragePoolsCommon(
+	ctx context.Context, d StorageDriver, poolAttributes map[string]sa.Offer, backendName string,
+) (map[string]storage.Pool, map[string]storage.Pool, error) {
+	var err error
+	config := d.GetOntapConfig()
+
+	mediaOffers := make([]sa.Offer, 0)
+	if mediaOffer, ok := poolAttributes[sa.Media]; ok {
+		mediaOffers = append(mediaOffers, mediaOffer)
+	}
+
+	pool := storage.NewStoragePool(nil, managedStoragePoolName)
+
+	// Update pool with attributes set by default for this backend
+	// We do not set internal attributes with these values as this
+	// merely means that pools supports these capabilities like
+	// encryption, cloning, thick/thin provisioning
+	for attrName, offer := range poolAttributes {
+		pool.Attributes()[attrName] = offer
+	}
+
+	err = setStoragePoolAttributes(ctx, pool, config, poolAttributes, d.Name())
+	if err != nil {
+		return nil, nil, err
+	}
 
 	physicalPools := map[string]storage.Pool{pool.Name(): pool}
 

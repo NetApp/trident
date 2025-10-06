@@ -28,7 +28,7 @@ type S3ServiceUserPostResponse struct {
 	AccessKey *string `json:"access_key,omitempty"`
 
 	// Specifies the date and time after which the keys expire and are no longer valid.
-	// Example: 2024-01-01 00:00:00
+	// Example: 2024-01-01 00:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	KeyExpiryTime *strfmt.DateTime `json:"key_expiry_time,omitempty"`

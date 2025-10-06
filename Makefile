@@ -470,3 +470,12 @@ lint-precommit: .git/hooks install-lint
 
 lint-prepush: .git/hooks install-lint .git/hooks/pre-push
 	@cp hooks/golangci-lint.sh .git/hooks/pre-push
+
+EXCLUDE_PACKAGES := client/clientset client/informers client/listers storage/external_test astrads/api/v1alpha1 ontap/api/azgo ontap/api/rest fake github.com/netapp/trident/mocks/ github.com/netapp/trident/operator/controllers/provisioner github.com/netapp/trident/operator/controllers/provisioner/apis/netapp/v1 github.com/netapp/trident/storage_drivers/astrads/api/v1beta1
+
+test-coverage:
+	@EXCLUDE_PATTERN=$$(echo $(EXCLUDE_PACKAGES) | sed 's/ /|/g'); \
+	packages=$$(go list ./... | grep -Ev "$$EXCLUDE_PATTERN"); \
+	go test -v -short -p 1 -coverprofile=coverage.out $$packages; \
+	OVERALL_COVERAGE=$$(go tool cover -func=coverage.out | grep total | awk '{print $$3}'); \
+	echo "Overall coverage: $$OVERALL_COVERAGE"

@@ -527,6 +527,7 @@ func TestInitialize_WithNoDataLIFs(t *testing.T) {
 	mockAPI.EXPECT().GetSVMUUID().AnyTimes().Return(uuid.New().String())
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{"aggr1"}, nil)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).AnyTimes().Return(map[string]string{}, nil)
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).AnyTimes().Return([]string{}, nil)
 
@@ -583,6 +584,7 @@ func addCommonExpectToMockApiForInitialize(mockAPI *mockapi.MockOntapAPI) {
 	mockAPI.EXPECT().GetSVMUUID().AnyTimes().Return(uuid.New().String())
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{"aggr1"}, nil)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(ctx).AnyTimes().Return(map[string]string{}, nil)
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, gomock.Any()).AnyTimes().Return([]string{"10.0.0.1"}, nil)
 	mockAPI.EXPECT().ExportPolicyCreate(ctx, gomock.Any()).AnyTimes().Return(nil)
@@ -781,6 +783,7 @@ func TestCreateClone_Success_ROClone(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeInfo(ctx, "trident_qtree_pool_trident_GLVRJSQGLP").Return(&flexVol, nil)
 
 	result := driver.CreateClone(ctx, srcVolConfig, volConfig, nil)
@@ -810,6 +813,7 @@ func TestCreateClone_FailureROCloneFalse(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	result := driver.CreateClone(ctx, srcVolConfig, volConfig, nil)
 
@@ -838,6 +842,7 @@ func TestCreateClone_FailureWrongVolID(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	result := driver.CreateClone(ctx, srcVolConfig, volConfig, nil)
 
@@ -872,6 +877,7 @@ func TestCreateClone_FailureNoVolInfo(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeInfo(ctx, "trident_qtree_pool_trident_GLVRJSQGLP").Return(&flexVol, mockError)
 
 	result := driver.CreateClone(ctx, srcVolConfig, volConfig, nil)
@@ -907,6 +913,7 @@ func TestCreateClone_FailureSnapDirFalse(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeInfo(ctx, "trident_qtree_pool_trident_GLVRJSQGLP").Return(&flexVol, nil)
 
 	result := driver.CreateClone(ctx, srcVolConfig, volConfig, nil)
@@ -2526,6 +2533,7 @@ func TestInitialize_QtreeStoragePoolsNameTemplatesAndLabels(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().GetSVMAggregateNames(gomock.Any()).AnyTimes().Return([]string{"aggr1"}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{"aggr1": "vmdisk"}, nil,
@@ -2824,6 +2832,7 @@ func TestCreatePrepare_NilPool(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().GetSVMAggregateNames(gomock.Any()).AnyTimes().Return([]string{"aggr1"}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{"aggr1": "vmdisk"}, nil,
@@ -2859,6 +2868,7 @@ func TestCreatePrepare_NilPool_templateNotContainVolumeName(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().GetSVMAggregateNames(gomock.Any()).AnyTimes().Return([]string{"aggr1"}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{"aggr1": "vmdisk"}, nil,
@@ -5110,6 +5120,7 @@ func TestCreateSnapshot_Success(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeExists(ctx, flexvol).Return(true, nil)
 	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, "snap1", flexvol).Return(nil)
 	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
@@ -5153,6 +5164,7 @@ func TestCreateSnapshot_FailureErrorCheckingVolume(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeExists(ctx, flexvol).Return(true, mockError)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	snap, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
 
@@ -5187,6 +5199,7 @@ func TestCreateSnapshot_FailureNoVolumeExists(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeExists(ctx, flexvol).Return(false, nil)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	snap, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
 
@@ -5220,6 +5233,7 @@ func TestCreateSnapshot_FailureSnapshotCreateFailed(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeExists(ctx, flexvol).Return(true, nil)
 	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, "snap1", flexvol).Return(mockError)
 
@@ -5255,6 +5269,7 @@ func TestCreateSnapshot_FailureSnapshotInfoFailed(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeExists(ctx, flexvol).Return(true, nil)
 	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, "snap1", flexvol).Return(nil)
 	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
@@ -5297,6 +5312,7 @@ func TestCreateSnapshot_FailureNoSnapshots(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeExists(ctx, flexvol).Return(true, nil)
 	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, "snap1", flexvol).Return(nil)
 	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
@@ -5335,6 +5351,7 @@ func TestCreateSnapshot_FailureWrongVolumeID(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	snap, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
 
@@ -5358,6 +5375,7 @@ func TestGetSnapshot_Success(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
 		api.Snapshot{
 			CreateTime: "time",
@@ -5387,6 +5405,7 @@ func TestGetSnapshot_FailureNoSnapshotReturned(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
 		api.Snapshot{},
 		errors.NotFoundError("snapshot %v not found for volume %v", snapConfig.InternalName,
@@ -5413,6 +5432,7 @@ func TestGetSnapshot_FailureErrorFetchingSnapshots(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapConfig.InternalName, flexvol).Return(
 		api.Snapshot{},
 		mockError)
@@ -5438,6 +5458,7 @@ func TestGetSnapshot_FailureWrongVolumeID(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	snap, err := driver.GetSnapshot(ctx, snapConfig, volConfig)
 
@@ -5462,6 +5483,7 @@ func TestGetSnapshots_Success(t *testing.T) {
 	})
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeSnapshotList(ctx, flexvol).Return(snapshots, nil)
 
 	snap, err := driver.GetSnapshots(ctx, volConfig)
@@ -5487,6 +5509,7 @@ func TestGetSnapshots_SuccessDockerContext(t *testing.T) {
 	})
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	driver.Config.DriverContext = tridentconfig.ContextDocker
 	snap, err := driver.GetSnapshots(ctx, volConfig)
@@ -5506,6 +5529,7 @@ func TestGetSnapshots_FailureWrongVolumeID(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	snap, err := driver.GetSnapshots(ctx, volConfig)
 
@@ -5530,6 +5554,7 @@ func TestGetSnapshots_FailureSnapshotListErr(t *testing.T) {
 	})
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeSnapshotList(ctx, flexvol).Return(snapshots, mockError)
 
 	snap, err := driver.GetSnapshots(ctx, volConfig)
@@ -6027,6 +6052,7 @@ func TestOntapNasEcoUnpublish(t *testing.T) {
 			driver.Config.AutoExportPolicy = tr.args.autoExportPolicy
 
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 			tr.mocks(mockAPI, volConfig.InternalName, "flexVolName")
 
 			err := driver.Unpublish(ctx, volConfig, publishInfo)
@@ -6145,6 +6171,7 @@ func TestOntapNasEcoLegacyUnpublish(t *testing.T) {
 			volConfig.ExportPolicy = tr.args.exportPolicy
 
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 			tr.mocks(mockAPI, volConfig.InternalName, "flexVolName", getExportPolicyName(publishInfo.BackendUUID))
 
 			err := driver.Unpublish(ctx, volConfig, publishInfo)

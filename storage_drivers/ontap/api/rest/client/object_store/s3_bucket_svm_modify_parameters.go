@@ -70,6 +70,18 @@ type S3BucketSvmModifyParams struct {
 	*/
 	Info *models.S3BucketSvm
 
+	/* RestoreToSnapshotName.
+
+	   Name of the snapshot to restore. The bucket will be restored to the point in time the snapshot was taken.
+	*/
+	RestoreToSnapshotName *string
+
+	/* RestoreToSnapshotUUID.
+
+	   UUID of the snapshot to restore. The bucket will be restored to the point in time the snapshot was taken.
+	*/
+	RestoreToSnapshotUUID *string
+
 	/* ReturnTimeout.
 
 	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
@@ -163,6 +175,28 @@ func (o *S3BucketSvmModifyParams) SetInfo(info *models.S3BucketSvm) {
 	o.Info = info
 }
 
+// WithRestoreToSnapshotName adds the restoreToSnapshotName to the s3 bucket svm modify params
+func (o *S3BucketSvmModifyParams) WithRestoreToSnapshotName(restoreToSnapshotName *string) *S3BucketSvmModifyParams {
+	o.SetRestoreToSnapshotName(restoreToSnapshotName)
+	return o
+}
+
+// SetRestoreToSnapshotName adds the restoreToSnapshotName to the s3 bucket svm modify params
+func (o *S3BucketSvmModifyParams) SetRestoreToSnapshotName(restoreToSnapshotName *string) {
+	o.RestoreToSnapshotName = restoreToSnapshotName
+}
+
+// WithRestoreToSnapshotUUID adds the restoreToSnapshotUUID to the s3 bucket svm modify params
+func (o *S3BucketSvmModifyParams) WithRestoreToSnapshotUUID(restoreToSnapshotUUID *string) *S3BucketSvmModifyParams {
+	o.SetRestoreToSnapshotUUID(restoreToSnapshotUUID)
+	return o
+}
+
+// SetRestoreToSnapshotUUID adds the restoreToSnapshotUuid to the s3 bucket svm modify params
+func (o *S3BucketSvmModifyParams) SetRestoreToSnapshotUUID(restoreToSnapshotUUID *string) {
+	o.RestoreToSnapshotUUID = restoreToSnapshotUUID
+}
+
 // WithReturnTimeout adds the returnTimeout to the s3 bucket svm modify params
 func (o *S3BucketSvmModifyParams) WithReturnTimeout(returnTimeout *int64) *S3BucketSvmModifyParams {
 	o.SetReturnTimeout(returnTimeout)
@@ -206,6 +240,40 @@ func (o *S3BucketSvmModifyParams) WriteToRequest(r runtime.ClientRequest, reg st
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err
+		}
+	}
+
+	if o.RestoreToSnapshotName != nil {
+
+		// query param restore_to.snapshot.name
+		var qrRestoreToSnapshotName string
+
+		if o.RestoreToSnapshotName != nil {
+			qrRestoreToSnapshotName = *o.RestoreToSnapshotName
+		}
+		qRestoreToSnapshotName := qrRestoreToSnapshotName
+		if qRestoreToSnapshotName != "" {
+
+			if err := r.SetQueryParam("restore_to.snapshot.name", qRestoreToSnapshotName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RestoreToSnapshotUUID != nil {
+
+		// query param restore_to.snapshot.uuid
+		var qrRestoreToSnapshotUUID string
+
+		if o.RestoreToSnapshotUUID != nil {
+			qrRestoreToSnapshotUUID = *o.RestoreToSnapshotUUID
+		}
+		qRestoreToSnapshotUUID := qrRestoreToSnapshotUUID
+		if qRestoreToSnapshotUUID != "" {
+
+			if err := r.SetQueryParam("restore_to.snapshot.uuid", qRestoreToSnapshotUUID); err != nil {
+				return err
+			}
 		}
 	}
 

@@ -305,7 +305,7 @@ type NodeModifyCollectionBody struct {
 	// The current or "wall clock" time of the node in ISO-8601 date, time, and time zone format.
 	// The ISO-8601 date and time are localized based on the ONTAP cluster's timezone setting.
 	//
-	// Example: 2019-04-17 15:49:26
+	// Example: 2019-04-17 11:49:26-04:00
 	// Read Only: true
 	// Format: date-time
 	Date *strfmt.DateTime `json:"date,omitempty"`

@@ -227,7 +227,7 @@ type S3UserModifyCollectionBody struct {
 	Comment *string `json:"comment,omitempty"`
 
 	// Specifies the date and time after which keys expire and are no longer valid.
-	// Example: 2024-01-01 00:00:00
+	// Example: 2024-01-01 00:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	KeyExpiryTime *strfmt.DateTime `json:"key_expiry_time,omitempty"`

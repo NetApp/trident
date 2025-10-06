@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -32,6 +33,13 @@ type VscanOnAccess struct {
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
 
+	// Specifies the on-access policy owner.
+	Owner *string `json:"owner,omitempty"`
+
+	// Specifies the file access protocol for the on-access policy. The following lists the possible protocols. CIFS  - SMB protocol
+	// Enum: ["cifs"]
+	Protocol *string `json:"protocol,omitempty"`
+
 	// scope
 	Scope *VscanOnAccessInlineScope `json:"scope,omitempty"`
 
@@ -44,6 +52,10 @@ func (m *VscanOnAccess) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateProtocol(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -71,6 +83,52 @@ func (m *VscanOnAccess) validateName(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MaxLength("name", "body", *m.Name, 256); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var vscanOnAccessTypeProtocolPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["cifs"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		vscanOnAccessTypeProtocolPropEnum = append(vscanOnAccessTypeProtocolPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// vscan_on_access
+	// VscanOnAccess
+	// protocol
+	// Protocol
+	// cifs
+	// END DEBUGGING
+	// VscanOnAccessProtocolCifs captures enum value "cifs"
+	VscanOnAccessProtocolCifs string = "cifs"
+)
+
+// prop value enum
+func (m *VscanOnAccess) validateProtocolEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, vscanOnAccessTypeProtocolPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *VscanOnAccess) validateProtocol(formats strfmt.Registry) error {
+	if swag.IsZero(m.Protocol) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateProtocolEnum("protocol", "body", *m.Protocol); err != nil {
 		return err
 	}
 

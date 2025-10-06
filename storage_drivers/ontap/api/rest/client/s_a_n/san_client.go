@@ -2554,6 +2554,7 @@ There is an added computational cost to retrieving values for these properties. 
 * `space.physical_used`
 * `space.physical_used_by_snapshots`
 * `space.efficiency_ratio`
+* `space.snapshot.*`
 * `statistics.*`
 * `vvol.bindings.*`
 * `metric.*`
@@ -2818,6 +2819,7 @@ There is an added computational cost to retrieving values for these properties. 
 * `space.physical_used`
 * `space.physical_used_by_snapshots`
 * `space.efficiency_ratio`
+* `space.snapshot.*`
 * `statistics.*`
 * `vvol.bindings.*`
 * `metric.*`
@@ -2942,6 +2944,7 @@ There is an added computational cost to retrieving values for these properties. 
 * `space.physical_used`
 * `space.physical_used_by_snapshots`
 * `space.efficiency_ratio`
+* `space.snapshot.*`
 * `statistics.*`
 * `vvol.bindings.*`
 * `metric.*`
@@ -4200,6 +4203,7 @@ There is an added computational cost to retrieving values for these properties. 
 * `movement.state`
 * `space.physical_used_by_snapshots`
 * `space.physical_used`
+* `space.snapshot.*`
 * `statistics.*`
 ### Learn more
 * [`DOC /storage/storage-units`](#docs-SAN-storage_storage-units)
@@ -4307,6 +4311,7 @@ There is an added computational cost to retrieving values for these properties. 
 * `movement.state`
 * `space.physical_used_by_snapshots`
 * `space.physical_used`
+* `space.snapshot.*`
 * `statistics.*`
 ### Learn more
 * [`DOC /storage/storage-units`](#docs-SAN-storage_storage-units)

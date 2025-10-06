@@ -1390,7 +1390,7 @@ type ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0ConsistencyGroupsIte
 	Comment *string `json:"comment,omitempty"`
 
 	// The time the LUN was created.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
@@ -3329,6 +3329,9 @@ type ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0ConsistencyGroupsIte
 	// Minimum: 4096
 	Size *int64 `json:"size,omitempty"`
 
+	// snapshot
+	Snapshot *models.VdiskSpaceSnapshot `json:"snapshot,omitempty"`
+
 	// The amount of space consumed by the main data stream of the LUN.<br/>
 	// This value is the total space consumed in the volume by the LUN, including filesystem overhead, but excluding prefix and suffix streams. Due to internal filesystem overhead and the many ways SAN filesystems and applications utilize blocks within a LUN, this value does not necessarily reflect actual consumption/availability from the perspective of the filesystem or application. Without specific knowledge of how the LUN blocks are utilized outside of ONTAP, this property should not be used as an indicator for an out-of-space condition.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
@@ -3346,6 +3349,10 @@ func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0ConsistencyGroup
 	}
 
 	if err := o.validateSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateSnapshot(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3388,11 +3395,32 @@ func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0ConsistencyGroup
 	return nil
 }
 
+func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0LunsItems0Space) validateSnapshot(formats strfmt.Registry) error {
+	if swag.IsZero(o.Snapshot) { // not required
+		return nil
+	}
+
+	if o.Snapshot != nil {
+		if err := o.Snapshot.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "snapshot")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this consistency group delete collection params body records items0 consistency groups items0 luns items0 space based on the context it is used
 func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0LunsItems0Space) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := o.contextValidateGuarantee(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateSnapshot(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3412,6 +3440,20 @@ func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0ConsistencyGroup
 		if err := o.Guarantee.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("space" + "." + "guarantee")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0LunsItems0Space) contextValidateSnapshot(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Snapshot != nil {
+		if err := o.Snapshot.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "snapshot")
 			}
 			return err
 		}
@@ -3542,7 +3584,7 @@ type ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0ConsistencyGroupsIte
 	Comment *string `json:"comment,omitempty"`
 
 	// The time the NVMe namespace was created.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
@@ -4059,6 +4101,9 @@ type ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0ConsistencyGroupsIte
 	// Minimum: 4096
 	Size *int64 `json:"size,omitempty"`
 
+	// snapshot
+	Snapshot *models.VdiskSpaceSnapshot `json:"snapshot,omitempty"`
+
 	// The amount of space consumed by the main data stream of the NVMe namespace.<br/>
 	// This value is the total space consumed in the volume by the NVMe namespace, including filesystem overhead, but excluding prefix and suffix streams. Due to internal filesystem overhead and the many ways NVMe filesystems and applications utilize blocks within a namespace, this value does not necessarily reflect actual consumption/availability from the perspective of the filesystem or application. Without specific knowledge of how the namespace blocks are utilized outside of ONTAP, this property should not be used as an indicator for an out-of-space condition.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
@@ -4080,6 +4125,10 @@ func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0ConsistencyGroup
 	}
 
 	if err := o.validateSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateSnapshot(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -4155,11 +4204,32 @@ func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0ConsistencyGroup
 	return nil
 }
 
+func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0NamespacesItems0Space) validateSnapshot(formats strfmt.Registry) error {
+	if swag.IsZero(o.Snapshot) { // not required
+		return nil
+	}
+
+	if o.Snapshot != nil {
+		if err := o.Snapshot.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "snapshot")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this consistency group delete collection params body records items0 consistency groups items0 namespaces items0 space based on the context it is used
 func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0NamespacesItems0Space) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := o.contextValidateGuarantee(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateSnapshot(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -4179,6 +4249,20 @@ func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0ConsistencyGroup
 		if err := o.Guarantee.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("space" + "." + "guarantee")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0NamespacesItems0Space) contextValidateSnapshot(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Snapshot != nil {
+		if err := o.Snapshot.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "snapshot")
 			}
 			return err
 		}
@@ -4773,6 +4857,12 @@ type ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0ConsistencyGroupsIte
 	// New name for consistency group. Required to resolve naming collisions.
 	//
 	Name *string `json:"name,omitempty"`
+
+	// Enable snapshot autodelete on a storage unit.
+	SnapshotAutodeleteEnabled interface{} `json:"snapshot_autodelete_enabled,omitempty"`
+
+	// The space that has been set aside as a reserve for storage unit snapshot usage, in percent.
+	SnapshotReservePercent interface{} `json:"snapshot_reserve_percent,omitempty"`
 
 	// storage service
 	StorageService *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0ConsistencyGroupsItems0ProvisioningOptionsStorageService `json:"storage_service,omitempty"`
@@ -7860,7 +7950,7 @@ type ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0LunsItems0 struct {
 	Comment *string `json:"comment,omitempty"`
 
 	// The time the LUN was created.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
@@ -9799,6 +9889,9 @@ type ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0LunsItems0Space stru
 	// Minimum: 4096
 	Size *int64 `json:"size,omitempty"`
 
+	// snapshot
+	Snapshot *models.VdiskSpaceSnapshot `json:"snapshot,omitempty"`
+
 	// The amount of space consumed by the main data stream of the LUN.<br/>
 	// This value is the total space consumed in the volume by the LUN, including filesystem overhead, but excluding prefix and suffix streams. Due to internal filesystem overhead and the many ways SAN filesystems and applications utilize blocks within a LUN, this value does not necessarily reflect actual consumption/availability from the perspective of the filesystem or application. Without specific knowledge of how the LUN blocks are utilized outside of ONTAP, this property should not be used as an indicator for an out-of-space condition.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
@@ -9816,6 +9909,10 @@ func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0LunsItems0Space)
 	}
 
 	if err := o.validateSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateSnapshot(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -9858,11 +9955,32 @@ func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0LunsItems0Space)
 	return nil
 }
 
+func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0LunsItems0Space) validateSnapshot(formats strfmt.Registry) error {
+	if swag.IsZero(o.Snapshot) { // not required
+		return nil
+	}
+
+	if o.Snapshot != nil {
+		if err := o.Snapshot.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "snapshot")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this consistency group delete collection params body records items0 luns items0 space based on the context it is used
 func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0LunsItems0Space) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := o.contextValidateGuarantee(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateSnapshot(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -9882,6 +10000,20 @@ func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0LunsItems0Space)
 		if err := o.Guarantee.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("space" + "." + "guarantee")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0LunsItems0Space) contextValidateSnapshot(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Snapshot != nil {
+		if err := o.Snapshot.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "snapshot")
 			}
 			return err
 		}
@@ -10012,7 +10144,7 @@ type ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0NamespacesItems0 str
 	Comment *string `json:"comment,omitempty"`
 
 	// The time the NVMe namespace was created.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
@@ -10529,6 +10661,9 @@ type ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0NamespacesItems0Spac
 	// Minimum: 4096
 	Size *int64 `json:"size,omitempty"`
 
+	// snapshot
+	Snapshot *models.VdiskSpaceSnapshot `json:"snapshot,omitempty"`
+
 	// The amount of space consumed by the main data stream of the NVMe namespace.<br/>
 	// This value is the total space consumed in the volume by the NVMe namespace, including filesystem overhead, but excluding prefix and suffix streams. Due to internal filesystem overhead and the many ways NVMe filesystems and applications utilize blocks within a namespace, this value does not necessarily reflect actual consumption/availability from the perspective of the filesystem or application. Without specific knowledge of how the namespace blocks are utilized outside of ONTAP, this property should not be used as an indicator for an out-of-space condition.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
@@ -10550,6 +10685,10 @@ func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0NamespacesItems0
 	}
 
 	if err := o.validateSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateSnapshot(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -10625,11 +10764,32 @@ func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0NamespacesItems0
 	return nil
 }
 
+func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0NamespacesItems0Space) validateSnapshot(formats strfmt.Registry) error {
+	if swag.IsZero(o.Snapshot) { // not required
+		return nil
+	}
+
+	if o.Snapshot != nil {
+		if err := o.Snapshot.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "snapshot")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this consistency group delete collection params body records items0 namespaces items0 space based on the context it is used
 func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0NamespacesItems0Space) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := o.contextValidateGuarantee(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateSnapshot(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -10649,6 +10809,20 @@ func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0NamespacesItems0
 		if err := o.Guarantee.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("space" + "." + "guarantee")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *ConsistencyGroupDeleteCollectionParamsBodyRecordsItems0NamespacesItems0Space) contextValidateSnapshot(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Snapshot != nil {
+		if err := o.Snapshot.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "snapshot")
 			}
 			return err
 		}
@@ -15875,7 +16049,7 @@ type ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineMetric struct {
 	Throughput *models.ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance and capacity data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -16776,6 +16950,12 @@ type ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineProvisioningOptio
 	//
 	Name *string `json:"name,omitempty"`
 
+	// Enable snapshot autodelete on a storage unit.
+	SnapshotAutodeleteEnabled interface{} `json:"snapshot_autodelete_enabled,omitempty"`
+
+	// The space that has been set aside as a reserve for storage unit snapshot usage, in percent.
+	SnapshotReservePercent interface{} `json:"snapshot_reserve_percent,omitempty"`
+
 	// storage service
 	StorageService *models.ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineProvisioningOptionsInlineStorageService `json:"storage_service,omitempty"`
 
@@ -17405,13 +17585,13 @@ swagger:model consistency_group_response_inline_records_inline_array_item_inline
 type ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineSnaplock struct {
 
 	// The compliance clock time used to manage the SnapLock objects in the consistency group.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	ComplianceClockTime *strfmt.DateTime `json:"compliance_clock_time,omitempty"`
 
 	// Expiry time of the consistency group. For consistency group with an infinite SnapLock expiry time, "9999-12-31T23:59:59" is used to denote the time.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
@@ -17774,7 +17954,7 @@ type ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineStatistics struct
 	ThroughputRaw *models.ConsistencyGroupResponseInlineRecordsInlineArrayItemInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`

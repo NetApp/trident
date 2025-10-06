@@ -266,6 +266,7 @@ func NewVolumeModifyDefault(code int) *VolumeModifyDefault {
 | 918775 | The \"constituent_count\" parameter must be greater than the current number of constituents in the FlexGroup volume. |
 | 918776 | The \"constituent_count\" and \"size\" parameters cannot both be specified. |
 | 918777 | The \"aggregates\" parameter cannot contain both storage pods and aggregates. |
+| 918786 | The specified value for the \"movement.state\" parameter is invalid. Valid values are \"replicating\", \"cutover\", \"aborted\", \"paused\" and \"cutover_wait\". |
 | 1638480 | Failed to promote snapshot \"restore_to.snapshot.name\" because one or more newer snapshots are currently used as a reference snapshot for data protection operations. |
 | 1638590 | Promoting a \"-pre-conversion\" snapshot is not supported. |
 | 2424998 | Unable to determine whether MetroCluster is configured. |
@@ -344,6 +345,7 @@ func NewVolumeModifyDefault(code int) *VolumeModifyDefault {
 | 144182226 | Failed to load the volume capacity rebalancing configuration for the volume. |
 | 144182233 | The specified rebalancing start time must be set to the current time or a later time. |
 | 144182235 | The \"-min-file-size\" value specified must be larger than or equal to 20MB. |
+| 144182238 | Volume capacity rebalancing is running on the volume. |
 | 196608022 | Failed to start rekey on volume \"name\" in SVM \"svm.name\" because of the specified reason. |
 | 196608023 | Failed to pause rekey on volume \"name\" because of the specified reason. |
 | 196608024 | Failed to resume rekey on volume \"name\" because of the specified reason. |

@@ -271,6 +271,7 @@ func NewVolumeModifyCollectionDefault(code int) *VolumeModifyCollectionDefault {
 | 918775 | The \"constituent_count\" parameter must be greater than the current number of constituents in the FlexGroup volume. |
 | 918776 | The \"constituent_count\" and \"size\" parameters cannot both be specified. |
 | 918777 | The \"aggregates\" parameter cannot contain both storage pods and aggregates. |
+| 918786 | The specified value for the \"movement.state\" parameter is invalid. Valid values are \"replicating\", \"cutover\", \"aborted\", \"paused\" and \"cutover_wait\". |
 | 1638480 | Failed to promote snapshot \"restore_to.snapshot.name\" because one or more newer snapshots are currently used as a reference snapshot for data protection operations. |
 | 1638590 | Promoting a \"-pre-conversion\" snapshot is not supported. |
 | 2424998 | Unable to determine whether MetroCluster is configured. |
@@ -349,6 +350,7 @@ func NewVolumeModifyCollectionDefault(code int) *VolumeModifyCollectionDefault {
 | 144182226 | Failed to load the volume capacity rebalancing configuration for the volume. |
 | 144182233 | The specified rebalancing start time must be set to the current time or a later time. |
 | 144182235 | The \"-min-file-size\" value specified must be larger than or equal to 20MB. |
+| 144182238 | Volume capacity rebalancing is running on the volume. |
 | 196608022 | Failed to start rekey on volume \"name\" in SVM \"svm.name\" because of the specified reason. |
 | 196608023 | Failed to pause rekey on volume \"name\" because of the specified reason. |
 | 196608024 | Failed to resume rekey on volume \"name\" because of the specified reason. |
@@ -502,7 +504,7 @@ type VolumeModifyCollectionBody struct {
 	ConvertUnicode *bool `json:"convert_unicode,omitempty"`
 
 	// Creation time of the volume. This field is generated when the volume is created.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
@@ -543,12 +545,21 @@ type VolumeModifyCollectionBody struct {
 	// Specifies whether the volume has directories with public index files.
 	HasDirIndexPublic *bool `json:"has_dir_index_public,omitempty"`
 
+	// Specifies whether the volume has directories bigger than 4GB.
+	HasLargeDir *bool `json:"has_large_dir,omitempty"`
+
 	// When set to true, this field enables support for directory index transfer.
 	IsDirIndexTransferEnabled *bool `json:"is_dir_index_transfer_enabled,omitempty"`
+
+	// When set to true, this field enables the large directory feature on a volume.
+	IsLargeDirEnabled *bool `json:"is_large_dir_enabled,omitempty"`
 
 	// Specifies whether the volume is provisioned for an object store server.
 	// Read Only: true
 	IsObjectStore *bool `json:"is_object_store,omitempty"`
+
+	// Specifies that the volume should allow Amazon S3 multipart uploads with arbitrary part lengths. This is only supported for FlexGroup volumes with `advanced` granular_data. The default value is `false`. When set to `true`, it cannot be reverted to `false`. Clusters with any volumes where this is `true` cannot be reverted to a release that does not support this feature.
+	IsS3ArbitraryPartSizeEnabled *bool `json:"is_s3_arbitrary_part_size_enabled,omitempty"`
 
 	// Specifies whether the volume is a root volume of the SVM it belongs to.
 	// Read Only: true
@@ -3663,6 +3674,82 @@ func (o *VolumeModifyCollectionBody) UnmarshalBinary(b []byte) error {
 }
 
 /*
+VolumeModifyCollectionParamsBodyActivityTrackingNoticesItems0 volume modify collection params body activity tracking notices items0
+swagger:model VolumeModifyCollectionParamsBodyActivityTrackingNoticesItems0
+*/
+type VolumeModifyCollectionParamsBodyActivityTrackingNoticesItems0 struct {
+
+	// An error code related to activity tracking.
+	// Example: 124518424
+	// Read Only: true
+	Code *string `json:"code,omitempty"`
+
+	// A notice message related to activity tracking.
+	// Example: The top metrics report contains partial data for read operations because NFSv4 reads using Multi-Processor I/O (MPIO) are not tracked.
+	// Read Only: true
+	Message *string `json:"message,omitempty"`
+}
+
+// Validate validates this volume modify collection params body activity tracking notices items0
+func (o *VolumeModifyCollectionParamsBodyActivityTrackingNoticesItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this volume modify collection params body activity tracking notices items0 based on the context it is used
+func (o *VolumeModifyCollectionParamsBodyActivityTrackingNoticesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *VolumeModifyCollectionParamsBodyActivityTrackingNoticesItems0) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "code", "body", o.Code); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *VolumeModifyCollectionParamsBodyActivityTrackingNoticesItems0) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "message", "body", o.Message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *VolumeModifyCollectionParamsBodyActivityTrackingNoticesItems0) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *VolumeModifyCollectionParamsBodyActivityTrackingNoticesItems0) UnmarshalBinary(b []byte) error {
+	var res VolumeModifyCollectionParamsBodyActivityTrackingNoticesItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
 VolumeModifyCollectionParamsBodyAntiRansomwareSuspectFilesItems0 volume modify collection params body anti ransomware suspect files items0
 swagger:model VolumeModifyCollectionParamsBodyAntiRansomwareSuspectFilesItems0
 */
@@ -3846,6 +3933,9 @@ swagger:model volume_inline_activity_tracking
 */
 type VolumeInlineActivityTracking struct {
 
+	// List of activity-tracking notices.
+	Notices []*VolumeModifyCollectionParamsBodyActivityTrackingNoticesItems0 `json:"notices,omitempty"`
+
 	// Activity tracking state of the volume. If this value is "on", ONTAP collects top metrics information for the volume in real time. There is a slight impact to I/O performance in order to collect this information. If this value is "off", no activity tracking information is collected or available to view.
 	// Enum: ["off","on"]
 	State *string `json:"state,omitempty"`
@@ -3862,6 +3952,10 @@ type VolumeInlineActivityTracking struct {
 func (o *VolumeInlineActivityTracking) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := o.validateNotices(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.validateState(formats); err != nil {
 		res = append(res, err)
 	}
@@ -3873,6 +3967,30 @@ func (o *VolumeInlineActivityTracking) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (o *VolumeInlineActivityTracking) validateNotices(formats strfmt.Registry) error {
+	if swag.IsZero(o.Notices) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(o.Notices); i++ {
+		if swag.IsZero(o.Notices[i]) { // not required
+			continue
+		}
+
+		if o.Notices[i] != nil {
+			if err := o.Notices[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("info" + "." + "activity_tracking" + "." + "notices" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -3953,6 +4071,10 @@ func (o *VolumeInlineActivityTracking) validateUnsupportedReason(formats strfmt.
 func (o *VolumeInlineActivityTracking) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := o.contextValidateNotices(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.contextValidateSupported(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -3964,6 +4086,24 @@ func (o *VolumeInlineActivityTracking) ContextValidate(ctx context.Context, form
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (o *VolumeInlineActivityTracking) contextValidateNotices(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(o.Notices); i++ {
+
+		if o.Notices[i] != nil {
+			if err := o.Notices[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("info" + "." + "activity_tracking" + "." + "notices" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -4301,7 +4441,7 @@ type VolumeInlineAnalytics struct {
 	Initialization *models.VolumeInlineAnalyticsInlineInitialization `json:"initialization,omitempty"`
 
 	// Time of data collection.
-	// Example: 2024-11-06 18:57:15
+	// Example: 2024-11-06 13:57:15-05:00
 	// Read Only: true
 	// Format: date-time
 	ReportTime *strfmt.DateTime `json:"report_time,omitempty"`
@@ -5616,6 +5756,9 @@ type VolumeInlineAntiRansomware struct {
 	// Enum: ["evaluation_period","active_unsuitable_workload","active_suitable_workload"]
 	BlockDeviceDetectionState *string `json:"block_device_detection_state,omitempty"`
 
+	// clear suspect
+	ClearSuspect *models.VolumeInlineAntiRansomwareInlineClearSuspect `json:"clear_suspect,omitempty"`
+
 	// Time when Anti-ransomware monitoring `state` is set to dry-run value for starting evaluation mode.
 	// Read Only: true
 	// Format: date-time
@@ -5676,6 +5819,10 @@ func (o *VolumeInlineAntiRansomware) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := o.validateBlockDeviceDetectionState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateClearSuspect(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -5968,6 +6115,23 @@ func (o *VolumeInlineAntiRansomware) validateBlockDeviceDetectionState(formats s
 	return nil
 }
 
+func (o *VolumeInlineAntiRansomware) validateClearSuspect(formats strfmt.Registry) error {
+	if swag.IsZero(o.ClearSuspect) { // not required
+		return nil
+	}
+
+	if o.ClearSuspect != nil {
+		if err := o.ClearSuspect.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "anti_ransomware" + "." + "clear_suspect")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (o *VolumeInlineAntiRansomware) validateDryRunStartTime(formats strfmt.Registry) error {
 	if swag.IsZero(o.DryRunStartTime) { // not required
 		return nil
@@ -6223,6 +6387,10 @@ func (o *VolumeInlineAntiRansomware) ContextValidate(ctx context.Context, format
 		res = append(res, err)
 	}
 
+	if err := o.contextValidateClearSuspect(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := o.contextValidateDryRunStartTime(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -6324,6 +6492,20 @@ func (o *VolumeInlineAntiRansomware) contextValidateBlockDeviceDetectionState(ct
 
 	if err := validate.ReadOnly(ctx, "info"+"."+"anti_ransomware"+"."+"block_device_detection_state", "body", o.BlockDeviceDetectionState); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (o *VolumeInlineAntiRansomware) contextValidateClearSuspect(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.ClearSuspect != nil {
+		if err := o.ClearSuspect.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "anti_ransomware" + "." + "clear_suspect")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -6441,6 +6623,141 @@ func (o *VolumeInlineAntiRansomware) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (o *VolumeInlineAntiRansomware) UnmarshalBinary(b []byte) error {
 	var res VolumeInlineAntiRansomware
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+VolumeInlineAntiRansomwareInlineClearSuspect Clear suspect status.
+//
+swagger:model volume_inline_anti_ransomware_inline_clear_suspect
+*/
+type VolumeInlineAntiRansomwareInlineClearSuspect struct {
+
+	// Clear suspect phase.
+	// Enum: ["file_extension_processing","snapshot_processing","done"]
+	Phase *string `json:"phase,omitempty"`
+
+	// Clear suspect start time.
+	// Format: date-time
+	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
+}
+
+// Validate validates this volume inline anti ransomware inline clear suspect
+func (o *VolumeInlineAntiRansomwareInlineClearSuspect) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validatePhase(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateStartTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var volumeInlineAntiRansomwareInlineClearSuspectTypePhasePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["file_extension_processing","snapshot_processing","done"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		volumeInlineAntiRansomwareInlineClearSuspectTypePhasePropEnum = append(volumeInlineAntiRansomwareInlineClearSuspectTypePhasePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// volume_inline_anti_ransomware_inline_clear_suspect
+	// VolumeInlineAntiRansomwareInlineClearSuspect
+	// phase
+	// Phase
+	// file_extension_processing
+	// END DEBUGGING
+	// VolumeInlineAntiRansomwareInlineClearSuspectPhaseFileExtensionProcessing captures enum value "file_extension_processing"
+	VolumeInlineAntiRansomwareInlineClearSuspectPhaseFileExtensionProcessing string = "file_extension_processing"
+
+	// BEGIN DEBUGGING
+	// volume_inline_anti_ransomware_inline_clear_suspect
+	// VolumeInlineAntiRansomwareInlineClearSuspect
+	// phase
+	// Phase
+	// snapshot_processing
+	// END DEBUGGING
+	// VolumeInlineAntiRansomwareInlineClearSuspectPhaseSnapshotProcessing captures enum value "snapshot_processing"
+	VolumeInlineAntiRansomwareInlineClearSuspectPhaseSnapshotProcessing string = "snapshot_processing"
+
+	// BEGIN DEBUGGING
+	// volume_inline_anti_ransomware_inline_clear_suspect
+	// VolumeInlineAntiRansomwareInlineClearSuspect
+	// phase
+	// Phase
+	// done
+	// END DEBUGGING
+	// VolumeInlineAntiRansomwareInlineClearSuspectPhaseDone captures enum value "done"
+	VolumeInlineAntiRansomwareInlineClearSuspectPhaseDone string = "done"
+)
+
+// prop value enum
+func (o *VolumeInlineAntiRansomwareInlineClearSuspect) validatePhaseEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, volumeInlineAntiRansomwareInlineClearSuspectTypePhasePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (o *VolumeInlineAntiRansomwareInlineClearSuspect) validatePhase(formats strfmt.Registry) error {
+	if swag.IsZero(o.Phase) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := o.validatePhaseEnum("info"+"."+"anti_ransomware"+"."+"clear_suspect"+"."+"phase", "body", *o.Phase); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *VolumeInlineAntiRansomwareInlineClearSuspect) validateStartTime(formats strfmt.Registry) error {
+	if swag.IsZero(o.StartTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("info"+"."+"anti_ransomware"+"."+"clear_suspect"+"."+"start_time", "body", "date-time", o.StartTime.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this volume inline anti ransomware inline clear suspect based on context it is used
+func (o *VolumeInlineAntiRansomwareInlineClearSuspect) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *VolumeInlineAntiRansomwareInlineClearSuspect) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *VolumeInlineAntiRansomwareInlineClearSuspect) UnmarshalBinary(b []byte) error {
+	var res VolumeInlineAntiRansomwareInlineClearSuspect
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -6629,7 +6946,7 @@ type VolumeInlineAntiRansomwareInlineSurgeUsage struct {
 	HighEntropyDataWritePeakRateKbPerMinute *int64 `json:"high_entropy_data_write_peak_rate_kb_per_minute,omitempty"`
 
 	// Timestamp at which the first surge in the volume's workload is observed.
-	// Example: 2021-12-01 17:46:20
+	// Example: 2021-12-01 23:16:20+05:30
 	// Read Only: true
 	// Format: date-time
 	Time *strfmt.DateTime `json:"time,omitempty"`
@@ -7160,6 +7477,9 @@ type VolumeInlineClone struct {
 	// Specifies if this volume is a normal FlexVol volume or FlexClone volume. This field needs to be set when creating a FlexClone volume. Valid in POST.
 	IsFlexclone *bool `json:"is_flexclone,omitempty"`
 
+	// This optional parameter specifies the name of a LUN that will be non-disruptively migrated to the newly created FlexClone volume. If not specified, no LUNs are migrated.
+	LunName *string `json:"lun_name,omitempty"`
+
 	// parent snapshot
 	ParentSnapshot *models.SnapshotReference `json:"parent_snapshot,omitempty"`
 
@@ -7168,6 +7488,9 @@ type VolumeInlineClone struct {
 
 	// parent volume
 	ParentVolume *models.VolumeInlineCloneInlineParentVolume `json:"parent_volume,omitempty"`
+
+	// This optional parameter specifies the name of the qtree containing the LUN that will be non-disruptively migrated to the newly created FlexClone volume.
+	QtreeName *string `json:"qtree_name,omitempty"`
 
 	// Percentage of FlexClone volume blocks split from its parent volume.
 	// Read Only: true
@@ -8135,7 +8458,7 @@ func (o *VolumeInlineConstituentsInlineArrayItemInlineAggregates) UnmarshalBinar
 }
 
 /*
-VolumeInlineConstituentsInlineArrayItemInlineMovement Volume movement. All attributes are modify, that is, not writable through POST. Set PATCH state to destination_aggregate to initiate a volume move operation. Volume movement on FlexGroup volume constituents is not supported.
+VolumeInlineConstituentsInlineArrayItemInlineMovement Volume movement. All attributes are modify, that is, not writable through POST. Set PATCH state to destination_aggregate to initiate a volume move operation.
 swagger:model volume_inline_constituents_inline_array_item_inline_movement
 */
 type VolumeInlineConstituentsInlineArrayItemInlineMovement struct {
@@ -11304,7 +11627,7 @@ type VolumeInlineEncryption struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// Encryption key creation time of the volume.
-	// Example: 2022-01-01 19:00:00
+	// Example: 2022-01-01 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	KeyCreateTime *strfmt.DateTime `json:"key_create_time,omitempty"`
@@ -12620,7 +12943,7 @@ type VolumeInlineMetric struct {
 	Throughput *models.VolumeInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -13306,7 +13629,7 @@ type VolumeInlineMetricInlineCloud struct {
 	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -13861,7 +14184,7 @@ type VolumeInlineMetricInlineFlexcache struct {
 	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -14356,7 +14679,7 @@ func (o *VolumeInlineMetricInlineThroughput) UnmarshalBinary(b []byte) error {
 }
 
 /*
-VolumeInlineMovement Volume movement. All attributes are modify, that is, not writable through POST. Set PATCH state to destination_aggregate to initiate a volume move operation. Volume movement on FlexGroup volume constituents are not supported.
+VolumeInlineMovement Volume movement. All attributes are modify, that is, not writable through POST. Set PATCH state to destination_aggregate to initiate a volume move operation.
 swagger:model volume_inline_movement
 */
 type VolumeInlineMovement struct {
@@ -14376,7 +14699,7 @@ type VolumeInlineMovement struct {
 	PercentComplete *int64 `json:"percent_complete,omitempty"`
 
 	// Start time of volume move.
-	// Example: 2020-12-07 08:45:12
+	// Example: 2020-12-07 03:45:12-05:00
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
@@ -16131,14 +16454,14 @@ swagger:model volume_inline_rebalancing
 type VolumeInlineRebalancing struct {
 
 	// links
-	Links *VolumeInlineRebalancingInlineLinks `json:"_links,omitempty"`
+	Links *models.VolumeInlineRebalancingInlineLinks `json:"_links,omitempty"`
 
 	// The amount of data that has been moved in or out of a constituent. A positive value represents data moving into the constituent while a negative value is data moving out of the constituent.
 	// Read Only: true
 	DataMoved *int64 `json:"data_moved,omitempty"`
 
 	// engine
-	Engine *VolumeInlineRebalancingInlineEngine `json:"engine,omitempty"`
+	Engine *models.VolumeInlineRebalancingInlineEngine `json:"engine,omitempty"`
 
 	// Specifies whether or not to exclude files that are stuck in snapshots during rebalancing operation. When a new capacity rebalancing operation is started on a FlexGroup volume, it uses the current "exclude_snapshots" value. Once the operation is started, any changes to the "exclude_snapshots" value do not affect the currently running capacity rebalancing operation. Only future capacity rebalancing operations will use the new "exclude_snapshots" value.
 	ExcludeSnapshots *bool `json:"exclude_snapshots,omitempty"`
@@ -16741,10 +17064,10 @@ swagger:model volume_inline_rebalancing_inline_engine
 type VolumeInlineRebalancingInlineEngine struct {
 
 	// movement
-	Movement *VolumeInlineRebalancingInlineEngineInlineMovement `json:"movement,omitempty"`
+	Movement *models.VolumeInlineRebalancingInlineEngineInlineMovement `json:"movement,omitempty"`
 
 	// scanner
-	Scanner *VolumeInlineRebalancingInlineEngineInlineScanner `json:"scanner,omitempty"`
+	Scanner *models.VolumeInlineRebalancingInlineEngineInlineScanner `json:"scanner,omitempty"`
 }
 
 // Validate validates this volume inline rebalancing inline engine
@@ -16874,10 +17197,10 @@ type VolumeInlineRebalancingInlineEngineInlineMovement struct {
 	FileMovesStarted *int64 `json:"file_moves_started,omitempty"`
 
 	// last error
-	LastError *VolumeInlineRebalancingInlineEngineInlineMovementInlineLastError `json:"last_error,omitempty"`
+	LastError *models.VolumeInlineRebalancingInlineEngineInlineMovementInlineLastError `json:"last_error,omitempty"`
 
 	// Start time of the most recent file move on the constituent.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	MostRecentStartTime *strfmt.DateTime `json:"most_recent_start_time,omitempty"`
@@ -17021,7 +17344,7 @@ type VolumeInlineRebalancingInlineEngineInlineMovementInlineLastError struct {
 	FileID *int64 `json:"file_id,omitempty"`
 
 	// Time of the last file move error on the constituent.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	Time *strfmt.DateTime `json:"time,omitempty"`
@@ -17144,14 +17467,14 @@ type VolumeInlineRebalancingInlineEngineInlineScanner struct {
 	BlocksScanned *int64 `json:"blocks_scanned,omitempty"`
 
 	// blocks skipped
-	BlocksSkipped *VolumeInlineRebalancingInlineEngineInlineScannerInlineBlocksSkipped `json:"blocks_skipped,omitempty"`
+	BlocksSkipped *models.VolumeInlineRebalancingInlineEngineInlineScannerInlineBlocksSkipped `json:"blocks_skipped,omitempty"`
 
 	// Number of files scanned on this constituent.
 	// Read Only: true
 	FilesScanned *int64 `json:"files_scanned,omitempty"`
 
 	// files skipped
-	FilesSkipped *VolumeInlineRebalancingInlineEngineInlineScannerInlineFilesSkipped `json:"files_skipped,omitempty"`
+	FilesSkipped *models.VolumeInlineRebalancingInlineEngineInlineScannerInlineFilesSkipped `json:"files_skipped,omitempty"`
 }
 
 // Validate validates this volume inline rebalancing inline engine inline scanner
@@ -17833,7 +18156,7 @@ type VolumeInlineSnaplock struct {
 	AutocommitPeriod *string `json:"autocommit_period,omitempty"`
 
 	// This is the volume compliance clock time which is used to manage the SnapLock objects in the volume.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	ComplianceClockTime *strfmt.DateTime `json:"compliance_clock_time,omitempty"`
@@ -17860,7 +18183,7 @@ type VolumeInlineSnaplock struct {
 	PrivilegedDelete *string `json:"privileged_delete,omitempty"`
 
 	// retention
-	Retention *VolumeInlineSnaplockInlineRetention `json:"retention,omitempty"`
+	Retention *models.VolumeInlineSnaplockInlineRetention `json:"retention,omitempty"`
 
 	// The SnapLock type of the volume. <br>compliance &dash; A SnapLock Compliance(SLC) volume provides the highest level of WORM protection and an administrator cannot destroy a SLC volume if it contains unexpired WORM files. <br> enterprise &dash; An administrator can delete a SnapLock Enterprise(SLE) volume.<br> non_snaplock &dash; Indicates the volume is non-snaplock.
 	// Example: enterprise
@@ -20136,7 +20459,7 @@ type VolumeInlineStatistics struct {
 	ThroughputRaw *models.VolumeInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -22635,7 +22958,7 @@ type VolumeInlineStatisticsInlineCloud struct {
 	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -23070,7 +23393,7 @@ type VolumeInlineStatisticsInlineFlexcacheRaw struct {
 	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`

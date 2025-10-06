@@ -35,7 +35,7 @@ type License struct {
 	Evaluation *bool `json:"evaluation,omitempty"`
 
 	// Date and time when the license expires.
-	// Example: 2019-03-02 19:00:00
+	// Example: 2019-03-02 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
@@ -65,7 +65,7 @@ type License struct {
 	ShutdownImminent *bool `json:"shutdown_imminent,omitempty"`
 
 	// Date and time when the license starts.
-	// Example: 2019-02-02 19:00:00
+	// Example: 2019-02-02 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
@@ -341,17 +341,91 @@ func (m *License) UnmarshalBinary(b []byte) error {
 // swagger:model license_inline_capacity
 type LicenseInlineCapacity struct {
 
-	// Licensed capacity size (in bytes) that can be used.
+	// Capacity that is currently disabled due to license limits. Its unit of measure is specified in the measurement_unit field.
+	// Read Only: true
+	DisabledSize *int64 `json:"disabled_size,omitempty"`
+
+	// Licensed capacity size that can be used. Its unit of measure is specified in the measurement_unit field.
 	// Read Only: true
 	MaximumSize *int64 `json:"maximum_size,omitempty"`
 
-	// Capacity that is currently used (in bytes).
+	// Unit of measure for capacity based licenses.
+	// Read Only: true
+	// Enum: ["bytes","gpu_count"]
+	MeasurementUnit *string `json:"measurement_unit,omitempty"`
+
+	// Specifies the total number of GPUs in the system when measurement_unit is GPUs, else specifies the bytes used.
 	// Read Only: true
 	UsedSize *int64 `json:"used_size,omitempty"`
 }
 
 // Validate validates this license inline capacity
 func (m *LicenseInlineCapacity) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateMeasurementUnit(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var licenseInlineCapacityTypeMeasurementUnitPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["bytes","gpu_count"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		licenseInlineCapacityTypeMeasurementUnitPropEnum = append(licenseInlineCapacityTypeMeasurementUnitPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// license_inline_capacity
+	// LicenseInlineCapacity
+	// measurement_unit
+	// MeasurementUnit
+	// bytes
+	// END DEBUGGING
+	// LicenseInlineCapacityMeasurementUnitBytes captures enum value "bytes"
+	LicenseInlineCapacityMeasurementUnitBytes string = "bytes"
+
+	// BEGIN DEBUGGING
+	// license_inline_capacity
+	// LicenseInlineCapacity
+	// measurement_unit
+	// MeasurementUnit
+	// gpu_count
+	// END DEBUGGING
+	// LicenseInlineCapacityMeasurementUnitGpuCount captures enum value "gpu_count"
+	LicenseInlineCapacityMeasurementUnitGpuCount string = "gpu_count"
+)
+
+// prop value enum
+func (m *LicenseInlineCapacity) validateMeasurementUnitEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, licenseInlineCapacityTypeMeasurementUnitPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *LicenseInlineCapacity) validateMeasurementUnit(formats strfmt.Registry) error {
+	if swag.IsZero(m.MeasurementUnit) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateMeasurementUnitEnum("capacity"+"."+"measurement_unit", "body", *m.MeasurementUnit); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -359,7 +433,15 @@ func (m *LicenseInlineCapacity) Validate(formats strfmt.Registry) error {
 func (m *LicenseInlineCapacity) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateDisabledSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateMaximumSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMeasurementUnit(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -373,9 +455,27 @@ func (m *LicenseInlineCapacity) ContextValidate(ctx context.Context, formats str
 	return nil
 }
 
+func (m *LicenseInlineCapacity) contextValidateDisabledSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "capacity"+"."+"disabled_size", "body", m.DisabledSize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *LicenseInlineCapacity) contextValidateMaximumSize(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "capacity"+"."+"maximum_size", "body", m.MaximumSize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *LicenseInlineCapacity) contextValidateMeasurementUnit(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "capacity"+"."+"measurement_unit", "body", m.MeasurementUnit); err != nil {
 		return err
 	}
 

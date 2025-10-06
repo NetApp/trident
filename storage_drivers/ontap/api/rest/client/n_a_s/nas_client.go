@@ -3961,6 +3961,8 @@ func (a *Client) EffectivePermissionGet(params *EffectivePermissionGetParams, au
 * `vserver export-policy rule show`
 ### Learn more
 * [`DOC /protocols/nfs/export-policies`](#docs-NAS-protocols_nfs_export-policies)
+####
+Note: `are_rules_truncated` is set to 'true' if the total number of export-policy rules is greater than 500. If set to 'true', rules after 500 will be truncated. Use GET /api/protocols/nfs/export-policies/{id}/rules to retrieve all rules for truncated policies.
 */
 func (a *Client) ExportPolicyCollectionGet(params *ExportPolicyCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ExportPolicyCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -7343,7 +7345,7 @@ func (a *Client) KerberosRealmCollectionGet(params *KerberosRealmCollectionGetPa
 ### Required properties
 * `svm.uuid` or `svm.name` - Existing SVM on which to create the Kerberos realm.
 * `name` - Base name for the Kerberos realm.
-* `kdc.vendor` - Vendor of the Key Distribution Center (KDC) server for this Kerberos realm. If the configuration uses a Microsoft Active Directory domain for authentication, this field nust be `microsoft`.
+* `kdc.vendor` - Vendor of the Key Distribution Center (KDC) server for this Kerberos realm. If the configuration uses a Microsoft Active Directory domain for authentication, this field must be `microsoft`.
 * `kdc.ip` - IP address of the KDC server for this Kerberos realm.
 ### Recommended optional properties
 * `ad_server.name` - Host name of the Active Directory Domain Controller (DC). This is a mandatory parameter if the kdc-vendor is `microsoft`.
@@ -8822,6 +8824,7 @@ There is an added computational cost to retrieving values for these properties. 
 ### Diagnostic properties
 * `credential_cache.transient_error_ttl`
 * `access_cache_config.ttl_failure`
+* `credential_cache.harvest_timeout`
 ### Related ONTAP commands
 * `vserver nfs show`
 * `vserver nfs status`
@@ -8927,6 +8930,7 @@ If not specified in POST, the following default property values are assigned:
 * `protocol.v41_features.read_delegation_enabled` - _false_
 * `protocol.v41_features.write_delegation_enabled` - _false_
 * `protocol.v41_features.pnfs_enabled` - _false_
+* `protocol.v4_features.subnet_filter_enabled` - _false_
 * `vstorage_enabled` - _false_
 * `rquota_enabled` - _false_
 * `showmount_enabled` - _true_
@@ -8951,9 +8955,10 @@ If not specified in POST, the following default property values are assigned:
 * `windows.v3_ms_dos_client_enabled` - _false_
 * `windows.default_user` - ""
 * `windows.map_unknown_uid_to_default_user` - _true_
-* `credential_cache.positive_ttl` - _86400000_
-* `credential_cache.negative_ttl` - _7200000_
+* `credential_cache.positive_ttl` - _3600000_
+* `credential_cache.negative_ttl` - _3600000_
 * `credential_cache.transient_error_ttl` - _30000_
+* `credential_cache.harvest_timeout` - _86400000_
 * `protocol.v40_features.acl_preserve` - _true_
 * `protocol.v41_features.implementation_domain` - 'netapp.com'
 * `protocol.v40_features.acl_max_aces` - _400_
@@ -10631,6 +10636,7 @@ If not specified in POST, the following default property values are assigned:
 * `only_execute_access` - _false_
 * `scan_readonly_volumes` - _false_
 * `scan_without_extension` - _true_
+* `protocol` - _CIFS_
 ### Related ONTAP commands
 * `vserver vscan on-access-policy create`
 * `vserver vscan on-access-policy enable`

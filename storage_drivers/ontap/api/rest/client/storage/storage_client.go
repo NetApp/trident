@@ -60,6 +60,10 @@ type ClientService interface {
 
 	ClusterSpaceModify(params *ClusterSpaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterSpaceModifyOK, *ClusterSpaceModifyAccepted, error)
 
+	ConnectionStatusCollectionGet(params *ConnectionStatusCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConnectionStatusCollectionGetOK, error)
+
+	ConnectionStatusGet(params *ConnectionStatusGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConnectionStatusGetOK, error)
+
 	DiskCollectionGet(params *DiskCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DiskCollectionGetOK, error)
 
 	DiskGet(params *DiskGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DiskGetOK, error)
@@ -1046,6 +1050,93 @@ func (a *Client) ClusterSpaceModify(params *ClusterSpaceModifyParams, authInfo r
 }
 
 /*
+	ConnectionStatusCollectionGet Retrieves attributes of the connection status between cache and origin volumes.
+
+### Related ONTAP commands
+* `volume flexcache connection-status show`
+### Learn more
+* [`DOC /storage/flexcache/connection-status`](#docs-storage-storage_flexcache_connection-status)
+Retrieves origin of FlexCache in the cluster.
+*/
+func (a *Client) ConnectionStatusCollectionGet(params *ConnectionStatusCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConnectionStatusCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewConnectionStatusCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "connection_status_collection_get",
+		Method:             "GET",
+		PathPattern:        "/storage/flexcache/connection-status",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ConnectionStatusCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ConnectionStatusCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ConnectionStatusCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	ConnectionStatusGet Retrieves connection status between a cache and origin volume.
+
+### Related ONTAP commands
+* `volume flexcache connection-status show`
+### Learn more
+* [`DOC /storage/flexcache/connection-status`](#docs-storage-storage_flexcache_connection-status)
+*/
+func (a *Client) ConnectionStatusGet(params *ConnectionStatusGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConnectionStatusGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewConnectionStatusGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "connection_status_get",
+		Method:             "GET",
+		PathPattern:        "/storage/flexcache/connection-status/{node}/{svm}/{local_fg_msid}/{remote_svm_uuid}/{remote_vol_const_msid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &ConnectionStatusGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ConnectionStatusGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ConnectionStatusGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	DiskCollectionGet Retrieves a collection of disks.
 
 ### Related ONTAP commands
@@ -1849,7 +1940,7 @@ func (a *Client) FlexcacheCollectionGet(params *FlexcacheCollectionGetParams, au
 ### Recommended optional properties
 * `path` - Path to mount the FlexCache volume
 * `prepopulate.dir_paths` - List of directory-paths to be prepopulated for the FlexCache volume.
-* `prepopulate.exclude_dir_paths` - List of directory-paths to be excluded from prepopulation for he FlexCache volume.
+* `prepopulate.exclude_dir_paths` - List of directory-paths to be excluded from prepopulation for the FlexCache volume.
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `size` - 10% of origin volume size or 1GB per constituent, whichever is greater.
@@ -1865,6 +1956,9 @@ If not specified in POST, the following default property values are assigned:
 * `override_encryption` - false. If true, this property is used to create a plaintext FlexCache volume for an encrypted origin volume.
 * `atime_scrub.enabled` - false. This property specifies whether scrubbing of inactive files based on atime is enabled for the FlexCache volume.
 * `atime_scrub.period` - 30. This property specifies the atime duration in days after which the file can be scrubbed from the FlexCache volume if it stays unused beyond the duration.
+* `nfsv4.enabled` - false. This property specifies whether NFSv4 is enabled for the FlexCache volume.
+* `cifs.enabled` - false. This property specifies whether CIFS is enabled for the FlexCache volume.
+* `s3.enabled` - false. This property specifies whether S3 is enabled for the FlexCache volume.
 * `cifs_change_notify.enabled` - false. This property specifies whether a CIFS change notification is enabled for the FlexCache volume. <personalities supports=aiml>
 * `constituent_count` - 1. This property specifies the number of constituents in the FlexGroup volume upon Flexcache create. </personalities>
 ### Related ONTAP commands
@@ -2060,6 +2154,9 @@ func (a *Client) FlexcacheGet(params *FlexcacheGetParams, authInfo runtime.Clien
 * `atime_scrub.enabled` - This property specifies whether the atime based scrub is enabled for the FlexCache volume.
 * `atime_scrub.period` - This property specifies the duration in days after which inactive files can be scrubbed from FlexCache volume.
 * `cifs_change_notify.enabled` - This property specifies whether a CIFS change notification is enabled for the FlexCache volume.
+* `nfsv4.enabled` - This property specifies whether NFSv4 is enabled for the FlexCache volume.
+* `cifs.enabled` - This property specifies whether CIFS is enabled for the FlexCache volume.
+* `s3.enabled` - This property specifies whether S3 is enabled for the FlexCache volume.
 ### Default property values
 If not specified in PATCH, the following default property value is assigned:
 * `prepopulate.recurse` - Default value is "true".
@@ -6769,7 +6866,6 @@ There is an added computational cost to retrieving values for these properties. 
 * `nas.junction_parent.uuid`
 * `snaplock.*`
 * `restore_to.*`
-* `snapshot_policy.uuid`
 * `quota.*`
 * `qos.*`
 * `flexcache_endpoint_type`
@@ -7396,7 +7492,6 @@ There is an added computational cost to retrieving values for these properties. 
 * `nas.junction_parent.uuid`
 * `snaplock.*`
 * `restore_to.*`
-* `snapshot_policy.uuid`
 * `quota.*`
 * `qos.*`
 * `flexcache_endpoint_type`

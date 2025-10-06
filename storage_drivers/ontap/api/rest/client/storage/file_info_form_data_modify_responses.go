@@ -112,8 +112,7 @@ func NewFileInfoFormDataModifyDefault(code int) *FileInfoFormDataModifyDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 918235 | A volume with UUID {volume.uuid} was not found. |
-| 918757 | The specified clone parent volume with UUID {volume.uuid} does not exist. |
+| 918235 | A volume with the specified UUID was not found. |
 | 6488081 | The {field} field is not supported for PATCH operations. |
 | 6488082 | Failed to rename {path}. |
 | 6488083 | Failed to rename {path} to {path} because a directory named {path} already exists. |

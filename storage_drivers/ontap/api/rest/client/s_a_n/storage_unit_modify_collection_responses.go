@@ -207,6 +207,8 @@ func NewStorageUnitModifyCollectionDefault(code int) *StorageUnitModifyCollectio
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 1638592 | The specified snapshot UUID is not correct for the specified snapshot name. |
+| 1638600 | The specified snapshot does not exist. |
 | 5374614 | A non-existent storage availability zone was specified. |
 | 5376461 | An invalid storage unit name was specified. |
 | 5376497 | The storage unit move operation is not ready for cutover. |
@@ -226,6 +228,7 @@ func NewStorageUnitModifyCollectionDefault(code int) *StorageUnitModifyCollectio
 | 5376525 | Query parameter `restore_to.keep_snapshots` must be `true` for secondary storage units. |
 | 5376526 | Query parameter `restore_to.start_byte` and `restore_to.byte_count` must both be supplied to request a partial storage unit snapshot restore. |
 | 5376527 | Query parameter `restore_to.start_byte` and `restore_to.byte_count` must both be increments of 4096. |
+| 5376530 | The specified storage unit does not exist in the specified snapshot. |
 | 203161607 | An attempt to set the anti-ransomware state to dry-run when it is already enabled. |
 | 203161610 | An attempt pause anti-ransomware checking when it is in a conflicting state. |
 | 203161611 | An attempt to resume anti-ransomware checking when it is in a conflicting state. |
@@ -333,7 +336,7 @@ type StorageUnitModifyCollectionBody struct {
 
 	// The time the storage unit was created.
 	//
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
@@ -1535,7 +1538,7 @@ type StorageUnitModifyCollectionParamsBodyAntiRansomwareAttackReportsItems0 stru
 
 	// Timestamp at which ransomware attack is observed.
 	//
-	// Example: 2021-06-01 15:06:41
+	// Example: 2021-06-01 20:36:41+05:30
 	// Read Only: true
 	// Format: date-time
 	Time *strfmt.DateTime `json:"time,omitempty"`
@@ -4011,7 +4014,7 @@ type StorageUnitInlineMetric struct {
 	Throughput *models.StorageUnitInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -4790,7 +4793,7 @@ type StorageUnitInlineMovement struct {
 	// The start date and time of the storage unit move operation.<br/>
 	// There is an added computational cost to retrieving this property's value. It is not populated for a GET request unless it is explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
 	//
-	// Example: 2024-12-07 08:45:12
+	// Example: 2024-12-07 03:45:12-05:00
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
@@ -5873,6 +5876,7 @@ type StorageUnitInlineSpace struct {
 	PhysicalUsed *int64 `json:"physical_used,omitempty"`
 
 	// The number of bytes consumed on the disk by the storage unit's snapshots.
+	// This property has been replaced by `space.snapshot.used`.
 	//
 	// Example: 1073741824
 	// Read Only: true
@@ -5888,6 +5892,9 @@ type StorageUnitInlineSpace struct {
 	// Minimum: 4096
 	Size *int64 `json:"size,omitempty"`
 
+	// snapshot
+	Snapshot *models.StorageUnitInlineSpaceInlineSnapshot `json:"snapshot,omitempty"`
+
 	// The amount of space consumed by the main data stream of the storage unit.<br/>
 	// This value is the total space consumed, including filesystem overhead, but excluding prefix and suffix streams. Due to internal filesystem overhead and the many ways SAN filesystems and applications utilize blocks within a LUN or namespace, this value does not necessarily reflect actual consumption/availability from the perspective of the filesystem or application. Without specific knowledge of how the LUN or namespace blocks are utilized outside of ONTAP, this property should not be used as an indicator for an out-of-space condition.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
@@ -5901,6 +5908,10 @@ func (o *StorageUnitInlineSpace) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := o.validateSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateSnapshot(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -5926,6 +5937,23 @@ func (o *StorageUnitInlineSpace) validateSize(formats strfmt.Registry) error {
 	return nil
 }
 
+func (o *StorageUnitInlineSpace) validateSnapshot(formats strfmt.Registry) error {
+	if swag.IsZero(o.Snapshot) { // not required
+		return nil
+	}
+
+	if o.Snapshot != nil {
+		if err := o.Snapshot.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "space" + "." + "snapshot")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this storage unit inline space based on the context it is used
 func (o *StorageUnitInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -5943,6 +5971,10 @@ func (o *StorageUnitInlineSpace) ContextValidate(ctx context.Context, formats st
 	}
 
 	if err := o.contextValidateSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateSnapshot(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -5992,6 +6024,20 @@ func (o *StorageUnitInlineSpace) contextValidateSize(ctx context.Context, format
 	return nil
 }
 
+func (o *StorageUnitInlineSpace) contextValidateSnapshot(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Snapshot != nil {
+		if err := o.Snapshot.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "space" + "." + "snapshot")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (o *StorageUnitInlineSpace) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "info"+"."+"space"+"."+"used", "body", o.Used); err != nil {
@@ -6012,6 +6058,202 @@ func (o *StorageUnitInlineSpace) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (o *StorageUnitInlineSpace) UnmarshalBinary(b []byte) error {
 	var res StorageUnitInlineSpace
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+StorageUnitInlineSpaceInlineSnapshot storage unit inline space inline snapshot
+swagger:model storage_unit_inline_space_inline_snapshot
+*/
+type StorageUnitInlineSpaceInlineSnapshot struct {
+
+	// autodelete
+	Autodelete *models.StorageUnitInlineSpaceInlineSnapshotInlineAutodelete `json:"autodelete,omitempty"`
+
+	// Size available for snapshots within the snapshot reserve, in bytes.
+	// Read Only: true
+	ReserveAvailable *int64 `json:"reserve_available,omitempty"`
+
+	// The space that has been reserved for snapshot usage, in percent.
+	ReservePercent *int64 `json:"reserve_percent,omitempty"`
+
+	// Size that has been reserved for snapshot usage, in bytes.
+	// Read Only: true
+	ReserveSize *int64 `json:"reserve_size,omitempty"`
+
+	// Percentage of snapshot reserve size that has been used.
+	// Read Only: true
+	SpaceUsedPercent *int64 `json:"space_used_percent,omitempty"`
+
+	// The total space used by snapshots, in bytes.
+	// Read Only: true
+	Used *int64 `json:"used,omitempty"`
+}
+
+// Validate validates this storage unit inline space inline snapshot
+func (o *StorageUnitInlineSpaceInlineSnapshot) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateAutodelete(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineSpaceInlineSnapshot) validateAutodelete(formats strfmt.Registry) error {
+	if swag.IsZero(o.Autodelete) { // not required
+		return nil
+	}
+
+	if o.Autodelete != nil {
+		if err := o.Autodelete.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "space" + "." + "snapshot" + "." + "autodelete")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this storage unit inline space inline snapshot based on the context it is used
+func (o *StorageUnitInlineSpaceInlineSnapshot) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateAutodelete(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateReserveAvailable(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateReserveSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateSpaceUsedPercent(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateUsed(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *StorageUnitInlineSpaceInlineSnapshot) contextValidateAutodelete(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Autodelete != nil {
+		if err := o.Autodelete.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info" + "." + "space" + "." + "snapshot" + "." + "autodelete")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *StorageUnitInlineSpaceInlineSnapshot) contextValidateReserveAvailable(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"space"+"."+"snapshot"+"."+"reserve_available", "body", o.ReserveAvailable); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *StorageUnitInlineSpaceInlineSnapshot) contextValidateReserveSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"space"+"."+"snapshot"+"."+"reserve_size", "body", o.ReserveSize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *StorageUnitInlineSpaceInlineSnapshot) contextValidateSpaceUsedPercent(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"space"+"."+"snapshot"+"."+"space_used_percent", "body", o.SpaceUsedPercent); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *StorageUnitInlineSpaceInlineSnapshot) contextValidateUsed(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "info"+"."+"space"+"."+"snapshot"+"."+"used", "body", o.Used); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *StorageUnitInlineSpaceInlineSnapshot) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *StorageUnitInlineSpaceInlineSnapshot) UnmarshalBinary(b []byte) error {
+	var res StorageUnitInlineSpaceInlineSnapshot
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+StorageUnitInlineSpaceInlineSnapshotInlineAutodelete storage unit inline space inline snapshot inline autodelete
+swagger:model storage_unit_inline_space_inline_snapshot_inline_autodelete
+*/
+type StorageUnitInlineSpaceInlineSnapshotInlineAutodelete struct {
+
+	// Specifies whether snapshot autodelete is currently enabled.
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// Validate validates this storage unit inline space inline snapshot inline autodelete
+func (o *StorageUnitInlineSpaceInlineSnapshotInlineAutodelete) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this storage unit inline space inline snapshot inline autodelete based on context it is used
+func (o *StorageUnitInlineSpaceInlineSnapshotInlineAutodelete) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *StorageUnitInlineSpaceInlineSnapshotInlineAutodelete) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *StorageUnitInlineSpaceInlineSnapshotInlineAutodelete) UnmarshalBinary(b []byte) error {
+	var res StorageUnitInlineSpaceInlineSnapshotInlineAutodelete
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -6041,7 +6283,7 @@ type StorageUnitInlineStatistics struct {
 	ThroughputRaw *models.StorageUnitInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`

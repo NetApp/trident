@@ -48,11 +48,12 @@ type CifsOpenFile struct {
 	// Open mode corresponding to the opened file
 	// - r: Opened for read
 	// - w: Opened for write
-	// - d: Opened for Delete
+	// - d: Opened for delete
+	// - rw: Opened for read and write
 	//
 	// Example: r
 	// Read Only: true
-	// Enum: ["r","w","d"]
+	// Enum: ["r","w","d","rw"]
 	OpenMode *string `json:"open_mode,omitempty"`
 
 	// Path from CIFS share.
@@ -249,7 +250,7 @@ var cifsOpenFileTypeOpenModePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["r","w","d"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["r","w","d","rw"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -288,6 +289,16 @@ const (
 	// END DEBUGGING
 	// CifsOpenFileOpenModeD captures enum value "d"
 	CifsOpenFileOpenModeD string = "d"
+
+	// BEGIN DEBUGGING
+	// cifs_open_file
+	// CifsOpenFile
+	// open_mode
+	// OpenMode
+	// rw
+	// END DEBUGGING
+	// CifsOpenFileOpenModeRw captures enum value "rw"
+	CifsOpenFileOpenModeRw string = "rw"
 )
 
 // prop value enum
@@ -969,10 +980,12 @@ type CifsOpenFileInlineShare struct {
 	//   - r: read mode
 	//   - w: write mode
 	//   - d: delete
+	//   - rw: read and write modes
+	//   - rwd: read, write, and delete modes
 	//
 	// Example: r
 	// Read Only: true
-	// Enum: ["r","w","d"]
+	// Enum: ["r","w","d","rw","rwd"]
 	Mode *string `json:"mode,omitempty"`
 
 	// CIFS share name where the file resides.
@@ -999,7 +1012,7 @@ var cifsOpenFileInlineShareTypeModePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["r","w","d"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["r","w","d","rw","rwd"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1038,6 +1051,26 @@ const (
 	// END DEBUGGING
 	// CifsOpenFileInlineShareModeD captures enum value "d"
 	CifsOpenFileInlineShareModeD string = "d"
+
+	// BEGIN DEBUGGING
+	// cifs_open_file_inline_share
+	// CifsOpenFileInlineShare
+	// mode
+	// Mode
+	// rw
+	// END DEBUGGING
+	// CifsOpenFileInlineShareModeRw captures enum value "rw"
+	CifsOpenFileInlineShareModeRw string = "rw"
+
+	// BEGIN DEBUGGING
+	// cifs_open_file_inline_share
+	// CifsOpenFileInlineShare
+	// mode
+	// Mode
+	// rwd
+	// END DEBUGGING
+	// CifsOpenFileInlineShareModeRwd captures enum value "rwd"
+	CifsOpenFileInlineShareModeRwd string = "rwd"
 )
 
 // prop value enum

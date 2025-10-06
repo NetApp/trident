@@ -202,6 +202,8 @@ func NewStorageUnitModifyDefault(code int) *StorageUnitModifyDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 1638592 | The specified snapshot UUID is not correct for the specified snapshot name. |
+| 1638600 | The specified snapshot does not exist. |
 | 5374614 | A non-existent storage availability zone was specified. |
 | 5376461 | An invalid storage unit name was specified. |
 | 5376497 | The storage unit move operation is not ready for cutover. |
@@ -221,6 +223,7 @@ func NewStorageUnitModifyDefault(code int) *StorageUnitModifyDefault {
 | 5376525 | Query parameter `restore_to.keep_snapshots` must be `true` for secondary storage units. |
 | 5376526 | Query parameter `restore_to.start_byte` and `restore_to.byte_count` must both be supplied to request a partial storage unit snapshot restore. |
 | 5376527 | Query parameter `restore_to.start_byte` and `restore_to.byte_count` must both be increments of 4096. |
+| 5376530 | The specified storage unit does not exist in the specified snapshot. |
 | 203161607 | An attempt to set the anti-ransomware state to dry-run when it is already enabled. |
 | 203161610 | An attempt pause anti-ransomware checking when it is in a conflicting state. |
 | 203161611 | An attempt to resume anti-ransomware checking when it is in a conflicting state. |

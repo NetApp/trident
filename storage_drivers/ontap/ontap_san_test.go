@@ -118,6 +118,7 @@ func TestOntapSANStorageDriverConfigString(t *testing.T) {
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	ontapSanDrivers := []SANStorageDriver{
 		*newTestOntapSANDriver(vserverAdminHost, vserverAdminPort, vserverAggrName, true, nil, mockAPI),
@@ -345,6 +346,7 @@ func TestOntapSANVolumeCreate(t *testing.T) {
 	luks := "true"
 	expectLunAndVolumeCreateSequence(ctx, mockAPI, "xfs", luks)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -389,6 +391,7 @@ func TestOntapSanVolumeCreate_InvalidSkipRecoveryQueue(t *testing.T) {
 	mockAPI, d := newMockOntapSANDriver(t)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).DoAndReturn(
 		func(ctx context.Context, volumeName string) (bool, error) {
 			return false, nil
@@ -643,6 +646,7 @@ func TestOntapSanUnpublish(t *testing.T) {
 			mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 				gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 			d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 			d.API = mockAPI
@@ -666,6 +670,7 @@ func TestOntapSanVolumePublishManaged(t *testing.T) {
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.API = mockAPI
@@ -712,6 +717,7 @@ func TestOntapSanVolumePublishUnmanaged(t *testing.T) {
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, testDefaultPort, ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.API = mockAPI
@@ -758,6 +764,7 @@ func TestOntapSanVolumePublishSLMError(t *testing.T) {
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	d := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	d.API = mockAPI
@@ -804,6 +811,7 @@ func TestSANStorageDriverGetBackendState(t *testing.T) {
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	mockDriver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	mockDriver.API = mockAPI
@@ -822,6 +830,7 @@ func TestOntapSanVolumeCreate_LabelLengthExceeding(t *testing.T) {
 	luks := "true"
 	expectLunAndVolumeCreateSequence(ctx, mockAPI, "xfs", luks)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -1066,6 +1075,7 @@ func TestOntapSanVolumeCreate_ValidationFail(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
 				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+				mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 				mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"InvalidSVM"}, nil)
 			},
 			wantErr:       assert.Error,
@@ -1082,6 +1092,7 @@ func TestOntapSanVolumeCreate_ValidationFail(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
 				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+				mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 			},
 			wantErr:       assert.Error,
 			assertMessage: "File system type is valid",
@@ -1352,6 +1363,7 @@ func TestOntapSanVolumeCreate_FormatOptions(t *testing.T) {
 	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil).MaxTimes(1)
 	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Return(nil).MaxTimes(1)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	// This is the assertion of this unit test,
 	// checking whether the argument FormatOptions matches with what we pass in the internal attributes.
@@ -1406,6 +1418,7 @@ func TestOntapSanVolumeClone(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	luks := "true"
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -1461,6 +1474,7 @@ func TestOntapSanVolumeClone_VolumeInfoFail(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
 
@@ -1512,6 +1526,7 @@ func TestOntapSanVolumeClone_ValidationTest(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	pool1 := storage.NewStoragePool(nil, "pool1")
 
 	type args struct {
@@ -1639,6 +1654,7 @@ func TestOntapSanVolumeClone_LabelLengthExceeding(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	pool1 := storage.NewStoragePool(nil, "")
 	pool1.SetInternalAttributes(map[string]string{
@@ -1680,6 +1696,7 @@ func TestOntapSanVolumeClone_NameTemplate(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	luks := "true"
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -1767,6 +1784,7 @@ func TestOntapSanVolumeClone_NameTemplateLabelLengthExceeding(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	pool1 := storage.NewStoragePool(nil, "")
 	pool1.SetInternalAttributes(map[string]string{
@@ -1831,6 +1849,7 @@ func TestOntapSanVolumeImport(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	driver.Config.Labels = map[string]string{
@@ -1878,6 +1897,7 @@ func TestOntapSanVolumeImport_VolumeInfoFail(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	originalVolumeName := "vol1"
 	volConfig := getVolumeConfig()
@@ -1955,6 +1975,7 @@ func TestOntapSanVolumeImport_RenameFail(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	originalVolumeName := "vol1"
 	volConfig := getVolumeConfig()
@@ -2026,6 +2047,7 @@ func TestOntapSanVolumeImport_VolumeUpdateFail(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	originalVolumeName := "vol1"
 	volConfig := getVolumeConfig()
@@ -2104,6 +2126,7 @@ func TestOntapSanVolumeImport_ImportNotManaged(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	originalVolumeName := "vol1"
 	volConfig := getVolumeConfig()
@@ -2131,6 +2154,7 @@ func TestOntapSanVolumeImport_NameTemplateLabel(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
 
@@ -2207,6 +2231,7 @@ func TestOntapSanVolumeImport_NameTemplateLabelLengthExceeding(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	longLabel := "thisIsATestLabelWhoseLengthShouldExceed1023Characters_AddingSomeRandomCharacters_" +
 		"V88bESTQlRIWRSS40sx9ND8P9yPf0LV8jPofiqtTp2iIXgotGh83zZ1HEeFlMGxZlIcOiPdoi07cJ" +
@@ -2267,6 +2292,7 @@ func TestOntapSanVolumeRename(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	originalVolumeName := "vol1"
 	newVolumeName := "vol2"
@@ -2283,6 +2309,7 @@ func TestOntapSanVolumeRename_fail(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	originalVolumeName := "vol1"
 	newVolumeName := "vol2"
@@ -2588,6 +2615,7 @@ func TestOntapSanVolumeDestroy_fail(t *testing.T) {
 				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().SnapmirrorRelease(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+				mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(),
 					gomock.Any(), gomock.Any()).Return(errors.New("volume destroy failed"))
 			},
@@ -2710,6 +2738,7 @@ func TestOntapSanVolumeSnapshot(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	volConfig := getVolumeConfig()
 
@@ -2751,6 +2780,7 @@ func TestOntapSanVolumeSnapshot_SnapshotNotFound(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	volConfig := getVolumeConfig()
 
@@ -2789,6 +2819,7 @@ func TestOntapSanVolumeSnapshotRestore(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	volConfig := getVolumeConfig()
 
@@ -2812,6 +2843,7 @@ func TestOntapSanVolumeSnapshotDelete(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	volConfig := getVolumeConfig()
 
@@ -2835,6 +2867,7 @@ func TestOntapSanVolumeSnapshotDelete_fail(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	volConfig := getVolumeConfig()
 
@@ -2863,6 +2896,7 @@ func TestOntapSanVolumeSnapshotGet(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	snapshotConfig := &storage.SnapshotConfig{
 		InternalName: "trident-pvc-1234_snap",
@@ -2880,6 +2914,7 @@ func TestOntapSanVolumeSnapshotGet_fail(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	snapshotConfig := &storage.SnapshotConfig{
 		InternalName: "trident-pvc-1234_snap",
@@ -2927,6 +2962,7 @@ func TestOntapSanVolumeGetStorageBackendSpecs(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
@@ -2968,6 +3004,7 @@ func TestOntapSanVolumeGetInternalVolumeName(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := getCommonConfig()
 	driver.Config.CommonStorageDriverConfig = commonConfig
@@ -2984,6 +3021,7 @@ func TestOntapSanVolumeCreatePrepare(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	volConfig := getVolumeConfig()
 	pool := storage.NewStoragePool(nil, "dummyPool")
@@ -3006,6 +3044,8 @@ func TestOntapSanVolumeCreatePrepare_NilPool(t *testing.T) {
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	driver.Config.NameTemplate = `{{.volume.Name}}_{{.volume.Namespace}}_{{.volume.StorageClass}}`
 	volConfig := storage.VolumeConfig{Name: "newVolume", Namespace: "testNamespace", StorageClass: "testSC"}
@@ -3036,11 +3076,13 @@ func TestOntapSanVolumeCreatePrepare_NilPool_templateNotContainVolumeName(t *tes
 	defer mockCtrl.Finish()
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	driver.Config.NameTemplate = `{{.volume.Namespace}}_{{.volume.StorageClass}}_{{slice .volume.Name 4 9}}`
 	volConfig := storage.VolumeConfig{Name: "pvc-1234567", Namespace: "testNamespace", StorageClass: "testSC"}
 
 	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
@@ -3172,6 +3214,8 @@ func TestOntapSANStorageDriverGetVolumeExternalWrappers(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeListByPrefix(ctx, gomock.Any()).Return(api.Volumes{&volume}, nil).Times(1)
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(api.Luns{lun}, nil).Times(1)
 
@@ -3199,6 +3243,7 @@ func TestOntapSANStorageDriverGetVolumeExternalWrappers_1(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().VolumeListByPrefix(ctx, gomock.Any()).Return(api.Volumes{&volume}, nil).Times(1)
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(api.Luns{lun}, nil).Times(1)
 
@@ -3236,6 +3281,7 @@ func TestOntapSANStorageDriverGetVolumeExternalWrappers_Failure(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			channel := make(chan *storage.VolumeExternalWrapper, 1)
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 			test.mocks(mockAPI)
 
 			driver.GetVolumeExternalWrappers(ctx, channel)
@@ -3274,6 +3320,7 @@ func TestOntapSANStorageDriverGetUpdateType(t *testing.T) {
 	newDriver.Config.DataLIF = "1.2.3.2"
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	result := newDriver.GetUpdateType(ctx, oldDriver)
 
@@ -3301,6 +3348,7 @@ func TestOntapSANStorageDriverGetUpdateType_NilDataLIF(t *testing.T) {
 func TestOntapSANStorageDriverGetUpdateType_Failure(t *testing.T) {
 	mockAPI, _ := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	oldDriver := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, false, nil, mockAPI)
 	oldDriver.API = mockAPI
@@ -3599,6 +3647,7 @@ func TestOntapSanVolumePublishisFlexvolRW(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	driver.ips = []string{"127.0.0.1"}
 	driver.Config.DriverContext = tridentconfig.ContextCSI
@@ -3696,6 +3745,8 @@ func TestOntapSANStorageDriverInitialize_WithNameTemplate(t *testing.T) {
 		mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 			gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 		mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+		mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+		mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 		commonConfig := getCommonConfig()
 
@@ -3772,6 +3823,8 @@ func TestOntapSANStorageDriverInitialize_NameTemplateDefineInStoragePool(t *test
 		mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 			gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 		mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+		mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+		mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 		commonConfig := getCommonConfig()
 
@@ -3858,6 +3911,8 @@ func TestOntapSANStorageDriverInitialize_NameTemplateDefineInBothPool(t *testing
 		mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 			gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 		mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+		mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+		mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 		commonConfig := getCommonConfig()
 
@@ -3998,6 +4053,7 @@ func TestOntapSanStorageDriverInitialize(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := getCommonConfig()
 
@@ -4058,6 +4114,7 @@ func TestOntapSanStorageDriverInitialize_WithFC(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := getCommonConfig()
 
@@ -4106,6 +4163,7 @@ func TestOntapSANStorageDriverInitialize_Failure(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	driver.API = nil // setting driver API nil
 
 	commonConfig := getCommonConfig()
@@ -4136,6 +4194,7 @@ func TestOntapSanStorageDriverInitialize_NetInterfaceGetDataLIFsFail(t *testing.
 	mockAPI, driver := newMockOntapSANDriver(t)
 	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := getCommonConfig()
 
@@ -4184,6 +4243,7 @@ func TestOntapSanStorageDriverInitialize_FcpInterfaceGetFail(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := getCommonConfig()
 
@@ -4229,6 +4289,7 @@ func TestOntapSanStorageDriverInitialize_FcpInterfaceGetFail(t *testing.T) {
 func TestOntapSANStorageDriverInitialize_StoragePoolFailed(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := getCommonConfig()
 
@@ -4285,6 +4346,7 @@ func TestOntapSANStorageDriverInitialize_StoragePoolFailed(t *testing.T) {
 			driver.Config.CommonStorageDriverConfig = nil
 			test.mocks(mockAPI)
 			mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
+			mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
 
 			result := driver.Initialize(ctx, "CSI", configJSON, commonConfig, secrets, BackendUUID)
 
@@ -4308,6 +4370,8 @@ func TestOntapSANStorageDriverInitializeStoragePools_NameTemplatesAndLabels(t *t
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
 
 	d.Config.Storage = []drivers.OntapStorageDriverPool{
 		{
@@ -4340,6 +4404,8 @@ func TestOntapSANStorageDriverInitializeStoragePools_NameTemplatesAndLabels(t *t
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+	mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
 	mockAPI.EXPECT().GetSVMAggregateNames(gomock.Any()).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
@@ -4484,6 +4550,7 @@ func TestOntapSANStorageDriverInitialize_ValidationFailed(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := getCommonConfig()
 
@@ -4495,6 +4562,7 @@ func TestOntapSANStorageDriverInitialize_ValidationFailed(t *testing.T) {
 	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
 	mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).AnyTimes().Return(true) // feature not supported
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{ONTAPTEST_VSERVER_AGGR_NAME: "vmdisk"}, nil,
 	)
@@ -4513,6 +4581,7 @@ func TestOntapSANStorageDriverInitialize_ValidationFailed(t *testing.T) {
 func TestOntapSANStorageDriverInitialized(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	driver.initialized = true
 	result := driver.Initialized()
@@ -4532,6 +4601,7 @@ func TestOntapSantorageDriverVolumeCanSnapshot(t *testing.T) {
 func TestOntapSANStorageDriverGetCommonConfig(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := getCommonConfig()
 
@@ -4546,6 +4616,7 @@ func TestOntapSANStorageDriverGetCommonConfig(t *testing.T) {
 func TestOntapSANStorageDriverEstablishMirror(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := getCommonConfig()
 
@@ -4577,6 +4648,7 @@ func TestOntapSANStorageDriverEstablishMirror(t *testing.T) {
 func TestOntapSANStorageDriverEstablishMirror_Failure(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := getCommonConfig()
 
@@ -4641,6 +4713,7 @@ func TestOntapSANStorageDriverEstablishMirror_Failure(t *testing.T) {
 func TestOntapSANStorageDriverReestablishMirror(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := getCommonConfig()
 
@@ -4663,6 +4736,7 @@ func TestOntapSANStorageDriverReestablishMirror(t *testing.T) {
 func TestOntapSANStorageDriverReestablishMirror_Failure(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := getCommonConfig()
 
@@ -4719,6 +4793,7 @@ func TestOntapSANStorageDriverReestablishMirror_Failure(t *testing.T) {
 func TestOntapSANStorageDriverPromoteMirror(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	driver.Config.ReplicationSchedule = "none"
 	driver.Config.ReplicationPolicy = "fake-rep-policy"
@@ -4744,6 +4819,7 @@ func TestOntapSANStorageDriverPromoteMirror(t *testing.T) {
 func TestOntapSANStorageDriverGetMirrorStatus(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	driver.Config.ReplicationSchedule = "none"
 	driver.Config.ReplicationPolicy = "fake-rep-policy"
@@ -4760,6 +4836,7 @@ func TestOntapSANStorageDriverGetMirrorStatus(t *testing.T) {
 func TestOntapSANStorageDriverReleaseMirror(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	mockAPI.EXPECT().SnapmirrorRelease(ctx, "volume-a", "SVM1")
 
@@ -4966,6 +5043,7 @@ func TestOntapSanVolumeGetSnapshot(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	snapshotConfig := &storage.SnapshotConfig{
 		InternalName:       "trident-pvc-1234_snap",
@@ -4996,6 +5074,7 @@ func TestOntapSanVolumeGetSnapshots(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	volConfig := getVolumeConfig()
 
@@ -5020,6 +5099,7 @@ func TestOntapSanVolumeCreatePrepare_EnablePublishEnforcement(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	volConfig := getVolumeConfig()
 	volConfig.ImportNotManaged = false
@@ -5040,6 +5120,7 @@ func TestOntapSanVolumeValidate(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	storagePrefix := "trident_"
 	commonConfig := getCommonConfig()
@@ -5072,6 +5153,7 @@ func TestOntapSanVolumeValidate_ValidateSANDriver(t *testing.T) {
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	driver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	driver.API = mockAPI
@@ -5104,6 +5186,7 @@ func TestOntapSanVolumeValidate_ValidateStoragePrefix(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	storagePrefix := "trident&#"
 	commonConfig := getCommonConfig()
@@ -5132,6 +5215,7 @@ func TestOntapSanVolumeValidate_ValidateStoragePools(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	storagePrefix := "trident_"
 	commonConfig := getCommonConfig()
@@ -5209,6 +5293,7 @@ func TestOntapSan_CreateVolumeGroupSnapshot(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	groupSnapshotConfig := &storage.GroupSnapshotConfig{
 		Name:         "groupsnapshot-1234",
@@ -5242,6 +5327,7 @@ func TestOntapSanStorageDriver_ProcessVolumeGroupSnapshot(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	groupSnapshotConfig := &storage.GroupSnapshotConfig{
 		Name:         "groupsnapshot-1234",
@@ -5273,6 +5359,7 @@ func TestOntapSan_GetGroupSnapshotTarget(t *testing.T) {
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	volumeConfigs := []*storage.VolumeConfig{
 		{

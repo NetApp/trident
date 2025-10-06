@@ -133,7 +133,12 @@ func NewClusterPeerModifyCollectionDefault(code int) *ClusterPeerModifyCollectio
 | ---------- | ----------- |
 | 2621462 | SVM name does not exist. |
 | 4653061 | The specified remote cluster is invalid. |
+| 4653215 | An introductory RPC to the peer address failed to connect. Verify that the peer address is correct, and then try the operation again. |
+| 4653216 | An introductory RPC to the peer address failed to connect. Verify that the peer address is correct, and then try the operation again. |
+| 4653217 | An introductory RPC to the peer address failed to connect. Verify that the peer address is correct, and then try the operation again. |
 | 4653218 | An introductory RPC to the peer address failed to connect. Verify that the peer address is correct, and then try the operation again. |
+| 4653219 | An introductory RPC to the peer address failed to connect. Verify that the peer address is correct, and then try the operation again. |
+| 4653220 | An introductory RPC to the peer address failed to connect. Verify that the peer address is correct, and then try the operation again. |
 | 4653229 | Specified value for \"-offer-expiration\" is obsolete. |
 | 4653236 | The specified passphrase is too short. |
 | 4653257 | The vifmgr process is not running. |
@@ -2076,7 +2081,7 @@ type ClusterPeerInlineStatus struct {
 	State *string `json:"state,omitempty"`
 
 	// The last time the state was updated.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	UpdateTime *strfmt.DateTime `json:"update_time,omitempty"`
@@ -2266,17 +2271,17 @@ type ClusterPeerInlineVersion struct {
 	// The generation portion of the version.
 	// Example: 9
 	// Read Only: true
-	Generation *int64 `json:"generation,omitempty"`
+	Generation *int64 `json:"generation"`
 
 	// The major portion of the version.
 	// Example: 4
 	// Read Only: true
-	Major *int64 `json:"major,omitempty"`
+	Major *int64 `json:"major"`
 
 	// The minor portion of the version.
 	// Example: 0
 	// Read Only: true
-	Minor *int64 `json:"minor,omitempty"`
+	Minor *int64 `json:"minor"`
 }
 
 // Validate validates this cluster peer inline version

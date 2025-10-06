@@ -20,6 +20,10 @@ import (
 // swagger:model vscan_event
 type VscanEvent struct {
 
+	// Specifies the consecutive occurrence count of the event.
+	// Example: 2
+	ConsecutiveOccurrenceCount *int64 `json:"consecutive_occurrence_count,omitempty"`
+
 	// Specifies the reason of the Vscan server disconnection.
 	// The available values are:
 	// * na                        Not applicable
@@ -38,7 +42,7 @@ type VscanEvent struct {
 	DisconnectReason *string `json:"disconnect_reason,omitempty"`
 
 	// Specifies the Timestamp of the event.
-	// Example: 2021-11-25 04:29:41.606000
+	// Example: 2021-11-25 04:29:41.606000+00:00
 	// Format: date-time
 	EventTime *strfmt.DateTime `json:"event_time,omitempty"`
 
@@ -51,6 +55,10 @@ type VscanEvent struct {
 
 	// node
 	Node *VscanEventInlineNode `json:"node,omitempty"`
+
+	// Specifies the status code of the scan-engine for the event. This field is only generated when there is a proper response from the scan-engine.
+	// Example: 333300005
+	ScanEngineStatus *int64 `json:"scan_engine_status,omitempty"`
 
 	// Specifies the IP address of the Vscan server.
 	// Example: 192.168.1.1

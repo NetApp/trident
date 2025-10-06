@@ -138,6 +138,12 @@ func NewSnmpUsersCreateDefault(code int) *SnmpUsersCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
+| 1263341 | Invalid authentication protocol. |
+| 1263342 | Invalid privacy protocol. |
+| 1263567 | Authentication password not supplied. |
+| 1263568 | Privacy password not supplied. |
+| 1263569 | Authentication password does not conform to ONTAP requirements. |
+| 1263570 | Privacy password does not conform to ONTAP requirements. |
 | 2621475 | This operation is not allowed on a node SVM. |
 | 2621601 | This operation is not permitted on a system SVM. |
 | 5636101 | One role for all applications and authentication methods is recommended for a user account. |

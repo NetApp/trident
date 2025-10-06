@@ -1156,7 +1156,7 @@ var switchPortInlineRemotePortFunctionalRolesItemsEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["cluster","ha","storage_ontap","storage_shelf"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["cluster","ha","storage_ontap","storage_shelf","compute_ontap","compute_node"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1285,6 +1285,9 @@ func (m *SwitchPortInlineRemotePort) UnmarshalBinary(b []byte) error {
 // swagger:model switch_port_inline_remote_port_inline_device
 type SwitchPortInlineRemotePortInlineDevice struct {
 
+	// dcn
+	Dcn *SwitchPortInlineRemotePortInlineDeviceInlineDcn `json:"dcn,omitempty"`
+
 	// Raw name of the discovered device.
 	// Example: stiA400-311
 	// Read Only: true
@@ -1301,6 +1304,10 @@ type SwitchPortInlineRemotePortInlineDevice struct {
 func (m *SwitchPortInlineRemotePortInlineDevice) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateDcn(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateNode(formats); err != nil {
 		res = append(res, err)
 	}
@@ -1312,6 +1319,23 @@ func (m *SwitchPortInlineRemotePortInlineDevice) Validate(formats strfmt.Registr
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *SwitchPortInlineRemotePortInlineDevice) validateDcn(formats strfmt.Registry) error {
+	if swag.IsZero(m.Dcn) { // not required
+		return nil
+	}
+
+	if m.Dcn != nil {
+		if err := m.Dcn.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("remote_port" + "." + "device" + "." + "dcn")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -1353,6 +1377,10 @@ func (m *SwitchPortInlineRemotePortInlineDevice) validateShelf(formats strfmt.Re
 func (m *SwitchPortInlineRemotePortInlineDevice) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateDcn(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateDiscoveredName(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -1368,6 +1396,20 @@ func (m *SwitchPortInlineRemotePortInlineDevice) ContextValidate(ctx context.Con
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *SwitchPortInlineRemotePortInlineDevice) contextValidateDcn(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Dcn != nil {
+		if err := m.Dcn.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("remote_port" + "." + "device" + "." + "dcn")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -1419,6 +1461,207 @@ func (m *SwitchPortInlineRemotePortInlineDevice) MarshalBinary() ([]byte, error)
 // UnmarshalBinary interface implementation
 func (m *SwitchPortInlineRemotePortInlineDevice) UnmarshalBinary(b []byte) error {
 	var res SwitchPortInlineRemotePortInlineDevice
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SwitchPortInlineRemotePortInlineDeviceInlineDcn Compute node connected to this port.
+//
+// swagger:model switch_port_inline_remote_port_inline_device_inline_dcn
+type SwitchPortInlineRemotePortInlineDeviceInlineDcn struct {
+
+	// links
+	Links *SwitchPortInlineRemotePortInlineDeviceInlineDcnInlineLinks `json:"_links,omitempty"`
+
+	// Compute node name.
+	// Example: node1
+	Name *string `json:"name,omitempty"`
+
+	// Compute node serial number.
+	// Example: 4048820-60-9
+	SerialNumber *string `json:"serial_number,omitempty"`
+
+	// Compute node UUID.
+	// Example: 4ea7a442-86d1-11e0-ae1c-123478563412
+	// Format: uuid
+	UUID *strfmt.UUID `json:"uuid,omitempty"`
+}
+
+// Validate validates this switch port inline remote port inline device inline dcn
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineDcn) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateUUID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineDcn) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("remote_port" + "." + "device" + "." + "dcn" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineDcn) validateUUID(formats strfmt.Registry) error {
+	if swag.IsZero(m.UUID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("remote_port"+"."+"device"+"."+"dcn"+"."+"uuid", "body", "uuid", m.UUID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this switch port inline remote port inline device inline dcn based on the context it is used
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineDcn) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineDcn) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("remote_port" + "." + "device" + "." + "dcn" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineDcn) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineDcn) UnmarshalBinary(b []byte) error {
+	var res SwitchPortInlineRemotePortInlineDeviceInlineDcn
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// SwitchPortInlineRemotePortInlineDeviceInlineDcnInlineLinks switch port inline remote port inline device inline dcn inline links
+//
+// swagger:model switch_port_inline_remote_port_inline_device_inline_dcn_inline__links
+type SwitchPortInlineRemotePortInlineDeviceInlineDcnInlineLinks struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this switch port inline remote port inline device inline dcn inline links
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineDcnInlineLinks) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineDcnInlineLinks) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("remote_port" + "." + "device" + "." + "dcn" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this switch port inline remote port inline device inline dcn inline links based on the context it is used
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineDcnInlineLinks) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineDcnInlineLinks) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("remote_port" + "." + "device" + "." + "dcn" + "." + "_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineDcnInlineLinks) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *SwitchPortInlineRemotePortInlineDeviceInlineDcnInlineLinks) UnmarshalBinary(b []byte) error {
+	var res SwitchPortInlineRemotePortInlineDeviceInlineDcnInlineLinks
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -2025,7 +2268,7 @@ type SwitchPortInlineStatistics struct {
 	ReceiveRaw *SwitchPortInlineStatisticsInlineReceiveRaw `json:"receive_raw,omitempty"`
 
 	// The time the statistics were gathered.
-	// Example: 2024-11-18 15:52:17
+	// Example: 2024-11-18 15:52:17+00:00
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 

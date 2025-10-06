@@ -86,6 +86,12 @@ type IpsecPolicyCollectionGetParams struct {
 	*/
 	CertificateUUID *string
 
+	/* CertificateModifyKeepsa.
+
+	   Filter by certificate_modify_keepsa
+	*/
+	CertificateModifyKeepsa *bool
+
 	/* Enabled.
 
 	   Filter by enabled
@@ -349,6 +355,17 @@ func (o *IpsecPolicyCollectionGetParams) WithCertificateUUID(certificateUUID *st
 // SetCertificateUUID adds the certificateUuid to the ipsec policy collection get params
 func (o *IpsecPolicyCollectionGetParams) SetCertificateUUID(certificateUUID *string) {
 	o.CertificateUUID = certificateUUID
+}
+
+// WithCertificateModifyKeepsa adds the certificateModifyKeepsa to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) WithCertificateModifyKeepsa(certificateModifyKeepsa *bool) *IpsecPolicyCollectionGetParams {
+	o.SetCertificateModifyKeepsa(certificateModifyKeepsa)
+	return o
+}
+
+// SetCertificateModifyKeepsa adds the certificateModifyKeepsa to the ipsec policy collection get params
+func (o *IpsecPolicyCollectionGetParams) SetCertificateModifyKeepsa(certificateModifyKeepsa *bool) {
+	o.CertificateModifyKeepsa = certificateModifyKeepsa
 }
 
 // WithEnabled adds the enabled to the ipsec policy collection get params
@@ -697,6 +714,23 @@ func (o *IpsecPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qCertificateUUID != "" {
 
 			if err := r.SetQueryParam("certificate.uuid", qCertificateUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CertificateModifyKeepsa != nil {
+
+		// query param certificate_modify_keepsa
+		var qrCertificateModifyKeepsa bool
+
+		if o.CertificateModifyKeepsa != nil {
+			qrCertificateModifyKeepsa = *o.CertificateModifyKeepsa
+		}
+		qCertificateModifyKeepsa := swag.FormatBool(qrCertificateModifyKeepsa)
+		if qCertificateModifyKeepsa != "" {
+
+			if err := r.SetQueryParam("certificate_modify_keepsa", qCertificateModifyKeepsa); err != nil {
 				return err
 			}
 		}

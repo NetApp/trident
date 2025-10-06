@@ -435,7 +435,7 @@ func TestInitializeASA(t *testing.T) {
 			},
 		},
 		{
-			name: "InitializeASAStoragePoolsCommon returns an error",
+			name: "InitializeDisaggregatedStoragePoolsCommon returns an error",
 			setupMocks: func() {
 				driver.Config.SnapshotDir = "not-boolean"
 				driver.initialized = false
@@ -3004,6 +3004,8 @@ func TestGetBackendStateASA(t *testing.T) {
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.ISCSI).Return([]string{"1.2.3.4"}, nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
+				mockAPI.EXPECT().IsDisaggregated().Return(false).Times(1)
+				mockAPI.EXPECT().IsSANOptimized().Return(false).Times(1)
 			},
 			expectedState:  "",
 			expectedReason: "Should be online",
@@ -3023,6 +3025,8 @@ func TestGetBackendStateASA(t *testing.T) {
 				mockAPI.EXPECT().NetFcpInterfaceGetDataLIFs(ctx, sa.FCP).Return([]string{"20:00:00:25:b5:11:a0:01", "20:00:00:25:b5:11:a0:02"}, nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
+				mockAPI.EXPECT().IsDisaggregated().Return(false).Times(1)
+				mockAPI.EXPECT().IsSANOptimized().Return(false).Times(1)
 			},
 			expectedState:  "",
 			expectedReason: "Should be online",
@@ -3040,6 +3044,8 @@ func TestGetBackendStateASA(t *testing.T) {
 				mockAPI.EXPECT().GetSVMState(ctx).Return(restAPIModels.SvmStateRunning, nil).Times(1)
 				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).Times(1)
 				mockAPI.EXPECT().NetFcpInterfaceGetDataLIFs(ctx, sa.FCP).Return([]string{}, nil).Times(1)
+				mockAPI.EXPECT().IsDisaggregated().Return(false).Times(1)
+				mockAPI.EXPECT().IsSANOptimized().Return(false).Times(1)
 			},
 			expectedState:  StateReasonDataLIFsDown,
 			expectedReason: "Should be offline due to no FCP LIFs",
@@ -3059,6 +3065,8 @@ func TestGetBackendStateASA(t *testing.T) {
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.ISCSI).Return([]string{"127.0.0.1"}, nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, false).Return("9.14.1", nil).Times(1)
+				mockAPI.EXPECT().IsDisaggregated().Return(false).Times(1)
+				mockAPI.EXPECT().IsSANOptimized().Return(false).Times(1)
 			},
 			expectedState:  "",
 			expectedReason: "Should be online with explicit iSCSI SANType",

@@ -33,6 +33,12 @@ type ConsistencyGroupProvisioningOptions struct {
 	//
 	Name *string `json:"name,omitempty"`
 
+	// Enable snapshot autodelete on a storage unit.
+	SnapshotAutodeleteEnabled interface{} `json:"snapshot_autodelete_enabled,omitempty"`
+
+	// The space that has been set aside as a reserve for storage unit snapshot usage, in percent.
+	SnapshotReservePercent interface{} `json:"snapshot_reserve_percent,omitempty"`
+
 	// storage service
 	StorageService *ConsistencyGroupProvisioningOptionsInlineStorageService `json:"storage_service,omitempty"`
 }

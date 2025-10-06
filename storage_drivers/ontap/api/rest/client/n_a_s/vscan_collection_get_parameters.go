@@ -98,6 +98,12 @@ type VscanCollectionGetParams struct {
 	*/
 	OnAccessPoliciesName *string
 
+	/* OnAccessPoliciesProtocol.
+
+	   Filter by on_access_policies.protocol
+	*/
+	OnAccessPoliciesProtocol *string
+
 	/* OnAccessPoliciesScopeExcludeExtensions.
 
 	   Filter by on_access_policies.scope.exclude_extensions
@@ -401,6 +407,17 @@ func (o *VscanCollectionGetParams) WithOnAccessPoliciesName(onAccessPoliciesName
 // SetOnAccessPoliciesName adds the onAccessPoliciesName to the vscan collection get params
 func (o *VscanCollectionGetParams) SetOnAccessPoliciesName(onAccessPoliciesName *string) {
 	o.OnAccessPoliciesName = onAccessPoliciesName
+}
+
+// WithOnAccessPoliciesProtocol adds the onAccessPoliciesProtocol to the vscan collection get params
+func (o *VscanCollectionGetParams) WithOnAccessPoliciesProtocol(onAccessPoliciesProtocol *string) *VscanCollectionGetParams {
+	o.SetOnAccessPoliciesProtocol(onAccessPoliciesProtocol)
+	return o
+}
+
+// SetOnAccessPoliciesProtocol adds the onAccessPoliciesProtocol to the vscan collection get params
+func (o *VscanCollectionGetParams) SetOnAccessPoliciesProtocol(onAccessPoliciesProtocol *string) {
+	o.OnAccessPoliciesProtocol = onAccessPoliciesProtocol
 }
 
 // WithOnAccessPoliciesScopeExcludeExtensions adds the onAccessPoliciesScopeExcludeExtensions to the vscan collection get params
@@ -810,6 +827,23 @@ func (o *VscanCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg s
 		if qOnAccessPoliciesName != "" {
 
 			if err := r.SetQueryParam("on_access_policies.name", qOnAccessPoliciesName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.OnAccessPoliciesProtocol != nil {
+
+		// query param on_access_policies.protocol
+		var qrOnAccessPoliciesProtocol string
+
+		if o.OnAccessPoliciesProtocol != nil {
+			qrOnAccessPoliciesProtocol = *o.OnAccessPoliciesProtocol
+		}
+		qOnAccessPoliciesProtocol := qrOnAccessPoliciesProtocol
+		if qOnAccessPoliciesProtocol != "" {
+
+			if err := r.SetQueryParam("on_access_policies.protocol", qOnAccessPoliciesProtocol); err != nil {
 				return err
 			}
 		}

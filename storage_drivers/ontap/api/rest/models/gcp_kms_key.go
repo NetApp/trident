@@ -17,9 +17,21 @@ import (
 // swagger:model gcp_kms_key
 type GcpKmsKey struct {
 
-	// Key identifier of the Google Cloud KMS key encryption key.
+	// Google Cloud KMS key name.
 	// Example: cryptokey1
 	KeyName *string `json:"key_name,omitempty"`
+
+	// Google Cloud KMS key ring location.
+	// Example: location1
+	KeyRingLocation *string `json:"key_ring_location,omitempty"`
+
+	// Google Cloud KMS key ring name.
+	// Example: keyring1
+	KeyRingName *string `json:"key_ring_name,omitempty"`
+
+	// Google Cloud KMS project ID.
+	// Example: project1
+	ProjectID *string `json:"project_id,omitempty"`
 }
 
 // Validate validates this gcp kms key

@@ -219,6 +219,7 @@ func NewSvmModifyDefault(code int) *SvmModifyDefault {
 | 262179      | Unexpected argument \"storage_limit\". |<personalities supports=asar2>
 | 13434935    | FCP, iSCSI and NVMe cannot be disabled or disallowed on this platform. |</personalities>
 | 23724038    | Invalid source for the provided ns-switch database. |
+| 2621779     | Operation not supported for an SVM of type data-engine. |
 ```
 <br/>
 */

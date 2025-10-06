@@ -24,7 +24,7 @@ type SoftwareStatusDetailsReference struct {
 	Action *SoftwareStatusDetailsReferenceInlineAction `json:"action,omitempty"`
 
 	// End time for each status phase.
-	// Example: 2019-02-02 19:00:00
+	// Example: 2019-02-02 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
@@ -41,7 +41,7 @@ type SoftwareStatusDetailsReference struct {
 	Node *SoftwareStatusDetailsReferenceInlineNode `json:"node,omitempty"`
 
 	// Start time for each status phase.
-	// Example: 2019-02-02 19:00:00
+	// Example: 2019-02-02 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`

@@ -92,11 +92,23 @@ type LicensesGetParams struct {
 	*/
 	LicensesActive *bool
 
+	/* LicensesCapacityDisabledSize.
+
+	   Filter by licenses.capacity.disabled_size
+	*/
+	LicensesCapacityDisabledSize *int64
+
 	/* LicensesCapacityMaximumSize.
 
 	   Filter by licenses.capacity.maximum_size
 	*/
 	LicensesCapacityMaximumSize *int64
+
+	/* LicensesCapacityMeasurementUnit.
+
+	   Filter by licenses.capacity.measurement_unit
+	*/
+	LicensesCapacityMeasurementUnit *string
 
 	/* LicensesCapacityUsedSize.
 
@@ -326,6 +338,17 @@ func (o *LicensesGetParams) SetLicensesActive(licensesActive *bool) {
 	o.LicensesActive = licensesActive
 }
 
+// WithLicensesCapacityDisabledSize adds the licensesCapacityDisabledSize to the licenses get params
+func (o *LicensesGetParams) WithLicensesCapacityDisabledSize(licensesCapacityDisabledSize *int64) *LicensesGetParams {
+	o.SetLicensesCapacityDisabledSize(licensesCapacityDisabledSize)
+	return o
+}
+
+// SetLicensesCapacityDisabledSize adds the licensesCapacityDisabledSize to the licenses get params
+func (o *LicensesGetParams) SetLicensesCapacityDisabledSize(licensesCapacityDisabledSize *int64) {
+	o.LicensesCapacityDisabledSize = licensesCapacityDisabledSize
+}
+
 // WithLicensesCapacityMaximumSize adds the licensesCapacityMaximumSize to the licenses get params
 func (o *LicensesGetParams) WithLicensesCapacityMaximumSize(licensesCapacityMaximumSize *int64) *LicensesGetParams {
 	o.SetLicensesCapacityMaximumSize(licensesCapacityMaximumSize)
@@ -335,6 +358,17 @@ func (o *LicensesGetParams) WithLicensesCapacityMaximumSize(licensesCapacityMaxi
 // SetLicensesCapacityMaximumSize adds the licensesCapacityMaximumSize to the licenses get params
 func (o *LicensesGetParams) SetLicensesCapacityMaximumSize(licensesCapacityMaximumSize *int64) {
 	o.LicensesCapacityMaximumSize = licensesCapacityMaximumSize
+}
+
+// WithLicensesCapacityMeasurementUnit adds the licensesCapacityMeasurementUnit to the licenses get params
+func (o *LicensesGetParams) WithLicensesCapacityMeasurementUnit(licensesCapacityMeasurementUnit *string) *LicensesGetParams {
+	o.SetLicensesCapacityMeasurementUnit(licensesCapacityMeasurementUnit)
+	return o
+}
+
+// SetLicensesCapacityMeasurementUnit adds the licensesCapacityMeasurementUnit to the licenses get params
+func (o *LicensesGetParams) SetLicensesCapacityMeasurementUnit(licensesCapacityMeasurementUnit *string) {
+	o.LicensesCapacityMeasurementUnit = licensesCapacityMeasurementUnit
 }
 
 // WithLicensesCapacityUsedSize adds the licensesCapacityUsedSize to the licenses get params
@@ -611,6 +645,23 @@ func (o *LicensesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 		}
 	}
 
+	if o.LicensesCapacityDisabledSize != nil {
+
+		// query param licenses.capacity.disabled_size
+		var qrLicensesCapacityDisabledSize int64
+
+		if o.LicensesCapacityDisabledSize != nil {
+			qrLicensesCapacityDisabledSize = *o.LicensesCapacityDisabledSize
+		}
+		qLicensesCapacityDisabledSize := swag.FormatInt64(qrLicensesCapacityDisabledSize)
+		if qLicensesCapacityDisabledSize != "" {
+
+			if err := r.SetQueryParam("licenses.capacity.disabled_size", qLicensesCapacityDisabledSize); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.LicensesCapacityMaximumSize != nil {
 
 		// query param licenses.capacity.maximum_size
@@ -623,6 +674,23 @@ func (o *LicensesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 		if qLicensesCapacityMaximumSize != "" {
 
 			if err := r.SetQueryParam("licenses.capacity.maximum_size", qLicensesCapacityMaximumSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LicensesCapacityMeasurementUnit != nil {
+
+		// query param licenses.capacity.measurement_unit
+		var qrLicensesCapacityMeasurementUnit string
+
+		if o.LicensesCapacityMeasurementUnit != nil {
+			qrLicensesCapacityMeasurementUnit = *o.LicensesCapacityMeasurementUnit
+		}
+		qLicensesCapacityMeasurementUnit := qrLicensesCapacityMeasurementUnit
+		if qLicensesCapacityMeasurementUnit != "" {
+
+			if err := r.SetQueryParam("licenses.capacity.measurement_unit", qLicensesCapacityMeasurementUnit); err != nil {
 				return err
 			}
 		}

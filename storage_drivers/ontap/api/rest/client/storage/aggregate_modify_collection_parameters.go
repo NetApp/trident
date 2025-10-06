@@ -906,6 +906,12 @@ type AggregateModifyCollectionParams struct {
 	*/
 	SpaceSnapshotUsedPercent *int64
 
+	/* SpaceTotalProvisionedSpace.
+
+	   Filter by space.total_provisioned_space
+	*/
+	SpaceTotalProvisionedSpace *int64
+
 	/* State.
 
 	   Filter by state
@@ -2619,6 +2625,17 @@ func (o *AggregateModifyCollectionParams) WithSpaceSnapshotUsedPercent(spaceSnap
 // SetSpaceSnapshotUsedPercent adds the spaceSnapshotUsedPercent to the aggregate modify collection params
 func (o *AggregateModifyCollectionParams) SetSpaceSnapshotUsedPercent(spaceSnapshotUsedPercent *int64) {
 	o.SpaceSnapshotUsedPercent = spaceSnapshotUsedPercent
+}
+
+// WithSpaceTotalProvisionedSpace adds the spaceTotalProvisionedSpace to the aggregate modify collection params
+func (o *AggregateModifyCollectionParams) WithSpaceTotalProvisionedSpace(spaceTotalProvisionedSpace *int64) *AggregateModifyCollectionParams {
+	o.SetSpaceTotalProvisionedSpace(spaceTotalProvisionedSpace)
+	return o
+}
+
+// SetSpaceTotalProvisionedSpace adds the spaceTotalProvisionedSpace to the aggregate modify collection params
+func (o *AggregateModifyCollectionParams) SetSpaceTotalProvisionedSpace(spaceTotalProvisionedSpace *int64) {
+	o.SpaceTotalProvisionedSpace = spaceTotalProvisionedSpace
 }
 
 // WithState adds the state to the aggregate modify collection params
@@ -5177,6 +5194,23 @@ func (o *AggregateModifyCollectionParams) WriteToRequest(r runtime.ClientRequest
 		if qSpaceSnapshotUsedPercent != "" {
 
 			if err := r.SetQueryParam("space.snapshot.used_percent", qSpaceSnapshotUsedPercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceTotalProvisionedSpace != nil {
+
+		// query param space.total_provisioned_space
+		var qrSpaceTotalProvisionedSpace int64
+
+		if o.SpaceTotalProvisionedSpace != nil {
+			qrSpaceTotalProvisionedSpace = *o.SpaceTotalProvisionedSpace
+		}
+		qSpaceTotalProvisionedSpace := swag.FormatInt64(qrSpaceTotalProvisionedSpace)
+		if qSpaceTotalProvisionedSpace != "" {
+
+			if err := r.SetQueryParam("space.total_provisioned_space", qSpaceTotalProvisionedSpace); err != nil {
 				return err
 			}
 		}

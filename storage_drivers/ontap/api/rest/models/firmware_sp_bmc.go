@@ -25,7 +25,7 @@ type FirmwareSpBmc struct {
 	Autoupdate *bool `json:"autoupdate,omitempty"`
 
 	// end time
-	// Example: 2020-05-17 20:00:00
+	// Example: 2020-05-17 20:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
@@ -70,7 +70,7 @@ type FirmwareSpBmc struct {
 	RunningVersion *string `json:"running_version,omitempty"`
 
 	// start time
-	// Example: 2020-05-17 20:00:00
+	// Example: 2020-05-17 20:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`

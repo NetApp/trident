@@ -583,7 +583,9 @@ func (a *Client) S3BucketLifecycleRuleCollectionGet(params *S3BucketLifecycleRul
 
 ### Required properties
 * `name` - Lifecycle Management rule to be created.
-* `actions` - Lifecycle Management actions associated with the rule.
+* `expiration` and/or `non_current_version_expiration` and/or `abort_incomplete_multipart_upload`
+  - Lifecycle Management actions associated with the lifecycle rule.
+
 ### Recommended optional properties
 * `enabled` - Lifecycle Management rule is enabled or not.
 * `object_filter.prefix` - Lifecycle Management rule filter prefix.
@@ -1217,7 +1219,7 @@ func (a *Client) S3BucketSnapshotGet(params *S3BucketSnapshotGetParams, authInfo
 * `is_consistent_etag` - Return a consistent ETag for NAS buckets.
 * `is_nas_path_mutable` - Specifies whether the NAS bucket mapping with a NAS volume can change according to the changes in the NAS volume junction-path due to volume operations like mount and unmount.
 ### Default property values
-* `size` - 800MB
+* `size` - 800GB
 * `comment` - ""
 * `aggregates` - No default value.
 * `constituents_per_aggregate` - _4_ , if an aggregates list is specified. Otherwise, no default value.
@@ -2215,6 +2217,7 @@ func (a *Client) S3ServiceCollectionGet(params *S3ServiceCollectionGetParams, au
 
 ### Important notes
 - Each SVM can have one S3 server configuration.
+- By default, HTTPS is enabled on the S3 server, so a valid certificate must be provided when creating a S3 Server for the SVM.
 - One or more buckets and users can also be created using this end-point.
 - If creating a user configuration fails, buckets are not created either and already created users are not saved.
 - If creating a bucket configuration fails, all buckets already created are saved with no new buckets created.
@@ -2226,6 +2229,7 @@ func (a *Client) S3ServiceCollectionGet(params *S3ServiceCollectionGetParams, au
 ### Default property values
 * `comment` - ""
 * `enabled` - _true_
+* `is_https_enabled` - _true_
 ### Related ONTAP commands
 * `vserver object-store-server create`
 * `vserver object-store-server bucket create`

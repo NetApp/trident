@@ -30,6 +30,9 @@ type TopMetricsSvmUserResponse struct {
 	// Example: 1
 	NumRecords *int64 `json:"num_records,omitempty"`
 
+	// partial response reason
+	PartialResponseReason *TopMetricsSvmUserResponseInlinePartialResponseReason `json:"partial_response_reason,omitempty"`
+
 	// List of volumes that are not included in the SVM activity tracking REST API.
 	TopMetricsSvmUserResponseInlineExcludedVolumes []*TopMetricsSvmUserExcludedVolume `json:"excluded_volumes,omitempty"`
 
@@ -46,6 +49,10 @@ func (m *TopMetricsSvmUserResponse) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNotice(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePartialResponseReason(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -89,6 +96,23 @@ func (m *TopMetricsSvmUserResponse) validateNotice(formats strfmt.Registry) erro
 		if err := m.Notice.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("notice")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *TopMetricsSvmUserResponse) validatePartialResponseReason(formats strfmt.Registry) error {
+	if swag.IsZero(m.PartialResponseReason) { // not required
+		return nil
+	}
+
+	if m.PartialResponseReason != nil {
+		if err := m.PartialResponseReason.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("partial_response_reason")
 			}
 			return err
 		}
@@ -157,6 +181,10 @@ func (m *TopMetricsSvmUserResponse) ContextValidate(ctx context.Context, formats
 		res = append(res, err)
 	}
 
+	if err := m.contextValidatePartialResponseReason(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateTopMetricsSvmUserResponseInlineExcludedVolumes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -191,6 +219,20 @@ func (m *TopMetricsSvmUserResponse) contextValidateNotice(ctx context.Context, f
 		if err := m.Notice.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("notice")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *TopMetricsSvmUserResponse) contextValidatePartialResponseReason(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.PartialResponseReason != nil {
+		if err := m.PartialResponseReason.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("partial_response_reason")
 			}
 			return err
 		}
@@ -449,6 +491,81 @@ func (m *TopMetricsSvmUserResponseInlineNotice) MarshalBinary() ([]byte, error) 
 // UnmarshalBinary interface implementation
 func (m *TopMetricsSvmUserResponseInlineNotice) UnmarshalBinary(b []byte) error {
 	var res TopMetricsSvmUserResponseInlineNotice
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// TopMetricsSvmUserResponseInlinePartialResponseReason Indicates that the metric report provides partial data.
+//
+// swagger:model top_metrics_svm_user_response_inline_partial_response_reason
+type TopMetricsSvmUserResponseInlinePartialResponseReason struct {
+
+	// Warning code indicating why partial data was reported.
+	// Example: 124518424
+	// Read Only: true
+	Code *string `json:"code,omitempty"`
+
+	// A message describing the reason for partial data.
+	// Example: The top metrics report contains partial data for read operations because NFSv4 reads using Multi-Processor I/O (MPIO) are not tracked.
+	// Read Only: true
+	Message *string `json:"message,omitempty"`
+}
+
+// Validate validates this top metrics svm user response inline partial response reason
+func (m *TopMetricsSvmUserResponseInlinePartialResponseReason) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this top metrics svm user response inline partial response reason based on the context it is used
+func (m *TopMetricsSvmUserResponseInlinePartialResponseReason) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCode(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *TopMetricsSvmUserResponseInlinePartialResponseReason) contextValidateCode(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "partial_response_reason"+"."+"code", "body", m.Code); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TopMetricsSvmUserResponseInlinePartialResponseReason) contextValidateMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "partial_response_reason"+"."+"message", "body", m.Message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *TopMetricsSvmUserResponseInlinePartialResponseReason) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *TopMetricsSvmUserResponseInlinePartialResponseReason) UnmarshalBinary(b []byte) error {
+	var res TopMetricsSvmUserResponseInlinePartialResponseReason
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

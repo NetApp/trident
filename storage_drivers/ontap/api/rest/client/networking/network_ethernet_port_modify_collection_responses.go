@@ -2726,7 +2726,7 @@ type PortInlineMetric struct {
 	Throughput *models.PortInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
@@ -3689,7 +3689,7 @@ swagger:model port_inline_statistics
 type PortInlineStatistics struct {
 
 	// device
-	Device *models.PortInlineStatisticsInlineDevice `json:"device,omitempty"`
+	Device *PortInlineStatisticsInlineDevice `json:"device,omitempty"`
 
 	// Errors associated with the sample. For example, if the aggregation of data over multiple nodes fails, then any partial errors might return "ok" on success or "error" on an internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
@@ -3697,10 +3697,10 @@ type PortInlineStatistics struct {
 	Status *string `json:"status,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *models.PortInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
+	ThroughputRaw *PortInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the throughput_raw performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
@@ -3991,7 +3991,7 @@ type PortInlineStatisticsInlineDevice struct {
 	ReceiveRaw *PortInlineStatisticsInlineDeviceInlineReceiveRaw `json:"receive_raw,omitempty"`
 
 	// The timestamp when the device specific counters were collected.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 

@@ -14,6 +14,7 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 )
@@ -63,6 +64,12 @@ DNSModifyParams contains all the parameters to send to the API endpoint
 */
 type DNSModifyParams struct {
 
+	/* Async.
+
+	   An asynchronous task.
+	*/
+	Async *bool
+
 	/* Info.
 
 	   Info specification
@@ -92,7 +99,18 @@ func (o *DNSModifyParams) WithDefaults() *DNSModifyParams {
 //
 // All values with no default are reset to their zero value.
 func (o *DNSModifyParams) SetDefaults() {
-	// no default values defined for this parameter
+	var (
+		asyncDefault = bool(false)
+	)
+
+	val := DNSModifyParams{
+		Async: &asyncDefault,
+	}
+
+	val.timeout = o.timeout
+	val.Context = o.Context
+	val.HTTPClient = o.HTTPClient
+	*o = val
 }
 
 // WithTimeout adds the timeout to the dns modify params
@@ -128,6 +146,17 @@ func (o *DNSModifyParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithAsync adds the async to the dns modify params
+func (o *DNSModifyParams) WithAsync(async *bool) *DNSModifyParams {
+	o.SetAsync(async)
+	return o
+}
+
+// SetAsync adds the async to the dns modify params
+func (o *DNSModifyParams) SetAsync(async *bool) {
+	o.Async = async
+}
+
 // WithInfo adds the info to the dns modify params
 func (o *DNSModifyParams) WithInfo(info *models.DNS) *DNSModifyParams {
 	o.SetInfo(info)
@@ -157,6 +186,23 @@ func (o *DNSModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 		return err
 	}
 	var res []error
+
+	if o.Async != nil {
+
+		// query param async
+		var qrAsync bool
+
+		if o.Async != nil {
+			qrAsync = *o.Async
+		}
+		qAsync := swag.FormatBool(qrAsync)
+		if qAsync != "" {
+
+			if err := r.SetQueryParam("async", qAsync); err != nil {
+				return err
+			}
+		}
+	}
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err

@@ -27,8 +27,14 @@ type Container struct {
 	// Min Items: 0
 	ContainerInlineVolumes []*ContainerInlineVolumesInlineArrayItem `json:"volumes,omitempty"`
 
+	// provisioning options
+	ProvisioningOptions *ContainerInlineProvisioningOptions `json:"provisioning_options,omitempty"`
+
 	// svm
 	Svm *ContainerInlineSvm `json:"svm,omitempty"`
+
+	// Specifies whether mirrored aggregates are selected when provisioning the volume. Only mirrored aggregates are used if this parameter is set to _true_ and only unmirrored aggregates are used if this parameter is set to _false_. The default value is _true_ for a MetroCluster configuration and is _false_ for a non-MetroCluster configuration.
+	UseMirroredAggregates *bool `json:"use_mirrored_aggregates,omitempty"`
 }
 
 // Validate validates this container
@@ -36,6 +42,10 @@ func (m *Container) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateContainerInlineVolumes(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateProvisioningOptions(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -83,6 +93,23 @@ func (m *Container) validateContainerInlineVolumes(formats strfmt.Registry) erro
 	return nil
 }
 
+func (m *Container) validateProvisioningOptions(formats strfmt.Registry) error {
+	if swag.IsZero(m.ProvisioningOptions) { // not required
+		return nil
+	}
+
+	if m.ProvisioningOptions != nil {
+		if err := m.ProvisioningOptions.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("provisioning_options")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Container) validateSvm(formats strfmt.Registry) error {
 	if swag.IsZero(m.Svm) { // not required
 		return nil
@@ -105,6 +132,10 @@ func (m *Container) ContextValidate(ctx context.Context, formats strfmt.Registry
 	var res []error
 
 	if err := m.contextValidateContainerInlineVolumes(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateProvisioningOptions(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -136,6 +167,20 @@ func (m *Container) contextValidateContainerInlineVolumes(ctx context.Context, f
 	return nil
 }
 
+func (m *Container) contextValidateProvisioningOptions(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ProvisioningOptions != nil {
+		if err := m.ProvisioningOptions.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("provisioning_options")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Container) contextValidateSvm(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Svm != nil {
@@ -161,6 +206,154 @@ func (m *Container) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *Container) UnmarshalBinary(b []byte) error {
 	var res Container
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ContainerInlineProvisioningOptions Options that are applied to the operation.
+//
+// swagger:model container_inline_provisioning_options
+type ContainerInlineProvisioningOptions struct {
+
+	// A list of aggregates to exclude when determining the placement of the volume.
+	//
+	// Max Items: 256
+	// Min Items: 0
+	ExcludeAggregates []*ContainerProvisioningOptionsExcludeAggregatesItems0 `json:"exclude_aggregates,omitempty"`
+}
+
+// Validate validates this container inline provisioning options
+func (m *ContainerInlineProvisioningOptions) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateExcludeAggregates(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ContainerInlineProvisioningOptions) validateExcludeAggregates(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExcludeAggregates) { // not required
+		return nil
+	}
+
+	iExcludeAggregatesSize := int64(len(m.ExcludeAggregates))
+
+	if err := validate.MinItems("provisioning_options"+"."+"exclude_aggregates", "body", iExcludeAggregatesSize, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("provisioning_options"+"."+"exclude_aggregates", "body", iExcludeAggregatesSize, 256); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ExcludeAggregates); i++ {
+		if swag.IsZero(m.ExcludeAggregates[i]) { // not required
+			continue
+		}
+
+		if m.ExcludeAggregates[i] != nil {
+			if err := m.ExcludeAggregates[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("provisioning_options" + "." + "exclude_aggregates" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this container inline provisioning options based on the context it is used
+func (m *ContainerInlineProvisioningOptions) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateExcludeAggregates(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ContainerInlineProvisioningOptions) contextValidateExcludeAggregates(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ExcludeAggregates); i++ {
+
+		if m.ExcludeAggregates[i] != nil {
+			if err := m.ExcludeAggregates[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("provisioning_options" + "." + "exclude_aggregates" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ContainerInlineProvisioningOptions) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ContainerInlineProvisioningOptions) UnmarshalBinary(b []byte) error {
+	var res ContainerInlineProvisioningOptions
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ContainerProvisioningOptionsExcludeAggregatesItems0 container provisioning options exclude aggregates items0
+//
+// swagger:model ContainerProvisioningOptionsExcludeAggregatesItems0
+type ContainerProvisioningOptionsExcludeAggregatesItems0 struct {
+
+	// name
+	// Example: aggr1
+	Name *string `json:"name,omitempty"`
+}
+
+// Validate validates this container provisioning options exclude aggregates items0
+func (m *ContainerProvisioningOptionsExcludeAggregatesItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this container provisioning options exclude aggregates items0 based on context it is used
+func (m *ContainerProvisioningOptionsExcludeAggregatesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ContainerProvisioningOptionsExcludeAggregatesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ContainerProvisioningOptionsExcludeAggregatesItems0) UnmarshalBinary(b []byte) error {
+	var res ContainerProvisioningOptionsExcludeAggregatesItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -355,6 +548,12 @@ func (m *ContainerInlineSvmInlineLinks) UnmarshalBinary(b []byte) error {
 // swagger:model container_inline_volumes_inline_array_item
 type ContainerInlineVolumesInlineArrayItem struct {
 
+	// A list of aggregates to exclude when determining the placement of the volume. <br/>
+	//
+	// Max Items: 256
+	// Min Items: 0
+	ExcludeAggregates []*ContainerVolumesItems0ExcludeAggregatesItems0 `json:"exclude_aggregates"`
+
 	// flexcache
 	Flexcache *ContainerInlineVolumesInlineArrayItemInlineFlexcache `json:"flexcache,omitempty"`
 
@@ -388,11 +587,24 @@ type ContainerInlineVolumesInlineArrayItem struct {
 
 	// space
 	Space *ContainerInlineVolumesInlineArrayItemInlineSpace `json:"space,omitempty"`
+
+	// storage service
+	StorageService *ContainerInlineVolumesInlineArrayItemInlineStorageService `json:"storage_service,omitempty"`
+
+	// tiering
+	Tiering *ContainerInlineVolumesInlineArrayItemInlineTiering `json:"tiering,omitempty"`
+
+	// Specifies whether mirrored aggregates are selected when provisioning the volume. Only mirrored aggregates are used if this parameter is set to _true_ and only unmirrored aggregates are used if this parameter is set to _false_. The default value is _true_ for a MetroCluster configuration and is _false_ for a non-MetroCluster configuration.
+	UseMirroredAggregates *bool `json:"use_mirrored_aggregates,omitempty"`
 }
 
 // Validate validates this container inline volumes inline array item
 func (m *ContainerInlineVolumesInlineArrayItem) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateExcludeAggregates(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateFlexcache(formats); err != nil {
 		res = append(res, err)
@@ -430,9 +642,51 @@ func (m *ContainerInlineVolumesInlineArrayItem) Validate(formats strfmt.Registry
 		res = append(res, err)
 	}
 
+	if err := m.validateStorageService(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateTiering(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ContainerInlineVolumesInlineArrayItem) validateExcludeAggregates(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExcludeAggregates) { // not required
+		return nil
+	}
+
+	iExcludeAggregatesSize := int64(len(m.ExcludeAggregates))
+
+	if err := validate.MinItems("exclude_aggregates", "body", iExcludeAggregatesSize, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("exclude_aggregates", "body", iExcludeAggregatesSize, 256); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ExcludeAggregates); i++ {
+		if swag.IsZero(m.ExcludeAggregates[i]) { // not required
+			continue
+		}
+
+		if m.ExcludeAggregates[i] != nil {
+			if err := m.ExcludeAggregates[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("exclude_aggregates" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -604,9 +858,47 @@ func (m *ContainerInlineVolumesInlineArrayItem) validateSpace(formats strfmt.Reg
 	return nil
 }
 
+func (m *ContainerInlineVolumesInlineArrayItem) validateStorageService(formats strfmt.Registry) error {
+	if swag.IsZero(m.StorageService) { // not required
+		return nil
+	}
+
+	if m.StorageService != nil {
+		if err := m.StorageService.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage_service")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ContainerInlineVolumesInlineArrayItem) validateTiering(formats strfmt.Registry) error {
+	if swag.IsZero(m.Tiering) { // not required
+		return nil
+	}
+
+	if m.Tiering != nil {
+		if err := m.Tiering.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("tiering")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this container inline volumes inline array item based on the context it is used
 func (m *ContainerInlineVolumesInlineArrayItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.contextValidateExcludeAggregates(ctx, formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.contextValidateFlexcache(ctx, formats); err != nil {
 		res = append(res, err)
@@ -636,9 +928,35 @@ func (m *ContainerInlineVolumesInlineArrayItem) ContextValidate(ctx context.Cont
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateStorageService(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTiering(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ContainerInlineVolumesInlineArrayItem) contextValidateExcludeAggregates(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ExcludeAggregates); i++ {
+
+		if m.ExcludeAggregates[i] != nil {
+			if err := m.ExcludeAggregates[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("exclude_aggregates" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -740,6 +1058,34 @@ func (m *ContainerInlineVolumesInlineArrayItem) contextValidateSpace(ctx context
 	return nil
 }
 
+func (m *ContainerInlineVolumesInlineArrayItem) contextValidateStorageService(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.StorageService != nil {
+		if err := m.StorageService.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("storage_service")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ContainerInlineVolumesInlineArrayItem) contextValidateTiering(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Tiering != nil {
+		if err := m.Tiering.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("tiering")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *ContainerInlineVolumesInlineArrayItem) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -758,6 +1104,186 @@ func (m *ContainerInlineVolumesInlineArrayItem) UnmarshalBinary(b []byte) error 
 	return nil
 }
 
+// ContainerVolumesItems0ExcludeAggregatesItems0 Aggregate
+//
+// swagger:model ContainerVolumesItems0ExcludeAggregatesItems0
+type ContainerVolumesItems0ExcludeAggregatesItems0 struct {
+
+	// links
+	Links *ContainerVolumesItems0ExcludeAggregatesItems0Links `json:"_links,omitempty"`
+
+	// name
+	// Example: aggr1
+	Name *string `json:"name,omitempty"`
+
+	// uuid
+	// Example: 1cd8a442-86d1-11e0-ae1c-123478563412
+	UUID *string `json:"uuid,omitempty"`
+}
+
+// Validate validates this container volumes items0 exclude aggregates items0
+func (m *ContainerVolumesItems0ExcludeAggregatesItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ContainerVolumesItems0ExcludeAggregatesItems0) validateLinks(formats strfmt.Registry) error {
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	if m.Links != nil {
+		if err := m.Links.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this container volumes items0 exclude aggregates items0 based on the context it is used
+func (m *ContainerVolumesItems0ExcludeAggregatesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ContainerVolumesItems0ExcludeAggregatesItems0) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Links != nil {
+		if err := m.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ContainerVolumesItems0ExcludeAggregatesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ContainerVolumesItems0ExcludeAggregatesItems0) UnmarshalBinary(b []byte) error {
+	var res ContainerVolumesItems0ExcludeAggregatesItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ContainerVolumesItems0ExcludeAggregatesItems0Links container volumes items0 exclude aggregates items0 links
+//
+// swagger:model ContainerVolumesItems0ExcludeAggregatesItems0Links
+type ContainerVolumesItems0ExcludeAggregatesItems0Links struct {
+
+	// self
+	Self *Href `json:"self,omitempty"`
+}
+
+// Validate validates this container volumes items0 exclude aggregates items0 links
+func (m *ContainerVolumesItems0ExcludeAggregatesItems0Links) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateSelf(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ContainerVolumesItems0ExcludeAggregatesItems0Links) validateSelf(formats strfmt.Registry) error {
+	if swag.IsZero(m.Self) { // not required
+		return nil
+	}
+
+	if m.Self != nil {
+		if err := m.Self.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this container volumes items0 exclude aggregates items0 links based on the context it is used
+func (m *ContainerVolumesItems0ExcludeAggregatesItems0Links) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSelf(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ContainerVolumesItems0ExcludeAggregatesItems0Links) contextValidateSelf(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Self != nil {
+		if err := m.Self.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("_links" + "." + "self")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ContainerVolumesItems0ExcludeAggregatesItems0Links) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ContainerVolumesItems0ExcludeAggregatesItems0Links) UnmarshalBinary(b []byte) error {
+	var res ContainerVolumesItems0ExcludeAggregatesItems0Links
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // ContainerInlineVolumesInlineArrayItemInlineFlexcache The FlexCache origin volume.
 //
 // swagger:model container_inline_volumes_inline_array_item_inline_flexcache
@@ -768,6 +1294,9 @@ type ContainerInlineVolumesInlineArrayItemInlineFlexcache struct {
 
 	// origins
 	Origins []*ContainerVolumeFlexcacheRelationship `json:"origins"`
+
+	// writeback
+	Writeback *ContainerInlineVolumesInlineArrayItemInlineFlexcacheInlineWriteback `json:"writeback,omitempty"`
 }
 
 // Validate validates this container inline volumes inline array item inline flexcache
@@ -775,6 +1304,10 @@ func (m *ContainerInlineVolumesInlineArrayItemInlineFlexcache) Validate(formats 
 	var res []error
 
 	if err := m.validateOrigins(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateWriteback(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -808,11 +1341,32 @@ func (m *ContainerInlineVolumesInlineArrayItemInlineFlexcache) validateOrigins(f
 	return nil
 }
 
+func (m *ContainerInlineVolumesInlineArrayItemInlineFlexcache) validateWriteback(formats strfmt.Registry) error {
+	if swag.IsZero(m.Writeback) { // not required
+		return nil
+	}
+
+	if m.Writeback != nil {
+		if err := m.Writeback.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("flexcache" + "." + "writeback")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this container inline volumes inline array item inline flexcache based on the context it is used
 func (m *ContainerInlineVolumesInlineArrayItemInlineFlexcache) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateOrigins(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateWriteback(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -840,6 +1394,20 @@ func (m *ContainerInlineVolumesInlineArrayItemInlineFlexcache) contextValidateOr
 	return nil
 }
 
+func (m *ContainerInlineVolumesInlineArrayItemInlineFlexcache) contextValidateWriteback(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Writeback != nil {
+		if err := m.Writeback.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("flexcache" + "." + "writeback")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *ContainerInlineVolumesInlineArrayItemInlineFlexcache) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -851,6 +1419,43 @@ func (m *ContainerInlineVolumesInlineArrayItemInlineFlexcache) MarshalBinary() (
 // UnmarshalBinary interface implementation
 func (m *ContainerInlineVolumesInlineArrayItemInlineFlexcache) UnmarshalBinary(b []byte) error {
 	var res ContainerInlineVolumesInlineArrayItemInlineFlexcache
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ContainerInlineVolumesInlineArrayItemInlineFlexcacheInlineWriteback container inline volumes inline array item inline flexcache inline writeback
+//
+// swagger:model container_inline_volumes_inline_array_item_inline_flexcache_inline_writeback
+type ContainerInlineVolumesInlineArrayItemInlineFlexcacheInlineWriteback struct {
+
+	// Indicates whether or not writeback is enabled for the FlexCache volume. Writeback is a storage method where data is first written to the FlexCache volume and then written to the origin of a FlexCache volume.
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// Validate validates this container inline volumes inline array item inline flexcache inline writeback
+func (m *ContainerInlineVolumesInlineArrayItemInlineFlexcacheInlineWriteback) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this container inline volumes inline array item inline flexcache inline writeback based on context it is used
+func (m *ContainerInlineVolumesInlineArrayItemInlineFlexcacheInlineWriteback) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ContainerInlineVolumesInlineArrayItemInlineFlexcacheInlineWriteback) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ContainerInlineVolumesInlineArrayItemInlineFlexcacheInlineWriteback) UnmarshalBinary(b []byte) error {
+	var res ContainerInlineVolumesInlineArrayItemInlineFlexcacheInlineWriteback
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1906,11 +2511,10 @@ type ContainerVolumesItems0S3BucketPolicyStatementsItems0 struct {
 	// Example: ["bucket1","bucket1/*"]
 	Resources []*string `json:"resources"`
 
-	// Specifies the statement identifier used to differentiate between statements. The sid length can range from 1 to 256 characters and can only contain the following combination of characters 0-9, A-Z, and a-z. Special characters are not valid.
-	// Example: FullAccessToUser1
+	// Specifies the statement identifier used to differentiate between statements. The SID length can range from 1 to 256 characters.
+	// Example: Full_Access_To_User1!
 	// Max Length: 256
 	// Min Length: 0
-	// Pattern: ^[0-9A-Za-z]{0,256}$
 	Sid *string `json:"sid,omitempty"`
 }
 
@@ -2026,10 +2630,6 @@ func (m *ContainerVolumesItems0S3BucketPolicyStatementsItems0) validateSid(forma
 	}
 
 	if err := validate.MaxLength("sid", "body", *m.Sid, 256); err != nil {
-		return err
-	}
-
-	if err := validate.Pattern("sid", "body", *m.Sid, `^[0-9A-Za-z]{0,256}$`); err != nil {
 		return err
 	}
 
@@ -2513,6 +3113,448 @@ func (m *ContainerInlineVolumesInlineArrayItemInlineSpace) MarshalBinary() ([]by
 // UnmarshalBinary interface implementation
 func (m *ContainerInlineVolumesInlineArrayItemInlineSpace) UnmarshalBinary(b []byte) error {
 	var res ContainerInlineVolumesInlineArrayItemInlineSpace
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ContainerInlineVolumesInlineArrayItemInlineStorageService Determines the placement of the volume that is to be provisioned.
+//
+// swagger:model container_inline_volumes_inline_array_item_inline_storage_service
+type ContainerInlineVolumesInlineArrayItemInlineStorageService struct {
+
+	// Storage service name. If not specified, the default value is the most performant for the platform.
+	//
+	// Enum: ["extreme","performance","value"]
+	Name *string `json:"name,omitempty"`
+}
+
+// Validate validates this container inline volumes inline array item inline storage service
+func (m *ContainerInlineVolumesInlineArrayItemInlineStorageService) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var containerInlineVolumesInlineArrayItemInlineStorageServiceTypeNamePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["extreme","performance","value"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		containerInlineVolumesInlineArrayItemInlineStorageServiceTypeNamePropEnum = append(containerInlineVolumesInlineArrayItemInlineStorageServiceTypeNamePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// container_inline_volumes_inline_array_item_inline_storage_service
+	// ContainerInlineVolumesInlineArrayItemInlineStorageService
+	// name
+	// Name
+	// extreme
+	// END DEBUGGING
+	// ContainerInlineVolumesInlineArrayItemInlineStorageServiceNameExtreme captures enum value "extreme"
+	ContainerInlineVolumesInlineArrayItemInlineStorageServiceNameExtreme string = "extreme"
+
+	// BEGIN DEBUGGING
+	// container_inline_volumes_inline_array_item_inline_storage_service
+	// ContainerInlineVolumesInlineArrayItemInlineStorageService
+	// name
+	// Name
+	// performance
+	// END DEBUGGING
+	// ContainerInlineVolumesInlineArrayItemInlineStorageServiceNamePerformance captures enum value "performance"
+	ContainerInlineVolumesInlineArrayItemInlineStorageServiceNamePerformance string = "performance"
+
+	// BEGIN DEBUGGING
+	// container_inline_volumes_inline_array_item_inline_storage_service
+	// ContainerInlineVolumesInlineArrayItemInlineStorageService
+	// name
+	// Name
+	// value
+	// END DEBUGGING
+	// ContainerInlineVolumesInlineArrayItemInlineStorageServiceNameValue captures enum value "value"
+	ContainerInlineVolumesInlineArrayItemInlineStorageServiceNameValue string = "value"
+)
+
+// prop value enum
+func (m *ContainerInlineVolumesInlineArrayItemInlineStorageService) validateNameEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, containerInlineVolumesInlineArrayItemInlineStorageServiceTypeNamePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ContainerInlineVolumesInlineArrayItemInlineStorageService) validateName(formats strfmt.Registry) error {
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateNameEnum("storage_service"+"."+"name", "body", *m.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this container inline volumes inline array item inline storage service based on context it is used
+func (m *ContainerInlineVolumesInlineArrayItemInlineStorageService) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ContainerInlineVolumesInlineArrayItemInlineStorageService) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ContainerInlineVolumesInlineArrayItemInlineStorageService) UnmarshalBinary(b []byte) error {
+	var res ContainerInlineVolumesInlineArrayItemInlineStorageService
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ContainerInlineVolumesInlineArrayItemInlineTiering container inline volumes inline array item inline tiering
+//
+// swagger:model container_inline_volumes_inline_array_item_inline_tiering
+type ContainerInlineVolumesInlineArrayItemInlineTiering struct {
+
+	// Storage tiering placement rules for the object.
+	// Enum: ["allowed","best_effort","disallowed","required"]
+	Control *string `json:"control,omitempty"`
+
+	// Object stores to use. Used for placement.
+	//
+	// Max Items: 2
+	// Min Items: 0
+	ObjectStores []*ContainerVolumesItems0TieringObjectStoresItems0 `json:"object_stores"`
+
+	// Policy that determines whether the user data blocks of a volume in a FabricPool will be tiered to the cloud store when they become cold.
+	// <br>FabricPool combines flash (performance tier) with a cloud store into a single aggregate. Temperature of a volume block increases if it is accessed frequently and decreases when it is not. Valid in POST or PATCH.<br/>all &dash; Allows tiering of both snapshots and active file system user data to the cloud store as soon as possible by ignoring the temperature on the volume blocks.<br/>auto &dash; Allows tiering of both snapshot and active file system user data to the cloud store<br/>none &dash; Volume blocks are not be tiered to the cloud store.<br/>snapshot_only &dash; Allows tiering of only the volume snapshots not associated with the active file system.
+	// <br>The default tiering policy is "snapshot-only" for a FlexVol volume and "none" for a FlexGroup volume. The default minimum cooling period for the "snapshot-only" tiering policy is 2 days and for the "auto" tiering policy it is 31 days.
+	//
+	// Enum: ["all","auto","backup","none","snapshot_only"]
+	Policy *string `json:"policy,omitempty"`
+}
+
+// Validate validates this container inline volumes inline array item inline tiering
+func (m *ContainerInlineVolumesInlineArrayItemInlineTiering) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateControl(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateObjectStores(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePolicy(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var containerInlineVolumesInlineArrayItemInlineTieringTypeControlPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["allowed","best_effort","disallowed","required"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		containerInlineVolumesInlineArrayItemInlineTieringTypeControlPropEnum = append(containerInlineVolumesInlineArrayItemInlineTieringTypeControlPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// container_inline_volumes_inline_array_item_inline_tiering
+	// ContainerInlineVolumesInlineArrayItemInlineTiering
+	// control
+	// Control
+	// allowed
+	// END DEBUGGING
+	// ContainerInlineVolumesInlineArrayItemInlineTieringControlAllowed captures enum value "allowed"
+	ContainerInlineVolumesInlineArrayItemInlineTieringControlAllowed string = "allowed"
+
+	// BEGIN DEBUGGING
+	// container_inline_volumes_inline_array_item_inline_tiering
+	// ContainerInlineVolumesInlineArrayItemInlineTiering
+	// control
+	// Control
+	// best_effort
+	// END DEBUGGING
+	// ContainerInlineVolumesInlineArrayItemInlineTieringControlBestEffort captures enum value "best_effort"
+	ContainerInlineVolumesInlineArrayItemInlineTieringControlBestEffort string = "best_effort"
+
+	// BEGIN DEBUGGING
+	// container_inline_volumes_inline_array_item_inline_tiering
+	// ContainerInlineVolumesInlineArrayItemInlineTiering
+	// control
+	// Control
+	// disallowed
+	// END DEBUGGING
+	// ContainerInlineVolumesInlineArrayItemInlineTieringControlDisallowed captures enum value "disallowed"
+	ContainerInlineVolumesInlineArrayItemInlineTieringControlDisallowed string = "disallowed"
+
+	// BEGIN DEBUGGING
+	// container_inline_volumes_inline_array_item_inline_tiering
+	// ContainerInlineVolumesInlineArrayItemInlineTiering
+	// control
+	// Control
+	// required
+	// END DEBUGGING
+	// ContainerInlineVolumesInlineArrayItemInlineTieringControlRequired captures enum value "required"
+	ContainerInlineVolumesInlineArrayItemInlineTieringControlRequired string = "required"
+)
+
+// prop value enum
+func (m *ContainerInlineVolumesInlineArrayItemInlineTiering) validateControlEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, containerInlineVolumesInlineArrayItemInlineTieringTypeControlPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ContainerInlineVolumesInlineArrayItemInlineTiering) validateControl(formats strfmt.Registry) error {
+	if swag.IsZero(m.Control) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateControlEnum("tiering"+"."+"control", "body", *m.Control); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ContainerInlineVolumesInlineArrayItemInlineTiering) validateObjectStores(formats strfmt.Registry) error {
+	if swag.IsZero(m.ObjectStores) { // not required
+		return nil
+	}
+
+	iObjectStoresSize := int64(len(m.ObjectStores))
+
+	if err := validate.MinItems("tiering"+"."+"object_stores", "body", iObjectStoresSize, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("tiering"+"."+"object_stores", "body", iObjectStoresSize, 2); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ObjectStores); i++ {
+		if swag.IsZero(m.ObjectStores[i]) { // not required
+			continue
+		}
+
+		if m.ObjectStores[i] != nil {
+			if err := m.ObjectStores[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("tiering" + "." + "object_stores" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+var containerInlineVolumesInlineArrayItemInlineTieringTypePolicyPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["all","auto","backup","none","snapshot_only"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		containerInlineVolumesInlineArrayItemInlineTieringTypePolicyPropEnum = append(containerInlineVolumesInlineArrayItemInlineTieringTypePolicyPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// container_inline_volumes_inline_array_item_inline_tiering
+	// ContainerInlineVolumesInlineArrayItemInlineTiering
+	// policy
+	// Policy
+	// all
+	// END DEBUGGING
+	// ContainerInlineVolumesInlineArrayItemInlineTieringPolicyAll captures enum value "all"
+	ContainerInlineVolumesInlineArrayItemInlineTieringPolicyAll string = "all"
+
+	// BEGIN DEBUGGING
+	// container_inline_volumes_inline_array_item_inline_tiering
+	// ContainerInlineVolumesInlineArrayItemInlineTiering
+	// policy
+	// Policy
+	// auto
+	// END DEBUGGING
+	// ContainerInlineVolumesInlineArrayItemInlineTieringPolicyAuto captures enum value "auto"
+	ContainerInlineVolumesInlineArrayItemInlineTieringPolicyAuto string = "auto"
+
+	// BEGIN DEBUGGING
+	// container_inline_volumes_inline_array_item_inline_tiering
+	// ContainerInlineVolumesInlineArrayItemInlineTiering
+	// policy
+	// Policy
+	// backup
+	// END DEBUGGING
+	// ContainerInlineVolumesInlineArrayItemInlineTieringPolicyBackup captures enum value "backup"
+	ContainerInlineVolumesInlineArrayItemInlineTieringPolicyBackup string = "backup"
+
+	// BEGIN DEBUGGING
+	// container_inline_volumes_inline_array_item_inline_tiering
+	// ContainerInlineVolumesInlineArrayItemInlineTiering
+	// policy
+	// Policy
+	// none
+	// END DEBUGGING
+	// ContainerInlineVolumesInlineArrayItemInlineTieringPolicyNone captures enum value "none"
+	ContainerInlineVolumesInlineArrayItemInlineTieringPolicyNone string = "none"
+
+	// BEGIN DEBUGGING
+	// container_inline_volumes_inline_array_item_inline_tiering
+	// ContainerInlineVolumesInlineArrayItemInlineTiering
+	// policy
+	// Policy
+	// snapshot_only
+	// END DEBUGGING
+	// ContainerInlineVolumesInlineArrayItemInlineTieringPolicySnapshotOnly captures enum value "snapshot_only"
+	ContainerInlineVolumesInlineArrayItemInlineTieringPolicySnapshotOnly string = "snapshot_only"
+)
+
+// prop value enum
+func (m *ContainerInlineVolumesInlineArrayItemInlineTiering) validatePolicyEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, containerInlineVolumesInlineArrayItemInlineTieringTypePolicyPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ContainerInlineVolumesInlineArrayItemInlineTiering) validatePolicy(formats strfmt.Registry) error {
+	if swag.IsZero(m.Policy) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validatePolicyEnum("tiering"+"."+"policy", "body", *m.Policy); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this container inline volumes inline array item inline tiering based on the context it is used
+func (m *ContainerInlineVolumesInlineArrayItemInlineTiering) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateObjectStores(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ContainerInlineVolumesInlineArrayItemInlineTiering) contextValidateObjectStores(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ObjectStores); i++ {
+
+		if m.ObjectStores[i] != nil {
+			if err := m.ObjectStores[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("tiering" + "." + "object_stores" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ContainerInlineVolumesInlineArrayItemInlineTiering) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ContainerInlineVolumesInlineArrayItemInlineTiering) UnmarshalBinary(b []byte) error {
+	var res ContainerInlineVolumesInlineArrayItemInlineTiering
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ContainerVolumesItems0TieringObjectStoresItems0 container volumes items0 tiering object stores items0
+//
+// swagger:model ContainerVolumesItems0TieringObjectStoresItems0
+type ContainerVolumesItems0TieringObjectStoresItems0 struct {
+
+	// The name of the object store to use. Used for placement.
+	Name *string `json:"name,omitempty"`
+}
+
+// Validate validates this container volumes items0 tiering object stores items0
+func (m *ContainerVolumesItems0TieringObjectStoresItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this container volumes items0 tiering object stores items0 based on context it is used
+func (m *ContainerVolumesItems0TieringObjectStoresItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ContainerVolumesItems0TieringObjectStoresItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ContainerVolumesItems0TieringObjectStoresItems0) UnmarshalBinary(b []byte) error {
+	var res ContainerVolumesItems0TieringObjectStoresItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

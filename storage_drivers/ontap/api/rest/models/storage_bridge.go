@@ -1615,7 +1615,7 @@ type StorageBridgeInlineLastReboot struct {
 	Reason *Error `json:"reason,omitempty"`
 
 	// time
-	// Example: 2020-12-09 05:47:58
+	// Example: 2020-12-09 00:47:58-05:00
 	// Format: date-time
 	Time *strfmt.DateTime `json:"time,omitempty"`
 }

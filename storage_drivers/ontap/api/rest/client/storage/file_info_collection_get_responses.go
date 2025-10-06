@@ -127,8 +127,7 @@ func NewFileInfoCollectionGetDefault(code int) *FileInfoCollectionGetDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 917752 | Volume is offline. |
-| 918235 | A volume with UUID {volume.uuid} was not found. |
-| 918757 | The specified clone parent volume with UUID {volume.uuid} does not exist. |
+| 918235 | A volume with the specified UUID was not found. |
 | 6488109 | Operation not supported on FlexCache volumes. |
 | 6684674 | No such file or directory. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.

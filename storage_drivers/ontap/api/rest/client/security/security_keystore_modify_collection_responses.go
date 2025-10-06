@@ -253,6 +253,7 @@ func NewSecurityKeystoreModifyCollectionDefault(code int) *SecurityKeystoreModif
 | 65539585 | Cannot enable an external key manager on the admin SVM because an inactive external key manager already exists on the admin SVM. |
 | 65539590 | Cannot switch to the Onboard Key Manager if there are more than two NSE-AKs in the cluster. |
 | 65539591 | Cannot switch to the Onboard Key Manager if there are fewer than two NSE-AKs in the cluster. |
+| 65539622 | CKEK not restored for SVM. |
 | 65539704 | The key manager cannot be configured because the SVM has NAE volumes. |
 | 65539837 | The key manager configured does not have any volumes to migrate. |
 | 65539838 | Cannot migrate to a cloud key manager when the external key manager has a policy associated with it. |
@@ -912,7 +913,7 @@ swagger:model security_keystore_inline_configuration
 type SecurityKeystoreInlineConfiguration struct {
 
 	// links
-	Links *models.SecurityKeystoreInlineConfigurationInlineLinks `json:"_links,omitempty"`
+	Links *SecurityKeystoreInlineConfigurationInlineLinks `json:"_links,omitempty"`
 
 	// Name of the configuration.
 	// Example: default

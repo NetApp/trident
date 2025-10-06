@@ -968,7 +968,7 @@ type IgroupInitiatorConnectivityTrackingConnectionsItems0LoginsItems0 struct {
 
 	// The last time this initiator logged in. Logins not seen for 48 hours are cleared and not reported.
 	//
-	// Example: 2021-03-14 05:19:00
+	// Example: 2021-03-14 05:19:00+00:00
 	// Read Only: true
 	// Format: date-time
 	LastSeenTime *strfmt.DateTime `json:"last_seen_time,omitempty"`

@@ -188,7 +188,7 @@ func NewConsistencyGroupSnapshotModifyDefault(code int) *ConsistencyGroupSnapsho
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 53411925 | Failed to find a previously initiated two-phase snapshot operation for consistency group. |
+| 53411925 | Failed to find a previously initiated two-phase snapshot operation for consistency group.<personalities supports=asar2> |
 | 53412015 | SnapLock expiry time cannot be before the current expiry time. |
 | 53412016 | Snapshot is not retained by SnapLock. |
 | 53412017 | The operation is not supported on this platform.</personalities> |

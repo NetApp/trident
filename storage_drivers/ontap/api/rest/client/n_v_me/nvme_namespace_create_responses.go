@@ -227,6 +227,7 @@ func NewNvmeNamespaceCreateDefault(code int) *NvmeNamespaceCreateDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 917927 | The specified volume was not found. |
+| 918235 | A volume with the specified UUID was not found. |
 | 918236 | The specified `location.volume.uuid` and `location.volume.name` do not refer to the same volume. |
 | 1254197 | The LUN specified for conversion to a namespace is mapped. |
 | 1260121 | Cloning a namespace to a volume different than the source volume is not supported. |

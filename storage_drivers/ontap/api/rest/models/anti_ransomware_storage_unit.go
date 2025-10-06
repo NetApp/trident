@@ -297,7 +297,7 @@ type AntiRansomwareStorageUnitInlineAttackReportsInlineArrayItem struct {
 
 	// Timestamp at which ransomware attack is observed.
 	//
-	// Example: 2021-06-01 15:06:41
+	// Example: 2021-06-01 20:36:41+05:30
 	// Read Only: true
 	// Format: date-time
 	Time *strfmt.DateTime `json:"time,omitempty"`

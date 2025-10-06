@@ -47,7 +47,7 @@ type ConfigurationBackupFile struct {
 	Size *int64 `json:"size,omitempty"`
 
 	// The backup creation time.
-	// Example: 2019-02-04 18:33:48
+	// Example: 2019-02-04 13:33:48-05:00
 	// Read Only: true
 	// Format: date-time
 	Time *strfmt.DateTime `json:"time,omitempty"`

@@ -299,7 +299,7 @@ type StorageUnitSnapshotModifyCollectionBody struct {
 
 	// Creation time of the snapshot. It is the storage unit access time when the snapshot was created.
 	//
-	// Example: 2019-02-04 19:00:00
+	// Example: 2019-02-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
@@ -310,7 +310,7 @@ type StorageUnitSnapshotModifyCollectionBody struct {
 
 	// The expiry time for the snapshot. Snapshots with an expiry time set are not allowed to be deleted until the retention time is reached.
 	//
-	// Example: 2019-02-04 19:00:00
+	// Example: 2019-02-04 19:00:00+00:00
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
 
@@ -959,7 +959,7 @@ type StorageUnitSnapshotInlineSnaplock struct {
 
 	// SnapLock expiry time for the snapshot, if the snapshot is taken on a SnapLock storage unit. A snapshot is not allowed to be deleted or renamed until the SnapLock ComplianceClock time goes beyond this retention time. This option can be set during snapshot POST and snapshot PATCH on snapshot locking enabled volumes. It can also be used to extend the expiry time of a locked snapshot on a SnapLock for SnapVault destination consistency-group.
 	//
-	// Example: 2019-02-04 19:00:00
+	// Example: 2019-02-04 19:00:00+00:00
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
 

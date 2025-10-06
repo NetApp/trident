@@ -189,6 +189,7 @@ func NewLunModifyDefault(code int) *LunModifyDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 917927 | The specified volume was not found. |
+| 918235 | A volume with the specified UUID was not found. |
 | 918236 | The specified `location.volume.uuid` and `location.volume.name` do not refer to the same volume. |
 | 1254196 | A LUN already exists at the specified path. |
 | 1254226 | Cannot patch a LUN's size to its current size. |

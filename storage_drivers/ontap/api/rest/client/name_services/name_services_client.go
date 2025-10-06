@@ -280,6 +280,7 @@ func (a *Client) DNSCollectionGet(params *DNSCollectionGetParams, authInfo runti
 - tld_query_enabled
 - skip_config_validation
 - scope
+- async
 */
 func (a *Client) DNSCreate(params *DNSCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DNSCreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -476,6 +477,7 @@ The validation fails in the following scenarios:<br/>
 - dynamic_dns.enabled
 - dynamic_dns.use_secure
 - dynamic_dns.time_to_live
+- async
 ### Related ONTAP commands
 * `vserver services name-service dns modify`
 * `vserver services name-service dns dynamic-update modify`

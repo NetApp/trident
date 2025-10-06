@@ -140,6 +140,24 @@ type SwitchPortCollectionGetParams struct {
 	*/
 	OrderBy []string
 
+	/* RemotePortDeviceDcnName.
+
+	   Filter by remote_port.device.dcn.name
+	*/
+	RemotePortDeviceDcnName *string
+
+	/* RemotePortDeviceDcnSerialNumber.
+
+	   Filter by remote_port.device.dcn.serial_number
+	*/
+	RemotePortDeviceDcnSerialNumber *string
+
+	/* RemotePortDeviceDcnUUID.
+
+	   Filter by remote_port.device.dcn.uuid
+	*/
+	RemotePortDeviceDcnUUID *string
+
 	/* RemotePortDeviceDiscoveredName.
 
 	   Filter by remote_port.device.discovered_name
@@ -514,6 +532,39 @@ func (o *SwitchPortCollectionGetParams) WithOrderBy(orderBy []string) *SwitchPor
 // SetOrderBy adds the orderBy to the switch port collection get params
 func (o *SwitchPortCollectionGetParams) SetOrderBy(orderBy []string) {
 	o.OrderBy = orderBy
+}
+
+// WithRemotePortDeviceDcnName adds the remotePortDeviceDcnName to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithRemotePortDeviceDcnName(remotePortDeviceDcnName *string) *SwitchPortCollectionGetParams {
+	o.SetRemotePortDeviceDcnName(remotePortDeviceDcnName)
+	return o
+}
+
+// SetRemotePortDeviceDcnName adds the remotePortDeviceDcnName to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetRemotePortDeviceDcnName(remotePortDeviceDcnName *string) {
+	o.RemotePortDeviceDcnName = remotePortDeviceDcnName
+}
+
+// WithRemotePortDeviceDcnSerialNumber adds the remotePortDeviceDcnSerialNumber to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithRemotePortDeviceDcnSerialNumber(remotePortDeviceDcnSerialNumber *string) *SwitchPortCollectionGetParams {
+	o.SetRemotePortDeviceDcnSerialNumber(remotePortDeviceDcnSerialNumber)
+	return o
+}
+
+// SetRemotePortDeviceDcnSerialNumber adds the remotePortDeviceDcnSerialNumber to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetRemotePortDeviceDcnSerialNumber(remotePortDeviceDcnSerialNumber *string) {
+	o.RemotePortDeviceDcnSerialNumber = remotePortDeviceDcnSerialNumber
+}
+
+// WithRemotePortDeviceDcnUUID adds the remotePortDeviceDcnUUID to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) WithRemotePortDeviceDcnUUID(remotePortDeviceDcnUUID *string) *SwitchPortCollectionGetParams {
+	o.SetRemotePortDeviceDcnUUID(remotePortDeviceDcnUUID)
+	return o
+}
+
+// SetRemotePortDeviceDcnUUID adds the remotePortDeviceDcnUuid to the switch port collection get params
+func (o *SwitchPortCollectionGetParams) SetRemotePortDeviceDcnUUID(remotePortDeviceDcnUUID *string) {
+	o.RemotePortDeviceDcnUUID = remotePortDeviceDcnUUID
 }
 
 // WithRemotePortDeviceDiscoveredName adds the remotePortDeviceDiscoveredName to the switch port collection get params
@@ -1027,6 +1078,57 @@ func (o *SwitchPortCollectionGetParams) WriteToRequest(r runtime.ClientRequest, 
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.RemotePortDeviceDcnName != nil {
+
+		// query param remote_port.device.dcn.name
+		var qrRemotePortDeviceDcnName string
+
+		if o.RemotePortDeviceDcnName != nil {
+			qrRemotePortDeviceDcnName = *o.RemotePortDeviceDcnName
+		}
+		qRemotePortDeviceDcnName := qrRemotePortDeviceDcnName
+		if qRemotePortDeviceDcnName != "" {
+
+			if err := r.SetQueryParam("remote_port.device.dcn.name", qRemotePortDeviceDcnName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RemotePortDeviceDcnSerialNumber != nil {
+
+		// query param remote_port.device.dcn.serial_number
+		var qrRemotePortDeviceDcnSerialNumber string
+
+		if o.RemotePortDeviceDcnSerialNumber != nil {
+			qrRemotePortDeviceDcnSerialNumber = *o.RemotePortDeviceDcnSerialNumber
+		}
+		qRemotePortDeviceDcnSerialNumber := qrRemotePortDeviceDcnSerialNumber
+		if qRemotePortDeviceDcnSerialNumber != "" {
+
+			if err := r.SetQueryParam("remote_port.device.dcn.serial_number", qRemotePortDeviceDcnSerialNumber); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RemotePortDeviceDcnUUID != nil {
+
+		// query param remote_port.device.dcn.uuid
+		var qrRemotePortDeviceDcnUUID string
+
+		if o.RemotePortDeviceDcnUUID != nil {
+			qrRemotePortDeviceDcnUUID = *o.RemotePortDeviceDcnUUID
+		}
+		qRemotePortDeviceDcnUUID := qrRemotePortDeviceDcnUUID
+		if qRemotePortDeviceDcnUUID != "" {
+
+			if err := r.SetQueryParam("remote_port.device.dcn.uuid", qRemotePortDeviceDcnUUID); err != nil {
+				return err
+			}
 		}
 	}
 

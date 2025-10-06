@@ -247,6 +247,7 @@ func NewLocalCifsUsersAndGroupsImportCreateDefault(code int) *LocalCifsUsersAndG
 | 655701     | Unknown element type. |
 | 655702     | Invalid URI. |
 | 655703     | Failed to download the import file. Network error occurred. |
+| 655709     | Failed to queue CIFS local users and groups import job since a similar job already exists. Retry the operation after some time. |
 */
 type LocalCifsUsersAndGroupsImportCreateDefault struct {
 	_statusCode int

@@ -62,6 +62,12 @@ DNSModifyCollectionParams contains all the parameters to send to the API endpoin
 */
 type DNSModifyCollectionParams struct {
 
+	/* Async.
+
+	   An asynchronous task.
+	*/
+	Async *bool
+
 	/* Attempts.
 
 	   Filter by attempts
@@ -248,6 +254,8 @@ func (o *DNSModifyCollectionParams) WithDefaults() *DNSModifyCollectionParams {
 // All values with no default are reset to their zero value.
 func (o *DNSModifyCollectionParams) SetDefaults() {
 	var (
+		asyncDefault = bool(false)
+
 		continueOnFailureDefault = bool(false)
 
 		returnRecordsDefault = bool(true)
@@ -260,6 +268,7 @@ func (o *DNSModifyCollectionParams) SetDefaults() {
 	)
 
 	val := DNSModifyCollectionParams{
+		Async:              &asyncDefault,
 		ContinueOnFailure:  &continueOnFailureDefault,
 		ReturnRecords:      &returnRecordsDefault,
 		ReturnTimeout:      &returnTimeoutDefault,
@@ -304,6 +313,17 @@ func (o *DNSModifyCollectionParams) WithHTTPClient(client *http.Client) *DNSModi
 // SetHTTPClient adds the HTTPClient to the dns modify collection params
 func (o *DNSModifyCollectionParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithAsync adds the async to the dns modify collection params
+func (o *DNSModifyCollectionParams) WithAsync(async *bool) *DNSModifyCollectionParams {
+	o.SetAsync(async)
+	return o
+}
+
+// SetAsync adds the async to the dns modify collection params
+func (o *DNSModifyCollectionParams) SetAsync(async *bool) {
+	o.Async = async
 }
 
 // WithAttempts adds the attempts to the dns modify collection params
@@ -610,6 +630,23 @@ func (o *DNSModifyCollectionParams) WriteToRequest(r runtime.ClientRequest, reg 
 		return err
 	}
 	var res []error
+
+	if o.Async != nil {
+
+		// query param async
+		var qrAsync bool
+
+		if o.Async != nil {
+			qrAsync = *o.Async
+		}
+		qAsync := swag.FormatBool(qrAsync)
+		if qAsync != "" {
+
+			if err := r.SetQueryParam("async", qAsync); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.Attempts != nil {
 

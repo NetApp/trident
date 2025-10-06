@@ -315,6 +315,7 @@ func NewSnapmirrorRelationshipCreateDefault(code int) *SnapmirrorRelationshipCre
 | 13304132 | Creating a destination endpoint is not supported with the \"backoff_level\" property. |
 | 13304144 | SnapLock is not licensed on the destination cluster. |
 | 13304155 | Invalid SnapMirror consistency group name. The name must be from 1 to 30 characters in length. The first letter must be one of A-Z, a-z or "_". The remaining characters must be A-Z, a-z, 0-9 or "_". |
+| 13304160 | A relationship with the specified object store endpoint exists and a restore relationship cannot be created with the same object store source endpoint name as the destination of a backup relationship except when restoring to the source volume of the existing relationship. The \"source.uuid\", not the source endpoint name, establishes what object is restored from the cloud.</private> |
 | 53411897 | The specified source volumes do not match the volumes contained in the source consistency group. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 ##### Above error msgs have been added in sorted(ascending) order

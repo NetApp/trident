@@ -62,6 +62,12 @@ ExportPolicyCollectionGetParams contains all the parameters to send to the API e
 */
 type ExportPolicyCollectionGetParams struct {
 
+	/* AreRulesTruncated.
+
+	   Filter by are_rules_truncated
+	*/
+	AreRulesTruncated *bool
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -251,6 +257,17 @@ func (o *ExportPolicyCollectionGetParams) WithHTTPClient(client *http.Client) *E
 // SetHTTPClient adds the HTTPClient to the export policy collection get params
 func (o *ExportPolicyCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithAreRulesTruncated adds the areRulesTruncated to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) WithAreRulesTruncated(areRulesTruncated *bool) *ExportPolicyCollectionGetParams {
+	o.SetAreRulesTruncated(areRulesTruncated)
+	return o
+}
+
+// SetAreRulesTruncated adds the areRulesTruncated to the export policy collection get params
+func (o *ExportPolicyCollectionGetParams) SetAreRulesTruncated(areRulesTruncated *bool) {
+	o.AreRulesTruncated = areRulesTruncated
 }
 
 // WithFields adds the fields to the export policy collection get params
@@ -480,6 +497,23 @@ func (o *ExportPolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		return err
 	}
 	var res []error
+
+	if o.AreRulesTruncated != nil {
+
+		// query param are_rules_truncated
+		var qrAreRulesTruncated bool
+
+		if o.AreRulesTruncated != nil {
+			qrAreRulesTruncated = *o.AreRulesTruncated
+		}
+		qAreRulesTruncated := swag.FormatBool(qrAreRulesTruncated)
+		if qAreRulesTruncated != "" {
+
+			if err := r.SetQueryParam("are_rules_truncated", qAreRulesTruncated); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.Fields != nil {
 

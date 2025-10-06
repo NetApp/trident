@@ -52,6 +52,9 @@ type AntiRansomwareVolume struct {
 	// Enum: ["evaluation_period","active_unsuitable_workload","active_suitable_workload"]
 	BlockDeviceDetectionState *string `json:"block_device_detection_state,omitempty"`
 
+	// clear suspect
+	ClearSuspect *AntiRansomwareVolumeInlineClearSuspect `json:"clear_suspect,omitempty"`
+
 	// Time when Anti-ransomware monitoring `state` is set to dry-run value for starting evaluation mode.
 	// Read Only: true
 	// Format: date-time
@@ -112,6 +115,10 @@ func (m *AntiRansomwareVolume) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateBlockDeviceDetectionState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateClearSuspect(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -424,6 +431,23 @@ func (m *AntiRansomwareVolume) validateBlockDeviceDetectionState(formats strfmt.
 	return nil
 }
 
+func (m *AntiRansomwareVolume) validateClearSuspect(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClearSuspect) { // not required
+		return nil
+	}
+
+	if m.ClearSuspect != nil {
+		if err := m.ClearSuspect.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("clear_suspect")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *AntiRansomwareVolume) validateDryRunStartTime(formats strfmt.Registry) error {
 	if swag.IsZero(m.DryRunStartTime) { // not required
 		return nil
@@ -659,6 +683,10 @@ func (m *AntiRansomwareVolume) ContextValidate(ctx context.Context, formats strf
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateClearSuspect(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateDryRunStartTime(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -783,6 +811,20 @@ func (m *AntiRansomwareVolume) contextValidateBlockDeviceDetectionState(ctx cont
 	return nil
 }
 
+func (m *AntiRansomwareVolume) contextValidateClearSuspect(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ClearSuspect != nil {
+		if err := m.ClearSuspect.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("clear_suspect")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *AntiRansomwareVolume) contextValidateDryRunStartTime(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "dry_run_start_time", "body", m.DryRunStartTime); err != nil {
@@ -873,6 +915,139 @@ func (m *AntiRansomwareVolume) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *AntiRansomwareVolume) UnmarshalBinary(b []byte) error {
 	var res AntiRansomwareVolume
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// AntiRansomwareVolumeInlineClearSuspect Clear suspect status.
+//
+// swagger:model anti_ransomware_volume_inline_clear_suspect
+type AntiRansomwareVolumeInlineClearSuspect struct {
+
+	// Clear suspect phase.
+	// Enum: ["file_extension_processing","snapshot_processing","done"]
+	Phase *string `json:"phase,omitempty"`
+
+	// Clear suspect start time.
+	// Format: date-time
+	StartTime *strfmt.DateTime `json:"start_time,omitempty"`
+}
+
+// Validate validates this anti ransomware volume inline clear suspect
+func (m *AntiRansomwareVolumeInlineClearSuspect) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validatePhase(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStartTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var antiRansomwareVolumeInlineClearSuspectTypePhasePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["file_extension_processing","snapshot_processing","done"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		antiRansomwareVolumeInlineClearSuspectTypePhasePropEnum = append(antiRansomwareVolumeInlineClearSuspectTypePhasePropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// anti_ransomware_volume_inline_clear_suspect
+	// AntiRansomwareVolumeInlineClearSuspect
+	// phase
+	// Phase
+	// file_extension_processing
+	// END DEBUGGING
+	// AntiRansomwareVolumeInlineClearSuspectPhaseFileExtensionProcessing captures enum value "file_extension_processing"
+	AntiRansomwareVolumeInlineClearSuspectPhaseFileExtensionProcessing string = "file_extension_processing"
+
+	// BEGIN DEBUGGING
+	// anti_ransomware_volume_inline_clear_suspect
+	// AntiRansomwareVolumeInlineClearSuspect
+	// phase
+	// Phase
+	// snapshot_processing
+	// END DEBUGGING
+	// AntiRansomwareVolumeInlineClearSuspectPhaseSnapshotProcessing captures enum value "snapshot_processing"
+	AntiRansomwareVolumeInlineClearSuspectPhaseSnapshotProcessing string = "snapshot_processing"
+
+	// BEGIN DEBUGGING
+	// anti_ransomware_volume_inline_clear_suspect
+	// AntiRansomwareVolumeInlineClearSuspect
+	// phase
+	// Phase
+	// done
+	// END DEBUGGING
+	// AntiRansomwareVolumeInlineClearSuspectPhaseDone captures enum value "done"
+	AntiRansomwareVolumeInlineClearSuspectPhaseDone string = "done"
+)
+
+// prop value enum
+func (m *AntiRansomwareVolumeInlineClearSuspect) validatePhaseEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, antiRansomwareVolumeInlineClearSuspectTypePhasePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *AntiRansomwareVolumeInlineClearSuspect) validatePhase(formats strfmt.Registry) error {
+	if swag.IsZero(m.Phase) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validatePhaseEnum("clear_suspect"+"."+"phase", "body", *m.Phase); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *AntiRansomwareVolumeInlineClearSuspect) validateStartTime(formats strfmt.Registry) error {
+	if swag.IsZero(m.StartTime) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("clear_suspect"+"."+"start_time", "body", "date-time", m.StartTime.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validates this anti ransomware volume inline clear suspect based on context it is used
+func (m *AntiRansomwareVolumeInlineClearSuspect) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *AntiRansomwareVolumeInlineClearSuspect) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *AntiRansomwareVolumeInlineClearSuspect) UnmarshalBinary(b []byte) error {
+	var res AntiRansomwareVolumeInlineClearSuspect
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -1058,7 +1233,7 @@ type AntiRansomwareVolumeInlineSurgeUsage struct {
 	HighEntropyDataWritePeakRateKbPerMinute *int64 `json:"high_entropy_data_write_peak_rate_kb_per_minute,omitempty"`
 
 	// Timestamp at which the first surge in the volume's workload is observed.
-	// Example: 2021-12-01 17:46:20
+	// Example: 2021-12-01 23:16:20+05:30
 	// Read Only: true
 	// Format: date-time
 	Time *strfmt.DateTime `json:"time,omitempty"`

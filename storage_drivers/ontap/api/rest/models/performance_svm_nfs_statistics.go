@@ -206,7 +206,7 @@ type PerformanceSvmNfsStatisticsInlineV3 struct {
 	ThroughputRaw *PerformanceSvmNfsStatisticsInlineV3InlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -739,7 +739,7 @@ type PerformanceSvmNfsStatisticsInlineV4 struct {
 	ThroughputRaw *PerformanceSvmNfsStatisticsInlineV4InlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1113,7 +1113,7 @@ type PerformanceSvmNfsStatisticsInlineV41 struct {
 	ThroughputRaw *PerformanceSvmNfsStatisticsInlineV41InlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`

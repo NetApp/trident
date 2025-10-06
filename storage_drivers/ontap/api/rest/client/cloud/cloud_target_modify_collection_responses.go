@@ -248,6 +248,7 @@ func NewCloudTargetModifyCollectionDefault(code int) *CloudTargetModifyCollectio
 | 787353 | Modifying an object store configuration with a Managed Service Identity (MSI) token is not supported for this owner. |
 | 787354 | The specified properties are mutually exclusive. |
 | 787355 | _azure_msi_ `authentication-type` is only supported with _Azure_Cloud_ `provider-type`. |
+| 787394 | Modifying the \"-new-object-store-name\\\" or \"-server\\\" without providing a Managed Identity (MI) token is not supported for this configuration. |
 | 45940761 | Hostname cannot be resolved. Check the spelling of the hostname and check the system DNS availability using the \"vserver services name-service dns check\" command. |
 | 45940778 | Bucket already exists. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.

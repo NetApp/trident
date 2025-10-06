@@ -38,7 +38,7 @@ type Node struct {
 	// The current or "wall clock" time of the node in ISO-8601 date, time, and time zone format.
 	// The ISO-8601 date and time are localized based on the ONTAP cluster's timezone setting.
 	//
-	// Example: 2019-04-17 15:49:26
+	// Example: 2019-04-17 11:49:26-04:00
 	// Read Only: true
 	// Format: date-time
 	Date *strfmt.DateTime `json:"date,omitempty"`
@@ -6697,7 +6697,7 @@ type NodeInlineMetric struct {
 	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 
@@ -9527,7 +9527,7 @@ func (m *NodeInlineServiceProcessorInlineWebService) UnmarshalBinary(b []byte) e
 type NodeInlineSnaplock struct {
 
 	// SnapLock compliance clock time.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Format: date-time
 	ComplianceClockTime *strfmt.DateTime `json:"compliance_clock_time,omitempty"`
 }
@@ -9606,7 +9606,7 @@ type NodeInlineStatistics struct {
 	Status *string `json:"status,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
 }
@@ -10125,17 +10125,17 @@ type NodeInlineVersion struct {
 	// The generation portion of the version.
 	// Example: 9
 	// Read Only: true
-	Generation *int64 `json:"generation,omitempty"`
+	Generation *int64 `json:"generation"`
 
 	// The major portion of the version.
 	// Example: 4
 	// Read Only: true
-	Major *int64 `json:"major,omitempty"`
+	Major *int64 `json:"major"`
 
 	// The minor portion of the version.
 	// Example: 0
 	// Read Only: true
-	Minor *int64 `json:"minor,omitempty"`
+	Minor *int64 `json:"minor"`
 }
 
 // Validate validates this node inline version

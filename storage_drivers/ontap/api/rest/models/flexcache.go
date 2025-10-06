@@ -27,6 +27,9 @@ type Flexcache struct {
 	// atime scrub
 	AtimeScrub *FlexcacheInlineAtimeScrub `json:"atime_scrub,omitempty"`
 
+	// cifs
+	Cifs *FlexcacheInlineCifs `json:"cifs,omitempty"`
+
 	// cifs change notify
 	CifsChangeNotify *FlexcacheInlineCifsChangeNotify `json:"cifs_change_notify,omitempty"`
 
@@ -60,6 +63,9 @@ type Flexcache struct {
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
 
+	// nfsv4
+	Nfsv4 *FlexcacheInlineNfsv4 `json:"nfsv4,omitempty"`
+
 	// If set to true, a plaintext FlexCache volume for an encrypted origin volume is created.
 	OverrideEncryption *bool `json:"override_encryption,omitempty"`
 
@@ -72,6 +78,9 @@ type Flexcache struct {
 
 	// relative size
 	RelativeSize *FlexcacheInlineRelativeSize `json:"relative_size,omitempty"`
+
+	// s3
+	S3 *FlexcacheInlineS3 `json:"s3,omitempty"`
 
 	// Physical size of the FlexCache. The recommended size for a FlexCache is 10% of the origin volume. The minimum FlexCache constituent size is 1GB.
 	Size *int64 `json:"size,omitempty"`
@@ -103,6 +112,10 @@ func (m *Flexcache) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateCifs(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateCifsChangeNotify(formats); err != nil {
 		res = append(res, err)
 	}
@@ -127,11 +140,19 @@ func (m *Flexcache) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateNfsv4(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validatePrepopulate(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateRelativeSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateS3(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -175,6 +196,23 @@ func (m *Flexcache) validateAtimeScrub(formats strfmt.Registry) error {
 		if err := m.AtimeScrub.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("atime_scrub")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Flexcache) validateCifs(formats strfmt.Registry) error {
+	if swag.IsZero(m.Cifs) { // not required
+		return nil
+	}
+
+	if m.Cifs != nil {
+		if err := m.Cifs.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("cifs")
 			}
 			return err
 		}
@@ -293,6 +331,23 @@ func (m *Flexcache) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Flexcache) validateNfsv4(formats strfmt.Registry) error {
+	if swag.IsZero(m.Nfsv4) { // not required
+		return nil
+	}
+
+	if m.Nfsv4 != nil {
+		if err := m.Nfsv4.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nfsv4")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Flexcache) validatePrepopulate(formats strfmt.Registry) error {
 	if swag.IsZero(m.Prepopulate) { // not required
 		return nil
@@ -319,6 +374,23 @@ func (m *Flexcache) validateRelativeSize(formats strfmt.Registry) error {
 		if err := m.RelativeSize.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("relative_size")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Flexcache) validateS3(formats strfmt.Registry) error {
+	if swag.IsZero(m.S3) { // not required
+		return nil
+	}
+
+	if m.S3 != nil {
+		if err := m.S3.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("s3")
 			}
 			return err
 		}
@@ -373,6 +445,10 @@ func (m *Flexcache) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateCifs(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateCifsChangeNotify(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -389,11 +465,19 @@ func (m *Flexcache) ContextValidate(ctx context.Context, formats strfmt.Registry
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateNfsv4(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidatePrepopulate(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.contextValidateRelativeSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateS3(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -435,6 +519,20 @@ func (m *Flexcache) contextValidateAtimeScrub(ctx context.Context, formats strfm
 		if err := m.AtimeScrub.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("atime_scrub")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Flexcache) contextValidateCifs(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Cifs != nil {
+		if err := m.Cifs.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("cifs")
 			}
 			return err
 		}
@@ -507,6 +605,20 @@ func (m *Flexcache) contextValidateGuarantee(ctx context.Context, formats strfmt
 	return nil
 }
 
+func (m *Flexcache) contextValidateNfsv4(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Nfsv4 != nil {
+		if err := m.Nfsv4.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nfsv4")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Flexcache) contextValidatePrepopulate(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Prepopulate != nil {
@@ -527,6 +639,20 @@ func (m *Flexcache) contextValidateRelativeSize(ctx context.Context, formats str
 		if err := m.RelativeSize.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("relative_size")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Flexcache) contextValidateS3(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.S3 != nil {
+		if err := m.S3.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("s3")
 			}
 			return err
 		}
@@ -810,6 +936,43 @@ func (m *FlexcacheInlineAtimeScrub) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// FlexcacheInlineCifs FlexCache CIFS
+//
+// swagger:model flexcache_inline_cifs
+type FlexcacheInlineCifs struct {
+
+	// Specifies whether CIFS access is enabled on the FlexCache volume.
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// Validate validates this flexcache inline cifs
+func (m *FlexcacheInlineCifs) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this flexcache inline cifs based on context it is used
+func (m *FlexcacheInlineCifs) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FlexcacheInlineCifs) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FlexcacheInlineCifs) UnmarshalBinary(b []byte) error {
+	var res FlexcacheInlineCifs
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // FlexcacheInlineCifsChangeNotify Notifies that a change has been made to the FlexCache volume CIFS.
 //
 // swagger:model flexcache_inline_cifs_change_notify
@@ -1036,6 +1199,43 @@ func (m *FlexcacheInlineLinks) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// FlexcacheInlineNfsv4 FlexCache NFSv4
+//
+// swagger:model flexcache_inline_nfsv4
+type FlexcacheInlineNfsv4 struct {
+
+	// Specifies whether NFSv4 access is enabled on the FlexCache volume.
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// Validate validates this flexcache inline nfsv4
+func (m *FlexcacheInlineNfsv4) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this flexcache inline nfsv4 based on context it is used
+func (m *FlexcacheInlineNfsv4) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FlexcacheInlineNfsv4) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FlexcacheInlineNfsv4) UnmarshalBinary(b []byte) error {
+	var res FlexcacheInlineNfsv4
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // FlexcacheInlinePrepopulate FlexCache prepopulate
 //
 // swagger:model flexcache_inline_prepopulate
@@ -1112,6 +1312,43 @@ func (m *FlexcacheInlineRelativeSize) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *FlexcacheInlineRelativeSize) UnmarshalBinary(b []byte) error {
 	var res FlexcacheInlineRelativeSize
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// FlexcacheInlineS3 Flexcache S3
+//
+// swagger:model flexcache_inline_s3
+type FlexcacheInlineS3 struct {
+
+	// Indicates whether S3 access is enabled on the Flexcache volume.
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// Validate validates this flexcache inline s3
+func (m *FlexcacheInlineS3) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this flexcache inline s3 based on context it is used
+func (m *FlexcacheInlineS3) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *FlexcacheInlineS3) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *FlexcacheInlineS3) UnmarshalBinary(b []byte) error {
+	var res FlexcacheInlineS3
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

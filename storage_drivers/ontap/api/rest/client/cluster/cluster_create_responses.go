@@ -243,6 +243,7 @@ func NewClusterCreateDefault(code int) *ClusterCreateDefault {
 | 1179824 | An invalid gateway was provided. |
 | 1179825 | All management and cluster config IP addresses must belong to the same address family. |
 | 1182809 | Cluster creation is already complete. |
+| 1182810 | This platform does not support cluster network overlay. |
 | 2097165 | An NTP server could not be reached. |
 | 7077919 | The minimum length for the new password does not meet the policy. |
 | 8847361 | Too many DNS domains provided. |

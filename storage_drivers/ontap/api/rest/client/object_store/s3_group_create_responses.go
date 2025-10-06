@@ -138,7 +138,7 @@ func NewS3GroupCreateDefault(code int) *S3GroupCreateDefault {
 
 | Error Code | Description |
 | ---------- | ----------- |
-| 92405896   | Users list cannot be empty.
+| 92406207   | An object store group cannot have an empty list of users.
 | 92405930   | Group name \\\"{group name}\\\" is not valid. Group names must have between 1 and 128 characters.
 | 92405931   | Group name \\\"{group name}\\\" contains invalid characters. Valid characters for a group name are 0-9, A-Z, a-z, "_", "+", "=", ",", ".", "@", and "-".
 | 92405932   | Creating an object store group requires an effective cluster version of 9.8 or later.

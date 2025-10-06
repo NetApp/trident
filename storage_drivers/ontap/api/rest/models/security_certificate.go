@@ -42,7 +42,7 @@ type SecurityCertificate struct {
 	CommonName *string `json:"common_name,omitempty"`
 
 	// Certificate expiration time, in ISO 8601 duration format or date and time format. Can be provided on POST if creating self-signed certificate. The expiration time range is between 1 day to 10 years.
-	// Example: 2030-01-25 11:20:13
+	// Example: 2030-01-25 11:20:13+00:00
 	ExpiryTime *string `json:"expiry_time,omitempty"`
 
 	// Hashing function. Can be provided on POST when creating a self-signed certificate. Hash functions md5 and sha1 are not allowed on POST.

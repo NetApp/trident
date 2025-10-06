@@ -398,6 +398,18 @@ type S3BucketSvmModifyCollectionParams struct {
 	*/
 	QosPolicyUUID *string
 
+	/* RestoreToSnapshotName.
+
+	   Name of the snapshot to restore. The bucket will be restored to the point in time the snapshot was taken.
+	*/
+	RestoreToSnapshotName *string
+
+	/* RestoreToSnapshotUUID.
+
+	   UUID of the snapshot to restore. The bucket will be restored to the point in time the snapshot was taken.
+	*/
+	RestoreToSnapshotUUID *string
+
 	/* RetentionDefaultPeriod.
 
 	   Filter by retention.default_period
@@ -1185,6 +1197,28 @@ func (o *S3BucketSvmModifyCollectionParams) WithQosPolicyUUID(qosPolicyUUID *str
 // SetQosPolicyUUID adds the qosPolicyUuid to the s3 bucket svm modify collection params
 func (o *S3BucketSvmModifyCollectionParams) SetQosPolicyUUID(qosPolicyUUID *string) {
 	o.QosPolicyUUID = qosPolicyUUID
+}
+
+// WithRestoreToSnapshotName adds the restoreToSnapshotName to the s3 bucket svm modify collection params
+func (o *S3BucketSvmModifyCollectionParams) WithRestoreToSnapshotName(restoreToSnapshotName *string) *S3BucketSvmModifyCollectionParams {
+	o.SetRestoreToSnapshotName(restoreToSnapshotName)
+	return o
+}
+
+// SetRestoreToSnapshotName adds the restoreToSnapshotName to the s3 bucket svm modify collection params
+func (o *S3BucketSvmModifyCollectionParams) SetRestoreToSnapshotName(restoreToSnapshotName *string) {
+	o.RestoreToSnapshotName = restoreToSnapshotName
+}
+
+// WithRestoreToSnapshotUUID adds the restoreToSnapshotUUID to the s3 bucket svm modify collection params
+func (o *S3BucketSvmModifyCollectionParams) WithRestoreToSnapshotUUID(restoreToSnapshotUUID *string) *S3BucketSvmModifyCollectionParams {
+	o.SetRestoreToSnapshotUUID(restoreToSnapshotUUID)
+	return o
+}
+
+// SetRestoreToSnapshotUUID adds the restoreToSnapshotUuid to the s3 bucket svm modify collection params
+func (o *S3BucketSvmModifyCollectionParams) SetRestoreToSnapshotUUID(restoreToSnapshotUUID *string) {
+	o.RestoreToSnapshotUUID = restoreToSnapshotUUID
 }
 
 // WithRetentionDefaultPeriod adds the retentionDefaultPeriod to the s3 bucket svm modify collection params
@@ -2304,6 +2338,40 @@ func (o *S3BucketSvmModifyCollectionParams) WriteToRequest(r runtime.ClientReque
 		if qQosPolicyUUID != "" {
 
 			if err := r.SetQueryParam("qos_policy.uuid", qQosPolicyUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RestoreToSnapshotName != nil {
+
+		// query param restore_to.snapshot.name
+		var qrRestoreToSnapshotName string
+
+		if o.RestoreToSnapshotName != nil {
+			qrRestoreToSnapshotName = *o.RestoreToSnapshotName
+		}
+		qRestoreToSnapshotName := qrRestoreToSnapshotName
+		if qRestoreToSnapshotName != "" {
+
+			if err := r.SetQueryParam("restore_to.snapshot.name", qRestoreToSnapshotName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RestoreToSnapshotUUID != nil {
+
+		// query param restore_to.snapshot.uuid
+		var qrRestoreToSnapshotUUID string
+
+		if o.RestoreToSnapshotUUID != nil {
+			qrRestoreToSnapshotUUID = *o.RestoreToSnapshotUUID
+		}
+		qRestoreToSnapshotUUID := qrRestoreToSnapshotUUID
+		if qRestoreToSnapshotUUID != "" {
+
+			if err := r.SetQueryParam("restore_to.snapshot.uuid", qRestoreToSnapshotUUID); err != nil {
 				return err
 			}
 		}

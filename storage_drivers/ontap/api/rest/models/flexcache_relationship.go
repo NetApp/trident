@@ -24,7 +24,7 @@ type FlexcacheRelationship struct {
 	Cluster *FlexcacheRelationshipInlineCluster `json:"cluster,omitempty"`
 
 	// Creation time of the relationship.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`

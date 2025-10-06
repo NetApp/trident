@@ -34,7 +34,7 @@ type MetroclusterDiagDetails struct {
 	Node *MetroclusterDiagDetailsInlineNode `json:"node,omitempty"`
 
 	// Time check was done.
-	// Example: 2016-03-10 22:35:16
+	// Example: 2016-03-10 14:35:16-08:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`

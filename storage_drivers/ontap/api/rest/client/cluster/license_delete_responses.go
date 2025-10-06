@@ -120,7 +120,6 @@ func NewLicenseDeleteDefault(code int) *LicenseDeleteDefault {
 | 1115213 | License is still in use and cannot be removed |
 | 1115406 | Capacity pool licenses cannot be deleted |
 | 1115564 | Package is part of a NLFv2 license and cannot be removed individually |
-| 66846823 | A FlexCache license that is still in use cannot be deleted |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.
 */
 type LicenseDeleteDefault struct {

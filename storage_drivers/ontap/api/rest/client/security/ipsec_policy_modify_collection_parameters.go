@@ -86,6 +86,12 @@ type IpsecPolicyModifyCollectionParams struct {
 	*/
 	CertificateUUID *string
 
+	/* CertificateModifyKeepsa.
+
+	   Filter by certificate_modify_keepsa
+	*/
+	CertificateModifyKeepsa *bool
+
 	/* ContinueOnFailure.
 
 	   Continue even when the operation fails on one of the records.
@@ -355,6 +361,17 @@ func (o *IpsecPolicyModifyCollectionParams) WithCertificateUUID(certificateUUID 
 // SetCertificateUUID adds the certificateUuid to the ipsec policy modify collection params
 func (o *IpsecPolicyModifyCollectionParams) SetCertificateUUID(certificateUUID *string) {
 	o.CertificateUUID = certificateUUID
+}
+
+// WithCertificateModifyKeepsa adds the certificateModifyKeepsa to the ipsec policy modify collection params
+func (o *IpsecPolicyModifyCollectionParams) WithCertificateModifyKeepsa(certificateModifyKeepsa *bool) *IpsecPolicyModifyCollectionParams {
+	o.SetCertificateModifyKeepsa(certificateModifyKeepsa)
+	return o
+}
+
+// SetCertificateModifyKeepsa adds the certificateModifyKeepsa to the ipsec policy modify collection params
+func (o *IpsecPolicyModifyCollectionParams) SetCertificateModifyKeepsa(certificateModifyKeepsa *bool) {
+	o.CertificateModifyKeepsa = certificateModifyKeepsa
 }
 
 // WithContinueOnFailure adds the continueOnFailure to the ipsec policy modify collection params
@@ -703,6 +720,23 @@ func (o *IpsecPolicyModifyCollectionParams) WriteToRequest(r runtime.ClientReque
 		if qCertificateUUID != "" {
 
 			if err := r.SetQueryParam("certificate.uuid", qCertificateUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CertificateModifyKeepsa != nil {
+
+		// query param certificate_modify_keepsa
+		var qrCertificateModifyKeepsa bool
+
+		if o.CertificateModifyKeepsa != nil {
+			qrCertificateModifyKeepsa = *o.CertificateModifyKeepsa
+		}
+		qCertificateModifyKeepsa := swag.FormatBool(qrCertificateModifyKeepsa)
+		if qCertificateModifyKeepsa != "" {
+
+			if err := r.SetQueryParam("certificate_modify_keepsa", qCertificateModifyKeepsa); err != nil {
 				return err
 			}
 		}

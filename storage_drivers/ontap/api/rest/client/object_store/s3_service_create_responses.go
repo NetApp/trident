@@ -168,6 +168,7 @@ func NewS3ServiceCreateDefault(code int) *S3ServiceCreateDefault {
 | 92406211   | The specified method \"DONE\" is not valid. Valid methods are GET, PUT, DELETE, HEAD, and POST.;
 | 92405863   | Failed to create CORS rules for bucket \"bb1\". Reason: \"Field \"index\" cannot be specified for this operation.\". Resolve all the issues and retry the operation.;
 | 92406228   | Cannot exceed the maximum limit of 100 Cross-Origin Resource Sharing (CORS) rules per S3 bucket \\\"<bucket>\\\" in SVM \\\"<SVM>\\\".;
+| 92405968   | Subnet \\\"{condition.source_ips}\\\" is not a valid IP subnet because it contains non-zero values in the host component of the address. Subnet address \\\"{valid source ips subnet}\\\" identifies a valid subnet for the given mask length. Example: \\\"10.0.1.0/24\\\" is a valid subnet while as\\\"10.0.1.1/24\\\" is invalid.";
 */
 type S3ServiceCreateDefault struct {
 	_statusCode int

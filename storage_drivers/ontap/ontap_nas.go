@@ -223,7 +223,6 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 	return nil
 }
 
-// Create a volume with the specified options
 func (d *NASStorageDriver) Create(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
 ) error {
@@ -403,25 +402,28 @@ func (d *NASStorageDriver) Create(
 		}
 
 		// Create the volume
-		err = d.API.VolumeCreate(
-			ctx, api.Volume{
-				Aggregates: []string{
-					aggregate,
-				},
-				Comment:         labels,
-				Encrypt:         enableEncryption,
-				ExportPolicy:    exportPolicy,
-				Name:            name,
-				Qos:             qosPolicyGroup,
-				Size:            size,
-				SpaceReserve:    spaceReserve,
-				SnapshotPolicy:  snapshotPolicy,
-				SecurityStyle:   securityStyle,
-				SnapshotReserve: snapshotReserveInt,
-				TieringPolicy:   tieringPolicy,
-				UnixPermissions: unixPermissions,
-				DPVolume:        volConfig.IsMirrorDestination,
-			})
+		volumeCreateRequest := api.Volume{
+			Comment:         labels,
+			Encrypt:         enableEncryption,
+			ExportPolicy:    exportPolicy,
+			Name:            name,
+			Qos:             qosPolicyGroup,
+			Size:            size,
+			SpaceReserve:    spaceReserve,
+			SnapshotPolicy:  snapshotPolicy,
+			SecurityStyle:   securityStyle,
+			SnapshotReserve: snapshotReserveInt,
+			TieringPolicy:   tieringPolicy,
+			UnixPermissions: unixPermissions,
+			DPVolume:        volConfig.IsMirrorDestination,
+		}
+
+		// Only set aggregates for non-disaggregated systems
+		if !d.API.IsDisaggregated() {
+			volumeCreateRequest.Aggregates = []string{aggregate}
+		}
+
+		err = d.API.VolumeCreate(ctx, volumeCreateRequest)
 		if err != nil {
 			if api.IsVolumeCreateJobExistsError(err) {
 				return nil
@@ -1405,6 +1407,7 @@ func (d *NASStorageDriver) getStorageBackendPools(ctx context.Context) []drivers
 	// 1. SVM UUID
 	// 2. Aggregate (physical pool)
 	svmUUID := d.GetAPI().GetSVMUUID()
+
 	backendPools := make([]drivers.OntapStorageBackendPool, 0)
 	for _, pool := range d.physicalPools {
 		backendPool := drivers.OntapStorageBackendPool{

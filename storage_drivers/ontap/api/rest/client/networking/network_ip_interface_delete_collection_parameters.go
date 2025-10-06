@@ -265,8 +265,6 @@ type NetworkIPInterfaceDeleteCollectionParams struct {
 
 	   The name of an IP Address Family for which to recommend IP interfaces. Unless ipv6 is specified, the default value is ipv4.
 
-
-	   Default: "ipv4"
 	*/
 	RecommendIPFamily *string
 
@@ -485,8 +483,6 @@ func (o *NetworkIPInterfaceDeleteCollectionParams) SetDefaults() {
 	var (
 		continueOnFailureDefault = bool(false)
 
-		recommendIPFamilyDefault = string("ipv4")
-
 		returnRecordsDefault = bool(true)
 
 		returnTimeoutDefault = int64(15)
@@ -496,7 +492,6 @@ func (o *NetworkIPInterfaceDeleteCollectionParams) SetDefaults() {
 
 	val := NetworkIPInterfaceDeleteCollectionParams{
 		ContinueOnFailure: &continueOnFailureDefault,
-		RecommendIPFamily: &recommendIPFamilyDefault,
 		ReturnRecords:     &returnRecordsDefault,
 		ReturnTimeout:     &returnTimeoutDefault,
 		SerialRecords:     &serialRecordsDefault,

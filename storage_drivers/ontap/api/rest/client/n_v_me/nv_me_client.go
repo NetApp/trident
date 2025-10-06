@@ -208,6 +208,7 @@ There is an added computational cost to retrieving values for these properties. 
 * `space.physical_used`
 * `space.physical_used_by_snapshots`
 * `space.efficiency_ratio`
+* `space.snapshot.*`
 * `subsystem_map.*`
 * `status.mapped`
 * `statistics.*`
@@ -412,6 +413,7 @@ There is an added computational cost to retrieving values for these properties. 
 * `space.physical_used`
 * `space.physical_used_by_snapshots`
 * `space.efficiency_ratio`
+* `space.snapshot.*`
 * `subsystem_map.*`
 * `status.mapped`
 * `statistics.*`

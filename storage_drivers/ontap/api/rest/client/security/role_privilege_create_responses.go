@@ -127,7 +127,7 @@ func NewRolePrivilegeCreateDefault(code int) *RolePrivilegeCreateDefault {
 | 5636129 | A role with given name has not been defined. |
 | 5636143 | A Vserver admin cannot use the API with this access level. |
 | 5636144 | The value specified for the access level is not valid. |
-| 5636168 | This role is mapped to a rest-role and cannot be modified directly. Modifications must be done with rest-role. |
+| 5636168 | This role is mapped to a REST role and can only be modified by updating the REST role.<personalities supports=aiml> |
 | 5636169 | A character in the URI is not valid. |
 | 5636170 | The URI does not exist. |
 | 5636173 | This feature requires an effective cluster version of 9.6 or later. |
@@ -137,6 +137,9 @@ func NewRolePrivilegeCreateDefault(code int) *RolePrivilegeCreateDefault {
 | 5636186 | Expanded REST roles for granular resource control requires an effective cluster version of 9.10.1 or later. |
 | 5636192 | The query parameter cannot be specified for the privileges tuple with API endpoint entries. |
 | 5636200 | The specified value of the access parameter is invalid, if a command or command directory is specified in the path parameter. |
+| 5636259 | The specified child AIDE object was not found within the specified parent AIDE object. |
+| 5636261 | The specified grandchild AIDE object was not found within the specified child AIDE object that belongs to the specified parent AIDE object.</personalities> |
+| 5636262 | Cannot create a role with the specified role name because it is reserved by the system. |
 | 13434890 | Vserver-ID failed for Vserver roles. |
 | 13434891 | UUID LookUp failed for Vserver roles. |
 | 13434892 | Roles is a required field. |

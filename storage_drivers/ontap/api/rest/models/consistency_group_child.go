@@ -1041,7 +1041,7 @@ type ConsistencyGroupChildInlineLunsInlineArrayItem struct {
 	Comment *string `json:"comment,omitempty"`
 
 	// The time the LUN was created.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
@@ -2964,6 +2964,9 @@ type ConsistencyGroupChildInlineLunsInlineArrayItemInlineSpace struct {
 	// Minimum: 4096
 	Size *int64 `json:"size,omitempty"`
 
+	// snapshot
+	Snapshot *VdiskSpaceSnapshot `json:"snapshot,omitempty"`
+
 	// The amount of space consumed by the main data stream of the LUN.<br/>
 	// This value is the total space consumed in the volume by the LUN, including filesystem overhead, but excluding prefix and suffix streams. Due to internal filesystem overhead and the many ways SAN filesystems and applications utilize blocks within a LUN, this value does not necessarily reflect actual consumption/availability from the perspective of the filesystem or application. Without specific knowledge of how the LUN blocks are utilized outside of ONTAP, this property should not be used as an indicator for an out-of-space condition.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
@@ -2981,6 +2984,10 @@ func (m *ConsistencyGroupChildInlineLunsInlineArrayItemInlineSpace) Validate(for
 	}
 
 	if err := m.validateSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSnapshot(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3023,11 +3030,32 @@ func (m *ConsistencyGroupChildInlineLunsInlineArrayItemInlineSpace) validateSize
 	return nil
 }
 
+func (m *ConsistencyGroupChildInlineLunsInlineArrayItemInlineSpace) validateSnapshot(formats strfmt.Registry) error {
+	if swag.IsZero(m.Snapshot) { // not required
+		return nil
+	}
+
+	if m.Snapshot != nil {
+		if err := m.Snapshot.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "snapshot")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this consistency group child inline luns inline array item inline space based on the context it is used
 func (m *ConsistencyGroupChildInlineLunsInlineArrayItemInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateGuarantee(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSnapshot(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3047,6 +3075,20 @@ func (m *ConsistencyGroupChildInlineLunsInlineArrayItemInlineSpace) contextValid
 		if err := m.Guarantee.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("space" + "." + "guarantee")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupChildInlineLunsInlineArrayItemInlineSpace) contextValidateSnapshot(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Snapshot != nil {
+		if err := m.Snapshot.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "snapshot")
 			}
 			return err
 		}
@@ -3173,7 +3215,7 @@ type ConsistencyGroupChildInlineNamespacesInlineArrayItem struct {
 	Comment *string `json:"comment,omitempty"`
 
 	// The time the NVMe namespace was created.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
@@ -3687,6 +3729,9 @@ type ConsistencyGroupChildInlineNamespacesInlineArrayItemInlineSpace struct {
 	// Minimum: 4096
 	Size *int64 `json:"size,omitempty"`
 
+	// snapshot
+	Snapshot *VdiskSpaceSnapshot `json:"snapshot,omitempty"`
+
 	// The amount of space consumed by the main data stream of the NVMe namespace.<br/>
 	// This value is the total space consumed in the volume by the NVMe namespace, including filesystem overhead, but excluding prefix and suffix streams. Due to internal filesystem overhead and the many ways NVMe filesystems and applications utilize blocks within a namespace, this value does not necessarily reflect actual consumption/availability from the perspective of the filesystem or application. Without specific knowledge of how the namespace blocks are utilized outside of ONTAP, this property should not be used as an indicator for an out-of-space condition.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
@@ -3708,6 +3753,10 @@ func (m *ConsistencyGroupChildInlineNamespacesInlineArrayItemInlineSpace) Valida
 	}
 
 	if err := m.validateSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSnapshot(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3783,11 +3832,32 @@ func (m *ConsistencyGroupChildInlineNamespacesInlineArrayItemInlineSpace) valida
 	return nil
 }
 
+func (m *ConsistencyGroupChildInlineNamespacesInlineArrayItemInlineSpace) validateSnapshot(formats strfmt.Registry) error {
+	if swag.IsZero(m.Snapshot) { // not required
+		return nil
+	}
+
+	if m.Snapshot != nil {
+		if err := m.Snapshot.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "snapshot")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this consistency group child inline namespaces inline array item inline space based on the context it is used
 func (m *ConsistencyGroupChildInlineNamespacesInlineArrayItemInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateGuarantee(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSnapshot(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -3807,6 +3877,20 @@ func (m *ConsistencyGroupChildInlineNamespacesInlineArrayItemInlineSpace) contex
 		if err := m.Guarantee.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("space" + "." + "guarantee")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ConsistencyGroupChildInlineNamespacesInlineArrayItemInlineSpace) contextValidateSnapshot(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Snapshot != nil {
+		if err := m.Snapshot.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "snapshot")
 			}
 			return err
 		}
@@ -4392,6 +4476,12 @@ type ConsistencyGroupChildInlineProvisioningOptions struct {
 	// New name for consistency group. Required to resolve naming collisions.
 	//
 	Name *string `json:"name,omitempty"`
+
+	// Enable snapshot autodelete on a storage unit.
+	SnapshotAutodeleteEnabled interface{} `json:"snapshot_autodelete_enabled,omitempty"`
+
+	// The space that has been set aside as a reserve for storage unit snapshot usage, in percent.
+	SnapshotReservePercent interface{} `json:"snapshot_reserve_percent,omitempty"`
 
 	// storage service
 	StorageService *ConsistencyGroupChildInlineProvisioningOptionsInlineStorageService `json:"storage_service,omitempty"`

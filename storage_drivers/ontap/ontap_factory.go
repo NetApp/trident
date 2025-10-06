@@ -25,6 +25,7 @@ const (
 
 	PersonalityUnified = "Unified"
 	PersonalityASAr2   = "ASAr2"
+	PersonalityAFX     = "AFX"
 )
 
 // GetStorageDriver uses a backend config to create an ONTAP API client and constructs the necessary storage driver.
@@ -73,6 +74,13 @@ func GetStorageDriver(
 	switch ontapConfig.StorageDriverName {
 
 	case config.OntapNASStorageDriverName:
+		if !API.IsSANOptimized() && API.IsDisaggregated() {
+			// Setup personality to be used by ASUP
+			if ontapConfig.Flags == nil {
+				ontapConfig.Flags = make(map[string]string)
+			}
+			ontapConfig.Flags[FlagPersonality] = PersonalityAFX
+		}
 		storageDriver = &NASStorageDriver{API: API, AWSAPI: AWSAPI, Config: *ontapConfig}
 	case config.OntapNASFlexGroupStorageDriverName:
 		storageDriver = &NASFlexGroupStorageDriver{API: API, AWSAPI: AWSAPI, Config: *ontapConfig}

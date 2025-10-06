@@ -146,7 +146,7 @@ func (d *ASAStorageDriver) Initialize(
 			Logc(ctx).WithField("dataLIFs", d.ips).Debug("Found iSCSI LIFs.")
 		}
 	}
-	d.physicalPools, d.virtualPools, err = InitializeASAStoragePoolsCommon(ctx, d,
+	d.physicalPools, d.virtualPools, err = InitializeManagedStoragePoolsCommon(ctx, d,
 		d.getStoragePoolAttributes(ctx), d.BackendName())
 	if err != nil {
 		return fmt.Errorf("could not configure storage pools: %v", err)

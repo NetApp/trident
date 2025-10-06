@@ -104,6 +104,12 @@ type NfsDeleteCollectionParams struct {
 	*/
 	ContinueOnFailure *bool
 
+	/* CredentialCacheHarvestTimeout.
+
+	   Filter by credential_cache.harvest_timeout
+	*/
+	CredentialCacheHarvestTimeout *int64
+
 	/* CredentialCacheNegativeTTL.
 
 	   Filter by credential_cache.negative_ttl
@@ -637,6 +643,12 @@ type NfsDeleteCollectionParams struct {
 	   Filter by protocol.v4_session_slots
 	*/
 	ProtocolV4SessionSlots *int64
+
+	/* ProtocolV4SubnetFilterEnabled.
+
+	   Filter by protocol.v4_subnet_filter_enabled
+	*/
+	ProtocolV4SubnetFilterEnabled *bool
 
 	/* ProtocolAccessRulesAuthType.
 
@@ -1215,6 +1227,17 @@ func (o *NfsDeleteCollectionParams) WithContinueOnFailure(continueOnFailure *boo
 // SetContinueOnFailure adds the continueOnFailure to the nfs delete collection params
 func (o *NfsDeleteCollectionParams) SetContinueOnFailure(continueOnFailure *bool) {
 	o.ContinueOnFailure = continueOnFailure
+}
+
+// WithCredentialCacheHarvestTimeout adds the credentialCacheHarvestTimeout to the nfs delete collection params
+func (o *NfsDeleteCollectionParams) WithCredentialCacheHarvestTimeout(credentialCacheHarvestTimeout *int64) *NfsDeleteCollectionParams {
+	o.SetCredentialCacheHarvestTimeout(credentialCacheHarvestTimeout)
+	return o
+}
+
+// SetCredentialCacheHarvestTimeout adds the credentialCacheHarvestTimeout to the nfs delete collection params
+func (o *NfsDeleteCollectionParams) SetCredentialCacheHarvestTimeout(credentialCacheHarvestTimeout *int64) {
+	o.CredentialCacheHarvestTimeout = credentialCacheHarvestTimeout
 }
 
 // WithCredentialCacheNegativeTTL adds the credentialCacheNegativeTTL to the nfs delete collection params
@@ -2196,6 +2219,17 @@ func (o *NfsDeleteCollectionParams) SetProtocolV4SessionSlots(protocolV4SessionS
 	o.ProtocolV4SessionSlots = protocolV4SessionSlots
 }
 
+// WithProtocolV4SubnetFilterEnabled adds the protocolV4SubnetFilterEnabled to the nfs delete collection params
+func (o *NfsDeleteCollectionParams) WithProtocolV4SubnetFilterEnabled(protocolV4SubnetFilterEnabled *bool) *NfsDeleteCollectionParams {
+	o.SetProtocolV4SubnetFilterEnabled(protocolV4SubnetFilterEnabled)
+	return o
+}
+
+// SetProtocolV4SubnetFilterEnabled adds the protocolV4SubnetFilterEnabled to the nfs delete collection params
+func (o *NfsDeleteCollectionParams) SetProtocolV4SubnetFilterEnabled(protocolV4SubnetFilterEnabled *bool) {
+	o.ProtocolV4SubnetFilterEnabled = protocolV4SubnetFilterEnabled
+}
+
 // WithProtocolAccessRulesAuthType adds the protocolAccessRulesAuthType to the nfs delete collection params
 func (o *NfsDeleteCollectionParams) WithProtocolAccessRulesAuthType(protocolAccessRulesAuthType *string) *NfsDeleteCollectionParams {
 	o.SetProtocolAccessRulesAuthType(protocolAccessRulesAuthType)
@@ -3088,6 +3122,23 @@ func (o *NfsDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qContinueOnFailure != "" {
 
 			if err := r.SetQueryParam("continue_on_failure", qContinueOnFailure); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CredentialCacheHarvestTimeout != nil {
+
+		// query param credential_cache.harvest_timeout
+		var qrCredentialCacheHarvestTimeout int64
+
+		if o.CredentialCacheHarvestTimeout != nil {
+			qrCredentialCacheHarvestTimeout = *o.CredentialCacheHarvestTimeout
+		}
+		qCredentialCacheHarvestTimeout := swag.FormatInt64(qrCredentialCacheHarvestTimeout)
+		if qCredentialCacheHarvestTimeout != "" {
+
+			if err := r.SetQueryParam("credential_cache.harvest_timeout", qCredentialCacheHarvestTimeout); err != nil {
 				return err
 			}
 		}
@@ -4587,6 +4638,23 @@ func (o *NfsDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qProtocolV4SessionSlots != "" {
 
 			if err := r.SetQueryParam("protocol.v4_session_slots", qProtocolV4SessionSlots); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolV4SubnetFilterEnabled != nil {
+
+		// query param protocol.v4_subnet_filter_enabled
+		var qrProtocolV4SubnetFilterEnabled bool
+
+		if o.ProtocolV4SubnetFilterEnabled != nil {
+			qrProtocolV4SubnetFilterEnabled = *o.ProtocolV4SubnetFilterEnabled
+		}
+		qProtocolV4SubnetFilterEnabled := swag.FormatBool(qrProtocolV4SubnetFilterEnabled)
+		if qProtocolV4SubnetFilterEnabled != "" {
+
+			if err := r.SetQueryParam("protocol.v4_subnet_filter_enabled", qProtocolV4SubnetFilterEnabled); err != nil {
 				return err
 			}
 		}

@@ -41,11 +41,10 @@ type S3BucketPolicyStatement struct {
 	// Example: ["bucket1","bucket1/*"]
 	S3BucketPolicyStatementInlineResources []*string `json:"resources,omitempty"`
 
-	// Specifies the statement identifier used to differentiate between statements. The sid length can range from 1 to 256 characters and can only contain the following combination of characters 0-9, A-Z, and a-z. Special characters are not valid.
-	// Example: FullAccessToUser1
+	// Specifies the statement identifier used to differentiate between statements. The SID length can range from 1 to 256 characters.
+	// Example: Full_Access_To_User1!
 	// Max Length: 256
 	// Min Length: 0
-	// Pattern: ^[0-9A-Za-z]{0,256}$
 	Sid *string `json:"sid,omitempty"`
 }
 
@@ -161,10 +160,6 @@ func (m *S3BucketPolicyStatement) validateSid(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MaxLength("sid", "body", *m.Sid, 256); err != nil {
-		return err
-	}
-
-	if err := validate.Pattern("sid", "body", *m.Sid, `^[0-9A-Za-z]{0,256}$`); err != nil {
 		return err
 	}
 

@@ -206,7 +206,7 @@ type AntiRansomwareSuspectInlineFile struct {
 	Reason *string `json:"reason,omitempty"`
 
 	// Time when the file was detected as a potential suspect in date-time format.
-	// Example: 2021-05-12 15:00:16
+	// Example: 2021-05-12 11:00:16-04:00
 	// Read Only: true
 	// Format: date-time
 	SuspectTime *strfmt.DateTime `json:"suspect_time,omitempty"`

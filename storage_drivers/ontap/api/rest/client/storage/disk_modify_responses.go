@@ -116,6 +116,7 @@ func NewDiskModifyDefault(code int) *DiskModifyDefault {
 | 720968 | Quiet mode is applicable only when disk unfail is sparing the drive. |
 | 721029 | Failed to assign disks to a pool. |
 | 721066 | Node is outside the list of controllers for disk. |
+| 721067 | The specified node does not exist in the cluster. |
 | 721084 | An invalid pool name was specified. |
 | 721085 | The node name was not specified. |
 | 721093 | Operation not supported on this platform. |

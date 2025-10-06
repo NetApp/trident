@@ -14,7 +14,7 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// HostKeyAlgorithm Host key algorithm. The host key algorithm 'ssh_ed25519' can be configured only in non-FIPS mode.
+// HostKeyAlgorithm Host key algorithm. The host key algorithms 'ssh_ed25519' and 'ssh_rsa' can be configured only in non-FIPS mode.
 // Example: ecdsa_sha2_nistp256
 //
 // swagger:model host_key_algorithm
@@ -39,6 +39,12 @@ const (
 
 	// HostKeyAlgorithmSSHRsa captures enum value "ssh_rsa"
 	HostKeyAlgorithmSSHRsa HostKeyAlgorithm = "ssh_rsa"
+
+	// HostKeyAlgorithmRsaSha2256 captures enum value "rsa_sha2_256"
+	HostKeyAlgorithmRsaSha2256 HostKeyAlgorithm = "rsa_sha2_256"
+
+	// HostKeyAlgorithmRsaSha2512 captures enum value "rsa_sha2_512"
+	HostKeyAlgorithmRsaSha2512 HostKeyAlgorithm = "rsa_sha2_512"
 )
 
 // for schema
@@ -46,7 +52,7 @@ var hostKeyAlgorithmEnum []interface{}
 
 func init() {
 	var res []HostKeyAlgorithm
-	if err := json.Unmarshal([]byte(`["ecdsa_sha2_nistp256","ssh_ed25519","ssh_rsa"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["ecdsa_sha2_nistp256","ssh_ed25519","ssh_rsa","rsa_sha2_256","rsa_sha2_512"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

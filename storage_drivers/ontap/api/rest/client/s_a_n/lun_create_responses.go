@@ -227,6 +227,7 @@ func NewLunCreateDefault(code int) *LunCreateDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 917927 | The specified volume was not found. |
+| 918235 | A volume with the specified UUID was not found. |
 | 918236 | The specified `location.volume.uuid` and `location.volume.name` do not refer to the same volume. |
 | 1260121 | Cloning a LUN to a volume different than the source volume is not supported. |
 | 1260136 | The specified destination for a clone operation already exists as a LUN, namespace, or file. |

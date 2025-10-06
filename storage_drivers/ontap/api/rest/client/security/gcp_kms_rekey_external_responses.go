@@ -207,6 +207,8 @@ func NewGcpKmsRekeyExternalDefault(code int) *GcpKmsRekeyExternalDefault {
 | 65537610 | Rekey cannot be performed on the SVM while the enabled keystore configuration is being switched. If a previous attempt to switch the keystore configuration failed, or was interrupted, the system will continue to prevent rekeying for the SVM. Use the REST API PATCH method "/api/security/key-stores/{uuid}" to re-run and complete the operation. |
 | 65537721 | Google Cloud KMS is not configured for the given SVM. |
 | 65537729 | External rekey failed on one or more nodes. Use the REST API POST method \"/api/security/gcp-kms/{uuid}/rekey-external\" to try the rekey operation again. |
+| 65537753 | The \"key_name\" value contains invalid characters. A forward slash '/' is not allowed in the key name. |
+| 65537755 | Google Cloud KMS configuration details were not found for the SVM. |
 | 65539436 | Rekey cannot be performed on the SVM while the enabled keystore configuration is being initialized. Wait until the keystore is in the active state, and rerun the rekey operation. |
 | 65539437 | Rekey cannot be performed on the SVM while the enabled keystore configuration is being disabled. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.

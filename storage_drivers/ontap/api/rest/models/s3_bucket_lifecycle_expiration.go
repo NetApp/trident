@@ -30,7 +30,7 @@ type S3BucketLifecycleExpiration struct {
 	ObjectAgeDays *int64 `json:"object_age_days,omitempty"`
 
 	// Specific date from when objects can expire. This cannot be used with object_age_days.
-	// Example: 2039-09-23 00:00:00
+	// Example: 2039-09-23 00:00:00+00:00
 	// Format: date-time
 	ObjectExpiryDate *strfmt.DateTime `json:"object_expiry_date,omitempty"`
 }

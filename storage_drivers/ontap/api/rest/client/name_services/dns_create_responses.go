@@ -148,6 +148,7 @@ func NewDNSCreateDefault(code int) *DNSCreateDefault {
 | 8847394    | FQDN name violated the limitations |
 | 8847403    | Scope specified is invalid for the specified SVM |
 | 9240587    | FQDN name cannot be empty |
+| 23724157   | Servers list cannot be empty |
 | 9240588    | FQDN name is too long. Maximum supported length: 255 characters  |
 | 9240590    | FQDN name is reserved. Following names are reserved: "all", "local" and "localhost" |
 | 9240607    | One of the FQDN labels is too long. Maximum supported length is 63 characters |

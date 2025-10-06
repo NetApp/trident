@@ -679,7 +679,7 @@ type VolumeRebalancingInlineEngineInlineMovement struct {
 	LastError *VolumeRebalancingInlineEngineInlineMovementInlineLastError `json:"last_error,omitempty"`
 
 	// Start time of the most recent file move on the constituent.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	MostRecentStartTime *strfmt.DateTime `json:"most_recent_start_time,omitempty"`
@@ -822,7 +822,7 @@ type VolumeRebalancingInlineEngineInlineMovementInlineLastError struct {
 	FileID *int64 `json:"file_id,omitempty"`
 
 	// Time of the last file move error on the constituent.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	Time *strfmt.DateTime `json:"time,omitempty"`

@@ -173,6 +173,7 @@ func TestNVMeInitialize_GetAggrNamesError(t *testing.T) {
 	mAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 	mAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return(mockIPs, nil)
 	mAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil)
+	mAPI.EXPECT().IsDisaggregated().Return(false)
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return(nil, errors.New("failed to get aggrs"))
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
@@ -196,6 +197,7 @@ func TestNVMeInitialize_ValidateStoragePrefixError(t *testing.T) {
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
 	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
 	mAPI.EXPECT().SVMName().Return("svm")
+	mAPI.EXPECT().IsDisaggregated().Return(false)
 
 	err := d.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, BackendUUID)
 
@@ -215,6 +217,7 @@ func TestNVMeInitialize_Success(t *testing.T) {
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
 	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
 	mAPI.EXPECT().SVMName().Return("svm")
+	mAPI.EXPECT().IsDisaggregated().Return(false)
 	mAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	mAPI.EXPECT().GetSVMUUID().Return("svm-uuid")
@@ -249,6 +252,7 @@ func TestNVMeInitialize_WithNameTemplate(t *testing.T) {
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
 	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
 	mAPI.EXPECT().SVMName().Return("svm")
+	mAPI.EXPECT().IsDisaggregated().Return(false)
 	mAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	mAPI.EXPECT().GetSVMUUID().Return("svm-uuid")
@@ -290,6 +294,7 @@ func TestNVMeInitialize_NameTemplateDefineInStoragePool(t *testing.T) {
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
 	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
 	mAPI.EXPECT().SVMName().Return("svm")
+	mAPI.EXPECT().IsDisaggregated().Return(false)
 	mAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	mAPI.EXPECT().GetSVMUUID().Return("svm-uuid")
@@ -337,6 +342,7 @@ func TestNVMeInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 	mAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{"data"}, nil)
 	mAPI.EXPECT().GetSVMAggregateAttributes(ctx).Return(nil, nil)
 	mAPI.EXPECT().SVMName().Return("svm")
+	mAPI.EXPECT().IsDisaggregated().Return(false)
 	mAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	mAPI.EXPECT().GetSVMUUID().Return("svm-uuid")
@@ -399,7 +405,9 @@ func TestNVMeInitializeStoragePools_NameTemplatesAndLabels(t *testing.T) {
 	d := newNVMeDriver(mockAPI, nil, nil)
 	defer mockCtrl.Finish()
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
@@ -1758,6 +1766,7 @@ func TestNVMeCreatePrepare_NilPool(t *testing.T) {
 	d.Config.NameTemplate = `{{.volume.Name}}_{{.volume.Namespace}}_{{.volume.StorageClass}}`
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
@@ -1786,6 +1795,7 @@ func TestNVMeCreatePrepare_NilPool_templateNotContainVolumeName(t *testing.T) {
 	d.Config.NameTemplate = `{{.volume.Namespace}}_{{.volume.StorageClass}}_{{slice .volume.Name 4 9}}`
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().IsSVMDRCapable(ctx).Return(true, nil).AnyTimes()
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(

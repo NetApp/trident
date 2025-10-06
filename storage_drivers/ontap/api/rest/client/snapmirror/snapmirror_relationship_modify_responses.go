@@ -259,6 +259,7 @@ func NewSnapmirrorRelationshipModifyDefault(code int) *SnapmirrorRelationshipMod
 | 13304093    | The property specified is not supported for the specified relationships. |
 | 6622077     | The expand operation has failed on the SnapMirror active sync relationship with specified destination path. |
 | 6619720     | Relationship information has been updated and is being propagated. Wait a few minutes and try the operation again. |
+| 13304156    | Either use state as broken-off or failover as true for SVM-DR fail-over operation. |
 | 13304159    | Could not retrieve the state or status values for the relationship. Wait a few minutes and try the operation again. If the error persists, address the error condition shown. |
 */
 type SnapmirrorRelationshipModifyDefault struct {

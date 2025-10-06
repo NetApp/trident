@@ -1980,6 +1980,7 @@ This can also be used to modify the SnapLock expiry time of a locked snapshot in
 	}
 	```
 
+<personalities supports=asar2>
 ### Modifying the SnapLock expiry time of a snapshot in SnapLock for SnapVault
 
 	The following example shows how to modify the SnapLock expiry time of a locked snapshot in SnapLock for SnapVault destination:
@@ -2001,6 +2002,7 @@ This can also be used to modify the SnapLock expiry time of a locked snapshot in
 	  }
 	}
 	```
+	</personalities>
 */
 func (a *Client) ConsistencyGroupSnapshotModify(params *ConsistencyGroupSnapshotModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ConsistencyGroupSnapshotModifyOK, *ConsistencyGroupSnapshotModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -2080,11 +2082,11 @@ func (a *Client) ConsistencyGroupSnapshotModifyCollection(params *ConsistencyGro
 }
 
 /*
-	ContainerCreate <personalities supports=asar2,unified>
+	ContainerCreate <personalities supports=asar2>
 
 * POST is not supported
 </personalities>
-<personalities supports=aiml>
+<personalities supports=aiml,unified>
 Creates one or more of the following:
 * New NAS FlexVol or FlexGroup volumes
 * S3 buckets

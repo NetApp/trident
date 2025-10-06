@@ -264,6 +264,7 @@ func NewSnapmirrorRelationshipModifyCollectionDefault(code int) *SnapmirrorRelat
 | 13304093    | The property specified is not supported for the specified relationships. |
 | 6622077     | The expand operation has failed on the SnapMirror active sync relationship with specified destination path. |
 | 6619720     | Relationship information has been updated and is being propagated. Wait a few minutes and try the operation again. |
+| 13304156    | Either use state as broken-off or failover as true for SVM-DR fail-over operation. |
 | 13304159    | Could not retrieve the state or status values for the relationship. Wait a few minutes and try the operation again. If the error persists, address the error condition shown. |
 */
 type SnapmirrorRelationshipModifyCollectionDefault struct {
@@ -1953,12 +1954,12 @@ type SnapmirrorRelationshipInlineTransfer struct {
 	BytesTransferred *int64 `json:"bytes_transferred,omitempty"`
 
 	// End time of the last transfer.
-	// Example: 2020-12-03 02:36:19
+	// Example: 2020-12-02 18:36:19-08:00
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
 
 	// Last updated time of the bytes transferred in the current transfer.
-	// Example: 2023-09-14 22:39:19
+	// Example: 2023-09-14 15:39:19-07:00
 	// Format: date-time
 	LastUpdatedTime *strfmt.DateTime `json:"last_updated_time,omitempty"`
 

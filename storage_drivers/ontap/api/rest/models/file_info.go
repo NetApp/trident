@@ -24,7 +24,7 @@ type FileInfo struct {
 	Links *FileInfoInlineLinks `json:"_links,omitempty"`
 
 	// Last access time of the file in date-time format.
-	// Example: 2019-06-12 15:00:16
+	// Example: 2019-06-12 11:00:16-04:00
 	// Read Only: true
 	// Format: date-time
 	AccessedTime *strfmt.DateTime `json:"accessed_time,omitempty"`
@@ -38,7 +38,7 @@ type FileInfo struct {
 	BytesUsed *int64 `json:"bytes_used,omitempty"`
 
 	// Last time data or attributes changed on the file in date-time format.
-	// Example: 2019-06-12 15:00:16
+	// Example: 2019-06-12 11:00:16-04:00
 	// Read Only: true
 	// Format: date-time
 	ChangedTime *strfmt.DateTime `json:"changed_time,omitempty"`
@@ -47,7 +47,7 @@ type FileInfo struct {
 	Constituent *FileInfoInlineConstituent `json:"constituent,omitempty"`
 
 	// Creation time of the file in date-time format.
-	// Example: 2019-06-12 15:00:16
+	// Example: 2019-06-12 11:00:16-04:00
 	// Read Only: true
 	// Format: date-time
 	CreationTime *strfmt.DateTime `json:"creation_time,omitempty"`
@@ -94,7 +94,7 @@ type FileInfo struct {
 	IsVMAligned *bool `json:"is_vm_aligned,omitempty"`
 
 	// Last data modification time of the file in date-time format.
-	// Example: 2019-06-12 15:00:16
+	// Example: 2019-06-12 11:00:16-04:00
 	// Read Only: true
 	// Format: date-time
 	ModifiedTime *strfmt.DateTime `json:"modified_time,omitempty"`

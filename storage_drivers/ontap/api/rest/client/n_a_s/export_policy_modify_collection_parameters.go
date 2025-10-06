@@ -62,6 +62,12 @@ ExportPolicyModifyCollectionParams contains all the parameters to send to the AP
 */
 type ExportPolicyModifyCollectionParams struct {
 
+	/* AreRulesTruncated.
+
+	   Filter by are_rules_truncated
+	*/
+	AreRulesTruncated *bool
+
 	/* ContinueOnFailure.
 
 	   Continue even when the operation fails on one of the records.
@@ -257,6 +263,17 @@ func (o *ExportPolicyModifyCollectionParams) WithHTTPClient(client *http.Client)
 // SetHTTPClient adds the HTTPClient to the export policy modify collection params
 func (o *ExportPolicyModifyCollectionParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithAreRulesTruncated adds the areRulesTruncated to the export policy modify collection params
+func (o *ExportPolicyModifyCollectionParams) WithAreRulesTruncated(areRulesTruncated *bool) *ExportPolicyModifyCollectionParams {
+	o.SetAreRulesTruncated(areRulesTruncated)
+	return o
+}
+
+// SetAreRulesTruncated adds the areRulesTruncated to the export policy modify collection params
+func (o *ExportPolicyModifyCollectionParams) SetAreRulesTruncated(areRulesTruncated *bool) {
+	o.AreRulesTruncated = areRulesTruncated
 }
 
 // WithContinueOnFailure adds the continueOnFailure to the export policy modify collection params
@@ -486,6 +503,23 @@ func (o *ExportPolicyModifyCollectionParams) WriteToRequest(r runtime.ClientRequ
 		return err
 	}
 	var res []error
+
+	if o.AreRulesTruncated != nil {
+
+		// query param are_rules_truncated
+		var qrAreRulesTruncated bool
+
+		if o.AreRulesTruncated != nil {
+			qrAreRulesTruncated = *o.AreRulesTruncated
+		}
+		qAreRulesTruncated := swag.FormatBool(qrAreRulesTruncated)
+		if qAreRulesTruncated != "" {
+
+			if err := r.SetQueryParam("are_rules_truncated", qAreRulesTruncated); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.ContinueOnFailure != nil {
 

@@ -6,6 +6,8 @@ package security
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"fmt"
+
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 )
@@ -59,6 +61,10 @@ type ClientService interface {
 	AccountTotpDelete(params *AccountTotpDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountTotpDeleteOK, error)
 
 	AccountTotpDeleteCollection(params *AccountTotpDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AccountTotpDeleteCollectionOK, error)
+
+	AntiRansomwareAutoEnableGet(params *AntiRansomwareAutoEnableGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareAutoEnableGetOK, error)
+
+	AntiRansomwareAutoEnableModify(params *AntiRansomwareAutoEnableModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareAutoEnableModifyOK, error)
 
 	AntiRansomwareGet(params *AntiRansomwareGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareGetOK, error)
 
@@ -155,6 +161,22 @@ type ClientService interface {
 	ClusterNisModify(params *ClusterNisModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterNisModifyOK, error)
 
 	CreateCertificateSigningRequest(params *CreateCertificateSigningRequestParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateCertificateSigningRequestOK, error)
+
+	DcnCertificateGet(params *DcnCertificateGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnCertificateGetOK, error)
+
+	DcnCertificateModify(params *DcnCertificateModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnCertificateModifyOK, error)
+
+	DcnClusterCertificateGet(params *DcnClusterCertificateGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnClusterCertificateGetOK, error)
+
+	DcnClusterCertificateModify(params *DcnClusterCertificateModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnClusterCertificateModifyOK, error)
+
+	DcnNodeCertificateCollectionGet(params *DcnNodeCertificateCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnNodeCertificateCollectionGetOK, error)
+
+	DcnNodeCertificateGet(params *DcnNodeCertificateGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnNodeCertificateGetOK, error)
+
+	DcnNodeCertificateModify(params *DcnNodeCertificateModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnNodeCertificateModifyOK, error)
+
+	DcnNodeCertificateModifyCollection(params *DcnNodeCertificateModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnNodeCertificateModifyCollectionOK, error)
 
 	DuoCollectionGet(params *DuoCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DuoCollectionGetOK, error)
 
@@ -366,6 +388,24 @@ type ClientService interface {
 
 	SecurityCertificateSign(params *SecurityCertificateSignParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityCertificateSignOK, error)
 
+	SecurityClusterNetworkCertificatesCollectionGet(params *SecurityClusterNetworkCertificatesCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityClusterNetworkCertificatesCollectionGetOK, error)
+
+	SecurityClusterNetworkCertificatesCreate(params *SecurityClusterNetworkCertificatesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityClusterNetworkCertificatesCreateCreated, error)
+
+	SecurityClusterNetworkCertificatesDelete(params *SecurityClusterNetworkCertificatesDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityClusterNetworkCertificatesDeleteOK, error)
+
+	SecurityClusterNetworkCertificatesDeleteCollection(params *SecurityClusterNetworkCertificatesDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityClusterNetworkCertificatesDeleteCollectionOK, error)
+
+	SecurityClusterNetworkCertificatesGet(params *SecurityClusterNetworkCertificatesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityClusterNetworkCertificatesGetOK, error)
+
+	SecurityClusterNetworkCertificatesModify(params *SecurityClusterNetworkCertificatesModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityClusterNetworkCertificatesModifyOK, error)
+
+	SecurityClusterNetworkCertificatesModifyCollection(params *SecurityClusterNetworkCertificatesModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityClusterNetworkCertificatesModifyCollectionOK, error)
+
+	SecurityClusterNetworkGet(params *SecurityClusterNetworkGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityClusterNetworkGetOK, error)
+
+	SecurityClusterNetworkModify(params *SecurityClusterNetworkModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityClusterNetworkModifyOK, error)
+
 	SecurityConfigGet(params *SecurityConfigGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityConfigGetOK, error)
 
 	SecurityConfigModify(params *SecurityConfigModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityConfigModifyOK, *SecurityConfigModifyAccepted, error)
@@ -397,6 +437,10 @@ type ClientService interface {
 	SecurityGroupModify(params *SecurityGroupModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityGroupModifyOK, error)
 
 	SecurityGroupModifyCollection(params *SecurityGroupModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityGroupModifyCollectionOK, error)
+
+	SecurityHaNetworkGet(params *SecurityHaNetworkGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityHaNetworkGetOK, error)
+
+	SecurityHaNetworkModify(params *SecurityHaNetworkModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityHaNetworkModifyOK, error)
 
 	SecurityJitPrivilegeCollectionGet(params *SecurityJitPrivilegeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityJitPrivilegeCollectionGetOK, error)
 
@@ -486,6 +530,14 @@ type ClientService interface {
 
 	SecurityOauth2GlobalModify(params *SecurityOauth2GlobalModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOauth2GlobalModifyOK, error)
 
+	SecurityOidcCreate(params *SecurityOidcCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOidcCreateCreated, *SecurityOidcCreateAccepted, error)
+
+	SecurityOidcDelete(params *SecurityOidcDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOidcDeleteOK, error)
+
+	SecurityOidcGet(params *SecurityOidcGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOidcGetOK, error)
+
+	SecurityOidcModify(params *SecurityOidcModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOidcModifyOK, error)
+
 	SecuritySamlDefMetadataCreate(params *SecuritySamlDefMetadataCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlDefMetadataCreateCreated, *SecuritySamlDefMetadataCreateAccepted, error)
 
 	SecuritySamlDefMetadataDelete(params *SecuritySamlDefMetadataDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecuritySamlDefMetadataDeleteOK, error)
@@ -549,6 +601,8 @@ type ClientService interface {
 	WebauthnGlobalCollectionGet(params *WebauthnGlobalCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnGlobalCollectionGetOK, error)
 
 	WebauthnGlobalGet(params *WebauthnGlobalGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnGlobalGetOK, error)
+
+	WhoamiGet(params *WhoamiGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WhoamiGetOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -1253,6 +1307,82 @@ func (a *Client) AccountTotpDeleteCollection(params *AccountTotpDeleteCollection
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*AccountTotpDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+AntiRansomwareAutoEnableGet Retrieves the current anti-ransomware auto enablement values, including details about warm-up period and auto enablement setting for new and existing volumes.
+*/
+func (a *Client) AntiRansomwareAutoEnableGet(params *AntiRansomwareAutoEnableGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareAutoEnableGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAntiRansomwareAutoEnableGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "anti_ransomware_auto_enable_get",
+		Method:             "GET",
+		PathPattern:        "/security/anti-ransomware/auto-enable",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AntiRansomwareAutoEnableGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AntiRansomwareAutoEnableGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AntiRansomwareAutoEnableGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+AntiRansomwareAutoEnableModify API to modify the anti-ransomware auto enablement setting.
+*/
+func (a *Client) AntiRansomwareAutoEnableModify(params *AntiRansomwareAutoEnableModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AntiRansomwareAutoEnableModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAntiRansomwareAutoEnableModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "anti_ransomware_auto_enable_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/anti-ransomware/auto-enable",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &AntiRansomwareAutoEnableModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AntiRansomwareAutoEnableModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AntiRansomwareAutoEnableModifyDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -3434,6 +3564,342 @@ func (a *Client) CreateCertificateSigningRequest(params *CreateCertificateSignin
 }
 
 /*
+	DcnCertificateGet Retrieves the client certificate that ONTAP uses for communication with DCN nodes.
+
+### Related ONTAP commands
+* `dcn security client show`
+*/
+func (a *Client) DcnCertificateGet(params *DcnCertificateGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnCertificateGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDcnCertificateGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "dcn_certificate_get",
+		Method:             "GET",
+		PathPattern:        "/dcn/security/client",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DcnCertificateGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DcnCertificateGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DcnCertificateGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	DcnCertificateModify Updates the client certificate that ONTAP uses for communication with DCN nodes.
+
+### Required properties
+* `ontap-cert-name` - Name of the client certificate used by ONTAP.
+### Related ONTAP commands
+* `dcn security client modify`
+*/
+func (a *Client) DcnCertificateModify(params *DcnCertificateModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnCertificateModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDcnCertificateModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "dcn_certificate_modify",
+		Method:             "PATCH",
+		PathPattern:        "/dcn/security/client",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DcnCertificateModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DcnCertificateModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for dcn_certificate_modify: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+	DcnClusterCertificateGet Retrieves the certificate that is used by the Kubernetes cluster.
+
+### Related ONTAP commands
+* `dcn security certificate k8s show`
+*/
+func (a *Client) DcnClusterCertificateGet(params *DcnClusterCertificateGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnClusterCertificateGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDcnClusterCertificateGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "dcn_cluster_certificate_get",
+		Method:             "GET",
+		PathPattern:        "/dcn/security/cluster/certificate",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DcnClusterCertificateGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DcnClusterCertificateGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DcnClusterCertificateGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	DcnClusterCertificateModify Updates the certificate that is used by the Kubernetes cluster.
+
+### Required properties
+* `dcn-k8s-cert-name` - Name of the DCN Kubernetes cluster certificate.
+### Related ONTAP commands
+* `dcn security certificate k8s modify`
+*/
+func (a *Client) DcnClusterCertificateModify(params *DcnClusterCertificateModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnClusterCertificateModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDcnClusterCertificateModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "dcn_cluster_certificate_modify",
+		Method:             "PATCH",
+		PathPattern:        "/dcn/security/cluster/certificate",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DcnClusterCertificateModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DcnClusterCertificateModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for dcn_cluster_certificate_modify: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+	DcnNodeCertificateCollectionGet Retrieves the certificate that is used by DCN nodes.
+
+### Related ONTAP commands
+* `dcn security certificate show`
+*/
+func (a *Client) DcnNodeCertificateCollectionGet(params *DcnNodeCertificateCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnNodeCertificateCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDcnNodeCertificateCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "dcn_node_certificate_collection_get",
+		Method:             "GET",
+		PathPattern:        "/dcn/security/node/certificates",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DcnNodeCertificateCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DcnNodeCertificateCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DcnNodeCertificateCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	DcnNodeCertificateGet Retrieves a certificate for a given DCN.
+
+### Related ONTAP commands
+* `dcn security certificate show`
+*/
+func (a *Client) DcnNodeCertificateGet(params *DcnNodeCertificateGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnNodeCertificateGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDcnNodeCertificateGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "dcn_node_certificate_get",
+		Method:             "GET",
+		PathPattern:        "/dcn/security/node/certificates/{dcn-node-name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DcnNodeCertificateGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DcnNodeCertificateGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DcnNodeCertificateGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	DcnNodeCertificateModify Updates the certificate that is used by a specific DCN node.
+
+### Required properties
+* `dcn-node-name` - Name of the DCN node.
+* `dcn-cert-name` - Certificate name used by the DCN node.
+### Related ONTAP commands
+* `dcn security certificate modify`
+*/
+func (a *Client) DcnNodeCertificateModify(params *DcnNodeCertificateModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnNodeCertificateModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDcnNodeCertificateModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "dcn_node_certificate_modify",
+		Method:             "PATCH",
+		PathPattern:        "/dcn/security/node/certificates/{dcn-node-name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DcnNodeCertificateModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DcnNodeCertificateModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for dcn_node_certificate_modify: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+DcnNodeCertificateModifyCollection dcn node certificate modify collection API
+*/
+func (a *Client) DcnNodeCertificateModifyCollection(params *DcnNodeCertificateModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnNodeCertificateModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDcnNodeCertificateModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "dcn_node_certificate_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/dcn/security/node/certificates",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DcnNodeCertificateModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DcnNodeCertificateModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for dcn_node_certificate_modify_collection: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
 	DuoCollectionGet Retrieves the configured Duo profiles.
 
 ### Related ONTAP commands
@@ -4205,6 +4671,12 @@ func (a *Client) GcpKmsModifyCollection(params *GcpKmsModifyCollectionParams, au
 /*
 	GcpKmsRekeyExternal Rekeys the external key in the key hierarchy for an SVM with a Google Cloud KMS configuration.
 
+### Required properties
+* `key_name` - Google Cloud KMS key name.
+### Optional properties
+* `project_id` - Google Cloud KMS project ID.
+* `key_ring_location` - Google Cloud KMS key ring location.
+* `key_ring_name` - Google Cloud KMS key ring name.
 ### Related ONTAP commands
 * `security key-manager external gcp rekey-external`
 */
@@ -7114,8 +7586,43 @@ func (a *Client) RolePrivilegeCollectionGet(params *RolePrivilegeCollectionGetPa
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/clients</i>
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/directories</i>
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/files</i>
-&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><p/>
-In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs. The <i>{volume.uuid}</i> refers to the <i>-instance-uuid</i> field value in the \"volume show\" command output at diagnostic privilege level. It can also be fetched through REST endpoint <i>/api/storage/volumes</i>.<br/>
+&ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><br/>
+<personalities supports=aiml>
+#### Artificial Intelligence Data Engine (AIDE) APIs
+##### Data Compute Node (DCN) APIs
+&ndash; <i>/api/dcn/cluster/nodes/{node.uuid}/metrics</i>
+&ndash; <i>/api/dcn/network/ports/{port.uuid}/metrics</i><br/>
+##### Data-Engine APIs
+&ndash; <i>/api/data-engine/policies/{policy.uuid}/versions</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/acls</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{datacollection.uuid}/acls</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{entity.uuid}/entities</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{datacollection.uuid}/search</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{datacollection.uuid}/versions</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{datacollection.uuid}/versions/{version.uuid}/diffs</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-sources</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/entities</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/entities/{entity.uuid}/custom-attributes</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/queries</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/queries/{query.uuid}/entities</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/versions</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/versions/{version.uuid}/diffs</i><br/>
+When used in the context of data collection APIs, <i>{version.uuid}</i> refers to a data collection version. In the context of workspace APIs, it refers to a workspace version.<br/>
+</personalities>
+In the APIs above, and in the context of REST roles, the wildcard character &#42; can be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to represent <i>all</i> volumes or <i>all</i> SVMs, depending on whether the REST endpoint references volumes or SVMs. The <i>{volume.uuid}</i> corresponds to the <i>-instance-uuid</i> field in the output of the \"volume show\" command at the diagnostic privilege level. It can also be retrieved through the REST endpoint <i>/api/storage/volumes</i>.<br/>
+<personalities supports=aiml>
+In the AIDE APIs described above, and in the context of REST roles, the wildcard character &#42; can be used in place of variable components in the Uniform Resource Identifier (URI) path, such as <i>{node.uuid}</i>, <i>{port.uuid}</i>, <i>{policy.uuid}</i>, <i>{workspace.uuid}</i>, <i>{datacollection.uuid}</i>, <i>{entity.uuid}</i>, <i>{version.uuid}</i>, or <i>{query.uuid}</i>. The specific variable to be replaced depends on whether the REST endpoint references nodes, ports, policies, workspaces, data collections, entities, versions, or queries.<br/>
+However, when using the wildcard character &#42; in place of a variable component in a URI path, it must replace <b>all</b> variable components in that path. Mixing wildcards and specific values for different variable components within the same URI path is not supported in REST roles. For example, a URI path such as <i>/api/data-engine/workspaces/c6e1b325-4125-11f0-abb5-bc2411f6fd43/data-collections/[*]/search</i> is not supported.<br/>
+In summary, only the following two types of resource-qualified endpoints are supported in a REST role:
+<ul>
+
+	<li>All variable components in the URI path are specific values. Example: <i>/api/data-engine/workspaces/c6e1b325-4125-11f0-abb5-bc2411f6fd43/data-collections/b09b6d25-4126-11f0-abb5-bc2411f6fd43/search</i></li>
+	<li>All variable components in the URI path are wildcards. Example: <i>/api/data-engine/workspaces/[*]/data-collections/[*]/search</i></li>
+
+</ul><br/>
+AIDE APIs are supported only in cluster-scoped REST roles, not in SVM-scoped REST roles.<br/>
+</personalities>
 * `access` - Desired access level for the REST URI path or command/command directory.
 ### Related ONTAP commands
 * `security login rest-role create`
@@ -7174,13 +7681,48 @@ func (a *Client) RolePrivilegeCreate(params *RolePrivilegeCreateParams, authInfo
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/directories</i>
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/files</i>
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><br/>
-#### Ontap S3 APIs
-&ndash; <i>/api/protocols/s3/services/{svm.uuid}/users</i><p/>
-In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs. The <i>{volume.uuid}</i> refers to the <i>-instance-uuid</i> field value in the \"volume show\" command output at diagnostic privilege level. It can also be fetched through REST endpoint <i>/api/storage/volumes</i>.<br/>
+#### ONTAP S3 APIs
+&ndash; <i>/api/protocols/s3/services/{svm.uuid}/users</i><br/>
+<personalities supports=aiml>
+#### Artificial Intelligence Data Engine (AIDE) APIs
+##### Data Compute Node (DCN) APIs
+&ndash; <i>/api/dcn/cluster/nodes/{node.uuid}/metrics</i>
+&ndash; <i>/api/dcn/network/ports/{port.uuid}/metrics</i><br/>
+##### Data-Engine APIs
+&ndash; <i>/api/data-engine/policies/{policy.uuid}/versions</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/acls</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{datacollection.uuid}/acls</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{entity.uuid}/entities</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{datacollection.uuid}/search</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{datacollection.uuid}/versions</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{datacollection.uuid}/versions/{version.uuid}/diffs</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-sources</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/entities</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/entities/{entity.uuid}/custom-attributes</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/queries</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/queries/{query.uuid}/entities</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/versions</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/versions/{version.uuid}/diffs</i><br/>
+When used in the context of data collection APIs, <i>{version.uuid}</i> refers to a data collection version. In the context of workspace APIs, it refers to a workspace version.<br/>
+</personalities>
+In the APIs above, and in the context of REST roles, the wildcard character &#42; can be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to represent <i>all</i> volumes or <i>all</i> SVMs, depending on whether the REST endpoint references volumes or SVMs. The <i>{volume.uuid}</i> corresponds to the <i>-instance-uuid</i> field in the output of the \"volume show\" command at the diagnostic privilege level. It can also be retrieved through the REST endpoint <i>/api/storage/volumes</i>.<br/>
+<personalities supports=aiml>
+In the AIDE APIs described above, and in the context of REST roles, the wildcard character &#42; can be used in place of variable components in the Uniform Resource Identifier (URI) path, such as <i>{node.uuid}</i>, <i>{port.uuid}</i>, <i>{policy.uuid}</i>, <i>{workspace.uuid}</i>, <i>{datacollection.uuid}</i>, <i>{entity.uuid}</i>, <i>{version.uuid}</i>, or <i>{query.uuid}</i>. The specific variable to be replaced depends on whether the REST endpoint references nodes, ports, policies, workspaces, data collections, entities, versions, or queries.<br/>
+However, when using the wildcard character &#42; in place of a variable component in a URI path, it must replace <b>all</b> variable components in that path. Mixing wildcards and specific values for different variable components within the same URI path is not supported in REST roles. For example, a URI path such as <i>/api/data-engine/workspaces/c6e1b325-4125-11f0-abb5-bc2411f6fd43/data-collections/[*]/search</i> is not supported.<br/>
+In summary, only the following two types of resource-qualified endpoints are supported in a REST role:
+<ul>
+
+	<li>All variable components in the URI path are specific values. Example: <i>/api/data-engine/workspaces/c6e1b325-4125-11f0-abb5-bc2411f6fd43/data-collections/b09b6d25-4126-11f0-abb5-bc2411f6fd43/search</i></li>
+	<li>All variable components in the URI path are wildcards. Example: <i>/api/data-engine/workspaces/[*]/data-collections/[*]/search</i></li>
+
+</ul><br/>
+AIDE APIs are supported only in cluster-scoped REST roles, not in SVM-scoped REST roles.<br/>
+</personalities>
 ### Required parameters
 * `owner.uuid` - UUID of the SVM which houses this role.
 * `name` - Name of the role to be updated.
-* `path` - Constituent REST API path or command/command directory path to be deleted from this role. Can be a resource-qualified endpoint (example: <i>/api/svm/svms/43256a71-be02-474d-a2a9-9642e12a6a2c/top-metrics/users</i>). Currently, resource-qualified endpoints are limited to the <i>Snapshots</i> and <i>File System Analytics</i> endpoints listed above in the description.
+* `path` - Constituent REST API path or command/command directory path to be deleted from this role. Can be a resource-qualified endpoint (example: <i>/api/svm/svms/43256a71-be02-474d-a2a9-9642e12a6a2c/top-metrics/users</i>). Currently, resource-qualified endpoints are limited to the <i>Snapshots</i>, <i>File System Analytics</i><personalities supports=aiml><i>, Artificial Intelligence Data Engine (AIDE)</i></personalities> and <i>ONTAP S3</i> endpoints listed above in the description.
 ### Related ONTAP commands
 * `security login rest-role delete`
 * `security login role delete`
@@ -7276,9 +7818,44 @@ func (a *Client) RolePrivilegeDeleteCollection(params *RolePrivilegeDeleteCollec
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/directories</i>
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/files</i>
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><br/>
-#### Ontap S3 APIs
-&ndash; <i>/api/protocols/s3/services/{svm.uuid}/users</i><p/>
-In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs. The <i>{volume.uuid}</i> refers to the <i>-instance-uuid</i> field value in the \"volume show\" command output at diagnostic privilege level. It can also be fetched through REST endpoint <i>/api/storage/volumes</i>.<br/>
+#### ONTAP S3 APIs
+&ndash; <i>/api/protocols/s3/services/{svm.uuid}/users</i><br/>
+<personalities supports=aiml>
+#### Artificial Intelligence Data Engine (AIDE) APIs
+##### Data Compute Node (DCN) APIs
+&ndash; <i>/api/dcn/cluster/nodes/{node.uuid}/metrics</i>
+&ndash; <i>/api/dcn/network/ports/{port.uuid}/metrics</i><br/>
+##### Data-Engine APIs
+&ndash; <i>/api/data-engine/policies/{policy.uuid}/versions</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/acls</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{datacollection.uuid}/acls</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{entity.uuid}/entities</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{datacollection.uuid}/search</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{datacollection.uuid}/versions</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{datacollection.uuid}/versions/{version.uuid}/diffs</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-sources</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/entities</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/entities/{entity.uuid}/custom-attributes</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/queries</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/queries/{query.uuid}/entities</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/versions</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/versions/{version.uuid}/diffs</i><br/>
+When used in the context of data collection APIs, <i>{version.uuid}</i> refers to a data collection version. In the context of workspace APIs, it refers to a workspace version.<br/>
+</personalities>
+In the APIs above, and in the context of REST roles, the wildcard character &#42; can be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to represent <i>all</i> volumes or <i>all</i> SVMs, depending on whether the REST endpoint references volumes or SVMs. The <i>{volume.uuid}</i> corresponds to the <i>-instance-uuid</i> field in the output of the \"volume show\" command at the diagnostic privilege level. It can also be retrieved through the REST endpoint <i>/api/storage/volumes</i>.<br/>
+<personalities supports=aiml>
+In the AIDE APIs described above, and in the context of REST roles, the wildcard character &#42; can be used in place of variable components in the Uniform Resource Identifier (URI) path, such as <i>{node.uuid}</i>, <i>{port.uuid}</i>, <i>{policy.uuid}</i>, <i>{workspace.uuid}</i>, <i>{datacollection.uuid}</i>, <i>{entity.uuid}</i>, <i>{version.uuid}</i>, or <i>{query.uuid}</i>. The specific variable to be replaced depends on whether the REST endpoint references nodes, ports, policies, workspaces, data collections, entities, versions, or queries.<br/>
+However, when using the wildcard character &#42; in place of a variable component in a URI path, it must replace <b>all</b> variable components in that path. Mixing wildcards and specific values for different variable components within the same URI path is not supported in REST roles. For example, a URI path such as <i>/api/data-engine/workspaces/c6e1b325-4125-11f0-abb5-bc2411f6fd43/data-collections/[*]/search</i> is not supported.<br/>
+In summary, only the following two types of resource-qualified endpoints are supported in a REST role:
+<ul>
+
+	<li>All variable components in the URI path are specific values. Example: <i>/api/data-engine/workspaces/c6e1b325-4125-11f0-abb5-bc2411f6fd43/data-collections/b09b6d25-4126-11f0-abb5-bc2411f6fd43/search</i></li>
+	<li>All variable components in the URI path are wildcards. Example: <i>/api/data-engine/workspaces/[*]/data-collections/[*]/search</i></li>
+
+</ul><br/>
+AIDE APIs are supported only in cluster-scoped REST roles, not in SVM-scoped REST roles.<br/>
+</personalities>
 ### Related ONTAP commands
 * `security login rest-role show`
 * `security login role show`
@@ -7336,13 +7913,48 @@ func (a *Client) RolePrivilegeGet(params *RolePrivilegeGetParams, authInfo runti
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/directories</i>
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/files</i>
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><br/>
-#### Ontap S3 APIs
-&ndash; <i>/api/protocols/s3/services/{svm.uuid}/users</i><p/>
-In the above APIs, wildcard character &#42; could be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to denote <i>all</i> volumes or <i>all</i> SVMs, depending upon whether the REST endpoint references volumes or SVMs. The <i>{volume.uuid}</i> refers to the <i>-instance-uuid</i> field value in the \"volume show\" command output at diagnostic privilege level. It can also be fetched through REST endpoint <i>/api/storage/volumes</i>.<br/>
+#### ONTAP S3 APIs
+&ndash; <i>/api/protocols/s3/services/{svm.uuid}/users</i><br/>
+<personalities supports=aiml>
+#### Artificial Intelligence Data Engine (AIDE) APIs
+##### Data Compute Node (DCN) APIs
+&ndash; <i>/api/dcn/cluster/nodes/{node.uuid}/metrics</i>
+&ndash; <i>/api/dcn/network/ports/{port.uuid}/metrics</i><br/>
+##### Data-Engine APIs
+&ndash; <i>/api/data-engine/policies/{policy.uuid}/versions</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/acls</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{datacollection.uuid}/acls</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{entity.uuid}/entities</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{datacollection.uuid}/search</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{datacollection.uuid}/versions</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-collections/{datacollection.uuid}/versions/{version.uuid}/diffs</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/data-sources</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/entities</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/entities/{entity.uuid}/custom-attributes</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/queries</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/queries/{query.uuid}/entities</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/versions</i>
+&ndash; <i>/api/data-engine/workspaces/{workspace.uuid}/versions/{version.uuid}/diffs</i><br/>
+When used in the context of data collection APIs, <i>{version.uuid}</i> refers to a data collection version. In the context of workspace APIs, it refers to a workspace version.<br/>
+</personalities>
+In the APIs above, and in the context of REST roles, the wildcard character &#42; can be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to represent <i>all</i> volumes or <i>all</i> SVMs, depending on whether the REST endpoint references volumes or SVMs. The <i>{volume.uuid}</i> corresponds to the <i>-instance-uuid</i> field in the output of the \"volume show\" command at the diagnostic privilege level. It can also be retrieved through the REST endpoint <i>/api/storage/volumes</i>.<br/>
+<personalities supports=aiml>
+In the AIDE APIs described above, and in the context of REST roles, the wildcard character &#42; can be used in place of variable components in the Uniform Resource Identifier (URI) path, such as <i>{node.uuid}</i>, <i>{port.uuid}</i>, <i>{policy.uuid}</i>, <i>{workspace.uuid}</i>, <i>{datacollection.uuid}</i>, <i>{entity.uuid}</i>, <i>{version.uuid}</i>, or <i>{query.uuid}</i>. The specific variable to be replaced depends on whether the REST endpoint references nodes, ports, policies, workspaces, data collections, entities, versions, or queries.<br/>
+However, when using the wildcard character &#42; in place of a variable component in a URI path, it must replace <b>all</b> variable components in that path. Mixing wildcards and specific values for different variable components within the same URI path is not supported in REST roles. For example, a URI path such as <i>/api/data-engine/workspaces/c6e1b325-4125-11f0-abb5-bc2411f6fd43/data-collections/[*]/search</i> is not supported.<br/>
+In summary, only the following two types of resource-qualified endpoints are supported in a REST role:
+<ul>
+
+	<li>All variable components in the URI path are specific values. Example: <i>/api/data-engine/workspaces/c6e1b325-4125-11f0-abb5-bc2411f6fd43/data-collections/b09b6d25-4126-11f0-abb5-bc2411f6fd43/search</i></li>
+	<li>All variable components in the URI path are wildcards. Example: <i>/api/data-engine/workspaces/[*]/data-collections/[*]/search</i></li>
+
+</ul><br/>
+AIDE APIs are supported only in cluster-scoped REST roles, not in SVM-scoped REST roles.<br/>
+</personalities>
 ### Required parameters
 * `owner.uuid` - UUID of the SVM that houses this role.
 * `name` - Name of the role to be updated.
-* `path` - Constituent REST API path or command/command directory path, whose access level and/or query are/is to be updated. Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the <i>Snapshots</i> and <i>File System Analytics</i> endpoints listed above in the description.
+* `path` - Constituent REST API path or command/command directory path, whose access level and/or query are/is to be updated. Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the <i>Snapshots</i>, <i>File System Analytics</i><personalities supports=aiml><i>, Artificial Intelligence Data Engine (AIDE)</i></personalities> and <i>ONTAP S3</i> endpoints listed above in the description.
 ### Optional parameters
 * `access` - Access level for the path.
 * `query` - Optional query, if the path refers to a command/command directory path.
@@ -7909,6 +8521,379 @@ func (a *Client) SecurityCertificateSign(params *SecurityCertificateSignParams, 
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SecurityCertificateSignDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityClusterNetworkCertificatesCollectionGet Retrieves the certificate configuration used for cluster network security.
+
+### Related ONTAP commands
+* 'security cluster-network certificate show'
+*/
+func (a *Client) SecurityClusterNetworkCertificatesCollectionGet(params *SecurityClusterNetworkCertificatesCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityClusterNetworkCertificatesCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityClusterNetworkCertificatesCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_cluster_network_certificates_collection_get",
+		Method:             "GET",
+		PathPattern:        "/security/cluster-network/certificates",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityClusterNetworkCertificatesCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityClusterNetworkCertificatesCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityClusterNetworkCertificatesCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityClusterNetworkCertificatesCreate Specifies the certificate configuration for cluster network security for a given node.
+
+### Required properties
+* 'node' - The node to which the certificate will be assigned.
+* 'name' - The certificate name.
+### Related ONTAP commands
+* 'security cluster-network certificate create'
+*/
+func (a *Client) SecurityClusterNetworkCertificatesCreate(params *SecurityClusterNetworkCertificatesCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityClusterNetworkCertificatesCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityClusterNetworkCertificatesCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_cluster_network_certificates_create",
+		Method:             "POST",
+		PathPattern:        "/security/cluster-network/certificates",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityClusterNetworkCertificatesCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityClusterNetworkCertificatesCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityClusterNetworkCertificatesCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityClusterNetworkCertificatesDelete Deletes the certificate configuration for cluster network security for a given node.
+
+### Required properties
+* `node: The name of the node`
+### Related ONTAP commands
+* 'security cluster-network certificate delete'
+*/
+func (a *Client) SecurityClusterNetworkCertificatesDelete(params *SecurityClusterNetworkCertificatesDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityClusterNetworkCertificatesDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityClusterNetworkCertificatesDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_cluster_network_certificates_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/cluster-network/certificates/{node.name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityClusterNetworkCertificatesDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityClusterNetworkCertificatesDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityClusterNetworkCertificatesDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SecurityClusterNetworkCertificatesDeleteCollection security cluster network certificates delete collection API
+*/
+func (a *Client) SecurityClusterNetworkCertificatesDeleteCollection(params *SecurityClusterNetworkCertificatesDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityClusterNetworkCertificatesDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityClusterNetworkCertificatesDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_cluster_network_certificates_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/security/cluster-network/certificates",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityClusterNetworkCertificatesDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityClusterNetworkCertificatesDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityClusterNetworkCertificatesDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityClusterNetworkCertificatesGet Retrieves the certificate configuration for cluster network security for a given node.
+
+### Related ONTAP commands
+* 'security cluster-network certificate show'
+*/
+func (a *Client) SecurityClusterNetworkCertificatesGet(params *SecurityClusterNetworkCertificatesGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityClusterNetworkCertificatesGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityClusterNetworkCertificatesGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_cluster_network_certificates_get",
+		Method:             "GET",
+		PathPattern:        "/security/cluster-network/certificates/{node.name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityClusterNetworkCertificatesGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityClusterNetworkCertificatesGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityClusterNetworkCertificatesGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityClusterNetworkCertificatesModify Updates the certificate configuration for cluster network security for a given node.
+
+### Required properties
+* `node: The name of the node`
+### Related ONTAP commands
+* 'security cluster-network certificate modify'
+*/
+func (a *Client) SecurityClusterNetworkCertificatesModify(params *SecurityClusterNetworkCertificatesModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityClusterNetworkCertificatesModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityClusterNetworkCertificatesModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_cluster_network_certificates_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/cluster-network/certificates/{node.name}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityClusterNetworkCertificatesModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityClusterNetworkCertificatesModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityClusterNetworkCertificatesModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+SecurityClusterNetworkCertificatesModifyCollection security cluster network certificates modify collection API
+*/
+func (a *Client) SecurityClusterNetworkCertificatesModifyCollection(params *SecurityClusterNetworkCertificatesModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityClusterNetworkCertificatesModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityClusterNetworkCertificatesModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_cluster_network_certificates_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/cluster-network/certificates",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityClusterNetworkCertificatesModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityClusterNetworkCertificatesModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityClusterNetworkCertificatesModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityClusterNetworkGet Retrieves the cluster network security configuration.
+
+### Related ONTAP commands
+* 'security cluster-network show'
+*/
+func (a *Client) SecurityClusterNetworkGet(params *SecurityClusterNetworkGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityClusterNetworkGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityClusterNetworkGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_cluster_network_get",
+		Method:             "GET",
+		PathPattern:        "/security/cluster-network",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityClusterNetworkGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityClusterNetworkGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityClusterNetworkGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityClusterNetworkModify Updates the cluster network security configuration.
+
+### Optional properties
+* 'enabled' - Indicates whether cluster network security is enabled.
+* 'mode' - The cluster network security mode.
+### Related ONTAP commands
+* 'security cluster-network modify'
+*/
+func (a *Client) SecurityClusterNetworkModify(params *SecurityClusterNetworkModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityClusterNetworkModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityClusterNetworkModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_cluster_network_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/cluster-network",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityClusterNetworkModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityClusterNetworkModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityClusterNetworkModifyDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -8573,6 +9558,90 @@ func (a *Client) SecurityGroupModifyCollection(params *SecurityGroupModifyCollec
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*SecurityGroupModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityHaNetworkGet Retrieves the HA network security configuration.
+
+### Related ONTAP commands
+* 'security ha-network show'
+*/
+func (a *Client) SecurityHaNetworkGet(params *SecurityHaNetworkGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityHaNetworkGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityHaNetworkGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_ha_network_get",
+		Method:             "GET",
+		PathPattern:        "/security/ha-network",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityHaNetworkGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityHaNetworkGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityHaNetworkGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityHaNetworkModify Updates the HA network security configuration.
+
+### Optional properties
+* 'enabled' - Indicates if HA network security for NVLog traffic is enabled.
+### Related ONTAP commands
+* 'security ha-network modify'
+*/
+func (a *Client) SecurityHaNetworkModify(params *SecurityHaNetworkModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityHaNetworkModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityHaNetworkModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_ha_network_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/ha-network",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityHaNetworkModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityHaNetworkModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityHaNetworkModifyDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -10504,6 +11573,179 @@ func (a *Client) SecurityOauth2GlobalModify(params *SecurityOauth2GlobalModifyPa
 }
 
 /*
+	SecurityOidcCreate Creates the OIDC configuration in the cluster.
+
+### Optional properties
+* `skip_uri_validation`
+* `jwks_refresh_interval`
+* `outgoing_proxy`
+* `access_token_issuer`
+### Related ONTAP commands
+* `security oidc create`
+*/
+func (a *Client) SecurityOidcCreate(params *SecurityOidcCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOidcCreateCreated, *SecurityOidcCreateAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityOidcCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_oidc_create",
+		Method:             "POST",
+		PathPattern:        "/security/authentication/cluster/oidc",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityOidcCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *SecurityOidcCreateCreated:
+		return value, nil, nil
+	case *SecurityOidcCreateAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityOidcCreateDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityOidcDelete Deletes the OIDC configuration in the cluster.
+
+### Related ONTAP commands
+* `security oidc delete`
+*/
+func (a *Client) SecurityOidcDelete(params *SecurityOidcDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOidcDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityOidcDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_oidc_delete",
+		Method:             "DELETE",
+		PathPattern:        "/security/authentication/cluster/oidc",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityOidcDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityOidcDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityOidcDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityOidcGet Retrieves the OIDC configuration in the cluster.
+
+### Related ONTAP commands
+* `security oidc show`
+*/
+func (a *Client) SecurityOidcGet(params *SecurityOidcGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOidcGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityOidcGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_oidc_get",
+		Method:             "GET",
+		PathPattern:        "/security/authentication/cluster/oidc",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityOidcGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityOidcGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityOidcGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	SecurityOidcModify Updates the OIDC configuration in the cluster.
+
+### Required properties
+* `enabled`
+### Related ONTAP commands
+* `security oidc modify`
+*/
+func (a *Client) SecurityOidcModify(params *SecurityOidcModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SecurityOidcModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewSecurityOidcModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "security_oidc_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/authentication/cluster/oidc",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &SecurityOidcModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*SecurityOidcModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*SecurityOidcModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	SecuritySamlDefMetadataCreate Creates the SAML default metadata configuration. Note that `common_name` is mutually exclusive with `serial_number` and `ca` in POST requests.
 
 ### Optional properties
@@ -10785,7 +12027,7 @@ func (a *Client) SecuritySamlSpModify(params *SecuritySamlSpModifyParams, authIn
 }
 
 /*
-	SSHGet Retrieves the cluster SSH server ciphers, MAC algorithms, key exchange algorithms, host key algorithms, connection limits, and _ssh-rsa_ enabled status for public key algorithms.
+	SSHGet Retrieves the cluster SSH server ciphers, MAC algorithms, key exchange algorithms, host key algorithms, connection limits, login grace time, and _ssh-rsa_ enabled status for public key algorithms.
 
 ### Related ONTAP commands
 * `security ssh`
@@ -10838,6 +12080,7 @@ func (a *Client) SSHGet(params *SSHGetParams, authInfo runtime.ClientAuthInfoWri
 * `connections_per_second` - Maximum allowed connections per second
 * `max_instances` - Maximum allowed connections per node
 * `is_rsa_in_publickey_algorithms_enabled` - _ssh-rsa_ enabled status for public key algorithms
+* `login_grace_time` - The SSH connection login grace time
 * `per_source_limit` - Maximum allowed connections from the same client host
 ### Related ONTAP commands
 * `security ssh`
@@ -11284,6 +12527,7 @@ func (a *Client) SvmSSHServerGet(params *SvmSSHServerGetParams, authInfo runtime
 * `mac_algorithms` - MAC algorithms
 * `max_authentication_retry_count` - Maximum authentication retries allowed before closing the connection
 * `is_rsa_in_publickey_algorithms_enabled` - _ssh-rsa_ enabled status for public key algorithms
+* `login_grace_time` - Login grace time allowed for SSH connection
 ### Related ONTAP commands
 * `security ssh`
 */
@@ -11823,6 +13067,47 @@ func (a *Client) WebauthnGlobalGet(params *WebauthnGlobalGetParams, authInfo run
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*WebauthnGlobalGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	WhoamiGet Retrieves the username, role, and permissions information for the logged-in user.
+
+### Related ONTAP commands
+* `security login whoami`
+*/
+func (a *Client) WhoamiGet(params *WhoamiGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WhoamiGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewWhoamiGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "whoami_get",
+		Method:             "GET",
+		PathPattern:        "/security/login/whoami",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &WhoamiGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*WhoamiGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*WhoamiGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

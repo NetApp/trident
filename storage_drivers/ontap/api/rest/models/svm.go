@@ -31,32 +31,32 @@ type Svm struct {
 	// Anti-ransomware related information for the SVM.
 	AntiRansomware *ArwVserver `json:"anti_ransomware,omitempty"`
 
-	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that no new file-extensions are observed in the volume in recent time. This parameter optionally specifies the recent time duration (in days) to be considered during which no new file-extension should be observed in a given volume to automatically switch the anti-ransomware state from “learning” to “enabled”.
+	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that no new file-extensions are observed in the volume in recent time. This parameter optionally specifies the recent time duration (in days) to be considered during which no new file-extension should be observed in a given volume to automatically switch the anti-ransomware state from “learning” to “enabled”. This field will no longer be supported in a future release.
 	AntiRansomwareAutoSwitchDurationWithoutNewFileExtension *int64 `json:"anti_ransomware_auto_switch_duration_without_new_file_extension,omitempty"`
 
-	// This property specifies whether anti-ransomware state of the volumes in this SVM are automatically switched by the system from “learning” (dry-run) to “enabled” (active) state after sufficient learning.
+	// This property specifies whether anti-ransomware state of the volumes in this SVM are automatically switched by the system from “learning” (dry-run) to “enabled” (active) state after sufficient learning. This field will no longer be supported in a future release.
 	AntiRansomwareAutoSwitchFromLearningToEnabled *bool `json:"anti_ransomware_auto_switch_from_learning_to_enabled,omitempty"`
 
-	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that the volume should have a minimum file count in “learning” state. This parameter optionally specifies the minimum number of newly created files in “learning” state in a given volume to automatically switch the anti-ransomware state from “learning” to “enabled”.
+	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that the volume should have a minimum file count in “learning” state. This parameter optionally specifies the minimum number of newly created files in “learning” state in a given volume to automatically switch the anti-ransomware state from “learning” to “enabled”. This field will no longer be supported in a future release.
 	AntiRansomwareAutoSwitchMinimumFileCount *int64 `json:"anti_ransomware_auto_switch_minimum_file_count,omitempty"`
 
-	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that the volume should have minimum number of file extensions in “learning” state. This parameter optionally specifies the minimum number of new file extensions in “learning” state in a given volume to automatically switch the anti-ransomware state from “learning” to “enabled”.
+	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that the volume should have minimum number of file extensions in “learning” state. This parameter optionally specifies the minimum number of new file extensions in “learning” state in a given volume to automatically switch the anti-ransomware state from “learning” to “enabled”. This field will no longer be supported in a future release.
 	AntiRansomwareAutoSwitchMinimumFileExtension *int64 `json:"anti_ransomware_auto_switch_minimum_file_extension,omitempty"`
 
-	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that the volume should have sufficient data ingested to do the learning. This parameter optionally specifies the minimum amount of data (in GB) to be written to a given volume during the learning period to automatically switch the anti-ransomware state from “learning” to “enabled”. The amount of data considered as ingested also includes the data that is deleted or overwritten after ingestion.
+	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that the volume should have sufficient data ingested to do the learning. This parameter optionally specifies the minimum amount of data (in GB) to be written to a given volume during the learning period to automatically switch the anti-ransomware state from “learning” to “enabled”. The amount of data considered as ingested also includes the data that is deleted or overwritten after ingestion. This field will no longer be supported in a future release.
 	AntiRansomwareAutoSwitchMinimumIncomingData *string `json:"anti_ransomware_auto_switch_minimum_incoming_data,omitempty"`
 
-	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that the volume should be in “learning” state for sufficient time period. This parameter optionally specifies the minimum number of days a given volume should be in “learning” state to automatically switch the anti-ransomware state from “learning” to “enabled”.
+	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that the volume should be in “learning” state for sufficient time period. This parameter optionally specifies the minimum number of days a given volume should be in “learning” state to automatically switch the anti-ransomware state from “learning” to “enabled”. This field will no longer be supported in a future release.
 	AntiRansomwareAutoSwitchMinimumLearningPeriod *int64 `json:"anti_ransomware_auto_switch_minimum_learning_period,omitempty"`
 
-	// Specifies the default Anti-ransomware state of the volumes in the SVM. Default "anti_ransomware_default_volume_state" property is disabled for POST operation. If this value is "disabled", Anti-ransomware protection is disabled by default on the new volumes that are created in the SVM. If this value is "dry_run", Anti-ransomware protection is in learning mode by default on the new volumes that are created in the SVM.  When the Anti-ransomware license is not present, this property is ignored and volumes will be created with the "disabled" state.
+	// Specifies the default anti-ransomware state of the volumes in the SVM. The default "anti_ransomware_default_volume_state" property is disabled for POST operations. If this value is "disabled", anti-ransomware protection is disabled by default on the new volumes that are created in the SVM. If this value is "dry_run", anti-ransomware protection is in learning mode by default on the new volumes that are created in the SVM.  When the anti-ransomware license is not present, this property is ignored and volumes will be created with the "disabled" state. This value "dry_run" will no longer be supported in a future release.
 	// Enum: ["disabled","dry_run"]
 	AntiRansomwareDefaultVolumeState *string `json:"anti_ransomware_default_volume_state,omitempty"`
 
 	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that the volume should have sufficient data ingested to do the learning. This parameter optionally specifies the minimum amount of data (in GB) to be written to a given volume during the learning period to automatically switch the anti-ransomware state from “learning” to “enabled”. The amount of data considered as ingested also includes the data that is deleted or overwritten after ingestion. This field is no longer supported.
 	AntiRansomwareIncomingWriteThreshold *string `json:"anti_ransomware_incoming_write_threshold,omitempty"`
 
-	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that the volume should have sufficient data ingested to do the learning. This parameter optionally specifies the minimum amount of data (in percentage) to be written to a given volume during the learning period to automatically switch the anti-ransomware state from “learning” to “enabled”. The amount of data considered as ingested also includes the data that is deleted or overwritten after ingestion.
+	// One of the many conditions to be satisfied to automatically switch the anti-ransomware state of the volumes in this SVM from “learning” (dry-run) to “enabled” is that the volume should have sufficient data ingested to do the learning. This parameter optionally specifies the minimum amount of data (in percentage) to be written to a given volume during the learning period to automatically switch the anti-ransomware state from “learning” to “enabled”. The amount of data considered as ingested also includes the data that is deleted or overwritten after ingestion. This field will no longer be supported in a future release.
 	AntiRansomwareIncomingWriteThresholdPercent *string `json:"anti_ransomware_incoming_write_threshold_percent,omitempty"`
 
 	// Specifies whether volume activity tracking is automatically enabled on volumes that are created in the SVM.
@@ -144,8 +144,14 @@ type Svm struct {
 	// snapmirror
 	Snapmirror *SvmInlineSnapmirror `json:"snapmirror,omitempty"`
 
+	// Specifies whether snapshot autodelete is automatically enabled on storage units that are created in the SVM.
+	SnapshotAutodeleteEnabled *bool `json:"snapshot_autodelete_enabled,omitempty"`
+
 	// snapshot policy
 	SnapshotPolicy *SvmInlineSnapshotPolicy `json:"snapshot_policy,omitempty"`
+
+	// Specifies the amount of space reserved for snapshots on the storage units that are created in the SVM.
+	SnapshotReservePercent *int64 `json:"snapshot_reserve_percent,omitempty"`
 
 	// SVM State
 	// Example: running
@@ -155,8 +161,8 @@ type Svm struct {
 	// storage
 	Storage *SvmInlineStorage `json:"storage,omitempty"`
 
-	// SVM subtype. The SVM subtype sync_destination is created automatically when an SVM of subtype sync_source is created on the source MetroCluster cluster. A POST request with sync_destination as SVM subtype is invalid.
-	// Enum: ["default","dp_destination","sync_source","sync_destination"]
+	// SVM subtype. The SVM subtype sync_destination is created automatically when an SVM of subtype sync_source is created on the source MetroCluster cluster. A POST request with sync_destination as SVM subtype is invalid. SVM of subtype data_engine cannot be explicitly created by the admin and most management changes are not allowed on it.
+	// Enum: ["default","dp_destination","sync_source","sync_destination","data_engine"]
 	Subtype *string `json:"subtype,omitempty"`
 
 	// List of allowed aggregates for SVM volumes. An administrator is allowed to create volumes on these aggregates.
@@ -1567,7 +1573,7 @@ var svmTypeSubtypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["default","dp_destination","sync_source","sync_destination"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["default","dp_destination","sync_source","sync_destination","data_engine"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -1616,6 +1622,16 @@ const (
 	// END DEBUGGING
 	// SvmSubtypeSyncDestination captures enum value "sync_destination"
 	SvmSubtypeSyncDestination string = "sync_destination"
+
+	// BEGIN DEBUGGING
+	// svm
+	// Svm
+	// subtype
+	// Subtype
+	// data_engine
+	// END DEBUGGING
+	// SvmSubtypeDataEngine captures enum value "data_engine"
+	SvmSubtypeDataEngine string = "data_engine"
 )
 
 // prop value enum

@@ -170,6 +170,7 @@ func getOntapStorageDriverConfigJson(encryption, spaceReserve, QosPolicy, adapti
 func TestOntapNasFlexgroupStorageDriverInitialized(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	driver.initialized = true
 	result := driver.Initialized()
@@ -296,6 +297,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
@@ -350,6 +352,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_withNameTemplate(t *testing.T)
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
@@ -397,6 +400,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_NameTemplateDefineInStoragePoo
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
@@ -451,6 +455,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_NameTemplateDefineInBothPool(t
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
@@ -504,6 +509,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_NameTemplateDefineInBothPool(t
 func TestOntapNasFlexgroupStorageDriverInitialize_StoragePool(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
@@ -581,6 +587,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_StoragePool(t *testing.T) {
 func TestOntapNasFlexgroupStorageDriverInitialize_NameTemplatesAndLabels(t *testing.T) {
 	mockAPI, d := newMockOntapNASFlexgroupDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	volume := storage.VolumeConfig{Name: "newVolume", Namespace: "testNamespace", StorageClass: "testSC"}
 	templateData := make(map[string]interface{})
@@ -614,6 +621,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_NameTemplatesAndLabels(t *test
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().GetSVMAggregateNames(gomock.Any()).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{"aggr1": ONTAPTEST_VSERVER_AGGR_NAME}, nil,
@@ -734,6 +742,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_Failure(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	driver.API = nil // setting driver API nil
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
@@ -767,6 +776,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_StoragePoolFailed(t *testing.T
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
@@ -816,6 +826,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_StoragePoolFailed(t *testing.T
 func TestOntapNasFlexgroupStorageDriverInitialize_ValidationFailed(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
@@ -897,6 +908,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_GetSVMAggregateNamesFailed(t *
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
@@ -930,6 +942,7 @@ func TestOntapNasFlexgroupStorageDriverInitialize_GetSVMAggregateNameEmptyList(t
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	driver.Config.CommonStorageDriverConfig = nil
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
 		Version:           1,
@@ -979,6 +992,7 @@ func TestOntapNasFlexgroupStorageDriverTerminate(t *testing.T) {
 			driver.initialized = true
 
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 			mockAPI.EXPECT().ExportPolicyDestroy(ctx, "trident-dummy").Return(test.err)
 
 			driver.Terminate(ctx, "dummy")
@@ -1001,6 +1015,7 @@ func TestOntapNasFlexgroupStorageDriverTerminate_TelemetryFailure(t *testing.T) 
 	driver.initialized = true
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().ExportPolicyDestroy(ctx, "trident-dummy").Return(errors.New("policy not found"))
 
 	driver.Terminate(ctx, "dummy")
@@ -2005,6 +2020,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_StoragePoolNil(t *testing.T) 
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupInfo(ctx, volConfig.CloneSourceVolume).Return(&flexgroup, nil)
 	mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 
@@ -2085,6 +2101,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 			}
 
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 			if test.name == "FlexgroupInfoFailed" {
 				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(nil, errors.New(test.errMessage))
@@ -2292,6 +2309,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateCloneFailed(t *testing.
 			}
 
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 			if test.name == "FlexgroupInfoFailed" {
 				mockAPI.EXPECT().FlexgroupInfo(ctx, cloneConfig.CloneSourceVolumeInternal).Return(nil, errors.New(test.errMessage))
@@ -2455,6 +2473,7 @@ func TestOntapNasSFlexgrouptorageDriverVolumeClone_BothQosPolicy(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupInfo(ctx, volConfig.CloneSourceVolume).Return(&flexgroup, nil)
 	mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 
@@ -2505,6 +2524,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_LabelLengthExceeding(t *testi
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupInfo(ctx, volConfig.CloneSourceVolume).Return(&flexgroup, nil)
 	mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 
@@ -2671,6 +2691,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_NameTemplateLabelLengthExceed
 		t.Run(test.name, func(t *testing.T) {
 			pool1.SetName(test.poolName)
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 			mockAPI.EXPECT().FlexgroupInfo(ctx, volConfig.CloneSourceVolume).Return(&flexgroup, nil)
 			mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 
@@ -2705,6 +2726,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_CreateFail(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupInfo(ctx, volConfig.CloneSourceVolume).Return(&flexgroup, nil)
 	mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 	mockAPI.EXPECT().FlexgroupExists(ctx, "").Return(false, nil)
@@ -2747,6 +2769,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_SMBShareCreateFail(t *testing
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupInfo(ctx, volConfig.CloneSourceVolume).Return(&flexgroup, nil)
 	mockAPI.EXPECT().SupportsFeature(ctx, gomock.Any()).Return(true)
 	// the first lookup should fail, the second should succeed
@@ -2851,6 +2874,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeImport(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 			mockAPI.EXPECT().FlexgroupInfo(ctx, gomock.Any()).Return(flexgroup, nil)
 			mockAPI.EXPECT().FlexgroupModifyUnixPermissions(ctx, gomock.Any(), gomock.Any(), DefaultUnixPermissions).Return(nil)
 
@@ -2866,6 +2890,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeImport(t *testing.T) {
 func TestOntapNasFlexgroupStorageDriverVolumeImport_Failure(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	volConfig := &storage.VolumeConfig{
 		Size:             "400g",
@@ -2965,6 +2990,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeImport_ModifyComment(t *testing.T) 
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupInfo(ctx, gomock.Any()).Return(flexgroup, nil)
 	mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(
 		errors.New("error modifying comment"))
@@ -3007,6 +3033,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeImport_UnixPermissions(t *testing.T
 			driver.Config.SecurityStyle = test.securityStyle
 
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 			mockAPI.EXPECT().FlexgroupInfo(ctx, gomock.Any()).Return(flexgroup, nil)
 			mockAPI.EXPECT().FlexgroupModifyUnixPermissions(ctx, gomock.Any(),
 				gomock.Any(), "").Return(errors.New("error modifying unix permissions"))
@@ -3036,6 +3063,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeImport_SMBShareCreateFail(t *testin
 		AccessType:   "rw",
 	}
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupInfo(ctx, gomock.Any()).Return(flexgroup, nil)
 	mockAPI.EXPECT().FlexgroupModifyUnixPermissions(ctx, gomock.Any(),
 		gomock.Any(), DefaultUnixPermissions).Return(nil)
@@ -3108,6 +3136,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeImport_NameTemplateLabel(t *testing
 			pool1.Attributes()["labels"] = sa.NewLabelOffer(map[string]string{test.labelKey: test.labelValue})
 
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 			mockAPI.EXPECT().FlexgroupInfo(ctx, gomock.Any()).Return(flexgroup, nil)
 			mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), test.expectedLabel).Return(nil)
 			mockAPI.EXPECT().FlexgroupModifyUnixPermissions(ctx, gomock.Any(),
@@ -3172,6 +3201,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeImport_NameTemplateLabelLengthExcee
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupInfo(ctx, gomock.Any()).Return(flexgroup, nil)
 
 	result := driver.Import(ctx, volConfig, "vol1")
@@ -3194,6 +3224,7 @@ func TestOntapNasFlexgroupStorageDriverVolumePublish_NASType_None(t *testing.T) 
 	volConfig.AccessInfo.NfsPath = "/nfs"
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	result := driver.Publish(ctx, volConfig, &models.VolumePublishInfo{})
 
@@ -3215,6 +3246,7 @@ func TestOntapNasSFlexgrouptorageDriverVolumePublish_NASType_SMB(t *testing.T) {
 	volConfig.AccessInfo.SMBPath = "/test_cifs_path"
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	result := driver.Publish(ctx, volConfig, &models.VolumePublishInfo{})
 
@@ -3254,6 +3286,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeGetSnapshot(t *testing.T) {
 	})
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(1, nil)
 	mockAPI.EXPECT().FlexgroupSnapshotList(ctx, "vol1").Return(snapshots, nil)
 
@@ -3288,6 +3321,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeGetSnapshot_VolumeSizeFailure(t *te
 	for _, test := range tests {
 		t.Run(test.TestName, func(t *testing.T) {
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 			mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(0, test.getVolumeSizeFailedError)
 
 			snap, err := driver.GetSnapshot(ctx, snapConfig, volConfig)
@@ -3319,6 +3353,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeGetSnapshot_NoSnapshot(t *testing.T
 	})
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(1, nil)
 	mockAPI.EXPECT().FlexgroupSnapshotList(ctx, "vol1").Return(nil, errors.New("no snapshots found"))
 
@@ -3343,6 +3378,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeGetSnapshot_NoError(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(0, nil)
 	mockAPI.EXPECT().FlexgroupSnapshotList(ctx, "vol1").Return(nil, nil)
 
@@ -3368,6 +3404,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeGetSnapshots(t *testing.T) {
 	})
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(1, nil)
 	mockAPI.EXPECT().FlexgroupSnapshotList(ctx, "vol1").Return(snapshots, nil)
 
@@ -3387,6 +3424,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeGetSnapshots_VolumeSizeFailure(t *t
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(0, errors.New("failed to get volume size"))
 
 	snap, err := driver.GetSnapshots(ctx, volConfig)
@@ -3405,6 +3443,7 @@ func TestConstructOntapNASFlexgroupSMBVolumePath2StorageDriverVolumeGetSnapshots
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(1, nil)
 	mockAPI.EXPECT().FlexgroupSnapshotList(ctx, "vol1").Return(nil, errors.New("no snapshots found"))
 
@@ -3435,6 +3474,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreateSnapshot(t *testing.T) {
 	})
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(true, nil)
 	mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(1, nil)
 	mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, "snap1", "vol1").Return(nil)
@@ -3481,6 +3521,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreateSnapshot_Failure(t *testing.T
 		t.Run(test.name, func(t *testing.T) {
 			if test.name == "FlexgroupExistsFailed" {
 				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+				mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 				mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false,
 					errors.New(test.message))
 
@@ -3488,12 +3529,14 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreateSnapshot_Failure(t *testing.T
 				assert.Error(t, err, "Flexgroup volume exists")
 			} else if test.name == "FlexgroupExists" {
 				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+				mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 				mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
 
 				_, err := driver.CreateSnapshot(ctx, snapConfig, volConfig)
 				assert.Error(t, err, "Flexgroup volume exists")
 			} else if test.name == "FlexgroupUsedSizeFailed" {
 				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+				mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 				mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(true, nil)
 				mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(1,
 					errors.New(test.message))
@@ -3502,6 +3545,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreateSnapshot_Failure(t *testing.T
 				assert.Error(t, err, "CreateSnapshot FlexgroupUsedSize successfully executed")
 			} else if test.name == "FlexgroupSnapshotCreateFailed" {
 				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+				mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 				mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(true, nil)
 				mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(1, nil)
 				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, "snap1", "vol1").Return(errors.New(test.message))
@@ -3510,6 +3554,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreateSnapshot_Failure(t *testing.T
 				assert.Error(t, err, "CreateSnapshot FlexgroupSnapshotCreate successfully executed")
 			} else if test.name == "FlexgroupSnapshotListFailed" {
 				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+				mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 				mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(true, nil)
 				mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(1, nil)
 				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, "snap1", "vol1").Return(nil)
@@ -3519,6 +3564,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreateSnapshot_Failure(t *testing.T
 				assert.Error(t, err, "CreateSnapshot FlexgroupSnapshotList successfully executed")
 			} else if test.name == "FlexgroupSnapshotListEmpty" {
 				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+				mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 				mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(true, nil)
 				mockAPI.EXPECT().FlexgroupUsedSize(ctx, "vol1").Return(1, nil)
 				mockAPI.EXPECT().FlexgroupSnapshotCreate(ctx, "snap1", "vol1").Return(nil)
@@ -3546,6 +3592,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeRestoreSnapshot(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().SnapshotRestoreFlexgroup(ctx, "snap1", "vol1").Return(nil)
 
 	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
@@ -3569,6 +3616,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeRestoreSnapshot_Failure(t *testing.
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().SnapshotRestoreFlexgroup(ctx, "snap1", "vol1").Return(errors.New("failed to restore volume"))
 
 	result := driver.RestoreSnapshot(ctx, snapConfig, volConfig)
@@ -3730,6 +3778,7 @@ func TestOntapNasFlexgroupStorageDriverGetVolumeExternalWrappers(t *testing.T) {
 	channel := make(chan *storage.VolumeExternalWrapper, 1)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupListByPrefix(ctx, gomock.Any()).Return(api.Volumes{&api.Volume{}}, nil).Times(1)
 
 	driver.GetVolumeExternalWrappers(ctx, channel)
@@ -3740,6 +3789,7 @@ func TestOntapNasFlexgroupStorageDriverGetVolumeExternalWrappers_Failure(t *test
 	channel := make(chan *storage.VolumeExternalWrapper, 1)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupListByPrefix(ctx, gomock.Any()).Return(nil, errors.New("no volume found"))
 
 	driver.GetVolumeExternalWrappers(ctx, channel)
@@ -3764,6 +3814,7 @@ func TestOntapNasFlexgroupStorageDriverCreateFollowup_NASType_None(t *testing.T)
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupInfo(ctx, "vol1").Return(&flexgroup, nil)
 	mockAPI.EXPECT().FlexgroupMount(ctx, "vol1", "/vol1").Return(nil)
 
@@ -3801,6 +3852,7 @@ func TestOntapNasFlexgroupStorageDriverCreateFollowup_NASType_SMB(t *testing.T) 
 	for _, test := range tests {
 		t.Run(test.message, func(t *testing.T) {
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 			mockAPI.EXPECT().FlexgroupInfo(ctx, "vol1").Return(&flexgroup, nil)
 			mockAPI.EXPECT().FlexgroupMount(ctx, "vol1", "/vol1").Return(nil)
 			if test.isSuccess {
@@ -3839,6 +3891,7 @@ func TestOntapNasFlexgroupStorageDriverCreateFollowup_VolumeInfoFailure(t *testi
 		t.Run(test.name, func(t *testing.T) {
 			if test.name == "VolumeInfoFailure" {
 				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+				mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 				mockAPI.EXPECT().FlexgroupInfo(ctx, gomock.Any()).Return(nil, errors.New("could not find volume"))
 
 				result := driver.CreateFollowup(ctx, volConfig)
@@ -3846,6 +3899,7 @@ func TestOntapNasFlexgroupStorageDriverCreateFollowup_VolumeInfoFailure(t *testi
 				assert.Error(t, result, "Get the flexgroup volume info")
 			} else if test.name == "VolumeInfoEmpty" {
 				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+				mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 				mockAPI.EXPECT().FlexgroupInfo(ctx, gomock.Any()).Return(nil, nil)
 
 				result := driver.CreateFollowup(ctx, volConfig)
@@ -3859,6 +3913,7 @@ func TestOntapNasFlexgroupStorageDriverCreateFollowup_VolumeInfoFailure(t *testi
 func TestOntapNasFlexgroupStorageDriverCreateFollowup_VolumeMountFailure(t *testing.T) {
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	volConfig := &storage.VolumeConfig{
 		Size:         "400g",
@@ -3924,6 +3979,7 @@ func TestOntapNasFlexgroupStorageDriverCreateFollowup_WithJunctionPath_NASType_N
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupInfo(ctx, "vol1").Return(&flexgroup, nil)
 
 	result := driver.CreateFollowup(ctx, volConfig)
@@ -3950,6 +4006,7 @@ func TestOntapNasFlexgroupStorageDriverCreateFollowup_WithJunctionPath_NASType_S
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupInfo(ctx, "vol1").Return(&flexgroup, nil)
 
 	result := driver.CreateFollowup(ctx, volConfig)
@@ -4001,6 +4058,7 @@ func TestOntapNasFlexgroupStorageDriverCreatePrepare_NilPool(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().GetSVMAggregateNames(gomock.Any()).AnyTimes().Return([]string{ONTAPTEST_VSERVER_AGGR_NAME}, nil)
 	mockAPI.EXPECT().GetSVMAggregateAttributes(gomock.Any()).AnyTimes().Return(
 		map[string]string{"aggr1": ONTAPTEST_VSERVER_AGGR_NAME}, nil,
@@ -4040,6 +4098,7 @@ func TestOntapNasFlexgroupStorageDriverGetUpdateType(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	result := newDriver.GetUpdateType(ctx, oldDriver)
 
@@ -4055,6 +4114,7 @@ func TestOntapNasFlexgroupStorageDriverGetUpdateType(t *testing.T) {
 func TestOntapNasFlexgroupStorageDriverGetUpdateType_Failure(t *testing.T) {
 	mockAPI, _ := newMockOntapNASFlexgroupDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	oldDriver := newTestOntapSanEcoDriver(t, ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, false, nil, mockAPI)
 	oldDriver.API = mockAPI
@@ -4265,6 +4325,7 @@ func TestOntapNasFlexgroupStorageDriverGetVolumeForImport(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupInfo(ctx, "vol1").Return(&flexgroup, nil)
 
 	volExt, err := driver.GetVolumeForImport(ctx, "vol1")
@@ -4277,6 +4338,7 @@ func TestOntapNasFlexgroupStorageDriverGetVolumeForImport_Failure(t *testing.T) 
 	mockAPI, driver := newMockOntapNASFlexgroupDriver(t)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().FlexgroupInfo(ctx, "vol1").Return(nil, errors.New("error fetching volume info"))
 
 	volExt, err := driver.GetVolumeForImport(ctx, "vol1")

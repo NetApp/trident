@@ -86,6 +86,12 @@ type FlexcacheCollectionGetParams struct {
 	*/
 	AtimeScrubPeriod *int64
 
+	/* CifsEnabled.
+
+	   Filter by cifs.enabled
+	*/
+	CifsEnabled *bool
+
 	/* CifsChangeNotifyEnabled.
 
 	   Filter by cifs_change_notify.enabled
@@ -139,6 +145,12 @@ type FlexcacheCollectionGetParams struct {
 	   Filter by name
 	*/
 	Name *string
+
+	/* Nfsv4Enabled.
+
+	   Filter by nfsv4.enabled
+	*/
+	Nfsv4Enabled *bool
 
 	/* OrderBy.
 
@@ -245,6 +257,12 @@ type FlexcacheCollectionGetParams struct {
 	   Default: 15
 	*/
 	ReturnTimeout *int64
+
+	/* S3Enabled.
+
+	   Filter by s3.enabled
+	*/
+	S3Enabled *bool
 
 	/* Size.
 
@@ -393,6 +411,17 @@ func (o *FlexcacheCollectionGetParams) SetAtimeScrubPeriod(atimeScrubPeriod *int
 	o.AtimeScrubPeriod = atimeScrubPeriod
 }
 
+// WithCifsEnabled adds the cifsEnabled to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithCifsEnabled(cifsEnabled *bool) *FlexcacheCollectionGetParams {
+	o.SetCifsEnabled(cifsEnabled)
+	return o
+}
+
+// SetCifsEnabled adds the cifsEnabled to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetCifsEnabled(cifsEnabled *bool) {
+	o.CifsEnabled = cifsEnabled
+}
+
 // WithCifsChangeNotifyEnabled adds the cifsChangeNotifyEnabled to the flexcache collection get params
 func (o *FlexcacheCollectionGetParams) WithCifsChangeNotifyEnabled(cifsChangeNotifyEnabled *bool) *FlexcacheCollectionGetParams {
 	o.SetCifsChangeNotifyEnabled(cifsChangeNotifyEnabled)
@@ -490,6 +519,17 @@ func (o *FlexcacheCollectionGetParams) WithName(name *string) *FlexcacheCollecti
 // SetName adds the name to the flexcache collection get params
 func (o *FlexcacheCollectionGetParams) SetName(name *string) {
 	o.Name = name
+}
+
+// WithNfsv4Enabled adds the nfsv4Enabled to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithNfsv4Enabled(nfsv4Enabled *bool) *FlexcacheCollectionGetParams {
+	o.SetNfsv4Enabled(nfsv4Enabled)
+	return o
+}
+
+// SetNfsv4Enabled adds the nfsv4Enabled to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetNfsv4Enabled(nfsv4Enabled *bool) {
+	o.Nfsv4Enabled = nfsv4Enabled
 }
 
 // WithOrderBy adds the orderBy to the flexcache collection get params
@@ -679,6 +719,17 @@ func (o *FlexcacheCollectionGetParams) SetReturnTimeout(returnTimeout *int64) {
 	o.ReturnTimeout = returnTimeout
 }
 
+// WithS3Enabled adds the s3Enabled to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithS3Enabled(s3Enabled *bool) *FlexcacheCollectionGetParams {
+	o.SetS3Enabled(s3Enabled)
+	return o
+}
+
+// SetS3Enabled adds the s3Enabled to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetS3Enabled(s3Enabled *bool) {
+	o.S3Enabled = s3Enabled
+}
+
 // WithSize adds the size to the flexcache collection get params
 func (o *FlexcacheCollectionGetParams) WithSize(size *int64) *FlexcacheCollectionGetParams {
 	o.SetSize(size)
@@ -816,6 +867,23 @@ func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qAtimeScrubPeriod != "" {
 
 			if err := r.SetQueryParam("atime_scrub.period", qAtimeScrubPeriod); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CifsEnabled != nil {
+
+		// query param cifs.enabled
+		var qrCifsEnabled bool
+
+		if o.CifsEnabled != nil {
+			qrCifsEnabled = *o.CifsEnabled
+		}
+		qCifsEnabled := swag.FormatBool(qrCifsEnabled)
+		if qCifsEnabled != "" {
+
+			if err := r.SetQueryParam("cifs.enabled", qCifsEnabled); err != nil {
 				return err
 			}
 		}
@@ -963,6 +1031,23 @@ func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qName != "" {
 
 			if err := r.SetQueryParam("name", qName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Nfsv4Enabled != nil {
+
+		// query param nfsv4.enabled
+		var qrNfsv4Enabled bool
+
+		if o.Nfsv4Enabled != nil {
+			qrNfsv4Enabled = *o.Nfsv4Enabled
+		}
+		qNfsv4Enabled := swag.FormatBool(qrNfsv4Enabled)
+		if qNfsv4Enabled != "" {
+
+			if err := r.SetQueryParam("nfsv4.enabled", qNfsv4Enabled); err != nil {
 				return err
 			}
 		}
@@ -1246,6 +1331,23 @@ func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.S3Enabled != nil {
+
+		// query param s3.enabled
+		var qrS3Enabled bool
+
+		if o.S3Enabled != nil {
+			qrS3Enabled = *o.S3Enabled
+		}
+		qS3Enabled := swag.FormatBool(qrS3Enabled)
+		if qS3Enabled != "" {
+
+			if err := r.SetQueryParam("s3.enabled", qS3Enabled); err != nil {
 				return err
 			}
 		}

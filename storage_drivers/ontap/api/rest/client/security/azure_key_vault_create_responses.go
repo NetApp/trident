@@ -240,6 +240,7 @@ func NewAzureKeyVaultCreateDefault(code int) *AzureKeyVaultCreateDefault {
 | 65537518 | Failed to find an interface with Cluster role. |
 | 65537523 | Invalid key ID format. Example key ID format\":" "https://mykeyvault.vault.azure.net/keys/key1/a8e619fd8f234db3b0b95c59540e2a74". |
 | 65537526 | Failed to enable Azure Key Vault feature. |
+| 65537553 | Invalid vault name format. Example vault name format\":" "https://mykeyvault.vault.azure.net". |
 | 65537567 | No authentication method provided. |
 | 65537573 | Invalid client certificate. |
 | 65537589 | The specified configuration.name already exists on the given SVM. |

@@ -1100,6 +1100,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().SupportsFeature(ctx, api.QosPolicies).AnyTimes().Return(false)
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
 		tridentconfig.DriverContext("CSI"), false, nil)
@@ -1120,6 +1121,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().SupportsFeature(ctx, api.QosPolicies).AnyTimes().Return(true)
 	storageDriver = newTestOntapNASDriver(vserverAdminHost, "443", vserverAggrName,
 		tridentconfig.DriverContext("CSI"), false, nil)
@@ -1139,6 +1141,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().SupportsFeature(ctx, api.QosPolicies).AnyTimes().Return(true)
 	storageDriverQtree := newNASQtreeStorageDriver(mockAPI)
 	storageDriver.API = mockAPI
@@ -1249,6 +1252,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	storageDriverSAN := newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, true, nil, mockAPI)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapSANPool()}
@@ -1266,6 +1270,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	storageDriverSAN = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, true, nil, mockAPI)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapSANPool()}
@@ -1283,6 +1288,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	storageDriverSAN = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, true, nil, mockAPI)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapSANPool()}
@@ -1299,6 +1305,7 @@ func TestValidateStoragePools_Valid_OntapNAS(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	storageDriverSAN = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, true, nil, mockAPI)
 	physicalPools = map[string]storage.Pool{}
 	virtualPools = map[string]storage.Pool{"test": getValidOntapSANPool()}
@@ -1385,6 +1392,7 @@ func TestValidateStoragePools_LUKS(t *testing.T) {
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	sanStorageDriver := newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, false, nil, mockAPI)
 	pool := getValidOntapSANPool()
 	pool.InternalAttributes()[LUKSEncryption] = "true"
@@ -1401,6 +1409,7 @@ func TestValidateStoragePools_LUKS(t *testing.T) {
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	sanEcoStorageDriver := newTestOntapSanEcoDriver(t, vserverAdminHost, "443", vserverAggrName, false, nil, mockAPI)
 	pool = getValidOntapSANPool()
 	pool.InternalAttributes()[LUKSEncryption] = "true"
@@ -1430,6 +1439,7 @@ func TestValidateStoragePools_LUKS(t *testing.T) {
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	sanStorageDriver = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName, false, nil, mockAPI)
 	pool = getValidOntapSANPool()
 	pool.InternalAttributes()[LUKSEncryption] = "invalid-not-a-bool"
@@ -4259,6 +4269,7 @@ func TestEMSHeartbeat(t *testing.T) {
 	ctx := context.Background()
 	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	driver.telemetry = &Telemetry{
 		Plugin: driver.Name(),
 		SVM:    "SVM1",
@@ -5277,6 +5288,7 @@ func TestGetVolumeOptsCommon_NoVolumeOptsReturned(t *testing.T) {
 func TestTelemetryString(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	driver.telemetry = &Telemetry{
 		Plugin: driver.Name(),
 		SVM:    "SVM1",
@@ -5295,6 +5307,7 @@ func TestTelemetryString(t *testing.T) {
 func TestGoString(t *testing.T) {
 	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	driver.telemetry = &Telemetry{
 		Plugin: driver.Name(),
 		SVM:    "SVM1",
@@ -6101,6 +6114,7 @@ func TestValidateNASDriver(t *testing.T) {
 	config.NASType = sa.SMB
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "cifs").AnyTimes().Return(nil, nil)
 
 	err = ValidateNASDriver(ctx, mockAPI, config)
@@ -6112,6 +6126,7 @@ func TestValidateNASDriver(t *testing.T) {
 	config.OntapStorageDriverConfigDefaults.LUKSEncryption = "false"
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, "nfs").AnyTimes().Return([]string{}, nil)
 
 	err = ValidateNASDriver(ctx, mockAPI, config)
@@ -7261,6 +7276,7 @@ func TestDiscoverBackendAggrNamesCommon(t *testing.T) {
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{}, nil)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	storageDriver := newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName,
 		false, nil, mockAPI)
 
@@ -7274,6 +7290,7 @@ func TestDiscoverBackendAggrNamesCommon(t *testing.T) {
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{}, nil).Return([]string{ONTAPTEST_VSERVER_AGGR_NAME},
 		nil)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	storageDriver = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName,
 		false, nil, mockAPI)
 	expected := ONTAPTEST_VSERVER_AGGR_NAME
@@ -7287,6 +7304,7 @@ func TestDiscoverBackendAggrNamesCommon(t *testing.T) {
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return([]string{}, nil).Return([]string{"aggr1"}, nil)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	storageDriver = newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName,
 		false, nil, mockAPI)
 
@@ -7430,6 +7448,7 @@ func TestGetVserverAggrAttributes(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	storageDriver := newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName,
 		false, nil, mockAPI)
 
@@ -7488,6 +7507,7 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	storageDriver := newTestOntapSANDriver(vserverAdminHost, "443", vserverAggrName,
 		false, nil, mockAPI)
@@ -7703,7 +7723,7 @@ func TestInitializeStoragePoolsCommon(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestInitializeASAStoragePoolsCommon(t *testing.T) {
+func TestInitializeDisaggregatedStoragePoolsCommon(t *testing.T) {
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME
 
@@ -7711,6 +7731,7 @@ func TestInitializeASAStoragePoolsCommon(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(true)
 
 	storageDriver := newTestOntapASADriver(vserverAdminHost, "443", vserverAggrName, mockAPI)
 	_ = PopulateASAConfigurationDefaults(ctx, &storageDriver.Config)
@@ -7743,48 +7764,49 @@ func TestInitializeASAStoragePoolsCommon(t *testing.T) {
 
 	// Test1 - Positive flow
 
-	physicalPool, virtualPool, err := InitializeASAStoragePoolsCommon(ctx, storageDriver,
+	physicalPool, virtualPool, err := InitializeManagedStoragePoolsCommon(ctx, storageDriver,
 		storageDriver.getStoragePoolAttributes(ctx), backendName)
+	fmt.Println("physical pool", physicalPool)
 	assert.NoError(t, err)
 	assert.NotNil(t, physicalPool, "Physical Pool not found when expected")
 	assert.NotNil(t, virtualPool, "Virtual Pool not found when expected")
 
 	// Physical pool attributes
 
-	assert.Equal(t, "ssd", physicalPool["dummyBackend"].Attributes()[Media].ToString())
-	assert.Equal(t, "us_east_1", physicalPool["dummyBackend"].Attributes()[Region].ToString())
-	assert.Equal(t, "us_east_1a", physicalPool["dummyBackend"].Attributes()[Zone].ToString())
-	assert.Equal(t, "", physicalPool["dummyBackend"].Attributes()[sa.NASType].ToString())
-	assert.Equal(t, "iscsi", physicalPool["dummyBackend"].Attributes()[sa.SANType].ToString())
-	assert.Equal(t, "true", physicalPool["dummyBackend"].Attributes()[Encryption].ToString())
-	assert.Equal(t, "false", physicalPool["dummyBackend"].Attributes()[Replication].ToString())
-	assert.Equal(t, "ontap-san", physicalPool["dummyBackend"].Attributes()[BackendType].ToString())
-	assert.Equal(t, "true", physicalPool["dummyBackend"].Attributes()[Clones].ToString())
-	assert.Equal(t, "thin", physicalPool["dummyBackend"].Attributes()[ProvisioningType].ToString())
-	assert.Equal(t, "true", physicalPool["dummyBackend"].Attributes()[Snapshots].ToString())
+	assert.Equal(t, "ssd", physicalPool[managedStoragePoolName].Attributes()[Media].ToString())
+	assert.Equal(t, "us_east_1", physicalPool[managedStoragePoolName].Attributes()[Region].ToString())
+	assert.Equal(t, "us_east_1a", physicalPool[managedStoragePoolName].Attributes()[Zone].ToString())
+	assert.Equal(t, "", physicalPool[managedStoragePoolName].Attributes()[sa.NASType].ToString())
+	assert.Equal(t, "iscsi", physicalPool[managedStoragePoolName].Attributes()[sa.SANType].ToString())
+	assert.Equal(t, "true", physicalPool[managedStoragePoolName].Attributes()[Encryption].ToString())
+	assert.Equal(t, "false", physicalPool[managedStoragePoolName].Attributes()[Replication].ToString())
+	assert.Equal(t, "ontap-san", physicalPool[managedStoragePoolName].Attributes()[BackendType].ToString())
+	assert.Equal(t, "true", physicalPool[managedStoragePoolName].Attributes()[Clones].ToString())
+	assert.Equal(t, "thin", physicalPool[managedStoragePoolName].Attributes()[ProvisioningType].ToString())
+	assert.Equal(t, "true", physicalPool[managedStoragePoolName].Attributes()[Snapshots].ToString())
 
-	assert.Equal(t, "1G", physicalPool["dummyBackend"].InternalAttributes()[Size])
-	assert.Equal(t, "", physicalPool["dummyBackend"].InternalAttributes()[NameTemplate])
-	assert.Equal(t, "us_east_1", physicalPool["dummyBackend"].InternalAttributes()[Region])
-	assert.Equal(t, "us_east_1a", physicalPool["dummyBackend"].InternalAttributes()[Zone])
-	assert.Equal(t, "", physicalPool["dummyBackend"].InternalAttributes()[SnapshotReserve])
-	assert.Equal(t, "", physicalPool["dummyBackend"].InternalAttributes()[SnapshotDir])
-	assert.Equal(t, "", physicalPool["dummyBackend"].InternalAttributes()[ExportPolicy])
-	assert.Equal(t, "", physicalPool["dummyBackend"].InternalAttributes()[QosPolicy])
-	assert.Equal(t, "", physicalPool["dummyBackend"].InternalAttributes()[AdaptiveQosPolicy])
-	assert.Equal(t, "ext4", physicalPool["dummyBackend"].InternalAttributes()[FileSystemType])
-	assert.Equal(t, "true", physicalPool["dummyBackend"].InternalAttributes()[SpaceAllocation])
-	assert.Equal(t, "none", physicalPool["dummyBackend"].InternalAttributes()[SpaceReserve])
-	assert.Equal(t, "false", physicalPool["dummyBackend"].InternalAttributes()[SplitOnClone])
-	assert.Equal(t, "", physicalPool["dummyBackend"].InternalAttributes()[UnixPermissions])
-	assert.Equal(t, "", physicalPool["dummyBackend"].InternalAttributes()[SecurityStyle])
-	assert.Equal(t, "none", physicalPool["dummyBackend"].InternalAttributes()[SnapshotPolicy])
-	assert.Equal(t, "true", physicalPool["dummyBackend"].InternalAttributes()[Encryption])
-	assert.Equal(t, "false", physicalPool["dummyBackend"].InternalAttributes()[LUKSEncryption])
-	assert.Equal(t, "", physicalPool["dummyBackend"].InternalAttributes()[TieringPolicy])
-	assert.Equal(t, "", physicalPool["dummyBackend"].InternalAttributes()[FormatOptions])
+	assert.Equal(t, "1G", physicalPool[managedStoragePoolName].InternalAttributes()[Size])
+	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[NameTemplate])
+	assert.Equal(t, "us_east_1", physicalPool[managedStoragePoolName].InternalAttributes()[Region])
+	assert.Equal(t, "us_east_1a", physicalPool[managedStoragePoolName].InternalAttributes()[Zone])
+	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[SnapshotReserve])
+	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[SnapshotDir])
+	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[ExportPolicy])
+	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[QosPolicy])
+	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[AdaptiveQosPolicy])
+	assert.Equal(t, "ext4", physicalPool[managedStoragePoolName].InternalAttributes()[FileSystemType])
+	assert.Equal(t, "true", physicalPool[managedStoragePoolName].InternalAttributes()[SpaceAllocation])
+	assert.Equal(t, "none", physicalPool[managedStoragePoolName].InternalAttributes()[SpaceReserve])
+	assert.Equal(t, "false", physicalPool[managedStoragePoolName].InternalAttributes()[SplitOnClone])
+	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[UnixPermissions])
+	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[SecurityStyle])
+	assert.Equal(t, "none", physicalPool[managedStoragePoolName].InternalAttributes()[SnapshotPolicy])
+	assert.Equal(t, "true", physicalPool[managedStoragePoolName].InternalAttributes()[Encryption])
+	assert.Equal(t, "false", physicalPool[managedStoragePoolName].InternalAttributes()[LUKSEncryption])
+	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[TieringPolicy])
+	assert.Equal(t, "", physicalPool[managedStoragePoolName].InternalAttributes()[FormatOptions])
 
-	assert.Nil(t, physicalPool["dummyBackend"].SupportedTopologies())
+	assert.Nil(t, physicalPool[managedStoragePoolName].SupportedTopologies())
 
 	// Virtual pool attributes
 
@@ -7830,7 +7852,7 @@ func TestInitializeASAStoragePoolsCommon(t *testing.T) {
 	storageDriver2 := cloneTestOntapASADriver(storageDriver)
 	storageDriver2.Config.SnapshotDir = "asdf"
 
-	_, _, err = InitializeASAStoragePoolsCommon(ctx, storageDriver2,
+	_, _, err = InitializeManagedStoragePoolsCommon(ctx, storageDriver2,
 		storageDriver2.getStoragePoolAttributes(ctx), backendName)
 
 	assert.Error(t, err)
@@ -8661,6 +8683,8 @@ func TestGetSVMState(t *testing.T) {
 	ctx := context.Background()
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAPI.EXPECT().IsSANOptimized().Return(false).AnyTimes()
+	mockAPI.EXPECT().IsDisaggregated().Return(false).AnyTimes()
 
 	var derivedPoolsNil []string
 	var aggrsNil []string

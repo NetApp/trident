@@ -2343,49 +2343,49 @@ func (m *SvmMigrationInlineSourceInlineSvmInlineLinks) UnmarshalBinary(b []byte)
 type SvmMigrationInlineTimeMetrics struct {
 
 	// Cutover end time
-	// Example: 2020-12-03 03:30:19
+	// Example: 2020-12-02 19:30:19-08:00
 	// Read Only: true
 	// Format: date-time
 	CutoverCompleteTime *strfmt.DateTime `json:"cutover_complete_time,omitempty"`
 
 	// Cutover start time
-	// Example: 2020-12-03 02:20:19
+	// Example: 2020-12-02 18:20:19-08:00
 	// Read Only: true
 	// Format: date-time
 	CutoverStartTime *strfmt.DateTime `json:"cutover_start_time,omitempty"`
 
 	// Cutover trigger time
-	// Example: 2020-12-03 03:15:19
+	// Example: 2020-12-02 19:15:19-08:00
 	// Read Only: true
 	// Format: date-time
 	CutoverTriggerTime *strfmt.DateTime `json:"cutover_trigger_time,omitempty"`
 
 	// Migration end time
-	// Example: 2020-12-03 03:36:19
+	// Example: 2020-12-02 19:36:19-08:00
 	// Read Only: true
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
 
 	// Last migration pause time
-	// Example: 2020-12-03 02:50:19
+	// Example: 2020-12-02 18:50:19-08:00
 	// Read Only: true
 	// Format: date-time
 	LastPauseTime *strfmt.DateTime `json:"last_pause_time,omitempty"`
 
 	// Last post point of no return retry time
-	// Example: 2020-12-03 03:30:19
+	// Example: 2020-12-02 19:30:19-08:00
 	// Read Only: true
 	// Format: date-time
 	LastPostPonrRetryTime *strfmt.DateTime `json:"last_post_ponr_retry_time,omitempty"`
 
 	// Last migration resume time
-	// Example: 2020-12-03 02:54:19
+	// Example: 2020-12-02 18:54:19-08:00
 	// Read Only: true
 	// Format: date-time
 	LastResumeTime *strfmt.DateTime `json:"last_resume_time,omitempty"`
 
 	// Migration start time
-	// Example: 2020-12-03 02:36:19
+	// Example: 2020-12-02 18:36:19-08:00
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`

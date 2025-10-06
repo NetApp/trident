@@ -13,6 +13,8 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/application"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/cloud"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/cluster"
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/data_engine"
+	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/dcn"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_a_s"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/n_v_me"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/name_services"
@@ -80,6 +82,8 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *ONTAPRESTA
 	cli.Application = application.New(transport, formats)
 	cli.Cloud = cloud.New(transport, formats)
 	cli.Cluster = cluster.New(transport, formats)
+	cli.DataEngine = data_engine.New(transport, formats)
+	cli.Dcn = dcn.New(transport, formats)
 	cli.Nas = n_a_s.New(transport, formats)
 	cli.NvMe = n_v_me.New(transport, formats)
 	cli.NameServices = name_services.New(transport, formats)
@@ -143,6 +147,10 @@ type ONTAPRESTAPIOnlineReference struct {
 
 	Cluster cluster.ClientService
 
+	DataEngine data_engine.ClientService
+
+	Dcn dcn.ClientService
+
 	Nas n_a_s.ClientService
 
 	NvMe n_v_me.ClientService
@@ -178,6 +186,8 @@ func (c *ONTAPRESTAPIOnlineReference) SetTransport(transport runtime.ClientTrans
 	c.Application.SetTransport(transport)
 	c.Cloud.SetTransport(transport)
 	c.Cluster.SetTransport(transport)
+	c.DataEngine.SetTransport(transport)
+	c.Dcn.SetTransport(transport)
 	c.Nas.SetTransport(transport)
 	c.NvMe.SetTransport(transport)
 	c.NameServices.SetTransport(transport)

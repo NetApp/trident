@@ -128,7 +128,7 @@ func NewRoleCreateDefault(code int) *RoleCreateDefault {
 | 5636129 | Role with given name has not been defined. |
 | 5636143 | Vserver admin cannot use the API with this access level. |
 | 5636144 | Invalid value specified for access level. |
-| 5636168 | This role is mapped to a rest-role and cannot be modified directly. Modifications must be done with rest-role. |
+| 5636168 | This role is mapped to a REST role and can only be modified by updating the REST role. |
 | 5636169 | Invalid character in URI. |
 | 5636170 | URI does not exist. |
 | 5636171 | Role already exists in legacy role table. |
@@ -138,7 +138,10 @@ func NewRoleCreateDefault(code int) *RoleCreateDefault {
 | 5636191 | The "path" parameter in a "privileges" tuple can contain only API endpoint entries or only command and command directory entries. |
 | 5636192 | The query parameter cannot be specified for the privileges tuple with API endpoint entries. |
 | 5636200 | The specified value of the access parameter is invalid, if a command or command directory is specified in the path parameter. |
-| 5636210 | User creation failed because LDAP is not configured for the SVM or the LDAP connection is not secure. |
+| 5636210 | User creation failed because LDAP is not configured for the SVM or the LDAP connection is not secure.<personalities supports=aiml> |
+| 5636259 | The specified child AIDE object was not found within the specified parent AIDE object. |
+| 5636261 | The specified grandchild AIDE object was not found within the specified child AIDE object that belongs to the specified parent AIDE object.</personalities> |
+| 5636262 | Cannot create a role with the specified role name because it is reserved by the system. |
 | 13434890 | Vserver-ID failed for Vserver roles. |
 | 13434891 | UUID lookup failed for Vserver roles. |
 | 13434892 | Roles is a required field. |

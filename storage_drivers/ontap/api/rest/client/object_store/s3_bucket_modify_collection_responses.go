@@ -217,7 +217,7 @@ func NewS3BucketModifyCollectionDefault(code int) *S3BucketModifyCollectionDefau
 | 92405891   | "The resources specified in the access policy are not valid. Valid ways to specify a resource are \\\"*\\\", \\\"<bucket-name>\\\", \\\"<bucket-name>/.../...\\\". Valid characters for a resource are 0-9, A-Z, a-z, \\\"_\\\", \\\"+\\\", \\\",\\\", \\\";\\\", \\\":\\\", \\\";\\\", \\\"=\\\", \\\".\\\", \\\"&\\\", \\\"@\\\", \\\"?\\\", \\\"(\\\", \\\")\\\", \\\"'\\\", \\\"*\\\", \\\"!\\\", \\\"-\\\" and \\\"\\$\\\".";
 | 92405894   | "Statements, principals and resources list can have a maximum of 10 entries.";
 | 92405897   | "The principals specified in the access policy are not in the correct format. User name must be between 1 and 64 characters. Valid characters for a user name are 0-9, A-Z, a-z, \\\"_\\\", \\\"+\\\", \\\"=\\\", \\\",\\\", \\\".\\\", \\\"@\\\", and \\\"-\\\". ";
-| 92405898   | "The SID specified in the access policy is not valid. Valid characters for a SID are 0-9, A-Z and a-z.";
+| 92405898   | "The SID specified in the access policy is not valid.";
 | 92406014   | "Failed to modify event selector for bucket \\\"{bucket name}\\\". If the value of either access or permission is set to none, they both must be set to none.";
 | 92733458   | "[Job job number] Job failed: Failed to modify bucket "s3bucket1" for SVM "vs1". Reason: {Reason for failure}. ";
 | 8454236    | "Could not assign qtree "qtree1" to QoS policy group "group1". Invalid QoS policy group specified "group1". The specified QoS policy group has a min-throughput value set, and the workload being assigned resides on a platform that does not support min-throughput or the cluster is in a mixed version state and the effective cluster version of ONTAP does not support min-throughput on this platform.";
@@ -369,10 +369,10 @@ type S3BucketModifyCollectionBody struct {
 	// s3 bucket response inline records
 	S3BucketResponseInlineRecords []*models.S3Bucket `json:"records,omitempty"`
 
-	// Specifies the bucket size in bytes; ranges from 190MB to 62PB.
-	// Example: 1677721600
-	// Maximum: 6.2672162783232e+16
-	// Minimum: 1.9922944e+08
+	// Specifies the bucket size in bytes; ranges from 100GB to 60PB.
+	// Example: 214748364800
+	// Maximum: 6.755399441055744e+16
+	// Minimum: 1.073741824e+11
 	Size *int64 `json:"size,omitempty"`
 
 	// snapshot policy
@@ -810,11 +810,11 @@ func (o *S3BucketModifyCollectionBody) validateSize(formats strfmt.Registry) err
 		return nil
 	}
 
-	if err := validate.MinimumInt("info"+"."+"size", "body", *o.Size, 1.9922944e+08, false); err != nil {
+	if err := validate.MinimumInt("info"+"."+"size", "body", *o.Size, 1.073741824e+11, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("info"+"."+"size", "body", *o.Size, 6.2672162783232e+16, false); err != nil {
+	if err := validate.MaximumInt("info"+"."+"size", "body", *o.Size, 6.755399441055744e+16, false); err != nil {
 		return err
 	}
 
@@ -2184,7 +2184,7 @@ type S3BucketModifyCollectionParamsBodyLifecycleManagementRulesItems0Expiration 
 	ObjectAgeDays *int64 `json:"object_age_days,omitempty"`
 
 	// Specific date from when objects can expire. This cannot be used with object_age_days.
-	// Example: 2039-09-23 00:00:00
+	// Example: 2039-09-23 00:00:00+00:00
 	// Format: date-time
 	ObjectExpiryDate *strfmt.DateTime `json:"object_expiry_date,omitempty"`
 }

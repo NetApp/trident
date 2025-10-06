@@ -20,7 +20,7 @@ import (
 type GroupPolicyObjectCentralAccessRule struct {
 
 	// Policy creation timestamp.
-	// Example: 2018-01-01 16:00:00
+	// Example: 2018-01-01 12:00:00-04:00
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
 
@@ -49,7 +49,7 @@ type GroupPolicyObjectCentralAccessRule struct {
 	Svm *GroupPolicyObjectCentralAccessRuleInlineSvm `json:"svm,omitempty"`
 
 	// Last policy modification timestamp.
-	// Example: 2018-01-01 16:00:00
+	// Example: 2018-01-01 12:00:00-04:00
 	// Format: date-time
 	UpdateTime *strfmt.DateTime `json:"update_time,omitempty"`
 }

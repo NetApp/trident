@@ -24,7 +24,7 @@ type WebauthnCredentials struct {
 	Links *SelfLink `json:"_links,omitempty"`
 
 	// Date and time indicating when this entry was created.
-	// Example: 2024-08-06 02:38:55
+	// Example: 2024-08-05 22:38:55-04:00
 	// Read Only: true
 	// Format: date-time
 	CreationTime *strfmt.DateTime `json:"creation_time,omitempty"`
@@ -42,7 +42,7 @@ type WebauthnCredentials struct {
 	Index *int64 `json:"index,omitempty"`
 
 	// Date and time indicating when this entry was last used.
-	// Example: 2024-08-06 02:48:55
+	// Example: 2024-08-05 22:48:55-04:00
 	// Read Only: true
 	// Format: date-time
 	LastUsedTime *strfmt.DateTime `json:"last_used_time,omitempty"`

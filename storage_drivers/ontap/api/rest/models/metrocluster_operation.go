@@ -34,7 +34,7 @@ type MetroclusterOperation struct {
 	CommandLine *string `json:"command_line,omitempty"`
 
 	// End Time
-	// Example: 2016-03-10 22:35:16
+	// Example: 2016-03-10 14:35:16-08:00
 	// Read Only: true
 	// Format: date-time
 	EndTime *strfmt.DateTime `json:"end_time,omitempty"`
@@ -48,7 +48,7 @@ type MetroclusterOperation struct {
 	Node *MetroclusterOperationInlineNode `json:"node,omitempty"`
 
 	// Start Time
-	// Example: 2016-03-10 22:33:16
+	// Example: 2016-03-10 14:33:16-08:00
 	// Read Only: true
 	// Format: date-time
 	StartTime *strfmt.DateTime `json:"start_time,omitempty"`

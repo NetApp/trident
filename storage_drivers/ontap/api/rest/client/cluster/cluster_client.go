@@ -609,7 +609,6 @@ func (a *Client) ClusterGet(params *ClusterGetParams, authInfo runtime.ClientAut
 * `vserver services dns modify`
 * `vserver services name-service dns modify`
 * `timezone`
-* `security ssl modify`
 * `vserver active-directory create`
 * `vserver active-directory modify`
 * `vserver active-directory delete`
@@ -4864,7 +4863,11 @@ func (a *Client) SoftwareUpload(params *SoftwareUploadParams, authInfo runtime.C
 }
 
 /*
-WebGet Retrieves the web services configuration.
+	WebGet Retrieves the web services configuration.
+
+### Related ONTAP commands
+* `system services web show`
+* `security ssl show`
 */
 func (a *Client) WebGet(params *WebGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebGetOK, error) {
 	// TODO: Validate the params before sending
@@ -4906,6 +4909,7 @@ func (a *Client) WebGet(params *WebGetParams, authInfo runtime.ClientAuthInfoWri
 
 ### Related ONTAP commands
 * `system services web modify`
+* `security ssl modify`
 */
 func (a *Client) WebModify(params *WebModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebModifyOK, *WebModifyAccepted, error) {
 	// TODO: Validate the params before sending

@@ -217,7 +217,7 @@ func NewS3BucketSvmModifyCollectionDefault(code int) *S3BucketSvmModifyCollectio
 | 92405891   | "The resources specified in the access policy are not valid. Valid ways to specify a resource are \\\"*\\\", \\\"<bucket-name>\\\", \\\"<bucket-name>/.../...\\\". Valid characters for a resource are 0-9, A-Z, a-z, \\\"_\\\", \\\"+\\\", \\\",\\\", \\\";\\\", \\\":\\\", \\\";\\\", \\\"=\\\", \\\".\\\", \\\"&\\\", \\\"@\\\", \\\"?\\\", \\\"(\\\", \\\")\\\", \\\"'\\\", \\\"*\\\", \\\"!\\\", \\\"-\\\" and \\\"\\$\\\".";
 | 92405894   | "Statements, principals and resources list can have a maximum of 10 entries.";
 | 92405897   | "The principals specified in the access policy are not in the correct format. User name must be in between 1 and 64 characters. Valid characters for a user name are 0-9, A-Z, a-z, \\\"_\\\", \\\"+\\\", \\\"=\\\", \\\",\\\", \\\".\\\", \\\"@\\\", and \\\"-\\\". ";
-| 92405898   | "The SID specified in the access policy is not valid. Valid characters for a SID are 0-9, A-Z and a-z.";
+| 92405898   | "The SID specified in the access policy is not valid.";
 | 92405940   | "The specified condition key is not valid for operator \"ip-address\". Valid choices of keys for this operator: source-ips.";
 | 92406014   | "Failed to modify event selector for bucket \\\"{bucket name}\\\". If value of either access or permission is set to none, then the other must be set to none as well.";
 | 92406032   | "Modifying the NAS path for a NAS bucket is not supported.";
@@ -2176,7 +2176,7 @@ type S3BucketSvmModifyCollectionParamsBodyLifecycleManagementRulesItems0Expirati
 	ObjectAgeDays *int64 `json:"object_age_days,omitempty"`
 
 	// Specific date from when objects can expire. This cannot be used with object_age_days.
-	// Example: 2039-09-23 00:00:00
+	// Example: 2039-09-23 00:00:00+00:00
 	// Format: date-time
 	ObjectExpiryDate *strfmt.DateTime `json:"object_expiry_date,omitempty"`
 }

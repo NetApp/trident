@@ -45,7 +45,7 @@ type Coredump struct {
 	Node *CoredumpInlineNode `json:"node,omitempty"`
 
 	// Time of panic that generated the core.
-	// Example: 2021-03-01 22:09:11
+	// Example: 2021-03-01 18:09:11-04:00
 	// Read Only: true
 	// Format: date-time
 	PanicTime *strfmt.DateTime `json:"panic_time,omitempty"`

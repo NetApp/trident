@@ -85,7 +85,7 @@ type Lun struct {
 	Copy *LunInlineCopy `json:"copy,omitempty"`
 
 	// The time the LUN was created.
-	// Example: 2018-06-04 19:00:00
+	// Example: 2018-06-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
@@ -110,7 +110,8 @@ type Lun struct {
 
 	// The LUN maps with which the LUN is associated.<br/>
 	// There is an added computational cost to retrieving property values for `lun_maps`. They are not populated for a GET request unless explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-	// <personalities supports=unified>These properties are supported for GET only.</personalities>
+	// <personalities supports=unified>These properties are supported for GET and POST. During POST, it requires the `provisioning_options.auto` property to be set to true.
+	// See the `provisioning_options.auto` property for full details.</personalities>
 	// <personalities supports=asar2>These properties are supported for GET and POST. During POST, a new or existing initiator group can be referenced. When referencing an existing initiator group, only the `name` and `uuid` properties are supported.</personalities>
 	//
 	LunInlineLunMaps []*LunInlineLunMapsInlineArrayItem `json:"lun_maps,omitempty"`
@@ -5718,7 +5719,7 @@ type LunInlineMetric struct {
 	Throughput *LunInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -6990,6 +6991,12 @@ type LunInlineProvisioningOptions struct {
 	// Minimum: 1
 	Count *int64 `json:"count,omitempty"`
 
+	// A list of aggregates to exclude when determining the placement of the volume. <br/>
+	//
+	// Max Items: 100
+	// Min Items: 0
+	ExcludeAggregates []*LunProvisioningOptionsExcludeAggregatesItems0 `json:"exclude_aggregates,omitempty"`
+
 	// qos policy
 	QosPolicy *LunInlineProvisioningOptionsInlineQosPolicy `json:"qos_policy,omitempty"`
 
@@ -7016,6 +7023,10 @@ func (m *LunInlineProvisioningOptions) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCount(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateExcludeAggregates(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -7052,6 +7063,40 @@ func (m *LunInlineProvisioningOptions) validateCount(formats strfmt.Registry) er
 
 	if err := validate.MaximumInt("provisioning_options"+"."+"count", "body", *m.Count, 80, false); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *LunInlineProvisioningOptions) validateExcludeAggregates(formats strfmt.Registry) error {
+	if swag.IsZero(m.ExcludeAggregates) { // not required
+		return nil
+	}
+
+	iExcludeAggregatesSize := int64(len(m.ExcludeAggregates))
+
+	if err := validate.MinItems("provisioning_options"+"."+"exclude_aggregates", "body", iExcludeAggregatesSize, 0); err != nil {
+		return err
+	}
+
+	if err := validate.MaxItems("provisioning_options"+"."+"exclude_aggregates", "body", iExcludeAggregatesSize, 100); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.ExcludeAggregates); i++ {
+		if swag.IsZero(m.ExcludeAggregates[i]) { // not required
+			continue
+		}
+
+		if m.ExcludeAggregates[i] != nil {
+			if err := m.ExcludeAggregates[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("provisioning_options" + "." + "exclude_aggregates" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -7129,6 +7174,10 @@ func (m *LunInlineProvisioningOptions) validateTiering(formats strfmt.Registry) 
 func (m *LunInlineProvisioningOptions) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateExcludeAggregates(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateQosPolicy(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -7148,6 +7197,24 @@ func (m *LunInlineProvisioningOptions) ContextValidate(ctx context.Context, form
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *LunInlineProvisioningOptions) contextValidateExcludeAggregates(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ExcludeAggregates); i++ {
+
+		if m.ExcludeAggregates[i] != nil {
+			if err := m.ExcludeAggregates[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("provisioning_options" + "." + "exclude_aggregates" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -7218,6 +7285,45 @@ func (m *LunInlineProvisioningOptions) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *LunInlineProvisioningOptions) UnmarshalBinary(b []byte) error {
 	var res LunInlineProvisioningOptions
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// LunProvisioningOptionsExcludeAggregatesItems0 lun provisioning options exclude aggregates items0
+//
+// swagger:model LunProvisioningOptionsExcludeAggregatesItems0
+type LunProvisioningOptionsExcludeAggregatesItems0 struct {
+
+	// The aggregate name.
+	//
+	// Example: aggr1
+	Name *string `json:"name,omitempty"`
+}
+
+// Validate validates this lun provisioning options exclude aggregates items0
+func (m *LunProvisioningOptionsExcludeAggregatesItems0) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this lun provisioning options exclude aggregates items0 based on context it is used
+func (m *LunProvisioningOptionsExcludeAggregatesItems0) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *LunProvisioningOptionsExcludeAggregatesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *LunProvisioningOptionsExcludeAggregatesItems0) UnmarshalBinary(b []byte) error {
+	var res LunProvisioningOptionsExcludeAggregatesItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
@@ -7969,6 +8075,7 @@ type LunInlineSpace struct {
 	PhysicalUsed *int64 `json:"physical_used,omitempty"`
 
 	// The number of bytes consumed on the disk by the LUN's snapshots.
+	// This property has been replaced by `space.snapshot.used`.
 	// <personalities supports=unified>This property is not available on the LUN object in the REST API and is not reported for GET requests. See the containing volume object for this information.</personalities>
 	// <personalities supports=asar2>Available for GET.</personalities>
 	//
@@ -7996,6 +8103,9 @@ type LunInlineSpace struct {
 	// Minimum: 4096
 	Size *int64 `json:"size,omitempty"`
 
+	// snapshot
+	Snapshot *VdiskSpaceSnapshot `json:"snapshot,omitempty"`
+
 	// The amount of space consumed by the main data stream of the LUN.<br/>
 	// This value is the total space consumed in the volume by the LUN, including filesystem overhead, but excluding prefix and suffix streams. Due to internal filesystem overhead and the many ways SAN filesystems and applications utilize blocks within a LUN, this value does not necessarily reflect actual consumption/availability from the perspective of the filesystem or application. Without specific knowledge of how the LUN blocks are utilized outside of ONTAP, this property should not be used as an indicator for an out-of-space condition.<br/>
 	// For more information, see _Size properties_ in the _docs_ section of the ONTAP REST API documentation.
@@ -8013,6 +8123,10 @@ func (m *LunInlineSpace) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSnapshot(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -8055,6 +8169,23 @@ func (m *LunInlineSpace) validateSize(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *LunInlineSpace) validateSnapshot(formats strfmt.Registry) error {
+	if swag.IsZero(m.Snapshot) { // not required
+		return nil
+	}
+
+	if m.Snapshot != nil {
+		if err := m.Snapshot.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "snapshot")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this lun inline space based on the context it is used
 func (m *LunInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -8072,6 +8203,10 @@ func (m *LunInlineSpace) ContextValidate(ctx context.Context, formats strfmt.Reg
 	}
 
 	if err := m.contextValidatePhysicalUsedBySnapshots(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSnapshot(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -8121,6 +8256,20 @@ func (m *LunInlineSpace) contextValidatePhysicalUsedBySnapshots(ctx context.Cont
 
 	if err := validate.ReadOnly(ctx, "space"+"."+"physical_used_by_snapshots", "body", m.PhysicalUsedBySnapshots); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *LunInlineSpace) contextValidateSnapshot(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Snapshot != nil {
+		if err := m.Snapshot.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("space" + "." + "snapshot")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -8238,7 +8387,7 @@ type LunInlineStatistics struct {
 	ThroughputRaw *LunInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`

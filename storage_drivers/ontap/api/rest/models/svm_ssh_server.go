@@ -27,6 +27,9 @@ type SvmSSHServer struct {
 	//
 	IsRsaInPublickeyAlgorithmsEnabled *bool `json:"is_rsa_in_publickey_algorithms_enabled,omitempty"`
 
+	// The login grace time allowed for SSH connection request timeout.
+	LoginGraceTime *int64 `json:"login_grace_time,omitempty"`
+
 	// Maximum authentication retries allowed before closing the connection.
 	// Maximum: 6
 	// Minimum: 2
@@ -39,8 +42,8 @@ type SvmSSHServer struct {
 	// Example: ["aes256_ctr","aes192_ctr","aes128_ctr"]
 	SvmSSHServerInlineCiphers []*Cipher `json:"ciphers,omitempty"`
 
-	// Host key algorithms. The host key algorithm 'ssh_ed25519' can be configured only in non-FIPS mode.
-	// Example: ["ecdsa_sha2_nistp256","ssh_ed25519","ssh_rsa"]
+	// Host key algorithms. The host key algorithms 'ssh_ed25519' and 'ssh_rsa' can be configured only in non-FIPS mode.
+	// Example: ["ecdsa_sha2_nistp256","ssh_ed25519","ssh_rsa","rsa_sha2_256","rsa_sha2_512"]
 	SvmSSHServerInlineHostKeyAlgorithms []*HostKeyAlgorithm `json:"host_key_algorithms,omitempty"`
 
 	// Key exchange algorithms.

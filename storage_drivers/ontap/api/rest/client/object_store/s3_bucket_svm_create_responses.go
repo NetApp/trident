@@ -245,7 +245,7 @@ func NewS3BucketSvmCreateDefault(code int) *S3BucketSvmCreateDefault {
 | 92405891   | "The resources specified in the access policy are not valid. Valid ways to specify a resource are \\\"*\\\", \\\"<bucket-name>\\\", \\\"<bucket-name>/.../...\\\". Valid characters for a resource are 0-9, A-Z, a-z, \\\"_\\\", \\\"+\\\", \\\",\\\", \\\";\\\", \\\":\\\", \\\";\\\", \\\"=\\\", \\\".\\\", \\\"&\\\", \\\"@\\\", \\\"?\\\", \\\"(\\\", \\\")\\\", \\\"'\\\", \\\"*\\\", \\\"!\\\", \\\"-\\\" and \\\"\\$\\\".";
 | 92405894   | "Statements, principals and resources list can have a maximum of 10 entries.";
 | 92405897   | "The principals specified in the access policy are not in the correct format. User name must be in between 1 and 64 characters. Valid characters for a user name are 0-9, A-Z, a-z, \\\"_\\\", \\\"+\\\", \\\"=\\\", \\\",\\\", \\\".\\\", \\\"@\\\", and \\\"-\\\". ";
-| 92405898   | "The SID specified in the access policy is not valid. Valid characters for a SID are 0-9, A-Z and a-z.";
+| 92405898   | "The SID specified in the access policy is not valid.";
 | 92733688   | "Failed to create bucket \\\"{bucket name}\\\" for SVM \\\"{svm.name}\\\". Reason: Unable to find a suitable aggregate for volume \\\"{volume name}\\\" in SVM \\\"{svm.name}\\\". Reason: No candidate aggregates are available for storage services: performance. ";
 | 460770     | "[Job job_number] Job failed: Failed to create bucket \\\"{bucket name}\\\" for SVM \\\"{svm name}\\\". Reason: {Reason of failure}. ";
 | 655551     | "The specified path \\\"{path name}\\\" does not exist in the namespace belonging to SVM \\\"{svm.name}\\\". ";

@@ -372,7 +372,7 @@ type MetroclusterDiagnosticsInlineAggregate struct {
 	Summary *MetroclusterDiagnosticsInlineAggregateInlineSummary `json:"summary,omitempty"`
 
 	// Time of the most recent diagnostic operation for this component
-	// Example: 2016-03-10 22:35:16
+	// Example: 2016-03-10 14:35:16-08:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -722,7 +722,7 @@ type MetroclusterDiagnosticsInlineCluster struct {
 	Summary *MetroclusterDiagnosticsInlineClusterInlineSummary `json:"summary,omitempty"`
 
 	// Time of the most recent diagnostic operation for this component
-	// Example: 2016-03-10 22:35:16
+	// Example: 2016-03-10 14:35:16-08:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1068,7 +1068,7 @@ type MetroclusterDiagnosticsInlineConfigReplication struct {
 	Summary *MetroclusterDiagnosticsInlineConfigReplicationInlineSummary `json:"summary,omitempty"`
 
 	// Time of the most recent diagnostic operation for this component
-	// Example: 2016-03-14 22:35:16
+	// Example: 2016-03-14 14:35:16-08:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1364,7 +1364,7 @@ type MetroclusterDiagnosticsInlineConnection struct {
 	Summary *MetroclusterDiagnosticsInlineConnectionInlineSummary `json:"summary,omitempty"`
 
 	// Time of the most recent diagnostic operation for this component
-	// Example: 2016-03-10 22:35:16
+	// Example: 2016-03-10 14:35:16-08:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1710,7 +1710,7 @@ type MetroclusterDiagnosticsInlineInterface struct {
 	Summary *MetroclusterDiagnosticsInlineInterfaceInlineSummary `json:"summary,omitempty"`
 
 	// Time of the most recent diagnostic operation for this component
-	// Example: 2016-03-10 22:35:16
+	// Example: 2016-03-10 14:35:16-08:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -2006,7 +2006,7 @@ type MetroclusterDiagnosticsInlineNode struct {
 	Summary *MetroclusterDiagnosticsInlineNodeInlineSummary `json:"summary,omitempty"`
 
 	// Time of the most recent diagnostic operation for this component
-	// Example: 2016-03-10 22:35:16
+	// Example: 2016-03-10 14:35:16-08:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -2356,7 +2356,7 @@ type MetroclusterDiagnosticsInlineVolume struct {
 	Summary *MetroclusterDiagnosticsInlineVolumeInlineSummary `json:"summary,omitempty"`
 
 	// Time of the most recent diagnostic operation for this component
-	// Example: 2016-03-10 22:35:16
+	// Example: 2016-03-10 14:35:16-08:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`

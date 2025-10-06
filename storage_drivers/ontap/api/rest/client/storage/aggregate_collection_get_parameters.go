@@ -888,6 +888,12 @@ type AggregateCollectionGetParams struct {
 	*/
 	SpaceSnapshotUsedPercent *int64
 
+	/* SpaceTotalProvisionedSpace.
+
+	   Filter by space.total_provisioned_space
+	*/
+	SpaceTotalProvisionedSpace *int64
+
 	/* State.
 
 	   Filter by state
@@ -2562,6 +2568,17 @@ func (o *AggregateCollectionGetParams) WithSpaceSnapshotUsedPercent(spaceSnapsho
 // SetSpaceSnapshotUsedPercent adds the spaceSnapshotUsedPercent to the aggregate collection get params
 func (o *AggregateCollectionGetParams) SetSpaceSnapshotUsedPercent(spaceSnapshotUsedPercent *int64) {
 	o.SpaceSnapshotUsedPercent = spaceSnapshotUsedPercent
+}
+
+// WithSpaceTotalProvisionedSpace adds the spaceTotalProvisionedSpace to the aggregate collection get params
+func (o *AggregateCollectionGetParams) WithSpaceTotalProvisionedSpace(spaceTotalProvisionedSpace *int64) *AggregateCollectionGetParams {
+	o.SetSpaceTotalProvisionedSpace(spaceTotalProvisionedSpace)
+	return o
+}
+
+// SetSpaceTotalProvisionedSpace adds the spaceTotalProvisionedSpace to the aggregate collection get params
+func (o *AggregateCollectionGetParams) SetSpaceTotalProvisionedSpace(spaceTotalProvisionedSpace *int64) {
+	o.SpaceTotalProvisionedSpace = spaceTotalProvisionedSpace
 }
 
 // WithState adds the state to the aggregate collection get params
@@ -5071,6 +5088,23 @@ func (o *AggregateCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qSpaceSnapshotUsedPercent != "" {
 
 			if err := r.SetQueryParam("space.snapshot.used_percent", qSpaceSnapshotUsedPercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceTotalProvisionedSpace != nil {
+
+		// query param space.total_provisioned_space
+		var qrSpaceTotalProvisionedSpace int64
+
+		if o.SpaceTotalProvisionedSpace != nil {
+			qrSpaceTotalProvisionedSpace = *o.SpaceTotalProvisionedSpace
+		}
+		qSpaceTotalProvisionedSpace := swag.FormatInt64(qrSpaceTotalProvisionedSpace)
+		if qSpaceTotalProvisionedSpace != "" {
+
+			if err := r.SetQueryParam("space.total_provisioned_space", qSpaceTotalProvisionedSpace); err != nil {
 				return err
 			}
 		}

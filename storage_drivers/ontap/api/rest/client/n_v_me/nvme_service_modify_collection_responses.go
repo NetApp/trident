@@ -581,7 +581,7 @@ type NvmeServiceInlineMetric struct {
 	Throughput *NvmeServiceInlineMetricInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -1283,7 +1283,7 @@ type NvmeServiceInlineMetricInlineFc struct {
 	Throughput *NvmeServiceInlineMetricInlineFcInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -2179,7 +2179,7 @@ type NvmeServiceInlineMetricInlineTCP struct {
 	Throughput *NvmeServiceInlineMetricInlineTCPInlineThroughput `json:"throughput,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -2992,13 +2992,13 @@ swagger:model nvme_service_inline_statistics
 type NvmeServiceInlineStatistics struct {
 
 	// fc
-	Fc *NvmeServiceInlineStatisticsInlineFc `json:"fc,omitempty"`
+	Fc *models.NvmeServiceInlineStatisticsInlineFc `json:"fc,omitempty"`
 
 	// iops raw
-	IopsRaw *NvmeServiceInlineStatisticsInlineIopsRaw `json:"iops_raw,omitempty"`
+	IopsRaw *models.NvmeServiceInlineStatisticsInlineIopsRaw `json:"iops_raw,omitempty"`
 
 	// latency raw
-	LatencyRaw *NvmeServiceInlineStatisticsInlineLatencyRaw `json:"latency_raw,omitempty"`
+	LatencyRaw *models.NvmeServiceInlineStatisticsInlineLatencyRaw `json:"latency_raw,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
@@ -3007,13 +3007,13 @@ type NvmeServiceInlineStatistics struct {
 	Status *string `json:"status,omitempty"`
 
 	// tcp
-	TCP *NvmeServiceInlineStatisticsInlineTCP `json:"tcp,omitempty"`
+	TCP *models.NvmeServiceInlineStatisticsInlineTCP `json:"tcp,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *NvmeServiceInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
+	ThroughputRaw *models.NvmeServiceInlineStatisticsInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -3451,10 +3451,10 @@ swagger:model nvme_service_inline_statistics_inline_fc
 type NvmeServiceInlineStatisticsInlineFc struct {
 
 	// iops raw
-	IopsRaw *NvmeServiceInlineStatisticsInlineFcInlineIopsRaw `json:"iops_raw,omitempty"`
+	IopsRaw *models.NvmeServiceInlineStatisticsInlineFcInlineIopsRaw `json:"iops_raw,omitempty"`
 
 	// latency raw
-	LatencyRaw *NvmeServiceInlineStatisticsInlineFcInlineLatencyRaw `json:"latency_raw,omitempty"`
+	LatencyRaw *models.NvmeServiceInlineStatisticsInlineFcInlineLatencyRaw `json:"latency_raw,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
@@ -3463,10 +3463,10 @@ type NvmeServiceInlineStatisticsInlineFc struct {
 	Status *string `json:"status,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *NvmeServiceInlineStatisticsInlineFcInlineThroughputRaw `json:"throughput_raw,omitempty"`
+	ThroughputRaw *models.NvmeServiceInlineStatisticsInlineFcInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`
@@ -4098,10 +4098,10 @@ swagger:model nvme_service_inline_statistics_inline_tcp
 type NvmeServiceInlineStatisticsInlineTCP struct {
 
 	// iops raw
-	IopsRaw *NvmeServiceInlineStatisticsInlineTCPInlineIopsRaw `json:"iops_raw,omitempty"`
+	IopsRaw *models.NvmeServiceInlineStatisticsInlineTCPInlineIopsRaw `json:"iops_raw,omitempty"`
 
 	// latency raw
-	LatencyRaw *NvmeServiceInlineStatisticsInlineTCPInlineLatencyRaw `json:"latency_raw,omitempty"`
+	LatencyRaw *models.NvmeServiceInlineStatisticsInlineTCPInlineLatencyRaw `json:"latency_raw,omitempty"`
 
 	// Any errors associated with the sample. For example, if the aggregation of data over multiple nodes fails then any of the partial errors might be returned, "ok" on success, or "error" on any internal uncategorized failure. Whenever a sample collection is missed but done at a later time, it is back filled to the previous 15 second timestamp and tagged with "backfilled_data". "Inconsistent_delta_time" is encountered when the time between two collections is not the same for all nodes. Therefore, the aggregated value might be over or under inflated. "Negative_delta" is returned when an expected monotonically increasing value has decreased in value. "Inconsistent_old_data" is returned when one or more nodes do not have the latest data.
 	// Example: ok
@@ -4110,10 +4110,10 @@ type NvmeServiceInlineStatisticsInlineTCP struct {
 	Status *string `json:"status,omitempty"`
 
 	// throughput raw
-	ThroughputRaw *NvmeServiceInlineStatisticsInlineTCPInlineThroughputRaw `json:"throughput_raw,omitempty"`
+	ThroughputRaw *models.NvmeServiceInlineStatisticsInlineTCPInlineThroughputRaw `json:"throughput_raw,omitempty"`
 
 	// The timestamp of the performance data.
-	// Example: 2017-01-25 11:20:13
+	// Example: 2017-01-25 11:20:13+00:00
 	// Read Only: true
 	// Format: date-time
 	Timestamp *strfmt.DateTime `json:"timestamp,omitempty"`

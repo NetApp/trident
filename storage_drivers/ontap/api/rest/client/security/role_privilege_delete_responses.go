@@ -113,7 +113,7 @@ func NewRolePrivilegeDeleteDefault(code int) *RolePrivilegeDeleteDefault {
 | Error Code | Description |
 | ---------- | ----------- |
 | 1263347 | Cannot modify pre-defined roles. |
-| 5636168 | This role is mapped to a rest-role and cannot be modified directly. Modifications must be done with rest-role. |
+| 5636168 | This role is mapped to a REST role and can only be modified by updating the REST role.<personalities supports=aiml> |
 | 5636169 | Specified URI path is invalid or not supported. Resource-qualified endpoints are not supported. |
 | 5636170 | URI does not exist. |
 | 5636172 | User accounts detected with this role assigned. Update or delete those accounts before deleting this role. |
@@ -121,6 +121,8 @@ func NewRolePrivilegeDeleteDefault(code int) *RolePrivilegeDeleteDefault {
 | 5636184 | Expanded REST roles for granular resource control feature is currently disabled. |
 | 5636185 | The specified UUID was not found. |
 | 5636186 | Expanded REST roles for granular resource control requires an effective cluster version of 9.10.1 or later. |
+| 5636259 | The specified child AIDE object was not found within the specified parent AIDE object. |
+| 5636261 | The specified grandchild AIDE object was not found within the specified child AIDE object that belongs to the specified parent AIDE object.</personalities> |
 | 13434890 | Vserver-ID failed for Vserver roles. |
 | 13434893 | The SVM does not exist. |
 Also see the table of common errors in the <a href="#Response_body">Response body</a> overview section of this documentation.

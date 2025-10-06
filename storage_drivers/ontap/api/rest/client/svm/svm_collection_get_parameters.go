@@ -492,6 +492,12 @@ type SvmCollectionGetParams struct {
 	*/
 	S3SecurePort *int64
 
+	/* SnapshotAutodeleteEnabled.
+
+	   Filter by snapshot_autodelete_enabled
+	*/
+	SnapshotAutodeleteEnabled *bool
+
 	/* SnapshotPolicyName.
 
 	   Filter by snapshot_policy.name
@@ -503,6 +509,12 @@ type SvmCollectionGetParams struct {
 	   Filter by snapshot_policy.uuid
 	*/
 	SnapshotPolicyUUID *string
+
+	/* SnapshotReservePercent.
+
+	   Filter by snapshot_reserve_percent
+	*/
+	SnapshotReservePercent *int64
 
 	/* State.
 
@@ -1412,6 +1424,17 @@ func (o *SvmCollectionGetParams) SetS3SecurePort(s3SecurePort *int64) {
 	o.S3SecurePort = s3SecurePort
 }
 
+// WithSnapshotAutodeleteEnabled adds the snapshotAutodeleteEnabled to the svm collection get params
+func (o *SvmCollectionGetParams) WithSnapshotAutodeleteEnabled(snapshotAutodeleteEnabled *bool) *SvmCollectionGetParams {
+	o.SetSnapshotAutodeleteEnabled(snapshotAutodeleteEnabled)
+	return o
+}
+
+// SetSnapshotAutodeleteEnabled adds the snapshotAutodeleteEnabled to the svm collection get params
+func (o *SvmCollectionGetParams) SetSnapshotAutodeleteEnabled(snapshotAutodeleteEnabled *bool) {
+	o.SnapshotAutodeleteEnabled = snapshotAutodeleteEnabled
+}
+
 // WithSnapshotPolicyName adds the snapshotPolicyName to the svm collection get params
 func (o *SvmCollectionGetParams) WithSnapshotPolicyName(snapshotPolicyName *string) *SvmCollectionGetParams {
 	o.SetSnapshotPolicyName(snapshotPolicyName)
@@ -1432,6 +1455,17 @@ func (o *SvmCollectionGetParams) WithSnapshotPolicyUUID(snapshotPolicyUUID *stri
 // SetSnapshotPolicyUUID adds the snapshotPolicyUuid to the svm collection get params
 func (o *SvmCollectionGetParams) SetSnapshotPolicyUUID(snapshotPolicyUUID *string) {
 	o.SnapshotPolicyUUID = snapshotPolicyUUID
+}
+
+// WithSnapshotReservePercent adds the snapshotReservePercent to the svm collection get params
+func (o *SvmCollectionGetParams) WithSnapshotReservePercent(snapshotReservePercent *int64) *SvmCollectionGetParams {
+	o.SetSnapshotReservePercent(snapshotReservePercent)
+	return o
+}
+
+// SetSnapshotReservePercent adds the snapshotReservePercent to the svm collection get params
+func (o *SvmCollectionGetParams) SetSnapshotReservePercent(snapshotReservePercent *int64) {
+	o.SnapshotReservePercent = snapshotReservePercent
 }
 
 // WithState adds the state to the svm collection get params
@@ -2747,6 +2781,23 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		}
 	}
 
+	if o.SnapshotAutodeleteEnabled != nil {
+
+		// query param snapshot_autodelete_enabled
+		var qrSnapshotAutodeleteEnabled bool
+
+		if o.SnapshotAutodeleteEnabled != nil {
+			qrSnapshotAutodeleteEnabled = *o.SnapshotAutodeleteEnabled
+		}
+		qSnapshotAutodeleteEnabled := swag.FormatBool(qrSnapshotAutodeleteEnabled)
+		if qSnapshotAutodeleteEnabled != "" {
+
+			if err := r.SetQueryParam("snapshot_autodelete_enabled", qSnapshotAutodeleteEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SnapshotPolicyName != nil {
 
 		// query param snapshot_policy.name
@@ -2776,6 +2827,23 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qSnapshotPolicyUUID != "" {
 
 			if err := r.SetQueryParam("snapshot_policy.uuid", qSnapshotPolicyUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnapshotReservePercent != nil {
+
+		// query param snapshot_reserve_percent
+		var qrSnapshotReservePercent int64
+
+		if o.SnapshotReservePercent != nil {
+			qrSnapshotReservePercent = *o.SnapshotReservePercent
+		}
+		qSnapshotReservePercent := swag.FormatInt64(qrSnapshotReservePercent)
+		if qSnapshotReservePercent != "" {
+
+			if err := r.SetQueryParam("snapshot_reserve_percent", qSnapshotReservePercent); err != nil {
 				return err
 			}
 		}

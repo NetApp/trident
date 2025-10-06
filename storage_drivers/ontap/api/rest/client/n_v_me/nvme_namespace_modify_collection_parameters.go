@@ -342,6 +342,42 @@ type NvmeNamespaceModifyCollectionParams struct {
 	*/
 	SpaceSize *int64
 
+	/* SpaceSnapshotAutodeleteEnabled.
+
+	   Filter by space.snapshot.autodelete.enabled
+	*/
+	SpaceSnapshotAutodeleteEnabled *bool
+
+	/* SpaceSnapshotReserveAvailable.
+
+	   Filter by space.snapshot.reserve_available
+	*/
+	SpaceSnapshotReserveAvailable *int64
+
+	/* SpaceSnapshotReservePercent.
+
+	   Filter by space.snapshot.reserve_percent
+	*/
+	SpaceSnapshotReservePercent *int64
+
+	/* SpaceSnapshotReserveSize.
+
+	   Filter by space.snapshot.reserve_size
+	*/
+	SpaceSnapshotReserveSize *int64
+
+	/* SpaceSnapshotSpaceUsedPercent.
+
+	   Filter by space.snapshot.space_used_percent
+	*/
+	SpaceSnapshotSpaceUsedPercent *int64
+
+	/* SpaceSnapshotUsed.
+
+	   Filter by space.snapshot.used
+	*/
+	SpaceSnapshotUsed *int64
+
 	/* SpaceUsed.
 
 	   Filter by space.used
@@ -1135,6 +1171,72 @@ func (o *NvmeNamespaceModifyCollectionParams) WithSpaceSize(spaceSize *int64) *N
 // SetSpaceSize adds the spaceSize to the nvme namespace modify collection params
 func (o *NvmeNamespaceModifyCollectionParams) SetSpaceSize(spaceSize *int64) {
 	o.SpaceSize = spaceSize
+}
+
+// WithSpaceSnapshotAutodeleteEnabled adds the spaceSnapshotAutodeleteEnabled to the nvme namespace modify collection params
+func (o *NvmeNamespaceModifyCollectionParams) WithSpaceSnapshotAutodeleteEnabled(spaceSnapshotAutodeleteEnabled *bool) *NvmeNamespaceModifyCollectionParams {
+	o.SetSpaceSnapshotAutodeleteEnabled(spaceSnapshotAutodeleteEnabled)
+	return o
+}
+
+// SetSpaceSnapshotAutodeleteEnabled adds the spaceSnapshotAutodeleteEnabled to the nvme namespace modify collection params
+func (o *NvmeNamespaceModifyCollectionParams) SetSpaceSnapshotAutodeleteEnabled(spaceSnapshotAutodeleteEnabled *bool) {
+	o.SpaceSnapshotAutodeleteEnabled = spaceSnapshotAutodeleteEnabled
+}
+
+// WithSpaceSnapshotReserveAvailable adds the spaceSnapshotReserveAvailable to the nvme namespace modify collection params
+func (o *NvmeNamespaceModifyCollectionParams) WithSpaceSnapshotReserveAvailable(spaceSnapshotReserveAvailable *int64) *NvmeNamespaceModifyCollectionParams {
+	o.SetSpaceSnapshotReserveAvailable(spaceSnapshotReserveAvailable)
+	return o
+}
+
+// SetSpaceSnapshotReserveAvailable adds the spaceSnapshotReserveAvailable to the nvme namespace modify collection params
+func (o *NvmeNamespaceModifyCollectionParams) SetSpaceSnapshotReserveAvailable(spaceSnapshotReserveAvailable *int64) {
+	o.SpaceSnapshotReserveAvailable = spaceSnapshotReserveAvailable
+}
+
+// WithSpaceSnapshotReservePercent adds the spaceSnapshotReservePercent to the nvme namespace modify collection params
+func (o *NvmeNamespaceModifyCollectionParams) WithSpaceSnapshotReservePercent(spaceSnapshotReservePercent *int64) *NvmeNamespaceModifyCollectionParams {
+	o.SetSpaceSnapshotReservePercent(spaceSnapshotReservePercent)
+	return o
+}
+
+// SetSpaceSnapshotReservePercent adds the spaceSnapshotReservePercent to the nvme namespace modify collection params
+func (o *NvmeNamespaceModifyCollectionParams) SetSpaceSnapshotReservePercent(spaceSnapshotReservePercent *int64) {
+	o.SpaceSnapshotReservePercent = spaceSnapshotReservePercent
+}
+
+// WithSpaceSnapshotReserveSize adds the spaceSnapshotReserveSize to the nvme namespace modify collection params
+func (o *NvmeNamespaceModifyCollectionParams) WithSpaceSnapshotReserveSize(spaceSnapshotReserveSize *int64) *NvmeNamespaceModifyCollectionParams {
+	o.SetSpaceSnapshotReserveSize(spaceSnapshotReserveSize)
+	return o
+}
+
+// SetSpaceSnapshotReserveSize adds the spaceSnapshotReserveSize to the nvme namespace modify collection params
+func (o *NvmeNamespaceModifyCollectionParams) SetSpaceSnapshotReserveSize(spaceSnapshotReserveSize *int64) {
+	o.SpaceSnapshotReserveSize = spaceSnapshotReserveSize
+}
+
+// WithSpaceSnapshotSpaceUsedPercent adds the spaceSnapshotSpaceUsedPercent to the nvme namespace modify collection params
+func (o *NvmeNamespaceModifyCollectionParams) WithSpaceSnapshotSpaceUsedPercent(spaceSnapshotSpaceUsedPercent *int64) *NvmeNamespaceModifyCollectionParams {
+	o.SetSpaceSnapshotSpaceUsedPercent(spaceSnapshotSpaceUsedPercent)
+	return o
+}
+
+// SetSpaceSnapshotSpaceUsedPercent adds the spaceSnapshotSpaceUsedPercent to the nvme namespace modify collection params
+func (o *NvmeNamespaceModifyCollectionParams) SetSpaceSnapshotSpaceUsedPercent(spaceSnapshotSpaceUsedPercent *int64) {
+	o.SpaceSnapshotSpaceUsedPercent = spaceSnapshotSpaceUsedPercent
+}
+
+// WithSpaceSnapshotUsed adds the spaceSnapshotUsed to the nvme namespace modify collection params
+func (o *NvmeNamespaceModifyCollectionParams) WithSpaceSnapshotUsed(spaceSnapshotUsed *int64) *NvmeNamespaceModifyCollectionParams {
+	o.SetSpaceSnapshotUsed(spaceSnapshotUsed)
+	return o
+}
+
+// SetSpaceSnapshotUsed adds the spaceSnapshotUsed to the nvme namespace modify collection params
+func (o *NvmeNamespaceModifyCollectionParams) SetSpaceSnapshotUsed(spaceSnapshotUsed *int64) {
+	o.SpaceSnapshotUsed = spaceSnapshotUsed
 }
 
 // WithSpaceUsed adds the spaceUsed to the nvme namespace modify collection params
@@ -2304,6 +2406,108 @@ func (o *NvmeNamespaceModifyCollectionParams) WriteToRequest(r runtime.ClientReq
 		if qSpaceSize != "" {
 
 			if err := r.SetQueryParam("space.size", qSpaceSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceSnapshotAutodeleteEnabled != nil {
+
+		// query param space.snapshot.autodelete.enabled
+		var qrSpaceSnapshotAutodeleteEnabled bool
+
+		if o.SpaceSnapshotAutodeleteEnabled != nil {
+			qrSpaceSnapshotAutodeleteEnabled = *o.SpaceSnapshotAutodeleteEnabled
+		}
+		qSpaceSnapshotAutodeleteEnabled := swag.FormatBool(qrSpaceSnapshotAutodeleteEnabled)
+		if qSpaceSnapshotAutodeleteEnabled != "" {
+
+			if err := r.SetQueryParam("space.snapshot.autodelete.enabled", qSpaceSnapshotAutodeleteEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceSnapshotReserveAvailable != nil {
+
+		// query param space.snapshot.reserve_available
+		var qrSpaceSnapshotReserveAvailable int64
+
+		if o.SpaceSnapshotReserveAvailable != nil {
+			qrSpaceSnapshotReserveAvailable = *o.SpaceSnapshotReserveAvailable
+		}
+		qSpaceSnapshotReserveAvailable := swag.FormatInt64(qrSpaceSnapshotReserveAvailable)
+		if qSpaceSnapshotReserveAvailable != "" {
+
+			if err := r.SetQueryParam("space.snapshot.reserve_available", qSpaceSnapshotReserveAvailable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceSnapshotReservePercent != nil {
+
+		// query param space.snapshot.reserve_percent
+		var qrSpaceSnapshotReservePercent int64
+
+		if o.SpaceSnapshotReservePercent != nil {
+			qrSpaceSnapshotReservePercent = *o.SpaceSnapshotReservePercent
+		}
+		qSpaceSnapshotReservePercent := swag.FormatInt64(qrSpaceSnapshotReservePercent)
+		if qSpaceSnapshotReservePercent != "" {
+
+			if err := r.SetQueryParam("space.snapshot.reserve_percent", qSpaceSnapshotReservePercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceSnapshotReserveSize != nil {
+
+		// query param space.snapshot.reserve_size
+		var qrSpaceSnapshotReserveSize int64
+
+		if o.SpaceSnapshotReserveSize != nil {
+			qrSpaceSnapshotReserveSize = *o.SpaceSnapshotReserveSize
+		}
+		qSpaceSnapshotReserveSize := swag.FormatInt64(qrSpaceSnapshotReserveSize)
+		if qSpaceSnapshotReserveSize != "" {
+
+			if err := r.SetQueryParam("space.snapshot.reserve_size", qSpaceSnapshotReserveSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceSnapshotSpaceUsedPercent != nil {
+
+		// query param space.snapshot.space_used_percent
+		var qrSpaceSnapshotSpaceUsedPercent int64
+
+		if o.SpaceSnapshotSpaceUsedPercent != nil {
+			qrSpaceSnapshotSpaceUsedPercent = *o.SpaceSnapshotSpaceUsedPercent
+		}
+		qSpaceSnapshotSpaceUsedPercent := swag.FormatInt64(qrSpaceSnapshotSpaceUsedPercent)
+		if qSpaceSnapshotSpaceUsedPercent != "" {
+
+			if err := r.SetQueryParam("space.snapshot.space_used_percent", qSpaceSnapshotSpaceUsedPercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SpaceSnapshotUsed != nil {
+
+		// query param space.snapshot.used
+		var qrSpaceSnapshotUsed int64
+
+		if o.SpaceSnapshotUsed != nil {
+			qrSpaceSnapshotUsed = *o.SpaceSnapshotUsed
+		}
+		qSpaceSnapshotUsed := swag.FormatInt64(qrSpaceSnapshotUsed)
+		if qSpaceSnapshotUsed != "" {
+
+			if err := r.SetQueryParam("space.snapshot.used", qSpaceSnapshotUsed); err != nil {
 				return err
 			}
 		}

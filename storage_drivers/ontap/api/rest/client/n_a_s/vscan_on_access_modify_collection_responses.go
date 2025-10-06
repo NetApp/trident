@@ -207,6 +207,13 @@ type VscanOnAccessModifyCollectionBody struct {
 	// Min Length: 1
 	Name *string `json:"name,omitempty"`
 
+	// Specifies the on-access policy owner.
+	Owner *string `json:"owner,omitempty"`
+
+	// Specifies the file access protocol for the on-access policy. The following lists the possible protocols. CIFS  - SMB protocol
+	// Enum: ["cifs"]
+	Protocol *string `json:"protocol,omitempty"`
+
 	// scope
 	Scope *models.VscanOnAccessInlineScope `json:"scope,omitempty"`
 
@@ -222,6 +229,10 @@ func (o *VscanOnAccessModifyCollectionBody) Validate(formats strfmt.Registry) er
 	var res []error
 
 	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateProtocol(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -253,6 +264,52 @@ func (o *VscanOnAccessModifyCollectionBody) validateName(formats strfmt.Registry
 	}
 
 	if err := validate.MaxLength("info"+"."+"name", "body", *o.Name, 256); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var vscanOnAccessModifyCollectionBodyTypeProtocolPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["cifs"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		vscanOnAccessModifyCollectionBodyTypeProtocolPropEnum = append(vscanOnAccessModifyCollectionBodyTypeProtocolPropEnum, v)
+	}
+}
+
+const (
+
+	// BEGIN DEBUGGING
+	// VscanOnAccessModifyCollectionBody
+	// VscanOnAccessModifyCollectionBody
+	// protocol
+	// Protocol
+	// cifs
+	// END DEBUGGING
+	// VscanOnAccessModifyCollectionBodyProtocolCifs captures enum value "cifs"
+	VscanOnAccessModifyCollectionBodyProtocolCifs string = "cifs"
+)
+
+// prop value enum
+func (o *VscanOnAccessModifyCollectionBody) validateProtocolEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, vscanOnAccessModifyCollectionBodyTypeProtocolPropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (o *VscanOnAccessModifyCollectionBody) validateProtocol(formats strfmt.Registry) error {
+	if swag.IsZero(o.Protocol) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := o.validateProtocolEnum("info"+"."+"protocol", "body", *o.Protocol); err != nil {
 		return err
 	}
 

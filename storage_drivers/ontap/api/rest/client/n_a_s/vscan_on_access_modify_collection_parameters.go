@@ -92,6 +92,18 @@ type VscanOnAccessModifyCollectionParams struct {
 	*/
 	Name *string
 
+	/* Owner.
+
+	   Filter by owner
+	*/
+	Owner *string
+
+	/* Protocol.
+
+	   Filter by protocol
+	*/
+	Protocol *string
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -294,6 +306,28 @@ func (o *VscanOnAccessModifyCollectionParams) WithName(name *string) *VscanOnAcc
 // SetName adds the name to the vscan on access modify collection params
 func (o *VscanOnAccessModifyCollectionParams) SetName(name *string) {
 	o.Name = name
+}
+
+// WithOwner adds the owner to the vscan on access modify collection params
+func (o *VscanOnAccessModifyCollectionParams) WithOwner(owner *string) *VscanOnAccessModifyCollectionParams {
+	o.SetOwner(owner)
+	return o
+}
+
+// SetOwner adds the owner to the vscan on access modify collection params
+func (o *VscanOnAccessModifyCollectionParams) SetOwner(owner *string) {
+	o.Owner = owner
+}
+
+// WithProtocol adds the protocol to the vscan on access modify collection params
+func (o *VscanOnAccessModifyCollectionParams) WithProtocol(protocol *string) *VscanOnAccessModifyCollectionParams {
+	o.SetProtocol(protocol)
+	return o
+}
+
+// SetProtocol adds the protocol to the vscan on access modify collection params
+func (o *VscanOnAccessModifyCollectionParams) SetProtocol(protocol *string) {
+	o.Protocol = protocol
 }
 
 // WithReturnRecords adds the returnRecords to the vscan on access modify collection params
@@ -502,6 +536,40 @@ func (o *VscanOnAccessModifyCollectionParams) WriteToRequest(r runtime.ClientReq
 		if qName != "" {
 
 			if err := r.SetQueryParam("name", qName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Owner != nil {
+
+		// query param owner
+		var qrOwner string
+
+		if o.Owner != nil {
+			qrOwner = *o.Owner
+		}
+		qOwner := qrOwner
+		if qOwner != "" {
+
+			if err := r.SetQueryParam("owner", qOwner); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Protocol != nil {
+
+		// query param protocol
+		var qrProtocol string
+
+		if o.Protocol != nil {
+			qrProtocol = *o.Protocol
+		}
+		qProtocol := qrProtocol
+		if qProtocol != "" {
+
+			if err := r.SetQueryParam("protocol", qProtocol); err != nil {
 				return err
 			}
 		}

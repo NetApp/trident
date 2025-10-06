@@ -128,7 +128,12 @@ func NewClusterPeerModifyDefault(code int) *ClusterPeerModifyDefault {
 | ---------- | ----------- |
 | 2621462 | SVM name does not exist. |
 | 4653061 | The specified remote cluster is invalid. |
+| 4653215 | An introductory RPC to the peer address failed to connect. Verify that the peer address is correct, and then try the operation again. |
+| 4653216 | An introductory RPC to the peer address failed to connect. Verify that the peer address is correct, and then try the operation again. |
+| 4653217 | An introductory RPC to the peer address failed to connect. Verify that the peer address is correct, and then try the operation again. |
 | 4653218 | An introductory RPC to the peer address failed to connect. Verify that the peer address is correct, and then try the operation again. |
+| 4653219 | An introductory RPC to the peer address failed to connect. Verify that the peer address is correct, and then try the operation again. |
+| 4653220 | An introductory RPC to the peer address failed to connect. Verify that the peer address is correct, and then try the operation again. |
 | 4653229 | Specified value for \"-offer-expiration\" is obsolete. |
 | 4653236 | The specified passphrase is too short. |
 | 4653257 | The vifmgr process is not running. |

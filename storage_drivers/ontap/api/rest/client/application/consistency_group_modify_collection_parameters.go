@@ -368,6 +368,42 @@ type ConsistencyGroupModifyCollectionParams struct {
 	*/
 	ConsistencyGroupsLunsSpaceSize *int64
 
+	/* ConsistencyGroupsLunsSpaceSnapshotAutodeleteEnabled.
+
+	   Filter by consistency_groups.luns.space.snapshot.autodelete.enabled
+	*/
+	ConsistencyGroupsLunsSpaceSnapshotAutodeleteEnabled *bool
+
+	/* ConsistencyGroupsLunsSpaceSnapshotReserveAvailable.
+
+	   Filter by consistency_groups.luns.space.snapshot.reserve_available
+	*/
+	ConsistencyGroupsLunsSpaceSnapshotReserveAvailable *int64
+
+	/* ConsistencyGroupsLunsSpaceSnapshotReservePercent.
+
+	   Filter by consistency_groups.luns.space.snapshot.reserve_percent
+	*/
+	ConsistencyGroupsLunsSpaceSnapshotReservePercent *int64
+
+	/* ConsistencyGroupsLunsSpaceSnapshotReserveSize.
+
+	   Filter by consistency_groups.luns.space.snapshot.reserve_size
+	*/
+	ConsistencyGroupsLunsSpaceSnapshotReserveSize *int64
+
+	/* ConsistencyGroupsLunsSpaceSnapshotSpaceUsedPercent.
+
+	   Filter by consistency_groups.luns.space.snapshot.space_used_percent
+	*/
+	ConsistencyGroupsLunsSpaceSnapshotSpaceUsedPercent *int64
+
+	/* ConsistencyGroupsLunsSpaceSnapshotUsed.
+
+	   Filter by consistency_groups.luns.space.snapshot.used
+	*/
+	ConsistencyGroupsLunsSpaceSnapshotUsed *int64
+
 	/* ConsistencyGroupsLunsSpaceUsed.
 
 	   Filter by consistency_groups.luns.space.used
@@ -445,6 +481,42 @@ type ConsistencyGroupModifyCollectionParams struct {
 	   Filter by consistency_groups.namespaces.space.size
 	*/
 	ConsistencyGroupsNamespacesSpaceSize *int64
+
+	/* ConsistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled.
+
+	   Filter by consistency_groups.namespaces.space.snapshot.autodelete.enabled
+	*/
+	ConsistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled *bool
+
+	/* ConsistencyGroupsNamespacesSpaceSnapshotReserveAvailable.
+
+	   Filter by consistency_groups.namespaces.space.snapshot.reserve_available
+	*/
+	ConsistencyGroupsNamespacesSpaceSnapshotReserveAvailable *int64
+
+	/* ConsistencyGroupsNamespacesSpaceSnapshotReservePercent.
+
+	   Filter by consistency_groups.namespaces.space.snapshot.reserve_percent
+	*/
+	ConsistencyGroupsNamespacesSpaceSnapshotReservePercent *int64
+
+	/* ConsistencyGroupsNamespacesSpaceSnapshotReserveSize.
+
+	   Filter by consistency_groups.namespaces.space.snapshot.reserve_size
+	*/
+	ConsistencyGroupsNamespacesSpaceSnapshotReserveSize *int64
+
+	/* ConsistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent.
+
+	   Filter by consistency_groups.namespaces.space.snapshot.space_used_percent
+	*/
+	ConsistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent *int64
+
+	/* ConsistencyGroupsNamespacesSpaceSnapshotUsed.
+
+	   Filter by consistency_groups.namespaces.space.snapshot.used
+	*/
+	ConsistencyGroupsNamespacesSpaceSnapshotUsed *int64
 
 	/* ConsistencyGroupsNamespacesSpaceUsed.
 
@@ -1124,6 +1196,42 @@ type ConsistencyGroupModifyCollectionParams struct {
 	*/
 	LunsSpaceSize *int64
 
+	/* LunsSpaceSnapshotAutodeleteEnabled.
+
+	   Filter by luns.space.snapshot.autodelete.enabled
+	*/
+	LunsSpaceSnapshotAutodeleteEnabled *bool
+
+	/* LunsSpaceSnapshotReserveAvailable.
+
+	   Filter by luns.space.snapshot.reserve_available
+	*/
+	LunsSpaceSnapshotReserveAvailable *int64
+
+	/* LunsSpaceSnapshotReservePercent.
+
+	   Filter by luns.space.snapshot.reserve_percent
+	*/
+	LunsSpaceSnapshotReservePercent *int64
+
+	/* LunsSpaceSnapshotReserveSize.
+
+	   Filter by luns.space.snapshot.reserve_size
+	*/
+	LunsSpaceSnapshotReserveSize *int64
+
+	/* LunsSpaceSnapshotSpaceUsedPercent.
+
+	   Filter by luns.space.snapshot.space_used_percent
+	*/
+	LunsSpaceSnapshotSpaceUsedPercent *int64
+
+	/* LunsSpaceSnapshotUsed.
+
+	   Filter by luns.space.snapshot.used
+	*/
+	LunsSpaceSnapshotUsed *int64
+
 	/* LunsSpaceUsed.
 
 	   Filter by luns.space.used
@@ -1309,6 +1417,42 @@ type ConsistencyGroupModifyCollectionParams struct {
 	   Filter by namespaces.space.size
 	*/
 	NamespacesSpaceSize *int64
+
+	/* NamespacesSpaceSnapshotAutodeleteEnabled.
+
+	   Filter by namespaces.space.snapshot.autodelete.enabled
+	*/
+	NamespacesSpaceSnapshotAutodeleteEnabled *bool
+
+	/* NamespacesSpaceSnapshotReserveAvailable.
+
+	   Filter by namespaces.space.snapshot.reserve_available
+	*/
+	NamespacesSpaceSnapshotReserveAvailable *int64
+
+	/* NamespacesSpaceSnapshotReservePercent.
+
+	   Filter by namespaces.space.snapshot.reserve_percent
+	*/
+	NamespacesSpaceSnapshotReservePercent *int64
+
+	/* NamespacesSpaceSnapshotReserveSize.
+
+	   Filter by namespaces.space.snapshot.reserve_size
+	*/
+	NamespacesSpaceSnapshotReserveSize *int64
+
+	/* NamespacesSpaceSnapshotSpaceUsedPercent.
+
+	   Filter by namespaces.space.snapshot.space_used_percent
+	*/
+	NamespacesSpaceSnapshotSpaceUsedPercent *int64
+
+	/* NamespacesSpaceSnapshotUsed.
+
+	   Filter by namespaces.space.snapshot.used
+	*/
+	NamespacesSpaceSnapshotUsed *int64
 
 	/* NamespacesSpaceUsed.
 
@@ -2656,6 +2800,72 @@ func (o *ConsistencyGroupModifyCollectionParams) SetConsistencyGroupsLunsSpaceSi
 	o.ConsistencyGroupsLunsSpaceSize = consistencyGroupsLunsSpaceSize
 }
 
+// WithConsistencyGroupsLunsSpaceSnapshotAutodeleteEnabled adds the consistencyGroupsLunsSpaceSnapshotAutodeleteEnabled to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithConsistencyGroupsLunsSpaceSnapshotAutodeleteEnabled(consistencyGroupsLunsSpaceSnapshotAutodeleteEnabled *bool) *ConsistencyGroupModifyCollectionParams {
+	o.SetConsistencyGroupsLunsSpaceSnapshotAutodeleteEnabled(consistencyGroupsLunsSpaceSnapshotAutodeleteEnabled)
+	return o
+}
+
+// SetConsistencyGroupsLunsSpaceSnapshotAutodeleteEnabled adds the consistencyGroupsLunsSpaceSnapshotAutodeleteEnabled to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetConsistencyGroupsLunsSpaceSnapshotAutodeleteEnabled(consistencyGroupsLunsSpaceSnapshotAutodeleteEnabled *bool) {
+	o.ConsistencyGroupsLunsSpaceSnapshotAutodeleteEnabled = consistencyGroupsLunsSpaceSnapshotAutodeleteEnabled
+}
+
+// WithConsistencyGroupsLunsSpaceSnapshotReserveAvailable adds the consistencyGroupsLunsSpaceSnapshotReserveAvailable to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithConsistencyGroupsLunsSpaceSnapshotReserveAvailable(consistencyGroupsLunsSpaceSnapshotReserveAvailable *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetConsistencyGroupsLunsSpaceSnapshotReserveAvailable(consistencyGroupsLunsSpaceSnapshotReserveAvailable)
+	return o
+}
+
+// SetConsistencyGroupsLunsSpaceSnapshotReserveAvailable adds the consistencyGroupsLunsSpaceSnapshotReserveAvailable to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetConsistencyGroupsLunsSpaceSnapshotReserveAvailable(consistencyGroupsLunsSpaceSnapshotReserveAvailable *int64) {
+	o.ConsistencyGroupsLunsSpaceSnapshotReserveAvailable = consistencyGroupsLunsSpaceSnapshotReserveAvailable
+}
+
+// WithConsistencyGroupsLunsSpaceSnapshotReservePercent adds the consistencyGroupsLunsSpaceSnapshotReservePercent to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithConsistencyGroupsLunsSpaceSnapshotReservePercent(consistencyGroupsLunsSpaceSnapshotReservePercent *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetConsistencyGroupsLunsSpaceSnapshotReservePercent(consistencyGroupsLunsSpaceSnapshotReservePercent)
+	return o
+}
+
+// SetConsistencyGroupsLunsSpaceSnapshotReservePercent adds the consistencyGroupsLunsSpaceSnapshotReservePercent to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetConsistencyGroupsLunsSpaceSnapshotReservePercent(consistencyGroupsLunsSpaceSnapshotReservePercent *int64) {
+	o.ConsistencyGroupsLunsSpaceSnapshotReservePercent = consistencyGroupsLunsSpaceSnapshotReservePercent
+}
+
+// WithConsistencyGroupsLunsSpaceSnapshotReserveSize adds the consistencyGroupsLunsSpaceSnapshotReserveSize to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithConsistencyGroupsLunsSpaceSnapshotReserveSize(consistencyGroupsLunsSpaceSnapshotReserveSize *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetConsistencyGroupsLunsSpaceSnapshotReserveSize(consistencyGroupsLunsSpaceSnapshotReserveSize)
+	return o
+}
+
+// SetConsistencyGroupsLunsSpaceSnapshotReserveSize adds the consistencyGroupsLunsSpaceSnapshotReserveSize to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetConsistencyGroupsLunsSpaceSnapshotReserveSize(consistencyGroupsLunsSpaceSnapshotReserveSize *int64) {
+	o.ConsistencyGroupsLunsSpaceSnapshotReserveSize = consistencyGroupsLunsSpaceSnapshotReserveSize
+}
+
+// WithConsistencyGroupsLunsSpaceSnapshotSpaceUsedPercent adds the consistencyGroupsLunsSpaceSnapshotSpaceUsedPercent to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithConsistencyGroupsLunsSpaceSnapshotSpaceUsedPercent(consistencyGroupsLunsSpaceSnapshotSpaceUsedPercent *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetConsistencyGroupsLunsSpaceSnapshotSpaceUsedPercent(consistencyGroupsLunsSpaceSnapshotSpaceUsedPercent)
+	return o
+}
+
+// SetConsistencyGroupsLunsSpaceSnapshotSpaceUsedPercent adds the consistencyGroupsLunsSpaceSnapshotSpaceUsedPercent to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetConsistencyGroupsLunsSpaceSnapshotSpaceUsedPercent(consistencyGroupsLunsSpaceSnapshotSpaceUsedPercent *int64) {
+	o.ConsistencyGroupsLunsSpaceSnapshotSpaceUsedPercent = consistencyGroupsLunsSpaceSnapshotSpaceUsedPercent
+}
+
+// WithConsistencyGroupsLunsSpaceSnapshotUsed adds the consistencyGroupsLunsSpaceSnapshotUsed to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithConsistencyGroupsLunsSpaceSnapshotUsed(consistencyGroupsLunsSpaceSnapshotUsed *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetConsistencyGroupsLunsSpaceSnapshotUsed(consistencyGroupsLunsSpaceSnapshotUsed)
+	return o
+}
+
+// SetConsistencyGroupsLunsSpaceSnapshotUsed adds the consistencyGroupsLunsSpaceSnapshotUsed to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetConsistencyGroupsLunsSpaceSnapshotUsed(consistencyGroupsLunsSpaceSnapshotUsed *int64) {
+	o.ConsistencyGroupsLunsSpaceSnapshotUsed = consistencyGroupsLunsSpaceSnapshotUsed
+}
+
 // WithConsistencyGroupsLunsSpaceUsed adds the consistencyGroupsLunsSpaceUsed to the consistency group modify collection params
 func (o *ConsistencyGroupModifyCollectionParams) WithConsistencyGroupsLunsSpaceUsed(consistencyGroupsLunsSpaceUsed *int64) *ConsistencyGroupModifyCollectionParams {
 	o.SetConsistencyGroupsLunsSpaceUsed(consistencyGroupsLunsSpaceUsed)
@@ -2797,6 +3007,72 @@ func (o *ConsistencyGroupModifyCollectionParams) WithConsistencyGroupsNamespaces
 // SetConsistencyGroupsNamespacesSpaceSize adds the consistencyGroupsNamespacesSpaceSize to the consistency group modify collection params
 func (o *ConsistencyGroupModifyCollectionParams) SetConsistencyGroupsNamespacesSpaceSize(consistencyGroupsNamespacesSpaceSize *int64) {
 	o.ConsistencyGroupsNamespacesSpaceSize = consistencyGroupsNamespacesSpaceSize
+}
+
+// WithConsistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled adds the consistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithConsistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled(consistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled *bool) *ConsistencyGroupModifyCollectionParams {
+	o.SetConsistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled(consistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled)
+	return o
+}
+
+// SetConsistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled adds the consistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetConsistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled(consistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled *bool) {
+	o.ConsistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled = consistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled
+}
+
+// WithConsistencyGroupsNamespacesSpaceSnapshotReserveAvailable adds the consistencyGroupsNamespacesSpaceSnapshotReserveAvailable to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithConsistencyGroupsNamespacesSpaceSnapshotReserveAvailable(consistencyGroupsNamespacesSpaceSnapshotReserveAvailable *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetConsistencyGroupsNamespacesSpaceSnapshotReserveAvailable(consistencyGroupsNamespacesSpaceSnapshotReserveAvailable)
+	return o
+}
+
+// SetConsistencyGroupsNamespacesSpaceSnapshotReserveAvailable adds the consistencyGroupsNamespacesSpaceSnapshotReserveAvailable to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetConsistencyGroupsNamespacesSpaceSnapshotReserveAvailable(consistencyGroupsNamespacesSpaceSnapshotReserveAvailable *int64) {
+	o.ConsistencyGroupsNamespacesSpaceSnapshotReserveAvailable = consistencyGroupsNamespacesSpaceSnapshotReserveAvailable
+}
+
+// WithConsistencyGroupsNamespacesSpaceSnapshotReservePercent adds the consistencyGroupsNamespacesSpaceSnapshotReservePercent to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithConsistencyGroupsNamespacesSpaceSnapshotReservePercent(consistencyGroupsNamespacesSpaceSnapshotReservePercent *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetConsistencyGroupsNamespacesSpaceSnapshotReservePercent(consistencyGroupsNamespacesSpaceSnapshotReservePercent)
+	return o
+}
+
+// SetConsistencyGroupsNamespacesSpaceSnapshotReservePercent adds the consistencyGroupsNamespacesSpaceSnapshotReservePercent to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetConsistencyGroupsNamespacesSpaceSnapshotReservePercent(consistencyGroupsNamespacesSpaceSnapshotReservePercent *int64) {
+	o.ConsistencyGroupsNamespacesSpaceSnapshotReservePercent = consistencyGroupsNamespacesSpaceSnapshotReservePercent
+}
+
+// WithConsistencyGroupsNamespacesSpaceSnapshotReserveSize adds the consistencyGroupsNamespacesSpaceSnapshotReserveSize to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithConsistencyGroupsNamespacesSpaceSnapshotReserveSize(consistencyGroupsNamespacesSpaceSnapshotReserveSize *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetConsistencyGroupsNamespacesSpaceSnapshotReserveSize(consistencyGroupsNamespacesSpaceSnapshotReserveSize)
+	return o
+}
+
+// SetConsistencyGroupsNamespacesSpaceSnapshotReserveSize adds the consistencyGroupsNamespacesSpaceSnapshotReserveSize to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetConsistencyGroupsNamespacesSpaceSnapshotReserveSize(consistencyGroupsNamespacesSpaceSnapshotReserveSize *int64) {
+	o.ConsistencyGroupsNamespacesSpaceSnapshotReserveSize = consistencyGroupsNamespacesSpaceSnapshotReserveSize
+}
+
+// WithConsistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent adds the consistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithConsistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent(consistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetConsistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent(consistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent)
+	return o
+}
+
+// SetConsistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent adds the consistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetConsistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent(consistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent *int64) {
+	o.ConsistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent = consistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent
+}
+
+// WithConsistencyGroupsNamespacesSpaceSnapshotUsed adds the consistencyGroupsNamespacesSpaceSnapshotUsed to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithConsistencyGroupsNamespacesSpaceSnapshotUsed(consistencyGroupsNamespacesSpaceSnapshotUsed *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetConsistencyGroupsNamespacesSpaceSnapshotUsed(consistencyGroupsNamespacesSpaceSnapshotUsed)
+	return o
+}
+
+// SetConsistencyGroupsNamespacesSpaceSnapshotUsed adds the consistencyGroupsNamespacesSpaceSnapshotUsed to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetConsistencyGroupsNamespacesSpaceSnapshotUsed(consistencyGroupsNamespacesSpaceSnapshotUsed *int64) {
+	o.ConsistencyGroupsNamespacesSpaceSnapshotUsed = consistencyGroupsNamespacesSpaceSnapshotUsed
 }
 
 // WithConsistencyGroupsNamespacesSpaceUsed adds the consistencyGroupsNamespacesSpaceUsed to the consistency group modify collection params
@@ -4042,6 +4318,72 @@ func (o *ConsistencyGroupModifyCollectionParams) SetLunsSpaceSize(lunsSpaceSize 
 	o.LunsSpaceSize = lunsSpaceSize
 }
 
+// WithLunsSpaceSnapshotAutodeleteEnabled adds the lunsSpaceSnapshotAutodeleteEnabled to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithLunsSpaceSnapshotAutodeleteEnabled(lunsSpaceSnapshotAutodeleteEnabled *bool) *ConsistencyGroupModifyCollectionParams {
+	o.SetLunsSpaceSnapshotAutodeleteEnabled(lunsSpaceSnapshotAutodeleteEnabled)
+	return o
+}
+
+// SetLunsSpaceSnapshotAutodeleteEnabled adds the lunsSpaceSnapshotAutodeleteEnabled to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetLunsSpaceSnapshotAutodeleteEnabled(lunsSpaceSnapshotAutodeleteEnabled *bool) {
+	o.LunsSpaceSnapshotAutodeleteEnabled = lunsSpaceSnapshotAutodeleteEnabled
+}
+
+// WithLunsSpaceSnapshotReserveAvailable adds the lunsSpaceSnapshotReserveAvailable to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithLunsSpaceSnapshotReserveAvailable(lunsSpaceSnapshotReserveAvailable *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetLunsSpaceSnapshotReserveAvailable(lunsSpaceSnapshotReserveAvailable)
+	return o
+}
+
+// SetLunsSpaceSnapshotReserveAvailable adds the lunsSpaceSnapshotReserveAvailable to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetLunsSpaceSnapshotReserveAvailable(lunsSpaceSnapshotReserveAvailable *int64) {
+	o.LunsSpaceSnapshotReserveAvailable = lunsSpaceSnapshotReserveAvailable
+}
+
+// WithLunsSpaceSnapshotReservePercent adds the lunsSpaceSnapshotReservePercent to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithLunsSpaceSnapshotReservePercent(lunsSpaceSnapshotReservePercent *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetLunsSpaceSnapshotReservePercent(lunsSpaceSnapshotReservePercent)
+	return o
+}
+
+// SetLunsSpaceSnapshotReservePercent adds the lunsSpaceSnapshotReservePercent to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetLunsSpaceSnapshotReservePercent(lunsSpaceSnapshotReservePercent *int64) {
+	o.LunsSpaceSnapshotReservePercent = lunsSpaceSnapshotReservePercent
+}
+
+// WithLunsSpaceSnapshotReserveSize adds the lunsSpaceSnapshotReserveSize to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithLunsSpaceSnapshotReserveSize(lunsSpaceSnapshotReserveSize *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetLunsSpaceSnapshotReserveSize(lunsSpaceSnapshotReserveSize)
+	return o
+}
+
+// SetLunsSpaceSnapshotReserveSize adds the lunsSpaceSnapshotReserveSize to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetLunsSpaceSnapshotReserveSize(lunsSpaceSnapshotReserveSize *int64) {
+	o.LunsSpaceSnapshotReserveSize = lunsSpaceSnapshotReserveSize
+}
+
+// WithLunsSpaceSnapshotSpaceUsedPercent adds the lunsSpaceSnapshotSpaceUsedPercent to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithLunsSpaceSnapshotSpaceUsedPercent(lunsSpaceSnapshotSpaceUsedPercent *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetLunsSpaceSnapshotSpaceUsedPercent(lunsSpaceSnapshotSpaceUsedPercent)
+	return o
+}
+
+// SetLunsSpaceSnapshotSpaceUsedPercent adds the lunsSpaceSnapshotSpaceUsedPercent to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetLunsSpaceSnapshotSpaceUsedPercent(lunsSpaceSnapshotSpaceUsedPercent *int64) {
+	o.LunsSpaceSnapshotSpaceUsedPercent = lunsSpaceSnapshotSpaceUsedPercent
+}
+
+// WithLunsSpaceSnapshotUsed adds the lunsSpaceSnapshotUsed to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithLunsSpaceSnapshotUsed(lunsSpaceSnapshotUsed *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetLunsSpaceSnapshotUsed(lunsSpaceSnapshotUsed)
+	return o
+}
+
+// SetLunsSpaceSnapshotUsed adds the lunsSpaceSnapshotUsed to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetLunsSpaceSnapshotUsed(lunsSpaceSnapshotUsed *int64) {
+	o.LunsSpaceSnapshotUsed = lunsSpaceSnapshotUsed
+}
+
 // WithLunsSpaceUsed adds the lunsSpaceUsed to the consistency group modify collection params
 func (o *ConsistencyGroupModifyCollectionParams) WithLunsSpaceUsed(lunsSpaceUsed *int64) *ConsistencyGroupModifyCollectionParams {
 	o.SetLunsSpaceUsed(lunsSpaceUsed)
@@ -4381,6 +4723,72 @@ func (o *ConsistencyGroupModifyCollectionParams) WithNamespacesSpaceSize(namespa
 // SetNamespacesSpaceSize adds the namespacesSpaceSize to the consistency group modify collection params
 func (o *ConsistencyGroupModifyCollectionParams) SetNamespacesSpaceSize(namespacesSpaceSize *int64) {
 	o.NamespacesSpaceSize = namespacesSpaceSize
+}
+
+// WithNamespacesSpaceSnapshotAutodeleteEnabled adds the namespacesSpaceSnapshotAutodeleteEnabled to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithNamespacesSpaceSnapshotAutodeleteEnabled(namespacesSpaceSnapshotAutodeleteEnabled *bool) *ConsistencyGroupModifyCollectionParams {
+	o.SetNamespacesSpaceSnapshotAutodeleteEnabled(namespacesSpaceSnapshotAutodeleteEnabled)
+	return o
+}
+
+// SetNamespacesSpaceSnapshotAutodeleteEnabled adds the namespacesSpaceSnapshotAutodeleteEnabled to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetNamespacesSpaceSnapshotAutodeleteEnabled(namespacesSpaceSnapshotAutodeleteEnabled *bool) {
+	o.NamespacesSpaceSnapshotAutodeleteEnabled = namespacesSpaceSnapshotAutodeleteEnabled
+}
+
+// WithNamespacesSpaceSnapshotReserveAvailable adds the namespacesSpaceSnapshotReserveAvailable to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithNamespacesSpaceSnapshotReserveAvailable(namespacesSpaceSnapshotReserveAvailable *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetNamespacesSpaceSnapshotReserveAvailable(namespacesSpaceSnapshotReserveAvailable)
+	return o
+}
+
+// SetNamespacesSpaceSnapshotReserveAvailable adds the namespacesSpaceSnapshotReserveAvailable to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetNamespacesSpaceSnapshotReserveAvailable(namespacesSpaceSnapshotReserveAvailable *int64) {
+	o.NamespacesSpaceSnapshotReserveAvailable = namespacesSpaceSnapshotReserveAvailable
+}
+
+// WithNamespacesSpaceSnapshotReservePercent adds the namespacesSpaceSnapshotReservePercent to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithNamespacesSpaceSnapshotReservePercent(namespacesSpaceSnapshotReservePercent *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetNamespacesSpaceSnapshotReservePercent(namespacesSpaceSnapshotReservePercent)
+	return o
+}
+
+// SetNamespacesSpaceSnapshotReservePercent adds the namespacesSpaceSnapshotReservePercent to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetNamespacesSpaceSnapshotReservePercent(namespacesSpaceSnapshotReservePercent *int64) {
+	o.NamespacesSpaceSnapshotReservePercent = namespacesSpaceSnapshotReservePercent
+}
+
+// WithNamespacesSpaceSnapshotReserveSize adds the namespacesSpaceSnapshotReserveSize to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithNamespacesSpaceSnapshotReserveSize(namespacesSpaceSnapshotReserveSize *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetNamespacesSpaceSnapshotReserveSize(namespacesSpaceSnapshotReserveSize)
+	return o
+}
+
+// SetNamespacesSpaceSnapshotReserveSize adds the namespacesSpaceSnapshotReserveSize to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetNamespacesSpaceSnapshotReserveSize(namespacesSpaceSnapshotReserveSize *int64) {
+	o.NamespacesSpaceSnapshotReserveSize = namespacesSpaceSnapshotReserveSize
+}
+
+// WithNamespacesSpaceSnapshotSpaceUsedPercent adds the namespacesSpaceSnapshotSpaceUsedPercent to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithNamespacesSpaceSnapshotSpaceUsedPercent(namespacesSpaceSnapshotSpaceUsedPercent *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetNamespacesSpaceSnapshotSpaceUsedPercent(namespacesSpaceSnapshotSpaceUsedPercent)
+	return o
+}
+
+// SetNamespacesSpaceSnapshotSpaceUsedPercent adds the namespacesSpaceSnapshotSpaceUsedPercent to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetNamespacesSpaceSnapshotSpaceUsedPercent(namespacesSpaceSnapshotSpaceUsedPercent *int64) {
+	o.NamespacesSpaceSnapshotSpaceUsedPercent = namespacesSpaceSnapshotSpaceUsedPercent
+}
+
+// WithNamespacesSpaceSnapshotUsed adds the namespacesSpaceSnapshotUsed to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) WithNamespacesSpaceSnapshotUsed(namespacesSpaceSnapshotUsed *int64) *ConsistencyGroupModifyCollectionParams {
+	o.SetNamespacesSpaceSnapshotUsed(namespacesSpaceSnapshotUsed)
+	return o
+}
+
+// SetNamespacesSpaceSnapshotUsed adds the namespacesSpaceSnapshotUsed to the consistency group modify collection params
+func (o *ConsistencyGroupModifyCollectionParams) SetNamespacesSpaceSnapshotUsed(namespacesSpaceSnapshotUsed *int64) {
+	o.NamespacesSpaceSnapshotUsed = namespacesSpaceSnapshotUsed
 }
 
 // WithNamespacesSpaceUsed adds the namespacesSpaceUsed to the consistency group modify collection params
@@ -6556,6 +6964,108 @@ func (o *ConsistencyGroupModifyCollectionParams) WriteToRequest(r runtime.Client
 		}
 	}
 
+	if o.ConsistencyGroupsLunsSpaceSnapshotAutodeleteEnabled != nil {
+
+		// query param consistency_groups.luns.space.snapshot.autodelete.enabled
+		var qrConsistencyGroupsLunsSpaceSnapshotAutodeleteEnabled bool
+
+		if o.ConsistencyGroupsLunsSpaceSnapshotAutodeleteEnabled != nil {
+			qrConsistencyGroupsLunsSpaceSnapshotAutodeleteEnabled = *o.ConsistencyGroupsLunsSpaceSnapshotAutodeleteEnabled
+		}
+		qConsistencyGroupsLunsSpaceSnapshotAutodeleteEnabled := swag.FormatBool(qrConsistencyGroupsLunsSpaceSnapshotAutodeleteEnabled)
+		if qConsistencyGroupsLunsSpaceSnapshotAutodeleteEnabled != "" {
+
+			if err := r.SetQueryParam("consistency_groups.luns.space.snapshot.autodelete.enabled", qConsistencyGroupsLunsSpaceSnapshotAutodeleteEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsLunsSpaceSnapshotReserveAvailable != nil {
+
+		// query param consistency_groups.luns.space.snapshot.reserve_available
+		var qrConsistencyGroupsLunsSpaceSnapshotReserveAvailable int64
+
+		if o.ConsistencyGroupsLunsSpaceSnapshotReserveAvailable != nil {
+			qrConsistencyGroupsLunsSpaceSnapshotReserveAvailable = *o.ConsistencyGroupsLunsSpaceSnapshotReserveAvailable
+		}
+		qConsistencyGroupsLunsSpaceSnapshotReserveAvailable := swag.FormatInt64(qrConsistencyGroupsLunsSpaceSnapshotReserveAvailable)
+		if qConsistencyGroupsLunsSpaceSnapshotReserveAvailable != "" {
+
+			if err := r.SetQueryParam("consistency_groups.luns.space.snapshot.reserve_available", qConsistencyGroupsLunsSpaceSnapshotReserveAvailable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsLunsSpaceSnapshotReservePercent != nil {
+
+		// query param consistency_groups.luns.space.snapshot.reserve_percent
+		var qrConsistencyGroupsLunsSpaceSnapshotReservePercent int64
+
+		if o.ConsistencyGroupsLunsSpaceSnapshotReservePercent != nil {
+			qrConsistencyGroupsLunsSpaceSnapshotReservePercent = *o.ConsistencyGroupsLunsSpaceSnapshotReservePercent
+		}
+		qConsistencyGroupsLunsSpaceSnapshotReservePercent := swag.FormatInt64(qrConsistencyGroupsLunsSpaceSnapshotReservePercent)
+		if qConsistencyGroupsLunsSpaceSnapshotReservePercent != "" {
+
+			if err := r.SetQueryParam("consistency_groups.luns.space.snapshot.reserve_percent", qConsistencyGroupsLunsSpaceSnapshotReservePercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsLunsSpaceSnapshotReserveSize != nil {
+
+		// query param consistency_groups.luns.space.snapshot.reserve_size
+		var qrConsistencyGroupsLunsSpaceSnapshotReserveSize int64
+
+		if o.ConsistencyGroupsLunsSpaceSnapshotReserveSize != nil {
+			qrConsistencyGroupsLunsSpaceSnapshotReserveSize = *o.ConsistencyGroupsLunsSpaceSnapshotReserveSize
+		}
+		qConsistencyGroupsLunsSpaceSnapshotReserveSize := swag.FormatInt64(qrConsistencyGroupsLunsSpaceSnapshotReserveSize)
+		if qConsistencyGroupsLunsSpaceSnapshotReserveSize != "" {
+
+			if err := r.SetQueryParam("consistency_groups.luns.space.snapshot.reserve_size", qConsistencyGroupsLunsSpaceSnapshotReserveSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsLunsSpaceSnapshotSpaceUsedPercent != nil {
+
+		// query param consistency_groups.luns.space.snapshot.space_used_percent
+		var qrConsistencyGroupsLunsSpaceSnapshotSpaceUsedPercent int64
+
+		if o.ConsistencyGroupsLunsSpaceSnapshotSpaceUsedPercent != nil {
+			qrConsistencyGroupsLunsSpaceSnapshotSpaceUsedPercent = *o.ConsistencyGroupsLunsSpaceSnapshotSpaceUsedPercent
+		}
+		qConsistencyGroupsLunsSpaceSnapshotSpaceUsedPercent := swag.FormatInt64(qrConsistencyGroupsLunsSpaceSnapshotSpaceUsedPercent)
+		if qConsistencyGroupsLunsSpaceSnapshotSpaceUsedPercent != "" {
+
+			if err := r.SetQueryParam("consistency_groups.luns.space.snapshot.space_used_percent", qConsistencyGroupsLunsSpaceSnapshotSpaceUsedPercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsLunsSpaceSnapshotUsed != nil {
+
+		// query param consistency_groups.luns.space.snapshot.used
+		var qrConsistencyGroupsLunsSpaceSnapshotUsed int64
+
+		if o.ConsistencyGroupsLunsSpaceSnapshotUsed != nil {
+			qrConsistencyGroupsLunsSpaceSnapshotUsed = *o.ConsistencyGroupsLunsSpaceSnapshotUsed
+		}
+		qConsistencyGroupsLunsSpaceSnapshotUsed := swag.FormatInt64(qrConsistencyGroupsLunsSpaceSnapshotUsed)
+		if qConsistencyGroupsLunsSpaceSnapshotUsed != "" {
+
+			if err := r.SetQueryParam("consistency_groups.luns.space.snapshot.used", qConsistencyGroupsLunsSpaceSnapshotUsed); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ConsistencyGroupsLunsSpaceUsed != nil {
 
 		// query param consistency_groups.luns.space.used
@@ -6772,6 +7282,108 @@ func (o *ConsistencyGroupModifyCollectionParams) WriteToRequest(r runtime.Client
 		if qConsistencyGroupsNamespacesSpaceSize != "" {
 
 			if err := r.SetQueryParam("consistency_groups.namespaces.space.size", qConsistencyGroupsNamespacesSpaceSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled != nil {
+
+		// query param consistency_groups.namespaces.space.snapshot.autodelete.enabled
+		var qrConsistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled bool
+
+		if o.ConsistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled != nil {
+			qrConsistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled = *o.ConsistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled
+		}
+		qConsistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled := swag.FormatBool(qrConsistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled)
+		if qConsistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.space.snapshot.autodelete.enabled", qConsistencyGroupsNamespacesSpaceSnapshotAutodeleteEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSpaceSnapshotReserveAvailable != nil {
+
+		// query param consistency_groups.namespaces.space.snapshot.reserve_available
+		var qrConsistencyGroupsNamespacesSpaceSnapshotReserveAvailable int64
+
+		if o.ConsistencyGroupsNamespacesSpaceSnapshotReserveAvailable != nil {
+			qrConsistencyGroupsNamespacesSpaceSnapshotReserveAvailable = *o.ConsistencyGroupsNamespacesSpaceSnapshotReserveAvailable
+		}
+		qConsistencyGroupsNamespacesSpaceSnapshotReserveAvailable := swag.FormatInt64(qrConsistencyGroupsNamespacesSpaceSnapshotReserveAvailable)
+		if qConsistencyGroupsNamespacesSpaceSnapshotReserveAvailable != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.space.snapshot.reserve_available", qConsistencyGroupsNamespacesSpaceSnapshotReserveAvailable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSpaceSnapshotReservePercent != nil {
+
+		// query param consistency_groups.namespaces.space.snapshot.reserve_percent
+		var qrConsistencyGroupsNamespacesSpaceSnapshotReservePercent int64
+
+		if o.ConsistencyGroupsNamespacesSpaceSnapshotReservePercent != nil {
+			qrConsistencyGroupsNamespacesSpaceSnapshotReservePercent = *o.ConsistencyGroupsNamespacesSpaceSnapshotReservePercent
+		}
+		qConsistencyGroupsNamespacesSpaceSnapshotReservePercent := swag.FormatInt64(qrConsistencyGroupsNamespacesSpaceSnapshotReservePercent)
+		if qConsistencyGroupsNamespacesSpaceSnapshotReservePercent != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.space.snapshot.reserve_percent", qConsistencyGroupsNamespacesSpaceSnapshotReservePercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSpaceSnapshotReserveSize != nil {
+
+		// query param consistency_groups.namespaces.space.snapshot.reserve_size
+		var qrConsistencyGroupsNamespacesSpaceSnapshotReserveSize int64
+
+		if o.ConsistencyGroupsNamespacesSpaceSnapshotReserveSize != nil {
+			qrConsistencyGroupsNamespacesSpaceSnapshotReserveSize = *o.ConsistencyGroupsNamespacesSpaceSnapshotReserveSize
+		}
+		qConsistencyGroupsNamespacesSpaceSnapshotReserveSize := swag.FormatInt64(qrConsistencyGroupsNamespacesSpaceSnapshotReserveSize)
+		if qConsistencyGroupsNamespacesSpaceSnapshotReserveSize != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.space.snapshot.reserve_size", qConsistencyGroupsNamespacesSpaceSnapshotReserveSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent != nil {
+
+		// query param consistency_groups.namespaces.space.snapshot.space_used_percent
+		var qrConsistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent int64
+
+		if o.ConsistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent != nil {
+			qrConsistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent = *o.ConsistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent
+		}
+		qConsistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent := swag.FormatInt64(qrConsistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent)
+		if qConsistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.space.snapshot.space_used_percent", qConsistencyGroupsNamespacesSpaceSnapshotSpaceUsedPercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsNamespacesSpaceSnapshotUsed != nil {
+
+		// query param consistency_groups.namespaces.space.snapshot.used
+		var qrConsistencyGroupsNamespacesSpaceSnapshotUsed int64
+
+		if o.ConsistencyGroupsNamespacesSpaceSnapshotUsed != nil {
+			qrConsistencyGroupsNamespacesSpaceSnapshotUsed = *o.ConsistencyGroupsNamespacesSpaceSnapshotUsed
+		}
+		qConsistencyGroupsNamespacesSpaceSnapshotUsed := swag.FormatInt64(qrConsistencyGroupsNamespacesSpaceSnapshotUsed)
+		if qConsistencyGroupsNamespacesSpaceSnapshotUsed != "" {
+
+			if err := r.SetQueryParam("consistency_groups.namespaces.space.snapshot.used", qConsistencyGroupsNamespacesSpaceSnapshotUsed); err != nil {
 				return err
 			}
 		}
@@ -8684,6 +9296,108 @@ func (o *ConsistencyGroupModifyCollectionParams) WriteToRequest(r runtime.Client
 		}
 	}
 
+	if o.LunsSpaceSnapshotAutodeleteEnabled != nil {
+
+		// query param luns.space.snapshot.autodelete.enabled
+		var qrLunsSpaceSnapshotAutodeleteEnabled bool
+
+		if o.LunsSpaceSnapshotAutodeleteEnabled != nil {
+			qrLunsSpaceSnapshotAutodeleteEnabled = *o.LunsSpaceSnapshotAutodeleteEnabled
+		}
+		qLunsSpaceSnapshotAutodeleteEnabled := swag.FormatBool(qrLunsSpaceSnapshotAutodeleteEnabled)
+		if qLunsSpaceSnapshotAutodeleteEnabled != "" {
+
+			if err := r.SetQueryParam("luns.space.snapshot.autodelete.enabled", qLunsSpaceSnapshotAutodeleteEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LunsSpaceSnapshotReserveAvailable != nil {
+
+		// query param luns.space.snapshot.reserve_available
+		var qrLunsSpaceSnapshotReserveAvailable int64
+
+		if o.LunsSpaceSnapshotReserveAvailable != nil {
+			qrLunsSpaceSnapshotReserveAvailable = *o.LunsSpaceSnapshotReserveAvailable
+		}
+		qLunsSpaceSnapshotReserveAvailable := swag.FormatInt64(qrLunsSpaceSnapshotReserveAvailable)
+		if qLunsSpaceSnapshotReserveAvailable != "" {
+
+			if err := r.SetQueryParam("luns.space.snapshot.reserve_available", qLunsSpaceSnapshotReserveAvailable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LunsSpaceSnapshotReservePercent != nil {
+
+		// query param luns.space.snapshot.reserve_percent
+		var qrLunsSpaceSnapshotReservePercent int64
+
+		if o.LunsSpaceSnapshotReservePercent != nil {
+			qrLunsSpaceSnapshotReservePercent = *o.LunsSpaceSnapshotReservePercent
+		}
+		qLunsSpaceSnapshotReservePercent := swag.FormatInt64(qrLunsSpaceSnapshotReservePercent)
+		if qLunsSpaceSnapshotReservePercent != "" {
+
+			if err := r.SetQueryParam("luns.space.snapshot.reserve_percent", qLunsSpaceSnapshotReservePercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LunsSpaceSnapshotReserveSize != nil {
+
+		// query param luns.space.snapshot.reserve_size
+		var qrLunsSpaceSnapshotReserveSize int64
+
+		if o.LunsSpaceSnapshotReserveSize != nil {
+			qrLunsSpaceSnapshotReserveSize = *o.LunsSpaceSnapshotReserveSize
+		}
+		qLunsSpaceSnapshotReserveSize := swag.FormatInt64(qrLunsSpaceSnapshotReserveSize)
+		if qLunsSpaceSnapshotReserveSize != "" {
+
+			if err := r.SetQueryParam("luns.space.snapshot.reserve_size", qLunsSpaceSnapshotReserveSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LunsSpaceSnapshotSpaceUsedPercent != nil {
+
+		// query param luns.space.snapshot.space_used_percent
+		var qrLunsSpaceSnapshotSpaceUsedPercent int64
+
+		if o.LunsSpaceSnapshotSpaceUsedPercent != nil {
+			qrLunsSpaceSnapshotSpaceUsedPercent = *o.LunsSpaceSnapshotSpaceUsedPercent
+		}
+		qLunsSpaceSnapshotSpaceUsedPercent := swag.FormatInt64(qrLunsSpaceSnapshotSpaceUsedPercent)
+		if qLunsSpaceSnapshotSpaceUsedPercent != "" {
+
+			if err := r.SetQueryParam("luns.space.snapshot.space_used_percent", qLunsSpaceSnapshotSpaceUsedPercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LunsSpaceSnapshotUsed != nil {
+
+		// query param luns.space.snapshot.used
+		var qrLunsSpaceSnapshotUsed int64
+
+		if o.LunsSpaceSnapshotUsed != nil {
+			qrLunsSpaceSnapshotUsed = *o.LunsSpaceSnapshotUsed
+		}
+		qLunsSpaceSnapshotUsed := swag.FormatInt64(qrLunsSpaceSnapshotUsed)
+		if qLunsSpaceSnapshotUsed != "" {
+
+			if err := r.SetQueryParam("luns.space.snapshot.used", qLunsSpaceSnapshotUsed); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.LunsSpaceUsed != nil {
 
 		// query param luns.space.used
@@ -9206,6 +9920,108 @@ func (o *ConsistencyGroupModifyCollectionParams) WriteToRequest(r runtime.Client
 		if qNamespacesSpaceSize != "" {
 
 			if err := r.SetQueryParam("namespaces.space.size", qNamespacesSpaceSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSpaceSnapshotAutodeleteEnabled != nil {
+
+		// query param namespaces.space.snapshot.autodelete.enabled
+		var qrNamespacesSpaceSnapshotAutodeleteEnabled bool
+
+		if o.NamespacesSpaceSnapshotAutodeleteEnabled != nil {
+			qrNamespacesSpaceSnapshotAutodeleteEnabled = *o.NamespacesSpaceSnapshotAutodeleteEnabled
+		}
+		qNamespacesSpaceSnapshotAutodeleteEnabled := swag.FormatBool(qrNamespacesSpaceSnapshotAutodeleteEnabled)
+		if qNamespacesSpaceSnapshotAutodeleteEnabled != "" {
+
+			if err := r.SetQueryParam("namespaces.space.snapshot.autodelete.enabled", qNamespacesSpaceSnapshotAutodeleteEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSpaceSnapshotReserveAvailable != nil {
+
+		// query param namespaces.space.snapshot.reserve_available
+		var qrNamespacesSpaceSnapshotReserveAvailable int64
+
+		if o.NamespacesSpaceSnapshotReserveAvailable != nil {
+			qrNamespacesSpaceSnapshotReserveAvailable = *o.NamespacesSpaceSnapshotReserveAvailable
+		}
+		qNamespacesSpaceSnapshotReserveAvailable := swag.FormatInt64(qrNamespacesSpaceSnapshotReserveAvailable)
+		if qNamespacesSpaceSnapshotReserveAvailable != "" {
+
+			if err := r.SetQueryParam("namespaces.space.snapshot.reserve_available", qNamespacesSpaceSnapshotReserveAvailable); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSpaceSnapshotReservePercent != nil {
+
+		// query param namespaces.space.snapshot.reserve_percent
+		var qrNamespacesSpaceSnapshotReservePercent int64
+
+		if o.NamespacesSpaceSnapshotReservePercent != nil {
+			qrNamespacesSpaceSnapshotReservePercent = *o.NamespacesSpaceSnapshotReservePercent
+		}
+		qNamespacesSpaceSnapshotReservePercent := swag.FormatInt64(qrNamespacesSpaceSnapshotReservePercent)
+		if qNamespacesSpaceSnapshotReservePercent != "" {
+
+			if err := r.SetQueryParam("namespaces.space.snapshot.reserve_percent", qNamespacesSpaceSnapshotReservePercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSpaceSnapshotReserveSize != nil {
+
+		// query param namespaces.space.snapshot.reserve_size
+		var qrNamespacesSpaceSnapshotReserveSize int64
+
+		if o.NamespacesSpaceSnapshotReserveSize != nil {
+			qrNamespacesSpaceSnapshotReserveSize = *o.NamespacesSpaceSnapshotReserveSize
+		}
+		qNamespacesSpaceSnapshotReserveSize := swag.FormatInt64(qrNamespacesSpaceSnapshotReserveSize)
+		if qNamespacesSpaceSnapshotReserveSize != "" {
+
+			if err := r.SetQueryParam("namespaces.space.snapshot.reserve_size", qNamespacesSpaceSnapshotReserveSize); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSpaceSnapshotSpaceUsedPercent != nil {
+
+		// query param namespaces.space.snapshot.space_used_percent
+		var qrNamespacesSpaceSnapshotSpaceUsedPercent int64
+
+		if o.NamespacesSpaceSnapshotSpaceUsedPercent != nil {
+			qrNamespacesSpaceSnapshotSpaceUsedPercent = *o.NamespacesSpaceSnapshotSpaceUsedPercent
+		}
+		qNamespacesSpaceSnapshotSpaceUsedPercent := swag.FormatInt64(qrNamespacesSpaceSnapshotSpaceUsedPercent)
+		if qNamespacesSpaceSnapshotSpaceUsedPercent != "" {
+
+			if err := r.SetQueryParam("namespaces.space.snapshot.space_used_percent", qNamespacesSpaceSnapshotSpaceUsedPercent); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.NamespacesSpaceSnapshotUsed != nil {
+
+		// query param namespaces.space.snapshot.used
+		var qrNamespacesSpaceSnapshotUsed int64
+
+		if o.NamespacesSpaceSnapshotUsed != nil {
+			qrNamespacesSpaceSnapshotUsed = *o.NamespacesSpaceSnapshotUsed
+		}
+		qNamespacesSpaceSnapshotUsed := swag.FormatInt64(qrNamespacesSpaceSnapshotUsed)
+		if qNamespacesSpaceSnapshotUsed != "" {
+
+			if err := r.SetQueryParam("namespaces.space.snapshot.used", qNamespacesSpaceSnapshotUsed); err != nil {
 				return err
 			}
 		}

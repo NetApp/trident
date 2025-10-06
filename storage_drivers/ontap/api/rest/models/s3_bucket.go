@@ -88,10 +88,10 @@ type S3Bucket struct {
 	// A list of aggregates for FlexGroup volume constituents where the bucket is hosted. If this option is not specified, the bucket is auto-provisioned as a FlexGroup volume.
 	S3BucketInlineAggregates []*S3BucketInlineAggregatesInlineArrayItem `json:"aggregates,omitempty"`
 
-	// Specifies the bucket size in bytes; ranges from 190MB to 62PB.
-	// Example: 1677721600
-	// Maximum: 6.2672162783232e+16
-	// Minimum: 1.9922944e+08
+	// Specifies the bucket size in bytes; ranges from 100GB to 60PB.
+	// Example: 214748364800
+	// Maximum: 6.755399441055744e+16
+	// Minimum: 1.073741824e+11
 	Size *int64 `json:"size,omitempty"`
 
 	// snapshot policy
@@ -501,11 +501,11 @@ func (m *S3Bucket) validateSize(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("size", "body", *m.Size, 1.9922944e+08, false); err != nil {
+	if err := validate.MinimumInt("size", "body", *m.Size, 1.073741824e+11, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("size", "body", *m.Size, 6.2672162783232e+16, false); err != nil {
+	if err := validate.MaximumInt("size", "body", *m.Size, 6.755399441055744e+16, false); err != nil {
 		return err
 	}
 
@@ -2472,7 +2472,7 @@ type S3BucketLifecycleManagementRulesItems0Expiration struct {
 	ObjectAgeDays *int64 `json:"object_age_days,omitempty"`
 
 	// Specific date from when objects can expire. This cannot be used with object_age_days.
-	// Example: 2039-09-23 00:00:00
+	// Example: 2039-09-23 00:00:00+00:00
 	// Format: date-time
 	ObjectExpiryDate *strfmt.DateTime `json:"object_expiry_date,omitempty"`
 }

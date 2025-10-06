@@ -67,7 +67,7 @@ type FpolicyConnection struct {
 	Type *string `json:"type,omitempty"`
 
 	// Specifies the time at which FPolicy server is connected or disconnected.
-	// Example: 2019-06-12 15:00:16
+	// Example: 2019-06-12 11:00:16-04:00
 	// Read Only: true
 	// Format: date-time
 	UpdateTime *strfmt.DateTime `json:"update_time,omitempty"`

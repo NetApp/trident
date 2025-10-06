@@ -27,17 +27,17 @@ type Version struct {
 	// The generation portion of the version.
 	// Example: 9
 	// Read Only: true
-	Generation *int64 `json:"generation,omitempty"`
+	Generation *int64 `json:"generation"`
 
 	// The major portion of the version.
 	// Example: 4
 	// Read Only: true
-	Major *int64 `json:"major,omitempty"`
+	Major *int64 `json:"major"`
 
 	// The minor portion of the version.
 	// Example: 0
 	// Read Only: true
-	Minor *int64 `json:"minor,omitempty"`
+	Minor *int64 `json:"minor"`
 }
 
 // Validate validates this version

@@ -478,6 +478,9 @@ type IpsecPolicyResponseInlineRecordsInlineArrayItem struct {
 	// certificate
 	Certificate *models.IpsecPolicyResponseInlineRecordsInlineArrayItemInlineCertificate `json:"certificate,omitempty"`
 
+	// Indicates whether old security associations are kept upon certificate modification.
+	CertificateModifyKeepsa *bool `json:"certificate_modify_keepsa,omitempty"`
+
 	// Indicates whether or not the policy is enabled.
 	Enabled *bool `json:"enabled,omitempty"`
 

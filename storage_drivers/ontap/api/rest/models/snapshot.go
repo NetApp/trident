@@ -33,7 +33,7 @@ type Snapshot struct {
 	CompressSavings *int64 `json:"compress_savings,omitempty"`
 
 	// Creation time of the snapshot. It is the volume access time when the snapshot was created.
-	// Example: 2019-02-04 19:00:00
+	// Example: 2019-02-04 19:00:00+00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
@@ -47,7 +47,7 @@ type Snapshot struct {
 	Delta *SnapshotDelta `json:"delta,omitempty"`
 
 	// The expiry time for the snapshot. This is an optional attribute for POST or PATCH. Snapshots with an expiry time set are not allowed to be deleted until the retention time is reached.
-	// Example: 2019-02-04 19:00:00
+	// Example: 2019-02-04 19:00:00+00:00
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
 
@@ -79,7 +79,7 @@ type Snapshot struct {
 	Snaplock *SnapshotInlineSnaplock `json:"snaplock,omitempty"`
 
 	// SnapLock expiry time for the snapshot, if the snapshot is taken on a SnapLock volume. A snapshot is not allowed to be deleted or renamed until the SnapLock ComplianceClock time goes beyond this retention time. This option can be set during snapshot POST and snapshot PATCH on snapshot locking enabled volumes. This field will no longer be supported in a future release. Use snaplock.expiry_time instead.
-	// Example: 2019-02-04 19:00:00
+	// Example: 2019-02-04 19:00:00+00:00
 	// Format: date-time
 	SnaplockExpiryTime *strfmt.DateTime `json:"snaplock_expiry_time,omitempty"`
 
@@ -850,7 +850,7 @@ type SnapshotInlineSnaplock struct {
 	Expired *bool `json:"expired,omitempty"`
 
 	// SnapLock expiry time for the snapshot, if the snapshot is taken on a SnapLock volume. A snapshot is not allowed to be deleted or renamed until the SnapLock ComplianceClock time goes beyond this retention time. This option can be set during snapshot POST and snapshot PATCH on snapshot locking enabled volumes. It can also be used to extend the expiry time of a locked snapshot on a SnapLock for SnapVault destination consistency-group.
-	// Example: 2019-02-04 19:00:00
+	// Example: 2019-02-04 19:00:00+00:00
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
 

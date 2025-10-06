@@ -70,7 +70,7 @@ type ConsistencyGroupSnapshot struct {
 
 	// Time the snapshot copy was created
 	//
-	// Example: 2020-10-25 11:20:00
+	// Example: 2020-10-25 11:20:00+00:00
 	// Read Only: true
 	// Format: date-time
 	CreateTime *strfmt.DateTime `json:"create_time,omitempty"`
@@ -1435,7 +1435,7 @@ type ConsistencyGroupSnapshotInlineSnaplock struct {
 	Expired *bool `json:"expired,omitempty"`
 
 	// SnapLock expiry time for the snapshot, if the snapshot is taken on a consistency-group. A snapshot is not allowed to be deleted until the SnapLock ComplianceClock time goes beyond this expiry time.
-	// Example: 2019-02-04 19:00:00
+	// Example: 2019-02-04 19:00:00+00:00
 	// Format: date-time
 	ExpiryTime *strfmt.DateTime `json:"expiry_time,omitempty"`
 
