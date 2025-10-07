@@ -175,18 +175,18 @@ func (mr *MockOrchestratorMockRecorder) CanBackendMirror(ctx, backendUUID any) *
 }
 
 // CheckMirrorTransferState mocks base method.
-func (m *MockOrchestrator) CheckMirrorTransferState(ctx context.Context, pvcVolumeName string) (*time.Time, error) {
+func (m *MockOrchestrator) CheckMirrorTransferState(ctx context.Context, volumeName string) (*time.Time, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckMirrorTransferState", ctx, pvcVolumeName)
+	ret := m.ctrl.Call(m, "CheckMirrorTransferState", ctx, volumeName)
 	ret0, _ := ret[0].(*time.Time)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CheckMirrorTransferState indicates an expected call of CheckMirrorTransferState.
-func (mr *MockOrchestratorMockRecorder) CheckMirrorTransferState(ctx, pvcVolumeName any) *gomock.Call {
+func (mr *MockOrchestratorMockRecorder) CheckMirrorTransferState(ctx, volumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckMirrorTransferState", reflect.TypeOf((*MockOrchestrator)(nil).CheckMirrorTransferState), ctx, pvcVolumeName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckMirrorTransferState", reflect.TypeOf((*MockOrchestrator)(nil).CheckMirrorTransferState), ctx, volumeName)
 }
 
 // CloneVolume mocks base method.
@@ -361,17 +361,17 @@ func (mr *MockOrchestratorMockRecorder) DetachVolume(ctx, volumeName, mountpoint
 }
 
 // EstablishMirror mocks base method.
-func (m *MockOrchestrator) EstablishMirror(ctx context.Context, backendUUID, pvcVolumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string) error {
+func (m *MockOrchestrator) EstablishMirror(ctx context.Context, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EstablishMirror", ctx, backendUUID, pvcVolumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule)
+	ret := m.ctrl.Call(m, "EstablishMirror", ctx, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // EstablishMirror indicates an expected call of EstablishMirror.
-func (mr *MockOrchestratorMockRecorder) EstablishMirror(ctx, backendUUID, pvcVolumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule any) *gomock.Call {
+func (mr *MockOrchestratorMockRecorder) EstablishMirror(ctx, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EstablishMirror", reflect.TypeOf((*MockOrchestrator)(nil).EstablishMirror), ctx, backendUUID, pvcVolumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EstablishMirror", reflect.TypeOf((*MockOrchestrator)(nil).EstablishMirror), ctx, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule)
 }
 
 // GetBackend mocks base method.
@@ -480,18 +480,18 @@ func (mr *MockOrchestratorMockRecorder) GetMirrorStatus(ctx, backendUUID, localI
 }
 
 // GetMirrorTransferTime mocks base method.
-func (m *MockOrchestrator) GetMirrorTransferTime(ctx context.Context, pvcVolumeName string) (*time.Time, error) {
+func (m *MockOrchestrator) GetMirrorTransferTime(ctx context.Context, volumeName string) (*time.Time, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMirrorTransferTime", ctx, pvcVolumeName)
+	ret := m.ctrl.Call(m, "GetMirrorTransferTime", ctx, volumeName)
 	ret0, _ := ret[0].(*time.Time)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetMirrorTransferTime indicates an expected call of GetMirrorTransferTime.
-func (mr *MockOrchestratorMockRecorder) GetMirrorTransferTime(ctx, pvcVolumeName any) *gomock.Call {
+func (mr *MockOrchestratorMockRecorder) GetMirrorTransferTime(ctx, volumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMirrorTransferTime", reflect.TypeOf((*MockOrchestrator)(nil).GetMirrorTransferTime), ctx, pvcVolumeName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMirrorTransferTime", reflect.TypeOf((*MockOrchestrator)(nil).GetMirrorTransferTime), ctx, volumeName)
 }
 
 // GetNode mocks base method.
@@ -971,18 +971,18 @@ func (mr *MockOrchestratorMockRecorder) PeriodicallyReconcileNodeAccessOnBackend
 }
 
 // PromoteMirror mocks base method.
-func (m *MockOrchestrator) PromoteMirror(ctx context.Context, backendUUID, pvcVolumeName, localInternalVolumeName, remoteVolumeHandle, snapshotHandle string) (bool, error) {
+func (m *MockOrchestrator) PromoteMirror(ctx context.Context, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, snapshotHandle string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PromoteMirror", ctx, backendUUID, pvcVolumeName, localInternalVolumeName, remoteVolumeHandle, snapshotHandle)
+	ret := m.ctrl.Call(m, "PromoteMirror", ctx, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, snapshotHandle)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // PromoteMirror indicates an expected call of PromoteMirror.
-func (mr *MockOrchestratorMockRecorder) PromoteMirror(ctx, backendUUID, pvcVolumeName, localInternalVolumeName, remoteVolumeHandle, snapshotHandle any) *gomock.Call {
+func (mr *MockOrchestratorMockRecorder) PromoteMirror(ctx, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, snapshotHandle any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PromoteMirror", reflect.TypeOf((*MockOrchestrator)(nil).PromoteMirror), ctx, backendUUID, pvcVolumeName, localInternalVolumeName, remoteVolumeHandle, snapshotHandle)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PromoteMirror", reflect.TypeOf((*MockOrchestrator)(nil).PromoteMirror), ctx, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, snapshotHandle)
 }
 
 // PublishVolume mocks base method.
@@ -1029,31 +1029,31 @@ func (mr *MockOrchestratorMockRecorder) ReconcileVolumePublications(ctx, attache
 }
 
 // ReestablishMirror mocks base method.
-func (m *MockOrchestrator) ReestablishMirror(ctx context.Context, backendUUID, pvcVolumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string) error {
+func (m *MockOrchestrator) ReestablishMirror(ctx context.Context, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReestablishMirror", ctx, backendUUID, pvcVolumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule)
+	ret := m.ctrl.Call(m, "ReestablishMirror", ctx, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ReestablishMirror indicates an expected call of ReestablishMirror.
-func (mr *MockOrchestratorMockRecorder) ReestablishMirror(ctx, backendUUID, pvcVolumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule any) *gomock.Call {
+func (mr *MockOrchestratorMockRecorder) ReestablishMirror(ctx, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReestablishMirror", reflect.TypeOf((*MockOrchestrator)(nil).ReestablishMirror), ctx, backendUUID, pvcVolumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReestablishMirror", reflect.TypeOf((*MockOrchestrator)(nil).ReestablishMirror), ctx, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule)
 }
 
 // ReleaseMirror mocks base method.
-func (m *MockOrchestrator) ReleaseMirror(ctx context.Context, backendUUID, pvcVolumeName, localInternalVolumeName string) error {
+func (m *MockOrchestrator) ReleaseMirror(ctx context.Context, backendUUID, volumeName, localInternalVolumeName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReleaseMirror", ctx, backendUUID, pvcVolumeName, localInternalVolumeName)
+	ret := m.ctrl.Call(m, "ReleaseMirror", ctx, backendUUID, volumeName, localInternalVolumeName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ReleaseMirror indicates an expected call of ReleaseMirror.
-func (mr *MockOrchestratorMockRecorder) ReleaseMirror(ctx, backendUUID, pvcVolumeName, localInternalVolumeName any) *gomock.Call {
+func (mr *MockOrchestratorMockRecorder) ReleaseMirror(ctx, backendUUID, volumeName, localInternalVolumeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReleaseMirror", reflect.TypeOf((*MockOrchestrator)(nil).ReleaseMirror), ctx, backendUUID, pvcVolumeName, localInternalVolumeName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReleaseMirror", reflect.TypeOf((*MockOrchestrator)(nil).ReleaseMirror), ctx, backendUUID, volumeName, localInternalVolumeName)
 }
 
 // ReloadVolumes mocks base method.
@@ -1226,17 +1226,17 @@ func (mr *MockOrchestratorMockRecorder) UpdateBackendState(ctx, backendName, bac
 }
 
 // UpdateMirror mocks base method.
-func (m *MockOrchestrator) UpdateMirror(ctx context.Context, pvcVolumeName, snapshotName string) error {
+func (m *MockOrchestrator) UpdateMirror(ctx context.Context, volumeName, snapshotName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateMirror", ctx, pvcVolumeName, snapshotName)
+	ret := m.ctrl.Call(m, "UpdateMirror", ctx, volumeName, snapshotName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateMirror indicates an expected call of UpdateMirror.
-func (mr *MockOrchestratorMockRecorder) UpdateMirror(ctx, pvcVolumeName, snapshotName any) *gomock.Call {
+func (mr *MockOrchestratorMockRecorder) UpdateMirror(ctx, volumeName, snapshotName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMirror", reflect.TypeOf((*MockOrchestrator)(nil).UpdateMirror), ctx, pvcVolumeName, snapshotName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMirror", reflect.TypeOf((*MockOrchestrator)(nil).UpdateMirror), ctx, volumeName, snapshotName)
 }
 
 // UpdateNode mocks base method.

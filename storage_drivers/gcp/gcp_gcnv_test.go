@@ -2875,10 +2875,7 @@ func TestCreateClone_NoSnapshot(t *testing.T) {
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, cloneVolConfig).Return(false, nil, nil).Times(1)
-	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any()).Return(snapshot, nil).Times(1)
-
-	mockAPI.EXPECT().WaitForSnapshotState(ctx, snapshot, sourceVolume, gcnvapi.SnapshotStateReady,
-		[]string{gcnvapi.SnapshotStateError}, gcnvapi.SnapshotTimeout).Return(nil).Times(1)
+	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any(), gomock.Any()).Return(snapshot, nil).Times(1)
 
 	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, gomock.Any()).Return(snapshot, nil).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(cloneVolume, nil).Times(1)
@@ -2954,9 +2951,7 @@ func TestCreateClone_CreateSnapshot(t *testing.T) {
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, cloneVolConfig).Return(false, nil, nil).Times(1)
 	// snapshot name is a timestamp, therefore it cannot be known beforehand, using Any
-	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any()).Return(snapshot, nil).Times(1)
-	mockAPI.EXPECT().WaitForSnapshotState(ctx, snapshot, sourceVolume, gcnvapi.SnapshotStateReady,
-		[]string{gcnvapi.SnapshotStateError}, gcnvapi.SnapshotTimeout).Return(nil).Times(1)
+	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any(), gomock.Any()).Return(snapshot, nil).Times(1)
 
 	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, gomock.Any()).Return(snapshot, nil).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(cloneVolume, nil).Times(1)
@@ -3304,39 +3299,7 @@ func TestCreateClone_SnapshotCreateFailed(t *testing.T) {
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, cloneVolConfig).Return(false, nil, nil).Times(1)
 
-	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any()).Return(nil, errFailed).Times(1)
-
-	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
-
-	assert.Error(t, result, "expected error")
-	assert.Equal(t, "", cloneVolConfig.InternalID, "internal ID set on volConfig")
-}
-
-func TestCreateClone_WaitForSnapshotStateFailed(t *testing.T) {
-	mockAPI, driver := newMockGCNVDriver(t)
-
-	driver.Config.BackendName = "gcnv"
-	driver.Config.ServiceLevel = gcnvapi.ServiceLevelPremium
-	driver.Config.NASType = "nfs"
-
-	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
-	assert.NoError(t, err, "error occurred")
-
-	driver.initializeStoragePools(ctx)
-	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
-
-	storagePool := driver.pools["gcnv_pool"]
-
-	sourceVolConfig, cloneVolConfig, _, sourceVolume, _, snapshot := getStructsForCreateClone(ctx, driver, storagePool)
-
-	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
-	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil).Times(1)
-	mockAPI.EXPECT().VolumeExists(ctx, cloneVolConfig).Return(false, nil, nil).Times(1)
-
-	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any()).Return(snapshot, nil).Times(1)
-
-	mockAPI.EXPECT().WaitForSnapshotState(ctx, snapshot, sourceVolume, gcnvapi.SnapshotStateReady,
-		[]string{gcnvapi.SnapshotStateError}, gcnvapi.SnapshotTimeout).Return(errFailed).Times(1)
+	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any(), gomock.Any()).Return(nil, errFailed).Times(1)
 
 	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
 
@@ -3365,10 +3328,7 @@ func TestCreateClone_SnapshotRefetchFailed(t *testing.T) {
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, cloneVolConfig).Return(false, nil, nil).Times(1)
 
-	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any()).Return(snapshot, nil).Times(1)
-
-	mockAPI.EXPECT().WaitForSnapshotState(ctx, snapshot, sourceVolume, gcnvapi.SnapshotStateReady,
-		[]string{gcnvapi.SnapshotStateError}, gcnvapi.SnapshotTimeout).Return(nil).Times(1)
+	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any(), gomock.Any()).Return(snapshot, nil).Times(1)
 
 	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, gomock.Any()).Return(nil, errFailed).Times(1)
 
@@ -3399,9 +3359,7 @@ func TestCreateClone_CreateFailed(t *testing.T) {
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, cloneVolConfig).Return(false, nil, nil).Times(1)
 
-	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any()).Return(snapshot, nil).Times(1)
-	mockAPI.EXPECT().WaitForSnapshotState(ctx, snapshot, sourceVolume, gcnvapi.SnapshotStateReady,
-		[]string{gcnvapi.SnapshotStateError}, gcnvapi.SnapshotTimeout).Return(nil).Times(1)
+	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any(), gomock.Any()).Return(snapshot, nil).Times(1)
 
 	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, gomock.Any()).Return(snapshot, nil).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
@@ -4621,7 +4579,7 @@ func TestDestroy_DeleteSnapshot(t *testing.T) {
 		driver.defaultTimeout()).Return(gcnvapi.VolumeStateDeleted, nil).Times(1)
 	mockAPI.EXPECT().VolumeByName(ctx, sourceVolumeConfig.InternalName).Return(sourceVolume, nil).Times(1)
 	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, cloneVolConfig.CloneSourceSnapshotInternal).Return(snapshot, nil).Times(1)
-	mockAPI.EXPECT().DeleteSnapshot(ctx, sourceVolume, snapshot).Return(nil).Times(1)
+	mockAPI.EXPECT().DeleteSnapshot(ctx, sourceVolume, snapshot, gomock.Any()).Return(nil).Times(1)
 
 	err := driver.Destroy(ctx, cloneVolConfig)
 
@@ -4661,7 +4619,7 @@ func Test_AutomaticDeleteSnapshot(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeByName(ctx, sourceVolumeConfig.InternalName).Return(sourceVolume, nil).Times(1)
 	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, cloneVolConfig.CloneSourceSnapshotInternal).Return(snapshot, nil).Times(1)
-	mockAPI.EXPECT().DeleteSnapshot(ctx, sourceVolume, snapshot).Return(nil).Times(1)
+	mockAPI.EXPECT().DeleteSnapshot(ctx, sourceVolume, snapshot, gomock.Any()).Return(nil).Times(1)
 
 	driver.deleteAutomaticSnapshot(ctx, nil, cloneVolConfig)
 }
@@ -4681,7 +4639,7 @@ func Test_AutomaticDeleteSnapshot_NoSnapshot(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeByName(ctx, gomock.Any()).Times(0)
 	mockAPI.EXPECT().SnapshotForVolume(ctx, gomock.Any(), cloneVolConfig.CloneSourceSnapshotInternal).Times(0)
-	mockAPI.EXPECT().DeleteSnapshot(ctx, gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().DeleteSnapshot(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 	driver.deleteAutomaticSnapshot(ctx, nil, cloneVolConfig)
 }
@@ -4701,7 +4659,7 @@ func Test_AutomaticDeleteSnapshot_SelectedSnapshot(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeByName(ctx, gomock.Any()).Times(0)
 	mockAPI.EXPECT().SnapshotForVolume(ctx, gomock.Any(), cloneVolConfig.CloneSourceSnapshotInternal).Times(0)
-	mockAPI.EXPECT().DeleteSnapshot(ctx, gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().DeleteSnapshot(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 	driver.deleteAutomaticSnapshot(ctx, nil, cloneVolConfig)
 }
@@ -4719,7 +4677,7 @@ func Test_AutomaticDeleteSnapshot_VolDeleteError(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeByName(ctx, gomock.Any()).Times(0)
 	mockAPI.EXPECT().SnapshotForVolume(ctx, gomock.Any(), cloneVolConfig.CloneSourceSnapshotInternal).Times(0)
-	mockAPI.EXPECT().DeleteSnapshot(ctx, gomock.Any(), gomock.Any()).Times(0)
+	mockAPI.EXPECT().DeleteSnapshot(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 	driver.deleteAutomaticSnapshot(ctx, errors.New("volume delete error"), cloneVolConfig)
 }
@@ -4753,7 +4711,7 @@ func Test_AutomaticDeleteSnapshot_VolByNameError(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			mockAPI.EXPECT().VolumeByName(ctx, sourceVolumeConfig.InternalName).Return(nil, test.volumeByNameError).Times(1)
 			mockAPI.EXPECT().SnapshotForVolume(ctx, gomock.Any(), cloneVolConfig.CloneSourceSnapshotInternal).Times(0)
-			mockAPI.EXPECT().DeleteSnapshot(ctx, gomock.Any(), gomock.Any()).Times(0)
+			mockAPI.EXPECT().DeleteSnapshot(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 			driver.deleteAutomaticSnapshot(ctx, nil, cloneVolConfig)
 		})
@@ -4789,7 +4747,7 @@ func Test_AutomaticDeleteSnapshot_SnapshotForVolumeError(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			mockAPI.EXPECT().VolumeByName(ctx, sourceVolumeConfig.InternalName).Return(sourceVolume, nil).Times(1)
 			mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, cloneVolConfig.CloneSourceSnapshotInternal).Return(nil, test.snapshotForVolumeError).Times(1)
-			mockAPI.EXPECT().DeleteSnapshot(ctx, gomock.Any(), gomock.Any()).Times(0)
+			mockAPI.EXPECT().DeleteSnapshot(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 			driver.deleteAutomaticSnapshot(ctx, nil, cloneVolConfig)
 		})
@@ -4809,7 +4767,7 @@ func Test_AutomaticDeleteSnapshot_DeleteSnapshotError(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeByName(ctx, sourceVolumeConfig.InternalName).Return(sourceVolume, nil).Times(1)
 	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, cloneVolConfig.CloneSourceSnapshotInternal).Return(snapshot, nil).Times(1)
-	mockAPI.EXPECT().DeleteSnapshot(ctx, sourceVolume, snapshot).Return(errors.New("delete failed")).Times(1)
+	mockAPI.EXPECT().DeleteSnapshot(ctx, sourceVolume, snapshot, gomock.Any()).Return(errors.New("delete failed")).Times(1)
 
 	driver.deleteAutomaticSnapshot(ctx, nil, cloneVolConfig)
 }
@@ -5583,7 +5541,7 @@ func TestGetSnapshot_SnapshotNotReady(t *testing.T) {
 	result, resultErr := driver.GetSnapshot(ctx, snapConfig, volConfig)
 
 	assert.Nil(t, result, "not nil")
-	assert.Error(t, resultErr, "expected error")
+	assert.NoError(t, resultErr, "expected no error")
 }
 
 func getSnapshotsForList(driver *NASStorageDriver, snapTime time.Time) *[]*gcnvapi.Snapshot {
@@ -5743,9 +5701,8 @@ func TestGCNVCreateSnapshot(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, volume, nil).Times(1)
-	mockAPI.EXPECT().CreateSnapshot(ctx, volume, snapConfig.InternalName).Return(snapshot, nil).Times(1)
-	mockAPI.EXPECT().WaitForSnapshotState(ctx, snapshot, volume, gcnvapi.SnapshotStateReady,
-		[]string{gcnvapi.SnapshotStateError}, gcnvapi.SnapshotTimeout).Return(nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, volume, snapConfig.InternalName).Return(nil, errors.NotFoundError("not found")).Times(1)
+	mockAPI.EXPECT().CreateSnapshot(ctx, volume, snapConfig.InternalName, gcnvapi.DefaultTimeout).Return(snapshot, nil).Times(1)
 
 	result, resultErr := driver.CreateSnapshot(ctx, snapConfig, volConfig)
 
@@ -5810,6 +5767,68 @@ func TestCreateSnapshot_NonexistentVolume(t *testing.T) {
 	assert.Error(t, resultErr, "expected error")
 }
 
+func TestCreateSnapshot_SnapshotExistsCheckFailed(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
+	snapTime := time.Now()
+
+	volConfig, volume, snapConfig, _ := getStructsForCreateSnapshot(ctx, driver, snapTime)
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, volume, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, volume, snapConfig.InternalName).Return(nil, errFailed).Times(1)
+
+	result, resultErr := driver.CreateSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Nil(t, result, "not nil")
+	assert.Error(t, resultErr, "expected error")
+}
+
+func TestGCNVCreateSnapshot_SnapshotExistsNotReady(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
+	snapTime := time.Now()
+
+	volConfig, volume, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
+	snapshot.State = gcnvapi.SnapshotStateError
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, volume, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, volume, snapConfig.InternalName).Return(snapshot, nil).Times(1)
+
+	result, resultErr := driver.CreateSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Nil(t, result, "not nil")
+	assert.Error(t, resultErr, "expected error")
+}
+
+func TestGCNVCreateSnapshot_SnapshotExistsReady(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
+	snapTime := time.Now()
+
+	volConfig, volume, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, volume, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, volume, snapConfig.InternalName).Return(snapshot, nil).Times(1)
+
+	result, resultErr := driver.CreateSnapshot(ctx, snapConfig, volConfig)
+
+	expectedSnapshot := &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   snapTime.UTC().Format(convert.TimestampFormat),
+		SizeBytes: 0,
+		State:     storage.SnapshotStateOnline,
+	}
+
+	assert.NoError(t, resultErr, "error occurred")
+	assert.Equal(t, expectedSnapshot, result, "snapshot mismatch")
+}
+
 func TestGCNVCreateSnapshot_SnapshotCreateFailed(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
@@ -5820,27 +5839,8 @@ func TestGCNVCreateSnapshot_SnapshotCreateFailed(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, volume, nil).Times(1)
-	mockAPI.EXPECT().CreateSnapshot(ctx, volume, "snap1").Return(nil, errFailed).Times(1)
-
-	result, resultErr := driver.CreateSnapshot(ctx, snapConfig, volConfig)
-
-	assert.Nil(t, result, "not nil")
-	assert.Error(t, resultErr, "expected error")
-}
-
-func TestCreateSnapshot_SnapshotWaitFailed(t *testing.T) {
-	mockAPI, driver := newMockGCNVDriver(t)
-
-	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
-	snapTime := time.Now()
-
-	volConfig, volume, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
-
-	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
-	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, volume, nil).Times(1)
-	mockAPI.EXPECT().CreateSnapshot(ctx, volume, snapConfig.InternalName).Return(snapshot, nil).Times(1)
-	mockAPI.EXPECT().WaitForSnapshotState(ctx, snapshot, volume, gcnvapi.SnapshotStateReady,
-		[]string{gcnvapi.SnapshotStateError}, gcnvapi.SnapshotTimeout).Return(errFailed).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, volume, snapConfig.InternalName).Return(nil, errors.NotFoundError("not found")).Times(1)
+	mockAPI.EXPECT().CreateSnapshot(ctx, volume, "snap1", gomock.Any()).Return(nil, errFailed).Times(1)
 
 	result, resultErr := driver.CreateSnapshot(ctx, snapConfig, volConfig)
 
@@ -5973,10 +5973,8 @@ func TestRestoreSnapshot_VolumeWaitFailed(t *testing.T) {
 	assert.Error(t, result, "expected error")
 }
 
-func TestDeleteSnapshot_Docker(t *testing.T) {
+func TestDeleteSnapshot_SnapshotReady(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
-
-	driver.Config.DriverContext = tridentconfig.ContextDocker
 
 	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
@@ -5986,33 +5984,48 @@ func TestDeleteSnapshot_Docker(t *testing.T) {
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, volume, nil).Times(1)
 	mockAPI.EXPECT().SnapshotForVolume(ctx, volume, snapConfig.InternalName).Return(snapshot, nil).Times(1)
-	mockAPI.EXPECT().DeleteSnapshot(ctx, volume, snapshot).Return(nil).Times(1)
-	mockAPI.EXPECT().WaitForSnapshotState(ctx, snapshot, volume, gcnvapi.SnapshotStateDeleted, []string{gcnvapi.SnapshotStateError},
-		gcnvapi.SnapshotTimeout).Return(nil).Times(1)
+	mockAPI.EXPECT().DeleteSnapshot(ctx, volume, snapshot, gomock.Any()).Return(nil).Times(1)
 
 	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
 
 	assert.Nil(t, result, "not nil")
 }
 
-func TestDeleteSnapshot_CSI(t *testing.T) {
+func TestDeleteSnapshot_SnapshotError(t *testing.T) {
 	mockAPI, driver := newMockGCNVDriver(t)
 
 	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 	snapTime := time.Now()
 
 	volConfig, volume, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
+	snapshot.State = gcnvapi.SnapshotStateError
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, volume, nil).Times(1)
 	mockAPI.EXPECT().SnapshotForVolume(ctx, volume, snapConfig.InternalName).Return(snapshot, nil).Times(1)
-	mockAPI.EXPECT().DeleteSnapshot(ctx, volume, snapshot).Return(nil).Times(1)
-	mockAPI.EXPECT().WaitForSnapshotState(ctx, snapshot, volume, gcnvapi.SnapshotStateDeleted, []string{gcnvapi.SnapshotStateError},
-		gcnvapi.SnapshotTimeout).Return(nil).Times(1)
+	mockAPI.EXPECT().DeleteSnapshot(ctx, volume, snapshot, gomock.Any()).Return(nil).Times(1)
 
 	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
 
 	assert.Nil(t, result, "not nil")
+}
+
+func TestDeleteSnapshot_SnapshotOtherState(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
+	snapTime := time.Now()
+
+	volConfig, volume, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
+	snapshot.State = gcnvapi.SnapshotStateDeleting
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, volume, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, volume, snapConfig.InternalName).Return(snapshot, nil).Times(1)
+
+	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
+
+	assert.Error(t, result, "expected error")
 }
 
 func TestDeleteSnapshot_DiscoveryFailed(t *testing.T) {
@@ -6107,29 +6120,7 @@ func TestDeleteSnapshot_SnapshotDeleteFailed(t *testing.T) {
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, volume, nil).Times(1)
 	mockAPI.EXPECT().SnapshotForVolume(ctx, volume, snapConfig.InternalName).Return(snapshot, nil).Times(1)
-	mockAPI.EXPECT().DeleteSnapshot(ctx, volume, snapshot).Return(errFailed).Times(1)
-
-	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
-
-	assert.Error(t, result, "expected error")
-}
-
-func TestDeleteSnapshot_SnapshotWaitFailed_Docker(t *testing.T) {
-	mockAPI, driver := newMockGCNVDriver(t)
-
-	driver.Config.DriverContext = tridentconfig.ContextDocker
-
-	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
-	snapTime := time.Now()
-
-	volConfig, volume, snapConfig, snapshot := getStructsForCreateSnapshot(ctx, driver, snapTime)
-
-	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
-	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, volume, nil).Times(1)
-	mockAPI.EXPECT().SnapshotForVolume(ctx, volume, snapConfig.InternalName).Return(snapshot, nil).Times(1)
-	mockAPI.EXPECT().DeleteSnapshot(ctx, volume, snapshot).Return(nil).Times(1)
-	mockAPI.EXPECT().WaitForSnapshotState(ctx, snapshot, volume, gcnvapi.SnapshotStateDeleted, []string{gcnvapi.SnapshotStateError},
-		gcnvapi.SnapshotTimeout).Return(errFailed).Times(1)
+	mockAPI.EXPECT().DeleteSnapshot(ctx, volume, snapshot, gomock.Any()).Return(errFailed).Times(1)
 
 	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
 

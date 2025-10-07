@@ -86,18 +86,18 @@ func (mr *MockGCNVMockRecorder) CapacityPoolsForStoragePools(arg0 any) *gomock.C
 }
 
 // CreateSnapshot mocks base method.
-func (m *MockGCNV) CreateSnapshot(arg0 context.Context, arg1 *gcnvapi.Volume, arg2 string) (*gcnvapi.Snapshot, error) {
+func (m *MockGCNV) CreateSnapshot(arg0 context.Context, arg1 *gcnvapi.Volume, arg2 string, arg3 time.Duration) (*gcnvapi.Snapshot, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateSnapshot", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "CreateSnapshot", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(*gcnvapi.Snapshot)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateSnapshot indicates an expected call of CreateSnapshot.
-func (mr *MockGCNVMockRecorder) CreateSnapshot(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockGCNVMockRecorder) CreateSnapshot(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSnapshot", reflect.TypeOf((*MockGCNV)(nil).CreateSnapshot), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSnapshot", reflect.TypeOf((*MockGCNV)(nil).CreateSnapshot), arg0, arg1, arg2, arg3)
 }
 
 // CreateVolume mocks base method.
@@ -116,17 +116,17 @@ func (mr *MockGCNVMockRecorder) CreateVolume(arg0, arg1 any) *gomock.Call {
 }
 
 // DeleteSnapshot mocks base method.
-func (m *MockGCNV) DeleteSnapshot(arg0 context.Context, arg1 *gcnvapi.Volume, arg2 *gcnvapi.Snapshot) error {
+func (m *MockGCNV) DeleteSnapshot(arg0 context.Context, arg1 *gcnvapi.Volume, arg2 *gcnvapi.Snapshot, arg3 time.Duration) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSnapshot", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "DeleteSnapshot", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteSnapshot indicates an expected call of DeleteSnapshot.
-func (mr *MockGCNVMockRecorder) DeleteSnapshot(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockGCNVMockRecorder) DeleteSnapshot(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSnapshot", reflect.TypeOf((*MockGCNV)(nil).DeleteSnapshot), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSnapshot", reflect.TypeOf((*MockGCNV)(nil).DeleteSnapshot), arg0, arg1, arg2, arg3)
 }
 
 // DeleteVolume mocks base method.
@@ -406,20 +406,6 @@ func (m *MockGCNV) Volumes(arg0 context.Context) (*[]*gcnvapi.Volume, error) {
 func (mr *MockGCNVMockRecorder) Volumes(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Volumes", reflect.TypeOf((*MockGCNV)(nil).Volumes), arg0)
-}
-
-// WaitForSnapshotState mocks base method.
-func (m *MockGCNV) WaitForSnapshotState(arg0 context.Context, arg1 *gcnvapi.Snapshot, arg2 *gcnvapi.Volume, arg3 string, arg4 []string, arg5 time.Duration) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WaitForSnapshotState", arg0, arg1, arg2, arg3, arg4, arg5)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// WaitForSnapshotState indicates an expected call of WaitForSnapshotState.
-func (mr *MockGCNVMockRecorder) WaitForSnapshotState(arg0, arg1, arg2, arg3, arg4, arg5 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForSnapshotState", reflect.TypeOf((*MockGCNV)(nil).WaitForSnapshotState), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
 // WaitForVolumeState mocks base method.

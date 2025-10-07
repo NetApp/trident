@@ -892,7 +892,8 @@ func (c Client) WaitForVolumeState(
 				volumeState = StateDeleted
 				return nil
 			}
-			if errors.Is(err, context.Canceled) {
+			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+				Logc(ctx).WithError(err).Debugf("Context expired while waiting for volume %s state.", filesystem.Name)
 				return backoff.Permanent(err)
 			}
 
@@ -1396,7 +1397,8 @@ func (c Client) WaitForSnapshotState(
 				Logc(ctx).Debugf("Implied deletion for snapshot %s.", snapshot.Name)
 				return nil
 			}
-			if errors.Is(err, context.Canceled) {
+			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+				Logc(ctx).WithError(err).Debugf("Context expired while waiting for snapshot %s state.", snapshot.Name)
 				return backoff.Permanent(err)
 			}
 			return fmt.Errorf("could not get snapshot status; %v", err)

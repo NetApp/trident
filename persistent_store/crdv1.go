@@ -1080,6 +1080,8 @@ func (k *CRDClientV1) AddVolumeTransaction(ctx context.Context, txn *storage.Vol
 }
 
 func (k *CRDClientV1) HasVolumeTransactions(ctx context.Context) (bool, error) {
+	ctx = context.WithoutCancel(ctx) // Transactions should not be cancelled
+
 	listOneOpts := metav1.ListOptions{Limit: 1}
 	txnList, err := k.crdClient.TridentV1().TridentTransactions(k.namespace).List(ctx, listOneOpts)
 	if err != nil {
@@ -1117,6 +1119,8 @@ func (k *CRDClientV1) GetVolumeTransactions(ctx context.Context) ([]*storage.Vol
 }
 
 func (k *CRDClientV1) UpdateVolumeTransaction(ctx context.Context, update *storage.VolumeTransaction) error {
+	ctx = context.WithoutCancel(ctx) // Transactions should not be cancelled
+
 	ttxn, err := k.crdClient.TridentV1().TridentTransactions(k.namespace).Get(ctx, v1.NameFix(update.Name()), getOpts)
 	if err != nil {
 		return err
@@ -1133,6 +1137,8 @@ func (k *CRDClientV1) UpdateVolumeTransaction(ctx context.Context, update *stora
 func (k *CRDClientV1) GetVolumeTransaction(
 	ctx context.Context, volTxn *storage.VolumeTransaction,
 ) (*storage.VolumeTransaction, error) {
+	ctx = context.WithoutCancel(ctx) // Transactions should not be cancelled
+
 	ttxn, err := k.crdClient.TridentV1().TridentTransactions(k.namespace).Get(ctx, v1.NameFix(volTxn.Name()), getOpts)
 
 	if k8sapierrors.IsNotFound(err) {
@@ -1157,6 +1163,8 @@ func (k *CRDClientV1) GetVolumeTransaction(
 }
 
 func (k *CRDClientV1) DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error {
+	ctx = context.WithoutCancel(ctx) // Transactions should not be cancelled
+
 	err := k.crdClient.TridentV1().TridentTransactions(k.namespace).Delete(ctx, v1.NameFix(volTxn.Name()),
 		k.deleteOpts())
 

@@ -40,8 +40,7 @@ type GCNV interface {
 
 	SnapshotsForVolume(context.Context, *Volume) (*[]*Snapshot, error)
 	SnapshotForVolume(context.Context, *Volume, string) (*Snapshot, error)
-	WaitForSnapshotState(context.Context, *Snapshot, *Volume, string, []string, time.Duration) error
-	CreateSnapshot(context.Context, *Volume, string) (*Snapshot, error)
+	CreateSnapshot(context.Context, *Volume, string, time.Duration) (*Snapshot, error)
 	RestoreSnapshot(context.Context, *Volume, *Snapshot) error
-	DeleteSnapshot(context.Context, *Volume, *Snapshot) error
+	DeleteSnapshot(context.Context, *Volume, *Snapshot, time.Duration) error
 }

@@ -984,16 +984,9 @@ func (d *NASStorageDriver) CreateClone(
 			"source":   sourceVolume.Name,
 		}).Debug("Creating source snapshot.")
 
-		sourceSnapshot, err = d.API.CreateSnapshot(ctx, sourceVolume, snapName)
+		sourceSnapshot, err = d.API.CreateSnapshot(ctx, sourceVolume, snapName, gcnvapi.SnapshotTimeout)
 		if err != nil {
 			return fmt.Errorf("could not create source snapshot; %v", err)
-		}
-
-		// Wait for snapshot creation to complete
-		err = d.API.WaitForSnapshotState(ctx, sourceSnapshot, sourceVolume, gcnvapi.SnapshotStateReady,
-			[]string{gcnvapi.SnapshotStateError}, gcnvapi.SnapshotTimeout)
-		if err != nil {
-			return err
 		}
 
 		// Re-fetch the snapshot to populate the properties after create has completed
@@ -1452,7 +1445,7 @@ func (d *NASStorageDriver) deleteAutomaticSnapshot(
 	}
 
 	// Delete the snapshot
-	if err = d.API.DeleteSnapshot(ctx, sourceVolume, sourceSnapshot); err != nil {
+	if err = d.API.DeleteSnapshot(ctx, sourceVolume, sourceSnapshot, gcnvapi.DefaultTimeout); err != nil {
 		Logc(ctx).WithFields(logFields).WithError(err).Errorf("Automatic snapshot could not be " +
 			"cleaned up and must be manually deleted.")
 	}
@@ -1600,7 +1593,7 @@ func (d *NASStorageDriver) GetSnapshot(
 	}
 
 	if snapshot.State != gcnvapi.SnapshotStateReady {
-		return nil, fmt.Errorf("snapshot %s state is %s", internalSnapName, snapshot.State)
+		return nil, nil
 	}
 
 	created := snapshot.Created.UTC().Format(convert.TimestampFormat)
@@ -1703,30 +1696,37 @@ func (d *NASStorageDriver) CreateSnapshot(
 		return nil, fmt.Errorf("volume %s does not exist", internalVolName)
 	}
 
+	// Check if snapshot exists
+	snapshot, err := d.API.SnapshotForVolume(ctx, sourceVolume, internalSnapName)
+	if err != nil && !errors.IsNotFoundError(err) {
+		return nil, fmt.Errorf("error checking for existing snapshot %s; %w", internalSnapName, err)
+	}
+
 	// Create the snapshot
-	snapshot, err := d.API.CreateSnapshot(ctx, sourceVolume, internalSnapName)
-	if err != nil {
-		return nil, fmt.Errorf("could not create snapshot; %v", err)
+	if snapshot == nil {
+		snapshot, err = d.API.CreateSnapshot(ctx, sourceVolume, internalSnapName, gcnvapi.DefaultTimeout)
+		if err != nil {
+			return nil, fmt.Errorf("could not create snapshot; %v", err)
+		}
 	}
 
-	// Wait for snapshot creation to complete
-	err = d.API.WaitForSnapshotState(
-		ctx, snapshot, sourceVolume, gcnvapi.SnapshotStateReady, []string{gcnvapi.SnapshotStateError}, gcnvapi.SnapshotTimeout)
-	if err != nil {
-		return nil, err
+	// At this point, snapshot should not be nil
+	if snapshot.State == gcnvapi.SnapshotStateReady {
+		Logc(ctx).WithFields(fields).Info("Snapshot created or already exists and is Ready.")
+
+		return &storage.Snapshot{
+			Config:    snapConfig,
+			Created:   snapshot.Created.UTC().Format(convert.TimestampFormat),
+			SizeBytes: 0,
+			State:     storage.SnapshotStateOnline,
+		}, nil
 	}
 
-	Logc(ctx).WithFields(LogFields{
-		"snapshotName": snapConfig.InternalName,
-		"volumeName":   snapConfig.VolumeInternalName,
-	}).Info("Snapshot created.")
+	fields["state"] = snapshot.State
+	Logc(ctx).WithFields(fields).Debug("Snapshot already exists but is not Ready.")
 
-	return &storage.Snapshot{
-		Config:    snapConfig,
-		Created:   snapshot.Created.UTC().Format(convert.TimestampFormat),
-		SizeBytes: 0,
-		State:     storage.SnapshotStateOnline,
-	}, nil
+	return nil, fmt.Errorf("snapshot %s already exists but is %s, not %s",
+		internalSnapName, snapshot.State, gcnvapi.SnapshotStateReady)
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
@@ -1816,16 +1816,19 @@ func (d *NASStorageDriver) DeleteSnapshot(
 			return nil
 		}
 		return fmt.Errorf("unable to find snapshot %s; %v", internalSnapName, err)
+	} else {
+		switch snapshot.State {
+		case gcnvapi.SnapshotStateError:
+			fallthrough
+		case gcnvapi.SnapshotStateReady:
+			return d.API.DeleteSnapshot(ctx, extantVolume, snapshot, gcnvapi.DefaultTimeout)
+		default:
+			fields["state"] = snapshot.State
+			Logc(ctx).WithFields(fields).Debug("Snapshot exists but is not Ready.")
+			return fmt.Errorf("snapshot %s already exists but is %s, not %s",
+				internalSnapName, snapshot.State, gcnvapi.SnapshotStateReady)
+		}
 	}
-
-	if err = d.API.DeleteSnapshot(ctx, extantVolume, snapshot); err != nil {
-		return err
-	}
-
-	// Wait for snapshot deletion to complete
-	return d.API.WaitForSnapshotState(
-		ctx, snapshot, extantVolume, gcnvapi.SnapshotStateDeleted, []string{gcnvapi.SnapshotStateError}, gcnvapi.SnapshotTimeout,
-	)
 }
 
 // List returns the list of volumes associated with this backend.
