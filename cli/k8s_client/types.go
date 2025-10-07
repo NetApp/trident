@@ -175,6 +175,7 @@ type DeploymentYAMLArguments struct {
 	EnableConcurrency          bool                  `json:"enableConcurrency"`
 	HTTPSMetrics               bool                  `json:"httpsMetrics"`
 	CSIFeatureGates            map[string]string     `json:"csiFeatureGates"`
+	HostNetwork                bool                  `json:"hostNetwork"`
 }
 
 type DaemonsetYAMLArguments struct {

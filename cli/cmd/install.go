@@ -131,6 +131,7 @@ var (
 	k8sAPIQPS                int
 	fsGroupPolicy            string
 	enableConcurrency        bool
+	hostNetwork              bool
 
 	// CLI-based K8S client
 	client k8sclient.KubernetesClient
@@ -261,6 +262,7 @@ func init() {
 	installCmd.Flags().StringVar(&fsGroupPolicy, "fs-group-policy", "", "The FSGroupPolicy "+
 		"to set on Trident's CSIDriver resource.")
 	installCmd.Flags().BoolVar(&enableConcurrency, "enable-concurrency", false, "Enable concurrency for Trident's controller **TECH PREVIEW**")
+	installCmd.Flags().BoolVar(&hostNetwork, "host-network", false, "Use the host network for the Trident controller.")
 
 	if err := installCmd.Flags().MarkHidden("skip-k8s-version-check"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
@@ -278,6 +280,9 @@ func init() {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 	}
 	if err := installCmd.Flags().MarkHidden("fs-group-policy"); err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, err)
+	}
+	if err := installCmd.Flags().MarkHidden("host-network"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 	}
 }
@@ -699,6 +704,7 @@ func prepareYAMLFiles() error {
 		K8sAPIQPS:               k8sAPIQPS,
 		EnableConcurrency:       enableConcurrency,
 		HTTPSMetrics:            httpsMetrics,
+		HostNetwork:             hostNetwork,
 	}
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
@@ -738,15 +744,17 @@ func prepareYAMLFiles() error {
 	// If OpenShift, generate corresponding SCCs
 	if client.Flavor() == k8sclient.FlavorOpenShift {
 		// Creating trident controller security context constraint (SCC)
-		controllerSCCYAML := k8sclient.GetOpenShiftSCCYAML(getControllerRBACResourceName(), getControllerRBACResourceName(), TridentPodNamespace, labels, nil,
-			isLinuxNodeSCCUser(getControllerRBACResourceName()))
+		controllerSCCYAML := k8sclient.GetOpenShiftSCCYAML(getControllerRBACResourceName(),
+			getControllerRBACResourceName(), TridentPodNamespace, labels, nil,
+			isLinuxNodeSCCUser(getControllerRBACResourceName()), hostNetwork)
 		if err = writeFile(controllerSCCPath, controllerSCCYAML); err != nil {
 			return fmt.Errorf("could not write controller SCC YAML file; %v", err)
 		}
 
 		// Creating trident node security context constraint (SCC)
-		nodeLinuxSCCYAML := k8sclient.GetOpenShiftSCCYAML(getNodeRBACResourceName(false), getNodeRBACResourceName(false), TridentPodNamespace, daemonSetlabels, nil,
-			isLinuxNodeSCCUser(getNodeRBACResourceName(false)))
+		nodeLinuxSCCYAML := k8sclient.GetOpenShiftSCCYAML(getNodeRBACResourceName(false),
+			getNodeRBACResourceName(false), TridentPodNamespace, daemonSetlabels, nil,
+			isLinuxNodeSCCUser(getNodeRBACResourceName(false)), hostNetwork)
 		if err = writeFile(nodeLinuxSCCPath, nodeLinuxSCCYAML); err != nil {
 			return fmt.Errorf("could not write node linux SCC YAML file; %v", err)
 		}
@@ -787,8 +795,9 @@ func prepareYAMLFiles() error {
 		}
 
 		if client.Flavor() == k8sclient.FlavorOpenShift {
-			nodeWindowsSCCYAML := k8sclient.GetOpenShiftSCCYAML(getNodeRBACResourceName(true), getNodeRBACResourceName(true), TridentPodNamespace, daemonSetlabels, nil,
-				isLinuxNodeSCCUser(getNodeRBACResourceName(true)))
+			nodeWindowsSCCYAML := k8sclient.GetOpenShiftSCCYAML(getNodeRBACResourceName(true),
+				getNodeRBACResourceName(true), TridentPodNamespace, daemonSetlabels, nil,
+				isLinuxNodeSCCUser(getNodeRBACResourceName(true)), hostNetwork)
 			if err = writeFile(nodeWindowsSCCPath, nodeWindowsSCCYAML); err != nil {
 				return fmt.Errorf("could not write node windows SCC YAML file; %v", err)
 			}
@@ -1073,6 +1082,7 @@ func installTrident() (returnError error) {
 			EnableConcurrency:       enableConcurrency,
 			HTTPSMetrics:            httpsMetrics,
 			CSIFeatureGates:         csiFeatureGateYAMLSnippets,
+			HostNetwork:             hostNetwork,
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDeploymentYAML(deploymentArgs))
@@ -2070,7 +2080,7 @@ func CreateOpenShiftTridentSCC(user, appLabelVal string) error {
 	labels["app"] = appLabelVal
 
 	err := client.CreateObjectByYAML(k8sclient.GetOpenShiftSCCYAML(user, user, TridentPodNamespace, labels, nil,
-		isLinuxNodeSCCUser(user)))
+		isLinuxNodeSCCUser(user), hostNetwork))
 	if err != nil {
 		return fmt.Errorf("cannot create trident's scc; %v", err)
 	}
@@ -2083,7 +2093,8 @@ func DeleteOpenShiftTridentSCC(user, labelVal string) error {
 	labels["app"] = labelVal
 
 	err := client.DeleteObjectByYAML(
-		k8sclient.GetOpenShiftSCCYAML(user, user, TridentPodNamespace, labels, nil, isLinuxNodeSCCUser(user)), true)
+		k8sclient.GetOpenShiftSCCYAML(user, user, TridentPodNamespace, labels, nil,
+			isLinuxNodeSCCUser(user), hostNetwork), true)
 	if err != nil {
 		return fmt.Errorf("%s; %v", "could not delete trident's scc", err)
 	}

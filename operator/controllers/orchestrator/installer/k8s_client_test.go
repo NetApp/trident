@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package installer
 
@@ -5844,7 +5844,7 @@ func TestGetMultipleTridentOpenShiftSCCInformation(t *testing.T) {
 
 	for idx := 0; idx < len(names); idx++ {
 		expCurrentOpenShiftSCCJSONMap[names[idx]] = []byte(k8sclient.GetOpenShiftSCCYAML(names[idx], usernames[idx],
-			"default", nil, nil, false))
+			"default", nil, nil, false, false))
 		expReuseOpenShiftSCCMap[names[idx]] = true
 		expRemoveExistingSCCMap[names[idx]] = true
 	}
@@ -6101,6 +6101,7 @@ func TestPutOpenShiftSCC(t *testing.T) {
 		make(map[string]string),
 		make(map[string]string),
 		false,
+		false,
 	)
 
 	currentOpenShiftSCCJSON, err := yaml.YAMLToJSON([]byte(k8sclient.GetOpenShiftSCCYAML(
@@ -6109,6 +6110,7 @@ func TestPutOpenShiftSCC(t *testing.T) {
 		"trident",
 		make(map[string]string),
 		make(map[string]string),
+		false,
 		false,
 	)))
 	if err != nil {

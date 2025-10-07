@@ -567,6 +567,12 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LABEL_IDENTITY}", "")
 	}
 
+	if args.HostNetwork {
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{HOST_NETWORK}", "hostNetwork: true")
+	} else {
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{HOST_NETWORK}", "")
+	}
+
 	if args.EnableACP {
 		enableACP = "- \"-enable_acp\""
 	}
@@ -677,6 +683,7 @@ spec:
         openshift.io/required-scc: {SERVICE_ACCOUNT}
     spec:
       serviceAccount: {SERVICE_ACCOUNT}
+      {HOST_NETWORK}
       containers:
       - name: trident-main
         image: {TRIDENT_IMAGE}
@@ -1620,16 +1627,17 @@ spec:
 `
 
 func GetOpenShiftSCCYAML(
-	sccName, user, namespace string, labels, controllingCRDetails map[string]string, privileged bool,
+	sccName, user, namespace string, labels, controllingCRDetails map[string]string, privileged, hostNetwork bool,
 ) string {
 	sccYAML := openShiftUnprivilegedSCCYAML
-	// Only linux node pod needs an privileged SCC (i.e. privileged set to true)
+	// Only linux node pod needs a privileged SCC (i.e. privileged set to true)
 	if privileged {
 		sccYAML = openShiftPrivilegedSCCYAML
 	}
 	sccYAML = strings.ReplaceAll(sccYAML, "{SCC}", sccName)
 	sccYAML = strings.ReplaceAll(sccYAML, "{NAMESPACE}", namespace)
 	sccYAML = strings.ReplaceAll(sccYAML, "{USER}", user)
+	sccYAML = strings.ReplaceAll(sccYAML, "{HOST_NETWORK}", strconv.FormatBool(hostNetwork))
 	sccYAML = yaml.ReplaceMultilineTag(sccYAML, "LABELS", constructLabels(labels))
 	sccYAML = yaml.ReplaceMultilineTag(sccYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 
@@ -1689,9 +1697,9 @@ metadata:
   {OWNER_REF}
 allowHostDirVolumePlugin: true
 allowHostIPC: false
-allowHostNetwork: false
+allowHostNetwork: {HOST_NETWORK}
 allowHostPID: false
-allowHostPorts: false
+allowHostPorts: {HOST_NETWORK}
 allowPrivilegeEscalation: true
 allowPrivilegedContainer: false
 allowedCapabilities: null

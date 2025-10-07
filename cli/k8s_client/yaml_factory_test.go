@@ -702,6 +702,23 @@ func TestGetCSIDeploymentYAML_K8sAPIQPS(t *testing.T) {
 	}
 }
 
+func TestGetCSIDeploymentYAML_HostNetwork(t *testing.T) {
+	deploymentArgs := &DeploymentYAMLArguments{
+		HostNetwork: true,
+	}
+
+	deploymentYAML := GetCSIDeploymentYAML(deploymentArgs)
+	deployment := appsv1.Deployment{}
+	err := yaml.Unmarshal([]byte(deploymentYAML), &deployment)
+	if err != nil {
+		t.Fatalf("expected valid YAML, got %s", deploymentYAML)
+	}
+
+	// trident controller flag validation
+	tridentMainHostNetworkFlag := "hostNetwork: true"
+	assert.Contains(t, deploymentYAML, tridentMainHostNetworkFlag)
+}
+
 func TestGetCSIDaemonSetYAMLLinux(t *testing.T) {
 	versions := []string{"1.21.0", "1.23.0", "1.25.0"}
 
@@ -1426,7 +1443,7 @@ func TestGetOpenShiftSCCYAML(t *testing.T) {
 
 	var actual scc.SecurityContextConstraints
 
-	actualYAML := GetOpenShiftSCCYAML(sccName, user, namespace, labels, crdDetails, true)
+	actualYAML := GetOpenShiftSCCYAML(sccName, user, namespace, labels, crdDetails, true, false)
 	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
 	assert.Equal(t, expected, actual)
 }
@@ -1487,7 +1504,7 @@ func TestGetOpenShiftSCCYAML_UnprivilegedUser(t *testing.T) {
 
 	var actual scc.SecurityContextConstraints
 
-	actualYAML := GetOpenShiftSCCYAML(sccName, user, namespace, labels, crdDetails, false)
+	actualYAML := GetOpenShiftSCCYAML(sccName, user, namespace, labels, crdDetails, false, false)
 	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
 	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))

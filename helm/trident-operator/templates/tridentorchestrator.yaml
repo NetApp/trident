@@ -88,3 +88,6 @@ spec:
   skipCRDsToObliviate: {{- range .Values.skipCRDsToObliviate }}
     - {{.}} {{- end }}
   {{- end }}
+{{- if .Values.hostNetwork }}
+  hostNetwork: {{ .Values.hostNetwork }}
+  {{- end }}

@@ -92,6 +92,7 @@ type TridentOrchestratorSpec struct {
 	SkipCRDsToObliviate          []string          `json:"skipCRDsToObliviate,omitempty"`
 	EnableConcurrency            bool              `json:"enableConcurrency,omitempty"`
 	HTTPSMetrics                 bool              `json:"httpsMetrics,omitempty"`
+	HostNetwork                  bool              `json:"hostNetwork,omitempty"`
 }
 
 // Toleration
@@ -173,6 +174,7 @@ type TridentOrchestratorSpecValues struct {
 	NodePrep                 []string          `json:"nodePrep"`
 	EnableConcurrency        string            `json:"enableConcurrency"`
 	HTTPSMetrics             string            `json:"httpsMetrics"`
+	HostNetwork              bool              `json:"hostNetwork"`
 }
 
 /************************

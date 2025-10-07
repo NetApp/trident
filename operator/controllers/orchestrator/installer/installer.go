@@ -67,6 +67,7 @@ var (
 	windows            bool
 	enableConcurrency  bool
 	httpsMetrics       bool
+	hostNetwork        bool
 
 	logLevel                           string
 	logWorkflows                       string
@@ -420,6 +421,7 @@ func (i *Installer) setInstallationParams(
 		}).Info("ACP is now obsolete; All workflows are now enabled by default.")
 	}
 
+	hostNetwork = cr.Spec.HostNetwork
 	useIPv6 = cr.Spec.IPv6
 	windows = cr.Spec.Windows
 	silenceAutosupport = cr.Spec.SilenceAutosupport
@@ -814,6 +816,7 @@ func (i *Installer) InstallOrPatchTrident(
 		NodePrep:                 nodePrep,
 		EnableConcurrency:        strconv.FormatBool(enableConcurrency),
 		HTTPSMetrics:             strconv.FormatBool(httpsMetrics),
+		HostNetwork:              hostNetwork,
 	}
 
 	Log().WithFields(LogFields{
@@ -1264,8 +1267,7 @@ func (i *Installer) createOrPatchTridentOpenShiftSCC(
 
 		appLabels, _ := getAppLabelForResource(openShiftSCCNames[idx])
 		newOpenShiftSCCYAML := k8sclient.GetOpenShiftSCCYAML(openShiftSCCNames[idx], openShiftSCCUserNames[idx],
-			i.namespace,
-			appLabels, controllingCRDetails, isLinuxNodeSCCUser(openShiftSCCUserNames[idx]))
+			i.namespace, appLabels, controllingCRDetails, isLinuxNodeSCCUser(openShiftSCCUserNames[idx]), hostNetwork)
 
 		err = i.client.PutOpenShiftSCC(currentOpenShiftSCCJSONMap[openShiftSCCNames[idx]],
 			reuseOpenShiftSCCMap[openShiftSCCNames[idx]],
@@ -1523,6 +1525,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 		EnableConcurrency:          enableConcurrency,
 		HTTPSMetrics:               httpsMetrics,
 		CSIFeatureGates:            csiFeatureGateYAMLSnippets,
+		HostNetwork:                hostNetwork,
 	}
 
 	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)

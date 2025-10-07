@@ -150,6 +150,7 @@ func getInstallYaml(semVersion *versionutils.Version) (string, error) {
 		HTTPRequestTimeout:      tridentconfig.HTTPTimeoutString,
 		ServiceAccountName:      getControllerRBACResourceName(),
 		HTTPSMetrics:            false,
+		HostNetwork:             false,
 	}
 	// Get Deployment and Daemonset YAML and collect the names of the container images Trident needs to run.
 	yaml := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
