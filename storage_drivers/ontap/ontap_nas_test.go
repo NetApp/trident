@@ -3804,7 +3804,7 @@ func TestOntapNasStorageDriverVolumeCreate(t *testing.T) {
 		SecureSMBEnabled: false,
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -3883,7 +3883,7 @@ func TestOntapNasStorageDriverVolumeCreate_SecureSMBEnabled(t *testing.T) {
 		SecureSMBEnabled: true,
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -4332,7 +4332,7 @@ func TestOntapNasStorageDriverVolumeCreate_CreateFailedScenarios(t *testing.T) {
 		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -4386,7 +4386,7 @@ func TestOntapNasStorageDriverVolumeCreate_SnapshotDisabled(t *testing.T) {
 		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -4424,7 +4424,7 @@ func TestOntapNasStorageDriverVolumeCreate_IsMirrorDestination(t *testing.T) {
 		IsMirrorDestination: true,
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -4459,7 +4459,7 @@ func TestOntapNasStorageDriverVolumeCreate_MountFailed(t *testing.T) {
 		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -4495,7 +4495,7 @@ func TestOntapNasStorageDriverVolumeCreate_LabelLengthExceeding(t *testing.T) {
 		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -4551,7 +4551,7 @@ func TestOntapNasStorageDriverVolumeCreate_SMBShareScenarios(t *testing.T) {
 		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -4608,7 +4608,7 @@ func TestOntapNasStorageDriverVolumeCreate_SMBShareExistsScenarios(t *testing.T)
 		PeerVolumeHandle: "fakesvm2:vol1",
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -4659,7 +4659,7 @@ func TestOntapNasStorageDriverVolumeCreate_SecureSMBAccessControlCreateFail(t *t
 		SecureSMBEnabled: true,
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -4712,7 +4712,7 @@ func TestOntapNasStorageDriverVolumeCreate_SecureSMBAccessControlDeleteFail(t *t
 		SecureSMBEnabled: true,
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{

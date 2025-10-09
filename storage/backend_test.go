@@ -4,6 +4,7 @@ package storage
 
 import (
 	"context"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -92,7 +93,8 @@ func TestDeleteSnapshot_BackendOffline(t *testing.T) {
 	}
 
 	backend := &StorageBackend{
-		state: Offline,
+		state:     Offline,
+		stateLock: new(sync.RWMutex),
 	}
 
 	// Both volume and snapshot not managed
@@ -126,7 +128,8 @@ func TestDeleteSnapshot_NotManaged(t *testing.T) {
 	}
 
 	backend := &StorageBackend{
-		state: Online,
+		state:     Online,
+		stateLock: new(sync.RWMutex),
 	}
 
 	// Both volume and snapshot not managed
@@ -177,8 +180,9 @@ func TestCloneVolume_BackendOffline(t *testing.T) {
 	}
 
 	backend := &StorageBackend{
-		state: Offline,
-		name:  "test-backend",
+		state:     Offline,
+		name:      "test-backend",
+		stateLock: new(sync.RWMutex),
 	}
 	pool := NewStoragePool(nil, "test-pool1")
 
@@ -202,6 +206,7 @@ func TestUserBackendState(t *testing.T) {
 		volumes:            nil,
 		configRef:          "",
 		nodeAccessUpToDate: false,
+		stateLock:          new(sync.RWMutex),
 	}
 
 	tests := map[string]struct {
@@ -303,6 +308,7 @@ func TestIsProvisioningAllowed(t *testing.T) {
 		volumes:            nil,
 		configRef:          "",
 		nodeAccessUpToDate: false,
+		stateLock:          new(sync.RWMutex),
 	}
 
 	// For cases where provisioning is allowed.

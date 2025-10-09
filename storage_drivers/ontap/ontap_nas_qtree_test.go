@@ -4571,7 +4571,7 @@ func TestNASQtreeStorageDriver_VolumeCreate(t *testing.T) {
 	sizeKB := 1048576
 	sizeKBStr := strconv.FormatUint(uint64(sizeKB), 10)
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -4642,7 +4642,7 @@ func TestCreate_WithInvalidInternalID(t *testing.T) {
 		InternalID:   "invalid",
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
@@ -4663,7 +4663,7 @@ func TestCreate_WithVirtualPoolAndNoMatchingPhysicalPool(t *testing.T) {
 		InternalName: qtreeName,
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool2 := storage.NewStoragePool(sb, "pool2")
@@ -4686,7 +4686,7 @@ func TestCreate_WithQtreeAlreadyExists(t *testing.T) {
 		InternalName: "qtree1",
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
@@ -4702,7 +4702,7 @@ func TestCreate_WithQtreeAlreadyExists(t *testing.T) {
 func TestCreate_WithInvalidConfig(t *testing.T) {
 	// Create attributes common to all test cases
 	volName := "vol1"
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	commonStoragePool := storage.NewStoragePool(sb, "pool1")
 	volAttrs := map[string]sa.Request{}
@@ -4746,7 +4746,7 @@ func TestCreate_WithInvalidConfig(t *testing.T) {
 				InternalName: volName,
 			},
 			storagePool: func() *storage.StoragePool {
-				sb := &storage.StorageBackend{}
+				sb := storage.NewTestStorageBackend()
 				sb.SetBackendUUID(BackendUUID)
 				pool := storage.NewStoragePool(sb, "pool1")
 				pool.InternalAttributes()["snapshotDir"] = "invalid"
@@ -4761,7 +4761,7 @@ func TestCreate_WithInvalidConfig(t *testing.T) {
 				InternalName: volName,
 			},
 			storagePool: func() *storage.StoragePool {
-				sb := &storage.StorageBackend{}
+				sb := storage.NewTestStorageBackend()
 				sb.SetBackendUUID(BackendUUID)
 				pool := storage.NewStoragePool(sb, "pool1")
 				pool.InternalAttributes()["snapshotDir"] = "true"
@@ -4806,7 +4806,7 @@ func TestCreate_OverSizeLimit(t *testing.T) {
 		InternalName: qtreeName,
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -4849,7 +4849,7 @@ func TestCreate_OverPoolSizeLimit(t *testing.T) {
 	sizeBytes := 1073741824
 	sizeBytesStr := strconv.FormatUint(uint64(sizeBytes), 10)
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -4895,7 +4895,7 @@ func TestCreate_WithIneligibleBackend(t *testing.T) {
 	flexvolName := "flexvol1"
 	flexvol := &api.Volume{Name: flexvolName}
 	volAttrs := map[string]sa.Request{}
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.InternalAttributes()["snapshotDir"] = "false"
@@ -4964,7 +4964,7 @@ func TestCreate_WithErrorInApiOperation(t *testing.T) {
 	sizeKB := 1048576
 	sizeKBStr := strconv.FormatUint(uint64(sizeKB), 10)
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := getValidOntapNASPool()
 	pool1.SetName("pool1")

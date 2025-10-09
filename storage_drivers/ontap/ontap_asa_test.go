@@ -2912,7 +2912,7 @@ func TestCanSnapshotASA(t *testing.T) {
 func TestGetStorageBackendSpecsASA(t *testing.T) {
 	_, driver := newMockOntapASADriver(t)
 
-	backend := &storage.StorageBackend{}
+	backend := storage.NewTestStorageBackend()
 	backend.SetOnline(true)
 	backend.ClearStoragePools()
 	backend.SetDriver(driver)

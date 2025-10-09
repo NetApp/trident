@@ -6404,7 +6404,7 @@ func TestGCNVGetStorageBackendSpecs(t *testing.T) {
 	driver.initializeStoragePools(ctx)
 	driver.initializeTelemetry(ctx, gcnvapi.BackendUUID)
 
-	backend := &storage.StorageBackend{}
+	backend := storage.NewTestStorageBackend()
 	backend.ClearStoragePools()
 
 	result := driver.GetStorageBackendSpecs(ctx, backend)

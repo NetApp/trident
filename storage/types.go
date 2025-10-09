@@ -75,10 +75,12 @@ type Backend interface {
 	Terminate(ctx context.Context)
 	InvalidateNodeAccess()
 	SetNodeAccessUpToDate()
+	IsNodeAccessUpToDate() bool
 	ReconcileNodeAccess(ctx context.Context, nodes []*models.Node, tridentUUID string) error
 	ReconcileVolumeNodeAccess(ctx context.Context, volConfig *VolumeConfig, nodes []*models.Node) error
 	CanGetState() bool
 	GetBackendState(ctx context.Context) (string, *roaring.Bitmap)
+	UpdateBackendState(ctx context.Context, stateReason string)
 	ConstructExternal(ctx context.Context) *BackendExternal
 	ConstructExternalWithPoolMap(ctx context.Context, poolMap map[string][]string) *BackendExternal
 	ConstructPersistent(ctx context.Context) *BackendPersistent

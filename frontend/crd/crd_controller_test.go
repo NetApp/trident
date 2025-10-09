@@ -542,7 +542,7 @@ func TestCrdControllerBackendOperations(t *testing.T) {
 	driver := fake.StorageDriver{
 		Config: fakeConfig.Config,
 	}
-	fakeBackend := &storage.StorageBackend{}
+	fakeBackend := storage.NewTestStorageBackend()
 	fakeBackend.SetDriver(&driver)
 	fakeBackend.SetName("fake1")
 	fakeBackend.SetBackendUUID(uuid.New().String())
@@ -700,7 +700,7 @@ func TestCrdControllerFinalizerRemoval(t *testing.T) {
 	storageDriver := fake.StorageDriver{
 		Config: fakeConfig.Config,
 	}
-	fakeBackend := &storage.StorageBackend{}
+	fakeBackend := storage.NewTestStorageBackend()
 	fakeBackend.SetDriver(&storageDriver)
 	fakeBackend.SetName("fake1")
 	fakeBackend.SetBackendUUID(uuid.New().String())

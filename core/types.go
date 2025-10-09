@@ -87,7 +87,7 @@ type Orchestrator interface {
 	ListNodes(ctx context.Context) ([]*models.NodeExternal, error)
 	DeleteNode(ctx context.Context, nodeName string) error
 	PeriodicallyReconcileNodeAccessOnBackends()
-	PeriodicallyReconcileBackendState(duration time.Duration)
+	PeriodicallyReconcileBackendState(pollInterval time.Duration)
 
 	ReconcileVolumePublications(ctx context.Context, attachedLegacyVolumes []*models.VolumePublicationExternal) error
 	GetVolumePublication(ctx context.Context, volumeName, nodeName string) (*models.VolumePublication, error)

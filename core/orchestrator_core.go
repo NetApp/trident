@@ -42,12 +42,6 @@ import (
 	"github.com/netapp/trident/utils/nvme"
 )
 
-const (
-	NodeAccessReconcilePeriod      = time.Second * 30
-	NodeRegistrationCooldownPeriod = time.Second * 30
-	AttachISCSIVolumeTimeoutLong   = time.Second * 90
-)
-
 type TridentOrchestrator struct {
 	backends                 map[string]storage.Backend // key is UUID, not name
 	volumes                  map[string]*storage.Volume

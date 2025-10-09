@@ -4895,7 +4895,7 @@ func TestGetPoolsForCreate(t *testing.T) {
 		Name:         "fakeVolName",
 		InternalName: "fakeInternalName",
 	}
-	backend := &storage.StorageBackend{}
+	backend := storage.NewTestStorageBackend()
 	backend.SetName("dummybackend")
 	backend.SetOnline(true)
 
@@ -4944,7 +4944,7 @@ func TestGetPoolsForCreate_NoMatchingPools(t *testing.T) {
 		Name:         "fakeVolName",
 		InternalName: "fakeInternalName",
 	}
-	backend := &storage.StorageBackend{}
+	backend := storage.NewTestStorageBackend()
 	backend.SetName("dummybackend")
 	backend.SetOnline(true)
 
@@ -6815,7 +6815,7 @@ func TestValidateASAStoragePools(t *testing.T) {
 
 func TestGetStorageBackendSpecsCommon(t *testing.T) {
 	// Test1: Physical pools provided
-	backend := &storage.StorageBackend{}
+	backend := storage.NewTestStorageBackend()
 	backend.SetName("dummybackend")
 	backend.SetOnline(true)
 	backend.ClearStoragePools()

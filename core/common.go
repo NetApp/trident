@@ -15,6 +15,12 @@ import (
 	"github.com/netapp/trident/utils/models"
 )
 
+const (
+	NodeAccessReconcilePeriod      = time.Second * 30
+	NodeRegistrationCooldownPeriod = time.Second * 30
+	AttachISCSIVolumeTimeoutLong   = time.Second * 90
+)
+
 // recordTiming is used to record in Prometheus the total time taken for an operation as follows:
 //
 //	defer recordTiming("backend_add")()

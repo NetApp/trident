@@ -126,16 +126,18 @@ type VolumeUpdater interface {
 }
 
 type StorageBackend struct {
-	driver             Driver
-	name               string
-	backendUUID        string
+	driver       Driver
+	name         string
+	backendUUID  string
+	storagePools *sync.Map
+	volumes      *sync.Map
+	configRef    string
+
+	stateLock          *sync.RWMutex
 	online             bool
 	state              BackendState
-	userState          UserBackendState
 	stateReason        string
-	storagePools       *sync.Map
-	volumes            *sync.Map
-	configRef          string
+	userState          UserBackendState
 	nodeAccessUpToDate bool
 }
 
@@ -200,36 +202,53 @@ func (b *StorageBackend) SetBackendUUID(BackendUUID string) {
 }
 
 func (b *StorageBackend) Online() bool {
+	b.stateLock.RLock()
+	defer b.stateLock.RUnlock()
+
 	return b.online
 }
 
 func (b *StorageBackend) SetOnline(Online bool) {
+	b.stateLock.Lock()
+	defer b.stateLock.Unlock()
+
 	b.online = Online
 }
 
 func (b *StorageBackend) State() BackendState {
+	b.stateLock.RLock()
+	defer b.stateLock.RUnlock()
+
 	return b.state
 }
 
 func (b *StorageBackend) UserState() UserBackendState {
+	b.stateLock.RLock()
+	defer b.stateLock.RUnlock()
+
 	return b.userState
 }
 
 func (b *StorageBackend) StateReason() string {
+	b.stateLock.RLock()
+	defer b.stateLock.RUnlock()
+
 	return b.stateReason
 }
 
 // SetState sets the 'state' and 'online' fields of StorageBackend accordingly.
 func (b *StorageBackend) SetState(state BackendState) {
+	b.stateLock.Lock()
+	defer b.stateLock.Unlock()
+
 	b.state = state
-	if state.IsOnline() {
-		b.online = true
-	} else {
-		b.online = false
-	}
+	b.online = state.IsOnline()
 }
 
 func (b *StorageBackend) SetUserState(state UserBackendState) {
+	b.stateLock.Lock()
+	defer b.stateLock.Unlock()
+
 	b.userState = state
 }
 
@@ -349,6 +368,7 @@ func NewStorageBackend(ctx context.Context, driver Driver) (*StorageBackend, err
 		userState:    UserNormal,
 		storagePools: new(sync.Map),
 		volumes:      new(sync.Map),
+		stateLock:    new(sync.RWMutex),
 	}
 
 	// Retrieve backend specs.
@@ -366,6 +386,7 @@ func NewFailedStorageBackend(ctx context.Context, driver Driver) Backend {
 		state:        Failed,
 		storagePools: new(sync.Map),
 		volumes:      new(sync.Map),
+		stateLock:    new(sync.RWMutex),
 	}
 
 	Logc(ctx).WithFields(LogFields{
@@ -375,6 +396,17 @@ func NewFailedStorageBackend(ctx context.Context, driver Driver) Backend {
 	}).Debug("Failed storagePools backend.")
 
 	return &backend
+}
+
+func NewTestStorageBackend() Backend {
+	return &StorageBackend{
+		state:        Online,
+		online:       true,
+		userState:    UserNormal,
+		storagePools: new(sync.Map),
+		volumes:      new(sync.Map),
+		stateLock:    new(sync.RWMutex),
+	}
 }
 
 func (b *StorageBackend) AddStoragePool(pool Pool) {
@@ -780,12 +812,9 @@ func (b *StorageBackend) RenameVolume(ctx context.Context, volConfig *VolumeConf
 		return errors.NotManagedError("volume %s is not managed by Trident", oldName)
 	}
 
-	if b.state != Online {
-		Logc(ctx).WithFields(LogFields{
-			"state":         b.state,
-			"expectedState": string(Online),
-		}).Error("Invalid backend state.")
-		return fmt.Errorf("backend %s is not Online", b.name)
+	// Ensure backend is ready
+	if err := b.ensureOnline(ctx); err != nil {
+		return err
 	}
 
 	if err := b.driver.Get(ctx, oldName); err != nil {
@@ -1085,12 +1114,14 @@ func (b *StorageBackend) HasVolumes() bool {
 // and will not be called again.  This may be a signal to the storage
 // driver to clean up and stop any ongoing operations.
 func (b *StorageBackend) Terminate(ctx context.Context) {
+	b.stateLock.RLock()
 	logFields := LogFields{
 		"backend":     b.name,
 		"backendUUID": b.backendUUID,
 		"driver":      b.GetDriverName(),
 		"state":       string(b.state),
 	}
+	b.stateLock.RUnlock()
 
 	if !b.driver.Initialized() {
 		Logc(ctx).WithFields(logFields).Warning("Cannot terminate an uninitialized backend.")
@@ -1102,12 +1133,23 @@ func (b *StorageBackend) Terminate(ctx context.Context) {
 
 // InvalidateNodeAccess marks the backend as needing the node access rule reconciled
 func (b *StorageBackend) InvalidateNodeAccess() {
+	b.stateLock.Lock()
+	defer b.stateLock.Unlock()
 	b.nodeAccessUpToDate = false
 }
 
-// InvalidateNodeAccess marks the backend as node access up to date
+// SetNodeAccessUpToDate marks the backend as node access up to date
 func (b *StorageBackend) SetNodeAccessUpToDate() {
+	b.stateLock.Lock()
+	defer b.stateLock.Unlock()
 	b.nodeAccessUpToDate = true
+}
+
+// IsNodeAccessUpToDate returns true if the backend's node access rules are up to date
+func (b *StorageBackend) IsNodeAccessUpToDate() bool {
+	b.stateLock.RLock()
+	defer b.stateLock.RUnlock()
+	return b.nodeAccessUpToDate
 }
 
 // ReconcileNodeAccess will ensure that the driver only has allowed access
@@ -1118,7 +1160,7 @@ func (b *StorageBackend) ReconcileNodeAccess(
 ) error {
 	if err := b.ensureOnlineOrDeleting(ctx); err == nil {
 		// Only reconcile backends that need it
-		if b.nodeAccessUpToDate {
+		if b.IsNodeAccessUpToDate() {
 			Logc(ctx).WithField("backend", b.name).Trace("Backend node access rules are already up-to-date, skipping.")
 			return nil
 		}
@@ -1136,7 +1178,7 @@ func (b *StorageBackend) ReconcileVolumeNodeAccess(
 ) error {
 	if err := b.ensureOnlineOrDeleting(ctx); err == nil {
 		// Only reconcile backends that need it
-		if b.nodeAccessUpToDate {
+		if b.IsNodeAccessUpToDate() {
 			Logc(ctx).WithField("backend", b.name).Trace("Backend volume node access rules are already up-to-date, skipping.")
 			return nil
 		}
@@ -1174,19 +1216,29 @@ func (b *StorageBackend) GetBackendState(ctx context.Context) (string, *roaring.
 		changeMap.Add(BackendStateReasonChange)
 	}
 
-	if reason == "" {
+	return reason, changeMap
+}
+
+// UpdateBackendState updates the backend state and state reason without polling the storage system.  It
+// is expected to be called with the results from a call to GetBackendState after acquiring the necessary locks.
+func (b *StorageBackend) UpdateBackendState(_ context.Context, stateReason string) {
+	b.stateLock.Lock()
+	defer b.stateLock.Unlock()
+
+	if stateReason == "" {
 		b.state = Online
 		b.online = true
 	} else {
 		b.state = Offline
 		b.online = false
 	}
-	b.stateReason = reason
-
-	return reason, changeMap
+	b.stateReason = stateReason
 }
 
 func (b *StorageBackend) ensureOnline(ctx context.Context) error {
+	b.stateLock.RLock()
+	defer b.stateLock.RUnlock()
+
 	if b.state != Online {
 		Logc(ctx).WithFields(LogFields{
 			"state":         b.state,
@@ -1198,6 +1250,9 @@ func (b *StorageBackend) ensureOnline(ctx context.Context) error {
 }
 
 func (b *StorageBackend) ensureOnlineOrDeleting(ctx context.Context) error {
+	b.stateLock.RLock()
+	defer b.stateLock.RUnlock()
+
 	if b.state != Online && b.state != Deleting {
 		Logc(ctx).WithFields(LogFields{
 			"state":         b.state,
@@ -1209,11 +1264,10 @@ func (b *StorageBackend) ensureOnlineOrDeleting(ctx context.Context) error {
 }
 
 func (b *StorageBackend) isProvisioningAllowed() bool {
-	if b.userState == UserSuspended {
-		return false
-	} else {
-		return true
-	}
+	b.stateLock.RLock()
+	defer b.stateLock.RUnlock()
+
+	return b.userState != UserSuspended
 }
 
 type BackendExternal struct {
@@ -1231,6 +1285,9 @@ type BackendExternal struct {
 }
 
 func (b *StorageBackend) ConstructExternal(ctx context.Context) *BackendExternal {
+	b.stateLock.RLock()
+	defer b.stateLock.RUnlock()
+
 	backendExternal := BackendExternal{
 		Name:        b.name,
 		BackendUUID: b.backendUUID,
@@ -1262,6 +1319,9 @@ func (b *StorageBackend) ConstructExternal(ctx context.Context) *BackendExternal
 func (b *StorageBackend) ConstructExternalWithPoolMap(
 	ctx context.Context, poolMap map[string][]string,
 ) *BackendExternal {
+	b.stateLock.RLock()
+	defer b.stateLock.RUnlock()
+
 	backendExternal := BackendExternal{
 		Name:        b.name,
 		BackendUUID: b.backendUUID,
@@ -1336,6 +1396,9 @@ type BackendPersistent struct {
 }
 
 func (b *StorageBackend) ConstructPersistent(ctx context.Context) *BackendPersistent {
+	b.stateLock.RLock()
+	defer b.stateLock.RUnlock()
+
 	persistentBackend := &BackendPersistent{
 		Version:     tridentconfig.OrchestratorAPIVersion,
 		Config:      PersistentStorageBackendConfig{},

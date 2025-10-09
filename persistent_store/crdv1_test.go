@@ -132,7 +132,7 @@ func TestKubernetesBackend(t *testing.T) {
 	NFSDriver := ontap.NASStorageDriver{
 		Config: NFSServerConfig,
 	}
-	NFSServer := &storage.StorageBackend{}
+	NFSServer := storage.NewTestStorageBackend()
 	NFSServer.SetDriver(&NFSDriver)
 	NFSServer.SetName("nfs-server-1-" + NFSServerConfig.ManagementLIF)
 	NFSServer.SetBackendUUID(uuid.New().String())
@@ -200,7 +200,7 @@ func TestKubernetesBackends(t *testing.T) {
 	p, _ := GetTestKubernetesClient()
 
 	var persistentBackends []*storage.BackendPersistent
-	var backends []*storage.StorageBackend
+	var backends []storage.Backend
 	var err error
 
 	// Adding storage backends
@@ -215,7 +215,7 @@ func TestKubernetesBackends(t *testing.T) {
 			Username:      "admin",
 			Password:      "netapp",
 		}
-		NFSServer := &storage.StorageBackend{}
+		NFSServer := storage.NewTestStorageBackend()
 		NFSServer.SetDriver(&ontap.NASStorageDriver{
 			Config: NFSServerConfig,
 		})
@@ -311,7 +311,7 @@ func TestKubernetesDuplicateBackend(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	NFSServer := &storage.StorageBackend{}
+	NFSServer := storage.NewTestStorageBackend()
 	NFSServer.SetDriver(&ontap.NASStorageDriver{
 		Config: NFSServerConfig,
 	})
@@ -349,7 +349,7 @@ func TestKubernetesVolume(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	NFSServer := &storage.StorageBackend{}
+	NFSServer := storage.NewTestStorageBackend()
 	NFSServer.SetDriver(&ontap.NASStorageDriver{
 		Config: NFSServerConfig,
 	})
@@ -456,7 +456,7 @@ func TestKubernetesVolumes(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	NFSServer := &storage.StorageBackend{}
+	NFSServer := storage.NewTestStorageBackend()
 	NFSServer.SetDriver(&ontap.NASStorageDriver{
 		Config: NFSServerConfig,
 	})
@@ -630,7 +630,7 @@ func TestKubernetesAddSolidFireBackend(t *testing.T) {
 		},
 		TenantName: "docker",
 	}
-	sfBackend := &storage.StorageBackend{}
+	sfBackend := storage.NewTestStorageBackend()
 	sfBackend.SetDriver(&solidfire.SANStorageDriver{
 		Config: sfConfig,
 	})
@@ -809,7 +809,7 @@ func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 	NFSDriver := ontap.NASStorageDriver{
 		Config: NFSServerConfig,
 	}
-	NFSServer := &storage.StorageBackend{}
+	NFSServer := storage.NewTestStorageBackend()
 	NFSServer.SetDriver(&NFSDriver)
 	NFSServer.SetName("ontapnas_" + NFSServerConfig.DataLIF)
 	NFSServer.SetBackendUUID(uuid.New().String())
@@ -870,7 +870,7 @@ func TestKubernetesReplaceBackendAndUpdateVolumes(t *testing.T) {
 		Log().Debugf("GetVolume(vol%v): %v, %v\n", i, volume, err)
 	}
 
-	newNFSServer := &storage.StorageBackend{}
+	newNFSServer := storage.NewTestStorageBackend()
 	newNFSServer.SetDriver(&NFSDriver)
 	// Renaming the NFS server
 	newNFSServer.SetName("AFF")
@@ -1029,7 +1029,7 @@ func TestKubernetesSnapshot(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	NFSServer := &storage.StorageBackend{}
+	NFSServer := storage.NewTestStorageBackend()
 	NFSServer.SetDriver(&ontap.NASStorageDriver{
 		Config: NFSServerConfig,
 	})
@@ -1140,7 +1140,7 @@ func TestKubernetesSnapshots(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	NFSServer := &storage.StorageBackend{}
+	NFSServer := storage.NewTestStorageBackend()
 	NFSServer.SetDriver(&ontap.NASStorageDriver{
 		Config: NFSServerConfig,
 	})
@@ -1310,7 +1310,7 @@ func TestCRDClientV1_HasBackends_True(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	nfsBackend := &storage.StorageBackend{}
+	nfsBackend := storage.NewTestStorageBackend()
 	nfsBackend.SetDriver(&ontap.NASStorageDriver{Config: nfsConfig})
 	nfsBackend.SetName("test-backend")
 	nfsBackend.SetBackendUUID(uuid.New().String())
@@ -1441,7 +1441,7 @@ func TestCRDClientV1_IsBackendDeleting_False(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	nfsBackend := &storage.StorageBackend{}
+	nfsBackend := storage.NewTestStorageBackend()
 	nfsBackend.SetDriver(&ontap.NASStorageDriver{Config: nfsConfig})
 	nfsBackend.SetName("test-backend")
 	nfsBackend.SetBackendUUID(uuid.New().String())
@@ -1466,7 +1466,7 @@ func TestCRDClientV1_IsBackendDeleting_NotFound(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	nfsBackend := &storage.StorageBackend{}
+	nfsBackend := storage.NewTestStorageBackend()
 	nfsBackend.SetDriver(&ontap.NASStorageDriver{Config: nfsConfig})
 	nfsBackend.SetName("test-backend")
 	nfsBackend.SetBackendUUID(uuid.New().String())
@@ -1530,7 +1530,7 @@ func TestCRDClientV1_DeleteBackends_Success(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	backend1 := &storage.StorageBackend{}
+	backend1 := storage.NewTestStorageBackend()
 	backend1.SetDriver(&ontap.NASStorageDriver{Config: nfsConfig1})
 	backend1.SetName("backend1")
 	backend1.SetBackendUUID(uuid.New().String())
@@ -1545,7 +1545,7 @@ func TestCRDClientV1_DeleteBackends_Success(t *testing.T) {
 		Username:      "admin",
 		Password:      "netapp",
 	}
-	backend2 := &storage.StorageBackend{}
+	backend2 := storage.NewTestStorageBackend()
 	backend2.SetDriver(&ontap.NASStorageDriver{Config: nfsConfig2})
 	backend2.SetName("backend2")
 	backend2.SetBackendUUID(uuid.New().String())

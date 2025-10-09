@@ -17,7 +17,6 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/mocks/mock_storage"
-	"github.com/netapp/trident/storage"
 	drivers "github.com/netapp/trident/storage_drivers"
 )
 
@@ -131,28 +130,20 @@ func TestNewStorageBackendForConfig_Panic(t *testing.T) {
 }
 
 func TestCreateNewStorageBackend_WithMockDriver(t *testing.T) {
+	dummyBackendName := "dummy-backend"
+
 	// create a mock controller and a mock driver.
 	mockCtrl := gomock.NewController(t)
 	mockDriver := mock_storage.NewMockDriver(mockCtrl)
-
-	// Set up a dummy backend with expected backend values that match
-	dummyBackendName := "dummy-backend"
-	dummyBackend := storage.StorageBackend{}
-	dummyBackend.SetDriver(mockDriver)
-	dummyBackend.SetState("online")
-	dummyBackend.SetOnline(true)
-	dummyBackend.SetUserState(storage.UserNormal)
-	dummyBackend.ClearStoragePools()
-	dummyBackend.ClearVolumes()
-	mockDriver.EXPECT().GetStorageBackendSpecs(ctx, &dummyBackend).Return(fmt.Errorf("couldn't get backend specs"))
-
+	mockDriver.EXPECT().GetStorageBackendSpecs(ctx, gomock.Any()).Return(fmt.Errorf("couldn't get backend specs"))
 	mockDriver.EXPECT().BackendName().Return(dummyBackendName)
 	mockDriver.EXPECT().Name().Return(dummyBackendName).Times(2)
 
 	stb, err := CreateNewStorageBackend(ctx, mockDriver)
 
-	assert.Error(t, err, "expected error!")
-	assert.NotNil(t, stb, "expected non-nil storage backend!")
+	assert.Error(t, err, "expected error")
+	assert.NotNil(t, stb, "expected non-nil storage backend")
+	assert.Equal(t, "failed", string(stb.State()), "expected failed backend")
 }
 
 func TestGetStorageDriver(t *testing.T) {

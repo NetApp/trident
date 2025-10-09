@@ -947,15 +947,15 @@ func (mr *MockOrchestratorMockRecorder) ListVolumes(ctx any) *gomock.Call {
 }
 
 // PeriodicallyReconcileBackendState mocks base method.
-func (m *MockOrchestrator) PeriodicallyReconcileBackendState(duration time.Duration) {
+func (m *MockOrchestrator) PeriodicallyReconcileBackendState(pollInterval time.Duration) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "PeriodicallyReconcileBackendState", duration)
+	m.ctrl.Call(m, "PeriodicallyReconcileBackendState", pollInterval)
 }
 
 // PeriodicallyReconcileBackendState indicates an expected call of PeriodicallyReconcileBackendState.
-func (mr *MockOrchestratorMockRecorder) PeriodicallyReconcileBackendState(duration any) *gomock.Call {
+func (mr *MockOrchestratorMockRecorder) PeriodicallyReconcileBackendState(pollInterval any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PeriodicallyReconcileBackendState", reflect.TypeOf((*MockOrchestrator)(nil).PeriodicallyReconcileBackendState), duration)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PeriodicallyReconcileBackendState", reflect.TypeOf((*MockOrchestrator)(nil).PeriodicallyReconcileBackendState), pollInterval)
 }
 
 // PeriodicallyReconcileNodeAccessOnBackends mocks base method.

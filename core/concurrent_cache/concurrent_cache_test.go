@@ -302,7 +302,7 @@ func initCaches() {
 	snapshots.data = make(map[string]SmartCopier)
 
 	nodes.data["node1"] = &models.Node{}
-	backends.data["backend1"] = &storage.StorageBackend{}
+	backends.data["backend1"] = storage.NewTestStorageBackend()
 	volumes.data["volume1"] = &storage.Volume{
 		BackendUUID: "backend1",
 		Config: &storage.VolumeConfig{

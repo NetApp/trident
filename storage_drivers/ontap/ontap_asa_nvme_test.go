@@ -2703,7 +2703,7 @@ func TestCanSnapshotASANVMe(t *testing.T) {
 func TestGetStorageBackendSpecsASANVMe(t *testing.T) {
 	_, driver := newMockOntapASANVMeDriver(t)
 
-	backend := &storage.StorageBackend{}
+	backend := storage.NewTestStorageBackend()
 	backend.SetOnline(true)
 	backend.ClearStoragePools()
 	backend.SetDriver(driver)
