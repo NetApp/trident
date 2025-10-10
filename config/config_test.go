@@ -3,11 +3,13 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -151,4 +153,219 @@ func TestValidateKubernetesVersionFromInfo(t *testing.T) {
 	}
 	err = ValidateKubernetesVersionFromInfo(k8sMinVersion, currentK8sVersionInfo)
 	assert.Error(t, err, "expected no error")
+}
+
+func TestRegisterTelemetryUpdater(t *testing.T) {
+	// Reset global state before test
+	defer func() {
+		telemetryUpdaterMutex.Lock()
+		dynamicTelemetryUpdater = nil
+		cachedTelemetryData = struct {
+			PlatformUID           string
+			PlatformNodeCount     int
+			PlatformVersion       string
+			TridentProtectVersion string
+		}{}
+		telemetryUpdaterMutex.Unlock()
+	}()
+
+	ctx := context.Background()
+
+	// Test 1: Register a valid updater
+	called := false
+	validUpdater := func(ctx context.Context, telemetry *Telemetry) {
+		called = true
+		telemetry.Platform = "test-platform"
+	}
+
+	RegisterTelemetryUpdater(validUpdater)
+
+	// Verify registration state
+	telemetryUpdaterMutex.RLock()
+	assert.NotNil(t, dynamicTelemetryUpdater, "telemetry updater should be registered")
+	telemetryUpdaterMutex.RUnlock()
+
+	// Test the updater works
+	testTelemetry := &Telemetry{}
+	telemetryUpdaterMutex.RLock()
+	dynamicTelemetryUpdater(ctx, testTelemetry)
+	telemetryUpdaterMutex.RUnlock()
+	assert.True(t, called, "updater should have been called")
+	assert.Equal(t, "test-platform", testTelemetry.Platform, "updater should have modified telemetry")
+
+	// Test 2: Register nil updater (should be ignored)
+	RegisterTelemetryUpdater(nil)
+
+	telemetryUpdaterMutex.RLock()
+	assert.NotNil(t, dynamicTelemetryUpdater, "original updater should still be registered after nil")
+	telemetryUpdaterMutex.RUnlock()
+
+	// Test 3: Register second updater (should be ignored due to single registration limit)
+	secondCalled := false
+	secondUpdater := func(ctx context.Context, telemetry *Telemetry) {
+		secondCalled = true
+	}
+
+	RegisterTelemetryUpdater(secondUpdater)
+
+	telemetryUpdaterMutex.RLock()
+	assert.NotNil(t, dynamicTelemetryUpdater, "updater should still be registered")
+	telemetryUpdaterMutex.RUnlock()
+
+	// Verify only first updater is registered
+	testTelemetry2 := &Telemetry{}
+	called = false
+	telemetryUpdaterMutex.RLock()
+	dynamicTelemetryUpdater(ctx, testTelemetry2)
+	telemetryUpdaterMutex.RUnlock()
+	assert.True(t, called, "first updater should still work")
+	assert.False(t, secondCalled, "second updater should not have been called")
+}
+
+func TestUpdateDynamicTelemetry(t *testing.T) {
+	// Reset global state before test
+	defer func() {
+		telemetryUpdaterMutex.Lock()
+		dynamicTelemetryUpdater = nil
+		lastTelemetryUpdate = time.Time{}
+		cachedTelemetryData = struct {
+			PlatformUID           string
+			PlatformNodeCount     int
+			PlatformVersion       string
+			TridentProtectVersion string
+		}{}
+		telemetryUpdaterMutex.Unlock()
+	}()
+
+	ctx := context.Background()
+
+	// Test 1: Update with nil telemetry (should return early)
+	UpdateDynamicTelemetry(ctx, nil)
+	// No assertions needed - should not panic
+
+	// Test 2: Update with no registered updaters
+	testTelemetry := &Telemetry{
+		TridentVersion: "test-version",
+		Platform:       "original-platform",
+	}
+	UpdateDynamicTelemetry(ctx, testTelemetry)
+	assert.Equal(t, "original-platform", testTelemetry.Platform, "telemetry should not be modified")
+
+	// Test 3: Update with registered updater
+	updateCalled := false
+	updater := func(ctx context.Context, telemetry *Telemetry) {
+		updateCalled = true
+		telemetry.Platform = "updated-platform"
+		telemetry.PlatformVersion = "v1.0.0"
+		telemetry.PlatformUID = "test-cluster-uid"
+		telemetry.PlatformNodeCount = 5
+		telemetry.TridentProtectVersion = "100.0.0"
+	}
+
+	// Reset registration state and register updater
+	telemetryUpdaterMutex.Lock()
+	dynamicTelemetryUpdater = nil
+	telemetryUpdaterMutex.Unlock()
+
+	RegisterTelemetryUpdater(updater)
+
+	// Set last update time to past to ensure update happens
+	telemetryUpdaterMutex.Lock()
+	lastTelemetryUpdate = time.Now().Add(-5 * time.Hour)
+	telemetryUpdaterMutex.Unlock()
+
+	UpdateDynamicTelemetry(ctx, testTelemetry)
+
+	assert.True(t, updateCalled, "updater should have been called")
+	assert.Equal(t, "updated-platform", testTelemetry.Platform)
+	assert.Equal(t, "v1.0.0", testTelemetry.PlatformVersion)
+	assert.Equal(t, "test-cluster-uid", testTelemetry.PlatformUID)
+	assert.Equal(t, 5, testTelemetry.PlatformNodeCount)
+	assert.Equal(t, "100.0.0", testTelemetry.TridentProtectVersion)
+
+	// Test 4: Update with recent last update (should use cached data)
+	updateCalled = false
+	testTelemetry2 := &Telemetry{Platform: "original-platform"}
+
+	UpdateDynamicTelemetry(ctx, testTelemetry2)
+
+	assert.False(t, updateCalled, "updater should not be called due to recent update")
+	// Should get cached data from previous update
+	assert.Equal(t, "test-cluster-uid", testTelemetry2.PlatformUID, "should use cached cluster UID")
+	assert.Equal(t, 5, testTelemetry2.PlatformNodeCount, "should use cached node count")
+	assert.Equal(t, "v1.0.0", testTelemetry2.PlatformVersion, "should use cached platform version")
+	assert.Equal(t, "100.0.0", testTelemetry2.TridentProtectVersion, "should use cached protect version")
+
+	// Test 5: Update with panicking updater (should recover)
+	panicUpdater := func(ctx context.Context, telemetry *Telemetry) {
+		panic("test panic")
+	}
+
+	// Reset and register panicking updater
+	telemetryUpdaterMutex.Lock()
+	dynamicTelemetryUpdater = panicUpdater
+	lastTelemetryUpdate = time.Now().Add(-5 * time.Hour)
+	telemetryUpdaterMutex.Unlock()
+
+	testTelemetry3 := &Telemetry{}
+
+	// Should not panic - recovery should handle it
+	assert.NotPanics(t, func() {
+		UpdateDynamicTelemetry(ctx, testTelemetry3)
+	}, "UpdateDynamicTelemetry should recover from panicking updater")
+}
+
+func TestUpdateDynamicTelemetryTimeWindow(t *testing.T) {
+	// Reset global state before test
+	defer func() {
+		telemetryUpdaterMutex.Lock()
+		dynamicTelemetryUpdater = nil
+		lastTelemetryUpdate = time.Time{}
+		cachedTelemetryData = struct {
+			PlatformUID           string
+			PlatformNodeCount     int
+			PlatformVersion       string
+			TridentProtectVersion string
+		}{}
+		telemetryUpdaterMutex.Unlock()
+	}()
+
+	ctx := context.Background()
+
+	updateCalled := false
+	updater := func(ctx context.Context, telemetry *Telemetry) {
+		updateCalled = true
+		telemetry.Platform = "updated"
+	}
+
+	// Register updater
+	telemetryUpdaterMutex.Lock()
+	dynamicTelemetryUpdater = nil
+	telemetryUpdaterMutex.Unlock()
+	RegisterTelemetryUpdater(updater)
+
+	testTelemetry := &Telemetry{}
+
+	// Test 1: First update (no previous timestamp) - should update
+	UpdateDynamicTelemetry(ctx, testTelemetry)
+	assert.True(t, updateCalled, "first update should proceed")
+	assert.Equal(t, "updated", testTelemetry.Platform)
+
+	// Test 2: Immediate second update - cache not populated so treated as miss
+	updateCalled = false
+	testTelemetry2 := &Telemetry{}
+	UpdateDynamicTelemetry(ctx, testTelemetry2)
+	assert.True(t, updateCalled, "second update should proceed when cache not populated")
+	assert.Equal(t, "updated", testTelemetry2.Platform, "should get fresh data when cache not populated")
+
+	// Test 3: Update after interval has passed - should update
+	telemetryUpdaterMutex.Lock()
+	lastTelemetryUpdate = time.Now().Add(-5 * time.Hour) // Force past the 4-hour interval
+	telemetryUpdaterMutex.Unlock()
+
+	updateCalled = false
+	testTelemetry3 := &Telemetry{}
+	UpdateDynamicTelemetry(ctx, testTelemetry3)
+	assert.True(t, updateCalled, "update after interval should proceed")
+	assert.Equal(t, "updated", testTelemetry3.Platform)
 }

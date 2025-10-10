@@ -389,6 +389,9 @@ func (h *helper) Activate() error {
 
 	Logc(ctx).Info("Activating K8S helper frontend.")
 
+	// Register dynamic telemetry updater for ONTAP drivers (once)
+	config.RegisterTelemetryUpdater(h.createDynamicTelemetryUpdater())
+
 	// TODO (websterj): Revisit or remove this reconcile once Trident v21.10.1 has reached EOL;
 	// At that point, all supported Trident versions will include volume publications.
 	reconcileRequired, err := h.isPublicationReconcileRequired(ctx)
@@ -414,9 +417,8 @@ func (h *helper) Activate() error {
 	go h.vrefController.Run(h.vrefControllerStopChan)
 	go h.reconcileNodes(ctx)
 
-	// Configure telemetry
-	config.OrchestratorTelemetry.Platform = string(config.PlatformKubernetes)
-	config.OrchestratorTelemetry.PlatformVersion = h.Version()
+	// Update dynamic telemetry fields during activation
+	h.updateTelemetryFields(ctx, &config.OrchestratorTelemetry)
 
 	Logc(ctx).Debug("Activated K8S helper frontend.")
 
@@ -1384,4 +1386,108 @@ func (h *helper) IsTopologyInUse(ctx context.Context) bool {
 	Logc(ctx).WithFields(fields).Info("Successfully determined if topology is in use.")
 
 	return topologyInUse
+}
+
+// getK8sClusterUID retrieves the Kubernetes cluster UID from the kube-system namespace
+func (h *helper) getK8sClusterUID(ctx context.Context) (string, error) {
+	namespace, err := h.kubeClient.CoreV1().Namespaces().Get(ctx, config.KubeSystemNamespace, metav1.GetOptions{})
+	if err != nil {
+		Logc(ctx).WithError(err).Debug("Failed to get kube-system namespace for cluster UID.")
+		return "", err
+	}
+	return string(namespace.UID), nil
+}
+
+// getK8sNodeCount retrieves the current number of nodes in the Kubernetes cluster efficiently using the local cache
+func (h *helper) getK8sNodeCount(ctx context.Context) (int, error) {
+	// Ensure the node cache is synchronized before counting
+	if !h.nodeController.HasSynced() {
+		return 0, fmt.Errorf("node cache not yet synchronized")
+	}
+
+	// Get count from the local cache
+	nodeKeys := h.nodeIndexer.ListKeys()
+	nodeCount := len(nodeKeys)
+
+	Logc(ctx).WithField("nodeCount", nodeCount).Debug("Got node count from local cache.")
+	return nodeCount, nil
+}
+
+// getTridentProtectVersion retrieves the version of Trident Protect if installed in the cluster
+func (h *helper) getTridentProtectVersion(ctx context.Context) (string, error) {
+	// Search for Trident Protect pods across all namespaces, specifically looking for the controller manager
+	pods, err := h.kubeClient.CoreV1().Pods("").List(ctx, metav1.ListOptions{
+		LabelSelector: config.TridentProtectAppNameLabel,
+	})
+	if err != nil {
+		Logc(ctx).WithError(err).Debug("Failed to get Trident Protect pods across all namespaces.")
+		return "", err
+	}
+
+	// Look for the controller manager pod specifically
+	for _, pod := range pods.Items {
+		if strings.Contains(pod.Name, config.TridentProtectControllerName) {
+			if version, exists := pod.Labels[config.TridentProtectVersionLabel]; exists {
+				Logc(ctx).WithField("version", version).WithField("podName", pod.Name).Debug("Found Trident Protect version from controller manager.")
+				return version, nil
+			}
+		}
+	}
+
+	Logc(ctx).Debug("No Trident Protect controller manager pod or version found.")
+	return "", nil
+}
+
+// getK8sPlatformVersion retrieves the current Kubernetes cluster version dynamically
+func (h *helper) getK8sPlatformVersion(ctx context.Context) (string, error) {
+	version, err := h.kubeClient.Discovery().ServerVersion()
+	if err != nil {
+		Logc(ctx).WithError(err).Debug("Failed to get Kubernetes server version.")
+		return "", err
+	}
+	return version.GitVersion, nil
+}
+
+// updateTelemetryFields updates dynamic telemetry fields for the given telemetry struct
+func (h *helper) updateTelemetryFields(ctx context.Context, telemetry *config.Telemetry) {
+	telemetry.Platform = string(config.PlatformKubernetes)
+
+	// Update ClusterUID dynamically (important for existing backends)
+	if clusterUID, err := h.getK8sClusterUID(ctx); err == nil {
+		telemetry.PlatformUID = clusterUID
+	} else {
+		Logc(ctx).WithError(err).Debug("Failed to get dynamic cluster UID for telemetry.")
+	}
+
+	// Update NodeCount dynamically
+	if nodeCount, err := h.getK8sNodeCount(ctx); err == nil {
+		telemetry.PlatformNodeCount = nodeCount
+	} else {
+		Logc(ctx).WithError(err).Debug("Failed to get dynamic node count for telemetry.")
+	}
+
+	// Update PlatformVersion dynamically
+	if platformVersion, err := h.getK8sPlatformVersion(ctx); err == nil {
+		telemetry.PlatformVersion = platformVersion
+	} else {
+		Logc(ctx).WithError(err).Debug("Failed to get dynamic platform version for telemetry.")
+	}
+
+	// Update TridentProtectVersion dynamically
+	if tridentProtectVersion, err := h.getTridentProtectVersion(ctx); err == nil {
+		telemetry.TridentProtectVersion = tridentProtectVersion
+	} else {
+		Logc(ctx).WithError(err).Debug("Failed to get dynamic Trident Protect version for telemetry.")
+		// Clear the field if Trident Protect is not found
+		telemetry.TridentProtectVersion = ""
+	}
+}
+
+// createDynamicTelemetryUpdater creates a telemetry updater function for dynamic field updates
+func (h *helper) createDynamicTelemetryUpdater() config.TelemetryUpdater {
+	return func(ctx context.Context, telemetry *config.Telemetry) {
+		// Use the provided context directly for better tracing and timeout handling
+		// Use the shared method to update all dynamic telemetry fields
+		h.updateTelemetryFields(ctx, telemetry)
+	}
 }

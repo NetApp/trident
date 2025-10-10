@@ -4286,6 +4286,54 @@ func TestEMSHeartbeat(t *testing.T) {
 	EMSHeartbeat(ctx, driver)
 }
 
+func TestRefreshDynamicTelemetry(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	// Test 1: With nil telemetry (should not panic and should return early)
+	// Temporarily set telemetry to nil
+	originalTelemetry := driver.telemetry
+	driver.telemetry = nil
+	refreshDynamicTelemetry(ctx, driver)
+	// Restore telemetry for next test
+	driver.telemetry = originalTelemetry
+
+	// Test 2: With valid telemetry (should call UpdateDynamicTelemetry)
+	driver.telemetry = &Telemetry{
+		Plugin: driver.Name(),
+		SVM:    "SVM1",
+		Driver: driver,
+		done:   make(chan struct{}),
+	}
+	driver.telemetry.TridentVersion = tridentconfig.OrchestratorVersion.String()
+	driver.telemetry.TridentBackendUUID = BackendUUID
+
+	// Store initial values
+	initialClusterUID := driver.telemetry.PlatformUID
+	initialNodeCount := driver.telemetry.PlatformNodeCount
+	initialPlatformVersion := driver.telemetry.PlatformVersion
+	initialTridentProtectVersion := driver.telemetry.TridentProtectVersion
+
+	// Call refreshDynamicTelemetry
+	refreshDynamicTelemetry(ctx, driver)
+
+	// Verify the function completed without error and telemetry object is intact
+	assert.NotNil(t, driver.telemetry)
+	assert.Equal(t, driver.Name(), driver.telemetry.Plugin)
+	assert.Equal(t, "SVM1", driver.telemetry.SVM)
+	assert.Equal(t, tridentconfig.OrchestratorVersion.String(), driver.telemetry.TridentVersion)
+	assert.Equal(t, BackendUUID, driver.telemetry.TridentBackendUUID)
+
+	// Note: The actual dynamic fields won't change in this unit test since tridentconfig.UpdateDynamicTelemetry
+	// is a global function that would need integration with the CSI helper. The test ensures the function
+	// doesn't panic and processes the telemetry object correctly.
+	_ = initialClusterUID
+	_ = initialNodeCount
+	_ = initialPlatformVersion
+	_ = initialTridentProtectVersion
+}
+
 func TestLunUnmapAllIgroups(t *testing.T) {
 	// Test-1 : Positive flow
 	ctx := context.Background()

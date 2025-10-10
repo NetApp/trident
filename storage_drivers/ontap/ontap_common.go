@@ -2281,9 +2281,34 @@ func GetSnapshotReserve(snapshotPolicy, snapshotReserve string) (int, error) {
 
 const MSecPerHour = 1000 * 60 * 60 // millis * seconds * minutes
 
+// refreshDynamicTelemetry updates dynamic telemetry fields before EMS heartbeat transmission
+func refreshDynamicTelemetry(ctx context.Context, driver StorageDriver) {
+	// Get the current telemetry object from the driver
+	telemetry := driver.GetTelemetry()
+	if telemetry == nil {
+		Logc(ctx).Debug("No telemetry object found for dynamic refresh.")
+		return
+	}
+
+	// Update dynamic fields using registered updaters (from CSI helper)
+	tridentconfig.UpdateDynamicTelemetry(ctx, &telemetry.Telemetry)
+
+	Logc(ctx).WithFields(LogFields{
+		"driver":                driver.Name(),
+		"svm":                   telemetry.SVM,
+		"platformUID":           telemetry.PlatformUID,
+		"platformNodeCount":     telemetry.PlatformNodeCount,
+		"platformVersion":       telemetry.PlatformVersion,
+		"tridentProtectVersion": telemetry.TridentProtectVersion,
+	}).Debug("Dynamic telemetry refresh completed.")
+}
+
 // EMSHeartbeat logs an ASUP message on a timer
 // view them via filer::> event log show -severity NOTICE
 func EMSHeartbeat(ctx context.Context, driver StorageDriver) {
+	// Refresh dynamic telemetry fields before sending heartbeat
+	refreshDynamicTelemetry(ctx, driver)
+
 	// log an informational message on a timer
 	hostname, err := os.Hostname()
 	if err != nil {

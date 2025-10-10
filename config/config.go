@@ -3,10 +3,13 @@
 package config
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
+	"sync"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	k8sversion "k8s.io/apimachinery/pkg/version"
 
 	versionutils "github.com/netapp/trident/utils/version"
@@ -22,10 +25,115 @@ type (
 )
 
 type Telemetry struct {
-	TridentVersion     string `json:"version"`
-	TridentBackendUUID string `json:"backendUUID"`
-	Platform           string `json:"platform"`
-	PlatformVersion    string `json:"platformVersion"`
+	TridentVersion        string `json:"version"`
+	TridentBackendUUID    string `json:"backendUUID"`
+	Platform              string `json:"platform"`
+	PlatformVersion       string `json:"platformVersion"`
+	PlatformUID           string `json:"platformUID,omitempty"`
+	PlatformNodeCount     int    `json:"platformNodeCount,omitempty"`
+	TridentProtectVersion string `json:"tridentProtectVersion,omitempty"`
+}
+
+// TelemetryUpdater is a function type for updating dynamic telemetry fields
+type TelemetryUpdater func(ctx context.Context, telemetry *Telemetry)
+
+// Global registry for dynamic telemetry updater with thread-safety
+var (
+	dynamicTelemetryUpdater TelemetryUpdater
+	telemetryUpdaterMutex   sync.RWMutex
+	lastTelemetryUpdate     time.Time
+	telemetryUpdateInterval = 4 * time.Hour
+
+	// Cached telemetry values for reuse during cache hits
+	cachedTelemetryData struct {
+		PlatformUID           string
+		PlatformNodeCount     int
+		PlatformVersion       string
+		TridentProtectVersion string
+	}
+)
+
+// RegisterTelemetryUpdater registers a function to update dynamic telemetry fields
+// Only allows one registration to prevent memory leaks and conflicts
+func RegisterTelemetryUpdater(updater TelemetryUpdater) {
+	if updater == nil {
+		return
+	}
+
+	telemetryUpdaterMutex.Lock()
+	defer telemetryUpdaterMutex.Unlock()
+
+	// Only allow one registration to prevent memory leaks
+	if dynamicTelemetryUpdater != nil {
+		return
+	}
+
+	dynamicTelemetryUpdater = updater
+}
+
+// UpdateDynamicTelemetry calls the registered telemetry updater with error recovery
+func UpdateDynamicTelemetry(ctx context.Context, telemetry *Telemetry) {
+	if telemetry == nil {
+		return
+	}
+
+	// Add timeout for telemetry operations to prevent hanging
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	// Single lock for entire operation - atomic and efficient
+	telemetryUpdaterMutex.Lock()
+	defer telemetryUpdaterMutex.Unlock()
+
+	// Check if we should skip update due to recent refresh
+	timeSinceLastUpdate := time.Since(lastTelemetryUpdate)
+	shouldUpdate := timeSinceLastUpdate >= telemetryUpdateInterval
+
+	if !shouldUpdate {
+		// Cache hit: only reuse data if cache has been populated (non-empty cluster UID indicates valid cache)
+		hasValidCache := cachedTelemetryData.PlatformUID != ""
+		if hasValidCache {
+			telemetry.PlatformUID = cachedTelemetryData.PlatformUID
+			telemetry.PlatformNodeCount = cachedTelemetryData.PlatformNodeCount
+			telemetry.PlatformVersion = cachedTelemetryData.PlatformVersion
+			telemetry.TridentProtectVersion = cachedTelemetryData.TridentProtectVersion
+
+			log.Debugf("Dynamic telemetry cache hit: applied cached data (last updated %v ago, interval %v).",
+				timeSinceLastUpdate.Truncate(time.Minute), telemetryUpdateInterval)
+			return
+		}
+
+		// Cache is not yet populated, treat as miss and update
+		log.Debugf("Dynamic telemetry cache miss: cache not yet populated, updating now")
+	} else {
+		log.Debugf("Dynamic telemetry cache miss: updating (last updated %v ago, interval %v).",
+			timeSinceLastUpdate.Truncate(time.Minute), telemetryUpdateInterval)
+	}
+
+	// Get the registered updater
+	updater := dynamicTelemetryUpdater
+
+	// Execute the updater with panic recovery if one is registered
+	if updater != nil {
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					// Log error but don't crash - telemetry updates are non-critical
+					log.Errorf("Telemetry updater panic recovered: %v.", r)
+				}
+			}()
+			updater(ctx, telemetry)
+		}()
+	}
+
+	// Cache the updated telemetry values for future reuse
+	cachedTelemetryData.PlatformUID = telemetry.PlatformUID
+	cachedTelemetryData.PlatformNodeCount = telemetry.PlatformNodeCount
+	cachedTelemetryData.PlatformVersion = telemetry.PlatformVersion
+	cachedTelemetryData.TridentProtectVersion = telemetry.TridentProtectVersion
+	lastTelemetryUpdate = time.Now()
+
+	log.Debugf("Dynamic telemetry update completed at %v.", lastTelemetryUpdate.Format(time.RFC3339))
 }
 
 type PersistentStateVersion struct {
@@ -45,6 +153,16 @@ const (
 	PersistentStoreTimeout           = 10 * time.Second
 	DockerCreateTimeout              = 115 * time.Second
 	DockerDefaultTimeout             = 55 * time.Second
+
+	/* Telemetry and platform detection constants */
+	// KubeSystemNamespace is the Kubernetes system namespace used for cluster UID retrieval
+	KubeSystemNamespace = "kube-system"
+
+	// Trident Protect related constants for version detection
+	TridentProtectAppNameLabel   = "app.kubernetes.io/name=trident-protect"
+	TridentProtectVersionLabel   = "app.kubernetes.io/version"
+	TridentProtectControllerName = "controller-manager"
+
 	// CSIUnixSocketPermissions CSI socket file needs rw access only for user
 	CSIUnixSocketPermissions = 0o600
 	// CSISocketDirPermissions CSI socket directory needs rwx access only for user

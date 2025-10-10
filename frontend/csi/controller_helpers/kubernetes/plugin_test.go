@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	vsv1 "github.com/kubernetes-csi/external-snapshotter/client/v8/apis/volumesnapshot/v1"
 	k8sfakesnapshotter "github.com/kubernetes-csi/external-snapshotter/client/v8/clientset/versioned/fake"
@@ -22,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	k8sfake "k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
+	"k8s.io/client-go/tools/cache"
 
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/frontend/csi"
@@ -1463,6 +1465,164 @@ func TestValidateStorageClassParameters(t *testing.T) {
 	}
 }
 
+func TestGetK8sClusterUID(t *testing.T) {
+	ctx := context.TODO()
+	_, plugin := newMockPlugin(t)
+
+	expectedUID := "test-cluster-uid-123"
+	kubeSystemNamespace := &v1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "kube-system",
+			UID:  "test-cluster-uid-123",
+		},
+	}
+
+	tests := map[string]struct {
+		setupClient func() *k8sfake.Clientset
+		expectedUID string
+		expectError bool
+	}{
+		"successfully gets cluster UID": {
+			setupClient: func() *k8sfake.Clientset {
+				return k8sfake.NewSimpleClientset(kubeSystemNamespace)
+			},
+			expectedUID: expectedUID,
+			expectError: false,
+		},
+		"fails when kube-system namespace not found": {
+			setupClient: func() *k8sfake.Clientset {
+				clientSet := k8sfake.NewSimpleClientset()
+				clientSet.Fake.PrependReactor(
+					"get", "namespaces",
+					func(_ k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+						return true, nil, &k8serrors.StatusError{
+							ErrStatus: metav1.Status{Reason: metav1.StatusReasonNotFound},
+						}
+					},
+				)
+				return clientSet
+			},
+			expectedUID: "",
+			expectError: true,
+		},
+		"fails when API call fails": {
+			setupClient: func() *k8sfake.Clientset {
+				clientSet := k8sfake.NewSimpleClientset()
+				clientSet.Fake.PrependReactor(
+					"get", "namespaces",
+					func(_ k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+						return true, nil, &k8serrors.StatusError{
+							ErrStatus: metav1.Status{Reason: metav1.StatusFailure},
+						}
+					},
+				)
+				return clientSet
+			},
+			expectedUID: "",
+			expectError: true,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			plugin.kubeClient = test.setupClient()
+			uid, err := plugin.getK8sClusterUID(ctx)
+			if test.expectError {
+				assert.Error(t, err, "should return error when kube-system namespace cannot be retrieved")
+				assert.Empty(t, uid)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, test.expectedUID, uid)
+			}
+		})
+	}
+}
+
+func TestGetK8sNodeCount(t *testing.T) {
+	ctx := context.TODO()
+	_, plugin := newMockPlugin(t)
+
+	tests := map[string]struct {
+		setupClient   func() *k8sfake.Clientset
+		expectedCount int
+		expectError   bool
+	}{
+		"successfully gets node count - single node": {
+			setupClient: func() *k8sfake.Clientset {
+				node := &v1.Node{ObjectMeta: metav1.ObjectMeta{Name: "node1"}}
+				return k8sfake.NewSimpleClientset(node)
+			},
+			expectedCount: 1,
+			expectError:   false,
+		},
+		"successfully gets node count - multiple nodes": {
+			setupClient: func() *k8sfake.Clientset {
+				node1 := &v1.Node{ObjectMeta: metav1.ObjectMeta{Name: "node1"}}
+				node2 := &v1.Node{ObjectMeta: metav1.ObjectMeta{Name: "node2"}}
+				node3 := &v1.Node{ObjectMeta: metav1.ObjectMeta{Name: "node3"}}
+				return k8sfake.NewSimpleClientset(node1, node2, node3)
+			},
+			expectedCount: 3,
+			expectError:   false,
+		},
+		"successfully gets node count - zero nodes": {
+			setupClient: func() *k8sfake.Clientset {
+				return k8sfake.NewSimpleClientset()
+			},
+			expectedCount: 0,
+			expectError:   false,
+		},
+		"fails when API call fails": {
+			setupClient: func() *k8sfake.Clientset {
+				clientSet := k8sfake.NewSimpleClientset()
+				clientSet.Fake.PrependReactor(
+					"list", "nodes",
+					func(_ k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+						return true, nil, &k8serrors.StatusError{
+							ErrStatus: metav1.Status{Reason: metav1.StatusFailure},
+						}
+					},
+				)
+				return clientSet
+			},
+			expectedCount: 0,
+			expectError:   true,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			plugin.kubeClient = test.setupClient()
+
+			// Initialize the nodeIndexer and nodeController for testing
+			fakeIndexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{})
+			plugin.nodeIndexer = fakeIndexer
+
+			if test.expectError {
+				// For error case, make the controller not synced
+				plugin.nodeController = &fakeController{synced: false}
+			} else {
+				// For success case, make the controller synced and add nodes to indexer
+				plugin.nodeController = &fakeController{synced: true}
+				nodeList, _ := plugin.kubeClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+				for _, node := range nodeList.Items {
+					err := plugin.nodeIndexer.Add(&node)
+					assert.NoError(t, err)
+				}
+			}
+
+			count, err := plugin.getK8sNodeCount(ctx)
+			if test.expectError {
+				assert.Error(t, err, "should return error when node cache not synchronized")
+				assert.Equal(t, 0, count)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, test.expectedCount, count)
+			}
+		})
+	}
+}
+
 func TestIsTopologyInUse(t *testing.T) {
 	ctx := context.TODO()
 	_, plugin := newMockPlugin(t)
@@ -1528,3 +1688,395 @@ func TestIsTopologyInUse(t *testing.T) {
 		})
 	}
 }
+
+func TestGetTridentProtectVersion(t *testing.T) {
+	ctx := context.Background()
+	_, plugin := newMockPlugin(t)
+
+	tests := []struct {
+		name        string
+		pods        []v1.Pod
+		expectError bool
+		expected    string
+	}{
+		{
+			name:        "No Trident Protect pods",
+			pods:        []v1.Pod{},
+			expectError: false,
+			expected:    "",
+		},
+		{
+			name: "Trident Protect controller manager pod with version in trident-protect namespace",
+			pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "trident-protect-controller-manager-abc123",
+						Namespace: "trident-protect",
+						Labels: map[string]string{
+							"app.kubernetes.io/name":    "trident-protect",
+							"app.kubernetes.io/version": "100.2506.0",
+						},
+					},
+				},
+			},
+			expectError: false,
+			expected:    "100.2506.0",
+		},
+		{
+			name: "Trident Protect controller manager pod with version in different namespace",
+			pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "trident-protect-controller-manager-xyz789",
+						Namespace: "my-custom-namespace",
+						Labels: map[string]string{
+							"app.kubernetes.io/name":    "trident-protect",
+							"app.kubernetes.io/version": "100.2507.1",
+						},
+					},
+				},
+			},
+			expectError: false,
+			expected:    "100.2507.1",
+		},
+		{
+			name: "Multiple Trident Protect pods across namespaces - returns first controller manager found",
+			pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "trident-protect-other-pod-abc123",
+						Namespace: "trident-protect",
+						Labels: map[string]string{
+							"app.kubernetes.io/name": "trident-protect",
+						},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "trident-protect-controller-manager-def456",
+						Namespace: "kube-system",
+						Labels: map[string]string{
+							"app.kubernetes.io/name":    "trident-protect",
+							"app.kubernetes.io/version": "100.2508.0",
+						},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "trident-protect-controller-manager-ghi789",
+						Namespace: "trident-protect",
+						Labels: map[string]string{
+							"app.kubernetes.io/name":    "trident-protect",
+							"app.kubernetes.io/version": "100.2509.0",
+						},
+					},
+				},
+			},
+			expectError: false,
+			expected:    "100.2508.0", // First controller manager found (kube-system comes before trident-protect alphabetically)
+		},
+		{
+			name: "Trident Protect pod without controller manager",
+			pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "trident-protect-other-pod-abc123",
+						Namespace: "trident-protect",
+						Labels: map[string]string{
+							"app.kubernetes.io/name": "trident-protect",
+						},
+					},
+				},
+			},
+			expectError: false,
+			expected:    "",
+		},
+		{
+			name: "Controller manager without version label",
+			pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "trident-protect-controller-manager-abc123",
+						Namespace: "trident-protect",
+						Labels: map[string]string{
+							"app.kubernetes.io/name": "trident-protect",
+						},
+					},
+				},
+			},
+			expectError: false,
+			expected:    "",
+		},
+		{
+			name: "Pods without proper app.kubernetes.io/name label are ignored",
+			pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "some-controller-manager-abc123",
+						Namespace: "default",
+						Labels: map[string]string{
+							"app.kubernetes.io/version": "100.2510.0",
+						},
+					},
+				},
+			},
+			expectError: false,
+			expected:    "",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// Create a fake clientset with the test pods
+			objs := make([]runtime.Object, len(test.pods))
+			for i := range test.pods {
+				objs[i] = &test.pods[i]
+			}
+			fakeClientSet := k8sfake.NewSimpleClientset(objs...)
+
+			plugin.kubeClient = fakeClientSet
+
+			version, err := plugin.getTridentProtectVersion(ctx)
+
+			if test.expectError {
+				assert.Error(t, err)
+				assert.Empty(t, version)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, test.expected, version)
+			}
+		})
+	}
+}
+
+func TestGetK8sPlatformVersion(t *testing.T) {
+	ctx := context.Background()
+	_, plugin := newMockPlugin(t)
+
+	tests := []struct {
+		name        string
+		injectError bool
+		expectError bool
+		expected    string
+	}{
+		{
+			name:        "Success getting platform version",
+			injectError: false,
+			expectError: false,
+			expected:    "v1.21.0",
+		},
+		{
+			name:        "Error getting platform version",
+			injectError: true,
+			expectError: true,
+			expected:    "",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			fakeClientSet := k8sfake.NewSimpleClientset()
+
+			if test.injectError {
+				fakeClientSet.Fake.PrependReactor("get", "version", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+					return true, nil, fmt.Errorf("simulated error")
+				})
+			}
+
+			plugin.kubeClient = fakeClientSet
+
+			version, err := plugin.getK8sPlatformVersion(ctx)
+
+			if test.expectError {
+				assert.Error(t, err)
+				assert.Empty(t, version)
+			} else {
+				assert.NoError(t, err)
+				// The fake client returns a default version
+				assert.NotEmpty(t, version)
+			}
+		})
+	}
+}
+
+func TestUpdateTelemetryFields(t *testing.T) {
+	ctx := context.Background()
+	_, plugin := newMockPlugin(t)
+
+	// Create fake Kubernetes objects
+	kubeSystemNS := &v1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "kube-system",
+			UID:  "test-cluster-uid-12345",
+		},
+	}
+
+	nodes := []v1.Node{
+		{ObjectMeta: metav1.ObjectMeta{Name: "node1"}},
+		{ObjectMeta: metav1.ObjectMeta{Name: "node2"}},
+		{ObjectMeta: metav1.ObjectMeta{Name: "node3"}},
+	}
+
+	tridentProtectPod := &v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "trident-protect-controller-manager-abc123",
+			Namespace: "trident-protect",
+			Labels: map[string]string{
+				"app.kubernetes.io/name":    "trident-protect",
+				"app.kubernetes.io/version": "100.2506.0",
+			},
+		},
+	}
+
+	// Setup fake clientset with test objects
+	objs := []runtime.Object{kubeSystemNS, tridentProtectPod}
+	for i := range nodes {
+		objs = append(objs, &nodes[i])
+	}
+	fakeClientSet := k8sfake.NewSimpleClientset(objs...)
+
+	plugin.kubeClient = fakeClientSet
+
+	// Initialize the nodeIndexer with a fake indexer that we can use for testing
+	fakeIndexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{})
+	plugin.nodeIndexer = fakeIndexer
+
+	// Setup the node controller cache with nodes for testing
+	for _, node := range nodes {
+		err := plugin.nodeIndexer.Add(&node)
+		assert.NoError(t, err)
+	}
+
+	// Mark node controller as synced
+	plugin.nodeController = &fakeController{synced: true}
+
+	// Create a test telemetry object
+	telemetry := &config.Telemetry{}
+
+	// Call the updateTelemetryFields function
+	plugin.updateTelemetryFields(ctx, telemetry)
+
+	// Verify that all telemetry fields were updated correctly
+	assert.Equal(t, "test-cluster-uid-12345", telemetry.PlatformUID, "should set cluster UID from kube-system namespace")
+	assert.Equal(t, 3, telemetry.PlatformNodeCount, "should set node count from cached nodes")
+	assert.Equal(t, "100.2506.0", telemetry.TridentProtectVersion, "should set Trident Protect version from controller manager pod label")
+	assert.NotEmpty(t, telemetry.PlatformVersion, "should set platform version from Kubernetes server version")
+
+	// Test with a telemetry object that has existing values to ensure they get overwritten
+	existingTelemetry := &config.Telemetry{
+		PlatformUID:           "old-uid",
+		PlatformNodeCount:     999,
+		PlatformVersion:       "old-version",
+		TridentProtectVersion: "old-protect-version",
+	}
+
+	plugin.updateTelemetryFields(ctx, existingTelemetry)
+
+	// Verify that the values were updated, not appended
+	assert.Equal(t, "test-cluster-uid-12345", existingTelemetry.PlatformUID, "should overwrite existing cluster UID")
+	assert.Equal(t, 3, existingTelemetry.PlatformNodeCount, "should overwrite existing node count")
+	assert.Equal(t, "100.2506.0", existingTelemetry.TridentProtectVersion, "should overwrite existing Trident Protect version")
+	assert.NotEmpty(t, existingTelemetry.PlatformVersion, "should overwrite existing platform version")
+	assert.NotEqual(t, "old-version", existingTelemetry.PlatformVersion, "platform version should be updated, not kept as old value")
+}
+
+func TestCreateDynamicTelemetryUpdater(t *testing.T) {
+	_, plugin := newMockPlugin(t)
+
+	ctx := context.Background()
+
+	// Create fake Kubernetes objects
+	kubeSystemNS := &v1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "kube-system",
+			UID:  "test-cluster-uid-12345",
+		},
+	}
+
+	nodes := []v1.Node{
+		{ObjectMeta: metav1.ObjectMeta{Name: "node1"}},
+		{ObjectMeta: metav1.ObjectMeta{Name: "node2"}},
+		{ObjectMeta: metav1.ObjectMeta{Name: "node3"}},
+	}
+
+	tridentProtectPod := &v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "trident-protect-controller-manager-abc123",
+			Namespace: "trident-protect",
+			Labels: map[string]string{
+				"app.kubernetes.io/name":    "trident-protect",
+				"app.kubernetes.io/version": "100.2506.0",
+			},
+		},
+	}
+
+	// Setup fake clientset with test objects
+	objs := []runtime.Object{kubeSystemNS, tridentProtectPod}
+	for i := range nodes {
+		objs = append(objs, &nodes[i])
+	}
+	fakeClientSet := k8sfake.NewSimpleClientset(objs...)
+
+	plugin.kubeClient = fakeClientSet
+
+	// Initialize the nodeIndexer with a fake indexer that we can use for testing
+	fakeIndexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{})
+	plugin.nodeIndexer = fakeIndexer
+
+	// Setup the node controller cache with nodes for testing
+	for _, node := range nodes {
+		err := plugin.nodeIndexer.Add(&node)
+		assert.NoError(t, err)
+	}
+
+	// Mark node controller as synced
+	plugin.nodeController = &fakeController{synced: true}
+
+	// Create the telemetry updater
+	updater := plugin.createDynamicTelemetryUpdater()
+	assert.NotNil(t, updater, "should create a non-nil telemetry updater function")
+
+	// Create a test telemetry object
+	telemetry := &config.Telemetry{}
+
+	// Call the updater function
+	updater(ctx, telemetry)
+
+	// Verify that the telemetry was updated
+	assert.Equal(t, "test-cluster-uid-12345", telemetry.PlatformUID, "updater should set cluster UID from kube-system namespace")
+	assert.Equal(t, 3, telemetry.PlatformNodeCount, "updater should set node count from cached nodes")
+	assert.Equal(t, "100.2506.0", telemetry.TridentProtectVersion, "updater should set Trident Protect version from controller manager pod label")
+	assert.NotEmpty(t, telemetry.PlatformVersion, "updater should set platform version from Kubernetes server version")
+}
+
+// fakeController implements cache.SharedIndexInformer interface for testing
+type fakeController struct {
+	synced bool
+}
+
+func (f *fakeController) HasSynced() bool {
+	return f.synced
+}
+
+// Implement other required methods as no-ops for testing
+func (f *fakeController) AddEventHandler(handler cache.ResourceEventHandler) (cache.ResourceEventHandlerRegistration, error) {
+	return nil, nil
+}
+
+func (f *fakeController) AddEventHandlerWithResyncPeriod(handler cache.ResourceEventHandler, resyncPeriod time.Duration) (cache.ResourceEventHandlerRegistration, error) {
+	return nil, nil
+}
+
+func (f *fakeController) RemoveEventHandler(handle cache.ResourceEventHandlerRegistration) error {
+	return nil
+}
+func (f *fakeController) GetStore() cache.Store                                      { return nil }
+func (f *fakeController) GetController() cache.Controller                            { return nil }
+func (f *fakeController) Run(stopCh <-chan struct{})                                 {}
+func (f *fakeController) HasStarted() bool                                           { return true }
+func (f *fakeController) LastSyncResourceVersion() string                            { return "" }
+func (f *fakeController) SetWatchErrorHandler(handler cache.WatchErrorHandler) error { return nil }
+func (f *fakeController) SetTransform(handler cache.TransformFunc) error             { return nil }
+func (f *fakeController) IsStopped() bool                                            { return false }
+func (f *fakeController) GetIndexer() cache.Indexer                                  { return nil }
+func (f *fakeController) AddIndexers(indexers cache.Indexers) error                  { return nil }
