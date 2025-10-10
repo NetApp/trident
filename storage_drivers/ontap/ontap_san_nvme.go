@@ -920,7 +920,13 @@ func (d *NVMeStorageDriver) Publish(
 	if volConfig.FileSystem == filesystem.Raw {
 		ssName = getNamespaceSpecificSubsystemName(name, pvName)
 	} else {
-		ssName = getNodeSpecificSubsystemName(publishInfo.HostName, publishInfo.TridentUUID)
+		// For Docker plugin mode, use storage prefix for stable subsystem naming
+		// This allows user control over subsystem sharing via storage prefix configuration
+		if tridentconfig.CurrentDriverContext == tridentconfig.ContextDocker {
+			ssName = d.getStoragePrefixSubsystemName()
+		} else {
+			ssName = d.getNodeSpecificSubsystemName(publishInfo.HostName, publishInfo.TridentUUID)
+		}
 	}
 
 	// Checks if subsystem exists and creates a new one if not
@@ -1715,13 +1721,31 @@ func (d *NVMeStorageDriver) ParseNVMeNamespaceCommentString(_ context.Context, c
 	return nil, fmt.Errorf("nsAttrs field not found in Namespace comment")
 }
 
-func getNodeSpecificSubsystemName(nodeName, tridentUUID string) string {
+func (d *NVMeStorageDriver) getNodeSpecificSubsystemName(nodeName, tridentUUID string) string {
+	// For CSI mode, use per-node subsystems
 	subsystemName := fmt.Sprintf("%s-%s", nodeName, tridentUUID)
 	if len(subsystemName) > maximumSubsystemNameLength {
 		// If the new subsystem name is over the subsystem character limit, it means the host name is too long.
 		subsystemPrefixLength := maximumSubsystemNameLength - len(tridentUUID) - 1
 		subsystemName = fmt.Sprintf("%s-%s", nodeName[:subsystemPrefixLength], tridentUUID)
 	}
+	return subsystemName
+}
+
+// getStoragePrefixSubsystemName generates a stable subsystem name using storage prefix for Docker mode
+func (d *NVMeStorageDriver) getStoragePrefixSubsystemName() string {
+	// Default for Docker is "netappdvp_", users can customize for isolation/sharing
+	storagePrefix := *d.Config.StoragePrefix
+
+	// Create subsystem name using storage prefix (similar to igroup naming)
+	subsystemName := fmt.Sprintf("%s_subsystem", storagePrefix)
+
+	// Ensure it fits within the length limit
+	if len(subsystemName) > maximumSubsystemNameLength {
+		maxPrefixLength := maximumSubsystemNameLength - len("_subsystem") - 1
+		subsystemName = fmt.Sprintf("%s_subsystem", storagePrefix[:maxPrefixLength])
+	}
+
 	return subsystemName
 }
 
