@@ -201,3 +201,7 @@ k8sAPIQPS: 0
 
 # hostNetwork sets the hostNetwork field in the Trident operator deployment spec.
 hostNetwork: false
+
+# nodePrep enables Trident to prepare the nodes of the Kubernetes cluster to manage volumes using the
+# specified data storage protocol. Currently, iSCSI is the only value supported.
+nodePrep: []
