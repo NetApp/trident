@@ -2016,6 +2016,116 @@ func TestOntapSanEconomyVolumeImport_UnsupportedNameLength(t *testing.T) {
 	assert.Error(t, err, "Import should fail with name length exceeding limits")
 }
 
+func TestOntapSanEconomyVolumeImport_ManagedNoRename(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+
+	d.flexvolNamePrefix = "test_lun_pool_"
+	d.Config.SVM = "test_svm"
+
+	tests := []struct {
+		name        string // Name of the test case
+		volConfig   *storage.VolumeConfig
+		volToImport string
+		mocks       func(mockAPI *mockapi.MockOntapAPI)
+		wantErr     assert.ErrorAssertionFunc
+		testOut     string
+		validate    func(t *testing.T, volConfig *storage.VolumeConfig)
+	}{
+		{
+			name: "ManagedImportNoRename_Success",
+			volConfig: &storage.VolumeConfig{
+				InternalName:   "desired_name",
+				Size:           "1g",
+				Encryption:     "false",
+				FileSystem:     "xfs",
+				ImportNoRename: true,
+			},
+			volToImport: "original_vol/original_lun",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeInfo(gomock.Any(), gomock.Any()).
+					Return(&api.Volume{Name: "original_vol", AccessType: "rw"}, nil)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).
+					Return(&api.Lun{Name: "/vol/original_vol/original_lun", State: "online", Size: "1073741824"}, nil)
+				mockAPI.EXPECT().LunListIgroupsMapped(gomock.Any(), gomock.Any()).Return(nil, nil)
+			},
+			wantErr: assert.NoError,
+			testOut: "Import succeeded",
+			validate: func(t *testing.T, volConfig *storage.VolumeConfig) {
+				// With ImportNoRename, InternalName should be set to original LUN name
+				assert.Equal(t, "original_lun", volConfig.InternalName, "InternalName should be original LUN name")
+				// InternalID should be set properly
+				expectedID := "/svm/test_svm/flexvol/original_vol/lun/original_lun"
+				assert.Equal(t, expectedID, volConfig.InternalID, "InternalID should be set correctly")
+			},
+		},
+		{
+			name: "ManagedImportNoRename_igroupListFailed",
+			volConfig: &storage.VolumeConfig{
+				InternalName:   "desired_name",
+				Size:           "1g",
+				Encryption:     "false",
+				FileSystem:     "xfs",
+				ImportNoRename: true,
+			},
+			volToImport: "original_vol/original_lun",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeInfo(gomock.Any(), gomock.Any()).
+					Return(&api.Volume{Name: "original_vol", AccessType: "rw"}, nil)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).
+					Return(&api.Lun{Name: "/vol/original_vol/original_lun", State: "online", Size: "1073741824"}, nil)
+				mockAPI.EXPECT().LunListIgroupsMapped(gomock.Any(), gomock.Any()).
+					Return(nil, errors.New("igroup list failed"))
+			},
+			wantErr: assert.Error,
+			testOut: "Import failed",
+			validate: func(t *testing.T, volConfig *storage.VolumeConfig) {
+				// Validate InternalName and InternalID are still set even on failure
+				assert.Equal(t, "original_lun", volConfig.InternalName, "InternalName should be original LUN name")
+				expectedID := "/svm/test_svm/flexvol/original_vol/lun/original_lun"
+				assert.Equal(t, expectedID, volConfig.InternalID, "InternalID should be set correctly")
+			},
+		},
+		{
+			name: "ManagedImportNoRename_WithNonConformingFlexvolName",
+			volConfig: &storage.VolumeConfig{
+				InternalName:   "desired_name",
+				Size:           "1g",
+				Encryption:     "false",
+				FileSystem:     "xfs",
+				ImportNoRename: true,
+			},
+			volToImport: "non_conforming_vol/my_lun",
+			mocks: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().VolumeInfo(gomock.Any(), gomock.Any()).
+					Return(&api.Volume{Name: "non_conforming_vol", AccessType: "rw"}, nil)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).
+					Return(&api.Lun{Name: "/vol/non_conforming_vol/my_lun", State: "online", Size: "1073741824"}, nil)
+				mockAPI.EXPECT().LunListIgroupsMapped(gomock.Any(), gomock.Any()).Return(nil, nil)
+			},
+			wantErr: assert.NoError,
+			testOut: "Import succeeded",
+			validate: func(t *testing.T, volConfig *storage.VolumeConfig) {
+				// With ImportNoRename, no rename should happen regardless of naming convention
+				assert.Equal(t, "my_lun", volConfig.InternalName, "InternalName should be original LUN name")
+				expectedID := "/svm/test_svm/flexvol/non_conforming_vol/lun/my_lun"
+				assert.Equal(t, expectedID, volConfig.InternalID, "InternalID should use original Flexvol and LUN names")
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			test.mocks(mockAPI)
+			err := d.Import(ctx, test.volConfig, test.volToImport)
+			if !test.wantErr(t, err, test.testOut) {
+				return
+			}
+			if test.validate != nil {
+				test.validate(t, test.volConfig)
+			}
+		})
+	}
+}
+
 func TestOntapSanEconomyVolumeRename(t *testing.T) {
 	_, d := newMockOntapSanEcoDriver(t)
 

@@ -650,6 +650,7 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 		"originalName": originalName,
 		"newName":      volConfig.InternalName,
 		"notManaged":   volConfig.ImportNotManaged,
+		"noRename":     volConfig.ImportNoRename,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
@@ -715,14 +716,18 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 		volConfig.Size = newSize
 	}
 
-	// Rename the volume if Trident will manage its lifecycle
-	if !volConfig.ImportNotManaged {
+	// Rename the volume if Trident will manage its lifecycle and the names are different
+	if !volConfig.ImportNotManaged && !volConfig.ImportNoRename {
 		err = d.API.VolumeRename(ctx, originalName, volConfig.InternalName)
 		if err != nil {
 			Logc(ctx).WithField("originalName", originalName).Errorf(
 				"Could not import volume, rename volume failed: %v", err)
 			return fmt.Errorf("volume %s rename failed: %v", originalName, err)
 		}
+	}
+
+	// Update volume labels if Trident will manage its lifecycle
+	if !volConfig.ImportNotManaged {
 		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, flexvol.Comment) {
 			// Set the base label
 			storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.Config.Labels)

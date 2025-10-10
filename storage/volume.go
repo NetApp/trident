@@ -53,6 +53,7 @@ type VolumeConfig struct {
 	ImportOriginalName          string                  `json:"importOriginalName,omitempty"`
 	ImportBackendUUID           string                  `json:"importBackendUUID,omitempty"`
 	ImportNotManaged            bool                    `json:"importNotManaged,omitempty"`
+	ImportNoRename              bool                    `json:"importNoRename,omitempty"`
 	MountOptions                string                  `json:"mountOptions,omitempty"`
 	RequisiteTopologies         []map[string]string     `json:"requisiteTopologies,omitempty"`
 	PreferredTopologies         []map[string]string     `json:"preferredTopologies,omitempty"`
@@ -229,6 +230,7 @@ type ImportVolumeRequest struct {
 	Backend      string `json:"backend"`
 	InternalName string `json:"internalName"`
 	NoManage     bool   `json:"noManage"`
+	NoRename     bool   `json:"noRename"`
 	PVCData      string `json:"pvcData"` // Opaque, base64-encoded
 }
 

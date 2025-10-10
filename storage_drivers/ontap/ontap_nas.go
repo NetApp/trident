@@ -712,6 +712,7 @@ func (d *NASStorageDriver) Import(
 		"originalName": originalName,
 		"newName":      volConfig.InternalName,
 		"notManaged":   volConfig.ImportNotManaged,
+		"noRename":     volConfig.ImportNoRename,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
@@ -741,8 +742,8 @@ func (d *NASStorageDriver) Import(
 		}
 	}
 
-	// Rename the volume if Trident will manage its lifecycle
-	if !volConfig.ImportNotManaged {
+	// Rename the volume if Trident will manage its lifecycle and the names are different
+	if !volConfig.ImportNotManaged && !volConfig.ImportNoRename {
 		if err := d.API.VolumeRename(ctx, originalName, volConfig.InternalName); err != nil {
 			return err
 		}

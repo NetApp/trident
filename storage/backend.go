@@ -737,6 +737,7 @@ func (b *StorageBackend) ImportVolume(ctx context.Context, volConfig *VolumeConf
 		"backend":    b.name,
 		"volume":     volConfig.ImportOriginalName,
 		"NotManaged": volConfig.ImportNotManaged,
+		"NoRename":   volConfig.ImportNoRename,
 	}).Debug("Backend#ImportVolume")
 
 	// Ensure backend is ready
@@ -753,8 +754,13 @@ func (b *StorageBackend) ImportVolume(ctx context.Context, volConfig *VolumeConf
 		// The volume is not managed and will not be renamed during import.
 		volConfig.InternalName = volConfig.ImportOriginalName
 	} else {
-		// Sanitize the volume name
+		// For managed imports, run CreatePrepare to set up PublishEnforcement, pools, etc.
 		b.driver.CreatePrepare(ctx, volConfig, nil)
+
+		// Override the generated internal name to keep the original name in case of no rename
+		if volConfig.ImportNoRename {
+			volConfig.InternalName = volConfig.ImportOriginalName
+		}
 	}
 
 	err := b.driver.Import(ctx, volConfig, volConfig.ImportOriginalName)

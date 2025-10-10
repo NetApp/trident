@@ -942,6 +942,7 @@ func (d *SANEconomyStorageDriver) Import(
 		"originalName": originalName,
 		"newName":      volConfig.InternalName,
 		"notManaged":   volConfig.ImportNotManaged,
+		"noRename":     volConfig.ImportNoRename,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
@@ -1005,52 +1006,63 @@ func (d *SANEconomyStorageDriver) Import(
 		volConfig.InternalName = d.helper.GetInternalVolumeNameFromPath(volConfig.InternalName)
 		return nil
 	}
+	var targetPath string
 
-	targetPath := "/vol/" + originalFlexvolName + "/" + volConfig.InternalName
-	newFlexvolName := d.FlexvolNamePrefix() + crypto.RandomString(10)
-	volRenamed := false
-	if extantLUN.Name != targetPath {
-		// Ensure LUN name isn't too long
-		if len(volConfig.InternalName) > maxLunNameLength {
-			return fmt.Errorf("volume %s name exceeds the limit of %d characters", volConfig.InternalName,
-				maxLunNameLength)
-		}
+	// Managed import with no rename only supported for csi workflow
+	if volConfig.ImportNoRename && d.Config.DriverContext != tridentconfig.ContextDocker {
+		volConfig.InternalName = originalLUNName
+		targetPath = "/vol/" + originalFlexvolName + "/" + volConfig.InternalName
+		// This is critical so that subsequent operations can find the LUN in case of no rename import
+		volConfig.InternalID = d.CreateLUNInternalID(d.Config.SVM, originalFlexvolName, originalLUNName)
+	} else {
+		// Managed import with rename
+		targetPath = "/vol/" + originalFlexvolName + "/" + volConfig.InternalName
+		newFlexvolName := d.FlexvolNamePrefix() + crypto.RandomString(10)
+		volRenamed := false
+		if extantLUN.Name != targetPath {
+			// Ensure LUN name isn't too long
+			if len(volConfig.InternalName) > maxLunNameLength {
+				return fmt.Errorf("volume %s name exceeds the limit of %d characters", volConfig.InternalName,
+					maxLunNameLength)
+			}
 
-		err = d.API.LunRename(ctx, extantLUN.Name, targetPath)
-		if err != nil {
-			Logc(ctx).WithFields(LogFields{
-				"path":    extantLUN.Name,
-				"newPath": targetPath,
-			}).WithError(err).Debug("Could not import volume, renaming LUN failed.")
-			return fmt.Errorf("LUN path %s rename failed: %w", extantLUN.Name, err)
-		}
-
-		// Rename Flexvol if it does not follow naming convention
-		if !strings.Contains(flexvol.Name, d.FlexvolNamePrefix()) {
-			err = d.API.VolumeRename(ctx, originalFlexvolName, newFlexvolName)
+			err = d.API.LunRename(ctx, extantLUN.Name, targetPath)
 			if err != nil {
 				Logc(ctx).WithFields(LogFields{
-					"originalName": originalFlexvolName,
-					"newName":      newFlexvolName,
-				}).WithError(err).Debug("Could not import volume, rename Flexvol failed.")
-
-				// Restore LUN to old name.
-				if renameErr := d.API.LunRename(ctx, targetPath, extantLUN.Name); renameErr != nil {
-					Logc(ctx).WithFields(LogFields{
-						"originalName": extantLUN.Name,
-						"newName":      targetPath,
-					}).WithError(renameErr).Warn("Failed restoring LUN name to original name.")
-				}
-				return fmt.Errorf("volume %s rename failed: %w", originalFlexvolName, err)
+					"path":    extantLUN.Name,
+					"newPath": targetPath,
+				}).WithError(err).Debug("Could not import volume, renaming LUN failed.")
+				return fmt.Errorf("LUN path %s rename failed: %w", extantLUN.Name, err)
 			}
-			volRenamed = true
+
+			// Rename Flexvol if it does not follow naming convention
+			if !strings.Contains(flexvol.Name, d.FlexvolNamePrefix()) {
+				err = d.API.VolumeRename(ctx, originalFlexvolName, newFlexvolName)
+				if err != nil {
+					Logc(ctx).WithFields(LogFields{
+						"originalName": originalFlexvolName,
+						"newName":      newFlexvolName,
+					}).WithError(err).Debug("Could not import volume, rename Flexvol failed.")
+
+					// Restore LUN to old name.
+					if renameErr := d.API.LunRename(ctx, targetPath, extantLUN.Name); renameErr != nil {
+						Logc(ctx).WithFields(LogFields{
+							"originalName": extantLUN.Name,
+							"newName":      targetPath,
+						}).WithError(renameErr).Warn("Failed restoring LUN name to original name.")
+					}
+					return fmt.Errorf("volume %s rename failed: %w", originalFlexvolName, err)
+				}
+				volRenamed = true
+			}
+
+			// Update target path if volume was renamed
+			if volRenamed {
+				targetPath = "/vol/" + newFlexvolName + "/" + volConfig.InternalName
+			}
 		}
 	}
 
-	// Unmap from all iGroups
-	if volRenamed {
-		targetPath = "/vol/" + newFlexvolName + "/" + volConfig.InternalName
-	}
 	if err = LunUnmapAllIgroups(ctx, d.GetAPI(), targetPath); err != nil {
 		Logc(ctx).WithField("LUN", targetPath).WithError(err).Warn("Unmapping of igroups failed.")
 		return fmt.Errorf("failed to unmap igroups for LUN %s: %w", targetPath, err)

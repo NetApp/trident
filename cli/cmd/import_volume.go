@@ -23,6 +23,7 @@ var (
 	importFilename   string
 	importBase64Data string
 	importNoManage   bool
+	importNoRename   bool
 )
 
 func init() {
@@ -30,6 +31,8 @@ func init() {
 	importVolumeCmd.Flags().StringVarP(&importFilename, "filename", "f", "", "Path to YAML or JSON PVC file")
 	importVolumeCmd.Flags().BoolVarP(&importNoManage, "no-manage", "", false,
 		"Create PV/PVC only, don't assume volume lifecycle management")
+	importVolumeCmd.Flags().BoolVarP(&importNoRename, "no-rename", "", false,
+		"Don't rename the volume during managed import")
 	importVolumeCmd.Flags().StringVarP(&importBase64Data, "base64", "", "", "Base64 encoding")
 	if err := importVolumeCmd.Flags().MarkHidden("base64"); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -58,11 +61,14 @@ Volume path').`,
 			if importNoManage {
 				command = append(command, "--no-manage")
 			}
+			if importNoRename {
+				command = append(command, "--no-rename")
+			}
 			out, err := TunnelCommand(append(command, args...))
 			printOutput(cmd, out, err)
 			return err
 		} else {
-			return volumeImport(args[0], args[1], importNoManage, pvcDataJSON)
+			return volumeImport(args[0], args[1], importNoManage, importNoRename, pvcDataJSON)
 		}
 	},
 }
@@ -96,11 +102,12 @@ func getPVCData(filename, b64Data string) ([]byte, error) {
 	return jsonData, nil
 }
 
-func volumeImport(backendName, internalVolumeName string, noManage bool, pvcDataJSON []byte) error {
+func volumeImport(backendName, internalVolumeName string, noManage, noRename bool, pvcDataJSON []byte) error {
 	request := &storage.ImportVolumeRequest{
 		Backend:      backendName,
 		InternalName: internalVolumeName,
 		NoManage:     noManage,
+		NoRename:     noRename,
 		PVCData:      base64.StdEncoding.EncodeToString(pvcDataJSON),
 	}
 

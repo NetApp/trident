@@ -522,6 +522,7 @@ func (d *ASANVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Vo
 		"originalName": originalName,
 		"newName":      volConfig.InternalName,
 		"notManaged":   volConfig.ImportNotManaged,
+		"noRename":     volConfig.ImportNoRename,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
@@ -574,8 +575,8 @@ func (d *ASANVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Vo
 	// Use the Namespace size
 	volConfig.Size = nsInfo.Size
 
-	// Rename the Namespace and recreate comments if Trident will manage its lifecycle
-	if !volConfig.ImportNotManaged {
+	// Rename the Namespace if Trident will manage its lifecycle and the names are different
+	if !volConfig.ImportNotManaged && !volConfig.ImportNoRename {
 		// Rename the namespace
 		err = d.API.NVMeNamespaceRename(ctx, nsInfo.UUID, volConfig.InternalName)
 		if err != nil {
@@ -583,7 +584,10 @@ func (d *ASANVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Vo
 				"Could not import ASA NVMe namespace, rename of ASA NVMe namespace failed: %w.", err)
 			return fmt.Errorf("ASA NVMe namespace %s rename failed: %w", originalName, err)
 		}
+	}
 
+	// Update namespace comments if Trident will manage its lifecycle
+	if !volConfig.ImportNotManaged {
 		// Create comment for the namespace based on the source Namespace
 		nsCommentString, commentErr := d.createNSCommentBasedOnSourceNS(ctx, volConfig, nsInfo, nil)
 		if commentErr != nil {

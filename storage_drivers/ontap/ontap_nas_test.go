@@ -5399,6 +5399,56 @@ func TestOntapNasStorageDriverVolumeImport_EmptyPolicy(t *testing.T) {
 	}
 }
 
+func TestOntapNasStorageDriverVolumeImport_NoRename(t *testing.T) {
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	volConfig := &storage.VolumeConfig{
+		Size:             "1g",
+		Encryption:       "false",
+		FileSystem:       "nfs",
+		InternalName:     "vol1", // With --no-rename, InternalName should be the original name
+		PeerVolumeHandle: "fakesvm:vol1",
+		ImportNotManaged: false,
+		ImportNoRename:   true, // Enable --no-rename flag
+		UnixPermissions:  DefaultUnixPermissions,
+	}
+	flexVol := &api.Volume{
+		Name:         "flexvol",
+		Comment:      "flexvol",
+		Size:         "1",
+		JunctionPath: "/nfs/vol1",
+	}
+
+	tests := []struct {
+		name    string
+		nasType string
+	}{
+		{"NFS", "nfs"},
+		{"SMB", "smb"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Reset driver config for each test
+			driver.Config.NASType = tt.nasType
+
+			mockAPI.EXPECT().VolumeInfo(ctx, "vol1").Return(flexVol, nil)
+			// With --no-rename, VolumeRename should NOT be called
+			// Only other import operations should happen
+			mockAPI.EXPECT().VolumeModifyUnixPermissions(ctx, "vol1", "vol1", DefaultUnixPermissions).Return(nil)
+
+			if tt.nasType == sa.SMB {
+				// SMB requires additional mock expectations
+				mockAPI.EXPECT().SMBShareExists(ctx, "vol1").Return(false, nil)
+				mockAPI.EXPECT().SMBShareCreate(ctx, "vol1", "/vol1").Return(nil)
+			}
+
+			result := driver.Import(ctx, volConfig, "vol1")
+			assert.NoError(t, result, "Import with --no-rename should not return an error")
+			assert.Equal(t, "vol1", volConfig.InternalName, "Expected volume internal name to remain as original name with --no-rename")
+		})
+	}
+}
+
 func TestOntapNasStorageDriverVolumePublish_NASType_None(t *testing.T) {
 	_, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
 	volConfig := &storage.VolumeConfig{

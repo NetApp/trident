@@ -554,6 +554,7 @@ func (d *ASAStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		"originalName": originalName,
 		"newName":      volConfig.InternalName,
 		"notManaged":   volConfig.ImportNotManaged,
+		"noRename":     volConfig.ImportNoRename,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
@@ -587,15 +588,18 @@ func (d *ASAStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 	// Use the LUN size
 	volConfig.Size = lunInfo.Size
 
-	// Rename the LUN if Trident will manage its lifecycle
-	if !volConfig.ImportNotManaged {
+	// Rename the LUN if Trident will manage its lifecycle and the names are different
+	if !volConfig.ImportNotManaged && !volConfig.ImportNoRename {
 		err = d.API.LunRename(ctx, originalName, volConfig.InternalName)
 		if err != nil {
 			Logc(ctx).WithField("originalName", originalName).Errorf(
 				"Could not import LUN, rename LUN failed: %v", err)
 			return fmt.Errorf("LUN %s rename failed: %v", originalName, err)
 		}
+	}
 
+	// Update LUN labels if Trident will manage its lifecycle
+	if !volConfig.ImportNotManaged {
 		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, lunInfo.Comment) {
 			// Set the base label
 			storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.Config.Labels)

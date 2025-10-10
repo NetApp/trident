@@ -2287,6 +2287,55 @@ func TestOntapSanVolumeImport_NameTemplateLabelLengthExceeding(t *testing.T) {
 	assert.Error(t, err, "Volume imported, expected an error")
 }
 
+func TestOntapSanVolumeImport_NoRename(t *testing.T) {
+	ctx := context.Background()
+
+	mockAPI, driver := newMockOntapSANDriver(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	driver.Config.Labels = map[string]string{
+		"cloud": "san",
+		"label": "dev-test-cluster-1",
+	}
+
+	pool1.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." +
+		"RequestName}}"
+	pool1.SetAttributes(map[string]sa.Offer{
+		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
+	originalVolumeName := "originalVolume"
+	volConfig := getVolumeConfig()
+	volConfig.ImportNotManaged = false
+	volConfig.ImportNoRename = true             // Enable --no-rename flag
+	volConfig.InternalName = originalVolumeName // With --no-rename, InternalName should be the original name
+
+	volume := api.Volume{
+		AccessType: "rw",
+		Comment:    "{\"provisioning\":{\"cloud\":\"anf\",\"clusterName\":\"dev-test-cluster-1\"}}",
+	}
+	lun := api.Lun{
+		Size:  testDefaultVolumeSize,
+		Name:  "/vol/" + originalVolumeName + "/lun1",
+		State: "online",
+	}
+
+	mockAPI.EXPECT().VolumeInfo(ctx, originalVolumeName).Return(&volume, nil)
+	mockAPI.EXPECT().LunGetByName(ctx, "/vol/"+originalVolumeName+"/*").Return(&lun, nil)
+	// With --no-rename, VolumeRename and LunRename should NOT be called
+	// Only label updates should happen
+	mockAPI.EXPECT().VolumeSetComment(ctx, originalVolumeName, originalVolumeName,
+		"{\"provisioning\":{\"cloud\":\"san\",\"label\":\"dev-test-cluster-1\"}}").Return(nil)
+	mockAPI.EXPECT().LunListIgroupsMapped(ctx, "/vol/"+originalVolumeName+"/lun0").Return(nil, nil)
+
+	err := driver.Import(ctx, &volConfig, originalVolumeName)
+
+	assert.NoError(t, err, "Error in Volume import with --no-rename, expected no error")
+	assert.Equal(t, originalVolumeName, volConfig.InternalName, "Expected volume internal name to remain as original name with --no-rename")
+}
+
 func TestOntapSanVolumeRename(t *testing.T) {
 	ctx := context.Background()
 

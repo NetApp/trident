@@ -925,6 +925,7 @@ func (d *NASFlexGroupStorageDriver) Import(
 		"Type":         "NASFlexGroupStorageDriver",
 		"originalName": originalName,
 		"notManaged":   volConfig.ImportNotManaged,
+		"noRename":     volConfig.ImportNoRename,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")

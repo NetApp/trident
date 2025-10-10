@@ -2401,6 +2401,39 @@ func TestImport(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestImport_NoRename(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	_, volConfig, _ := getNVMeCreateArgs(d)
+	originalName := "fakeOriginalName"
+	volConfig.ImportNotManaged = false
+	volConfig.ImportNoRename = true       // Enable --no-rename flag
+	volConfig.InternalName = originalName // With --no-rename, InternalName should be the original name
+
+	vol := &api.Volume{
+		Aggregates: []string{"data"},
+		AccessType: "rw",
+		Comment:    "fakeComment",
+	}
+	ns := &api.NVMeNamespace{
+		Name:  "/vol/cloneVol1/namespace0",
+		Size:  "100",
+		UUID:  "fakeUUID",
+		State: "online",
+	}
+
+	// Test successful import with --no-rename (VolumeRename should NOT be called)
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
+	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(false, nil)
+	// With --no-rename, VolumeRename should NOT be called
+	// Only label updates should happen (VolumeSetComment is called in the label update logic)
+
+	err := d.Import(ctx, volConfig, originalName)
+
+	assert.NoError(t, err, "Error in Volume import with --no-rename, expected no error")
+	assert.Equal(t, originalName, volConfig.InternalName, "Expected volume internal name to remain as original name with --no-rename")
+}
+
 func TestImport_LUKSNamespace(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	_, volConfig, _ := getNVMeCreateArgs(d)

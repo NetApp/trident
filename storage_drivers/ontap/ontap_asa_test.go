@@ -3253,6 +3253,60 @@ func TestOntapASAStorageDriver_Import_Managed_Success(t *testing.T) {
 	assert.Equal(t, "2g", volConfig.Size, "Expected volume config to be updated with actual LUN size")
 }
 
+func TestOntapASAStorageDriver_Import_NoRename_Success(t *testing.T) {
+	ctx := context.Background()
+
+	mockAPI, driver := newMockOntapASADriver(t)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	driver.Config.Labels = map[string]string{
+		"app":   "my-db-app",
+		"label": "gold",
+	}
+
+	pool1.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." +
+		"RequestName}}"
+	pool1.SetAttributes(map[string]sa.Offer{
+		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
+	// originalVolumeName will be same as LUN name in ASA driver
+	originalVolumeName := "lun1"
+	volConfig := getASAVolumeConfig()
+	volConfig.ImportNotManaged = false
+	volConfig.ImportNoRename = true             // Enable --no-rename flag
+	volConfig.InternalName = originalVolumeName // With --no-rename, InternalName should be the original name
+
+	volume := api.Volume{
+		AccessType: "rw",
+	}
+	lun := api.Lun{
+		Size:    "2g",
+		Name:    "lun1",
+		State:   "online",
+		Comment: "{\"provisioning\":{\"app\":\"my-gateway-app\",\"label\":\"silver\"}}",
+	}
+	igroups := []string{"igroup1", "igroup2"}
+
+	mockAPI.EXPECT().LunGetByName(ctx, originalVolumeName).Return(&lun, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, originalVolumeName).Return(&volume, nil)
+	// With --no-rename, LunRename should NOT be called
+	// Only label updates should happen
+	mockAPI.EXPECT().LunSetComment(ctx, originalVolumeName,
+		"{\"provisioning\":{\"app\":\"my-db-app\",\"label\":\"gold\"}}").Return(nil)
+	mockAPI.EXPECT().LunListIgroupsMapped(ctx, originalVolumeName).Return(
+		igroups, nil)
+	mockAPI.EXPECT().LunUnmap(ctx, "igroup1", originalVolumeName).Return(nil)
+	mockAPI.EXPECT().LunUnmap(ctx, "igroup2", originalVolumeName).Return(nil)
+
+	err := driver.Import(ctx, &volConfig, originalVolumeName)
+
+	assert.NoError(t, err, "Expected no error in managed import with --no-rename, but got error")
+	assert.Equal(t, "2g", volConfig.Size, "Expected volume config to be updated with actual LUN size")
+	assert.Equal(t, originalVolumeName, volConfig.InternalName, "Expected volume internal name to remain as original name with --no-rename")
+}
+
 func TestOntapASAStorageDriver_Import_UnManaged_Success(t *testing.T) {
 	ctx := context.Background()
 
