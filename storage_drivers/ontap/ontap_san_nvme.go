@@ -690,6 +690,10 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 		return fmt.Errorf("nvme namespace not found in volume %s", originalName)
 	}
 
+	// Lock the namespace until import is done.
+	namespaceMutex.Lock(nsInfo.UUID)
+	defer namespaceMutex.Unlock(nsInfo.UUID)
+
 	// The Namespace should be online
 	if nsInfo.State != "online" {
 		return fmt.Errorf("Namespace %s is not online", nsInfo.Name)
@@ -888,6 +892,7 @@ func (d *NVMeStorageDriver) Publish(
 
 	nsPath := volConfig.InternalID
 	nsUUID := volConfig.AccessInfo.NVMeNamespaceUUID
+
 	// For docker context, some of the attributes like fsType, luks needs to be
 	// fetched from namespace where they were stored while creating the namespace.
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
@@ -929,16 +934,19 @@ func (d *NVMeStorageDriver) Publish(
 		}
 	}
 
-	// Checks if subsystem exists and creates a new one if not
-	subsystem, err := d.API.NVMeSubsystemCreate(ctx, ssName, ssName)
+	// If 2 concurrent requests try to create the same subsystem, one will succeed and ONTAP is guaranteed to return
+	// "already exists" error code for the other. So no need for locking around subsystem creation.
+	subsystem, err := d.createOrGetSubsystem(ctx, ssName)
 	if err != nil {
-		Logc(ctx).Errorf("subsystem create failed, %v", err)
 		return err
 	}
 
 	if subsystem == nil {
 		return fmt.Errorf("No subsystem returned after subsystem create")
 	}
+
+	unlock := lockNamespaceAndSubsystem(nsUUID, subsystem.UUID)
+	defer unlock()
 
 	// Fill important info in publishInfo
 	publishInfo.NVMeSubsystemNQN = subsystem.NQN
@@ -988,6 +996,9 @@ func (d *NVMeStorageDriver) Unpublish(
 
 	subsystemUUID := volConfig.AccessInfo.NVMeSubsystemUUID
 	namespaceUUID := volConfig.AccessInfo.NVMeNamespaceUUID
+
+	unlock := lockNamespaceAndSubsystem(namespaceUUID, subsystemUUID)
+	defer unlock()
 
 	removePublishInfo, err := d.API.NVMeEnsureNamespaceUnmapped(ctx, publishInfo.HostNQN, subsystemUUID, namespaceUUID)
 	if removePublishInfo {
@@ -1163,6 +1174,16 @@ func (d *NVMeStorageDriver) getStoragePoolAttributes(ctx context.Context) map[st
 		sa.Replication:      sa.NewBoolOffer(mirroring),
 		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
 	}
+}
+
+func (d *NVMeStorageDriver) createOrGetSubsystem(ctx context.Context, ssName string) (*api.NVMeSubsystem, error) {
+	// This checks if subsystem exists and creates it if not.
+	ss, err := d.API.NVMeSubsystemCreate(ctx, ssName, ssName)
+	if err != nil {
+		Logc(ctx).Errorf("subsystem create failed, %v", err)
+		return nil, err
+	}
+	return ss, nil
 }
 
 // GetVolumeOpts populates the volume properties required in volume create.

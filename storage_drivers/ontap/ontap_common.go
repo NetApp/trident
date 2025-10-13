@@ -152,9 +152,15 @@ var (
 	volumeNameRegex          = regexp.MustCompile(`\{+.*\.volume.Name[^{a-z]*\}+`)
 	volumeNameStartWithRegex = regexp.MustCompile(`^[A-Za-z_].*`)
 	smbShareDeleteACL        = map[string]string{DefaultSMBAccessControlUser: DefaultSMBAccessControlUserType}
-	lunMutex                 = locks.NewGCNamedMutex()
-	igroupMutex              = locks.NewGCNamedMutex()
 	exportPolicyMutex        = locks.NewGCNamedMutex()
+
+	// NOTE: The lock order should be lunMutex first, then igroupMutex
+	lunMutex    = locks.NewGCNamedMutex()
+	igroupMutex = locks.NewGCNamedMutex()
+
+	// NOTE: The lock order should be namespaceMutex first, then subsystemMutex
+	namespaceMutex = locks.NewGCNamedMutex()
+	subsystemMutex = locks.NewGCNamedMutex()
 
 	duringVolCloneAfterSnapCreation1 = fiji.Register("duringVolCloneAfterSnapCreation1", "ontap_common")
 	duringVolCloneAfterSnapCreation2 = fiji.Register("duringVolCloneAfterSnapCreation2", "ontap_common")
@@ -5430,4 +5436,16 @@ func getUniqueNodeSpecificSubsystemName(
 	}
 
 	return completeSSName, finalSSName, nil
+}
+
+// lockNamespaceAndSubsystem acquires the namespace lock first and then the subsystem lock.
+// It returns a function that should be deferred to release the locks in reverse order.
+func lockNamespaceAndSubsystem(nsUUID, ssUUID string) func() {
+	namespaceMutex.Lock(nsUUID)
+	subsystemMutex.Lock(ssUUID)
+
+	return func() {
+		subsystemMutex.Unlock(ssUUID)
+		namespaceMutex.Unlock(nsUUID)
+	}
 }

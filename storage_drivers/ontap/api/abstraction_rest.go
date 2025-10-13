@@ -3460,6 +3460,28 @@ func (d OntapAPIREST) NVMeSubsystemCreate(ctx context.Context, subsystemName, co
 		Logc(ctx).Infof("Subsystem doesn't exist, creating new subsystem %v now.", subsystemName)
 		subsystem, err = d.api.NVMeSubsystemCreate(ctx, subsystemName, comment)
 		if err != nil {
+
+			errorResponse, extractErr := ExtractErrorResponse(ctx, err)
+			if extractErr != nil {
+				return nil, err
+			}
+			if errorResponse != nil && errorResponse.Error != nil {
+				errorCode := errorResponse.Error.Code
+				if errorCode != nil && *errorCode == NVME_SUBSYSTEM_ALREADY_EXISTS {
+					// If there is a conflict error, it means the subsystem got created in between the get and create calls
+					Logc(ctx).Infof("Subsystem %v already exists.", subsystemName)
+					subsystem, err = d.api.NVMeSubsystemGetByName(ctx, subsystemName, fields)
+					if err != nil {
+						Logc(ctx).Infof("Problem getting subsystem; %v", err)
+						return nil, err
+					}
+					if subsystem != nil {
+						return &NVMeSubsystem{UUID: *subsystem.UUID, Name: *subsystem.Name, NQN: *subsystem.TargetNqn}, nil
+					}
+					return nil, fmt.Errorf("unable to create subsystem %v", subsystemName)
+				}
+			}
+
 			return nil, err
 		}
 

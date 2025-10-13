@@ -795,6 +795,41 @@ func TestNVMeSubsystemCreate(t *testing.T) {
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	newsubsys, err = oapi.NVMeSubsystemCreate(ctx, subsystemName, subsystemComment)
 	assert.Error(t, err)
+
+	// case 6: Subsystem not present, create a new one but returned already exists error with code NVME_SUBSYSTEM_ALREADY_EXISTS
+	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(nil, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(subsys, nil).Times(1)
+	mockErr := &nvme.NvmeSubsystemCreateDefault{
+		Payload: &models.ErrorResponse{
+			Error: &models.ReturnedError{
+				Code:    convert.ToPtr(api.NVME_SUBSYSTEM_ALREADY_EXISTS),
+				Message: convert.ToPtr("NVMe subsystem already exists"),
+			},
+		},
+	}
+	mock.EXPECT().NVMeSubsystemCreate(ctx, subsystemName, subsystemComment).Return(nil, mockErr)
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	newsubsys, err = oapi.NVMeSubsystemCreate(ctx, subsystemName, subsystemComment)
+	assert.NoError(t, err)
+	assert.Equal(t, newsubsys.UUID, subsysUUID, "subsystem UUID does not match")
+	assert.Equal(t, newsubsys.Name, subsystemName, "subsystem name does not match")
+
+	// case 7: Subsystem not present, create a new one but returned already exists error with code NVME_SUBSYSTEM_ALREADY_EXISTS
+	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(nil, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(nil, nil).Times(1)
+	mockErr = &nvme.NvmeSubsystemCreateDefault{
+		Payload: &models.ErrorResponse{
+			Error: &models.ReturnedError{
+				Code:    convert.ToPtr(api.NVME_SUBSYSTEM_ALREADY_EXISTS),
+				Message: convert.ToPtr("NVMe subsystem already exists"),
+			},
+		},
+	}
+	mock.EXPECT().NVMeSubsystemCreate(ctx, subsystemName, subsystemComment).Return(nil, mockErr)
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	newsubsys, err = oapi.NVMeSubsystemCreate(ctx, subsystemName, subsystemComment)
+	assert.Error(t, err)
+	assert.Nil(t, newsubsys, "subsystem expected to be nil when error is returned")
 }
 
 func TestNVMeEnsureNamespaceMapped(t *testing.T) {

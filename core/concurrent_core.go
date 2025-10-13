@@ -3236,6 +3236,7 @@ func (o *ConcurrentTridentOrchestrator) publishVolume(ctx context.Context, volum
 	}
 
 	publishInfo.TridentUUID = o.uuid
+	publishInfo.BackendUUID = backend.BackendUUID()
 
 	// Enable publish enforcement if the backend supports it and the volume isn't already enforced
 	if publishEnforceable && !volume.Config.AccessInfo.PublishEnforcement {
