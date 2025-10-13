@@ -1548,12 +1548,6 @@ spec:
           mountPath: \\.\pipe\csi-proxy-filesystem-v1beta1
         - name: csi-proxy-smb-pipe-v1beta1
           mountPath: \\.\pipe\csi-proxy-smb-v1beta1
-        resources:
-          limits:
-            memory: 400Mi
-          requests:
-            cpu: 10m
-            memory: 20Mi
       - name: node-driver-registrar
         image: {CSI_SIDECAR_NODE_DRIVER_REGISTRAR_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
