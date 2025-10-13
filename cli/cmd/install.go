@@ -282,9 +282,6 @@ func init() {
 	if err := installCmd.Flags().MarkHidden("fs-group-policy"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 	}
-	if err := installCmd.Flags().MarkHidden("host-network"); err != nil {
-		_, _ = fmt.Fprintln(os.Stderr, err)
-	}
 }
 
 var installCmd = &cobra.Command{
