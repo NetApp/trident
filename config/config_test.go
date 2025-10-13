@@ -155,6 +155,516 @@ func TestValidateKubernetesVersionFromInfo(t *testing.T) {
 	assert.Error(t, err, "expected no error")
 }
 
+func TestIsValidContainerName(t *testing.T) {
+	tests := []struct {
+		name          string
+		containerName string
+		expected      bool
+	}{
+		// Valid controller containers
+		{
+			name:          "Valid trident-main",
+			containerName: "trident-main",
+			expected:      true,
+		},
+		{
+			name:          "Valid csi-provisioner",
+			containerName: "csi-provisioner",
+			expected:      true,
+		},
+		{
+			name:          "Valid csi-resizer",
+			containerName: "csi-resizer",
+			expected:      true,
+		},
+		{
+			name:          "Valid csi-snapshotter",
+			containerName: "csi-snapshotter",
+			expected:      true,
+		},
+		{
+			name:          "Valid csi-attacher",
+			containerName: "csi-attacher",
+			expected:      true,
+		},
+		{
+			name:          "Valid trident-autosupport",
+			containerName: "trident-autosupport",
+			expected:      true,
+		},
+		// Valid node containers
+		{
+			name:          "Valid node driver-registrar",
+			containerName: "node-driver-registrar",
+			expected:      true,
+		},
+		{
+			name:          "Valid windows driver-registrar",
+			containerName: "node-driver-registrar",
+			expected:      true,
+		},
+		{
+			name:          "Valid windows liveness probe",
+			containerName: "liveness-probe",
+			expected:      true,
+		},
+		// Case sensitivity tests (should NOT match - exact match required)
+		{
+			name:          "Uppercase TRIDENT-MAIN",
+			containerName: "TRIDENT-MAIN",
+			expected:      false,
+		},
+		{
+			name:          "Mixed case Csi-Provisioner",
+			containerName: "Csi-Provisioner",
+			expected:      false,
+		},
+		{
+			name:          "Mixed case CSI-Attacher",
+			containerName: "CSI-Attacher",
+			expected:      false,
+		},
+		// Whitespace tests (should NOT match - exact match required)
+		{
+			name:          "Leading whitespace",
+			containerName: "  trident-main",
+			expected:      false,
+		},
+		{
+			name:          "Trailing whitespace",
+			containerName: "csi-provisioner  ",
+			expected:      false,
+		},
+		{
+			name:          "Both leading and trailing whitespace",
+			containerName: "  driver-registrar  ",
+			expected:      false,
+		},
+		{
+			name:          "Tab characters",
+			containerName: "\ttrident-autosupport\t",
+			expected:      false,
+		},
+		// Combined case and whitespace
+		{
+			name:          "Uppercase with whitespace",
+			containerName: "  TRIDENT-MAIN  ",
+			expected:      false,
+		},
+		// Invalid containers
+		{
+			name:          "Invalid container name",
+			containerName: "invalid-container",
+			expected:      false,
+		},
+		{
+			name:          "Empty string",
+			containerName: "",
+			expected:      false,
+		},
+		{
+			name:          "Only whitespace",
+			containerName: "   ",
+			expected:      false,
+		},
+		{
+			name:          "Typo in name - trident-mian",
+			containerName: "trident-mian",
+			expected:      false,
+		},
+		{
+			name:          "Typo in name - csi-provisoner",
+			containerName: "csi-provisoner",
+			expected:      false,
+		},
+		{
+			name:          "Similar but wrong - trident-node",
+			containerName: "trident-node",
+			expected:      false,
+		},
+		{
+			name:          "Random string",
+			containerName: "random-container-name",
+			expected:      false,
+		},
+		{
+			name:          "Special characters",
+			containerName: "trident@main",
+			expected:      false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			result := IsValidContainerName(tt.containerName)
+			assert.Equal(t, tt.expected, result, "IsValidContainerName(%q) = %v, expected %v", tt.containerName, result, tt.expected)
+		})
+	}
+}
+
+func TestIsValidControllerContainerName(t *testing.T) {
+	tests := []struct {
+		name          string
+		containerName string
+		expected      bool
+	}{
+		// Valid controller containers
+		{
+			name:          "Valid controller trident-main",
+			containerName: "trident-main",
+			expected:      true,
+		},
+		{
+			name:          "Valid controller csi-provisioner",
+			containerName: "csi-provisioner",
+			expected:      true,
+		},
+		{
+			name:          "Valid controller csi-resizer",
+			containerName: "csi-resizer",
+			expected:      true,
+		},
+		{
+			name:          "Valid controller csi-snapshotter",
+			containerName: "csi-snapshotter",
+			expected:      true,
+		},
+		{
+			name:          "Valid controller csi-attacher",
+			containerName: "csi-attacher",
+			expected:      true,
+		},
+		{
+			name:          "Valid controller trident-autosupport",
+			containerName: "trident-autosupport",
+			expected:      true,
+		},
+		// Case sensitivity tests (should NOT match - exact match required)
+		{
+			name:          "Uppercase controller TRIDENT-MAIN",
+			containerName: "TRIDENT-MAIN",
+			expected:      false,
+		},
+		{
+			name:          "Mixed case controller CSI-Provisioner",
+			containerName: "CSI-Provisioner",
+			expected:      false,
+		},
+		// Whitespace tests (should NOT match - exact match required)
+		{
+			name:          "Controller with leading whitespace",
+			containerName: "  trident-main",
+			expected:      false,
+		},
+		{
+			name:          "Controller with trailing whitespace",
+			containerName: "csi-attacher  ",
+			expected:      false,
+		},
+		{
+			name:          "Controller with both whitespace",
+			containerName: "  trident-autosupport  ",
+			expected:      false,
+		},
+		// Node containers (should return false)
+		{
+			name:          "Node container driver-registrar",
+			containerName: "driver-registrar",
+			expected:      false,
+		},
+		{
+			name:          "Node container driver-registrar uppercase",
+			containerName: "DRIVER-REGISTRAR",
+			expected:      false,
+		},
+		// Invalid containers
+		{
+			name:          "Invalid container",
+			containerName: "invalid-container",
+			expected:      false,
+		},
+		{
+			name:          "Empty string",
+			containerName: "",
+			expected:      false,
+		},
+		{
+			name:          "Only whitespace",
+			containerName: "   ",
+			expected:      false,
+		},
+		{
+			name:          "Typo - csi-provisoner",
+			containerName: "csi-provisoner",
+			expected:      false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			result := IsValidControllerContainerName(tt.containerName)
+			assert.Equal(t, tt.expected, result, "IsValidControllerContainerName(%q) = %v, expected %v", tt.containerName, result, tt.expected)
+		})
+	}
+}
+
+func TestIsValidLinuxNodeContainerName(t *testing.T) {
+	tests := []struct {
+		name          string
+		containerName string
+		expected      bool
+	}{
+		// Valid node containers
+		{
+			name:          "Valid node trident-main",
+			containerName: "trident-main",
+			expected:      true,
+		},
+		{
+			name:          "Valid node driver-registrar",
+			containerName: "node-driver-registrar",
+			expected:      true,
+		},
+		// Case sensitivity tests (should NOT match - exact match required)
+		{
+			name:          "Uppercase node TRIDENT-MAIN",
+			containerName: "TRIDENT-MAIN",
+			expected:      false,
+		},
+		{
+			name:          "Mixed case node Driver-Registrar",
+			containerName: "Driver-Registrar",
+			expected:      false,
+		},
+		{
+			name:          "Uppercase DRIVER-REGISTRAR",
+			containerName: "DRIVER-REGISTRAR",
+			expected:      false,
+		},
+		// Whitespace tests (should NOT match - exact match required)
+		{
+			name:          "Node with leading whitespace",
+			containerName: "  trident-main",
+			expected:      false,
+		},
+		{
+			name:          "Node with trailing whitespace",
+			containerName: "driver-registrar  ",
+			expected:      false,
+		},
+		{
+			name:          "Node with both whitespace",
+			containerName: "  trident-main  ",
+			expected:      false,
+		},
+		{
+			name:          "Node with tabs",
+			containerName: "\tdriver-registrar\t",
+			expected:      false,
+		},
+		// Controller-only containers (should return false)
+		{
+			name:          "Controller-only csi-provisioner",
+			containerName: "csi-provisioner",
+			expected:      false,
+		},
+		{
+			name:          "Controller-only csi-attacher",
+			containerName: "csi-attacher",
+			expected:      false,
+		},
+		{
+			name:          "Controller-only csi-resizer",
+			containerName: "csi-resizer",
+			expected:      false,
+		},
+		{
+			name:          "Controller-only csi-snapshotter",
+			containerName: "csi-snapshotter",
+			expected:      false,
+		},
+		{
+			name:          "Controller-only trident-autosupport",
+			containerName: "trident-autosupport",
+			expected:      false,
+		},
+		{
+			name:          "Controller-only uppercase CSI-PROVISIONER",
+			containerName: "CSI-PROVISIONER",
+			expected:      false,
+		},
+		// Windows node pod extra container (should return false)
+		{
+			name:          "Windows Node Pod container",
+			containerName: "livenessprobe",
+			expected:      false,
+		},
+		// Invalid containers
+		{
+			name:          "Invalid container",
+			containerName: "invalid-container",
+			expected:      false,
+		},
+		{
+			name:          "Empty string",
+			containerName: "",
+			expected:      false,
+		},
+		{
+			name:          "Only whitespace",
+			containerName: "   ",
+			expected:      false,
+		},
+		{
+			name:          "Typo - driver-regitrar",
+			containerName: "driver-regitrar",
+			expected:      false,
+		},
+		{
+			name:          "Random container",
+			containerName: "some-random-container",
+			expected:      false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			result := IsValidLinuxNodeContainerName(tt.containerName)
+			assert.Equal(t, tt.expected, result, "IsValidNodeContainerName(%q) = %v, expected %v", tt.containerName, result, tt.expected)
+		})
+	}
+}
+
+func TestIsValidWindowsNodeContainerName(t *testing.T) {
+	tests := []struct {
+		name          string
+		containerName string
+		expected      bool
+	}{
+		// Valid node containers
+		{
+			name:          "Valid node trident-main",
+			containerName: "trident-main",
+			expected:      true,
+		},
+		{
+			name:          "Valid node driver-registrar",
+			containerName: "node-driver-registrar",
+			expected:      true,
+		},
+		{
+			name:          "Valid node livenessprobe",
+			containerName: "liveness-probe",
+			expected:      true,
+		},
+		// Case sensitivity tests (should NOT match - exact match required)
+		{
+			name:          "Uppercase node TRIDENT-MAIN",
+			containerName: "TRIDENT-MAIN",
+			expected:      false,
+		},
+		{
+			name:          "Mixed case node Driver-Registrar",
+			containerName: "Driver-Registrar",
+			expected:      false,
+		},
+		{
+			name:          "Uppercase DRIVER-REGISTRAR",
+			containerName: "DRIVER-REGISTRAR",
+			expected:      false,
+		},
+		// Whitespace tests (should NOT match - exact match required)
+		{
+			name:          "Node with leading whitespace",
+			containerName: "  trident-main",
+			expected:      false,
+		},
+		{
+			name:          "Node with trailing whitespace",
+			containerName: "driver-registrar  ",
+			expected:      false,
+		},
+		{
+			name:          "Node with both whitespace",
+			containerName: "  trident-main  ",
+			expected:      false,
+		},
+		{
+			name:          "Node with tabs",
+			containerName: "\tdriver-registrar\t",
+			expected:      false,
+		},
+		// Controller-only containers (should return false)
+		{
+			name:          "Controller-only csi-provisioner",
+			containerName: "csi-provisioner",
+			expected:      false,
+		},
+		{
+			name:          "Controller-only csi-attacher",
+			containerName: "csi-attacher",
+			expected:      false,
+		},
+		{
+			name:          "Controller-only csi-resizer",
+			containerName: "csi-resizer",
+			expected:      false,
+		},
+		{
+			name:          "Controller-only csi-snapshotter",
+			containerName: "csi-snapshotter",
+			expected:      false,
+		},
+		{
+			name:          "Controller-only trident-autosupport",
+			containerName: "trident-autosupport",
+			expected:      false,
+		},
+		{
+			name:          "Controller-only uppercase CSI-PROVISIONER",
+			containerName: "CSI-PROVISIONER",
+			expected:      false,
+		},
+		// Invalid containers
+		{
+			name:          "Invalid container",
+			containerName: "invalid-container",
+			expected:      false,
+		},
+		{
+			name:          "Empty string",
+			containerName: "",
+			expected:      false,
+		},
+		{
+			name:          "Only whitespace",
+			containerName: "   ",
+			expected:      false,
+		},
+		{
+			name:          "Typo - driver-regitrar",
+			containerName: "driver-regitrar",
+			expected:      false,
+		},
+		{
+			name:          "Random container",
+			containerName: "some-random-container",
+			expected:      false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			result := IsValidWindowsNodeContainerName(tt.containerName)
+			assert.Equal(t, tt.expected, result, "IsValidNodeContainerName(%q) = %v, expected %v", tt.containerName, result, tt.expected)
+		})
+	}
+}
+
 func TestRegisterTelemetryUpdater(t *testing.T) {
 	// Reset global state before test
 	defer func() {

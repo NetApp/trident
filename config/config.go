@@ -10,6 +10,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/api/resource"
 	k8sversion "k8s.io/apimachinery/pkg/version"
 
 	versionutils "github.com/netapp/trident/utils/version"
@@ -140,6 +141,31 @@ type PersistentStateVersion struct {
 	PersistentStoreVersion string `json:"store_version"`
 	OrchestratorAPIVersion string `json:"orchestrator_api_version"`
 	PublicationsSynced     bool   `json:"publications_synced,omitempty"`
+}
+
+type ContainersResourceRequirements map[string]*ContainerResource
+
+// Resources mirrors trident/operator/crd/apis/netapp/v1/Resources exactly.
+// The duplication exists because Trident currently has no admission webhook to validate CRD fields.
+// TODO(pshashan): Remove or refactor this if an admission webhook is ever implemented.
+type Resources struct {
+	Controller ContainersResourceRequirements `json:"controller,omitempty"`
+	Node       *NodeResources                 `json:"node,omitempty"`
+}
+
+type NodeResources struct {
+	Linux   ContainersResourceRequirements `json:"linux,omitempty"`
+	Windows ContainersResourceRequirements `json:"windows,omitempty"`
+}
+
+type ContainerResource struct {
+	Requests *ResourceRequirements `json:"requests,omitempty"`
+	Limits   *ResourceRequirements `json:"limits,omitempty"`
+}
+
+type ResourceRequirements struct {
+	CPU    *resource.Quantity `json:"cpu,omitempty"`
+	Memory *resource.Quantity `json:"memory,omitempty"`
 }
 
 const (
@@ -311,6 +337,19 @@ const (
 
 	// REDACTED is replacement text for sensitive information that would otherwise be exposed by HTTP logging, etc.
 	REDACTED = "<REDACTED>"
+
+	// Trident Containers Name
+	TridentControllerMain = "trident-main"
+	CSISidecarProvisioner = "csi-provisioner"
+	CSISidecarResizer     = "csi-resizer"
+	CSISidecarSnapshotter = "csi-snapshotter"
+	CSISidecarAttacher    = "csi-attacher"
+	TridentAutosupport    = "trident-autosupport"
+
+	// Node Containers Name
+	TridentNodeMain                = "trident-main"
+	CSISidecarRegistrar            = "node-driver-registrar"
+	CSISidecarWindowsLivenessProbe = "liveness-probe"
 )
 
 var (
@@ -391,6 +430,86 @@ var (
 	// QPS and Burst for k8s clients
 	K8sAPIQPS   float32
 	K8sAPIBurst int
+
+	// DefaultResources consists of all the defaults resources for the all the containers
+	// If you're changing here, keep in mind to also update the defaults in the helm chart.
+	// Over at trident/helm/trident-operator/values.yaml.
+	DefaultResources = Resources{
+		Controller: ContainersResourceRequirements{
+			TridentControllerMain: &ContainerResource{
+				Requests: &ResourceRequirements{
+					CPU:    ToPtr(resource.MustParse("10m")),
+					Memory: ToPtr(resource.MustParse("80Mi")),
+				},
+			},
+			CSISidecarProvisioner: &ContainerResource{
+				Requests: &ResourceRequirements{
+					CPU:    ToPtr(resource.MustParse("2m")),
+					Memory: ToPtr(resource.MustParse("20Mi")),
+				},
+			},
+			CSISidecarAttacher: &ContainerResource{
+				Requests: &ResourceRequirements{
+					CPU:    ToPtr(resource.MustParse("2m")),
+					Memory: ToPtr(resource.MustParse("20Mi")),
+				},
+			},
+			CSISidecarResizer: &ContainerResource{
+				Requests: &ResourceRequirements{
+					CPU:    ToPtr(resource.MustParse("3m")),
+					Memory: ToPtr(resource.MustParse("20Mi")),
+				},
+			},
+			CSISidecarSnapshotter: &ContainerResource{
+				Requests: &ResourceRequirements{
+					CPU:    ToPtr(resource.MustParse("2m")),
+					Memory: ToPtr(resource.MustParse("20Mi")),
+				},
+			},
+			TridentAutosupport: &ContainerResource{
+				Requests: &ResourceRequirements{
+					CPU:    ToPtr(resource.MustParse("1m")),
+					Memory: ToPtr(resource.MustParse("30Mi")),
+				},
+			},
+		},
+		Node: &NodeResources{
+			Linux: ContainersResourceRequirements{
+				TridentNodeMain: &ContainerResource{
+					Requests: &ResourceRequirements{
+						CPU:    ToPtr(resource.MustParse("10m")),
+						Memory: ToPtr(resource.MustParse("60Mi")),
+					},
+				},
+				CSISidecarRegistrar: &ContainerResource{
+					Requests: &ResourceRequirements{
+						CPU:    ToPtr(resource.MustParse("1m")),
+						Memory: ToPtr(resource.MustParse("10Mi")),
+					},
+				},
+			},
+			Windows: ContainersResourceRequirements{
+				TridentNodeMain: &ContainerResource{
+					Requests: &ResourceRequirements{
+						CPU:    ToPtr(resource.MustParse("10m")),
+						Memory: ToPtr(resource.MustParse("60Mi")),
+					},
+				},
+				CSISidecarRegistrar: &ContainerResource{
+					Requests: &ResourceRequirements{
+						CPU:    ToPtr(resource.MustParse("6m")),
+						Memory: ToPtr(resource.MustParse("40Mi")),
+					},
+				},
+				CSISidecarWindowsLivenessProbe: &ContainerResource{
+					Requests: &ResourceRequirements{
+						CPU:    ToPtr(resource.MustParse("2m")),
+						Memory: ToPtr(resource.MustParse("40Mi")),
+					},
+				},
+			},
+		},
+	}
 )
 
 func IsValidProtocol(p Protocol) bool {
@@ -457,4 +576,53 @@ func ValidateKubernetesVersionFromInfo(k8sMinVersion string, versionInfo *k8sver
 	}
 
 	return ValidateKubernetesVersion(k8sMinVersion, k8sVersion)
+}
+
+// IsValidContainerName checks if the container name is a valid Trident container including both controller and node pods.
+func IsValidContainerName(c string) bool {
+	switch c {
+	case TridentControllerMain, CSISidecarProvisioner, CSISidecarResizer,
+		CSISidecarSnapshotter, CSISidecarAttacher, TridentAutosupport,
+		CSISidecarRegistrar, CSISidecarWindowsLivenessProbe:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsValidControllerContainerName checks if the container runs in the controller pod
+func IsValidControllerContainerName(c string) bool {
+	switch c {
+	case TridentControllerMain, CSISidecarProvisioner, CSISidecarResizer,
+		CSISidecarSnapshotter, CSISidecarAttacher, TridentAutosupport:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsValidLinuxNodeContainerName IsValidNodeContainerName checks if the container runs in the linux node pod
+func IsValidLinuxNodeContainerName(c string) bool {
+	switch c {
+	case TridentNodeMain, CSISidecarRegistrar:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsValidWindowsNodeContainerName IsValidNodeContainerName checks if the container runs in the windows node pod
+func IsValidWindowsNodeContainerName(c string) bool {
+	switch c {
+	case TridentNodeMain, CSISidecarRegistrar, CSISidecarWindowsLivenessProbe:
+		return true
+	default:
+		return false
+	}
+}
+
+// ToPtr returns a pointer to the provided value.
+// Re-declared here to avoid a cyclic dependency on the `convert` package.
+func ToPtr[T any](v T) *T {
+	return &v
 }

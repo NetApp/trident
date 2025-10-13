@@ -32,7 +32,7 @@ affinity:
               operator: In
               values:
               - linux
-              
+
 
 # tridentControllerPluginNodeSelector additional nodeSelectors for the Pod running the Trident Controller CSI Plugin.
 # tridentControllerPluginNodeSelector : {}
@@ -183,7 +183,7 @@ anfConfigurator:
   netappAccounts: []
   resourceGroups: []
   customerEncryptionKeys: {}
-  
+
 # Auto generated ONTAP backend related fields consumed by the configurator controller.
 ontapConfigurator:
   enabled: false
@@ -195,6 +195,123 @@ ontapConfigurator:
 
 # enableConcurrency enables the concurrent core feature in Trident **TECH PREVIEW**
 enableConcurrency: false
+
+# Resource requests and limits for Trident components (controller, node, operator).
+# Configure CPU and memory for each container and sidecar to manage resource allocation in Kubernetes.
+#
+# IMPORTANT NOTES:
+# - DO NOT change the names of any containers or fields - or, they may not work
+# - DO NOT change the indentation - YAML indentation is critical for proper parsing
+# - Default values for controller/node are shown in comments (e.g., # 10m) and are applied automatically if not specified
+# - Default values for operator are directly specified in the config (not in comments) and will be applied
+# - By default, NO limits are applied - only requests have default values
+# - Container names are listed as they appear in the pod specifications
+#
+# STRUCTURE EXPLANATION:
+#
+# 1. CONTROLLER POD:
+#    The controller pod runs on a single operating system (Linux), so there are no OS-specific
+#    sub-sections. All containers within the controller pod are listed directly under 'controller'.
+#
+# 2. NODE POD:
+#    The node pod runs on multiple operating systems (Linux and Windows), so it has OS-specific
+#    sub-sections: 'linux' and 'windows'. Each OS section lists its specific containers.
+#
+# 3. OPERATOR POD:
+#    Unlike controller and node pods, the operator has actual default values directly specified 
+#    (not in comments). If removed, no values will be applied.
+resources:
+  controller:
+    trident-main:
+      requests:
+        cpu: # 10m
+        memory: # 80Mi
+      limits:
+        cpu:
+        memory:
+      # sidecars
+    csi-provisioner:
+      requests:
+        cpu: # 2m
+        memory: # 20Mi
+      limits:
+        cpu:
+        memory:
+    csi-attacher:
+      requests:
+        cpu: # 2m
+        memory: # 20Mi
+      limits:
+        cpu:
+        memory:
+    csi-resizer:
+      requests:
+        cpu: # 3m
+        memory: # 20Mi
+      limits:
+        cpu:
+        memory:
+    csi-snapshotter:
+      requests:
+        cpu: # 2m
+        memory: # 20Mi
+      limits:
+        cpu:
+        memory:
+    trident-autosupport:
+      requests:
+        cpu: # 1m
+        memory: # 30Mi
+      limits:
+        cpu:
+        memory:
+  node:
+    linux:
+      trident-main:
+        requests:
+          cpu: # 10m
+          memory: # 60Mi
+        limits:
+          cpu:
+          memory:
+      # sidecars
+      node-driver-registrar:
+        requests:
+          cpu: # 1m
+          memory: # 10Mi
+        limits:
+          cpu:
+          memory:
+    windows:
+      trident-main:
+        requests:
+          cpu: # 6m
+          memory: # 40Mi
+        limits:
+          cpu:
+          memory:
+      # sidecars
+      node-driver-registrar:
+        requests:
+          cpu: # 6m
+          memory: # 40Mi
+        limits:
+          cpu:
+          memory:
+      liveness-probe:
+        requests:
+          cpu: # 2m
+          memory: # 40Mi
+        limits:
+          cpu:
+          memory:
+  operator:
+    requests:
+      cpu: 10m
+      memory: 40Mi
+    limits:
+      cpu:
+      memory:
 
 # k8sAPIQPS sets the maximum QPS to the Kubernetes API server from the Trident operator. (default 100)
 k8sAPIQPS: 0

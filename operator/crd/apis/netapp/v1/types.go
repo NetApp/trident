@@ -7,6 +7,8 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/netapp/trident/config"
 )
 
 const (
@@ -91,6 +93,7 @@ type TridentOrchestratorSpec struct {
 	NodePrep                     []string          `json:"nodePrep"`
 	SkipCRDsToObliviate          []string          `json:"skipCRDsToObliviate,omitempty"`
 	EnableConcurrency            bool              `json:"enableConcurrency,omitempty"`
+	Resources                    *Resources        `json:"resources,omitempty"`
 	HTTPSMetrics                 bool              `json:"httpsMetrics,omitempty"`
 	HostNetwork                  bool              `json:"hostNetwork,omitempty"`
 }
@@ -128,6 +131,28 @@ func (t *Toleration) GetMap() map[string]string {
 	}
 
 	return toleration
+}
+
+type ContainersResourceRequirements map[string]*ContainerResource
+
+type Resources struct {
+	Controller ContainersResourceRequirements `json:"controller,omitempty"`
+	Node       *NodeResources                 `json:"node,omitempty"`
+}
+
+type NodeResources struct {
+	Linux   ContainersResourceRequirements `json:"linux,omitempty"`
+	Windows ContainersResourceRequirements `json:"windows,omitempty"`
+}
+
+type ContainerResource struct {
+	Requests *ResourceRequirements `json:"requests,omitempty"`
+	Limits   *ResourceRequirements `json:"limits,omitempty"`
+}
+
+type ResourceRequirements struct {
+	CPU    string `json:"cpu,omitempty"`
+	Memory string `json:"memory,omitempty"`
 }
 
 // TridentOrchestratorStatus defines the observed state of TridentOrchestrator
@@ -173,6 +198,7 @@ type TridentOrchestratorSpecValues struct {
 	FSGroupPolicy            string            `json:"fsGroupPolicy,omitempty"`
 	NodePrep                 []string          `json:"nodePrep"`
 	EnableConcurrency        string            `json:"enableConcurrency"`
+	Resources                *config.Resources `json:"resources,omitempty"`
 	HTTPSMetrics             string            `json:"httpsMetrics"`
 	HostNetwork              bool              `json:"hostNetwork"`
 }

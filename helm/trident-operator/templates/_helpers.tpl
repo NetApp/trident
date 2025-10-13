@@ -246,3 +246,136 @@ Override auto-detection and force install the roles by setting Values.forceInsta
 {{- end }}
 {{- $isRancher -}}
 {{- end }}
+
+{{/*
+Helper functions to render resource requests and limits for each container of trident from values.yaml
+*/}}
+{{- define "trident.resources.controller" -}}
+{{- range $key, $val := . }}
+{{- $containerName := $key }}
+{{- if or $val.requests.cpu $val.requests.memory $val.limits.cpu $val.limits.memory }}
+{{ $containerName }}:
+{{- if or $val.requests.cpu $val.requests.memory }}
+  requests:
+{{- if $val.requests.cpu }}
+    cpu: {{ $val.requests.cpu }}
+{{- end }}
+{{- if $val.requests.memory }}
+    memory: {{ $val.requests.memory }}
+{{- end }}
+{{- end }}
+{{- if or $val.limits.cpu $val.limits.memory }}
+  limits:
+{{- if $val.limits.cpu }}
+    cpu: {{ $val.limits.cpu }}
+{{- end }}
+{{- if $val.limits.memory }}
+    memory: {{ $val.limits.memory }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- define "trident.resources.node.linux" -}}
+{{- range $key, $val := . }}
+{{- $containerName := $key }}
+{{- if or $val.requests.cpu $val.requests.memory $val.limits.cpu $val.limits.memory }}
+{{ $containerName }}:
+{{- if or $val.requests.cpu $val.requests.memory }}
+  requests:
+{{- if $val.requests.cpu }}
+    cpu: {{ $val.requests.cpu }}
+{{- end }}
+{{- if $val.requests.memory }}
+    memory: {{ $val.requests.memory }}
+{{- end }}
+{{- end }}
+{{- if or $val.limits.cpu $val.limits.memory }}
+  limits:
+{{- if $val.limits.cpu }}
+    cpu: {{ $val.limits.cpu }}
+{{- end }}
+{{- if $val.limits.memory }}
+    memory: {{ $val.limits.memory }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- define "trident.resources.node.windows" -}}
+{{- range $key, $val := . }}
+{{- $containerName := $key }}
+{{- if or $val.requests.cpu $val.requests.memory $val.limits.cpu $val.limits.memory }}
+{{ $containerName }}:
+{{- if or $val.requests.cpu $val.requests.memory }}
+  requests:
+{{- if $val.requests.cpu }}
+    cpu: {{ $val.requests.cpu }}
+{{- end }}
+{{- if $val.requests.memory }}
+    memory: {{ $val.requests.memory }}
+{{- end }}
+{{- end }}
+{{- if or $val.limits.cpu $val.limits.memory }}
+  limits:
+{{- if $val.limits.cpu }}
+    cpu: {{ $val.limits.cpu }}
+{{- end }}
+{{- if $val.limits.memory }}
+    memory: {{ $val.limits.memory }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Helper functions to check if resources are actually defined (not just empty structure)
+*/}}
+{{- define "trident.hasControllerResources" -}}
+  {{- $hasResources := false -}}
+  {{- if .Values.resources -}}
+    {{- if .Values.resources.controller -}}
+      {{- range $key, $val := .Values.resources.controller -}}
+        {{- if or $val.requests.cpu $val.requests.memory $val.limits.cpu $val.limits.memory -}}
+          {{- $hasResources = true -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if $hasResources -}}true{{- end -}}
+{{- end -}}
+
+{{- define "trident.hasNodeLinuxResources" -}}
+  {{- $hasResources := false -}}
+  {{- if .Values.resources -}}
+    {{- if .Values.resources.node -}}
+      {{- if .Values.resources.node.linux -}}
+        {{- range $key, $val := .Values.resources.node.linux -}}
+          {{- if or $val.requests.cpu $val.requests.memory $val.limits.cpu $val.limits.memory -}}
+            {{- $hasResources = true -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if $hasResources -}}true{{- end -}}
+{{- end -}}
+
+{{- define "trident.hasNodeWindowsResources" -}}
+  {{- $hasResources := false -}}
+  {{- if .Values.resources -}}
+    {{- if .Values.resources.node -}}
+      {{- if .Values.resources.node.windows -}}
+        {{- range $key, $val := .Values.resources.node.windows -}}
+          {{- if or $val.requests.cpu $val.requests.memory $val.limits.cpu $val.limits.memory -}}
+            {{- $hasResources = true -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if $hasResources -}}true{{- end -}}
+{{- end -}}

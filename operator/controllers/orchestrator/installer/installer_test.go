@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/brunoga/deep"
 	"github.com/distribution/reference"
 	"github.com/ghodss/yaml"
 	"github.com/google/go-cmp/cmp"
@@ -15,9 +16,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
+	commonconfig "github.com/netapp/trident/config"
 	mockExtendedK8sClient "github.com/netapp/trident/mocks/mock_operator/mock_controllers/mock_orchestrator/mock_installer"
 	"github.com/netapp/trident/operator/config"
 	netappv1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
@@ -471,4 +474,945 @@ func TestSetInstallationParams_FSGroupPolicy(t *testing.T) {
 			test.assertValid(t, err)
 		})
 	}
+}
+
+func TestInstaller_populateResources(t *testing.T) {
+	// Initialize default resources for testing
+	setupDefaultResources := func() {
+		resourcesValues = deep.MustCopy(&commonconfig.DefaultResources)
+	}
+
+	tests := []struct {
+		name           string
+		inputCR        netappv1.TridentOrchestrator
+		expectedError  bool
+		errorSubstring string
+		validateFunc   func(t *testing.T)
+	}{
+		// Positive test cases:
+		{
+			name:          "nil resources - should return nil",
+			inputCR:       *NewTridentOrchestrator(),
+			expectedError: false,
+			validateFunc: func(t *testing.T) {
+				// Should not modify resourcesValues when Resources is nil
+				assert.True(t, cmp.Equal(resourcesValues, &commonconfig.DefaultResources))
+			},
+		},
+		{
+			name: "valid controller resources - requests only",
+			inputCR: *NewTridentOrchestrator(
+				WithControllerContainer(commonconfig.TridentControllerMain, "100m", "200Mi", "", ""),
+			),
+			expectedError: false,
+			validateFunc: func(t *testing.T) {
+				expected := mustParseQuantity("100m")
+				assert.Equal(t, expected, *resourcesValues.Controller[commonconfig.TridentControllerMain].Requests.CPU)
+				expected = mustParseQuantity("200Mi")
+				assert.Equal(t, expected, *resourcesValues.Controller[commonconfig.TridentControllerMain].Requests.Memory)
+
+				// Now I should also check that it didn't change other values.
+				for containerName, container := range resourcesValues.Controller {
+					if containerName != commonconfig.TridentControllerMain {
+						assert.True(t, cmp.Equal(container, commonconfig.DefaultResources.Controller[containerName]),
+							"Container %s should not have been modified", containerName)
+					}
+				}
+
+				// Verify that node resources weren't modified at all
+				assert.True(t, cmp.Equal(resourcesValues.Node, commonconfig.DefaultResources.Node),
+					"Node resources should remain unchanged")
+			},
+		},
+		{
+			name: "valid controller resources - requests and limits",
+			inputCR: *NewTridentOrchestrator(
+				WithControllerContainer(commonconfig.TridentControllerMain, "100m", "200Mi", "500m", "1Gi"),
+			),
+			expectedError: false,
+			validateFunc: func(t *testing.T) {
+				container := resourcesValues.Controller[commonconfig.TridentControllerMain]
+
+				// Validate requests
+				expected := mustParseQuantity("100m")
+				assert.Equal(t, expected, *container.Requests.CPU)
+				expected = mustParseQuantity("200Mi")
+				assert.Equal(t, expected, *container.Requests.Memory)
+
+				// Validate limits
+				expected = mustParseQuantity("500m")
+				assert.Equal(t, expected, *container.Limits.CPU)
+				expected = mustParseQuantity("1Gi")
+				assert.Equal(t, expected, *container.Limits.Memory)
+
+				for containerName, container := range resourcesValues.Controller {
+					if containerName != commonconfig.TridentControllerMain {
+						assert.True(t, cmp.Equal(container, commonconfig.DefaultResources.Controller[containerName]),
+							"Container %s should not have been modified", containerName)
+					}
+				}
+
+				// Verify that node resources weren't modified at all
+				assert.True(t, cmp.Equal(resourcesValues.Node, commonconfig.DefaultResources.Node),
+					"Node resources should remain unchanged")
+			},
+		},
+		{
+			name: "valid node linux resources",
+			inputCR: *NewTridentOrchestrator(
+				WithNodeLinuxContainer(commonconfig.TridentNodeMain, "150m", "300Mi", "600m", "2Gi"),
+			),
+			expectedError: false,
+			validateFunc: func(t *testing.T) {
+				container := resourcesValues.Node.Linux[commonconfig.TridentNodeMain]
+
+				// Validate requests
+				expected := mustParseQuantity("150m")
+				assert.Equal(t, expected, *container.Requests.CPU)
+				expected = mustParseQuantity("300Mi")
+				assert.Equal(t, expected, *container.Requests.Memory)
+
+				// Validate limits
+				expected = mustParseQuantity("600m")
+				assert.Equal(t, expected, *container.Limits.CPU)
+				expected = mustParseQuantity("2Gi")
+				assert.Equal(t, expected, *container.Limits.Memory)
+
+				for containerName, container := range resourcesValues.Node.Linux {
+					if containerName != commonconfig.TridentNodeMain {
+						assert.True(t, cmp.Equal(container, commonconfig.DefaultResources.Node.Linux[containerName]),
+							"Container %s should not have been modified", containerName)
+					}
+				}
+
+				// Verify that node resources weren't modified at all
+				assert.True(t, cmp.Equal(resourcesValues.Controller, commonconfig.DefaultResources.Controller),
+					"Node resources should remain unchanged")
+				assert.True(t, cmp.Equal(resourcesValues.Node.Windows, commonconfig.DefaultResources.Node.Windows),
+					"Node resources should remain unchanged")
+			},
+		},
+		{
+			name: "valid node windows resources",
+			inputCR: *NewTridentOrchestrator(
+				WithNodeWindowsContainer(commonconfig.TridentNodeMain, "120m", "250Mi", "700m", "1.5Gi"),
+			),
+			expectedError: false,
+			validateFunc: func(t *testing.T) {
+				container := resourcesValues.Node.Windows[commonconfig.TridentNodeMain]
+
+				// Validate requests
+				expected := mustParseQuantity("120m")
+				assert.Equal(t, expected, *container.Requests.CPU)
+				expected = mustParseQuantity("250Mi")
+				assert.Equal(t, expected, *container.Requests.Memory)
+
+				// Validate limits
+				expected = mustParseQuantity("700m")
+				assert.Equal(t, expected, *container.Limits.CPU)
+				expected = mustParseQuantity("1.5Gi")
+				assert.Equal(t, expected, *container.Limits.Memory)
+
+				for containerName, container := range resourcesValues.Node.Windows {
+					if containerName != commonconfig.TridentNodeMain {
+						assert.True(t, cmp.Equal(container, commonconfig.DefaultResources.Node.Windows[containerName]),
+							"Container %s should not have been modified", containerName)
+					}
+				}
+
+				// Verify that node resources weren't modified at all
+				assert.True(t, cmp.Equal(resourcesValues.Controller, commonconfig.DefaultResources.Controller),
+					"Node resources should remain unchanged")
+				assert.True(t, cmp.Equal(resourcesValues.Node.Linux, commonconfig.DefaultResources.Node.Linux),
+					"Node resources should remain unchanged")
+			},
+		},
+		{
+			name: "multiple container resources",
+			inputCR: *NewTridentOrchestrator(
+				WithControllerContainer(commonconfig.TridentControllerMain, "100m", "200Mi", "500m", "1Gi"),
+				WithControllerContainer(commonconfig.CSISidecarProvisioner, "50m", "100Mi", "200m", "500Mi"),
+				WithNodeLinuxContainer(commonconfig.TridentNodeMain, "150m", "300Mi", "600m", "2Gi"),
+				WithNodeLinuxContainer(commonconfig.CSISidecarRegistrar, "25m", "50Mi", "100m", "200Mi"),
+				WithNodeWindowsContainer(commonconfig.TridentNodeMain, "120m", "250Mi", "700m", "1.5Gi"),
+				WithNodeWindowsContainer(commonconfig.CSISidecarRegistrar, "30m", "60Mi", "150m", "300Mi"),
+			),
+			expectedError: false,
+			validateFunc: func(t *testing.T) {
+				// Validate controller main
+				container := resourcesValues.Controller[commonconfig.TridentControllerMain]
+				assert.Equal(t, mustParseQuantity("100m"), *container.Requests.CPU)
+				assert.Equal(t, mustParseQuantity("200Mi"), *container.Requests.Memory)
+				assert.Equal(t, mustParseQuantity("500m"), *container.Limits.CPU)
+				assert.Equal(t, mustParseQuantity("1Gi"), *container.Limits.Memory)
+
+				// Validate controller provisioner
+				container = resourcesValues.Controller[commonconfig.CSISidecarProvisioner]
+				assert.Equal(t, mustParseQuantity("50m"), *container.Requests.CPU)
+				assert.Equal(t, mustParseQuantity("100Mi"), *container.Requests.Memory)
+				assert.Equal(t, mustParseQuantity("200m"), *container.Limits.CPU)
+				assert.Equal(t, mustParseQuantity("500Mi"), *container.Limits.Memory)
+
+				// Validate node linux main
+				container = resourcesValues.Node.Linux[commonconfig.TridentNodeMain]
+				assert.Equal(t, mustParseQuantity("150m"), *container.Requests.CPU)
+				assert.Equal(t, mustParseQuantity("300Mi"), *container.Requests.Memory)
+				assert.Equal(t, mustParseQuantity("600m"), *container.Limits.CPU)
+				assert.Equal(t, mustParseQuantity("2Gi"), *container.Limits.Memory)
+
+				// Validate node linux registrar
+				container = resourcesValues.Node.Linux[commonconfig.CSISidecarRegistrar]
+				assert.Equal(t, mustParseQuantity("25m"), *container.Requests.CPU)
+				assert.Equal(t, mustParseQuantity("50Mi"), *container.Requests.Memory)
+				assert.Equal(t, mustParseQuantity("100m"), *container.Limits.CPU)
+				assert.Equal(t, mustParseQuantity("200Mi"), *container.Limits.Memory)
+
+				// Validate node windows main
+				container = resourcesValues.Node.Windows[commonconfig.TridentNodeMain]
+				assert.Equal(t, mustParseQuantity("120m"), *container.Requests.CPU)
+				assert.Equal(t, mustParseQuantity("250Mi"), *container.Requests.Memory)
+				assert.Equal(t, mustParseQuantity("700m"), *container.Limits.CPU)
+				assert.Equal(t, mustParseQuantity("1.5Gi"), *container.Limits.Memory)
+
+				// Validate node windows registrar
+				container = resourcesValues.Node.Windows[commonconfig.CSISidecarRegistrar]
+				assert.Equal(t, mustParseQuantity("30m"), *container.Requests.CPU)
+				assert.Equal(t, mustParseQuantity("60Mi"), *container.Requests.Memory)
+				assert.Equal(t, mustParseQuantity("150m"), *container.Limits.CPU)
+				assert.Equal(t, mustParseQuantity("300Mi"), *container.Limits.Memory)
+			},
+		},
+		{
+			name: "only requests specified",
+			inputCR: *NewTridentOrchestrator(
+				WithControllerContainer(commonconfig.TridentControllerMain, "100m", "200Mi", "", ""),
+			),
+			expectedError: false,
+			validateFunc: func(t *testing.T) {
+				container := resourcesValues.Controller[commonconfig.TridentControllerMain]
+				assert.Equal(t, mustParseQuantity("100m"), *container.Requests.CPU)
+				assert.Equal(t, mustParseQuantity("200Mi"), *container.Requests.Memory)
+				// Limits should remain nil if not specified
+				if container.Limits != nil {
+					assert.Nil(t, container.Limits.CPU)
+					assert.Nil(t, container.Limits.Memory)
+				}
+			},
+		},
+		{
+			name: "only limits specified",
+			inputCR: *NewTridentOrchestrator(
+				WithControllerContainer(commonconfig.TridentControllerMain, "", "", "500m", "1Gi"),
+			),
+			expectedError: false,
+			validateFunc: func(t *testing.T) {
+				container := resourcesValues.Controller[commonconfig.TridentControllerMain]
+				// Requests should have default values
+				assert.NotNil(t, container.Requests.CPU)
+				assert.NotNil(t, container.Requests.Memory)
+				// Limits should be set
+				assert.NotNil(t, container.Limits)
+				assert.Equal(t, mustParseQuantity("500m"), *container.Limits.CPU)
+				assert.Equal(t, mustParseQuantity("1Gi"), *container.Limits.Memory)
+			},
+		},
+		{
+			name: "partial requests - CPU only",
+			inputCR: *NewTridentOrchestrator(
+				WithControllerContainer(commonconfig.TridentControllerMain, "100m", "", "", ""),
+			),
+			expectedError: false,
+			validateFunc: func(t *testing.T) {
+				container := resourcesValues.Controller[commonconfig.TridentControllerMain]
+				assert.Equal(t, mustParseQuantity("100m"), *container.Requests.CPU)
+				// Memory should keep default value
+				assert.Equal(t, *commonconfig.DefaultResources.Controller[commonconfig.TridentControllerMain].Requests.Memory, *container.Requests.Memory)
+			},
+		},
+		{
+			name: "partial requests - Memory only",
+			inputCR: *NewTridentOrchestrator(
+				WithControllerContainer(commonconfig.TridentControllerMain, "", "500Mi", "", ""),
+			),
+			expectedError: false,
+			validateFunc: func(t *testing.T) {
+				container := resourcesValues.Controller[commonconfig.TridentControllerMain]
+				// CPU should keep default value
+				assert.Equal(t, mustParseQuantity("10m"), *container.Requests.CPU)
+				assert.Equal(t, mustParseQuantity("500Mi"), *container.Requests.Memory)
+			},
+		},
+		{
+			name: "partial limits - CPU only",
+			inputCR: *NewTridentOrchestrator(
+				WithControllerContainer(commonconfig.TridentControllerMain, "", "", "800m", ""),
+			),
+			expectedError: false,
+			validateFunc: func(t *testing.T) {
+				container := resourcesValues.Controller[commonconfig.TridentControllerMain]
+				assert.NotNil(t, container.Limits)
+				assert.Equal(t, mustParseQuantity("800m"), *container.Limits.CPU)
+				assert.Nil(t, container.Limits.Memory)
+			},
+		},
+		{
+			name: "partial limits - Memory only",
+			inputCR: *NewTridentOrchestrator(
+				WithControllerContainer(commonconfig.TridentControllerMain, "", "", "", "2Gi"),
+			),
+			expectedError: false,
+			validateFunc: func(t *testing.T) {
+				container := resourcesValues.Controller[commonconfig.TridentControllerMain]
+				assert.NotNil(t, container.Limits)
+				assert.Nil(t, container.Limits.CPU)
+				assert.Equal(t, mustParseQuantity("2Gi"), *container.Limits.Memory)
+			},
+		},
+		{
+			name: "empty resource strings",
+			inputCR: *NewTridentOrchestrator(
+				WithControllerContainer(commonconfig.TridentControllerMain, "", "", "", ""),
+			),
+			expectedError: false,
+			validateFunc: func(t *testing.T) {
+				container := resourcesValues.Controller[commonconfig.TridentControllerMain]
+				// Should keep default values when empty strings are provided
+				assert.Equal(t, *commonconfig.DefaultResources.Controller[commonconfig.TridentControllerMain].Requests.CPU, *container.Requests.CPU)
+				assert.Equal(t, *commonconfig.DefaultResources.Controller[commonconfig.TridentControllerMain].Requests.Memory, *container.Requests.Memory)
+				// Limits should remain nil as empty strings are ignored
+				if container.Limits != nil {
+					assert.Nil(t, container.Limits.CPU)
+					assert.Nil(t, container.Limits.Memory)
+				}
+			},
+		},
+		{
+			name: "all sidecar containers",
+			inputCR: *NewTridentOrchestrator(
+				WithControllerContainer(commonconfig.TridentControllerMain, "100m", "200Mi", "500m", "1Gi"),
+				WithControllerContainer(commonconfig.CSISidecarProvisioner, "50m", "100Mi", "200m", "500Mi"),
+				WithControllerContainer(commonconfig.CSISidecarAttacher, "40m", "80Mi", "150m", "300Mi"),
+				WithControllerContainer(commonconfig.CSISidecarResizer, "30m", "60Mi", "120m", "250Mi"),
+				WithControllerContainer(commonconfig.CSISidecarSnapshotter, "35m", "70Mi", "140m", "280Mi"),
+				WithControllerContainer(commonconfig.TridentAutosupport, "20m", "40Mi", "100m", "200Mi"),
+			),
+			expectedError: false,
+			validateFunc: func(t *testing.T) {
+				// Validate all controller containers
+				containers := map[string]struct{ cpu, mem, cpuLimit, memLimit string }{
+					commonconfig.TridentControllerMain: {"100m", "200Mi", "500m", "1Gi"},
+					commonconfig.CSISidecarProvisioner: {"50m", "100Mi", "200m", "500Mi"},
+					commonconfig.CSISidecarAttacher:    {"40m", "80Mi", "150m", "300Mi"},
+					commonconfig.CSISidecarResizer:     {"30m", "60Mi", "120m", "250Mi"},
+					commonconfig.CSISidecarSnapshotter: {"35m", "70Mi", "140m", "280Mi"},
+					commonconfig.TridentAutosupport:    {"20m", "40Mi", "100m", "200Mi"},
+				}
+
+				for containerName, expected := range containers {
+					container := resourcesValues.Controller[containerName]
+					assert.Equal(t, mustParseQuantity(expected.cpu), *container.Requests.CPU, "CPU request for %s", containerName)
+					assert.Equal(t, mustParseQuantity(expected.mem), *container.Requests.Memory, "Memory request for %s", containerName)
+					assert.Equal(t, mustParseQuantity(expected.cpuLimit), *container.Limits.CPU, "CPU limit for %s", containerName)
+					assert.Equal(t, mustParseQuantity(expected.memLimit), *container.Limits.Memory, "Memory limit for %s", containerName)
+				}
+			},
+		},
+
+		// Negative test cases:
+		{
+			name: "invalid CPU request format",
+			inputCR: *NewTridentOrchestrator(
+				WithControllerContainer(commonconfig.TridentControllerMain, "invalid-cpu", "200Mi", "", ""),
+			),
+			expectedError:  true,
+			errorSubstring: "invalid CPU request for Controller container 'trident-main'",
+		},
+		{
+			name: "invalid memory request format",
+			inputCR: *NewTridentOrchestrator(
+				WithControllerContainer(commonconfig.TridentControllerMain, "100m", "invalid-memory", "", ""),
+			),
+			expectedError:  true,
+			errorSubstring: "invalid Memory request for Controller container 'trident-main'",
+		},
+		{
+			name: "invalid CPU limit format",
+			inputCR: *NewTridentOrchestrator(
+				WithControllerContainer(commonconfig.TridentControllerMain, "100m", "200Mi", "invalid-cpu-limit", "1Gi"),
+			),
+			expectedError:  true,
+			errorSubstring: "invalid CPU limit for Controller container 'trident-main'",
+		},
+		{
+			name: "invalid memory limit format",
+			inputCR: *NewTridentOrchestrator(
+				WithControllerContainer(commonconfig.TridentControllerMain, "100m", "200Mi", "500m", "invalid-memory-limit"),
+			),
+			expectedError:  true,
+			errorSubstring: "invalid Memory limit for Controller container 'trident-main'",
+		},
+		{
+			name: "invalid controller container name",
+			inputCR: *NewTridentOrchestrator(
+				WithControllerContainer("invalid-container", "100m", "200Mi", "", ""),
+			),
+			expectedError:  true,
+			errorSubstring: "invalid container name 'invalid-container' for 'Controller'",
+		},
+		{
+			name: "invalid node linux container name",
+			inputCR: *NewTridentOrchestrator(
+				WithNodeLinuxContainer("invalid-node-container", "100m", "200Mi", "", ""),
+			),
+			expectedError:  true,
+			errorSubstring: "invalid container name 'invalid-node-container' for 'NodeLinux'",
+		},
+		{
+			name: "invalid node windows container name",
+			inputCR: *NewTridentOrchestrator(
+				WithNodeWindowsContainer("invalid-windows-container", "100m", "200Mi", "", ""),
+			),
+			expectedError:  true,
+			errorSubstring: "invalid container name 'invalid-windows-container' for 'NodeWindows'",
+		},
+		{
+			name: "multiple errors",
+			inputCR: *NewTridentOrchestrator(
+				WithControllerContainer(commonconfig.TridentControllerMain, "invalid-cpu", "invalid-memory", "", ""),
+				WithNodeLinuxContainer("invalid-container", "100m", "200Mi", "", ""),
+			),
+			expectedError: true,
+			errorSubstring: "invalid CPU request for Controller container 'trident-main'" +
+				": quantities must match the regular expression '^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$'; invalid Memory request for Controller container 'trident-main'" +
+				": quantities must match the regular expression '^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$'; invalid container name 'invalid-container' for 'NodeLinux'",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Setup fresh installer and default resources for each test
+			mockK8sClient := newMockKubeClient(t)
+			installer := newTestInstaller(mockK8sClient)
+			setupDefaultResources()
+
+			// Execute the function
+			err := installer.populateResources(tt.inputCR)
+
+			// Validate error expectations
+			if tt.expectedError {
+				assert.Error(t, err, "expected error but got none")
+				if tt.errorSubstring != "" {
+					tempErr := err.Error()
+					fmt.Println(tempErr)
+					assert.Contains(t, err.Error(), tt.errorSubstring, "error message should contain expected substring")
+				}
+			} else {
+				assert.NoError(t, err, "expected no error but got: %v", err)
+			}
+
+			// Run custom validation if provided
+			if tt.validateFunc != nil {
+				tt.validateFunc(t)
+			}
+		})
+	}
+}
+
+func TestInstaller_validateResources(t *testing.T) {
+	tests := []struct {
+		name            string
+		resources       *commonconfig.Resources
+		expectedError   bool
+		errorSubstrings []string // For multiple error validation
+	}{
+		{
+			name:          "nil resources",
+			resources:     nil,
+			expectedError: false,
+		},
+		{
+			name:          "empty resources",
+			resources:     &commonconfig.Resources{},
+			expectedError: false,
+		},
+		{
+			name: "valid controller resources - requests only",
+			resources: &commonconfig.Resources{
+				Controller: map[string]*commonconfig.ContainerResource{
+					commonconfig.TridentControllerMain: createCommonConfigContainerResource("100m", "200Mi", "", ""),
+				},
+			},
+			expectedError: false,
+		},
+		{
+			name: "valid controller resources - requests and limits",
+			resources: &commonconfig.Resources{
+				Controller: map[string]*commonconfig.ContainerResource{
+					commonconfig.TridentControllerMain: createCommonConfigContainerResource("100m", "200Mi", "500m", "1Gi"),
+				},
+			},
+			expectedError: false,
+		},
+		{
+			name: "valid node linux resources",
+			resources: &commonconfig.Resources{
+				Node: &commonconfig.NodeResources{
+					Linux: map[string]*commonconfig.ContainerResource{
+						commonconfig.TridentNodeMain: createCommonConfigContainerResource("150m", "300Mi", "600m", "2Gi"),
+					},
+				},
+			},
+			expectedError: false,
+		},
+		{
+			name: "valid node windows resources",
+			resources: &commonconfig.Resources{
+				Node: &commonconfig.NodeResources{
+					Windows: map[string]*commonconfig.ContainerResource{
+						commonconfig.TridentNodeMain: createCommonConfigContainerResource("120m", "250Mi", "700m", "1.5Gi"),
+					},
+				},
+			},
+			expectedError: false,
+		},
+		{
+			name: "valid multiple containers",
+			resources: &commonconfig.Resources{
+				Controller: map[string]*commonconfig.ContainerResource{
+					commonconfig.TridentControllerMain: createCommonConfigContainerResource("100m", "200Mi", "500m", "1Gi"),
+					commonconfig.CSISidecarProvisioner: createCommonConfigContainerResource("50m", "100Mi", "200m", "500Mi"),
+				},
+				Node: &commonconfig.NodeResources{
+					Linux: map[string]*commonconfig.ContainerResource{
+						commonconfig.TridentNodeMain:     createCommonConfigContainerResource("150m", "300Mi", "600m", "2Gi"),
+						commonconfig.CSISidecarRegistrar: createCommonConfigContainerResource("25m", "50Mi", "100m", "200Mi"),
+					},
+					Windows: map[string]*commonconfig.ContainerResource{
+						commonconfig.TridentNodeMain:     createCommonConfigContainerResource("120m", "250Mi", "700m", "1.5Gi"),
+						commonconfig.CSISidecarRegistrar: createCommonConfigContainerResource("30m", "60Mi", "150m", "300Mi"),
+					},
+				},
+			},
+			expectedError: false,
+		},
+		{
+			name: "negative CPU request in controller",
+			resources: &commonconfig.Resources{
+				Controller: map[string]*commonconfig.ContainerResource{
+					commonconfig.TridentControllerMain: {
+						Requests: &commonconfig.ResourceRequirements{
+							CPU:    createNegativeQuantity("100m"),
+							Memory: mustParseQuantityPtr("200Mi"),
+						},
+					},
+				},
+			},
+			expectedError:   true,
+			errorSubstrings: []string{"invalid CPU request for container \"trident-main\" in Controller"},
+		},
+		{
+			name: "negative memory request in controller",
+			resources: &commonconfig.Resources{
+				Controller: map[string]*commonconfig.ContainerResource{
+					commonconfig.TridentControllerMain: {
+						Requests: &commonconfig.ResourceRequirements{
+							CPU:    mustParseQuantityPtr("100m"),
+							Memory: createNegativeQuantity("200Mi"),
+						},
+					},
+				},
+			},
+			expectedError:   true,
+			errorSubstrings: []string{"invalid memory request for container \"trident-main\" in Controller"},
+		},
+		{
+			name: "negative CPU limit in controller",
+			resources: &commonconfig.Resources{
+				Controller: map[string]*commonconfig.ContainerResource{
+					commonconfig.TridentControllerMain: {
+						Limits: &commonconfig.ResourceRequirements{
+							CPU:    createNegativeQuantity("500m"),
+							Memory: mustParseQuantityPtr("1Gi"),
+						},
+						Requests: &commonconfig.ResourceRequirements{
+							CPU:    mustParseQuantityPtr("100m"),
+							Memory: mustParseQuantityPtr("200Mi"),
+						},
+					},
+				},
+			},
+			expectedError:   true,
+			errorSubstrings: []string{"invalid CPU limit for container \"trident-main\" in Controller"},
+		},
+		{
+			name: "negative memory limit in controller",
+			resources: &commonconfig.Resources{
+				Controller: map[string]*commonconfig.ContainerResource{
+					commonconfig.TridentControllerMain: {
+						Limits: &commonconfig.ResourceRequirements{
+							CPU:    mustParseQuantityPtr("500m"),
+							Memory: createNegativeQuantity("1Gi"),
+						},
+						Requests: &commonconfig.ResourceRequirements{
+							CPU:    mustParseQuantityPtr("100m"),
+							Memory: mustParseQuantityPtr("200Mi"),
+						},
+					},
+				},
+			},
+			expectedError:   true,
+			errorSubstrings: []string{"invalid memory limit for container \"trident-main\" in Controller"},
+		},
+		{
+			name: "CPU request exceeds limit",
+			resources: &commonconfig.Resources{
+				Controller: map[string]*commonconfig.ContainerResource{
+					commonconfig.TridentControllerMain: createCommonConfigContainerResource("500m", "200Mi", "100m", "1Gi"),
+				},
+			},
+			expectedError:   true,
+			errorSubstrings: []string{"CPU request 500m exceeds limit 100m for container \"trident-main\" in Controller"},
+		},
+		{
+			name: "memory request exceeds limit",
+			resources: &commonconfig.Resources{
+				Controller: map[string]*commonconfig.ContainerResource{
+					commonconfig.TridentControllerMain: createCommonConfigContainerResource("100m", "2Gi", "500m", "1Gi"),
+				},
+			},
+			expectedError:   true,
+			errorSubstrings: []string{"memory request 2Gi exceeds limit 1Gi for container \"trident-main\" in Controller"},
+		},
+		{
+			name: "negative resources in node linux",
+			resources: &commonconfig.Resources{
+				Node: &commonconfig.NodeResources{
+					Linux: map[string]*commonconfig.ContainerResource{
+						commonconfig.TridentNodeMain: {
+							Requests: &commonconfig.ResourceRequirements{
+								CPU:    createNegativeQuantity("150m"),
+								Memory: mustParseQuantityPtr("300Mi"),
+							},
+						},
+					},
+				},
+			},
+			expectedError:   true,
+			errorSubstrings: []string{"invalid CPU request for container \"trident-main\" in NodeLinux"},
+		},
+		{
+			name: "negative resources in node windows",
+			resources: &commonconfig.Resources{
+				Node: &commonconfig.NodeResources{
+					Windows: map[string]*commonconfig.ContainerResource{
+						commonconfig.TridentNodeMain: {
+							Limits: &commonconfig.ResourceRequirements{
+								CPU:    mustParseQuantityPtr("700m"),
+								Memory: createNegativeQuantity("1.5Gi"),
+							},
+							Requests: &commonconfig.ResourceRequirements{
+								CPU:    mustParseQuantityPtr("700m"),
+								Memory: mustParseQuantityPtr("1.5Gi"),
+							},
+						},
+					},
+				},
+			},
+			expectedError:   true,
+			errorSubstrings: []string{"invalid memory limit for container \"trident-main\" in NodeWindows"},
+		},
+		{
+			name: "request exceeds limit in node linux",
+			resources: &commonconfig.Resources{
+				Node: &commonconfig.NodeResources{
+					Linux: map[string]*commonconfig.ContainerResource{
+						commonconfig.TridentNodeMain: createCommonConfigContainerResource("600m", "300Mi", "150m", "2Gi"),
+					},
+				},
+			},
+			expectedError:   true,
+			errorSubstrings: []string{"CPU request 600m exceeds limit 150m for container \"trident-main\" in NodeLinux"},
+		},
+		{
+			name: "request exceeds limit in node windows",
+			resources: &commonconfig.Resources{
+				Node: &commonconfig.NodeResources{
+					Windows: map[string]*commonconfig.ContainerResource{
+						commonconfig.TridentNodeMain: createCommonConfigContainerResource("120m", "2Gi", "700m", "1.5Gi"),
+					},
+				},
+			},
+			expectedError:   true,
+			errorSubstrings: []string{"memory request 2Gi exceeds limit 1536Mi for container \"trident-main\" in NodeWindows"},
+		},
+		{
+			name: "zero resources are valid",
+			resources: &commonconfig.Resources{
+				Controller: map[string]*commonconfig.ContainerResource{
+					commonconfig.TridentControllerMain: createCommonConfigContainerResource("0", "0", "0", "0"),
+				},
+			},
+			expectedError: false,
+		},
+		{
+			name: "equal requests and limits are valid",
+			resources: &commonconfig.Resources{
+				Controller: map[string]*commonconfig.ContainerResource{
+					commonconfig.TridentControllerMain: createCommonConfigContainerResource("500m", "1Gi", "500m", "1Gi"),
+				},
+			},
+			expectedError: false,
+		},
+		{
+			name: "nil container resource",
+			resources: &commonconfig.Resources{
+				Controller: map[string]*commonconfig.ContainerResource{
+					commonconfig.TridentControllerMain: nil,
+				},
+			},
+			expectedError: false,
+		},
+		{
+			name: "mixed valid and invalid containers",
+			resources: &commonconfig.Resources{
+				Controller: map[string]*commonconfig.ContainerResource{
+					commonconfig.TridentControllerMain: createCommonConfigContainerResource("100m", "200Mi", "500m", "1Gi"),
+					commonconfig.CSISidecarProvisioner: {
+						Requests: &commonconfig.ResourceRequirements{
+							CPU:    createNegativeQuantity("50m"),
+							Memory: mustParseQuantityPtr("100Mi"),
+						},
+					},
+				},
+			},
+			expectedError:   true,
+			errorSubstrings: []string{"invalid CPU request for container \"csi-provisioner\" in Controller"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockK8sClient := newMockKubeClient(t)
+			installer := newTestInstaller(mockK8sClient)
+
+			err := installer.validateResources(test.resources)
+
+			if test.expectedError {
+				assert.Error(t, err, "Expected error for test case: %s", test.name)
+				if len(test.errorSubstrings) > 0 {
+					for _, substr := range test.errorSubstrings {
+						assert.Contains(t, err.Error(), substr, "Error should contain substring: %s", substr)
+					}
+				}
+			} else {
+				assert.NoError(t, err, "Expected no error for test case: %s", test.name)
+			}
+		})
+	}
+}
+
+// ------------------------- Helper functions -------------------------
+
+// TridentOrchestratorBuilder provides a fluent interface for building TridentOrchestrator objects
+type TridentOrchestratorBuilder struct {
+	to *netappv1.TridentOrchestrator
+}
+
+// TridentOrchestratorOption is a function that modifies the TridentOrchestrator
+type TridentOrchestratorOption func(*TridentOrchestratorBuilder)
+
+// NewTridentOrchestrator creates a new TridentOrchestratorBuilder with default values
+func NewTridentOrchestrator(opts ...TridentOrchestratorOption) *netappv1.TridentOrchestrator {
+	builder := &TridentOrchestratorBuilder{
+		to: &netappv1.TridentOrchestrator{
+			TypeMeta:   metav1.TypeMeta{},
+			ObjectMeta: metav1.ObjectMeta{},
+			Spec:       netappv1.TridentOrchestratorSpec{},
+			Status:     netappv1.TridentOrchestratorStatus{},
+		},
+	}
+
+	for _, opt := range opts {
+		opt(builder)
+	}
+
+	return builder.to
+}
+
+// WithControllerContainer adds a controller container with specified resources
+func WithControllerContainer(containerName, cpuReq, memReq, cpuLimit, memLimit string) TridentOrchestratorOption {
+	return func(b *TridentOrchestratorBuilder) {
+		if b.to.Spec.Resources == nil {
+			b.to.Spec.Resources = &netappv1.Resources{}
+		}
+		if b.to.Spec.Resources.Controller == nil {
+			b.to.Spec.Resources.Controller = make(netappv1.ContainersResourceRequirements)
+		}
+		b.to.Spec.Resources.Controller[containerName] = createContainerResource(cpuReq, memReq, cpuLimit, memLimit)
+	}
+}
+
+// WithNodeLinuxContainer adds a node Linux container with specified resources
+func WithNodeLinuxContainer(containerName, cpuReq, memReq, cpuLimit, memLimit string) TridentOrchestratorOption {
+	return func(b *TridentOrchestratorBuilder) {
+		if b.to.Spec.Resources == nil {
+			b.to.Spec.Resources = &netappv1.Resources{}
+		}
+		if b.to.Spec.Resources.Node == nil {
+			b.to.Spec.Resources.Node = &netappv1.NodeResources{}
+		}
+		if b.to.Spec.Resources.Node.Linux == nil {
+			b.to.Spec.Resources.Node.Linux = make(netappv1.ContainersResourceRequirements)
+		}
+		b.to.Spec.Resources.Node.Linux[containerName] = createContainerResource(cpuReq, memReq, cpuLimit, memLimit)
+	}
+}
+
+// WithNodeWindowsContainer adds a node Windows container with specified resources
+func WithNodeWindowsContainer(containerName, cpuReq, memReq, cpuLimit, memLimit string) TridentOrchestratorOption {
+	return func(b *TridentOrchestratorBuilder) {
+		if b.to.Spec.Resources == nil {
+			b.to.Spec.Resources = &netappv1.Resources{}
+		}
+		if b.to.Spec.Resources.Node == nil {
+			b.to.Spec.Resources.Node = &netappv1.NodeResources{}
+		}
+		if b.to.Spec.Resources.Node.Windows == nil {
+			b.to.Spec.Resources.Node.Windows = make(netappv1.ContainersResourceRequirements)
+		}
+		b.to.Spec.Resources.Node.Windows[containerName] = createContainerResource(cpuReq, memReq, cpuLimit, memLimit)
+	}
+}
+
+// WithImageRegistry sets the image registry
+func WithImageRegistry(registry string) TridentOrchestratorOption {
+	return func(b *TridentOrchestratorBuilder) {
+		b.to.Spec.ImageRegistry = registry
+	}
+}
+
+// WithDebug sets the debug flag
+func WithDebug(debug bool) TridentOrchestratorOption {
+	return func(b *TridentOrchestratorBuilder) {
+		b.to.Spec.Debug = debug
+	}
+}
+
+// WithLogLevel sets the log level
+func WithLogLevel(logLevel string) TridentOrchestratorOption {
+	return func(b *TridentOrchestratorBuilder) {
+		b.to.Spec.LogLevel = logLevel
+	}
+}
+
+// WithNamespace sets the namespace
+func WithNamespace(namespace string) TridentOrchestratorOption {
+	return func(b *TridentOrchestratorBuilder) {
+		b.to.Spec.Namespace = namespace
+	}
+}
+
+// WithFSGroupPolicy sets the FSGroupPolicy
+func WithFSGroupPolicy(policy string) TridentOrchestratorOption {
+	return func(b *TridentOrchestratorBuilder) {
+		b.to.Spec.FSGroupPolicy = policy
+	}
+}
+
+// WithNodePrep sets the node preparation protocols
+func WithNodePrep(protocols []string) TridentOrchestratorOption {
+	return func(b *TridentOrchestratorBuilder) {
+		b.to.Spec.NodePrep = protocols
+	}
+}
+
+// WithIPv6 sets the IPv6 flag
+func WithIPv6(ipv6 bool) TridentOrchestratorOption {
+	return func(b *TridentOrchestratorBuilder) {
+		b.to.Spec.IPv6 = ipv6
+	}
+}
+
+// WithWindows sets the Windows flag
+func WithWindows(windows bool) TridentOrchestratorOption {
+	return func(b *TridentOrchestratorBuilder) {
+		b.to.Spec.Windows = windows
+	}
+}
+
+// Helper function to create resource quantity
+func mustParseQuantity(value string) resource.Quantity {
+	qty, err := resource.ParseQuantity(value)
+	if err != nil {
+		panic(fmt.Sprintf("failed to parse quantity %s: %v", value, err))
+	}
+	return qty
+}
+
+// Helper function to create pointer to resource quantity
+func mustParseQuantityPtr(value string) *resource.Quantity {
+	qty := mustParseQuantity(value)
+	return &qty
+}
+
+// Helper function to create container resource specification
+func createContainerResource(cpuReq, memReq, cpuLimit, memLimit string) *netappv1.ContainerResource {
+	cr := &netappv1.ContainerResource{}
+
+	if cpuReq != "" || memReq != "" {
+		cr.Requests = &netappv1.ResourceRequirements{}
+		if cpuReq != "" {
+			cr.Requests.CPU = cpuReq
+		}
+		if memReq != "" {
+			cr.Requests.Memory = memReq
+		}
+	}
+
+	if cpuLimit != "" || memLimit != "" {
+		cr.Limits = &netappv1.ResourceRequirements{}
+		if cpuLimit != "" {
+			cr.Limits.CPU = cpuLimit
+		}
+		if memLimit != "" {
+			cr.Limits.Memory = memLimit
+		}
+	}
+
+	return cr
+}
+
+// Helper function to create commonconfig.ContainerResource
+func createCommonConfigContainerResource(cpuReq, memReq, cpuLimit, memLimit string) *commonconfig.ContainerResource {
+	cr := &commonconfig.ContainerResource{}
+
+	if cpuReq != "" || memReq != "" {
+		cr.Requests = &commonconfig.ResourceRequirements{}
+		if cpuReq != "" {
+			cr.Requests.CPU = mustParseQuantityPtr(cpuReq)
+		}
+		if memReq != "" {
+			cr.Requests.Memory = mustParseQuantityPtr(memReq)
+		}
+	}
+
+	if cpuLimit != "" || memLimit != "" {
+		cr.Limits = &commonconfig.ResourceRequirements{}
+		if cpuLimit != "" {
+			cr.Limits.CPU = mustParseQuantityPtr(cpuLimit)
+		}
+		if memLimit != "" {
+			cr.Limits.Memory = mustParseQuantityPtr(memLimit)
+		}
+	}
+
+	return cr
+}
+
+// Helper function to create negative quantity
+func createNegativeQuantity(value string) *resource.Quantity {
+	qty := mustParseQuantity(value)
+	negQty := qty.DeepCopy()
+	negQty.Neg()
+	return &negQty
 }

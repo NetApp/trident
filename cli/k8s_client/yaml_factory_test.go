@@ -15,9 +15,12 @@ import (
 	v1 "k8s.io/api/core/v1"
 	csiv1 "k8s.io/api/storage/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/config"
+	commonconfig "github.com/netapp/trident/config"
+	"github.com/netapp/trident/pkg/convert"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -3058,4 +3061,1097 @@ func TestGetResourceQuotaYAML(t *testing.T) {
 	assert.Equal(t, strings.Contains(resourceQuotaYAML, Namespace), false)
 	assert.Equal(t, strings.ContainsAny(resourceQuotaYAML, appLabelString), true)
 	assert.Equal(t, strings.ContainsAny(resourceQuotaYAML, controllingCRString), true)
+}
+
+// TestGenerateResourcesYAML tests the generateResourcesYAML function
+func TestGenerateResourcesYAML(t *testing.T) {
+	tests := []struct {
+		name              string
+		containerResource *commonconfig.ContainerResource
+		indent            string
+		expectedYAML      string
+	}{
+		{
+			name:              "nil container resource",
+			containerResource: nil,
+			indent:            "",
+			expectedYAML:      "",
+		},
+		{
+			name:              "empty container resource",
+			containerResource: &commonconfig.ContainerResource{},
+			indent:            "",
+			expectedYAML:      "",
+		},
+		{
+			name: "nil requests and limits",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: nil,
+				Limits:   nil,
+			},
+			indent:       "",
+			expectedYAML: "",
+		},
+		{
+			name: "empty requests - both CPU and memory zero",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0")),
+					Memory: convert.ToPtr(resource.MustParse("0")),
+				},
+			},
+			indent:       "",
+			expectedYAML: "",
+		},
+		{
+			name: "empty limits - both CPU and memory zero",
+			containerResource: &commonconfig.ContainerResource{
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0")),
+					Memory: convert.ToPtr(resource.MustParse("0")),
+				},
+			},
+			indent:       "",
+			expectedYAML: "",
+		},
+		{
+			name: "requests only - CPU and memory",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("100m")),
+					Memory: convert.ToPtr(resource.MustParse("128Mi")),
+				},
+			},
+			indent: "",
+			expectedYAML: `resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+`,
+		},
+		{
+			name: "limits only - CPU and memory",
+			containerResource: &commonconfig.ContainerResource{
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("500m")),
+					Memory: convert.ToPtr(resource.MustParse("512Mi")),
+				},
+			},
+			indent: "",
+			expectedYAML: `resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+`,
+		},
+		{
+			name: "requests and limits - both CPU and memory",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("100m")),
+					Memory: convert.ToPtr(resource.MustParse("128Mi")),
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("500m")),
+					Memory: convert.ToPtr(resource.MustParse("512Mi")),
+				},
+			},
+			indent: "",
+			expectedYAML: `resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+`,
+		},
+		{
+			name: "requests only - CPU only",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("200m")),
+					Memory: convert.ToPtr(resource.MustParse("0")),
+				},
+			},
+			indent: "",
+			expectedYAML: `resources:
+  requests:
+    cpu: 200m
+`,
+		},
+		{
+			name: "requests only - memory only",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0")),
+					Memory: convert.ToPtr(resource.MustParse("256Mi")),
+				},
+			},
+			indent: "",
+			expectedYAML: `resources:
+  requests:
+    memory: 256Mi
+`,
+		},
+		{
+			name: "limits only - CPU only",
+			containerResource: &commonconfig.ContainerResource{
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("1")),
+					Memory: convert.ToPtr(resource.MustParse("0")),
+				},
+			},
+			indent: "",
+			expectedYAML: `resources:
+  limits:
+    cpu: 1
+`,
+		},
+		{
+			name: "limits only - memory only",
+			containerResource: &commonconfig.ContainerResource{
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0")),
+					Memory: convert.ToPtr(resource.MustParse("1Gi")),
+				},
+			},
+			indent: "",
+			expectedYAML: `resources:
+  limits:
+    memory: 1Gi
+`,
+		},
+		{
+			name: "mixed - requests CPU only, limits memory only",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("150m")),
+					Memory: convert.ToPtr(resource.MustParse("0")),
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0")),
+					Memory: convert.ToPtr(resource.MustParse("2Gi")),
+				},
+			},
+			indent: "",
+			expectedYAML: `resources:
+  requests:
+    cpu: 150m
+  limits:
+    memory: 2Gi
+`,
+		},
+		{
+			name: "mixed - requests memory only, limits CPU only",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0")),
+					Memory: convert.ToPtr(resource.MustParse("64Mi")),
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("2")),
+					Memory: convert.ToPtr(resource.MustParse("0")),
+				},
+			},
+			indent: "",
+			expectedYAML: `resources:
+  requests:
+    memory: 64Mi
+  limits:
+    cpu: 2
+`,
+		},
+		{
+			name: "with custom indent",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("100m")),
+					Memory: convert.ToPtr(resource.MustParse("128Mi")),
+				},
+			},
+			indent: "        ",
+			expectedYAML: `resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+`,
+		},
+		{
+			name: "with tabs as indent",
+			containerResource: &commonconfig.ContainerResource{
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("500m")),
+					Memory: convert.ToPtr(resource.MustParse("512Mi")),
+				},
+			},
+			indent: "\t\t",
+			expectedYAML: `resources:
+		  limits:
+		    cpu: 500m
+		    memory: 512Mi
+`,
+		},
+		{
+			name: "fractional CPU values",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0.5")),
+					Memory: convert.ToPtr(resource.MustParse("0")), // Must provide Memory even if zero
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("1.5")),
+					Memory: convert.ToPtr(resource.MustParse("0")), // Must provide Memory even if zero
+				},
+			},
+			indent: "",
+			expectedYAML: `resources:
+  requests:
+    cpu: 500m
+  limits:
+    cpu: 1500m
+`,
+		},
+		{
+			name: "large memory values",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0")), // Must provide CPU even if zero
+					Memory: convert.ToPtr(resource.MustParse("4Gi")),
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0")), // Must provide CPU even if zero
+					Memory: convert.ToPtr(resource.MustParse("8Gi")),
+				},
+			},
+			indent: "",
+			expectedYAML: `resources:
+  requests:
+    memory: 4Gi
+  limits:
+    memory: 8Gi
+`,
+		},
+		{
+			name: "small memory values in bytes",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0")), // Must provide CPU even if zero
+					Memory: convert.ToPtr(resource.MustParse("1024")),
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0")), // Must provide CPU even if zero
+					Memory: convert.ToPtr(resource.MustParse("2048")),
+				},
+			},
+			indent: "",
+			expectedYAML: `resources:
+  requests:
+    memory: 1024
+  limits:
+    memory: 2048
+`,
+		},
+		{
+			name: "zero CPU in requests - only memory",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0")),
+					Memory: convert.ToPtr(resource.MustParse("128Mi")),
+				},
+			},
+			indent: "",
+			expectedYAML: `resources:
+  requests:
+    memory: 128Mi
+`,
+		},
+		{
+			name: "zero memory in limits - only CPU",
+			containerResource: &commonconfig.ContainerResource{
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("500m")),
+					Memory: convert.ToPtr(resource.MustParse("0")),
+				},
+			},
+			indent: "",
+			expectedYAML: `resources:
+  limits:
+    cpu: 500m
+`,
+		},
+		{
+			name: "zero values and non-zero mixed",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0")),
+					Memory: convert.ToPtr(resource.MustParse("128Mi")),
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("500m")),
+					Memory: convert.ToPtr(resource.MustParse("0")),
+				},
+			},
+			indent: "",
+			expectedYAML: `resources:
+  requests:
+    memory: 128Mi
+  limits:
+    cpu: 500m
+`,
+		},
+		{
+			name: "CPU cores as integers",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("1")),
+					Memory: convert.ToPtr(resource.MustParse("0")), // Must provide Memory even if zero
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("4")),
+					Memory: convert.ToPtr(resource.MustParse("0")), // Must provide Memory even if zero
+				},
+			},
+			indent: "",
+			expectedYAML: `resources:
+  requests:
+    cpu: 1
+  limits:
+    cpu: 4
+`,
+		},
+		{
+			name: "edge case - very small CPU values",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("1m")),
+					Memory: convert.ToPtr(resource.MustParse("0")), // Must provide Memory even if zero
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("10m")),
+					Memory: convert.ToPtr(resource.MustParse("0")), // Must provide Memory even if zero
+				},
+			},
+			indent: "",
+			expectedYAML: `resources:
+  requests:
+    cpu: 1m
+  limits:
+    cpu: 10m
+`,
+		},
+		{
+			name: "edge case - very small memory values",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0")), // Must provide CPU even if zero
+					Memory: convert.ToPtr(resource.MustParse("1Ki")),
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0")), // Must provide CPU even if zero
+					Memory: convert.ToPtr(resource.MustParse("1Mi")),
+				},
+			},
+			indent: "",
+			expectedYAML: `resources:
+  requests:
+    memory: 1Ki
+  limits:
+    memory: 1Mi
+`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			result := generateResourcesYAML(tt.containerResource, tt.indent)
+			assert.Equal(t, tt.expectedYAML, result, "YAML output should match expected")
+		})
+	}
+}
+
+// TestReplaceResourcesInTemplate tests the replaceResourcesInTemplate function.
+func TestReplaceResourcesInTemplate(t *testing.T) {
+	tests := []struct {
+		name              string
+		template          string
+		containerName     string
+		containerResource *commonconfig.ContainerResource
+		expectedTemplate  string
+	}{
+		{
+			name:          "template without resource tag",
+			template:      "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: test",
+			containerName: "trident-main",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("100m")),
+					Memory: convert.ToPtr(resource.MustParse("128Mi")),
+				},
+			},
+			expectedTemplate: "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: test",
+		},
+		{
+			name: "replace simple requests and limits",
+			template: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+  {TRIDENT_MAIN_RESOURCES}
+  env:
+  - name: TZ`,
+			containerName: "{TRIDENT_MAIN_RESOURCES}",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("100m")),
+					Memory: convert.ToPtr(resource.MustParse("128Mi")),
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("500m")),
+					Memory: convert.ToPtr(resource.MustParse("512Mi")),
+				},
+			},
+			expectedTemplate: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  env:
+  - name: TZ`,
+		},
+		{
+			name: "replace requests only",
+			template: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+  {TRIDENT_MAIN_RESOURCES}
+  env:
+  - name: TZ`,
+			containerName: "{TRIDENT_MAIN_RESOURCES}",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("200m")),
+					Memory: convert.ToPtr(resource.MustParse("256Mi")),
+				},
+			},
+			expectedTemplate: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  env:
+  - name: TZ`,
+		},
+		{
+			name: "replace limits only",
+			template: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+  {TRIDENT_MAIN_RESOURCES}
+  env:
+  - name: TZ`,
+			containerName: "{TRIDENT_MAIN_RESOURCES}",
+			containerResource: &commonconfig.ContainerResource{
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("1")),
+					Memory: convert.ToPtr(resource.MustParse("1Gi")),
+				},
+			},
+			expectedTemplate: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+  resources:
+    limits:
+      cpu: 1
+      memory: 1Gi
+  env:
+  - name: TZ`,
+		},
+		{
+			name: "replace with different indentation - 2 spaces",
+			template: `spec:
+  containers:
+  - name: trident-main
+    image: netapp/trident:latest
+    {TRIDENT_MAIN_RESOURCES}
+    env:
+    - name: TZ`,
+			containerName: "{TRIDENT_MAIN_RESOURCES}",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("100m")),
+					Memory: convert.ToPtr(resource.MustParse("128Mi")),
+				},
+			},
+			expectedTemplate: `spec:
+  containers:
+  - name: trident-main
+    image: netapp/trident:latest
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    env:
+    - name: TZ`,
+		},
+		{
+			name: "replace with different indentation - 4 spaces",
+			template: `spec:
+    containers:
+    - name: trident-main
+      image: netapp/trident:latest
+      {TRIDENT_MAIN_RESOURCES}
+      env:
+      - name: TZ`,
+			containerName: "{TRIDENT_MAIN_RESOURCES}",
+			containerResource: &commonconfig.ContainerResource{
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("500m")),
+					Memory: convert.ToPtr(resource.MustParse("512Mi")),
+				},
+			},
+			expectedTemplate: `spec:
+    containers:
+    - name: trident-main
+      image: netapp/trident:latest
+      resources:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      env:
+      - name: TZ`,
+		},
+		{
+			name: "replace with tab indentation",
+			template: `spec:
+	containers:
+	- name: trident-main
+	  image: netapp/trident:latest
+	  {TRIDENT_MAIN_RESOURCES}
+	  env:
+	  - name: TZ`,
+			containerName: "{TRIDENT_MAIN_RESOURCES}",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("150m")),
+					Memory: convert.ToPtr(resource.MustParse("64Mi")),
+				},
+			},
+			expectedTemplate: `spec:
+	containers:
+	- name: trident-main
+	  image: netapp/trident:latest
+	  resources:
+	    requests:
+	      cpu: 150m
+	      memory: 64Mi
+	  env:
+	  - name: TZ`,
+		},
+		{
+			name: "multiple container resource tags - replace only matching one",
+			template: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+  {TRIDENT_MAIN_RESOURCES}
+  env:
+  - name: TZ
+- name: trident-autosupport
+  image: netapp/trident-autosupport:latest
+  {TRIDENT_AUTOSUPPORT_RESOURCES}
+  env:
+  - name: INTERVAL`,
+			containerName: "{TRIDENT_MAIN_RESOURCES}",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("100m")),
+					Memory: convert.ToPtr(resource.MustParse("128Mi")),
+				},
+			},
+			expectedTemplate: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  env:
+  - name: TZ
+- name: trident-autosupport
+  image: netapp/trident-autosupport:latest
+  {TRIDENT_AUTOSUPPORT_RESOURCES}
+  env:
+  - name: INTERVAL`,
+		},
+		{
+			name: "resource tag at start of line",
+			template: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+{TRIDENT_MAIN_RESOURCES}
+  env:
+  - name: TZ`,
+			containerName: "{TRIDENT_MAIN_RESOURCES}",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("100m")),
+					Memory: convert.ToPtr(resource.MustParse("0")),
+				},
+			},
+			expectedTemplate: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+resources:
+  requests:
+    cpu: 100m
+  env:
+  - name: TZ`,
+		},
+		{
+			name: "resource tag with mixed indentation (spaces and tabs)",
+			template: `spec:
+	containers:
+	- name: trident-main
+	  image: netapp/trident:latest
+		{TRIDENT_MAIN_RESOURCES}
+	  env:
+	  - name: TZ`,
+			containerName: "{TRIDENT_MAIN_RESOURCES}",
+			containerResource: &commonconfig.ContainerResource{
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0")),
+					Memory: convert.ToPtr(resource.MustParse("1Gi")),
+				},
+			},
+			expectedTemplate: `spec:
+	containers:
+	- name: trident-main
+	  image: netapp/trident:latest
+		resources:
+		  limits:
+		    memory: 1Gi
+	  env:
+	  - name: TZ`,
+		},
+		{
+			name: "complex template with multiple sections",
+			template: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trident-csi
+spec:
+  template:
+    spec:
+      containers:
+      - name: trident-main
+        image: netapp/trident:latest
+        {TRIDENT_MAIN_RESOURCES}
+        env:
+        - name: TZ
+        ports:
+        - containerPort: 8443`,
+			containerName: "{TRIDENT_MAIN_RESOURCES}",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("100m")),
+					Memory: convert.ToPtr(resource.MustParse("128Mi")),
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("500m")),
+					Memory: convert.ToPtr(resource.MustParse("512Mi")),
+				},
+			},
+			expectedTemplate: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trident-csi
+spec:
+  template:
+    spec:
+      containers:
+      - name: trident-main
+        image: netapp/trident:latest
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        env:
+        - name: TZ
+        ports:
+        - containerPort: 8443`,
+		},
+		{
+			name: "resource tag with CPU only",
+			template: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+  {TRIDENT_MAIN_RESOURCES}
+  env:
+  - name: TZ`,
+			containerName: "{TRIDENT_MAIN_RESOURCES}",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("250m")),
+					Memory: convert.ToPtr(resource.MustParse("0")),
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("1")),
+					Memory: convert.ToPtr(resource.MustParse("0")),
+				},
+			},
+			expectedTemplate: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+  resources:
+    requests:
+      cpu: 250m
+    limits:
+      cpu: 1
+  env:
+  - name: TZ`,
+		},
+		{
+			name: "resource tag with memory only",
+			template: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+  {TRIDENT_MAIN_RESOURCES}
+  env:
+  - name: TZ`,
+			containerName: "{TRIDENT_MAIN_RESOURCES}",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0")),
+					Memory: convert.ToPtr(resource.MustParse("64Mi")),
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0")),
+					Memory: convert.ToPtr(resource.MustParse("2Gi")),
+				},
+			},
+			expectedTemplate: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+  resources:
+    requests:
+      memory: 64Mi
+    limits:
+      memory: 2Gi
+  env:
+  - name: TZ`,
+		},
+		{
+			name: "autosupport container resources",
+			template: `containers:
+- name: trident-autosupport
+  image: netapp/trident-autosupport:latest
+  {TRIDENT_AUTOSUPPORT_RESOURCES}
+  command:
+  - /usr/local/bin/trident-autosupport`,
+			containerName: "{TRIDENT_AUTOSUPPORT_RESOURCES}",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("10m")),
+					Memory: convert.ToPtr(resource.MustParse("16Mi")),
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("100m")),
+					Memory: convert.ToPtr(resource.MustParse("128Mi")),
+				},
+			},
+			expectedTemplate: `containers:
+- name: trident-autosupport
+  image: netapp/trident-autosupport:latest
+  resources:
+    requests:
+      cpu: 10m
+      memory: 16Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+  command:
+  - /usr/local/bin/trident-autosupport`,
+		},
+		{
+			name: "node container resources",
+			template: `containers:
+- name: trident-node
+  image: netapp/trident:latest
+  {TRIDENT_NODE_RESOURCES}
+  securityContext:
+    privileged: true`,
+			containerName: "{TRIDENT_NODE_RESOURCES}",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("200m")),
+					Memory: convert.ToPtr(resource.MustParse("256Mi")),
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("2")),
+					Memory: convert.ToPtr(resource.MustParse("4Gi")),
+				},
+			},
+			expectedTemplate: `containers:
+- name: trident-node
+  image: netapp/trident:latest
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 2
+      memory: 4Gi
+  securityContext:
+    privileged: true`,
+		},
+		{
+			name: "case sensitive container name mismatch",
+			template: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+  {trident_main_resources}
+  env:
+  - name: TZ`,
+			containerName: "{TRIDENT_MAIN_RESOURCES}",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("100m")),
+					Memory: convert.ToPtr(resource.MustParse("128Mi")),
+				},
+			},
+			expectedTemplate: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+  {trident_main_resources}
+  env:
+  - name: TZ`,
+		},
+		{
+			name: "fractional CPU and large memory values",
+			template: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+  {TRIDENT_MAIN_RESOURCES}
+  env:
+  - name: TZ`,
+			containerName: "{TRIDENT_MAIN_RESOURCES}",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("0.5")),
+					Memory: convert.ToPtr(resource.MustParse("8Gi")),
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("2.5")),
+					Memory: convert.ToPtr(resource.MustParse("16Gi")),
+				},
+			},
+			expectedTemplate: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+  resources:
+    requests:
+      cpu: 500m
+      memory: 8Gi
+    limits:
+      cpu: 2500m
+      memory: 16Gi
+  env:
+  - name: TZ`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			result := replaceResourcesInTemplate(tt.template, tt.containerName, tt.containerResource)
+			assert.Equal(t, tt.expectedTemplate, result, "Template replacement should match expected output")
+		})
+	}
+}
+
+// TestReplaceResourcesInTemplate_Integration tests the integration with real-world template scenarios
+func TestReplaceResourcesInTemplate_Integration(t *testing.T) {
+	tests := []struct {
+		name                string
+		template            string
+		containerName       string
+		containerResource   *commonconfig.ContainerResource
+		expectedContains    []string
+		expectedNotContains []string
+	}{
+		{
+			name: "deployment template with full resource specification",
+			template: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trident-csi
+  namespace: trident
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: controller.csi.trident.netapp.io
+    spec:
+      serviceAccount: trident-csi
+      containers:
+      - name: trident-main
+        image: netapp/trident:latest
+        ports:
+        - containerPort: 8443
+        {TRIDENT_MAIN_RESOURCES}
+        command:
+        - /trident_orchestrator
+        env:
+        - name: TZ
+          value: UTC`,
+			containerName: "TRIDENT_MAIN",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("100m")),
+					Memory: convert.ToPtr(resource.MustParse("128Mi")),
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("500m")),
+					Memory: convert.ToPtr(resource.MustParse("512Mi")),
+				},
+			},
+			expectedContains: []string{
+				"resources:",
+				"requests:",
+				"cpu: 100m",
+				"memory: 128Mi",
+				"limits:",
+				"cpu: 500m",
+				"memory: 512Mi",
+				"containerPort: 8443",
+				"command:",
+			},
+			expectedNotContains: []string{
+				"{TRIDENT_MAIN_RESOURCES}",
+			},
+		},
+		{
+			name: "daemonset template with node resources",
+			template: `apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: trident-csi
+  namespace: trident
+spec:
+  template:
+    spec:
+      hostNetwork: true
+      hostIPC: true
+      containers:
+      - name: trident-node
+        image: netapp/trident:latest
+        securityContext:
+          privileged: true
+        {TRIDENT_NODE_RESOURCES}
+        env:
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName`,
+			containerName: "TRIDENT_NODE",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("200m")),
+					Memory: convert.ToPtr(resource.MustParse("256Mi")),
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("2")),
+					Memory: convert.ToPtr(resource.MustParse("4Gi")),
+				},
+			},
+			expectedContains: []string{
+				"resources:",
+				"requests:",
+				"cpu: 200m",
+				"memory: 256Mi",
+				"limits:",
+				"cpu: 2",
+				"memory: 4Gi",
+				"privileged: true",
+				"KUBE_NODE_NAME",
+			},
+			expectedNotContains: []string{
+				"{TRIDENT_NODE_RESOURCES}",
+			},
+		},
+		{
+			name: "multi-container deployment with autosupport",
+			template: `containers:
+- name: trident-main
+  image: netapp/trident:latest
+  {TRIDENT_MAIN_RESOURCES}
+  ports:
+  - containerPort: 8443
+- name: trident-autosupport
+  image: netapp/trident-autosupport:latest
+  {TRIDENT_AUTOSUPPORT_RESOURCES}
+  command:
+  - /usr/local/bin/trident-autosupport`,
+			containerName: "TRIDENT_AUTOSUPPORT",
+			containerResource: &commonconfig.ContainerResource{
+				Requests: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("10m")),
+					Memory: convert.ToPtr(resource.MustParse("16Mi")),
+				},
+				Limits: &commonconfig.ResourceRequirements{
+					CPU:    convert.ToPtr(resource.MustParse("50m")),
+					Memory: convert.ToPtr(resource.MustParse("64Mi")),
+				},
+			},
+			expectedContains: []string{
+				"- name: trident-autosupport",
+				"resources:",
+				"requests:",
+				"cpu: 10m",
+				"memory: 16Mi",
+				"limits:",
+				"cpu: 50m",
+				"memory: 64Mi",
+				"trident-autosupport:latest",
+				"{TRIDENT_MAIN_RESOURCES}", // This should remain untouched
+			},
+			expectedNotContains: []string{
+				"{TRIDENT_AUTOSUPPORT_RESOURCES}",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			result := replaceResourcesInTemplate(tt.template, tt.containerName, tt.containerResource)
+
+			// Check that all expected strings are present
+			for _, expected := range tt.expectedContains {
+				assert.Contains(t, result, expected, "Result should contain expected string: %s", expected)
+			}
+
+			// Check that none of the unwanted strings are present
+			for _, notExpected := range tt.expectedNotContains {
+				assert.NotContains(t, result, notExpected, "Result should not contain string: %s", notExpected)
+			}
+
+			if tt.containerResource != nil &&
+				((tt.containerResource.Requests != nil && (!tt.containerResource.Requests.CPU.IsZero() || !tt.containerResource.Requests.Memory.IsZero())) ||
+					(tt.containerResource.Limits != nil && (!tt.containerResource.Limits.CPU.IsZero() || !tt.containerResource.Limits.Memory.IsZero()))) {
+				assert.Contains(t, result, "resources:", "Should contain resources section when resources are specified")
+			}
+		})
+	}
 }

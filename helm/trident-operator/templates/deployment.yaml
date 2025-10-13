@@ -71,11 +71,13 @@ spec:
         name: trident-operator
         resources:
           requests:
-            cpu: "10m"
-            memory: "40Mi"
+            cpu: {{ .Values.resources.operator.requests.cpu }}
+            memory: {{ .Values.resources.operator.requests.memory }}
+          {{- if .Values.resources.operator.limits.cpu }}
           limits:
-            cpu: "20m"
-            memory: "80Mi"
+            cpu: {{ .Values.resources.operator.limits.cpu }}
+            memory: {{ .Values.resources.operator.limits.memory }}
+          {{- end }}
       {{- if and (eq .Values.cloudProvider "Azure") (eq .Values.cloudIdentity "") }}
       volumes:
       - name: azure-cred
