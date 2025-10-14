@@ -30,7 +30,8 @@ func TestUpdateMirrorRelationshipNoUpdateNeeded(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 
 	// Test no changes to TMR
-	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient,
+		nil, nil)
 	oldRelationship := &netappv1.TridentMirrorRelationship{
 		Status: netappv1.TridentMirrorRelationshipStatus{
 			Conditions: []*netappv1.TridentMirrorRelationshipCondition{
@@ -47,7 +48,8 @@ func TestUpdateMirrorRelationshipNoUpdateNeeded(t *testing.T) {
 	}
 
 	// Test changes but desired state and actual state are equal
-	controller, _ = newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	controller, _ = newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient,
+		nil, nil)
 	oldRelationship = &netappv1.TridentMirrorRelationship{
 		Spec: netappv1.TridentMirrorRelationshipSpec{
 			MirrorState:    netappv1.MirrorStateEstablished,
@@ -79,7 +81,8 @@ func TestUpdateMirrorRelationshipNeedsUpdate(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 
 	// Test the old relationship has no status conditions
-	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient,
+		nil, nil)
 	newRelationship := &netappv1.TridentMirrorRelationship{}
 
 	controller.updateTMRHandler(newRelationship, newRelationship)
@@ -89,7 +92,8 @@ func TestUpdateMirrorRelationshipNeedsUpdate(t *testing.T) {
 	}
 
 	// Test updated relationship has Deletion timestamp
-	controller, _ = newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	controller, _ = newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient,
+		nil, nil)
 	oldRelationship := &netappv1.TridentMirrorRelationship{
 		Status: netappv1.TridentMirrorRelationshipStatus{
 			Conditions: []*netappv1.TridentMirrorRelationshipCondition{
@@ -107,7 +111,8 @@ func TestUpdateMirrorRelationshipNeedsUpdate(t *testing.T) {
 	}
 
 	// Test change in desired state from actual state
-	controller, _ = newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	controller, _ = newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient,
+		nil, nil)
 	oldRelationship = &netappv1.TridentMirrorRelationship{
 		Spec: netappv1.TridentMirrorRelationshipSpec{
 			MirrorState: netappv1.MirrorStateEstablished,
@@ -175,7 +180,8 @@ func TestValidateTMRUpdate_InvalidPolicyUpdate(t *testing.T) {
 	crdClient := GetTestCrdClientset()
 	snapClient := GetTestSnapshotClientset()
 
-	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient,
+		nil, nil)
 	conditions := &netappv1.TridentMirrorRelationshipCondition{}
 	oldRelationship := &netappv1.TridentMirrorRelationship{}
 	newRelationship := &netappv1.TridentMirrorRelationship{}
@@ -209,7 +215,8 @@ func TestValidateTMRUpdate_InvalidScheduleUpdate(t *testing.T) {
 	crdClient := GetTestCrdClientset()
 	snapClient := GetTestSnapshotClientset()
 
-	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient,
+		nil, nil)
 	conditions := &netappv1.TridentMirrorRelationshipCondition{}
 	oldRelationship := &netappv1.TridentMirrorRelationship{}
 	newRelationship := &netappv1.TridentMirrorRelationship{}
@@ -246,7 +253,8 @@ func TestUpdateTMRConditionReplicationSettings(t *testing.T) {
 	crdClient := GetTestCrdClientset()
 	snapClient := GetTestSnapshotClientset()
 
-	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient,
+		nil, nil)
 
 	cases := []struct {
 		initialPolicy    string
@@ -315,7 +323,8 @@ func TestUpdateTMRConditionReplicationSettings_ErrorGettingDetails(t *testing.T)
 	snapClient := GetTestSnapshotClientset()
 	localVolumeInternalName := "pvc_1"
 
-	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	controller, _ := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient,
+		nil, nil)
 
 	cases := []struct {
 		initialPolicy    string
@@ -384,7 +393,8 @@ func setupMirrorRelationshipTest(t *testing.T) (*TridentCrdController, *gomock.C
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
+		crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}

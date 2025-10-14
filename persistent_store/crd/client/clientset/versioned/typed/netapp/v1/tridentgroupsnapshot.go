@@ -8,13 +8,12 @@ import (
 	"context"
 	"time"
 
+	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
+	scheme "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/scheme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	rest "k8s.io/client-go/rest"
-
-	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
-	scheme "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/scheme"
 )
 
 // TridentGroupSnapshotsGetter has a method to return a TridentGroupSnapshotInterface.

@@ -15,6 +15,7 @@ import (
 	"go.uber.org/multierr"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -30,6 +31,7 @@ import (
 	"github.com/netapp/trident/operator/config"
 	netappv1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
 	operatorCrdClient "github.com/netapp/trident/operator/crd/client/clientset/versioned"
+	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/utils/errors"
@@ -38,22 +40,24 @@ import (
 
 const (
 	// CRD names
-	ActionMirrorUpdateCRDName    = "tridentactionmirrorupdates.trident.netapp.io"
-	ActionSnapshotRestoreCRDName = "tridentactionsnapshotrestores.trident.netapp.io"
-	BackendCRDName               = "tridentbackends.trident.netapp.io"
-	BackendConfigCRDName         = "tridentbackendconfigs.trident.netapp.io"
-	MirrorRelationshipCRDName    = "tridentmirrorrelationships.trident.netapp.io"
-	SnapshotInfoCRDName          = "tridentsnapshotinfos.trident.netapp.io"
-	NodeCRDName                  = "tridentnodes.trident.netapp.io"
-	StorageClassCRDName          = "tridentstorageclasses.trident.netapp.io"
-	TransactionCRDName           = "tridenttransactions.trident.netapp.io"
-	VersionCRDName               = "tridentversions.trident.netapp.io"
-	VolumeCRDName                = "tridentvolumes.trident.netapp.io"
-	VolumePublicationCRDName     = "tridentvolumepublications.trident.netapp.io"
-	SnapshotCRDName              = "tridentsnapshots.trident.netapp.io"
-	GroupSnapshotCRDName         = "tridentgroupsnapshots.trident.netapp.io"
-	VolumeReferenceCRDName       = "tridentvolumereferences.trident.netapp.io"
-	ConfiguratorCRDName          = "tridentconfigurators.trident.netapp.io"
+	ActionMirrorUpdateCRDName      = "tridentactionmirrorupdates.trident.netapp.io"
+	ActionSnapshotRestoreCRDName   = "tridentactionsnapshotrestores.trident.netapp.io"
+	BackendCRDName                 = "tridentbackends.trident.netapp.io"
+	BackendConfigCRDName           = "tridentbackendconfigs.trident.netapp.io"
+	MirrorRelationshipCRDName      = "tridentmirrorrelationships.trident.netapp.io"
+	SnapshotInfoCRDName            = "tridentsnapshotinfos.trident.netapp.io"
+	NodeCRDName                    = "tridentnodes.trident.netapp.io"
+	NodeRemediationCRDName         = "tridentnoderemediations.trident.netapp.io"
+	NodeRemediationTemplateCRDName = "tridentnoderemediationtemplates.trident.netapp.io"
+	StorageClassCRDName            = "tridentstorageclasses.trident.netapp.io"
+	TransactionCRDName             = "tridenttransactions.trident.netapp.io"
+	VersionCRDName                 = "tridentversions.trident.netapp.io"
+	VolumeCRDName                  = "tridentvolumes.trident.netapp.io"
+	VolumePublicationCRDName       = "tridentvolumepublications.trident.netapp.io"
+	SnapshotCRDName                = "tridentsnapshots.trident.netapp.io"
+	GroupSnapshotCRDName           = "tridentgroupsnapshots.trident.netapp.io"
+	VolumeReferenceCRDName         = "tridentvolumereferences.trident.netapp.io"
+	ConfiguratorCRDName            = "tridentconfigurators.trident.netapp.io"
 
 	DefaultTimeout = 180
 )
@@ -130,6 +134,8 @@ var (
 		BackendConfigCRDName,
 		MirrorRelationshipCRDName,
 		NodeCRDName,
+		NodeRemediationCRDName,
+		NodeRemediationTemplateCRDName,
 		SnapshotCRDName,
 		SnapshotInfoCRDName,
 		GroupSnapshotCRDName,
@@ -989,6 +995,20 @@ func (i *Installer) InstallOrPatchTrident(
 		}
 	}
 
+	// Create or update NodeRemediation resouces for automatic force-detach
+	if enableForceDetach {
+		returnError = i.createOrPatchNodeRemediationResources()
+		if returnError != nil {
+			returnError = fmt.Errorf("failed to create or patch TridentNodeRemediation resources; %v", returnError)
+			return nil, "", "", returnError
+		}
+	} else {
+		// Remove TridentNodeRemediation resouces if enableForceDeach was toggled off
+		if err := i.client.DeleteTridentNodeRemediationResources(i.namespace); err != nil {
+			Log().Warn("could not remove TridentNodeRemediation resources; %v", err)
+		}
+	}
+
 	// Wait for Trident pod to be running
 	var tridentPod *v1.Pod
 
@@ -1078,6 +1098,12 @@ func (i *Installer) createCRDs(performOperationOnce bool) error {
 		return err
 	}
 	if err = i.CreateOrPatchCRD(NodeCRDName, k8sclient.GetNodeCRDYAML(), false); err != nil {
+		return err
+	}
+	if err = i.CreateOrPatchCRD(NodeRemediationCRDName, k8sclient.GetNodeRemediationCRDYAML(), false); err != nil {
+		return err
+	}
+	if err = i.CreateOrPatchCRD(NodeRemediationTemplateCRDName, k8sclient.GetNodeRemediationTemplateCRDYAML(), false); err != nil {
 		return err
 	}
 	if err = i.CreateOrPatchCRD(TransactionCRDName, k8sclient.GetTransactionCRDYAML(), false); err != nil {
@@ -1512,6 +1538,29 @@ func (i *Installer) createAndEnsureCRDs(performOperationOnce bool) (returnError 
 		returnError = fmt.Errorf("failed to create the Trident CRDs; %v", returnError)
 	}
 	return
+}
+
+func (i *Installer) createOrPatchNodeRemediationResources() error {
+	yamlStr := k8sclient.GetNodeRemediationClusterRoleYAML()
+	var clusterRole rbacv1.ClusterRole
+	if err := yaml.Unmarshal([]byte(yamlStr), &clusterRole); err != nil {
+		return fmt.Errorf("unable to unmarshal TridentNodeRemediation cluster role YAML; %v", err)
+	}
+	err := i.client.CreateOrPatchClusterRole(&clusterRole)
+	if err != nil {
+		return fmt.Errorf("failed to create or patch TridentNodeRemediation cluster role; %v", err)
+	}
+
+	yamlStr = k8sclient.GetNodeRemediationTemplateYAML(i.namespace)
+	var template tridentv1.TridentNodeRemediationTemplate
+	if err := yaml.Unmarshal([]byte(yamlStr), &template); err != nil {
+		return fmt.Errorf("unable to unmarshal TridentNodeRemediationTemplate YAML; %v", err)
+	}
+	err = i.client.CreateOrPatchNodeRemediationTemplate(&template, i.namespace)
+	if err != nil {
+		return fmt.Errorf("failed to create or patch TridentNodeRemediation cluster role; %v", err)
+	}
+	return nil
 }
 
 func (i *Installer) createOrPatchTridentService(

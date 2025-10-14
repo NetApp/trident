@@ -144,13 +144,13 @@ rules:
     verbs: ["get", "list", "delete", "patch"]
   - apiGroups: [""]
     resources: ["pods"]
-    verbs: ["get", "list", "watch"]
+    verbs: ["get", "list", "watch", "delete"]
   - apiGroups: [""]
     resources: ["nodes"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["volumeattachments"]
-    verbs: ["get", "list", "watch", "update", "patch"]
+    verbs: ["get", "list", "watch", "update", "patch", "delete"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["volumeattachments/status"]
     verbs: ["update", "patch"]
@@ -185,6 +185,8 @@ rules:
 "tridentsnapshotinfos/status", "tridentvolumepublications", "tridentvolumereferences",
 "tridentactionmirrorupdates", "tridentactionmirrorupdates/status",
 "tridentactionsnapshotrestores", "tridentactionsnapshotrestores/status",
+"tridentnoderemediations", "tridentnoderemediations/status",
+"tridentnoderemediationtemplates", "tridentnoderemediationtemplates/status",
 "tridentgroupsnapshots", "tridentgroupsnapshots/status"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
@@ -1996,10 +1998,35 @@ func GetActionSnapshotRestoreCRDYAML() string {
 	return tridentActionSnapshotRestoreCRDYAMLv1
 }
 
+func GetNodeRemediationCRDYAML() string {
+	Log().Trace(">>>> GetNodeRemediationCRDYAML")
+	defer func() { Log().Trace("<<<< GetNodeRemediationCRDYAML") }()
+	return tridentNodeRemediationCRDYAMLv1
+}
+
+func GetNodeRemediationTemplateCRDYAML() string {
+	Log().Trace(">>>> GetNodeRemediationTemplateCRDYAML")
+	defer func() { Log().Trace("<<<< GetNodeRemediationTemplateCRDYAML") }()
+	return tridentNodeRemediationTemplateCRDYAMLv1
+}
+
 func GetOrchestratorCRDYAML() string {
 	Log().Trace(">>>> GetOrchestratorCRDYAML")
 	defer func() { Log().Trace("<<<< GetOrchestratorCRDYAML") }()
 	return tridentOrchestratorCRDYAMLv1
+}
+
+func GetNodeRemediationClusterRoleYAML() string {
+	Log().Trace(">>>> GetNodeRemediationClusterRoleYAML")
+	defer func() { Log().Trace("<<<< GetNodeRemediationClusterRoleYAML") }()
+	return tridentNodeRemediationClusterRoleYAMLv1
+}
+
+func GetNodeRemediationTemplateYAML(namespace string) string {
+	Log().Trace(">>>> GetNodeRemediationYAML")
+	defer func() { Log().Trace("<<<< GetNodeRemediationYAML") }()
+	yaml := strings.ReplaceAll(tridentNodeRemediationDefaultTemplate, "{NAMESPACE}", namespace)
+	return yaml
 }
 
 /*
@@ -2847,6 +2874,134 @@ spec:
     - trident
     - trident-external`
 
+const tridentNodeRemediationCRDYAMLv1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentnoderemediations.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+            status:
+              type: object
+              properties:
+                state:
+                  type: string
+                message:
+                  type: string
+                completionTime:
+                  type: string
+                  format: date-time
+                volumeAttachments:
+                  type: object
+                  additionalProperties:
+                    type: string
+      additionalPrinterColumns:
+        - name: State
+          type: string
+          description: Remediation state
+          jsonPath: .status.state
+        - name: Completion Time
+          type: date
+          description: When the remediation completed
+          jsonPath: .status.completionTime
+        - name: Message
+          type: string
+          description: Remediation error message
+          jsonPath: .status.message
+  scope: Namespaced
+  names:
+    plural: tridentnoderemediations
+    singular: tridentnoderemediation
+    kind: TridentNodeRemediation
+    shortNames:
+      - tnr
+      - tnoderemediation
+      - tnremediation
+`
+
+const tridentNodeRemediationTemplateCRDYAMLv1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentnoderemediationtemplates.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                template:
+                  type: object
+                  properties:
+                    spec:
+                      type: object
+            status:
+              type: object
+              properties: {}
+  scope: Namespaced
+  names:
+    plural: tridentnoderemediationtemplates
+    singular: tridentnoderemediationtemplate
+    kind: TridentNodeRemediationTemplate
+    shortNames:
+      - tnrt
+      - tnrtemplate
+`
+
+const tridentNodeRemediationClusterRoleYAMLv1 = `
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    rbac.ext-remediation/aggregate-to-ext-remediation: "true"
+  name: trident-node-remediation-access
+rules:
+- apiGroups:
+  - trident.netapp.io
+  resources:
+  - tridentnoderemediationtemplates
+  - tridentnoderemediations
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+`
+
+const tridentNodeRemediationDefaultTemplate = `
+apiVersion: trident.netapp.io/v1
+kind: TridentNodeRemediationTemplate
+metadata:
+  name: trident-node-remediation-template
+  namespace: {NAMESPACE}
+spec:
+  template:
+    spec: {}
+`
+
+const tridentNodeRemediationYAMLv1 = tridentNodeRemediationClusterRoleYAMLv1 +
+	"\n---" + tridentNodeRemediationDefaultTemplate
+
 const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentBackendCRDYAMLv1 +
 	"\n---" + tridentBackendConfigCRDYAMLv1 +
@@ -2857,6 +3012,8 @@ const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentVolumeCRDYAMLv1 +
 	"\n---" + tridentVolumePublicationCRDYAMLv1 +
 	"\n---" + tridentNodeCRDYAMLv1 +
+	"\n---" + tridentNodeRemediationCRDYAMLv1 +
+	"\n---" + tridentNodeRemediationTemplateCRDYAMLv1 +
 	"\n---" + tridentTransactionCRDYAMLv1 +
 	"\n---" + tridentSnapshotCRDYAMLv1 +
 	"\n---" + tridentGroupSnapshotCRDYAMLv1 +

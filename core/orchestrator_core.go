@@ -346,6 +346,14 @@ func (o *TridentOrchestrator) bootstrapVolumes(ctx context.Context) error {
 			}
 		}
 
+		// Set the publish enforcement flag on the subordinate volume if supported by the backend and drvier.
+		// This is needed for nas and nas eco volumes. Legacy volumes may not have this flag set. Needed for
+		// automatic force-detach.
+		err = o.healTridentVolumePublishEnforcement(ctx, vol, backend)
+		if err != nil {
+			Logc(ctx).WithError(err).Warning("Unable to heal Trident volume publish enforcement.")
+		}
+
 		Logc(ctx).WithFields(LogFields{
 			"volume":       vol.Config.Name,
 			"internalName": vol.Config.InternalName,
@@ -359,6 +367,35 @@ func (o *TridentOrchestrator) bootstrapVolumes(ctx context.Context) error {
 		volCount++
 	}
 	Logc(ctx).Infof("Added %v existing volume(s)", volCount)
+	return nil
+}
+
+func (o *TridentOrchestrator) healTridentVolumePublishEnforcement(
+	ctx context.Context, vol *storage.Volume, backend storage.Backend,
+) error {
+	if vol.Config.AccessInfo.PublishEnforcement {
+		// If publish enforcement is already enabled on the volume, nothing to do.
+		return nil
+	}
+
+	// If this backend cannot enable publish enforcement, then, no volume on this backend
+	// can have publish enforcement enabled.
+	if backend == nil {
+		Logc(ctx).WithField("volume", vol.Config.Name).
+			Info("Volume cannot have publish enforcement enabled, backend missing.")
+		return nil
+	}
+
+	// Enable publish enforcement on the volume.
+	updated := backend.HealVolumePublishEnforcement(ctx, vol)
+
+	if updated {
+		_, exists := o.volumes[vol.Config.Name]
+		if !exists {
+			return fmt.Errorf("volume %s not found in cache during healing publish enforcement", vol.Config.Name)
+		}
+		o.volumes[vol.Config.Name] = vol
+	}
 	return nil
 }
 

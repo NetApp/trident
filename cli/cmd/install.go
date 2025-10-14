@@ -37,22 +37,24 @@ const (
 	PreferredNamespace = tridentconfig.OrchestratorName
 
 	// CRD names
-	ActionMirrorUpdateCRDName    = "tridentactionmirrorupdates.trident.netapp.io"
-	ActionSnapshotRestoreCRDName = "tridentactionsnapshotrestores.trident.netapp.io"
-	BackendConfigCRDName         = "tridentbackendconfigs.trident.netapp.io"
-	BackendCRDName               = "tridentbackends.trident.netapp.io"
-	MirrorRelationshipCRDName    = "tridentmirrorrelationships.trident.netapp.io"
-	NodeCRDName                  = "tridentnodes.trident.netapp.io"
-	SnapshotCRDName              = "tridentsnapshots.trident.netapp.io"
-	SnapshotInfoCRDName          = "tridentsnapshotinfos.trident.netapp.io"
-	GroupSnapshotCRDName         = "tridentgroupsnapshots.trident.netapp.io"
-	StorageClassCRDName          = "tridentstorageclasses.trident.netapp.io"
-	TransactionCRDName           = "tridenttransactions.trident.netapp.io"
-	VersionCRDName               = "tridentversions.trident.netapp.io"
-	VolumeCRDName                = "tridentvolumes.trident.netapp.io"
-	VolumePublicationCRDName     = "tridentvolumepublications.trident.netapp.io"
-	VolumeReferenceCRDName       = "tridentvolumereferences.trident.netapp.io"
-	ConfiguratorCRDName          = "tridentconfigurators.trident.netapp.io"
+	ActionMirrorUpdateCRDName      = "tridentactionmirrorupdates.trident.netapp.io"
+	ActionSnapshotRestoreCRDName   = "tridentactionsnapshotrestores.trident.netapp.io"
+	BackendConfigCRDName           = "tridentbackendconfigs.trident.netapp.io"
+	BackendCRDName                 = "tridentbackends.trident.netapp.io"
+	MirrorRelationshipCRDName      = "tridentmirrorrelationships.trident.netapp.io"
+	NodeCRDName                    = "tridentnodes.trident.netapp.io"
+	NodeRemediationCRDName         = "tridentnoderemediations.trident.netapp.io"
+	NodeRemediationTemplateCRDName = "tridentnoderemediationtemplates.trident.netapp.io"
+	SnapshotCRDName                = "tridentsnapshots.trident.netapp.io"
+	SnapshotInfoCRDName            = "tridentsnapshotinfos.trident.netapp.io"
+	GroupSnapshotCRDName           = "tridentgroupsnapshots.trident.netapp.io"
+	StorageClassCRDName            = "tridentstorageclasses.trident.netapp.io"
+	TransactionCRDName             = "tridenttransactions.trident.netapp.io"
+	VersionCRDName                 = "tridentversions.trident.netapp.io"
+	VolumeCRDName                  = "tridentvolumes.trident.netapp.io"
+	VolumePublicationCRDName       = "tridentvolumepublications.trident.netapp.io"
+	VolumeReferenceCRDName         = "tridentvolumereferences.trident.netapp.io"
+	ConfiguratorCRDName            = "tridentconfigurators.trident.netapp.io"
 
 	ControllerRoleFilename               = "trident-controller-role.yaml"
 	ControllerClusterRoleFilename        = "trident-controller-clusterrole.yaml"
@@ -78,6 +80,9 @@ const (
 	NamespaceFilename        = "trident-namespace.yaml"
 	ServiceFilename          = "trident-service.yaml"
 	ResourceQuotaFilename    = "trident-resourcequota.yaml"
+
+	NodeRemediationTemplateFilename    = "trident-node-remediation-template.yaml"
+	NodeRemediationClusterRoleFilename = "trident-node-remediation-clusterrole.yaml"
 
 	TridentEncryptionKeys = "trident-encryption-keys"
 
@@ -161,6 +166,8 @@ var (
 	nodeLinuxSCCPath                 string
 	nodeWindowsSCCPath               string
 	setupYAMLPaths                   []string
+	nodeRemediationTemplatePath      string
+	nodeRemediationClusterRolePath   string
 
 	appLabel      string
 	appLabelKey   string
@@ -176,6 +183,8 @@ var (
 		BackendCRDName,
 		MirrorRelationshipCRDName,
 		NodeCRDName,
+		NodeRemediationCRDName,
+		NodeRemediationTemplateCRDName,
 		VolumeReferenceCRDName,
 		SnapshotCRDName,
 		GroupSnapshotCRDName,
@@ -555,6 +564,8 @@ func prepareYAMLFilePaths() error {
 	deploymentPath = path.Join(setupPath, DeploymentFilename)
 	resourceQuotaPath = path.Join(setupPath, ResourceQuotaFilename)
 	windowsDaemonSetPath = path.Join(setupPath, WindowsDaemonSetFilename)
+	nodeRemediationTemplatePath = path.Join(setupPath, NodeRemediationTemplateFilename)
+	nodeRemediationClusterRolePath = path.Join(setupPath, NodeRemediationClusterRoleFilename)
 
 	setupYAMLPaths = []string{
 		namespacePath,
@@ -575,6 +586,8 @@ func prepareYAMLFilePaths() error {
 		daemonsetPath,
 		windowsDaemonSetPath,
 		resourceQuotaPath,
+		nodeRemediationClusterRolePath,
+		nodeRemediationTemplatePath,
 	}
 
 	if client.Flavor() == k8sclient.FlavorOpenShift {
@@ -665,6 +678,17 @@ func prepareYAMLFiles() error {
 		nil)
 	if err = writeFile(resourceQuotaPath, resourceQuotaYAML); err != nil {
 		return fmt.Errorf("could not write resource quota YAML file; %v", err)
+	}
+
+	// TridentNodeRemediation resources
+	nodeRemediationTemplateYaml := k8sclient.GetNodeRemediationTemplateYAML(TridentPodNamespace)
+	if err = writeFile(nodeRemediationTemplatePath, nodeRemediationTemplateYaml); err != nil {
+		return fmt.Errorf("could not write file %s; %v", NodeRemediationTemplateFilename, err)
+	}
+
+	nodeRemediationClusterRoleYaml := k8sclient.GetNodeRemediationClusterRoleYAML()
+	if err = writeFile(nodeRemediationClusterRolePath, nodeRemediationClusterRoleYaml); err != nil {
+		return fmt.Errorf("could not write file %s; %v", NodeRemediationClusterRoleFilename, err)
 	}
 
 	deploymentArgs := &k8sclient.DeploymentYAMLArguments{
@@ -1198,6 +1222,22 @@ func installTrident() (returnError error) {
 
 	Log().WithFields(logFields).Info("Created Trident daemonset.")
 
+	// Remove any TridentNodeRemediation resources objects from a previous Trident installation
+	if returnError = deleteNodeRemediationResources(TridentPodNamespace); returnError != nil {
+		returnError = fmt.Errorf("could not remove tridentNodeRemediation resources; " +
+			"please delete them manually and try again")
+		return
+	}
+
+	// Create TridentNodeRemediation resources
+	if enableForceDetach {
+		if returnError = createNodeRemediationResources(); returnError != nil {
+			returnError = fmt.Errorf("could not create TridentNodeRemediation resources for automatic force-detach; %v",
+				returnError)
+			return
+		}
+	}
+
 	// Wait for Trident pod to be running
 	var tridentPod *v1.Pod
 
@@ -1240,6 +1280,72 @@ func createNamespace() (returnError error) {
 		return
 	}
 	Log().WithFields(logFields).Info("Created namespace.")
+	return nil
+}
+
+func deleteNodeRemediationResources(namespace string) error {
+	yaml := k8sclient.GetNodeRemediationClusterRoleYAML()
+	err := client.DeleteObjectByYAML(yaml, true)
+	if err != nil {
+		return fmt.Errorf("could not delete TridentNodeRemediation clusterRole; %v", err)
+	}
+
+	yaml = k8sclient.GetNodeRemediationTemplateCRDYAML()
+	err = client.DeleteObjectByYAML(yaml, true)
+	if err != nil {
+		return fmt.Errorf("could not delete TridentNodeRemediationTemplate CR; %v", err)
+	}
+
+	return nil
+}
+
+func createNodeRemediationClusterRole() (returnError error) {
+	var logFields LogFields
+
+	// Create resources
+	if useYAML && fileExists(nodeRemediationClusterRolePath) {
+		logFields = LogFields{"path": nodeRemediationClusterRolePath}
+		returnError = client.CreateObjectByFile(nodeRemediationClusterRolePath)
+	} else {
+		yaml := k8sclient.GetNodeRemediationClusterRoleYAML()
+		returnError = client.CreateObjectByYAML(yaml)
+	}
+
+	if returnError != nil {
+		returnError = fmt.Errorf("could not create TridentNodeRemediation clusterRole; %v", returnError)
+		return
+	}
+	Log().WithFields(logFields).Info("Created TridentNodeRemediation clusterRole.")
+	return nil
+}
+
+func createNodeRemediationTemplate() (returnError error) {
+	var logFields LogFields
+
+	// Create resources
+	if useYAML && fileExists(nodeRemediationTemplatePath) {
+		logFields = LogFields{"path": nodeRemediationTemplatePath}
+		returnError = client.CreateObjectByFile(nodeRemediationTemplatePath)
+	} else {
+		yaml := k8sclient.GetNodeRemediationTemplateYAML(TridentPodNamespace)
+		returnError = client.CreateObjectByYAML(yaml)
+	}
+
+	if returnError != nil {
+		returnError = fmt.Errorf("could not create TridentNodeRemediationTemplate; %v", returnError)
+		return
+	}
+	Log().WithFields(logFields).Info("Created TridentNodeRemediationTemplate.")
+	return nil
+}
+
+func createNodeRemediationResources() (returnError error) {
+	if returnError = createNodeRemediationClusterRole(); returnError != nil {
+		return
+	}
+	if returnError = createNodeRemediationTemplate(); returnError != nil {
+		return
+	}
 	return nil
 }
 

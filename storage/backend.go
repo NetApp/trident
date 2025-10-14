@@ -1654,6 +1654,17 @@ func (b *StorageBackend) CanEnablePublishEnforcement() bool {
 	return ok
 }
 
+func (b *StorageBackend) HealVolumePublishEnforcement(
+	ctx context.Context, vol *Volume,
+) bool {
+	updated := false
+	driver, ok := b.driver.(PublishEnforceable)
+	if ok {
+		updated = driver.HealVolumePublishEnforcement(ctx, vol)
+	}
+	return updated
+}
+
 // SmartCopy implements a shallow copy of StorageBackend because it satisfies interior mutability. This means the volume
 // and pool maps, and the driver, are shared between all copies of the StorageBackend.
 func (b *StorageBackend) SmartCopy() interface{} {

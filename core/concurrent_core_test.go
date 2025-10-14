@@ -909,6 +909,7 @@ func TestBootstrapVolumesConcurrentCore(t *testing.T) {
 				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid")
 				mockBackend.EXPECT().Volumes().Return(&sync.Map{}).AnyTimes()
 				mockBackend.EXPECT().Driver().Return(&fakedriver.StorageDriver{}).AnyTimes()
+				mockBackend.EXPECT().HealVolumePublishEnforcement(gomock.Any(), gomock.Any()).Return(false)
 
 				addBackendsToCache(t, mockBackend)
 

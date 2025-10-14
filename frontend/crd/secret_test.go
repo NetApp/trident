@@ -40,7 +40,8 @@ func TestUpdateSecretHandler_Success(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
+		crdClient, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot create Trident CRD controller frontend, error: %v", err.Error())
 	}
@@ -203,7 +204,8 @@ func TestUpdateSecretHandler_EdgeCases(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
+		crdClient, nil, nil)
 	assert.NoError(t, err)
 
 	// Test case 1: Valid secret update with generation change
@@ -271,7 +273,8 @@ func TestHandleSecret_EdgeCases(t *testing.T) {
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient)
+	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
+		crdClient, nil, nil)
 	assert.NoError(t, err)
 
 	ctx := GenerateRequestContext(context.TODO(), "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)

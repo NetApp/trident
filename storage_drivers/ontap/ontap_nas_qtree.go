@@ -427,6 +427,8 @@ func (d *NASQtreeStorageDriver) Create(
 		if err != nil {
 			return fmt.Errorf("error ensuring export policy exists: %v", err)
 		}
+
+		volConfig.AccessInfo.PublishEnforcement = true
 	}
 
 	// Update config to reflect values used to create volume
@@ -2774,4 +2776,24 @@ func (d *NASQtreeStorageDriver) EnablePublishEnforcement(ctx context.Context, vo
 func (d *NASQtreeStorageDriver) CanEnablePublishEnforcement() bool {
 	// Only do publish enforcement if the auto export policy is turned on
 	return d.Config.AutoExportPolicy
+}
+
+func (d *NASQtreeStorageDriver) HealVolumePublishEnforcement(
+	ctx context.Context, vol *storage.Volume,
+) bool {
+	var updated bool
+	// Check of publish enforcment is already set
+	if vol.Config.AccessInfo.PublishEnforcement {
+		// If publish enforcement is already enabled on the volume, nothing to do.
+		return updated
+	}
+
+	policy := vol.Config.ExportPolicy
+	driverConfig := d.GetCommonConfig(ctx)
+	if policy == getEmptyExportPolicyName(*driverConfig.StoragePrefix) ||
+		policy == vol.Config.InternalName {
+		vol.Config.AccessInfo.PublishEnforcement = true
+		updated = true
+	}
+	return updated
 }

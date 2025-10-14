@@ -2739,7 +2739,7 @@ func TestPrepareYAMLFilePaths(t *testing.T) {
 				assert.NotEmpty(t, setupPath)
 				assert.Contains(t, setupPath, "setup")
 
-				assert.Len(t, setupYAMLPaths, 18)
+				assert.Len(t, setupYAMLPaths, 20)
 
 				assert.Contains(t, setupYAMLPaths, namespacePath)
 				assert.Contains(t, setupYAMLPaths, controllerServiceAccountPath)
@@ -2759,7 +2759,7 @@ func TestPrepareYAMLFilePaths(t *testing.T) {
 				assert.NotEmpty(t, installerDirectoryPath)
 				assert.NotEmpty(t, setupPath)
 
-				assert.Len(t, setupYAMLPaths, 21)
+				assert.Len(t, setupYAMLPaths, 23)
 
 				assert.Contains(t, setupYAMLPaths, controllerSCCPath)
 				assert.Contains(t, setupYAMLPaths, nodeLinuxSCCPath)
@@ -2817,7 +2817,7 @@ func TestPrepareYAMLFiles(t *testing.T) {
 				mockClient.EXPECT().ServerVersion().Return(versionutils.MustParseSemantic("v1.25.0")).AnyTimes()
 			},
 			expectedError: "",
-			expectedFiles: 12,
+			expectedFiles: 14,
 		},
 		{
 			name:          "successful_kubernetes_with_windows",
@@ -2829,7 +2829,7 @@ func TestPrepareYAMLFiles(t *testing.T) {
 				mockClient.EXPECT().ServerVersion().Return(versionutils.MustParseSemantic("v1.25.0")).AnyTimes()
 			},
 			expectedError: "",
-			expectedFiles: 14,
+			expectedFiles: 16,
 		},
 		{
 			name:          "successful_openshift_linux_only",
@@ -2841,7 +2841,7 @@ func TestPrepareYAMLFiles(t *testing.T) {
 				mockClient.EXPECT().ServerVersion().Return(versionutils.MustParseSemantic("v1.25.0")).AnyTimes()
 			},
 			expectedError: "",
-			expectedFiles: 14,
+			expectedFiles: 16,
 		},
 		{
 			name:          "successful_openshift_with_windows",
@@ -2853,7 +2853,7 @@ func TestPrepareYAMLFiles(t *testing.T) {
 				mockClient.EXPECT().ServerVersion().Return(versionutils.MustParseSemantic("v1.25.0")).AnyTimes()
 			},
 			expectedError: "",
-			expectedFiles: 17,
+			expectedFiles: 19,
 		},
 		{
 			name:          "with_cloud_identity",
@@ -2865,7 +2865,7 @@ func TestPrepareYAMLFiles(t *testing.T) {
 				mockClient.EXPECT().ServerVersion().Return(versionutils.MustParseSemantic("v1.25.0")).AnyTimes()
 			},
 			expectedError: "",
-			expectedFiles: 12,
+			expectedFiles: 14,
 		},
 	}
 
@@ -2890,6 +2890,8 @@ func TestPrepareYAMLFiles(t *testing.T) {
 			controllerSCCPath = filepath.Join(tempDir, "controller-scc.yaml")
 			nodeLinuxSCCPath = filepath.Join(tempDir, "node-scc.yaml")
 			nodeWindowsSCCPath = filepath.Join(tempDir, "windows-scc.yaml")
+			nodeRemediationTemplatePath = filepath.Join(tempDir, "node-remediation-template.yaml")
+			nodeRemediationClusterRolePath = filepath.Join(tempDir, "node-remediation-cluster-role.yaml")
 
 			windows = tt.windows
 			cloudIdentity = tt.cloudIdentity

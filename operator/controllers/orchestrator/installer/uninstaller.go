@@ -46,6 +46,11 @@ func (i *Installer) UninstallTrident() error {
 		return fmt.Errorf("could not delete Trident CSI driver custom resource; %v", err)
 	}
 
+	// Delete TridentNodeRemediation resouces
+	if err := i.client.DeleteTridentNodeRemediationResources(i.namespace); err != nil {
+		return fmt.Errorf("could not delete TridentNodeRemediation resources; %v", err)
+	}
+
 	// Delete Trident RBAC objects
 	if err := i.removeRBACObjects(); err != nil {
 		return fmt.Errorf("could not delete all Trident's RBAC objects; %v", err)

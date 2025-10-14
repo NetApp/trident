@@ -341,6 +341,8 @@ func (d *NASStorageDriver) Create(
 		if err != nil {
 			return fmt.Errorf("error ensuring export policy exists: %v", err)
 		}
+
+		volConfig.AccessInfo.PublishEnforcement = true
 	}
 
 	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
@@ -1981,4 +1983,24 @@ func (d *NASStorageDriver) EnablePublishEnforcement(ctx context.Context, volume 
 func (d *NASStorageDriver) CanEnablePublishEnforcement() bool {
 	// Only do publish enforcement if the auto export policy is turned on
 	return d.Config.AutoExportPolicy
+}
+
+func (d *NASStorageDriver) HealVolumePublishEnforcement(
+	ctx context.Context, vol *storage.Volume,
+) bool {
+	var updated bool
+	// Check of publish enforcment is already set
+	if vol.Config.AccessInfo.PublishEnforcement {
+		// If publish enforcement is already enabled on the volume, nothing to do.
+		return updated
+	}
+
+	policy := vol.Config.ExportPolicy
+	driverConfig := d.GetCommonConfig(ctx)
+	if policy == getEmptyExportPolicyName(*driverConfig.StoragePrefix) ||
+		policy == vol.Config.InternalName {
+		vol.Config.AccessInfo.PublishEnforcement = true
+		updated = true
+	}
+	return updated
 }

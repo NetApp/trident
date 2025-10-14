@@ -629,6 +629,20 @@ func (mr *MockBackendMockRecorder) HasVolumes() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasVolumes", reflect.TypeOf((*MockBackend)(nil).HasVolumes))
 }
 
+// HealVolumePublishEnforcement mocks base method.
+func (m *MockBackend) HealVolumePublishEnforcement(ctx context.Context, volume *storage.Volume) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HealVolumePublishEnforcement", ctx, volume)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// HealVolumePublishEnforcement indicates an expected call of HealVolumePublishEnforcement.
+func (mr *MockBackendMockRecorder) HealVolumePublishEnforcement(ctx, volume any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HealVolumePublishEnforcement", reflect.TypeOf((*MockBackend)(nil).HealVolumePublishEnforcement), ctx, volume)
+}
+
 // ImportVolume mocks base method.
 func (m *MockBackend) ImportVolume(ctx context.Context, volConfig *storage.VolumeConfig) (*storage.Volume, error) {
 	m.ctrl.T.Helper()

@@ -17,6 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/version"
 
 	commonconfig "github.com/netapp/trident/config"
+	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -133,6 +134,11 @@ type KubernetesClient interface {
 	GetVolumeSnapshotClasses() ([]snapshotv1.VolumeSnapshotClass, error)
 	GetVolumeSnapshotContents() ([]snapshotv1.VolumeSnapshotContent, error)
 	GetVolumeSnapshots(allNamespaces bool) ([]snapshotv1.VolumeSnapshot, error)
+	CreateOrPatchClusterRole(clusterRole *v13.ClusterRole) error
+	PatchClusterRole(newClusterRole, currentClusterRole *v13.ClusterRole) error
+	CreateOrPatchNodeRemediationTemplate(tnrt *tridentv1.TridentNodeRemediationTemplate, namespace string) error
+	PatchNodeRemediationTemplate(newTnrt *tridentv1.TridentNodeRemediationTemplate,
+		currentTnrt *tridentv1.TridentNodeRemediationTemplate) error
 }
 
 type DeploymentYAMLArguments struct {

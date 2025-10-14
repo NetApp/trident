@@ -120,6 +120,7 @@ rules:
       - watch
       - update
       - patch
+      - delete
   - apiGroups:
       - storage.k8s.io
     resources:
@@ -254,6 +255,10 @@ rules:
       - tridentgroupsnapshots/status
       - tridentactionsnapshotrestores
       - tridentactionsnapshotrestores/status
+      - tridentnoderemediations
+      - tridentnoderemediations/status
+      - tridentnoderemediationtemplates
+      - tridentnoderemediationtemplates/status
       - tridentprovisioners # Required for Tprov
       - tridentprovisioners/status # Required to update Tprov's status section
       - tridentorchestrators # Required for Torc
@@ -378,10 +383,12 @@ rules:
       - clusterroles
       - clusterrolebindings
     verbs:
+      - get
       - delete
       - update
       - patch
     resourceNames:
+      - trident-node-remediation-access
       - trident-controller
       - trident-node-linux
       - trident-node-windows

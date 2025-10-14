@@ -536,6 +536,10 @@ func main() {
 			}
 			orchestrator.AddFrontend(ctx, crdController)
 			postBootstrapFrontends = append(postBootstrapFrontends, crdController)
+
+			if *enableForceDetach {
+				crdController.SetForceDetach(true)
+			}
 		}
 
 		// Add the FIJI frontend to the pre-bootstrap frontends.

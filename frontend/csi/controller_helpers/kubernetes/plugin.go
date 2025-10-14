@@ -1193,7 +1193,7 @@ func (h *helper) updateNode(_, obj interface{}) {
 	Logc(ctx).WithFields(logFields).Debug("Node updated in cache.")
 
 	if h.enableForceDetach {
-		if err := h.orchestrator.UpdateNode(ctx, node.Name, h.getNodePublicationState(node)); err != nil {
+		if err := h.orchestrator.UpdateNode(ctx, node.Name, h.getNodePublicationState(ctx, node)); err != nil {
 			Logc(ctx).WithFields(logFields).WithError(err).Error("Could not update node in Trident's database.")
 		}
 	}
@@ -1262,13 +1262,13 @@ func (h *helper) GetNodePublicationState(
 		return nil, err
 	}
 
-	return h.getNodePublicationState(node), nil
+	return h.getNodePublicationState(ctx, node), nil
 }
 
 // getNodePublicationState returns a set of flags that indicate whether a node may safely publish volumes.
 // To be safe, a node must have a Ready=true condition and not have the "node.kubernetes.io/out-of-service" taint.
-func (h *helper) getNodePublicationState(node *v1.Node) *models.NodePublicationStateFlags {
-	ready, outOfService := false, false
+func (h *helper) getNodePublicationState(ctx context.Context, node *v1.Node) *models.NodePublicationStateFlags {
+	ready, outOfService, remediating := false, false, false
 
 	// Look for non-Ready condition
 	for _, condition := range node.Status.Conditions {
@@ -1286,9 +1286,18 @@ func (h *helper) getNodePublicationState(node *v1.Node) *models.NodePublicationS
 		}
 	}
 
+	// Look for Trident Node Remediation CRD, if state is "in progress" do not set to ready yet
+	remediationCRD, _ := h.tridentClient.TridentV1().TridentNodeRemediations(h.namespace).Get(ctx, node.Name, getOpts)
+	if remediationCRD != nil && remediationCRD.Status.State == netappv1.TridentNodeRemediatingState {
+		Logc(ctx).Debug("found remediation CRD")
+		remediating = true
+	}
+
+	adminReady := !outOfService && !remediating
+
 	return &models.NodePublicationStateFlags{
 		OrchestratorReady:  convert.ToPtr(ready),
-		AdministratorReady: convert.ToPtr(!outOfService),
+		AdministratorReady: convert.ToPtr(adminReady),
 	}
 }
 

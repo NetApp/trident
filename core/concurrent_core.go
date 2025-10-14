@@ -347,7 +347,9 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumes(ctx context.Context) er
 
 		if vol.IsSubordinate() {
 
-			results, unlocker, upsertErr := db.Lock(ctx, db.Query(db.UpsertSubordinateVolume(vol.Config.Name, vol.Config.ShareSourceVolume)))
+			results, unlocker, upsertErr := db.Lock(ctx,
+				db.Query(db.UpsertSubordinateVolume(vol.Config.Name, vol.Config.ShareSourceVolume),
+					db.ReadBackend("")))
 			if upsertErr != nil {
 				Logc(ctx).WithFields(LogFields{
 					"subordinateVolume": vol.Config.Name,
@@ -356,6 +358,13 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumes(ctx context.Context) er
 				unlocker()
 				return upsertErr
 			}
+
+			backend := results[0].Backend.Read
+
+			// Set the publish enforcement flag on the subordinate volume if supported by the backend and drvier.
+			// This is needed for nas and nas eco volumes. Legacy volumes may not have this flag set. Needed for
+			// automatic force-detach.
+			o.healTridentVolumePublishEnforcement(ctx, vol, backend)
 
 			results[0].SubordinateVolume.Upsert(vol)
 			unlocker()
@@ -375,6 +384,8 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumes(ctx context.Context) er
 
 			backend := results[0].Backend.Read
 			upserter := results[0].Volume.Upsert
+
+			o.healTridentVolumePublishEnforcement(ctx, vol, backend)
 
 			if backend == nil {
 				Logc(ctx).WithFields(LogFields{
@@ -398,6 +409,28 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumes(ctx context.Context) er
 
 	Logc(ctx).Infof("Added %d existing volume(s).", volCount)
 	return nil
+}
+
+func (o *ConcurrentTridentOrchestrator) healTridentVolumePublishEnforcement(
+	ctx context.Context, vol *storage.Volume, backend storage.Backend,
+) {
+	if vol.Config.AccessInfo.PublishEnforcement {
+		// If publish enforcement is already enabled on the volume, nothing to do.
+		return
+	}
+
+	// If this backend cannot enable publish enforcement, then, no volume on this backend
+	// can have publish enforcement enabled.
+	if backend == nil {
+		Logc(ctx).WithField("volume", vol.Config.Name).
+			Info("Volume cannot have publish enforcement enabled, backend missing.")
+		return
+	}
+
+	// Enable publish enforcement on the volume.
+	_ = backend.HealVolumePublishEnforcement(ctx, vol)
+
+	return
 }
 
 // bootstrapSnapshots reads snapshots from the persistent store and loads them into the concurrent cache.

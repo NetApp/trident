@@ -60,6 +60,22 @@ type TridentNodeListerExpansion interface{}
 // TridentNodeNamespaceLister.
 type TridentNodeNamespaceListerExpansion interface{}
 
+// TridentNodeRemediationListerExpansion allows custom methods to be added to
+// TridentNodeRemediationLister.
+type TridentNodeRemediationListerExpansion interface{}
+
+// TridentNodeRemediationNamespaceListerExpansion allows custom methods to be added to
+// TridentNodeRemediationNamespaceLister.
+type TridentNodeRemediationNamespaceListerExpansion interface{}
+
+// TridentNodeRemediationTemplateListerExpansion allows custom methods to be added to
+// TridentNodeRemediationTemplateLister.
+type TridentNodeRemediationTemplateListerExpansion interface{}
+
+// TridentNodeRemediationTemplateNamespaceListerExpansion allows custom methods to be added to
+// TridentNodeRemediationTemplateNamespaceLister.
+type TridentNodeRemediationTemplateNamespaceListerExpansion interface{}
+
 // TridentSnapshotListerExpansion allows custom methods to be added to
 // TridentSnapshotLister.
 type TridentSnapshotListerExpansion interface{}

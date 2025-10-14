@@ -74,6 +74,11 @@ const (
 	AnnSMBShareAdUser           = prefix + "/smbShareAdUser"
 	AnnSMBShareAccessControl    = prefix + "/smbShareAccessControl"
 
+	// Pod remediation policy annotation and values
+	AnnPodRemediationPolicyAnnotation = prefix + "/podRemediationPolicy"
+	PodRemediationPolicyDelete        = "delete"
+	PodRemediationPolicyRetain        = "retain"
+
 	// Orchestrator-defined storage class parameters
 	SCParameterNASType = prefix + "/nasType"
 )

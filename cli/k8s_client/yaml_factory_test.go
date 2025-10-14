@@ -51,6 +51,8 @@ func TestYAML(t *testing.T) {
 		namespaceYAMLTemplate,
 		openShiftSCCQueryYAMLTemplate,
 		customResourceDefinitionYAMLv1,
+		tridentNodeRemediationClusterRoleYAMLv1,
+		tridentNodeRemediationDefaultTemplate,
 	}
 	for i, yamlData := range yamls {
 		// jsonData, err := yaml.YAMLToJSON([]byte(yamlData))
@@ -1589,6 +1591,19 @@ func TestGetSecretYAML(t *testing.T) {
 	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
 	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
 	assert.True(t, reflect.DeepEqual(expected.StringData, actual.StringData))
+}
+
+func TestGetNodeRemediationClusterRoleYAML(t *testing.T) {
+	yaml := GetNodeRemediationClusterRoleYAML()
+	expected := tridentNodeRemediationClusterRoleYAMLv1
+	assert.Equal(t, expected, yaml)
+}
+
+func TestGetNodeRemediationTemplateYAML(t *testing.T) {
+	namespace := "trident"
+	yaml := GetNodeRemediationTemplateYAML(namespace)
+	expected := strings.ReplaceAll(tridentNodeRemediationDefaultTemplate, "{NAMESPACE}", namespace)
+	assert.Equal(t, expected, yaml)
 }
 
 func TestGetCRDsYAML(t *testing.T) {
