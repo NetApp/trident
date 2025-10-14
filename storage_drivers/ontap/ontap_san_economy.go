@@ -421,6 +421,7 @@ func (d *SANEconomyStorageDriver) Terminate(ctx context.Context, _ string) {
 		d.telemetry.Stop()
 	}
 
+	d.API.Terminate()
 	d.initialized = false
 }
 

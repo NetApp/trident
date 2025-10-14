@@ -3942,32 +3942,6 @@ func TestLunDestroy(t *testing.T) {
 	assert.Error(t, err, "no error returned while deleting a LUN")
 }
 
-func TestLunGetGeometry(t *testing.T) {
-	oapi, rsi := newMockOntapAPIREST(t)
-
-	clientConfig := api.ClientConfig{
-		DebugTraceFlags: map[string]bool{"method": true},
-	}
-
-	// common call for all subtests
-	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-
-	// case 1: Positive test, get the LUN options
-	rsi.EXPECT().LunOptions(ctx).Return(&api.LunOptionsResult{}, nil)
-	_, err := oapi.LunGetGeometry(ctx, "/")
-	assert.NoError(t, err, "error returned while getting a LUN option")
-
-	// case 2: Positive test, get the LUN options returned error.
-	rsi.EXPECT().LunOptions(ctx).Return(&api.LunOptionsResult{}, errors.New("failed to get lun option"))
-	_, err = oapi.LunGetGeometry(ctx, "/")
-	assert.Error(t, err, "no error returned while getting a LUN option")
-
-	// case 1: Positive test, get the LUN options returned nil response.
-	rsi.EXPECT().LunOptions(ctx).Return(nil, nil)
-	_, err = oapi.LunGetGeometry(ctx, "/")
-	assert.Error(t, err, "no error returned while getting a LUN option")
-}
-
 func TestLunSetAttribute(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 

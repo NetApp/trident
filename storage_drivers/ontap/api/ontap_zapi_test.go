@@ -99,7 +99,7 @@ func TestZAPIClient(t *testing.T) {
 		Username:      "admin",
 		Password:      "password",
 	}
-	client := NewClient(config, "test_svm", "trident")
+	client, _ := NewClient(config, "test_svm", "trident")
 
 	t.Run("Basic_Client_Operations", func(t *testing.T) {
 		// Test client configuration access
@@ -474,11 +474,6 @@ func TestZAPI_LunOperations_WithFakeServer(t *testing.T) {
 		assert.Empty(t, comment, "LUN comment should be empty when API call fails")
 	})
 
-	t.Run("LunGetGeometry_Success", func(t *testing.T) {
-		_, err := client.LunGetGeometry("/vol/test/lun1")
-		assert.NoError(t, err) // Fake server supports this operation
-	})
-
 	t.Run("LunResize_Success", func(t *testing.T) {
 		lunID, err := client.LunResize("/vol/test/lun1", 2147483648)
 		assert.Error(t, err, "expected error when resizing LUN due to fake server unable to parse size from generic response")
@@ -757,7 +752,7 @@ func TestZAPI_ConfigurationEdgeCases(t *testing.T) {
 	t.Run("Empty_Config_Fields", func(t *testing.T) {
 		// Test with empty configuration fields
 		config := ClientConfig{}
-		client := NewClient(config, "", "")
+		client, _ := NewClient(config, "", "")
 		assert.NotNil(t, client)
 
 		result := client.ClientConfig()
@@ -773,7 +768,7 @@ func TestZAPI_ConfigurationEdgeCases(t *testing.T) {
 			Username:      "admin@domain.com",
 			Password:      "p@ssw0rd!",
 		}
-		client := NewClient(config, "svm-test", "trident-driver")
+		client, _ := NewClient(config, "svm-test", "trident-driver")
 		assert.NotNil(t, client)
 
 		result := client.ClientConfig()
@@ -818,7 +813,7 @@ func setupFakeZAPIServer(t *testing.T, aggrName string) (*Client, *httptest.Serv
 		Password:      "password",
 	}
 
-	client := NewClient(config, "datavserver", "trident")
+	client, _ := NewClient(config, "datavserver", "trident")
 
 	return client, server
 }
@@ -831,7 +826,7 @@ func TestZAPI(t *testing.T) {
 			Password:      "password",
 		}
 
-		client := NewClient(config, "test-svm", "test-driver")
+		client, _ := NewClient(config, "test-svm", "test-driver")
 		assert.NotNil(t, client)
 
 		// Test all getter methods
@@ -872,7 +867,7 @@ func TestZAPI(t *testing.T) {
 			Username:      "admin",
 			Password:      "password",
 		}
-		client := NewClient(config, "test-svm", "test-driver")
+		client, _ := NewClient(config, "test-svm", "test-driver")
 
 		// Test utility methods that don't make network calls
 		assert.NotNil(t, client.GetNontunneledZapiRunner())
@@ -891,7 +886,7 @@ func TestZAPI(t *testing.T) {
 			Username:      "admin",
 			Password:      "password",
 		}
-		client := NewClient(config, "test-svm", "test-driver")
+		client, _ := NewClient(config, "test-svm", "test-driver")
 
 		// Test empty volume name (this path doesn't make network calls)
 		exists, err := client.VolumeExists(context.Background(), "")
@@ -1338,7 +1333,7 @@ func TestZAPI_Priority1_CoreInfrastructure(t *testing.T) {
 			Password:      "password",
 			DriverContext: "docker", // This should trigger MaxZapiRecords
 		}
-		client := NewClient(config, "test-svm", "test-driver")
+		client, _ := NewClient(config, "test-svm", "test-driver")
 		assert.NotNil(t, client)
 		// This tests the Docker context branch in NewClient
 	})

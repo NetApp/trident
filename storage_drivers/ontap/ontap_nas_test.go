@@ -703,6 +703,7 @@ func TestOntapNasStorageDriverTerminate_Scenarios(t *testing.T) {
 			driver.initialized = true
 
 			mockAPI.EXPECT().ExportPolicyDestroy(ctx, "trident-dummy").Return(tt.err)
+			mockAPI.EXPECT().Terminate().AnyTimes()
 
 			driver.Terminate(ctx, "dummy")
 
@@ -724,6 +725,7 @@ func TestOntapNasStorageDriverTerminate_TelemetryFailure(t *testing.T) {
 	driver.initialized = true
 
 	mockAPI.EXPECT().ExportPolicyDestroy(ctx, "trident-dummy").Return(errors.New("policy not found"))
+	mockAPI.EXPECT().Terminate().AnyTimes()
 
 	driver.Terminate(ctx, "dummy")
 
@@ -6486,12 +6488,16 @@ func TestNASDriver_Terminate(t *testing.T) {
 			name: "WithAutoExportPolicy",
 			setupMocks: func(m *mockapi.MockOntapAPI) {
 				m.EXPECT().ExportPolicyDestroy(ctx, "trident-test-uuid").Return(nil)
+				m.EXPECT().Terminate().AnyTimes()
 			},
 			autoExportPolicy: true,
 		},
 		{
 			name:             "WithoutAutoExportPolicy",
 			autoExportPolicy: false,
+			setupMocks: func(m *mockapi.MockOntapAPI) {
+				m.EXPECT().Terminate().AnyTimes()
+			},
 		},
 	}
 

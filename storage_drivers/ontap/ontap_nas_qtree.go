@@ -279,6 +279,7 @@ func (d *NASQtreeStorageDriver) Terminate(ctx context.Context, backendUUID strin
 		d.housekeepingWaitGroup.Wait()
 	}
 
+	d.API.Terminate()
 	d.initialized = false
 }
 

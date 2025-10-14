@@ -1173,53 +1173,6 @@ func TestOntapREST_LunGet(t *testing.T) {
 	}
 }
 
-func mockInvalidResponse(w http.ResponseWriter, r *http.Request) {
-	setHTTPResponseHeader(w, http.StatusNotFound)
-	json.NewEncoder(w).Encode("invalidResponse")
-}
-
-func mockUnauthorizedError(w http.ResponseWriter, r *http.Request) {
-	setHTTPResponseHeader(w, http.StatusUnauthorized)
-	json.NewEncoder(w).Encode(errors.New("error"))
-}
-
-func mockIOUtilError(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Length", "50")
-	w.Write([]byte("500 - Something bad happened!"))
-}
-
-func TestOntapREST_LunOptions(t *testing.T) {
-	tests := []struct {
-		name            string
-		mockFunction    func(w http.ResponseWriter, r *http.Request)
-		isErrorExpected bool
-	}{
-		{"getUnauthorizedError", mockUnauthorizedError, true},
-		{"getIOUtilError", mockIOUtilError, true},
-		{"getInvalidResponse", mockInvalidResponse, true},
-		{"getHttpServerNotRespondError", mockInvalidResponse, true},
-	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			server := httptest.NewTLSServer(http.HandlerFunc(test.mockFunction))
-			rs := newRestClient(server.Listener.Addr().String(), server.Client())
-			assert.NotNil(t, rs)
-
-			if test.name == "getHttpServerNotRespondError" {
-				server.Close()
-			}
-			_, err := rs.LunOptions(ctx)
-
-			if !test.isErrorExpected {
-				assert.NoError(t, err, "could not create clone of the LUN")
-			} else {
-				assert.Error(t, err, "could not create clone of the LUN")
-			}
-			server.Close()
-		})
-	}
-}
-
 func TestOntapREST_LunCloneCreate(t *testing.T) {
 	tests := []struct {
 		name            string

@@ -247,10 +247,10 @@ const (
 	UnknownVolumeType VolumeType = ""
 
 	/* Driver-related constants */
-	DefaultSolidFireVAG      = OrchestratorName
-	UnknownDriver            = "UnknownDriver"
-	StorageAPITimeoutSeconds = 90
-	SANResizeDelta           = 50000000 // 50mb
+	DefaultSolidFireVAG = OrchestratorName
+	UnknownDriver       = "UnknownDriver"
+	StorageAPITimeout   = 90 * time.Second
+	SANResizeDelta      = 50000000 // 50mb
 
 	// Storage driver names specified in the config file, etc.
 	OntapNASStorageDriverName          = "ontap-nas"

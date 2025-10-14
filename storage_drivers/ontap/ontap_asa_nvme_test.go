@@ -49,6 +49,7 @@ func newMockOntapASANVMeDriver(t *testing.T) (*mockapi.MockOntapAPI, *ASANVMeSto
 
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
+	mockAPI.EXPECT().Terminate().AnyTimes()
 
 	driver := newTestOntapASANVMeDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, mockAPI)
 	driver.API = mockAPI
@@ -297,6 +298,7 @@ func TestInitializeASANVMe(t *testing.T) {
 				mockAPI.EXPECT().SupportsFeature(ctx, api.NVMeProtocol).Return(true).Times(1)
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return([]string{"127.0.0.1"}, nil).Times(1)
 				mockAPI.EXPECT().GetSVMUUID().Return(uuid.NewString()).Times(1)
+				mockAPI.EXPECT().Terminate().AnyTimes()
 			},
 			expectedError: false,
 			verify: func(t *testing.T, err error) {
@@ -466,8 +468,6 @@ func TestInitializeASANVMe(t *testing.T) {
 }
 
 func TestTerminateNVMe(t *testing.T) {
-	_, driver := newMockOntapASANVMeDriver(t)
-
 	tests := []struct {
 		name          string
 		driverContext tridentconfig.DriverContext
@@ -502,6 +502,7 @@ func TestTerminateNVMe(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			_, driver := newMockOntapASANVMeDriver(t)
 			driver.Config.DriverContext = tt.driverContext
 			driver.telemetry = tt.telemetry
 

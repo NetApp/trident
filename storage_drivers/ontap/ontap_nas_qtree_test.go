@@ -610,6 +610,7 @@ func TestTerminate_Success(t *testing.T) {
 	driver.initialized = true
 
 	mockAPI.EXPECT().ExportPolicyDestroy(ctx, gomock.Any()).Return(nil)
+	mockAPI.EXPECT().Terminate().AnyTimes()
 
 	driver.Terminate(ctx, BackendUUID)
 
@@ -631,6 +632,7 @@ func TestTerminate_WithErrorInApiOperation(t *testing.T) {
 	driver.housekeepingTasks = map[string]*HousekeepingTask{"task1": newMockHousekeepingTask(driver)}
 
 	mockAPI.EXPECT().ExportPolicyDestroy(ctx, gomock.Any()).Return(mockError)
+	mockAPI.EXPECT().Terminate().AnyTimes()
 
 	driver.Terminate(ctx, BackendUUID)
 

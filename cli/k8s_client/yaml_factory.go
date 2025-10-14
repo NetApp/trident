@@ -783,7 +783,7 @@ spec:
         - "--csi-address=$(ADDRESS)"
         - "--retry-interval-start=8s"
         - "--retry-interval-max=30s"
-        - "--worker-threads=5"
+        - "--worker-threads=100"
         {K8S_API_CLIENT_SIDECAR_THROTTLE}
         {CSI_SIDECAR_PROVISIONER_RESOURCES}
         env:
@@ -803,7 +803,7 @@ spec:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=60s"
         - "--retry-interval-start=10s"
-        - "--worker-threads=10"
+        - "--worker-threads=100"
         - "--csi-address=$(ADDRESS)"
         {K8S_API_CLIENT_SIDECAR_THROTTLE}
         {CSI_SIDECAR_ATTACHER_RESOURCES}
@@ -823,7 +823,7 @@ spec:
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=300s"
-        - "--workers=10"
+        - "--workers=100"
         - "--csi-address=$(ADDRESS)"
         {K8S_API_CLIENT_SIDECAR_THROTTLE}
         {CSI_SIDECAR_RESIZER_RESOURCES}
@@ -843,7 +843,7 @@ spec:
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=300s"
-        - "--worker-threads=10"
+        - "--worker-threads=100"
         - "--csi-address=$(ADDRESS)"
         {FEATURE_GATES_CSI_SNAPSHOTTER}
         {K8S_API_CLIENT_SIDECAR_THROTTLE}

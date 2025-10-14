@@ -58,7 +58,6 @@ var returnTimeout = convert.ToPtr(int64(2)) // seconds
 // RestClient is the object to use for interacting with ONTAP controllers via the REST API
 type RestClient struct {
 	config        ClientConfig
-	tr            *http.Transport
 	httpClient    *http.Client
 	api           *client.ONTAPRESTAPIOnlineReference
 	authInfo      runtime.ClientAuthInfoWriter
@@ -70,6 +69,10 @@ type RestClient struct {
 	sanOptimized  bool
 	disaggregated bool
 	m             *sync.RWMutex
+}
+
+func (c *RestClient) Terminate() {
+	drivers.FreeSemaphore(c.config.ManagementLIF)
 }
 
 func (c *RestClient) ClientConfig() ClientConfig {
@@ -170,18 +173,18 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM, driverName str
 		m:          &sync.RWMutex{},
 	}
 
-	result.tr = &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: skipVerify,
-			MinVersion:         tridentconfig.MinClientTLSVersion,
-			Certificates:       []tls.Certificate{cert},
-			RootCAs:            caCertPool,
-		},
-	}
-
 	result.httpClient = &http.Client{
-		Transport: result.tr,
-		Timeout:   time.Duration(60 * time.Second),
+		Transport: drivers.NewLimitedRetryTransport(
+			drivers.NewSemaphore(config.ManagementLIF, drivers.ONTAPRequestLimit),
+			&http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: skipVerify,
+					MinVersion:         tridentconfig.MinClientTLSVersion,
+					Certificates:       []tls.Certificate{cert},
+					RootCAs:            caCertPool,
+				},
+			},
+		),
 	}
 
 	formats := strfmt.Default
@@ -1774,12 +1777,7 @@ func (c *RestClient) sendPassThroughCliCommand(ctx context.Context, request *htt
 		request.SetBasicAuth(c.config.Username, c.config.Password)
 	}
 
-	httpClient := &http.Client{
-		Transport: c.tr,
-		Timeout:   tridentconfig.StorageAPITimeoutSeconds * time.Second,
-	}
-
-	response, err := httpClient.Do(request)
+	response, err := c.httpClient.Do(request)
 	if err != nil {
 		return nil, err
 	}
@@ -2607,74 +2605,6 @@ func (c *RestClient) IgroupGetByName(ctx context.Context, initiatorGroupName str
 // //////////////////////////////////////////////////////////////////////////
 // LUN operations
 // ////////////////////////////////////////////////////////////////////////////
-
-type LunOptionsResult struct {
-	RecordSchema struct {
-		Space struct {
-			Size struct {
-				OpenAPIType string `json:"open_api_type"`
-				Range       struct {
-					Min int   `json:"min"`
-					Max int64 `json:"max"`
-				} `json:"range"`
-			} `json:"size,omitempty"`
-		} `json:"space,omitempty"`
-	} `json:"record_schema"`
-}
-
-// LunOptions gets the LUN options
-func (c *RestClient) LunOptions(
-	ctx context.Context,
-) (*LunOptionsResult, error) {
-	url := fmt.Sprintf(
-		`https://%v/api/v1/storage/luns?return_schema=POST&fields=space.size`,
-		c.config.ManagementLIF,
-	)
-
-	Logc(ctx).WithFields(LogFields{
-		"url": url,
-	}).Debug("LunOptions request")
-
-	req, _ := http.NewRequestWithContext(ctx, "OPTIONS", url, nil)
-	req.Header.Set("Content-Type", "application/json")
-	if c.config.Username != "" && c.config.Password != "" {
-		req.SetBasicAuth(c.config.Username, c.config.Password)
-	}
-
-	// certs will have been parsed and configured already, if needed, as part of the RestClient init
-	tr := c.tr
-
-	client := &http.Client{
-		Transport: tr,
-		Timeout:   time.Duration(tridentconfig.StorageAPITimeoutSeconds * time.Second),
-	}
-
-	response, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	} else if response.StatusCode == 401 {
-		return nil, errors.New("response code 401 (Unauthorized): incorrect or missing credentials")
-	}
-	defer response.Body.Close()
-
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"body": string(body),
-	}).Debug("LunOptions")
-
-	result := &LunOptionsResult{}
-	unmarshalErr := json.Unmarshal(body, result)
-	if unmarshalErr != nil {
-		Log().WithField("body", string(body)).Warnf("Error unmarshaling response body. %v", unmarshalErr.Error())
-		return nil, unmarshalErr
-	}
-
-	return result, nil
-}
 
 // LunCloneCreate creates a LUN clone
 func (c *RestClient) LunCloneCreate(

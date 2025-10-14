@@ -117,6 +117,10 @@ type OntapAPIREST struct {
 	driverName string
 }
 
+func (d OntapAPIREST) Terminate() {
+	d.api.Terminate()
+}
+
 func NewOntapAPIREST(restClient *RestClient, driverName string) (OntapAPIREST, error) {
 	result := OntapAPIREST{
 		api:        restClient,
@@ -2217,18 +2221,6 @@ func (d OntapAPIREST) LunDestroy(ctx context.Context, lunPath string) error {
 	}
 
 	return nil
-}
-
-func (d OntapAPIREST) LunGetGeometry(ctx context.Context, lunPath string) (uint64, error) {
-	lunOptionsResult, err := d.api.LunOptions(ctx)
-	if err != nil {
-		return 0, fmt.Errorf("error get lun options for LUN: %v, err: %d", lunPath, err)
-	}
-	if lunOptionsResult == nil {
-		return 0, fmt.Errorf("lun options for LUN: %v are nil", lunPath)
-	}
-
-	return uint64(lunOptionsResult.RecordSchema.Space.Size.Range.Max), nil
 }
 
 func (d OntapAPIREST) LunSetAttribute(

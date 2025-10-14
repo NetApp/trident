@@ -391,6 +391,7 @@ func TestOntapSanEconomyTerminate_Failed(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().IgroupDestroy(ctx, gomock.Any()).Times(1).Return(errors.New("failed to destroy igroup"))
+	mockAPI.EXPECT().Terminate().AnyTimes()
 
 	d.Terminate(ctx, "")
 
@@ -565,6 +566,7 @@ func TestOntapSanEconomyTerminateCSI(t *testing.T) {
 	d.Config.DriverContext = tridentconfig.ContextCSI
 
 	mockAPI.EXPECT().IgroupDestroy(ctx, gomock.Any()).Times(1).Return(nil)
+	mockAPI.EXPECT().Terminate().AnyTimes()
 
 	d.Terminate(ctx, "")
 	assert.False(t, d.initialized)

@@ -15,6 +15,7 @@ import (
 	tridentconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/convert"
+	storagedrivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
@@ -71,31 +72,32 @@ type Client struct {
 }
 
 // NewClient is a factory method for creating a new instance
-func NewClient(config ClientConfig, SVM, driverName string) *Client {
+func NewClient(config ClientConfig, SVM, driverName string) (*Client, error) {
 	// When running in Docker context we want to request MAX number of records from ZAPI for Volume, LUNs and Qtrees
 	config.ContextBasedZapiRecords = DefaultZapiRecords
 	if config.DriverContext == tridentconfig.ContextDocker {
 		config.ContextBasedZapiRecords = MaxZapiRecords
 	}
-
+	zr, err := azgo.NewZapiRunner(
+		config.ManagementLIF,
+		SVM,
+		config.Username,
+		config.Password,
+		config.ClientPrivateKey,
+		config.ClientCertificate,
+		config.TrustedCACertificate,
+		true,
+		"",
+		config.DebugTraceFlags,
+		storagedrivers.NewSemaphore(config.ManagementLIF, storagedrivers.ONTAPRequestLimit),
+	)
 	d := &Client{
 		driverName: driverName,
 		config:     config,
-		zr: azgo.NewZapiRunner(
-			config.ManagementLIF,
-			SVM,
-			config.Username,
-			config.Password,
-			config.ClientPrivateKey,
-			config.ClientCertificate,
-			config.TrustedCACertificate,
-			true,
-			"",
-			config.DebugTraceFlags,
-		),
-		m: &sync.Mutex{},
+		zr:         zr,
+		m:          &sync.Mutex{},
 	}
-	return d
+	return d, err
 }
 
 func (c *Client) ClientConfig() ClientConfig {
@@ -120,6 +122,10 @@ func (c *Client) SVMMCC() bool {
 
 func (c *Client) SVMName() string {
 	return c.zr.GetSVM()
+}
+
+func (c *Client) Terminate() {
+	storagedrivers.FreeSemaphore(c.config.ManagementLIF)
 }
 
 // GetClonedZapiRunner returns a clone of the ZapiRunner configured on this driver.
@@ -669,13 +675,6 @@ func (c Client) lunGetAllCommon(query *azgo.LunGetIterRequestQuery) (*azgo.LunGe
 		SetMaxRecords(c.config.ContextBasedZapiRecords).
 		SetQuery(*query).
 		SetDesiredAttributes(*desiredAttributes).
-		ExecuteUsing(c.zr)
-	return response, err
-}
-
-func (c Client) LunGetGeometry(path string) (*azgo.LunGetGeometryResponse, error) {
-	response, err := azgo.NewLunGetGeometryRequest().
-		SetPath(path).
 		ExecuteUsing(c.zr)
 	return response, err
 }

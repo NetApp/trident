@@ -175,6 +175,7 @@ func (d *NASFlexGroupStorageDriver) Terminate(ctx context.Context, backendUUID s
 	if d.telemetry != nil {
 		d.telemetry.Stop()
 	}
+	d.API.Terminate()
 	d.initialized = false
 }
 

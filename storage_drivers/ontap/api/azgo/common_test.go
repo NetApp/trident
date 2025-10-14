@@ -5,14 +5,15 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/sync/semaphore"
+
+	drivers "github.com/netapp/trident/storage_drivers"
 )
 
 func TestValidateZAPIResponse(t *testing.T) {
@@ -135,19 +136,6 @@ func CreateTestZapiRunner(n int) *ZapiRunner {
 	}
 }
 
-type mockHttpClientGetter struct {
-	tr      http.RoundTripper
-	timeout time.Duration
-}
-
-func (m *mockHttpClientGetter) getHttpClient() (*http.Client, error) {
-	client := &http.Client{
-		Transport: m.tr,
-		Timeout:   m.timeout,
-	}
-	return client, nil
-}
-
 type RoundTripFunc func(*http.Request) (*http.Response, error)
 
 func (f RoundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) {
@@ -166,22 +154,20 @@ func TestZapiRunner_ExecuteUsing_Parallel_MC(t *testing.T) {
 	mockTransport := RoundTripFunc(func(req *http.Request) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(strings.NewReader(mockZapiErrorVserverNotFound)),
+			Body:       io.NopCloser(strings.NewReader(mockZapiErrorVserverNotFound)),
 			Header:     make(http.Header),
 		}, nil
 	})
-	mockGetter := &mockHttpClientGetter{
-		tr:      mockTransport,
-		timeout: 5 * time.Second,
+	zRunner.httpClient = &http.Client{
+		Transport: drivers.NewLimitedRetryTransport(semaphore.NewWeighted(1), mockTransport),
 	}
-	zRunner.clientGetter = mockGetter
 
 	var wg sync.WaitGroup
 	for i := 0; i < 50; i++ {
 		wg.Add(1)
 		go func(n int) {
 			defer wg.Done()
-			zRunner.ExecuteUsing(&VolumeCreateRequest{}, "VolumeCreateRequest", NewVolumeCreateResponse())
+			_, _ = zRunner.ExecuteUsing(&VolumeCreateRequest{}, "VolumeCreateRequest", NewVolumeCreateResponse())
 		}(i)
 	}
 	wg.Wait() // Wait for all goroutines to finish

@@ -994,6 +994,7 @@ func TestOntapNasFlexgroupStorageDriverTerminate(t *testing.T) {
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 			mockAPI.EXPECT().ExportPolicyDestroy(ctx, "trident-dummy").Return(test.err)
+			mockAPI.EXPECT().Terminate().AnyTimes()
 
 			driver.Terminate(ctx, "dummy")
 
@@ -1017,6 +1018,7 @@ func TestOntapNasFlexgroupStorageDriverTerminate_TelemetryFailure(t *testing.T) 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().ExportPolicyDestroy(ctx, "trident-dummy").Return(errors.New("policy not found"))
+	mockAPI.EXPECT().Terminate().AnyTimes()
 
 	driver.Terminate(ctx, "dummy")
 

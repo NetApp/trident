@@ -1559,40 +1559,6 @@ func TestOntapAPIZAPI_FcpNodeGetNameRequest_Error(t *testing.T) {
 	assert.Empty(t, nodeName)
 }
 
-func TestOntapAPIZAPI_LunGetGeometry_Success(t *testing.T) {
-	ctrl, mock, oapi := setupTestZAPIClient(t)
-	defer ctrl.Finish()
-
-	lunPath := "/vol/test_volume/test_lun"
-	expectedMaxSize := uint64(16776704)
-
-	lunGeometryResponse := &azgo.LunGetGeometryResponse{
-		Result: azgo.LunGetGeometryResponseResult{
-			ResultStatusAttr: "passed",
-			MaxResizeSizePtr: convert.ToPtr(int(expectedMaxSize)),
-		},
-	}
-
-	mock.EXPECT().LunGetGeometry(lunPath).Return(lunGeometryResponse, nil).Times(1)
-
-	maxSize, err := oapi.LunGetGeometry(ctx, lunPath)
-	assert.NoError(t, err)
-	assert.Equal(t, expectedMaxSize, maxSize)
-}
-
-func TestOntapAPIZAPI_LunGetGeometry_Error(t *testing.T) {
-	ctrl, mock, oapi := setupTestZAPIClient(t)
-	defer ctrl.Finish()
-
-	lunPath := "/vol/test_volume/test_lun"
-
-	mock.EXPECT().LunGetGeometry(lunPath).Return(nil, errors.New("geometry error")).Times(1)
-
-	maxSize, err := oapi.LunGetGeometry(ctx, lunPath)
-	assert.Error(t, err, "expected error when LUN geometry retrieval fails")
-	assert.Equal(t, uint64(0), maxSize)
-}
-
 func TestOntapAPIZAPI_VolumeInfo_Success(t *testing.T) {
 	ctrl, mock, oapi := setupTestZAPIClient(t)
 	defer ctrl.Finish()
@@ -1768,7 +1734,7 @@ func TestNewOntapAPIZAPI(t *testing.T) {
 				Username:      "admin",
 				Password:      "password",
 			}
-			client := api.NewZAPIClient(config, "test-svm", "trident")
+			client, _ := api.NewZAPIClient(config, "test-svm", "trident")
 			oapi, err := api.NewOntapAPIZAPI(client)
 
 			if tt.shouldFail {
@@ -1786,13 +1752,14 @@ func TestNewOntapAPIZAPI(t *testing.T) {
 
 func TestNewZAPIClient(t *testing.T) {
 	tests := []struct {
-		name       string
-		config     api.ClientConfig
-		svm        string
-		driverName string
+		name        string
+		config      api.ClientConfig
+		svm         string
+		driverName  string
+		errContains string
 	}{
 		{
-			name: "Complete_configuration",
+			name: "Complete_configuration_invalid_certs",
 			config: api.ClientConfig{
 				ManagementLIF:           "192.168.1.10",
 				Username:                "admin",
@@ -1800,6 +1767,22 @@ func TestNewZAPIClient(t *testing.T) {
 				ClientCertificate:       "test-cert",
 				ClientPrivateKey:        "test-key",
 				TrustedCACertificate:    "test-ca",
+				ContextBasedZapiRecords: 100,
+				DebugTraceFlags:         map[string]bool{"method": true},
+			},
+			svm:         "test-svm",
+			driverName:  "ontap-nas",
+			errContains: "failed to decode client certificate from base64",
+		},
+		{
+			name: "Complete_configuration",
+			config: api.ClientConfig{
+				ManagementLIF:           "192.168.1.10",
+				Username:                "admin",
+				Password:                "password",
+				ClientCertificate:       "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNkVENDQWQ2Z0F3SUJBZ0lVUlRNczZFL0FXUmo3YVdBd2hKVkRXRjBFaGVJd0RRWUpLb1pJaHZjTkFRRUwKQlFBd1ZURUxNQWtHQTFVRUJoTUNWVk14Q3pBSkJnTlZCQWdNQWs1RE1Rd3dDZ1lEVlFRSERBTlNWRkF4RlRBVApCZ05WQkFvTURFNWxkRUZ3Y0N3Z1NXNWpMakVVTUJJR0ExVUVBd3dMZEdWemRDMWtaV052WkdVd0hoY05NalV4Ck1EQTVNVGt4TlRBNVdoY05NalV4TURFd01Ua3hOVEE1V2pCVk1Rc3dDUVlEVlFRR0V3SlZVekVMTUFrR0ExVUUKQ0F3Q1RrTXhEREFLQmdOVkJBY01BMUpVVURFVk1CTUdBMVVFQ2d3TVRtVjBRWEJ3TENCSmJtTXVNUlF3RWdZRApWUVFEREF0MFpYTjBMV1JsWTI5a1pUQ0JuekFOQmdrcWhraUc5dzBCQVFFRkFBT0JqUUF3Z1lrQ2dZRUEyYkZnCnZ5bEFKUjIyRk1sWERZNFpOK2FEQnNSczJVYk54cCt2SVgyNUMra2diV0x6Zm5WZnJyY00yMnVIalRxSEJnVWoKM3hlT3lEemdWNXJqWkVrTFdEWVVpUTRMYk9rMVo5SmlLMTlzc2RXVnhTc3NXdGp6ZkoyTXZOd2x0cXk3bTFpSgpoMER2ek1oMVVteHUreGtyenhBK2NpdW42QzIrZHVIMlZTck5Qb2tDQXdFQUFhTkNNRUF3SFFZRFZSME9CQllFCkZPbHNPNDVlTEVxZlZ5ZGFmenFGT25CNDN1ejRNQjhHQTFVZEl3UVlNQmFBRktFd3NObG1KVWp5K1BteU5CVnUKcXZCeGtuSE9NQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0R0JBQytjckVQQytaYTZDb09sRnY5NE4xRHpqK2dBWDN1bgovRm9lSXJreXNJbjJtRkFwNXNPUm9RaFdEM3F0eXQzdGV3dms3Qi9uc1p0YlhNSElpN3ZId1ZYcEhyUCs1NkRECk9zRk56ZHd6UnYxRzRlRlMxdVlkb1lkSnVnYUl1dHMrVUZZdDZTajBWby9GekxZelhudkRaUGl3STFKMjhRbDEKOHlJWGUraVBsaDEwCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K",
+				ClientPrivateKey:        "LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUNkZ0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQW1Bd2dnSmNBZ0VBQW9HQkFObXhZTDhwUUNVZHRoVEoKVncyT0dUZm1nd2JFYk5sR3pjYWZyeUY5dVF2cElHMWk4MzUxWDY2M0ROdHJoNDA2aHdZRkk5OFhqc2c4NEZlYQo0MlJKQzFnMkZJa09DMnpwTldmU1lpdGZiTEhWbGNVckxGclk4M3lkakx6Y0piYXN1NXRZaVlkQTc4eklkVkpzCmJ2c1pLODhRUG5JcnArZ3R2bmJoOWxVcXpUNkpBZ01CQUFFQ2dZQnk5QTZoZ3pmaklaaFh5NllUZTFqbnd1cW4KdFN2QlpIa2ZESTJmUXRObmJiaDQ2c3FubVhWb1BqTWszdGhhaEhCdWhtSlYyUXZGd3hlNFN3c09sdC9Nd0pObwpHSi9HU1RZQkFQVjMwdTJQS2lpRk9ZcGczM2lBb3NSRjlhd3pIbTlMKzBzVkdWZ1EyWDJXVStoY1JhVjZDSnYzClBJTisvZnBsOXE0a2pQYkl2UUpCQU83OTVkclh4Z2tGRnM1U3N4bCt3bXR6dVFDMnlUbTJUZEJRdElYL3MrSHMKc2RjbVRiY1NzT3JKTEdSK1RjbHZQM3BVZmtTWTFzdmJlYlhmUDRzWTJMTUNRUURwTDNGM3FHUGJHc2Y4MkRMTgpQd3ZqbVlxYnR6QUpqdXczVjd6VzcyUHpvWklaOVJqNDVZdzhJaU01U0dMUjlEVENwVWpJbVR0WUVVZ3dLbExCCk5sSFRBa0JIT0M1cE91ZnZCQzg1cVBkcVg1WDhnMjNjUXB4UXNIMGIyUkVTNVpKcmZ5ZTRIOWdFK0hMMFpLTHcKQjV1U3JhNVMvQjdzdmtjMFZPRStTNXNhRG50MUFrRUFvZWo0VDA1VHIzSUVCSk1WaXgvSW9Jc2ZEQW9CUjlHKwpRSnNpR3RkenZsbWtlWE9PbUZ2Q3FJcEhqT0d2QS9zZG16MXFzU1o4WnlUd3k4akhWekxoVXdKQUpHb1k0ZFd3CjFCd01VNTFTUWwwSnh2Vk1LNHg4YkREY1paL21oR3lSc01URlQ4cnpaSHEwQXVWQzJhZFh0MHIzNkxvblRtbVAKMGY0OHZCd0ExRHIxYUE9PQotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0tCg==",
+				TrustedCACertificate:    "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNWRENDQWIyZ0F3SUJBZ0lVSTV4aFp6azBIS1RYMVdHMmpoK0JpNk9RbThzd0RRWUpLb1pJaHZjTkFRRUwKQlFBd1ZURUxNQWtHQTFVRUJoTUNWVk14Q3pBSkJnTlZCQWdNQWs1RE1Rd3dDZ1lEVlFRSERBTlNWRkF4RlRBVApCZ05WQkFvTURFNWxkRUZ3Y0N3Z1NXNWpMakVVTUJJR0ExVUVBd3dMZEdWemRDMWtaV052WkdVd0hoY05NalV4Ck1EQTVNVGt4TWpVeldoY05NalV4TURFd01Ua3hNalV6V2pCVk1Rc3dDUVlEVlFRR0V3SlZVekVMTUFrR0ExVUUKQ0F3Q1RrTXhEREFLQmdOVkJBY01BMUpVVURFVk1CTUdBMVVFQ2d3TVRtVjBRWEJ3TENCSmJtTXVNUlF3RWdZRApWUVFEREF0MFpYTjBMV1JsWTI5a1pUQ0JuekFOQmdrcWhraUc5dzBCQVFFRkFBT0JqUUF3Z1lrQ2dZRUF1eGZlCkpzMEYyK0VGY3pDUkVBS1NrMDQxM0o4NG0vOEtGYVRuQzcrUFV3V1ZRMjZQUXZSZzN5dUFzQzBCc2tHM2tuNGEKOUdCV2VnY0ZXeXN2d2ptZng2ZUF0VlZYRFJWUTh0Rmw0OVlwNzZXalRCb05zY0Z6eTViUTlTUU5JNlVOcVdjMQp5dUhXc05rWE5zV2RwVlFkTWRVL0ppaElxdDg3WGcyN2F6UkJ5UzBDQXdFQUFhTWhNQjh3SFFZRFZSME9CQllFCkZLRXdzTmxtSlVqeStQbXlOQlZ1cXZCeGtuSE9NQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0R0JBSVhXb1JmZWp5TXYKNTFFN2xzTm1HeUIwT3FlellhbG0xUzdUc0IvQnlUb3dCNnk2RWRpZ3I4VDJja1Q0cjhaaWExWG5pWUhHVUxnaQo5blQ4T3JONE5ocmlIZ0hTZmJ5ZzZMOEx4bjRDbTRZQmxKK3N3Qk1JWldxZ3Mvak1zdDAydVAxalh3eVJaK0lhCitIVXgrTTBwekl0UTV0S05EYXluRzladlovUisxdzBUCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K",
 				ContextBasedZapiRecords: 100,
 				DebugTraceFlags:         map[string]bool{"method": true},
 			},
@@ -1826,14 +1809,19 @@ func TestNewZAPIClient(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			client := api.NewZAPIClient(tt.config, tt.svm, tt.driverName)
-			assert.NotNil(t, client)
+			client, err := api.NewZAPIClient(tt.config, tt.svm, tt.driverName)
+			if tt.errContains != "" {
+				assert.Nil(t, client)
+				assert.ErrorContains(t, err, tt.errContains)
+			} else {
+				assert.NotNil(t, client)
 
-			// Test that client configuration is accessible
-			clientConfig := client.ClientConfig()
-			assert.Equal(t, tt.config.ManagementLIF, clientConfig.ManagementLIF)
-			assert.Equal(t, tt.config.Username, clientConfig.Username)
-			assert.Equal(t, tt.config.Password, clientConfig.Password)
+				// Test that client configuration is accessible
+				clientConfig := client.ClientConfig()
+				assert.Equal(t, tt.config.ManagementLIF, clientConfig.ManagementLIF)
+				assert.Equal(t, tt.config.Username, clientConfig.Username)
+				assert.Equal(t, tt.config.Password, clientConfig.Password)
+			}
 		})
 	}
 }

@@ -536,57 +536,65 @@ func TestInitializeASA(t *testing.T) {
 }
 
 func TestTerminate(t *testing.T) {
-	mockAPI, driver := newMockOntapASADriver(t)
-
 	tests := []struct {
 		name          string
 		driverContext tridentconfig.DriverContext
 		telemetry     *Telemetry
-		setupMocks    func()
+		setupMocks    func(api *mockapi.MockOntapAPI, driver *ASAStorageDriver)
 	}{
 		{
 			name:          "DriverContextCSI_WithTelemetry",
 			driverContext: tridentconfig.ContextCSI,
 			telemetry:     &Telemetry{done: make(chan struct{})},
-			setupMocks: func() {
-				mockAPI.EXPECT().IgroupDestroy(ctx, driver.Config.IgroupName).Return(nil).Times(1)
+			setupMocks: func(api *mockapi.MockOntapAPI, driver *ASAStorageDriver) {
+				api.EXPECT().IgroupDestroy(ctx, driver.Config.IgroupName).Return(nil).Times(1)
+				api.EXPECT().Terminate().AnyTimes()
 			},
 		},
 		{
 			name:          "DriverContextCSI_WithoutTelemetry",
 			driverContext: tridentconfig.ContextCSI,
 			telemetry:     nil,
-			setupMocks: func() {
-				mockAPI.EXPECT().IgroupDestroy(ctx, driver.Config.IgroupName).Return(nil).Times(1)
+			setupMocks: func(api *mockapi.MockOntapAPI, driver *ASAStorageDriver) {
+				api.EXPECT().IgroupDestroy(ctx, driver.Config.IgroupName).Return(nil).Times(1)
+				api.EXPECT().Terminate().AnyTimes()
 			},
 		},
 		{
 			name:          "DriverContextCSI_WithoutTelemetry_IgroupDestory_Returns_error",
 			driverContext: tridentconfig.ContextCSI,
 			telemetry:     nil,
-			setupMocks: func() {
-				mockAPI.EXPECT().IgroupDestroy(ctx, driver.Config.IgroupName).Return(errors.New("api-error")).Times(1)
+			setupMocks: func(api *mockapi.MockOntapAPI, driver *ASAStorageDriver) {
+				api.EXPECT().IgroupDestroy(ctx, driver.Config.IgroupName).Return(errors.New("api-error")).Times(1)
+				api.EXPECT().Terminate().AnyTimes()
 			},
 		},
 		{
 			name:          "DriverContextDocker_WithTelemetry",
 			driverContext: tridentconfig.ContextDocker,
 			telemetry:     &Telemetry{done: make(chan struct{})},
+			setupMocks: func(api *mockapi.MockOntapAPI, driver *ASAStorageDriver) {
+				api.EXPECT().Terminate().AnyTimes()
+			},
 		},
 		{
 			name:          "DriverContextDocker_WithoutTelemetry",
 			driverContext: tridentconfig.ContextDocker,
 			telemetry:     nil,
+			setupMocks: func(api *mockapi.MockOntapAPI, driver *ASAStorageDriver) {
+				api.EXPECT().Terminate().AnyTimes()
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mockAPI, driver := newMockOntapASADriver(t)
 			driver.Config.DriverContext = tt.driverContext
 			driver.telemetry = tt.telemetry
 
 			if tt.setupMocks != nil {
-				tt.setupMocks()
+				tt.setupMocks(mockAPI, driver)
 			}
 
 			driver.Terminate(ctx, "")

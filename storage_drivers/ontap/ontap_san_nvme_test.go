@@ -86,6 +86,7 @@ func newNVMeDriverAndMockApi(t *testing.T) (*NVMeStorageDriver, *mockapi.MockOnt
 
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
+	mockAPI.EXPECT().Terminate().AnyTimes()
 
 	return newNVMeDriver(mockAPI, nil, nil), mockAPI
 }
@@ -361,7 +362,7 @@ func TestNVMeInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 }
 
 func TestNVMeTerminate_Success(t *testing.T) {
-	d := newNVMeDriver(nil, nil, nil)
+	d, _ := newNVMeDriverAndMockApi(t)
 	d.telemetry = NewOntapTelemetry(ctx, d)
 
 	d.Terminate(ctx, "")

@@ -192,6 +192,7 @@ func (d *NASStorageDriver) Terminate(ctx context.Context, backendUUID string) {
 	if d.telemetry != nil {
 		d.telemetry.Stop()
 	}
+	d.API.Terminate()
 	d.initialized = false
 }
 

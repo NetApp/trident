@@ -217,6 +217,7 @@ func (d *NVMeStorageDriver) Terminate(ctx context.Context, _ string) {
 		d.telemetry.Stop()
 	}
 
+	d.API.Terminate()
 	d.initialized = false
 }
 

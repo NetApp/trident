@@ -184,6 +184,7 @@ func (d *ASANVMeStorageDriver) Terminate(ctx context.Context, _ string) {
 	if d.telemetry != nil {
 		d.telemetry.Stop()
 	}
+	d.API.Terminate()
 	d.initialized = false
 }
 

@@ -300,6 +300,7 @@ func TestOntapSANStorageDriverTerminate_TelemetryFailure(t *testing.T) {
 	driver.initialized = true
 
 	mockAPI.EXPECT().IgroupDestroy(ctx, "igroup1").Return(errors.New("igroup not found"))
+	mockAPI.EXPECT().Terminate().AnyTimes()
 
 	driver.Terminate(ctx, "dummy")
 

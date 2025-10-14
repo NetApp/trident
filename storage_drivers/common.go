@@ -8,9 +8,16 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
+
+	"github.com/cenkalti/backoff/v4"
+	"golang.org/x/sync/semaphore"
 
 	trident "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
@@ -398,4 +405,95 @@ func RemoveSCSIDeviceByPublishInfo(ctx context.Context, publishInfo *tridentmode
 			}
 		}
 	}
+}
+
+var (
+	semaphoresLock    = sync.Mutex{}
+	semaphores        = make(map[string]*rcSem)
+	ONTAPRequestLimit = 20
+)
+
+const (
+	initialInterval = 1 * time.Second
+	multiplier      = 1.414 // approx sqrt(2)
+	maxInterval     = 6 * time.Second
+	randomFactor    = 0.1
+)
+
+// rcSem is a reference-counted semaphore.
+type rcSem struct {
+	sem  *semaphore.Weighted
+	refs int
+}
+
+// NewSemaphore returns a named semaphore, creating it if it does not already exist.
+// The semaphore is initialized with the specified maxConcurrent value only the first time it is created.
+// Each call to NewSemaphore should be matched with a call to FreeSemaphore to allow proper cleanup.
+func NewSemaphore(name string, maxConcurrent int) *semaphore.Weighted {
+	semaphoresLock.Lock()
+	defer semaphoresLock.Unlock()
+
+	s, exists := semaphores[name]
+	if !exists {
+		s = &rcSem{
+			sem:  semaphore.NewWeighted(int64(maxConcurrent)),
+			refs: 0,
+		}
+		semaphores[name] = s
+	}
+	s.refs++
+	return s.sem
+}
+
+func FreeSemaphore(name string) {
+	semaphoresLock.Lock()
+	defer semaphoresLock.Unlock()
+
+	counter, exists := semaphores[name]
+	if exists {
+		counter.refs--
+		if counter.refs <= 0 {
+			delete(semaphores, name)
+		}
+	}
+}
+
+type LimitedRetryTransport struct {
+	base http.RoundTripper
+	sem  *semaphore.Weighted
+	b    *backoff.ExponentialBackOff
+}
+
+// NewLimitedRetryTransport wraps a base transport to limit the number of concurrent requests and add retries
+// on io.EOF errors.
+func NewLimitedRetryTransport(sem *semaphore.Weighted, base http.RoundTripper) *LimitedRetryTransport {
+	b := backoff.NewExponentialBackOff()
+	b.InitialInterval = initialInterval
+	b.Multiplier = multiplier
+	b.MaxInterval = maxInterval
+	b.RandomizationFactor = randomFactor
+	return &LimitedRetryTransport{
+		base: base,
+		sem:  sem,
+		b:    b,
+	}
+}
+
+func (lrt *LimitedRetryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	var resp *http.Response
+	f := func() error {
+		if err := lrt.sem.Acquire(req.Context(), 1); err != nil {
+			return backoff.Permanent(err)
+		} else {
+			defer lrt.sem.Release(1)
+		}
+		r, err := lrt.base.RoundTrip(req)
+		resp = r
+		if err != nil && !errors.Is(err, io.EOF) {
+			return backoff.Permanent(err)
+		}
+		return err
+	}
+	lrt.b.Reset()
+	return resp, backoff.Retry(f, lrt.b)
 }
