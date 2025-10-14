@@ -5965,6 +5965,7 @@ func TestOntapNasEcoUnpublish(t *testing.T) {
 					Return(map[int]string{1: "1.1.1.1", 2: "2.2.2.2"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, qtreeName, gomock.Any()).Times(2)
 				mockAPI.EXPECT().ExportRuleList(ctx, qtreeName)
+				mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Return(true, nil)
 				mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, "tridentempty")
 				mockAPI.EXPECT().ExportPolicyDestroy(ctx, qtreeName)
 			},
@@ -5980,8 +5981,7 @@ func TestOntapNasEcoUnpublish(t *testing.T) {
 					Return(map[int]string{1: "1.1.1.1", 2: "2.2.2.2"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, qtreeName, gomock.Any()).Times(2)
 				mockAPI.EXPECT().ExportRuleList(ctx, qtreeName)
-				mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, "tridentempty").
-					Return(errors.NotFoundError("export policy not found"))
+				mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Return(false, nil)
 				mockAPI.EXPECT().ExportPolicyCreate(ctx, "tridentempty")
 				mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, "tridentempty")
 				mockAPI.EXPECT().ExportPolicyDestroy(ctx, qtreeName)
@@ -6093,6 +6093,8 @@ func TestOntapNasEcoLegacyUnpublish(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI, qtreeName, flexVolName, backendPolicy string) {
 				mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, gomock.Any()).
 					Return(&api.Qtree{ExportPolicy: backendPolicy, Volume: flexVolName}, nil)
+				mockAPI.EXPECT().ExportPolicyExists(ctx, "tridentempty").Return(false, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "tridentempty").Return(nil)
 				mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, "tridentempty")
 			},
 			wantErr: assert.NoError,
@@ -6100,7 +6102,7 @@ func TestOntapNasEcoLegacyUnpublish(t *testing.T) {
 		{
 			// This qtree has the backend based export policy "trident-1234" but its volConfig.ExportPolicy="" because
 			// this qtree vol was created using trident version <= 23.01. During Unpublish, the correct export policy
-			// should be querired from backend and used.
+			// should be queried from backend and used.
 			// After unpublish, the qtree is expected to be set to the empty export policy with no rules because it
 			// is no longer in use by any pods on any node.
 			name: "legacyQtreeWithEmptyExportPolicyInVolConfig",
@@ -6108,6 +6110,8 @@ func TestOntapNasEcoLegacyUnpublish(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI, qtreeName, flexVolName, backendPolicy string) {
 				mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, gomock.Any()).
 					Return(&api.Qtree{ExportPolicy: backendPolicy, Volume: flexVolName}, nil)
+				mockAPI.EXPECT().ExportPolicyExists(ctx, "tridentempty").Return(false, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "tridentempty").Return(nil)
 				mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, "tridentempty")
 			},
 			wantErr: assert.NoError,
@@ -6121,9 +6125,8 @@ func TestOntapNasEcoLegacyUnpublish(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI, qtreeName, flexVolName, backendPolicy string) {
 				mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, gomock.Any()).
 					Return(&api.Qtree{ExportPolicy: backendPolicy, Volume: flexVolName}, nil)
-				mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, "tridentempty").
-					Return(errors.NotFoundError("export policy not found"))
-				mockAPI.EXPECT().ExportPolicyCreate(ctx, "tridentempty")
+				mockAPI.EXPECT().ExportPolicyExists(ctx, "tridentempty").Return(false, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "tridentempty").Return(nil)
 				mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, "tridentempty")
 			},
 			wantErr: assert.NoError,
@@ -6149,6 +6152,8 @@ func TestOntapNasEcoLegacyUnpublish(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI, qtreeName, flexVolName, backendPolicy string) {
 				mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, gomock.Any()).
 					Return(&api.Qtree{ExportPolicy: "default", Volume: flexVolName}, nil).Times(1)
+				mockAPI.EXPECT().ExportPolicyExists(ctx, "tridentempty").Return(false, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "tridentempty").Return(nil)
 				mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, "tridentempty").Times(1)
 			},
 			wantErr: assert.NoError,

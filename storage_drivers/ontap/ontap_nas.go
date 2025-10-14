@@ -990,25 +990,28 @@ func (d *NASStorageDriver) Unpublish(
 
 // setVolToEmptyPolicy  set export policy to the empty policy.
 func (d *NASStorageDriver) setVolToEmptyPolicy(ctx context.Context, volName string) error {
+	fields := LogFields{"flexvol": volName}
 	emptyExportPolicy := getEmptyExportPolicyName(*d.Config.StoragePrefix)
 
+	fields["exportPolicy"] = emptyExportPolicy
 	exists, err := d.API.ExportPolicyExists(ctx, emptyExportPolicy)
 	if err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Errorf("Could not check if export policy %s exists.", emptyExportPolicy)
 		return err
 	}
 
 	if !exists {
-		Logc(ctx).WithField("exportPolicy", emptyExportPolicy).
-			Debug("Export policy not found, attempting to create it.")
+		Logc(ctx).WithFields(fields).Debug("Export policy not found, attempting to create it.")
 		if err = ensureExportPolicyExists(ctx, emptyExportPolicy, d.API); err != nil {
-			Logc(ctx).WithError(err).Errorf("Could not create empty export policy %s.", emptyExportPolicy)
+			Logc(ctx).WithFields(fields).
+				WithError(err).Errorf("Could not create empty export policy %s.", emptyExportPolicy)
 			return err
 		}
 	}
 
 	err = d.API.VolumeModifyExportPolicy(ctx, volName, emptyExportPolicy)
 	if err != nil {
-		Logc(ctx).WithError(err).Errorf("Error setting volume %s to empty export policy.", volName)
+		Logc(ctx).WithFields(fields).WithError(err).Errorf("Error setting volume %s to empty export policy.", volName)
 		return err
 	}
 

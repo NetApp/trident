@@ -935,25 +935,33 @@ func (d *NASQtreeStorageDriver) Unpublish(
 
 // setQtreeToEmptyPolicy takes an existing qtree and sets its export policy to the empty policy.
 func (d *NASQtreeStorageDriver) setQtreeToEmptyPolicy(ctx context.Context, qtreeName, flexvol string) error {
+	fields := LogFields{"qtree": qtreeName, "flexvol": flexvol}
+
 	emptyExportPolicy := getEmptyExportPolicyName(*d.Config.StoragePrefix)
-	err := d.API.QtreeModifyExportPolicy(ctx, qtreeName, flexvol, emptyExportPolicy)
+
+	fields["exportPolicy"] = emptyExportPolicy
+	exists, err := d.API.ExportPolicyExists(ctx, emptyExportPolicy)
 	if err != nil {
-		// Check if error is that the export policy does not exist error
-		if errors.IsNotFoundError(err) {
-			Logc(ctx).WithField("exportPolicy", emptyExportPolicy).
-				Debug("Export policy not found, attempting to create it.")
-			if err = ensureExportPolicyExists(ctx, emptyExportPolicy, d.API); err != nil {
-				Logc(ctx).WithError(err).Errorf("Could not create export policy %s.", emptyExportPolicy)
-			}
-			if err = d.API.QtreeModifyExportPolicy(ctx, qtreeName, flexvol, emptyExportPolicy); err != nil {
-				Logc(ctx).WithError(err).Errorf("Error setting qtree %s to empty export policy.", qtreeName)
-				return err
-			}
-		} else {
-			Logc(ctx).WithError(err).Errorf("Error setting qtree %s to empty export policy.", qtreeName)
+		Logc(ctx).WithFields(fields).WithError(err).Errorf("Could not check if export policy %s exists.", emptyExportPolicy)
+		return err
+	}
+
+	if !exists {
+		Logc(ctx).WithFields(fields).Debug("Export policy not found, attempting to create it.")
+		if err = ensureExportPolicyExists(ctx, emptyExportPolicy, d.API); err != nil {
+			Logc(ctx).WithFields(fields).
+				WithError(err).Errorf("Could not create export policy %s.", emptyExportPolicy)
+			return err
 		}
 	}
-	return err
+
+	err = d.API.QtreeModifyExportPolicy(ctx, qtreeName, flexvol, emptyExportPolicy)
+	if err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Errorf("Error setting qtree %s to export policy.", qtreeName)
+		return err
+	}
+
+	return nil
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
