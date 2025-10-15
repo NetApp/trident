@@ -995,7 +995,7 @@ func (i *Installer) InstallOrPatchTrident(
 		}
 	}
 
-	// Create or update NodeRemediation resouces for automatic force-detach
+	// Create or update NodeRemediation resources for automatic force-detach
 	if enableForceDetach {
 		returnError = i.createOrPatchNodeRemediationResources()
 		if returnError != nil {
@@ -1003,7 +1003,7 @@ func (i *Installer) InstallOrPatchTrident(
 			return nil, "", "", returnError
 		}
 	} else {
-		// Remove TridentNodeRemediation resouces if enableForceDeach was toggled off
+		// Remove TridentNodeRemediation resources if enableForceDetach was toggled off
 		if err := i.client.DeleteTridentNodeRemediationResources(i.namespace); err != nil {
 			Log().Warn("could not remove TridentNodeRemediation resources; %v", err)
 		}
