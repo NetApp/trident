@@ -46,7 +46,7 @@ func (i *Installer) UninstallTrident() error {
 		return fmt.Errorf("could not delete Trident CSI driver custom resource; %v", err)
 	}
 
-	// Delete TridentNodeRemediation resouces
+	// Delete TridentNodeRemediation resources
 	if err := i.client.DeleteTridentNodeRemediationResources(i.namespace); err != nil {
 		return fmt.Errorf("could not delete TridentNodeRemediation resources; %v", err)
 	}
