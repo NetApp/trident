@@ -30,7 +30,7 @@ func (c *TridentCrdController) handleTridentNodeRemediation(keyItem *KeyItem) (r
 	Logc(ctx).Debug(">>>> TridentCrdController#handleNodeRemediation")
 	defer Logc(ctx).Debug("<<<< TridentCrdController#handleNodeRemediation")
 
-	// Esnure the volume attachment indexer cache is synced
+	// Ensure the volume attachment indexer cache is synced
 	if ok := c.indexers.VolumeAttachmentIndexer().WaitForCacheSync(ctx); !ok {
 		Logc(ctx).Warn("Failed to sync volume attachment cache. Not all volume attachments may be found.")
 	}
@@ -202,6 +202,21 @@ func (c *TridentCrdController) validateTridentNodeRemediationCR(
 	return actionCR, nil
 }
 
+// updateNodeRemediationCRWithErrorHandling performs a CR update and handles common error cases
+func (c *TridentCrdController) updateNodeRemediationCRWithErrorHandling(
+	ctx context.Context, cr *netappv1.TridentNodeRemediation, namespace string,
+) (*netappv1.TridentNodeRemediation, error) {
+	updatedCR, err := c.crdClientset.TridentV1().TridentNodeRemediations(namespace).Update(ctx, cr, updateOpts)
+	if apierrors.IsNotFound(err) {
+		Logc(ctx).Debug("Node remediation in work queue no longer exists.")
+		return nil, err
+	}
+	if err != nil {
+		return nil, errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
+	}
+	return updatedCR, nil
+}
+
 func (c *TridentCrdController) updateNodeRemediationCR(
 	ctx context.Context, namespace, name string, statusUpdate *netappv1.TridentNodeRemediationStatus,
 ) error {
@@ -215,23 +230,30 @@ func (c *TridentCrdController) updateNodeRemediationCR(
 		return errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 	}
 
-	if statusUpdate.State == netappv1.TridentActionStateSucceeded || statusUpdate.State == netappv1.TridentActionStateFailed {
-		if actionCR.HasTridentFinalizers() {
-			actionCR.RemoveTridentFinalizers()
+	// Add finalizers for in-progress states
+	if statusUpdate.State != netappv1.TridentActionStateSucceeded && statusUpdate.State != netappv1.TridentActionStateFailed {
+		if !actionCR.HasTridentFinalizers() {
+			actionCR.AddTridentFinalizers()
 		}
-	} else if !actionCR.HasTridentFinalizers() {
-		actionCR.AddTridentFinalizers()
 	}
 
 	actionCR.Status = *statusUpdate
 
-	_, err = c.crdClientset.TridentV1().TridentNodeRemediations(namespace).Update(ctx, actionCR, updateOpts)
-	if apierrors.IsNotFound(err) {
-		Logc(ctx).Debug("Node remediation in work queue no longer exists.")
+	updatedCR, err := c.updateNodeRemediationCRWithErrorHandling(ctx, actionCR, namespace)
+	if err != nil {
 		return err
 	}
-	if err != nil {
-		return errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
+
+	// For terminal states, remove finalizers in a separate update after
+	// status is set, to let state update before NHC deletes CR
+	if statusUpdate.State == netappv1.TridentActionStateSucceeded || statusUpdate.State == netappv1.TridentActionStateFailed {
+		if updatedCR.HasTridentFinalizers() {
+			updatedCR.RemoveTridentFinalizers()
+			_, err = c.updateNodeRemediationCRWithErrorHandling(ctx, updatedCR, namespace)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil
@@ -310,7 +332,7 @@ func (c *TridentCrdController) failoverDetach(
 	}
 
 	// Update the CR status with VAs to delete.
-	// This is addative, not a replacement. This way if we have already deleted pods and then crash, we will still
+	// This is additive, not a replacement. This way if we have already deleted pods and then crash, we will still
 	// know which VAs to delete when we restart.
 	Logc(ctx).WithField("tridentNodeRemediation", actionCR.Name).Info(
 		"Adding volume attachments to delete to TridentNodeRemediation CR status.")
