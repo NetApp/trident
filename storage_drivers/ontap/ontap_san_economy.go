@@ -1011,6 +1011,11 @@ func (d *SANEconomyStorageDriver) Import(
 
 	// Managed import with no rename only supported for csi workflow
 	if volConfig.ImportNoRename && d.Config.DriverContext != tridentconfig.ContextDocker {
+		if !strings.HasPrefix(flexvol.Name, d.FlexvolNamePrefix()) {
+			// Reject import if the Flexvol is not following naming conventions.
+			return fmt.Errorf("could not import volume/LUN, volume is named incorrectly: %s, expected pattern: %s*",
+				flexvol.Name, d.FlexvolNamePrefix())
+		}
 		volConfig.InternalName = originalLUNName
 		targetPath = "/vol/" + originalFlexvolName + "/" + volConfig.InternalName
 		// This is critical so that subsequent operations can find the LUN in case of no rename import

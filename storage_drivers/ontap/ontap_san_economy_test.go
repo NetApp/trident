@@ -2020,9 +2020,15 @@ func TestOntapSanEconomyVolumeImport_UnsupportedNameLength(t *testing.T) {
 
 func TestOntapSanEconomyVolumeImport_ManagedNoRename(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
-
-	d.flexvolNamePrefix = "test_lun_pool_"
 	d.Config.SVM = "test_svm"
+	var storagePrefix string
+	if d.Config.StoragePrefix != nil {
+		storagePrefix = *d.Config.StoragePrefix
+	} else {
+		storagePrefix = ""
+	}
+	d.flexvolNamePrefix = fmt.Sprintf("trident_lun_pool_%s_", storagePrefix)
+	d.Config.DriverContext = tridentconfig.ContextCSI
 
 	tests := []struct {
 		name        string // Name of the test case
@@ -2042,12 +2048,12 @@ func TestOntapSanEconomyVolumeImport_ManagedNoRename(t *testing.T) {
 				FileSystem:     "xfs",
 				ImportNoRename: true,
 			},
-			volToImport: "original_vol/original_lun",
+			volToImport: d.FlexvolNamePrefix() + "12345/original_lun",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeInfo(gomock.Any(), gomock.Any()).
-					Return(&api.Volume{Name: "original_vol", AccessType: "rw"}, nil)
+					Return(&api.Volume{Name: d.FlexvolNamePrefix() + "12345", AccessType: "rw"}, nil)
 				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).
-					Return(&api.Lun{Name: "/vol/original_vol/original_lun", State: "online", Size: "1073741824"}, nil)
+					Return(&api.Lun{Name: "/vol/" + d.FlexvolNamePrefix() + "12345/original_lun", State: "online", Size: "1073741824"}, nil)
 				mockAPI.EXPECT().LunListIgroupsMapped(gomock.Any(), gomock.Any()).Return(nil, nil)
 			},
 			wantErr: assert.NoError,
@@ -2056,7 +2062,7 @@ func TestOntapSanEconomyVolumeImport_ManagedNoRename(t *testing.T) {
 				// With ImportNoRename, InternalName should be set to original LUN name
 				assert.Equal(t, "original_lun", volConfig.InternalName, "InternalName should be original LUN name")
 				// InternalID should be set properly
-				expectedID := "/svm/test_svm/flexvol/original_vol/lun/original_lun"
+				expectedID := "/svm/test_svm/flexvol/" + d.FlexvolNamePrefix() + "12345/lun/original_lun"
 				assert.Equal(t, expectedID, volConfig.InternalID, "InternalID should be set correctly")
 			},
 		},
@@ -2069,12 +2075,12 @@ func TestOntapSanEconomyVolumeImport_ManagedNoRename(t *testing.T) {
 				FileSystem:     "xfs",
 				ImportNoRename: true,
 			},
-			volToImport: "original_vol/original_lun",
+			volToImport: d.FlexvolNamePrefix() + "67890/original_lun",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeInfo(gomock.Any(), gomock.Any()).
-					Return(&api.Volume{Name: "original_vol", AccessType: "rw"}, nil)
+					Return(&api.Volume{Name: d.FlexvolNamePrefix() + "67890", AccessType: "rw"}, nil)
 				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).
-					Return(&api.Lun{Name: "/vol/original_vol/original_lun", State: "online", Size: "1073741824"}, nil)
+					Return(&api.Lun{Name: "/vol/" + d.FlexvolNamePrefix() + "67890/original_lun", State: "online", Size: "1073741824"}, nil)
 				mockAPI.EXPECT().LunListIgroupsMapped(gomock.Any(), gomock.Any()).
 					Return(nil, errors.New("igroup list failed"))
 			},
@@ -2083,7 +2089,7 @@ func TestOntapSanEconomyVolumeImport_ManagedNoRename(t *testing.T) {
 			validate: func(t *testing.T, volConfig *storage.VolumeConfig) {
 				// Validate InternalName and InternalID are still set even on failure
 				assert.Equal(t, "original_lun", volConfig.InternalName, "InternalName should be original LUN name")
-				expectedID := "/svm/test_svm/flexvol/original_vol/lun/original_lun"
+				expectedID := "/svm/test_svm/flexvol/" + d.FlexvolNamePrefix() + "67890/lun/original_lun"
 				assert.Equal(t, expectedID, volConfig.InternalID, "InternalID should be set correctly")
 			},
 		},
@@ -2102,15 +2108,11 @@ func TestOntapSanEconomyVolumeImport_ManagedNoRename(t *testing.T) {
 					Return(&api.Volume{Name: "non_conforming_vol", AccessType: "rw"}, nil)
 				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).
 					Return(&api.Lun{Name: "/vol/non_conforming_vol/my_lun", State: "online", Size: "1073741824"}, nil)
-				mockAPI.EXPECT().LunListIgroupsMapped(gomock.Any(), gomock.Any()).Return(nil, nil)
 			},
-			wantErr: assert.NoError,
-			testOut: "Import succeeded",
+			wantErr: assert.Error,
+			testOut: "Import should fail with non-conforming Flexvol name",
 			validate: func(t *testing.T, volConfig *storage.VolumeConfig) {
-				// With ImportNoRename, no rename should happen regardless of naming convention
-				assert.Equal(t, "my_lun", volConfig.InternalName, "InternalName should be original LUN name")
-				expectedID := "/svm/test_svm/flexvol/non_conforming_vol/lun/my_lun"
-				assert.Equal(t, expectedID, volConfig.InternalID, "InternalID should use original Flexvol and LUN names")
+				// Validation removed as import should fail before this point
 			},
 		},
 	}
