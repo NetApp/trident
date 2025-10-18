@@ -1706,16 +1706,18 @@ func TestGetTridentProtectVersion(t *testing.T) {
 	_, plugin := newMockPlugin(t)
 
 	tests := []struct {
-		name        string
-		pods        []v1.Pod
-		expectError bool
-		expected    string
+		name              string
+		pods              []v1.Pod
+		expectError       bool
+		expectedVersion   string
+		expectedConnector bool
 	}{
 		{
-			name:        "No Trident Protect pods",
-			pods:        []v1.Pod{},
-			expectError: false,
-			expected:    "",
+			name:              "No Trident Protect pods",
+			pods:              []v1.Pod{},
+			expectError:       false,
+			expectedVersion:   "",
+			expectedConnector: false,
 		},
 		{
 			name: "Trident Protect controller manager pod with version in trident-protect namespace",
@@ -1731,8 +1733,9 @@ func TestGetTridentProtectVersion(t *testing.T) {
 					},
 				},
 			},
-			expectError: false,
-			expected:    "100.2506.0",
+			expectError:       false,
+			expectedVersion:   "100.2506.0",
+			expectedConnector: false,
 		},
 		{
 			name: "Trident Protect controller manager pod with version in different namespace",
@@ -1748,8 +1751,63 @@ func TestGetTridentProtectVersion(t *testing.T) {
 					},
 				},
 			},
-			expectError: false,
-			expected:    "100.2507.1",
+			expectError:       false,
+			expectedVersion:   "100.2507.1",
+			expectedConnector: false,
+		},
+		{
+			name: "Controller manager with connector present",
+			pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "trident-protect-controller-manager-abc123",
+						Namespace: "trident-protect",
+						Labels: map[string]string{
+							"app.kubernetes.io/name":    "trident-protect",
+							"app.kubernetes.io/version": "100.2506.0",
+						},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "trident-protect-connector-58d5bf7644-6zsjc",
+						Namespace: "trident-protect",
+						Labels: map[string]string{
+							"app": "connector.protect.trident.netapp.io",
+						},
+					},
+				},
+			},
+			expectError:       false,
+			expectedVersion:   "100.2506.0",
+			expectedConnector: true,
+		},
+		{
+			name: "Controller manager with connector in different namespace",
+			pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "trident-protect-controller-manager-abc123",
+						Namespace: "trident-protect",
+						Labels: map[string]string{
+							"app.kubernetes.io/name":    "trident-protect",
+							"app.kubernetes.io/version": "100.2506.0",
+						},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "trident-protect-connector-58d5bf7644-6zsjc",
+						Namespace: "other-namespace",
+						Labels: map[string]string{
+							"app": "connector.protect.trident.netapp.io",
+						},
+					},
+				},
+			},
+			expectError:       false,
+			expectedVersion:   "100.2506.0",
+			expectedConnector: true,
 		},
 		{
 			name: "Multiple Trident Protect pods across namespaces - returns first controller manager found",
@@ -1784,8 +1842,9 @@ func TestGetTridentProtectVersion(t *testing.T) {
 					},
 				},
 			},
-			expectError: false,
-			expected:    "100.2508.0", // First controller manager found (kube-system comes before trident-protect alphabetically)
+			expectError:       false,
+			expectedVersion:   "100.2508.0", // First controller manager found (kube-system comes before trident-protect alphabetically)
+			expectedConnector: false,
 		},
 		{
 			name: "Trident Protect pod without controller manager",
@@ -1800,8 +1859,9 @@ func TestGetTridentProtectVersion(t *testing.T) {
 					},
 				},
 			},
-			expectError: false,
-			expected:    "",
+			expectError:       false,
+			expectedVersion:   "",
+			expectedConnector: false,
 		},
 		{
 			name: "Controller manager without version label",
@@ -1816,8 +1876,9 @@ func TestGetTridentProtectVersion(t *testing.T) {
 					},
 				},
 			},
-			expectError: false,
-			expected:    "",
+			expectError:       false,
+			expectedVersion:   "",
+			expectedConnector: false,
 		},
 		{
 			name: "Pods without proper app.kubernetes.io/name label are ignored",
@@ -1832,8 +1893,9 @@ func TestGetTridentProtectVersion(t *testing.T) {
 					},
 				},
 			},
-			expectError: false,
-			expected:    "",
+			expectError:       false,
+			expectedVersion:   "",
+			expectedConnector: false,
 		},
 	}
 
@@ -1848,14 +1910,131 @@ func TestGetTridentProtectVersion(t *testing.T) {
 
 			plugin.kubeClient = fakeClientSet
 
-			version, err := plugin.getTridentProtectVersion(ctx)
+			version, connectorPresent, err := plugin.getTridentProtectVersion(ctx)
 
 			if test.expectError {
 				assert.Error(t, err)
 				assert.Empty(t, version)
+				assert.False(t, connectorPresent)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, test.expected, version)
+				assert.Equal(t, test.expectedVersion, version)
+				assert.Equal(t, test.expectedConnector, connectorPresent)
+			}
+		})
+	}
+}
+
+func TestGetTridentProtectConnectorPresent(t *testing.T) {
+	ctx := context.Background()
+	_, plugin := newMockPlugin(t)
+
+	tests := []struct {
+		name              string
+		pods              []v1.Pod
+		expectError       bool
+		expectedConnector bool
+	}{
+		{
+			name:              "No connector pods",
+			pods:              []v1.Pod{},
+			expectError:       false,
+			expectedConnector: false,
+		},
+		{
+			name: "Connector pod present",
+			pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "trident-protect-connector-58d5bf7644-6zsjc",
+						Namespace: "trident-protect",
+						Labels: map[string]string{
+							"app": "connector.protect.trident.netapp.io",
+						},
+					},
+				},
+			},
+			expectError:       false,
+			expectedConnector: true,
+		},
+		{
+			name: "Multiple connector pods across namespaces",
+			pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "trident-protect-connector-abc123",
+						Namespace: "namespace1",
+						Labels: map[string]string{
+							"app": "connector.protect.trident.netapp.io",
+						},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "trident-protect-connector-def456",
+						Namespace: "namespace2",
+						Labels: map[string]string{
+							"app": "connector.protect.trident.netapp.io",
+						},
+					},
+				},
+			},
+			expectError:       false,
+			expectedConnector: true,
+		},
+		{
+			name: "Pod with different label - should not detect",
+			pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "some-other-connector-pod",
+						Namespace: "default",
+						Labels: map[string]string{
+							"app": "some.other.connector",
+						},
+					},
+				},
+			},
+			expectError:       false,
+			expectedConnector: false,
+		},
+		{
+			name: "Pod with connector in name but wrong label",
+			pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "trident-protect-connector-wrong-label",
+						Namespace: "trident-protect",
+						Labels: map[string]string{
+							"app.kubernetes.io/name": "trident-protect",
+						},
+					},
+				},
+			},
+			expectError:       false,
+			expectedConnector: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// Create a fake clientset with the test pods
+			objs := make([]runtime.Object, len(test.pods))
+			for i := range test.pods {
+				objs[i] = &test.pods[i]
+			}
+			fakeClientSet := k8sfake.NewSimpleClientset(objs...)
+
+			plugin.kubeClient = fakeClientSet
+
+			connectorPresent, err := plugin.getTridentProtectConnectorPresent(ctx)
+
+			if test.expectError {
+				assert.Error(t, err)
+				assert.False(t, connectorPresent)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, test.expectedConnector, connectorPresent)
 			}
 		})
 	}
@@ -1940,8 +2119,18 @@ func TestUpdateTelemetryFields(t *testing.T) {
 		},
 	}
 
+	connectorPod := &v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "trident-protect-connector-58d5bf7644-6zsjc",
+			Namespace: "trident-protect",
+			Labels: map[string]string{
+				"app": "connector.protect.trident.netapp.io",
+			},
+		},
+	}
+
 	// Setup fake clientset with test objects
-	objs := []runtime.Object{kubeSystemNS, tridentProtectPod}
+	objs := []runtime.Object{kubeSystemNS, tridentProtectPod, connectorPod}
 	for i := range nodes {
 		objs = append(objs, &nodes[i])
 	}
@@ -1972,14 +2161,16 @@ func TestUpdateTelemetryFields(t *testing.T) {
 	assert.Equal(t, "test-cluster-uid-12345", telemetry.PlatformUID, "should set cluster UID from kube-system namespace")
 	assert.Equal(t, 3, telemetry.PlatformNodeCount, "should set node count from cached nodes")
 	assert.Equal(t, "100.2506.0", telemetry.TridentProtectVersion, "should set Trident Protect version from controller manager pod label")
+	assert.True(t, telemetry.TridentProtectConnectorPresent, "should set connector present to true when connector pod exists")
 	assert.NotEmpty(t, telemetry.PlatformVersion, "should set platform version from Kubernetes server version")
 
 	// Test with a telemetry object that has existing values to ensure they get overwritten
 	existingTelemetry := &config.Telemetry{
-		PlatformUID:           "old-uid",
-		PlatformNodeCount:     999,
-		PlatformVersion:       "old-version",
-		TridentProtectVersion: "old-protect-version",
+		PlatformUID:                    "e48f1b9c-ac99-430-82d2-d89815e2ebd1",
+		PlatformNodeCount:              5,
+		PlatformVersion:                "v1.31.8",
+		TridentProtectVersion:          "25.07.0-preview",
+		TridentProtectConnectorPresent: false,
 	}
 
 	plugin.updateTelemetryFields(ctx, existingTelemetry)
@@ -1988,6 +2179,7 @@ func TestUpdateTelemetryFields(t *testing.T) {
 	assert.Equal(t, "test-cluster-uid-12345", existingTelemetry.PlatformUID, "should overwrite existing cluster UID")
 	assert.Equal(t, 3, existingTelemetry.PlatformNodeCount, "should overwrite existing node count")
 	assert.Equal(t, "100.2506.0", existingTelemetry.TridentProtectVersion, "should overwrite existing Trident Protect version")
+	assert.True(t, existingTelemetry.TridentProtectConnectorPresent, "should overwrite existing connector presence")
 	assert.NotEmpty(t, existingTelemetry.PlatformVersion, "should overwrite existing platform version")
 	assert.NotEqual(t, "old-version", existingTelemetry.PlatformVersion, "platform version should be updated, not kept as old value")
 }

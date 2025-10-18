@@ -26,13 +26,14 @@ type (
 )
 
 type Telemetry struct {
-	TridentVersion        string `json:"version"`
-	TridentBackendUUID    string `json:"backendUUID"`
-	Platform              string `json:"platform"`
-	PlatformVersion       string `json:"platformVersion"`
-	PlatformUID           string `json:"platformUID,omitempty"`
-	PlatformNodeCount     int    `json:"platformNodeCount,omitempty"`
-	TridentProtectVersion string `json:"tridentProtectVersion,omitempty"`
+	TridentVersion                 string `json:"version"`
+	TridentBackendUUID             string `json:"backendUUID"`
+	Platform                       string `json:"platform"`
+	PlatformVersion                string `json:"platformVersion"`
+	PlatformUID                    string `json:"platformUID,omitempty"`
+	PlatformNodeCount              int    `json:"platformNodeCount,omitempty"`
+	TridentProtectVersion          string `json:"tridentProtectVersion,omitempty"`
+	TridentProtectConnectorPresent bool   `json:"tridentProtectConnectorPresent,omitempty"`
 }
 
 // TelemetryUpdater is a function type for updating dynamic telemetry fields
@@ -188,6 +189,7 @@ const (
 	TridentProtectAppNameLabel   = "app.kubernetes.io/name=trident-protect"
 	TridentProtectVersionLabel   = "app.kubernetes.io/version"
 	TridentProtectControllerName = "controller-manager"
+	TridentProtectConnectorLabel = "app=connector.protect.trident.netapp.io"
 
 	// CSIUnixSocketPermissions CSI socket file needs rw access only for user
 	CSIUnixSocketPermissions = 0o600

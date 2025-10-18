@@ -1422,15 +1422,20 @@ func (h *helper) getK8sNodeCount(ctx context.Context) (int, error) {
 	return nodeCount, nil
 }
 
-// getTridentProtectVersion retrieves the version of Trident Protect if installed in the cluster
-func (h *helper) getTridentProtectVersion(ctx context.Context) (string, error) {
+// getTridentProtectVersion retrieves the version of Trident Protect and checks for connector presence if controller is found
+func (h *helper) getTridentProtectVersion(ctx context.Context) (string, bool, error) {
 	// Search for Trident Protect pods across all namespaces, specifically looking for the controller manager
 	pods, err := h.kubeClient.CoreV1().Pods("").List(ctx, metav1.ListOptions{
 		LabelSelector: config.TridentProtectAppNameLabel,
 	})
 	if err != nil {
 		Logc(ctx).WithError(err).Debug("Failed to get Trident Protect pods across all namespaces.")
-		return "", err
+		return "", false, err
+	}
+
+	if len(pods.Items) == 0 {
+		Logc(ctx).Debugf("No pods found with %s across all namespaces.", config.TridentProtectAppNameLabel)
+		return "", false, nil
 	}
 
 	// Look for the controller manager pod specifically
@@ -1438,13 +1443,47 @@ func (h *helper) getTridentProtectVersion(ctx context.Context) (string, error) {
 		if strings.Contains(pod.Name, config.TridentProtectControllerName) {
 			if version, exists := pod.Labels[config.TridentProtectVersionLabel]; exists {
 				Logc(ctx).WithField("version", version).WithField("podName", pod.Name).Debug("Found Trident Protect version from controller manager.")
-				return version, nil
+
+				// Controller found, now check for connector
+				connectorPresent, err := h.getTridentProtectConnectorPresent(ctx)
+				if err != nil {
+					Logc(ctx).WithError(err).Debug("Failed to check connector presence after finding controller.")
+					// Return version but connector check failed
+					return version, false, nil
+				}
+
+				return version, connectorPresent, nil
 			}
 		}
 	}
 
 	Logc(ctx).Debug("No Trident Protect controller manager pod or version found.")
-	return "", nil
+	return "", false, nil
+}
+
+// getTridentProtectConnectorPresent checks if trident-protect-connector pod exists across all namespaces
+func (h *helper) getTridentProtectConnectorPresent(ctx context.Context) (bool, error) {
+	// Search across all namespaces for connector pods
+	pods, err := h.kubeClient.CoreV1().Pods("").List(ctx, metav1.ListOptions{
+		LabelSelector: config.TridentProtectConnectorLabel,
+		Limit:         1, // We only need to know if one exists
+	})
+	if err != nil {
+		Logc(ctx).WithError(err).Debug("Failed to get Trident Protect connector pods across all namespaces.")
+		return false, err
+	}
+
+	connectorPresent := len(pods.Items) > 0
+	if connectorPresent {
+		Logc(ctx).WithFields(LogFields{
+			"podName":   pods.Items[0].Name,
+			"namespace": pods.Items[0].Namespace,
+		}).Debug("Found Trident Protect connector.")
+	} else {
+		Logc(ctx).Debug("No Trident Protect connector found.")
+	}
+
+	return connectorPresent, nil
 }
 
 // getK8sPlatformVersion retrieves the current Kubernetes cluster version dynamically
@@ -1482,13 +1521,15 @@ func (h *helper) updateTelemetryFields(ctx context.Context, telemetry *config.Te
 		Logc(ctx).WithError(err).Debug("Failed to get dynamic platform version for telemetry.")
 	}
 
-	// Update TridentProtectVersion dynamically
-	if tridentProtectVersion, err := h.getTridentProtectVersion(ctx); err == nil {
+	// Update TridentProtectVersion and connector presence dynamically
+	if tridentProtectVersion, connectorPresent, err := h.getTridentProtectVersion(ctx); err == nil {
 		telemetry.TridentProtectVersion = tridentProtectVersion
+		telemetry.TridentProtectConnectorPresent = connectorPresent
 	} else {
 		Logc(ctx).WithError(err).Debug("Failed to get dynamic Trident Protect version for telemetry.")
-		// Clear the field if Trident Protect is not found
+		// Clear both fields if Trident Protect is not found
 		telemetry.TridentProtectVersion = ""
+		telemetry.TridentProtectConnectorPresent = false
 	}
 }
 
