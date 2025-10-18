@@ -1238,13 +1238,23 @@ func (d *NFSStorageDriver) Rename(ctx context.Context, name, newName string) err
 	return nil
 }
 
-// getTelemetryLabels builds the labels that are set on each volume.
+// getTelemetryLabels builds essential telemetry labels that fit within GCP's 255-character limit.
 func (d *NFSStorageDriver) getTelemetryLabels(ctx context.Context) string {
-	telemetry := map[string]Telemetry{drivers.TridentLabelTag: *d.getTelemetry()}
+	// Use only essential fields to stay within GCP label size limit (255 chars)
+	essentialTelemetry := map[string]interface{}{
+		drivers.TridentLabelTag: map[string]interface{}{
+			"version":         d.telemetry.TridentVersion,
+			"backendUUID":     d.telemetry.TridentBackendUUID,
+			"platform":        d.telemetry.Platform,
+			"platformVersion": d.telemetry.PlatformVersion,
+			"plugin":          d.telemetry.Plugin,
+		},
+	}
 
-	telemetryJSON, err := json.Marshal(telemetry)
+	telemetryJSON, err := json.Marshal(essentialTelemetry)
 	if err != nil {
-		Logc(ctx).Errorf("Failed to marshal telemetry: %+v", telemetry)
+		Logc(ctx).Errorf("Failed to marshal essential telemetry; %v", err)
+		return ""
 	}
 
 	return strings.ReplaceAll(string(telemetryJSON), " ", "")

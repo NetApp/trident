@@ -1673,6 +1673,35 @@ func TestImport_NotManagedZoneRedundantVolume(t *testing.T) {
 	assert.NoError(t, err, "Volume import failed")
 }
 
+func TestGetTelemetryLabels_SizeConstraint(t *testing.T) {
+	_, driver := newMockGCPDriver(t)
+
+	result := driver.getTelemetryLabels(ctx)
+
+	// Validate the telemetry fits within GCP's 255-character label limit
+	assert.LessOrEqual(t, len(result), 255,
+		"Telemetry JSON exceeds GCP's 255-character label limit: %d characters", len(result))
+
+	// Validate it's not empty
+	assert.Greater(t, len(result), 0, "Telemetry should not be empty")
+
+	// Validate JSON structure
+	assert.True(t, strings.HasPrefix(result, `{"trident":{`))
+
+	// Validate essential fields are present
+	assert.Contains(t, result, `"version"`)
+	assert.Contains(t, result, `"backendUUID"`)
+	assert.Contains(t, result, `"platform"`)
+	assert.Contains(t, result, `"platformVersion"`)
+	assert.Contains(t, result, `"plugin"`)
+
+	// Validate excluded fields are NOT present (they were causing size issues)
+	assert.NotContains(t, result, `"platformUID"`)
+	assert.NotContains(t, result, `"platformNodeCount"`)
+	assert.NotContains(t, result, `"tridentProtectVersion"`)
+	assert.NotContains(t, result, `"tridentProtectConnectorPresent"`)
+}
+
 func getTelemetryMapString(key string) string {
 	telemetry := tridentconfig.OrchestratorTelemetry
 	telemetry.TridentBackendUUID = "backend-id"

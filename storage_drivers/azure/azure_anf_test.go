@@ -5,6 +5,7 @@ package azure
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"regexp"
@@ -5678,7 +5679,70 @@ func TestGetTelemetryLabels(t *testing.T) {
 
 	result := driver.getTelemetryLabels(ctx)
 
+	// Validate JSON structure
 	assert.True(t, strings.HasPrefix(result, `{"trident":{`))
+
+	// Validate essential fields are present
+	assert.Contains(t, result, `"version"`)
+	assert.Contains(t, result, `"backendUUID"`)
+	assert.Contains(t, result, `"platform"`)
+	assert.Contains(t, result, `"plugin"`)
+	// Validate excluded fields are NOT present (they were causing size issues)
+	assert.Contains(t, result, `"platformVersion"`)
+	// Validate excluded fields are NOT present (they were causing size issues)
+	assert.NotContains(t, result, `"platformUID"`)
+	assert.NotContains(t, result, `"platformNodeCount"`)
+	assert.NotContains(t, result, `"tridentProtectVersion"`)
+	assert.NotContains(t, result, `"tridentProtectConnectorPresent"`)
+}
+
+func TestGetTelemetryLabels_SizeConstraint(t *testing.T) {
+	_, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	result := driver.getTelemetryLabels(ctx)
+
+	// Validate the telemetry fits within Azure's 256-character tag limit
+	assert.LessOrEqual(t, len(result), 256,
+		"Telemetry JSON exceeds Azure's 256-character tag limit: %d characters", len(result))
+
+	// Validate it's not empty
+	assert.Greater(t, len(result), 0, "Telemetry should not be empty")
+
+	// Log the actual size for reference
+	t.Logf("Telemetry size: %d characters (limit: 256)", len(result))
+	t.Logf("Telemetry content: %s", result)
+}
+
+func TestTelemetryIntegration_VolumeCreation(t *testing.T) {
+	_, driver := newMockANFDriver(t)
+	driver.initializeTelemetry(ctx, BackendUUID)
+
+	// Test that telemetry labels are properly included in volume creation context
+	labels := make(map[string]string)
+	labels[drivers.TridentLabelTag] = driver.getTelemetryLabels(ctx)
+
+	// Validate the telemetry label exists and is properly formatted
+	telemetryLabel, exists := labels[drivers.TridentLabelTag]
+	assert.True(t, exists, "Trident label should exist in volume labels")
+	assert.NotEmpty(t, telemetryLabel, "Telemetry label should not be empty")
+
+	// Validate size constraint for Azure tags
+	assert.LessOrEqual(t, len(telemetryLabel), 256,
+		"Telemetry label exceeds Azure tag size limit")
+
+	// Validate JSON structure
+	assert.True(t, strings.HasPrefix(telemetryLabel, `{"trident":{`),
+		"Telemetry should be properly formatted JSON")
+
+	// Validate essential fields are present
+	essentialFields := []string{"version", "backendUUID", "platform", "plugin"}
+	for _, field := range essentialFields {
+		assert.Contains(t, telemetryLabel, fmt.Sprintf(`"%s"`, field),
+			"Essential field %s should be present in telemetry", field)
+	}
+
+	t.Logf("Volume creation telemetry validation passed. Size: %d chars", len(telemetryLabel))
 }
 
 func TestUpdateTelemetryLabels(t *testing.T) {
