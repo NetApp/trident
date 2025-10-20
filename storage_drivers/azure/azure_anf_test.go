@@ -1110,6 +1110,164 @@ func TestInitialize_FailureWithEncryptionKeysBasicNetworkFeatures(t *testing.T) 
 	assert.Error(t, result, "initialize should fail with Basic networkFeature")
 }
 
+func TestInitialize_WithCloudConfigurationAzureChina(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "azure-netapp-files",
+		BackendName:       "myANFBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	configJSON := `
+    {
+		"version": 1,
+        "storageDriverName": "azure-netapp-files",
+        "location": "chinaeast",
+        "subscriptionID": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+        "tenantID": "deadbeef-4746-4444-a919-3b34af5f0a3c",
+        "clientID": "deadbeef-784c-4b35-8329-460f52a3ad50",
+        "clientSecret": "myClientSecret",
+        "cloudConfiguration": {
+            "cloudName": "AzureChina"
+        },
+        "serviceLevel": "Premium",
+        "debugTraceFlags": {"method": true, "api": true, "discovery": true},
+	    "capacityPools": ["RG1/NA1/CP1"],
+	    "virtualNetwork": "VN1",
+	    "subnet": "RG1/VN1/SN1"
+    }`
+
+	pool := &api.CapacityPool{
+		Name:          "CP1",
+		Location:      "chinaeast",
+		NetAppAccount: "NA1",
+		ResourceGroup: "RG1",
+	}
+
+	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(nil).Times(1)
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).AnyTimes()
+	mockAPI.EXPECT().CapacityPoolsForStoragePools(ctx).Return([]*api.CapacityPool{pool}).Times(1)
+
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
+		map[string]string{}, BackendUUID)
+
+	assert.NoError(t, result, "initialize failed")
+	assert.NotNil(t, driver.Config.CloudConfiguration, "cloud configuration is nil")
+	assert.Equal(t, "AzureChina", driver.Config.CloudConfiguration.CloudName)
+}
+
+func TestInitialize_WithCloudConfigurationCustom(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
+	mockAPI, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "azure-netapp-files",
+		BackendName:       "myANFBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	configJSON := `
+    {
+		"version": 1,
+        "storageDriverName": "azure-netapp-files",
+        "location": "local",
+        "subscriptionID": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+        "tenantID": "deadbeef-4746-4444-a919-3b34af5f0a3c",
+        "clientID": "deadbeef-784c-4b35-8329-460f52a3ad50",
+        "clientSecret": "myClientSecret",
+        "cloudConfiguration": {
+            "adAuthorityHost": "https://login.microsoftonline.azurestack.contoso.com/",
+            "audience": "https://management.azurestack.contoso.com",
+            "endpoint": "https://management.azurestack.contoso.com"
+        },
+        "serviceLevel": "Premium",
+        "debugTraceFlags": {"method": true, "api": true, "discovery": true},
+	    "capacityPools": ["RG1/NA1/CP1"],
+	    "virtualNetwork": "VN1",
+	    "subnet": "RG1/VN1/SN1"
+    }`
+
+	pool := &api.CapacityPool{
+		Name:          "CP1",
+		Location:      "local",
+		NetAppAccount: "NA1",
+		ResourceGroup: "RG1",
+	}
+
+	mockAPI.EXPECT().Init(ctx, gomock.Any()).Return(nil).Times(1)
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).AnyTimes()
+	mockAPI.EXPECT().CapacityPoolsForStoragePools(ctx).Return([]*api.CapacityPool{pool}).Times(1)
+
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
+		map[string]string{}, BackendUUID)
+
+	assert.NoError(t, result, "initialize failed")
+	assert.NotNil(t, driver.Config.CloudConfiguration, "cloud configuration is nil")
+	assert.Equal(t, "https://login.microsoftonline.azurestack.contoso.com/", driver.Config.CloudConfiguration.ADAuthorityHost)
+	assert.Equal(t, "https://management.azurestack.contoso.com", driver.Config.CloudConfiguration.Audience)
+	assert.Equal(t, "https://management.azurestack.contoso.com", driver.Config.CloudConfiguration.Endpoint)
+}
+
+func TestInitialize_WithCloudConfigurationInvalid(t *testing.T) {
+	defer acp.SetAPI(acp.API())
+
+	mockCtrl := gomock.NewController(t)
+	_, driver := newMockANFDriver(t)
+	mockACP := mockacp.NewMockTridentACP(mockCtrl)
+	acp.SetAPI(mockACP)
+
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		Version:           1,
+		StorageDriverName: "azure-netapp-files",
+		BackendName:       "myANFBackend",
+		DriverContext:     tridentconfig.ContextCSI,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	// Test with mutually exclusive configuration
+	configJSON := `
+    {
+		"version": 1,
+        "storageDriverName": "azure-netapp-files",
+        "location": "fake-location",
+        "subscriptionID": "deadbeef-173f-4bf4-b5b8-f17f8d2fe43b",
+        "tenantID": "deadbeef-4746-4444-a919-3b34af5f0a3c",
+        "clientID": "deadbeef-784c-4b35-8329-460f52a3ad50",
+        "clientSecret": "myClientSecret",
+        "cloudConfiguration": {
+            "cloudName": "AzurePublic",
+            "adAuthorityHost": "https://login.example.com/"
+        },
+        "serviceLevel": "Premium",
+        "debugTraceFlags": {"method": true, "api": true, "discovery": true},
+	    "capacityPools": ["RG1/NA1/CP1"],
+	    "virtualNetwork": "VN1",
+	    "subnet": "RG1/VN1/SN1"
+    }`
+
+	mockACP.EXPECT().IsFeatureEnabled(ctx, acp.FeatureInflightEncryption).Return(nil).AnyTimes()
+
+	result := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig,
+		map[string]string{}, BackendUUID)
+
+	assert.Error(t, result, "initialize should fail with mutually exclusive cloud configuration")
+	assert.Contains(t, result.Error(), "mutually exclusive")
+}
+
 func TestInitialized(t *testing.T) {
 	tests := []struct {
 		Expected bool

@@ -605,6 +605,17 @@ func (d *NASStorageDriver) initializeAzureSDKClient(
 		}
 	}
 
+	// Convert driver cloud configuration to API cloud configuration
+	var cloudConfig *api.CloudConfiguration
+	if config.CloudConfiguration != nil {
+		cloudConfig = &api.CloudConfiguration{
+			CloudName:       config.CloudConfiguration.CloudName,
+			ADAuthorityHost: config.CloudConfiguration.ADAuthorityHost,
+			Audience:        config.CloudConfiguration.Audience,
+			Endpoint:        config.CloudConfiguration.Endpoint,
+		}
+	}
+
 	clientConfig := api.ClientConfig{
 		SubscriptionID: config.SubscriptionID,
 		AzureAuthConfig: azclient.AzureAuthConfig{
@@ -613,6 +624,7 @@ func (d *NASStorageDriver) initializeAzureSDKClient(
 		},
 		TenantID:          config.TenantID,
 		Location:          config.Location,
+		CloudConfig:       cloudConfig,
 		StorageDriverName: config.StorageDriverName,
 		DebugTraceFlags:   config.DebugTraceFlags,
 		SDKTimeout:        sdkTimeout,

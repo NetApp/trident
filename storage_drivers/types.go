@@ -480,19 +480,28 @@ func (d SolidfireStorageDriverConfig) SpecOnlyValidation() error {
 
 type AzureNASStorageDriverConfig struct {
 	*CommonStorageDriverConfig
-	SubscriptionID         string            `json:"subscriptionID"`
-	TenantID               string            `json:"tenantID"`
-	ClientID               string            `json:"clientID"`
-	ClientSecret           string            `json:"clientSecret"`
-	Location               string            `json:"location"`
-	NfsMountOptions        string            `json:"nfsMountOptions"`
-	VolumeCreateTimeout    string            `json:"volumeCreateTimeout"`
-	SDKTimeout             string            `json:"sdkTimeout"`
-	MaxCacheAge            string            `json:"maxCacheAge"`
-	CustomerEncryptionKeys map[string]string `json:"customerEncryptionKeys"`
+	SubscriptionID         string                   `json:"subscriptionID"`
+	TenantID               string                   `json:"tenantID"`
+	ClientID               string                   `json:"clientID"`
+	ClientSecret           string                   `json:"clientSecret"`
+	Location               string                   `json:"location"`
+	NfsMountOptions        string                   `json:"nfsMountOptions"`
+	VolumeCreateTimeout    string                   `json:"volumeCreateTimeout"`
+	SDKTimeout             string                   `json:"sdkTimeout"`
+	MaxCacheAge            string                   `json:"maxCacheAge"`
+	CustomerEncryptionKeys map[string]string        `json:"customerEncryptionKeys"`
+	CloudConfiguration     *AzureCloudConfiguration `json:"cloudConfiguration,omitempty"`
 
 	AzureNASStorageDriverPool
 	Storage []AzureNASStorageDriverPool `json:"storage"`
+}
+
+// AzureCloudConfiguration allows users to specify Azure cloud environment.
+type AzureCloudConfiguration struct {
+	CloudName       string `json:"cloudName,omitempty"`       // AzurePublic, AzureChina, AzureGovernment
+	ADAuthorityHost string `json:"adAuthorityHost,omitempty"` // e.g., https://login.chinacloudapi.cn/
+	Audience        string `json:"audience,omitempty"`        // e.g., https://management.core.chinacloudapi.cn
+	Endpoint        string `json:"endpoint,omitempty"`        // e.g., https://management.chinacloudapi.cn
 }
 
 // AzureNASStorageDriverPool is the virtual pool definition for the ANF driver.  Note that 'Region' and 'Zone'
