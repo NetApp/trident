@@ -1092,3 +1092,235 @@ func TestCreateKeyVaultEndpoint(t *testing.T) {
 
 	assert.Equal(t, expected, result, "endpoint mismatch")
 }
+
+// TestValidateCloudConfiguration_Nil tests that nil config returns AzurePublic
+func TestValidateCloudConfiguration_Nil(t *testing.T) {
+	config, err := ValidateCloudConfiguration(nil)
+	assert.NoError(t, err)
+	assert.NotNil(t, config)
+	assert.Equal(t, "https://login.microsoftonline.com/", config.ActiveDirectoryAuthorityHost)
+}
+
+// TestValidateCloudConfiguration_Empty tests that empty config returns AzurePublic
+func TestValidateCloudConfiguration_Empty(t *testing.T) {
+	config, err := ValidateCloudConfiguration(&CloudConfiguration{})
+	assert.NoError(t, err)
+	assert.NotNil(t, config)
+	assert.Equal(t, "https://login.microsoftonline.com/", config.ActiveDirectoryAuthorityHost)
+}
+
+// TestValidateCloudConfiguration_NamedClouds tests various named cloud configurations
+func TestValidateCloudConfiguration_NamedClouds(t *testing.T) {
+	tests := []struct {
+		name                string
+		cloudName           string
+		expectError         bool
+		expectedAuthority   string
+		expectedErrorString string
+	}{
+		{
+			name:              "AzurePublic",
+			cloudName:         "AzurePublic",
+			expectError:       false,
+			expectedAuthority: "https://login.microsoftonline.com/",
+		},
+		{
+			name:              "AzureChina",
+			cloudName:         "AzureChina",
+			expectError:       false,
+			expectedAuthority: "https://login.chinacloudapi.cn/",
+		},
+		{
+			name:              "AzureGovernment",
+			cloudName:         "AzureGovernment",
+			expectError:       false,
+			expectedAuthority: "https://login.microsoftonline.us/",
+		},
+		{
+			name:                "InvalidCloudName",
+			cloudName:           "InvalidCloud",
+			expectError:         true,
+			expectedErrorString: "unknown cloudName",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config, err := ValidateCloudConfiguration(&CloudConfiguration{CloudName: tt.cloudName})
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Nil(t, config)
+				assert.Contains(t, err.Error(), tt.expectedErrorString)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, config)
+				assert.Equal(t, tt.expectedAuthority, config.ActiveDirectoryAuthorityHost)
+			}
+		})
+	}
+}
+
+// TestValidateCloudConfiguration_CustomValid tests valid custom configuration
+func TestValidateCloudConfiguration_CustomValid(t *testing.T) {
+	config, err := ValidateCloudConfiguration(&CloudConfiguration{
+		ADAuthorityHost: "https://login.example.com/",
+		Audience:        "https://management.example.com",
+		Endpoint:        "https://api.example.com",
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, config)
+	assert.Equal(t, "https://login.example.com/", config.ActiveDirectoryAuthorityHost)
+	assert.Equal(t, "https://management.example.com", config.Services["resourceManager"].Audience)
+	assert.Equal(t, "https://api.example.com", config.Services["resourceManager"].Endpoint)
+}
+
+// TestValidateCloudConfiguration_IncompleteCustomConfig tests incomplete custom configurations
+func TestValidateCloudConfiguration_IncompleteCustomConfig(t *testing.T) {
+	tests := []struct {
+		name   string
+		config *CloudConfiguration
+	}{
+		{
+			name: "OnlyADAuthorityHost",
+			config: &CloudConfiguration{
+				ADAuthorityHost: "https://login.example.com/",
+			},
+		},
+		{
+			name: "OnlyAudience",
+			config: &CloudConfiguration{
+				Audience: "https://management.example.com",
+			},
+		},
+		{
+			name: "OnlyEndpoint",
+			config: &CloudConfiguration{
+				Endpoint: "https://api.example.com",
+			},
+		},
+		{
+			name: "ADAuthorityHostAndAudience",
+			config: &CloudConfiguration{
+				ADAuthorityHost: "https://login.example.com/",
+				Audience:        "https://management.example.com",
+			},
+		},
+		{
+			name: "ADAuthorityHostAndEndpoint",
+			config: &CloudConfiguration{
+				ADAuthorityHost: "https://login.example.com/",
+				Endpoint:        "https://api.example.com",
+			},
+		},
+		{
+			name: "AudienceAndEndpoint",
+			config: &CloudConfiguration{
+				Audience: "https://management.example.com",
+				Endpoint: "https://api.example.com",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config, err := ValidateCloudConfiguration(tt.config)
+			assert.Error(t, err)
+			assert.Nil(t, config)
+			assert.Contains(t, err.Error(), "all required")
+		})
+	}
+}
+
+// TestValidateCloudConfiguration_MutuallyExclusive tests that cloudName and custom fields are mutually exclusive
+func TestValidateCloudConfiguration_MutuallyExclusive(t *testing.T) {
+	tests := []struct {
+		name   string
+		config *CloudConfiguration
+	}{
+		{
+			name: "CloudNameWithAllCustomFields",
+			config: &CloudConfiguration{
+				CloudName:       "AzurePublic",
+				ADAuthorityHost: "https://login.example.com/",
+				Audience:        "https://management.example.com",
+				Endpoint:        "https://api.example.com",
+			},
+		},
+		{
+			name: "CloudNameWithADAuthorityHost",
+			config: &CloudConfiguration{
+				CloudName:       "AzureChina",
+				ADAuthorityHost: "https://login.example.com/",
+			},
+		},
+		{
+			name: "CloudNameWithAudience",
+			config: &CloudConfiguration{
+				CloudName: "AzureGovernment",
+				Audience:  "https://management.example.com",
+			},
+		},
+		{
+			name: "CloudNameWithEndpoint",
+			config: &CloudConfiguration{
+				CloudName: "AzurePublic",
+				Endpoint:  "https://api.example.com",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config, err := ValidateCloudConfiguration(tt.config)
+			assert.Error(t, err)
+			assert.Nil(t, config)
+			assert.Contains(t, err.Error(), "mutually exclusive")
+		})
+	}
+}
+
+// TestValidateCloudConfiguration_InvalidURL tests invalid URL validation
+func TestValidateCloudConfiguration_InvalidURL(t *testing.T) {
+	tests := []struct {
+		name                string
+		config              *CloudConfiguration
+		expectedErrorString string
+	}{
+		{
+			name: "InvalidADAuthorityHost",
+			config: &CloudConfiguration{
+				ADAuthorityHost: "not a valid url://",
+				Audience:        "https://management.example.com",
+				Endpoint:        "https://api.example.com",
+			},
+			expectedErrorString: "invalid adAuthorityHost URL",
+		},
+		{
+			name: "InvalidAudience",
+			config: &CloudConfiguration{
+				ADAuthorityHost: "https://login.example.com/",
+				Audience:        "not a valid url://",
+				Endpoint:        "https://api.example.com",
+			},
+			expectedErrorString: "invalid audience URL",
+		},
+		{
+			name: "InvalidEndpoint",
+			config: &CloudConfiguration{
+				ADAuthorityHost: "https://login.example.com/",
+				Audience:        "https://management.example.com",
+				Endpoint:        "not a valid url://",
+			},
+			expectedErrorString: "invalid endpoint URL",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config, err := ValidateCloudConfiguration(tt.config)
+			assert.Error(t, err)
+			assert.Nil(t, config)
+			assert.Contains(t, err.Error(), tt.expectedErrorString)
+		})
+	}
+}

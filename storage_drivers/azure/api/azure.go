@@ -9,11 +9,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"regexp"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	netapp "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp/v7"
@@ -51,6 +53,18 @@ var (
 	VolumePollerCache   = AzurePollerResponseCache{pollerResponseMap: make(map[PollerKey]PollerResponse)}
 )
 
+// CloudConfiguration allows users to specify Azure cloud environment.
+// Either CloudName (predefined) or custom configuration (ADAuthorityHost, Audience, Endpoint) must be specified.
+type CloudConfiguration struct {
+	// Option 1: Predefined cloud name (AzurePublic, AzureChina, AzureGovernment)
+	CloudName string `json:"cloudName,omitempty"`
+
+	// Option 2: Custom cloud configuration (all three must be specified together)
+	ADAuthorityHost string `json:"adAuthorityHost,omitempty"` // e.g., https://login.chinacloudapi.cn/
+	Audience        string `json:"audience,omitempty"`        // e.g., https://management.core.chinacloudapi.cn
+	Endpoint        string `json:"endpoint,omitempty"`        // e.g., https://management.chinacloudapi.cn
+}
+
 // ClientConfig holds configuration data for the API driver object.
 type ClientConfig struct {
 	// Azure API authentication parameters
@@ -59,6 +73,9 @@ type ClientConfig struct {
 	Location          string `json:"location"`
 	StorageDriverName string
 	TenantID          string `json:"tenantId"`
+
+	// Cloud configuration
+	CloudConfig *CloudConfiguration `json:"cloudConfiguration,omitempty"`
 
 	// Options
 	DebugTraceFlags map[string]bool
@@ -214,6 +231,68 @@ type Client struct {
 	sdkClient *AzureClient
 }
 
+// ValidateCloudConfiguration validates the cloud configuration and returns a cloud.Configuration.
+func ValidateCloudConfiguration(cloudConfig *CloudConfiguration) (*cloud.Configuration, error) {
+	// If no cloud config provided, use default (AzurePublic)
+	if cloudConfig == nil {
+		return &cloud.AzurePublic, nil
+	}
+
+	hasCloudName := cloudConfig.CloudName != ""
+	hasCustom := cloudConfig.ADAuthorityHost != "" || cloudConfig.Audience != "" || cloudConfig.Endpoint != ""
+
+	// Check mutual exclusivity
+	if hasCloudName && hasCustom {
+		return nil, errors.New("cloudName and custom configuration (adAuthorityHost, audience, endpoint) are mutually exclusive")
+	}
+
+	// If neither is provided, use default
+	if !hasCloudName && !hasCustom {
+		return &cloud.AzurePublic, nil
+	}
+
+	// Option 1: Named cloud
+	if hasCloudName {
+		switch cloudConfig.CloudName {
+		case "AzurePublic":
+			return &cloud.AzurePublic, nil
+		case "AzureChina":
+			return &cloud.AzureChina, nil
+		case "AzureGovernment":
+			return &cloud.AzureGovernment, nil
+		default:
+			return nil, fmt.Errorf("unknown cloudName: %s (valid values: AzurePublic, AzureChina, AzureGovernment)", cloudConfig.CloudName)
+		}
+	}
+
+	// Option 2: Custom configuration - all three fields must be provided
+	if cloudConfig.ADAuthorityHost == "" || cloudConfig.Audience == "" || cloudConfig.Endpoint == "" {
+		return nil, errors.New("when using custom cloud configuration, adAuthorityHost, audience, and endpoint are all required")
+	}
+
+	// Validate URLs
+	if _, err := url.Parse(cloudConfig.ADAuthorityHost); err != nil {
+		return nil, fmt.Errorf("invalid adAuthorityHost URL: %v", err)
+	}
+	if _, err := url.Parse(cloudConfig.Audience); err != nil {
+		return nil, fmt.Errorf("invalid audience URL: %v", err)
+	}
+	if _, err := url.Parse(cloudConfig.Endpoint); err != nil {
+		return nil, fmt.Errorf("invalid endpoint URL: %v", err)
+	}
+
+	// Build custom cloud configuration
+	return &cloud.Configuration{
+		ActiveDirectoryAuthorityHost: cloudConfig.ADAuthorityHost,
+		Services: map[cloud.ServiceName]cloud.ServiceConfiguration{
+			cloud.ResourceManager: {
+				Audience: cloudConfig.Audience,
+				Endpoint: cloudConfig.Endpoint,
+			},
+		},
+	}, nil
+}
+
 // NewDriver is a factory method for creating a new SDK interface.
 func NewDriver(config ClientConfig) (Azure, error) {
 	var err error
@@ -223,6 +302,12 @@ func NewDriver(config ClientConfig) (Azure, error) {
 		return nil, errors.New("location must be specified in the config")
 	}
 
+	// Validate and get cloud configuration
+	cloudConfig, err := ValidateCloudConfiguration(config.CloudConfig)
+	if err != nil {
+		return nil, fmt.Errorf("invalid cloud configuration: %v", err)
+	}
+
 	credential, err := GetAzureCredential(config)
 	if err != nil {
 		return nil, err
@@ -230,6 +315,7 @@ func NewDriver(config ClientConfig) (Azure, error) {
 
 	clientOptions := &arm.ClientOptions{
 		ClientOptions: policy.ClientOptions{
+			Cloud: *cloudConfig,
 			Retry: policy.RetryOptions{
 				TryTimeout:    config.SDKTimeout,
 				RetryDelay:    SDKRetryDelay,
