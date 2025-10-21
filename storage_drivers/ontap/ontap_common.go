@@ -4576,6 +4576,33 @@ func EnableSANPublishEnforcement(
 	return nil
 }
 
+// HealSANPublishEnforcement is a no-op for ONTAP-SAN volumes because ONTAP-SAN already properly sets
+// the LUN mappings during publish/unpublish,
+// operations. This function is implemented to satisfy interface assertions on the drivers.
+func HealSANPublishEnforcement(_ context.Context, _ storage.Driver, _ *storage.Volume) bool {
+	return false
+}
+
+// HealNASPublishEnforcement checks if publish enforcement should be enabled on the given NAS volume
+// and updates the volume config accordingly. It returns true if the volume config was updated.
+func HealNASPublishEnforcement(ctx context.Context, driver storage.Driver, volume *storage.Volume) bool {
+	var updated bool
+	// Check if publish enforcement is already set.
+	if volume.Config.AccessInfo.PublishEnforcement {
+		// If publish enforcement is already enabled on the volume, nothing to do.
+		return updated
+	}
+
+	policy := volume.Config.ExportPolicy
+	driverConfig := driver.GetCommonConfig(ctx)
+	if policy == getEmptyExportPolicyName(*driverConfig.StoragePrefix) ||
+		policy == volume.Config.InternalName {
+		volume.Config.AccessInfo.PublishEnforcement = true
+		updated = true
+	}
+	return updated
+}
+
 func ValidateStoragePrefixEconomy(storagePrefix string) error {
 	// Ensure storage prefix is compatible with ONTAP
 	matched, err := regexp.MatchString(`^$|^[a-zA-Z0-9_.-]*$`, storagePrefix)

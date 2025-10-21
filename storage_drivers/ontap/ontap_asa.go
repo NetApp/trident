@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -1321,6 +1321,10 @@ func (d *ASAStorageDriver) EnablePublishEnforcement(ctx context.Context, volume 
 
 func (d *ASAStorageDriver) CanEnablePublishEnforcement() bool {
 	return true
+}
+
+func (d *ASAStorageDriver) HealVolumePublishEnforcement(ctx context.Context, volume *storage.Volume) bool {
+	return HealSANPublishEnforcement(ctx, d, volume)
 }
 
 // CreateASALUNInternalID creates a string in the format /svm/<svm_name>/lun/<lun_name>

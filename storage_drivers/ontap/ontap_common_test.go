@@ -29,6 +29,7 @@ import (
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
+	fakeDriver "github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/networking"
@@ -10367,6 +10368,105 @@ func TestCleanupFailedCloneFlexVol(t *testing.T) {
 			test.setupMock(mockAPI)
 
 			cleanupFailedCloneFlexVol(ctx, mockAPI, test.err, test.clonedVolName, test.sourceVol, test.snapshot)
+		})
+	}
+}
+
+func TestHealNASPublishEnforcement(t *testing.T) {
+	tt := map[string]struct {
+		makeDriver func() storage.Driver
+		volume     *storage.Volume
+		assertBool assert.BoolAssertionFunc
+	}{
+		"enables publish enforcement when policy is the same as internal name": {
+			makeDriver: func() storage.Driver {
+				config := drivers.FakeStorageDriverConfig{
+					CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+						StorageDriverName: "fakeDriver",
+						StoragePrefix:     convert.ToPtr("fake_"),
+					},
+				}
+				return fakeDriver.NewFakeStorageDriver(ctx, config)
+			},
+			volume: &storage.Volume{
+				Config: &storage.VolumeConfig{
+					InternalName: "pvc-test-name",
+					ExportPolicy: "pvc-test-name",
+					AccessInfo: tridentmodels.VolumeAccessInfo{
+						PublishEnforcement: false,
+					},
+				},
+			},
+			assertBool: assert.True,
+		},
+		"enables publish enforcement when policy is the empty export policy": {
+			makeDriver: func() storage.Driver {
+				config := drivers.FakeStorageDriverConfig{
+					CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+						StorageDriverName: "fakeDriver",
+						StoragePrefix:     convert.ToPtr("fake_"),
+					},
+				}
+				return fakeDriver.NewFakeStorageDriver(ctx, config)
+			},
+			volume: &storage.Volume{
+				Config: &storage.VolumeConfig{
+					InternalName: "pvc-test-name",
+					ExportPolicy: getEmptyExportPolicyName("fake_"),
+					AccessInfo: tridentmodels.VolumeAccessInfo{
+						PublishEnforcement: false,
+					},
+				},
+			},
+			assertBool: assert.True,
+		},
+		"does not enable publish enforcement when policy is not empty and policy is not the same as the volume": {
+			makeDriver: func() storage.Driver {
+				config := drivers.FakeStorageDriverConfig{
+					CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+						StorageDriverName: "fakeDriver",
+						StoragePrefix:     convert.ToPtr("fake_"),
+					},
+				}
+				return fakeDriver.NewFakeStorageDriver(ctx, config)
+			},
+			volume: &storage.Volume{
+				Config: &storage.VolumeConfig{
+					InternalName: "pvc-test-name",
+					ExportPolicy: "trident-export-policy",
+					AccessInfo: tridentmodels.VolumeAccessInfo{
+						PublishEnforcement: false,
+					},
+				},
+			},
+			assertBool: assert.False,
+		},
+		"does not update if publish enforcement is alread set": {
+			makeDriver: func() storage.Driver {
+				config := drivers.FakeStorageDriverConfig{
+					CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+						StorageDriverName: "fakeDriver",
+						StoragePrefix:     convert.ToPtr("fake_"),
+					},
+				}
+				return fakeDriver.NewFakeStorageDriver(ctx, config)
+			},
+			volume: &storage.Volume{
+				Config: &storage.VolumeConfig{
+					InternalName: "pvc-test-name",
+					ExportPolicy: "trident-export-policy",
+					AccessInfo: tridentmodels.VolumeAccessInfo{
+						PublishEnforcement: true,
+					},
+				},
+			},
+			assertBool: assert.False,
+		},
+	}
+
+	for name, fixture := range tt {
+		t.Run(name, func(t *testing.T) {
+			fixture.assertBool(t, HealNASPublishEnforcement(ctx, fixture.makeDriver(), fixture.volume))
 		})
 	}
 }

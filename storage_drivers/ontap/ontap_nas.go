@@ -1991,19 +1991,5 @@ func (d *NASStorageDriver) CanEnablePublishEnforcement() bool {
 func (d *NASStorageDriver) HealVolumePublishEnforcement(
 	ctx context.Context, vol *storage.Volume,
 ) bool {
-	var updated bool
-	// Check of publish enforcment is already set
-	if vol.Config.AccessInfo.PublishEnforcement {
-		// If publish enforcement is already enabled on the volume, nothing to do.
-		return updated
-	}
-
-	policy := vol.Config.ExportPolicy
-	driverConfig := d.GetCommonConfig(ctx)
-	if policy == getEmptyExportPolicyName(*driverConfig.StoragePrefix) ||
-		policy == vol.Config.InternalName {
-		vol.Config.AccessInfo.PublishEnforcement = true
-		updated = true
-	}
-	return updated
+	return HealNASPublishEnforcement(ctx, d, vol)
 }
