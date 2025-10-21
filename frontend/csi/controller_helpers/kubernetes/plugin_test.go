@@ -2284,3 +2284,12 @@ func (f *fakeController) SetTransform(handler cache.TransformFunc) error        
 func (f *fakeController) IsStopped() bool                                            { return false }
 func (f *fakeController) GetIndexer() cache.Indexer                                  { return nil }
 func (f *fakeController) AddIndexers(indexers cache.Indexers) error                  { return nil }
+func (f *fakeController) AddEventHandlerWithOptions(handler cache.ResourceEventHandler,
+	options cache.HandlerOptions,
+) (cache.ResourceEventHandlerRegistration, error) {
+	return nil, nil
+}
+func (f *fakeController) RunWithContext(ctx context.Context) {}
+func (f *fakeController) SetWatchErrorHandlerWithContext(handler cache.WatchErrorHandlerWithContext) error {
+	return nil
+}
