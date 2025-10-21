@@ -1479,6 +1479,10 @@ func (d *ASANVMeStorageDriver) CanEnablePublishEnforcement() bool {
 	return true
 }
 
+func (d *ASANVMeStorageDriver) HealVolumePublishEnforcement(ctx context.Context, volume *storage.Volume) bool {
+	return HealSANPublishEnforcement(ctx, d, volume)
+}
+
 // CreateASANVMeNamespaceInternalID creates a string in the format /svm/<svm_name>/<namespace_name>
 func (d *ASANVMeStorageDriver) CreateASANVMeNamespaceInternalID(svm, name string) string {
 	return fmt.Sprintf("/svm/%s/namespace/%s", svm, name)

@@ -1833,3 +1833,7 @@ func (d *NVMeStorageDriver) EnablePublishEnforcement(_ context.Context, volume *
 func (d *NVMeStorageDriver) CanEnablePublishEnforcement() bool {
 	return true
 }
+
+func (d *NVMeStorageDriver) HealVolumePublishEnforcement(ctx context.Context, volume *storage.Volume) bool {
+	return HealSANPublishEnforcement(ctx, d, volume)
+}

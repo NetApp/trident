@@ -2814,6 +2814,10 @@ func (d *SANEconomyStorageDriver) CanEnablePublishEnforcement() bool {
 	return true
 }
 
+func (d *SANEconomyStorageDriver) HealVolumePublishEnforcement(ctx context.Context, volume *storage.Volume) bool {
+	return HealSANPublishEnforcement(ctx, d, volume)
+}
+
 // ParseLunInternalID parses the passed string which is in the format /svm/<svm_name>/flexvol/<flexvol_name>/lun/<lun_name>
 // and returns svm, flexvol and LUN name.
 func (d SANEconomyStorageDriver) ParseLunInternalID(internalId string) (svm, flexvol, lun string, err error) {

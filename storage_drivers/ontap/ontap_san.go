@@ -1807,3 +1807,7 @@ func (d *SANStorageDriver) EnablePublishEnforcement(ctx context.Context, volume 
 func (d *SANStorageDriver) CanEnablePublishEnforcement() bool {
 	return true
 }
+
+func (d *SANStorageDriver) HealVolumePublishEnforcement(ctx context.Context, volume *storage.Volume) bool {
+	return HealSANPublishEnforcement(ctx, d, volume)
+}
