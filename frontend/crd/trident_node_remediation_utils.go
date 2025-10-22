@@ -113,7 +113,8 @@ func (n *nodeRemediationUtils) GetPvcToTvolMap(
 	for _, volumeName := range tridentVolumesOnNode {
 		tvol, err := n.orchestrator.GetVolume(ctx, volumeName)
 		if err != nil {
-			return nil, fmt.Errorf("could not get volume %s: %v", volumeName, err)
+			Logc(ctx).WithError(err).Warnf("Could not get volume %s.", volumeName)
+			continue
 		}
 		pvcName := tvol.Config.RequestName
 		if pvcName == "" { // Sanity check, should never be empty
