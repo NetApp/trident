@@ -43,7 +43,7 @@ affinity:
 # tridentNodePluginNodeSelector additional nodeSelectors for Pods running the Trident Node CSI Plugin.
 # tridentNodePluginNodeSelector : {}
 
-# tridentNodePluginTolerations overrides tolerations for Pods running the Trident Node CSI Plugin. 
+# tridentNodePluginTolerations overrides tolerations for Pods running the Trident Node CSI Plugin.
 # tridentNodePluginTolerations: []
 
 
@@ -61,7 +61,7 @@ imagePullSecrets: []
 kubeletDir: ""
 
 
-# operatorLogLevel allows the log level of the Trident operator to be set to one of these: 
+# operatorLogLevel allows the log level of the Trident operator to be set to one of these:
 # trace, debug, info, warn, error, fatal.
 # operatorLogLevel: "info"
 
@@ -167,7 +167,7 @@ iscsiSelfHealingWaitTime: "7m0s"
 configuratorReconcileInterval: 30m0s
 
 # forceInstallRancherClusterRoles will install a Rancher specific ClusterRole and ClusterRoleBinding when set to true.
-# When set to false, the ClusterRole and ClusterRoleBinding will be installed only when a Rancher cluster is detected. 
+# When set to false, the ClusterRole and ClusterRoleBinding will be installed only when a Rancher cluster is detected.
 forceInstallRancherClusterRoles: false
 
 # Auto generated ANF backend related fields consumed by the configurator controller.
@@ -218,7 +218,7 @@ enableConcurrency: false
 #    sub-sections: 'linux' and 'windows'. Each OS section lists its specific containers.
 #
 # 3. OPERATOR POD:
-#    Unlike controller and node pods, the operator has actual default values directly specified 
+#    Unlike controller and node pods, the operator has actual default values directly specified
 #    (not in comments). If removed, no values will be applied.
 resources:
   controller:
@@ -309,9 +309,6 @@ resources:
     requests:
       cpu: 10m
       memory: 40Mi
-    limits:
-      cpu:
-      memory:
 
 # k8sAPIQPS sets the maximum QPS to the Kubernetes API server from the Trident operator. (default 100)
 k8sAPIQPS: 0

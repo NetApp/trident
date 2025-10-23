@@ -32,7 +32,7 @@ spec:
     spec:
       {{- if .Values.affinity }}
       affinity:
-{{- toYaml .Values.affinity | nindent 8 }}       
+{{- toYaml .Values.affinity | nindent 8 }}
     {{- end }}
       {{- if .Values.nodeSelector }}
       nodeSelector:
@@ -69,15 +69,10 @@ spec:
         image: {{ include "trident-operator.image" $ }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         name: trident-operator
+        {{- with .Values.resources.operator }}
         resources:
-          requests:
-            cpu: {{ .Values.resources.operator.requests.cpu }}
-            memory: {{ .Values.resources.operator.requests.memory }}
-          {{- if .Values.resources.operator.limits.cpu }}
-          limits:
-            cpu: {{ .Values.resources.operator.limits.cpu }}
-            memory: {{ .Values.resources.operator.limits.memory }}
-          {{- end }}
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
       {{- if and (eq .Values.cloudProvider "Azure") (eq .Values.cloudIdentity "") }}
       volumes:
       - name: azure-cred
