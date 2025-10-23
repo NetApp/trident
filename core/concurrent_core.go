@@ -5365,6 +5365,7 @@ func (o *ConcurrentTridentOrchestrator) reconcileBackendState(ctx context.Contex
 			return dbErr
 		}
 		backend = results[0].Backend.Read
+		upserter := results[0].Backend.Upsert
 
 		if backend == nil {
 			return errors.NotFoundError("backend '%s' not found", backendUUID)
@@ -5378,6 +5379,7 @@ func (o *ConcurrentTridentOrchestrator) reconcileBackendState(ctx context.Contex
 		}
 
 		backend.UpdateBackendState(ctx, reason)
+		upserter(backend)
 
 		logFields := LogFields{
 			"backend": backend.Name(),
