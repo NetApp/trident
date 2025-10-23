@@ -5834,6 +5834,7 @@ func (o *TridentOrchestrator) reconcileBackendState(ctx context.Context, b stora
 	defer o.updateMetrics()
 
 	reason, changeMap := b.GetBackendState(ctx)
+	b.UpdateBackendState(ctx, reason)
 
 	if changeMap != nil {
 		if changeMap.Contains(storage.BackendStateReasonChange) {
