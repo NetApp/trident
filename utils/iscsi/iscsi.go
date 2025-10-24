@@ -94,6 +94,9 @@ type ISCSI interface {
 		volID, sessionNumber string, reasonInvalid models.PortalInvalid,
 	)
 	PreChecks(ctx context.Context) error
+	ResizeVolumeRetry(
+		ctx context.Context, publishInfo *models.VolumePublishInfo, minSize int64, timeout time.Duration,
+	) error
 	RescanDevices(ctx context.Context, targetIQN string, lunID int32, minSize int64) error
 	IsAlreadyAttached(ctx context.Context, lunID int, targetIqn string) bool
 	RemoveLUNFromSessions(ctx context.Context, publishInfo *models.VolumePublishInfo, sessions *models.ISCSISessions)
@@ -758,8 +761,7 @@ func (client *Client) reloadMultipathDevice(ctx context.Context, multipathDevice
 		return errors.New("cannot reload an empty multipathDevice")
 	}
 
-	_, err := client.command.ExecuteWithTimeout(ctx, "multipath", 10*time.Second, true, "-r",
-		devices.DevPrefix+multipathDevice)
+	_, err := client.command.ExecuteWithTimeout(ctx, "multipath", 10*time.Second, true, "-r", DevPrefix+multipathDevice)
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"device": multipathDevice,
@@ -780,17 +782,154 @@ func (client *Client) IsAlreadyAttached(ctx context.Context, lunID int, targetIq
 	}
 
 	paths := client.iscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
-
-	devices, err := client.iscsiUtils.GetDevicesForLUN(paths)
+	devs, err := client.iscsiUtils.GetDevicesForLUN(paths)
 	if nil != err {
 		return false
 	}
 
 	// return true even if a single device exists
-	return 0 < len(devices)
+	return 0 < len(devs)
 }
 
-// getDeviceInfoForLUN finds iSCSI devices using /dev/disk/by-path values.  This method should be
+// remediatePaths drives the established paths for a LUN into parity with the expected portals.
+// It reads the sysfs paths for the LUN and ensures that all devices are readable.
+// If sessions are not found for the LUN, it attempts to heal the attachment by establishing sessions on all portals.
+// It verifies that the devices are readable and that there is disk to path to portal parity.
+// If all checks pass, it initiates a SCSI rescan on the target. If any step fails, it returns an error.
+func (client *Client) remediatePaths(ctx context.Context, publishInfo *models.VolumePublishInfo) error {
+	// Extract the LUN ID, target IQN, and portals from the publish info.
+	lunID, targetIQN := int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN
+	portals := make([]string, 0)
+	for _, p := range publishInfo.IscsiPortals {
+		portals = append(portals, network.EnsureHostportFormatted(p))
+	}
+	portals = append(portals, network.EnsureHostportFormatted(publishInfo.IscsiTargetPortal))
+
+	// Set up logging fields with entry and exit log messages.
+	fields := LogFields{
+		"lunID":     lunID,
+		"targetIQN": targetIQN,
+		"portals":   portals,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.remediatePaths")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.remediatePaths")
+
+	// Build a set of host sessions.
+	// From the host sessions, ensure the number of paths in sysfs is congruent with the number of portals.
+	hostSessions := client.iscsiUtils.GetISCSIHostSessionMapForTarget(ctx, targetIQN)
+	paths := client.iscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessions)
+
+	// Ensure the number of visible paths is congruent with the number of portals.
+	// If not, attempt to heal the sessions and initiate a SCSI rescan to recover the path.
+	// NOTE: Hypothetically, this can lead to momentary incongruence between device sizes for the same LUN
+	// on the host, but it should correct itself after the later rescans complete.
+	if len(paths) != len(portals) {
+		// If we're missing a session, attempt to heal it. If we can't establish the sessions, return an error.
+		Logc(ctx).WithFields(fields).Debug("Paths are missing for LUN; attempting to establish missing paths.")
+		if _, err := client.EnsureSessions(ctx, publishInfo, portals); err != nil {
+			return fmt.Errorf("failed to establish sessions for LUN %v; %w", lunID, err)
+		}
+
+		// Sleep for a second before rereading sysfs to allow the kernel to process new sessions.
+		time.Sleep(time.Second)
+
+		// Reread the host session map to detect new host session entries.
+		hostSessions = client.iscsiUtils.GetISCSIHostSessionMapForTarget(ctx, targetIQN)
+		paths = client.iscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessions)
+	}
+
+	// Parity should exist between the number of paths and the number of portals.
+	// If it doesn't fail and retry. If this never resolves, it implies a network connectivity issue.
+	if len(paths) != len(portals) {
+		return fmt.Errorf("paths missing for LUN %v; current paths: %v; expected portals: %v", lunID, paths, portals)
+	}
+	fields["paths"] = paths
+
+	// Scan the target and wait for the device(s) to appear.
+	if err := client.waitForDeviceScan(ctx, hostSessions, lunID, targetIQN); err != nil {
+		return fmt.Errorf("failed to scan for devices for LUN %v; %w", lunID, err)
+	}
+
+	// Ensure that all devices are present and readable.
+	diskDevices, err := client.iscsiUtils.GetDevicesForLUN(paths)
+	if err != nil {
+		return fmt.Errorf("failed to get devices for LUN %v; %w", lunID, err)
+	}
+	fields["devices"] = diskDevices
+
+	// At this point, parity should exist between the number of devices and the number of paths.
+	if len(diskDevices) != len(paths) {
+		return fmt.Errorf("device and path count are incongruent for LUN %v: "+
+			"found %d devices and %d paths", lunID, len(diskDevices), len(paths))
+	}
+
+	return nil
+}
+
+// resizeVolume accepts a LUN ID, target IQN, and list of portals.
+func (client *Client) resizeVolume(ctx context.Context, publishInfo *models.VolumePublishInfo, minSize int64) error {
+	// Extract the LUN ID, target IQN, and portals from the publish info.
+	lunID, targetIQN := int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN
+	portals := make([]string, 0)
+	for _, p := range publishInfo.IscsiPortals {
+		portals = append(portals, network.EnsureHostportFormatted(p))
+	}
+	portals = append(portals, network.EnsureHostportFormatted(publishInfo.IscsiTargetPortal))
+
+	// Set up logging fields with entry and exit log messages.
+	fields := LogFields{
+		"lunID":     lunID,
+		"targetIQN": targetIQN,
+		"portals":   portals,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.resizeVolume")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.resizeVolume")
+
+	// Ensure the established paths for the LUN are healthy.
+	// Under normal circumstances, this should be a no-op. If a path is non-existent, this will attempt to heal it.
+	// If healing fails, it returns an error as moving forward with the resize could lead to inconsistent device sizes.
+	if err := client.remediatePaths(ctx, publishInfo); err != nil {
+		return fmt.Errorf("failed to remediate paths for LUN %v; %w", lunID, err)
+	}
+
+	// Initiate rescans across all devices for the LUN.
+	if err := client.RescanDevices(ctx, targetIQN, int32(lunID), minSize); err != nil {
+		return fmt.Errorf("failed to rescan devices for LUN %v; %w", lunID, err)
+	}
+
+	return nil
+}
+
+func (client *Client) ResizeVolumeRetry(
+	ctx context.Context, publishInfo *models.VolumePublishInfo, minSize int64, timeout time.Duration,
+) error {
+	fields := LogFields{
+		"lunID":     publishInfo.IscsiLunNumber,
+		"targetIQN": publishInfo.IscsiTargetIQN,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.ResizeVolumeRetry")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.ResizeVolumeRetry")
+
+	checkPreconditions := func() error {
+		return client.resizeVolume(ctx, publishInfo, minSize)
+	}
+
+	checkNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithFields(fields).WithField(
+			"increment", duration,
+		).WithError(err).Debug("Resize iSCSI volume is not complete, waiting.")
+	}
+
+	checkBackoff := backoff.NewExponentialBackOff()
+	checkBackoff.InitialInterval = 1 * time.Second
+	checkBackoff.Multiplier = 1.414 // approx sqrt(2)
+	checkBackoff.RandomizationFactor = 0.1
+	checkBackoff.MaxElapsedTime = timeout
+
+	return backoff.RetryNotify(checkPreconditions, checkBackoff, checkNotify)
+}
+
+// GetDeviceInfoForLUN finds iSCSI devices using /dev/disk/by-path values.  This method should be
 // called after calling waitForDeviceScan so that the device paths are known to exist.
 func (client *Client) GetDeviceInfoForLUN(
 	ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string, needFSType bool,

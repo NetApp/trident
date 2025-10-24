@@ -295,6 +295,20 @@ func (mr *MockISCSIMockRecorder) RescanDevices(ctx, targetIQN, lunID, minSize an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RescanDevices", reflect.TypeOf((*MockISCSI)(nil).RescanDevices), ctx, targetIQN, lunID, minSize)
 }
 
+// ResizeVolumeRetry mocks base method.
+func (m *MockISCSI) ResizeVolumeRetry(arg0 context.Context, arg1 *models.VolumePublishInfo, arg2 int64, arg3 time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResizeVolumeRetry", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ResizeVolumeRetry indicates an expected call of ResizeVolumeRetry.
+func (mr *MockISCSIMockRecorder) ResizeVolumeRetry(arg0, arg1, arg2, arg3 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResizeVolumeRetry", reflect.TypeOf((*MockISCSI)(nil).ResizeVolumeRetry), arg0, arg1, arg2, arg3)
+}
+
 // SafeToLogOut mocks base method.
 func (m *MockISCSI) SafeToLogOut(ctx context.Context, hostNumber, sessionNumber int) bool {
 	m.ctrl.T.Helper()

@@ -75,8 +75,9 @@ func TestNodeStageVolume(t *testing.T) {
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
 					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(1), nil)
-				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
-				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockISCSIClient.EXPECT().ResizeVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(nil)
 				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 				return mockISCSIClient
 			},
@@ -252,8 +253,9 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
 					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(1), nil)
-				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
-				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockISCSIClient.EXPECT().ResizeVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(nil)
 				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 				return mockISCSIClient
 			},
@@ -520,7 +522,9 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
 					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(1), nil)
-				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
+				mockISCSIClient.EXPECT().ResizeVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(errors.New("volume not attached"))
 				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 				return mockISCSIClient
 			},
@@ -538,9 +542,9 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
 					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(1), nil)
-				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
-				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any()).Return(errors.New("some error"))
+				mockISCSIClient.EXPECT().ResizeVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(errors.New("volume resize failed"))
 				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 				return mockISCSIClient
 			},
@@ -558,8 +562,9 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
 					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(1), nil)
-				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
-				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockISCSIClient.EXPECT().ResizeVolumeRetry(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(nil)
 				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 				return mockISCSIClient
 			},
@@ -2733,8 +2738,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 			mockISCSIClient.EXPECT().AttachVolumeRetry(
 				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 			).Return(int64(1), nil)
-			mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
-			mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			mockISCSIClient.EXPECT().ResizeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 		}
@@ -2881,8 +2885,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 			mockISCSIClient.EXPECT().AttachVolumeRetry(
 				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 			).Return(int64(1), nil)
-			mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
-			mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			mockISCSIClient.EXPECT().ResizeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 		}
@@ -11540,7 +11543,7 @@ func TestNodeExpandVolume(t *testing.T) {
 			expErrCode:       codes.Internal,
 		},
 		{
-			name: "Node expand volume failed,  volume tracking file not found",
+			name: "Node expand volume failed, volume tracking file not found",
 			req: &csi.NodeExpandVolumeRequest{
 				VolumeId:   "test-vol",
 				VolumePath: "/vol/path",
@@ -11662,8 +11665,7 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			setupISCSIMock: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
-				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true).AnyTimes()
-				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockISCSIClient.EXPECT().ResizeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 				return mockISCSIClient
 			},
 			mockFilesystem: func() filesystem.Filesystem {
@@ -11703,8 +11705,8 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			setupISCSIMock: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
-				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(false).AnyTimes()
-				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockISCSIClient.EXPECT().ResizeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any()).Return(errors.New("failure")).AnyTimes()
 				return mockISCSIClient
 			},
 
@@ -11738,8 +11740,7 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			setupISCSIMock: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
-				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true).AnyTimes()
-				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				mockISCSIClient.EXPECT().ResizeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 				return mockISCSIClient
 			},
 
@@ -11773,8 +11774,7 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			setupISCSIMock: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
-				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true).AnyTimes()
-				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockISCSIClient.EXPECT().ResizeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 				return mockISCSIClient
 			},
 			mockFilesystem: func() filesystem.Filesystem {
@@ -11924,8 +11924,7 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			setupISCSIMock: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
-				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true).AnyTimes()
-				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockISCSIClient.EXPECT().ResizeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 				return mockISCSIClient
 			},
 			mockFilesystem: func() filesystem.Filesystem {
@@ -11972,8 +11971,7 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			setupISCSIMock: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
-				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true).AnyTimes()
-				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockISCSIClient.EXPECT().ResizeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 				return mockISCSIClient
 			},
 			mockFilesystem: func() filesystem.Filesystem {
@@ -12020,8 +12018,8 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			setupISCSIMock: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
-				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true).AnyTimes()
-				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockISCSIClient.EXPECT().ResizeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any()).Return(nil).AnyTimes()
 				return mockISCSIClient
 			},
 			mockFilesystem: func() filesystem.Filesystem {
@@ -12068,8 +12066,8 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			setupISCSIMock: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
-				mockISCSIClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(true).AnyTimes()
-				mockISCSIClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockISCSIClient.EXPECT().ResizeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any()).Return(errors.New("failure")).AnyTimes()
 				return mockISCSIClient
 			},
 			mockFilesystem: func() filesystem.Filesystem {

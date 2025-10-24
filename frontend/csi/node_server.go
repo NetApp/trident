@@ -49,6 +49,7 @@ const (
 	tridentDeviceInfoPath           = "/var/lib/trident/tracking"
 	nodeLockID                      = "csi_node_server"
 	AttachISCSIVolumeTimeoutShort   = 20 * time.Second
+	ResizeISCSIVolumeTimeout        = 20 * time.Second
 	AttachFCPVolumeTimeoutShort     = 20 * time.Second
 	iSCSINodeUnstageMaxDuration     = 15 * time.Second
 	iSCSILoginTimeout               = 10 * time.Second
@@ -733,7 +734,6 @@ func (p *Plugin) nodePrepareISCSIVolumeForExpansion(
 	ctx context.Context, publishInfo *models.VolumePublishInfo, requiredBytes int64,
 ) error {
 	lunID := int(publishInfo.IscsiLunNumber)
-
 	Logc(ctx).WithFields(LogFields{
 		"targetIQN":      publishInfo.IscsiTargetIQN,
 		"lunID":          lunID,
@@ -742,24 +742,16 @@ func (p *Plugin) nodePrepareISCSIVolumeForExpansion(
 		"filesystemType": publishInfo.FilesystemType,
 	}).Debug("PublishInfo for block device to expand.")
 
-	var err error
-
-	// Make sure device is ready.
-	if p.iscsi.IsAlreadyAttached(ctx, lunID, publishInfo.IscsiTargetIQN) {
-		// Rescan device to detect increased size.
-		if err = p.iscsi.RescanDevices(
-			ctx, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunNumber, requiredBytes); err != nil {
-			Logc(ctx).WithField("device", publishInfo.DevicePath).WithError(err).
-				Error("Unable to scan device.")
-			err = status.Error(codes.Internal, err.Error())
-		}
-	} else {
-		err = fmt.Errorf("device %s to expand is not attached", publishInfo.DevicePath)
-		Logc(ctx).WithField("devicePath", publishInfo.DevicePath).WithError(err).Error(
-			"Unable to expand volume.")
+	// Resize the volume.
+	if err := p.iscsi.ResizeVolumeRetry(ctx, publishInfo, requiredBytes, ResizeISCSIVolumeTimeout); err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"lunID":      publishInfo.IscsiLunNumber,
+			"devicePath": publishInfo.DevicePath,
+		}).WithError(err).Error("Unable to resize device(s) for LUN.")
 		return status.Error(codes.Internal, err.Error())
 	}
-	return err
+
+	return nil
 }
 
 func (p *Plugin) NodeGetCapabilities(
