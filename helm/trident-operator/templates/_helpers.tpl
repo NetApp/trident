@@ -379,3 +379,38 @@ Helper functions to check if resources are actually defined (not just empty stru
   {{- end -}}
   {{- if $hasResources -}}true{{- end -}}
 {{- end -}}
+
+{{/*
+Helper function to check if operator resources are defined
+*/}}
+{{- define "trident-operator.hasResources" -}}
+  {{- $val := . -}}
+  {{- if or $val.requests.cpu $val.requests.memory $val.limits.cpu $val.limits.memory -}}
+    true
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Helper function to render resource requests and limits for the operator
+*/}}
+{{- define "trident-operator.resources" }}
+{{- $val := .}}
+{{- if or $val.requests.cpu $val.requests.memory }}
+requests:
+{{- if $val.requests.cpu }}
+  cpu: {{ $val.requests.cpu }}
+{{- end }}
+{{- if $val.requests.memory }}
+  memory: {{ $val.requests.memory }}
+{{- end }}
+{{- end }}
+{{- if or $val.limits.cpu $val.limits.memory }}
+limits:
+{{- if $val.limits.cpu }}
+  cpu: {{ $val.limits.cpu }}
+{{- end }}
+{{- if $val.limits.memory }}
+  memory: {{ $val.limits.memory }}
+{{- end }}
+{{- end }}
+{{- end -}}
