@@ -718,7 +718,7 @@ func (c *RestClient) setVolumeSizeByNameAndStyle(ctx context.Context, volumeName
 	params.Context = ctx
 	params.HTTPClient = c.httpClient
 	params.UUID = uuid
-	params.SetReturnTimeout(returnTimeout)
+	// params.SetReturnTimeout(returnTimeout)
 
 	sizeBytesStr, _ := capacity.ToBytes(newSize)
 	sizeBytes, err := convert.ToPositiveInt64(sizeBytesStr)
@@ -4740,7 +4740,7 @@ func (c *RestClient) QtreeCreate(
 	params := storage.NewQtreeCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
-	params.SetReturnTimeout(returnTimeout)
+	// params.SetReturnTimeout(returnTimeout)
 
 	qtreeInfo := &models.Qtree{
 		Name:   convert.ToPtr(name),
@@ -4842,7 +4842,7 @@ func (c *RestClient) QtreeRename(ctx context.Context, path, newPath string) erro
 	params.SetHTTPClient(c.httpClient)
 	params.SetID(strconv.FormatInt(*qtree.ID, 10))
 	params.SetVolumeUUID(*qtree.Volume.UUID)
-	params.SetReturnTimeout(returnTimeout)
+	// params.SetReturnTimeout(returnTimeout)
 
 	qtreeInfo := &models.Qtree{
 		Name: convert.ToPtr(strings.TrimPrefix(newPath, "/"+*qtree.Volume.Name+"/")),
@@ -4887,7 +4887,7 @@ func (c *RestClient) QtreeDestroyAsync(ctx context.Context, path string, force b
 	params.SetHTTPClient(c.httpClient)
 	params.SetID(strconv.FormatInt(*qtree.ID, 10))
 	params.SetVolumeUUID(*qtree.Volume.UUID)
-	params.SetReturnTimeout(returnTimeout)
+	// params.SetReturnTimeout(returnTimeout)
 
 	deleteOK, deleteAccepted, err := c.api.Storage.QtreeDelete(params, c.authInfo)
 	if err != nil {
@@ -5302,7 +5302,7 @@ func (c *RestClient) QtreeModifyExportPolicy(ctx context.Context, name, volumeNa
 	params.SetHTTPClient(c.httpClient)
 	params.SetID(strconv.FormatInt(*qtree.ID, 10))
 	params.SetVolumeUUID(*qtree.Volume.UUID)
-	params.SetReturnTimeout(returnTimeout)
+	// params.SetReturnTimeout(returnTimeout)
 
 	qtreeInfo := &models.Qtree{
 		ExportPolicy: &models.QtreeInlineExportPolicy{
@@ -5367,7 +5367,7 @@ func (c *RestClient) quotaModify(ctx context.Context, volumeName string, quotaEn
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 	params.SetUUID(*volume.UUID)
-	params.SetReturnTimeout(returnTimeout)
+	// params.SetReturnTimeout(returnTimeout)
 
 	volumeInfo := &models.Volume{
 		Quota: &models.VolumeInlineQuota{
@@ -5413,7 +5413,7 @@ func (c *RestClient) QuotaSetEntry(ctx context.Context, qtreeName, volumeName, q
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
 	params.SetUUID(*quotaRule.UUID)
-	params.SetReturnTimeout(returnTimeout)
+	// params.SetReturnTimeout(returnTimeout)
 
 	// determine the new hard disk limit value
 	if diskLimit == "" {
@@ -5450,7 +5450,7 @@ func (c *RestClient) QuotaAddEntry(ctx context.Context, volumeName, qtreeName, q
 	params := storage.NewQuotaRuleCreateParamsWithTimeout(c.httpClient.Timeout)
 	params.SetContext(ctx)
 	params.SetHTTPClient(c.httpClient)
-	params.SetReturnTimeout(convert.ToPtr(int64(3)))
+	// params.SetReturnTimeout(convert.ToPtr(int64(3)))
 
 	quotaRuleInfo := &models.QuotaRule{
 		Qtree: &models.QuotaRuleInlineQtree{
