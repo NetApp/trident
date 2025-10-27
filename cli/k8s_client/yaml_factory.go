@@ -390,7 +390,7 @@ spec:
     matchExpressions:
     - operator : In
       scopeName: PriorityClass
-      values: ["system-node-critical"]
+      values: ["system-node-critical", "system-cluster-critical"]
 `
 
 const deploymentAutosupportYAMLTemplate = `
