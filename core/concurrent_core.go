@@ -49,10 +49,7 @@ type ConcurrentTridentOrchestrator struct {
 	scPoolMap      *storageclass.PoolMap
 	scPoolMapMutex *sync.RWMutex
 
-	txnMutex          *locks.GCNamedMutex
-	txnMonitorTicker  *time.Ticker
-	txnMonitorChannel chan struct{}
-	txnMonitorStopped bool
+	txnMutex *locks.GCNamedMutex
 
 	lastNodeRegistrationMutex *sync.RWMutex
 	lastNodeRegistrationTime  time.Time
@@ -163,7 +160,7 @@ func (o *ConcurrentTridentOrchestrator) transformPersistentState(ctx context.Con
 	return nil
 }
 
-func (o *ConcurrentTridentOrchestrator) Bootstrap(monitorTransactions bool) error {
+func (o *ConcurrentTridentOrchestrator) Bootstrap(_ bool) error {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowCoreBootstrap, LogLayerCore)
 	var err error
 
@@ -188,12 +185,6 @@ func (o *ConcurrentTridentOrchestrator) Bootstrap(monitorTransactions bool) erro
 		o.bootstrapError = errors.BootstrapError(err)
 		return o.bootstrapError
 	}
-
-	// TODO (cknight): reenable
-	// if monitorTransactions {
-	//	// Start transaction monitor
-	//	o.StartTransactionMonitor(ctx, txnMonitorPeriod, txnMonitorMaxAge)
-	// }
 
 	o.bootstrapped = true
 	o.bootstrapError = nil
@@ -684,10 +675,6 @@ func (o *ConcurrentTridentOrchestrator) Stop() {
 	if o.stopReconcileBackendLoop != nil {
 		o.stopReconcileBackendLoop <- true
 	}
-
-	// TODO (cknight): reenable
-	// // Stop transaction monitor
-	// o.StopTransactionMonitor()
 }
 
 // validateAndCreateBackendFromConfig validates config and creates backend based on Config
