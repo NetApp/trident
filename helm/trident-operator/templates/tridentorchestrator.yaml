@@ -65,8 +65,8 @@ spec:
   {{- end }}
   imagePullPolicy: {{ include "imagePullPolicy" $ }}
   windows: {{ .Values.windows }}
-  cloudProvider: {{ .Values.cloudProvider }}
-  cloudIdentity: {{ .Values.cloudIdentity }}
+  cloudProvider: {{ .Values.cloudProvider | quote }}
+  cloudIdentity: {{ .Values.cloudIdentity | quote }}
   enableACP: {{ .Values.enableACP }}
   acpImage: {{ .Values.acpImage }}
   httpsMetrics: {{ .Values.httpsMetrics }}
