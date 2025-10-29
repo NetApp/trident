@@ -895,7 +895,7 @@ func (d *NASQtreeStorageDriver) Unpublish(
 	}
 	if exportPolicy == qtreeName {
 		// Remove export policy rules matching the node IP address from qtree level policy
-		if err = removeExportPolicyRules(ctx, exportPolicy, publishInfo, d.API); err != nil {
+		if err = removeExportPolicyRules(ctx, exportPolicy, publishInfo, d.API, d.Config); err != nil {
 			Logc(ctx).WithError(err).Errorf("Error cleaning up export policy rules in %s.", exportPolicy)
 			return err
 		}
@@ -1821,7 +1821,7 @@ func (d *NASQtreeStorageDriver) reapDeletedQtrees(ctx context.Context) {
 func (d *NASQtreeStorageDriver) ensureDefaultExportPolicy(ctx context.Context) error {
 	err := d.API.ExportPolicyCreate(ctx, d.flexvolExportPolicy)
 	if err != nil {
-		return fmt.Errorf("error creating export policy %s: %v", d.flexvolExportPolicy, err)
+		return fmt.Errorf("error creating default export policy %s: %v", d.flexvolExportPolicy, err)
 	}
 	return d.ensureDefaultExportPolicyRule(ctx)
 }
@@ -1832,7 +1832,7 @@ func (d *NASQtreeStorageDriver) ensureDefaultExportPolicy(ctx context.Context) e
 func (d *NASQtreeStorageDriver) ensureDefaultExportPolicyRule(ctx context.Context) error {
 	ruleList, err := d.API.ExportRuleList(ctx, d.flexvolExportPolicy)
 	if err != nil {
-		return fmt.Errorf("error listing export policy rules: %v", err)
+		return fmt.Errorf("error listing default export policy rules: %v", err)
 	}
 
 	if len(ruleList) == 0 {

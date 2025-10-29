@@ -42,6 +42,29 @@ func ValidateCIDRs(ctx context.Context, cidrs []string) error {
 	return err
 }
 
+// ValidateIPs parses a list of IPs, attempting to validate them with net.ParseIP.
+// It returns error in case the IPs are not valid.
+func ValidateIPs(ctx context.Context, ipStrings []string) error {
+	var err error
+	errors := make([]error, 0)
+
+    for _, ipStr := range ipStrings {
+        // net.ParseIP parses strings as an IP address, returning nil if error.
+        ip := net.ParseIP(ipStr)
+        if ip == nil {
+			errors = append(errors, fmt.Errorf("found an invalid IP: %s", ipStr))
+			logging.Logc(ctx).WithError(fmt.Errorf("found an invalid IP: %s", ipStr)).Error("Found an invalid IP.")
+        }
+    }
+	
+	if len(errors) != 0 {
+		err = multierr.Combine(errors...)
+		return err
+	}
+
+	return err
+}
+
 // FilterIPs takes a list of IPs and CIDRs and returns the sorted list of IPs that are contained by one or more of the
 // CIDRs
 func FilterIPs(ctx context.Context, ips, cidrs []string) ([]string, error) {

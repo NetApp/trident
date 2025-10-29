@@ -21,5 +21,9 @@ spec:
   autoExportCIDRs:
   - 192.168.0.0/24
   autoExportPolicy: true
+  # useRest: true
+  # enableCustomExportPolicySettings: true
+  # customExportClientIPs:
+  # - 192.168.0.1
   credentials: 
     name: backend-tbc-ontap-nas-autoexport-secret
