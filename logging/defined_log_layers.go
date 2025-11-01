@@ -20,7 +20,6 @@ const (
 	LogLayerPersistentStore         = LogLayer("persistent_store")
 	LogLayerANFNASDriver            = LogLayer(AzureNASStorageDriverName)
 	LogLayerSolidfireDriver         = LogLayer(SolidfireSANStorageDriverName)
-	LogLayerGCPNASDriver            = LogLayer(GCPNFSStorageDriverName)
 	LogLayerGCNVNASDriver           = LogLayer(GCNVNASStorageDriverName)
 	LogLayerOntapNASDriver          = LogLayer(OntapNASStorageDriverName)
 	LogLayerOntapNASFlexgroupDriver = LogLayer(OntapNASFlexGroupStorageDriverName)
@@ -42,7 +41,6 @@ var layers = []LogLayer{
 	LogLayerPersistentStore,
 	LogLayerANFNASDriver,
 	LogLayerSolidfireDriver,
-	LogLayerGCPNASDriver,
 	LogLayerOntapNASDriver,
 	LogLayerOntapNASFlexgroupDriver,
 	LogLayerOntapNASQtreeDriver,

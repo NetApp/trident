@@ -56,7 +56,7 @@ func getFakeBackends1() []storage.BackendExternal {
 			State:       storage.Online,
 			Online:      true,
 			Config: map[string]interface{}{
-				"storageDriverName": "gcp-cvs",
+				"storageDriverName": "gcp-gcnv",
 			},
 			Volumes: []string{},
 		},
@@ -122,7 +122,7 @@ func TestGetBackendCmd_RunE(t *testing.T) {
 							State:       storage.Online,
 							Online:      true,
 							Config: map[string]interface{}{
-								"storageDriverName": "gcp-cvs",
+								"storageDriverName": "gcp-gcnv",
 							},
 						},
 					})

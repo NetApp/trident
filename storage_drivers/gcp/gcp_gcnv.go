@@ -28,7 +28,7 @@ import (
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
-	"github.com/netapp/trident/storage_drivers/gcp/gcnvapi"
+	"github.com/netapp/trident/storage_drivers/gcp/api"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
@@ -36,14 +36,27 @@ import (
 )
 
 const (
+	MinimumVolumeSizeBytes       = uint64(1073741824)   // 1 GiB
 	MinimumGCNVVolumeSizeBytesSW = uint64(1073741824)   // 1 GiB
 	MinimumGCNVVolumeSizeBytesHW = uint64(107374182400) // 100 GiB
 
-	defaultVolumeSizeStr = "107374182400"
+	defaultSnapshotReserve = ""
+	defaultUnixPermissions = "0777"
+	defaultLimitVolumeSize = ""
+	defaultExportRule      = "0.0.0.0/0"
 
 	// Constants for internal pool attributes
 
-	CapacityPools = "capacityPools"
+	Size            = "size"
+	ServiceLevel    = "serviceLevel"
+	SnapshotDir     = "snapshotDir"
+	SnapshotReserve = "snapshotReserve"
+	ExportRule      = "exportRule"
+	Network         = "network"
+	Region          = "region"
+	Zone            = "zone"
+	UnixPermissions = "unixPermissions"
+	CapacityPools   = "capacityPools"
 
 	nfsVersion3  = "3"
 	nfsVersion4  = "4"
@@ -61,11 +74,16 @@ var (
 	smbMountPathRegex        = regexp.MustCompile(`\\\\(?P<server>.+)\\(?P<share>.+)$`)
 )
 
+type Telemetry struct {
+	tridentconfig.Telemetry
+	Plugin string `json:"plugin"`
+}
+
 // NASStorageDriver is for storage provisioning using the Google Cloud NetApp Volumes service.
 type NASStorageDriver struct {
 	initialized         bool
 	Config              drivers.GCNVNASStorageDriverConfig
-	API                 gcnvapi.GCNV
+	API                 api.GCNV
 	telemetry           *Telemetry
 	pools               map[string]storage.Pool
 	volumeCreateTimeout time.Duration
@@ -130,7 +148,7 @@ func (d *NASStorageDriver) defaultCreateTimeout() time.Duration {
 	case tridentconfig.ContextDocker:
 		return tridentconfig.DockerCreateTimeout
 	default:
-		return gcnvapi.VolumeCreateTimeout
+		return api.VolumeCreateTimeout
 	}
 }
 
@@ -140,7 +158,7 @@ func (d *NASStorageDriver) defaultTimeout() time.Duration {
 	case tridentconfig.ContextDocker:
 		return tridentconfig.DockerDefaultTimeout
 	default:
-		return gcnvapi.DefaultTimeout
+		return api.DefaultTimeout
 	}
 }
 
@@ -239,11 +257,7 @@ func (d *NASStorageDriver) populateConfigurationDefaults(
 	}
 
 	if config.ServiceLevel == "" {
-		config.ServiceLevel = gcnvapi.ServiceLevelStandard
-	}
-
-	if config.StorageClass == "" {
-		config.StorageClass = defaultStorageClass
+		config.ServiceLevel = api.ServiceLevelStandard
 	}
 
 	if config.SnapshotDir != "" {
@@ -484,14 +498,14 @@ func (d *NASStorageDriver) initializeGCNVConfig(
 // initializeGCNVAPIClient returns a GCNV API client.
 func (d *NASStorageDriver) initializeGCNVAPIClient(
 	ctx context.Context, config *drivers.GCNVNASStorageDriverConfig,
-) (gcnvapi.GCNV, error) {
+) (api.GCNV, error) {
 	fields := LogFields{"Method": "initializeGCNVAPIClient", "Type": "NASStorageDriver"}
 	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(
 		">>>> initializeGCNVAPIClient")
 	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(
 		"<<<< initializeGCNVAPIClient")
 
-	sdkTimeout := gcnvapi.DefaultSDKTimeout
+	sdkTimeout := api.DefaultSDKTimeout
 	if config.SDKTimeout != "" {
 		if i, parseErr := strconv.ParseInt(d.Config.SDKTimeout, 10, 64); parseErr != nil {
 			Logc(ctx).WithField("interval", d.Config.SDKTimeout).WithError(parseErr).Error(
@@ -502,7 +516,7 @@ func (d *NASStorageDriver) initializeGCNVAPIClient(
 		}
 	}
 
-	maxCacheAge := gcnvapi.DefaultMaxCacheAge
+	maxCacheAge := api.DefaultMaxCacheAge
 	if config.MaxCacheAge != "" {
 		if i, parseErr := strconv.ParseInt(d.Config.MaxCacheAge, 10, 64); parseErr != nil {
 			Logc(ctx).WithField("interval", d.Config.MaxCacheAge).WithError(parseErr).Error(
@@ -513,7 +527,7 @@ func (d *NASStorageDriver) initializeGCNVAPIClient(
 		}
 	}
 
-	gcnv, err := gcnvapi.NewDriver(ctx, &gcnvapi.ClientConfig{
+	gcnv, err := api.NewDriver(ctx, &api.ClientConfig{
 		ProjectNumber:   config.ProjectNumber,
 		Location:        config.Location,
 		APIKey:          &config.APIKey,
@@ -551,8 +565,8 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 		// Validate service level (it is allowed to be blank)
 		serviceLevel := pool.InternalAttributes()[ServiceLevel]
 		switch serviceLevel {
-		case gcnvapi.ServiceLevelFlex, gcnvapi.ServiceLevelStandard,
-			gcnvapi.ServiceLevelPremium, gcnvapi.ServiceLevelExtreme, "":
+		case api.ServiceLevelFlex, api.ServiceLevelStandard,
+			api.ServiceLevelPremium, api.ServiceLevelExtreme, "":
 			break
 		default:
 			return fmt.Errorf("invalid service level in pool %s: %s",
@@ -648,10 +662,10 @@ func (d *NASStorageDriver) Create(
 		return fmt.Errorf("error checking for existing volume %s; %v", name, err)
 	}
 	if volumeExists {
-		if extantVolume.State == gcnvapi.VolumeStateCreating {
+		if extantVolume.State == api.VolumeStateCreating {
 			// This is a retry and the volume still isn't ready, so no need to wait further.
 			return errors.VolumeCreatingError(
-				fmt.Sprintf("volume state is still %s, not %s", gcnvapi.VolumeStateCreating, gcnvapi.VolumeStateReady))
+				fmt.Sprintf("volume state is still %s, not %s", api.VolumeStateCreating, api.VolumeStateReady))
 		}
 
 		Logc(ctx).WithFields(LogFields{
@@ -671,7 +685,7 @@ func (d *NASStorageDriver) Create(
 	}
 
 	minimumGCNVVolumeSizeBytes := MinimumGCNVVolumeSizeBytesHW
-	if serviceLevel == gcnvapi.ServiceLevelFlex {
+	if serviceLevel == api.ServiceLevelFlex {
 		minimumGCNVVolumeSizeBytes = MinimumGCNVVolumeSizeBytesSW
 	}
 
@@ -742,12 +756,12 @@ func (d *NASStorageDriver) Create(
 	// Determine protocol from mount options
 	var protocolTypes []string
 	var smbAccess, nfsV3Access, nfsV41Access bool
-	var apiExportRule gcnvapi.ExportRule
-	var exportPolicy *gcnvapi.ExportPolicy
+	var apiExportRule api.ExportRule
+	var exportPolicy *api.ExportPolicy
 	var nfsVersion string
 
 	if d.Config.NASType == sa.SMB {
-		protocolTypes = []string{gcnvapi.ProtocolTypeSMB}
+		protocolTypes = []string{api.ProtocolTypeSMB}
 	} else {
 		nfsVersion, err = nfs.GetNFSVersionFromMountOptions(mountOptions, "", supportedNFSVersions)
 		if err != nil {
@@ -756,29 +770,29 @@ func (d *NASStorageDriver) Create(
 		switch nfsVersion {
 		case nfsVersion3:
 			nfsV3Access = true
-			protocolTypes = []string{gcnvapi.ProtocolTypeNFSv3}
+			protocolTypes = []string{api.ProtocolTypeNFSv3}
 		case nfsVersion4:
 			fallthrough
 		case nfsVersion41:
 			nfsV41Access = true
-			protocolTypes = []string{gcnvapi.ProtocolTypeNFSv41}
+			protocolTypes = []string{api.ProtocolTypeNFSv41}
 		case "":
 			nfsV3Access = true
 			nfsV41Access = true
-			protocolTypes = []string{gcnvapi.ProtocolTypeNFSv3, gcnvapi.ProtocolTypeNFSv41}
+			protocolTypes = []string{api.ProtocolTypeNFSv3, api.ProtocolTypeNFSv41}
 		}
 
-		apiExportRule = gcnvapi.ExportRule{
+		apiExportRule = api.ExportRule{
 			AllowedClients: pool.InternalAttributes()[ExportRule],
 			SMB:            smbAccess,
 			Nfsv3:          nfsV3Access,
 			Nfsv4:          nfsV41Access,
 			RuleIndex:      1,
-			AccessType:     gcnvapi.AccessTypeReadWrite,
+			AccessType:     api.AccessTypeReadWrite,
 		}
 
-		exportPolicy = &gcnvapi.ExportPolicy{
-			Rules: []gcnvapi.ExportRule{apiExportRule},
+		exportPolicy = &api.ExportPolicy{
+			Rules: []api.ExportRule{apiExportRule},
 		}
 	}
 
@@ -806,7 +820,7 @@ func (d *NASStorageDriver) Create(
 		if key, keyOK := d.fixGCPLabelKey(k); keyOK {
 			labels[key] = d.fixGCPLabelValue(v)
 		}
-		if len(labels) > gcnvapi.MaxLabelCount {
+		if len(labels) > api.MaxLabelCount {
 			break
 		}
 	}
@@ -857,7 +871,7 @@ func (d *NASStorageDriver) Create(
 			}).Debug("Creating volume.")
 		}
 
-		createRequest := &gcnvapi.VolumeCreateRequest{
+		createRequest := &api.VolumeCreateRequest{
 			Name:              volConfig.Name,
 			CreationToken:     name,
 			CapacityPool:      cPool.Name,
@@ -872,7 +886,7 @@ func (d *NASStorageDriver) Create(
 		if d.Config.NASType == sa.NFS {
 			createRequest.UnixPermissions = unixPermissions
 			createRequest.ExportPolicy = exportPolicy
-			createRequest.SecurityStyle = gcnvapi.SecurityStyleUnix
+			createRequest.SecurityStyle = api.SecurityStyleUnix
 		}
 
 		// Create the volume
@@ -945,15 +959,15 @@ func (d *NASStorageDriver) CreateClone(
 		return fmt.Errorf("error checking for existing volume %s; %v", name, err)
 	}
 	if volumeExists {
-		if extantVolume.State == gcnvapi.VolumeStateCreating {
+		if extantVolume.State == api.VolumeStateCreating {
 			// This is a retry and the volume still isn't ready, so no need to wait further.
 			return errors.VolumeCreatingError(
-				fmt.Sprintf("volume state is still %s, not %s", gcnvapi.VolumeStateCreating, gcnvapi.VolumeStateReady))
+				fmt.Sprintf("volume state is still %s, not %s", api.VolumeStateCreating, api.VolumeStateReady))
 		}
 		return drivers.NewVolumeExistsError(name)
 	}
 
-	var sourceSnapshot *gcnvapi.Snapshot
+	var sourceSnapshot *api.Snapshot
 
 	if snapshot != "" {
 
@@ -964,9 +978,9 @@ func (d *NASStorageDriver) CreateClone(
 		}
 
 		// Ensure snapshot is in a usable state
-		if sourceSnapshot.State != gcnvapi.SnapshotStateReady {
+		if sourceSnapshot.State != api.SnapshotStateReady {
 			return fmt.Errorf("source snapshot state is %s, it must be %s",
-				sourceSnapshot.State, gcnvapi.SnapshotStateReady)
+				sourceSnapshot.State, api.SnapshotStateReady)
 		}
 
 		Logc(ctx).WithFields(LogFields{
@@ -984,7 +998,7 @@ func (d *NASStorageDriver) CreateClone(
 			"source":   sourceVolume.Name,
 		}).Debug("Creating source snapshot.")
 
-		sourceSnapshot, err = d.API.CreateSnapshot(ctx, sourceVolume, snapName, gcnvapi.SnapshotTimeout)
+		sourceSnapshot, err = d.API.CreateSnapshot(ctx, sourceVolume, snapName, api.SnapshotTimeout)
 		if err != nil {
 			return fmt.Errorf("could not create source snapshot; %v", err)
 		}
@@ -1027,7 +1041,7 @@ func (d *NASStorageDriver) CreateClone(
 			if key, keyOK := d.fixGCPLabelKey(k); keyOK {
 				labels[key] = d.fixGCPLabelValue(v)
 			}
-			if len(labels) > gcnvapi.MaxLabelCount {
+			if len(labels) > api.MaxLabelCount {
 				break
 			}
 		}
@@ -1041,7 +1055,7 @@ func (d *NASStorageDriver) CreateClone(
 		"snapshotReserve": sourceVolume.SnapshotReserve,
 	}).Debug("Cloning volume.")
 
-	createRequest := &gcnvapi.VolumeCreateRequest{
+	createRequest := &api.VolumeCreateRequest{
 		Name:              cloneVolConfig.Name,
 		CreationToken:     name,
 		CapacityPool:      sourceVolume.CapacityPool,
@@ -1095,7 +1109,7 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 	if err != nil {
 		return fmt.Errorf("could not find volume %s; %v", originalName, err)
 	}
-	if volume.State != gcnvapi.VolumeStateReady {
+	if volume.State != api.VolumeStateReady {
 		return fmt.Errorf("volume %s is in state %s and is not available", originalName, volume.State)
 	}
 	// Don't allow import for dual-protocol volume.
@@ -1133,7 +1147,7 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		// Update the volume labels
 		labels := d.updateTelemetryLabels(ctx, volume)
 
-		if d.Config.NASType == sa.SMB && volume.ProtocolTypes[0] == gcnvapi.ProtocolTypeSMB {
+		if d.Config.NASType == sa.SMB && volume.ProtocolTypes[0] == api.ProtocolTypeSMB {
 			if err = d.API.ModifyVolume(ctx, volume, labels, nil, &snapshotDirAccess, nil); err != nil {
 				Logc(ctx).WithField("originalName", originalName).WithError(err).Error(
 					"Could not import volume, volume modify failed.")
@@ -1146,8 +1160,8 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 				"labels":        labels,
 			}).Info("Volume modified.")
 
-		} else if d.Config.NASType == sa.NFS && (volume.ProtocolTypes[0] == gcnvapi.ProtocolTypeNFSv3 || volume.
-			ProtocolTypes[0] == gcnvapi.ProtocolTypeNFSv41) {
+		} else if d.Config.NASType == sa.NFS && (volume.ProtocolTypes[0] == api.ProtocolTypeNFSv3 || volume.
+			ProtocolTypes[0] == api.ProtocolTypeNFSv41) {
 			// Update volume unix permissions.  Permissions specified in a PVC annotation take precedence
 			// over the backend's unixPermissions config.
 			unixPermissions := volConfig.UnixPermissions
@@ -1181,7 +1195,7 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		}
 
 		if _, err = d.API.WaitForVolumeState(
-			ctx, volume, gcnvapi.VolumeStateReady, []string{gcnvapi.VolumeStateError}, d.defaultTimeout()); err != nil {
+			ctx, volume, api.VolumeStateReady, []string{api.VolumeStateError}, d.defaultTimeout()); err != nil {
 			return fmt.Errorf("could not import volume %s; %v", originalName, err)
 		}
 	}
@@ -1224,7 +1238,7 @@ func (d *NASStorageDriver) getTelemetryLabels(_ context.Context) map[string]stri
 }
 
 // updateTelemetryLabels updates a volume's labels to include the standard telemetry labels.
-func (d *NASStorageDriver) updateTelemetryLabels(ctx context.Context, volume *gcnvapi.Volume) map[string]string {
+func (d *NASStorageDriver) updateTelemetryLabels(ctx context.Context, volume *api.Volume) map[string]string {
 	if volume.Labels == nil {
 		volume.Labels = make(map[string]string)
 	}
@@ -1258,7 +1272,7 @@ func (d *NASStorageDriver) fixGCPLabelKey(s string) (string, bool) {
 	}
 
 	// Shorten the string to a maximum of 63 characters
-	s = convert.TruncateString(s, gcnvapi.MaxLabelLength)
+	s = convert.TruncateString(s, api.MaxLabelLength)
 
 	return s, true
 }
@@ -1274,7 +1288,7 @@ func (d *NASStorageDriver) fixGCPLabelValue(s string) string {
 	})
 
 	// Shorten the string to a maximum of 63 characters
-	s = convert.TruncateString(s, gcnvapi.MaxLabelLength)
+	s = convert.TruncateString(s, api.MaxLabelLength)
 
 	return s
 }
@@ -1282,30 +1296,30 @@ func (d *NASStorageDriver) fixGCPLabelValue(s string) string {
 // waitForVolumeCreate waits for volume creation to complete by reaching the Available state.  If the
 // volume reaches a terminal state (Error), the volume is deleted.  If the wait times out and the volume
 // is still creating, a VolumeCreatingError is returned so the caller may try again.
-func (d *NASStorageDriver) waitForVolumeCreate(ctx context.Context, volume *gcnvapi.Volume) error {
+func (d *NASStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.Volume) error {
 	state, err := d.API.WaitForVolumeState(
-		ctx, volume, gcnvapi.VolumeStateReady, []string{gcnvapi.VolumeStateError}, d.volumeCreateTimeout)
+		ctx, volume, api.VolumeStateReady, []string{api.VolumeStateError}, d.volumeCreateTimeout)
 	if err != nil {
 
 		logFields := LogFields{"volume": volume.Name}
 
 		switch state {
 
-		case gcnvapi.VolumeStateUnspecified, gcnvapi.VolumeStateCreating:
+		case api.VolumeStateUnspecified, api.VolumeStateCreating:
 			Logc(ctx).WithFields(logFields).Debugf("Volume is in %s state.", state)
 			return errors.VolumeCreatingError(err.Error())
 
-		case gcnvapi.VolumeStateDeleting:
+		case api.VolumeStateDeleting:
 			// Wait for deletion to complete
 			_, errDelete := d.API.WaitForVolumeState(
-				ctx, volume, gcnvapi.VolumeStateDeleted, []string{gcnvapi.VolumeStateError}, d.defaultTimeout())
+				ctx, volume, api.VolumeStateDeleted, []string{api.VolumeStateError}, d.defaultTimeout())
 			if errDelete != nil {
 				Logc(ctx).WithFields(logFields).WithError(errDelete).Error(
 					"Volume could not be cleaned up and must be manually deleted.")
 			}
 			return errDelete
 
-		case gcnvapi.VolumeStateError:
+		case api.VolumeStateError:
 			// Delete a failed volume
 			errDelete := d.API.DeleteVolume(ctx, volume)
 			if errDelete != nil {
@@ -1360,10 +1374,10 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	if !volumeExists {
 		Logc(ctx).WithField("volume", name).Warn("Volume already deleted.")
 		return nil
-	} else if extantVolume.State == gcnvapi.VolumeStateDeleting {
+	} else if extantVolume.State == api.VolumeStateDeleting {
 		// This is a retry, so give it more time before giving up again.
-		_, err = d.API.WaitForVolumeState(ctx, extantVolume, gcnvapi.VolumeStateDeleted,
-			[]string{gcnvapi.VolumeStateError}, d.volumeCreateTimeout)
+		_, err = d.API.WaitForVolumeState(ctx, extantVolume, api.VolumeStateDeleted,
+			[]string{api.VolumeStateError}, d.volumeCreateTimeout)
 		return err
 	}
 
@@ -1375,8 +1389,8 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	Logc(ctx).WithField("volume", extantVolume.Name).Info("Volume deleted.")
 
 	// Wait for deletion to complete
-	_, err = d.API.WaitForVolumeState(ctx, extantVolume, gcnvapi.VolumeStateDeleted,
-		[]string{gcnvapi.VolumeStateError}, d.defaultTimeout())
+	_, err = d.API.WaitForVolumeState(ctx, extantVolume, api.VolumeStateDeleted,
+		[]string{api.VolumeStateError}, d.defaultTimeout())
 	return err
 }
 
@@ -1445,7 +1459,7 @@ func (d *NASStorageDriver) deleteAutomaticSnapshot(
 	}
 
 	// Delete the snapshot
-	if err = d.API.DeleteSnapshot(ctx, sourceVolume, sourceSnapshot, gcnvapi.DefaultTimeout); err != nil {
+	if err = d.API.DeleteSnapshot(ctx, sourceVolume, sourceSnapshot, api.DefaultTimeout); err != nil {
 		Logc(ctx).WithFields(logFields).WithError(err).Errorf("Automatic snapshot could not be " +
 			"cleaned up and must be manually deleted.")
 	}
@@ -1459,7 +1473,7 @@ func (d *NASStorageDriver) deleteAutomaticSnapshot(
 func (d *NASStorageDriver) Publish(
 	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
-	var volume *gcnvapi.Volume
+	var volume *api.Volume
 	var err error
 
 	name := volConfig.InternalName
@@ -1518,11 +1532,11 @@ func (d *NASStorageDriver) Publish(
 		}
 		switch nfsVersion {
 		case nfsVersion3:
-			protocol = gcnvapi.ProtocolTypeNFSv3
+			protocol = api.ProtocolTypeNFSv3
 		case nfsVersion4:
 			fallthrough
 		case nfsVersion41:
-			protocol = gcnvapi.ProtocolTypeNFSv41
+			protocol = api.ProtocolTypeNFSv41
 		default:
 			// No preference, use first listed NFS mount target
 		}
@@ -1592,7 +1606,7 @@ func (d *NASStorageDriver) GetSnapshot(
 		return nil, fmt.Errorf("could not check for existing snapshot; %v", err)
 	}
 
-	if snapshot.State != gcnvapi.SnapshotStateReady {
+	if snapshot.State != api.SnapshotStateReady {
 		return nil, nil
 	}
 
@@ -1646,7 +1660,7 @@ func (d *NASStorageDriver) GetSnapshots(
 	for _, snapshot := range *snapshots {
 
 		// Filter out snapshots in an unavailable state
-		if snapshot.State != gcnvapi.SnapshotStateReady {
+		if snapshot.State != api.SnapshotStateReady {
 			continue
 		}
 
@@ -1704,14 +1718,14 @@ func (d *NASStorageDriver) CreateSnapshot(
 
 	// Create the snapshot
 	if snapshot == nil {
-		snapshot, err = d.API.CreateSnapshot(ctx, sourceVolume, internalSnapName, gcnvapi.DefaultTimeout)
+		snapshot, err = d.API.CreateSnapshot(ctx, sourceVolume, internalSnapName, api.DefaultTimeout)
 		if err != nil {
 			return nil, fmt.Errorf("could not create snapshot; %v", err)
 		}
 	}
 
 	// At this point, snapshot should not be nil
-	if snapshot.State == gcnvapi.SnapshotStateReady {
+	if snapshot.State == api.SnapshotStateReady {
 		Logc(ctx).WithFields(fields).Info("Snapshot created or already exists and is Ready.")
 
 		return &storage.Snapshot{
@@ -1726,7 +1740,7 @@ func (d *NASStorageDriver) CreateSnapshot(
 	Logc(ctx).WithFields(fields).Debug("Snapshot already exists but is not Ready.")
 
 	return nil, fmt.Errorf("snapshot %s already exists but is %s, not %s",
-		internalSnapName, snapshot.State, gcnvapi.SnapshotStateReady)
+		internalSnapName, snapshot.State, api.SnapshotStateReady)
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
@@ -1767,8 +1781,8 @@ func (d *NASStorageDriver) RestoreSnapshot(
 	}
 
 	// Wait for snapshot deletion to complete
-	_, err = d.API.WaitForVolumeState(ctx, volume, gcnvapi.VolumeStateReady,
-		[]string{gcnvapi.VolumeStateError, gcnvapi.VolumeStateDeleting, gcnvapi.VolumeStateDeleted}, gcnvapi.DefaultSDKTimeout,
+	_, err = d.API.WaitForVolumeState(ctx, volume, api.VolumeStateReady,
+		[]string{api.VolumeStateError, api.VolumeStateDeleting, api.VolumeStateDeleted}, api.DefaultSDKTimeout,
 	)
 	return err
 }
@@ -1818,15 +1832,15 @@ func (d *NASStorageDriver) DeleteSnapshot(
 		return fmt.Errorf("unable to find snapshot %s; %v", internalSnapName, err)
 	} else {
 		switch snapshot.State {
-		case gcnvapi.SnapshotStateError:
+		case api.SnapshotStateError:
 			fallthrough
-		case gcnvapi.SnapshotStateReady:
-			return d.API.DeleteSnapshot(ctx, extantVolume, snapshot, gcnvapi.DefaultTimeout)
+		case api.SnapshotStateReady:
+			return d.API.DeleteSnapshot(ctx, extantVolume, snapshot, api.DefaultTimeout)
 		default:
 			fields["state"] = snapshot.State
 			Logc(ctx).WithFields(fields).Debug("Snapshot exists but is not Ready.")
 			return fmt.Errorf("snapshot %s already exists but is %s, not %s",
-				internalSnapName, snapshot.State, gcnvapi.SnapshotStateReady)
+				internalSnapName, snapshot.State, api.SnapshotStateReady)
 		}
 	}
 }
@@ -1854,7 +1868,7 @@ func (d *NASStorageDriver) List(ctx context.Context) ([]string, error) {
 
 		// Filter out volumes in an unavailable state
 		switch volume.State {
-		case gcnvapi.VolumeStateDeleting, gcnvapi.VolumeStateError, gcnvapi.VolumeStateDisabled:
+		case api.VolumeStateDeleting, api.VolumeStateError, api.VolumeStateDisabled:
 			continue
 		}
 
@@ -1912,8 +1926,8 @@ func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	}
 
 	// If the volume state isn't Available, return an error
-	if volume.State != gcnvapi.VolumeStateReady {
-		return fmt.Errorf("volume %s state is %s, not %s", name, volume.State, gcnvapi.VolumeStateReady)
+	if volume.State != api.VolumeStateReady {
+		return fmt.Errorf("volume %s state is %s, not %s", name, volume.State, api.VolumeStateReady)
 	}
 
 	// Include the snapshot reserve in the new size
@@ -2019,7 +2033,7 @@ func (d *NASStorageDriver) GetInternalVolumeName(
 
 // CreateFollowup is called after volume creation and sets the access info in the volume config.
 func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
-	var volume *gcnvapi.Volume
+	var volume *api.Volume
 	var err error
 
 	name := volConfig.InternalName
@@ -2051,8 +2065,8 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 	}
 
 	// Ensure volume is in a good state
-	if volume.State != gcnvapi.VolumeStateReady {
-		return fmt.Errorf("volume %s is in %s state, not %s", name, volume.State, gcnvapi.VolumeStateReady)
+	if volume.State != api.VolumeStateReady {
+		return fmt.Errorf("volume %s is in %s state, not %s", name, volume.State, api.VolumeStateReady)
 	}
 
 	if len(volume.MountTargets) == 0 {
@@ -2166,7 +2180,7 @@ func (d *NASStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channe
 
 		// Filter out volumes in an unavailable state
 		switch volume.State {
-		case gcnvapi.VolumeStateDeleting, gcnvapi.VolumeStateError, gcnvapi.VolumeStateDisabled:
+		case api.VolumeStateDeleting, api.VolumeStateError, api.VolumeStateDisabled:
 			continue
 		}
 
@@ -2182,7 +2196,7 @@ func (d *NASStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channe
 // getExternalVolume is a private method that accepts info about a volume
 // as returned by the storage backend and formats it as a VolumeExternal
 // object.
-func (d *NASStorageDriver) getVolumeExternal(volumeAttrs *gcnvapi.Volume) *storage.VolumeExternal {
+func (d *NASStorageDriver) getVolumeExternal(volumeAttrs *api.Volume) *storage.VolumeExternal {
 	internalName := volumeAttrs.Name
 	name := internalName
 	if strings.HasPrefix(internalName, *d.Config.StoragePrefix) {
@@ -2283,10 +2297,10 @@ func (d *NASStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStora
 }
 
 func (d *NASStorageDriver) nfsExportComponentsForProtocol(
-	volume *gcnvapi.Volume, protocol string,
+	volume *api.Volume, protocol string,
 ) (server, share string, err error) {
 	switch protocol {
-	case gcnvapi.ProtocolTypeNFSv3, gcnvapi.ProtocolTypeNFSv41, "":
+	case api.ProtocolTypeNFSv3, api.ProtocolTypeNFSv41, "":
 		// First find matching protocol
 		for _, mountTarget := range volume.MountTargets {
 			if mountTarget.Protocol == protocol {
@@ -2296,7 +2310,7 @@ func (d *NASStorageDriver) nfsExportComponentsForProtocol(
 		// Fall back to any NFS mount
 		for _, mountTarget := range volume.MountTargets {
 			if collection.ContainsString(
-				[]string{gcnvapi.ProtocolTypeNFSv3, gcnvapi.ProtocolTypeNFSv41}, mountTarget.Protocol) {
+				[]string{api.ProtocolTypeNFSv3, api.ProtocolTypeNFSv41}, mountTarget.Protocol) {
 				return d.parseNFSExport(mountTarget.ExportPath)
 			}
 		}
@@ -2348,14 +2362,14 @@ func (d *NASStorageDriver) parseSMBExport(export string) (server, share string, 
 	return
 }
 
-func (d *NASStorageDriver) isDualProtocolVolume(volume *gcnvapi.Volume) bool {
+func (d *NASStorageDriver) isDualProtocolVolume(volume *api.Volume) bool {
 	var nfs, smb bool
 
 	for _, protocol := range volume.ProtocolTypes {
 		switch protocol {
-		case gcnvapi.ProtocolTypeNFSv3, gcnvapi.ProtocolTypeNFSv41:
+		case api.ProtocolTypeNFSv3, api.ProtocolTypeNFSv41:
 			nfs = true
-		case gcnvapi.ProtocolTypeSMB:
+		case api.ProtocolTypeSMB:
 			smb = true
 		}
 	}
@@ -2363,7 +2377,7 @@ func (d *NASStorageDriver) isDualProtocolVolume(volume *gcnvapi.Volume) bool {
 }
 
 func constructVolumeAccessPath(
-	volConfig *storage.VolumeConfig, volume *gcnvapi.Volume, protocol string,
+	volConfig *storage.VolumeConfig, volume *api.Volume, protocol string,
 ) string {
 	switch protocol {
 	case sa.NFS:

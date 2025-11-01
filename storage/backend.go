@@ -1361,7 +1361,6 @@ type PersistentStorageBackendConfig struct {
 	OntapConfig             *drivers.OntapStorageDriverConfig     `json:"ontap_config,omitempty"`
 	SolidfireConfig         *drivers.SolidfireStorageDriverConfig `json:"solidfire_config,omitempty"`
 	AzureConfig             *drivers.AzureNASStorageDriverConfig  `json:"azure_config,omitempty"`
-	GCPConfig               *drivers.GCPNFSStorageDriverConfig    `json:"gcp_config,omitempty"`
 	GCNVConfig              *drivers.GCNVNASStorageDriverConfig   `json:"gcnv_config,omitempty"`
 	FakeStorageDriverConfig *drivers.FakeStorageDriverConfig      `json:"fake_config,omitempty"`
 }
@@ -1376,8 +1375,6 @@ func (psbc *PersistentStorageBackendConfig) GetDriverConfig() (drivers.DriverCon
 		driverConfig = psbc.SolidfireConfig
 	case psbc.AzureConfig != nil:
 		driverConfig = psbc.AzureConfig
-	case psbc.GCPConfig != nil:
-		driverConfig = psbc.GCPConfig
 	case psbc.GCNVConfig != nil:
 		driverConfig = psbc.GCNVConfig
 	case psbc.FakeStorageDriverConfig != nil:
@@ -1437,8 +1434,6 @@ func (p *BackendPersistent) MarshalConfig() (string, error) {
 		bytes, err = json.Marshal(p.Config.SolidfireConfig)
 	case p.Config.AzureConfig != nil:
 		bytes, err = json.Marshal(p.Config.AzureConfig)
-	case p.Config.GCPConfig != nil:
-		bytes, err = json.Marshal(p.Config.GCPConfig)
 	case p.Config.GCNVConfig != nil:
 		bytes, err = json.Marshal(p.Config.GCNVConfig)
 	case p.Config.FakeStorageDriverConfig != nil:

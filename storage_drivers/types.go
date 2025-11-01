@@ -52,8 +52,6 @@ func GetDriverConfigByName(driverName string) (DriverConfig, error) {
 		storageDriverConfig = &SolidfireStorageDriverConfig{}
 	case trident.AzureNASStorageDriverName:
 		storageDriverConfig = &AzureNASStorageDriverConfig{}
-	case trident.GCPNFSStorageDriverName:
-		storageDriverConfig = &GCPNFSStorageDriverConfig{}
 	case trident.GCNVNASStorageDriverName:
 		storageDriverConfig = &GCNVNASStorageDriverConfig{}
 	case trident.FakeStorageDriverName:
@@ -172,8 +170,7 @@ type AWSConfig struct {
 // within a backend.
 type StorageBackendPool interface {
 	OntapFlexGroupStorageBackendPool | OntapStorageBackendPool | OntapEconomyStorageBackendPool |
-		ANFStorageBackendPool | SolidfireStorageBackendPool |
-		GCPNFSStorageBackendPool | GCNVNASStorageBackendPool
+		ANFStorageBackendPool | SolidfireStorageBackendPool | GCNVNASStorageBackendPool
 }
 
 // OntapFlexGroupStorageBackendPool is a non-overlapping section of an ONTAP flexgroup backend that may be used for
@@ -622,49 +619,6 @@ func (d AzureNASStorageDriverConfig) SpecOnlyValidation() error {
 	return nil
 }
 
-type GCPNFSStorageDriverConfig struct {
-	*CommonStorageDriverConfig
-	ProjectNumber       string        `json:"projectNumber"`
-	HostProjectNumber   string        `json:"hostProjectNumber"`
-	APIKey              GCPPrivateKey `json:"apiKey"`
-	APIRegion           string        `json:"apiRegion"`
-	APIURL              string        `json:"apiURL"`
-	APIAudienceURL      string        `json:"apiAudienceURL"`
-	ProxyURL            string        `json:"proxyURL"`
-	NfsMountOptions     string        `json:"nfsMountOptions"`
-	VolumeCreateTimeout string        `json:"volumeCreateTimeout"`
-	GCPNFSStorageDriverPool
-	Storage []GCPNFSStorageDriverPool `json:"storage"`
-}
-
-type GCPNFSStorageDriverPool struct {
-	Labels                            map[string]string   `json:"labels"`
-	Region                            string              `json:"region"`
-	Zone                              string              `json:"zone"`
-	ServiceLevel                      string              `json:"serviceLevel"`
-	StorageClass                      string              `json:"storageClass"`
-	StoragePools                      []string            `json:"storagePools"`
-	Network                           string              `json:"network"`
-	SupportedTopologies               []map[string]string `json:"supportedTopologies"`
-	GCPNFSStorageDriverConfigDefaults `json:"defaults"`
-}
-
-// GCPNFSStorageBackendPool is a non-overlapping section of a GCP backend that may be used for provisioning storage.
-type GCPNFSStorageBackendPool struct {
-	ProjectNumber string `json:"projectNumber"`
-	APIRegion     string `json:"apiRegion"`
-	ServiceLevel  string `json:"serviceLevel"`
-	StoragePool   string `json:"storagePool"`
-}
-
-type GCPNFSStorageDriverConfigDefaults struct {
-	ExportRule      string `json:"exportRule"`
-	SnapshotDir     string `json:"snapshotDir"`
-	SnapshotReserve string `json:"snapshotReserve"`
-	UnixPermissions string `json:"unixPermissions"`
-	CommonStorageDriverConfigDefaults
-}
-
 type GCPPrivateKey struct {
 	Type                    string `json:"type"`
 	ProjectID               string `json:"project_id"`
@@ -676,90 +630,6 @@ type GCPPrivateKey struct {
 	TokenURI                string `json:"token_uri"`
 	AuthProviderX509CertURL string `json:"auth_provider_x509_cert_url"`
 	ClientX509CertURL       string `json:"client_x509_cert_url"`
-}
-
-// Implement stringer interface for the GCPNFSStorageDriverConfig driver
-func (d GCPNFSStorageDriverConfig) String() string {
-	return convert.ToStringRedacted(&d, []string{"ProjectNumber", "HostProjectNumber", "APIKey"}, nil)
-}
-
-// Implement GoStringer interface for the GCPNFSStorageDriverConfig driver
-func (d GCPNFSStorageDriverConfig) GoString() string {
-	return d.String()
-}
-
-func (d *GCPNFSStorageDriverConfig) Marshal() ([]byte, error) {
-	SanitizeCommonStorageDriverConfig(d.CommonStorageDriverConfig)
-	bytes, err := json.Marshal(d)
-	if err != nil {
-		return nil, fmt.Errorf("could not marshal GCPNFSStorageDriverConfig: %v", err)
-	}
-	return bytes, nil
-}
-
-// InjectSecrets function replaces sensitive fields in the config with the field values in the map
-func (d *GCPNFSStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
-	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
-
-	var ok bool
-	if d.APIKey.PrivateKey, ok = secretMap[strings.ToLower("Private_Key")]; !ok {
-		return injectionError("Private_Key")
-	}
-	if d.APIKey.PrivateKeyID, ok = secretMap[strings.ToLower("Private_Key_ID")]; !ok {
-		return injectionError("Private_Key_ID")
-	}
-
-	return nil
-}
-
-// ExtractSecrets function builds a map of any sensitive fields it contains (credentials, etc.),
-// and returns the the map.
-func (d *GCPNFSStorageDriverConfig) ExtractSecrets() map[string]string {
-	secretMap := make(map[string]string)
-
-	secretMap["Private_Key"] = d.APIKey.PrivateKey
-	secretMap["Private_Key_ID"] = d.APIKey.PrivateKeyID
-
-	return secretMap
-}
-
-// RemoveSecrets function removes sensitive fields it contains (credentials, etc.)
-func (d *GCPNFSStorageDriverConfig) ResetSecrets() {
-	d.APIKey.PrivateKey = ""
-	d.APIKey.PrivateKeyID = ""
-}
-
-// HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
-// with secretName.
-func (d *GCPNFSStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
-	d.APIKey.PrivateKey = secretName
-	d.APIKey.PrivateKeyID = secretName
-}
-
-// GetAndHideSensitive function builds a map of any sensitive fields it contains (credentials, etc.),
-// replaces those fields with secretName and returns the the map.
-func (d *GCPNFSStorageDriverConfig) GetAndHideSensitive(secretName string) map[string]string {
-	secretMap := d.ExtractSecrets()
-	d.HideSensitiveWithSecretName(secretName)
-
-	return secretMap
-}
-
-// CheckForCRDControllerForbiddenAttributes checks config for the keys forbidden by CRD controller and returns them
-func (d GCPNFSStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() []string {
-	return checkMapContainsAttributes(d.ExtractSecrets())
-}
-
-func (d GCPNFSStorageDriverConfig) SpecOnlyValidation() error {
-	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
-		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
-	}
-
-	if !d.HasCredentials() {
-		return fmt.Errorf("input is missing the credentials field")
-	}
-
-	return nil
 }
 
 type GCNVNASStorageDriverConfig struct {
@@ -781,7 +651,6 @@ type GCNVNASStorageDriverPool struct {
 	Region                             string              `json:"region"`
 	Zone                               string              `json:"zone"`
 	ServiceLevel                       string              `json:"serviceLevel"`
-	StorageClass                       string              `json:"storageClass"`
 	StoragePools                       []string            `json:"storagePools"`
 	Network                            string              `json:"network"`
 	SupportedTopologies                []map[string]string `json:"supportedTopologies"`

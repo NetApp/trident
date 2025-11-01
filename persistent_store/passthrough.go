@@ -165,8 +165,6 @@ func (c *PassthroughClient) unmarshalConfig(ctx context.Context, fileContents []
 		configType = "solidfire_config"
 	case config.AzureNASStorageDriverName:
 		configType = "azure_config"
-	case config.GCPNFSStorageDriverName:
-		configType = "gcp_config"
 	case config.GCNVNASStorageDriverName:
 		configType = "gcnv_config"
 	case config.FakeStorageDriverName:

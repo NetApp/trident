@@ -262,7 +262,6 @@ const (
 	OntapSANEconomyStorageDriverName   = "ontap-san-economy"
 	SolidfireSANStorageDriverName      = "solidfire-san"
 	AzureNASStorageDriverName          = "azure-netapp-files"
-	GCPNFSStorageDriverName            = "gcp-cvs"
 	GCNVNASStorageDriverName           = "google-cloud-netapp-volumes"
 	FakeStorageDriverName              = "fake"
 

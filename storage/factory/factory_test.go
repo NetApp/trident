@@ -155,7 +155,7 @@ func TestGetStorageDriver(t *testing.T) {
 		{"fake", "", true},
 		{"solidfire-san", "", true},
 		{"azure-netapp-files", "", true},
-		{"gcp-cvs", "", true},
+		{"google-cloud-netapp-volumes", "", true},
 		{"unknown", "", false},
 	}
 
