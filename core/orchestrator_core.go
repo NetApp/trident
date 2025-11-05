@@ -2474,7 +2474,12 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 	cloneConfig.ReadOnlyClone = volumeConfig.ReadOnlyClone
 	cloneConfig.Namespace = volumeConfig.Namespace
 	cloneConfig.RequestName = volumeConfig.RequestName
-	cloneConfig.SkipRecoveryQueue = volumeConfig.SkipRecoveryQueue
+
+	// If skipRecoveryQueue is set for the clone, use it. If not, default to the source volume's setting.
+	if volumeConfig.SkipRecoveryQueue != "" {
+		cloneConfig.SkipRecoveryQueue = volumeConfig.SkipRecoveryQueue
+	}
+
 	// Empty out the export policy. It will be set in the backend driver.
 	cloneConfig.ExportPolicy = ""
 

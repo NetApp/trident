@@ -2417,7 +2417,11 @@ func (o *ConcurrentTridentOrchestrator) cloneVolume(
 	cloneConfig.ReadOnlyClone = volConfig.ReadOnlyClone
 	cloneConfig.Namespace = volConfig.Namespace
 	cloneConfig.RequestName = volConfig.RequestName
-	cloneConfig.SkipRecoveryQueue = volConfig.SkipRecoveryQueue
+
+	// If skipRecoveryQueue is set for the clone, use it. If not, default to the source volume's setting.
+	if volConfig.SkipRecoveryQueue != "" {
+		cloneConfig.SkipRecoveryQueue = volConfig.SkipRecoveryQueue
+	}
 
 	// If it's from snapshot, we need the LUKS passphrases value from the snapshot
 	isLUKS, err := strconv.ParseBool(cloneConfig.LUKSEncryption)
