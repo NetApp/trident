@@ -1,10 +1,12 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package luks
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -119,7 +121,6 @@ func (d *LUKSDevice) format(ctx context.Context, luksPassphrase string) error {
 // underlying device already has a format present.
 func (d *LUKSDevice) formatUnformattedDevice(ctx context.Context, luksPassphrase string) error {
 	fields := LogFields{"device": d.RawDevicePath()}
-	Logc(ctx).WithFields(fields).Debug("Attempting to LUKS format device.")
 
 	// Check if the device is already LUKS formatted.
 	if luksFormatted, err := d.IsLUKSFormatted(ctx); err != nil {
@@ -169,8 +170,10 @@ func (d *LUKSDevice) IsLUKSFormatted(ctx context.Context) (bool, error) {
 		return false, errors.New("no device path for LUKS device")
 	}
 	device := d.RawDevicePath()
+	luksDeviceName := d.MappedDeviceName()
 
-	Logc(ctx).WithField("device", device).Debug("Checking if device is a LUKS device.")
+	fields := LogFields{"device": device, "luksDeviceName": luksDeviceName}
+	Logc(ctx).WithFields(fields).Debug("Checking if device is a LUKS device.")
 
 	if err := beforeLuksCheck.Inject(); err != nil {
 		return false, err
@@ -180,7 +183,7 @@ func (d *LUKSDevice) IsLUKSFormatted(ctx context.Context) (bool, error) {
 		ctx, "cryptsetup", luksCommandTimeout, true, "", "isLuks", device,
 	)
 	if err != nil {
-		fields := LogFields{"device": device, "output": string(output)}
+		fields["output"] = string(output)
 
 		// If the error isn't an exit error, then some other issue happened.
 		exitError, ok := err.(execCmd.ExitError)
@@ -201,7 +204,7 @@ func (d *LUKSDevice) IsLUKSFormatted(ctx context.Context) (bool, error) {
 		return false, nil
 	}
 
-	Logc(ctx).WithField("device", device).Debug("Device is a LUKS device.")
+	Logc(ctx).WithFields(fields).Debug("Device is a LUKS device.")
 	return true, nil
 }
 
@@ -403,4 +406,81 @@ func (d *LUKSDevice) CheckPassphrase(ctx context.Context, luksPassphrase string)
 		return false, err
 	}
 	return true, nil
+}
+
+// isMappingStale determines whether the LUKS mapping is stale by checking if the underlying device is still accessible.
+// This is only supported with LUKS NVMe devices.
+func (d *LUKSDevice) isMappingStale(ctx context.Context) bool {
+	fields := LogFields{
+		"mappedDevicePath": d.MappedDevicePath(),
+		"rawDevicePath":    d.rawDevicePath,
+	}
+	const dmDevicePattern = "/sys/block/dm-*"
+
+	// A non-existent device mapper cannot be stale.
+	if _, err := d.osFs.Stat(d.MappedDevicePath()); os.IsNotExist(err) {
+		Logc(ctx).WithFields(fields).Info("LUKS device mapper not found.")
+		return false
+	}
+	deviceNode := filepath.Base(d.rawDevicePath)
+	mapperName := d.mappedDeviceName
+
+	dmDirs, err := d.osFs.Glob(dmDevicePattern)
+	if err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Debug("Could not read dm device directories.")
+		return true
+	}
+
+	for _, dmDir := range dmDirs {
+		dmNamePath := filepath.Join(dmDir, "dm", "name")
+		dmNameBytes, err := d.osFs.ReadFile(dmNamePath)
+		if err != nil {
+			Logc(ctx).WithFields(fields).WithError(err).Error("Could not inspect dm device name.")
+			continue
+		} else if strings.TrimSpace(string(dmNameBytes)) != mapperName {
+			continue
+		}
+		Logc(ctx).WithFields(fields).WithField("dmDevice", dmNamePath).Debug("Found LUKS device-mapper device.")
+
+		slavesDir := filepath.Join(dmDir, "slaves")
+		slaveEntries, err := d.osFs.ReadDir(slavesDir)
+		if err != nil {
+			Logc(ctx).WithFields(fields).WithError(err).Error("Could not determine target device for LUKS mapper.")
+			return true
+		} else if len(slaveEntries) == 0 {
+			Logc(ctx).WithFields(fields).Debug("No target devices found for LUKS mapper.")
+			return true
+		}
+
+		for _, slaveEntry := range slaveEntries {
+			slaveNode := slaveEntry.Name()
+			if slaveNode != deviceNode {
+				continue
+			}
+
+			slavePath := filepath.Join(slavesDir, slaveNode)
+			target, err := d.osFs.ReadlinkIfPossible(slavePath)
+			if err != nil {
+				Logc(ctx).WithFields(fields).WithError(err).Debug("Target device symlink is broken for LUKS mapper.")
+				return true
+			}
+			absTarget := target
+			if !filepath.IsAbs(absTarget) {
+				absTarget = filepath.Join(filepath.Dir(slavePath), target)
+			}
+			if _, err := d.osFs.Stat(absTarget); err != nil {
+				Logc(ctx).WithFields(fields).WithError(err).Debug("Target device is not accessible for LUKS mapper.")
+				return true
+			}
+
+			Logc(ctx).WithFields(fields).Debug("LUKS device is not stale.")
+			return false
+		}
+
+		Logc(ctx).WithFields(fields).Debug("Device node not found among target devices; treating as stale.")
+		return true
+	}
+
+	// No matching dm-* found for the mapped device, so it must be stale.
+	return true
 }

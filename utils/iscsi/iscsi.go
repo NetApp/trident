@@ -25,6 +25,7 @@ import (
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/devices/luks"
@@ -408,18 +409,12 @@ func (client *Client) AttachVolume(
 		return mpathSize, fmt.Errorf("could not find device %v; %s", devicePath, err)
 	}
 
-	var isLUKSDevice, luksFormatted bool
-	if publishInfo.LUKSEncryption != "" {
-		isLUKSDevice, err = strconv.ParseBool(publishInfo.LUKSEncryption)
-		if err != nil {
-			return mpathSize, fmt.Errorf("could not parse LUKSEncryption into a bool, got %v",
-				publishInfo.LUKSEncryption)
-		}
-	}
-
 	// Return the device in the publish info in case the mount will be done later
 	publishInfo.DevicePath = devicePath
 
+	// If LUKS encryption is requested, ensure the device is formatted and open.
+	var luksFormatted bool
+	isLUKSDevice := convert.ToBool(publishInfo.LUKSEncryption)
 	if isLUKSDevice {
 		luksDevice := luks.NewDevice(devicePath, name, client.command)
 		luksFormatted, err = luksDevice.EnsureDeviceMappedOnHost(ctx, name, secrets)
@@ -428,6 +423,17 @@ func (client *Client) AttachVolume(
 		}
 
 		devicePath = luksDevice.MappedDevicePath()
+	}
+
+	// Fail fast if the device should be a LUKS device but is not LUKS formatted.
+	if isLUKSDevice && !luksFormatted {
+		Logc(ctx).WithFields(LogFields{
+			"devicePath":      publishInfo.DevicePath,
+			"luksMapperPath":  devicePath,
+			"isLUKSFormatted": luksFormatted,
+			"isLUKSDevice":    isLUKSDevice,
+		}).Error("Device should be a LUKS device but is not LUKS formatted.")
+		return mpathSize, errors.New("device should be a LUKS device but is not LUKS formatted")
 	}
 
 	if publishInfo.FilesystemType == filesystem.Raw {
@@ -443,7 +449,7 @@ func (client *Client) AttachVolume(
 			if unformatted, err := client.devices.IsDeviceUnformatted(ctx, devicePath); err != nil {
 				Logc(ctx).WithField(
 					"device", devicePath,
-				).WithError(err).Errorf("Unable to identify if the device is unformatted.")
+				).WithError(err).Errorf("Unable to identify if the device is not formatted.")
 				return mpathSize, err
 			} else if !unformatted {
 				Logc(ctx).WithField(
@@ -451,17 +457,16 @@ func (client *Client) AttachVolume(
 				).WithError(err).Errorf("Device is not unformatted.")
 				return mpathSize, fmt.Errorf("device %v is not unformatted", devicePath)
 			}
-		} else {
-			// We can safely assume if we just luksFormatted the device, we can also add a filesystem without dataloss
-			if !luksFormatted {
-				Logc(ctx).WithField("device",
-					devicePath).Errorf("Unable to identify if the luks device is empty; err: %v", err)
-				return mpathSize, err
-			}
 		}
 
-		Logc(ctx).WithFields(LogFields{"volume": name, "fstype": publishInfo.FilesystemType}).Debug("Formatting LUN.")
-		if err = client.fileSystemClient.FormatVolume(ctx, devicePath, publishInfo.FilesystemType, publishInfo.FormatOptions); err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"volume":        name,
+			"lunID":         lunID,
+			"fstype":        publishInfo.FilesystemType,
+			"formatOptions": publishInfo.FormatOptions,
+		}).Debug("Formatting iSCSI LUN.")
+		err = client.fileSystemClient.FormatVolume(ctx, devicePath, publishInfo.FilesystemType, publishInfo.FormatOptions)
+		if err != nil {
 			return mpathSize, fmt.Errorf("error formatting LUN %s, device %s: %v", name, deviceToUse, err)
 		}
 	} else if existingFstype != filesystem.UnknownFstype && existingFstype != publishInfo.FilesystemType {

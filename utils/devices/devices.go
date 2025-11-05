@@ -67,6 +67,7 @@ type Devices interface {
 	GetLunSerial(ctx context.Context, path string) (string, error)
 	GetMultipathDeviceUUID(multipathDevicePath string) (string, error)
 	GetLUKSDeviceForMultipathDevice(multipathDevice string) (string, error)
+	GetLUKSDevicePathForVolume(ctx context.Context, volumeID string) (string, error)
 	ScanTargetLUN(ctx context.Context, deviceAddresses []models.ScsiDeviceAddress) error
 	CloseLUKSDevice(ctx context.Context, devicePath string) error
 	EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx context.Context, luksDevicePath string) error
@@ -802,6 +803,53 @@ func (c *Client) GetLUKSDeviceForMultipathDevice(multipathDevice string) (string
 	}
 
 	return DevMapperRoot + strings.TrimRight(string(b[luksDeviceUUIDNameOffset:]), "\n"), nil
+}
+
+// GetLUKSDevicePathForVolume finds the LUKS device path for a given volume ID.
+// Every LUKS device Trident creates should include the volume ID, which includes a volume uuid in the suffix.
+// Use that knowledge to find the correct LUKS mapper device and path.
+func (c *Client) GetLUKSDevicePathForVolume(ctx context.Context, volumeID string) (string, error) {
+	fields := LogFields{"volumeID": volumeID}
+	Logc(ctx).WithFields(fields).Debug(">>>> devices.GetLUKSDevicePathForVolume")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.GetLUKSDevicePathForVolume")
+	const dmDevicePattern = "/sys/block/dm-*"
+
+	// This isn't great; we essentially have to reconstruct the suffix of the LUKS mapper device name
+	// which is the internal volume name of the volume. If this is required for iSCSI,
+	// we must test with SAN and SAN-Eco.
+	// "pvc-33bd3006-4765-498e-b61d-eae1d035c487" becomes "pvc_33bd3006_4765_498e_b61d_eae1d035c487"
+	luksSuffix := strings.ReplaceAll(volumeID, "-", "_")
+	dmDeviceDirs, err := afero.Glob(c.osFs, dmDevicePattern)
+	if err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Warn("Could not read dm device directories.")
+		return "", err
+	}
+
+	for _, deviceDir := range dmDeviceDirs {
+		// "/sys/block/dm-#/dm/name" contains the name of the device-mapper device.
+		namePath := filepath.Join(deviceDir, "dm", "name")
+		nameBytes, err := c.osFs.ReadFile(namePath)
+		if err != nil {
+			// If an error occurs or the /dm-#/dm/name file is empty, log and continue to next dm-#.
+			Logc(ctx).WithFields(fields).WithError(err).Error("Could not inspect dm device name.")
+			continue // Try next dm-#
+		} else if len(nameBytes) == 0 {
+			continue
+		}
+		mapperDevice := strings.TrimSpace(string(nameBytes))
+
+		if strings.Contains(mapperDevice, luksSuffix) {
+			dmNode := filepath.Base(deviceDir) // /sys/block/dm-# -> dm-#
+			Logc(ctx).WithFields(LogFields{
+				"volumeID":     volumeID,     // pvc-33bd3006-4765-498e-b61d-eae1d035c487
+				"mapperDevice": mapperDevice, // luks-pvc_33bd3006_4765_498e_b61d_eae1d035c487
+				"dmNode":       dmNode,       // dm-#
+			}).Info("Found LUKS device for volume.")
+			return DevMapperRoot + mapperDevice, nil
+		}
+	}
+
+	return "", errors.NotFoundError("no LUKS mapper found for volume ID %s", luksSuffix)
 }
 
 // ScanTargetLUN scans a single LUN or all the LUNs on an iSCSI target to discover it.
