@@ -3520,6 +3520,7 @@ func (d OntapAPIREST) NVMeEnsureNamespaceMapped(ctx context.Context, subsystemUU
 // NVMeEnsureNamespaceUnmapped first checks if a namespace is mapped to the subsystem and if it is mapped:
 // a) removes the namespace from the subsystem
 // b) deletes the subsystem if no more namespaces are attached to it
+// c) Handles the case where multiple hosts are mapped to single common subsystem arising out of lengthy node names.
 // If namespace is not mapped to subsystem, it is treated as success
 // The function also returns a bool value along with error. A true value denotes the subsystem is deleted
 // successfully and Published info can be removed for the NVMe volume
@@ -3549,8 +3550,15 @@ func (d OntapAPIREST) NVMeEnsureNamespaceUnmapped(ctx context.Context, hostNQN, 
 		}
 	}
 
-	// In case of multiple hosts attached to a subsystem (e.g. in RWX case), do not delete the namespace,
-	// subsystem or the published info
+	// Below are the cases where multiple hosts are attached to a subsystem:
+	// case 1: RWX case - Multiple hosts are intentionally sharing the same namespace for ReadWriteMany access.
+	//         In this scenario, do not delete the namespace mapping, as other hosts may still be using it.
+	// case 2: Common subsystem due to lengthy host names - When host names exceed the allowed length,
+	//         multiple hosts may be mapped to a single "common" subsystem. In this scenario, the subsystem
+	//         is not truly shared for RWX purposes, but is a result of host name truncation. Therefore,
+	//         it is appropriate to remove the namespace mapping when detaching a host, as the mapping is
+	//         not required for other hosts. This differs from the RWX case, where the namespace mapping
+	//         must be preserved for legitimate multi-host access.
 	if len(subsystemHosts) > 1 {
 		if hostFound {
 			Logc(ctx).Infof("Multiple hosts are attached to this subsystem %v. Do not delete namespace or subsystem",
@@ -3560,6 +3568,21 @@ func (d OntapAPIREST) NVMeEnsureNamespaceUnmapped(ctx context.Context, hostNQN, 
 				return false, err
 			}
 		}
+
+		// Check if there are multiple namespaces attached to the subsystem,
+		// This indicates case 2, so, remove the namespace only.
+		count, err := d.api.NVMeNamespaceCount(ctx, subsystemUUID)
+		if err != nil {
+			return false, fmt.Errorf("error getting namespace count for subsystem %s; %v", subsystemUUID, err)
+		}
+
+		if count > 1 {
+			err = d.api.NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, namespaceUUID)
+			if err != nil {
+				return false, fmt.Errorf("error removing namespace %s from subsystem %s; %v", namespaceUUID, subsystemUUID, err)
+			}
+		}
+
 		return false, nil
 	}
 
@@ -3583,7 +3606,7 @@ func (d OntapAPIREST) NVMeEnsureNamespaceUnmapped(ctx context.Context, hostNQN, 
 		return false, fmt.Errorf("error getting namespace count for subsystem %s; %v", subsystemUUID, err)
 	}
 
-	// Delete the subsystem if no. of namespaces is 0
+	// Delete the subsystem if the namespace count for this subsystem is 0 after removal.
 	if count == 0 {
 		if err := d.api.NVMeSubsystemDelete(ctx, subsystemUUID); err != nil {
 			return false, fmt.Errorf("error deleting subsystem %s; %v", subsystemUUID, err)
