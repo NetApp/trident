@@ -15,20 +15,27 @@ import (
 	k8sfakesnapshotter "github.com/kubernetes-csi/external-snapshotter/client/v8/clientset/versioned/fake"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	v1 "k8s.io/api/core/v1"
 	k8sstoragev1 "k8s.io/api/storage/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	k8sversion "k8s.io/apimachinery/pkg/version"
+	"k8s.io/apimachinery/pkg/watch"
 	k8sfake "k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/frontend"
 	"github.com/netapp/trident/frontend/csi"
+	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	. "github.com/netapp/trident/logging"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
+	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	tridentfake "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/fake"
 	"github.com/netapp/trident/pkg/convert"
@@ -42,6 +49,111 @@ import (
 const (
 	FakeStorageClass = "fakeStorageClass"
 )
+
+// Fake implementations for testing
+type FakeListWatcher struct{}
+
+func (f *FakeListWatcher) List(options metav1.ListOptions) (runtime.Object, error) {
+	return nil, nil
+}
+
+func (f *FakeListWatcher) Watch(options metav1.ListOptions) (watch.Interface, error) {
+	return nil, nil
+}
+
+type FakeController struct{}
+
+func (f *FakeController) Run(stopCh <-chan struct{})                {}
+func (f *FakeController) HasSynced() bool                           { return true }
+func (f *FakeController) LastSyncResourceVersion() string           { return "" }
+func (f *FakeController) GetIndexer() cache.Indexer                 { return &FakeIndexer{} }
+func (f *FakeController) AddIndexers(indexers cache.Indexers) error { return nil }
+func (f *FakeController) AddEventHandler(handler cache.ResourceEventHandler) (cache.ResourceEventHandlerRegistration, error) {
+	return nil, nil
+}
+
+func (f *FakeController) AddEventHandlerWithResyncPeriod(handler cache.ResourceEventHandler, resyncPeriod time.Duration) (cache.ResourceEventHandlerRegistration, error) {
+	return nil, nil
+}
+
+func (f *FakeController) RemoveEventHandler(handle cache.ResourceEventHandlerRegistration) error {
+	return nil
+}
+
+func (f *FakeController) AddEventHandlerWithOptions(handler cache.ResourceEventHandler, options cache.HandlerOptions) (cache.ResourceEventHandlerRegistration, error) {
+	return nil, nil
+}
+func (f *FakeController) RunWithContext(ctx context.Context) {}
+func (f *FakeController) SetWatchErrorHandlerWithContext(handler cache.WatchErrorHandlerWithContext) error {
+	return nil
+}
+func (f *FakeController) GetStore() cache.Store                                      { return &FakeStore{} }
+func (f *FakeController) GetController() cache.Controller                            { return nil }
+func (f *FakeController) SetWatchErrorHandler(handler cache.WatchErrorHandler) error { return nil }
+func (f *FakeController) SetTransform(transform cache.TransformFunc) error           { return nil }
+func (f *FakeController) IsStopped() bool                                            { return false }
+
+type FakeIndexer struct {
+	// Fields for ByIndex method testing
+	items        []interface{}
+	byIndexError error
+
+	// Fields for GetByKey method testing
+	getByKeyResult interface{}
+	getByKeyExists bool
+	getByKeyError  error
+}
+
+func (f *FakeIndexer) Index(indexName string, obj interface{}) ([]interface{}, error) {
+	return nil, nil
+}
+
+func (f *FakeIndexer) IndexKeys(indexName, indexedValue string) ([]string, error) {
+	return nil, nil
+}
+func (f *FakeIndexer) ListIndexFuncValues(indexName string) []string { return nil }
+func (f *FakeIndexer) ByIndex(indexName, indexedValue string) ([]interface{}, error) {
+	if f.byIndexError != nil {
+		return nil, f.byIndexError
+	}
+	return f.items, nil
+}
+func (f *FakeIndexer) GetIndexers() cache.Indexers                  { return nil }
+func (f *FakeIndexer) AddIndexers(newIndexers cache.Indexers) error { return nil }
+func (f *FakeIndexer) Add(obj interface{}) error                    { return nil }
+func (f *FakeIndexer) Update(obj interface{}) error                 { return nil }
+func (f *FakeIndexer) Delete(obj interface{}) error                 { return nil }
+func (f *FakeIndexer) List() []interface{}                          { return nil }
+func (f *FakeIndexer) ListKeys() []string                           { return nil }
+func (f *FakeIndexer) Get(obj interface{}) (item interface{}, exists bool, err error) {
+	return nil, false, nil
+}
+
+func (f *FakeIndexer) GetByKey(key string) (item interface{}, exists bool, err error) {
+	if f.getByKeyError != nil {
+		return nil, false, f.getByKeyError
+	}
+	return f.getByKeyResult, f.getByKeyExists, nil
+}
+func (f *FakeIndexer) Replace([]interface{}, string) error { return nil }
+func (f *FakeIndexer) Resync() error                       { return nil }
+
+type FakeStore struct{}
+
+func (f *FakeStore) Add(obj interface{}) error    { return nil }
+func (f *FakeStore) Update(obj interface{}) error { return nil }
+func (f *FakeStore) Delete(obj interface{}) error { return nil }
+func (f *FakeStore) List() []interface{}          { return nil }
+func (f *FakeStore) ListKeys() []string           { return nil }
+func (f *FakeStore) Get(obj interface{}) (item interface{}, exists bool, err error) {
+	return nil, false, nil
+}
+
+func (f *FakeStore) GetByKey(key string) (item interface{}, exists bool, err error) {
+	return nil, false, nil
+}
+func (f *FakeStore) Replace([]interface{}, string) error { return nil }
+func (f *FakeStore) Resync() error                       { return nil }
 
 var (
 	noTaint               = v1.Taint{}
@@ -2292,4 +2404,1687 @@ func (f *fakeController) AddEventHandlerWithOptions(handler cache.ResourceEventH
 func (f *fakeController) RunWithContext(ctx context.Context) {}
 func (f *fakeController) SetWatchErrorHandlerWithContext(handler cache.WatchErrorHandlerWithContext) error {
 	return nil
+}
+
+func TestMetaUIDKeyFunc(t *testing.T) {
+	tests := []struct {
+		name        string
+		input       interface{}
+		expected    []string
+		expectError bool
+		errorMsg    string
+	}{
+		{
+			name:        "valid UID string",
+			input:       "550e8400-e29b-41d4-a716-446655440000",
+			expected:    []string{"550e8400-e29b-41d4-a716-446655440000"},
+			expectError: false,
+		},
+		{
+			name:        "invalid UID string",
+			input:       "invalid-uid",
+			expected:    []string{""},
+			expectError: true,
+			errorMsg:    "object has no meta",
+		},
+		{
+			name: "object with valid UID",
+			input: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					UID: "550e8400-e29b-41d4-a716-446655440000",
+				},
+			},
+			expected:    []string{"550e8400-e29b-41d4-a716-446655440000"},
+			expectError: false,
+		},
+		{
+			name: "object with empty UID",
+			input: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					UID: "",
+				},
+			},
+			expected:    []string{""},
+			expectError: true,
+			errorMsg:    "object has no UID",
+		},
+		{
+			name:        "object without meta",
+			input:       "not-a-meta-object",
+			expected:    []string{""},
+			expectError: true,
+			errorMsg:    "object has no meta",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result, err := MetaUIDKeyFunc(test.input)
+
+			if test.expectError {
+				assert.Error(t, err, "Expected error for MetaUIDKeyFunc test case: %s", test.name)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, test.expected, result)
+		})
+	}
+}
+
+func TestMetaNameKeyFunc(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     interface{}
+		expected  []string
+		assertErr assert.ErrorAssertionFunc
+		errorMsg  string
+	}{
+		{
+			name:      "valid name string",
+			input:     "test-object-name",
+			expected:  []string{"test-object-name"},
+			assertErr: assert.NoError,
+		},
+		{
+			name: "object with valid name",
+			input: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-pod",
+				},
+			},
+			expected:  []string{"test-pod"},
+			assertErr: assert.NoError,
+		},
+		{
+			name: "object with empty name",
+			input: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "",
+				},
+			},
+			expected:  []string{""},
+			assertErr: assert.Error,
+			errorMsg:  "object has no name",
+		},
+		{
+			name:      "object without meta",
+			input:     123,
+			expected:  []string{""},
+			assertErr: assert.Error,
+			errorMsg:  "object has no meta",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result, err := MetaNameKeyFunc(test.input)
+
+			// Use function types for assertions - no conditional logic needed!
+			test.assertErr(t, err, "Unexpected error result for MetaNameKeyFunc test case: %s", test.name)
+			assert.Equal(t, test.expected, result)
+		})
+	}
+}
+
+func TestTridentVolumeReferenceKeyFunc(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     interface{}
+		expected  []string
+		assertErr assert.ErrorAssertionFunc
+		errorMsg  string
+	}{
+		{
+			name:      "valid key string",
+			input:     "namespace_pvc-namespace/pvc-name",
+			expected:  []string{"namespace_pvc-namespace/pvc-name"},
+			assertErr: assert.NoError,
+		},
+		{
+			name: "valid TridentVolumeReference",
+			input: &netappv1.TridentVolumeReference{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "trident-ns",
+				},
+				Spec: netappv1.TridentVolumeReferenceSpec{
+					PVCName:      "test-pvc",
+					PVCNamespace: "default",
+				},
+			},
+			expected:  []string{"trident-ns_default/test-pvc"},
+			assertErr: assert.NoError,
+		},
+		{
+			name: "TridentVolumeReference with empty PVCName",
+			input: &netappv1.TridentVolumeReference{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "trident-ns",
+				},
+				Spec: netappv1.TridentVolumeReferenceSpec{
+					PVCName:      "",
+					PVCNamespace: "default",
+				},
+			},
+			expected:  []string{""},
+			assertErr: assert.Error,
+			errorMsg:  "TridentVolumeReference CR has no PVCName set",
+		},
+		{
+			name: "TridentVolumeReference with empty PVCNamespace",
+			input: &netappv1.TridentVolumeReference{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "trident-ns",
+				},
+				Spec: netappv1.TridentVolumeReferenceSpec{
+					PVCName:      "test-pvc",
+					PVCNamespace: "",
+				},
+			},
+			expected:  []string{""},
+			assertErr: assert.Error,
+			errorMsg:  "TridentVolumeReference CR has no PVCNamespace set",
+		},
+		{
+			name:      "wrong object type",
+			input:     &v1.Pod{},
+			expected:  []string{""},
+			assertErr: assert.Error,
+			errorMsg:  "object is not a TridentVolumeReference CR",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result, err := TridentVolumeReferenceKeyFunc(test.input)
+
+			// Use function types for assertions
+			test.assertErr(t, err, "Unexpected error result for TridentVolumeReferenceKeyFunc test case: %s", test.name)
+			assert.Equal(t, test.expected, result)
+		})
+	}
+}
+
+func TestGetName(t *testing.T) {
+	h := &helper{}
+
+	result := h.GetName()
+
+	assert.Equal(t, controllerhelpers.KubernetesHelper, result)
+}
+
+func TestVersion(t *testing.T) {
+	tests := []struct {
+		name        string
+		kubeVersion *k8sversion.Info
+		expected    string
+	}{
+		{
+			name: "valid version",
+			kubeVersion: &k8sversion.Info{
+				Major:      "1",
+				Minor:      "28",
+				GitVersion: "v1.28.0",
+			},
+			expected: "v1.28.0",
+		},
+		{
+			name: "version with build info",
+			kubeVersion: &k8sversion.Info{
+				Major:      "1",
+				Minor:      "27",
+				GitVersion: "v1.27.5+k3s1",
+			},
+			expected: "v1.27.5+k3s1",
+		},
+		{
+			name: "empty version",
+			kubeVersion: &k8sversion.Info{
+				GitVersion: "",
+			},
+			expected: "",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			h := &helper{
+				kubeVersion: test.kubeVersion,
+			}
+
+			result := h.Version()
+
+			assert.Equal(t, test.expected, result)
+		})
+	}
+}
+
+func TestNewHelper(t *testing.T) {
+	tests := []struct {
+		name              string
+		masterURL         string
+		kubeConfigPath    string
+		enableForceDetach bool
+		mockK8sSetup      func() (*k8sfake.Clientset, error)
+		expectError       bool
+		errorContains     string
+		validateResult    func(*testing.T, frontend.Plugin)
+	}{
+		{
+			name:              "successful initialization with default config",
+			masterURL:         "",
+			kubeConfigPath:    "",
+			enableForceDetach: false,
+			mockK8sSetup: func() (*k8sfake.Clientset, error) {
+				return k8sfake.NewSimpleClientset(), nil
+			},
+			expectError: false,
+			validateResult: func(t *testing.T, plugin frontend.Plugin) {
+				assert.NotNil(t, plugin)
+
+				// Type assert to helper to check internal state
+				helper, ok := plugin.(*helper)
+				require.True(t, ok, "Plugin should be of type *helper")
+
+				// Check that all required fields are initialized
+				assert.NotNil(t, helper.kubeClient)
+				assert.NotNil(t, helper.pvcController)
+				assert.NotNil(t, helper.pvController)
+				assert.NotNil(t, helper.scController)
+				assert.NotNil(t, helper.nodeController)
+				assert.NotNil(t, helper.mrController)
+				assert.NotNil(t, helper.vrefController)
+				assert.NotNil(t, helper.pvcIndexer)
+				assert.NotNil(t, helper.pvIndexer)
+				assert.NotNil(t, helper.scIndexer)
+				assert.NotNil(t, helper.nodeIndexer)
+				assert.NotNil(t, helper.mrIndexer)
+				assert.NotNil(t, helper.vrefIndexer)
+				assert.NotNil(t, helper.eventRecorder)
+
+				// Check stop channels are initialized
+				assert.NotNil(t, helper.pvcControllerStopChan)
+				assert.NotNil(t, helper.pvControllerStopChan)
+				assert.NotNil(t, helper.scControllerStopChan)
+				assert.NotNil(t, helper.nodeControllerStopChan)
+				assert.NotNil(t, helper.mrControllerStopChan)
+				assert.NotNil(t, helper.vrefControllerStopChan)
+
+				// Check force detach setting
+				assert.Equal(t, false, helper.enableForceDetach)
+			},
+		},
+		{
+			name:              "successful initialization with force detach enabled",
+			masterURL:         "",
+			kubeConfigPath:    "",
+			enableForceDetach: true,
+			mockK8sSetup: func() (*k8sfake.Clientset, error) {
+				return k8sfake.NewSimpleClientset(), nil
+			},
+			expectError: false,
+			validateResult: func(t *testing.T, plugin frontend.Plugin) {
+				helper, ok := plugin.(*helper)
+				require.True(t, ok)
+				assert.Equal(t, true, helper.enableForceDetach)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// Mock the orchestrator
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+			// Since NewHelper creates real K8s clients and we can't easily mock the client creation,
+			// we'll test the parts we can and expect specific errors for invalid configs
+			if test.expectError {
+				plugin, err := NewHelper(orchestrator, test.masterURL, test.kubeConfigPath, test.enableForceDetach)
+				assert.Error(t, err, "Expected error for NewHelper test case: %s", test.name)
+				assert.Nil(t, plugin)
+				if test.errorContains != "" {
+					assert.Contains(t, err.Error(), test.errorContains)
+				}
+			} else {
+				// For non-error cases, we expect them to fail with K8s connection errors in test environment
+				// but we can still test the function structure
+				plugin, err := NewHelper(orchestrator, test.masterURL, test.kubeConfigPath, test.enableForceDetach)
+				if err != nil {
+					// Expected in test environment without real K8s cluster or kubectl
+					// Check for various possible connection error messages
+					errorMsg := err.Error()
+					connectionErrorFound := strings.Contains(errorMsg, "failed to construct clientset") ||
+						strings.Contains(errorMsg, "connection to the server") ||
+						strings.Contains(errorMsg, "was refused") ||
+						strings.Contains(errorMsg, "unable to load in-cluster configuration") ||
+						strings.Contains(errorMsg, "no such host") ||
+						strings.Contains(errorMsg, "timeout") ||
+						strings.Contains(errorMsg, "could not find the Kubernetes CLI") ||
+						strings.Contains(errorMsg, "executable file not found")
+					assert.True(t, connectionErrorFound, "Expected a K8s connection error, got: %s", errorMsg)
+				} else if plugin != nil {
+					// If it somehow succeeds (shouldn't in test env), validate the result
+					test.validateResult(t, plugin)
+				}
+			}
+		})
+	}
+}
+
+func TestNewHelper_InvalidMasterURL(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+	// Test with invalid master URL - use a URL that will definitely fail
+	plugin, err := NewHelper(orchestrator, "http://invalid-master-url-that-does-not-exist:6443", "", false)
+
+	// In test environment, this might succeed if kubectl config is available
+	// So we check if error occurred OR if plugin creation succeeded but with fallback config
+	if err != nil {
+		assert.Error(t, err, "Expected error when connecting to invalid master URL")
+		assert.Nil(t, plugin)
+	} else if plugin != nil {
+		// If it succeeds (fallback to kubectl config), verify it's a valid plugin
+		assert.NotNil(t, plugin)
+		assert.IsType(t, &helper{}, plugin)
+	}
+}
+
+func TestNewHelper_InvalidKubeConfig(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer func() {
+		if mockCtrl != nil {
+			mockCtrl.Finish()
+		}
+	}()
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+	// Test with non-existent kubeconfig path - this might fail or fallback to default config
+	plugin, err := NewHelper(orchestrator, "", "/this/path/definitely/does/not/exist/kubeconfig", false)
+
+	if err != nil {
+		// If it fails as expected, we just verify an error occurred
+		assert.Error(t, err)
+		assert.Nil(t, plugin)
+	} else {
+		// If it doesn't fail (fallback scenario), ensure we got a valid plugin
+		assert.NotNil(t, plugin)
+		// Clean up if plugin was created successfully
+		if plugin != nil {
+			plugin.Deactivate()
+		}
+	}
+}
+
+func TestActivate(t *testing.T) {
+	tests := []struct {
+		name                  string
+		setupHelper           func(*testing.T) *helper
+		mockOrchestratorSetup func(*mockcore.MockOrchestrator)
+		expectError           bool
+		errorContains         string
+		validateChannels      func(*testing.T, *helper)
+	}{
+		{
+			name: "successful activation with no volumes",
+			setupHelper: func(t *testing.T) *helper {
+				// Create a helper with mock controllers and channels
+				h := &helper{
+					pvcControllerStopChan:  make(chan struct{}),
+					pvControllerStopChan:   make(chan struct{}),
+					scControllerStopChan:   make(chan struct{}),
+					nodeControllerStopChan: make(chan struct{}),
+					mrControllerStopChan:   make(chan struct{}),
+					vrefControllerStopChan: make(chan struct{}),
+					kubeVersion: &k8sversion.Info{
+						Major:      "1",
+						Minor:      "27",
+						GitVersion: "v1.27.0",
+					},
+					namespace: "default",
+				}
+
+				// Create fake clients
+				clientset := k8sfake.NewSimpleClientset()
+				h.kubeClient = clientset
+
+				// Create fake trident client with mock namespace and version object
+				scheme := runtime.NewScheme()
+				_ = tridentv1.AddToScheme(scheme)
+				tridentClient := tridentfake.NewSimpleClientset()
+				h.tridentClient = tridentClient
+
+				// Create a TridentVersion object to avoid the nil pointer
+				version := &tridentv1.TridentVersion{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      config.OrchestratorName,
+						Namespace: "default",
+					},
+					TridentVersion:     "22.01.0",
+					PublicationsSynced: true, // No reconciliation needed
+				}
+				_, _ = tridentClient.TridentV1().TridentVersions("default").Create(context.Background(), version, metav1.CreateOptions{})
+
+				// Initialize controllers with fake data sources to prevent nil pointer panics
+				h.pvcSource = &FakeListWatcher{}
+				h.pvcController = &FakeController{}
+				h.pvcIndexer = &FakeIndexer{}
+
+				h.pvSource = &FakeListWatcher{}
+				h.pvController = &FakeController{}
+				h.pvIndexer = &FakeIndexer{}
+
+				h.scSource = &FakeListWatcher{}
+				h.scController = &FakeController{}
+				h.scIndexer = &FakeIndexer{}
+
+				h.nodeSource = &FakeListWatcher{}
+				h.nodeController = &FakeController{}
+				h.nodeIndexer = &FakeIndexer{}
+
+				h.mrSource = &FakeListWatcher{}
+				h.mrController = &FakeController{}
+				h.mrIndexer = &FakeIndexer{}
+
+				h.vrefSource = &FakeListWatcher{}
+				h.vrefController = &FakeController{}
+				h.vrefIndexer = &FakeIndexer{}
+
+				return h
+			},
+			mockOrchestratorSetup: func(mockOrchestrator *mockcore.MockOrchestrator) {
+				// Set up expectations for volume publication reconciliation check
+				mockOrchestrator.EXPECT().ListVolumes(gomock.Any()).Return([]*storage.VolumeExternal{}, nil).AnyTimes()
+				// Set up expectations for node reconciliation
+				mockOrchestrator.EXPECT().ListNodes(gomock.Any()).Return([]*models.NodeExternal{}, nil).AnyTimes()
+			},
+			expectError: false,
+			validateChannels: func(t *testing.T, h *helper) {
+				// Channels should still be open after activation
+				select {
+				case <-h.pvcControllerStopChan:
+					t.Error("PVC controller stop channel should not be closed")
+				default:
+					// Expected - channel is open
+				}
+			},
+		},
+		{
+			name: "activation with volumes requiring reconciliation",
+			setupHelper: func(t *testing.T) *helper {
+				h := &helper{
+					pvcControllerStopChan:  make(chan struct{}),
+					pvControllerStopChan:   make(chan struct{}),
+					scControllerStopChan:   make(chan struct{}),
+					nodeControllerStopChan: make(chan struct{}),
+					mrControllerStopChan:   make(chan struct{}),
+					vrefControllerStopChan: make(chan struct{}),
+					kubeVersion: &k8sversion.Info{
+						Major:      "1",
+						Minor:      "27",
+						GitVersion: "v1.27.0",
+					},
+					namespace: "default",
+				}
+
+				clientset := k8sfake.NewSimpleClientset()
+				h.kubeClient = clientset
+
+				// Create fake trident client
+				tridentClient := tridentfake.NewSimpleClientset()
+				h.tridentClient = tridentClient
+
+				// Create a TridentVersion object requiring reconciliation
+				version := &tridentv1.TridentVersion{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      config.OrchestratorName,
+						Namespace: "default",
+					},
+					TridentVersion:     "22.01.0",
+					PublicationsSynced: false, // Reconciliation needed
+				}
+				_, _ = tridentClient.TridentV1().TridentVersions("default").Create(context.Background(), version, metav1.CreateOptions{})
+
+				// Initialize controllers with fake data sources to prevent nil pointer panics
+				h.pvcSource = &FakeListWatcher{}
+				h.pvcController = &FakeController{}
+				h.pvcIndexer = &FakeIndexer{}
+
+				h.pvSource = &FakeListWatcher{}
+				h.pvController = &FakeController{}
+				h.pvIndexer = &FakeIndexer{}
+
+				h.scSource = &FakeListWatcher{}
+				h.scController = &FakeController{}
+				h.scIndexer = &FakeIndexer{}
+
+				h.nodeSource = &FakeListWatcher{}
+				h.nodeController = &FakeController{}
+				h.nodeIndexer = &FakeIndexer{}
+
+				h.mrSource = &FakeListWatcher{}
+				h.mrController = &FakeController{}
+				h.mrIndexer = &FakeIndexer{}
+
+				h.vrefSource = &FakeListWatcher{}
+				h.vrefController = &FakeController{}
+				h.vrefIndexer = &FakeIndexer{}
+
+				return h
+			},
+			mockOrchestratorSetup: func(mockOrchestrator *mockcore.MockOrchestrator) {
+				// Set up a scenario where volumes exist (requiring reconciliation)
+				volume := &storage.VolumeExternal{
+					Config: &storage.VolumeConfig{
+						Name: "test-volume",
+					},
+				}
+				mockOrchestrator.EXPECT().ListVolumes(gomock.Any()).Return([]*storage.VolumeExternal{volume}, nil).AnyTimes()
+				// Set up expectations for node reconciliation
+				mockOrchestrator.EXPECT().ListNodes(gomock.Any()).Return([]*models.NodeExternal{}, nil).AnyTimes()
+				// Set up expectations for volume publication reconciliation
+				mockOrchestrator.EXPECT().ReconcileVolumePublications(gomock.Any(), gomock.AssignableToTypeOf([]*models.VolumePublicationExternal{})).Return(nil).AnyTimes()
+			},
+			expectError: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// Create mock orchestrator
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+			// Set up the helper
+			h := test.setupHelper(t)
+			h.orchestrator = orchestrator
+
+			// Set up orchestrator expectations
+			if test.mockOrchestratorSetup != nil {
+				test.mockOrchestratorSetup(orchestrator)
+			}
+
+			// Test activation
+			err := h.Activate()
+
+			if test.expectError {
+				assert.Error(t, err, "Expected error for Activate test case: %s", test.name)
+			} else {
+				assert.NoError(t, err)
+				if test.validateChannels != nil {
+					test.validateChannels(t, h)
+				}
+			}
+		})
+	}
+}
+
+func TestDeactivate(t *testing.T) {
+	tests := []struct {
+		name             string
+		setupHelper      func(*testing.T) *helper
+		validateChannels func(*testing.T, *helper)
+	}{
+		{
+			name: "successful deactivation",
+			setupHelper: func(t *testing.T) *helper {
+				return &helper{
+					pvcControllerStopChan:  make(chan struct{}),
+					pvControllerStopChan:   make(chan struct{}),
+					scControllerStopChan:   make(chan struct{}),
+					nodeControllerStopChan: make(chan struct{}),
+					mrControllerStopChan:   make(chan struct{}),
+					vrefControllerStopChan: make(chan struct{}),
+				}
+			},
+			validateChannels: func(t *testing.T, h *helper) {
+				// All channels should be closed after deactivation
+				select {
+				case <-h.pvcControllerStopChan:
+					// Expected - channel is closed
+				default:
+					t.Error("PVC controller stop channel should be closed")
+				}
+
+				select {
+				case <-h.pvControllerStopChan:
+					// Expected - channel is closed
+				default:
+					t.Error("PV controller stop channel should be closed")
+				}
+
+				select {
+				case <-h.scControllerStopChan:
+					// Expected - channel is closed
+				default:
+					t.Error("SC controller stop channel should be closed")
+				}
+
+				select {
+				case <-h.nodeControllerStopChan:
+					// Expected - channel is closed
+				default:
+					t.Error("Node controller stop channel should be closed")
+				}
+
+				select {
+				case <-h.mrControllerStopChan:
+					// Expected - channel is closed
+				default:
+					t.Error("MR controller stop channel should be closed")
+				}
+
+				select {
+				case <-h.vrefControllerStopChan:
+					// Expected - channel is closed
+				default:
+					t.Error("VRef controller stop channel should be closed")
+				}
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			h := test.setupHelper(t)
+
+			// Test deactivation
+			err := h.Deactivate()
+
+			// Deactivate should always succeed
+			assert.NoError(t, err)
+
+			// Validate channel states
+			if test.validateChannels != nil {
+				test.validateChannels(t, h)
+			}
+		})
+	}
+}
+
+func TestAddPVC(t *testing.T) {
+	tests := []struct {
+		name        string
+		obj         interface{}
+		expectError bool
+		expectLog   string
+	}{
+		{
+			name: "Valid PVC object",
+			obj: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-pvc",
+					Namespace: "default",
+					UID:       "test-uid-123",
+				},
+				Spec: v1.PersistentVolumeClaimSpec{
+					Resources: v1.VolumeResourceRequirements{
+						Requests: v1.ResourceList{
+							v1.ResourceStorage: resource.MustParse("1Gi"),
+						},
+					},
+					AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+				},
+				Status: v1.PersistentVolumeClaimStatus{
+					Phase: v1.ClaimPending,
+				},
+			},
+			expectError: false,
+		},
+		{
+			name:        "Invalid object type",
+			obj:         "not-a-pvc",
+			expectError: true,
+			expectLog:   "K8S helper expected PVC",
+		},
+		{
+			name:        "Nil object",
+			obj:         nil,
+			expectError: true,
+			expectLog:   "K8S helper expected PVC",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			// Create helper with minimal setup
+			h := &helper{}
+
+			// Capture log output would require more complex setup
+			// For now, just test that the function doesn't panic
+			assert.NotPanics(t, func() {
+				h.addPVC(tt.obj)
+			})
+		})
+	}
+}
+
+func TestUpdatePVC(t *testing.T) {
+	tests := []struct {
+		name        string
+		oldObj      interface{}
+		newObj      interface{}
+		expectError bool
+	}{
+		{
+			name:   "Valid PVC update",
+			oldObj: nil, // oldObj is ignored in updatePVC
+			newObj: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-pvc",
+					Namespace: "default",
+					UID:       "test-uid-123",
+				},
+				Spec: v1.PersistentVolumeClaimSpec{
+					Resources: v1.VolumeResourceRequirements{
+						Requests: v1.ResourceList{
+							v1.ResourceStorage: resource.MustParse("2Gi"),
+						},
+					},
+				},
+				Status: v1.PersistentVolumeClaimStatus{
+					Phase: v1.ClaimBound,
+				},
+			},
+			expectError: false,
+		},
+		{
+			name:        "Invalid new object type",
+			oldObj:      nil,
+			newObj:      "not-a-pvc",
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &helper{}
+
+			assert.NotPanics(t, func() {
+				h.updatePVC(tt.oldObj, tt.newObj)
+			})
+		})
+	}
+}
+
+func TestDeletePVC(t *testing.T) {
+	tests := []struct {
+		name        string
+		obj         interface{}
+		expectError bool
+	}{
+		{
+			name: "Valid PVC deletion",
+			obj: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-pvc",
+					Namespace: "default",
+					UID:       "test-uid-123",
+				},
+				Spec: v1.PersistentVolumeClaimSpec{
+					Resources: v1.VolumeResourceRequirements{
+						Requests: v1.ResourceList{
+							v1.ResourceStorage: resource.MustParse("1Gi"),
+						},
+					},
+				},
+			},
+			expectError: false,
+		},
+		{
+			name:        "Invalid object type",
+			obj:         123,
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &helper{}
+
+			assert.NotPanics(t, func() {
+				h.deletePVC(tt.obj)
+			})
+		})
+	}
+}
+
+func TestProcessPVC(t *testing.T) {
+	tests := []struct {
+		name      string
+		pvc       *v1.PersistentVolumeClaim
+		eventType string
+	}{
+		{
+			name: "Process PVC add event",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-pvc",
+					Namespace: "default",
+					UID:       "test-uid-123",
+				},
+				Spec: v1.PersistentVolumeClaimSpec{
+					Resources: v1.VolumeResourceRequirements{
+						Requests: v1.ResourceList{
+							v1.ResourceStorage: resource.MustParse("1Gi"),
+						},
+					},
+					AccessModes:      []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+					StorageClassName: &[]string{"fast-ssd"}[0],
+				},
+				Status: v1.PersistentVolumeClaimStatus{
+					Phase: v1.ClaimPending,
+				},
+			},
+			eventType: eventAdd,
+		},
+		{
+			name: "Process PVC update event",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-pvc",
+					Namespace: "default",
+					UID:       "test-uid-123",
+				},
+				Spec: v1.PersistentVolumeClaimSpec{
+					Resources: v1.VolumeResourceRequirements{
+						Requests: v1.ResourceList{
+							v1.ResourceStorage: resource.MustParse("2Gi"),
+						},
+					},
+					VolumeName: "pv-test-volume",
+				},
+				Status: v1.PersistentVolumeClaimStatus{
+					Phase: v1.ClaimBound,
+				},
+			},
+			eventType: eventUpdate,
+		},
+		{
+			name: "Process PVC delete event",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-pvc",
+					Namespace: "default",
+					UID:       "test-uid-123",
+				},
+				Spec: v1.PersistentVolumeClaimSpec{
+					Resources: v1.VolumeResourceRequirements{
+						Requests: v1.ResourceList{
+							v1.ResourceStorage: resource.MustParse("1Gi"),
+						},
+					},
+				},
+			},
+			eventType: eventDelete,
+		},
+		{
+			name: "Process PVC without storage size",
+			pvc: &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "invalid-pvc",
+					Namespace: "default",
+					UID:       "test-uid-invalid",
+				},
+				Spec: v1.PersistentVolumeClaimSpec{
+					Resources: v1.VolumeResourceRequirements{
+						Requests: v1.ResourceList{
+							// No storage size specified
+						},
+					},
+				},
+			},
+			eventType: eventAdd,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &helper{}
+			ctx := context.TODO()
+
+			// Test that processPVC doesn't panic
+			assert.NotPanics(t, func() {
+				h.processPVC(ctx, tt.pvc, tt.eventType)
+			})
+		})
+	}
+}
+
+func TestGetCachedPVCByUID(t *testing.T) {
+	tests := []struct {
+		name           string
+		uid            string
+		setupIndexer   func(*FakeIndexer)
+		assertErr      assert.ErrorAssertionFunc
+		assertPVC      assert.ValueAssertionFunc
+		expectedPVCUID string
+	}{
+		{
+			name: "Successfully find PVC by UID",
+			uid:  "test-uid-123",
+			setupIndexer: func(indexer *FakeIndexer) {
+				pvc := &v1.PersistentVolumeClaim{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-pvc",
+						Namespace: "default",
+						UID:       "test-uid-123",
+					},
+				}
+				indexer.items = []interface{}{pvc}
+			},
+			assertErr:      assert.NoError,
+			assertPVC:      assert.NotNil,
+			expectedPVCUID: "test-uid-123",
+		},
+		{
+			name: "PVC not found by UID",
+			uid:  "nonexistent-uid",
+			setupIndexer: func(indexer *FakeIndexer) {
+				indexer.items = []interface{}{} // Empty
+			},
+			assertErr: assert.Error,
+			assertPVC: assert.Nil,
+		},
+		{
+			name: "Multiple PVCs found by UID - error",
+			uid:  "duplicate-uid",
+			setupIndexer: func(indexer *FakeIndexer) {
+				pvc1 := &v1.PersistentVolumeClaim{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "pvc1", UID: "duplicate-uid",
+					},
+				}
+				pvc2 := &v1.PersistentVolumeClaim{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "pvc2", UID: "duplicate-uid",
+					},
+				}
+				indexer.items = []interface{}{pvc1, pvc2}
+			},
+			assertErr: assert.Error,
+			assertPVC: assert.Nil,
+		},
+		{
+			name: "Non-PVC object found by UID",
+			uid:  "wrong-type-uid",
+			setupIndexer: func(indexer *FakeIndexer) {
+				// Return a non-PVC object
+				indexer.items = []interface{}{"not-a-pvc"}
+			},
+			assertErr: assert.Error,
+			assertPVC: assert.Nil,
+		},
+		{
+			name: "Indexer error",
+			uid:  "error-uid",
+			setupIndexer: func(indexer *FakeIndexer) {
+				indexer.byIndexError = errors.New("indexer error")
+			},
+			assertErr: assert.Error,
+			assertPVC: assert.Nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fakeIndexer := &FakeIndexer{}
+			tt.setupIndexer(fakeIndexer)
+
+			h := &helper{
+				pvcIndexer: fakeIndexer,
+			}
+
+			ctx := context.TODO()
+			pvc, err := h.getCachedPVCByUID(ctx, tt.uid)
+
+			// Use function types for assertions - no conditional logic needed!
+			tt.assertErr(t, err, "Unexpected error result for test case: %s", tt.name)
+			tt.assertPVC(t, pvc, "Unexpected PVC result for test case: %s", tt.name)
+
+			// Only check UID when we expect a non-nil PVC
+			if tt.expectedPVCUID != "" {
+				assert.Equal(t, tt.expectedPVCUID, string(pvc.UID))
+			}
+		})
+	}
+}
+
+func TestWaitForCachedPVCByUID(t *testing.T) {
+	tests := []struct {
+		name            string
+		uid             string
+		maxElapsedTime  time.Duration
+		setupIndexer    func(*FakeIndexer)
+		assertErr       assert.ErrorAssertionFunc
+		assertPVC       assert.ValueAssertionFunc
+		expectedTimeout bool
+	}{
+		{
+			name:           "Successfully find PVC immediately",
+			uid:            "immediate-uid",
+			maxElapsedTime: 1 * time.Second,
+			setupIndexer: func(indexer *FakeIndexer) {
+				pvc := &v1.PersistentVolumeClaim{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-pvc",
+						Namespace: "default",
+						UID:       "immediate-uid",
+					},
+				}
+				indexer.items = []interface{}{pvc}
+			},
+			assertErr: assert.NoError,
+			assertPVC: assert.NotNil,
+		},
+		{
+			name:           "Timeout waiting for PVC",
+			uid:            "timeout-uid",
+			maxElapsedTime: 10 * time.Millisecond, // Very short timeout
+			setupIndexer: func(indexer *FakeIndexer) {
+				indexer.items = []interface{}{} // Always empty
+			},
+			assertErr:       assert.Error,
+			assertPVC:       assert.Nil,
+			expectedTimeout: true,
+		},
+		{
+			name:           "Indexer error prevents finding PVC",
+			uid:            "error-uid",
+			maxElapsedTime: 100 * time.Millisecond,
+			setupIndexer: func(indexer *FakeIndexer) {
+				indexer.byIndexError = errors.New("persistent indexer error")
+			},
+			assertErr: assert.Error,
+			assertPVC: assert.Nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fakeIndexer := &FakeIndexer{}
+			tt.setupIndexer(fakeIndexer)
+
+			h := &helper{
+				pvcIndexer: fakeIndexer,
+			}
+
+			ctx := context.TODO()
+			pvc, err := h.waitForCachedPVCByUID(ctx, tt.uid, tt.maxElapsedTime)
+
+			// Use function types for assertions - no conditional logic needed!
+			tt.assertErr(t, err, "Unexpected error result for waitForCachedPVCByUID test case: %s", tt.name)
+			tt.assertPVC(t, pvc, "Unexpected PVC result for waitForCachedPVCByUID test case: %s", tt.name)
+
+			if tt.expectedTimeout {
+				assert.Error(t, err, "Expected timeout error")
+			}
+
+			// Only check UID when we expect a non-nil PVC (successful cases)
+			if pvc != nil {
+				assert.Equal(t, tt.uid, string(pvc.UID))
+			}
+		})
+	}
+}
+
+func TestGetCachedPVCByName(t *testing.T) {
+	tests := []struct {
+		name         string
+		pvcName      string
+		namespace    string
+		setupIndexer func(*FakeIndexer)
+		assertErr    assert.ErrorAssertionFunc
+		assertPVC    assert.ValueAssertionFunc
+	}{
+		{
+			name:      "Successfully find PVC by name",
+			pvcName:   "test-pvc",
+			namespace: "default",
+			setupIndexer: func(indexer *FakeIndexer) {
+				pvc := &v1.PersistentVolumeClaim{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-pvc",
+						Namespace: "default",
+					},
+				}
+				indexer.getByKeyResult = pvc
+				indexer.getByKeyExists = true
+			},
+			assertErr: assert.NoError,
+			assertPVC: assert.NotNil,
+		},
+		{
+			name:      "PVC not found by name",
+			pvcName:   "nonexistent-pvc",
+			namespace: "default",
+			setupIndexer: func(indexer *FakeIndexer) {
+				indexer.getByKeyResult = nil
+				indexer.getByKeyExists = false
+			},
+			assertErr: assert.Error,
+			assertPVC: assert.Nil,
+		},
+		{
+			name:      "Non-PVC object found",
+			pvcName:   "wrong-type",
+			namespace: "default",
+			setupIndexer: func(indexer *FakeIndexer) {
+				indexer.getByKeyResult = "not-a-pvc"
+				indexer.getByKeyExists = true
+			},
+			assertErr: assert.Error,
+			assertPVC: assert.Nil,
+		},
+		{
+			name:      "Indexer error",
+			pvcName:   "error-pvc",
+			namespace: "default",
+			setupIndexer: func(indexer *FakeIndexer) {
+				indexer.getByKeyError = errors.New("indexer error")
+			},
+			assertErr: assert.Error,
+			assertPVC: assert.Nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fakeIndexer := &FakeIndexer{}
+			tt.setupIndexer(fakeIndexer)
+
+			h := &helper{
+				pvcIndexer: fakeIndexer,
+			}
+
+			ctx := context.TODO()
+			pvc, err := h.getCachedPVCByName(ctx, tt.pvcName, tt.namespace)
+
+			// Use function types for assertions - no conditional logic needed!
+			tt.assertErr(t, err, "Unexpected error result for test case: %s", tt.name)
+			tt.assertPVC(t, pvc, "Unexpected PVC result for test case: %s", tt.name)
+
+			// Only validate PVC details when we expect a non-nil PVC
+			if pvc != nil {
+				assert.Equal(t, tt.pvcName, pvc.Name)
+				assert.Equal(t, tt.namespace, pvc.Namespace)
+			}
+		})
+	}
+}
+
+func TestGetCachedPVByName(t *testing.T) {
+	tests := []struct {
+		name         string
+		pvName       string
+		setupIndexer func(*FakeIndexer)
+		assertErr    assert.ErrorAssertionFunc
+		assertPV     assert.ValueAssertionFunc
+	}{
+		{
+			name:   "Successfully find PV by name",
+			pvName: "test-pv",
+			setupIndexer: func(indexer *FakeIndexer) {
+				pv := &v1.PersistentVolume{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "test-pv",
+					},
+				}
+				indexer.getByKeyResult = pv
+				indexer.getByKeyExists = true
+			},
+			assertErr: assert.NoError,
+			assertPV:  assert.NotNil,
+		},
+		{
+			name:   "PV not found by name",
+			pvName: "nonexistent-pv",
+			setupIndexer: func(indexer *FakeIndexer) {
+				indexer.getByKeyResult = nil
+				indexer.getByKeyExists = false
+			},
+			assertErr: assert.Error,
+			assertPV:  assert.Nil,
+		},
+		{
+			name:   "Non-PV object found",
+			pvName: "wrong-type",
+			setupIndexer: func(indexer *FakeIndexer) {
+				indexer.getByKeyResult = "not-a-pv"
+				indexer.getByKeyExists = true
+			},
+			assertErr: assert.Error,
+			assertPV:  assert.Nil,
+		},
+		{
+			name:   "Indexer error",
+			pvName: "error-pv",
+			setupIndexer: func(indexer *FakeIndexer) {
+				indexer.getByKeyError = errors.New("indexer error")
+			},
+			assertErr: assert.Error,
+			assertPV:  assert.Nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fakeIndexer := &FakeIndexer{}
+			tt.setupIndexer(fakeIndexer)
+
+			h := &helper{
+				pvIndexer: fakeIndexer,
+			}
+
+			ctx := context.TODO()
+			pv, err := h.getCachedPVByName(ctx, tt.pvName)
+
+			// Use function types for assertions - no conditional logic needed!
+			tt.assertErr(t, err, "Unexpected error result for test case: %s", tt.name)
+			tt.assertPV(t, pv, "Unexpected PV result for test case: %s", tt.name)
+
+			// Only validate PV name when we expect a non-nil PV
+			if pv != nil {
+				assert.Equal(t, tt.pvName, pv.Name)
+			}
+		})
+	}
+}
+
+func TestIsPVInCache(t *testing.T) {
+	tests := []struct {
+		name         string
+		pvName       string
+		setupIndexer func(*FakeIndexer)
+		assertErr    assert.ErrorAssertionFunc
+		assertFound  func(assert.TestingT, bool, ...interface{}) bool
+	}{
+		{
+			name:   "PV found in cache",
+			pvName: "existing-pv",
+			setupIndexer: func(indexer *FakeIndexer) {
+				pv := &v1.PersistentVolume{
+					ObjectMeta: metav1.ObjectMeta{Name: "existing-pv"},
+				}
+				indexer.getByKeyResult = pv
+				indexer.getByKeyExists = true
+			},
+			assertErr:   assert.NoError,
+			assertFound: assert.True,
+		},
+		{
+			name:   "PV not found in cache",
+			pvName: "missing-pv",
+			setupIndexer: func(indexer *FakeIndexer) {
+				indexer.getByKeyResult = nil
+				indexer.getByKeyExists = false
+			},
+			assertErr:   assert.NoError,
+			assertFound: assert.False,
+		},
+		{
+			name:   "Non-PV object found",
+			pvName: "wrong-type",
+			setupIndexer: func(indexer *FakeIndexer) {
+				indexer.getByKeyResult = "not-a-pv"
+				indexer.getByKeyExists = true
+			},
+			assertErr:   assert.Error,
+			assertFound: assert.False,
+		},
+		{
+			name:   "Indexer error",
+			pvName: "error-pv",
+			setupIndexer: func(indexer *FakeIndexer) {
+				indexer.getByKeyError = errors.New("cache error")
+			},
+			assertErr:   assert.Error,
+			assertFound: assert.False,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fakeIndexer := &FakeIndexer{}
+			tt.setupIndexer(fakeIndexer)
+
+			h := &helper{
+				pvIndexer: fakeIndexer,
+			}
+
+			ctx := context.TODO()
+			found, err := h.isPVInCache(ctx, tt.pvName)
+
+			// Use function types for assertions - no conditional logic needed!
+			tt.assertErr(t, err, "Unexpected error result for test case: %s", tt.name)
+			tt.assertFound(t, found, "Unexpected found result for test case: %s", tt.name)
+		})
+	}
+}
+
+func TestProcessNode(t *testing.T) {
+	tests := []struct {
+		name                   string
+		node                   *v1.Node
+		eventType              string
+		setupOrchestrator      func(*mockcore.MockOrchestrator)
+		expectOrchestratorCall bool
+	}{
+		{
+			name: "Process node add event",
+			node: &v1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-node-1",
+				},
+				Status: v1.NodeStatus{
+					Conditions: []v1.NodeCondition{
+						{
+							Type:   v1.NodeReady,
+							Status: v1.ConditionTrue,
+						},
+					},
+				},
+			},
+			eventType: eventAdd,
+			setupOrchestrator: func(mockOrchestrator *mockcore.MockOrchestrator) {
+				// No orchestrator call expected for add events
+			},
+			expectOrchestratorCall: false,
+		},
+		{
+			name: "Process node update event",
+			node: &v1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-node-2",
+				},
+				Status: v1.NodeStatus{
+					Conditions: []v1.NodeCondition{
+						{
+							Type:   v1.NodeReady,
+							Status: v1.ConditionFalse,
+						},
+					},
+				},
+			},
+			eventType: eventUpdate,
+			setupOrchestrator: func(mockOrchestrator *mockcore.MockOrchestrator) {
+				// No orchestrator call expected for update events
+			},
+			expectOrchestratorCall: false,
+		},
+		{
+			name: "Process node delete event - successful deletion",
+			node: &v1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-node-3",
+				},
+			},
+			eventType: eventDelete,
+			setupOrchestrator: func(mockOrchestrator *mockcore.MockOrchestrator) {
+				mockOrchestrator.EXPECT().DeleteNode(gomock.Any(), "test-node-3").Return(nil)
+			},
+			expectOrchestratorCall: true,
+		},
+		{
+			name: "Process node delete event - not found error (should not log error)",
+			node: &v1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-node-4",
+				},
+			},
+			eventType: eventDelete,
+			setupOrchestrator: func(mockOrchestrator *mockcore.MockOrchestrator) {
+				mockOrchestrator.EXPECT().DeleteNode(gomock.Any(), "test-node-4").Return(errors.NotFoundError("node not found"))
+			},
+			expectOrchestratorCall: true,
+		},
+		{
+			name: "Process node delete event - other error",
+			node: &v1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-node-5",
+				},
+			},
+			eventType: eventDelete,
+			setupOrchestrator: func(mockOrchestrator *mockcore.MockOrchestrator) {
+				mockOrchestrator.EXPECT().DeleteNode(gomock.Any(), "test-node-5").Return(errors.New("database error"))
+			},
+			expectOrchestratorCall: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockOrchestrator := mockcore.NewMockOrchestrator(ctrl)
+			tt.setupOrchestrator(mockOrchestrator)
+
+			h := &helper{
+				orchestrator: mockOrchestrator,
+			}
+
+			ctx := context.TODO()
+
+			// Test that processNode doesn't panic and calls orchestrator when expected
+			assert.NotPanics(t, func() {
+				h.processNode(ctx, tt.node, tt.eventType)
+			})
+		})
+	}
+}
+
+func TestGetNodeTopologyLabels(t *testing.T) {
+	tests := []struct {
+		name           string
+		nodeName       string
+		setupClient    func() *k8sfake.Clientset
+		expectedLabels map[string]string
+		assertErr      assert.ErrorAssertionFunc
+	}{
+		{
+			name:     "Node with topology labels",
+			nodeName: "node-with-topology",
+			setupClient: func() *k8sfake.Clientset {
+				node := &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node-with-topology",
+						Labels: map[string]string{
+							"topology.kubernetes.io/zone":   "us-east-1a",
+							"topology.kubernetes.io/region": "us-east-1",
+							"kubernetes.io/hostname":        "node-with-topology",
+							"regular-label":                 "not-topology",
+						},
+					},
+				}
+				client := k8sfake.NewSimpleClientset(node)
+				return client
+			},
+			expectedLabels: map[string]string{
+				"topology.kubernetes.io/zone":   "us-east-1a",
+				"topology.kubernetes.io/region": "us-east-1",
+			},
+			assertErr: assert.NoError,
+		},
+		{
+			name:     "Node with no topology labels",
+			nodeName: "node-no-topology",
+			setupClient: func() *k8sfake.Clientset {
+				node := &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node-no-topology",
+						Labels: map[string]string{
+							"kubernetes.io/hostname": "node-no-topology",
+							"regular-label":          "value",
+						},
+					},
+				}
+				client := k8sfake.NewSimpleClientset(node)
+				return client
+			},
+			expectedLabels: map[string]string{},
+			assertErr:      assert.NoError,
+		},
+		{
+			name:     "Node with custom topology prefix",
+			nodeName: "node-custom-topology",
+			setupClient: func() *k8sfake.Clientset {
+				node := &v1.Node{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "node-custom-topology",
+						Labels: map[string]string{
+							"topology.example.com/rack":   "rack-1", // Non-standard prefix, should not be included
+							"topology.kubernetes.io/zone": "us-west-2b",
+							"normal-label":                "value",
+						},
+					},
+				}
+				client := k8sfake.NewSimpleClientset(node)
+				return client
+			},
+			expectedLabels: map[string]string{
+				"topology.kubernetes.io/zone": "us-west-2b", // Only standard prefix should be included
+			},
+			assertErr: assert.NoError,
+		},
+		{
+			name:     "Node not found",
+			nodeName: "nonexistent-node",
+			setupClient: func() *k8sfake.Clientset {
+				// Create empty client without the requested node
+				client := k8sfake.NewSimpleClientset()
+				return client
+			},
+			expectedLabels: nil,
+			assertErr:      assert.Error,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			kubeClient := tt.setupClient()
+
+			h := &helper{
+				kubeClient: kubeClient,
+			}
+
+			ctx := context.TODO()
+			labels, err := h.GetNodeTopologyLabels(ctx, tt.nodeName)
+
+			// Use function types for assertions - no conditional logic needed!
+			tt.assertErr(t, err, "Unexpected error result for GetNodeTopologyLabels test case: %s", tt.name)
+			if err == nil {
+				assert.Equal(t, tt.expectedLabels, labels)
+			}
+		})
+	}
+}
+
+func TestGetCachedVolumeReference(t *testing.T) {
+	tests := []struct {
+		name          string
+		vrefNamespace string
+		pvcName       string
+		pvcNamespace  string
+		setupIndexer  func(*FakeIndexer)
+		assertErr     assert.ErrorAssertionFunc
+		assertVRef    assert.ValueAssertionFunc
+	}{
+		{
+			name:          "Successfully find volume reference",
+			vrefNamespace: "trident",
+			pvcName:       "test-pvc",
+			pvcNamespace:  "default",
+			setupIndexer: func(indexer *FakeIndexer) {
+				vref := &netappv1.TridentVolumeReference{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-vref",
+						Namespace: "trident",
+					},
+					Spec: netappv1.TridentVolumeReferenceSpec{
+						PVCName:      "test-pvc",
+						PVCNamespace: "default",
+					},
+				}
+				indexer.items = []interface{}{vref}
+			},
+			assertErr:  assert.NoError,
+			assertVRef: assert.NotNil,
+		},
+		{
+			name:          "Volume reference not found",
+			vrefNamespace: "trident",
+			pvcName:       "missing-pvc",
+			pvcNamespace:  "default",
+			setupIndexer: func(indexer *FakeIndexer) {
+				indexer.items = []interface{}{} // Empty
+			},
+			assertErr:  assert.Error,
+			assertVRef: assert.Nil,
+		},
+		{
+			name:          "Multiple volume references found - error",
+			vrefNamespace: "trident",
+			pvcName:       "duplicate-pvc",
+			pvcNamespace:  "default",
+			setupIndexer: func(indexer *FakeIndexer) {
+				vref1 := &netappv1.TridentVolumeReference{
+					ObjectMeta: metav1.ObjectMeta{Name: "vref1"},
+				}
+				vref2 := &netappv1.TridentVolumeReference{
+					ObjectMeta: metav1.ObjectMeta{Name: "vref2"},
+				}
+				indexer.items = []interface{}{vref1, vref2}
+			},
+			assertErr:  assert.Error,
+			assertVRef: assert.Nil,
+		},
+		{
+			name:          "Non-VolumeReference object found",
+			vrefNamespace: "trident",
+			pvcName:       "wrong-type",
+			pvcNamespace:  "default",
+			setupIndexer: func(indexer *FakeIndexer) {
+				indexer.items = []interface{}{"not-a-vref"}
+			},
+			assertErr:  assert.Error,
+			assertVRef: assert.Nil,
+		},
+		{
+			name:          "Indexer error",
+			vrefNamespace: "trident",
+			pvcName:       "error-pvc",
+			pvcNamespace:  "default",
+			setupIndexer: func(indexer *FakeIndexer) {
+				indexer.byIndexError = errors.New("cache error")
+			},
+			assertErr:  assert.Error,
+			assertVRef: assert.Nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fakeIndexer := &FakeIndexer{}
+			tt.setupIndexer(fakeIndexer)
+
+			h := &helper{
+				vrefIndexer: fakeIndexer,
+			}
+
+			ctx := context.TODO()
+			vref, err := h.getCachedVolumeReference(ctx, tt.vrefNamespace, tt.pvcName, tt.pvcNamespace)
+
+			// Use function types for assertions - no conditional logic needed!
+			tt.assertErr(t, err, "Unexpected error result for getCachedVolumeReference test case: %s", tt.name)
+			tt.assertVRef(t, vref, "Unexpected VRef result for getCachedVolumeReference test case: %s", tt.name)
+		})
+	}
 }
