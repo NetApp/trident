@@ -1510,25 +1510,6 @@ func TestGetNamespaceSpecificSubsystemName(t *testing.T) {
 	assert.Equal(t, got_name, expected_name)
 }
 
-func TestGetNodeSpecificSubsystemName(t *testing.T) {
-	// case 1: subsystem, name is shorter than 64 char
-	nodeName := "fakeNodeName"
-	tridentUUID := "fakeUUID"
-	expected := "fakeNodeName-fakeUUID"
-
-	got := getNodeSpecificSubsystemName(nodeName, tridentUUID)
-
-	assert.Equal(t, got, expected)
-
-	// case 2: subsystem name is longer than 64 char
-	nodeName = "fakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeName"
-	expected = "fakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNod-fakeUUID"
-
-	got = getNodeSpecificSubsystemName(nodeName, tridentUUID)
-
-	assert.Equal(t, got, expected)
-}
-
 func TestPublish(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mock := mockapi.NewMockOntapAPI(mockCtrl)
@@ -1599,7 +1580,7 @@ func TestPublish(t *testing.T) {
 	publishInfo.HostNQN = "fakeHostNQN"
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
 	mock.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).Return(namespace, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, fmt.Errorf("Error creating subsystem")).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, fmt.Errorf("Error creating subsystem")).Times(1)
 
 	err = d.Publish(ctx, volConfig, publishInfo)
 
@@ -1608,7 +1589,7 @@ func TestPublish(t *testing.T) {
 	// case 6: Error creating subsystem in CSI Context
 	d.Config.DriverContext = tridentconfig.ContextCSI
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, fmt.Errorf("Error creating subsystem")).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, fmt.Errorf("Error creating subsystem")).Times(1)
 
 	err = d.Publish(ctx, volConfig, publishInfo)
 
@@ -1626,7 +1607,7 @@ func TestPublish(t *testing.T) {
 	// case 8: Error while adding host nqn to subsystem
 	publishInfo.HostNQN = "fakeHostNQN"
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, nil).Times(1)
 	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(fmt.Errorf("Error adding host nqnq to subsystem")).Times(1)
 
 	err = d.Publish(ctx, volConfig, publishInfo)
@@ -1635,7 +1616,7 @@ func TestPublish(t *testing.T) {
 
 	// case 9: Error returned by NVMeEnsureNamespaceMapped
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, nil).Times(1)
 	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
 	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(fmt.Errorf("Error returned by NVMeEnsureNamespaceMapped")).Times(1)
 
@@ -1645,7 +1626,7 @@ func TestPublish(t *testing.T) {
 
 	// case 10: Success
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, nil).Times(1)
 	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
 	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
 

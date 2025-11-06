@@ -5085,6 +5085,8 @@ func getUniqueNodeSpecificSubsystemName(
 
 	// Construct the subsystem name
 	completeSSName := fmt.Sprintf("%s_%s_%s", prefix, nodeName, tridentUUID)
+	// Skip any underscores at the beginning
+	completeSSName = strings.TrimLeft(completeSSName, "_")
 	finalSSName := completeSSName
 
 	// Ensure the final name does not exceed the maximum length
@@ -5098,6 +5100,7 @@ func getUniqueNodeSpecificSubsystemName(
 
 		base64Str := base64.StdEncoding.EncodeToString(u[:])
 		finalSSName = fmt.Sprintf("%s_%s_%s", prefix, nodeName, base64Str)
+		finalSSName = strings.TrimLeft(finalSSName, "_")
 
 		if len(finalSSName) > maxSubsystemLength {
 			// If even after Trident UUID reduction, the length is more than max length,

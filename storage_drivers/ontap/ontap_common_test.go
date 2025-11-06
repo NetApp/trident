@@ -9729,6 +9729,26 @@ func TestGetUniqueNodeSpecificSubsystemName(t *testing.T) {
 			expectedFinal:      "",
 			expectError:        true,
 		},
+		{
+			description:        "Valid input, with no prefix passed",
+			nodeName:           "node1",
+			tridentUUID:        tridentUUID,
+			prefix:             "",
+			maxSubsystemLength: 64,
+			expectedBestCase:   fmt.Sprintf("node1_%s", tridentUUID),
+			expectedFinal:      fmt.Sprintf("node1_%s", tridentUUID),
+			expectError:        false,
+		},
+		{
+			description:        "Even hash is more than limit, truncation needed with no prefix",
+			nodeName:           "averylongnodenameexceedingthelimit",
+			tridentUUID:        tridentUUID,
+			prefix:             "",
+			maxSubsystemLength: 32,
+			expectedBestCase:   fmt.Sprintf("averylongnodenameexceedingthelimit_%s", tridentUUID),
+			expectedFinal:      fmt.Sprintf("%x", sha256.Sum256([]byte(fmt.Sprintf("averylongnodenameexceedingthelimit_%s", tridentUUID))))[:32],
+			expectError:        false,
+		},
 	}
 
 	for _, test := range tests {
