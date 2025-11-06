@@ -1500,26 +1500,6 @@ func TestGetNamespaceSpecificSubsystemName(t *testing.T) {
 	assert.Equal(t, got_name, expected_name)
 }
 
-func TestGetNodeSpecificSubsystemName(t *testing.T) {
-	d := newNVMeDriver(nil, nil, nil)
-	// case 1: subsystem, name is shorter than 64 char
-	nodeName := "fakeNodeName"
-	tridentUUID := "fakeUUID"
-	expected := "fakeNodeName-fakeUUID"
-
-	got := d.getNodeSpecificSubsystemName(nodeName, tridentUUID)
-
-	assert.Equal(t, got, expected)
-
-	// case 2: subsystem name is longer than 64 char
-	nodeName = "fakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeName"
-	expected = "fakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNod-fakeUUID"
-
-	got = d.getNodeSpecificSubsystemName(nodeName, tridentUUID)
-
-	assert.Equal(t, got, expected)
-}
-
 func TestPublish(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mock := mockapi.NewMockOntapAPI(mockCtrl)
@@ -1632,7 +1612,7 @@ func TestPublish(t *testing.T) {
 	publishInfo.LUKSEncryption = ""
 	volConfig.FileSystem = ""
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, errors.New("Error creating subsystem")).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, errors.New("Error creating subsystem")).Times(1)
 
 	err = d.Publish(ctx, volConfig, publishInfo)
 
@@ -1650,7 +1630,7 @@ func TestPublish(t *testing.T) {
 	// case 8: Error while adding host nqn to subsystem
 	publishInfo.HostNQN = "fakeHostNQN"
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, nil).Times(1)
 	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(errors.New("Error adding host nqnq to subsystem")).Times(1)
 
 	err = d.Publish(ctx, volConfig, publishInfo)
@@ -1659,7 +1639,7 @@ func TestPublish(t *testing.T) {
 
 	// case 9: Error returned by NVMeEnsureNamespaceMapped
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, nil).Times(1)
 	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
 	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(errors.New("Error returned by NVMeEnsureNamespaceMapped")).Times(1)
 
@@ -1669,7 +1649,7 @@ func TestPublish(t *testing.T) {
 
 	// case 10: Success
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, nil).Times(1)
 	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
 	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
@@ -1681,7 +1661,7 @@ func TestPublish(t *testing.T) {
 	volConfig.FileSystem = filesystem.Xfs
 	publishInfo.MountOptions = ""
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, nil).Times(1)
 	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
 	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
@@ -1694,7 +1674,7 @@ func TestPublish(t *testing.T) {
 	volConfig.FileSystem = filesystem.Xfs
 	publishInfo.MountOptions = "rw,relatime"
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, nil).Times(1)
 	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
 	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
@@ -1709,7 +1689,7 @@ func TestPublish(t *testing.T) {
 	volConfig.FileSystem = filesystem.Ext4
 	publishInfo.MountOptions = ""
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, nil).Times(1)
 	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
 	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
@@ -1722,7 +1702,7 @@ func TestPublish(t *testing.T) {
 	volConfig.FileSystem = filesystem.Xfs
 	publishInfo.MountOptions = "rw,nouuid,relatime"
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, nil).Times(1)
 	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
 	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
 

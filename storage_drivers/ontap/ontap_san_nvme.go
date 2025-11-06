@@ -58,6 +58,8 @@ const (
 	defaultNamespaceBlockSize = 4096
 	// maximumSubsystemNameLength represent the max length of subsystem name
 	maximumSubsystemNameLength = 64
+	// nvmeSubsystemPrefix Subsystem prefix for ONTAP NVMe driver (empty for legacy compatibility)
+	nvmeSubsystemPrefix = ""
 )
 
 // Namespace attributes stored in its comment field. These fields are useful for docker context.
@@ -923,6 +925,7 @@ func (d *NVMeStorageDriver) Publish(
 	// When FS type is RAW, we create a new subsystem per namespace,
 	// else we use the subsystem created for that particular node
 	var ssName string
+	var completeSSName string
 	if volConfig.FileSystem == filesystem.Raw {
 		ssName = getNamespaceSpecificSubsystemName(name, pvName)
 	} else {
@@ -931,13 +934,24 @@ func (d *NVMeStorageDriver) Publish(
 		if tridentconfig.CurrentDriverContext == tridentconfig.ContextDocker {
 			ssName = d.getStoragePrefixSubsystemName()
 		} else {
-			ssName = d.getNodeSpecificSubsystemName(publishInfo.HostName, publishInfo.TridentUUID)
+			if completeSSName, ssName, err = getUniqueNodeSpecificSubsystemName(
+				publishInfo.HostName, publishInfo.TridentUUID, nvmeSubsystemPrefix, maximumSubsystemNameLength); err != nil {
+				return fmt.Errorf("failed to create node specific subsystem name: %w", err)
+			}
 		}
+	}
+
+	// Update the subsystem comment
+	var ssComment string
+	if completeSSName == "" {
+		ssComment = ssName
+	} else {
+		ssComment = completeSSName
 	}
 
 	// If 2 concurrent requests try to create the same subsystem, one will succeed and ONTAP is guaranteed to return
 	// "already exists" error code for the other. So no need for locking around subsystem creation.
-	subsystem, err := d.createOrGetSubsystem(ctx, ssName)
+	subsystem, err := d.createOrGetSubsystem(ctx, ssName, ssComment)
 	if err != nil {
 		return err
 	}
@@ -1177,9 +1191,11 @@ func (d *NVMeStorageDriver) getStoragePoolAttributes(ctx context.Context) map[st
 	}
 }
 
-func (d *NVMeStorageDriver) createOrGetSubsystem(ctx context.Context, ssName string) (*api.NVMeSubsystem, error) {
+func (d *NVMeStorageDriver) createOrGetSubsystem(
+	ctx context.Context, ssName, comment string,
+) (*api.NVMeSubsystem, error) {
 	// This checks if subsystem exists and creates it if not.
-	ss, err := d.API.NVMeSubsystemCreate(ctx, ssName, ssName)
+	ss, err := d.API.NVMeSubsystemCreate(ctx, ssName, comment)
 	if err != nil {
 		Logc(ctx).Errorf("subsystem create failed, %v", err)
 		return nil, err
@@ -1741,17 +1757,6 @@ func (d *NVMeStorageDriver) ParseNVMeNamespaceCommentString(_ context.Context, c
 		return nsAttrs, nil
 	}
 	return nil, fmt.Errorf("nsAttrs field not found in Namespace comment")
-}
-
-func (d *NVMeStorageDriver) getNodeSpecificSubsystemName(nodeName, tridentUUID string) string {
-	// For CSI mode, use per-node subsystems
-	subsystemName := fmt.Sprintf("%s-%s", nodeName, tridentUUID)
-	if len(subsystemName) > maximumSubsystemNameLength {
-		// If the new subsystem name is over the subsystem character limit, it means the host name is too long.
-		subsystemPrefixLength := maximumSubsystemNameLength - len(tridentUUID) - 1
-		subsystemName = fmt.Sprintf("%s-%s", nodeName[:subsystemPrefixLength], tridentUUID)
-	}
-	return subsystemName
 }
 
 // getStoragePrefixSubsystemName generates a stable subsystem name using storage prefix for Docker mode
