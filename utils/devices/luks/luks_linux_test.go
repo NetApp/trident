@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 //go:build linux
 
@@ -7,7 +7,9 @@ package luks
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
+	"time"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
@@ -15,6 +17,7 @@ import (
 	"golang.org/x/sys/unix"
 
 	"github.com/netapp/trident/mocks/mock_utils/mock_devices"
+	"github.com/netapp/trident/mocks/mock_utils/mock_devices/mock_luks"
 	"github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	"github.com/netapp/trident/utils/devices"
@@ -810,4 +813,162 @@ func TestGenerateAnonymousMemFile(t *testing.T) {
 	// Close the file descriptor
 	err = unix.Close(fd)
 	assert.NoError(t, err, "expected no error closing anonymous mem file")
+}
+
+// Stub file info for unit testing
+type fakeFileInfo struct {
+	name string
+}
+
+func (f fakeFileInfo) Name() string       { return f.name }
+func (f fakeFileInfo) Size() int64        { return 0 }
+func (f fakeFileInfo) Mode() os.FileMode  { return 0 }
+func (f fakeFileInfo) ModTime() time.Time { return time.Time{} }
+func (f fakeFileInfo) IsDir() bool        { return false }
+func (f fakeFileInfo) Sys() interface{}   { return nil }
+
+func TestLUKSDevice_IsMappingStale(t *testing.T) {
+	type deviceOption func(device *LUKSDevice)
+	instrumentDevice := func(opts ...deviceOption) *LUKSDevice {
+		device := &LUKSDevice{
+			rawDevicePath:    "/dev/sdb",
+			mappedDeviceName: "pvc-test",
+		}
+		for _, opt := range opts {
+			opt(device)
+		}
+		return device
+	}
+
+	tt := map[string]struct {
+		createOpt  func(*gomock.Controller) deviceOption
+		assertBool assert.BoolAssertionFunc
+	}{
+		"with no mapper not found": {
+			createOpt: func(ctrl *gomock.Controller) deviceOption {
+				return func(device *LUKSDevice) {
+					mockOS := mock_luks.NewMockOS(ctrl)
+					mockOS.EXPECT().Stat(device.MappedDevicePath()).Return(nil, os.ErrNotExist).Times(1)
+
+					device.osFs = mockOS
+				}
+			},
+			assertBool: assert.False,
+		},
+		"with failure to glob dm-* directories": {
+			createOpt: func(ctrl *gomock.Controller) deviceOption {
+				return func(device *LUKSDevice) {
+					mockOS := mock_luks.NewMockOS(ctrl)
+					mockOS.EXPECT().Stat(device.MappedDevicePath()).Return(nil, nil)
+					mockOS.EXPECT().Glob("/sys/block/dm-*").Return([]string{"/sys/block/dm-0"}, errors.New("mock-error"))
+
+					device.osFs = mockOS
+				}
+			},
+			assertBool: assert.True,
+		},
+		"with no dm-* directories found": {
+			createOpt: func(ctrl *gomock.Controller) deviceOption {
+				return func(device *LUKSDevice) {
+					mockOS := mock_luks.NewMockOS(ctrl)
+					mockOS.EXPECT().Stat(device.MappedDevicePath()).Return(nil, nil)
+					mockOS.EXPECT().Glob("/sys/block/dm-*").Return([]string{}, nil)
+
+					device.osFs = mockOS
+				}
+			},
+			assertBool: assert.True,
+		},
+		"with dm-* directory found, wrong device name": {
+			createOpt: func(ctrl *gomock.Controller) deviceOption {
+				return func(device *LUKSDevice) {
+					mockOS := mock_luks.NewMockOS(ctrl)
+					mockOS.EXPECT().Stat(device.MappedDevicePath()).Return(nil, nil)
+					mockOS.EXPECT().Glob("/sys/block/dm-*").Return([]string{"/sys/block/dm-0"}, nil)
+					mockOS.EXPECT().ReadFile("/sys/block/dm-0/dm/name").Return([]byte("not-the-mapper"), nil)
+
+					device.osFs = mockOS
+				}
+			},
+			assertBool: assert.True,
+		},
+		"with dm-* directory found, correct device name, no slaves": {
+			createOpt: func(ctrl *gomock.Controller) deviceOption {
+				return func(device *LUKSDevice) {
+					mockOS := mock_luks.NewMockOS(ctrl)
+					mockOS.EXPECT().Stat(device.MappedDevicePath()).Return(nil, nil)
+					mockOS.EXPECT().Glob("/sys/block/dm-*").Return([]string{"/sys/block/dm-0"}, nil)
+					mockOS.EXPECT().ReadFile("/sys/block/dm-0/dm/name").Return([]byte(device.mappedDeviceName), nil)
+					mockOS.EXPECT().ReadDir("/sys/block/dm-0/slaves").Return([]os.FileInfo{}, nil)
+
+					device.osFs = mockOS
+				}
+			},
+			assertBool: assert.True,
+		},
+		"with dm-* directory found, correct device name, slave symlink broken": {
+			createOpt: func(ctrl *gomock.Controller) deviceOption {
+				return func(device *LUKSDevice) {
+					mockOS := mock_luks.NewMockOS(ctrl)
+					mockOS.EXPECT().Stat(device.MappedDevicePath()).Return(nil, nil)
+					mockOS.EXPECT().Glob("/sys/block/dm-*").Return([]string{"/sys/block/dm-0"}, nil)
+					mockOS.EXPECT().ReadFile("/sys/block/dm-0/dm/name").Return([]byte(device.mappedDeviceName), nil)
+					// One slave entry matching deviceNode
+					slaveInfo := fakeFileInfo{name: "sdb"}
+					mockOS.EXPECT().ReadDir("/sys/block/dm-0/slaves").Return([]os.FileInfo{slaveInfo}, nil)
+					mockOS.EXPECT().ReadlinkIfPossible("/sys/block/dm-0/slaves/sdb").Return("",
+						fmt.Errorf("broken symlink"))
+
+					device.osFs = mockOS
+				}
+			},
+			assertBool: assert.True,
+		},
+		"with dm-* directory found, correct device name, slave symlink ok, target device missing": {
+			createOpt: func(ctrl *gomock.Controller) deviceOption {
+				return func(device *LUKSDevice) {
+					mockOS := mock_luks.NewMockOS(ctrl)
+					mockOS.EXPECT().Stat(device.MappedDevicePath()).Return(nil, nil)
+					mockOS.EXPECT().Glob("/sys/block/dm-*").Return([]string{"/sys/block/dm-0"}, nil)
+					mockOS.EXPECT().ReadFile("/sys/block/dm-0/dm/name").Return([]byte(device.mappedDeviceName), nil)
+					// One slave entry matching deviceNode
+					slaveInfo := fakeFileInfo{name: "sdb"}
+					mockOS.EXPECT().ReadDir("/sys/block/dm-0/slaves").Return([]os.FileInfo{slaveInfo}, nil)
+					mockOS.EXPECT().ReadlinkIfPossible("/sys/block/dm-0/slaves/sdb").Return("/dev/sdb", nil)
+					mockOS.EXPECT().Stat("/dev/sdb").Return(nil, os.ErrNotExist)
+
+					device.osFs = mockOS
+				}
+			},
+			assertBool: assert.True,
+		},
+		"with dm-* directory found, correct device name, slave symlink ok, target device present": {
+			createOpt: func(ctrl *gomock.Controller) deviceOption {
+				return func(device *LUKSDevice) {
+					mockOS := mock_luks.NewMockOS(ctrl)
+					mockOS.EXPECT().Stat(device.MappedDevicePath()).Return(nil, nil)
+					mockOS.EXPECT().Glob("/sys/block/dm-*").Return([]string{"/sys/block/dm-0"}, nil)
+					mockOS.EXPECT().ReadFile("/sys/block/dm-0/dm/name").Return([]byte(device.mappedDeviceName), nil)
+					// One slave entry matching deviceNode
+					slaveInfo := fakeFileInfo{name: "sdb"}
+					mockOS.EXPECT().ReadDir("/sys/block/dm-0/slaves").Return([]os.FileInfo{slaveInfo}, nil)
+					mockOS.EXPECT().ReadlinkIfPossible("/sys/block/dm-0/slaves/sdb").Return("/dev/sdb", nil)
+					mockOS.EXPECT().Stat("/dev/sdb").Return(nil, nil)
+
+					device.osFs = mockOS
+				}
+			},
+			assertBool: assert.False,
+		},
+	}
+
+	for name, params := range tt {
+		t.Run(name, func(t *testing.T) {
+			ctx := context.Background()
+			ctrl := gomock.NewController(t)
+			assertBool := params.assertBool
+			device := instrumentDevice(params.createOpt(ctrl))
+			assertBool(t, device.IsMappingStale(ctx))
+		})
+	}
 }

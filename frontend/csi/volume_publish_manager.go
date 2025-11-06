@@ -151,7 +151,7 @@ func (v *VolumePublishManager) readTrackingInfo(
 	err := jsonRW.ReadJSONFile(ctx, &volumeTrackingInfo, path.Join(v.volumeTrackingInfoPath, filename),
 		"volume tracking info")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read tracking info for volume %s: %w", volumeID, err)
 	}
 
 	Logc(ctx).WithField("volumeTrackingInfo", volumeTrackingInfo).Debug("Volume tracking info found.")

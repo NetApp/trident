@@ -1,12 +1,13 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package luks
 
-//go:generate mockgen -destination=../../../mocks/mock_utils/mock_devices/mock_luks/mock_luks.go -package mock_luks github.com/netapp/trident/utils/devices/luks Device
+//go:generate mockgen -destination=../../../mocks/mock_utils/mock_devices/mock_luks/mock_luks.go -package mock_luks github.com/netapp/trident/utils/devices/luks OS,Device
 
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/spf13/afero"
@@ -20,9 +21,58 @@ import (
 
 const (
 	devicePrefix = "luks-"
-	// LUKS2 requires ~16MiB for overhead. Default to 18MiB just in case.
+	// MetadataSize is ~16MiB for overhead for LUKS2 headers. Default to 18MiB just in case.
 	MetadataSize = 18874368
 )
+
+// OS is an abstraction over afero.Fs, afero.LinkReader and os utility functions
+// to provide a concise interface for LUKSDevice's to interact with the filesystem.
+// It should not be used outside of this package, but it is exported for mock generation.
+type OS interface {
+	Stat(name string) (os.FileInfo, error)
+	Glob(pattern string) ([]string, error)
+	ReadDir(dirname string) ([]os.FileInfo, error)
+	ReadFile(filename string) ([]byte, error)
+	ReadlinkIfPossible(name string) (string, error)
+}
+
+// osFs is a helper that wraps operations on the OS filesystem and implements osFsAbs.
+// It should not be used outside of this package.
+type osFs struct {
+	fs afero.Fs
+}
+
+// Ensure osFs always implements OS.
+var _ OS = &osFs{}
+
+func newOsFs(fs afero.Fs) OS {
+	return &osFs{fs: fs}
+}
+
+func (o *osFs) Stat(name string) (os.FileInfo, error) {
+	return o.fs.Stat(name)
+}
+
+func (o *osFs) Glob(pattern string) ([]string, error) {
+	return afero.Glob(o.fs, pattern)
+}
+
+func (o *osFs) ReadDir(dirname string) ([]os.FileInfo, error) {
+	return afero.ReadDir(o.fs, dirname)
+}
+
+func (o *osFs) ReadFile(filename string) ([]byte, error) {
+	return afero.ReadFile(o.fs, filename)
+}
+
+func (o *osFs) ReadlinkIfPossible(name string) (string, error) {
+	if lr, ok := o.fs.(afero.LinkReader); ok {
+		return lr.ReadlinkIfPossible(name)
+	}
+	// Symlinks don't work with in-memory filesystems.
+	// Regardless, fall back to os.Readlink.
+	return os.Readlink(name)
+}
 
 type Device interface {
 	EnsureDeviceMappedOnHost(ctx context.Context, name string, secrets map[string]string) (bool, error)
@@ -32,6 +82,7 @@ type Device interface {
 	EnsureFormattedAndOpen(ctx context.Context, luksPassphrase string) (bool, error)
 	CheckPassphrase(ctx context.Context, luksPassphrase string) (bool, error)
 	RotatePassphrase(ctx context.Context, volumeId, previousLUKSPassphrase, luksPassphrase string) error
+	IsMappingStale(ctx context.Context) bool
 }
 
 type LUKSDevice struct {
@@ -39,25 +90,23 @@ type LUKSDevice struct {
 	mappedDeviceName string
 	command          execCmd.Command
 	devices          devices.Devices
-	osFs             afero.Fs
+	osFs             OS
 }
 
 func NewDevice(rawDevicePath, volumeId string, command execCmd.Command) *LUKSDevice {
 	luksDeviceName := devicePrefix + volumeId
-	devices := devices.New()
-	osFs := afero.NewOsFs()
-	return NewDetailed(rawDevicePath, luksDeviceName, command, devices, osFs)
+	return NewDetailed(rawDevicePath, luksDeviceName, command, devices.New(), afero.NewOsFs())
 }
 
-func NewDetailed(rawDevicePath, mappedDeviceName string, command execCmd.Command, devices devices.Devices,
-	osFs afero.Fs,
+func NewDetailed(
+	rawDevicePath, mappedDeviceName string, command execCmd.Command, devices devices.Devices, osFs afero.Fs,
 ) *LUKSDevice {
 	return &LUKSDevice{
 		rawDevicePath:    rawDevicePath,
 		mappedDeviceName: mappedDeviceName,
 		command:          command,
 		devices:          devices,
-		osFs:             osFs,
+		osFs:             newOsFs(osFs),
 	}
 }
 
@@ -71,7 +120,7 @@ func NewDeviceFromMappingPath(
 	return NewDevice(rawDevicePath, volumeId, command), nil
 }
 
-// EnsureLUKSDeviceMappedOnHost ensures the specified device is LUKS formatted, opened, and has the current passphrase.
+// EnsureDeviceMappedOnHost ensures the specified device is LUKS formatted, opened, and has the current passphrase.
 func (d *LUKSDevice) EnsureDeviceMappedOnHost(ctx context.Context, name string, secrets map[string]string) (bool, error) {
 	// Try to Open with current luks passphrase
 	luksPassphraseName, luksPassphrase, previousLUKSPassphraseName, previousLUKSPassphrase := GetLUKSPassphrasesFromSecretMap(secrets)
@@ -134,6 +183,18 @@ func (d *LUKSDevice) RawDevicePath() string {
 // EnsureFormattedAndOpen ensures the specified device is LUKS formatted and opened.
 func (d *LUKSDevice) EnsureFormattedAndOpen(ctx context.Context, luksPassphrase string) (formatted bool, err error) {
 	return d.ensureLUKSDevice(ctx, luksPassphrase)
+}
+
+// IsMappingStale checks if the LUKS mapping is stale (i.e., mapped but the underlying device is gone).
+// Currently, this is only supported for LUKS w/NVMe devices.
+func (d *LUKSDevice) IsMappingStale(ctx context.Context) bool {
+	fields := LogFields{
+		"devicePath": d.rawDevicePath,
+		"mappedPath": d.MappedDevicePath(),
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> luks.IsMappingStale")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< luks.IsMappingStale")
+	return d.isMappingStale(ctx)
 }
 
 func (d *LUKSDevice) ensureLUKSDevice(ctx context.Context, luksPassphrase string) (bool, error) {

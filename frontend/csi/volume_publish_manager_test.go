@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -79,10 +79,10 @@ func TestWriteTrackingInfo(t *testing.T) {
 	assert.NoError(t, err, "no error expected when write succeeds")
 
 	mockJSONUtils.EXPECT().WriteJSONFile(gomock.Any(), trackInfo, "tmp-"+fName, "volume tracking info").
-		Return(errors.New("foo"))
+		Return(errors.InvalidJSONError("foo"))
 	err = v.WriteTrackingInfo(ctx, volId, trackInfo)
 	assert.Error(t, err, "error expected when write tracking info fails")
-	assert.Equal(t, "foo", err.Error(), "expected actual error we threw")
+	assert.True(t, errors.IsInvalidJSONError(err), "expected actual error we threw")
 }
 
 func TestReadTrackingInfo(t *testing.T) {
@@ -111,15 +111,17 @@ func TestReadTrackingInfo(t *testing.T) {
 	mockJSONUtils.EXPECT().ReadJSONFile(gomock.Any(), emptyTrackInfo, fName, "volume tracking info").
 		SetArg(1, *trackInfo).Return(nil)
 	trackInfo, err := v.ReadTrackingInfo(context.Background(), volId)
+	assert.NoError(t, err, "no error expected when write succeed")
+	assert.NotNil(t, trackInfo, "expected a valid tracking info")
 	assert.Equal(t, fsType, trackInfo.FilesystemType, "tracking file did not have expected value in it")
-	assert.NoError(t, err, "tracking file should have been written")
 
 	emptyTrackInfo = &models.VolumeTrackingInfo{}
 	mockJSONUtils.EXPECT().ReadJSONFile(gomock.Any(), emptyTrackInfo, fName,
-		"volume tracking info").Return(errors.New("foo"))
-	_, err = v.ReadTrackingInfo(context.Background(), volId)
+		"volume tracking info").Return(errors.NotFoundError("not found"))
+	trackInfo, err = v.ReadTrackingInfo(context.Background(), volId)
 	assert.Error(t, err, "expected error when reading the file results in an error")
-	assert.Equal(t, "foo", err.Error(), "expected the error we threw in the mock")
+	assert.Nil(t, trackInfo, "expected nil tracking info")
+	assert.True(t, errors.IsNotFoundError(err), "expected not found error")
 }
 
 func TestListVolumeTrackingInfo_FailsToGetVolumeTrackingFiles(t *testing.T) {
@@ -255,10 +257,10 @@ func TestDeleteTrackingInfo(t *testing.T) {
 	err := v.DeleteTrackingInfo(context.Background(), volName)
 	assert.NoError(t, err, "expected no error deleting the tracking info")
 
-	mockFilesytesm.EXPECT().DeleteFile(gomock.Any(), gomock.Any(), gomock.Any()).Return("", errors.New("foo"))
+	mockFilesytesm.EXPECT().DeleteFile(gomock.Any(), gomock.Any(), gomock.Any()).Return("", errors.InvalidJSONError("foo"))
 	err = v.DeleteTrackingInfo(context.Background(), volName)
 	assert.Error(t, err, "expected error if delete tracking info fails")
-	assert.Equal(t, "foo", err.Error(), "expected the error we threw")
+	assert.True(t, errors.IsInvalidJSONError(err), "expected the error we threw")
 }
 
 func TestUpgradeVolumeTrackingFile(t *testing.T) {
