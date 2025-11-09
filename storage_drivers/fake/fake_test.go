@@ -203,3 +203,97 @@ func TestCreateGroupSnapshot(t *testing.T) {
 	err := driver.CreateGroupSnapshot(context.TODO(), groupSnapshotConfig, groupSnapshotTarget)
 	assert.NoError(t, err, "CreateGroupSnapshot should not return an error")
 }
+
+func TestFakeStorageDriver_Import_Managed(t *testing.T) {
+	driver := *NewFakeStorageDriverWithDebugTraceFlags(nil)
+	originalName := "originalVolume"
+
+	// Create a fake volume to import
+	fakeVolume := fake.Volume{
+		Name:      originalName,
+		SizeBytes: 1073741824, // 1GB
+	}
+	driver.Volumes[originalName] = fakeVolume
+
+	volConfig := &storage.VolumeConfig{
+		Name:             "importedVolume",
+		InternalName:     "trident-imported-volume",
+		Size:             "1GB",
+		ImportNotManaged: false,
+	}
+
+	err := driver.Import(context.Background(), volConfig, originalName)
+
+	assert.NoError(t, err, "Import should not return an error")
+	assert.Equal(t, "1073741824", volConfig.Size, "Volume size should be updated")
+
+	// Verify the volume was renamed (moved in the map)
+	_, exists := driver.Volumes[volConfig.InternalName]
+	assert.True(t, exists, "Volume should exist with new internal name")
+
+	_, originalExists := driver.Volumes[originalName]
+	assert.False(t, originalExists, "Original volume should no longer exist")
+}
+
+func TestFakeStorageDriver_Import_NoRename(t *testing.T) {
+	driver := *NewFakeStorageDriverWithDebugTraceFlags(nil)
+	originalName := "originalVolume"
+
+	// Create a fake volume to import
+	fakeVolume := fake.Volume{
+		Name:      originalName,
+		SizeBytes: 1073741824, // 1GB
+	}
+	driver.Volumes[originalName] = fakeVolume
+
+	volConfig := &storage.VolumeConfig{
+		Name:             "importedVolume",
+		InternalName:     "trident-imported-volume",
+		Size:             "1GB",
+		ImportNotManaged: false,
+		ImportNoRename:   true, // Enable --no-rename flag
+	}
+
+	err := driver.Import(context.Background(), volConfig, originalName)
+
+	assert.NoError(t, err, "Import with --no-rename should not return an error")
+	assert.Equal(t, "1073741824", volConfig.Size, "Volume size should be updated")
+
+	// With --no-rename, the volume should NOT be renamed (should stay with original name)
+	_, exists := driver.Volumes[originalName]
+	assert.True(t, exists, "Original volume should still exist with original name")
+
+	_, newExists := driver.Volumes[volConfig.InternalName]
+	assert.False(t, newExists, "Volume should NOT exist with new internal name")
+}
+
+func TestFakeStorageDriver_Import_NotManaged(t *testing.T) {
+	driver := *NewFakeStorageDriverWithDebugTraceFlags(nil)
+	originalName := "originalVolume"
+
+	// Create a fake volume to import
+	fakeVolume := fake.Volume{
+		Name:      originalName,
+		SizeBytes: 1073741824, // 1GB
+	}
+	driver.Volumes[originalName] = fakeVolume
+
+	volConfig := &storage.VolumeConfig{
+		Name:             "importedVolume",
+		InternalName:     "trident-imported-volume",
+		Size:             "1GB",
+		ImportNotManaged: true, // Unmanaged import
+	}
+
+	err := driver.Import(context.Background(), volConfig, originalName)
+
+	assert.NoError(t, err, "Unmanaged import should not return an error")
+	assert.Equal(t, "1073741824", volConfig.Size, "Volume size should be updated")
+
+	// With unmanaged import, the volume should NOT be renamed
+	_, exists := driver.Volumes[originalName]
+	assert.True(t, exists, "Original volume should still exist with original name")
+
+	_, newExists := driver.Volumes[volConfig.InternalName]
+	assert.False(t, newExists, "Volume should NOT exist with new internal name")
+}

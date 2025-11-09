@@ -955,21 +955,6 @@ func (mr *MockZapiClientInterfaceMockRecorder) LunGetComment(ctx, lunPath any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetComment", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetComment), ctx, lunPath)
 }
 
-// LunGetGeometry mocks base method.
-func (m *MockZapiClientInterface) LunGetGeometry(path string) (*azgo.LunGetGeometryResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunGetGeometry", path)
-	ret0, _ := ret[0].(*azgo.LunGetGeometryResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// LunGetGeometry indicates an expected call of LunGetGeometry.
-func (mr *MockZapiClientInterfaceMockRecorder) LunGetGeometry(path any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetGeometry", reflect.TypeOf((*MockZapiClientInterface)(nil).LunGetGeometry), path)
-}
-
 // LunGetSerialNumber mocks base method.
 func (m *MockZapiClientInterface) LunGetSerialNumber(lunPath string) (*azgo.LunGetSerialNumberResponse, error) {
 	m.ctrl.T.Helper()
@@ -2023,6 +2008,18 @@ func (m *MockZapiClientInterface) SystemGetVersion() (*azgo.SystemGetVersionResp
 func (mr *MockZapiClientInterfaceMockRecorder) SystemGetVersion() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SystemGetVersion", reflect.TypeOf((*MockZapiClientInterface)(nil).SystemGetVersion))
+}
+
+// Terminate mocks base method.
+func (m *MockZapiClientInterface) Terminate() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Terminate")
+}
+
+// Terminate indicates an expected call of Terminate.
+func (mr *MockZapiClientInterfaceMockRecorder) Terminate() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminate", reflect.TypeOf((*MockZapiClientInterface)(nil).Terminate))
 }
 
 // TieringPolicyValue mocks base method.

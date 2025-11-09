@@ -49,10 +49,14 @@ type ConcurrentTridentOrchestrator struct {
 	scPoolMap      *storageclass.PoolMap
 	scPoolMapMutex *sync.RWMutex
 
-	txnMutex          *locks.GCNamedMutex
-	txnMonitorTicker  *time.Ticker
-	txnMonitorChannel chan struct{}
-	txnMonitorStopped bool
+	txnMutex *locks.GCNamedMutex
+
+	lastNodeRegistrationMutex *sync.RWMutex
+	lastNodeRegistrationTime  time.Time
+	nodeAccessReconcilePeriod time.Duration
+
+	stopNodeAccessLoop       chan bool
+	stopReconcileBackendLoop chan bool
 }
 
 var (
@@ -62,14 +66,17 @@ var (
 
 func NewConcurrentTridentOrchestrator(client persistentstore.Client) (Orchestrator, error) {
 	return &ConcurrentTridentOrchestrator{
-		frontends:      make(map[string]frontend.Plugin),
-		storeClient:    client,
-		bootstrapped:   false,
-		bootstrapError: errors.NotReadyError(),
-		mtx:            &sync.Mutex{},
-		scPoolMap:      storageclass.NewPoolMap(),
-		scPoolMapMutex: &sync.RWMutex{},
-		txnMutex:       locks.NewGCNamedMutex(),
+		frontends:                 make(map[string]frontend.Plugin),
+		storeClient:               client,
+		bootstrapped:              false,
+		bootstrapError:            errors.NotReadyError(),
+		mtx:                       &sync.Mutex{},
+		scPoolMap:                 storageclass.NewPoolMap(),
+		scPoolMapMutex:            &sync.RWMutex{},
+		txnMutex:                  locks.NewGCNamedMutex(),
+		lastNodeRegistrationMutex: &sync.RWMutex{},
+		lastNodeRegistrationTime:  time.Now(),
+		nodeAccessReconcilePeriod: NodeAccessReconcilePeriod,
 	}, nil
 }
 
@@ -153,7 +160,7 @@ func (o *ConcurrentTridentOrchestrator) transformPersistentState(ctx context.Con
 	return nil
 }
 
-func (o *ConcurrentTridentOrchestrator) Bootstrap(monitorTransactions bool) error {
+func (o *ConcurrentTridentOrchestrator) Bootstrap(_ bool) error {
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowCoreBootstrap, LogLayerCore)
 	var err error
 
@@ -178,12 +185,6 @@ func (o *ConcurrentTridentOrchestrator) Bootstrap(monitorTransactions bool) erro
 		o.bootstrapError = errors.BootstrapError(err)
 		return o.bootstrapError
 	}
-
-	// TODO (cknight): reenable
-	// if monitorTransactions {
-	//	// Start transaction monitor
-	//	o.StartTransactionMonitor(ctx, txnMonitorPeriod, txnMonitorMaxAge)
-	// }
 
 	o.bootstrapped = true
 	o.bootstrapError = nil
@@ -337,7 +338,9 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumes(ctx context.Context) er
 
 		if vol.IsSubordinate() {
 
-			results, unlocker, upsertErr := db.Lock(ctx, db.Query(db.UpsertSubordinateVolume(vol.Config.Name, vol.Config.ShareSourceVolume)))
+			results, unlocker, upsertErr := db.Lock(ctx,
+				db.Query(db.UpsertSubordinateVolume(vol.Config.Name, vol.Config.ShareSourceVolume),
+					db.ReadBackend("")))
 			if upsertErr != nil {
 				Logc(ctx).WithFields(LogFields{
 					"subordinateVolume": vol.Config.Name,
@@ -346,6 +349,13 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumes(ctx context.Context) er
 				unlocker()
 				return upsertErr
 			}
+
+			backend := results[0].Backend.Read
+
+			// Set the publish enforcement flag on the subordinate volume if supported by the backend and drvier.
+			// This is needed for nas and nas eco volumes. Legacy volumes may not have this flag set. Needed for
+			// automatic force-detach.
+			o.healTridentVolumePublishEnforcement(ctx, vol, backend)
 
 			results[0].SubordinateVolume.Upsert(vol)
 			unlocker()
@@ -365,6 +375,8 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumes(ctx context.Context) er
 
 			backend := results[0].Backend.Read
 			upserter := results[0].Volume.Upsert
+
+			o.healTridentVolumePublishEnforcement(ctx, vol, backend)
 
 			if backend == nil {
 				Logc(ctx).WithFields(LogFields{
@@ -388,6 +400,28 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumes(ctx context.Context) er
 
 	Logc(ctx).Infof("Added %d existing volume(s).", volCount)
 	return nil
+}
+
+func (o *ConcurrentTridentOrchestrator) healTridentVolumePublishEnforcement(
+	ctx context.Context, vol *storage.Volume, backend storage.Backend,
+) {
+	if vol.Config.AccessInfo.PublishEnforcement {
+		// If publish enforcement is already enabled on the volume, nothing to do.
+		return
+	}
+
+	// If this backend cannot enable publish enforcement, then, no volume on this backend
+	// can have publish enforcement enabled.
+	if backend == nil {
+		Logc(ctx).WithField("volume", vol.Config.Name).
+			Info("Volume cannot have publish enforcement enabled, backend missing.")
+		return
+	}
+
+	// Enable publish enforcement on the volume.
+	_ = backend.HealVolumePublishEnforcement(ctx, vol)
+
+	return
 }
 
 // bootstrapSnapshots reads snapshots from the persistent store and loads them into the concurrent cache.
@@ -634,17 +668,13 @@ func (o *ConcurrentTridentOrchestrator) cleanupDeletingBackends(ctx context.Cont
 
 // Stop stops the orchestrator core.
 func (o *ConcurrentTridentOrchestrator) Stop() {
-	// TODO (cknight): reenable
-	// // Stop the node access and backends' state reconciliation background tasks
-	// if o.stopNodeAccessLoop != nil {
-	//	o.stopNodeAccessLoop <- true
-	// }
-	// if o.stopReconcileBackendLoop != nil {
-	//	o.stopReconcileBackendLoop <- true
-	// }
-	//
-	// // Stop transaction monitor
-	// o.StopTransactionMonitor()
+	// Stop the node access and backends' state reconciliation background tasks
+	if o.stopNodeAccessLoop != nil {
+		o.stopNodeAccessLoop <- true
+	}
+	if o.stopReconcileBackendLoop != nil {
+		o.stopReconcileBackendLoop <- true
+	}
 }
 
 // validateAndCreateBackendFromConfig validates config and creates backend based on Config
@@ -701,7 +731,9 @@ func (o *ConcurrentTridentOrchestrator) validateAndCreateBackendFromConfig(
 	return sb, err
 }
 
-func (o *ConcurrentTridentOrchestrator) updateUserBackendState(ctx context.Context, sb *storage.Backend, userBackendState string, isCLI bool) (err error) {
+func (o *ConcurrentTridentOrchestrator) updateUserBackendState(
+	ctx context.Context, sb *storage.Backend, userBackendState string, isCLI bool,
+) (err error) {
 	backend := *sb
 	Logc(ctx).WithFields(LogFields{
 		"backendName":      backend.Name(),
@@ -721,7 +753,8 @@ func (o *ConcurrentTridentOrchestrator) updateUserBackendState(ctx context.Conte
 		commonConfig := backend.Driver().GetCommonConfig(ctx)
 		if commonConfig.UserState != "" {
 			if backend.ConfigRef() != "" {
-				return fmt.Errorf("updating via tridentctl is not allowed when `userState` field is set in the tbc of the backend")
+				return fmt.Errorf("updating via tridentctl is not allowed when `userState` " +
+					"field is set in the tbc of the backend")
 			} else {
 				// If the userState has been updated via tridentctl,
 				//    then in the config section of tbe, userState will be shown empty.
@@ -737,7 +770,8 @@ func (o *ConcurrentTridentOrchestrator) updateUserBackendState(ctx context.Conte
 
 	// An extra check to ensure that the user-backend state is valid.
 	if err = newUserBackendState.Validate(); err != nil {
-		return fmt.Errorf("invalid user backend state provided: %s, allowed are: `%s`, `%s`", string(newUserBackendState), storage.UserNormal, storage.UserSuspended)
+		return fmt.Errorf("invalid user backend state provided: %s, allowed are: `%s`, `%s`",
+			string(newUserBackendState), storage.UserNormal, storage.UserSuspended)
 	}
 
 	// Idempotent check.
@@ -749,7 +783,8 @@ func (o *ConcurrentTridentOrchestrator) updateUserBackendState(ctx context.Conte
 	if newUserBackendState.IsSuspended() {
 		// Backend is only suspended when its current state is either online, offline or failed.
 		if !backend.State().IsOnline() && !backend.State().IsOffline() && !backend.State().IsFailed() {
-			return fmt.Errorf("the backend '%s' is currently not in any of the expected states: offline, online, or failed. Its current state is '%s'", backend.Name(),
+			return fmt.Errorf("the backend '%s' is currently not in any of the expected states: offline, "+
+				"online, or failed. Its current state is '%s'", backend.Name(),
 				backend.State())
 		}
 	}
@@ -760,13 +795,15 @@ func (o *ConcurrentTridentOrchestrator) updateUserBackendState(ctx context.Conte
 	return nil
 }
 
+// reconcileNodeAccessOnAllBackends updates node access on backends based on current
+// volume publications.  Only backends that need reconciliation are affected.
 func (o *ConcurrentTridentOrchestrator) reconcileNodeAccessOnAllBackends(ctx context.Context) error {
 	if config.CurrentDriverContext != config.ContextCSI {
 		return nil
 	}
 
 	Logc(ctx).Debug("Reconciling node access on current backends.")
-	errored := false
+
 	allBackends, err := func() ([]storage.Backend, error) {
 		results, unlocker, err := db.Lock(ctx, db.Query(db.ListBackends()))
 		defer unlocker()
@@ -778,31 +815,72 @@ func (o *ConcurrentTridentOrchestrator) reconcileNodeAccessOnAllBackends(ctx con
 	if err != nil {
 		return err
 	}
+
+	var wg sync.WaitGroup
+	wg.Add(len(allBackends))
+	var errors error
+
 	for _, b := range allBackends {
-		err := func() error {
-			results, unlocker, err := db.Lock(ctx, db.Query(db.ListVolumePublications(), db.ListNodes(),
-				db.UpsertBackend(b.BackendUUID(), "", "")))
-			defer unlocker()
+		backend := b
+
+		go func(backend storage.Backend) {
+			defer wg.Done()
+
+			// Check if reconcile is needed to avoid taking backend write lock unnecessarily
+			nodeAccessUpToDate := func() bool {
+				results, unlocker, dbErr := db.Lock(ctx, db.Query(db.ReadBackend(backend.BackendUUID())))
+				defer unlocker()
+				if dbErr != nil {
+					Logc(ctx).WithError(dbErr).WithField("backend", backend.BackendUUID()).Warning(
+						"Could not lock backend for reconcile check.")
+					return false
+				}
+
+				readBackend := results[0].Backend.Read
+				if readBackend == nil {
+					Logc(ctx).WithField("backend", backend.BackendUUID()).Warning(
+						"Could not find backend for reconcile check.")
+					return false
+				}
+
+				return readBackend.IsNodeAccessUpToDate()
+			}()
+
+			// Return early if no reconcile is needed
+			if nodeAccessUpToDate {
+				Logc(ctx).WithField("backend", backend.BackendUUID()).Debug(
+					"Backend node access up to date, skipping reconcile.")
+				return
+			}
+
+			// Now we know a reconcile is needed, so take the write lock and do it.  If an error occurs,
+			// just log it and continue.
+			err = func() error {
+				results, unlocker, dbErr := db.Lock(ctx, db.Query(
+					db.ListVolumePublications(), db.ListNodes(), db.UpsertBackend(backend.BackendUUID(), "", "")))
+				defer unlocker()
+				if dbErr != nil {
+					return dbErr
+				}
+				upsertBackend := results[0].Backend.Read
+				if reconcileErr := o.reconcileNodeAccessOnBackend(
+					ctx, upsertBackend, results[0].VolumePublications, results[0].Nodes); reconcileErr != nil {
+					return reconcileErr
+				}
+				results[0].Backend.Upsert(upsertBackend)
+				return nil
+			}()
 			if err != nil {
-				return err
+				errors = multierr.Append(errors, err)
+				Logc(ctx).WithError(err).WithField("backend", backend.Name()).Warn(
+					"Error during node access reconciliation.")
 			}
-			backend := results[0].Backend.Read
-			if err := o.reconcileNodeAccessOnBackend(ctx, backend, results[0].VolumePublications,
-				results[0].Nodes); err != nil {
-				return err
-			}
-			results[0].Backend.Upsert(backend)
-			return nil
-		}()
-		if err != nil {
-			Logc(ctx).WithError(err).WithField("backend", b.Name()).Warn("Error during node access reconciliation")
-			errored = true
-		}
+		}(backend)
 	}
-	if errored {
-		return fmt.Errorf("one or more errors during node access reconciliation")
-	}
-	return nil
+
+	wg.Wait()
+
+	return errors
 }
 
 func (o *ConcurrentTridentOrchestrator) reconcileNodeAccessOnBackend(ctx context.Context, b storage.Backend,
@@ -826,6 +904,56 @@ func (o *ConcurrentTridentOrchestrator) reconcileNodeAccessOnBackend(ctx context
 
 	b.SetNodeAccessUpToDate()
 	return nil
+}
+
+// invalidateAllBackendNodeAccess sets nodeAccessUpToDate to false on all backends.  That value is
+// protected from concurrent modification, so under the principle of interior mutability, a backend
+// read lock is sufficient here.
+func (o *ConcurrentTridentOrchestrator) invalidateAllBackendNodeAccess(ctx context.Context) error {
+	results, unlocker, dbErr := db.Lock(ctx, db.Query(db.ListBackends()))
+	unlocker()
+	if dbErr != nil {
+		return dbErr
+	}
+	backends := results[0].Backends
+
+	var backendErrors error
+
+	for _, b := range backends {
+		backendErr := func() error {
+			results, unlocker, dbErr = db.Lock(ctx, db.Query(db.ReadBackend(b.BackendUUID())))
+			defer unlocker()
+			if dbErr != nil {
+				return dbErr
+			}
+
+			backend := results[0].Backend.Read
+			if backend == nil {
+				return errors.NotFoundError("backend %s not found, skipping node access invalidation", b.BackendUUID())
+			}
+
+			backend.InvalidateNodeAccess()
+			return nil
+		}()
+
+		backendErrors = multierr.Append(backendErrors, backendErr)
+	}
+
+	return backendErrors
+}
+
+// getLastNodeRegistrationTime returns the latest time a node was added.
+func (o *ConcurrentTridentOrchestrator) getLastNodeRegistrationTime() time.Time {
+	o.lastNodeRegistrationMutex.RLock()
+	defer o.lastNodeRegistrationMutex.RUnlock()
+	return o.lastNodeRegistrationTime
+}
+
+// updateLastNodeRegistrationTime updates the latest node registration time to the current time.
+func (o *ConcurrentTridentOrchestrator) updateLastNodeRegistrationTime() {
+	o.lastNodeRegistrationMutex.Lock()
+	defer o.lastNodeRegistrationMutex.Unlock()
+	o.lastNodeRegistrationTime = time.Now()
 }
 
 // publishedNodesForBackend returns the nodes that a backend has published volumes to
@@ -901,7 +1029,13 @@ func (o *ConcurrentTridentOrchestrator) AddBackend(
 		return nil, fmt.Errorf("backend name cannot be empty")
 	}
 
-	backend, err := o.upsertBackend(ctx, configJSON, newBackendName, "", configRef)
+	results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertBackend("", newBackendName, "")))
+	defer unlocker()
+	if err != nil {
+		return nil, err
+	}
+
+	backend, err := o.upsertBackend(ctx, configJSON, results[0], configRef)
 	if err != nil {
 		Logc(ctx).WithError(err).WithFields(LogFields{
 			"backendName": newBackendName,
@@ -1164,7 +1298,27 @@ func (o *ConcurrentTridentOrchestrator) UpdateBackend(
 
 	defer recordTiming("backend_update", &err)()
 
-	backend, err := o.upsertBackend(ctx, configJSON, backendName, "", configRef)
+	newBackendName, err := o.checkForBackendNameChange(configJSON, backendName)
+	if err != nil {
+		return nil, err
+	}
+
+	results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertBackend("", backendName, newBackendName)))
+	if err != nil {
+		unlocker()
+		if strings.Contains(err.Error(), "no Backend found with key") {
+			err = errors.NotFoundError("backend %v was not found", backendName)
+		}
+		return nil, err
+	}
+
+	if results[0].Backend.Read == nil {
+		unlocker()
+		return nil, errors.NotFoundError("backend %v was not found", backendName)
+	}
+
+	backend, err := o.upsertBackend(ctx, configJSON, results[0], configRef)
+	unlocker()
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"err":         err.Error(),
@@ -1201,13 +1355,32 @@ func (o *ConcurrentTridentOrchestrator) UpdateBackendByBackendUUID(
 
 	defer recordTiming("backend_update", &err)()
 
-	backend, err := o.upsertBackend(ctx, configJSON, backendName, backendUUID, configRef)
+	newBackendName, err := o.checkForBackendNameChange(configJSON, backendName)
+	if err != nil {
+		return nil, err
+	}
+
+	results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertBackend(backendUUID, "", newBackendName)))
+	if err != nil {
+		unlocker()
+		if strings.Contains(err.Error(), "no Backend found with key") {
+			err = errors.NotFoundError("backend %v was not found", backendName)
+		}
+		return nil, err
+	}
+
+	if results[0].Backend.Read == nil {
+		unlocker()
+		return nil, errors.NotFoundError("backend %v was not found", backendName)
+	}
+
+	backend, err := o.upsertBackend(ctx, configJSON, results[0], configRef)
+	unlocker()
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
-			"err":         err.Error(),
 			"backendName": backendName,
 			"configRef":   configRef,
-		}).Error("UpdateBackend failed.")
+		}).WithError(err).Error("UpdateBackend failed.")
 		return nil, err
 	}
 
@@ -1227,47 +1400,28 @@ func (o *ConcurrentTridentOrchestrator) UpdateBackendByBackendUUID(
 		o.GetStorageClassPoolMap().StorageClassNamesForBackendName(ctx, backend.Name())), nil
 }
 
-// upsertBackend updates an existing backend.
+// upsertBackend updates an existing backend.  The caller is expected to obtain a cache lock,
+// pass that cache result in upsertResult, and handle unlocking and any cache errors.  Any call
+// to the cache result upsert function is done here.  Since a lock is held by the caller, only
+// lockless (inconsistent) cache reads may be performed in this function.
 func (o *ConcurrentTridentOrchestrator) upsertBackend(
-	ctx context.Context, configJSON, backendName, backendUUID, callingConfigRef string,
+	ctx context.Context, configJSON string, upsertResult db.Result, callingConfigRef string,
 ) (storage.Backend, error) {
-	logFields := LogFields{"backendName": backendName, "backendUUID": backendUUID, "configJSON": "<suppressed>"}
-
-	Logc(ctx).WithFields(logFields).Debug(">>>>>> upsertBackend")
-
 	var backend storage.Backend
 
-	newBackendName, err := o.checkForBackendNameChange(configJSON, backendName)
-	if err != nil {
-		return nil, err
-	}
+	Logc(ctx).Debug(">>>>>> upsertBackend")
+	defer Logc(ctx).Debug("<<<<<< upsertBackend")
 
-	results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertBackend("", backendName, newBackendName),
-		db.ListVolumePublications(), db.ListNodes()))
+	results, unlocker, err := db.Lock(ctx, db.Query(db.ListVolumePublications(), db.ListNodes()))
 	defer unlocker()
 	if err != nil {
-		if strings.Contains(err.Error(), "no Backend found with key") {
-			err = errors.NotFoundError("backend %v was not found", backendName)
-		}
 		return nil, err
 	}
 
-	addBackend := false
-	originalBackend := results[0].Backend.Read
+	originalBackend := upsertResult.Backend.Read
 
 	if originalBackend == nil {
-		if backendUUID == "" {
-			// This is an add backend request, generate and set UUID
-			backendUUID = uuid.New().String()
-			addBackend = true
-		} else {
-			// This is an update backend request via backendConfig CR, but the backend was not found
-			return nil, errors.NotFoundError("backend %v was not found", backendName)
-		}
-	}
-
-	if addBackend {
-		backend, err = o.addBackend(ctx, configJSON, backendUUID, callingConfigRef)
+		backend, err = o.addBackend(ctx, configJSON, uuid.New().String(), callingConfigRef)
 		if err != nil {
 			if backend != nil && backend.State().IsFailed() {
 				return backend, err
@@ -1288,20 +1442,18 @@ func (o *ConcurrentTridentOrchestrator) upsertBackend(
 		return nil, err
 	}
 
-	if !addBackend {
-		// for update backend request, terminate the old backend and update the volumes in backend
+	// For update backend request, terminate the old backend and update the volumes in backend
+	if originalBackend != nil {
 		originalBackend.Terminate(ctx)
 	}
 
 	// Update the backend in the cache
-	results[0].Backend.Upsert(backend)
+	upsertResult.Backend.Upsert(backend)
 
 	// Update storage class to pool map
 	o.RebuildStorageClassPoolMap(ctx)
 
 	Logc(ctx).WithField("backend", backend).Debug("Backend upserted.")
-
-	Logc(ctx).WithFields(logFields).Debug("<<<<<< upsertBackend")
 
 	return backend, nil
 }
@@ -1347,8 +1499,8 @@ func (o *ConcurrentTridentOrchestrator) addBackend(
 	return backend, nil
 }
 
-func (o *ConcurrentTridentOrchestrator) updateBackend(ctx context.Context, configJSON string, originalBackend storage.Backend,
-	callingConfigRef string,
+func (o *ConcurrentTridentOrchestrator) updateBackend(
+	ctx context.Context, configJSON string, originalBackend storage.Backend, callingConfigRef string,
 ) (storage.Backend, error) {
 	var backend storage.Backend
 	backendName := originalBackend.Name()
@@ -1375,8 +1527,8 @@ func (o *ConcurrentTridentOrchestrator) updateBackend(ctx context.Context, confi
 			}).Error("Cannot update backend created using TridentBackendConfig CR; please update the" +
 				" TridentBackendConfig CR instead.")
 
-			return nil, fmt.Errorf("cannot update backend '%v' created using TridentBackendConfig CR; please update"+
-				" the TridentBackendConfig CR", backendName)
+			return nil, fmt.Errorf("cannot update backend '%v' created using TridentBackendConfig CR; "+
+				"please update the TridentBackendConfig CR", backendName)
 		}
 	}
 
@@ -1586,7 +1738,8 @@ func (o *ConcurrentTridentOrchestrator) updateBackendVolumes(ctx context.Context
 		}
 		if updatePersistentStore {
 			if err := o.storeClient.UpdateVolume(ctx, vol); err != nil {
-				Logc(ctx).WithField("volume", vol.Config.Name).Error("Persistent store update failed for orphan volume.")
+				Logc(ctx).WithField("volume", vol.Config.Name).Error(
+					"Persistent store update failed for orphan volume.")
 				continue
 			}
 		}
@@ -1619,7 +1772,9 @@ func (o *ConcurrentTridentOrchestrator) validateBackendUpdate(oldBackend, newBac
 	return nil
 }
 
-func (o *ConcurrentTridentOrchestrator) UpdateBackendState(ctx context.Context, backendName, backendState, userBackendState string) (storageBackendExternal *storage.BackendExternal, err error) {
+func (o *ConcurrentTridentOrchestrator) UpdateBackendState(
+	ctx context.Context, backendName, backendState, userBackendState string,
+) (storageBackendExternal *storage.BackendExternal, err error) {
 	return nil, fmt.Errorf("UpdateBackendState is not implemented for concurrent core")
 }
 
@@ -2186,8 +2341,8 @@ func (o *ConcurrentTridentOrchestrator) cloneVolume(
 
 	// Check if the storage class of source and clone volume is different, only if the orchestrator is not in Docker plugin mode. In Docker plugin mode, the storage class of source and clone volume will be different at times.
 	if !isDockerPluginMode() && volConfig.StorageClass != sourceVolume.Config.StorageClass {
-		return nil, errors.MismatchedStorageClassError("clone volume %s from source volume %s with different storage classes is not allowed",
-			volConfig.Name, volConfig.CloneSourceVolume)
+		return nil, errors.MismatchedStorageClassError("clone volume %s from source volume %s with "+
+			"different storage classes is not allowed", volConfig.Name, volConfig.CloneSourceVolume)
 	}
 
 	if volConfig.Size != "" {
@@ -2265,7 +2420,11 @@ func (o *ConcurrentTridentOrchestrator) cloneVolume(
 	cloneConfig.ReadOnlyClone = volConfig.ReadOnlyClone
 	cloneConfig.Namespace = volConfig.Namespace
 	cloneConfig.RequestName = volConfig.RequestName
-	cloneConfig.SkipRecoveryQueue = volConfig.SkipRecoveryQueue
+
+	// If skipRecoveryQueue is set for the clone, use it. If not, default to the source volume's setting.
+	if volConfig.SkipRecoveryQueue != "" {
+		cloneConfig.SkipRecoveryQueue = volConfig.SkipRecoveryQueue
+	}
 
 	// If it's from snapshot, we need the LUKS passphrases value from the snapshot
 	isLUKS, err := strconv.ParseBool(cloneConfig.LUKSEncryption)
@@ -2374,10 +2533,11 @@ func (o *ConcurrentTridentOrchestrator) cloneVolumeRetry(
 
 	Logc(ctx).WithFields(logFields).Debug("Cloning volume.")
 
-	// Check if the storage class of source and clone volume is different, only if the orchestrator is not in Docker plugin mode. In Docker plugin mode, the storage class of source and clone volume will be different at times.
+	// Check if the storage class of source and clone volume is different, only if the orchestrator is not in Docker
+	// plugin mode. In Docker plugin mode, the storage class of source and clone volume will be different at times.
 	if !isDockerPluginMode() && cloneConfig.StorageClass != sourceVolConfig.StorageClass {
-		return nil, errors.MismatchedStorageClassError("clone volume %s from source volume %s with different storage classes is not allowed",
-			cloneConfig.Name, cloneConfig.CloneSourceVolume)
+		return nil, errors.MismatchedStorageClassError("clone volume %s from source volume %s "+
+			"with different storage classes is not allowed", cloneConfig.Name, cloneConfig.CloneSourceVolume)
 	}
 
 	// Create the volume
@@ -2656,7 +2816,9 @@ func (o *ConcurrentTridentOrchestrator) getVolume(
 	return nil, errors.NotFoundError("volume %v was not found", volumeName)
 }
 
-func (o *ConcurrentTridentOrchestrator) GetVolumeByInternalName(ctx context.Context, volumeInternal string) (volume string, err error) {
+func (o *ConcurrentTridentOrchestrator) GetVolumeByInternalName(
+	ctx context.Context, volumeInternal string,
+) (volume string, err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	defer recordTiming("volume_internal_get", &err)()
@@ -3101,6 +3263,7 @@ func (o *ConcurrentTridentOrchestrator) publishVolume(ctx context.Context, volum
 	}
 
 	publishInfo.TridentUUID = o.uuid
+	publishInfo.BackendUUID = backend.BackendUUID()
 
 	// Enable publish enforcement if the backend supports it and the volume isn't already enforced
 	if publishEnforceable && !volume.Config.AccessInfo.PublishEnforcement {
@@ -3233,7 +3396,8 @@ func (o *ConcurrentTridentOrchestrator) unpublishVolume(
 		// If the publication couldn't be found and Trident isn't in docker mode, bail out.
 		// Otherwise, continue un-publishing. It is ok for the publication to not exist at this point for docker.
 		if config.CurrentDriverContext != config.ContextDocker {
-			Logc(ctx).WithError(errors.NotFoundError("unable to get volume publication record")).WithFields(fields).Warn("Volume is not published to node; doing nothing.")
+			Logc(ctx).WithError(errors.NotFoundError("unable to get volume publication record")).
+				WithFields(fields).Warn("Volume is not published to node; doing nothing.")
 			return false, nil
 		}
 	}
@@ -3807,7 +3971,9 @@ func (o *ConcurrentTridentOrchestrator) ListSubordinateVolumes(
 		}
 	} else {
 		// List subordinate volumes for a single source volume
-		results, unlocker, err = db.Lock(ctx, db.Query(db.ListSubordinateVolumesForVolume(sourceVolumeName), db.InconsistentReadVolume(sourceVolumeName)))
+		results, unlocker, err = db.Lock(ctx, db.Query(
+			db.ListSubordinateVolumesForVolume(sourceVolumeName),
+			db.InconsistentReadVolume(sourceVolumeName)))
 		defer unlocker()
 		if err != nil {
 			return nil, err
@@ -4849,8 +5015,8 @@ func (o *ConcurrentTridentOrchestrator) AddNode(
 	}
 
 	results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertNode(node.Name)))
-	defer unlocker()
 	if err != nil {
+		unlocker()
 		return err
 	}
 
@@ -4874,13 +5040,17 @@ func (o *ConcurrentTridentOrchestrator) AddNode(
 		"state": node.PublicationState,
 	}).Debug("Adding node to persistence layer.")
 	if err = o.storeClient.AddOrUpdateNode(ctx, node); err != nil {
+		unlocker()
 		return
 	}
 
-	// TODO: enable this with periodic node reconciliation
-	// o.invalidateAllBackendNodeAccess(ctx)
-
 	results[0].Node.Upsert(node)
+	unlocker()
+
+	o.updateLastNodeRegistrationTime()
+	if invalidateErr := o.invalidateAllBackendNodeAccess(ctx); invalidateErr != nil {
+		Logc(ctx).WithError(invalidateErr).Error("Could not invalidate backend node access.")
+	}
 	return
 }
 
@@ -5008,8 +5178,8 @@ func (o *ConcurrentTridentOrchestrator) DeleteNode(ctx context.Context, nodeName
 		db.Query(db.ListVolumePublications(), db.DeleteNode(nodeName)),
 		db.Query(db.UpsertNode(nodeName)),
 	)
-	defer unlocker()
 	if err != nil {
+		unlocker()
 		return err
 	}
 	volumePublications := results[0].VolumePublications
@@ -5029,32 +5199,238 @@ func (o *ConcurrentTridentOrchestrator) DeleteNode(ctx context.Context, nodeName
 				"There are still volumes published to this node, marking node CR as deleted.")
 			node.Deleted = true
 			if err = o.storeClient.AddOrUpdateNode(ctx, node); err != nil {
+				unlocker()
 				return
 			}
 			upsertNode(node)
+			unlocker()
 			return
 		}
 	}
 
 	// No publications for this node, so we can delete it.
 	if err := o.storeClient.DeleteNode(ctx, node); err != nil {
-		return fmt.Errorf("failed to delete node %s in store: %v", nodeName, err)
+		unlocker()
+		return fmt.Errorf("failed to delete node %s in store: %w", nodeName, err)
 	}
 	deleteNode()
+	unlocker()
 
-	// TODO: enable this with periodic node reconciliation
-	// o.invalidateAllBackendNodeAccess(ctx)
-
-	return
+	if invalidateErr := o.invalidateAllBackendNodeAccess(ctx); invalidateErr != nil {
+		Logc(ctx).WithError(invalidateErr).Error("Could not invalidate backend node access.")
+	}
+	return o.reconcileNodeAccessOnAllBackends(ctx)
 }
 
 func (o *ConcurrentTridentOrchestrator) PeriodicallyReconcileNodeAccessOnBackends() {
-	// not implemented
+	o.stopNodeAccessLoop = make(chan bool)
+	ctx := GenerateRequestContext(nil, "", ContextSourcePeriodic, WorkflowCoreNodeReconcile, LogLayerCore)
+
+	Logc(ctx).Info("Starting periodic node access reconciliation service.")
+	defer Logc(ctx).Info("Stopping periodic node access reconciliation service.")
+
+	// Every period seconds after the last run
+	ticker := time.NewTicker(o.nodeAccessReconcilePeriod)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-o.stopNodeAccessLoop:
+			// Exit on shutdown signal
+			return
+
+		case <-ticker.C:
+			Logc(ctx).Trace("Periodic node access reconciliation loop beginning.")
+			// Do nothing if it has not been at least cooldown seconds after the last node registration to prevent thundering herd
+			if time.Now().After(o.getLastNodeRegistrationTime().Add(NodeRegistrationCooldownPeriod)) {
+				if err := o.reconcileNodeAccessOnAllBackends(ctx); err != nil {
+					// If there's a problem log an error and keep going
+					Logc(ctx).WithError(err).Error("Problem encountered updating node access rules for backends.")
+				}
+			} else {
+				Logc(ctx).Trace(
+					"Time is too soon since last node registration, delaying node access rule reconciliation.")
+			}
+		}
+	}
 }
 
-func (o *ConcurrentTridentOrchestrator) PeriodicallyReconcileBackendState(duration time.Duration) {
-	// not implemented
-	return
+func (o *ConcurrentTridentOrchestrator) PeriodicallyReconcileBackendState(pollInterval time.Duration) {
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourcePeriodic, WorkflowCoreBackendReconcile,
+		LogLayerCore)
+
+	// Provision to disable reconciling backend state, just in case
+	if pollInterval <= 0 {
+		Logc(ctx).Debug("Periodic reconciliation of backends is disabled.")
+		return
+	}
+
+	Logc(ctx).WithField("pollInterval", pollInterval).Info("Starting periodic backend state reconciliation service.")
+	defer Logc(ctx).WithField("pollInterval", pollInterval).Info("Stopping periodic backend state reconciliation service.")
+
+	o.stopReconcileBackendLoop = make(chan bool)
+	reconcileBackendTimer := time.NewTimer(pollInterval)
+	defer func(t *time.Timer) {
+		if !t.Stop() {
+			<-t.C
+		}
+	}(reconcileBackendTimer)
+
+	for {
+		select {
+		case <-o.stopReconcileBackendLoop:
+			// Exit on shutdown signal.
+			return
+
+		case <-reconcileBackendTimer.C:
+			Logc(ctx).Debug("Periodic backend state reconciliation loop beginning.")
+
+			if o.bootstrapError != nil {
+				Logc(ctx).WithError(o.bootstrapError).Debug("Core not ready yet, skipping backend reconcile.")
+				reconcileBackendTimer.Reset(pollInterval)
+				continue
+			}
+
+			results, unlocker, dbErr := db.Lock(ctx, db.Query(db.ListBackends()))
+			unlocker()
+			if dbErr != nil {
+				// If we can't list backends from cache, log an error and try again at the next interval.
+				Logc(ctx).WithError(dbErr).Error("Unable to list backends from cache.")
+				reconcileBackendTimer.Reset(pollInterval)
+				continue
+			}
+			backends := results[0].Backends
+
+			var wg sync.WaitGroup
+			wg.Add(len(backends))
+
+			for _, b := range backends {
+				backend := b
+
+				go func(backend storage.Backend) {
+					defer wg.Done()
+					if err := o.reconcileBackendState(ctx, backend.BackendUUID()); err != nil {
+						// If there is a problem, log an error and keep going.
+						Logc(ctx).WithField("backend", backend.Name()).WithError(err).Error(
+							"Unable to reconcile state for backend.")
+					}
+				}(backend)
+			}
+
+			wg.Wait()
+
+			// Reset the timer so that next poll starts after pollInterval.
+			reconcileBackendTimer.Reset(pollInterval)
+		}
+	}
+}
+
+func (o *ConcurrentTridentOrchestrator) reconcileBackendState(ctx context.Context, backendUUID string) error {
+	Logc(ctx).WithField("backend", backendUUID).Debug(">>>> reconcileBackendState")
+	defer Logc(ctx).WithField("backend", backendUUID).Debug("<<<< reconcileBackendState")
+
+	results, unlocker, dbErr := db.Lock(ctx, db.Query(db.ReadBackend(backendUUID)))
+	if dbErr != nil {
+		unlocker()
+		return dbErr
+	}
+	backend := results[0].Backend.Read
+
+	if backend == nil {
+		unlocker()
+		return errors.NotFoundError("backend %s not found", backendUUID)
+	}
+
+	if !backend.CanGetState() {
+		// This backend does not support polling backend for state.
+		unlocker()
+		return nil
+	}
+
+	reason, changeMap := backend.GetBackendState(ctx)
+	unlocker()
+
+	if changeMap != nil && !changeMap.IsEmpty() {
+
+		// Acquire write lock on backend
+		results, unlocker, dbErr = db.Lock(ctx, db.Query(db.UpsertBackend(backendUUID, "", "")))
+		defer unlocker()
+		if dbErr != nil {
+			return dbErr
+		}
+		backend = results[0].Backend.Read
+		upserter := results[0].Backend.Upsert
+
+		if backend == nil {
+			return errors.NotFoundError("backend '%s' not found", backendUUID)
+		}
+
+		// Ensure there is work to do now that we hold the write lock
+		reason, changeMap = backend.GetBackendState(ctx)
+		if changeMap == nil || changeMap.IsEmpty() {
+			// In the unlikely event there is now no issue, just return
+			return nil
+		}
+
+		backend.UpdateBackendState(ctx, reason)
+		upserter(backend)
+
+		logFields := LogFields{
+			"backend": backend.Name(),
+			"reason":  reason,
+		}
+
+		if changeMap.Contains(storage.BackendStateReasonChange) {
+			// Update CR.
+			Logc(ctx).WithFields(logFields).Debugf("Backend state reason change detected.")
+			if err := o.storeClient.UpdateBackend(ctx, backend); err != nil {
+				return err
+			}
+		}
+
+		// If reason is non-empty, the backend is offline, so it doesn't make sense to call updateBackend()
+		// and we should return early. Additionally, calling updateBackend() might fail for various reasons, such as
+		// - A dataLIF being down
+		// - The aggregate specified in the backend config's aggregate field being different
+		// - And other similar issues
+		if reason != "" {
+			return nil
+		}
+
+		var logMessage string
+
+		// Determine the log message based on the changes detected
+		switch {
+		case changeMap.Contains(storage.BackendStatePoolsChange) && changeMap.Contains(storage.BackendStateAPIVersionChange):
+			logMessage = "Change in physical pools and API version detected for the backend."
+		case changeMap.Contains(storage.BackendStatePoolsChange):
+			logMessage = "Change in physical pools detected for the backend."
+		case changeMap.Contains(storage.BackendStateAPIVersionChange):
+			logMessage = "Change in API version detected for the backend."
+		}
+
+		if logMessage != "" {
+			Logc(ctx).WithFields(logFields).Debug(logMessage)
+
+			// Getting the marshaled driver's config.
+			configBytes, configErr := backend.MarshalDriverConfig()
+			if configErr != nil {
+				return configErr
+			}
+
+			_, err := o.upsertBackend(ctx, string(configBytes), results[0], backend.ConfigRef())
+			if err != nil {
+				Logc(ctx).WithFields(LogFields{
+					"err":         err.Error(),
+					"backendName": backend.Name(),
+					"configRef":   backend.ConfigRef(),
+				}).WithError(err).Error("UpdateBackend failed.")
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (o *ConcurrentTridentOrchestrator) ReconcileVolumePublications(
@@ -5651,12 +6027,16 @@ func (o *ConcurrentTridentOrchestrator) AddVolumeTransaction(ctx context.Context
 	return o.storeClient.AddVolumeTransaction(ctx, volTxn)
 }
 
-func (o *ConcurrentTridentOrchestrator) GetVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error) {
+func (o *ConcurrentTridentOrchestrator) GetVolumeTransaction(
+	ctx context.Context, volTxn *storage.VolumeTransaction,
+) (*storage.VolumeTransaction, error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 	return o.storeClient.GetVolumeTransaction(ctx, volTxn)
 }
 
-func (o *ConcurrentTridentOrchestrator) DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error {
+func (o *ConcurrentTridentOrchestrator) DeleteVolumeTransaction(
+	ctx context.Context, volTxn *storage.VolumeTransaction,
+) error {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 	return o.storeClient.DeleteVolumeTransaction(ctx, volTxn)
 }
@@ -5765,7 +6145,9 @@ func (o *ConcurrentTridentOrchestrator) PromoteMirror(
 	return backend.PromoteMirror(ctx, localInternalVolumeName, remoteVolumeHandle, snapshotHandle)
 }
 
-func (o *ConcurrentTridentOrchestrator) GetMirrorStatus(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string) (string, error) {
+func (o *ConcurrentTridentOrchestrator) GetMirrorStatus(
+	ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string,
+) (string, error) {
 	var err error
 
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
@@ -5803,7 +6185,9 @@ func (o *ConcurrentTridentOrchestrator) CanBackendMirror(ctx context.Context, ba
 	return backend.CanMirror(), nil
 }
 
-func (o *ConcurrentTridentOrchestrator) ReleaseMirror(ctx context.Context, backendUUID, volumeName, localInternalVolumeName string) error {
+func (o *ConcurrentTridentOrchestrator) ReleaseMirror(
+	ctx context.Context, backendUUID, volumeName, localInternalVolumeName string,
+) error {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	var err error
@@ -5834,7 +6218,9 @@ func (o *ConcurrentTridentOrchestrator) ReleaseMirror(ctx context.Context, backe
 	return backend.ReleaseMirror(ctx, localInternalVolumeName)
 }
 
-func (o *ConcurrentTridentOrchestrator) GetReplicationDetails(ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string) (string, string, string, error) {
+func (o *ConcurrentTridentOrchestrator) GetReplicationDetails(
+	ctx context.Context, backendUUID, localInternalVolumeName, remoteVolumeHandle string,
+) (string, string, string, error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	var err error
@@ -5901,7 +6287,9 @@ func (o *ConcurrentTridentOrchestrator) UpdateMirror(ctx context.Context, volume
 	return backend.UpdateMirror(ctx, tridentVolume.Config.InternalName, snapshotName)
 }
 
-func (o *ConcurrentTridentOrchestrator) CheckMirrorTransferState(ctx context.Context, volumeName string) (*time.Time, error) {
+func (o *ConcurrentTridentOrchestrator) CheckMirrorTransferState(
+	ctx context.Context, volumeName string,
+) (*time.Time, error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	var err error
@@ -5930,7 +6318,9 @@ func (o *ConcurrentTridentOrchestrator) CheckMirrorTransferState(ctx context.Con
 	return backend.CheckMirrorTransferState(ctx, tridentVolume.Config.InternalName)
 }
 
-func (o *ConcurrentTridentOrchestrator) GetMirrorTransferTime(ctx context.Context, volumeName string) (*time.Time, error) {
+func (o *ConcurrentTridentOrchestrator) GetMirrorTransferTime(
+	ctx context.Context, volumeName string,
+) (*time.Time, error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
 
 	var err error

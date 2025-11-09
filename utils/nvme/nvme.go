@@ -323,12 +323,22 @@ func (nh *NVMeHandler) NVMeMountVolume(
 	// Initially, the device path raw device path for this NVMe namespace.
 	devicePath := publishInfo.DevicePath
 
-	// Format and open a LUKS device if LUKS Encryption is set to true.
+	// If LUKS encryption is requested, ensure the device is formatted and open.
 	var luksFormatted bool
 	var err error
 	isLUKSDevice := convert.ToBool(publishInfo.LUKSEncryption)
 	if isLUKSDevice {
 		luksDevice := luks.NewDevice(devicePath, name, nh.command)
+		if luksDevice.IsMappingStale(ctx) {
+			luksPath := luksDevice.MappedDevicePath()
+			Logc(ctx).WithFields(LogFields{
+				"devicePath": devicePath,
+				"luksMapper": luksPath,
+			}).Info("Removing stale LUKS mapping.")
+			if err := nh.devicesClient.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksPath); err != nil {
+				return fmt.Errorf("could not remove LUKS mapping '%s' for device '%s'; %w", luksPath, devicePath, err)
+			}
+		}
 
 		luksFormatted, err = luksDevice.EnsureDeviceMappedOnHost(ctx, name, secrets)
 		if err != nil {

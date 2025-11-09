@@ -576,6 +576,20 @@ func (mr *MockRestClientInterfaceMockRecorder) FlexgroupUnmount(ctx, volumeName 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlexgroupUnmount", reflect.TypeOf((*MockRestClientInterface)(nil).FlexgroupUnmount), ctx, volumeName)
 }
 
+// GetOntapVersion mocks base method.
+func (m *MockRestClientInterface) GetOntapVersion() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOntapVersion")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetOntapVersion indicates an expected call of GetOntapVersion.
+func (mr *MockRestClientInterfaceMockRecorder) GetOntapVersion() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOntapVersion", reflect.TypeOf((*MockRestClientInterface)(nil).GetOntapVersion))
+}
+
 // GetPeeredVservers mocks base method.
 func (m *MockRestClientInterface) GetPeeredVservers(ctx context.Context) ([]string, error) {
 	m.ctrl.T.Helper()
@@ -1073,21 +1087,6 @@ func (m *MockRestClientInterface) LunMapList(ctx context.Context, initiatorGroup
 func (mr *MockRestClientInterfaceMockRecorder) LunMapList(ctx, initiatorGroupName, lunPath, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunMapList", reflect.TypeOf((*MockRestClientInterface)(nil).LunMapList), ctx, initiatorGroupName, lunPath, fields)
-}
-
-// LunOptions mocks base method.
-func (m *MockRestClientInterface) LunOptions(ctx context.Context) (*api.LunOptionsResult, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunOptions", ctx)
-	ret0, _ := ret[0].(*api.LunOptionsResult)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// LunOptions indicates an expected call of LunOptions.
-func (mr *MockRestClientInterfaceMockRecorder) LunOptions(ctx any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunOptions", reflect.TypeOf((*MockRestClientInterface)(nil).LunOptions), ctx)
 }
 
 // LunRename mocks base method.
@@ -1930,6 +1929,42 @@ func (mr *MockRestClientInterfaceMockRecorder) SVMUUID() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SVMUUID", reflect.TypeOf((*MockRestClientInterface)(nil).SVMUUID))
 }
 
+// SetDisaggregated mocks base method.
+func (m *MockRestClientInterface) SetDisaggregated(disaggregated bool) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetDisaggregated", disaggregated)
+}
+
+// SetDisaggregated indicates an expected call of SetDisaggregated.
+func (mr *MockRestClientInterfaceMockRecorder) SetDisaggregated(disaggregated any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetDisaggregated", reflect.TypeOf((*MockRestClientInterface)(nil).SetDisaggregated), disaggregated)
+}
+
+// SetOntapVersion mocks base method.
+func (m *MockRestClientInterface) SetOntapVersion(version string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetOntapVersion", version)
+}
+
+// SetOntapVersion indicates an expected call of SetOntapVersion.
+func (mr *MockRestClientInterfaceMockRecorder) SetOntapVersion(version any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetOntapVersion", reflect.TypeOf((*MockRestClientInterface)(nil).SetOntapVersion), version)
+}
+
+// SetSANOptimized mocks base method.
+func (m *MockRestClientInterface) SetSANOptimized(sanOptimized bool) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetSANOptimized", sanOptimized)
+}
+
+// SetSANOptimized indicates an expected call of SetSANOptimized.
+func (mr *MockRestClientInterfaceMockRecorder) SetSANOptimized(sanOptimized any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSANOptimized", reflect.TypeOf((*MockRestClientInterface)(nil).SetSANOptimized), sanOptimized)
+}
+
 // SetSVMName mocks base method.
 func (m *MockRestClientInterface) SetSVMName(svmName string) {
 	m.ctrl.T.Helper()
@@ -2519,6 +2554,18 @@ func (m *MockRestClientInterface) SystemGetOntapVersion(ctx context.Context, cac
 func (mr *MockRestClientInterfaceMockRecorder) SystemGetOntapVersion(ctx, cached any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SystemGetOntapVersion", reflect.TypeOf((*MockRestClientInterface)(nil).SystemGetOntapVersion), ctx, cached)
+}
+
+// Terminate mocks base method.
+func (m *MockRestClientInterface) Terminate() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Terminate")
+}
+
+// Terminate indicates an expected call of Terminate.
+func (mr *MockRestClientInterfaceMockRecorder) Terminate() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminate", reflect.TypeOf((*MockRestClientInterface)(nil).Terminate))
 }
 
 // TieringPolicyValue mocks base method.

@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -908,6 +909,7 @@ func TestBootstrapVolumesConcurrentCore(t *testing.T) {
 				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid")
 				mockBackend.EXPECT().Volumes().Return(&sync.Map{}).AnyTimes()
 				mockBackend.EXPECT().Driver().Return(&fakedriver.StorageDriver{}).AnyTimes()
+				mockBackend.EXPECT().HealVolumePublishEnforcement(gomock.Any(), gomock.Any()).Return(false)
 
 				addBackendsToCache(t, mockBackend)
 
@@ -1256,6 +1258,7 @@ func TestBootstrapNodesConcurrentCore(t *testing.T) {
 				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid")
 				mockBackend.EXPECT().CanEnablePublishEnforcement().Return(false).AnyTimes()
 				mockBackend.EXPECT().ReconcileNodeAccess(gomock.Any(), nodes, gomock.Any()).Return(nil).AnyTimes()
+				mockBackend.EXPECT().IsNodeAccessUpToDate().Return(false).AnyTimes()
 				mockBackend.EXPECT().SetNodeAccessUpToDate().AnyTimes()
 
 				addBackendsToCache(t, mockBackend)
@@ -9728,11 +9731,12 @@ func TestListStorageClassesConcurrentCore(t *testing.T) {
 
 func TestAddNodeConcurrentCore(t *testing.T) {
 	tests := []struct {
-		name         string
-		setup        func(*testing.T, *gomock.Controller) persistentstore.Client
-		newNode      *models.Node
-		expectedNode *models.Node
-		verifyError  func(*testing.T, error)
+		name           string
+		setup          func(*testing.T, *gomock.Controller) persistentstore.Client
+		newNode        *models.Node
+		expectedNode   *models.Node
+		verifyBehavior func(*ConcurrentTridentOrchestrator)
+		verifyError    func(*testing.T, error)
 	}{
 		{
 			name: "Success with new node",
@@ -9755,17 +9759,32 @@ func TestAddNodeConcurrentCore(t *testing.T) {
 				},
 				LogLevel: "debug",
 			},
+			verifyBehavior: func(o *ConcurrentTridentOrchestrator) {
+				assert.WithinDuration(t, time.Now(), o.getLastNodeRegistrationTime(), 10*time.Second)
+			},
 			verifyError: func(t *testing.T, err error) {
 				t.Helper()
 				assert.NoError(t, err)
 			},
 		},
 		{
-			name: "Success with existing node",
+			name: "Success with existing node and backends",
 			setup: func(t *testing.T, mockCtrl *gomock.Controller) persistentstore.Client {
 				t.Helper()
 				mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
 				mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+				mockBackend1 := getMockBackend(mockCtrl, "backend1", "uuid1")
+				mockBackend2 := getMockBackend(mockCtrl, "backend2", "uuid2")
+
+				// Setup backend expectations
+				mockBackend1.EXPECT().BackendUUID().Return("uuid1").AnyTimes()
+				mockBackend1.EXPECT().InvalidateNodeAccess().AnyTimes()
+				mockBackend2.EXPECT().BackendUUID().Return("uuid2").AnyTimes()
+				mockBackend2.EXPECT().InvalidateNodeAccess().AnyTimes()
+
+				// Add backend to cache
+				addBackendsToCache(t, mockBackend1, mockBackend2)
 
 				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertNode("node1")))
 				defer unlocker()
@@ -9786,6 +9805,9 @@ func TestAddNodeConcurrentCore(t *testing.T) {
 				Name:             "node1",
 				PublicationState: models.NodeCleanable,
 				LogLevel:         "debug",
+			},
+			verifyBehavior: func(o *ConcurrentTridentOrchestrator) {
+				assert.WithinDuration(t, time.Now(), o.getLastNodeRegistrationTime(), 10*time.Second)
 			},
 			verifyError: func(t *testing.T, err error) {
 				t.Helper()
@@ -9809,6 +9831,9 @@ func TestAddNodeConcurrentCore(t *testing.T) {
 				},
 			},
 			expectedNode: nil,
+			verifyBehavior: func(o *ConcurrentTridentOrchestrator) {
+				assert.Equal(t, time.Time{}, o.getLastNodeRegistrationTime())
+			},
 			verifyError: func(t *testing.T, err error) {
 				t.Helper()
 				assert.ErrorContains(t, err, "persistent store error")
@@ -9824,8 +9849,13 @@ func TestAddNodeConcurrentCore(t *testing.T) {
 			mockStoreClient := tt.setup(t, mockCtrl)
 			o := getConcurrentOrchestrator()
 			o.storeClient = mockStoreClient
+			o.lastNodeRegistrationTime = time.Time{}
 
 			err := o.AddNode(testCtx, tt.newNode, func(_, _, _ string) {})
+
+			if tt.verifyBehavior != nil {
+				tt.verifyBehavior(o)
+			}
 			tt.verifyError(t, err)
 
 			results, unlocker, _ := db.Lock(testCtx, db.Query(db.ReadNode(tt.newNode.Name)))
@@ -10128,6 +10158,23 @@ func TestDeleteNodeConcurrentCore(t *testing.T) {
 				node := &models.Node{Name: "testNode"}
 				addNodesToCache(t, node)
 
+				// Add backends to cache
+				mockBackend1 := getMockBackend(mockCtrl, "backend1", "uuid1")
+				mockBackend2 := getMockBackend(mockCtrl, "backend2", "uuid2")
+				addBackendsToCache(t, mockBackend1, mockBackend2)
+
+				// Setup backend expectations
+				mockBackend1.EXPECT().BackendUUID().Return("uuid1").AnyTimes()
+				mockBackend1.EXPECT().InvalidateNodeAccess().Times(1)
+				mockBackend1.EXPECT().IsNodeAccessUpToDate().Return(true).Times(1)
+				mockBackend2.EXPECT().BackendUUID().Return("uuid2").AnyTimes()
+				mockBackend2.EXPECT().InvalidateNodeAccess().Times(1)
+				mockBackend2.EXPECT().IsNodeAccessUpToDate().Return(false).Times(1)
+				mockBackend2.EXPECT().CanEnablePublishEnforcement().Return(true).Times(1)
+				mockBackend2.EXPECT().Volumes().Return(&sync.Map{}).Times(1)
+				mockBackend2.EXPECT().ReconcileNodeAccess(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockBackend2.EXPECT().SetNodeAccessUpToDate().Times(1)
+
 				mockStoreClient.EXPECT().DeleteNode(gomock.Any(), node).Return(nil).Times(1)
 			},
 			verifyError: func(err error) {
@@ -10146,6 +10193,11 @@ func TestDeleteNodeConcurrentCore(t *testing.T) {
 			bootstrapError: nil,
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 				// No node added to cache
+
+				// Add backends to cache
+				mockBackend1 := getMockBackend(mockCtrl, "backend1", "uuid1")
+				mockBackend2 := getMockBackend(mockCtrl, "backend2", "uuid2")
+				addBackendsToCache(t, mockBackend1, mockBackend2)
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "node nonExistentNode was not found")
@@ -10161,6 +10213,11 @@ func TestDeleteNodeConcurrentCore(t *testing.T) {
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 				node := &models.Node{Name: "testNode"}
 				addNodesToCache(t, node)
+
+				// Add backends to cache
+				mockBackend1 := getMockBackend(mockCtrl, "backend1", "uuid1")
+				mockBackend2 := getMockBackend(mockCtrl, "backend2", "uuid2")
+				addBackendsToCache(t, mockBackend1, mockBackend2)
 
 				mockStoreClient.EXPECT().DeleteNode(gomock.Any(), node).Return(errors.New("delete error")).Times(1)
 			},
@@ -10192,6 +10249,8 @@ func TestDeleteNodeConcurrentCore(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			config.CurrentDriverContext = config.ContextCSI
+
 			mockCtrl := gomock.NewController(t)
 
 			// Re-initialize the concurrent cache for each test
@@ -10215,6 +10274,496 @@ func TestDeleteNodeConcurrentCore(t *testing.T) {
 			if tt.verifyBehavior != nil {
 				tt.verifyBehavior(t, o)
 			}
+		})
+	}
+}
+
+func TestPeriodicallyReconcileNodeAccessOnBackendsConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name                           string
+		reconcilePeriod                time.Duration
+		lastNodeRegistrationTimeOffset time.Duration
+		setupMocks                     func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
+	}{
+		{
+			name:                           "LoopStartsAndStopsCorrectly",
+			reconcilePeriod:                NodeAccessReconcilePeriod,
+			lastNodeRegistrationTimeOffset: 0,
+		},
+		{
+			name:                           "NotTimeToReconcileYet",
+			reconcilePeriod:                50 * time.Millisecond,
+			lastNodeRegistrationTimeOffset: 0,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "backend1", "uuid1")
+
+				// Add backend to cache
+				addBackendsToCache(t, mockBackend)
+			},
+		},
+		{
+			name:                           "LoopReconcilesBackend",
+			reconcilePeriod:                50 * time.Millisecond,
+			lastNodeRegistrationTimeOffset: -2 * NodeRegistrationCooldownPeriod,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "backend1", "uuid1")
+
+				// Setup backend expectations
+				mockBackend.EXPECT().BackendUUID().Return("uuid1").AnyTimes()
+				mockBackend.EXPECT().IsNodeAccessUpToDate().Return(true).AnyTimes()
+
+				// Add backend to cache
+				addBackendsToCache(t, mockBackend)
+			},
+		},
+		{
+			name:                           "LoopReconcilesBackends",
+			reconcilePeriod:                50 * time.Millisecond,
+			lastNodeRegistrationTimeOffset: -2 * NodeRegistrationCooldownPeriod,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend1 := getMockBackend(mockCtrl, "backend1", "uuid1")
+				mockBackend2 := getMockBackend(mockCtrl, "backend2", "uuid2")
+
+				// Setup backend expectations
+				mockBackend1.EXPECT().BackendUUID().Return("uuid1").AnyTimes()
+				mockBackend1.EXPECT().IsNodeAccessUpToDate().Return(true).AnyTimes()
+				mockBackend2.EXPECT().BackendUUID().Return("uuid2").AnyTimes()
+				mockBackend2.EXPECT().IsNodeAccessUpToDate().Return(false).AnyTimes()
+				mockBackend2.EXPECT().CanEnablePublishEnforcement().Return(true).AnyTimes()
+				mockBackend2.EXPECT().Volumes().Return(&sync.Map{}).AnyTimes()
+				mockBackend2.EXPECT().ReconcileNodeAccess(gomock.Any(), gomock.Any(), gomock.Any()).Return(failed).AnyTimes()
+
+				// Add backend to cache
+				addBackendsToCache(t, mockBackend1, mockBackend2)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config.CurrentDriverContext = config.ContextCSI
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+			o.nodeAccessReconcilePeriod = tt.reconcilePeriod
+			o.lastNodeRegistrationTime = time.Now().Add(tt.lastNodeRegistrationTimeOffset)
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient, o)
+			}
+
+			// Start loop
+			go o.PeriodicallyReconcileNodeAccessOnBackends()
+			for o.stopNodeAccessLoop == nil {
+				// Wait for loop to initialize
+				time.Sleep(10 * time.Millisecond)
+			}
+
+			assert.NotNil(t, o.stopNodeAccessLoop, "loop channel should be initialized")
+
+			time.Sleep(500 * time.Millisecond) // Wait for loop to do some work
+
+			// Stop loop
+			o.Stop()
+		})
+	}
+}
+
+func TestPeriodicallyReconcileBackendStateConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name           string
+		pollInterval   time.Duration
+		setupMocks     func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
+		verifyBehavior func(t *testing.T, o *ConcurrentTridentOrchestrator)
+	}{
+		{
+			name:         "ZeroPollIntervalDoesNotStartLoop",
+			pollInterval: 0,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				// No setup needed for zero interval test
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				assert.Nil(t, o.stopReconcileBackendLoop, "reconcile backend loop should not have started")
+			},
+		},
+		{
+			name:         "NormalPollIntervalStartsLoopBootstrapError",
+			pollInterval: 50 * time.Millisecond,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "backend1", "uuid1")
+
+				// Setup backend expectations
+				mockBackend.EXPECT().CanGetState().Return(false).AnyTimes()
+				mockBackend.EXPECT().Name().Return("backend1").AnyTimes()
+
+				// Add backend to cache
+				addBackendsToCache(t, mockBackend)
+
+				// Set bootstrap error to trigger reconciliation
+				o.bootstrapError = failed
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// The loop should be running (stopReconcileBackendLoop should not be nil)
+				assert.NotNil(t, o.stopReconcileBackendLoop, "reconcile backend loop should have started")
+			},
+		},
+		{
+			name:         "ReconcileWithNoBackends",
+			pollInterval: 50 * time.Millisecond,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				// No backends added to cache
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// The loop should still be running even with no backends
+				assert.NotNil(t, o.stopReconcileBackendLoop, "reconcile backend loop should have started")
+			},
+		},
+		{
+			name:         "ReconcileWithMultipleBackends",
+			pollInterval: 50 * time.Millisecond,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend1 := getMockBackend(mockCtrl, "backend1", "uuid1")
+				mockBackend2 := getMockBackend(mockCtrl, "backend2", "uuid2")
+
+				// Setup backend expectations
+				mockBackend1.EXPECT().CanGetState().Return(false).AnyTimes()
+				mockBackend2.EXPECT().CanGetState().Return(false).AnyTimes()
+				mockBackend1.EXPECT().Name().Return("backend1").AnyTimes()
+				mockBackend2.EXPECT().Name().Return("backend2").AnyTimes()
+
+				// Add backends to cache
+				addBackendsToCache(t, mockBackend1, mockBackend2)
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// The loop should be running
+				assert.NotNil(t, o.stopReconcileBackendLoop, "reconcile backend loop should have started")
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient, o)
+			}
+
+			go o.PeriodicallyReconcileBackendState(tt.pollInterval)
+			if tt.pollInterval > 0 {
+				for o.stopReconcileBackendLoop == nil {
+					// Wait for loop to initialize
+					time.Sleep(10 * time.Millisecond)
+				}
+			}
+
+			time.Sleep(500 * time.Millisecond) // Wait for loop to do some work
+
+			if tt.verifyBehavior != nil {
+				tt.verifyBehavior(t, o)
+			}
+
+			// Clean up
+			o.Stop()
+		})
+	}
+}
+
+func TestReconcileBackendStateConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name        string
+		backendUUID string
+		setupMocks  func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend
+		verifyError func(t *testing.T, err error)
+	}{
+		{
+			name:        "BackendNotFound",
+			backendUUID: "nonexistent",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				// No backend added to cache
+				return nil
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.Error(t, err)
+				assert.True(t, errors.IsNotFoundError(err))
+			},
+		},
+		{
+			name:        "BackendNotSupported",
+			backendUUID: "uuid1",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackend(mockCtrl, "backend1", "uuid1")
+
+				// Setup backend expectations
+				mockBackend.EXPECT().CanGetState().Return(false).Times(1)
+
+				// Add backend to cache
+				addBackendsToCache(t, mockBackend)
+
+				return mockBackend
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:        "ReconcileHealthyBackendNoChange",
+			backendUUID: "uuid1",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackend(mockCtrl, "backend1", "uuid1")
+
+				// Setup backend expectations
+				mockBackend.EXPECT().CanGetState().Return(true).Times(1)
+				mockBackend.EXPECT().GetBackendState(gomock.Any()).Return("", roaring.New()).Times(1)
+
+				// Add backend to cache
+				addBackendsToCache(t, mockBackend)
+
+				return mockBackend
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:        "ReconcileBackendNoPools",
+			backendUUID: "uuid1",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackend(mockCtrl, "backend1", "uuid1")
+				bitset := roaring.New()
+				bitset.Add(storage.BackendStatePoolsChange) // Simulate a change in pool state
+
+				// Setup backend expectations
+				mockBackend.EXPECT().CanGetState().Return(true).Times(1)
+				mockBackend.EXPECT().GetBackendState(gomock.Any()).Return("no aggregates", bitset).Times(2)
+				mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "no aggregates").Times(1)
+
+				// Add backend to cache
+				addBackendsToCache(t, mockBackend)
+
+				return mockBackend
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:        "ReconcileBackendNoPoolsProblemResolves",
+			backendUUID: "uuid1",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackend(mockCtrl, "backend1", "uuid1")
+				bitset := roaring.New()
+				bitset.Add(storage.BackendStatePoolsChange) // Simulate a change in pool state
+
+				// Setup backend expectations
+				mockBackend.EXPECT().CanGetState().Return(true).Times(1)
+				mockBackend.EXPECT().GetBackendState(gomock.Any()).Return("no aggregates", bitset).Times(1)
+				mockBackend.EXPECT().GetBackendState(gomock.Any()).Return("", roaring.New()).Times(1)
+
+				// Add backend to cache
+				addBackendsToCache(t, mockBackend)
+
+				return mockBackend
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:        "ReconcileBackendStateReasonChange",
+			backendUUID: "uuid1",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackend(mockCtrl, "backend1", "uuid1")
+				bitset := roaring.New()
+				bitset.Add(storage.BackendStatePoolsChange) // Simulate a change in pool state
+				bitset.Add(storage.BackendStateReasonChange)
+
+				// Setup backend expectations
+				mockBackend.EXPECT().CanGetState().Return(true).Times(1)
+				mockBackend.EXPECT().GetBackendState(gomock.Any()).Return("no aggregates", bitset).Times(2)
+				mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "no aggregates").Times(1)
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), mockBackend).Return(nil).Times(1)
+
+				// Add backend to cache
+				addBackendsToCache(t, mockBackend)
+
+				return mockBackend
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:        "ReconcileBackendStateReasonChangeStoreError",
+			backendUUID: "uuid1",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackend(mockCtrl, "backend1", "uuid1")
+				bitset := roaring.New()
+				bitset.Add(storage.BackendStatePoolsChange) // Simulate a change in pool state
+				bitset.Add(storage.BackendStateReasonChange)
+
+				// Setup backend expectations
+				mockBackend.EXPECT().CanGetState().Return(true).Times(1)
+				mockBackend.EXPECT().GetBackendState(gomock.Any()).Return("no aggregates", bitset).Times(2)
+				mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "no aggregates").Times(1)
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), mockBackend).Return(failed).Times(1)
+
+				// Add backend to cache
+				addBackendsToCache(t, mockBackend)
+
+				return mockBackend
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.Error(t, err)
+			},
+		},
+		{
+			name:        "ReconcileBackendPoolsChangeConfigError",
+			backendUUID: "uuid1",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackend(mockCtrl, "backend1", "uuid1")
+				bitset := roaring.New()
+				bitset.Add(storage.BackendStatePoolsChange) // Simulate a change in pool state
+
+				// Setup backend expectations for offline backend
+				mockBackend.EXPECT().CanGetState().Return(true).Times(1)
+				mockBackend.EXPECT().GetBackendState(gomock.Any()).Return("", bitset).Times(2)
+				mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "").Times(1)
+				mockBackend.EXPECT().MarshalDriverConfig().Return(nil, failed).Times(1)
+
+				// Add backend to cache
+				addBackendsToCache(t, mockBackend)
+
+				return mockBackend
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.Error(t, err)
+			},
+		},
+		{
+			name:        "ReconcileBackendPoolsChange",
+			backendUUID: "uuid1",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
+					"name":       "backend1",
+					"uuid":       "uuid1",
+					"state":      string(storage.Online),
+					"driverName": "fake",
+				})
+				bitset := roaring.New()
+				bitset.Add(storage.BackendStatePoolsChange) // Simulate a change in pool state
+
+				fakeBackend := getFakeBackend("backend1", "uuid1", nil)
+				fakeConfigBytes, _ := fakeBackend.MarshalDriverConfig()
+
+				// Setup backend expectations for offline backend
+				mockBackend.EXPECT().CanGetState().Return(true).Times(1)
+				mockBackend.EXPECT().GetBackendState(gomock.Any()).Return("", bitset).Times(2)
+				mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "").Times(1)
+				mockBackend.EXPECT().MarshalDriverConfig().Return(fakeConfigBytes, nil).Times(1)
+				mockBackend.EXPECT().ConfigRef().Return("").AnyTimes()
+				mockBackend.EXPECT().Name().Return("backend1").AnyTimes()
+				mockBackend.EXPECT().BackendUUID().Return("uuid1").AnyTimes()
+				mockBackend.EXPECT().Driver().Return(fakeBackend.Driver()).AnyTimes()
+				mockBackend.EXPECT().UserState().Return(storage.UserNormal).AnyTimes()
+				mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+				mockBackend.EXPECT().Online().Return(true).AnyTimes()
+				mockBackend.EXPECT().HasVolumes().Return(true).AnyTimes()
+				mockBackend.EXPECT().SmartCopy().Return(mockBackend).AnyTimes()
+				mockBackend.EXPECT().GetUniqueKey().Return("backend1").AnyTimes()
+				mockBackend.EXPECT().ConstructPersistent(gomock.Any()).Return(&storage.BackendPersistent{Name: "backend1", BackendUUID: "uuid1"}).AnyTimes()
+				mockBackend.EXPECT().Terminate(gomock.Any()).Times(1)
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+				// Add backend to cache
+				addBackendsToCache(t, mockBackend)
+
+				return mockBackend
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name:        "ReconcileBackendVersionChangeStoreError",
+			backendUUID: "uuid1",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
+				mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
+					"name":       "backend1",
+					"uuid":       "uuid1",
+					"state":      string(storage.Online),
+					"driverName": "fake",
+				})
+				bitset := roaring.New()
+				bitset.Add(storage.BackendStateAPIVersionChange) // Simulate a change in pool state
+
+				fakeBackend := getFakeBackend("backend1", "uuid1", nil)
+				fakeConfigBytes, _ := fakeBackend.MarshalDriverConfig()
+
+				// Setup backend expectations for offline backend
+				mockBackend.EXPECT().CanGetState().Return(true).Times(1)
+				mockBackend.EXPECT().GetBackendState(gomock.Any()).Return("", bitset).Times(2)
+				mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "").Times(1)
+				mockBackend.EXPECT().MarshalDriverConfig().Return(fakeConfigBytes, nil).Times(1)
+				mockBackend.EXPECT().ConfigRef().Return("").AnyTimes()
+				mockBackend.EXPECT().Name().Return("backend1").AnyTimes()
+				mockBackend.EXPECT().BackendUUID().Return("uuid1").AnyTimes()
+				mockBackend.EXPECT().Driver().Return(fakeBackend.Driver()).AnyTimes()
+				mockBackend.EXPECT().UserState().Return(storage.UserNormal).AnyTimes()
+				mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+				mockBackend.EXPECT().Online().Return(true).AnyTimes()
+				mockBackend.EXPECT().HasVolumes().Return(true).AnyTimes()
+				mockBackend.EXPECT().SmartCopy().Return(mockBackend).AnyTimes()
+				mockBackend.EXPECT().GetUniqueKey().Return("backend1").AnyTimes()
+				mockBackend.EXPECT().ConstructPersistent(gomock.Any()).Return(&storage.BackendPersistent{Name: "backend1", BackendUUID: "uuid1"}).AnyTimes()
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(failed).Times(1)
+
+				// Add backend to cache
+				addBackendsToCache(t, mockBackend)
+
+				return mockBackend
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.Error(t, err)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			tt.setupMocks(mockCtrl, mockStoreClient, o)
+
+			err := o.reconcileBackendState(testCtx, tt.backendUUID)
+
+			if tt.verifyError != nil {
+				tt.verifyError(t, err)
+			}
+
+			persistenceCleanup(t, o)
 		})
 	}
 }

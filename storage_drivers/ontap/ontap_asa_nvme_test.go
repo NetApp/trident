@@ -49,6 +49,7 @@ func newMockOntapASANVMeDriver(t *testing.T) (*mockapi.MockOntapAPI, *ASANVMeSto
 
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
+	mockAPI.EXPECT().Terminate().AnyTimes()
 
 	driver := newTestOntapASANVMeDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, mockAPI)
 	driver.API = mockAPI
@@ -297,6 +298,7 @@ func TestInitializeASANVMe(t *testing.T) {
 				mockAPI.EXPECT().SupportsFeature(ctx, api.NVMeProtocol).Return(true).Times(1)
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.NVMeTransport).Return([]string{"127.0.0.1"}, nil).Times(1)
 				mockAPI.EXPECT().GetSVMUUID().Return(uuid.NewString()).Times(1)
+				mockAPI.EXPECT().Terminate().AnyTimes()
 			},
 			expectedError: false,
 			verify: func(t *testing.T, err error) {
@@ -466,8 +468,6 @@ func TestInitializeASANVMe(t *testing.T) {
 }
 
 func TestTerminateNVMe(t *testing.T) {
-	_, driver := newMockOntapASANVMeDriver(t)
-
 	tests := []struct {
 		name          string
 		driverContext tridentconfig.DriverContext
@@ -502,6 +502,7 @@ func TestTerminateNVMe(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			_, driver := newMockOntapASANVMeDriver(t)
 			driver.Config.DriverContext = tt.driverContext
 			driver.telemetry = tt.telemetry
 
@@ -2703,7 +2704,7 @@ func TestCanSnapshotASANVMe(t *testing.T) {
 func TestGetStorageBackendSpecsASANVMe(t *testing.T) {
 	_, driver := newMockOntapASANVMeDriver(t)
 
-	backend := &storage.StorageBackend{}
+	backend := storage.NewTestStorageBackend()
 	backend.SetOnline(true)
 	backend.ClearStoragePools()
 	backend.SetDriver(driver)
@@ -3002,6 +3003,90 @@ func TestImportASANVMe_Managed_Success(t *testing.T) {
 
 	assert.NoError(t, err, "Expected no error in managed import, but got error")
 	assert.Equal(t, "1g", volConfig.Size, "Expected volume config to be updated with actual Namespace size")
+	assert.Equal(t, driver.CreateASANVMeNamespaceInternalID(driver.Config.SVM, nvmeNamespace.Name), volConfig.InternalID,
+		"InternalID not set as expected")
+	assert.Equal(t, nvmeNamespace.UUID, volConfig.AccessInfo.NVMeNamespaceUUID,
+		"NVMe namespace UUID not set as expected")
+}
+
+func TestImportASANVMe_NoRename_Success(t *testing.T) {
+	ctx := context.Background()
+
+	mockAPI, driver := newMockOntapASANVMeDriver(t)
+
+	pool1 := storage.NewStoragePool(nil, "pool1")
+	driver.Config.Labels = map[string]string{
+		"app":   "my-db-app",
+		"label": "gold",
+	}
+
+	pool1.InternalAttributes()[NameTemplate] = "{{.config.StorageDriverName}}_{{.labels.Cluster}}_{{.volume.Namespace}}_{{.volume." +
+		"RequestName}}"
+	pool1.SetAttributes(map[string]sa.Offer{
+		sa.Labels: sa.NewLabelOffer(driver.Config.Labels),
+	})
+	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
+
+	// originalVolumeName will be same as NVMe namespace name in ASA driver
+	originalVolumeName := "namespace1"
+	volConfig := getASANVMeVolumeConfig()
+	volConfig.ImportNotManaged = false
+	volConfig.ImportNoRename = true             // Enable --no-rename flag
+	volConfig.InternalName = originalVolumeName // With --no-rename, InternalName should be the original name
+
+	volume := api.Volume{
+		AccessType: "rw",
+	}
+
+	nsUuid := uuid.New()
+
+	// Create a comment generated from Trident to be present on existing namespace
+	existingNsComment := map[string]string{
+		nsAttributeFSType:    volConfig.FileSystem,
+		nsAttributeLUKS:      volConfig.LUKSEncryption,
+		nsAttributeDriverCtx: string(driver.Config.DriverContext),
+		nsLabels:             "{\"provisioning\":{\"app\":\"my-gateway-app\",\"label\":\"silver\"}}",
+	}
+
+	existingCommentString, _ := driver.createNVMeNamespaceCommentString(ctx, existingNsComment, nsMaxCommentLength)
+
+	nvmeNamespace := api.NVMeNamespace{
+		UUID:      nsUuid.String(),
+		Name:      originalVolumeName,
+		State:     "online",
+		Size:      "1g",
+		OsType:    "linux",
+		BlockSize: defaultNamespaceBlockSize,
+		Comment:   existingCommentString,
+		QosPolicy: api.QosPolicyGroup{
+			Name: "fake-qos-policy",
+			Kind: api.QosPolicyGroupKind,
+		},
+	}
+
+	// Generate the comment to be set
+	nsCommentToBeSet := map[string]string{
+		nsAttributeFSType:    volConfig.FileSystem,
+		nsAttributeLUKS:      volConfig.LUKSEncryption,
+		nsAttributeDriverCtx: string(driver.Config.DriverContext),
+		FormatOptions:        volConfig.FormatOptions,
+		nsLabels:             "{\"provisioning\":{\"app\":\"my-db-app\",\"label\":\"gold\"}}",
+	}
+
+	nsCommentToBeSetString, _ := driver.createNVMeNamespaceCommentString(ctx, nsCommentToBeSet, nsMaxCommentLength)
+
+	mockAPI.EXPECT().NVMeNamespaceGetByName(ctx, originalVolumeName).Return(&nvmeNamespace, nil)
+	mockAPI.EXPECT().VolumeInfo(ctx, originalVolumeName).Return(&volume, nil)
+	mockAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", nsUuid.String()).Return(false, nil)
+	// With --no-rename, NVMeNamespaceRename should NOT be called
+	// Only comment updates should happen
+	mockAPI.EXPECT().NVMeNamespaceSetComment(ctx, originalVolumeName, nsCommentToBeSetString).Return(nil)
+
+	err := driver.Import(ctx, &volConfig, originalVolumeName)
+
+	assert.NoError(t, err, "Expected no error in managed import with --no-rename, but got error")
+	assert.Equal(t, "1g", volConfig.Size, "Expected volume config to be updated with actual Namespace size")
+	assert.Equal(t, originalVolumeName, volConfig.InternalName, "Expected volume internal name to remain as original name with --no-rename")
 	assert.Equal(t, driver.CreateASANVMeNamespaceInternalID(driver.Config.SVM, nvmeNamespace.Name), volConfig.InternalID,
 		"InternalID not set as expected")
 	assert.Equal(t, nvmeNamespace.UUID, volConfig.AccessInfo.NVMeNamespaceUUID,

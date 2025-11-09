@@ -8,7 +8,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/brunoga/deep"
 	storagev1 "k8s.io/api/storage/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	commonconfig "github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
@@ -142,13 +144,13 @@ rules:
     verbs: ["get", "list", "delete", "patch"]
   - apiGroups: [""]
     resources: ["pods"]
-    verbs: ["get", "list", "watch"]
+    verbs: ["get", "list", "watch", "delete"]
   - apiGroups: [""]
     resources: ["nodes"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["volumeattachments"]
-    verbs: ["get", "list", "watch", "update", "patch"]
+    verbs: ["get", "list", "watch", "update", "patch", "delete"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["volumeattachments/status"]
     verbs: ["update", "patch"]
@@ -183,6 +185,8 @@ rules:
 "tridentsnapshotinfos/status", "tridentvolumepublications", "tridentvolumereferences",
 "tridentactionmirrorupdates", "tridentactionmirrorupdates/status",
 "tridentactionsnapshotrestores", "tridentactionsnapshotrestores/status",
+"tridentnoderemediations", "tridentnoderemediations/status",
+"tridentnoderemediationtemplates", "tridentnoderemediationtemplates/status",
 "tridentgroupsnapshots", "tridentgroupsnapshots/status"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
@@ -386,7 +390,7 @@ spec:
     matchExpressions:
     - operator : In
       scopeName: PriorityClass
-      values: ["system-node-critical"]
+      values: ["system-node-critical", "system-cluster-critical"]
 `
 
 const deploymentAutosupportYAMLTemplate = `
@@ -410,9 +414,7 @@ const deploymentAutosupportYAMLTemplate = `
         {AUTOSUPPORT_HOSTNAME}
         {AUTOSUPPORT_DEBUG}
         {AUTOSUPPORT_INSECURE}
-        resources:
-          limits:
-            memory: 1Gi
+        {CSI_TRIDENT_AUTOSUPPORT_RESOURCES}
         volumeMounts:
         - name: asup-dir
           mountPath: /asup
@@ -481,6 +483,10 @@ func getCSIDeploymentAutosupportYAML(args *DeploymentYAMLArguments) string {
 		autosupportInsecureLine = "- -insecure"
 	}
 
+	if args.Resources == nil {
+		args.Resources = deep.MustCopy(&commonconfig.DefaultResources)
+	}
+
 	asupYAMLSnippet := deploymentAutosupportYAMLTemplate
 	asupYAMLSnippet = strings.ReplaceAll(asupYAMLSnippet, "{AUTOSUPPORT_CONTAINER_NAME}", commonconfig.DefaultAutosupportName)
 	asupYAMLSnippet = strings.ReplaceAll(asupYAMLSnippet, "{AUTOSUPPORT_IMAGE}", args.AutosupportImage)
@@ -491,6 +497,7 @@ func getCSIDeploymentAutosupportYAML(args *DeploymentYAMLArguments) string {
 	asupYAMLSnippet = strings.ReplaceAll(asupYAMLSnippet, "{AUTOSUPPORT_HOSTNAME}", autosupportHostnameLine)
 	asupYAMLSnippet = strings.ReplaceAll(asupYAMLSnippet, "{AUTOSUPPORT_DEBUG}", autosupportDebugLine)
 	asupYAMLSnippet = strings.ReplaceAll(asupYAMLSnippet, "{AUTOSUPPORT_SILENCE}", strconv.FormatBool(args.SilenceAutosupport))
+	asupYAMLSnippet = replaceResourcesInTemplate(asupYAMLSnippet, "{CSI_TRIDENT_AUTOSUPPORT_RESOURCES}", args.Resources.Controller[commonconfig.TridentAutosupport])
 
 	return asupYAMLSnippet
 }
@@ -546,6 +553,10 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		args.ImageRegistry = commonconfig.KubernetesCSISidecarRegistry
 	}
 
+	if args.Resources == nil {
+		args.Resources = deep.MustCopy(&commonconfig.DefaultResources)
+	}
+
 	sidecarImages := []struct {
 		arg *string
 		tag string
@@ -565,6 +576,12 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LABEL_IDENTITY}", AzureWorkloadIdentityLabel)
 	} else {
 		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{LABEL_IDENTITY}", "")
+	}
+
+	if args.HostNetwork {
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{HOST_NETWORK}", "hostNetwork: true")
+	} else {
+		deploymentYAML = strings.ReplaceAll(deploymentYAML, "{HOST_NETWORK}", "")
 	}
 
 	if args.EnableACP {
@@ -643,6 +660,11 @@ func GetCSIDeploymentYAML(args *DeploymentYAMLArguments) string {
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{K8S_API_CLIENT_TRIDENT_THROTTLE}", K8sAPITridentThrottle)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{K8S_API_CLIENT_SIDECAR_THROTTLE}", K8sAPISidecarThrottle)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{ENABLE_CONCURRENCY}", strconv.FormatBool(args.EnableConcurrency))
+	deploymentYAML = replaceResourcesInTemplate(deploymentYAML, "{CSI_TRIDENT_MAIN_RESOURCES}", args.Resources.Controller[commonconfig.TridentControllerMain])
+	deploymentYAML = replaceResourcesInTemplate(deploymentYAML, "{CSI_SIDECAR_PROVISIONER_RESOURCES}", args.Resources.Controller[commonconfig.CSISidecarProvisioner])
+	deploymentYAML = replaceResourcesInTemplate(deploymentYAML, "{CSI_SIDECAR_ATTACHER_RESOURCES}", args.Resources.Controller[commonconfig.CSISidecarAttacher])
+	deploymentYAML = replaceResourcesInTemplate(deploymentYAML, "{CSI_SIDECAR_RESIZER_RESOURCES}", args.Resources.Controller[commonconfig.CSISidecarResizer])
+	deploymentYAML = replaceResourcesInTemplate(deploymentYAML, "{CSI_SIDECAR_SNAPSHOTTER_RESOURCES}", args.Resources.Controller[commonconfig.CSISidecarSnapshotter])
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{METRICS}", metrics)
 	deploymentYAML = strings.ReplaceAll(deploymentYAML, "{HTTPS_METRICS}", httpsMetrics)
 
@@ -677,6 +699,8 @@ spec:
         openshift.io/required-scc: {SERVICE_ACCOUNT}
     spec:
       serviceAccount: {SERVICE_ACCOUNT}
+      priorityClassName: system-cluster-critical
+      {HOST_NETWORK}
       containers:
       - name: trident-main
         image: {TRIDENT_IMAGE}
@@ -724,6 +748,7 @@ spec:
           initialDelaySeconds: 120
           periodSeconds: 120
           timeoutSeconds: 90
+        {CSI_TRIDENT_MAIN_RESOURCES}
         env:
         - name: KUBE_NODE_NAME
           valueFrom:
@@ -760,8 +785,9 @@ spec:
         - "--csi-address=$(ADDRESS)"
         - "--retry-interval-start=8s"
         - "--retry-interval-max=30s"
-        - "--worker-threads=5"
+        - "--worker-threads=100"
         {K8S_API_CLIENT_SIDECAR_THROTTLE}
+        {CSI_SIDECAR_PROVISIONER_RESOURCES}
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -779,9 +805,10 @@ spec:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=60s"
         - "--retry-interval-start=10s"
-        - "--worker-threads=10"
+        - "--worker-threads=100"
         - "--csi-address=$(ADDRESS)"
         {K8S_API_CLIENT_SIDECAR_THROTTLE}
+        {CSI_SIDECAR_ATTACHER_RESOURCES}
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -798,9 +825,10 @@ spec:
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=300s"
-        - "--workers=10"
+        - "--workers=100"
         - "--csi-address=$(ADDRESS)"
         {K8S_API_CLIENT_SIDECAR_THROTTLE}
+        {CSI_SIDECAR_RESIZER_RESOURCES}
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -817,10 +845,11 @@ spec:
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--timeout=300s"
-        - "--worker-threads=10"
+        - "--worker-threads=100"
         - "--csi-address=$(ADDRESS)"
         {FEATURE_GATES_CSI_SNAPSHOTTER}
         {K8S_API_CLIENT_SIDECAR_THROTTLE}
+        {CSI_SIDECAR_SNAPSHOTTER_RESOURCES}
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -916,6 +945,10 @@ func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
 		args.ImageRegistry = commonconfig.KubernetesCSISidecarRegistry
 	}
 
+	if args.Resources == nil {
+		args.Resources = deep.MustCopy(&commonconfig.DefaultResources)
+	}
+
 	sidecarImages := []struct {
 		arg *string
 		tag string
@@ -952,6 +985,9 @@ func GetCSIDaemonSetYAMLWindows(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = yaml.ReplaceMultilineTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
 	daemonSetYAML = yaml.ReplaceMultilineTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
 	daemonSetYAML = yaml.ReplaceMultilineTag(daemonSetYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
+	daemonSetYAML = replaceResourcesInTemplate(daemonSetYAML, "{CSI_TRIDENT_MAIN_RESOURCES}", args.Resources.Node.Windows[commonconfig.TridentNodeMain])
+	daemonSetYAML = replaceResourcesInTemplate(daemonSetYAML, "{CSI_SIDECAR_REGISTRAR_RESOURCES}", args.Resources.Node.Windows[commonconfig.CSISidecarRegistrar])
+	daemonSetYAML = replaceResourcesInTemplate(daemonSetYAML, "{CSI_SIDECAR_LIVENESS_PROBE_RESOURCES}", args.Resources.Node.Windows[commonconfig.CSISidecarWindowsLivenessProbe])
 	// Log before secrets are inserted into YAML.
 	Log().WithField("yaml", daemonSetYAML).Trace("CSI Daemonset Windows YAML.")
 	daemonSetYAML = yaml.ReplaceMultilineTag(daemonSetYAML, "IMAGE_PULL_SECRETS",
@@ -1011,6 +1047,10 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 		args.ImageRegistry = commonconfig.KubernetesCSISidecarRegistry
 	}
 
+	if args.Resources == nil {
+		args.Resources = deep.MustCopy(&commonconfig.DefaultResources)
+	}
+
 	if args.CSISidecarNodeDriverRegistrarImage == "" {
 		args.CSISidecarNodeDriverRegistrarImage = args.ImageRegistry + "/" + commonconfig.CSISidecarNodeDriverRegistrarImageTag
 	}
@@ -1043,6 +1083,8 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 	daemonSetYAML = yaml.ReplaceMultilineTag(daemonSetYAML, "NODE_TOLERATIONS", constructTolerations(tolerations))
 	daemonSetYAML = yaml.ReplaceMultilineTag(daemonSetYAML, "LABELS", constructLabels(args.Labels))
 	daemonSetYAML = yaml.ReplaceMultilineTag(daemonSetYAML, "OWNER_REF", constructOwnerRef(args.ControllingCRDetails))
+	daemonSetYAML = replaceResourcesInTemplate(daemonSetYAML, "{CSI_TRIDENT_MAIN_RESOURCES}", args.Resources.Node.Linux[commonconfig.TridentNodeMain])
+	daemonSetYAML = replaceResourcesInTemplate(daemonSetYAML, "{CSI_SIDECAR_REGISTRAR_RESOURCES}", args.Resources.Node.Linux[commonconfig.CSISidecarRegistrar])
 
 	// Log before secrets are inserted into YAML.
 	Log().WithField("yaml", daemonSetYAML).Trace("CSI Daemonset Linux YAML.")
@@ -1050,6 +1092,87 @@ func GetCSIDaemonSetYAMLLinux(args *DaemonsetYAMLArguments) string {
 		constructImagePullSecrets(args.ImagePullSecrets))
 
 	return daemonSetYAML
+}
+
+// generateResourcesYAML creates the resources section YAML with conditional requests and limits
+func generateResourcesYAML(containerResource *commonconfig.ContainerResource, indent string) string {
+	if containerResource == nil {
+		return ""
+	}
+
+	const (
+		indent2 = "  "
+		indent4 = "    "
+	)
+
+	// Not adding any indentation here because we're assuming that it'll be arleady placed with indentation
+	// in the template.
+	resourcesYAML := "resources:\n"
+	hasRequests := false
+	hasLimits := false
+
+	// Helper function to check if a resource value should be included
+	shouldInclude := func(value *resource.Quantity) bool {
+		return value != nil && !value.IsZero()
+	}
+
+	// Only include requests if they are provided and non-zero
+	if containerResource.Requests != nil {
+		if shouldInclude(containerResource.Requests.CPU) || shouldInclude(containerResource.Requests.Memory) {
+			resourcesYAML += indent + indent2 + "requests:\n"
+			hasRequests = true
+			if shouldInclude(containerResource.Requests.CPU) {
+				resourcesYAML += indent + indent4 + "cpu: " + containerResource.Requests.CPU.String() + "\n"
+			}
+			if shouldInclude(containerResource.Requests.Memory) {
+				resourcesYAML += indent + indent4 + "memory: " + containerResource.Requests.Memory.String() + "\n"
+			}
+		}
+	}
+
+	// Only include limits if they are provided and non-zero
+	if containerResource.Limits != nil {
+		if shouldInclude(containerResource.Limits.CPU) || shouldInclude(containerResource.Limits.Memory) {
+			resourcesYAML += indent + indent2 + "limits:\n"
+			hasLimits = true
+			if shouldInclude(containerResource.Limits.CPU) {
+				resourcesYAML += indent + indent4 + "cpu: " + containerResource.Limits.CPU.String() + "\n"
+			}
+			if shouldInclude(containerResource.Limits.Memory) {
+				resourcesYAML += indent + indent4 + "memory: " + containerResource.Limits.Memory.String() + "\n"
+			}
+		}
+	}
+
+	// If neither requests nor limits were added, return empty string
+	if !hasRequests && !hasLimits {
+		return ""
+	}
+
+	return resourcesYAML
+}
+
+// replaceResourcesInTemplate replaces resource placeholders with conditional resource YAML
+func replaceResourcesInTemplate(template, containerResourcePlaceholder string, containerResource *commonconfig.ContainerResource) string {
+	// Find the resources section for this container
+	if !strings.Contains(template, containerResourcePlaceholder) {
+		return template
+	}
+
+	// Get the indentation for the resources section
+	tagIndex := strings.Index(template, containerResourcePlaceholder)
+	lineStart := strings.LastIndex(template[:tagIndex], "\n") + 1
+	indent := template[lineStart:tagIndex]
+
+	// Generate the resources YAML
+	resourcesYAML := generateResourcesYAML(containerResource, indent)
+
+	// Replace the tag with the generated YAML (remove trailing newline to avoid extra blank line)
+	if resourcesYAML != "" && strings.HasSuffix(resourcesYAML, "\n") {
+		resourcesYAML = strings.TrimSuffix(resourcesYAML, "\n")
+	}
+
+	return strings.ReplaceAll(template, containerResourcePlaceholder, resourcesYAML)
 }
 
 func replaceNodePrepTag(daemonSetYAML string, nodePrep []string) string {
@@ -1191,6 +1314,7 @@ spec:
           timeoutSeconds: 5
           periodSeconds: 10
           initialDelaySeconds: 15
+        {CSI_TRIDENT_MAIN_RESOURCES}
         env:
         - name: KUBE_NODE_NAME
           valueFrom:
@@ -1225,13 +1349,14 @@ spec:
         - name: certs
           mountPath: /certs
           readOnly: true
-      - name: driver-registrar
+      - name: node-driver-registrar
         image: {CSI_SIDECAR_NODE_DRIVER_REGISTRAR_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
         args:
         - "--v={SIDECAR_LOG_LEVEL}"
         - "--csi-address=$(ADDRESS)"
         - "--kubelet-registration-path=$(REGISTRATION_PATH)"
+        {CSI_SIDECAR_REGISTRAR_RESOURCES}
         env:
         - name: ADDRESS
           value: /plugin/csi.sock
@@ -1391,6 +1516,7 @@ spec:
           timeoutSeconds: 5
           periodSeconds: 10
           initialDelaySeconds: 15
+        {CSI_TRIDENT_MAIN_RESOURCES}
         env:
         - name: KUBE_NODE_NAME
           valueFrom:
@@ -1424,12 +1550,6 @@ spec:
           mountPath: \\.\pipe\csi-proxy-filesystem-v1beta1
         - name: csi-proxy-smb-pipe-v1beta1
           mountPath: \\.\pipe\csi-proxy-smb-v1beta1
-        resources:
-          limits:
-            memory: 400Mi
-          requests:
-            cpu: 10m
-            memory: 20Mi
       - name: node-driver-registrar
         image: {CSI_SIDECAR_NODE_DRIVER_REGISTRAR_IMAGE}
         imagePullPolicy: {IMAGE_PULL_POLICY}
@@ -1461,12 +1581,7 @@ spec:
           mountPath: C:\csi
         - name: registration-dir
           mountPath: C:\registration
-        resources:
-          limits:
-            memory: 200Mi
-          requests:
-            cpu: 10m
-            memory: 20Mi
+        {CSI_SIDECAR_REGISTRAR_RESOURCES}
       - name: liveness-probe
         volumeMounts:
           - mountPath: C:\csi
@@ -1480,12 +1595,7 @@ spec:
         env:
           - name: CSI_ENDPOINT
             value: unix:///csi/csi.sock
-        resources:
-          limits:
-            memory: 100Mi
-          requests:
-            cpu: 10m
-            memory: 40Mi
+        {CSI_SIDECAR_LIVENESS_PROBE_RESOURCES}
       {IMAGE_PULL_SECRETS}
       affinity:
         nodeAffinity:
@@ -1620,16 +1730,17 @@ spec:
 `
 
 func GetOpenShiftSCCYAML(
-	sccName, user, namespace string, labels, controllingCRDetails map[string]string, privileged bool,
+	sccName, user, namespace string, labels, controllingCRDetails map[string]string, privileged, hostNetwork bool,
 ) string {
 	sccYAML := openShiftUnprivilegedSCCYAML
-	// Only linux node pod needs an privileged SCC (i.e. privileged set to true)
+	// Only linux node pod needs a privileged SCC (i.e. privileged set to true)
 	if privileged {
 		sccYAML = openShiftPrivilegedSCCYAML
 	}
 	sccYAML = strings.ReplaceAll(sccYAML, "{SCC}", sccName)
 	sccYAML = strings.ReplaceAll(sccYAML, "{NAMESPACE}", namespace)
 	sccYAML = strings.ReplaceAll(sccYAML, "{USER}", user)
+	sccYAML = strings.ReplaceAll(sccYAML, "{HOST_NETWORK}", strconv.FormatBool(hostNetwork))
 	sccYAML = yaml.ReplaceMultilineTag(sccYAML, "LABELS", constructLabels(labels))
 	sccYAML = yaml.ReplaceMultilineTag(sccYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
 
@@ -1689,9 +1800,9 @@ metadata:
   {OWNER_REF}
 allowHostDirVolumePlugin: true
 allowHostIPC: false
-allowHostNetwork: false
+allowHostNetwork: {HOST_NETWORK}
 allowHostPID: false
-allowHostPorts: false
+allowHostPorts: {HOST_NETWORK}
 allowPrivilegeEscalation: true
 allowPrivilegedContainer: false
 allowedCapabilities: null
@@ -1887,10 +1998,35 @@ func GetActionSnapshotRestoreCRDYAML() string {
 	return tridentActionSnapshotRestoreCRDYAMLv1
 }
 
+func GetNodeRemediationCRDYAML() string {
+	Log().Trace(">>>> GetNodeRemediationCRDYAML")
+	defer func() { Log().Trace("<<<< GetNodeRemediationCRDYAML") }()
+	return tridentNodeRemediationCRDYAMLv1
+}
+
+func GetNodeRemediationTemplateCRDYAML() string {
+	Log().Trace(">>>> GetNodeRemediationTemplateCRDYAML")
+	defer func() { Log().Trace("<<<< GetNodeRemediationTemplateCRDYAML") }()
+	return tridentNodeRemediationTemplateCRDYAMLv1
+}
+
 func GetOrchestratorCRDYAML() string {
 	Log().Trace(">>>> GetOrchestratorCRDYAML")
 	defer func() { Log().Trace("<<<< GetOrchestratorCRDYAML") }()
 	return tridentOrchestratorCRDYAMLv1
+}
+
+func GetNodeRemediationClusterRoleYAML() string {
+	Log().Trace(">>>> GetNodeRemediationClusterRoleYAML")
+	defer func() { Log().Trace("<<<< GetNodeRemediationClusterRoleYAML") }()
+	return tridentNodeRemediationClusterRoleYAMLv1
+}
+
+func GetNodeRemediationTemplateYAML(namespace string) string {
+	Log().Trace(">>>> GetNodeRemediationYAML")
+	defer func() { Log().Trace("<<<< GetNodeRemediationYAML") }()
+	yaml := strings.ReplaceAll(tridentNodeRemediationDefaultTemplate, "{NAMESPACE}", namespace)
+	return yaml
 }
 
 /*
@@ -2738,6 +2874,134 @@ spec:
     - trident
     - trident-external`
 
+const tridentNodeRemediationCRDYAMLv1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentnoderemediations.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+            status:
+              type: object
+              properties:
+                state:
+                  type: string
+                message:
+                  type: string
+                completionTime:
+                  type: string
+                  format: date-time
+                volumeAttachments:
+                  type: object
+                  additionalProperties:
+                    type: string
+      additionalPrinterColumns:
+        - name: State
+          type: string
+          description: Remediation state
+          jsonPath: .status.state
+        - name: Completion Time
+          type: date
+          description: When the remediation completed
+          jsonPath: .status.completionTime
+        - name: Message
+          type: string
+          description: Remediation error message
+          jsonPath: .status.message
+  scope: Namespaced
+  names:
+    plural: tridentnoderemediations
+    singular: tridentnoderemediation
+    kind: TridentNodeRemediation
+    shortNames:
+      - tnr
+      - tnoderemediation
+      - tnremediation
+`
+
+const tridentNodeRemediationTemplateCRDYAMLv1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentnoderemediationtemplates.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                template:
+                  type: object
+                  properties:
+                    spec:
+                      type: object
+            status:
+              type: object
+              properties: {}
+  scope: Namespaced
+  names:
+    plural: tridentnoderemediationtemplates
+    singular: tridentnoderemediationtemplate
+    kind: TridentNodeRemediationTemplate
+    shortNames:
+      - tnrt
+      - tnrtemplate
+`
+
+const tridentNodeRemediationClusterRoleYAMLv1 = `
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    rbac.ext-remediation/aggregate-to-ext-remediation: "true"
+  name: trident-node-remediation-access
+rules:
+- apiGroups:
+  - trident.netapp.io
+  resources:
+  - tridentnoderemediationtemplates
+  - tridentnoderemediations
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+`
+
+const tridentNodeRemediationDefaultTemplate = `
+apiVersion: trident.netapp.io/v1
+kind: TridentNodeRemediationTemplate
+metadata:
+  name: trident-node-remediation-template
+  namespace: {NAMESPACE}
+spec:
+  template:
+    spec: {}
+`
+
+const tridentNodeRemediationYAMLv1 = tridentNodeRemediationClusterRoleYAMLv1 +
+	"\n---" + tridentNodeRemediationDefaultTemplate
+
 const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentBackendCRDYAMLv1 +
 	"\n---" + tridentBackendConfigCRDYAMLv1 +
@@ -2748,6 +3012,8 @@ const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentVolumeCRDYAMLv1 +
 	"\n---" + tridentVolumePublicationCRDYAMLv1 +
 	"\n---" + tridentNodeCRDYAMLv1 +
+	"\n---" + tridentNodeRemediationCRDYAMLv1 +
+	"\n---" + tridentNodeRemediationTemplateCRDYAMLv1 +
 	"\n---" + tridentTransactionCRDYAMLv1 +
 	"\n---" + tridentSnapshotCRDYAMLv1 +
 	"\n---" + tridentGroupSnapshotCRDYAMLv1 +

@@ -25,6 +25,7 @@ import (
 	clik8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
+	"github.com/netapp/trident/frontend/crd/indexers"
 	. "github.com/netapp/trident/logging"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
@@ -53,6 +54,7 @@ const (
 	ObjectTypeTridentActionMirrorUpdate    string = "TridentActionMirrorUpdate"
 	ObjectTypeTridentSnapshotInfo          string = "TridentSnapshotInfo"
 	ObjectTypeTridentActionSnapshotRestore string = "TridentActionSnapshotRestore"
+	ObjectTypeTridentNodeRemediation       string = "TridentNodeRemediation"
 
 	OperationStatusSuccess string = "Success"
 	OperationStatusFailed  string = "Failed"
@@ -129,6 +131,11 @@ type TridentCrdController struct {
 	nodesLister listers.TridentNodeLister
 	nodesSynced cache.InformerSynced
 
+	// TridentNodeRemediation CRD handling
+	nodeRemediationLister listers.TridentNodeRemediationLister
+	nodeRemediationSynced cache.InformerSynced
+	nodeRemediationUtils  NodeRemediationUtils
+
 	// TridentStorageClass CRD handling
 	storageClassesLister listers.TridentStorageClassLister
 	storageClassesSynced cache.InformerSynced
@@ -161,6 +168,9 @@ type TridentCrdController struct {
 	actionSnapshotRestoreLister listers.TridentActionSnapshotRestoreLister
 	actionSnapshotRestoreSynced cache.InformerSynced
 
+	// K8s Indexers
+	indexers indexers.Indexers
+
 	// workqueue is a rate limited work queue. This is used to queue work to be
 	// processed instead of performing it as soon as a change happens. This
 	// means we can ensure we only process a fixed amount of resources at a
@@ -171,6 +181,7 @@ type TridentCrdController struct {
 	// recorder is an event recorder for recording Event resources to the Kubernetes API.
 	recorder                  record.EventRecorder
 	actionMirrorUpdatesSynced func() bool
+	enableForceDetach         bool
 }
 
 // NewTridentCrdController returns a new Trident CRD controller frontend
@@ -186,14 +197,19 @@ func NewTridentCrdController(
 		return nil, err
 	}
 
+	indexers := indexers.NewIndexers(clients.KubeClient)
+	indexers.Activate()
+	remediationUtils := NewNodeRemediationUtils(clients.KubeClient, orchestrator, indexers)
+
 	return newTridentCrdControllerImpl(orchestrator, clients.Namespace, clients.KubeClient,
-		clients.SnapshotClient, clients.TridentClient)
+		clients.SnapshotClient, clients.TridentClient, indexers, remediationUtils)
 }
 
 // newTridentCrdControllerImpl returns a new Trident CRD controller frontend
 func newTridentCrdControllerImpl(
 	orchestrator core.Orchestrator, tridentNamespace string, kubeClientset kubernetes.Interface,
-	snapshotClientset k8ssnapshots.Interface, crdClientset tridentv1clientset.Interface,
+	snapshotClientset k8ssnapshots.Interface, crdClientset tridentv1clientset.Interface, indexers indexers.Indexers,
+	nodeRemediationUtils NodeRemediationUtils,
 ) (*TridentCrdController, error) {
 	ctx := GenerateRequestContext(nil, "", "", WorkflowNone, LogLayerCRDFrontend)
 	Logx(ctx).WithFields(LogFields{
@@ -219,6 +235,7 @@ func newTridentCrdControllerImpl(
 	actionMirrorUpdateInformer := allNSCrdInformer.TridentActionMirrorUpdates()
 	snapshotInfoInformer := allNSCrdInformer.TridentSnapshotInfos()
 	nodeInformer := crdInformer.TridentNodes()
+	nodeRemediationInformer := crdInformer.TridentNodeRemediations()
 	storageClassInformer := crdInformer.TridentStorageClasses()
 	transactionInformer := txnInformer.TridentTransactions()
 	versionInformer := crdInformer.TridentVersions()
@@ -260,6 +277,8 @@ func newTridentCrdControllerImpl(
 		snapshotInfoSynced:          snapshotInfoInformer.Informer().HasSynced,
 		nodesLister:                 nodeInformer.Lister(),
 		nodesSynced:                 nodeInformer.Informer().HasSynced,
+		nodeRemediationLister:       nodeRemediationInformer.Lister(),
+		nodeRemediationSynced:       nodeRemediationInformer.Informer().HasSynced,
 		storageClassesLister:        storageClassInformer.Lister(),
 		storageClassesSynced:        storageClassInformer.Informer().HasSynced,
 		transactionsLister:          transactionInformer.Lister(),
@@ -278,7 +297,9 @@ func newTridentCrdControllerImpl(
 		actionSnapshotRestoreSynced: actionSnapshotRestoreInformer.Informer().HasSynced,
 		workqueue: workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(),
 			crdControllerQueueName),
-		recorder: recorder,
+		recorder:             recorder,
+		indexers:             indexers,
+		nodeRemediationUtils: nodeRemediationUtils,
 	}
 
 	// Set up event handlers for when a Trident CRs are added, updated, or deleted
@@ -306,6 +327,12 @@ func newTridentCrdControllerImpl(
 
 	_, _ = actionMirrorUpdateInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: controller.addCRHandler,
+	})
+
+	_, _ = nodeRemediationInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    controller.addCRHandler,
+		UpdateFunc: controller.updateCRHandler,
+		DeleteFunc: controller.deleteCRHandler,
 	})
 
 	_, _ = snapshotInfoInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -369,6 +396,7 @@ func (c *TridentCrdController) Deactivate() error {
 	if c.crdControllerStopChan != nil {
 		close(c.crdControllerStopChan)
 	}
+	c.indexers.Deactivate()
 	return nil
 }
 
@@ -610,6 +638,8 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 			handleFunction = c.handleTridentSnapshotInfo
 		case ObjectTypeTridentActionSnapshotRestore:
 			handleFunction = c.handleActionSnapshotRestore
+		case ObjectTypeTridentNodeRemediation:
+			handleFunction = c.handleTridentNodeRemediation
 		default:
 			return fmt.Errorf("unknown objectType in the workqueue: %v", keyItem.objectType)
 		}
@@ -751,6 +781,10 @@ func (c *TridentCrdController) removeFinalizers(ctx context.Context, obj interfa
 	case *tridentv1.TridentSnapshotInfo:
 		if force || !crd.ObjectMeta.DeletionTimestamp.IsZero() {
 			return c.removeTSIFinalizers(ctx, crd)
+		}
+	case *tridentv1.TridentNodeRemediation:
+		if force || !crd.ObjectMeta.DeletionTimestamp.IsZero() {
+			return c.removeTNRFinalizers(ctx, crd)
 		}
 	default:
 		Logx(ctx).Warnf("unexpected type %T", crd)
@@ -1002,4 +1036,34 @@ func (c *TridentCrdController) removeTSIFinalizers(
 	}
 
 	return
+}
+
+// removeTNR Finalizers removes Trident's finalizers from TridentNodeRemediation CRs
+func (c *TridentCrdController) removeTNRFinalizers(
+	ctx context.Context, tnr *tridentv1.TridentNodeRemediation,
+) (err error) {
+	Logx(ctx).WithFields(LogFields{
+		"tnr.ResourceVersion":              tnr.ResourceVersion,
+		"tnr.ObjectMeta.DeletionTimestamp": tnr.ObjectMeta.DeletionTimestamp,
+	}).Trace("removeTNRFinalizers")
+
+	if !tnr.HasTridentFinalizers() {
+		Logx(ctx).Trace("No finalizers to remove.")
+		return nil
+	}
+
+	Logx(ctx).Trace("Has finalizers, removing them.")
+	tnrCopy := tnr.DeepCopy()
+	tnrCopy.RemoveTridentFinalizers()
+	_, err = c.crdClientset.TridentV1().TridentNodeRemediations(tnr.Namespace).Update(ctx, tnrCopy, updateOpts)
+	if err != nil {
+		Logx(ctx).Errorf("Problem removing finalizers: %v", err)
+		return
+	}
+
+	return nil
+}
+
+func (c *TridentCrdController) SetForceDetach(enableForceDetach bool) {
+	c.enableForceDetach = enableForceDetach
 }

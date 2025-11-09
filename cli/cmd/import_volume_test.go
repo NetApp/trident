@@ -150,6 +150,7 @@ func TestVolumeImport(t *testing.T) {
 		backendName        string
 		internalVolumeName string
 		noManage           bool
+		noRename           bool
 		pvcDataJSON        []byte
 		wantErr            bool
 		setupMocks         func()
@@ -159,6 +160,7 @@ func TestVolumeImport(t *testing.T) {
 			backendName:        "test-backend",
 			internalVolumeName: "test-volume",
 			noManage:           false,
+			noRename:           false,
 			pvcDataJSON:        []byte(`{"test": "data"}`),
 			wantErr:            false,
 			setupMocks: func() {
@@ -189,6 +191,7 @@ func TestVolumeImport(t *testing.T) {
 			backendName:        "test-backend",
 			internalVolumeName: "test-volume",
 			noManage:           false,
+			noRename:           false,
 			pvcDataJSON:        nil,
 			wantErr:            false,
 			setupMocks: func() {
@@ -202,6 +205,7 @@ func TestVolumeImport(t *testing.T) {
 			backendName:        "test-backend",
 			internalVolumeName: "test-volume",
 			noManage:           false,
+			noRename:           false,
 			pvcDataJSON:        []byte(`{"test": "data"}`),
 			wantErr:            true,
 			setupMocks: func() {
@@ -216,6 +220,7 @@ func TestVolumeImport(t *testing.T) {
 			backendName:        "test-backend",
 			internalVolumeName: "test-volume",
 			noManage:           true,
+			noRename:           false,
 			pvcDataJSON:        []byte(`{"test": "data"}`),
 			wantErr:            true,
 			setupMocks: func() {
@@ -228,6 +233,7 @@ func TestVolumeImport(t *testing.T) {
 			backendName:        "test-backend",
 			internalVolumeName: "test-volume",
 			noManage:           false,
+			noRename:           false,
 			pvcDataJSON:        []byte(`{"test": "data"}`),
 			wantErr:            true,
 			setupMocks: func() {
@@ -240,6 +246,7 @@ func TestVolumeImport(t *testing.T) {
 			backendName:        "test-backend",
 			internalVolumeName: "test-volume",
 			noManage:           false,
+			noRename:           false,
 			pvcDataJSON:        []byte(`{"test": "data"}`),
 			wantErr:            true,
 			setupMocks: func() {
@@ -252,11 +259,80 @@ func TestVolumeImport(t *testing.T) {
 			backendName:        "test-backend",
 			internalVolumeName: "test-volume",
 			noManage:           false,
+			noRename:           false,
 			pvcDataJSON:        []byte(`{"test": "data"}`),
 			wantErr:            true,
 			setupMocks: func() {
 				httpmock.RegisterResponder("POST", BaseURL()+"/volume/import",
 					httpmock.NewStringResponder(http.StatusCreated, `{}`))
+			},
+		},
+		{
+			name:               "successful import with no-rename",
+			backendName:        "test-backend",
+			internalVolumeName: "test-volume",
+			noManage:           false,
+			noRename:           true,
+			pvcDataJSON:        []byte(`{"test": "data"}`),
+			wantErr:            false,
+			setupMocks: func() {
+				httpmock.RegisterResponder("POST", BaseURL()+"/volume/import",
+					func(req *http.Request) (*http.Response, error) {
+						body, _ := io.ReadAll(req.Body)
+						var importReq storage.ImportVolumeRequest
+						err := json.Unmarshal(body, &importReq)
+						if err != nil {
+							return httpmock.NewStringResponse(400, ""), nil
+						}
+
+						// Verify that NoRename flag is set correctly
+						if !importReq.NoRename {
+							return httpmock.NewStringResponse(400, "NoRename flag not set"), nil
+						}
+
+						volume := storage.VolumeExternal{
+							Config: &storage.VolumeConfig{
+								Name: "test-volume",
+							},
+						}
+						response := rest.ImportVolumeResponse{
+							Volume: &volume,
+						}
+						responseJSON, _ := json.Marshal(response)
+						return httpmock.NewBytesResponse(http.StatusCreated, responseJSON), nil
+					})
+			},
+		},
+		{
+			name:               "no-manage and no-rename both true - should fail validation",
+			backendName:        "test-backend",
+			internalVolumeName: "test-volume",
+			noManage:           true,
+			noRename:           true,
+			pvcDataJSON:        []byte(`{"test": "data"}`),
+			wantErr:            true,
+			setupMocks: func() {
+				httpmock.RegisterResponder("POST", BaseURL()+"/volume/import",
+					func(req *http.Request) (*http.Response, error) {
+						body, _ := io.ReadAll(req.Body)
+						var importReq storage.ImportVolumeRequest
+						err := json.Unmarshal(body, &importReq)
+						if err != nil {
+							return httpmock.NewStringResponse(400, ""), nil
+						}
+
+						// Validate the request - should fail when both flags are true
+						if err := importReq.Validate(); err != nil {
+							errorResponse := map[string]string{
+								"error": err.Error(),
+							}
+							errorJSON, _ := json.Marshal(errorResponse)
+							return httpmock.NewBytesResponse(http.StatusBadRequest, errorJSON), nil
+						}
+
+						// Should never reach here
+						return httpmock.NewStringResponse(500, "validation should have failed"), nil
+					})
 			},
 		},
 	}
@@ -268,7 +344,7 @@ func TestVolumeImport(t *testing.T) {
 				tc.setupMocks()
 			}
 
-			err := volumeImport(tc.backendName, tc.internalVolumeName, tc.noManage, tc.pvcDataJSON)
+			err := volumeImport(tc.backendName, tc.internalVolumeName, tc.noManage, tc.noRename, tc.pvcDataJSON)
 
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -287,12 +363,15 @@ func TestImportVolumeCmd_RunE(t *testing.T) {
 		setupFile     func() (string, func())
 		base64Data    string
 		noManage      bool
+		noRename      bool
 		wantErr       bool
 	}{
 		{
 			name:          "no input error",
 			operatingMode: ModeDirect,
 			args:          []string{"test-backend", "test-volume"},
+			noManage:      false,
+			noRename:      false,
 			wantErr:       true,
 		},
 		{
@@ -300,6 +379,8 @@ func TestImportVolumeCmd_RunE(t *testing.T) {
 			operatingMode: ModeDirect,
 			args:          []string{"test-backend", "test-volume"},
 			base64Data:    "invalid-base64!!!",
+			noManage:      false,
+			noRename:      false,
 			wantErr:       true,
 		},
 		{
@@ -307,6 +388,8 @@ func TestImportVolumeCmd_RunE(t *testing.T) {
 			operatingMode: ModeTunnel,
 			args:          []string{"test-backend", "test-volume"},
 			base64Data:    base64.StdEncoding.EncodeToString([]byte(`{"apiVersion": "v1", "kind": "PersistentVolumeClaim"}`)),
+			noManage:      false,
+			noRename:      false,
 			wantErr:       true,
 		},
 		{
@@ -314,6 +397,8 @@ func TestImportVolumeCmd_RunE(t *testing.T) {
 			operatingMode: ModeDirect,
 			args:          []string{"test-backend", "test-volume"},
 			base64Data:    base64.StdEncoding.EncodeToString([]byte(`{"apiVersion": "v1", "kind": "PersistentVolumeClaim"}`)),
+			noManage:      false,
+			noRename:      false,
 			wantErr:       true,
 		},
 		{
@@ -323,7 +408,9 @@ func TestImportVolumeCmd_RunE(t *testing.T) {
 			setupFile: func() (string, func()) {
 				return "nonexistent-file.yaml", func() {}
 			},
-			wantErr: true,
+			noManage: false,
+			noRename: false,
+			wantErr:  true,
 		},
 	}
 
@@ -333,16 +420,19 @@ func TestImportVolumeCmd_RunE(t *testing.T) {
 			prevImportFilename := importFilename
 			prevImportBase64Data := importBase64Data
 			prevImportNoManage := importNoManage
+			prevImportNoRename := importNoRename
 			defer func() {
 				OperatingMode = prevOperatingMode
 				importFilename = prevImportFilename
 				importBase64Data = prevImportBase64Data
 				importNoManage = prevImportNoManage
+				importNoRename = prevImportNoRename
 			}()
 
 			// Set test values
 			OperatingMode = tc.operatingMode
 			importNoManage = tc.noManage
+			importNoRename = tc.noRename
 
 			var filename string
 			var cleanup func()

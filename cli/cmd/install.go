@@ -37,22 +37,24 @@ const (
 	PreferredNamespace = tridentconfig.OrchestratorName
 
 	// CRD names
-	ActionMirrorUpdateCRDName    = "tridentactionmirrorupdates.trident.netapp.io"
-	ActionSnapshotRestoreCRDName = "tridentactionsnapshotrestores.trident.netapp.io"
-	BackendConfigCRDName         = "tridentbackendconfigs.trident.netapp.io"
-	BackendCRDName               = "tridentbackends.trident.netapp.io"
-	MirrorRelationshipCRDName    = "tridentmirrorrelationships.trident.netapp.io"
-	NodeCRDName                  = "tridentnodes.trident.netapp.io"
-	SnapshotCRDName              = "tridentsnapshots.trident.netapp.io"
-	SnapshotInfoCRDName          = "tridentsnapshotinfos.trident.netapp.io"
-	GroupSnapshotCRDName         = "tridentgroupsnapshots.trident.netapp.io"
-	StorageClassCRDName          = "tridentstorageclasses.trident.netapp.io"
-	TransactionCRDName           = "tridenttransactions.trident.netapp.io"
-	VersionCRDName               = "tridentversions.trident.netapp.io"
-	VolumeCRDName                = "tridentvolumes.trident.netapp.io"
-	VolumePublicationCRDName     = "tridentvolumepublications.trident.netapp.io"
-	VolumeReferenceCRDName       = "tridentvolumereferences.trident.netapp.io"
-	ConfiguratorCRDName          = "tridentconfigurators.trident.netapp.io"
+	ActionMirrorUpdateCRDName      = "tridentactionmirrorupdates.trident.netapp.io"
+	ActionSnapshotRestoreCRDName   = "tridentactionsnapshotrestores.trident.netapp.io"
+	BackendConfigCRDName           = "tridentbackendconfigs.trident.netapp.io"
+	BackendCRDName                 = "tridentbackends.trident.netapp.io"
+	MirrorRelationshipCRDName      = "tridentmirrorrelationships.trident.netapp.io"
+	NodeCRDName                    = "tridentnodes.trident.netapp.io"
+	NodeRemediationCRDName         = "tridentnoderemediations.trident.netapp.io"
+	NodeRemediationTemplateCRDName = "tridentnoderemediationtemplates.trident.netapp.io"
+	SnapshotCRDName                = "tridentsnapshots.trident.netapp.io"
+	SnapshotInfoCRDName            = "tridentsnapshotinfos.trident.netapp.io"
+	GroupSnapshotCRDName           = "tridentgroupsnapshots.trident.netapp.io"
+	StorageClassCRDName            = "tridentstorageclasses.trident.netapp.io"
+	TransactionCRDName             = "tridenttransactions.trident.netapp.io"
+	VersionCRDName                 = "tridentversions.trident.netapp.io"
+	VolumeCRDName                  = "tridentvolumes.trident.netapp.io"
+	VolumePublicationCRDName       = "tridentvolumepublications.trident.netapp.io"
+	VolumeReferenceCRDName         = "tridentvolumereferences.trident.netapp.io"
+	ConfiguratorCRDName            = "tridentconfigurators.trident.netapp.io"
 
 	ControllerRoleFilename               = "trident-controller-role.yaml"
 	ControllerClusterRoleFilename        = "trident-controller-clusterrole.yaml"
@@ -78,6 +80,9 @@ const (
 	NamespaceFilename        = "trident-namespace.yaml"
 	ServiceFilename          = "trident-service.yaml"
 	ResourceQuotaFilename    = "trident-resourcequota.yaml"
+
+	NodeRemediationTemplateFilename    = "trident-node-remediation-template.yaml"
+	NodeRemediationClusterRoleFilename = "trident-node-remediation-clusterrole.yaml"
 
 	TridentEncryptionKeys = "trident-encryption-keys"
 
@@ -131,6 +136,7 @@ var (
 	k8sAPIQPS                int
 	fsGroupPolicy            string
 	enableConcurrency        bool
+	hostNetwork              bool
 
 	// CLI-based K8S client
 	client k8sclient.KubernetesClient
@@ -160,6 +166,8 @@ var (
 	nodeLinuxSCCPath                 string
 	nodeWindowsSCCPath               string
 	setupYAMLPaths                   []string
+	nodeRemediationTemplatePath      string
+	nodeRemediationClusterRolePath   string
 
 	appLabel      string
 	appLabelKey   string
@@ -175,6 +183,8 @@ var (
 		BackendCRDName,
 		MirrorRelationshipCRDName,
 		NodeCRDName,
+		NodeRemediationCRDName,
+		NodeRemediationTemplateCRDName,
 		VolumeReferenceCRDName,
 		SnapshotCRDName,
 		GroupSnapshotCRDName,
@@ -261,6 +271,7 @@ func init() {
 	installCmd.Flags().StringVar(&fsGroupPolicy, "fs-group-policy", "", "The FSGroupPolicy "+
 		"to set on Trident's CSIDriver resource.")
 	installCmd.Flags().BoolVar(&enableConcurrency, "enable-concurrency", false, "Enable concurrency for Trident's controller **TECH PREVIEW**")
+	installCmd.Flags().BoolVar(&hostNetwork, "host-network", false, "Use the host network for the Trident controller.")
 
 	if err := installCmd.Flags().MarkHidden("skip-k8s-version-check"); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
@@ -553,6 +564,8 @@ func prepareYAMLFilePaths() error {
 	deploymentPath = path.Join(setupPath, DeploymentFilename)
 	resourceQuotaPath = path.Join(setupPath, ResourceQuotaFilename)
 	windowsDaemonSetPath = path.Join(setupPath, WindowsDaemonSetFilename)
+	nodeRemediationTemplatePath = path.Join(setupPath, NodeRemediationTemplateFilename)
+	nodeRemediationClusterRolePath = path.Join(setupPath, NodeRemediationClusterRoleFilename)
 
 	setupYAMLPaths = []string{
 		namespacePath,
@@ -573,6 +586,8 @@ func prepareYAMLFilePaths() error {
 		daemonsetPath,
 		windowsDaemonSetPath,
 		resourceQuotaPath,
+		nodeRemediationClusterRolePath,
+		nodeRemediationTemplatePath,
 	}
 
 	if client.Flavor() == k8sclient.FlavorOpenShift {
@@ -665,6 +680,17 @@ func prepareYAMLFiles() error {
 		return fmt.Errorf("could not write resource quota YAML file; %v", err)
 	}
 
+	// TridentNodeRemediation resources
+	nodeRemediationTemplateYaml := k8sclient.GetNodeRemediationTemplateYAML(TridentPodNamespace)
+	if err = writeFile(nodeRemediationTemplatePath, nodeRemediationTemplateYaml); err != nil {
+		return fmt.Errorf("could not write file %s; %v", NodeRemediationTemplateFilename, err)
+	}
+
+	nodeRemediationClusterRoleYaml := k8sclient.GetNodeRemediationClusterRoleYAML()
+	if err = writeFile(nodeRemediationClusterRolePath, nodeRemediationClusterRoleYaml); err != nil {
+		return fmt.Errorf("could not write file %s; %v", NodeRemediationClusterRoleFilename, err)
+	}
+
 	deploymentArgs := &k8sclient.DeploymentYAMLArguments{
 		DeploymentName:          getDeploymentName(),
 		TridentImage:            tridentImage,
@@ -699,6 +725,7 @@ func prepareYAMLFiles() error {
 		K8sAPIQPS:               k8sAPIQPS,
 		EnableConcurrency:       enableConcurrency,
 		HTTPSMetrics:            httpsMetrics,
+		HostNetwork:             hostNetwork,
 	}
 	deploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
 	if err = writeFile(deploymentPath, deploymentYAML); err != nil {
@@ -738,15 +765,17 @@ func prepareYAMLFiles() error {
 	// If OpenShift, generate corresponding SCCs
 	if client.Flavor() == k8sclient.FlavorOpenShift {
 		// Creating trident controller security context constraint (SCC)
-		controllerSCCYAML := k8sclient.GetOpenShiftSCCYAML(getControllerRBACResourceName(), getControllerRBACResourceName(), TridentPodNamespace, labels, nil,
-			isLinuxNodeSCCUser(getControllerRBACResourceName()))
+		controllerSCCYAML := k8sclient.GetOpenShiftSCCYAML(getControllerRBACResourceName(),
+			getControllerRBACResourceName(), TridentPodNamespace, labels, nil,
+			isLinuxNodeSCCUser(getControllerRBACResourceName()), hostNetwork)
 		if err = writeFile(controllerSCCPath, controllerSCCYAML); err != nil {
 			return fmt.Errorf("could not write controller SCC YAML file; %v", err)
 		}
 
 		// Creating trident node security context constraint (SCC)
-		nodeLinuxSCCYAML := k8sclient.GetOpenShiftSCCYAML(getNodeRBACResourceName(false), getNodeRBACResourceName(false), TridentPodNamespace, daemonSetlabels, nil,
-			isLinuxNodeSCCUser(getNodeRBACResourceName(false)))
+		nodeLinuxSCCYAML := k8sclient.GetOpenShiftSCCYAML(getNodeRBACResourceName(false),
+			getNodeRBACResourceName(false), TridentPodNamespace, daemonSetlabels, nil,
+			isLinuxNodeSCCUser(getNodeRBACResourceName(false)), hostNetwork)
 		if err = writeFile(nodeLinuxSCCPath, nodeLinuxSCCYAML); err != nil {
 			return fmt.Errorf("could not write node linux SCC YAML file; %v", err)
 		}
@@ -787,8 +816,9 @@ func prepareYAMLFiles() error {
 		}
 
 		if client.Flavor() == k8sclient.FlavorOpenShift {
-			nodeWindowsSCCYAML := k8sclient.GetOpenShiftSCCYAML(getNodeRBACResourceName(true), getNodeRBACResourceName(true), TridentPodNamespace, daemonSetlabels, nil,
-				isLinuxNodeSCCUser(getNodeRBACResourceName(true)))
+			nodeWindowsSCCYAML := k8sclient.GetOpenShiftSCCYAML(getNodeRBACResourceName(true),
+				getNodeRBACResourceName(true), TridentPodNamespace, daemonSetlabels, nil,
+				isLinuxNodeSCCUser(getNodeRBACResourceName(true)), hostNetwork)
 			if err = writeFile(nodeWindowsSCCPath, nodeWindowsSCCYAML); err != nil {
 				return fmt.Errorf("could not write node windows SCC YAML file; %v", err)
 			}
@@ -1073,6 +1103,7 @@ func installTrident() (returnError error) {
 			EnableConcurrency:       enableConcurrency,
 			HTTPSMetrics:            httpsMetrics,
 			CSIFeatureGates:         csiFeatureGateYAMLSnippets,
+			HostNetwork:             hostNetwork,
 		}
 		returnError = client.CreateObjectByYAML(
 			k8sclient.GetCSIDeploymentYAML(deploymentArgs))
@@ -1191,6 +1222,22 @@ func installTrident() (returnError error) {
 
 	Log().WithFields(logFields).Info("Created Trident daemonset.")
 
+	// Remove any TridentNodeRemediation resources objects from a previous Trident installation
+	if returnError = deleteNodeRemediationResources(TridentPodNamespace); returnError != nil {
+		returnError = fmt.Errorf("could not remove tridentNodeRemediation resources; " +
+			"please delete them manually and try again")
+		return
+	}
+
+	// Create TridentNodeRemediation resources
+	if enableForceDetach {
+		if returnError = createNodeRemediationResources(); returnError != nil {
+			returnError = fmt.Errorf("could not create TridentNodeRemediation resources for automatic force-detach; %v",
+				returnError)
+			return
+		}
+	}
+
 	// Wait for Trident pod to be running
 	var tridentPod *v1.Pod
 
@@ -1233,6 +1280,72 @@ func createNamespace() (returnError error) {
 		return
 	}
 	Log().WithFields(logFields).Info("Created namespace.")
+	return nil
+}
+
+func deleteNodeRemediationResources(namespace string) error {
+	yaml := k8sclient.GetNodeRemediationClusterRoleYAML()
+	err := client.DeleteObjectByYAML(yaml, true)
+	if err != nil {
+		return fmt.Errorf("could not delete TridentNodeRemediation clusterRole; %v", err)
+	}
+
+	yaml = k8sclient.GetNodeRemediationTemplateCRDYAML()
+	err = client.DeleteObjectByYAML(yaml, true)
+	if err != nil {
+		return fmt.Errorf("could not delete TridentNodeRemediationTemplate CR; %v", err)
+	}
+
+	return nil
+}
+
+func createNodeRemediationClusterRole() (returnError error) {
+	var logFields LogFields
+
+	// Create resources
+	if useYAML && fileExists(nodeRemediationClusterRolePath) {
+		logFields = LogFields{"path": nodeRemediationClusterRolePath}
+		returnError = client.CreateObjectByFile(nodeRemediationClusterRolePath)
+	} else {
+		yaml := k8sclient.GetNodeRemediationClusterRoleYAML()
+		returnError = client.CreateObjectByYAML(yaml)
+	}
+
+	if returnError != nil {
+		returnError = fmt.Errorf("could not create TridentNodeRemediation clusterRole; %v", returnError)
+		return
+	}
+	Log().WithFields(logFields).Info("Created TridentNodeRemediation clusterRole.")
+	return nil
+}
+
+func createNodeRemediationTemplate() (returnError error) {
+	var logFields LogFields
+
+	// Create resources
+	if useYAML && fileExists(nodeRemediationTemplatePath) {
+		logFields = LogFields{"path": nodeRemediationTemplatePath}
+		returnError = client.CreateObjectByFile(nodeRemediationTemplatePath)
+	} else {
+		yaml := k8sclient.GetNodeRemediationTemplateYAML(TridentPodNamespace)
+		returnError = client.CreateObjectByYAML(yaml)
+	}
+
+	if returnError != nil {
+		returnError = fmt.Errorf("could not create TridentNodeRemediationTemplate; %v", returnError)
+		return
+	}
+	Log().WithFields(logFields).Info("Created TridentNodeRemediationTemplate.")
+	return nil
+}
+
+func createNodeRemediationResources() (returnError error) {
+	if returnError = createNodeRemediationClusterRole(); returnError != nil {
+		return
+	}
+	if returnError = createNodeRemediationTemplate(); returnError != nil {
+		return
+	}
 	return nil
 }
 
@@ -2070,7 +2183,7 @@ func CreateOpenShiftTridentSCC(user, appLabelVal string) error {
 	labels["app"] = appLabelVal
 
 	err := client.CreateObjectByYAML(k8sclient.GetOpenShiftSCCYAML(user, user, TridentPodNamespace, labels, nil,
-		isLinuxNodeSCCUser(user)))
+		isLinuxNodeSCCUser(user), hostNetwork))
 	if err != nil {
 		return fmt.Errorf("cannot create trident's scc; %v", err)
 	}
@@ -2083,7 +2196,8 @@ func DeleteOpenShiftTridentSCC(user, labelVal string) error {
 	labels["app"] = labelVal
 
 	err := client.DeleteObjectByYAML(
-		k8sclient.GetOpenShiftSCCYAML(user, user, TridentPodNamespace, labels, nil, isLinuxNodeSCCUser(user)), true)
+		k8sclient.GetOpenShiftSCCYAML(user, user, TridentPodNamespace, labels, nil,
+			isLinuxNodeSCCUser(user), hostNetwork), true)
 	if err != nil {
 		return fmt.Errorf("%s; %v", "could not delete trident's scc", err)
 	}

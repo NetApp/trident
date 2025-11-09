@@ -7,10 +7,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math/rand"
+	"net/http"
 	"os"
+	"strconv"
+	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/sync/semaphore"
 
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
@@ -714,4 +721,96 @@ func TestDecodeStorageBackendPools_FailsWithInvalidEncodedPools(t *testing.T) {
 	backendPools, err = DecodeStorageBackendPools[OntapStorageBackendPool](ctx, config, []string{"test", ""})
 	assert.Error(t, err)
 	assert.Nil(t, backendPools)
+}
+
+type TestTransport func(*http.Request) (*http.Response, error)
+
+func (t TestTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	return t(req)
+}
+
+func TestLimitedRetryTransport(t *testing.T) {
+	t.Run("canceled context", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+		tr := NewLimitedRetryTransport(semaphore.NewWeighted(1), TestTransport(func(req *http.Request) (*http.Response, error) {
+			return nil, nil
+		}))
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://localhost", nil)
+		assert.NoError(t, err)
+		_, err = tr.RoundTrip(req)
+		assert.NotNil(t, err)
+		assert.ErrorContains(t, err, "context canceled")
+	})
+	t.Run("times out with EOF", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		defer cancel()
+		tr := NewLimitedRetryTransport(semaphore.NewWeighted(1), TestTransport(func(req *http.Request) (*http.Response, error) {
+			return nil, io.EOF
+		}))
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://localhost", nil)
+		assert.NoError(t, err)
+		_, err = tr.RoundTrip(req)
+		assert.NotNil(t, err)
+		assert.ErrorContains(t, err, "deadline exceeded")
+	})
+	t.Run("permanent failure", func(t *testing.T) {
+		tr := NewLimitedRetryTransport(semaphore.NewWeighted(1), TestTransport(func(req *http.Request) (*http.Response, error) {
+			return nil, fmt.Errorf("permanent failure")
+		}))
+		req, err := http.NewRequest(http.MethodGet, "http://localhost", nil)
+		assert.NoError(t, err)
+		_, err = tr.RoundTrip(req)
+		assert.NotNil(t, err)
+		assert.ErrorContains(t, err, "permanent failure")
+	})
+	t.Run("succeeds after failure", func(t *testing.T) {
+		attempts := 0
+		tr := NewLimitedRetryTransport(semaphore.NewWeighted(1), TestTransport(func(req *http.Request) (*http.Response, error) {
+			if attempts < 3 {
+				attempts++
+				return nil, io.EOF
+			}
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(strings.NewReader("ok")),
+				Header:     make(http.Header),
+			}, nil
+		}))
+		req, err := http.NewRequest(http.MethodGet, "http://localhost", nil)
+		assert.NoError(t, err)
+		resp, err := tr.RoundTrip(req)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		body, err := io.ReadAll(resp.Body)
+		assert.NoError(t, err)
+		assert.Equal(t, "ok", string(body))
+	})
+}
+
+// TestSemaphore tests that New and Free won't cause deadlocks, and at the end everything is cleaned up
+func TestSemaphore(t *testing.T) {
+	count := 100
+	sems := 3
+	wg := sync.WaitGroup{}
+	for i := 0; i < count; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			name := strconv.FormatInt(int64(i%sems), 10)
+			s := NewSemaphore(name, 2)
+			defer FreeSemaphore(name)
+			for i := 0; i < 4; i++ {
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
+					_ = s.Acquire(context.Background(), 1)
+					defer s.Release(1)
+					time.Sleep(time.Duration(rand.Intn(50)) * time.Millisecond)
+				}()
+			}
+		}(i)
+	}
+	wg.Wait()
+	assert.Equal(t, 0, len(semaphores), "expected all semaphores to be freed")
 }

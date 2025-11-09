@@ -9,12 +9,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/brunoga/deep"
 	"github.com/cenkalti/backoff/v4"
 	"github.com/ghodss/yaml"
+	"go.uber.org/multierr"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	apiextensionv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/rest"
 	"k8s.io/utils/env"
 
@@ -27,6 +31,7 @@ import (
 	"github.com/netapp/trident/operator/config"
 	netappv1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
 	operatorCrdClient "github.com/netapp/trident/operator/crd/client/clientset/versioned"
+	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	crdclient "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/utils/errors"
@@ -35,22 +40,24 @@ import (
 
 const (
 	// CRD names
-	ActionMirrorUpdateCRDName    = "tridentactionmirrorupdates.trident.netapp.io"
-	ActionSnapshotRestoreCRDName = "tridentactionsnapshotrestores.trident.netapp.io"
-	BackendCRDName               = "tridentbackends.trident.netapp.io"
-	BackendConfigCRDName         = "tridentbackendconfigs.trident.netapp.io"
-	MirrorRelationshipCRDName    = "tridentmirrorrelationships.trident.netapp.io"
-	SnapshotInfoCRDName          = "tridentsnapshotinfos.trident.netapp.io"
-	NodeCRDName                  = "tridentnodes.trident.netapp.io"
-	StorageClassCRDName          = "tridentstorageclasses.trident.netapp.io"
-	TransactionCRDName           = "tridenttransactions.trident.netapp.io"
-	VersionCRDName               = "tridentversions.trident.netapp.io"
-	VolumeCRDName                = "tridentvolumes.trident.netapp.io"
-	VolumePublicationCRDName     = "tridentvolumepublications.trident.netapp.io"
-	SnapshotCRDName              = "tridentsnapshots.trident.netapp.io"
-	GroupSnapshotCRDName         = "tridentgroupsnapshots.trident.netapp.io"
-	VolumeReferenceCRDName       = "tridentvolumereferences.trident.netapp.io"
-	ConfiguratorCRDName          = "tridentconfigurators.trident.netapp.io"
+	ActionMirrorUpdateCRDName      = "tridentactionmirrorupdates.trident.netapp.io"
+	ActionSnapshotRestoreCRDName   = "tridentactionsnapshotrestores.trident.netapp.io"
+	BackendCRDName                 = "tridentbackends.trident.netapp.io"
+	BackendConfigCRDName           = "tridentbackendconfigs.trident.netapp.io"
+	MirrorRelationshipCRDName      = "tridentmirrorrelationships.trident.netapp.io"
+	SnapshotInfoCRDName            = "tridentsnapshotinfos.trident.netapp.io"
+	NodeCRDName                    = "tridentnodes.trident.netapp.io"
+	NodeRemediationCRDName         = "tridentnoderemediations.trident.netapp.io"
+	NodeRemediationTemplateCRDName = "tridentnoderemediationtemplates.trident.netapp.io"
+	StorageClassCRDName            = "tridentstorageclasses.trident.netapp.io"
+	TransactionCRDName             = "tridenttransactions.trident.netapp.io"
+	VersionCRDName                 = "tridentversions.trident.netapp.io"
+	VolumeCRDName                  = "tridentvolumes.trident.netapp.io"
+	VolumePublicationCRDName       = "tridentvolumepublications.trident.netapp.io"
+	SnapshotCRDName                = "tridentsnapshots.trident.netapp.io"
+	GroupSnapshotCRDName           = "tridentgroupsnapshots.trident.netapp.io"
+	VolumeReferenceCRDName         = "tridentvolumereferences.trident.netapp.io"
+	ConfiguratorCRDName            = "tridentconfigurators.trident.netapp.io"
 
 	DefaultTimeout = 180
 )
@@ -67,6 +74,7 @@ var (
 	windows            bool
 	enableConcurrency  bool
 	httpsMetrics       bool
+	hostNetwork        bool
 
 	logLevel                           string
 	logWorkflows                       string
@@ -85,6 +93,7 @@ var (
 	imagePullPolicy                    string
 	cloudProvider                      string
 	cloudIdentity                      string
+	resourcesValues                    *commonconfig.Resources
 
 	acpImage  string
 	enableACP bool
@@ -125,6 +134,8 @@ var (
 		BackendConfigCRDName,
 		MirrorRelationshipCRDName,
 		NodeCRDName,
+		NodeRemediationCRDName,
+		NodeRemediationTemplateCRDName,
 		SnapshotCRDName,
 		SnapshotInfoCRDName,
 		GroupSnapshotCRDName,
@@ -335,7 +346,7 @@ func (i *Installer) imagePrechecks(labels, controllingCRDetails map[string]strin
 			return "", errors.New(errMessage)
 		}
 
-		// need to append 'v', so that it can be stores in trident version label later
+		// need to append 'v', so that it can be stored in trident version label later
 		identifiedImageVersion = "v" + tridentImageVersion.ShortStringWithRelease()
 		Log().WithFields(LogFields{
 			"tridentImage": tridentImage,
@@ -363,6 +374,215 @@ func (i *Installer) fsGroupPolicyPrechecks() error {
 	return nil
 }
 
+// populateResources processes resource requirements specified in the TridentOrchestrator CR
+// and updates the global resourcesValues(which must be filled with default values from config by now)
+// variable with parsed CPU and memory values.
+//
+// This function:
+// - Parses resource requirements (requests/limits) from the CR spec applied by the user
+// - Validates that container names match expected values for each component type
+// - Converts string quantities to Kubernetes resource.Quantity objects, which catchec any ill-formatted quantities.
+// - Updates the global resourcesValues variable which is later used to set pod resource constraints
+//
+// Returns a combined error (using multierr) containing all validation failures encountered:
+// - Invalid container names for the specified component type
+// - Unparseable CPU/memory quantities (e.g., "invalid", "10Gi" for CPU)
+func (i *Installer) populateResources(cr netappv1.TridentOrchestrator) error {
+	Log().WithField("resourcesSpecifiedInCR", cr.Spec.Resources).Debug(">>>> populateResources")
+	defer Log().WithField("resourcesSpecifiedInCR", cr.Spec.Resources).Debug("<<<< populateResources")
+
+	// errList: a combined error (using multierr) containing all processing failures encountered
+	var errList error
+
+	// Early return if no resources specified - use defaults
+	resourcesSpecifiedInCR := cr.Spec.Resources
+	if resourcesSpecifiedInCR == nil {
+		return nil
+	}
+
+	// Define component types for clearer error messages and logic flow
+	type ComponentType = string
+	const (
+		Controller  ComponentType = "Controller"
+		NodeLinux   ComponentType = "NodeLinux"
+		NodeWindows ComponentType = "NodeWindows"
+	)
+
+	// parseResource is a helper function that processes a single container's resource requirements.
+	// It validates and parses CPU/memory values for both requests and limits, updating the
+	// global resourcesValues based on the component type.
+	//
+	// Parameters:
+	// - componentType: Which pod type (Controller/NodeLinux/NodeWindows) this container belongs to
+	// - containerName: Name of the container (must be pre-validated and lowercase)
+	// - val: Container resource specification from CR (can be nil)
+	parseResource := func(componentType ComponentType, containerName string, val *netappv1.ContainerResource) {
+		if val == nil {
+			return
+		}
+
+		logFields := LogFields{
+			"containerName": containerName,
+			"componentType": componentType,
+			"val":           val,
+		}
+
+		// Process resource requests - these specify the minimum resources guaranteed to the container
+		// Note: Even if not specified in CR, requests will always have some values from commonconfig.DefaultResources
+		if val.Requests != nil {
+			if val.Requests.CPU != "" {
+				cpuRequestsQty, err := resource.ParseQuantity(val.Requests.CPU)
+				if err != nil {
+					Log().WithFields(logFields).Error("invalid CPU request")
+					errList = multierr.Append(errList, fmt.Errorf("invalid CPU request for %s container '%s': %v",
+						componentType, containerName, err))
+				} else {
+					switch componentType {
+					case Controller:
+						resourcesValues.Controller[containerName].Requests.CPU = &cpuRequestsQty
+					case NodeLinux:
+						resourcesValues.Node.Linux[containerName].Requests.CPU = &cpuRequestsQty
+					case NodeWindows:
+						resourcesValues.Node.Windows[containerName].Requests.CPU = &cpuRequestsQty
+					}
+				}
+			}
+
+			if val.Requests.Memory != "" {
+				memRequestsQty, err := resource.ParseQuantity(val.Requests.Memory)
+				if err != nil {
+					Log().WithFields(logFields).Error("invalid Memory request")
+					errList = multierr.Append(errList, fmt.Errorf("invalid Memory request for %s container '%s': %v",
+						componentType, containerName, err))
+				} else {
+					switch componentType {
+					case Controller:
+						resourcesValues.Controller[containerName].Requests.Memory = &memRequestsQty
+					case NodeLinux:
+						resourcesValues.Node.Linux[containerName].Requests.Memory = &memRequestsQty
+					case NodeWindows:
+						resourcesValues.Node.Windows[containerName].Requests.Memory = &memRequestsQty
+					}
+				}
+			}
+		}
+
+		// Process resource limits - these specify the maximum resources the container can consume
+		// Limits are optional and if not set, the container can use resources up to node capacity
+		if val.Limits != nil {
+			if val.Limits.CPU != "" {
+				cpuLimitsQty, err := resource.ParseQuantity(val.Limits.CPU)
+				if err != nil {
+					Log().WithFields(logFields).Error("invalid CPU limit")
+					errList = multierr.Append(errList, fmt.Errorf("invalid CPU limit for %s container '%s': %v",
+						componentType, containerName, err))
+				} else {
+					switch componentType {
+					case Controller:
+						container := resourcesValues.Controller[containerName]
+						// Initialize limits struct if not already present (defaults don't include limits)
+						if container.Limits == nil {
+							container.Limits = &commonconfig.ResourceRequirements{}
+						}
+						container.Limits.CPU = &cpuLimitsQty
+					case NodeLinux:
+						container := resourcesValues.Node.Linux[containerName]
+						if container.Limits == nil {
+							container.Limits = &commonconfig.ResourceRequirements{}
+						}
+						resourcesValues.Node.Linux[containerName].Limits.CPU = &cpuLimitsQty
+					case NodeWindows:
+						container := resourcesValues.Node.Windows[containerName]
+						if container.Limits == nil {
+							container.Limits = &commonconfig.ResourceRequirements{}
+						}
+						container.Limits.CPU = &cpuLimitsQty
+					}
+				}
+			}
+
+			if val.Limits.Memory != "" {
+				memLimitsQty, err := resource.ParseQuantity(val.Limits.Memory)
+				if err != nil {
+					Log().WithFields(logFields).Error("invalid Memory limit")
+					errList = multierr.Append(errList, fmt.Errorf("invalid Memory limit for %s container '%s': %v",
+						componentType, containerName, err))
+				} else {
+					switch componentType {
+					case Controller:
+						container := resourcesValues.Controller[containerName]
+						// Initialize limits struct if not already present (defaults don't include limits)
+						if container.Limits == nil {
+							container.Limits = &commonconfig.ResourceRequirements{}
+						}
+						resourcesValues.Controller[containerName].Limits.Memory = &memLimitsQty
+					case NodeLinux:
+						container := resourcesValues.Node.Linux[containerName]
+						if container.Limits == nil {
+							container.Limits = &commonconfig.ResourceRequirements{}
+						}
+						container.Limits.Memory = &memLimitsQty
+					case NodeWindows:
+						container := resourcesValues.Node.Windows[containerName]
+						if container.Limits == nil {
+							container.Limits = &commonconfig.ResourceRequirements{}
+						}
+						container.Limits.Memory = &memLimitsQty
+					}
+				}
+			}
+		}
+	}
+
+	// Process controller pod resources
+	if resourcesSpecifiedInCR.Controller != nil {
+		for containerName, val := range resourcesSpecifiedInCR.Controller {
+			// Normalize container name to handle case variations
+			containerName = strings.ToLower(strings.TrimSpace(containerName))
+
+			// Validate against allowed controller container names
+			if !commonconfig.IsValidControllerContainerName(containerName) {
+				Log().WithField("containerName", containerName).Error("invalid container name for controller")
+				errList = multierr.Append(errList, fmt.Errorf("invalid container name '%s' for '%s'", containerName, Controller))
+				continue
+			}
+			parseResource(Controller, containerName, val)
+		}
+	}
+
+	// Process node pod resources
+	if resourcesSpecifiedInCR.Node != nil {
+		// Process Linux node pod resources
+		if resourcesSpecifiedInCR.Node.Linux != nil {
+			for containerName, val := range resourcesSpecifiedInCR.Node.Linux {
+				containerName = strings.ToLower(strings.TrimSpace(containerName))
+				if !commonconfig.IsValidLinuxNodeContainerName(containerName) {
+					Log().WithField("containerName", containerName).Error("invalid container name for node linux")
+					errList = multierr.Append(errList, fmt.Errorf("invalid container name '%s' for '%s'", containerName, NodeLinux))
+					continue
+				}
+				parseResource(NodeLinux, containerName, val)
+			}
+		}
+
+		// Process Windows node pod resources
+		if resourcesSpecifiedInCR.Node.Windows != nil {
+			for containerName, val := range resourcesSpecifiedInCR.Node.Windows {
+				containerName = strings.ToLower(strings.TrimSpace(containerName))
+				if !commonconfig.IsValidWindowsNodeContainerName(containerName) {
+					Log().WithField("containerName", containerName).Error("invalid container name for node windows")
+					errList = multierr.Append(errList, fmt.Errorf("invalid container name '%s' for '%s'", containerName, NodeWindows))
+					continue
+				}
+				parseResource(NodeWindows, containerName, val)
+			}
+		}
+	}
+
+	// Return errors if any
+	return errList
+}
+
 // setInstallationParams identifies the correct parameters for the Trident installation
 func (i *Installer) setInstallationParams(
 	cr netappv1.TridentOrchestrator, currentInstallationVersion string,
@@ -375,6 +595,7 @@ func (i *Installer) setInstallationParams(
 	// Get default values
 	logFormat = DefaultLogFormat
 	probePort = DefaultProbePort
+	resourcesValues = deep.MustCopy(&commonconfig.DefaultResources)
 
 	// Images set via environment are considered default
 	tridentImage = env.GetString(config.TridentImageEnv, TridentImage)
@@ -420,6 +641,7 @@ func (i *Installer) setInstallationParams(
 		}).Info("ACP is now obsolete; All workflows are now enabled by default.")
 	}
 
+	hostNetwork = cr.Spec.HostNetwork
 	useIPv6 = cr.Spec.IPv6
 	windows = cr.Spec.Windows
 	silenceAutosupport = cr.Spec.SilenceAutosupport
@@ -497,6 +719,11 @@ func (i *Installer) setInstallationParams(
 				*sidecarImage = network.ReplaceImageRegistry(*sidecarImage, cr.Spec.ImageRegistry)
 			}
 		}
+	}
+
+	// Setting up the resources
+	if returnError = i.populateResources(cr); returnError != nil {
+		return nil, nil, false, fmt.Errorf("failed parsing resources list specified: \n%w", returnError)
 	}
 
 	if cr.Spec.AutosupportImage != "" {
@@ -645,6 +872,11 @@ func (i *Installer) setInstallationParams(
 		return nil, nil, false, returnError
 	}
 
+	// Perform resources prechecks
+	if returnError = i.validateResources(resourcesValues); returnError != nil {
+		return nil, nil, false, fmt.Errorf("failed validating resources list specified: \n%w", returnError)
+	}
+
 	// Update the label with the correct version
 	labels[TridentVersionLabelKey] = identifiedImageVersion
 
@@ -763,6 +995,20 @@ func (i *Installer) InstallOrPatchTrident(
 		}
 	}
 
+	// Create or update NodeRemediation resources for automatic force-detach
+	if enableForceDetach {
+		returnError = i.createOrPatchNodeRemediationResources()
+		if returnError != nil {
+			returnError = fmt.Errorf("failed to create or patch TridentNodeRemediation resources; %v", returnError)
+			return nil, "", "", returnError
+		}
+	} else {
+		// Remove TridentNodeRemediation resources if enableForceDetach was toggled off
+		if err := i.client.DeleteTridentNodeRemediationResources(i.namespace); err != nil {
+			Log().Warn("could not remove TridentNodeRemediation resources; %v", err)
+		}
+	}
+
 	// Wait for Trident pod to be running
 	var tridentPod *v1.Pod
 
@@ -813,7 +1059,9 @@ func (i *Installer) InstallOrPatchTrident(
 		FSGroupPolicy:            fsGroupPolicy,
 		NodePrep:                 nodePrep,
 		EnableConcurrency:        strconv.FormatBool(enableConcurrency),
+		Resources:                resourcesValues,
 		HTTPSMetrics:             strconv.FormatBool(httpsMetrics),
+		HostNetwork:              hostNetwork,
 	}
 
 	Log().WithFields(LogFields{
@@ -850,6 +1098,12 @@ func (i *Installer) createCRDs(performOperationOnce bool) error {
 		return err
 	}
 	if err = i.CreateOrPatchCRD(NodeCRDName, k8sclient.GetNodeCRDYAML(), false); err != nil {
+		return err
+	}
+	if err = i.CreateOrPatchCRD(NodeRemediationCRDName, k8sclient.GetNodeRemediationCRDYAML(), false); err != nil {
+		return err
+	}
+	if err = i.CreateOrPatchCRD(NodeRemediationTemplateCRDName, k8sclient.GetNodeRemediationTemplateCRDYAML(), false); err != nil {
 		return err
 	}
 	if err = i.CreateOrPatchCRD(TransactionCRDName, k8sclient.GetTransactionCRDYAML(), false); err != nil {
@@ -1264,8 +1518,7 @@ func (i *Installer) createOrPatchTridentOpenShiftSCC(
 
 		appLabels, _ := getAppLabelForResource(openShiftSCCNames[idx])
 		newOpenShiftSCCYAML := k8sclient.GetOpenShiftSCCYAML(openShiftSCCNames[idx], openShiftSCCUserNames[idx],
-			i.namespace,
-			appLabels, controllingCRDetails, isLinuxNodeSCCUser(openShiftSCCUserNames[idx]))
+			i.namespace, appLabels, controllingCRDetails, isLinuxNodeSCCUser(openShiftSCCUserNames[idx]), hostNetwork)
 
 		err = i.client.PutOpenShiftSCC(currentOpenShiftSCCJSONMap[openShiftSCCNames[idx]],
 			reuseOpenShiftSCCMap[openShiftSCCNames[idx]],
@@ -1285,6 +1538,29 @@ func (i *Installer) createAndEnsureCRDs(performOperationOnce bool) (returnError 
 		returnError = fmt.Errorf("failed to create the Trident CRDs; %v", returnError)
 	}
 	return
+}
+
+func (i *Installer) createOrPatchNodeRemediationResources() error {
+	yamlStr := k8sclient.GetNodeRemediationClusterRoleYAML()
+	var clusterRole rbacv1.ClusterRole
+	if err := yaml.Unmarshal([]byte(yamlStr), &clusterRole); err != nil {
+		return fmt.Errorf("unable to unmarshal TridentNodeRemediation cluster role YAML; %v", err)
+	}
+	err := i.client.CreateOrPatchClusterRole(&clusterRole)
+	if err != nil {
+		return fmt.Errorf("failed to create or patch TridentNodeRemediation cluster role; %v", err)
+	}
+
+	yamlStr = k8sclient.GetNodeRemediationTemplateYAML(i.namespace)
+	var template tridentv1.TridentNodeRemediationTemplate
+	if err := yaml.Unmarshal([]byte(yamlStr), &template); err != nil {
+		return fmt.Errorf("unable to unmarshal TridentNodeRemediationTemplate YAML; %v", err)
+	}
+	err = i.client.CreateOrPatchNodeRemediationTemplate(&template, i.namespace)
+	if err != nil {
+		return fmt.Errorf("failed to create or patch TridentNodeRemediation cluster role; %v", err)
+	}
+	return nil
 }
 
 func (i *Installer) createOrPatchTridentService(
@@ -1457,7 +1733,7 @@ func (i *Installer) createOrPatchTridentDeployment(
 	}
 
 	// Create a new deployment if there is a current deployment and
-	// a new service account or it should be updated
+	// either a new service account or shouldUpdate is true
 	if currentDeployment != nil && (shouldUpdate || !reuseServiceAccountMap[serviceAccName]) {
 		unwantedDeployments = append(unwantedDeployments, *currentDeployment)
 		createDeployment = true
@@ -1523,6 +1799,8 @@ func (i *Installer) createOrPatchTridentDeployment(
 		EnableConcurrency:          enableConcurrency,
 		HTTPSMetrics:               httpsMetrics,
 		CSIFeatureGates:            csiFeatureGateYAMLSnippets,
+		Resources:                  resourcesValues,
+		HostNetwork:                hostNetwork,
 	}
 
 	newDeploymentYAML := k8sclient.GetCSIDeploymentYAML(deploymentArgs)
@@ -1606,6 +1884,7 @@ func (i *Installer) createOrPatchTridentDaemonSet(
 		ISCSISelfHealingWaitTime:           iscsiSelfHealingWaitTime,
 		NodePrep:                           nodePrep,
 		K8sAPIQPS:                          k8sAPIQPS,
+		Resources:                          resourcesValues,
 	}
 
 	var newDaemonSetYAML string
@@ -1644,6 +1923,13 @@ func (i *Installer) waitForTridentPod() (*v1.Pod, error) {
 	waitTime := 7 * time.Second
 	Log().Debugf("Waiting for %v after the patch to make sure we get the right trident-pod name.", waitTime)
 	time.Sleep(waitTime)
+
+	// Handles a corner case where the operator was removed but operator-managed Trident remains.
+	// In that situation when deploying operator again, the installer could wait indefinitely.
+	// As appLabel is empty.
+	if appLabel == "" {
+		appLabel = TridentCSILabel
+	}
 
 	checkPodRunning := func() error {
 		var podError error
@@ -2004,6 +2290,139 @@ func getAppLabelForResource(resourceName string) (map[string]string, string) {
 		label = TridentCSILabel
 	}
 	return labelMap, label
+}
+
+// validateResources performs validation on the resource requirements that have been populated
+// from both defaults and user-specified values in the TridentOrchestrator CR.
+//
+// This function:
+// - Validates that all resource quantities (CPU/memory) are non-negative
+// - Ensures that resource requests do not exceed their corresponding limits
+//
+// Returns a combined error (using multierr) containing all validation failures encountered:
+// - Negative resource values
+// - Requests exceeding limits
+func (i *Installer) validateResources(resources *commonconfig.Resources) error {
+	Log().WithField("resources", resources).Debug(">>>> validateResources")
+	defer Log().WithField("resources", resources).Debug("<<<< validateResources")
+
+	if resources == nil {
+		return nil
+	}
+
+	// errList: a combined error (using multierr) containing all validation failures encountered
+	var errList error
+
+	// Define component types for clearer error messages
+	type ComponentType = string
+	const (
+		Controller  ComponentType = "Controller"
+		NodeLinux   ComponentType = "NodeLinux"
+		NodeWindows ComponentType = "NodeWindows"
+	)
+
+	// validateContainer is a helper function that validates resource requirements for a single container.
+	// It ensures all quantities are non-negative and that requests don't exceed limits.
+	//
+	// Parameters:
+	// - componentType: Which pod type (Controller/NodeLinux/NodeWindows) this container belongs to
+	// - containerName: Name of the container being validated
+	// - val: Container resource specification (can be nil)
+	validateContainer := func(componentType ComponentType, containerName string, val *commonconfig.ContainerResource) {
+		if val == nil {
+			return
+		}
+
+		logFields := LogFields{
+			"containerName": containerName,
+			"componentType": componentType,
+			"val":           val,
+		}
+
+		// Validate resource limits are non-negative
+		// Negative values would be rejected by Kubernetes, so we catch them early
+		if val.Limits != nil {
+			if err := ValidateNonNegativeQuantity(val.Limits.CPU); err != nil {
+				Log().WithFields(logFields).Error("negative CPU limit")
+				errList = multierr.Append(errList, fmt.Errorf("invalid CPU limit for container %q in %s: %w", containerName, componentType, err))
+			}
+			if err := ValidateNonNegativeQuantity(val.Limits.Memory); err != nil {
+				Log().WithField("containerName", containerName).Error("negative Memory limit")
+				errList = multierr.Append(errList, fmt.Errorf("invalid memory limit for container %q in %s: %w", containerName, componentType, err))
+			}
+		}
+
+		// Validate resource requests are non-negative
+		// Requests should always be present due to defaults.
+		if err := ValidateNonNegativeQuantity(val.Requests.CPU); err != nil {
+			Log().WithFields(logFields).Error("negative CPU request")
+			errList = multierr.Append(errList, fmt.Errorf("invalid CPU request for container %q in %s: %w", containerName, componentType, err))
+		}
+		if err := ValidateNonNegativeQuantity(val.Requests.Memory); err != nil {
+			Log().WithFields(logFields).Error("negative Memory request")
+			errList = multierr.Append(errList, fmt.Errorf("invalid memory request for container %q in %s: %w", containerName, componentType, err))
+		}
+
+		// Validate that requests don't exceed their corresponding limits
+		// This is a Kubernetes requirement - requests must be <= limits when both are specified
+		if val.Limits != nil {
+			if val.Limits.CPU != nil {
+				if val.Requests.CPU.Cmp(*val.Limits.CPU) > 0 {
+					Log().WithFields(logFields).Error("CPU request exceeds limit")
+					errList = multierr.Append(errList, fmt.Errorf("CPU request %s exceeds limit %s for container %q in %s",
+						val.Requests.CPU.String(), val.Limits.CPU.String(), containerName, componentType))
+				}
+			}
+
+			if val.Limits.Memory != nil {
+				if val.Requests.Memory.Cmp(*val.Limits.Memory) > 0 {
+					Log().WithFields(logFields).Error("Memory request exceeds limit")
+					errList = multierr.Append(errList, fmt.Errorf("memory request %s exceeds limit %s for container %q in %s",
+						val.Requests.Memory.String(), val.Limits.Memory.String(), containerName, componentType))
+				}
+			}
+		}
+	}
+
+	// Process controller pod resources
+	if resources.Controller != nil {
+		for containerName, val := range resources.Controller {
+			validateContainer(Controller, containerName, val)
+		}
+	}
+
+	if resources.Node != nil {
+		// Process Linux node pod resources
+		if resources.Node.Linux != nil {
+			for containerName, val := range resources.Node.Linux {
+				validateContainer(NodeLinux, containerName, val)
+			}
+		}
+
+		// Process Windows node pod resources
+		if resources.Node.Windows != nil {
+			for containerName, val := range resources.Node.Windows {
+				validateContainer(NodeWindows, containerName, val)
+			}
+		}
+	}
+
+	// Return all accumulated validation errors, if any.
+	return errList
+}
+
+// ValidateNonNegativeQuantity ensures that a Kubernetes resource quantity is not negative.
+// Returns an error if the quantity is negative, nil otherwise (including for nil values).
+func ValidateNonNegativeQuantity(value *resource.Quantity) error {
+	if value == nil {
+		return nil
+	}
+
+	// Compare with zero quantity - negative values are not allowed
+	if value.Cmp(resource.Quantity{}) < 0 {
+		return errors.InvalidInputError(errors.IsNegativeErrorMsg)
+	}
+	return nil
 }
 
 func isLinuxNodeSCCUser(user string) bool {

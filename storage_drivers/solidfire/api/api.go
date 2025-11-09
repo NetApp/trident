@@ -13,7 +13,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"time"
 
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/crypto"
@@ -77,7 +76,7 @@ func NewFromParameters(pendpoint, psvip string, pcfg Config) (c *Client, err err
 		Transport: &http.Transport{
 			TLSClientConfig: &tcfg,
 		},
-		Timeout: tridentconfig.StorageAPITimeoutSeconds * time.Second,
+		Timeout: tridentconfig.StorageAPITimeout,
 	}
 	SFClient := &Client{
 		Endpoint:         pendpoint,

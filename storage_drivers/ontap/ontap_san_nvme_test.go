@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
 	"testing"
 
@@ -85,6 +86,7 @@ func newNVMeDriverAndMockApi(t *testing.T) (*NVMeStorageDriver, *mockapi.MockOnt
 
 	mockAPI.EXPECT().EmsAutosupportLog(ctx, gomock.Any(), "1", false, "heartbeat",
 		gomock.Any(), gomock.Any(), 1, "trident", 5).AnyTimes()
+	mockAPI.EXPECT().Terminate().AnyTimes()
 
 	return newNVMeDriver(mockAPI, nil, nil), mockAPI
 }
@@ -360,7 +362,7 @@ func TestNVMeInitialize_NameTemplateDefineInBothPool(t *testing.T) {
 }
 
 func TestNVMeTerminate_Success(t *testing.T) {
-	d := newNVMeDriver(nil, nil, nil)
+	d, _ := newNVMeDriverAndMockApi(t)
 	d.telemetry = NewOntapTelemetry(ctx, d)
 
 	d.Terminate(ctx, "")
@@ -1498,29 +1500,14 @@ func TestGetNamespaceSpecificSubsystemName(t *testing.T) {
 	assert.Equal(t, got_name, expected_name)
 }
 
-func TestGetNodeSpecificSubsystemName(t *testing.T) {
-	// case 1: subsystem, name is shorter than 64 char
-	nodeName := "fakeNodeName"
-	tridentUUID := "fakeUUID"
-	expected := "fakeNodeName-fakeUUID"
-
-	got := getNodeSpecificSubsystemName(nodeName, tridentUUID)
-
-	assert.Equal(t, got, expected)
-
-	// case 2: subsystem name is longer than 64 char
-	nodeName = "fakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNodeName"
-	expected = "fakeNodeNamefakeNodeNamefakeNodeNamefakeNodeNamefakeNod-fakeUUID"
-
-	got = getNodeSpecificSubsystemName(nodeName, tridentUUID)
-
-	assert.Equal(t, got, expected)
-}
-
 func TestPublish(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mock := mockapi.NewMockOntapAPI(mockCtrl)
 	d := newNVMeDriver(mock, nil, nil)
+
+	// Save and restore the original driver context
+	originalContext := tridentconfig.CurrentDriverContext
+	defer func() { tridentconfig.CurrentDriverContext = originalContext }()
 
 	volConfig := &storage.VolumeConfig{
 		Name:         "fakeVolName",
@@ -1564,6 +1551,8 @@ func TestPublish(t *testing.T) {
 	// case 3: Error getting namespace in Docker context
 	flexVol.AccessType = VolTypeRW
 	d.Config.DriverContext = tridentconfig.ContextDocker
+	tridentconfig.CurrentDriverContext = tridentconfig.ContextDocker
+	d.Config.StoragePrefix = convert.ToPtr("netappdvp_")
 	publishInfo.HostNQN = "fakeHostNQN"
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
 	mock.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).Return(nil, errors.New("Error getting namespace by name")).Times(1)
@@ -1574,6 +1563,8 @@ func TestPublish(t *testing.T) {
 
 	// case 4: Error getting namespace in Docker context
 	d.Config.DriverContext = tridentconfig.ContextDocker
+	tridentconfig.CurrentDriverContext = tridentconfig.ContextDocker
+	d.Config.StoragePrefix = convert.ToPtr("netappdvp_")
 	publishInfo.HostNQN = "fakeHostNQN"
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
 	mock.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).Return(nil, nil).Times(1)
@@ -1582,21 +1573,46 @@ func TestPublish(t *testing.T) {
 
 	assert.Error(t, err)
 
-	// case 5: Error creating subsystem in Docker context
+	// case 5: Error creating subsystem in Docker context (uses storage prefix based name)
 	d.Config.DriverContext = tridentconfig.ContextDocker
+	tridentconfig.CurrentDriverContext = tridentconfig.ContextDocker
+	d.Config.StoragePrefix = convert.ToPtr("netappdvp_")
 	publishInfo.HostNQN = "fakeHostNQN"
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
 	mock.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).Return(namespace, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, errors.New("Error creating subsystem")).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "netappdvp__subsystem", "netappdvp__subsystem").Return(subsystem, errors.New("Error creating subsystem")).Times(1)
 
 	err = d.Publish(ctx, volConfig, publishInfo)
 
 	assert.Error(t, err)
 
+	// case 5a: Success in Docker context (uses storage prefix based subsystem name)
+	d.Config.DriverContext = tridentconfig.ContextDocker
+	tridentconfig.CurrentDriverContext = tridentconfig.ContextDocker
+	d.Config.StoragePrefix = convert.ToPtr("netappdvp_")
+	publishInfo.HostNQN = "fakeHostNQN"
+	publishInfo.MountOptions = ""
+	volConfig.FileSystem = ""
+	volConfig.InternalID = "fakeInternalID"
+	volConfig.AccessInfo.NVMeNamespaceUUID = "fakeNsUUID"
+	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mock.EXPECT().NVMeNamespaceGetByName(ctx, gomock.Any()).Return(namespace, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "netappdvp__subsystem", "netappdvp__subsystem").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
+	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, subsystem.UUID, volConfig.AccessInfo.NVMeNamespaceUUID).Return(nil).Times(1)
+
+	err = d.Publish(ctx, volConfig, publishInfo)
+
+	assert.NoError(t, err)
+
 	// case 6: Error creating subsystem in CSI Context
 	d.Config.DriverContext = tridentconfig.ContextCSI
+	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
+	publishInfo.FilesystemType = ""
+	publishInfo.LUKSEncryption = ""
+	volConfig.FileSystem = ""
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, errors.New("Error creating subsystem")).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, errors.New("Error creating subsystem")).Times(1)
 
 	err = d.Publish(ctx, volConfig, publishInfo)
 
@@ -1614,7 +1630,7 @@ func TestPublish(t *testing.T) {
 	// case 8: Error while adding host nqn to subsystem
 	publishInfo.HostNQN = "fakeHostNQN"
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, nil).Times(1)
 	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(errors.New("Error adding host nqnq to subsystem")).Times(1)
 
 	err = d.Publish(ctx, volConfig, publishInfo)
@@ -1623,7 +1639,7 @@ func TestPublish(t *testing.T) {
 
 	// case 9: Error returned by NVMeEnsureNamespaceMapped
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, nil).Times(1)
 	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
 	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(errors.New("Error returned by NVMeEnsureNamespaceMapped")).Times(1)
 
@@ -1633,7 +1649,7 @@ func TestPublish(t *testing.T) {
 
 	// case 10: Success
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, nil).Times(1)
 	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
 	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
@@ -1645,7 +1661,7 @@ func TestPublish(t *testing.T) {
 	volConfig.FileSystem = filesystem.Xfs
 	publishInfo.MountOptions = ""
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, nil).Times(1)
 	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
 	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
@@ -1658,7 +1674,7 @@ func TestPublish(t *testing.T) {
 	volConfig.FileSystem = filesystem.Xfs
 	publishInfo.MountOptions = "rw,relatime"
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, nil).Times(1)
 	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
 	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
@@ -1673,7 +1689,7 @@ func TestPublish(t *testing.T) {
 	volConfig.FileSystem = filesystem.Ext4
 	publishInfo.MountOptions = ""
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, nil).Times(1)
 	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
 	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
@@ -1686,7 +1702,7 @@ func TestPublish(t *testing.T) {
 	volConfig.FileSystem = filesystem.Xfs
 	publishInfo.MountOptions = "rw,nouuid,relatime"
 	mock.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName-fakeUUID", "fakeHostName-fakeUUID").Return(subsystem, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemCreate(ctx, "fakeHostName_fakeUUID", "fakeHostName_fakeUUID").Return(subsystem, nil).Times(1)
 	mock.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
 	mock.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
@@ -2401,6 +2417,39 @@ func TestImport(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestImport_NoRename(t *testing.T) {
+	d, mAPI := newNVMeDriverAndMockApi(t)
+	_, volConfig, _ := getNVMeCreateArgs(d)
+	originalName := "fakeOriginalName"
+	volConfig.ImportNotManaged = false
+	volConfig.ImportNoRename = true       // Enable --no-rename flag
+	volConfig.InternalName = originalName // With --no-rename, InternalName should be the original name
+
+	vol := &api.Volume{
+		Aggregates: []string{"data"},
+		AccessType: "rw",
+		Comment:    "fakeComment",
+	}
+	ns := &api.NVMeNamespace{
+		Name:  "/vol/cloneVol1/namespace0",
+		Size:  "100",
+		UUID:  "fakeUUID",
+		State: "online",
+	}
+
+	// Test successful import with --no-rename (VolumeRename should NOT be called)
+	mAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Return(vol, nil)
+	mAPI.EXPECT().NVMeNamespaceGetByName(ctx, "/vol/"+originalName+"/*").Return(ns, nil)
+	mAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "", ns.UUID).Return(false, nil)
+	// With --no-rename, VolumeRename should NOT be called
+	// Only label updates should happen (VolumeSetComment is called in the label update logic)
+
+	err := d.Import(ctx, volConfig, originalName)
+
+	assert.NoError(t, err, "Error in Volume import with --no-rename, expected no error")
+	assert.Equal(t, originalName, volConfig.InternalName, "Expected volume internal name to remain as original name with --no-rename")
+}
+
 func TestImport_LUKSNamespace(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 	_, volConfig, _ := getNVMeCreateArgs(d)
@@ -2934,4 +2983,95 @@ func TestNVMeNoOpMethods(t *testing.T) {
 	assert.NoError(t, d.ReconcileVolumeNodeAccess(ctx, volConfig, nodes))
 	assert.NoError(t, d.CreateFollowup(ctx, volConfig))
 	assert.True(t, d.CanEnablePublishEnforcement())
+}
+
+// TestNVMeStorageDriverGetStoragePrefixSubsystemName tests the getStoragePrefixSubsystemName method
+func TestNVMeStorageDriverGetStoragePrefixSubsystemName(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	mockAWSAPI := mockapi.NewMockAWSAPI(mockCtrl)
+
+	tests := []struct {
+		name           string
+		storagePrefix  string
+		expectedResult string
+		description    string
+	}{
+		{
+			name:           "DefaultDockerPrefix",
+			storagePrefix:  "netappdvp_",
+			expectedResult: "netappdvp__subsystem",
+			description:    "Default Docker storage prefix with trailing underscore",
+		},
+		{
+			name:           "CustomShortPrefix",
+			storagePrefix:  "app1_",
+			expectedResult: "app1__subsystem",
+			description:    "Custom short prefix with trailing underscore",
+		},
+		{
+			name:           "CustomPrefixWithoutUnderscore",
+			storagePrefix:  "myapp",
+			expectedResult: "myapp_subsystem",
+			description:    "Custom prefix without trailing underscore",
+		},
+		{
+			name:           "EmptyPrefix",
+			storagePrefix:  "",
+			expectedResult: "_subsystem",
+			description:    "Empty storage prefix",
+		},
+		{
+			name:           "LongPrefixTriggeringTruncation",
+			storagePrefix:  "very_long_application_name_with_lots_of_characters_that_exceeds_limit_",
+			expectedResult: "very_long_application_name_with_lots_of_characters_th_subsystem",
+			description:    "Long prefix that triggers truncation to fit 64 char limit",
+		},
+		{
+			name:           "PrefixExactly53Chars",
+			storagePrefix:  "exactly_fifty_three_characters_prefix_name_here_",
+			expectedResult: "exactly_fifty_three_characters_prefix_name_here__subsystem",
+			description:    "Prefix that should not trigger truncation",
+		},
+		{
+			name:           "PrefixTriggeringTruncationEdgeCase",
+			storagePrefix:  "this_is_a_very_long_prefix_that_will_definitely_trigger_truncation_mechanism_in_code",
+			expectedResult: "this_is_a_very_long_prefix_that_will_definitely_trigg_subsystem",
+			description:    "Edge case prefix that triggers truncation at boundary",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create a mock driver with the test storage prefix
+			d := &NVMeStorageDriver{
+				Config: drivers.OntapStorageDriverConfig{
+					CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+						StoragePrefix: &tt.storagePrefix,
+					},
+				},
+				API:    mockAPI,
+				AWSAPI: mockAWSAPI,
+			}
+
+			result := d.getStoragePrefixSubsystemName()
+
+			// Verify the result matches expected
+			assert.Equal(t, tt.expectedResult, result, tt.description)
+
+			// Verify the result doesn't exceed maximum length
+			assert.LessOrEqual(t, len(result), maximumSubsystemNameLength,
+				"Subsystem name should not exceed maximum length of %d characters", maximumSubsystemNameLength)
+
+			// Verify the result contains "_subsystem" suffix
+			assert.True(t, strings.HasSuffix(result, "_subsystem"),
+				"Subsystem name should end with '_subsystem'")
+
+			// Log the test result for debugging
+			t.Logf("Test: %s | Input: '%s' (%d chars) | Output: '%s' (%d chars)",
+				tt.name, tt.storagePrefix, len(tt.storagePrefix), result, len(result))
+		})
+	}
 }

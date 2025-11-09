@@ -149,6 +149,8 @@ const (
 	TridentActionStateSucceeded  = "Succeeded"
 	TridentActionStateInProgress = "In progress"
 	TridentActionStateFailed     = "Failed"
+	TridentNodeRemediatingState  = "Remediating"
+	NodeRecoveryPending          = "NodeRecoveryPending"
 )
 
 // TridentActionMirrorUpdate defines an imperative action to update a mirror relationship
@@ -194,6 +196,67 @@ type TridentActionMirrorUpdateList struct {
 
 	// List of TridentActionMirrorUpdate objects
 	Items []*TridentActionMirrorUpdate `json:"items"`
+}
+
+// TridentNodeRemediation defines a Trident node remediation
+// +genclient
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentNodeRemediation struct {
+	metav1.TypeMeta `json:",inline"`
+	// +k8s:openapi-gen=false
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+	Spec              TridentNodeRemediationSpec   `json:"spec,omitempty"`
+	Status            TridentNodeRemediationStatus `json:"status,omitempty"`
+}
+
+// TridentNodeRemediationSpec defines the desired state of TridentNodeRemediation
+type TridentNodeRemediationSpec struct{}
+
+// TridentNodeRemediationStatus defines the observed state of TridentNodeRemediation
+type TridentNodeRemediationStatus struct {
+	State             string            `json:"state,omitempty"`
+	CompletionTime    *metav1.Time      `json:"completionTime,omitempty"`
+	Message           string            `json:"message,omitempty"`
+	VolumeAttachments map[string]string `json:"volumeAttachments,omitempty"`
+}
+
+// TridentNodeRemediationList is a list of TridentNodeRemediation objects
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentNodeRemediationList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []*TridentNodeRemediation `json:"items"`
+}
+
+// TridentNodeRemediationTemplate defines a Trident node remediation template
+// +genclient
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentNodeRemediationTemplate struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+	Spec              TridentNodeRemediationTemplateSpec   `json:"spec,omitempty"`
+	Status            TridentNodeRemediationTemplateStatus `json:"status,omitempty"`
+}
+
+// TridentNodeRemediationTemplateSpec defines the desired state of TridentNodeRemediationTemplate
+type TridentNodeRemediationTemplateSpec struct {
+	Test     string               `json:"test,omitempty"`
+	Template runtime.RawExtension `json:"template,omitempty"`
+}
+
+// TridentNodeRemediationTemplateStatus defines the observed state (can be empty if unused)
+type TridentNodeRemediationTemplateStatus struct{}
+
+// TridentNodeRemediationTemplateList is a list of TridentNodeRemediationTemplate objects
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+type TridentNodeRemediationTemplateList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []TridentNodeRemediationTemplate `json:"items"`
 }
 
 // TridentBackendConfig defines a Trident backend.

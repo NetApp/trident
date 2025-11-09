@@ -813,7 +813,10 @@ func getVolumeConfig(
 	annotations map[string]string, storageClass *k8sstoragev1.StorageClass,
 	requisiteTopology, preferredTopology []map[string]string,
 ) *storage.VolumeConfig {
-	var accessModes []config.AccessMode
+	var (
+		accessModes    []config.AccessMode
+		importNoRename bool
+	)
 	smbShareACL := make(map[string]string)
 
 	for _, pvcAccessMode := range pvc.Spec.AccessModes {
@@ -856,6 +859,16 @@ func getVolumeConfig(
 	}
 
 	importOriginalName := getAnnotation(annotations, AnnImportOriginalName)
+
+	// parse importNoRename annotation only for import workflow, if not present, default to false
+	if importOriginalName != "" {
+		importNoRename, err = strconv.ParseBool(getAnnotation(annotations, AnnImportNoRename))
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Invalid value '%s' for %s annotation; must be a valid boolean, defaulting to false.",
+				AnnImportNoRename)
+		}
+	}
+
 	luksEncryption := ""
 	if importOriginalName != "" {
 		luksEncryption = getAnnotation(annotations, AnnLUKSEncryption)
@@ -886,6 +899,7 @@ func getVolumeConfig(
 		ImportOriginalName:  importOriginalName,
 		ImportBackendUUID:   getAnnotation(annotations, AnnImportBackendUUID),
 		ImportNotManaged:    notManaged,
+		ImportNoRename:      importNoRename,
 		MountOptions:        strings.Join(storageClass.MountOptions, ","),
 		RequisiteTopologies: requisiteTopology,
 		PreferredTopologies: preferredTopology,

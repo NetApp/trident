@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -205,6 +205,7 @@ func (d *ASAStorageDriver) Terminate(ctx context.Context, _ string) {
 	if d.telemetry != nil {
 		d.telemetry.Stop()
 	}
+	d.API.Terminate()
 	d.initialized = false
 }
 
@@ -554,6 +555,7 @@ func (d *ASAStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		"originalName": originalName,
 		"newName":      volConfig.InternalName,
 		"notManaged":   volConfig.ImportNotManaged,
+		"noRename":     volConfig.ImportNoRename,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
@@ -587,15 +589,18 @@ func (d *ASAStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 	// Use the LUN size
 	volConfig.Size = lunInfo.Size
 
-	// Rename the LUN if Trident will manage its lifecycle
-	if !volConfig.ImportNotManaged {
+	// Rename the LUN if Trident will manage its lifecycle and the names are different
+	if !volConfig.ImportNotManaged && !volConfig.ImportNoRename {
 		err = d.API.LunRename(ctx, originalName, volConfig.InternalName)
 		if err != nil {
 			Logc(ctx).WithField("originalName", originalName).Errorf(
 				"Could not import LUN, rename LUN failed: %v", err)
 			return fmt.Errorf("LUN %s rename failed: %v", originalName, err)
 		}
+	}
 
+	// Update LUN labels if Trident will manage its lifecycle
+	if !volConfig.ImportNotManaged {
 		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, lunInfo.Comment) {
 			// Set the base label
 			storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.Config.Labels)
@@ -1316,6 +1321,10 @@ func (d *ASAStorageDriver) EnablePublishEnforcement(ctx context.Context, volume 
 
 func (d *ASAStorageDriver) CanEnablePublishEnforcement() bool {
 	return true
+}
+
+func (d *ASAStorageDriver) HealVolumePublishEnforcement(ctx context.Context, volume *storage.Volume) bool {
+	return HealSANPublishEnforcement(ctx, d, volume)
 }
 
 // CreateASALUNInternalID creates a string in the format /svm/<svm_name>/lun/<lun_name>

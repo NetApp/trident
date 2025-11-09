@@ -3,10 +3,14 @@
 package config
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
+	"sync"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/api/resource"
 	k8sversion "k8s.io/apimachinery/pkg/version"
 
 	versionutils "github.com/netapp/trident/utils/version"
@@ -22,10 +26,116 @@ type (
 )
 
 type Telemetry struct {
-	TridentVersion     string `json:"version"`
-	TridentBackendUUID string `json:"backendUUID"`
-	Platform           string `json:"platform"`
-	PlatformVersion    string `json:"platformVersion"`
+	TridentVersion                 string `json:"version"`
+	TridentBackendUUID             string `json:"backendUUID"`
+	Platform                       string `json:"platform"`
+	PlatformVersion                string `json:"platformVersion"`
+	PlatformUID                    string `json:"platformUID,omitempty"`
+	PlatformNodeCount              int    `json:"platformNodeCount,omitempty"`
+	TridentProtectVersion          string `json:"tridentProtectVersion,omitempty"`
+	TridentProtectConnectorPresent bool   `json:"tridentProtectConnectorPresent,omitempty"`
+}
+
+// TelemetryUpdater is a function type for updating dynamic telemetry fields
+type TelemetryUpdater func(ctx context.Context, telemetry *Telemetry)
+
+// Global registry for dynamic telemetry updater with thread-safety
+var (
+	dynamicTelemetryUpdater TelemetryUpdater
+	telemetryUpdaterMutex   sync.RWMutex
+	lastTelemetryUpdate     time.Time
+	telemetryUpdateInterval = 4 * time.Hour
+
+	// Cached telemetry values for reuse during cache hits
+	cachedTelemetryData struct {
+		PlatformUID           string
+		PlatformNodeCount     int
+		PlatformVersion       string
+		TridentProtectVersion string
+	}
+)
+
+// RegisterTelemetryUpdater registers a function to update dynamic telemetry fields
+// Only allows one registration to prevent memory leaks and conflicts
+func RegisterTelemetryUpdater(updater TelemetryUpdater) {
+	if updater == nil {
+		return
+	}
+
+	telemetryUpdaterMutex.Lock()
+	defer telemetryUpdaterMutex.Unlock()
+
+	// Only allow one registration to prevent memory leaks
+	if dynamicTelemetryUpdater != nil {
+		return
+	}
+
+	dynamicTelemetryUpdater = updater
+}
+
+// UpdateDynamicTelemetry calls the registered telemetry updater with error recovery
+func UpdateDynamicTelemetry(ctx context.Context, telemetry *Telemetry) {
+	if telemetry == nil {
+		return
+	}
+
+	// Add timeout for telemetry operations to prevent hanging
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	// Single lock for entire operation - atomic and efficient
+	telemetryUpdaterMutex.Lock()
+	defer telemetryUpdaterMutex.Unlock()
+
+	// Check if we should skip update due to recent refresh
+	timeSinceLastUpdate := time.Since(lastTelemetryUpdate)
+	shouldUpdate := timeSinceLastUpdate >= telemetryUpdateInterval
+
+	if !shouldUpdate {
+		// Cache hit: only reuse data if cache has been populated (non-empty cluster UID indicates valid cache)
+		hasValidCache := cachedTelemetryData.PlatformUID != ""
+		if hasValidCache {
+			telemetry.PlatformUID = cachedTelemetryData.PlatformUID
+			telemetry.PlatformNodeCount = cachedTelemetryData.PlatformNodeCount
+			telemetry.PlatformVersion = cachedTelemetryData.PlatformVersion
+			telemetry.TridentProtectVersion = cachedTelemetryData.TridentProtectVersion
+
+			log.Debugf("Dynamic telemetry cache hit: applied cached data (last updated %v ago, interval %v).",
+				timeSinceLastUpdate.Truncate(time.Minute), telemetryUpdateInterval)
+			return
+		}
+
+		// Cache is not yet populated, treat as miss and update
+		log.Debugf("Dynamic telemetry cache miss: cache not yet populated, updating now")
+	} else {
+		log.Debugf("Dynamic telemetry cache miss: updating (last updated %v ago, interval %v).",
+			timeSinceLastUpdate.Truncate(time.Minute), telemetryUpdateInterval)
+	}
+
+	// Get the registered updater
+	updater := dynamicTelemetryUpdater
+
+	// Execute the updater with panic recovery if one is registered
+	if updater != nil {
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					// Log error but don't crash - telemetry updates are non-critical
+					log.Errorf("Telemetry updater panic recovered: %v.", r)
+				}
+			}()
+			updater(ctx, telemetry)
+		}()
+	}
+
+	// Cache the updated telemetry values for future reuse
+	cachedTelemetryData.PlatformUID = telemetry.PlatformUID
+	cachedTelemetryData.PlatformNodeCount = telemetry.PlatformNodeCount
+	cachedTelemetryData.PlatformVersion = telemetry.PlatformVersion
+	cachedTelemetryData.TridentProtectVersion = telemetry.TridentProtectVersion
+	lastTelemetryUpdate = time.Now()
+
+	log.Debugf("Dynamic telemetry update completed at %v.", lastTelemetryUpdate.Format(time.RFC3339))
 }
 
 type PersistentStateVersion struct {
@@ -34,17 +144,53 @@ type PersistentStateVersion struct {
 	PublicationsSynced     bool   `json:"publications_synced,omitempty"`
 }
 
+type ContainersResourceRequirements map[string]*ContainerResource
+
+// Resources mirrors trident/operator/crd/apis/netapp/v1/Resources exactly.
+// The duplication exists because Trident currently has no admission webhook to validate CRD fields.
+// TODO(pshashan): Remove or refactor this if an admission webhook is ever implemented.
+type Resources struct {
+	Controller ContainersResourceRequirements `json:"controller,omitempty"`
+	Node       *NodeResources                 `json:"node,omitempty"`
+}
+
+type NodeResources struct {
+	Linux   ContainersResourceRequirements `json:"linux,omitempty"`
+	Windows ContainersResourceRequirements `json:"windows,omitempty"`
+}
+
+type ContainerResource struct {
+	Requests *ResourceRequirements `json:"requests,omitempty"`
+	Limits   *ResourceRequirements `json:"limits,omitempty"`
+}
+
+type ResourceRequirements struct {
+	CPU    *resource.Quantity `json:"cpu,omitempty"`
+	Memory *resource.Quantity `json:"memory,omitempty"`
+}
+
 const (
 	/* Misc. orchestrator constants */
 	OrchestratorName                 = "trident"
 	OrchestratorClientName           = OrchestratorName + "ctl"
 	OrchestratorAPIVersion           = "1"
-	DefaultOrchestratorVersion       = "25.10.0"
+	DefaultOrchestratorVersion       = "26.02.0"
 	PersistentStoreBootstrapAttempts = 30
 	PersistentStoreBootstrapTimeout  = PersistentStoreBootstrapAttempts * time.Second
 	PersistentStoreTimeout           = 10 * time.Second
 	DockerCreateTimeout              = 115 * time.Second
 	DockerDefaultTimeout             = 55 * time.Second
+
+	/* Telemetry and platform detection constants */
+	// KubeSystemNamespace is the Kubernetes system namespace used for cluster UID retrieval
+	KubeSystemNamespace = "kube-system"
+
+	// Trident Protect related constants for version detection
+	TridentProtectAppNameLabel   = "app.kubernetes.io/name=trident-protect"
+	TridentProtectVersionLabel   = "app.kubernetes.io/version"
+	TridentProtectControllerName = "controller-manager"
+	TridentProtectConnectorLabel = "app=connector.protect.trident.netapp.io"
+
 	// CSIUnixSocketPermissions CSI socket file needs rw access only for user
 	CSIUnixSocketPermissions = 0o600
 	// CSISocketDirPermissions CSI socket directory needs rwx access only for user
@@ -103,10 +249,10 @@ const (
 	UnknownVolumeType VolumeType = ""
 
 	/* Driver-related constants */
-	DefaultSolidFireVAG      = OrchestratorName
-	UnknownDriver            = "UnknownDriver"
-	StorageAPITimeoutSeconds = 90
-	SANResizeDelta           = 50000000 // 50mb
+	DefaultSolidFireVAG = OrchestratorName
+	UnknownDriver       = "UnknownDriver"
+	StorageAPITimeout   = 90 * time.Second
+	SANResizeDelta      = 50000000 // 50mb
 
 	// Storage driver names specified in the config file, etc.
 	OntapNASStorageDriverName          = "ontap-nas"
@@ -116,7 +262,6 @@ const (
 	OntapSANEconomyStorageDriverName   = "ontap-san-economy"
 	SolidfireSANStorageDriverName      = "solidfire-san"
 	AzureNASStorageDriverName          = "azure-netapp-files"
-	GCPNFSStorageDriverName            = "gcp-cvs"
 	GCNVNASStorageDriverName           = "google-cloud-netapp-volumes"
 	FakeStorageDriverName              = "fake"
 
@@ -151,15 +296,15 @@ const (
 
 	// Minimum and maximum supported Kubernetes versions
 	KubernetesVersionMin = "v1.27"
-	KubernetesVersionMax = "v1.33"
+	KubernetesVersionMax = "v1.34"
 
 	// KubernetesCSISidecarRegistry is where the CSI sidecar images are hosted
 	KubernetesCSISidecarRegistry          = "registry.k8s.io/sig-storage"
-	CSISidecarProvisionerImageTag         = "csi-provisioner:v5.2.0"
-	CSISidecarAttacherImageTag            = "csi-attacher:v4.8.1"
-	CSISidecarResizerImageTag             = "csi-resizer:v1.13.2"
-	CSISidecarSnapshotterImageTag         = "csi-snapshotter:v8.2.1"
-	CSISidecarNodeDriverRegistrarImageTag = "csi-node-driver-registrar:v2.13.0"
+	CSISidecarProvisionerImageTag         = "csi-provisioner:v5.3.0"
+	CSISidecarAttacherImageTag            = "csi-attacher:v4.10.0"
+	CSISidecarResizerImageTag             = "csi-resizer:v1.14.0"
+	CSISidecarSnapshotterImageTag         = "csi-snapshotter:v8.3.0"
+	CSISidecarNodeDriverRegistrarImageTag = "csi-node-driver-registrar:v2.15.0"
 	CSISidecarLivenessProbeImageTag       = "livenessprobe:v2.15.0"
 
 	DefaultK8sAPIQPS   = 100.0
@@ -193,6 +338,19 @@ const (
 
 	// REDACTED is replacement text for sensitive information that would otherwise be exposed by HTTP logging, etc.
 	REDACTED = "<REDACTED>"
+
+	// Trident Containers Name
+	TridentControllerMain = "trident-main"
+	CSISidecarProvisioner = "csi-provisioner"
+	CSISidecarResizer     = "csi-resizer"
+	CSISidecarSnapshotter = "csi-snapshotter"
+	CSISidecarAttacher    = "csi-attacher"
+	TridentAutosupport    = "trident-autosupport"
+
+	// Node Containers Name
+	TridentNodeMain                = "trident-main"
+	CSISidecarRegistrar            = "node-driver-registrar"
+	CSISidecarWindowsLivenessProbe = "liveness-probe"
 )
 
 var (
@@ -256,7 +414,7 @@ var (
 	DefaultAutosupportName = "trident-autosupport"
 
 	// DefaultAutosupportImage default image used by tridentctl and operator for asup sidecar
-	DefaultAutosupportImage = fmt.Sprintf("docker.io/netapp/%s:25.06", DefaultAutosupportName)
+	DefaultAutosupportImage = fmt.Sprintf("docker.io/netapp/%s:25.10", DefaultAutosupportName)
 
 	// DefaultACPImage default image used by tridentctl and operator for acp sidecar
 	DefaultACPImage = "cr.astra.netapp.io/astra/trident-acp:24.10.0"
@@ -273,6 +431,86 @@ var (
 	// QPS and Burst for k8s clients
 	K8sAPIQPS   float32
 	K8sAPIBurst int
+
+	// DefaultResources consists of all the defaults resources for the all the containers
+	// If you're changing here, keep in mind to also update the defaults in the helm chart.
+	// Over at trident/helm/trident-operator/values.yaml.
+	DefaultResources = Resources{
+		Controller: ContainersResourceRequirements{
+			TridentControllerMain: &ContainerResource{
+				Requests: &ResourceRequirements{
+					CPU:    ToPtr(resource.MustParse("10m")),
+					Memory: ToPtr(resource.MustParse("80Mi")),
+				},
+			},
+			CSISidecarProvisioner: &ContainerResource{
+				Requests: &ResourceRequirements{
+					CPU:    ToPtr(resource.MustParse("2m")),
+					Memory: ToPtr(resource.MustParse("20Mi")),
+				},
+			},
+			CSISidecarAttacher: &ContainerResource{
+				Requests: &ResourceRequirements{
+					CPU:    ToPtr(resource.MustParse("2m")),
+					Memory: ToPtr(resource.MustParse("20Mi")),
+				},
+			},
+			CSISidecarResizer: &ContainerResource{
+				Requests: &ResourceRequirements{
+					CPU:    ToPtr(resource.MustParse("3m")),
+					Memory: ToPtr(resource.MustParse("20Mi")),
+				},
+			},
+			CSISidecarSnapshotter: &ContainerResource{
+				Requests: &ResourceRequirements{
+					CPU:    ToPtr(resource.MustParse("2m")),
+					Memory: ToPtr(resource.MustParse("20Mi")),
+				},
+			},
+			TridentAutosupport: &ContainerResource{
+				Requests: &ResourceRequirements{
+					CPU:    ToPtr(resource.MustParse("1m")),
+					Memory: ToPtr(resource.MustParse("30Mi")),
+				},
+			},
+		},
+		Node: &NodeResources{
+			Linux: ContainersResourceRequirements{
+				TridentNodeMain: &ContainerResource{
+					Requests: &ResourceRequirements{
+						CPU:    ToPtr(resource.MustParse("10m")),
+						Memory: ToPtr(resource.MustParse("60Mi")),
+					},
+				},
+				CSISidecarRegistrar: &ContainerResource{
+					Requests: &ResourceRequirements{
+						CPU:    ToPtr(resource.MustParse("1m")),
+						Memory: ToPtr(resource.MustParse("10Mi")),
+					},
+				},
+			},
+			Windows: ContainersResourceRequirements{
+				TridentNodeMain: &ContainerResource{
+					Requests: &ResourceRequirements{
+						CPU:    ToPtr(resource.MustParse("10m")),
+						Memory: ToPtr(resource.MustParse("60Mi")),
+					},
+				},
+				CSISidecarRegistrar: &ContainerResource{
+					Requests: &ResourceRequirements{
+						CPU:    ToPtr(resource.MustParse("6m")),
+						Memory: ToPtr(resource.MustParse("40Mi")),
+					},
+				},
+				CSISidecarWindowsLivenessProbe: &ContainerResource{
+					Requests: &ResourceRequirements{
+						CPU:    ToPtr(resource.MustParse("2m")),
+						Memory: ToPtr(resource.MustParse("40Mi")),
+					},
+				},
+			},
+		},
+	}
 )
 
 func IsValidProtocol(p Protocol) bool {
@@ -339,4 +577,53 @@ func ValidateKubernetesVersionFromInfo(k8sMinVersion string, versionInfo *k8sver
 	}
 
 	return ValidateKubernetesVersion(k8sMinVersion, k8sVersion)
+}
+
+// IsValidContainerName checks if the container name is a valid Trident container including both controller and node pods.
+func IsValidContainerName(c string) bool {
+	switch c {
+	case TridentControllerMain, CSISidecarProvisioner, CSISidecarResizer,
+		CSISidecarSnapshotter, CSISidecarAttacher, TridentAutosupport,
+		CSISidecarRegistrar, CSISidecarWindowsLivenessProbe:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsValidControllerContainerName checks if the container runs in the controller pod
+func IsValidControllerContainerName(c string) bool {
+	switch c {
+	case TridentControllerMain, CSISidecarProvisioner, CSISidecarResizer,
+		CSISidecarSnapshotter, CSISidecarAttacher, TridentAutosupport:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsValidLinuxNodeContainerName IsValidNodeContainerName checks if the container runs in the linux node pod
+func IsValidLinuxNodeContainerName(c string) bool {
+	switch c {
+	case TridentNodeMain, CSISidecarRegistrar:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsValidWindowsNodeContainerName IsValidNodeContainerName checks if the container runs in the windows node pod
+func IsValidWindowsNodeContainerName(c string) bool {
+	switch c {
+	case TridentNodeMain, CSISidecarRegistrar, CSISidecarWindowsLivenessProbe:
+		return true
+	default:
+		return false
+	}
+}
+
+// ToPtr returns a pointer to the provided value.
+// Re-declared here to avoid a cyclic dependency on the `convert` package.
+func ToPtr[T any](v T) *T {
+	return &v
 }

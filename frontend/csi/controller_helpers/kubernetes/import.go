@@ -81,6 +81,7 @@ func (h *helper) ImportVolume(
 	claim.Annotations[AnnNotManaged] = strconv.FormatBool(request.NoManage)
 	claim.Annotations[AnnImportOriginalName] = request.InternalName
 	claim.Annotations[AnnImportBackendUUID] = backend.BackendUUID
+	claim.Annotations[AnnImportNoRename] = strconv.FormatBool(request.NoRename)
 	claim.Annotations[AnnStorageProvisioner] = csi.Provisioner
 
 	// Find the volume on the storage system

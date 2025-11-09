@@ -42,12 +42,6 @@ import (
 	"github.com/netapp/trident/utils/nvme"
 )
 
-const (
-	NodeAccessReconcilePeriod      = time.Second * 30
-	NodeRegistrationCooldownPeriod = time.Second * 30
-	AttachISCSIVolumeTimeoutLong   = time.Second * 90
-)
-
 type TridentOrchestrator struct {
 	backends                 map[string]storage.Backend // key is UUID, not name
 	volumes                  map[string]*storage.Volume
@@ -352,6 +346,14 @@ func (o *TridentOrchestrator) bootstrapVolumes(ctx context.Context) error {
 			}
 		}
 
+		// Set the publish enforcement flag on the subordinate volume if supported by the backend and drvier.
+		// This is needed for nas and nas eco volumes. Legacy volumes may not have this flag set. Needed for
+		// automatic force-detach.
+		err = o.healTridentVolumePublishEnforcement(ctx, vol, backend)
+		if err != nil {
+			Logc(ctx).WithError(err).Warning("Unable to heal Trident volume publish enforcement.")
+		}
+
 		Logc(ctx).WithFields(LogFields{
 			"volume":       vol.Config.Name,
 			"internalName": vol.Config.InternalName,
@@ -365,6 +367,35 @@ func (o *TridentOrchestrator) bootstrapVolumes(ctx context.Context) error {
 		volCount++
 	}
 	Logc(ctx).Infof("Added %v existing volume(s)", volCount)
+	return nil
+}
+
+func (o *TridentOrchestrator) healTridentVolumePublishEnforcement(
+	ctx context.Context, vol *storage.Volume, backend storage.Backend,
+) error {
+	if vol.Config.AccessInfo.PublishEnforcement {
+		// If publish enforcement is already enabled on the volume, nothing to do.
+		return nil
+	}
+
+	// If this backend cannot enable publish enforcement, then, no volume on this backend
+	// can have publish enforcement enabled.
+	if backend == nil {
+		Logc(ctx).WithField("volume", vol.Config.Name).
+			Info("Volume cannot have publish enforcement enabled, backend missing.")
+		return nil
+	}
+
+	// Enable publish enforcement on the volume.
+	updated := backend.HealVolumePublishEnforcement(ctx, vol)
+
+	if updated {
+		_, exists := o.volumes[vol.Config.Name]
+		if !exists {
+			return fmt.Errorf("volume %s not found in cache during healing publish enforcement", vol.Config.Name)
+		}
+		o.volumes[vol.Config.Name] = vol
+	}
 	return nil
 }
 
@@ -2443,7 +2474,12 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 	cloneConfig.ReadOnlyClone = volumeConfig.ReadOnlyClone
 	cloneConfig.Namespace = volumeConfig.Namespace
 	cloneConfig.RequestName = volumeConfig.RequestName
-	cloneConfig.SkipRecoveryQueue = volumeConfig.SkipRecoveryQueue
+
+	// If skipRecoveryQueue is set for the clone, use it. If not, default to the source volume's setting.
+	if volumeConfig.SkipRecoveryQueue != "" {
+		cloneConfig.SkipRecoveryQueue = volumeConfig.SkipRecoveryQueue
+	}
+
 	// Empty out the export policy. It will be set in the backend driver.
 	cloneConfig.ExportPolicy = ""
 
@@ -5803,6 +5839,7 @@ func (o *TridentOrchestrator) reconcileBackendState(ctx context.Context, b stora
 	defer o.updateMetrics()
 
 	reason, changeMap := b.GetBackendState(ctx)
+	b.UpdateBackendState(ctx, reason)
 
 	if changeMap != nil {
 		if changeMap.Contains(storage.BackendStateReasonChange) {

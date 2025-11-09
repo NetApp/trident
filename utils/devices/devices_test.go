@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package devices
 
@@ -843,6 +843,84 @@ func TestGetLUKSDeviceForMultipathDevice(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
+		})
+	}
+}
+
+func TestGetLUKSDevicePathForVolume(t *testing.T) {
+	const (
+		volumeID      = "pvc-33bd3006-4765-498e-b61d-eae1d035c487"
+		luksSuffix    = "pvc_33bd3006_4765_498e_b61d_eae1d035c487"
+		mapperName    = "luks-" + luksSuffix
+		mapperDevPath = "/dev/mapper/" + mapperName
+	)
+	tests := map[string]struct {
+		getFs       func() afero.Fs
+		expectPath  string
+		assertError assert.ErrorAssertionFunc
+	}{
+		"Happy Path": {
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				_ = fs.MkdirAll("/sys/block/dm-0/dm", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-0/dm/name", []byte(mapperName), 0o644)
+				return fs
+			},
+			expectPath:  mapperDevPath,
+			assertError: assert.NoError,
+		},
+		"No Matching Device": {
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				_ = fs.MkdirAll("/sys/block/dm-0/dm", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-0/dm/name", []byte("not-a-luks-device"), 0o644)
+				return fs
+			},
+			expectPath:  "",
+			assertError: assert.Error,
+		},
+		"Error Reading Name File": {
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				_ = fs.MkdirAll("/sys/block/dm-0/dm", 0o755)
+				// Do not create the name file, so ReadFile will error
+				return fs
+			},
+			expectPath:  "",
+			assertError: assert.Error,
+		},
+		"Empty Name File": {
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				_ = fs.MkdirAll("/sys/block/dm-0/dm", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-0/dm/name", []byte(""), 0o644)
+				return fs
+			},
+			expectPath:  "",
+			assertError: assert.Error,
+		},
+		"Multiple Devices, Only One Matches": {
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				_ = fs.MkdirAll("/sys/block/dm-0/dm", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-1/dm", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-0/dm/name", []byte("not-a-luks-device"), 0o644)
+				_ = afero.WriteFile(fs, "/sys/block/dm-1/dm/name", []byte(mapperName), 0o644)
+				return fs
+			},
+			expectPath:  mapperDevPath,
+			assertError: assert.NoError,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctx := context.Background()
+			fs := tc.getFs()
+			client := &Client{osFs: afero.Afero{Fs: fs}}
+			path, err := client.GetLUKSDevicePathForVolume(ctx, volumeID)
+			tc.assertError(t, err)
+			assert.Equal(t, tc.expectPath, path)
 		})
 	}
 }

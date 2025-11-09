@@ -140,5 +140,7 @@ type ExtendedK8sClient interface {
 	DeleteTransientVersionPod(tridentVersionPodLabel string) error
 	RemoveMultiplePods(unwantedPods []corev1.Pod) error
 
+	DeleteTridentNodeRemediationResources(namespace string) error
+
 	ExecPodForVersionInformation(podName string, cmd []string, timeout time.Duration) ([]byte, error)
 }

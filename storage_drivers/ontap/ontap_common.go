@@ -152,9 +152,15 @@ var (
 	volumeNameRegex          = regexp.MustCompile(`\{+.*\.volume.Name[^{a-z]*\}+`)
 	volumeNameStartWithRegex = regexp.MustCompile(`^[A-Za-z_].*`)
 	smbShareDeleteACL        = map[string]string{DefaultSMBAccessControlUser: DefaultSMBAccessControlUserType}
-	lunMutex                 = locks.NewGCNamedMutex()
-	igroupMutex              = locks.NewGCNamedMutex()
 	exportPolicyMutex        = locks.NewGCNamedMutex()
+
+	// NOTE: The lock order should be lunMutex first, then igroupMutex
+	lunMutex    = locks.NewGCNamedMutex()
+	igroupMutex = locks.NewGCNamedMutex()
+
+	// NOTE: The lock order should be namespaceMutex first, then subsystemMutex
+	namespaceMutex = locks.NewGCNamedMutex()
+	subsystemMutex = locks.NewGCNamedMutex()
 
 	duringVolCloneAfterSnapCreation1 = fiji.Register("duringVolCloneAfterSnapCreation1", "ontap_common")
 	duringVolCloneAfterSnapCreation2 = fiji.Register("duringVolCloneAfterSnapCreation2", "ontap_common")
@@ -2336,9 +2342,34 @@ func GetSnapshotReserve(snapshotPolicy, snapshotReserve string) (int, error) {
 
 const MSecPerHour = 1000 * 60 * 60 // millis * seconds * minutes
 
+// refreshDynamicTelemetry updates dynamic telemetry fields before EMS heartbeat transmission
+func refreshDynamicTelemetry(ctx context.Context, driver StorageDriver) {
+	// Get the current telemetry object from the driver
+	telemetry := driver.GetTelemetry()
+	if telemetry == nil {
+		Logc(ctx).Debug("No telemetry object found for dynamic refresh.")
+		return
+	}
+
+	// Update dynamic fields using registered updaters (from CSI helper)
+	tridentconfig.UpdateDynamicTelemetry(ctx, &telemetry.Telemetry)
+
+	Logc(ctx).WithFields(LogFields{
+		"driver":                driver.Name(),
+		"svm":                   telemetry.SVM,
+		"platformUID":           telemetry.PlatformUID,
+		"platformNodeCount":     telemetry.PlatformNodeCount,
+		"platformVersion":       telemetry.PlatformVersion,
+		"tridentProtectVersion": telemetry.TridentProtectVersion,
+	}).Debug("Dynamic telemetry refresh completed.")
+}
+
 // EMSHeartbeat logs an ASUP message on a timer
 // view them via filer::> event log show -severity NOTICE
 func EMSHeartbeat(ctx context.Context, driver StorageDriver) {
+	// Refresh dynamic telemetry fields before sending heartbeat
+	refreshDynamicTelemetry(ctx, driver)
+
 	// log an informational message on a timer
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -4600,6 +4631,33 @@ func EnableSANPublishEnforcement(
 	return nil
 }
 
+// HealSANPublishEnforcement is a no-op for ONTAP-SAN volumes because ONTAP-SAN already properly sets
+// the LUN mappings during publish/unpublish,
+// operations. This function is implemented to satisfy interface assertions on the drivers.
+func HealSANPublishEnforcement(_ context.Context, _ storage.Driver, _ *storage.Volume) bool {
+	return false
+}
+
+// HealNASPublishEnforcement checks if publish enforcement should be enabled on the given NAS volume
+// and updates the volume config accordingly. It returns true if the volume config was updated.
+func HealNASPublishEnforcement(ctx context.Context, driver storage.Driver, volume *storage.Volume) bool {
+	var updated bool
+	// Check if publish enforcement is already set.
+	if volume.Config.AccessInfo.PublishEnforcement {
+		// If publish enforcement is already enabled on the volume, nothing to do.
+		return updated
+	}
+
+	policy := volume.Config.ExportPolicy
+	driverConfig := driver.GetCommonConfig(ctx)
+	if policy == getEmptyExportPolicyName(*driverConfig.StoragePrefix) ||
+		policy == volume.Config.InternalName {
+		volume.Config.AccessInfo.PublishEnforcement = true
+		updated = true
+	}
+	return updated
+}
+
 func ValidateStoragePrefixEconomy(storagePrefix string) error {
 	// Ensure storage prefix is compatible with ONTAP
 	matched, err := regexp.MatchString(`^$|^[a-zA-Z0-9_.-]*$`, storagePrefix)
@@ -5455,6 +5513,8 @@ func getUniqueNodeSpecificSubsystemName(
 
 	// Construct the subsystem name
 	completeSSName := fmt.Sprintf("%s_%s_%s", prefix, nodeName, tridentUUID)
+	// Skip any underscores at the beginning
+	completeSSName = strings.TrimLeft(completeSSName, "_")
 	finalSSName := completeSSName
 
 	// Ensure the final name does not exceed the maximum length
@@ -5468,6 +5528,7 @@ func getUniqueNodeSpecificSubsystemName(
 
 		base64Str := base64.StdEncoding.EncodeToString(u[:])
 		finalSSName = fmt.Sprintf("%s_%s_%s", prefix, nodeName, base64Str)
+		finalSSName = strings.TrimLeft(finalSSName, "_")
 
 		if len(finalSSName) > maxSubsystemLength {
 			// If even after Trident UUID reduction, the length is more than max length,
@@ -5480,4 +5541,16 @@ func getUniqueNodeSpecificSubsystemName(
 	}
 
 	return completeSSName, finalSSName, nil
+}
+
+// lockNamespaceAndSubsystem acquires the namespace lock first and then the subsystem lock.
+// It returns a function that should be deferred to release the locks in reverse order.
+func lockNamespaceAndSubsystem(nsUUID, ssUUID string) func() {
+	namespaceMutex.Lock(nsUUID)
+	subsystemMutex.Lock(ssUUID)
+
+	return func() {
+		subsystemMutex.Unlock(ssUUID)
+		namespaceMutex.Unlock(nsUUID)
+	}
 }

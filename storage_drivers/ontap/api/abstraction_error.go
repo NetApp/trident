@@ -18,6 +18,7 @@ const (
 	EXPORT_POLICY_NOT_FOUND                    = "1703954"
 	EXPORT_POLICY_RULE_EXISTS                  = "1704070"
 	CONSISTENCY_GROUP_SNAP_EXISTS_ERROR        = "53411921"
+	NVME_SUBSYSTEM_ALREADY_EXISTS              = "72090025"
 )
 
 // ///////////////////////////////////////////////////////////////////////////

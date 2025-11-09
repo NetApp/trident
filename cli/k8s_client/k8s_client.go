@@ -39,6 +39,7 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 
 	. "github.com/netapp/trident/logging"
+	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/utils/errors"
 	versionutils "github.com/netapp/trident/utils/version"
@@ -1360,6 +1361,121 @@ func (k *KubeClient) PatchClusterRoleByLabelAndName(
 		"clusterRole": clusterRole.Name,
 	}).Trace("Patched Kubernetes cluster role.")
 
+	return nil
+}
+
+// patchClusterRole patches an existing CRD to meet Trident's expected specification in the installer.
+func (k *KubeClient) PatchClusterRole(
+	newClusterRole, currentClusterRole *v13.ClusterRole,
+) error {
+	currentClusterRoleJson, err := json.Marshal(currentClusterRole)
+	if err != nil {
+		return fmt.Errorf("error marshalling cluster role %s: %v", currentClusterRole.Name, err)
+	}
+	newClusterRoleJson, err := json.Marshal(newClusterRole)
+	if err != nil {
+		return fmt.Errorf("error marshalling cluster role %s: %v", newClusterRole.Name, err)
+	}
+
+	// Generate the deltas between the currentCRD and the new CRD YAML using a json merge patch strategy.
+	patchBytes, err := jsonMergePatch(currentClusterRoleJson, newClusterRoleJson)
+	if err != nil {
+		return fmt.Errorf("error in creating the two-way merge patch for cluster role %s; %v", newClusterRole.Name, err)
+	}
+
+	// Update the object
+	if _, err := k.clientset.RbacV1().ClusterRoles().Patch(reqCtx(), newClusterRole.Name, types.MergePatchType,
+		patchBytes, metav1.PatchOptions{}); err != nil {
+		return fmt.Errorf("could not patch cluster role %v; %v", newClusterRole.Name, err)
+	}
+
+	Log().Debugf("Patched cluster role %v.", currentClusterRole.Name)
+	return nil
+}
+
+// CreateOrPatchClusterRole Creates the clusterRole if it doesn't exist, and patches if it does exist.
+func (k *KubeClient) CreateOrPatchClusterRole(
+	clusterRole *v13.ClusterRole,
+) error {
+	// Get the CR if it exists
+	existingCr, err := k.clientset.RbacV1().ClusterRoles().Get(reqCtx(), clusterRole.Name, getOpts)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			_, err := k.clientset.RbacV1().ClusterRoles().Create(reqCtx(), clusterRole, createOpts)
+			if err != nil {
+				return fmt.Errorf("error creating cluster role %s: %v", clusterRole.Name, err)
+			}
+			Log().Debugf("Created cluster role %v.", clusterRole.Name)
+			return nil
+		} else {
+			return fmt.Errorf("error getting cluster role %s: %v", clusterRole.Name, err)
+		}
+	} else {
+		// CR exists, patch it
+		err := k.PatchClusterRole(clusterRole, existingCr)
+		if err != nil {
+			return fmt.Errorf("error patching cluster role %s: %v", clusterRole.Name, err)
+		}
+		return nil
+	}
+}
+
+// CreateOrPatchNodeRemediationTemplate Creates the TNRT if it doesn't exist, and patches if it does exist.
+func (k *KubeClient) CreateOrPatchNodeRemediationTemplate(
+	tnrt *tridentv1.TridentNodeRemediationTemplate, namespace string,
+) error {
+	// Get the CR if it exists
+	existingCr, err := k.crdClientset.TridentV1().TridentNodeRemediationTemplates(namespace).Get(reqCtx(),
+		tnrt.Name, getOpts)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			_, err := k.crdClientset.TridentV1().TridentNodeRemediationTemplates(namespace).Create(reqCtx(), tnrt, createOpts)
+			if err != nil {
+				return fmt.Errorf("error TridentNodeRemediationTemplate %s: %v", tnrt.Name, err)
+			}
+			Log().Debugf("Created TridentNodeRemediationTemplate %v.", tnrt.Name)
+			return nil
+		} else {
+			return fmt.Errorf("error getting TridentNodeRemediationTemplate %s: %v", tnrt.Name, err)
+		}
+	} else {
+		// CR exists, patch it
+		err := k.PatchNodeRemediationTemplate(tnrt, existingCr)
+		if err != nil {
+			return fmt.Errorf("error patching TridentNodeRemediationTemplate %s: %v", tnrt.Name, err)
+		}
+		return nil
+	}
+}
+
+// patchClusterRole patches an existing CRD to meet Trident's expected specification in the installer.
+func (k *KubeClient) PatchNodeRemediationTemplate(newTnrt *tridentv1.TridentNodeRemediationTemplate,
+	currentTnrt *tridentv1.TridentNodeRemediationTemplate,
+) error {
+	currentTnrtJson, err := json.Marshal(currentTnrt)
+	if err != nil {
+		return fmt.Errorf("error marshalling TridentNodeRemediationTemplate %s: %v", currentTnrt.Name, err)
+	}
+	newTnrtJson, err := json.Marshal(newTnrt)
+	if err != nil {
+		return fmt.Errorf("error marshalling TridentNodeRemediationTemplate %s: %v", newTnrt.Name, err)
+	}
+
+	// Generate the deltas between the currentCR and the new CR YAML using a json merge patch strategy.
+	patchBytes, err := jsonMergePatch(currentTnrtJson, newTnrtJson)
+	if err != nil {
+		return fmt.Errorf("error in creating the two-way merge patch for TridentNodeRemediationTemplate %s; %v",
+			newTnrt.Name, err)
+	}
+
+	// Update the object
+	if _, err := k.crdClientset.TridentV1().TridentNodeRemediationTemplates(newTnrt.Namespace).Patch(reqCtx(),
+		newTnrt.Name, types.MergePatchType,
+		patchBytes, metav1.PatchOptions{}); err != nil {
+		return fmt.Errorf("could not patch TridentNodeRemediationTemplate %v; %v", newTnrt.Name, err)
+	}
+
+	Log().Debugf("Patched TridentNodeRemediationTemplate %v.", newTnrt.Name)
 	return nil
 }
 

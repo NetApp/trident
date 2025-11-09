@@ -135,6 +135,7 @@ registry mirrors. See docker (https://docs.docker.com/engine/reference/commandli
 (https://github.com/moby/buildkit/blob/master/docs/buildkitd.toml.md) docs for more options and examples.
 
 Example file:
+
 ```shell
 # insecure, local/private registry, set $PRIVATE_REGISTRY to appropriate value
 [registry."$PRIVATE_REGISTRY"]
@@ -314,6 +315,30 @@ REGISTRY=$PRIVATE_REGISTRY \
 BUILD_CLI='docker buildx' \
 BUILDX_OUTPUT=push \
 make manifest
+```
+
+### Build linux amd64 without operator
+
+Note: requires `docker buildx` and target registry
+
+```shell
+PLATFORMS='linux/amd64' \
+REGISTRY=$PRIVATE_REGISTRY \
+BUILD_CLI='docker buildx' \
+BUILDX_OUTPUT=push \
+make
+```
+
+### Build linux amd64 trident operator image
+
+Note: requires `docker buildx` and target registry
+
+```shell
+PLATFORMS='linux/amd64' \
+REGISTRY=$PRIVATE_REGISTRY \
+BUILD_CLI='docker buildx' \
+BUILDX_OUTPUT=push \
+make operator_images
 ```
 
 ### Build tridentctl natively

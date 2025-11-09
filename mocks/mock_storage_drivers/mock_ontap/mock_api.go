@@ -910,21 +910,6 @@ func (mr *MockOntapAPIMockRecorder) LunGetFSType(ctx, lunPath any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetFSType", reflect.TypeOf((*MockOntapAPI)(nil).LunGetFSType), ctx, lunPath)
 }
 
-// LunGetGeometry mocks base method.
-func (m *MockOntapAPI) LunGetGeometry(ctx context.Context, lunPath string) (uint64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunGetGeometry", ctx, lunPath)
-	ret0, _ := ret[0].(uint64)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// LunGetGeometry indicates an expected call of LunGetGeometry.
-func (mr *MockOntapAPIMockRecorder) LunGetGeometry(ctx, lunPath any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunGetGeometry", reflect.TypeOf((*MockOntapAPI)(nil).LunGetGeometry), ctx, lunPath)
-}
-
 // LunList mocks base method.
 func (m *MockOntapAPI) LunList(ctx context.Context, pattern string) (api.Luns, error) {
 	m.ctrl.T.Helper()
@@ -2061,6 +2046,18 @@ func (m *MockOntapAPI) SupportsFeature(ctx context.Context, feature api.Feature)
 func (mr *MockOntapAPIMockRecorder) SupportsFeature(ctx, feature any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SupportsFeature", reflect.TypeOf((*MockOntapAPI)(nil).SupportsFeature), ctx, feature)
+}
+
+// Terminate mocks base method.
+func (m *MockOntapAPI) Terminate() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Terminate")
+}
+
+// Terminate indicates an expected call of Terminate.
+func (mr *MockOntapAPIMockRecorder) Terminate() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Terminate", reflect.TypeOf((*MockOntapAPI)(nil).Terminate))
 }
 
 // TieringPolicyValue mocks base method.

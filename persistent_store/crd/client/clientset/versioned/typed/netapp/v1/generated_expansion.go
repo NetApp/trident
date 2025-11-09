@@ -18,6 +18,10 @@ type TridentMirrorRelationshipExpansion interface{}
 
 type TridentNodeExpansion interface{}
 
+type TridentNodeRemediationExpansion interface{}
+
+type TridentNodeRemediationTemplateExpansion interface{}
+
 type TridentSnapshotExpansion interface{}
 
 type TridentSnapshotInfoExpansion interface{}

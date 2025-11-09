@@ -629,6 +629,20 @@ func (mr *MockBackendMockRecorder) HasVolumes() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasVolumes", reflect.TypeOf((*MockBackend)(nil).HasVolumes))
 }
 
+// HealVolumePublishEnforcement mocks base method.
+func (m *MockBackend) HealVolumePublishEnforcement(ctx context.Context, volume *storage.Volume) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HealVolumePublishEnforcement", ctx, volume)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// HealVolumePublishEnforcement indicates an expected call of HealVolumePublishEnforcement.
+func (mr *MockBackendMockRecorder) HealVolumePublishEnforcement(ctx, volume any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HealVolumePublishEnforcement", reflect.TypeOf((*MockBackend)(nil).HealVolumePublishEnforcement), ctx, volume)
+}
+
 // ImportVolume mocks base method.
 func (m *MockBackend) ImportVolume(ctx context.Context, volConfig *storage.VolumeConfig) (*storage.Volume, error) {
 	m.ctrl.T.Helper()
@@ -668,6 +682,20 @@ func (m *MockBackend) IsCredentialsFieldSet(ctx context.Context) bool {
 func (mr *MockBackendMockRecorder) IsCredentialsFieldSet(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsCredentialsFieldSet", reflect.TypeOf((*MockBackend)(nil).IsCredentialsFieldSet), ctx)
+}
+
+// IsNodeAccessUpToDate mocks base method.
+func (m *MockBackend) IsNodeAccessUpToDate() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsNodeAccessUpToDate")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsNodeAccessUpToDate indicates an expected call of IsNodeAccessUpToDate.
+func (mr *MockBackendMockRecorder) IsNodeAccessUpToDate() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsNodeAccessUpToDate", reflect.TypeOf((*MockBackend)(nil).IsNodeAccessUpToDate))
 }
 
 // MarshalDriverConfig mocks base method.
@@ -1057,6 +1085,18 @@ func (m *MockBackend) UnpublishVolume(ctx context.Context, volConfig *storage.Vo
 func (mr *MockBackendMockRecorder) UnpublishVolume(ctx, volConfig, publishInfo any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnpublishVolume", reflect.TypeOf((*MockBackend)(nil).UnpublishVolume), ctx, volConfig, publishInfo)
+}
+
+// UpdateBackendState mocks base method.
+func (m *MockBackend) UpdateBackendState(ctx context.Context, stateReason string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "UpdateBackendState", ctx, stateReason)
+}
+
+// UpdateBackendState indicates an expected call of UpdateBackendState.
+func (mr *MockBackendMockRecorder) UpdateBackendState(ctx, stateReason any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBackendState", reflect.TypeOf((*MockBackend)(nil).UpdateBackendState), ctx, stateReason)
 }
 
 // UpdateMirror mocks base method.

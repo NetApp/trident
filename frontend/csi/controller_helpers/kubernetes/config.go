@@ -59,6 +59,7 @@ const (
 	AnnNotManaged               = prefix + "/notManaged"
 	AnnImportOriginalName       = prefix + "/importOriginalName"
 	AnnImportBackendUUID        = prefix + "/importBackendUUID"
+	AnnImportNoRename           = prefix + "/importNoRename"
 	AnnInternalSnapshotName     = prefix + "/internalSnapshotName"
 	AnnMirrorRelationship       = prefix + "/mirrorRelationship"
 	AnnVolumeShareFromPVC       = prefix + "/shareFromPVC"
@@ -72,6 +73,11 @@ const (
 	AnnSMBShareAdUserPermission = prefix + "/smbShareAdUserPermission"
 	AnnSMBShareAdUser           = prefix + "/smbShareAdUser"
 	AnnSMBShareAccessControl    = prefix + "/smbShareAccessControl"
+
+	// Pod remediation policy annotation and values
+	AnnPodRemediationPolicyAnnotation = prefix + "/podRemediationPolicy"
+	PodRemediationPolicyDelete        = "delete"
+	PodRemediationPolicyRetain        = "retain"
 
 	// Orchestrator-defined storage class parameters
 	SCParameterNASType = prefix + "/nasType"

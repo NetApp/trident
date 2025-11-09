@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package installer
 
@@ -23,6 +23,7 @@ import (
 	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/rest"
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	. "github.com/netapp/trident/logging"
@@ -5844,7 +5845,7 @@ func TestGetMultipleTridentOpenShiftSCCInformation(t *testing.T) {
 
 	for idx := 0; idx < len(names); idx++ {
 		expCurrentOpenShiftSCCJSONMap[names[idx]] = []byte(k8sclient.GetOpenShiftSCCYAML(names[idx], usernames[idx],
-			"default", nil, nil, false))
+			"default", nil, nil, false, false))
 		expReuseOpenShiftSCCMap[names[idx]] = true
 		expRemoveExistingSCCMap[names[idx]] = true
 	}
@@ -6101,6 +6102,7 @@ func TestPutOpenShiftSCC(t *testing.T) {
 		make(map[string]string),
 		make(map[string]string),
 		false,
+		false,
 	)
 
 	currentOpenShiftSCCJSON, err := yaml.YAMLToJSON([]byte(k8sclient.GetOpenShiftSCCYAML(
@@ -6109,6 +6111,7 @@ func TestPutOpenShiftSCC(t *testing.T) {
 		"trident",
 		make(map[string]string),
 		make(map[string]string),
+		false,
 		false,
 	)))
 	if err != nil {
@@ -6467,4 +6470,52 @@ func TestRemoveMultiplePods(t *testing.T) {
 			},
 		)
 	}
+}
+
+func TestNewExtendedK8sClient(t *testing.T) {
+	t.Run("creates K8sClient wrapper", func(t *testing.T) {
+		// Basic config setup
+		kubeConfig := &rest.Config{
+			Host: "https://localhost:8443",
+		}
+
+		client, _ := NewExtendedK8sClient(kubeConfig, "test-namespace", 30*time.Second)
+
+		assert.NotNil(t, client)
+		assert.IsType(t, &K8sClient{}, client)
+	})
+
+	t.Run("wrapper functionality", func(t *testing.T) {
+		// Setup mocks
+		mockCtrl := gomock.NewController(t)
+		mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
+
+		// Create wrapper directly
+		extendedClient := &K8sClient{mockKubeClient}
+
+		// Verify wrapper structure
+		assert.NotNil(t, extendedClient)
+		assert.Implements(t, (*ExtendedK8sClient)(nil), extendedClient)
+		assert.Equal(t, mockKubeClient, extendedClient.KubernetesClient)
+	})
+
+	t.Run("timeout parameter", func(t *testing.T) {
+		kubeConfig := &rest.Config{
+			Host: "https://localhost:8443",
+		}
+
+		// Test different timeouts
+		timeouts := []time.Duration{
+			0 * time.Second,
+			30 * time.Second,
+			5 * time.Minute,
+		}
+
+		for _, timeout := range timeouts {
+			client, _ := NewExtendedK8sClient(kubeConfig, "test-ns", timeout)
+			// Client should be created
+			assert.NotNil(t, client)
+			assert.IsType(t, &K8sClient{}, client)
+		}
+	})
 }

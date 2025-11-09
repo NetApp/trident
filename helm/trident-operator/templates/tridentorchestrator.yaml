@@ -38,7 +38,7 @@ spec:
   {{- if .Values.tridentControllerPluginNodeSelector }}
   controllerPluginNodeSelector:
     {{- range $key, $value := .Values.tridentControllerPluginNodeSelector }}
-      {{ $key }}: "{{ $value }}"
+    {{ $key }}: "{{ $value }}"
     {{- end }}
   {{- end }}
   {{- if .Values.tridentControllerPluginTolerations }}
@@ -87,4 +87,22 @@ spec:
   {{- if .Values.skipCRDsToObliviate }}
   skipCRDsToObliviate: {{- range .Values.skipCRDsToObliviate }}
     - {{.}} {{- end }}
+  {{- end }}
+  {{ if or (include "trident.hasControllerResources" .) (include "trident.hasNodeLinuxResources" .) (include "trident.hasNodeWindowsResources" .) -}}
+  resources:
+    {{ if include "trident.hasControllerResources" . -}}
+    controller: {{ include  "trident.resources.controller" .Values.resources.controller | indent 6 }}
+    {{- end }}
+    {{ if or (include "trident.hasNodeLinuxResources" .) (include "trident.hasNodeWindowsResources" .) -}}
+    node:
+      {{ if include "trident.hasNodeLinuxResources" . -}}
+      linux: {{ include  "trident.resources.node.linux" .Values.resources.node.linux | indent 8 }}
+      {{- end }}
+      {{- if include "trident.hasNodeWindowsResources" . }}
+      windows: {{ include  "trident.resources.node.windows" .Values.resources.node.windows | indent 8 }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- if .Values.hostNetwork }}
+  hostNetwork: {{ .Values.hostNetwork }}
   {{- end }}

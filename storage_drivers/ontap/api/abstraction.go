@@ -49,6 +49,9 @@ type OntapAPI interface {
 	IsSANOptimized() bool
 	IsDisaggregated() bool
 
+	// Terminate frees resources shared between driver instances
+	Terminate()
+
 	EmsAutosupportLog(
 		ctx context.Context, driverName, appVersion string, autoSupport bool, category string,
 		computerName, eventDescription string, eventID int, eventSource string, logLevel int,
@@ -87,7 +90,6 @@ type OntapAPI interface {
 	LunCreate(ctx context.Context, lun Lun) error
 	LunCloneCreate(ctx context.Context, flexvol, source, lunName string, qosPolicyGroup QosPolicyGroup) error
 	LunDestroy(ctx context.Context, lunPath string) error
-	LunGetGeometry(ctx context.Context, lunPath string) (uint64, error)
 	LunGetFSType(ctx context.Context, lunPath string) (string, error)
 	LunGetAttribute(ctx context.Context, lunPath, attributeName string) (string, error)
 	LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, context, luks, formatOptions string) error

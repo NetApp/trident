@@ -110,6 +110,8 @@ func obliviateCRDs(skipCRDs []string) error {
 		"tridentvolumepublications.trident.netapp.io",
 		"tridentvolumereferences.trident.netapp.io",
 		"tridentactionsnapshotrestores.trident.netapp.io",
+		"tridentnoderemediations.trident.netapp.io",
+		"tridentnoderemediationtemplates.trident.netapp.io",
 		"tridentconfigurators.trident.netapp.io",
 		"tridentorchestrators.trident.netapp.io",
 	}
@@ -201,6 +203,14 @@ func deleteCRs(filteredCRDs []string) error {
 			}
 		case "tridentactionsnapshotrestores.trident.netapp.io":
 			if err := deleteActionSnapshotRestores(); err != nil {
+				return err
+			}
+		case "tridentnoderemediations.trident.netapp.io":
+			if err := deleteNodeRemediations(); err != nil {
+				return err
+			}
+		case "tridentnoderemediationtemplates.trident.netapp.io":
+			if err := deleteNodeRemediationTemplates(); err != nil {
 				return err
 			}
 		case "tridentconfigurators.trident.netapp.io":
@@ -1174,6 +1184,122 @@ func deleteActionSnapshotRestores() error {
 		}
 
 		deleteFunc := crdClientset.TridentV1().TridentActionSnapshotRestores(vref.Namespace).Delete
+		if err = deleteWithRetry(deleteFunc, ctx(), vref.Name, nil); err != nil {
+			Log().Errorf("Problem deleting resource: %v", err)
+			return err
+		}
+	}
+
+	Log().WithFields(logFields).Info("Resources deleted.")
+	return nil
+}
+
+func deleteNodeRemediations() error {
+	crd := "tridentnoderemediations.trident.netapp.io"
+	logFields := LogFields{"CRD": crd}
+
+	// See if CRD exists
+	exists, err := k8sClient.CheckCRDExists(crd)
+	if err != nil {
+		return err
+	} else if !exists {
+		Log().WithField("CRD", crd).Debug("CRD not present.")
+		return nil
+	}
+
+	allTnrs, err := crdClientset.TridentV1().TridentNodeRemediations(allNamespaces).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	} else if len(allTnrs.Items) == 0 {
+		Log().WithFields(logFields).Info("Resources not present.")
+		return nil
+	}
+
+	for _, tnr := range allTnrs.Items {
+		if tnr.DeletionTimestamp.IsZero() {
+			_ = crdClientset.TridentV1().TridentNodeRemediations(tnr.Namespace).Delete(ctx(),
+				tnr.Name, deleteOpts)
+		}
+	}
+
+	allTnrs, err = crdClientset.TridentV1().TridentNodeRemediations(allNamespaces).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	}
+
+	for _, tnr := range allTnrs.Items {
+		if tnr.HasTridentFinalizers() {
+			crCopy := tnr.DeepCopy()
+			crCopy.RemoveTridentFinalizers()
+			_, err := crdClientset.TridentV1().TridentNodeRemediations(tnr.Namespace).Update(ctx(),
+				crCopy, updateOpts)
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
+				Log().Errorf("Problem removing finalizers: %v", err)
+				return err
+			}
+		}
+
+		deleteFunc := crdClientset.TridentV1().TridentNodeRemediations(tnr.Namespace).Delete
+		if err = deleteWithRetry(deleteFunc, ctx(), tnr.Name, nil); err != nil {
+			Log().Errorf("Problem deleting resource: %v", err)
+			return err
+		}
+	}
+
+	Log().WithFields(logFields).Info("Resources deleted.")
+	return nil
+}
+
+func deleteNodeRemediationTemplates() error {
+	crd := "tridentnoderemediationtemplates.trident.netapp.io"
+	logFields := LogFields{"CRD": crd}
+
+	// See if CRD exists
+	exists, err := k8sClient.CheckCRDExists(crd)
+	if err != nil {
+		return err
+	} else if !exists {
+		Log().WithField("CRD", crd).Debug("CRD not present.")
+		return nil
+	}
+
+	vrefs, err := crdClientset.TridentV1().TridentNodeRemediationTemplates(allNamespaces).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	} else if len(vrefs.Items) == 0 {
+		Log().WithFields(logFields).Info("Resources not present.")
+		return nil
+	}
+
+	for _, vref := range vrefs.Items {
+		if vref.DeletionTimestamp.IsZero() {
+			_ = crdClientset.TridentV1().TridentNodeRemediationTemplates(vref.Namespace).Delete(ctx(),
+				vref.Name, deleteOpts)
+		}
+	}
+
+	vrefs, err = crdClientset.TridentV1().TridentNodeRemediationTemplates(allNamespaces).List(ctx(), listOpts)
+	if err != nil {
+		return err
+	}
+
+	for _, vref := range vrefs.Items {
+		if vref.HasTridentFinalizers() {
+			crCopy := vref.DeepCopy()
+			crCopy.RemoveTridentFinalizers()
+			_, err := crdClientset.TridentV1().TridentNodeRemediationTemplates(vref.Namespace).Update(ctx(),
+				crCopy, updateOpts)
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
+				Log().Errorf("Problem removing finalizers: %v", err)
+				return err
+			}
+		}
+
+		deleteFunc := crdClientset.TridentV1().TridentNodeRemediationTemplates(vref.Namespace).Delete
 		if err = deleteWithRetry(deleteFunc, ctx(), vref.Name, nil); err != nil {
 			Log().Errorf("Problem deleting resource: %v", err)
 			return err

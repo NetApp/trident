@@ -69,13 +69,10 @@ spec:
         image: {{ include "trident-operator.image" $ }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         name: trident-operator
+        {{- if (include "trident-operator.hasResources" .Values.resources.operator) }}
         resources:
-          requests:
-            cpu: "10m"
-            memory: "40Mi"
-          limits:
-            cpu: "20m"
-            memory: "80Mi"
+          {{- include "trident-operator.resources" .Values.resources.operator | indent 10 }}
+        {{- end }}
       {{- if and (eq .Values.cloudProvider "Azure") (eq .Values.cloudIdentity "") }}
       volumes:
       - name: azure-cred

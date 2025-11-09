@@ -5,10 +5,9 @@
 package v1
 
 import (
-	rest "k8s.io/client-go/rest"
-
 	v1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/scheme"
+	rest "k8s.io/client-go/rest"
 )
 
 type TridentV1Interface interface {
@@ -20,6 +19,8 @@ type TridentV1Interface interface {
 	TridentGroupSnapshotsGetter
 	TridentMirrorRelationshipsGetter
 	TridentNodesGetter
+	TridentNodeRemediationsGetter
+	TridentNodeRemediationTemplatesGetter
 	TridentSnapshotsGetter
 	TridentSnapshotInfosGetter
 	TridentStorageClassesGetter
@@ -61,6 +62,14 @@ func (c *TridentV1Client) TridentMirrorRelationships(namespace string) TridentMi
 
 func (c *TridentV1Client) TridentNodes(namespace string) TridentNodeInterface {
 	return newTridentNodes(c, namespace)
+}
+
+func (c *TridentV1Client) TridentNodeRemediations(namespace string) TridentNodeRemediationInterface {
+	return newTridentNodeRemediations(c, namespace)
+}
+
+func (c *TridentV1Client) TridentNodeRemediationTemplates(namespace string) TridentNodeRemediationTemplateInterface {
+	return newTridentNodeRemediationTemplates(c, namespace)
 }
 
 func (c *TridentV1Client) TridentSnapshots(namespace string) TridentSnapshotInterface {

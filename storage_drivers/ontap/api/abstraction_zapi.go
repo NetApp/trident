@@ -344,6 +344,10 @@ type OntapAPIZAPI struct {
 	driverName string
 }
 
+func (d OntapAPIZAPI) Terminate() {
+	d.api.Terminate()
+}
+
 func (d OntapAPIZAPI) FcpInterfaceGet(ctx context.Context, svm string) ([]string, error) {
 	var fcpInterfaces []string
 	interfaceResponse, err := d.api.FcpInterfaceGetIterRequest()
@@ -369,21 +373,6 @@ func (d OntapAPIZAPI) FcpNodeGetNameRequest(ctx context.Context) (string, error)
 		return "", err
 	}
 	return nodeNameResponse.Result.NodeName(), nil
-}
-
-func (d OntapAPIZAPI) LunGetGeometry(ctx context.Context, lunPath string) (uint64, error) {
-	// Check LUN geometry and verify LUN max size.
-	var lunMaxSize uint64 = 0
-	lunGeometry, err := d.api.LunGetGeometry(lunPath)
-	if err != nil {
-		Logc(ctx).WithField("error", err).Error("LUN resize failed.")
-		return lunMaxSize, fmt.Errorf("volume resize failed")
-	}
-
-	if lunGeometry != nil && lunGeometry.Result.MaxResizeSizePtr != nil {
-		lunMaxSize = uint64(lunGeometry.Result.MaxResizeSize())
-	}
-	return lunMaxSize, nil
 }
 
 func parseLunSnapshotPath(path string) (string, string, string, error) {
@@ -1129,31 +1118,36 @@ func NewOntapAPIZAPIFromZapiClientInterface(zapiClient ZapiClientInterface) (Ont
 }
 
 // NewZAPIClient is a factory method for creating a new instance
-func NewZAPIClient(config ClientConfig, SVM, driverName string) *Client {
+func NewZAPIClient(config ClientConfig, SVM, driverName string) (*Client, error) {
+	zr, err := azgo.NewZapiRunner(
+		config.ManagementLIF,
+		SVM,
+		config.Username,
+		config.Password,
+		config.ClientPrivateKey,
+		config.ClientCertificate,
+		config.TrustedCACertificate,
+		true,
+		"",
+		config.DebugTraceFlags,
+		drivers.NewSemaphore(config.ManagementLIF, drivers.ONTAPRequestLimit),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get zapi client for ontap: %v", err)
+	}
 	d := &Client{
 		driverName: driverName,
 		config:     config,
-		zr: azgo.NewZapiRunner(
-			config.ManagementLIF,
-			SVM,
-			config.Username,
-			config.Password,
-			config.ClientPrivateKey,
-			config.ClientCertificate,
-			config.TrustedCACertificate,
-			true,
-			"",
-			config.DebugTraceFlags,
-		),
-		m: &sync.Mutex{},
+		zr:         zr,
+		m:          &sync.Mutex{},
 	}
-	return d
+	return d, nil
 }
 
 func NewZAPIClientFromOntapConfig(
 	ctx context.Context, ontapConfig *drivers.OntapStorageDriverConfig, numRecords int,
 ) (OntapAPI, error) {
-	client := NewZAPIClient(ClientConfig{
+	client, err := NewZAPIClient(ClientConfig{
 		ManagementLIF:           ontapConfig.ManagementLIF,
 		Username:                ontapConfig.Username,
 		Password:                ontapConfig.Password,
@@ -1163,6 +1157,9 @@ func NewZAPIClientFromOntapConfig(
 		TrustedCACertificate:    ontapConfig.TrustedCACertificate,
 		DebugTraceFlags:         ontapConfig.DebugTraceFlags,
 	}, ontapConfig.SVM, ontapConfig.StorageDriverName)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get zapi client for ontap: %v", err)
+	}
 
 	if ontapConfig.SVM != "" {
 
@@ -1184,7 +1181,7 @@ func NewZAPIClientFromOntapConfig(
 		mcc := svmSubtype == SVMSubtypeSyncSource || svmSubtype == SVMSubtypeSyncDestination
 
 		// Create a new client based on the SVM we discovered
-		client = NewZAPIClient(ClientConfig{
+		client, err = NewZAPIClient(ClientConfig{
 			ManagementLIF:           ontapConfig.ManagementLIF,
 			Username:                ontapConfig.Username,
 			Password:                ontapConfig.Password,
@@ -1194,6 +1191,9 @@ func NewZAPIClientFromOntapConfig(
 			TrustedCACertificate:    ontapConfig.TrustedCACertificate,
 			DebugTraceFlags:         ontapConfig.DebugTraceFlags,
 		}, ontapConfig.SVM, ontapConfig.StorageDriverName)
+		if err != nil {
+			return nil, fmt.Errorf("unable to get zapi client for ontap: %v", err)
+		}
 		client.SetSVMUUID(svmUUID)
 		client.SetSVMMCC(mcc)
 
@@ -1227,7 +1227,7 @@ func NewZAPIClientFromOntapConfig(
 		mcc := svmSubtype == SVMSubtypeSyncSource || svmSubtype == SVMSubtypeSyncDestination
 
 		// Create a new client based on the SVM we discovered
-		client = NewZAPIClient(ClientConfig{
+		client, err = NewZAPIClient(ClientConfig{
 			ManagementLIF:           ontapConfig.ManagementLIF,
 			Username:                ontapConfig.Username,
 			Password:                ontapConfig.Password,
@@ -1237,6 +1237,9 @@ func NewZAPIClientFromOntapConfig(
 			TrustedCACertificate:    ontapConfig.TrustedCACertificate,
 			DebugTraceFlags:         ontapConfig.DebugTraceFlags,
 		}, ontapConfig.SVM, ontapConfig.StorageDriverName)
+		if err != nil {
+			return nil, fmt.Errorf("unable to get zapi client for ontap: %v", err)
+		}
 		client.SetSVMUUID(svmUUID)
 		client.SetSVMMCC(mcc)
 

@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package luks
 
@@ -70,4 +70,8 @@ func IsOpen(ctx context.Context, devicePath string) (bool, error) {
 	Logc(ctx).Debug(">>>> devices_windows.IsOpen")
 	defer Logc(ctx).Debug("<<<< devices_windows.IsOpen")
 	return false, errors.UnsupportedError("IsOpen is not supported for windows")
+}
+
+func (d *LUKSDevice) isMappingStale(_ context.Context) bool {
+	return false
 }

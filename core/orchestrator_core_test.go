@@ -31,7 +31,6 @@ import (
 	"github.com/netapp/trident/storage/fake"
 	sa "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
-	drivers "github.com/netapp/trident/storage_drivers"
 	fakedriver "github.com/netapp/trident/storage_drivers/fake"
 	tu "github.com/netapp/trident/storage_drivers/fake/test_utils"
 	"github.com/netapp/trident/utils/errors"
@@ -7834,8 +7833,8 @@ func TestListLogLayers(t *testing.T) {
 	layers, err := o.ListLogLayers(ctx())
 	expected := []string{
 		"all", "azure-netapp-files", "core", "crd_frontend", "csi_frontend", "docker_frontend",
-		"fake", "gcp-cvs", "ontap-nas", "ontap-nas-economy", "ontap-nas-flexgroup",
-		"ontap-san", "ontap-san-economy", "persistent_store", "rest_frontend", "solidfire-san",
+		"fake", "ontap-nas", "ontap-nas-economy", "ontap-nas-flexgroup", "ontap-san", "ontap-san-economy",
+		"persistent_store", "rest_frontend", "solidfire-san",
 	}
 	assert.Equal(t, expected, layers)
 	assert.NoError(t, err)
@@ -8551,115 +8550,155 @@ func TestReconcileBackendState(t *testing.T) {
 	backendUUID := "1234"
 	backendName := "Fake Backend"
 	testReason := "Test Reason"
-
-	// Creating a roaring map
-	changeMap := roaring.New()
-
-	mockCtrl := gomock.NewController(t)
-	mockBackend := mockstorage.NewMockBackend(mockCtrl)
-	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
-	o := getOrchestrator(t, false)
-	o.storeClient = mockStoreClient
-
-	gomock.InOrder(
-		mockBackend.EXPECT().CanGetState().Return(false),
-		mockBackend.EXPECT().CanGetState().Return(true).AnyTimes(),
-	)
-	gomock.InOrder(
-		// For Test 3
-		mockBackend.EXPECT().GetBackendState(ctx()).Return("", nil),
-		// For Test 4
-		mockBackend.EXPECT().GetBackendState(ctx()).Return("", changeMap),
-		// For Test 5
-		mockBackend.EXPECT().GetBackendState(ctx()).Return(testReason, changeMap).Times(1),
-		// For Test 6,7,8
-		mockBackend.EXPECT().GetBackendState(ctx()).Return("", changeMap).AnyTimes(),
-	)
-
-	mockStoreClient.EXPECT().AddBackend(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-
-	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
-	mockBackend.EXPECT().GetDriverName().Return("fake").AnyTimes()
-	mockBackend.EXPECT().Name().Return(backendName).AnyTimes()
-	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
-
 	mockUpdateError := fmt.Errorf("returning error on UpdateBackend")
-	gomock.InOrder(
-		// For Test 4
-		mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(mockUpdateError),
-		// For Test 5
-		mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil).AnyTimes(),
+
+	fakeConfig, _ := fakedriver.NewFakeStorageDriverConfigJSONWithDebugTraceFlags(
+		backendName, "", nil, "fakeBackend_",
 	)
 
-	fakeConfig, err := fakedriver.NewFakeStorageDriverConfigJSONWithDebugTraceFlags(
-		backendName, "",
-		nil, "fakeBackend_",
-	)
-	if err != nil {
-		t.Fatalf("Unable to generate config JSON for %s: %v", backendName, err)
+	tests := []struct {
+		name           string
+		setupMocks     func(*mockstorage.MockBackend, *mockpersistentstore.MockStoreClient, *roaring.Bitmap)
+		bootstrapError error
+		expectError    bool
+		errorMessage   string
+	}{
+		{
+			name: "unsupported driver",
+			setupMocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient, changeMap *roaring.Bitmap) {
+				mockBackend.EXPECT().CanGetState().Return(false)
+			},
+			expectError: false,
+		},
+		{
+			name: "bootstrap error",
+			setupMocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient, changeMap *roaring.Bitmap) {
+				mockBackend.EXPECT().CanGetState().Return(true)
+			},
+			bootstrapError: fmt.Errorf("returning bootstrap error"),
+			expectError:    true,
+			errorMessage:   "should return bootstrap error",
+		},
+		{
+			name: "changeMap nil",
+			setupMocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient, changeMap *roaring.Bitmap) {
+				mockBackend.EXPECT().CanGetState().Return(true)
+				mockBackend.EXPECT().GetBackendState(ctx()).Return("", nil)
+				mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "").AnyTimes()
+			},
+			expectError: false,
+		},
+		{
+			name: "changeMap contains reasonChange, nil reason, error on storeclient.UpdateBackend",
+			setupMocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient, changeMap *roaring.Bitmap) {
+				changeMap.Add(storage.BackendStateReasonChange)
+				mockBackend.EXPECT().CanGetState().Return(true)
+				mockBackend.EXPECT().GetBackendState(ctx()).Return("", changeMap)
+				mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "").AnyTimes()
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(mockUpdateError)
+			},
+			expectError:  true,
+			errorMessage: "should be error",
+		},
+		{
+			name: "changeMap contains reasonChange, non-nil reason",
+			setupMocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient, changeMap *roaring.Bitmap) {
+				changeMap.Add(storage.BackendStateReasonChange)
+				mockBackend.EXPECT().CanGetState().Return(true)
+				mockBackend.EXPECT().GetBackendState(ctx()).Return(testReason, changeMap)
+				mockBackend.EXPECT().UpdateBackendState(gomock.Any(), testReason).AnyTimes()
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil)
+			},
+			expectError: false,
+		},
+		{
+			name: "changeMap contains BackendStateReasonChange and BackendStatePoolsChange",
+			setupMocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient, changeMap *roaring.Bitmap) {
+				changeMap.Add(storage.BackendStateReasonChange)
+				changeMap.Add(storage.BackendStatePoolsChange)
+				mockBackend.EXPECT().CanGetState().Return(true)
+				mockBackend.EXPECT().GetBackendState(ctx()).Return("", changeMap)
+				mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "").AnyTimes()
+				mockBackend.EXPECT().ConfigRef().Return("")
+				mockBackend.EXPECT().MarshalDriverConfig().Return([]byte(fakeConfig), nil)
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil).Times(2)
+			},
+			expectError: false,
+		},
+		{
+			name: "changeMap contains BackendStateReasonChange, BackendStatePoolsChange and BackendStateAPIVersionChange",
+			setupMocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient, changeMap *roaring.Bitmap) {
+				changeMap.Add(storage.BackendStateReasonChange)
+				changeMap.Add(storage.BackendStatePoolsChange)
+				changeMap.Add(storage.BackendStateAPIVersionChange)
+				mockBackend.EXPECT().CanGetState().Return(true)
+				mockBackend.EXPECT().GetBackendState(ctx()).Return("", changeMap)
+				mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "").AnyTimes()
+				mockBackend.EXPECT().ConfigRef().Return("")
+				mockBackend.EXPECT().MarshalDriverConfig().Return([]byte(fakeConfig), nil)
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil).Times(2)
+			},
+			expectError: false,
+		},
+		{
+			name: "configRef that is passed doesn't match the one that is stored in the backend",
+			setupMocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient, changeMap *roaring.Bitmap) {
+				changeMap.Add(storage.BackendStateReasonChange)
+				changeMap.Add(storage.BackendStatePoolsChange)
+				mockBackend.EXPECT().CanGetState().Return(true)
+				mockBackend.EXPECT().GetBackendState(ctx()).Return("", changeMap)
+				mockBackend.EXPECT().UpdateBackendState(gomock.Any(), "").AnyTimes()
+				mockBackend.EXPECT().ConfigRef().Return("123456789")
+				mockBackend.EXPECT().MarshalDriverConfig().Return([]byte(fakeConfig), nil)
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			expectError:  true,
+			errorMessage: "should be error",
+		},
 	}
 
-	// Adding that fakeBackend.
-	_, err = o.AddBackend(ctx(), fakeConfig, "")
-	if err != nil {
-		t.Errorf("Unable to add backend %s: %v", backendName, err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Setup
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			changeMap := roaring.New()
+
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			o.bootstrapError = tt.bootstrapError
+
+			// Set up common expectations
+			mockStoreClient.EXPECT().AddBackend(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+			mockBackend.EXPECT().GetDriverName().Return("fake").AnyTimes()
+			mockBackend.EXPECT().Name().Return(backendName).AnyTimes()
+			mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+
+			// Set up test-specific expectations
+			tt.setupMocks(mockBackend, mockStoreClient, changeMap)
+
+			// Add fake backend if no bootstrap error
+			if tt.bootstrapError == nil {
+				if _, err := o.AddBackend(ctx(), fakeConfig, ""); err != nil {
+					t.Errorf("Unable to add backend %s: %v", backendName, err)
+				}
+			}
+
+			// Execute
+			err := o.reconcileBackendState(ctx(), mockBackend)
+
+			// Assert
+			if tt.expectError {
+				assert.Error(t, err, tt.errorMessage)
+			} else {
+				assert.NoError(t, err, "should be no error")
+			}
+		})
 	}
-
-	// Fetching the added backend.
-	fakeBackend, err := o.getBackendByBackendName(backendName)
-	if err != nil {
-		t.Errorf("Unable to get backend %s: by its name, %v", backendName, err)
-	}
-
-	// Test 1 - unsupported driver
-	err = o.reconcileBackendState(ctx(), mockBackend)
-	assert.NoError(t, err, "should skip un-supportive drivers")
-
-	// Test 2 - bootstrap error
-	o.bootstrapError = fmt.Errorf("returning bootstrap error")
-	err = o.reconcileBackendState(ctx(), mockBackend)
-	assert.Error(t, err, "should return bootstrap error")
-
-	o.bootstrapError = nil
-	// Test 3 - changeMap nil
-	err = o.reconcileBackendState(ctx(), mockBackend)
-	assert.NoError(t, err, "should be no error")
-
-	// Test 4 - changeMap contains reasonChange, nil reason, error on storeclient.UpdateBackend
-	changeMap.Add(storage.BackendStateReasonChange)
-	err = o.reconcileBackendState(ctx(), mockBackend)
-	assert.Error(t, err, "should be error")
-
-	// Test 5 - changeMap contains reasonChange, non-nil reason
-	err = o.reconcileBackendState(ctx(), mockBackend)
-	assert.NoError(t, err, "should be no error")
-
-	commonConfig := fakeBackend.Driver().GetCommonConfig(ctx())
-	commonConfig.BackendName = backendName
-
-	fakeDriverConfig := &drivers.FakeStorageDriverConfig{
-		CommonStorageDriverConfig: commonConfig,
-	}
-	out, _ := fakeDriverConfig.Marshal()
-
-	mockBackend.EXPECT().MarshalDriverConfig().Return(out, nil).AnyTimes()
-
-	// Test 6 - changeMap contains BackendStateReasonChange and BackendStatePoolsChange
-	mockBackend.EXPECT().ConfigRef().Return("").Times(1)
-	changeMap.Add(storage.BackendStatePoolsChange)
-	err = o.reconcileBackendState(ctx(), mockBackend)
-	assert.NoError(t, err, "should be no error")
-
-	// Test 7 - changeMap contains BackendStateReasonChange, BackendStatePoolsChange and BackendStateAPIVersionChange
-	mockBackend.EXPECT().ConfigRef().Return("").Times(1)
-	changeMap.Add(storage.BackendStateAPIVersionChange)
-	err = o.reconcileBackendState(ctx(), mockBackend)
-	assert.NoError(t, err, "should be no error")
-
-	// Test 8: configRef that is passed doesn't match the one that is stored in the backend.
-	mockBackend.EXPECT().ConfigRef().Return("123456789").Times(1)
-	err = o.reconcileBackendState(ctx(), mockBackend)
-	assert.Error(t, err, "should be no error")
 }
 
 // TestPeriodicallyReconcileBackendState is majorly for code coverage, as all other called functions have respective

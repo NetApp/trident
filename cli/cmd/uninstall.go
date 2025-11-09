@@ -284,6 +284,22 @@ func uninstallTrident() error {
 		}
 	}
 
+	yaml := k8sclient.GetNodeRemediationClusterRoleYAML()
+	err = client.DeleteObjectByYAML(yaml, true)
+	if err != nil {
+		anyErrors = true
+		Log().Warning("Could not delete trident-node-remediation-access cluster role.")
+	}
+	Log().Info("Deleted trident-node-remediation-access cluster role.")
+
+	yaml = k8sclient.GetNodeRemediationTemplateYAML(TridentPodNamespace)
+	err = client.DeleteObjectByYAML(yaml, true)
+	if err != nil {
+		anyErrors = true
+		Log().Warning("Could not delete TridentNodeRemediationTemplate")
+	}
+	Log().Info("Deleted TridentNodeRemediationTemplate.")
+
 	anyErrors = removeRBACObjects(log.InfoLevel) || anyErrors
 
 	CSIDriverYAML := k8sclient.GetCSIDriverYAML(getCSIDriverName(), fsGroupPolicy, nil, nil)

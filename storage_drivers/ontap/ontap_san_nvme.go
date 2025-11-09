@@ -58,6 +58,8 @@ const (
 	defaultNamespaceBlockSize = 4096
 	// maximumSubsystemNameLength represent the max length of subsystem name
 	maximumSubsystemNameLength = 64
+	// nvmeSubsystemPrefix Subsystem prefix for ONTAP NVMe driver (empty for legacy compatibility)
+	nvmeSubsystemPrefix = ""
 )
 
 // Namespace attributes stored in its comment field. These fields are useful for docker context.
@@ -217,6 +219,7 @@ func (d *NVMeStorageDriver) Terminate(ctx context.Context, _ string) {
 		d.telemetry.Stop()
 	}
 
+	d.API.Terminate()
 	d.initialized = false
 }
 
@@ -650,6 +653,7 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 		"originalName": originalName,
 		"newName":      volConfig.InternalName,
 		"notManaged":   volConfig.ImportNotManaged,
+		"noRename":     volConfig.ImportNoRename,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
@@ -689,6 +693,10 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 		return fmt.Errorf("nvme namespace not found in volume %s", originalName)
 	}
 
+	// Lock the namespace until import is done.
+	namespaceMutex.Lock(nsInfo.UUID)
+	defer namespaceMutex.Unlock(nsInfo.UUID)
+
 	// The Namespace should be online
 	if nsInfo.State != "online" {
 		return fmt.Errorf("Namespace %s is not online", nsInfo.Name)
@@ -715,14 +723,18 @@ func (d *NVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Volum
 		volConfig.Size = newSize
 	}
 
-	// Rename the volume if Trident will manage its lifecycle
-	if !volConfig.ImportNotManaged {
+	// Rename the volume if Trident will manage its lifecycle and the names are different
+	if !volConfig.ImportNotManaged && !volConfig.ImportNoRename {
 		err = d.API.VolumeRename(ctx, originalName, volConfig.InternalName)
 		if err != nil {
 			Logc(ctx).WithField("originalName", originalName).Errorf(
 				"Could not import volume, rename volume failed: %v", err)
 			return fmt.Errorf("volume %s rename failed: %v", originalName, err)
 		}
+	}
+
+	// Update volume labels if Trident will manage its lifecycle
+	if !volConfig.ImportNotManaged {
 		if storage.AllowPoolLabelOverwrite(storage.ProvisioningLabelTag, flexvol.Comment) {
 			// Set the base label
 			storagePoolTemp := ConstructPoolForLabels(d.Config.NameTemplate, d.Config.Labels)
@@ -883,6 +895,7 @@ func (d *NVMeStorageDriver) Publish(
 
 	nsPath := volConfig.InternalID
 	nsUUID := volConfig.AccessInfo.NVMeNamespaceUUID
+
 	// For docker context, some of the attributes like fsType, luks needs to be
 	// fetched from namespace where they were stored while creating the namespace.
 	if d.Config.DriverContext == tridentconfig.ContextDocker {
@@ -912,22 +925,43 @@ func (d *NVMeStorageDriver) Publish(
 	// When FS type is RAW, we create a new subsystem per namespace,
 	// else we use the subsystem created for that particular node
 	var ssName string
+	var completeSSName string
 	if volConfig.FileSystem == filesystem.Raw {
 		ssName = getNamespaceSpecificSubsystemName(name, pvName)
 	} else {
-		ssName = getNodeSpecificSubsystemName(publishInfo.HostName, publishInfo.TridentUUID)
+		// For Docker plugin mode, use storage prefix for stable subsystem naming
+		// This allows user control over subsystem sharing via storage prefix configuration
+		if tridentconfig.CurrentDriverContext == tridentconfig.ContextDocker {
+			ssName = d.getStoragePrefixSubsystemName()
+		} else {
+			if completeSSName, ssName, err = getUniqueNodeSpecificSubsystemName(
+				publishInfo.HostName, publishInfo.TridentUUID, nvmeSubsystemPrefix, maximumSubsystemNameLength); err != nil {
+				return fmt.Errorf("failed to create node specific subsystem name: %w", err)
+			}
+		}
 	}
 
-	// Checks if subsystem exists and creates a new one if not
-	subsystem, err := d.API.NVMeSubsystemCreate(ctx, ssName, ssName)
+	// Update the subsystem comment
+	var ssComment string
+	if completeSSName == "" {
+		ssComment = ssName
+	} else {
+		ssComment = completeSSName
+	}
+
+	// If 2 concurrent requests try to create the same subsystem, one will succeed and ONTAP is guaranteed to return
+	// "already exists" error code for the other. So no need for locking around subsystem creation.
+	subsystem, err := d.createOrGetSubsystem(ctx, ssName, ssComment)
 	if err != nil {
-		Logc(ctx).Errorf("subsystem create failed, %v", err)
 		return err
 	}
 
 	if subsystem == nil {
 		return fmt.Errorf("No subsystem returned after subsystem create")
 	}
+
+	unlock := lockNamespaceAndSubsystem(nsUUID, subsystem.UUID)
+	defer unlock()
 
 	// Fill important info in publishInfo
 	publishInfo.NVMeSubsystemNQN = subsystem.NQN
@@ -977,6 +1011,9 @@ func (d *NVMeStorageDriver) Unpublish(
 
 	subsystemUUID := volConfig.AccessInfo.NVMeSubsystemUUID
 	namespaceUUID := volConfig.AccessInfo.NVMeNamespaceUUID
+
+	unlock := lockNamespaceAndSubsystem(namespaceUUID, subsystemUUID)
+	defer unlock()
 
 	removePublishInfo, err := d.API.NVMeEnsureNamespaceUnmapped(ctx, publishInfo.HostNQN, subsystemUUID, namespaceUUID)
 	if removePublishInfo {
@@ -1152,6 +1189,18 @@ func (d *NVMeStorageDriver) getStoragePoolAttributes(ctx context.Context) map[st
 		sa.Replication:      sa.NewBoolOffer(mirroring),
 		sa.ProvisioningType: sa.NewStringOffer("thick", "thin"),
 	}
+}
+
+func (d *NVMeStorageDriver) createOrGetSubsystem(
+	ctx context.Context, ssName, comment string,
+) (*api.NVMeSubsystem, error) {
+	// This checks if subsystem exists and creates it if not.
+	ss, err := d.API.NVMeSubsystemCreate(ctx, ssName, comment)
+	if err != nil {
+		Logc(ctx).Errorf("subsystem create failed, %v", err)
+		return nil, err
+	}
+	return ss, nil
 }
 
 // GetVolumeOpts populates the volume properties required in volume create.
@@ -1710,13 +1759,20 @@ func (d *NVMeStorageDriver) ParseNVMeNamespaceCommentString(_ context.Context, c
 	return nil, fmt.Errorf("nsAttrs field not found in Namespace comment")
 }
 
-func getNodeSpecificSubsystemName(nodeName, tridentUUID string) string {
-	subsystemName := fmt.Sprintf("%s-%s", nodeName, tridentUUID)
+// getStoragePrefixSubsystemName generates a stable subsystem name using storage prefix for Docker mode
+func (d *NVMeStorageDriver) getStoragePrefixSubsystemName() string {
+	// Default for Docker is "netappdvp_", users can customize for isolation/sharing
+	storagePrefix := *d.Config.StoragePrefix
+
+	// Create subsystem name using storage prefix (similar to igroup naming)
+	subsystemName := fmt.Sprintf("%s_subsystem", storagePrefix)
+
+	// Ensure it fits within the length limit
 	if len(subsystemName) > maximumSubsystemNameLength {
-		// If the new subsystem name is over the subsystem character limit, it means the host name is too long.
-		subsystemPrefixLength := maximumSubsystemNameLength - len(tridentUUID) - 1
-		subsystemName = fmt.Sprintf("%s-%s", nodeName[:subsystemPrefixLength], tridentUUID)
+		maxPrefixLength := maximumSubsystemNameLength - len("_subsystem") - 1
+		subsystemName = fmt.Sprintf("%s_subsystem", storagePrefix[:maxPrefixLength])
 	}
+
 	return subsystemName
 }
 
@@ -1781,4 +1837,8 @@ func (d *NVMeStorageDriver) EnablePublishEnforcement(_ context.Context, volume *
 // CanEnablePublishEnforcement dictates if any NVMe volume will get published on a node, depending on the node state.
 func (d *NVMeStorageDriver) CanEnablePublishEnforcement() bool {
 	return true
+}
+
+func (d *NVMeStorageDriver) HealVolumePublishEnforcement(ctx context.Context, volume *storage.Volume) bool {
+	return HealSANPublishEnforcement(ctx, d, volume)
 }

@@ -1,4 +1,6 @@
-package gcnvapi
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
+
+package api
 
 import (
 	"context"

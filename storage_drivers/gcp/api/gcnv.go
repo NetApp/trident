@@ -1,7 +1,7 @@
 // Copyright 2025 NetApp, Inc. All Rights Reserved.
 
-// Package gcnvapi provides a high-level interface to the Google Cloud NetApp Volumes SDK
-package gcnvapi
+// Package api provides a high-level interface to the Google Cloud NetApp Volumes SDK
+package api
 
 import (
 	"context"
@@ -604,7 +604,8 @@ func (c Client) WaitForVolumeState(
 				volumeState = VolumeStateDeleted
 				return nil
 			}
-			if errors.Is(err, context.Canceled) {
+			if IsGCNVTimeoutError(err) {
+				Logc(ctx).WithError(err).Debugf("Timed out while waiting for volume %s state.", volume.Name)
 				return backoff.Permanent(err)
 			}
 			volumeState = ""
@@ -851,7 +852,7 @@ func (c Client) DeleteVolume(ctx context.Context, volume *Volume) error {
 		Name:  c.createVolumeID(volume.Location, name),
 		Force: true,
 	}
-	_, err := c.sdkClient.gcnv.DeleteVolume(sdkCtx, req)
+	poller, err := c.sdkClient.gcnv.DeleteVolume(sdkCtx, req)
 	if err != nil {
 		if IsGCNVNotFoundError(err) {
 			Logc(ctx).WithFields(logFields).Info("Volume already deleted.")
@@ -862,7 +863,11 @@ func (c Client) DeleteVolume(ctx context.Context, volume *Volume) error {
 		return err
 	}
 
-	Logc(ctx).WithFields(logFields).Debug("Volume deleted.")
+	Logc(ctx).WithFields(logFields).Debug("Volume delete request issued.")
+
+	if pollErr := poller.Poll(sdkCtx); pollErr != nil {
+		return pollErr
+	}
 
 	return nil
 }
@@ -988,75 +993,10 @@ func (c Client) SnapshotForVolume(
 	return c.newSnapshotFromGCNVSnapshot(ctx, gcnvSnapshot)
 }
 
-// WaitForSnapshotState waits for a desired snapshot state and returns once that state is achieved.
-func (c Client) WaitForSnapshotState(
-	ctx context.Context, snapshot *Snapshot, volume *Volume, desiredState string, abortStates []string,
-	maxElapsedTime time.Duration,
-) error {
-	checkSnapshotState := func() error {
-		s, err := c.SnapshotForVolume(ctx, volume, snapshot.Name)
-		if err != nil {
-
-			// There is no 'Deleted' state in GCNV -- the snapshot just vanishes.  If we failed to query
-			// the snapshot info, and we're trying to transition to StateDeleted, and we get back a 404,
-			// then return success.  Otherwise, log the error as usual.
-			if desiredState == SnapshotStateDeleted && errors.IsNotFoundError(err) {
-				Logc(ctx).Debugf("Implied deletion for snapshot %s.", snapshot.Name)
-				return nil
-			}
-			if errors.Is(err, context.Canceled) {
-				return backoff.Permanent(err)
-			}
-			return fmt.Errorf("could not get snapshot status; %v", err)
-		}
-
-		if s.State == desiredState {
-			return nil
-		}
-
-		err = fmt.Errorf("snapshot state is %s, not %s", s.State, desiredState)
-
-		// Return a permanent error to stop retrying if we reached one of the abort states
-		if collection.ContainsString(abortStates, s.State) {
-			return backoff.Permanent(TerminalState(err))
-		}
-
-		return err
-	}
-
-	stateNotify := func(err error, duration time.Duration) {
-		Logc(ctx).WithFields(LogFields{
-			"increment": duration.Truncate(10 * time.Millisecond),
-			"message":   err.Error(),
-		}).Debugf("Waiting for snapshot state.")
-	}
-
-	stateBackoff := backoff.NewExponentialBackOff()
-	stateBackoff.MaxElapsedTime = maxElapsedTime
-	stateBackoff.MaxInterval = 5 * time.Second
-	stateBackoff.RandomizationFactor = 0.1
-	stateBackoff.InitialInterval = 3 * time.Second
-	stateBackoff.Multiplier = 1.414
-
-	Logc(ctx).WithField("desiredState", desiredState).Info("Waiting for snapshot state.")
-
-	if err := backoff.RetryNotify(checkSnapshotState, stateBackoff, stateNotify); err != nil {
-		if IsTerminalStateError(err) {
-			Logc(ctx).WithError(err).Error("Snapshot reached terminal state.")
-		} else {
-			Logc(ctx).Warningf("Snapshot state was not %s after %3.2f seconds.",
-				desiredState, stateBackoff.MaxElapsedTime.Seconds())
-		}
-		return err
-	}
-
-	Logc(ctx).WithField("desiredState", desiredState).Debugf("Desired snapshot state reached.")
-
-	return nil
-}
-
 // CreateSnapshot creates a new snapshot.
-func (c Client) CreateSnapshot(ctx context.Context, volume *Volume, snapshotName string) (*Snapshot, error) {
+func (c Client) CreateSnapshot(
+	ctx context.Context, volume *Volume, snapshotName string, waitDuration time.Duration,
+) (*Snapshot, error) {
 	newSnapshot := &netapppb.Snapshot{}
 
 	logFields := LogFields{
@@ -1082,12 +1022,13 @@ func (c Client) CreateSnapshot(ctx context.Context, volume *Volume, snapshotName
 
 	Logc(ctx).WithFields(logFields).Info("Snapshot create request issued.")
 
-	if _, pollErr := poller.Poll(sdkCtx); pollErr != nil {
+	waitCtx, waitCancel := context.WithTimeout(ctx, waitDuration)
+	defer waitCancel()
+	if snapshot, pollErr := poller.Wait(waitCtx); pollErr != nil {
+		Logc(ctx).WithFields(logFields).WithError(pollErr).Error("Error polling for create snapshot result.")
 		return nil, pollErr
 	} else {
-		// The snapshot doesn't exist yet, so forge the name ID to enable conversion to a Snapshot struct
-		newSnapshot.Name = c.createSnapshotID(volume.Location, volume.Name, snapshotName)
-		return c.newSnapshotFromGCNVSnapshot(ctx, newSnapshot)
+		return c.newSnapshotFromGCNVSnapshot(ctx, snapshot)
 	}
 }
 
@@ -1129,7 +1070,9 @@ func (c Client) RestoreSnapshot(ctx context.Context, volume *Volume, snapshot *S
 }
 
 // DeleteSnapshot deletes a snapshot.
-func (c Client) DeleteSnapshot(ctx context.Context, volume *Volume, snapshot *Snapshot) error {
+func (c Client) DeleteSnapshot(
+	ctx context.Context, volume *Volume, snapshot *Snapshot, waitDuration time.Duration,
+) error {
 	logFields := LogFields{
 		"API":      "GCNV.DeleteSnapshot",
 		"volume":   volume.Name,
@@ -1141,7 +1084,7 @@ func (c Client) DeleteSnapshot(ctx context.Context, volume *Volume, snapshot *Sn
 	req := &netapppb.DeleteSnapshotRequest{
 		Name: c.createSnapshotID(volume.Location, volume.Name, snapshot.Name),
 	}
-	_, err := c.sdkClient.gcnv.DeleteSnapshot(sdkCtx, req)
+	poller, err := c.sdkClient.gcnv.DeleteSnapshot(sdkCtx, req)
 	if err != nil {
 		if IsGCNVNotFoundError(err) {
 			Logc(ctx).WithFields(logFields).Info("Snapshot already deleted.")
@@ -1152,7 +1095,14 @@ func (c Client) DeleteSnapshot(ctx context.Context, volume *Volume, snapshot *Sn
 		return err
 	}
 
-	Logc(ctx).WithFields(logFields).Debug("Snapshot deleted.")
+	Logc(ctx).WithFields(logFields).Debug("Snapshot delete request issued.")
+
+	waitCtx, waitCancel := context.WithTimeout(ctx, waitDuration)
+	defer waitCancel()
+	if pollErr := poller.Wait(waitCtx); pollErr != nil {
+		Logc(ctx).WithFields(logFields).WithError(pollErr).Error("Error polling for delete snapshot result.")
+		return pollErr
+	}
 
 	return nil
 }
@@ -1372,6 +1322,41 @@ func IsGCNVTooManyRequestsError(err error) bool {
 	}
 
 	return false
+}
+
+// IsGCNVDeadlineExceededError checks whether an error returned from the GCNV indicates the deadline was exceeded.
+func IsGCNVDeadlineExceededError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	if s, ok := status.FromError(err); ok && s.Code() == codes.DeadlineExceeded {
+		return true
+	}
+
+	return false
+}
+
+// IsGCNVCanceledError checks whether an error returned from the GCNV indicates the request was canceled.
+func IsGCNVCanceledError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	if s, ok := status.FromError(err); ok && s.Code() == codes.Canceled {
+		return true
+	}
+
+	return false
+}
+
+// IsGCNVTimeoutError checks whether an error returned from the GCNV indicates a timeout, deadline exceeded, or
+// context cancellation.  If this function returns true, the caller should not retry the operation.
+func IsGCNVTimeoutError(err error) bool {
+	return errors.Is(err, context.Canceled) ||
+		errors.Is(err, context.DeadlineExceeded) ||
+		IsGCNVDeadlineExceededError(err) ||
+		IsGCNVCanceledError(err)
 }
 
 // DerefString accepts a string pointer and returns the value of the string, or "" if the pointer is nil.

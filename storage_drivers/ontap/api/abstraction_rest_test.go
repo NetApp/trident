@@ -5,6 +5,7 @@ package api_test
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -794,6 +795,41 @@ func TestNVMeSubsystemCreate(t *testing.T) {
 	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
 	newsubsys, err = oapi.NVMeSubsystemCreate(ctx, subsystemName, subsystemComment)
 	assert.Error(t, err)
+
+	// case 6: Subsystem not present, create a new one but returned already exists error with code NVME_SUBSYSTEM_ALREADY_EXISTS
+	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(nil, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(subsys, nil).Times(1)
+	mockErr := &nvme.NvmeSubsystemCreateDefault{
+		Payload: &models.ErrorResponse{
+			Error: &models.ReturnedError{
+				Code:    convert.ToPtr(api.NVME_SUBSYSTEM_ALREADY_EXISTS),
+				Message: convert.ToPtr("NVMe subsystem already exists"),
+			},
+		},
+	}
+	mock.EXPECT().NVMeSubsystemCreate(ctx, subsystemName, subsystemComment).Return(nil, mockErr)
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	newsubsys, err = oapi.NVMeSubsystemCreate(ctx, subsystemName, subsystemComment)
+	assert.NoError(t, err)
+	assert.Equal(t, newsubsys.UUID, subsysUUID, "subsystem UUID does not match")
+	assert.Equal(t, newsubsys.Name, subsystemName, "subsystem name does not match")
+
+	// case 7: Subsystem not present, create a new one but returned already exists error with code NVME_SUBSYSTEM_ALREADY_EXISTS
+	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(nil, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemGetByName(ctx, subsystemName, gomock.Any()).Return(nil, nil).Times(1)
+	mockErr = &nvme.NvmeSubsystemCreateDefault{
+		Payload: &models.ErrorResponse{
+			Error: &models.ReturnedError{
+				Code:    convert.ToPtr(api.NVME_SUBSYSTEM_ALREADY_EXISTS),
+				Message: convert.ToPtr("NVMe subsystem already exists"),
+			},
+		},
+	}
+	mock.EXPECT().NVMeSubsystemCreate(ctx, subsystemName, subsystemComment).Return(nil, mockErr)
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	newsubsys, err = oapi.NVMeSubsystemCreate(ctx, subsystemName, subsystemComment)
+	assert.Error(t, err)
+	assert.Nil(t, newsubsys, "subsystem expected to be nil when error is returned")
 }
 
 func TestNVMeEnsureNamespaceMapped(t *testing.T) {
@@ -928,6 +964,7 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
 	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1, host2}, nil).Times(1)
 	mock.EXPECT().NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID).Return(nil).Times(1)
+	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(1), nil).Times(1)
 
 	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
 
@@ -999,10 +1036,83 @@ func TestNVMeNamespaceUnmapped(t *testing.T) {
 	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
 	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1, host2},
 		nil).Times(1)
+	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(1), nil).Times(1)
 
 	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, nonExistentHostNQN, subsystemUUID, nsUUID)
 
 	assert.Equal(t, false, removePublishInfo, "nqn is unmapped")
+	assert.NoError(t, err)
+
+	// case 13: Multiple hosts with error getting namespace count
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1, host2}, nil).Times(1)
+	mock.EXPECT().NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID).Return(nil).Times(1)
+	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(0), errors.New("Error getting namespace count")).Times(1)
+
+	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
+
+	assert.Equal(t, false, removePublishInfo, "subsystem removed")
+	assert.Error(t, err)
+
+	// case 14: Multiple hosts with namespace count > 1, error removing namespace
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1, host2}, nil).Times(1)
+	mock.EXPECT().NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID).Return(nil).Times(1)
+	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(2), nil).Times(1)
+	mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, nsUUID).Return(errors.New("Error removing namespace")).Times(1)
+
+	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
+
+	assert.Equal(t, false, removePublishInfo, "subsystem removed")
+	assert.Error(t, err)
+
+	// case 15: Multiple hosts with namespace count > 1, success removing namespace
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1, host2}, nil).Times(1)
+	mock.EXPECT().NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID).Return(nil).Times(1)
+	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(3), nil).Times(1)
+	mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, nsUUID).Return(nil).Times(1)
+
+	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
+
+	assert.Equal(t, false, removePublishInfo, "subsystem is not removed due to multiple namespaces")
+	assert.NoError(t, err)
+
+	// case 16: Multiple hosts with namespace count = 1 (RWX case), no removal of namespace or subsystem
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1, host2}, nil).Times(1)
+	mock.EXPECT().NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID).Return(nil).Times(1)
+	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(1), nil).Times(1)
+
+	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
+
+	assert.Equal(t, false, removePublishInfo, "subsystem is not removed in RWX case")
+	assert.NoError(t, err)
+
+	// case 17: Single host but different from requested host (nonExistentHostNQN), subsystem and namespace not removed
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1}, nil).Times(1)
+
+	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, nonExistentHostNQN, subsystemUUID, nsUUID)
+
+	assert.Equal(t, false, removePublishInfo, "subsystem is not removed when host doesn't match")
+	assert.NoError(t, err)
+
+	// case 18: Namespace count > 0 after removal, subsystem not deleted
+	mock.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+	mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, nsUUID).Return(true, nil).Times(1)
+	mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).Return([]*models.NvmeSubsystemHost{host1}, nil).Times(1)
+	mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, nsUUID).Return(nil).Times(1)
+	mock.EXPECT().NVMeNamespaceCount(ctx, subsystemUUID).Return(int64(2), nil).Times(1)
+
+	removePublishInfo, err = oapi.NVMeEnsureNamespaceUnmapped(ctx, hostNQN, subsystemUUID, nsUUID)
+
+	assert.Equal(t, true, removePublishInfo, "subsystem has remaining namespaces")
 	assert.NoError(t, err)
 }
 
@@ -1189,6 +1299,14 @@ func newMockOntapAPIREST(t *testing.T) (api.OntapAPIREST, *mockapi.MockRestClien
 	rsi := mockapi.NewMockRestClientInterface(ctrl)
 	ontapAPIREST, _ := api.NewOntapAPIRESTFromRestClientInterface(rsi)
 	return ontapAPIREST, rsi
+}
+
+func newMockOntapAPIRESTWithController(t *testing.T) (*api.OntapAPIREST, *mockapi.MockRestClientInterface, *gomock.Controller) {
+	ctrl := gomock.NewController(t)
+	rsi := mockapi.NewMockRestClientInterface(ctrl)
+	oapi, err := api.NewOntapAPIRESTFromRestClientInterface(rsi)
+	assert.NoError(t, err)
+	return &oapi, rsi, ctrl
 }
 
 func TestNVMeNamespaceSetSize(t *testing.T) {
@@ -3898,32 +4016,6 @@ func TestLunDestroy(t *testing.T) {
 	assert.Error(t, err, "no error returned while deleting a LUN")
 }
 
-func TestLunGetGeometry(t *testing.T) {
-	oapi, rsi := newMockOntapAPIREST(t)
-
-	clientConfig := api.ClientConfig{
-		DebugTraceFlags: map[string]bool{"method": true},
-	}
-
-	// common call for all subtests
-	rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
-
-	// case 1: Positive test, get the LUN options
-	rsi.EXPECT().LunOptions(ctx).Return(&api.LunOptionsResult{}, nil)
-	_, err := oapi.LunGetGeometry(ctx, "/")
-	assert.NoError(t, err, "error returned while getting a LUN option")
-
-	// case 2: Positive test, get the LUN options returned error.
-	rsi.EXPECT().LunOptions(ctx).Return(&api.LunOptionsResult{}, errors.New("failed to get lun option"))
-	_, err = oapi.LunGetGeometry(ctx, "/")
-	assert.Error(t, err, "no error returned while getting a LUN option")
-
-	// case 1: Positive test, get the LUN options returned nil response.
-	rsi.EXPECT().LunOptions(ctx).Return(nil, nil)
-	_, err = oapi.LunGetGeometry(ctx, "/")
-	assert.Error(t, err, "no error returned while getting a LUN option")
-}
-
 func TestLunSetAttribute(t *testing.T) {
 	oapi, rsi := newMockOntapAPIREST(t)
 
@@ -4794,4 +4886,883 @@ func TestStorageUnitSnapshotCreate(t *testing.T) {
 
 	err = oapi.StorageUnitSnapshotCreate(ctx, snapshotName, suName)
 	assert.Error(t, err, "expected an error while creating snapshot")
+}
+
+func TestAPIVersion(t *testing.T) {
+	oapi, rsi, ctrl := newMockOntapAPIRESTWithController(t)
+	defer ctrl.Finish()
+
+	tests := []struct {
+		name        string
+		cached      bool
+		expected    string
+		mockErr     error
+		expectError bool
+	}{
+		{"Cached version success", true, "9.12.1", nil, false},
+		{"Fresh version success", false, "9.12.1", nil, false},
+		{"API error", false, "", fmt.Errorf("API call failed"), true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.expectError {
+				rsi.EXPECT().SystemGetOntapVersion(ctx, tt.cached).Return("", tt.mockErr)
+			} else {
+				rsi.EXPECT().SystemGetOntapVersion(ctx, tt.cached).Return(tt.expected, nil)
+			}
+
+			version, err := oapi.APIVersion(ctx, tt.cached)
+
+			if tt.expectError {
+				assert.Error(t, err, "expected error when getting API version")
+				assert.Equal(t, "", version)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expected, version)
+			}
+		})
+	}
+}
+
+func TestValidateAPIVersion(t *testing.T) {
+	oapi, rsi, ctrl := newMockOntapAPIRESTWithController(t)
+	defer ctrl.Finish()
+
+	tests := []struct {
+		name        string
+		version     string
+		expectError bool
+	}{
+		{"Valid version", "9.12.1", false},
+		{"Valid version 9.13", "9.13.0", false},
+		{"Invalid version", "invalid", true},
+		{"Too old version", "9.5.0", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rsi.EXPECT().SystemGetOntapVersion(ctx, true).Return(tt.version, nil)
+			err := oapi.ValidateAPIVersion(ctx)
+
+			if tt.expectError {
+				assert.Error(t, err, "expected error when validating API version")
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestIsSANOptimized(t *testing.T) {
+	oapi, rsi, ctrl := newMockOntapAPIRESTWithController(t)
+	defer ctrl.Finish()
+
+	tests := []struct {
+		name     string
+		expected bool
+	}{
+		{"SAN optimized true", true},
+		{"SAN optimized false", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rsi.EXPECT().IsSANOptimized().Return(tt.expected)
+			result := oapi.IsSANOptimized()
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestIsDisaggregated(t *testing.T) {
+	oapi, rsi, ctrl := newMockOntapAPIRESTWithController(t)
+	defer ctrl.Finish()
+
+	tests := []struct {
+		name     string
+		expected bool
+	}{
+		{"Disaggregated true", true},
+		{"Disaggregated false", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rsi.EXPECT().IsDisaggregated().Return(tt.expected)
+			result := oapi.IsDisaggregated()
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestVolumeRecoveryQueuePurge(t *testing.T) {
+	oapi, rsi, ctrl := newMockOntapAPIRESTWithController(t)
+	defer ctrl.Finish()
+
+	tests := []struct {
+		name        string
+		mockErr     error
+		expectError bool
+	}{
+		{"Success", nil, false},
+		{"API error", fmt.Errorf("API call failed"), true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rsi.EXPECT().VolumeRecoveryQueuePurge(ctx, "test_volume").Return(tt.mockErr)
+			err := oapi.VolumeRecoveryQueuePurge(ctx, "test_volume")
+
+			if tt.expectError {
+				assert.Error(t, err, "expected error when purging volume recovery queue")
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestVolumeRecoveryQueueGetName(t *testing.T) {
+	oapi, rsi, ctrl := newMockOntapAPIRESTWithController(t)
+	defer ctrl.Finish()
+
+	tests := []struct {
+		name        string
+		expected    string
+		mockErr     error
+		expectError bool
+	}{
+		{"Success", "recovery_queue_name", nil, false},
+		{"Empty queue", "", nil, false},
+		{"API error", "", fmt.Errorf("API call failed"), true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rsi.EXPECT().VolumeRecoveryQueueGetName(ctx, "test_volume").Return(tt.expected, tt.mockErr)
+			name, err := oapi.VolumeRecoveryQueueGetName(ctx, "test_volume")
+
+			if tt.expectError {
+				assert.Error(t, err, "expected error when getting volume recovery queue name")
+				assert.Equal(t, "", name)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expected, name)
+			}
+		})
+	}
+}
+
+func TestNetFcpInterfaceGetDataLIFs(t *testing.T) {
+	oapi, rsi, ctrl := newMockOntapAPIRESTWithController(t)
+	defer ctrl.Finish()
+
+	tests := []struct {
+		name        string
+		protocol    string
+		expected    []string
+		mockErr     error
+		expectError bool
+	}{
+		{"FCP protocol success", "fcp", []string{"fcp_lif1", "fcp_lif2"}, nil, false},
+		{"Empty result", "fcp", []string{}, nil, false},
+		{"API error", "fcp", nil, fmt.Errorf("API call failed"), true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rsi.EXPECT().NetFcpInterfaceGetDataLIFs(ctx, tt.protocol).Return(tt.expected, tt.mockErr)
+
+			lifs, err := oapi.NetFcpInterfaceGetDataLIFs(ctx, tt.protocol)
+
+			if tt.expectError {
+				assert.Error(t, err, "expected error when getting FCP data LIFs")
+				assert.Nil(t, lifs)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expected, lifs)
+			}
+		})
+	}
+}
+
+func TestRestError_Methods(t *testing.T) {
+	tests := []struct {
+		name     string
+		payload  *models.Job
+		hasError bool
+	}{
+		{
+			name: "Valid error payload",
+			payload: &models.Job{
+				Code:        convert.ToPtr(int64(12345)),
+				Description: convert.ToPtr("Test error message"),
+				State:       convert.ToPtr("failure"),
+			},
+			hasError: true,
+		},
+		{
+			name:     "Nil payload",
+			payload:  nil,
+			hasError: false,
+		},
+		{
+			name: "Success payload",
+			payload: &models.Job{
+				State: convert.ToPtr("success"),
+			},
+			hasError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			restErr := api.NewRestErrorFromPayload(tt.payload)
+
+			// Test IsSuccess and IsFailure
+			success := restErr.IsSuccess()
+			failure := restErr.IsFailure()
+
+			if tt.hasError {
+				assert.False(t, success)
+				assert.True(t, failure)
+			} else if tt.payload != nil {
+				assert.True(t, success)
+				assert.False(t, failure)
+			} else {
+				assert.False(t, success)
+				assert.False(t, failure)
+			}
+
+			// Test other methods for coverage
+			errorMsg := restErr.Error()
+			assert.IsType(t, "", errorMsg, "Error() should return a string")
+
+			isSnapshotBusy := restErr.IsSnapshotBusy()
+			assert.IsType(t, false, isSnapshotBusy, "IsSnapshotBusy() should return a boolean")
+
+			state := restErr.State()
+			assert.IsType(t, "", state, "State() should return a string")
+
+			message := restErr.Message()
+			assert.IsType(t, "", message, "Message() should return a string")
+
+			code := restErr.Code()
+			assert.IsType(t, "", code, "Code() should return a string")
+		})
+	}
+}
+
+func TestVolumeSnapshotInfo(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	rsi := mockapi.NewMockRestClientInterface(ctrl)
+	oapi, err := api.NewOntapAPIRESTFromRestClientInterface(rsi)
+	assert.NoError(t, err)
+
+	tests := []struct {
+		name           string
+		snapshotName   string
+		sourceVolume   string
+		mockVolumeInfo *models.Volume
+		mockVolumeErr  error
+		mockSnapshots  []*models.Snapshot
+		mockSnapErr    error
+		expectError    bool
+		expectedName   string
+	}{
+		{
+			name:         "Successful snapshot info retrieval",
+			snapshotName: "snap1",
+			sourceVolume: "vol1",
+			mockVolumeInfo: &models.Volume{
+				Name: convert.ToPtr("vol1"),
+				UUID: convert.ToPtr("volume-uuid-123"),
+			},
+			mockVolumeErr: nil,
+			mockSnapshots: []*models.Snapshot{
+				{
+					Name:       convert.ToPtr("snap1"),
+					CreateTime: &strfmt.DateTime{},
+					UUID:       convert.ToPtr("snap-uuid-123"),
+				},
+			},
+			mockSnapErr:  nil,
+			expectError:  false,
+			expectedName: "snap1",
+		},
+		{
+			name:           "Volume info lookup error",
+			snapshotName:   "snap1",
+			sourceVolume:   "vol1",
+			mockVolumeInfo: nil,
+			mockVolumeErr:  fmt.Errorf("volume not found"),
+			expectError:    true,
+		},
+		{
+			name:           "Volume info returns nil",
+			snapshotName:   "snap1",
+			sourceVolume:   "vol1",
+			mockVolumeInfo: nil,
+			mockVolumeErr:  nil,
+			expectError:    true,
+		},
+		{
+			name:         "Snapshot not found",
+			snapshotName: "snap1",
+			sourceVolume: "vol1",
+			mockVolumeInfo: &models.Volume{
+				Name: convert.ToPtr("vol1"),
+				UUID: convert.ToPtr("volume-uuid-123"),
+			},
+			mockVolumeErr: nil,
+			mockSnapshots: []*models.Snapshot{},
+			mockSnapErr:   nil,
+			expectError:   true,
+		},
+		{
+			name:         "Multiple snapshots found error",
+			snapshotName: "snap1",
+			sourceVolume: "vol1",
+			mockVolumeInfo: &models.Volume{
+				Name: convert.ToPtr("vol1"),
+				UUID: convert.ToPtr("volume-uuid-123"),
+			},
+			mockVolumeErr: nil,
+			mockSnapshots: []*models.Snapshot{
+				{
+					Name:       convert.ToPtr("snap1"),
+					CreateTime: &strfmt.DateTime{},
+					UUID:       convert.ToPtr("snap-uuid-123"),
+				},
+				{
+					Name:       convert.ToPtr("snap1"),
+					CreateTime: &strfmt.DateTime{},
+					UUID:       convert.ToPtr("snap-uuid-456"),
+				},
+			},
+			mockSnapErr: nil,
+			expectError: true,
+		},
+		{
+			name:         "Snapshot with nil fields",
+			snapshotName: "snap1",
+			sourceVolume: "vol1",
+			mockVolumeInfo: &models.Volume{
+				Name: convert.ToPtr("vol1"),
+				UUID: convert.ToPtr("volume-uuid-123"),
+			},
+			mockVolumeErr: nil,
+			mockSnapshots: []*models.Snapshot{
+				{
+					Name:       nil, // Nil name should cause error
+					CreateTime: &strfmt.DateTime{},
+					UUID:       convert.ToPtr("snap-uuid-123"),
+				},
+			},
+			mockSnapErr: nil,
+			expectError: true,
+		},
+		{
+			name:         "Snapshot API error",
+			snapshotName: "snap1",
+			sourceVolume: "vol1",
+			mockVolumeInfo: &models.Volume{
+				Name: convert.ToPtr("vol1"),
+				UUID: convert.ToPtr("volume-uuid-123"),
+			},
+			mockVolumeErr: nil,
+			mockSnapErr:   fmt.Errorf("API call failed"),
+			expectError:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Mock VolumeGetByName call - this is what VolumeInfo calls internally
+			// VolumeInfo calls with specific fields
+			expectedFields := []string{
+				"type", "size", "comment", "aggregates", "nas", "guarantee",
+				"snapshot_policy", "snapshot_directory_access_enabled",
+				"space.snapshot.used", "space.snapshot.reserve_percent",
+				"nas.export_policy.name",
+			}
+			rsi.EXPECT().VolumeGetByName(ctx, tt.sourceVolume, expectedFields).Return(tt.mockVolumeInfo, tt.mockVolumeErr)
+
+			// Mock SnapshotListByName call only if volume lookup succeeds and has valid UUID
+			if tt.mockVolumeInfo != nil && tt.mockVolumeErr == nil && tt.mockVolumeInfo.UUID != nil {
+				var snapResponse *models.SnapshotResponse
+				if tt.mockSnapshots != nil {
+					snapResponse = &models.SnapshotResponse{
+						SnapshotResponseInlineRecords: tt.mockSnapshots,
+					}
+				}
+				rsi.EXPECT().SnapshotListByName(ctx, *tt.mockVolumeInfo.UUID, tt.snapshotName).Return(
+					&storage.SnapshotCollectionGetOK{Payload: snapResponse}, tt.mockSnapErr)
+			}
+
+			result, err := oapi.VolumeSnapshotInfo(ctx, tt.snapshotName, tt.sourceVolume)
+
+			if tt.expectError {
+				assert.Error(t, err, "expected error when getting volume snapshot info")
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expectedName, result.Name)
+			}
+		})
+	}
+}
+
+func TestFcpInterfaceGet(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	rsi := mockapi.NewMockRestClientInterface(ctrl)
+	oapi, err := api.NewOntapAPIRESTFromRestClientInterface(rsi)
+	assert.NoError(t, err)
+
+	tests := []struct {
+		name             string
+		svm              string
+		mockInterfaces   []*models.FcpService
+		mockErr          error
+		expectedNames    []string
+		expectError      bool
+		expectedErrorMsg string
+	}{
+		{
+			name: "Multiple enabled FCP interfaces",
+			svm:  "svm1",
+			mockInterfaces: []*models.FcpService{
+				{
+					Enabled: convert.ToPtr(true),
+					Target: &models.FcpServiceInlineTarget{
+						Name: convert.ToPtr("20:00:00:50:56:bb:bb:01"),
+					},
+				},
+				{
+					Enabled: convert.ToPtr(true),
+					Target: &models.FcpServiceInlineTarget{
+						Name: convert.ToPtr("20:00:00:50:56:bb:bb:02"),
+					},
+				},
+				{
+					Enabled: convert.ToPtr(false), // Should be filtered out
+					Target: &models.FcpServiceInlineTarget{
+						Name: convert.ToPtr("20:00:00:50:56:bb:bb:03"),
+					},
+				},
+			},
+			mockErr:       nil,
+			expectedNames: []string{"20:00:00:50:56:bb:bb:01", "20:00:00:50:56:bb:bb:02"},
+			expectError:   false,
+		},
+		{
+			name: "No enabled FCP interfaces",
+			svm:  "svm1",
+			mockInterfaces: []*models.FcpService{
+				{
+					Enabled: convert.ToPtr(false),
+					Target: &models.FcpServiceInlineTarget{
+						Name: convert.ToPtr("20:00:00:50:56:bb:bb:01"),
+					},
+				},
+			},
+			mockErr:          nil,
+			expectError:      true,
+			expectedErrorMsg: "SVM svm1 has no active FCP interfaces",
+		},
+		{
+			name:             "Empty interface list",
+			svm:              "svm1",
+			mockInterfaces:   []*models.FcpService{},
+			mockErr:          nil,
+			expectError:      true,
+			expectedErrorMsg: "SVM svm1 has no active FCP interfaces",
+		},
+		{
+			name:        "API call error",
+			svm:         "svm1",
+			mockErr:     fmt.Errorf("API call failed"),
+			expectError: true,
+		},
+		{
+			name: "Interface with nil target",
+			svm:  "svm1",
+			mockInterfaces: []*models.FcpService{
+				{
+					Enabled: convert.ToPtr(true),
+					Target:  nil, // Should be handled gracefully
+				},
+			},
+			mockErr:          nil,
+			expectError:      true,
+			expectedErrorMsg: "SVM svm1 has no active FCP interfaces",
+		},
+		{
+			name: "Interface with nil name",
+			svm:  "svm1",
+			mockInterfaces: []*models.FcpService{
+				{
+					Enabled: convert.ToPtr(true),
+					Target: &models.FcpServiceInlineTarget{
+						Name: nil, // Should be handled gracefully
+					},
+				},
+			},
+			mockErr:          nil,
+			expectError:      true,
+			expectedErrorMsg: "SVM svm1 has no active FCP interfaces",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var response *s_a_n.FcpServiceCollectionGetOK
+			if tt.mockInterfaces != nil {
+				response = &s_a_n.FcpServiceCollectionGetOK{
+					Payload: &models.FcpServiceResponse{
+						FcpServiceResponseInlineRecords: tt.mockInterfaces,
+					},
+				}
+			}
+
+			rsi.EXPECT().FcpInterfaceGet(ctx, []string{"target.name", "enabled"}).Return(response, tt.mockErr)
+
+			result, err := oapi.FcpInterfaceGet(ctx, tt.svm)
+
+			if tt.expectError {
+				assert.Error(t, err, "expected error when getting FCP interface")
+				if tt.expectedErrorMsg != "" {
+					assert.Contains(t, err.Error(), tt.expectedErrorMsg)
+				}
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expectedNames, result)
+			}
+		})
+	}
+}
+
+func TestFlexVolInfoFromRestAttrsHelper(t *testing.T) {
+	tests := []struct {
+		name        string
+		volume      models.Volume
+		expected    *api.Volume
+		expectError bool
+	}{
+		{
+			name: "Complete volume information",
+			volume: models.Volume{
+				Name: convert.ToPtr("test_volume"),
+				UUID: convert.ToPtr("volume-uuid-123"),
+				Size: convert.ToPtr(int64(1073741824)),
+				Space: &models.VolumeInlineSpace{
+					Used: convert.ToPtr(int64(536870912)),
+				},
+				State: convert.ToPtr("online"),
+				Type:  convert.ToPtr("rw"),
+				Style: convert.ToPtr("flexvol"),
+				Nas: &models.VolumeInlineNas{
+					Path:            convert.ToPtr("/test_volume"),
+					SecurityStyle:   convert.ToPtr("unix"),
+					UnixPermissions: convert.ToPtr(int64(755)),
+				},
+				Comment: convert.ToPtr("Test volume comment"),
+			},
+			expected: &api.Volume{
+				Name:           "test_volume",
+				Aggregates:     []string{},
+				Encrypt:        convert.ToPtr(false),
+				TieringPolicy:  "none",
+				SnapshotDir:    convert.ToPtr(false),
+				SpaceReserve:   "",
+				SnapshotPolicy: "",
+			},
+			expectError: false,
+		},
+		{
+			name: "Volume with minimal information",
+			volume: models.Volume{
+				Name: convert.ToPtr("minimal_volume"),
+				UUID: convert.ToPtr("volume-uuid-456"),
+			},
+			expected: &api.Volume{
+				Name:           "minimal_volume",
+				Aggregates:     []string{},
+				Encrypt:        convert.ToPtr(false),
+				TieringPolicy:  "none",
+				SnapshotDir:    convert.ToPtr(false),
+				SpaceReserve:   "",
+				SnapshotPolicy: "",
+			},
+			expectError: false,
+		},
+		{
+			name: "Volume with nil name",
+			volume: models.Volume{
+				Name: nil,
+				UUID: convert.ToPtr("volume-uuid-789"),
+			},
+			expected: &api.Volume{
+				Name:           "", // Name will be empty when nil
+				Aggregates:     []string{},
+				Encrypt:        convert.ToPtr(false),
+				TieringPolicy:  "none",
+				SnapshotDir:    convert.ToPtr(false),
+				SpaceReserve:   "",
+				SnapshotPolicy: "",
+			},
+			expectError: false,
+		},
+		{
+			name: "Volume with nil UUID",
+			volume: models.Volume{
+				Name: convert.ToPtr("test_volume"),
+				UUID: nil,
+			},
+			expected: &api.Volume{
+				Name:           "test_volume",
+				Aggregates:     []string{},
+				Encrypt:        convert.ToPtr(false),
+				TieringPolicy:  "none",
+				SnapshotDir:    convert.ToPtr(false),
+				SpaceReserve:   "",
+				SnapshotPolicy: "",
+			},
+			expectError: false,
+		},
+		{
+			name: "Volume with space information",
+			volume: models.Volume{
+				Name: convert.ToPtr("space_volume"),
+				UUID: convert.ToPtr("volume-uuid-space"),
+				Size: convert.ToPtr(int64(2147483648)),
+				Space: &models.VolumeInlineSpace{
+					Used:      convert.ToPtr(int64(1073741824)),
+					Available: convert.ToPtr(int64(1073741824)),
+				},
+			},
+			expected: &api.Volume{
+				Name:           "space_volume",
+				Aggregates:     []string{},
+				Encrypt:        convert.ToPtr(false),
+				TieringPolicy:  "none",
+				SnapshotDir:    convert.ToPtr(false),
+				SpaceReserve:   "",
+				SnapshotPolicy: "",
+			},
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := api.FlexVolInfoFromRestAttrsHelper(&tt.volume)
+
+			if tt.expectError {
+				assert.Error(t, err, "expected error when converting REST volume attributes to FlexVol info")
+				assert.Nil(t, result)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, result)
+				assert.Equal(t, tt.expected.Name, result.Name)
+				assert.Equal(t, len(tt.expected.Aggregates), len(result.Aggregates))
+				assert.Equal(t, *tt.expected.Encrypt, *result.Encrypt)
+				assert.Equal(t, tt.expected.TieringPolicy, result.TieringPolicy)
+				assert.Equal(t, *tt.expected.SnapshotDir, *result.SnapshotDir)
+				assert.Equal(t, tt.expected.SpaceReserve, result.SpaceReserve)
+				assert.Equal(t, tt.expected.SnapshotPolicy, result.SnapshotPolicy)
+			}
+		})
+	}
+}
+
+func TestVolumeListByAttrs_Additional(t *testing.T) {
+	tests := []struct {
+		name          string
+		volumeAttrs   *api.Volume
+		mockResponse  *storage.VolumeCollectionGetOK
+		mockError     error
+		expectError   bool
+		expectedCount int
+	}{
+		{
+			name: "Nil response handling with named volume",
+			volumeAttrs: &api.Volume{
+				Name: "test-volume",
+			},
+			mockResponse:  &storage.VolumeCollectionGetOK{}, // Empty but not nil to avoid panic
+			mockError:     nil,
+			expectError:   false,
+			expectedCount: 0,
+		},
+		{
+			name: "Nil response handling with unnamed volume",
+			volumeAttrs: &api.Volume{
+				Name: "",
+			},
+			mockResponse:  &storage.VolumeCollectionGetOK{}, // Empty but not nil to avoid panic
+			mockError:     nil,
+			expectError:   false,
+			expectedCount: 0,
+		},
+		{
+			name: "API error handling",
+			volumeAttrs: &api.Volume{
+				Name: "test-volume",
+			},
+			mockResponse: nil,
+			mockError:    errors.New("API connection failed"),
+			expectError:  true,
+		},
+		{
+			name: "FlexVolInfoFromRestAttrsHelper error propagation",
+			volumeAttrs: &api.Volume{
+				Name: "test-volume",
+			},
+			mockResponse: &storage.VolumeCollectionGetOK{
+				Payload: &models.VolumeResponse{
+					VolumeResponseInlineRecords: []*models.Volume{
+						{
+							Name: convert.ToPtr("test-volume"), // Valid name to avoid error
+							UUID: convert.ToPtr("test-uuid"),
+						},
+					},
+				},
+			},
+			mockError:     nil,
+			expectError:   false,
+			expectedCount: 1,
+		},
+		{
+			name: "Empty payload records",
+			volumeAttrs: &api.Volume{
+				Name: "test-volume",
+			},
+			mockResponse: &storage.VolumeCollectionGetOK{
+				Payload: &models.VolumeResponse{
+					VolumeResponseInlineRecords: []*models.Volume{},
+				},
+			},
+			mockError:     nil,
+			expectError:   false,
+			expectedCount: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			oapi, rsi := newMockOntapAPIREST(t)
+
+			expectedFields := []string{
+				"aggregates",
+				"snapshot_directory_access_enabled",
+				"encryption.enabled",
+				"guarantee.type",
+				"snapshot_policy.name",
+			}
+			rsi.EXPECT().VolumeListByAttrs(ctx, tt.volumeAttrs, expectedFields).Return(tt.mockResponse, tt.mockError)
+
+			result, err := oapi.VolumeListByAttrs(ctx, tt.volumeAttrs)
+
+			if tt.expectError {
+				assert.Error(t, err, "expected error when listing volumes by attributes")
+			} else {
+				assert.NoError(t, err)
+				assert.Len(t, result, tt.expectedCount)
+			}
+		})
+	}
+}
+
+func TestExportRuleCreate_Additional(t *testing.T) {
+	tests := []struct {
+		name               string
+		policyName         string
+		desiredPolicyRules string
+		nasProtocol        string
+		mockResponse       *nas.ExportRuleCreateCreated
+		mockError          error
+		expectError        bool
+		expectedErrorType  string
+	}{
+		{
+			name:               "Multiple comma-separated rules",
+			policyName:         "test-policy",
+			desiredPolicyRules: "10.0.0.1,10.0.0.2,10.0.0.3",
+			nasProtocol:        sa.NFS,
+			mockResponse:       &nas.ExportRuleCreateCreated{},
+			mockError:          nil,
+			expectError:        false,
+		},
+		{
+			name:               "Export rule already exists error",
+			policyName:         "test-policy",
+			desiredPolicyRules: "10.0.0.1",
+			nasProtocol:        sa.NFS,
+			mockResponse:       nil,
+			mockError:          errors.New("export rule already exists"),
+			expectError:        true,
+			expectedErrorType:  "AlreadyExistsError",
+		},
+		{
+			name:               "Generic API error during rule creation",
+			policyName:         "test-policy",
+			desiredPolicyRules: "10.0.0.1",
+			nasProtocol:        sa.SMB,
+			mockResponse:       nil,
+			mockError:          errors.New("generic API error"),
+			expectError:        true,
+		},
+		{
+			name:               "Error extraction failure fallback",
+			policyName:         "test-policy",
+			desiredPolicyRules: "10.0.0.1",
+			nasProtocol:        sa.NFS,
+			mockResponse:       nil,
+			mockError:          errors.New("malformed error that can't be extracted"),
+			expectError:        true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			oapi, rsi := newMockOntapAPIREST(t)
+
+			clientConfig := api.ClientConfig{
+				DebugTraceFlags: map[string]bool{"method": true},
+			}
+			rsi.EXPECT().ClientConfig().Return(clientConfig).AnyTimes()
+
+			// Set up expectations for each rule in comma-separated list
+			rules := strings.Split(tt.desiredPolicyRules, ",")
+			for _, rule := range rules {
+				var expectedProtocol []string
+				if tt.nasProtocol == sa.SMB {
+					expectedProtocol = []string{"cifs"}
+				} else {
+					expectedProtocol = []string{"nfs"}
+				}
+
+				rsi.EXPECT().ExportRuleCreate(ctx, tt.policyName, rule, expectedProtocol,
+					[]string{"any"}, []string{"any"}, []string{"any"}).Return(tt.mockResponse, tt.mockError)
+
+				// If we expect an error, it will stop at the first rule
+				if tt.expectError {
+					break
+				}
+			}
+
+			err := oapi.ExportRuleCreate(ctx, tt.policyName, tt.desiredPolicyRules, tt.nasProtocol)
+
+			if tt.expectError {
+				assert.Error(t, err, "expected error when creating export rule")
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }

@@ -49,6 +49,7 @@ const (
 	tridentDeviceInfoPath           = "/var/lib/trident/tracking"
 	nodeLockID                      = "csi_node_server"
 	AttachISCSIVolumeTimeoutShort   = 20 * time.Second
+	ResizeISCSIVolumeTimeout        = 20 * time.Second
 	AttachFCPVolumeTimeoutShort     = 20 * time.Second
 	iSCSINodeUnstageMaxDuration     = 15 * time.Second
 	iSCSILoginTimeout               = 10 * time.Second
@@ -644,12 +645,12 @@ func (p *Plugin) nodeExpandVolume(
 	devicePath := publishInfo.DevicePath
 	if convert.ToBool(publishInfo.LUKSEncryption) {
 		if !luks.IsLegacyDevicePath(devicePath) {
-			devicePath, err = p.devices.GetLUKSDeviceForMultipathDevice(devicePath)
+			devicePath, err = p.devices.GetLUKSDevicePathForVolume(ctx, volumeId)
 			if err != nil {
 				Logc(ctx).WithFields(LogFields{
 					"volumeId":      volumeId,
 					"publishedPath": publishInfo.DevicePath,
-				}).WithError(err).Error("Failed to get LUKS device path from device path.")
+				}).WithError(err).Error("Failed to get LUKS device path for volume.")
 				return status.Error(codes.Internal, err.Error())
 			}
 		}
@@ -733,7 +734,6 @@ func (p *Plugin) nodePrepareISCSIVolumeForExpansion(
 	ctx context.Context, publishInfo *models.VolumePublishInfo, requiredBytes int64,
 ) error {
 	lunID := int(publishInfo.IscsiLunNumber)
-
 	Logc(ctx).WithFields(LogFields{
 		"targetIQN":      publishInfo.IscsiTargetIQN,
 		"lunID":          lunID,
@@ -742,24 +742,16 @@ func (p *Plugin) nodePrepareISCSIVolumeForExpansion(
 		"filesystemType": publishInfo.FilesystemType,
 	}).Debug("PublishInfo for block device to expand.")
 
-	var err error
-
-	// Make sure device is ready.
-	if p.iscsi.IsAlreadyAttached(ctx, lunID, publishInfo.IscsiTargetIQN) {
-		// Rescan device to detect increased size.
-		if err = p.iscsi.RescanDevices(
-			ctx, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunNumber, requiredBytes); err != nil {
-			Logc(ctx).WithField("device", publishInfo.DevicePath).WithError(err).
-				Error("Unable to scan device.")
-			err = status.Error(codes.Internal, err.Error())
-		}
-	} else {
-		err = fmt.Errorf("device %s to expand is not attached", publishInfo.DevicePath)
-		Logc(ctx).WithField("devicePath", publishInfo.DevicePath).WithError(err).Error(
-			"Unable to expand volume.")
+	// Resize the volume.
+	if err := p.iscsi.ResizeVolumeRetry(ctx, publishInfo, requiredBytes, ResizeISCSIVolumeTimeout); err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"lunID":      publishInfo.IscsiLunNumber,
+			"devicePath": publishInfo.DevicePath,
+		}).WithError(err).Error("Unable to resize device(s) for LUN.")
 		return status.Error(codes.Internal, err.Error())
 	}
-	return err
+
+	return nil
 }
 
 func (p *Plugin) NodeGetCapabilities(
@@ -1468,15 +1460,18 @@ func (p *Plugin) nodeUnstageFCPVolume(
 					publishInfo.DevicePath = dmPath
 				}
 			} else {
-				// If not using luks legacy device path we need to find the LUKS mapper device
-				luksMapperPath, err = p.devices.GetLUKSDeviceForMultipathDevice(publishInfo.DevicePath)
+				// If not using luks legacy device path we need to find the LUKS mapper device.
+				luksMapperPath, err = p.devices.GetLUKSDevicePathForVolume(ctx, req.GetVolumeId())
 				if err != nil {
-					if !errors.IsNotFoundError(err) {
-						Logc(ctx).WithFields(fields).WithError(err).Warn(
-							"Could not determine LUKS device path from multipath device. " +
-								"Continuing with device removal.")
+					// If the LUKS device is not found, the functional difference is negligible to unstage.
+					// But it may be useful to log at different levels for observability.
+					log := Logc(ctx).WithFields(fields).WithError(err)
+					if errors.IsNotFoundError(err) {
+						log.Warn("Failed to get LUKS device path for volume.")
+					} else {
+						log.Debug("Could not determine LUKS device path for volume.")
 					}
-					Logc(ctx).WithFields(fields).Info("No LUKS device path found from multipath device.")
+					log.Debug("Continuing with device removal.")
 				}
 			}
 			err = p.devices.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksMapperPath)
@@ -1519,11 +1514,10 @@ func (p *Plugin) nodeUnstageFCPVolume(
 			"multipathDevice": deviceInfo.MultipathDevice,
 		}
 
-		luksMapperPath, err = p.devices.GetLUKSDeviceForMultipathDevice(deviceInfo.MultipathDevice)
+		luksMapperPath, err = p.devices.GetLUKSDevicePathForVolume(ctx, req.GetVolumeId())
 		if err != nil {
 			if !errors.IsNotFoundError(err) {
-				Logc(ctx).WithFields(fields).
-					WithError(err).Error("Failed to get LUKS device path from multipath device.")
+				Logc(ctx).WithFields(fields).WithError(err).Error("Failed to get LUKS device path from multipath device.")
 				return err
 			}
 			Logc(ctx).WithFields(fields).Info("No LUKS device path found from multipath device.")
@@ -1995,7 +1989,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		if convert.ToBool(publishInfo.LUKSEncryption) {
 			var err error
 			var luksMapperPath string
-			fields := LogFields{"device": publishInfo.DevicePath}
+			fields := LogFields{"device": publishInfo.DevicePath, "volume": req.GetVolumeId()}
 			// Set device path to dm device to correctly verify legacy volumes.
 			if luks.IsLegacyDevicePath(publishInfo.DevicePath) {
 				luksMapperPath = publishInfo.DevicePath
@@ -2009,17 +2003,22 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 					publishInfo.DevicePath = dmPath
 				}
 			} else {
-				// If not using luks legacy device path we need to find the LUKS mapper device
-				luksMapperPath, err = p.devices.GetLUKSDeviceForMultipathDevice(publishInfo.DevicePath)
+				// Use the volume ID to get the LUKS mapper path.
+				// This should always work if the mapper is still present.
+				luksMapperPath, err = p.devices.GetLUKSDevicePathForVolume(ctx, req.GetVolumeId())
 				if err != nil {
-					if !errors.IsNotFoundError(err) {
-						Logc(ctx).WithFields(fields).WithError(err).Warn(
-							"Could not determine LUKS device path from multipath device. " +
-								"Continuing with device removal.")
+					// If the LUKS device is not found, the functional difference is negligible to unstage.
+					// But it may be useful to log at different levels for observability.
+					log := Logc(ctx).WithFields(fields).WithError(err)
+					if errors.IsNotFoundError(err) {
+						log.Warn("Failed to get LUKS device path for volume.")
+					} else {
+						log.Debug("Could not determine LUKS device path for volume.")
 					}
-					Logc(ctx).WithFields(fields).Info("No LUKS device path found from multipath device.")
+					log.Debug("Continuing with device removal.")
 				}
 			}
+
 			err = p.devices.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksMapperPath)
 			if err != nil {
 				Logc(ctx).WithError(err).Debug("Unable to remove LUKS device. Continuing with tracking file removal.")
@@ -2070,7 +2069,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 			"multipathDevice": deviceInfo.MultipathDevice,
 		}
 
-		luksMapperPath, err = p.devices.GetLUKSDeviceForMultipathDevice(deviceInfo.MultipathDevice)
+		luksMapperPath, err = p.devices.GetLUKSDevicePathForVolume(ctx, req.GetVolumeId())
 		if err != nil {
 			if !errors.IsNotFoundError(err) {
 				Logc(ctx).WithFields(fields).WithError(err).Error("Failed to get LUKS device path from multipath device.")
@@ -3073,7 +3072,7 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 		return nil, fmt.Errorf("failed to get NVMe device; %v", err)
 	}
 
-	var devicePath string
+	devicePath := publishInfo.DevicePath
 	if nvmeDev != nil {
 		devicePath = nvmeDev.GetPath()
 	}
@@ -3086,10 +3085,19 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 			"publishedPath": publishInfo.DevicePath,
 		}
 
-		luksMapperPath, err = p.devices.GetLUKSDeviceForMultipathDevice(devicePath)
+		// Use the volume ID to get the LUKS mapper path.
+		// This should always work if the mapper is still present.
+		luksMapperPath, err = p.devices.GetLUKSDevicePathForVolume(ctx, req.GetVolumeId())
 		if err != nil {
-			Logc(ctx).WithFields(fields).WithError(err).Debug("Failed to get LUKS device path from device path. " +
-				"Device may already be removed.")
+			// If the LUKS device is not found, the functional difference is negligible to unstage.
+			// But it may be useful to log at different levels for observability.
+			log := Logc(ctx).WithFields(fields).WithError(err)
+			if errors.IsNotFoundError(err) {
+				log.Warn("Failed to get LUKS device path for volume.")
+			} else {
+				log.Debug("Could not determine LUKS device path for volume.")
+			}
+			log.Debug("Continuing with device removal.")
 		}
 
 		if luksMapperPath != "" {

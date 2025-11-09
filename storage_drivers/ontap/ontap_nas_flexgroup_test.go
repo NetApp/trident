@@ -994,6 +994,7 @@ func TestOntapNasFlexgroupStorageDriverTerminate(t *testing.T) {
 			mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 			mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 			mockAPI.EXPECT().ExportPolicyDestroy(ctx, "trident-dummy").Return(test.err)
+			mockAPI.EXPECT().Terminate().AnyTimes()
 
 			driver.Terminate(ctx, "dummy")
 
@@ -1017,6 +1018,7 @@ func TestOntapNasFlexgroupStorageDriverTerminate_TelemetryFailure(t *testing.T) 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().ExportPolicyDestroy(ctx, "trident-dummy").Return(errors.New("policy not found"))
+	mockAPI.EXPECT().Terminate().AnyTimes()
 
 	driver.Terminate(ctx, "dummy")
 
@@ -1066,7 +1068,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate(t *testing.T) {
 		PeerVolumeHandle: "fakesvm:vol1",
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -1129,7 +1131,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_Failure(t *testing.T) {
 		PeerVolumeHandle: "fakesvm:vol1",
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -1169,7 +1171,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_SnapshotDisabled(t *testing.
 		PeerVolumeHandle: "fakesvm:vol1",
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -1211,7 +1213,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_MountFailure(t *testing.T) {
 		PeerVolumeHandle: "fakesvm:vol1",
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -1251,7 +1253,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_LabelLengthExceeding(t *test
 		PeerVolumeHandle: "fakesvm:vol1",
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -1307,7 +1309,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeCreate_SMBShareCreatefail(t *testin
 		PeerVolumeHandle: "fakesvm:vol1",
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -1920,7 +1922,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone(t *testing.T) {
 			mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockAPI.EXPECT().FlexgroupMount(ctx, "vol1", "/vol1").Return(nil)
 
-			sb := &storage.StorageBackend{}
+			sb := storage.NewTestStorageBackend()
 			sb.SetBackendUUID(BackendUUID)
 			pool1 := storage.NewStoragePool(sb, "pool1")
 			pool1.SetInternalAttributes(map[string]string{
@@ -1960,7 +1962,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_storagePoolUnset(t *testing.T
 		PeerVolumeHandle: "fakesvm:vol1",
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -2566,7 +2568,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_NameTemplate(t *testing.T) {
 
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
-			sb := &storage.StorageBackend{}
+			sb := storage.NewTestStorageBackend()
 			sb.SetBackendUUID(BackendUUID)
 
 			pool1 := storage.NewStoragePool(sb, "pool1")
@@ -2816,7 +2818,7 @@ func TestOntapNasFlexgroupStorageDriverVolumeClone_VolumeCloneWithoutSnapshot(t 
 	mockAPI.EXPECT().FlexgroupSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 	mockAPI.EXPECT().FlexgroupMount(ctx, gomock.Any(), gomock.Any()).Return(nil)
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 
 	pool1 := storage.NewStoragePool(sb, "pool1")

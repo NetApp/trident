@@ -29,6 +29,7 @@ import (
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
+	fakeDriver "github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
 	"github.com/netapp/trident/storage_drivers/ontap/api/azgo"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/networking"
@@ -4286,6 +4287,54 @@ func TestEMSHeartbeat(t *testing.T) {
 	EMSHeartbeat(ctx, driver)
 }
 
+func TestRefreshDynamicTelemetry(t *testing.T) {
+	ctx := context.Background()
+	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+
+	// Test 1: With nil telemetry (should not panic and should return early)
+	// Temporarily set telemetry to nil
+	originalTelemetry := driver.telemetry
+	driver.telemetry = nil
+	refreshDynamicTelemetry(ctx, driver)
+	// Restore telemetry for next test
+	driver.telemetry = originalTelemetry
+
+	// Test 2: With valid telemetry (should call UpdateDynamicTelemetry)
+	driver.telemetry = &Telemetry{
+		Plugin: driver.Name(),
+		SVM:    "SVM1",
+		Driver: driver,
+		done:   make(chan struct{}),
+	}
+	driver.telemetry.TridentVersion = tridentconfig.OrchestratorVersion.String()
+	driver.telemetry.TridentBackendUUID = BackendUUID
+
+	// Store initial values
+	initialClusterUID := driver.telemetry.PlatformUID
+	initialNodeCount := driver.telemetry.PlatformNodeCount
+	initialPlatformVersion := driver.telemetry.PlatformVersion
+	initialTridentProtectVersion := driver.telemetry.TridentProtectVersion
+
+	// Call refreshDynamicTelemetry
+	refreshDynamicTelemetry(ctx, driver)
+
+	// Verify the function completed without error and telemetry object is intact
+	assert.NotNil(t, driver.telemetry)
+	assert.Equal(t, driver.Name(), driver.telemetry.Plugin)
+	assert.Equal(t, "SVM1", driver.telemetry.SVM)
+	assert.Equal(t, tridentconfig.OrchestratorVersion.String(), driver.telemetry.TridentVersion)
+	assert.Equal(t, BackendUUID, driver.telemetry.TridentBackendUUID)
+
+	// Note: The actual dynamic fields won't change in this unit test since tridentconfig.UpdateDynamicTelemetry
+	// is a global function that would need integration with the CSI helper. The test ensures the function
+	// doesn't panic and processes the telemetry object correctly.
+	_ = initialClusterUID
+	_ = initialNodeCount
+	_ = initialPlatformVersion
+	_ = initialTridentProtectVersion
+}
+
 func TestLunUnmapAllIgroups(t *testing.T) {
 	// Test-1 : Positive flow
 	ctx := context.Background()
@@ -4895,7 +4944,7 @@ func TestGetPoolsForCreate(t *testing.T) {
 		Name:         "fakeVolName",
 		InternalName: "fakeInternalName",
 	}
-	backend := &storage.StorageBackend{}
+	backend := storage.NewTestStorageBackend()
 	backend.SetName("dummybackend")
 	backend.SetOnline(true)
 
@@ -4944,7 +4993,7 @@ func TestGetPoolsForCreate_NoMatchingPools(t *testing.T) {
 		Name:         "fakeVolName",
 		InternalName: "fakeInternalName",
 	}
-	backend := &storage.StorageBackend{}
+	backend := storage.NewTestStorageBackend()
 	backend.SetName("dummybackend")
 	backend.SetOnline(true)
 
@@ -6815,7 +6864,7 @@ func TestValidateASAStoragePools(t *testing.T) {
 
 func TestGetStorageBackendSpecsCommon(t *testing.T) {
 	// Test1: Physical pools provided
-	backend := &storage.StorageBackend{}
+	backend := storage.NewTestStorageBackend()
 	backend.SetName("dummybackend")
 	backend.SetOnline(true)
 	backend.ClearStoragePools()
@@ -9775,6 +9824,26 @@ func TestGetUniqueNodeSpecificSubsystemName(t *testing.T) {
 			expectedFinal:      "",
 			expectError:        true,
 		},
+		{
+			description:        "Valid input, with no prefix passed",
+			nodeName:           "node1",
+			tridentUUID:        tridentUUID,
+			prefix:             "",
+			maxSubsystemLength: 64,
+			expectedBestCase:   fmt.Sprintf("node1_%s", tridentUUID),
+			expectedFinal:      fmt.Sprintf("node1_%s", tridentUUID),
+			expectError:        false,
+		},
+		{
+			description:        "Even hash is more than limit, truncation needed with no prefix",
+			nodeName:           "averylongnodenameexceedingthelimit",
+			tridentUUID:        tridentUUID,
+			prefix:             "",
+			maxSubsystemLength: 32,
+			expectedBestCase:   fmt.Sprintf("averylongnodenameexceedingthelimit_%s", tridentUUID),
+			expectedFinal:      fmt.Sprintf("%x", sha256.Sum256([]byte(fmt.Sprintf("averylongnodenameexceedingthelimit_%s", tridentUUID))))[:32],
+			expectError:        false,
+		},
 	}
 
 	for _, test := range tests {
@@ -10319,6 +10388,105 @@ func TestCleanupFailedCloneFlexVol(t *testing.T) {
 			test.setupMock(mockAPI)
 
 			cleanupFailedCloneFlexVol(ctx, mockAPI, test.err, test.clonedVolName, test.sourceVol, test.snapshot)
+		})
+	}
+}
+
+func TestHealNASPublishEnforcement(t *testing.T) {
+	tt := map[string]struct {
+		makeDriver func() storage.Driver
+		volume     *storage.Volume
+		assertBool assert.BoolAssertionFunc
+	}{
+		"enables publish enforcement when policy is the same as internal name": {
+			makeDriver: func() storage.Driver {
+				config := drivers.FakeStorageDriverConfig{
+					CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+						StorageDriverName: "fakeDriver",
+						StoragePrefix:     convert.ToPtr("fake_"),
+					},
+				}
+				return fakeDriver.NewFakeStorageDriver(ctx, config)
+			},
+			volume: &storage.Volume{
+				Config: &storage.VolumeConfig{
+					InternalName: "pvc-test-name",
+					ExportPolicy: "pvc-test-name",
+					AccessInfo: tridentmodels.VolumeAccessInfo{
+						PublishEnforcement: false,
+					},
+				},
+			},
+			assertBool: assert.True,
+		},
+		"enables publish enforcement when policy is the empty export policy": {
+			makeDriver: func() storage.Driver {
+				config := drivers.FakeStorageDriverConfig{
+					CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+						StorageDriverName: "fakeDriver",
+						StoragePrefix:     convert.ToPtr("fake_"),
+					},
+				}
+				return fakeDriver.NewFakeStorageDriver(ctx, config)
+			},
+			volume: &storage.Volume{
+				Config: &storage.VolumeConfig{
+					InternalName: "pvc-test-name",
+					ExportPolicy: getEmptyExportPolicyName("fake_"),
+					AccessInfo: tridentmodels.VolumeAccessInfo{
+						PublishEnforcement: false,
+					},
+				},
+			},
+			assertBool: assert.True,
+		},
+		"does not enable publish enforcement when policy is not empty and policy is not the same as the volume": {
+			makeDriver: func() storage.Driver {
+				config := drivers.FakeStorageDriverConfig{
+					CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+						StorageDriverName: "fakeDriver",
+						StoragePrefix:     convert.ToPtr("fake_"),
+					},
+				}
+				return fakeDriver.NewFakeStorageDriver(ctx, config)
+			},
+			volume: &storage.Volume{
+				Config: &storage.VolumeConfig{
+					InternalName: "pvc-test-name",
+					ExportPolicy: "trident-export-policy",
+					AccessInfo: tridentmodels.VolumeAccessInfo{
+						PublishEnforcement: false,
+					},
+				},
+			},
+			assertBool: assert.False,
+		},
+		"does not update if publish enforcement is alread set": {
+			makeDriver: func() storage.Driver {
+				config := drivers.FakeStorageDriverConfig{
+					CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+						StorageDriverName: "fakeDriver",
+						StoragePrefix:     convert.ToPtr("fake_"),
+					},
+				}
+				return fakeDriver.NewFakeStorageDriver(ctx, config)
+			},
+			volume: &storage.Volume{
+				Config: &storage.VolumeConfig{
+					InternalName: "pvc-test-name",
+					ExportPolicy: "trident-export-policy",
+					AccessInfo: tridentmodels.VolumeAccessInfo{
+						PublishEnforcement: true,
+					},
+				},
+			},
+			assertBool: assert.False,
+		},
+	}
+
+	for name, fixture := range tt {
+		t.Run(name, func(t *testing.T) {
+			fixture.assertBool(t, HealNASPublishEnforcement(ctx, fixture.makeDriver(), fixture.volume))
 		})
 	}
 }

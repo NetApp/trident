@@ -536,6 +536,10 @@ func main() {
 			}
 			orchestrator.AddFrontend(ctx, crdController)
 			postBootstrapFrontends = append(postBootstrapFrontends, crdController)
+
+			if *enableForceDetach {
+				crdController.SetForceDetach(true)
+			}
 		}
 
 		// Add the FIJI frontend to the pre-bootstrap frontends.
@@ -604,13 +608,10 @@ func main() {
 		}
 	}
 
-	// TODO (cknight): enable for concurrent core
-	if !*enableConcurrency {
-		if config.CurrentDriverContext == config.ContextCSI {
-			go orchestrator.PeriodicallyReconcileNodeAccessOnBackends()
-		}
-		go orchestrator.PeriodicallyReconcileBackendState(*backendStoragePollInterval)
+	if config.CurrentDriverContext == config.ContextCSI {
+		go orchestrator.PeriodicallyReconcileNodeAccessOnBackends()
 	}
+	go orchestrator.PeriodicallyReconcileBackendState(*backendStoragePollInterval)
 
 	// Register and wait for a shutdown signal
 	c := make(chan os.Signal, 1)

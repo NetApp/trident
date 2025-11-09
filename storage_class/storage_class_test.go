@@ -1052,7 +1052,7 @@ func TestCheckAndAddBackend(t *testing.T) {
 			excludePools := make(map[string][]string, 0)
 			additionalPools := make(map[string][]string, 0)
 
-			backend := &storage.StorageBackend{}
+			backend := storage.NewTestStorageBackend()
 			backend.SetName(test.backendName)
 			backend.SetState(test.state)
 			backend.ClearStoragePools()
@@ -1099,7 +1099,7 @@ func TestIsAddedToBackend(t *testing.T) {
 
 	for testName, test := range tests {
 		t.Run(fmt.Sprintf("%s:", testName), func(t *testing.T) {
-			backend := &storage.StorageBackend{}
+			backend := storage.NewTestStorageBackend()
 			backend.SetName(test.backendName)
 			backend.ClearStoragePools()
 			for _, pool := range test.fakePools {
@@ -1123,9 +1123,9 @@ func TestRemovePoolsForBackend(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	fakePool1 := mockstorage.NewMockPool(mockCtrl)
 	fakePool2 := mockstorage.NewMockPool(mockCtrl)
-	backend1 := &storage.StorageBackend{}
+	backend1 := storage.NewTestStorageBackend()
 	backend1.SetName("b1")
-	backend2 := &storage.StorageBackend{}
+	backend2 := storage.NewTestStorageBackend()
 	backend2.SetName("b2")
 
 	type removePoolTest struct {
@@ -1158,7 +1158,7 @@ func TestRemovePoolsForBackend(t *testing.T) {
 func TestGetStoragePools(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	pools, _, fakePools := createAndGetPool(mockCtrl, 3)
-	backend := &storage.StorageBackend{}
+	backend := storage.NewTestStorageBackend()
 	backend.SetName("backend1")
 	backend.ClearStoragePools()
 	for _, pool := range fakePools {
@@ -1179,7 +1179,7 @@ func TestGetStoragePools(t *testing.T) {
 func TestGetAdditionalStoragePools(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	pools, additionalPools, fakePools := createAndGetPool(mockCtrl, 3)
-	backend := &storage.StorageBackend{}
+	backend := storage.NewTestStorageBackend()
 	backend.SetName("backend1")
 	backend.ClearStoragePools()
 	for _, pool := range fakePools {

@@ -16,6 +16,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/version"
 
+	commonconfig "github.com/netapp/trident/config"
+	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	versionutils "github.com/netapp/trident/utils/version"
 )
 
@@ -132,79 +134,87 @@ type KubernetesClient interface {
 	GetVolumeSnapshotClasses() ([]snapshotv1.VolumeSnapshotClass, error)
 	GetVolumeSnapshotContents() ([]snapshotv1.VolumeSnapshotContent, error)
 	GetVolumeSnapshots(allNamespaces bool) ([]snapshotv1.VolumeSnapshot, error)
+	CreateOrPatchClusterRole(clusterRole *v13.ClusterRole) error
+	PatchClusterRole(newClusterRole, currentClusterRole *v13.ClusterRole) error
+	CreateOrPatchNodeRemediationTemplate(tnrt *tridentv1.TridentNodeRemediationTemplate, namespace string) error
+	PatchNodeRemediationTemplate(newTnrt *tridentv1.TridentNodeRemediationTemplate,
+		currentTnrt *tridentv1.TridentNodeRemediationTemplate) error
 }
 
 type DeploymentYAMLArguments struct {
-	DeploymentName             string                `json:"deploymentName"`
-	TridentImage               string                `json:"tridentImage"`
-	AutosupportImage           string                `json:"autosupportImage"`
-	AutosupportProxy           string                `json:"autosupportProxy"`
-	AutosupportInsecure        bool                  `json:"autosupportInsecure"`
-	AutosupportCustomURL       string                `json:"autosupportCustomURL"`
-	AutosupportSerialNumber    string                `json:"autosupportSerialNumber"`
-	AutosupportHostname        string                `json:"autosupportHostname"`
-	ImageRegistry              string                `json:"imageRegistry"`
-	CSISidecarProvisionerImage string                `json:"csiSidecarProvisionerImage"`
-	CSISidecarAttacherImage    string                `json:"csiSidecarAttacherImage"`
-	CSISidecarResizerImage     string                `json:"csiSidecarResizerImage"`
-	CSISidecarSnapshotterImage string                `json:"csiSidecarSnapshotterImage"`
-	LogFormat                  string                `json:"logFormat"`
-	LogLevel                   string                `json:"logLevel"`
-	LogWorkflows               string                `json:"logWorkflows"`
-	LogLayers                  string                `json:"logLayers"`
-	ImagePullSecrets           []string              `json:"imagePullSecrets"`
-	Labels                     map[string]string     `json:"labels"`
-	ControllingCRDetails       map[string]string     `json:"controllingCRDetails"`
-	Debug                      bool                  `json:"debug"`
-	UseIPv6                    bool                  `json:"useIPv6"`
-	SilenceAutosupport         bool                  `json:"silenceAutosupport"`
-	ExcludeAutosupport         bool                  `json:"excludeAutosupport"`
-	Version                    *versionutils.Version `json:"version"`
-	DisableAuditLog            bool                  `json:"disableAuditLog"`
-	HTTPRequestTimeout         string                `json:"httpRequestTimeout"`
-	NodeSelector               map[string]string     `json:"nodeSelector"`
-	Tolerations                []map[string]string   `json:"tolerations"`
-	ServiceAccountName         string                `json:"serviceAccountName"`
-	ImagePullPolicy            string                `json:"imagePullPolicy"`
-	EnableForceDetach          bool                  `json:"enableForceDetach"`
-	ACPImage                   string                `json:"acpImage"`  // TODO: Remove after 26.04.
-	EnableACP                  bool                  `json:"enableACP"` // TODO: Remove after 26.04.
-	CloudProvider              string                `json:"cloudProvider"`
-	IdentityLabel              bool                  `json:"identityLabel"`
-	K8sAPIQPS                  int                   `json:"k8sAPIQPS"`
-	EnableConcurrency          bool                  `json:"enableConcurrency"`
-	HTTPSMetrics               bool                  `json:"httpsMetrics"`
-	CSIFeatureGates            map[string]string     `json:"csiFeatureGates"`
+	DeploymentName             string                  `json:"deploymentName"`
+	TridentImage               string                  `json:"tridentImage"`
+	AutosupportImage           string                  `json:"autosupportImage"`
+	AutosupportProxy           string                  `json:"autosupportProxy"`
+	AutosupportInsecure        bool                    `json:"autosupportInsecure"`
+	AutosupportCustomURL       string                  `json:"autosupportCustomURL"`
+	AutosupportSerialNumber    string                  `json:"autosupportSerialNumber"`
+	AutosupportHostname        string                  `json:"autosupportHostname"`
+	ImageRegistry              string                  `json:"imageRegistry"`
+	CSISidecarProvisionerImage string                  `json:"csiSidecarProvisionerImage"`
+	CSISidecarAttacherImage    string                  `json:"csiSidecarAttacherImage"`
+	CSISidecarResizerImage     string                  `json:"csiSidecarResizerImage"`
+	CSISidecarSnapshotterImage string                  `json:"csiSidecarSnapshotterImage"`
+	LogFormat                  string                  `json:"logFormat"`
+	LogLevel                   string                  `json:"logLevel"`
+	LogWorkflows               string                  `json:"logWorkflows"`
+	LogLayers                  string                  `json:"logLayers"`
+	ImagePullSecrets           []string                `json:"imagePullSecrets"`
+	Labels                     map[string]string       `json:"labels"`
+	ControllingCRDetails       map[string]string       `json:"controllingCRDetails"`
+	Debug                      bool                    `json:"debug"`
+	UseIPv6                    bool                    `json:"useIPv6"`
+	SilenceAutosupport         bool                    `json:"silenceAutosupport"`
+	ExcludeAutosupport         bool                    `json:"excludeAutosupport"`
+	Version                    *versionutils.Version   `json:"version"`
+	DisableAuditLog            bool                    `json:"disableAuditLog"`
+	HTTPRequestTimeout         string                  `json:"httpRequestTimeout"`
+	NodeSelector               map[string]string       `json:"nodeSelector"`
+	Tolerations                []map[string]string     `json:"tolerations"`
+	ServiceAccountName         string                  `json:"serviceAccountName"`
+	ImagePullPolicy            string                  `json:"imagePullPolicy"`
+	EnableForceDetach          bool                    `json:"enableForceDetach"`
+	ACPImage                   string                  `json:"acpImage"`  // TODO: Remove after 26.04.
+	EnableACP                  bool                    `json:"enableACP"` // TODO: Remove after 26.04.
+	CloudProvider              string                  `json:"cloudProvider"`
+	IdentityLabel              bool                    `json:"identityLabel"`
+	K8sAPIQPS                  int                     `json:"k8sAPIQPS"`
+	EnableConcurrency          bool                    `json:"enableConcurrency"`
+	HTTPSMetrics               bool                    `json:"httpsMetrics"`
+	CSIFeatureGates            map[string]string       `json:"csiFeatureGates"`
+	HostNetwork                bool                    `json:"hostNetwork"`
+	Resources                  *commonconfig.Resources `json:"resources"`
 }
 
 type DaemonsetYAMLArguments struct {
-	DaemonsetName                      string                `json:"daemonsetName"`
-	TridentImage                       string                `json:"tridentImage"`
-	ImageRegistry                      string                `json:"imageRegistry"`
-	CSISidecarNodeDriverRegistrarImage string                `json:"csiSidecarNodeDriverRegistrarImage"`
-	CSISidecarLivenessProbeImage       string                `json:"csiSidecarLivenessProbeImage"`
-	KubeletDir                         string                `json:"kubeletDir"`
-	LogFormat                          string                `json:"logFormat"`
-	LogLevel                           string                `json:"logLevel"`
-	LogWorkflows                       string                `json:"logWorkflows"`
-	LogLayers                          string                `json:"logLayers"`
-	ProbePort                          string                `json:"probePort"`
-	ImagePullSecrets                   []string              `json:"imagePullSecrets"`
-	Labels                             map[string]string     `json:"labels"`
-	ControllingCRDetails               map[string]string     `json:"controllingCRDetails"`
-	EnableForceDetach                  bool                  `json:"enableForceDetach"`
-	DisableAuditLog                    bool                  `json:"disableAuditLog"`
-	Debug                              bool                  `json:"debug"`
-	Version                            *versionutils.Version `json:"version"`
-	HTTPRequestTimeout                 string                `json:"httpRequestTimeout"`
-	NodeSelector                       map[string]string     `json:"nodeSelector"`
-	Tolerations                        []map[string]string   `json:"tolerations"`
-	ServiceAccountName                 string                `json:"serviceAccountName"`
-	ImagePullPolicy                    string                `json:"imagePullPolicy"`
-	ISCSISelfHealingInterval           string                `json:"iscsiSelfHealingInterval"`
-	ISCSISelfHealingWaitTime           string                `json:"iscsiSelfHealingWaitTime"`
-	NodePrep                           []string              `json:"nodePrep"`
-	K8sAPIQPS                          int                   `json:"k8sAPIQPS"`
+	DaemonsetName                      string                  `json:"daemonsetName"`
+	TridentImage                       string                  `json:"tridentImage"`
+	ImageRegistry                      string                  `json:"imageRegistry"`
+	CSISidecarNodeDriverRegistrarImage string                  `json:"csiSidecarNodeDriverRegistrarImage"`
+	CSISidecarLivenessProbeImage       string                  `json:"csiSidecarLivenessProbeImage"`
+	KubeletDir                         string                  `json:"kubeletDir"`
+	LogFormat                          string                  `json:"logFormat"`
+	LogLevel                           string                  `json:"logLevel"`
+	LogWorkflows                       string                  `json:"logWorkflows"`
+	LogLayers                          string                  `json:"logLayers"`
+	ProbePort                          string                  `json:"probePort"`
+	ImagePullSecrets                   []string                `json:"imagePullSecrets"`
+	Labels                             map[string]string       `json:"labels"`
+	ControllingCRDetails               map[string]string       `json:"controllingCRDetails"`
+	EnableForceDetach                  bool                    `json:"enableForceDetach"`
+	DisableAuditLog                    bool                    `json:"disableAuditLog"`
+	Debug                              bool                    `json:"debug"`
+	Version                            *versionutils.Version   `json:"version"`
+	HTTPRequestTimeout                 string                  `json:"httpRequestTimeout"`
+	NodeSelector                       map[string]string       `json:"nodeSelector"`
+	Tolerations                        []map[string]string     `json:"tolerations"`
+	ServiceAccountName                 string                  `json:"serviceAccountName"`
+	ImagePullPolicy                    string                  `json:"imagePullPolicy"`
+	ISCSISelfHealingInterval           string                  `json:"iscsiSelfHealingInterval"`
+	ISCSISelfHealingWaitTime           string                  `json:"iscsiSelfHealingWaitTime"`
+	NodePrep                           []string                `json:"nodePrep"`
+	K8sAPIQPS                          int                     `json:"k8sAPIQPS"`
+	Resources                          *commonconfig.Resources `json:"resources"`
 }
 
 type TridentVersionPodYAMLArguments struct {

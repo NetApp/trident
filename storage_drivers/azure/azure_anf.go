@@ -605,6 +605,17 @@ func (d *NASStorageDriver) initializeAzureSDKClient(
 		}
 	}
 
+	// Convert driver cloud configuration to API cloud configuration
+	var cloudConfig *api.CloudConfiguration
+	if config.CloudConfiguration != nil {
+		cloudConfig = &api.CloudConfiguration{
+			CloudName:       config.CloudConfiguration.CloudName,
+			ADAuthorityHost: config.CloudConfiguration.ADAuthorityHost,
+			Audience:        config.CloudConfiguration.Audience,
+			Endpoint:        config.CloudConfiguration.Endpoint,
+		}
+	}
+
 	clientConfig := api.ClientConfig{
 		SubscriptionID: config.SubscriptionID,
 		AzureAuthConfig: azclient.AzureAuthConfig{
@@ -613,6 +624,7 @@ func (d *NASStorageDriver) initializeAzureSDKClient(
 		},
 		TenantID:          config.TenantID,
 		Location:          config.Location,
+		CloudConfig:       cloudConfig,
 		StorageDriverName: config.StorageDriverName,
 		DebugTraceFlags:   config.DebugTraceFlags,
 		SDKTimeout:        sdkTimeout,
@@ -1544,13 +1556,23 @@ func (d *NASStorageDriver) Rename(ctx context.Context, name, newName string) err
 	return nil
 }
 
-// getTelemetryLabels builds the standard telemetry labels that are set on each volume.
+// getTelemetryLabels builds essential telemetry labels that fit within Azure's 256-character limit.
 func (d *NASStorageDriver) getTelemetryLabels(ctx context.Context) string {
-	telemetry := map[string]Telemetry{drivers.TridentLabelTag: *d.telemetry}
+	// Use only essential fields to stay within Azure tag size limit (256 chars)
+	essentialTelemetry := map[string]interface{}{
+		drivers.TridentLabelTag: map[string]interface{}{
+			"version":         d.telemetry.TridentVersion,
+			"backendUUID":     d.telemetry.TridentBackendUUID,
+			"platform":        d.telemetry.Platform,
+			"platformVersion": d.telemetry.PlatformVersion,
+			"plugin":          d.telemetry.Plugin,
+		},
+	}
 
-	telemetryJSON, err := json.Marshal(telemetry)
+	telemetryJSON, err := json.Marshal(essentialTelemetry)
 	if err != nil {
-		Logc(ctx).Errorf("Failed to marshal telemetry: %+v", telemetry)
+		Logc(ctx).Errorf("Failed to marshal essential telemetry; %v", err)
+		return ""
 	}
 
 	return strings.ReplaceAll(string(telemetryJSON), " ", "")

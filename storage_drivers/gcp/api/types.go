@@ -1,53 +1,46 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
+// Package api provides a high-level interface to the Google Cloud NetApp Volumes SDK
 package api
-
-//go:generate mockgen -destination=../../../mocks/mock_storage_drivers/mock_gcp/mock_api.go github.com/netapp/trident/storage_drivers/gcp/api GCPClient
 
 import (
 	"context"
-	"net/http"
 	"time"
 
-	versionutils "github.com/netapp/trident/utils/version"
+	"github.com/netapp/trident/storage"
 )
 
-type GCPClient interface {
-	InvokeAPI(
-		ctx context.Context, requestBody []byte, method, gcpURL string,
-	) (*http.Response, []byte, error)
-	GetVersion(ctx context.Context) (*versionutils.Version, *versionutils.Version, error)
-	GetServiceLevels(ctx context.Context) (map[string]string, error)
+//go:generate mockgen -package mock_api -destination=../../../mocks/mock_storage_drivers/mock_gcp/mock_api.go github.com/netapp/trident/storage_drivers/gcp/api GCNV
 
-	GetVolumes(ctx context.Context) (*[]Volume, error)
-	GetVolumeByName(ctx context.Context, name string) (*Volume, error)
-	GetVolumeByCreationToken(ctx context.Context, creationToken string) (*Volume, error)
-	VolumeExistsByCreationToken(ctx context.Context, creationToken string) (bool, *Volume, error)
-	GetVolumeByID(ctx context.Context, volumeId string) (*Volume, error)
-	WaitForVolumeStates(
-		ctx context.Context, volume *Volume, desiredStates, abortStates []string,
-		maxElapsedTime time.Duration,
-	) (string, error)
-	CreateVolume(ctx context.Context, request *VolumeCreateRequest) error
-	RenameVolume(ctx context.Context, volume *Volume, newName string) (*Volume, error)
-	ChangeVolumeUnixPermissions(ctx context.Context, volume *Volume, newUnixPermissions string) (*Volume, error)
-	RelabelVolume(ctx context.Context, volume *Volume, labels []string) (*Volume, error)
-	RenameRelabelVolume(
-		ctx context.Context, volume *Volume, newName string, labels []string,
-	) (*Volume, error)
-	ResizeVolume(ctx context.Context, volume *Volume, newSizeBytes int64) (*Volume, error)
-	DeleteVolume(ctx context.Context, volume *Volume) error
+type GCNV interface {
+	Init(context.Context, map[string]storage.Pool) error
 
-	GetSnapshotsForVolume(ctx context.Context, volume *Volume) (*[]Snapshot, error)
-	GetSnapshotForVolume(ctx context.Context, volume *Volume, snapshotName string) (*Snapshot, error)
-	GetSnapshotByID(ctx context.Context, snapshotId string) (*Snapshot, error)
-	WaitForSnapshotState(
-		ctx context.Context, snapshot *Snapshot, desiredState string, abortStates []string,
-		maxElapsedTime time.Duration,
-	) error
-	CreateSnapshot(ctx context.Context, request *SnapshotCreateRequest) error
-	RestoreSnapshot(ctx context.Context, volume *Volume, snapshot *Snapshot) error
-	DeleteSnapshot(ctx context.Context, volume *Volume, snapshot *Snapshot) error
+	RefreshGCNVResources(context.Context) error
+	DiscoverGCNVResources(context.Context) error
 
-	GetPools(ctx context.Context) (*[]*Pool, error)
+	CapacityPools() *[]*CapacityPool
+	CapacityPoolsForStoragePools(context.Context) []*CapacityPool
+	CapacityPoolsForStoragePool(context.Context, storage.Pool, string) []*CapacityPool
+	FilterCapacityPoolsOnTopology(context.Context, []*CapacityPool, []map[string]string, []map[string]string) []*CapacityPool
+	EnsureVolumeInValidCapacityPool(context.Context, *Volume) error
+
+	Volumes(context.Context) (*[]*Volume, error)
+	Volume(context.Context, *storage.VolumeConfig) (*Volume, error)
+	VolumeByName(context.Context, string) (*Volume, error)
+	VolumeExists(context.Context, *storage.VolumeConfig) (bool, *Volume, error)
+	VolumeExistsByName(context.Context, string) (bool, *Volume, error)
+	VolumeByID(context.Context, string) (*Volume, error)
+	VolumeExistsByID(context.Context, string) (bool, *Volume, error)
+	VolumeByNameOrID(context.Context, string) (*Volume, error)
+	WaitForVolumeState(context.Context, *Volume, string, []string, time.Duration) (string, error)
+	CreateVolume(context.Context, *VolumeCreateRequest) (*Volume, error)
+	ModifyVolume(context.Context, *Volume, map[string]string, *string, *bool, *ExportRule) error
+	ResizeVolume(context.Context, *Volume, int64) error
+	DeleteVolume(context.Context, *Volume) error
+
+	SnapshotsForVolume(context.Context, *Volume) (*[]*Snapshot, error)
+	SnapshotForVolume(context.Context, *Volume, string) (*Snapshot, error)
+	CreateSnapshot(context.Context, *Volume, string, time.Duration) (*Snapshot, error)
+	RestoreSnapshot(context.Context, *Volume, *Snapshot) error
+	DeleteSnapshot(context.Context, *Volume, *Snapshot, time.Duration) error
 }

@@ -610,6 +610,7 @@ func TestTerminate_Success(t *testing.T) {
 	driver.initialized = true
 
 	mockAPI.EXPECT().ExportPolicyDestroy(ctx, gomock.Any()).Return(nil)
+	mockAPI.EXPECT().Terminate().AnyTimes()
 
 	driver.Terminate(ctx, BackendUUID)
 
@@ -631,6 +632,7 @@ func TestTerminate_WithErrorInApiOperation(t *testing.T) {
 	driver.housekeepingTasks = map[string]*HousekeepingTask{"task1": newMockHousekeepingTask(driver)}
 
 	mockAPI.EXPECT().ExportPolicyDestroy(ctx, gomock.Any()).Return(mockError)
+	mockAPI.EXPECT().Terminate().AnyTimes()
 
 	driver.Terminate(ctx, BackendUUID)
 
@@ -4571,7 +4573,7 @@ func TestNASQtreeStorageDriver_VolumeCreate(t *testing.T) {
 	sizeKB := 1048576
 	sizeKBStr := strconv.FormatUint(uint64(sizeKB), 10)
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -4642,7 +4644,7 @@ func TestCreate_WithInvalidInternalID(t *testing.T) {
 		InternalID:   "invalid",
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
@@ -4663,7 +4665,7 @@ func TestCreate_WithVirtualPoolAndNoMatchingPhysicalPool(t *testing.T) {
 		InternalName: qtreeName,
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool2 := storage.NewStoragePool(sb, "pool2")
@@ -4686,7 +4688,7 @@ func TestCreate_WithQtreeAlreadyExists(t *testing.T) {
 		InternalName: "qtree1",
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	driver.physicalPools = map[string]storage.Pool{"pool1": pool1}
@@ -4702,7 +4704,7 @@ func TestCreate_WithQtreeAlreadyExists(t *testing.T) {
 func TestCreate_WithInvalidConfig(t *testing.T) {
 	// Create attributes common to all test cases
 	volName := "vol1"
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	commonStoragePool := storage.NewStoragePool(sb, "pool1")
 	volAttrs := map[string]sa.Request{}
@@ -4746,7 +4748,7 @@ func TestCreate_WithInvalidConfig(t *testing.T) {
 				InternalName: volName,
 			},
 			storagePool: func() *storage.StoragePool {
-				sb := &storage.StorageBackend{}
+				sb := storage.NewTestStorageBackend()
 				sb.SetBackendUUID(BackendUUID)
 				pool := storage.NewStoragePool(sb, "pool1")
 				pool.InternalAttributes()["snapshotDir"] = "invalid"
@@ -4761,7 +4763,7 @@ func TestCreate_WithInvalidConfig(t *testing.T) {
 				InternalName: volName,
 			},
 			storagePool: func() *storage.StoragePool {
-				sb := &storage.StorageBackend{}
+				sb := storage.NewTestStorageBackend()
 				sb.SetBackendUUID(BackendUUID)
 				pool := storage.NewStoragePool(sb, "pool1")
 				pool.InternalAttributes()["snapshotDir"] = "true"
@@ -4806,7 +4808,7 @@ func TestCreate_OverSizeLimit(t *testing.T) {
 		InternalName: qtreeName,
 	}
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -4849,7 +4851,7 @@ func TestCreate_OverPoolSizeLimit(t *testing.T) {
 	sizeBytes := 1073741824
 	sizeBytesStr := strconv.FormatUint(uint64(sizeBytes), 10)
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -4895,7 +4897,7 @@ func TestCreate_WithIneligibleBackend(t *testing.T) {
 	flexvolName := "flexvol1"
 	flexvol := &api.Volume{Name: flexvolName}
 	volAttrs := map[string]sa.Request{}
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := storage.NewStoragePool(sb, "pool1")
 	pool1.InternalAttributes()["snapshotDir"] = "false"
@@ -4964,7 +4966,7 @@ func TestCreate_WithErrorInApiOperation(t *testing.T) {
 	sizeKB := 1048576
 	sizeKBStr := strconv.FormatUint(uint64(sizeKB), 10)
 
-	sb := &storage.StorageBackend{}
+	sb := storage.NewTestStorageBackend()
 	sb.SetBackendUUID(BackendUUID)
 	pool1 := getValidOntapNASPool()
 	pool1.SetName("pool1")
@@ -5963,6 +5965,7 @@ func TestOntapNasEcoUnpublish(t *testing.T) {
 					Return(map[int]string{1: "1.1.1.1", 2: "2.2.2.2"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, qtreeName, gomock.Any()).Times(2)
 				mockAPI.EXPECT().ExportRuleList(ctx, qtreeName)
+				mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Return(true, nil)
 				mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, "tridentempty")
 				mockAPI.EXPECT().ExportPolicyDestroy(ctx, qtreeName)
 			},
@@ -5978,8 +5981,7 @@ func TestOntapNasEcoUnpublish(t *testing.T) {
 					Return(map[int]string{1: "1.1.1.1", 2: "2.2.2.2"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, qtreeName, gomock.Any()).Times(2)
 				mockAPI.EXPECT().ExportRuleList(ctx, qtreeName)
-				mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, "tridentempty").
-					Return(errors.NotFoundError("export policy not found"))
+				mockAPI.EXPECT().ExportPolicyExists(ctx, gomock.Any()).Return(false, nil)
 				mockAPI.EXPECT().ExportPolicyCreate(ctx, "tridentempty")
 				mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, "tridentempty")
 				mockAPI.EXPECT().ExportPolicyDestroy(ctx, qtreeName)
@@ -6091,6 +6093,8 @@ func TestOntapNasEcoLegacyUnpublish(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI, qtreeName, flexVolName, backendPolicy string) {
 				mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, gomock.Any()).
 					Return(&api.Qtree{ExportPolicy: backendPolicy, Volume: flexVolName}, nil)
+				mockAPI.EXPECT().ExportPolicyExists(ctx, "tridentempty").Return(false, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "tridentempty").Return(nil)
 				mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, "tridentempty")
 			},
 			wantErr: assert.NoError,
@@ -6098,7 +6102,7 @@ func TestOntapNasEcoLegacyUnpublish(t *testing.T) {
 		{
 			// This qtree has the backend based export policy "trident-1234" but its volConfig.ExportPolicy="" because
 			// this qtree vol was created using trident version <= 23.01. During Unpublish, the correct export policy
-			// should be querired from backend and used.
+			// should be queried from backend and used.
 			// After unpublish, the qtree is expected to be set to the empty export policy with no rules because it
 			// is no longer in use by any pods on any node.
 			name: "legacyQtreeWithEmptyExportPolicyInVolConfig",
@@ -6106,6 +6110,8 @@ func TestOntapNasEcoLegacyUnpublish(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI, qtreeName, flexVolName, backendPolicy string) {
 				mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, gomock.Any()).
 					Return(&api.Qtree{ExportPolicy: backendPolicy, Volume: flexVolName}, nil)
+				mockAPI.EXPECT().ExportPolicyExists(ctx, "tridentempty").Return(false, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "tridentempty").Return(nil)
 				mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, "tridentempty")
 			},
 			wantErr: assert.NoError,
@@ -6119,9 +6125,8 @@ func TestOntapNasEcoLegacyUnpublish(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI, qtreeName, flexVolName, backendPolicy string) {
 				mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, gomock.Any()).
 					Return(&api.Qtree{ExportPolicy: backendPolicy, Volume: flexVolName}, nil)
-				mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, "tridentempty").
-					Return(errors.NotFoundError("export policy not found"))
-				mockAPI.EXPECT().ExportPolicyCreate(ctx, "tridentempty")
+				mockAPI.EXPECT().ExportPolicyExists(ctx, "tridentempty").Return(false, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "tridentempty").Return(nil)
 				mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, "tridentempty")
 			},
 			wantErr: assert.NoError,
@@ -6147,6 +6152,8 @@ func TestOntapNasEcoLegacyUnpublish(t *testing.T) {
 			mocks: func(mockAPI *mockapi.MockOntapAPI, qtreeName, flexVolName, backendPolicy string) {
 				mockAPI.EXPECT().QtreeGetByName(ctx, qtreeName, gomock.Any()).
 					Return(&api.Qtree{ExportPolicy: "default", Volume: flexVolName}, nil).Times(1)
+				mockAPI.EXPECT().ExportPolicyExists(ctx, "tridentempty").Return(false, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "tridentempty").Return(nil)
 				mockAPI.EXPECT().QtreeModifyExportPolicy(ctx, qtreeName, flexVolName, "tridentempty").Times(1)
 			},
 			wantErr: assert.NoError,

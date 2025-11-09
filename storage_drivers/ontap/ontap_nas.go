@@ -192,6 +192,7 @@ func (d *NASStorageDriver) Terminate(ctx context.Context, backendUUID string) {
 	if d.telemetry != nil {
 		d.telemetry.Stop()
 	}
+	d.API.Terminate()
 	d.initialized = false
 }
 
@@ -340,6 +341,8 @@ func (d *NASStorageDriver) Create(
 		if err != nil {
 			return fmt.Errorf("error ensuring export policy exists: %v", err)
 		}
+
+		volConfig.AccessInfo.PublishEnforcement = true
 	}
 
 	qosPolicyGroup, err := api.NewQosPolicyGroup(qosPolicy, adaptiveQosPolicy)
@@ -712,6 +715,7 @@ func (d *NASStorageDriver) Import(
 		"originalName": originalName,
 		"newName":      volConfig.InternalName,
 		"notManaged":   volConfig.ImportNotManaged,
+		"noRename":     volConfig.ImportNoRename,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
@@ -741,8 +745,8 @@ func (d *NASStorageDriver) Import(
 		}
 	}
 
-	// Rename the volume if Trident will manage its lifecycle
-	if !volConfig.ImportNotManaged {
+	// Rename the volume if Trident will manage its lifecycle and the names are different
+	if !volConfig.ImportNotManaged && !volConfig.ImportNoRename {
 		if err := d.API.VolumeRename(ctx, originalName, volConfig.InternalName); err != nil {
 			return err
 		}
@@ -986,25 +990,28 @@ func (d *NASStorageDriver) Unpublish(
 
 // setVolToEmptyPolicy  set export policy to the empty policy.
 func (d *NASStorageDriver) setVolToEmptyPolicy(ctx context.Context, volName string) error {
+	fields := LogFields{"flexvol": volName}
 	emptyExportPolicy := getEmptyExportPolicyName(*d.Config.StoragePrefix)
 
+	fields["exportPolicy"] = emptyExportPolicy
 	exists, err := d.API.ExportPolicyExists(ctx, emptyExportPolicy)
 	if err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Errorf("Could not check if export policy %s exists.", emptyExportPolicy)
 		return err
 	}
 
 	if !exists {
-		Logc(ctx).WithField("exportPolicy", emptyExportPolicy).
-			Debug("Export policy not found, attempting to create it.")
+		Logc(ctx).WithFields(fields).Debug("Export policy not found, attempting to create it.")
 		if err = ensureExportPolicyExists(ctx, emptyExportPolicy, d.API); err != nil {
-			Logc(ctx).WithError(err).Errorf("Could not create empty export policy %s.", emptyExportPolicy)
+			Logc(ctx).WithFields(fields).
+				WithError(err).Errorf("Could not create empty export policy %s.", emptyExportPolicy)
 			return err
 		}
 	}
 
 	err = d.API.VolumeModifyExportPolicy(ctx, volName, emptyExportPolicy)
 	if err != nil {
-		Logc(ctx).WithError(err).Errorf("Error setting volume %s to empty export policy.", volName)
+		Logc(ctx).WithFields(fields).WithError(err).Errorf("Error setting volume %s to empty export policy.", volName)
 		return err
 	}
 
@@ -2010,4 +2017,10 @@ func (d *NASStorageDriver) EnablePublishEnforcement(ctx context.Context, volume 
 func (d *NASStorageDriver) CanEnablePublishEnforcement() bool {
 	// Only do publish enforcement if the auto export policy is turned on
 	return d.Config.AutoExportPolicy
+}
+
+func (d *NASStorageDriver) HealVolumePublishEnforcement(
+	ctx context.Context, vol *storage.Volume,
+) bool {
+	return HealNASPublishEnforcement(ctx, d, vol)
 }

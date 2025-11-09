@@ -1287,86 +1287,6 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			volumeAuthSecrets: make(map[string]string, 0),
 			assertError:       assert.Error,
 		},
-		"invalid LUKS encryption value in publish info": {
-			chrootPathPrefix: "",
-			getCommand: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(context.TODO(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(context.TODO(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
-				mockCommand.EXPECT().Execute(context.TODO(), "iscsiadm", "-m",
-					"session").Return([]byte(iscsiadmSessionOutput), nil)
-				return mockCommand
-			},
-			getOSClient: func(controller *gomock.Controller) OS {
-				mockOsClient := mock_iscsi.NewMockOS(controller)
-				mockOsClient.EXPECT().PathExists("/dev/sda/block").Return(true, nil)
-				return mockOsClient
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().WaitForDevice(context.TODO(), "/dev/dm-0").Return(nil)
-				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
-				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return(vpdpg80Serial, nil).Times(3)
-				mockDevices.EXPECT().ScanTargetLUN(context.TODO(), ScsiScanZeros)
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(2)
-				mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
-					nil)
-				return mockDevices
-			},
-			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
-				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
-				return mockFileSystem
-			},
-			getMountClient: func(controller *gomock.Controller) mount.Mount {
-				mockMount := mock_mount.NewMockMount(controller)
-				return mockMount
-			},
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(), targetIQN).
-					Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).
-					Times(6)
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).Times(2)
-				return mockReconcileUtils
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				f, err := fs.Create("/dev/sda/vpd_pg80")
-				assert.NoError(t, err)
-
-				_, err = f.Write(vpdpg80SerialBytes(vpdpg80Serial))
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/rescan")
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/delete")
-				assert.NoError(t, err)
-
-				err = fs.MkdirAll("/sys/block/sda/holders/dm-0", 777)
-				assert.NoError(t, err)
-				return fs
-			},
-			publishInfo: models.VolumePublishInfo{
-				LUKSEncryption: "foo",
-				FilesystemType: filesystem.Ext4,
-				VolumeAccessInfo: models.VolumeAccessInfo{
-					IscsiAccessInfo: models.IscsiAccessInfo{
-						IscsiTargetPortal: "127.0.0.1",
-						IscsiPortals:      []string{"127.0.0.2"},
-						IscsiTargetIQN:    targetIQN,
-						IscsiLunSerial:    vpdpg80Serial,
-					},
-				},
-			},
-			volumeName:        "test-volume",
-			volumeMountPoint:  "/mnt/test-volume",
-			volumeAuthSecrets: make(map[string]string, 0),
-			assertError:       assert.Error,
-		},
 		"failure ensuring LUKS device mapped on host": {
 			chrootPathPrefix: "",
 			getCommand: func(controller *gomock.Controller) tridentexec.Command {
@@ -2331,6 +2251,367 @@ func TestClient_filterDevicesBySize(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, deviceSizeMap)
 	assert.Equal(t, len(deviceInfo.Devices), len(deviceSizeMap))
+}
+
+func TestClient_remediatePaths(t *testing.T) {
+	type clientOptions func(*Client)
+	stageClient := func(opts ...clientOptions) *Client {
+		c := &Client{}
+		for _, opt := range opts {
+			if opt != nil {
+				opt(c)
+			}
+		}
+		return c
+	}
+
+	tt := map[string]struct {
+		publishInfo *models.VolumePublishInfo
+		mockOptions []func(*gomock.Controller) clientOptions
+		assertError assert.ErrorAssertionFunc
+	}{
+		"when no path remediation is necessary": {
+			publishInfo: &models.VolumePublishInfo{
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiLunNumber:    1,
+						IscsiTargetIQN:    "iqn.test",
+						IscsiTargetPortal: "10.0.0.1:3260",
+						IscsiPortals:      []string{"10.0.0.2:3260"},
+					},
+				},
+			},
+			mockOptions: []func(ctrl *gomock.Controller) clientOptions{
+				// Mock iscsiUtils
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockUtils := mock_iscsi.NewMockIscsiReconcileUtils(ctrl)
+						// Initial call in remediatePaths
+						mockUtils.EXPECT().
+							GetISCSIHostSessionMapForTarget(gomock.Any(), "iqn.test").
+							Return(map[int]int{0: 0})
+						// First call in remediatePaths
+						mockUtils.EXPECT().
+							GetSysfsBlockDirsForLUN(1, map[int]int{0: 0}).
+							Return([]string{"/sys/block/sda", "/sys/block/sdb"})
+						// Called again in waitForDeviceScan
+						mockUtils.EXPECT().
+							GetSysfsBlockDirsForLUN(1, map[int]int{0: 0}).
+							Return([]string{"/sys/block/sda", "/sys/block/sdb"})
+						// Called after waitForDeviceScan
+						mockUtils.EXPECT().
+							GetDevicesForLUN([]string{"/sys/block/sda", "/sys/block/sdb"}).
+							Return([]string{"sda", "sdb"}, nil)
+						c.iscsiUtils = mockUtils
+					}
+				},
+				// Mock devices
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockDevices := mock_devices.NewMockDevices(ctrl)
+						// Called in waitForDeviceScan
+						mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), gomock.Any()).Return(nil)
+						c.devices = mockDevices
+					}
+				},
+				// Mock osClient
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockOS := mock_iscsi.NewMockOS(ctrl)
+						// Called in waitForDeviceScan for each path
+						mockOS.EXPECT().
+							PathExists("/sys/block/sda/block").Return(true, nil)
+						mockOS.EXPECT().
+							PathExists("/sys/block/sdb/block").Return(true, nil)
+						c.osClient = mockOS
+					}
+				},
+			},
+			assertError: assert.NoError,
+		},
+		"when one path is missing": {
+			publishInfo: &models.VolumePublishInfo{
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiLunNumber:    1,
+						IscsiTargetIQN:    "iqn.test",
+						IscsiTargetPortal: "10.0.0.1:3260",
+						IscsiPortals:      []string{"10.0.0.2:3260"},
+					},
+				},
+			},
+			mockOptions: []func(ctrl *gomock.Controller) clientOptions{
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockUtils := mock_iscsi.NewMockIscsiReconcileUtils(ctrl)
+						mockUtils.EXPECT().
+							GetISCSIHostSessionMapForTarget(gomock.Any(), "iqn.test").
+							Return(map[int]int{0: 0}).AnyTimes()
+						mockUtils.EXPECT().
+							GetSysfsBlockDirsForLUN(1, map[int]int{0: 0}).
+							Return([]string{"/sys/block/sda", "/sys/block/sdb"}).AnyTimes()
+						mockUtils.EXPECT().
+							GetSysfsBlockDirsForLUN(1, map[int]int{0: 0}).
+							Return([]string{"/sys/block/sda"}).AnyTimes()
+						mockUtils.EXPECT().
+							GetDevicesForLUN([]string{"/sys/block/sda", "/sys/block/sdb"}).
+							Return([]string{"sda", "sdb"}, nil).AnyTimes()
+						c.iscsiUtils = mockUtils
+					}
+				},
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockDevices := mock_devices.NewMockDevices(ctrl)
+						mockDevices.EXPECT().
+							ScanTargetLUN(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+						mockDevices.EXPECT().
+							ListAllDevices(gomock.Any()).AnyTimes()
+						c.devices = mockDevices
+					}
+				},
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockOS := mock_iscsi.NewMockOS(ctrl)
+						mockOS.EXPECT().
+							PathExists("/sys/block/sda/block").Return(true, nil).AnyTimes()
+						mockOS.EXPECT().
+							PathExists("/sys/block/sdb/block").Return(true, nil).AnyTimes()
+						c.osClient = mockOS
+					}
+				},
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockCommand := mockexec.NewMockCommand(ctrl)
+						mockCommand.EXPECT().
+							Execute(gomock.Any(), "iscsiadm", "-m", "node").
+							Return([]byte(""), nil).AnyTimes()
+						mockCommand.EXPECT().
+							Execute(gomock.Any(), "iscsiadm", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+							Return([]byte(""), nil).AnyTimes()
+						mockCommand.EXPECT().
+							ExecuteWithTimeout(gomock.Any(), "iscsiadm", gomock.Any(), gomock.Any(), gomock.Any()).
+							Return([]byte(""), nil).AnyTimes()
+						c.command = mockCommand
+					}
+				},
+			},
+			assertError: assert.NoError,
+		},
+		"when device and path count lack parity after remediation": {
+			publishInfo: &models.VolumePublishInfo{
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiLunNumber:    1,
+						IscsiTargetIQN:    "iqn.test",
+						IscsiTargetPortal: "10.0.0.1:3260",
+						IscsiPortals:      []string{"10.0.0.2:3260"},
+					},
+				},
+			},
+			mockOptions: []func(ctrl *gomock.Controller) clientOptions{
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockUtils := mock_iscsi.NewMockIscsiReconcileUtils(ctrl)
+						// All calls return both paths, as if remediation succeeded
+						mockUtils.EXPECT().
+							GetISCSIHostSessionMapForTarget(gomock.Any(), "iqn.test").
+							Return(map[int]int{0: 0}).AnyTimes()
+						mockUtils.EXPECT().
+							GetSysfsBlockDirsForLUN(1, map[int]int{0: 0}).
+							Return([]string{"/sys/block/sda", "/sys/block/sdb"}).AnyTimes()
+						// Final call returns only one device, causing the parity check to fail
+						mockUtils.EXPECT().
+							GetDevicesForLUN([]string{"/sys/block/sda", "/sys/block/sdb"}).
+							Return([]string{"sda"}, nil).AnyTimes()
+						c.iscsiUtils = mockUtils
+					}
+				},
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockDevices := mock_devices.NewMockDevices(ctrl)
+						mockDevices.EXPECT().
+							ScanTargetLUN(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+						mockDevices.EXPECT().
+							ListAllDevices(gomock.Any()).AnyTimes()
+						c.devices = mockDevices
+					}
+				},
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockOS := mock_iscsi.NewMockOS(ctrl)
+						mockOS.EXPECT().
+							PathExists("/sys/block/sda/block").Return(true, nil).AnyTimes()
+						mockOS.EXPECT().
+							PathExists("/sys/block/sdb/block").Return(true, nil).AnyTimes()
+						c.osClient = mockOS
+					}
+				},
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockCommand := mockexec.NewMockCommand(ctrl)
+						mockCommand.EXPECT().
+							Execute(gomock.Any(), "iscsiadm", "-m", "node").
+							Return([]byte(""), nil).AnyTimes()
+						mockCommand.EXPECT().
+							Execute(gomock.Any(), "iscsiadm", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+							Return([]byte(""), nil).AnyTimes()
+						mockCommand.EXPECT().
+							ExecuteWithTimeout(gomock.Any(), "iscsiadm", gomock.Any(), gomock.Any(), gomock.Any()).
+							Return([]byte(""), nil).AnyTimes()
+						c.command = mockCommand
+					}
+				},
+			},
+			assertError: assert.Error, // Should fail at the device/path parity check
+		},
+		"when path and portal count lack parity after remediation": {
+			publishInfo: &models.VolumePublishInfo{
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiLunNumber:    1,
+						IscsiTargetIQN:    "iqn.test",
+						IscsiTargetPortal: "10.0.0.1:3260",
+						IscsiPortals:      []string{"10.0.0.2:3260"},
+					},
+				},
+			},
+			mockOptions: []func(ctrl *gomock.Controller) clientOptions{
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockUtils := mock_iscsi.NewMockIscsiReconcileUtils(ctrl)
+						// Initial call: only one path
+						mockUtils.EXPECT().
+							GetISCSIHostSessionMapForTarget(gomock.Any(), "iqn.test").
+							Return(map[int]int{0: 0}).AnyTimes()
+						mockUtils.EXPECT().
+							GetSysfsBlockDirsForLUN(1, map[int]int{0: 0}).
+							Return([]string{"/sys/block/sda"}).AnyTimes()
+						c.iscsiUtils = mockUtils
+					}
+				},
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockDevices := mock_devices.NewMockDevices(ctrl)
+						mockDevices.EXPECT().
+							ListAllDevices(gomock.Any()).AnyTimes()
+						mockDevices.EXPECT().
+							ScanTargetLUN(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+						c.devices = mockDevices
+					}
+				},
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockOS := mock_iscsi.NewMockOS(ctrl)
+						mockOS.EXPECT().
+							PathExists("/sys/block/sda/block").Return(true, nil).AnyTimes()
+						c.osClient = mockOS
+					}
+				},
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockCommand := mockexec.NewMockCommand(ctrl)
+						mockCommand.EXPECT().
+							Execute(gomock.Any(), "iscsiadm", "-m", "node").
+							Return([]byte(""), nil).AnyTimes()
+						mockCommand.EXPECT().
+							Execute(gomock.Any(), "iscsiadm", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+							Return([]byte(""), nil).AnyTimes()
+						mockCommand.EXPECT().
+							ExecuteWithTimeout(gomock.Any(), "iscsiadm", gomock.Any(), gomock.Any(), gomock.Any()).
+							Return([]byte(""), nil).AnyTimes()
+						c.command = mockCommand
+					}
+				},
+			},
+			assertError: assert.Error, // Should fail at the path/portal parity check
+		},
+		"fails to get devices for LUN": {
+			publishInfo: &models.VolumePublishInfo{
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiLunNumber:    1,
+						IscsiTargetIQN:    "iqn.test",
+						IscsiTargetPortal: "10.0.0.1:3260",
+						IscsiPortals:      []string{"10.0.0.2:3260"},
+					},
+				},
+			},
+			mockOptions: []func(ctrl *gomock.Controller) clientOptions{
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockUtils := mock_iscsi.NewMockIscsiReconcileUtils(ctrl)
+						// All calls return both paths, as if remediation succeeded
+						mockUtils.EXPECT().
+							GetISCSIHostSessionMapForTarget(gomock.Any(), "iqn.test").
+							Return(map[int]int{0: 0}).AnyTimes()
+						mockUtils.EXPECT().
+							GetSysfsBlockDirsForLUN(1, map[int]int{0: 0}).
+							Return([]string{"/sys/block/sda", "/sys/block/sdb"}).AnyTimes()
+						// Final call returns an error
+						mockUtils.EXPECT().
+							GetDevicesForLUN([]string{"/sys/block/sda", "/sys/block/sdb"}).
+							Return(nil, fmt.Errorf("mock device lookup error")).AnyTimes()
+						c.iscsiUtils = mockUtils
+					}
+				},
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockDevices := mock_devices.NewMockDevices(ctrl)
+						mockDevices.EXPECT().
+							ScanTargetLUN(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+						mockDevices.EXPECT().
+							ListAllDevices(gomock.Any()).AnyTimes()
+						c.devices = mockDevices
+					}
+				},
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockOS := mock_iscsi.NewMockOS(ctrl)
+						mockOS.EXPECT().
+							PathExists("/sys/block/sda/block").Return(true, nil).AnyTimes()
+						mockOS.EXPECT().
+							PathExists("/sys/block/sdb/block").Return(true, nil).AnyTimes()
+						c.osClient = mockOS
+					}
+				},
+				func(ctrl *gomock.Controller) clientOptions {
+					return func(c *Client) {
+						mockCommand := mockexec.NewMockCommand(ctrl)
+						mockCommand.EXPECT().
+							Execute(gomock.Any(), "iscsiadm", "-m", "node").
+							Return([]byte(""), nil).AnyTimes()
+						mockCommand.EXPECT().
+							Execute(gomock.Any(), "iscsiadm", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+							Return([]byte(""), nil).AnyTimes()
+						mockCommand.EXPECT().
+							ExecuteWithTimeout(gomock.Any(), "iscsiadm", gomock.Any(), gomock.Any(), gomock.Any()).
+							Return([]byte(""), nil).AnyTimes()
+						c.command = mockCommand
+					}
+				},
+			},
+			assertError: assert.Error, // Should fail at GetDevicesForLUN error check
+		},
+	}
+
+	for name, fixture := range tt {
+		t.Run(name, func(t *testing.T) {
+			if fixture.assertError == nil || fixture.mockOptions == nil {
+				t.FailNow()
+			}
+			ctx := context.Background()
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			opts := make([]clientOptions, 0)
+			for _, getMockOpts := range fixture.mockOptions {
+				opts = append(opts, getMockOpts(mockCtrl))
+			}
+			client := stageClient(opts...)
+
+			fixture.assertError(t, client.remediatePaths(ctx, fixture.publishInfo))
+		})
+	}
 }
 
 func TestClient_rescanDevices(t *testing.T) {

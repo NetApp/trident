@@ -128,8 +128,6 @@ func GetStorageDriver(driverName string) (storage.Driver, error) {
 		storageDriver = &solidfire.SANStorageDriver{}
 	case config.AzureNASStorageDriverName:
 		storageDriver = &azure.NASStorageDriver{}
-	case config.GCPNFSStorageDriverName:
-		storageDriver = &gcp.NFSStorageDriver{}
 	case config.GCNVNASStorageDriverName:
 		storageDriver = &gcp.NASStorageDriver{}
 	case config.FakeStorageDriverName:

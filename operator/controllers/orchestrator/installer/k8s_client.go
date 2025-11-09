@@ -2268,6 +2268,28 @@ func (k *K8sClient) DeleteTransientVersionPod(versionPodLabel string) error {
 	return nil
 }
 
+// DeleteTridentNodeRemediationResources removes the resources used for node remediation.
+func (k *K8sClient) DeleteTridentNodeRemediationResources(namespace string) error {
+	yaml := k8sclient.GetNodeRemediationTemplateYAML(namespace)
+	if err := k.DeleteObjectByYAML(yaml, true); err != nil {
+		if !errors.IsResourceNotFoundError(err) {
+			Log().WithError(err).
+				Warning("Could not delete TridentNodeRemediationTemplate CR.")
+			return fmt.Errorf("could not delete TridentNodeRemediationTemplate CR: %v", err)
+		}
+	}
+
+	yaml = k8sclient.GetNodeRemediationClusterRoleYAML()
+	if err := k.DeleteObjectByYAML(yaml, true); err != nil {
+		if !errors.IsResourceNotFoundError(err) {
+			Log().WithError(err).
+				Warning("Could not delete trident-node-remediation-access clusterRole.")
+			return fmt.Errorf("could not delete tridentnoderemediation-access clusterRole: %v", err)
+		}
+	}
+	return nil
+}
+
 // ExecPodForVersionInformation takes the pod name and command to execute the command into the container matching the
 // pod name
 func (k *K8sClient) ExecPodForVersionInformation(podName string, cmd []string, timeout time.Duration) ([]byte, error) {

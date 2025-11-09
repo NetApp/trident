@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package luks
 
@@ -62,4 +62,8 @@ func (d *LUKSDevice) Resize(ctx context.Context, luksPassphrase string) error {
 	Logc(ctx).Debug(">>>> devices_darwin.Resize")
 	defer Logc(ctx).Debug("<<<< devices_darwin.Resize")
 	return errors.UnsupportedError("Resize is not supported for darwin")
+}
+
+func (d *LUKSDevice) isMappingStale(_ context.Context) bool {
+	return false
 }

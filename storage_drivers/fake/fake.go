@@ -810,6 +810,7 @@ func (d *StorageDriver) Import(ctx context.Context, volConfig *storage.VolumeCon
 	Logc(ctx).WithFields(LogFields{
 		"volumeConfig": volConfig,
 		"originalName": originalName,
+		"noRename":     volConfig.ImportNoRename,
 	}).Debug("Import")
 
 	importVolume, ok := d.Volumes[originalName]
@@ -819,7 +820,7 @@ func (d *StorageDriver) Import(ctx context.Context, volConfig *storage.VolumeCon
 
 	volConfig.Size = strconv.FormatUint(importVolume.SizeBytes, 10)
 
-	if !volConfig.ImportNotManaged {
+	if !volConfig.ImportNotManaged && !volConfig.ImportNoRename {
 		importVolume.Name = volConfig.InternalName
 		d.Volumes[volConfig.InternalName] = importVolume
 		delete(d.Volumes, originalName)

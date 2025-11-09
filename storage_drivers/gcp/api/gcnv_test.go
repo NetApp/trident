@@ -1,9 +1,11 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
-package gcnvapi
+package api
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"cloud.google.com/go/netapp/apiv1/netapppb"
@@ -622,34 +624,83 @@ func TestSnapshotStateFromGCNVState(t *testing.T) {
 	assert.Equal(t, "Error", errorState)
 }
 
-func TestIsGCNVNotFoundErrorNil(t *testing.T) {
-	err := IsGCNVNotFoundError(nil)
-	assert.False(t, err)
-}
-
 func TestIsGCNVNotFoundError(t *testing.T) {
-	statusCodeError := status.Error(codes.NotFound, "This is a test error")
-	errStatusCode := IsGCNVNotFoundError(statusCodeError)
+	result := IsGCNVNotFoundError(nil)
+	assert.False(t, result)
 
-	statusCodeNotError := errors.New("This is a non status code  error")
-	errStatus := IsGCNVNotFoundError(statusCodeNotError)
-	assert.True(t, errStatusCode)
-	assert.False(t, errStatus)
-}
+	err := status.Error(codes.NotFound, "This is a test error")
+	result = IsGCNVNotFoundError(err)
+	assert.True(t, result)
 
-func TestIsGCNVTooManyRequestsErrorNil(t *testing.T) {
-	err := IsGCNVTooManyRequestsError(nil)
-	assert.False(t, err)
+	err = errors.New("This is a non status code  error")
+	result = IsGCNVNotFoundError(err)
+	assert.False(t, result)
 }
 
 func TestIsGCNVTooManyRequestsError(t *testing.T) {
-	statusCodeError := status.Error(codes.ResourceExhausted, "This is a test error")
-	errStatusCode := IsGCNVTooManyRequestsError(statusCodeError)
+	result := IsGCNVTooManyRequestsError(nil)
+	assert.False(t, result)
 
-	statusCodeNotError := errors.New("This is a non status code  error")
-	errStatus := IsGCNVTooManyRequestsError(statusCodeNotError)
-	assert.True(t, errStatusCode)
-	assert.False(t, errStatus)
+	err := status.Error(codes.ResourceExhausted, "This is a test error")
+	result = IsGCNVTooManyRequestsError(err)
+	assert.True(t, result)
+
+	err = errors.New("This is a non status code  error")
+	result = IsGCNVTooManyRequestsError(err)
+	assert.False(t, result)
+}
+
+func TestIsGCNVDeadlineExceededError(t *testing.T) {
+	result := IsGCNVDeadlineExceededError(nil)
+	assert.False(t, result)
+
+	err := status.Error(codes.DeadlineExceeded, "This is a test error")
+	result = IsGCNVDeadlineExceededError(err)
+	assert.True(t, result)
+
+	err = errors.New("This is a non status code  error")
+	result = IsGCNVDeadlineExceededError(err)
+	assert.False(t, result)
+}
+
+func TestIsGCNVCanceledError(t *testing.T) {
+	result := IsGCNVCanceledError(nil)
+	assert.False(t, result)
+
+	err := status.Error(codes.Canceled, "This is a test error")
+	result = IsGCNVCanceledError(err)
+	assert.True(t, result)
+
+	err = errors.New("This is a non status code  error")
+	result = IsGCNVCanceledError(err)
+	assert.False(t, result)
+}
+
+func TestIsGCNVTimeoutError(t *testing.T) {
+	tests := []struct {
+		name     string
+		err      error
+		expected bool
+	}{
+		{"nil error", nil, false},
+		{"plain error", fmt.Errorf("some error"), false},
+		{"context canceled", context.Canceled, true},
+		{"wrapped context canceled", fmt.Errorf("wrap: %w", context.Canceled), true},
+		{"context deadline exceeded", context.DeadlineExceeded, true},
+		{"wrapped deadline exceeded", fmt.Errorf("wrap: %w", context.DeadlineExceeded), true},
+		{"grpc deadline exceeded", status.Error(codes.DeadlineExceeded, "deadline"), true},
+		{"grpc canceled", status.Error(codes.Canceled, "canceled"), true},
+		{"grpc other code", status.Error(codes.Unavailable, "unavailable"), false},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result := IsGCNVTimeoutError(tc.err)
+			if result != tc.expected {
+				t.Fatalf("IsGCNVTimeoutError(%v) = %v, expected %v", tc.err, result, tc.expected)
+			}
+		})
+	}
 }
 
 func TestDerefString(t *testing.T) {
