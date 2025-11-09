@@ -341,14 +341,7 @@ func ensureNodeAccess(
 	config *drivers.OntapStorageDriverConfig,
 ) error {
 	policyName := getExportPolicyName(publishInfo.BackendUUID)
-	if exists, err := clientAPI.ExportPolicyExists(ctx, policyName); err != nil {
-		return err
-	} else if !exists {
-		Logc(ctx).WithField("exportPolicy", policyName).Debug("Export policy missing, will create it.")
-		return reconcileNASNodeAccess(ctx, publishInfo.Nodes, config, clientAPI, policyName)
-	}
-	Logc(ctx).WithField("exportPolicy", policyName).Debug("Export policy exists.")
-	return nil
+	return reconcileNASNodeAccess(ctx, publishInfo.Nodes, config, clientAPI, policyName)
 }
 
 func reconcileNASNodeAccess(
@@ -388,10 +381,12 @@ func ensureNodeAccessForPolicy(
 	config *drivers.OntapStorageDriverConfig, policyName string,
 ) error {
 	fields := LogFields{
-		"Method":        "ensureNodeAccessForPolicy",
-		"Type":          "ontap_common",
-		"policyName":    policyName,
-		"targetNodeIPs": targetNode.IPs,
+		"Method":                           "ensureNodeAccessForPolicy",
+		"Type":                             "ontap_common",
+		"policyName":                       policyName,
+		"targetNodeIPs":                    targetNode.IPs,
+		"EnableCustomExportPolicySettings": config.EnableCustomExportPolicySettings,
+		"CustomExportClientIPs":            config.CustomExportClientIPs,
 	}
 
 	Logc(ctx).WithFields(fields).Debug(">>>> ensureNodeAccessForPolicy")
@@ -400,22 +395,41 @@ func ensureNodeAccessForPolicy(
 	exportPolicyMutex.Lock(policyName)
 	defer exportPolicyMutex.Unlock(policyName)
 
-	if exists, err := clientAPI.ExportPolicyExists(ctx, policyName); err != nil {
+	exists, err := clientAPI.ExportPolicyExists(ctx, policyName)
+	if err != nil {
 		return err
 	} else if !exists {
 		Logc(ctx).WithField("exportPolicy", policyName).Debug("Export policy missing, will create it.")
 
-		if err = clientAPI.ExportPolicyCreate(ctx, policyName); err != nil {
+		if err = ensureExportPolicyExists(ctx, policyName, clientAPI); err != nil {
 			return err
 		}
 	}
 
 	desiredRules, err := network.FilterIPs(ctx, targetNode.IPs, config.AutoExportCIDRs)
+
 	if err != nil {
 		err = fmt.Errorf("unable to determine desired export policy rules; %v", err)
 		Logc(ctx).Error(err)
 		return err
 	}
+
+	// if EnableCustomExportPolicySettings enabled then
+	// Add Custom Export Client IPs if they exist.
+	if config.EnableCustomExportPolicySettings {
+		if len(config.CustomExportClientIPs) > 0 {
+			extraCustomRules, err := network.FilterIPs(ctx, config.CustomExportClientIPs, config.AutoExportCIDRs)
+			if err != nil {
+				err = fmt.Errorf("unable to filter customExportClientIPs; %v", err)
+				Logc(ctx).Error(err)
+				return err
+			}
+
+			// Append the extraCustomRules to desiredRules
+			desiredRules = append(desiredRules, extraCustomRules...)
+		}
+	}
+
 	Logc(ctx).WithField("desiredRules", desiredRules).Debug("Desired export policy rules.")
 
 	// first grab all existing rules
@@ -465,6 +479,7 @@ func ensureNodeAccessForPolicy(
 
 		// Rule does not exist, so create it
 		if !ruleFound {
+			// Create Export Rule
 			if err = clientAPI.ExportRuleCreate(ctx, policyName, desiredRule, config.NASType); err != nil {
 				// Check if error is that the export policy rule already exist error
 				if errors.IsAlreadyExistsError(err) {
@@ -483,15 +498,35 @@ func ensureNodeAccessForPolicy(
 func getDesiredExportPolicyRules(
 	ctx context.Context, nodes []*tridentmodels.Node, config *drivers.OntapStorageDriverConfig,
 ) ([]string, error) {
+
 	uniqueRules := make(map[string]struct{})
+
 	for _, node := range nodes {
-		// Filter the IPs based on the CIDRs provided by user
-		filteredIPs, err := network.FilterIPs(ctx, node.IPs, config.AutoExportCIDRs)
+
+		// Filter the Node IPs based on the AutoExportCIDRs provided by user
+		nodeFilteredIPs, err := network.FilterIPs(ctx, node.IPs, config.AutoExportCIDRs)
 		if err != nil {
 			return nil, err
 		}
-		for _, ip := range filteredIPs {
+
+		for _, ip := range nodeFilteredIPs {
 			uniqueRules[ip] = struct{}{}
+		}
+	}
+
+	// if EnableCustomExportPolicySettings is enabled
+	// then check if CustomExportClientIPs exists and add IPs to list of desired rules.
+	if config.EnableCustomExportPolicySettings {
+		if len(config.CustomExportClientIPs) > 0 {
+			// Filter the CustomExportClientIPs based on the AutoExportCIDRs provided by user
+			customExtraIPs, err := network.FilterIPs(ctx, config.CustomExportClientIPs, config.AutoExportCIDRs)
+			if err != nil {
+				return nil, err
+			}
+
+			for _, ip := range customExtraIPs {
+				uniqueRules[ip] = struct{}{}
+			}
 		}
 	}
 
@@ -600,6 +635,7 @@ func reconcileExportPolicyRules(
 		}
 		deleted++
 	}
+
 	return nil
 }
 
@@ -1723,6 +1759,15 @@ func ValidateNASDriver(
 		return fmt.Errorf("failed to validate auto-export CIDR(s): %w", err)
 	}
 
+	// If EnableCustomExportPolicySettings is enabled then
+	// Check validity of CustomExportClientIPs
+	if config.EnableCustomExportPolicySettings {
+		// Ensure config has a set of valid CustomExportClientIPs
+		if err := network.ValidateIPs(ctx, config.CustomExportClientIPs); err != nil {
+			return fmt.Errorf("failed to validate custom export policy client IP(s): %w", err)
+		}
+	}
+
 	return nil
 }
 
@@ -1899,6 +1944,14 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		config.AutoExportCIDRs = []string{"0.0.0.0/0", "::/0"}
 	}
 
+	if len(config.CustomExportClientIPs) == 0 {
+		config.CustomExportClientIPs = []string{}
+	}
+
+	if !config.EnableCustomExportPolicySettings {
+		config.EnableCustomExportPolicySettings = false
+	}
+
 	if len(config.FlexGroupAggregateList) == 0 {
 		config.FlexGroupAggregateList = []string{}
 	}
@@ -1946,32 +1999,34 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 	}
 
 	logFields := LogFields{
-		"SpaceAllocation":        config.SpaceAllocation,
-		"SpaceReserve":           config.SpaceReserve,
-		"SnapshotPolicy":         config.SnapshotPolicy,
-		"SnapshotReserve":        config.SnapshotReserve,
-		"UnixPermissions":        config.UnixPermissions,
-		"SnapshotDir":            config.SnapshotDir,
-		"ExportPolicy":           config.ExportPolicy,
-		"SecurityStyle":          config.SecurityStyle,
-		"NfsMountOptions":        config.NfsMountOptions,
-		"SplitOnClone":           config.SplitOnClone,
-		"CloneSplitDelay":        config.CloneSplitDelay,
-		"FileSystemType":         config.FileSystemType,
-		"Encryption":             config.Encryption,
-		"LUKSEncryption":         config.LUKSEncryption,
-		"Mirroring":              config.Mirroring,
-		"LimitAggregateUsage":    config.LimitAggregateUsage,
-		"LimitVolumeSize":        config.LimitVolumeSize,
-		"LimitVolumePoolSize":    config.LimitVolumePoolSize,
-		"DenyNewVolumePools":     config.DenyNewVolumePools,
-		"Size":                   config.Size,
-		"TieringPolicy":          config.TieringPolicy,
-		"AutoExportPolicy":       config.AutoExportPolicy,
-		"AutoExportCIDRs":        config.AutoExportCIDRs,
-		"FlexgroupAggregateList": config.FlexGroupAggregateList,
-		"ADAdminUser":            config.ADAdminUser,
-		"NameTemplate":           config.NameTemplate,
+		"SpaceAllocation":                  config.SpaceAllocation,
+		"SpaceReserve":                     config.SpaceReserve,
+		"SnapshotPolicy":                   config.SnapshotPolicy,
+		"SnapshotReserve":                  config.SnapshotReserve,
+		"UnixPermissions":                  config.UnixPermissions,
+		"SnapshotDir":                      config.SnapshotDir,
+		"ExportPolicy":                     config.ExportPolicy,
+		"SecurityStyle":                    config.SecurityStyle,
+		"NfsMountOptions":                  config.NfsMountOptions,
+		"SplitOnClone":                     config.SplitOnClone,
+		"CloneSplitDelay":                  config.CloneSplitDelay,
+		"FileSystemType":                   config.FileSystemType,
+		"Encryption":                       config.Encryption,
+		"LUKSEncryption":                   config.LUKSEncryption,
+		"Mirroring":                        config.Mirroring,
+		"LimitAggregateUsage":              config.LimitAggregateUsage,
+		"LimitVolumeSize":                  config.LimitVolumeSize,
+		"LimitVolumePoolSize":              config.LimitVolumePoolSize,
+		"DenyNewVolumePools":               config.DenyNewVolumePools,
+		"Size":                             config.Size,
+		"TieringPolicy":                    config.TieringPolicy,
+		"AutoExportPolicy":                 config.AutoExportPolicy,
+		"AutoExportCIDRs":                  config.AutoExportCIDRs,
+		"EnableCustomExportPolicySettings": config.EnableCustomExportPolicySettings,
+		"CustomExportClientIPs":            config.CustomExportClientIPs,
+		"FlexgroupAggregateList":           config.FlexGroupAggregateList,
+		"ADAdminUser":                      config.ADAdminUser,
+		"NameTemplate":                     config.NameTemplate,
 	}
 
 	if config.StoragePrefix != nil {
@@ -4968,7 +5023,7 @@ func deleteAutomaticSnapshot(
 // retrieves its rules and matches the rules that exist to the IP addresses from the node.
 // Any matched IP addresses will be removed from the export policy.
 func removeExportPolicyRules(
-	ctx context.Context, exportPolicy string, publishInfo *tridentmodels.VolumePublishInfo, clientAPI api.OntapAPI,
+	ctx context.Context, exportPolicy string, publishInfo *tridentmodels.VolumePublishInfo, clientAPI api.OntapAPI, config drivers.OntapStorageDriverConfig,
 ) error {
 	fields := LogFields{
 		"Method":     "removeExportPolicyRules",
@@ -4984,10 +5039,21 @@ func removeExportPolicyRules(
 
 	var removeRuleIndexes []int
 
-	nodeIPRules := make(map[string]struct{})
+	finalNodes := make(map[string]struct{})
+
+	//parse host / node ips
 	for _, ip := range publishInfo.HostIP {
 		ip = strings.TrimSpace(ip)
-		nodeIPRules[ip] = struct{}{}
+		finalNodes[ip] = struct{}{}
+	}
+
+	// if EnableCustomExportPolicySettings then add customExportClientIPs to list.
+	// Parse custom export ips
+	if config.EnableCustomExportPolicySettings {
+		for _, ip := range config.CustomExportClientIPs {
+			ip = strings.TrimSpace(ip)
+			finalNodes[ip] = struct{}{}
+		}
 	}
 
 	// Get export policy rules from given policy
@@ -4995,40 +5061,49 @@ func removeExportPolicyRules(
 	if err != nil {
 		return err
 	}
+
 	Logc(ctx).WithField("existingExportRules", existingExportRules).Debug("Existing export policy rules.")
 
-	// Match list of rules to rule index based on clientMatch address
-	// ONTAP expects the rule index to delete
-	for ruleIndex, clientMatch := range existingExportRules {
-		// For the policy, match the node IP addresses to the clientMatch to remove the matched items.
-		// Example:
-		// trident_pvc_123 is attached to node1 and node2. The policy is being unpublished from node1.
-		// node1 IP addresses [1.1.1.0, 1.1.1.1] node2 IP addresses [2.2.2.0, 2.2.2.2].
-		// export policy "trident_pvc_123" should have the export rules:
-		// index 1: "1.1.1.0"
-		// index 2: "1.1.1.1"
-		// index 3: "2.2.2.0"
-		// index 4: "2.2.2.2"
-		// When the clientMatch is the same as the node IP that export rule index will be added to the list of
-		// indexes to be removed. For this example indexes 1 and 2 will be removed.
-
-		// Legacy export policies created via ZAPI will have multiple clientMatch IPs for a node in a single rule.
-		// index 1: "1.1.1.0, 1.1.1.1"
-		// index 2: "2.2.2.0, 2.2.2.2"
-		// For this example, index 1 will be removed.
-
-		// Add a ruleIndex for deletion only if ALL the IPs in the clientMatch are in the list of IPs we are trying
-		// to delete
-		allMatch := true
-		for _, singleClientMatch := range strings.Split(clientMatch, ",") {
-			singleClientMatch = strings.TrimSpace(singleClientMatch)
-			if _, match := nodeIPRules[singleClientMatch]; !match {
-				allMatch = false
-				break
-			}
-		}
-		if allMatch {
+	// If CustomExportClientIPs were defined
+	if config.EnableCustomExportPolicySettings {
+		// Remove all rules
+		for ruleIndex := range existingExportRules {
 			removeRuleIndexes = append(removeRuleIndexes, ruleIndex)
+		}
+	} else {
+		// Match list of rules to rule index based on clientMatch address
+		// ONTAP expects the rule index to delete
+		for ruleIndex, clientMatch := range existingExportRules {
+			// For the policy, match the node IP addresses to the clientMatch to remove the matched items.
+			// Example:
+			// trident_pvc_123 is attached to node1 and node2. The policy is being unpublished from node1.
+			// node1 IP addresses [1.1.1.0, 1.1.1.1] node2 IP addresses [2.2.2.0, 2.2.2.2].
+			// export policy "trident_pvc_123" should have the export rules:
+			// index 1: "1.1.1.0"
+			// index 2: "1.1.1.1"
+			// index 3: "2.2.2.0"
+			// index 4: "2.2.2.2"
+			// When the clientMatch is the same as the node IP that export rule index will be added to the list of
+			// indexes to be removed. For this example indexes 1 and 2 will be removed.
+
+			// Legacy export policies created via ZAPI will have multiple clientMatch IPs for a node in a single rule.
+			// index 1: "1.1.1.0, 1.1.1.1"
+			// index 2: "2.2.2.0, 2.2.2.2"
+			// For this example, index 1 will be removed.
+
+			// Add a ruleIndex for deletion only if ALL the IPs in the clientMatch are in the list of IPs we are trying
+			// to delete
+			allMatch := true
+			for _, singleClientMatch := range strings.Split(clientMatch, ",") {
+				singleClientMatch = strings.TrimSpace(singleClientMatch)
+				if _, match := finalNodes[singleClientMatch]; !match {
+					allMatch = false
+					break
+				}
+			}
+			if allMatch {
+				removeRuleIndexes = append(removeRuleIndexes, ruleIndex)
+			}
 		}
 	}
 

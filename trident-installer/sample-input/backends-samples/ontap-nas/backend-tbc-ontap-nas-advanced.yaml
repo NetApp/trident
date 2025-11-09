@@ -23,6 +23,11 @@ spec:
   limitAggregateUsage: 80%
   limitVolumeSize: 50Gi
   nfsMountOptions: nfsvers=4
+  useRest: true
+  # useRest: true
+  # enableCustomExportPolicySettings: true
+  # customExportClientIPs:
+  # - 192.168.0.1
   defaults:
     spaceReserve: volume
     exportPolicy: myk8scluster

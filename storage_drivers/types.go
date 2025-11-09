@@ -131,6 +131,8 @@ type OntapStorageDriverConfig struct {
 	DenyNewVolumePools               string     `json:"denyNewVolumePools"`
 	AutoExportPolicy                 bool       `json:"autoExportPolicy"`
 	AutoExportCIDRs                  []string   `json:"autoExportCIDRs"`
+	CustomExportClientIPs            []string   `json:"customExportClientIPs"`
+	EnableCustomExportPolicySettings    bool       `json:"enableCustomExportPolicySettings"`
 	OntapStorageDriverPool
 	Storage                   []OntapStorageDriverPool `json:"storage"`
 	UseCHAP                   bool                     `json:"useCHAP"`
