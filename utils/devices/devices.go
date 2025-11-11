@@ -67,7 +67,7 @@ type Devices interface {
 	GetLunSerial(ctx context.Context, path string) (string, error)
 	GetMultipathDeviceUUID(multipathDevicePath string) (string, error)
 	GetLUKSDeviceForMultipathDevice(multipathDevice string) (string, error)
-	GetLUKSDevicePathForVolume(ctx context.Context, volumeID string) (string, error)
+	GetLUKSDevicePathForDevicePath(ctx context.Context, devicePath string) (string, error)
 	ScanTargetLUN(ctx context.Context, deviceAddresses []models.ScsiDeviceAddress) error
 	CloseLUKSDevice(ctx context.Context, devicePath string) error
 	EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx context.Context, luksDevicePath string) error
@@ -805,51 +805,131 @@ func (c *Client) GetLUKSDeviceForMultipathDevice(multipathDevice string) (string
 	return DevMapperRoot + strings.TrimRight(string(b[luksDeviceUUIDNameOffset:]), "\n"), nil
 }
 
-// GetLUKSDevicePathForVolume finds the LUKS device path for a given volume ID.
-// Every LUKS device Trident creates should include the volume ID, which includes a volume uuid in the suffix.
-// Use that knowledge to find the correct LUKS mapper device and path.
-func (c *Client) GetLUKSDevicePathForVolume(ctx context.Context, volumeID string) (string, error) {
-	fields := LogFields{"volumeID": volumeID}
-	Logc(ctx).WithFields(fields).Debug(">>>> devices.GetLUKSDevicePathForVolume")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.GetLUKSDevicePathForVolume")
-	const dmDevicePattern = "/sys/block/dm-*"
+// GetLUKSDevicePathForDevicePath finds the LUKS device path for a given device path. It looks through every
+// dm-* device to find the correct LUKS mapper device and path based on the which dm-#/slaves entries.
+// This should work even if the underlying devices are ripped out before closing the LUKS mapper,
+// because the slaves dirs will have stale entries until the underlying device is removed first.
+func (c *Client) GetLUKSDevicePathForDevicePath(ctx context.Context, devicePath string) (string, error) {
+	fields := LogFields{"devicePath": devicePath}
+	Logc(ctx).WithFields(fields).Debug(">>>> devices.GetLUKSDevicePathForDevicePath")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< devices.GetLUKSDevicePathForDevicePath")
 
-	// This isn't great; we essentially have to reconstruct the suffix of the LUKS mapper device name
-	// which is the internal volume name of the volume. If this is required for iSCSI,
-	// we must test with SAN and SAN-Eco.
-	// "pvc-33bd3006-4765-498e-b61d-eae1d035c487" becomes "pvc_33bd3006_4765_498e_b61d_eae1d035c487"
-	luksSuffix := strings.ReplaceAll(volumeID, "-", "_")
+	const luksUUIDPrefix = "CRYPT-LUKS2"
+
+	// Clean the device path to get just the device name.
+	// Example: "/dev/nvmeXnY" -> "nvmeXnY"; "/dev/dm-#" -> "dm-#"
+	deviceName := strings.TrimPrefix(devicePath, DevPrefix)
+	deviceName = strings.TrimPrefix(deviceName, "/")
+
+	// Include chroot prefix in the pattern.
+	// Glob the /sys/block/dm-* directories; we have to search them all.
+	dmDevicePattern := c.chrootPathPrefix + "/sys/block/dm-*"
 	dmDeviceDirs, err := afero.Glob(c.osFs, dmDevicePattern)
 	if err != nil {
 		Logc(ctx).WithFields(fields).WithError(err).Warn("Could not read dm device directories.")
 		return "", err
 	}
 
+	// Search every dm device and their slave devices for the target device.
 	for _, deviceDir := range dmDeviceDirs {
-		// "/sys/block/dm-#/dm/name" contains the name of the device-mapper device.
-		namePath := filepath.Join(deviceDir, "dm", "name")
-		nameBytes, err := c.osFs.ReadFile(namePath)
+		// Check if this dm device is a "CRYPT-LUKS2" device by inspecting the prefix of the uuid present in:
+		// "/sys/block/dm-*/dm/uuid" file. This ensures we only consider LUKS devices.
+		uuidPath := filepath.Join(deviceDir, "dm", "uuid")
+		uuidBytes, err := c.osFs.ReadFile(uuidPath)
 		if err != nil {
-			// If an error occurs or the /dm-#/dm/name file is empty, log and continue to next dm-#.
-			Logc(ctx).WithFields(fields).WithError(err).Error("Could not inspect dm device name.")
-			continue // Try next dm-#
-		} else if len(nameBytes) == 0 {
+			Logc(ctx).WithField("device", deviceDir).WithFields(fields).WithError(err).Debug("Could not read dm uuid.")
 			continue
 		}
-		mapperDevice := strings.TrimSpace(string(nameBytes))
+		uuid := strings.TrimSpace(string(uuidBytes))
+		if !strings.HasPrefix(uuid, luksUUIDPrefix) {
+			// Ignore non-LUKS dm devices.
+			continue
+		}
 
-		if strings.Contains(mapperDevice, luksSuffix) {
-			dmNode := filepath.Base(deviceDir) // /sys/block/dm-# -> dm-#
+		// Check if this LUKS device is a holder of our supplied devicePath (directly or indirectly)
+		// The correct dm-# device will have our device as a slave (directly or indirectly).
+		// Example:
+		//  "devicePath" -> "/dev/nvme0n1"
+		//  "deviceName" -> "nvme0n1"
+		//  "/sys/block/dm-0/slaves/nvme0n1" -> our LUKS device. The mapper name also lives under the dm-0 entry.
+		if c.deviceIsSlaveOf(ctx, deviceName, filepath.Base(deviceDir), nil) {
+			namePath := filepath.Join(deviceDir, "dm", "name")
+			nameBytes, err := c.osFs.ReadFile(namePath)
+			if err != nil {
+				Logc(ctx).WithFields(fields).WithError(err).Error("Could not read LUKS device name.")
+				continue
+			}
+
+			mapperDevice := strings.TrimSpace(string(nameBytes))
 			Logc(ctx).WithFields(LogFields{
-				"volumeID":     volumeID,     // pvc-33bd3006-4765-498e-b61d-eae1d035c487
-				"mapperDevice": mapperDevice, // luks-pvc_33bd3006_4765_498e_b61d_eae1d035c487
-				"dmNode":       dmNode,       // dm-#
-			}).Info("Found LUKS device for volume.")
+				"devicePath": devicePath,
+				"mapperName": mapperDevice,
+				"mapperNode": filepath.Base(deviceDir),
+			}).Info("Found LUKS device for device path.")
 			return DevMapperRoot + mapperDevice, nil
 		}
 	}
 
-	return "", errors.NotFoundError("no LUKS mapper found for volume ID %s", luksSuffix)
+	return "", errors.NotFoundError("no LUKS mapper found for device path %s", devicePath)
+}
+
+// deviceIsSlaveOf is a helper function to check if a device is a slave of a dm device (recursively).
+// For iSCSI and FCP, Trident supports nested dm-mappers (LUKS, Mpath) for a given LUN.
+func (c *Client) deviceIsSlaveOf(
+	ctx context.Context, deviceName, dmDevice string, visited map[string]bool,
+) bool {
+	// Initialize visited map on first call.
+	// This keeps track of dm devices we've already visited in this recursion chain and aids in cycle detection.
+	if visited == nil {
+		visited = make(map[string]bool)
+	}
+
+	// This detects a cycle, which Trident doesn't support.
+	// Bail out if we run into a cyclic reference.
+	if visited[dmDevice] {
+		return false
+	}
+	visited[dmDevice] = true
+
+	// "/sys/block/dm-*/slaves/*"
+	slavesDir := c.chrootPathPrefix + "/sys/block/" + dmDevice + "/slaves"
+	slaveDirs, err := c.osFs.ReadDir(slavesDir)
+	if err != nil {
+		Logc(ctx).WithField("device", dmDevice).WithError(err).Debug("Could not read dm slaves.")
+		return false
+	}
+
+	// Examine each slave entry:
+	// If it matches our deviceName, return true.
+	// If it is another dm device, recurse into it.
+	// Otherwise, continue checking other slaves.
+	for _, slaveDir := range slaveDirs {
+		// Technically, the slaves here could be a physical or logical block device.
+		// Examples of a physical device are: sdX, nvmeXnY, etc.
+		// Examples of a logical device are: dm-#, etc.
+		slaveName := slaveDir.Name()
+		if slaveName == deviceName {
+			Logc(ctx).WithFields(LogFields{
+				"deviceName": slaveName,
+				"mapperName": dmDevice,
+			}).Debug("Found matching slave device.")
+			return true
+		}
+		// Recursively check nested dm devices
+		if strings.HasPrefix(slaveName, "dm-") {
+			Logc(ctx).WithFields(LogFields{
+				"deviceName": deviceName,
+				"mapperName": dmDevice,
+				"nestedName": slaveName,
+			}).Debug("Found nested dm device; recursing.")
+			if c.deviceIsSlaveOf(ctx, deviceName, slaveName, visited) {
+				return true
+			}
+		}
+	}
+
+	Logc(ctx).WithField("device", dmDevice).WithError(err).Debug("No slave devices for this device.")
+	return false
 }
 
 // ScanTargetLUN scans a single LUN or all the LUNs on an iSCSI target to discover it.
