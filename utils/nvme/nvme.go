@@ -331,8 +331,8 @@ func (nh *NVMeHandler) NVMeMountVolume(
 		if luksDevice.IsMappingStale(ctx) {
 			luksPath := luksDevice.MappedDevicePath()
 			Logc(ctx).WithFields(LogFields{
-				"devicePath": devicePath,
-				"luksMapper": luksPath,
+				"device": devicePath,
+				"mapper": luksPath,
 			}).Info("Removing stale LUKS mapping.")
 			if err := nh.devicesClient.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksPath); err != nil {
 				return fmt.Errorf("could not remove LUKS mapping '%s' for device '%s'; %w", luksPath, devicePath, err)

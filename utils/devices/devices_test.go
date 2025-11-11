@@ -847,84 +847,6 @@ func TestGetLUKSDeviceForMultipathDevice(t *testing.T) {
 	}
 }
 
-func TestGetLUKSDevicePathForVolume(t *testing.T) {
-	const (
-		volumeID      = "pvc-33bd3006-4765-498e-b61d-eae1d035c487"
-		luksSuffix    = "pvc_33bd3006_4765_498e_b61d_eae1d035c487"
-		mapperName    = "luks-" + luksSuffix
-		mapperDevPath = "/dev/mapper/" + mapperName
-	)
-	tests := map[string]struct {
-		getFs       func() afero.Fs
-		expectPath  string
-		assertError assert.ErrorAssertionFunc
-	}{
-		"Happy Path": {
-			getFs: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				_ = fs.MkdirAll("/sys/block/dm-0/dm", 0o755)
-				_ = afero.WriteFile(fs, "/sys/block/dm-0/dm/name", []byte(mapperName), 0o644)
-				return fs
-			},
-			expectPath:  mapperDevPath,
-			assertError: assert.NoError,
-		},
-		"No Matching Device": {
-			getFs: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				_ = fs.MkdirAll("/sys/block/dm-0/dm", 0o755)
-				_ = afero.WriteFile(fs, "/sys/block/dm-0/dm/name", []byte("not-a-luks-device"), 0o644)
-				return fs
-			},
-			expectPath:  "",
-			assertError: assert.Error,
-		},
-		"Error Reading Name File": {
-			getFs: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				_ = fs.MkdirAll("/sys/block/dm-0/dm", 0o755)
-				// Do not create the name file, so ReadFile will error
-				return fs
-			},
-			expectPath:  "",
-			assertError: assert.Error,
-		},
-		"Empty Name File": {
-			getFs: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				_ = fs.MkdirAll("/sys/block/dm-0/dm", 0o755)
-				_ = afero.WriteFile(fs, "/sys/block/dm-0/dm/name", []byte(""), 0o644)
-				return fs
-			},
-			expectPath:  "",
-			assertError: assert.Error,
-		},
-		"Multiple Devices, Only One Matches": {
-			getFs: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				_ = fs.MkdirAll("/sys/block/dm-0/dm", 0o755)
-				_ = fs.MkdirAll("/sys/block/dm-1/dm", 0o755)
-				_ = afero.WriteFile(fs, "/sys/block/dm-0/dm/name", []byte("not-a-luks-device"), 0o644)
-				_ = afero.WriteFile(fs, "/sys/block/dm-1/dm/name", []byte(mapperName), 0o644)
-				return fs
-			},
-			expectPath:  mapperDevPath,
-			assertError: assert.NoError,
-		},
-	}
-
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			ctx := context.Background()
-			fs := tc.getFs()
-			client := &Client{osFs: afero.Afero{Fs: fs}}
-			path, err := client.GetLUKSDevicePathForVolume(ctx, volumeID)
-			tc.assertError(t, err)
-			assert.Equal(t, tc.expectPath, path)
-		})
-	}
-}
-
 func TestFindMultipathDeviceForDevice(t *testing.T) {
 	device := "sda"
 	tests := map[string]struct {
@@ -1150,6 +1072,298 @@ func TestClearFormatting(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
+		})
+	}
+}
+
+func TestGetLUKSDevicePathForDevicePath(t *testing.T) {
+	tests := map[string]struct {
+		devicePath   string
+		getFs        func() afero.Fs
+		expectResult string
+		assertError  assert.ErrorAssertionFunc
+	}{
+		"Happy Path - Direct slave": {
+			devicePath: "/dev/nvme0n1",
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// Create LUKS dm-0 device with nvme0n1 as slave
+				_ = fs.MkdirAll("/sys/block/dm-0/dm", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-0/dm/uuid", []byte("CRYPT-LUKS2-abc123-luks-device\n"), 0o644)
+				_ = afero.WriteFile(fs, "/sys/block/dm-0/dm/name", []byte("luks-abc123\n"), 0o644)
+				// Create symlink for slave (represented as directory in test)
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves/nvme0n1", 0o755)
+				return fs
+			},
+			expectResult: "/dev/mapper/luks-abc123",
+			assertError:  assert.NoError,
+		},
+		"Happy Path - Nested dm devices": {
+			devicePath: "/dev/sda",
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// Create LUKS dm-2 that has dm-1 as slave
+				_ = fs.MkdirAll("/sys/block/dm-2/dm", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-2/slaves", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-2/dm/uuid", []byte("CRYPT-LUKS2-nested-luks\n"), 0o644)
+				_ = afero.WriteFile(fs, "/sys/block/dm-2/dm/name", []byte("luks-nested\n"), 0o644)
+				_ = fs.MkdirAll("/sys/block/dm-2/slaves/dm-1", 0o755)
+
+				// Create intermediate dm-1 that has sda as slave
+				_ = fs.MkdirAll("/sys/block/dm-1/dm", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("mpath-abc123\n"), 0o644)
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves/sda", 0o755)
+
+				return fs
+			},
+			expectResult: "/dev/mapper/luks-nested",
+			assertError:  assert.NoError,
+		},
+		"Device path without /dev prefix": {
+			devicePath: "nvme0n1",
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				_ = fs.MkdirAll("/sys/block/dm-0/dm", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-0/dm/uuid", []byte("CRYPT-LUKS2-test\n"), 0o644)
+				_ = afero.WriteFile(fs, "/sys/block/dm-0/dm/name", []byte("luks-test\n"), 0o644)
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves/nvme0n1", 0o755)
+				return fs
+			},
+			expectResult: "/dev/mapper/luks-test",
+			assertError:  assert.NoError,
+		},
+		"No LUKS device found": {
+			devicePath: "/dev/sdb",
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// Create non-LUKS dm device
+				_ = fs.MkdirAll("/sys/block/dm-0/dm", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-0/dm/uuid", []byte("mpath-123\n"), 0o644)
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves/sdb", 0o755)
+				return fs
+			},
+			expectResult: "",
+			assertError:  assert.Error,
+		},
+		"Multiple LUKS devices - returns first match": {
+			devicePath: "/dev/nvme0n1",
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// First LUKS device
+				_ = fs.MkdirAll("/sys/block/dm-0/dm", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-0/dm/uuid", []byte("CRYPT-LUKS2-first\n"), 0o644)
+				_ = afero.WriteFile(fs, "/sys/block/dm-0/dm/name", []byte("luks-first\n"), 0o644)
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves/nvme0n1", 0o755)
+
+				// Second LUKS device with same slave (shouldn't happen in practice)
+				_ = fs.MkdirAll("/sys/block/dm-1/dm", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("CRYPT-LUKS2-second\n"), 0o644)
+				_ = afero.WriteFile(fs, "/sys/block/dm-1/dm/name", []byte("luks-second\n"), 0o644)
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves/nvme0n1", 0o755)
+
+				return fs
+			},
+			expectResult: "/dev/mapper/luks-first",
+			assertError:  assert.NoError,
+		},
+		"Error reading dm directories": {
+			devicePath: "/dev/sda",
+			getFs: func() afero.Fs {
+				// Return empty filesystem to simulate glob error
+				return afero.NewReadOnlyFs(afero.NewMemMapFs())
+			},
+			expectResult: "",
+			assertError:  assert.Error, // Glob returns empty list on error
+		},
+		"UUID file missing - skip device": {
+			devicePath: "/dev/sda",
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				_ = fs.MkdirAll("/sys/block/dm-0/dm", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves", 0o755)
+				// No UUID file
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves/sda", 0o755)
+				return fs
+			},
+			expectResult: "",
+			assertError:  assert.Error,
+		},
+		"Name file missing - continue to next device": {
+			devicePath: "/dev/sda",
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// First device with missing name file
+				_ = fs.MkdirAll("/sys/block/dm-0/dm", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-0/dm/uuid", []byte("CRYPT-LUKS2-noname\n"), 0o644)
+				// No name file
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves/sda", 0o755)
+
+				// Second device with everything correct
+				_ = fs.MkdirAll("/sys/block/dm-1/dm", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("CRYPT-LUKS2-withname\n"), 0o644)
+				_ = afero.WriteFile(fs, "/sys/block/dm-1/dm/name", []byte("luks-good\n"), 0o644)
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves/sda", 0o755)
+
+				return fs
+			},
+			expectResult: "/dev/mapper/luks-good",
+			assertError:  assert.NoError,
+		},
+		"Broken symlink scenario": {
+			devicePath: "/dev/nvme0n1",
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// LUKS device with broken symlink (simulated as directory entry)
+				_ = fs.MkdirAll("/sys/block/dm-0/dm", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-0/dm/uuid", []byte("CRYPT-LUKS2-broken\n"), 0o644)
+				_ = afero.WriteFile(fs, "/sys/block/dm-0/dm/name", []byte("luks-broken\n"), 0o644)
+				// This represents a broken symlink - the entry exists but points nowhere
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves/nvme0n1", 0o755)
+				return fs
+			},
+			expectResult: "/dev/mapper/luks-broken",
+			assertError:  assert.NoError,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			deviceClient := NewDetailed(nil, params.getFs(), nil)
+			result, err := deviceClient.GetLUKSDevicePathForDevicePath(context.TODO(), params.devicePath)
+			params.assertError(t, err)
+			assert.Equal(t, params.expectResult, result)
+		})
+	}
+}
+
+func TestDeviceIsSlaveOf(t *testing.T) {
+	tests := map[string]struct {
+		deviceName   string
+		dmDevice     string
+		getFs        func() afero.Fs
+		expectResult bool
+	}{
+		"Direct slave": {
+			deviceName: "sda",
+			dmDevice:   "dm-0",
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves/sda", 0o755)
+				return fs
+			},
+			expectResult: true,
+		},
+		"Not a slave": {
+			deviceName: "sdb",
+			dmDevice:   "dm-0",
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves/sda", 0o755)
+				return fs
+			},
+			expectResult: false,
+		},
+		"Nested slave - one level": {
+			deviceName: "sda",
+			dmDevice:   "dm-1",
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// dm-1 has dm-0 as slave
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves/dm-0", 0o755)
+				// dm-0 has sda as slave
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves/sda", 0o755)
+				return fs
+			},
+			expectResult: true,
+		},
+		"Nested slave - multiple levels": {
+			deviceName: "nvme0n1",
+			dmDevice:   "dm-3",
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// dm-3 -> dm-2 -> dm-1 -> nvme0n1
+				_ = fs.MkdirAll("/sys/block/dm-3/slaves", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-3/slaves/dm-2", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-2/slaves", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-2/slaves/dm-1", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves/nvme0n1", 0o755)
+				return fs
+			},
+			expectResult: true,
+		},
+		"Cycle detection": {
+			deviceName: "sda",
+			dmDevice:   "dm-0",
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// Create a cycle: dm-0 -> dm-1 -> dm-0
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves/dm-1", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves/dm-0", 0o755)
+				return fs
+			},
+			expectResult: false,
+		},
+		"No slaves directory": {
+			deviceName: "sda",
+			dmDevice:   "dm-0",
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// No slaves directory created
+				return fs
+			},
+			expectResult: false,
+		},
+		"Empty slaves directory": {
+			deviceName: "sda",
+			dmDevice:   "dm-0",
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves", 0o755)
+				// No slave entries
+				return fs
+			},
+			expectResult: false,
+		},
+		"Mixed devices and dm slaves": {
+			deviceName: "sdc",
+			dmDevice:   "dm-2",
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// dm-2 has both regular devices and dm devices as slaves
+				_ = fs.MkdirAll("/sys/block/dm-2/slaves", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-2/slaves/sda", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-2/slaves/sdb", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-2/slaves/dm-1", 0o755)
+				// dm-1 has sdc as slave
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves/sdc", 0o755)
+				return fs
+			},
+			expectResult: true,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			deviceClient := NewDetailed(nil, params.getFs(), nil)
+			result := deviceClient.deviceIsSlaveOf(context.TODO(), params.deviceName, params.dmDevice, nil)
+			assert.Equal(t, params.expectResult, result)
 		})
 	}
 }

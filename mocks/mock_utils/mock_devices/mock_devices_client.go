@@ -212,19 +212,19 @@ func (mr *MockDevicesMockRecorder) GetLUKSDeviceForMultipathDevice(arg0 any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLUKSDeviceForMultipathDevice", reflect.TypeOf((*MockDevices)(nil).GetLUKSDeviceForMultipathDevice), arg0)
 }
 
-// GetLUKSDevicePathForVolume mocks base method.
-func (m *MockDevices) GetLUKSDevicePathForVolume(arg0 context.Context, arg1 string) (string, error) {
+// GetLUKSDevicePathForDevicePath mocks base method.
+func (m *MockDevices) GetLUKSDevicePathForDevicePath(arg0 context.Context, arg1 string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLUKSDevicePathForVolume", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetLUKSDevicePathForDevicePath", arg0, arg1)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetLUKSDevicePathForVolume indicates an expected call of GetLUKSDevicePathForVolume.
-func (mr *MockDevicesMockRecorder) GetLUKSDevicePathForVolume(arg0, arg1 any) *gomock.Call {
+// GetLUKSDevicePathForDevicePath indicates an expected call of GetLUKSDevicePathForDevicePath.
+func (mr *MockDevicesMockRecorder) GetLUKSDevicePathForDevicePath(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLUKSDevicePathForVolume", reflect.TypeOf((*MockDevices)(nil).GetLUKSDevicePathForVolume), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLUKSDevicePathForDevicePath", reflect.TypeOf((*MockDevices)(nil).GetLUKSDevicePathForDevicePath), arg0, arg1)
 }
 
 // GetLunSerial mocks base method.

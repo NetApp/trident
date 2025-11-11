@@ -111,9 +111,8 @@ func TestReadTrackingInfo(t *testing.T) {
 	mockJSONUtils.EXPECT().ReadJSONFile(gomock.Any(), emptyTrackInfo, fName, "volume tracking info").
 		SetArg(1, *trackInfo).Return(nil)
 	trackInfo, err := v.ReadTrackingInfo(context.Background(), volId)
-	assert.NoError(t, err, "no error expected when write succeed")
-	assert.NotNil(t, trackInfo, "expected a valid tracking info")
 	assert.Equal(t, fsType, trackInfo.FilesystemType, "tracking file did not have expected value in it")
+	assert.NoError(t, err, "tracking file should have been written")
 
 	emptyTrackInfo = &models.VolumeTrackingInfo{}
 	mockJSONUtils.EXPECT().ReadJSONFile(gomock.Any(), emptyTrackInfo, fName,
