@@ -80,7 +80,7 @@ func (c *TridentCrdController) handleActionMirrorUpdate(keyItem *KeyItem) (updat
 	// will update the CR with a failed status and the operation will not be retried.
 	tmr, updateError := c.getTMR(ctx, actionCR)
 	if updateError != nil {
-		return
+		return updateError
 	}
 
 	// Check the state of the TMR to determine if it is ready to be updated or not.
@@ -160,7 +160,7 @@ func (c *TridentCrdController) handleActionMirrorUpdate(keyItem *KeyItem) (updat
 	if errors.IsInProgressError(updateError) {
 		updateError = errors.WrapWithReconcileDeferredError(err, "reconcile deferred")
 	}
-	return
+	return updateError
 }
 
 // validateActionMirrorUpdateCR returns an error if the TAMU CR is invalid, is not new,

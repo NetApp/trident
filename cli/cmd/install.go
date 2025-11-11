@@ -875,7 +875,7 @@ func installTrident() (returnError error) {
 	namespaceExists, returnError := client.CheckNamespaceExists(TridentPodNamespace)
 	if returnError != nil {
 		returnError = fmt.Errorf("could not check if namespace %s exists; %v", TridentPodNamespace, returnError)
-		return
+		return returnError
 	}
 	if namespaceExists {
 		Log().WithField("namespace", TridentPodNamespace).Debug("Namespace exists.")
@@ -890,7 +890,7 @@ func installTrident() (returnError error) {
 		var crdExists bool
 		crdExists, returnError = client.CheckCRDExists(crdName)
 		if returnError != nil {
-			return
+			return returnError
 		}
 		if crdExists {
 			Log().WithField("CRD", crdName).Debug("CRD present.")
@@ -918,37 +918,37 @@ func installTrident() (returnError error) {
 		returnError = createNamespace()
 	}
 	if returnError != nil {
-		return
+		return returnError
 	}
 
 	// Remove any RBAC objects from a previous Trident installation
 	if anyCleanupErrors := removeRBACObjects(log.DebugLevel); anyCleanupErrors {
 		returnError = fmt.Errorf("could not remove one or more previous Trident artifacts; " +
 			"please delete them manually and try again")
-		return
+		return returnError
 	}
 
 	// Create the RBAC objects
 	if returnError = createRBACObjects(); returnError != nil {
-		return
+		return returnError
 	}
 
 	// Create or update CRDs and ensure they are established.
 	if returnError = createAndEnsureCRDs(); returnError != nil {
 		Log().Errorf("could not create or update the Trident CRDs; %v", returnError)
-		return
+		return returnError
 	}
 
 	// Patch the CRD definitions with finalizers to protect them
 	if returnError = protectCustomResourceDefinitions(); returnError != nil {
-		return
+		return returnError
 	}
 
 	// Create the CSI Driver object
 	returnError = createK8SCSIDriver()
 	if returnError != nil {
 		returnError = fmt.Errorf("could not create the Kubernetes CSI Driver object; %v", returnError)
-		return
+		return returnError
 	}
 
 	// Create the service
@@ -956,7 +956,7 @@ func installTrident() (returnError error) {
 		returnError = validateTridentService()
 		if returnError != nil {
 			returnError = fmt.Errorf("please correct the service YAML file; %v", returnError)
-			return
+			return returnError
 		}
 		returnError = client.CreateObjectByFile(servicePath)
 		logFields = LogFields{"path": servicePath}
@@ -966,7 +966,7 @@ func installTrident() (returnError error) {
 	}
 	if returnError != nil {
 		returnError = fmt.Errorf("could not create Trident service; %v", returnError)
-		return
+		return returnError
 	}
 	Log().WithFields(logFields).Info("Created Trident service.")
 	logFields = LogFields{}
@@ -975,7 +975,7 @@ func installTrident() (returnError error) {
 	secretExists, err := client.CheckSecretExists(getEncryptionSecretName())
 	if err != nil {
 		returnError = fmt.Errorf("could not check for existing Trident encryption secret; %v", err)
-		return
+		return returnError
 	}
 
 	// If the encryption secret doesn't exist create a new one.
@@ -983,7 +983,7 @@ func installTrident() (returnError error) {
 		aesKey, err := crypto.GenerateAESKey()
 		if err != nil {
 			returnError = fmt.Errorf("could not generate secure AES key; %v", err)
-			return
+			return returnError
 		}
 
 		// Create the secret for the HTTP certs & keys
@@ -997,7 +997,7 @@ func installTrident() (returnError error) {
 				secretMap, nil))
 		if err != nil {
 			returnError = fmt.Errorf("could not create Trident encryption secret; %v", err)
-			return
+			return returnError
 		}
 		Log().WithFields(logFields).Info("Created Trident encryption secret.")
 	}
@@ -1007,7 +1007,7 @@ func installTrident() (returnError error) {
 		tridentconfig.CACertName, tridentconfig.ServerCertName, tridentconfig.ClientCertName)
 	if err != nil {
 		returnError = fmt.Errorf("could not create Trident X509 certificates; %v", err)
-		return
+		return returnError
 	}
 
 	// Create the secret for the HTTP certs & keys
@@ -1023,7 +1023,7 @@ func installTrident() (returnError error) {
 		k8sclient.GetSecretYAML(getProtocolSecretName(), TridentPodNamespace, labels, nil, secretMap, nil))
 	if err != nil {
 		returnError = fmt.Errorf("could not create Trident protocol secret; %v", err)
-		return
+		return returnError
 	}
 	Log().WithFields(logFields).Info("Created Trident protocol secret.")
 
@@ -1031,7 +1031,7 @@ func installTrident() (returnError error) {
 		nodeLabels, nil))
 	if err != nil {
 		returnError = fmt.Errorf("could not create Trident resource quota; %v", err)
-		return
+		return returnError
 	}
 	Log().WithFields(logFields).Info("Created Trident resource quota.")
 
@@ -1039,7 +1039,7 @@ func installTrident() (returnError error) {
 	if found, _ := client.CheckDeploymentExists(getDeploymentName(), TridentPodNamespace); found {
 		if err := client.DeleteDeployment(getDeploymentName(), TridentPodNamespace, true); err != nil {
 			returnError = fmt.Errorf("could not delete previous Trident deployment; %v", err)
-			return
+			return returnError
 		}
 	}
 
@@ -1063,7 +1063,7 @@ func installTrident() (returnError error) {
 		returnError = validateTridentDeployment()
 		if returnError != nil {
 			returnError = fmt.Errorf("please correct the deployment YAML file; %v", returnError)
-			return
+			return returnError
 		}
 		returnError = client.CreateObjectByFile(deploymentPath)
 		logFields = LogFields{"path": deploymentPath}
@@ -1111,7 +1111,7 @@ func installTrident() (returnError error) {
 	}
 	if returnError != nil {
 		returnError = fmt.Errorf("could not create Trident deployment; %v", returnError)
-		return
+		return returnError
 	}
 	Log().WithFields(logFields).Info("Created Trident deployment.")
 
@@ -1121,14 +1121,14 @@ func installTrident() (returnError error) {
 		if found, _ := client.CheckDaemonSetExists(getDaemonSetName(true), TridentPodNamespace); found {
 			if err := client.DeleteDaemonSet(getDaemonSetName(true), TridentPodNamespace, true); err != nil {
 				returnError = fmt.Errorf("could not delete previous Trident windows daemonset; %v", err)
-				return
+				return returnError
 			}
 		}
 		if useYAML && fileExists(windowsDaemonSetPath) {
 			returnError = validateTridentDaemonSet(windowsDaemonSetPath)
 			if returnError != nil {
 				returnError = fmt.Errorf("please correct the daemonset YAML file; %v", returnError)
-				return
+				return returnError
 			}
 			returnError = client.CreateObjectByFile(windowsDaemonSetPath)
 			logFields = LogFields{"path": windowsDaemonSetPath}
@@ -1161,7 +1161,7 @@ func installTrident() (returnError error) {
 
 			if returnError != nil {
 				returnError = fmt.Errorf("could not create Trident daemonset; %v", returnError)
-				return
+				return returnError
 			}
 		}
 	}
@@ -1170,7 +1170,7 @@ func installTrident() (returnError error) {
 	if found, _ := client.CheckDaemonSetExists(getDaemonSetName(false), TridentPodNamespace); found {
 		if err := client.DeleteDaemonSet(getDaemonSetName(false), TridentPodNamespace, true); err != nil {
 			returnError = fmt.Errorf("could not delete previous Trident linux daemonset; %v", err)
-			return
+			return returnError
 		}
 	}
 
@@ -1179,7 +1179,7 @@ func installTrident() (returnError error) {
 		returnError = validateTridentDaemonSet(daemonsetPath)
 		if returnError != nil {
 			returnError = fmt.Errorf("please correct the daemonset YAML file; %v", returnError)
-			return
+			return returnError
 		}
 		returnError = client.CreateObjectByFile(daemonsetPath)
 		logFields = LogFields{"path": daemonsetPath}
@@ -1217,7 +1217,7 @@ func installTrident() (returnError error) {
 	}
 	if returnError != nil {
 		returnError = fmt.Errorf("could not create Trident daemonset; %v", returnError)
-		return
+		return returnError
 	}
 
 	Log().WithFields(logFields).Info("Created Trident daemonset.")
@@ -1226,7 +1226,7 @@ func installTrident() (returnError error) {
 	if returnError = deleteNodeRemediationResources(TridentPodNamespace); returnError != nil {
 		returnError = fmt.Errorf("could not remove tridentNodeRemediation resources; " +
 			"please delete them manually and try again")
-		return
+		return returnError
 	}
 
 	// Create TridentNodeRemediation resources
@@ -1234,7 +1234,7 @@ func installTrident() (returnError error) {
 		if returnError = createNodeRemediationResources(); returnError != nil {
 			returnError = fmt.Errorf("could not create TridentNodeRemediation resources for automatic force-detach; %v",
 				returnError)
-			return
+			return returnError
 		}
 	}
 
@@ -1243,7 +1243,7 @@ func installTrident() (returnError error) {
 
 	tridentPod, returnError = waitForTridentPod()
 	if returnError != nil {
-		return
+		return returnError
 	}
 
 	// Wait for Trident REST interface to be available
@@ -1251,7 +1251,7 @@ func installTrident() (returnError error) {
 	returnError = waitForRESTInterface()
 	if returnError != nil {
 		returnError = fmt.Errorf("%v; use 'tridentctl logs' to learn more", returnError)
-		return
+		return returnError
 	}
 
 	Log().Info("Trident installation succeeded.")
@@ -1626,7 +1626,7 @@ func createRBACObjects() (returnError error) {
 	if createObjectFunc(controllerServiceAccountPath,
 		k8sclient.GetServiceAccountYAML(getControllerRBACResourceName(), nil, labels, nil, cloudIdentity)) != nil {
 		returnError = fmt.Errorf("could not create controller service account; %v", returnError)
-		return
+		return returnError
 	}
 	Log().WithFields(logFields).Info("Created controller service account.")
 
@@ -1635,7 +1635,7 @@ func createRBACObjects() (returnError error) {
 		k8sclient.GetRoleYAML(TridentPodNamespace, getControllerRBACResourceName(),
 			labels, nil)) != nil {
 		returnError = fmt.Errorf("could not create controller role; %v", returnError)
-		return
+		return returnError
 	}
 	Log().WithFields(logFields).Info("Created controller role.")
 
@@ -1643,7 +1643,7 @@ func createRBACObjects() (returnError error) {
 	if createObjectFunc(controllerRoleBindingPath,
 		k8sclient.GetRoleBindingYAML(TridentPodNamespace, getControllerRBACResourceName(), labels, nil)) != nil {
 		returnError = fmt.Errorf("could not create controller role binding; %v", returnError)
-		return
+		return returnError
 	}
 	Log().WithFields(logFields).Info("Created controller role binding.")
 
@@ -1651,7 +1651,7 @@ func createRBACObjects() (returnError error) {
 	if createObjectFunc(controllerClusterRolePath,
 		k8sclient.GetClusterRoleYAML(getControllerRBACResourceName(), labels, nil)) != nil {
 		returnError = fmt.Errorf("could not create controller cluster role; %v", returnError)
-		return
+		return returnError
 	}
 	Log().WithFields(logFields).Info("Created controller cluster role.")
 
@@ -1660,7 +1660,7 @@ func createRBACObjects() (returnError error) {
 		k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, getControllerRBACResourceName(), client.Flavor(),
 			labels, nil)) != nil {
 		returnError = fmt.Errorf("could not create controller cluster role binding; %v", returnError)
-		return
+		return returnError
 	}
 	Log().WithFields(logFields).Info("Created controller cluster role binding.")
 
@@ -1669,7 +1669,7 @@ func createRBACObjects() (returnError error) {
 	if createObjectFunc(nodeLinuxServiceAccountPath,
 		k8sclient.GetServiceAccountYAML(getNodeRBACResourceName(false), nil, daemonSetlabels, nil, "")) != nil {
 		returnError = fmt.Errorf("could not create node linux service account; %v", returnError)
-		return
+		return returnError
 	}
 	Log().WithFields(logFields).Info("Created node linux service account.")
 
@@ -1678,7 +1678,7 @@ func createRBACObjects() (returnError error) {
 		if createObjectFunc(nodeWindowsServiceAccountPath,
 			k8sclient.GetServiceAccountYAML(getNodeRBACResourceName(true), nil, daemonSetlabels, nil, "")) != nil {
 			returnError = fmt.Errorf("could not create node windows service account; %v", returnError)
-			return
+			return returnError
 		}
 		Log().WithFields(logFields).Info("Created node windows service account.")
 	}
@@ -1696,7 +1696,7 @@ func createRBACObjects() (returnError error) {
 			// This will be changed in the future to accomodate one SCC to hold all three users
 			if returnError = CreateOpenShiftTridentSCC(user, strings.Split(label, "=")[1]); returnError != nil {
 				returnError = fmt.Errorf("could not create security context constraint; %v", returnError)
-				return
+				return returnError
 			}
 			Log().WithFields(LogFields{
 				"scc":  "trident",
@@ -1705,7 +1705,7 @@ func createRBACObjects() (returnError error) {
 		}
 	}
 
-	return
+	return returnError
 }
 
 func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
@@ -1891,7 +1891,7 @@ func removeRBACObjects(logLevel log.Level) (anyErrors bool) {
 		}
 	}
 
-	return
+	return anyErrors
 }
 
 func validateTridentDeployment() error {

@@ -1969,7 +1969,7 @@ func (d *SANEconomyStorageDriver) ProcessGroupSnapshot(
 
 	if errs != nil {
 		Logc(ctx).WithFields(fields).Error("Failed to process group snapshot.")
-		return
+		return snapshots, errs
 	}
 	return snapshots, nil
 }

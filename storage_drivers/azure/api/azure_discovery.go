@@ -102,7 +102,7 @@ func (c Client) DiscoverAzureResources(ctx context.Context) (returnError error) 
 	// Discover capacity pools
 	cPools, returnError := c.discoverCapacityPoolsWithRetry(ctx)
 	if returnError != nil {
-		return
+		return returnError
 	}
 
 	// Update maps with all data from discovered capacity pools
@@ -148,7 +148,7 @@ func (c Client) DiscoverAzureResources(ctx context.Context) (returnError error) 
 	// Discover ANF-delegated subnets
 	subnets, returnError := c.discoverSubnetsWithRetry(ctx)
 	if returnError != nil {
-		return
+		return returnError
 	}
 
 	// Update maps with all data from discovered subnets
@@ -214,7 +214,7 @@ func (c Client) DiscoverAzureResources(ctx context.Context) (returnError error) 
 		"subnets":        numSubnets,
 	}).Info("Discovered Azure resources.")
 
-	return
+	return returnError
 }
 
 // dumpAzureResources writes a hierarchical representation of discovered resources to the log.

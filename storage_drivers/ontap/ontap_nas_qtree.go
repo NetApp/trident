@@ -2217,7 +2217,7 @@ type HousekeepingTask struct {
 
 func (t *HousekeepingTask) Start(ctx context.Context) {
 	go func() {
-		t.Driver.housekeepingWaitGroup.Add(1)
+		t.Driver.housekeepingWaitGroup.Add(1) //nolint:govet
 		defer t.Driver.housekeepingWaitGroup.Done()
 		time.Sleep(t.InitialDelay)
 		t.run(ctx, time.Now())

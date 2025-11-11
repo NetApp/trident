@@ -81,13 +81,13 @@ func (c *TridentCrdController) handleActionSnapshotRestore(keyItem *KeyItem) (re
 	// will not be retried.
 	tridentVolume, tridentSnapshot, restoreError := c.getKubernetesObjectsForActionSnapshotRestore(ctx, actionCR)
 	if restoreError != nil {
-		return
+		return restoreError
 	}
 
 	// Update CR with finalizers and in-progress status
 	restoreError = c.updateActionSnapshotRestoreCRInProgress(ctx, namespace, name)
 	if restoreError != nil {
-		return
+		return restoreError
 	}
 
 	// Invoke snapshot restore
@@ -96,7 +96,7 @@ func (c *TridentCrdController) handleActionSnapshotRestore(keyItem *KeyItem) (re
 		restoreError = errors.WrapWithReconcileDeferredError(restoreError, "reconcile deferred")
 	}
 
-	return
+	return restoreError
 }
 
 func (c *TridentCrdController) validateActionSnapshotRestoreCR(
@@ -195,72 +195,72 @@ func (c *TridentCrdController) getKubernetesObjectsForActionSnapshotRestore(
 	pvc, err := c.kubeClientset.CoreV1().PersistentVolumeClaims(actionCR.Namespace).Get(
 		ctx, actionCR.Spec.PVCName, getOpts)
 	if err != nil {
-		return
+		return tridentVolume, tridentSnapshot, err
 	}
 
 	// Ensure PVC is bound
 	if pvc.Status.Phase != v1.ClaimBound {
 		err = fmt.Errorf("PVC %s/%s is not bound to a PV", pvc.Namespace, pvc.Name)
-		return
+		return tridentVolume, tridentSnapshot, err
 	}
 
 	// Get the PV to which the PVC is bound and validate its status
 	pv, err := c.kubeClientset.CoreV1().PersistentVolumes().Get(ctx, pvc.Spec.VolumeName, getOpts)
 	if err != nil {
-		return
+		return tridentVolume, tridentSnapshot, err
 	}
 
 	// Ensure PV is bound to the PVC
 	if pv.Status.Phase != v1.VolumeBound || pv.Spec.ClaimRef == nil ||
 		pv.Spec.ClaimRef.Namespace != pvc.Namespace || pv.Spec.ClaimRef.Name != pvc.Name {
 		err = fmt.Errorf("PV %s is not bound to PVC %s/%s", pv.Name, pvc.Namespace, pvc.Name)
-		return
+		return tridentVolume, tridentSnapshot, err
 	}
 
 	// Get VolumeSnapshot
 	vs, err := c.snapshotClientSet.SnapshotV1().VolumeSnapshots(actionCR.Namespace).Get(
 		ctx, actionCR.Spec.VolumeSnapshotName, getOpts)
 	if err != nil {
-		return
+		return tridentVolume, tridentSnapshot, err
 	}
 
 	// Ensure VS is bound and validate its status
 	if vs.Status.BoundVolumeSnapshotContentName == nil || vs.Status.CreationTime == nil ||
 		vs.Status.CreationTime.IsZero() || vs.Status.ReadyToUse == nil || !*vs.Status.ReadyToUse {
 		err = fmt.Errorf("volume snapshot %s/%s is not bound and ready to use", vs.Namespace, vs.Name)
-		return
+		return tridentVolume, tridentSnapshot, err
 	}
 
 	// Get VolumeSnapshotContent
 	vsc, err := c.snapshotClientSet.SnapshotV1().VolumeSnapshotContents().Get(
 		ctx, *vs.Status.BoundVolumeSnapshotContentName, getOpts)
 	if err != nil {
-		return
+		return tridentVolume, tridentSnapshot, err
 	}
 
 	// Ensure VSC is bound to the VS and is ready to use and has a valid handle
 	if vsc.Spec.VolumeSnapshotRef.Name != vs.Name || vsc.Spec.VolumeSnapshotRef.Namespace != vs.Namespace {
 		err = fmt.Errorf("volume snapshot content %s is not bound to snapshot %s/%s", vsc.Name, vs.Namespace, vs.Name)
-		return
+		return tridentVolume, tridentSnapshot, err
 	}
 	if vsc.Status.ReadyToUse == nil || !*vsc.Status.ReadyToUse {
 		err = fmt.Errorf("volume snapshot content %s is not ready to use", vsc.Name)
-		return
+		return tridentVolume, tridentSnapshot, err
 	}
 	if vsc.Status.SnapshotHandle == nil {
 		err = fmt.Errorf("volume snapshot content %s does not have a snapshot handle", vsc.Name)
-		return
+		return tridentVolume, tridentSnapshot, err
 	}
 	tridentVolume, tridentSnapshot, err = storage.ParseSnapshotID(*vsc.Status.SnapshotHandle)
 	if err != nil {
 		err = fmt.Errorf("volume snapshot content %s does not have a valid snapshot handle", vsc.Name)
-		return
+		return tridentVolume, tridentSnapshot, err
 	}
 
 	// Ensure the VS is the most recent one on the PVC
 	snapshotList, err := c.snapshotClientSet.SnapshotV1().VolumeSnapshots(actionCR.Namespace).List(ctx, listOpts)
 	if err != nil {
-		return
+		return tridentVolume, tridentSnapshot, err
 	}
 
 	for _, snapshot := range snapshotList.Items {
@@ -277,9 +277,9 @@ func (c *TridentCrdController) getKubernetesObjectsForActionSnapshotRestore(
 			snapshot.Status.CreationTime.After(vs.Status.CreationTime.Time) {
 			err = fmt.Errorf("volume snapshot %s is not the newest snapshot of PVC %s/%s",
 				vs.Name, pvc.Namespace, pvc.Name)
-			return
+			return tridentVolume, tridentSnapshot, err
 		}
 	}
 
-	return
+	return tridentVolume, tridentSnapshot, err
 }

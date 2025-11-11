@@ -4486,7 +4486,8 @@ func getStructsForDestroyDeleteSnapshot(ctx context.Context, driver *NASStorageD
 		},
 	}
 
-	return
+	return volumeConfig, volume, cloneVolumeConfig,
+		cloneVolume, snapshot
 }
 
 func getStructsForDestroySMBVolume(ctx context.Context, driver *NASStorageDriver) (*storage.VolumeConfig, *api.Volume) {

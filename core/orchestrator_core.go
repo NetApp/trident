@@ -6101,7 +6101,7 @@ func (o *TridentOrchestrator) UpdateNode(
 		err = o.storeClient.AddOrUpdateNode(ctx, node)
 	}
 
-	return
+	return err
 }
 
 func (o *TridentOrchestrator) invalidateAllBackendNodeAccess() {

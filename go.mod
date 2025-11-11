@@ -1,6 +1,6 @@
 module github.com/netapp/trident
 
-go 1.24.6
+go 1.25
 
 require (
 	cloud.google.com/go/compute v1.49.0

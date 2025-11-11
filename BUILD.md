@@ -4,16 +4,16 @@
 
 ### Single-Platform (Linux)
 
-* Docker-compatible container cli, such as nerdctl or docker
-* Make, if not building natively or with linker flags
-* Go 1.24 or greater, to optionally build Trident natively
+- Docker-compatible container cli, such as nerdctl or docker
+- Make, if not building natively or with linker flags
+- Go 1.25 or greater, to optionally build Trident natively
 
 ### Multi-Platform
 
-* Make
-* Docker
-* Go 1.24 or greater, to optionally build Trident binaries natively
-* jq
+- Make
+- Docker
+- Go 1.25 or greater, to optionally build Trident binaries natively
+- jq
 
 ## Makefile Parameters
 
@@ -32,7 +32,7 @@ Container registry used to tag images and manifests, and optionally to push imag
 
 `GO_IMAGE`
 
-Default: `golang:1.24`
+Default: `golang:1.25`
 
 Container image used by default `$GO_SHELL` to run binary build scripts.
 

@@ -1,12 +1,13 @@
 version: "2"
 run:
-  go: "1.24"
+  go: "1.25"
 linters:
   default: none
   enable:
     - errcheck
     - gosec
     - govet
+    - nakedret
   settings:
     gosec:
       excludes:
@@ -15,6 +16,8 @@ linters:
     govet:
       disable:
         - printf
+    nakedret:
+      max-func-lines: 60
     lll:
       line-length: 120
       tab-width: 4
@@ -41,12 +44,8 @@ linters:
       - examples$
 formatters:
   enable:
-    - gofumpt
     - goimports
   settings:
-    gofumpt:
-      module-path: github.com/netapp/trident
-      extra-rules: true
     goimports:
       local-prefixes:
         - github.com/netapp/trident
