@@ -627,3 +627,67 @@ func IsValidWindowsNodeContainerName(c string) bool {
 func ToPtr[T any](v T) *T {
 	return &v
 }
+
+// ValidateProtocol checks if the provided protocol is valid and supported.
+// Returns true if protocol is valid (File, Block, or ProtocolAny), false otherwise.
+func ValidateProtocol(protocol Protocol) bool {
+	switch protocol {
+	case File, Block, ProtocolAny:
+		return true
+	default:
+		return false
+	}
+}
+
+// CalculateStorageSize converts a size string with units to bytes.
+// Supports Kubernetes resource quantity format (e.g., "10Gi", "500Mi", "1Ti").
+// Returns the size in bytes or an error if the format is invalid.
+func CalculateStorageSize(sizeStr string) (int64, error) {
+	if sizeStr == "" {
+		return 0, fmt.Errorf("size string cannot be empty")
+	}
+	
+	quantity, err := resource.ParseQuantity(sizeStr)
+	if err != nil {
+		return 0, fmt.Errorf("invalid size format: %v", err)
+	}
+	
+	value, ok := quantity.AsInt64()
+	if !ok {
+		return 0, fmt.Errorf("size value too large to convert to int64")
+	}
+	
+	if value < 0 {
+		return 0, fmt.Errorf("size cannot be negative")
+	}
+	
+	return value, nil
+}
+
+// FormatDuration converts a time.Duration to a human-readable string.
+// Returns formatted string like "2h30m" or "45s".
+func FormatDuration(d time.Duration) string {
+	if d < time.Second {
+		return fmt.Sprintf("%dms", d.Milliseconds())
+	}
+	
+	hours := int(d.Hours())
+	minutes := int(d.Minutes()) % 60
+	seconds := int(d.Seconds()) % 60
+	
+	if hours > 0 {
+		if minutes > 0 {
+			return fmt.Sprintf("%dh%dm", hours, minutes)
+		}
+		return fmt.Sprintf("%dh", hours)
+	}
+	
+	if minutes > 0 {
+		if seconds > 0 {
+			return fmt.Sprintf("%dm%ds", minutes, seconds)
+		}
+		return fmt.Sprintf("%dm", minutes)
+	}
+	
+	return fmt.Sprintf("%ds", seconds)
+}
