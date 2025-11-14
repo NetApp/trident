@@ -2136,7 +2136,7 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				mockDeviceClient.EXPECT().GetMultipathDeviceBySerial(gomock.Any(), gomock.Any())
-				mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(gomock.Any(), gomock.Any()).Return(mockDevicePath, nil)
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return(mockDevicePath, nil)
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), mockDevicePath).Return(nil)
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosed(gomock.Any(), mockDevicePath).Return(nil)
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
@@ -2183,7 +2183,7 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				mockDeviceClient.EXPECT().GetMultipathDeviceBySerial(gomock.Any(), gomock.Any())
-				mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(gomock.Any(), gomock.Any()).Return(mockDevicePath, nil)
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return(mockDevicePath, nil)
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), mockDevicePath).
 					Return(nil)
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosed(gomock.Any(), mockDevicePath).Return(nil)
@@ -2228,7 +2228,7 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				mockDeviceClient.EXPECT().GetMultipathDeviceBySerial(gomock.Any(), gomock.Any())
-				mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(gomock.Any(), gomock.Any()).Return(mockDevicePath, nil)
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return(mockDevicePath, nil)
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), mockDevicePath).
 					Return(fmt.Errorf("mock error"))
 				return mockDeviceClient
@@ -2247,7 +2247,7 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				mockDeviceClient.EXPECT().GetMultipathDeviceBySerial(gomock.Any(), gomock.Any())
-				mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(gomock.Any(), gomock.Any()).Return(mockDevicePath, nil)
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return(mockDevicePath, nil)
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), mockDevicePath).
 					Return(nil)
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
@@ -2322,8 +2322,7 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 				return mockDeviceClient
 			},
 		},
-		// mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(gomock.Any(), gomock.Any()).Return(mockDevicePath, nil)
-		"SAN: iSCSI unstage: GetLUKSDevicePathForVolume error": {
+		"SAN: iSCSI unstage: GetLUKSDeviceForMultipathDevice error": {
 			assertError: assert.Error,
 			request:     NewNodeUnstageVolumeRequestBuilder().Build(),
 			publishInfo: NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).WithLUKSEncryption("true").Build(),
@@ -2343,8 +2342,8 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				mockDeviceClient.EXPECT().GetMultipathDeviceBySerial(gomock.Any(), gomock.Any())
-				mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(gomock.Any(),
-					gomock.Any()).Return(mockDevicePath, errors.New("mock error"))
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("", fmt.Errorf(
+					"mock error"))
 				return mockDeviceClient
 			},
 		},
@@ -2364,7 +2363,7 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				mockDeviceClient.EXPECT().GetMultipathDeviceBySerial(gomock.Any(), gomock.Any())
-				mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(gomock.Any(), gomock.Any()).Return(mockDevicePath, nil)
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return(mockDevicePath, nil)
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), mockDevicePath).
 					Return(nil)
 				return mockDeviceClient
@@ -2398,7 +2397,7 @@ func TestNodeUnstageISCSIVolume(t *testing.T) {
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				mockDeviceClient.EXPECT().GetMultipathDeviceBySerial(gomock.Any(), gomock.Any())
-				mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(gomock.Any(), gomock.Any()).Return(mockDevicePath, nil)
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return(mockDevicePath, nil)
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), mockDevicePath).
 					Return(nil)
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosed(gomock.Any(), mockDevicePath).Return(nil)
@@ -11936,7 +11935,7 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(gomock.Any(), gomock.Any()).Return("", errors.New(""))
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("", errors.New(""))
 				return mockDeviceClient
 			},
 			expErrCode: codes.Internal,
@@ -11983,9 +11982,7 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(
-					gomock.Any(), gomock.Any(),
-				).Return("x/device-path", nil).AnyTimes()
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("x/device-path", nil).AnyTimes()
 				return mockDeviceClient
 			},
 			expErrCode: codes.InvalidArgument,
@@ -12033,9 +12030,7 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(
-					gomock.Any(), gomock.Any(),
-				).Return("x/device-path", nil).AnyTimes()
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("x/device-path", nil).AnyTimes()
 				return mockDeviceClient
 			},
 			expErrCode: codes.InvalidArgument,
@@ -12083,9 +12078,7 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(
-					gomock.Any(), gomock.Any(),
-				).Return("x/device-path", nil).AnyTimes()
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("x/device-path", nil).AnyTimes()
 				return mockDeviceClient
 			},
 			expErrCode: codes.Internal,
@@ -12528,9 +12521,7 @@ func TestNodeUnstageFCPVolume(t *testing.T) {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
-				mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(
-					gomock.Any(), gomock.Any(),
-				).Return("", errors.New("")).AnyTimes()
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("", errors.New("")).AnyTimes()
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
 				return mockDeviceClient
 			},
@@ -12717,9 +12708,7 @@ func TestNodeUnstageFCPVolume(t *testing.T) {
 			},
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(
-					gomock.Any(), gomock.Any(),
-				).Return("", errors.New("")).AnyTimes()
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("", errors.New("")).AnyTimes()
 				// mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
 				// 	gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 				// mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
@@ -12767,9 +12756,7 @@ func TestNodeUnstageFCPVolume(t *testing.T) {
 			},
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(
-					gomock.Any(), gomock.Any(),
-				).Return("multipath-device", nil).AnyTimes()
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("multipath-device", nil).AnyTimes()
 				// mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
 				// 	gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
@@ -12818,9 +12805,7 @@ func TestNodeUnstageFCPVolume(t *testing.T) {
 			},
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(
-					gomock.Any(), gomock.Any(),
-				).Return("multipath-device", nil).AnyTimes()
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("multipath-device", nil).AnyTimes()
 				// mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
 				// 	gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), gomock.Any()).Return(errors.MaxWaitExceededError("")).AnyTimes()
@@ -12868,9 +12853,7 @@ func TestNodeUnstageFCPVolume(t *testing.T) {
 			},
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(
-					gomock.Any(), gomock.Any(),
-				).Return("multipath-device", nil).AnyTimes()
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("multipath-device", nil).AnyTimes()
 				// mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
 				// 	gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), gomock.Any()).Return(errors.MaxWaitExceededError("")).AnyTimes()
@@ -12918,9 +12901,7 @@ func TestNodeUnstageFCPVolume(t *testing.T) {
 			},
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(
-					gomock.Any(), gomock.Any(),
-				).Return("multipath-device", nil).AnyTimes()
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("multipath-device", nil).AnyTimes()
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosedWithMaxWaitLimit(gomock.Any(), gomock.Any()).Return(errors.MaxWaitExceededError("")).AnyTimes()
@@ -12969,9 +12950,7 @@ func TestNodeUnstageFCPVolume(t *testing.T) {
 			},
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
-				mockDeviceClient.EXPECT().GetLUKSDevicePathForVolume(
-					gomock.Any(), gomock.Any(),
-				).Return("multipath-device", nil).AnyTimes()
+				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("multipath-device", nil).AnyTimes()
 				mockDeviceClient.EXPECT().RemoveMultipathDeviceMappingWithRetries(gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 				mockDeviceClient.EXPECT().EnsureLUKSDeviceClosed(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
