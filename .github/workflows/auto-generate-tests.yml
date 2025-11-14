@@ -1,0 +1,639 @@
+name: Auto-Generate Unit Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '**.go'
+      - '!**_test.go'
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  generate-tests:
+    name: Generate Unit Tests for Changed Code
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'pull_request') ||
+      (github.event_name == 'issue_comment' && 
+       github.event.issue.pull_request && 
+       contains(github.event.comment.body, '/approve-tests'))
+    
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.event.issue.pull_request.head.ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Get base branch
+        id: base
+        run: |
+          if [ "${{ github.event_name }}" = "issue_comment" ]; then
+            # Fetch PR details for comment trigger
+            PR_NUM=${{ github.event.issue.number }}
+            BASE_REF=$(gh pr view $PR_NUM --json baseRefName -q .baseRefName)
+            echo "ref=$BASE_REF" >> $GITHUB_OUTPUT
+          else
+            echo "ref=${{ github.event.pull_request.base.ref }}" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Detect changed Go files
+        id: changes
+        run: |
+          # Get changed .go files (exclude test files)
+          git fetch origin ${{ steps.base.outputs.ref }}
+          CHANGED_FILES=$(git diff --name-only origin/${{ steps.base.outputs.ref }}...HEAD | grep '\.go$' | grep -v '_test\.go$' || true)
+          
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No Go files changed"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          
+          # Define exclude patterns from Makefile
+          EXCLUDE_PATTERNS=(
+            "client/clientset"
+            "client/informers"
+            "client/listers"
+            "storage/external_test"
+            "astrads/api/v1alpha1"
+            "ontap/api/azgo"
+            "ontap/api/rest"
+            "fake"
+            "mocks/"
+            "operator/controllers/provisioner"
+            "storage_drivers/astrads/api/v1beta1"
+          )
+          
+          # Filter out excluded packages
+          FILTERED_FILES=""
+          for file in $CHANGED_FILES; do
+            EXCLUDE=false
+            for pattern in "${EXCLUDE_PATTERNS[@]}"; do
+              if [[ "$file" == *"$pattern"* ]]; then
+                EXCLUDE=true
+                break
+              fi
+            done
+            
+            if [ "$EXCLUDE" = false ]; then
+              FILTERED_FILES="$FILTERED_FILES$file"$'\n'
+            fi
+          done
+          
+          if [ -z "$FILTERED_FILES" ]; then
+            echo "No files after filtering exclusions"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Extract unique package paths
+          PACKAGES=""
+          for file in $FILTERED_FILES; do
+            if [ -n "$file" ]; then
+              # Get directory of the file
+              dir=$(dirname "$file")
+              # Convert to Go package path
+              pkg="github.com/netapp/trident/$dir"
+              PACKAGES="$PACKAGES$pkg"$'\n'
+            fi
+          done
+          
+          UNIQUE_PACKAGES=$(echo "$PACKAGES" | sort -u | grep -v '^$')
+          
+          echo "Affected packages:"
+          echo "$UNIQUE_PACKAGES"
+          
+          # Save to files for later steps
+          echo "$FILTERED_FILES" > /tmp/changed_files.txt
+          echo "$UNIQUE_PACKAGES" > /tmp/affected_packages.txt
+          
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+          echo "file_count=$(echo "$FILTERED_FILES" | grep -c . || echo 0)" >> $GITHUB_OUTPUT
+
+      - name: Extract functions from changed files
+        if: steps.changes.outputs.has_changes == 'true'
+        id: extract
+        run: |
+          # Create script to extract function signatures
+          cat > /tmp/extract_functions.go << 'SCRIPT'
+          package main
+          
+          import (
+            "encoding/json"
+            "fmt"
+            "go/ast"
+            "go/parser"
+            "go/token"
+            "os"
+            "strings"
+          )
+          
+          type FunctionInfo struct {
+            Name       string `json:"name"`
+            File       string `json:"file"`
+            Package    string `json:"package"`
+            Signature  string `json:"signature"`
+            IsExported bool   `json:"is_exported"`
+            StartLine  int    `json:"start_line"`
+            EndLine    int    `json:"end_line"`
+          }
+          
+          func main() {
+            if len(os.Args) < 2 {
+              return
+            }
+            
+            filename := os.Args[1]
+            fset := token.NewFileSet()
+            node, err := parser.ParseFile(fset, filename, nil, parser.ParseComments)
+            if err != nil {
+              return
+            }
+            
+            var functions []FunctionInfo
+            
+            ast.Inspect(node, func(n ast.Node) bool {
+              switch fn := n.(type) {
+              case *ast.FuncDecl:
+                sig := extractSignature(fset, fn)
+                functions = append(functions, FunctionInfo{
+                  Name:       fn.Name.Name,
+                  File:       filename,
+                  Package:    node.Name.Name,
+                  Signature:  sig,
+                  IsExported: fn.Name.IsExported(),
+                  StartLine:  fset.Position(fn.Pos()).Line,
+                  EndLine:    fset.Position(fn.End()).Line,
+                })
+              }
+              return true
+            })
+            
+            json.NewEncoder(os.Stdout).Encode(functions)
+          }
+          
+          func extractSignature(fset *token.FileSet, fn *ast.FuncDecl) string {
+            var parts []string
+            
+            if fn.Recv != nil {
+              parts = append(parts, fmt.Sprintf("(%s)", formatFieldList(fset, fn.Recv)))
+            }
+            
+            parts = append(parts, fn.Name.Name)
+            parts = append(parts, fmt.Sprintf("(%s)", formatFieldList(fset, fn.Type.Params)))
+            
+            if fn.Type.Results != nil {
+              parts = append(parts, formatFieldList(fset, fn.Type.Results))
+            }
+            
+            return strings.Join(parts, " ")
+          }
+          
+          func formatFieldList(fset *token.FileSet, fl *ast.FieldList) string {
+            if fl == nil || len(fl.List) == 0 {
+              return ""
+            }
+            var parts []string
+            for _, f := range fl.List {
+              typeStr := formatExpr(fset, f.Type)
+              if len(f.Names) > 0 {
+                for _, name := range f.Names {
+                  parts = append(parts, name.Name+" "+typeStr)
+                }
+              } else {
+                parts = append(parts, typeStr)
+              }
+            }
+            return strings.Join(parts, ", ")
+          }
+          
+          func formatExpr(fset *token.FileSet, expr ast.Expr) string {
+            switch t := expr.(type) {
+            case *ast.Ident:
+              return t.Name
+            case *ast.StarExpr:
+              return "*" + formatExpr(fset, t.X)
+            case *ast.SelectorExpr:
+              return formatExpr(fset, t.X) + "." + t.Sel.Name
+            case *ast.ArrayType:
+              return "[]" + formatExpr(fset, t.Elt)
+            case *ast.MapType:
+              return "map[" + formatExpr(fset, t.Key) + "]" + formatExpr(fset, t.Value)
+            default:
+              return "interface{}"
+            }
+          }
+          SCRIPT
+          
+          # Extract functions from all changed files
+          ALL_FUNCTIONS='[]'
+          while IFS= read -r file; do
+            if [ -n "$file" ] && [ -f "$file" ]; then
+              FUNCS=$(go run /tmp/extract_functions.go "$file" 2>/dev/null || echo '[]')
+              # Merge JSON arrays
+              ALL_FUNCTIONS=$(echo "$ALL_FUNCTIONS" "$FUNCS" | jq -s 'add')
+            fi
+          done < /tmp/changed_files.txt
+          
+          echo "$ALL_FUNCTIONS" > /tmp/functions.json
+          echo "Function count: $(echo "$ALL_FUNCTIONS" | jq 'length')"
+
+      - name: Generate unit tests using AI
+        if: steps.changes.outputs.has_changes == 'true'
+        id: generate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          # Create test generation script
+          cat > /tmp/generate_tests.py << 'SCRIPT'
+          import json
+          import os
+          import sys
+          import requests
+          from pathlib import Path
+          
+          def call_github_copilot(prompt, model="gpt-4o"):
+              """Call GitHub Copilot API via Azure OpenAI endpoint"""
+              token = os.environ.get("GITHUB_TOKEN")
+              headers = {
+                  "Authorization": f"Bearer {token}",
+                  "Content-Type": "application/json"
+              }
+              
+              payload = {
+                  "messages": [
+                      {"role": "system", "content": "You are an expert Go test engineer. Generate comprehensive unit tests using Go's testing package and table-driven test patterns."},
+                      {"role": "user", "content": prompt}
+                  ],
+                  "model": model,
+                  "temperature": 0.3,
+                  "max_tokens": 2000
+              }
+              
+              try:
+                  # Try GitHub Models API first
+                  response = requests.post(
+                      "https://models.inference.ai.azure.com/chat/completions",
+                      headers=headers,
+                      json=payload,
+                      timeout=30
+                  )
+                  
+                  if response.status_code == 200:
+                      return response.json()["choices"][0]["message"]["content"]
+                  else:
+                      print(f"GitHub API failed: {response.status_code}", file=sys.stderr)
+                      return None
+              except Exception as e:
+                  print(f"GitHub API error: {e}", file=sys.stderr)
+                  return None
+          
+          def call_openai(prompt, model="gpt-4o-mini"):
+              """Fallback to OpenAI API"""
+              api_key = os.environ.get("OPENAI_API_KEY")
+              if not api_key:
+                  return None
+                  
+              headers = {
+                  "Authorization": f"Bearer {api_key}",
+                  "Content-Type": "application/json"
+              }
+              
+              payload = {
+                  "model": model,
+                  "messages": [
+                      {"role": "system", "content": "You are an expert Go test engineer. Generate comprehensive unit tests using Go's testing package and table-driven test patterns."},
+                      {"role": "user", "content": prompt}
+                  ],
+                  "temperature": 0.3,
+                  "max_tokens": 2000
+              }
+              
+              try:
+                  response = requests.post(
+                      "https://api.openai.com/v1/chat/completions",
+                      headers=headers,
+                      json=payload,
+                      timeout=30
+                  )
+                  
+                  if response.status_code == 200:
+                      return response.json()["choices"][0]["message"]["content"]
+                  return None
+              except Exception as e:
+                  print(f"OpenAI API error: {e}", file=sys.stderr)
+                  return None
+          
+          def generate_test_for_function(func_info, source_code):
+              """Generate test for a single function"""
+              prompt = f"""Generate a comprehensive unit test for the following Go function.
+
+          Package: {func_info['package']}
+          Function: {func_info['signature']}
+          
+          Source code context:
+          ```go
+          {source_code}
+          ```
+          
+          Requirements:
+          1. Use table-driven test pattern where appropriate
+          2. Include edge cases and error scenarios
+          3. Use testify/assert if needed for assertions
+          4. Mock external dependencies
+          5. Follow Go testing best practices
+          6. Return ONLY the test function code, no explanations
+          7. Function name should be Test{func_info['name']}
+          
+          Generate the test code:"""
+              
+              # Try GitHub Copilot first
+              result = call_github_copilot(prompt)
+              if result:
+                  return result
+              
+              # Fallback to OpenAI
+              result = call_openai(prompt)
+              return result
+          
+          def extract_code_block(text):
+              """Extract Go code from markdown code blocks"""
+              if "```go" in text:
+                  parts = text.split("```go")
+                  if len(parts) > 1:
+                      code = parts[1].split("```")[0]
+                      return code.strip()
+              elif "```" in text:
+                  parts = text.split("```")
+                  if len(parts) > 1:
+                      return parts[1].strip()
+              return text.strip()
+          
+          def main():
+              # Load functions
+              with open("/tmp/functions.json", "r") as f:
+                  functions = json.load(f)
+              
+              generated_tests = {}
+              
+              for func in functions:
+                  if not func["is_exported"]:
+                      continue  # Skip unexported functions
+                  
+                  print(f"Generating test for {func['name']}...", file=sys.stderr)
+                  
+                  # Read source code
+                  try:
+                      with open(func["file"], "r") as f:
+                          lines = f.readlines()
+                          start = max(0, func["start_line"] - 5)
+                          end = min(len(lines), func["end_line"] + 5)
+                          source_code = "".join(lines[start:end])
+                  except Exception as e:
+                      print(f"Error reading {func['file']}: {e}", file=sys.stderr)
+                      continue
+                  
+                  # Generate test
+                  test_code = generate_test_for_function(func, source_code)
+                  if not test_code:
+                      print(f"Failed to generate test for {func['name']}", file=sys.stderr)
+                      continue
+                  
+                  # Clean up code
+                  test_code = extract_code_block(test_code)
+                  
+                  # Organize by test file
+                  test_file = func["file"].replace(".go", "_test.go")
+                  if test_file not in generated_tests:
+                      generated_tests[test_file] = {
+                          "package": func["package"],
+                          "imports": set(),
+                          "tests": []
+                      }
+                  
+                  generated_tests[test_file]["tests"].append({
+                      "function": func["name"],
+                      "code": test_code
+                  })
+              
+              # Save generated tests
+              with open("/tmp/generated_tests.json", "w") as f:
+                  # Convert sets to lists for JSON serialization
+                  output = {}
+                  for k, v in generated_tests.items():
+                      output[k] = {
+                          "package": v["package"],
+                          "imports": list(v["imports"]),
+                          "tests": v["tests"]
+                      }
+                  json.dump(output, f, indent=2)
+              
+              print(f"Generated tests for {len(generated_tests)} files", file=sys.stderr)
+          
+          if __name__ == "__main__":
+              main()
+          SCRIPT
+          
+          # Install Python dependencies
+          pip install -q requests
+          
+          # Generate tests
+          python3 /tmp/generate_tests.py
+          
+          if [ -f /tmp/generated_tests.json ]; then
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Write generated tests to files
+        if: steps.generate.outputs.success == 'true'
+        run: |
+          # Create script to write test files
+          python3 << 'SCRIPT'
+          import json
+          import os
+          from pathlib import Path
+          
+          with open("/tmp/generated_tests.json", "r") as f:
+              tests = json.load(f)
+          
+          for test_file, content in tests.items():
+              # Check if file already exists
+              file_exists = os.path.exists(test_file)
+              
+              if file_exists:
+                  # Append to existing file
+                  with open(test_file, "a") as f:
+                      f.write("\n\n// Auto-generated tests\n")
+                      for test in content["tests"]:
+                          f.write(f"\n{test['code']}\n")
+              else:
+                  # Create new file
+                  Path(test_file).parent.mkdir(parents=True, exist_ok=True)
+                  with open(test_file, "w") as f:
+                      f.write(f"package {content['package']}\n\n")
+                      f.write("import (\n")
+                      f.write('\t"testing"\n')
+                      f.write(")\n\n")
+                      f.write("// Auto-generated tests\n")
+                      for test in content["tests"]:
+                          f.write(f"\n{test['code']}\n")
+              
+              print(f"{'Updated' if file_exists else 'Created'}: {test_file}")
+          SCRIPT
+
+      - name: Run tests on affected packages
+        if: steps.generate.outputs.success == 'true'
+        id: coverage
+        continue-on-error: true
+        run: |
+          # Read affected packages
+          PACKAGES=$(cat /tmp/affected_packages.txt | tr '\n' ' ')
+          
+          echo "Running tests on affected packages:"
+          echo "$PACKAGES"
+          
+          # Run tests with coverage
+          go test -v -short -coverprofile=coverage_pr.out $PACKAGES || true
+          
+          # Calculate coverage per package
+          if [ -f coverage_pr.out ]; then
+            echo "## Coverage Report" > /tmp/coverage_report.md
+            echo "" >> /tmp/coverage_report.md
+            echo "| Package | Coverage |" >> /tmp/coverage_report.md
+            echo "|---------|----------|" >> /tmp/coverage_report.md
+            
+            go tool cover -func=coverage_pr.out | grep -v "total:" | while read line; do
+              # Extract package and coverage
+              pkg=$(echo "$line" | awk '{print $1}' | sed 's|github.com/netapp/trident/||' | cut -d'/' -f1-2 | sort -u)
+              if [ -n "$pkg" ]; then
+                echo "Processing: $pkg"
+              fi
+            done
+            
+            # Get overall coverage
+            OVERALL=$(go tool cover -func=coverage_pr.out | grep "total:" | awk '{print $3}')
+            echo "" >> /tmp/coverage_report.md
+            echo "**Overall coverage for changed packages:** $OVERALL" >> /tmp/coverage_report.md
+            
+            echo "coverage=$OVERALL" >> $GITHUB_OUTPUT
+          else
+            echo "No coverage data generated" >> /tmp/coverage_report.md
+            echo "coverage=N/A" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create PR comment with results
+        if: steps.generate.outputs.success == 'true' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // Read generated tests
+            const testsData = JSON.parse(fs.readFileSync('/tmp/generated_tests.json', 'utf8'));
+            const testFiles = Object.keys(testsData);
+            
+            // Read coverage report
+            let coverageReport = 'Coverage data not available';
+            if (fs.existsSync('/tmp/coverage_report.md')) {
+              coverageReport = fs.readFileSync('/tmp/coverage_report.md', 'utf8');
+            }
+            
+            // Build comment
+            let comment = '## 🤖 Auto-Generated Unit Tests\n\n';
+            comment += '### 📝 Generated Test Files:\n';
+            
+            for (const file of testFiles) {
+              const testCount = testsData[file].tests.length;
+              comment += `- \`${file}\` (${testCount} test${testCount > 1 ? 's' : ''})\n`;
+            }
+            
+            comment += '\n### 📊 Coverage Report:\n\n';
+            comment += coverageReport;
+            
+            comment += '\n\n### 📋 Generated Tests Preview:\n\n';
+            
+            // Show preview of first test file
+            const firstFile = testFiles[0];
+            if (firstFile) {
+              comment += '<details>\n';
+              comment += `<summary>${firstFile}</summary>\n\n`;
+              comment += '```go\n';
+              const preview = testsData[firstFile].tests.slice(0, 2).map(t => t.code).join('\n\n');
+              comment += preview.substring(0, 2000); // Limit size
+              if (preview.length > 2000) comment += '\n// ... truncated ...';
+              comment += '\n```\n';
+              comment += '</details>\n\n';
+            }
+            
+            comment += '---\n';
+            comment += '✅ **To approve and commit these tests:** Comment `/approve-tests` below\n';
+            comment += '❌ **To reject:** No action needed, tests will not be committed\n\n';
+            comment += '*Note: Tests have been generated but not committed. Please review before approval.*';
+            
+            // Post comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+
+      - name: Commit generated tests
+        if: |
+          steps.generate.outputs.success == 'true' && 
+          github.event_name == 'issue_comment' && 
+          contains(github.event.comment.body, '/approve-tests')
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Add all test files
+          git add '*_test.go'
+          
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          
+          git commit -m "chore: add auto-generated unit tests [skip ci]
+
+          Generated by Auto-Generate Unit Tests workflow
+          Approved by: @${{ github.event.comment.user.login }}"
+          
+          git push
+
+      - name: Acknowledge approval
+        if: |
+          steps.generate.outputs.success == 'true' && 
+          github.event_name == 'issue_comment' && 
+          contains(github.event.comment.body, '/approve-tests')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: '✅ Tests approved and committed to the PR branch!'
+            });
