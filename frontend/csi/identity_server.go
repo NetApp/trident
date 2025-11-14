@@ -75,6 +75,13 @@ func (p *Plugin) GetPluginCapabilities(
 				},
 			},
 		},
+		{
+			Type: &csi.PluginCapability_VolumeExpansion_{
+				VolumeExpansion: &csi.PluginCapability_VolumeExpansion{
+					Type: csi.PluginCapability_VolumeExpansion_ONLINE,
+				},
+			},
+		},
 	}
 
 	// If topology is in use, add VOLUME_ACCESSIBILITY_CONSTRAINTS capability

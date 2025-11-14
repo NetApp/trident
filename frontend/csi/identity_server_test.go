@@ -116,25 +116,32 @@ func TestGetPluginInfo(t *testing.T) {
 
 func TestGetPluginCapabilities(t *testing.T) {
 	testCases := []struct {
-		name          string
-		topologyInUse bool
-		expectedTypes []csi.PluginCapability_Service_Type
+		name                   string
+		topologyInUse          bool
+		expectedServiceTypes   []csi.PluginCapability_Service_Type
+		expectedExpansionTypes []csi.PluginCapability_VolumeExpansion_Type
 	}{
 		{
 			name:          "No Topology",
 			topologyInUse: false,
-			expectedTypes: []csi.PluginCapability_Service_Type{
+			expectedServiceTypes: []csi.PluginCapability_Service_Type{
 				csi.PluginCapability_Service_CONTROLLER_SERVICE,
 				csi.PluginCapability_Service_GROUP_CONTROLLER_SERVICE,
+			},
+			expectedExpansionTypes: []csi.PluginCapability_VolumeExpansion_Type{
+				csi.PluginCapability_VolumeExpansion_ONLINE,
 			},
 		},
 		{
 			name:          "With Topology",
 			topologyInUse: true,
-			expectedTypes: []csi.PluginCapability_Service_Type{
+			expectedServiceTypes: []csi.PluginCapability_Service_Type{
 				csi.PluginCapability_Service_CONTROLLER_SERVICE,
 				csi.PluginCapability_Service_GROUP_CONTROLLER_SERVICE,
 				csi.PluginCapability_Service_VOLUME_ACCESSIBILITY_CONSTRAINTS,
+			},
+			expectedExpansionTypes: []csi.PluginCapability_VolumeExpansion_Type{
+				csi.PluginCapability_VolumeExpansion_ONLINE,
 			},
 		},
 	}
@@ -145,13 +152,23 @@ func TestGetPluginCapabilities(t *testing.T) {
 				topologyInUse: tc.topologyInUse,
 			}
 			resp, err := plugin.GetPluginCapabilities(context.Background(), &csi.GetPluginCapabilitiesRequest{})
+
 			assert.NoError(t, err)
 			assert.NotNil(t, resp)
-			var gotTypes []csi.PluginCapability_Service_Type
-			for _, cap := range resp.Capabilities {
-				gotTypes = append(gotTypes, cap.GetService().GetType())
+
+			var gotServiceTypes []csi.PluginCapability_Service_Type
+			var gotExpansionTypes []csi.PluginCapability_VolumeExpansion_Type
+
+			for _, capability := range resp.Capabilities {
+				if capability.GetService() != nil {
+					gotServiceTypes = append(gotServiceTypes, capability.GetService().GetType())
+				} else if capability.GetVolumeExpansion() != nil {
+					gotExpansionTypes = append(gotExpansionTypes, capability.GetVolumeExpansion().GetType())
+				}
 			}
-			assert.ElementsMatch(t, tc.expectedTypes, gotTypes)
+
+			assert.ElementsMatch(t, tc.expectedServiceTypes, gotServiceTypes)
+			assert.ElementsMatch(t, tc.expectedExpansionTypes, gotExpansionTypes)
 		})
 	}
 }
