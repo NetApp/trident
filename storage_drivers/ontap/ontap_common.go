@@ -4982,62 +4982,124 @@ func removeExportPolicyRules(
 	exportPolicyMutex.Lock(exportPolicy)
 	defer exportPolicyMutex.Unlock(exportPolicy)
 
-	var removeRuleIndexes []int
+	// CNVA-AWARE EXPORT POLICY MANAGEMENT:
+	// Instead of blindly removing rules for the departing node, we implement "keep only active nodes" logic.
+	// This is critical for CNVA where multiple PVCs (primary + subordinates) share the same export policy.
+	// We must preserve rules for all remaining active nodes that still need access to the shared volume.
 
-	nodeIPRules := make(map[string]struct{})
-	for _, ip := range publishInfo.HostIP {
-		ip = strings.TrimSpace(ip)
-		nodeIPRules[ip] = struct{}{}
+	// When all nodes have been unpublished
+	if publishInfo.Nodes == nil || len(publishInfo.Nodes) == 0 {
+		Logc(ctx).WithFields(fields).Debug("No active nodes remaining, removing ALL export policy rules.")
+
+		// Get all existing rules and remove them
+		existingRules, err := clientAPI.ExportRuleList(ctx, exportPolicy)
+		if err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"policyName": exportPolicy,
+				"error":      err,
+			}).WithError(err).Error("Failed to list export policy rules for cleanup.")
+			return err
+		}
+
+		// Remove all existing rules
+		for ruleIndex := range existingRules {
+			if err := clientAPI.ExportRuleDestroy(ctx, exportPolicy, ruleIndex); err != nil {
+				Logc(ctx).WithFields(LogFields{
+					"policyName": exportPolicy,
+					"ruleIndex":  ruleIndex,
+				}).WithError(err).Error("Failed to remove export policy rule during full cleanup.")
+				// Continue removing other rules even if one fails
+			} else {
+				Logc(ctx).WithFields(LogFields{
+					"policyName": exportPolicy,
+					"ruleIndex":  ruleIndex,
+				}).Debug("Removed export policy rule during full cleanup.")
+			}
+		}
+
+		Logc(ctx).WithFields(LogFields{
+			"policyName":        exportPolicy,
+			"totalRulesRemoved": len(existingRules),
+		}).Debug("All export policy rules removed for empty volume.")
+		return nil
 	}
 
-	// Get export policy rules from given policy
+	// Build set of IPs that should be KEPT (all active nodes)
+	activeNodeIPs := make(map[string]struct{})
+	for _, node := range publishInfo.Nodes {
+		for _, ip := range node.IPs {
+			ip = strings.TrimSpace(ip)
+			activeNodeIPs[ip] = struct{}{}
+		}
+	}
+
+	// Get existing export policy rules
 	existingExportRules, err := clientAPI.ExportRuleList(ctx, exportPolicy)
 	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"policyName": exportPolicy,
+			"error":      err,
+		}).WithError(err).Error("Failed to list existing export policy rules.")
 		return err
 	}
-	Logc(ctx).WithField("existingExportRules", existingExportRules).Debug("Existing export policy rules.")
 
-	// Match list of rules to rule index based on clientMatch address
-	// ONTAP expects the rule index to delete
+	var removeRuleIndexes []int
+
+	// Analyze each existing rule to determine if it should be kept or removed
 	for ruleIndex, clientMatch := range existingExportRules {
-		// For the policy, match the node IP addresses to the clientMatch to remove the matched items.
-		// Example:
-		// trident_pvc_123 is attached to node1 and node2. The policy is being unpublished from node1.
-		// node1 IP addresses [1.1.1.0, 1.1.1.1] node2 IP addresses [2.2.2.0, 2.2.2.2].
-		// export policy "trident_pvc_123" should have the export rules:
-		// index 1: "1.1.1.0"
-		// index 2: "1.1.1.1"
-		// index 3: "2.2.2.0"
-		// index 4: "2.2.2.2"
-		// When the clientMatch is the same as the node IP that export rule index will be added to the list of
-		// indexes to be removed. For this example indexes 1 and 2 will be removed.
+		clientIPs := strings.Split(clientMatch, ",")
+		shouldKeepRule := false
 
-		// Legacy export policies created via ZAPI will have multiple clientMatch IPs for a node in a single rule.
-		// index 1: "1.1.1.0, 1.1.1.1"
-		// index 2: "2.2.2.0, 2.2.2.2"
-		// For this example, index 1 will be removed.
-
-		// Add a ruleIndex for deletion only if ALL the IPs in the clientMatch are in the list of IPs we are trying
-		// to delete
-		allMatch := true
-		for _, singleClientMatch := range strings.Split(clientMatch, ",") {
-			singleClientMatch = strings.TrimSpace(singleClientMatch)
-			if _, match := nodeIPRules[singleClientMatch]; !match {
-				allMatch = false
+		// Check if ANY IP in this rule should be preserved (belongs to active nodes)
+		for _, singleClientIP := range clientIPs {
+			singleClientIP = strings.TrimSpace(singleClientIP)
+			if _, shouldKeep := activeNodeIPs[singleClientIP]; shouldKeep {
+				shouldKeepRule = true
 				break
 			}
 		}
-		if allMatch {
+
+		if !shouldKeepRule {
+			// This rule contains ONLY IPs that are no longer active - safe to remove
 			removeRuleIndexes = append(removeRuleIndexes, ruleIndex)
 		}
 	}
 
-	// Attempt to remove node IP addresses from export policy rules
-	Logc(ctx).WithField("removeRuleIndexes", removeRuleIndexes).Debug("Rule indexes to remove.")
+	// Remove rules that contain only inactive node IPs
 	for _, ruleIndex := range removeRuleIndexes {
+		ruleToRemove := existingExportRules[ruleIndex]
+
 		if err = clientAPI.ExportRuleDestroy(ctx, exportPolicy, ruleIndex); err != nil {
-			Logc(ctx).WithError(err).Error("Error deleting export policy rule.")
+			Logc(ctx).WithFields(LogFields{
+				"policyName":   exportPolicy,
+				"ruleIndex":    ruleIndex,
+				"ruleToRemove": ruleToRemove,
+				"error":        err,
+			}).WithError(err).Error("Failed to remove export policy rule.")
+		} else {
+			Logc(ctx).WithFields(LogFields{
+				"policyName":  exportPolicy,
+				"ruleIndex":   ruleIndex,
+				"removedRule": ruleToRemove,
+			}).Debug("Removed export policy rule.")
 		}
+	}
+
+	// Get final rules after cleanup
+	finalExportRules, err := clientAPI.ExportRuleList(ctx, exportPolicy)
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"policyName": exportPolicy,
+			"error":      err,
+		}).WithError(err).Error("Could not list final export policy rules.")
+	} else {
+		Logc(ctx).WithFields(LogFields{
+			"policyName":        exportPolicy,
+			"finalExportRules":  finalExportRules,
+			"finalRuleCount":    len(finalExportRules),
+			"originalRuleCount": len(existingExportRules),
+			"removedRuleCount":  len(removeRuleIndexes),
+		}).Debug("Export policy cleanup completed.")
 	}
 
 	return nil

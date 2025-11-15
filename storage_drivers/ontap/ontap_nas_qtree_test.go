@@ -6002,6 +6002,7 @@ func TestOntapNasEcoUnpublish(t *testing.T) {
 					Return(map[int]string{1: "1.1.1.1", 2: "2.2.2.2", 4: "4.4.4.4", 5: "5.5.5.5"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, qtreeName, gomock.Any()).Times(2)
 				mockAPI.EXPECT().ExportRuleList(ctx, qtreeName).Return(map[int]string{4: "4.4.4.4", 5: "5.5.5.5"}, nil)
+				mockAPI.EXPECT().ExportRuleList(ctx, qtreeName).Return(map[int]string{4: "4.4.4.4", 5: "5.5.5.5"}, nil) // Third call by qtree unpublish
 			},
 			wantErr: assert.NoError,
 		},
@@ -6048,6 +6049,17 @@ func TestOntapNasEcoUnpublish(t *testing.T) {
 				BackendUUID:      "1234",
 				HostIP:           []string{"1.1.1.1", "2.2.2.2"},
 				VolumeAccessInfo: models.VolumeAccessInfo{PublishEnforcement: tr.args.publishEnforcement},
+			}
+
+			// Add Nodes field only for CNVA behavior tests (those expecting selective rule removal)
+			if tr.name == "qtreeWithTwoMounts" {
+				// CNVA: After unpublishing node1, only node2 remains active
+				publishInfo.Nodes = []*models.Node{
+					{
+						Name: "node2",
+						IPs:  []string{"4.4.4.4", "5.5.5.5"}, // Remaining active node
+					},
+				}
 			}
 
 			mockAPI, driver := newMockOntapNasQtreeDriver(t)

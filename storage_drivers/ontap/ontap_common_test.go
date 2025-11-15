@@ -2781,7 +2781,11 @@ func TestRemoveExportPolicyRules_Success(t *testing.T) {
 	ctx := context.TODO()
 	mockAPI := newMockOntapAPI(t)
 	exportPolicy := "testPolicy"
-	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1", "1.1.1.2"}}
+	// When publishInfo.Nodes is nil, ALL rules are removed (empty volume cleanup)
+	publishInfo := &tridentmodels.VolumePublishInfo{
+		HostIP: []string{"1.1.1.1", "1.1.1.2"},
+		Nodes:  nil, // This triggers "remove all rules" logic
+	}
 
 	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1", 2: "1.1.1.2"}, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
@@ -2825,10 +2829,17 @@ func TestRemoveExportPolicyRules_NoMatchingRules(t *testing.T) {
 	ctx := context.TODO()
 	mockAPI := newMockOntapAPI(t)
 	exportPolicy := "testPolicy"
-	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1"}}
+	publishInfo := &tridentmodels.VolumePublishInfo{
+		HostIP: []string{"1.1.1.1"},
+		Nodes: []*tridentmodels.Node{
+			createTestNode("active-node", []string{"2.2.2.2"}), // Active node has different IP
+		},
+	}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "2.2.2.2"}, nil)
+	existingRules := map[int]string{1: "2.2.2.2"}
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
 	assert.NoError(t, err)
@@ -2838,10 +2849,18 @@ func TestRemoveExportPolicyRules_AllIPsMatchInZapiRule(t *testing.T) {
 	ctx := context.TODO()
 	mockAPI := newMockOntapAPI(t)
 	exportPolicy := "testPolicy"
-	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.2", "1.1.1.1"}}
+	publishInfo := &tridentmodels.VolumePublishInfo{
+		HostIP: []string{"1.1.1.2", "1.1.1.1"},
+		Nodes: []*tridentmodels.Node{
+			createTestNode("active-node-1", []string{"1.1.1.1"}),
+			createTestNode("active-node-2", []string{"1.1.1.2"}),
+		},
+	}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1, 1.1.1.2"}, nil)
-	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
+	existingRules := map[int]string{1: "1.1.1.1, 1.1.1.2"}
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
 	assert.NoError(t, err)
@@ -2851,12 +2870,28 @@ func TestRemoveExportPolicyRules_DuplicateIPsMatchInZapiRule(t *testing.T) {
 	ctx := context.TODO()
 	mockAPI := newMockOntapAPI(t)
 	exportPolicy := "testPolicy"
-	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1", "1.1.1.2"}}
+	publishInfo := &tridentmodels.VolumePublishInfo{
+		HostIP: []string{"1.1.1.1", "1.1.1.2"},
+		Nodes: []*tridentmodels.Node{
+			createTestNode("active-node-1", []string{"1.1.1.1"}),
+			createTestNode("active-node-2", []string{"1.1.1.2"}),
+		},
+	}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).
-		Return(map[int]string{1: "1.1.1.1, 1.1.1.2", 2: "1.1.1.2, 1.1.1.1"}, nil)
-	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil).Times(1)
-	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil).Times(1)
+	existingRules := map[int]string{
+		1: "1.1.1.1, 1.1.1.2", // Contains both active node IPs → PRESERVE
+		2: "1.1.1.2, 1.1.1.1", // Same IPs, different order → PRESERVE
+		3: "3.3.3.3",          // Inactive IP → REMOVE
+	}
+	finalRules := map[int]string{
+		1: "1.1.1.1, 1.1.1.2", // Preserved
+		2: "1.1.1.2, 1.1.1.1", // Preserved (duplicate content is OK)
+		// Rule 3 removed
+	}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 3).Return(nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(finalRules, nil)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
 	assert.NoError(t, err)
@@ -2866,10 +2901,21 @@ func TestRemoveExportPolicyRules_OneIPMatchInZapiRule(t *testing.T) {
 	ctx := context.TODO()
 	mockAPI := newMockOntapAPI(t)
 	exportPolicy := "testPolicy"
-	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.2"}}
+	publishInfo := &tridentmodels.VolumePublishInfo{
+		HostIP: []string{"1.1.1.2"}, // Departing node
+		Nodes: []*tridentmodels.Node{
+			createTestNode("active-node-1", []string{"1.1.1.1"}),
+			createTestNode("active-node-2", []string{"1.1.1.2"}),
+		},
+	}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1, 1.1.1.2"}, nil)
+	// Rule contains both active node IPs, so it should be PRESERVED
+	existingRules := map[int]string{1: "1.1.1.1, 1.1.1.2"}
+	finalRules := map[int]string{1: "1.1.1.1, 1.1.1.2"} // Same rules (preserved)
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(finalRules, nil)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
 	assert.NoError(t, err)
@@ -2882,7 +2928,7 @@ func TestRemoveExportPolicyRules_NoIPMatchInZapiRule(t *testing.T) {
 	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"2.2.2.2", "2.2.2.3"}}
 
 	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1, 1.1.1.2"}, nil)
-	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(1)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
 	assert.NoError(t, err)
@@ -2892,10 +2938,18 @@ func TestRemoveExportPolicyRules_EmptyHostIPList(t *testing.T) {
 	ctx := context.TODO()
 	mockAPI := newMockOntapAPI(t)
 	exportPolicy := "testPolicy"
-	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{}}
+	publishInfo := &tridentmodels.VolumePublishInfo{
+		HostIP: []string{}, // Empty
+		Nodes: []*tridentmodels.Node{
+			createTestNode("node-a", []string{"1.1.1.1"}),
+		},
+	}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1"}, nil)
+	existingRules := map[int]string{1: "1.1.1.1"}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
 	assert.NoError(t, err)
@@ -2918,10 +2972,20 @@ func TestRemoveExportPolicyRules_InvalidIPFormat(t *testing.T) {
 	ctx := context.TODO()
 	mockAPI := newMockOntapAPI(t)
 	exportPolicy := "testPolicy"
-	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"invalidIP"}}
+	publishInfo := &tridentmodels.VolumePublishInfo{
+		HostIP: []string{"invalidIP"},
+		Nodes: []*tridentmodels.Node{
+			createTestNode("active-node-1", []string{"1.1.1.1"}),
+		},
+	}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1"}, nil)
+	// Rule contains active node IP, so it should be PRESERVED
+	existingRules := map[int]string{1: "1.1.1.1"}
+	finalRules := map[int]string{1: "1.1.1.1"} // Same rules (preserved)
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
 	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(finalRules, nil)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
 	assert.NoError(t, err)
@@ -2931,10 +2995,25 @@ func TestRemoveExportPolicyRules_MixedValidAndInvalidIPs(t *testing.T) {
 	ctx := context.TODO()
 	mockAPI := newMockOntapAPI(t)
 	exportPolicy := "testPolicy"
-	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1", "invalidIP"}}
+	publishInfo := &tridentmodels.VolumePublishInfo{
+		HostIP: []string{"1.1.1.1", "invalidIP"},
+		Nodes: []*tridentmodels.Node{
+			createTestNode("active-node-1", []string{"1.1.1.1"}), // Active node with valid IP
+		},
+	}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1"}, nil)
-	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
+	// Multiple rules, some should be preserved, others removed
+	existingRules := map[int]string{
+		1: "1.1.1.1", // Keep - belongs to active node
+		2: "2.2.2.2", // Remove - doesn't belong to any active node
+	}
+	finalRules := map[int]string{
+		1: "1.1.1.1", // Rule 1 preserved, rule 2 removed
+	}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil) // Only remove rule 2
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(finalRules, nil)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
 	assert.NoError(t, err)
@@ -2944,11 +3023,27 @@ func TestRemoveExportPolicyRules_IPsWithSpaces(t *testing.T) {
 	ctx := context.TODO()
 	mockAPI := newMockOntapAPI(t)
 	exportPolicy := "testPolicy"
-	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{" 1.1.1.1 ", " 1.1.1.2 "}}
+	publishInfo := &tridentmodels.VolumePublishInfo{
+		HostIP: []string{" 1.1.1.1 ", " 1.1.1.2 "},
+		Nodes: []*tridentmodels.Node{
+			createTestNode("active-node-1", []string{" 1.1.1.1 ", "1.1.1.2"}),
+		},
+	}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1", 2: "1.1.1.2"}, nil)
-	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
-	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil)
+	existingRules := map[int]string{
+		1: "1.1.1.1", // Matches trimmed " 1.1.1.1 " -> "1.1.1.1"
+		2: "1.1.1.2", // Matches "1.1.1.2"
+		3: "3.3.3.3", // No active node has this IP -> should be removed
+	}
+	finalRules := map[int]string{
+		1: "1.1.1.1", // Preserved
+		2: "1.1.1.2", // Preserved
+		// Rule 3 removed
+	}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 3).Return(nil) // Only remove rule 3
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(finalRules, nil)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
 	assert.NoError(t, err)
@@ -2958,11 +3053,23 @@ func TestRemoveExportPolicyRules_IPsWithMixedFormats(t *testing.T) {
 	ctx := context.TODO()
 	mockAPI := newMockOntapAPI(t)
 	exportPolicy := "testPolicy"
-	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1", "2001:db8::1"}}
+	publishInfo := &tridentmodels.VolumePublishInfo{
+		HostIP: []string{"1.1.1.1", "2001:db8::1"},
+		Nodes: []*tridentmodels.Node{
+			createTestNode("active-node-1", []string{"1.1.1.1", "2001:db8::1"}),
+		},
+	}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "1.1.1.1", 2: "2001:db8::1"}, nil)
-	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
-	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil)
+	existingRules := map[int]string{
+		1: "1.1.1.1",
+		2: "2001:db8::1",
+	}
+	finalRules := map[int]string{
+		1: "1.1.1.1",
+		2: "2001:db8::1",
+	}
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(finalRules, nil)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
 	assert.NoError(t, err)
@@ -2972,10 +3079,291 @@ func TestRemoveExportPolicyRules_IPsMatchInMixedFormats(t *testing.T) {
 	ctx := context.TODO()
 	mockAPI := newMockOntapAPI(t)
 	exportPolicy := "testPolicy"
-	publishInfo := &tridentmodels.VolumePublishInfo{HostIP: []string{"1.1.1.1"}}
+	publishInfo := &tridentmodels.VolumePublishInfo{
+		HostIP: []string{"1.1.1.1"},
+		Nodes: []*tridentmodels.Node{
+			createTestNode("active-node-1", []string{"1.1.1.1"}),
+		},
+	}
 
-	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{1: "::ffff:1.1.1.1"}, nil)
-	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, gomock.Any()).Times(0)
+	// Rule has IPv4-mapped IPv6 format which does NOT match standard IPv4 in string comparison
+	existingRules := map[int]string{1: "::ffff:1.1.1.1"}
+	finalRules := map[int]string{}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(finalRules, nil)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func createTestNode(name string, ips []string) *tridentmodels.Node {
+	return &tridentmodels.Node{
+		Name: name,
+		IPs:  ips,
+	}
+}
+
+func createTestPublishInfoWithNodes(nodes []*tridentmodels.Node) *tridentmodels.VolumePublishInfo {
+	return &tridentmodels.VolumePublishInfo{
+		Nodes: nodes,
+	}
+}
+
+func TestRemoveExportPolicyRules_CNVA_NilNodes(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{
+		Nodes: nil,
+	}
+
+	// Should remove ALL existing rules when no active nodes remain
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{
+		1: "1.1.1.1",
+		2: "2.2.2.2",
+		3: "3.3.3.3",
+	}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 3).Return(nil)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_CNVA_EmptyNodes(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{
+		Nodes: []*tridentmodels.Node{},
+	}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{
+		1: "1.1.1.1",
+		2: "2.2.2.2",
+	}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_CNVA_PreserveActiveNodes(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+
+	// Scenario: Node A and B remain active, Node C is being removed
+	activeNodes := []*tridentmodels.Node{
+		createTestNode("node-a", []string{"1.1.1.1"}),
+		createTestNode("node-b", []string{"2.2.2.2"}),
+	}
+	publishInfo := createTestPublishInfoWithNodes(activeNodes)
+
+	existingRules := map[int]string{
+		1: "1.1.1.1", // Node A - should be preserved
+		2: "2.2.2.2", // Node B - should be preserved
+		3: "3.3.3.3", // Node C - should be removed
+	}
+	finalRules := map[int]string{
+		1: "1.1.1.1", // Node A - preserved
+		2: "2.2.2.2", // Node B - preserved
+		// Node C rule removed
+	}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 3).Return(nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(finalRules, nil)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_CNVA_MultiIPNodes(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+
+	// Node with multiple IPs (multi-homed)
+	activeNodes := []*tridentmodels.Node{
+		createTestNode("multi-homed-node", []string{"1.1.1.1", "10.0.0.1"}),
+		createTestNode("single-ip-node", []string{"2.2.2.2"}),
+	}
+	publishInfo := createTestPublishInfoWithNodes(activeNodes)
+
+	existingRules := map[int]string{
+		1: "1.1.1.1",  // Keep - belongs to active multi-homed node
+		2: "2.2.2.2",  // Keep - belongs to active single-ip node
+		3: "10.0.0.1", // Keep - second IP of active multi-homed node
+		4: "3.3.3.3",  // Remove - not in any active node
+	}
+	finalRules := map[int]string{
+		1: "1.1.1.1",
+		2: "2.2.2.2",
+		3: "10.0.0.1",
+	}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 4).Return(nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(finalRules, nil)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_CNVA_CommaSeparatedRules(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+
+	activeNodes := []*tridentmodels.Node{
+		createTestNode("node-a", []string{"1.1.1.1"}),
+		createTestNode("node-b", []string{"2.2.2.2"}),
+	}
+	publishInfo := createTestPublishInfoWithNodes(activeNodes)
+
+	existingRules := map[int]string{
+		1: "1.1.1.1, 2.2.2.2", // Keep - contains ONLY active IPs
+		2: "1.1.1.1, 3.3.3.3", // Keep - contains active IP (1.1.1.1) + inactive IP (3.3.3.3)
+		3: "3.3.3.3, 4.4.4.4", // Remove - contains NO active IPs
+		4: "2.2.2.2",          // Keep - single active IP
+	}
+	finalRules := map[int]string{
+		1: "1.1.1.1, 2.2.2.2", // Preserved
+		2: "1.1.1.1, 3.3.3.3", // Preserved (has active IP 1.1.1.1)
+		4: "2.2.2.2",          // Preserved
+		// Only rule 3 removed
+	}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 3).Return(nil) // Only remove rule 3
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(finalRules, nil)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_CNVA_AllRulesActive(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+
+	activeNodes := []*tridentmodels.Node{
+		createTestNode("node-a", []string{"1.1.1.1"}),
+		createTestNode("node-b", []string{"2.2.2.2"}),
+		createTestNode("node-c", []string{"3.3.3.3"}),
+	}
+	publishInfo := createTestPublishInfoWithNodes(activeNodes)
+
+	// All existing rules belong to active nodes - none should be removed
+	existingRules := map[int]string{
+		1: "1.1.1.1",
+		2: "2.2.2.2",
+		3: "3.3.3.3",
+	}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
+	// No ExportRuleDestroy calls expected - all rules preserved
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_CNVA_ErrorDuringNilCleanup(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{
+		Nodes: nil,
+	}
+	fakeErr := errors.New("fake destroy error during cleanup")
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(map[int]string{
+		1: "1.1.1.1",
+		2: "2.2.2.2",
+	}, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 1).Return(fakeErr)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_CNVA_IPsWithSpaces(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+
+	activeNodes := []*tridentmodels.Node{
+		createTestNode("node-a", []string{" 1.1.1.1 ", "2.2.2.2"}),
+	}
+	publishInfo := createTestPublishInfoWithNodes(activeNodes)
+
+	existingRules := map[int]string{
+		1: "1.1.1.1",
+		2: "2.2.2.2",
+		3: "3.3.3.3",
+	}
+
+	finalRules := map[int]string{
+		1: "1.1.1.1",
+		2: "2.2.2.2",
+	}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 3).Return(nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(finalRules, nil)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+func TestRemoveExportPolicyRules_CNVA_ErrorInListDuringNilCleanup(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+	publishInfo := &tridentmodels.VolumePublishInfo{
+		Nodes: nil,
+	}
+	fakeErr := errors.New("fake list error")
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(nil, fakeErr)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.Error(t, err)
+	assert.Equal(t, fakeErr, err)
+}
+
+func TestRemoveExportPolicyRules_CNVA_ContinueOnPartialErrors(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "testPolicy"
+
+	activeNodes := []*tridentmodels.Node{
+		createTestNode("node-a", []string{"1.1.1.1"}),
+	}
+	publishInfo := createTestPublishInfoWithNodes(activeNodes)
+
+	existingRules := map[int]string{
+		1: "1.1.1.1",
+		2: "2.2.2.2",
+		3: "3.3.3.3",
+	}
+
+	finalRules := map[int]string{
+		1: "1.1.1.1",
+		2: "2.2.2.2",
+	}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(errors.New("destroy failed"))
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 3).Return(nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(finalRules, nil)
 
 	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
 	assert.NoError(t, err)
