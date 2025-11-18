@@ -5,6 +5,7 @@ package logging
 import (
 	"context"
 	"io"
+	"net/http"
 	"os"
 	"testing"
 
@@ -747,4 +748,94 @@ func TestGetSelectedLogLayers(t *testing.T) {
 
 	selectedLogLayers[LogLayerCSIFrontend] = true
 	assert.Equal(t, "core,csi_frontend", GetSelectedLogLayers())
+}
+
+func TestLog(t *testing.T) {
+	result := Log()
+	assert.NotNil(t, result, "log entry is nil")
+}
+
+func TestSetWorkflows(t *testing.T) {
+	originalWorkflows := make(map[WorkflowCategory]map[WorkflowOperation]bool)
+	for k, v := range selectedWorkflows {
+		originalWorkflows[k] = make(map[WorkflowOperation]bool)
+		for k2, v2 := range v {
+			originalWorkflows[k][k2] = v2
+		}
+	}
+	defer func() {
+		selectedWorkflows = originalWorkflows
+	}()
+
+	err := SetWorkflows("volume=create:volume=delete")
+	assert.NoError(t, err, "SetWorkflows should not return error for valid input")
+
+	err = SetWorkflows("invalid")
+	assert.Error(t, err, "SetWorkflows should return error for invalid workflow format")
+
+	err = SetWorkflows("")
+	assert.NoError(t, err, "SetWorkflows should handle empty string")
+}
+
+func TestSetLogLayers(t *testing.T) {
+	originalLayers := make(map[LogLayer]bool)
+	for k, v := range selectedLogLayers {
+		originalLayers[k] = v
+	}
+	originalAdditive := areLogLayersAdditive
+	defer func() {
+		selectedLogLayers = originalLayers
+		areLogLayersAdditive = originalAdditive
+	}()
+
+	err := SetLogLayers("csi_frontend,core")
+	assert.NoError(t, err, "SetLogLayers should not return error for valid input")
+
+	err = SetLogLayers("invalid")
+	assert.Error(t, err, "SetLogLayers should return error for invalid layer")
+
+	err = SetLogLayers("")
+	assert.NoError(t, err, "SetLogLayers should handle empty string")
+}
+
+func TestListWorkflowTypes(t *testing.T) {
+	result := ListWorkflowTypes()
+	assert.NotNil(t, result, "workflow types slice should not be nil")
+	assert.True(t, len(result) > 0, "workflow types slice should not be empty")
+}
+
+func TestGetSelectedWorkFlows(t *testing.T) {
+	result := GetSelectedWorkFlows()
+	assert.NotNil(t, result, "selected workflows slice should not be nil")
+}
+
+func TestRedactedHTTPRequest(t *testing.T) {
+	// Create a mock HTTP request
+	req, err := http.NewRequest("POST", "http://example.com/api/test", nil)
+	assert.NoError(t, err, "Failed to create HTTP request")
+	req.Header.Set("Authorization", "Basic dGVzdDp0ZXN0")
+	req.Header.Set("Content-Type", "application/json")
+
+	requestBody := []byte(`{"password":"secret"}`)
+
+	// This function doesn't return anything, just logs
+	RedactedHTTPRequest(req, requestBody, "test-driver", true, true)
+	// The test passes if the function doesn't panic
+}
+
+func TestRedactedHTTPResponse(t *testing.T) {
+	// Create a mock HTTP response
+	resp := &http.Response{
+		StatusCode: 200,
+		Status:     "200 OK",
+		Header:     make(http.Header),
+	}
+	resp.Header.Set("Content-Type", "application/json")
+
+	responseBody := []byte(`{"token":"secrettoken","password":"secret"}`)
+	ctx := context.Background()
+
+	// This function doesn't return anything, just logs
+	RedactedHTTPResponse(ctx, resp, responseBody, "test-driver", true, true)
+	// The test passes if the function doesn't panic
 }
