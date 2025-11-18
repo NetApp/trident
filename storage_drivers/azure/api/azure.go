@@ -233,6 +233,20 @@ type Client struct {
 
 // ValidateCloudConfiguration validates the cloud configuration and returns a cloud.Configuration.
 func ValidateCloudConfiguration(cloudConfig *CloudConfiguration) (*cloud.Configuration, error) {
+	ctx := context.Background()
+
+	// Log input configuration
+	if cloudConfig == nil {
+		Logc(ctx).Debug("ValidateCloudConfiguration called with nil cloudConfig, using default AzurePublic.")
+	} else {
+		Logc(ctx).WithFields(LogFields{
+			"cloudName":       cloudConfig.CloudName,
+			"adAuthorityHost": cloudConfig.ADAuthorityHost,
+			"audience":        cloudConfig.Audience,
+			"endpoint":        cloudConfig.Endpoint,
+		}).Debug("ValidateCloudConfiguration called with cloudConfig.")
+	}
+
 	// If no cloud config provided, use default (AzurePublic)
 	if cloudConfig == nil {
 		return &cloud.AzurePublic, nil
@@ -253,16 +267,25 @@ func ValidateCloudConfiguration(cloudConfig *CloudConfiguration) (*cloud.Configu
 
 	// Option 1: Named cloud
 	if hasCloudName {
+		var namedConfig *cloud.Configuration
 		switch cloudConfig.CloudName {
 		case "AzurePublic":
-			return &cloud.AzurePublic, nil
+			namedConfig = &cloud.AzurePublic
 		case "AzureChina":
-			return &cloud.AzureChina, nil
+			namedConfig = &cloud.AzureChina
 		case "AzureGovernment":
-			return &cloud.AzureGovernment, nil
+			namedConfig = &cloud.AzureGovernment
 		default:
 			return nil, fmt.Errorf("unknown cloudName: %s (valid values: AzurePublic, AzureChina, AzureGovernment)", cloudConfig.CloudName)
 		}
+
+		// Log resulting configuration
+		Logc(ctx).WithFields(LogFields{
+			"cloudName":                    cloudConfig.CloudName,
+			"activeDirectoryAuthorityHost": namedConfig.ActiveDirectoryAuthorityHost,
+		}).Debug("ValidateCloudConfiguration returning named cloud configuration.")
+
+		return namedConfig, nil
 	}
 
 	// Option 2: Custom configuration - all three fields must be provided
@@ -282,7 +305,7 @@ func ValidateCloudConfiguration(cloudConfig *CloudConfiguration) (*cloud.Configu
 	}
 
 	// Build custom cloud configuration
-	return &cloud.Configuration{
+	customConfig := &cloud.Configuration{
 		ActiveDirectoryAuthorityHost: cloudConfig.ADAuthorityHost,
 		Services: map[cloud.ServiceName]cloud.ServiceConfiguration{
 			cloud.ResourceManager: {
@@ -290,7 +313,16 @@ func ValidateCloudConfiguration(cloudConfig *CloudConfiguration) (*cloud.Configu
 				Endpoint: cloudConfig.Endpoint,
 			},
 		},
-	}, nil
+	}
+
+	// Log resulting configuration
+	Logc(ctx).WithFields(LogFields{
+		"activeDirectoryAuthorityHost": customConfig.ActiveDirectoryAuthorityHost,
+		"resourceManagerEndpoint":      customConfig.Services[cloud.ResourceManager].Endpoint,
+		"resourceManagerAudience":      customConfig.Services[cloud.ResourceManager].Audience,
+	}).Debug("ValidateCloudConfiguration returning custom cloud configuration.")
+
+	return customConfig, nil
 }
 
 // NewDriver is a factory method for creating a new SDK interface.
@@ -308,7 +340,7 @@ func NewDriver(config ClientConfig) (Azure, error) {
 		return nil, fmt.Errorf("invalid cloud configuration: %v", err)
 	}
 
-	credential, err := GetAzureCredential(config)
+	credential, err := GetAzureCredential(config, cloudConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -360,16 +392,47 @@ func NewDriver(config ClientConfig) (Azure, error) {
 	}, nil
 }
 
-func GetAzureCredential(config ClientConfig) (credential azcore.TokenCredential, err error) {
+// GetAzureCredential creates an Azure credential with the specified cloud configuration.
+// The cloudConfig parameter should be a validated cloud configuration from ValidateCloudConfiguration().
+// If cloudConfig is nil, defaults to AzurePublic cloud.
+func GetAzureCredential(
+	config ClientConfig, cloudConfig *cloud.Configuration,
+) (credential azcore.TokenCredential, err error) {
+	// Default to AzurePublic if no cloud config provided
+	if cloudConfig == nil {
+		cloudConfig = &cloud.AzurePublic
+	}
+
 	armConfig := azclient.ARMClientConfig{
 		TenantID: config.TenantID,
 	}
 
-	authProvider, err := azclient.NewAuthProvider(&armConfig, &config.AzureAuthConfig)
+	// Set cloud-specific ARM configuration
+	// For named clouds: use CloudName (e.g., "AzurePublic", "AzureChina", "AzureGovernment")
+	// For custom clouds: use ResourceManagerEndpoint to let azclient build custom configuration
+	if config.CloudConfig != nil {
+		if config.CloudConfig.CloudName != "" {
+			armConfig.Cloud = config.CloudConfig.CloudName
+		} else if config.CloudConfig.Endpoint != "" {
+			armConfig.ResourceManagerEndpoint = config.CloudConfig.Endpoint
+		}
+	}
+
+	// Create auth provider with cloud-aware client options
+	// The cloud configuration must be set before credentials are created to ensure
+	// the correct authority host is used (e.g., login.microsoftonline.us for Azure Government)
+	authProviderOptions := []azclient.AuthProviderOption{
+		azclient.WithClientOptionsMutFn(func(option *policy.ClientOptions) {
+			option.Cloud = *cloudConfig
+		}),
+	}
+
+	authProvider, err := azclient.NewAuthProvider(&armConfig, &config.AzureAuthConfig, authProviderOptions...)
 	if err != nil {
 		return nil, fmt.Errorf("error creating azure auth provider: %w", err)
 	}
 
+	// GetAzIdentity may return nil in test environments without actual credentials
 	return authProvider.GetAzIdentity(), nil
 }
 

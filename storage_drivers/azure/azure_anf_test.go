@@ -1190,9 +1190,9 @@ func TestInitialize_WithCloudConfigurationCustom(t *testing.T) {
         "clientID": "deadbeef-784c-4b35-8329-460f52a3ad50",
         "clientSecret": "myClientSecret",
         "cloudConfiguration": {
-            "adAuthorityHost": "https://login.microsoftonline.azurestack.contoso.com/",
-            "audience": "https://management.azurestack.contoso.com",
-            "endpoint": "https://management.azurestack.contoso.com"
+            "adAuthorityHost": "https://login.microsoftonline.com/",
+            "audience": "https://management.core.windows.net/",
+            "endpoint": "https://management.azure.com"
         },
         "serviceLevel": "Premium",
         "debugTraceFlags": {"method": true, "api": true, "discovery": true},
@@ -1217,9 +1217,9 @@ func TestInitialize_WithCloudConfigurationCustom(t *testing.T) {
 
 	assert.NoError(t, result, "initialize failed")
 	assert.NotNil(t, driver.Config.CloudConfiguration, "cloud configuration is nil")
-	assert.Equal(t, "https://login.microsoftonline.azurestack.contoso.com/", driver.Config.CloudConfiguration.ADAuthorityHost)
-	assert.Equal(t, "https://management.azurestack.contoso.com", driver.Config.CloudConfiguration.Audience)
-	assert.Equal(t, "https://management.azurestack.contoso.com", driver.Config.CloudConfiguration.Endpoint)
+	assert.Equal(t, "https://login.microsoftonline.com/", driver.Config.CloudConfiguration.ADAuthorityHost)
+	assert.Equal(t, "https://management.core.windows.net/", driver.Config.CloudConfiguration.Audience)
+	assert.Equal(t, "https://management.azure.com", driver.Config.CloudConfiguration.Endpoint)
 }
 
 func TestInitialize_WithCloudConfigurationInvalid(t *testing.T) {

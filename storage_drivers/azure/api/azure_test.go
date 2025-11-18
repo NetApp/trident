@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
-
 	"github.com/stretchr/testify/assert"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient"
 
 	"github.com/netapp/trident/utils/errors"
 )
@@ -1323,4 +1323,154 @@ func TestValidateCloudConfiguration_InvalidURL(t *testing.T) {
 			assert.Contains(t, err.Error(), tt.expectedErrorString)
 		})
 	}
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+// Tests for GetAzureCredential
+// ////////////////////////////////////////////////////////////////////////////
+
+// Helper function to create a test ClientConfig
+func createTestClientConfig(cloudConfig *CloudConfiguration) ClientConfig {
+	return ClientConfig{
+		TenantID:        "test-tenant-id",
+		CloudConfig:     cloudConfig,
+		AzureAuthConfig: azclient.AzureAuthConfig{},
+	}
+}
+
+func TestGetAzureCredential_NoCloudConfig(t *testing.T) {
+	// Test with nil cloud config - should default to AzurePublic
+	config := createTestClientConfig(nil)
+
+	// Validate cloud configuration
+	cloudConfig, err := ValidateCloudConfiguration(config.CloudConfig)
+	assert.NoError(t, err, "ValidateCloudConfiguration should not error with nil config")
+
+	_, err = GetAzureCredential(config, cloudConfig)
+	// Since we don't have actual Azure credentials, we expect this to succeed in creating
+	// the auth provider structure, even though it won't return a valid credential
+	// The important thing is it doesn't error on cloud configuration validation
+	assert.NoError(t, err, "GetAzureCredential should not error with nil cloud config")
+}
+
+func TestGetAzureCredential_EmptyCloudConfig(t *testing.T) {
+	// Test with empty cloud config - should default to AzurePublic
+	config := createTestClientConfig(&CloudConfiguration{})
+
+	// Validate cloud configuration
+	cloudConfig, err := ValidateCloudConfiguration(config.CloudConfig)
+	assert.NoError(t, err, "ValidateCloudConfiguration should not error with empty config")
+
+	_, err = GetAzureCredential(config, cloudConfig)
+	assert.NoError(t, err, "GetAzureCredential should not error with empty cloud config")
+}
+
+func TestGetAzureCredential_NamedClouds(t *testing.T) {
+	tests := []struct {
+		name      string
+		cloudName string
+	}{
+		{
+			name:      "AzurePublic",
+			cloudName: "AzurePublic",
+		},
+		{
+			name:      "AzureChina",
+			cloudName: "AzureChina",
+		},
+		{
+			name:      "AzureGovernment",
+			cloudName: "AzureGovernment",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config := createTestClientConfig(&CloudConfiguration{
+				CloudName: tt.cloudName,
+			})
+
+			// Validate cloud configuration
+			cloudConfig, err := ValidateCloudConfiguration(config.CloudConfig)
+			assert.NoError(t, err, "ValidateCloudConfiguration should not error with valid cloud name: %s", tt.cloudName)
+
+			_, err = GetAzureCredential(config, cloudConfig)
+			assert.NoError(t, err, "GetAzureCredential should not error with valid named cloud: %s", tt.cloudName)
+		})
+	}
+}
+
+func TestGetAzureCredential_CustomCloud(t *testing.T) {
+	config := createTestClientConfig(&CloudConfiguration{
+		ADAuthorityHost: "https://login.custom.cloud/",
+		Audience:        "https://management.custom.cloud",
+		Endpoint:        "https://management.custom.cloud",
+	})
+
+	// Validate cloud configuration
+	cloudConfig, err := ValidateCloudConfiguration(config.CloudConfig)
+	assert.NoError(t, err, "ValidateCloudConfiguration should not error with valid custom config")
+
+	// Note: This test will fail with a network error because the custom cloud URL is fake.
+	// This is expected behavior - validation of custom cloud URLs happens when the auth
+	// provider attempts to connect to the endpoint.
+	_, err = GetAzureCredential(config, cloudConfig)
+	// We expect an error due to network failure, not a validation error
+	assert.Error(t, err, "GetAzureCredential should error when custom cloud endpoint is unreachable")
+	assert.Contains(t, err.Error(), "error creating azure auth provider")
+}
+
+func TestGetAzureCredential_InvalidCloudName(t *testing.T) {
+	config := createTestClientConfig(&CloudConfiguration{
+		CloudName: "InvalidCloudName",
+	})
+
+	// Validate cloud configuration - should fail for invalid cloud name
+	_, err := ValidateCloudConfiguration(config.CloudConfig)
+	assert.Error(t, err, "ValidateCloudConfiguration should error with invalid cloud name")
+	assert.Contains(t, err.Error(), "unknown cloudName")
+}
+
+func TestGetAzureCredential_IncompleteCustomConfig(t *testing.T) {
+	config := createTestClientConfig(&CloudConfiguration{
+		ADAuthorityHost: "https://login.custom.cloud/",
+		Audience:        "https://management.custom.cloud",
+		// Missing Endpoint - should cause validation error
+	})
+
+	// Validate cloud configuration - should fail for incomplete custom config
+	_, err := ValidateCloudConfiguration(config.CloudConfig)
+	assert.Error(t, err, "ValidateCloudConfiguration should error with incomplete custom config")
+	assert.Contains(t, err.Error(), "adAuthorityHost, audience, and endpoint are all required")
+}
+
+func TestGetAzureCredential_MutuallyExclusiveConfig(t *testing.T) {
+	config := createTestClientConfig(&CloudConfiguration{
+		CloudName:       "AzurePublic",
+		ADAuthorityHost: "https://login.custom.cloud/",
+		Audience:        "https://management.custom.cloud",
+		Endpoint:        "https://management.custom.cloud",
+	})
+
+	// Validate cloud configuration - should fail for mutually exclusive config
+	_, err := ValidateCloudConfiguration(config.CloudConfig)
+	assert.Error(t, err, "ValidateCloudConfiguration should error with mutually exclusive config")
+	assert.Contains(t, err.Error(), "mutually exclusive")
+}
+
+func TestGetAzureCredential_InvalidURLInCustomConfig(t *testing.T) {
+	config := createTestClientConfig(&CloudConfiguration{
+		ADAuthorityHost: "https://login.custom.cloud/",
+		Audience:        "https://management.custom.cloud",
+		Endpoint:        "https://management.custom.cloud",
+	})
+
+	// Validate cloud configuration - should succeed (url.Parse is permissive)
+	cloudConfig, err := ValidateCloudConfiguration(config.CloudConfig)
+	assert.NoError(t, err, "ValidateCloudConfiguration accepts syntactically valid URLs")
+
+	// The actual network error will occur when trying to use the credential
+	_, err = GetAzureCredential(config, cloudConfig)
+	assert.Error(t, err, "GetAzureCredential should error when custom cloud endpoint is unreachable")
+	assert.Contains(t, err.Error(), "error creating azure auth provider")
 }
