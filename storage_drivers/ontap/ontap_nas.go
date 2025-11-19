@@ -389,7 +389,7 @@ func (d *NASStorageDriver) Create(
 		physicalPoolNames = append(physicalPoolNames, aggregate)
 
 		if aggrLimitsErr := checkAggregateLimits(
-			ctx, aggregate, spaceReserve, sizeBytes, d.Config, d.GetAPI(),
+			ctx, aggregate, spaceReserve, sizeBytes, "create", d.Config, d.GetAPI(),
 		); aggrLimitsErr != nil {
 			errMessage := fmt.Sprintf("ONTAP-NAS pool %s/%s; error: %v", storagePool.Name(), aggregate, aggrLimitsErr)
 			Logc(ctx).Error(errMessage)

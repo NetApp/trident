@@ -415,7 +415,7 @@ func (d *NVMeStorageDriver) Create(
 		physicalPoolNames = append(physicalPoolNames, aggregate)
 
 		if aggrLimitsErr := checkAggregateLimits(
-			ctx, aggregate, spaceReserve, flexVolBufferSize, d.Config, d.GetAPI(),
+			ctx, aggregate, spaceReserve, flexVolBufferSize, "create", d.Config, d.GetAPI(),
 		); aggrLimitsErr != nil {
 			errMessage := fmt.Sprintf("ONTAP-NVMe pool %s/%s; error: %v", storagePool.Name(), aggregate, aggrLimitsErr)
 			Logc(ctx).Error(errMessage)
