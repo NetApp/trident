@@ -45,6 +45,34 @@ func TestVolumeState(t *testing.T) {
 				return input.IsDeleting()
 			},
 		},
+		"Upgrading state": {
+			input:  VolumeStateUpgrading,
+			output: "unknown",
+			predicate: func(input VolumeState) bool {
+				return input.IsUnknown()
+			},
+		},
+		"Missing backend state": {
+			input:  VolumeStateMissingBackend,
+			output: "unknown",
+			predicate: func(input VolumeState) bool {
+				return input.IsUnknown()
+			},
+		},
+		"Subordinate state": {
+			input:  VolumeStateSubordinate,
+			output: "unknown",
+			predicate: func(input VolumeState) bool {
+				return input.IsUnknown()
+			},
+		},
+		"Custom invalid state": {
+			input:  VolumeState("invalid"),
+			output: "unknown",
+			predicate: func(input VolumeState) bool {
+				return input.IsUnknown()
+			},
+		},
 	}
 	for testName, test := range tests {
 		t.Logf("Running test case '%s'", testName)
