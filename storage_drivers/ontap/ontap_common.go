@@ -1760,6 +1760,7 @@ const (
 	DefaultLuksEncryption            = "false"
 	DefaultMirroring                 = "false"
 	DefaultLimitAggregateUsage       = ""
+	DefaultLimitAggregateUsageOnResize = ""
 	DefaultLimitVolumeSize           = ""
 	DefaultLimitVolumePoolSize       = ""
 	DefaultDenyNewVolumePools        = "false"
@@ -1962,6 +1963,7 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		"LUKSEncryption":         config.LUKSEncryption,
 		"Mirroring":              config.Mirroring,
 		"LimitAggregateUsage":    config.LimitAggregateUsage,
+		"LimitAggregateUsageOnResize":    config.LimitAggregateUsageOnResize,
 		"LimitVolumeSize":        config.LimitVolumeSize,
 		"LimitVolumePoolSize":    config.LimitVolumePoolSize,
 		"DenyNewVolumePools":     config.DenyNewVolumePools,
@@ -2092,6 +2094,7 @@ func PopulateASAConfigurationDefaults(ctx context.Context, config *drivers.Ontap
 		"LUKSEncryption":      config.LUKSEncryption,
 		"Mirroring":           config.Mirroring,
 		"LimitAggregateUsage": config.LimitAggregateUsage,
+		"LimitAggregateUsageOnResize": config.LimitAggregateUsageOnResize,
 		"LimitVolumeSize":     config.LimitVolumeSize,
 		"Size":                config.Size,
 		"TieringPolicy":       config.TieringPolicy,
@@ -2117,12 +2120,12 @@ func checkAggregateLimitsForFlexvol(
 		return fmt.Errorf("aggregate info not available from Flexvol %s", flexvol)
 	}
 
-	return checkAggregateLimits(ctx, volInfo.Aggregates[0], volInfo.SpaceReserve, requestedSizeInt, config,
-		client)
+	return checkAggregateLimits(ctx, volInfo.Aggregates[0], volInfo.SpaceReserve, requestedSizeInt, "resize",
+		config, client)
 }
 
 func checkAggregateLimits(
-	ctx context.Context, aggregate, spaceReserve string, requestedSizeInt uint64,
+	ctx context.Context, aggregate, spaceReserve string, requestedSizeInt uint64, checkType string,
 	config drivers.OntapStorageDriverConfig, client api.OntapAPI,
 ) error {
 	if aggregate == managedStoragePoolName {
@@ -2132,7 +2135,15 @@ func checkAggregateLimits(
 
 	requestedSize := float64(requestedSizeInt)
 
+	// checkType should be either "resize" or "create".
+	// Fall back to limitAggregateUsage for a resize if the
+	// limitAggregateUsageOnResize config is not set.
 	limitAggregateUsage := config.LimitAggregateUsage
+	if checkType != "" && checkType == "resize" {
+		if config.LimitAggregateUsageOnResize != "" {
+			limitAggregateUsage = config.LimitAggregateUsageOnResize
+		}
+	}
 	limitAggregateUsage = strings.Replace(limitAggregateUsage, "%", "", -1) // strip off any %
 
 	Logc(ctx).WithFields(LogFields{
