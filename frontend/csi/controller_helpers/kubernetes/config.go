@@ -49,6 +49,7 @@ const (
 	AnnSnapshotPolicy           = prefix + "/snapshotPolicy"
 	AnnSnapshotReserve          = prefix + "/snapshotReserve"
 	AnnSnapshotDir              = prefix + "/snapshotDirectory"
+	AnnPreserveUnlink           = prefix + "/preserveUnlink"
 	AnnUnixPermissions          = prefix + "/unixPermissions"
 	AnnExportPolicy             = prefix + "/exportPolicy"
 	AnnBlockSize                = prefix + "/blockSize"

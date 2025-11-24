@@ -125,6 +125,12 @@ func (d OntapAPIZAPI) VolumeDestroy(ctx context.Context, name string, force, ski
 	return nil
 }
 
+// The -is-preserve-unlink-enabled flag is only supported with newer ONTAP versions that use REST.
+func (d OntapAPIZAPI) PreserveUnlinkSet(ctx context.Context, volumeName string) error {
+	Logc(ctx).WithField("volume", volumeName).Warn("preserveUnlink cannot be set with ZAPI.")
+	return nil
+}
+
 func (d OntapAPIZAPI) VolumeRecoveryQueuePurge(ctx context.Context, recoveryQueueVolumeName string) error {
 	volRecoveryQueuePurgeResponse, err := d.api.VolumeRecoveryQueuePurge(recoveryQueueVolumeName)
 	if err != nil {

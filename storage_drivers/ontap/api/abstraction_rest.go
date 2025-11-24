@@ -220,6 +220,14 @@ func (d OntapAPIREST) VolumeRecoveryQueueGetName(ctx context.Context, name strin
 	return recoveryQueueVolumeName, nil
 }
 
+func (d OntapAPIREST) PreserveUnlinkSet(ctx context.Context, volumeName string) error {
+	preserveUnlinkErr := d.api.PreserveUnlinkSet(ctx, volumeName)
+	if preserveUnlinkErr != nil {
+		return fmt.Errorf("error setting preserveUnlink %v: %v", volumeName, preserveUnlinkErr)
+	}
+	return nil
+}
+
 func (d OntapAPIREST) VolumeInfo(ctx context.Context, name string) (*Volume, error) {
 	fields := []string{
 		"type", "size", "comment", "aggregates", "nas", "guarantee",

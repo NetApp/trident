@@ -24,6 +24,7 @@ type VolumeConfig struct {
 	SecurityStyle               string                  `json:"securityStyle"`
 	SnapshotPolicy              string                  `json:"snapshotPolicy,omitempty"`
 	SnapshotReserve             string                  `json:"snapshotReserve,omitempty"`
+	PreserveUnlink              string                  `json:"preserveUnlink,omitempty"`
 	SnapshotDir                 string                  `json:"snapshotDirectory,omitempty"`
 	ExportPolicy                string                  `json:"exportPolicy,omitempty"`
 	UnixPermissions             string                  `json:"unixPermissions,omitempty"`

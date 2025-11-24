@@ -138,6 +138,17 @@ func GetVolumeConfig(
 		snapshotDir = snapDirFormatted
 	}
 
+	// If preserveUnlink is provided, ensure it is lower case
+	preserveUnlink := collection.GetV(opts, "preserveUnlink", "")
+	if preserveUnlink != "" {
+		preserveUnlinkFormatted, err := convert.ToFormattedBool(preserveUnlink)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Invalid boolean value for preserveUnlink: %v.", preserveUnlink)
+			return nil, err
+		}
+		preserveUnlink = preserveUnlinkFormatted
+	}
+
 	cfg := &storage.VolumeConfig{
 		Name:                name,
 		Size:                fmt.Sprintf("%d", sizeBytes),
@@ -150,6 +161,7 @@ func GetVolumeConfig(
 		SplitOnClone:        collection.GetV(opts, "splitOnClone", ""),
 		SnapshotPolicy:      collection.GetV(opts, "snapshotPolicy", ""),
 		SnapshotReserve:     collection.GetV(opts, "snapshotReserve", ""),
+		PreserveUnlink:      preserveUnlink,
 		SnapshotDir:         snapshotDir,
 		ExportPolicy:        collection.GetV(opts, "exportPolicy", ""),
 		UnixPermissions:     collection.GetV(opts, "unixPermissions", ""),
