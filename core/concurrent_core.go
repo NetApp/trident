@@ -654,6 +654,12 @@ func (o *ConcurrentTridentOrchestrator) cleanupDeletingBackends(ctx context.Cont
 		backend := results[0].Backend.Read
 		deleter := results[0].Backend.Delete
 
+		if backend == nil {
+			Logc(ctx).WithField("backendUUID", backendUUID).Debug("Backend not found.")
+			unlocker()
+			continue
+		}
+
 		if err = o.storeClient.DeleteBackend(ctx, backend); err != nil {
 			Logc(ctx).WithField("backendUUID", backendUUID).WithError(err).Error("Failed to delete deleting backend.")
 			unlocker()
@@ -818,7 +824,7 @@ func (o *ConcurrentTridentOrchestrator) reconcileNodeAccessOnAllBackends(ctx con
 
 	var wg sync.WaitGroup
 	wg.Add(len(allBackends))
-	var errors error
+	var reconcileErrors error
 
 	for _, b := range allBackends {
 		backend := b
@@ -862,7 +868,12 @@ func (o *ConcurrentTridentOrchestrator) reconcileNodeAccessOnAllBackends(ctx con
 				if dbErr != nil {
 					return dbErr
 				}
+
 				upsertBackend := results[0].Backend.Read
+				if upsertBackend == nil {
+					return errors.NotFoundError("backend %s not found for reconcile", backend.BackendUUID())
+				}
+
 				if reconcileErr := o.reconcileNodeAccessOnBackend(
 					ctx, upsertBackend, results[0].VolumePublications, results[0].Nodes); reconcileErr != nil {
 					return reconcileErr
@@ -871,7 +882,7 @@ func (o *ConcurrentTridentOrchestrator) reconcileNodeAccessOnAllBackends(ctx con
 				return nil
 			}()
 			if err != nil {
-				errors = multierr.Append(errors, err)
+				reconcileErrors = multierr.Append(reconcileErrors, err)
 				Logc(ctx).WithError(err).WithField("backend", backend.Name()).Warn(
 					"Error during node access reconciliation.")
 			}
@@ -880,7 +891,7 @@ func (o *ConcurrentTridentOrchestrator) reconcileNodeAccessOnAllBackends(ctx con
 
 	wg.Wait()
 
-	return errors
+	return reconcileErrors
 }
 
 func (o *ConcurrentTridentOrchestrator) reconcileNodeAccessOnBackend(ctx context.Context, b storage.Backend,
@@ -1931,6 +1942,12 @@ func (o *ConcurrentTridentOrchestrator) addVolume(
 		backend = results[0].Backend.Read
 		upserter = results[0].Volume.Upsert
 
+		if backend == nil {
+			Logc(ctx).WithField("backend", backendName).Debug("Backend not found.")
+			unlocker()
+			continue
+		}
+
 		// Get actual pools from backend
 		pools := make(map[string]*storage.Pool)
 		backend.StoragePools().Range(func(k, v interface{}) bool {
@@ -2048,6 +2065,10 @@ func (o *ConcurrentTridentOrchestrator) addVolume(
 func (o *ConcurrentTridentOrchestrator) addVolumeRetry(
 	ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool, volAttributes map[string]sa.Request,
 ) (volume *storage.Volume, err error) {
+	if pool == nil {
+		return nil, fmt.Errorf("pool cannot be nil")
+	}
+
 	logFields := LogFields{
 		"backend": pool.Backend().Name(),
 		"pool":    pool.Name(),
@@ -2664,12 +2685,12 @@ func (o *ConcurrentTridentOrchestrator) deleteVolume(ctx context.Context, volume
 	snapshotsForVolume := results[2].Snapshots
 	subordinatesForVolume := results[2].SubordinateVolumes
 
-	logFields := LogFields{"volume": volumeName, "backendUUID": volume.BackendUUID}
-
 	if volume == nil {
 		unlocker()
 		return errors.NotFoundError("volume %s not found", volumeName)
 	}
+
+	logFields := LogFields{"volume": volumeName, "backendUUID": volume.BackendUUID}
 
 	// If there are any snapshots or subordinate volumes for this volume, we need to "soft" delete.
 	// Only hard delete this volume when its last snapshot is deleted and no subordinates remain.
@@ -3499,7 +3520,7 @@ func (o *ConcurrentTridentOrchestrator) resizeVolume(ctx context.Context, volume
 			"volume":      volName,
 			"backendUUID": backendUUID,
 		}).Error("Unable to find volume during resize.")
-		return fmt.Errorf("unable to find volume %v during resize", volume.Config.Name)
+		return fmt.Errorf("unable to find volume %v during resize", volName)
 	}
 
 	if backend == nil {
