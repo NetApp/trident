@@ -1,6 +1,6 @@
 // Copyright 2025 NetApp, Inc. All Rights Reserved.
 
-package crd
+package controller
 
 import (
 	"fmt"

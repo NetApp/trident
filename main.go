@@ -20,7 +20,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend"
-	"github.com/netapp/trident/frontend/crd"
+	"github.com/netapp/trident/frontend/crd/controller"
 	"github.com/netapp/trident/frontend/csi"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	k8sctrlhelper "github.com/netapp/trident/frontend/csi/controller_helpers/kubernetes"
@@ -530,7 +530,7 @@ func main() {
 		postBootstrapFrontends = append(postBootstrapFrontends, csiFrontend)
 
 		if *useCRD {
-			crdController, err := crd.NewTridentCrdController(orchestrator, *k8sAPIServer, *k8sConfigPath)
+			crdController, err := controller.NewTridentCrdController(orchestrator, *k8sAPIServer, *k8sConfigPath)
 			if err != nil {
 				Log().Fatalf("Unable to start the Trident CRD controller frontend. %v", err)
 			}

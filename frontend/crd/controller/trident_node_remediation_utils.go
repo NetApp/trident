@@ -1,6 +1,6 @@
-package crd
+package controller
 
-//go:generate mockgen -destination=../../mocks/mock_frontend/crd/mock_node_remediation.go github.com/netapp/trident/frontend/crd NodeRemediationUtils
+//go:generate mockgen -destination=../../../mocks/mock_frontend/crd/controller/mock_node_remediation.go github.com/netapp/trident/frontend/crd/controller NodeRemediationUtils
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/netapp/trident/core"
-	"github.com/netapp/trident/frontend/crd/indexers"
+	"github.com/netapp/trident/frontend/crd/controller/indexers"
 	k8shelper "github.com/netapp/trident/frontend/csi/controller_helpers/kubernetes"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/operator/controllers/orchestrator/installer"

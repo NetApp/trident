@@ -1,6 +1,6 @@
 // Copyright 2023 NetApp, Inc. All Rights Reserved.
 
-package crd
+package controller
 
 import (
 	"context"

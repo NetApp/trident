@@ -1,5 +1,5 @@
 // Copyright 2023 NetApp, Inc. All Rights Reserved.
-package crd
+package controller
 
 import (
 	"context"
@@ -22,7 +22,7 @@ import (
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
-	mockindexers "github.com/netapp/trident/mocks/mock_frontend/crd/indexers"
+	mockindexers "github.com/netapp/trident/mocks/mock_frontend/crd/controller/indexers"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"

@@ -1,6 +1,6 @@
 // Copyright 2025 NetApp, Inc. All Rights Reserved.
 
-package crd
+package controller
 
 import (
 	"fmt"
@@ -14,9 +14,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	mockcore "github.com/netapp/trident/mocks/mock_core"
-	mock_crd "github.com/netapp/trident/mocks/mock_frontend/crd"
-	mockindexers "github.com/netapp/trident/mocks/mock_frontend/crd/indexers"
-	mockindexer "github.com/netapp/trident/mocks/mock_frontend/crd/indexers/indexer"
+	mock_controller_crd "github.com/netapp/trident/mocks/mock_frontend/crd/controller"
+	mockindexers "github.com/netapp/trident/mocks/mock_frontend/crd/controller/indexers"
+	mockindexer "github.com/netapp/trident/mocks/mock_frontend/crd/controller/indexers/indexer"
 	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils/errors"
@@ -1315,7 +1315,7 @@ func TestFailoverDetach_Success(t *testing.T) {
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	remediationUtils := mock_crd.NewMockNodeRemediationUtils(mockCtrl)
+	remediationUtils := mock_controller_crd.NewMockNodeRemediationUtils(mockCtrl)
 
 	testPod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -1376,7 +1376,7 @@ func TestFailoverDetach_GetNodePodsError(t *testing.T) {
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	remediationUtils := mock_crd.NewMockNodeRemediationUtils(mockCtrl)
+	remediationUtils := mock_controller_crd.NewMockNodeRemediationUtils(mockCtrl)
 
 	remediationUtils.EXPECT().GetNodePods(ctx(), nodeName).Return([]*corev1.Pod{}, fmt.Errorf("mock error"))
 
@@ -1402,7 +1402,7 @@ func TestFailoverDetach_GetPvcToTvolMapError(t *testing.T) {
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	remediationUtils := mock_crd.NewMockNodeRemediationUtils(mockCtrl)
+	remediationUtils := mock_controller_crd.NewMockNodeRemediationUtils(mockCtrl)
 
 	remediationUtils.EXPECT().GetNodePods(ctx(), nodeName).Return([]*corev1.Pod{}, nil)
 	remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nodeName).Return(nil, fmt.Errorf("mock error"))
@@ -1429,7 +1429,7 @@ func TestFailoverDetach_GetVolumeAttachmentsToDeleteError(t *testing.T) {
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	remediationUtils := mock_crd.NewMockNodeRemediationUtils(mockCtrl)
+	remediationUtils := mock_controller_crd.NewMockNodeRemediationUtils(mockCtrl)
 
 	remediationUtils.EXPECT().GetNodePods(ctx(), nodeName).Return([]*corev1.Pod{}, nil)
 	remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nodeName).Return(map[string]*storage.VolumeExternal{}, nil)
@@ -1459,7 +1459,7 @@ func TestFailoverDetach_UpdateCrVolAttachementsError(t *testing.T) {
 	kubeClient := GetTestKubernetesClientset()
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
-	remediationUtils := mock_crd.NewMockNodeRemediationUtils(mockCtrl)
+	remediationUtils := mock_controller_crd.NewMockNodeRemediationUtils(mockCtrl)
 
 	remediationUtils.EXPECT().GetNodePods(ctx(), nodeName).Return([]*corev1.Pod{}, nil)
 	remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nodeName).Return(map[string]*storage.VolumeExternal{}, nil)
@@ -1483,12 +1483,12 @@ func TestFailoverDetach_UpdateCrVolAttachementsError(t *testing.T) {
 // using a parameterized approach to cover success and error cases systematically.
 func TestFailoverDetach_Scenarios(t *testing.T) {
 	tests := map[string]struct {
-		setupMocks             func(*mock_crd.MockNodeRemediationUtils)
+		setupMocks             func(*mock_controller_crd.MockNodeRemediationUtils)
 		expectError            bool
 		expectedErrorSubstring string
 	}{
 		"Success": {
-			setupMocks: func(remediationUtils *mock_crd.MockNodeRemediationUtils) {
+			setupMocks: func(remediationUtils *mock_controller_crd.MockNodeRemediationUtils) {
 				testPod := &corev1.Pod{
 					ObjectMeta: metav1.ObjectMeta{Name: "test-pod", Namespace: "default"},
 				}
@@ -1508,20 +1508,20 @@ func TestFailoverDetach_Scenarios(t *testing.T) {
 			expectError: false,
 		},
 		"GetNodePodsError": {
-			setupMocks: func(remediationUtils *mock_crd.MockNodeRemediationUtils) {
+			setupMocks: func(remediationUtils *mock_controller_crd.MockNodeRemediationUtils) {
 				remediationUtils.EXPECT().GetNodePods(ctx(), nodeName).Return(nil, fmt.Errorf("mock error"))
 			},
 			expectError: true,
 		},
 		"GetPvcToTvolMapError": {
-			setupMocks: func(remediationUtils *mock_crd.MockNodeRemediationUtils) {
+			setupMocks: func(remediationUtils *mock_controller_crd.MockNodeRemediationUtils) {
 				remediationUtils.EXPECT().GetNodePods(ctx(), nodeName).Return([]*corev1.Pod{}, nil)
 				remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nodeName).Return(nil, fmt.Errorf("mock error"))
 			},
 			expectError: true,
 		},
 		"GetVolumeAttachmentsToDeleteError": {
-			setupMocks: func(remediationUtils *mock_crd.MockNodeRemediationUtils) {
+			setupMocks: func(remediationUtils *mock_controller_crd.MockNodeRemediationUtils) {
 				remediationUtils.EXPECT().GetNodePods(ctx(), nodeName).Return([]*corev1.Pod{}, nil)
 				remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nodeName).Return(map[string]*storage.VolumeExternal{}, nil)
 				remediationUtils.EXPECT().GetPodsToDelete(ctx(), gomock.Any(), gomock.Any()).Return([]*corev1.Pod{})
@@ -1531,7 +1531,7 @@ func TestFailoverDetach_Scenarios(t *testing.T) {
 			expectError: true,
 		},
 		"ForceDeletePodError": {
-			setupMocks: func(remediationUtils *mock_crd.MockNodeRemediationUtils) {
+			setupMocks: func(remediationUtils *mock_controller_crd.MockNodeRemediationUtils) {
 				testPod := &corev1.Pod{
 					ObjectMeta: metav1.ObjectMeta{Name: "test-pod", Namespace: "default"},
 				}
@@ -1547,7 +1547,7 @@ func TestFailoverDetach_Scenarios(t *testing.T) {
 			expectError: true,
 		},
 		"DeleteVolumeAttachmentError": {
-			setupMocks: func(remediationUtils *mock_crd.MockNodeRemediationUtils) {
+			setupMocks: func(remediationUtils *mock_controller_crd.MockNodeRemediationUtils) {
 				testPod := &corev1.Pod{
 					ObjectMeta: metav1.ObjectMeta{Name: "test-pod", Namespace: "default"},
 				}
@@ -1575,7 +1575,7 @@ func TestFailoverDetach_Scenarios(t *testing.T) {
 			kubeClient := GetTestKubernetesClientset()
 			snapClient := GetTestSnapshotClientset()
 			crdClient := GetTestCrdClientset()
-			remediationUtils := mock_crd.NewMockNodeRemediationUtils(mockCtrl)
+			remediationUtils := mock_controller_crd.NewMockNodeRemediationUtils(mockCtrl)
 
 			tt.setupMocks(remediationUtils)
 

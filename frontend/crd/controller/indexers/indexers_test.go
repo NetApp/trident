@@ -10,7 +10,7 @@ import (
 	"go.uber.org/mock/gomock"
 	"k8s.io/client-go/kubernetes/fake"
 
-	mock_indexer "github.com/netapp/trident/mocks/mock_frontend/crd/indexers/indexer"
+	mock_indexer "github.com/netapp/trident/mocks/mock_frontend/crd/controller/indexers/indexer"
 )
 
 func TestNewIndexers(t *testing.T) {

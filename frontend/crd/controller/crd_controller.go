@@ -1,6 +1,6 @@
 // Copyright 2023 NetApp, Inc. All Rights Reserved.
 
-package crd
+package controller
 
 import (
 	"context"
@@ -25,7 +25,7 @@ import (
 	clik8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
-	"github.com/netapp/trident/frontend/crd/indexers"
+	"github.com/netapp/trident/frontend/crd/controller/indexers"
 	. "github.com/netapp/trident/logging"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"

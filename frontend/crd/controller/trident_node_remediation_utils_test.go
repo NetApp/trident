@@ -1,4 +1,4 @@
-package crd
+package controller
 
 import (
 	"fmt"
@@ -14,11 +14,11 @@ import (
 	"k8s.io/client-go/kubernetes"
 	ktesting "k8s.io/client-go/testing"
 
-	"github.com/netapp/trident/frontend/crd/indexers"
+	"github.com/netapp/trident/frontend/crd/controller/indexers"
 	k8shelper "github.com/netapp/trident/frontend/csi/controller_helpers/kubernetes"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
-	mockindexers "github.com/netapp/trident/mocks/mock_frontend/crd/indexers"
-	mockindexer "github.com/netapp/trident/mocks/mock_frontend/crd/indexers/indexer"
+	mockindexers "github.com/netapp/trident/mocks/mock_frontend/crd/controller/indexers"
+	mockindexer "github.com/netapp/trident/mocks/mock_frontend/crd/controller/indexers/indexer"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/utils/models"
 )
