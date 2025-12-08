@@ -142,3 +142,29 @@ func TestTridentCRDClient_DeleteTridentBackendConfig_Error(t *testing.T) {
 
 	assert.Error(t, err, "delete backend config did not fail")
 }
+
+func TestTridentCRDClient_ListTridentBackend_Success(t *testing.T) {
+	client, fakeClient := getMockTridentClient()
+
+	fakeClient.PrependReactor("list", "tridentbackends", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, &tridentV1.TridentBackendList{}, nil
+	})
+
+	backendList, err := client.ListTridentBackend("test-namespace")
+
+	assert.NoError(t, err, "failed to list trident backends")
+	assert.NotNil(t, backendList, "expected TridentBackendList, got nil")
+}
+
+func TestTridentCRDClient_ListTridentBackend_Error(t *testing.T) {
+	client, fakeClient := getMockTridentClient()
+
+	fakeClient.PrependReactor("list", "tridentbackends", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, fmt.Errorf("random error")
+	})
+
+	backendList, err := client.ListTridentBackend("test-namespace")
+
+	assert.Error(t, err, "list trident backends did not fail")
+	assert.Nil(t, backendList, "expected nil, got TridentBackendList")
+}

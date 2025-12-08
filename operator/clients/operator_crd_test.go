@@ -172,3 +172,34 @@ func TestOperatorCRDClient_UpdateTridentConfiguratorStatus_Error(t *testing.T) {
 	assert.Error(t, err, "no error returned for failed TridentConfigurator CR status update")
 	assert.True(t, updated, "status of TridentConfigurator CR was not updated")
 }
+
+func TestOperatorCRDClient_GetControllingTorcCR_MultipleNoneInstalled(t *testing.T) {
+	client, fakeClient := getMockOperatorClient()
+
+	fakeClient.PrependReactor("list", "tridentorchestrators", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, &operatorV1.TridentOrchestratorList{
+			Items: []operatorV1.TridentOrchestrator{
+				{Status: operatorV1.TridentOrchestratorStatus{Status: string(operatorV1.AppStatusFailed)}},
+				{Status: operatorV1.TridentOrchestratorStatus{Status: string(operatorV1.AppStatusError)}},
+			},
+		}, nil
+	})
+
+	_, err := client.GetControllingTorcCR()
+
+	assert.Error(t, err, "no error returned when no TridentOrchestrator is installed")
+	assert.Contains(t, err.Error(), "trident is not installed yet", "Error should indicate trident is not installed")
+}
+
+func TestOperatorCRDClient_GetControllingTorcCR_ListError(t *testing.T) {
+	client, fakeClient := getMockOperatorClient()
+
+	fakeClient.PrependReactor("list", "tridentorchestrators", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, fmt.Errorf("failed to list orchestrators")
+	})
+
+	_, err := client.GetControllingTorcCR()
+
+	assert.Error(t, err, "no error returned for list failure")
+	assert.Contains(t, err.Error(), "failed to list orchestrators", "Error should be from list operation")
+}
