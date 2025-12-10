@@ -477,5 +477,6 @@ test-coverage:
 	@EXCLUDE_PATTERN=$$(echo $(EXCLUDE_PACKAGES) | sed 's/ /|/g'); \
 	packages=$$(go list ./... | grep -Ev "$$EXCLUDE_PATTERN"); \
 	go test -v -short -p 1 -coverprofile=coverage.out $$packages; \
-	OVERALL_COVERAGE=$$(go tool cover -func=coverage.out | grep total | awk '{print $$3}'); \
+	grep -v "zz_generated.deepcopy.go" coverage.out > coverage_filtered.out; \
+	OVERALL_COVERAGE=$$(go tool cover -func=coverage_filtered.out | grep total | awk '{print $$3}'); \
 	echo "Overall coverage: $$OVERALL_COVERAGE"
