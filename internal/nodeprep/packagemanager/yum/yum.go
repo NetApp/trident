@@ -19,7 +19,7 @@ const (
 )
 
 const (
-	defaultCommandTimeout   = 10 * time.Second
+	defaultCommandTimeout   = 60 * time.Second
 	defaultLogCommandOutput = true
 )
 
