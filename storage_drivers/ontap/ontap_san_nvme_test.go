@@ -2908,6 +2908,113 @@ func TestNVMeDeleteSnapshot_Error(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestNVMeCreateVolumeGroupSnapshot(t *testing.T) {
+	ctx := context.Background()
+
+	driver, mockAPI := newNVMeDriverAndMockApi(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+
+	groupSnapshotConfig := &storage.GroupSnapshotConfig{
+		Name:         "groupsnapshot-1234",
+		InternalName: "groupsnapshot-1234",
+		VolumeNames:  []string{"vol1", "vol2"},
+	}
+	storageVols := storage.GroupSnapshotTargetVolumes{
+		"trident_vol1": {
+			"vol1": &storage.VolumeConfig{Name: "vol1"},
+		},
+		"trident_vol2": {
+			"vol2": &storage.VolumeConfig{Name: "vol2"},
+		},
+	}
+	targetInfo := &storage.GroupSnapshotTargetInfo{
+		StorageType:    "unified",
+		StorageUUID:    "12345",
+		StorageVolumes: storageVols,
+	}
+	storageVolNames := []string{"trident_vol1", "trident_vol2"}
+	snapName, _ := storage.ConvertGroupSnapshotID(groupSnapshotConfig.Name)
+
+	mockAPI.EXPECT().ConsistencyGroupSnapshot(ctx, snapName, gomock.InAnyOrder(storageVolNames)).Return(nil).Times(1)
+
+	err := driver.CreateGroupSnapshot(ctx, groupSnapshotConfig, targetInfo)
+	assert.NoError(t, err, "Group snapshot creation failed")
+}
+
+func TestNVMeProcessVolumeGroupSnapshot(t *testing.T) {
+	ctx := context.Background()
+
+	driver, mockAPI := newNVMeDriverAndMockApi(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+
+	groupSnapshotConfig := &storage.GroupSnapshotConfig{
+		Name:         "groupsnapshot-1234",
+		InternalName: "groupsnapshot-1234",
+		VolumeNames:  []string{"vol1", "vol2"},
+	}
+	storageVols := []*storage.VolumeConfig{
+		{Name: "vol1"},
+		{Name: "vol2"},
+	}
+	snapName, _ := storage.ConvertGroupSnapshotID(groupSnapshotConfig.Name)
+	snapInfoResult := api.Snapshot{CreateTime: "1"}
+	size := 1073741824
+
+	mockAPI.EXPECT().VolumeSnapshotInfo(ctx, snapName, gomock.Any()).Return(snapInfoResult, nil).Times(2)
+	mockAPI.EXPECT().NVMeNamespaceGetSize(ctx, gomock.Any()).Return(1073741824, nil).Times(2)
+
+	snaps, err := driver.ProcessGroupSnapshot(ctx, groupSnapshotConfig, storageVols)
+	assert.NoError(t, err, "Group snapshot processing failed")
+	assert.NotNil(t, snaps, "Grouped snapshot extraction failed")
+	for _, snap := range snaps {
+		assert.Equal(t, snapName, snap.Config.Name)
+		assert.Equal(t, int64(size), snap.SizeBytes)
+	}
+}
+
+func TestNVMeGetGroupSnapshotTarget(t *testing.T) {
+	ctx := context.Background()
+
+	driver, mockAPI := newNVMeDriverAndMockApi(t)
+	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
+	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+
+	volumeConfigs := []*storage.VolumeConfig{
+		{
+			Name:         "vol1",
+			InternalName: "trident_vol1",
+		},
+		{
+			Name:         "vol2",
+			InternalName: "trident_vol2",
+		},
+	}
+
+	storageVols := storage.GroupSnapshotTargetVolumes{
+		"trident_vol1": {
+			"vol1": &storage.VolumeConfig{Name: "vol1", InternalName: "trident_vol1"},
+		},
+		"trident_vol2": {
+			"vol2": &storage.VolumeConfig{Name: "vol2", InternalName: "trident_vol2"},
+		},
+	}
+	expectedTargetInfo := &storage.GroupSnapshotTargetInfo{
+		StorageType:    "Unified",
+		StorageUUID:    "12345",
+		StorageVolumes: storageVols,
+	}
+
+	mockAPI.EXPECT().GetSVMUUID().Return("12345").Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(true, nil).Times(2)
+
+	targetInfo, err := driver.GetGroupSnapshotTarget(ctx, volumeConfigs)
+
+	assert.Equal(t, targetInfo, expectedTargetInfo)
+	assert.NoError(t, err, "Volume group target failed")
+}
+
 // Phase 3: Volume Management Tests
 func TestNVMeGet_Success(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)

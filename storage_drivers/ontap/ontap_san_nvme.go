@@ -1125,6 +1125,60 @@ func (d *NVMeStorageDriver) DeleteSnapshot(
 	return nil
 }
 
+// GetGroupSnapshotTarget returns a set of information about the target of a group snapshot.
+// This information is used to gather information in a consistent way across storage drivers.
+func (d *NVMeStorageDriver) GetGroupSnapshotTarget(
+	ctx context.Context, volConfigs []*storage.VolumeConfig,
+) (*storage.GroupSnapshotTargetInfo, error) {
+	fields := LogFields{
+		"Method": "GetGroupSnapshotTarget",
+		"Type":   "NVMeStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetGroupSnapshotTarget")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetGroupSnapshotTarget")
+
+	return GetGroupSnapshotTarget(ctx, volConfigs, &d.Config, d.API)
+}
+
+func (d *NVMeStorageDriver) CreateGroupSnapshot(
+	ctx context.Context, config *storage.GroupSnapshotConfig, target *storage.GroupSnapshotTargetInfo,
+) error {
+	fields := LogFields{
+		"Method": "CreateGroupSnapshot",
+		"Type":   "NVMeStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateGroupSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateGroupSnapshot")
+
+	return CreateGroupSnapshot(ctx, config, target, &d.Config, d.API)
+}
+
+func (d *NVMeStorageDriver) ProcessGroupSnapshot(
+	ctx context.Context, config *storage.GroupSnapshotConfig, volConfigs []*storage.VolumeConfig,
+) ([]*storage.Snapshot, error) {
+	fields := LogFields{
+		"Method": "ProcessGroupSnapshot",
+		"Type":   "NVMeStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ProcessGroupSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ProcessGroupSnapshot")
+
+	return ProcessGroupSnapshot(ctx, config, volConfigs, &d.Config, d.API, d.namespaceSize)
+}
+
+func (d *NVMeStorageDriver) ConstructGroupSnapshot(
+	ctx context.Context, config *storage.GroupSnapshotConfig, snapshots []*storage.Snapshot,
+) (*storage.GroupSnapshot, error) {
+	fields := LogFields{
+		"Method": "ConstructGroupSnapshot",
+		"Type":   "NVMeStorageDriver",
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ConstructGroupSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ConstructGroupSnapshot")
+
+	return ConstructGroupSnapshot(ctx, config, snapshots, &d.Config)
+}
+
 // Get tests for the existence of a volume.
 func (d *NVMeStorageDriver) Get(ctx context.Context, name string) error {
 	fields := LogFields{
