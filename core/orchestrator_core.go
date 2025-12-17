@@ -3650,19 +3650,73 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 	}
 
 	// Build list of nodes to which the volume remains published.
+	// For read-only clones, we need to also consider publications of the source volume
+	// since they share the same export policy.
 	nodeMap := make(map[string]*models.Node)
-	for _, pub := range o.listVolumePublicationsForVolumeAndSubordinates(ctx, volume.Config.Name) {
 
-		// Exclude the publication we are unpublishing.
-		if pub.VolumeName == volumeName && pub.NodeName == nodeName {
+	// Collect all volume names whose publications should be considered
+	volumeNamesToCheck := []string{volume.Config.Name}
+	unpublishVolumeName := volumeName
+
+	// If this is a read-only clone, also check the source volume's publications
+	sourceVolumeName := ""
+	if volume.Config.ReadOnlyClone && volume.Config.CloneSourceVolume != "" {
+		sourceVolumeName = volume.Config.CloneSourceVolume
+		// Verify the source volume still exists before checking its publications
+		if _, found := o.volumes[sourceVolumeName]; found {
+			volumeNamesToCheck = append(volumeNamesToCheck, sourceVolumeName)
+			Logc(ctx).WithFields(LogFields{
+				"clone":  unpublishVolumeName,
+				"source": sourceVolumeName,
+			}).Debug("Read-only clone detected; checking source volume publications too.")
+		} else {
+			Logc(ctx).WithFields(LogFields{
+				"clone":  unpublishVolumeName,
+				"source": sourceVolumeName,
+			}).Warn("Source volume for read-only clone not found; may have been deleted.")
+		}
+	}
+
+	// Single loop to find:
+	// 1. Sibling read-only clones (if this is a clone) - other clones of the same source
+	// 2. Child read-only clones (if this is a source) - clones that have this volume as their source
+	for volName, vol := range o.volumes {
+		if !vol.Config.ReadOnlyClone || volName == unpublishVolumeName {
 			continue
 		}
 
-		if n := o.nodes.Get(pub.NodeName); n == nil {
-			Logc(ctx).WithField("node", pub.NodeName).Warning("Node not found during volume unpublish.")
-			continue
-		} else {
-			nodeMap[pub.NodeName] = n
+		// Check if this is a sibling clone (same source as the volume being unpublished)
+		if sourceVolumeName != "" && vol.Config.CloneSourceVolume == sourceVolumeName {
+			volumeNamesToCheck = append(volumeNamesToCheck, volName)
+			Logc(ctx).WithFields(LogFields{
+				"clone":   unpublishVolumeName,
+				"sibling": volName,
+				"source":  sourceVolumeName,
+			}).Debug("Found sibling read-only clone; checking its publications too.")
+		} else if vol.Config.CloneSourceVolume == unpublishVolumeName {
+			// Check if the volume being unpublished is the source of a clone
+			volumeNamesToCheck = append(volumeNamesToCheck, volName)
+			Logc(ctx).WithFields(LogFields{
+				"source": unpublishVolumeName,
+				"clone":  volName,
+			}).Debug("Found read-only clone of this volume; checking its publications too.")
+		}
+	}
+
+	// Collect publications from all related volumes
+	for _, volName := range volumeNamesToCheck {
+		for _, pub := range o.listVolumePublicationsForVolumeAndSubordinates(ctx, volName) {
+			// Exclude the publication we are unpublishing.
+			if pub.VolumeName == unpublishVolumeName && pub.NodeName == nodeName {
+				continue
+			}
+
+			if n := o.nodes.Get(pub.NodeName); n == nil {
+				Logc(ctx).WithField("node", pub.NodeName).Warning("Node not found during volume unpublish.")
+				continue
+			} else {
+				nodeMap[pub.NodeName] = n
+			}
 		}
 	}
 

@@ -5502,6 +5502,488 @@ func TestUnpublishVolume(t *testing.T) {
 	assert.Error(t, err, "volume not found")
 }
 
+// TestUnpublishVolumeReadOnlyClone tests the read-only clone unpublish bug fix.
+// This test ensures that when unpublishing a read-only clone, the export policy rules
+// for the source volume and sibling clones are preserved correctly.
+func TestUnpublishVolumeReadOnlyClone(t *testing.T) {
+	var (
+		backendUUID   = "backend-1234"
+		node1         = "node-1"
+		node2         = "node-2"
+		node3         = "node-3"
+		sourceVolName = "source-volume"
+		clone1Name    = "clone-1"
+		clone2Name    = "clone-2"
+		node1Obj      = &models.Node{Name: node1, Deleted: false}
+		node2Obj      = &models.Node{Name: node2, Deleted: false}
+		node3Obj      = &models.Node{Name: node3, Deleted: false}
+	)
+
+	tests := []struct {
+		name                       string
+		volumeToUnpublish          string
+		nodeToUnpublish            string
+		volumes                    map[string]*storage.Volume
+		publications               map[string]map[string]*models.VolumePublication
+		nodes                      map[string]*models.Node
+		expectedNodesInPublishInfo []string // Nodes that should remain in publishInfo.Nodes
+		description                string
+	}{
+		{
+			name:              "UnpublishClone_SourceAndSiblingStillPublished",
+			volumeToUnpublish: clone1Name,
+			nodeToUnpublish:   node1,
+			volumes: map[string]*storage.Volume{
+				sourceVolName: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:         sourceVolName,
+						InternalName: "source_internal",
+					},
+				},
+				clone1Name: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:                      clone1Name,
+						InternalName:              "clone1_internal",
+						ReadOnlyClone:             true,
+						CloneSourceVolume:         sourceVolName,
+						CloneSourceVolumeInternal: "source_internal",
+					},
+				},
+				clone2Name: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:                      clone2Name,
+						InternalName:              "clone2_internal",
+						ReadOnlyClone:             true,
+						CloneSourceVolume:         sourceVolName,
+						CloneSourceVolumeInternal: "source_internal",
+					},
+				},
+			},
+			publications: map[string]map[string]*models.VolumePublication{
+				sourceVolName: {
+					node2: {VolumeName: sourceVolName, NodeName: node2, ReadOnly: false},
+				},
+				clone1Name: {
+					node1: {VolumeName: clone1Name, NodeName: node1, ReadOnly: true},
+				},
+				clone2Name: {
+					node1: {VolumeName: clone2Name, NodeName: node1, ReadOnly: true},
+				},
+			},
+			nodes: map[string]*models.Node{
+				node1: node1Obj,
+				node2: node2Obj,
+			},
+			expectedNodesInPublishInfo: []string{node1, node2}, // Source on node2, clone2 on node1
+			description:                "When unpublishing clone1 from node1, source volume on node2 and clone2 on node1 should remain in export policy",
+		},
+		{
+			name:              "UnpublishSource_ClonesStillPublished",
+			volumeToUnpublish: sourceVolName,
+			nodeToUnpublish:   node2,
+			volumes: map[string]*storage.Volume{
+				sourceVolName: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:         sourceVolName,
+						InternalName: "source_internal",
+					},
+				},
+				clone1Name: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:                      clone1Name,
+						InternalName:              "clone1_internal",
+						ReadOnlyClone:             true,
+						CloneSourceVolume:         sourceVolName,
+						CloneSourceVolumeInternal: "source_internal",
+					},
+				},
+				clone2Name: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:                      clone2Name,
+						InternalName:              "clone2_internal",
+						ReadOnlyClone:             true,
+						CloneSourceVolume:         sourceVolName,
+						CloneSourceVolumeInternal: "source_internal",
+					},
+				},
+			},
+			publications: map[string]map[string]*models.VolumePublication{
+				sourceVolName: {
+					node2: {VolumeName: sourceVolName, NodeName: node2, ReadOnly: false},
+				},
+				clone1Name: {
+					node1: {VolumeName: clone1Name, NodeName: node1, ReadOnly: true},
+				},
+				clone2Name: {
+					node3: {VolumeName: clone2Name, NodeName: node3, ReadOnly: true},
+				},
+			},
+			nodes: map[string]*models.Node{
+				node1: node1Obj,
+				node2: node2Obj,
+				node3: node3Obj,
+			},
+			expectedNodesInPublishInfo: []string{node1, node3}, // clone1 on node1, clone2 on node3
+			description:                "When unpublishing source from node2, clone publications on node1 and node3 should remain in export policy",
+		},
+		{
+			name:              "UnpublishClone_SameNodeAsSource",
+			volumeToUnpublish: clone1Name,
+			nodeToUnpublish:   node1,
+			volumes: map[string]*storage.Volume{
+				sourceVolName: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:         sourceVolName,
+						InternalName: "source_internal",
+					},
+				},
+				clone1Name: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:                      clone1Name,
+						InternalName:              "clone1_internal",
+						ReadOnlyClone:             true,
+						CloneSourceVolume:         sourceVolName,
+						CloneSourceVolumeInternal: "source_internal",
+					},
+				},
+			},
+			publications: map[string]map[string]*models.VolumePublication{
+				sourceVolName: {
+					node1: {VolumeName: sourceVolName, NodeName: node1, ReadOnly: false},
+					node2: {VolumeName: sourceVolName, NodeName: node2, ReadOnly: false},
+				},
+				clone1Name: {
+					node1: {VolumeName: clone1Name, NodeName: node1, ReadOnly: true},
+				},
+			},
+			nodes: map[string]*models.Node{
+				node1: node1Obj,
+				node2: node2Obj,
+			},
+			expectedNodesInPublishInfo: []string{node1, node2}, // Source still on node1 and node2
+			description:                "When unpublishing clone from node1 where source is also published, source publication on node1 should remain",
+		},
+		{
+			name:              "UnpublishClone_MultipleSiblingsOnSameNode",
+			volumeToUnpublish: clone1Name,
+			nodeToUnpublish:   node1,
+			volumes: map[string]*storage.Volume{
+				sourceVolName: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:         sourceVolName,
+						InternalName: "source_internal",
+					},
+				},
+				clone1Name: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:                      clone1Name,
+						InternalName:              "clone1_internal",
+						ReadOnlyClone:             true,
+						CloneSourceVolume:         sourceVolName,
+						CloneSourceVolumeInternal: "source_internal",
+					},
+				},
+				clone2Name: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:                      clone2Name,
+						InternalName:              "clone2_internal",
+						ReadOnlyClone:             true,
+						CloneSourceVolume:         sourceVolName,
+						CloneSourceVolumeInternal: "source_internal",
+					},
+				},
+			},
+			publications: map[string]map[string]*models.VolumePublication{
+				clone1Name: {
+					node1: {VolumeName: clone1Name, NodeName: node1, ReadOnly: true},
+				},
+				clone2Name: {
+					node1: {VolumeName: clone2Name, NodeName: node1, ReadOnly: true},
+				},
+			},
+			nodes: map[string]*models.Node{
+				node1: node1Obj,
+			},
+			expectedNodesInPublishInfo: []string{node1}, // clone2 still on node1
+			description:                "When unpublishing clone1 from node1 where clone2 is also published, clone2 publication should remain",
+		},
+		{
+			name:              "UnpublishClone_LastPublication",
+			volumeToUnpublish: clone1Name,
+			nodeToUnpublish:   node1,
+			volumes: map[string]*storage.Volume{
+				sourceVolName: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:         sourceVolName,
+						InternalName: "source_internal",
+					},
+				},
+				clone1Name: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:                      clone1Name,
+						InternalName:              "clone1_internal",
+						ReadOnlyClone:             true,
+						CloneSourceVolume:         sourceVolName,
+						CloneSourceVolumeInternal: "source_internal",
+					},
+				},
+			},
+			publications: map[string]map[string]*models.VolumePublication{
+				clone1Name: {
+					node1: {VolumeName: clone1Name, NodeName: node1, ReadOnly: true},
+				},
+			},
+			nodes: map[string]*models.Node{
+				node1: node1Obj,
+			},
+			expectedNodesInPublishInfo: []string{}, // No publications remain
+			description:                "When unpublishing the last clone publication with no source publications, export policy should be empty",
+		},
+		{
+			name:              "UnpublishClone_SourceOnMultipleNodes",
+			volumeToUnpublish: clone1Name,
+			nodeToUnpublish:   node1,
+			volumes: map[string]*storage.Volume{
+				sourceVolName: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:         sourceVolName,
+						InternalName: "source_internal",
+					},
+				},
+				clone1Name: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:                      clone1Name,
+						InternalName:              "clone1_internal",
+						ReadOnlyClone:             true,
+						CloneSourceVolume:         sourceVolName,
+						CloneSourceVolumeInternal: "source_internal",
+					},
+				},
+			},
+			publications: map[string]map[string]*models.VolumePublication{
+				sourceVolName: {
+					node1: {VolumeName: sourceVolName, NodeName: node1, ReadOnly: false},
+					node2: {VolumeName: sourceVolName, NodeName: node2, ReadOnly: false},
+					node3: {VolumeName: sourceVolName, NodeName: node3, ReadOnly: false},
+				},
+				clone1Name: {
+					node1: {VolumeName: clone1Name, NodeName: node1, ReadOnly: true},
+				},
+			},
+			nodes: map[string]*models.Node{
+				node1: node1Obj,
+				node2: node2Obj,
+				node3: node3Obj,
+			},
+			expectedNodesInPublishInfo: []string{node1, node2, node3}, // All source nodes should remain
+			description:                "When unpublishing clone from node1 where source is published to multiple nodes, all source publications should remain",
+		},
+		{
+			name:              "UnpublishClone_CloneOnMultipleNodes",
+			volumeToUnpublish: clone1Name,
+			nodeToUnpublish:   node1,
+			volumes: map[string]*storage.Volume{
+				sourceVolName: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:         sourceVolName,
+						InternalName: "source_internal",
+					},
+				},
+				clone1Name: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:                      clone1Name,
+						InternalName:              "clone1_internal",
+						ReadOnlyClone:             true,
+						CloneSourceVolume:         sourceVolName,
+						CloneSourceVolumeInternal: "source_internal",
+					},
+				},
+			},
+			publications: map[string]map[string]*models.VolumePublication{
+				clone1Name: {
+					node1: {VolumeName: clone1Name, NodeName: node1, ReadOnly: true},
+					node2: {VolumeName: clone1Name, NodeName: node2, ReadOnly: true},
+				},
+			},
+			nodes: map[string]*models.Node{
+				node1: node1Obj,
+				node2: node2Obj,
+			},
+			expectedNodesInPublishInfo: []string{node2}, // Other clone publication should remain
+			description:                "When unpublishing clone from node1 where clone is published to multiple nodes, other clone publications should remain",
+		},
+		{
+			name:              "UnpublishSource_AllOnSameNode",
+			volumeToUnpublish: sourceVolName,
+			nodeToUnpublish:   node1,
+			volumes: map[string]*storage.Volume{
+				sourceVolName: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:         sourceVolName,
+						InternalName: "source_internal",
+					},
+				},
+				clone1Name: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:                      clone1Name,
+						InternalName:              "clone1_internal",
+						ReadOnlyClone:             true,
+						CloneSourceVolume:         sourceVolName,
+						CloneSourceVolumeInternal: "source_internal",
+					},
+				},
+				clone2Name: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:                      clone2Name,
+						InternalName:              "clone2_internal",
+						ReadOnlyClone:             true,
+						CloneSourceVolume:         sourceVolName,
+						CloneSourceVolumeInternal: "source_internal",
+					},
+				},
+			},
+			publications: map[string]map[string]*models.VolumePublication{
+				sourceVolName: {
+					node1: {VolumeName: sourceVolName, NodeName: node1, ReadOnly: false},
+				},
+				clone1Name: {
+					node1: {VolumeName: clone1Name, NodeName: node1, ReadOnly: true},
+				},
+				clone2Name: {
+					node1: {VolumeName: clone2Name, NodeName: node1, ReadOnly: true},
+				},
+			},
+			nodes: map[string]*models.Node{
+				node1: node1Obj,
+			},
+			expectedNodesInPublishInfo: []string{node1}, // Both clones still on node1
+			description:                "When unpublishing source from node1 where all clones are also on node1, clone publications should remain",
+		},
+		{
+			name:              "UnpublishClone_SourceVolumeDeleted",
+			volumeToUnpublish: clone1Name,
+			nodeToUnpublish:   node1,
+			volumes: map[string]*storage.Volume{
+				// Source volume is NOT present in volumes map (it was deleted)
+				clone1Name: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:                      clone1Name,
+						InternalName:              "clone1_internal",
+						ReadOnlyClone:             true,
+						CloneSourceVolume:         sourceVolName, // References deleted source
+						CloneSourceVolumeInternal: "source_internal",
+					},
+				},
+				clone2Name: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name:                      clone2Name,
+						InternalName:              "clone2_internal",
+						ReadOnlyClone:             true,
+						CloneSourceVolume:         sourceVolName, // References deleted source
+						CloneSourceVolumeInternal: "source_internal",
+					},
+				},
+			},
+			publications: map[string]map[string]*models.VolumePublication{
+				clone1Name: {
+					node1: {VolumeName: clone1Name, NodeName: node1, ReadOnly: true},
+				},
+				clone2Name: {
+					node2: {VolumeName: clone2Name, NodeName: node2, ReadOnly: true},
+				},
+			},
+			nodes: map[string]*models.Node{
+				node1: node1Obj,
+				node2: node2Obj,
+			},
+			expectedNodesInPublishInfo: []string{node2}, // Only clone2 on node2 should remain (source volume was deleted)
+			description:                "When unpublishing clone from node1 and source volume has been deleted, only sibling clone publications should remain",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			config.CurrentDriverContext = config.ContextCSI
+			defer func() { config.CurrentDriverContext = "" }()
+
+			mockBackend := mockstorage.NewMockBackend(mockCtrl)
+			mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+			// Set up expectations
+			var capturedPublishInfo *models.VolumePublishInfo
+			mockBackend.EXPECT().UnpublishVolume(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
+				func(ctx context.Context, volConfig *storage.VolumeConfig, pubInfo *models.VolumePublishInfo) error {
+					capturedPublishInfo = pubInfo
+					return nil
+				},
+			)
+			mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(nil)
+			mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
+
+			// Create orchestrator
+			o := getOrchestrator(t, false)
+			o.storeClient = mockStoreClient
+			o.backends[backendUUID] = mockBackend
+			o.volumes = tt.volumes
+
+			for name, node := range tt.nodes {
+				o.nodes.Set(name, node)
+			}
+
+			if len(tt.publications) != 0 {
+				o.volumePublications.SetMap(tt.publications)
+			}
+
+			// Execute unpublish
+			err := o.unpublishVolume(coreCtx, tt.volumeToUnpublish, tt.nodeToUnpublish)
+			assert.NoError(t, err, tt.description)
+
+			// Verify the publication was removed
+			pub, found := o.volumePublications.TryGet(tt.volumeToUnpublish, tt.nodeToUnpublish)
+			assert.False(t, found, "Publication should be removed")
+			assert.Nil(t, pub, "Publication should be nil")
+
+			// Verify that capturedPublishInfo contains the correct nodes
+			assert.NotNil(t, capturedPublishInfo, "PublishInfo should have been captured")
+
+			actualNodeNames := make([]string, 0, len(capturedPublishInfo.Nodes))
+			for _, node := range capturedPublishInfo.Nodes {
+				actualNodeNames = append(actualNodeNames, node.Name)
+			}
+
+			assert.ElementsMatch(t, tt.expectedNodesInPublishInfo, actualNodeNames,
+				"Expected nodes: %v, but got: %v. %s", tt.expectedNodesInPublishInfo, actualNodeNames, tt.description)
+		})
+	}
+}
+
 func TestBootstrapSubordinateVolumes(t *testing.T) {
 	var (
 		backendUUID      = "1234"
