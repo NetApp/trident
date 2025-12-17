@@ -322,3 +322,315 @@ func TestDeleteSnapshot_Metrics(t *testing.T) {
 		})
 	}
 }
+
+func TestListSnapshots(t *testing.T) {
+	tests := []struct {
+		name      string
+		snapshots map[string]*storage.Snapshot
+		expected  int
+	}{
+		{
+			name:      "empty snapshots",
+			snapshots: map[string]*storage.Snapshot{},
+			expected:  0,
+		},
+		{
+			name: "single snapshot",
+			snapshots: map[string]*storage.Snapshot{
+				"snapshot1": {
+					Config: &storage.SnapshotConfig{
+						Name:       "snapshot1",
+						VolumeName: "volume1",
+					},
+				},
+			},
+			expected: 1,
+		},
+		{
+			name: "multiple snapshots",
+			snapshots: map[string]*storage.Snapshot{
+				"snapshot1": {
+					Config: &storage.SnapshotConfig{
+						Name:       "snapshot1",
+						VolumeName: "volume1",
+					},
+				},
+				"snapshot2": {
+					Config: &storage.SnapshotConfig{
+						Name:       "snapshot2",
+						VolumeName: "volume2",
+					},
+				},
+			},
+			expected: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			snapshots.lock()
+			snapshots.data = make(map[string]SmartCopier)
+			for k, v := range tt.snapshots {
+				snapshots.data[k] = v
+			}
+			snapshots.unlock()
+
+			// Execute ListSnapshots
+			subquery := ListSnapshots()
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ListSnapshots setResults should not error")
+
+			// Verify results
+			assert.Len(t, result.Snapshots, tt.expected, "Number of snapshots should match expected")
+
+			// Clean up
+			snapshots.lock()
+			snapshots.data = make(map[string]SmartCopier)
+			snapshots.unlock()
+		})
+	}
+}
+
+func TestListSnapshotsByName(t *testing.T) {
+	tests := []struct {
+		name         string
+		snapshots    map[string]*storage.Snapshot
+		snapshotName string
+		expected     int
+	}{
+		{
+			name:         "no matching snapshots",
+			snapshots:    map[string]*storage.Snapshot{},
+			snapshotName: "nonexistent",
+			expected:     0,
+		},
+		{
+			name: "single matching snapshot",
+			snapshots: map[string]*storage.Snapshot{
+				"snapshot1": {
+					Config: &storage.SnapshotConfig{
+						Name:       "target-snapshot",
+						VolumeName: "volume1",
+					},
+				},
+				"snapshot2": {
+					Config: &storage.SnapshotConfig{
+						Name:       "other-snapshot",
+						VolumeName: "volume2",
+					},
+				},
+			},
+			snapshotName: "target-snapshot",
+			expected:     1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			snapshots.lock()
+			snapshots.data = make(map[string]SmartCopier)
+			for k, v := range tt.snapshots {
+				snapshots.data[k] = v
+			}
+			snapshots.unlock()
+
+			// Execute ListSnapshotsByName
+			subquery := ListSnapshotsByName(tt.snapshotName)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ListSnapshotsByName setResults should not error")
+
+			// Verify results
+			assert.Len(t, result.Snapshots, tt.expected, "Number of snapshots should match expected")
+			for _, snapshot := range result.Snapshots {
+				assert.Equal(t, tt.snapshotName, snapshot.Config.Name, "Snapshot name should match filter")
+			}
+
+			// Clean up
+			snapshots.lock()
+			snapshots.data = make(map[string]SmartCopier)
+			snapshots.unlock()
+		})
+	}
+}
+
+func TestListSnapshotsForVolume(t *testing.T) {
+	tests := []struct {
+		name       string
+		snapshots  map[string]*storage.Snapshot
+		volumeName string
+		expected   int
+	}{
+		{
+			name:       "no matching snapshots",
+			snapshots:  map[string]*storage.Snapshot{},
+			volumeName: "nonexistent-volume",
+			expected:   0,
+		},
+		{
+			name: "single matching snapshot",
+			snapshots: map[string]*storage.Snapshot{
+				"snapshot1": {
+					Config: &storage.SnapshotConfig{
+						Name:       "snapshot1",
+						VolumeName: "target-volume",
+					},
+				},
+				"snapshot2": {
+					Config: &storage.SnapshotConfig{
+						Name:       "snapshot2",
+						VolumeName: "other-volume",
+					},
+				},
+			},
+			volumeName: "target-volume",
+			expected:   1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			snapshots.lock()
+			snapshots.data = make(map[string]SmartCopier)
+			for k, v := range tt.snapshots {
+				snapshots.data[k] = v
+			}
+			snapshots.unlock()
+
+			// Execute ListSnapshotsForVolume
+			subquery := ListSnapshotsForVolume(tt.volumeName)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ListSnapshotsForVolume setResults should not error")
+
+			// Verify results
+			assert.Len(t, result.Snapshots, tt.expected, "Number of snapshots should match expected")
+			for _, snapshot := range result.Snapshots {
+				assert.Equal(t, tt.volumeName, snapshot.Config.VolumeName, "Snapshot volume name should match filter")
+			}
+
+			// Clean up
+			snapshots.lock()
+			snapshots.data = make(map[string]SmartCopier)
+			snapshots.unlock()
+		})
+	}
+}
+
+func TestReadSnapshot(t *testing.T) {
+	tests := []struct {
+		name             string
+		setupSnapshot    bool
+		snapshotID       string
+		expectedSnapshot *storage.Snapshot
+	}{
+		{
+			name:          "existing snapshot",
+			setupSnapshot: true,
+			snapshotID:    "test-snapshot-id",
+			expectedSnapshot: &storage.Snapshot{
+				Config: &storage.SnapshotConfig{
+					Name:       "test-snapshot",
+					VolumeName: "test-volume",
+				},
+			},
+		},
+		{
+			name:          "non-existing snapshot",
+			setupSnapshot: false,
+			snapshotID:    "non-existing-id",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			snapshots.lock()
+			snapshots.data = make(map[string]SmartCopier)
+			if tt.setupSnapshot {
+				snapshots.data[tt.snapshotID] = tt.expectedSnapshot
+			}
+			snapshots.unlock()
+
+			// Execute ReadSnapshot
+			subquery := ReadSnapshot(tt.snapshotID)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ReadSnapshot setResults should not error")
+
+			// Verify results
+			if tt.setupSnapshot {
+				assert.NotNil(t, result.Snapshot.Read, "Snapshot should be found")
+				assert.Equal(t, tt.expectedSnapshot, result.Snapshot.Read, "Snapshot should match expected")
+			} else {
+				assert.Nil(t, result.Snapshot.Read, "Snapshot should not be found")
+			}
+
+			// Clean up
+			snapshots.lock()
+			snapshots.data = make(map[string]SmartCopier)
+			snapshots.unlock()
+		})
+	}
+}
+
+func TestInconsistentReadSnapshot(t *testing.T) {
+	tests := []struct {
+		name             string
+		setupSnapshot    bool
+		snapshotID       string
+		expectedSnapshot *storage.Snapshot
+	}{
+		{
+			name:          "existing snapshot",
+			setupSnapshot: true,
+			snapshotID:    "test-snapshot-id",
+			expectedSnapshot: &storage.Snapshot{
+				Config: &storage.SnapshotConfig{
+					Name:       "test-snapshot",
+					VolumeName: "test-volume",
+				},
+			},
+		},
+		{
+			name:          "non-existing snapshot",
+			setupSnapshot: false,
+			snapshotID:    "non-existing-id",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			snapshots.lock()
+			snapshots.data = make(map[string]SmartCopier)
+			if tt.setupSnapshot {
+				snapshots.data[tt.snapshotID] = tt.expectedSnapshot
+			}
+			snapshots.unlock()
+
+			// Execute InconsistentReadSnapshot
+			subquery := InconsistentReadSnapshot(tt.snapshotID)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "InconsistentReadSnapshot setResults should not error")
+
+			// Verify results
+			if tt.setupSnapshot {
+				assert.NotNil(t, result.Snapshot.Read, "Snapshot should be found")
+				assert.Equal(t, tt.expectedSnapshot, result.Snapshot.Read, "Snapshot should match expected")
+			} else {
+				assert.Nil(t, result.Snapshot.Read, "Snapshot should not be found")
+			}
+
+			// Clean up
+			snapshots.lock()
+			snapshots.data = make(map[string]SmartCopier)
+			snapshots.unlock()
+		})
+	}
+}

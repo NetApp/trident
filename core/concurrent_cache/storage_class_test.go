@@ -166,3 +166,343 @@ func TestDeleteStorageClass_Metrics(t *testing.T) {
 		})
 	}
 }
+
+func TestListStorageClasses(t *testing.T) {
+	tests := []struct {
+		name           string
+		storageClasses map[string]*storageclass.StorageClass
+		expected       int
+	}{
+		{
+			name:           "empty storage classes",
+			storageClasses: map[string]*storageclass.StorageClass{},
+			expected:       0,
+		},
+		{
+			name: "single storage class",
+			storageClasses: map[string]*storageclass.StorageClass{
+				"sc1": storageclass.New(&storageclass.Config{
+					Name: "sc1",
+				}),
+			},
+			expected: 1,
+		},
+		{
+			name: "multiple storage classes",
+			storageClasses: map[string]*storageclass.StorageClass{
+				"sc1": storageclass.New(&storageclass.Config{
+					Name: "sc1",
+				}),
+				"sc2": storageclass.New(&storageclass.Config{
+					Name: "sc2",
+				}),
+			},
+			expected: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			storageClasses.lock()
+			storageClasses.data = make(map[string]SmartCopier)
+			for k, v := range tt.storageClasses {
+				storageClasses.data[k] = v
+			}
+			storageClasses.unlock()
+
+			// Execute ListStorageClasses
+			subquery := ListStorageClasses()
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ListStorageClasses setResults should not error")
+
+			// Verify results
+			assert.Len(t, result.StorageClasses, tt.expected, "Number of storage classes should match expected")
+
+			// Clean up
+			storageClasses.lock()
+			storageClasses.data = make(map[string]SmartCopier)
+			storageClasses.unlock()
+		})
+	}
+}
+
+func TestReadStorageClass(t *testing.T) {
+	tests := []struct {
+		name                 string
+		setupStorageClass    bool
+		storageClassID       string
+		expectedStorageClass *storageclass.StorageClass
+	}{
+		{
+			name:              "existing storage class",
+			setupStorageClass: true,
+			storageClassID:    "test-sc-id",
+			expectedStorageClass: storageclass.New(&storageclass.Config{
+				Name: "test-sc",
+			}),
+		},
+		{
+			name:              "non-existing storage class",
+			setupStorageClass: false,
+			storageClassID:    "non-existing-id",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			storageClasses.lock()
+			storageClasses.data = make(map[string]SmartCopier)
+			if tt.setupStorageClass {
+				storageClasses.data[tt.storageClassID] = tt.expectedStorageClass
+			}
+			storageClasses.unlock()
+
+			// Execute ReadStorageClass
+			subquery := ReadStorageClass(tt.storageClassID)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ReadStorageClass setResults should not error")
+
+			// Verify results
+			if tt.setupStorageClass {
+				assert.NotNil(t, result.StorageClass.Read, "StorageClass should be found")
+				assert.Equal(t, tt.expectedStorageClass, result.StorageClass.Read, "StorageClass should match expected")
+			} else {
+				assert.Nil(t, result.StorageClass.Read, "StorageClass should not be found")
+			}
+
+			// Clean up
+			storageClasses.lock()
+			storageClasses.data = make(map[string]SmartCopier)
+			storageClasses.unlock()
+		})
+	}
+}
+
+func TestInconsistentReadStorageClass(t *testing.T) {
+	tests := []struct {
+		name                 string
+		setupStorageClass    bool
+		storageClassID       string
+		expectedStorageClass *storageclass.StorageClass
+	}{
+		{
+			name:              "existing storage class",
+			setupStorageClass: true,
+			storageClassID:    "test-sc-id",
+			expectedStorageClass: storageclass.New(&storageclass.Config{
+				Name: "test-sc",
+			}),
+		},
+		{
+			name:              "non-existing storage class",
+			setupStorageClass: false,
+			storageClassID:    "non-existing-id",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			storageClasses.lock()
+			storageClasses.data = make(map[string]SmartCopier)
+			if tt.setupStorageClass {
+				storageClasses.data[tt.storageClassID] = tt.expectedStorageClass
+			}
+			storageClasses.unlock()
+
+			// Execute InconsistentReadStorageClass
+			subquery := InconsistentReadStorageClass(tt.storageClassID)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "InconsistentReadStorageClass setResults should not error")
+
+			// Verify results
+			if tt.setupStorageClass {
+				assert.NotNil(t, result.StorageClass.Read, "StorageClass should be found")
+				assert.Equal(t, tt.expectedStorageClass, result.StorageClass.Read, "StorageClass should match expected")
+			} else {
+				assert.Nil(t, result.StorageClass.Read, "StorageClass should not be found")
+			}
+
+			// Clean up
+			storageClasses.lock()
+			storageClasses.data = make(map[string]SmartCopier)
+			storageClasses.unlock()
+		})
+	}
+}
+
+// Additional tests to cover the missing 0% coverage functions
+
+func TestListStorageClasses_Coverage(t *testing.T) {
+	tests := []struct {
+		name           string
+		storageClasses map[string]*storageclass.StorageClass
+		expected       int
+	}{
+		{
+			name:           "empty storage classes",
+			storageClasses: map[string]*storageclass.StorageClass{},
+			expected:       0,
+		},
+		{
+			name: "single storage class",
+			storageClasses: map[string]*storageclass.StorageClass{
+				"sc1": storageclass.New(&storageclass.Config{
+					Name: "sc1",
+				}),
+			},
+			expected: 1,
+		},
+		{
+			name: "multiple storage classes",
+			storageClasses: map[string]*storageclass.StorageClass{
+				"sc1": storageclass.New(&storageclass.Config{
+					Name: "sc1",
+				}),
+				"sc2": storageclass.New(&storageclass.Config{
+					Name: "sc2",
+				}),
+			},
+			expected: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			storageClasses.lock()
+			storageClasses.data = make(map[string]SmartCopier)
+			for k, v := range tt.storageClasses {
+				storageClasses.data[k] = v
+			}
+			storageClasses.unlock()
+
+			// Execute ListStorageClasses through the function that wasn't being called
+			subquery := ListStorageClasses()
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ListStorageClasses setResults should not error")
+
+			// Verify results
+			assert.Len(t, result.StorageClasses, tt.expected, "Number of storage classes should match expected")
+
+			// Clean up
+			storageClasses.lock()
+			storageClasses.data = make(map[string]SmartCopier)
+			storageClasses.unlock()
+		})
+	}
+}
+
+func TestReadStorageClass_Coverage(t *testing.T) {
+	tests := []struct {
+		name                 string
+		setupStorageClass    bool
+		storageClassID       string
+		expectedStorageClass *storageclass.StorageClass
+	}{
+		{
+			name:              "existing storage class",
+			setupStorageClass: true,
+			storageClassID:    "test-sc-id",
+			expectedStorageClass: storageclass.New(&storageclass.Config{
+				Name: "test-sc",
+			}),
+		},
+		{
+			name:              "non-existing storage class",
+			setupStorageClass: false,
+			storageClassID:    "non-existing-id",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			storageClasses.lock()
+			storageClasses.data = make(map[string]SmartCopier)
+			if tt.setupStorageClass {
+				storageClasses.data[tt.storageClassID] = tt.expectedStorageClass
+			}
+			storageClasses.unlock()
+
+			// Execute ReadStorageClass through the function that wasn't being called
+			subquery := ReadStorageClass(tt.storageClassID)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ReadStorageClass setResults should not error")
+
+			// Verify results
+			if tt.setupStorageClass {
+				assert.NotNil(t, result.StorageClass.Read, "StorageClass should be found")
+				assert.Equal(t, tt.expectedStorageClass, result.StorageClass.Read, "StorageClass should match expected")
+			} else {
+				assert.Nil(t, result.StorageClass.Read, "StorageClass should not be found")
+			}
+
+			// Clean up
+			storageClasses.lock()
+			storageClasses.data = make(map[string]SmartCopier)
+			storageClasses.unlock()
+		})
+	}
+}
+
+func TestInconsistentReadStorageClass_Coverage(t *testing.T) {
+	tests := []struct {
+		name                 string
+		setupStorageClass    bool
+		storageClassID       string
+		expectedStorageClass *storageclass.StorageClass
+	}{
+		{
+			name:              "existing storage class",
+			setupStorageClass: true,
+			storageClassID:    "test-sc-id",
+			expectedStorageClass: storageclass.New(&storageclass.Config{
+				Name: "test-sc",
+			}),
+		},
+		{
+			name:              "non-existing storage class",
+			setupStorageClass: false,
+			storageClassID:    "non-existing-id",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			storageClasses.lock()
+			storageClasses.data = make(map[string]SmartCopier)
+			if tt.setupStorageClass {
+				storageClasses.data[tt.storageClassID] = tt.expectedStorageClass
+			}
+			storageClasses.unlock()
+
+			// Execute InconsistentReadStorageClass through the function that wasn't being called
+			subquery := InconsistentReadStorageClass(tt.storageClassID)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "InconsistentReadStorageClass setResults should not error")
+
+			// Verify results
+			if tt.setupStorageClass {
+				assert.NotNil(t, result.StorageClass.Read, "StorageClass should be found")
+				assert.Equal(t, tt.expectedStorageClass, result.StorageClass.Read, "StorageClass should match expected")
+			} else {
+				assert.Nil(t, result.StorageClass.Read, "StorageClass should not be found")
+			}
+
+			// Clean up
+			storageClasses.lock()
+			storageClasses.data = make(map[string]SmartCopier)
+			storageClasses.unlock()
+		})
+	}
+}

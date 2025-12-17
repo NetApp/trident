@@ -170,3 +170,177 @@ func TestDeleteNode_Metrics(t *testing.T) {
 		})
 	}
 }
+
+func TestListNodes(t *testing.T) {
+	tests := []struct {
+		name     string
+		nodes    map[string]*models.Node
+		expected int
+	}{
+		{
+			name:     "empty nodes",
+			nodes:    map[string]*models.Node{},
+			expected: 0,
+		},
+		{
+			name: "single node",
+			nodes: map[string]*models.Node{
+				"node1": {
+					Name: "node1",
+					IQN:  "iqn.2023.com.example:node1",
+				},
+			},
+			expected: 1,
+		},
+		{
+			name: "multiple nodes",
+			nodes: map[string]*models.Node{
+				"node1": {
+					Name: "node1",
+					IQN:  "iqn.2023.com.example:node1",
+				},
+				"node2": {
+					Name: "node2",
+					IQN:  "iqn.2023.com.example:node2",
+				},
+			},
+			expected: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			nodes.lock()
+			nodes.data = make(map[string]SmartCopier)
+			for k, v := range tt.nodes {
+				nodes.data[k] = v
+			}
+			nodes.unlock()
+
+			// Execute ListNodes
+			subquery := ListNodes()
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ListNodes setResults should not error")
+
+			// Verify results
+			assert.Len(t, result.Nodes, tt.expected, "Number of nodes should match expected")
+
+			// Clean up
+			nodes.lock()
+			nodes.data = make(map[string]SmartCopier)
+			nodes.unlock()
+		})
+	}
+}
+
+func TestReadNode(t *testing.T) {
+	tests := []struct {
+		name         string
+		setupNode    bool
+		nodeID       string
+		expectedNode *models.Node
+	}{
+		{
+			name:      "existing node",
+			setupNode: true,
+			nodeID:    "test-node-id",
+			expectedNode: &models.Node{
+				Name: "test-node",
+				IQN:  "iqn.2023.com.example:test-node",
+			},
+		},
+		{
+			name:      "non-existing node",
+			setupNode: false,
+			nodeID:    "non-existing-id",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			nodes.lock()
+			nodes.data = make(map[string]SmartCopier)
+			if tt.setupNode {
+				nodes.data[tt.nodeID] = tt.expectedNode
+			}
+			nodes.unlock()
+
+			// Execute ReadNode
+			subquery := ReadNode(tt.nodeID)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ReadNode setResults should not error")
+
+			// Verify results
+			if tt.setupNode {
+				assert.NotNil(t, result.Node.Read, "Node should be found")
+				assert.Equal(t, tt.expectedNode, result.Node.Read, "Node should match expected")
+			} else {
+				assert.Nil(t, result.Node.Read, "Node should not be found")
+			}
+
+			// Clean up
+			nodes.lock()
+			nodes.data = make(map[string]SmartCopier)
+			nodes.unlock()
+		})
+	}
+}
+
+func TestInconsistentReadNode(t *testing.T) {
+	tests := []struct {
+		name         string
+		setupNode    bool
+		nodeID       string
+		expectedNode *models.Node
+	}{
+		{
+			name:      "existing node",
+			setupNode: true,
+			nodeID:    "test-node-id",
+			expectedNode: &models.Node{
+				Name: "test-node",
+				IQN:  "iqn.2023.com.example:test-node",
+			},
+		},
+		{
+			name:      "non-existing node",
+			setupNode: false,
+			nodeID:    "non-existing-id",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			nodes.lock()
+			nodes.data = make(map[string]SmartCopier)
+			if tt.setupNode {
+				nodes.data[tt.nodeID] = tt.expectedNode
+			}
+			nodes.unlock()
+
+			// Execute InconsistentReadNode
+			subquery := InconsistentReadNode(tt.nodeID)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "InconsistentReadNode setResults should not error")
+
+			// Verify results
+			if tt.setupNode {
+				assert.NotNil(t, result.Node.Read, "Node should be found")
+				assert.Equal(t, tt.expectedNode, result.Node.Read, "Node should match expected")
+			} else {
+				assert.Nil(t, result.Node.Read, "Node should not be found")
+			}
+
+			// Clean up
+			nodes.lock()
+			nodes.data = make(map[string]SmartCopier)
+			nodes.unlock()
+		})
+	}
+}

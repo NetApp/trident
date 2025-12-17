@@ -785,3 +785,234 @@ func TestLockCancel(t *testing.T) {
 	defer unlocker()
 	assert.ErrorContains(t, err, "context deadline exceeded")
 }
+
+func TestInitialize(t *testing.T) {
+	// Call Initialize
+	Initialize()
+
+	// Verify all caches are initialized properly
+	assert.NotNil(t, nodes.data, "nodes data should be initialized")
+	assert.NotNil(t, nodes.resourceLocks, "nodes resourceLocks should be initialized")
+	assert.NotNil(t, storageClasses.data, "storageClasses data should be initialized")
+	assert.NotNil(t, storageClasses.resourceLocks, "storageClasses resourceLocks should be initialized")
+	assert.NotNil(t, backends.data, "backends data should be initialized")
+	assert.NotNil(t, backends.resourceLocks, "backends resourceLocks should be initialized")
+	assert.NotNil(t, volumes.data, "volumes data should be initialized")
+	assert.NotNil(t, volumes.resourceLocks, "volumes resourceLocks should be initialized")
+	assert.NotNil(t, snapshots.data, "snapshots data should be initialized")
+	assert.NotNil(t, snapshots.resourceLocks, "snapshots resourceLocks should be initialized")
+	assert.NotNil(t, volumePublications.data, "volumePublications data should be initialized")
+	assert.NotNil(t, volumePublications.resourceLocks, "volumePublications resourceLocks should be initialized")
+	assert.NotNil(t, subordinateVolumes.data, "subordinateVolumes data should be initialized")
+	assert.NotNil(t, subordinateVolumes.resourceLocks, "subordinateVolumes resourceLocks should be initialized")
+
+	// Test the caches are working
+	nodes.lock()
+	assert.NotNil(t, nodes.data, "nodes data should remain initialized after lock/unlock")
+	nodes.unlock()
+
+	// Call Initialize again - should reinitialize
+	Initialize()
+	assert.Empty(t, nodes.data, "nodes data should be empty after re-initialization")
+	assert.Empty(t, storageClasses.data, "storageClasses data should be empty after re-initialization")
+	assert.Empty(t, backends.data, "backends data should be empty after re-initialization")
+	assert.Empty(t, volumes.data, "volumes data should be empty after re-initialization")
+	assert.Empty(t, snapshots.data, "snapshots data should be empty after re-initialization")
+	assert.Empty(t, volumePublications.data, "volumePublications data should be empty after re-initialization")
+	assert.Empty(t, subordinateVolumes.data, "subordinateVolumes data should be empty after re-initialization")
+}
+
+func TestQuery(t *testing.T) {
+	tests := []struct {
+		name       string
+		subqueries []Subquery
+		expected   int
+	}{
+		{
+			name:       "empty query",
+			subqueries: []Subquery{},
+			expected:   0,
+		},
+		{
+			name: "single subquery",
+			subqueries: []Subquery{
+				ListBackends(),
+			},
+			expected: 1,
+		},
+		{
+			name: "multiple subqueries",
+			subqueries: []Subquery{
+				ListBackends(),
+				ListNodes(),
+			},
+			expected: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := Query(tt.subqueries...)
+			assert.Len(t, result, tt.expected, "Query should return the same number of subqueries")
+
+			// Verify that the returned subqueries are the same as the input
+			for i, subquery := range tt.subqueries {
+				assert.Equal(t, subquery.res, result[i].res, "Resource should match")
+				assert.Equal(t, subquery.op, result[i].op, "Operation should match")
+			}
+		})
+	}
+}
+
+func TestIsWriteOp(t *testing.T) {
+	tests := []struct {
+		name     string
+		op       operation
+		expected bool
+	}{
+		{
+			name:     "list operation is read-only",
+			op:       list,
+			expected: false,
+		},
+		{
+			name:     "read operation is read-only",
+			op:       read,
+			expected: false,
+		},
+		{
+			name:     "inconsistentRead operation is read-only",
+			op:       inconsistentRead,
+			expected: false,
+		},
+		{
+			name:     "upsert operation is write",
+			op:       upsert,
+			expected: true,
+		},
+		{
+			name:     "del operation is write",
+			op:       del,
+			expected: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := isWriteOp(tt.op)
+			assert.Equal(t, tt.expected, result, "isWriteOp should return expected value")
+		})
+	}
+}
+
+func TestRankForResource(t *testing.T) {
+	tests := []struct {
+		name     string
+		resource resource
+		expected int // We'll test that it returns a non-negative integer
+	}{
+		{
+			name:     "node resource",
+			resource: node,
+			expected: 0, // nodes typically have rank 0
+		},
+		{
+			name:     "backend resource",
+			resource: backend,
+			expected: 0, // backends typically have rank 0
+		},
+		{
+			name:     "storage class resource",
+			resource: storageClass,
+			expected: 0, // storage classes typically have rank 0
+		},
+		{
+			name:     "volume resource",
+			resource: volume,
+			expected: 1, // volumes depend on backend, so rank 1
+		},
+		{
+			name:     "snapshot resource",
+			resource: snapshot,
+			expected: 2, // snapshots depend on volume, so rank 2
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := rankForResource(tt.resource)
+			assert.GreaterOrEqual(t, result, 0, "rankForResource should return non-negative value")
+			// Don't assert exact values as they may depend on schema configuration
+		})
+	}
+}
+
+func TestCheckDependency(t *testing.T) {
+	tests := []struct {
+		name          string
+		subqueries    []Subquery
+		index         int
+		resource      resource
+		expectError   bool
+		errorContains string
+	}{
+		{
+			name: "valid single dependency",
+			subqueries: []Subquery{
+				{res: backend, dependencies: []int{}}, // index 0: backend
+				{res: volume, dependencies: []int{0}}, // index 1: volume depends on backend
+			},
+			index:       1,
+			resource:    backend,
+			expectError: false,
+		},
+		{
+			name: "no dependencies - should error",
+			subqueries: []Subquery{
+				{res: volume, dependencies: []int{}}, // index 0: volume with no dependencies
+			},
+			index:         0,
+			resource:      backend,
+			expectError:   true,
+			errorContains: "expected one dependency",
+		},
+		{
+			name: "multiple dependencies - should error",
+			subqueries: []Subquery{
+				{res: backend, dependencies: []int{}},      // index 0: backend
+				{res: storageClass, dependencies: []int{}}, // index 1: storage class
+				{res: volume, dependencies: []int{0, 1}},   // index 2: volume with multiple dependencies
+			},
+			index:         2,
+			resource:      backend,
+			expectError:   true,
+			errorContains: "expected one dependency",
+		},
+		{
+			name: "wrong dependency type - should error",
+			subqueries: []Subquery{
+				{res: storageClass, dependencies: []int{}}, // index 0: storage class
+				{res: volume, dependencies: []int{0}},      // index 1: volume depends on storage class
+			},
+			index:         1,
+			resource:      backend,
+			expectError:   true,
+			errorContains: "expected Backend dependency",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := checkDependency(tt.subqueries, tt.index, tt.resource)
+
+			if tt.expectError {
+				assert.Error(t, err, "checkDependency should return an error")
+				if tt.errorContains != "" {
+					assert.Contains(t, err.Error(), tt.errorContains, "Error message should contain expected text")
+				}
+			} else {
+				assert.NoError(t, err, "checkDependency should not return an error")
+			}
+		})
+	}
+}

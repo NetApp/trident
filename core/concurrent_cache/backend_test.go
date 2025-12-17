@@ -201,3 +201,329 @@ func TestDeleteBackend_Metrics(t *testing.T) {
 		})
 	}
 }
+
+func TestListBackends(t *testing.T) {
+	tests := []struct {
+		name     string
+		backends map[string]storage.Backend
+		expected int
+	}{
+		{
+			name:     "empty backends",
+			backends: map[string]storage.Backend{},
+			expected: 0,
+		},
+		{
+			name: "single backend",
+			backends: map[string]storage.Backend{
+				"backend1": getMockBackendWithMap(gomock.NewController(t), map[string]string{
+					"name":       "backend1",
+					"driverName": "test-driver",
+					"state":      string(storage.Online),
+					"uuid":       "backend-uuid-1",
+				}),
+			},
+			expected: 1,
+		},
+		{
+			name: "multiple backends",
+			backends: map[string]storage.Backend{
+				"backend1": getMockBackendWithMap(gomock.NewController(t), map[string]string{
+					"name":       "backend1",
+					"driverName": "test-driver",
+					"state":      string(storage.Online),
+					"uuid":       "backend-uuid-1",
+				}),
+				"backend2": getMockBackendWithMap(gomock.NewController(t), map[string]string{
+					"name":       "backend2",
+					"driverName": "test-driver-2",
+					"state":      string(storage.Offline),
+					"uuid":       "backend-uuid-2",
+				}),
+			},
+			expected: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			backends.lock()
+			backends.data = make(map[string]SmartCopier)
+			for k, v := range tt.backends {
+				backends.data[k] = v
+			}
+			backends.unlock()
+
+			// Execute ListBackends
+			subquery := ListBackends()
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ListBackends setResults should not error")
+
+			// Verify results
+			assert.Len(t, result.Backends, tt.expected, "Number of backends should match expected")
+
+			// Clean up
+			backends.lock()
+			backends.data = make(map[string]SmartCopier)
+			backends.unlock()
+		})
+	}
+}
+
+func TestReadBackend(t *testing.T) {
+	tests := []struct {
+		name            string
+		setupBackend    bool
+		backendID       string
+		expectedBackend storage.Backend
+	}{
+		{
+			name:         "existing backend",
+			setupBackend: true,
+			backendID:    "test-backend-uuid",
+		},
+		{
+			name:         "non-existing backend",
+			setupBackend: false,
+			backendID:    "non-existing-uuid",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Set up initial state
+			backends.lock()
+			backends.data = make(map[string]SmartCopier)
+			if tt.setupBackend {
+				tt.expectedBackend = getMockBackendWithMap(mockCtrl, map[string]string{
+					"name":       "test-backend",
+					"driverName": "test-driver",
+					"state":      string(storage.Online),
+					"uuid":       tt.backendID,
+				})
+				backends.data[tt.backendID] = tt.expectedBackend
+			}
+			backends.unlock()
+
+			// Execute ReadBackend
+			subquery := ReadBackend(tt.backendID)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ReadBackend setResults should not error")
+
+			// Verify results
+			if tt.setupBackend {
+				assert.NotNil(t, result.Backend.Read, "Backend should be found")
+				assert.Equal(t, tt.expectedBackend, result.Backend.Read, "Backend should match expected")
+			} else {
+				assert.Nil(t, result.Backend.Read, "Backend should not be found")
+			}
+
+			// Clean up
+			backends.lock()
+			backends.data = make(map[string]SmartCopier)
+			backends.unlock()
+		})
+	}
+}
+
+func TestInconsistentReadBackend(t *testing.T) {
+	tests := []struct {
+		name            string
+		setupBackend    bool
+		backendID       string
+		expectedBackend storage.Backend
+	}{
+		{
+			name:         "existing backend",
+			setupBackend: true,
+			backendID:    "test-backend-uuid",
+		},
+		{
+			name:         "non-existing backend",
+			setupBackend: false,
+			backendID:    "non-existing-uuid",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Set up initial state
+			backends.lock()
+			backends.data = make(map[string]SmartCopier)
+			if tt.setupBackend {
+				tt.expectedBackend = getMockBackendWithMap(mockCtrl, map[string]string{
+					"name":       "test-backend",
+					"driverName": "test-driver",
+					"state":      string(storage.Online),
+					"uuid":       tt.backendID,
+				})
+				backends.data[tt.backendID] = tt.expectedBackend
+			}
+			backends.unlock()
+
+			// Execute InconsistentReadBackend
+			subquery := InconsistentReadBackend(tt.backendID)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "InconsistentReadBackend setResults should not error")
+
+			// Verify results
+			if tt.setupBackend {
+				assert.NotNil(t, result.Backend.Read, "Backend should be found")
+				assert.Equal(t, tt.expectedBackend, result.Backend.Read, "Backend should match expected")
+			} else {
+				assert.Nil(t, result.Backend.Read, "Backend should not be found")
+			}
+
+			// Clean up
+			backends.lock()
+			backends.data = make(map[string]SmartCopier)
+			backends.unlock()
+		})
+	}
+}
+
+func TestReadBackendByName(t *testing.T) {
+	tests := []struct {
+		name            string
+		setupBackend    bool
+		backendName     string
+		backendID       string
+		expectedBackend storage.Backend
+	}{
+		{
+			name:         "existing backend by name",
+			setupBackend: true,
+			backendName:  "test-backend-name",
+			backendID:    "test-backend-uuid",
+		},
+		{
+			name:         "non-existing backend by name",
+			setupBackend: false,
+			backendName:  "non-existing-name",
+			backendID:    "non-existing-uuid",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Set up initial state
+			backends.lock()
+			backends.data = make(map[string]SmartCopier)
+			backends.key.data = make(map[string]string)
+			if tt.setupBackend {
+				tt.expectedBackend = getMockBackendWithMap(mockCtrl, map[string]string{
+					"name":       tt.backendName,
+					"driverName": "test-driver",
+					"state":      string(storage.Online),
+					"uuid":       tt.backendID,
+				})
+				backends.data[tt.backendID] = tt.expectedBackend
+				backends.key.data[tt.backendName] = tt.backendID
+			}
+			backends.unlock()
+
+			// Execute ReadBackendByName
+			subquery := ReadBackendByName(tt.backendName)
+			// Simulate fillInIDs processing
+			subquery.id = backends.key.data[tt.backendName]
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ReadBackendByName setResults should not error")
+
+			// Verify results
+			if tt.setupBackend {
+				assert.NotNil(t, result.Backend.Read, "Backend should be found")
+				assert.Equal(t, tt.expectedBackend, result.Backend.Read, "Backend should match expected")
+			} else {
+				assert.Nil(t, result.Backend.Read, "Backend should not be found")
+			}
+
+			// Clean up
+			backends.lock()
+			backends.data = make(map[string]SmartCopier)
+			backends.key.data = make(map[string]string)
+			backends.unlock()
+		})
+	}
+}
+
+func TestInconsistentReadBackendByName(t *testing.T) {
+	tests := []struct {
+		name            string
+		setupBackend    bool
+		backendName     string
+		backendID       string
+		expectedBackend storage.Backend
+	}{
+		{
+			name:         "existing backend by name",
+			setupBackend: true,
+			backendName:  "test-backend-name",
+			backendID:    "test-backend-uuid",
+		},
+		{
+			name:         "non-existing backend by name",
+			setupBackend: false,
+			backendName:  "non-existing-name",
+			backendID:    "non-existing-uuid",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Set up initial state
+			backends.lock()
+			backends.data = make(map[string]SmartCopier)
+			backends.key.data = make(map[string]string)
+			if tt.setupBackend {
+				tt.expectedBackend = getMockBackendWithMap(mockCtrl, map[string]string{
+					"name":       tt.backendName,
+					"driverName": "test-driver",
+					"state":      string(storage.Online),
+					"uuid":       tt.backendID,
+				})
+				backends.data[tt.backendID] = tt.expectedBackend
+				backends.key.data[tt.backendName] = tt.backendID
+			}
+			backends.unlock()
+
+			// Execute InconsistentReadBackendByName
+			subquery := InconsistentReadBackendByName(tt.backendName)
+			// Simulate fillInIDs processing
+			subquery.id = backends.key.data[tt.backendName]
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "InconsistentReadBackendByName setResults should not error")
+
+			// Verify results
+			if tt.setupBackend {
+				assert.NotNil(t, result.Backend.Read, "Backend should be found")
+				assert.Equal(t, tt.expectedBackend, result.Backend.Read, "Backend should match expected")
+			} else {
+				assert.Nil(t, result.Backend.Read, "Backend should not be found")
+			}
+
+			// Clean up
+			backends.lock()
+			backends.data = make(map[string]SmartCopier)
+			backends.key.data = make(map[string]string)
+			backends.unlock()
+		})
+	}
+}

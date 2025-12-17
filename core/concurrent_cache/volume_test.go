@@ -13,6 +13,25 @@ import (
 	"github.com/netapp/trident/storage"
 )
 
+const (
+	testVolumeName      = "test-volume"
+	testBackendName     = "test-backend"
+	testBackendUUID     = "test-backend-uuid"
+	testDriverName      = "test-driver"
+	internalVol1        = "internal-vol-1"
+	internalVol2        = "internal-vol-2"
+	internalVol3        = "internal-vol-3"
+	targetBackend       = "target-backend"
+	backend1            = "backend1"
+	targetInternal      = "target-internal"
+	otherInternal       = "other-internal"
+	vol1                = "vol1"
+	vol2                = "vol2"
+	vol3                = "vol3"
+	nonexistentBackend  = "nonexistent-backend"
+	nonexistentInternal = "nonexistent-internal"
+)
+
 func TestUpsertVolumeByInternalName_Metrics(t *testing.T) {
 	tests := []struct {
 		name            string
@@ -30,8 +49,8 @@ func TestUpsertVolumeByInternalName_Metrics(t *testing.T) {
 			updatedSize:     "1073741824", // 1GB in bytes
 			volumeState:     storage.VolumeStateOnline,
 			volumeMode:      config.Filesystem,
-			internalName:    "internal-vol-1",
-			newInternalName: "internal-vol-1",
+			internalName:    internalVol1,
+			newInternalName: internalVol1,
 		},
 		{
 			name:            "update existing volume with size increase",
@@ -40,7 +59,7 @@ func TestUpsertVolumeByInternalName_Metrics(t *testing.T) {
 			updatedSize:     "2147483648", // 2GB in bytes
 			volumeState:     storage.VolumeStateOnline,
 			volumeMode:      config.Filesystem,
-			internalName:    "internal-vol-2",
+			internalName:    internalVol2,
 			newInternalName: "internal-vol-2-updated",
 		},
 		{
@@ -50,8 +69,8 @@ func TestUpsertVolumeByInternalName_Metrics(t *testing.T) {
 			updatedSize:     "1073741824", // Same size
 			volumeState:     storage.VolumeStateMissingBackend,
 			volumeMode:      config.Filesystem,
-			internalName:    "internal-vol-3",
-			newInternalName: "internal-vol-3",
+			internalName:    internalVol3,
+			newInternalName: internalVol3,
 		},
 	}
 
@@ -67,27 +86,27 @@ func TestUpsertVolumeByInternalName_Metrics(t *testing.T) {
 
 			// Create mock backend
 			mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
-				"name":       "test-backend",
-				"driverName": "test-driver",
-				"uuid":       "test-backend-uuid",
+				"name":       testBackendName,
+				"driverName": testDriverName,
+				"uuid":       testBackendUUID,
 			})
 
 			// Add backend to backends map
 			backends.lock()
-			backends.data["test-backend-uuid"] = mockBackend
-			backends.key.data["test-backend"] = "test-backend-uuid"
+			backends.data[testBackendUUID] = mockBackend
+			backends.key.data[testBackendName] = testBackendUUID
 			backends.unlock()
 
 			// Setup initial volume if test case requires it
 			if tt.volumeExists {
 				initialVolume := &storage.Volume{
 					Config: &storage.VolumeConfig{
-						Name:         "test-volume",
+						Name:         testVolumeName,
 						InternalName: tt.internalName,
 						Size:         tt.initialSize,
 						VolumeMode:   config.Filesystem,
 					},
-					BackendUUID: "test-backend-uuid",
+					BackendUUID: testBackendUUID,
 					State:       storage.VolumeStateOnline,
 				}
 
@@ -98,7 +117,7 @@ func TestUpsertVolumeByInternalName_Metrics(t *testing.T) {
 
 				// Add volume to volumes map by name
 				volumes.lock()
-				volumes.data["test-volume"] = initialVolume
+				volumes.data[testVolumeName] = initialVolume
 				volumes.unlock()
 
 				// Add volume to metrics
@@ -108,25 +127,25 @@ func TestUpsertVolumeByInternalName_Metrics(t *testing.T) {
 			// Get initial metric values for total bytes and volume counts
 			initialTotalBytes := testutil.ToFloat64(metrics.VolumesTotalBytesGauge)
 			initialVolumeGauge := testutil.ToFloat64(metrics.VolumesGauge.WithLabelValues(
-				"test-driver",
-				"test-backend-uuid",
+				testDriverName,
+				testBackendUUID,
 				string(storage.VolumeStateOnline),
 				string(config.Filesystem)))
 
 			// Create updated volume
 			updatedVolume := &storage.Volume{
 				Config: &storage.VolumeConfig{
-					Name:         "test-volume",
+					Name:         testVolumeName,
 					InternalName: tt.newInternalName,
 					Size:         tt.updatedSize,
 					VolumeMode:   tt.volumeMode,
 				},
-				BackendUUID: "test-backend-uuid",
+				BackendUUID: testBackendUUID,
 				State:       tt.volumeState,
 			}
 
 			// Execute upsert operation
-			subquery := UpsertVolumeByInternalName("test-volume", tt.internalName, tt.newInternalName, "test-backend-uuid")
+			subquery := UpsertVolumeByInternalName(testVolumeName, tt.internalName, tt.newInternalName, testBackendUUID)
 			result := &Result{}
 			err := subquery.setResults(&subquery, result)
 			assert.NoError(t, err, "UpsertVolumeByInternalName setResults should not error")
@@ -144,13 +163,13 @@ func TestUpsertVolumeByInternalName_Metrics(t *testing.T) {
 			// Get updated metric values
 			updatedTotalBytes := testutil.ToFloat64(metrics.VolumesTotalBytesGauge)
 			updatedVolumeGauge := testutil.ToFloat64(metrics.VolumesGauge.WithLabelValues(
-				"test-driver",
-				"test-backend-uuid",
+				testDriverName,
+				testBackendUUID,
 				string(tt.volumeState),
 				string(tt.volumeMode)))
 			updatedAllocatedBytes := testutil.ToFloat64(metrics.VolumeAllocatedBytesGauge.WithLabelValues(
-				"test-driver",
-				"test-backend-uuid",
+				testDriverName,
+				testBackendUUID,
 				string(tt.volumeState),
 				string(tt.volumeMode)))
 
@@ -162,8 +181,8 @@ func TestUpsertVolumeByInternalName_Metrics(t *testing.T) {
 				} else {
 					// If state or mode changed, old metrics should be 0 and new metrics should be 1
 					updatedOldGauge := testutil.ToFloat64(metrics.VolumesGauge.WithLabelValues(
-						"test-driver",
-						"test-backend-uuid",
+						testDriverName,
+						testBackendUUID,
 						string(storage.VolumeStateOnline),
 						string(config.Filesystem)))
 					assert.Equal(t, float64(0), updatedOldGauge,
@@ -207,7 +226,7 @@ func TestUpsertVolumeByInternalName_Metrics(t *testing.T) {
 
 			// Clean up
 			volumes.lock()
-			delete(volumes.data, "test-volume")
+			delete(volumes.data, testVolumeName)
 			volumes.unlock()
 
 			volumes.lock()
@@ -216,8 +235,8 @@ func TestUpsertVolumeByInternalName_Metrics(t *testing.T) {
 			volumes.unlock()
 
 			backends.lock()
-			delete(backends.data, "test-backend-uuid")
-			delete(backends.key.data, "test-backend")
+			delete(backends.data, testBackendUUID)
+			delete(backends.key.data, testBackendName)
 			backends.unlock()
 		})
 	}
@@ -269,32 +288,32 @@ func TestUpsertVolume_Metrics(t *testing.T) {
 
 			// Create mock backend
 			mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
-				"name":       "test-backend",
-				"driverName": "test-driver",
-				"uuid":       "test-backend-uuid",
+				"name":       testBackendName,
+				"driverName": testDriverName,
+				"uuid":       testBackendUUID,
 			})
 
 			// Add backend to backends map
 			backends.lock()
-			backends.data["test-backend-uuid"] = mockBackend
-			backends.key.data["test-backend"] = "test-backend-uuid"
+			backends.data[testBackendUUID] = mockBackend
+			backends.key.data[testBackendName] = testBackendUUID
 			backends.unlock()
 
 			// Setup initial volume if test case requires it
 			if tt.volumeExists {
 				initialVolume := &storage.Volume{
 					Config: &storage.VolumeConfig{
-						Name:       "test-volume",
+						Name:       testVolumeName,
 						Size:       tt.initialSize,
 						VolumeMode: config.Filesystem,
 					},
-					BackendUUID: "test-backend-uuid",
+					BackendUUID: testBackendUUID,
 					State:       storage.VolumeStateOnline,
 				}
 
 				// Add volume to volumes map
 				volumes.lock()
-				volumes.data["test-volume"] = initialVolume
+				volumes.data[testVolumeName] = initialVolume
 				volumes.unlock()
 
 				// Add volume to metrics
@@ -304,24 +323,24 @@ func TestUpsertVolume_Metrics(t *testing.T) {
 			// Get initial metric values for total bytes and volume counts
 			initialTotalBytes := testutil.ToFloat64(metrics.VolumesTotalBytesGauge)
 			initialVolumeGauge := testutil.ToFloat64(metrics.VolumesGauge.WithLabelValues(
-				"test-driver",
-				"test-backend-uuid",
+				testDriverName,
+				testBackendUUID,
 				string(storage.VolumeStateOnline),
 				string(config.Filesystem)))
 
 			// Create updated volume
 			updatedVolume := &storage.Volume{
 				Config: &storage.VolumeConfig{
-					Name:       "test-volume",
+					Name:       testVolumeName,
 					Size:       tt.updatedSize,
 					VolumeMode: tt.volumeMode,
 				},
-				BackendUUID: "test-backend-uuid",
+				BackendUUID: testBackendUUID,
 				State:       tt.volumeState,
 			}
 
 			// Execute upsert operation
-			subquery := UpsertVolume("test-volume", "test-backend-uuid")
+			subquery := UpsertVolume(testVolumeName, testBackendUUID)
 			result := &Result{}
 			err := subquery.setResults(&subquery, result)
 			assert.NoError(t, err, "UpsertVolume setResults should not error")
@@ -387,19 +406,19 @@ func TestUpsertVolume_Metrics(t *testing.T) {
 
 			// Verify the volume was actually stored
 			volumes.rlock()
-			storedVolume, exists := volumes.data["test-volume"]
+			storedVolume, exists := volumes.data[testVolumeName]
 			volumes.runlock()
 			assert.True(t, exists, "Volume should exist in storage after upsert")
 			assert.Equal(t, updatedVolume, storedVolume, "Stored volume should match upserted volume")
 
 			// Clean up
 			volumes.lock()
-			delete(volumes.data, "test-volume")
+			delete(volumes.data, testVolumeName)
 			volumes.unlock()
 
 			backends.lock()
-			delete(backends.data, "test-backend-uuid")
-			delete(backends.key.data, "test-backend")
+			delete(backends.data, testBackendUUID)
+			delete(backends.key.data, testBackendName)
 			backends.unlock()
 		})
 	}
@@ -451,32 +470,32 @@ func TestUpsertVolumeByBackendName_Metrics(t *testing.T) {
 
 			// Create mock backend
 			mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
-				"name":       "test-backend",
-				"driverName": "test-driver",
-				"uuid":       "test-backend-uuid",
+				"name":       testBackendName,
+				"driverName": testDriverName,
+				"uuid":       testBackendUUID,
 			})
 
 			// Add backend to backends map
 			backends.lock()
-			backends.data["test-backend-uuid"] = mockBackend
-			backends.key.data["test-backend"] = "test-backend-uuid"
+			backends.data[testBackendUUID] = mockBackend
+			backends.key.data[testBackendName] = testBackendUUID
 			backends.unlock()
 
 			// Setup initial volume if test case requires it
 			if tt.volumeExists {
 				initialVolume := &storage.Volume{
 					Config: &storage.VolumeConfig{
-						Name:       "test-volume",
+						Name:       testVolumeName,
 						Size:       tt.initialSize,
 						VolumeMode: config.Filesystem,
 					},
-					BackendUUID: "test-backend-uuid",
+					BackendUUID: testBackendUUID,
 					State:       storage.VolumeStateOnline,
 				}
 
 				// Add volume to volumes map
 				volumes.lock()
-				volumes.data["test-volume"] = initialVolume
+				volumes.data[testVolumeName] = initialVolume
 				volumes.unlock()
 
 				// Add volume to metrics
@@ -486,24 +505,24 @@ func TestUpsertVolumeByBackendName_Metrics(t *testing.T) {
 			// Get initial metric values for total bytes and volume counts
 			initialTotalBytes := testutil.ToFloat64(metrics.VolumesTotalBytesGauge)
 			initialVolumeGauge := testutil.ToFloat64(metrics.VolumesGauge.WithLabelValues(
-				"test-driver",
-				"test-backend-uuid",
+				testDriverName,
+				testBackendUUID,
 				string(storage.VolumeStateOnline),
 				string(config.Filesystem)))
 
 			// Create updated volume
 			updatedVolume := &storage.Volume{
 				Config: &storage.VolumeConfig{
-					Name:       "test-volume",
+					Name:       testVolumeName,
 					Size:       tt.updatedSize,
 					VolumeMode: tt.volumeMode,
 				},
-				BackendUUID: "test-backend-uuid",
+				BackendUUID: testBackendUUID,
 				State:       tt.volumeState,
 			}
 
 			// Execute upsert operation
-			subquery := UpsertVolumeByBackendName("test-volume", "test-backend")
+			subquery := UpsertVolumeByBackendName(testVolumeName, testBackendName)
 			result := &Result{}
 			err := subquery.setResults(&subquery, result)
 			assert.NoError(t, err, "UpsertVolumeByBackendName setResults should not error")
@@ -569,19 +588,19 @@ func TestUpsertVolumeByBackendName_Metrics(t *testing.T) {
 
 			// Verify the volume was actually stored
 			volumes.rlock()
-			storedVolume, exists := volumes.data["test-volume"]
+			storedVolume, exists := volumes.data[testVolumeName]
 			volumes.runlock()
 			assert.True(t, exists, "Volume should exist in storage after upsert")
 			assert.Equal(t, updatedVolume, storedVolume, "Stored volume should match upserted volume")
 
 			// Clean up
 			volumes.lock()
-			delete(volumes.data, "test-volume")
+			delete(volumes.data, testVolumeName)
 			volumes.unlock()
 
 			backends.lock()
-			delete(backends.data, "test-backend-uuid")
-			delete(backends.key.data, "test-backend")
+			delete(backends.data, testBackendUUID)
+			delete(backends.key.data, testBackendName)
 			backends.unlock()
 		})
 	}
@@ -634,15 +653,15 @@ func TestDeleteVolume_Metrics(t *testing.T) {
 
 			// Create mock backend
 			mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
-				"name":       "test-backend",
-				"driverName": "test-driver",
-				"uuid":       "test-backend-uuid",
+				"name":       testBackendName,
+				"driverName": testDriverName,
+				"uuid":       testBackendUUID,
 			})
 
 			// Add backend to backends map
 			backends.lock()
-			backends.data["test-backend-uuid"] = mockBackend
-			backends.key.data["test-backend"] = "test-backend-uuid"
+			backends.data[testBackendUUID] = mockBackend
+			backends.key.data[testBackendName] = testBackendUUID
 			backends.unlock()
 
 			// Setup initial volume if test case requires it
@@ -650,17 +669,17 @@ func TestDeleteVolume_Metrics(t *testing.T) {
 			if tt.volumeExists {
 				testVolume = &storage.Volume{
 					Config: &storage.VolumeConfig{
-						Name:       "test-volume",
+						Name:       testVolumeName,
 						Size:       tt.volumeSize,
 						VolumeMode: tt.volumeMode,
 					},
-					BackendUUID: "test-backend-uuid",
+					BackendUUID: testBackendUUID,
 					State:       tt.volumeState,
 				}
 
 				// Add volume to volumes map
 				volumes.lock()
-				volumes.data["test-volume"] = testVolume
+				volumes.data[testVolumeName] = testVolume
 				volumes.unlock()
 
 				// Add volume to metrics
@@ -670,18 +689,18 @@ func TestDeleteVolume_Metrics(t *testing.T) {
 			// Get initial metric values
 			initialTotalBytes := testutil.ToFloat64(metrics.VolumesTotalBytesGauge)
 			initialVolumeGauge := testutil.ToFloat64(metrics.VolumesGauge.WithLabelValues(
-				"test-driver",
-				"test-backend-uuid",
+				testDriverName,
+				testBackendUUID,
 				string(tt.volumeState),
 				string(tt.volumeMode)))
 			initialAllocatedBytes := testutil.ToFloat64(metrics.VolumeAllocatedBytesGauge.WithLabelValues(
-				"test-driver",
-				"test-backend-uuid",
+				testDriverName,
+				testBackendUUID,
 				string(tt.volumeState),
 				string(tt.volumeMode)))
 
 			// Execute delete operation
-			subquery := DeleteVolume("test-volume")
+			subquery := DeleteVolume(testVolumeName)
 			result := &Result{}
 			err := subquery.setResults(&subquery, result)
 			assert.NoError(t, err, "DeleteVolume setResults should not error")
@@ -700,13 +719,13 @@ func TestDeleteVolume_Metrics(t *testing.T) {
 				// Verify metrics were updated correctly
 				afterDeleteTotalBytes := testutil.ToFloat64(metrics.VolumesTotalBytesGauge)
 				afterDeleteVolumeGauge := testutil.ToFloat64(metrics.VolumesGauge.WithLabelValues(
-					"test-driver",
-					"test-backend-uuid",
+					testDriverName,
+					testBackendUUID,
 					string(tt.volumeState),
 					string(tt.volumeMode)))
 				afterDeleteAllocatedBytes := testutil.ToFloat64(metrics.VolumeAllocatedBytesGauge.WithLabelValues(
-					"test-driver",
-					"test-backend-uuid",
+					testDriverName,
+					testBackendUUID,
 					string(tt.volumeState),
 					string(tt.volumeMode)))
 
@@ -719,7 +738,7 @@ func TestDeleteVolume_Metrics(t *testing.T) {
 
 				// Verify the volume was actually removed from storage
 				volumes.rlock()
-				_, exists := volumes.data["test-volume"]
+				_, exists := volumes.data[testVolumeName]
 				volumes.runlock()
 				assert.False(t, exists, "Volume should not exist in storage after delete")
 			} else {
@@ -733,13 +752,13 @@ func TestDeleteVolume_Metrics(t *testing.T) {
 				// Verify metrics were NOT updated (no change since volume didn't exist)
 				afterDeleteTotalBytes := testutil.ToFloat64(metrics.VolumesTotalBytesGauge)
 				afterDeleteVolumeGauge := testutil.ToFloat64(metrics.VolumesGauge.WithLabelValues(
-					"test-driver",
-					"test-backend-uuid",
+					testDriverName,
+					testBackendUUID,
 					string(tt.volumeState),
 					string(tt.volumeMode)))
 				afterDeleteAllocatedBytes := testutil.ToFloat64(metrics.VolumeAllocatedBytesGauge.WithLabelValues(
-					"test-driver",
-					"test-backend-uuid",
+					testDriverName,
+					testBackendUUID,
 					string(tt.volumeState),
 					string(tt.volumeMode)))
 
@@ -753,13 +772,309 @@ func TestDeleteVolume_Metrics(t *testing.T) {
 
 			// Clean up
 			volumes.lock()
-			delete(volumes.data, "test-volume")
+			delete(volumes.data, testVolumeName)
 			volumes.unlock()
 
 			backends.lock()
-			delete(backends.data, "test-backend-uuid")
-			delete(backends.key.data, "test-backend")
+			delete(backends.data, testBackendUUID)
+			delete(backends.key.data, testBackendName)
 			backends.unlock()
+		})
+	}
+}
+
+func TestListVolumesForBackend(t *testing.T) {
+	tests := []struct {
+		name      string
+		volumes   map[string]*storage.Volume
+		backendID string
+		expected  int
+	}{
+		{
+			name:      "no matching volumes",
+			volumes:   map[string]*storage.Volume{},
+			backendID: "nonexistent-backend",
+			expected:  0,
+		},
+		{
+			name: "single matching volume",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name: "vol1",
+					},
+					BackendUUID: "target-backend",
+				},
+				"vol2": {
+					Config: &storage.VolumeConfig{
+						Name: "vol2",
+					},
+					BackendUUID: "other-backend",
+				},
+			},
+			backendID: "target-backend",
+			expected:  1,
+		},
+		{
+			name: "multiple matching volumes",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name: "vol1",
+					},
+					BackendUUID: "target-backend",
+				},
+				"vol2": {
+					Config: &storage.VolumeConfig{
+						Name: "vol2",
+					},
+					BackendUUID: "target-backend",
+				},
+			},
+			backendID: "target-backend",
+			expected:  2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			for k, v := range tt.volumes {
+				volumes.data[k] = v
+			}
+			volumes.unlock()
+
+			// Execute ListVolumesForBackend
+			subquery := ListVolumesForBackend(tt.backendID)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ListVolumesForBackend setResults should not error")
+
+			// Verify results
+			assert.Len(t, result.Volumes, tt.expected, "Number of volumes should match expected")
+			for _, volume := range result.Volumes {
+				assert.Equal(t, tt.backendID, volume.BackendUUID, "Volume backend UUID should match filter")
+			}
+
+			// Clean up
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			volumes.unlock()
+		})
+	}
+}
+
+func TestListReadOnlyCloneVolumes(t *testing.T) {
+	tests := []struct {
+		name     string
+		volumes  map[string]*storage.Volume
+		expected int
+	}{
+		{
+			name:     "no read-only clone volumes",
+			volumes:  map[string]*storage.Volume{},
+			expected: 0,
+		},
+		{
+			name: "single read-only clone volume",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name:          "vol1",
+						ReadOnlyClone: true,
+					},
+					BackendUUID: "backend1",
+				},
+				"vol2": {
+					Config: &storage.VolumeConfig{
+						Name:          "vol2",
+						ReadOnlyClone: false,
+					},
+					BackendUUID: "backend1",
+				},
+			},
+			expected: 1,
+		},
+		{
+			name: "multiple read-only clone volumes",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name:          "vol1",
+						ReadOnlyClone: true,
+					},
+					BackendUUID: "backend1",
+				},
+				"vol2": {
+					Config: &storage.VolumeConfig{
+						Name:          "vol2",
+						ReadOnlyClone: true,
+					},
+					BackendUUID: "backend1",
+				},
+				"vol3": {
+					Config: &storage.VolumeConfig{
+						Name:          "vol3",
+						ReadOnlyClone: false,
+					},
+					BackendUUID: "backend1",
+				},
+			},
+			expected: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			for k, v := range tt.volumes {
+				volumes.data[k] = v
+			}
+			volumes.unlock()
+
+			// Execute ListReadOnlyCloneVolumes
+			subquery := ListReadOnlyCloneVolumes()
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ListReadOnlyCloneVolumes setResults should not error")
+
+			// Verify results
+			assert.Len(t, result.Volumes, tt.expected, "Number of volumes should match expected")
+			for _, volume := range result.Volumes {
+				assert.True(t, volume.Config.ReadOnlyClone, "Volume should be read-only clone")
+			}
+
+			// Clean up
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			volumes.unlock()
+		})
+	}
+}
+
+func TestListVolumesByInternalName(t *testing.T) {
+	tests := []struct {
+		name            string
+		volumes         map[string]*storage.Volume
+		internalVolName string
+		expected        int
+	}{
+		{
+			name:            "no matching volumes",
+			volumes:         map[string]*storage.Volume{},
+			internalVolName: "nonexistent-internal",
+			expected:        0,
+		},
+		{
+			name: "single matching volume",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name:         "vol1",
+						InternalName: "target-internal",
+					},
+					BackendUUID: "backend1",
+				},
+				"vol2": {
+					Config: &storage.VolumeConfig{
+						Name:         "vol2",
+						InternalName: "other-internal",
+					},
+					BackendUUID: "backend1",
+				},
+			},
+			internalVolName: "target-internal",
+			expected:        1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			for k, v := range tt.volumes {
+				volumes.data[k] = v
+			}
+			volumes.unlock()
+
+			// Execute ListVolumesByInternalName
+			subquery := ListVolumesByInternalName(tt.internalVolName)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ListVolumesByInternalName setResults should not error")
+
+			// Verify results
+			assert.Len(t, result.Volumes, tt.expected, "Number of volumes should match expected")
+			for _, volume := range result.Volumes {
+				assert.Equal(t, tt.internalVolName, volume.Config.InternalName, "Volume internal name should match filter")
+			}
+
+			// Clean up
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			volumes.unlock()
+		})
+	}
+}
+
+func TestInconsistentReadVolume(t *testing.T) {
+	tests := []struct {
+		name           string
+		setupVolume    bool
+		volumeID       string
+		expectedVolume *storage.Volume
+	}{
+		{
+			name:        "existing volume",
+			setupVolume: true,
+			volumeID:    "test-volume-id",
+			expectedVolume: &storage.Volume{
+				Config: &storage.VolumeConfig{
+					Name: "test-volume",
+				},
+				BackendUUID: "backend1",
+			},
+		},
+		{
+			name:        "non-existing volume",
+			setupVolume: false,
+			volumeID:    "non-existing-id",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			if tt.setupVolume {
+				volumes.data[tt.volumeID] = tt.expectedVolume
+			}
+			volumes.unlock()
+
+			// Execute InconsistentReadVolume
+			subquery := InconsistentReadVolume(tt.volumeID)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "InconsistentReadVolume setResults should not error")
+
+			// Verify results
+			if tt.setupVolume {
+				assert.NotNil(t, result.Volume.Read, "Volume should be found")
+				assert.Equal(t, tt.expectedVolume, result.Volume.Read, "Volume should match expected")
+			} else {
+				assert.Nil(t, result.Volume.Read, "Volume should not be found")
+			}
+
+			// Clean up
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			volumes.unlock()
 		})
 	}
 }
