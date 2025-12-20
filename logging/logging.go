@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package logging
 
@@ -21,6 +21,15 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/crypto"
 )
+
+const (
+	LogRoot              = "/var/log/" + config.OrchestratorName
+	LogRotationThreshold = 10485760 // 10 MB
+	MaxLogEntryLength    = 64000
+	RandomLogcheckEnvVar = "LOGROTATE_FREQUENCY"
+)
+
+var randomLogcheckInterval = 20
 
 const (
 	TextFormat             = "text"

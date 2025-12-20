@@ -1,3 +1,5 @@
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
+
 // Package concurrent_cache provides similar functionality as concurrent_cache but with half the calories
 // Resources/objects/whatever are always locked and unlocked in the same order, by list, then type, then id.
 // One query may only contain list operations and one "tree" of resources.
@@ -12,6 +14,7 @@ import (
 	"slices"
 	"sync"
 
+	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/locks"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
@@ -197,22 +200,24 @@ func Query(query ...Subquery) []Subquery {
 //  5. Merge all queries
 //     Returns sorted list of subqueries
 //  6. Acquire locks and fill in Results
-func Lock(ctx context.Context, queries ...[]Subquery) ([]Result, func(), error) {
+func Lock(ctx context.Context, queries ...[]Subquery) (results []Result, unlocker func(), err error) {
+	ctx = NewContextBuilder(ctx).WithLayer(LogLayerCoreCache).BuildContext()
+
 	roots := make([][]int, len(queries))
 	cachesPresent := make(map[resource]struct{}, resourceCount)
 	// phase 1, requires no locks, check errors, dedupe, and build trees
-	if err := assembleQueries(queries, roots, cachesPresent); err != nil {
+	if err = assembleQueries(queries, roots, cachesPresent); err != nil {
 		return nil, func() {}, err
 	}
 
 	// phase 2, requires locks, fill in IDs
-	if err := lockCachesAndFillInIDs(queries, roots, cachesPresent); err != nil {
+	if err = lockCachesAndFillInIDs(queries, roots, cachesPresent); err != nil {
 		return nil, func() {}, err
 	}
 
 	// phase 3, takes per-resource locks
 	merged := mergeQueries(queries)
-	results, unlocker, err := lockQuery(merged, len(queries))
+	results, unlocker, err = lockQuery(merged, len(queries))
 	if err == nil && ctx.Err() != nil {
 		err = ctx.Err()
 	}

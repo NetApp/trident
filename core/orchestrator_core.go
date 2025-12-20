@@ -1907,7 +1907,7 @@ func (o *TridentOrchestrator) RemoveBackendConfigRef(ctx context.Context, backen
 func (o *TridentOrchestrator) AddVolume(
 	ctx context.Context, volumeConfig *storage.VolumeConfig,
 ) (externalVol *storage.VolumeExternal, err error) {
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = NewContextBuilder(ctx).WithLayer(LogLayerCore).BuildContext()
 
 	if o.bootstrapError != nil {
 		return nil, o.bootstrapError

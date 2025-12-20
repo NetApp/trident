@@ -1,3 +1,5 @@
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
+
 package logging
 
 import (
@@ -7,6 +9,14 @@ import (
 const auditKey = "audit"
 
 var auditor AuditLogger
+
+type AuditEvent string
+
+type AuditLogger interface {
+	Log(ctx context.Context, event AuditEvent, fields LogFields, message string)
+	Logln(ctx context.Context, event AuditEvent, fields LogFields, message string)
+	Logf(ctx context.Context, event AuditEvent, fields LogFields, format string, args ...interface{})
+}
 
 type auditLogger struct {
 	enabled bool

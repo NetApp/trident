@@ -392,4 +392,3 @@ type ZapiClientInterface interface {
 	// -group-type <userOrGroupType>
 	SMBShareAccessControlDelete(shareName string, smbShareACL map[string]string) (*azgo.CifsShareAccessControlDeleteResponse, error)
 }
-

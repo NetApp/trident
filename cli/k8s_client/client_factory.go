@@ -1,10 +1,11 @@
-// Copyright 2021 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package k8sclient
 
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"os/exec"
 	"strings"
@@ -81,6 +82,22 @@ func CreateK8SClients(masterURL, kubeConfigPath, overrideNamespace string) (*Cli
 	if err != nil {
 		return nil, err
 	}
+
+	// Register client-go metrics adapters to feed Trident telemeters
+	registerK8sClientGoMetricsAdapter()
+
+	// Wrap all interaction with K8s in a metrics transport http.RoundTripper.
+	clients.RestConfig.Wrap(func(rt http.RoundTripper) http.RoundTripper {
+		return NewMetricsTransport(
+			rt,
+			WithMetricsTransportTarget(ContextRequestTargetKubernetes),
+			WithMetricsTransportTelemeters(
+				// client-go/metrics is configured to track certain metrics, so we avoid duplicating those here.
+				OutgoingAPIRequestDurationTelemeter,
+				OutgoingAPIRequestInFlightTelemeter,
+			),
+		)
+	})
 
 	// Create the Kubernetes client
 	clients.KubeClient, err = kubernetes.NewForConfig(clients.RestConfig)

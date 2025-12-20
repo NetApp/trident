@@ -427,4 +427,3 @@ type RestClientInterface interface {
 	StorageUnitCloneSplitStart(ctx context.Context, suUUID string) error
 	StorageUnitListAllBackedBySnapshot(ctx context.Context, suName, snapshotName string) ([]string, error)
 }
-

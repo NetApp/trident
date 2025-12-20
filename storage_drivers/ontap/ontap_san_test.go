@@ -42,6 +42,10 @@ const (
 	testVolumeName             = "test-volume"
 )
 
+func anyCtx() gomock.Matcher {
+	return gomock.AssignableToTypeOf(context.Background())
+}
+
 func getCommonConfig() *drivers.CommonStorageDriverConfig {
 	return &drivers.CommonStorageDriverConfig{
 		Version:           1,
@@ -307,32 +311,32 @@ func TestOntapSANStorageDriverTerminate_TelemetryFailure(t *testing.T) {
 	assert.False(t, driver.initialized)
 }
 
-func expectLunAndVolumeCreateSequence(ctx context.Context, mockAPI *mockapi.MockOntapAPI, fsType, luks string) {
+func expectLunAndVolumeCreateSequence(mockAPI *mockapi.MockOntapAPI, fsType, luks string) {
 	// expected call sequenece is:
 	//   check the volume exists (should return false)
 	//   create the volume
 	//   create the LUN
 	//   set attributes on the LUN
 
-	mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).DoAndReturn(
+	mockAPI.EXPECT().VolumeExists(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(ctx context.Context, volumeName string) (bool, error) {
 			return false, nil
 		},
 	).MaxTimes(1)
 
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).DoAndReturn(
+	mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(ctx context.Context, volume api.Volume) error {
 			return nil
 		},
 	).MaxTimes(1)
 
-	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).DoAndReturn(
+	mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(ctx context.Context, lun api.Lun) error {
 			return nil
 		},
 	).MaxTimes(1)
 
-	mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), fsType, gomock.Any(), luks, gomock.Any()).DoAndReturn(
+	mockAPI.EXPECT().LunSetAttribute(gomock.Any(), gomock.Any(), gomock.Any(), fsType, gomock.Any(), luks, gomock.Any()).DoAndReturn(
 		func(ctx context.Context, lunPath, attribute, fstype, context, luks, formatOptions string) error {
 			return nil
 		},
@@ -345,7 +349,7 @@ func TestOntapSANVolumeCreate(t *testing.T) {
 	mockAPI, d := newMockOntapSANDriver(t)
 
 	luks := "true"
-	expectLunAndVolumeCreateSequence(ctx, mockAPI, "xfs", luks)
+	expectLunAndVolumeCreateSequence(mockAPI, "xfs", luks)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
@@ -393,12 +397,12 @@ func TestOntapSanVolumeCreate_InvalidSkipRecoveryQueue(t *testing.T) {
 
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
-	mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).DoAndReturn(
+	mockAPI.EXPECT().VolumeExists(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(ctx context.Context, volumeName string) (bool, error) {
 			return false, nil
 		},
 	).MaxTimes(1)
-	mockAPI.EXPECT().TieringPolicyValue(ctx).Return("fake-tier-policy")
+	mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
 	pool1.SetInternalAttributes(map[string]string{
@@ -829,7 +833,7 @@ func TestOntapSanVolumeCreate_LabelLengthExceeding(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 
 	luks := "true"
-	expectLunAndVolumeCreateSequence(ctx, mockAPI, "xfs", luks)
+	expectLunAndVolumeCreateSequence(mockAPI, "xfs", luks)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
@@ -896,7 +900,7 @@ func TestOntapSanVolume_DestroyVolumeIfNoLUN(t *testing.T) {
 		{
 			name: "VolumeExists_Fail",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false,
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false,
 					errors.New("volume checks fail"))
 			},
 			wantErr:       assert.Error,
@@ -906,7 +910,7 @@ func TestOntapSanVolume_DestroyVolumeIfNoLUN(t *testing.T) {
 		{
 			name: "VolumeDoesNotExist",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 			},
 			wantErr:       assert.NoError,
 			volExists:     false,
@@ -915,8 +919,8 @@ func TestOntapSanVolume_DestroyVolumeIfNoLUN(t *testing.T) {
 		{
 			name: "LUNExists",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(dummyLun, nil)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(dummyLun, nil)
 			},
 			wantErr:       assert.NoError,
 			volExists:     true,
@@ -925,8 +929,8 @@ func TestOntapSanVolume_DestroyVolumeIfNoLUN(t *testing.T) {
 		{
 			name: "LUNFindError",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil, nil)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(nil, nil)
 			},
 			wantErr:       assert.Error,
 			volExists:     false,
@@ -935,10 +939,10 @@ func TestOntapSanVolume_DestroyVolumeIfNoLUN(t *testing.T) {
 		{
 			name: "LUNDoesNotExist",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil,
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(nil,
 					errors.NotFoundError("LUN does not exist"))
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(errors.New("destroy fail"))
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), true, true).Return(errors.New("destroy fail"))
 			},
 			wantErr:       assert.Error,
 			volExists:     true,
@@ -947,10 +951,10 @@ func TestOntapSanVolume_DestroyVolumeIfNoLUN(t *testing.T) {
 		{
 			name: "LUNDoesNotExist_VolDestroy",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(nil,
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(nil,
 					errors.NotFoundError("LUN does not exist"))
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), true, true).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), true, true).Return(nil)
 			},
 			wantErr:       assert.NoError,
 			volExists:     false,
@@ -970,7 +974,7 @@ func TestOntapSanVolume_DestroyVolumeIfNoLUN(t *testing.T) {
 
 	// Mirrored configuration coverage
 	volConfig.IsMirrorDestination = true
-	mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
+	mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
 	t.Run("mirrored configuration", func(t *testing.T) {
 		volExists, err := driver.destroyVolumeIfNoLUN(ctx, &volConfig)
 		assert.True(t, volExists, "volume does not exist")
@@ -1016,7 +1020,7 @@ func TestOntapSanVolumeCreate_ValidationFail(t *testing.T) {
 				FileSystem:       "xfs",
 			},
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false,
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false,
 					errors.New("volume checks fail"))
 			},
 			wantErr:       assert.Error,
@@ -1031,8 +1035,8 @@ func TestOntapSanVolumeCreate_ValidationFail(t *testing.T) {
 				FileSystem:       "xfs",
 			},
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunGetByName(ctx, gomock.Any()).Return(dummyLun, nil)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().LunGetByName(gomock.Any(), gomock.Any()).Return(dummyLun, nil)
 			},
 			wantErr:       assert.Error,
 			assertMessage: "Volume is not present in backend",
@@ -1046,7 +1050,7 @@ func TestOntapSanVolumeCreate_ValidationFail(t *testing.T) {
 				FileSystem:       "xfs",
 			},
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 			},
 			wantErr:       assert.Error,
 			assertMessage: "SnapshotReserve validation passed",
@@ -1060,7 +1064,7 @@ func TestOntapSanVolumeCreate_ValidationFail(t *testing.T) {
 				FileSystem:       "xfs",
 			},
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 			},
 			wantErr:       assert.Error,
 			assertMessage: "Encryption validation pass",
@@ -1074,10 +1078,10 @@ func TestOntapSanVolumeCreate_ValidationFail(t *testing.T) {
 				FileSystem:       "xfs",
 			},
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 				mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
-				mockAPI.EXPECT().GetSVMPeers(ctx).Return([]string{"InvalidSVM"}, nil)
+				mockAPI.EXPECT().GetSVMPeers(gomock.Any()).Return([]string{"InvalidSVM"}, nil)
 			},
 			wantErr:       assert.Error,
 			assertMessage: "Get the peer storage pool and volume information",
@@ -1091,7 +1095,7 @@ func TestOntapSanVolumeCreate_ValidationFail(t *testing.T) {
 				FileSystem:       "InvalidFilesystem",
 			},
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 				mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 			},
@@ -1109,8 +1113,8 @@ func TestOntapSanVolumeCreate_ValidationFail(t *testing.T) {
 				AdaptiveQosPolicy: "fake-adaptive-policy",
 			},
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-				mockAPI.EXPECT().TieringPolicyValue(ctx).Return("fake-tier-policy")
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
+				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
 			},
 			wantErr:       assert.Error,
 			assertMessage: "QosPolicy is valid",
@@ -1126,9 +1130,9 @@ func TestOntapSanVolumeCreate_ValidationFail(t *testing.T) {
 				AdaptiveQosPolicy: "",
 			},
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-				mockAPI.EXPECT().TieringPolicyValue(ctx).Return("fake-tier-policy")
-				mockAPI.EXPECT().GetSVMAggregateSpace(ctx, "pool1").Return(nil, errors.New("aggregate not found"))
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
+				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
+				mockAPI.EXPECT().GetSVMAggregateSpace(gomock.Any(), "pool1").Return(nil, errors.New("aggregate not found"))
 			},
 			wantErr:       assert.Error,
 			assertMessage: "Get the SVM aggregates",
@@ -1145,7 +1149,7 @@ func TestOntapSanVolumeCreate_ValidationFail(t *testing.T) {
 				LimitVolumeSize:   "InvalidSize",
 			},
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 			},
 			wantErr:       assert.Error,
 			assertMessage: "Volume size limit validation has passed",
@@ -1191,7 +1195,7 @@ func TestOntapSanVolumeCreate_GetPool(t *testing.T) {
 	volConfig := getVolumeConfig()
 	volAttrs := map[string]sa.Request{}
 
-	mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).DoAndReturn(
+	mockAPI.EXPECT().VolumeExists(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(ctx context.Context, volumeName string) (bool, error) {
 			return false, nil
 		},
@@ -1226,9 +1230,9 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 		{
 			name: "volumeCreateFail",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-				mockAPI.EXPECT().TieringPolicyValue(ctx).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(errors.New("volume creation failed"))
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
+				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
+				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(errors.New("volume creation failed"))
 			},
 			wantErr:       assert.Error,
 			assertMessage: "Volume is created",
@@ -1236,12 +1240,12 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 		{
 			name: "volumeCreateJobFail",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-				mockAPI.EXPECT().TieringPolicyValue(ctx).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
+				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
+				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(
 					api.VolumeCreateJobExistsError("Volume creation failed"))
-				mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Return(errors.New("lun creation failed"))
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(errors.New("lun creation failed"))
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			},
 			wantErr:       assert.Error,
 			assertMessage: "Volume is created",
@@ -1249,11 +1253,11 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 		{
 			name: "LunCreateFail",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-				mockAPI.EXPECT().TieringPolicyValue(ctx).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
-				mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Return(errors.New("lun creation failed"))
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
+				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
+				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(errors.New("lun creation failed"))
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			},
 			wantErr:       assert.Error,
 			assertMessage: "LUN is created",
@@ -1261,11 +1265,11 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 		{
 			name: "LunCreateFail_volumeDestroyFail",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-				mockAPI.EXPECT().TieringPolicyValue(ctx).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
-				mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Return(errors.New("lun creation failed"))
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(),
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
+				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
+				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(errors.New("lun creation failed"))
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any()).Return(errors.New("volume destroy failed"))
 			},
 			wantErr:       assert.Error,
@@ -1274,14 +1278,14 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 		{
 			name: "UpdateLunAttributeFailed",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-				mockAPI.EXPECT().TieringPolicyValue(ctx).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
-				mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Return(nil)
-				mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
+				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
+				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().LunSetAttribute(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any()).Return(errors.New("failed to set LUN attribute"))
-				mockAPI.EXPECT().LunDestroy(ctx, gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().LunDestroy(gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			},
 			wantErr:       assert.Error,
 			assertMessage: "LUN attributes are updated",
@@ -1289,14 +1293,14 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 		{
 			name: "LunCreateFail_LunDestroyFail",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-				mockAPI.EXPECT().TieringPolicyValue(ctx).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
-				mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Return(nil)
-				mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
+				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
+				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().LunSetAttribute(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any()).Return(errors.New("failed to set LUN attribute"))
-				mockAPI.EXPECT().LunDestroy(ctx, gomock.Any()).Return(errors.New("LUN destroy failed"))
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().LunDestroy(gomock.Any(), gomock.Any()).Return(errors.New("LUN destroy failed"))
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			},
 			wantErr:       assert.Error,
 			assertMessage: "Lun deletion failed",
@@ -1304,14 +1308,14 @@ func TestOntapSanVolumeCreate_VolumeCreateFail(t *testing.T) {
 		{
 			name: "LunCreateFail_VolumeDestroyFail",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
-				mockAPI.EXPECT().TieringPolicyValue(ctx).Return("fake-tier-policy")
-				mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil)
-				mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Return(nil)
-				mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
+				mockAPI.EXPECT().TieringPolicyValue(gomock.Any()).Return("fake-tier-policy")
+				mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().LunSetAttribute(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any()).Return(errors.New("failed to set LUN attribute"))
-				mockAPI.EXPECT().LunDestroy(ctx, gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(),
+				mockAPI.EXPECT().LunDestroy(gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any()).Return(errors.New("volume destroy failed"))
 			},
 			wantErr:       assert.Error,
@@ -1360,15 +1364,15 @@ func TestOntapSanVolumeCreate_FormatOptions(t *testing.T) {
 	d.physicalPools = map[string]storage.Pool{"pool1": pool1}
 
 	// Setting up expected calls.
-	mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).Return(false, nil).MaxTimes(1)
-	mockAPI.EXPECT().VolumeCreate(ctx, gomock.Any()).Return(nil).MaxTimes(1)
-	mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Return(nil).MaxTimes(1)
+	mockAPI.EXPECT().VolumeExists(gomock.Any(), gomock.Any()).Return(false, nil).MaxTimes(1)
+	mockAPI.EXPECT().VolumeCreate(gomock.Any(), gomock.Any()).Return(nil).MaxTimes(1)
+	mockAPI.EXPECT().LunCreate(gomock.Any(), gomock.Any()).Return(nil).MaxTimes(1)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
 	// This is the assertion of this unit test,
 	// checking whether the argument FormatOptions matches with what we pass in the internal attributes.
-	mockAPI.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), fsType, gomock.Any(), luks, tempFormatOptions).Return(nil).MaxTimes(1)
+	mockAPI.EXPECT().LunSetAttribute(gomock.Any(), gomock.Any(), gomock.Any(), fsType, gomock.Any(), luks, tempFormatOptions).Return(nil).MaxTimes(1)
 
 	volConfig := getVolumeConfig()
 	volAttrs := map[string]sa.Request{}
@@ -1379,8 +1383,6 @@ func TestOntapSanVolumeCreate_FormatOptions(t *testing.T) {
 }
 
 func TestOntapSanVolumeCreate_InvalidVolumeSize(t *testing.T) {
-	ctx := context.Background()
-
 	mockAPI, driver := newMockOntapSANDriver(t)
 
 	pool1 := storage.NewStoragePool(nil, "pool1")
@@ -1398,11 +1400,13 @@ func TestOntapSanVolumeCreate_InvalidVolumeSize(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.volumeSize, func(t *testing.T) {
+			ctx := context.Background()
+
 			volConfig := getVolumeConfig()
 			volConfig.Size = test.volumeSize
 			volAttrs := map[string]sa.Request{}
 
-			mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).DoAndReturn(
+			mockAPI.EXPECT().VolumeExists(gomock.Any(), gomock.Any()).DoAndReturn(
 				func(ctx context.Context, volumeName string) (bool, error) {
 					return false, nil
 				},
@@ -1448,19 +1452,19 @@ func TestOntapSanVolumeClone(t *testing.T) {
 		Name:    "vol1",
 		Comment: "iscsi volume",
 	}
-	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolume).Return(&volume, nil)
-	mockAPI.EXPECT().VolumeExists(ctx, gomock.Any()).DoAndReturn(
+	mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.CloneSourceVolume).Return(&volume, nil)
+	mockAPI.EXPECT().VolumeExists(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(ctx context.Context, volumeName string) (bool, error) {
 			return false, nil
 		},
 	).MaxTimes(1)
 
-	mockAPI.EXPECT().VolumeSnapshotCreate(ctx, gomock.Any(), gomock.Any()).Return(nil)
-	mockAPI.EXPECT().VolumeCloneCreate(ctx, gomock.Any(), gomock.Any(),
+	mockAPI.EXPECT().VolumeSnapshotCreate(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeCloneCreate(gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any()).Return(nil)
-	mockAPI.EXPECT().VolumeWaitForStates(ctx, volConfig.InternalName, []string{"online"}, []string{"error"},
+	mockAPI.EXPECT().VolumeWaitForStates(gomock.Any(), volConfig.InternalName, []string{"online"}, []string{"error"},
 		maxFlexvolCloneWait).AnyTimes().Return("online", nil)
-	mockAPI.EXPECT().VolumeSetComment(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeSetComment(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
 	err := driver.CreateClone(ctx, &volConfig, &volConfig, pool1)
 
@@ -1493,7 +1497,7 @@ func TestOntapSanVolumeClone_VolumeInfoFail(t *testing.T) {
 		{
 			name: "VolumeInfo_Fail",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(nil,
+				mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.CloneSourceVolumeInternal).Return(nil,
 					errors.New("volume check fail"))
 			},
 			wantErr:       assert.Error,
@@ -1502,7 +1506,7 @@ func TestOntapSanVolumeClone_VolumeInfoFail(t *testing.T) {
 		{
 			name: "VolumeInfo_NotFound",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeInfo(ctx, volConfig.CloneSourceVolumeInternal).Return(nil, nil)
+				mockAPI.EXPECT().VolumeInfo(gomock.Any(), volConfig.CloneSourceVolumeInternal).Return(nil, nil)
 			},
 			wantErr:       assert.Error,
 			assertMessage: "Get the volume info from the backend",
@@ -2394,11 +2398,11 @@ func TestOntapSanVolumeDestroy_FSx(t *testing.T) {
 				vol := awsapi.Volume{
 					State: awsapi.StateAvailable,
 				}
-				api.EXPECT().VolumeExists(ctx, &volConfig).Return(true, &vol, nil)
+				api.EXPECT().VolumeExists(gomock.Any(), &volConfig).Return(true, &vol, nil)
 				api.EXPECT().WaitForVolumeStates(
-					ctx, &vol, []string{awsapi.StateDeleted}, []string{awsapi.StateFailed}, awsapi.RetryDeleteTimeout).
+					gomock.Any(), &vol, []string{awsapi.StateDeleted}, []string{awsapi.StateFailed}, awsapi.RetryDeleteTimeout).
 					Return("", nil)
-				api.EXPECT().DeleteVolume(ctx, &vol).Return(nil)
+				api.EXPECT().DeleteVolume(gomock.Any(), &vol).Return(nil)
 			},
 			volumeConfig: volConfig,
 			assertError:  assert.NoError,
@@ -2408,9 +2412,9 @@ func TestOntapSanVolumeDestroy_FSx(t *testing.T) {
 				vol := awsapi.Volume{
 					State: awsapi.StateDeleting,
 				}
-				api.EXPECT().VolumeExists(ctx, &volConfig).Return(true, &vol, nil)
+				api.EXPECT().VolumeExists(gomock.Any(), &volConfig).Return(true, &vol, nil)
 				api.EXPECT().WaitForVolumeStates(
-					ctx, &vol, []string{awsapi.StateDeleted}, []string{awsapi.StateFailed}, awsapi.RetryDeleteTimeout).Return("", nil)
+					gomock.Any(), &vol, []string{awsapi.StateDeleted}, []string{awsapi.StateFailed}, awsapi.RetryDeleteTimeout).Return("", nil)
 			},
 			volumeConfig: volConfig,
 			assertError:  assert.NoError,
@@ -2419,18 +2423,18 @@ func TestOntapSanVolumeDestroy_FSx(t *testing.T) {
 			configureOntapAPI: func(a *mockapi.MockOntapAPI) {
 				recoveryQueueVolumeName := fmt.Sprintf("%s_%d", skipRecoveryQueueVolumeConfig.InternalName,
 					recoveryQueueNamePostfix)
-				a.EXPECT().VolumeRecoveryQueueGetName(ctx, skipRecoveryQueueVolumeConfig.InternalName).Return(recoveryQueueVolumeName, nil)
-				a.EXPECT().VolumeRecoveryQueuePurge(ctx, recoveryQueueVolumeName).Return(assert.AnError)
+				a.EXPECT().VolumeRecoveryQueueGetName(gomock.Any(), skipRecoveryQueueVolumeConfig.InternalName).Return(recoveryQueueVolumeName, nil)
+				a.EXPECT().VolumeRecoveryQueuePurge(gomock.Any(), recoveryQueueVolumeName).Return(assert.AnError)
 			},
 			ConfigureAwsAPI: func(api *mockapi.MockAWSAPI) {
 				vol := awsapi.Volume{
 					State: awsapi.StateAvailable,
 				}
-				api.EXPECT().VolumeExists(ctx, &skipRecoveryQueueVolumeConfig).Return(true, &vol, nil)
+				api.EXPECT().VolumeExists(gomock.Any(), &skipRecoveryQueueVolumeConfig).Return(true, &vol, nil)
 				api.EXPECT().WaitForVolumeStates(
-					ctx, &vol, []string{awsapi.StateDeleted}, []string{awsapi.StateFailed}, awsapi.RetryDeleteTimeout).
+					gomock.Any(), &vol, []string{awsapi.StateDeleted}, []string{awsapi.StateFailed}, awsapi.RetryDeleteTimeout).
 					Return("", nil)
-				api.EXPECT().DeleteVolume(ctx, &vol).Return(nil)
+				api.EXPECT().DeleteVolume(gomock.Any(), &vol).Return(nil)
 			},
 			volumeConfig: skipRecoveryQueueVolumeConfig,
 			assertError:  assert.NoError,
@@ -2439,35 +2443,35 @@ func TestOntapSanVolumeDestroy_FSx(t *testing.T) {
 			configureOntapAPI: func(a *mockapi.MockOntapAPI) {
 				recoveryQueueVolumeName := fmt.Sprintf("%s_%d", skipRecoveryQueueVolumeConfig.InternalName,
 					recoveryQueueNamePostfix)
-				a.EXPECT().VolumeRecoveryQueueGetName(ctx, skipRecoveryQueueVolumeConfig.InternalName).Return(recoveryQueueVolumeName, nil)
-				a.EXPECT().VolumeRecoveryQueuePurge(ctx, recoveryQueueVolumeName).Return(nil)
+				a.EXPECT().VolumeRecoveryQueueGetName(gomock.Any(), skipRecoveryQueueVolumeConfig.InternalName).Return(recoveryQueueVolumeName, nil)
+				a.EXPECT().VolumeRecoveryQueuePurge(gomock.Any(), recoveryQueueVolumeName).Return(nil)
 			},
 			ConfigureAwsAPI: func(api *mockapi.MockAWSAPI) {
 				vol := awsapi.Volume{
 					State: awsapi.StateAvailable,
 				}
-				api.EXPECT().VolumeExists(ctx, &skipRecoveryQueueVolumeConfig).Return(true, &vol, nil)
+				api.EXPECT().VolumeExists(gomock.Any(), &skipRecoveryQueueVolumeConfig).Return(true, &vol, nil)
 				api.EXPECT().WaitForVolumeStates(
-					ctx, &vol, []string{awsapi.StateDeleted}, []string{awsapi.StateFailed}, awsapi.RetryDeleteTimeout).
+					gomock.Any(), &vol, []string{awsapi.StateDeleted}, []string{awsapi.StateFailed}, awsapi.RetryDeleteTimeout).
 					Return("", nil)
-				api.EXPECT().DeleteVolume(ctx, &vol).Return(nil)
+				api.EXPECT().DeleteVolume(gomock.Any(), &vol).Return(nil)
 			},
 			volumeConfig: skipRecoveryQueueVolumeConfig,
 			assertError:  assert.NoError,
 		},
 		"SkipRecoveryQueue FSx Fexvol volume: error getting recovery queue volumeName": {
 			configureOntapAPI: func(a *mockapi.MockOntapAPI) {
-				a.EXPECT().VolumeRecoveryQueueGetName(ctx, skipRecoveryQueueVolumeConfig.InternalName).
+				a.EXPECT().VolumeRecoveryQueueGetName(gomock.Any(), skipRecoveryQueueVolumeConfig.InternalName).
 					Return("", assert.AnError)
 			},
 			ConfigureAwsAPI: func(api *mockapi.MockAWSAPI) {
 				vol := awsapi.Volume{
 					State: awsapi.StateAvailable,
 				}
-				api.EXPECT().VolumeExists(ctx, &skipRecoveryQueueVolumeConfig).Return(true, &vol, nil)
+				api.EXPECT().VolumeExists(gomock.Any(), &skipRecoveryQueueVolumeConfig).Return(true, &vol, nil)
 				api.EXPECT().WaitForVolumeStates(
-					ctx, &vol, []string{awsapi.StateDeleted}, []string{awsapi.StateFailed}, awsapi.RetryDeleteTimeout).Return("", nil)
-				api.EXPECT().DeleteVolume(ctx, &vol).Return(nil)
+					gomock.Any(), &vol, []string{awsapi.StateDeleted}, []string{awsapi.StateFailed}, awsapi.RetryDeleteTimeout).Return("", nil)
+				api.EXPECT().DeleteVolume(gomock.Any(), &vol).Return(nil)
 			},
 			volumeConfig: skipRecoveryQueueVolumeConfig,
 			assertError:  assert.NoError,
@@ -2517,43 +2521,43 @@ func TestOntapSanVolumeDestroy(t *testing.T) {
 		"happy path": {
 			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return(nodeName, nil)
-				mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
-				mockAPI.EXPECT().LunMapInfo(ctx, gomock.Any(), gomock.Any()).Return(0, nil)
-				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().SnapmirrorRelease(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().IscsiNodeGetNameRequest(gomock.Any()).Times(1).Return(nodeName, nil)
+				mockAPI.EXPECT().IscsiInterfaceGet(gomock.Any(), gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
+				mockAPI.EXPECT().LunMapInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(0, nil)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), false).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), false).Return(nil)
 			},
 			volumeConfig: volConfig,
 		},
 		"source volume with internal snapshot": {
 			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return(nodeName, nil)
-				mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
-				mockAPI.EXPECT().LunMapInfo(ctx, gomock.Any(), gomock.Any()).Return(0, nil)
-				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().SnapmirrorRelease(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().IscsiNodeGetNameRequest(gomock.Any()).Times(1).Return(nodeName, nil)
+				mockAPI.EXPECT().IscsiInterfaceGet(gomock.Any(), gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
+				mockAPI.EXPECT().LunMapInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(0, nil)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeSnapshotDelete(ctx, cloneSourceSnapshotInternal, "").Return(nil).Times(1)
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeSnapshotDelete(gomock.Any(), cloneSourceSnapshotInternal, "").Return(nil).Times(1)
 			},
 			volumeConfig: volConfigWithInternalSnapshot,
 		},
 		"SkipRecoveryQueue volume": {
 			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return(nodeName, nil)
-				mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
-				mockAPI.EXPECT().LunMapInfo(ctx, gomock.Any(), gomock.Any()).Return(0, nil)
-				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().SnapmirrorRelease(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().IscsiNodeGetNameRequest(gomock.Any()).Times(1).Return(nodeName, nil)
+				mockAPI.EXPECT().IscsiInterfaceGet(gomock.Any(), gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
+				mockAPI.EXPECT().LunMapInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(0, nil)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), true).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), true).Return(nil)
 			},
 			volumeConfig: volConfigSkipRecoveryQueue,
 		},
@@ -2599,7 +2603,7 @@ func TestOntapSanVolumeDestroy_fail(t *testing.T) {
 	tests := map[string]parameters{
 		"GetISCSITargetInfo_fail": {
 			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{iscsiInterface},
+				mockAPI.EXPECT().IscsiInterfaceGet(gomock.Any(), gomock.Any()).Return([]string{iscsiInterface},
 					errors.New("failed to get target iscsi info")).Times(1)
 			},
 			volConfig:     volConfig,
@@ -2607,7 +2611,7 @@ func TestOntapSanVolumeDestroy_fail(t *testing.T) {
 		},
 		"GetISCSITargetInfo_fail: source volume has an internal snapshot": {
 			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{iscsiInterface},
+				mockAPI.EXPECT().IscsiInterfaceGet(gomock.Any(), gomock.Any()).Return([]string{iscsiInterface},
 					errors.New("failed to get target iscsi info")).Times(1)
 			},
 			volConfig:     volConfigWithInternalSnapshot,
@@ -2615,8 +2619,8 @@ func TestOntapSanVolumeDestroy_fail(t *testing.T) {
 		},
 		"LunMapInfo_fail": {
 			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
-				mockAPI.EXPECT().LunMapInfo(ctx, gomock.Any(), gomock.Any()).Return(0,
+				mockAPI.EXPECT().IscsiInterfaceGet(gomock.Any(), gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
+				mockAPI.EXPECT().LunMapInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(0,
 					errors.New("LUN map to iscsi device failed"))
 			},
 			volConfig: volConfig,
@@ -2626,8 +2630,8 @@ func TestOntapSanVolumeDestroy_fail(t *testing.T) {
 		},
 		"LunMapInfo_fail: source volume has an internal snapshot": {
 			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
-				mockAPI.EXPECT().LunMapInfo(ctx, gomock.Any(), gomock.Any()).Return(0,
+				mockAPI.EXPECT().IscsiInterfaceGet(gomock.Any(), gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
+				mockAPI.EXPECT().LunMapInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(0,
 					errors.New("LUN map to iscsi device failed"))
 			},
 			volConfig: volConfigWithInternalSnapshot,
@@ -2637,10 +2641,10 @@ func TestOntapSanVolumeDestroy_fail(t *testing.T) {
 		},
 		"SnapmirrorDeleteViaDestination_fail": {
 			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunMapInfo(ctx, gomock.Any(), gomock.Any()).Return(0, nil)
-				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(
+				mockAPI.EXPECT().IscsiInterfaceGet(gomock.Any(), gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().LunMapInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(0, nil)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(gomock.Any(), gomock.Any(), gomock.Any()).Return(
 					errors.New("snapmirror delete failed"))
 			},
 			volConfig:     volConfig,
@@ -2648,10 +2652,10 @@ func TestOntapSanVolumeDestroy_fail(t *testing.T) {
 		},
 		"SnapmirrorDeleteViaDestination_fail: source volume has an internal snapshot": {
 			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunMapInfo(ctx, gomock.Any(), gomock.Any()).Return(0, nil)
-				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(
+				mockAPI.EXPECT().IscsiInterfaceGet(gomock.Any(), gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().LunMapInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(0, nil)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(gomock.Any(), gomock.Any(), gomock.Any()).Return(
 					errors.New("snapmirror delete failed"))
 			},
 			volConfig:     volConfigWithInternalSnapshot,
@@ -2659,14 +2663,14 @@ func TestOntapSanVolumeDestroy_fail(t *testing.T) {
 		},
 		"VolumeDestroy_fail": {
 			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunMapInfo(ctx, gomock.Any(), gomock.Any()).Return(0, nil)
-				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().SnapmirrorRelease(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().IscsiInterfaceGet(gomock.Any(), gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().LunMapInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(0, nil)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 				mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(),
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any()).Return(errors.New("volume destroy failed"))
 			},
 			volConfig:     volConfig,
@@ -2674,13 +2678,13 @@ func TestOntapSanVolumeDestroy_fail(t *testing.T) {
 		},
 		"VolumeDestroy_fail: source volume has an internal snapshot": {
 			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunMapInfo(ctx, gomock.Any(), gomock.Any()).Return(0, nil)
-				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().SnapmirrorRelease(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().IscsiInterfaceGet(gomock.Any(), gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().LunMapInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(0, nil)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(),
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(),
 					gomock.Any(), gomock.Any()).Return(errors.New("volume destroy failed"))
 			},
 			volConfig:     volConfigWithInternalSnapshot,
@@ -2688,26 +2692,26 @@ func TestOntapSanVolumeDestroy_fail(t *testing.T) {
 		},
 		"internal volume cleanup failure: internal snapshot not found": {
 			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunMapInfo(ctx, gomock.Any(), gomock.Any()).Return(0, nil)
-				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().SnapmirrorRelease(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeSnapshotDelete(ctx, cloneSourceSnapshotInternal, "").Return(api.NotFoundError("snapshot not found")).Times(1)
+				mockAPI.EXPECT().IscsiInterfaceGet(gomock.Any(), gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().LunMapInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(0, nil)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeSnapshotDelete(gomock.Any(), cloneSourceSnapshotInternal, "").Return(api.NotFoundError("snapshot not found")).Times(1)
 			},
 			volConfig:     volConfigWithInternalSnapshot,
 			expectedError: nil,
 		},
 		"internal volume cleanup failure: internal snapshot deletion error": {
 			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(true, nil)
-				mockAPI.EXPECT().LunMapInfo(ctx, gomock.Any(), gomock.Any()).Return(0, nil)
-				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().SnapmirrorRelease(ctx, gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeDestroy(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				mockAPI.EXPECT().VolumeSnapshotDelete(ctx, cloneSourceSnapshotInternal, "").Return(errors.New("snapshot not found")).Times(1)
+				mockAPI.EXPECT().IscsiInterfaceGet(gomock.Any(), gomock.Any()).Return([]string{iscsiInterface}, nil).Times(1)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(true, nil)
+				mockAPI.EXPECT().LunMapInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(0, nil)
+				mockAPI.EXPECT().SnapmirrorDeleteViaDestination(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().SnapmirrorRelease(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeDestroy(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockAPI.EXPECT().VolumeSnapshotDelete(gomock.Any(), cloneSourceSnapshotInternal, "").Return(errors.New("snapshot not found")).Times(1)
 			},
 			volConfig:     volConfigWithInternalSnapshot,
 			expectedError: nil,
@@ -2720,7 +2724,7 @@ func TestOntapSanVolumeDestroy_fail(t *testing.T) {
 
 			mockAPI, driver := newMockOntapSANDriver(t)
 			mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
-			mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return(nodeName, nil)
+			mockAPI.EXPECT().IscsiNodeGetNameRequest(gomock.Any()).Times(1).Return(nodeName, nil)
 
 			driver.Config.DriverContext = tridentconfig.ContextDocker
 			driver.Config.SANType = sa.ISCSI
@@ -2737,7 +2741,6 @@ func TestOntapSanVolumeDestroy_fail(t *testing.T) {
 
 func TestOntapSanVolumeDestroy_VolumeExistsFail(t *testing.T) {
 	const svmName = "SVM1"
-	ctx := context.Background()
 
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return(svmName)
@@ -2755,7 +2758,7 @@ func TestOntapSanVolumeDestroy_VolumeExistsFail(t *testing.T) {
 		{
 			name: "VolumeExists_Fail",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false,
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false,
 					errors.New("volume check fail"))
 			},
 			wantErr:       assert.Error,
@@ -2764,7 +2767,7 @@ func TestOntapSanVolumeDestroy_VolumeExistsFail(t *testing.T) {
 		{
 			name: "VolumeExists_NotFound",
 			mocks: func(mockAPI *mockapi.MockOntapAPI) {
-				mockAPI.EXPECT().VolumeExists(ctx, volConfig.InternalName).Return(false, nil)
+				mockAPI.EXPECT().VolumeExists(gomock.Any(), volConfig.InternalName).Return(false, nil)
 			},
 			wantErr:       assert.NoError,
 			assertMessage: "Volume is present in backend",
@@ -2773,8 +2776,8 @@ func TestOntapSanVolumeDestroy_VolumeExistsFail(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			ctx := context.Background()
 			test.mocks(mockAPI)
-
 			err := driver.Destroy(ctx, &volConfig)
 			if !test.wantErr(t, err, test.assertMessage) {
 				return

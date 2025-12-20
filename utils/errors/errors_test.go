@@ -346,7 +346,7 @@ func TestAdditionalSimpleErrorTypes(t *testing.T) {
 		},
 		{
 			name:        "TooManyRequestsError_NoArgs",
-			createErr:   func() error { return TooManyRequestsError("simple rate limit") },
+			createErr:   func() error { return WrapWithTooManyRequestsError(errors.New(""), "simple rate limit") },
 			isErrFunc:   IsTooManyRequestsError,
 			expectedMsg: "simple rate limit",
 		},
@@ -909,4 +909,81 @@ func TestRemainingSimpleErrors(t *testing.T) {
 		assert.True(t, IsTimeoutError(err))
 		assert.Equal(t, "simple timeout", err.Error())
 	})
+}
+
+func TestMustRetryError(t *testing.T) {
+	// Base inner error for wrapping
+	inner := errors.New("base transport error")
+
+	tests := []struct {
+		name        string
+		makeErr     func() error
+		wantMsg     string
+		wantIsRetry assert.BoolAssertionFunc
+		checkUnwrap bool
+	}{
+		{
+			name:        "MustRetryError_NoArgs",
+			makeErr:     func() error { return MustRetryError("rate limited") },
+			wantMsg:     "rate limited",
+			wantIsRetry: assert.True,
+			checkUnwrap: false,
+		},
+		{
+			name:        "MustRetryError_WithArgs",
+			makeErr:     func() error { return MustRetryError("retry after %s", "backoff") },
+			wantMsg:     "retry after backoff",
+			wantIsRetry: assert.True,
+			checkUnwrap: false,
+		},
+		{
+			name:        "WrapWithMustRetryError_WithInnerAndMessage",
+			makeErr:     func() error { return WrapWithMustRetryError(inner, "received HTTP 429 Too Many Requests") },
+			wantMsg:     "received HTTP 429 Too Many Requests; base transport error",
+			wantIsRetry: assert.True,
+			checkUnwrap: true,
+		},
+		{
+			name:        "WrapWithMustRetryError_WithInnerEmptyMessage_UsesInner",
+			makeErr:     func() error { return WrapWithMustRetryError(inner, "") },
+			wantMsg:     "base transport error",
+			wantIsRetry: assert.True,
+			checkUnwrap: true,
+		},
+		{
+			name:        "WrapMustRetryError_NilInner_UsesMessage",
+			makeErr:     func() error { return WrapWithMustRetryError(nil, "retry later") },
+			wantMsg:     "retry later",
+			wantIsRetry: assert.True,
+			checkUnwrap: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.makeErr()
+			// message formatting
+			assert.Equal(t, tt.wantMsg, err.Error())
+			// IsMustRetryError detection
+			tt.wantIsRetry(t, IsMustRetryError(err))
+			// negative cases
+			assert.False(t, IsMustRetryError(nil))
+			assert.False(t, IsMustRetryError(errors.New("generic")))
+
+			if tt.checkUnwrap {
+				// Unwrap should return the inner error for wrapped cases
+				un := Unwrap(err)
+				// For nil inner, unwrap should be nil
+				if tt.name == "WrapMustRetryError_NilInner_UsesMessage" {
+					assert.Nil(t, un)
+				} else {
+					assert.Equal(t, inner, un)
+				}
+			}
+		})
+	}
+
+	// Multi-level wrapping should still be detected
+	wrapped := fmt.Errorf("outer: %w", MustRetryError("retry after backoff"))
+	assert.True(t, IsMustRetryError(wrapped))
 }

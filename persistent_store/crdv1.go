@@ -915,7 +915,9 @@ func (k *CRDClientV1) ReplaceBackendAndUpdateVolumes(
 // should be called after creating a new volume with the expectation that the result is a record
 // that matches what was just created.  It is the caller's responsibility to ensure that replacement
 // is appropriate.
-func (k *CRDClientV1) AddVolume(ctx context.Context, volume *storage.Volume) error {
+func (k *CRDClientV1) AddVolume(ctx context.Context, volume *storage.Volume) (err error) {
+	ctx = NewContextBuilder(ctx).WithLayer(LogLayerPersistentStore).BuildContext()
+
 	persistentVolume, err := v1.NewTridentVolume(ctx, volume.ConstructExternal())
 	if err != nil {
 		return err
@@ -961,7 +963,9 @@ func (k *CRDClientV1) AddVolume(ctx context.Context, volume *storage.Volume) err
 	return err
 }
 
-func (k *CRDClientV1) HasVolumes(ctx context.Context) (bool, error) {
+func (k *CRDClientV1) HasVolumes(ctx context.Context) (hasVols bool, err error) {
+	ctx = NewContextBuilder(context.WithoutCancel(ctx)).WithLayer(LogLayerPersistentStore).BuildContext()
+
 	listOneOpts := metav1.ListOptions{Limit: 1}
 	volumeList, err := k.crdClient.TridentV1().TridentVolumes(k.namespace).List(ctx, listOneOpts)
 	if err != nil {
@@ -971,13 +975,17 @@ func (k *CRDClientV1) HasVolumes(ctx context.Context) (bool, error) {
 	return len(volumeList.Items) > 0, nil
 }
 
-func (k *CRDClientV1) GetVolume(ctx context.Context, volName string) (*storage.VolumeExternal, error) {
+func (k *CRDClientV1) GetVolume(
+	ctx context.Context, volName string,
+) (persistentVolume *storage.VolumeExternal, err error) {
+	ctx = NewContextBuilder(ctx).WithLayer(LogLayerPersistentStore).BuildContext()
+
 	volume, err := k.crdClient.TridentV1().TridentVolumes(k.namespace).Get(ctx, v1.NameFix(volName), getOpts)
 	if err != nil {
 		return nil, err
 	}
 
-	persistentVolume, err := volume.Persistent()
+	persistentVolume, err = volume.Persistent()
 	if err != nil {
 		return nil, err
 	}
@@ -985,7 +993,9 @@ func (k *CRDClientV1) GetVolume(ctx context.Context, volName string) (*storage.V
 	return persistentVolume, nil
 }
 
-func (k *CRDClientV1) UpdateVolume(ctx context.Context, update *storage.Volume) error {
+func (k *CRDClientV1) UpdateVolume(ctx context.Context, update *storage.Volume) (err error) {
+	ctx = NewContextBuilder(context.WithoutCancel(ctx)).WithLayer(LogLayerPersistentStore).BuildContext()
+
 	volume, err := k.crdClient.TridentV1().TridentVolumes(k.namespace).Get(ctx, v1.NameFix(update.Config.Name), getOpts)
 	if err != nil {
 		return err
@@ -1003,8 +1013,10 @@ func (k *CRDClientV1) UpdateVolume(ctx context.Context, update *storage.Volume) 
 	return nil
 }
 
-func (k *CRDClientV1) DeleteVolume(ctx context.Context, volume *storage.Volume) error {
-	err := k.crdClient.TridentV1().TridentVolumes(k.namespace).Delete(ctx, v1.NameFix(volume.Config.Name),
+func (k *CRDClientV1) DeleteVolume(ctx context.Context, volume *storage.Volume) (err error) {
+	ctx = NewContextBuilder(ctx).WithLayer(LogLayerPersistentStore).BuildContext()
+
+	err = k.crdClient.TridentV1().TridentVolumes(k.namespace).Delete(ctx, v1.NameFix(volume.Config.Name),
 		k.deleteOpts())
 
 	if k8sapierrors.IsNotFound(err) {
@@ -1015,14 +1027,15 @@ func (k *CRDClientV1) DeleteVolume(ctx context.Context, volume *storage.Volume) 
 	return err
 }
 
-func (k *CRDClientV1) GetVolumes(ctx context.Context) ([]*storage.VolumeExternal, error) {
+func (k *CRDClientV1) GetVolumes(ctx context.Context) (vols []*storage.VolumeExternal, err error) {
+	ctx = NewContextBuilder(context.WithoutCancel(ctx)).WithLayer(LogLayerPersistentStore).BuildContext()
+
 	volumeList, err := k.crdClient.TridentV1().TridentVolumes(k.namespace).List(ctx, listOpts)
 	if err != nil {
 		return nil, err
 	}
 
-	results := make([]*storage.VolumeExternal, 0)
-
+	vols = make([]*storage.VolumeExternal, 0)
 	for _, item := range volumeList.Items {
 		if !item.ObjectMeta.DeletionTimestamp.IsZero() {
 			Logc(ctx).WithFields(LogFields{
@@ -1038,10 +1051,10 @@ func (k *CRDClientV1) GetVolumes(ctx context.Context) ([]*storage.VolumeExternal
 			return nil, err
 		}
 
-		results = append(results, persistentVolume)
+		vols = append(vols, persistentVolume)
 	}
 
-	return results, nil
+	return vols, nil
 }
 
 func (k *CRDClientV1) DeleteVolumes(ctx context.Context) error {
@@ -1060,7 +1073,9 @@ func (k *CRDClientV1) DeleteVolumes(ctx context.Context) error {
 	return nil
 }
 
-func (k *CRDClientV1) AddVolumeTransaction(ctx context.Context, txn *storage.VolumeTransaction) error {
+func (k *CRDClientV1) AddVolumeTransaction(ctx context.Context, txn *storage.VolumeTransaction) (err error) {
+	ctx = NewContextBuilder(context.WithoutCancel(ctx)).WithLayer(LogLayerPersistentStore).BuildContext()
+
 	newTxn, err := v1.NewTridentTransaction(txn)
 	if err != nil {
 		return err
@@ -1079,8 +1094,8 @@ func (k *CRDClientV1) AddVolumeTransaction(ctx context.Context, txn *storage.Vol
 	return nil
 }
 
-func (k *CRDClientV1) HasVolumeTransactions(ctx context.Context) (bool, error) {
-	ctx = context.WithoutCancel(ctx) // Transactions should not be cancelled
+func (k *CRDClientV1) HasVolumeTransactions(ctx context.Context) (hasTxns bool, err error) {
+	ctx = NewContextBuilder(context.WithoutCancel(ctx)).WithLayer(LogLayerPersistentStore).BuildContext()
 
 	listOneOpts := metav1.ListOptions{Limit: 1}
 	txnList, err := k.crdClient.TridentV1().TridentTransactions(k.namespace).List(ctx, listOneOpts)
@@ -1091,14 +1106,15 @@ func (k *CRDClientV1) HasVolumeTransactions(ctx context.Context) (bool, error) {
 	return len(txnList.Items) > 0, nil
 }
 
-func (k *CRDClientV1) GetVolumeTransactions(ctx context.Context) ([]*storage.VolumeTransaction, error) {
+func (k *CRDClientV1) GetVolumeTransactions(ctx context.Context) (txns []*storage.VolumeTransaction, err error) {
+	ctx = NewContextBuilder(context.WithoutCancel(ctx)).WithLayer(LogLayerPersistentStore).BuildContext()
+
 	txnList, err := k.crdClient.TridentV1().TridentTransactions(k.namespace).List(ctx, listOpts)
 	if err != nil {
 		return nil, err
 	}
 
-	results := make([]*storage.VolumeTransaction, 0)
-
+	txns = make([]*storage.VolumeTransaction, 0)
 	for _, item := range txnList.Items {
 		if !item.ObjectMeta.DeletionTimestamp.IsZero() {
 			Logc(ctx).WithFields(LogFields{
@@ -1111,15 +1127,15 @@ func (k *CRDClientV1) GetVolumeTransactions(ctx context.Context) ([]*storage.Vol
 		if tTxn, err := item.Persistent(); err != nil {
 			return nil, err
 		} else {
-			results = append(results, tTxn)
+			txns = append(txns, tTxn)
 		}
 	}
 
-	return results, nil
+	return txns, nil
 }
 
-func (k *CRDClientV1) UpdateVolumeTransaction(ctx context.Context, update *storage.VolumeTransaction) error {
-	ctx = context.WithoutCancel(ctx) // Transactions should not be cancelled
+func (k *CRDClientV1) UpdateVolumeTransaction(ctx context.Context, update *storage.VolumeTransaction) (err error) {
+	ctx = NewContextBuilder(context.WithoutCancel(ctx)).WithLayer(LogLayerPersistentStore).BuildContext()
 
 	ttxn, err := k.crdClient.TridentV1().TridentTransactions(k.namespace).Get(ctx, v1.NameFix(update.Name()), getOpts)
 	if err != nil {
@@ -1136,8 +1152,8 @@ func (k *CRDClientV1) UpdateVolumeTransaction(ctx context.Context, update *stora
 
 func (k *CRDClientV1) GetVolumeTransaction(
 	ctx context.Context, volTxn *storage.VolumeTransaction,
-) (*storage.VolumeTransaction, error) {
-	ctx = context.WithoutCancel(ctx) // Transactions should not be cancelled
+) (pTxn *storage.VolumeTransaction, err error) {
+	ctx = NewContextBuilder(context.WithoutCancel(ctx)).WithLayer(LogLayerPersistentStore).BuildContext()
 
 	ttxn, err := k.crdClient.TridentV1().TridentTransactions(k.namespace).Get(ctx, v1.NameFix(volTxn.Name()), getOpts)
 
@@ -1155,17 +1171,17 @@ func (k *CRDClientV1) GetVolumeTransaction(
 		return nil, err
 	}
 
-	if pTxn, err := ttxn.Persistent(); err != nil {
+	if pTxn, err = ttxn.Persistent(); err != nil {
 		return nil, fmt.Errorf("error parsing volumeTransaction; %v", err)
-	} else {
-		return pTxn, nil
 	}
+
+	return pTxn, nil
 }
 
-func (k *CRDClientV1) DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error {
-	ctx = context.WithoutCancel(ctx) // Transactions should not be cancelled
+func (k *CRDClientV1) DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) (err error) {
+	ctx = NewContextBuilder(context.WithoutCancel(ctx)).WithLayer(LogLayerPersistentStore).BuildContext()
 
-	err := k.crdClient.TridentV1().TridentTransactions(k.namespace).Delete(ctx, v1.NameFix(volTxn.Name()),
+	err = k.crdClient.TridentV1().TridentTransactions(k.namespace).Delete(ctx, v1.NameFix(volTxn.Name()),
 		k.deleteOpts())
 
 	if k8sapierrors.IsNotFound(err) {

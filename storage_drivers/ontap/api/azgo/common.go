@@ -98,18 +98,20 @@ func NewZapiRunner(managementLIF, svm, username, password, clientPrivateKey, cli
 		caCertPool.AppendCertsFromPEM(trustedCACert)
 	}
 
-	tr := drivers.NewLimitedRetryTransport(
-		sem,
-		&http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: skipVerify, MinVersion: tridentconfig.MinClientTLSVersion,
-				Certificates: []tls.Certificate{cert}, RootCAs: caCertPool,
-			},
+	// Create the base transport and wrap it with TLS configuration.
+	var transport http.RoundTripper
+	transport = &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: skipVerify, MinVersion: tridentconfig.MinClientTLSVersion,
+			Certificates: []tls.Certificate{cert}, RootCAs: caCertPool,
 		},
-	)
-
+	}
+	// Create a metrics transport that captures request metrics.
+	transport = NewMetricsTransport(transport, WithMetricsTransportTarget(ContextRequestTargetONTAP))
+	// Create a limited retry transport to limit concurrent requests.
+	transport = drivers.NewLimitedRetryTransport(sem, transport)
 	zr.httpClient = &http.Client{
-		Transport: tr,
+		Transport: transport,
 	}
 	return zr, nil
 }

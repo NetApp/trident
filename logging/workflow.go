@@ -2,6 +2,31 @@
 
 package logging
 
+type WorkflowCategory string
+
+func (w WorkflowCategory) String() string {
+	return string(w)
+}
+
+type WorkflowOperation string
+
+func (w WorkflowOperation) String() string {
+	return string(w)
+}
+
+type Workflow struct {
+	Category  WorkflowCategory
+	Operation WorkflowOperation
+}
+
+func (w Workflow) String() string {
+	return w.Category.String() + workflowCategorySeparator + w.Operation.String()
+}
+
+func (w Workflow) IsValid() bool {
+	return !(w.Category == "" || w.Operation == "")
+}
+
 const (
 	WorkflowFlagSeparator      = ":"
 	workflowCategorySeparator  = "="
@@ -158,7 +183,7 @@ var (
 
 	WorkflowNone = Workflow{CategoryNone, OpNone}
 
-	workflowTypes = []Workflow{
+	WorkflowTypes = []Workflow{
 		WorkflowCoreBootstrap,
 		WorkflowCoreVersion,
 		WorkflowCoreInit,

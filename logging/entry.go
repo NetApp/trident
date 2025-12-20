@@ -1,8 +1,41 @@
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
+
 package logging
 
 import (
 	log "github.com/sirupsen/logrus"
 )
+
+const (
+	LogSource = "logSource"
+
+	AuditRESTAccess   = AuditEvent("rest")
+	AuditGRPCAccess   = AuditEvent("csi")
+	AuditDockerAccess = AuditEvent("docker")
+)
+
+type LogFields log.Fields
+
+type LogEntry interface {
+	WithField(key string, value interface{}) LogEntry
+	WithFields(fields LogFields) LogEntry
+	WithError(err error) LogEntry
+	Fatal(args ...interface{})
+	Fatalf(format string, args ...interface{})
+	Error(args ...interface{})
+	Errorf(format string, args ...interface{})
+	Warn(args ...interface{})
+	Warnf(format string, args ...interface{})
+	Warning(args ...interface{})
+	Warningf(format string, args ...interface{})
+	Info(args ...interface{})
+	Infof(format string, args ...interface{})
+	Debug(args ...interface{})
+	Debugf(format string, args ...interface{})
+	Trace(args ...interface{})
+	Tracef(format string, args ...interface{})
+	Data(key string) (interface{}, bool)
+}
 
 type logEntry struct {
 	entry        *log.Entry

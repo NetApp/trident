@@ -1,3 +1,5 @@
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
+
 package logging
 
 import (
@@ -1224,7 +1226,7 @@ func TestUncoveredEdgeCasesAndErrorPath(t *testing.T) {
 
 	// Should return context without adding the empty layer
 	value := result.Value(ContextKeyLogLayer)
-	assert.Nil(t, value, "Empty LogLayer should not be stored in context")
+	assert.Equal(t, LogLayerNone, value)
 
 	// 2. Test checkIfTerminal with non-*os.File writer
 	hook, err := NewConsoleHook("text")

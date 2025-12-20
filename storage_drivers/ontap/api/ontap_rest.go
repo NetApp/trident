@@ -173,29 +173,35 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM, driverName str
 		m:          &sync.RWMutex{},
 	}
 
-	result.httpClient = &http.Client{
-		Transport: drivers.NewLimitedRetryTransport(
-			drivers.NewSemaphore(config.ManagementLIF, drivers.ONTAPRequestLimit),
-			&http.Transport{
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: skipVerify,
-					MinVersion:         tridentconfig.MinClientTLSVersion,
-					Certificates:       []tls.Certificate{cert},
-					RootCAs:            caCertPool,
-				},
-			},
-		),
-	}
-
 	formats := strfmt.Default
 
+	// Create a default transport config and override the host.
 	transportConfig := client.DefaultTransportConfig()
 	transportConfig.Host = config.ManagementLIF
 	if config.unitTestTransportConfigSchemes != "" {
 		transportConfig.Schemes = []string{config.unitTestTransportConfigSchemes}
 	}
-
 	result.api = client.NewHTTPClientWithConfig(formats, transportConfig)
+
+	// Wrap the transport with our roundtripper middlewares.
+	var transport http.RoundTripper
+	transport = &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: skipVerify,
+			MinVersion:         tridentconfig.MinClientTLSVersion,
+			Certificates:       []tls.Certificate{cert},
+			RootCAs:            caCertPool,
+		},
+	}
+	// Create a metrics transport that captures request metrics.
+	transport = NewMetricsTransport(transport, WithMetricsTransportTarget(ContextRequestTargetONTAP))
+	// Create a retry transport round tripper that uses semaphores for rate limiting.
+	transport = drivers.NewLimitedRetryTransport(
+		drivers.NewSemaphore(config.ManagementLIF, drivers.ONTAPRequestLimit), transport,
+	)
+	result.httpClient = &http.Client{
+		Transport: transport,
+	}
 
 	if config.Username != "" && config.Password != "" {
 		result.authInfo = runtime_client.BasicAuth(config.Username, config.Password)

@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package logging
 
@@ -299,8 +299,8 @@ func TestProcessLogLayersString(t *testing.T) {
 
 	testCases := []test{
 		{name: "valid layer", layers: "csi_frontend", testLayer: LogLayerCSIFrontend, tracingEnabled: true, errExpected: false},
-		{name: "all layers", layers: "all", testLayer: LogLayerAll, tracingEnabled: true, errExpected: false},
-		{name: "no layers", layers: "none", testLayer: LogLayerNone, tracingEnabled: false, errExpected: false},
+		{name: "all Layers", layers: "all", testLayer: LogLayerAll, tracingEnabled: true, errExpected: false},
+		{name: "no Layers", layers: "none", testLayer: LogLayerNone, tracingEnabled: false, errExpected: false},
 		{name: "invalid layer", layers: "volume=create:", testLayer: LogLayerNone, tracingEnabled: false, errExpected: true},
 	}
 
@@ -387,7 +387,7 @@ func TestGetLogLayersString(t *testing.T) {
 			expected: "csi_frontend", layersAdditive: false,
 		},
 		{
-			name: "multiple layers", layers: map[LogLayer]bool{
+			name: "multiple Layers", layers: map[LogLayer]bool{
 				LogLayerRESTFrontend:    true,
 				LogLayerPersistentStore: true,
 			},
@@ -508,15 +508,15 @@ func TestHandleWorkflowsAndLayersCase(t *testing.T) {
 
 	testCases := []test{
 		{
-			name: "layers additive, workflow or layer trace = trace", layersAdditive: true, flowLevel: Trace,
+			name: "Layers additive, workflow or layer trace = trace", layersAdditive: true, flowLevel: Trace,
 			layerLevel: UseDefault, expected: Trace,
 		},
 		{
-			name: "layers not additive, workflow and layer trace = trace", layersAdditive: false, flowLevel: Trace,
+			name: "Layers not additive, workflow and layer trace = trace", layersAdditive: false, flowLevel: Trace,
 			layerLevel: Trace, expected: Trace,
 		},
 		{
-			name: "layers not additive, but workflow trace and layer use_default = default level", layersAdditive: false,
+			name: "Layers not additive, but workflow trace and layer use_default = default level", layersAdditive: false,
 			flowLevel: Trace, layerLevel: UseDefault, expected: UseDefault,
 		},
 	}
@@ -541,8 +541,9 @@ func TestGetWorkflowTypeFromContext(t *testing.T) {
 
 	testCases := []test{
 		{
-			name:     "Valid workflow in context",
-			ctx:      context.WithValue(context.Background(), ContextKeyWorkflow, WorkflowPluginCreate),
+			name: "Valid workflow in context",
+			ctx: context.WithValue(context.Background(), ContextKeyWorkflow,
+				WorkflowPluginCreate),
 			expected: WorkflowPluginCreate,
 		},
 		{

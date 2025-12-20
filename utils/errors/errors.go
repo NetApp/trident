@@ -873,16 +873,33 @@ func IsFCPSameLunNumberError(err error) bool {
 // ///////////////////////////////////////////////////////////////////////////
 
 type tooManyRequestsError struct {
+	inner   error
 	message string
 }
 
-func (e *tooManyRequestsError) Error() string { return e.message }
+func (e *tooManyRequestsError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
+	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+}
+
+func (e *tooManyRequestsError) Unwrap() error { return e.inner }
 
 func TooManyRequestsError(message string, a ...any) error {
 	if len(a) == 0 {
 		return &tooManyRequestsError{message: message}
 	}
 	return &tooManyRequestsError{message: fmt.Sprintf(fmt.Sprintf("%s", message), a...)}
+}
+
+func WrapWithTooManyRequestsError(err error, message string, a ...any) error {
+	return &tooManyRequestsError{
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
+	}
 }
 
 func IsTooManyRequestsError(err error) bool {
@@ -1157,5 +1174,48 @@ func IsConflictError(err error) bool {
 		return false
 	}
 	var errPtr *conflictError
+	return errors.As(err, &errPtr)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// mustRetryError
+// ///////////////////////////////////////////////////////////////////////////
+
+type mustRetryError struct {
+	inner   error
+	message string
+}
+
+func (e *mustRetryError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
+	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+}
+
+func (e *mustRetryError) Unwrap() error { return e.inner }
+
+// MustRetryError is a custom error type to indicate that an operation should be retried.
+func MustRetryError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &mustRetryError{message: message}
+	}
+	return &mustRetryError{message: fmt.Sprintf(message, a...)}
+}
+
+func WrapWithMustRetryError(err error, message string, a ...any) error {
+	return &mustRetryError{
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
+	}
+}
+
+func IsMustRetryError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *mustRetryError
 	return errors.As(err, &errPtr)
 }

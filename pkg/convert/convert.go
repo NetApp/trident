@@ -16,7 +16,6 @@ import (
 	"golang.org/x/text/language"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
 )
 
@@ -32,6 +31,16 @@ func ToTitle(str string) string {
 // ToPtr converts any value into a pointer to that value.
 func ToPtr[T any](v T) *T {
 	return &v
+}
+
+// ToVal converts any pointer to a value, into the value.
+// If the supplied pointer is nil, the zero value of the type is returned.
+func ToVal[T any](v *T) T {
+	var zero T
+	if v == nil {
+		return zero
+	}
+	return *v
 }
 
 // PtrToString converts any value into its string representation, or nil
@@ -144,8 +153,7 @@ func parseIntInRange(s string, min, max int64) (int64, error) {
 func ToStringRedacted(structPointer interface{}, redactList []string, configVal interface{}) (out string) {
 	defer func() {
 		if r := recover(); r != nil {
-			logging.Log().Errorf("Panic in utils#ToStringRedacted; err: %v", r)
-			out = "<panic>"
+			out = fmt.Sprintf("<panic> in convert#ToStringRedacted; err: %v", r)
 		}
 	}()
 

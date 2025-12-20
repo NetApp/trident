@@ -1831,7 +1831,7 @@ func (o *ConcurrentTridentOrchestrator) RemoveBackendConfigRef(
 func (o *ConcurrentTridentOrchestrator) AddVolume(
 	ctx context.Context, volumeConfig *storage.VolumeConfig,
 ) (volExternal *storage.VolumeExternal, err error) {
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = NewContextBuilder(ctx).WithLayer(LogLayerCore).BuildContext()
 
 	if o.bootstrapError != nil {
 		Logc(ctx).WithField("bootstrapError", o.bootstrapError).Warn("AddVolume error.")
@@ -2601,7 +2601,7 @@ func (o *ConcurrentTridentOrchestrator) DetachVolume(ctx context.Context, volume
 
 // DeleteVolume removes a volume from storage, persistence, and cache.
 func (o *ConcurrentTridentOrchestrator) DeleteVolume(ctx context.Context, volumeName string) (err error) {
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+	ctx = NewContextBuilder(ctx).WithLayer(LogLayerCore).BuildContext()
 
 	if o.bootstrapError != nil {
 		return o.bootstrapError

@@ -9,12 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/netapp/trident/config"
-	"github.com/netapp/trident/logging"
 )
 
 func TestToTitle(t *testing.T) {
-	logging.Log().Debug("Running TestTitle...")
-
 	testCases := []struct {
 		Text           string
 		ExpectedResult string
@@ -43,6 +40,52 @@ func TestToPtr(t *testing.T) {
 	a := [2]int{1, 2}
 	pa := ToPtr(a)
 	assert.Equal(t, a, *pa)
+}
+
+func TestToVal(t *testing.T) {
+	cases := map[string]struct {
+		test func(t *testing.T)
+	}{
+		"int": {
+			test: func(t *testing.T) {
+				actual := ToVal(ToPtr(123))
+				assert.Equal(t, 123, actual)
+			},
+		},
+		"string": {
+			test: func(t *testing.T) {
+				actual := ToVal(ToPtr("test string"))
+				assert.Equal(t, "test string", actual)
+			},
+		},
+		"struct": {
+			test: func(t *testing.T) {
+				type s struct{ A int }
+				actual := ToVal(ToPtr(s{A: 10}))
+				assert.EqualValues(t, s{A: 10}, actual)
+			},
+		},
+		"pointer-to-struct": {
+			test: func(t *testing.T) {
+				type s struct{ A int }
+				sStr := s{A: 20}
+				sPtr := ToPtr(&sStr)
+				actual := ToVal(sPtr)
+				assert.EqualValues(t, &sStr, actual)
+			},
+		},
+		"nil-int-pointer": {
+			test: func(t *testing.T) {
+				var p *int
+				actual := ToVal(p)
+				assert.Equal(t, 0, actual)
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, tc.test)
+	}
 }
 
 func TestToSlicePtrs(t *testing.T) {

@@ -36,14 +36,14 @@ var (
 func init() {
 	// Doing this instead of putting all the constants directly into a map literal, which would require a large number
 	// of empty curly braces.
-	for _, w := range workflowTypes {
+	for _, w := range WorkflowTypes {
 		if _, ok := workflows[w.Category]; !ok {
 			workflows[w.Category] = make(map[WorkflowOperation]bool)
 		}
 		workflows[w.Category][w.Operation] = true
 	}
 
-	for _, l := range layers {
+	for _, l := range Layers {
 		logLayers[l] = true
 	}
 }
@@ -53,15 +53,17 @@ func Log() LogEntry {
 	return Logc(context.Background())
 }
 
-// Logc performs logging for all of Trident except for the storage drivers. It dynamically configures the log level
-// based on the selected workflows and/or log layers.
+// Logc performs logging for all Trident except for the storage drivers. It dynamically configures the log level
+// based on the selected workflows and/or log Layers.
 func Logc(ctx context.Context) LogEntry {
 	entry := getRequestIDSourceLogEntry(ctx)
 
+	// Second, check for the workflow and layer values in the main context.
+	// If these are set, it's legacy code or code that doesn't set the RequestContextOptions.
+	// Honor these above the RequestContextOptions values.
 	if val := ctx.Value(ContextKeyWorkflow); val != nil && val != WorkflowNone {
 		entry = entry.WithField(string(ContextKeyWorkflow), val)
 	}
-
 	if val := ctx.Value(ContextKeyLogLayer); val != nil && val != LogLayerNone {
 		entry = entry.WithField(string(ContextKeyLogLayer), val)
 	}
@@ -98,7 +100,7 @@ func Logd(ctx context.Context, driverName string, debugTraceFlagEnabled bool) Lo
 	}
 
 	ctx = SetContextLogLayer(ctx, LogLayer(driverName))
-	// If debug trace flags aren't enabled, get the log level for the selected workflows and log layers.
+	// If debug trace flags aren't enabled, get the log level for the selected workflows and log Layers.
 	e.dynamicLevel = getLogLevelForWorkflowAndLayer(getWorkflowTypeFromContext(ctx), getLogLayerFromContext(ctx))
 
 	return entry
@@ -152,19 +154,6 @@ func GenerateRequestContext(
 	if logLayer != LogLayerNone {
 		ctx = context.WithValue(ctx, ContextKeyLogLayer, logLayer)
 	}
-	return ctx
-}
-
-func GenerateRequestContextForLayer(ctx context.Context, logLayer LogLayer) context.Context {
-	// Don't add another context if we are already at the specified layer.
-	if logLayer == ctx.Value(ContextKeyLogLayer) {
-		return ctx
-	}
-
-	if logLayer != LogLayerNone {
-		return context.WithValue(ctx, ContextKeyLogLayer, logLayer)
-	}
-
 	return ctx
 }
 
@@ -232,7 +221,7 @@ func SetLogLayers(layers string) error {
 	selectedLogLayers = make(map[LogLayer]bool)
 
 	if layers == "" {
-		Log().Trace("No logging layers provided.")
+		Log().Trace("No logging Layers provided.")
 		return nil
 	}
 
@@ -244,11 +233,11 @@ func SetLogLayers(layers string) error {
 }
 
 func processLogLayersString(theLayers string) error {
-	// Check if the layers are intended to be additive, and then split the string provided by the --log-layers flag into
-	// individual layers to check whether trace logging is indicated for that layer.
+	// Check if the Layers are intended to be additive, and then split the string provided by the --log-Layers flag into
+	// individual Layers to check whether trace logging is indicated for that layer.
 	unionCharUsed := strings.Index(theLayers, additiveModifier) == 0
 	if unionCharUsed {
-		// Remove the union operator from the layers list.
+		// Remove the union operator from the Layers list.
 		theLayers = theLayers[1:]
 		areLogLayersAdditive = true
 	} else {
@@ -343,17 +332,21 @@ func getLogLayersString(layers map[LogLayer]bool) string {
 
 // SetContextWorkflow sets the workflow type of the context. This WILL replace the workflow type if it already exists.
 func SetContextWorkflow(ctx context.Context, w Workflow) context.Context {
+	if !w.IsValid() {
+		w = WorkflowNone
+	}
 	return context.WithValue(ctx, ContextKeyWorkflow, w)
 }
 
-// SetContextLogLayer sets the associated log layer of the context. This WILL replace the log layer if it already exists.
+// SetContextLogLayer sets the associated log layer of the context.
+// This WILL replace the log layer if it already exists.
+// This will replace the log layer in the RequestContextOptions stored in the context.
 func SetContextLogLayer(ctx context.Context, l LogLayer) context.Context {
 	// Don't set a log layer if the underlying string value is an empty string. This can happen if a storage driver is
 	// initialized with an empty string as the driver name argument.
 	if string(l) == "" {
-		return ctx
+		l = LogLayerNone
 	}
-
 	return context.WithValue(ctx, ContextKeyLogLayer, l)
 }
 
@@ -361,7 +354,7 @@ func getLogLevelForWorkflowAndLayer(workflow Workflow, layer LogLayer) log.Level
 	workflowsSelected := len(selectedWorkflows) > 0
 	layersSelected := len(selectedLogLayers) > 0
 
-	// If we did not select any workflows or log layers, use the default log level.
+	// If we did not select any workflows or log Layers, use the default log level.
 	if !workflowsSelected && !layersSelected {
 		return defaultLogLevel
 	}
@@ -376,12 +369,12 @@ func getLogLevelForWorkflowAndLayer(workflow Workflow, layer LogLayer) log.Level
 		layerLevel = determineLogLevelForLayer(layer)
 	}
 
-	// If we selected workflows, but no log layers.
+	// If we selected workflows, but no log Layers.
 	if workflowsSelected && !layersSelected {
 		return getLogLevelForEntry(workflowLevel)
 	}
 
-	// If we selected log layers, but no workflows.
+	// If we selected log Layers, but no workflows.
 	if layersSelected && !workflowsSelected {
 		return getLogLevelForEntry(layerLevel)
 	}
@@ -390,7 +383,7 @@ func getLogLevelForWorkflowAndLayer(workflow Workflow, layer LogLayer) log.Level
 }
 
 func handleWorkflowsAndLayersCase(workflowLevel, layerLevel int) int {
-	// Workflows and log layers provided.
+	// Workflows and log Layers provided.
 	level := UseDefault
 	if areLogLayersAdditive {
 		if workflowLevel == Trace || layerLevel == Trace {

@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"net/http"
 	"reflect"
 	"strconv"
 	"strings"
@@ -32,9 +33,20 @@ import (
 
 func (p *Plugin) CreateVolume(
 	ctx context.Context, req *csi.CreateVolumeRequest,
-) (*csi.CreateVolumeResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowVolumeCreate)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
+) (res *csi.CreateVolumeResponse, err error) {
+	ctx, rec := NewContextBuilder(ctx).
+		WithWorkflow(WorkflowVolumeCreate).
+		WithLayer(LogLayerCSIFrontend).
+		WithSource(ContextSourceCSI).
+		WithClient(ContextRequestClientCSIProvisioner).
+		WithRoute(csi.Controller_CreateVolume_FullMethodName).
+		WithMethod(http.MethodPost).
+		WithTelemetry(
+			IncomingAPIRequestInFlightTelemeter,
+			IncomingAPIRequestDurationTelemeter,
+		).
+		BuildContextAndTelemetry()
+	defer rec(&err)
 
 	fields := LogFields{"Method": "CreateVolume", "Type": "CSI_Controller", "name": req.Name}
 	Logc(ctx).WithFields(fields).Debug(">>>> CreateVolume")
@@ -285,9 +297,20 @@ func (p *Plugin) CreateVolume(
 
 func (p *Plugin) DeleteVolume(
 	ctx context.Context, req *csi.DeleteVolumeRequest,
-) (*csi.DeleteVolumeResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowVolumeDelete)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
+) (res *csi.DeleteVolumeResponse, err error) {
+	ctx, rec := NewContextBuilder(ctx).
+		WithWorkflow(WorkflowVolumeDelete).
+		WithLayer(LogLayerCSIFrontend).
+		WithSource(ContextSourceCSI).
+		WithClient(ContextRequestClientCSIProvisioner).
+		WithRoute(csi.Controller_DeleteVolume_FullMethodName).
+		WithMethod(http.MethodDelete).
+		WithTelemetry(
+			IncomingAPIRequestInFlightTelemeter,
+			IncomingAPIRequestDurationTelemeter,
+		).
+		BuildContextAndTelemetry()
+	defer rec(&err)
 
 	fields := LogFields{"Method": "DeleteVolume", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Debug(">>>> DeleteVolume")

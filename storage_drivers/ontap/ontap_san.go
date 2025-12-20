@@ -317,9 +317,10 @@ func (d *SANStorageDriver) destroyVolumeIfNoLUN(ctx context.Context, volConfig *
 // Create a volume+LUN with the specified options
 func (d *SANStorageDriver) Create(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
-) error {
-	name := volConfig.InternalName
+) (err error) {
+	ctx = NewContextBuilder(ctx).WithLayer(LogLayerOntapSANDriver).BuildContext()
 
+	name := volConfig.InternalName
 	var fstype string
 
 	fields := LogFields{
@@ -838,7 +839,9 @@ func (d *SANStorageDriver) Rename(ctx context.Context, name, newName string) err
 }
 
 // Destroy the requested (volume,lun) storage tuple
-func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) error {
+func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.VolumeConfig) (err error) {
+	ctx = NewContextBuilder(ctx).WithLayer(LogLayerOntapSANDriver).BuildContext()
+
 	name := volConfig.InternalName
 
 	fields := LogFields{
@@ -850,7 +853,6 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
 
 	var (
-		err           error
 		lunID         int
 		iSCSINodeName string
 	)
