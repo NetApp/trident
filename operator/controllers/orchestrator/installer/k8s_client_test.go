@@ -6519,3 +6519,277 @@ func TestNewExtendedK8sClient(t *testing.T) {
 		}
 	})
 }
+
+func TestMergeAnnotationsFromExistingDeployment(t *testing.T) {
+	// arrange variables for the tests
+	newDeploymentYAML := `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trident-controller
+  namespace: trident
+  annotations:
+    existing-annotation: "existing-value"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: controller.csi.trident.netapp.io
+  template:
+    metadata:
+      labels:
+        app: controller.csi.trident.netapp.io
+    spec:
+      containers:
+      - name: trident-main
+        image: netapp/trident:v25.01.0
+`
+
+	existingDeploymentWithAnnotations := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "trident-controller",
+			Namespace: "trident",
+			Annotations: map[string]string{
+				"old-annotation-1":    "old-value-1",
+				"old-annotation-2":    "old-value-2",
+				"existing-annotation": "should-not-override",
+			},
+		},
+	}
+
+	existingDeploymentNoAnnotations := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "trident-controller",
+			Namespace: "trident",
+		},
+	}
+
+	invalidYAML := `invalid: yaml: content: [unclosed`
+
+	type input struct {
+		existingDeployment *appsv1.Deployment
+		newDeploymentYAML  string
+	}
+
+	tests := map[string]struct {
+		input       input
+		expectError bool
+		validate    func(t *testing.T, result string, err error)
+	}{
+		"nil existing deployment returns unchanged YAML": {
+			input: input{
+				existingDeployment: nil,
+				newDeploymentYAML:  newDeploymentYAML,
+			},
+			expectError: false,
+			validate: func(t *testing.T, result string, err error) {
+				assert.NoError(t, err)
+				assert.Equal(t, newDeploymentYAML, result)
+			},
+		},
+		"existing deployment with no annotations returns unchanged YAML": {
+			input: input{
+				existingDeployment: existingDeploymentNoAnnotations,
+				newDeploymentYAML:  newDeploymentYAML,
+			},
+			expectError: false,
+			validate: func(t *testing.T, result string, err error) {
+				assert.NoError(t, err)
+				assert.Equal(t, newDeploymentYAML, result)
+			},
+		},
+		"existing deployment with annotations merges non-conflicting annotations": {
+			input: input{
+				existingDeployment: existingDeploymentWithAnnotations,
+				newDeploymentYAML:  newDeploymentYAML,
+			},
+			expectError: false,
+			validate: func(t *testing.T, result string, err error) {
+				assert.NoError(t, err)
+				assert.NotEqual(t, newDeploymentYAML, result)
+
+				// Parse the result to verify annotations are merged
+				var updatedDeployment appsv1.Deployment
+				unmarshalErr := yaml.Unmarshal([]byte(result), &updatedDeployment)
+				assert.NoError(t, unmarshalErr)
+
+				// Verify old annotations are added
+				assert.Equal(t, "old-value-1", updatedDeployment.Annotations["old-annotation-1"])
+				assert.Equal(t, "old-value-2", updatedDeployment.Annotations["old-annotation-2"])
+
+				// Verify existing annotation is NOT overridden (new deployment value should be preserved)
+				assert.Equal(t, "existing-value", updatedDeployment.Annotations["existing-annotation"])
+
+				// Verify total annotation count
+				assert.Equal(t, 3, len(updatedDeployment.Annotations))
+			},
+		},
+		"new deployment without annotations gets all existing annotations": {
+			input: input{
+				existingDeployment: existingDeploymentWithAnnotations,
+				newDeploymentYAML: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trident-controller
+  namespace: trident
+spec:
+  replicas: 1
+`,
+			},
+			expectError: false,
+			validate: func(t *testing.T, result string, err error) {
+				assert.NoError(t, err)
+
+				// Parse the result to verify all existing annotations are added
+				var updatedDeployment appsv1.Deployment
+				unmarshalErr := yaml.Unmarshal([]byte(result), &updatedDeployment)
+				assert.NoError(t, unmarshalErr)
+
+				// Verify all existing annotations are copied
+				assert.Equal(t, "old-value-1", updatedDeployment.Annotations["old-annotation-1"])
+				assert.Equal(t, "old-value-2", updatedDeployment.Annotations["old-annotation-2"])
+				assert.Equal(t, "should-not-override", updatedDeployment.Annotations["existing-annotation"])
+				assert.Equal(t, 3, len(updatedDeployment.Annotations))
+			},
+		},
+		"invalid new deployment YAML returns error": {
+			input: input{
+				existingDeployment: existingDeploymentWithAnnotations,
+				newDeploymentYAML:  invalidYAML,
+			},
+			expectError: true,
+			validate: func(t *testing.T, result string, err error) {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "failed to unmarshal new deployment yaml")
+				assert.Empty(t, result)
+			},
+		},
+		"existing deployment with single annotation merges correctly": {
+			input: input{
+				existingDeployment: &appsv1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "trident-controller",
+						Namespace: "trident",
+						Annotations: map[string]string{
+							"single-annotation": "single-value",
+						},
+					},
+				},
+				newDeploymentYAML: newDeploymentYAML,
+			},
+			expectError: false,
+			validate: func(t *testing.T, result string, err error) {
+				assert.NoError(t, err)
+
+				var updatedDeployment appsv1.Deployment
+				unmarshalErr := yaml.Unmarshal([]byte(result), &updatedDeployment)
+				assert.NoError(t, unmarshalErr)
+
+				assert.Equal(t, "single-value", updatedDeployment.Annotations["single-annotation"])
+				assert.Equal(t, "existing-value", updatedDeployment.Annotations["existing-annotation"])
+				assert.Equal(t, 2, len(updatedDeployment.Annotations))
+			},
+		},
+		"existing deployment with empty annotation value merges correctly": {
+			input: input{
+				existingDeployment: &appsv1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "trident-controller",
+						Namespace: "trident",
+						Annotations: map[string]string{
+							"empty-annotation": "",
+						},
+					},
+				},
+				newDeploymentYAML: newDeploymentYAML,
+			},
+			expectError: false,
+			validate: func(t *testing.T, result string, err error) {
+				assert.NoError(t, err)
+
+				var updatedDeployment appsv1.Deployment
+				unmarshalErr := yaml.Unmarshal([]byte(result), &updatedDeployment)
+				assert.NoError(t, unmarshalErr)
+
+				// Empty annotation should still be present
+				val, exists := updatedDeployment.Annotations["empty-annotation"]
+				assert.True(t, exists)
+				assert.Equal(t, "", val)
+				assert.Equal(t, 2, len(updatedDeployment.Annotations))
+			},
+		},
+		"existing deployment with special characters in annotations merges correctly": {
+			input: input{
+				existingDeployment: &appsv1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "trident-controller",
+						Namespace: "trident",
+						Annotations: map[string]string{
+							"special/annotation":      "value-with-slash",
+							"annotation.with.dots":    "dotted-value",
+							"annotation-with-dashes":  "dashed-value",
+							"annotation_with_undersc": "underscore-value",
+						},
+					},
+				},
+				newDeploymentYAML: newDeploymentYAML,
+			},
+			expectError: false,
+			validate: func(t *testing.T, result string, err error) {
+				assert.NoError(t, err)
+
+				var updatedDeployment appsv1.Deployment
+				unmarshalErr := yaml.Unmarshal([]byte(result), &updatedDeployment)
+				assert.NoError(t, unmarshalErr)
+
+				assert.Equal(t, "value-with-slash", updatedDeployment.Annotations["special/annotation"])
+				assert.Equal(t, "dotted-value", updatedDeployment.Annotations["annotation.with.dots"])
+				assert.Equal(t, "dashed-value", updatedDeployment.Annotations["annotation-with-dashes"])
+				assert.Equal(t, "underscore-value", updatedDeployment.Annotations["annotation_with_undersc"])
+				assert.Equal(t, 5, len(updatedDeployment.Annotations))
+			},
+		},
+		"multiple merges preserve deployment structure": {
+			input: input{
+				existingDeployment: existingDeploymentWithAnnotations,
+				newDeploymentYAML:  newDeploymentYAML,
+			},
+			expectError: false,
+			validate: func(t *testing.T, result string, err error) {
+				assert.NoError(t, err)
+
+				var updatedDeployment appsv1.Deployment
+				unmarshalErr := yaml.Unmarshal([]byte(result), &updatedDeployment)
+				assert.NoError(t, unmarshalErr)
+
+				// Verify deployment structure is preserved
+				assert.Equal(t, "trident-controller", updatedDeployment.Name)
+				assert.Equal(t, "trident", updatedDeployment.Namespace)
+				assert.Equal(t, "apps/v1", updatedDeployment.APIVersion)
+				assert.Equal(t, "Deployment", updatedDeployment.Kind)
+
+				// Verify spec is preserved
+				assert.NotNil(t, updatedDeployment.Spec)
+				assert.Equal(t, int32(1), *updatedDeployment.Spec.Replicas)
+			},
+		},
+	}
+
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			result, err := mergeAnnotationsFromExistingDeployment(
+				test.input.existingDeployment,
+				test.input.newDeploymentYAML,
+			)
+
+			if test.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			if test.validate != nil {
+				test.validate(t, result, err)
+			}
+		})
+	}
+}

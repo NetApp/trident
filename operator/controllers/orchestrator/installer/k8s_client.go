@@ -1415,11 +1415,17 @@ func (k *K8sClient) PutDeployment(
 		"namespace":  k.Namespace(),
 	}
 
+	// Preserve annotations from current deployment
+	updatedDeploymentYAML, err := mergeAnnotationsFromExistingDeployment(currentDeployment, newDeploymentYAML)
+	if err != nil {
+		return fmt.Errorf("could not merge annotations from current deployment %q: %v", deploymentName, err)
+	}
+
 	if createDeployment {
 		Log().WithFields(logFields).Debug("Creating Trident deployment.")
 
 		// Create the deployment
-		if err := k.CreateObjectByYAML(newDeploymentYAML); err != nil {
+		if err := k.CreateObjectByYAML(updatedDeploymentYAML); err != nil {
 			return fmt.Errorf("could not create Trident deployment; %v", err)
 		}
 
@@ -1428,7 +1434,7 @@ func (k *K8sClient) PutDeployment(
 		Log().WithFields(logFields).Debug("Patching Trident deployment.")
 
 		// Identify the deltas
-		patchBytes, err := k8sclient.GenericPatch(currentDeployment, []byte(newDeploymentYAML))
+		patchBytes, err := k8sclient.GenericPatch(currentDeployment, []byte(updatedDeploymentYAML))
 		if err != nil {
 			return fmt.Errorf("error in creating the two-way merge patch for current Deployment %q: %v",
 				deploymentName, err)
@@ -2334,4 +2340,42 @@ func (k *K8sClient) ExecPodForVersionInformation(podName string, cmd []string, t
 	}).Infof("Trident version pod started.")
 
 	return execOutput, nil
+}
+
+// mergeAnnotationsFromExistingDeployment preserves annotations from an existing deployment into a new deployment
+// during trident-controller upgrade.
+func mergeAnnotationsFromExistingDeployment(existingDeployment *appsv1.Deployment, newDeploymentYAML string) (string,
+	error) {
+	if existingDeployment == nil {
+		return newDeploymentYAML, nil
+	}
+
+	existingAnnotations := existingDeployment.GetAnnotations()
+	if len(existingAnnotations) == 0 {
+		return newDeploymentYAML, nil
+	}
+
+	// Parse new deployment YAML into deployment object
+	var newDeployment appsv1.Deployment
+	if err := yaml.Unmarshal([]byte(newDeploymentYAML), &newDeployment); err != nil {
+		return "", fmt.Errorf("failed to unmarshal new deployment yaml: %w", err)
+	}
+
+	if newDeployment.Annotations == nil {
+		newDeployment.Annotations = existingAnnotations
+	} else {
+		for annotationKey, annotationValue := range existingAnnotations {
+			if _, exists := newDeployment.Annotations[annotationKey]; !exists {
+				newDeployment.Annotations[annotationKey] = annotationValue
+			}
+		}
+	}
+
+	// Convert updated new deployment object back to YAML
+	updatedNewDeploymentYAMLBytes, err := yaml.Marshal(newDeployment)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal updated deployment: %w", err)
+	}
+
+	return string(updatedNewDeploymentYAMLBytes), nil
 }
