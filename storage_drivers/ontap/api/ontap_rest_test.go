@@ -4637,6 +4637,8 @@ func TestGetAllVolumesByPatternStyleAndState_failure(t *testing.T) {
 		{"InvalidStyle", "InvalidState", mockGetVolumeResponse, true},
 		{models.VolumeStyleFlexvol, "InvalidState", mockGetVolumeResponse, true},
 		{models.VolumeStyleFlexvol, models.VolumeStateOnline, mockGetVolumeResponseNumRecordsNil, false},
+		{models.VolumeStyleFlexvol, "", mockGetVolumeResponse, false},
+		{models.VolumeStyleFlexvol, "", mockGetVolumeResponseNumRecordsNil, false},
 	}
 
 	for _, test := range tests {
