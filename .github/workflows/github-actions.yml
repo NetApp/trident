@@ -137,7 +137,7 @@ jobs:
 
         - name: Install dependencies
           run: |
-            go install github.com/t-yuki/gocover-cobertura@latest
+            go install github.com/boumenot/gocover-cobertura@latest
         # ToDo: run tests in /cmd directory
         - name: Run the tests (not on Windows)
           run: |
@@ -152,10 +152,12 @@ jobs:
                 "storage/external_test"                # Test code, excluded from production
                 "ontap/api/azgo"                       # Auto-generated code for ONTAP API (AZGO)
                 "ontap/api/rest"                       # Auto-generated code for ONTAP REST API
+                "astrads/api/v1alpha1"                 # Exclude deprecated AstraDS
                 "fake"                                 # Mock code for testing purposes
                 "github.com/netapp/trident/mocks/"     # Mock code for unit tests
-                "github.com/netapp/trident/operator/controllers/provisioner"  # Auto-generated operator code
+                "github.com/netapp/trident/operator/controllers/provisioner"                 # Auto-generated operator code
                 "github.com/netapp/trident/operator/controllers/provisioner/apis/netapp/v1"  # Auto-generated API definitions
+                "github.com/netapp/trident/storage_drivers/astrads/api/v1beta1"              # Exclude deprecated AstraDS
             )
             
             # Build regex pattern from exclusion list
@@ -164,13 +166,25 @@ jobs:
             # Run tests excluding the specified packages
             echo mkdir ${{ runner.temp }}/${{ runner.os }}-coverage-binary.out
             mkdir ${{ runner.temp }}/${{ runner.os }}-coverage-binary.out
-            go test $(go list ./... | grep -v -E "$EXCLUDE_REGEX") -covermode=count -test.gocoverdir=${{ runner.temp }}/${{ runner.os }}-coverage-binary.out
-            go tool covdata textfmt -i=${{ runner.temp }}/${{ runner.os }}-coverage-binary.out -o ${{ runner.os }}-coverage.out
+            go test $(go list ./... | grep -Ev "$EXCLUDE_REGEX") -v -coverprofile=${{ runner.os }}-coverage.out
+            grep -v "zz_generated.deepcopy.go" ${{ runner.os }}-coverage.out > ${{ runner.os }}-coverage_filtered.out
+            
+            # Display coverage using go tool cover (same as Makefile)
+            OVERALL_COVERAGE=$(go tool cover -func=${{ runner.os }}-coverage_filtered.out | grep total | awk '{print $3}')
+            echo "Overall coverage (go tool cover): $OVERALL_COVERAGE"
             
         - name: Convert Go coverage to Cobertura XML
           run: |
-            gocover-cobertura < ${{ runner.os }}-coverage.out > cobertura-coverage.xml
-            
+            # Use the more actively maintained gocover-cobertura fork with file exclusions
+            # Exclude patterns: auto-generated files, mocks, test utilities
+            gocover-cobertura \
+              -ignore-files '.*zz_generated.*\.go$' \
+              -ignore-files '.*\/fake\/.*\.go$' \
+              -ignore-files '.*\/mocks\/.*\.go$' \
+              -ignore-files '.*_test\.go$' \
+              -ignore-files '.*\/testutils\/.*\.go$' \
+              < ${{ runner.os }}-coverage_filtered.out > cobertura-coverage.xml
+
         - name: Summarize code coverage
           uses: irongut/CodeCoverageSummary@v1.3.0
           with:
@@ -181,7 +195,7 @@ jobs:
             hide_complexity: true
             indicators: false
             output: both
-            thresholds: '69 100'
+            thresholds: '75 100'
 
         - name: Add coverage PR comment
           uses: marocchino/sticky-pull-request-comment@v2
@@ -196,7 +210,7 @@ jobs:
           with:
             name: code-coverage
             path: |
-              ${{ runner.os }}-coverage.out
+              ${{ runner.os }}-coverage_filtered.out
               cobertura-coverage.xml
               code-coverage-results.md
             retention-days: 5
