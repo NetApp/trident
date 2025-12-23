@@ -620,7 +620,7 @@ func (c *RestClient) getVolumeByNameAndStyle(
 	style string,
 	fields []string,
 ) (*models.Volume, error) {
-	result, err := c.getAllVolumesByPatternStyleAndState(ctx, volumeName, style, models.VolumeStateOnline, fields)
+	result, err := c.getAllVolumesByPatternStyleAndState(ctx, volumeName, style, "", fields)
 	if err != nil {
 		return nil, err
 	}
