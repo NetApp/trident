@@ -43,9 +43,11 @@ type AWS struct {
 	AwsConfig
 	ConfClient       confClients.ConfiguratorClientInterface
 	AwsClient        *awsapi.Client
-	ManagementLif    string
 	TBCNamePrefix    string
 	TridentNamespace string
+	SCManagedTConf   bool
+	SecretARNName    string
+	TConfSpec        map[string]interface{}
 }
 
 type AwsConfig struct {
@@ -65,7 +67,7 @@ type SVM struct {
 // NewFSxNInstance creates a new instance of the AWS struct and populates it with the provided CRs and client
 func NewFSxNInstance(
 	torcCR *operatorV1.TridentOrchestrator, configuratorCR *operatorV1.TridentConfigurator,
-	client confClients.ConfiguratorClientInterface,
+	client confClients.ConfiguratorClientInterface, scManagedTconf bool,
 ) (*AWS, error) {
 	if torcCR == nil {
 		return nil, fmt.Errorf("empty torc CR")
@@ -84,11 +86,27 @@ func NewFSxNInstance(
 		Log().Errorf("Error occured while unmarshalling configurator CR: %v", err)
 		return nil, err
 	}
+
+	var tConfSpec map[string]interface{}
+	if err := json.Unmarshal(configuratorCR.Spec.Raw, &tConfSpec); err != nil {
+		Log().Errorf("Error occurred while unmarshalling configurator CR: %v", err)
+		return nil, err
+	}
+
+	awsSecretARNName := ""
+	if scManagedTconf {
+		if credentialsName, ok := tConfSpec["credentialsName"].(string); ok {
+			awsSecretARNName = credentialsName
+		}
+	}
 	return &AWS{
 		AwsConfig:        awsConfig,
 		ConfClient:       client,
 		TBCNamePrefix:    configuratorCR.Name,
 		TridentNamespace: torcCR.Spec.Namespace,
+		SCManagedTConf:   scManagedTconf,
+		SecretARNName:    awsSecretARNName,
+		TConfSpec:        tConfSpec,
 	}, nil
 }
 
@@ -138,7 +156,7 @@ func (aws *AWS) processFSxNInstance(ctx context.Context, key int, svm SVM) error
 		ErrStatusCode = "StatusCode: 400"
 	)
 	svmName = svm.SvmName
-	if svmName == "" {
+	if svmName == "" && !aws.SCManagedTConf {
 		svmName = fmt.Sprintf(SvmNamePattern, svm.FsxnID)
 		svm.SvmName = svmName
 	}
@@ -151,96 +169,113 @@ func (aws *AWS) processFSxNInstance(ctx context.Context, key int, svm SVM) error
 		return fmt.Errorf("error occurred while getting fsxn id: %v : %v", svm.FsxnID, err)
 	}
 	Log().Debugf("Filesystem ID: %s exists", svm.FsxnID)
-	secretName = getAWSSecretName(svmName)
-	// Get the secret if it already exists or create a new one
-	secret, _ := aws.AwsClient.GetSecret(ctx, secretName)
-	if secret != nil {
-		Log().Debugf("Secret %s already exists, reusing the same for auto-backend config.", secretName)
-		secretARN = secret.SecretARN
-	} else {
-		Log().Debugf("Creating secret %s for auto-backend config.", secretName)
-		resSecret, err := aws.AwsClient.CreateSecret(ctx, &awsapi.SecretCreateRequest{
-			Name:        secretName,
-			Description: Description,
-			SecretData: map[string]string{
-				"username": VsAdmin,
-				"password": crypto.GenerateRandomPassword(ctx, 10, true, true, true, true),
-			},
-			Tags: map[string]string{
-				FileSystemId: svm.FsxnID,
-			},
-		})
-		if err != nil {
-			return fmt.Errorf("error occurred while creating secret: %w ", err)
+	if !aws.SCManagedTConf {
+		secretName = getAWSSecretName(svmName)
+		// Get the secret if it already exists or create a new one
+		secret, _ := aws.AwsClient.GetSecret(ctx, secretName)
+		if secret != nil {
+			Log().Debugf("Secret %s already exists, reusing the same for auto-backend config.", secretName)
+			secretARN = secret.SecretARN
+		} else {
+			Log().Debugf("Creating secret %s for auto-backend config.", secretName)
+			resSecret, err := aws.AwsClient.CreateSecret(ctx, &awsapi.SecretCreateRequest{
+				Name:        secretName,
+				Description: Description,
+				SecretData: map[string]string{
+					"username": VsAdmin,
+					"password": crypto.GenerateRandomPassword(ctx, 10, true, true, true, true),
+				},
+				Tags: map[string]string{
+					FileSystemId: svm.FsxnID,
+				},
+			})
+			if err != nil {
+				return fmt.Errorf("error occurred while creating secret: %w ", err)
+			}
+			secretARN = resSecret.SecretARN
 		}
-		secretARN = resSecret.SecretARN
+
+		aws.SVMs[key].SecretARNName = secretARN
+	} else {
+		// If the tconf is managed by the resource monitor, use the secret ARN name from the tconf
+		aws.SVMs[key].SecretARNName = aws.SecretARNName
 	}
 
-	aws.SVMs[key].SecretARNName = secretARN
 	aws.AwsClient.SetClientFsConfig(svm.FsxnID)
 
-	svmList, err := aws.AwsClient.GetSVMs(ctx)
-	if err != nil {
-		return fmt.Errorf("error occurred while getting SVMs: %w", err)
-	}
-	for _, storageVirtualMachine := range *svmList {
-		if storageVirtualMachine.Name == svmName {
-			// SVM already exists against the filesystem. Reuse the same for auto-backend config.
-			Log().Debugf("SVM already exists: %v for fsxnId: %v", storageVirtualMachine.Name,
-				storageVirtualMachine.FilesystemID)
-			aws.SVMs[key].SvmName = storageVirtualMachine.Name
-			aws.SVMs[key].ManagementLIF = storageVirtualMachine.MgtEndpoint.IPAddresses[0]
-			svmExists = true
-			break
-		}
-	}
-	if !svmExists {
-		// Create SVM if it does not exist against the filesystem
-		svmCreateRequest := &awsapi.SVMCreateRequest{
-			Name:      svmName,
-			SecretARN: secretARN,
-		}
-
-		_, err = aws.AwsClient.CreateSVM(ctx, svmCreateRequest)
+	if !aws.SCManagedTConf {
+		svmList, err := aws.AwsClient.GetSVMs(ctx)
 		if err != nil {
-			return fmt.Errorf("error occurred while creating SVM: %w", err)
+			return fmt.Errorf("error occurred while getting SVMs: %w", err)
 		}
-		svmStatus := func() error {
-			svm, err := aws.AwsClient.GetSVMs(ctx)
-			if err != nil {
-				return fmt.Errorf("error occurred while getting SVM: %w", err)
-			}
-
-			for _, svm := range *svm {
-				if svm.Name == svmCreateRequest.Name && svm.State == SvmStateCreated {
-					// SVM is in running state now and ready for auto-backend config
-					Log().Infof("SVM %v is in running state", svm.Name)
-					aws.SVMs[key].SvmName = svm.Name
-					aws.SVMs[key].ManagementLIF = svm.MgtEndpoint.IPAddresses[0]
-					return nil
-				}
-			}
-
-			return fmt.Errorf("SVM is still not in running state")
-		}
-		checkSvmCreatedNotify := func(err error, duration time.Duration) {
-			Log().WithFields(LogFields{
-				"svmName": svmName,
-				"err":     err,
-			}).Debug("Svm not yet created, waiting.")
-		}
-		checkSVMStatusBackoff := backoff.NewExponentialBackOff()
-		checkSVMStatusBackoff.InitialInterval = 1 * time.Second
-		checkSVMStatusBackoff.RandomizationFactor = 0.1
-		checkSVMStatusBackoff.Multiplier = 1.414
-		checkSVMStatusBackoff.MaxInterval = 10 * time.Second
-		checkSVMStatusBackoff.MaxElapsedTime = 5 * time.Minute
-
-		// Retry to check the SVM status until it is in running state
-		if err := backoff.RetryNotify(svmStatus, checkSVMStatusBackoff, checkSvmCreatedNotify); err != nil {
-			Log().Errorf("Svm not in running state after %3.2f minutes", checkSVMStatusBackoff.MaxElapsedTime.Minutes())
+		svmExists, err = aws.findAndSetSVM(ctx, svmList, svmName, key)
+		if err != nil {
 			return err
 		}
+		if !svmExists {
+			// Create SVM if it does not exist against the filesystem
+			svmCreateRequest := &awsapi.SVMCreateRequest{
+				Name:      svmName,
+				SecretARN: secretARN,
+			}
+
+			_, err = aws.AwsClient.CreateSVM(ctx, svmCreateRequest)
+			if err != nil {
+				return fmt.Errorf("error occurred while creating SVM: %w", err)
+			}
+			svmStatus := func() error {
+				svm, err := aws.AwsClient.GetSVMs(ctx)
+				if err != nil {
+					return fmt.Errorf("error occurred while getting SVM: %w", err)
+				}
+
+				for _, svm := range *svm {
+					if svm.Name == svmCreateRequest.Name && svm.State == SvmStateCreated {
+						// SVM is in running state now and ready for auto-backend config
+						Log().Infof("SVM %v is in running state", svm.Name)
+						aws.SVMs[key].SvmName = svm.Name
+						aws.SVMs[key].ManagementLIF = svm.MgtEndpoint.IPAddresses[0]
+						return nil
+					}
+				}
+
+				return fmt.Errorf("SVM is still not in running state")
+			}
+			checkSvmCreatedNotify := func(err error, duration time.Duration) {
+				Log().WithFields(LogFields{
+					"svmName": svmName,
+					"err":     err,
+				}).Debug("Svm not yet created, waiting.")
+			}
+			checkSVMStatusBackoff := backoff.NewExponentialBackOff()
+			checkSVMStatusBackoff.InitialInterval = 1 * time.Second
+			checkSVMStatusBackoff.RandomizationFactor = 0.1
+			checkSVMStatusBackoff.Multiplier = 1.414
+			checkSVMStatusBackoff.MaxInterval = 10 * time.Second
+			checkSVMStatusBackoff.MaxElapsedTime = 5 * time.Minute
+
+			// Retry to check the SVM status until it is in running state
+			if err := backoff.RetryNotify(svmStatus, checkSVMStatusBackoff, checkSvmCreatedNotify); err != nil {
+				Log().Errorf("Svm not in running state after %3.2f minutes", checkSVMStatusBackoff.MaxElapsedTime.Minutes())
+				return err
+			}
+		}
+	} else {
+		svmList, err := aws.AwsClient.GetSVMs(ctx)
+		if err != nil {
+			return fmt.Errorf("error occurred while getting SVMs: %w", err)
+		}
+
+		svmExists, err = aws.findAndSetSVM(ctx, svmList, svmName, key)
+		if err != nil {
+			return err
+		}
+
+		// If svmName was specified but not found, fail
+		if !svmExists && svmName != "" {
+			return fmt.Errorf("specified SVM %q not found on filesystem %s", svmName, svm.FsxnID)
+		}
+
 	}
 	return nil
 }
@@ -254,7 +289,7 @@ func (aws *AWS) Create() ([]string, error) {
 	for _, svm := range aws.SVMs {
 		for _, protocol := range svm.Protocols {
 			backendName = getFSxNBackendName(svm.FsxnID, protocol)
-			backendYAML := getFsxnTBCYaml(svm, aws.TridentNamespace, backendName, protocol)
+			backendYAML := getFsxnTBCYaml(svm, aws.TridentNamespace, backendName, protocol, aws.TBCNamePrefix, aws.SCManagedTConf, aws.TConfSpec)
 			if err := aws.ConfClient.CreateOrPatchObject(confClients.OBackend, backendName,
 				aws.TridentNamespace, backendYAML); err != nil {
 				return nil, fmt.Errorf("error creating or patching object: %w", err)
@@ -268,6 +303,10 @@ func (aws *AWS) Create() ([]string, error) {
 // CreateStorageClass creates a storage class for the storage driver
 func (aws *AWS) CreateStorageClass() error {
 	var driver string
+	// If the storage class is managed by the resource monitor, do not create a storage class
+	if aws.SCManagedTConf {
+		return nil
+	}
 	for _, svm := range aws.SVMs {
 		for _, protocol := range svm.Protocols {
 			name := getFSxNStorageClassName(svm.FsxnID, protocol)
@@ -337,6 +376,37 @@ func (aws *AWS) DeleteSnapshotClass() error {
 	}
 
 	return nil
+}
+
+// findAndSetSVM locates an SVM in the provided list (using the first available if svmName is empty,
+// or matching by name if specified) and sets its name and management LIF.
+// Returns true if found and set, false if not found, or an error if no SVMs are available.
+func (aws *AWS) findAndSetSVM(ctx context.Context, svmList *[]*awsapi.SVM, svmName string, key int) (bool, error) {
+	// If svmName is empty, pick the first available SVM
+	if svmName == "" {
+		if len(*svmList) == 0 {
+			return false, fmt.Errorf("no SVMs available on filesystem")
+		}
+		firstSVM := (*svmList)[0]
+		Log().Debugf("No SVM name specified, using first available SVM: %v for fsxnId: %v",
+			firstSVM.Name, firstSVM.FilesystemID)
+		aws.SVMs[key].SvmName = firstSVM.Name
+		aws.SVMs[key].ManagementLIF = firstSVM.MgtEndpoint.IPAddresses[0]
+		return true, nil
+	}
+
+	// If svmName is specified, find exact match
+	for _, storageVirtualMachine := range *svmList {
+		if storageVirtualMachine.Name == svmName {
+			Log().Debugf("SVM already exists: %v for fsxnId: %v",
+				storageVirtualMachine.Name, storageVirtualMachine.FilesystemID)
+			aws.SVMs[key].SvmName = storageVirtualMachine.Name
+			aws.SVMs[key].ManagementLIF = storageVirtualMachine.MgtEndpoint.IPAddresses[0]
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 // cleanUpFSxNRelatedObjects cleans up the FSxN instance related objects like storage class, backend, and AWS secret

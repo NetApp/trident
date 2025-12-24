@@ -12,6 +12,7 @@ import (
 
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	operatorV1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
+	tridentV1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 )
 
 //go:generate mockgen -destination=../../../../mocks/mock_operator/mock_controllers/mock_configurator/mock_clients/mock_api.go github.com/netapp/trident/operator/controllers/configurator/clients ConfiguratorClientInterface,ExtendedK8sClientInterface
@@ -44,11 +45,14 @@ type ConfiguratorClientInterface interface {
 	UpdateTridentConfiguratorStatus(
 		tconfCR *operatorV1.TridentConfigurator, newStatus operatorV1.TridentConfiguratorStatus,
 	) (*operatorV1.TridentConfigurator, bool, error)
+	UpdateTridentConfigurator(tconfCR *operatorV1.TridentConfigurator) error
 	GetControllingTorcCR() (*operatorV1.TridentOrchestrator, error)
 	GetTconfCR(name string) (*operatorV1.TridentConfigurator, error)
 	GetANFSecrets(secretName string) (string, string, error)
 	DeleteObject(objType ObjectType, objName, objNamespace string) error
 	ListObjects(objType ObjectType, objNamespace string) (interface{}, error)
+	ListTridentBackendsByLabel(namespace, labelKey, labelValue string) ([]*tridentV1.TridentBackendConfig, error)
+	ListStorageClassesByLabel(labelKey, labelValue string) ([]string, error)
 }
 
 type ExtendedK8sClientInterface interface {
@@ -58,4 +62,5 @@ type ExtendedK8sClientInterface interface {
 	GetStorageClass(name string) (*v1.StorageClass, error)
 	PatchStorageClass(name string, patchBytes []byte, patchType types.PatchType) error
 	DeleteStorageClass(name string) error
+	ListStorageClassesByLabel(labelKey, labelValue string) (*v1.StorageClassList, error)
 }

@@ -45,3 +45,23 @@ func (tc *TridentCRDClient) DeleteTridentBackendConfig(name, namespace string) e
 func (tc *TridentCRDClient) ListTridentBackend(namespace string) (*tridentV1.TridentBackendList, error) {
 	return tc.client.TridentV1().TridentBackends(namespace).List(ctx, listOpts)
 }
+
+// ListTridentBackendsByLabel lists TridentBackendConfigs with a specific label.
+// It is useful for cleaning up associated backends when a TridentConfigurator is deleted.
+func (tc *TridentCRDClient) ListTridentBackendsByLabel(namespace, labelKey, labelValue string) ([]*tridentV1.TridentBackendConfig, error) {
+	labelSelector := metav1.LabelSelector{
+		MatchLabels: map[string]string{
+			labelKey: labelValue,
+		},
+	}
+	listOptions := metav1.ListOptions{
+		LabelSelector: metav1.FormatLabelSelector(&labelSelector),
+	}
+
+	backendList, err := tc.client.TridentV1().TridentBackendConfigs(namespace).List(ctx, listOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return backendList.Items, nil
+}

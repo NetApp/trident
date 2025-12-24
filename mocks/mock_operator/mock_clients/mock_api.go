@@ -103,6 +103,20 @@ func (mr *MockOperatorCRDClientInterfaceMockRecorder) GetTorcCRList() *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTorcCRList", reflect.TypeOf((*MockOperatorCRDClientInterface)(nil).GetTorcCRList))
 }
 
+// UpdateTridentConfigurator mocks base method.
+func (m *MockOperatorCRDClientInterface) UpdateTridentConfigurator(tconfCR *v10.TridentConfigurator) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateTridentConfigurator", tconfCR)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateTridentConfigurator indicates an expected call of UpdateTridentConfigurator.
+func (mr *MockOperatorCRDClientInterfaceMockRecorder) UpdateTridentConfigurator(tconfCR any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTridentConfigurator", reflect.TypeOf((*MockOperatorCRDClientInterface)(nil).UpdateTridentConfigurator), tconfCR)
+}
+
 // UpdateTridentConfiguratorStatus mocks base method.
 func (m *MockOperatorCRDClientInterface) UpdateTridentConfiguratorStatus(tconfCR *v10.TridentConfigurator, newStatus v10.TridentConfiguratorStatus) (*v10.TridentConfigurator, bool, error) {
 	m.ctrl.T.Helper()
@@ -200,6 +214,21 @@ func (m *MockTridentCRDClientInterface) ListTridentBackend(namespace string) (*v
 func (mr *MockTridentCRDClientInterfaceMockRecorder) ListTridentBackend(namespace any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTridentBackend", reflect.TypeOf((*MockTridentCRDClientInterface)(nil).ListTridentBackend), namespace)
+}
+
+// ListTridentBackendsByLabel mocks base method.
+func (m *MockTridentCRDClientInterface) ListTridentBackendsByLabel(namespace, labelKey, labelValue string) ([]*v11.TridentBackendConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListTridentBackendsByLabel", namespace, labelKey, labelValue)
+	ret0, _ := ret[0].([]*v11.TridentBackendConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListTridentBackendsByLabel indicates an expected call of ListTridentBackendsByLabel.
+func (mr *MockTridentCRDClientInterfaceMockRecorder) ListTridentBackendsByLabel(namespace, labelKey, labelValue any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTridentBackendsByLabel", reflect.TypeOf((*MockTridentCRDClientInterface)(nil).ListTridentBackendsByLabel), namespace, labelKey, labelValue)
 }
 
 // PatchTridentBackendConfig mocks base method.

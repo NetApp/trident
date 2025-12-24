@@ -229,3 +229,27 @@ func (c *ConfiguratorClient) GetANFSecrets(secretName string) (string, string, e
 
 	return clientID, clientSecret, nil
 }
+
+// UpdateTridentConfigurator updates the TridentConfigurator CR
+func (c *ConfiguratorClient) UpdateTridentConfigurator(tconfCR *operatorV1.TridentConfigurator) error {
+	return c.oClient.UpdateTridentConfigurator(tconfCR)
+}
+
+// ListTridentBackendsByLabel lists TridentBackends with a specific label
+func (c *ConfiguratorClient) ListTridentBackendsByLabel(namespace, labelKey, labelValue string) ([]*tridentV1.TridentBackendConfig, error) {
+	return c.tClient.ListTridentBackendsByLabel(namespace, labelKey, labelValue)
+}
+
+// ListStorageClassesByLabel lists StorageClasses with a specific label
+func (c *ConfiguratorClient) ListStorageClassesByLabel(labelKey, labelValue string) ([]string, error) {
+	scList, err := c.kClient.ListStorageClassesByLabel(labelKey, labelValue)
+	if err != nil {
+		return nil, err
+	}
+
+	names := make([]string, 0, len(scList.Items))
+	for _, sc := range scList.Items {
+		names = append(names, sc.Name)
+	}
+	return names, nil
+}

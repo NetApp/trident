@@ -1006,6 +1006,14 @@ func (h *helper) processStorageClass(ctx context.Context, sc *k8sstoragev1.Stora
 	scConfig.Name = sc.Name
 	scConfig.Attributes = make(map[string]storageattribute.Request)
 
+	// Check if configuratorStatus annotation is present. It suggests the SC is managed by a TridentConfigurator.
+	// We might encounter initial unknown parameters errors but once we see the configuratorStatus annotation,
+	// we know the SC is managed by a TridentConfigurator and we can ignore the unknown parameters.
+	ignoreUnknownParamErrors := false
+	if _, exists := sc.ObjectMeta.Annotations[AnnConfiguratorStatus]; exists {
+		ignoreUnknownParamErrors = true
+	}
+
 	// Populate storage class config attributes and backend storage pools
 	for k, v := range sc.Parameters {
 
@@ -1048,6 +1056,9 @@ func (h *helper) processStorageClass(ctx context.Context, sc *k8sstoragev1.Stora
 			// format:  attribute: "value"
 			req, err := storageattribute.CreateAttributeRequestFromAttributeValue(newKey, v)
 			if err != nil {
+				if ignoreUnknownParamErrors {
+					continue
+				}
 				Logc(ctx).WithFields(logFields).WithError(err).Errorf(
 					"K8S helper could not process the storage class attribute %s", newKey)
 				return
@@ -1057,6 +1068,7 @@ func (h *helper) processStorageClass(ctx context.Context, sc *k8sstoragev1.Stora
 	}
 
 	// To allow for atomic selector updates, replace selector with an annotation if it exists
+	// Also allow additionalStoragePools to be overridden via annotation
 	for k, v := range sc.ObjectMeta.Annotations {
 		if k == AnnSelector {
 			req, err := storageattribute.CreateAttributeRequestFromAttributeValue("selector", v)
@@ -1066,6 +1078,18 @@ func (h *helper) processStorageClass(ctx context.Context, sc *k8sstoragev1.Stora
 				continue
 			}
 			scConfig.Attributes["selector"] = req
+		}
+		if k == AnnAdditionalStoragePools {
+			// Override additionalStoragePools parameter with annotation value
+			additionalPools, err := storageattribute.CreateBackendStoragePoolsMapFromEncodedString(v)
+			if err != nil {
+				Logc(ctx).WithFields(logFields).WithField(k, v).WithError(err).Errorf(
+					"K8S helper could not process the storage class annotation %s.", k)
+				continue
+			}
+			scConfig.AdditionalPools = additionalPools
+			Logc(ctx).WithFields(logFields).WithField("additionalStoragePools", v).
+				Debug("Using additionalStoragePools from annotation to override parameter")
 		}
 	}
 

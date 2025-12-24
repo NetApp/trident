@@ -33,12 +33,14 @@ type OperatorCRDClientInterface interface {
 	UpdateTridentConfiguratorStatus(
 		tconfCR *operatorV1.TridentConfigurator, newStatus operatorV1.TridentConfiguratorStatus,
 	) (*operatorV1.TridentConfigurator, bool, error)
+	UpdateTridentConfigurator(tconfCR *operatorV1.TridentConfigurator) error
 }
 
 type TridentCRDClientInterface interface {
 	CheckTridentBackendConfigExists(name, namespace string) (bool, error)
 	GetTridentBackendConfig(name, namespace string) (*tridentV1.TridentBackendConfig, error)
 	ListTridentBackend(namespace string) (*tridentV1.TridentBackendList, error)
+	ListTridentBackendsByLabel(namespace, labelKey, labelValue string) ([]*tridentV1.TridentBackendConfig, error)
 	PatchTridentBackendConfig(name, namespace string, patchBytes []byte, patchType types.PatchType) error
 	DeleteTridentBackendConfig(name, namespace string) error
 }

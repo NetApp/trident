@@ -66,3 +66,10 @@ func (oc *OperatorCRDClient) UpdateTridentConfiguratorStatus(
 
 	return newTconfCR, true, nil
 }
+
+// UpdateTridentConfigurator updates the TridentConfigurator CR (metadata/spec, not status)
+func (oc *OperatorCRDClient) UpdateTridentConfigurator(tconfCR *operatorV1.TridentConfigurator) error {
+	_, err := oc.client.TridentV1().TridentConfigurators().Update(ctx, tconfCR, updateOpts)
+
+	return err
+}

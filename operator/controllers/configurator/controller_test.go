@@ -17,6 +17,7 @@ import (
 	. "github.com/netapp/trident/logging"
 	mockConfClients "github.com/netapp/trident/mocks/mock_operator/mock_controllers/mock_configurator/mock_clients"
 	netappv1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
+	tridentV1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -199,6 +200,14 @@ func TestController_processNextWorkItem_ErrorHandling(t *testing.T) {
 			controller, mockCtrl, mockClient := createMockController(t)
 			defer mockCtrl.Finish()
 
+			// Mock GetTconfCR to return a valid CR (called first in reconcile)
+			tconfCR := &netappv1.TridentConfigurator{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: TestCRName,
+				},
+			}
+			mockClient.EXPECT().GetTconfCR(TestCRName).Return(tconfCR, nil)
+			mockClient.EXPECT().UpdateTridentConfigurator(gomock.Any()).Return(nil) // ensureFinalizer call
 			mockClient.EXPECT().GetControllingTorcCR().Return(nil, tt.mockError)
 			controller.workqueue.Add("test/test-cr")
 
@@ -282,7 +291,7 @@ func TestController_updateConfigurator_DeletionTimestamp(t *testing.T) {
 	}
 
 	controller.updateConfigurator(tconfCR, tconfCR)
-	assert.Equal(t, ExpectedWorkqueueLength0, controller.workqueue.Len(), "Workqueue should be empty for deleting object")
+	assert.Equal(t, ExpectedWorkqueueLength1, controller.workqueue.Len(), "Workqueue should have 1 item for deletion processing")
 }
 
 func TestController_updateConfigurator_StatusOnlyUpdate(t *testing.T) {
@@ -359,6 +368,12 @@ func TestController_reconcile_InitialErrors(t *testing.T) {
 			name: "GetControllingTorcCRError",
 			key:  TestKey,
 			setupMocks: func(mockClient *mockConfClients.MockConfiguratorClientInterface) {
+				// GetTconfCR is called first, then UpdateTridentConfigurator (finalizer), then GetControllingTorcCR
+				tconfCR := &netappv1.TridentConfigurator{
+					ObjectMeta: metav1.ObjectMeta{Name: TestCRName},
+				}
+				mockClient.EXPECT().GetTconfCR(TestCRName).Return(tconfCR, nil)
+				mockClient.EXPECT().UpdateTridentConfigurator(gomock.Any()).Return(nil) // ensureFinalizer call
 				mockClient.EXPECT().GetControllingTorcCR().Return(nil, fmt.Errorf(FailedToGetTorcCR))
 			},
 			description: "Failed to get controlling torc CR",
@@ -367,8 +382,7 @@ func TestController_reconcile_InitialErrors(t *testing.T) {
 			name: "InvalidKeyItem",
 			key:  TestInvalidKey,
 			setupMocks: func(mockClient *mockConfClients.MockConfiguratorClientInterface) {
-				torcCR := &netappv1.TridentOrchestrator{}
-				mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
+				// GetTconfCR is called with the invalid key
 				mockClient.EXPECT().GetTconfCR(TestInvalidKey).Return(nil, fmt.Errorf(InvalidKeyMessage))
 			},
 			description: "Invalid key format should fail",
@@ -377,11 +391,10 @@ func TestController_reconcile_InitialErrors(t *testing.T) {
 			name: "GetTconfCRError",
 			key:  TestKey,
 			setupMocks: func(mockClient *mockConfClients.MockConfiguratorClientInterface) {
-				torcCR := &netappv1.TridentOrchestrator{}
-				mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
+				// GetTconfCR is called first and returns an error - reconcile returns nil (not an error)
 				mockClient.EXPECT().GetTconfCR(TestCRName).Return(nil, fmt.Errorf(TconfNotFoundMessage))
 			},
-			description: "Failed to get tconf CR",
+			description: "Failed to get tconf CR - should return nil",
 		},
 	}
 
@@ -393,7 +406,12 @@ func TestController_reconcile_InitialErrors(t *testing.T) {
 			tt.setupMocks(mockClient)
 
 			err := controller.reconcile(tt.key)
-			assert.Error(t, err, tt.description)
+			// GetTconfCRError and InvalidKeyItem cases return nil (GetTconfCR error returns nil), others return error
+			if tt.name == "GetTconfCRError" || tt.name == "InvalidKeyItem" {
+				assert.NoError(t, err, tt.description)
+			} else {
+				assert.Error(t, err, tt.description)
+			}
 		})
 	}
 }
@@ -409,8 +427,9 @@ func TestController_reconcile_ValidateError(t *testing.T) {
 		},
 	}
 
-	mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
 	mockClient.EXPECT().GetTconfCR(TestCRName).Return(tconfCR, nil)
+	mockClient.EXPECT().UpdateTridentConfigurator(gomock.Any()).Return(nil) // ensureFinalizer call
+	mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
 
 	err := controller.reconcile(TestKey)
 	assert.Error(t, err, "Validation should fail")
@@ -427,8 +446,9 @@ func TestController_reconcile_UnsupportedDriverName(t *testing.T) {
 		},
 	}
 
-	mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
 	mockClient.EXPECT().GetTconfCR(TestCRName).Return(tconfCR, nil)
+	mockClient.EXPECT().UpdateTridentConfigurator(gomock.Any()).Return(nil) // ensureFinalizer call
+	mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
 
 	err := controller.reconcile(TestKey)
 	assert.Error(t, err, "Unsupported driver should fail")
@@ -446,8 +466,9 @@ func TestController_reconcile_GetStorageDriverNameError(t *testing.T) {
 		},
 	}
 
-	mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
 	mockClient.EXPECT().GetTconfCR(TestCRName).Return(tconfCR, nil)
+	mockClient.EXPECT().UpdateTridentConfigurator(gomock.Any()).Return(nil) // ensureFinalizer call
+	mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
 
 	err := controller.reconcile(TestKey)
 	assert.Error(t, err, "Failed to get storage driver name")
@@ -723,6 +744,11 @@ func TestController_runWorker(t *testing.T) {
 	controller, mockCtrl, mockClient := createMockController(t)
 	defer mockCtrl.Finish()
 
+	tconfCR := &netappv1.TridentConfigurator{
+		ObjectMeta: metav1.ObjectMeta{Name: "test-item"},
+	}
+	mockClient.EXPECT().GetTconfCR("test-item").Return(tconfCR, nil)
+	mockClient.EXPECT().UpdateTridentConfigurator(gomock.Any()).Return(nil) // ensureFinalizer call
 	mockClient.EXPECT().GetControllingTorcCR().Return(nil, fmt.Errorf("mock error to exit quickly"))
 
 	controller.workqueue.Add("test-item")
@@ -739,6 +765,11 @@ func TestController_processNextWorkItem_RateLimitedError(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	// Mock an error that should cause rate limiting (not UnsupportedConfig, NotFound, or ReconcileIncomplete)
+	tconfCR := &netappv1.TridentConfigurator{
+		ObjectMeta: metav1.ObjectMeta{Name: TestCRName},
+	}
+	mockClient.EXPECT().GetTconfCR(TestCRName).Return(tconfCR, nil)
+	mockClient.EXPECT().UpdateTridentConfigurator(gomock.Any()).Return(nil) // ensureFinalizer call
 	mockClient.EXPECT().GetControllingTorcCR().Return(nil, fmt.Errorf("generic error"))
 	controller.workqueue.Add(TestKey)
 
@@ -752,6 +783,11 @@ func TestController_processNextWorkItem_RequeueError(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	// Mock ReconcileIncompleteError which should cause immediate requeue
+	tconfCR := &netappv1.TridentConfigurator{
+		ObjectMeta: metav1.ObjectMeta{Name: TestCRName},
+	}
+	mockClient.EXPECT().GetTconfCR(TestCRName).Return(tconfCR, nil)
+	mockClient.EXPECT().UpdateTridentConfigurator(gomock.Any()).Return(nil) // ensureFinalizer call
 	mockClient.EXPECT().GetControllingTorcCR().Return(nil, errors.ReconcileIncompleteError("incomplete"))
 	controller.workqueue.Add(TestKey)
 
@@ -772,8 +808,9 @@ func TestController_reconcile_ANFInstanceCreationError(t *testing.T) {
 		},
 	}
 
-	mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
 	mockClient.EXPECT().GetTconfCR(TestCRName).Return(tconfCR, nil)
+	mockClient.EXPECT().UpdateTridentConfigurator(gomock.Any()).Return(nil) // ensureFinalizer call
+	mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
 	// Mock ANF secret retrieval to fail, which should cause ANF instance creation to fail
 	mockClient.EXPECT().GetANFSecrets("").Return("", "", fmt.Errorf(SecretNotFoundMessage))
 	// Also expect a status update call that would happen in the error flow
@@ -795,8 +832,9 @@ func TestController_reconcile_FSxNInstanceCreationError(t *testing.T) {
 		},
 	}
 
-	mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
 	mockClient.EXPECT().GetTconfCR(TestCRName).Return(tconfCR, nil)
+	mockClient.EXPECT().UpdateTridentConfigurator(gomock.Any()).Return(nil) // ensureFinalizer call
+	mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
 	// Also expect a status update call that would happen in the error flow
 	mockClient.EXPECT().UpdateTridentConfiguratorStatus(gomock.Any(), gomock.Any()).Return(tconfCR, false, nil).AnyTimes()
 
@@ -856,9 +894,15 @@ func TestController_backendCreateOperation_UpdateStatusFailure(t *testing.T) {
 		return []string{Backend1, Backend2}, nil
 	}
 
-	// Mock the first status update to succeed, then the second to fail
+	// Mock the first status update to succeed, GetControllingTorcCR for verify, then the second status update to fail
 	mockClient.EXPECT().UpdateTridentConfiguratorStatus(gomock.Any(), gomock.Any()).
 		Return(tconfCR, true, nil) // First update
+	mockClient.EXPECT().GetControllingTorcCR().Return(&netappv1.TridentOrchestrator{}, nil).AnyTimes() // Called by verifyBackendStatus (polls)
+	// Return successful backends to satisfy verification
+	successfulBackends := []*tridentV1.TridentBackendConfig{
+		{Status: tridentV1.TridentBackendConfigStatus{LastOperationStatus: "Succeeded"}},
+	}
+	mockClient.EXPECT().ListTridentBackendsByLabel(gomock.Any(), gomock.Any(), gomock.Any()).Return(successfulBackends, nil).AnyTimes() // Called by verifyBackendStatus (polls)
 	mockClient.EXPECT().UpdateTridentConfiguratorStatus(gomock.Any(), gomock.Any()).
 		Return(nil, false, fmt.Errorf(StatusUpdateFailedMessage)) // Second update fails
 
@@ -902,8 +946,9 @@ func TestController_reconcile_EmptyDriverName(t *testing.T) {
 		},
 	}
 
-	mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
 	mockClient.EXPECT().GetTconfCR(TestCRName).Return(tconfCR, nil)
+	mockClient.EXPECT().UpdateTridentConfigurator(gomock.Any()).Return(nil) // ensureFinalizer call
+	mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
 
 	err := controller.reconcile(TestKey)
 	assert.Error(t, err, "Should fail with missing storage driver name")
@@ -923,8 +968,9 @@ func TestController_reconcile_AzureANFSuccess(t *testing.T) {
 
 	// Mock expectations - this will fail at creating ANF instance due to nil clients,
 	// but we're testing the code path gets there
-	mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
 	mockClient.EXPECT().GetTconfCR("test-cr").Return(tconfCR, nil)
+	mockClient.EXPECT().UpdateTridentConfigurator(gomock.Any()).Return(nil) // ensureFinalizer call
+	mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
 	mockClient.EXPECT().GetANFSecrets("").Return("", "", fmt.Errorf("secret not found"))
 	mockClient.EXPECT().UpdateTridentConfiguratorStatus(gomock.Any(), gomock.Any()).Return(tconfCR, false, nil).AnyTimes()
 
@@ -981,8 +1027,9 @@ func TestController_reconcile_ONTAPDrivers(t *testing.T) {
 				},
 			}
 
-			mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
 			mockClient.EXPECT().GetTconfCR("test-cr").Return(tconfCR, nil)
+			mockClient.EXPECT().UpdateTridentConfigurator(gomock.Any()).Return(nil) // ensureFinalizer call
+			mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
 			tt.setupMocks(mockClient, tconfCR)
 
 			err := controller.reconcile("test/test-cr")
@@ -1016,6 +1063,12 @@ func TestController_ProcessBackend_SuccessfulFlow(t *testing.T) {
 
 	// Mock successful status updates for all phases
 	mockClient.EXPECT().UpdateTridentConfiguratorStatus(gomock.Any(), gomock.Any()).Return(tconfCR, true, nil).Times(8) // 4 phases × 2 updates each
+	mockClient.EXPECT().GetControllingTorcCR().Return(&netappv1.TridentOrchestrator{}, nil).AnyTimes()                  // Called by verifyBackendStatus for each phase (polls)
+	// Return successful backends to satisfy verification
+	successfulBackends := []*tridentV1.TridentBackendConfig{
+		{Status: tridentV1.TridentBackendConfigStatus{LastOperationStatus: "Succeeded"}},
+	}
+	mockClient.EXPECT().ListTridentBackendsByLabel(gomock.Any(), gomock.Any(), gomock.Any()).Return(successfulBackends, nil).AnyTimes() // Called by verifyBackendStatus (polls)
 
 	err := controller.ProcessBackend(mockBackend, tconfCR)
 	assert.NoError(t, err, "Should succeed with successful backend")
@@ -1037,6 +1090,12 @@ func TestController_ProcessBackend_StorageClassError(t *testing.T) {
 
 	// Mock status updates until it fails at storage class creation
 	mockClient.EXPECT().UpdateTridentConfiguratorStatus(gomock.Any(), gomock.Any()).Return(tconfCR, false, nil).AnyTimes()
+	mockClient.EXPECT().GetControllingTorcCR().Return(&netappv1.TridentOrchestrator{}, nil).AnyTimes() // Called by verifyBackendStatus
+	// Return successful backends to satisfy verification
+	successfulBackends := []*tridentV1.TridentBackendConfig{
+		{Status: tridentV1.TridentBackendConfigStatus{LastOperationStatus: "Succeeded"}},
+	}
+	mockClient.EXPECT().ListTridentBackendsByLabel(gomock.Any(), gomock.Any(), gomock.Any()).Return(successfulBackends, nil).AnyTimes() // Called by verifyBackendStatus
 
 	err := controller.ProcessBackend(mockBackend, tconfCR)
 	assert.Error(t, err, "Storage class creation should fail")
@@ -1058,6 +1117,12 @@ func TestController_ProcessBackend_SnapshotClassError(t *testing.T) {
 
 	// Mock status updates until it fails at snapshot class creation
 	mockClient.EXPECT().UpdateTridentConfiguratorStatus(gomock.Any(), gomock.Any()).Return(tconfCR, false, nil).AnyTimes()
+	mockClient.EXPECT().GetControllingTorcCR().Return(&netappv1.TridentOrchestrator{}, nil).AnyTimes() // Called by verifyBackendStatus
+	// Return successful backends to satisfy verification
+	successfulBackends := []*tridentV1.TridentBackendConfig{
+		{Status: tridentV1.TridentBackendConfigStatus{LastOperationStatus: "Succeeded"}},
+	}
+	mockClient.EXPECT().ListTridentBackendsByLabel(gomock.Any(), gomock.Any(), gomock.Any()).Return(successfulBackends, nil).AnyTimes() // Called by verifyBackendStatus
 
 	err := controller.ProcessBackend(mockBackend, tconfCR)
 	assert.Error(t, err, "Snapshot class creation should fail")
@@ -1078,6 +1143,12 @@ func TestController_backendCreateOperation_Success(t *testing.T) {
 	}
 
 	mockClient.EXPECT().UpdateTridentConfiguratorStatus(gomock.Any(), gomock.Any()).Return(tconfCR, true, nil).Times(2)
+	mockClient.EXPECT().GetControllingTorcCR().Return(&netappv1.TridentOrchestrator{}, nil).AnyTimes() // Called by verifyBackendStatus (polls)
+	// Return successful backends to satisfy verification
+	successfulBackends := []*tridentV1.TridentBackendConfig{
+		{Status: tridentV1.TridentBackendConfigStatus{LastOperationStatus: "Succeeded"}},
+	}
+	mockClient.EXPECT().ListTridentBackendsByLabel(gomock.Any(), gomock.Any(), gomock.Any()).Return(successfulBackends, nil).AnyTimes() // Called by verifyBackendStatus (polls)
 
 	newTconfCR, operationErr, updateErr := controller.backendCreateOperation(tconfCR, netappv1.CreatingBackend, operationFunc, "azure")
 
@@ -1122,8 +1193,9 @@ func TestController_processNextWorkItem_Success(t *testing.T) {
 		},
 	}
 
-	mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
 	mockClient.EXPECT().GetTconfCR("test-cr").Return(tconfCR, nil)
+	mockClient.EXPECT().UpdateTridentConfigurator(gomock.Any()).Return(nil) // ensureFinalizer call
+	mockClient.EXPECT().GetControllingTorcCR().Return(torcCR, nil)
 	mockClient.EXPECT().GetANFSecrets("").Return("", "", fmt.Errorf("secret not found"))
 	mockClient.EXPECT().UpdateTridentConfiguratorStatus(gomock.Any(), gomock.Any()).Return(tconfCR, false, nil).AnyTimes()
 

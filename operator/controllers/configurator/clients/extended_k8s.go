@@ -69,3 +69,10 @@ func (kc *K8sClient) PatchStorageClass(name string, patchBytes []byte, patchType
 func (kc *K8sClient) DeleteStorageClass(name string) error {
 	return kc.KubeClient.StorageV1().StorageClasses().Delete(ctx, name, deleteOpts)
 }
+
+func (kc *K8sClient) ListStorageClassesByLabel(labelKey, labelValue string) (*v1.StorageClassList, error) {
+	labelSelector := fmt.Sprintf("%s=%s", labelKey, labelValue)
+	return kc.KubeClient.StorageV1().StorageClasses().List(ctx, metav1.ListOptions{
+		LabelSelector: labelSelector,
+	})
+}

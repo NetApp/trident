@@ -109,7 +109,7 @@ func TestNewFSxNInstance_Success(t *testing.T) {
 	svms := []SVM{{FsxnID: testFsxnID, Protocols: []string{sa.NFS}}}
 	tconfCR := getTestTconfCR(svms)
 
-	aws, err := NewFSxNInstance(torcCR, tconfCR, mockClient)
+	aws, err := NewFSxNInstance(torcCR, tconfCR, mockClient, false)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, aws)
@@ -176,7 +176,7 @@ func TestNewFSxNInstance_ErrorCases(t *testing.T) {
 			if tt.client != nil {
 				client = tt.client.(*mockConfClients.MockConfiguratorClientInterface)
 			}
-			aws, err := NewFSxNInstance(tt.torcCR, tt.tconfCR, client)
+			aws, err := NewFSxNInstance(tt.torcCR, tt.tconfCR, client, false)
 
 			assert.Error(t, err)
 			if err != nil {
@@ -860,4 +860,150 @@ func TestGetAWSSecretName_EdgeCases(t *testing.T) {
 			assert.Equal(t, tt.expected, result)
 		})
 	}
+}
+
+// Test CreateStorageClass when SCManagedTConf is true (should return early without creating)
+func TestAWS_CreateStorageClass_SCManagedTConf(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockClient := mockConfClients.NewMockConfiguratorClientInterface(mockCtrl)
+
+	aws := &AWS{
+		AwsConfig: AwsConfig{
+			StorageDriverName: testStorageDriverName,
+			SVMs: []SVM{
+				{
+					FsxnID:    testFsxnID,
+					Protocols: []string{sa.NFS},
+				},
+			},
+		},
+		ConfClient:       mockClient,
+		TBCNamePrefix:    testFSxConfiguratorName,
+		TridentNamespace: testTridentNamespace,
+		SCManagedTConf:   true, // This should cause early return
+	}
+
+	// No mock expectations - CreateOrPatchObject should NOT be called
+
+	err := aws.CreateStorageClass()
+
+	assert.NoError(t, err)
+}
+
+// Test NewFSxNInstance with scManagedTconf=true and credentialsName
+func TestNewFSxNInstance_SCManagedTConf(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockClient := mockConfClients.NewMockConfiguratorClientInterface(mockCtrl)
+
+	torcCR := getTestTorcCR()
+
+	// Create config with credentialsName
+	awsConfig := map[string]interface{}{
+		"storageDriverName": testStorageDriverName,
+		"credentialsName":   testSecretARN,
+		"svms": []map[string]interface{}{
+			{
+				"fsxnID":    testFsxnID,
+				"protocols": []string{sa.NFS},
+			},
+		},
+	}
+	configBytes, _ := json.Marshal(awsConfig)
+
+	tconfCR := &operatorV1.TridentConfigurator{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: testFSxConfiguratorName,
+		},
+		Spec: operatorV1.TridentConfiguratorSpec{
+			RawExtension: runtime.RawExtension{
+				Raw: configBytes,
+			},
+		},
+	}
+
+	aws, err := NewFSxNInstance(torcCR, tconfCR, mockClient, true)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, aws)
+	assert.True(t, aws.SCManagedTConf)
+	assert.Equal(t, testSecretARN, aws.SecretARNName)
+}
+
+// Test NewFSxNInstance with scManagedTconf=true but no credentialsName
+func TestNewFSxNInstance_SCManagedTConf_NoCredentials(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockClient := mockConfClients.NewMockConfiguratorClientInterface(mockCtrl)
+
+	torcCR := getTestTorcCR()
+
+	// Create config without credentialsName
+	awsConfig := map[string]interface{}{
+		"storageDriverName": testStorageDriverName,
+		"svms": []map[string]interface{}{
+			{
+				"fsxnID":    testFsxnID,
+				"protocols": []string{sa.NFS},
+			},
+		},
+	}
+	configBytes, _ := json.Marshal(awsConfig)
+
+	tconfCR := &operatorV1.TridentConfigurator{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: testFSxConfiguratorName,
+		},
+		Spec: operatorV1.TridentConfiguratorSpec{
+			RawExtension: runtime.RawExtension{
+				Raw: configBytes,
+			},
+		},
+	}
+
+	aws, err := NewFSxNInstance(torcCR, tconfCR, mockClient, true)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, aws)
+	assert.True(t, aws.SCManagedTConf)
+	assert.Empty(t, aws.SecretARNName) // Should be empty since no credentialsName
+}
+
+// Test Create with SCManagedTConf=true
+func TestAWS_Create_SCManagedTConf(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockClient := mockConfClients.NewMockConfiguratorClientInterface(mockCtrl)
+
+	tconfSpec := map[string]interface{}{
+		"storageDriverName": testStorageDriverName,
+		"useREST":           true,
+		"storagePrefix":     "test-prefix",
+	}
+
+	aws := &AWS{
+		AwsConfig: AwsConfig{
+			StorageDriverName: testStorageDriverName,
+			SVMs: []SVM{
+				{
+					FsxnID:        testFsxnID,
+					Protocols:     []string{sa.NFS},
+					ManagementLIF: testManagementLIF,
+					SecretARNName: testSecretARN,
+					SvmName:       testSvmName,
+				},
+			},
+		},
+		ConfClient:       mockClient,
+		TBCNamePrefix:    testFSxConfiguratorName,
+		TridentNamespace: testTridentNamespace,
+		SCManagedTConf:   true,
+		TConfSpec:        tconfSpec,
+	}
+
+	// Mock backend creation
+	mockClient.EXPECT().CreateOrPatchObject(gomock.Any(), testBackendPrefix+testFsxnID+"-nfs", testTridentNamespace, gomock.Any()).Return(nil)
+
+	backends, err := aws.Create()
+
+	assert.NoError(t, err)
+	assert.Len(t, backends, 1)
+	assert.Contains(t, backends, testBackendPrefix+testFsxnID+"-nfs")
 }

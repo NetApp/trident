@@ -70,9 +70,11 @@ const (
 	AnnLUKSEncryption           = prefix + "/luksEncryption" // import only
 	AnnSkipRecoveryQueue        = prefix + "/skipRecoveryQueue"
 	AnnSelector                 = prefix + "/selector"
+	AnnAdditionalStoragePools   = prefix + "/additionalStoragePools"
 	AnnSMBShareAdUserPermission = prefix + "/smbShareAdUserPermission"
 	AnnSMBShareAdUser           = prefix + "/smbShareAdUser"
 	AnnSMBShareAccessControl    = prefix + "/smbShareAccessControl"
+	AnnConfiguratorStatus       = prefix + "/configuratorStatus"
 
 	// Pod remediation policy annotation and values
 	AnnPodRemediationPolicyAnnotation = prefix + "/podRemediationPolicy"

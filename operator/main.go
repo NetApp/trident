@@ -17,6 +17,7 @@ import (
 	"github.com/netapp/trident/operator/controllers"
 	"github.com/netapp/trident/operator/controllers/configurator"
 	"github.com/netapp/trident/operator/controllers/orchestrator"
+	"github.com/netapp/trident/operator/controllers/resourcemonitor"
 	"github.com/netapp/trident/operator/frontend/rest"
 )
 
@@ -104,10 +105,16 @@ func main() {
 		Log().WithField("error", err).Fatalf("Could not create Trident Configurator controller.")
 	}
 
+	// Create Trident Resource Monitor controller
+	resourceMonitorFrontend, err := resourcemonitor.NewController(k8sClients)
+	if err != nil {
+		Log().WithField("error", err).Fatalf("Could not create Trident Resource Monitor controller.")
+	}
+
 	// Create the Operator frontend
 	operatorFrontend := rest.NewHTTPServer(operatorCheckAddress, operatorCheckPort, k8sClients)
 
-	frontends = append(frontends, torcFrontend, tconfFrontend, operatorFrontend)
+	frontends = append(frontends, torcFrontend, tconfFrontend, resourceMonitorFrontend, operatorFrontend)
 
 	// Activate the frontends
 	for _, c := range frontends {

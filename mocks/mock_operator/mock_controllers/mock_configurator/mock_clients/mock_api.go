@@ -142,6 +142,50 @@ func (mr *MockConfiguratorClientInterfaceMockRecorder) ListObjects(objType, objN
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListObjects", reflect.TypeOf((*MockConfiguratorClientInterface)(nil).ListObjects), objType, objNamespace)
 }
 
+// ListStorageClassesByLabel mocks base method.
+func (m *MockConfiguratorClientInterface) ListStorageClassesByLabel(labelKey, labelValue string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListStorageClassesByLabel", labelKey, labelValue)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListStorageClassesByLabel indicates an expected call of ListStorageClassesByLabel.
+func (mr *MockConfiguratorClientInterfaceMockRecorder) ListStorageClassesByLabel(labelKey, labelValue any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListStorageClassesByLabel", reflect.TypeOf((*MockConfiguratorClientInterface)(nil).ListStorageClassesByLabel), labelKey, labelValue)
+}
+
+// ListTridentBackendsByLabel mocks base method.
+func (m *MockConfiguratorClientInterface) ListTridentBackendsByLabel(namespace, labelKey, labelValue string) ([]*v11.TridentBackendConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListTridentBackendsByLabel", namespace, labelKey, labelValue)
+	ret0, _ := ret[0].([]*v11.TridentBackendConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListTridentBackendsByLabel indicates an expected call of ListTridentBackendsByLabel.
+func (mr *MockConfiguratorClientInterfaceMockRecorder) ListTridentBackendsByLabel(namespace, labelKey, labelValue any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTridentBackendsByLabel", reflect.TypeOf((*MockConfiguratorClientInterface)(nil).ListTridentBackendsByLabel), namespace, labelKey, labelValue)
+}
+
+// UpdateTridentConfigurator mocks base method.
+func (m *MockConfiguratorClientInterface) UpdateTridentConfigurator(tconfCR *v10.TridentConfigurator) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateTridentConfigurator", tconfCR)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateTridentConfigurator indicates an expected call of UpdateTridentConfigurator.
+func (mr *MockConfiguratorClientInterfaceMockRecorder) UpdateTridentConfigurator(tconfCR any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTridentConfigurator", reflect.TypeOf((*MockConfiguratorClientInterface)(nil).UpdateTridentConfigurator), tconfCR)
+}
+
 // UpdateTridentConfiguratorStatus mocks base method.
 func (m *MockConfiguratorClientInterface) UpdateTridentConfiguratorStatus(tconfCR *v10.TridentConfigurator, newStatus v10.TridentConfiguratorStatus) (*v10.TridentConfigurator, bool, error) {
 	m.ctrl.T.Helper()
@@ -1504,6 +1548,21 @@ func (m *MockExtendedK8sClientInterface) GetVolumeSnapshots(allNamespaces bool) 
 func (mr *MockExtendedK8sClientInterfaceMockRecorder) GetVolumeSnapshots(allNamespaces any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeSnapshots", reflect.TypeOf((*MockExtendedK8sClientInterface)(nil).GetVolumeSnapshots), allNamespaces)
+}
+
+// ListStorageClassesByLabel mocks base method.
+func (m *MockExtendedK8sClientInterface) ListStorageClassesByLabel(labelKey, labelValue string) (*v15.StorageClassList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListStorageClassesByLabel", labelKey, labelValue)
+	ret0, _ := ret[0].(*v15.StorageClassList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListStorageClassesByLabel indicates an expected call of ListStorageClassesByLabel.
+func (mr *MockExtendedK8sClientInterfaceMockRecorder) ListStorageClassesByLabel(labelKey, labelValue any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListStorageClassesByLabel", reflect.TypeOf((*MockExtendedK8sClientInterface)(nil).ListStorageClassesByLabel), labelKey, labelValue)
 }
 
 // Namespace mocks base method.

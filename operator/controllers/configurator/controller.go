@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,6 +29,7 @@ import (
 	netappv1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
 	operatorV1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
 	"github.com/netapp/trident/operator/crd/client/clientset/versioned/scheme"
+	tridentV1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -36,8 +38,12 @@ const (
 	ControllerVersion = "0.1"
 	CRDName           = "TridentConfigurator"
 	Operator          = "trident-operator.netapp.io"
+	CreatedByLabel    = "trident.netapp.io/createdBy"
+	ResourceMonitor   = "resource-monitor"
 
-	TridentConfiguratorCRDName = "tridentconfigurators.trident.netapp.io"
+	TridentConfiguratorCRDName   = "tridentconfigurators.trident.netapp.io"
+	TridentConfiguratorFinalizer = "trident.netapp.io/configuratorFinalizer"
+	TridentConfiguratorLabel     = "trident.netapp.io/configurator"
 )
 
 var ctx = context.TODO
@@ -297,7 +303,14 @@ func (c *Controller) updateConfigurator(oldObj, newObj interface{}) {
 		Log().WithFields(LogFields{
 			"name":              newCR.Name,
 			"deletionTimestamp": newCR.ObjectMeta.DeletionTimestamp,
-		}).Infof("'%s' CR is being deleted, not updated.", CRDName)
+		}).Infof("'%s' CR is being deleted.", CRDName)
+		var key string
+		var err error
+		if key, err = cache.MetaNamespaceKeyFunc(newObj); err != nil {
+			Log().Error(err)
+			return
+		}
+		c.workqueue.Add(key)
 		return
 	}
 
@@ -352,12 +365,6 @@ func (c *Controller) deleteConfigurator(obj interface{}) {
 // maintained
 func (c *Controller) reconcile(keyItem string) error {
 	Log().Infof("Reconcile request came for TridentConfigurator CR %s", keyItem)
-	// Get Controlling Trident Orchestrator CR and wait till trident is installed.
-	torcCR, err := c.Clients.GetControllingTorcCR()
-	if err != nil {
-		Log().Error("Failed to get controlling torcCR", err)
-		return err
-	}
 
 	_, tconfCRName, err := cache.SplitMetaNamespaceKey(keyItem)
 	if err != nil {
@@ -367,8 +374,28 @@ func (c *Controller) reconcile(keyItem string) error {
 
 	tconfCR, err := c.Clients.GetTconfCR(tconfCRName)
 	if err != nil {
-		Log().Error("Failed to get tconfCR: ", err)
-		return errors.NotFoundError(err.Error())
+		// If the CR doesn't exist, it was deleted, nothing to do
+		Log().Infof("TridentConfigurator '%s' not found, assuming it was deleted", tconfCRName)
+		return nil
+	}
+
+	// Handle deletion
+	if !tconfCR.ObjectMeta.DeletionTimestamp.IsZero() {
+		Log().WithField("tconf", tconfCRName).Info("TridentConfigurator is being deleted, cleaning up backends")
+		return c.handleTconfDeletion(tconfCR)
+	}
+
+	// Add finalizer if not present
+	if err := c.ensureFinalizer(tconfCR); err != nil {
+		Log().Errorf("Failed to add finalizer to TridentConfigurator %s: %v", tconfCRName, err)
+		return err
+	}
+
+	// Get Controlling Trident Orchestrator CR and wait till trident is installed.
+	torcCR, err := c.Clients.GetControllingTorcCR()
+	if err != nil {
+		Log().Error("Failed to get controlling torcCR", err)
+		return err
 	}
 
 	if err = tconfCR.Validate(); err != nil {
@@ -401,7 +428,12 @@ func (c *Controller) reconcile(keyItem string) error {
 		}
 		if isAwsFSxN {
 			Log().Debugf("Tconf indicates auto-backend config is for AWS FSxN")
-			fsxn, err := storage_drivers.NewFSxNInstance(torcCR, tconfCR, c.Clients)
+			scManagedTconf := false
+			// To support both existing flow and newer sc managed flow
+			if tconfCR.Labels[CreatedByLabel] == ResourceMonitor {
+				scManagedTconf = true
+			}
+			fsxn, err := storage_drivers.NewFSxNInstance(torcCR, tconfCR, c.Clients, scManagedTconf)
 			if err != nil {
 				Log().Info("Failed to create FsxN backend instance: ", err)
 				return err
@@ -414,6 +446,92 @@ func (c *Controller) reconcile(keyItem string) error {
 	default:
 		return fmt.Errorf("backend not supported")
 	}
+
+	return nil
+}
+
+// verifyBackendStatus polls the TridentBackendConfig resources created by this TridentConfigurator
+// and verifies they are not in a Failed state. Returns an error if any TBC is in Failed state.
+func (c *Controller) verifyBackendStatus(tconfCR *operatorV1.TridentConfigurator) error {
+	// Get controlling TorcCR to get the namespace
+	torcCR, err := c.Clients.GetControllingTorcCR()
+	if err != nil {
+		Log().Warnf("Failed to get controlling torcCR during backend verification: %v", err)
+		return fmt.Errorf("failed to get controlling torcCR: %w", err)
+	}
+
+	namespace := torcCR.Spec.Namespace
+
+	checkBackendStatus := func() error {
+		// List all TridentBackendConfigs with the configurator label
+		backends, err := c.Clients.ListTridentBackendsByLabel(namespace, TridentConfiguratorLabel, tconfCR.Name)
+		if err != nil {
+			Log().Errorf("Failed to list TridentBackendConfigs for TridentConfigurator %s: %v", tconfCR.Name, err)
+			return backoff.Permanent(fmt.Errorf("failed to list TridentBackendConfigs: %w", err))
+		}
+
+		if len(backends) == 0 {
+			Log().Warnf("No TridentBackendConfigs found for TridentConfigurator %s", tconfCR.Name)
+			return fmt.Errorf("no TridentBackendConfigs found for TridentConfigurator %s", tconfCR.Name)
+		}
+
+		isAllBackendHealthy := true
+		var failedBackend *tridentV1.TridentBackendConfig
+
+		// Check each backend's status
+		for _, backend := range backends {
+			Log().Debugf("Checking status of TBC %s: LastOperationStatus=%s, Message=%s",
+				backend.Name, backend.Status.LastOperationStatus, backend.Status.Message)
+
+			if backend.Status.LastOperationStatus == "Failed" {
+				Log().Errorf("TridentBackendConfig %s is in Failed state: %s", backend.Name, backend.Status.Message)
+				failedBackend = backend
+				isAllBackendHealthy = false
+				break
+			}
+
+			// If status is still empty or in progress, keep polling
+			if backend.Status.LastOperationStatus == "" || backend.Status.LastOperationStatus == "Processing" {
+				Log().Debugf("TBC %s status is still being processed", backend.Name)
+				isAllBackendHealthy = false
+			}
+		}
+
+		// If we found a failed backend, return a permanent error immediately
+		if failedBackend != nil {
+			return backoff.Permanent(fmt.Errorf("backend validation failed: %s", failedBackend.Status.Message))
+		}
+
+		// If all backends are healthy (not empty, not processing, not failed), return success
+		if isAllBackendHealthy {
+			Log().Infof("All TridentBackendConfigs for TridentConfigurator %s are healthy", tconfCR.Name)
+			return nil
+		}
+
+		// Return error to trigger retry
+		return fmt.Errorf("backends still processing")
+	}
+
+	checkBackendNotify := func(err error, duration time.Duration) {
+		Log().WithField("increment", duration).Debug("TridentBackendConfigs not ready, waiting.")
+	}
+
+	statusBackoff := backoff.NewExponentialBackOff()
+	statusBackoff.InitialInterval = 5 * time.Second
+	statusBackoff.MaxInterval = 10 * time.Second
+	statusBackoff.Multiplier = 1.5
+	statusBackoff.RandomizationFactor = 0.1
+	statusBackoff.MaxElapsedTime = 60 * time.Second
+
+	// Run the status check using an exponential backoff
+	if err := backoff.RetryNotify(checkBackendStatus, statusBackoff, checkBackendNotify); err != nil {
+		Log().Warnf("TridentBackendConfigs not ready after %3.2f seconds: %v",
+			statusBackoff.MaxElapsedTime.Seconds(), err)
+		return err
+	}
+
+	Log().Debugf("All TridentBackendConfigs ready after %3.2f seconds.",
+		statusBackoff.GetElapsedTime().Seconds())
 
 	return nil
 }
@@ -528,6 +646,12 @@ func (c *Controller) backendCreateOperation(
 
 	backendNames, operationErr := operationFunc()
 
+	// Wait for backend validation by checking TBC status
+	if operationErr == nil {
+		Log().Debug("Backend created successfully, verifying TBC status before updating tconf status")
+		operationErr = c.verifyBackendStatus(tconfCR)
+	}
+
 	newPhase := c.getProcessedPhase(currPhase)
 	newTconfCR, updateErr = c.updateEventAndStatus(newTconfCR, newPhase, operationErr, cloudProvider, backendNames)
 	return
@@ -637,4 +761,84 @@ func (c *Controller) getProcessedPhase(currPhase operatorV1.TConfPhase) operator
 	default:
 		return ""
 	}
+}
+
+// ensureFinalizer adds the finalizer to the TridentConfigurator if it's not present
+func (c *Controller) ensureFinalizer(tconfCR *operatorV1.TridentConfigurator) error {
+	// Add finalizer using generic utility
+	if !AddFinalizerToObjectMeta(&tconfCR.ObjectMeta, TridentConfiguratorFinalizer) {
+		// Finalizer already exists
+		return nil
+	}
+
+	if err := c.Clients.UpdateTridentConfigurator(tconfCR); err != nil {
+		return fmt.Errorf("failed to add finalizer: %w", err)
+	}
+
+	Log().WithField("tconf", tconfCR.Name).Debug("Added finalizer to TridentConfigurator")
+	return nil
+}
+
+// handleTconfDeletion handles the deletion of a TridentConfigurator by cleaning up associated backends and storage classes
+func (c *Controller) handleTconfDeletion(tconfCR *operatorV1.TridentConfigurator) error {
+	// Get controlling TorcCR to get the namespace
+	torcCR, err := c.Clients.GetControllingTorcCR()
+	if err != nil {
+		Log().Warnf("Failed to get controlling torcCR during deletion: %v", err)
+		return fmt.Errorf("failed to get controlling torcCR during deletion: %w", err)
+	}
+
+	namespace := torcCR.Spec.Namespace
+
+	// List all TridentBackends with the configurator label
+	backends, err := c.Clients.ListTridentBackendsByLabel(namespace, TridentConfiguratorLabel, tconfCR.Name)
+	if err != nil {
+		Log().Errorf("Failed to list TridentBackends for TridentConfigurator %s: %v", tconfCR.Name, err)
+		// Don't return error, continue with cleanup
+	} else if len(backends) > 0 {
+		// Check if any backends are still being deleted
+		hasBackendsBeingDeleted := false
+		for _, backend := range backends {
+			if !backend.ObjectMeta.DeletionTimestamp.IsZero() {
+				// Backend is already being deleted, wait for it to complete
+				hasBackendsBeingDeleted = true
+				Log().WithFields(LogFields{
+					"backend": backend.ObjectMeta.Name,
+					"tconf":   tconfCR.Name,
+				}).Info("Waiting for TridentBackendConfig deletion to complete")
+			} else {
+				// Initiate deletion
+				Log().WithFields(LogFields{
+					"backend": backend.ObjectMeta.Name,
+					"tconf":   tconfCR.Name,
+				}).Info("Deleting TridentBackendConfig")
+
+				if err := c.Clients.DeleteObject(confClients.OBackend, backend.ObjectMeta.Name, namespace); err != nil {
+					Log().Errorf("Failed to delete TridentBackendConfig %s: %v", backend.ObjectMeta.Name, err)
+					// Continue deleting other backends
+				} else {
+					hasBackendsBeingDeleted = true
+				}
+			}
+		}
+
+		// If any backends are being deleted, requeue to wait for completion
+		if hasBackendsBeingDeleted {
+			return errors.ReconcileIncompleteError("waiting for TridentBackendConfig deletion to complete")
+		}
+	}
+
+	// Remove finalizer
+	if !RemoveFinalizerFromObjectMeta(&tconfCR.ObjectMeta, TridentConfiguratorFinalizer) {
+		// Finalizer wasn't present
+		Log().WithField("tconf", tconfCR.Name).Debug("Finalizer not present on TridentConfigurator")
+		return nil
+	}
+
+	if err := c.Clients.UpdateTridentConfigurator(tconfCR); err != nil {
+		return fmt.Errorf("failed to remove finalizer: %w", err)
+	}
+
+	Log().WithField("tconf", tconfCR.Name).Info("Removed finalizer from TridentConfigurator, deletion can proceed")
+	return nil
 }
