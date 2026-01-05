@@ -1,4 +1,4 @@
-// Copyright 2022 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 
 package v1
 
@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -41,8 +42,7 @@ func TestNewTransaction(t *testing.T) {
 			Kind:       "TridentTransaction",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:       NameFix(volConfig.Name),
-			Finalizers: GetTridentFinalizers(),
+			Name: NameFix(volConfig.Name),
 		},
 		Transaction: runtime.RawExtension{
 			Raw: MustEncode(json.Marshal(txn)),
@@ -53,6 +53,7 @@ func TestNewTransaction(t *testing.T) {
 	if !reflect.DeepEqual(volumeTransaction, expected) {
 		t.Fatalf("TridentTransaction does not match expected result, got %v expected %v", volumeTransaction, expected)
 	}
+	assert.Empty(t, volumeTransaction.Finalizers) // Transactions should never have finalizers.
 }
 
 func TestNewSnapshotTransaction(t *testing.T) {
@@ -88,8 +89,7 @@ func TestNewSnapshotTransaction(t *testing.T) {
 			Kind:       "TridentTransaction",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:       NameFix(volConfig.Name),
-			Finalizers: GetTridentFinalizers(),
+			Name: NameFix(volConfig.Name),
 		},
 		Transaction: runtime.RawExtension{
 			Raw: MustEncode(json.Marshal(txn)),
@@ -100,6 +100,7 @@ func TestNewSnapshotTransaction(t *testing.T) {
 	if !reflect.DeepEqual(volumeTransaction, expected) {
 		t.Fatalf("TridentTransaction does not match expected result, got %v expected %v", volumeTransaction, expected)
 	}
+	assert.Empty(t, volumeTransaction.Finalizers) // Transactions should never have finalizers.
 }
 
 func TestTransaction_Persistent(t *testing.T) {
@@ -123,8 +124,7 @@ func TestTransaction_Persistent(t *testing.T) {
 			Kind:       "TridentTransaction",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:       NameFix(volConfig.Name),
-			Finalizers: GetTridentFinalizers(),
+			Name: NameFix(volConfig.Name),
 		},
 		Transaction: runtime.RawExtension{
 			Raw: MustEncode(json.Marshal(txn)),
@@ -180,8 +180,7 @@ func TestSnapshotTransaction_Persistent(t *testing.T) {
 			Kind:       "TridentTransaction",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:       NameFix(volConfig.Name),
-			Finalizers: GetTridentFinalizers(),
+			Name: NameFix(volConfig.Name),
 		},
 		Transaction: runtime.RawExtension{
 			Raw: MustEncode(json.Marshal(txn)),

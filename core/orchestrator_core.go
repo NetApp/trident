@@ -22,6 +22,7 @@ import (
 	"github.com/netapp/trident/core/metrics"
 	"github.com/netapp/trident/frontend"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
+	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	"github.com/netapp/trident/pkg/capacity"
@@ -41,6 +42,8 @@ import (
 	"github.com/netapp/trident/utils/mount"
 	"github.com/netapp/trident/utils/nvme"
 )
+
+var addVolumeAfterAddVolumeTxn = fiji.Register("addVolumeAfterAddVolumeTransaction", "orchestrator_core")
 
 type TridentOrchestrator struct {
 	backends                 map[string]storage.Backend // key is UUID, not name
@@ -2002,6 +2005,11 @@ func (o *TridentOrchestrator) addVolumeInitial(
 		Op:     storage.AddVolume,
 	}
 	if err = o.AddVolumeTransaction(ctx, txn); err != nil {
+		return nil, err
+	}
+
+	// addVolumeAfterAddVolumeTxn allows fault injection for automated testing.
+	if err := addVolumeAfterAddVolumeTxn.Inject(); err != nil {
 		return nil, err
 	}
 

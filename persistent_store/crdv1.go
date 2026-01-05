@@ -1178,11 +1178,10 @@ func (k *CRDClientV1) GetVolumeTransaction(
 	return pTxn, nil
 }
 
-func (k *CRDClientV1) DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) (err error) {
+func (k *CRDClientV1) DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error {
 	ctx = NewContextBuilder(context.WithoutCancel(ctx)).WithLayer(LogLayerPersistentStore).BuildContext()
 
-	err = k.crdClient.TridentV1().TridentTransactions(k.namespace).Delete(ctx, v1.NameFix(volTxn.Name()),
-		k.deleteOpts())
+	err := k.crdClient.TridentV1().TridentTransactions(k.namespace).Delete(ctx, v1.NameFix(volTxn.Name()), k.deleteOpts())
 
 	if k8sapierrors.IsNotFound(err) {
 		return nil

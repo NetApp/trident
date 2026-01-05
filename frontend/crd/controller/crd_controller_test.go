@@ -1,4 +1,4 @@
-// Copyright 2023 NetApp, Inc. All Rights Reserved.
+// Copyright 2025 NetApp, Inc. All Rights Reserved.
 package controller
 
 import (
@@ -1056,9 +1056,9 @@ func TestCrdControllerTransactionFinalizerRemoval(t *testing.T) {
 		"txn": savedTxn,
 	}).Debug("Got transaction.")
 
-	// Ensure the CRD was saved with a Trident finalizer
-	if !savedTxn.HasTridentFinalizers() {
-		t.Fatalf("expected transaction CRD to have Trident finalizer")
+	// Ensure the CRD was saved with no Trident finalizer
+	if savedTxn.HasTridentFinalizers() {
+		t.Fatalf("expected transaction CRD to not have Trident finalizer")
 	}
 
 	Logc(ctx()).Debug("Deleting transaction.")
