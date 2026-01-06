@@ -5660,7 +5660,7 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 
 				results, unlocker, dbErr = db.Lock(ctx, db.Query(
 					db.UpsertBackend(b.BackendUUID(), "", ""),
-					db.UpsertVolumeByInternalName(v.Config.Name, v.Config.InternalName, "", ""),
+					db.UpsertVolumeByInternalName(v.Config.Name, "", v.Config.InternalName, ""),
 				))
 				if dbErr != nil {
 					unlocker()
