@@ -36,6 +36,7 @@ import (
 var (
 	inMemoryPersistence *persistentstore.InMemoryClient
 	testCtx             = context.Background()
+	expiredCtx, _       = context.WithDeadline(context.Background(), time.Now().Add(-time.Hour))
 	failed              = errors.New("failed")
 )
 
@@ -10146,6 +10147,7 @@ func TestDeleteNodeConcurrentCore(t *testing.T) {
 		name           string
 		nodeName       string
 		bootstrapError error
+		ctx            context.Context
 		setupMocks     func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
 		verifyError    func(err error)
 		verifyBehavior func(t *testing.T, o *ConcurrentTridentOrchestrator)
@@ -10154,6 +10156,7 @@ func TestDeleteNodeConcurrentCore(t *testing.T) {
 			name:           "Success",
 			nodeName:       "testNode",
 			bootstrapError: nil,
+			ctx:            testCtx,
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 				node := &models.Node{Name: "testNode"}
 				addNodesToCache(t, node)
@@ -10188,9 +10191,72 @@ func TestDeleteNodeConcurrentCore(t *testing.T) {
 			},
 		},
 		{
+			name:           "SuccessNodeHasPublications",
+			nodeName:       "testNode",
+			bootstrapError: nil,
+			ctx:            testCtx,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				node := &models.Node{Name: "testNode"}
+				addNodesToCache(t, node)
+
+				// Add backends to cache
+				mockBackend1 := getMockBackend(mockCtrl, "backend1", "uuid1")
+				mockBackend2 := getMockBackend(mockCtrl, "backend2", "uuid2")
+				addBackendsToCache(t, mockBackend1, mockBackend2)
+
+				// Add publication to cache
+				fakePublication := getFakeVolumePublication("vol1", "testNode")
+				addVolumePublicationsToCache(t, fakePublication)
+
+				mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// Verify node is still present and marked as deleted
+				nodes, err := o.ListNodes(context.Background())
+				assert.NoError(t, err)
+				assert.NotEmpty(t, nodes)
+				assert.True(t, *nodes[0].Deleted)
+			},
+		},
+		{
+			name:           "SuccessNodeHasPublicationsUpdateFailed",
+			nodeName:       "testNode",
+			bootstrapError: nil,
+			ctx:            testCtx,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				node := &models.Node{Name: "testNode"}
+				addNodesToCache(t, node)
+
+				// Add backends to cache
+				mockBackend1 := getMockBackend(mockCtrl, "backend1", "uuid1")
+				mockBackend2 := getMockBackend(mockCtrl, "backend2", "uuid2")
+				addBackendsToCache(t, mockBackend1, mockBackend2)
+
+				// Add publication to cache
+				fakePublication := getFakeVolumePublication("vol1", "testNode")
+				addVolumePublicationsToCache(t, fakePublication)
+
+				mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(failed).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.Error(t, err)
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// Verify node is still present and unchanged
+				nodes, err := o.ListNodes(context.Background())
+				assert.NoError(t, err)
+				assert.NotEmpty(t, nodes)
+				assert.False(t, *nodes[0].Deleted)
+			},
+		},
+		{
 			name:           "NodeNotFound",
 			nodeName:       "nonExistentNode",
 			bootstrapError: nil,
+			ctx:            testCtx,
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 				// No node added to cache
 
@@ -10210,6 +10276,7 @@ func TestDeleteNodeConcurrentCore(t *testing.T) {
 			name:           "DeleteNodeError",
 			nodeName:       "testNode",
 			bootstrapError: nil,
+			ctx:            testCtx,
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 				node := &models.Node{Name: "testNode"}
 				addNodesToCache(t, node)
@@ -10235,11 +10302,27 @@ func TestDeleteNodeConcurrentCore(t *testing.T) {
 			name:           "BootstrapError",
 			nodeName:       "testNode",
 			bootstrapError: errors.New("bootstrap error"),
+			ctx:            testCtx,
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 				// No setup needed
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "bootstrap error")
+			},
+			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
+				// No behavior to verify
+			},
+		},
+		{
+			name:           "LockError",
+			nodeName:       "testNode",
+			bootstrapError: nil,
+			ctx:            expiredCtx,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				// No setup needed
+			},
+			verifyError: func(err error) {
+				assert.ErrorContains(t, err, "context deadline exceeded")
 			},
 			verifyBehavior: func(t *testing.T, o *ConcurrentTridentOrchestrator) {
 				// No behavior to verify
@@ -10265,7 +10348,7 @@ func TestDeleteNodeConcurrentCore(t *testing.T) {
 				tt.setupMocks(mockCtrl, mockStoreClient, o)
 			}
 
-			err := o.DeleteNode(testCtx, tt.nodeName)
+			err := o.DeleteNode(tt.ctx, tt.nodeName)
 
 			if tt.verifyError != nil {
 				tt.verifyError(err)

@@ -5193,7 +5193,7 @@ func (o *ConcurrentTridentOrchestrator) DeleteNode(ctx context.Context, nodeName
 
 	results, unlocker, err := db.Lock(
 		ctx,
-		db.Query(db.ListVolumePublications(), db.DeleteNode(nodeName)),
+		db.Query(db.ListVolumePublicationsForNode(nodeName), db.DeleteNode(nodeName)),
 		db.Query(db.UpsertNode(nodeName)),
 	)
 	if err != nil {
@@ -5203,7 +5203,7 @@ func (o *ConcurrentTridentOrchestrator) DeleteNode(ctx context.Context, nodeName
 	volumePublications := results[0].VolumePublications
 	node := results[0].Node.Read
 	deleteNode := results[0].Node.Delete
-	upsertNode := results[0].Node.Upsert
+	upsertNode := results[1].Node.Upsert
 
 	if node == nil {
 		return errors.NotFoundError("node %v was not found", nodeName)
@@ -5211,19 +5211,17 @@ func (o *ConcurrentTridentOrchestrator) DeleteNode(ctx context.Context, nodeName
 
 	// If there are still volumes published to this node, this is a sudden node removal. Preserve the node CR and mark
 	// it as deleted so we can handle the eventual unpublish calls for the affected volumes.
-	for _, pub := range volumePublications {
-		if pub.NodeName == nodeName {
-			Logc(ctx).WithField("node", nodeName).Debug(
-				"There are still volumes published to this node, marking node CR as deleted.")
-			node.Deleted = true
-			if err = o.storeClient.AddOrUpdateNode(ctx, node); err != nil {
-				unlocker()
-				return
-			}
-			upsertNode(node)
+	if len(volumePublications) > 0 {
+		Logc(ctx).WithField("node", nodeName).Debug(
+			"There are still volumes published to this node, marking node CR as deleted.")
+		node.Deleted = true
+		if err = o.storeClient.AddOrUpdateNode(ctx, node); err != nil {
 			unlocker()
 			return
 		}
+		upsertNode(node)
+		unlocker()
+		return
 	}
 
 	// No publications for this node, so we can delete it.
