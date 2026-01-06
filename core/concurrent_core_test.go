@@ -36,6 +36,7 @@ import (
 var (
 	inMemoryPersistence *persistentstore.InMemoryClient
 	testCtx             = context.Background()
+	expiredCtx, _       = context.WithDeadline(context.Background(), time.Now().Add(-time.Hour))
 	failed              = errors.New("failed")
 )
 
@@ -12635,6 +12636,231 @@ func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
 			}
 
 			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestHandleFailedTransactionConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name        string
+		ctx         context.Context
+		txn         *storage.VolumeTransaction
+		setupMocks  func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
+		verifyError func(err error)
+	}{
+		{
+			name: "Success_AddVolume",
+			ctx:  expiredCtx, // Ensure we delete a transaction even if context is expired
+			txn: &storage.VolumeTransaction{
+				Config: &storage.VolumeConfig{Name: "vol1", InternalName: "vol1"},
+				Op:     storage.AddVolume,
+			},
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend1 := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend1.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
+				mockBackend1.EXPECT().RemoveVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+				mockBackend2 := getMockBackend(mockCtrl, "testBackend2", "backend-uuid2")
+
+				vol := &storage.Volume{
+					Config:      &storage.VolumeConfig{InternalName: "vol1", Name: "vol1"},
+					BackendUUID: "backend-uuid1",
+					State:       storage.VolumeStateOnline,
+				}
+
+				addBackendsToCache(t, mockBackend1, mockBackend2)
+				addVolumesToCache(t, vol)
+
+				mockStoreClient.EXPECT().DeleteVolume(gomock.Any(), vol).Return(nil)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name: "Success_AddVolume_NoVolume_MultipleBackends",
+			ctx:  expiredCtx,
+			txn: &storage.VolumeTransaction{
+				Config: &storage.VolumeConfig{Name: "vol1", InternalName: "vol1"},
+				Op:     storage.AddVolume,
+			},
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend1 := getMockBackendWithMap(mockCtrl, map[string]string{
+					"name":       "testBackend1",
+					"uuid":       "backend-uuid1",
+					"state":      string(storage.Online),
+					"driverName": "ontap-nas",
+				})
+				mockBackend1.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
+				mockBackend1.EXPECT().RemoveVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+				mockBackend2 := getMockBackendWithMap(mockCtrl, map[string]string{
+					"name":       "testBackend2",
+					"uuid":       "backend-uuid2",
+					"state":      string(storage.Failed),
+					"driverName": "ontap-nas",
+				})
+				mockBackend2.EXPECT().GetUniqueKey().Return("testBackend2").AnyTimes()
+
+				addBackendsToCache(t, mockBackend1, mockBackend2)
+
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name: "Success_AddVolume_NoVolume_NoBackends",
+			ctx:  expiredCtx,
+			txn: &storage.VolumeTransaction{
+				Config: &storage.VolumeConfig{Name: "vol1", InternalName: "vol1"},
+				Op:     storage.AddVolume,
+			},
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient, o)
+			}
+
+			err := o.handleFailedTransaction(tt.ctx, tt.txn)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+		})
+	}
+}
+
+func TestGetVolumeTransactionConcurrentCore(t *testing.T) {
+	volTxn := &storage.VolumeTransaction{
+		Config: &storage.VolumeConfig{Name: "vol1"},
+		Op:     storage.AddVolume,
+	}
+
+	tests := []struct {
+		name       string
+		setupMocks func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
+		expectTxn  *storage.VolumeTransaction
+		expectErr  bool
+	}{
+		{
+			name: "Success",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), volTxn).Return(volTxn, nil)
+			},
+			expectTxn: volTxn,
+			expectErr: false,
+		},
+		{
+			name: "PersistenceFailure",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), volTxn).Return(nil, failed)
+			},
+			expectTxn: nil,
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient, o)
+			}
+
+			result, err := o.GetVolumeTransaction(testCtx, volTxn)
+
+			if tt.expectErr {
+				require.Error(t, err)
+				assert.Nil(t, result)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tt.expectTxn, result)
+			}
+		})
+	}
+}
+
+func TestDeleteVolumeTransactionConcurrentCore(t *testing.T) {
+	volTxn := &storage.VolumeTransaction{
+		Config: &storage.VolumeConfig{Name: "vol1"},
+		Op:     storage.AddVolume,
+	}
+
+	tests := []struct {
+		name       string
+		setupMocks func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
+		expectErr  bool
+	}{
+		{
+			name: "Success",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), volTxn).Return(nil)
+			},
+			expectErr: false,
+		},
+		{
+			name: "PersistenceFailure",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), volTxn).Return(failed)
+			},
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient, o)
+			}
+
+			err := o.DeleteVolumeTransaction(testCtx, volTxn)
+
+			if tt.expectErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
 		})
 	}
 }
