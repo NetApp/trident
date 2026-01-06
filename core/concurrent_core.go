@@ -5658,10 +5658,12 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 				// name to ensure that no other workflow is trying to access the
 				// volume on the backend storage system.
 
-				results, unlocker, dbErr = db.Lock(ctx, db.Query(
-					db.UpsertBackend(b.BackendUUID(), "", ""),
-					db.UpsertVolumeByInternalName(v.Config.Name, "", v.Config.InternalName, ""),
-				))
+				results, unlocker, dbErr = db.Lock(ctx,
+					db.Query(db.UpsertBackend(b.BackendUUID(), "", "")),
+					db.Query(
+						db.UpsertVolumeByInternalName(v.Config.Name, "", v.Config.InternalName, ""),
+					),
+				)
 				if dbErr != nil {
 					unlocker()
 					return fmt.Errorf("unable to lock backend %s for upsert: %w", b.BackendUUID(), dbErr)
