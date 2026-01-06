@@ -5666,7 +5666,8 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 				)
 				if dbErr != nil {
 					unlocker()
-					return fmt.Errorf("unable to lock backend %s for upsert: %w", b.BackendUUID(), dbErr)
+					Logc(ctx).WithField("backend", b.Name()).WithError(dbErr).Trace("unable to lock backend for upsert")
+					continue
 				}
 
 				backend := results[0].Backend.Read
@@ -5674,13 +5675,16 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 
 				if backend == nil {
 					unlocker()
-					return fmt.Errorf("unable to find backend %s for upsert: %w", b.BackendUUID(), dbErr)
+					Logc(ctx).WithField("backend", b.Name()).WithError(dbErr).Trace("unable to find backend for upsert")
 				}
 
 				if err := backend.RemoveVolume(ctx, v.Config); err != nil {
 					unlocker()
-					return fmt.Errorf("error attempting to clean up volume %s from backend %s: %w", v.Config.Name,
-						b.Name(), err)
+					Logc(ctx).WithFields(LogFields{
+						"volume":  v.Config.Name,
+						"backend": b.Name(),
+					}).WithError(err).Trace("error attempting to clean up volume from backend")
+					continue
 				}
 
 				backendUpserter(backend)
