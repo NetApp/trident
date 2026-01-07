@@ -19,8 +19,7 @@ func NewTridentTransaction(txn *storage.VolumeTransaction) (*TridentTransaction,
 			Kind:       "TridentTransaction",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:       NameFix(txn.Name()),
-			Finalizers: GetTridentFinalizers(),
+			Name: NameFix(txn.Name()),
 		},
 	}
 

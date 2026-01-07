@@ -974,12 +974,11 @@ func TestCrdControllerTransactionFinalizerRemoval(t *testing.T) {
 		"txn": savedTxn,
 	}).Debug("Got transaction.")
 
-	// Ensure the CRD was saved with a Trident finalizer
-	if !savedTxn.HasTridentFinalizers() {
-		t.Fatalf("expected transaction CRD to have Trident finalizer")
+	// Ensure the CRD was saved with no Trident finalizer
+	if savedTxn.HasTridentFinalizers() {
+		t.Fatalf("expected transaction CRD to not have Trident finalizer")
+		Logc(ctx()).Debug("Deleting transaction.")
 	}
-
-	Logc(ctx()).Debug("Deleting transaction.")
 
 	// Delete the CRD
 	deleteErr := crdClient.TridentV1().TridentTransactions(tridentNamespace).Delete(ctx(), "vol1", deleteOptions)
