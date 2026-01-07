@@ -255,14 +255,25 @@ func (o *ConcurrentTridentOrchestrator) bootstrapBackends(ctx context.Context) e
 		backend, backendErr := o.validateAndCreateBackendFromConfig(ctx, serializedConfig, storageBackend.ConfigRef,
 			storageBackend.BackendUUID)
 		if backendErr != nil {
-			Logc(ctx).WithFields(LogFields{
-				"backend":     storageBackend.Name,
-				"backendUUID": storageBackend.BackendUUID,
-			}).WithError(backendErr).Error("Failed to create backend from config.")
-			return backendErr
+			Logc(ctx).WithError(backendErr).WithFields(LogFields{
+				"handler":            "Bootstrap",
+				"newBackendExternal": backend,
+			}).Error("Failed to create backend from config.")
+
+			// Trident for Docker supports one backend at a time, and the Docker volume plugin
+			// should not start if the backend fails to initialize, so return any error here.
+			if config.CurrentDriverContext == config.ContextDocker {
+				return backendErr
+			}
 		}
 
-		results, unlocker, lockErr := db.Lock(ctx, db.Query(db.UpsertBackend(backend.BackendUUID(), "", backend.Name())))
+		if backend == nil {
+			// If we couldn't create a backend, even a failed one, skip this backend.
+			continue
+		}
+
+		results, unlocker, lockErr := db.Lock(
+			ctx, db.Query(db.UpsertBackend(backend.BackendUUID(), "", backend.Name())))
 		if lockErr != nil {
 			Logc(ctx).WithFields(LogFields{
 				"backend":     storageBackend.Name,
@@ -271,6 +282,12 @@ func (o *ConcurrentTridentOrchestrator) bootstrapBackends(ctx context.Context) e
 			unlocker()
 			return lockErr
 		}
+
+		// Set some backend values from the persistent version that aren't in the config
+		if storageBackend.State == storage.Deleting {
+			backend.SetState(storage.Deleting)
+		}
+		backend.SetUserState(storageBackend.UserState)
 
 		results[0].Backend.Upsert(backend)
 		unlocker()
@@ -686,7 +703,7 @@ func (o *ConcurrentTridentOrchestrator) Stop() {
 // validateAndCreateBackendFromConfig validates config and creates backend based on Config
 func (o *ConcurrentTridentOrchestrator) validateAndCreateBackendFromConfig(
 	ctx context.Context, configJSON, configRef, backendUUID string,
-) (backendExternal storage.Backend, err error) {
+) (storage.Backend, error) {
 	var backendSecret map[string]string
 
 	commonConfig, configInJSON, err := factory.ValidateCommonSettings(ctx, configJSON)
@@ -737,6 +754,9 @@ func (o *ConcurrentTridentOrchestrator) validateAndCreateBackendFromConfig(
 	return sb, err
 }
 
+// updateUserBackendState sets the user state on an existing backend.  The caller is expected
+// to obtain a cache lock, pass the locked backend reference in sb, and handle upserting,
+// unlocking and any cache errors.
 func (o *ConcurrentTridentOrchestrator) updateUserBackendState(
 	ctx context.Context, sb *storage.Backend, userBackendState string, isCLI bool,
 ) (err error) {
@@ -771,8 +791,7 @@ func (o *ConcurrentTridentOrchestrator) updateUserBackendState(
 		}
 	}
 
-	userBackendState = strings.ToLower(userBackendState)
-	newUserBackendState := storage.UserBackendState(userBackendState)
+	newUserBackendState := storage.UserBackendState(strings.ToLower(userBackendState))
 
 	// An extra check to ensure that the user-backend state is valid.
 	if err = newUserBackendState.Validate(); err != nil {
@@ -1783,7 +1802,76 @@ func (o *ConcurrentTridentOrchestrator) validateBackendUpdate(oldBackend, newBac
 func (o *ConcurrentTridentOrchestrator) UpdateBackendState(
 	ctx context.Context, backendName, backendState, userBackendState string,
 ) (storageBackendExternal *storage.BackendExternal, err error) {
-	return nil, fmt.Errorf("UpdateBackendState is not implemented for concurrent core")
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	defer recordTiming("backend_update_state", &err)()
+
+	// Extra check to ensure exactly one is set.
+	if (backendState == "" && userBackendState == "") || (backendState != "" && userBackendState != "") {
+		return nil, fmt.Errorf("exactly one of backendState or userBackendState must be set")
+	}
+
+	results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertBackend("", backendName, "")))
+	defer unlocker()
+	if err != nil {
+		return nil, err
+	}
+
+	backend := results[0].Backend.Read
+	upserter := results[0].Backend.Upsert
+
+	if backend == nil {
+		return nil, errors.NotFoundError("backend %v was not found", backendName)
+	}
+
+	if userBackendState != "" {
+		if err = o.updateUserBackendState(ctx, &backend, userBackendState, true); err != nil {
+			return nil, err
+		}
+	}
+	if backendState != "" {
+		if err = o.updateBackendState(ctx, &backend, backendState); err != nil {
+			return nil, err
+		}
+	}
+
+	if err = o.storeClient.UpdateBackend(ctx, backend); err != nil {
+		return nil, err
+	}
+	upserter(backend)
+
+	return backend.ConstructExternal(ctx), nil
+}
+
+// updateBackendState sets the state on an existing backend.  The caller is expected
+// to obtain a cache lock, pass the locked backend reference in sb, and handle upserting,
+// unlocking and any cache errors.
+func (o *ConcurrentTridentOrchestrator) updateBackendState(
+	ctx context.Context, sb *storage.Backend, backendState string,
+) (err error) {
+	backend := *sb
+	Logc(ctx).WithFields(LogFields{
+		"backendName":  backend.Name(),
+		"backendState": backendState,
+	}).Debug("updateBackendState")
+
+	newBackendState := storage.BackendState(strings.ToLower(backendState))
+
+	// Limit the command to Failed
+	if !newBackendState.IsFailed() {
+		return fmt.Errorf("unsupported backend state: %s", newBackendState)
+	}
+
+	if !newBackendState.IsOnline() {
+		backend.Terminate(ctx)
+	}
+	backend.SetState(newBackendState)
+
+	return nil
 }
 
 func (o *ConcurrentTridentOrchestrator) RemoveBackendConfigRef(

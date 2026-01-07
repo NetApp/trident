@@ -163,7 +163,7 @@ func processCmdLineArgs(ctx context.Context) {
 	}
 	config.K8sAPIBurst = *k8sApiBurst
 
-	Logc(ctx).Debugf("Setting Kubernetes client QPS to %v  and burst to %v", *k8sApiQPS, *k8sApiBurst)
+	Logc(ctx).Debugf("Setting Kubernetes client QPS to %v and burst to %v", *k8sApiQPS, *k8sApiBurst)
 
 	// Infer frontend from arguments
 	enableCSI = *csiEndpoint != ""

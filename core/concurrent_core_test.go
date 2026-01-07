@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/RoaringBitmap/roaring/v2"
+	"github.com/brunoga/deep"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -296,6 +297,19 @@ func getFakeStorageDriverConfig(name string) drivers.FakeStorageDriverConfig {
 
 func getFakeBackend(name, uuid string, driver storage.Driver) *storage.StorageBackend {
 	fakeConfig := getFakeStorageDriverConfig(name)
+	if driver == nil {
+		driver = fakedriver.NewFakeStorageDriver(testCtx, fakeConfig)
+	}
+	fakeBackend, _ := storage.NewStorageBackend(testCtx, driver)
+	fakeBackend.SetName(name)
+	fakeBackend.SetBackendUUID(uuid)
+	fakeBackend.SetState(storage.Online)
+	return fakeBackend
+}
+
+func getFakeBackendWithConfig(
+	name, uuid string, driver storage.Driver, fakeConfig drivers.FakeStorageDriverConfig,
+) *storage.StorageBackend {
 	if driver == nil {
 		driver = fakedriver.NewFakeStorageDriver(testCtx, fakeConfig)
 	}
@@ -686,11 +700,13 @@ func TestBootstrapBackendsConcurrentCore(t *testing.T) {
 
 	tests := []struct {
 		name        string
+		ctx         context.Context
 		setupMocks  func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
 		verifyError func(err error)
 	}{
 		{
 			name: "StoreError",
+			ctx:  testCtx,
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 				mockStoreClient.EXPECT().GetBackends(gomock.Any()).Return(nil, failed).AnyTimes()
 			},
@@ -703,6 +719,7 @@ func TestBootstrapBackendsConcurrentCore(t *testing.T) {
 		},
 		{
 			name: "Success",
+			ctx:  testCtx,
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 				mockStoreClient.EXPECT().GetBackends(gomock.Any()).Return(backends, nil).AnyTimes()
 			},
@@ -711,10 +728,41 @@ func TestBootstrapBackendsConcurrentCore(t *testing.T) {
 
 				result := getBackendByUuidFromCache(t, "backend-uuid1")
 				assert.NotNil(t, result)
+				assert.Equal(t, storage.Online, result.State())
+			},
+		},
+		{
+			name: "SuccessDeleting",
+			ctx:  testCtx,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				backendsCopy := []*storage.BackendPersistent{deep.MustCopy(backends[0])}
+				backendsCopy[0].State = storage.Deleting
+				mockStoreClient.EXPECT().GetBackends(gomock.Any()).Return(backendsCopy, nil).AnyTimes()
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+
+				result := getBackendByUuidFromCache(t, "backend-uuid1")
+				assert.NotNil(t, result)
+				assert.Equal(t, storage.Deleting, result.State())
+			},
+		},
+		{
+			name: "LockError",
+			ctx:  expiredCtx,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockStoreClient.EXPECT().GetBackends(gomock.Any()).Return(backends, nil).AnyTimes()
+			},
+			verifyError: func(err error) {
+				assert.Error(t, err)
+
+				result := getBackendByUuidFromCache(t, "backend-uuid1")
+				assert.Nil(t, result)
 			},
 		},
 		{
 			name: "MarshalError",
+			ctx:  testCtx,
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 				noConfigBackend := &storage.BackendPersistent{Name: "backend1", BackendUUID: "backend-uuid1"}
 
@@ -729,7 +777,35 @@ func TestBootstrapBackendsConcurrentCore(t *testing.T) {
 		},
 		{
 			name: "ValidateError",
+			ctx:  testCtx,
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				unknownBackend := &storage.BackendPersistent{
+					Version: "1",
+					Config: storage.PersistentStorageBackendConfig{
+						FakeStorageDriverConfig: &drivers.FakeStorageDriverConfig{
+							CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+								Version:           1,
+								StorageDriverName: "unknown",
+								BackendName:       "fake1",
+							},
+						},
+					},
+				}
+
+				mockStoreClient.EXPECT().GetBackends(gomock.Any()).Return([]*storage.BackendPersistent{unknownBackend}, nil).AnyTimes()
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+
+				result := getBackendByUuidFromCache(t, "backend-uuid1")
+				assert.Nil(t, result)
+			},
+		},
+		{
+			name: "ValidateErrorDocker",
+			ctx:  testCtx,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				config.CurrentDriverContext = config.ContextDocker
 				unknownBackend := &storage.BackendPersistent{
 					Version: "1",
 					Config: storage.PersistentStorageBackendConfig{
@@ -770,7 +846,7 @@ func TestBootstrapBackendsConcurrentCore(t *testing.T) {
 				tt.setupMocks(mockCtrl, mockStoreClient, o)
 			}
 
-			err := o.bootstrapBackends(testCtx)
+			err := o.bootstrapBackends(tt.ctx)
 
 			if tt.verifyError != nil {
 				tt.verifyError(err)
@@ -3748,6 +3824,314 @@ func TestAddBackendConcurrentCore(t *testing.T) {
 			if tt.verifyResult != nil {
 				tt.verifyResult(backend)
 			}
+		})
+	}
+}
+
+// TestUpdateBackendStateConcurrentCore covers public UpdateBackendState API.
+func TestUpdateBackendStateConcurrentCore(t *testing.T) {
+	tests := []struct {
+		name             string
+		backendName      string
+		backendState     string
+		userBackendState string
+		ctx              context.Context
+		setup            func(t *testing.T, o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient, mockCtrl *gomock.Controller)
+		verify           func(t *testing.T, o *ConcurrentTridentOrchestrator, ext *storage.BackendExternal, err error)
+	}{
+		{
+			name:             "BootstrapError",
+			backendName:      "b1",
+			userBackendState: "suspended",
+			ctx:              testCtx,
+			setup: func(t *testing.T, o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient, mc *gomock.Controller) {
+				o.bootstrapError = errors.New("bootstrap error")
+
+				backend := getFakeBackend("b1", "uuid-b1", nil)
+
+				mockStoreClient.EXPECT().AddBackend(gomock.Any(), backend).Return(nil)
+
+				addBackendsToCache(t, backend)
+				addBackendsToPersistence(t, o, backend)
+			},
+			verify: func(t *testing.T, _ *ConcurrentTridentOrchestrator, _ *storage.BackendExternal, err error) {
+				require.Error(t, err)
+			},
+		},
+		{
+			name:             "LockError",
+			backendName:      "b1",
+			userBackendState: "suspended",
+			ctx:              expiredCtx,
+			setup: func(t *testing.T, o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient, mc *gomock.Controller) {
+				backend := getFakeBackend("b1", "uuid-b1", nil)
+
+				mockStoreClient.EXPECT().AddBackend(gomock.Any(), backend).Return(nil)
+
+				addBackendsToCache(t, backend)
+				addBackendsToPersistence(t, o, backend)
+			},
+			verify: func(t *testing.T, _ *ConcurrentTridentOrchestrator, _ *storage.BackendExternal, err error) {
+				require.Error(t, err)
+			},
+		},
+		{
+			name:             "StoreError",
+			backendName:      "b1",
+			userBackendState: "suspended",
+			ctx:              testCtx,
+			setup: func(t *testing.T, o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient, mc *gomock.Controller) {
+				backend := getFakeBackend("b1", "uuid-b1", nil)
+
+				mockStoreClient.EXPECT().AddBackend(gomock.Any(), backend).Return(nil)
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(failed)
+
+				addBackendsToCache(t, backend)
+				addBackendsToPersistence(t, o, backend)
+			},
+			verify: func(t *testing.T, _ *ConcurrentTridentOrchestrator, _ *storage.BackendExternal, err error) {
+				require.Error(t, err)
+			},
+		},
+		{
+			name:             "BothStatesSet",
+			backendName:      "b1",
+			backendState:     "failed",
+			userBackendState: "offline",
+			ctx:              testCtx,
+			setup: func(t *testing.T, o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient, mc *gomock.Controller) {
+				backend := getFakeBackend("b1", "uuid-b1", nil)
+
+				mockStoreClient.EXPECT().AddBackend(gomock.Any(), backend).Return(nil)
+
+				addBackendsToCache(t, backend)
+				addBackendsToPersistence(t, o, backend)
+			},
+			verify: func(t *testing.T, _ *ConcurrentTridentOrchestrator, _ *storage.BackendExternal, err error) {
+				require.Error(t, err)
+			},
+		},
+		{
+			name:        "NeitherStateSet",
+			backendName: "b1",
+			ctx:         testCtx,
+			setup: func(t *testing.T, o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient, mc *gomock.Controller) {
+				backend := getFakeBackend("b1", "uuid-b1", nil)
+
+				mockStoreClient.EXPECT().AddBackend(gomock.Any(), backend).Return(nil)
+
+				addBackendsToCache(t, backend)
+				addBackendsToPersistence(t, o, backend)
+			},
+			verify: func(t *testing.T, _ *ConcurrentTridentOrchestrator, _ *storage.BackendExternal, err error) {
+				require.Error(t, err)
+			},
+		},
+		{
+			name:         "BackendNotFound",
+			backendName:  "missing",
+			backendState: "failed",
+			ctx:          testCtx,
+			verify: func(t *testing.T, _ *ConcurrentTridentOrchestrator, _ *storage.BackendExternal, err error) {
+				require.Error(t, err)
+				assert.True(t, errors.IsNotFoundError(err), "expected not found error")
+			},
+		},
+		{
+			name:         "InvalidBackendState",
+			backendName:  "b1",
+			backendState: "online",
+			ctx:          testCtx,
+			setup: func(t *testing.T, o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient, mc *gomock.Controller) {
+				backend := getFakeBackend("b1", "uuid-b1", nil)
+
+				mockStoreClient.EXPECT().AddBackend(gomock.Any(), backend).Return(nil)
+
+				addBackendsToCache(t, backend)
+				addBackendsToPersistence(t, o, backend)
+			},
+			verify: func(t *testing.T, _ *ConcurrentTridentOrchestrator, _ *storage.BackendExternal, err error) {
+				require.Error(t, err)
+			},
+		},
+		{
+			name:         "SuccessBackendFailed",
+			backendName:  "b1",
+			backendState: "failed",
+			ctx:          testCtx,
+			setup: func(t *testing.T, o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient, mc *gomock.Controller) {
+				backend := getFakeBackend("b1", "uuid-b1", nil)
+
+				mockStoreClient.EXPECT().AddBackend(gomock.Any(), backend).Return(nil)
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil)
+
+				addBackendsToCache(t, backend)
+				addBackendsToPersistence(t, o, backend)
+			},
+			verify: func(t *testing.T, o *ConcurrentTridentOrchestrator, ext *storage.BackendExternal, err error) {
+				require.NoError(t, err)
+				require.NotNil(t, ext)
+				assert.Equal(t, storage.Failed, ext.State)
+			},
+		},
+		{
+			name:             "SuccessUserBackendSuspended",
+			backendName:      "b1",
+			userBackendState: "suspended",
+			ctx:              testCtx,
+			setup: func(t *testing.T, o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient, mc *gomock.Controller) {
+				backend := getFakeBackend("b1", "uuid-b1", nil)
+
+				mockStoreClient.EXPECT().AddBackend(gomock.Any(), backend).Return(nil)
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil)
+
+				addBackendsToCache(t, backend)
+				addBackendsToPersistence(t, o, backend)
+			},
+			verify: func(t *testing.T, o *ConcurrentTridentOrchestrator, ext *storage.BackendExternal, err error) {
+				require.NoError(t, err)
+				require.NotNil(t, ext)
+				// Validate cached backend user state.
+				b := getBackendByNameFromCache(t, "b1")
+				require.NotNil(t, b)
+				assert.Equal(t, storage.UserSuspended, b.UserState())
+			},
+		},
+		{
+			name:             "UserBackendInvalid",
+			backendName:      "b1",
+			userBackendState: "bogus-state",
+			ctx:              testCtx,
+			setup: func(t *testing.T, o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient, mc *gomock.Controller) {
+				backend := getFakeBackend("b1", "uuid-b1", nil)
+
+				mockStoreClient.EXPECT().AddBackend(gomock.Any(), backend).Return(nil)
+
+				addBackendsToCache(t, backend)
+				addBackendsToPersistence(t, o, backend)
+			},
+			verify: func(t *testing.T, _ *ConcurrentTridentOrchestrator, _ *storage.BackendExternal, err error) {
+				require.Error(t, err)
+			},
+		},
+		{
+			name:             "BackendUserStateConfiguredConfigRefSet",
+			backendName:      "b1",
+			userBackendState: "suspended",
+			ctx:              testCtx,
+			setup: func(t *testing.T, o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient, mc *gomock.Controller) {
+				fakeConfig := getFakeStorageDriverConfig("b1")
+				fakeConfig.UserState = string(storage.UserSuspended)
+				backend := getFakeBackendWithConfig("b1", "uuid-b1", nil, fakeConfig)
+				backend.SetConfigRef("fake-ref")
+
+				mockStoreClient.EXPECT().AddBackend(gomock.Any(), backend).Return(nil)
+
+				addBackendsToCache(t, backend)
+				addBackendsToPersistence(t, o, backend)
+			},
+			verify: func(t *testing.T, _ *ConcurrentTridentOrchestrator, _ *storage.BackendExternal, err error) {
+				require.Error(t, err)
+			},
+		},
+		{
+			name:             "BackendUserStateConfiguredConfigRefNotSet",
+			backendName:      "b1",
+			userBackendState: "suspended",
+			ctx:              testCtx,
+			setup: func(t *testing.T, o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient, mc *gomock.Controller) {
+				fakeConfig := getFakeStorageDriverConfig("b1")
+				fakeConfig.UserState = string(storage.UserSuspended)
+				backend := getFakeBackendWithConfig("b1", "uuid-b1", nil, fakeConfig)
+
+				mockStoreClient.EXPECT().AddBackend(gomock.Any(), backend).Return(nil)
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil)
+
+				addBackendsToCache(t, backend)
+				addBackendsToPersistence(t, o, backend)
+			},
+			verify: func(t *testing.T, _ *ConcurrentTridentOrchestrator, ext *storage.BackendExternal, err error) {
+				require.NoError(t, err)
+				require.NotNil(t, ext)
+
+				// Validate cached backend user state.
+				b := getBackendByNameFromCache(t, "b1")
+				require.NotNil(t, b)
+				assert.Equal(t, storage.UserSuspended, b.UserState())
+			},
+		},
+		{
+			name:             "BackendUserStateIdempotent",
+			backendName:      "b1",
+			userBackendState: "suspended",
+			ctx:              testCtx,
+			setup: func(t *testing.T, o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient, mc *gomock.Controller) {
+				fakeConfig := getFakeStorageDriverConfig("b1")
+				fakeConfig.UserState = string(storage.UserSuspended)
+				backend := getFakeBackendWithConfig("b1", "uuid-b1", nil, fakeConfig)
+				backend.SetUserState(storage.UserSuspended)
+
+				mockStoreClient.EXPECT().AddBackend(gomock.Any(), backend).Return(nil)
+				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil)
+
+				addBackendsToCache(t, backend)
+				addBackendsToPersistence(t, o, backend)
+			},
+			verify: func(t *testing.T, _ *ConcurrentTridentOrchestrator, ext *storage.BackendExternal, err error) {
+				require.NoError(t, err)
+				require.NotNil(t, ext)
+
+				// Validate cached backend user state.
+				b := getBackendByNameFromCache(t, "b1")
+				require.NotNil(t, b)
+				assert.Equal(t, storage.UserSuspended, b.UserState())
+			},
+		},
+		{
+			name:             "BackendUserStateBackendDeleting",
+			backendName:      "b1",
+			userBackendState: "suspended",
+			ctx:              testCtx,
+			setup: func(t *testing.T, o *ConcurrentTridentOrchestrator, mockStoreClient *mockpersistentstore.MockStoreClient, mc *gomock.Controller) {
+				fakeConfig := getFakeStorageDriverConfig("b1")
+				fakeConfig.UserState = string(storage.UserSuspended)
+				backend := getFakeBackendWithConfig("b1", "uuid-b1", nil, fakeConfig)
+				backend.SetState(storage.Deleting)
+
+				mockStoreClient.EXPECT().AddBackend(gomock.Any(), backend).Return(nil)
+
+				addBackendsToCache(t, backend)
+				addBackendsToPersistence(t, o, backend)
+			},
+			verify: func(t *testing.T, _ *ConcurrentTridentOrchestrator, ext *storage.BackendExternal, err error) {
+				require.Error(t, err)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			// Re-initialize the concurrent cache for each test
+			db.Initialize()
+			config.CurrentDriverContext = config.ContextCSI
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			if tt.setup != nil {
+				tt.setup(t, o, mockStoreClient, mockCtrl)
+			}
+
+			ext, err := o.UpdateBackendState(tt.ctx, tt.backendName, tt.backendState, tt.userBackendState)
+			if tt.verify != nil {
+				tt.verify(t, o, ext, err)
+			}
+
+			persistenceCleanup(t, o)
 		})
 	}
 }

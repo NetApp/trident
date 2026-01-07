@@ -65,9 +65,7 @@ func ValidateCommonSettings(ctx context.Context, configJSON string) (commonConfi
 func NewStorageBackendForConfig(
 	ctx context.Context, configJSON, configRef, backendUUID string,
 	commonConfig *drivers.CommonStorageDriverConfig, backendSecret map[string]string,
-) (sb storage.Backend,
-	err error,
-) {
+) (sb storage.Backend, err error) {
 	// Some drivers may panic during initialize if given invalid parameters,
 	// so catch any panics that might occur and return an error.
 	defer func() {
@@ -110,9 +108,6 @@ func NewStorageBackendForConfig(
 		}
 	}
 
-	if err == nil {
-		sb.SetState(storage.Online)
-	}
 	sb.SetBackendUUID(backendUUID)
 	sb.SetConfigRef(configRef)
 
