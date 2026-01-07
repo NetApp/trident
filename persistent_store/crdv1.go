@@ -1163,7 +1163,7 @@ func (k *CRDClientV1) GetVolumeTransaction(
 }
 
 func (k *CRDClientV1) DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error {
-	ctx = context.WithoutCancel(ctx) // Transactions should not be cancelled
+	ctx = context.WithoutCancel(ctx) // Transactions should not be canceled
 
 	err := k.crdClient.TridentV1().TridentTransactions(k.namespace).Delete(ctx, v1.NameFix(volTxn.Name()),
 		k.deleteOpts())
