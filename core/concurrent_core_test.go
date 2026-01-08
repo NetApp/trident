@@ -12640,7 +12640,7 @@ func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
 	}
 }
 
-func TestHandleFailedTransactionConcurrentCore(t *testing.T) {
+func TestHandleFailedTransactionAddVolumeConcurrentCore(t *testing.T) {
 	tests := []struct {
 		name        string
 		ctx         context.Context
@@ -12649,7 +12649,7 @@ func TestHandleFailedTransactionConcurrentCore(t *testing.T) {
 		verifyError func(err error)
 	}{
 		{
-			name: "Success_AddVolume",
+			name: "Success",
 			ctx:  expiredCtx, // Ensure we delete a transaction even if context is expired
 			txn: &storage.VolumeTransaction{
 				Config: &storage.VolumeConfig{Name: "vol1", InternalName: "vol1"},
@@ -12679,7 +12679,36 @@ func TestHandleFailedTransactionConcurrentCore(t *testing.T) {
 			},
 		},
 		{
-			name: "Success_AddVolume_NoVolume_MultipleBackends",
+			name: "Failure_DeleteVolumeFails",
+			ctx:  expiredCtx, // Ensure we delete a transaction even if context is expired
+			txn: &storage.VolumeTransaction{
+				Config: &storage.VolumeConfig{Name: "vol1", InternalName: "vol1"},
+				Op:     storage.AddVolume,
+			},
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend1 := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend1.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
+				mockBackend1.EXPECT().RemoveVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+				mockBackend2 := getMockBackend(mockCtrl, "testBackend2", "backend-uuid2")
+
+				vol := &storage.Volume{
+					Config:      &storage.VolumeConfig{InternalName: "vol1", Name: "vol1"},
+					BackendUUID: "backend-uuid1",
+					State:       storage.VolumeStateOnline,
+				}
+
+				addBackendsToCache(t, mockBackend1, mockBackend2)
+				addVolumesToCache(t, vol)
+
+				mockStoreClient.EXPECT().DeleteVolume(gomock.Any(), vol).Return(failed)
+			},
+			verifyError: func(err error) {
+				assert.Error(t, err)
+			},
+		},
+		{
+			name: "Success_NoVolume_MultipleBackends",
 			ctx:  expiredCtx,
 			txn: &storage.VolumeTransaction{
 				Config: &storage.VolumeConfig{Name: "vol1", InternalName: "vol1"},
@@ -12712,7 +12741,38 @@ func TestHandleFailedTransactionConcurrentCore(t *testing.T) {
 			},
 		},
 		{
-			name: "Success_AddVolume_NoVolume_NoBackends",
+			name: "Failure_NoVolume_MultipleBackends_DeleteVolumeFails",
+			ctx:  expiredCtx,
+			txn: &storage.VolumeTransaction{
+				Config: &storage.VolumeConfig{Name: "vol1", InternalName: "vol1"},
+				Op:     storage.AddVolume,
+			},
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend1 := getMockBackendWithMap(mockCtrl, map[string]string{
+					"name":       "testBackend1",
+					"uuid":       "backend-uuid1",
+					"state":      string(storage.Online),
+					"driverName": "ontap-nas",
+				})
+				mockBackend1.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
+				mockBackend1.EXPECT().RemoveVolume(gomock.Any(), gomock.Any()).Return(failed).Times(1)
+
+				mockBackend2 := getMockBackendWithMap(mockCtrl, map[string]string{
+					"name":       "testBackend2",
+					"uuid":       "backend-uuid2",
+					"state":      string(storage.Failed),
+					"driverName": "ontap-nas",
+				})
+				mockBackend2.EXPECT().GetUniqueKey().Return("testBackend2").AnyTimes()
+
+				addBackendsToCache(t, mockBackend1, mockBackend2)
+			},
+			verifyError: func(err error) {
+				assert.Error(t, err)
+			},
+		},
+		{
+			name: "Success_NoVolume_NoBackends",
 			ctx:  expiredCtx,
 			txn: &storage.VolumeTransaction{
 				Config: &storage.VolumeConfig{Name: "vol1", InternalName: "vol1"},
@@ -12723,6 +12783,36 @@ func TestHandleFailedTransactionConcurrentCore(t *testing.T) {
 			},
 			verifyError: func(err error) {
 				assert.NoError(t, err)
+			},
+		},
+		{
+			name: "Failure_AddVolume_DeleteVolumeTransactionFails",
+			ctx:  expiredCtx, // Ensure we delete a transaction even if context is expired
+			txn: &storage.VolumeTransaction{
+				Config: &storage.VolumeConfig{Name: "vol1", InternalName: "vol1"},
+				Op:     storage.AddVolume,
+			},
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend1 := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend1.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
+				mockBackend1.EXPECT().RemoveVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+				mockBackend2 := getMockBackend(mockCtrl, "testBackend2", "backend-uuid2")
+
+				vol := &storage.Volume{
+					Config:      &storage.VolumeConfig{InternalName: "vol1", Name: "vol1"},
+					BackendUUID: "backend-uuid1",
+					State:       storage.VolumeStateOnline,
+				}
+
+				addBackendsToCache(t, mockBackend1, mockBackend2)
+				addVolumesToCache(t, vol)
+
+				mockStoreClient.EXPECT().DeleteVolume(gomock.Any(), vol).Return(nil)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(failed)
+			},
+			verifyError: func(err error) {
+				assert.Error(t, err)
 			},
 		},
 	}

@@ -5648,6 +5648,10 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 			backends := results[0].Backends
 
 			for _, b := range backends {
+				// Backend offlining is serialized with volume creation, so we can safely skip offline backends.
+				if !b.State().IsOnline() && !b.State().IsDeleting() {
+					continue
+				}
 
 				// Volume deletion is an idempotent operation, so it's safe to delete an already
 				// deleted volume, but we must try all backends since we can't distinguish between
@@ -5680,7 +5684,8 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 						"volume":  v.Config.Name,
 						"backend": b.Name(),
 					}).WithError(err).Error("Error attempting to clean up volume from backend.")
-					continue
+					return fmt.Errorf("error attempting to clean up volume %s from backend %s: %w",
+						v.Config.Name, b.Name(), err)
 				}
 
 				backendUpserter(backend)
