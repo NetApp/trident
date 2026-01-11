@@ -92,6 +92,7 @@ const (
 	SpaceReserve          = "spaceReserve"
 	SnapshotPolicy        = "snapshotPolicy"
 	SnapshotReserve       = "snapshotReserve"
+	PreserveUnlink        = "preserveUnlink"
 	UnixPermissions       = "unixPermissions"
 	ExportPolicy          = "exportPolicy"
 	SecurityStyle         = "securityStyle"
@@ -1748,6 +1749,7 @@ const (
 	DefaultSpaceReserve              = "none"
 	DefaultSnapshotPolicy            = "none"
 	DefaultSnapshotReserve           = "5"
+	DefaultPreserveUnlink            = "false"
 	DefaultUnixPermissions           = "---rwxrwxrwx"
 	DefaultSnapshotDir               = "false"
 	DefaultExportPolicy              = "default"
@@ -1812,6 +1814,10 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		}
 	}
 
+	if config.PreserveUnlink == "" {
+		config.PreserveUnlink = DefaultPreserveUnlink
+	}
+
 	// If snapshotDir is provided, ensure it is lower case
 	snapDir := DefaultSnapshotDir
 	if config.SnapshotDir != "" {
@@ -1821,6 +1827,16 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		}
 	}
 	config.SnapshotDir = snapDir
+
+	// If preserveUnlink is provided, ensure it is lower case
+	preserveUnlink := DefaultPreserveUnlink
+	if config.PreserveUnlink != "" {
+		if preserveUnlink, err = convert.ToFormattedBool(config.PreserveUnlink); err != nil {
+			Logc(ctx).WithError(err).Errorf("Invalid boolean value for preserveUnlink: %v.", config.PreserveUnlink)
+			return fmt.Errorf("invalid boolean value for preserveUnlink: %v", err)
+		}
+	}
+	config.PreserveUnlink = preserveUnlink
 
 	if config.DenyNewVolumePools == "" {
 		config.DenyNewVolumePools = DefaultDenyNewVolumePools
@@ -1950,6 +1966,7 @@ func PopulateConfigurationDefaults(ctx context.Context, config *drivers.OntapSto
 		"SpaceReserve":           config.SpaceReserve,
 		"SnapshotPolicy":         config.SnapshotPolicy,
 		"SnapshotReserve":        config.SnapshotReserve,
+		"PreserveUnlink":         config.PreserveUnlink,
 		"UnixPermissions":        config.UnixPermissions,
 		"SnapshotDir":            config.SnapshotDir,
 		"ExportPolicy":           config.ExportPolicy,
@@ -2615,6 +2632,10 @@ func getVolumeExternalCommon(
 	if volume.SnapshotDir != nil {
 		snapshotDir = *volume.SnapshotDir
 	}
+	preserveUnlink := false
+	if volume.PreserveUnlink != nil {
+		preserveUnlink = *volume.PreserveUnlink
+	}
 	volumeConfig := &storage.VolumeConfig{
 		Version:         tridentconfig.OrchestratorAPIVersion,
 		Name:            name,
@@ -2625,6 +2646,7 @@ func getVolumeExternalCommon(
 		SnapshotReserve: strconv.Itoa(volume.SnapshotReserve),
 		ExportPolicy:    volume.ExportPolicy,
 		SnapshotDir:     strconv.FormatBool(snapshotDir),
+		PreserveUnlink:  strconv.FormatBool(preserveUnlink),
 		UnixPermissions: volume.UnixPermissions,
 		StorageClass:    "",
 		AccessMode:      tridentconfig.ReadWriteMany,
@@ -2901,6 +2923,7 @@ func setStoragePoolAttributes(
 	pool.InternalAttributes()[SpaceReserve] = config.SpaceReserve
 	pool.InternalAttributes()[SnapshotPolicy] = config.SnapshotPolicy
 	pool.InternalAttributes()[SnapshotReserve] = config.SnapshotReserve
+	pool.InternalAttributes()[PreserveUnlink] = config.PreserveUnlink
 	pool.InternalAttributes()[SplitOnClone] = config.SplitOnClone
 	pool.InternalAttributes()[Encryption] = config.Encryption
 	pool.InternalAttributes()[LUKSEncryption] = config.LUKSEncryption
@@ -3021,6 +3044,11 @@ func initializeVirtualPools(
 		snapshotReserve := config.SnapshotReserve
 		if vpool.SnapshotReserve != "" {
 			snapshotReserve = vpool.SnapshotReserve
+		}
+
+		preserveUnlink := config.PreserveUnlink
+		if vpool.PreserveUnlink != "" {
+			preserveUnlink = vpool.PreserveUnlink
 		}
 
 		splitOnClone := config.SplitOnClone
@@ -3155,6 +3183,7 @@ func initializeVirtualPools(
 		pool.InternalAttributes()[SpaceReserve] = spaceReserve
 		pool.InternalAttributes()[SnapshotPolicy] = snapshotPolicy
 		pool.InternalAttributes()[SnapshotReserve] = snapshotReserve
+		pool.InternalAttributes()[PreserveUnlink] = preserveUnlink
 		pool.InternalAttributes()[SplitOnClone] = splitOnClone
 		pool.InternalAttributes()[UnixPermissions] = unixPermissions
 		pool.InternalAttributes()[SnapshotDir] = snapshotDir
@@ -3694,6 +3723,16 @@ func getVolumeOptsCommon(
 				"Invalid boolean value for volume '%v' snapshotDir: %v.", volConfig.Name, volConfig.SnapshotDir)
 		}
 		opts["snapshotDir"] = snapshotDirFormatted
+	}
+
+	// If preserveUnlink is provided, ensure it is lower case
+	if volConfig.PreserveUnlink != "" {
+		preserveUnlinkFormatted, err := convert.ToFormattedBool(volConfig.PreserveUnlink)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf(
+				"Invalid boolean value for volume '%v' preserveUnlink: %v.", volConfig.Name, volConfig.PreserveUnlink)
+		}
+		opts["preserveUnlink"] = preserveUnlinkFormatted
 	}
 
 	// If skipRecoveryQueue is provided, ensure it is lower case
@@ -5471,6 +5510,14 @@ func purgeRecoveryQueueVolume(ctx context.Context, api api.OntapAPI, volumeName 
 	if err = api.VolumeRecoveryQueuePurge(ctx, recoveryQueueVolumeName); err != nil {
 		Logc(ctx).WithField("volume",
 			volumeName).Errorf("error purging volume from ONTAP recovery queue: %v", err)
+	}
+}
+
+// setPreserveUnlink has to be handled specially
+func setPresrveUnlink(ctx context.Context, api api.OntapAPI, volumeName string) {
+	if err := api.PreserveUnlinkSet(ctx, volumeName); err != nil {
+		Logc(ctx).WithField("volume",
+			volumeName).Errorf("error setting preserveUnlink: %v", err)
 	}
 }
 

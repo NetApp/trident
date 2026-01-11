@@ -81,6 +81,8 @@ type RestClientInterface interface {
 	// directly purge the volume from the recovery queue.
 	VolumeRecoveryQueuePurge(ctx context.Context, recoveryQueueVolumeName string) error
 	VolumeRecoveryQueueGetName(ctx context.Context, name string) (string, error)
+	// PreserveUnlinkSet uses the cli passthrough REST API to to enable the volume is-preserve-unlink-enabled option.
+	PreserveUnlinkSet(ctx context.Context, volumeName string) error
 	// ConsistencyGroupCreateAndWait creates a CG and waits on the job to complete
 	ConsistencyGroupCreateAndWait(ctx context.Context, cgName string, flexVols []string) error
 	// ConsistencyGroupCreate creates a consistency group
