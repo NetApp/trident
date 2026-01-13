@@ -1,0 +1,34 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "group:all"
+  ],
+  "enabledManagers": ["gomod"],
+  "labels": ["dependencies"],
+  "prConcurrentLimit": 1,
+  "schedule": ["before 11am every day"],
+  "timezone": "Asia/Kolkata",
+  "rebaseWhen": "conflicted",
+  "assignees": [],
+  "reviewers": ["alloydsa", "reederc42"],
+  "automerge": false,
+  "platformAutomerge": false,
+  "dependencyDashboard": false,
+  "postUpdateOptions": [
+    "gomodTidy",
+    "gomodUpdateImportPaths"
+  ],
+  "packageRules": [
+    {
+      "description": "Ignore indirect dependencies",
+      "matchManagers": ["gomod"],
+      "matchDepTypes": ["indirect"],
+      "enabled": false
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "labels": ["security", "urgent"],
+    "assignees": []
+  }
+}
