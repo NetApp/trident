@@ -20,7 +20,7 @@ const (
 	AdditionalFsxNFileSystemIDAnnotation = "trident.netapp.io/additionalFsxNFileSystemID"
 
 	// Backend naming pattern for FSxN
-	BackendNamePattern = "trident-%s-%s" // filesystemID, protocol
+	SCManagedBackendNamePattern = "trident-%s-%s-%s"
 )
 
 // FsxStorageDriverHandler implements StorageDriverHandler for FSxN
@@ -104,7 +104,7 @@ func (h *FsxStorageDriverHandler) BuildAdditionalStoragePoolsValue(sc *storagev1
 	// Start with the primary filesystem
 	primaryFsxID := sc.Parameters[FSxFilesystemIDParam]
 	if primaryFsxID != "" {
-		backendName := buildBackendName(primaryFsxID, protocol)
+		backendName := buildBackendName(sc.Name, primaryFsxID, protocol)
 		// Use ".*" as a regex pattern to match all pools for this backend
 		backendPools = append(backendPools, fmt.Sprintf("%s:.*", backendName))
 	}
@@ -123,7 +123,7 @@ func (h *FsxStorageDriverHandler) BuildAdditionalStoragePoolsValue(sc *storagev1
 		// Add additional FSx filesystems
 		for _, fsxID := range idList {
 			if fsxID != "" {
-				backendName := buildBackendName(fsxID, protocol)
+				backendName := buildBackendName(sc.Name, fsxID, protocol)
 				backendPools = append(backendPools, fmt.Sprintf("%s:.*", backendName))
 			}
 		}
@@ -276,7 +276,7 @@ func getProtocolFromDriver(driverName string) string {
 	}
 }
 
-// buildBackendName generates a backend name using the pattern trident-{filesystemID}-{protocol}
-func buildBackendName(filesystemID, protocol string) string {
-	return fmt.Sprintf(BackendNamePattern, filesystemID, protocol)
+// buildBackendName generates a backend name using the pattern trident-<scName>-<filesystemID>-<protocol>
+func buildBackendName(scName, filesystemID, protocol string) string {
+	return fmt.Sprintf(SCManagedBackendNamePattern, scName, filesystemID, protocol)
 }

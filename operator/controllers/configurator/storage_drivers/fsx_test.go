@@ -526,18 +526,54 @@ func TestAWS_DeleteSnapshotClass_ListError(t *testing.T) {
 // Test utility functions
 func TestGetFSxNBackendName(t *testing.T) {
 	tests := []struct {
-		fsxnId       string
-		protocolType string
-		expected     string
+		name           string
+		fsxnId         string
+		protocolType   string
+		scManagedTConf bool
+		tbcNamePrefix  string
+		expected       string
 	}{
-		{testFsxnID, sa.NFS, testBackendPrefix + testFsxnID + "-nfs"},
-		{testFsxnID, sa.ISCSI, testBackendPrefix + testFsxnID + "-iscsi"},
-		{"fs-test", "custom", testBackendPrefix + "fs-test-custom"},
+		{
+			name:           "NFS non-managed",
+			fsxnId:         testFsxnID,
+			protocolType:   sa.NFS,
+			scManagedTConf: false,
+			tbcNamePrefix:  "",
+			expected:       testBackendPrefix + testFsxnID + "-nfs",
+		},
+		{
+			name:           "ISCSI non-managed",
+			fsxnId:         testFsxnID,
+			protocolType:   sa.ISCSI,
+			scManagedTConf: false,
+			tbcNamePrefix:  "",
+			expected:       testBackendPrefix + testFsxnID + "-iscsi",
+		},
+		{
+			name:           "custom protocol non-managed",
+			fsxnId:         "fs-test",
+			protocolType:   "custom",
+			scManagedTConf: false,
+			tbcNamePrefix:  "",
+			expected:       testBackendPrefix + "fs-test-custom",
+		},
+		{
+			name:           "NFS SC-managed",
+			fsxnId:         testFsxnID,
+			protocolType:   sa.NFS,
+			scManagedTConf: true,
+			tbcNamePrefix:  "tconf-sc-name",
+			expected:       testBackendPrefix + "sc-name-" + testFsxnID + "-nfs",
+		},
 	}
 
 	for _, tt := range tests {
-		t.Run(fmt.Sprintf("%s_%s", tt.fsxnId, tt.protocolType), func(t *testing.T) {
-			result := getFSxNBackendName(tt.fsxnId, tt.protocolType)
+		t.Run(tt.name, func(t *testing.T) {
+			aws := &AWS{
+				SCManagedTConf: tt.scManagedTConf,
+				TBCNamePrefix:  tt.tbcNamePrefix,
+			}
+			result := getFSxNBackendName(aws, tt.fsxnId, tt.protocolType)
 			assert.Equal(t, tt.expected, result)
 		})
 	}
@@ -998,12 +1034,13 @@ func TestAWS_Create_SCManagedTConf(t *testing.T) {
 		TConfSpec:        tconfSpec,
 	}
 
-	// Mock backend creation
-	mockClient.EXPECT().CreateOrPatchObject(gomock.Any(), testBackendPrefix+testFsxnID+"-nfs", testTridentNamespace, gomock.Any()).Return(nil)
+	// Mock backend creation - SC-managed uses different naming pattern
+	expectedBackendName := testBackendPrefix + testFSxConfiguratorName + "-" + testFsxnID + "-nfs"
+	mockClient.EXPECT().CreateOrPatchObject(gomock.Any(), expectedBackendName, testTridentNamespace, gomock.Any()).Return(nil)
 
 	backends, err := aws.Create()
 
 	assert.NoError(t, err)
 	assert.Len(t, backends, 1)
-	assert.Contains(t, backends, testBackendPrefix+testFsxnID+"-nfs")
+	assert.Contains(t, backends, expectedBackendName)
 }

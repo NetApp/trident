@@ -28,12 +28,13 @@ const (
 	SvmStateCreated = "CREATED"
 	AWSRegion       = "AWS_REGION"
 
-	TridentSecretPattern    = "trident-%s"
-	SvmNamePattern          = "trident-%s"
-	StorageClassNamePattern = "trident-%s-%s"
-	BackendNamePattern      = "trident-%s-%s"
-	VsAdmin                 = "vsadmin"
-	Description             = "Trident secret for FsxN for ONTAP"
+	TridentSecretPattern        = "trident-%s"
+	SvmNamePattern              = "trident-%s"
+	StorageClassNamePattern     = "trident-%s-%s"
+	BackendNamePattern          = "trident-%s-%s"
+	SCManagedBackendNamePattern = "trident-%s-%s-%s"
+	VsAdmin                     = "vsadmin"
+	Description                 = "Trident secret for FsxN for ONTAP"
 
 	// Tags for the secret
 	FileSystemId = "file-system-id"
@@ -288,7 +289,7 @@ func (aws *AWS) Create() ([]string, error) {
 	)
 	for _, svm := range aws.SVMs {
 		for _, protocol := range svm.Protocols {
-			backendName = getFSxNBackendName(svm.FsxnID, protocol)
+			backendName = getFSxNBackendName(aws, svm.FsxnID, protocol)
 			backendYAML := getFsxnTBCYaml(svm, aws.TridentNamespace, backendName, protocol, aws.TBCNamePrefix, aws.SCManagedTConf, aws.TConfSpec)
 			if err := aws.ConfClient.CreateOrPatchObject(confClients.OBackend, backendName,
 				aws.TridentNamespace, backendYAML); err != nil {
@@ -342,7 +343,7 @@ func (aws *AWS) DeleteBackend(request map[string]interface{}) error {
 	protocols := request["protocols"].([]string)
 	fsxnId := request["FSxNID"].(string)
 	for _, protocol := range protocols {
-		backendName := getFSxNBackendName(fsxnId, protocol)
+		backendName := getFSxNBackendName(aws, fsxnId, protocol)
 		if err := aws.ConfClient.DeleteObject(confClients.OBackend, backendName, aws.TridentNamespace); err != nil {
 			return fmt.Errorf("error occurred while deleting backend: %w", err)
 		}
@@ -447,7 +448,11 @@ func deleteSecret(ctx context.Context, aws *AWS, secretName string) error {
 }
 
 // getFSxNBackendName returns the FsxN Trident backend config name
-func getFSxNBackendName(fsxnId, protocolType string) string {
+func getFSxNBackendName(aws *AWS, fsxnId, protocolType string) string {
+	if aws.SCManagedTConf {
+		scName := strings.TrimPrefix(aws.TBCNamePrefix, "tconf-")
+		return fmt.Sprintf(SCManagedBackendNamePattern, scName, fsxnId, protocolType)
+	}
 	return fmt.Sprintf(BackendNamePattern, fsxnId, protocolType)
 }
 
