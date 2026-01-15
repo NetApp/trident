@@ -20,7 +20,7 @@ spec:
       serviceAccountName: trident-operator
       containers:
       - name: pre-delete-container
-        image: bitnami/kubectl:1.21.0
+        image: {{ .Values.helmHookImage }}
         command:
           - sh
           - -c

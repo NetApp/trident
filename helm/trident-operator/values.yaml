@@ -1,6 +1,9 @@
 # Default values for standalone.
 # This is a YAML-formatted file.
 
+# helmHookImage specifies the image used for Helm hook jobs
+helmHookImage: "alpine/k8s:1.33.0"
+
 ## Node labels for pod assignment
 ## ref: https://kubernetes.io/docs/user-guide/node-selection/
 nodeSelector: {}
