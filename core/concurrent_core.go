@@ -5734,23 +5734,25 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 			backends := results[0].Backends
 
 			for _, b := range backends {
-				// Backend offlining is serialized with volume creation,
-				// so we can safely skip offline backends.
+				// Backend offlining is serialized with volume creation, so we can safely skip offline backends.
 				if !b.State().IsOnline() && !b.State().IsDeleting() {
 					continue
 				}
-				// Volume deletion is an idempotent operation, so it's safe to
-				// delete an already deleted volume. We lock the volume's internal
-				// name to ensure that no other workflow is trying to access the
-				// volume on the backend storage system.
 
-				results, unlocker, dbErr = db.Lock(ctx, db.Query(
-					db.UpsertBackend(b.BackendUUID(), "", ""),
-					db.UpsertVolumeByInternalName(v.Config.Name, v.Config.InternalName, "", ""),
-				))
+				// Volume deletion is an idempotent operation, so it's safe to delete an already
+				// deleted volume, but we must try all backends since we can't distinguish between
+				// a successful deletion and a non-existent volume.  We lock the volume's internal
+				// name to ensure that no other workflow is trying to access the volume on the
+				// backend storage system.
+
+				results, unlocker, dbErr = db.Lock(ctx,
+					db.Query(db.UpsertBackend(b.BackendUUID(), "", "")),
+					db.Query(db.UpsertVolumeByInternalName(v.Config.Name, "", v.Config.InternalName, "")),
+				)
 				if dbErr != nil {
 					unlocker()
-					return fmt.Errorf("unable to lock backend %s for upsert: %w", b.BackendUUID(), dbErr)
+					Logc(ctx).WithField("backend", b.Name()).WithError(dbErr).Warn("Unable to lock backend for upsert.")
+					continue
 				}
 
 				backend := results[0].Backend.Read
@@ -5758,23 +5760,28 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 
 				if backend == nil {
 					unlocker()
-					return fmt.Errorf("unable to find backend %s for upsert: %w", b.BackendUUID(), dbErr)
+					Logc(ctx).WithField("backend", b.Name()).WithError(dbErr).Warn("Unable to find backend for upsert.")
+					continue
 				}
 
 				if err := backend.RemoveVolume(ctx, v.Config); err != nil {
 					unlocker()
-					return fmt.Errorf("error attempting to clean up volume %s from backend %s: %w", v.Config.Name,
-						b.Name(), err)
+					Logc(ctx).WithFields(LogFields{
+						"volume":  v.Config.Name,
+						"backend": b.Name(),
+					}).WithError(err).Error("Error attempting to clean up volume from backend.")
+					return fmt.Errorf("error attempting to clean up volume %s from backend %s: %w",
+						v.Config.Name, b.Name(), err)
 				}
 
 				backendUpserter(backend)
 				unlocker()
 			}
 		}
-		// Finally, we need to clean up the volume transaction.
-		// Necessary for all cases.
+
+		// Finally, we need to clean up the volume transaction.  Necessary for all cases.
 		if err := o.DeleteVolumeTransaction(ctx, v); err != nil {
-			return fmt.Errorf("failed to clean up volume addition transaction: %v", err)
+			return fmt.Errorf("failed to clean up volume addition transaction: %w", err)
 		}
 
 	case storage.DeleteVolume:
