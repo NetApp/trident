@@ -381,7 +381,7 @@ func (c *ControllerRestClient) UpdateVolumeLUKSPassphraseNames(
 		return fmt.Errorf("could not log into the Trident CSI Controller: %v", err)
 	}
 	if resp.StatusCode != http.StatusAccepted && resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("could not update volume LUKS passphrase names")
+		return fmt.Errorf("could not update volume LUKS passphrase names, status code %d", resp.StatusCode)
 	}
 	return nil
 }

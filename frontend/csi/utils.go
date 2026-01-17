@@ -327,7 +327,7 @@ func ensureLUKSVolumePassphrase(
 			"current-luks-passphrase-name": previousLUKSPassphraseName,
 			"new-luks-passphrase-name":     luksPassphraseName,
 		}).WithError(err).Errorf("Failed to rotate LUKS passphrase.")
-		return fmt.Errorf("failed to rotate LUKS passphrase")
+		return fmt.Errorf("failed to rotate LUKS passphrase; %w", err)
 	}
 	Logc(ctx).Infof("Rotated LUKS passphrase")
 

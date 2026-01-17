@@ -111,7 +111,7 @@ func (d *LUKSDevice) format(ctx context.Context, luksPassphrase string) error {
 			"device": device,
 			"output": string(output),
 		}).WithError(err).Error("Failed to format LUKS device.")
-		return errors.FormatError(fmt.Errorf("could not format LUKS device; %v", string(output)))
+		return errors.FormatError(fmt.Errorf("could not format LUKS device; %w; %v", err, string(output)))
 	}
 
 	return nil
@@ -140,7 +140,7 @@ func (d *LUKSDevice) formatUnformattedDevice(ctx context.Context, luksPassphrase
 	// Attempt LUKS format.
 	if err := d.format(ctx, luksPassphrase); err != nil {
 		if errors.IsFormatError(err) {
-			Logc(ctx).Debug("Failed to format LUKS device. Clearing partial formatting.")
+			Logc(ctx).WithError(err).Debug("Failed to format LUKS device. Clearing partial formatting.")
 			// We clear the formatting here to allow retires, else we would detect the device as already formatted
 			// or dirty and not retry the format on the next nodeStage attempt.
 			clearFormatErr := d.devices.ClearFormatting(ctx, d.rawDevicePath)
@@ -377,9 +377,8 @@ func (d *LUKSDevice) Resize(ctx context.Context, luksPassphrase string) error {
 	if nil != err {
 		log.WithFields(log.Fields{
 			"MappedDevicePath": d.MappedDevicePath(),
-			"error":            err.Error(),
 			"output":           string(output),
-		}).Debug("Failed to resize LUKS device")
+		}).WithError(err).Debug("Failed to resize LUKS device")
 
 		// Exit code 2 means bad passphrase
 		if exiterr, ok := err.(*exec.ExitError); ok && exiterr.ExitCode() == luksCryptsetupBadPassphraseReturnCode {
@@ -402,7 +401,7 @@ func (d *LUKSDevice) CheckPassphrase(ctx context.Context, luksPassphrase string)
 		if exiterr, ok := err.(execCmd.ExitError); ok && exiterr.ExitCode() == luksCryptsetupBadPassphraseReturnCode {
 			return false, nil
 		}
-		Logc(ctx).WithError(err).Errorf("Cryptsetup command failed, output: %s", output)
+		Logc(ctx).WithError(err).Errorf("cryptsetup command failed, output: %s", output)
 		return false, err
 	}
 	return true, nil

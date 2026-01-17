@@ -257,7 +257,7 @@ func GetDmDevicePathFromLUKSLegacyPath(
 	if err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"devicePath": devicePath,
-		}).WithError(err).Error("Unable to determine luks parent device.")
+		}).WithError(err).Error("Unable to determine LUKS parent device.")
 	}
 	return devices.DevPrefix + dev, nil
 }

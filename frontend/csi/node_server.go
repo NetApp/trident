@@ -1381,17 +1381,16 @@ func (p *Plugin) nodeStageFCPVolume(
 	}
 
 	if isLUKS {
-		if err := betweenAttachAndLUKSPassphrase.Inject(); err != nil {
+		if err = betweenAttachAndLUKSPassphrase.Inject(); err != nil {
 			return err
 		}
 
-		var luksDevice luks.Device
-		luksDevice = luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
+		luksDevice := luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
 
 		// Ensure we update the passphrase in case it has never been set before
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
 		if err != nil {
-			return fmt.Errorf("could not set LUKS volume passphrase")
+			return fmt.Errorf("could not set LUKS volume passphrase; %w", err)
 		}
 	}
 	if mpathSize > 0 {
@@ -1846,17 +1845,16 @@ func (p *Plugin) nodeStageISCSIVolume(
 	}
 
 	if isLUKS {
-		if err := betweenAttachAndLUKSPassphrase.Inject(); err != nil {
+		if err = betweenAttachAndLUKSPassphrase.Inject(); err != nil {
 			return err
 		}
 
-		var luksDevice luks.Device
-		luksDevice = luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
+		luksDevice := luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
 
 		// Ensure we update the passphrase in case it has never been set before
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
 		if err != nil {
-			return fmt.Errorf("could not set LUKS volume passphrase")
+			return fmt.Errorf("could not set LUKS volume passphrase; %w", err)
 		}
 	}
 
@@ -3000,7 +2998,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 	}
 
 	if isLUKS {
-		if err := betweenAttachAndLUKSPassphrase.Inject(); err != nil {
+		if err = betweenAttachAndLUKSPassphrase.Inject(); err != nil {
 			return err
 		}
 
@@ -3009,7 +3007,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 		// Ensure we update the passphrase in case it has never been set before
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
 		if err != nil {
-			return fmt.Errorf("could not set LUKS volume passphrase; %v", err)
+			return fmt.Errorf("could not set LUKS volume passphrase; %w", err)
 		}
 	}
 
