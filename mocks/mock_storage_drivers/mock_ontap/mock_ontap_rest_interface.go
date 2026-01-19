@@ -1218,6 +1218,36 @@ func (mr *MockRestClientInterfaceMockRecorder) NVMeGetHostsOfSubsystem(ctx, subs
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeGetHostsOfSubsystem", reflect.TypeOf((*MockRestClientInterface)(nil).NVMeGetHostsOfSubsystem), ctx, subsUUID)
 }
 
+// NVMeGetNamespaceUUIDsForSubsystem mocks base method.
+func (m *MockRestClientInterface) NVMeGetNamespaceUUIDsForSubsystem(ctx context.Context, subsysUUID string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NVMeGetNamespaceUUIDsForSubsystem", ctx, subsysUUID)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NVMeGetNamespaceUUIDsForSubsystem indicates an expected call of NVMeGetNamespaceUUIDsForSubsystem.
+func (mr *MockRestClientInterfaceMockRecorder) NVMeGetNamespaceUUIDsForSubsystem(ctx, subsysUUID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeGetNamespaceUUIDsForSubsystem", reflect.TypeOf((*MockRestClientInterface)(nil).NVMeGetNamespaceUUIDsForSubsystem), ctx, subsysUUID)
+}
+
+// NVMeGetSubsystemsForNamespace mocks base method.
+func (m *MockRestClientInterface) NVMeGetSubsystemsForNamespace(ctx context.Context, namespaceUUID string) ([]api.NVMeSubsystem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NVMeGetSubsystemsForNamespace", ctx, namespaceUUID)
+	ret0, _ := ret[0].([]api.NVMeSubsystem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NVMeGetSubsystemsForNamespace indicates an expected call of NVMeGetSubsystemsForNamespace.
+func (mr *MockRestClientInterfaceMockRecorder) NVMeGetSubsystemsForNamespace(ctx, namespaceUUID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeGetSubsystemsForNamespace", reflect.TypeOf((*MockRestClientInterface)(nil).NVMeGetSubsystemsForNamespace), ctx, namespaceUUID)
+}
+
 // NVMeIsNamespaceMapped mocks base method.
 func (m *MockRestClientInterface) NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, namespaceUUID string) (bool, error) {
 	m.ctrl.T.Helper()

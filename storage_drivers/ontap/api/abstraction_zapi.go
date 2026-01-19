@@ -2831,6 +2831,10 @@ func (d OntapAPIZAPI) NVMeSubsystemAddNamespace(ctx context.Context, subsystemUU
 	return errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
+func (d OntapAPIZAPI) NVMeSubsystemList(ctx context.Context, pattern string) ([]NVMeSubsystem, error) {
+	return nil, errors.UnsupportedError("NVMeSubsystemList is not supported for ZAPI")
+}
+
 func (d OntapAPIZAPI) NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error {
 	return errors.UnsupportedError("ZAPI call is not supported yet")
 }
@@ -2841,6 +2845,10 @@ func (d OntapAPIZAPI) NVMeSubsystemGetNamespaceCount(ctx context.Context, subsys
 
 func (d OntapAPIZAPI) NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error {
 	return errors.UnsupportedError("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) NVMeSubsystemGetByName(ctx context.Context, subsysName string) (*NVMeSubsystem, error) {
+	return nil, errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) NVMeAddHostToSubsystem(ctx context.Context, hostNQN, subsUUID string) error {
@@ -2859,12 +2867,20 @@ func (d OntapAPIZAPI) NVMeEnsureNamespaceMapped(ctx context.Context, subsystemUU
 	return errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
-func (d OntapAPIZAPI) NVMeEnsureNamespaceUnmapped(ctx context.Context, hostNQN, subsystemUUID, namespaceUUID string) (bool, error) {
-	return false, errors.UnsupportedError("ZAPI call is not supported yet")
-}
-
 func (d OntapAPIZAPI) NVMeNamespaceGetSize(ctx context.Context, subsystemName string) (int, error) {
 	return 0, errors.UnsupportedError("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) NVMeGetNamespaceUUIDsForSubsystem(ctx context.Context, subsysUUID string) ([]string, error) {
+	return nil, errors.UnsupportedError("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) NVMeGetHostsOfSubsystem(ctx context.Context, subsUUID string) ([]*NvmeSubsystemHost, error) {
+	return nil, errors.UnsupportedError("ZAPI call is not supported yet")
+}
+
+func (d OntapAPIZAPI) NVMeGetSubsystemsForNamespace(ctx context.Context, namespaceUUID string) ([]NVMeSubsystem, error) {
+	return nil, errors.UnsupportedError("ZAPI call is not supported yet")
 }
 
 func (d OntapAPIZAPI) VolumeWaitForStates(

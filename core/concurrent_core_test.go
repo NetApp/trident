@@ -15120,3 +15120,68 @@ func TestCheckMirrorTransferStateConcurrentCore(t *testing.T) {
 		})
 	}
 }
+
+func TestUnpublishVolumeWithNVMeNamespaceUUIDs(t *testing.T) {
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	// Create node with NQN
+	fakeNode := &models.Node{
+		Name: "testNode",
+		NQN:  "nqn.2014-08.org.nvmexpress:uuid:test-host-nqn",
+	}
+	addNodesToCache(t, fakeNode)
+
+	// Create backend
+	fakeBackend := getFakeBackend("testBackend", "uuid", nil)
+	addBackendsToCache(t, fakeBackend)
+
+	// Create NVMe volume with namespace UUID
+	nvmeVolume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			InternalName: "nvmeVolume",
+			Name:         "nvmeVolume",
+			AccessInfo: models.VolumeAccessInfo{
+				NVMeAccessInfo: models.NVMeAccessInfo{
+					NVMeNamespaceUUID: "ns-uuid-1",
+				},
+			},
+		},
+		BackendUUID: "uuid",
+	}
+	addVolumesToCache(t, nvmeVolume)
+	addVolumesToPersistence(t, o, nvmeVolume)
+
+	// Create another NVMe volume published to same node
+	otherNVMeVolume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			InternalName: "otherVolume",
+			Name:         "otherVolume",
+			AccessInfo: models.VolumeAccessInfo{
+				NVMeAccessInfo: models.NVMeAccessInfo{
+					NVMeNamespaceUUID: "ns-uuid-2",
+				},
+			},
+		},
+		BackendUUID: "uuid",
+	}
+	addVolumesToCache(t, otherNVMeVolume)
+
+	// Create publications
+	pub1 := &models.VolumePublication{
+		VolumeName: "nvmeVolume",
+		NodeName:   "testNode",
+	}
+	pub2 := &models.VolumePublication{
+		VolumeName: "otherVolume",
+		NodeName:   "testNode",
+	}
+	addVolumePublicationsToCache(t, pub1, pub2)
+	addVolumePublicationsToPersistence(t, o, pub1)
+
+	// Unpublish first volume - should collect namespace UUIDs
+	err := o.UnpublishVolume(testCtx, "nvmeVolume", "testNode")
+	assert.NoError(t, err)
+
+	persistenceCleanup(t, o)
+}

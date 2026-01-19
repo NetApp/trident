@@ -144,6 +144,10 @@ type VolumePublishInfo struct {
 	TridentUUID       string              `json:"tridentUUID,omitempty"`       // NOTE: Added in 22.07 release
 	LUKSEncryption    string              `json:"LUKSEncryption,omitempty"`
 	SANType           string              `json:"SANType,omitempty"`
+	// HostNVMeNamespaceUUIDs contains namespace UUIDs that remain published
+	// to the host where this volume is mounted. Used by NVMe drivers to
+	// determine if host should be removed from shared subsystems.
+	HostNVMeNamespaceUUIDs []string `json:"-"`
 	VolumeAccessInfo
 }
 

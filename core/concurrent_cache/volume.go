@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils/models"
 )
 
 // Volume queries
@@ -43,6 +44,32 @@ func ListVolumesByInternalName(internalVolName string) Subquery {
 		setResults: listVolumesSetResults(func(v *storage.Volume) bool {
 			return v.Config.InternalName == internalVolName
 		}),
+	}
+}
+
+func ListVolumesForNode(nodeName string) Subquery {
+	return Subquery{
+		res: volume,
+		op:  list,
+		setResults: func(_ *Subquery, r *Result) error {
+			unlocker, err := rLockCaches([]resource{volume, volumePublication})
+			defer unlocker()
+			if err != nil {
+				return err
+			}
+			r.Volumes = make([]*storage.Volume, 0)
+
+			for _, vp := range volumePublications.data {
+				pub := vp.(*models.VolumePublication)
+				if pub.NodeName == nodeName {
+					v, ok := volumes.data[pub.VolumeName]
+					if ok {
+						r.Volumes = append(r.Volumes, v.SmartCopy().(*storage.Volume))
+					}
+				}
+			}
+			return nil
+		},
 	}
 }
 

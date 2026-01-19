@@ -6956,6 +6956,76 @@ func (c *RestClient) NVMeSubsystemGetByName(
 	return nil, nil
 }
 
+// NVMeGetSubsystemsForNamespace retrieves all subsystems that a namespace is mapped to
+func (c *RestClient) NVMeGetSubsystemsForNamespace(ctx context.Context, namespaceUUID string) ([]NVMeSubsystem, error) {
+	params := nvme.NewNvmeSubsystemMapCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.NamespaceUUID = &namespaceUUID
+	params.SetFields([]string{"subsystem.name", "subsystem.uuid"})
+
+	result, err := c.api.NvMe.NvmeSubsystemMapCollectionGet(params, c.authInfo)
+	if err != nil {
+		return nil, fmt.Errorf("error getting subsystems for namespace %s: %w", namespaceUUID, err)
+	}
+	if result == nil {
+		return nil, fmt.Errorf("unexpected response while getting subsystems")
+	}
+
+	payload := result.GetPayload()
+	if payload == nil {
+		return nil, fmt.Errorf("could not get subsystems collection")
+	}
+
+	subsystems := make([]NVMeSubsystem, 0)
+	if payload.NumRecords != nil && *payload.NumRecords > 0 {
+		for _, record := range payload.NvmeSubsystemMapResponseInlineRecords {
+			if record != nil && record.Subsystem != nil {
+				subsys := NVMeSubsystem{}
+				if record.Subsystem.Name != nil {
+					subsys.Name = *record.Subsystem.Name
+				}
+				if record.Subsystem.UUID != nil {
+					subsys.UUID = *record.Subsystem.UUID
+				}
+				subsystems = append(subsystems, subsys)
+			}
+		}
+	}
+
+	return subsystems, nil
+}
+
+// NVMeGetNamespaceUUIDsForSubsystem returns UUIDs of all namespaces mapped to a subsystem
+func (c *RestClient) NVMeGetNamespaceUUIDsForSubsystem(ctx context.Context, subsysUUID string) ([]string, error) {
+	params := nvme.NewNvmeSubsystemMapCollectionGetParamsWithTimeout(c.httpClient.Timeout)
+	params.Context = ctx
+	params.HTTPClient = c.httpClient
+	params.SubsystemUUID = &subsysUUID
+
+	result, err := c.api.NvMe.NvmeSubsystemMapCollectionGet(params, c.authInfo)
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, fmt.Errorf("unexpected nil response getting namespace UUIDs for subsystem %s", subsysUUID)
+	}
+
+	payload := result.GetPayload()
+	if payload == nil {
+		return nil, fmt.Errorf("unexpected nil payload getting namespace UUIDs for subsystem %s", subsysUUID)
+	}
+
+	namespaceUUIDs := make([]string, 0, int(*payload.NumRecords))
+	for _, record := range payload.NvmeSubsystemMapResponseInlineRecords {
+		if record != nil && record.Namespace != nil && record.Namespace.UUID != nil {
+			namespaceUUIDs = append(namespaceUUIDs, *record.Namespace.UUID)
+		}
+	}
+
+	return namespaceUUIDs, nil
+}
+
 // NVMeSubsystemCreate creates a new subsystem
 func (c *RestClient) NVMeSubsystemCreate(ctx context.Context, subsystemName, comment string) (*models.NvmeSubsystem, error) {
 	params := nvme.NewNvmeSubsystemCreateParamsWithTimeout(c.httpClient.Timeout)

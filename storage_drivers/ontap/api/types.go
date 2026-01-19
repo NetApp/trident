@@ -203,4 +203,10 @@ type NVMeSubsystem struct {
 type NVMeSubsystemMap struct {
 	SubsystemUUID string
 	NamespaceUUID string
+	SubsystemName string
+}
+
+// NVMeSubsystemHost represents a host (initiator) connected to an NVMe subsystem
+type NvmeSubsystemHost struct {
+	NQN string
 }

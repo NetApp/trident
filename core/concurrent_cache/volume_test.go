@@ -11,6 +11,7 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core/metrics"
 	"github.com/netapp/trident/storage"
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -1075,6 +1076,83 @@ func TestInconsistentReadVolume(t *testing.T) {
 			volumes.lock()
 			volumes.data = make(map[string]SmartCopier)
 			volumes.unlock()
+		})
+	}
+}
+
+func TestListVolumesForNode(t *testing.T) {
+	tests := []struct {
+		name          string
+		nodeName      string
+		volumes       map[string]*storage.Volume
+		publications  map[string]*models.VolumePublication
+		expectedCount int
+		expectedError bool
+	}{
+		{
+			name:     "volumes published to specified node",
+			nodeName: "node1",
+			volumes: map[string]*storage.Volume{
+				"vol1": {Config: &storage.VolumeConfig{Name: "vol1"}},
+				"vol2": {Config: &storage.VolumeConfig{Name: "vol2"}},
+			},
+			publications: map[string]*models.VolumePublication{
+				"pub1": {VolumeName: "vol1", NodeName: "node1"},
+				"pub2": {VolumeName: "vol2", NodeName: "node2"},
+			},
+			expectedCount: 1,
+		},
+		{
+			name:     "no volumes for node",
+			nodeName: "node3",
+			volumes: map[string]*storage.Volume{
+				"vol1": {Config: &storage.VolumeConfig{Name: "vol1"}},
+			},
+			publications: map[string]*models.VolumePublication{
+				"pub1": {VolumeName: "vol1", NodeName: "node1"},
+			},
+			expectedCount: 0,
+		},
+		{
+			name:     "publication exists but volume missing",
+			nodeName: "node1",
+			volumes:  map[string]*storage.Volume{},
+			publications: map[string]*models.VolumePublication{
+				"pub1": {VolumeName: "vol999", NodeName: "node1"},
+			},
+			expectedCount: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			for k, v := range tt.volumes {
+				volumes.data[k] = v
+			}
+			volumes.unlock()
+
+			volumePublications.lock()
+			volumePublications.data = make(map[string]SmartCopier)
+			for k, v := range tt.publications {
+				volumePublications.data[k] = v
+			}
+			volumePublications.unlock()
+
+			subquery := ListVolumesForNode(tt.nodeName)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+
+			assert.NoError(t, err)
+			assert.Len(t, result.Volumes, tt.expectedCount)
+
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			volumes.unlock()
+			volumePublications.lock()
+			volumePublications.data = make(map[string]SmartCopier)
+			volumePublications.unlock()
 		})
 	}
 }

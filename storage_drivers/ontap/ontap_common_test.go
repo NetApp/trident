@@ -10878,3 +10878,935 @@ func TestHealNASPublishEnforcement(t *testing.T) {
 		})
 	}
 }
+
+func TestGetSuperSubsystemName(t *testing.T) {
+	ctx := context.Background()
+	nsUUID := "ns-uuid-1234"
+	tridentUUID := "4321"
+
+	tests := []struct {
+		name           string
+		mockSetup      func(*mockapi.MockOntapAPI)
+		expectedResult string
+		expectError    bool
+		errorContains  string
+	}{
+		{
+			name: "Error getting subsystems for namespace",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return(nil, fmt.Errorf("API error"))
+			},
+			expectedResult: "",
+			expectError:    true,
+			errorContains:  "failed to get subsystems for namespace",
+		},
+		{
+			name: "Namespace already mapped to SuperSubsystem - early exit",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return([]api.NVMeSubsystem{
+						{UUID: "ss-uuid-1", Name: "trident_subsystem_4321_1"},
+					}, nil)
+				// No other calls - should return immediately
+			},
+			expectedResult: "trident_subsystem_4321_1",
+			expectError:    false,
+		},
+		{
+			name: "Namespace mapped to non-SuperSubsystem - continues to find SuperSubsystem",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return([]api.NVMeSubsystem{
+						{UUID: "other-uuid", Name: "some_other_subsystem"},
+					}, nil)
+				mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_4321*").
+					Return([]api.NVMeSubsystem{
+						{UUID: "ss-uuid-1", Name: "trident_subsystem_4321_1"},
+					}, nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-1").Return(int64(100), nil)
+			},
+			expectedResult: "trident_subsystem_4321_1",
+			expectError:    false,
+		},
+		{
+			name: "No subsystems exist - returns trident_subsystem_4321_1",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return([]api.NVMeSubsystem{}, nil)
+				mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_4321*").
+					Return([]api.NVMeSubsystem{}, nil)
+			},
+			expectedResult: "trident_subsystem_4321_1",
+			expectError:    false,
+		},
+		{
+			name: "Error listing subsystems",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return([]api.NVMeSubsystem{}, nil)
+				mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_4321*").
+					Return(nil, fmt.Errorf("API error"))
+			},
+			expectedResult: "",
+			expectError:    true,
+			errorContains:  "failed to list subsystems",
+		},
+		{
+			name: "First subsystem has capacity",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return([]api.NVMeSubsystem{}, nil)
+				mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_4321*").
+					Return([]api.NVMeSubsystem{
+						{UUID: "ss-uuid-1", Name: "trident_subsystem_4321_1"},
+					}, nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-1").Return(int64(500), nil)
+			},
+			expectedResult: "trident_subsystem_4321_1",
+			expectError:    false,
+		},
+		{
+			name: "Error getting namespace count",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return([]api.NVMeSubsystem{}, nil)
+				mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_4321*").
+					Return([]api.NVMeSubsystem{
+						{UUID: "ss-uuid-1", Name: "trident_subsystem_4321_1"},
+					}, nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-1").
+					Return(int64(0), fmt.Errorf("count error"))
+			},
+			expectedResult: "",
+			expectError:    true,
+			errorContains:  "error getting namespace count",
+		},
+		{
+			name: "First subsystem full, second has capacity",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return([]api.NVMeSubsystem{}, nil)
+				mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_4321*").
+					Return([]api.NVMeSubsystem{
+						{UUID: "ss-uuid-1", Name: "trident_subsystem_4321_1"},
+						{UUID: "ss-uuid-2", Name: "trident_subsystem_4321_2"},
+					}, nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-1").Return(int64(1024), nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-2").Return(int64(100), nil)
+			},
+			expectedResult: "trident_subsystem_4321_2",
+			expectError:    false,
+		},
+		{
+			name: "Gap filling - subsystems 1 and 3 exist, both full, return 2",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return([]api.NVMeSubsystem{}, nil)
+				mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_4321*").
+					Return([]api.NVMeSubsystem{
+						{UUID: "ss-uuid-1", Name: "trident_subsystem_4321_1"},
+						{UUID: "ss-uuid-3", Name: "trident_subsystem_4321_3"},
+					}, nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-1").Return(int64(1024), nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-3").Return(int64(1024), nil)
+			},
+			expectedResult: "trident_subsystem_4321_2",
+			expectError:    false,
+		},
+		{
+			name: "Gap filling - subsystems 1,2,3 exist, all full, return 4",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return([]api.NVMeSubsystem{}, nil)
+				mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_4321*").
+					Return([]api.NVMeSubsystem{
+						{UUID: "ss-uuid-1", Name: "trident_subsystem_4321_1"},
+						{UUID: "ss-uuid-2", Name: "trident_subsystem_4321_2"},
+						{UUID: "ss-uuid-3", Name: "trident_subsystem_4321_3"},
+					}, nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-1").Return(int64(1024), nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-2").Return(int64(1024), nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-3").Return(int64(1024), nil)
+			},
+			expectedResult: "trident_subsystem_4321_4",
+			expectError:    false,
+		},
+		{
+			name: "Gap filling - subsystems 2,3,4 exist, all full, return 1",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return([]api.NVMeSubsystem{}, nil)
+				mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_4321*").
+					Return([]api.NVMeSubsystem{
+						{UUID: "ss-uuid-2", Name: "trident_subsystem_4321_2"},
+						{UUID: "ss-uuid-3", Name: "trident_subsystem_4321_3"},
+						{UUID: "ss-uuid-4", Name: "trident_subsystem_4321_4"},
+					}, nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-2").Return(int64(1024), nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-3").Return(int64(1024), nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-4").Return(int64(1024), nil)
+			},
+			expectedResult: "trident_subsystem_4321_1",
+			expectError:    false,
+		},
+		{
+			name: "Multiple gaps - subsystems 1,3,5 exist, all full, return 2",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return([]api.NVMeSubsystem{}, nil)
+				mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_4321*").
+					Return([]api.NVMeSubsystem{
+						{UUID: "ss-uuid-1", Name: "trident_subsystem_4321_1"},
+						{UUID: "ss-uuid-3", Name: "trident_subsystem_4321_3"},
+						{UUID: "ss-uuid-5", Name: "trident_subsystem_4321_5"},
+					}, nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-1").Return(int64(1024), nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-3").Return(int64(1024), nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-5").Return(int64(1024), nil)
+			},
+			expectedResult: "trident_subsystem_4321_2",
+			expectError:    false,
+		},
+		{
+			name: "Subsystem at boundary (1023 namespaces) has capacity",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return([]api.NVMeSubsystem{}, nil)
+				mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_4321*").
+					Return([]api.NVMeSubsystem{
+						{UUID: "ss-uuid-1", Name: "trident_subsystem_4321_1"},
+					}, nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-1").Return(int64(1023), nil)
+			},
+			expectedResult: "trident_subsystem_4321_1",
+			expectError:    false,
+		},
+		{
+			name: "Subsystem exactly at limit (1024 namespaces) is full",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return([]api.NVMeSubsystem{}, nil)
+				mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_4321*").
+					Return([]api.NVMeSubsystem{
+						{UUID: "ss-uuid-1", Name: "trident_subsystem_4321_1"},
+					}, nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-1").Return(int64(1024), nil)
+			},
+			expectedResult: "trident_subsystem_4321_2",
+			expectError:    false,
+		},
+		{
+			name: "Complex gap scenario - 1,2,4,5 exist, 1 has capacity",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return([]api.NVMeSubsystem{}, nil)
+				mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_4321*").
+					Return([]api.NVMeSubsystem{
+						{UUID: "ss-uuid-1", Name: "trident_subsystem_4321_1"},
+						{UUID: "ss-uuid-2", Name: "trident_subsystem_4321_2"},
+						{UUID: "ss-uuid-4", Name: "trident_subsystem_4321_4"},
+						{UUID: "ss-uuid-5", Name: "trident_subsystem_4321_5"},
+					}, nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-1").Return(int64(100), nil)
+				// Early exit - won't check ss-uuid-2, ss-uuid-4, ss-uuid-5
+			},
+			expectedResult: "trident_subsystem_4321_1",
+			expectError:    false,
+		},
+		{
+			name: "Complex gap scenario - 1,2,4,5 exist, all full, return 3",
+			mockSetup: func(mockAPI *mockapi.MockOntapAPI) {
+				mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, nsUUID).
+					Return([]api.NVMeSubsystem{}, nil)
+				mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_4321*").
+					Return([]api.NVMeSubsystem{
+						{UUID: "ss-uuid-1", Name: "trident_subsystem_4321_1"},
+						{UUID: "ss-uuid-2", Name: "trident_subsystem_4321_2"},
+						{UUID: "ss-uuid-4", Name: "trident_subsystem_4321_4"},
+						{UUID: "ss-uuid-5", Name: "trident_subsystem_4321_5"},
+					}, nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-1").Return(int64(1024), nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-2").Return(int64(1024), nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-4").Return(int64(1024), nil)
+				mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "ss-uuid-5").Return(int64(1024), nil)
+			},
+			expectedResult: "trident_subsystem_4321_3",
+			expectError:    false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockAPI := mockapi.NewMockOntapAPI(ctrl)
+			tt.mockSetup(mockAPI)
+			result, err := getSuperSubsystemName(ctx, mockAPI, nsUUID, tridentUUID)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				if tt.errorContains != "" {
+					assert.Contains(t, err.Error(), tt.errorContains)
+				}
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, tt.expectedResult, result)
+		})
+	}
+}
+
+func TestNVMeRemoveHostFromSubsystem(t *testing.T) {
+	subsystemUUID := "fake-subsystem-uuid"
+	hostNQN := "nqn.2024-01.com.netapp:host1"
+	namespaceUUID := "fake-namespace-uuid"
+	namespaceUUID2 := "fake-namespace-uuid-2"
+
+	tests := []struct {
+		name                      string
+		subsystemUUID             string
+		hostNQN                   string
+		namespacesPublishedToNode []string
+		mockSetup                 func(*mockapi.MockOntapAPI)
+		expectedHostRemoved       bool
+		expectedError             bool
+	}{
+		{
+			name:                      "Error checking if host exists",
+			subsystemUUID:             subsystemUUID,
+			hostNQN:                   hostNQN,
+			namespacesPublishedToNode: []string{namespaceUUID},
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return(nil, errors.New("API error"))
+			},
+			expectedHostRemoved: false,
+			expectedError:       true,
+		},
+		{
+			name:                      "Host not present in subsystem",
+			subsystemUUID:             subsystemUUID,
+			hostNQN:                   hostNQN,
+			namespacesPublishedToNode: []string{namespaceUUID},
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return([]*api.NvmeSubsystemHost{}, nil)
+			},
+			expectedHostRemoved: false,
+			expectedError:       false,
+		},
+		{
+			name:                      "Error checking if host has mounted other namespaces from subsystem",
+			subsystemUUID:             subsystemUUID,
+			hostNQN:                   hostNQN,
+			namespacesPublishedToNode: []string{namespaceUUID},
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return([]*api.NvmeSubsystemHost{{NQN: hostNQN}}, nil)
+				mock.EXPECT().NVMeGetNamespaceUUIDsForSubsystem(ctx, subsystemUUID).
+					Return(nil, errors.New("API error"))
+			},
+			expectedHostRemoved: false,
+			expectedError:       true,
+		},
+		{
+			name:                      "Host has other namespaces from subsystem - cannot remove",
+			subsystemUUID:             subsystemUUID,
+			hostNQN:                   hostNQN,
+			namespacesPublishedToNode: []string{namespaceUUID, namespaceUUID2},
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return([]*api.NvmeSubsystemHost{{NQN: hostNQN}}, nil)
+				mock.EXPECT().NVMeGetNamespaceUUIDsForSubsystem(ctx, subsystemUUID).
+					Return([]string{namespaceUUID, namespaceUUID2}, nil)
+			},
+			expectedHostRemoved: false,
+			expectedError:       false,
+		},
+		{
+			name:                      "Error removing host",
+			subsystemUUID:             subsystemUUID,
+			hostNQN:                   hostNQN,
+			namespacesPublishedToNode: []string{},
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return([]*api.NvmeSubsystemHost{{NQN: hostNQN}}, nil)
+				mock.EXPECT().NVMeGetNamespaceUUIDsForSubsystem(ctx, subsystemUUID).
+					Return([]string{namespaceUUID}, nil)
+				mock.EXPECT().NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID).
+					Return(errors.New("API error"))
+			},
+			expectedHostRemoved: false,
+			expectedError:       true,
+		},
+		{
+			name:                      "Success - host removed",
+			subsystemUUID:             subsystemUUID,
+			hostNQN:                   hostNQN,
+			namespacesPublishedToNode: []string{},
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return([]*api.NvmeSubsystemHost{{NQN: hostNQN}}, nil)
+				mock.EXPECT().NVMeGetNamespaceUUIDsForSubsystem(ctx, subsystemUUID).
+					Return([]string{namespaceUUID}, nil)
+				mock.EXPECT().NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID).
+					Return(nil)
+			},
+			expectedHostRemoved: true,
+			expectedError:       false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockAPI := mockapi.NewMockOntapAPI(ctrl)
+			tt.mockSetup(mockAPI)
+
+			hostRemoved, err := RemoveHostFromSubsystem(
+				ctx,
+				mockAPI,
+				tt.hostNQN,
+				tt.subsystemUUID,
+				tt.namespacesPublishedToNode,
+			)
+
+			assert.Equal(t, tt.expectedHostRemoved, hostRemoved)
+			if tt.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestIsHostPresentInSubsystem(t *testing.T) {
+	subsystemUUID := "fake-subsystem-uuid"
+	hostNQN := "nqn.2024-01.com.netapp:host1"
+
+	tests := []struct {
+		name          string
+		subsystemUUID string
+		hostNQN       string
+		mockSetup     func(*mockapi.MockOntapAPI)
+		expectedFound bool
+		expectedError bool
+	}{
+		{
+			name:          "Error getting hosts",
+			subsystemUUID: subsystemUUID,
+			hostNQN:       hostNQN,
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return(nil, errors.New("API error"))
+			},
+			expectedFound: false,
+			expectedError: true,
+		},
+		{
+			name:          "Host found",
+			subsystemUUID: subsystemUUID,
+			hostNQN:       hostNQN,
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return([]*api.NvmeSubsystemHost{{NQN: hostNQN}}, nil)
+			},
+			expectedFound: true,
+			expectedError: false,
+		},
+		{
+			name:          "Host not found",
+			subsystemUUID: subsystemUUID,
+			hostNQN:       hostNQN,
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return([]*api.NvmeSubsystemHost{{NQN: "different-nqn"}}, nil)
+			},
+			expectedFound: false,
+			expectedError: false,
+		},
+		{
+			name:          "Nil host in list",
+			subsystemUUID: subsystemUUID,
+			hostNQN:       hostNQN,
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return([]*api.NvmeSubsystemHost{nil, {NQN: hostNQN}}, nil)
+			},
+			expectedFound: true,
+			expectedError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockAPI := mockapi.NewMockOntapAPI(ctrl)
+			tt.mockSetup(mockAPI)
+
+			found, err := isHostPresentInSubsystem(ctx, mockAPI, tt.subsystemUUID, tt.hostNQN)
+
+			assert.Equal(t, tt.expectedFound, found)
+			if tt.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestNamespacesFromSubsystemExistsOnHost(t *testing.T) {
+	subsystemUUID := "fake-subsystem-uuid"
+	namespaceUUID := "fake-namespace-uuid"
+	namespaceUUID2 := "fake-namespace-uuid-2"
+
+	tests := []struct {
+		name                      string
+		subsystemUUID             string
+		namespacesPublishedToNode []string
+		mockSetup                 func(*mockapi.MockOntapAPI)
+		expectedExists            bool
+		expectedError             bool
+	}{
+		{
+			name:                      "Error getting namespaces for subsystem",
+			subsystemUUID:             subsystemUUID,
+			namespacesPublishedToNode: []string{namespaceUUID},
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetNamespaceUUIDsForSubsystem(ctx, subsystemUUID).
+					Return(nil, errors.New("API error"))
+			},
+			expectedExists: false,
+			expectedError:  true,
+		},
+		{
+			name:                      "Namespace exists on host",
+			subsystemUUID:             subsystemUUID,
+			namespacesPublishedToNode: []string{namespaceUUID, namespaceUUID2},
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetNamespaceUUIDsForSubsystem(ctx, subsystemUUID).
+					Return([]string{namespaceUUID}, nil)
+			},
+			expectedExists: true,
+			expectedError:  false,
+		},
+		{
+			name:                      "No matching namespaces",
+			subsystemUUID:             subsystemUUID,
+			namespacesPublishedToNode: []string{namespaceUUID2},
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetNamespaceUUIDsForSubsystem(ctx, subsystemUUID).
+					Return([]string{namespaceUUID}, nil)
+			},
+			expectedExists: false,
+			expectedError:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockAPI := mockapi.NewMockOntapAPI(ctrl)
+			tt.mockSetup(mockAPI)
+
+			exists, err := namespacesFromSubsystemExistsOnHost(
+				ctx,
+				mockAPI,
+				tt.subsystemUUID,
+				tt.namespacesPublishedToNode,
+			)
+
+			assert.Equal(t, tt.expectedExists, exists)
+			if tt.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestNVMeEnsureNamespaceUnmapped(t *testing.T) {
+	subsystemUUID := "fake-subsystem-uuid"
+	namespaceUUID := "fake-namespace-uuid"
+	host2NQN := "nqn.2024-01.com.netapp:host2"
+
+	tests := []struct {
+		name                   string
+		subsystemUUID          string
+		namespaceUUID          string
+		publishedNodes         []*tridentmodels.Node
+		mockSetup              func(*mockapi.MockOntapAPI)
+		expectedNamespaceUnmap bool
+		expectedError          bool
+	}{
+		{
+			name:           "Error checking namespace mapping",
+			subsystemUUID:  subsystemUUID,
+			namespaceUUID:  namespaceUUID,
+			publishedNodes: nil,
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, namespaceUUID).
+					Return(false, errors.New("API error"))
+			},
+			expectedNamespaceUnmap: false,
+			expectedError:          true,
+		},
+		{
+			name:           "Namespace not mapped - already unmapped",
+			subsystemUUID:  subsystemUUID,
+			namespaceUUID:  namespaceUUID,
+			publishedNodes: nil,
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, namespaceUUID).
+					Return(false, nil)
+			},
+			expectedNamespaceUnmap: true,
+			expectedError:          false,
+		},
+		{
+			name:           "Error checking if other hosts need namespace",
+			subsystemUUID:  subsystemUUID,
+			namespaceUUID:  namespaceUUID,
+			publishedNodes: []*tridentmodels.Node{{NQN: host2NQN}},
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, namespaceUUID).
+					Return(true, nil)
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return(nil, errors.New("API error"))
+			},
+			expectedNamespaceUnmap: false,
+			expectedError:          true,
+		},
+		{
+			name:           "Other hosts need namespace - cannot unmap",
+			subsystemUUID:  subsystemUUID,
+			namespaceUUID:  namespaceUUID,
+			publishedNodes: []*tridentmodels.Node{{NQN: host2NQN}},
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, namespaceUUID).
+					Return(true, nil)
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return([]*api.NvmeSubsystemHost{{NQN: host2NQN}}, nil)
+			},
+			expectedNamespaceUnmap: false,
+			expectedError:          false,
+		},
+		{
+			name:           "Error unmapping namespace",
+			subsystemUUID:  subsystemUUID,
+			namespaceUUID:  namespaceUUID,
+			publishedNodes: nil,
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, namespaceUUID).
+					Return(true, nil)
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return([]*api.NvmeSubsystemHost{}, nil)
+				mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, namespaceUUID).
+					Return(errors.New("API error"))
+			},
+			expectedNamespaceUnmap: false,
+			expectedError:          true,
+		},
+		{
+			name:           "Success - namespace unmapped",
+			subsystemUUID:  subsystemUUID,
+			namespaceUUID:  namespaceUUID,
+			publishedNodes: nil,
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, namespaceUUID).
+					Return(true, nil)
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return([]*api.NvmeSubsystemHost{}, nil)
+				mock.EXPECT().NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, namespaceUUID).
+					Return(nil)
+			},
+			expectedNamespaceUnmap: true,
+			expectedError:          false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockAPI := mockapi.NewMockOntapAPI(ctrl)
+			tt.mockSetup(mockAPI)
+
+			namespaceUnmapped, err := UnmapNamespaceFromSubsystem(
+				ctx,
+				mockAPI,
+				tt.subsystemUUID,
+				tt.namespaceUUID,
+				tt.publishedNodes,
+			)
+
+			assert.Equal(t, tt.expectedNamespaceUnmap, namespaceUnmapped)
+			if tt.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestIsNamespaceMappedToSubsystem(t *testing.T) {
+	subsystemUUID := "fake-subsystem-uuid"
+	namespaceUUID := "fake-namespace-uuid"
+
+	tests := []struct {
+		name           string
+		subsystemUUID  string
+		namespaceUUID  string
+		mockSetup      func(*mockapi.MockOntapAPI)
+		expectedMapped bool
+		expectedError  bool
+	}{
+		{
+			name:          "Error checking mapping",
+			subsystemUUID: subsystemUUID,
+			namespaceUUID: namespaceUUID,
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, namespaceUUID).
+					Return(false, errors.New("API error"))
+			},
+			expectedMapped: false,
+			expectedError:  true,
+		},
+		{
+			name:          "Namespace mapped",
+			subsystemUUID: subsystemUUID,
+			namespaceUUID: namespaceUUID,
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, namespaceUUID).
+					Return(true, nil)
+			},
+			expectedMapped: true,
+			expectedError:  false,
+		},
+		{
+			name:          "Namespace not mapped",
+			subsystemUUID: subsystemUUID,
+			namespaceUUID: namespaceUUID,
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeIsNamespaceMapped(ctx, subsystemUUID, namespaceUUID).
+					Return(false, nil)
+			},
+			expectedMapped: false,
+			expectedError:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockAPI := mockapi.NewMockOntapAPI(ctrl)
+			tt.mockSetup(mockAPI)
+
+			isMapped, err := isNamespaceMappedToSubsystem(ctx, mockAPI, tt.subsystemUUID, tt.namespaceUUID)
+
+			assert.Equal(t, tt.expectedMapped, isMapped)
+			if tt.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestOtherHostsNeedNamespace(t *testing.T) {
+	subsystemUUID := "fake-subsystem-uuid"
+	hostNQN := "nqn.2024-01.com.netapp:host1"
+	host2NQN := "nqn.2024-01.com.netapp:host2"
+
+	tests := []struct {
+		name              string
+		subsystemUUID     string
+		publishedNodes    []*tridentmodels.Node
+		mockSetup         func(*mockapi.MockOntapAPI)
+		expectedOtherNeed bool
+		expectedError     bool
+	}{
+		{
+			name:           "Error getting hosts",
+			subsystemUUID:  subsystemUUID,
+			publishedNodes: []*tridentmodels.Node{{NQN: hostNQN}},
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return(nil, errors.New("API error"))
+			},
+			expectedOtherNeed: false,
+			expectedError:     true,
+		},
+		{
+			name:           "Other host needs namespace",
+			subsystemUUID:  subsystemUUID,
+			publishedNodes: []*tridentmodels.Node{{NQN: host2NQN}},
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return([]*api.NvmeSubsystemHost{{NQN: hostNQN}, {NQN: host2NQN}}, nil)
+			},
+			expectedOtherNeed: true,
+			expectedError:     false,
+		},
+		{
+			name:           "No other hosts need namespace",
+			subsystemUUID:  subsystemUUID,
+			publishedNodes: []*tridentmodels.Node{{NQN: "different-nqn"}},
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return([]*api.NvmeSubsystemHost{{NQN: hostNQN}}, nil)
+			},
+			expectedOtherNeed: false,
+			expectedError:     false,
+		},
+		{
+			name:           "Nil node in published nodes",
+			subsystemUUID:  subsystemUUID,
+			publishedNodes: []*tridentmodels.Node{nil, {NQN: host2NQN}},
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return([]*api.NvmeSubsystemHost{{NQN: host2NQN}}, nil)
+			},
+			expectedOtherNeed: true,
+			expectedError:     false,
+		},
+		{
+			name:           "Empty NQN in published node",
+			subsystemUUID:  subsystemUUID,
+			publishedNodes: []*tridentmodels.Node{{NQN: ""}},
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return([]*api.NvmeSubsystemHost{{NQN: hostNQN}}, nil)
+			},
+			expectedOtherNeed: false,
+			expectedError:     false,
+		},
+		{
+			name:           "Nil host in subsystem",
+			subsystemUUID:  subsystemUUID,
+			publishedNodes: []*tridentmodels.Node{{NQN: hostNQN}},
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return([]*api.NvmeSubsystemHost{nil, {NQN: hostNQN}}, nil)
+			},
+			expectedOtherNeed: true,
+			expectedError:     false,
+		},
+		{
+			name:           "Empty NQN in subsystem host",
+			subsystemUUID:  subsystemUUID,
+			publishedNodes: []*tridentmodels.Node{{NQN: hostNQN}},
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeGetHostsOfSubsystem(ctx, subsystemUUID).
+					Return([]*api.NvmeSubsystemHost{{NQN: ""}}, nil)
+			},
+			expectedOtherNeed: false,
+			expectedError:     false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockAPI := mockapi.NewMockOntapAPI(ctrl)
+			tt.mockSetup(mockAPI)
+
+			otherNeed, err := otherHostsNeedNamespace(ctx, mockAPI, tt.subsystemUUID, tt.publishedNodes)
+
+			assert.Equal(t, tt.expectedOtherNeed, otherNeed)
+			if tt.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestDeleteSubsystemIfEmpty(t *testing.T) {
+	subsystemUUID := "fake-subsystem-uuid"
+
+	tests := []struct {
+		name          string
+		subsystemUUID string
+		mockSetup     func(*mockapi.MockOntapAPI)
+		expectedError bool
+	}{
+		{
+			name:          "Error getting namespace count - returns nil",
+			subsystemUUID: subsystemUUID,
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, subsystemUUID).
+					Return(int64(0), errors.New("API error"))
+			},
+			expectedError: false,
+		},
+		{
+			name:          "Subsystem has namespaces - not deleted",
+			subsystemUUID: subsystemUUID,
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, subsystemUUID).
+					Return(int64(2), nil)
+			},
+			expectedError: false,
+		},
+		{
+			name:          "Error deleting subsystem",
+			subsystemUUID: subsystemUUID,
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, subsystemUUID).
+					Return(int64(0), nil)
+				mock.EXPECT().NVMeSubsystemDelete(ctx, subsystemUUID).
+					Return(errors.New("API error"))
+			},
+			expectedError: true,
+		},
+		{
+			name:          "Success - subsystem deleted",
+			subsystemUUID: subsystemUUID,
+			mockSetup: func(mock *mockapi.MockOntapAPI) {
+				mock.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, subsystemUUID).
+					Return(int64(0), nil)
+				mock.EXPECT().NVMeSubsystemDelete(ctx, subsystemUUID).
+					Return(nil)
+			},
+			expectedError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockAPI := mockapi.NewMockOntapAPI(ctrl)
+			tt.mockSetup(mockAPI)
+
+			err := deleteSubsystemIfEmpty(ctx, mockAPI, tt.subsystemUUID)
+
+			if tt.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

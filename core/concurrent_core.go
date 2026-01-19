@@ -3472,9 +3472,18 @@ func (o *ConcurrentTridentOrchestrator) unpublishVolume(
 	Logc(ctx).WithFields(fields).Debug(">>>>>> Orchestrator#unpublishVolume")
 	defer Logc(ctx).Debug("<<<<<< Orchestrator#unpublishVolume")
 
-	results, unlocker, err := db.Lock(ctx, db.Query(db.ListVolumePublicationsForVolume(volumeName), db.ReadNode(""),
-		db.ReadBackend(""), db.UpsertVolume("", ""),
-		db.DeleteVolumePublication(volumeName, nodeName)))
+	results, unlocker, err := db.Lock(ctx,
+		db.Query(
+			db.ListVolumePublicationsForVolume(volumeName),
+			db.ReadNode(""),
+			db.ReadBackend(""),
+			db.UpsertVolume("", ""),
+			db.DeleteVolumePublication(volumeName, nodeName),
+		),
+		db.Query(
+			db.ListVolumesForNode(nodeName),
+		),
+	)
 	defer unlocker()
 	if err != nil {
 		if errors.IsNotFoundError(err) {
@@ -3531,6 +3540,22 @@ func (o *ConcurrentTridentOrchestrator) unpublishVolume(
 		nodes = append(nodes, n)
 	}
 	publishInfo.Nodes = nodes
+
+	// Build list of NVMe namespace UUIDs that remain published to this host.
+	// This is used to determine if the host should be removed from a SuperSubsystem.
+	// Only collect namespace UUIDs if this volume is NVMe (has a namespace UUID).
+	if volume.Config.AccessInfo.NVMeNamespaceUUID != "" {
+		namespaceUUIDs := make([]string, 0)
+		for _, vol := range results[1].Volumes {
+			if vol.Config.Name == volumeName {
+				continue
+			}
+			if vol.Config.AccessInfo.NVMeNamespaceUUID != "" {
+				namespaceUUIDs = append(namespaceUUIDs, vol.Config.AccessInfo.NVMeNamespaceUUID)
+			}
+		}
+		publishInfo.HostNVMeNamespaceUUIDs = namespaceUUIDs
+	}
 
 	if err := backend.UnpublishVolume(ctx, volume.Config, publishInfo); err != nil {
 		if !errors.IsNotFoundError(err) {

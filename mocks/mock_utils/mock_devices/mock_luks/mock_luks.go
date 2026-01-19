@@ -11,7 +11,7 @@ package mock_luks
 
 import (
 	context "context"
-	fs "io/fs"
+	os "os"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -21,6 +21,7 @@ import (
 type MockOS struct {
 	ctrl     *gomock.Controller
 	recorder *MockOSMockRecorder
+	isgomock struct{}
 }
 
 // MockOSMockRecorder is the mock recorder for MockOS.
@@ -41,84 +42,85 @@ func (m *MockOS) EXPECT() *MockOSMockRecorder {
 }
 
 // Glob mocks base method.
-func (m *MockOS) Glob(arg0 string) ([]string, error) {
+func (m *MockOS) Glob(pattern string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Glob", arg0)
+	ret := m.ctrl.Call(m, "Glob", pattern)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Glob indicates an expected call of Glob.
-func (mr *MockOSMockRecorder) Glob(arg0 any) *gomock.Call {
+func (mr *MockOSMockRecorder) Glob(pattern any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Glob", reflect.TypeOf((*MockOS)(nil).Glob), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Glob", reflect.TypeOf((*MockOS)(nil).Glob), pattern)
 }
 
 // ReadDir mocks base method.
-func (m *MockOS) ReadDir(arg0 string) ([]fs.FileInfo, error) {
+func (m *MockOS) ReadDir(dirname string) ([]os.FileInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReadDir", arg0)
-	ret0, _ := ret[0].([]fs.FileInfo)
+	ret := m.ctrl.Call(m, "ReadDir", dirname)
+	ret0, _ := ret[0].([]os.FileInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ReadDir indicates an expected call of ReadDir.
-func (mr *MockOSMockRecorder) ReadDir(arg0 any) *gomock.Call {
+func (mr *MockOSMockRecorder) ReadDir(dirname any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadDir", reflect.TypeOf((*MockOS)(nil).ReadDir), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadDir", reflect.TypeOf((*MockOS)(nil).ReadDir), dirname)
 }
 
 // ReadFile mocks base method.
-func (m *MockOS) ReadFile(arg0 string) ([]byte, error) {
+func (m *MockOS) ReadFile(filename string) ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReadFile", arg0)
+	ret := m.ctrl.Call(m, "ReadFile", filename)
 	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ReadFile indicates an expected call of ReadFile.
-func (mr *MockOSMockRecorder) ReadFile(arg0 any) *gomock.Call {
+func (mr *MockOSMockRecorder) ReadFile(filename any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadFile", reflect.TypeOf((*MockOS)(nil).ReadFile), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadFile", reflect.TypeOf((*MockOS)(nil).ReadFile), filename)
 }
 
 // ReadlinkIfPossible mocks base method.
-func (m *MockOS) ReadlinkIfPossible(arg0 string) (string, error) {
+func (m *MockOS) ReadlinkIfPossible(name string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReadlinkIfPossible", arg0)
+	ret := m.ctrl.Call(m, "ReadlinkIfPossible", name)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ReadlinkIfPossible indicates an expected call of ReadlinkIfPossible.
-func (mr *MockOSMockRecorder) ReadlinkIfPossible(arg0 any) *gomock.Call {
+func (mr *MockOSMockRecorder) ReadlinkIfPossible(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadlinkIfPossible", reflect.TypeOf((*MockOS)(nil).ReadlinkIfPossible), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadlinkIfPossible", reflect.TypeOf((*MockOS)(nil).ReadlinkIfPossible), name)
 }
 
 // Stat mocks base method.
-func (m *MockOS) Stat(arg0 string) (fs.FileInfo, error) {
+func (m *MockOS) Stat(name string) (os.FileInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Stat", arg0)
-	ret0, _ := ret[0].(fs.FileInfo)
+	ret := m.ctrl.Call(m, "Stat", name)
+	ret0, _ := ret[0].(os.FileInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Stat indicates an expected call of Stat.
-func (mr *MockOSMockRecorder) Stat(arg0 any) *gomock.Call {
+func (mr *MockOSMockRecorder) Stat(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stat", reflect.TypeOf((*MockOS)(nil).Stat), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stat", reflect.TypeOf((*MockOS)(nil).Stat), name)
 }
 
 // MockDevice is a mock of Device interface.
 type MockDevice struct {
 	ctrl     *gomock.Controller
 	recorder *MockDeviceMockRecorder
+	isgomock struct{}
 }
 
 // MockDeviceMockRecorder is the mock recorder for MockDevice.
@@ -139,62 +141,62 @@ func (m *MockDevice) EXPECT() *MockDeviceMockRecorder {
 }
 
 // CheckPassphrase mocks base method.
-func (m *MockDevice) CheckPassphrase(arg0 context.Context, arg1 string) (bool, error) {
+func (m *MockDevice) CheckPassphrase(ctx context.Context, luksPassphrase string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckPassphrase", arg0, arg1)
+	ret := m.ctrl.Call(m, "CheckPassphrase", ctx, luksPassphrase)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CheckPassphrase indicates an expected call of CheckPassphrase.
-func (mr *MockDeviceMockRecorder) CheckPassphrase(arg0, arg1 any) *gomock.Call {
+func (mr *MockDeviceMockRecorder) CheckPassphrase(ctx, luksPassphrase any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPassphrase", reflect.TypeOf((*MockDevice)(nil).CheckPassphrase), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPassphrase", reflect.TypeOf((*MockDevice)(nil).CheckPassphrase), ctx, luksPassphrase)
 }
 
 // EnsureDeviceMappedOnHost mocks base method.
-func (m *MockDevice) EnsureDeviceMappedOnHost(arg0 context.Context, arg1 string, arg2 map[string]string) (bool, error) {
+func (m *MockDevice) EnsureDeviceMappedOnHost(ctx context.Context, name string, secrets map[string]string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnsureDeviceMappedOnHost", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "EnsureDeviceMappedOnHost", ctx, name, secrets)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // EnsureDeviceMappedOnHost indicates an expected call of EnsureDeviceMappedOnHost.
-func (mr *MockDeviceMockRecorder) EnsureDeviceMappedOnHost(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockDeviceMockRecorder) EnsureDeviceMappedOnHost(ctx, name, secrets any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureDeviceMappedOnHost", reflect.TypeOf((*MockDevice)(nil).EnsureDeviceMappedOnHost), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureDeviceMappedOnHost", reflect.TypeOf((*MockDevice)(nil).EnsureDeviceMappedOnHost), ctx, name, secrets)
 }
 
 // EnsureFormattedAndOpen mocks base method.
-func (m *MockDevice) EnsureFormattedAndOpen(arg0 context.Context, arg1 string) (bool, error) {
+func (m *MockDevice) EnsureFormattedAndOpen(ctx context.Context, luksPassphrase string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnsureFormattedAndOpen", arg0, arg1)
+	ret := m.ctrl.Call(m, "EnsureFormattedAndOpen", ctx, luksPassphrase)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // EnsureFormattedAndOpen indicates an expected call of EnsureFormattedAndOpen.
-func (mr *MockDeviceMockRecorder) EnsureFormattedAndOpen(arg0, arg1 any) *gomock.Call {
+func (mr *MockDeviceMockRecorder) EnsureFormattedAndOpen(ctx, luksPassphrase any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureFormattedAndOpen", reflect.TypeOf((*MockDevice)(nil).EnsureFormattedAndOpen), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureFormattedAndOpen", reflect.TypeOf((*MockDevice)(nil).EnsureFormattedAndOpen), ctx, luksPassphrase)
 }
 
 // IsMappingStale mocks base method.
-func (m *MockDevice) IsMappingStale(arg0 context.Context) bool {
+func (m *MockDevice) IsMappingStale(ctx context.Context) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsMappingStale", arg0)
+	ret := m.ctrl.Call(m, "IsMappingStale", ctx)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // IsMappingStale indicates an expected call of IsMappingStale.
-func (mr *MockDeviceMockRecorder) IsMappingStale(arg0 any) *gomock.Call {
+func (mr *MockDeviceMockRecorder) IsMappingStale(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsMappingStale", reflect.TypeOf((*MockDevice)(nil).IsMappingStale), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsMappingStale", reflect.TypeOf((*MockDevice)(nil).IsMappingStale), ctx)
 }
 
 // MappedDeviceName mocks base method.
@@ -240,15 +242,15 @@ func (mr *MockDeviceMockRecorder) RawDevicePath() *gomock.Call {
 }
 
 // RotatePassphrase mocks base method.
-func (m *MockDevice) RotatePassphrase(arg0 context.Context, arg1, arg2, arg3 string) error {
+func (m *MockDevice) RotatePassphrase(ctx context.Context, volumeId, previousLUKSPassphrase, luksPassphrase string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RotatePassphrase", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "RotatePassphrase", ctx, volumeId, previousLUKSPassphrase, luksPassphrase)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RotatePassphrase indicates an expected call of RotatePassphrase.
-func (mr *MockDeviceMockRecorder) RotatePassphrase(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockDeviceMockRecorder) RotatePassphrase(ctx, volumeId, previousLUKSPassphrase, luksPassphrase any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RotatePassphrase", reflect.TypeOf((*MockDevice)(nil).RotatePassphrase), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RotatePassphrase", reflect.TypeOf((*MockDevice)(nil).RotatePassphrase), ctx, volumeId, previousLUKSPassphrase, luksPassphrase)
 }

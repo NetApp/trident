@@ -5541,3 +5541,340 @@ func lockNamespaceAndSubsystem(nsUUID, ssUUID string) func() {
 		namespaceMutex.Unlock(nsUUID)
 	}
 }
+
+// getSuperSubsystemName finds or allocates a SuperSubsystem for the given NVMe namespace.
+//
+// The function uses an approach with the following priority:
+//  1. First checks if the namespace is already mapped to any SuperSubsystem
+//  2. If not mapped, retrieves all SuperSubsystems (single wildcard call) and finds one with capacity.
+//  3. Otherwise, creates a new SuperSubsystem number by filling gaps in the numbering sequence.
+//     For example: if subsystems 1 and 3 exist, it returns 2; if 1,2,3 exist and all are full, it returns 4.
+func getSuperSubsystemName(ctx context.Context, api api.OntapAPI, nsUUID, tridentUUID string) (string, error) {
+	ssPrefix := fmt.Sprintf("%s%s_", superSubsystemNamePrefix, tridentUUID)
+
+	// Get all the subsystems this namespace is mapped to
+	mappedSubsystems, err := api.NVMeGetSubsystemsForNamespace(ctx, nsUUID)
+	if err != nil {
+		return "", fmt.Errorf("failed to get subsystems for namespace: %w", err)
+	}
+
+	// Check if any of the mapped subsystems is a SuperSubsystem
+	for _, subsys := range mappedSubsystems {
+		if strings.HasPrefix(subsys.Name, ssPrefix) {
+			// Namespace is already mapped to a SuperSubsystem - return
+			Logc(ctx).WithFields(LogFields{
+				"namespace":   nsUUID,
+				"subsystem":   subsys.Name,
+				"subsystemID": subsys.UUID,
+			}).Debug("Namespace already mapped to SuperSubsystem.")
+			return subsys.Name, nil
+		}
+	}
+
+	// Namespace is not mapped to any SuperSubsystem yet
+	// Get all SuperSubsystems to find one with capacity or create a new one
+	Logc(ctx).WithField("tridentUUID", tridentUUID).Debug("Getting all SuperSubsystems.")
+	superSubsystems, err := api.NVMeSubsystemList(ctx, fmt.Sprintf("%s%s*", superSubsystemNamePrefix, tridentUUID))
+	if err != nil {
+		return "", fmt.Errorf("failed to list subsystems: %w", err)
+	}
+
+	usedSubsystemNumbers := make(map[int]bool, len(superSubsystems))
+	for _, ss := range superSubsystems {
+		// Extract number from name (e.g., "trident_subsystem_4321_19" -> 19)
+		numStr := strings.TrimPrefix(ss.Name, ssPrefix)
+		if num, err := strconv.Atoi(numStr); err == nil {
+			usedSubsystemNumbers[num] = true
+		}
+
+		// check the capacity of subsystem and return if there is capacity left
+		nsCount, err := api.NVMeSubsystemGetNamespaceCount(ctx, ss.UUID)
+		if err != nil {
+			return "", fmt.Errorf("error getting namespace count for subsystem %s: %w", ss.UUID, err)
+		}
+		if nsCount < maxNamespacesPerSuperSubsystem {
+			Logc(ctx).WithFields(LogFields{
+				"subsystem":      ss.Name,
+				"namespaceCount": nsCount,
+				"maxNamespaces":  maxNamespacesPerSuperSubsystem,
+			}).Debug("Found SuperSubsystem with available capacity.")
+			return ss.Name, nil
+		}
+	}
+
+	// Create a new one, fill gaps in numbering (e.g., if 1,3 exist -> return 2)
+	nextNumber := 1
+	for {
+		if !usedSubsystemNumbers[nextNumber] {
+			newSubsystemName := fmt.Sprintf("%s%s_%d", superSubsystemNamePrefix, tridentUUID, nextNumber)
+			Logc(ctx).WithFields(LogFields{
+				"subsystem": newSubsystemName,
+				"number":    nextNumber,
+			}).Debug("Allocating new SuperSubsystem number.")
+			return newSubsystemName, nil
+		}
+		nextNumber++
+	}
+}
+
+// RemoveHostFromSubsystem handles the host removal during NVMe volume unpublish operations.
+//	This function safely removes a host (NQN) from a subsystem, but only
+//	if the host no longer has mounted any other namespaces from that subsystem. This is critical
+//	because a single host can have multiple volumes (namespaces) mounted from the same subsystem.
+
+// Algorithm:
+//  1. Check if host exists in subsystem, if not no need to remove
+//  2. Check if host has mounted any other namespaces from this subsystem
+//  3. Remove host only if it has no other namespaces mounted from this subsystem
+func RemoveHostFromSubsystem(
+	ctx context.Context,
+	api api.OntapAPI,
+	hostNQN, subsystemUUID string,
+	namespacesPublishedToNode []string,
+) (bool, error) {
+	fields := LogFields{
+		"method":        "NVMeRemoveHostFromSubsystem",
+		"hostNQN":       hostNQN,
+		"subsystemUUID": subsystemUUID,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> NVMeRemoveHostFromSubsystem")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< NVMeRemoveHostFromSubsystem")
+
+	// Step 1: Verify host exists in subsystem - if not present, nothing to do
+	hostExists, err := isHostPresentInSubsystem(ctx, api, subsystemUUID, hostNQN)
+	if err != nil {
+		return false, fmt.Errorf("error checking if host %s exists in subsystem %s: %w", hostNQN, subsystemUUID, err)
+	}
+	if !hostExists {
+		Logc(ctx).Debugf("Host %s not found in subsystem %s; no removal needed", hostNQN, subsystemUUID)
+		return false, nil
+	}
+
+	// Step 2: Check if host has mounted any other namespaces from this subsystem
+	otherNamespacesExists, err := namespacesFromSubsystemExistsOnHost(ctx, api, subsystemUUID, namespacesPublishedToNode)
+	if err != nil {
+		return false, fmt.Errorf("error checking host dependencies in subsystem %s: %w", subsystemUUID, err)
+	}
+	if otherNamespacesExists {
+		Logc(ctx).Debugf("Host %s still has other namespaces from subsystem %s; cannot remove host yet",
+			hostNQN, subsystemUUID)
+		return false, nil
+	}
+
+	// Step 3: Safe to remove - host has no other publications from this subsystem
+	if err := api.NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID); err != nil {
+		return false, fmt.Errorf("failed to remove host %s from subsystem %s: %w", hostNQN, subsystemUUID, err)
+	}
+
+	Logc(ctx).Debugf("Successfully removed host %s from subsystem %s", hostNQN, subsystemUUID)
+	return true, nil
+}
+
+// isHostPresentInSubsystem checks whether a host(NQN) exists in a subsystem
+func isHostPresentInSubsystem(
+	ctx context.Context,
+	api api.OntapAPI,
+	subsystemUUID, hostNQN string,
+) (bool, error) {
+	// Query all hosts currently added in this subsystem
+	hosts, err := api.NVMeGetHostsOfSubsystem(ctx, subsystemUUID)
+	if err != nil {
+		return false, fmt.Errorf("failed to retrieve host list for subsystem %s: %w", subsystemUUID, err)
+	}
+
+	// Search for the target host in the subsystem's host list
+	for _, host := range hosts {
+		if host != nil && host.NQN == hostNQN {
+			return true, nil
+		}
+	}
+
+	// Host not found in subsystem
+	return false, nil
+}
+
+// namespacesFromSubsystemExistsOnHost checks if a host has mounted any other namespaces (other than the one
+// being unpublished) from the specified subsystem.
+//
+//	Before removing a host from a subsystem, we must ensure the host doesn't have OTHER volumes
+//	mounted from that same subsystem. This prevents breaking connectivity to other volumes.
+//
+// Why this matters:
+//   - In SuperSubsystem scenarios: A host may have volumes vol1, vol2, vol3 all using the same subsystem.
+//     When unpublishing vol1, we cannot remove the host because vol2 and vol3 still need access.
+//   - In PerNode scenarios: A node's personal subsystem may contain namespaces from multiple volumes.
+//     Removing the host prematurely would break access to all other volumes.
+//
+// How it works:
+//  1. Get all namespaces that exist in this subsystem from ONTAP
+//  2. Check if any of the host's currently mounted namespaces belong to this subsystem
+//  3. If a match is found, the host still needs access to the subsystem
+func namespacesFromSubsystemExistsOnHost(
+	ctx context.Context,
+	api api.OntapAPI,
+	subsystemUUID string,
+	namespacesPublishedToNode []string,
+) (bool, error) {
+	// Step 1: Get all namespaces that belong to this subsystem from ONTAP
+	namespacesInSubsystem, err := api.NVMeGetNamespaceUUIDsForSubsystem(ctx, subsystemUUID)
+	if err != nil {
+		return false, fmt.Errorf("failed to retrieve namespace list for subsystem %s: %w", subsystemUUID, err)
+	}
+
+	// Step 2: Convert subsystem's namespace list to map for O(1) lookup performance
+	subsystemNamespaceMap := make(map[string]struct{}, len(namespacesInSubsystem))
+	for _, nsUUID := range namespacesInSubsystem {
+		subsystemNamespaceMap[nsUUID] = struct{}{}
+	}
+
+	// Step 3: Check if any of the host's mounted namespaces belong to this subsystem
+	for _, nsUUID := range namespacesPublishedToNode {
+		if _, exists := subsystemNamespaceMap[nsUUID]; exists {
+			// Found a match - host has at least one other namespace from this subsystem
+			Logc(ctx).Debugf("Host has another namespace %s from subsystem %s; host must remain",
+				nsUUID, subsystemUUID)
+			return true, nil
+		}
+	}
+
+	// No matches found - host has no other namespaces from this subsystem
+	return false, nil
+}
+
+// UnmapNamespaceFromSubsystem handles the namespace unmapping.
+//
+//	This function safely unmaps a namespace from a NVMe subsystem, but only if no other hosts
+//	present in the subsystem, still need access to that namespace. This is critical for RWX (ReadWriteMany) volumes where
+//	multiple hosts may be accessing the same namespace simultaneously.
+
+// Algorithm:
+//  1. Check if namespace is mapped, if not mapped -> nothing to be done
+//  2. Check if any other hosts in the subsystem, still need this namespace
+//  3. Unmap namespace only if no other hosts need it
+func UnmapNamespaceFromSubsystem(
+	ctx context.Context,
+	api api.OntapAPI,
+	subsystemUUID, namespaceUUID string,
+	publishedNodes []*tridentmodels.Node,
+) (bool, error) {
+	fields := LogFields{
+		"method":        "NVMeEnsureNamespaceUnmapped",
+		"subsystemUUID": subsystemUUID,
+		"namespaceUUID": namespaceUUID,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> NVMeEnsureNamespaceUnmapped")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< NVMeEnsureNamespaceUnmapped")
+
+	// Step 1: Verify namespace is mapped to subsystem - if not, nothing to do
+	isMapped, err := isNamespaceMappedToSubsystem(ctx, api, subsystemUUID, namespaceUUID)
+	if err != nil {
+		return false, fmt.Errorf("error checking namespace %s mapping status: %w", namespaceUUID, err)
+	}
+	if !isMapped {
+		Logc(ctx).Infof("Namespace %s is not mapped to subsystem %s; already unmapped",
+			namespaceUUID, subsystemUUID)
+		return true, nil
+	}
+
+	// Step 2: Check if any other hosts in the subsystem still need access to this namespace
+	// if yes, then don't unmap namespace from this subsystem
+	hostsNeedNS, err := otherHostsNeedNamespace(ctx, api, subsystemUUID, publishedNodes)
+	if err != nil {
+		return false, fmt.Errorf("error checking if other hosts need namespace %s: %w", namespaceUUID, err)
+	}
+	if hostsNeedNS {
+		Logc(ctx).Debug("Other hosts still need access to this namespace; cannot unmap yet")
+		return false, nil
+	}
+
+	// Step 3: Safe to unmap - no other hosts need this namespace
+	if err := api.NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, namespaceUUID); err != nil {
+		return false, fmt.Errorf("failed to unmap namespace %s from subsystem %s: %w",
+			namespaceUUID, subsystemUUID, err)
+	}
+	Logc(ctx).Debugf("Successfully unmapped namespace %s from subsystem %s", namespaceUUID, subsystemUUID)
+
+	return true, nil
+}
+
+// isNamespaceMappedToSubsystem checks if a namespace is currently mapped to a subsystem.
+func isNamespaceMappedToSubsystem(
+	ctx context.Context,
+	api api.OntapAPI,
+	subsystemUUID, namespaceUUID string,
+) (bool, error) {
+	isMapped, err := api.NVMeIsNamespaceMapped(ctx, subsystemUUID, namespaceUUID)
+	if err != nil {
+		return false, fmt.Errorf("failed to check mapping status for namespace %s in subsystem %s: %w",
+			namespaceUUID, subsystemUUID, err)
+	}
+	return isMapped, nil
+}
+
+// otherHostsNeedNamespace determines if any hosts (other than the one being unpublished) in the subsystem still
+// need access to the specified namespace within the subsystem.
+//
+// How it works:
+//  1. Get all hosts currently registered in this subsystem from ONTAP
+//  2. Build a map of host NQNs for O(1) lookup performance
+//  3. Check if any node which has published this volume, is there in this subsystem
+//  4. If a match is found, at least one other host still needs access to this namespace.
+func otherHostsNeedNamespace(
+	ctx context.Context,
+	api api.OntapAPI,
+	subsystemUUID string,
+	publishedNodes []*tridentmodels.Node,
+) (bool, error) {
+	// Step 1: Get all hosts (NQNs) currently registered in this subsystem from ONTAP
+	hosts, err := api.NVMeGetHostsOfSubsystem(ctx, subsystemUUID)
+	if err != nil {
+		return false, fmt.Errorf("failed to retrieve host list for subsystem %s: %w", subsystemUUID, err)
+	}
+
+	// Step 2: Build a map of host NQNs present in this subsystem for O(1) lookup performance
+	hostsInSubsystem := make(map[string]struct{})
+	for _, host := range hosts {
+		if host != nil && host.NQN != "" {
+			hostsInSubsystem[host.NQN] = struct{}{}
+		}
+	}
+
+	// Step 3:  Check if any node which has published this volume, is there in this subsystem
+	// publishedNodes contains the list of nodes that currently have this volume published to them
+	for _, node := range publishedNodes {
+		if node != nil && node.NQN != "" {
+			if _, exists := hostsInSubsystem[node.NQN]; exists {
+				// Found a match - at least one other host in this subsystem still needs this namespace
+				Logc(ctx).Debugf("Host %s still needs namespace in subsystem %s; cannot unmap yet",
+					node.NQN, subsystemUUID)
+				return true, nil
+			}
+		}
+	}
+
+	// No matches found - no other hosts in this subsystem need this namespace, safe to unmap
+	return false, nil
+}
+
+// deleteSubsystemIfEmpty checks if subsystem has no namespaces and deletes it
+func deleteSubsystemIfEmpty(ctx context.Context, api api.OntapAPI, subsystemUUID string) error {
+	// Check remaining namespace count
+	remainingNS, err := api.NVMeSubsystemGetNamespaceCount(ctx, subsystemUUID)
+	if err != nil {
+		Logc(ctx).WithError(err).Warn("Error getting remaining namespace count, skipping subsystem deletion")
+		return nil
+	}
+
+	if remainingNS > 0 {
+		Logc(ctx).Debugf("Subsystem %s still has %d namespaces, not deleting", subsystemUUID, remainingNS)
+		return nil
+	}
+
+	// Subsystem has no namespaces, delete it
+	if err := api.NVMeSubsystemDelete(ctx, subsystemUUID); err != nil {
+		return fmt.Errorf("error deleting empty subsystem %s: %w", subsystemUUID, err)
+	}
+	Logc(ctx).Debugf("Deleted empty subsystem %s", subsystemUUID)
+
+	return nil
+}

@@ -3732,6 +3732,12 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 		publishInfo.Nodes = append(publishInfo.Nodes, n)
 	}
 
+	// Build list of NVMe namespace UUIDs that remain published to this host.
+	// This is used to determine if the host should be removed from a SuperSubsystem.
+	// Only collect namespace UUIDs if this volume is NVMe (has a namespace UUID).
+	if volume.Config.AccessInfo.NVMeNamespaceUUID != "" {
+		publishInfo.HostNVMeNamespaceUUIDs = o.getPublishedNVMeNamespaceUUIDsOnNode(ctx, nodeName, volumeName)
+	}
 	backend, ok := o.backends[volume.BackendUUID]
 	if !ok {
 		// Not a not found error because this is not user input.
@@ -3764,6 +3770,38 @@ func (o *TridentOrchestrator) unpublishVolume(ctx context.Context, volumeName, n
 	}
 
 	return nil
+}
+
+// getPublishedNVMeNamespaceUUIDsOnNode returns namespace UUIDs for all NVMe volumes
+// that remain published to this node, excluding the specified volume.
+func (o *TridentOrchestrator) getPublishedNVMeNamespaceUUIDsOnNode(
+	ctx context.Context, nodeName, excludeVolumeName string,
+) []string {
+	namespaceUUIDs := make([]string, 0)
+
+	// Get all publications for this node
+	publications := o.volumePublications.ListPublicationsForNode(nodeName)
+
+	for _, pub := range publications {
+		// Skip the volume being unpublished
+		if pub.VolumeName == excludeVolumeName {
+			continue
+		}
+
+		vol, found := o.volumes[pub.VolumeName]
+		if !found {
+			if vol, found = o.subordinateVolumes[pub.VolumeName]; !found {
+				continue
+			}
+		}
+
+		// Check if this volume has an NVMe namespace UUID
+		if vol.Config.AccessInfo.NVMeNamespaceUUID != "" {
+			namespaceUUIDs = append(namespaceUUIDs, vol.Config.AccessInfo.NVMeNamespaceUUID)
+		}
+	}
+
+	return namespaceUUIDs
 }
 
 // AttachVolume mounts a volume to the local host.  This method is currently only used by Docker,

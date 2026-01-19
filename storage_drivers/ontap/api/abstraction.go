@@ -253,6 +253,8 @@ type OntapAPI interface {
 	NVMeNamespaceDelete(ctx context.Context, namespacePath string) error
 	NVMeSubsystemCreate(ctx context.Context, subsystemName, comment string) (*NVMeSubsystem, error)
 	NVMeSubsystemDelete(ctx context.Context, subsysUUID string) error
+	NVMeSubsystemGetByName(ctx context.Context, subsysName string) (*NVMeSubsystem, error)
+	NVMeSubsystemList(ctx context.Context, pattern string) ([]NVMeSubsystem, error)
 	NVMeSubsystemAddNamespace(ctx context.Context, subsystemUUID, nsUUID string) error
 	NVMeSubsystemRemoveNamespace(ctx context.Context, subsysUUID, nsUUID string) error
 	NVMeAddHostToSubsystem(ctx context.Context, hostNQN, subsUUID string) error
@@ -260,7 +262,9 @@ type OntapAPI interface {
 	NVMeSubsystemGetNamespaceCount(ctx context.Context, subsysUUID string) (int64, error)
 	NVMeIsNamespaceMapped(ctx context.Context, subsysUUID, nsUUID string) (bool, error)
 	NVMeEnsureNamespaceMapped(ctx context.Context, subsystemUUID, nsUUID string) error
-	NVMeEnsureNamespaceUnmapped(ctx context.Context, hostNQN, subsytemUUID, nsUUID string) (bool, error)
+	NVMeGetNamespaceUUIDsForSubsystem(ctx context.Context, subsysUUID string) ([]string, error)
+	NVMeGetSubsystemsForNamespace(ctx context.Context, namespaceUUID string) ([]NVMeSubsystem, error)
+	NVMeGetHostsOfSubsystem(ctx context.Context, subsUUID string) ([]*NvmeSubsystemHost, error)
 
 	StorageUnitExists(ctx context.Context, suName string) (bool, error)
 	StorageUnitSnapshotCreate(ctx context.Context, snapshotName, suName string) error

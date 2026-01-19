@@ -60,6 +60,11 @@ const (
 	maximumSubsystemNameLength = 64
 	// nvmeSubsystemPrefix Subsystem prefix for ONTAP NVMe driver (empty for legacy compatibility)
 	nvmeSubsystemPrefix = ""
+
+	// SuperSubsystem naming prefix for shared RWX volumes
+	superSubsystemNamePrefix = "trident_subsystem_"
+	// maxNamespacesPerSuperSubsystem is the hard limit for namespaces per SuperSubsystem
+	maxNamespacesPerSuperSubsystem int64 = 1024
 )
 
 // Namespace attributes stored in its comment field. These fields are useful for docker context.
@@ -922,12 +927,31 @@ func (d *NVMeStorageDriver) Publish(
 		Logc(ctx).Debug("Host NQN is ", publishInfo.HostNQN)
 	}
 
-	// When FS type is RAW, we create a new subsystem per namespace,
+	// When FS type is RAW, we create a new super subsystem where we can add multiple NQNs and NS,
 	// else we use the subsystem created for that particular node
 	var ssName string
 	var completeSSName string
 	if volConfig.FileSystem == filesystem.Raw {
-		ssName = getNamespaceSpecificSubsystemName(name, pvName)
+		// Check if per-volume subsystem already exists for this volume
+		perVolumeSSName := getNamespaceSpecificSubsystemName(name, pvName)
+		perVolumeSS, err := d.API.NVMeSubsystemGetByName(ctx, perVolumeSSName)
+		if err != nil {
+			return fmt.Errorf("failed to check per-volume subsystem: %w", err)
+		}
+
+		if perVolumeSS != nil {
+			ssName = perVolumeSSName
+			Logc(ctx).Info("Using existing per-volume subsystem for volume %v", volConfig.InternalID)
+		}
+
+		if ssName == "" {
+			ssName, err = getSuperSubsystemName(ctx, d.API, nsUUID, publishInfo.TridentUUID)
+			if err != nil {
+				return fmt.Errorf("failed to get SuperSubsystem: %w", err)
+			}
+			Logc(ctx).WithField("superSubsystem", ssName).Info("Using SuperSubsystem for volume %v", ssName)
+		}
+
 	} else {
 		// For Docker plugin mode, use storage prefix for stable subsystem naming
 		// This allows user control over subsystem sharing via storage prefix configuration
@@ -1015,13 +1039,43 @@ func (d *NVMeStorageDriver) Unpublish(
 	unlock := lockNamespaceAndSubsystem(namespaceUUID, subsystemUUID)
 	defer unlock()
 
-	removePublishInfo, err := d.API.NVMeEnsureNamespaceUnmapped(ctx, publishInfo.HostNQN, subsystemUUID, namespaceUUID)
-	if removePublishInfo {
+	// Remove host from subsystem if it has no other published volumes from this subsystem
+	_, err := RemoveHostFromSubsystem(
+		ctx,
+		d.API,
+		publishInfo.HostNQN,
+		subsystemUUID,
+		publishInfo.HostNVMeNamespaceUUIDs,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to remove host from subsystem: %w", err)
+	}
+
+	// Unmap namespace from subsystem if no other hosts in SS need it
+	namespaceUnmapped, err := UnmapNamespaceFromSubsystem(
+		ctx,
+		d.API,
+		subsystemUUID,
+		namespaceUUID,
+		publishInfo.Nodes,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to unmap namespace: %w", err)
+	}
+
+	//  Delete subsystem if it's now empty, has no namespaces
+	if err := deleteSubsystemIfEmpty(ctx, d.API, subsystemUUID); err != nil {
+		Logc(ctx).WithError(err).Warning("Failed to delete empty subsystem")
+	}
+
+	// Clear access info
+	if namespaceUnmapped {
 		volConfig.AccessInfo.NVMeTargetIPs = []string{}
 		volConfig.AccessInfo.NVMeSubsystemNQN = ""
 		volConfig.AccessInfo.NVMeSubsystemUUID = ""
 	}
-	return err
+
+	return nil
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.

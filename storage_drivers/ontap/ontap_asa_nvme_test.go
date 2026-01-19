@@ -1619,12 +1619,23 @@ func TestPublishASANVMe(t *testing.T) {
 
 	assert.NoError(t, err, "expected no error when adding host NQN to subsystem, got one")
 
-	// case: Success for RAW volume
+	// case: Success for RAW volume - per-volume subsystem doesn't exist, SuperSubsystem doesn't exist
 	volConfig.FileSystem = filesystem.Raw
+	volConfig.InternalName = "fakeInternalName"
+	volConfig.AccessInfo.NVMeNamespaceUUID = "fakeNsUUID"
+	superSubsystem := &api.NVMeSubsystem{
+		Name: "trident_subsystem_fakeUUID_1",
+		UUID: "superSSUUID",
+		NQN:  "superNQN",
+	}
 	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
-	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, "s_fakeInternalName", "s_fakeInternalName").Return(subsystem, nil).Times(1)
-	mockAPI.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, subsystem.UUID).Return(nil).Times(1)
-	mockAPI.EXPECT().NVMeEnsureNamespaceMapped(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemGetByName(ctx, "s_fakeInternalName").Return(nil, nil).Times(1)
+	// NEW getSuperSubsystemName flow
+	mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, "fakeNsUUID").Return([]api.NVMeSubsystem{}, nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_fakeUUID*").Return([]api.NVMeSubsystem{}, nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, "trident_subsystem_fakeUUID_1", "trident_subsystem_fakeUUID_1").Return(superSubsystem, nil).Times(1)
+	mockAPI.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, superSubsystem.UUID).Return(nil).Times(1)
+	mockAPI.EXPECT().NVMeEnsureNamespaceMapped(ctx, superSubsystem.UUID, "fakeNsUUID").Return(nil).Times(1)
 
 	err = driver.Publish(ctx, volConfig, publishInfo)
 
@@ -1683,6 +1694,111 @@ func TestPublishASANVMe(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "rw,nouuid,relatime", publishInfo.MountOptions, "Mount options should not duplicate nouuid")
+
+	// case: RAW filesystem - error checking per-volume subsystem
+	volConfig.FileSystem = filesystem.Raw
+	volConfig.Name = "pvc-12345"
+	volConfig.InternalName = "trident_pvc_12345"
+	volConfig.AccessInfo.NVMeNamespaceUUID = "fakeNsUUID"
+	publishInfo.MountOptions = ""
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemGetByName(ctx, "s_trident_pvc_12345").
+		Return(nil, fmt.Errorf("error checking per-volume subsystem"))
+
+	err = driver.Publish(ctx, volConfig, publishInfo)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to check per-volume subsystem")
+
+	// case: RAW filesystem - per-volume subsystem exists, use it
+	volConfig.FileSystem = filesystem.Raw
+	perVolumeSS := &api.NVMeSubsystem{
+		Name: "s_trident_pvc_12345",
+		UUID: "perVolumeSSUUID",
+		NQN:  "perVolumeNQN",
+	}
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemGetByName(ctx, "s_trident_pvc_12345").Return(perVolumeSS, nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, "s_trident_pvc_12345", "s_trident_pvc_12345").Return(perVolumeSS, nil).Times(1)
+	mockAPI.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, perVolumeSS.UUID).Return(nil).Times(1)
+	mockAPI.EXPECT().NVMeEnsureNamespaceMapped(ctx, perVolumeSS.UUID, "fakeNsUUID").Return(nil).Times(1)
+
+	err = driver.Publish(ctx, volConfig, publishInfo)
+
+	assert.NoError(t, err)
+
+	// case: RAW filesystem - per-volume subsystem does not exist, use SuperSubsystem
+	volConfig.FileSystem = filesystem.Raw
+	superSubsystem = &api.NVMeSubsystem{
+		Name: "trident_subsystem_fakeUUID_1",
+		UUID: "superSSUUID",
+		NQN:  "superNQN",
+	}
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemGetByName(ctx, "s_trident_pvc_12345").Return(nil, nil).Times(1)
+	mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, "fakeNsUUID").Return([]api.NVMeSubsystem{}, nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_fakeUUID*").Return([]api.NVMeSubsystem{}, nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, "trident_subsystem_fakeUUID_1", "trident_subsystem_fakeUUID_1").Return(superSubsystem, nil).Times(1)
+	mockAPI.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, superSubsystem.UUID).Return(nil).Times(1)
+	mockAPI.EXPECT().NVMeEnsureNamespaceMapped(ctx, superSubsystem.UUID, "fakeNsUUID").Return(nil).Times(1)
+
+	err = driver.Publish(ctx, volConfig, publishInfo)
+
+	assert.NoError(t, err)
+
+	// case: RAW filesystem - getSuperSubsystemName returns error
+	volConfig.FileSystem = filesystem.Raw
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemGetByName(ctx, "s_trident_pvc_12345").Return(nil, nil).Times(1)
+	mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, "fakeNsUUID").
+		Return(nil, fmt.Errorf("API error getting subsystems for namespace"))
+
+	err = driver.Publish(ctx, volConfig, publishInfo)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to get SuperSubsystem")
+
+	// case: RAW filesystem - namespace already mapped to existing SuperSubsystem
+	volConfig.FileSystem = filesystem.Raw
+	existingSuperSS := &api.NVMeSubsystem{
+		Name: "trident_subsystem_fakeUUID_2",
+		UUID: "existingSuperSSUUID",
+		NQN:  "existingSuperNQN",
+	}
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemGetByName(ctx, "s_trident_pvc_12345").Return(nil, nil).Times(1)
+	// Namespace already mapped to SuperSubsystem (returned from NVMeGetSubsystemsForNamespace)
+	mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, "fakeNsUUID").Return([]api.NVMeSubsystem{{
+		Name: "trident_subsystem_fakeUUID_2",
+		UUID: "existingSuperSSUUID",
+	}}, nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, "trident_subsystem_fakeUUID_2", "trident_subsystem_fakeUUID_2").Return(existingSuperSS, nil).Times(1)
+	mockAPI.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, existingSuperSS.UUID).Return(nil).Times(1)
+	mockAPI.EXPECT().NVMeEnsureNamespaceMapped(ctx, existingSuperSS.UUID, "fakeNsUUID").Return(nil).Times(1)
+
+	err = driver.Publish(ctx, volConfig, publishInfo)
+
+	assert.NoError(t, err)
+
+	// case: RAW filesystem - SuperSubsystem exists with capacity (not full)
+	volConfig.FileSystem = filesystem.Raw
+	mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemGetByName(ctx, "s_trident_pvc_12345").Return(nil, nil).Times(1)
+	// Namespace not yet mapped
+	mockAPI.EXPECT().NVMeGetSubsystemsForNamespace(ctx, "fakeNsUUID").Return([]api.NVMeSubsystem{}, nil).Times(1)
+	// SuperSubsystem exists with capacity
+	mockAPI.EXPECT().NVMeSubsystemList(ctx, "trident_subsystem_fakeUUID*").Return([]api.NVMeSubsystem{{
+		Name: "trident_subsystem_fakeUUID_1",
+		UUID: "existingSuperSSUUID",
+	}}, nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "existingSuperSSUUID").Return(int64(500), nil).Times(1)
+	mockAPI.EXPECT().NVMeSubsystemCreate(ctx, "trident_subsystem_fakeUUID_1", "trident_subsystem_fakeUUID_1").Return(existingSuperSS, nil).Times(1)
+	mockAPI.EXPECT().NVMeAddHostToSubsystem(ctx, publishInfo.HostNQN, existingSuperSS.UUID).Return(nil).Times(1)
+	mockAPI.EXPECT().NVMeEnsureNamespaceMapped(ctx, existingSuperSS.UUID, "fakeNsUUID").Return(nil).Times(1)
+
+	err = driver.Publish(ctx, volConfig, publishInfo)
+
+	assert.NoError(t, err)
 }
 
 func TestUnpublishASANVMe(t *testing.T) {
@@ -1696,26 +1812,134 @@ func TestUnpublishASANVMe(t *testing.T) {
 	publishInfo := &models.VolumePublishInfo{
 		HostName:    "fakeHostName",
 		TridentUUID: "fakeUUID",
+		HostNQN:     "nqn.2014-08.org.nvmexpress:uuid:fake-host-nqn",
 	}
 
-	// case 1: NVMeEnsureNamespaceUnmapped returned error
+	// case 1: NVMeRemoveHostFromSubsystem - error checking if host present
 	volConfig.AccessInfo.NVMeNamespaceUUID = "fakeUUID"
+	volConfig.AccessInfo.NVMeSubsystemUUID = "fakeSubsystemUUID"
 	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
-	mockAPI.EXPECT().NVMeEnsureNamespaceUnmapped(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(false, fmt.Errorf("NVMeEnsureNamespaceUnmapped returned error"))
+
+	mockAPI.EXPECT().NVMeGetHostsOfSubsystem(ctx, "fakeSubsystemUUID").
+		Return(nil, fmt.Errorf("NVMeGetHostsOfSubsystem returned error"))
 
 	err := driver.Unpublish(ctx, volConfig, publishInfo)
 
-	assert.Error(t, err, "expected error when NVMeEnsureNamespaceUnmapped fails, got none")
+	assert.Error(t, err, "expected error when NVMeGetHostsOfSubsystem fails, got none")
 
-	// case 2: Success
+	// case 2: NVMeEnsureNamespaceUnmapped - error checking if namespace is mapped
+	mockAPI.EXPECT().NVMeGetHostsOfSubsystem(ctx, "fakeSubsystemUUID").
+		Return([]*api.NvmeSubsystemHost{}, nil)
+	mockAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "fakeSubsystemUUID", "fakeUUID").
+		Return(false, fmt.Errorf("NVMeIsNamespaceMapped returned error"))
+
+	err = driver.Unpublish(ctx, volConfig, publishInfo)
+
+	assert.Error(t, err, "expected error when NVMeIsNamespaceMapped fails, got none")
+
+	// case 3: Namespace not mapped (nothing to do, but deleteSubsystemIfEmpty still called)
+	mockAPI.EXPECT().NVMeGetHostsOfSubsystem(ctx, "fakeSubsystemUUID").
+		Return([]*api.NvmeSubsystemHost{}, nil)
+	mockAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "fakeSubsystemUUID", "fakeUUID").
+		Return(false, nil)
+	mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "fakeSubsystemUUID").
+		Return(int64(1), nil)
+
+	err = driver.Unpublish(ctx, volConfig, publishInfo)
+
+	assert.NoError(t, err, "expected no error when namespace not mapped")
+
+	// case 4: Success - namespace mapped, no other hosts or namespaces, complete flow
 	volConfig.AccessInfo.PublishEnforcement = true
 	volConfig.AccessInfo.NVMeNamespaceUUID = "fakeUUID"
+	volConfig.AccessInfo.NVMeSubsystemUUID = "fakeSubsystemUUID"
+	volConfig.AccessInfo.NVMeTargetIPs = []string{"1.2.3.4"}
+	volConfig.AccessInfo.NVMeSubsystemNQN = "nqn.fake.subsystem"
 	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
-	mockAPI.EXPECT().NVMeEnsureNamespaceUnmapped(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
+
+	// Step 1: NVMeRemoveHostFromSubsystem
+	mockAPI.EXPECT().NVMeGetHostsOfSubsystem(ctx, "fakeSubsystemUUID").
+		Return([]*api.NvmeSubsystemHost{
+			{NQN: "nqn.2014-08.org.nvmexpress:uuid:fake-host-nqn"},
+		}, nil)
+	mockAPI.EXPECT().NVMeGetNamespaceUUIDsForSubsystem(ctx, "fakeSubsystemUUID").
+		Return([]string{"fakeUUID"}, nil)
+	mockAPI.EXPECT().NVMeRemoveHostFromSubsystem(ctx, "nqn.2014-08.org.nvmexpress:uuid:fake-host-nqn", "fakeSubsystemUUID").
+		Return(nil)
+
+	// Step 2: NVMeEnsureNamespaceUnmapped
+	mockAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "fakeSubsystemUUID", "fakeUUID").
+		Return(true, nil)
+	mockAPI.EXPECT().NVMeGetHostsOfSubsystem(ctx, "fakeSubsystemUUID").
+		Return([]*api.NvmeSubsystemHost{}, nil)
+	mockAPI.EXPECT().NVMeSubsystemRemoveNamespace(ctx, "fakeSubsystemUUID", "fakeUUID").
+		Return(nil)
+
+	// Step 3: deleteSubsystemIfEmpty
+	mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "fakeSubsystemUUID").
+		Return(int64(0), nil)
+	mockAPI.EXPECT().NVMeSubsystemDelete(ctx, "fakeSubsystemUUID").
+		Return(nil)
 
 	err = driver.Unpublish(ctx, volConfig, publishInfo)
 
 	assert.NoError(t, err, "expected no error during unpublish, got one")
+	assert.Empty(t, volConfig.AccessInfo.NVMeTargetIPs, "expected NVMeTargetIPs to be cleared")
+	assert.Empty(t, volConfig.AccessInfo.NVMeSubsystemNQN, "expected NVMeSubsystemNQN to be cleared")
+	assert.Empty(t, volConfig.AccessInfo.NVMeSubsystemUUID, "expected NVMeSubsystemUUID to be cleared")
+
+	volConfig = &storage.VolumeConfig{
+		Name:         "fakeVolName",
+		InternalName: "fakeInternalName",
+	}
+	volConfig.AccessInfo.PublishEnforcement = true
+	volConfig.AccessInfo.NVMeNamespaceUUID = "fakeUUID"
+	volConfig.AccessInfo.NVMeSubsystemUUID = "fakeSubsystemUUID"
+	volConfig.AccessInfo.NVMeTargetIPs = []string{"1.2.3.4"}
+	volConfig.AccessInfo.NVMeSubsystemNQN = "nqn.fake.subsystem"
+	tridentconfig.CurrentDriverContext = tridentconfig.ContextCSI
+
+	publishInfo.Nodes = []*models.Node{
+		{
+			Name: "node1",
+			NQN:  "nqn.2014-08.org.nvmexpress:uuid:fake-host-nqn",
+		},
+		{
+			Name: "node2",
+			NQN:  "nqn.2014-08.org.nvmexpress:uuid:other-host-nqn",
+		},
+	}
+
+	// NVMeRemoveHostFromSubsystem - removes current host
+	mockAPI.EXPECT().NVMeGetHostsOfSubsystem(ctx, "fakeSubsystemUUID").
+		Return([]*api.NvmeSubsystemHost{
+			{NQN: "nqn.2014-08.org.nvmexpress:uuid:fake-host-nqn"},
+		}, nil)
+	mockAPI.EXPECT().NVMeGetNamespaceUUIDsForSubsystem(ctx, "fakeSubsystemUUID").
+		Return([]string{"fakeUUID"}, nil)
+	mockAPI.EXPECT().NVMeRemoveHostFromSubsystem(ctx, "nqn.2014-08.org.nvmexpress:uuid:fake-host-nqn", "fakeSubsystemUUID").
+		Return(nil)
+
+	// NVMeEnsureNamespaceUnmapped - namespace stays mapped because other hosts need it
+	mockAPI.EXPECT().NVMeIsNamespaceMapped(ctx, "fakeSubsystemUUID", "fakeUUID").
+		Return(true, nil)
+	mockAPI.EXPECT().NVMeGetHostsOfSubsystem(ctx, "fakeSubsystemUUID").
+		Return([]*api.NvmeSubsystemHost{
+			{NQN: "nqn.2014-08.org.nvmexpress:uuid:other-host-nqn"}, // Other host still present
+		}, nil)
+	// NVMeSubsystemRemoveNamespace should NOT be called because other hosts need this namespace
+
+	// deleteSubsystemIfEmpty - subsystem still has namespaces
+	mockAPI.EXPECT().NVMeSubsystemGetNamespaceCount(ctx, "fakeSubsystemUUID").
+		Return(int64(1), nil)
+
+	err = driver.Unpublish(ctx, volConfig, publishInfo)
+
+	assert.NoError(t, err, "expected no error during unpublish for RWX volume")
+	// AccessInfo should NOT be cleared because namespace was not unmapped
+	assert.Equal(t, []string{"1.2.3.4"}, volConfig.AccessInfo.NVMeTargetIPs, "expected NVMeTargetIPs to be preserved")
+	assert.Equal(t, "nqn.fake.subsystem", volConfig.AccessInfo.NVMeSubsystemNQN, "expected NVMeSubsystemNQN to be preserved")
+	assert.Equal(t, "fakeSubsystemUUID", volConfig.AccessInfo.NVMeSubsystemUUID, "expected NVMeSubsystemUUID to be preserved")
 }
 
 func TestGetSnapshotNVMe(t *testing.T) {

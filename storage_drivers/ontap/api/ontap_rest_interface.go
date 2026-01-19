@@ -402,6 +402,8 @@ type RestClientInterface interface {
 	NVMeSubsystemList(ctx context.Context, pattern string, fields []string) (*nvme.NvmeSubsystemCollectionGetOK, error)
 	// NVMeSubsystemGetByName gets the subsystem with the specified name
 	NVMeSubsystemGetByName(ctx context.Context, subsystemName string, fields []string) (*models.NvmeSubsystem, error)
+	// NVMeGetNamespaceUUIDsForSubsystem returns UUIDs of all namespaces mapped to a subsystem
+	NVMeGetNamespaceUUIDsForSubsystem(ctx context.Context, subsysUUID string) ([]string, error)
 	// NVMeSubsystemCreate creates a new subsystem
 	NVMeSubsystemCreate(ctx context.Context, subsystemName, comment string) (*models.NvmeSubsystem, error)
 	// NVMeSubsystemDelete deletes a given subsystem
@@ -414,6 +416,8 @@ type RestClientInterface interface {
 	NVMeGetHostsOfSubsystem(ctx context.Context, subsUUID string) ([]*models.NvmeSubsystemHost, error)
 	// NVMeNamespaceSize returns the size of the namespace
 	NVMeNamespaceSize(ctx context.Context, namespacePath string) (int, error)
+	// NVMeGetSubsystemsForNamespace retrieves all subsystems that a namespace is mapped to
+	NVMeGetSubsystemsForNamespace(ctx context.Context, namespaceUUID string) ([]NVMeSubsystem, error)
 	// StorageUnitGetByName gets the storage unit with the specified name
 	StorageUnitGetByName(ctx context.Context, suName string) (*models.StorageUnit, error)
 	// StorageUnitSnapshotCreateAndWait creates a snapshot and waits on the job to complete

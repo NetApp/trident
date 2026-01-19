@@ -3336,6 +3336,31 @@ func (d OntapAPIREST) NVMeSubsystemGetNamespaceCount(ctx context.Context, subsys
 	return count, nil
 }
 
+// NVMeSubsystemList returns a list of subsystems matching the pattern
+func (d OntapAPIREST) NVMeSubsystemList(ctx context.Context, pattern string) ([]NVMeSubsystem, error) {
+	fields := []string{"uuid", "name"}
+	result, err := d.api.NVMeSubsystemList(ctx, pattern, fields)
+	if err != nil {
+		return nil, err
+	}
+
+	if result == nil || result.Payload == nil || result.Payload.NvmeSubsystemResponseInlineRecords == nil {
+		return nil, nil
+	}
+
+	subsystems := make([]NVMeSubsystem, 0, len(result.Payload.NvmeSubsystemResponseInlineRecords))
+	for _, ss := range result.Payload.NvmeSubsystemResponseInlineRecords {
+		if ss != nil && ss.UUID != nil && ss.Name != nil {
+			subsystems = append(subsystems, NVMeSubsystem{
+				UUID: *ss.UUID,
+				Name: *ss.Name,
+			})
+		}
+	}
+
+	return subsystems, nil
+}
+
 func (d OntapAPIREST) NVMeIsNamespaceMapped(
 	ctx context.Context, subsysUUID, namespaceUUID string,
 ) (bool, error) {
@@ -3370,6 +3395,72 @@ func (d OntapAPIREST) NVMeSubsystemDelete(ctx context.Context, subsysUUID string
 	}
 
 	return nil
+}
+
+// NVMeSubsystemGetByName retrieves a subsystem by its name.
+// Returns nil if the subsystem does not exist.
+func (d OntapAPIREST) NVMeSubsystemGetByName(ctx context.Context, subsysName string) (*NVMeSubsystem, error) {
+	logFields := LogFields{
+		"Method":        "NVMeSubsystemGetByName",
+		"Type":          "OntapAPIREST",
+		"subsystemName": subsysName,
+	}
+	Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace(
+		">>>> NVMeSubsystemGetByName")
+	defer Logd(ctx, d.driverName, d.api.ClientConfig().DebugTraceFlags["method"]).WithFields(logFields).Trace(
+		"<<<< NVMeSubsystemGetByName")
+
+	fields := []string{"uuid", "name", "target_nqn"}
+	subsystem, err := d.api.NVMeSubsystemGetByName(ctx, subsysName, fields)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving subsystem %s: %w", subsysName, err)
+	}
+
+	if subsystem == nil {
+		// Subsystem does not exist
+		return nil, nil
+	}
+
+	result := &NVMeSubsystem{}
+	if subsystem.UUID != nil {
+		result.UUID = *subsystem.UUID
+	}
+	if subsystem.Name != nil {
+		result.Name = *subsystem.Name
+	}
+	if subsystem.TargetNqn != nil {
+		result.NQN = *subsystem.TargetNqn
+	}
+
+	return result, nil
+}
+
+// NVMeGetHostsOfSubsystem retrieves all hosts (NQNs) that are currently added in the specified NVMe subsystem.
+func (d OntapAPIREST) NVMeGetHostsOfSubsystem(ctx context.Context, subsUUID string) ([]*NvmeSubsystemHost, error) {
+	// Get the nvme host in the subsystem
+	hostsInSubsystem, err := d.api.NVMeGetHostsOfSubsystem(ctx, subsUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert REST models to abstraction models
+	nvmeHosts := make([]*NvmeSubsystemHost, 0, len(hostsInSubsystem))
+	for _, host := range hostsInSubsystem {
+		if host == nil || host.Nqn == nil {
+			continue
+		}
+
+		nvmeHosts = append(nvmeHosts, &NvmeSubsystemHost{
+			NQN: *host.Nqn,
+		})
+	}
+
+	return nvmeHosts, nil
+}
+
+// NVMeGetSubsystemsForNamespace retrieves all subsystems that a namespace is mapped to
+func (d OntapAPIREST) NVMeGetSubsystemsForNamespace(ctx context.Context, namespaceUUID string) ([]NVMeSubsystem, error) {
+	return d.api.NVMeGetSubsystemsForNamespace(ctx, namespaceUUID)
 }
 
 func (d OntapAPIREST) NVMeAddHostToSubsystem(ctx context.Context, hostNQN, subsysUUID string) error {
@@ -3517,102 +3608,8 @@ func (d OntapAPIREST) NVMeEnsureNamespaceMapped(ctx context.Context, subsystemUU
 	return nil
 }
 
-// NVMeEnsureNamespaceUnmapped first checks if a namespace is mapped to the subsystem and if it is mapped:
-// a) removes the namespace from the subsystem
-// b) deletes the subsystem if no more namespaces are attached to it
-// c) Handles the case where multiple hosts are mapped to single common subsystem arising out of lengthy node names.
-// If namespace is not mapped to subsystem, it is treated as success
-// The function also returns a bool value along with error. A true value denotes the subsystem is deleted
-// successfully and Published info can be removed for the NVMe volume
-func (d OntapAPIREST) NVMeEnsureNamespaceUnmapped(ctx context.Context, hostNQN, subsystemUUID, namespaceUUID string) (bool, error) {
-	// check is namespace is mapped to the subsystem before attempting to remove it
-	isNameSpaceMapped, err := d.api.NVMeIsNamespaceMapped(ctx, subsystemUUID, namespaceUUID)
-	if err != nil {
-		return false, fmt.Errorf("error getting namespace %s from subsystem %s; %v", namespaceUUID, subsystemUUID, err)
-	}
-
-	// If namespace is not mapped, remove the published info if there is any
-	if isNameSpaceMapped == false {
-		Logc(ctx).Infof("Namespace %v is not mapped to subsystem %v", namespaceUUID, subsystemUUID)
-		return true, nil
-	}
-
-	subsystemHosts, err := d.api.NVMeGetHostsOfSubsystem(ctx, subsystemUUID)
-	if err != nil {
-		return false, fmt.Errorf("error getting hosts mapped to subsystem with UUID %s; %v", subsystemUUID, err)
-	}
-
-	hostFound := false
-	for _, host := range subsystemHosts {
-		if host != nil && *host.Nqn == hostNQN {
-			hostFound = true
-			break
-		}
-	}
-
-	// Below are the cases where multiple hosts are attached to a subsystem:
-	// case 1: RWX case - Multiple hosts are intentionally sharing the same namespace for ReadWriteMany access.
-	//         In this scenario, do not delete the namespace mapping, as other hosts may still be using it.
-	// case 2: Common subsystem due to lengthy host names - When host names exceed the allowed length,
-	//         multiple hosts may be mapped to a single "common" subsystem. In this scenario, the subsystem
-	//         is not truly shared for RWX purposes, but is a result of host name truncation. Therefore,
-	//         it is appropriate to remove the namespace mapping when detaching a host, as the mapping is
-	//         not required for other hosts. This differs from the RWX case, where the namespace mapping
-	//         must be preserved for legitimate multi-host access.
-	if len(subsystemHosts) > 1 {
-		if hostFound {
-			Logc(ctx).Infof("Multiple hosts are attached to this subsystem %v. Do not delete namespace or subsystem",
-				subsystemUUID)
-			if err = d.api.NVMeRemoveHostFromSubsystem(ctx, hostNQN, subsystemUUID); err != nil {
-				Logc(ctx).Errorf("Remove host from subsystem failed; %v", err)
-				return false, err
-			}
-		}
-
-		// Check if there are multiple namespaces attached to the subsystem,
-		// This indicates case 2, so, remove the namespace only.
-		count, err := d.api.NVMeNamespaceCount(ctx, subsystemUUID)
-		if err != nil {
-			return false, fmt.Errorf("error getting namespace count for subsystem %s; %v", subsystemUUID, err)
-		}
-
-		if count > 1 {
-			err = d.api.NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, namespaceUUID)
-			if err != nil {
-				return false, fmt.Errorf("error removing namespace %s from subsystem %s; %v", namespaceUUID, subsystemUUID, err)
-			}
-		}
-
-		return false, nil
-	}
-
-	// If there is only one host attached to the subsystem, check if it is the host which is being asked to be unmapped
-	if len(subsystemHosts) == 1 && !hostFound {
-		Logc(ctx).Infof("Hosts are attached to this subsystem %v. Do not delete namespace or subsystem",
-			subsystemUUID)
-		return false, nil
-	}
-
-	// Proceed further as there are no hosts or only the specified host is present that needs to be unmapped.
-	// Unmap the namespace from the subsystem
-	err = d.api.NVMeSubsystemRemoveNamespace(ctx, subsystemUUID, namespaceUUID)
-	if err != nil {
-		return false, fmt.Errorf("error removing namespace %s from subsystem %s; %v", namespaceUUID, subsystemUUID, err)
-	}
-
-	// Get the number of namespaces present in the subsystem
-	count, err := d.api.NVMeNamespaceCount(ctx, subsystemUUID)
-	if err != nil {
-		return false, fmt.Errorf("error getting namespace count for subsystem %s; %v", subsystemUUID, err)
-	}
-
-	// Delete the subsystem if the namespace count for this subsystem is 0 after removal.
-	if count == 0 {
-		if err := d.api.NVMeSubsystemDelete(ctx, subsystemUUID); err != nil {
-			return false, fmt.Errorf("error deleting subsystem %s; %v", subsystemUUID, err)
-		}
-	}
-	return true, nil
+func (d OntapAPIREST) NVMeGetNamespaceUUIDsForSubsystem(ctx context.Context, subsysUUID string) ([]string, error) {
+	return d.api.NVMeGetNamespaceUUIDsForSubsystem(ctx, subsysUUID)
 }
 
 func (d OntapAPIREST) NVMeNamespaceGetSize(ctx context.Context, namespacePath string) (int, error) {

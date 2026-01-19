@@ -5428,6 +5428,58 @@ func TestUnpublishVolume(t *testing.T) {
 			wantErr:                assert.Error,
 			publicationShouldExist: true,
 		},
+		{
+			name:          "NVMeNamespaceUUIDCollection",
+			volumeName:    volumeName,
+			nodeName:      nodeName,
+			driverContext: config.ContextCSI,
+			volumes: map[string]*storage.Volume{
+				volumeName: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name: volumeName,
+						AccessInfo: models.VolumeAccessInfo{
+							NVMeAccessInfo: models.NVMeAccessInfo{
+								NVMeNamespaceUUID: "ns-uuid-1",
+							},
+						},
+					},
+				},
+				otherVolumeName: {
+					BackendUUID: backendUUID,
+					Config: &storage.VolumeConfig{
+						Name: otherVolumeName,
+						AccessInfo: models.VolumeAccessInfo{
+							NVMeAccessInfo: models.NVMeAccessInfo{
+								NVMeNamespaceUUID: "ns-uuid-2",
+							},
+						},
+					},
+				},
+			},
+			nodes: map[string]*models.Node{nodeName: node},
+			publications: map[string]map[string]*models.VolumePublication{
+				volumeName: {
+					nodeName: publication,
+				},
+				otherVolumeName: {
+					nodeName: otherVolPublication,
+				},
+			},
+			mocks: func(mockBackend *mockstorage.MockBackend, mockStoreClient *mockpersistentstore.MockStoreClient) {
+				mockBackend.EXPECT().UnpublishVolume(coreCtx, gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo) error {
+						// Verify that HostNVMeNamespaceUUIDs contains the other volume's namespace UUID
+						assert.Contains(t, publishInfo.HostNVMeNamespaceUUIDs, "ns-uuid-2", "Expected namespace UUID for other volume")
+						assert.NotContains(t, publishInfo.HostNVMeNamespaceUUIDs, "ns-uuid-1", "Should not contain UUID of volume being unpublished")
+						return nil
+					})
+				mockStoreClient.EXPECT().UpdateVolume(coreCtx, gomock.Any()).Return(nil)
+				mockStoreClient.EXPECT().DeleteVolumePublication(coreCtx, gomock.Any()).Return(nil)
+			},
+			wantErr:                assert.NoError,
+			publicationShouldExist: false,
+		},
 	}
 
 	for _, tr := range tt {

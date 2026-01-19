@@ -8463,3 +8463,346 @@ func TestGetOntapVersion(t *testing.T) {
 	}
 	assert.Equal(t, ontapVersion, client.GetOntapVersion(), "SetOntapVersion should update the ONTAP version correctly")
 }
+
+func mockNvmeSubsystemMapResponseMultipleNamespaces(w http.ResponseWriter, r *http.Request) {
+	numRecords := int64(3)
+
+	nvmeSubsystemMapResponse := models.NvmeSubsystemMapResponse{
+		NvmeSubsystemMapResponseInlineRecords: []*models.NvmeSubsystemMap{
+			{
+				Namespace: &models.NvmeSubsystemMapInlineNamespace{
+					UUID: convert.ToPtr("ns-uuid-1"),
+				},
+			},
+			{
+				Namespace: &models.NvmeSubsystemMapInlineNamespace{
+					UUID: convert.ToPtr("ns-uuid-2"),
+				},
+			},
+			{
+				Namespace: &models.NvmeSubsystemMapInlineNamespace{
+					UUID: convert.ToPtr("ns-uuid-3"),
+				},
+			},
+		},
+		NumRecords: &numRecords,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(nvmeSubsystemMapResponse)
+}
+
+func mockNvmeSubsystemMapResponseEmpty(w http.ResponseWriter, r *http.Request) {
+	numRecords := int64(0)
+
+	nvmeSubsystemMapResponse := models.NvmeSubsystemMapResponse{
+		NvmeSubsystemMapResponseInlineRecords: []*models.NvmeSubsystemMap{},
+		NumRecords:                            &numRecords,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(nvmeSubsystemMapResponse)
+}
+
+func mockNvmeSubsystemMapResponseWithNilRecords(w http.ResponseWriter, r *http.Request) {
+	numRecords := int64(3)
+
+	nvmeSubsystemMapResponse := models.NvmeSubsystemMapResponse{
+		NvmeSubsystemMapResponseInlineRecords: []*models.NvmeSubsystemMap{
+			nil, // nil record - should be skipped
+			{
+				Namespace: nil, // nil namespace - should be skipped
+			},
+			{
+				Namespace: &models.NvmeSubsystemMapInlineNamespace{
+					UUID: nil, // nil UUID - should be skipped
+				},
+			},
+			{
+				Namespace: &models.NvmeSubsystemMapInlineNamespace{
+					UUID: convert.ToPtr("valid-ns-uuid"),
+				},
+			},
+		},
+		NumRecords: &numRecords,
+	}
+
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(nvmeSubsystemMapResponse)
+}
+
+func TestOntapRest_NVMeGetSubsystemsForNamespace(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockFunction    func(w http.ResponseWriter, r *http.Request)
+		namespaceUUID   string
+		expectedLen     int
+		expectedFirst   *NVMeSubsystem
+		isErrorExpected bool
+		errorContains   string
+	}{
+		{
+			name:          "Success_SingleSubsystem",
+			mockFunction:  mockNvmeGetSubsystemsForNamespaceSingle,
+			namespaceUUID: "ns-uuid-1",
+			expectedLen:   1,
+			expectedFirst: &NVMeSubsystem{
+				Name: "trident_subsystem_4321_1",
+				UUID: "subsystem-uuid-1",
+			},
+			isErrorExpected: false,
+		},
+		{
+			name:          "Success_MultipleSubsystems",
+			mockFunction:  mockNvmeGetSubsystemsForNamespaceMultiple,
+			namespaceUUID: "ns-uuid-1",
+			expectedLen:   3,
+			expectedFirst: &NVMeSubsystem{
+				Name: "trident_subsystem_4321_1",
+				UUID: "subsystem-uuid-1",
+			},
+			isErrorExpected: false,
+		},
+		{
+			name:            "Success_EmptyResult",
+			mockFunction:    mockNvmeSubsystemMapResponseEmpty,
+			namespaceUUID:   "ns-uuid-unmapped",
+			expectedLen:     0,
+			isErrorExpected: false,
+		},
+		{
+			name:          "Success_SkipNilRecords",
+			mockFunction:  mockNvmeGetSubsystemsForNamespaceWithNils,
+			namespaceUUID: "ns-uuid-1",
+			expectedLen:   1,
+			expectedFirst: &NVMeSubsystem{
+				Name: "valid_subsystem",
+				UUID: "valid-uuid",
+			},
+			isErrorExpected: false,
+		},
+		{
+			name:            "Error_APIError",
+			mockFunction:    mockNvmeResourceNotFound,
+			namespaceUUID:   "ns-uuid-error",
+			isErrorExpected: true,
+			errorContains:   "error getting subsystems for namespace",
+		},
+		{
+			name:            "Error_NilResponse",
+			mockFunction:    mockNilResponse,
+			namespaceUUID:   "ns-uuid-1",
+			isErrorExpected: true,
+			errorContains:   "error getting subsystems for namespace",
+		},
+		{
+			name:            "Error_NilPayload",
+			mockFunction:    mockNilPayloadResponse,
+			namespaceUUID:   "ns-uuid-1",
+			isErrorExpected: true,
+			errorContains:   "error getting subsystems for namespace",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			defer server.Close()
+
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			subsystems, err := rs.NVMeGetSubsystemsForNamespace(ctx, test.namespaceUUID)
+
+			if test.isErrorExpected {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), test.errorContains)
+				assert.Nil(t, subsystems)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, test.expectedLen, len(subsystems))
+				if test.expectedFirst != nil {
+					assert.Equal(t, test.expectedFirst.Name, subsystems[0].Name)
+					assert.Equal(t, test.expectedFirst.UUID, subsystems[0].UUID)
+				}
+			}
+		})
+	}
+}
+
+// Mock functions
+func mockNvmeGetSubsystemsForNamespaceSingle(w http.ResponseWriter, r *http.Request) {
+	numRecords := int64(1)
+	response := models.NvmeSubsystemMapResponse{
+		NvmeSubsystemMapResponseInlineRecords: []*models.NvmeSubsystemMap{
+			{
+				Subsystem: &models.NvmeSubsystemMapInlineSubsystem{
+					Name: convert.ToPtr("trident_subsystem_4321_1"),
+					UUID: convert.ToPtr("subsystem-uuid-1"),
+				},
+			},
+		},
+		NumRecords: &numRecords,
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
+func mockNvmeGetSubsystemsForNamespaceMultiple(w http.ResponseWriter, r *http.Request) {
+	numRecords := int64(3)
+	response := models.NvmeSubsystemMapResponse{
+		NvmeSubsystemMapResponseInlineRecords: []*models.NvmeSubsystemMap{
+			{
+				Subsystem: &models.NvmeSubsystemMapInlineSubsystem{
+					Name: convert.ToPtr("trident_subsystem_4321_1"),
+					UUID: convert.ToPtr("subsystem-uuid-1"),
+				},
+			},
+			{
+				Subsystem: &models.NvmeSubsystemMapInlineSubsystem{
+					Name: convert.ToPtr("trident_subsystem_4321_2"),
+					UUID: convert.ToPtr("subsystem-uuid-2"),
+				},
+			},
+			{
+				Subsystem: &models.NvmeSubsystemMapInlineSubsystem{
+					Name: convert.ToPtr("trident_subsystem_4321_3"),
+					UUID: convert.ToPtr("subsystem-uuid-3"),
+				},
+			},
+		},
+		NumRecords: &numRecords,
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
+func mockNvmeGetSubsystemsForNamespaceWithNils(w http.ResponseWriter, r *http.Request) {
+	numRecords := int64(3)
+	response := models.NvmeSubsystemMapResponse{
+		NvmeSubsystemMapResponseInlineRecords: []*models.NvmeSubsystemMap{
+			nil, // nil record
+			{
+				Subsystem: nil, // nil subsystem
+			},
+			{
+				Subsystem: &models.NvmeSubsystemMapInlineSubsystem{
+					Name: convert.ToPtr("valid_subsystem"),
+					UUID: convert.ToPtr("valid-uuid"),
+				},
+			},
+		},
+		NumRecords: &numRecords,
+	}
+	setHTTPResponseHeader(w, http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
+func mockNilResponse(w http.ResponseWriter, r *http.Request) {
+	setHTTPResponseHeader(w, http.StatusInternalServerError)
+	errorResponse := models.ErrorResponse{
+		Error: &models.ReturnedError{
+			Code:    convert.ToPtr("500"),
+			Message: convert.ToPtr("Internal server error"),
+		},
+	}
+	json.NewEncoder(w).Encode(errorResponse)
+}
+
+func mockNilPayloadResponse(w http.ResponseWriter, r *http.Request) {
+	setHTTPResponseHeader(w, http.StatusOK)
+	// Return invalid/malformed JSON that cannot be properly deserialized
+	w.Write([]byte("invalid json"))
+}
+
+func TestOntapRest_NVMeGetNamespaceUUIDsForSubsystem(t *testing.T) {
+	tests := []struct {
+		name             string
+		mockFunction     func(w http.ResponseWriter, r *http.Request)
+		subsystemUUID    string
+		expectedUUIDs    []string
+		expectedUUIDsLen int
+		isErrorExpected  bool
+	}{
+		{
+			name:             "PositiveTest_SingleNamespace",
+			mockFunction:     mockNvmeSubsystemMapResponse,
+			subsystemUUID:    "subsystemUUID",
+			expectedUUIDs:    []string{"1cd8a442-86d1-11e0-ae1c-123478563412"},
+			expectedUUIDsLen: 1,
+			isErrorExpected:  false,
+		},
+		{
+			name:             "PositiveTest_MultipleNamespaces",
+			mockFunction:     mockNvmeSubsystemMapResponseMultipleNamespaces,
+			subsystemUUID:    "subsystemUUID",
+			expectedUUIDs:    []string{"ns-uuid-1", "ns-uuid-2", "ns-uuid-3"},
+			expectedUUIDsLen: 3,
+			isErrorExpected:  false,
+		},
+		{
+			name:             "PositiveTest_EmptyResult",
+			mockFunction:     mockNvmeSubsystemMapResponseEmpty,
+			subsystemUUID:    "subsystemUUID",
+			expectedUUIDs:    []string{},
+			expectedUUIDsLen: 0,
+			isErrorExpected:  false,
+		},
+		{
+			name:             "PositiveTest_WithNilRecords_SkipsInvalid",
+			mockFunction:     mockNvmeSubsystemMapResponseWithNilRecords,
+			subsystemUUID:    "subsystemUUID",
+			expectedUUIDs:    []string{"valid-ns-uuid"},
+			expectedUUIDsLen: 1,
+			isErrorExpected:  false,
+		},
+		{
+			name:             "BackendReturnError",
+			mockFunction:     mockNvmeResourceNotFound,
+			subsystemUUID:    "subsystemUUID",
+			expectedUUIDs:    nil,
+			expectedUUIDsLen: 0,
+			isErrorExpected:  true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			rs := newRestClient(server.Listener.Addr().String(), server.Client())
+			assert.NotNil(t, rs)
+
+			uuids, err := rs.NVMeGetNamespaceUUIDsForSubsystem(ctx, test.subsystemUUID)
+
+			if !test.isErrorExpected {
+				assert.NoError(t, err, "unexpected error")
+				assert.Equal(t, test.expectedUUIDsLen, len(uuids), "unexpected number of UUIDs")
+				if test.expectedUUIDsLen > 0 {
+					assert.Equal(t, test.expectedUUIDs, uuids, "UUIDs don't match")
+				}
+			} else {
+				assert.Error(t, err, "expected error but got none")
+				assert.Nil(t, uuids, "expected nil result on error")
+			}
+
+			server.Close()
+		})
+	}
+}
+
+func TestOntapRest_NVMeGetNamespaceUUIDsForSubsystem_NilResponse(t *testing.T) {
+	mockNilResponse := func(w http.ResponseWriter, r *http.Request) {
+		setHTTPResponseHeader(w, http.StatusInternalServerError)
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(mockNilResponse))
+	rs := newRestClient(server.Listener.Addr().String(), server.Client())
+	assert.NotNil(t, rs)
+
+	uuids, err := rs.NVMeGetNamespaceUUIDsForSubsystem(ctx, "subsystemUUID")
+
+	assert.Error(t, err, "expected error for nil response")
+	assert.Nil(t, uuids, "expected nil result")
+
+	server.Close()
+}
