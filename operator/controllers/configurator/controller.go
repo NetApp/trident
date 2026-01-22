@@ -420,7 +420,9 @@ func (c *Controller) reconcile(keyItem string) error {
 			Log().Error("Failed to process ANF backend: ", err)
 			return err
 		}
-	case config.OntapNASStorageDriverName, config.OntapSANStorageDriverName:
+	case config.OntapNASStorageDriverName, config.OntapSANStorageDriverName,
+		config.OntapNASFlexGroupStorageDriverName, config.OntapNASQtreeStorageDriverName,
+		config.OntapSANEconomyStorageDriverName:
 		isAwsFSxN, err := tconfCR.IsAWSFSxNTconf()
 		if err != nil {
 			Log().Error("Failed to check if tconf is for AWS FSxN: ", err)

@@ -290,7 +290,8 @@ func (aws *AWS) Create() ([]string, error) {
 	for _, svm := range aws.SVMs {
 		for _, protocol := range svm.Protocols {
 			backendName = getFSxNBackendName(aws, svm.FsxnID, protocol)
-			backendYAML := getFsxnTBCYaml(svm, aws.TridentNamespace, backendName, protocol, aws.TBCNamePrefix, aws.SCManagedTConf, aws.TConfSpec)
+			backendYAML := getFsxnTBCYaml(svm, aws.TridentNamespace, backendName, protocol, aws.TBCNamePrefix,
+				aws.SCManagedTConf, aws.TConfSpec, aws.AwsConfig.StorageDriverName)
 			if err := aws.ConfClient.CreateOrPatchObject(confClients.OBackend, backendName,
 				aws.TridentNamespace, backendYAML); err != nil {
 				return nil, fmt.Errorf("error creating or patching object: %w", err)

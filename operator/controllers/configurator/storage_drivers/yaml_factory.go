@@ -7,7 +7,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/pkg/yaml"
 	sa "github.com/netapp/trident/storage_attribute"
 )
@@ -204,7 +203,8 @@ deletionPolicy: Delete
 `
 
 // getFsxnTBCYaml returns the FsxN Trident backend config YAML
-func getFsxnTBCYaml(svm SVM, tridentNamespace, backendName, protocolType, tconfName string, scManagedTconf bool, tconfSpec map[string]interface{}) string {
+func getFsxnTBCYaml(svm SVM, tridentNamespace, backendName, protocolType, tconfName string,
+	scManagedTconf bool, tconfSpec map[string]interface{}, storageDriverName string) string {
 	tbcYaml := FsxnTBCYaml
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{TBC_NAME}", backendName)
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{NAMESPACE}", tridentNamespace)
@@ -212,6 +212,7 @@ func getFsxnTBCYaml(svm SVM, tridentNamespace, backendName, protocolType, tconfN
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{FILE_SYSTEM_ID}", svm.FsxnID)
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{SVM_NAME}", svm.SvmName)
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{AWS_ARN}", svm.SecretARNName)
+	tbcYaml = strings.ReplaceAll(tbcYaml, "{DRIVER_TYPE}", storageDriverName)
 
 	if scManagedTconf {
 		labels := fmt.Sprintf("labels:\n    trident.netapp.io/configurator: %s\n", tconfName)
@@ -246,10 +247,8 @@ func getFsxnTBCYaml(svm SVM, tridentNamespace, backendName, protocolType, tconfN
 	}
 
 	if protocolType == sa.NFS {
-		tbcYaml = strings.ReplaceAll(tbcYaml, "{DRIVER_TYPE}", config.OntapNASStorageDriverName)
 		tbcYaml = strings.ReplaceAll(tbcYaml, "{NAS_TYPE}", strings.Join([]string{"nasType:", protocolType}, " "))
 	} else if protocolType == sa.ISCSI {
-		tbcYaml = strings.ReplaceAll(tbcYaml, "{DRIVER_TYPE}", config.OntapSANStorageDriverName)
 		tbcYaml = strings.ReplaceAll(tbcYaml, "{NAS_TYPE}", "")
 	}
 

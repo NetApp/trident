@@ -10,6 +10,7 @@ import (
 	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/netapp/trident/config"
 	netappv1 "github.com/netapp/trident/operator/crd/apis/netapp/v1"
 	"github.com/netapp/trident/utils/errors"
 )
@@ -149,9 +150,10 @@ func (h *FsxStorageDriverHandler) BuildTridentConfiguratorSpec(sc *storagev1.Sto
 	// Determine protocols based on storage driver
 	var protocols []string
 	switch storageDriverName {
-	case "ontap-nas":
+	case config.OntapNASStorageDriverName, config.OntapNASFlexGroupStorageDriverName,
+		config.OntapNASQtreeStorageDriverName:
 		protocols = []string{"nfs"}
-	case "ontap-san":
+	case config.OntapSANStorageDriverName, config.OntapSANEconomyStorageDriverName:
 		protocols = []string{"iscsi"}
 	default:
 		return nil, fmt.Errorf("unsupported storage driver: %s", storageDriverName)
@@ -267,9 +269,10 @@ func (h *FsxStorageDriverHandler) BuildTridentConfiguratorSpec(sc *storagev1.Sto
 // getProtocolFromDriver returns the protocol type from the storage driver name
 func getProtocolFromDriver(driverName string) string {
 	switch driverName {
-	case "ontap-nas":
+	case config.OntapNASStorageDriverName, config.OntapNASFlexGroupStorageDriverName,
+		config.OntapNASQtreeStorageDriverName:
 		return "nfs"
-	case "ontap-san":
+	case config.OntapSANStorageDriverName, config.OntapSANEconomyStorageDriverName:
 		return "iscsi"
 	default:
 		return "nfs" // default to nfs

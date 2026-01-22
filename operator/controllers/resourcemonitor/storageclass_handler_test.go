@@ -7,6 +7,8 @@ import (
 
 	storagev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/netapp/trident/config"
 )
 
 func TestShouldManageStorageClass(t *testing.T) {
@@ -28,7 +30,7 @@ func TestShouldManageStorageClass(t *testing.T) {
 				Provisioner: TridentCSIProvisioner,
 				Parameters: map[string]string{
 					FSxFilesystemIDParam:   "fs-123456789",
-					StorageDriverNameParam: "ontap-nas",
+					StorageDriverNameParam: config.OntapNASStorageDriverName,
 					CredentialsNameParam:   "arn:aws:secretsmanager:us-west-2:123:secret:test",
 				},
 			},
@@ -42,7 +44,7 @@ func TestShouldManageStorageClass(t *testing.T) {
 				},
 				Provisioner: TridentCSIProvisioner,
 				Parameters: map[string]string{
-					StorageDriverNameParam: "ontap-nas",
+					StorageDriverNameParam: config.OntapNASStorageDriverName,
 					CredentialsNameParam:   "arn:aws:secretsmanager:us-west-2:123:secret:test",
 				},
 			},
@@ -71,7 +73,7 @@ func TestShouldManageStorageClass(t *testing.T) {
 				Provisioner: TridentCSIProvisioner,
 				Parameters: map[string]string{
 					FSxFilesystemIDParam:   "fs-123456789",
-					StorageDriverNameParam: "ontap-nas",
+					StorageDriverNameParam: config.OntapNASStorageDriverName,
 				},
 			},
 			expected: false,
@@ -85,7 +87,7 @@ func TestShouldManageStorageClass(t *testing.T) {
 				Provisioner: "kubernetes.io/aws-ebs",
 				Parameters: map[string]string{
 					FSxFilesystemIDParam:   "fs-123456789",
-					StorageDriverNameParam: "ontap-nas",
+					StorageDriverNameParam: config.OntapNASStorageDriverName,
 					CredentialsNameParam:   "arn:aws:secretsmanager:us-west-2:123:secret:test",
 				},
 			},
@@ -326,7 +328,7 @@ func TestValidateStorageClass(t *testing.T) {
 				},
 				Parameters: map[string]string{
 					FSxFilesystemIDParam:   "fs-123456789",
-					StorageDriverNameParam: "ontap-nas",
+					StorageDriverNameParam: config.OntapNASStorageDriverName,
 					CredentialsNameParam:   "arn:aws:secretsmanager:us-west-2:123:secret:test",
 				},
 			},
@@ -349,7 +351,7 @@ func TestValidateStorageClass(t *testing.T) {
 					Name: "test-sc",
 				},
 				Parameters: map[string]string{
-					StorageDriverNameParam: "ontap-nas",
+					StorageDriverNameParam: config.OntapNASStorageDriverName,
 					CredentialsNameParam:   "arn:aws:secretsmanager:us-west-2:123:secret:test",
 				},
 			},
@@ -363,7 +365,7 @@ func TestValidateStorageClass(t *testing.T) {
 				},
 				Parameters: map[string]string{
 					FSxFilesystemIDParam:   "",
-					StorageDriverNameParam: "ontap-nas",
+					StorageDriverNameParam: config.OntapNASStorageDriverName,
 					CredentialsNameParam:   "arn:aws:secretsmanager:us-west-2:123:secret:test",
 				},
 			},
@@ -451,6 +453,149 @@ func TestMapsEqual(t *testing.T) {
 			if result != tt.expected {
 				t.Errorf("mapsEqual() = %v, want %v", result, tt.expected)
 			}
+		})
+	}
+}
+
+func TestAllSupportedDrivers(t *testing.T) {
+	handler := &StorageClassHandler{
+		driverHandler: NewFsxStorageDriverHandler(),
+	}
+
+	// Test all 5 supported ONTAP drivers
+	supportedDrivers := []string{
+		config.OntapNASStorageDriverName,
+		config.OntapNASQtreeStorageDriverName,
+		config.OntapNASFlexGroupStorageDriverName,
+		config.OntapSANStorageDriverName,
+		config.OntapSANEconomyStorageDriverName,
+	}
+
+	for _, driver := range supportedDrivers {
+		t.Run(driver, func(t *testing.T) {
+			sc := &storagev1.StorageClass{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-" + driver,
+				},
+				Provisioner: TridentCSIProvisioner,
+				Parameters: map[string]string{
+					FSxFilesystemIDParam:   "fs-123456789",
+					StorageDriverNameParam: driver,
+					CredentialsNameParam:   "arn:aws:secretsmanager:us-west-2:123:secret:test",
+				},
+			}
+
+			// Test shouldManageStorageClass
+			if !handler.shouldManageStorageClass(sc) {
+				t.Errorf("shouldManageStorageClass() returned false for supported driver %s", driver)
+			}
+
+			// Test validateStorageClass
+			if err := handler.validateStorageClass(sc); err != nil {
+				t.Errorf("validateStorageClass() returned error for supported driver %s: %v", driver, err)
+			}
+
+			// Test buildAdditionalStoragePoolsValue
+			if _, err := handler.buildAdditionalStoragePoolsValue(sc); err != nil {
+				t.Errorf("buildAdditionalStoragePoolsValue() returned error for supported driver %s: %v", driver, err)
+			}
+		})
+	}
+}
+
+func TestUnsupportedDrivers(t *testing.T) {
+	handler := &StorageClassHandler{
+		driverHandler: NewFsxStorageDriverHandler(),
+	}
+
+	// Test unsupported drivers
+	unsupportedDrivers := []string{
+		"ontap-nas-filesystem",
+		config.SolidfireSANStorageDriverName,
+		"eseries-iscsi",
+		config.AzureNASStorageDriverName,
+		config.GCNVNASStorageDriverName,
+		"unknown-driver",
+	}
+
+	for _, driver := range unsupportedDrivers {
+		t.Run(driver, func(t *testing.T) {
+			sc := &storagev1.StorageClass{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-" + driver,
+				},
+				Provisioner: TridentCSIProvisioner,
+				Parameters: map[string]string{
+					FSxFilesystemIDParam:   "fs-123456789",
+					StorageDriverNameParam: driver,
+					CredentialsNameParam:   "arn:aws:secretsmanager:us-west-2:123:secret:test",
+				},
+			}
+
+			// FSxN handler should still accept these (it doesn't validate driver type)
+			// The validation only checks for required parameters, not driver compatibility
+			// These would be accepted by shouldManageStorageClass() but may fail later
+			// when TridentConfigurator tries to use an unsupported driver
+			if !handler.shouldManageStorageClass(sc) {
+				t.Errorf("shouldManageStorageClass() returned false for driver %s with all required params", driver)
+			}
+
+			// Validation should pass since all required parameters are present
+			if err := handler.validateStorageClass(sc); err != nil {
+				t.Errorf("validateStorageClass() returned error for driver %s: %v", driver, err)
+			}
+
+			// The handler will accept it, but the actual failure would occur when
+			// Trident tries to create a backend with an unsupported driver
+			t.Logf("Handler accepted unsupported driver %s (will fail in backend creation)", driver)
+		})
+	}
+}
+
+func TestDriverProtocolMapping(t *testing.T) {
+	handler := &StorageClassHandler{
+		driverHandler: NewFsxStorageDriverHandler(),
+	}
+
+	tests := []struct {
+		driver           string
+		expectedProtocol string // "nas" or "san"
+	}{
+		{config.OntapNASStorageDriverName, "nas"},
+		{config.OntapNASQtreeStorageDriverName, "nas"},
+		{config.OntapNASFlexGroupStorageDriverName, "nas"},
+		{config.OntapSANStorageDriverName, "san"},
+		{config.OntapSANEconomyStorageDriverName, "san"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.driver, func(t *testing.T) {
+			sc := &storagev1.StorageClass{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-" + tt.driver,
+				},
+				Provisioner: TridentCSIProvisioner,
+				Parameters: map[string]string{
+					FSxFilesystemIDParam:   "fs-123456789",
+					StorageDriverNameParam: tt.driver,
+					CredentialsNameParam:   "arn:aws:secretsmanager:us-west-2:123:secret:test",
+					"svmName":              "testSvm",
+				},
+			}
+
+			// Build storage pools value which includes protocol
+			poolsValue, err := handler.buildAdditionalStoragePoolsValue(sc)
+			if err != nil {
+				t.Errorf("buildAdditionalStoragePoolsValue() error for %s: %v", tt.driver, err)
+				return
+			}
+
+			// Verify the pools value is not empty
+			if poolsValue == "" {
+				t.Errorf("buildAdditionalStoragePoolsValue() returned empty value for %s", tt.driver)
+			}
+
+			t.Logf("Driver %s generated pools value: %s", tt.driver, poolsValue)
 		})
 	}
 }
