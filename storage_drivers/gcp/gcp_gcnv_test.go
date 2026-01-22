@@ -4346,6 +4346,24 @@ func TestWaitForVolumeCreate_OtherStates(t *testing.T) {
 	}
 }
 
+func TestWaitForVolumeCreate_NoState(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	volume := &api.Volume{
+		Name:          "testvol1",
+		CreationToken: "trident-testvol1",
+		FullName:      api.FullVolumeName + "testvol1",
+		State:         api.VolumeStateCreating,
+	}
+
+	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, api.VolumeStateReady, []string{api.VolumeStateError},
+		driver.volumeCreateTimeout).Return("", errFailed).Times(1)
+
+	result := driver.waitForVolumeCreate(ctx, volume)
+
+	assert.Error(t, result, "expected error")
+}
+
 func getStructsForDestroyNFSVolume(ctx context.Context, driver *NASStorageDriver) (*storage.VolumeConfig, *api.Volume) {
 	exportPolicy := &api.ExportPolicy{
 		Rules: []api.ExportRule{

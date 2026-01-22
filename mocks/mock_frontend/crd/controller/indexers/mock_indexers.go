@@ -20,6 +20,7 @@ import (
 type MockIndexers struct {
 	ctrl     *gomock.Controller
 	recorder *MockIndexersMockRecorder
+	isgomock struct{}
 }
 
 // MockIndexersMockRecorder is the mock recorder for MockIndexers.

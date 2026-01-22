@@ -16,7 +16,7 @@ RUN --mount=type=secret,id=activation_key,env=ACTIVATION_KEY \
     --mount=type=secret,id=organization,env=ORGANIZATION \
     function unregister() { subscription-manager unregister || true; }; trap unregister EXIT; \
     if [[ $DEPS_IMAGE =~ "alpine" ]]; \
-        then apk add nfs-utils; \
+        then apk add --no-scripts nfs-utils; \
         else subscription-manager register --activationkey $ACTIVATION_KEY --org $ORGANIZATION && \
             yum install --repo=rhel-9-*-baseos-rpms -y nfs-utils || { cat /var/log/rhsm/rhsm.log; exit 1; }  \
     fi;

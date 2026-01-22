@@ -94,6 +94,10 @@ DEFAULT_ACP_IMAGE ?=
 # TRIDENT_DEPS_IMAGE sets the image used by the Trident dockerfile to install dependencies such as NFS
 TRIDENT_DEPS_IMAGE ?=
 
+# CGO_ENABLED sets the CGO_ENABLED environment variable for go builds. Default is 0 (disabled), must be 1 to use the
+# '-race' GOFLAG.
+CGO_ENABLED ?= 0
+
 # Constants
 ALL_PLATFORMS = linux/amd64 linux/arm64 windows/amd64/ltsc2022 windows/amd64/ltsc2019 darwin/amd64
 DEFAULT_REGISTRY = docker.io/netapp
@@ -174,7 +178,7 @@ binary_path = bin/$(call os,$2)/$(call arch,$2)/$(1)$(if $(findstring windows,$(
 
 # go_env sets environment variables for go commands
 # usage: $(call go_env,$(platform))
-go_env = CGO_ENABLED=0 GOOS=$(call os,$1) GOARCH=$(call arch,$1)$(if $(GOPROXY), GOPROXY=$(GOPROXY))$(if $(GOFLAGS), GOFLAGS="$(GOFLAGS)")
+go_env = CGO_ENABLED=$(CGO_ENABLED) GOOS=$(call os,$1) GOARCH=$(call arch,$1)$(if $(GOPROXY), GOPROXY=$(GOPROXY))$(if $(GOFLAGS), GOFLAGS="$(GOFLAGS)")
 
 # go_build returns the go build command for the named binary, platform, and source
 # usage: $(call go_build,$(binary_name),$(source_path),$(platform),$(linker_flags))
@@ -456,7 +460,7 @@ k8s_codegen_operator:
 	@mv $(OPERATOR_KUBERNETES_PKG)/apis/netapp/v1/zz_generated.deepcopy.go ./operator/crd/apis/netapp/v1/
 
 mocks:
-	@go install go.uber.org/mock/mockgen@v0.5.2
+	@go install go.uber.org/mock/mockgen@v0.6.0
 	@go generate ./...
 
 .git/hooks:

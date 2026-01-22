@@ -1330,6 +1330,11 @@ func (d *NASStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 				Logc(ctx).WithField("volume", volume.Name).Info("Volume deleted.")
 			}
 
+		case "":
+			// State will be empty if the volume could not be found or there was an API error
+			Logc(ctx).WithFields(logFields).WithError(err).Error("Volume state is unknown.")
+			return err
+
 		default:
 			Logc(ctx).WithFields(logFields).Errorf("unexpected volume state %s found for volume", state)
 		}

@@ -472,8 +472,9 @@ func TestServiceLevelFromCapacityPool(t *testing.T) {
 	pool := storage.NewStoragePool(nil, "pool1")
 	pool.InternalAttributes()[serviceLevel] = ServiceLevelPremium
 
-	serviceLevel := ServiceLevelFromCapacityPool(sdk.sdkClient.CapacityPoolMap["projects/"+ProjectNumber+
-		"/locations/"+Location+"/storagePools/CP1"])
+	serviceLevel := ServiceLevelFromCapacityPool(
+		sdk.sdkClient.resources.GetCapacityPools().Get("projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP1"),
+	)
 
 	assert.Equal(t, ServiceLevelPremium, serviceLevel)
 }

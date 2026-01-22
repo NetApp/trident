@@ -61,7 +61,12 @@ type ConcurrentTridentOrchestrator struct {
 
 var (
 	_                 Orchestrator = &ConcurrentTridentOrchestrator{}
-	supportedBackends              = []string{"ontap-san", "fake", "ontap-nas"}
+	supportedBackends              = []string{
+		"ontap-san",
+		"fake",
+		"ontap-nas",
+		"google-cloud-netapp-volumes",
+	}
 )
 
 func NewConcurrentTridentOrchestrator(client persistentstore.Client) (Orchestrator, error) {

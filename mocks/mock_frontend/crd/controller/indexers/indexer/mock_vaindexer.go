@@ -21,6 +21,7 @@ import (
 type MockVolumeAttachmentIndexer struct {
 	ctrl     *gomock.Controller
 	recorder *MockVolumeAttachmentIndexerMockRecorder
+	isgomock struct{}
 }
 
 // MockVolumeAttachmentIndexerMockRecorder is the mock recorder for MockVolumeAttachmentIndexer.
@@ -65,30 +66,30 @@ func (mr *MockVolumeAttachmentIndexerMockRecorder) Deactivate() *gomock.Call {
 }
 
 // GetCachedVolumeAttachmentsByNode mocks base method.
-func (m *MockVolumeAttachmentIndexer) GetCachedVolumeAttachmentsByNode(arg0 context.Context, arg1 string) ([]*v1.VolumeAttachment, error) {
+func (m *MockVolumeAttachmentIndexer) GetCachedVolumeAttachmentsByNode(ctx context.Context, nodeName string) ([]*v1.VolumeAttachment, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCachedVolumeAttachmentsByNode", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetCachedVolumeAttachmentsByNode", ctx, nodeName)
 	ret0, _ := ret[0].([]*v1.VolumeAttachment)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCachedVolumeAttachmentsByNode indicates an expected call of GetCachedVolumeAttachmentsByNode.
-func (mr *MockVolumeAttachmentIndexerMockRecorder) GetCachedVolumeAttachmentsByNode(arg0, arg1 any) *gomock.Call {
+func (mr *MockVolumeAttachmentIndexerMockRecorder) GetCachedVolumeAttachmentsByNode(ctx, nodeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCachedVolumeAttachmentsByNode", reflect.TypeOf((*MockVolumeAttachmentIndexer)(nil).GetCachedVolumeAttachmentsByNode), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCachedVolumeAttachmentsByNode", reflect.TypeOf((*MockVolumeAttachmentIndexer)(nil).GetCachedVolumeAttachmentsByNode), ctx, nodeName)
 }
 
 // WaitForCacheSync mocks base method.
-func (m *MockVolumeAttachmentIndexer) WaitForCacheSync(arg0 context.Context) bool {
+func (m *MockVolumeAttachmentIndexer) WaitForCacheSync(ctx context.Context) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WaitForCacheSync", arg0)
+	ret := m.ctrl.Call(m, "WaitForCacheSync", ctx)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // WaitForCacheSync indicates an expected call of WaitForCacheSync.
-func (mr *MockVolumeAttachmentIndexerMockRecorder) WaitForCacheSync(arg0 any) *gomock.Call {
+func (mr *MockVolumeAttachmentIndexerMockRecorder) WaitForCacheSync(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForCacheSync", reflect.TypeOf((*MockVolumeAttachmentIndexer)(nil).WaitForCacheSync), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForCacheSync", reflect.TypeOf((*MockVolumeAttachmentIndexer)(nil).WaitForCacheSync), ctx)
 }

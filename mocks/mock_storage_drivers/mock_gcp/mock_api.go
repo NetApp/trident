@@ -144,17 +144,17 @@ func (mr *MockGCNVMockRecorder) DeleteVolume(arg0, arg1 any) *gomock.Call {
 }
 
 // DiscoverGCNVResources mocks base method.
-func (m *MockGCNV) DiscoverGCNVResources(arg0 context.Context) error {
+func (m *MockGCNV) DiscoverGCNVResources(arg0 context.Context, arg1 api.GCNVResourceUpdater) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DiscoverGCNVResources", arg0)
+	ret := m.ctrl.Call(m, "DiscoverGCNVResources", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DiscoverGCNVResources indicates an expected call of DiscoverGCNVResources.
-func (mr *MockGCNVMockRecorder) DiscoverGCNVResources(arg0 any) *gomock.Call {
+func (mr *MockGCNVMockRecorder) DiscoverGCNVResources(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoverGCNVResources", reflect.TypeOf((*MockGCNV)(nil).DiscoverGCNVResources), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoverGCNVResources", reflect.TypeOf((*MockGCNV)(nil).DiscoverGCNVResources), arg0, arg1)
 }
 
 // EnsureVolumeInValidCapacityPool mocks base method.

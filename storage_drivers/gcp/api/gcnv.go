@@ -69,9 +69,9 @@ type ClientConfig struct {
 }
 
 type GCNVClient struct {
-	gcnv    *netapp.Client
-	compute *compute.RegionZonesClient
-	GCNVResources
+	gcnv      *netapp.Client
+	compute   *compute.RegionZonesClient
+	resources *GCNVResources
 }
 
 // Client encapsulates connection details.
@@ -112,8 +112,9 @@ func NewDriver(ctx context.Context, config *ClientConfig) (GCNV, error) {
 	}
 
 	sdkClient := &GCNVClient{
-		gcnv:    gcnvClient,
-		compute: computeClient,
+		gcnv:      gcnvClient,
+		compute:   computeClient,
+		resources: newGCNVResources(),
 	}
 
 	return Client{
@@ -133,11 +134,13 @@ func (c Client) Init(ctx context.Context, pools map[string]storage.Pool) error {
 
 // RegisterStoragePool makes a note of pools defined by the driver for later mapping.
 func (c Client) registerStoragePools(sPools map[string]storage.Pool) {
-	c.sdkClient.GCNVResources.StoragePoolMap = make(map[string]storage.Pool)
+	m := make(map[string]storage.Pool)
 
 	for _, sPool := range sPools {
-		c.sdkClient.GCNVResources.StoragePoolMap[sPool.Name()] = sPool
+		m[sPool.Name()] = sPool
 	}
+
+	c.sdkClient.resources.SetStoragePools(m)
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -266,11 +269,12 @@ func parseNetworkID(fullName string) (projectNumber, network string, err error) 
 // flexPoolCount returns the number of Flex pools in the StoragePoolMap.
 func (c Client) flexPoolCount() int {
 	flexPoolsCount := 0
-	for _, storagePool := range c.sdkClient.GCNVResources.StoragePoolMap {
+	c.sdkClient.resources.GetStoragePools().Range(func(_ string, storagePool storage.Pool) bool {
 		if storagePool.InternalAttributes()[serviceLevel] == ServiceLevelFlex {
 			flexPoolsCount++
 		}
-	}
+		return true
+	})
 	return flexPoolsCount
 }
 
@@ -279,9 +283,10 @@ func (c Client) flexPoolCount() int {
 func (c Client) findAllLocationsFromCapacityPool(flexPoolsCount int) map[string]struct{} {
 	locations := make(map[string]struct{})
 	if flexPoolsCount != 0 {
-		for _, cPool := range c.sdkClient.GCNVResources.CapacityPoolMap {
+		c.sdkClient.resources.GetCapacityPools().Range(func(_ string, cPool *CapacityPool) bool {
 			locations[cPool.Location] = struct{}{}
-		}
+			return true
+		})
 	} else {
 		locations[c.config.Location] = struct{}{}
 	}

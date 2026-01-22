@@ -16,7 +16,7 @@ type GCNV interface {
 	Init(context.Context, map[string]storage.Pool) error
 
 	RefreshGCNVResources(context.Context) error
-	DiscoverGCNVResources(context.Context) error
+	DiscoverGCNVResources(context.Context, GCNVResourceUpdater) error
 
 	CapacityPools() *[]*CapacityPool
 	CapacityPoolsForStoragePools(context.Context) []*CapacityPool
@@ -44,3 +44,6 @@ type GCNV interface {
 	RestoreSnapshot(context.Context, *Volume, *Snapshot) error
 	DeleteSnapshot(context.Context, *Volume, *Snapshot, time.Duration) error
 }
+
+// GCNVResourceUpdater allows updating GCNV resources in a thread-safe manner.
+type GCNVResourceUpdater func(time.Time, map[string]*CapacityPool)

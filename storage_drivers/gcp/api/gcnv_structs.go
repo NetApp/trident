@@ -4,8 +4,10 @@
 package api
 
 import (
+	"sync"
 	"time"
 
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
 )
 
@@ -63,9 +65,44 @@ const (
 
 // GCNVResources is the toplevel cache for the set of things we discover about our GCNV environment.
 type GCNVResources struct {
-	CapacityPoolMap map[string]*CapacityPool
-	StoragePoolMap  map[string]storage.Pool
-	lastUpdateTime  time.Time
+	capacityPools  *collection.ImmutableMap[string, *CapacityPool]
+	storagePools   *collection.ImmutableMap[string, storage.Pool]
+	lastUpdateTime time.Time
+	m              sync.Mutex
+}
+
+func newGCNVResources() *GCNVResources {
+	return &GCNVResources{
+		capacityPools: collection.NewImmutableMap[string, *CapacityPool](nil),
+		storagePools:  collection.NewImmutableMap[string, storage.Pool](nil),
+	}
+}
+
+func (r *GCNVResources) GetCapacityPools() *collection.ImmutableMap[string, *CapacityPool] {
+	r.m.Lock()
+	defer r.m.Unlock()
+	return r.capacityPools
+}
+
+// GetStoragePools returns the pools defined in the backend.
+func (r *GCNVResources) GetStoragePools() *collection.ImmutableMap[string, storage.Pool] {
+	return r.storagePools
+}
+
+// SetStoragePools sets the pools from the backend config; it is not thread-safe and should only be called during
+// initialization.
+func (r *GCNVResources) SetStoragePools(storagePools map[string]storage.Pool) {
+	r.storagePools = collection.NewImmutableMap(storagePools)
+}
+
+// LockAndCheckStale locks the resources and returns true if the resources are stale based on the provided maxAge.
+// The caller must call the returned unlock function when done.
+func (r *GCNVResources) LockAndCheckStale(maxAge time.Duration) (bool, GCNVResourceUpdater, func()) {
+	r.m.Lock()
+	return time.Since(r.lastUpdateTime) > maxAge, func(t time.Time, capacityPools map[string]*CapacityPool) {
+		r.capacityPools = collection.NewImmutableMap(capacityPools)
+		r.lastUpdateTime = t
+	}, func() { r.m.Unlock() }
 }
 
 // CapacityPool records details of a discovered GCNV storage pool.

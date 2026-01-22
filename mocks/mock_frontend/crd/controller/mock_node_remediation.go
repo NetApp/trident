@@ -22,6 +22,7 @@ import (
 type MockNodeRemediationUtils struct {
 	ctrl     *gomock.Controller
 	recorder *MockNodeRemediationUtilsMockRecorder
+	isgomock struct{}
 }
 
 // MockNodeRemediationUtilsMockRecorder is the mock recorder for MockNodeRemediationUtils.
@@ -42,103 +43,103 @@ func (m *MockNodeRemediationUtils) EXPECT() *MockNodeRemediationUtilsMockRecorde
 }
 
 // DeleteVolumeAttachment mocks base method.
-func (m *MockNodeRemediationUtils) DeleteVolumeAttachment(arg0 context.Context, arg1 string) error {
+func (m *MockNodeRemediationUtils) DeleteVolumeAttachment(ctx context.Context, attachmentName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteVolumeAttachment", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteVolumeAttachment", ctx, attachmentName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteVolumeAttachment indicates an expected call of DeleteVolumeAttachment.
-func (mr *MockNodeRemediationUtilsMockRecorder) DeleteVolumeAttachment(arg0, arg1 any) *gomock.Call {
+func (mr *MockNodeRemediationUtilsMockRecorder) DeleteVolumeAttachment(ctx, attachmentName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolumeAttachment", reflect.TypeOf((*MockNodeRemediationUtils)(nil).DeleteVolumeAttachment), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVolumeAttachment", reflect.TypeOf((*MockNodeRemediationUtils)(nil).DeleteVolumeAttachment), ctx, attachmentName)
 }
 
 // ForceDeletePod mocks base method.
-func (m *MockNodeRemediationUtils) ForceDeletePod(arg0 context.Context, arg1 *v1.Pod) error {
+func (m *MockNodeRemediationUtils) ForceDeletePod(ctx context.Context, pod *v1.Pod) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ForceDeletePod", arg0, arg1)
+	ret := m.ctrl.Call(m, "ForceDeletePod", ctx, pod)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ForceDeletePod indicates an expected call of ForceDeletePod.
-func (mr *MockNodeRemediationUtilsMockRecorder) ForceDeletePod(arg0, arg1 any) *gomock.Call {
+func (mr *MockNodeRemediationUtilsMockRecorder) ForceDeletePod(ctx, pod any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForceDeletePod", reflect.TypeOf((*MockNodeRemediationUtils)(nil).ForceDeletePod), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForceDeletePod", reflect.TypeOf((*MockNodeRemediationUtils)(nil).ForceDeletePod), ctx, pod)
 }
 
 // GetNodePods mocks base method.
-func (m *MockNodeRemediationUtils) GetNodePods(arg0 context.Context, arg1 string) ([]*v1.Pod, error) {
+func (m *MockNodeRemediationUtils) GetNodePods(ctx context.Context, nodeName string) ([]*v1.Pod, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNodePods", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetNodePods", ctx, nodeName)
 	ret0, _ := ret[0].([]*v1.Pod)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetNodePods indicates an expected call of GetNodePods.
-func (mr *MockNodeRemediationUtilsMockRecorder) GetNodePods(arg0, arg1 any) *gomock.Call {
+func (mr *MockNodeRemediationUtilsMockRecorder) GetNodePods(ctx, nodeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNodePods", reflect.TypeOf((*MockNodeRemediationUtils)(nil).GetNodePods), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNodePods", reflect.TypeOf((*MockNodeRemediationUtils)(nil).GetNodePods), ctx, nodeName)
 }
 
 // GetPodsToDelete mocks base method.
-func (m *MockNodeRemediationUtils) GetPodsToDelete(arg0 context.Context, arg1 []*v1.Pod, arg2 map[string]*storage.VolumeExternal) []*v1.Pod {
+func (m *MockNodeRemediationUtils) GetPodsToDelete(ctx context.Context, nodePods []*v1.Pod, pvcToTvolMap map[string]*storage.VolumeExternal) []*v1.Pod {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPodsToDelete", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "GetPodsToDelete", ctx, nodePods, pvcToTvolMap)
 	ret0, _ := ret[0].([]*v1.Pod)
 	return ret0
 }
 
 // GetPodsToDelete indicates an expected call of GetPodsToDelete.
-func (mr *MockNodeRemediationUtilsMockRecorder) GetPodsToDelete(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockNodeRemediationUtilsMockRecorder) GetPodsToDelete(ctx, nodePods, pvcToTvolMap any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPodsToDelete", reflect.TypeOf((*MockNodeRemediationUtils)(nil).GetPodsToDelete), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPodsToDelete", reflect.TypeOf((*MockNodeRemediationUtils)(nil).GetPodsToDelete), ctx, nodePods, pvcToTvolMap)
 }
 
 // GetPvcToTvolMap mocks base method.
-func (m *MockNodeRemediationUtils) GetPvcToTvolMap(arg0 context.Context, arg1 string) (map[string]*storage.VolumeExternal, error) {
+func (m *MockNodeRemediationUtils) GetPvcToTvolMap(ctx context.Context, nodeName string) (map[string]*storage.VolumeExternal, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPvcToTvolMap", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetPvcToTvolMap", ctx, nodeName)
 	ret0, _ := ret[0].(map[string]*storage.VolumeExternal)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetPvcToTvolMap indicates an expected call of GetPvcToTvolMap.
-func (mr *MockNodeRemediationUtilsMockRecorder) GetPvcToTvolMap(arg0, arg1 any) *gomock.Call {
+func (mr *MockNodeRemediationUtilsMockRecorder) GetPvcToTvolMap(ctx, nodeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPvcToTvolMap", reflect.TypeOf((*MockNodeRemediationUtils)(nil).GetPvcToTvolMap), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPvcToTvolMap", reflect.TypeOf((*MockNodeRemediationUtils)(nil).GetPvcToTvolMap), ctx, nodeName)
 }
 
 // GetTridentVolumesOnNode mocks base method.
-func (m *MockNodeRemediationUtils) GetTridentVolumesOnNode(arg0 context.Context, arg1 string) ([]string, error) {
+func (m *MockNodeRemediationUtils) GetTridentVolumesOnNode(ctx context.Context, nodeName string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTridentVolumesOnNode", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetTridentVolumesOnNode", ctx, nodeName)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetTridentVolumesOnNode indicates an expected call of GetTridentVolumesOnNode.
-func (mr *MockNodeRemediationUtilsMockRecorder) GetTridentVolumesOnNode(arg0, arg1 any) *gomock.Call {
+func (mr *MockNodeRemediationUtilsMockRecorder) GetTridentVolumesOnNode(ctx, nodeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTridentVolumesOnNode", reflect.TypeOf((*MockNodeRemediationUtils)(nil).GetTridentVolumesOnNode), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTridentVolumesOnNode", reflect.TypeOf((*MockNodeRemediationUtils)(nil).GetTridentVolumesOnNode), ctx, nodeName)
 }
 
 // GetVolumeAttachmentsToDelete mocks base method.
-func (m *MockNodeRemediationUtils) GetVolumeAttachmentsToDelete(arg0 context.Context, arg1 []*v1.Pod, arg2 map[string]*storage.VolumeExternal, arg3 string) (map[string]string, error) {
+func (m *MockNodeRemediationUtils) GetVolumeAttachmentsToDelete(ctx context.Context, podsToDelete []*v1.Pod, pvcToTvols map[string]*storage.VolumeExternal, nodeName string) (map[string]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVolumeAttachmentsToDelete", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "GetVolumeAttachmentsToDelete", ctx, podsToDelete, pvcToTvols, nodeName)
 	ret0, _ := ret[0].(map[string]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVolumeAttachmentsToDelete indicates an expected call of GetVolumeAttachmentsToDelete.
-func (mr *MockNodeRemediationUtilsMockRecorder) GetVolumeAttachmentsToDelete(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockNodeRemediationUtilsMockRecorder) GetVolumeAttachmentsToDelete(ctx, podsToDelete, pvcToTvols, nodeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeAttachmentsToDelete", reflect.TypeOf((*MockNodeRemediationUtils)(nil).GetVolumeAttachmentsToDelete), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeAttachmentsToDelete", reflect.TypeOf((*MockNodeRemediationUtils)(nil).GetVolumeAttachmentsToDelete), ctx, podsToDelete, pvcToTvols, nodeName)
 }

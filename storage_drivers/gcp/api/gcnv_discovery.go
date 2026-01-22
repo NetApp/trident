@@ -38,14 +38,19 @@ const (
 // them against our known storage pools.
 func (c Client) RefreshGCNVResources(ctx context.Context) error {
 	// Check if it is time to update the cache
-	if time.Now().Before(c.sdkClient.GCNVResources.lastUpdateTime.Add(c.config.MaxCacheAge)) {
+	stale, resourceUpdater, unlocker := c.sdkClient.resources.LockAndCheckStale(c.config.MaxCacheAge)
+
+	if !stale {
 		Logc(ctx).Debugf("Cached resources not yet %v old, skipping refresh.", c.config.MaxCacheAge)
+		unlocker()
 		return nil
 	}
 
 	// (re-)Discover what we have to work with in GCNV
 	Logc(ctx).Debugf("Discovering GCNV resources.")
-	discoveryErr := multierr.Combine(c.DiscoverGCNVResources(ctx))
+	discoveryErr := multierr.Combine(c.DiscoverGCNVResources(ctx, resourceUpdater))
+	// Concurrent operations may continue after this point even if discovery failed
+	unlocker()
 
 	// This is noisy, hide it behind api tracing.
 	c.dumpGCNVResources(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["api"])
@@ -61,10 +66,10 @@ func (c Client) RefreshGCNVResources(ctx context.Context) error {
 	return discoveryErr
 }
 
-// DiscoverGCNVResources rediscovers the GCNV resources we care about and updates the cache.
-func (c Client) DiscoverGCNVResources(ctx context.Context) (returnError error) {
+// DiscoverGCNVResources rediscovers the GCNV resources we care about and updates the cache. Caller must hold the client's resources lock.
+func (c Client) DiscoverGCNVResources(ctx context.Context, resourceUpdater GCNVResourceUpdater) (returnError error) {
 	// Start from scratch each time we are called.
-	newCapacityPoolMap := make(map[string]*CapacityPool)
+	newCapacityPools := make(map[string]*CapacityPool)
 
 	defer func() {
 		if returnError != nil {
@@ -73,9 +78,7 @@ func (c Client) DiscoverGCNVResources(ctx context.Context) (returnError error) {
 		}
 
 		// Swap the newly discovered resources into the cache only if discovery succeeded.
-		c.sdkClient.GCNVResources.CapacityPoolMap = newCapacityPoolMap
-		c.sdkClient.GCNVResources.lastUpdateTime = time.Now()
-
+		resourceUpdater(time.Now(), newCapacityPools)
 		Logc(ctx).Debug("Switched to newly discovered resources.")
 	}()
 
@@ -87,13 +90,13 @@ func (c Client) DiscoverGCNVResources(ctx context.Context) (returnError error) {
 
 	// Update maps with all data from discovered capacity pools
 	for _, cPool := range *cPools {
-		newCapacityPoolMap[cPool.FullName] = cPool
+		newCapacityPools[cPool.FullName] = cPool
 	}
 
 	// Detect the lack of any resources: can occur when no connectivity, etc.
 	// Would like a better way of proactively finding out there is something wrong
 	// at a very basic level.  (Reproduce this by turning off your network!)
-	numCapacityPools := len(newCapacityPoolMap)
+	numCapacityPools := len(newCapacityPools)
 
 	if numCapacityPools == 0 {
 		return errors.New("no GCNV storage pools discovered; volume provisioning may fail until corrected")
@@ -110,17 +113,18 @@ func (c Client) DiscoverGCNVResources(ctx context.Context) (returnError error) {
 func (c Client) dumpGCNVResources(ctx context.Context, driverName string, discoveryTraceEnabled bool) {
 	Logd(ctx, driverName, discoveryTraceEnabled).Tracef("Discovered GCNV Resources:")
 
-	for _, cp := range c.sdkClient.GCNVResources.CapacityPoolMap {
+	c.sdkClient.resources.GetCapacityPools().Range(func(_ string, cp *CapacityPool) bool {
 		Logd(ctx, driverName, discoveryTraceEnabled).Tracef("CPool: %s, [%s, %s]",
 			cp.Name, cp.ServiceLevel, cp.NetworkName)
-	}
+		return true
+	})
 }
 
 // checkForUnsatisfiedPools returns one or more errors if one or more configured storage pools
 // are satisfied by no capacity pools.
 func (c Client) checkForUnsatisfiedPools(ctx context.Context) (discoveryErrors []error) {
 	// Ensure every storage pool matches one or more capacity pools
-	for sPoolName, sPool := range c.sdkClient.GCNVResources.StoragePoolMap {
+	c.sdkClient.resources.GetStoragePools().Range(func(sPoolName string, sPool storage.Pool) bool {
 
 		// Find all capacity pools that work for this storage pool
 		cPools := c.CapacityPoolsForStoragePool(ctx, sPool, sPool.InternalAttributes()[serviceLevel])
@@ -141,7 +145,8 @@ func (c Client) checkForUnsatisfiedPools(ctx context.Context) (discoveryErrors [
 			// Print the mapping in the logs so we see it after each discovery refresh.
 			Logc(ctx).Debugf("Storage pool %s mapped to capacity pools %v.", sPoolName, cPoolFullNames)
 		}
-	}
+		return true
+	})
 
 	return
 }
@@ -149,14 +154,14 @@ func (c Client) checkForUnsatisfiedPools(ctx context.Context) (discoveryErrors [
 // checkForNonexistentCapacityPools logs warnings if any configured capacity pools do not
 // match discovered capacity pools in the resource cache.
 func (c Client) checkForNonexistentCapacityPools(ctx context.Context) (anyMismatches bool) {
-	for sPoolName, sPool := range c.sdkClient.GCNVResources.StoragePoolMap {
-
-		// Build list of capacity pool names
-		cpNames := make([]string, 0)
-		for _, cacheCP := range c.sdkClient.GCNVResources.CapacityPoolMap {
-			cpNames = append(cpNames, cacheCP.Name)
-			cpNames = append(cpNames, cacheCP.FullName)
-		}
+	cPools := c.sdkClient.resources.GetCapacityPools()
+	cpNames := make([]string, 0, cPools.Length()*2)
+	cPools.Range(func(_ string, cp *CapacityPool) bool {
+		cpNames = append(cpNames, cp.Name)
+		cpNames = append(cpNames, cp.FullName)
+		return true
+	})
+	c.sdkClient.resources.GetStoragePools().Range(func(sPoolName string, sPool storage.Pool) bool {
 
 		// Find any capacity pools value in this storage pool that doesn't match known capacity pools
 		for _, configCP := range collection.SplitString(ctx, sPool.InternalAttributes()[capacityPools], ",") {
@@ -169,7 +174,8 @@ func (c Client) checkForNonexistentCapacityPools(ctx context.Context) (anyMismat
 				}).Warning("Capacity pool referenced in pool not found.")
 			}
 		}
-	}
+		return true
+	})
 
 	return
 }
@@ -177,14 +183,15 @@ func (c Client) checkForNonexistentCapacityPools(ctx context.Context) (anyMismat
 // checkForNonexistentNetworks logs warnings if any configured networks do not
 // match discovered virtual networks in the resource cache.
 func (c Client) checkForNonexistentNetworks(ctx context.Context) (anyMismatches bool) {
-	for sPoolName, sPool := range c.sdkClient.GCNVResources.StoragePoolMap {
-
-		// Build list of short and long capacity network names
-		networkNames := make([]string, 0)
-		for _, cPool := range c.sdkClient.GCNVResources.CapacityPoolMap {
-			networkNames = append(networkNames, cPool.NetworkName)
-			networkNames = append(networkNames, cPool.NetworkFullName)
-		}
+	// Build list of short and long capacity network names
+	cPools := c.sdkClient.resources.GetCapacityPools()
+	networkNames := make([]string, 0, cPools.Length()*2)
+	cPools.Range(func(_ string, cp *CapacityPool) bool {
+		networkNames = append(networkNames, cp.NetworkName)
+		networkNames = append(networkNames, cp.NetworkFullName)
+		return true
+	})
+	c.sdkClient.resources.GetStoragePools().Range(func(sPoolName string, sPool storage.Pool) bool {
 
 		// Find any network value in this storage pool that doesn't match the pool's network
 		configNetwork := sPool.InternalAttributes()[network]
@@ -196,7 +203,8 @@ func (c Client) checkForNonexistentNetworks(ctx context.Context) (anyMismatches 
 				"network": configNetwork,
 			}).Warning("Network referenced in pool not found.")
 		}
-	}
+		return true
+	})
 
 	return
 }
@@ -303,23 +311,27 @@ func (c Client) discoverCapacityPools(ctx context.Context) (*[]*CapacityPool, er
 
 // CapacityPools returns a list of all discovered GCNV capacity pools.
 func (c Client) CapacityPools() *[]*CapacityPool {
-	var cPools []*CapacityPool
-
-	for _, cPool := range c.sdkClient.GCNVResources.CapacityPoolMap {
+	cPoolsMap := c.sdkClient.resources.GetCapacityPools()
+	cPools := make([]*CapacityPool, 0, cPoolsMap.Length())
+	cPoolsMap.Range(func(_ string, cPool *CapacityPool) bool {
 		cPools = append(cPools, cPool)
-	}
+		return true
+	})
 
 	return &cPools
 }
 
 // capacityPool returns a single discovered capacity pool by its short name.
 func (c Client) capacityPool(cPoolName string) *CapacityPool {
-	for _, cPool := range c.sdkClient.GCNVResources.CapacityPoolMap {
+	var matchingCPool *CapacityPool
+	c.sdkClient.resources.GetCapacityPools().Range(func(_ string, cPool *CapacityPool) bool {
 		if cPool.Name == cPoolName {
-			return cPool
+			matchingCPool = cPool
+			return false
 		}
-	}
-	return nil
+		return true
+	})
+	return matchingCPool
 }
 
 // CapacityPoolsForStoragePools returns all discovered capacity pools matching all known storage pools,
@@ -329,14 +341,15 @@ func (c Client) CapacityPoolsForStoragePools(ctx context.Context) []*CapacityPoo
 	cPoolMap := make(map[*CapacityPool]bool)
 
 	// Build deduplicated map of cPools
-	for _, sPool := range c.sdkClient.StoragePoolMap {
+	c.sdkClient.resources.GetStoragePools().Range(func(_ string, sPool storage.Pool) bool {
 		for _, cPool := range c.CapacityPoolsForStoragePool(ctx, sPool, "") {
 			cPoolMap[cPool] = true
 		}
-	}
+		return true
+	})
 
 	// Copy keys into a list of deduplicated cPools
-	cPools := make([]*CapacityPool, 0)
+	cPools := make([]*CapacityPool, 0, len(cPoolMap))
 
 	for cPool := range cPoolMap {
 		cPools = append(cPools, cPool)
@@ -355,59 +368,63 @@ func (c Client) CapacityPoolsForStoragePool(
 
 	// This map tracks which capacity pools have passed the filters
 	filteredCapacityPoolMap := make(map[string]bool)
-
+	cPools := c.sdkClient.resources.GetCapacityPools()
 	// Start with all capacity pools marked as passing the filters
-	for cPoolFullName := range c.sdkClient.CapacityPoolMap {
+	cPools.Range(func(cPoolFullName string, _ *CapacityPool) bool {
 		filteredCapacityPoolMap[cPoolFullName] = true
-	}
+		return true
+	})
 
 	// If capacity pools were specified, filter out non-matching capacity pools
 	cpList := collection.SplitString(ctx, sPool.InternalAttributes()[capacityPools], ",")
 	if len(cpList) > 0 {
-		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
+		cPools.Range(func(cPoolFullName string, cPool *CapacityPool) bool {
 			if !collection.ContainsString(cpList, cPool.Name) && !collection.ContainsString(cpList, cPoolFullName) {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring capacity pool %s, not in capacity pools [%s].",
 					cPoolFullName, cpList)
 				filteredCapacityPoolMap[cPoolFullName] = false
 			}
-		}
+			return true
+		})
 	}
 
 	// If networks were specified, filter out non-matching capacity pools
 	network := sPool.InternalAttributes()[network]
 	if network != "" {
-		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
+		cPools.Range(func(cPoolFullName string, cPool *CapacityPool) bool {
 			if network != cPool.NetworkName && network != cPool.NetworkFullName {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring capacity pool %s, not in capacity pools [%s].",
 					cPoolFullName, cpList)
 				filteredCapacityPoolMap[cPoolFullName] = false
 			}
-		}
+			return true
+		})
 	}
 
 	// Filter out pools with non-matching service levels
 	if serviceLevel != "" {
-		for cPoolFullName, cPool := range c.sdkClient.CapacityPoolMap {
+		cPools.Range(func(cPoolFullName string, cPool *CapacityPool) bool {
 			if !strings.EqualFold(cPool.ServiceLevel, serviceLevel) {
 				Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef("Ignoring capacity pool %s, not service level %s.",
 					cPoolFullName, serviceLevel)
 				filteredCapacityPoolMap[cPoolFullName] = false
 			}
-		}
+			return true
+		})
 	}
 
 	// Build list of all capacity pools that have passed all filters
-	cPools := make([]*CapacityPool, 0)
+	filteredCPools := make([]*CapacityPool, 0, len(filteredCapacityPoolMap))
 	for cPoolFullName, match := range filteredCapacityPoolMap {
 		if match {
-			cPools = append(cPools, c.sdkClient.CapacityPoolMap[cPoolFullName])
+			filteredCPools = append(filteredCPools, cPools.Get(cPoolFullName))
 		}
 	}
 
 	// Filter out Capacity pools with non-matching supported topology
-	cPools = c.FilterCapacityPoolsOnTopology(ctx, cPools, sPool.SupportedTopologies(), []map[string]string{})
+	filteredCPools = c.FilterCapacityPoolsOnTopology(ctx, filteredCPools, sPool.SupportedTopologies(), []map[string]string{})
 
-	return cPools
+	return filteredCPools
 }
 
 // FilterCapacityPoolsOnTopology returns all the discovered capacity pools that support any of the requisite
