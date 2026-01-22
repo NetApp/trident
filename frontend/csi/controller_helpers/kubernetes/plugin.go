@@ -562,8 +562,8 @@ func (h *helper) reconcileVolumePublications(ctx context.Context) error {
 func (h *helper) listAttachmentsAsPublications(
 	ctx context.Context, attachments []k8sstoragev1.VolumeAttachment,
 ) ([]*models.VolumePublicationExternal, error) {
-	Logc(ctx).Debug("Converting Kubernetes volume attachments to Trident publications.")
-	defer Logc(ctx).Debug("Converted Kubernetes volume attachments to Trident publications.")
+	Logc(ctx).Trace("Converting Kubernetes volume attachments to Trident publications.")
+	defer Logc(ctx).Trace("Converted Kubernetes volume attachments to Trident publications.")
 
 	publications := make([]*models.VolumePublicationExternal, 0)
 	for _, attachment := range attachments {
@@ -1088,8 +1088,8 @@ func (h *helper) processStorageClass(ctx context.Context, sc *k8sstoragev1.Stora
 				continue
 			}
 			scConfig.AdditionalPools = additionalPools
-			Logc(ctx).WithFields(logFields).WithField("additionalStoragePools", v).
-				Debug("Using additionalStoragePools from annotation to override parameter")
+			Logc(ctx).WithFields(logFields).WithField("additionalStoragePools", v).Trace(
+				"Using additionalStoragePools from annotation to override parameter")
 		}
 	}
 
@@ -1214,7 +1214,7 @@ func (h *helper) updateNode(_, obj interface{}) {
 	}
 
 	logFields := LogFields{"name": node.Name}
-	Logc(ctx).WithFields(logFields).Debug("Node updated in cache.")
+	Logc(ctx).WithFields(logFields).Trace("Node updated in cache.")
 
 	if h.enableForceDetach {
 		if err := h.orchestrator.UpdateNode(ctx, node.Name, h.getNodePublicationState(ctx, node)); err != nil {
@@ -1313,7 +1313,7 @@ func (h *helper) getNodePublicationState(ctx context.Context, node *v1.Node) *mo
 	// Look for Trident Node Remediation CRD, if state is "in progress" do not set to ready yet
 	remediationCRD, _ := h.tridentClient.TridentV1().TridentNodeRemediations(h.namespace).Get(ctx, node.Name, getOpts)
 	if remediationCRD != nil && remediationCRD.Status.State == netappv1.TridentNodeRemediatingState {
-		Logc(ctx).Debug("found remediation CRD")
+		Logc(ctx).WithField("node", node.Name).Debug("Found remediation CRD.")
 		remediating = true
 	}
 
@@ -1405,7 +1405,8 @@ func (h *helper) IsTopologyInUse(ctx context.Context) bool {
 
 	nodes, err := h.kubeClient.CoreV1().Nodes().List(ctx, listOpts)
 	if err != nil {
-		Logc(ctx).WithError(err).Error("Failed to list nodes with topology label. Assuming topology in use to be 'false' by default.")
+		Logc(ctx).WithError(err).Error("Failed to list nodes with topology label. " +
+			"Assuming topology in use to be 'false' by default.")
 		return false
 	}
 
@@ -1416,7 +1417,7 @@ func (h *helper) IsTopologyInUse(ctx context.Context) bool {
 	}
 
 	fields := LogFields{"topologyInUse": topologyInUse}
-	Logc(ctx).WithFields(fields).Info("Successfully determined if topology is in use.")
+	Logc(ctx).WithFields(fields).Debug("Determined if topology is in use.")
 
 	return topologyInUse
 }
@@ -1425,7 +1426,7 @@ func (h *helper) IsTopologyInUse(ctx context.Context) bool {
 func (h *helper) getK8sClusterUID(ctx context.Context) (string, error) {
 	namespace, err := h.kubeClient.CoreV1().Namespaces().Get(ctx, config.KubeSystemNamespace, metav1.GetOptions{})
 	if err != nil {
-		Logc(ctx).WithError(err).Debug("Failed to get kube-system namespace for cluster UID.")
+		Logc(ctx).WithError(err).Error("Failed to get kube-system namespace for cluster UID.")
 		return "", err
 	}
 	return string(namespace.UID), nil
@@ -1466,7 +1467,8 @@ func (h *helper) getTridentProtectVersion(ctx context.Context) (string, bool, er
 	for _, pod := range pods.Items {
 		if strings.Contains(pod.Name, config.TridentProtectControllerName) {
 			if version, exists := pod.Labels[config.TridentProtectVersionLabel]; exists {
-				Logc(ctx).WithField("version", version).WithField("podName", pod.Name).Debug("Found Trident Protect version from controller manager.")
+				Logc(ctx).WithField("version", version).WithField("podName", pod.Name).Debug(
+					"Found Trident Protect version from controller manager.")
 
 				// Controller found, now check for connector
 				connectorPresent, err := h.getTridentProtectConnectorPresent(ctx)
@@ -1514,7 +1516,7 @@ func (h *helper) getTridentProtectConnectorPresent(ctx context.Context) (bool, e
 func (h *helper) getK8sPlatformVersion(ctx context.Context) (string, error) {
 	version, err := h.kubeClient.Discovery().ServerVersion()
 	if err != nil {
-		Logc(ctx).WithError(err).Debug("Failed to get Kubernetes server version.")
+		Logc(ctx).WithError(err).Error("Failed to get Kubernetes server version.")
 		return "", err
 	}
 	return version.GitVersion, nil
@@ -1528,21 +1530,21 @@ func (h *helper) updateTelemetryFields(ctx context.Context, telemetry *config.Te
 	if clusterUID, err := h.getK8sClusterUID(ctx); err == nil {
 		telemetry.PlatformUID = clusterUID
 	} else {
-		Logc(ctx).WithError(err).Debug("Failed to get dynamic cluster UID for telemetry.")
+		Logc(ctx).WithError(err).Error("Failed to get dynamic cluster UID for telemetry.")
 	}
 
 	// Update NodeCount dynamically
 	if nodeCount, err := h.getK8sNodeCount(ctx); err == nil {
 		telemetry.PlatformNodeCount = nodeCount
 	} else {
-		Logc(ctx).WithError(err).Debug("Failed to get dynamic node count for telemetry.")
+		Logc(ctx).WithError(err).Error("Failed to get dynamic node count for telemetry.")
 	}
 
 	// Update PlatformVersion dynamically
 	if platformVersion, err := h.getK8sPlatformVersion(ctx); err == nil {
 		telemetry.PlatformVersion = platformVersion
 	} else {
-		Logc(ctx).WithError(err).Debug("Failed to get dynamic platform version for telemetry.")
+		Logc(ctx).WithError(err).Error("Failed to get dynamic platform version for telemetry.")
 	}
 
 	// Update TridentProtectVersion and connector presence dynamically
@@ -1550,7 +1552,7 @@ func (h *helper) updateTelemetryFields(ctx context.Context, telemetry *config.Te
 		telemetry.TridentProtectVersion = tridentProtectVersion
 		telemetry.TridentProtectConnectorPresent = connectorPresent
 	} else {
-		Logc(ctx).WithError(err).Debug("Failed to get dynamic Trident Protect version for telemetry.")
+		Logc(ctx).WithError(err).Error("Failed to get dynamic Trident Protect version for telemetry.")
 		// Clear both fields if Trident Protect is not found
 		telemetry.TridentProtectVersion = ""
 		telemetry.TridentProtectConnectorPresent = false
