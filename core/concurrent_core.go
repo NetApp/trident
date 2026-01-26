@@ -66,6 +66,7 @@ var (
 		"fake",
 		"ontap-nas",
 		"google-cloud-netapp-volumes",
+		"ontap-nas-economy",
 	}
 )
 
@@ -3481,6 +3482,7 @@ func (o *ConcurrentTridentOrchestrator) unpublishVolume(
 		db.Query(
 			db.ListVolumePublicationsForVolume(volumeName),
 			db.ReadNode(""),
+			db.ListNodes(),
 			db.ReadBackend(""),
 			db.UpsertVolume("", ""),
 			db.DeleteVolumePublication(volumeName, nodeName),

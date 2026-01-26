@@ -55,12 +55,12 @@ type NASQtreeStorageDriver struct {
 	API                              api.OntapAPI
 	AWSAPI                           awsapi.AWSAPI
 	telemetry                        *Telemetry
-	quotaResizeMap                   map[string]bool
+	quotaResizeMap                   *quotaResizeMap
 	flexvolNamePrefix                string
 	flexvolExportPolicy              string
 	housekeepingTasks                map[string]*HousekeepingTask
 	housekeepingWaitGroup            *sync.WaitGroup
-	sharedLockID                     string
+	flexvolLocks                     *locks.GCNamedMutex
 	emptyFlexvolMap                  map[string]time.Time
 	emptyFlexvolDeferredDeletePeriod time.Duration
 	qtreesPerFlexvol                 int
@@ -70,6 +70,36 @@ type NASQtreeStorageDriver struct {
 	virtualPools  map[string]storage.Pool
 
 	cloneSplitTimers *sync.Map
+}
+
+// lockedFlexVol represents a FlexVol with an acquired lock.
+// The lock is released when Unlock() is called.
+// Usage:
+//
+//	lockedFlexvol, err := d.ensureFlexvolForQtree(...)
+//	if err != nil { return err }
+//	defer lockedFlexvol.Unlock()
+//	// ... use lockedFlexvol.Name() ...
+//
+// NOTE: lockedFlexVol structs should not be shared between goroutines.
+// If one was, there'd be race in Unlock().
+type lockedFlexVol struct {
+	name   string
+	unlock func()
+}
+
+// Name returns the FlexVol name
+func (lf *lockedFlexVol) Name() string {
+	return lf.name
+}
+
+// Unlock releases the lock on this FlexVol.
+// Safe to call multiple times (subsequent calls are no-ops).
+func (lf *lockedFlexVol) Unlock() {
+	if lf.unlock != nil {
+		lf.unlock()
+		lf.unlock = nil // Prevent double-unlock
+	}
 }
 
 func (d *NASQtreeStorageDriver) GetConfig() drivers.DriverConfig {
@@ -168,7 +198,8 @@ func (d *NASQtreeStorageDriver) Initialize(
 	}
 
 	// Set up internal driver state
-	d.quotaResizeMap = make(map[string]bool)
+	d.quotaResizeMap = newQuotaResizeMap()
+	d.flexvolLocks = locks.NewGCNamedMutex()
 	d.flexvolNamePrefix = fmt.Sprintf("%s_qtree_pool_%s_", artifactPrefix, *d.Config.StoragePrefix)
 	d.flexvolNamePrefix = strings.Replace(d.flexvolNamePrefix, "-", "_", -1)  // ONTAP disallows hyphens
 	d.flexvolNamePrefix = strings.Replace(d.flexvolNamePrefix, "__", "_", -1) // Remove any double underscores
@@ -177,7 +208,6 @@ func (d *NASQtreeStorageDriver) Initialize(
 	} else {
 		d.flexvolExportPolicy = fmt.Sprintf("%s_qtree_pool_export_policy", artifactPrefix)
 	}
-	d.sharedLockID = d.API.GetSVMUUID() + "-" + *d.Config.StoragePrefix
 	d.emptyFlexvolMap = make(map[string]time.Time)
 	d.denyNewFlexvols, _ = strconv.ParseBool(d.Config.DenyNewVolumePools)
 
@@ -200,7 +230,6 @@ func (d *NASQtreeStorageDriver) Initialize(
 		"FlexvolNamePrefix":   d.flexvolNamePrefix,
 		"FlexvolExportPolicy": d.flexvolExportPolicy,
 		"QtreesPerFlexvol":    d.qtreesPerFlexvol,
-		"SharedLockID":        d.sharedLockID,
 	}).Debugf("Qtree driver settings.")
 
 	d.physicalPools, d.virtualPools, err = InitializeStoragePoolsCommon(ctx, d,
@@ -325,10 +354,6 @@ func (d *NASQtreeStorageDriver) Create(
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
-
-	// Ensure any Flexvol we create won't be pruned before we place a qtree on it
-	locks.Lock(ctx, "create", d.sharedLockID)
-	defer locks.Unlock(ctx, "create", d.sharedLockID)
 
 	// Generic user-facing message
 	createError := errors.New("volume creation failed")
@@ -461,7 +486,8 @@ func (d *NASQtreeStorageDriver) Create(
 		}
 
 		// Make sure we have a Flexvol for the new qtree
-		flexvol, flexvolErr := d.ensureFlexvolForQtree(
+		// NOTE: ensureFlexvolForQtree returns a lockedFlexVol with the lock held.
+		lockedFlexvol, flexvolErr := d.ensureFlexvolForQtree(
 			ctx, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, enableSnapshotDir, enableEncryption, sizeBytes,
 			&d.Config, snapshotReserve, exportPolicy)
 		if flexvolErr != nil {
@@ -471,6 +497,13 @@ func (d *NASQtreeStorageDriver) Create(
 			createErrors = append(createErrors, errors.New(errMessage))
 			continue
 		}
+
+		// Release the FlexVol lock when done
+		defer lockedFlexvol.Unlock()
+
+		// Extract FlexVol name for use throughout the operation
+		flexvol := lockedFlexvol.Name()
+
 		volConfig.InternalID = d.CreateQtreeInternalID(d.Config.SVM, flexvol, name)
 		Logc(ctx).WithFields(LogFields{"InternalID": volConfig.InternalID}).Debug("Creating new qtree.")
 
@@ -625,10 +658,6 @@ func (d *NASQtreeStorageDriver) Destroy(ctx context.Context, volConfig *storage.
 		return nil // Return early for all ReadOnlyClone cases
 	}
 
-	// Ensure the deleted qtree reaping job doesn't interfere with this workflow
-	locks.Lock(ctx, "destroy", d.sharedLockID)
-	defer locks.Unlock(ctx, "destroy", d.sharedLockID)
-
 	// Generic user-facing message
 	deleteError := errors.New("volume deletion failed")
 
@@ -647,6 +676,10 @@ func (d *NASQtreeStorageDriver) Destroy(ctx context.Context, volConfig *storage.
 		Logc(ctx).WithField("qtree", name).Warn("Qtree not found.")
 		return nil
 	}
+
+	// Lock this specific FlexVol to prevent concurrent operations
+	d.flexvolLocks.Lock(flexvol)
+	defer d.flexvolLocks.Unlock(flexvol)
 
 	// If qtree exists, update the volConfig.InternalID in case it was not set
 	// This is useful for "legacy" volumes which do not have InternalID set when they were created
@@ -721,6 +754,16 @@ func (d *NASQtreeStorageDriver) Publish(
 		Logc(ctx).WithField("qtree", name).Debug("Qtree not found.")
 		return fmt.Errorf("volume %s not found", name)
 	}
+
+	// NOTE: FlexVol lock is NOT needed here even though publishQtreeShare modifies the FlexVol's export policy.
+	// Reasons:
+	// 1. VolumeModifyExportPolicy is idempotent - setting the same value multiple times is safe
+	// 2. All concurrent Publish operations set FlexVol policy to the same value (backendPolicyName)
+	// 3. Destroy already holds the FlexVol lock, preventing races with qtree deletion
+	// 4. ONTAP API calls are atomic - no partial state is visible
+	// 5. If qtree is deleted mid-Publish, the operation fails gracefully with "not found"
+	// 6. Export policy modifications are protected by exportPolicyMutex (per-policy locking)
+	// Adding FlexVol lock here causes massive serialization of concurrent mount operations, harming performance
 
 	// If qtree exists, update the volConfig.InternalID in case it was not set
 	// This is useful for "legacy" volumes which do not have InternalID set when they were created
@@ -888,6 +931,14 @@ func (d *NASQtreeStorageDriver) Unpublish(
 		Logc(ctx).WithField("qtree", qtreeName).Debug("Qtree not found.")
 		return errors.NotFoundError("qtree not found")
 	}
+
+	// NOTE: FlexVol lock is NOT needed here even though we modify export policies.
+	// Reasons:
+	// 1. Export policy modifications are protected by exportPolicyMutex (per-policy locking)
+	// 2. Destroy already holds the FlexVol lock, preventing races with qtree deletion
+	// 3. Export policy rule removal is idempotent - safe to run concurrently
+	// 4. ONTAP API calls are atomic - no partial state is visible
+	// Adding FlexVol lock here causes unnecessary serialization of concurrent unpublish operations.
 
 	exportPolicy := volConfig.ExportPolicy
 	if exportPolicy == "" {
@@ -1297,43 +1348,54 @@ func (d *NASQtreeStorageDriver) Get(ctx context.Context, name string) error {
 
 // ensureFlexvolForQtree accepts a set of Flexvol characteristics and either finds one to contain a new
 // qtree or it creates a new Flexvol with the needed attributes.
+//
+// IMPORTANT: This method returns a lockedFlexVol object with a lock held. The caller MUST call
+// Unlock() on the returned object (typically via defer) after completing the operation. This ensures
+// no TOCTOU race between capacity checks and qtree creation.
 func (d *NASQtreeStorageDriver) ensureFlexvolForQtree(
 	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy string, enableSnapshotDir bool,
 	enableEncryption *bool, sizeBytes uint64, config *drivers.OntapStorageDriverConfig, snapshotReserve,
 	exportPolicy string,
-) (string, error) {
+) (*lockedFlexVol, error) {
 	shouldLimitFlexvolSize, flexvolSizeLimit, checkFlexvolSizeLimitsError := CheckVolumePoolSizeLimits(
 		ctx, sizeBytes, config)
 	if checkFlexvolSizeLimitsError != nil {
-		return "", checkFlexvolSizeLimitsError
+		return nil, checkFlexvolSizeLimitsError
 	}
 
 	// Check if a suitable Flexvol already exists
-	flexvol, err := d.findFlexvolForQtree(ctx, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, snapshotReserve,
+	// NOTE: findFlexvolForQtree returns a lockedFlexVol with lock held if it finds a suitable FlexVol
+	lockedFlexvol, err := d.findFlexvolForQtree(ctx, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, snapshotReserve,
 		enableSnapshotDir, enableEncryption, shouldLimitFlexvolSize, sizeBytes, flexvolSizeLimit)
 	if err != nil {
-		return "", fmt.Errorf("error finding Flexvol for qtree: %v", err)
+		return nil, fmt.Errorf("error finding Flexvol for qtree: %v", err)
 	}
 
-	// Found one!
-	if flexvol != "" {
-		return flexvol, nil
+	// Found one (lock is already held)!
+	if lockedFlexvol != nil {
+		return lockedFlexvol, nil
 	}
 
 	// If we can't create a new Flexvol, fail
 	if d.denyNewFlexvols {
-		return "", errors.New("new Flexvol creation not permitted")
+		return nil, errors.New("new Flexvol creation not permitted")
 	}
 
 	// Nothing found, so create a suitable Flexvol
-	flexvol, err = d.createFlexvolForQtree(
+	flexvolName, err := d.createFlexvolForQtree(
 		ctx, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, enableSnapshotDir, enableEncryption,
 		snapshotReserve, exportPolicy)
 	if err != nil {
-		return "", fmt.Errorf("error creating Flexvol for qtree: %v", err)
+		return nil, fmt.Errorf("error creating Flexvol for qtree: %v", err)
 	}
 
-	return flexvol, nil
+	// Lock the newly created FlexVol before returning
+	d.flexvolLocks.Lock(flexvolName)
+
+	return &lockedFlexVol{
+		name:   flexvolName,
+		unlock: func() { d.flexvolLocks.Unlock(flexvolName) },
+	}, nil
 }
 
 // createFlexvolForQtree creates a new Flexvol matching the specified attributes for
@@ -1438,19 +1500,24 @@ func (d *NASQtreeStorageDriver) createFlexvolForQtree(
 	return flexvol, nil
 }
 
-// findFlexvolForQtree returns a Flexvol (from the set of existing Flexvols) that
+// findFlexvolForQtree returns a locked FlexVol (from the set of existing Flexvols) that
 // matches the specified Flexvol attributes and does not already contain more
 // than the maximum configured number of qtrees.  No matching Flexvols is not
 // considered an error.  If more than one matching Flexvol is found, one of those
 // is returned at random.
+//
+// IMPORTANT: This method acquires a lock on the FlexVol before checking its capacity
+// and qtree count to prevent TOCTOU races. If a suitable FlexVol is found, this method
+// returns a lockedFlexVol object with the lock held. The caller MUST call Unlock() on
+// the returned object (typically via defer). If no FlexVol is found, nil is returned.
 func (d *NASQtreeStorageDriver) findFlexvolForQtree(
 	ctx context.Context, aggregate, spaceReserve, snapshotPolicy, tieringPolicy, snapshotReserve string,
 	enableSnapshotDir bool, enableEncryption *bool, shouldLimitFlexvolSize bool,
 	sizeBytes, flexvolSizeLimit uint64,
-) (string, error) {
+) (*lockedFlexVol, error) {
 	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
 	if err != nil {
-		return "", fmt.Errorf("invalid value for snapshotReserve: %v", err)
+		return nil, fmt.Errorf("invalid value for snapshotReserve: %v", err)
 	}
 
 	// Get all volumes matching the specified attributes
@@ -1466,48 +1533,68 @@ func (d *NASQtreeStorageDriver) findFlexvolForQtree(
 	}
 	volumes, err := d.API.VolumeListByAttrs(ctx, volAttrs)
 	if err != nil {
-		return "", fmt.Errorf("error listing volumes; %v", err)
+		return nil, fmt.Errorf("error listing volumes; %v", err)
 	}
 
-	// Weed out the Flexvols:
-	// 1) already having too many qtrees
-	// 2) exceeding size limits
-	var eligibleVolumeNames []string
+	// Shuffle the candidate FlexVols to distribute load and avoid thundering herd
+	if len(volumes) > 1 {
+		for i := len(volumes) - 1; i > 0; i-- {
+			j := crypto.RandomNumber(i + 1)
+			volumes[i], volumes[j] = volumes[j], volumes[i]
+		}
+	}
+
+	// Check each candidate FlexVol for eligibility.
+	// Lock each FlexVol BEFORE reading its size/quota data to prevent TOCTOU races.
+	// If a FlexVol is suitable, return with the lock still held (caller inherits it).
+	// If not suitable, unlock and continue to the next candidate.
 	for _, volume := range volumes {
 		volName := volume.Name
 
-		// skip flexvols over the size limit
+		// Lock this FlexVol before checking capacity/qtree count
+		d.flexvolLocks.Lock(volName)
+
+		// Check if flexvol is over the size limit (with proposed new qtree)
 		if shouldLimitFlexvolSize {
 			sizeWithRequest, err := d.getOptimalSizeForFlexvol(ctx, volName, sizeBytes)
 			if err != nil {
 				Logc(ctx).Errorf("Error checking size for existing qtree. %v %v", volName, err)
+				d.flexvolLocks.Unlock(volName)
 				continue
 			}
 			if sizeWithRequest > flexvolSizeLimit {
 				Logc(ctx).Debugf("Flexvol quota size for %v is over the limit of %v", volName, flexvolSizeLimit)
+				d.flexvolLocks.Unlock(volName)
 				continue
 			}
 		}
 
+		// Check qtree count
 		count, err := d.API.QtreeCount(ctx, volName)
 		if err != nil {
-			return "", fmt.Errorf("error enumerating qtrees: %v", err)
+			d.flexvolLocks.Unlock(volName)
+			return nil, fmt.Errorf("error enumerating qtrees: %v", err)
 		}
 
+		// Found a suitable FlexVol - return with lock held via closure
 		if count < d.qtreesPerFlexvol {
-			eligibleVolumeNames = append(eligibleVolumeNames, volName)
+			Logc(ctx).WithFields(LogFields{
+				"flexvol":    volName,
+				"qtreeCount": count,
+				"maxQtrees":  d.qtreesPerFlexvol,
+			}).Debug("Selected FlexVol for new qtree (lock held).")
+			return &lockedFlexVol{
+				name:   volName,
+				unlock: func() { d.flexvolLocks.Unlock(volName) },
+			}, nil
 		}
+
+		// This FlexVol is full, unlock and try next
+		d.flexvolLocks.Unlock(volName)
 	}
 
-	// Pick a Flexvol.  If there are multiple matches, pick one at random.
-	switch len(eligibleVolumeNames) {
-	case 0:
-		return "", nil
-	case 1:
-		return eligibleVolumeNames[0], nil
-	default:
-		return eligibleVolumeNames[crypto.RandomNumber(len(eligibleVolumeNames))], nil
-	}
+	// No suitable FlexVol found (no lock held)
+	return nil, nil
 }
 
 // getOptimalSizeForFlexvol sums up all the disk limit quota rules on a Flexvol and adds the size of
@@ -1560,7 +1647,7 @@ func (d *NASQtreeStorageDriver) setQuotaForQtree(ctx context.Context, qtree, fle
 	}
 
 	// Mark this Flexvol as needing a quota resize
-	d.quotaResizeMap[flexvol] = true
+	d.quotaResizeMap.Set(flexvol, true)
 
 	return nil
 }
@@ -1655,7 +1742,7 @@ func (d *NASQtreeStorageDriver) queueAllFlexvolsForQuotaResize(ctx context.Conte
 	}
 
 	for _, volume := range volumes {
-		d.quotaResizeMap[volume.Name] = true
+		d.quotaResizeMap.Set(volume.Name, true)
 	}
 }
 
@@ -1664,30 +1751,32 @@ func (d *NASQtreeStorageDriver) queueAllFlexvolsForQuotaResize(ctx context.Conte
 // in quotaResizeMap.  Any failures that occur are simply logged, and the resize
 // operation will be attempted each time this method is called until it succeeds.
 func (d *NASQtreeStorageDriver) resizeQuotas(ctx context.Context) {
-	// Ensure we don't forget any Flexvol that is involved in a qtree provisioning workflow
-	locks.Lock(ctx, "resize", d.sharedLockID)
-	defer locks.Unlock(ctx, "resize", d.sharedLockID)
-
 	Logc(ctx).Debug("Housekeeping, resizing quotas.")
 
-	for flexvol, resize := range d.quotaResizeMap {
-		if resize {
-			err := d.API.QuotaResize(ctx, flexvol)
-			if err != nil {
-				if errors.IsNotFoundError(err) {
-					// Volume gone, so no need to try again
-					Logc(ctx).WithField("flexvol", flexvol).Debug("Volume does not exist.")
-					delete(d.quotaResizeMap, flexvol)
-				}
-				Logc(ctx).WithFields(LogFields{"flexvol": flexvol, "error": err}).Debug("Error resizing quotas.")
-				continue
+	// Get snapshot of pending FlexVols to avoid holding lock during iteration
+	pendingFlexvols := d.quotaResizeMap.GetPending()
+
+	for _, flexvol := range pendingFlexvols {
+		// Lock this specific FlexVol during quota resize
+		d.flexvolLocks.Lock(flexvol)
+
+		err := d.API.QuotaResize(ctx, flexvol)
+		if err != nil {
+			d.flexvolLocks.Unlock(flexvol)
+			if errors.IsNotFoundError(err) {
+				// Volume gone, so no need to try again
+				Logc(ctx).WithField("flexvol", flexvol).Debug("Volume does not exist.")
+				d.quotaResizeMap.Delete(flexvol)
 			}
-
-			Logc(ctx).WithField("flexvol", flexvol).Debug("Started quota resize.")
-
-			// Resize start succeeded, so no need to try again
-			delete(d.quotaResizeMap, flexvol)
+			Logc(ctx).WithFields(LogFields{"flexvol": flexvol, "error": err}).Debug("Error resizing quotas.")
+			continue
 		}
+
+		Logc(ctx).WithField("flexvol", flexvol).Debug("Started quota resize.")
+
+		// Resize start succeeded, so no need to try again
+		d.quotaResizeMap.Delete(flexvol)
+		d.flexvolLocks.Unlock(flexvol)
 	}
 }
 
@@ -1710,10 +1799,6 @@ func (d *NASQtreeStorageDriver) getTotalHardDiskLimitQuota(ctx context.Context, 
 // that are managed by this driver (discovered by virtue of having a well-known
 // hardcoded prefix on their names) that have no qtrees are deleted.
 func (d *NASQtreeStorageDriver) pruneUnusedFlexvols(ctx context.Context) {
-	// Ensure we don't prune any Flexvol that is involved in a qtree provisioning workflow
-	locks.Lock(ctx, "prune", d.sharedLockID)
-	defer locks.Unlock(ctx, "prune", d.sharedLockID)
-
 	Logc(ctx).Debug("Housekeeping, checking for managed Flexvols with no qtrees.")
 
 	// Get list of Flexvols managed by this driver
@@ -1730,6 +1815,8 @@ func (d *NASQtreeStorageDriver) pruneUnusedFlexvols(ctx context.Context) {
 
 	// Update map of empty Flexvols
 	for _, flexvol := range flexvols {
+		// Lock this specific FlexVol for qtree count check
+		d.flexvolLocks.Lock(flexvol)
 
 		qtreeCount, err := d.API.QtreeCount(ctx, flexvol)
 		if err != nil {
@@ -1752,6 +1839,8 @@ func (d *NASQtreeStorageDriver) pruneUnusedFlexvols(ctx context.Context) {
 			Logc(ctx).WithFields(LogFields{"flexvol": flexvol, "qtrees": qtreeCount}).Debug("Flexvol has qtrees.")
 			delete(d.emptyFlexvolMap, flexvol)
 		}
+
+		d.flexvolLocks.Unlock(flexvol)
 	}
 
 	// Destroy any Flexvol if it is devoid of qtrees and has remained empty for the configured time to live
@@ -1768,13 +1857,41 @@ func (d *NASQtreeStorageDriver) pruneUnusedFlexvols(ctx context.Context) {
 		now := time.Now()
 		expirationTime := initialEmptyTime.Add(d.emptyFlexvolDeferredDeletePeriod)
 		if expirationTime.Before(now) {
+			// Lock this specific FlexVol for deletion
+			d.flexvolLocks.Lock(flexvol)
+
+			// CRITICAL: Recheck qtree count while holding lock to prevent TOCTOU race.
+			// Race scenario without this check:
+			// 1. Thread A (prune): Checks FlexVol → 0 qtrees → adds to emptyFlexvolMap → unlocks
+			// 2. Thread B (Create): Finds same FlexVol → locks → adds qtree → unlocks
+			// 3. TTL expires, Thread A: locks → deletes FlexVol WITH qtree inside!
+			// By rechecking here while holding the lock, we ensure no qtree was added between
+			// the initial check and deletion.
+			qtreeCount, err := d.API.QtreeCount(ctx, flexvol)
+			if err != nil {
+				Logc(ctx).WithFields(LogFields{"flexvol": flexvol, "error": err}).Warning(
+					"Could not recheck qtree count before deletion, skipping.")
+				delete(d.emptyFlexvolMap, flexvol)
+				d.flexvolLocks.Unlock(flexvol)
+				continue
+			}
+			if qtreeCount > 0 {
+				Logc(ctx).WithFields(LogFields{"flexvol": flexvol, "qtrees": qtreeCount}).Debug(
+					"Flexvol now has qtrees, skipping deletion.")
+				delete(d.emptyFlexvolMap, flexvol)
+				d.flexvolLocks.Unlock(flexvol)
+				continue
+			}
+
 			Logc(ctx).WithField("flexvol", flexvol).Debug("Deleting managed Flexvol with no qtrees.")
-			err := d.API.VolumeDestroy(ctx, flexvol, true, true)
+			err = d.API.VolumeDestroy(ctx, flexvol, true, true)
 			if err != nil {
 				Logc(ctx).WithFields(LogFields{"flexvol": flexvol, "error": err}).Error("Could not delete Flexvol.")
 			} else {
 				delete(d.emptyFlexvolMap, flexvol)
 			}
+
+			d.flexvolLocks.Unlock(flexvol)
 		} else {
 			Logc(ctx).WithFields(LogFields{
 				"flexvol":          flexvol,
@@ -1790,10 +1907,6 @@ func (d *NASQtreeStorageDriver) pruneUnusedFlexvols(ctx context.Context) {
 // in which a qtree was renamed (prior to being destroyed) but the subsequent
 // destroy call failed or was never made due to a process interruption.
 func (d *NASQtreeStorageDriver) reapDeletedQtrees(ctx context.Context) {
-	// Ensure we don't reap any qtree that is involved in a qtree delete workflow
-	locks.Lock(ctx, "reap", d.sharedLockID)
-	defer locks.Unlock(ctx, "reap", d.sharedLockID)
-
 	Logc(ctx).Debug("Housekeeping, checking for deleted qtrees.")
 
 	// Get all deleted qtrees in all Flexvols managed by this driver
@@ -1804,12 +1917,26 @@ func (d *NASQtreeStorageDriver) reapDeletedQtrees(ctx context.Context) {
 		return
 	}
 
+	// Group qtrees by FlexVol to batch locking
+	qtreesByFlexvol := make(map[string][]*api.Qtree)
 	for _, qtree := range qtrees {
-		qtreePath := fmt.Sprintf("/vol/%s/%s", qtree.Volume, qtree.Name)
-		Logc(ctx).WithField("qtree", qtreePath).Debug("Housekeeping, reaping deleted qtree.")
-		if err := d.API.QtreeDestroyAsync(ctx, qtreePath, true); err != nil {
-			Logc(ctx).Error(err)
+		qtreesByFlexvol[qtree.Volume] = append(qtreesByFlexvol[qtree.Volume], qtree)
+	}
+
+	// Process qtrees per FlexVol with individual locking
+	for flexvol, qtreeList := range qtreesByFlexvol {
+		// Lock this specific FlexVol
+		d.flexvolLocks.Lock(flexvol)
+
+		for _, qtree := range qtreeList {
+			qtreePath := fmt.Sprintf("/vol/%s/%s", qtree.Volume, qtree.Name)
+			Logc(ctx).WithField("qtree", qtreePath).Debug("Housekeeping, reaping deleted qtree.")
+			if err := d.API.QtreeDestroyAsync(ctx, qtreePath, true); err != nil {
+				Logc(ctx).Error(err)
+			}
 		}
+
+		d.flexvolLocks.Unlock(flexvol)
 	}
 }
 
@@ -2349,10 +2476,6 @@ func (d *NASQtreeStorageDriver) Resize(ctx context.Context, volConfig *storage.V
 		return fmt.Errorf("invalid volume size")
 	}
 
-	// Ensure any Flexvol won't be pruned before resize is completed.
-	locks.Lock(ctx, "resize", d.sharedLockID)
-	defer locks.Unlock(ctx, "resize", d.sharedLockID)
-
 	// Generic user-facing message
 	resizeError := errors.New("storage driver failed to resize the volume")
 
@@ -2371,6 +2494,10 @@ func (d *NASQtreeStorageDriver) Resize(ctx context.Context, volConfig *storage.V
 		Logc(ctx).WithFields(LogFields{"qtree": name, "flexvol": flexvol}).Debug("Qtree does not exist.")
 		return fmt.Errorf("volume %s does not exist", name)
 	}
+
+	// Lock this specific FlexVol to prevent concurrent operations
+	d.flexvolLocks.Lock(flexvol)
+	defer d.flexvolLocks.Unlock(flexvol)
 
 	// If qtree exists, update the volConfig.InternalID in case it was not set
 	// This is useful for "legacy" volumes which do not have InternalID set when they were created

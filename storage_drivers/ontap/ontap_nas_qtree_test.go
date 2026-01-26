@@ -22,6 +22,7 @@ import (
 	mockacp "github.com/netapp/trident/mocks/mock_acp"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_ontap"
 	"github.com/netapp/trident/pkg/convert"
+	"github.com/netapp/trident/pkg/locks"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -60,7 +61,8 @@ func newNASQtreeStorageDriver(api api.OntapAPI) *NASQtreeStorageDriver {
 	nasqtreeDriver := &NASQtreeStorageDriver{}
 	nasqtreeDriver.Config = *config
 	nasqtreeDriver.qtreesPerFlexvol = defaultQtreesPerFlexvol
-	nasqtreeDriver.quotaResizeMap = make(map[string]bool)
+	nasqtreeDriver.quotaResizeMap = newQuotaResizeMap()
+	nasqtreeDriver.flexvolLocks = locks.NewGCNamedMutex()
 	nasqtreeDriver.cloneSplitTimers = &sync.Map{}
 
 	nasqtreeDriver.API = api
@@ -1495,13 +1497,17 @@ func TestEnsureFlexvolForQtree_Success_EligibleFlexvolFound(t *testing.T) {
 	mockAPI.EXPECT().QtreeCount(ctx, gomock.Any()).AnyTimes().Return(0, nil)
 
 	// Ensure flexvol for qtree
-	resultFlexvol, result := driver.ensureFlexvolForQtree(
+	lockedFlexvol, result := driver.ensureFlexvolForQtree(
 		ctx, "", "", "",
 		"", false, convert.ToPtr(false), 0,
 		driverConfig, "", "")
 
 	assert.NoError(t, result, "Expected no error when eligible flexvol found, got error")
-	assert.Equal(t, eligibleFlexvol.Name, resultFlexvol, "Incorrect flexvol returned")
+	assert.NotNil(t, lockedFlexvol, "Expected locked FlexVol, got nil")
+	if lockedFlexvol != nil {
+		defer lockedFlexvol.Unlock()
+		assert.Equal(t, eligibleFlexvol.Name, lockedFlexvol.Name(), "Incorrect flexvol returned")
+	}
 }
 
 func TestEnsureFlexvolForQtree_Success_NoEligibleFlexvol(t *testing.T) {
@@ -1524,14 +1530,17 @@ func TestEnsureFlexvolForQtree_Success_NoEligibleFlexvol(t *testing.T) {
 		mockAPI.EXPECT().QuotaStatus(ctx, gomock.Any()).Return("on", nil),
 	)
 
-	resultFlexvol, result := driver.ensureFlexvolForQtree(
+	lockedFlexvol, result := driver.ensureFlexvolForQtree(
 		ctx, "", "", "",
 		"", false, convert.ToPtr(false), 0,
 		driverConfig, "", "")
 
 	// Expect no error as new flexvol is created when no eligible flexvol found
 	assert.NoError(t, result, "Expected no error when no eligible flexvol found, got error")
-	assert.NotNil(t, resultFlexvol, "Expected non nil flexvol, got nil")
+	assert.NotNil(t, lockedFlexvol, "Expected non nil flexvol, got nil")
+	if lockedFlexvol != nil {
+		defer lockedFlexvol.Unlock()
+	}
 }
 
 func TestEnsureFlexvolForQtree_Success_NewFlexvolNotPermitted(t *testing.T) {
@@ -1561,13 +1570,13 @@ func TestEnsureFlexvolForQtree_Success_NewFlexvolNotPermitted(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).AnyTimes().Return(api.Volumes{}, nil)
 
-	resultFlexvol, result := driver.ensureFlexvolForQtree(
+	lockedFlexvol, result := driver.ensureFlexvolForQtree(
 		ctx, "", "", "",
 		"", false, convert.ToPtr(false), 0,
 		&driver.Config, "", "")
 
 	// Expect error as no new flexvol may be created
-	assert.Equal(t, "", resultFlexvol, "Expected no Flexvol, got %s", resultFlexvol)
+	assert.Nil(t, lockedFlexvol, "Expected nil lockedFlexvol when creation not permitted")
 	assert.Error(t, result, "Expected error when needing to create new Flexvol, got nil")
 }
 
@@ -1796,13 +1805,13 @@ func TestFindFlexvolForQtree_Success_ZeroEligibleVolume(t *testing.T) {
 	// Ensure 0 volumes are returned by api
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, volAttrs).AnyTimes().Return(api.Volumes{}, nil)
 
-	resultFlexvol, result := driver.findFlexvolForQtree(
+	lockedFlexvol, result := driver.findFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
 		"", "10", false, isEncrypt,
 		false, 0, 0,
 	)
 
-	assert.Emptyf(t, resultFlexvol, "Expected empty flexvol, got non-empty")
+	assert.Nil(t, lockedFlexvol, "Expected nil lockedFlexvol when no eligible volumes")
 	assert.NoError(t, result, "Expected no error, got error")
 }
 
@@ -1831,13 +1840,17 @@ func TestFindFlexvolForQtree_Success_OneEligibleVolume(t *testing.T) {
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, volAttrs).AnyTimes().Return(api.Volumes{eligibleVolume}, nil)
 	mockAPI.EXPECT().QtreeCount(ctx, eligibleVolume.Name).AnyTimes().Return(0, nil)
 
-	resultFlexvol, result := driver.findFlexvolForQtree(
+	lockedFlexvol, result := driver.findFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
 		"", "10", false, isEncrypt,
 		false, 0, 0,
 	)
 
-	assert.Equal(t, eligibleVolume.Name, resultFlexvol, "Expected one eligible flexvol, got empty")
+	assert.NotNil(t, lockedFlexvol, "Expected locked FlexVol, got nil")
+	if lockedFlexvol != nil {
+		defer lockedFlexvol.Unlock()
+		assert.Equal(t, eligibleVolume.Name, lockedFlexvol.Name(), "Expected one eligible flexvol name to match")
+	}
 	assert.NoError(t, result, "Expected no error, got error")
 }
 
@@ -1867,16 +1880,19 @@ func TestFindFlexvolForQtree_Success_MultipleEligibleVolume(t *testing.T) {
 	mockAPI.EXPECT().QtreeCount(ctx, eligibleVolume1.Name).AnyTimes().Return(0, nil)
 	mockAPI.EXPECT().QtreeCount(ctx, eligibleVolume2.Name).AnyTimes().Return(0, nil)
 
-	resultFlexvol, result := driver.findFlexvolForQtree(
+	lockedFlexvol, result := driver.findFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
 		"", "10", false, isEncrypt,
 		false, 0, 0,
 	)
 
 	// Returned flexvol should be one of the eligible volumes
-	ok := resultFlexvol == eligibleVolume1.Name || resultFlexvol == eligibleVolume2.Name
-
-	assert.True(t, ok, "Expected one of the random flexvol from eligible volumes, got different")
+	assert.NotNil(t, lockedFlexvol, "Expected locked FlexVol, got nil")
+	if lockedFlexvol != nil {
+		defer lockedFlexvol.Unlock()
+		ok := lockedFlexvol.Name() == eligibleVolume1.Name || lockedFlexvol.Name() == eligibleVolume2.Name
+		assert.True(t, ok, "Expected one of the random flexvol from eligible volumes, got different")
+	}
 	assert.NoError(t, result, "Expected no error, got error")
 }
 
@@ -1910,14 +1926,14 @@ func TestFindFlexvolForQtree_Success_VolumeWithSizeMoreThanLimit(t *testing.T) {
 	mockAPI.EXPECT().QuotaEntryList(ctx, eligibleVolume1.Name).AnyTimes().
 		Return(api.QuotaEntries{&api.QuotaEntry{Target: "", DiskLimitBytes: 1 * 1024 * 1024 * 1024}}, nil)
 
-	resultFlexvol, result := driver.findFlexvolForQtree(
+	lockedFlexvol, result := driver.findFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
 		"", "10", false, isEncrypt,
 		true, 1073741824, 10,
 	)
 
 	// Assert that no volume is returned
-	assert.Emptyf(t, resultFlexvol, "Expected empty flexvol, got non-empty")
+	assert.Nil(t, lockedFlexvol, "Expected nil lockedFlexvol when all volumes exceed size limit")
 	assert.NoError(t, result, "Expected no error, got error")
 }
 
@@ -1943,14 +1959,14 @@ func TestFindFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Return(nil, mockError)
 
-	resultFlexvol1, result1 := driver.findFlexvolForQtree(
+	lockedFlexvol1, result1 := driver.findFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
 		"", "10", false, convert.ToPtr(false),
 		false, 0, 0,
 	)
 
 	assert.Error(t, result1, "Expected error, got nil")
-	assert.Emptyf(t, resultFlexvol1, "Expected empty flexvol, got non-empty")
+	assert.Nil(t, lockedFlexvol1, "Expected nil lockedFlexvol on error")
 
 	// CASE 2: Error in getting qtree count
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
@@ -1958,14 +1974,14 @@ func TestFindFlexvolForQtree_WithErrorInApiOperation(t *testing.T) {
 	mockAPI.EXPECT().VolumeListByAttrs(ctx, gomock.Any()).Return(api.Volumes{volInfo}, nil)
 	mockAPI.EXPECT().QtreeCount(ctx, volName).AnyTimes().Return(0, mockError)
 
-	resultFlexvol2, result2 := driver.findFlexvolForQtree(
+	lockedFlexvol2, result2 := driver.findFlexvolForQtree(
 		ctx, "aggr1", "none", "snapshotPolicy",
 		"", "10", false, convert.ToPtr(false),
 		false, 0, 0,
 	)
 
 	assert.Error(t, result2, "Expected error, got nil")
-	assert.Emptyf(t, resultFlexvol2, "Expected empty flexvol, got non-empty")
+	assert.Nil(t, lockedFlexvol2, "Expected nil lockedFlexvol on error")
 }
 
 func TestGetOptimalSizeForFlexvol_Success(t *testing.T) {
@@ -2067,7 +2083,7 @@ func TestSetQuotaForQtree_Success(t *testing.T) {
 
 	result := driver.setQuotaForQtree(ctx, "", volName, sizeKB)
 	assert.NoError(t, result, "Expected no error, got error")
-	assert.True(t, driver.quotaResizeMap[volName])
+	assert.True(t, driver.quotaResizeMap.Get(volName))
 }
 
 func TestSetQuotaForQtree_WithErrorInApiOperation(t *testing.T) {
@@ -2080,7 +2096,7 @@ func TestSetQuotaForQtree_WithErrorInApiOperation(t *testing.T) {
 
 	result := driver.setQuotaForQtree(ctx, "", volName, sizeKB)
 	assert.Error(t, result, "Expected error, got nil")
-	assert.False(t, driver.quotaResizeMap[volName])
+	assert.False(t, driver.quotaResizeMap.Get(volName))
 }
 
 func TestDisableQuotas_Success(t *testing.T) {
@@ -2228,9 +2244,9 @@ func TestQueueAllFlexvolsForQuotaResize_Success(t *testing.T) {
 
 	driver.queueAllFlexvolsForQuotaResize(ctx)
 
-	assert.True(t, driver.quotaResizeMap[volName1],
+	assert.True(t, driver.quotaResizeMap.Get(volName1),
 		fmt.Sprintf("Expected true for %s in driver's quotaResizeMap, got false", volName1))
-	assert.True(t, driver.quotaResizeMap[volName2],
+	assert.True(t, driver.quotaResizeMap.Get(volName2),
 		fmt.Sprintf("Expected true for %s in driver's quotaResizeMap, got false", volName2))
 }
 
@@ -2241,17 +2257,17 @@ func TestQueueAllFlexvolsForQuotaResize_WithErrorInApiOperation(t *testing.T) {
 	driver.queueAllFlexvolsForQuotaResize(ctx)
 
 	// No volumes should be added in driver quotaResizeMap
-	assert.Equal(t, 0, len(driver.quotaResizeMap))
+	assert.Equal(t, 0, driver.quotaResizeMap.Len())
 }
 
 func TestResizeQuotas_Success(t *testing.T) {
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 
 	// Add flexvols to driver's quotaResizeMap. Add some requiring resize and some do not
-	driver.quotaResizeMap["vol1"] = true
-	driver.quotaResizeMap["vol2"] = true
-	driver.quotaResizeMap["vol3"] = true
-	driver.quotaResizeMap["vol4"] = false
+	driver.quotaResizeMap.Set("vol1", true)
+	driver.quotaResizeMap.Set("vol2", true)
+	driver.quotaResizeMap.Set("vol3", true)
+	driver.quotaResizeMap.Set("vol4", false)
 
 	// Ensure for one of the flexvol quota resize fails with notFoundError and one fails due to other error
 	mockAPI.EXPECT().QuotaResize(ctx, "vol1").AnyTimes().Return(nil)
@@ -2262,12 +2278,12 @@ func TestResizeQuotas_Success(t *testing.T) {
 	driver.resizeQuotas(ctx)
 
 	// Assert that where resize is successful or the flexvol is not found, the entry is removed from quotaResizeMap
-	assert.NotContains(t, driver.quotaResizeMap, "vol1", "Expected successful resizeQuota, but failed")
-	assert.NotContains(t, driver.quotaResizeMap, "vol2", "Not found flexvol should be removed from quotaResize map")
-	assert.Contains(t, driver.quotaResizeMap, "vol3",
-		"Flexvol for which quotaResize failed due should be retained for next try")
-	assert.Contains(t, driver.quotaResizeMap, "vol4",
-		"Flexvol not requiring quotaResize should be retained for next try")
+	assert.False(t, driver.quotaResizeMap.Get("vol1"), "Expected successful resizeQuota to remove entry")
+	assert.False(t, driver.quotaResizeMap.Get("vol2"), "Not found flexvol should be removed from quotaResize map")
+	assert.True(t, driver.quotaResizeMap.Get("vol3"),
+		"Flexvol for which quotaResize failed should be retained for next try")
+	assert.False(t, driver.quotaResizeMap.Get("vol4"),
+		"Flexvol not requiring quotaResize (false value) should remain false")
 }
 
 func TestGetTotalHardDiskLimitQuota_Success(t *testing.T) {
