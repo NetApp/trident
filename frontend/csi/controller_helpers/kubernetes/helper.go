@@ -841,6 +841,16 @@ func getVolumeConfig(
 		snapshotDirAnn = snapDirFormatted
 	}
 
+	// If preserveUnlink annotation is provided, ensure it is lower case
+	preserveUnlinkAnn := getAnnotation(annotations, AnnPreserveUnlink)
+	if preserveUnlinkAnn != "" {
+		preserveUnlinkFormatted, err := convert.ToFormattedBool(preserveUnlinkAnn)
+		if err != nil {
+			Logc(ctx).WithError(err).Errorf("Invalid boolean value for preserveUnlink annotation: %v.", preserveUnlinkAnn)
+		}
+		preserveUnlinkAnn = preserveUnlinkFormatted
+	}
+
 	if getAnnotation(annotations, AnnReadOnlyClone) == "" {
 		annotations[AnnReadOnlyClone] = "false"
 	}
@@ -886,6 +896,7 @@ func getVolumeConfig(
 		SnapshotPolicy:      getAnnotation(annotations, AnnSnapshotPolicy),
 		SnapshotReserve:     getAnnotation(annotations, AnnSnapshotReserve),
 		SnapshotDir:         snapshotDirAnn,
+		PreserveUnlink:      preserveUnlinkAnn,
 		ExportPolicy:        getAnnotation(annotations, AnnExportPolicy),
 		UnixPermissions:     getAnnotation(annotations, AnnUnixPermissions),
 		StorageClass:        storageClass.Name,

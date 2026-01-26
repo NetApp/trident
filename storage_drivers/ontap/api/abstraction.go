@@ -233,6 +233,7 @@ type OntapAPI interface {
 	) (string, error)
 	VolumeRecoveryQueuePurge(ctx context.Context, recoveryQueueVolumeName string) error
 	VolumeRecoveryQueueGetName(ctx context.Context, name string) (string, error)
+	PreserveUnlinkSet(ctx context.Context, volumeName string) error
 	SMBShareCreate(ctx context.Context, shareName, path string) error
 	SMBShareExists(ctx context.Context, shareName string) (bool, error)
 	SMBShareDestroy(ctx context.Context, shareName string) error

@@ -1776,6 +1776,67 @@ func (c *RestClient) VolumeRecoveryQueueGetName(ctx context.Context, name string
 	return responseObject.Records[0].Volume, nil
 }
 
+// PreserveUnlinkSet uses the cli passthrough REST API to set the is-preserve-unlink-enabled option on a volume.
+// This volume option was introduced in 9.12.1 but not made visible via the /storage/volumes REST API endpoint.
+func (c *RestClient) PreserveUnlinkSet(ctx context.Context, volumeName string) error {
+	fields := LogFields{
+		"Method":     "PreserveUnlinkSet",
+		"Type":       "ontap_rest",
+		"volumeName": volumeName,
+		"vserver":    c.svmName,
+	}
+	Logd(ctx, c.driverName, c.config.DebugTraceFlags["method"]).WithFields(fields).
+		Trace(">>>> PreserveUnlinkSet")
+	defer Logd(ctx, c.driverName, c.config.DebugTraceFlags["method"]).WithFields(fields).
+		Trace("<<<< PrserveUnlinkSet")
+
+	requestUrl := fmt.Sprintf("https://%s/api/private/cli/volume?vserver=%s&volume=%s",
+		c.config.ManagementLIF, c.svmName, volumeName)
+
+	requestContent := map[string]string{
+		"is-preserve-unlink-enabled": "true",
+	}
+	requestBodyBytes, err := json.Marshal(requestContent)
+	if err != nil {
+		return err
+	}
+
+	request, err := http.NewRequestWithContext(ctx, http.MethodPatch, requestUrl, bytes.NewReader(requestBodyBytes))
+	if err != nil {
+		return err
+	}
+
+	response, err := c.sendPassThroughCliCommand(ctx, request)
+	if err != nil {
+		return err
+	}
+
+	defer func() { _ = response.Body.Close() }()
+
+	var responseBodyBytes []byte
+	var responseBodyString string
+	if response.Body != nil {
+		responseBodyBytes, _ = io.ReadAll(response.Body)
+		responseBodyString = string(responseBodyBytes)
+	} else {
+		Logc(ctx).WithField("statusCode", response.StatusCode).Error(
+			"no response when trying to set preserveUnlink.")
+		return fmt.Errorf("no response with status code: %v", response.StatusCode)
+	}
+	if response.StatusCode != http.StatusOK {
+		Logc(ctx).WithField("statusCode", response.StatusCode).Error(
+			"failed to set preserveUnlink: %s", responseBodyString)
+		return fmt.Errorf("unexpected response status code: %v", response.StatusCode)
+	}
+	if !strings.Contains(responseBodyString, "modify successful") {
+		Logc(ctx).WithField("statusCode", response.StatusCode).Error(
+			"unexpected response when setting preserveUnlink: %s", responseBodyString)
+		return fmt.Errorf("unexpected response boday with status code: %v", response.StatusCode)
+	}
+
+	return nil
+}
+
 func (c *RestClient) sendPassThroughCliCommand(ctx context.Context, request *http.Request) (*http.Response, error) {
 	request.Header.Set("Content-Type", "application/json")
 

@@ -198,6 +198,7 @@ type OntapStorageDriverConfigDefaults struct {
 	SpaceReserve      string `json:"spaceReserve"`
 	SnapshotPolicy    string `json:"snapshotPolicy"`
 	SnapshotReserve   string `json:"snapshotReserve"`
+	PreserveUnlink    string `json:"preserveUnlink"`
 	SnapshotDir       string `json:"snapshotDir"`
 	UnixPermissions   string `json:"unixPermissions"`
 	ExportPolicy      string `json:"exportPolicy"`

@@ -20,6 +20,7 @@ type Volume struct {
 	SnapshotDir       *bool
 	SnapshotPolicy    string
 	SnapshotReserve   int
+	PreserveUnlink    *bool
 	SnapshotSpaceUsed int
 	SpaceReserve      string
 	TieringPolicy     string

@@ -269,6 +269,7 @@ func (d *NASStorageDriver) Create(
 		spaceReserve      = collection.GetV(opts, "spaceReserve", storagePool.InternalAttributes()[SpaceReserve])
 		snapshotPolicy    = collection.GetV(opts, "snapshotPolicy", storagePool.InternalAttributes()[SnapshotPolicy])
 		snapshotReserve   = collection.GetV(opts, "snapshotReserve", storagePool.InternalAttributes()[SnapshotReserve])
+		preserveUnlink    = collection.GetV(opts, "preserveUnlink", storagePool.InternalAttributes()[PreserveUnlink])
 		unixPermissions   = collection.GetV(opts, "unixPermissions", storagePool.InternalAttributes()[UnixPermissions])
 		snapshotDir       = collection.GetV(opts, "snapshotDir", storagePool.InternalAttributes()[SnapshotDir])
 		exportPolicy      = collection.GetV(opts, "exportPolicy", storagePool.InternalAttributes()[ExportPolicy])
@@ -280,7 +281,7 @@ func (d *NASStorageDriver) Create(
 		qosPolicy         = storagePool.InternalAttributes()[QosPolicy]
 		adaptiveQosPolicy = storagePool.InternalAttributes()[AdaptiveQosPolicy]
 	)
-
+	
 	snapshotReserveInt, err := GetSnapshotReserve(snapshotPolicy, snapshotReserve)
 	if err != nil {
 		return fmt.Errorf("invalid value for snapshotReserve: %v", err)
@@ -311,6 +312,11 @@ func (d *NASStorageDriver) Create(
 	enableSnapshotDir, err := strconv.ParseBool(snapshotDir)
 	if err != nil {
 		return fmt.Errorf("invalid boolean value for snapshotDir: %v", err)
+	}
+
+	enablePreserveUnlink, err := strconv.ParseBool(preserveUnlink)
+	if err != nil {
+		return fmt.Errorf("invalid boolean value for preserveUnlink: %v", err)
 	}
 
 	enableEncryption, configEncryption, err := GetEncryptionValue(encryption)
@@ -355,6 +361,7 @@ func (d *NASStorageDriver) Create(
 	volConfig.SpaceReserve = spaceReserve
 	volConfig.SnapshotPolicy = snapshotPolicy
 	volConfig.SnapshotReserve = snapshotReserve
+	volConfig.PreserveUnlink = preserveUnlink
 	volConfig.UnixPermissions = unixPermissions
 	volConfig.SnapshotDir = snapshotDir
 	volConfig.ExportPolicy = exportPolicy
@@ -370,6 +377,7 @@ func (d *NASStorageDriver) Create(
 		"spaceReserve":      spaceReserve,
 		"snapshotPolicy":    snapshotPolicy,
 		"snapshotReserve":   snapshotReserveInt,
+		"preserveUnlink":    enablePreserveUnlink,
 		"unixPermissions":   unixPermissions,
 		"snapshotDir":       enableSnapshotDir,
 		"exportPolicy":      exportPolicy,
@@ -461,6 +469,11 @@ func (d *NASStorageDriver) Create(
 			if err := d.EnsureSMBShare(ctx, name, "/"+name, volConfig.SMBShareACL, volConfig.SecureSMBEnabled); err != nil {
 				return err
 			}
+		}
+
+		// Set is-unlink-preserve-enabled if required
+		if enablePreserveUnlink {
+			setPresrveUnlink(ctx, d.API, volConfig.InternalName)
 		}
 
 		return nil
