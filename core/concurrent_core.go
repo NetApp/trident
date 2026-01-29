@@ -5876,7 +5876,6 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 
 			results, unlocker, dbErr = db.Lock(ctx, db.Query(db.ListBackends()))
 			unlocker()
-
 			if dbErr != nil {
 				return dbErr
 			}
@@ -5986,11 +5985,12 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 				}).Info("Orchestrator resized the volume on the storage backend.")
 			}
 		} else {
-			Logc(ctx).WithFields(LogFields{
-				"volume": v.Config.Name,
-			}).Error("Volume for the resize transaction wasn't found.")
+			Logc(ctx).WithField("volume", v.Config.Name).Info("Volume for the resize transaction wasn't found.")
 		}
-		return o.resizeVolumeCleanup(ctx, err, volume, v)
+
+		if err = o.DeleteVolumeTransaction(ctx, v); err != nil {
+			return fmt.Errorf("failed to clean up volume resize transaction: %v", err)
+		}
 
 	case storage.ImportVolume:
 		/*
@@ -6013,18 +6013,17 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 			If the import failed the PVC and PV should be cleaned up by the K8S frontend code.
 			There is a situation where the PVC/PV bind operation may fail after the import operation is complete.
 			In this case the end user needs to delete the PVC and PV via kubectl.
-			The volume import process sets the reclaim policy to "retain" by default,
-			for legacy imports. In the case where notManaged is true then the volume is not renamed,
-			and in the legacy import case it is also not persisted.
 		*/
+
+		logFields := LogFields{
+			"volume":  v.Config.Name,
+			"backend": v.Config.ImportBackendUUID,
+		}
 
 		results, unlocker, dbErr = db.Lock(ctx, db.Query(db.DeleteVolume(v.Config.Name)))
 		if dbErr != nil {
 			unlocker()
-			Logc(ctx).WithFields(LogFields{
-				"volume": v.Config.Name,
-				"error":  dbErr,
-			}).Error("Error getting volume from the cache")
+			Logc(ctx).WithFields(logFields).WithError(dbErr).Error("Error getting volume from the cache.")
 			return dbErr
 		}
 
@@ -6042,72 +6041,40 @@ func (o *ConcurrentTridentOrchestrator) handleFailedTransaction(ctx context.Cont
 		unlocker()
 
 		if !v.Config.ImportNotManaged {
-
 			// The volume could be renamed (notManaged = false) without being persisted.
-			// We attempt to rename it at each backend, since we don't know where it might have landed.  We're
-			// guaranteed that the volume name will be unique across backends, thanks to the StoragePrefix field,
-			// so this should be idempotent.
 
-			results, unlocker, dbErr = db.Lock(ctx, db.Query(db.ListBackends()))
-			unlocker()
+			renameErr := func(backendUUID string) error {
+				// Acquire the read lock on the backend.
+				// Acquire the write lock on the volume.Config.Name before proceeding to renaming volume.
+				// This is required to prevent any other requests from importing the same backend volume
+				// while we are trying to rename the backend volume back to its original name.
 
-			if dbErr != nil {
-				Logc(ctx).WithFields(LogFields{
-					"volume": v.Config.Name,
-					"error":  dbErr,
-				}).Error("Error getting backends from the cache")
-				return dbErr
-			}
-			backends := results[0].Backends
+				results, unlocker, dbErr = db.Lock(ctx,
+					db.Query(db.ReadBackend(backendUUID)),
+					db.Query(db.DeleteVolume(v.Config.Name)),
+				)
+				defer unlocker()
 
-			var renameErr error
-			for _, backend := range backends {
-
-				renameErr = func() error {
-					// Acquire the read lock on the backend.
-					// Acquire the write lock on the volume.Config.Name before proceeding to renaming volume on each backend.
-					// This is required to prevent any other requests from importing the same backend volume into another pvc
-					// while we are trying to rename the backend volume back to its original name.
-
-					results, unlocker, dbErr = db.Lock(
-						ctx,
-						db.Query(db.ReadBackend(backend.BackendUUID())),
-						db.Query(db.DeleteVolume(v.Config.Name)),
-					)
-					defer unlocker()
-
-					if dbErr != nil {
-						Logc(ctx).WithFields(LogFields{
-							"volume": v.Config.Name,
-							"error":  dbErr,
-						}).Error("Error getting backend from the cache")
-						return dbErr
-					}
-
-					backend = results[0].Backend.Read
-					if backend == nil {
-						return fmt.Errorf("backend %s not found", backend.BackendUUID())
-					}
-
-					if bErr := backend.RenameVolume(ctx, v.Config, v.Config.ImportOriginalName); bErr != nil {
-						return fmt.Errorf("failed to rename volume on backend")
-					}
-
-					return nil
-				}()
-
-				if renameErr != nil {
-					// continue to the next backend
-					Logc(ctx).Tracef("could not rename volume %s on backend %s: %v", v.Config.Name, backend.Name(), renameErr)
-					continue
-				} else {
-					// we successfully renamed the volume on a backend. break out of the loop
-					break
+				if dbErr != nil {
+					Logc(ctx).WithFields(logFields).WithError(dbErr).Error("Error getting backend from the cache.")
+					return dbErr
 				}
-			}
+
+				backend := results[0].Backend.Read
+				if backend == nil {
+					return fmt.Errorf("backend %s not found", backendUUID)
+				}
+
+				if renameErr := backend.RenameVolume(ctx, v.Config, v.Config.ImportOriginalName); renameErr != nil {
+					return fmt.Errorf("failed to rename volume on backend; %w", renameErr)
+				}
+
+				return nil
+			}(v.Config.ImportBackendUUID)
 
 			if renameErr != nil {
-				Logc(ctx).Debugf("could not find volume %s to reset the volume name", v.Config.InternalName)
+				Logc(ctx).Warningf("Could not rename volume %s on backend %s: %v",
+					v.Config.Name, v.Config.ImportBackendUUID, renameErr)
 			}
 		}
 
