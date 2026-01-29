@@ -1351,7 +1351,7 @@ func getMockK8sClient(t *testing.T) (*mockK8sClient.MockKubernetesClient, *fakeK
 
 func TestWaitForTridentPod(t *testing.T) {
 	originalTimeout := k8sTimeout
-	k8sTimeout = 2 * time.Second
+	k8sTimeout = 20 * time.Second
 	defer func() { k8sTimeout = originalTimeout }()
 
 	tests := []struct {
@@ -1620,6 +1620,27 @@ func TestWaitForTridentPod(t *testing.T) {
 					Status: v1.PodStatus{
 						Phase:   v1.PodFailed,
 						Message: "Image pull failed",
+					},
+				}
+
+				mockClient.EXPECT().GetDeploymentByLabel(appLabel, false).Return(deployment, nil).AnyTimes()
+				mockClient.EXPECT().GetPodByLabel(appLabel, false).Return(pod, nil).AnyTimes()
+				mockClient.EXPECT().CLI().Return("kubectl").AnyTimes()
+				mockClient.EXPECT().Namespace().Return("trident").AnyTimes()
+			},
+			expectedErrorContains: "trident pod is not running",
+			expectPod:             false,
+		},
+		{
+			name: "max_interval_backoff_behavior",
+			setupMocks: func(mockClient *mockK8sClient.MockKubernetesClient) {
+				deployment := &appsv1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{Name: "trident-deployment"},
+				}
+				pod := &v1.Pod{
+					ObjectMeta: metav1.ObjectMeta{Name: "trident-pod"},
+					Status: v1.PodStatus{
+						Phase: v1.PodPending, // Pod never becomes ready to trigger retries
 					},
 				}
 

@@ -2044,6 +2044,7 @@ func waitForTridentPod() (*v1.Pod, error) {
 		}).Debugf("Trident pod not yet running, waiting.")
 	}
 	podBackoff := backoff.NewExponentialBackOff()
+	podBackoff.MaxInterval = 15 * time.Second
 	podBackoff.MaxElapsedTime = k8sTimeout
 
 	Log().Info("Waiting for Trident pod to start.")
