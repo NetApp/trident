@@ -205,7 +205,7 @@ func (p *PollerVolumeCreateResponse) Result(ctx context.Context) error {
 		Logc(ctx).Debug("Polling for volume create response")
 
 		var rawResponse *http.Response
-		responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+		responseCtx := policy.WithCaptureResponse(ctx, &rawResponse)
 
 		_, err := p.PollUntilDone(responseCtx, &runtime.PollUntilDoneOptions{Frequency: 2 * time.Second})
 		if err != nil {
@@ -856,7 +856,7 @@ func (c Client) getVolumesFromPool(ctx context.Context, cPool *CapacityPool) (*[
 
 	for pager.More() {
 		var rawResponse *http.Response
-		responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+		responseCtx := policy.WithCaptureResponse(ctx, &rawResponse)
 
 		nextResult, err := pager.NextPage(responseCtx)
 
@@ -984,7 +984,7 @@ func (c Client) VolumeByID(ctx context.Context, id string) (*FileSystem, error) 
 	}
 
 	var rawResponse *http.Response
-	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+	responseCtx := policy.WithCaptureResponse(ctx, &rawResponse)
 
 	response, err := c.sdkClient.VolumesClient.Get(responseCtx,
 		resourceGroup, netappAccount, cPoolName, volumeName, nil)
@@ -1208,7 +1208,7 @@ func (c Client) CreateVolume(ctx context.Context, request *FilesystemCreateReque
 	}
 
 	var rawResponse *http.Response
-	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+	responseCtx := policy.WithCaptureResponse(ctx, &rawResponse)
 
 	poller, err := c.sdkClient.VolumesClient.BeginCreateOrUpdate(responseCtx,
 		resourceGroup, netappAccount, cPoolName, request.Name, newVol, nil)
@@ -1251,7 +1251,7 @@ func (c Client) ModifyVolume(
 	}
 
 	var rawResponse *http.Response
-	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+	responseCtx := policy.WithCaptureResponse(ctx, &rawResponse)
 
 	// Fetch the netapp.Volume to fill in the updated fields
 	response, err := c.sdkClient.VolumesClient.Get(responseCtx,
@@ -1357,7 +1357,7 @@ func (c Client) ResizeVolume(ctx context.Context, filesystem *FileSystem, newSiz
 	}
 
 	var rawResponse *http.Response
-	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+	responseCtx := policy.WithCaptureResponse(ctx, &rawResponse)
 
 	poller, err := c.sdkClient.VolumesClient.BeginUpdate(responseCtx,
 		filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name, patch, nil)
@@ -1390,7 +1390,7 @@ func (c Client) DeleteVolume(ctx context.Context, filesystem *FileSystem) error 
 	}
 
 	var rawResponse *http.Response
-	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+	responseCtx := policy.WithCaptureResponse(ctx, &rawResponse)
 
 	_, err := c.sdkClient.VolumesClient.BeginDelete(responseCtx,
 		filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool, filesystem.Name, nil)
@@ -1470,7 +1470,7 @@ func (c Client) SnapshotsForVolume(ctx context.Context, filesystem *FileSystem) 
 
 	for pager.More() {
 		var rawResponse *http.Response
-		responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+		responseCtx := policy.WithCaptureResponse(ctx, &rawResponse)
 
 		nextResult, err := pager.NextPage(responseCtx)
 
@@ -1507,7 +1507,7 @@ func (c Client) SnapshotForVolume(
 	}
 
 	var rawResponse *http.Response
-	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+	responseCtx := policy.WithCaptureResponse(ctx, &rawResponse)
 
 	response, err := c.sdkClient.SnapshotsClient.Get(responseCtx,
 		filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool,
@@ -1612,7 +1612,7 @@ func (c Client) CreateSnapshot(ctx context.Context, filesystem *FileSystem, name
 	}
 
 	var rawResponse *http.Response
-	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+	responseCtx := policy.WithCaptureResponse(ctx, &rawResponse)
 
 	// Create the snapshot
 	_, err := c.sdkClient.SnapshotsClient.BeginCreate(responseCtx,
@@ -1647,7 +1647,7 @@ func (c Client) RestoreSnapshot(ctx context.Context, filesystem *FileSystem, sna
 	}
 
 	var rawResponse *http.Response
-	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+	responseCtx := policy.WithCaptureResponse(ctx, &rawResponse)
 
 	revertBody := netapp.VolumeRevert{
 		SnapshotID: convert.ToPtr(snapshot.ID),
@@ -1678,7 +1678,7 @@ func (c Client) DeleteSnapshot(ctx context.Context, filesystem *FileSystem, snap
 	}
 
 	var rawResponse *http.Response
-	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+	responseCtx := policy.WithCaptureResponse(ctx, &rawResponse)
 
 	_, err := c.sdkClient.SnapshotsClient.BeginDelete(responseCtx,
 		filesystem.ResourceGroup, filesystem.NetAppAccount, filesystem.CapacityPool,

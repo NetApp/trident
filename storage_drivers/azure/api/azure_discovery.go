@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	resourcegraph "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resourcegraph/armresourcegraph"
 	features "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armfeatures"
 	"github.com/cenkalti/backoff/v4"
@@ -441,7 +441,7 @@ func (c Client) enableAzureFeature(
 	logFields := LogFields{"feature": feature}
 
 	var rawResponse *http.Response
-	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+	responseCtx := policy.WithCaptureResponse(ctx, &rawResponse)
 
 	result, err := c.sdkClient.FeaturesClient.Get(responseCtx, provider, feature, nil)
 
@@ -556,7 +556,7 @@ func (c Client) discoverCapacityPools(ctx context.Context) (*[]*CapacityPool, er
 	}
 
 	var rawResponse *http.Response
-	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+	responseCtx := policy.WithCaptureResponse(ctx, &rawResponse)
 
 	response, err := c.sdkClient.GraphClient.Resources(responseCtx, request, nil)
 
@@ -689,9 +689,9 @@ func (c Client) discoverSubnets(ctx context.Context) (*[]*Subnet, error) {
     Resources
 	| where type =~ 'Microsoft.Network/virtualNetworks' and location =~ '%s'
 	| project subnets = (properties.subnets)
-	| mv-expand subnets
+	| mv-expand subnets limit 2000
 	| project subnetID = (subnets.id), delegations = (subnets.properties.delegations)
-	| mv-expand delegations
+	| mv-expand delegations limit 2000
 	| project subnetID, serviceName = (delegations.properties.serviceName)
 	| where serviceName =~ 'Microsoft.NetApp/volumes'`, c.config.Location)
 	resultFormat := resourcegraph.ResultFormat("objectArray")
@@ -704,7 +704,7 @@ func (c Client) discoverSubnets(ctx context.Context) (*[]*Subnet, error) {
 	}
 
 	var rawResponse *http.Response
-	responseCtx := runtime.WithCaptureResponse(ctx, &rawResponse)
+	responseCtx := policy.WithCaptureResponse(ctx, &rawResponse)
 
 	response, err := c.sdkClient.GraphClient.Resources(responseCtx, request, nil)
 
