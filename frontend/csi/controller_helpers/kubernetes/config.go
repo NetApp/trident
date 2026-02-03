@@ -76,6 +76,10 @@ const (
 	AnnSMBShareAccessControl    = prefix + "/smbShareAccessControl"
 	AnnConfiguratorStatus       = prefix + "/configuratorStatus"
 
+	// Auto-tiering annotations (GCNV, can be extended to ANF and ONTAP)
+	AnnTieringPolicy             = prefix + "/tieringPolicy"
+	AnnTieringMinimumCoolingDays = prefix + "/tieringMinimumCoolingDays"
+
 	// Pod remediation policy annotation and values
 	AnnPodRemediationPolicyAnnotation = prefix + "/podRemediationPolicy"
 	PodRemediationPolicyDelete        = "delete"

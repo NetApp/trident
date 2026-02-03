@@ -634,14 +634,16 @@ type GCPPrivateKey struct {
 
 type GCNVNASStorageDriverConfig struct {
 	*CommonStorageDriverConfig
-	ProjectNumber       string        `json:"projectNumber"`
-	Location            string        `json:"location"`
-	APIKey              GCPPrivateKey `json:"apiKey"`
-	NFSMountOptions     string        `json:"nfsMountOptions"`
-	VolumeCreateTimeout string        `json:"volumeCreateTimeout"`
-	SDKTimeout          string        `json:"sdkTimeout"`
-	MaxCacheAge         string        `json:"maxCacheAge"`
-	NASType             string        `json:"nasType"`
+	ProjectNumber string        `json:"projectNumber"`
+	Location      string        `json:"location"`
+	APIKey        GCPPrivateKey `json:"apiKey"`
+	// APIEndpoint is a developer-only field for internal testing against autopush/staging GCNV environments.
+	APIEndpoint         string `json:"apiEndpoint,omitempty"`
+	NFSMountOptions     string `json:"nfsMountOptions"`
+	VolumeCreateTimeout string `json:"volumeCreateTimeout"`
+	SDKTimeout          string `json:"sdkTimeout"`
+	MaxCacheAge         string `json:"maxCacheAge"`
+	NASType             string `json:"nasType"`
 	GCNVNASStorageDriverPool
 	Storage []GCNVNASStorageDriverPool `json:"storage"`
 }
@@ -666,10 +668,12 @@ type GCNVNASStorageBackendPool struct {
 }
 
 type GCNVNASStorageDriverConfigDefaults struct {
-	ExportRule      string `json:"exportRule"`
-	SnapshotDir     string `json:"snapshotDir"`
-	SnapshotReserve string `json:"snapshotReserve"`
-	UnixPermissions string `json:"unixPermissions"`
+	ExportRule                string `json:"exportRule"`
+	SnapshotDir               string `json:"snapshotDir"`
+	SnapshotReserve           string `json:"snapshotReserve"`
+	UnixPermissions           string `json:"unixPermissions"`
+	TieringPolicy             string `json:"tieringPolicy"`
+	TieringMinimumCoolingDays string `json:"tieringMinimumCoolingDays"`
 	CommonStorageDriverConfigDefaults
 }
 

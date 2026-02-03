@@ -2488,6 +2488,14 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 		cloneConfig.SkipRecoveryQueue = volumeConfig.SkipRecoveryQueue
 	}
 
+	// Override tiering settings from clone volume config if provided
+	if volumeConfig.TieringPolicy != "" {
+		cloneConfig.TieringPolicy = volumeConfig.TieringPolicy
+	}
+	if volumeConfig.TieringMinimumCoolingDays != "" {
+		cloneConfig.TieringMinimumCoolingDays = volumeConfig.TieringMinimumCoolingDays
+	}
+
 	// Empty out the export policy. It will be set in the backend driver.
 	cloneConfig.ExportPolicy = ""
 

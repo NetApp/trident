@@ -73,6 +73,10 @@ type VolumeConfig struct {
 	SMBShareACL        map[string]string      `json:"smbShareACL,omitempty"`
 	// SecureSMBEnabled indicates whether the volume is to be created with secure SMB enabled
 	SecureSMBEnabled bool `json:"secureSMBEnabled,omitempty"`
+	// TieringPolicy specifies the tiering policy for the volume (e.g., "auto", "none")
+	TieringPolicy string `json:"tieringPolicy,omitempty"`
+	// TieringMinimumCoolingDays specifies the cooling period in days before data is tiered
+	TieringMinimumCoolingDays string `json:"tieringMinimumCoolingDays,omitempty"`
 }
 
 type VolumeCreatingConfig struct {

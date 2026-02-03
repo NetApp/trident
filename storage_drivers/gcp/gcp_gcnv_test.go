@@ -76,6 +76,11 @@ func newMockGCNVDriver(t *testing.T) (*mockapi.MockGCNV, *NASStorageDriver) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockGCNV(mockCtrl)
 
+	// Set default expectation for CapacityPools() which is called during initializeStoragePools
+	// Tests can override this if needed
+	emptyPools := []*api.CapacityPool{}
+	mockAPI.EXPECT().CapacityPools().Return(&emptyPools).AnyTimes()
+
 	return mockAPI, newTestGCNVDriver(mockAPI)
 }
 
@@ -84,6 +89,14 @@ func TestName(t *testing.T) {
 
 	result := driver.Name()
 	assert.Equal(t, tridentconfig.GCNVNASStorageDriverName, result, "driver name mismatch")
+}
+
+func TestGetConfig(t *testing.T) {
+	_, driver := newMockGCNVDriver(t)
+
+	result := driver.GetConfig()
+	assert.NotNil(t, result, "config should not be nil")
+	assert.Equal(t, &driver.Config, result, "config mismatch")
 }
 
 func TestBackendName_SetInConfig(t *testing.T) {
@@ -1031,6 +1044,8 @@ func TestInitializeStoragePools(t *testing.T) {
 
 	pool0.InternalAttributes()[Network] = "test-network1"
 	pool0.InternalAttributes()[CapacityPools] = "Pool1"
+	pool0.InternalAttributes()[drivers.TieringPolicy] = drivers.TieringPolicyNone
+	pool0.InternalAttributes()[drivers.TieringMinimumCoolingDays] = defaultTieringMinimumCoolingDays
 
 	pool0.SetSupportedTopologies(supportedTopologies)
 
@@ -1056,6 +1071,8 @@ func TestInitializeStoragePools(t *testing.T) {
 
 	pool1.InternalAttributes()[Network] = ""
 	pool1.InternalAttributes()[CapacityPools] = ""
+	pool1.InternalAttributes()[drivers.TieringPolicy] = drivers.TieringPolicyNone
+	pool1.InternalAttributes()[drivers.TieringMinimumCoolingDays] = defaultTieringMinimumCoolingDays
 
 	pool1.SetSupportedTopologies(supportedTopologies)
 
@@ -1152,6 +1169,159 @@ func TestInitializeStoragePools_VirtualPool_InvalidSnapshotDir(t *testing.T) {
 	assert.NoError(t, result, "error occurred")
 }
 
+// Storage Pool Initialization with Auto-Tiering Tests
+
+func TestInitializeStoragePools_WithAutoTieringEnabled(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+	driver.Config.StoragePools = []string{"CP_AutoTier"}
+	driver.Config.TieringPolicy = drivers.TieringPolicyAuto
+
+	// Create capacity pool with auto-tiering enabled
+	cpAutoTier := &api.CapacityPool{
+		Name:            "CP_AutoTier",
+		FullName:        "projects/123456789/locations/fake-location/storagePools/CP_AutoTier",
+		Location:        api.Location,
+		ServiceLevel:    api.ServiceLevelPremium,
+		State:           api.StateReady,
+		NetworkName:     api.NetworkName,
+		NetworkFullName: api.NetworkFullName,
+		AutoTiering:     true,
+	}
+
+	capacityPools := []*api.CapacityPool{cpAutoTier}
+	mockAPI.EXPECT().CapacityPools().Return(&capacityPools).AnyTimes()
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err, "error occurred")
+
+	driver.initializeStoragePools(ctx)
+
+	// Verify pool was created with tiering policy enabled
+	assert.Equal(t, 1, len(driver.pools), "expected 1 storage pool")
+	pool := driver.pools["gcnv_pool"]
+	assert.NotNil(t, pool, "storage pool should exist")
+	assert.Equal(t, drivers.TieringPolicyAuto, pool.InternalAttributes()[drivers.TieringPolicy], "tiering policy should be auto")
+}
+
+func TestInitializeStoragePools_WithAutoTieringDisabled(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelStandard
+	driver.Config.NASType = "nfs"
+	driver.Config.StoragePools = []string{"CP_NoAutoTier"}
+	driver.Config.TieringPolicy = drivers.TieringPolicyNone
+
+	// Create capacity pool with auto-tiering disabled
+	cpNoAutoTier := &api.CapacityPool{
+		Name:            "CP_NoAutoTier",
+		FullName:        "projects/123456789/locations/fake-location/storagePools/CP_NoAutoTier",
+		Location:        api.Location,
+		ServiceLevel:    api.ServiceLevelStandard,
+		State:           api.StateReady,
+		NetworkName:     api.NetworkName,
+		NetworkFullName: api.NetworkFullName,
+		AutoTiering:     false,
+	}
+
+	capacityPools := []*api.CapacityPool{cpNoAutoTier}
+	mockAPI.EXPECT().CapacityPools().Return(&capacityPools).AnyTimes()
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err, "error occurred")
+
+	driver.initializeStoragePools(ctx)
+
+	// Verify pool was created with tiering policy disabled
+	assert.Equal(t, 1, len(driver.pools), "expected 1 storage pool")
+	pool := driver.pools["gcnv_pool"]
+	assert.NotNil(t, pool, "storage pool should exist")
+	assert.Equal(t, drivers.TieringPolicyNone, pool.InternalAttributes()[drivers.TieringPolicy], "tiering policy should be none")
+}
+
+func TestInitializeStoragePools_AutoTieringFallbackToConfig(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+	driver.Config.StoragePools = []string{"NonExistentPool"}
+	driver.Config.TieringPolicy = drivers.TieringPolicyAuto
+
+	// Return empty capacity pools (discovery returns nil)
+	emptyPools := []*api.CapacityPool{}
+	mockAPI.EXPECT().CapacityPools().Return(&emptyPools).AnyTimes()
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err, "error occurred")
+
+	driver.initializeStoragePools(ctx)
+
+	// Verify pool falls back to config value when discovery returns nil
+	assert.Equal(t, 1, len(driver.pools), "expected 1 storage pool")
+	pool := driver.pools["gcnv_pool"]
+	assert.NotNil(t, pool, "storage pool should exist")
+	assert.Equal(t, drivers.TieringPolicyAuto, pool.InternalAttributes()[drivers.TieringPolicy], "should fallback to config tiering policy")
+}
+
+func TestInitializeStoragePools_VirtualPoolWithAutoTiering(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelStandard
+	driver.Config.NASType = "nfs"
+	driver.Config.TieringPolicy = drivers.TieringPolicyNone
+
+	// Add virtual pool with tiering policy enabled
+	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+		{
+			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+					Size: "123456789000",
+				},
+				TieringPolicy: drivers.TieringPolicyAuto,
+			},
+			ServiceLevel: api.ServiceLevelPremium,
+			StoragePools: []string{"CP_AutoTier"},
+		},
+	}
+
+	// Create capacity pool with auto-tiering enabled
+	cpAutoTier := &api.CapacityPool{
+		Name:            "CP_AutoTier",
+		FullName:        "projects/123456789/locations/fake-location/storagePools/CP_AutoTier",
+		Location:        api.Location,
+		ServiceLevel:    api.ServiceLevelPremium,
+		State:           api.StateReady,
+		NetworkName:     api.NetworkName,
+		NetworkFullName: api.NetworkFullName,
+		AutoTiering:     true,
+	}
+
+	capacityPools := []*api.CapacityPool{cpAutoTier}
+	mockAPI.EXPECT().CapacityPools().Return(&capacityPools).AnyTimes()
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err, "error occurred")
+
+	driver.initializeStoragePools(ctx)
+
+	// Verify virtual pool has auto-tiering enabled
+	assert.Equal(t, 1, len(driver.pools), "expected 1 virtual storage pool")
+
+	var pool storage.Pool
+	for _, p := range driver.pools {
+		pool = p
+		break
+	}
+	assert.NotNil(t, pool, "storage pool should exist")
+	assert.Equal(t, drivers.TieringPolicyAuto, pool.InternalAttributes()[drivers.TieringPolicy], "virtual pool should have tiering policy enabled")
+}
+
 func getStructsForCreateNFSVolume(ctx context.Context, driver *NASStorageDriver, storagePool storage.Pool) (
 	*storage.VolumeConfig, *api.CapacityPool, *api.Volume, *api.VolumeCreateRequest,
 ) {
@@ -1221,9 +1391,11 @@ func getStructsForCreateNFSVolume(ctx context.Context, driver *NASStorageDriver,
 			"plugin":           "google-cloud-netapp-volumes",
 			"version":          driver.fixGCPLabelValue(driver.telemetry.TridentVersion),
 		},
-		SnapshotReserve:   nil,
-		SnapshotDirectory: true,
-		SecurityStyle:     "Unix",
+		SnapshotReserve:           nil,
+		SnapshotDirectory:         true,
+		SecurityStyle:             "Unix",
+		TieringPolicy:             drivers.TieringPolicyNone,
+		TieringMinimumCoolingDays: nil,
 	}
 
 	return volConfig, capacityPool, volume, createRequest
@@ -1297,7 +1469,7 @@ func TestCreate_NFSVolume(t *testing.T) {
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
@@ -1340,7 +1512,7 @@ func TestCreate_NFSVolume_MultipleCapacityPools_FirstSucceeds(t *testing.T) {
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return(capacityPools).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return(capacityPools).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, capacityPools, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return(capacityPools).Times(1)
 
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
@@ -1391,7 +1563,7 @@ func TestCreate_NFSVolume_MultipleCapacityPools_SecondSucceeds(t *testing.T) {
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return(capacityPools).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return(capacityPools).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, capacityPools, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return(capacityPools).Times(1)
 
 	mockAPI.EXPECT().CreateVolume(ctx, &createRequest1).Return(nil, errFailed).Times(1)
@@ -1446,7 +1618,7 @@ func TestCreate_NFSVolume_MultipleCapacityPools_NoneSucceeds(t *testing.T) {
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return(capacityPools).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return(capacityPools).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, capacityPools, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return(capacityPools).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, &createRequest1).Return(nil, errFailed).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, &createRequest2).Return(nil, errFailed).Times(1)
@@ -1745,7 +1917,7 @@ func TestCreate_ZeroSize(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
@@ -1789,7 +1961,7 @@ func TestCreate_ServiceLevelFlex(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelFlex).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelFlex, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
@@ -1942,7 +2114,7 @@ func TestGCNVCreate_InvalidSnapshotReserve(t *testing.T) {
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
@@ -1985,7 +2157,7 @@ func TestCreate_MountOptions(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
@@ -2031,7 +2203,7 @@ func TestCreate_MountOptions_NFSv4(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
@@ -2071,7 +2243,7 @@ func TestCreate_MountOptions_BothEnabled(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
@@ -2141,7 +2313,7 @@ func TestCreate_NFSVolume_VolConfigMountOptionsNFSv3(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
@@ -2181,7 +2353,7 @@ func TestCreate_NFSVolume_VolConfigMountOptions(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
@@ -2216,7 +2388,7 @@ func TestCreate_NFSVolume_CreateFailed(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
 
@@ -2250,7 +2422,7 @@ func TestCreate_NFSVolume_BelowGCNVMinimumSize(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
@@ -2295,7 +2467,7 @@ func TestCreate_NFSVolumeWithPoolLabels(t *testing.T) {
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
@@ -2396,7 +2568,7 @@ func TestCreate_NFSVolumeWithPoolLabels_NoMatchingCapacityPool(t *testing.T) {
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return([]*api.CapacityPool{}).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{}).Times(1)
 
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{}).Times(1)
 	result := driver.Create(ctx, volConfig, storagePool, nil)
@@ -2448,7 +2620,7 @@ func TestCreate_NFSVolume_ZoneSelectionSucceeds(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelFlex).Return(capacityPools).Times(1)
+		api.ServiceLevelFlex, gomock.Any()).Return(capacityPools).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, capacityPools, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return(capacityPools).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
@@ -2506,7 +2678,7 @@ func TestCreate_NFSVolume_ZoneSelectionFails(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelFlex).Return(capacityPools).Times(1)
+		api.ServiceLevelFlex, gomock.Any()).Return(capacityPools).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, capacityPools, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{}).Times(1)
 	result := driver.Create(ctx, volConfig, storagePool, nil)
 
@@ -2565,8 +2737,10 @@ func getStructsForCreateSMBVolume(ctx context.Context, driver *NASStorageDriver,
 			"plugin":           "google-cloud-netapp-volumes",
 			"version":          driver.fixGCPLabelValue(driver.telemetry.TridentVersion),
 		},
-		SnapshotReserve:   nil,
-		SnapshotDirectory: true,
+		SnapshotReserve:           nil,
+		SnapshotDirectory:         true,
+		TieringPolicy:             drivers.TieringPolicyNone,
+		TieringMinimumCoolingDays: nil,
 	}
 
 	return volConfig, capacityPool, volume, createRequest
@@ -2592,7 +2766,7 @@ func TestCreate_SMBVolume(t *testing.T) {
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
 
@@ -2630,7 +2804,7 @@ func TestCreate_SMBVolume_CreateFailed(t *testing.T) {
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
 
@@ -2662,7 +2836,7 @@ func TestCreate_SMBVolume_BelowGCNVMinimumSize(t *testing.T) {
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
 
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
@@ -2699,7 +2873,7 @@ func TestCreate_NFSVolumeOnSMBPool_CreateFailed(t *testing.T) {
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
 
@@ -2732,7 +2906,7 @@ func TestCreate_SMBVolumeOnNFSPool_CreateFailed(t *testing.T) {
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
-		api.ServiceLevelPremium).Return([]*api.CapacityPool{capacityPool}).Times(1)
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
 
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
@@ -7211,4 +7385,973 @@ func TestNFSExportComponentsForProtocol_IncorrectProtocol(t *testing.T) {
 	assert.Error(t, resultErr, "expected error")
 	assert.Equal(t, "", server, "server value is populated")
 	assert.Equal(t, "", share, "share name is populated")
+}
+
+// TestCreate_AutoTiering verifies tiering configuration from volume config is correctly passed to volume creation
+func TestCreate_AutoTiering(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+	driver.Config.TieringPolicy = drivers.TieringPolicyAuto
+	driver.Config.TieringMinimumCoolingDays = "30"
+
+	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+		{
+			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+					Size: defaultVolumeSizeStr,
+				},
+				TieringPolicy:             drivers.TieringPolicyAuto,
+				TieringMinimumCoolingDays: "30",
+			},
+			ServiceLevel: api.ServiceLevelPremium,
+			StoragePools: []string{"CP1"},
+		},
+	}
+
+	cp := &api.CapacityPool{
+		Name:            "CP1",
+		FullName:        "projects/123456789/locations/fake-location/storagePools/CP1",
+		Location:        api.Location,
+		ServiceLevel:    api.ServiceLevelPremium,
+		State:           api.StateReady,
+		NetworkName:     api.NetworkName,
+		NetworkFullName: api.NetworkFullName,
+		AutoTiering:     true,
+	}
+	capacityPools := []*api.CapacityPool{cp}
+	mockAPI.EXPECT().CapacityPools().Return(&capacityPools).AnyTimes()
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err)
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool_0"]
+	assert.NotNil(t, storagePool, "storage pool should exist")
+
+	volConfig, _, volume, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	volConfig.TieringPolicy = drivers.TieringPolicyAuto
+	volConfig.TieringMinimumCoolingDays = "60" // Override pool default
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool, api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{cp}).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]*api.CapacityPool{cp}).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
+			// Verify tiering configuration
+			assert.NotNil(t, req.TieringMinimumCoolingDays, "cooling days should be set")
+			assert.Equal(t, int32(60), *req.TieringMinimumCoolingDays, "should use VolumeConfig cooling days value, not pool default")
+			return volume, nil
+		},
+	).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, api.VolumeStateReady, gomock.Any(), gomock.Any()).Return(api.VolumeStateReady, nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+	assert.NoError(t, result, "create should succeed")
+}
+
+// TestCreate_RejectAutoTieringOnDisallowedPool verifies rejection when pool doesn't allow tiering
+func TestCreate_RejectAutoTieringOnDisallowedPool(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelStandard
+	driver.Config.NASType = "nfs"
+
+	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+		{
+			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+					Size: defaultVolumeSizeStr,
+				},
+			},
+			ServiceLevel: api.ServiceLevelStandard,
+			StoragePools: []string{"CP1"},
+		},
+	}
+
+	cp := &api.CapacityPool{
+		Name:            "CP1",
+		FullName:        "projects/123456789/locations/fake-location/storagePools/CP1",
+		Location:        api.Location,
+		ServiceLevel:    api.ServiceLevelStandard,
+		State:           api.StateReady,
+		NetworkName:     api.NetworkName,
+		NetworkFullName: api.NetworkFullName,
+		AutoTiering:     false,
+	}
+	capacityPools := []*api.CapacityPool{cp}
+	mockAPI.EXPECT().CapacityPools().Return(&capacityPools).AnyTimes()
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err)
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool_0"]
+	assert.NotNil(t, storagePool, "storage pool should exist")
+
+	volConfig, _, _, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	volConfig.TieringPolicy = drivers.TieringPolicyAuto // User requests auto
+	volConfig.TieringMinimumCoolingDays = "30"
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	// Capacity pool selection (including auto-tiering support) is handled in the API layer.
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool, api.ServiceLevelStandard, drivers.TieringPolicyAuto).Return([]*api.CapacityPool{}).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{}, []map[string]string(nil), []map[string]string(nil)).Return([]*api.CapacityPool{}).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+	assert.Error(t, result, "should fail when auto tiering requested on capacity pool without support")
+	assert.Contains(t, result.Error(), "no GCNV storage pools found", "error should indicate no pools found")
+}
+
+// TestCreate_AutoTieringPoolDefault tests volume creation uses pool default tiering config
+func TestCreate_AutoTieringPoolDefault(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+		{
+			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+					Size: defaultVolumeSizeStr,
+				},
+				TieringPolicy:             drivers.TieringPolicyAuto,
+				TieringMinimumCoolingDays: "14",
+			},
+			ServiceLevel: api.ServiceLevelPremium,
+			StoragePools: []string{"CP1"},
+		},
+	}
+
+	cp := &api.CapacityPool{
+		Name:            "CP1",
+		FullName:        "projects/123456789/locations/fake-location/storagePools/CP1",
+		Location:        api.Location,
+		ServiceLevel:    api.ServiceLevelPremium,
+		State:           api.StateReady,
+		NetworkName:     api.NetworkName,
+		NetworkFullName: api.NetworkFullName,
+		AutoTiering:     true,
+	}
+	capacityPools := []*api.CapacityPool{cp}
+	mockAPI.EXPECT().CapacityPools().Return(&capacityPools).AnyTimes()
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err)
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool_0"]
+	assert.NotNil(t, storagePool, "storage pool should exist")
+
+	volConfig, _, volume, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	// No tiering config in VolumeConfig - should use pool defaults
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool, api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{cp}).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]*api.CapacityPool{cp}).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
+			// Verify tiering configuration from pool defaults
+			assert.Equal(t, drivers.TieringPolicyAuto, req.TieringPolicy, "should use pool default policy")
+			assert.NotNil(t, req.TieringMinimumCoolingDays, "cooling days should be set")
+			assert.Equal(t, int32(14), *req.TieringMinimumCoolingDays, "should use pool default cooling days")
+			return volume, nil
+		},
+	).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, api.VolumeStateReady, gomock.Any(), gomock.Any()).Return(api.VolumeStateReady, nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+	assert.NoError(t, result, "create should succeed")
+}
+
+// TestCreate_AutoTieringDisabledByDefault tests volume creation without tiering when not configured
+func TestCreate_AutoTieringDisabledByDefault(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	// No tiering config in storage pool defaults
+	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+		{
+			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+					Size: defaultVolumeSizeStr,
+				},
+			},
+			ServiceLevel: api.ServiceLevelPremium,
+			StoragePools: []string{"CP1"},
+		},
+	}
+
+	cp := &api.CapacityPool{
+		Name:            "CP1",
+		FullName:        "projects/123456789/locations/fake-location/storagePools/CP1",
+		Location:        api.Location,
+		ServiceLevel:    api.ServiceLevelPremium,
+		State:           api.StateReady,
+		NetworkName:     api.NetworkName,
+		NetworkFullName: api.NetworkFullName,
+		AutoTiering:     false,
+	}
+	capacityPools := []*api.CapacityPool{cp}
+	mockAPI.EXPECT().CapacityPools().Return(&capacityPools).AnyTimes()
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err)
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool_0"]
+	assert.NotNil(t, storagePool, "storage pool should exist")
+
+	volConfig, capacityPool, volume, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool, api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]*api.CapacityPool{cp}).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
+			// Verify tiering is disabled by default
+			assert.Equal(t, drivers.TieringPolicyNone, req.TieringPolicy, "should have policy 'none' by default")
+			assert.Nil(t, req.TieringMinimumCoolingDays, "cooling days should be nil when policy is none")
+			return volume, nil
+		},
+	).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, api.VolumeStateReady, gomock.Any(), gomock.Any()).Return(api.VolumeStateReady, nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+	assert.NoError(t, result, "create should succeed")
+}
+
+// TestCreate_AutoTieringNonePolicyExplicit tests explicit "none" policy
+func TestCreate_AutoTieringNonePolicyExplicit(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+		{
+			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+					Size: defaultVolumeSizeStr,
+				},
+				TieringPolicy: drivers.TieringPolicyNone, // Explicitly set to "none"
+			},
+			ServiceLevel: api.ServiceLevelPremium,
+			StoragePools: []string{"CP1"},
+		},
+	}
+
+	cp := &api.CapacityPool{
+		Name:            "CP1",
+		FullName:        "projects/123456789/locations/fake-location/storagePools/CP1",
+		Location:        api.Location,
+		ServiceLevel:    api.ServiceLevelPremium,
+		State:           api.StateReady,
+		NetworkName:     api.NetworkName,
+		NetworkFullName: api.NetworkFullName,
+		AutoTiering:     true,
+	}
+	capacityPools := []*api.CapacityPool{cp}
+	mockAPI.EXPECT().CapacityPools().Return(&capacityPools).AnyTimes()
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err)
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool_0"]
+	assert.NotNil(t, storagePool, "storage pool should exist")
+
+	volConfig, capacityPool, volume, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool, api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]*api.CapacityPool{cp}).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
+			assert.Equal(t, drivers.TieringPolicyNone, req.TieringPolicy, "should have explicit 'none' policy")
+			assert.Nil(t, req.TieringMinimumCoolingDays, "cooling days should be nil when policy is none")
+			return volume, nil
+		},
+	).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, api.VolumeStateReady, gomock.Any(), gomock.Any()).Return(api.VolumeStateReady, nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+	assert.NoError(t, result, "create should succeed")
+}
+
+// TestCreate_TieringNoneIgnoresCoolingDays tests that cooling days are ignored when tieringPolicy is "none",
+// even if a caller mistakenly provides tieringMinimumCoolingDays.
+func TestCreate_TieringNoneIgnoresCoolingDays(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+		{
+			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+					Size: defaultVolumeSizeStr,
+				},
+				TieringPolicy: drivers.TieringPolicyNone, // Explicitly set to "none"
+			},
+			ServiceLevel: api.ServiceLevelPremium,
+			StoragePools: []string{"CP1"},
+		},
+	}
+
+	cp := &api.CapacityPool{
+		Name:            "CP1",
+		FullName:        "projects/123456789/locations/fake-location/storagePools/CP1",
+		Location:        api.Location,
+		ServiceLevel:    api.ServiceLevelPremium,
+		State:           api.StateReady,
+		NetworkName:     api.NetworkName,
+		NetworkFullName: api.NetworkFullName,
+		AutoTiering:     true,
+	}
+	capacityPools := []*api.CapacityPool{cp}
+	mockAPI.EXPECT().CapacityPools().Return(&capacityPools).AnyTimes()
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err)
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool_0"]
+	assert.NotNil(t, storagePool, "storage pool should exist")
+
+	volConfig, capacityPool, volume, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	volConfig.TieringPolicy = drivers.TieringPolicyNone
+	volConfig.TieringMinimumCoolingDays = "60" // Should be ignored/cleared
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool, api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]*api.CapacityPool{cp}).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
+			assert.Equal(t, drivers.TieringPolicyNone, req.TieringPolicy, "should have explicit 'none' policy")
+			assert.Nil(t, req.TieringMinimumCoolingDays, "cooling days should be nil when policy is none")
+			return volume, nil
+		},
+	).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, api.VolumeStateReady, gomock.Any(), gomock.Any()).Return(api.VolumeStateReady, nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+	assert.NoError(t, result, "create should succeed")
+	assert.Equal(t, "", volConfig.TieringMinimumCoolingDays, "cooling days should be cleared on volConfig when policy is none")
+}
+
+// TestCreate_AutoTieringMinimumCoolingDays tests boundary values for cooling days
+func TestCreate_AutoTieringMinimumCoolingDays(t *testing.T) {
+	rangeErrorMsg := fmt.Sprintf("must be in the range [%d, %d]", drivers.MinTieringCoolingDays, drivers.MaxTieringCoolingDays)
+
+	tests := []struct {
+		name        string
+		coolingDays string
+		expectError bool
+		errorMsg    string
+	}{
+		{"Below minimum (1 day)", "1", true, rangeErrorMsg},
+		{"Above maximum (184 days)", "184", true, rangeErrorMsg},
+		{"Invalid non-numeric", "abc", true, "must be an integer"},
+		{"Invalid negative", "-5", true, rangeErrorMsg}, // Negative values are rejected by range validation
+		{"Invalid zero", "0", true, rangeErrorMsg},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockAPI, driver := newMockGCNVDriver(t)
+
+			driver.Config.BackendName = "gcnv"
+			driver.Config.ServiceLevel = api.ServiceLevelPremium
+			driver.Config.NASType = "nfs"
+
+			driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+				{
+					GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+						CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+							Size: defaultVolumeSizeStr,
+						},
+					},
+					ServiceLevel: api.ServiceLevelPremium,
+					StoragePools: []string{"CP1"},
+				},
+			}
+
+			cp := &api.CapacityPool{
+				Name:            "CP1",
+				FullName:        "projects/123456789/locations/fake-location/storagePools/CP1",
+				Location:        api.Location,
+				ServiceLevel:    api.ServiceLevelPremium,
+				State:           api.StateReady,
+				NetworkName:     api.NetworkName,
+				NetworkFullName: api.NetworkFullName,
+				AutoTiering:     true,
+			}
+			capacityPools := []*api.CapacityPool{cp}
+			mockAPI.EXPECT().CapacityPools().Return(&capacityPools).AnyTimes()
+
+			err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+			assert.NoError(t, err)
+
+			driver.initializeStoragePools(ctx)
+			driver.initializeTelemetry(ctx, api.BackendUUID)
+
+			storagePool := driver.pools["gcnv_pool_0"]
+			assert.NotNil(t, storagePool, "storage pool should exist")
+
+			volConfig, _, _, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+			volConfig.TieringPolicy = drivers.TieringPolicyAuto
+			volConfig.TieringMinimumCoolingDays = tt.coolingDays
+
+			mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+			mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+
+			result := driver.Create(ctx, volConfig, storagePool, nil)
+
+			assert.Error(t, result, "should fail with invalid cooling days")
+			assert.Contains(t, result.Error(), tt.errorMsg, "error message should mention validation issue")
+		})
+	}
+}
+
+// TestCreateClone_AutoTieringInheritance tests clone inherits source volume tiering config
+func TestCreateClone_AutoTieringInheritance(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+		{
+			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+					Size: defaultVolumeSizeStr,
+				},
+				TieringPolicy:             drivers.TieringPolicyAuto,
+				TieringMinimumCoolingDays: "7", // Pool default
+			},
+			ServiceLevel: api.ServiceLevelPremium,
+			StoragePools: []string{"CP1"},
+		},
+	}
+
+	cp := &api.CapacityPool{
+		Name:            "CP1",
+		FullName:        "projects/123456789/locations/fake-location/storagePools/CP1",
+		Location:        api.Location,
+		ServiceLevel:    api.ServiceLevelPremium,
+		State:           api.StateReady,
+		NetworkName:     api.NetworkName,
+		NetworkFullName: api.NetworkFullName,
+		AutoTiering:     true,
+	}
+	capacityPools := []*api.CapacityPool{cp}
+	mockAPI.EXPECT().CapacityPools().Return(&capacityPools).AnyTimes()
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err)
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool_0"]
+	sourceVolConfig, cloneVolConfig, _, sourceVolume, cloneVolume, snapshot := getStructsForCreateClone(ctx, driver, storagePool)
+
+	// Source volume with custom tiering
+	sourceVolume.TieringPolicy = drivers.TieringPolicyAuto
+	sourceCoolingDays := int32(60)
+	sourceVolume.TieringMinimumCoolingDays = &sourceCoolingDays
+
+	// Orchestrator layer populates clone config with inherited values before calling driver
+	cloneVolConfig.TieringPolicy = drivers.TieringPolicyAuto
+	cloneVolConfig.TieringMinimumCoolingDays = fmt.Sprintf("%d", 60)
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, cloneVolConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any(), gomock.Any()).Return(snapshot, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, gomock.Any()).Return(snapshot, nil).Times(1)
+
+	mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
+			// Verify driver uses tiering config provided by orchestrator
+			assert.Equal(t, drivers.TieringPolicyAuto, req.TieringPolicy, "driver should use tiering policy from clone config")
+			assert.NotNil(t, req.TieringMinimumCoolingDays, "driver should use cooling days from clone config")
+			assert.Equal(t, int32(60), *req.TieringMinimumCoolingDays, "driver should use 60 days from clone config")
+			return cloneVolume, nil
+		},
+	).Times(1)
+
+	mockAPI.EXPECT().WaitForVolumeState(ctx, cloneVolume, api.VolumeStateReady, []string{api.VolumeStateError},
+		driver.volumeCreateTimeout).Return(api.VolumeStateReady, nil).Times(1)
+
+	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, storagePool)
+	assert.NoError(t, result, "clone should succeed with tiering config")
+}
+
+// TestCreateClone_AutoTieringNoInheritance tests clone when source has no tiering
+func TestCreateClone_AutoTieringNoInheritance(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+		{
+			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+					Size: defaultVolumeSizeStr,
+				},
+			},
+			ServiceLevel: api.ServiceLevelPremium,
+			StoragePools: []string{"CP1"},
+		},
+	}
+
+	cp := &api.CapacityPool{
+		Name:            "CP1",
+		FullName:        "projects/123456789/locations/fake-location/storagePools/CP1",
+		Location:        api.Location,
+		ServiceLevel:    api.ServiceLevelPremium,
+		State:           api.StateReady,
+		NetworkName:     api.NetworkName,
+		NetworkFullName: api.NetworkFullName,
+		AutoTiering:     false,
+	}
+	capacityPools := []*api.CapacityPool{cp}
+	mockAPI.EXPECT().CapacityPools().Return(&capacityPools).AnyTimes()
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err)
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool_0"]
+	sourceVolConfig, cloneVolConfig, _, sourceVolume, cloneVolume, snapshot := getStructsForCreateClone(ctx, driver, storagePool)
+
+	// Source volume has no tiering
+	sourceVolume.TieringPolicy = drivers.TieringPolicyNone
+	sourceVolume.TieringMinimumCoolingDays = nil
+
+	// Orchestrator layer populates clone config with inherited values before calling driver
+	cloneVolConfig.TieringPolicy = drivers.TieringPolicyNone
+	cloneVolConfig.TieringMinimumCoolingDays = ""
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, cloneVolConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any(), gomock.Any()).Return(snapshot, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, gomock.Any()).Return(snapshot, nil).Times(1)
+
+	mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
+			// Verify clone inherits "none" policy from source
+			assert.Equal(t, drivers.TieringPolicyNone, req.TieringPolicy, "clone should inherit source's 'none' policy")
+			assert.Nil(t, req.TieringMinimumCoolingDays, "clone should have no cooling days when policy is none")
+			return cloneVolume, nil
+		},
+	).Times(1)
+
+	mockAPI.EXPECT().WaitForVolumeState(ctx, cloneVolume, api.VolumeStateReady, []string{api.VolumeStateError},
+		driver.volumeCreateTimeout).Return(api.VolumeStateReady, nil).Times(1)
+
+	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, storagePool)
+	assert.NoError(t, result, "clone should succeed")
+}
+
+// TestCreateClone_TieringNoneIgnoresCoolingDays tests that cooling days are ignored when clone tieringPolicy is "none",
+// even if a caller mistakenly provides tieringMinimumCoolingDays.
+func TestCreateClone_TieringNoneIgnoresCoolingDays(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+		{
+			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+					Size: defaultVolumeSizeStr,
+				},
+			},
+			ServiceLevel: api.ServiceLevelPremium,
+			StoragePools: []string{"CP1"},
+		},
+	}
+
+	cp := &api.CapacityPool{
+		Name:            "CP1",
+		FullName:        "projects/123456789/locations/fake-location/storagePools/CP1",
+		Location:        api.Location,
+		ServiceLevel:    api.ServiceLevelPremium,
+		State:           api.StateReady,
+		NetworkName:     api.NetworkName,
+		NetworkFullName: api.NetworkFullName,
+		AutoTiering:     true,
+	}
+	capacityPools := []*api.CapacityPool{cp}
+	mockAPI.EXPECT().CapacityPools().Return(&capacityPools).AnyTimes()
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err)
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool_0"]
+	sourceVolConfig, cloneVolConfig, _, sourceVolume, cloneVolume, snapshot := getStructsForCreateClone(ctx, driver, storagePool)
+
+	// Source volume has no tiering
+	sourceVolume.TieringPolicy = drivers.TieringPolicyNone
+	sourceVolume.TieringMinimumCoolingDays = nil
+
+	// Caller mistakenly provides cooling days with policy none; driver should clear/ignore it.
+	cloneVolConfig.TieringPolicy = drivers.TieringPolicyNone
+	cloneVolConfig.TieringMinimumCoolingDays = "60"
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, cloneVolConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any(), gomock.Any()).Return(snapshot, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, gomock.Any()).Return(snapshot, nil).Times(1)
+
+	mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
+			assert.Equal(t, drivers.TieringPolicyNone, req.TieringPolicy, "clone should use 'none' policy")
+			assert.Nil(t, req.TieringMinimumCoolingDays, "clone should have no cooling days when policy is none")
+			return cloneVolume, nil
+		},
+	).Times(1)
+
+	mockAPI.EXPECT().WaitForVolumeState(ctx, cloneVolume, api.VolumeStateReady, []string{api.VolumeStateError},
+		driver.volumeCreateTimeout).Return(api.VolumeStateReady, nil).Times(1)
+
+	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, storagePool)
+	assert.NoError(t, result, "clone should succeed")
+	assert.Equal(t, "", cloneVolConfig.TieringMinimumCoolingDays, "cooling days should be cleared on cloneVolConfig when policy is none")
+}
+
+// TestCreateClone_AnnotationOverride tests clone volume config overrides source volume tiering
+func TestCreateClone_AnnotationOverride(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+		{
+			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+					Size: defaultVolumeSizeStr,
+				},
+				TieringPolicy:             drivers.TieringPolicyAuto,
+				TieringMinimumCoolingDays: "7",
+			},
+			ServiceLevel: api.ServiceLevelPremium,
+			StoragePools: []string{"CP1"},
+		},
+	}
+
+	cp := &api.CapacityPool{
+		Name:            "CP1",
+		FullName:        "projects/123456789/locations/fake-location/storagePools/CP1",
+		Location:        api.Location,
+		ServiceLevel:    api.ServiceLevelPremium,
+		State:           api.StateReady,
+		NetworkName:     api.NetworkName,
+		NetworkFullName: api.NetworkFullName,
+		AutoTiering:     true,
+	}
+	capacityPools := []*api.CapacityPool{cp}
+	mockAPI.EXPECT().CapacityPools().Return(&capacityPools).AnyTimes()
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err)
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool_0"]
+	sourceVolConfig, cloneVolConfig, _, sourceVolume, cloneVolume, snapshot := getStructsForCreateClone(ctx, driver, storagePool)
+
+	// Source volume has auto tiering with 60 days
+	sourceVolume.TieringPolicy = drivers.TieringPolicyAuto
+	sourceCoolingDays := int32(60)
+	sourceVolume.TieringMinimumCoolingDays = &sourceCoolingDays
+
+	// Orchestrator populates clone config with override: policy=none
+	cloneVolConfig.TieringPolicy = drivers.TieringPolicyNone
+	cloneVolConfig.TieringMinimumCoolingDays = "" // Empty when policy is none
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, cloneVolConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any(), gomock.Any()).Return(snapshot, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, gomock.Any()).Return(snapshot, nil).Times(1)
+
+	mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
+			// Verify clone uses override policy
+			assert.Equal(t, drivers.TieringPolicyNone, req.TieringPolicy, "clone should override source with 'none' policy")
+			assert.Nil(t, req.TieringMinimumCoolingDays, "clone should have no cooling days when overriding with 'none'")
+			return cloneVolume, nil
+		},
+	).Times(1)
+
+	mockAPI.EXPECT().WaitForVolumeState(ctx, cloneVolume, api.VolumeStateReady, []string{api.VolumeStateError},
+		driver.volumeCreateTimeout).Return(api.VolumeStateReady, nil).Times(1)
+
+	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, storagePool)
+	assert.NoError(t, result, "clone should succeed with volume config override")
+}
+
+// TestCreateClone_AnnotationOverrideCoolingDays tests clone overrides only cooling days
+func TestCreateClone_AnnotationOverrideCoolingDays(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+		{
+			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+					Size: defaultVolumeSizeStr,
+				},
+			},
+			ServiceLevel: api.ServiceLevelPremium,
+			StoragePools: []string{"CP1"},
+		},
+	}
+
+	cp := &api.CapacityPool{
+		Name:            "CP1",
+		FullName:        "projects/123456789/locations/fake-location/storagePools/CP1",
+		Location:        api.Location,
+		ServiceLevel:    api.ServiceLevelPremium,
+		State:           api.StateReady,
+		NetworkName:     api.NetworkName,
+		NetworkFullName: api.NetworkFullName,
+		AutoTiering:     true,
+	}
+	capacityPools := []*api.CapacityPool{cp}
+	mockAPI.EXPECT().CapacityPools().Return(&capacityPools).AnyTimes()
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err)
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool_0"]
+	sourceVolConfig, cloneVolConfig, _, sourceVolume, cloneVolume, snapshot := getStructsForCreateClone(ctx, driver, storagePool)
+
+	// Source volume with auto tiering
+	sourceVolume.TieringPolicy = drivers.TieringPolicyAuto
+	sourceCoolingDays := int32(30)
+	sourceVolume.TieringMinimumCoolingDays = &sourceCoolingDays
+
+	// Orchestrator inherits policy from source and applies override for cooling days
+	cloneVolConfig.TieringPolicy = drivers.TieringPolicyAuto // Inherited from source
+	cloneVolConfig.TieringMinimumCoolingDays = "90"          // Override
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, cloneVolConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any(), gomock.Any()).Return(snapshot, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, gomock.Any()).Return(snapshot, nil).Times(1)
+
+	mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
+			// Verify clone overrides cooling days
+			assert.Equal(t, drivers.TieringPolicyAuto, req.TieringPolicy, "clone should inherit source's auto policy")
+			assert.NotNil(t, req.TieringMinimumCoolingDays, "clone should have cooling days")
+			assert.Equal(t, int32(90), *req.TieringMinimumCoolingDays, "clone should override with 90 days, not inherit 30")
+			return cloneVolume, nil
+		},
+	).Times(1)
+
+	mockAPI.EXPECT().WaitForVolumeState(ctx, cloneVolume, api.VolumeStateReady, []string{api.VolumeStateError},
+		driver.volumeCreateTimeout).Return(api.VolumeStateReady, nil).Times(1)
+
+	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, storagePool)
+	assert.NoError(t, result, "clone should succeed with cooling days override")
+}
+
+// TestCreateClone_InvalidCoolingDaysOverride tests clone with invalid cooling days in volume config
+func TestCreateClone_InvalidCoolingDaysOverride(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+		{
+			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+					Size: defaultVolumeSizeStr,
+				},
+			},
+			ServiceLevel: api.ServiceLevelPremium,
+			StoragePools: []string{"CP1"},
+		},
+	}
+
+	cp := &api.CapacityPool{
+		Name:            "CP1",
+		FullName:        "projects/123456789/locations/fake-location/storagePools/CP1",
+		Location:        api.Location,
+		ServiceLevel:    api.ServiceLevelPremium,
+		State:           api.StateReady,
+		NetworkName:     api.NetworkName,
+		NetworkFullName: api.NetworkFullName,
+		AutoTiering:     true,
+	}
+	capacityPools := []*api.CapacityPool{cp}
+	mockAPI.EXPECT().CapacityPools().Return(&capacityPools).AnyTimes()
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err)
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool_0"]
+	sourceVolConfig, cloneVolConfig, _, sourceVolume, _, _ := getStructsForCreateClone(ctx, driver, storagePool)
+
+	// Source volume with auto tiering
+	sourceVolume.TieringPolicy = drivers.TieringPolicyAuto
+	sourceCoolingDays := int32(45)
+	sourceVolume.TieringMinimumCoolingDays = &sourceCoolingDays
+
+	// Clone has invalid cooling days (with auto tiering policy)
+	cloneVolConfig.TieringPolicy = drivers.TieringPolicyAuto
+	cloneVolConfig.TieringMinimumCoolingDays = "1" // Invalid: must be >= 2
+
+	// Calls that happen before validation (since early validation was removed)
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, cloneVolConfig).Return(false, nil, nil).Times(1)
+	// CreateSnapshot is called when no snapshot is specified (before validation)
+	snapshot := &api.Snapshot{Name: "snap1", FullName: "projects/123456789/locations/fake-location/volumes/testvol1/snapshots/snap1"}
+	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any(), gomock.Any()).Return(snapshot, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, gomock.Any()).Return(snapshot, nil).Times(1)
+	// Note: CreateVolume is NOT called because validation fails before it
+
+	// When the cooling days override is invalid, validation should reject
+	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, storagePool)
+	assert.Error(t, result, "clone should fail with invalid cooling days")
+	assert.Contains(t, result.Error(), "must be in the range", "error should mention valid range")
+}
+
+// TestCreateClone_AutoTieringNoCoolingDaysUsesDefault tests clone uses the service default cooling days when unset.
+func TestCreateClone_AutoTieringNoCoolingDaysUsesDefault(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+		{
+			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
+					Size: defaultVolumeSizeStr,
+				},
+			},
+			ServiceLevel: api.ServiceLevelPremium,
+			StoragePools: []string{"CP1"},
+		},
+	}
+
+	cp := &api.CapacityPool{
+		Name:            "CP1",
+		FullName:        "projects/123456789/locations/fake-location/storagePools/CP1",
+		Location:        api.Location,
+		ServiceLevel:    api.ServiceLevelPremium,
+		State:           api.StateReady,
+		NetworkName:     api.NetworkName,
+		NetworkFullName: api.NetworkFullName,
+		AutoTiering:     true,
+	}
+	capacityPools := []*api.CapacityPool{cp}
+	mockAPI.EXPECT().CapacityPools().Return(&capacityPools).AnyTimes()
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err)
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool_0"]
+	sourceVolConfig, cloneVolConfig, _, sourceVolume, cloneVolume, _ := getStructsForCreateClone(ctx, driver, storagePool)
+
+	// Source volume has no tiering (policy=none, no cooling days)
+	sourceVolume.TieringPolicy = drivers.TieringPolicyNone
+	sourceVolume.TieringMinimumCoolingDays = nil
+
+	// Clone PVC overrides to auto but doesn't provide cooling days
+	// Orchestrator would set: tieringPolicy=auto, tieringMinimumCoolingDays="" (inherited from source)
+	cloneVolConfig.TieringPolicy = drivers.TieringPolicyAuto
+	cloneVolConfig.TieringMinimumCoolingDays = "" // Empty - should use default
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, cloneVolConfig).Return(false, nil, nil).Times(1)
+	// CreateSnapshot is called when no snapshot is specified (before validation)
+	snapshot := &api.Snapshot{Name: "snap1", FullName: "projects/123456789/locations/fake-location/volumes/testvol1/snapshots/snap1"}
+	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any(), gomock.Any()).Return(snapshot, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, gomock.Any()).Return(snapshot, nil).Times(1)
+
+	mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
+			assert.Equal(t, drivers.TieringPolicyAuto, req.TieringPolicy, "should enable auto tiering")
+			if assert.NotNil(t, req.TieringMinimumCoolingDays, "cooling days should be set to default when unset") {
+				assert.Equal(t, int32(31), *req.TieringMinimumCoolingDays, "should use default cooling threshold")
+			}
+			return cloneVolume, nil
+		},
+	).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, cloneVolume, api.VolumeStateReady, gomock.Any(), gomock.Any()).
+		Return(api.VolumeStateReady, nil).Times(1)
+
+	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, storagePool)
+	assert.NoError(t, result, "clone should succeed when cooling days is unset")
+	assert.Equal(t, cloneVolume.FullName, cloneVolConfig.InternalID, "clone internal ID should be set")
 }

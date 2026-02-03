@@ -58,17 +58,17 @@ func (mr *MockGCNVMockRecorder) CapacityPools() *gomock.Call {
 }
 
 // CapacityPoolsForStoragePool mocks base method.
-func (m *MockGCNV) CapacityPoolsForStoragePool(arg0 context.Context, arg1 storage.Pool, arg2 string) []*api.CapacityPool {
+func (m *MockGCNV) CapacityPoolsForStoragePool(arg0 context.Context, arg1 storage.Pool, arg2, arg3 string) []*api.CapacityPool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CapacityPoolsForStoragePool", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "CapacityPoolsForStoragePool", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].([]*api.CapacityPool)
 	return ret0
 }
 
 // CapacityPoolsForStoragePool indicates an expected call of CapacityPoolsForStoragePool.
-func (mr *MockGCNVMockRecorder) CapacityPoolsForStoragePool(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockGCNVMockRecorder) CapacityPoolsForStoragePool(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CapacityPoolsForStoragePool", reflect.TypeOf((*MockGCNV)(nil).CapacityPoolsForStoragePool), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CapacityPoolsForStoragePool", reflect.TypeOf((*MockGCNV)(nil).CapacityPoolsForStoragePool), arg0, arg1, arg2, arg3)
 }
 
 // CapacityPoolsForStoragePools mocks base method.

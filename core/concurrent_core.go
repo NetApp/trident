@@ -2538,6 +2538,14 @@ func (o *ConcurrentTridentOrchestrator) cloneVolume(
 		cloneConfig.SkipRecoveryQueue = volConfig.SkipRecoveryQueue
 	}
 
+	// Override tiering settings from clone volume config if provided
+	if volConfig.TieringPolicy != "" {
+		cloneConfig.TieringPolicy = volConfig.TieringPolicy
+	}
+	if volConfig.TieringMinimumCoolingDays != "" {
+		cloneConfig.TieringMinimumCoolingDays = volConfig.TieringMinimumCoolingDays
+	}
+
 	// If it's from snapshot, we need the LUKS passphrases value from the snapshot
 	isLUKS, err := strconv.ParseBool(cloneConfig.LUKSEncryption)
 	// If the LUKSEncryption is not a bool (or is empty string) assume we are not making a LUKS volume

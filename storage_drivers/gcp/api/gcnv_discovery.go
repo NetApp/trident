@@ -20,6 +20,7 @@ import (
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
 	sc "github.com/netapp/trident/storage_class"
+	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils/errors"
 )
 
@@ -127,7 +128,8 @@ func (c Client) checkForUnsatisfiedPools(ctx context.Context) (discoveryErrors [
 	c.sdkClient.resources.GetStoragePools().Range(func(sPoolName string, sPool storage.Pool) bool {
 
 		// Find all capacity pools that work for this storage pool
-		cPools := c.CapacityPoolsForStoragePool(ctx, sPool, sPool.InternalAttributes()[serviceLevel])
+		tieringPolicy := sPool.InternalAttributes()[drivers.TieringPolicy]
+		cPools := c.CapacityPoolsForStoragePool(ctx, sPool, sPool.InternalAttributes()[serviceLevel], tieringPolicy)
 
 		if len(cPools) == 0 {
 
@@ -295,6 +297,7 @@ func (c Client) discoverCapacityPools(ctx context.Context) (*[]*CapacityPool, er
 				NetworkName:     network,
 				NetworkFullName: pool.Network,
 				Zone:            pool.Zone,
+				AutoTiering:     pool.AllowAutoTiering,
 			})
 		}
 	}
@@ -342,7 +345,7 @@ func (c Client) CapacityPoolsForStoragePools(ctx context.Context) []*CapacityPoo
 
 	// Build deduplicated map of cPools
 	c.sdkClient.resources.GetStoragePools().Range(func(_ string, sPool storage.Pool) bool {
-		for _, cPool := range c.CapacityPoolsForStoragePool(ctx, sPool, "") {
+		for _, cPool := range c.CapacityPoolsForStoragePool(ctx, sPool, "", "") {
 			cPoolMap[cPool] = true
 		}
 		return true
@@ -361,7 +364,7 @@ func (c Client) CapacityPoolsForStoragePools(ctx context.Context) []*CapacityPoo
 // CapacityPoolsForStoragePool returns all discovered capacity pools matching the specified
 // storage pool and service level.  The pools are shuffled to enable easier random selection.
 func (c Client) CapacityPoolsForStoragePool(
-	ctx context.Context, sPool storage.Pool, serviceLevel string,
+	ctx context.Context, sPool storage.Pool, serviceLevel string, tieringPolicy string,
 ) []*CapacityPool {
 	Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).WithField("storagePool", sPool.Name()).
 		Tracef("Determining capacity pools for storage pool.")
@@ -411,6 +414,27 @@ func (c Client) CapacityPoolsForStoragePool(
 			}
 			return true
 		})
+	}
+
+	// Filter out capacity pools that don't support auto-tiering if policy is "auto"
+	// Only check pools that are still candidates (haven't been filtered out by previous filters)
+	if tieringPolicy == drivers.TieringPolicyAuto {
+		for cPoolFullName, match := range filteredCapacityPoolMap {
+			if match {
+				cPool := cPools.Get(cPoolFullName)
+				if cPool == nil {
+					Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef(
+						"Capacity pool %s is nil in CapacityPoolMap; excluding from candidates.", cPoolFullName)
+					filteredCapacityPoolMap[cPoolFullName] = false
+					continue
+				}
+				if !cPool.AutoTiering {
+					Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef(
+						"Ignoring capacity pool %s, does not support auto-tiering.", cPoolFullName)
+					filteredCapacityPoolMap[cPoolFullName] = false
+				}
+			}
+		}
 	}
 
 	// Build list of all capacity pools that have passed all filters

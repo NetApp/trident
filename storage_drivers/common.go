@@ -497,3 +497,43 @@ func (lrt *LimitedRetryTransport) RoundTrip(req *http.Request) (*http.Response, 
 	lrt.b.Reset()
 	return resp, backoff.Retry(f, lrt.b)
 }
+
+// Tiering policy constants (driver-agnostic, can be extended to ANF/ONTAP)
+const (
+	TieringPolicyAuto = "auto"
+	TieringPolicyNone = "none"
+
+	// Tiering cooling days limits (consistent with ONTAP-based backends)
+	MinTieringCoolingDays = 2
+	MaxTieringCoolingDays = 183
+
+	// Tiering internal attribute keys (used for pool/volume configuration)
+	TieringPolicy             = "tieringPolicy"
+	TieringMinimumCoolingDays = "tieringMinimumCoolingDays"
+)
+
+// ValidateTieringPolicy validates a tiering policy value
+func ValidateTieringPolicy(policy string) error {
+	switch policy {
+	case "", TieringPolicyAuto, TieringPolicyNone:
+		return nil
+	default:
+		return fmt.Errorf("invalid tiering policy '%s': must be '%s' or '%s'", policy, TieringPolicyAuto, TieringPolicyNone)
+	}
+}
+
+// ValidateTieringMinimumCoolingDays validates cooling days value
+func ValidateTieringMinimumCoolingDays(daysStr string) error {
+	if daysStr == "" {
+		return nil
+	}
+	days, err := strconv.Atoi(daysStr)
+	if err != nil {
+		return fmt.Errorf("invalid tiering minimum cooling days '%s': must be an integer; %w", daysStr, err)
+	}
+	if days < MinTieringCoolingDays || days > MaxTieringCoolingDays {
+		return fmt.Errorf("tiering minimum cooling days %d must be in the range [%d, %d]",
+			days, MinTieringCoolingDays, MaxTieringCoolingDays)
+	}
+	return nil
+}

@@ -44,6 +44,10 @@ const (
 	defaultUnixPermissions = "0777"
 	defaultLimitVolumeSize = ""
 	defaultExportRule      = "0.0.0.0/0"
+	defaultTieringPolicy   = drivers.TieringPolicyNone
+	// defaultTieringMinimumCoolingDays matches the service default cooling threshold for auto-tiering.
+	// See Google Cloud NetApp Volumes docs: default cooling threshold is 31 days.
+	defaultTieringMinimumCoolingDays = "31"
 
 	// Constants for internal pool attributes
 
@@ -290,6 +294,14 @@ func (d *NASStorageDriver) populateConfigurationDefaults(
 		config.NASType = sa.NFS
 	}
 
+	if config.TieringPolicy == "" {
+		config.TieringPolicy = defaultTieringPolicy
+	}
+
+	if config.TieringMinimumCoolingDays == "" {
+		config.TieringMinimumCoolingDays = defaultTieringMinimumCoolingDays
+	}
+
 	// VolumeCreateTimeoutSeconds is the timeout value in seconds.
 	volumeCreateTimeout := d.defaultCreateTimeout()
 	if config.VolumeCreateTimeout != "" {
@@ -353,6 +365,10 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 		pool.InternalAttributes()[ExportRule] = d.Config.ExportRule
 		pool.InternalAttributes()[Network] = d.Config.Network
 		pool.InternalAttributes()[CapacityPools] = strings.Join(d.Config.StoragePools, ",")
+
+		// TieringPolicy is always set by populateConfigurationDefaults().
+		pool.InternalAttributes()[drivers.TieringPolicy] = d.Config.TieringPolicy
+		pool.InternalAttributes()[drivers.TieringMinimumCoolingDays] = d.Config.TieringMinimumCoolingDays
 
 		pool.SetSupportedTopologies(d.Config.SupportedTopologies)
 
@@ -419,6 +435,16 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 				network = vpool.Network
 			}
 
+			tieringPolicy := d.Config.TieringPolicy
+			if vpool.TieringPolicy != "" {
+				tieringPolicy = vpool.TieringPolicy
+			}
+
+			tieringMinimumCoolingDays := d.Config.TieringMinimumCoolingDays
+			if vpool.TieringMinimumCoolingDays != "" {
+				tieringMinimumCoolingDays = vpool.TieringMinimumCoolingDays
+			}
+
 			pool := storage.NewStoragePool(nil, d.poolName(fmt.Sprintf("pool_%d", index)))
 
 			pool.Attributes()[sa.BackendType] = sa.NewStringOffer(d.Name())
@@ -445,6 +471,9 @@ func (d *NASStorageDriver) initializeStoragePools(ctx context.Context) {
 			pool.InternalAttributes()[Network] = network
 			pool.InternalAttributes()[CapacityPools] = strings.Join(capacityPools, ",")
 
+			// tieringPolicy will always be set via config defaults (and may be overridden by vpool values).
+			pool.InternalAttributes()[drivers.TieringPolicy] = tieringPolicy
+			pool.InternalAttributes()[drivers.TieringMinimumCoolingDays] = tieringMinimumCoolingDays
 			pool.SetSupportedTopologies(supportedTopologies)
 
 			d.pools[pool.Name()] = pool
@@ -531,6 +560,7 @@ func (d *NASStorageDriver) initializeGCNVAPIClient(
 		ProjectNumber:   config.ProjectNumber,
 		Location:        config.Location,
 		APIKey:          &config.APIKey,
+		APIEndpoint:     config.APIEndpoint,
 		DebugTraceFlags: config.DebugTraceFlags,
 		SDKTimeout:      sdkTimeout,
 		MaxCacheAge:     maxCacheAge,
@@ -611,6 +641,19 @@ func (d *NASStorageDriver) validate(ctx context.Context) error {
 		// Validate default size
 		if _, err := capacity.ToBytes(pool.InternalAttributes()[Size]); err != nil {
 			return fmt.Errorf("invalid value for default volume size in pool %s; %v", poolName, err)
+		}
+
+		// Validate tiering policy configuration.
+		tieringPolicy := pool.InternalAttributes()[drivers.TieringPolicy]
+		if err := drivers.ValidateTieringPolicy(tieringPolicy); err != nil {
+			return err
+		}
+
+		// Validate tiering minimum cooling days.
+		if coolingDaysStr := pool.InternalAttributes()[drivers.TieringMinimumCoolingDays]; coolingDaysStr != "" {
+			if err := drivers.ValidateTieringMinimumCoolingDays(coolingDaysStr); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -753,6 +796,44 @@ func (d *NASStorageDriver) Create(
 		unixPermissions = pool.InternalAttributes()[UnixPermissions]
 	}
 
+	// Resolve tiering policy using precedence: VolumeConfig → Pool defaults
+	// Pool defaults already include driver defaults from populateConfigurationDefaults()
+	tieringPolicy := volConfig.TieringPolicy
+	coolingDaysStr := volConfig.TieringMinimumCoolingDays
+
+	if tieringPolicy == "" {
+		tieringPolicy = pool.InternalAttributes()[drivers.TieringPolicy]
+	}
+
+	if coolingDaysStr == "" {
+		coolingDaysStr = pool.InternalAttributes()[drivers.TieringMinimumCoolingDays]
+	}
+
+	if err := drivers.ValidateTieringPolicy(tieringPolicy); err != nil {
+		return err
+	}
+
+	// Validate and parse cooling days
+	// Note: If tieringPolicy is "none", cooling days are ignored.
+	var tieringMinimumCoolingDays *int32
+	if tieringPolicy == drivers.TieringPolicyNone {
+		coolingDaysStr = ""
+	} else if tieringPolicy == drivers.TieringPolicyAuto {
+		// Defensive guard: cooling days should have been resolved from VolumeConfig or pool defaults.
+		if coolingDaysStr == "" {
+			return fmt.Errorf("tieringMinimumCoolingDays must be set when tieringPolicy is 'auto'")
+		}
+
+		if err := drivers.ValidateTieringMinimumCoolingDays(coolingDaysStr); err != nil {
+			return err
+		}
+
+		// Parse validated cooling days (validation already confirmed it's a valid int in range [2, 183])
+		coolingDays, _ := strconv.ParseInt(coolingDaysStr, 10, 32)
+		coolingDaysInt32 := int32(coolingDays)
+		tieringMinimumCoolingDays = &coolingDaysInt32
+	}
+
 	// Determine protocol from mount options
 	var protocolTypes []string
 	var smbAccess, nfsV3Access, nfsV41Access bool
@@ -831,9 +912,11 @@ func (d *NASStorageDriver) Create(
 	volConfig.SnapshotDir = snapshotDir
 	volConfig.SnapshotReserve = snapshotReserve
 	volConfig.UnixPermissions = unixPermissions
+	volConfig.TieringPolicy = tieringPolicy
+	volConfig.TieringMinimumCoolingDays = coolingDaysStr
 
 	// Find matching capacity pools
-	cPools := d.API.CapacityPoolsForStoragePool(ctx, pool, serviceLevel)
+	cPools := d.API.CapacityPoolsForStoragePool(ctx, pool, serviceLevel, tieringPolicy)
 
 	// Filter capacity pools based on requisite topology
 	cPools = d.API.FilterCapacityPoolsOnTopology(ctx, cPools, volConfig.RequisiteTopologies, volConfig.PreferredTopologies)
@@ -846,7 +929,6 @@ func (d *NASStorageDriver) Create(
 
 	// Try each capacity pool until one works
 	for _, cPool := range cPools {
-
 		if d.Config.NASType == sa.SMB {
 			Logc(ctx).WithFields(LogFields{
 				"capacityPool":    cPool.Name,
@@ -856,6 +938,8 @@ func (d *NASStorageDriver) Create(
 				"snapshotDir":     snapshotDirBool,
 				"snapshotReserve": snapshotReserve,
 				"protocolTypes":   protocolTypes,
+				"tieringPolicy":   tieringPolicy,
+				"coolingDays":     convert.PtrToString(tieringMinimumCoolingDays),
 			}).Debug("Creating volume.")
 		} else {
 			Logc(ctx).WithFields(LogFields{
@@ -868,18 +952,22 @@ func (d *NASStorageDriver) Create(
 				"snapshotReserve": snapshotReserve,
 				"protocolTypes":   protocolTypes,
 				"exportPolicy":    fmt.Sprintf("%+v", exportPolicy),
+				"tieringPolicy":   tieringPolicy,
+				"coolingDays":     convert.PtrToString(tieringMinimumCoolingDays),
 			}).Debug("Creating volume.")
 		}
 
 		createRequest := &api.VolumeCreateRequest{
-			Name:              volConfig.Name,
-			CreationToken:     name,
-			CapacityPool:      cPool.Name,
-			SizeBytes:         int64(sizeWithReserveBytes),
-			ProtocolTypes:     protocolTypes,
-			Labels:            labels,
-			SnapshotReserve:   snapshotReservePtr,
-			SnapshotDirectory: snapshotDirBool,
+			Name:                      volConfig.Name,
+			CreationToken:             name,
+			CapacityPool:              cPool.Name,
+			SizeBytes:                 int64(sizeWithReserveBytes),
+			ProtocolTypes:             protocolTypes,
+			Labels:                    labels,
+			SnapshotReserve:           snapshotReservePtr,
+			SnapshotDirectory:         snapshotDirBool,
+			TieringPolicy:             tieringPolicy,
+			TieringMinimumCoolingDays: tieringMinimumCoolingDays,
 		}
 
 		// Add unix permissions and export policy fields only to NFS volume
@@ -1047,25 +1135,61 @@ func (d *NASStorageDriver) CreateClone(
 		}
 	}
 
+	// Validate tiering settings (orchestrator handles clone VolumeConfig → source volume precedence)
+	cloneTieringPolicy := cloneVolConfig.TieringPolicy
+	cloneCoolingDaysStr := cloneVolConfig.TieringMinimumCoolingDays
+
+	if err := drivers.ValidateTieringPolicy(cloneTieringPolicy); err != nil {
+		return err
+	}
+
+	var cloneTieringMinimumCoolingDays *int32
+	if cloneTieringPolicy == drivers.TieringPolicyNone {
+		cloneCoolingDaysStr = ""
+	} else if cloneTieringPolicy == drivers.TieringPolicyAuto {
+		// Defensive fallback: clone tiering is expected to be resolved upstream (inheritance/override),
+		// but if cooling days are still unset, use the GCNV service default.
+		if cloneCoolingDaysStr == "" {
+			cloneCoolingDaysStr = defaultTieringMinimumCoolingDays
+		}
+
+		if err := drivers.ValidateTieringMinimumCoolingDays(cloneCoolingDaysStr); err != nil {
+			return err
+		}
+
+		// Parse validated cooling days (validation already confirmed it's a valid int in range [2, 183])
+		coolingDays, _ := strconv.ParseInt(cloneCoolingDaysStr, 10, 32)
+		coolingDaysInt32 := int32(coolingDays)
+		cloneTieringMinimumCoolingDays = &coolingDaysInt32
+	}
+
+	// Update clone config to reflect resolved tiering values used for the clone.
+	cloneVolConfig.TieringPolicy = cloneTieringPolicy
+	cloneVolConfig.TieringMinimumCoolingDays = cloneCoolingDaysStr
+
 	Logc(ctx).WithFields(LogFields{
 		"creationToken":   name,
 		"sourceVolume":    sourceVolume.CreationToken,
 		"sourceSnapshot":  sourceSnapshot.Name,
 		"unixPermissions": sourceVolume.UnixPermissions,
 		"snapshotReserve": sourceVolume.SnapshotReserve,
+		"tieringPolicy":   cloneTieringPolicy,
+		"coolingDays":     convert.PtrToString(cloneTieringMinimumCoolingDays),
 	}).Debug("Cloning volume.")
 
 	createRequest := &api.VolumeCreateRequest{
-		Name:              cloneVolConfig.Name,
-		CreationToken:     name,
-		CapacityPool:      sourceVolume.CapacityPool,
-		SizeBytes:         sourceVolume.SizeBytes,
-		ProtocolTypes:     sourceVolume.ProtocolTypes,
-		Labels:            labels,
-		SnapshotReserve:   convert.ToPtr(sourceVolume.SnapshotReserve),
-		SnapshotDirectory: sourceVolume.SnapshotDirectory,
-		SecurityStyle:     sourceVolume.SecurityStyle,
-		SnapshotID:        sourceSnapshot.FullName,
+		Name:                      cloneVolConfig.Name,
+		CreationToken:             name,
+		CapacityPool:              sourceVolume.CapacityPool,
+		SizeBytes:                 sourceVolume.SizeBytes,
+		ProtocolTypes:             sourceVolume.ProtocolTypes,
+		Labels:                    labels,
+		SnapshotReserve:           convert.ToPtr(sourceVolume.SnapshotReserve),
+		SnapshotDirectory:         sourceVolume.SnapshotDirectory,
+		SecurityStyle:             sourceVolume.SecurityStyle,
+		SnapshotID:                sourceSnapshot.FullName,
+		TieringPolicy:             cloneTieringPolicy,
+		TieringMinimumCoolingDays: cloneTieringMinimumCoolingDays,
 	}
 
 	// Add unix permissions and export policy fields only to NFS volume
@@ -1162,7 +1286,7 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 
 		} else if d.Config.NASType == sa.NFS && (volume.ProtocolTypes[0] == api.ProtocolTypeNFSv3 || volume.
 			ProtocolTypes[0] == api.ProtocolTypeNFSv41) {
-			// Update volume unix permissions.  Permissions specified in a PVC annotation take precedence
+			// Update volume unix permissions.  Permissions specified in volume config take precedence
 			// over the backend's unixPermissions config.
 			unixPermissions := volConfig.UnixPermissions
 			if unixPermissions == "" {
@@ -1205,6 +1329,12 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 
 	// Always save the full GCP ID
 	volConfig.InternalID = volume.FullName
+
+	// Populate tiering settings from the imported volume so clones can inherit them
+	volConfig.TieringPolicy = volume.TieringPolicy
+	if volume.TieringMinimumCoolingDays != nil {
+		volConfig.TieringMinimumCoolingDays = strconv.Itoa(int(*volume.TieringMinimumCoolingDays))
+	}
 
 	return nil
 }

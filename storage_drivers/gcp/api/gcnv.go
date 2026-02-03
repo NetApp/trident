@@ -24,6 +24,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
+	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/utils/errors"
@@ -61,6 +62,9 @@ type ClientConfig struct {
 
 	// URL for accessing the API via an HTTP/HTTPS proxy
 	ProxyURL string
+
+	// APIEndpoint allows overriding the GCNV API endpoint for internal testing (autopush/staging).
+	APIEndpoint string
 
 	// Options
 	DebugTraceFlags map[string]bool
@@ -106,7 +110,13 @@ func NewDriver(ctx context.Context, config *ClientConfig) (GCNV, error) {
 	if computeErr != nil {
 		return nil, computeErr
 	}
-	gcnvClient, err := netapp.NewClient(ctx, option.WithCredentials(credentials))
+
+	// Create GCNV client with optional endpoint override for testing
+	clientOptions := []option.ClientOption{option.WithCredentials(credentials)}
+	if config.APIEndpoint != "" {
+		clientOptions = append(clientOptions, option.WithEndpoint(config.APIEndpoint))
+	}
+	gcnvClient, err := netapp.NewClient(ctx, clientOptions...)
 	if err != nil {
 		return nil, err
 	}
@@ -365,25 +375,53 @@ func (c Client) newVolumeFromGCNVVolume(ctx context.Context, volume *netapppb.Vo
 		protocolTypes = append(protocolTypes, VolumeProtocolFromGCNVProtocol(gcnvProtocolType))
 	}
 
+	// Extract tiering information from the protobuf volume.
+	tieringPolicy := drivers.TieringPolicyNone
+	var tieringMinimumCoolingDays *int32
+
+	if volume.TieringPolicy != nil {
+		// Map GCNV TieringPolicy_ENABLED to Trident's "auto" policy.
+		// For any other TierAction value (PAUSED, UNSPECIFIED) or when TieringPolicy is nil,
+		// the tieringPolicy remains at the default TieringPolicyNone.
+		switch volume.TieringPolicy.GetTierAction() {
+		case netapppb.TieringPolicy_ENABLED:
+			tieringPolicy = drivers.TieringPolicyAuto
+			if volume.TieringPolicy.CoolingThresholdDays != nil {
+				tieringMinimumCoolingDays = volume.TieringPolicy.CoolingThresholdDays
+			}
+		case netapppb.TieringPolicy_PAUSED, netapppb.TieringPolicy_TIER_ACTION_UNSPECIFIED:
+			// Both PAUSED and UNSPECIFIED map to Trident's "none" policy.
+			// PAUSED: Explicitly disabled tiering (user/admin set tieringPolicy=none).
+			// UNSPECIFIED: Tiering action not specified by the API; Trident conservatively
+			// treats this the same as PAUSED and does not enable auto-tiering.
+			tieringPolicy = drivers.TieringPolicyNone
+		default:
+			// Future-proof: any new/unknown tier action conservatively maps to "none".
+			tieringPolicy = drivers.TieringPolicyNone
+		}
+	}
+
 	return &Volume{
-		Name:              volumeName,
-		CreationToken:     volume.ShareName,
-		FullName:          volume.Name,
-		Location:          location,
-		State:             VolumeStateFromGCNVState(volume.State),
-		CapacityPool:      volume.StoragePool,
-		NetworkName:       network,
-		NetworkFullName:   volume.Network,
-		ServiceLevel:      ServiceLevelFromCapacityPool(c.capacityPool(volume.StoragePool)),
-		SizeBytes:         volume.CapacityGib * int64(1073741824),
-		ExportPolicy:      c.exportPolicyImport(volume.ExportPolicy),
-		ProtocolTypes:     protocolTypes,
-		MountTargets:      c.getMountTargetsFromVolume(ctx, volume),
-		UnixPermissions:   volume.UnixPermissions,
-		Labels:            volume.Labels,
-		SnapshotReserve:   int64(volume.SnapReserve),
-		SnapshotDirectory: volume.SnapshotDirectory,
-		SecurityStyle:     VolumeSecurityStyleFromGCNVSecurityStyle(volume.SecurityStyle),
+		Name:                      volumeName,
+		CreationToken:             volume.ShareName,
+		FullName:                  volume.Name,
+		Location:                  location,
+		State:                     VolumeStateFromGCNVState(volume.State),
+		CapacityPool:              volume.StoragePool,
+		NetworkName:               network,
+		NetworkFullName:           volume.Network,
+		ServiceLevel:              ServiceLevelFromCapacityPool(c.capacityPool(volume.StoragePool)),
+		SizeBytes:                 volume.CapacityGib * int64(1073741824),
+		ExportPolicy:              c.exportPolicyImport(volume.ExportPolicy),
+		ProtocolTypes:             protocolTypes,
+		MountTargets:              c.getMountTargetsFromVolume(ctx, volume),
+		UnixPermissions:           volume.UnixPermissions,
+		Labels:                    volume.Labels,
+		SnapshotReserve:           int64(volume.SnapReserve),
+		SnapshotDirectory:         volume.SnapshotDirectory,
+		SecurityStyle:             VolumeSecurityStyleFromGCNVSecurityStyle(volume.SecurityStyle),
+		TieringPolicy:             tieringPolicy,
+		TieringMinimumCoolingDays: tieringMinimumCoolingDays,
 	}, nil
 }
 
@@ -691,6 +729,35 @@ func (c Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest) 
 		Labels:            request.Labels,
 		SnapshotDirectory: request.SnapshotDirectory,
 		SecurityStyle:     GCNVSecurityStyleFromVolumeSecurityStyle(request.SecurityStyle),
+	}
+
+	// Add auto-tiering configuration using TieringPolicy
+	switch request.TieringPolicy {
+	case drivers.TieringPolicyAuto:
+		// Only set tiering if the pool supports it
+		if !cPool.AutoTiering {
+			return nil, fmt.Errorf("cannot enable auto-tiering: storage pool %s does not support auto-tiering", request.CapacityPool)
+		}
+
+		// If cooling days is unset, omit it and let the service apply its default.
+		tierAction := netapppb.TieringPolicy_ENABLED
+		newVol.TieringPolicy = &netapppb.TieringPolicy{
+			TierAction:           &tierAction,
+			CoolingThresholdDays: request.TieringMinimumCoolingDays,
+		}
+
+		Logc(ctx).WithFields(LogFields{
+			"volume":                    request.Name,
+			"tieringPolicy":             request.TieringPolicy,
+			"tieringMinimumCoolingDays": convert.PtrToString(request.TieringMinimumCoolingDays),
+		}).Debug("Auto-tiering enabled for volume creation")
+	case drivers.TieringPolicyNone:
+		if cPool.AutoTiering {
+			tierAction := netapppb.TieringPolicy_PAUSED
+			newVol.TieringPolicy = &netapppb.TieringPolicy{
+				TierAction: &tierAction,
+			}
+		}
 	}
 
 	if request.ExportPolicy != nil {

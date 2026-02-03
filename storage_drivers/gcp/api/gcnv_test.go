@@ -15,6 +15,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/netapp/trident/storage"
+	drivers "github.com/netapp/trident/storage_drivers"
 )
 
 func TestRegisterStoragePools(t *testing.T) {
@@ -371,27 +372,83 @@ func TestNewVolumeFromGCNVVolume(t *testing.T) {
 	actual, _ := sdk.newVolumeFromGCNVVolume(ctx, volume)
 
 	expected := &Volume{
-		Name:              "myVolume",
-		CreationToken:     "myVolume",
-		FullName:          "projects/123456789/locations/fake-location/volumes/myVolume",
-		Location:          "fake-location",
-		State:             "Unspecified",
-		CapacityPool:      "CP1",
-		NetworkName:       "myNetwork",
-		NetworkFullName:   "projects/123456789/global/networks/myNetwork",
-		ServiceLevel:      "Premium",
-		SizeBytes:         107374182400,
-		ExportPolicy:      exportPolicy,
-		ProtocolTypes:     []string{"NFSv3"},
-		MountTargets:      []MountTarget{},
-		UnixPermissions:   "777",
-		Labels:            map[string]string{},
-		SnapshotReserve:   0,
-		SnapshotDirectory: false,
-		SecurityStyle:     "Unix",
+		Name:                      "myVolume",
+		CreationToken:             "myVolume",
+		FullName:                  "projects/123456789/locations/fake-location/volumes/myVolume",
+		Location:                  "fake-location",
+		State:                     "Unspecified",
+		CapacityPool:              "CP1",
+		NetworkName:               "myNetwork",
+		NetworkFullName:           "projects/123456789/global/networks/myNetwork",
+		ServiceLevel:              "Premium",
+		SizeBytes:                 107374182400,
+		ExportPolicy:              exportPolicy,
+		ProtocolTypes:             []string{"NFSv3"},
+		MountTargets:              []MountTarget{},
+		UnixPermissions:           "777",
+		Labels:                    map[string]string{},
+		SnapshotReserve:           0,
+		SnapshotDirectory:         false,
+		SecurityStyle:             "Unix",
+		TieringPolicy:             "none",
+		TieringMinimumCoolingDays: nil,
 	}
 
 	assert.Equal(t, expected, actual, "Volume is not equal")
+}
+
+func TestNewVolumeFromGCNVVolumeTieringEnabled(t *testing.T) {
+	sdk := getFakeSDK()
+
+	coolingDays := int32(30)
+	tierAction := netapppb.TieringPolicy_ENABLED
+	volume := &netapppb.Volume{
+		Name:        "projects/123456789/locations/fake-location/volumes/myVolume",
+		ShareName:   "myVolume",
+		Network:     "projects/123456789/global/networks/myNetwork",
+		StoragePool: "CP1",
+		Protocols:   []netapppb.Protocols{netapppb.Protocols_NFSV3},
+		CapacityGib: 100,
+		TieringPolicy: &netapppb.TieringPolicy{
+			TierAction:           &tierAction,
+			CoolingThresholdDays: &coolingDays,
+		},
+	}
+
+	actual, err := sdk.newVolumeFromGCNVVolume(ctx, volume)
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+	assert.Equal(t, drivers.TieringPolicyAuto, actual.TieringPolicy)
+	if assert.NotNil(t, actual.TieringMinimumCoolingDays) {
+		assert.Equal(t, coolingDays, *actual.TieringMinimumCoolingDays)
+	}
+}
+
+func TestNewVolumeFromGCNVVolumeTieringPaused(t *testing.T) {
+	sdk := getFakeSDK()
+
+	coolingDays := int32(30)
+	tierAction := netapppb.TieringPolicy_PAUSED
+	volume := &netapppb.Volume{
+		Name:        "projects/123456789/locations/fake-location/volumes/myVolume",
+		ShareName:   "myVolume",
+		Network:     "projects/123456789/global/networks/myNetwork",
+		StoragePool: "CP1",
+		Protocols:   []netapppb.Protocols{netapppb.Protocols_NFSV3},
+		CapacityGib: 100,
+		TieringPolicy: &netapppb.TieringPolicy{
+			TierAction:           &tierAction,
+			CoolingThresholdDays: &coolingDays,
+		},
+	}
+
+	actual, err := sdk.newVolumeFromGCNVVolume(ctx, volume)
+	assert.NoError(t, err)
+	assert.NotNil(t, actual)
+
+	// Trident models PAUSED as policy "none".
+	assert.Equal(t, drivers.TieringPolicyNone, actual.TieringPolicy)
+	assert.Nil(t, actual.TieringMinimumCoolingDays)
 }
 
 func TestGetMountTargetsFromVolume(t *testing.T) {
@@ -675,6 +732,39 @@ func TestIsGCNVCanceledError(t *testing.T) {
 	err = errors.New("This is a non status code  error")
 	result = IsGCNVCanceledError(err)
 	assert.False(t, result)
+}
+
+func TestCreateVolume_TieringPolicyAuto_PoolDoesNotSupportTiering(t *testing.T) {
+	sdk := getFakeSDK()
+	ctx := context.Background()
+
+	poolFullName := "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP1"
+	pool := &CapacityPool{
+		Name:            "CP1",
+		FullName:        poolFullName,
+		Location:        Location,
+		ServiceLevel:    ServiceLevelPremium,
+		State:           StateReady,
+		NetworkName:     NetworkName,
+		NetworkFullName: NetworkFullName,
+		AutoTiering:     false,
+	}
+	addCapacityPool(sdk, pool)
+
+	coolingDays := int32(7)
+	request := &VolumeCreateRequest{
+		Name:                      "test-volume",
+		CreationToken:             "test-volume",
+		CapacityPool:              "CP1",
+		SizeBytes:                 107374182400,
+		ProtocolTypes:             []string{"NFSv3"},
+		TieringPolicy:             drivers.TieringPolicyAuto,
+		TieringMinimumCoolingDays: &coolingDays,
+	}
+
+	_, err := sdk.CreateVolume(ctx, request)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "does not support auto-tiering", "should fail when pool does not support auto-tiering")
 }
 
 func TestIsGCNVTimeoutError(t *testing.T) {

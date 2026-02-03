@@ -115,44 +115,49 @@ type CapacityPool struct {
 	NetworkName     string
 	NetworkFullName string
 	Zone            string
+	AutoTiering     bool
 }
 
 // Volume records details of a discovered GCNV volume.
 type Volume struct {
-	Name              string
-	CreationToken     string
-	FullName          string
-	Location          string
-	State             string
-	CapacityPool      string
-	NetworkName       string
-	NetworkFullName   string
-	ServiceLevel      string
-	SizeBytes         int64
-	ExportPolicy      *ExportPolicy
-	ProtocolTypes     []string
-	MountTargets      []MountTarget
-	UnixPermissions   string
-	Labels            map[string]string
-	SnapshotReserve   int64
-	SnapshotDirectory bool
-	SecurityStyle     string
+	Name                      string
+	CreationToken             string
+	FullName                  string
+	Location                  string
+	State                     string
+	CapacityPool              string
+	NetworkName               string
+	NetworkFullName           string
+	ServiceLevel              string
+	SizeBytes                 int64
+	ExportPolicy              *ExportPolicy
+	ProtocolTypes             []string
+	MountTargets              []MountTarget
+	UnixPermissions           string
+	Labels                    map[string]string
+	SnapshotReserve           int64
+	SnapshotDirectory         bool
+	SecurityStyle             string
+	TieringPolicy             string
+	TieringMinimumCoolingDays *int32
 }
 
 // VolumeCreateRequest embodies all the details of a volume to be created.
 type VolumeCreateRequest struct {
-	Name              string
-	CreationToken     string
-	CapacityPool      string
-	SizeBytes         int64
-	ExportPolicy      *ExportPolicy
-	ProtocolTypes     []string
-	UnixPermissions   string
-	Labels            map[string]string
-	SnapshotReserve   *int64
-	SnapshotDirectory bool
-	SecurityStyle     string
-	SnapshotID        string
+	Name                      string
+	CreationToken             string
+	CapacityPool              string
+	SizeBytes                 int64
+	ExportPolicy              *ExportPolicy
+	ProtocolTypes             []string
+	UnixPermissions           string
+	Labels                    map[string]string
+	SnapshotReserve           *int64
+	SnapshotDirectory         bool
+	SecurityStyle             string
+	SnapshotID                string
+	TieringPolicy             string
+	TieringMinimumCoolingDays *int32
 }
 
 // ExportPolicy records details of a discovered GCNV volume export policy.

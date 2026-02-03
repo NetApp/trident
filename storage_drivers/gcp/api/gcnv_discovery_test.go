@@ -5,6 +5,7 @@ package api
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
@@ -98,6 +99,26 @@ func getFakeSDK() *Client {
 	sdk.sdkClient.resources = newGCNVResources()
 	sdk.sdkClient.resources.capacityPools = collection.NewImmutableMap(cPools)
 	return sdk
+}
+
+func setCapacityPools(sdk *Client, capacityPools map[string]*CapacityPool) {
+	_, updater, unlocker := sdk.sdkClient.resources.LockAndCheckStale(0)
+	updater(time.Now(), capacityPools)
+	unlocker()
+}
+
+func addCapacityPool(sdk *Client, cPool *CapacityPool) {
+	m := make(map[string]*CapacityPool)
+	sdk.sdkClient.resources.GetCapacityPools().Range(func(k string, v *CapacityPool) bool {
+		m[k] = v
+		return true
+	})
+	m[cPool.FullName] = cPool
+	setCapacityPools(sdk, m)
+}
+
+func clearCapacityPools(sdk *Client) {
+	setCapacityPools(sdk, make(map[string]*CapacityPool))
 }
 
 func TestCheckForUnsatisfiedPools_NoPools(t *testing.T) {
@@ -292,6 +313,52 @@ func TestCapacityPoolsForStoragePools(t *testing.T) {
 	assert.ElementsMatch(t, expected, actual, "Did not get expected capacity pools for storage pools")
 }
 
+func TestRefreshGCNVResources_CacheNotExpired(t *testing.T) {
+	sdk := getFakeSDK()
+	sdk.config.MaxCacheAge = 1 * time.Hour
+
+	initialUpdateTime := time.Now()
+
+	// Copy existing capacity pools into a plain map so we can set cache state.
+	initialPoolMap := make(map[string]*CapacityPool)
+	sdk.sdkClient.resources.GetCapacityPools().Range(func(k string, v *CapacityPool) bool {
+		initialPoolMap[k] = v
+		return true
+	})
+
+	// Mark the cache as fresh (so RefreshGCNVResources should return early without re-discovery).
+	_, updater, unlocker := sdk.sdkClient.resources.LockAndCheckStale(0)
+	updater(initialUpdateTime, initialPoolMap)
+	unlocker()
+
+	// Store references to verify they aren't replaced during refresh
+	initialPoolCount := sdk.sdkClient.resources.GetCapacityPools().Length()
+	initialPoolMapRef := sdk.sdkClient.resources.GetCapacityPools()
+	// Store a specific pool reference to verify it's not replaced
+	cp1FullName := "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP1"
+	initialCP1 := sdk.sdkClient.resources.GetCapacityPools().Get(cp1FullName)
+
+	err := sdk.RefreshGCNVResources(ctx)
+	assert.NoError(t, err, "Should not error when cache is fresh")
+
+	// Verify cache was not refreshed: lastUpdateTime should be unchanged
+	assert.Equal(t, initialUpdateTime, sdk.sdkClient.resources.lastUpdateTime,
+		"lastUpdateTime should not change when cache is fresh")
+
+	// Verify capacity pool map was not modified (same map reference and count)
+	assert.Equal(t, initialPoolCount, sdk.sdkClient.resources.GetCapacityPools().Length(),
+		"Capacity pool map should not be refreshed when cache is fresh")
+	assert.Equal(t, initialPoolMapRef, sdk.sdkClient.resources.GetCapacityPools(),
+		"Capacity pool map reference should not change when cache is fresh")
+
+	// Verify specific pool object is unchanged (not replaced)
+	if initialCP1 != nil {
+		cp1After := sdk.sdkClient.resources.GetCapacityPools().Get(cp1FullName)
+		assert.Equal(t, initialCP1, cp1After,
+			"Capacity pool object should not be replaced when cache is fresh")
+	}
+}
+
 func TestCapacityPoolsForStoragePool(t *testing.T) {
 	sdk := getFakeSDK()
 	CP1 := sdk.capacityPool("CP1")
@@ -381,7 +448,7 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 		sPool.InternalAttributes()[network] = test.network
 		sPool.InternalAttributes()[capacityPools] = test.capacityPools
 
-		cPools := sdk.CapacityPoolsForStoragePool(context.TODO(), sPool, test.serviceLevel)
+		cPools := sdk.CapacityPoolsForStoragePool(context.TODO(), sPool, test.serviceLevel, "")
 
 		assert.ElementsMatch(t, test.expected, cPools, "Did not get expected capacity pools for storage pools")
 	}
@@ -425,4 +492,223 @@ func TestDumpGCNVResources(t *testing.T) {
 
 	driverName := sdk.config.StorageDriverName
 	sdk.dumpGCNVResources(ctx, driverName, discoveryTraceEnabled)
+}
+
+// Auto-Tiering Discovery Tests
+
+func TestCapacityPoolDiscovery_AutoTieringEnabled(t *testing.T) {
+	sdk := getFakeSDK()
+
+	// Create a capacity pool with auto-tiering enabled
+	cpWithAutoTiering := &CapacityPool{
+		Name:            "CP_AutoTier",
+		FullName:        "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP_AutoTier",
+		Location:        Location,
+		ServiceLevel:    ServiceLevelPremium,
+		State:           StateReady,
+		NetworkName:     NetworkName,
+		NetworkFullName: NetworkFullName,
+		AutoTiering:     true,
+	}
+	addCapacityPool(sdk, cpWithAutoTiering)
+
+	// Verify the capacity pool has auto-tiering enabled
+	discoveredPool := sdk.capacityPool("CP_AutoTier")
+	assert.NotNil(t, discoveredPool, "capacity pool should be discovered")
+	assert.True(t, discoveredPool.AutoTiering, "auto-tiering should be enabled")
+}
+
+func TestCapacityPoolDiscovery_AutoTieringDisabled(t *testing.T) {
+	sdk := getFakeSDK()
+
+	// Create a capacity pool with auto-tiering disabled
+	cpWithoutAutoTiering := &CapacityPool{
+		Name:            "CP_NoAutoTier",
+		FullName:        "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP_NoAutoTier",
+		Location:        Location,
+		ServiceLevel:    ServiceLevelStandard,
+		State:           StateReady,
+		NetworkName:     NetworkName,
+		NetworkFullName: NetworkFullName,
+		AutoTiering:     false,
+	}
+	addCapacityPool(sdk, cpWithoutAutoTiering)
+
+	// Verify the capacity pool has auto-tiering disabled
+	discoveredPool := sdk.capacityPool("CP_NoAutoTier")
+	assert.NotNil(t, discoveredPool, "capacity pool should be discovered")
+	assert.False(t, discoveredPool.AutoTiering, "auto-tiering should be disabled")
+}
+
+func TestCapacityPoolDiscovery_MixedAutoTiering(t *testing.T) {
+	sdk := getFakeSDK()
+
+	// Create capacity pools with mixed auto-tiering capabilities
+	cpWithAutoTiering := &CapacityPool{
+		Name:            "CP_WithAutoTier",
+		FullName:        "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP_WithAutoTier",
+		Location:        Location,
+		ServiceLevel:    ServiceLevelPremium,
+		State:           StateReady,
+		NetworkName:     NetworkName,
+		NetworkFullName: NetworkFullName,
+		AutoTiering:     true,
+	}
+	cpWithoutAutoTiering := &CapacityPool{
+		Name:            "CP_WithoutAutoTier",
+		FullName:        "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP_WithoutAutoTier",
+		Location:        Location,
+		ServiceLevel:    ServiceLevelStandard,
+		State:           StateReady,
+		NetworkName:     NetworkName,
+		NetworkFullName: NetworkFullName,
+		AutoTiering:     false,
+	}
+
+	addCapacityPool(sdk, cpWithAutoTiering)
+	addCapacityPool(sdk, cpWithoutAutoTiering)
+
+	// Verify both pools are discovered with correct auto-tiering settings
+	poolWithAutoTier := sdk.capacityPool("CP_WithAutoTier")
+	assert.NotNil(t, poolWithAutoTier, "capacity pool with auto-tiering should be discovered")
+	assert.True(t, poolWithAutoTier.AutoTiering, "auto-tiering should be enabled")
+
+	poolWithoutAutoTier := sdk.capacityPool("CP_WithoutAutoTier")
+	assert.NotNil(t, poolWithoutAutoTier, "capacity pool without auto-tiering should be discovered")
+	assert.False(t, poolWithoutAutoTier.AutoTiering, "auto-tiering should be disabled")
+}
+
+func TestCapacityPoolDiscovery_DefaultAutoTieringFalse(t *testing.T) {
+	sdk := getFakeSDK()
+
+	// Verify existing capacity pools have auto-tiering set to false by default
+	// (since they were created without the AutoTiering field in getFakeSDK)
+	cp1 := sdk.capacityPool("CP1")
+	assert.NotNil(t, cp1, "CP1 should exist")
+	assert.False(t, cp1.AutoTiering, "auto-tiering should default to false")
+
+	cp2 := sdk.capacityPool("CP2")
+	assert.NotNil(t, cp2, "CP2 should exist")
+	assert.False(t, cp2.AutoTiering, "auto-tiering should default to false")
+}
+
+// Capacity Pool Filtering with Auto-Tiering Tests
+
+func TestCapacityPoolsForStoragePool_WithAutoTiering(t *testing.T) {
+	sdk := getFakeSDK()
+
+	// Add capacity pools with auto-tiering enabled
+	cpAutoTier1 := &CapacityPool{
+		Name:            "CP_AutoTier1",
+		FullName:        "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP_AutoTier1",
+		Location:        Location,
+		ServiceLevel:    ServiceLevelPremium,
+		State:           StateReady,
+		NetworkName:     NetworkName,
+		NetworkFullName: NetworkFullName,
+		AutoTiering:     true,
+	}
+	cpAutoTier2 := &CapacityPool{
+		Name:            "CP_AutoTier2",
+		FullName:        "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP_AutoTier2",
+		Location:        Location,
+		ServiceLevel:    ServiceLevelStandard,
+		State:           StateReady,
+		NetworkName:     NetworkName,
+		NetworkFullName: NetworkFullName,
+		AutoTiering:     true,
+	}
+
+	addCapacityPool(sdk, cpAutoTier1)
+	addCapacityPool(sdk, cpAutoTier2)
+
+	// Create storage pool that references auto-tiering capacity pools
+	sPool := storage.NewStoragePool(nil, "testPool")
+	sPool.InternalAttributes()[capacityPools] = "CP_AutoTier1,CP_AutoTier2"
+
+	// Get capacity pools for storage pool
+	cPools := sdk.CapacityPoolsForStoragePool(ctx, sPool, "", "")
+
+	// Verify both pools are returned
+	assert.Equal(t, 2, len(cPools), "expected 2 capacity pools")
+
+	// Verify both have auto-tiering enabled
+	for _, cPool := range cPools {
+		assert.True(t, cPool.AutoTiering, "capacity pool should have auto-tiering enabled")
+	}
+}
+
+func TestCapacityPoolsForStoragePool_FilterByServiceLevelWithAutoTiering(t *testing.T) {
+	sdk := getFakeSDK()
+
+	// Clear existing capacity pools from getFakeSDK to have a clean slate
+	clearCapacityPools(sdk)
+
+	// Add capacity pools with different service levels and auto-tiering
+	cpPremium := &CapacityPool{
+		Name:            "CP_Premium_AutoTier",
+		FullName:        "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP_Premium_AutoTier",
+		Location:        Location,
+		ServiceLevel:    ServiceLevelPremium,
+		State:           StateReady,
+		NetworkName:     NetworkName,
+		NetworkFullName: NetworkFullName,
+		AutoTiering:     true,
+	}
+	cpStandard := &CapacityPool{
+		Name:            "CP_Standard_AutoTier",
+		FullName:        "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP_Standard_AutoTier",
+		Location:        Location,
+		ServiceLevel:    ServiceLevelStandard,
+		State:           StateReady,
+		NetworkName:     NetworkName,
+		NetworkFullName: NetworkFullName,
+		AutoTiering:     true,
+	}
+
+	addCapacityPool(sdk, cpPremium)
+	addCapacityPool(sdk, cpStandard)
+
+	// Create storage pool without specific capacity pool filter
+	sPool := storage.NewStoragePool(nil, "testPool")
+	sPool.InternalAttributes()[network] = NetworkName
+
+	// Filter by Premium service level
+	cPools := sdk.CapacityPoolsForStoragePool(ctx, sPool, ServiceLevelPremium, "")
+
+	// Should only get Premium pool with auto-tiering
+	assert.Equal(t, 1, len(cPools), "expected 1 Premium capacity pool")
+	assert.Equal(t, "CP_Premium_AutoTier", cPools[0].Name, "expected Premium pool")
+	assert.True(t, cPools[0].AutoTiering, "Premium pool should have auto-tiering enabled")
+}
+
+func TestCapacityPools_ReturnsAllWithAutoTiering(t *testing.T) {
+	sdk := getFakeSDK()
+
+	// Add a capacity pool with auto-tiering
+	cpAutoTier := &CapacityPool{
+		Name:            "CP_AutoTier",
+		FullName:        "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP_AutoTier",
+		Location:        Location,
+		ServiceLevel:    ServiceLevelPremium,
+		State:           StateReady,
+		NetworkName:     NetworkName,
+		NetworkFullName: NetworkFullName,
+		AutoTiering:     true,
+	}
+	addCapacityPool(sdk, cpAutoTier)
+
+	// Get all capacity pools
+	allPools := sdk.CapacityPools()
+
+	// Should include the new pool with auto-tiering
+	found := false
+	for _, pool := range *allPools {
+		if pool.Name == "CP_AutoTier" {
+			found = true
+			assert.True(t, pool.AutoTiering, "pool should have auto-tiering enabled")
+			break
+		}
+	}
+	assert.True(t, found, "auto-tiering pool should be in the list")
 }
