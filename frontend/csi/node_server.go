@@ -76,6 +76,9 @@ const (
 	maxNodeStageFCPVolumeOperations     = 5
 	maxNodeUnstageFCPVolumeOperations   = 10
 	maxNodePublishFCPVolumeOperations   = 10
+	maxNodeStageNVMeVolumeOperations    = 5
+	maxNodeUnstageNVMeVolumeOperations  = 10
+	maxNodePublishNVMeVolumeOperations  = 10
 	maxNodeExpandVolumeOperations       = 10
 
 	NodeStageNFSVolume   = "NodeStageNFSVolume"
@@ -95,11 +98,19 @@ const (
 	NodeUnstageFCPVolume = "NodeUnstageFCPVolume"
 	NodePublishFCPVolume = "NodePublishFCPVolume"
 
+	// NVMe Constants
+	NodeStageNVMeVolume   = "NodeStageNVMeVolume"
+	NodeUnstageNVMeVolume = "NodeUnstageNVMeVolume"
+	NodePublishNVMeVolume = "NodePublishNVMeVolume"
+
 	NodeUnpublishVolume = "NodeUnpublishVolume"
 	NodeExpandVolume    = "NodeExpandVolume"
 
-	// LockID Constant for the self-healing global lock.
+	// LockID Constants for the self-healing global locks.
 	iSCSISelfHealingSessionLock = "iSCSISelfHealingSessionLock"
+	nvmeSelfHealingSessionLock  = "nvmeSelfHealingSessionLock"
+	nvmeSubsystemDisconnectLock = "nvmeSubsystemDisconnectLock"
+	nvmeFlushRetryMapLock       = "nvmeFlushRetryMapLock"
 )
 
 var (
@@ -128,6 +139,10 @@ var (
 	// TODO(pshashan): Once the locks package revamp PR is merged, remove both  of these var below.
 	iSCSISelfHealingLock           = sync.RWMutex{}
 	iSCSINodeOperationWaitingCount atomic.Int32
+
+	// NVMe Self-healing lock and counter for parallelism
+	nvmeSelfHealingLock           = sync.RWMutex{}
+	nvmeNodeOperationWaitingCount atomic.Int32
 )
 
 const (
@@ -571,21 +586,9 @@ func (p *Plugin) NodeExpandVolume(
 	}
 
 	{
-		// TODO(pshashan): Remove this POC once the NVMe protocol is parallelized.
-		// It currently enables parallelization for the iSCSI and FCP protocol while keeping NVMe serialized.
-		protocol, err := getVolumeProtocolFromPublishInfo(&trackingInfo.VolumePublishInfo)
-		if err != nil {
-			return nil, status.Errorf(codes.FailedPrecondition, "unable to read protocol info from publish info; %s", err)
-		}
+		// All protocols (iSCSI, FCP, NVMe) now use limiter-based parallelism
 		lockID := req.GetVolumeId()
 		lockContext := "NodeExpandVolume"
-		if protocol == tridentconfig.Block {
-			switch trackingInfo.VolumePublishInfo.SANType {
-			case sa.NVMe:
-				lockID = nodeLockID
-				lockContext = "NodeExpandVolume-" + req.GetVolumeId()
-			}
-		}
 		defer locks.Unlock(ctx, lockContext, lockID)
 		if !attemptLock(ctx, lockContext, lockID, csiNodeLockTimeout) {
 			return nil, status.Error(codes.Aborted, "request waited too long for the lock")
@@ -2969,12 +2972,16 @@ func (p *Plugin) nodeStageNVMeVolume(
 	Logc(ctx).Debug(">>>> nodeStageNVMeVolume")
 	defer Logc(ctx).Debug("<<<< nodeStageNVMeVolume")
 
-	// Serializing all the parallel requests by relying on the constant var.
-	lockContext := "NodeStageSANNVMeVolume-" + req.GetVolumeId()
-	defer locks.Unlock(ctx, lockContext, nodeLockID)
-	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
-		return status.Error(codes.Aborted, "request waited too long for the lock")
+	if err := p.limiterSharedMap[NodeStageNVMeVolume].Wait(ctx); err != nil {
+		return err
 	}
+	defer p.limiterSharedMap[NodeStageNVMeVolume].Release(ctx)
+
+	// Acquire self-healing read lock to allow parallel operations
+	nvmeNodeOperationWaitingCount.Add(1)
+	nvmeSelfHealingLock.RLock()
+	defer nvmeSelfHealingLock.RUnlock()
+	nvmeNodeOperationWaitingCount.Add(-1)
 
 	isLUKS := convert.ToBool(req.PublishContext["LUKSEncryption"])
 	publishInfo.LUKSEncryption = strconv.FormatBool(isLUKS)
@@ -3030,7 +3037,13 @@ func (p *Plugin) nodeStageNVMeVolume(
 		return err
 	}
 
+	lockContext := "nodeStageNVMeVolume.AddSession"
+	if !attemptLock(ctx, lockContext, nvmeSelfHealingSessionLock, csiNodeLockTimeout) {
+		locks.Unlock(ctx, lockContext, nvmeSelfHealingSessionLock)
+		return status.Error(codes.Aborted, "request waited too long for the lock")
+	}
 	p.nvmeHandler.AddPublishedNVMeSession(&publishedNVMeSessions, publishInfo)
+	locks.Unlock(ctx, lockContext, nvmeSelfHealingSessionLock)
 	return nil
 }
 
@@ -3045,15 +3058,25 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 	Logc(ctx).Debug(">>>> nodeUnstageNVMeVolume")
 	defer Logc(ctx).Debug("<<<< nodeUnstageNVMeVolume")
 
-	// Serializing all the parallel requests by relying on the constant var.
-	lockContext := "NodeUnstageNVMeVolume-" + req.GetVolumeId()
-	defer locks.Unlock(ctx, lockContext, nodeLockID)
-	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
+	if err := p.limiterSharedMap[NodeUnstageNVMeVolume].Wait(ctx); err != nil {
+		return nil, err
+	}
+	defer p.limiterSharedMap[NodeUnstageNVMeVolume].Release(ctx)
+
+	// Acquire self-healing read lock to allow parallel operations
+	nvmeNodeOperationWaitingCount.Add(1)
+	nvmeSelfHealingLock.RLock()
+	defer nvmeSelfHealingLock.RUnlock()
+	nvmeNodeOperationWaitingCount.Add(-1)
+
+	lockContext := "nodeUnstageNVMeVolume.RemovePublishedNVMeSession"
+	if !attemptLock(ctx, lockContext, nvmeSelfHealingSessionLock, csiNodeLockTimeout) {
+		locks.Unlock(ctx, lockContext, nvmeSelfHealingSessionLock)
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
 	}
-
 	disconnect := p.nvmeHandler.RemovePublishedNVMeSession(&publishedNVMeSessions, publishInfo.NVMeSubsystemNQN,
 		publishInfo.NVMeNamespaceUUID)
+	locks.Unlock(ctx, lockContext, nvmeSelfHealingSessionLock)
 
 	nvmeSubsys := p.nvmeHandler.NewNVMeSubsystem(ctx, publishInfo.NVMeSubsystemNQN)
 	// Get the device using 'nvme-cli' commands. Flush the device IOs.
@@ -3105,13 +3128,17 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 	if !nvmeDev.IsNil() {
 		// If flush fails, give a grace period of 6 minutes (nvmeMaxFlushWaitDuration) before giving up.
 		if err := nvmeDev.FlushDevice(ctx, p.unsafeDetach, force); err != nil {
+			locks.Lock(ctx, "nodeUnstageNVMeVolume.FlushRetryCheck", nvmeFlushRetryMapLock)
 			if NVMeNamespacesFlushRetry[publishInfo.NVMeNamespaceUUID].IsZero() {
 				NVMeNamespacesFlushRetry[publishInfo.NVMeNamespaceUUID] = time.Now()
+				locks.Unlock(ctx, "nodeUnstageNVMeVolume.FlushRetryCheck", nvmeFlushRetryMapLock)
 				return nil, fmt.Errorf("failed to flush NVMe device; %v", err)
 			}
 
 			// If the max wait time for flush isn't hit yet, fail and let the CSI node agent call again.
 			elapsed := time.Since(NVMeNamespacesFlushRetry[publishInfo.NVMeNamespaceUUID])
+			locks.Unlock(ctx, "nodeUnstageNVMeVolume.FlushRetryCheck", nvmeFlushRetryMapLock)
+
 			if elapsed <= nvmeMaxFlushWaitDuration {
 				Logc(ctx).WithFields(LogFields{
 					"devicePath": devicePath,
@@ -3128,27 +3155,17 @@ func (p *Plugin) nodeUnstageNVMeVolume(
 			}).Warn("Could not flush device within expected time period.")
 		}
 
+		locks.Lock(ctx, "nodeUnstageNVMeVolume.FlushRetryDelete", nvmeFlushRetryMapLock)
 		delete(NVMeNamespacesFlushRetry, publishInfo.NVMeNamespaceUUID)
+		locks.Unlock(ctx, "nodeUnstageNVMeVolume.FlushRetryDelete", nvmeFlushRetryMapLock)
 	}
 
-	// Get the number of namespaces associated with the subsystem
-	numNs, err := nvmeSubsys.GetNamespaceCount(ctx)
-	if err != nil {
-		Logc(ctx).WithField(
-			"subsystem", publishInfo.NVMeSubsystemNQN,
-		).WithError(err).Debug("Error getting Namespace count.")
+	// Disconnect the subsystem if needed (handled under lock to prevent race conditions)
+	if err := p.disconnectNVMeSubsystemIfNeeded(ctx, nvmeSubsys, publishInfo, disconnect); err != nil {
+		Logc(ctx).WithError(err).Warn("Error during subsystem disconnect check.")
+		// Continue with cleanup even if disconnect fails
 	}
 
-	// If number of namespaces is more than 1, don't disconnect the subsystem. If we get any issues while getting the
-	// number of namespaces through the CLI, we can rely on the disconnect flag from NVMe self-healing sessions (if
-	// NVMe self-healing is enabled), which keeps track of namespaces associated with the subsystem.
-	if (err == nil && numNs <= 1) || (p.nvmeSelfHealingInterval > 0 && err != nil && disconnect) {
-		if err := nvmeSubsys.Disconnect(ctx); err != nil {
-			Logc(ctx).WithField(
-				"subsystem", publishInfo.NVMeSubsystemNQN,
-			).WithError(err).Debug("Error disconnecting subsystem.")
-		}
-	}
 	if err := afterNvmeDisconnect.Inject(); err != nil {
 		return nil, err
 	}
@@ -3195,12 +3212,10 @@ func (p *Plugin) nodePublishNVMeVolume(
 	Logc(ctx).Debug(">>>> nodePublishNVMeVolume")
 	defer Logc(ctx).Debug("<<<< nodePublishNVMeVolume")
 
-	// Serializing all the parallel requests by relying on the constant var.
-	lockContext := "NodePublishNVMeVolume-" + req.GetVolumeId()
-	defer locks.Unlock(ctx, lockContext, nodeLockID)
-	if !attemptLock(ctx, lockContext, nodeLockID, csiNodeLockTimeout) {
-		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
+	if err := p.limiterSharedMap[NodePublishNVMeVolume].Wait(ctx); err != nil {
+		return nil, err
 	}
+	defer p.limiterSharedMap[NodePublishNVMeVolume].Release(ctx)
 
 	var err error
 
@@ -3319,8 +3334,15 @@ func (p *Plugin) nodeStageSANVolume(
 // performNVMeSelfHealing inspects the desired state of the NVMe sessions with the current state and accordingly
 // identifies candidate sessions that require remediation. This function is invoked periodically.
 func (p *Plugin) performNVMeSelfHealing(ctx context.Context) {
-	locks.Lock(ctx, nvmeSelfHealingLockContext, nodeLockID)
-	defer locks.Unlock(ctx, nvmeSelfHealingLockContext, nodeLockID)
+	nvmeSelfHealingLock.Lock()
+	defer nvmeSelfHealingLock.Unlock()
+
+	lockContext := "performNVMeSelfHealing.SessionLock"
+	defer locks.Unlock(ctx, lockContext, nvmeSelfHealingSessionLock)
+	if !attemptLock(ctx, lockContext, nvmeSelfHealingSessionLock, csiNodeLockTimeout) {
+		Logc(ctx).WithError(fmt.Errorf("request waited too long for the lock"))
+		return
+	}
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -3367,13 +3389,52 @@ func (p *Plugin) fixNVMeSessions(ctx context.Context, stopAt time.Time, subsyste
 		}
 
 		// 1. We should fix at least one subsystem in a single self-healing thread.
-		// 2. If there's another thread waiting for the node lock and if we have exceeded our 60 secs lock, we should
+		// 2. If there's another thread waiting and if we have exceeded our 60 secs lock, we should
 		//    stop NVMe self-healing.
-		if index > 0 && locks.WaitQueueSize(nodeLockID) > 0 && time.Now().After(stopAt) {
+		if index > 0 && nvmeNodeOperationWaitingCount.Load() > 0 && time.Now().After(stopAt) {
 			Logc(ctx).Info("Self-healing has exceeded maximum runtime; preempting NVMe session self-healing.")
 			break
 		}
 
 		p.nvmeHandler.RectifyNVMeSession(ctx, sub, &publishedNVMeSessions)
 	}
+}
+
+// disconnectNVMeSubsystemIfNeeded checks if the subsystem should be disconnected and performs the disconnect
+// operation under lock to prevent race conditions with concurrent unstage operations.
+// This lock serializes GetNamespaceCount() and Disconnect() operations to ensure accurate namespace counting
+// and prevent race conditions where multiple threads might see the same count simultaneously.
+func (p *Plugin) disconnectNVMeSubsystemIfNeeded(
+	ctx context.Context, nvmeSubsys nvme.NVMeSubsystemInterface, publishInfo *models.VolumePublishInfo, disconnect bool,
+) error {
+	// Acquire lock specific to disconnect operations to serialize GetNamespaceCount and Disconnect calls.
+	// This prevents race conditions where multiple concurrent unstage operations might read the same
+	// namespace count and make incorrect disconnect decisions.
+	lockContext := "disconnectNVMeSubsystemIfNeeded"
+	if !attemptLock(ctx, lockContext, nvmeSubsystemDisconnectLock, csiNodeLockTimeout) {
+		locks.Unlock(ctx, lockContext, nvmeSubsystemDisconnectLock)
+		return status.Error(codes.Aborted, "request waited too long for the lock")
+	}
+	defer locks.Unlock(ctx, lockContext, nvmeSubsystemDisconnectLock)
+
+	// Get the number of namespaces associated with the subsystem (inside lock to avoid race conditions)
+	numNs, err := nvmeSubsys.GetNamespaceCount(ctx)
+	if err != nil {
+		Logc(ctx).WithField(
+			"subsystem", publishInfo.NVMeSubsystemNQN,
+		).WithError(err).Debug("Error getting Namespace count.")
+	}
+
+	// If number of namespaces is more than 1, don't disconnect the subsystem. If we get any issues while getting the
+	// number of namespaces through the CLI, we can rely on the disconnect flag from NVMe self-healing sessions (if
+	// NVMe self-healing is enabled), which keeps track of namespaces associated with the subsystem.
+	if (err == nil && numNs <= 1) || (p.nvmeSelfHealingInterval > 0 && err != nil && disconnect) {
+		if err := nvmeSubsys.Disconnect(ctx); err != nil {
+			Logc(ctx).WithField(
+				"subsystem", publishInfo.NVMeSubsystemNQN,
+			).WithError(err).Debug("Error disconnecting subsystem.")
+			return err
+		}
+	}
+	return nil
 }

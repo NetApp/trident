@@ -2847,9 +2847,14 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 
 	// Test4:
 	// Mixing SAN and NAS requests
-	t.Run("Test Case 4: Mixing SAN and NAS requests and waiting for both of them to succeed", func(t *testing.T) {
-		numOfRequestsNAS := 50
-		numOfRequestsSAN := 50
+	t.Run("Test Case 4: Mixing SAN (iSCSI+NVMe) and NAS requests and waiting for all to succeed", func(t *testing.T) {
+		if runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
+			t.Skip("Skipping NVMe tests on Darwin/Windows as NVMe is not supported on these platforms")
+		}
+
+		numOfRequestsNAS := 34
+		numOfRequestsISCSI := 33
+		numOfRequestsNVMe := 33
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
@@ -2857,12 +2862,14 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
 		NASrequests := make([]*csi.NodeStageVolumeRequest, numOfRequestsNAS)
-		SANrequests := make([]*csi.NodeStageVolumeRequest, numOfRequestsSAN)
+		ISCSIrequests := make([]*csi.NodeStageVolumeRequest, numOfRequestsISCSI)
+		NVMerequests, _ := createNVMeStageRequests(numOfRequestsNVMe)
+
 		for i := 0; i < numOfRequestsNAS; i++ {
 			NASrequests[i] = NewNodeStageVolumeRequestBuilder(TypeNFSRequest).Build()
 		}
-		for i := 0; i < numOfRequestsSAN; i++ {
-			SANrequests[i] = NewNodeStageVolumeRequestBuilder(TypeiSCSIRequest).WithVolumeID(uuid.NewString()).Build()
+		for i := 0; i < numOfRequestsISCSI; i++ {
+			ISCSIrequests[i] = NewNodeStageVolumeRequestBuilder(TypeiSCSIRequest).WithVolumeID(uuid.NewString()).Build()
 		}
 
 		csiNodeLockTimeout = 1 * time.Second
@@ -2872,6 +2879,7 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 		mockMount := mock_mount.NewMockMount(ctrl)
 		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
 		mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
+		mockNVMeClient := mock_nvme.NewMockNVMeInterface(ctrl)
 		mountClient, _ := mount.New()
 
 		for i := 0; i < numOfRequestsNAS; i++ {
@@ -2880,14 +2888,23 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 		}
 
-		for i := 0; i < numOfRequestsSAN; i++ {
-			// Setting up mocks expectation for SAN request.
+		for i := 0; i < numOfRequestsISCSI; i++ {
+			// Setting up mocks expectation for iSCSI request.
 			mockISCSIClient.EXPECT().AttachVolumeRetry(
 				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 			).Return(int64(1), nil)
 			mockISCSIClient.EXPECT().ResizeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
+		}
+
+		for i := 0; i < numOfRequestsNVMe; i++ {
+			// Setting up mocks expectation for NVMe request.
+			mockNVMeClient.EXPECT().AttachNVMeVolumeRetry(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(nil)
+			mockNVMeClient.EXPECT().AddPublishedNVMeSession(gomock.Any(), gomock.Any())
+			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 		}
 
 		// Creating a node plugin.
@@ -2898,13 +2915,14 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 			mount:            mockMount,
 			nodeHelper:       mockTrackingClient,
 			iscsi:            mockISCSIClient,
+			nvmeHandler:      mockNVMeClient,
 			fs:               filesystem.New(mountClient),
 		}
 
 		plugin.InitializeNodeLimiter(ctx)
 
 		var wg sync.WaitGroup
-		wg.Add(numOfRequestsNAS + numOfRequestsSAN)
+		wg.Add(numOfRequestsNAS + numOfRequestsISCSI + numOfRequestsNVMe)
 
 		// Spinning up go-routine for the NAS requests.
 		for i := 0; i < numOfRequestsNAS; i++ {
@@ -2914,13 +2932,21 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 				assert.NoError(t, err)
 			}()
 		}
-		// Spinning up go-routine for the SAN requests.
-		for i := 0; i < numOfRequestsSAN; i++ {
+		// Spinning up go-routine for the iSCSI requests.
+		for i := 0; i < numOfRequestsISCSI; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := plugin.NodeStageVolume(context.Background(), SANrequests[i])
+				_, err := plugin.NodeStageVolume(context.Background(), ISCSIrequests[i])
 				assert.NoError(t, err)
 			}()
+		}
+		// Spinning up go-routine for the NVMe requests.
+		for i := 0; i < numOfRequestsNVMe; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				_, err := plugin.NodeStageVolume(context.Background(), NVMerequests[idx])
+				assert.NoError(t, err)
+			}(i)
 		}
 
 		wg.Wait()
@@ -3589,6 +3615,7 @@ func TestNodeStageSMBVolume_Multithreaded(t *testing.T) {
 
 		wg.Wait()
 	})
+
 }
 
 func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
@@ -3805,10 +3832,15 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 	})
 
 	// Test4:
-	// Mixing SAN and NAS requests
-	t.Run("Test Case 4: Mixing SAN and NAS requests and waiting for both of them to succeed", func(t *testing.T) {
-		numOfRequestsNAS := 50
-		numOfRequestsSAN := 50
+	// Mixing SAN (iSCSI+NVMe) and NAS requests
+	t.Run("Test Case 4: Mixing SAN (iSCSI+NVMe) and NAS requests and waiting for all to succeed", func(t *testing.T) {
+		if runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
+			t.Skip("Skipping NVMe tests on Darwin/Windows as NVMe is not supported on these platforms")
+		}
+
+		numOfRequestsNAS := 34
+		numOfRequestsISCSI := 33
+		numOfRequestsNVMe := 33
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
@@ -3816,23 +3848,27 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
 		NASrequests := make([]*csi.NodeUnstageVolumeRequest, numOfRequestsNAS)
-		SANrequests := make([]*csi.NodeUnstageVolumeRequest, numOfRequestsSAN)
+		ISCSIrequests := make([]*csi.NodeUnstageVolumeRequest, numOfRequestsISCSI)
+		NVMerequests, publishInfosNVMe := createNVMeUnstageRequests(numOfRequestsNVMe)
 
 		for i := 0; i < numOfRequestsNAS; i++ {
 			NASrequests[i] = NewNodeUnstageVolumeRequestBuilder().Build()
 		}
-		for i := 0; i < numOfRequestsSAN; i++ {
-			SANrequests[i] = NewNodeUnstageVolumeRequestBuilder().Build()
+		for i := 0; i < numOfRequestsISCSI; i++ {
+			ISCSIrequests[i] = NewNodeUnstageVolumeRequestBuilder().Build()
 		}
 
 		csiNodeLockTimeout = 1 * time.Second
 
 		mockTrackingClientNAS := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
-		mockTrackingClientSAN := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+		mockTrackingClientISCSI := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+		mockTrackingClientNVMe := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
 		mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+		mockNVMeClient := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
 		mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
 		mockMountClient := mock_mount.NewMockMount(gomock.NewController(t))
 		mockIscsiReconcileUtilsClient := mock_iscsi.NewMockIscsiReconcileUtils(gomock.NewController(t))
+		mountClient, _ := mount.New()
 
 		for i := 0; i < numOfRequestsNAS; i++ {
 			// Setting up mocks expectation for NAS request.
@@ -3843,8 +3879,8 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 			mockTrackingClientNAS.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).Return(nil)
 		}
 
-		for i := 0; i < numOfRequestsSAN; i++ {
-			// Setting up mocks expectation for SAN request.
+		for i := 0; i < numOfRequestsISCSI; i++ {
+			// Setting up mocks expectation for iSCSI request.
 			mockDevicePath := "/dev/mapper/mock-device"
 			mockDevice := &models.ScsiDeviceInfo{MultipathDevice: mockDevicePath}
 
@@ -3863,11 +3899,23 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 			mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
 			mockIscsiReconcileUtilsClient.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(),
 				gomock.Any()).Return(map[int]int{6: 3})
-			sanVolumeTrackingInfo := &models.VolumeTrackingInfo{
+			iscsiVolumeTrackingInfo := &models.VolumeTrackingInfo{
 				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).Build(),
 			}
-			mockTrackingClientSAN.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(sanVolumeTrackingInfo, nil)
-			mockTrackingClientSAN.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).Return(nil)
+			mockTrackingClientISCSI.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(iscsiVolumeTrackingInfo, nil)
+			mockTrackingClientISCSI.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).Return(nil)
+		}
+
+		for i := 0; i < numOfRequestsNVMe; i++ {
+			// Setting up mocks expectation for NVMe request.
+			mockNVMeClient.EXPECT().RemovePublishedNVMeSession(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
+			mockNVMeClient.EXPECT().NewNVMeSubsystem(gomock.Any(), gomock.Any()).Return(nvme.NewNVMeSubsystem("", execCmd.NewCommand(), afero.NewMemMapFs()))
+			mockMountClient.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+			nvmeVolumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: *publishInfosNVMe[i],
+			}
+			mockTrackingClientNVMe.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(nvmeVolumeTrackingInfo, nil)
+			mockTrackingClientNVMe.EXPECT().DeleteTrackingInfo(gomock.Any(), NVMerequests[i].VolumeId).Return(nil)
 		}
 
 		// Creating a NAS node plugin.
@@ -3881,21 +3929,33 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 
 		pluginNAS.InitializeNodeLimiter(ctx)
 
-		// Creating a SAN node plugin.
-		pluginSAN := &Plugin{
+		// Creating an iSCSI node plugin.
+		pluginISCSI := &Plugin{
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
-			nodeHelper:       mockTrackingClientSAN,
+			nodeHelper:       mockTrackingClientISCSI,
 			iscsi:            mockISCSIClient,
 			devices:          mockDeviceClient,
 			mount:            mockMountClient,
 		}
 
-		pluginSAN.InitializeNodeLimiter(ctx)
+		pluginISCSI.InitializeNodeLimiter(ctx)
 		iscsiUtils = mockIscsiReconcileUtilsClient
 
+		// Creating an NVMe node plugin.
+		pluginNVMe := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			nodeHelper:       mockTrackingClientNVMe,
+			nvmeHandler:      mockNVMeClient,
+			mount:            mockMountClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		pluginNVMe.InitializeNodeLimiter(ctx)
+
 		var wg sync.WaitGroup
-		wg.Add(numOfRequestsNAS + numOfRequestsSAN)
+		wg.Add(numOfRequestsNAS + numOfRequestsISCSI + numOfRequestsNVMe)
 
 		for i := 0; i < numOfRequestsNAS; i++ {
 			go func() {
@@ -3905,12 +3965,20 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 			}()
 		}
 
-		for i := 0; i < numOfRequestsSAN; i++ {
+		for i := 0; i < numOfRequestsISCSI; i++ {
 			go func() {
 				defer wg.Done()
-				_, err := pluginSAN.NodeUnstageVolume(context.Background(), SANrequests[i])
+				_, err := pluginISCSI.NodeUnstageVolume(context.Background(), ISCSIrequests[i])
 				assert.NoError(t, err)
 			}()
+		}
+
+		for i := 0; i < numOfRequestsNVMe; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				_, err := pluginNVMe.NodeUnstageVolume(context.Background(), NVMerequests[idx])
+				assert.NoError(t, err)
+			}(i)
 		}
 
 		wg.Wait()
@@ -4594,6 +4662,7 @@ func TestNodeUnstageSMBVolume_Multithreaded(t *testing.T) {
 
 		wg.Wait()
 	})
+
 }
 
 func TestNodePublishVolume_Multithreaded(t *testing.T) {
@@ -4885,51 +4954,76 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 	})
 
 	// Test 5:
-	// Mixing nfs and san requests
-	t.Run("Test Case 5: Mixing NFS and SAN requests and waiting for both of them to succeed", func(t *testing.T) {
-		numOfRequests := 50
+	// Mixing NFS and SAN (iSCSI+NVMe) requests
+	t.Run("Test Case 5: Mixing NFS and SAN (iSCSI+NVMe) requests and waiting for all to succeed", func(t *testing.T) {
+		if runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
+			t.Skip("Skipping NVMe tests on Darwin/Windows as NVMe is not supported on these platforms")
+		}
+
+		numOfRequestsNFS := 34
+		numOfRequestsISCSI := 33
+		numOfRequestsNVMe := 33
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
 			csiKubeletTimeout = csiKubeletTimeoutTemp
 		}(csiNodeLockTimeout, csiKubeletTimeout)
 
-		NFSrequests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
-		ISCSIrequests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
-		for i := 0; i < numOfRequests; i++ {
+		NFSrequests := make([]*csi.NodePublishVolumeRequest, numOfRequestsNFS)
+		ISCSIrequests := make([]*csi.NodePublishVolumeRequest, numOfRequestsISCSI)
+		NVMerequests := createNVMePublishRequests(numOfRequestsNVMe, false)
+
+		for i := 0; i < numOfRequestsNFS; i++ {
 			NFSrequests[i] = NewNodePublishVolumeRequestBuilder(NFSNodePublishVolumeRequestType).Build()
+		}
+		for i := 0; i < numOfRequestsISCSI; i++ {
 			ISCSIrequests[i] = NewNodePublishVolumeRequestBuilder(iSCSINodePublishVolumeRequestType).Build()
 		}
 
 		csiNodeLockTimeout = 500 * time.Millisecond
 
 		mockMount := mock_mount.NewMockMount(gomock.NewController(t))
-		// Need two mockTrackingClient because of conflicting ReadTrackingInfo function call.
+		// Need separate mockTrackingClient for each protocol because of conflicting ReadTrackingInfo function calls.
 		mockTrackingClientNFS := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
 		mockFilesystem := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
 		mockISCSINodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
 		mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
+		mockNVMeNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+		mockNVMeClient := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
 		mountClient, _ := mount.New()
 
-		for i := 0; i < numOfRequests; i++ {
+		for i := 0; i < numOfRequestsNFS; i++ {
 			nfsVolumeTrackingInfo := &models.VolumeTrackingInfo{
 				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNFSVolumePublishInfo).Build(),
 			}
-			iscsiVolumeTrackingInfo := &models.VolumeTrackingInfo{
-				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).Build(),
-			}
-
-			// Setting up mocks expectation for NAS request.
+			// Setting up mocks expectation for NFS request.
 			mockTrackingClientNFS.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(nfsVolumeTrackingInfo, nil)
 			mockTrackingClientNFS.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(nfsVolumeTrackingInfo, nil)
 			mockMount.EXPECT().IsLikelyNotMountPoint(gomock.Any(), gomock.Any()).Return(true, nil)
 			mockMount.EXPECT().AttachNFSVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockTrackingClientNFS.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		}
 
-			// Setting up mocks expectation for SAN request.
+		for i := 0; i < numOfRequestsISCSI; i++ {
+			iscsiVolumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeiSCSIVolumePublishInfo).Build(),
+			}
+			// Setting up mocks expectation for iSCSI request.
 			mockISCSINodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(iscsiVolumeTrackingInfo, nil)
 			mockMount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Eq(false)).Return(nil)
 			mockISCSINodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		}
+
+		for i := 0; i < numOfRequestsNVMe; i++ {
+			nvmeVolumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNVMeVolumePublishInfo).
+					WithDevicePath("/dev/nvme0n1").
+					Build(),
+			}
+			// Setting up mocks expectation for NVMe request.
+			mockNVMeNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(nvmeVolumeTrackingInfo, nil)
+			mockMount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Eq(false)).Return(nil)
+			mockNVMeNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 		}
 
 		// Creating an NFS node plugin.
@@ -4943,7 +5037,7 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 
 		pluginNFS.InitializeNodeLimiter(ctx)
 
-		// Creating an ISCSI node plugin.
+		// Creating an iSCSI node plugin.
 		pluginISCSI := &Plugin{
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
@@ -4955,11 +5049,23 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 
 		pluginISCSI.InitializeNodeLimiter(ctx)
 
+		// Creating an NVMe node plugin.
+		pluginNVMe := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockNVMeNodeHelper,
+			nvmeHandler:      mockNVMeClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		pluginNVMe.InitializeNodeLimiter(ctx)
+
 		var wg sync.WaitGroup
-		wg.Add(numOfRequests * 2)
+		wg.Add(numOfRequestsNFS + numOfRequestsISCSI + numOfRequestsNVMe)
 
 		// Spinning up go-routine for NFS requests.
-		for i := 0; i < numOfRequests; i++ {
+		for i := 0; i < numOfRequestsNFS; i++ {
 			go func() {
 				defer wg.Done()
 				_, err := pluginNFS.NodePublishVolume(context.Background(), NFSrequests[i])
@@ -4967,13 +5073,22 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 			}()
 		}
 
-		// Spinning up go-routine for SMB requests.
-		for i := 0; i < numOfRequests; i++ {
+		// Spinning up go-routine for iSCSI requests.
+		for i := 0; i < numOfRequestsISCSI; i++ {
 			go func() {
 				defer wg.Done()
 				_, err := pluginISCSI.NodePublishVolume(context.Background(), ISCSIrequests[i])
 				assert.NoError(t, err)
 			}()
+		}
+
+		// Spinning up go-routine for NVMe requests.
+		for i := 0; i < numOfRequestsNVMe; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				_, err := pluginNVMe.NodePublishVolume(context.Background(), NVMerequests[idx])
+				assert.NoError(t, err)
+			}(i)
 		}
 
 		wg.Wait()
@@ -5548,6 +5663,7 @@ func TestNodePublishSMBVolume_Multithreaded(t *testing.T) {
 
 		wg.Wait()
 	})
+
 }
 
 func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
@@ -7145,6 +7261,151 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		}
 		wg.Wait()
 	})
+
+	t.Run("Test Case 5: Testing with NVMe requests", func(t *testing.T) {
+		if runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
+			t.Skip("Skipping NVMe tests on Darwin/Windows as NVMe is not supported on these platforms")
+		}
+
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiNodeLockTimeout = 500 * time.Millisecond
+		csiKubeletTimeout = 500 * time.Millisecond
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockNVMeClient := mock_nvme.NewMockNVMeInterface(ctrl)
+		mountClient, _ := mount.New()
+
+		// ---- NodeStage nodeStageRequests ----
+		nodeStageRequests, publishInfos := createNVMeStageRequests(numOfRequests)
+
+		// Setting up expectations for each request
+		for i := 0; i < numOfRequests; i++ {
+			mockNVMeClient.EXPECT().AttachNVMeVolumeRetry(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(nil)
+			mockNVMeClient.EXPECT().AddPublishedNVMeSession(gomock.Any(), gomock.Any())
+			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		}
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockTrackingClient,
+			nvmeHandler:      mockNVMeClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		// Spinning up go-routines for each request.
+		for i := 0; i < numOfRequests; i++ {
+			go func(index int) {
+				defer wg.Done()
+				_, err := plugin.NodeStageVolume(context.Background(), nodeStageRequests[index])
+				assert.NoError(t, err)
+			}(i)
+		}
+		wg.Wait()
+
+		// ---- Unstaging all those previously staged nodeStageRequests ----
+		nodeUnstageRequests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			// Using the same volumeID as nodeStage requests.
+			nodeUnstageRequests[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(nodeStageRequests[i].VolumeId).Build()
+		}
+
+		// Setting up mocks expectation for each request.
+		for i := 0; i < numOfRequests; i++ {
+			mockNVMeClient.EXPECT().RemovePublishedNVMeSession(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
+			mockNVMeClient.EXPECT().NewNVMeSubsystem(gomock.Any(), gomock.Any()).Return(nvme.NewNVMeSubsystem("", execCmd.NewCommand(), afero.NewMemMapFs()))
+			mockMount.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+
+			volumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: *publishInfos[i],
+			}
+			mockTrackingClient.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(volumeTrackingInfo, nil)
+			mockTrackingClient.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).Return(nil)
+		}
+
+		wg.Add(numOfRequests)
+		volumeIDs := rand.Perm(numOfRequests) // Randomizing the requests.
+		for i := 0; i < numOfRequests; i++ {
+			// Spinning up go-routines for each request.
+			go func(index int) {
+				defer wg.Done()
+				_, err := plugin.NodeUnstageVolume(context.Background(), nodeUnstageRequests[volumeIDs[index]])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		// ---- Parallely creating another batch of 100 nodeStage requests ----
+		nodeStageRequests2, publishInfos2 := createNVMeStageRequests(numOfRequests)
+
+		// Setting up expectations for each request
+		for i := 0; i < numOfRequests; i++ {
+			mockNVMeClient.EXPECT().AttachNVMeVolumeRetry(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(nil)
+			mockNVMeClient.EXPECT().AddPublishedNVMeSession(gomock.Any(), gomock.Any())
+			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		}
+
+		wg.Add(numOfRequests)
+		// Spinning up go-routines for each request.
+		for i := 0; i < numOfRequests; i++ {
+			go func(index int) {
+				defer wg.Done()
+				_, err := plugin.NodeStageVolume(context.Background(), nodeStageRequests2[index])
+				assert.NoError(t, err)
+			}(i)
+		}
+		wg.Wait()
+
+		// ---- Unstaging all those previously staged nodeStageRequests of 2nd batch ----
+		nodeUnstageRequests2 := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
+		for i := 0; i < numOfRequests; i++ {
+			// Using the same volumeID as nodeStage requests.
+			nodeUnstageRequests2[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(nodeStageRequests2[i].VolumeId).Build()
+		}
+
+		// Setting up mocks expectation for each request.
+		for i := 0; i < numOfRequests; i++ {
+			mockNVMeClient.EXPECT().RemovePublishedNVMeSession(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
+			mockNVMeClient.EXPECT().NewNVMeSubsystem(gomock.Any(), gomock.Any()).Return(nvme.NewNVMeSubsystem("", execCmd.NewCommand(), afero.NewMemMapFs()))
+			mockMount.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+
+			volumeTrackingInfo := &models.VolumeTrackingInfo{
+				VolumePublishInfo: *publishInfos2[i],
+			}
+			mockTrackingClient.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(volumeTrackingInfo, nil)
+			mockTrackingClient.EXPECT().DeleteTrackingInfo(gomock.Any(), gomock.Any()).Return(nil)
+		}
+
+		wg.Add(numOfRequests)
+		volumeIDs = rand.Perm(numOfRequests) // Randomizing the requests.
+		for i := 0; i < numOfRequests; i++ {
+			go func(index int) {
+				defer wg.Done()
+				_, err := plugin.NodeUnstageVolume(context.Background(), nodeUnstageRequests2[volumeIDs[index]])
+				assert.NoError(t, err)
+			}(i)
+		}
+		wg.Wait()
+	})
 }
 
 // ------------------------ ISCSI Volume Multithreaded Tests ------------------------
@@ -7953,6 +8214,505 @@ func TestNodePublishISCSIVolume_Multithreaded(t *testing.T) {
 	})
 }
 
+func TestNodeStageNVMeVolume_Multithreaded(t *testing.T) {
+	if runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
+		t.Skip("Skipping NVMe tests on Darwin/Windows as NVMe is not supported on these platforms")
+	}
+
+	// Test 1:
+	// Sending requests within the limit of the limiter
+	t.Run("Test Case 1: Sending requests within the limit of the limiter", func(t *testing.T) {
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		requests, publishInfos := createNVMeStageRequests(numOfRequests)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		defer cancel()
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockNVMeClient := mock_nvme.NewMockNVMeInterface(ctrl)
+
+		// Setting up expectations for each request
+		for i := 0; i < numOfRequests; i++ {
+			mockNVMeClient.EXPECT().AttachNVMeVolumeRetry(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(nil)
+			mockNVMeClient.EXPECT().AddPublishedNVMeSession(gomock.Any(), gomock.Any())
+			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		}
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockTrackingClient,
+			nvmeHandler:      mockNVMeClient,
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		// Modifying the limiter limit
+		plugin.limiterSharedMap[NodeStageNVMeVolume], _ = limiter.New(ctx,
+			NodeStageNVMeVolume,
+			limiter.TypeSemaphoreN,
+			limiter.WithSemaphoreNSize(ctx, numOfRequests),
+		)
+
+		var wg sync.WaitGroup
+		wg.Add(len(requests))
+
+		for i := 0; i < len(requests); i++ {
+			go func(idx int) {
+				defer wg.Done()
+				err := plugin.nodeStageNVMeVolume(ctx, requests[idx], publishInfos[idx])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+
+	// Test 2: Sending more than what can be parallelized
+	t.Run("Test Case 2: Sending more than what can be parallelized", func(t *testing.T) {
+		numOfRequests := 100
+		numOfParallelRequestsAllowed := maxNodeStageNVMeVolumeOperations
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		defer cancel()
+
+		requests, publishInfos := createNVMeStageRequests(numOfRequests)
+
+		signalChan := make(chan struct{}, numOfParallelRequestsAllowed)
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockNVMeClient := mock_nvme.NewMockNVMeInterface(ctrl)
+
+		// Setting up expectations for numOfParallelRequestsAllowed requests
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			mockNVMeClient.EXPECT().AttachNVMeVolumeRetry(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(nil)
+			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, volumeID string, info *models.VolumeTrackingInfo) error {
+				signalChan <- struct{}{}
+				time.Sleep(600 * time.Millisecond)
+				return nil
+			})
+			mockNVMeClient.EXPECT().AddPublishedNVMeSession(gomock.Any(), publishInfos[i]).Return()
+		}
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockTrackingClient,
+			nvmeHandler:      mockNVMeClient,
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		// Spinning up go-routines for the first numOfParallelRequestsAllowed requests
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				err := plugin.nodeStageNVMeVolume(ctx, requests[idx], publishInfos[idx])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		// Waiting for the first numOfParallelRequestsAllowed requests to acquire the limiter
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			<-signalChan
+		}
+
+		// Spinning up the rest of the requests, which should error out
+		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				err := plugin.nodeStageNVMeVolume(ctx, requests[idx], publishInfos[idx])
+				assert.Error(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+
+	// Test 3:
+	// Sending n requests at the same time with the same volume.uuid.
+	// Since there's no per-volume locking, all requests will attempt to process concurrently.
+	t.Run("Test Case 3: Sending n NVMe request with same volume.uuid at the same time.", func(t *testing.T) {
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		requests, publishInfos := createNVMeStageRequests(numOfRequests)
+		csiKubeletTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		defer cancel()
+
+		volumeID := "1234-5678" // Making volume.uuid same for all the requests.
+		for i := 0; i < numOfRequests; i++ {
+			requests[i].VolumeId = volumeID
+		}
+
+		// Setting up mock clients.
+		ctrl := gomock.NewController(t)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockNVMeClient := mock_nvme.NewMockNVMeInterface(ctrl)
+
+		// Setting up expectations - all requests may process concurrently
+		mockNVMeClient.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(numOfRequests)
+		mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(numOfRequests)
+		mockNVMeClient.EXPECT().AddPublishedNVMeSession(gomock.Any(), gomock.Any()).Times(numOfRequests)
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockTrackingClient,
+			nvmeHandler:      mockNVMeClient,
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		// Modifying the limiter limit
+		plugin.limiterSharedMap[NodeStageNVMeVolume], _ = limiter.New(ctx,
+			NodeStageNVMeVolume,
+			limiter.TypeSemaphoreN,
+			limiter.WithSemaphoreNSize(ctx, numOfRequests),
+		)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		// Spinning up all goroutines
+		for i := 0; i < numOfRequests; i++ {
+			go func(index int) {
+				defer wg.Done()
+				err := plugin.nodeStageNVMeVolume(ctx, requests[index], publishInfos[index])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+}
+
+func TestNodeUnstageNVMeVolume_Multithreaded(t *testing.T) {
+	if runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
+		t.Skip("Skipping NVMe tests on Darwin/Windows as NVMe is not supported on these platforms")
+	}
+
+	// Test 1: Sending requests within the limit of the limiter
+	t.Run("Test Case 1: Sending requests within the limit of the limiter", func(t *testing.T) {
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		defer cancel()
+
+		requests, publishInfos := createNVMeUnstageRequests(numOfRequests)
+
+		// Setting up mock clients
+		ctrl := gomock.NewController(t)
+		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockNVMeClient := mock_nvme.NewMockNVMeInterface(ctrl)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mountClient, _ := mount.New()
+
+		// Setting up expectations for each request
+		for i := 0; i < numOfRequests; i++ {
+			mockNVMeClient.EXPECT().RemovePublishedNVMeSession(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
+			mockNVMeClient.EXPECT().NewNVMeSubsystem(gomock.Any(), gomock.Any()).Return(nvme.NewNVMeSubsystem("", execCmd.NewCommand(), afero.NewMemMapFs()))
+			mockMount.EXPECT().UmountAndRemoveTemporaryMountPoint(gomock.Any(), gomock.Any()).Return(nil)
+			mockTrackingClient.EXPECT().DeleteTrackingInfo(gomock.Any(), requests[i].VolumeId).Return(nil)
+		}
+
+		// Creating a node plugin
+		plugin := &Plugin{
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockTrackingClient,
+			nvmeHandler:      mockNVMeClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		// Modifying the limiter limit
+		plugin.limiterSharedMap[NodeUnstageNVMeVolume], _ = limiter.New(ctx,
+			NodeUnstageNVMeVolume,
+			limiter.TypeSemaphoreN,
+			limiter.WithSemaphoreNSize(ctx, numOfRequests),
+		)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		// Spinning up go-routines for each request
+		for i := 0; i < numOfRequests; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				_, err := plugin.nodeUnstageNVMeVolume(ctx, requests[idx], publishInfos[idx], false)
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+}
+
+func TestNodePublishNVMeVolume_Multithreaded(t *testing.T) {
+	if runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
+		t.Skip("Skipping NVMe tests on Darwin/Windows as NVMe is not supported on these platforms")
+	}
+
+	// Test 1:
+	// Sending requests within the limit of the limiter
+	t.Run("Test Case 1: Sending requests within the limit of the limiter", func(t *testing.T) {
+		numOfRequests := 100
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		defer cancel()
+
+		requests := createNVMePublishRequests(numOfRequests, false)
+
+		ctrl := gomock.NewController(t)
+		mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockNVMeClient := mock_nvme.NewMockNVMeInterface(ctrl)
+		mountClient, _ := mount.New()
+
+		volumeTrackingInfo := &models.VolumeTrackingInfo{
+			VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNVMeVolumePublishInfo).
+				WithDevicePath("/dev/nvme0n1").
+				Build(),
+		}
+
+		for i := 0; i < numOfRequests; i++ {
+			mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(volumeTrackingInfo, nil)
+			mockMount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Eq(false)).Return(nil)
+			mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		}
+
+		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockNodeHelper,
+			nvmeHandler:      mockNVMeClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		plugin.limiterSharedMap[NodePublishNVMeVolume], _ = limiter.New(ctx,
+			NodePublishNVMeVolume,
+			limiter.TypeSemaphoreN,
+			limiter.WithSemaphoreNSize(ctx, numOfRequests),
+		)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		for i := 0; i < numOfRequests; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				_, err := plugin.nodePublishNVMeVolume(ctx, requests[idx])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+
+	// Test 2: Sending more than what can be parallelized
+	t.Run("Test Case 2: Sending more than what can be parallelized", func(t *testing.T) {
+		numOfRequests := 100
+		numOfParallelRequestsAllowed := maxNodePublishNVMeVolumeOperations
+
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		defer cancel()
+
+		requests := createNVMePublishRequests(numOfRequests, false)
+
+		signalChan := make(chan struct{}, numOfParallelRequestsAllowed)
+
+		ctrl := gomock.NewController(t)
+		mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockNVMeClient := mock_nvme.NewMockNVMeInterface(ctrl)
+		mountClient, _ := mount.New()
+
+		volumeTrackingInfo := &models.VolumeTrackingInfo{
+			VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNVMeVolumePublishInfo).
+				WithDevicePath("/dev/nvme0n1").
+				Build(),
+		}
+
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(volumeTrackingInfo, nil)
+			mockMount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Eq(false)).DoAndReturn(func(ctx context.Context, devicePath, stagingTargetPath, mountOptions string, isMountPointFile bool) error {
+				signalChan <- struct{}{}
+				time.Sleep(600 * time.Millisecond)
+				return nil
+			})
+			mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		}
+
+		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockNodeHelper,
+			nvmeHandler:      mockNVMeClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		// Spinning up go-routines for the first numOfParallelRequestsAllowed requests
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				_, err := plugin.nodePublishNVMeVolume(ctx, requests[idx])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		// Waiting for the first numOfParallelRequestsAllowed requests to acquire the limiter
+		for i := 0; i < numOfParallelRequestsAllowed; i++ {
+			<-signalChan
+		}
+
+		// Spinning up the rest of the requests, which should error out
+		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				_, err := plugin.nodePublishNVMeVolume(ctx, requests[idx])
+				assert.Error(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+
+	// Test 3: Raw block volume handling
+	t.Run("Test Case 3: Raw block volume", func(t *testing.T) {
+		numOfRequests := 100
+		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
+			csiNodeLockTimeout = csiNodeLockTimeoutTemp
+			csiKubeletTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiKubeletTimeout)
+
+		csiKubeletTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		defer cancel()
+
+		requests := createNVMePublishRequests(numOfRequests, true)
+
+		ctrl := gomock.NewController(t)
+		mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+		mockMount := mock_mount.NewMockMount(ctrl)
+		mockNVMeClient := mock_nvme.NewMockNVMeInterface(ctrl)
+		mountClient, _ := mount.New()
+
+		volumeTrackingInfo := &models.VolumeTrackingInfo{
+			VolumePublishInfo: NewVolumePublishInfoBuilder(TypeNVMeVolumePublishInfo).
+				WithFilesystemType(filesystem.Raw).
+				Build(),
+		}
+
+		for i := 0; i < numOfRequests; i++ {
+			mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), gomock.Any()).Return(volumeTrackingInfo, nil)
+			mockMount.EXPECT().MountDevice(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Eq(true)).Return(nil)
+			mockNodeHelper.EXPECT().AddPublishedPath(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		}
+
+		plugin := &Plugin{
+			command:          execCmd.NewCommand(),
+			role:             CSINode,
+			limiterSharedMap: make(map[string]limiter.Limiter),
+			mount:            mockMount,
+			nodeHelper:       mockNodeHelper,
+			nvmeHandler:      mockNVMeClient,
+			fs:               filesystem.New(mountClient),
+		}
+
+		plugin.InitializeNodeLimiter(ctx)
+
+		plugin.limiterSharedMap[NodePublishNVMeVolume], _ = limiter.New(ctx,
+			NodePublishNVMeVolume,
+			limiter.TypeSemaphoreN,
+			limiter.WithSemaphoreNSize(ctx, numOfRequests),
+		)
+
+		var wg sync.WaitGroup
+		wg.Add(numOfRequests)
+
+		for i := 0; i < numOfRequests; i++ {
+			go func(idx int) {
+				defer wg.Done()
+				_, err := plugin.nodePublishNVMeVolume(ctx, requests[idx])
+				assert.NoError(t, err)
+			}(i)
+		}
+
+		wg.Wait()
+	})
+}
+
 // ----- helpers ----
 type NodeStageVolumeRequestBuilder struct {
 	request *csi.NodeStageVolumeRequest
@@ -8051,6 +8811,30 @@ func NewNodeStageVolumeRequestBuilder(requestType NodeStageVolumeRequestType) *N
 					"nfsPath":        "/raw/temp",
 				},
 				VolumeId:          fmt.Sprintf("pvc-%s", uuid.New().String()),
+				StagingTargetPath: "/foo",
+			},
+		}
+
+	case TypeNVMERequest:
+		return &NodeStageVolumeRequestBuilder{
+			request: &csi.NodeStageVolumeRequest{
+				PublishContext: map[string]string{
+					"protocol":       "block",
+					"sharedTarget":   "false",
+					"filesystemType": filesystem.Ext4,
+					"SANType":        sa.NVMe,
+				},
+				VolumeContext: map[string]string{
+					"internalName": "test-nvme-volume",
+				},
+				VolumeCapability: &csi.VolumeCapability{
+					AccessType: &csi.VolumeCapability_Mount{
+						Mount: &csi.VolumeCapability_MountVolume{
+							FsType: "ext4",
+						},
+					},
+				},
+				VolumeId:          "pvc-85987a99-648d-4d84-95df-47d0256ca2ab",
 				StagingTargetPath: "/foo",
 			},
 		}
@@ -8505,6 +9289,47 @@ func createFCPPublishRequests(numRequests int, isRawBlock bool) []*csi.NodePubli
 	requests := make([]*csi.NodePublishVolumeRequest, numRequests)
 	for i := 0; i < numRequests; i++ {
 		request := NewNodePublishVolumeRequestBuilder(FCPNodePublishVolumeRequestType).Build()
+		if isRawBlock {
+			request.VolumeCapability = &csi.VolumeCapability{
+				AccessType: &csi.VolumeCapability_Block{
+					Block: &csi.VolumeCapability_BlockVolume{},
+				},
+			}
+		}
+		requests[i] = request
+	}
+	return requests
+}
+
+// createNVMeStageRequests creates an array of NVMe stage volume requests
+func createNVMeStageRequests(numRequests int) ([]*csi.NodeStageVolumeRequest, []*models.VolumePublishInfo) {
+	requests := make([]*csi.NodeStageVolumeRequest, numRequests)
+	publishInfos := make([]*models.VolumePublishInfo, numRequests)
+	for i := 0; i < numRequests; i++ {
+		requests[i] = NewNodeStageVolumeRequestBuilder(TypeNVMERequest).WithVolumeID(uuid.NewString()).Build()
+		publishInfo := NewVolumePublishInfoBuilder(TypeNVMeVolumePublishInfo).Build()
+		publishInfos[i] = &publishInfo
+	}
+	return requests, publishInfos
+}
+
+// createNVMeUnstageRequests creates an array of NVMe unstage volume requests
+func createNVMeUnstageRequests(numRequests int) ([]*csi.NodeUnstageVolumeRequest, []*models.VolumePublishInfo) {
+	requests := make([]*csi.NodeUnstageVolumeRequest, numRequests)
+	publishInfos := make([]*models.VolumePublishInfo, numRequests)
+	for i := 0; i < numRequests; i++ {
+		requests[i] = NewNodeUnstageVolumeRequestBuilder().WithVolumeID(uuid.NewString()).Build()
+		publishInfo := NewVolumePublishInfoBuilder(TypeNVMeVolumePublishInfo).Build()
+		publishInfos[i] = &publishInfo
+	}
+	return requests, publishInfos
+}
+
+// createNVMePublishRequests creates an array of NVMe publish volume requests
+func createNVMePublishRequests(numRequests int, isRawBlock bool) []*csi.NodePublishVolumeRequest {
+	requests := make([]*csi.NodePublishVolumeRequest, numRequests)
+	for i := 0; i < numRequests; i++ {
+		request := NewNodePublishVolumeRequestBuilder(NVMENodePublishVolumeRequestType).Build()
 		if isRawBlock {
 			request.VolumeCapability = &csi.VolumeCapability{
 				AccessType: &csi.VolumeCapability_Block{

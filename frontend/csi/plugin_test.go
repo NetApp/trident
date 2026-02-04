@@ -971,6 +971,9 @@ func TestPlugin_InitializeNodeLimiter(t *testing.T) {
 				NodeStageFCPVolume,
 				NodeUnstageFCPVolume,
 				NodePublishFCPVolume,
+				NodeStageNVMeVolume,
+				NodeUnstageNVMeVolume,
+				NodePublishNVMeVolume,
 			}
 
 			for _, limiterName := range expectedLimiters {

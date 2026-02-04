@@ -770,6 +770,31 @@ func (p *Plugin) InitializeNodeLimiter(ctx context.Context) {
 		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodePublishFCPVolume, err)
 	}
 
+	// Initializing NVMe limiters:
+	if p.limiterSharedMap[NodeStageNVMeVolume], err = limiter.New(ctx,
+		NodeStageNVMeVolume,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodeStageNVMeVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodeStageNVMeVolume, err)
+	}
+
+	if p.limiterSharedMap[NodeUnstageNVMeVolume], err = limiter.New(ctx,
+		NodeUnstageNVMeVolume,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodeUnstageNVMeVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodeUnstageNVMeVolume, err)
+	}
+
+	if p.limiterSharedMap[NodePublishNVMeVolume], err = limiter.New(ctx,
+		NodePublishNVMeVolume,
+		limiter.TypeSemaphoreN,
+		limiter.WithSemaphoreNSize(ctx, maxNodePublishNVMeVolumeOperations),
+	); err != nil {
+		Logc(ctx).Fatalf("Failed to initialize limiter for %s: %v", NodePublishNVMeVolume, err)
+	}
+
 	// NodeUnpublish is common for all protocols
 	if p.limiterSharedMap[NodeUnpublishVolume], err = limiter.New(ctx,
 		NodeUnpublishVolume,
