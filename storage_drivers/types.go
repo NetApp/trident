@@ -632,18 +632,35 @@ type GCPPrivateKey struct {
 	ClientX509CertURL       string `json:"client_x509_cert_url"`
 }
 
+type GCPWIPCredentialSource struct {
+	File string `json:"file"`
+}
+
+type GCPWIPCredential struct {
+	UniverseDomain                 string                  `json:"universe_domain,omitempty"`
+	Type                           string                  `json:"type"`
+	Audience                       string                  `json:"audience"`
+	SubjectTokenType               string                  `json:"subject_token_type"`
+	TokenURL                       string                  `json:"token_url"`
+	ServiceAccountImpersonationURL string                  `json:"service_account_impersonation_url,omitempty"`
+	CredentialSource               *GCPWIPCredentialSource `json:"credential_source"`
+	QuotaProjectID                 string                  `json:"quota_project_id,omitempty"`
+}
+
 type GCNVNASStorageDriverConfig struct {
 	*CommonStorageDriverConfig
 	ProjectNumber string        `json:"projectNumber"`
 	Location      string        `json:"location"`
 	APIKey        GCPPrivateKey `json:"apiKey"`
 	// APIEndpoint is a developer-only field for internal testing against autopush/staging GCNV environments.
-	APIEndpoint         string `json:"apiEndpoint,omitempty"`
-	NFSMountOptions     string `json:"nfsMountOptions"`
-	VolumeCreateTimeout string `json:"volumeCreateTimeout"`
-	SDKTimeout          string `json:"sdkTimeout"`
-	MaxCacheAge         string `json:"maxCacheAge"`
-	NASType             string `json:"nasType"`
+	APIEndpoint string `json:"apiEndpoint,omitempty"`
+	// workload identity pool credential configuration for GCNV API authentication
+	WIPCredentialConfig *GCPWIPCredential `json:"wipCredentialConfig,omitempty"`
+	NFSMountOptions     string            `json:"nfsMountOptions"`
+	VolumeCreateTimeout string            `json:"volumeCreateTimeout"`
+	SDKTimeout          string            `json:"sdkTimeout"`
+	MaxCacheAge         string            `json:"maxCacheAge"`
+	NASType             string            `json:"nasType"`
 	GCNVNASStorageDriverPool
 	Storage []GCNVNASStorageDriverPool `json:"storage"`
 }

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"strings"
 	"time"
 
 	compute "cloud.google.com/go/compute/apiv1"
@@ -54,6 +55,9 @@ type ClientConfig struct {
 	// GCP project number
 	ProjectNumber string
 
+	// GCP Workload Identity Pool credential configuration for GCNV API authentication
+	WIPCredentialConfig *drivers.GCPWIPCredential
+
 	// GCP CVS API authentication parameters
 	APIKey *drivers.GCPPrivateKey
 
@@ -88,7 +92,23 @@ type Client struct {
 func NewDriver(ctx context.Context, config *ClientConfig) (GCNV, error) {
 	var credentials *google.Credentials
 	var err error
-	if reflect.ValueOf(*config.APIKey).IsZero() {
+	if config.WIPCredentialConfig != nil {
+		Logc(ctx).Debug("Using GCP Workload Identity pool credentials from backend config")
+
+		if err := validateWIPCredentialConfig(config.WIPCredentialConfig); err != nil {
+			return nil, fmt.Errorf("invalid WIP credential configuration: %v", err)
+		}
+
+		credBytes, jsonErr := json.Marshal(config.WIPCredentialConfig)
+		if jsonErr != nil {
+			return nil, fmt.Errorf("failed to marshal WIP credential config: %v", jsonErr)
+		}
+
+		credentials, err = google.CredentialsFromJSON(ctx, credBytes, netapp.DefaultAuthScopes()...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create credentials from WIP credential config: %v", err)
+		}
+	} else if reflect.ValueOf(*config.APIKey).IsZero() {
 		credentials, err = google.FindDefaultCredentials(ctx)
 		if err != nil {
 			return nil, err
@@ -131,6 +151,37 @@ func NewDriver(ctx context.Context, config *ClientConfig) (GCNV, error) {
 		config:    config,
 		sdkClient: sdkClient,
 	}, nil
+}
+
+func validateWIPCredentialConfig(config *drivers.GCPWIPCredential) error {
+	var missingFields []string
+
+	if config.Type == "" {
+		missingFields = append(missingFields, "type")
+	}
+	if config.Audience == "" {
+		missingFields = append(missingFields, "audience")
+	}
+	if config.SubjectTokenType == "" {
+		missingFields = append(missingFields, "subject_token_type")
+	}
+	if config.TokenURL == "" {
+		missingFields = append(missingFields, "token_url")
+	}
+	if config.ServiceAccountImpersonationURL == "" {
+		missingFields = append(missingFields, "service_account_impersonation_url")
+	}
+	if config.CredentialSource == nil {
+		missingFields = append(missingFields, "credential_source")
+	} else if config.CredentialSource.File == "" {
+		missingFields = append(missingFields, "credential_source.file")
+	}
+
+	if len(missingFields) > 0 {
+		return fmt.Errorf("missing required WIP credential fields: %s", strings.Join(missingFields, ", "))
+	}
+
+	return nil
 }
 
 // Init runs startup logic after allocating the driver resources.

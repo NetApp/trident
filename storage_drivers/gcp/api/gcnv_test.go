@@ -847,3 +847,199 @@ func TestTerminalState(t *testing.T) {
 
 	assert.Equal(t, expected, actual, " Terminal state error is not equal")
 }
+
+func TestValidateWIPCredentialConfig(t *testing.T) {
+	tests := []struct {
+		name        string
+		config      *drivers.GCPWIPCredential
+		expectError bool
+		errorMsg    string
+	}{
+		{
+			name: "Valid_AllFieldsPresent",
+			config: &drivers.GCPWIPCredential{
+				Type:                           "external_account",
+				Audience:                       "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider",
+				SubjectTokenType:               "urn:ietf:params:oauth:token-type:jwt",
+				TokenURL:                       "https://sts.googleapis.com/v1/token",
+				ServiceAccountImpersonationURL: "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/sa@project.iam.gserviceaccount.com:generateAccessToken",
+				CredentialSource: &drivers.GCPWIPCredentialSource{
+					File: "/var/run/secrets/kubernetes.io/serviceaccount/token",
+				},
+			},
+			expectError: false,
+		},
+		{
+			name: "Valid_WithOptionalFields",
+			config: &drivers.GCPWIPCredential{
+				UniverseDomain:                 "googleapis.com",
+				Type:                           "external_account",
+				Audience:                       "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider",
+				SubjectTokenType:               "urn:ietf:params:oauth:token-type:jwt",
+				TokenURL:                       "https://sts.googleapis.com/v1/token",
+				ServiceAccountImpersonationURL: "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/sa@project.iam.gserviceaccount.com:generateAccessToken",
+				CredentialSource: &drivers.GCPWIPCredentialSource{
+					File: "/var/run/secrets/kubernetes.io/serviceaccount/token",
+				},
+				QuotaProjectID: "quota-project",
+			},
+			expectError: false,
+		},
+		{
+			name: "Error_MissingType",
+			config: &drivers.GCPWIPCredential{
+				Type:                           "",
+				Audience:                       "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider",
+				SubjectTokenType:               "urn:ietf:params:oauth:token-type:jwt",
+				ServiceAccountImpersonationURL: "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/sa@project.iam.gserviceaccount.com:generateAccessToken",
+				TokenURL:                       "https://sts.googleapis.com/v1/token",
+				CredentialSource: &drivers.GCPWIPCredentialSource{
+					File: "/var/run/secrets/kubernetes.io/serviceaccount/token",
+				},
+			},
+			expectError: true,
+			errorMsg:    "type",
+		},
+		{
+			name: "Error_MissingAudience",
+			config: &drivers.GCPWIPCredential{
+				Type:                           "external_account",
+				Audience:                       "",
+				SubjectTokenType:               "urn:ietf:params:oauth:token-type:jwt",
+				TokenURL:                       "https://sts.googleapis.com/v1/token",
+				ServiceAccountImpersonationURL: "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/sa@project.iam.gserviceaccount.com:generateAccessToken",
+				CredentialSource: &drivers.GCPWIPCredentialSource{
+					File: "/var/run/secrets/kubernetes.io/serviceaccount/token",
+				},
+			},
+			expectError: true,
+			errorMsg:    "audience",
+		},
+		{
+			name: "Error_MissingSubjectTokenType",
+			config: &drivers.GCPWIPCredential{
+				Type:                           "external_account",
+				Audience:                       "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider",
+				SubjectTokenType:               "",
+				TokenURL:                       "https://sts.googleapis.com/v1/token",
+				ServiceAccountImpersonationURL: "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/sa@project.iam.gserviceaccount.com:generateAccessToken",
+				CredentialSource: &drivers.GCPWIPCredentialSource{
+					File: "/var/run/secrets/kubernetes.io/serviceaccount/token",
+				},
+			},
+			expectError: true,
+			errorMsg:    "subject_token_type",
+		},
+		{
+			name: "Error_MissingTokenURL",
+			config: &drivers.GCPWIPCredential{
+				Type:                           "external_account",
+				Audience:                       "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider",
+				SubjectTokenType:               "urn:ietf:params:oauth:token-type:jwt",
+				TokenURL:                       "",
+				ServiceAccountImpersonationURL: "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/sa@project.iam.gserviceaccount.com:generateAccessToken",
+				CredentialSource: &drivers.GCPWIPCredentialSource{
+					File: "/var/run/secrets/kubernetes.io/serviceaccount/token",
+				},
+			},
+			expectError: true,
+			errorMsg:    "token_url",
+		},
+		{
+			name: "Error_NilCredentialSource",
+			config: &drivers.GCPWIPCredential{
+				Type:                           "external_account",
+				Audience:                       "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider",
+				SubjectTokenType:               "urn:ietf:params:oauth:token-type:jwt",
+				TokenURL:                       "https://sts.googleapis.com/v1/token",
+				ServiceAccountImpersonationURL: "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/sa@project.iam.gserviceaccount.com:generateAccessToken",
+				CredentialSource:               nil,
+			},
+			expectError: true,
+			errorMsg:    "credential_source",
+		},
+		{
+			name: "Error_MissingCredentialSourceFile",
+			config: &drivers.GCPWIPCredential{
+				Type:                           "external_account",
+				Audience:                       "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider",
+				SubjectTokenType:               "urn:ietf:params:oauth:token-type:jwt",
+				TokenURL:                       "https://sts.googleapis.com/v1/token",
+				ServiceAccountImpersonationURL: "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/sa@project.iam.gserviceaccount.com:generateAccessToken",
+				CredentialSource: &drivers.GCPWIPCredentialSource{
+					File: "",
+				},
+			},
+			expectError: true,
+			errorMsg:    "credential_source.file",
+		},
+		{
+			name: "Error_MultipleFieldsMissing",
+			config: &drivers.GCPWIPCredential{
+				Type:                           "",
+				Audience:                       "",
+				SubjectTokenType:               "urn:ietf:params:oauth:token-type:jwt",
+				TokenURL:                       "",
+				CredentialSource:               nil,
+				ServiceAccountImpersonationURL: "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/sa@project.iam.gserviceaccount.com:generateAccessToken",
+			},
+			expectError: true,
+			errorMsg:    "type, audience, token_url, credential_source",
+		},
+		{
+			name: "Error_AllFieldsMissing",
+			config: &drivers.GCPWIPCredential{
+				Type:             "",
+				Audience:         "",
+				SubjectTokenType: "",
+				TokenURL:         "",
+				CredentialSource: nil,
+			},
+			expectError: true,
+			errorMsg:    "type, audience, subject_token_type, token_url, service_account_impersonation_url, credential_source",
+		},
+		{
+			name: "Error_OnlyCredentialSourceFileMissing",
+			config: &drivers.GCPWIPCredential{
+				Type:             "external_account",
+				Audience:         "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider",
+				SubjectTokenType: "urn:ietf:params:oauth:token-type:jwt",
+				TokenURL:         "https://sts.googleapis.com/v1/token",
+				CredentialSource: &drivers.GCPWIPCredentialSource{
+					File: "",
+				},
+			},
+			expectError: true,
+		},
+		{
+			name: "Error_MissingServiceAccountImpersonationURL",
+			config: &drivers.GCPWIPCredential{
+				UniverseDomain:   "googleapis.com",
+				Type:             "external_account",
+				Audience:         "//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider",
+				SubjectTokenType: "urn:ietf:params:oauth:token-type:jwt",
+				TokenURL:         "https://sts.googleapis.com/v1/token",
+				CredentialSource: &drivers.GCPWIPCredentialSource{
+					File: "/var/run/secrets/kubernetes.io/serviceaccount/token",
+				},
+				QuotaProjectID: "quota-project",
+			},
+			expectError: true,
+			errorMsg:    "service_account_impersonation_url",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateWIPCredentialConfig(tt.config)
+
+			if tt.expectError {
+				assert.Error(t, err, "Expected an error but got none")
+				assert.Contains(t, err.Error(), "missing required WIP credential fields")
+				assert.Contains(t, err.Error(), tt.errorMsg, "Error message should contain expected missing field(s)")
+			} else {
+				assert.NoError(t, err, "Expected no error but got: %v", err)
+			}
+		})
+	}
+}

@@ -557,13 +557,14 @@ func (d *NASStorageDriver) initializeGCNVAPIClient(
 	}
 
 	gcnv, err := api.NewDriver(ctx, &api.ClientConfig{
-		ProjectNumber:   config.ProjectNumber,
-		Location:        config.Location,
-		APIKey:          &config.APIKey,
-		APIEndpoint:     config.APIEndpoint,
-		DebugTraceFlags: config.DebugTraceFlags,
-		SDKTimeout:      sdkTimeout,
-		MaxCacheAge:     maxCacheAge,
+		ProjectNumber:       config.ProjectNumber,
+		Location:            config.Location,
+		APIKey:              &config.APIKey,
+		APIEndpoint:         config.APIEndpoint,
+		WIPCredentialConfig: config.WIPCredentialConfig,
+		DebugTraceFlags:     config.DebugTraceFlags,
+		SDKTimeout:          sdkTimeout,
+		MaxCacheAge:         maxCacheAge,
 	})
 	if err != nil {
 		return nil, err
