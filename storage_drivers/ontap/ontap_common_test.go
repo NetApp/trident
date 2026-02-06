@@ -7832,12 +7832,12 @@ func TestSplitVolumeFromBusySnapshotWithDelay(t *testing.T) {
 	SplitVolumeFromBusySnapshotWithDelay(ctx, snapConfig, config, mockAPI, mockCloneSplitStart, cloneSplitTimers)
 
 	time.Sleep(50 * time.Millisecond)
-	// Test 3: time difference < config.CloneSplitDelay, which is defaulted to 10 seconds.
+	// Test 3: time difference < config.CloneSplitDelay.
 	SplitVolumeFromBusySnapshotWithDelay(ctx, snapConfig, config, mockAPI, mockCloneSplitStart, cloneSplitTimers)
 
 	// Test 4: SplitVolumeFromBusySnapshot returning error
 	// Add the time for first delete in past so that SplitVolume is called.
-	cloneSplitTimers.Store(snapConfig.ID(), time.Now().Add(-10*time.Second))
+	cloneSplitTimers.Store(snapConfig.ID(), time.Now().Add(-1*DefaultCloneSplitDelay*time.Second))
 	mockAPI.EXPECT().VolumeListBySnapshotParent(ctx, snapConfig.InternalName,
 		snapConfig.VolumeInternalName).Return(api.VolumeNameList{},
 		errors.New("error returned by VolumeListBySnapshotParent"))
@@ -9915,7 +9915,7 @@ func TestSplitASAVolumeFromBusySnapshotWithDelay(t *testing.T) {
 			name: "Positive - Not a first delete, and timer has moved past cloneSplitDelay",
 			setupMock: func() {
 				cloneSplitTimer = &sync.Map{}
-				cloneSplitTimer.Store(snapConfig.ID(), time.Now().Add(-15*time.Second))
+				cloneSplitTimer.Store(snapConfig.ID(), time.Now().Add((-1*DefaultCloneSplitDelay-1)*time.Second))
 				mockAPI.EXPECT().StorageUnitListBySnapshotParent(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(api.VolumeNameList{volumeName}, nil).Times(1)
 				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName).Return(nil).Times(1)
 			},
@@ -9929,7 +9929,7 @@ func TestSplitASAVolumeFromBusySnapshotWithDelay(t *testing.T) {
 			name: "Negative - Error is returned when SplitASAVolumeFromBusySnapshot call is made",
 			setupMock: func() {
 				cloneSplitTimer = &sync.Map{}
-				cloneSplitTimer.Store(snapConfig.ID(), time.Now().Add(-15*time.Second))
+				cloneSplitTimer.Store(snapConfig.ID(), time.Now().Add((-1*DefaultCloneSplitDelay-1)*time.Second))
 				mockAPI.EXPECT().StorageUnitListBySnapshotParent(ctx, snapConfig.InternalName, snapConfig.VolumeInternalName).Return(api.VolumeNameList{volumeName}, nil).Times(1)
 				mockAPI.EXPECT().StorageUnitCloneSplitStart(ctx, volumeName).Return(errors.New("error")).Times(1)
 			},

@@ -1756,7 +1756,7 @@ const (
 	DefaultNfsMountOptionsDocker     = "-o nfsvers=3"
 	DefaultNfsMountOptionsKubernetes = ""
 	DefaultSplitOnClone              = "false"
-	DefaultCloneSplitDelay           = 10
+	DefaultCloneSplitDelay           = 86400
 	DefaultLuksEncryption            = "false"
 	DefaultMirroring                 = "false"
 	DefaultLimitAggregateUsage       = ""
@@ -2528,9 +2528,10 @@ func hasCloneSplitTimerExpired(
 		cloneSplitTimers.Store(snapshotID, time.Now())
 		return 0, false
 	}
+	elapsedTime := time.Now().Sub(t)
 
 	// This isn't the first delete, and the split is still running, so there is nothing to do.
-	if time.Now().Sub(t) < 0 {
+	if elapsedTime < 0 {
 
 		Logc(ctx).WithFields(LogFields{
 			"snapshot": snapshotID,
@@ -2540,11 +2541,11 @@ func hasCloneSplitTimerExpired(
 	}
 
 	// This isn't the first delete, and the delay has not expired, so there is nothing to do.
-	if time.Now().Sub(t) < cloneSplitDelay {
+	if elapsedTime < cloneSplitDelay {
 
 		Logc(ctx).WithFields(LogFields{
 			"snapshot":           snapshotID,
-			"secondsBeforeSplit": fmt.Sprintf("%3.2f", time.Now().Sub(t).Seconds()),
+			"secondsBeforeSplit": fmt.Sprintf("%3.2f", (cloneSplitDelay - elapsedTime).Seconds()),
 		}).Warning("Retried locked snapshot delete, clone split timer not yet expired.")
 
 		return 0, false

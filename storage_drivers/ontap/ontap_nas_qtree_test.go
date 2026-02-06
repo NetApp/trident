@@ -5628,7 +5628,7 @@ func TestDeleteSnapshot_FailureSnapshotBusy(t *testing.T) {
 
 	driver.cloneSplitTimers = &sync.Map{}
 	// Use DefaultCloneSplitDelay to set time to past. It is defaulted to 10 seconds.
-	driver.cloneSplitTimers.Store(snapConfig.ID(), time.Now().Add(-10*time.Second))
+	driver.cloneSplitTimers.Store(snapConfig.ID(), time.Now().Add(-1*DefaultCloneSplitDelay*time.Second))
 	result := driver.DeleteSnapshot(ctx, snapConfig, volConfig)
 
 	assert.NotNil(t, result, "result is nil")

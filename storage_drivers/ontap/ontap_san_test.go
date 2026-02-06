@@ -2938,7 +2938,7 @@ func TestOntapSanVolumeSnapshotDelete_fail(t *testing.T) {
 		snapshotConfig.VolumeInternalName).Return(nil, nil)
 
 	// Use DefaultCloneSplitDelay to set time to past. It is defaulted to 10 seconds.
-	driver.cloneSplitTimers.Store(snapshotConfig.ID(), time.Now().Add(-10*time.Second))
+	driver.cloneSplitTimers.Store(snapshotConfig.ID(), time.Now().Add(-1*DefaultCloneSplitDelay*time.Second))
 	err := driver.DeleteSnapshot(ctx, snapshotConfig, &volConfig)
 
 	assert.Error(t, err, "Snapshot destroyed, expected an error")
