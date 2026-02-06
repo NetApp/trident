@@ -53,7 +53,7 @@ func TestGetDriverConfigByName(t *testing.T) {
 		},
 		{
 			driverName:           config.GCNVNASStorageDriverName,
-			expectedDriverConfig: &GCNVNASStorageDriverConfig{},
+			expectedDriverConfig: &GCNVStorageDriverConfig{},
 			errorExpected:        false,
 		},
 		{

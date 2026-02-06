@@ -324,11 +324,16 @@ func (c Client) CapacityPools() *[]*CapacityPool {
 	return &cPools
 }
 
-// capacityPool returns a single discovered capacity pool by its short name.
+// capacityPool returns a single discovered capacity pool by name.
+// Accepts either the short name (e.g., "pool-1") or the full name
+// (e.g., "projects/<project>/locations/<loc>/storagePools/<pool>").
 func (c Client) capacityPool(cPoolName string) *CapacityPool {
+	if cPoolName == "" {
+		return nil
+	}
 	var matchingCPool *CapacityPool
 	c.sdkClient.resources.GetCapacityPools().Range(func(_ string, cPool *CapacityPool) bool {
-		if cPool.Name == cPoolName {
+		if cPool.Name == cPoolName || cPool.FullName == cPoolName {
 			matchingCPool = cPool
 			return false
 		}

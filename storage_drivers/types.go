@@ -53,7 +53,9 @@ func GetDriverConfigByName(driverName string) (DriverConfig, error) {
 	case trident.AzureNASStorageDriverName:
 		storageDriverConfig = &AzureNASStorageDriverConfig{}
 	case trident.GCNVNASStorageDriverName:
-		storageDriverConfig = &GCNVNASStorageDriverConfig{}
+		storageDriverConfig = &GCNVStorageDriverConfig{}
+	case trident.GCNVSANStorageDriverName:
+		storageDriverConfig = &GCNVStorageDriverConfig{}
 	case trident.FakeStorageDriverName:
 		storageDriverConfig = &FakeStorageDriverConfig{}
 	default:
@@ -170,7 +172,7 @@ type AWSConfig struct {
 // within a backend.
 type StorageBackendPool interface {
 	OntapFlexGroupStorageBackendPool | OntapStorageBackendPool | OntapEconomyStorageBackendPool |
-		ANFStorageBackendPool | SolidfireStorageBackendPool | GCNVNASStorageBackendPool
+		ANFStorageBackendPool | SolidfireStorageBackendPool | GCNVStorageBackendPool
 }
 
 // OntapFlexGroupStorageBackendPool is a non-overlapping section of an ONTAP flexgroup backend that may be used for
@@ -647,75 +649,93 @@ type GCPWIPCredential struct {
 	QuotaProjectID                 string                  `json:"quota_project_id,omitempty"`
 }
 
-type GCNVNASStorageDriverConfig struct {
+// GCNVStorageDriverConfig is the unified config for both GCNV NAS and SAN drivers.
+// Both drivers connect to the same GCNV service with the same authentication and networking.
+type GCNVStorageDriverConfig struct {
 	*CommonStorageDriverConfig
 	ProjectNumber string        `json:"projectNumber"`
 	Location      string        `json:"location"`
 	APIKey        GCPPrivateKey `json:"apiKey"`
 	// APIEndpoint is a developer-only field for internal testing against autopush/staging GCNV environments.
 	APIEndpoint string `json:"apiEndpoint,omitempty"`
-	// workload identity pool credential configuration for GCNV API authentication
+	// WIPCredentialConfig is the workload identity pool credential configuration for GCNV API authentication
 	WIPCredentialConfig *GCPWIPCredential `json:"wipCredentialConfig,omitempty"`
-	NFSMountOptions     string            `json:"nfsMountOptions"`
 	VolumeCreateTimeout string            `json:"volumeCreateTimeout"`
 	SDKTimeout          string            `json:"sdkTimeout"`
 	MaxCacheAge         string            `json:"maxCacheAge"`
-	NASType             string            `json:"nasType"`
-	GCNVNASStorageDriverPool
-	Storage []GCNVNASStorageDriverPool `json:"storage"`
+
+	// NAS-specific fields (embedded, promoted to top level)
+	GCNVNASDriverConfig
+
+	// SAN-specific fields (embedded, promoted to top level)
+	GCNVSANDriverConfig
+
+	// Common pool settings (top-level defaults)
+	GCNVStorageDriverPool
+	Storage []GCNVStorageDriverPool `json:"storage"`
 }
 
-type GCNVNASStorageDriverPool struct {
-	Labels                             map[string]string   `json:"labels"`
-	Region                             string              `json:"region"`
-	Zone                               string              `json:"zone"`
-	ServiceLevel                       string              `json:"serviceLevel"`
-	StoragePools                       []string            `json:"storagePools"`
-	Network                            string              `json:"network"`
-	SupportedTopologies                []map[string]string `json:"supportedTopologies"`
-	NASType                            string              `json:"NASType"`
-	GCNVNASStorageDriverConfigDefaults `json:"defaults"`
+// GCNVNASDriverConfig holds NAS-specific settings for the GCNV NAS driver.
+// These fields are promoted to GCNVStorageDriverConfig via embedding.
+type GCNVNASDriverConfig struct {
+	NFSMountOptions string `json:"nfsMountOptions,omitempty"`
+	NASType         string `json:"nasType,omitempty"`
 }
 
-// GCNVNASStorageBackendPool is a non-overlapping section of a GCNV backend that may be used for provisioning storage.
-type GCNVNASStorageBackendPool struct {
-	ProjectNumber string `json:"projectNumber"`
-	Location      string `json:"location"`
-	StoragePool   string `json:"storagePool"`
+// GCNVSANDriverConfig holds SAN-specific settings for the GCNV SAN driver.
+// Note: FileSystemType and FormatOptions are in GCNVStorageDriverConfigDefaults.
+// Potentially we will add more fields here in the future.
+type GCNVSANDriverConfig struct {
 }
 
-type GCNVNASStorageDriverConfigDefaults struct {
-	ExportRule                string `json:"exportRule"`
-	SnapshotDir               string `json:"snapshotDir"`
-	SnapshotReserve           string `json:"snapshotReserve"`
-	UnixPermissions           string `json:"unixPermissions"`
-	TieringPolicy             string `json:"tieringPolicy"`
-	TieringMinimumCoolingDays string `json:"tieringMinimumCoolingDays"`
+// GCNVStorageDriverPool holds pool settings for GCNV drivers.
+type GCNVStorageDriverPool struct {
+	Labels              map[string]string   `json:"labels"`
+	Region              string              `json:"region"`
+	Zone                string              `json:"zone"`
+	ServiceLevel        string              `json:"serviceLevel"`
+	StoragePools        []string            `json:"storagePools"`
+	Network             string              `json:"network"`
+	SupportedTopologies []map[string]string `json:"supportedTopologies"`
+	// Pool defaults
+	GCNVStorageDriverConfigDefaults `json:"defaults"`
+}
+
+// GCNVStorageDriverConfigDefaults holds default settings for GCNV volumes.
+type GCNVStorageDriverConfigDefaults struct {
+	ExportRule                string `json:"exportRule,omitempty"`
+	SnapshotDir               string `json:"snapshotDir,omitempty"`
+	SnapshotReserve           string `json:"snapshotReserve,omitempty"`
+	UnixPermissions           string `json:"unixPermissions,omitempty"`
+	TieringPolicy             string `json:"tieringPolicy,omitempty"`
+	TieringMinimumCoolingDays string `json:"tieringMinimumCoolingDays,omitempty"`
+	FileSystemType            string `json:"fileSystemType,omitempty"`
+	FormatOptions             string `json:"formatOptions,omitempty"`
 	CommonStorageDriverConfigDefaults
 }
 
-// Implement stringer interface for the GCNVNASStorageDriverConfig driver
-func (d GCNVNASStorageDriverConfig) String() string {
+// Implement stringer interface for the GCNVStorageDriverConfig driver
+func (d GCNVStorageDriverConfig) String() string {
 	return convert.ToStringRedacted(&d, []string{"ProjectNumber", "HostProjectNumber", "APIKey"}, nil)
 }
 
-// Implement GoStringer interface for the GCNVNASStorageDriverConfig driver
-func (d GCNVNASStorageDriverConfig) GoString() string {
+// Implement GoStringer interface for the GCNVStorageDriverConfig driver
+func (d GCNVStorageDriverConfig) GoString() string {
 	return d.String()
 }
 
-func (d *GCNVNASStorageDriverConfig) Marshal() ([]byte, error) {
+func (d *GCNVStorageDriverConfig) Marshal() ([]byte, error) {
 	SanitizeCommonStorageDriverConfig(d.CommonStorageDriverConfig)
 	bytes, err := json.Marshal(d)
 	if err != nil {
-		return nil, fmt.Errorf("could not marshal GCNVNASStorageDriverConfig: %v", err)
+		return nil, fmt.Errorf("could not marshal GCNVStorageDriverConfig: %v", err)
 	}
 	return bytes, nil
 }
 
 // InjectSecrets function replaces sensitive fields in the config with the field values in the map
-func (d *GCNVNASStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
-	// NOTE: When the backend secrets are read in the CRD persistance layer they are converted to lower-case.
+func (d *GCNVStorageDriverConfig) InjectSecrets(secretMap map[string]string) error {
+	// NOTE: When the backend secrets are read in the CRD persistence layer they are converted to lower-case.
 
 	var ok bool
 	if d.APIKey.PrivateKey, ok = secretMap[strings.ToLower("Private_Key")]; !ok {
@@ -729,8 +749,8 @@ func (d *GCNVNASStorageDriverConfig) InjectSecrets(secretMap map[string]string) 
 }
 
 // ExtractSecrets function builds a map of any sensitive fields it contains (credentials, etc.),
-// and returns the the map.
-func (d *GCNVNASStorageDriverConfig) ExtractSecrets() map[string]string {
+// and returns the map.
+func (d *GCNVStorageDriverConfig) ExtractSecrets() map[string]string {
 	secretMap := make(map[string]string)
 
 	secretMap["Private_Key"] = d.APIKey.PrivateKey
@@ -739,22 +759,22 @@ func (d *GCNVNASStorageDriverConfig) ExtractSecrets() map[string]string {
 	return secretMap
 }
 
-// RemoveSecrets function removes sensitive fields it contains (credentials, etc.)
-func (d *GCNVNASStorageDriverConfig) ResetSecrets() {
+// ResetSecrets function removes sensitive fields it contains (credentials, etc.)
+func (d *GCNVStorageDriverConfig) ResetSecrets() {
 	d.APIKey.PrivateKey = ""
 	d.APIKey.PrivateKeyID = ""
 }
 
 // HideSensitiveWithSecretName function replaces sensitive fields it contains (credentials, etc.),
 // with secretName.
-func (d *GCNVNASStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
+func (d *GCNVStorageDriverConfig) HideSensitiveWithSecretName(secretName string) {
 	d.APIKey.PrivateKey = secretName
 	d.APIKey.PrivateKeyID = secretName
 }
 
 // GetAndHideSensitive function builds a map of any sensitive fields it contains (credentials, etc.),
-// replaces those fields with secretName and returns the the map.
-func (d *GCNVNASStorageDriverConfig) GetAndHideSensitive(secretName string) map[string]string {
+// replaces those fields with secretName and returns the map.
+func (d *GCNVStorageDriverConfig) GetAndHideSensitive(secretName string) map[string]string {
 	secretMap := d.ExtractSecrets()
 	d.HideSensitiveWithSecretName(secretName)
 
@@ -762,16 +782,23 @@ func (d *GCNVNASStorageDriverConfig) GetAndHideSensitive(secretName string) map[
 }
 
 // CheckForCRDControllerForbiddenAttributes checks config for the keys forbidden by CRD controller and returns them
-func (d GCNVNASStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() []string {
+func (d GCNVStorageDriverConfig) CheckForCRDControllerForbiddenAttributes() []string {
 	return checkMapContainsAttributes(d.ExtractSecrets())
 }
 
-func (d GCNVNASStorageDriverConfig) SpecOnlyValidation() error {
+func (d GCNVStorageDriverConfig) SpecOnlyValidation() error {
 	if forbiddenList := d.CheckForCRDControllerForbiddenAttributes(); len(forbiddenList) > 0 {
 		return fmt.Errorf("input contains forbidden attributes: %v", forbiddenList)
 	}
 
 	return nil
+}
+
+// GCNVStorageBackendPool is a non-overlapping section of a GCNV backend that may be used for provisioning storage.
+type GCNVStorageBackendPool struct {
+	ProjectNumber string `json:"projectNumber"`
+	Location      string `json:"location"`
+	StoragePool   string `json:"storagePool"`
 }
 
 type FakeStorageDriverConfig struct {

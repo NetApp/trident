@@ -1361,7 +1361,7 @@ type PersistentStorageBackendConfig struct {
 	OntapConfig             *drivers.OntapStorageDriverConfig     `json:"ontap_config,omitempty"`
 	SolidfireConfig         *drivers.SolidfireStorageDriverConfig `json:"solidfire_config,omitempty"`
 	AzureConfig             *drivers.AzureNASStorageDriverConfig  `json:"azure_config,omitempty"`
-	GCNVConfig              *drivers.GCNVNASStorageDriverConfig   `json:"gcnv_config,omitempty"`
+	GCNVConfig              *drivers.GCNVStorageDriverConfig      `json:"gcnv_config,omitempty"`
 	FakeStorageDriverConfig *drivers.FakeStorageDriverConfig      `json:"fake_config,omitempty"`
 }
 

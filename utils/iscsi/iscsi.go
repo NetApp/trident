@@ -46,8 +46,13 @@ const (
 	SessionSourceNodeStage     = "nodeStage"
 	SessionSourceTrackingInfo  = "trackingInfo"
 
-	iscsiadmLoginTimeoutValue       = 10
-	iscsiadmLoginTimeout            = iscsiadmLoginTimeoutValue * time.Second
+	iscsiadmLoginTimeoutValue = 10
+	iscsiadmLoginTimeout      = iscsiadmLoginTimeoutValue * time.Second
+
+	// TODO(GCNV API): Remove FallbackIQNPrefix when GCNV API provides the target IQN.
+	// FallbackIQNPrefix marks placeholder IQNs that should trigger iSCSI discovery.
+	// Used when the backend doesn't provide a target IQN and discovery is needed.
+	FallbackIQNPrefix               = "iqn.2008-11.com.netapp.gcnv:"
 	iscsiadmAccessiblePortalTimeout = 15 * time.Second
 	iscsiadmLoginRetryMax           = "1"
 
@@ -221,6 +226,136 @@ func (client *Client) AttachVolumeRetry(
 	return mpathSize, err
 }
 
+// scanForAllLUNs performs a wildcard SCSI scan on all iSCSI hosts to discover all LUNs
+// currently presented by the target. This is equivalent to running:
+//
+//	echo "- - -" > /sys/class/scsi_host/hostX/scan
+//
+// for each host in the hostSessionMap.
+//
+// TODO(GCNV API): Remove this wildcard scan approach when GCNV API provides the LUN ID.
+// At that point, the controller will pass the correct LUN ID and serial validation will
+// pass on the first attempt, making LUN discovery unnecessary.
+func (client *Client) scanForAllLUNs(ctx context.Context, hostSessionMap map[int]int) error {
+	Logc(ctx).WithField("hosts", len(hostSessionMap)).Debug(">>>> iscsi.scanForAllLUNs")
+	defer Logc(ctx).Debug("<<<< iscsi.scanForAllLUNs")
+
+	// Build wildcard scan addresses for all hosts
+	deviceAddresses := make([]models.ScsiDeviceAddress, 0, len(hostSessionMap))
+	for hostNumber := range hostSessionMap {
+		deviceAddresses = append(deviceAddresses, models.ScsiDeviceAddress{
+			Host:    strconv.Itoa(hostNumber),
+			Channel: models.ScanAllSCSIDeviceAddress,
+			Target:  models.ScanAllSCSIDeviceAddress,
+			LUN:     models.ScanAllSCSIDeviceAddress,
+		})
+	}
+
+	if err := client.devices.ScanTargetLUN(ctx, deviceAddresses); err != nil {
+		Logc(ctx).WithField("error", err).Debug("Wildcard SCSI scan encountered error (non-fatal).")
+		return err
+	}
+
+	Logc(ctx).Info("Triggered wildcard SCSI scan on all iSCSI hosts to discover LUNs.")
+	return nil
+}
+
+// findLUNBySerial scans iSCSI LUNs on the target to find the one with the matching serial number.
+// This is necessary because some storage backends (e.g., GCNV) auto-assign LUN IDs and don't expose
+// them via their API, so the controller may provide an incorrect LUN ID hint.
+//
+// NOTE: This function is only called when the hinted LUN ID's serial doesn't match (i.e., the caller
+// has already verified the hint is wrong). It assumes a wildcard scan has already been performed
+// (via scanForAllLUNs) before being called, so it only checks for existing sysfs paths without
+// triggering new scans.
+//
+// Returns the actual LUN ID where the serial matches, or an error if not found.
+func (client *Client) findLUNBySerial(
+	ctx context.Context, hostSessionMap map[int]int, expectedSerial, targetIQN string,
+) (int, error) {
+	if expectedSerial == "" {
+		return -1, errors.New("findLUNBySerial requires a serial number")
+	}
+
+	fields := LogFields{
+		"expectedSerial": expectedSerial,
+		"targetIQN":      targetIQN,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.findLUNBySerial")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.findLUNBySerial")
+
+	// Helper function to check if a LUN has the expected serial
+	checkLUNSerial := func(lunID int) (bool, error) {
+		paths := client.iscsiUtils.GetSysfsBlockDirsForLUN(lunID, hostSessionMap)
+		if len(paths) == 0 {
+			return false, nil
+		}
+
+		for _, path := range paths {
+			serial, err := client.devices.GetLunSerial(ctx, path)
+			if err != nil {
+				if os.IsNotExist(err) {
+					// LUN not present or VPD not supported
+					continue
+				}
+				return false, err
+			}
+
+			if serial == expectedSerial {
+				Logc(ctx).WithFields(LogFields{
+					"lunID":  lunID,
+					"serial": serial,
+					"path":   path,
+				}).Debug("Found LUN with matching serial.")
+				return true, nil
+			}
+
+			// Serial mismatch on this path
+			Logc(ctx).WithFields(LogFields{
+				"lunID":          lunID,
+				"expectedSerial": expectedSerial,
+				"actualSerial":   serial,
+				"path":           path,
+			}).Debug("LUN serial mismatch.")
+			return false, nil
+		}
+
+		return false, nil
+	}
+
+	// Scan all LUNs (0-255) to find the one with matching serial.
+	// After a wildcard SCSI scan, the kernel needs time to populate sysfs. We poll until
+	// the context expires, letting kubelet retry if needed.
+	const pollInterval = 500 * time.Millisecond
+
+	for attempt := 1; ; attempt++ {
+		// Scan all LUNs to find matching serial
+		for lunID := 0; lunID < 256; lunID++ {
+			match, err := checkLUNSerial(lunID)
+			if err != nil {
+				return -1, err
+			}
+			if match {
+				Logc(ctx).WithFields(LogFields{
+					"lunID":   lunID,
+					"attempt": attempt,
+				}).Info("Found LUN with matching serial.")
+				return lunID, nil
+			}
+		}
+
+		// LUN not found yet, wait before retrying (respecting context timeout)
+		Logc(ctx).WithField("attempt", attempt).Debug("LUN not found yet, waiting for sysfs to populate...")
+
+		select {
+		case <-ctx.Done():
+			return -1, fmt.Errorf("could not find LUN with serial %s on target %s: %w", expectedSerial, targetIQN, ctx.Err())
+		case <-time.After(pollInterval):
+			// Continue polling
+		}
+	}
+}
+
 // AttachVolume attaches the volume to the local host.
 // This method must be able to accomplish its task using only the publish information passed in.
 // It may be assumed that this method always runs on the host to which the volume will be attached.
@@ -262,6 +397,40 @@ func (client *Client) AttachVolume(
 		"iscsiInterface": publishInfo.IscsiInterface,
 		"fstype":         publishInfo.FilesystemType,
 	}).Debug("Attaching iSCSI volume.")
+
+	// If IQN is empty or a known placeholder, perform discovery
+	if publishInfo.IscsiTargetIQN == "" || strings.HasPrefix(publishInfo.IscsiTargetIQN, FallbackIQNPrefix) {
+		var discoveredIQN string
+		for _, portal := range portals {
+			discoveryInfo, err := client.ISCSIDiscovery(ctx, portal)
+			if err != nil {
+				Logc(ctx).WithFields(LogFields{
+					"portal": portal,
+					"error":  err,
+				}).Debug("iSCSI discovery failed on portal, trying next.")
+				continue
+			}
+			if len(discoveryInfo) == 1 {
+				discoveredIQN = discoveryInfo[0].TargetName
+				Logc(ctx).WithFields(LogFields{
+					"portal":        portal,
+					"discoveredIQN": discoveredIQN,
+				}).Debug("Discovered iSCSI target IQN on node.")
+				break
+			} else if len(discoveryInfo) > 1 {
+				Logc(ctx).WithFields(LogFields{
+					"portal":  portal,
+					"targets": discoveryInfo,
+				}).Debug("Multiple iSCSI targets discovered, using first.")
+				discoveredIQN = discoveryInfo[0].TargetName
+				break
+			}
+		}
+		if discoveredIQN == "" {
+			return mpathSize, fmt.Errorf("could not discover iSCSI target IQN from any portal")
+		}
+		publishInfo.IscsiTargetIQN = discoveredIQN
+	}
 
 	if err = client.PreChecks(ctx); err != nil {
 		return mpathSize, err
@@ -305,9 +474,56 @@ func (client *Client) AttachVolume(
 		return mpathSize, err
 	}
 
-	// At this point if the serials are still invalid, give up so the
-	// caller can retry (invoking the remediation steps above in the
-	// process, if they haven't already been run).
+	// Check if the scanned LUN has the expected serial. If not, try to discover the correct LUN ID.
+	// This handles cases where the storage backend auto-assigns LUN IDs (e.g., GCNV) and the controller
+	// provided an incorrect hint. For drivers that provide correct LUN IDs (e.g., ONTAP-SAN), the fast
+	// path will confirm the hint is correct and skip the full scan.
+	serialCheckHandler := func(ctx context.Context, path string) error {
+		// Serial mismatch detected, return error to trigger LUN discovery below
+		return errors.New("serial mismatch on hinted LUN")
+	}
+	err = client.handleInvalidSerials(ctx, hostSessionMap, lunID, publishInfo.IscsiTargetIQN, publishInfo.IscsiLunSerial, serialCheckHandler)
+	if err != nil {
+		// Serial mismatch on the hinted LUN - try to discover the correct LUN ID by scanning
+		Logc(ctx).WithFields(LogFields{
+			"hintLunID":      lunID,
+			"expectedSerial": publishInfo.IscsiLunSerial,
+		}).Info("LUN serial mismatch detected, attempting to discover correct LUN ID.")
+
+		// Perform a wildcard SCSI scan to discover all LUNs currently presented by the target.
+		// This handles cases where the storage backend has already mapped the volume to a different
+		// LUN ID (e.g., GCNV auto-assigns LUN IDs), but the kernel hasn't discovered it yet because
+		// we only scanned for the specific hinted LUN earlier.
+		if scanErr := client.scanForAllLUNs(ctx, hostSessionMap); scanErr != nil {
+			Logc(ctx).WithError(scanErr).Debug("Wildcard scan failed, proceeding with discovery anyway.")
+		}
+
+		// findLUNBySerial will poll with retries to wait for sysfs to populate after the wildcard scan
+		discoveredLunID, discoverErr := client.findLUNBySerial(ctx, hostSessionMap, publishInfo.IscsiLunSerial, publishInfo.IscsiTargetIQN)
+		if discoverErr != nil {
+			return mpathSize, fmt.Errorf("LUN serial mismatch and discovery failed: %w", discoverErr)
+		}
+
+		if discoveredLunID != lunID {
+			Logc(ctx).WithFields(LogFields{
+				"hintLunID":       lunID,
+				"discoveredLunID": discoveredLunID,
+				"serial":          publishInfo.IscsiLunSerial,
+			}).Info("Discovered actual LUN ID differs from controller hint (storage backend likely auto-assigned LUN IDs).")
+
+			// Update to the correct LUN ID and rescan
+			lunID = discoveredLunID
+
+			// Wait for the correct LUN's devices
+			err = client.waitForDeviceScan(ctx, hostSessionMap, lunID, publishInfo.IscsiTargetIQN)
+			if err != nil {
+				Logc(ctx).Errorf("Could not find iSCSI device for discovered LUN %d: %+v", lunID, err)
+				return mpathSize, err
+			}
+		}
+	}
+
+	// Final serial validation - at this point we should have the correct LUN
 	failHandler := func(ctx context.Context, path string) error {
 		Logc(ctx).Error("Detected LUN serial number mismatch, attaching volume would risk data corruption, giving up")
 		return errors.New("LUN serial number mismatch, kernel has stale cached data")
@@ -609,7 +825,6 @@ func (client *Client) filterDevicesBySize(
 		}
 
 		if size < minSize {
-			// Only consider devices that are undersized.
 			deviceSizeMap[diskDevice] = size
 		}
 	}
@@ -639,7 +854,7 @@ func (client *Client) rescanDevices(ctx context.Context, deviceSizeMap map[strin
 func (client *Client) RescanDevices(ctx context.Context, targetIQN string, lunID int32, minSize int64) error {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
-	fields := LogFields{"targetIQN": targetIQN, "lunID": lunID}
+	fields := LogFields{"targetIQN": targetIQN, "lunID": lunID, "minSize": minSize}
 	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.RescanDevices")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.RescanDevices")
 
@@ -697,7 +912,7 @@ func (client *Client) RescanDevices(ctx context.Context, targetIQN string, lunID
 
 		fields = LogFields{"size": size, "minSize": minSize}
 		if size < minSize {
-			Logc(ctx).WithFields(fields).Debug("Reloading the multipath device.")
+			Logc(ctx).WithFields(fields).Debug("Multipath device undersized, reloading.")
 			if err := client.reloadMultipathDevice(ctx, multipathDevice); err != nil {
 				return err
 			}
@@ -709,8 +924,8 @@ func (client *Client) RescanDevices(ctx context.Context, targetIQN string, lunID
 			}
 
 			if size < minSize {
-				Logc(ctx).Error("Multipath device not large enough after resize.")
-				return fmt.Errorf("multipath device not large enough after resize: %d < %d", size, minSize)
+				return fmt.Errorf("multipath device not large enough after resize: size (%d bytes) is less than minimum required (%d bytes)",
+					size, minSize)
 			}
 		} else {
 			Logc(ctx).WithFields(fields).Debug("Not reloading the multipath device because the size is greater than or equal to the minimum size.")
@@ -804,11 +1019,29 @@ func (client *Client) IsAlreadyAttached(ctx context.Context, lunID int, targetIq
 func (client *Client) remediatePaths(ctx context.Context, publishInfo *models.VolumePublishInfo) error {
 	// Extract the LUN ID, target IQN, and portals from the publish info.
 	lunID, targetIQN := int(publishInfo.IscsiLunNumber), publishInfo.IscsiTargetIQN
+
+	// Build a deduplicated list of portals from both IscsiPortals (array) and IscsiTargetPortal (singular).
 	portals := make([]string, 0)
+	seenPortals := make(map[string]bool)
+
+	// Add portals from the array
 	for _, p := range publishInfo.IscsiPortals {
-		portals = append(portals, network.EnsureHostportFormatted(p))
+		formatted := network.EnsureHostportFormatted(p)
+		if !seenPortals[formatted] {
+			portals = append(portals, formatted)
+			seenPortals[formatted] = true
+		}
 	}
-	portals = append(portals, network.EnsureHostportFormatted(publishInfo.IscsiTargetPortal))
+
+	// Add the singular portal if it's not already in the list
+	// This handles edge cases where IscsiTargetPortal might differ from IscsiPortals
+	if publishInfo.IscsiTargetPortal != "" {
+		formatted := network.EnsureHostportFormatted(publishInfo.IscsiTargetPortal)
+		if !seenPortals[formatted] {
+			portals = append(portals, formatted)
+			seenPortals[formatted] = true
+		}
+	}
 
 	// Set up logging fields with entry and exit log messages.
 	fields := LogFields{
@@ -1225,11 +1458,11 @@ func (client *Client) handleInvalidSerials(
 
 		if serial != expectedSerial {
 			Logc(ctx).WithFields(LogFields{
-				"expected": expectedSerial,
-				"actual":   serial,
-				"lun":      lunID,
-				"target":   targetIqn,
-				"path":     path,
+				"expectedSerial": expectedSerial,
+				"actualSerial":   serial,
+				"lun":            lunID,
+				"target":         targetIqn,
+				"path":           path,
 			}).Warn("LUN serial check failed")
 			err = handler(ctx, path)
 			if err != nil {
@@ -1523,6 +1756,25 @@ func (client *Client) EnsureSessions(ctx context.Context, publishInfo *models.Vo
 			continue
 		}
 
+		// Check if a session already exists before attempting login
+		sessionExists, err := client.sessionExistsForTarget(ctx, portal, publishInfo.IscsiTargetIQN)
+		if err != nil {
+			// Log the error but proceed with login attempt as a fallback
+			Logc(ctx).WithFields(LogFields{
+				"err":       err,
+				"portalIP":  portal,
+				"targetIQN": publishInfo.IscsiTargetIQN,
+			}).Debug("Could not check for existing iSCSI session, will attempt login.")
+		} else if sessionExists {
+			// Session already exists - skip login to avoid exit status 15
+			Logc(ctx).WithFields(LogFields{
+				"portalIP":  portal,
+				"targetIQN": publishInfo.IscsiTargetIQN,
+			}).Debug("iSCSI session already exists, skipping login.")
+			loggedInPortals = append(loggedInPortals, portal)
+			continue
+		}
+
 		// Log in to target
 		if err := client.LoginTarget(ctx, publishInfo, portal); err != nil {
 			Logc(ctx).WithFields(LogFields{
@@ -1596,6 +1848,39 @@ func (client *Client) sessionExists(ctx context.Context, portal string) (bool, e
 		}
 	}
 
+	return false, nil
+}
+
+// sessionExistsForTarget checks if a session exists to the specified portal AND target IQN.
+// This is more specific than sessionExists, which only checks the portal.
+func (client *Client) sessionExistsForTarget(ctx context.Context, portal string, targetIQN string) (bool, error) {
+	Logc(ctx).WithFields(LogFields{
+		"portal":    portal,
+		"targetIQN": targetIQN,
+	}).Debug(">>>> iscsi.sessionExistsForTarget")
+	defer Logc(ctx).Debug("<<<< iscsi.sessionExistsForTarget")
+
+	sessionInfo, err := client.getSessionInfo(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	portalIP := network.ParseHostportIP(portal)
+	for _, session := range sessionInfo {
+		if strings.Contains(session.PortalIP, portalIP) && session.TargetName == targetIQN {
+			Logc(ctx).WithFields(LogFields{
+				"portal":    portal,
+				"targetIQN": targetIQN,
+				"sessionID": session.SID,
+			}).Debug("Found existing iSCSI session for target.")
+			return true, nil
+		}
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"portal":    portal,
+		"targetIQN": targetIQN,
+	}).Debug("No existing iSCSI session found for target.")
 	return false, nil
 }
 

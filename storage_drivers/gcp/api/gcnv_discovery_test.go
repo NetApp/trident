@@ -7,99 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
-	storagedrivers "github.com/netapp/trident/storage_drivers"
 
 	"github.com/stretchr/testify/assert"
 )
-
-func getFakeSDK() *Client {
-	APIKey := storagedrivers.GCPPrivateKey{
-		Type:                    "random_account",
-		ProjectID:               ProjectID,
-		PrivateKeyID:            PrivateKeyID,
-		PrivateKey:              PrivateKey,
-		ClientEmail:             ClientEmail,
-		ClientID:                ClientID,
-		AuthURI:                 AuthURI,
-		TokenURI:                TokenURI,
-		AuthProviderX509CertURL: AuthProviderX509CertURL,
-		ClientX509CertURL:       ClientX509CertURL,
-	}
-
-	sdk := &Client{
-		config: &ClientConfig{
-			ProjectNumber:   ProjectNumber,
-			APIKey:          &APIKey,
-			Location:        Location,
-			DebugTraceFlags: debugTraceFlags,
-		},
-		sdkClient: new(GCNVClient),
-	}
-
-	// Capacity pools
-	cPools := make(map[string]*CapacityPool)
-
-	GCNV_CP1 := &CapacityPool{
-		Name:            "CP1",
-		FullName:        "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP1",
-		Location:        Location,
-		ServiceLevel:    ServiceLevelPremium,
-		State:           StateReady,
-		NetworkName:     NetworkName,
-		NetworkFullName: NetworkFullName,
-	}
-	cPools[GCNV_CP1.FullName] = GCNV_CP1
-
-	GCNV_CP2 := &CapacityPool{
-		Name:            "CP2",
-		FullName:        "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP2",
-		Location:        Location,
-		ServiceLevel:    ServiceLevelStandard,
-		State:           StateReady,
-		NetworkName:     NetworkName,
-		NetworkFullName: NetworkFullName,
-	}
-	cPools[GCNV_CP2.FullName] = GCNV_CP2
-
-	GCNV_CP3 := &CapacityPool{
-		Name:            "CP3",
-		FullName:        "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP3",
-		Location:        Location,
-		ServiceLevel:    ServiceLevelExtreme,
-		State:           StateReady,
-		NetworkName:     NetworkName,
-		NetworkFullName: NetworkFullName,
-	}
-	cPools[GCNV_CP3.FullName] = GCNV_CP3
-
-	GCNV_CP4 := &CapacityPool{
-		Name:            "CP4",
-		FullName:        "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP4",
-		Location:        Location,
-		ServiceLevel:    ServiceLevelFlex,
-		State:           StateReady,
-		NetworkName:     NetworkName,
-		NetworkFullName: NetworkFullName,
-	}
-	cPools[GCNV_CP4.FullName] = GCNV_CP4
-
-	GCNV_CP6 := &CapacityPool{
-		Name:            "CP6",
-		FullName:        "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP6",
-		Location:        Location,
-		ServiceLevel:    ServiceLevelStandard,
-		State:           StateReady,
-		NetworkName:     NetworkName,
-		NetworkFullName: NetworkFullName,
-	}
-	cPools[GCNV_CP6.FullName] = GCNV_CP6
-
-	sdk.sdkClient.resources = newGCNVResources()
-	sdk.sdkClient.resources.capacityPools = collection.NewImmutableMap(cPools)
-	return sdk
-}
 
 func setCapacityPools(sdk *Client, capacityPools map[string]*CapacityPool) {
 	_, updater, unlocker := sdk.sdkClient.resources.LockAndCheckStale(0)
@@ -125,7 +36,7 @@ func TestCheckForUnsatisfiedPools_NoPools(t *testing.T) {
 	sPool1 := storage.NewStoragePool(nil, "pool1")
 	sPool2 := storage.NewStoragePool(nil, "pool2")
 
-	sdk := getFakeSDK()
+	sdk := getFakeSDK(true)
 	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2})
 
 	result := sdk.checkForUnsatisfiedPools(ctx)
@@ -139,7 +50,7 @@ func TestCheckForUnsatisfiedPools_EmptyPools(t *testing.T) {
 	sPool2 := storage.NewStoragePool(nil, "pool2")
 	sPool2.InternalAttributes()[capacityPools] = ""
 
-	sdk := getFakeSDK()
+	sdk := getFakeSDK(true)
 	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2})
 
 	result := sdk.checkForUnsatisfiedPools(ctx)
@@ -153,7 +64,7 @@ func TestCheckForUnsatisfiedPools_ValidPools(t *testing.T) {
 	sPool2 := storage.NewStoragePool(nil, "pool2")
 	sPool2.InternalAttributes()[capacityPools] = "CP2,CP4"
 
-	sdk := getFakeSDK()
+	sdk := getFakeSDK(true)
 	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2})
 
 	result := sdk.checkForUnsatisfiedPools(ctx)
@@ -167,7 +78,7 @@ func TestCheckForUnsatisfiedPools_OneInvalidPool(t *testing.T) {
 	sPool2 := storage.NewStoragePool(nil, "pool2")
 	sPool2.InternalAttributes()[capacityPools] = "CP5"
 
-	sdk := getFakeSDK()
+	sdk := getFakeSDK(true)
 	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2})
 
 	result := sdk.checkForUnsatisfiedPools(ctx)
@@ -182,7 +93,7 @@ func TestCheckForUnsatisfiedPools_TwoInvalidPools(t *testing.T) {
 	sPool2 := storage.NewStoragePool(nil, "pool2")
 	sPool2.InternalAttributes()[capacityPools] = "CP5"
 
-	sdk := getFakeSDK()
+	sdk := getFakeSDK(true)
 	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool1": sPool1, "pool2": sPool2})
 
 	result := sdk.checkForUnsatisfiedPools(ctx)
@@ -191,7 +102,7 @@ func TestCheckForUnsatisfiedPools_TwoInvalidPools(t *testing.T) {
 }
 
 func TestCheckForNonexistentCapacityPools_NoPools(t *testing.T) {
-	sdk := getFakeSDK()
+	sdk := getFakeSDK(true)
 	sdk.sdkClient.resources.SetStoragePools(make(map[string]storage.Pool))
 
 	result := sdk.checkForNonexistentCapacityPools(ctx)
@@ -203,7 +114,7 @@ func TestCheckForNonexistentCapacityPools_Empty(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[capacityPools] = ""
 
-	sdk := getFakeSDK()
+	sdk := getFakeSDK(true)
 	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentCapacityPools(ctx)
@@ -215,7 +126,7 @@ func TestCheckForNonexistentCapacityPools_OK(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[capacityPools] = "CP1,CP3"
 
-	sdk := getFakeSDK()
+	sdk := getFakeSDK(true)
 	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentCapacityPools(ctx)
@@ -227,7 +138,7 @@ func TestCheckForNonexistentCapacityPools_Missing(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[capacityPools] = "CP1,CP3,CP5"
 
-	sdk := getFakeSDK()
+	sdk := getFakeSDK(true)
 	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentCapacityPools(ctx)
@@ -239,7 +150,7 @@ func TestCheckForNonexistentNetworks_Empty(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[network] = ""
 
-	sdk := getFakeSDK()
+	sdk := getFakeSDK(true)
 	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentNetworks(ctx)
@@ -251,7 +162,7 @@ func TestCheckForNonexistentNetworks_OK(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[network] = NetworkFullName
 
-	sdk := getFakeSDK()
+	sdk := getFakeSDK(true)
 	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentNetworks(ctx)
@@ -263,7 +174,7 @@ func TestCheckForNonexistentNetworks_Missing(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[network] = "projects/123456789/locations/myLocation/networks/missing"
 
-	sdk := getFakeSDK()
+	sdk := getFakeSDK(true)
 	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	result := sdk.checkForNonexistentNetworks(ctx)
@@ -272,7 +183,7 @@ func TestCheckForNonexistentNetworks_Missing(t *testing.T) {
 }
 
 func TestCapacityPools(t *testing.T) {
-	sdk := getFakeSDK()
+	sdk := getFakeSDK(true)
 	sdk.sdkClient.resources.SetStoragePools(make(map[string]storage.Pool))
 
 	expected := &[]*CapacityPool{
@@ -290,8 +201,19 @@ func TestCapacityPools(t *testing.T) {
 	assert.ElementsMatch(t, *expected, *actual, "Did not get expected capacity pools")
 }
 
+func TestCapacityPool_FullNameAndEmpty(t *testing.T) {
+	sdk := getFakeSDK(true)
+
+	// Full name should resolve
+	fullName := "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP1"
+	assert.Equal(t, sdk.capacityPool("CP1"), sdk.capacityPool(fullName))
+
+	// Empty input should return nil
+	assert.Nil(t, sdk.capacityPool(""))
+}
+
 func TestCapacityPoolsForStoragePools(t *testing.T) {
-	sdk := getFakeSDK()
+	sdk := getFakeSDK(true)
 	sdk.sdkClient.resources.SetStoragePools(make(map[string]storage.Pool))
 
 	CP1 := sdk.capacityPool("CP1")
@@ -360,7 +282,7 @@ func TestRefreshGCNVResources_CacheNotExpired(t *testing.T) {
 }
 
 func TestCapacityPoolsForStoragePool(t *testing.T) {
-	sdk := getFakeSDK()
+	sdk := getFakeSDK(true)
 	CP1 := sdk.capacityPool("CP1")
 	CP2 := sdk.capacityPool("CP2")
 	CP3 := sdk.capacityPool("CP3")
@@ -455,7 +377,7 @@ func TestCapacityPoolsForStoragePool(t *testing.T) {
 }
 
 func TestEnsureVolumeInValidCapacityPool(t *testing.T) {
-	sdk := getFakeSDK()
+	sdk := getFakeSDK(true)
 	sdk.sdkClient.resources.SetStoragePools(make(map[string]storage.Pool))
 
 	volume := &Volume{
@@ -485,7 +407,7 @@ func TestDumpGCNVResources(t *testing.T) {
 	sPool := storage.NewStoragePool(nil, "pool")
 	sPool.InternalAttributes()[network] = NetworkFullName
 
-	sdk := getFakeSDK()
+	sdk := getFakeSDK(true)
 	sdk.sdkClient.resources.SetStoragePools(map[string]storage.Pool{"pool": sPool})
 
 	discoveryTraceEnabled := sdk.config.DebugTraceFlags["api"]
@@ -579,7 +501,7 @@ func TestCapacityPoolDiscovery_MixedAutoTiering(t *testing.T) {
 }
 
 func TestCapacityPoolDiscovery_DefaultAutoTieringFalse(t *testing.T) {
-	sdk := getFakeSDK()
+	sdk := getFakeSDK(true)
 
 	// Verify existing capacity pools have auto-tiering set to false by default
 	// (since they were created without the AutoTiering field in getFakeSDK)

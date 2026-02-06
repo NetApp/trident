@@ -263,6 +263,7 @@ const (
 	SolidfireSANStorageDriverName      = "solidfire-san"
 	AzureNASStorageDriverName          = "azure-netapp-files"
 	GCNVNASStorageDriverName           = "google-cloud-netapp-volumes"
+	GCNVSANStorageDriverName           = "google-cloud-netapp-volumes-san"
 	FakeStorageDriverName              = "fake"
 
 	/* REST frontend constants */

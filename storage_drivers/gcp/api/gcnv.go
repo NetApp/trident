@@ -39,6 +39,15 @@ const (
 	MaxLabelCount       = 64
 	DefaultSDKTimeout   = 30 * time.Second
 	PaginationLimit     = 100
+
+	// TODO(GCNV API): Remove FallbackIQNFormat when GCNV API provides the target IQN.
+	// FallbackIQNFormat is a placeholder IQN format (serial-based) used when the authoritative target IQN
+	// is not provided by the backend and must be discovered via iSCSI SendTargets discovery.
+	FallbackIQNFormat = "iqn.2008-11.com.netapp.gcnv:%s"
+
+	// GiBBytes is the number of bytes in a gibibyte (1024^3), used for converting between
+	// GCNV's GiB-based capacity and Trident's byte-based sizes.
+	GiBBytes = int64(1024 * 1024 * 1024)
 )
 
 var (
@@ -130,7 +139,6 @@ func NewDriver(ctx context.Context, config *ClientConfig) (GCNV, error) {
 	if computeErr != nil {
 		return nil, computeErr
 	}
-
 	// Create GCNV client with optional endpoint override for testing
 	clientOptions := []option.ClientOption{option.WithCredentials(credentials)}
 	if config.APIEndpoint != "" {
@@ -141,6 +149,7 @@ func NewDriver(ctx context.Context, config *ClientConfig) (GCNV, error) {
 		return nil, err
 	}
 
+	// NOTE: This package uses the NetApp v1 SDK (cloud.google.com/go/netapp v1.12.0+).
 	sdkClient := &GCNVClient{
 		gcnv:      gcnvClient,
 		compute:   computeClient,
@@ -193,7 +202,7 @@ func (c Client) Init(ctx context.Context, pools map[string]storage.Pool) error {
 	return c.RefreshGCNVResources(ctx)
 }
 
-// RegisterStoragePool makes a note of pools defined by the driver for later mapping.
+// registerStoragePools makes a note of pools defined by the driver for later mapping.
 func (c Client) registerStoragePools(sPools map[string]storage.Pool) {
 	m := make(map[string]storage.Pool)
 
@@ -245,6 +254,11 @@ func parseCapacityPoolID(fullName string) (projectNumber, location, capacityPool
 // createVolumeID creates the GCNV-style ID for a volume.
 func (c Client) createVolumeID(location, volume string) string {
 	return fmt.Sprintf("projects/%s/locations/%s/volumes/%s", c.config.ProjectNumber, location, volume)
+}
+
+// createHostGroupID creates the GCNV-style ID for a host group.
+func (c Client) createHostGroupID(location, hostGroup string) string {
+	return fmt.Sprintf("projects/%s/locations/%s/hostGroups/%s", c.config.ProjectNumber, location, hostGroup)
 }
 
 // parseVolumeID parses the GCNV-style full name for a volume.
@@ -354,6 +368,16 @@ func (c Client) findAllLocationsFromCapacityPool(flexPoolsCount int) map[string]
 	return locations
 }
 
+// getLocationFromCapacityPools returns the location from the first available capacity pool.
+// Returns an error if no capacity pools are available.
+func (c Client) getLocationFromCapacityPools() (string, error) {
+	pools := c.CapacityPools()
+	if pools == nil || len(*pools) == 0 {
+		return "", fmt.Errorf("no capacity pools available")
+	}
+	return (*pools)[0].Location, nil
+}
+
 // ///////////////////////////////////////////////////////////////////////////////
 // Functions to convert between GCNV SDK & internal volume structs
 // ///////////////////////////////////////////////////////////////////////////////
@@ -452,7 +476,7 @@ func (c Client) newVolumeFromGCNVVolume(ctx context.Context, volume *netapppb.Vo
 		}
 	}
 
-	return &Volume{
+	result := &Volume{
 		Name:                      volumeName,
 		CreationToken:             volume.ShareName,
 		FullName:                  volume.Name,
@@ -462,7 +486,7 @@ func (c Client) newVolumeFromGCNVVolume(ctx context.Context, volume *netapppb.Vo
 		NetworkName:               network,
 		NetworkFullName:           volume.Network,
 		ServiceLevel:              ServiceLevelFromCapacityPool(c.capacityPool(volume.StoragePool)),
-		SizeBytes:                 volume.CapacityGib * int64(1073741824),
+		SizeBytes:                 volume.CapacityGib * GiBBytes,
 		ExportPolicy:              c.exportPolicyImport(volume.ExportPolicy),
 		ProtocolTypes:             protocolTypes,
 		MountTargets:              c.getMountTargetsFromVolume(ctx, volume),
@@ -473,7 +497,84 @@ func (c Client) newVolumeFromGCNVVolume(ctx context.Context, volume *netapppb.Vo
 		SecurityStyle:             VolumeSecurityStyleFromGCNVSecurityStyle(volume.SecurityStyle),
 		TieringPolicy:             tieringPolicy,
 		TieringMinimumCoolingDays: tieringMinimumCoolingDays,
-	}, nil
+	}
+
+	// If present, extract block device info and iSCSI connection details.
+	if len(volume.BlockDevices) > 0 {
+		for _, bd := range volume.BlockDevices {
+			result.BlockDevices = append(result.BlockDevices, BlockDevice{
+				HostGroups: bd.GetHostGroups(),
+				Identifier: bd.GetIdentifier(),
+				OSType:     osTypeToString(bd.GetOsType()),
+				Name:       bd.GetName(),
+			})
+		}
+		if len(result.BlockDevices) > 0 {
+			result.SerialNumber = result.BlockDevices[0].Identifier
+		}
+		// Ensure ISCSI is present in ProtocolTypes for block volumes, even if the API didn't include it.
+		hasISCSI := false
+		for _, p := range result.ProtocolTypes {
+			if p == ProtocolTypeISCSI {
+				hasISCSI = true
+				break
+			}
+		}
+		if !hasISCSI {
+			result.ProtocolTypes = append([]string{ProtocolTypeISCSI}, result.ProtocolTypes...)
+		}
+	}
+
+	// Extract iSCSI portal details from mount options when present.
+	for _, mo := range volume.MountOptions {
+		if mo.GetProtocol() != netapppb.Protocols_ISCSI {
+			continue
+		}
+		if mo.GetIpAddress() != "" {
+			ipAddresses := strings.Split(mo.GetIpAddress(), ",")
+			for _, ip := range ipAddresses {
+				ip = strings.TrimSpace(ip)
+				if ip == "" {
+					continue
+				}
+				result.ISCSIPortals = append(result.ISCSIPortals, fmt.Sprintf("%s:3260", ip))
+			}
+			if len(result.ISCSIPortals) > 0 {
+				result.ISCSITargetPortal = result.ISCSIPortals[0]
+			}
+		}
+
+		// For GCNV, the real target IQN may need to be obtained via iSCSI discovery.
+		// We set a placeholder IQN from the volume's LUN serial so something is populated.
+		if result.SerialNumber != "" && result.ISCSITargetIQN == "" {
+			result.ISCSITargetIQN = fmt.Sprintf(FallbackIQNFormat, result.SerialNumber)
+		}
+	}
+
+	return result, nil
+}
+
+// convertProtoHostGroupToHostGroup converts a protobuf HostGroup to our HostGroup struct.
+func (c Client) convertProtoHostGroupToHostGroup(protoHG *netapppb.HostGroup) *HostGroup {
+	if protoHG == nil {
+		return nil
+	}
+
+	hg := &HostGroup{
+		Name:        protoHG.Name,
+		Type:        hostGroupTypeFromProtoType(protoHG.Type),
+		State:       hostGroupStateFromProtoState(protoHG.State),
+		Hosts:       protoHG.Hosts,
+		OSType:      osTypeFromProtoOSType(protoHG.OsType),
+		Description: protoHG.Description,
+		Labels:      protoHG.Labels,
+	}
+
+	if protoHG.CreateTime != nil {
+		hg.CreateTime = protoHG.CreateTime.AsTime().Format(time.RFC3339)
+	}
+
+	return hg
 }
 
 // getMountTargetsFromVolume extracts the mount targets from a GCNV volume.
@@ -634,7 +735,7 @@ func (c Client) VolumeExists(ctx context.Context, volConfig *storage.VolumeConfi
 	return c.VolumeExistsByName(ctx, volConfig.InternalName)
 }
 
-// VolumeByID returns a Filesystem based on its GCNV-style ID.
+// VolumeByID returns a volume based on its full GCNV-style resource ID.
 func (c Client) VolumeByID(ctx context.Context, id string) (*Volume, error) {
 	logFields := LogFields{
 		"API":    "GCNV.GetVolume",
@@ -758,11 +859,17 @@ func (c Client) WaitForVolumeState(
 	return volumeState, nil
 }
 
-// CreateVolume creates a new volume.
+// CreateVolume creates a new volume (NAS or block).
+// For NAS volumes (NFS/SMB), it sets export policy, unix permissions, snapshot directory, etc.
+// For block volumes (iSCSI), it sets block devices with OS type.
 func (c Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest) (*Volume, error) {
 	var protocols []netapppb.Protocols
+	isBlockVolume := false
 	for _, protocolType := range request.ProtocolTypes {
 		protocols = append(protocols, GCNVProtocolFromVolumeProtocol(protocolType))
+		if protocolType == ProtocolTypeISCSI {
+			isBlockVolume = true
+		}
 	}
 
 	cPool := c.capacityPool(request.CapacityPool)
@@ -771,15 +878,11 @@ func (c Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest) 
 	}
 
 	newVol := &netapppb.Volume{
-		Name:              request.Name,
-		ShareName:         request.CreationToken,
-		StoragePool:       request.CapacityPool,
-		CapacityGib:       request.SizeBytes / 1073741824,
-		Protocols:         protocols,
-		UnixPermissions:   request.UnixPermissions,
-		Labels:            request.Labels,
-		SnapshotDirectory: request.SnapshotDirectory,
-		SecurityStyle:     GCNVSecurityStyleFromVolumeSecurityStyle(request.SecurityStyle),
+		Name:        request.Name,
+		StoragePool: request.CapacityPool,
+		CapacityGib: request.SizeBytes / GiBBytes,
+		Protocols:   protocols,
+		Labels:      request.Labels,
 	}
 
 	// Add auto-tiering configuration using TieringPolicy
@@ -818,6 +921,21 @@ func (c Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest) 
 		newVol.SnapReserve = float64(*request.SnapshotReserve)
 	}
 
+	// Set NAS vs block specific fields.
+	if isBlockVolume {
+		newVol.BlockDevices = []*netapppb.BlockDevice{
+			{
+				OsType:     stringToOsType(request.OSType),
+				HostGroups: []string{}, // Start with empty mappings for per-node architecture
+			},
+		}
+	} else {
+		newVol.ShareName = request.CreationToken
+		newVol.UnixPermissions = request.UnixPermissions
+		newVol.SnapshotDirectory = request.SnapshotDirectory
+		newVol.SecurityStyle = GCNVSecurityStyleFromVolumeSecurityStyle(request.SecurityStyle)
+	}
+
 	// Only set the snapshot ID if we are cloning
 	if request.SnapshotID != "" {
 		newVol.RestoreParameters = &netapppb.RestoreParameters{
@@ -831,6 +949,7 @@ func (c Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest) 
 		"name":          request.Name,
 		"creationToken": request.CreationToken,
 		"capacityPool":  request.CapacityPool,
+		"isBlock":       isBlockVolume,
 	}).Debug("Issuing create request.")
 
 	logFields := LogFields{
@@ -855,21 +974,21 @@ func (c Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest) 
 
 	if _, pollErr := poller.Poll(sdkCtx); pollErr != nil {
 		return nil, pollErr
-	} else {
-		// The volume doesn't exist yet, so forge the name & network IDs to enable conversion to a Volume struct
-		newVol.Name = c.createVolumeID(cPool.Location, request.Name)
-		newVol.Network = cPool.NetworkFullName
-		return c.newVolumeFromGCNVVolume(ctx, newVol)
 	}
+	// The volume doesn't exist yet, so forge the name & network IDs to enable conversion to a Volume struct
+	newVol.Name = c.createVolumeID(cPool.Location, request.Name)
+	newVol.Network = cPool.NetworkFullName
+	return c.newVolumeFromGCNVVolume(ctx, newVol)
 }
 
-// ModifyVolume updates attributes of a volume.
-func (c Client) ModifyVolume(
+// UpdateNASVolume updates NAS-specific attributes of a volume: labels, unix permissions, and snapshot directory access.
+// This is only applicable to NFS/SMB volumes. For block volumes, use UpdateSANVolume.
+func (c Client) UpdateNASVolume(
 	ctx context.Context, volume *Volume, labels map[string]string, unixPermissions *string,
 	snapshotDirAccess *bool, _ *ExportRule,
 ) error {
 	logFields := LogFields{
-		"API":    "GCNV.UpdateVolume",
+		"API":    "GCNV.UpdateVolumeAttributes",
 		"volume": volume.Name,
 	}
 
@@ -891,7 +1010,7 @@ func (c Client) ModifyVolume(
 		updateMask.Paths = append(updateMask.Paths, "snapshot_directory")
 	}
 
-	Logc(ctx).WithFields(logFields).Debug("Modifying volume.")
+	Logc(ctx).WithFields(logFields).Debug("Updating volume attributes.")
 
 	sdkCtx, sdkCancel := context.WithTimeout(ctx, c.config.SDKTimeout)
 	defer sdkCancel()
@@ -901,20 +1020,20 @@ func (c Client) ModifyVolume(
 	}
 	poller, err := c.sdkClient.gcnv.UpdateVolume(sdkCtx, req)
 	if err != nil {
-		Logc(ctx).WithFields(logFields).WithError(err).Error("Error modifying volume.")
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error updating volume attributes.")
 		return err
 	}
 
-	Logc(ctx).WithFields(logFields).Info("Volume modify request issued.")
+	Logc(ctx).WithFields(logFields).Info("Volume attribute update request issued.")
 
 	waitCtx, waitCancel := context.WithTimeout(ctx, DefaultTimeout)
 	defer waitCancel()
 	if _, pollErr := poller.Wait(waitCtx); pollErr != nil {
-		Logc(ctx).WithFields(logFields).WithError(pollErr).Error("Error polling for volume modify result.")
+		Logc(ctx).WithFields(logFields).WithError(pollErr).Error("Error polling for volume attribute update result.")
 		return pollErr
 	}
 
-	Logc(ctx).WithFields(logFields).Debug("Volume modified.")
+	Logc(ctx).WithFields(logFields).Debug("Volume attributes updated.")
 
 	return nil
 }
@@ -928,7 +1047,7 @@ func (c Client) ResizeVolume(ctx context.Context, volume *Volume, newSizeBytes i
 
 	newVolume := &netapppb.Volume{
 		Name:        volume.FullName,
-		CapacityGib: newSizeBytes / 1073741824,
+		CapacityGib: newSizeBytes / GiBBytes,
 	}
 	updateMask := &fieldmaskpb.FieldMask{
 		Paths: []string{"capacity_gib"},
@@ -950,9 +1069,9 @@ func (c Client) ResizeVolume(ctx context.Context, volume *Volume, newSizeBytes i
 
 	waitCtx, waitCancel := context.WithTimeout(ctx, DefaultTimeout)
 	defer waitCancel()
-	if _, pollErr := poller.Wait(waitCtx); pollErr != nil {
-		Logc(ctx).WithFields(logFields).WithError(pollErr).Error("Error polling for volume resize result.")
-		return pollErr
+	if _, waitErr := poller.Wait(waitCtx); waitErr != nil {
+		Logc(ctx).WithFields(logFields).WithError(waitErr).Error("Error polling for volume resize result.")
+		return waitErr
 	}
 
 	Logc(ctx).WithFields(logFields).Debug("Volume resize complete.")
@@ -1223,7 +1342,7 @@ func (c Client) DeleteSnapshot(
 	waitCtx, waitCancel := context.WithTimeout(ctx, waitDuration)
 	defer waitCancel()
 	if pollErr := poller.Wait(waitCtx); pollErr != nil {
-		Logc(ctx).WithFields(logFields).WithError(pollErr).Error("Error polling for delete snapshot result.")
+		Logc(ctx).WithFields(logFields).WithError(pollErr).Error("Error waiting for delete snapshot result.")
 		return pollErr
 	}
 
@@ -1370,32 +1489,92 @@ func GCNVAccessTypeFromVolumeAccessType(accessType string) netapppb.AccessType {
 // VolumeProtocolFromGCNVProtocol converts GCNV protocol type to string
 func VolumeProtocolFromGCNVProtocol(protocol netapppb.Protocols) string {
 	switch protocol {
-	default:
-		fallthrough
-	case netapppb.Protocols_PROTOCOLS_UNSPECIFIED:
-		return ProtocolTypeUnknown
 	case netapppb.Protocols_NFSV3:
 		return ProtocolTypeNFSv3
 	case netapppb.Protocols_NFSV4:
 		return ProtocolTypeNFSv41
 	case netapppb.Protocols_SMB:
 		return ProtocolTypeSMB
+	case netapppb.Protocols_ISCSI:
+		return ProtocolTypeISCSI
+	default:
+		return ProtocolTypeUnknown
 	}
 }
 
-// GCNVProtocolFromVolumeProtocol converts string to GCNV protocol type
+// GCNVProtocolFromVolumeProtocol converts string to GCNV protocol type.
 func GCNVProtocolFromVolumeProtocol(protocol string) netapppb.Protocols {
 	switch protocol {
-	default:
-		fallthrough
-	case ProtocolTypeUnknown:
-		return netapppb.Protocols_PROTOCOLS_UNSPECIFIED
 	case ProtocolTypeNFSv3:
 		return netapppb.Protocols_NFSV3
 	case ProtocolTypeNFSv41:
 		return netapppb.Protocols_NFSV4
 	case ProtocolTypeSMB:
 		return netapppb.Protocols_SMB
+	case ProtocolTypeISCSI:
+		return netapppb.Protocols_ISCSI
+	default:
+		return netapppb.Protocols_PROTOCOLS_UNSPECIFIED
+	}
+}
+
+func osTypeToString(osType netapppb.OsType) string {
+	switch osType {
+	case netapppb.OsType_LINUX:
+		return OSTypeLinux
+	case netapppb.OsType_WINDOWS:
+		return OSTypeWindows
+	default:
+		return ""
+	}
+}
+
+func stringToOsType(osType string) netapppb.OsType {
+	switch strings.ToUpper(osType) {
+	case OSTypeLinux:
+		return netapppb.OsType_LINUX
+	case OSTypeWindows:
+		return netapppb.OsType_WINDOWS
+	default:
+		return netapppb.OsType_OS_TYPE_UNSPECIFIED
+	}
+}
+
+// hostGroupTypeFromProtoType converts protobuf HostGroup_Type to string
+func hostGroupTypeFromProtoType(t netapppb.HostGroup_Type) string {
+	switch t {
+	case netapppb.HostGroup_ISCSI_INITIATOR:
+		return HostGroupTypeISCSIInitiator
+	default:
+		return "TYPE_UNSPECIFIED"
+	}
+}
+
+// hostGroupStateFromProtoState converts protobuf HostGroup_State to string
+func hostGroupStateFromProtoState(s netapppb.HostGroup_State) string {
+	switch s {
+	case netapppb.HostGroup_READY:
+		return HostGroupStateReady
+	case netapppb.HostGroup_CREATING:
+		return HostGroupStateCreating
+	case netapppb.HostGroup_UPDATING:
+		return HostGroupStateUpdating
+	case netapppb.HostGroup_DELETING:
+		return HostGroupStateDeleting
+	default:
+		return HostGroupStateUnspecified
+	}
+}
+
+// osTypeFromProtoOSType converts protobuf OsType to string
+func osTypeFromProtoOSType(osType netapppb.OsType) string {
+	switch osType {
+	case netapppb.OsType_LINUX:
+		return OSTypeLinux
+	case netapppb.OsType_WINDOWS:
+		return OSTypeWindows
+	default:
+		return ""
 	}
 }
 
@@ -1419,6 +1598,600 @@ func SnapshotStateFromGCNVState(state netapppb.Snapshot_State) string {
 	case netapppb.Snapshot_ERROR:
 		return SnapshotStateError
 	}
+}
+
+// ///////////////////////////////////////////////////////////////////////////////
+// Block Storage (iSCSI LUN) API Methods - v1 protobuf API (v1.12.0+)
+// ///////////////////////////////////////////////////////////////////////////////
+
+// UpdateSANVolume updates SAN/block volume properties (labels, block devices) using v1 protobuf SDK.
+// This is only applicable to iSCSI volumes. For NAS volumes, use UpdateNASVolume.
+func (c Client) UpdateSANVolume(ctx context.Context, volume *Volume, request *VolumeUpdateRequest) (*Volume, error) {
+	logFields := LogFields{
+		"API":       "GCNV.UpdateVolume",
+		"volume":    volume.FullName,
+		"fieldMask": request.FieldMask,
+	}
+
+	Logc(ctx).WithFields(logFields).Debug("Updating volume via NetApp v1 SDK.")
+
+	// Build the volume update with only the fields specified in FieldMask
+	updatedVolume := &netapppb.Volume{
+		Name: volume.FullName,
+	}
+
+	// Add fields based on FieldMask
+	for _, field := range request.FieldMask {
+		switch field {
+		case "labels":
+			if request.Labels != nil {
+				updatedVolume.Labels = request.Labels
+			}
+		case "block_devices":
+			// BlockDevices updates are handled by AddHostGroupToVolume/RemoveHostGroupFromVolume
+			// This case is here for completeness but not currently used
+			if request.BlockDevices != nil {
+				Logc(ctx).WithFields(logFields).Debug("BlockDevices update requested but should use AddHostGroupToVolume/RemoveHostGroupFromVolume instead.")
+			}
+		default:
+			Logc(ctx).WithFields(logFields).WithField("unknownField", field).Debug("Unknown field in FieldMask, ignoring.")
+		}
+	}
+
+	updateMask := &fieldmaskpb.FieldMask{
+		Paths: request.FieldMask,
+	}
+
+	req := &netapppb.UpdateVolumeRequest{
+		Volume:     updatedVolume,
+		UpdateMask: updateMask,
+	}
+
+	opCtx, cancel := context.WithTimeout(ctx, DefaultTimeout)
+	defer cancel()
+	op, err := c.sdkClient.gcnv.UpdateVolume(opCtx, req)
+	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error updating volume.")
+		return nil, err
+	}
+
+	// Wait for the update operation to complete
+	gcnvVol, err := op.Wait(opCtx)
+	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error waiting for volume update operation.")
+		return nil, err
+	}
+
+	Logc(ctx).WithFields(logFields).Debug("Volume updated successfully.")
+	return c.newVolumeFromGCNVVolume(ctx, gcnvVol)
+}
+
+// VolumeMappedHostGroups retrieves the list of host groups mapped to a volume.
+func (c Client) VolumeMappedHostGroups(ctx context.Context, volumeID string) ([]string, error) {
+	volume, err := c.VolumeByID(ctx, volumeID)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(volume.BlockDevices) > 0 {
+		return volume.BlockDevices[0].HostGroups, nil
+	}
+
+	return []string{}, nil
+}
+
+// AddHostGroupToVolume adds a host group to the volume's blockDevices[0].hostGroups array.
+func (c Client) AddHostGroupToVolume(ctx context.Context, volumeID, hostGroupID string) error {
+	logFields := LogFields{
+		"API":         "GCNV.AddHostGroupToVolume",
+		"volume":      volumeID,
+		"hostGroupID": hostGroupID,
+	}
+
+	Logc(ctx).WithFields(logFields).Debug("Adding host group to volume via NetApp v1 SDK.")
+
+	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
+	defer cancel()
+	gcnvVol, err := c.sdkClient.gcnv.GetVolume(sdkCtx, &netapppb.GetVolumeRequest{Name: volumeID})
+	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error fetching volume.")
+		return err
+	}
+	if len(gcnvVol.BlockDevices) == 0 {
+		return fmt.Errorf("volume %s has no block devices", volumeID)
+	}
+
+	current := gcnvVol.BlockDevices[0].GetHostGroups()
+	for _, hg := range current {
+		if hg == hostGroupID {
+			return nil
+		}
+	}
+	updatedHostGroups := append(current, hostGroupID)
+
+	// Create a new BlockDevice with only the fields we're updating (HostGroups).
+	// Do not include read-only fields like SizeGib, which the API rejects.
+	// Name is required by the API.
+	blockDeviceName := gcnvVol.BlockDevices[0].Name
+	if blockDeviceName != nil {
+		Logc(ctx).WithFields(logFields).WithField("blockDeviceName", *blockDeviceName).Info("Retrieved block device name for host group update.")
+	} else {
+		Logc(ctx).WithFields(logFields).Debug("Block device name is nil.")
+	}
+
+	updatedBlockDevice := &netapppb.BlockDevice{
+		Name:       blockDeviceName, // Required field (pointer to string)
+		HostGroups: updatedHostGroups,
+		OsType:     gcnvVol.BlockDevices[0].GetOsType(), // Preserve OS type
+	}
+
+	updateReq := &netapppb.UpdateVolumeRequest{
+		Volume: &netapppb.Volume{
+			Name:         gcnvVol.Name,
+			BlockDevices: []*netapppb.BlockDevice{updatedBlockDevice},
+		},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"block_devices"}},
+	}
+
+	opCtx, opCancel := context.WithTimeout(ctx, DefaultTimeout)
+	defer opCancel()
+	op, err := c.sdkClient.gcnv.UpdateVolume(opCtx, updateReq)
+	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error adding host group to volume.")
+		return err
+	}
+	// Use a detached context for waiting - the operation should complete regardless of caller timeout
+	waitCtx, waitCancel := context.WithTimeout(context.Background(), DefaultTimeout)
+	defer waitCancel()
+	if _, err := op.Wait(waitCtx); err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error adding host group to volume.")
+		return err
+	}
+
+	Logc(ctx).WithFields(logFields).Info("Host group added to volume.")
+	return nil
+}
+
+// RemoveHostGroupFromVolume removes a host group from the volume's blockDevices[0].hostGroups array.
+func (c Client) RemoveHostGroupFromVolume(ctx context.Context, volumeID, hostGroupID string) error {
+	logFields := LogFields{
+		"API":         "GCNV.RemoveHostGroupFromVolume",
+		"volume":      volumeID,
+		"hostGroupID": hostGroupID,
+	}
+
+	Logc(ctx).WithFields(logFields).Debug("Removing host group from volume via NetApp v1 SDK.")
+
+	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
+	defer cancel()
+	gcnvVol, err := c.sdkClient.gcnv.GetVolume(sdkCtx, &netapppb.GetVolumeRequest{Name: volumeID})
+	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error fetching volume.")
+		return err
+	}
+	if len(gcnvVol.BlockDevices) == 0 {
+		return fmt.Errorf("volume %s has no block devices", volumeID)
+	}
+
+	current := gcnvVol.BlockDevices[0].GetHostGroups()
+	updated := make([]string, 0, len(current))
+	found := false
+	for _, hg := range current {
+		if hg == hostGroupID {
+			found = true
+			continue
+		}
+		updated = append(updated, hg)
+	}
+	if !found {
+		return nil
+	}
+
+	// Create a new BlockDevice with only the fields we're updating (HostGroups).
+	// Do not include read-only fields like SizeGib, which the API rejects.
+	// Name is required by the API.
+	blockDeviceName := gcnvVol.BlockDevices[0].Name
+	if blockDeviceName != nil {
+		Logc(ctx).WithFields(logFields).WithField("blockDeviceName", *blockDeviceName).Info("Retrieved block device name for host group removal.")
+	} else {
+		Logc(ctx).WithFields(logFields).Debug("Block device name is nil.")
+	}
+
+	updatedBlockDevice := &netapppb.BlockDevice{
+		Name:       blockDeviceName, // Required field (pointer to string)
+		HostGroups: updated,
+		OsType:     gcnvVol.BlockDevices[0].GetOsType(), // Preserve OS type
+	}
+
+	updateReq := &netapppb.UpdateVolumeRequest{
+		Volume: &netapppb.Volume{
+			Name:         gcnvVol.Name,
+			BlockDevices: []*netapppb.BlockDevice{updatedBlockDevice},
+		},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"block_devices"}},
+	}
+
+	opCtx, opCancel := context.WithTimeout(ctx, DefaultTimeout)
+	defer opCancel()
+	op, err := c.sdkClient.gcnv.UpdateVolume(opCtx, updateReq)
+	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error removing host group from volume.")
+		return err
+	}
+	// Use a detached context for waiting - the operation should complete regardless of caller timeout
+	waitCtx, waitCancel := context.WithTimeout(context.Background(), DefaultTimeout)
+	defer waitCancel()
+	if _, err := op.Wait(waitCtx); err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error removing host group from volume.")
+		return err
+	}
+
+	Logc(ctx).WithFields(logFields).Info("Host group removed from volume.")
+	return nil
+}
+
+// ISCSITargetInfo extracts iSCSI connection details from a volume.
+func (c Client) ISCSITargetInfo(ctx context.Context, volume *Volume) (*ISCSITargetInfo, error) {
+	if volume == nil {
+		return nil, fmt.Errorf("volume cannot be nil")
+	}
+
+	// Check if volume is an iSCSI volume by checking for BlockDevices or ISCSI protocol
+	isISCSI := len(volume.BlockDevices) > 0
+	if !isISCSI && len(volume.ProtocolTypes) > 0 {
+		for _, proto := range volume.ProtocolTypes {
+			if proto == ProtocolTypeISCSI {
+				isISCSI = true
+				break
+			}
+		}
+	}
+
+	if !isISCSI {
+		return nil, fmt.Errorf("volume %s is not an iSCSI volume", volume.Name)
+	}
+
+	info := &ISCSITargetInfo{
+		TargetIQN:    volume.ISCSITargetIQN,
+		TargetPortal: volume.ISCSITargetPortal,
+		Portals:      volume.ISCSIPortals,
+		LunID:        volume.LunID,
+		NetworkPath:  volume.NetworkFullName,
+	}
+
+	return info, nil
+}
+
+// ///////////////////////////////////////////////////////////////////////////////
+// Host Group API Methods - v1 protobuf SDK
+// ///////////////////////////////////////////////////////////////////////////////
+
+// HostGroups retrieves all host groups in the configured location using v1 protobuf SDK.
+func (c Client) HostGroups(ctx context.Context) ([]*HostGroup, error) {
+	logFields := LogFields{
+		"API": "GCNV.HostGroups",
+	}
+
+	Logc(ctx).WithFields(logFields).Debug("Listing host groups via v1 protobuf SDK.")
+
+	location, err := c.getLocationFromCapacityPools()
+	if err != nil {
+		return []*HostGroup{}, nil
+	}
+
+	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
+	defer cancel()
+	req := &netapppb.ListHostGroupsRequest{
+		Parent:   c.createBaseID(location),
+		PageSize: PaginationLimit,
+	}
+	it := c.sdkClient.gcnv.ListHostGroups(sdkCtx, req)
+
+	hostGroups := make([]*HostGroup, 0)
+	for {
+		hg, err := it.Next()
+		if errors.Is(err, iterator.Done) {
+			break
+		}
+		if err != nil {
+			Logc(ctx).WithFields(logFields).WithError(err).Error("Error listing host groups.")
+			return nil, err
+		}
+		hostGroups = append(hostGroups, c.convertProtoHostGroupToHostGroup(hg))
+	}
+
+	Logc(ctx).WithFields(logFields).WithField("count", len(hostGroups)).Debug("Listed host groups.")
+	return hostGroups, nil
+}
+
+// HostGroupByName retrieves a specific host group by name using v1 protobuf SDK.
+func (c Client) HostGroupByName(ctx context.Context, name string) (*HostGroup, error) {
+	logFields := LogFields{
+		"API":           "GCNV.HostGroupByName",
+		"hostGroupName": name,
+	}
+
+	Logc(ctx).WithFields(logFields).Debug("Fetching host group by name via v1 protobuf SDK.")
+
+	location, err := c.getLocationFromCapacityPools()
+	if err != nil {
+		return nil, err
+	}
+
+	fullName := c.createHostGroupID(location, name)
+
+	sdkCtx, sdkCancel := context.WithTimeout(ctx, c.config.SDKTimeout)
+	defer sdkCancel()
+
+	req := &netapppb.GetHostGroupRequest{
+		Name: fullName,
+	}
+
+	gcnvHostGroup, err := c.sdkClient.gcnv.GetHostGroup(sdkCtx, req)
+	if err != nil {
+		if IsGCNVNotFoundError(err) {
+			return nil, errors.NotFoundError("host group %s not found", name)
+		}
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error fetching host group.")
+		return nil, err
+	}
+
+	hostGroup := c.convertProtoHostGroupToHostGroup(gcnvHostGroup)
+
+	Logc(ctx).WithFields(logFields).Debug("Fetched host group.")
+	return hostGroup, nil
+}
+
+// CreateHostGroup creates a new host group with the specified initiators.
+func (c Client) CreateHostGroup(ctx context.Context, request *HostGroupCreateRequest) (*HostGroup, error) {
+	logFields := LogFields{
+		"API":           "GCNV.CreateHostGroup",
+		"hostGroupName": request.ResourceID,
+	}
+
+	Logc(ctx).WithFields(logFields).Debug("Creating host group via v1 protobuf SDK.")
+
+	location, err := c.getLocationFromCapacityPools()
+	if err != nil {
+		return nil, err
+	}
+
+	// Validate and convert host group type
+	hostGroupType := netapppb.HostGroup_ISCSI_INITIATOR
+	if request.Type != "" {
+		if request.Type != HostGroupTypeISCSIInitiator {
+			return nil, fmt.Errorf("unsupported host group type: %s (only %s is supported)", request.Type, HostGroupTypeISCSIInitiator)
+		}
+	}
+
+	// Validate and convert OS type
+	osType := netapppb.OsType_LINUX
+	if request.OSType != "" {
+		osType = stringToOsType(request.OSType)
+		if osType == netapppb.OsType_OS_TYPE_UNSPECIFIED {
+			return nil, fmt.Errorf("invalid OS type: %s (must be %s or %s)", request.OSType, OSTypeLinux, OSTypeWindows)
+		}
+	}
+
+	newHostGroup := &netapppb.HostGroup{
+		Type:        hostGroupType,
+		Hosts:       request.Hosts,
+		OsType:      osType,
+		Description: request.Description,
+		Labels:      make(map[string]string),
+	}
+
+	req := &netapppb.CreateHostGroupRequest{
+		Parent:      c.createBaseID(location),
+		HostGroupId: request.ResourceID,
+		HostGroup:   newHostGroup,
+	}
+
+	sdkCtx, sdkCancel := context.WithTimeout(ctx, c.config.SDKTimeout)
+	defer sdkCancel()
+
+	poller, err := c.sdkClient.gcnv.CreateHostGroup(sdkCtx, req)
+	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error creating host group.")
+		return nil, err
+	}
+
+	Logc(ctx).WithFields(logFields).Info("Host group create request issued.")
+
+	// Wait for operation to complete
+	waitCtx, waitCancel := context.WithTimeout(ctx, DefaultTimeout)
+	defer waitCancel()
+	gcnvHostGroup, pollErr := poller.Wait(waitCtx)
+	if pollErr != nil {
+		Logc(ctx).WithFields(logFields).WithError(pollErr).Error("Error polling for host group creation result.")
+		return nil, pollErr
+	}
+
+	// Convert protobuf response to our HostGroup struct
+	hostGroup := c.convertProtoHostGroupToHostGroup(gcnvHostGroup)
+
+	Logc(ctx).WithFields(logFields).Info("Host group created successfully.")
+	return hostGroup, nil
+}
+
+// UpdateHostGroup updates an existing host group (e.g., modify initiators).
+func (c Client) UpdateHostGroup(ctx context.Context, hostGroup *HostGroup, newHosts []string) error {
+	logFields := LogFields{
+		"API":           "GCNV.UpdateHostGroup",
+		"hostGroupName": hostGroup.Name,
+	}
+
+	Logc(ctx).WithFields(logFields).Debug("Updating host group via v1 protobuf SDK.")
+
+	updatedHostGroup := &netapppb.HostGroup{
+		Name:  hostGroup.Name,
+		Hosts: newHosts,
+	}
+	updateMask := &fieldmaskpb.FieldMask{
+		Paths: []string{"hosts"},
+	}
+
+	sdkCtx, sdkCancel := context.WithTimeout(ctx, c.config.SDKTimeout)
+	defer sdkCancel()
+
+	req := &netapppb.UpdateHostGroupRequest{
+		HostGroup:  updatedHostGroup,
+		UpdateMask: updateMask,
+	}
+
+	poller, err := c.sdkClient.gcnv.UpdateHostGroup(sdkCtx, req)
+	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error updating host group.")
+		return err
+	}
+
+	Logc(ctx).WithFields(logFields).Info("Host group update request issued.")
+
+	// Wait for operation to complete
+	waitCtx, waitCancel := context.WithTimeout(ctx, DefaultTimeout)
+	defer waitCancel()
+	if _, waitErr := poller.Wait(waitCtx); waitErr != nil {
+		Logc(ctx).WithFields(logFields).WithError(waitErr).Error("Error waiting for host group update to complete.")
+		return waitErr
+	}
+
+	Logc(ctx).WithFields(logFields).Info("Host group updated successfully.")
+	return nil
+}
+
+// DeleteHostGroup deletes a host group (only if no volumes are mapped).
+func (c Client) DeleteHostGroup(ctx context.Context, hostGroup *HostGroup) error {
+	logFields := LogFields{
+		"API":           "GCNV.DeleteHostGroup",
+		"hostGroupName": hostGroup.Name,
+	}
+
+	Logc(ctx).WithFields(logFields).Debug("Deleting host group via v1 protobuf SDK.")
+
+	sdkCtx, sdkCancel := context.WithTimeout(ctx, c.config.SDKTimeout)
+	defer sdkCancel()
+
+	req := &netapppb.DeleteHostGroupRequest{
+		Name: hostGroup.Name,
+	}
+
+	poller, err := c.sdkClient.gcnv.DeleteHostGroup(sdkCtx, req)
+	if err != nil {
+		Logc(ctx).WithFields(logFields).WithError(err).Error("Error deleting host group.")
+		return err
+	}
+
+	Logc(ctx).WithFields(logFields).Info("Host group delete request issued.")
+
+	// Use a detached context for waiting - the operation should complete regardless of caller timeout
+	waitCtx, waitCancel := context.WithTimeout(context.Background(), DefaultTimeout)
+	defer waitCancel()
+	if waitErr := poller.Wait(waitCtx); waitErr != nil {
+		Logc(ctx).WithFields(logFields).WithError(waitErr).Error("Error waiting for host group deletion to complete.")
+		return waitErr
+	}
+
+	Logc(ctx).WithFields(logFields).Info("Host group deleted successfully.")
+	return nil
+}
+
+// AddInitiatorsToHostGroup adds IQNs to an existing host group.
+func (c Client) AddInitiatorsToHostGroup(ctx context.Context, hostGroup *HostGroup, iqns []string) error {
+	logFields := LogFields{
+		"API":           "GCNV.AddInitiatorsToHostGroup",
+		"hostGroupName": hostGroup.Name,
+		"iqns":          iqns,
+	}
+
+	Logc(ctx).WithFields(logFields).Debug("Adding initiators to host group.")
+
+	// Add new IQNs (deduplicate)
+	existingIQNs := make(map[string]bool)
+	for _, iqn := range hostGroup.Hosts {
+		existingIQNs[iqn] = true
+	}
+
+	updatedHosts := hostGroup.Hosts
+	for _, iqn := range iqns {
+		if !existingIQNs[iqn] {
+			updatedHosts = append(updatedHosts, iqn)
+		}
+	}
+
+	// Only update if there are changes
+	if len(updatedHosts) == len(hostGroup.Hosts) {
+		Logc(ctx).WithFields(logFields).Debug("No new initiators to add.")
+		return nil
+	}
+
+	return c.UpdateHostGroup(ctx, hostGroup, updatedHosts)
+}
+
+// RemoveInitiatorsFromHostGroup removes IQNs from an existing host group.
+func (c Client) RemoveInitiatorsFromHostGroup(ctx context.Context, hostGroup *HostGroup, iqns []string) error {
+	logFields := LogFields{
+		"API":           "GCNV.RemoveInitiatorsFromHostGroup",
+		"hostGroupName": hostGroup.Name,
+		"iqns":          iqns,
+	}
+
+	Logc(ctx).WithFields(logFields).Debug("Removing initiators from host group.")
+
+	// Remove IQNs
+	toRemove := make(map[string]bool)
+	for _, iqn := range iqns {
+		toRemove[iqn] = true
+	}
+
+	updatedHosts := []string{}
+	for _, iqn := range hostGroup.Hosts {
+		if !toRemove[iqn] {
+			updatedHosts = append(updatedHosts, iqn)
+		}
+	}
+
+	// Only update if there are changes
+	if len(updatedHosts) == len(hostGroup.Hosts) {
+		Logc(ctx).WithFields(logFields).Debug("No initiators to remove.")
+		return nil
+	}
+
+	return c.UpdateHostGroup(ctx, hostGroup, updatedHosts)
+}
+
+// HostGroupVolumes retrieves all volumes mapped to a specific host group.
+func (c Client) HostGroupVolumes(ctx context.Context, hostGroupID string) ([]string, error) {
+	logFields := LogFields{
+		"API":         "GCNV.HostGroupVolumes",
+		"hostGroupID": hostGroupID,
+	}
+
+	Logc(ctx).WithFields(logFields).Debug("Fetching volumes for host group.")
+
+	// Use a detached context - this query should complete regardless of caller timeout
+	queryCtx, cancel := context.WithTimeout(context.Background(), DefaultTimeout)
+	defer cancel()
+
+	// Get all volumes and filter by host group mapping
+	volumes, err := c.Volumes(queryCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	mappedVolumes := []string{}
+	for _, vol := range *volumes {
+		if len(vol.BlockDevices) > 0 {
+			for _, hgID := range vol.BlockDevices[0].HostGroups {
+				if hgID == hostGroupID {
+					mappedVolumes = append(mappedVolumes, vol.FullName)
+					break
+				}
+			}
+		}
+	}
+
+	Logc(ctx).WithFields(logFields).WithField("count", len(mappedVolumes)).Debug("Found mapped volumes.")
+	return mappedVolumes, nil
 }
 
 // IsGCNVNotFoundError checks whether an error returned from the GCNV SDK contains a 404 (Not Found) error.

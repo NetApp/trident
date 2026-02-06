@@ -7,8 +7,16 @@ import (
 	"sync"
 	"time"
 
+	netapppb "cloud.google.com/go/netapp/apiv1/netapppb"
+
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/storage"
+)
+
+// OS type constants derived from the SDK
+var (
+	OSTypeLinux   = netapppb.OsType_LINUX.String()
+	OSTypeWindows = netapppb.OsType_WINDOWS.String()
 )
 
 const (
@@ -17,12 +25,22 @@ const (
 	ProtocolTypeNFSv3     = ProtocolTypeNFSPrefix + "3"
 	ProtocolTypeNFSv41    = ProtocolTypeNFSPrefix + "4.1"
 	ProtocolTypeSMB       = "SMB"
+	ProtocolTypeISCSI     = "ISCSI"
 
 	ServiceLevelUnspecified = "Unspecified"
 	ServiceLevelFlex        = "Flex"
 	ServiceLevelStandard    = "Standard"
 	ServiceLevelPremium     = "Premium"
 	ServiceLevelExtreme     = "Extreme"
+
+	HostGroupTypeISCSIInitiator = "ISCSI_INITIATOR"
+
+	HostGroupStateUnspecified = "Unspecified"
+	HostGroupStateReady       = "Ready"
+	HostGroupStateCreating    = "Creating"
+	HostGroupStateUpdating    = "Updating"
+	HostGroupStateDeleting    = "Deleting"
+	HostGroupStateError       = "Error"
 
 	StoragePoolStateUnspecified = "Unspecified"
 	StoragePoolStateReady       = "Ready"
@@ -138,24 +156,34 @@ type Volume struct {
 	SnapshotReserve           int64
 	SnapshotDirectory         bool
 	SecurityStyle             string
+	BlockDevices              []BlockDevice
+	ISCSITargetIQN            string
+	ISCSITargetPortal         string
+	ISCSIPortals              []string
+	LunID                     int
+	SerialNumber              string
 	TieringPolicy             string
 	TieringMinimumCoolingDays *int32
 }
 
 // VolumeCreateRequest embodies all the details of a volume to be created.
+// This unified request supports both NAS (NFS/SMB) and block (iSCSI) volumes.
 type VolumeCreateRequest struct {
-	Name                      string
-	CreationToken             string
-	CapacityPool              string
-	SizeBytes                 int64
-	ExportPolicy              *ExportPolicy
-	ProtocolTypes             []string
-	UnixPermissions           string
-	Labels                    map[string]string
-	SnapshotReserve           *int64
-	SnapshotDirectory         bool
-	SecurityStyle             string
-	SnapshotID                string
+	Name              string
+	CreationToken     string
+	CapacityPool      string
+	SizeBytes         int64
+	ExportPolicy      *ExportPolicy
+	ProtocolTypes     []string
+	UnixPermissions   string
+	Labels            map[string]string
+	SnapshotReserve   *int64
+	SnapshotDirectory bool
+	SecurityStyle     string
+	SnapshotID        string
+
+	// Block/iSCSI-specific fields
+	OSType                    string // LINUX or WINDOWS - only used for iSCSI volumes
 	TieringPolicy             string
 	TieringMinimumCoolingDays *int32
 }
@@ -191,4 +219,51 @@ type Snapshot struct {
 	State    string
 	Created  time.Time
 	Labels   map[string]string
+}
+
+// BlockDevice represents a block device in a GCNV volume.
+// This matches the GCNV API BlockDevice structure.
+type BlockDevice struct {
+	HostGroups []string `json:"hostGroups,omitempty"`
+	Identifier string   `json:"identifier,omitempty"` // Output only - LUN serial number for iSCSI
+	OSType     string   `json:"osType,omitempty"`
+	Name       string   `json:"name,omitempty"`
+}
+
+// HostGroup records details of a discovered GCNV host group (iGroup).
+// This matches the GCNV API HostGroup structure.
+type HostGroup struct {
+	Name        string            `json:"name,omitempty"`        // Full resource name
+	Type        string            `json:"type,omitempty"`        // ISCSI_INITIATOR
+	State       string            `json:"state,omitempty"`       // Ready, Creating, Deleting, Error
+	CreateTime  string            `json:"createTime,omitempty"`  // RFC3339 timestamp
+	Hosts       []string          `json:"hosts,omitempty"`       // IQNs of hosts
+	OSType      string            `json:"osType,omitempty"`      // LINUX or WINDOWS
+	Description string            `json:"description,omitempty"` // Optional description
+	Labels      map[string]string `json:"labels,omitempty"`      // Optional labels
+}
+
+// HostGroupCreateRequest embodies all the details of a host group to be created.
+type HostGroupCreateRequest struct {
+	ResourceID  string   `json:"resourceId,omitempty"`
+	Hosts       []string `json:"hosts,omitempty"`
+	OSType      string   `json:"osType,omitempty"` // LINUX or WINDOWS (default should be set by caller)
+	Type        string   `json:"type,omitempty"`   // ISCSI_INITIATOR (default should be set by caller)
+	Description string   `json:"description,omitempty"`
+}
+
+// VolumeUpdateRequest embodies the fields that can be updated on a volume.
+type VolumeUpdateRequest struct {
+	BlockDevices []map[string]interface{} `json:"blockDevices,omitempty"`
+	Labels       map[string]string        `json:"labels,omitempty"`
+	FieldMask    []string                 `json:"fieldMask,omitempty"`
+}
+
+// ISCSITargetInfo records iSCSI connection details for a block volume.
+type ISCSITargetInfo struct {
+	TargetIQN    string   `json:"targetIqn,omitempty"`
+	TargetPortal string   `json:"targetPortal,omitempty"`
+	Portals      []string `json:"portals,omitempty"`
+	LunID        int      `json:"lunId,omitempty"`
+	NetworkPath  string   `json:"networkPath,omitempty"`
 }

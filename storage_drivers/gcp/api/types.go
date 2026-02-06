@@ -34,7 +34,7 @@ type GCNV interface {
 	VolumeByNameOrID(context.Context, string) (*Volume, error)
 	WaitForVolumeState(context.Context, *Volume, string, []string, time.Duration) (string, error)
 	CreateVolume(context.Context, *VolumeCreateRequest) (*Volume, error)
-	ModifyVolume(context.Context, *Volume, map[string]string, *string, *bool, *ExportRule) error
+	UpdateNASVolume(context.Context, *Volume, map[string]string, *string, *bool, *ExportRule) error
 	ResizeVolume(context.Context, *Volume, int64) error
 	DeleteVolume(context.Context, *Volume) error
 
@@ -43,6 +43,23 @@ type GCNV interface {
 	CreateSnapshot(context.Context, *Volume, string, time.Duration) (*Snapshot, error)
 	RestoreSnapshot(context.Context, *Volume, *Snapshot) error
 	DeleteSnapshot(context.Context, *Volume, *Snapshot, time.Duration) error
+
+	// SAN/Block storage methods
+	ISCSITargetInfo(context.Context, *Volume) (*ISCSITargetInfo, error)
+	UpdateSANVolume(context.Context, *Volume, *VolumeUpdateRequest) (*Volume, error)
+	AddHostGroupToVolume(context.Context, string, string) error
+	RemoveHostGroupFromVolume(context.Context, string, string) error
+	VolumeMappedHostGroups(context.Context, string) ([]string, error)
+
+	// Host group methods
+	HostGroups(context.Context) ([]*HostGroup, error)
+	HostGroupByName(context.Context, string) (*HostGroup, error)
+	CreateHostGroup(context.Context, *HostGroupCreateRequest) (*HostGroup, error)
+	UpdateHostGroup(context.Context, *HostGroup, []string) error
+	DeleteHostGroup(context.Context, *HostGroup) error
+	AddInitiatorsToHostGroup(context.Context, *HostGroup, []string) error
+	RemoveInitiatorsFromHostGroup(context.Context, *HostGroup, []string) error
+	HostGroupVolumes(context.Context, string) ([]string, error)
 }
 
 // GCNVResourceUpdater allows updating GCNV resources in a thread-safe manner.

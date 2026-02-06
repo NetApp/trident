@@ -86,7 +86,7 @@ type Telemetry struct {
 // NASStorageDriver is for storage provisioning using the Google Cloud NetApp Volumes service.
 type NASStorageDriver struct {
 	initialized         bool
-	Config              drivers.GCNVNASStorageDriverConfig
+	Config              drivers.GCNVStorageDriverConfig
 	API                 api.GCNV
 	telemetry           *Telemetry
 	pools               map[string]storage.Pool
@@ -244,7 +244,7 @@ func (d *NASStorageDriver) Terminate(ctx context.Context, _ string) {
 
 // populateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
 func (d *NASStorageDriver) populateConfigurationDefaults(
-	ctx context.Context, config *drivers.GCNVNASStorageDriverConfig,
+	ctx context.Context, config *drivers.GCNVStorageDriverConfig,
 ) error {
 	fields := LogFields{"Method": "populateConfigurationDefaults", "Type": "NASStorageDriver"}
 	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> populateConfigurationDefaults")
@@ -497,17 +497,17 @@ func (d *NASStorageDriver) initializeTelemetry(_ context.Context, backendUUID st
 func (d *NASStorageDriver) initializeGCNVConfig(
 	ctx context.Context, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
 	backendSecret map[string]string,
-) (*drivers.GCNVNASStorageDriverConfig, error) {
+) (*drivers.GCNVStorageDriverConfig, error) {
 	fields := LogFields{"Method": "initializeGCNVConfig", "Type": "NASStorageDriver"}
 	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(
 		">>>> initializeGCNVConfig")
 	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(
 		"<<<< initializeGCNVConfig")
 
-	config := &drivers.GCNVNASStorageDriverConfig{}
+	config := &drivers.GCNVStorageDriverConfig{}
 	config.CommonStorageDriverConfig = commonConfig
 
-	// decode configJSON into GCNVNASStorageDriverConfig object
+	// decode configJSON into GCNVStorageDriverConfig object
 	err := json.Unmarshal([]byte(configJSON), &config)
 	if err != nil {
 		return nil, fmt.Errorf("could not decode JSON configuration. %v", err)
@@ -526,7 +526,7 @@ func (d *NASStorageDriver) initializeGCNVConfig(
 
 // initializeGCNVAPIClient returns a GCNV API client.
 func (d *NASStorageDriver) initializeGCNVAPIClient(
-	ctx context.Context, config *drivers.GCNVNASStorageDriverConfig,
+	ctx context.Context, config *drivers.GCNVStorageDriverConfig,
 ) (api.GCNV, error) {
 	fields := LogFields{"Method": "initializeGCNVAPIClient", "Type": "NASStorageDriver"}
 	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(
@@ -715,7 +715,7 @@ func (d *NASStorageDriver) Create(
 		Logc(ctx).WithFields(LogFields{
 			"name":  name,
 			"state": extantVolume.State,
-		}).Warning("Volume already exists.")
+		}).Debug("Volume already exists.")
 
 		return drivers.NewVolumeExistsError(name)
 	}
@@ -1273,7 +1273,7 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		labels := d.updateTelemetryLabels(ctx, volume)
 
 		if d.Config.NASType == sa.SMB && volume.ProtocolTypes[0] == api.ProtocolTypeSMB {
-			if err = d.API.ModifyVolume(ctx, volume, labels, nil, &snapshotDirAccess, nil); err != nil {
+			if err = d.API.UpdateNASVolume(ctx, volume, labels, nil, &snapshotDirAccess, nil); err != nil {
 				Logc(ctx).WithField("originalName", originalName).WithError(err).Error(
 					"Could not import volume, volume modify failed.")
 				return fmt.Errorf("could not import volume %s, volume modify failed; %v", originalName, err)
@@ -1302,7 +1302,7 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 				}
 			}
 
-			err = d.API.ModifyVolume(ctx, volume, labels, &unixPermissions, &snapshotDirAccess, nil)
+			err = d.API.UpdateNASVolume(ctx, volume, labels, &unixPermissions, &snapshotDirAccess, nil)
 			if err != nil {
 				Logc(ctx).WithField("originalName", originalName).WithError(err).Error(
 					"Could not import volume, volume modify failed.")
@@ -2125,7 +2125,7 @@ func (d *NASStorageDriver) GetStorageBackendPhysicalPoolNames(context.Context) [
 }
 
 // getStorageBackendPools determines any non-overlapping, discrete storage pools present on a driver's storage backend.
-func (d *NASStorageDriver) getStorageBackendPools(ctx context.Context) []drivers.GCNVNASStorageBackendPool {
+func (d *NASStorageDriver) getStorageBackendPools(ctx context.Context) []drivers.GCNVStorageBackendPool {
 	fields := LogFields{"Method": "getStorageBackendPools", "Type": "NASStorageDriver"}
 	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
@@ -2135,9 +2135,9 @@ func (d *NASStorageDriver) getStorageBackendPools(ctx context.Context) []drivers
 	// 2. Location
 	// 3. Storage pool - contains at least one pool depending on the backend configuration.
 	cPools := d.API.CapacityPoolsForStoragePools(ctx)
-	backendPools := make([]drivers.GCNVNASStorageBackendPool, 0, len(cPools))
+	backendPools := make([]drivers.GCNVStorageBackendPool, 0, len(cPools))
 	for _, cPool := range cPools {
-		backendPool := drivers.GCNVNASStorageBackendPool{
+		backendPool := drivers.GCNVStorageBackendPool{
 			ProjectNumber: d.Config.ProjectNumber,
 			Location:      cPool.Location,
 			StoragePool:   cPool.Name,
@@ -2242,7 +2242,7 @@ func (d *NASStorageDriver) StoreConfig(_ context.Context, b *storage.PersistentS
 // GetExternalConfig returns a clone of this backend's config, sanitized for external consumption.
 func (d *NASStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 	// Clone the config so we don't risk altering the original
-	var cloneConfig drivers.GCNVNASStorageDriverConfig
+	var cloneConfig drivers.GCNVStorageDriverConfig
 	drivers.Clone(ctx, d.Config, &cloneConfig)
 
 	cloneConfig.APIKey = drivers.GCPPrivateKey{

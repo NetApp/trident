@@ -42,7 +42,7 @@ var (
 func newTestGCNVDriver(mockAPI api.GCNV) *NASStorageDriver {
 	prefix := "test-"
 
-	config := drivers.GCNVNASStorageDriverConfig{
+	config := drivers.GCNVStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			StorageDriverName: "google-cloud-netapp-volumes",
 			StoragePrefix:     &prefix,
@@ -872,7 +872,7 @@ func TestGCNVTerminate(t *testing.T) {
 }
 
 func TestPopulateConfigurationDefaults_NoneSet(t *testing.T) {
-	config := &drivers.GCNVNASStorageDriverConfig{
+	config := &drivers.GCNVStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DriverContext:   tridentconfig.ContextCSI,
 			DebugTraceFlags: debugTraceFlags,
@@ -900,17 +900,20 @@ func TestPopulateConfigurationDefaults_NoneSet(t *testing.T) {
 func TestPopulateConfigurationDefaults_AllSet(t *testing.T) {
 	prefix := "myPrefix"
 
-	config := &drivers.GCNVNASStorageDriverConfig{
+	config := &drivers.GCNVStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DriverContext:   tridentconfig.ContextCSI,
 			DebugTraceFlags: debugTraceFlags,
 			StoragePrefix:   &prefix,
 			LimitVolumeSize: "123456789000",
 		},
-		NFSMountOptions:     "nfsvers=4.1",
+		GCNVNASDriverConfig: drivers.GCNVNASDriverConfig{
+			NFSMountOptions: "nfsvers=4.1",
+			NASType:         "nfs",
+		},
 		VolumeCreateTimeout: "30",
-		GCNVNASStorageDriverPool: drivers.GCNVNASStorageDriverPool{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+		GCNVStorageDriverPool: drivers.GCNVStorageDriverPool{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: "1234567890",
 				},
@@ -920,7 +923,6 @@ func TestPopulateConfigurationDefaults_AllSet(t *testing.T) {
 				ExportRule:      "1.1.1.1/32",
 			},
 			ServiceLevel: "premium",
-			NASType:      "smb",
 		},
 	}
 
@@ -944,13 +946,13 @@ func TestPopulateConfigurationDefaults_AllSet(t *testing.T) {
 }
 
 func TestPopulateConfigurationDefaults_InvalidSnapshotDir(t *testing.T) {
-	config := &drivers.GCNVNASStorageDriverConfig{
+	config := &drivers.GCNVStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			DriverContext:   tridentconfig.ContextCSI,
 			DebugTraceFlags: debugTraceFlags,
 		},
-		GCNVNASStorageDriverPool: drivers.GCNVNASStorageDriverPool{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+		GCNVStorageDriverPool: drivers.GCNVStorageDriverPool{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				SnapshotDir: "true$",
 			},
 		},
@@ -969,16 +971,18 @@ func TestInitializeStoragePools(t *testing.T) {
 		{"topology.kubernetes.io/region": "europe-west1", "topology.kubernetes.io/zone": "us-east-1c"},
 	}
 
-	config := &drivers.GCNVNASStorageDriverConfig{
+	config := &drivers.GCNVStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			BackendName:     "myGCNVBackend",
 			DriverContext:   tridentconfig.ContextCSI,
 			DebugTraceFlags: debugTraceFlags,
 			LimitVolumeSize: "123456789000",
 		},
-		NFSMountOptions: "nfsvers=4.1",
-		GCNVNASStorageDriverPool: drivers.GCNVNASStorageDriverPool{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+		GCNVNASDriverConfig: drivers.GCNVNASDriverConfig{
+			NFSMountOptions: "nfsvers=4.1",
+		},
+		GCNVStorageDriverPool: drivers.GCNVStorageDriverPool{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: "1234567890",
 				},
@@ -991,9 +995,9 @@ func TestInitializeStoragePools(t *testing.T) {
 			Region:       "region1",
 			Zone:         "zone1",
 		},
-		Storage: []drivers.GCNVNASStorageDriverPool{
+		Storage: []drivers.GCNVStorageDriverPool{
 			{
-				GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+				GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 					CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 						Size: "123456789000",
 					},
@@ -1004,12 +1008,11 @@ func TestInitializeStoragePools(t *testing.T) {
 				Region:              "region2",
 				Zone:                "zone2",
 				SupportedTopologies: supportedTopologies,
-				NASType:             "nfs",
 				StoragePools:        []string{"Pool1"},
 				Network:             "test-network1",
 			},
 			{
-				GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+				GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 					UnixPermissions: "0770",
 					SnapshotDir:     "false",
 					SnapshotReserve: "1456898458",
@@ -1089,16 +1092,18 @@ func TestInitializeStoragePools(t *testing.T) {
 }
 
 func TestInitializeStoragePools_InvalidSnapshotDir(t *testing.T) {
-	config := &drivers.GCNVNASStorageDriverConfig{
+	config := &drivers.GCNVStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			BackendName:     "myGCNVBackend",
 			DriverContext:   tridentconfig.ContextCSI,
 			DebugTraceFlags: debugTraceFlags,
 			LimitVolumeSize: "123456789000",
 		},
-		NFSMountOptions: "nfsvers=4.1",
-		GCNVNASStorageDriverPool: drivers.GCNVNASStorageDriverPool{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+		GCNVNASDriverConfig: drivers.GCNVNASDriverConfig{
+			NFSMountOptions: "nfsvers=4.1",
+		},
+		GCNVStorageDriverPool: drivers.GCNVStorageDriverPool{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: "1234567890",
 				},
@@ -1123,16 +1128,18 @@ func TestInitializeStoragePools_InvalidSnapshotDir(t *testing.T) {
 }
 
 func TestInitializeStoragePools_VirtualPool_InvalidSnapshotDir(t *testing.T) {
-	config := &drivers.GCNVNASStorageDriverConfig{
+	config := &drivers.GCNVStorageDriverConfig{
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			BackendName:     "myGCNVBackend",
 			DriverContext:   tridentconfig.ContextCSI,
 			DebugTraceFlags: debugTraceFlags,
 			LimitVolumeSize: "123456789000",
 		},
-		NFSMountOptions: "nfsvers=4.1",
-		GCNVNASStorageDriverPool: drivers.GCNVNASStorageDriverPool{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+		GCNVNASDriverConfig: drivers.GCNVNASDriverConfig{
+			NFSMountOptions: "nfsvers=4.1",
+		},
+		GCNVStorageDriverPool: drivers.GCNVStorageDriverPool{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: "1234567890",
 				},
@@ -1142,9 +1149,9 @@ func TestInitializeStoragePools_VirtualPool_InvalidSnapshotDir(t *testing.T) {
 			Region:       "region1",
 			Zone:         "zone1",
 		},
-		Storage: []drivers.GCNVNASStorageDriverPool{
+		Storage: []drivers.GCNVStorageDriverPool{
 			{
-				GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+				GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 					CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 						Size: "123456789000",
 					},
@@ -1153,7 +1160,6 @@ func TestInitializeStoragePools_VirtualPool_InvalidSnapshotDir(t *testing.T) {
 					SnapshotDir:     "true$",
 				},
 				ServiceLevel: api.ServiceLevelExtreme,
-				NASType:      "nfs",
 				StoragePools: []string{"Pool1"},
 				Network:      "test-network1",
 			},
@@ -1277,9 +1283,9 @@ func TestInitializeStoragePools_VirtualPoolWithAutoTiering(t *testing.T) {
 	driver.Config.TieringPolicy = drivers.TieringPolicyNone
 
 	// Add virtual pool with tiering policy enabled
-	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+	driver.Config.Storage = []drivers.GCNVStorageDriverPool{
 		{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: "123456789000",
 				},
@@ -3796,7 +3802,7 @@ func TestImport_Managed(t *testing.T) {
 	mockAPI.EXPECT().VolumeByNameOrID(ctx, originalName).Return(originalVolume, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalVolume).Return(nil).Times(1)
 
-	mockAPI.EXPECT().ModifyVolume(ctx, originalVolume, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess, nil).Return(nil).Times(1)
+	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess, nil).Return(nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalVolume, api.VolumeStateReady, []string{api.VolumeStateError},
 		driver.defaultTimeout()).Return(api.VolumeStateReady, nil).Times(1)
@@ -3833,7 +3839,7 @@ func TestImport_ManagedVolumeFullName(t *testing.T) {
 	mockAPI.EXPECT().VolumeByNameOrID(ctx, originalFullName).Return(originalVolume, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalVolume).Return(nil).Times(1)
 
-	mockAPI.EXPECT().ModifyVolume(ctx, originalVolume, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess, nil).Return(nil).Times(1)
+	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess, nil).Return(nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalVolume, api.VolumeStateReady, []string{api.VolumeStateError},
 		driver.defaultTimeout()).Return(api.VolumeStateReady, nil).Times(1)
@@ -3872,7 +3878,7 @@ func TestImport_ManagedWithSnapshotDir(t *testing.T) {
 	mockAPI.EXPECT().VolumeByNameOrID(ctx, originalName).Return(originalVolume, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalVolume).Return(nil).Times(1)
 
-	mockAPI.EXPECT().ModifyVolume(ctx, originalVolume, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess, nil).Return(nil).Times(1)
+	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess, nil).Return(nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalVolume, api.VolumeStateReady, []string{api.VolumeStateError},
 		driver.defaultTimeout()).Return(api.VolumeStateReady, nil).Times(1)
@@ -3911,7 +3917,7 @@ func TestImport_ManagedWithSnapshotDirFalse(t *testing.T) {
 	mockAPI.EXPECT().VolumeByNameOrID(ctx, originalName).Return(originalVolume, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalVolume).Return(nil).Times(1)
 
-	mockAPI.EXPECT().ModifyVolume(ctx, originalVolume, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess, nil).Return(nil).Times(1)
+	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess, nil).Return(nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalVolume, api.VolumeStateReady, []string{api.VolumeStateError},
 		driver.defaultTimeout()).Return(api.VolumeStateReady, nil).Times(1)
@@ -3975,7 +3981,7 @@ func TestImport_SMB_Managed(t *testing.T) {
 	mockAPI.EXPECT().VolumeByNameOrID(ctx, originalName).Return(originalVolume, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalVolume).Return(nil).Times(1)
 
-	mockAPI.EXPECT().ModifyVolume(ctx, originalVolume, expectedLabels, nil, &snapshotDirAccess, nil).Return(nil).Times(1)
+	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, nil, &snapshotDirAccess, nil).Return(nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalVolume, api.VolumeStateReady, []string{api.VolumeStateError},
 		driver.defaultTimeout()).Return(api.VolumeStateReady, nil).Times(1)
@@ -4010,7 +4016,7 @@ func TestImport_SMB_Failed(t *testing.T) {
 	mockAPI.EXPECT().VolumeByNameOrID(ctx, originalName).Return(originalVolume, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalVolume).Return(nil).Times(1)
 
-	mockAPI.EXPECT().ModifyVolume(ctx, originalVolume, expectedLabels, nil, &snapshotDirAccess, nil).Return(errFailed).Times(1)
+	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, nil, &snapshotDirAccess, nil).Return(errFailed).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
 
@@ -4272,7 +4278,7 @@ func TestImport_ModifyVolumeFailed(t *testing.T) {
 	mockAPI.EXPECT().VolumeByNameOrID(ctx, originalName).Return(originalVolume, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalVolume).Return(nil).Times(1)
 
-	mockAPI.EXPECT().ModifyVolume(ctx, originalVolume, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess, nil).Return(errFailed).Times(1)
+	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess, nil).Return(errFailed).Times(1)
 
 	result := driver.Import(ctx, volConfig, originalName)
 
@@ -4306,7 +4312,7 @@ func TestImport_VolumeWaitFailed(t *testing.T) {
 	mockAPI.EXPECT().VolumeByNameOrID(ctx, originalName).Return(originalVolume, nil).Times(1)
 	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(ctx, originalVolume).Return(nil).Times(1)
 
-	mockAPI.EXPECT().ModifyVolume(ctx, originalVolume, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess, nil).Return(nil).Times(1)
+	mockAPI.EXPECT().UpdateNASVolume(ctx, originalVolume, expectedLabels, &expectedUnixPermissions, &snapshotDirAccess, nil).Return(nil).Times(1)
 
 	mockAPI.EXPECT().WaitForVolumeState(ctx, originalVolume, api.VolumeStateReady, []string{api.VolumeStateError},
 		driver.defaultTimeout()).Return("", errFailed).Times(1)
@@ -7397,9 +7403,9 @@ func TestCreate_AutoTiering(t *testing.T) {
 	driver.Config.TieringPolicy = drivers.TieringPolicyAuto
 	driver.Config.TieringMinimumCoolingDays = "30"
 
-	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+	driver.Config.Storage = []drivers.GCNVStorageDriverPool{
 		{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: defaultVolumeSizeStr,
 				},
@@ -7463,9 +7469,9 @@ func TestCreate_RejectAutoTieringOnDisallowedPool(t *testing.T) {
 	driver.Config.ServiceLevel = api.ServiceLevelStandard
 	driver.Config.NASType = "nfs"
 
-	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+	driver.Config.Storage = []drivers.GCNVStorageDriverPool{
 		{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: defaultVolumeSizeStr,
 				},
@@ -7520,9 +7526,9 @@ func TestCreate_AutoTieringPoolDefault(t *testing.T) {
 	driver.Config.ServiceLevel = api.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+	driver.Config.Storage = []drivers.GCNVStorageDriverPool{
 		{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: defaultVolumeSizeStr,
 				},
@@ -7587,9 +7593,9 @@ func TestCreate_AutoTieringDisabledByDefault(t *testing.T) {
 	driver.Config.NASType = "nfs"
 
 	// No tiering config in storage pool defaults
-	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+	driver.Config.Storage = []drivers.GCNVStorageDriverPool{
 		{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: defaultVolumeSizeStr,
 				},
@@ -7649,9 +7655,9 @@ func TestCreate_AutoTieringNonePolicyExplicit(t *testing.T) {
 	driver.Config.ServiceLevel = api.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+	driver.Config.Storage = []drivers.GCNVStorageDriverPool{
 		{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: defaultVolumeSizeStr,
 				},
@@ -7712,9 +7718,9 @@ func TestCreate_TieringNoneIgnoresCoolingDays(t *testing.T) {
 	driver.Config.ServiceLevel = api.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+	driver.Config.Storage = []drivers.GCNVStorageDriverPool{
 		{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: defaultVolumeSizeStr,
 				},
@@ -7794,9 +7800,9 @@ func TestCreate_AutoTieringMinimumCoolingDays(t *testing.T) {
 			driver.Config.ServiceLevel = api.ServiceLevelPremium
 			driver.Config.NASType = "nfs"
 
-			driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+			driver.Config.Storage = []drivers.GCNVStorageDriverPool{
 				{
-					GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+					GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 						CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 							Size: defaultVolumeSizeStr,
 						},
@@ -7851,9 +7857,9 @@ func TestCreateClone_AutoTieringInheritance(t *testing.T) {
 	driver.Config.ServiceLevel = api.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+	driver.Config.Storage = []drivers.GCNVStorageDriverPool{
 		{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: defaultVolumeSizeStr,
 				},
@@ -7927,9 +7933,9 @@ func TestCreateClone_AutoTieringNoInheritance(t *testing.T) {
 	driver.Config.ServiceLevel = api.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+	driver.Config.Storage = []drivers.GCNVStorageDriverPool{
 		{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: defaultVolumeSizeStr,
 				},
@@ -8000,9 +8006,9 @@ func TestCreateClone_TieringNoneIgnoresCoolingDays(t *testing.T) {
 	driver.Config.ServiceLevel = api.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+	driver.Config.Storage = []drivers.GCNVStorageDriverPool{
 		{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: defaultVolumeSizeStr,
 				},
@@ -8072,9 +8078,9 @@ func TestCreateClone_AnnotationOverride(t *testing.T) {
 	driver.Config.ServiceLevel = api.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+	driver.Config.Storage = []drivers.GCNVStorageDriverPool{
 		{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: defaultVolumeSizeStr,
 				},
@@ -8147,9 +8153,9 @@ func TestCreateClone_AnnotationOverrideCoolingDays(t *testing.T) {
 	driver.Config.ServiceLevel = api.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+	driver.Config.Storage = []drivers.GCNVStorageDriverPool{
 		{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: defaultVolumeSizeStr,
 				},
@@ -8221,9 +8227,9 @@ func TestCreateClone_InvalidCoolingDaysOverride(t *testing.T) {
 	driver.Config.ServiceLevel = api.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+	driver.Config.Storage = []drivers.GCNVStorageDriverPool{
 		{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: defaultVolumeSizeStr,
 				},
@@ -8288,9 +8294,9 @@ func TestCreateClone_AutoTieringNoCoolingDaysUsesDefault(t *testing.T) {
 	driver.Config.ServiceLevel = api.ServiceLevelPremium
 	driver.Config.NASType = "nfs"
 
-	driver.Config.Storage = []drivers.GCNVNASStorageDriverPool{
+	driver.Config.Storage = []drivers.GCNVStorageDriverPool{
 		{
-			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
+			GCNVStorageDriverConfigDefaults: drivers.GCNVStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
 					Size: defaultVolumeSizeStr,
 				},
