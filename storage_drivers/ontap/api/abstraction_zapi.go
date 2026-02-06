@@ -963,7 +963,7 @@ func (d OntapAPIZAPI) IgroupCreate(ctx context.Context, initiatorGroupName, init
 	zerr, zerrOK := err.(azgo.ZapiError)
 	if err == nil || (zerrOK && zerr.Code() == azgo.EVDISK_ERROR_NO_SUCH_INITGROUP) {
 		Logc(ctx).WithField("igroup", initiatorGroupName).Debug("No such initiator group (igroup).")
-	} else if zerrOK && zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_EXISTS {
+	} else if zerrOK && (zerr.Code() == azgo.EVDISK_ERROR_INITGROUP_EXISTS || zerr.Code() == azgo.EDUPLICATEENTRY) {
 		Logc(ctx).WithField("igroup", initiatorGroupName).Info("Initiator group (igroup) already exists.")
 	} else {
 		Logc(ctx).WithFields(LogFields{

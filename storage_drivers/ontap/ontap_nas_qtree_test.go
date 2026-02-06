@@ -4246,8 +4246,8 @@ func TestOntapNasQtreeStorageDriverConfigString(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
 
-	qtreeDrivers := []NASQtreeStorageDriver{
-		*newNASQtreeStorageDriver(mockAPI),
+	qtreeDrivers := []*NASQtreeStorageDriver{
+		newNASQtreeStorageDriver(mockAPI),
 	}
 
 	sensitiveIncludeList := map[string]string{

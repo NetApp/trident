@@ -1080,6 +1080,63 @@ func TestOntapAPIZAPI_IgroupCreate_Success(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestOntapAPIZAPI_IgroupCreate_AlreadyExists(t *testing.T) {
+	ctrl, mock, oapi := setupTestZAPIClient(t)
+	defer ctrl.Finish()
+
+	// Test EVDISK_ERROR_INITGROUP_EXISTS (9004) - igroup already exists
+	igroupCreateResponse := &azgo.IgroupCreateResponse{
+		Result: azgo.IgroupCreateResponseResult{
+			ResultStatusAttr: "failed",
+			ResultErrnoAttr:  azgo.EVDISK_ERROR_INITGROUP_EXISTS,
+			ResultReasonAttr: "Initiator group already exists",
+		},
+	}
+
+	mock.EXPECT().IgroupCreate("test_igroup", "iscsi", "linux").Return(igroupCreateResponse, nil).Times(1)
+
+	err := oapi.IgroupCreate(ctx, "test_igroup", "iscsi", "linux")
+	assert.NoError(t, err, "IgroupCreate should not return error when igroup already exists (9004)")
+}
+
+func TestOntapAPIZAPI_IgroupCreate_DuplicateEntry(t *testing.T) {
+	ctrl, mock, oapi := setupTestZAPIClient(t)
+	defer ctrl.Finish()
+
+	// Test EDUPLICATEENTRY (13130) - duplicate entry race condition
+	igroupCreateResponse := &azgo.IgroupCreateResponse{
+		Result: azgo.IgroupCreateResponseResult{
+			ResultStatusAttr: "failed",
+			ResultErrnoAttr:  azgo.EDUPLICATEENTRY,
+			ResultReasonAttr: "duplicate entry",
+		},
+	}
+
+	mock.EXPECT().IgroupCreate("test_igroup", "iscsi", "linux").Return(igroupCreateResponse, nil).Times(1)
+
+	err := oapi.IgroupCreate(ctx, "test_igroup", "iscsi", "linux")
+	assert.NoError(t, err, "IgroupCreate should not return error on duplicate entry (13130)")
+}
+
+func TestOntapAPIZAPI_IgroupCreate_Error(t *testing.T) {
+	ctrl, mock, oapi := setupTestZAPIClient(t)
+	defer ctrl.Finish()
+
+	// Test actual error that should be returned
+	igroupCreateResponse := &azgo.IgroupCreateResponse{
+		Result: azgo.IgroupCreateResponseResult{
+			ResultStatusAttr: "failed",
+			ResultErrnoAttr:  azgo.EAPIERROR,
+			ResultReasonAttr: "API error",
+		},
+	}
+
+	mock.EXPECT().IgroupCreate("test_igroup", "iscsi", "linux").Return(igroupCreateResponse, nil).Times(1)
+
+	err := oapi.IgroupCreate(ctx, "test_igroup", "iscsi", "linux")
+	assert.Error(t, err, "IgroupCreate should return error on real API error")
+}
+
 func TestOntapAPIZAPI_IgroupDestroy_Success(t *testing.T) {
 	ctrl, mock, oapi := setupTestZAPIClient(t)
 	defer ctrl.Finish()

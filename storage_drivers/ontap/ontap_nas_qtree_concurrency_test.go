@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	"github.com/netapp/trident/pkg/locks"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	"github.com/netapp/trident/storage_drivers/ontap/api"
@@ -498,7 +499,7 @@ func TestConcurrency_CreateRaceFlexVolCapacity(t *testing.T) {
 
 	// Run concurrent findFlexvolForQtree calls
 	var wg sync.WaitGroup
-	results := make([]*lockedFlexVol, numConcurrent)
+	results := make([]*locks.LockedResource, numConcurrent)
 	errors := make([]error, numConcurrent)
 
 	for i := 0; i < numConcurrent; i++ {
@@ -638,7 +639,7 @@ func TestConcurrency_CreateRaceQtreeCount(t *testing.T) {
 
 	// Run concurrent findFlexvolForQtree calls
 	var wg sync.WaitGroup
-	results := make([]*lockedFlexVol, numConcurrent)
+	results := make([]*locks.LockedResource, numConcurrent)
 	errors := make([]error, numConcurrent)
 
 	for i := 0; i < numConcurrent; i++ {

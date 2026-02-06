@@ -19,6 +19,7 @@ import (
 	"github.com/netapp/trident/pkg/capacity"
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/pkg/convert"
+	"github.com/netapp/trident/pkg/locks"
 	"github.com/netapp/trident/storage"
 	sa "github.com/netapp/trident/storage_attribute"
 	drivers "github.com/netapp/trident/storage_drivers"
@@ -201,20 +202,27 @@ func (o *LUNHelper) GetBucketName(lunPath string) string {
 
 // SANEconomyStorageDriver is for iSCSI storage provisioning of LUNs
 type SANEconomyStorageDriver struct {
-	initialized       bool
-	Config            drivers.OntapStorageDriverConfig
-	ips               []string
-	API               api.OntapAPI
-	AWSAPI            awsapi.AWSAPI
-	telemetry         *Telemetry
-	flexvolNamePrefix string
-	helper            *LUNHelper
-	lunsPerFlexvol    int
-	denyNewFlexvols   bool
-	iscsi             iscsi.ISCSI
+	initialized         bool
+	Config              drivers.OntapStorageDriverConfig
+	ips                 []string
+	API                 api.OntapAPI
+	AWSAPI              awsapi.AWSAPI
+	telemetry           *Telemetry
+	flexvolNamePrefix   string
+	helper              *LUNHelper
+	lunsPerFlexvol      int
+	denyNewFlexvols     bool
+	iscsi               iscsi.ISCSI
+	flexvolLocks        *locks.GCNamedMutex // Locks for FlexVol-level operations
+	flexvolCreationLock sync.Mutex          // Global lock for FlexVol find-or-create decisions
 
 	physicalPools map[string]storage.Pool
 	virtualPools  map[string]storage.Pool
+}
+
+// lockFlexvol locks the specified FlexVol and returns a locked wrapper
+func (d *SANEconomyStorageDriver) lockFlexvol(name string) *locks.LockedResource {
+	return d.flexvolLocks.LockWithGuard(name)
 }
 
 func (d *SANEconomyStorageDriver) GetConfig() drivers.DriverConfig {
@@ -395,6 +403,9 @@ func (d *SANEconomyStorageDriver) Initialize(
 	d.telemetry.Telemetry = tridentconfig.OrchestratorTelemetry
 	d.telemetry.TridentBackendUUID = backendUUID
 	d.telemetry.Start(ctx)
+
+	// Initialize FlexVol-level locks for concurrency protection
+	d.flexvolLocks = locks.NewGCNamedMutex()
 
 	d.initialized = true
 	return nil
@@ -600,83 +611,98 @@ func (d *SANEconomyStorageDriver) Create(
 		}
 
 		var (
-			ignoredVols = make(map[string]struct{})
-			bucketVol   string
-			lunPathEco  string
-			newVol      bool
+			bucketVol     string
+			lunPathEco    string
+			newVol        bool
+			lockedFlexvol *locks.LockedResource
 		)
-	prepareBucket:
 
-		volAttrs := &api.Volume{
-			Aggregates:      []string{aggregate},
-			Encrypt:         enableEncryption,
-			Name:            d.FlexvolNamePrefix() + "*",
-			SnapshotPolicy:  snapshotPolicy,
-			SpaceReserve:    spaceReserve,
-			SnapshotReserve: snapshotReserveInt,
-			TieringPolicy:   tieringPolicy,
-		}
+		// Track FlexVols that have already been tried (to avoid retrying the same one)
+		ignoredVols := make(map[string]struct{})
 
-		// Make sure we have a Flexvol for the new LUN
-		bucketVol, newVol, err = d.ensureFlexvolForLUN(
-			ctx, volAttrs, sizeBytes, opts, &d.Config, storagePool, ignoredVols,
-		)
-		if err != nil {
-			errMessage := fmt.Sprintf(
-				"ONTAP-SAN-ECONOMY pool %s/%s; BucketVol location/creation failed %s: %v",
-				storagePool.Name(), aggregate, name, err,
-			)
-			Logc(ctx).Error(errMessage)
-			createErrors = append(createErrors, errors.New(errMessage))
+		// Retry loop for finding/creating a FlexVol with capacity
+		// This handles the case where ONTAP's LUN limit is reached during creation
+		var lunCreated bool
 
-			// Move on to the next pool
-			continue
-		}
-
-		// Grow or shrink the Flexvol as needed
-		if err = d.resizeFlexvol(ctx, bucketVol, sizeBytes); err != nil {
-
-			errMessage := fmt.Sprintf(
-				"ONTAP-SAN-ECONOMY pool %s/%s; Flexvol resize failed %s/%s: %v",
-				storagePool.Name(), aggregate, bucketVol, name, err,
-			)
-			Logc(ctx).Error(errMessage)
-			createErrors = append(createErrors, errors.New(errMessage))
-
-			// Don't leave the new Flexvol around if we just created it
-			if newVol {
-				if err := d.API.VolumeDestroy(ctx, bucketVol, true, true); err != nil {
-					Logc(ctx).WithField("volume", bucketVol).WithError(err).Error("Could not clean up volume.")
-				} else {
-					Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after resize error.")
-				}
+		for !lunCreated {
+			volAttrs := &api.Volume{
+				Aggregates:      []string{aggregate},
+				Encrypt:         enableEncryption,
+				Name:            d.FlexvolNamePrefix() + "*",
+				SnapshotPolicy:  snapshotPolicy,
+				SpaceReserve:    spaceReserve,
+				SnapshotReserve: snapshotReserveInt,
+				TieringPolicy:   tieringPolicy,
 			}
 
-			// Move on to the next pool
-			continue
-		}
+			// Lock Hierarchy Rule: Never hold per-FlexVol lock while trying to acquire flexvolCreationMux lock
+			// ensureFlexvolForLUN() releases flexvolCreationMux lock BEFORE acquiring per-FlexVol lock
+			// Caller receives per-FlexVol lock already acquired
+			// Caller NEVER tries to call ensureFlexvolForLUN() again while holding per-FlexVol lock
+			// In retry scenario (TooManyLunsError), caller explicitly unlocks per-FlexVol lock BEFORE calling ensureFlexvolForLUN() again
 
-		lunPathEco = GetLUNPathEconomy(bucketVol, name)
-		osType := "linux"
+			// Make sure we have a Flexvol for the new LUN (with lock)
+			lockedFlexvol, newVol, err = d.ensureFlexvolForLUN(
+				ctx, volAttrs, sizeBytes, opts, &d.Config, storagePool, ignoredVols,
+			)
+			if err != nil {
+				errMessage := fmt.Sprintf(
+					"ONTAP-SAN-ECONOMY pool %s/%s; BucketVol location/creation failed %s: %v",
+					storagePool.Name(), aggregate, name, err,
+				)
+				Logc(ctx).Error(errMessage)
+				createErrors = append(createErrors, errors.New(errMessage))
+				break // Try next aggregate
+			}
+			bucketVol = lockedFlexvol.Name()
 
-		// Create the LUN
-		// For the ONTAP SAN economy driver, we set the QoS policy at the LUN layer.
+			// Grow or shrink the Flexvol as needed (lock is held)
+			if err = d.resizeFlexvol(ctx, bucketVol, sizeBytes); err != nil {
+				errMessage := fmt.Sprintf(
+					"ONTAP-SAN-ECONOMY pool %s/%s; Flexvol resize failed %s/%s: %v",
+					storagePool.Name(), aggregate, bucketVol, name, err,
+				)
+				Logc(ctx).Error(errMessage)
+				createErrors = append(createErrors, errors.New(errMessage))
 
-		err = d.API.LunCreate(
-			ctx, api.Lun{
-				Name:           lunPathEco,
-				Qos:            qosPolicyGroup,
-				Size:           lunSize,
-				OsType:         osType,
-				SpaceReserved:  convert.ToPtr(false),
-				SpaceAllocated: convert.ToPtr(spaceAllocation),
-			})
-		if err != nil {
-			if api.IsTooManyLunsError(err) {
-				Logc(ctx).WithError(err).Warn("ONTAP limit for LUNs/Flexvol reached; finding a new Flexvol")
-				ignoredVols[bucketVol] = struct{}{}
-				goto prepareBucket
-			} else {
+				// Don't leave the new Flexvol around if we just created it
+				if newVol {
+					if err := d.API.VolumeDestroy(ctx, bucketVol, true, true); err != nil {
+						Logc(ctx).WithField("volume", bucketVol).WithError(err).Error("Could not clean up volume.")
+					} else {
+						Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after resize error.")
+					}
+				}
+				lockedFlexvol.Unlock() // Release lock before trying next aggregate
+				break                  // Try next aggregate
+			}
+
+			lunPathEco = GetLUNPathEconomy(bucketVol, name)
+			osType := "linux"
+
+			// Create the LUN
+			// For the ONTAP SAN economy driver, we set the QoS policy at the LUN layer.
+			err = d.API.LunCreate(
+				ctx, api.Lun{
+					Name:           lunPathEco,
+					Qos:            qosPolicyGroup,
+					Size:           lunSize,
+					OsType:         osType,
+					SpaceReserved:  convert.ToPtr(false),
+					SpaceAllocated: convert.ToPtr(spaceAllocation),
+				})
+			if err != nil {
+				if api.IsTooManyLunsError(err) {
+					Logc(ctx).WithError(err).Warn(
+						"ONTAP limit for LUNs/Flexvol reached; retrying with different Flexvol")
+					ignoredVols[bucketVol] = struct{}{}
+					lockedFlexvol.Unlock() // Explicit unlock before retry
+					// NOTE: With lock-before-check pattern, this race is rare but still possible
+					// if LUNs are created between check and LunCreate. Simply retry - the
+					// next call to ensureFlexvolForLUN will skip this FlexVol via ignoredVols.
+					continue // Retry with next FlexVol
+				}
+
 				errMessage := fmt.Sprintf(
 					"ONTAP-SAN-ECONOMY pool %s/%s; error creating LUN %s/%s: %v",
 					storagePool.Name(), aggregate, bucketVol, name, err,
@@ -692,11 +718,22 @@ func (d *SANEconomyStorageDriver) Create(
 						Logc(ctx).WithField("volume", name).Debugf("Cleaned up volume after LUN create error.")
 					}
 				}
-
-				// Move on to the next pool
-				continue
+				lockedFlexvol.Unlock() // Release lock before trying next aggregate
+				break                  // Try next aggregate
 			}
+
+			// LUN created successfully
+			lunCreated = true
 		}
+
+		// If we exhausted retries or hit an error, move to next aggregate
+		if !lunCreated {
+			continue
+		}
+
+		// Ensure the FlexVol lock is released when we're done (after all operations on this FlexVol)
+		// Note: lockedFlexvol.Unlock() is idempotent (safe to call multiple times)
+		defer lockedFlexvol.Unlock()
 
 		actualSize, err := d.getLUNSize(ctx, name, bucketVol)
 		if err != nil {
@@ -735,6 +772,8 @@ func (d *SANEconomyStorageDriver) Create(
 				}
 			}
 
+			// Release lock before moving to next aggregate
+			lockedFlexvol.Unlock()
 			// Move on to the next pool
 			continue
 		}
@@ -838,13 +877,17 @@ func (d *SANEconomyStorageDriver) cloneLUNFromSnapshot(
 	defer Logd(ctx, d.Config.StorageDriverName,
 		d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< cloneLUNFromSnapshot")
 
-	// Create the clone based on given snapshot.
+	// Lock the FlexVol to ensure atomic clone and resize operations
+	lockedFlexvol := d.lockFlexvol(bucketVolume)
+	defer lockedFlexvol.Unlock()
+
+	// Create the clone based on given snapshot (lock is held)
 	if err := d.API.LunCloneCreate(ctx, bucketVolume, sourcePath, lunName, qosPolicyGroup); err != nil {
 		return "", err
 	}
 	internalID := d.CreateLUNInternalID(d.Config.SVM, bucketVolume, lunName)
 
-	// Grow or shrink the FlexVol as needed.
+	// Grow or shrink the FlexVol as needed (lock is still held)
 	if err := d.resizeFlexvol(ctx, bucketVolume, 0); err != nil {
 		return "", err
 	}
@@ -901,6 +944,10 @@ func (d *SANEconomyStorageDriver) createLUNClone(
 		return "", lunSizeErr
 	}
 
+	// Lock the source FlexVol to ensure atomic clone and resize operations
+	locked := d.lockFlexvol(flexvol)
+	defer locked.Unlock()
+
 	shouldLimitFlexvolSize, flexvolSizeLimit, checkFlexvolSizeLimitsError := CheckVolumePoolSizeLimits(
 		ctx, sourceLunSizeBytes, config)
 	if checkFlexvolSizeLimitsError != nil {
@@ -918,7 +965,7 @@ func (d *SANEconomyStorageDriver) createLUNClone(
 		}
 	}
 
-	// Create the clone based on given LUN
+	// Create the clone based on given LUN (lock is held)
 	// For the ONTAP SAN economy driver, we set the QoS policy at the LUN layer.
 	if err = client.LunCloneCreate(ctx, flexvol, source, lunName, qosPolicyGroup); err != nil {
 		return "", err
@@ -926,7 +973,7 @@ func (d *SANEconomyStorageDriver) createLUNClone(
 
 	internalID := d.CreateLUNInternalID(config.SVM, flexvol, lunName)
 
-	// Grow or shrink the Flexvol as needed
+	// Grow or shrink the Flexvol as needed (lock is still held)
 	if err = d.resizeFlexvol(ctx, flexvol, 0); err != nil {
 		return "", err
 	}
@@ -995,6 +1042,12 @@ func (d *SANEconomyStorageDriver) Import(
 		}
 		volConfig.Size = newSize
 	}
+
+	// Lock the FlexVol to prevent race conditions during import operations.
+	// This prevents concurrent Create/Delete/Resize/Clone operations from
+	// interfering with LUN rename, FlexVol rename, and igroup unmapping.
+	lockedFlexvol := d.lockFlexvol(originalFlexvolName)
+	defer lockedFlexvol.Unlock()
 
 	if volConfig.ImportNotManaged {
 		// Volume/LUN import is not managed by Trident
@@ -1151,6 +1204,7 @@ func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, volConfig *storag
 	}
 
 	// Before deleting the LUN, check if a LUN has associated snapshots. If so, delete all associated snapshots
+	// Note: DeleteSnapshot acquires its own FlexVol lock, so we don't hold the lock here
 	externalVolumeName := d.helper.GetExternalVolumeNameFromPath(lunPathEco)
 	snapList, err := d.getSnapshotsEconomy(ctx, name, externalVolumeName)
 	if err != nil {
@@ -1164,6 +1218,10 @@ func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, volConfig *storag
 			return err
 		}
 	}
+
+	// Lock the FlexVol to prevent race conditions during LUN deletion and FlexVol cleanup
+	lockedFlexvol := d.lockFlexvol(bucketVol)
+	defer lockedFlexvol.Unlock()
 
 	if err = LunUnmapAllIgroups(ctx, d.GetAPI(), lunPathEco); err != nil {
 		msg := "error removing all mappings from LUN"
@@ -1183,19 +1241,19 @@ func (d *SANEconomyStorageDriver) Destroy(ctx context.Context, volConfig *storag
 	}
 
 	// Check if a bucket volume has no more LUNs. If none left, delete the bucketVol. Else, call for resize
-	return d.DeleteBucketIfEmpty(ctx, bucketVol)
+	return d.deleteBucketIfEmpty(ctx, bucketVol)
 }
 
-// DeleteBucketIfEmpty will check if the given bucket volume is empty, if the bucket is empty it will be deleted.
-// Otherwise, it will be resized.
-func (d *SANEconomyStorageDriver) DeleteBucketIfEmpty(ctx context.Context, bucketVol string) error {
+// deleteBucketIfEmpty will check if the given bucket volume is empty, if the bucket is empty it will be deleted.
+// Otherwise, it will be resized. Callers must hold the FlexVol lock before calling this method.
+func (d *SANEconomyStorageDriver) deleteBucketIfEmpty(ctx context.Context, bucketVol string) error {
 	fields := LogFields{
-		"Method":    "Destroy",
+		"Method":    "deleteBucketIfEmpty",
 		"Type":      "SANEconomyStorageDriver",
 		"bucketVol": bucketVol,
 	}
-	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> DeleteBucketIfEmpty")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteBucketIfEmpty")
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> deleteBucketIfEmpty")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< deleteBucketIfEmpty")
 
 	lunPathPattern := fmt.Sprintf("/vol/%s/*", bucketVol)
 	luns, err := d.API.LunList(ctx, lunPathPattern)
@@ -1218,13 +1276,13 @@ func (d *SANEconomyStorageDriver) DeleteBucketIfEmpty(ctx context.Context, bucke
 			}
 		}
 
-		// Delete the bucketVol
+		// Delete the bucketVol (lock is held by caller)
 		err := d.API.VolumeDestroy(ctx, bucketVol, true, true)
 		if err != nil {
 			return fmt.Errorf("error destroying volume %s: %w", bucketVol, err)
 		}
 	} else {
-		// Grow or shrink the Flexvol as needed
+		// Grow or shrink the Flexvol as needed (lock is held by caller)
 		err = d.resizeFlexvol(ctx, bucketVol, 0)
 		if err != nil {
 			return err
@@ -1270,6 +1328,9 @@ func (d *SANEconomyStorageDriver) Publish(
 	if tridentconfig.CurrentDriverContext == tridentconfig.ContextCSI {
 		igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
 		err = ensureIGroupExists(ctx, d.GetAPI(), igroupName, d.Config.SANType)
+		if err != nil {
+			return fmt.Errorf("failed to ensure igroup %s exists for publish operation: %w", igroupName, err)
+		}
 	}
 
 	// Get target info.
@@ -1335,6 +1396,13 @@ func (d *SANEconomyStorageDriver) Unpublish(
 	// Attempt to unmap the LUN from the per-node igroup; the lunPath is where the LUN resides within the flexvol.
 	igroupName := getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
 	lunPath := d.helper.GetLUNPath(bucketVol, name)
+
+	// Acquire locks in the correct order: lunMutex first, then igroupMutex
+	lunMutex.Lock(lunPath)
+	defer lunMutex.Unlock(lunPath)
+	igroupMutex.Lock(igroupName)
+	defer igroupMutex.Unlock(igroupName)
+
 	if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath); err != nil {
 		return fmt.Errorf("error unmapping LUN %s from igroup %s; %w", lunPath, igroupName, err)
 	}
@@ -1587,7 +1655,8 @@ func (d *SANEconomyStorageDriver) RestoreSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
-	// Check to see if volume LUN exists
+	// PRELIMINARY check to determine which FlexVol contains the volume LUN.
+	// This is necessary to know which lock to acquire. We will re-validate inside the lock.
 	volLunExists, volBucketVol, err := d.LUNExists(ctx, volLunName, volConfig.InternalID, d.FlexvolNamePrefix())
 	if err != nil {
 		Logc(ctx).WithError(err).Errorf("Error checking for existing volume LUN %s", volLunName)
@@ -1597,6 +1666,28 @@ func (d *SANEconomyStorageDriver) RestoreSnapshot(
 		message := fmt.Sprintf("volume LUN %s does not exist", volLunName)
 		Logc(ctx).Warnf(message)
 		return errors.NotFoundError(message)
+	}
+
+	// Lock the FlexVol EARLY to prevent TOCTOU races. All subsequent checks and operations
+	// are serialized per FlexVol, ensuring atomic multi-step restore operation.
+	lockedFlexvol := d.lockFlexvol(volBucketVol)
+	defer lockedFlexvol.Unlock()
+
+	// RE-VALIDATE: Check volume LUN still exists (could have been deleted after preliminary check)
+	volLunExists, volBucketVolRecheck, err := d.LUNExists(ctx, volLunName, volConfig.InternalID, d.FlexvolNamePrefix())
+	if err != nil {
+		Logc(ctx).WithError(err).Errorf("Error re-checking for existing volume LUN %s", volLunName)
+		return err
+	}
+	if !volLunExists {
+		message := fmt.Sprintf("volume LUN %s does not exist", volLunName)
+		Logc(ctx).Warnf(message)
+		return errors.NotFoundError(message)
+	}
+	// Verify the bucket volume hasn't changed
+	if volBucketVolRecheck != volBucketVol {
+		return fmt.Errorf("volume LUN %s moved from FlexVol %s to %s during operation",
+			volLunName, volBucketVol, volBucketVolRecheck)
 	}
 
 	// Check to see if the snapshot LUN exists
@@ -1716,6 +1807,10 @@ func (d *SANEconomyStorageDriver) DeleteSnapshot(
 		return errors.NotFoundError("snapshot LUN %s does not exist", snapLunName)
 	}
 
+	// Lock the FlexVol early to prevent race conditions during concurrent deletes
+	lockedFlexvol := d.lockFlexvol(bucketVol)
+	defer lockedFlexvol.Unlock()
+
 	snapPath := GetLUNPathEconomy(bucketVol, snapLunName)
 
 	// Don't leave the new LUN around
@@ -1725,7 +1820,7 @@ func (d *SANEconomyStorageDriver) DeleteSnapshot(
 	}
 
 	// Check if a bucket volume has no more LUNs. If none left, delete the bucketVol. Else, call for resize
-	return d.DeleteBucketIfEmpty(ctx, bucketVol)
+	return d.deleteBucketIfEmpty(ctx, bucketVol)
 }
 
 // GetGroupSnapshotTarget returns a set of information about the target of a group snapshot.
@@ -2012,41 +2107,70 @@ func (d *SANEconomyStorageDriver) Get(ctx context.Context, name string) error {
 }
 
 // ensureFlexvolForLUN accepts a set of Flexvol characteristics and either finds one to contain a new
-// LUN or it creates a new Flexvol with the needed attributes.  The name of the matching volume is returned,
-// as is a boolean indicating whether the volume was newly created to satisfy this request.
+// LUN or it creates a new Flexvol with the needed attributes.
+//
+// IMPORTANT: This method returns a lockedFlexVol object with a lock held. The caller MUST call
+// Unlock() on the returned object (typically via defer) after completing the operation.
 func (d *SANEconomyStorageDriver) ensureFlexvolForLUN(
 	ctx context.Context, volAttrs *api.Volume, sizeBytes uint64, opts map[string]string,
 	config *drivers.OntapStorageDriverConfig, storagePool storage.Pool, ignoredVols map[string]struct{},
-) (string, bool, error) {
+) (*locks.LockedResource, bool, error) {
 	shouldLimitFlexvolSize, flexvolSizeLimit, checkFlexvolSizeLimitsError := CheckVolumePoolSizeLimits(
 		ctx, sizeBytes, config)
 	if checkFlexvolSizeLimitsError != nil {
-		return "", false, checkFlexvolSizeLimitsError
+		return nil, false, checkFlexvolSizeLimitsError
 	}
 
 	// Check if a suitable Flexvol already exists
-	flexvol, err := d.getFlexvolForLUN(ctx, volAttrs, sizeBytes, shouldLimitFlexvolSize, flexvolSizeLimit, ignoredVols)
+	// NOTE: findFlexvolForLUN returns a lockedFlexVol with lock held if it finds a suitable FlexVol
+	lockedFlexvol, err := d.findFlexvolForLUN(ctx, volAttrs, sizeBytes, shouldLimitFlexvolSize, flexvolSizeLimit, ignoredVols)
 	if err != nil {
-		return "", false, fmt.Errorf("error finding Flexvol for LUN: %w", err)
+		return nil, false, fmt.Errorf("error finding Flexvol for LUN: %w", err)
 	}
 
-	// Found one
-	if flexvol != "" {
-		return flexvol, false, nil
+	// Found one (lock is already held)!
+	if lockedFlexvol != nil {
+		return lockedFlexvol, false, nil
+	}
+
+	// No suitable FlexVol found - need to create one
+	// Use flexvolCreationMuxtex to prevent concurrent creation races (double-check locking pattern)
+	// This allows the "find FlexVol" decision to happen in parallel across all threads, only serializing
+	// the actual Flexvol creation.
+	d.flexvolCreationLock.Lock()
+
+	// Double-check: another goroutine may have created a FlexVol while we waited for the lock
+	lockedFlexvol, err = d.findFlexvolForLUN(ctx, volAttrs, sizeBytes, shouldLimitFlexvolSize, flexvolSizeLimit, ignoredVols)
+	if err != nil {
+		d.flexvolCreationLock.Unlock()
+		return nil, false, fmt.Errorf("error finding Flexvol for LUN: %w", err)
+	}
+	if lockedFlexvol != nil {
+		// Another goroutine created one - use it (lock already held by findFlexvolForLUN)
+		// Release global lock before returning with per-FlexVol lock
+		d.flexvolCreationLock.Unlock()
+		return lockedFlexvol, false, nil
 	}
 
 	// If we can't create a new Flexvol, fail
 	if d.denyNewFlexvols {
-		return "", false, errors.New("new Flexvol creation not permitted")
+		d.flexvolCreationLock.Unlock()
+		return nil, false, errors.New("new Flexvol creation not permitted")
 	}
 
 	// Nothing found, so create a suitable Flexvol
-	flexvol, err = d.createFlexvolForLUN(ctx, volAttrs, opts, storagePool)
+	flexvol, err := d.createFlexvolForLUN(ctx, volAttrs, opts, storagePool)
 	if err != nil {
-		return "", false, fmt.Errorf("error creating Flexvol for LUN: %w", err)
+		d.flexvolCreationLock.Unlock()
+		return nil, false, fmt.Errorf("error creating Flexvol for LUN: %w", err)
 	}
 
-	return flexvol, true, nil
+	// Release global lock BEFORE acquiring per-FlexVol lock to maintain proper lock hierarchy
+	d.flexvolCreationLock.Unlock()
+
+	// Now lock the newly created FlexVol and return
+	lockedFlexvol = d.lockFlexvol(flexvol)
+	return lockedFlexvol, true, nil
 }
 
 // createFlexvolForLUN creates a new Flexvol matching the specified attributes for
@@ -2115,47 +2239,72 @@ func (d *SANEconomyStorageDriver) createFlexvolForLUN(
 	return flexvol, nil
 }
 
-// getFlexvolForLUN returns a Flexvol (from the set of existing Flexvols) that
+// findFlexvolForLUN returns a locked FlexVol (from the set of existing Flexvols) that
 // matches the specified Flexvol attributes and does not already contain more
-// than the maximum configured number of LUNs.  No matching Flexvols is not
-// considered an error.  If more than one matching Flexvol is found, one of those
-// is returned at random.
-func (d *SANEconomyStorageDriver) getFlexvolForLUN(
+// than the maximum configured number of LUNs. No matching Flexvols is not
+// considered an error.
+//
+// IMPORTANT: This method acquires a lock on the FlexVol before checking its capacity
+// and LUN count to prevent TOCTOU races. If a suitable FlexVol is found, this method
+// returns a lockedFlexVol object with the lock held. The caller MUST call Unlock() on
+// the returned object (typically via defer). If no FlexVol is found, nil is returned.
+func (d *SANEconomyStorageDriver) findFlexvolForLUN(
 	ctx context.Context, volumeAttributes *api.Volume, sizeBytes uint64, shouldLimitFlexvolSize bool,
 	flexvolSizeLimit uint64, ignoredVols map[string]struct{},
-) (string, error) {
+) (*locks.LockedResource, error) {
 	// Get all volumes matching the specified attributes
 	volumes, err := d.API.VolumeListByAttrs(ctx, volumeAttributes)
 	if err != nil {
-		return "", fmt.Errorf("error listing volumes; %w", err)
+		return nil, fmt.Errorf("error listing volumes; %w", err)
 	}
 
-	// Weed out the Flexvols:
-	// 1) already having too many LUNs
-	// 2) exceeding size limits
-	var eligibleVolumes []string
+	// Shuffle the candidate FlexVols to distribute load and avoid thundering herd
+	if len(volumes) > 1 {
+		for i := len(volumes) - 1; i > 0; i-- {
+			j := crypto.RandomNumber(i + 1)
+			volumes[i], volumes[j] = volumes[j], volumes[i]
+		}
+	}
+
+	// Check each candidate FlexVol for eligibility.
+	// Lock each FlexVol BEFORE reading its size/LUN data to prevent TOCTOU races.
+	// If a FlexVol is suitable, return with the lock still held (caller inherits it).
+	// If not suitable, unlock and continue to the next candidate.
 	for _, volume := range volumes {
 		volName := volume.Name
-		// skip flexvols over the size limit
+
+		// Skip volumes that have been marked as ignored (full)
+		if _, ignored := ignoredVols[volName]; ignored {
+			continue
+		}
+
+		// Lock this FlexVol before checking capacity/LUN count
+		lockedFlexvol := d.lockFlexvol(volName)
+
+		// Check if flexvol is over the size limit (with proposed new LUN)
 		if shouldLimitFlexvolSize {
 			sizeWithRequest, err := d.getOptimalSizeForFlexvol(ctx, volName, sizeBytes)
 			if err != nil {
 				Logc(ctx).WithError(err).Errorf("Error checking size for existing LUN %s", volName)
+				lockedFlexvol.Unlock()
 				continue
 			}
 			if sizeWithRequest > flexvolSizeLimit {
 				Logc(ctx).Debugf("Flexvol size for %v is over the limit of %v", volName, flexvolSizeLimit)
+				lockedFlexvol.Unlock()
 				continue
 			}
 		}
 
-		count := 0
+		// Check LUN count
 		lunPathPattern := fmt.Sprintf("/vol/%s/*", volName)
 		luns, err := d.API.LunList(ctx, lunPathPattern)
 		if err != nil {
-			return "", fmt.Errorf("error enumerating LUNs for volume %v: %w", volName, err)
+			lockedFlexvol.Unlock()
+			return nil, fmt.Errorf("error enumerating LUNs for volume %v: %w", volName, err)
 		}
 
+		count := 0
 		for _, lunInfo := range luns {
 			lunPath := GetLUNPathEconomy(volName, lunInfo.Name)
 			if !d.helper.IsValidSnapLUNPath(lunPath) {
@@ -2163,23 +2312,22 @@ func (d *SANEconomyStorageDriver) getFlexvolForLUN(
 			}
 		}
 
+		// Found a suitable FlexVol - return with lock held
 		if count < d.lunsPerFlexvol {
-			// Only add to the list if the volume is not being explicitly ignored
-			if _, ignored := ignoredVols[volName]; !ignored {
-				eligibleVolumes = append(eligibleVolumes, volName)
-			}
+			Logc(ctx).WithFields(LogFields{
+				"flexvol":  volName,
+				"lunCount": count,
+				"maxLUNs":  d.lunsPerFlexvol,
+			}).Debug("Selected FlexVol for new LUN (lock held).")
+			return lockedFlexvol, nil
 		}
+
+		// This FlexVol is full, unlock and try next
+		lockedFlexvol.Unlock()
 	}
 
-	// Pick a Flexvol.  If there are multiple matches, pick one at random.
-	switch len(eligibleVolumes) {
-	case 0:
-		return "", nil
-	case 1:
-		return eligibleVolumes[0], nil
-	default:
-		return eligibleVolumes[crypto.RandomNumber(len(eligibleVolumes))], nil
-	}
+	// No suitable FlexVol found (no lock held)
+	return nil, nil
 }
 
 // getOptimalSizeForFlexvol sums up all the LUN sizes on a Flexvol and adds the size of
@@ -2567,7 +2715,11 @@ func (d *SANEconomyStorageDriver) Resize(ctx context.Context, volConfig *storage
 		return errors.NotFoundError("LUN %s does not exist", name)
 	}
 
-	// Calculate the delta size needed to resize the bucketVol
+	// Lock the FlexVol to ensure atomic resize operations
+	lockedFlexvol := d.lockFlexvol(bucketVol)
+	defer lockedFlexvol.Unlock()
+
+	// Calculate the delta size needed to resize the bucketVol (now under lock)
 	totalLunSize, err := d.getTotalLUNSize(ctx, bucketVol)
 	if err != nil {
 		Logc(ctx).WithError(err).Error("Failed to determine total LUN size.")
@@ -2764,17 +2916,17 @@ func (d *SANEconomyStorageDriver) GetBackendState(ctx context.Context) (string, 
 }
 
 // String makes SANEconomyStorageDriver satisfy the Stringer interface.
-func (d SANEconomyStorageDriver) String() string {
-	return convert.ToStringRedacted(&d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
+func (d *SANEconomyStorageDriver) String() string {
+	return convert.ToStringRedacted(d, GetOntapDriverRedactList(), d.GetExternalConfig(context.Background()))
 }
 
 // GoString makes SANEconomyStorageDriver satisfy the GoStringer interface.
-func (d SANEconomyStorageDriver) GoString() string {
+func (d *SANEconomyStorageDriver) GoString() string {
 	return d.String()
 }
 
 // GetCommonConfig returns driver's CommonConfig
-func (d SANEconomyStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
+func (d *SANEconomyStorageDriver) GetCommonConfig(context.Context) *drivers.CommonStorageDriverConfig {
 	return d.Config.CommonStorageDriverConfig
 }
 
@@ -2820,7 +2972,7 @@ func (d *SANEconomyStorageDriver) HealVolumePublishEnforcement(ctx context.Conte
 
 // ParseLunInternalID parses the passed string which is in the format /svm/<svm_name>/flexvol/<flexvol_name>/lun/<lun_name>
 // and returns svm, flexvol and LUN name.
-func (d SANEconomyStorageDriver) ParseLunInternalID(internalId string) (svm, flexvol, lun string, err error) {
+func (d *SANEconomyStorageDriver) ParseLunInternalID(internalId string) (svm, flexvol, lun string, err error) {
 	match := LUNInternalIDRegex.FindStringSubmatch(internalId)
 	if match == nil {
 		err = fmt.Errorf("internalId ID %s is invalid", internalId)
@@ -2841,6 +2993,6 @@ func (d SANEconomyStorageDriver) ParseLunInternalID(internalId string) (svm, fle
 }
 
 // CreateLUNInternalID creates a string in the format /svm/<svm_name>/flexvol/<flexvol_name>/lun/<lun_name>
-func (d SANEconomyStorageDriver) CreateLUNInternalID(svm, flexvol, name string) string {
+func (d *SANEconomyStorageDriver) CreateLUNInternalID(svm, flexvol, name string) string {
 	return fmt.Sprintf("/svm/%s/flexvol/%s/lun/%s", svm, flexvol, name)
 }

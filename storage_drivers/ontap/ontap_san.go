@@ -980,6 +980,9 @@ func (d *SANStorageDriver) Publish(
 			igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
 		}
 		err = ensureIGroupExists(ctx, d.GetAPI(), igroupName, d.Config.SANType)
+		if err != nil {
+			return err
+		}
 	}
 
 	if d.Config.SANType == sa.FCP {

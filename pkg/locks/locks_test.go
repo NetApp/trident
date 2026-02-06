@@ -6,11 +6,14 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var ctx = context.Background
@@ -531,4 +534,171 @@ func TestQueue(t *testing.T) {
 	assert.True(t, WaitQueueSize(lockID1) == 0)
 	assert.True(t, WaitQueueSize(lockID2) == 0)
 	assert.True(t, WaitQueueSize(lockID3) == 0)
+}
+
+// ============================================================================
+// LockedResource and GCNamedMutex Tests
+// These tests verify the named lock and LockedResource wrapper functionality
+// ============================================================================
+
+// TestLockedResource_BasicLockUnlock verifies basic lock functionality
+func TestLockedResource_BasicLockUnlock(t *testing.T) {
+	mutex := NewGCNamedMutex()
+
+	lockedResource := mutex.LockWithGuard("test-resource")
+	require.NotNil(t, lockedResource)
+	assert.Equal(t, "test-resource", lockedResource.Name())
+
+	lockedResource.Unlock()
+	lockedResource.Unlock() // Double unlock should be safe
+
+	lockedResource2 := mutex.LockWithGuard("test-resource")
+	require.NotNil(t, lockedResource2)
+	lockedResource2.Unlock()
+}
+
+// TestLockedResource_SerializationSameResource verifies that operations
+// on the same resource are properly serialized by the lock
+func TestLockedResource_SerializationSameResource(t *testing.T) {
+	mutex := NewGCNamedMutex()
+
+	const numGoroutines = 50
+	const resourceName = "shared-resource"
+	var counter int64
+	var wg sync.WaitGroup
+
+	for i := 0; i < numGoroutines; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			lockedResource := mutex.LockWithGuard(resourceName)
+			defer lockedResource.Unlock()
+
+			oldValue := atomic.LoadInt64(&counter)
+			newValue := oldValue + 1
+			atomic.StoreInt64(&counter, newValue)
+		}()
+	}
+
+	wg.Wait()
+	assert.Equal(t, int64(numGoroutines), counter, "All increments should be serialized")
+}
+
+// TestLockedResource_ParallelDifferentResources verifies that operations
+// on different resources can proceed in parallel
+func TestLockedResource_ParallelDifferentResources(t *testing.T) {
+	mutex := NewGCNamedMutex()
+
+	const numResources = 10
+	const opsPerResource = 10
+	counters := make([]int64, numResources)
+	var wg sync.WaitGroup
+
+	for resourceID := 0; resourceID < numResources; resourceID++ {
+		for op := 0; op < opsPerResource; op++ {
+			wg.Add(1)
+			go func(resID int) {
+				defer wg.Done()
+				resourceName := fmt.Sprintf("resource-%d", resID)
+				lockedResource := mutex.LockWithGuard(resourceName)
+				defer lockedResource.Unlock()
+
+				oldValue := atomic.LoadInt64(&counters[resID])
+				newValue := oldValue + 1
+				atomic.StoreInt64(&counters[resID], newValue)
+			}(resourceID)
+		}
+	}
+
+	wg.Wait()
+
+	for i := 0; i < numResources; i++ {
+		assert.Equal(t, int64(opsPerResource), counters[i],
+			"Resource %d should have %d operations", i, opsPerResource)
+	}
+}
+
+// TestLockedResource_GarbageCollection verifies that locks are properly cleaned up
+func TestLockedResource_GarbageCollection(t *testing.T) {
+	mutex := NewGCNamedMutex()
+
+	const numLocks = 1000
+	for i := 0; i < numLocks; i++ {
+		resourceName := fmt.Sprintf("resource-%d", i)
+		lockedResource := mutex.LockWithGuard(resourceName)
+		lockedResource.Unlock()
+	}
+
+	lockedResource := mutex.LockWithGuard("test-after-gc")
+	require.NotNil(t, lockedResource)
+	lockedResource.Unlock()
+
+	var wg sync.WaitGroup
+	var counter int64
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			lockedResource := mutex.LockWithGuard("test-after-gc")
+			defer lockedResource.Unlock()
+			atomic.AddInt64(&counter, 1)
+		}()
+	}
+
+	wg.Wait()
+	assert.Equal(t, int64(10), counter)
+}
+
+// TestLockedResource_PanicRecovery verifies that locks are released even on panic
+func TestLockedResource_PanicRecovery(t *testing.T) {
+	mutex := NewGCNamedMutex()
+
+	resourceName := "test-panic-resource"
+
+	func() {
+		defer func() {
+			recover()
+		}()
+		lockedResource := mutex.LockWithGuard(resourceName)
+		defer lockedResource.Unlock()
+		panic("test panic")
+	}()
+
+	lockedResource := mutex.LockWithGuard(resourceName)
+	require.NotNil(t, lockedResource)
+	lockedResource.Unlock()
+}
+
+// TestLockedResource_NoDeadlock verifies operations complete without deadlock
+func TestLockedResource_NoDeadlock(t *testing.T) {
+	mutex := NewGCNamedMutex()
+
+	done := make(chan struct{})
+	go func() {
+		var wg sync.WaitGroup
+		for res := 0; res < 5; res++ {
+			for op := 0; op < 20; op++ {
+				wg.Add(1)
+				go func(resourceID int) {
+					defer wg.Done()
+					resourceName := fmt.Sprintf("resource-%d", resourceID)
+					lockedResource := mutex.LockWithGuard(resourceName)
+					defer lockedResource.Unlock()
+					var sum int64
+					for i := 0; i < 1000; i++ {
+						sum += int64(i)
+					}
+				}(res)
+			}
+		}
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		// Success
+	case <-time.After(5 * time.Second):
+		t.Fatal("Timeout - possible deadlock")
+	}
 }

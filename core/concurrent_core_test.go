@@ -11728,6 +11728,51 @@ func TestPublishVolumeConcurrentCore(t *testing.T) {
 	}
 }
 
+// TestPublishVolumeConcurrentCore_PublicationAlreadyExists tests that PublishVolume
+// handles AlreadyExistsError gracefully when the volume publication already exists
+// (e.g., during Kubernetes retries of ControllerPublishVolume).
+func TestPublishVolumeConcurrentCore_PublicationAlreadyExists(t *testing.T) {
+	config.CurrentDriverContext = config.ContextCSI
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	db.Initialize()
+
+	// Create mock store client that returns AlreadyExistsError for AddVolumePublication
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	// Create the orchestrator with mock store client
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	// Setup driver mock
+	driver := mockstorage.NewMockDriver(mockCtrl)
+	driver.EXPECT().Name().Return(config.FakeStorageDriverName).AnyTimes()
+	driver.EXPECT().GetStorageBackendSpecs(gomock.Any(), gomock.Any()).Return(nil)
+	driver.EXPECT().CreateFollowup(gomock.Any(), gomock.Any()).Return(nil)
+	driver.EXPECT().Publish(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+	// Setup cache with required resources
+	fakeNode := getFakeNode("testNode")
+	addNodesToCache(t, fakeNode)
+	fakeBackend := getFakeBackend("testBackend", "uuid", driver)
+	addBackendsToCache(t, fakeBackend)
+	fakeVolume := getFakeVolume("testVolume", "uuid")
+	addVolumesToCache(t, fakeVolume)
+
+	// Mock store client expectations
+	// AddVolumePublication returns AlreadyExistsError (simulating Kubernetes retry scenario)
+	alreadyExistsErr := persistentstore.NewAlreadyExistsError("TridentVolumePublication", "testVolume.testNode")
+	mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).Return(alreadyExistsErr)
+	// UpdateVolume should still be called after handling AlreadyExistsError
+	mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(nil)
+
+	// Call PublishVolume - should succeed despite AlreadyExistsError
+	err := o.PublishVolume(testCtx, "testVolume", &models.VolumePublishInfo{HostName: "testNode"})
+
+	// Verify no error is returned (AlreadyExistsError is handled gracefully)
+	assert.NoError(t, err, "PublishVolume should succeed even when publication already exists")
+}
+
 func TestUnpublishVolumeConcurrentCore(t *testing.T) {
 	tests := []struct {
 		name        string

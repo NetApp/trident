@@ -67,6 +67,7 @@ var (
 		"ontap-nas",
 		"google-cloud-netapp-volumes",
 		"ontap-nas-economy",
+		"ontap-san-economy",
 	}
 )
 
@@ -3422,7 +3423,12 @@ func (o *ConcurrentTridentOrchestrator) publishVolume(ctx context.Context, volum
 		AccessMode: publishInfo.AccessMode,
 	}
 	if err := o.storeClient.AddVolumePublication(ctx, vp); err != nil {
-		return err
+		// Handle idempotent publish - if publication already exists, treat as success
+		// This can happen when Kubernetes retries ControllerPublishVolume
+		if !persistentstore.IsAlreadyExistsError(err) {
+			return err
+		}
+		Logc(ctx).WithFields(fields).Debug("Volume publication already exists, continuing.")
 	}
 
 	if err := o.updateVolumeInStoreAndCache(ctx, &results[0]); err != nil {
