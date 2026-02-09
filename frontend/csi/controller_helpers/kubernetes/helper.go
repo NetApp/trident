@@ -814,8 +814,8 @@ func getVolumeConfig(
 	requisiteTopology, preferredTopology []map[string]string,
 ) *storage.VolumeConfig {
 	var (
-		accessModes    []config.AccessMode
-		importNoRename bool
+		accessModes []config.AccessMode
+		noRename    bool
 	)
 	smbShareACL := make(map[string]string)
 
@@ -862,10 +862,13 @@ func getVolumeConfig(
 
 	// parse importNoRename annotation only for import workflow, if not present, default to false
 	if importOriginalName != "" {
-		importNoRename, err = strconv.ParseBool(getAnnotation(annotations, AnnImportNoRename))
-		if err != nil {
-			Logc(ctx).WithError(err).Errorf("Invalid value '%s' for %s annotation; must be a valid boolean, defaulting to false.",
-				AnnImportNoRename)
+		importNoRename := getAnnotation(annotations, AnnImportNoRename)
+		if importNoRename != "" {
+			noRename, err = strconv.ParseBool(importNoRename)
+			if err != nil {
+				Logc(ctx).WithError(err).Errorf("Invalid value '%s' for %s annotation; must be a valid boolean, defaulting to false.",
+					importNoRename, AnnImportNoRename)
+			}
 		}
 	}
 
@@ -899,7 +902,7 @@ func getVolumeConfig(
 		ImportOriginalName:        importOriginalName,
 		ImportBackendUUID:         getAnnotation(annotations, AnnImportBackendUUID),
 		ImportNotManaged:          notManaged,
-		ImportNoRename:            importNoRename,
+		ImportNoRename:            noRename,
 		MountOptions:              strings.Join(storageClass.MountOptions, ","),
 		RequisiteTopologies:       requisiteTopology,
 		PreferredTopologies:       preferredTopology,
