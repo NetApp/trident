@@ -909,6 +909,7 @@ func TestPopulateConfigurationDefaults_AllSet(t *testing.T) {
 		},
 		NFSMountOptions:     "nfsvers=4.1",
 		VolumeCreateTimeout: "30",
+		NASType:             "smb",
 		GCNVNASStorageDriverPool: drivers.GCNVNASStorageDriverPool{
 			GCNVNASStorageDriverConfigDefaults: drivers.GCNVNASStorageDriverConfigDefaults{
 				CommonStorageDriverConfigDefaults: drivers.CommonStorageDriverConfigDefaults{
@@ -920,7 +921,6 @@ func TestPopulateConfigurationDefaults_AllSet(t *testing.T) {
 				ExportRule:      "1.1.1.1/32",
 			},
 			ServiceLevel: "premium",
-			NASType:      "smb",
 		},
 	}
 
@@ -934,13 +934,13 @@ func TestPopulateConfigurationDefaults_AllSet(t *testing.T) {
 	assert.Equal(t, "1234567890", driver.Config.Size, "size mismatch")
 	assert.Equal(t, "premium", driver.Config.ServiceLevel, "service level mismatch")
 	assert.Equal(t, "nfsvers=4.1", driver.Config.NFSMountOptions, "NFS mount options mismatch")
-	assert.Equal(t, "30", driver.Config.VolumeCreateTimeout, "NFS mount options mismatch")
+	assert.Equal(t, "30", driver.Config.VolumeCreateTimeout, "volume create timeout mismatch")
 	assert.Equal(t, "true", driver.Config.SnapshotDir, "snapshot dir mismatch")
 	assert.Equal(t, "1456898458", driver.Config.SnapshotReserve, "snapshot reserve mismatch")
 	assert.Equal(t, "0700", driver.Config.UnixPermissions, "unix permissions mismatch")
 	assert.Equal(t, "123456789000", driver.Config.LimitVolumeSize, "limit volume size mismatch")
 	assert.Equal(t, "1.1.1.1/32", driver.Config.ExportRule, "export rule mismatch")
-	assert.Equal(t, sa.NFS, driver.Config.NASType, "NAS type mismatch")
+	assert.Equal(t, sa.SMB, driver.Config.NASType, "NAS type mismatch")
 }
 
 func TestPopulateConfigurationDefaults_InvalidSnapshotDir(t *testing.T) {
