@@ -17,6 +17,7 @@ import (
 
 	tridentconfig "github.com/netapp/trident/config"
 	mockapi "github.com/netapp/trident/mocks/mock_storage_drivers/mock_gcp"
+	"github.com/netapp/trident/pkg/capacity"
 	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	storagefake "github.com/netapp/trident/storage/fake"
@@ -1929,6 +1930,47 @@ func TestCreate_ZeroSize(t *testing.T) {
 	assert.NoError(t, result, "create failed")
 	assert.Equal(t, createRequest.SizeBytes, DefaultVolumeSize, "request size mismatch")
 	assert.Equal(t, volConfig.Size, defaultVolumeSizeStr, "config size mismatch")
+	assert.Equal(t, volume.FullName, volConfig.InternalID, "internal ID not set on volConfig")
+}
+
+func TestCreate_SizeNotGibMultiple(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err, "error occurred")
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool"]
+
+	volConfig, capacityPool, volume, createRequest := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	volConfig.Size = "107374182401"                        // 100 GiB + 1 byte
+	createRequest.SizeBytes = int64(capacity.OneGiB * 101) // 101 GiB (rounded up)
+	volume.SizeBytes = int64(capacity.OneGiB * 101)        // 101 GiB
+	createRequest.UnixPermissions = "0777"
+	volume.UnixPermissions = "0777"
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
+
+	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, api.VolumeStateReady, []string{api.VolumeStateError},
+		driver.volumeCreateTimeout).Return(api.VolumeStateReady, nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.NoError(t, result, "create failed")
+	assert.Equal(t, createRequest.SizeBytes, int64(capacity.OneGiB*101), "request size mismatch")
+	assert.Equal(t, volConfig.Size, strconv.FormatInt(int64(capacity.OneGiB*101), 10), "config size mismatch") // 101 GiB
 	assert.Equal(t, volume.FullName, volConfig.InternalID, "internal ID not set on volConfig")
 }
 
@@ -6467,6 +6509,25 @@ func TestResize(t *testing.T) {
 
 	assert.Nil(t, result, "not nil")
 	assert.Equal(t, strconv.FormatUint(newSize, 10), volConfig.Size, "size mismatch")
+}
+
+func TestResize_SizeNotGibMultiple(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	volConfig, volume := getStructsForDestroyNFSVolume(ctx, driver)
+	newSize := (capacity.OneGiB * 100) + 1 // 100 GiB + 1 byte
+	expectedSize := capacity.OneGiB * 101  // 101 GiB (rounded up)
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, volConfig).Return(volume, nil).Times(1)
+	mockAPI.EXPECT().ResizeVolume(ctx, volume, int64(expectedSize)).Return(nil).Times(1)
+
+	result := driver.Resize(ctx, volConfig, newSize)
+
+	assert.Nil(t, result, "not nil")
+	assert.Equal(t, strconv.FormatUint(expectedSize, 10), volConfig.Size, "size mismatch")
 }
 
 func TestResize_DiscoveryFailed(t *testing.T) {
