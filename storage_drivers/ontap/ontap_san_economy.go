@@ -1001,6 +1001,7 @@ func (d *SANEconomyStorageDriver) Import(
 	}
 	originalFlexvolName := pathElements[0]
 	originalLUNName := pathElements[1]
+	originalInternalID := d.CreateLUNInternalID(d.Config.SVM, originalFlexvolName, originalLUNName)
 
 	flexvol, err := d.API.VolumeInfo(ctx, originalFlexvolName)
 	if err != nil {
@@ -1058,8 +1059,10 @@ func (d *SANEconomyStorageDriver) Import(
 		}
 		// Adjust internalName to LUN name. Trim the Flexvol name.
 		volConfig.InternalName = d.helper.GetInternalVolumeNameFromPath(volConfig.InternalName)
+		volConfig.InternalID = originalInternalID
 		return nil
 	}
+
 	var targetPath string
 
 	// Managed import with no rename only supported for csi workflow
@@ -1070,15 +1073,17 @@ func (d *SANEconomyStorageDriver) Import(
 				flexvol.Name, d.FlexvolNamePrefix())
 		}
 		volConfig.InternalName = originalLUNName
+		volConfig.InternalID = originalInternalID
 		targetPath = "/vol/" + originalFlexvolName + "/" + volConfig.InternalName
-		// This is critical so that subsequent operations can find the LUN in case of no rename import
-		volConfig.InternalID = d.CreateLUNInternalID(d.Config.SVM, originalFlexvolName, originalLUNName)
 	} else {
 		// Managed import with rename
+		volConfig.InternalID = d.CreateLUNInternalID(d.Config.SVM, originalFlexvolName, volConfig.InternalName)
 		targetPath = "/vol/" + originalFlexvolName + "/" + volConfig.InternalName
-		newFlexvolName := d.FlexvolNamePrefix() + crypto.RandomString(10)
-		volRenamed := false
+
 		if extantLUN.Name != targetPath {
+			newFlexvolName := d.FlexvolNamePrefix() + crypto.RandomString(10)
+			volRenamed := false
+
 			// Ensure LUN name isn't too long
 			if len(volConfig.InternalName) > maxLunNameLength {
 				return fmt.Errorf("volume %s name exceeds the limit of %d characters", volConfig.InternalName,
@@ -1118,6 +1123,7 @@ func (d *SANEconomyStorageDriver) Import(
 			// Update target path if volume was renamed
 			if volRenamed {
 				targetPath = "/vol/" + newFlexvolName + "/" + volConfig.InternalName
+				volConfig.InternalID = d.CreateLUNInternalID(d.Config.SVM, newFlexvolName, volConfig.InternalName)
 			}
 		}
 	}
