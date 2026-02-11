@@ -93,6 +93,8 @@ func ValidateCommonSettings(ctx context.Context, configJSON string) (*CommonStor
 		}
 	}
 
+	config.Flags = make(map[string]string)
+
 	Logc(ctx).Debugf("Parsed commonConfig: %+v", *config)
 
 	return config, nil

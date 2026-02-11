@@ -55,7 +55,9 @@ func TestGetDriverProtocol(t *testing.T) {
 
 func TestGetSANStorageDriverBasedOnPersonality(t *testing.T) {
 	ontapConfig := drivers.OntapStorageDriverConfig{
-		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{},
+		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+			Flags: make(map[string]string),
+		},
 	}
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()

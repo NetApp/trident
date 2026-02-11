@@ -718,6 +718,8 @@ func (o *ConcurrentTridentOrchestrator) validateAndCreateBackendFromConfig(
 		return nil, err
 	}
 
+	commonConfig.Flags[FlagConcurrent] = "true"
+
 	if !collection.StringInSlice(commonConfig.StorageDriverName, supportedBackends) {
 		return nil, fmt.Errorf("backend type %s is not yet supported by concurrent Trident",
 			commonConfig.StorageDriverName)

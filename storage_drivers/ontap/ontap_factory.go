@@ -65,20 +65,18 @@ func GetStorageDriver(
 	}
 
 	// Set up driver flags
-	ontapConfig.Flags = map[string]string{
-		FlagPersonality:   PersonalityUnified,
-		FlagDisaggregated: strconv.FormatBool(API.IsDisaggregated()),
-		FlagSANOptimized:  strconv.FormatBool(API.IsSANOptimized()),
+	if ontapConfig.Flags == nil {
+		ontapConfig.Flags = make(map[string]string)
 	}
+	ontapConfig.Flags[FlagPersonality] = PersonalityUnified
+	ontapConfig.Flags[FlagDisaggregated] = strconv.FormatBool(API.IsDisaggregated())
+	ontapConfig.Flags[FlagSANOptimized] = strconv.FormatBool(API.IsSANOptimized())
 
 	switch ontapConfig.StorageDriverName {
 
 	case config.OntapNASStorageDriverName:
 		if !API.IsSANOptimized() && API.IsDisaggregated() {
 			// Setup personality to be used by ASUP
-			if ontapConfig.Flags == nil {
-				ontapConfig.Flags = make(map[string]string)
-			}
 			ontapConfig.Flags[FlagPersonality] = PersonalityAFX
 		}
 		storageDriver = &NASStorageDriver{API: API, AWSAPI: AWSAPI, Config: *ontapConfig}
@@ -119,9 +117,6 @@ func getSANStorageDriverBasedOnPersonality(
 	isASAr2 := false
 	if sanOptimized && disaggregated {
 		// Setup personality to be used by ASUP
-		if ontapConfig.Flags == nil {
-			ontapConfig.Flags = make(map[string]string)
-		}
 		ontapConfig.Flags[FlagPersonality] = PersonalityASAr2
 		isASAr2 = true
 	}

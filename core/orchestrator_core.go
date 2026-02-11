@@ -1146,6 +1146,8 @@ func (o *TridentOrchestrator) validateAndCreateBackendFromConfig(
 		return nil, err
 	}
 
+	commonConfig.Flags[FlagConcurrent] = "false"
+
 	// For backends created using CRD Controller ensure there are no forbidden fields
 	if isCRDContext(ctx) {
 		if err = factory.SpecOnlyValidation(ctx, commonConfig, configInJSON); err != nil {

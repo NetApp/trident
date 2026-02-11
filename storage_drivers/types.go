@@ -76,7 +76,7 @@ type CommonStorageDriverConfig struct {
 	StoragePrefixRaw  json.RawMessage       `json:"storagePrefix,string"`
 	StoragePrefix     *string               `json:"-"`
 	SerialNumbers     []string              `json:"serialNumbers,omitempty"`
-	Flags             map[string]string     `json:"flags,omitempty"`
+	Flags             map[string]string     `json:"flags"`
 	BackendPools      []string              `json:"backendPools,omitempty"`
 	DriverContext     trident.DriverContext `json:"-"`
 	LimitVolumeSize   string                `json:"limitVolumeSize"`

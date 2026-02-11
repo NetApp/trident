@@ -2304,6 +2304,36 @@ func TestBackendCleanup(t *testing.T) {
 	}
 }
 
+func TestAddBackend_SetsConcurrentFlag(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	o := getOrchestrator(t, false)
+	defer cleanup(t, o)
+
+	// Create a simple fake backend config
+	configJSON := `{
+		"version": 1,
+		"storageDriverName": "fake",
+		"storagePrefix": "test_"
+	}`
+
+	backendExternal, err := o.AddBackend(context.Background(), configJSON, "")
+	assert.NoError(t, err)
+	assert.NotNil(t, backendExternal)
+
+	// Verify the backend was added
+	backend, found := o.backends[backendExternal.BackendUUID]
+	assert.True(t, found)
+	assert.NotNil(t, backend)
+
+	// Verify the Flags map contains the concurrent flag set to "false"
+	driver := backend.Driver()
+	commonConfig := driver.GetCommonConfig(context.Background())
+	assert.NotNil(t, commonConfig.Flags)
+	assert.Equal(t, "false", commonConfig.Flags["concurrent"])
+}
+
 func TestLoadBackend(t *testing.T) {
 	const (
 		backendName = "load-backend-test"

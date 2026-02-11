@@ -19,6 +19,8 @@ const (
 	NodeAccessReconcilePeriod      = time.Second * 30
 	NodeRegistrationCooldownPeriod = time.Second * 30
 	AttachISCSIVolumeTimeoutLong   = time.Second * 90
+
+	FlagConcurrent = "concurrent"
 )
 
 // recordTiming is used to record in Prometheus the total time taken for an operation as follows:

@@ -286,6 +286,7 @@ func getFakeStorageDriverConfig(name string) drivers.FakeStorageDriverConfig {
 		CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
 			Version:           drivers.ConfigVersion,
 			StorageDriverName: config.FakeStorageDriverName,
+			Flags:             make(map[string]string),
 		},
 		Protocol:     config.File,
 		Pools:        testutils.GenerateFakePools(2),
@@ -1474,6 +1475,27 @@ func TestBootstrapSubordinateVolumesConcurrentCore(t *testing.T) {
 }
 
 // Backend tests
+
+func TestValidateAndCreateBackendFromConfig_SetsConcurrentFlag(t *testing.T) {
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	fakeConfig := getFakeStorageDriverConfig("test-backend")
+	configJSON, err := fakeConfig.Marshal()
+	require.NoError(t, err)
+
+	backend, err := o.validateAndCreateBackendFromConfig(testCtx, string(configJSON), "", "")
+
+	require.NoError(t, err)
+	require.NotNil(t, backend)
+
+	// Verify the concurrent flag was set in the backend's common config
+	commonConfig := backend.Driver().GetCommonConfig(testCtx)
+	require.NotNil(t, commonConfig.Flags)
+	assert.Equal(t, "true", commonConfig.Flags[FlagConcurrent])
+
+	persistenceCleanup(t, o)
+}
 
 func TestGetBackendConcurrentCore(t *testing.T) {
 	tests := []struct {

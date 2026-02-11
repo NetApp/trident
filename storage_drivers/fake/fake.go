@@ -207,6 +207,7 @@ func NewFakeStorageDriverConfigJSON(
 				StorageDriverName: config.FakeStorageDriverName,
 				StoragePrefixRaw:  json.RawMessage("\"\""),
 				StoragePrefix:     &prefix,
+				Flags:             make(map[string]string),
 			},
 			Protocol:     protocol,
 			Pools:        pools,
