@@ -26,6 +26,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	tridentconfig "github.com/netapp/trident/config"
+	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
@@ -60,7 +61,6 @@ const (
 	defaultNodeReconciliationPeriod = 1 * time.Minute
 	maximumNodeReconciliationJitter = 5000 * time.Millisecond
 	nvmeMaxFlushWaitDuration        = 6 * time.Minute
-	fsUnavailableTimeout            = 5 * time.Second
 
 	// Node Scalability constants.
 	maxNodeStageNFSVolumeOperations     = 10
@@ -459,64 +459,86 @@ func (p *Plugin) NodeGetVolumeStats(
 	ctx = SetContextWorkflow(ctx, WorkflowVolumeGetStats)
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
 
+	Logc(ctx).WithFields(LogFields{
+		"volumeId":          req.VolumeId,
+		"volumePath":        req.GetVolumePath(),
+		"stagingTargetPath": req.StagingTargetPath,
+	}).Debug("NodeGetVolumeStats request received")
+
+	// Validate request
 	if req.GetVolumeId() == "" {
 		return nil, status.Error(codes.InvalidArgument, "empty volume id provided")
 	}
-
 	if req.GetVolumePath() == "" {
 		return nil, status.Error(codes.InvalidArgument, "empty volume path provided")
 	}
 
-	// Ensure volume is published at path
-	exists, err := p.osutils.PathExistsWithTimeout(ctx, req.GetVolumePath(), fsUnavailableTimeout)
-	if !exists || err != nil {
-		return nil, status.Error(codes.NotFound,
-			fmt.Sprintf("could not find volume mount at path: %s; %v", req.GetVolumePath(), err))
+	// Verify volume exists at path
+	if err := p.nodeHelper.VerifyVolumePath(ctx, req.GetVolumePath()); err != nil {
+		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
-	// If raw block volume, don't return usage.
-	isRawBlock := false
-	if req.StagingTargetPath != "" {
-		trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, req.VolumeId)
-		if err != nil {
-			if errors.IsNotFoundError(err) {
-				return nil, status.Error(codes.FailedPrecondition, err.Error())
-			} else {
-				return nil, status.Error(codes.Internal, err.Error())
-			}
+	// Read tracking info to determine volume type
+	trackingInfo, err := p.nodeHelper.ReadTrackingInfo(ctx, req.VolumeId)
+	if err != nil {
+		if errors.IsNotFoundError(err) {
+			return nil, status.Error(codes.FailedPrecondition, err.Error())
 		}
-		publishInfo := &trackingInfo.VolumePublishInfo
-
-		isRawBlock = publishInfo.FilesystemType == filesystem.Raw
+		return nil, status.Error(codes.Internal, fmt.Sprintf("error reading the tracking file: %v", err.Error()))
 	}
+
+	// Determine if this is a raw block or filesystem volume
+	isRawBlock := p.nodeHelper.IsRawBlockVolume(trackingInfo)
+
+	var stats *nodehelpers.VolumeStats
 	if isRawBlock {
-		// Return no capacity info for raw block volumes, we cannot reliably determine the capacity.
-		return &csi.NodeGetVolumeStatsResponse{}, nil
+		// Get stats for raw block volume
+		stats, err = p.nodeHelper.GetBlockDeviceStatsByID(ctx, req.VolumeId, trackingInfo)
+		if err != nil {
+			// For block devices, log warning but return empty response (not an error)
+			Logc(ctx).WithError(err).Warn("Failed to get block device volume statistics, returning empty response")
+			return &csi.NodeGetVolumeStatsResponse{}, nil
+		}
 	} else {
-		// If filesystem, return usage reported by FS.
-		available, capacity, usage, inodes, inodesFree, inodesUsed, err := p.fs.GetFilesystemStats(
-			ctx, req.GetVolumePath())
+		// Get stats for filesystem volume
+		stats, err = p.nodeHelper.GetFilesystemStatsByID(ctx, req.GetVolumePath())
 		if err != nil {
 			Logc(ctx).Errorf("unable to get filesystem stats at path: %s; %v", req.GetVolumePath(), err)
 			return nil, status.Error(codes.Unknown, "Failed to get filesystem stats")
 		}
+	}
+
+	// Build CSI response from VolumeStats
+	if isRawBlock {
 		return &csi.NodeGetVolumeStatsResponse{
 			Usage: []*csi.VolumeUsage{
 				{
 					Unit:      csi.VolumeUsage_BYTES,
-					Available: available,
-					Total:     capacity,
-					Used:      usage,
-				},
-				{
-					Unit:      csi.VolumeUsage_INODES,
-					Available: inodesFree,
-					Total:     inodes,
-					Used:      inodesUsed,
+					Total:     stats.Total,
+					Used:      stats.Used,
+					Available: stats.Available,
 				},
 			},
 		}, nil
 	}
+
+	// Filesystem volumes include inode information
+	return &csi.NodeGetVolumeStatsResponse{
+		Usage: []*csi.VolumeUsage{
+			{
+				Unit:      csi.VolumeUsage_BYTES,
+				Total:     stats.Total,
+				Used:      stats.Used,
+				Available: stats.Available,
+			},
+			{
+				Unit:      csi.VolumeUsage_INODES,
+				Total:     stats.Inodes,
+				Used:      stats.InodesUsed,
+				Available: stats.InodesFree,
+			},
+		},
+	}, nil
 }
 
 // NodeExpandVolume handles volume expansion for Block (i.e. iSCSI) volumes.  The CO only calls NodeExpandVolume

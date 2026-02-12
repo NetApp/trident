@@ -191,6 +191,8 @@ const (
 	TridentProtectControllerName = "controller-manager"
 	TridentProtectConnectorLabel = "app=connector.protect.trident.netapp.io"
 
+	TridentNodeNameLabel = "trident.netapp.io/nodeName"
+
 	// CSIUnixSocketPermissions CSI socket file needs rw access only for user
 	CSIUnixSocketPermissions = 0o600
 	// CSISocketDirPermissions CSI socket directory needs rwx access only for user
@@ -352,6 +354,14 @@ const (
 	TridentNodeMain                = "trident-main"
 	CSISidecarRegistrar            = "node-driver-registrar"
 	CSISidecarWindowsLivenessProbe = "liveness-probe"
+
+	/* Autogrow-related constants */
+	// Autogrow policy constants
+	DefaultAGPGrowthAmount        = "10%"
+	DefaultAutogrowPoliciesForCLI = 10
+
+	// Autogrow TAGRI constants
+	DefaultTagriTimeoutSeconds = 300 // 5 minutes
 )
 
 var (
@@ -381,19 +391,20 @@ var (
 	OrchestratorVersion = versionutils.MustParseDate(version())
 
 	/* API Server and persistent store variables */
-	BaseURL          = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion
-	VersionURL       = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/version"
-	BackendURL       = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/backend"
-	BackendUUIDURL   = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/backendUUID"
-	VolumeURL        = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/volume"
-	TransactionURL   = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/txn"
-	StorageClassURL  = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/storageclass"
-	NodeURL          = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/node"
-	SnapshotURL      = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/snapshot"
-	GroupSnapshotURL = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/groupsnapshot"
-	ChapURL          = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/chap"
-	PublicationURL   = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/publication"
-	LoggingConfigURL = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/logging"
+	BaseURL           = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion
+	VersionURL        = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/version"
+	BackendURL        = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/backend"
+	BackendUUIDURL    = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/backendUUID"
+	VolumeURL         = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/volume"
+	TransactionURL    = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/txn"
+	StorageClassURL   = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/storageclass"
+	NodeURL           = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/node"
+	SnapshotURL       = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/snapshot"
+	GroupSnapshotURL  = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/groupsnapshot"
+	ChapURL           = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/chap"
+	PublicationURL    = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/publication"
+	LoggingConfigURL  = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/logging"
+	AutogrowPolicyURL = "/" + OrchestratorName + "/v" + OrchestratorAPIVersion + "/autogrowpolicy"
 
 	UsingPassthroughStore bool
 	CurrentDriverContext  DriverContext
@@ -432,6 +443,9 @@ var (
 	// QPS and Burst for k8s clients
 	K8sAPIQPS   float32
 	K8sAPIBurst int
+
+	// Absolute max age for ANY TAGRI (safety net to prevent stuck states) before forced deletion
+	TagriTimeout time.Duration
 
 	// DefaultResources consists of all the defaults resources for the all the containers
 	// If you're changing here, keep in mind to also update the defaults in the helm chart.
@@ -621,6 +635,17 @@ func IsValidWindowsNodeContainerName(c string) bool {
 	default:
 		return false
 	}
+}
+
+// GetTagriTimeout returns the absolute max age for any TAGRI before forced deletion.
+// This is a safety net to prevent TAGRIs from being stuck indefinitely in any phase.
+// Uses TagriTimeout set from --tagri_timeout at process start; default 5 minutes.
+// Zero means use DefaultTagriTimeoutSeconds.
+func GetTagriTimeout() time.Duration {
+	if TagriTimeout != 0 {
+		return TagriTimeout
+	}
+	return DefaultTagriTimeoutSeconds * time.Second
 }
 
 // ToPtr returns a pointer to the provided value.

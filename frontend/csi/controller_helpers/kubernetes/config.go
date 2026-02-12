@@ -75,6 +75,7 @@ const (
 	AnnSMBShareAdUser           = prefix + "/smbShareAdUser"
 	AnnSMBShareAccessControl    = prefix + "/smbShareAccessControl"
 	AnnConfiguratorStatus       = prefix + "/configuratorStatus"
+	AnnAutogrowPolicy           = prefix + "/autogrowPolicy"
 
 	// Auto-tiering annotations (GCNV, can be extended to ANF and ONTAP)
 	AnnTieringPolicy             = prefix + "/tieringPolicy"

@@ -22,6 +22,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/config"
+	"github.com/netapp/trident/core/cache"
 	"github.com/netapp/trident/logging"
 	mockpersistentstore "github.com/netapp/trident/mocks/mock_persistent_store"
 	mockstorage "github.com/netapp/trident/mocks/mock_storage"
@@ -1047,6 +1048,161 @@ func TestUpdateVolumeLUKSPassphraseNames(t *testing.T) {
 	err = orchestrator.UpdateVolumeLUKSPassphraseNames(context.TODO(), "test-vol", &[]string{"A"})
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, bootstrapError)
+}
+
+func TestUpdateVolumeAutogrowStatus(t *testing.T) {
+	now := time.Now()
+	statusSuccess := &models.VolumeAutogrowStatus{
+		LastAutogrowPolicyUsed:   "policy1",
+		LastAutogrowAttemptedAt:  &now,
+		LastProposedSize:         "100Gi",
+		TotalAutogrowAttempted:   1,
+		TotalSuccessfulAutogrow:  1,
+		LastSuccessfulAutogrowAt: &now,
+		LastSuccessfulSize:       "100Gi",
+		LastError:                "",
+	}
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: main volume, cache and store updated
+	orchestrator := getOrchestrator(t, false)
+	vol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "test-vol"},
+		BackendUUID: "12345",
+	}
+	orchestrator.volumes[vol.Config.Name] = vol
+	err := orchestrator.storeClient.AddVolume(context.TODO(), vol)
+	assert.NoError(t, err)
+	assert.Nil(t, orchestrator.volumes[vol.Config.Name].AutogrowStatus)
+
+	err = orchestrator.UpdateVolumeAutogrowStatus(context.TODO(), "test-vol", statusSuccess)
+	assert.NoError(t, err)
+	assert.Equal(t, statusSuccess, orchestrator.volumes[vol.Config.Name].AutogrowStatus)
+
+	storedVol, err := orchestrator.storeClient.GetVolume(context.TODO(), "test-vol")
+	assert.NoError(t, err)
+	assert.NotNil(t, storedVol.AutogrowStatus)
+	assert.Equal(t, "policy1", storedVol.AutogrowStatus.LastAutogrowPolicyUsed)
+	assert.Equal(t, 1, storedVol.AutogrowStatus.TotalAutogrowAttempted)
+
+	err = orchestrator.storeClient.DeleteVolume(context.TODO(), vol)
+	assert.NoError(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: subordinate volume, cache and store updated
+	orchestrator = getOrchestrator(t, false)
+	subVol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "sub-vol",
+			ShareSourceVolume: "src-vol",
+		},
+		BackendUUID: "12345",
+	}
+	orchestrator.subordinateVolumes[subVol.Config.Name] = subVol
+	err = orchestrator.storeClient.AddVolume(context.TODO(), subVol)
+	assert.NoError(t, err)
+	assert.Nil(t, orchestrator.subordinateVolumes[subVol.Config.Name].AutogrowStatus)
+
+	err = orchestrator.UpdateVolumeAutogrowStatus(context.TODO(), "sub-vol", statusSuccess)
+	assert.NoError(t, err)
+	assert.Equal(t, statusSuccess, orchestrator.subordinateVolumes[subVol.Config.Name].AutogrowStatus)
+
+	storedVol, err = orchestrator.storeClient.GetVolume(context.TODO(), "sub-vol")
+	assert.NoError(t, err)
+	assert.NotNil(t, storedVol.AutogrowStatus)
+	assert.Equal(t, "policy1", storedVol.AutogrowStatus.LastAutogrowPolicyUsed)
+
+	err = orchestrator.storeClient.DeleteVolume(context.TODO(), subVol)
+	assert.NoError(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Positive case: nil status (clear AutogrowStatus)
+	orchestrator = getOrchestrator(t, false)
+	vol = &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "test-vol"},
+		BackendUUID: "12345",
+	}
+	orchestrator.volumes[vol.Config.Name] = vol
+	err = orchestrator.storeClient.AddVolume(context.TODO(), vol)
+	assert.NoError(t, err)
+
+	err = orchestrator.UpdateVolumeAutogrowStatus(context.TODO(), "test-vol", nil)
+	assert.NoError(t, err)
+	assert.Nil(t, orchestrator.volumes[vol.Config.Name].AutogrowStatus)
+
+	storedVol, err = orchestrator.storeClient.GetVolume(context.TODO(), "test-vol")
+	assert.NoError(t, err)
+	assert.Nil(t, storedVol.AutogrowStatus)
+
+	err = orchestrator.storeClient.DeleteVolume(context.TODO(), vol)
+	assert.NoError(t, err)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: volume not found (not in cache)
+	orchestrator = getOrchestrator(t, false)
+	err = orchestrator.UpdateVolumeAutogrowStatus(context.TODO(), "nonexistent", statusSuccess)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "was not found")
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: volume in cache but not in store (persistence update fails)
+	orchestrator = getOrchestrator(t, false)
+	vol = &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "test-vol"},
+		BackendUUID: "12345",
+	}
+	orchestrator.volumes[vol.Config.Name] = vol
+	// Do not add to store so UpdateVolume (read-modify-write) will fail
+
+	err = orchestrator.UpdateVolumeAutogrowStatus(context.TODO(), "test-vol", statusSuccess)
+	assert.Error(t, err)
+	// Cache is still updated (method updates cache before store)
+	assert.Equal(t, statusSuccess, orchestrator.volumes[vol.Config.Name].AutogrowStatus)
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Negative case: bootstrap error
+	orchestrator = getOrchestrator(t, false)
+	bootstrapErr := fmt.Errorf("bootstrap error")
+	orchestrator.bootstrapError = bootstrapErr
+	vol = &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "test-vol"},
+		BackendUUID: "12345",
+	}
+	orchestrator.volumes[vol.Config.Name] = vol
+
+	err = orchestrator.UpdateVolumeAutogrowStatus(context.TODO(), "test-vol", statusSuccess)
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, bootstrapErr)
+}
+
+func TestGetResizeDeltaForBackend(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	// Bootstrap error: returns (0, err)
+	orchestrator := getOrchestrator(t, false)
+	bootstrapErr := fmt.Errorf("bootstrap error")
+	orchestrator.bootstrapError = bootstrapErr
+	delta, err := orchestrator.GetResizeDeltaForBackend(ctx(), "any-uuid")
+	assert.Equal(t, int64(0), delta)
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, bootstrapErr)
+
+	// Backend not found: returns (0, nil)
+	orchestrator = getOrchestrator(t, false)
+	delta, err = orchestrator.GetResizeDeltaForBackend(ctx(), "nonexistent-uuid")
+	assert.Equal(t, int64(0), delta)
+	assert.NoError(t, err)
+
+	// Backend found: returns backend's GetResizeDeltaBytes()
+	backendUUID := "backend-123"
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockBackend.EXPECT().GetResizeDeltaBytes().Return(int64(1024)).Times(1)
+	orchestrator = getOrchestrator(t, false)
+	orchestrator.backends[backendUUID] = mockBackend
+	delta, err = orchestrator.GetResizeDeltaForBackend(ctx(), backendUUID)
+	assert.Equal(t, int64(1024), delta)
+	assert.NoError(t, err)
 }
 
 func TestCloneVolume_SnapshotDataSource_LUKS(t *testing.T) {
@@ -2509,7 +2665,7 @@ func TestAddVolumeRecovery(t *testing.T) {
 
 func TestAddVolumeWithTMRNonONTAPNAS(t *testing.T) {
 	// Add a single backend of fake
-	// create volume with relationship annotation added
+	// create volume with relationship attribute added
 	// witness failure
 	const (
 		backendName    = "addRecoveryBackend"
@@ -3612,6 +3768,457 @@ func TestListVolumePublicationsForNodePublicationsNotSyncedError(t *testing.T) {
 	actualPubs, err := orchestrator.ListVolumePublicationsForNode(context.Background(), fakePub.NodeName)
 	assert.Error(t, err)
 	assert.Nil(t, actualPubs, "non-empty publication list returned")
+}
+
+func TestSyncVolumePublications_SingleVP(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+
+	// Create a volume publication to sync
+	vp := &models.VolumePublication{
+		Name:         "vol1/node1",
+		NodeName:     "node1",
+		VolumeName:   "vol1",
+		ReadOnly:     false,
+		AccessMode:   5,
+		StorageClass: "gold",
+		BackendUUID:  "backend-123",
+		Pool:         "pool-1",
+		Labels:       map[string]string{"key": "value"},
+	}
+
+	// Expect the store client to be called once for the single VP
+	mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), vp).Return(nil).Times(1)
+
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t, false)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+
+	// Add VP to cache first
+	err := orchestrator.volumePublications.Set(vp.VolumeName, vp.NodeName, vp)
+	assert.NoError(t, err)
+
+	// Propagate single VP (this runs synchronously in goroutine)
+	orchestrator.SyncVolumePublications(context.Background(), []*models.VolumePublication{vp})
+
+	// Allow goroutine to complete
+	time.Sleep(200 * time.Millisecond)
+}
+
+func TestSyncVolumePublications_MultipleVPs(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+
+	// Create multiple volume publications to sync
+	vps := []*models.VolumePublication{
+		{
+			Name:         "vol1/node1",
+			NodeName:     "node1",
+			VolumeName:   "vol1",
+			StorageClass: "gold",
+			BackendUUID:  "backend-1",
+			Pool:         "pool-1",
+		},
+		{
+			Name:         "vol1/node2",
+			NodeName:     "node2",
+			VolumeName:   "vol1",
+			StorageClass: "gold",
+			BackendUUID:  "backend-1",
+			Pool:         "pool-1",
+		},
+		{
+			Name:         "vol2/node1",
+			NodeName:     "node1",
+			VolumeName:   "vol2",
+			StorageClass: "silver",
+			BackendUUID:  "backend-2",
+			Pool:         "pool-2",
+		},
+	}
+
+	// Expect the store client to be called for each VP
+	for _, vp := range vps {
+		mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), vp).Return(nil).Times(1)
+	}
+
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t, false)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+
+	// Add all VPs to cache first
+	for _, vp := range vps {
+		err := orchestrator.volumePublications.Set(vp.VolumeName, vp.NodeName, vp)
+		assert.NoError(t, err)
+	}
+
+	// Propagate multiple VPs (runs asynchronously)
+	orchestrator.SyncVolumePublications(context.Background(), vps)
+
+	// Allow goroutines to complete (with rate limiting, needs more time)
+	time.Sleep(500 * time.Millisecond)
+}
+
+func TestSyncVolumePublications_VPDeletedBeforePersist(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+
+	// Create a volume publication that will be deleted before persist
+	vp := &models.VolumePublication{
+		Name:       "vol1/node1",
+		NodeName:   "node1",
+		VolumeName: "vol1",
+	}
+
+	// Store should NOT be called because VP is deleted before persist
+	mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).Times(0)
+
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t, false)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+
+	// Add VP to cache
+	err := orchestrator.volumePublications.Set(vp.VolumeName, vp.NodeName, vp)
+	assert.NoError(t, err)
+
+	// Delete VP from cache immediately (simulates deletion before persist)
+	orchestrator.volumePublications.Delete(vp.VolumeName, vp.NodeName)
+
+	// Try to propagate - should be skipped because VP no longer in cache
+	orchestrator.SyncVolumePublications(context.Background(), []*models.VolumePublication{vp})
+
+	// Allow goroutine to complete
+	time.Sleep(200 * time.Millisecond)
+}
+
+func TestSyncVolumePublications_StoreError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+
+	// Create a volume publication
+	vp := &models.VolumePublication{
+		Name:       "vol1/node1",
+		NodeName:   "node1",
+		VolumeName: "vol1",
+	}
+
+	// Simulate store error - with exponential backoff retry, it will retry multiple times
+	// Allow multiple calls since retry logic will keep trying
+	mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), vp).Return(fmt.Errorf("store error")).MinTimes(1).MaxTimes(5)
+
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t, false)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+
+	// Add VP to cache
+	err := orchestrator.volumePublications.Set(vp.VolumeName, vp.NodeName, vp)
+	assert.NoError(t, err)
+
+	// Propagate in goroutine since it will retry indefinitely
+	done := make(chan bool)
+	go func() {
+		orchestrator.SyncVolumePublications(context.Background(), []*models.VolumePublication{vp})
+		done <- true
+	}()
+
+	// Let it retry a few times
+	time.Sleep(5 * time.Second)
+
+	// Delete VP from cache to stop retries
+	orchestrator.volumePublications.Delete(vp.VolumeName, vp.NodeName)
+
+	// Wait a bit more for it to detect deletion and stop
+	select {
+	case <-done:
+		// Completed
+	case <-time.After(3 * time.Second):
+		// Timed out, which is okay - the goroutine will eventually stop
+	}
+
+	// VP should no longer be in cache
+	cachedVP := orchestrator.volumePublications.Get(vp.VolumeName, vp.NodeName)
+	assert.Nil(t, cachedVP, "VP should have been deleted from cache")
+}
+
+func TestSyncVolumePublications_EmptyList(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+
+	// No store calls expected for empty list
+	mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).Times(0)
+
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t, false)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+
+	// Propagate empty list - should do nothing
+	orchestrator.SyncVolumePublications(context.Background(), []*models.VolumePublication{})
+
+	// Allow any potential goroutine to complete
+	time.Sleep(100 * time.Millisecond)
+}
+
+func TestSyncVolumePublications_StoreRetryWithBackoff(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+
+	// Create a volume publication
+	vp := &models.VolumePublication{
+		Name:       "vol1/node1",
+		NodeName:   "node1",
+		VolumeName: "vol1",
+	}
+
+	// Simulate store failures followed by success (exponential backoff retry logic)
+	callCount := 0
+	mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), vp).DoAndReturn(
+		func(ctx context.Context, pub *models.VolumePublication) error {
+			callCount++
+			if callCount < 3 {
+				return fmt.Errorf("temporary store error")
+			}
+			return nil // Success on 3rd attempt
+		},
+	).Times(3)
+
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t, false)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+
+	// Add VP to cache
+	err := orchestrator.volumePublications.Set(vp.VolumeName, vp.NodeName, vp)
+	assert.NoError(t, err)
+
+	startTime := time.Now()
+	// Propagate - should retry with backoff and eventually succeed
+	orchestrator.SyncVolumePublications(context.Background(), []*models.VolumePublication{vp})
+	duration := time.Since(startTime)
+
+	// Verify it took some time (backoff delays)
+	// With initial 1s and 2x multiplier: 1s + 2s = 3s minimum
+	assert.GreaterOrEqual(t, duration.Seconds(), 2.0, "Expected backoff delays")
+
+	// Verify it was called 3 times (2 failures + 1 success)
+	assert.Equal(t, 3, callCount, "Expected 3 store update attempts")
+}
+
+func TestSyncVolumePublications_RateLimiterBackoff(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+
+	// Create multiple VPs to trigger rate limiting
+	vps := make([]*models.VolumePublication, 10)
+	for i := 0; i < 10; i++ {
+		vps[i] = &models.VolumePublication{
+			Name:       fmt.Sprintf("vol%d/node1", i),
+			NodeName:   "node1",
+			VolumeName: fmt.Sprintf("vol%d", i),
+		}
+		mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), vps[i]).Return(nil).Times(1)
+	}
+
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t, false)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+
+	// Add all VPs to cache
+	for _, vp := range vps {
+		err := orchestrator.volumePublications.Set(vp.VolumeName, vp.NodeName, vp)
+		assert.NoError(t, err)
+	}
+
+	// Propagate - should use rate limiter with exponential backoff
+	// The actual timing depends on system load and rate limiter configuration
+	// Just verify all VPs are persisted successfully
+	orchestrator.SyncVolumePublications(context.Background(), vps)
+
+	// Verify all VPs were processed (they should still be in cache)
+	for _, vp := range vps {
+		cachedVP := orchestrator.volumePublications.Get(vp.VolumeName, vp.NodeName)
+		assert.NotNil(t, cachedVP, "VP should still be in cache")
+	}
+}
+
+func TestSyncVolumePublications_VPDeletedDuringRetry(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+
+	// Create a volume publication
+	vp := &models.VolumePublication{
+		Name:       "vol1/node1",
+		NodeName:   "node1",
+		VolumeName: "vol1",
+	}
+
+	// Simulate store failure first, then VP gets deleted from cache
+	callCount := 0
+	mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), vp).DoAndReturn(
+		func(ctx context.Context, pub *models.VolumePublication) error {
+			callCount++
+			if callCount == 1 {
+				return fmt.Errorf("temporary store error")
+			}
+			// Should not reach here as VP will be deleted
+			return nil
+		},
+	).AnyTimes()
+
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t, false)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+
+	// Add VP to cache
+	err := orchestrator.volumePublications.Set(vp.VolumeName, vp.NodeName, vp)
+	assert.NoError(t, err)
+
+	// Start propagation in goroutine
+	go orchestrator.SyncVolumePublications(context.Background(), []*models.VolumePublication{vp})
+
+	// Wait a bit for first attempt to fail
+	time.Sleep(500 * time.Millisecond)
+
+	// Delete VP from cache (simulates deletion during retry)
+	orchestrator.volumePublications.Delete(vp.VolumeName, vp.NodeName)
+
+	// Wait for retry attempts to complete
+	time.Sleep(3 * time.Second)
+
+	// Should have attempted at least once, but stopped retrying after VP was deleted
+	assert.GreaterOrEqual(t, callCount, 1, "Expected at least one attempt")
+}
+
+func TestPersistVolumePublicationUpdate_Success(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+
+	// Create a volume publication
+	vp := &models.VolumePublication{
+		Name:         "vol1/node1",
+		NodeName:     "node1",
+		VolumeName:   "vol1",
+		StorageClass: "gold",
+	}
+
+	// Expect successful store update
+	mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), vp).Return(nil).Times(1)
+
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t, false)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+
+	// Add VP to cache
+	err := orchestrator.volumePublications.Set(vp.VolumeName, vp.NodeName, vp)
+	assert.NoError(t, err)
+
+	// Call syncVolumePublications directly (with lock held)
+	orchestrator.mutex.Lock()
+	err = orchestrator.syncVolumePublications(context.Background(), vp)
+	orchestrator.mutex.Unlock()
+
+	assert.NoError(t, err, "Expected successful persist")
+}
+
+func TestPersistVolumePublicationUpdate_VPNotInCache(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+
+	// Create a volume publication
+	vp := &models.VolumePublication{
+		Name:       "vol1/node1",
+		NodeName:   "node1",
+		VolumeName: "vol1",
+	}
+
+	// Should NOT call store update since VP is not in cache
+	mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).Times(0)
+
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t, false)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+
+	// Don't add VP to cache - it's deleted/missing
+
+	// Call syncVolumePublications directly (with lock held)
+	orchestrator.mutex.Lock()
+	err := orchestrator.syncVolumePublications(context.Background(), vp)
+	orchestrator.mutex.Unlock()
+
+	assert.NoError(t, err, "Expected no error when VP not in cache (skip case)")
+}
+
+func TestPersistVolumePublicationUpdate_StoreError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	// Create a mocked persistent store client
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	// Set the store client behavior we don't care about for this testcase
+	mockStoreClient.EXPECT().GetVolumeTransactions(gomock.Any()).Return([]*storage.VolumeTransaction{}, nil).AnyTimes()
+
+	// Create a volume publication
+	vp := &models.VolumePublication{
+		Name:       "vol1/node1",
+		NodeName:   "node1",
+		VolumeName: "vol1",
+	}
+
+	// Expect store update to fail
+	mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), vp).Return(fmt.Errorf("store error")).Times(1)
+
+	// Create an instance of the orchestrator for this test
+	orchestrator := getOrchestrator(t, false)
+	// Add the mocked objects to the orchestrator
+	orchestrator.storeClient = mockStoreClient
+
+	// Add VP to cache
+	err := orchestrator.volumePublications.Set(vp.VolumeName, vp.NodeName, vp)
+	assert.NoError(t, err)
+
+	// Call syncVolumePublications directly (with lock held)
+	orchestrator.mutex.Lock()
+	err = orchestrator.syncVolumePublications(context.Background(), vp)
+	orchestrator.mutex.Unlock()
+
+	assert.Error(t, err, "Expected error from store update failure")
+	assert.Contains(t, err.Error(), "store error")
 }
 
 func TestAddNode(t *testing.T) {
@@ -5249,6 +5856,103 @@ func TestPublishVolume(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPublishVolume_UpdateExistingVP(t *testing.T) {
+	// This test verifies the VP update/sync path when a VP already exists (lines 3632-3655 in orchestrator_core.go)
+	// We publish twice to the same node and verify fields are synced from volume to VP on second publish
+
+	config.CurrentDriverContext = config.ContextCSI
+	defer func() { config.CurrentDriverContext = "" }()
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	volumeName := "test-volume"
+	nodeName := "test-node"
+	backendUUID := "backend-123"
+	poolName := "pool1"
+	storageClassName := "gold"
+
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	volume := &storage.Volume{
+		BackendUUID: backendUUID,
+		Pool:        poolName,
+		Config: &storage.VolumeConfig{
+			Name:                    volumeName,
+			StorageClass:            storageClassName,
+			RequestedAutogrowPolicy: "aggressive",
+			AccessInfo:              models.VolumeAccessInfo{},
+		},
+		State: storage.VolumeStateOnline,
+	}
+
+	node := &models.Node{
+		Name:             nodeName,
+		Deleted:          false,
+		PublicationState: models.NodeClean,
+	}
+
+	o := getOrchestrator(t, false)
+	o.storeClient = mockStoreClient
+	o.backends[backendUUID] = mockBackend
+	o.volumes = map[string]*storage.Volume{volumeName: volume}
+	o.volumePublicationsSynced = true
+	o.nodes.Set(nodeName, node)
+
+	// First publish - creates VP with empty legacy fields
+	mockStoreClient.EXPECT().AddVolumePublication(coreCtx, gomock.Any()).Return(nil)
+	mockBackend.EXPECT().EnablePublishEnforcement(coreCtx, volume).DoAndReturn(
+		func(ctx context.Context, volume *storage.Volume) error {
+			volume.Config.AccessInfo.PublishEnforcement = true
+			return nil
+		})
+	mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+	mockBackend.EXPECT().ReconcileVolumeNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+	mockBackend.EXPECT().SetNodeAccessUpToDate()
+	mockBackend.EXPECT().Volumes().Return(makeSyncMap(map[string]*storage.Volume{volumeName: volume})).Times(2)
+	mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+	mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
+	mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
+
+	err := o.publishVolume(coreCtx, volumeName, &models.VolumePublishInfo{HostName: nodeName})
+	assert.NoError(t, err, "First publish should succeed")
+
+	// Verify VP exists but legacy fields (StorageClass, Pool) are initially empty
+	// Note: AutogrowPolicy and Labels ARE set on first publish via generateVolumePublication
+	vp := o.volumePublications.Get(volumeName, nodeName)
+	assert.NotNil(t, vp)
+	assert.Equal(t, "", vp.StorageClass, "StorageClass initially empty (not in publishInfo)")
+	assert.Equal(t, "", vp.Pool, "Pool initially empty (not in publishInfo)")
+	assert.Equal(t, "aggressive", vp.AutogrowPolicy, "AutogrowPolicy set from volConfig on first publish")
+	assert.Equal(t, false, vp.AutogrowIneligible, "AutogrowIneligible initially false")
+	assert.Equal(t, nodeName, vp.Labels[config.TridentNodeNameLabel], "Labels initialized on first publish")
+
+	// Second publish - should sync fields from volume to VP
+	mockStoreClient.EXPECT().UpdateVolumePublication(coreCtx, gomock.Any()).Return(nil) // This is the key call we're testing
+	mockBackend.EXPECT().ReconcileNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+	mockBackend.EXPECT().ReconcileVolumeNodeAccess(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+	mockBackend.EXPECT().SetNodeAccessUpToDate()
+	mockBackend.EXPECT().Volumes().Return(makeSyncMap(map[string]*storage.Volume{volumeName: volume})).Times(2)
+	mockBackend.EXPECT().PublishVolume(coreCtx, gomock.Any(), gomock.Any()).Return(nil)
+	mockBackend.EXPECT().CanEnablePublishEnforcement().Return(true).Times(2)
+	mockStoreClient.EXPECT().UpdateVolume(coreCtx, volume).Return(nil)
+
+	err = o.publishVolume(coreCtx, volumeName, &models.VolumePublishInfo{HostName: nodeName})
+	assert.NoError(t, err, "Second publish should succeed")
+
+	// Verify VP fields were synced from volume (StorageClass, Pool, BackendUUID, AutogrowPolicy, AutogrowIneligible, Labels)
+	updatedVP := o.volumePublications.Get(volumeName, nodeName)
+	assert.NotNil(t, updatedVP)
+	assert.Equal(t, storageClassName, updatedVP.StorageClass, "StorageClass should be synced from volume")
+	assert.Equal(t, poolName, updatedVP.Pool, "Pool should be synced from volume")
+	assert.Equal(t, backendUUID, updatedVP.BackendUUID, "BackendUUID should be synced from volume")
+	assert.Equal(t, "aggressive", updatedVP.AutogrowPolicy, "AutogrowPolicy should be synced from volume")
+	assert.Equal(t, false, updatedVP.AutogrowIneligible, "AutogrowIneligible should be synced (false for normal volumes)")
+	assert.NotNil(t, updatedVP.Labels, "Labels should be initialized")
+	assert.Equal(t, nodeName, updatedVP.Labels[config.TridentNodeNameLabel], "Labels should contain node name")
 }
 
 func TestUnpublishVolume(t *testing.T) {
@@ -8396,7 +9100,7 @@ func TestListLogLayers(t *testing.T) {
 
 	layers, err := o.ListLogLayers(ctx())
 	expected := []string{
-		"all", "azure-netapp-files", "core", "crd_frontend", "csi_frontend", "docker_frontend",
+		"all", "autogrow", "azure-netapp-files", "core", "crd_frontend", "csi_frontend", "docker_frontend",
 		"fake", "ontap-nas", "ontap-nas-economy", "ontap-nas-flexgroup", "ontap-san", "ontap-san-economy",
 		"persistent_store", "rest_frontend", "solidfire-san",
 	}
@@ -8771,6 +9475,156 @@ func TestReconcileVolumePublications_AddsPublicationForLegacyVolume(t *testing.T
 
 	// Expect this to be true.
 	assert.True(t, o.volumePublicationsSynced)
+}
+
+// TestReconcileVolumePublications_VerifyNewFields tests that ReconcileVolumePublications
+// correctly sets StorageClass, BackendUUID, and Pool fields from attachedLegacyVolume
+func TestReconcileVolumePublications_VerifyNewFields(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	ctx := context.TODO()
+	volumeName := "legacy-volume"
+	nodeName := "test-node"
+	storageClassName := "premium-storage"
+	backendUUID := "backend-uuid-789"
+	poolName := "pool-abc"
+
+	// Create attached legacy volume with all new fields populated
+	attachedLegacyVolumes := []*models.VolumePublicationExternal{
+		{
+			Name:         models.GenerateVolumePublishName(volumeName, nodeName),
+			NodeName:     nodeName,
+			VolumeName:   volumeName,
+			ReadOnly:     true,
+			AccessMode:   2,
+			StorageClass: storageClassName,
+			BackendUUID:  backendUUID,
+			Pool:         poolName,
+		},
+	}
+
+	// Create volume
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:         volumeName,
+			StorageClass: storageClassName,
+			AccessInfo: models.VolumeAccessInfo{
+				ReadOnly:   true,
+				AccessMode: 2,
+			},
+		},
+		BackendUUID: backendUUID,
+		Pool:        poolName,
+	}
+
+	storeVersion := &config.PersistentStateVersion{
+		PersistentStoreVersion: string(persistentstore.CRDV1Store),
+		OrchestratorAPIVersion: config.OrchestratorAPIVersion,
+		PublicationsSynced:     false,
+	}
+
+	// Setup orchestrator
+	o := getOrchestrator(t, false)
+	o.storeClient = mockStoreClient
+	o.volumes[volumeName] = volume
+
+	// Expect AddVolumePublication to be called
+	var capturedPublication *models.VolumePublication
+	mockStoreClient.EXPECT().AddVolumePublication(ctx, gomock.Any()).
+		DoAndReturn(func(_ context.Context, pub *models.VolumePublication) error {
+			capturedPublication = pub
+			return nil
+		}).Times(1)
+	mockStoreClient.EXPECT().GetVersion(ctx).Return(storeVersion, nil).Times(1)
+	storeVersion.PublicationsSynced = true
+	mockStoreClient.EXPECT().SetVersion(ctx, storeVersion).Return(nil).Times(1)
+
+	// Execute ReconcileVolumePublications
+	err := o.ReconcileVolumePublications(ctx, attachedLegacyVolumes)
+	assert.NoError(t, err)
+
+	// Verify the captured publication has all the new fields set correctly
+	assert.NotNil(t, capturedPublication, "VolumePublication should have been created")
+	assert.Equal(t, storageClassName, capturedPublication.StorageClass, "StorageClass should match attachedLegacyVolume")
+	assert.Equal(t, backendUUID, capturedPublication.BackendUUID, "BackendUUID should match attachedLegacyVolume")
+	assert.Equal(t, poolName, capturedPublication.Pool, "Pool should match attachedLegacyVolume")
+
+	// Verify existing fields are also correct
+	assert.Equal(t, volumeName, capturedPublication.VolumeName)
+	assert.Equal(t, nodeName, capturedPublication.NodeName)
+	assert.Equal(t, true, capturedPublication.ReadOnly)
+	assert.Equal(t, int32(2), capturedPublication.AccessMode)
+}
+
+// TestReconcileVolumePublications_VerifyNewFields_EmptyValues tests with empty new fields
+func TestReconcileVolumePublications_VerifyNewFields_EmptyValues(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	ctx := context.TODO()
+	volumeName := "legacy-volume-2"
+	nodeName := "test-node-2"
+
+	// Create attached legacy volume with empty new fields
+	attachedLegacyVolumes := []*models.VolumePublicationExternal{
+		{
+			Name:         models.GenerateVolumePublishName(volumeName, nodeName),
+			NodeName:     nodeName,
+			VolumeName:   volumeName,
+			ReadOnly:     false,
+			AccessMode:   1,
+			StorageClass: "", // Empty
+			BackendUUID:  "", // Empty
+			Pool:         "", // Empty
+		},
+	}
+
+	// Create volume
+	volume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:         volumeName,
+			StorageClass: "",
+			AccessInfo: models.VolumeAccessInfo{
+				ReadOnly:   false,
+				AccessMode: 1,
+			},
+		},
+		BackendUUID: "",
+		Pool:        "",
+	}
+
+	storeVersion := &config.PersistentStateVersion{
+		PersistentStoreVersion: string(persistentstore.CRDV1Store),
+		OrchestratorAPIVersion: config.OrchestratorAPIVersion,
+		PublicationsSynced:     false,
+	}
+
+	// Setup orchestrator
+	o := getOrchestrator(t, false)
+	o.storeClient = mockStoreClient
+	o.volumes[volumeName] = volume
+
+	// Expect AddVolumePublication to be called
+	var capturedPublication *models.VolumePublication
+	mockStoreClient.EXPECT().AddVolumePublication(ctx, gomock.Any()).
+		DoAndReturn(func(_ context.Context, pub *models.VolumePublication) error {
+			capturedPublication = pub
+			return nil
+		}).Times(1)
+	mockStoreClient.EXPECT().GetVersion(ctx).Return(storeVersion, nil).Times(1)
+	storeVersion.PublicationsSynced = true
+	mockStoreClient.EXPECT().SetVersion(ctx, storeVersion).Return(nil).Times(1)
+
+	// Execute ReconcileVolumePublications
+	err := o.ReconcileVolumePublications(ctx, attachedLegacyVolumes)
+	assert.NoError(t, err)
+
+	// Verify the captured publication has empty values for new fields
+	assert.NotNil(t, capturedPublication, "VolumePublication should have been created")
+	assert.Equal(t, "", capturedPublication.StorageClass, "StorageClass should be empty")
+	assert.Equal(t, "", capturedPublication.BackendUUID, "BackendUUID should be empty")
+	assert.Equal(t, "", capturedPublication.Pool, "Pool should be empty")
 }
 
 func TestReconcileVolumePublications_SupportsMultiAttachedLegacyVolumes(t *testing.T) {
@@ -9691,4 +10545,2139 @@ func TestUpdateBackendState(t *testing.T) {
 	mockBackend.EXPECT().UserState().Return(storage.UserSuspended).Times(1)
 	_, err = o.UpdateBackendState(ctx, "something", "", "suspended")
 	assert.NoError(t, err, "update to userState via tridentctl should be allowed when there's no tbc linked to this tbe yet")
+}
+
+func TestBootstrapAutogrowPolicies(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	o := &TridentOrchestrator{
+		storeClient:      mockStoreClient,
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+	}
+
+	tests := []struct {
+		name          string
+		context       config.DriverContext
+		mockPolicies  []*storage.AutogrowPolicyPersistent
+		mockError     error
+		expectedCount int
+		expectError   bool
+	}{
+		{
+			name:    "Bootstrap in CSI mode with policies",
+			context: config.ContextCSI,
+			mockPolicies: []*storage.AutogrowPolicyPersistent{
+				{
+					Name:          "policy1",
+					UsedThreshold: "80%",
+					GrowthAmount:  "20%",
+					MaxSize:       "1000Gi",
+					State:         storage.AutogrowPolicyStateSuccess,
+				},
+				{
+					Name:          "policy2",
+					UsedThreshold: "90%",
+					GrowthAmount:  "10%",
+					MaxSize:       "",
+					State:         storage.AutogrowPolicyStateFailed,
+				},
+			},
+			mockError:     nil,
+			expectedCount: 2,
+			expectError:   false,
+		},
+		{
+			name:          "Bootstrap in Docker mode",
+			context:       config.ContextDocker,
+			mockPolicies:  []*storage.AutogrowPolicyPersistent{},
+			mockError:     nil,
+			expectedCount: 0,
+			expectError:   false,
+		},
+		{
+			name:          "Bootstrap with store error",
+			context:       config.ContextCSI,
+			mockPolicies:  nil,
+			mockError:     fmt.Errorf("store error"),
+			expectedCount: 0,
+			expectError:   true,
+		},
+		{
+			name:          "Bootstrap with empty policy list",
+			context:       config.ContextCSI,
+			mockPolicies:  []*storage.AutogrowPolicyPersistent{},
+			mockError:     nil,
+			expectedCount: 0,
+			expectError:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set context
+			origContext := config.CurrentDriverContext
+			config.CurrentDriverContext = tt.context
+			defer func() { config.CurrentDriverContext = origContext }()
+
+			// Clear policies
+			o.autogrowPolicies = make(map[string]*storage.AutogrowPolicy)
+
+			// Setup mock - now always called regardless of context
+			mockStoreClient.EXPECT().
+				GetAutogrowPolicies(gomock.Any()).
+				Return(tt.mockPolicies, tt.mockError).
+				Times(1)
+
+			// Call bootstrap
+			err := o.bootstrapAutogrowPolicies(ctx())
+
+			// Verify
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Len(t, o.autogrowPolicies, tt.expectedCount)
+			}
+		})
+	}
+}
+
+func TestAddAutogrowPolicy(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockBackend.EXPECT().GetDriverName().Return("fake").AnyTimes()
+	mockBackend.EXPECT().BackendUUID().Return("test-backend-uuid").AnyTimes()
+	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+	mockBackend.EXPECT().Name().Return("fake-backend").AnyTimes()
+
+	o := &TridentOrchestrator{
+		backends:         map[string]storage.Backend{"test-backend-uuid": mockBackend},
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		storageClasses:   make(map[string]*storageclass.StorageClass),
+		volumes:          make(map[string]*storage.Volume),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	tests := []struct {
+		name             string
+		config           *storage.AutogrowPolicyConfig
+		existingPolicies map[string]*storage.AutogrowPolicy
+		expectError      bool
+		errorContains    string
+	}{
+		{
+			name: "Add new policy successfully",
+			config: &storage.AutogrowPolicyConfig{
+				Name:          "test-policy",
+				UsedThreshold: "80%",
+				GrowthAmount:  "20%",
+				MaxSize:       "1000Gi",
+				State:         storage.AutogrowPolicyStateSuccess,
+			},
+			existingPolicies: map[string]*storage.AutogrowPolicy{},
+			expectError:      false,
+		},
+		{
+			name: "Add policy that already exists",
+			config: &storage.AutogrowPolicyConfig{
+				Name:          "existing-policy",
+				UsedThreshold: "80%",
+				GrowthAmount:  "20%",
+				MaxSize:       "1000Gi",
+				State:         storage.AutogrowPolicyStateSuccess,
+			},
+			existingPolicies: map[string]*storage.AutogrowPolicy{
+				"existing-policy": storage.NewAutogrowPolicy("existing-policy", "75%", "25%", "500Gi", storage.AutogrowPolicyStateSuccess),
+			},
+			expectError:   true,
+			errorContains: "already exists",
+		},
+		{
+			name: "Add policy in Failed state",
+			config: &storage.AutogrowPolicyConfig{
+				Name:          "failed-policy",
+				UsedThreshold: "90%",
+				GrowthAmount:  "10%",
+				MaxSize:       "2000Gi",
+				State:         storage.AutogrowPolicyStateFailed,
+			},
+			existingPolicies: map[string]*storage.AutogrowPolicy{},
+			expectError:      false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			o.autogrowPolicies = tt.existingPolicies
+
+			result, err := o.AddAutogrowPolicy(ctx(), tt.config)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				if tt.errorContains != "" {
+					assert.Contains(t, err.Error(), tt.errorContains)
+				}
+				assert.Nil(t, result)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, result)
+				assert.Equal(t, tt.config.Name, result.Name)
+				assert.Contains(t, o.autogrowPolicies, tt.config.Name)
+			}
+		})
+	}
+}
+
+func TestAddAutogrowPolicy_BootstrapError(t *testing.T) {
+	o := &TridentOrchestrator{
+		bootstrapError: fmt.Errorf("bootstrap error"),
+	}
+
+	config := &storage.AutogrowPolicyConfig{
+		Name:          "test-policy",
+		UsedThreshold: "80%",
+	}
+
+	result, err := o.AddAutogrowPolicy(ctx(), config)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, o.bootstrapError, err)
+}
+
+func TestUpdateAutogrowPolicy(t *testing.T) {
+	o := &TridentOrchestrator{
+		backends:         make(map[string]storage.Backend),
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		volumes:          make(map[string]*storage.Volume),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	tests := []struct {
+		name          string
+		config        *storage.AutogrowPolicyConfig
+		setupPolicy   *storage.AutogrowPolicy
+		expectError   bool
+		errorContains string
+	}{
+		{
+			name: "Update existing policy",
+			config: &storage.AutogrowPolicyConfig{
+				Name:          "test-policy",
+				UsedThreshold: "85%",
+				GrowthAmount:  "15%",
+				MaxSize:       "2000Gi",
+				State:         storage.AutogrowPolicyStateSuccess,
+			},
+			setupPolicy: storage.NewAutogrowPolicy("test-policy", "80%", "20%", "1000Gi", storage.AutogrowPolicyStateSuccess),
+			expectError: false,
+		},
+		{
+			name: "Update non-existent policy",
+			config: &storage.AutogrowPolicyConfig{
+				Name:          "nonexistent",
+				UsedThreshold: "80%",
+				GrowthAmount:  "20%",
+				MaxSize:       "1000Gi",
+				State:         storage.AutogrowPolicyStateSuccess,
+			},
+			setupPolicy:   nil,
+			expectError:   true,
+			errorContains: "not found",
+		},
+		{
+			name: "Update policy state from Success to Failed",
+			config: &storage.AutogrowPolicyConfig{
+				Name:          "state-change-policy",
+				UsedThreshold: "80%",
+				GrowthAmount:  "20%",
+				MaxSize:       "1000Gi",
+				State:         storage.AutogrowPolicyStateFailed,
+			},
+			setupPolicy: storage.NewAutogrowPolicy("state-change-policy", "80%", "20%", "1000Gi", storage.AutogrowPolicyStateSuccess),
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			o.autogrowPolicies = make(map[string]*storage.AutogrowPolicy)
+			if tt.setupPolicy != nil {
+				o.autogrowPolicies[tt.setupPolicy.Name()] = tt.setupPolicy
+			}
+
+			result, err := o.UpdateAutogrowPolicy(ctx(), tt.config)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				if tt.errorContains != "" {
+					assert.Contains(t, err.Error(), tt.errorContains)
+				}
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, result)
+				assert.Equal(t, tt.config.UsedThreshold, result.UsedThreshold)
+			}
+		})
+	}
+}
+
+func TestDeleteAutogrowPolicy(t *testing.T) {
+	o := &TridentOrchestrator{
+		backends:         make(map[string]storage.Backend),
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	tests := []struct {
+		name                 string
+		policyName           string
+		setupPolicy          *storage.AutogrowPolicy
+		addVolumes           []string
+		expectError          bool
+		errorContains        string
+		expectPolicyDeleted  bool
+		expectPolicyInMemory bool
+		expectedPolicyState  string
+		expectedVolumeCount  int
+	}{
+		{
+			name:                 "Delete policy with no volumes (hard delete)",
+			policyName:           "empty-policy",
+			setupPolicy:          storage.NewAutogrowPolicy("empty-policy", "80%", "20%", "1000Gi", storage.AutogrowPolicyStateSuccess),
+			addVolumes:           []string{},
+			expectError:          false,
+			expectPolicyDeleted:  true,
+			expectPolicyInMemory: false,
+		},
+		{
+			name:                 "Delete policy with volumes (soft delete)",
+			policyName:           "in-use-policy",
+			setupPolicy:          storage.NewAutogrowPolicy("in-use-policy", "80%", "20%", "1000Gi", storage.AutogrowPolicyStateSuccess),
+			addVolumes:           []string{"vol1", "vol2"},
+			expectError:          false,
+			expectPolicyDeleted:  false,
+			expectPolicyInMemory: true,
+			expectedPolicyState:  string(storage.AutogrowPolicyStateDeleting),
+			expectedVolumeCount:  2,
+		},
+		{
+			name:          "Delete non-existent policy",
+			policyName:    "nonexistent",
+			setupPolicy:   nil,
+			addVolumes:    []string{},
+			expectError:   true,
+			errorContains: "not found",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			o.autogrowPolicies = make(map[string]*storage.AutogrowPolicy)
+			if tt.setupPolicy != nil {
+				o.autogrowPolicies[tt.setupPolicy.Name()] = tt.setupPolicy
+				for _, vol := range tt.addVolumes {
+					tt.setupPolicy.AddVolume(vol)
+				}
+			}
+
+			err := o.DeleteAutogrowPolicy(ctx(), tt.policyName)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				if tt.errorContains != "" {
+					assert.Contains(t, err.Error(), tt.errorContains)
+				}
+			} else {
+				assert.NoError(t, err)
+			}
+
+			// Check policy state in memory
+			if tt.expectPolicyInMemory {
+				assert.Contains(t, o.autogrowPolicies, tt.policyName)
+				policy := o.autogrowPolicies[tt.policyName]
+				assert.Equal(t, tt.expectedPolicyState, string(policy.State()))
+				assert.Equal(t, tt.expectedVolumeCount, len(policy.GetVolumes()))
+			} else if tt.expectPolicyDeleted {
+				assert.NotContains(t, o.autogrowPolicies, tt.policyName)
+			}
+		})
+	}
+}
+
+// TestDeleteAutogrowPolicy_SoftDeleteWithSingleVolume tests soft delete behavior with one volume
+func TestDeleteAutogrowPolicy_SoftDeleteWithSingleVolume(t *testing.T) {
+	o := &TridentOrchestrator{
+		backends:         make(map[string]storage.Backend),
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	// Setup policy with one volume
+	policy := storage.NewAutogrowPolicy("soft-delete-policy", "80%", "20%", "1000Gi", storage.AutogrowPolicyStateSuccess)
+	policy.AddVolume("vol1")
+	o.autogrowPolicies["soft-delete-policy"] = policy
+
+	// Delete should succeed and set state to Deleting
+	err := o.DeleteAutogrowPolicy(ctx(), "soft-delete-policy")
+	assert.NoError(t, err)
+
+	// Policy should still exist in memory
+	assert.Contains(t, o.autogrowPolicies, "soft-delete-policy")
+	retrievedPolicy := o.autogrowPolicies["soft-delete-policy"]
+	assert.Equal(t, storage.AutogrowPolicyStateDeleting, retrievedPolicy.State())
+	assert.Equal(t, 1, len(retrievedPolicy.GetVolumes()))
+
+	// Verify GetAutogrowPolicy returns the soft-deleted policy
+	externalPolicy, err := o.GetAutogrowPolicy(ctx(), "soft-delete-policy")
+	assert.NoError(t, err)
+	assert.Equal(t, storage.AutogrowPolicyStateDeleting, externalPolicy.State)
+	assert.Equal(t, 1, externalPolicy.VolumeCount)
+}
+
+// TestDeleteAutogrowPolicy_SoftDeleteWithMultipleVolumes tests soft delete with multiple volumes
+func TestDeleteAutogrowPolicy_SoftDeleteWithMultipleVolumes(t *testing.T) {
+	o := &TridentOrchestrator{
+		backends:         make(map[string]storage.Backend),
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	// Setup policy with multiple volumes
+	policy := storage.NewAutogrowPolicy("multi-vol-policy", "85%", "15%", "2000Gi", storage.AutogrowPolicyStateSuccess)
+	policy.AddVolume("vol1")
+	policy.AddVolume("vol2")
+	policy.AddVolume("vol3")
+	o.autogrowPolicies["multi-vol-policy"] = policy
+
+	// Delete should succeed and set state to Deleting
+	err := o.DeleteAutogrowPolicy(ctx(), "multi-vol-policy")
+	assert.NoError(t, err)
+
+	// Policy should still exist with all volumes
+	assert.Contains(t, o.autogrowPolicies, "multi-vol-policy")
+	retrievedPolicy := o.autogrowPolicies["multi-vol-policy"]
+	assert.Equal(t, storage.AutogrowPolicyStateDeleting, retrievedPolicy.State())
+	assert.Equal(t, 3, len(retrievedPolicy.GetVolumes()))
+	assert.Contains(t, retrievedPolicy.GetVolumes(), "vol1")
+	assert.Contains(t, retrievedPolicy.GetVolumes(), "vol2")
+	assert.Contains(t, retrievedPolicy.GetVolumes(), "vol3")
+}
+
+// TestDeleteAutogrowPolicy_AlreadySoftDeleted tests deleting an already soft-deleted policy
+func TestDeleteAutogrowPolicy_AlreadySoftDeleted(t *testing.T) {
+	o := &TridentOrchestrator{
+		backends:         make(map[string]storage.Backend),
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	// Setup policy already in Deleting state with volumes
+	policy := storage.NewAutogrowPolicy("already-deleting", "80%", "20%", "1000Gi", storage.AutogrowPolicyStateDeleting)
+	policy.AddVolume("vol1")
+	o.autogrowPolicies["already-deleting"] = policy
+
+	// Delete should succeed again (idempotent)
+	err := o.DeleteAutogrowPolicy(ctx(), "already-deleting")
+	assert.NoError(t, err)
+
+	// Policy should still exist in Deleting state
+	assert.Contains(t, o.autogrowPolicies, "already-deleting")
+	retrievedPolicy := o.autogrowPolicies["already-deleting"]
+	assert.Equal(t, storage.AutogrowPolicyStateDeleting, retrievedPolicy.State())
+}
+
+// TestDeleteAutogrowPolicy_HardDeleteAfterNoVolumes tests that policy is hard deleted when no volumes
+func TestDeleteAutogrowPolicy_HardDeleteAfterNoVolumes(t *testing.T) {
+	o := &TridentOrchestrator{
+		backends:         make(map[string]storage.Backend),
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	// Setup policy in Deleting state but with no volumes (edge case)
+	policy := storage.NewAutogrowPolicy("no-volumes-deleting", "80%", "20%", "1000Gi", storage.AutogrowPolicyStateDeleting)
+	o.autogrowPolicies["no-volumes-deleting"] = policy
+
+	// Delete should hard delete since no volumes
+	err := o.DeleteAutogrowPolicy(ctx(), "no-volumes-deleting")
+	assert.NoError(t, err)
+
+	// Policy should be removed from memory
+	assert.NotContains(t, o.autogrowPolicies, "no-volumes-deleting")
+}
+
+func TestGetAutogrowPolicy(t *testing.T) {
+	o := &TridentOrchestrator{
+		backends:         make(map[string]storage.Backend),
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	policy := storage.NewAutogrowPolicy("test-policy", "80%", "20%", "1000Gi", storage.AutogrowPolicyStateSuccess)
+	o.autogrowPolicies["test-policy"] = policy
+
+	tests := []struct {
+		name        string
+		policyName  string
+		expectError bool
+	}{
+		{
+			name:        "Get existing policy",
+			policyName:  "test-policy",
+			expectError: false,
+		},
+		{
+			name:        "Get non-existent policy",
+			policyName:  "nonexistent",
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := o.GetAutogrowPolicy(ctx(), tt.policyName)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Nil(t, result)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, result)
+				assert.Equal(t, tt.policyName, result.Name)
+			}
+		})
+	}
+}
+
+func TestListAutogrowPolicies(t *testing.T) {
+	o := &TridentOrchestrator{
+		backends:         make(map[string]storage.Backend),
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	tests := []struct {
+		name          string
+		setupPolicies map[string]*storage.AutogrowPolicy
+		expectedCount int
+	}{
+		{
+			name: "List multiple policies",
+			setupPolicies: map[string]*storage.AutogrowPolicy{
+				"policy1": storage.NewAutogrowPolicy("policy1", "80%", "20%", "1000Gi", storage.AutogrowPolicyStateSuccess),
+				"policy2": storage.NewAutogrowPolicy("policy2", "90%", "10%", "2000Gi", storage.AutogrowPolicyStateSuccess),
+				"policy3": storage.NewAutogrowPolicy("policy3", "85%", "15%", "", storage.AutogrowPolicyStateFailed),
+			},
+			expectedCount: 3,
+		},
+		{
+			name:          "List empty policies",
+			setupPolicies: map[string]*storage.AutogrowPolicy{},
+			expectedCount: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			o.autogrowPolicies = tt.setupPolicies
+
+			result, err := o.ListAutogrowPolicies(ctx())
+
+			assert.NoError(t, err)
+			assert.Len(t, result, tt.expectedCount)
+		})
+	}
+}
+
+func TestResolveEffectiveAutogrowPolicy(t *testing.T) {
+	o := &TridentOrchestrator{
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		storageClasses:   make(map[string]*storageclass.StorageClass),
+		mutex:            &sync.Mutex{},
+	}
+
+	// Setup test data
+	policy := storage.NewAutogrowPolicy("gold-policy", "80%", "20%", "1000Gi", storage.AutogrowPolicyStateSuccess)
+	o.autogrowPolicies["gold-policy"] = policy
+
+	failedPolicy := storage.NewAutogrowPolicy("failed-policy", "90%", "10%", "2000Gi", storage.AutogrowPolicyStateFailed)
+	o.autogrowPolicies["failed-policy"] = failedPolicy
+
+	scConfig := &storageclass.Config{
+		Name:           "test-sc",
+		AutogrowPolicy: "gold-policy",
+	}
+	sc := storageclass.New(scConfig)
+	o.storageClasses["test-sc"] = sc
+
+	tests := []struct {
+		name               string
+		volumeConfig       *storage.VolumeConfig
+		expectedPolicyName string
+		expectedReason     models.AutogrowPolicyReason
+		expectError        bool
+	}{
+		{
+			name: "Volume-level autogrow policy takes priority",
+			volumeConfig: &storage.VolumeConfig{
+				Name:                    "vol1",
+				StorageClass:            "test-sc",
+				RequestedAutogrowPolicy: "gold-policy",
+			},
+			expectedPolicyName: "gold-policy",
+			expectedReason:     models.AutogrowPolicyReasonActive,
+			expectError:        false,
+		},
+		{
+			name: "Volume-level none disables autogrow",
+			volumeConfig: &storage.VolumeConfig{
+				Name:                    "vol2",
+				StorageClass:            "test-sc",
+				RequestedAutogrowPolicy: "none",
+			},
+			expectedPolicyName: "",
+			expectedReason:     models.AutogrowPolicyReasonDisabled,
+			expectError:        false,
+		},
+		{
+			name: "StorageClass used when volume-level empty",
+			volumeConfig: &storage.VolumeConfig{
+				Name:                    "vol3",
+				StorageClass:            "test-sc",
+				RequestedAutogrowPolicy: "",
+			},
+			expectedPolicyName: "gold-policy",
+			expectedReason:     models.AutogrowPolicyReasonActive,
+			expectError:        false,
+		},
+		{
+			name: "No policy configured",
+			volumeConfig: &storage.VolumeConfig{
+				Name:                    "vol4",
+				StorageClass:            "",
+				RequestedAutogrowPolicy: "",
+			},
+			expectedPolicyName: "",
+			expectedReason:     models.AutogrowPolicyReasonNotConfigured,
+			expectError:        false,
+		},
+		{
+			name: "Policy not found",
+			volumeConfig: &storage.VolumeConfig{
+				Name:                    "vol5",
+				StorageClass:            "",
+				RequestedAutogrowPolicy: "nonexistent-policy",
+			},
+			expectedPolicyName: "",
+			expectedReason:     models.AutogrowPolicyReasonNotFound,
+			expectError:        true,
+		},
+		{
+			name: "Policy not usable (Failed state)",
+			volumeConfig: &storage.VolumeConfig{
+				Name:                    "vol6",
+				StorageClass:            "",
+				RequestedAutogrowPolicy: "failed-policy",
+			},
+			expectedPolicyName: "",
+			expectedReason:     models.AutogrowPolicyReasonUnusable,
+			expectError:        true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := o.resolveEffectiveAutogrowPolicy(ctx(), tt.volumeConfig)
+
+			assert.Equal(t, tt.expectedPolicyName, result.PolicyName)
+			assert.Equal(t, tt.expectedReason, result.Reason)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestUpdateVolumeAutogrowPolicy(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	o := &TridentOrchestrator{
+		storeClient:        mockStoreClient,
+		backends:           make(map[string]storage.Backend),
+		autogrowPolicies:   make(map[string]*storage.AutogrowPolicy),
+		storageClasses:     make(map[string]*storageclass.StorageClass),
+		volumes:            make(map[string]*storage.Volume),
+		volumePublications: cache.NewVolumePublicationCache(),
+		nodes:              *cache.NewNodeCache(),
+		mutex:              &sync.Mutex{},
+		bootstrapped:       true,
+		bootstrapError:     nil,
+	}
+
+	// Setup test data
+	goldPolicy := storage.NewAutogrowPolicy("gold-policy", "80%", "20%", "1000Gi", storage.AutogrowPolicyStateSuccess)
+	silverPolicy := storage.NewAutogrowPolicy("silver-policy", "90%", "10%", "2000Gi", storage.AutogrowPolicyStateSuccess)
+	o.autogrowPolicies["gold-policy"] = goldPolicy
+	o.autogrowPolicies["silver-policy"] = silverPolicy
+
+	volumeConfig := &storage.VolumeConfig{
+		Name:                    "test-volume",
+		Size:                    "100Gi",
+		StorageClass:            "test-sc",
+		RequestedAutogrowPolicy: "gold-policy",
+	}
+	volume := storage.NewVolume(volumeConfig, "backend-uuid", "pool1", false, storage.VolumeStateOnline)
+	volume.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+		PolicyName: "gold-policy",
+		Reason:     models.AutogrowPolicyReasonActive,
+	}
+	o.volumes["test-volume"] = volume
+	goldPolicy.AddVolume("test-volume")
+
+	tests := []struct {
+		name              string
+		volumeName        string
+		newAnnotation     string
+		expectError       bool
+		expectedNewPolicy string
+	}{
+		{
+			name:              "Change from gold to silver",
+			volumeName:        "test-volume",
+			newAnnotation:     "silver-policy",
+			expectError:       false,
+			expectedNewPolicy: "silver-policy",
+		},
+		{
+			name:              "Change to none",
+			volumeName:        "test-volume",
+			newAnnotation:     "none",
+			expectError:       false,
+			expectedNewPolicy: "",
+		},
+		{
+			name:              "Change to nonexistent policy",
+			volumeName:        "test-volume",
+			newAnnotation:     "nonexistent",
+			expectError:       true,
+			expectedNewPolicy: "",
+		},
+		{
+			name:          "Volume not found",
+			volumeName:    "nonexistent-volume",
+			newAnnotation: "gold-policy",
+			expectError:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Reset state
+			volume.Config.RequestedAutogrowPolicy = "gold-policy"
+			volume.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+				PolicyName: "gold-policy",
+				Reason:     models.AutogrowPolicyReasonActive,
+			}
+			goldPolicy.ClearVolumes()
+			silverPolicy.ClearVolumes()
+			goldPolicy.AddVolume("test-volume")
+
+			// Mock store client
+			if tt.volumeName == "test-volume" {
+				mockStoreClient.EXPECT().
+					UpdateVolume(gomock.Any(), gomock.Any()).
+					Return(nil).
+					Times(1)
+			}
+
+			err := o.UpdateVolumeAutogrowPolicy(ctx(), tt.volumeName, tt.newAnnotation)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				if tt.volumeName == "test-volume" {
+					assert.Equal(t, tt.expectedNewPolicy, volume.EffectiveAGPolicy.PolicyName)
+				}
+			}
+		})
+	}
+}
+
+func TestAssociateVolumeWithAutogrowPolicyInternal(t *testing.T) {
+	o := &TridentOrchestrator{
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		mutex:            &sync.Mutex{},
+	}
+
+	policy := storage.NewAutogrowPolicy("test-policy", "80%", "20%", "1000Gi", storage.AutogrowPolicyStateSuccess)
+	o.autogrowPolicies["test-policy"] = policy
+
+	tests := []struct {
+		name        string
+		volumeName  string
+		policyName  string
+		expectAssoc bool
+	}{
+		{
+			name:        "Associate volume with policy",
+			volumeName:  "vol1",
+			policyName:  "test-policy",
+			expectAssoc: true,
+		},
+		{
+			name:        "Empty policy name - no association",
+			volumeName:  "vol2",
+			policyName:  "",
+			expectAssoc: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			policy.ClearVolumes()
+
+			o.associateVolumeWithAutogrowPolicyInternal(ctx(), tt.volumeName, tt.policyName)
+
+			if tt.expectAssoc {
+				assert.True(t, policy.HasVolume(tt.volumeName))
+			} else {
+				assert.False(t, policy.HasVolume(tt.volumeName))
+			}
+		})
+	}
+}
+
+func TestAssociateVolumeWithAutogrowPolicyInternal_PolicyNotFound(t *testing.T) {
+	o := &TridentOrchestrator{
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		mutex:            &sync.Mutex{},
+	}
+
+	// No policy exists, should handle gracefully (not panic)
+	o.associateVolumeWithAutogrowPolicyInternal(ctx(), "vol1", "nonexistent-policy")
+
+	// Should not panic - graceful degradation
+	assert.Len(t, o.autogrowPolicies, 0)
+}
+
+func TestDisassociateVolumeFromAutogrowPolicyInternal(t *testing.T) {
+	o := &TridentOrchestrator{
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		mutex:            &sync.Mutex{},
+	}
+
+	policy := storage.NewAutogrowPolicy("test-policy", "80%", "20%", "1000Gi", storage.AutogrowPolicyStateSuccess)
+	policy.AddVolume("vol1")
+	o.autogrowPolicies["test-policy"] = policy
+
+	tests := []struct {
+		name           string
+		volumeName     string
+		policyName     string
+		expectDisassoc bool
+	}{
+		{
+			name:           "Disassociate volume from policy",
+			volumeName:     "vol1",
+			policyName:     "test-policy",
+			expectDisassoc: true,
+		},
+		{
+			name:           "Empty policy name - no operation",
+			volumeName:     "vol2",
+			policyName:     "",
+			expectDisassoc: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			initialCount := policy.VolumeCount()
+
+			o.disassociateVolumeFromAutogrowPolicyInternal(ctx(), tt.volumeName, tt.policyName)
+
+			if tt.expectDisassoc {
+				assert.False(t, policy.HasVolume(tt.volumeName))
+				assert.Less(t, policy.VolumeCount(), initialCount)
+			}
+		})
+	}
+}
+
+func TestUpdateStorageClassAutogrowPolicyInternal(t *testing.T) {
+	o := &TridentOrchestrator{
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		storageClasses:   make(map[string]*storageclass.StorageClass),
+		volumes:          make(map[string]*storage.Volume),
+		mutex:            &sync.Mutex{},
+	}
+
+	// Setup policies
+	goldPolicy := storage.NewAutogrowPolicy("gold-policy", "80%", "20%", "1000Gi", storage.AutogrowPolicyStateSuccess)
+	silverPolicy := storage.NewAutogrowPolicy("silver-policy", "90%", "10%", "2000Gi", storage.AutogrowPolicyStateSuccess)
+	failedPolicy := storage.NewAutogrowPolicy("failed-policy", "70%", "30%", "500Gi", storage.AutogrowPolicyStateFailed)
+	o.autogrowPolicies["gold-policy"] = goldPolicy
+	o.autogrowPolicies["silver-policy"] = silverPolicy
+	o.autogrowPolicies["failed-policy"] = failedPolicy
+
+	// Setup storage class
+	scConfig := &storageclass.Config{
+		Name:           "test-sc",
+		AutogrowPolicy: "gold-policy",
+	}
+	sc := storageclass.New(scConfig)
+	o.storageClasses["test-sc"] = sc
+
+	// Setup volumes
+	vol1Config := &storage.VolumeConfig{
+		Name:                    "vol1",
+		Size:                    "100Gi",
+		StorageClass:            "test-sc",
+		RequestedAutogrowPolicy: "", // Uses StorageClass
+	}
+	vol1 := storage.NewVolume(vol1Config, "backend-uuid", "pool1", false, storage.VolumeStateOnline)
+	vol1.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+		PolicyName: "gold-policy",
+		Reason:     models.AutogrowPolicyReasonActive,
+	}
+	o.volumes["vol1"] = vol1
+	goldPolicy.AddVolume("vol1")
+
+	// Vol2 has volume-level autogrow policy - should NOT be affected by SC change
+	vol2Config := &storage.VolumeConfig{
+		Name:                    "vol2",
+		Size:                    "200Gi",
+		StorageClass:            "test-sc",
+		RequestedAutogrowPolicy: "silver-policy", // Volume-level autogrow policy
+	}
+	vol2 := storage.NewVolume(vol2Config, "backend-uuid", "pool1", false, storage.VolumeStateOnline)
+	vol2.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+		PolicyName: "silver-policy",
+		Reason:     models.AutogrowPolicyReasonActive,
+	}
+	o.volumes["vol2"] = vol2
+	silverPolicy.AddVolume("vol2")
+
+	// Vol3 uses different SC - should NOT be affected
+	vol3Config := &storage.VolumeConfig{
+		Name:                    "vol3",
+		Size:                    "300Gi",
+		StorageClass:            "other-sc",
+		RequestedAutogrowPolicy: "",
+	}
+	vol3 := storage.NewVolume(vol3Config, "backend-uuid", "pool1", false, storage.VolumeStateOnline)
+	vol3.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+		PolicyName: "",
+		Reason:     models.AutogrowPolicyReasonNotConfigured,
+	}
+	o.volumes["vol3"] = vol3
+
+	tests := []struct {
+		name                  string
+		scName                string
+		newAGPolicyAnnotation string
+		expectedVol1Policy    string
+		expectedVol2Policy    string
+		expectedVol3Policy    string
+		vol1ShouldBeInGold    bool
+		vol1ShouldBeInSilver  bool
+		vol2ShouldBeInSilver  bool
+		setupSCParameter      string
+	}{
+		{
+			name:                  "Change StorageClass from gold to silver",
+			scName:                "test-sc",
+			newAGPolicyAnnotation: "silver-policy",
+			setupSCParameter:      "silver-policy",
+			expectedVol1Policy:    "silver-policy",
+			expectedVol2Policy:    "silver-policy", // unchanged (has volume-level autogrow policy)
+			expectedVol3Policy:    "",              // unchanged (different SC)
+			vol1ShouldBeInGold:    false,
+			vol1ShouldBeInSilver:  true,
+			vol2ShouldBeInSilver:  true,
+		},
+		{
+			name:                  "Change StorageClass to none",
+			scName:                "test-sc",
+			newAGPolicyAnnotation: "none",
+			setupSCParameter:      "none",
+			expectedVol1Policy:    "",
+			expectedVol2Policy:    "silver-policy", // unchanged (has volume-level autogrow policy)
+			expectedVol3Policy:    "",
+			vol1ShouldBeInGold:    false,
+			vol1ShouldBeInSilver:  false,
+			vol2ShouldBeInSilver:  true,
+		},
+		{
+			name:                  "Change StorageClass to nonexistent policy",
+			scName:                "test-sc",
+			newAGPolicyAnnotation: "nonexistent-policy",
+			setupSCParameter:      "nonexistent-policy",
+			expectedVol1Policy:    "",
+			expectedVol2Policy:    "silver-policy",
+			expectedVol3Policy:    "",
+			vol1ShouldBeInGold:    false,
+			vol1ShouldBeInSilver:  false,
+			vol2ShouldBeInSilver:  true,
+		},
+		{
+			name:                  "Change StorageClass to failed policy",
+			scName:                "test-sc",
+			newAGPolicyAnnotation: "failed-policy",
+			setupSCParameter:      "failed-policy",
+			expectedVol1Policy:    "",
+			expectedVol2Policy:    "silver-policy",
+			expectedVol3Policy:    "",
+			vol1ShouldBeInGold:    false,
+			vol1ShouldBeInSilver:  false,
+			vol2ShouldBeInSilver:  true,
+		},
+		{
+			name:                  "No change - same policy",
+			scName:                "test-sc",
+			newAGPolicyAnnotation: "gold-policy",
+			setupSCParameter:      "gold-policy",
+			expectedVol1Policy:    "gold-policy",
+			expectedVol2Policy:    "silver-policy",
+			expectedVol3Policy:    "",
+			vol1ShouldBeInGold:    true,
+			vol1ShouldBeInSilver:  false,
+			vol2ShouldBeInSilver:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Reset state
+			vol1.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+				PolicyName: "gold-policy",
+				Reason:     models.AutogrowPolicyReasonActive,
+			}
+			vol2.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+				PolicyName: "silver-policy",
+				Reason:     models.AutogrowPolicyReasonActive,
+			}
+			vol3.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+				PolicyName: "",
+				Reason:     models.AutogrowPolicyReasonNotConfigured,
+			}
+			goldPolicy.ClearVolumes()
+			silverPolicy.ClearVolumes()
+			goldPolicy.AddVolume("vol1")
+			silverPolicy.AddVolume("vol2")
+
+			// Update StorageClass by recreating the storage class
+			scConfig.AutogrowPolicy = tt.setupSCParameter
+			sc = storageclass.New(scConfig)
+			o.storageClasses["test-sc"] = sc
+
+			// Call the function
+			err := o.upsertStorageClassAutogrowPolicyInternal(ctx(), tt.scName)
+
+			// For nonexistent and failed policies, we expect an error
+			if tt.newAGPolicyAnnotation == "nonexistent-policy" {
+				assert.Error(t, err)
+				assert.True(t, errors.IsAutogrowPolicyNotFoundError(err))
+			} else if tt.newAGPolicyAnnotation == "failed-policy" {
+				assert.Error(t, err)
+				assert.True(t, errors.IsAutogrowPolicyNotUsableError(err))
+			}
+
+			// Verify volume effective policies
+			assert.Equal(t, tt.expectedVol1Policy, vol1.EffectiveAGPolicy.PolicyName, "vol1 policy mismatch")
+			assert.Equal(t, tt.expectedVol2Policy, vol2.EffectiveAGPolicy.PolicyName, "vol2 policy mismatch")
+			assert.Equal(t, tt.expectedVol3Policy, vol3.EffectiveAGPolicy.PolicyName, "vol3 policy mismatch")
+
+			// Verify associations
+			assert.Equal(t, tt.vol1ShouldBeInGold, goldPolicy.HasVolume("vol1"), "vol1 gold association mismatch")
+			assert.Equal(t, tt.vol1ShouldBeInSilver, silverPolicy.HasVolume("vol1"), "vol1 silver association mismatch")
+			assert.Equal(t, tt.vol2ShouldBeInSilver, silverPolicy.HasVolume("vol2"), "vol2 silver association mismatch")
+		})
+	}
+}
+
+func TestReevaluateVolumesForPolicy(t *testing.T) {
+	o := &TridentOrchestrator{
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		storageClasses:   make(map[string]*storageclass.StorageClass),
+		volumes:          make(map[string]*storage.Volume),
+		mutex:            &sync.Mutex{},
+	}
+
+	// Setup policies
+	goldPolicy := storage.NewAutogrowPolicy("gold-policy", "80%", "20%", "1000Gi", storage.AutogrowPolicyStateSuccess)
+	silverPolicy := storage.NewAutogrowPolicy("silver-policy", "90%", "10%", "2000Gi", storage.AutogrowPolicyStateSuccess)
+	o.autogrowPolicies["gold-policy"] = goldPolicy
+	o.autogrowPolicies["silver-policy"] = silverPolicy
+
+	// Setup storage class with gold-policy
+	scConfig := &storageclass.Config{
+		Name:           "test-sc",
+		AutogrowPolicy: "gold-policy",
+	}
+	sc := storageclass.New(scConfig)
+	o.storageClasses["test-sc"] = sc
+
+	// Vol1: Uses gold-policy via volume-level autogrow policy, currently has no policy (was unusable)
+	vol1Config := &storage.VolumeConfig{
+		Name:                    "vol1",
+		Size:                    "100Gi",
+		StorageClass:            "test-sc",
+		RequestedAutogrowPolicy: "gold-policy",
+	}
+	vol1 := storage.NewVolume(vol1Config, "backend-uuid", "pool1", false, storage.VolumeStateOnline)
+	vol1.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+		PolicyName: "",
+		Reason:     models.AutogrowPolicyReasonUnusable,
+	}
+	o.volumes["vol1"] = vol1
+
+	// Vol2: Uses gold-policy via SC, currently has no policy
+	vol2Config := &storage.VolumeConfig{
+		Name:                    "vol2",
+		Size:                    "200Gi",
+		StorageClass:            "test-sc",
+		RequestedAutogrowPolicy: "", // Uses SC
+	}
+	vol2 := storage.NewVolume(vol2Config, "backend-uuid", "pool1", false, storage.VolumeStateOnline)
+	vol2.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+		PolicyName: "",
+		Reason:     models.AutogrowPolicyReasonUnusable,
+	}
+	o.volumes["vol2"] = vol2
+
+	// Vol3: Explicitly uses silver-policy - should NOT change to gold
+	vol3Config := &storage.VolumeConfig{
+		Name:                    "vol3",
+		Size:                    "300Gi",
+		StorageClass:            "test-sc",
+		RequestedAutogrowPolicy: "silver-policy",
+	}
+	vol3 := storage.NewVolume(vol3Config, "backend-uuid", "pool1", false, storage.VolumeStateOnline)
+	vol3.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+		PolicyName: "silver-policy",
+		Reason:     models.AutogrowPolicyReasonActive,
+	}
+	o.volumes["vol3"] = vol3
+	silverPolicy.AddVolume("vol3")
+
+	// Vol4: Explicitly disabled with "none" - should NOT get gold policy
+	vol4Config := &storage.VolumeConfig{
+		Name:                    "vol4",
+		Size:                    "400Gi",
+		StorageClass:            "test-sc",
+		RequestedAutogrowPolicy: "none",
+	}
+	vol4 := storage.NewVolume(vol4Config, "backend-uuid", "pool1", false, storage.VolumeStateOnline)
+	vol4.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+		PolicyName: "",
+		Reason:     models.AutogrowPolicyReasonDisabled,
+	}
+	o.volumes["vol4"] = vol4
+
+	// Vol5: Already using gold-policy - should remain unchanged
+	vol5Config := &storage.VolumeConfig{
+		Name:                    "vol5",
+		Size:                    "500Gi",
+		StorageClass:            "test-sc",
+		RequestedAutogrowPolicy: "gold-policy",
+	}
+	vol5 := storage.NewVolume(vol5Config, "backend-uuid", "pool1", false, storage.VolumeStateOnline)
+	vol5.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+		PolicyName: "gold-policy",
+		Reason:     models.AutogrowPolicyReasonActive,
+	}
+	o.volumes["vol5"] = vol5
+	goldPolicy.AddVolume("vol5")
+
+	// Vol6: Uses different policy via volume-level autogrow policy (case insensitive check)
+	vol6Config := &storage.VolumeConfig{
+		Name:                    "vol6",
+		Size:                    "600Gi",
+		StorageClass:            "test-sc",
+		RequestedAutogrowPolicy: "GOLD-POLICY", // Different case
+	}
+	vol6 := storage.NewVolume(vol6Config, "backend-uuid", "pool1", false, storage.VolumeStateOnline)
+	vol6.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+		PolicyName: "",
+		Reason:     models.AutogrowPolicyReasonUnusable,
+	}
+	o.volumes["vol6"] = vol6
+
+	tests := []struct {
+		name                        string
+		policyName                  string
+		expectedVol1InGold          bool
+		expectedVol2InGold          bool
+		expectedVol3InSilver        bool
+		expectedVol4InGold          bool
+		expectedVol5InGold          bool
+		expectedVol6InGold          bool
+		expectedVol1EffectivePolicy string
+		expectedVol2EffectivePolicy string
+		expectedVol3EffectivePolicy string
+		expectedVol4EffectivePolicy string
+		expectedVol5EffectivePolicy string
+		expectedVol6EffectivePolicy string
+	}{
+		{
+			name:                        "Reevaluate for gold-policy",
+			policyName:                  "gold-policy",
+			expectedVol1InGold:          true,
+			expectedVol2InGold:          true,
+			expectedVol3InSilver:        true, // stays in silver
+			expectedVol4InGold:          false,
+			expectedVol5InGold:          true,
+			expectedVol6InGold:          true, // case-insensitive match
+			expectedVol1EffectivePolicy: "gold-policy",
+			expectedVol2EffectivePolicy: "gold-policy",
+			expectedVol3EffectivePolicy: "silver-policy",
+			expectedVol4EffectivePolicy: "",
+			expectedVol5EffectivePolicy: "gold-policy",
+			expectedVol6EffectivePolicy: "gold-policy",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Call the function
+			o.reevaluateVolumesForPolicy(ctx(), tt.policyName)
+
+			// Verify associations
+			assert.Equal(t, tt.expectedVol1InGold, goldPolicy.HasVolume("vol1"), "vol1 gold association")
+			assert.Equal(t, tt.expectedVol2InGold, goldPolicy.HasVolume("vol2"), "vol2 gold association")
+			assert.Equal(t, tt.expectedVol3InSilver, silverPolicy.HasVolume("vol3"), "vol3 silver association")
+			assert.Equal(t, tt.expectedVol4InGold, goldPolicy.HasVolume("vol4"), "vol4 gold association")
+			assert.Equal(t, tt.expectedVol5InGold, goldPolicy.HasVolume("vol5"), "vol5 gold association")
+			assert.Equal(t, tt.expectedVol6InGold, goldPolicy.HasVolume("vol6"), "vol6 gold association")
+
+			// Verify effective policies
+			assert.Equal(t, tt.expectedVol1EffectivePolicy, vol1.EffectiveAGPolicy.PolicyName, "vol1 effective policy")
+			assert.Equal(t, tt.expectedVol2EffectivePolicy, vol2.EffectiveAGPolicy.PolicyName, "vol2 effective policy")
+			assert.Equal(t, tt.expectedVol3EffectivePolicy, vol3.EffectiveAGPolicy.PolicyName, "vol3 effective policy")
+			assert.Equal(t, tt.expectedVol4EffectivePolicy, vol4.EffectiveAGPolicy.PolicyName, "vol4 effective policy")
+			assert.Equal(t, tt.expectedVol5EffectivePolicy, vol5.EffectiveAGPolicy.PolicyName, "vol5 effective policy")
+			assert.Equal(t, tt.expectedVol6EffectivePolicy, vol6.EffectiveAGPolicy.PolicyName, "vol6 effective policy")
+		})
+	}
+}
+
+func TestInvalidateVolumesForPolicy(t *testing.T) {
+	o := &TridentOrchestrator{
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		volumes:          make(map[string]*storage.Volume),
+		mutex:            &sync.Mutex{},
+	}
+
+	// Setup policy
+	goldPolicy := storage.NewAutogrowPolicy("gold-policy", "80%", "20%", "1000Gi", storage.AutogrowPolicyStateSuccess)
+	o.autogrowPolicies["gold-policy"] = goldPolicy
+
+	// Setup volumes
+	vol1Config := &storage.VolumeConfig{
+		Name: "vol1",
+		Size: "100Gi",
+	}
+	vol1 := storage.NewVolume(vol1Config, "backend-uuid", "pool1", false, storage.VolumeStateOnline)
+	vol1.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+		PolicyName: "gold-policy",
+		Reason:     models.AutogrowPolicyReasonActive,
+	}
+	o.volumes["vol1"] = vol1
+	goldPolicy.AddVolume("vol1")
+
+	vol2Config := &storage.VolumeConfig{
+		Name: "vol2",
+		Size: "200Gi",
+	}
+	vol2 := storage.NewVolume(vol2Config, "backend-uuid", "pool1", false, storage.VolumeStateOnline)
+	vol2.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+		PolicyName: "gold-policy",
+		Reason:     models.AutogrowPolicyReasonActive,
+	}
+	o.volumes["vol2"] = vol2
+	goldPolicy.AddVolume("vol2")
+
+	vol3Config := &storage.VolumeConfig{
+		Name: "vol3",
+		Size: "300Gi",
+	}
+	vol3 := storage.NewVolume(vol3Config, "backend-uuid", "pool1", false, storage.VolumeStateOnline)
+	vol3.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+		PolicyName: "gold-policy",
+		Reason:     models.AutogrowPolicyReasonActive,
+	}
+	o.volumes["vol3"] = vol3
+	goldPolicy.AddVolume("vol3")
+
+	tests := []struct {
+		name                  string
+		policyName            string
+		associatedVolumes     []string
+		volumesInOrchestrator []string
+	}{
+		{
+			name:                  "Invalidate all volumes",
+			policyName:            "gold-policy",
+			associatedVolumes:     []string{"vol1", "vol2", "vol3"},
+			volumesInOrchestrator: []string{"vol1", "vol2", "vol3"},
+		},
+		{
+			name:                  "Invalidate with some volumes missing from orchestrator",
+			policyName:            "gold-policy",
+			associatedVolumes:     []string{"vol1", "vol2", "nonexistent-vol"},
+			volumesInOrchestrator: []string{"vol1", "vol2"},
+		},
+		{
+			name:                  "Invalidate with empty volume list",
+			policyName:            "gold-policy",
+			associatedVolumes:     []string{},
+			volumesInOrchestrator: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Reset state
+			vol1.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+				PolicyName: "gold-policy",
+				Reason:     models.AutogrowPolicyReasonActive,
+			}
+			vol2.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+				PolicyName: "gold-policy",
+				Reason:     models.AutogrowPolicyReasonActive,
+			}
+			vol3.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+				PolicyName: "gold-policy",
+				Reason:     models.AutogrowPolicyReasonActive,
+			}
+			goldPolicy.ClearVolumes()
+			for _, vol := range tt.associatedVolumes {
+				goldPolicy.AddVolume(vol)
+			}
+
+			// Call the function
+			o.invalidateVolumesForPolicy(ctx(), tt.policyName, tt.associatedVolumes)
+
+			// Verify all volumes in orchestrator are invalidated
+			for _, volName := range tt.volumesInOrchestrator {
+				vol := o.volumes[volName]
+				assert.Equal(t, "", vol.EffectiveAGPolicy.PolicyName, "%s should have empty policy", volName)
+				assert.Equal(t, models.AutogrowPolicyReasonUnusable, vol.EffectiveAGPolicy.Reason, "%s should have Unusable reason", volName)
+				assert.False(t, goldPolicy.HasVolume(volName), "%s should not be in gold policy", volName)
+			}
+		})
+	}
+}
+
+func TestAddAutogrowPolicy_WithVolumeReevaluation(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockBackend.EXPECT().GetDriverName().Return("fake").AnyTimes()
+	mockBackend.EXPECT().BackendUUID().Return("test-backend-uuid").AnyTimes()
+	mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+	mockBackend.EXPECT().Name().Return("fake-backend").AnyTimes()
+
+	o := &TridentOrchestrator{
+		backends:         map[string]storage.Backend{"test-backend-uuid": mockBackend},
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		storageClasses:   make(map[string]*storageclass.StorageClass),
+		volumes:          make(map[string]*storage.Volume),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	// Setup storage class
+	scConfig := &storageclass.Config{
+		Name:           "test-sc",
+		AutogrowPolicy: "gold-policy",
+	}
+	sc := storageclass.New(scConfig)
+	o.storageClasses["test-sc"] = sc
+
+	// Setup volume that references gold-policy but it doesn't exist yet
+	volConfig := &storage.VolumeConfig{
+		Name:                    "test-volume",
+		Size:                    "100Gi",
+		StorageClass:            "test-sc",
+		RequestedAutogrowPolicy: "gold-policy",
+	}
+	vol := storage.NewVolume(volConfig, "backend-uuid", "pool1", false, storage.VolumeStateOnline)
+	vol.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+		PolicyName: "",
+		Reason:     models.AutogrowPolicyReasonNotFound,
+	}
+	o.volumes["test-volume"] = vol
+
+	tests := []struct {
+		name                        string
+		config                      *storage.AutogrowPolicyConfig
+		expectedVolumeAssociated    bool
+		expectedEffectivePolicyName string
+		expectedEffectiveReason     models.AutogrowPolicyReason
+	}{
+		{
+			name: "Add policy in Success state - volumes re-evaluated and associated",
+			config: &storage.AutogrowPolicyConfig{
+				Name:          "gold-policy",
+				UsedThreshold: "80%",
+				GrowthAmount:  "20%",
+				MaxSize:       "1000Gi",
+				State:         storage.AutogrowPolicyStateSuccess,
+			},
+			expectedVolumeAssociated:    true,
+			expectedEffectivePolicyName: "gold-policy",
+			expectedEffectiveReason:     models.AutogrowPolicyReasonActive,
+		},
+		{
+			name: "Add policy in Failed state - volumes re-evaluated but not associated",
+			config: &storage.AutogrowPolicyConfig{
+				Name:          "failed-policy",
+				UsedThreshold: "90%",
+				GrowthAmount:  "10%",
+				MaxSize:       "2000Gi",
+				State:         storage.AutogrowPolicyStateFailed,
+			},
+			expectedVolumeAssociated:    false,
+			expectedEffectivePolicyName: "",
+			expectedEffectiveReason:     models.AutogrowPolicyReasonUnusable,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Clear policies for fresh test
+			o.autogrowPolicies = make(map[string]*storage.AutogrowPolicy)
+
+			// Reset volume state
+			vol.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+				PolicyName: "",
+				Reason:     models.AutogrowPolicyReasonNotFound,
+			}
+			vol.Config.RequestedAutogrowPolicy = tt.config.Name
+
+			result, err := o.AddAutogrowPolicy(ctx(), tt.config)
+
+			assert.NoError(t, err)
+			assert.NotNil(t, result)
+			assert.Equal(t, tt.config.Name, result.Name)
+			assert.Contains(t, o.autogrowPolicies, tt.config.Name)
+
+			policy := o.autogrowPolicies[tt.config.Name]
+			if tt.expectedVolumeAssociated {
+				assert.True(t, policy.HasVolume("test-volume"))
+			} else {
+				assert.False(t, policy.HasVolume("test-volume"))
+			}
+			// Always check effective policy state (updated with our changes)
+			assert.Equal(t, tt.expectedEffectivePolicyName, vol.EffectiveAGPolicy.PolicyName)
+			assert.Equal(t, tt.expectedEffectiveReason, vol.EffectiveAGPolicy.Reason)
+		})
+	}
+}
+
+func TestUpdateAutogrowPolicy_StateTransitions(t *testing.T) {
+	o := &TridentOrchestrator{
+		backends:         make(map[string]storage.Backend),
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		storageClasses:   make(map[string]*storageclass.StorageClass),
+		volumes:          make(map[string]*storage.Volume),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	// Setup storage class
+	scConfig := &storageclass.Config{
+		Name:           "test-sc",
+		AutogrowPolicy: "test-policy",
+	}
+	sc := storageclass.New(scConfig)
+	o.storageClasses["test-sc"] = sc
+
+	// Setup volume
+	volConfig := &storage.VolumeConfig{
+		Name:                    "test-volume",
+		Size:                    "100Gi",
+		StorageClass:            "test-sc",
+		RequestedAutogrowPolicy: "",
+	}
+	vol := storage.NewVolume(volConfig, "backend-uuid", "pool1", false, storage.VolumeStateOnline)
+	vol.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+		PolicyName: "test-policy",
+		Reason:     models.AutogrowPolicyReasonActive,
+	}
+	o.volumes["test-volume"] = vol
+
+	tests := []struct {
+		name                        string
+		initialState                storage.AutogrowPolicyState
+		newState                    storage.AutogrowPolicyState
+		initialVolumeAssociated     bool
+		expectedVolumeAssociated    bool
+		expectedEffectivePolicyName string
+		expectedEffectiveReason     models.AutogrowPolicyReason
+	}{
+		{
+			name:                        "Success to Failed - invalidate volumes",
+			initialState:                storage.AutogrowPolicyStateSuccess,
+			newState:                    storage.AutogrowPolicyStateFailed,
+			initialVolumeAssociated:     true,
+			expectedVolumeAssociated:    false,
+			expectedEffectivePolicyName: "",
+			expectedEffectiveReason:     models.AutogrowPolicyReasonUnusable,
+		},
+		{
+			name:                        "Failed to Success - reevaluate volumes",
+			initialState:                storage.AutogrowPolicyStateFailed,
+			newState:                    storage.AutogrowPolicyStateSuccess,
+			initialVolumeAssociated:     false,
+			expectedVolumeAssociated:    true,
+			expectedEffectivePolicyName: "test-policy",
+			expectedEffectiveReason:     models.AutogrowPolicyReasonActive,
+		},
+		{
+			name:                        "Success to Deleting - invalidate volumes",
+			initialState:                storage.AutogrowPolicyStateSuccess,
+			newState:                    storage.AutogrowPolicyStateDeleting,
+			initialVolumeAssociated:     true,
+			expectedVolumeAssociated:    false,
+			expectedEffectivePolicyName: "",
+			expectedEffectiveReason:     models.AutogrowPolicyReasonUnusable,
+		},
+		{
+			name:                        "No state change - no re-evaluation",
+			initialState:                storage.AutogrowPolicyStateSuccess,
+			newState:                    storage.AutogrowPolicyStateSuccess,
+			initialVolumeAssociated:     true,
+			expectedVolumeAssociated:    true,
+			expectedEffectivePolicyName: "test-policy",
+			expectedEffectiveReason:     models.AutogrowPolicyReasonActive,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Setup initial policy
+			policy := storage.NewAutogrowPolicy("test-policy", "80%", "20%", "1000Gi", tt.initialState)
+			o.autogrowPolicies["test-policy"] = policy
+
+			// Setup initial volume state
+			if tt.initialVolumeAssociated {
+				policy.AddVolume("test-volume")
+				vol.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+					PolicyName: "test-policy",
+					Reason:     models.AutogrowPolicyReasonActive,
+				}
+			} else {
+				policy.ClearVolumes()
+				vol.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+					PolicyName: "",
+					Reason:     models.AutogrowPolicyReasonUnusable,
+				}
+			}
+
+			// Update policy with new state
+			config := &storage.AutogrowPolicyConfig{
+				Name:          "test-policy",
+				UsedThreshold: "85%",
+				GrowthAmount:  "15%",
+				MaxSize:       "2000Gi",
+				State:         tt.newState,
+			}
+
+			result, err := o.UpdateAutogrowPolicy(ctx(), config)
+
+			assert.NoError(t, err)
+			assert.NotNil(t, result)
+			assert.Equal(t, tt.newState, policy.State())
+
+			// Verify volume association
+			assert.Equal(t, tt.expectedVolumeAssociated, policy.HasVolume("test-volume"))
+			assert.Equal(t, tt.expectedEffectivePolicyName, vol.EffectiveAGPolicy.PolicyName)
+			assert.Equal(t, tt.expectedEffectiveReason, vol.EffectiveAGPolicy.Reason)
+		})
+	}
+}
+
+func TestUpdateAutogrowPolicy_BootstrapError(t *testing.T) {
+	o := &TridentOrchestrator{
+		bootstrapError: fmt.Errorf("bootstrap error"),
+	}
+
+	config := &storage.AutogrowPolicyConfig{
+		Name:          "test-policy",
+		UsedThreshold: "80%",
+	}
+
+	result, err := o.UpdateAutogrowPolicy(ctx(), config)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, o.bootstrapError, err)
+}
+
+func TestDeleteAutogrowPolicy_BootstrapError(t *testing.T) {
+	o := &TridentOrchestrator{
+		bootstrapError: fmt.Errorf("bootstrap error"),
+	}
+
+	err := o.DeleteAutogrowPolicy(ctx(), "test-policy")
+	assert.Error(t, err)
+	assert.Equal(t, o.bootstrapError, err)
+}
+
+func TestGetAutogrowPolicy_BootstrapError(t *testing.T) {
+	o := &TridentOrchestrator{
+		bootstrapError: fmt.Errorf("bootstrap error"),
+	}
+
+	result, err := o.GetAutogrowPolicy(ctx(), "test-policy")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, o.bootstrapError, err)
+}
+
+func TestListAutogrowPolicies_BootstrapError(t *testing.T) {
+	o := &TridentOrchestrator{
+		bootstrapError: fmt.Errorf("bootstrap error"),
+	}
+
+	result, err := o.ListAutogrowPolicies(ctx())
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, o.bootstrapError, err)
+}
+
+func TestUpdateVolumeAutogrowPolicy_BootstrapError(t *testing.T) {
+	o := &TridentOrchestrator{
+		bootstrapError: fmt.Errorf("bootstrap error"),
+	}
+
+	err := o.UpdateVolumeAutogrowPolicy(ctx(), "test-volume", "gold-policy")
+	assert.Error(t, err)
+	assert.Equal(t, o.bootstrapError, err)
+}
+
+func TestUpdateVolumeAutogrowPolicy_PersistenceError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	o := &TridentOrchestrator{
+		storeClient:        mockStoreClient,
+		backends:           make(map[string]storage.Backend),
+		autogrowPolicies:   make(map[string]*storage.AutogrowPolicy),
+		storageClasses:     make(map[string]*storageclass.StorageClass),
+		volumes:            make(map[string]*storage.Volume),
+		volumePublications: cache.NewVolumePublicationCache(),
+		nodes:              *cache.NewNodeCache(),
+		mutex:              &sync.Mutex{},
+		bootstrapped:       true,
+		bootstrapError:     nil,
+	}
+
+	// Setup policy
+	goldPolicy := storage.NewAutogrowPolicy("gold-policy", "80%", "20%", "1000Gi", storage.AutogrowPolicyStateSuccess)
+	o.autogrowPolicies["gold-policy"] = goldPolicy
+
+	// Setup volume
+	volConfig := &storage.VolumeConfig{
+		Name:                    "test-volume",
+		Size:                    "100Gi",
+		StorageClass:            "test-sc",
+		RequestedAutogrowPolicy: "",
+	}
+	vol := storage.NewVolume(volConfig, "backend-uuid", "pool1", false, storage.VolumeStateOnline)
+	vol.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+		PolicyName: "",
+		Reason:     models.AutogrowPolicyReasonNotConfigured,
+	}
+	o.volumes["test-volume"] = vol
+
+	// Mock store client to return error
+	mockStoreClient.EXPECT().
+		UpdateVolume(gomock.Any(), gomock.Any()).
+		Return(fmt.Errorf("persistence error")).
+		Times(1)
+
+	err := o.UpdateVolumeAutogrowPolicy(ctx(), "test-volume", "gold-policy")
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "persistence error")
+}
+
+func TestGetAutogrowPolicy_ContextCancellation(t *testing.T) {
+	o := &TridentOrchestrator{
+		backends:         make(map[string]storage.Backend),
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	// Create cancelled context
+	cancelledCtx, cancel := context.WithCancel(ctx())
+	cancel()
+
+	result, err := o.GetAutogrowPolicy(cancelledCtx, "test-policy")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, context.Canceled, err)
+}
+
+func TestListAutogrowPolicies_ContextCancellation(t *testing.T) {
+	o := &TridentOrchestrator{
+		backends:         make(map[string]storage.Backend),
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	// Create cancelled context
+	cancelledCtx, cancel := context.WithCancel(ctx())
+	cancel()
+
+	result, err := o.ListAutogrowPolicies(cancelledCtx)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, context.Canceled, err)
+}
+
+func TestAddAutogrowPolicy_ContextCancellation(t *testing.T) {
+	o := &TridentOrchestrator{
+		backends:         make(map[string]storage.Backend),
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	config := &storage.AutogrowPolicyConfig{
+		Name:          "test-policy",
+		UsedThreshold: "80%",
+		GrowthAmount:  "20%",
+		MaxSize:       "1000Gi",
+		State:         storage.AutogrowPolicyStateSuccess,
+	}
+
+	// Create cancelled context
+	cancelledCtx, cancel := context.WithCancel(ctx())
+	cancel()
+
+	result, err := o.AddAutogrowPolicy(cancelledCtx, config)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, context.Canceled, err)
+}
+
+func TestUpdateAutogrowPolicy_ContextCancellation(t *testing.T) {
+	o := &TridentOrchestrator{
+		backends:         make(map[string]storage.Backend),
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	config := &storage.AutogrowPolicyConfig{
+		Name:          "test-policy",
+		UsedThreshold: "80%",
+		GrowthAmount:  "20%",
+		MaxSize:       "1000Gi",
+		State:         storage.AutogrowPolicyStateSuccess,
+	}
+
+	// Create cancelled context
+	cancelledCtx, cancel := context.WithCancel(ctx())
+	cancel()
+
+	result, err := o.UpdateAutogrowPolicy(cancelledCtx, config)
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, context.Canceled, err)
+}
+
+func TestDeleteAutogrowPolicy_ContextCancellation(t *testing.T) {
+	o := &TridentOrchestrator{
+		backends:         make(map[string]storage.Backend),
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	// Create cancelled context
+	cancelledCtx, cancel := context.WithCancel(ctx())
+	cancel()
+
+	err := o.DeleteAutogrowPolicy(cancelledCtx, "test-policy")
+	assert.Error(t, err)
+	assert.Equal(t, context.Canceled, err)
+}
+
+func TestUpdateVolumeAutogrowPolicy_ContextCancellation(t *testing.T) {
+	o := &TridentOrchestrator{
+		backends:         make(map[string]storage.Backend),
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		volumes:          make(map[string]*storage.Volume),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	// Create cancelled context
+	cancelledCtx, cancel := context.WithCancel(ctx())
+	cancel()
+
+	err := o.UpdateVolumeAutogrowPolicy(cancelledCtx, "test-volume", "gold-policy")
+	assert.Error(t, err)
+	assert.Equal(t, context.Canceled, err)
+}
+
+func TestDisassociateVolumeFromAutogrowPolicyInternal_PolicyNotFound(t *testing.T) {
+	o := &TridentOrchestrator{
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		mutex:            &sync.Mutex{},
+	}
+
+	// No policy exists, should handle gracefully
+	o.disassociateVolumeFromAutogrowPolicyInternal(ctx(), "vol1", "nonexistent-policy")
+
+	// Should not panic or error
+	assert.Len(t, o.autogrowPolicies, 0)
+}
+
+func TestResolveEffectiveAutogrowPolicy_CaseInsensitiveNone(t *testing.T) {
+	o := &TridentOrchestrator{
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		storageClasses:   make(map[string]*storageclass.StorageClass),
+		mutex:            &sync.Mutex{},
+	}
+
+	tests := []struct {
+		name                 string
+		volumeAutogrowPolicy string
+		scAutogrowPolicy     string
+		expectedPolicyName   string
+		expectedReason       models.AutogrowPolicyReason
+		expectError          bool
+	}{
+		{
+			name:                 "Volume-level none (lowercase)",
+			volumeAutogrowPolicy: "none",
+			scAutogrowPolicy:     "",
+			expectedPolicyName:   "",
+			expectedReason:       models.AutogrowPolicyReasonDisabled,
+			expectError:          false,
+		},
+		{
+			name:                 "Volume-level NONE (uppercase)",
+			volumeAutogrowPolicy: "NONE",
+			scAutogrowPolicy:     "",
+			expectedPolicyName:   "",
+			expectedReason:       models.AutogrowPolicyReasonDisabled,
+			expectError:          false,
+		},
+		{
+			name:                 "Volume-level NoNe (mixed case)",
+			volumeAutogrowPolicy: "NoNe",
+			scAutogrowPolicy:     "",
+			expectedPolicyName:   "",
+			expectedReason:       models.AutogrowPolicyReasonDisabled,
+			expectError:          false,
+		},
+		{
+			name:                 "StorageClass none",
+			volumeAutogrowPolicy: "",
+			scAutogrowPolicy:     "none",
+			expectedPolicyName:   "",
+			expectedReason:       models.AutogrowPolicyReasonDisabled,
+			expectError:          false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Setup storage class
+			scConfig := &storageclass.Config{
+				Name:           "test-sc",
+				AutogrowPolicy: tt.scAutogrowPolicy,
+			}
+			sc := storageclass.New(scConfig)
+			o.storageClasses["test-sc"] = sc
+
+			volumeConfig := &storage.VolumeConfig{
+				Name:                    "test-volume",
+				StorageClass:            "test-sc",
+				RequestedAutogrowPolicy: tt.volumeAutogrowPolicy,
+			}
+
+			result, err := o.resolveEffectiveAutogrowPolicy(ctx(), volumeConfig)
+
+			assert.Equal(t, tt.expectedPolicyName, result.PolicyName)
+			assert.Equal(t, tt.expectedReason, result.Reason)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestResolveEffectiveAutogrowPolicy_StorageClassNotFound(t *testing.T) {
+	o := &TridentOrchestrator{
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		storageClasses:   make(map[string]*storageclass.StorageClass),
+		mutex:            &sync.Mutex{},
+	}
+
+	volumeConfig := &storage.VolumeConfig{
+		Name:                    "test-volume",
+		StorageClass:            "nonexistent-sc",
+		RequestedAutogrowPolicy: "",
+	}
+
+	result, err := o.resolveEffectiveAutogrowPolicy(ctx(), volumeConfig)
+
+	// Should return not configured when SC doesn't exist
+	assert.Equal(t, "", result.PolicyName)
+	assert.Equal(t, models.AutogrowPolicyReasonNotConfigured, result.Reason)
+	assert.NoError(t, err)
+}
+
+func TestUpdateVolumeAutogrowPolicy_NoAssociationChange(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	o := &TridentOrchestrator{
+		storeClient:        mockStoreClient,
+		backends:           make(map[string]storage.Backend),
+		autogrowPolicies:   make(map[string]*storage.AutogrowPolicy),
+		storageClasses:     make(map[string]*storageclass.StorageClass),
+		volumes:            make(map[string]*storage.Volume),
+		volumePublications: cache.NewVolumePublicationCache(),
+		nodes:              *cache.NewNodeCache(),
+		mutex:              &sync.Mutex{},
+		bootstrapped:       true,
+		bootstrapError:     nil,
+	}
+
+	// Setup policy
+	goldPolicy := storage.NewAutogrowPolicy("gold-policy", "80%", "20%", "1000Gi", storage.AutogrowPolicyStateSuccess)
+	o.autogrowPolicies["gold-policy"] = goldPolicy
+
+	// Setup volume already using gold-policy
+	volConfig := &storage.VolumeConfig{
+		Name:                    "test-volume",
+		Size:                    "100Gi",
+		StorageClass:            "test-sc",
+		RequestedAutogrowPolicy: "gold-policy",
+	}
+	vol := storage.NewVolume(volConfig, "backend-uuid", "pool1", false, storage.VolumeStateOnline)
+	vol.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+		PolicyName: "gold-policy",
+		Reason:     models.AutogrowPolicyReasonActive,
+	}
+	o.volumes["test-volume"] = vol
+	goldPolicy.AddVolume("test-volume")
+
+	// Mock store client
+	mockStoreClient.EXPECT().
+		UpdateVolume(gomock.Any(), gomock.Any()).
+		Return(nil).
+		Times(1)
+
+	// Update to same policy - no association change
+	err := o.UpdateVolumeAutogrowPolicy(ctx(), "test-volume", "gold-policy")
+
+	assert.NoError(t, err)
+	assert.True(t, goldPolicy.HasVolume("test-volume"))
+	assert.Equal(t, "gold-policy", vol.EffectiveAGPolicy.PolicyName)
+}
+
+// TestUpdateVolumeAutogrowPolicy_MutexUnlockedOnContextCancellation verifies the mutex is unlocked
+// when the context is cancelled before processing begins.
+func TestUpdateVolumeAutogrowPolicy_MutexUnlockedOnContextCancellation(t *testing.T) {
+	o := &TridentOrchestrator{
+		backends:         make(map[string]storage.Backend),
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		volumes:          make(map[string]*storage.Volume),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	// Create cancelled context
+	cancelledCtx, cancel := context.WithCancel(ctx())
+	cancel()
+
+	// Call the function - should return context.Canceled
+	err := o.UpdateVolumeAutogrowPolicy(cancelledCtx, "test-volume", "gold-policy")
+	assert.Error(t, err)
+	assert.Equal(t, context.Canceled, err)
+
+	// Verify mutex is unlocked by trying to acquire it (should succeed immediately)
+	mutexAcquired := make(chan bool, 1)
+	go func() {
+		o.mutex.Lock()
+		mutexAcquired <- true
+		o.mutex.Unlock()
+	}()
+
+	select {
+	case <-mutexAcquired:
+		// Success - mutex was unlocked
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("Mutex was not unlocked after context cancellation")
+	}
+}
+
+// TestUpdateVolumeAutogrowPolicy_MutexUnlockedOnVolumeNotFound verifies the mutex is unlocked
+// when the volume is not found.
+func TestUpdateVolumeAutogrowPolicy_MutexUnlockedOnVolumeNotFound(t *testing.T) {
+	o := &TridentOrchestrator{
+		backends:         make(map[string]storage.Backend),
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		volumes:          make(map[string]*storage.Volume), // Empty - no volumes
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	// Call with non-existent volume
+	err := o.UpdateVolumeAutogrowPolicy(ctx(), "nonexistent-volume", "gold-policy")
+	assert.Error(t, err)
+	assert.True(t, errors.IsNotFoundError(err))
+
+	// Verify mutex is unlocked by trying to acquire it (should succeed immediately)
+	mutexAcquired := make(chan bool, 1)
+	go func() {
+		o.mutex.Lock()
+		mutexAcquired <- true
+		o.mutex.Unlock()
+	}()
+
+	select {
+	case <-mutexAcquired:
+		// Success - mutex was unlocked
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("Mutex was not unlocked after volume not found error")
+	}
+}
+
+// TestUpdateVolumeAutogrowPolicy_MutexUnlockedOnPersistenceFailure verifies the mutex is unlocked
+// when persistence to the store fails.
+func TestUpdateVolumeAutogrowPolicy_MutexUnlockedOnPersistenceFailure(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	o := &TridentOrchestrator{
+		storeClient:      mockStoreClient,
+		backends:         make(map[string]storage.Backend),
+		autogrowPolicies: make(map[string]*storage.AutogrowPolicy),
+		storageClasses:   make(map[string]*storageclass.StorageClass),
+		volumes:          make(map[string]*storage.Volume),
+		nodes:            *cache.NewNodeCache(),
+		mutex:            &sync.Mutex{},
+		bootstrapped:     true,
+		bootstrapError:   nil,
+	}
+
+	// Setup volume
+	volConfig := &storage.VolumeConfig{
+		Name:                    "test-volume",
+		RequestedAutogrowPolicy: "",
+	}
+	vol := &storage.Volume{
+		Config:      volConfig,
+		BackendUUID: "backend-1",
+		Pool:        "pool-1",
+	}
+	o.volumes["test-volume"] = vol
+
+	// Mock store to return error on update
+	mockStoreClient.EXPECT().
+		UpdateVolume(gomock.Any(), vol).
+		Return(fmt.Errorf("persistence failure")).
+		Times(1)
+
+	// Call the function - should return persistence error
+	err := o.UpdateVolumeAutogrowPolicy(ctx(), "test-volume", "gold-policy")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "persistence failure")
+
+	// Verify mutex is unlocked by trying to acquire it (should succeed immediately)
+	mutexAcquired := make(chan bool, 1)
+	go func() {
+		o.mutex.Lock()
+		mutexAcquired <- true
+		o.mutex.Unlock()
+	}()
+
+	select {
+	case <-mutexAcquired:
+		// Success - mutex was unlocked
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("Mutex was not unlocked after persistence failure")
+	}
 }

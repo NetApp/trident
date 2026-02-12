@@ -32,6 +32,7 @@ type InMemoryClient struct {
 	snapshotsAdded          int
 	groupSnapshots          map[string]*storage.GroupSnapshotPersistent
 	groupSnapshotsAdded     int
+	autogrowPolicies        map[string]*storage.AutogrowPolicyPersistent
 	uuid                    string
 }
 
@@ -44,6 +45,7 @@ func NewInMemoryClient() *InMemoryClient {
 		volumePublications: make(map[string]*models.VolumePublication),
 		nodes:              make(map[string]*models.Node),
 		snapshots:          make(map[string]*storage.SnapshotPersistent),
+		autogrowPolicies:   make(map[string]*storage.AutogrowPolicyPersistent),
 		version: &config.PersistentStateVersion{
 			PersistentStoreVersion: "memory", OrchestratorAPIVersion: config.OrchestratorAPIVersion,
 		},
@@ -70,6 +72,7 @@ func (c *InMemoryClient) Stop() error {
 	c.nodesAdded = 0
 	c.snapshots = make(map[string]*storage.SnapshotPersistent)
 	c.snapshotsAdded = 0
+	c.autogrowPolicies = make(map[string]*storage.AutogrowPolicyPersistent)
 	return nil
 }
 
@@ -487,4 +490,20 @@ func (c *InMemoryClient) DeleteGroupSnapshots(_ context.Context) error {
 	c.groupSnapshots = make(map[string]*storage.GroupSnapshotPersistent)
 	c.groupSnapshotsAdded = 0
 	return nil
+}
+
+func (c *InMemoryClient) GetAutogrowPolicy(_ context.Context, agPolicyName string) (*storage.AutogrowPolicyPersistent, error) {
+	agPolicy, ok := c.autogrowPolicies[agPolicyName]
+	if !ok {
+		return nil, NewPersistentStoreError(KeyNotFoundErr, agPolicyName)
+	}
+	return agPolicy, nil
+}
+
+func (c *InMemoryClient) GetAutogrowPolicies(_ context.Context) ([]*storage.AutogrowPolicyPersistent, error) {
+	agPolicies := make([]*storage.AutogrowPolicyPersistent, 0, len(c.autogrowPolicies))
+	for _, agPolicy := range c.autogrowPolicies {
+		agPolicies = append(agPolicies, agPolicy)
+	}
+	return agPolicies, nil
 }

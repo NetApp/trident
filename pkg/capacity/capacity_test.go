@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 func TestToBytes(t *testing.T) {
@@ -117,4 +118,104 @@ func TestVolumeSizeWithinTolerance(t *testing.T) {
 		isSameSize := VolumeSizeWithinTolerance(vst.requestedSize, vst.currentSize, vst.delta)
 		assert.Equal(t, vst.expected, isSameSize)
 	}
+}
+
+// TestQuantityToHumanReadableString verifies decimal human-readable strings (e.g. "20.74Gi").
+// Values are rounded up to HumanReadableDecimals (2) so we never request less than the original.
+func TestQuantityToHumanReadableString(t *testing.T) {
+	oneGiB := int64(1 << 30)
+	oneMiB := int64(1 << 20)
+	oneKiB := int64(1 << 10)
+
+	tests := []struct {
+		name           string
+		input          resource.Quantity
+		expectedString string
+		roundsUp       bool
+	}{
+		{
+			name:           "12 GiB - 12.00Gi",
+			input:          *resource.NewQuantity(12*oneGiB, resource.BinarySI),
+			expectedString: "12.00Gi",
+		},
+		{
+			name:           "10 GiB - 10.00Gi",
+			input:          *resource.NewQuantity(10*oneGiB, resource.BinarySI),
+			expectedString: "10.00Gi",
+		},
+		{
+			name:           "1 GiB - 1.00Gi",
+			input:          *resource.NewQuantity(oneGiB, resource.BinarySI),
+			expectedString: "1.00Gi",
+		},
+		{
+			name:           "512 MiB - 512.00Mi",
+			input:          *resource.NewQuantity(512*oneMiB, resource.BinarySI),
+			expectedString: "512.00Mi",
+		},
+		{
+			name:           "100 MiB - 100.00Mi",
+			input:          *resource.NewQuantity(100*oneMiB, resource.BinarySI),
+			expectedString: "100.00Mi",
+		},
+		{
+			name:           "1024 KiB - 1.00Mi",
+			input:          *resource.NewQuantity(1024*oneKiB, resource.BinarySI),
+			expectedString: "1.00Mi",
+		},
+		{
+			name:           "512 KiB - 512.00Ki",
+			input:          *resource.NewQuantity(512*oneKiB, resource.BinarySI),
+			expectedString: "512.00Ki",
+		},
+		{
+			name:           "12Gi+1 byte - 12.01Gi",
+			input:          *resource.NewQuantity(12*oneGiB+1, resource.BinarySI),
+			expectedString: "12.01Gi",
+			roundsUp:       true,
+		},
+		{
+			name:           "22265110461 bytes - 20.74Gi (user example)",
+			input:          *resource.NewQuantity(22265110461, resource.BinarySI),
+			expectedString: "20.74Gi",
+			roundsUp:       true,
+		},
+		{
+			name:           "zero - 0",
+			input:          *resource.NewQuantity(0, resource.BinarySI),
+			expectedString: "0",
+		},
+		{
+			name:           "parsed 15Gi - 15.00Gi",
+			input:          resource.MustParse("15Gi"),
+			expectedString: "15.00Gi",
+		},
+		{
+			name:           "parsed 5Gi - 5.00Gi",
+			input:          resource.MustParse("5Gi"),
+			expectedString: "5.00Gi",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := QuantityToHumanReadableString(tt.input)
+			assert.Equal(t, tt.expectedString, s, "QuantityToHumanReadableString should match expected")
+			// Parsed string should yield value >= input when rounding up
+			parsed, err := resource.ParseQuantity(tt.expectedString)
+			assert.NoError(t, err)
+			if tt.roundsUp {
+				assert.GreaterOrEqual(t, parsed.Value(), tt.input.Value(), "Rounded-up value must be >= input")
+			} else {
+				assert.Equal(t, tt.input.Value(), parsed.Value(), "Value must be unchanged")
+			}
+		})
+	}
+}
+
+// TestQuantityToHumanReadableString_Negative verifies negative quantities return q.String()
+func TestQuantityToHumanReadableString_Negative(t *testing.T) {
+	q := *resource.NewQuantity(-1, resource.BinarySI)
+	s := QuantityToHumanReadableString(q)
+	assert.Equal(t, q.String(), s)
 }

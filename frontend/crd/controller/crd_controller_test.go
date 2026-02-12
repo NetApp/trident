@@ -12,6 +12,7 @@ import (
 	snapv1 "github.com/kubernetes-csi/external-snapshotter/client/v8/apis/volumesnapshot/v1"
 	fakesnapshots "github.com/kubernetes-csi/external-snapshotter/client/v8/clientset/versioned/fake"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -20,9 +21,11 @@ import (
 	k8sfake "k8s.io/client-go/kubernetes/fake"
 
 	"github.com/netapp/trident/config"
+	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	. "github.com/netapp/trident/logging"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	mockindexers "github.com/netapp/trident/mocks/mock_frontend/crd/controller/indexers"
+	mockk8s "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_helpers/mock_kubernetes_helper"
 	persistentstore "github.com/netapp/trident/persistent_store"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/storage"
@@ -71,7 +74,7 @@ func TestCRHandlersTableDriven(t *testing.T) {
 
 	type crdTestCase struct {
 		name               string
-		objectType         string
+		objectType         ObjectType
 		addFunc            func(controller *TridentCrdController) KeyItem
 		updateNoChangeFunc func(controller *TridentCrdController)
 		updateNewGenFunc   func(controller *TridentCrdController) KeyItem
@@ -218,6 +221,81 @@ func TestCRHandlersTableDriven(t *testing.T) {
 				return workItem.(KeyItem)
 			},
 		},
+		{
+			name:       "TridentAutogrowPolicy",
+			objectType: ObjectTypeTridentAutogrowPolicy,
+			addFunc: func(controller *TridentCrdController) KeyItem {
+				agp := &tridentv1.TridentAutogrowPolicy{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "test-policy",
+					},
+				}
+				controller.addCRHandler(agp)
+				workItem, _ := controller.workqueue.Get()
+				return workItem.(KeyItem)
+			},
+			updateNoChangeFunc: func(controller *TridentCrdController) {
+				agp := &tridentv1.TridentAutogrowPolicy{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "test-policy",
+						Generation: 1,
+					},
+				}
+				agpNew := &tridentv1.TridentAutogrowPolicy{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "test-policy",
+						Generation: 1,
+					},
+				}
+				controller.updateCRHandler(agp, agpNew)
+			},
+			updateNewGenFunc: func(controller *TridentCrdController) KeyItem {
+				agp := &tridentv1.TridentAutogrowPolicy{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "test-policy",
+						Generation: 1,
+					},
+				}
+				agpNew := &tridentv1.TridentAutogrowPolicy{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "test-policy",
+						Generation: 2,
+					},
+				}
+				controller.updateCRHandler(agp, agpNew)
+				workItem, _ := controller.workqueue.Get()
+				return workItem.(KeyItem)
+			},
+			updateDeletedFunc: func(controller *TridentCrdController) {
+				now := time.Now()
+				v1Now := metav1.NewTime(now)
+				agp := &tridentv1.TridentAutogrowPolicy{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "test-policy",
+						Generation: 1,
+					},
+				}
+				agpNew := &tridentv1.TridentAutogrowPolicy{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "test-policy",
+						Generation:        1,
+						DeletionTimestamp: &v1Now,
+					},
+				}
+				controller.updateCRHandler(agp, agpNew)
+				controller.workqueue.Get()
+			},
+			deleteFunc: func(controller *TridentCrdController) KeyItem {
+				agp := &tridentv1.TridentAutogrowPolicy{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "test-policy",
+					},
+				}
+				controller.deleteCRHandler(agp)
+				workItem, _ := controller.workqueue.Get()
+				return workItem.(KeyItem)
+			},
+		},
 		// Add more types as needed for comprehensive coverage...
 	}
 
@@ -319,7 +397,7 @@ func TestUpdateCRHandler_NewGeneration(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventUpdate, keyItem.event)
-	assert.Equal(t, "TridentVolumeReference", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentVolumeReference"), keyItem.objectType)
 
 	// Test TridentVolumeReference
 	tvp := &tridentv1.TridentVolumePublication{}
@@ -331,7 +409,7 @@ func TestUpdateCRHandler_NewGeneration(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventUpdate, keyItem.event)
-	assert.Equal(t, "TridentVolumePublication", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentVolumePublication"), keyItem.objectType)
 
 	// Test TridentVolume
 	tv := &tridentv1.TridentVolume{}
@@ -343,7 +421,7 @@ func TestUpdateCRHandler_NewGeneration(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventUpdate, keyItem.event)
-	assert.Equal(t, "TridentVolume", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentVolume"), keyItem.objectType)
 
 	// Test TridentVersion
 	tvers := &tridentv1.TridentVersion{}
@@ -355,7 +433,7 @@ func TestUpdateCRHandler_NewGeneration(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventUpdate, keyItem.event)
-	assert.Equal(t, "TridentVersion", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentVersion"), keyItem.objectType)
 
 	// Test TridentTransaction
 	tt := &tridentv1.TridentTransaction{}
@@ -367,7 +445,7 @@ func TestUpdateCRHandler_NewGeneration(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventUpdate, keyItem.event)
-	assert.Equal(t, "TridentTransaction", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentTransaction"), keyItem.objectType)
 
 	// Test TridentStorageClass
 	tsc := &tridentv1.TridentStorageClass{}
@@ -379,7 +457,7 @@ func TestUpdateCRHandler_NewGeneration(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventUpdate, keyItem.event)
-	assert.Equal(t, "TridentStorageClass", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentStorageClass"), keyItem.objectType)
 
 	// Test TridentSnapshot
 	ts := &tridentv1.TridentSnapshot{}
@@ -391,7 +469,7 @@ func TestUpdateCRHandler_NewGeneration(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventUpdate, keyItem.event)
-	assert.Equal(t, "TridentSnapshot", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentSnapshot"), keyItem.objectType)
 
 	// Test TridentBackendConfig
 	tbc := &tridentv1.TridentBackendConfig{}
@@ -403,7 +481,7 @@ func TestUpdateCRHandler_NewGeneration(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventUpdate, keyItem.event)
-	assert.Equal(t, "TridentBackendConfig", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentBackendConfig"), keyItem.objectType)
 
 	// Test TridentBackend
 	tb := &tridentv1.TridentBackend{}
@@ -415,7 +493,7 @@ func TestUpdateCRHandler_NewGeneration(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventUpdate, keyItem.event)
-	assert.Equal(t, "TridentBackend", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentBackend"), keyItem.objectType)
 
 	// Test TridentNode
 	tn := &tridentv1.TridentNode{}
@@ -427,7 +505,7 @@ func TestUpdateCRHandler_NewGeneration(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventUpdate, keyItem.event)
-	assert.Equal(t, "TridentNode", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentNode"), keyItem.objectType)
 
 	// Test TridentNodeRemediation
 	tnr := &tridentv1.TridentNodeRemediation{}
@@ -439,7 +517,27 @@ func TestUpdateCRHandler_NewGeneration(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventUpdate, keyItem.event)
-	assert.Equal(t, "TridentNodeRemediation", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentNodeRemediation"), keyItem.objectType)
+
+	// Test TridentAutogrowPolicy
+	agp := &tridentv1.TridentAutogrowPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:       "test-policy",
+			Generation: 1,
+		},
+	}
+	agpNew := &tridentv1.TridentAutogrowPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:       "test-policy",
+			Generation: 2,
+		},
+	}
+	crdController.updateCRHandler(agp, agpNew)
+	assert.Equal(t, 1, crdController.workqueue.Len())
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventUpdate, keyItem.event)
+	assert.Equal(t, ObjectTypeTridentAutogrowPolicy, keyItem.objectType)
 }
 
 func TestDeleteCRHandler(t *testing.T) {
@@ -494,7 +592,7 @@ func TestDeleteCRHandler(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventDelete, keyItem.event)
-	assert.Equal(t, "TridentVolumeReference", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentVolumeReference"), keyItem.objectType)
 
 	// Test TridentVolumeReference
 	tvp := &tridentv1.TridentVolumePublication{}
@@ -502,7 +600,7 @@ func TestDeleteCRHandler(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventDelete, keyItem.event)
-	assert.Equal(t, "TridentVolumePublication", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentVolumePublication"), keyItem.objectType)
 
 	// Test TridentVolume
 	tv := &tridentv1.TridentVolume{}
@@ -510,7 +608,7 @@ func TestDeleteCRHandler(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventDelete, keyItem.event)
-	assert.Equal(t, "TridentVolume", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentVolume"), keyItem.objectType)
 
 	// Test TridentVersion
 	tvers := &tridentv1.TridentVersion{}
@@ -518,7 +616,7 @@ func TestDeleteCRHandler(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventDelete, keyItem.event)
-	assert.Equal(t, "TridentVersion", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentVersion"), keyItem.objectType)
 
 	// Test TridentTransaction
 	tt := &tridentv1.TridentTransaction{}
@@ -526,7 +624,7 @@ func TestDeleteCRHandler(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventDelete, keyItem.event)
-	assert.Equal(t, "TridentTransaction", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentTransaction"), keyItem.objectType)
 
 	// Test TridentStorageClass
 	tsc := &tridentv1.TridentStorageClass{}
@@ -534,7 +632,7 @@ func TestDeleteCRHandler(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventDelete, keyItem.event)
-	assert.Equal(t, "TridentStorageClass", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentStorageClass"), keyItem.objectType)
 
 	// Test TridentSnapshot
 	ts := &tridentv1.TridentSnapshot{}
@@ -542,7 +640,7 @@ func TestDeleteCRHandler(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventDelete, keyItem.event)
-	assert.Equal(t, "TridentSnapshot", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentSnapshot"), keyItem.objectType)
 
 	// Test TridentBackendConfig
 	tbc := &tridentv1.TridentBackendConfig{}
@@ -550,7 +648,7 @@ func TestDeleteCRHandler(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventDelete, keyItem.event)
-	assert.Equal(t, "TridentBackendConfig", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentBackendConfig"), keyItem.objectType)
 
 	// Test TridentBackend
 	tb := &tridentv1.TridentBackend{}
@@ -558,7 +656,63 @@ func TestDeleteCRHandler(t *testing.T) {
 	workItem, _ = crdController.workqueue.Get()
 	keyItem = workItem.(KeyItem)
 	assert.Equal(t, EventDelete, keyItem.event)
-	assert.Equal(t, "TridentBackend", keyItem.objectType)
+	assert.Equal(t, ObjectType("TridentBackend"), keyItem.objectType)
+
+	// Test TridentAutogrowPolicy
+	agp := &tridentv1.TridentAutogrowPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test-policy",
+		},
+	}
+	crdController.deleteCRHandler(agp)
+	workItem, _ = crdController.workqueue.Get()
+	keyItem = workItem.(KeyItem)
+	assert.Equal(t, EventDelete, keyItem.event)
+	assert.Equal(t, ObjectTypeTridentAutogrowPolicy, keyItem.objectType)
+}
+
+// TestGetPVCGetter exercises getPVCGetter: GetFrontend(KubernetesHelper) success, error, and wrong type.
+func TestGetPVCGetter(t *testing.T) {
+	ctx := context.Background()
+	tridentNamespace := "trident"
+	kubeClient := GetTestKubernetesClientset()
+	snapClient := GetTestSnapshotClientset()
+	crdClient := GetTestCrdClientset()
+
+	t.Run("returns_K8s_helper_when_GetFrontend_returns_it", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		defer mockCtrl.Finish()
+		orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+		mockK8s := mockk8s.NewMockK8SControllerHelperPlugin(mockCtrl)
+		orchestrator.EXPECT().GetFrontend(gomock.Any(), controllerhelpers.KubernetesHelper).Return(mockK8s, nil)
+		controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
+		require.NoError(t, err)
+		got := controller.getPVCGetter(ctx)
+		assert.Same(t, mockK8s, got)
+	})
+
+	t.Run("returns_nil_when_GetFrontend_returns_error", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		defer mockCtrl.Finish()
+		orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+		orchestrator.EXPECT().GetFrontend(gomock.Any(), controllerhelpers.KubernetesHelper).Return(nil, fmt.Errorf("not found"))
+		controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
+		require.NoError(t, err)
+		got := controller.getPVCGetter(ctx)
+		assert.Nil(t, got)
+	})
+
+	t.Run("returns_nil_when_GetFrontend_returns_nil_frontend", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+		defer mockCtrl.Finish()
+		orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+		// Frontend is nil (e.g. not yet registered); type assertion in getPVCGetter yields nil.
+		orchestrator.EXPECT().GetFrontend(gomock.Any(), controllerhelpers.KubernetesHelper).Return(nil, nil)
+		controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
+		require.NoError(t, err)
+		got := controller.getPVCGetter(ctx)
+		assert.Nil(t, got)
+	})
 }
 
 func TestCrdControllerBackendOperations(t *testing.T) {
@@ -2316,7 +2470,7 @@ func TestControllerLifecycle_WorkqueueOperations(t *testing.T) {
 
 	// Test multiple event types
 	eventTypes := []EventType{EventAdd, EventUpdate, EventForceUpdate, EventDelete}
-	objectTypes := []string{
+	objectTypes := []ObjectType{
 		ObjectTypeTridentBackend,
 		ObjectTypeTridentBackendConfig,
 		ObjectTypeTridentMirrorRelationship,
@@ -2500,7 +2654,7 @@ func TestAddEventToWorkqueue_VariousEvents(t *testing.T) {
 	testCases := []struct {
 		key        string
 		event      EventType
-		objectType string
+		objectType ObjectType
 	}{
 		{"ns1/backend1", EventAdd, ObjectTypeTridentBackend},
 		{"ns2/config1", EventUpdate, ObjectTypeTridentBackendConfig},

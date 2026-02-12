@@ -285,6 +285,131 @@ func TestRecordNodeEvent(t *testing.T) {
 		"provisioned a volume")
 }
 
+func TestRecordStorageClassEvent(t *testing.T) {
+	tests := []struct {
+		name      string
+		scName    string
+		eventType string
+		reason    string
+		message   string
+	}{
+		{
+			name:      "Normal event with valid parameters",
+			scName:    "test-storage-class",
+			eventType: controller_helpers.EventTypeNormal,
+			reason:    "StorageClassCreated",
+			message:   "Storage class created successfully",
+		},
+		{
+			name:      "Warning event with valid parameters",
+			scName:    "test-storage-class",
+			eventType: controller_helpers.EventTypeWarning,
+			reason:    "StorageClassFailed",
+			message:   "Storage class creation failed",
+		},
+		{
+			name:      "Event with empty storage class name",
+			scName:    "",
+			eventType: controller_helpers.EventTypeNormal,
+			reason:    "Test",
+			message:   "Test message",
+		},
+		{
+			name:      "Event with empty event type",
+			scName:    "test-storage-class",
+			eventType: "",
+			reason:    "Test",
+			message:   "Test message",
+		},
+		{
+			name:      "Event with empty reason",
+			scName:    "test-storage-class",
+			eventType: controller_helpers.EventTypeNormal,
+			reason:    "",
+			message:   "Test message",
+		},
+		{
+			name:      "Event with empty message",
+			scName:    "test-storage-class",
+			eventType: controller_helpers.EventTypeNormal,
+			reason:    "Test",
+			message:   "",
+		},
+		{
+			name:      "Event with all empty parameters",
+			scName:    "",
+			eventType: "",
+			reason:    "",
+			message:   "",
+		},
+		{
+			name:      "Event with autogrow policy not found",
+			scName:    "test-storage-class",
+			eventType: controller_helpers.EventTypeWarning,
+			reason:    "AutogrowPolicyNotFound",
+			message:   "Referenced autogrow policy 'gold-policy' not found",
+		},
+		{
+			name:      "Event with autogrow policy not usable",
+			scName:    "test-storage-class",
+			eventType: controller_helpers.EventTypeWarning,
+			reason:    "AutogrowPolicyNotUsable",
+			message:   "Referenced autogrow policy is not in Success state: Failed",
+		},
+		{
+			name:      "Event with long storage class name",
+			scName:    "very-long-storage-class-name-with-many-characters-to-test-handling",
+			eventType: controller_helpers.EventTypeNormal,
+			reason:    "Test",
+			message:   "Test message",
+		},
+		{
+			name:      "Event with special characters in message",
+			scName:    "test-storage-class",
+			eventType: controller_helpers.EventTypeNormal,
+			reason:    "Test",
+			message:   "Message with special chars: !@#$%^&*()_+-=[]{}|;':,.<>?/~`",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			orchestrator := mock.NewMockOrchestrator(mockCtrl)
+			p := NewHelper(orchestrator)
+			plugin, ok := p.(controller_helpers.ControllerHelper)
+			if !ok {
+				t.Fatal("Could not cast the helper to a ControllerHelper!")
+			}
+
+			// Should not panic regardless of input
+			assert.NotPanics(t, func() {
+				plugin.RecordStorageClassEvent(ctx, tt.scName, tt.eventType, tt.reason, tt.message)
+			})
+		})
+	}
+}
+
+func TestRecordStorageClassEvent_NilContext(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	orchestrator := mock.NewMockOrchestrator(mockCtrl)
+	p := NewHelper(orchestrator)
+	plugin, ok := p.(controller_helpers.ControllerHelper)
+	if !ok {
+		t.Fatal("Could not cast the helper to a ControllerHelper!")
+	}
+
+	// Should panic with nil context (Logc panics on nil context)
+	assert.Panics(t, func() {
+		plugin.RecordStorageClassEvent(nil, "test-sc", controller_helpers.EventTypeNormal, "Test", "Test message")
+	})
+}
+
 func TestSupportsFeature(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	orchestrator := mock.NewMockOrchestrator(mockCtrl)

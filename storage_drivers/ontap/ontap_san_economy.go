@@ -246,6 +246,11 @@ func (d *SANEconomyStorageDriver) Name() string {
 	return tridentconfig.OntapSANEconomyStorageDriverName
 }
 
+// GetResizeDeltaBytes returns the size delta (bytes) below which this driver treats resize as a no-op.
+func (d *SANEconomyStorageDriver) GetResizeDeltaBytes() int64 {
+	return int64(tridentconfig.SANResizeDelta)
+}
+
 // BackendName returns the name of the backend managed by this driver instance
 func (d *SANEconomyStorageDriver) BackendName() string {
 	if d.Config.BackendName == "" {

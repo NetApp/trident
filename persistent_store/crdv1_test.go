@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -25,6 +26,7 @@ import (
 	k8sclient "github.com/netapp/trident/cli/k8s_client"
 	"github.com/netapp/trident/config"
 	. "github.com/netapp/trident/logging"
+	netappv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	"github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
 	"github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/fake"
 	v1 "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned/typed/netapp/v1"
@@ -657,6 +659,245 @@ func TestKubernetesAddSolidFireBackend(t *testing.T) {
 
 	if err = p.DeleteBackend(ctx(), sfBackend); err != nil {
 		t.Fatal(err.Error())
+	}
+}
+
+func TestGetAutogrowPolicy(t *testing.T) {
+	p, _ := GetTestKubernetesClient()
+
+	// Create Autogrow policy CRD directly
+	agPolicy := &netappv1.TridentAutogrowPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test-policy",
+		},
+		Spec: netappv1.TridentAutogrowPolicySpec{
+			UsedThreshold: "80%",
+			GrowthAmount:  "20%",
+			MaxSize:       "1000Gi",
+		},
+		Status: netappv1.TridentAutogrowPolicyStatus{
+			State: string(netappv1.TridentAutogrowPolicyStateSuccess),
+		},
+	}
+
+	// Add directly to the fake clientset
+	_, err := p.crdClient.TridentV1().TridentAutogrowPolicies().Create(ctx(), agPolicy, createOpts)
+	assert.NoError(t, err, "failed to create autogrow policy CRD")
+
+	// Get the policy using GetAutogrowPolicy
+	retrievedPolicy, err := p.GetAutogrowPolicy(ctx(), "test-policy")
+	assert.NoError(t, err, "failed to get autogrow policy")
+	assert.NotNil(t, retrievedPolicy)
+	assert.Equal(t, "test-policy", retrievedPolicy.Name)
+	assert.Equal(t, "80%", retrievedPolicy.UsedThreshold)
+	assert.Equal(t, "20%", retrievedPolicy.GrowthAmount)
+	assert.Equal(t, "1000Gi", retrievedPolicy.MaxSize)
+	assert.Equal(t, storage.AutogrowPolicyStateSuccess, retrievedPolicy.State)
+}
+
+func TestGetAutogrowPolicy_NotFound(t *testing.T) {
+	p, _ := GetTestKubernetesClient()
+
+	// Try to get a non-existent policy
+	retrievedPolicy, err := p.GetAutogrowPolicy(ctx(), "nonexistent-policy")
+	assert.Error(t, err, "expected error for non-existent policy")
+	assert.Nil(t, retrievedPolicy)
+	assert.True(t, errors.IsNotFound(err), "expected NotFound error")
+}
+
+func TestGetAutogrowPolicy_WithNameFix(t *testing.T) {
+	p, _ := GetTestKubernetesClient()
+
+	originalName := "Test_Policy.With-Special"
+	fixedName := netappv1.NameFix(originalName)
+
+	// Create policy CRD with fixed name
+	agPolicy := &netappv1.TridentAutogrowPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: fixedName, // K8s name must be DNS-compliant
+		},
+		Spec: netappv1.TridentAutogrowPolicySpec{
+			UsedThreshold: "85%",
+			GrowthAmount:  "15%",
+			MaxSize:       "2000Gi",
+		},
+		Status: netappv1.TridentAutogrowPolicyStatus{
+			State: string(netappv1.TridentAutogrowPolicyStateSuccess),
+		},
+	}
+
+	_, err := p.crdClient.TridentV1().TridentAutogrowPolicies().Create(ctx(), agPolicy, createOpts)
+	assert.NoError(t, err)
+
+	// Get using original name (NameFix should be applied internally in GetAutogrowPolicy)
+	retrievedPolicy, err := p.GetAutogrowPolicy(ctx(), originalName)
+	assert.NoError(t, err)
+	assert.NotNil(t, retrievedPolicy)
+	// The CRD name is fixed, but it should still be retrievable
+	assert.Equal(t, fixedName, retrievedPolicy.Name)
+}
+
+func TestGetAutogrowPolicies(t *testing.T) {
+	p, _ := GetTestKubernetesClient()
+
+	// Create multiple policy CRDs directly
+	policies := []*netappv1.TridentAutogrowPolicy{
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "policy1"},
+			Spec: netappv1.TridentAutogrowPolicySpec{
+				UsedThreshold: "80%",
+				GrowthAmount:  "20%",
+				MaxSize:       "1000Gi",
+			},
+			Status: netappv1.TridentAutogrowPolicyStatus{
+				State: string(netappv1.TridentAutogrowPolicyStateSuccess),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "policy2"},
+			Spec: netappv1.TridentAutogrowPolicySpec{
+				UsedThreshold: "90%",
+				GrowthAmount:  "10%",
+				MaxSize:       "2000Gi",
+			},
+			Status: netappv1.TridentAutogrowPolicyStatus{
+				State: string(netappv1.TridentAutogrowPolicyStateSuccess),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "policy3"},
+			Spec: netappv1.TridentAutogrowPolicySpec{
+				UsedThreshold: "85%",
+				GrowthAmount:  "15%",
+				MaxSize:       "",
+			},
+			Status: netappv1.TridentAutogrowPolicyStatus{
+				State: string(netappv1.TridentAutogrowPolicyStateFailed),
+			},
+		},
+	}
+
+	for _, policy := range policies {
+		_, err := p.crdClient.TridentV1().TridentAutogrowPolicies().Create(ctx(), policy, createOpts)
+		assert.NoError(t, err, "failed to create autogrow policy CRD: %s", policy.Name)
+	}
+
+	// Get all policies
+	retrievedPolicies, err := p.GetAutogrowPolicies(ctx())
+	assert.NoError(t, err, "failed to get autogrow policies")
+	assert.Len(t, retrievedPolicies, 3, "expected 3 policies")
+
+	// Verify all policies are present
+	policyNames := make(map[string]bool)
+	for _, policy := range retrievedPolicies {
+		policyNames[policy.Name] = true
+	}
+	assert.True(t, policyNames["policy1"])
+	assert.True(t, policyNames["policy2"])
+	assert.True(t, policyNames["policy3"])
+}
+
+func TestGetAutogrowPolicies_Empty(t *testing.T) {
+	p, _ := GetTestKubernetesClient()
+
+	// Get policies from empty store
+	retrievedPolicies, err := p.GetAutogrowPolicies(ctx())
+	assert.NoError(t, err, "failed to get autogrow policies")
+	assert.Empty(t, retrievedPolicies, "expected empty policy list")
+}
+
+func TestGetAutogrowPolicies_SkipDeleting(t *testing.T) {
+	p, _ := GetTestKubernetesClient()
+
+	// Create a normal policy CRD
+	normalPolicy := &netappv1.TridentAutogrowPolicy{
+		ObjectMeta: metav1.ObjectMeta{Name: "normal-policy"},
+		Spec: netappv1.TridentAutogrowPolicySpec{
+			UsedThreshold: "80%",
+			GrowthAmount:  "20%",
+			MaxSize:       "1000Gi",
+		},
+		Status: netappv1.TridentAutogrowPolicyStatus{
+			State: string(netappv1.TridentAutogrowPolicyStateSuccess),
+		},
+	}
+	_, err := p.crdClient.TridentV1().TridentAutogrowPolicies().Create(ctx(), normalPolicy, createOpts)
+	assert.NoError(t, err)
+
+	// Create a policy with deletion timestamp
+	now := metav1.Now()
+	deletingPolicy := &netappv1.TridentAutogrowPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "deleting-policy",
+			DeletionTimestamp: &now,
+		},
+		Spec: netappv1.TridentAutogrowPolicySpec{
+			UsedThreshold: "90%",
+			GrowthAmount:  "10%",
+			MaxSize:       "2000Gi",
+		},
+		Status: netappv1.TridentAutogrowPolicyStatus{
+			State: string(netappv1.TridentAutogrowPolicyStateDeleting),
+		},
+	}
+	_, err = p.crdClient.TridentV1().TridentAutogrowPolicies().Create(ctx(), deletingPolicy, createOpts)
+	assert.NoError(t, err)
+
+	// Get all policies - should skip the one with deletion timestamp
+	retrievedPolicies, err := p.GetAutogrowPolicies(ctx())
+	assert.NoError(t, err)
+
+	// Verify only normal policy is returned
+	assert.Len(t, retrievedPolicies, 1, "expected 1 policy (deleting policy should be skipped)")
+	assert.Equal(t, "normal-policy", retrievedPolicies[0].Name)
+}
+
+func TestGetAutogrowPolicies_AllStates(t *testing.T) {
+	p, _ := GetTestKubernetesClient()
+
+	// Create policies with different states
+	policies := []*netappv1.TridentAutogrowPolicy{
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "success-policy"},
+			Spec: netappv1.TridentAutogrowPolicySpec{
+				UsedThreshold: "80%",
+				GrowthAmount:  "20%",
+				MaxSize:       "1000Gi",
+			},
+			Status: netappv1.TridentAutogrowPolicyStatus{
+				State: string(netappv1.TridentAutogrowPolicyStateSuccess),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "failed-policy"},
+			Spec: netappv1.TridentAutogrowPolicySpec{
+				UsedThreshold: "90%",
+				GrowthAmount:  "10%",
+				MaxSize:       "2000Gi",
+			},
+			Status: netappv1.TridentAutogrowPolicyStatus{
+				State: string(netappv1.TridentAutogrowPolicyStateFailed),
+			},
+		},
+	}
+
+	for _, policy := range policies {
+		_, err := p.crdClient.TridentV1().TridentAutogrowPolicies().Create(ctx(), policy, createOpts)
+		assert.NoError(t, err)
+	}
+
+	// Get all policies
+	retrievedPolicies, err := p.GetAutogrowPolicies(ctx())
+	assert.NoError(t, err)
+	assert.Len(t, retrievedPolicies, 2)
+
+	// Verify states are preserved
+	for _, retrieved := range retrievedPolicies {
+		if retrieved.Name == "success-policy" {
+			assert.Equal(t, storage.AutogrowPolicyStateSuccess, retrieved.State)
+		} else if retrieved.Name == "failed-policy" {
+			assert.Equal(t, storage.AutogrowPolicyStateFailed, retrieved.State)
+		}
 	}
 }
 

@@ -287,6 +287,24 @@ func (p *Plugin) CreateVolume(
 		p.controllerHelper.RecordVolumeEvent(ctx, req.Name, v1.EventTypeNormal, "ProvisioningSuccess", "provisioned a volume")
 	}
 
+	// Check for autogrow policy warnings if there's a reason to report
+	if newVolume.EffectiveAutogrowPolicy.Reason != "" {
+		effectiveAGPReason := newVolume.EffectiveAutogrowPolicy.Reason
+		switch effectiveAGPReason {
+		case models.AutogrowPolicyReasonNotFound:
+			// Send warning event to PVC but don't fail volume creation
+			p.controllerHelper.RecordVolumeEvent(ctx, req.Name, controllerhelpers.EventTypeWarning,
+				"AutogrowPolicyNotFound",
+				"Referenced Autogrow policy not found; volume created without Autogrow policy.")
+			Logc(ctx).Warn("Volume created without effective Autogrow policy.")
+		case models.AutogrowPolicyReasonUnusable:
+			p.controllerHelper.RecordVolumeEvent(ctx, req.Name, controllerhelpers.EventTypeWarning,
+				"AutogrowPolicyNotUsable",
+				"Referenced Autogrow policy is not in Success state; volume created without Autogrow policy.")
+			Logc(ctx).Warn("Volume created without effective Autogrow policy.")
+		}
+	}
+
 	csiVolume, err := p.getCSIVolumeFromTridentVolume(ctx, newVolume)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -393,6 +411,9 @@ func (p *Plugin) ControllerPublishVolume(
 		HostName:       nodeInfo.Name,
 		Unmanaged:      volume.Config.ImportNotManaged,
 		LUKSEncryption: volume.Config.LUKSEncryption,
+		BackendUUID:    volume.BackendUUID,
+		Pool:           volume.Pool,
+		StorageClass:   volume.Config.StorageClass,
 	}
 	populatePublishInfoFromCSIPublishRequest(volumePublishInfo, req)
 
@@ -419,6 +440,9 @@ func (p *Plugin) ControllerPublishVolume(
 	publishInfo["mountOptions"] = volumePublishInfo.MountOptions
 	publishInfo["formatOptions"] = volumePublishInfo.FormatOptions
 	publishInfo["filesystemType"] = volumePublishInfo.FilesystemType
+	publishInfo["backendUUID"] = volumePublishInfo.BackendUUID
+	publishInfo["pool"] = volumePublishInfo.Pool
+	publishInfo["storageClass"] = volumePublishInfo.StorageClass
 	switch volume.Config.Protocol {
 	case tridentconfig.File:
 		if volumePublishInfo.FilesystemType == "smb" {

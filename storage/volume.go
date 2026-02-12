@@ -77,6 +77,9 @@ type VolumeConfig struct {
 	TieringPolicy string `json:"tieringPolicy,omitempty"`
 	// TieringMinimumCoolingDays specifies the cooling period in days before data is tiered
 	TieringMinimumCoolingDays string `json:"tieringMinimumCoolingDays,omitempty"`
+	// RequestedAutogrowPolicy stores the autogrow policy on volume
+	// This IS persisted so we can recompute the effective policy after restart
+	RequestedAutogrowPolicy string `json:"requestedAutogrowPolicy,omitempty"`
 }
 
 type VolumeCreatingConfig struct {
@@ -113,6 +116,11 @@ type Volume struct {
 	Pool        string // Name of the pool on which this volume was first provisioned
 	Orphaned    bool   // An Orphaned volume isn't currently tracked by the storage backend
 	State       VolumeState
+	// EffectiveAGPolicy is the resolved Autogrow policy (after hierarchy resolution)
+	// This is not persisted - computed at runtime from volume config + StorageClass default
+	EffectiveAGPolicy models.EffectiveAutogrowPolicyInfo
+	// AutogrowStatus tracks the autogrow feature state and history for this volume
+	AutogrowStatus *models.VolumeAutogrowStatus `json:"autogrowStatus,omitempty"`
 }
 
 type VolumeState string
@@ -174,12 +182,14 @@ func NewVolume(conf *VolumeConfig, backendUUID, pool string, orphaned bool, stat
 }
 
 type VolumeExternal struct {
-	Config      *VolumeConfig
-	Backend     string      `json:"backend"`     // replaced w/ backendUUID, remains to read old records
-	BackendUUID string      `json:"backendUUID"` // UUID of the storage backend
-	Pool        string      `json:"pool"`
-	Orphaned    bool        `json:"orphaned"`
-	State       VolumeState `json:"state"`
+	Config                  *VolumeConfig
+	Backend                 string                             `json:"backend"`     // replaced w/ backendUUID, remains to read old records
+	BackendUUID             string                             `json:"backendUUID"` // UUID of the storage backend
+	Pool                    string                             `json:"pool"`
+	Orphaned                bool                               `json:"orphaned"`
+	State                   VolumeState                        `json:"state"`
+	EffectiveAutogrowPolicy models.EffectiveAutogrowPolicyInfo `json:"effectiveAutogrowPolicy,omitempty"`
+	AutogrowStatus          *models.VolumeAutogrowStatus       `json:"autogrowStatus,omitempty"`
 }
 
 func (v *VolumeExternal) GetCHAPSecretName() string {
@@ -192,11 +202,13 @@ func (v *VolumeExternal) GetCHAPSecretName() string {
 
 func (v *Volume) ConstructExternal() *VolumeExternal {
 	return &VolumeExternal{
-		Config:      v.Config,
-		BackendUUID: v.BackendUUID,
-		Pool:        v.Pool,
-		Orphaned:    v.Orphaned,
-		State:       v.State,
+		Config:                  v.Config,
+		BackendUUID:             v.BackendUUID,
+		Pool:                    v.Pool,
+		Orphaned:                v.Orphaned,
+		State:                   v.State,
+		EffectiveAutogrowPolicy: v.EffectiveAGPolicy,
+		AutogrowStatus:          v.AutogrowStatus,
 	}
 }
 

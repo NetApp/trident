@@ -46,6 +46,21 @@ func (m *MockOrchestrator) EXPECT() *MockOrchestratorMockRecorder {
 	return m.recorder
 }
 
+// AddAutogrowPolicy mocks base method.
+func (m *MockOrchestrator) AddAutogrowPolicy(ctx context.Context, config *storage.AutogrowPolicyConfig) (*storage.AutogrowPolicyExternal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddAutogrowPolicy", ctx, config)
+	ret0, _ := ret[0].(*storage.AutogrowPolicyExternal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddAutogrowPolicy indicates an expected call of AddAutogrowPolicy.
+func (mr *MockOrchestratorMockRecorder) AddAutogrowPolicy(ctx, config any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAutogrowPolicy", reflect.TypeOf((*MockOrchestrator)(nil).AddAutogrowPolicy), ctx, config)
+}
+
 // AddBackend mocks base method.
 func (m *MockOrchestrator) AddBackend(ctx context.Context, configJSON, configRef string) (*storage.BackendExternal, error) {
 	m.ctrl.T.Helper()
@@ -234,6 +249,20 @@ func (mr *MockOrchestratorMockRecorder) CreateSnapshot(ctx, snapshotConfig any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSnapshot", reflect.TypeOf((*MockOrchestrator)(nil).CreateSnapshot), ctx, snapshotConfig)
 }
 
+// DeleteAutogrowPolicy mocks base method.
+func (m *MockOrchestrator) DeleteAutogrowPolicy(ctx context.Context, agPolicyName string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAutogrowPolicy", ctx, agPolicyName)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAutogrowPolicy indicates an expected call of DeleteAutogrowPolicy.
+func (mr *MockOrchestratorMockRecorder) DeleteAutogrowPolicy(ctx, agPolicyName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAutogrowPolicy", reflect.TypeOf((*MockOrchestrator)(nil).DeleteAutogrowPolicy), ctx, agPolicyName)
+}
+
 // DeleteBackend mocks base method.
 func (m *MockOrchestrator) DeleteBackend(ctx context.Context, backend string) error {
 	m.ctrl.T.Helper()
@@ -374,6 +403,21 @@ func (mr *MockOrchestratorMockRecorder) EstablishMirror(ctx, backendUUID, volume
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EstablishMirror", reflect.TypeOf((*MockOrchestrator)(nil).EstablishMirror), ctx, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy, replicationSchedule)
 }
 
+// GetAutogrowPolicy mocks base method.
+func (m *MockOrchestrator) GetAutogrowPolicy(ctx context.Context, agPolicyName string) (*storage.AutogrowPolicyExternal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAutogrowPolicy", ctx, agPolicyName)
+	ret0, _ := ret[0].(*storage.AutogrowPolicyExternal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAutogrowPolicy indicates an expected call of GetAutogrowPolicy.
+func (mr *MockOrchestratorMockRecorder) GetAutogrowPolicy(ctx, agPolicyName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAutogrowPolicy", reflect.TypeOf((*MockOrchestrator)(nil).GetAutogrowPolicy), ctx, agPolicyName)
+}
+
 // GetBackend mocks base method.
 func (m *MockOrchestrator) GetBackend(ctx context.Context, backend string) (*storage.BackendExternal, error) {
 	m.ctrl.T.Helper()
@@ -402,6 +446,21 @@ func (m *MockOrchestrator) GetBackendByBackendUUID(ctx context.Context, backendU
 func (mr *MockOrchestratorMockRecorder) GetBackendByBackendUUID(ctx, backendUUID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackendByBackendUUID", reflect.TypeOf((*MockOrchestrator)(nil).GetBackendByBackendUUID), ctx, backendUUID)
+}
+
+// GetResizeDeltaForBackend mocks base method.
+func (m *MockOrchestrator) GetResizeDeltaForBackend(arg0 context.Context, arg1 string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetResizeDeltaForBackend", arg0, arg1)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetResizeDeltaForBackend indicates an expected call of GetResizeDeltaForBackend.
+func (mr *MockOrchestratorMockRecorder) GetResizeDeltaForBackend(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResizeDeltaForBackend", reflect.TypeOf((*MockOrchestrator)(nil).GetResizeDeltaForBackend), arg0, arg1)
 }
 
 // GetCHAP mocks base method.
@@ -721,6 +780,21 @@ func (mr *MockOrchestratorMockRecorder) ImportVolume(ctx, volumeConfig any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ImportVolume", reflect.TypeOf((*MockOrchestrator)(nil).ImportVolume), ctx, volumeConfig)
 }
 
+// ListAutogrowPolicies mocks base method.
+func (m *MockOrchestrator) ListAutogrowPolicies(ctx context.Context) ([]*storage.AutogrowPolicyExternal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAutogrowPolicies", ctx)
+	ret0, _ := ret[0].([]*storage.AutogrowPolicyExternal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListAutogrowPolicies indicates an expected call of ListAutogrowPolicies.
+func (mr *MockOrchestratorMockRecorder) ListAutogrowPolicies(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAutogrowPolicies", reflect.TypeOf((*MockOrchestrator)(nil).ListAutogrowPolicies), ctx)
+}
+
 // ListBackends mocks base method.
 func (m *MockOrchestrator) ListBackends(ctx context.Context) ([]*storage.BackendExternal, error) {
 	m.ctrl.T.Helper()
@@ -985,6 +1059,18 @@ func (mr *MockOrchestratorMockRecorder) PromoteMirror(ctx, backendUUID, volumeNa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PromoteMirror", reflect.TypeOf((*MockOrchestrator)(nil).PromoteMirror), ctx, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, snapshotHandle)
 }
 
+// SyncVolumePublications mocks base method.
+func (m *MockOrchestrator) SyncVolumePublications(ctx context.Context, vpsToBeSynced []*models.VolumePublication) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SyncVolumePublications", ctx, vpsToBeSynced)
+}
+
+// SyncVolumePublications indicates an expected call of SyncVolumePublications.
+func (mr *MockOrchestratorMockRecorder) SyncVolumePublications(ctx, vpsToBeSynced any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncVolumePublications", reflect.TypeOf((*MockOrchestrator)(nil).SyncVolumePublications), ctx, vpsToBeSynced)
+}
+
 // PublishVolume mocks base method.
 func (m *MockOrchestrator) PublishVolume(ctx context.Context, volumeName string, publishInfo *models.VolumePublishInfo) error {
 	m.ctrl.T.Helper()
@@ -1180,6 +1266,21 @@ func (mr *MockOrchestratorMockRecorder) UnpublishVolume(ctx, volumeName, nodeNam
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnpublishVolume", reflect.TypeOf((*MockOrchestrator)(nil).UnpublishVolume), ctx, volumeName, nodeName)
 }
 
+// UpdateAutogrowPolicy mocks base method.
+func (m *MockOrchestrator) UpdateAutogrowPolicy(ctx context.Context, config *storage.AutogrowPolicyConfig) (*storage.AutogrowPolicyExternal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateAutogrowPolicy", ctx, config)
+	ret0, _ := ret[0].(*storage.AutogrowPolicyExternal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateAutogrowPolicy indicates an expected call of UpdateAutogrowPolicy.
+func (mr *MockOrchestratorMockRecorder) UpdateAutogrowPolicy(ctx, config any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAutogrowPolicy", reflect.TypeOf((*MockOrchestrator)(nil).UpdateAutogrowPolicy), ctx, config)
+}
+
 // UpdateBackend mocks base method.
 func (m *MockOrchestrator) UpdateBackend(ctx context.Context, backendName, configJSON, configRef string) (*storage.BackendExternal, error) {
 	m.ctrl.T.Helper()
@@ -1280,6 +1381,34 @@ func (m *MockOrchestrator) UpdateVolume(ctx context.Context, volume string, volu
 func (mr *MockOrchestratorMockRecorder) UpdateVolume(ctx, volume, volumeUpdateInfo any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolume", reflect.TypeOf((*MockOrchestrator)(nil).UpdateVolume), ctx, volume, volumeUpdateInfo)
+}
+
+// UpdateVolumeAutogrowPolicy mocks base method.
+func (m *MockOrchestrator) UpdateVolumeAutogrowPolicy(ctx context.Context, volumeName, requestedAutogrowPolicy string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateVolumeAutogrowPolicy", ctx, volumeName, requestedAutogrowPolicy)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateVolumeAutogrowPolicy indicates an expected call of UpdateVolumeAutogrowPolicy.
+func (mr *MockOrchestratorMockRecorder) UpdateVolumeAutogrowPolicy(ctx, volumeName, requestedAutogrowPolicy any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumeAutogrowPolicy", reflect.TypeOf((*MockOrchestrator)(nil).UpdateVolumeAutogrowPolicy), ctx, volumeName, requestedAutogrowPolicy)
+}
+
+// UpdateVolumeAutogrowStatus mocks base method.
+func (m *MockOrchestrator) UpdateVolumeAutogrowStatus(arg0 context.Context, arg1 string, arg2 *models.VolumeAutogrowStatus) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateVolumeAutogrowStatus", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateVolumeAutogrowStatus indicates an expected call of UpdateVolumeAutogrowStatus.
+func (mr *MockOrchestratorMockRecorder) UpdateVolumeAutogrowStatus(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVolumeAutogrowStatus", reflect.TypeOf((*MockOrchestrator)(nil).UpdateVolumeAutogrowStatus), arg0, arg1, arg2)
 }
 
 // UpdateVolumeLUKSPassphraseNames mocks base method.

@@ -737,7 +737,7 @@ func TestSetContextLogLayer(t *testing.T) {
 
 func TestListLogLayers(t *testing.T) {
 	assert.Equal(t, []string{
-		"all", "azure-netapp-files", "core", "crd_frontend", "csi_frontend", "docker_frontend",
+		"all", "autogrow", "azure-netapp-files", "core", "crd_frontend", "csi_frontend", "docker_frontend",
 		"fake", "ontap-nas", "ontap-nas-economy", "ontap-nas-flexgroup", "ontap-san", "ontap-san-economy",
 		"persistent_store", "rest_frontend", "solidfire-san",
 	}, ListLogLayers())

@@ -25,6 +25,7 @@ type Orchestrator interface {
 	DeleteBackendByBackendUUID(ctx context.Context, backendName, backendUUID string) error
 	GetBackend(ctx context.Context, backend string) (*storage.BackendExternal, error)
 	GetBackendByBackendUUID(ctx context.Context, backendUUID string) (*storage.BackendExternal, error)
+	GetResizeDeltaForBackend(ctx context.Context, backendUUID string) (deltaBytes int64, err error)
 	ListBackends(ctx context.Context) ([]*storage.BackendExternal, error)
 	UpdateBackend(
 		ctx context.Context, backendName, configJSON, configRef string,
@@ -98,10 +99,20 @@ type Orchestrator interface {
 	ListVolumePublicationsForNode(
 		ctx context.Context, nodeName string,
 	) (publications []*models.VolumePublicationExternal, err error)
+	SyncVolumePublications(ctx context.Context, vpsToBeSynced []*models.VolumePublication)
 
 	AddVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
 	GetVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) (*storage.VolumeTransaction, error)
 	DeleteVolumeTransaction(ctx context.Context, volTxn *storage.VolumeTransaction) error
+
+	AddAutogrowPolicy(ctx context.Context, config *storage.AutogrowPolicyConfig) (*storage.AutogrowPolicyExternal, error)
+	UpdateAutogrowPolicy(ctx context.Context, config *storage.AutogrowPolicyConfig) (*storage.AutogrowPolicyExternal, error)
+	DeleteAutogrowPolicy(ctx context.Context, agPolicyName string) error
+	GetAutogrowPolicy(ctx context.Context, agPolicyName string) (*storage.AutogrowPolicyExternal, error)
+	ListAutogrowPolicies(ctx context.Context) ([]*storage.AutogrowPolicyExternal, error)
+
+	UpdateVolumeAutogrowPolicy(ctx context.Context, volumeName, requestedAutogrowPolicy string) error
+	UpdateVolumeAutogrowStatus(ctx context.Context, volumeName string, status *models.VolumeAutogrowStatus) error
 
 	EstablishMirror(ctx context.Context, backendUUID, volumeName, localInternalVolumeName, remoteVolumeHandle, replicationPolicy,
 		replicationSchedule string) error

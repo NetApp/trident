@@ -3351,7 +3351,7 @@ func TestProcessPVC(t *testing.T) {
 
 			// Test that processPVC doesn't panic
 			assert.NotPanics(t, func() {
-				h.processPVC(ctx, tt.pvc, tt.eventType)
+				h.processPVC(ctx, nil, tt.pvc, tt.eventType)
 			})
 		})
 	}
@@ -4086,5 +4086,604 @@ func TestGetCachedVolumeReference(t *testing.T) {
 			tt.assertErr(t, err, "Unexpected error result for getCachedVolumeReference test case: %s", tt.name)
 			tt.assertVRef(t, vref, "Unexpected VRef result for getCachedVolumeReference test case: %s", tt.name)
 		})
+	}
+}
+
+// Autogrow Policy Annotation Change Tests (Recent Changes)
+
+// TestUpdatePVC_AutogrowPolicyAnnotationChanged tests the Autogrow policy annotation handling in updatePVC
+func TestUpdatePVC_AutogrowPolicyAnnotationChanged(t *testing.T) {
+	tests := []struct {
+		name                   string
+		oldPVCAnnotation       string
+		newPVCAnnotation       string
+		volumeName             string
+		mockOrchestratorError  error
+		expectOrchestratorCall bool
+		expectNotFoundEvent    bool
+		expectNotUsableEvent   bool
+		expectOtherError       bool
+	}{
+		{
+			name:                   "Autogrow policy annotation added",
+			oldPVCAnnotation:       "",
+			newPVCAnnotation:       "gold-policy",
+			volumeName:             "pvc-test-volume-123",
+			mockOrchestratorError:  nil,
+			expectOrchestratorCall: true,
+			expectNotFoundEvent:    false,
+			expectNotUsableEvent:   false,
+		},
+		{
+			name:                   "Autogrow policy annotation changed",
+			oldPVCAnnotation:       "silver-policy",
+			newPVCAnnotation:       "gold-policy",
+			volumeName:             "pvc-test-volume-456",
+			mockOrchestratorError:  nil,
+			expectOrchestratorCall: true,
+			expectNotFoundEvent:    false,
+			expectNotUsableEvent:   false,
+		},
+		{
+			name:                   "Autogrow policy annotation removed",
+			oldPVCAnnotation:       "gold-policy",
+			newPVCAnnotation:       "",
+			volumeName:             "pvc-test-volume-789",
+			mockOrchestratorError:  nil,
+			expectOrchestratorCall: true,
+			expectNotFoundEvent:    false,
+			expectNotUsableEvent:   false,
+		},
+		{
+			name:                   "Autogrow policy annotation set to none",
+			oldPVCAnnotation:       "gold-policy",
+			newPVCAnnotation:       "none",
+			volumeName:             "pvc-test-volume-none",
+			mockOrchestratorError:  nil,
+			expectOrchestratorCall: true,
+			expectNotFoundEvent:    false,
+			expectNotUsableEvent:   false,
+		},
+		{
+			name:                   "Autogrow policy not found error",
+			oldPVCAnnotation:       "",
+			newPVCAnnotation:       "nonexistent-policy",
+			volumeName:             "pvc-test-volume-notfound",
+			mockOrchestratorError:  errors.NotFoundError("autogrow policy not found"),
+			expectOrchestratorCall: true,
+			expectNotFoundEvent:    true,
+			expectNotUsableEvent:   false,
+		},
+		{
+			name:                   "Autogrow policy not usable error",
+			oldPVCAnnotation:       "",
+			newPVCAnnotation:       "failed-policy",
+			volumeName:             "pvc-test-volume-notusable",
+			mockOrchestratorError:  errors.AutogrowPolicyNotUsableError("failed-policy", "Failed"),
+			expectOrchestratorCall: true,
+			expectNotFoundEvent:    false,
+			expectNotUsableEvent:   true,
+		},
+		{
+			name:                   "Autogrow policy orchestrator other error",
+			oldPVCAnnotation:       "",
+			newPVCAnnotation:       "test-policy",
+			volumeName:             "pvc-test-volume-error",
+			mockOrchestratorError:  fmt.Errorf("database connection error"),
+			expectOrchestratorCall: true,
+			expectNotFoundEvent:    false,
+			expectNotUsableEvent:   false,
+			expectOtherError:       true,
+		},
+		{
+			name:                   "Autogrow policy annotation unchanged",
+			oldPVCAnnotation:       "gold-policy",
+			newPVCAnnotation:       "gold-policy",
+			volumeName:             "pvc-test-volume-unchanged",
+			mockOrchestratorError:  nil,
+			expectOrchestratorCall: false, // Should not call orchestrator
+			expectNotFoundEvent:    false,
+			expectNotUsableEvent:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+			plugin := &helper{
+				orchestrator: mockOrchestrator,
+			}
+
+			// Setup orchestrator mock expectation
+			if tt.expectOrchestratorCall {
+				mockOrchestrator.EXPECT().
+					UpdateVolumeAutogrowPolicy(gomock.Any(), tt.volumeName, tt.newPVCAnnotation).
+					Return(tt.mockOrchestratorError).
+					Times(1)
+			}
+
+			// Create old and new PVCs
+			oldPVC := &v1.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-pvc",
+					Namespace: "default",
+					Annotations: map[string]string{
+						AnnAutogrowPolicy: tt.oldPVCAnnotation,
+					},
+				},
+				Spec: v1.PersistentVolumeClaimSpec{
+					VolumeName: tt.volumeName,
+					Resources: v1.VolumeResourceRequirements{
+						Requests: v1.ResourceList{
+							v1.ResourceStorage: resource.MustParse("1Gi"),
+						},
+					},
+				},
+			}
+
+			newPVC := oldPVC.DeepCopy()
+			newPVC.Annotations[AnnAutogrowPolicy] = tt.newPVCAnnotation
+
+			// Call updatePVC
+			plugin.updatePVC(oldPVC, newPVC)
+		})
+	}
+}
+
+// TestUpdatePVC_AutogrowPolicyAnnotationChanged_NoVolumeName tests when PVC has no volume yet
+func TestUpdatePVC_AutogrowPolicyAnnotationChanged_NoVolumeName(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+	plugin := &helper{
+		orchestrator: mockOrchestrator,
+	}
+
+	// Should not call orchestrator when VolumeName is empty
+	// mockOrchestrator.EXPECT().UpdateVolumeAutogrowPolicy() - NO CALL EXPECTED
+
+	oldPVC := &v1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-pvc",
+			Namespace: "default",
+			Annotations: map[string]string{
+				AnnAutogrowPolicy: "",
+			},
+		},
+		Spec: v1.PersistentVolumeClaimSpec{
+			VolumeName: "", // No volume name yet
+			Resources: v1.VolumeResourceRequirements{
+				Requests: v1.ResourceList{
+					v1.ResourceStorage: resource.MustParse("1Gi"),
+				},
+			},
+		},
+	}
+
+	newPVC := oldPVC.DeepCopy()
+	newPVC.Annotations[AnnAutogrowPolicy] = "gold-policy"
+
+	// Call updatePVC - should not call orchestrator since no volume name
+	plugin.updatePVC(oldPVC, newPVC)
+}
+
+// TestUpdatePVC_InvalidObjectTypes tests error handling for wrong object types
+func TestUpdatePVC_InvalidObjectTypes(t *testing.T) {
+	plugin := &helper{}
+
+	tests := []struct {
+		name   string
+		oldObj interface{}
+		newObj interface{}
+	}{
+		{
+			name:   "Invalid old object type",
+			oldObj: "not-a-pvc",
+			newObj: &v1.PersistentVolumeClaim{},
+		},
+		{
+			name:   "Invalid new object type",
+			oldObj: &v1.PersistentVolumeClaim{},
+			newObj: "not-a-pvc",
+		},
+		{
+			name:   "Both invalid object types",
+			oldObj: "not-a-pvc",
+			newObj: 12345,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Should not panic - just log error and return
+			assert.NotPanics(t, func() {
+				plugin.updatePVC(tt.oldObj, tt.newObj)
+			})
+		})
+	}
+}
+
+// TestProcessStorageClass_AutogrowPolicyErrors tests Autogrow policy error handling in processStorageClass
+func TestProcessStorageClass_AutogrowPolicyErrors(t *testing.T) {
+	tests := []struct {
+		name                     string
+		autogrowPolicyAnnotation string
+		isUpdate                 bool
+		mockOrchestratorError    error
+		expectNotFoundEvent      bool
+		expectNotUsableEvent     bool
+	}{
+		{
+			name:                     "Update with autogrow policy not found",
+			autogrowPolicyAnnotation: "nonexistent-policy",
+			isUpdate:                 true,
+			mockOrchestratorError:    errors.NotFoundError("autogrow policy not found"),
+			expectNotFoundEvent:      true,
+			expectNotUsableEvent:     false,
+		},
+		{
+			name:                     "Update with autogrow policy not usable",
+			autogrowPolicyAnnotation: "failed-policy",
+			isUpdate:                 true,
+			mockOrchestratorError:    errors.AutogrowPolicyNotUsableError("failed-policy", "Failed"),
+			expectNotFoundEvent:      false,
+			expectNotUsableEvent:     true,
+		},
+		{
+			name:                     "Update with autogrow policy success",
+			autogrowPolicyAnnotation: "success-policy",
+			isUpdate:                 true,
+			mockOrchestratorError:    nil,
+			expectNotFoundEvent:      false,
+			expectNotUsableEvent:     false,
+		},
+		{
+			name:                     "Add with autogrow policy annotation",
+			autogrowPolicyAnnotation: "test-policy",
+			isUpdate:                 false,
+			mockOrchestratorError:    nil,
+			expectNotFoundEvent:      false,
+			expectNotUsableEvent:     false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+			// Create fake indexer to avoid panic in RecordStorageClassEvent
+			fakeIndexer := &FakeIndexer{
+				getByKeyResult: nil,
+				getByKeyExists: false,
+				getByKeyError:  nil,
+			}
+
+			plugin := &helper{
+				orchestrator: mockOrchestrator,
+				scIndexer:    fakeIndexer,
+			}
+
+			sc := &k8sstoragev1.StorageClass{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-storage-class",
+					Annotations: map[string]string{
+						AnnAutogrowPolicy: tt.autogrowPolicyAnnotation,
+					},
+				},
+				Provisioner: csi.Provisioner,
+				Parameters: map[string]string{
+					"backendType": "ontap-nas",
+				},
+			}
+
+			// Setup mock expectations
+			if tt.isUpdate {
+				mockOrchestrator.EXPECT().
+					UpdateStorageClass(gomock.Any(), gomock.Any()).
+					Return(nil, tt.mockOrchestratorError).
+					Times(1)
+			} else {
+				mockOrchestrator.EXPECT().
+					AddStorageClass(gomock.Any(), gomock.Any()).
+					Return(nil, tt.mockOrchestratorError).
+					Times(1)
+			}
+
+			ctx := context.Background()
+			// Call processStorageClass
+			plugin.processStorageClass(ctx, sc, tt.isUpdate)
+		})
+	}
+}
+
+// TestProcessStorageClass_AutogrowPolicyOtherError tests non-Autogrow-specific errors
+func TestProcessStorageClass_AutogrowPolicyOtherError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+	// Create fake indexer to avoid panic in RecordStorageClassEvent
+	fakeIndexer := &FakeIndexer{
+		getByKeyResult: nil,
+		getByKeyExists: false,
+		getByKeyError:  nil,
+	}
+
+	plugin := &helper{
+		orchestrator: mockOrchestrator,
+		scIndexer:    fakeIndexer,
+	}
+
+	sc := &k8sstoragev1.StorageClass{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test-storage-class",
+			Annotations: map[string]string{
+				AnnAutogrowPolicy: "test-policy",
+			},
+		},
+		Provisioner: csi.Provisioner,
+		Parameters: map[string]string{
+			"backendType": "ontap-nas",
+		},
+	}
+
+	// Mock orchestrator returning a generic error (not NotFound or NotUsable)
+	genericError := fmt.Errorf("database connection error")
+	mockOrchestrator.EXPECT().
+		UpdateStorageClass(gomock.Any(), gomock.Any()).
+		Return(nil, genericError).
+		Times(1)
+
+	ctx := context.Background()
+	// Call processStorageClass - should log warning but not record event
+	plugin.processStorageClass(ctx, sc, true)
+}
+
+// TestUpdatePVC_AutogrowPolicyCaseFolding tests case-insensitive annotation key handling
+func TestUpdatePVC_AutogrowPolicyCaseFolding(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+	plugin := &helper{
+		orchestrator: mockOrchestrator,
+	}
+
+	volumeName := "pvc-test-volume-case"
+
+	// getCaseFoldedAnnotation finds the annotation regardless of case
+	// The value will be retrieved from the actual key that exists
+	mockOrchestrator.EXPECT().
+		UpdateVolumeAutogrowPolicy(gomock.Any(), volumeName, "GOLD-Policy").
+		Return(nil).
+		Times(1)
+
+	oldPVC := &v1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-pvc",
+			Namespace: "default",
+			Annotations: map[string]string{
+				// Different casing for the key
+				"TRIDENT.NETAPP.IO/AUTOGROWPOLICY": "",
+			},
+		},
+		Spec: v1.PersistentVolumeClaimSpec{
+			VolumeName: volumeName,
+			Resources: v1.VolumeResourceRequirements{
+				Requests: v1.ResourceList{
+					v1.ResourceStorage: resource.MustParse("1Gi"),
+				},
+			},
+		},
+	}
+
+	newPVC := oldPVC.DeepCopy()
+	// Update annotation value (key stays the same case)
+	newPVC.Annotations["TRIDENT.NETAPP.IO/AUTOGROWPOLICY"] = "GOLD-Policy"
+
+	// Call updatePVC
+	plugin.updatePVC(oldPVC, newPVC)
+}
+
+// Test GetPVC and GetPVCForPV (cache-first with API fallback)
+
+func TestGetPVC_CacheHit(t *testing.T) {
+	ctx := context.Background()
+	pvc := &v1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{Name: "my-pvc", Namespace: "default"},
+		Spec: v1.PersistentVolumeClaimSpec{
+			Resources: v1.VolumeResourceRequirements{
+				Requests: v1.ResourceList{v1.ResourceStorage: resource.MustParse("10Gi")},
+			},
+		},
+	}
+	pvcIndexer := &FakeIndexer{
+		getByKeyResult: pvc,
+		getByKeyExists: true,
+	}
+	h := &helper{kubeClient: k8sfake.NewSimpleClientset(), pvcIndexer: pvcIndexer}
+
+	result, err := h.GetPVC(ctx, "default", "my-pvc")
+	require.NoError(t, err)
+	assert.Equal(t, "my-pvc", result.Name)
+	assert.Equal(t, "default", result.Namespace)
+}
+
+func TestGetPVC_CacheMiss_APISuccess(t *testing.T) {
+	ctx := context.Background()
+	pvc := &v1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{Name: "api-pvc", Namespace: "default"},
+		Spec: v1.PersistentVolumeClaimSpec{
+			Resources: v1.VolumeResourceRequirements{
+				Requests: v1.ResourceList{v1.ResourceStorage: resource.MustParse("5Gi")},
+			},
+		},
+	}
+	clientSet := k8sfake.NewSimpleClientset(pvc)
+	pvcIndexer := &FakeIndexer{getByKeyExists: false} // cache miss
+	h := &helper{kubeClient: clientSet, pvcIndexer: pvcIndexer}
+
+	result, err := h.GetPVC(ctx, "default", "api-pvc")
+	require.NoError(t, err)
+	assert.Equal(t, "api-pvc", result.Name)
+	assert.Equal(t, "default", result.Namespace)
+}
+
+func TestGetPVC_CacheMiss_APIFail(t *testing.T) {
+	ctx := context.Background()
+	clientSet := k8sfake.NewSimpleClientset()
+	var getCalled bool
+	clientSet.Fake.PrependReactor("get", "persistentvolumeclaims", func(a k8stesting.Action) (bool, runtime.Object, error) {
+		getCalled = true
+		return true, nil, k8serrors.NewNotFound(v1.Resource("persistentvolumeclaims"), "nonexistent")
+	})
+	pvcIndexer := &FakeIndexer{getByKeyExists: false}
+	h := &helper{kubeClient: clientSet, pvcIndexer: pvcIndexer}
+
+	result, err := h.GetPVC(ctx, "default", "nonexistent")
+	require.True(t, getCalled, "API Get should have been called after cache miss")
+	require.Error(t, err)
+	require.True(t, k8serrors.IsNotFound(err), "error should be NotFound")
+	// Result may be nil or empty depending on fake client behavior; we care that error is returned
+	if result != nil {
+		assert.Empty(t, result.Name, "result should be empty or nil when PVC is not found")
+	}
+}
+
+func TestGetPVCForPV_PVNotFound(t *testing.T) {
+	ctx := context.Background()
+	clientSet := k8sfake.NewSimpleClientset()
+	pvIndexer := &FakeIndexer{getByKeyExists: false}
+	h := &helper{kubeClient: clientSet, pvIndexer: pvIndexer}
+
+	result, err := h.GetPVCForPV(ctx, "nonexistent-pv")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "could not get PV")
+	assert.Contains(t, err.Error(), "nonexistent-pv")
+}
+
+func TestGetPVCForPV_NoClaimRef(t *testing.T) {
+	ctx := context.Background()
+	pv := &v1.PersistentVolume{
+		ObjectMeta: metav1.ObjectMeta{Name: "pv-no-claim"},
+		Spec:       v1.PersistentVolumeSpec{ClaimRef: nil},
+	}
+	pvIndexer := &FakeIndexer{getByKeyResult: pv, getByKeyExists: true}
+	h := &helper{kubeClient: k8sfake.NewSimpleClientset(), pvIndexer: pvIndexer}
+
+	result, err := h.GetPVCForPV(ctx, "pv-no-claim")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "has no bound PVC")
+	assert.Contains(t, err.Error(), "pv-no-claim")
+}
+
+func TestGetPVCForPV_ClaimRefEmptyNamespace(t *testing.T) {
+	ctx := context.Background()
+	pv := &v1.PersistentVolume{
+		ObjectMeta: metav1.ObjectMeta{Name: "pv-empty-ns"},
+		Spec: v1.PersistentVolumeSpec{
+			ClaimRef: &v1.ObjectReference{Name: "pvc1", Namespace: ""},
+		},
+	}
+	pvIndexer := &FakeIndexer{getByKeyResult: pv, getByKeyExists: true}
+	h := &helper{kubeClient: k8sfake.NewSimpleClientset(), pvIndexer: pvIndexer}
+
+	result, err := h.GetPVCForPV(ctx, "pv-empty-ns")
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "has no bound PVC")
+}
+
+func TestGetPVCForPV_SuccessFromCache(t *testing.T) {
+	ctx := context.Background()
+	pv := &v1.PersistentVolume{
+		ObjectMeta: metav1.ObjectMeta{Name: "my-pv"},
+		Spec: v1.PersistentVolumeSpec{
+			ClaimRef: &v1.ObjectReference{Name: "bound-pvc", Namespace: "default"},
+		},
+	}
+	pvc := &v1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{Name: "bound-pvc", Namespace: "default"},
+		Spec: v1.PersistentVolumeClaimSpec{
+			Resources: v1.VolumeResourceRequirements{
+				Requests: v1.ResourceList{v1.ResourceStorage: resource.MustParse("10Gi")},
+			},
+		},
+	}
+	pvIndexer := &FakeIndexer{getByKeyResult: pv, getByKeyExists: true}
+	pvcIndexer := &FakeIndexer{getByKeyResult: pvc, getByKeyExists: true}
+	h := &helper{kubeClient: k8sfake.NewSimpleClientset(), pvIndexer: pvIndexer, pvcIndexer: pvcIndexer}
+
+	result, err := h.GetPVCForPV(ctx, "my-pv")
+	require.NoError(t, err)
+	assert.Equal(t, "bound-pvc", result.Name)
+	assert.Equal(t, "default", result.Namespace)
+}
+
+func TestGetPVCForPV_SuccessPVFromAPI_PVCFromCache(t *testing.T) {
+	ctx := context.Background()
+	pv := &v1.PersistentVolume{
+		ObjectMeta: metav1.ObjectMeta{Name: "pv-api"},
+		Spec: v1.PersistentVolumeSpec{
+			ClaimRef: &v1.ObjectReference{Name: "pvc-from-cache", Namespace: "default"},
+		},
+	}
+	pvc := &v1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{Name: "pvc-from-cache", Namespace: "default"},
+		Spec: v1.PersistentVolumeClaimSpec{
+			Resources: v1.VolumeResourceRequirements{
+				Requests: v1.ResourceList{v1.ResourceStorage: resource.MustParse("1Gi")},
+			},
+		},
+	}
+	clientSet := k8sfake.NewSimpleClientset(pv)
+	pvIndexer := &FakeIndexer{getByKeyExists: false}
+	_, _ = clientSet.CoreV1().PersistentVolumes().Create(ctx, pv, metav1.CreateOptions{})
+	pvcIndexer := &FakeIndexer{getByKeyResult: pvc, getByKeyExists: true}
+	h := &helper{kubeClient: clientSet, pvIndexer: pvIndexer, pvcIndexer: pvcIndexer}
+
+	result, err := h.GetPVCForPV(ctx, "pv-api")
+	require.NoError(t, err)
+	assert.Equal(t, "pvc-from-cache", result.Name)
+	assert.Equal(t, "default", result.Namespace)
+}
+
+func TestGetPVCForPV_PVCNotFound(t *testing.T) {
+	ctx := context.Background()
+	pv := &v1.PersistentVolume{
+		ObjectMeta: metav1.ObjectMeta{Name: "my-pv"},
+		Spec: v1.PersistentVolumeSpec{
+			ClaimRef: &v1.ObjectReference{Name: "missing-pvc", Namespace: "default"},
+		},
+	}
+	pvIndexer := &FakeIndexer{getByKeyResult: pv, getByKeyExists: true}
+	pvcIndexer := &FakeIndexer{getByKeyExists: false}
+	clientSet := k8sfake.NewSimpleClientset()
+	var pvcGetCalled bool
+	clientSet.Fake.PrependReactor("get", "persistentvolumeclaims", func(a k8stesting.Action) (bool, runtime.Object, error) {
+		pvcGetCalled = true
+		return true, nil, k8serrors.NewNotFound(v1.Resource("persistentvolumeclaims"), "missing-pvc")
+	})
+	h := &helper{kubeClient: clientSet, pvIndexer: pvIndexer, pvcIndexer: pvcIndexer}
+
+	result, err := h.GetPVCForPV(ctx, "my-pv")
+	require.True(t, pvcGetCalled, "API Get for PVC should have been called after cache miss")
+	require.Error(t, err)
+	require.True(t, k8serrors.IsNotFound(err), "error should be NotFound")
+	if result != nil {
+		assert.Empty(t, result.Name, "result should be empty or nil when PVC is not found")
 	}
 }

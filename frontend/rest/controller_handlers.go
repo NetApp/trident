@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"runtime"
+	"sort"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -1461,6 +1462,57 @@ func DeleteGroupSnapshot(w http.ResponseWriter, r *http.Request) {
 	DeleteGeneric(w, r, func(ctx context.Context, vars map[string]string) error {
 		return orchestrator.DeleteGroupSnapshot(r.Context(), vars["group"])
 	})
+}
+
+type GetAutogrowPolicyResponse struct {
+	AutogrowPolicy storage.AutogrowPolicyExternal `json:"autogrowPolicy"`
+	Error          string                         `json:"error,omitempty"`
+}
+
+type ListAutogrowPoliciesResponse struct {
+	AutogrowPolicies []string `json:"autogrowPolicies"`
+	Error            string   `json:"error,omitempty"`
+}
+
+func GetAutogrowPolicy(w http.ResponseWriter, r *http.Request) {
+	response := &GetAutogrowPolicyResponse{}
+	GetGeneric(w, r, response,
+		func(vars map[string]string) int {
+			autogrowPolicyName, ok := vars["autogrowPolicy"]
+			if !ok {
+				response.Error = errors.InvalidInputError("Autogrow policy name is required").Error()
+				return httpStatusCodeForAdd(errors.InvalidInputError(""))
+			}
+
+			autogrowPolicy, err := orchestrator.GetAutogrowPolicy(r.Context(), autogrowPolicyName)
+			if err != nil {
+				response.Error = err.Error()
+			} else {
+				response.AutogrowPolicy = *autogrowPolicy
+			}
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
+}
+
+func ListAutogrowPolicies(w http.ResponseWriter, r *http.Request) {
+	response := &ListAutogrowPoliciesResponse{}
+	GetGeneric(w, r, response,
+		func(_ map[string]string) int {
+			autogrowPolicies, err := orchestrator.ListAutogrowPolicies(r.Context())
+			if err != nil {
+				response.Error = err.Error()
+			} else {
+				autogrowPolicyNames := make([]string, 0, len(autogrowPolicies))
+				for _, autogrowPolicy := range autogrowPolicies {
+					autogrowPolicyNames = append(autogrowPolicyNames, autogrowPolicy.Name)
+				}
+				sort.Strings(autogrowPolicyNames)
+				response.AutogrowPolicies = autogrowPolicyNames
+			}
+			return httpStatusCodeForGetUpdateList(err)
+		},
+	)
 }
 
 type GetCHAPResponse struct {

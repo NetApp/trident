@@ -66,6 +66,7 @@ func (in *TridentVolume) Apply(ctx context.Context, persistent *storage.VolumeEx
 	in.Orphaned = persistent.Orphaned
 	in.Pool = persistent.Pool
 	in.State = string(persistent.State)
+	in.AutogrowStatus = persistent.AutogrowStatus
 
 	return nil
 }
@@ -74,14 +75,18 @@ func (in *TridentVolume) Apply(ctx context.Context, persistent *storage.VolumeEx
 // storage.VolumeExternal equivalent
 func (in *TridentVolume) Persistent() (*storage.VolumeExternal, error) {
 	persistent := &storage.VolumeExternal{
-		BackendUUID: in.BackendUUID,
-		Orphaned:    in.Orphaned,
-		Pool:        in.Pool,
-		Config:      &storage.VolumeConfig{},
-		State:       storage.VolumeState(in.State),
+		BackendUUID:    in.BackendUUID,
+		Orphaned:       in.Orphaned,
+		Pool:           in.Pool,
+		Config:         &storage.VolumeConfig{},
+		State:          storage.VolumeState(in.State),
+		AutogrowStatus: in.AutogrowStatus,
 	}
 
-	return persistent, json.Unmarshal(in.Config.Raw, persistent.Config)
+	if err := json.Unmarshal(in.Config.Raw, persistent.Config); err != nil {
+		return nil, err
+	}
+	return persistent, nil
 }
 
 func (in *TridentVolume) GetObjectMeta() metav1.ObjectMeta {

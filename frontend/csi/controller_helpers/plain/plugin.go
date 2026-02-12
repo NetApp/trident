@@ -162,6 +162,17 @@ func (h *helper) RecordNodeEvent(ctx context.Context, name, eventType, reason, m
 	}).Trace("Node event.")
 }
 
+// RecordStorageClassEvent accepts the name of a storage class and posts an event message
+// on the StorageClass object with the K8S API server.
+func (h *helper) RecordStorageClassEvent(ctx context.Context, name, eventType, reason, message string) {
+	Logc(ctx).WithFields(LogFields{
+		"name":      name,
+		"eventType": eventType,
+		"reason":    reason,
+		"message":   message,
+	}).Trace("StorageClass event.")
+}
+
 // IsValidResourceName determines if a string meets the CO schema for naming objects.
 func (h *helper) IsValidResourceName(_ string) bool {
 	return true

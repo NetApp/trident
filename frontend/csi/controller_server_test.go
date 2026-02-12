@@ -940,7 +940,7 @@ func TestControllerPublishVolume(t *testing.T) {
 					},
 				},
 			},
-			expectedResponse: &csi.ControllerPublishVolumeResponse{PublishContext: map[string]string{"filesystemType": "smb", "formatOptions": "", "mountOptions": "", "smbPath": "", "smbServer": "", "protocol": "file"}},
+			expectedResponse: &csi.ControllerPublishVolumeResponse{PublishContext: map[string]string{"filesystemType": "smb", "formatOptions": "", "mountOptions": "", "smbPath": "", "smbServer": "", "protocol": "file", "backendUUID": "", "pool": "", "storageClass": ""}},
 			publishInfo: models.VolumePublishInfo{
 				SANType:        sa.FCP,
 				FilesystemType: "smb",
@@ -962,7 +962,7 @@ func TestControllerPublishVolume(t *testing.T) {
 					},
 				},
 			},
-			expectedResponse: &csi.ControllerPublishVolumeResponse{PublishContext: map[string]string{"filesystemType": "", "formatOptions": "", "mountOptions": "", "nfsPath": "", "nfsServerIp": "", "protocol": "file"}},
+			expectedResponse: &csi.ControllerPublishVolumeResponse{PublishContext: map[string]string{"filesystemType": "", "formatOptions": "", "mountOptions": "", "nfsPath": "", "nfsServerIp": "", "protocol": "file", "backendUUID": "", "pool": "", "storageClass": ""}},
 			expErrCode:       codes.OK,
 		},
 		{
@@ -1073,6 +1073,9 @@ func TestControllerPublishVolume(t *testing.T) {
 					"SANType":           sa.NVMe,
 					"sharedTarget":      "false",
 					"nvmeTargetIPs":     "",
+					"backendUUID":       "",
+					"pool":              "",
+					"storageClass":      "",
 				},
 			},
 			expErrCode: codes.OK,
@@ -1110,6 +1113,9 @@ func TestControllerPublishVolume(t *testing.T) {
 					"SANType":                sa.ISCSI,
 					"sharedTarget":           "false",
 					"useCHAP":                "false",
+					"backendUUID":            "",
+					"pool":                   "",
+					"storageClass":           "",
 				},
 			},
 			expErrCode: codes.OK,
@@ -1141,6 +1147,9 @@ func TestControllerPublishVolume(t *testing.T) {
 					"protocol":       "block",
 					"sharedTarget":   "false",
 					"useCHAP":        "false",
+					"backendUUID":    "",
+					"pool":           "",
+					"storageClass":   "",
 				},
 			},
 			expErrCode: codes.OK,
@@ -3164,4 +3173,499 @@ func TestContainsMultiNodeAccessMode(t *testing.T) {
 			assert.Equal(t, tc.expected, result)
 		})
 	}
+}
+
+// CreateVolume Autogrow Policy Error Handling Tests (Recent Changes)
+
+func TestControllerPublishVolume_VerifyNewFields_PopulatedValues(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	volumeID := "test-volume-456"
+	nodeID := "test-node-456"
+	storageClass := "platinum-storage"
+	backendUUID := "ontap-nas-backend-uuid"
+	poolName := "aggr1"
+
+	req := &csi.ControllerPublishVolumeRequest{
+		VolumeId: volumeID,
+		NodeId:   nodeID,
+		VolumeCapability: &csi.VolumeCapability{
+			AccessType: &csi.VolumeCapability_Mount{
+				Mount: &csi.VolumeCapability_MountVolume{FsType: "ext4"},
+			},
+			AccessMode: &csi.VolumeCapability_AccessMode{
+				Mode: csi.VolumeCapability_AccessMode_SINGLE_NODE_WRITER,
+			},
+		},
+	}
+
+	// Create fake volume with all new fields set
+	fakeVolume := &storage.VolumeExternal{
+		Config: &storage.VolumeConfig{
+			Name:         volumeID,
+			StorageClass: storageClass,
+			Protocol:     tridentconfig.File,
+		},
+		BackendUUID: backendUUID,
+		Pool:        poolName,
+	}
+
+	// Create fake node
+	fakeNode := &models.NodeExternal{
+		Name: nodeID,
+		IQN:  "iqn.test",
+		IPs:  []string{"192.168.1.1"},
+	}
+
+	// Setup expectations
+	mockOrchestrator.EXPECT().GetVolume(gomock.Any(), volumeID).Return(fakeVolume, nil)
+	mockOrchestrator.EXPECT().GetNode(gomock.Any(), nodeID).Return(fakeNode, nil)
+
+	// Capture the VolumePublishInfo that's passed to PublishVolume
+	var capturedPublishInfo *models.VolumePublishInfo
+	mockOrchestrator.EXPECT().PublishVolume(gomock.Any(), volumeID, gomock.Any()).
+		DoAndReturn(func(_ context.Context, _ string, publishInfo *models.VolumePublishInfo) error {
+			capturedPublishInfo = publishInfo
+			return nil
+		})
+
+	// Execute ControllerPublishVolume
+	resp, err := controllerServer.ControllerPublishVolume(ctx, req)
+
+	// Verify success
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+
+	// Verify VolumePublishInfo was populated with new fields
+	assert.NotNil(t, capturedPublishInfo, "VolumePublishInfo should have been captured")
+	assert.Equal(t, storageClass, capturedPublishInfo.StorageClass, "StorageClass should be set from volume")
+	assert.Equal(t, backendUUID, capturedPublishInfo.BackendUUID, "BackendUUID should be set from volume")
+	assert.Equal(t, poolName, capturedPublishInfo.Pool, "Pool should be set from volume")
+
+	// Verify PublishContext includes new fields
+	assert.Equal(t, storageClass, resp.PublishContext["storageClass"], "PublishContext should include storageClass")
+	assert.Equal(t, backendUUID, resp.PublishContext["backendUUID"], "PublishContext should include backendUUID")
+	assert.Equal(t, poolName, resp.PublishContext["pool"], "PublishContext should include pool")
+}
+
+// TestCreateVolume_AutogrowPolicyNotFoundError tests CreateVolume with autogrow policy not found
+func TestCreateVolume_AutogrowPolicyNotFoundError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	plugin := generateController(mockOrchestrator, mockHelper)
+
+	volName := "test-volume-notfound"
+	volSize := int64(1024 * 1024 * 1024)
+
+	volumeConfig := createMockVolumeConfig(volName, volSize)
+	volumeExternal := createMockVolume(volName, volName, volSize)
+
+	// Setup mocks
+	mockOrchestrator.EXPECT().
+		GetVolume(gomock.Any(), volName).
+		Return(nil, errors.NotFoundError("volume not found")).
+		Times(1)
+
+	mockHelper.EXPECT().
+		SupportsFeature(gomock.Any(), gomock.Any()).
+		Return(true).
+		AnyTimes()
+
+	mockOrchestrator.EXPECT().
+		ListBackends(gomock.Any()).
+		Return([]*storage.BackendExternal{{Protocol: tridentconfig.File}}, nil).
+		Times(1)
+
+	mockHelper.EXPECT().
+		GetVolumeConfig(gomock.Any(), volName, volSize, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(volumeConfig, nil).
+		Times(1)
+
+	// Set volumeExternal to have AutogrowPolicyNotFoundError reason
+	volumeExternal.EffectiveAutogrowPolicy.Reason = models.AutogrowPolicyReasonNotFound
+	volumeExternal.EffectiveAutogrowPolicy.PolicyName = ""
+
+	// AddVolume returns volume with EffectiveAutogrowPolicy indicating policy not found (no error)
+	mockOrchestrator.EXPECT().
+		AddVolume(gomock.Any(), volumeConfig).
+		Return(volumeExternal, nil).
+		Times(1)
+
+	// Expect success event to be recorded FIRST
+	mockHelper.EXPECT().
+		RecordVolumeEvent(gomock.Any(), volName, "Normal", "ProvisioningSuccess", gomock.Any()).
+		Times(1)
+
+	// Expect warning event to be recorded SECOND
+	mockHelper.EXPECT().
+		RecordVolumeEvent(gomock.Any(), volName, "Warning", "AutogrowPolicyNotFound", gomock.Any()).
+		Times(1)
+
+	req := &csi.CreateVolumeRequest{
+		Name:               volName,
+		CapacityRange:      stdCapacityRange,
+		VolumeCapabilities: stdFilesystemVolCap,
+		Parameters:         stdParameters,
+	}
+
+	// Call CreateVolume - should succeed despite Autogrow policy not found
+	resp, err := plugin.CreateVolume(ctx, req)
+	assert.NoError(t, err, "CreateVolume should succeed even when autogrow policy not found")
+	assert.NotNil(t, resp, "Response should not be nil")
+	assert.Equal(t, volName, resp.Volume.VolumeId, "Volume ID should match")
+}
+
+func TestControllerPublishVolume_VerifyNewFields_EmptyValues(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	controllerServer := generateController(mockOrchestrator, mockHelper)
+
+	volumeID := "test-volume-empty"
+	nodeID := "test-node-empty"
+
+	req := &csi.ControllerPublishVolumeRequest{
+		VolumeId: volumeID,
+		NodeId:   nodeID,
+		VolumeCapability: &csi.VolumeCapability{
+			AccessType: &csi.VolumeCapability_Mount{
+				Mount: &csi.VolumeCapability_MountVolume{FsType: "ext4"},
+			},
+			AccessMode: &csi.VolumeCapability_AccessMode{
+				Mode: csi.VolumeCapability_AccessMode_SINGLE_NODE_WRITER,
+			},
+		},
+	}
+
+	// Create fake volume with empty new fields
+	fakeVolume := &storage.VolumeExternal{
+		Config: &storage.VolumeConfig{
+			Name:         volumeID,
+			StorageClass: "", // Empty
+			Protocol:     tridentconfig.File,
+		},
+		BackendUUID: "", // Empty
+		Pool:        "", // Empty
+	}
+
+	// Create fake node
+	fakeNode := &models.NodeExternal{
+		Name: nodeID,
+		IQN:  "iqn.test",
+		IPs:  []string{"192.168.1.1"},
+	}
+
+	// Setup expectations
+	mockOrchestrator.EXPECT().GetVolume(gomock.Any(), volumeID).Return(fakeVolume, nil)
+	mockOrchestrator.EXPECT().GetNode(gomock.Any(), nodeID).Return(fakeNode, nil)
+
+	// Capture the VolumePublishInfo
+	var capturedPublishInfo *models.VolumePublishInfo
+	mockOrchestrator.EXPECT().PublishVolume(gomock.Any(), volumeID, gomock.Any()).
+		DoAndReturn(func(_ context.Context, _ string, publishInfo *models.VolumePublishInfo) error {
+			capturedPublishInfo = publishInfo
+			return nil
+		})
+
+	// Execute
+	resp, err := controllerServer.ControllerPublishVolume(ctx, req)
+
+	// Verify success
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+
+	// Verify empty values are handled correctly
+	assert.NotNil(t, capturedPublishInfo)
+	assert.Equal(t, "", capturedPublishInfo.StorageClass, "StorageClass should be empty")
+	assert.Equal(t, "", capturedPublishInfo.BackendUUID, "BackendUUID should be empty")
+	assert.Equal(t, "", capturedPublishInfo.Pool, "Pool should be empty")
+
+	// Verify PublishContext includes empty values
+	assert.Equal(t, "", resp.PublishContext["storageClass"])
+	assert.Equal(t, "", resp.PublishContext["backendUUID"])
+	assert.Equal(t, "", resp.PublishContext["pool"])
+}
+
+func TestCreateVolume_AutogrowPolicyNotUsableErrorHandling(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	plugin := generateController(mockOrchestrator, mockHelper)
+
+	volName := "test-volume-agp-notusable"
+	volSize := int64(1024 * 1024 * 1024)
+
+	volumeConfig := createMockVolumeConfig(volName, volSize)
+	volumeExternal := createMockVolume(volName, volName, volSize)
+
+	// Setup mocks
+	mockOrchestrator.EXPECT().
+		GetVolume(gomock.Any(), volName).
+		Return(nil, errors.NotFoundError("volume not found")).
+		Times(1)
+
+	mockHelper.EXPECT().
+		SupportsFeature(gomock.Any(), gomock.Any()).
+		Return(true).
+		AnyTimes()
+
+	mockOrchestrator.EXPECT().
+		ListBackends(gomock.Any()).
+		Return([]*storage.BackendExternal{{Protocol: tridentconfig.File}}, nil).
+		Times(1)
+
+	mockHelper.EXPECT().
+		GetVolumeConfig(gomock.Any(), volName, volSize, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(volumeConfig, nil).
+		Times(1)
+
+	// Set volumeExternal to have AutogrowPolicyNotUsableError reason
+	volumeExternal.EffectiveAutogrowPolicy.Reason = models.AutogrowPolicyReasonUnusable
+	volumeExternal.EffectiveAutogrowPolicy.PolicyName = ""
+
+	// AddVolume returns volume with EffectiveAutogrowPolicy indicating policy not usable (no error)
+	mockOrchestrator.EXPECT().
+		AddVolume(gomock.Any(), volumeConfig).
+		Return(volumeExternal, nil).
+		Times(1)
+
+	// Expect success event to be recorded FIRST
+	mockHelper.EXPECT().
+		RecordVolumeEvent(gomock.Any(), volName, "Normal", "ProvisioningSuccess", gomock.Any()).
+		Times(1)
+
+	// Expect warning event to be recorded SECOND
+	mockHelper.EXPECT().
+		RecordVolumeEvent(gomock.Any(), volName, "Warning", "AutogrowPolicyNotUsable", gomock.Any()).
+		Times(1)
+
+	req := &csi.CreateVolumeRequest{
+		Name:               volName,
+		CapacityRange:      stdCapacityRange,
+		VolumeCapabilities: stdFilesystemVolCap,
+		Parameters:         stdParameters,
+	}
+
+	// Call CreateVolume - should succeed despite Autogrow policy not usable
+	resp, err := plugin.CreateVolume(ctx, req)
+	assert.NoError(t, err, "CreateVolume should succeed even when autogrow policy not usable")
+	assert.NotNil(t, resp, "Response should not be nil")
+	assert.Equal(t, volName, resp.Volume.VolumeId, "Volume ID should match")
+}
+
+func TestCreateVolume_CloneVolume_AutogrowPolicyNotFoundError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	plugin := generateController(mockOrchestrator, mockHelper)
+
+	volName := "test-clone-agp-notfound"
+	sourceVolName := "source-volume"
+	volSize := int64(1024 * 1024 * 1024)
+
+	volumeConfig := createMockVolumeConfig(volName, volSize)
+	volumeConfig.CloneSourceVolume = sourceVolName
+	volumeExternal := createMockVolume(volName, volName, volSize)
+
+	// Setup mocks
+	mockOrchestrator.EXPECT().
+		GetVolume(gomock.Any(), volName).
+		Return(nil, errors.NotFoundError("volume not found")).
+		Times(1)
+
+	mockHelper.EXPECT().
+		SupportsFeature(gomock.Any(), gomock.Any()).
+		Return(true).
+		AnyTimes()
+
+	mockOrchestrator.EXPECT().
+		ListBackends(gomock.Any()).
+		Return([]*storage.BackendExternal{{Protocol: tridentconfig.File}}, nil).
+		Times(1)
+
+	mockHelper.EXPECT().
+		GetVolumeConfig(gomock.Any(), volName, volSize, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(volumeConfig, nil).
+		Times(1)
+
+	// Set volumeExternal to have AutogrowPolicyNotFoundError reason
+	volumeExternal.EffectiveAutogrowPolicy.Reason = models.AutogrowPolicyReasonNotFound
+	volumeExternal.EffectiveAutogrowPolicy.PolicyName = ""
+
+	// CloneVolume returns volume with EffectiveAutogrowPolicy indicating policy not found (no error)
+	mockOrchestrator.EXPECT().
+		CloneVolume(gomock.Any(), volumeConfig).
+		Return(volumeExternal, nil).
+		Times(1)
+
+	// Expect success event to be recorded FIRST
+	mockHelper.EXPECT().
+		RecordVolumeEvent(gomock.Any(), volName, "Normal", "ProvisioningSuccess", gomock.Any()).
+		Times(1)
+
+	// Expect warning event to be recorded SECOND
+	mockHelper.EXPECT().
+		RecordVolumeEvent(gomock.Any(), volName, "Warning", "AutogrowPolicyNotFound", gomock.Any()).
+		Times(1)
+
+	req := &csi.CreateVolumeRequest{
+		Name:               volName,
+		CapacityRange:      stdCapacityRange,
+		VolumeCapabilities: stdFilesystemVolCap,
+		Parameters:         stdParameters,
+		VolumeContentSource: &csi.VolumeContentSource{
+			Type: &csi.VolumeContentSource_Volume{
+				Volume: &csi.VolumeContentSource_VolumeSource{
+					VolumeId: sourceVolName,
+				},
+			},
+		},
+	}
+
+	// Call CreateVolume - should succeed despite Autogrow policy not found
+	resp, err := plugin.CreateVolume(ctx, req)
+	assert.NoError(t, err, "CreateVolume clone should succeed even when autogrow policy not found")
+	assert.NotNil(t, resp, "Response should not be nil")
+	assert.Equal(t, volName, resp.Volume.VolumeId, "Volume ID should match")
+}
+
+func TestCreateVolume_ImportVolume_AutogrowPolicyNotUsableError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	plugin := generateController(mockOrchestrator, mockHelper)
+
+	volName := "test-import-agp-notusable"
+	importOriginalName := "original-volume"
+	volSize := int64(1024 * 1024 * 1024)
+
+	volumeConfig := createMockVolumeConfig(volName, volSize)
+	volumeConfig.ImportOriginalName = importOriginalName
+	volumeExternal := createMockVolume(volName, volName, volSize)
+
+	// Setup mocks
+	mockOrchestrator.EXPECT().
+		GetVolume(gomock.Any(), volName).
+		Return(nil, errors.NotFoundError("volume not found")).
+		Times(1)
+
+	mockHelper.EXPECT().
+		SupportsFeature(gomock.Any(), gomock.Any()).
+		Return(true).
+		AnyTimes()
+
+	mockOrchestrator.EXPECT().
+		ListBackends(gomock.Any()).
+		Return([]*storage.BackendExternal{{Protocol: tridentconfig.File}}, nil).
+		Times(1)
+
+	mockHelper.EXPECT().
+		GetVolumeConfig(gomock.Any(), volName, volSize, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(volumeConfig, nil).
+		Times(1)
+
+	// Set volumeExternal to have AutogrowPolicyNotUsableError reason
+	volumeExternal.EffectiveAutogrowPolicy.Reason = models.AutogrowPolicyReasonUnusable
+	volumeExternal.EffectiveAutogrowPolicy.PolicyName = ""
+
+	// ImportVolume returns volume with EffectiveAutogrowPolicy indicating policy not usable (no error)
+	mockOrchestrator.EXPECT().
+		ImportVolume(gomock.Any(), volumeConfig).
+		Return(volumeExternal, nil).
+		Times(1)
+
+	// Expect success event to be recorded FIRST
+	mockHelper.EXPECT().
+		RecordVolumeEvent(gomock.Any(), volName, "Normal", "ProvisioningSuccess", gomock.Any()).
+		Times(1)
+
+	// Expect warning event to be recorded SECOND
+	mockHelper.EXPECT().
+		RecordVolumeEvent(gomock.Any(), volName, "Warning", "AutogrowPolicyNotUsable", gomock.Any()).
+		Times(1)
+
+	req := &csi.CreateVolumeRequest{
+		Name:               volName,
+		CapacityRange:      stdCapacityRange,
+		VolumeCapabilities: stdFilesystemVolCap,
+		Parameters:         stdParameters,
+	}
+
+	// Call CreateVolume - should succeed despite Autogrow policy not usable
+	resp, err := plugin.CreateVolume(ctx, req)
+	assert.NoError(t, err, "CreateVolume import should succeed even when autogrow policy not usable")
+	assert.NotNil(t, resp, "Response should not be nil")
+	assert.Equal(t, volName, resp.Volume.VolumeId, "Volume ID should match")
+}
+
+func TestCreateVolume_OtherError_ShouldFail(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	mockHelper := mockhelpers.NewMockControllerHelper(mockCtrl)
+	plugin := generateController(mockOrchestrator, mockHelper)
+
+	volName := "test-volume-other-error"
+	volSize := int64(1024 * 1024 * 1024)
+
+	volumeConfig := createMockVolumeConfig(volName, volSize)
+
+	// Setup mocks
+	mockOrchestrator.EXPECT().
+		GetVolume(gomock.Any(), volName).
+		Return(nil, errors.NotFoundError("volume not found")).
+		Times(1)
+
+	mockHelper.EXPECT().
+		SupportsFeature(gomock.Any(), gomock.Any()).
+		Return(true).
+		AnyTimes()
+
+	mockOrchestrator.EXPECT().
+		ListBackends(gomock.Any()).
+		Return([]*storage.BackendExternal{{Protocol: tridentconfig.File}}, nil).
+		Times(1)
+
+	mockHelper.EXPECT().
+		GetVolumeConfig(gomock.Any(), volName, volSize, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(volumeConfig, nil).
+		Times(1)
+
+	// AddVolume returns generic error (not Autogrow policy related)
+	genericError := fmt.Errorf("backend unavailable")
+	mockOrchestrator.EXPECT().
+		AddVolume(gomock.Any(), volumeConfig).
+		Return(nil, genericError).
+		Times(1)
+
+	// NO event should be recorded for generic errors
+	// (The function returns error before success event)
+
+	req := &csi.CreateVolumeRequest{
+		Name:               volName,
+		CapacityRange:      stdCapacityRange,
+		VolumeCapabilities: stdFilesystemVolCap,
+		Parameters:         stdParameters,
+	}
+
+	// Call CreateVolume - should fail with generic error
+	resp, err := plugin.CreateVolume(ctx, req)
+	assert.Error(t, err, "CreateVolume should fail with generic orchestrator error")
+	assert.Nil(t, resp, "Response should be nil on error")
 }

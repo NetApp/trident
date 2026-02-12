@@ -1990,3 +1990,292 @@ func TestGetCloneSourceInfo_EarlyValidation(t *testing.T) {
 		})
 	}
 }
+
+// RecordStorageClassEvent Tests
+
+// TestRecordStorageClassEvent_Success tests successful event recording
+func TestRecordStorageClassEvent_Success(t *testing.T) {
+	scName := "test-storage-class"
+	sc := &k8sstoragev1.StorageClass{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: scName,
+		},
+		Provisioner: "csi.trident.netapp.io",
+	}
+
+	// Create mock indexer that returns the storage class
+	mockSCIndexer := &MockFullIndexer{
+		getByKeyFunc: func(key string) (interface{}, bool, error) {
+			if key == scName {
+				return sc, true, nil
+			}
+			return nil, false, nil
+		},
+	}
+
+	h := &helper{
+		scIndexer: mockSCIndexer,
+		// eventRecorder is nil - will panic when storage class is found
+	}
+
+	// Record event
+	ctx := context.Background()
+	// Should panic when event recorder is nil and storage class is found
+	assert.Panics(t, func() {
+		h.RecordStorageClassEvent(ctx, scName, controllerhelpers.EventTypeNormal, "Created", "Storage class created successfully")
+	})
+}
+
+// TestRecordStorageClassEvent_StorageClassNotFound tests when storage class is not found
+func TestRecordStorageClassEvent_StorageClassNotFound(t *testing.T) {
+	scName := "non-existent-storage-class"
+
+	// Create mock indexer that returns not found
+	mockSCIndexer := &MockFullIndexer{
+		getByKeyFunc: func(key string) (interface{}, bool, error) {
+			return nil, false, nil // Storage class not found
+		},
+	}
+
+	h := &helper{
+		scIndexer: mockSCIndexer,
+	}
+
+	ctx := context.Background()
+	// Should not panic when storage class is not found
+	assert.NotPanics(t, func() {
+		h.RecordStorageClassEvent(ctx, scName, controllerhelpers.EventTypeNormal, "Test", "Test message")
+	})
+}
+
+// TestRecordStorageClassEvent_GetStorageClassError tests when getStorageClass returns an error
+func TestRecordStorageClassEvent_GetStorageClassError(t *testing.T) {
+	scName := "test-storage-class"
+
+	// Create mock indexer that returns an error
+	mockSCIndexer := &MockFullIndexer{
+		getByKeyFunc: func(key string) (interface{}, bool, error) {
+			return nil, false, fmt.Errorf("indexer error")
+		},
+	}
+
+	h := &helper{
+		scIndexer: mockSCIndexer,
+	}
+
+	ctx := context.Background()
+	// Should not panic when getStorageClass returns an error
+	assert.NotPanics(t, func() {
+		h.RecordStorageClassEvent(ctx, scName, controllerhelpers.EventTypeNormal, "Test", "Test message")
+	})
+}
+
+// TestRecordStorageClassEvent_EmptyStorageClassName tests with empty storage class name
+func TestRecordStorageClassEvent_EmptyStorageClassName(t *testing.T) {
+	mockSCIndexer := &MockFullIndexer{
+		getByKeyFunc: func(key string) (interface{}, bool, error) {
+			return nil, false, nil
+		},
+	}
+
+	h := &helper{
+		scIndexer: mockSCIndexer,
+	}
+
+	ctx := context.Background()
+	// Should not panic with empty storage class name
+	assert.NotPanics(t, func() {
+		h.RecordStorageClassEvent(ctx, "", controllerhelpers.EventTypeNormal, "Test", "Test message")
+	})
+}
+
+// TestRecordStorageClassEvent_NilContext tests with nil context
+func TestRecordStorageClassEvent_NilContext(t *testing.T) {
+	scName := "test-storage-class"
+	sc := &k8sstoragev1.StorageClass{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: scName,
+		},
+		Provisioner: "csi.trident.netapp.io",
+	}
+
+	mockSCIndexer := &MockFullIndexer{
+		getByKeyFunc: func(key string) (interface{}, bool, error) {
+			if key == scName {
+				return sc, true, nil
+			}
+			return nil, false, nil
+		},
+	}
+
+	h := &helper{
+		scIndexer: mockSCIndexer,
+	}
+
+	// Should panic with nil context (Logc panics on nil context)
+	assert.Panics(t, func() {
+		h.RecordStorageClassEvent(nil, scName, controllerhelpers.EventTypeNormal, "Test", "Test message")
+	})
+}
+
+// TestRecordStorageClassEvent_StorageClassCacheMiss tests cache miss scenario
+func TestRecordStorageClassEvent_StorageClassCacheMiss(t *testing.T) {
+	scName := "test-storage-class"
+
+	// Simulate cache miss - getByKey returns false but no error
+	mockSCIndexer := &MockFullIndexer{
+		getByKeyFunc: func(key string) (interface{}, bool, error) {
+			return nil, false, nil // Cache miss
+		},
+		resyncFunc: func() error {
+			return nil // Resync succeeds but still no SC
+		},
+	}
+
+	h := &helper{
+		scIndexer: mockSCIndexer,
+	}
+
+	ctx := context.Background()
+	// Should handle cache miss gracefully
+	assert.NotPanics(t, func() {
+		h.RecordStorageClassEvent(ctx, scName, controllerhelpers.EventTypeNormal, "Test", "Test message")
+	})
+}
+
+// TestRecordStorageClassEvent_WarningEventType tests with warning event type
+func TestRecordStorageClassEvent_WarningEventType(t *testing.T) {
+	scName := "test-storage-class"
+	sc := &k8sstoragev1.StorageClass{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: scName,
+		},
+		Provisioner: "csi.trident.netapp.io",
+	}
+
+	mockSCIndexer := &MockFullIndexer{
+		getByKeyFunc: func(key string) (interface{}, bool, error) {
+			if key == scName {
+				return sc, true, nil
+			}
+			return nil, false, nil
+		},
+	}
+
+	h := &helper{
+		scIndexer: mockSCIndexer,
+		// eventRecorder is nil - will panic when storage class is found
+	}
+
+	ctx := context.Background()
+	// Should panic when eventRecorder is nil and storage class is found
+	assert.Panics(t, func() {
+		h.RecordStorageClassEvent(ctx, scName, controllerhelpers.EventTypeWarning, "Failed", "Storage class creation failed")
+	})
+}
+
+// TestRecordStorageClassEvent_UnknownEventType tests with unknown event type
+func TestRecordStorageClassEvent_UnknownEventType(t *testing.T) {
+	scName := "test-storage-class"
+	sc := &k8sstoragev1.StorageClass{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: scName,
+		},
+		Provisioner: "csi.trident.netapp.io",
+	}
+
+	mockSCIndexer := &MockFullIndexer{
+		getByKeyFunc: func(key string) (interface{}, bool, error) {
+			if key == scName {
+				return sc, true, nil
+			}
+			return nil, false, nil
+		},
+	}
+
+	h := &helper{
+		scIndexer: mockSCIndexer,
+		// eventRecorder is nil - will panic when storage class is found
+	}
+
+	ctx := context.Background()
+	// Unknown event type should be mapped to Warning, but will panic due to nil eventRecorder
+	assert.Panics(t, func() {
+		h.RecordStorageClassEvent(ctx, scName, "UnknownType", "Test", "Test message")
+	})
+}
+
+// TestRecordStorageClassEvent_EmptyReason tests with empty reason
+func TestRecordStorageClassEvent_EmptyReason(t *testing.T) {
+	scName := "test-storage-class"
+	sc := &k8sstoragev1.StorageClass{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: scName,
+		},
+		Provisioner: "csi.trident.netapp.io",
+	}
+
+	mockSCIndexer := &MockFullIndexer{
+		getByKeyFunc: func(key string) (interface{}, bool, error) {
+			if key == scName {
+				return sc, true, nil
+			}
+			return nil, false, nil
+		},
+	}
+
+	h := &helper{
+		scIndexer: mockSCIndexer,
+		// eventRecorder is nil - will panic when storage class is found
+	}
+
+	ctx := context.Background()
+	// Should panic due to nil eventRecorder
+	assert.Panics(t, func() {
+		h.RecordStorageClassEvent(ctx, scName, controllerhelpers.EventTypeNormal, "", "Test message")
+	})
+}
+
+// TestRecordStorageClassEvent_EmptyMessage tests with empty message
+func TestRecordStorageClassEvent_EmptyMessage(t *testing.T) {
+	scName := "test-storage-class"
+	sc := &k8sstoragev1.StorageClass{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: scName,
+		},
+		Provisioner: "csi.trident.netapp.io",
+	}
+
+	mockSCIndexer := &MockFullIndexer{
+		getByKeyFunc: func(key string) (interface{}, bool, error) {
+			if key == scName {
+				return sc, true, nil
+			}
+			return nil, false, nil
+		},
+	}
+
+	h := &helper{
+		scIndexer: mockSCIndexer,
+		// eventRecorder is nil - will panic when storage class is found
+	}
+
+	ctx := context.Background()
+	// Should panic due to nil eventRecorder
+	assert.Panics(t, func() {
+		h.RecordStorageClassEvent(ctx, scName, controllerhelpers.EventTypeNormal, "TestReason", "")
+	})
+}
+
+// TestRecordStorageClassEvent_NilIndexer tests with nil storage class indexer
+func TestRecordStorageClassEvent_NilIndexer(t *testing.T) {
+	h := &helper{
+		scIndexer: nil,
+	}
+
+	ctx := context.Background()
+	// Should panic when scIndexer is nil
+	assert.Panics(t, func() {
+		h.RecordStorageClassEvent(ctx, "test-sc", controllerhelpers.EventTypeNormal, "Test", "Test message")
+	})
+}

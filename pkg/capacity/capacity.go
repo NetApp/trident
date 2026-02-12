@@ -5,9 +5,12 @@ package capacity
 import (
 	"context"
 	"fmt"
+	"math"
 	"sort"
 	"strconv"
 	"strings"
+
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
@@ -233,4 +236,60 @@ func VolumeSizeWithinTolerance(requestedSize, currentSize, delta int64) bool {
 		return true
 	}
 	return false
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+//
+// Human-readable quantity formatting
+//
+// ///////////////////////////////////////////////////////////////////////////
+
+const (
+	kiB = int64(1 << 10)
+	miB = int64(1 << 20)
+	giB = int64(1 << 30)
+
+	// HumanReadableDecimals is the number of decimal places used when formatting
+	// sizes (e.g. "20.74Gi"). We round up so the requested size is never less than the computed value.
+	HumanReadableDecimals = 2
+)
+
+// roundUpToDecimals rounds val up to the given number of decimal places
+// (e.g. 20.736 → 20.74 with 2 decimals) so we never request less than the original value.
+func roundUpToDecimals(val float64, decimals int) float64 {
+	if decimals <= 0 {
+		return math.Ceil(val)
+	}
+	mult := math.Pow(10, float64(decimals))
+	return math.Ceil(val*mult) / mult
+}
+
+// QuantityToHumanReadableString returns a human-readable decimal string (e.g. "20.74Gi", "512.50Mi").
+// Values are rounded up to HumanReadableDecimals (2) so we never request less than the original.
+// Example: 22265110461 bytes → "20.74Gi" (20.735999... GiB rounded up to 2 decimals).
+func QuantityToHumanReadableString(q resource.Quantity) string {
+	bytes := q.Value()
+	if bytes < 0 {
+		return q.String()
+	}
+	if bytes == 0 {
+		return "0"
+	}
+	d := HumanReadableDecimals
+	switch {
+	case bytes >= giB:
+		valGi := float64(bytes) / float64(giB)
+		valGi = roundUpToDecimals(valGi, d)
+		return fmt.Sprintf("%.*fGi", d, valGi)
+	case bytes >= miB:
+		valMi := float64(bytes) / float64(miB)
+		valMi = roundUpToDecimals(valMi, d)
+		return fmt.Sprintf("%.*fMi", d, valMi)
+	case bytes >= kiB:
+		valKi := float64(bytes) / float64(kiB)
+		valKi = roundUpToDecimals(valKi, d)
+		return fmt.Sprintf("%.*fKi", d, valKi)
+	default:
+		return fmt.Sprintf("%d", bytes)
+	}
 }

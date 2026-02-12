@@ -26,6 +26,9 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend/crd/controller/indexers"
+	crdtypes "github.com/netapp/trident/frontend/crd/types"
+	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
+	k8shelper "github.com/netapp/trident/frontend/csi/controller_helpers/kubernetes"
 	. "github.com/netapp/trident/logging"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
 	tridentv1clientset "github.com/netapp/trident/persistent_store/crd/client/clientset/versioned"
@@ -37,24 +40,26 @@ import (
 )
 
 type (
-	EventType  string
-	ObjectType string
+	EventType  = crdtypes.EventType
+	ObjectType = crdtypes.ObjectType
 )
 
 const (
-	EventAdd         EventType = "add"
-	EventUpdate      EventType = "update"
-	EventForceUpdate EventType = "forceupdate"
-	EventDelete      EventType = "delete"
+	EventAdd         = crdtypes.EventAdd
+	EventUpdate      = crdtypes.EventUpdate
+	EventForceUpdate = crdtypes.EventForceUpdate
+	EventDelete      = crdtypes.EventDelete
 
-	ObjectTypeTridentBackendConfig         string = "TridentBackendConfig"
-	ObjectTypeTridentBackend               string = "TridentBackend"
-	ObjectTypeSecret                       string = "secret"
-	ObjectTypeTridentMirrorRelationship    string = "TridentMirrorRelationship"
-	ObjectTypeTridentActionMirrorUpdate    string = "TridentActionMirrorUpdate"
-	ObjectTypeTridentSnapshotInfo          string = "TridentSnapshotInfo"
-	ObjectTypeTridentActionSnapshotRestore string = "TridentActionSnapshotRestore"
-	ObjectTypeTridentNodeRemediation       string = "TridentNodeRemediation"
+	ObjectTypeTridentBackendConfig           = crdtypes.ObjectTypeTridentBackendConfig
+	ObjectTypeTridentBackend                 = crdtypes.ObjectTypeTridentBackend
+	ObjectTypeSecret                         = crdtypes.ObjectTypeSecret
+	ObjectTypeTridentMirrorRelationship      = crdtypes.ObjectTypeTridentMirrorRelationship
+	ObjectTypeTridentActionMirrorUpdate      = crdtypes.ObjectTypeTridentActionMirrorUpdate
+	ObjectTypeTridentSnapshotInfo            = crdtypes.ObjectTypeTridentSnapshotInfo
+	ObjectTypeTridentActionSnapshotRestore   = crdtypes.ObjectTypeTridentActionSnapshotRestore
+	ObjectTypeTridentNodeRemediation         = crdtypes.ObjectTypeTridentNodeRemediation
+	ObjectTypeTridentAutogrowPolicy          = crdtypes.ObjectTypeTridentAutogrowPolicy
+	ObjectTypeTridentAutogrowRequestInternal = crdtypes.ObjectTypeTridentAutogrowRequestInternal
 
 	OperationStatusSuccess string = "Success"
 	OperationStatusFailed  string = "Failed"
@@ -68,7 +73,7 @@ const (
 
 type KeyItem struct {
 	key        string
-	objectType string
+	objectType ObjectType
 	event      EventType
 	ctx        context.Context
 	isRetry    bool
@@ -168,6 +173,14 @@ type TridentCrdController struct {
 	actionSnapshotRestoreLister listers.TridentActionSnapshotRestoreLister
 	actionSnapshotRestoreSynced cache.InformerSynced
 
+	// TridentAutogrowPolicy CRD handling
+	autogrowPoliciesLister listers.TridentAutogrowPolicyLister
+	autogrowPoliciesSynced cache.InformerSynced
+
+	// TridentAutogrowRequestInternal CRD handling
+	autogrowRequestInternalLister listers.TridentAutogrowRequestInternalLister
+	autogrowRequestInternalSynced cache.InformerSynced
+
 	// K8s Indexers
 	indexers indexers.Indexers
 
@@ -184,7 +197,7 @@ type TridentCrdController struct {
 	enableForceDetach         bool
 }
 
-// NewTridentCrdController returns a new Trident CRD controller frontend
+// NewTridentCrdController returns a new Trident CRD controller frontend.
 func NewTridentCrdController(
 	orchestrator core.Orchestrator, masterURL, kubeConfigPath string,
 ) (*TridentCrdController, error) {
@@ -244,6 +257,9 @@ func newTridentCrdControllerImpl(
 	snapshotInformer := crdInformer.TridentSnapshots()
 	secretInformer := kubeInformer.Secrets()
 	actionSnapshotRestoreInformer := allNSCrdInformer.TridentActionSnapshotRestores()
+	autogrowPolicyInformer := allNSCrdInformer.TridentAutogrowPolicies()
+	// Reuse crdInformer (resync 0) for TAGRIs; reconciliation is driven by watch events and on-demand re-queues
+	autogrowRequestInternalInformer := crdInformer.TridentAutogrowRequestInternals()
 
 	// Create event broadcaster
 	// Add our types to the default Kubernetes Scheme so Events can be logged.
@@ -254,47 +270,51 @@ func newTridentCrdControllerImpl(
 	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: controllerAgentName})
 
 	controller := &TridentCrdController{
-		orchestrator:                orchestrator,
-		kubeClientset:               kubeClientset,
-		snapshotClientSet:           snapshotClientset,
-		crdClientset:                crdClientset,
-		crdControllerStopChan:       make(chan struct{}),
-		crdInformerFactory:          crdInformerFactory,
-		crdInformer:                 crdInformer,
-		txnInformerFactory:          txnInformerFactory,
-		txnInformer:                 txnInformer,
-		kubeInformerFactory:         kubeInformerFactory,
-		kubeInformer:                kubeInformer,
-		backendsLister:              backendInformer.Lister(),
-		backendsSynced:              backendInformer.Informer().HasSynced,
-		backendConfigsLister:        backendConfigInformer.Lister(),
-		backendConfigsSynced:        backendConfigInformer.Informer().HasSynced,
-		mirrorLister:                mirrorInformer.Lister(),
-		mirrorSynced:                mirrorInformer.Informer().HasSynced,
-		actionMirrorUpdateLister:    actionMirrorUpdateInformer.Lister(),
-		actionMirrorUpdatesSynced:   actionMirrorUpdateInformer.Informer().HasSynced,
-		snapshotInfoLister:          snapshotInfoInformer.Lister(),
-		snapshotInfoSynced:          snapshotInfoInformer.Informer().HasSynced,
-		nodesLister:                 nodeInformer.Lister(),
-		nodesSynced:                 nodeInformer.Informer().HasSynced,
-		nodeRemediationLister:       nodeRemediationInformer.Lister(),
-		nodeRemediationSynced:       nodeRemediationInformer.Informer().HasSynced,
-		storageClassesLister:        storageClassInformer.Lister(),
-		storageClassesSynced:        storageClassInformer.Informer().HasSynced,
-		transactionsLister:          transactionInformer.Lister(),
-		transactionsSynced:          transactionInformer.Informer().HasSynced,
-		versionsLister:              versionInformer.Lister(),
-		versionsSynced:              versionInformer.Informer().HasSynced,
-		volumesLister:               volumeInformer.Lister(),
-		volumesSynced:               volumeInformer.Informer().HasSynced,
-		volumePublicationsLister:    volumePublicationInformer.Lister(),
-		volumePublicationsSynced:    volumePublicationInformer.Informer().HasSynced,
-		snapshotsLister:             snapshotInformer.Lister(),
-		snapshotsSynced:             snapshotInformer.Informer().HasSynced,
-		secretsLister:               secretInformer.Lister(),
-		secretsSynced:               secretInformer.Informer().HasSynced,
-		actionSnapshotRestoreLister: actionSnapshotRestoreInformer.Lister(),
-		actionSnapshotRestoreSynced: actionSnapshotRestoreInformer.Informer().HasSynced,
+		orchestrator:                  orchestrator,
+		kubeClientset:                 kubeClientset,
+		snapshotClientSet:             snapshotClientset,
+		crdClientset:                  crdClientset,
+		crdControllerStopChan:         make(chan struct{}),
+		crdInformerFactory:            crdInformerFactory,
+		crdInformer:                   crdInformer,
+		txnInformerFactory:            txnInformerFactory,
+		txnInformer:                   txnInformer,
+		kubeInformerFactory:           kubeInformerFactory,
+		kubeInformer:                  kubeInformer,
+		backendsLister:                backendInformer.Lister(),
+		backendsSynced:                backendInformer.Informer().HasSynced,
+		backendConfigsLister:          backendConfigInformer.Lister(),
+		backendConfigsSynced:          backendConfigInformer.Informer().HasSynced,
+		mirrorLister:                  mirrorInformer.Lister(),
+		mirrorSynced:                  mirrorInformer.Informer().HasSynced,
+		actionMirrorUpdateLister:      actionMirrorUpdateInformer.Lister(),
+		actionMirrorUpdatesSynced:     actionMirrorUpdateInformer.Informer().HasSynced,
+		snapshotInfoLister:            snapshotInfoInformer.Lister(),
+		snapshotInfoSynced:            snapshotInfoInformer.Informer().HasSynced,
+		nodesLister:                   nodeInformer.Lister(),
+		nodesSynced:                   nodeInformer.Informer().HasSynced,
+		nodeRemediationLister:         nodeRemediationInformer.Lister(),
+		nodeRemediationSynced:         nodeRemediationInformer.Informer().HasSynced,
+		storageClassesLister:          storageClassInformer.Lister(),
+		storageClassesSynced:          storageClassInformer.Informer().HasSynced,
+		transactionsLister:            transactionInformer.Lister(),
+		transactionsSynced:            transactionInformer.Informer().HasSynced,
+		versionsLister:                versionInformer.Lister(),
+		versionsSynced:                versionInformer.Informer().HasSynced,
+		volumesLister:                 volumeInformer.Lister(),
+		volumesSynced:                 volumeInformer.Informer().HasSynced,
+		volumePublicationsLister:      volumePublicationInformer.Lister(),
+		volumePublicationsSynced:      volumePublicationInformer.Informer().HasSynced,
+		snapshotsLister:               snapshotInformer.Lister(),
+		snapshotsSynced:               snapshotInformer.Informer().HasSynced,
+		secretsLister:                 secretInformer.Lister(),
+		secretsSynced:                 secretInformer.Informer().HasSynced,
+		actionSnapshotRestoreLister:   actionSnapshotRestoreInformer.Lister(),
+		actionSnapshotRestoreSynced:   actionSnapshotRestoreInformer.Informer().HasSynced,
+		autogrowPoliciesLister:        autogrowPolicyInformer.Lister(),
+		autogrowPoliciesSynced:        autogrowPolicyInformer.Informer().HasSynced,
+		autogrowRequestInternalLister: autogrowRequestInternalInformer.Lister(),
+		autogrowRequestInternalSynced: autogrowRequestInternalInformer.Informer().HasSynced,
 		workqueue: workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(),
 			crdControllerQueueName),
 		recorder:             recorder,
@@ -345,6 +365,18 @@ func newTridentCrdControllerImpl(
 		AddFunc: controller.addCRHandler,
 	})
 
+	_, _ = autogrowPolicyInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    controller.addCRHandler,
+		UpdateFunc: controller.updateCRHandler,
+		DeleteFunc: controller.deleteCRHandler,
+	})
+
+	_, _ = autogrowRequestInternalInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    controller.addCRHandler,
+		UpdateFunc: controller.updateCRHandler,
+		DeleteFunc: controller.deleteCRHandler,
+	})
+
 	_, _ = secretInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		// Do not handle AddFunc here otherwise everytime trident is restarted,
 		// there will be unwarranted reconciles and backend initializations
@@ -385,6 +417,7 @@ func (c *TridentCrdController) Activate() error {
 		c.crdInformerFactory.Start(c.crdControllerStopChan)
 		c.txnInformerFactory.Start(c.crdControllerStopChan)
 		c.kubeInformerFactory.Start(c.crdControllerStopChan)
+
 		go c.Run(ctx, 1, c.crdControllerStopChan)
 	}
 	return nil
@@ -437,7 +470,9 @@ func (c *TridentCrdController) Run(ctx context.Context, threadiness int, stopCh 
 		c.mirrorSynced,
 		c.snapshotsSynced,
 		c.snapshotInfoSynced,
-		c.secretsSynced); !ok {
+		c.secretsSynced,
+		c.autogrowPoliciesSynced,
+		c.autogrowRequestInternalSynced); !ok {
 		waitErr := fmt.Errorf("failed to wait for caches to sync")
 		Logx(ctx).Errorf("Error: %v", waitErr)
 		return
@@ -464,7 +499,7 @@ func (c *TridentCrdController) runWorker() {
 	}
 }
 
-func (c *TridentCrdController) addEventToWorkqueue(key string, event EventType, ctx context.Context, objKind string) {
+func (c *TridentCrdController) addEventToWorkqueue(key string, event EventType, ctx context.Context, objKind ObjectType) {
 	keyItem := KeyItem{
 		key:        key,
 		event:      event,
@@ -501,7 +536,7 @@ func (c *TridentCrdController) addCRHandler(obj interface{}) {
 		return
 	}
 
-	c.addEventToWorkqueue(key, EventAdd, ctx, cr.GetKind())
+	c.addEventToWorkqueue(key, EventAdd, ctx, ObjectType(cr.GetKind()))
 }
 
 // updateCRHandler is the update handler for CR watchers.
@@ -551,7 +586,7 @@ func (c *TridentCrdController) updateCRHandler(old, new interface{}) {
 		return
 	}
 
-	c.addEventToWorkqueue(key, EventUpdate, ctx, newCR.GetKind())
+	c.addEventToWorkqueue(key, EventUpdate, ctx, ObjectType(newCR.GetKind()))
 }
 
 // deleteCRHandler is the delete handler for CR watchers.
@@ -574,7 +609,7 @@ func (c *TridentCrdController) deleteCRHandler(obj interface{}) {
 		return
 	}
 
-	c.addEventToWorkqueue(key, EventDelete, ctx, cr.GetKind())
+	c.addEventToWorkqueue(key, EventDelete, ctx, ObjectType(cr.GetKind()))
 }
 
 // processNextWorkItem will read a single work item off the workqueue and
@@ -640,6 +675,10 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 			handleFunction = c.handleActionSnapshotRestore
 		case ObjectTypeTridentNodeRemediation:
 			handleFunction = c.handleTridentNodeRemediation
+		case ObjectTypeTridentAutogrowPolicy:
+			handleFunction = c.handleAutogrowPolicy
+		case ObjectTypeTridentAutogrowRequestInternal:
+			handleFunction = c.handleTridentAutogrowRequestInternal
 		default:
 			return fmt.Errorf("unknown objectType in the workqueue: %v", keyItem.objectType)
 		}
@@ -785,6 +824,10 @@ func (c *TridentCrdController) removeFinalizers(ctx context.Context, obj interfa
 	case *tridentv1.TridentNodeRemediation:
 		if force || !crd.ObjectMeta.DeletionTimestamp.IsZero() {
 			return c.removeTNRFinalizers(ctx, crd)
+		}
+	case *tridentv1.TridentAutogrowPolicy:
+		if force || !crd.ObjectMeta.DeletionTimestamp.IsZero() {
+			return c.removeAutogrowPolicyFinalizers(ctx, crd)
 		}
 	default:
 		Logx(ctx).Warnf("unexpected type %T", crd)
@@ -1066,4 +1109,17 @@ func (c *TridentCrdController) removeTNRFinalizers(
 
 func (c *TridentCrdController) SetForceDetach(enableForceDetach bool) {
 	c.enableForceDetach = enableForceDetach
+}
+
+// getPVCGetter returns the Kubernetes helper frontend from the orchestrator (by name) for cache-first
+// PVC lookup, or nil if not available (e.g. plain CSI helper or not yet registered).
+func (c *TridentCrdController) getPVCGetter(ctx context.Context) k8shelper.K8SControllerHelperPlugin {
+	frontend, err := c.orchestrator.GetFrontend(ctx, controllerhelpers.KubernetesHelper)
+	if err != nil {
+		return nil
+	}
+	if k8s, ok := frontend.(k8shelper.K8SControllerHelperPlugin); ok {
+		return k8s
+	}
+	return nil
 }

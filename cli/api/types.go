@@ -40,6 +40,10 @@ type MultipleStorageClassResponse struct {
 	Items []StorageClass `json:"items"`
 }
 
+type MultipleAutogrowPolicyResponse struct {
+	Items []storage.AutogrowPolicyExternal `json:"items"`
+}
+
 type MultipleVolumeResponse struct {
 	Items []storage.VolumeExternal `json:"items"`
 }

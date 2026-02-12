@@ -3,6 +3,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -29,6 +30,80 @@ type VolumeAccessInfo struct {
 	// The access mode values are defined by CSI
 	// See https://github.com/container-storage-interface/spec/blob/release-1.5/lib/go/csi/csi.pb.go#L135
 	AccessMode int32 `json:"accessMode,omitempty"`
+}
+
+// AutogrowPolicyReason indicates why the effective Autogrow policy is in its current state
+type AutogrowPolicyReason string
+
+const (
+	AutogrowPolicyReasonActive        AutogrowPolicyReason = "Active"
+	AutogrowPolicyReasonNotConfigured AutogrowPolicyReason = "NotConfigured"
+	AutogrowPolicyReasonDisabled      AutogrowPolicyReason = "Disabled"
+	AutogrowPolicyReasonNotFound      AutogrowPolicyReason = "NotFound"
+	AutogrowPolicyReasonUnusable      AutogrowPolicyReason = "Unusable"
+	AutogrowPolicyReasonIneligible    AutogrowPolicyReason = "Ineligible"
+)
+
+// String returns a human-readable message for the Autogrow policy reason
+func (r AutogrowPolicyReason) String() string {
+	switch r {
+	case AutogrowPolicyReasonActive:
+		return "Autogrow policy is active"
+	case AutogrowPolicyReasonNotConfigured:
+		return "No autogrow policy configured"
+	case AutogrowPolicyReasonDisabled:
+		return "Autogrow explicitly disabled via 'none' annotation"
+	case AutogrowPolicyReasonNotFound:
+		return "Configured autogrow policy does not exist"
+	case AutogrowPolicyReasonUnusable:
+		return "Autogrow policy exists but is in Failed or Deleting state"
+	case AutogrowPolicyReasonIneligible:
+		return "Volume is ineligible for autogrow (unmanaged import, thick provisioned san raw block, or read-only clone)"
+	default:
+		return string(r)
+	}
+}
+
+func (r AutogrowPolicyReason) MarshalJSON() ([]byte, error) {
+	return json.Marshal(r.String())
+}
+
+// EffectiveAutogrowPolicyInfo contains the resolved Autogrow policy and why it's in that state
+// This is computed at runtime and not persisted
+type EffectiveAutogrowPolicyInfo struct {
+	// PolicyName is the name of the effective Autogrow policy
+	PolicyName string
+
+	// Reason explains why the policy is in its current state
+	Reason AutogrowPolicyReason
+}
+
+// VolumeAutogrowStatus tracks the autogrow feature state and history for a volume
+type VolumeAutogrowStatus struct {
+	// LastAutogrowPolicyUsed is the autogrow policy used latest
+	// Precedence: PVC annotation > SC annotation > Backend config
+	LastAutogrowPolicyUsed string `json:"lastAutogrowPolicyUsed,omitempty"`
+
+	// LastAutogrowAttemptedAt is the timestamp of the most recent attempt
+	LastAutogrowAttemptedAt *time.Time `json:"lastAutogrowAttemptedAt,omitempty"`
+
+	// LastProposedSize is the size that was last attempted (may have failed)
+	LastProposedSize string `json:"lastProposedSize,omitempty"`
+
+	// LastSuccessfulAutogrowAt is when the last successful autogrow completed
+	LastSuccessfulAutogrowAt *time.Time `json:"lastSuccessfulAutogrowAt,omitempty"`
+
+	// LastSuccessfulSize is the size after the last successful autogrow
+	LastSuccessfulSize string `json:"lastSuccessfulSize,omitempty"`
+
+	// LastError contains the most recent error message (empty on success)
+	LastError string `json:"lastError,omitempty"`
+
+	// TotalAutogrowAttempted is cumulative count of all autogrow attempts
+	TotalAutogrowAttempted int `json:"totalAutogrowAttempted"`
+
+	// TotalSuccessfulAutogrow is cumulative count of successful autogrows
+	TotalSuccessfulAutogrow int `json:"totalSuccessfulAutogrow"`
 }
 
 // ISCSIDiscoveryInfo contains information about discovered iSCSI targets.
@@ -148,6 +223,8 @@ type VolumePublishInfo struct {
 	// to the host where this volume is mounted. Used by NVMe drivers to
 	// determine if host should be removed from shared subsystems.
 	HostNVMeNamespaceUUIDs []string `json:"-"`
+	Pool                   string   `json:"pool,omitempty"`
+	StorageClass           string   `json:"storageClass,omitempty"`
 	VolumeAccessInfo
 }
 
@@ -169,7 +246,13 @@ type VolumePublication struct {
 	ReadOnly   bool   `json:"readOnly"`
 	// The access mode values are defined by CSI
 	// See https://github.com/container-storage-interface/spec/blob/release-1.5/lib/go/csi/csi.pb.go#L135
-	AccessMode int32 `json:"accessMode"`
+	AccessMode         int32             `json:"accessMode"`
+	AutogrowPolicy     string            `json:"autogrowPolicy,omitempty"`
+	AutogrowIneligible bool              `json:"autogrowIneligible,omitempty"` // Indicates if volume is ineligible for autogrow monitoring
+	StorageClass       string            `json:"storageClass,omitempty"`       // StorageClass used by this volume
+	BackendUUID        string            `json:"backendUUID,omitempty"`        // Backend UUID hosting this volume
+	Pool               string            `json:"pool,omitempty"`               // Storage pool hosting this volume
+	Labels             map[string]string `json:"labels,omitempty"`             // Labels mirrored from CRD metadata labels
 }
 
 type VolumePublicationExternal struct {
@@ -179,18 +262,39 @@ type VolumePublicationExternal struct {
 	ReadOnly   bool   `json:"readOnly"`
 	// The access mode values are defined by CSI
 	// See https://github.com/container-storage-interface/spec/blob/release-1.5/lib/go/csi/csi.pb.go#L135
-	AccessMode int32 `json:"accessMode"`
+	AccessMode         int32             `json:"accessMode"`
+	AutogrowPolicy     string            `json:"autogrowPolicy,omitempty"`
+	AutogrowIneligible bool              `json:"autogrowIneligible,omitempty"` // Indicates if volume is ineligible for autogrow monitoring
+	StorageClass       string            `json:"storageClass,omitempty"`       // StorageClass used by this volume
+	BackendUUID        string            `json:"backendUUID,omitempty"`        // Backend UUID hosting this volume
+	Pool               string            `json:"pool,omitempty"`               // Storage pool hosting this volume
+	Labels             map[string]string `json:"labels,omitempty"`             // Labels mirrored from CRD metadata labels
 }
 
 // Copy returns a new copy of the VolumePublication.
 func (v *VolumePublication) Copy() *VolumePublication {
-	return &VolumePublication{
-		Name:       v.Name,
-		NodeName:   v.NodeName,
-		VolumeName: v.VolumeName,
-		ReadOnly:   v.ReadOnly,
-		AccessMode: v.AccessMode,
+	copy := &VolumePublication{
+		Name:               v.Name,
+		NodeName:           v.NodeName,
+		VolumeName:         v.VolumeName,
+		ReadOnly:           v.ReadOnly,
+		AccessMode:         v.AccessMode,
+		AutogrowPolicy:     v.AutogrowPolicy,
+		AutogrowIneligible: v.AutogrowIneligible,
+		StorageClass:       v.StorageClass,
+		BackendUUID:        v.BackendUUID,
+		Pool:               v.Pool,
 	}
+
+	// Deep copy labels map
+	if v.Labels != nil {
+		copy.Labels = make(map[string]string, len(v.Labels))
+		for k, val := range v.Labels {
+			copy.Labels[k] = val
+		}
+	}
+
+	return copy
 }
 
 func (v *VolumePublication) SmartCopy() interface{} {
@@ -208,11 +312,16 @@ func (v *VolumePublication) GetNodeID() string {
 // ConstructExternal returns an externally facing representation of the VolumePublication.
 func (v *VolumePublication) ConstructExternal() *VolumePublicationExternal {
 	return &VolumePublicationExternal{
-		Name:       v.Name,
-		NodeName:   v.NodeName,
-		VolumeName: v.VolumeName,
-		ReadOnly:   v.ReadOnly,
-		AccessMode: v.AccessMode,
+		Name:               v.Name,
+		NodeName:           v.NodeName,
+		VolumeName:         v.VolumeName,
+		ReadOnly:           v.ReadOnly,
+		AccessMode:         v.AccessMode,
+		AutogrowPolicy:     v.AutogrowPolicy,
+		AutogrowIneligible: v.AutogrowIneligible,
+		StorageClass:       v.StorageClass,
+		BackendUUID:        v.BackendUUID,
+		Pool:               v.Pool,
 	}
 }
 

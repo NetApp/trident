@@ -125,6 +125,11 @@ func (d *SANStorageDriver) BackendName() string {
 	}
 }
 
+// GetResizeDeltaBytes returns the size delta (bytes) below which this driver treats resize as a no-op.
+func (d *SANStorageDriver) GetResizeDeltaBytes() int64 {
+	return int64(tridentconfig.SANResizeDelta)
+}
+
 // poolName constructs the name of the pool reported by this driver instance
 func (d *SANStorageDriver) poolName(name string) string {
 	return fmt.Sprintf("%s_%s", d.BackendName(), strings.Replace(name, "-", "", -1))

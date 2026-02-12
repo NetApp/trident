@@ -857,6 +857,20 @@ func TestSpecialErrorTypes(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
+	// Test UsageStatsUnavailableError
+	t.Run("UsageStatsUnavailableError", func(t *testing.T) {
+		err := UsageStatsUnavailableError("error with formatting %s, %s", "foo", "bar")
+		assert.Contains(t, err.Error(), "error with formatting foo, bar")
+		assert.True(t, IsUsageStatsUnavailableError(err))
+		assert.False(t, IsUsageStatsUnavailableError(nil))
+		assert.False(t, IsUsageStatsUnavailableError(errors.New("generic")))
+
+		// Test without formatting
+		err = UsageStatsUnavailableError("simple message")
+		assert.Equal(t, "simple message", err.Error())
+		assert.True(t, IsUsageStatsUnavailableError(err))
+	})
+
 	// Test FormatError
 	t.Run("FormatError", func(t *testing.T) {
 		err := FormatError(errors.New("formatting error"))
@@ -867,6 +881,20 @@ func TestSpecialErrorTypes(t *testing.T) {
 		// Test wrapped format error
 		wrappedErr := fmt.Errorf("wrapping formatError; %w", err)
 		assert.True(t, IsFormatError(wrappedErr))
+	})
+
+	// Test UsageStatsUnavailableError
+	t.Run("UsageStatsUnavailableError", func(t *testing.T) {
+		err := UsageStatsUnavailableError("error with formatting %s, %s", "foo", "bar")
+		assert.Contains(t, err.Error(), "error with formatting foo, bar")
+		assert.True(t, IsUsageStatsUnavailableError(err))
+		assert.False(t, IsUsageStatsUnavailableError(nil))
+		assert.False(t, IsUsageStatsUnavailableError(errors.New("generic")))
+
+		// Test without formatting
+		err = UsageStatsUnavailableError("simple message")
+		assert.Equal(t, "simple message", err.Error())
+		assert.True(t, IsUsageStatsUnavailableError(err))
 	})
 }
 
@@ -986,4 +1014,658 @@ func TestMustRetryError(t *testing.T) {
 	// Multi-level wrapping should still be detected
 	wrapped := fmt.Errorf("outer: %w", MustRetryError("retry after backoff"))
 	assert.True(t, IsMustRetryError(wrapped))
+}
+
+func TestInterfaceNotSupportedError(t *testing.T) {
+	err := InterfaceNotSupportedError("ants.Config", "MultiPoolWithStats")
+
+	assert.True(t, IsInterfaceNotSupportedError(err))
+	assert.Equal(t, `requested type "ants.Config" does not support interface MultiPoolWithStats`, err.Error())
+	assert.False(t, IsInterfaceNotSupportedError(nil))
+	assert.False(t, IsInterfaceNotSupportedError(errors.New("generic error")))
+}
+
+func TestStateError(t *testing.T) {
+	tests := []struct {
+		name        string
+		state       string
+		message     string
+		expectedMsg string
+		testIsFunc  bool
+	}{
+		{
+			name:        "StateError with state and message",
+			state:       "Starting",
+			message:     "cannot activate: current state is Starting",
+			expectedMsg: "state: Starting; cannot activate: current state is Starting",
+			testIsFunc:  true,
+		},
+		{
+			name:        "StateError with state only (empty message)",
+			state:       "Stopping",
+			message:     "",
+			expectedMsg: "state: Stopping",
+			testIsFunc:  true,
+		},
+		{
+			name:        "StateError with Running state and message",
+			state:       "Running",
+			message:     "autogrow is already running",
+			expectedMsg: "state: Running; autogrow is already running",
+			testIsFunc:  true,
+		},
+		{
+			name:        "StateError with Stopped state and message",
+			state:       "Stopped",
+			message:     "autogrow is already stopped",
+			expectedMsg: "state: Stopped; autogrow is already stopped",
+			testIsFunc:  true,
+		},
+		{
+			name:        "StateError with empty state and message",
+			state:       "",
+			message:     "unknown state error",
+			expectedMsg: "state: ; unknown state error",
+			testIsFunc:  true,
+		},
+		{
+			name:        "StateError with empty state and empty message",
+			state:       "",
+			message:     "",
+			expectedMsg: "state: ",
+			testIsFunc:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := NewStateError(tt.state, tt.message)
+
+			// Verify error message format
+			assert.Equal(t, tt.expectedMsg, err.Error())
+
+			if tt.testIsFunc {
+				assert.True(t, IsStateError(err), "IsStateError should detect this error")
+			}
+
+			// Verify we can extract state and message via type assertion
+			var stateErr *StateError
+			if assert.True(t, errors.As(err, &stateErr)) {
+				assert.Equal(t, tt.state, stateErr.State, "State field should match")
+				assert.Equal(t, tt.message, stateErr.Message, "Message field should match")
+			}
+		})
+	}
+
+	t.Run("IsStateError_NilError", func(t *testing.T) {
+		assert.False(t, IsStateError(nil))
+	})
+
+	t.Run("IsStateError_DifferentErrorType", func(t *testing.T) {
+		assert.False(t, IsStateError(errors.New("generic error")))
+		assert.False(t, IsStateError(NotFoundError("not found")))
+		assert.False(t, IsStateError(InvalidInputError("invalid input")))
+	})
+
+	// Test wrapped error detection
+	t.Run("IsStateError_WrappedError", func(t *testing.T) {
+		originalErr := NewStateError("Starting", "activation in progress")
+		wrappedErr := fmt.Errorf("operation failed: %w", originalErr)
+
+		assert.True(t, IsStateError(wrappedErr), "Should detect wrapped state error")
+
+		// Should be able to extract the state error from wrapped error
+		var stateErr *StateError
+		if assert.True(t, errors.As(wrappedErr, &stateErr)) {
+			assert.Equal(t, "Starting", stateErr.State)
+			assert.Equal(t, "activation in progress", stateErr.Message)
+		}
+	})
+
+	// Test multi-level wrapping
+	t.Run("IsStateError_DeepWrapping", func(t *testing.T) {
+		originalErr := NewStateError("Stopping", "deactivation in progress")
+		wrappedOnce := fmt.Errorf("level 1: %w", originalErr)
+		wrappedTwice := fmt.Errorf("level 2: %w", wrappedOnce)
+		wrappedThrice := fmt.Errorf("level 3: %w", wrappedTwice)
+
+		assert.True(t, IsStateError(wrappedThrice), "Should detect deeply wrapped state error")
+
+		// Should still be able to extract state error fields
+		var stateErr *StateError
+		if assert.True(t, errors.As(wrappedThrice, &stateErr)) {
+			assert.Equal(t, "Stopping", stateErr.State)
+			assert.Equal(t, "deactivation in progress", stateErr.Message)
+		}
+	})
+
+	// Test direct struct creation (verify public fields are accessible)
+	t.Run("StateError_DirectStructCreation", func(t *testing.T) {
+		err := &StateError{
+			State:   "CustomState",
+			Message: "custom message",
+		}
+
+		assert.Equal(t, "state: CustomState; custom message", err.Error())
+		assert.True(t, IsStateError(err))
+		assert.Equal(t, "CustomState", err.State)
+		assert.Equal(t, "custom message", err.Message)
+	})
+
+	// Test state extraction from wrapped error (common use case in orchestrator)
+	t.Run("StateError_ExtractStateFromWrappedError", func(t *testing.T) {
+		originalErr := NewStateError("Running", "cannot activate: already running")
+		wrappedErr := fmt.Errorf("autogrow activation failed: %w", originalErr)
+
+		// Caller pattern: check if it's a state error, then extract state
+		if IsStateError(wrappedErr) {
+			var stateErr *StateError
+			if errors.As(wrappedErr, &stateErr) {
+				// This is the pattern used in trident_autogrow_policies.go
+				switch stateErr.State {
+				case "Starting", "Stopping":
+					// Transient states - would requeue
+					assert.Contains(t, []string{"Starting", "Stopping"}, stateErr.State)
+				case "Running":
+					// Already running - this is the case we're testing
+					assert.Equal(t, "Running", stateErr.State)
+				case "Stopped":
+					// Already stopped
+					assert.Equal(t, "Stopped", stateErr.State)
+				default:
+					t.Errorf("Unexpected state: %s", stateErr.State)
+				}
+			}
+		} else {
+			t.Error("Expected wrapped error to be detected as StateError")
+		}
+	})
+
+	// Test all state transitions from autogrow orchestrator
+	t.Run("StateError_AllOrchestatorStates", func(t *testing.T) {
+		states := []struct {
+			state       string
+			message     string
+			isTransient bool
+		}{
+			{"Stopped", "autogrow is not running", false},
+			{"Starting", "activation in progress", true},
+			{"Running", "autogrow is already running", false},
+			{"Stopping", "deactivation in progress", true},
+		}
+
+		for _, s := range states {
+			t.Run(s.state, func(t *testing.T) {
+				err := NewStateError(s.state, s.message)
+				assert.True(t, IsStateError(err))
+
+				var stateErr *StateError
+				if assert.True(t, errors.As(err, &stateErr)) {
+					assert.Equal(t, s.state, stateErr.State)
+					assert.Equal(t, s.message, stateErr.Message)
+
+					// Verify transient state logic
+					isTransient := (stateErr.State == "Starting" || stateErr.State == "Stopping")
+					assert.Equal(t, s.isTransient, isTransient,
+						"State %s transient classification mismatch", s.state)
+				}
+			})
+		}
+	})
+}
+
+func TestKeyError(t *testing.T) {
+	// Test KeyNotFoundError creation
+	t.Run("KeyNotFoundError_StringKey", func(t *testing.T) {
+		err := KeyNotFoundError("mykey")
+		assert.Error(t, err)
+		assert.Equal(t, "key mykey does not exist in cache", err.Error())
+		assert.True(t, IsKeyError(err))
+	})
+
+	t.Run("KeyNotFoundError_IntKey", func(t *testing.T) {
+		err := KeyNotFoundError(42)
+		assert.Error(t, err)
+		assert.Equal(t, "key 42 does not exist in cache", err.Error())
+		assert.True(t, IsKeyError(err))
+	})
+
+	// Test Key() method
+	t.Run("KeyError_KeyExtraction", func(t *testing.T) {
+		err := KeyNotFoundError("test-key")
+		var keyErr *keyError
+		if assert.True(t, errors.As(err, &keyErr)) {
+			assert.Equal(t, "test-key", keyErr.Key())
+		}
+	})
+
+	// Test negative cases
+	t.Run("IsKeyError_Nil", func(t *testing.T) {
+		assert.False(t, IsKeyError(nil))
+	})
+
+	t.Run("IsKeyError_DifferentErrorType", func(t *testing.T) {
+		assert.False(t, IsKeyError(errors.New("generic error")))
+		assert.False(t, IsKeyError(NotFoundError("not found")))
+	})
+
+	// Test wrapped error detection
+	t.Run("IsKeyError_WrappedError", func(t *testing.T) {
+		originalErr := KeyNotFoundError("wrapped-key")
+		wrappedErr := fmt.Errorf("cache operation failed: %w", originalErr)
+
+		assert.True(t, IsKeyError(wrappedErr))
+
+		var keyErr *keyError
+		if assert.True(t, errors.As(wrappedErr, &keyErr)) {
+			assert.Equal(t, "wrapped-key", keyErr.Key())
+		}
+	})
+}
+
+func TestValueError(t *testing.T) {
+	// Test ValueNotFoundError creation with key
+	t.Run("ValueNotFoundError_WithKey", func(t *testing.T) {
+		err := ValueNotFoundError("myvalue", "mykey")
+		assert.Error(t, err)
+		assert.Equal(t, "for key mykey, value myvalue does not exist in cache", err.Error())
+		assert.True(t, IsValueError(err))
+	})
+
+	// Test ValueNotFoundError creation without key
+	t.Run("ValueNotFoundError_WithoutKey", func(t *testing.T) {
+		err := ValueNotFoundError("myvalue")
+		assert.Error(t, err)
+		assert.Equal(t, "value myvalue does not exist in cache", err.Error())
+		assert.True(t, IsValueError(err))
+	})
+
+	// Test with mixed types
+	t.Run("ValueNotFoundError_MixedTypes", func(t *testing.T) {
+		err := ValueNotFoundError(123, "key1")
+		assert.Error(t, err)
+		assert.Equal(t, "for key key1, value 123 does not exist in cache", err.Error())
+		assert.True(t, IsValueError(err))
+	})
+
+	// Test Key() and Value() methods with key provided
+	t.Run("ValueError_KeyValueExtraction_WithKey", func(t *testing.T) {
+		err := ValueNotFoundError("test-value", "test-key")
+		var valErr *valueError
+		if assert.True(t, errors.As(err, &valErr)) {
+			assert.Equal(t, "test-key", valErr.Key())
+			assert.Equal(t, "test-value", valErr.Value())
+		}
+	})
+
+	// Test Key() and Value() methods without key
+	t.Run("ValueError_KeyValueExtraction_WithoutKey", func(t *testing.T) {
+		err := ValueNotFoundError("test-value")
+		var valErr *valueError
+		if assert.True(t, errors.As(err, &valErr)) {
+			assert.Equal(t, "", valErr.Key(), "Key should be empty when not provided")
+			assert.Equal(t, "test-value", valErr.Value())
+		}
+	})
+
+	// Test negative cases
+	t.Run("IsValueError_Nil", func(t *testing.T) {
+		assert.False(t, IsValueError(nil))
+	})
+
+	t.Run("IsValueError_DifferentErrorType", func(t *testing.T) {
+		assert.False(t, IsValueError(errors.New("generic error")))
+		assert.False(t, IsValueError(NotFoundError("not found")))
+		assert.False(t, IsValueError(KeyNotFoundError("key")))
+	})
+
+	// Test wrapped error detection
+	t.Run("IsValueError_WrappedError", func(t *testing.T) {
+		originalErr := ValueNotFoundError("wrapped-value", "wrapped-key")
+		wrappedErr := fmt.Errorf("cache delete failed: %w", originalErr)
+
+		assert.True(t, IsValueError(wrappedErr))
+
+		var valErr *valueError
+		if assert.True(t, errors.As(wrappedErr, &valErr)) {
+			assert.Equal(t, "wrapped-key", valErr.Key())
+			assert.Equal(t, "wrapped-value", valErr.Value())
+		}
+	})
+
+	// Test multi-level wrapping
+	t.Run("IsValueError_DeepWrapping", func(t *testing.T) {
+		originalErr := ValueNotFoundError("deep-value", "deep-key")
+		wrappedOnce := fmt.Errorf("level 1: %w", originalErr)
+		wrappedTwice := fmt.Errorf("level 2: %w", wrappedOnce)
+
+		assert.True(t, IsValueError(wrappedTwice))
+
+		var valErr *valueError
+		if assert.True(t, errors.As(wrappedTwice, &valErr)) {
+			assert.Equal(t, "deep-key", valErr.Key())
+			assert.Equal(t, "deep-value", valErr.Value())
+		}
+	})
+
+	// Test with nil key (should be treated as no key)
+	t.Run("ValueNotFoundError_NilKey", func(t *testing.T) {
+		err := ValueNotFoundError("myvalue", nil)
+		assert.Error(t, err)
+		assert.Equal(t, "value myvalue does not exist in cache", err.Error())
+
+		var valErr *valueError
+		if assert.True(t, errors.As(err, &valErr)) {
+			assert.Equal(t, "", valErr.Key(), "Key should be empty when nil is provided")
+			assert.Equal(t, "myvalue", valErr.Value())
+		}
+	})
+}
+
+func TestZeroValueError(t *testing.T) {
+	tests := []struct {
+		name          string
+		makeErr       func() error
+		wantMsg       string
+		wantIsZeroVal assert.BoolAssertionFunc
+	}{
+		{
+			name:          "ZeroValueError_NoArgs",
+			makeErr:       func() error { return ZeroValueError("key must not be zero value") },
+			wantMsg:       "key must not be zero value",
+			wantIsZeroVal: assert.True,
+		},
+		{
+			name:          "ZeroValueError_WithArgs",
+			makeErr:       func() error { return ZeroValueError("field %s must not be zero value", "userName") },
+			wantMsg:       "field userName must not be zero value",
+			wantIsZeroVal: assert.True,
+		},
+		{
+			name:          "ZeroValueError_MultipleArgs",
+			makeErr:       func() error { return ZeroValueError("%s field at index %d is zero value", "ID", 5) },
+			wantMsg:       "ID field at index 5 is zero value",
+			wantIsZeroVal: assert.True,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.makeErr()
+			// message formatting
+			assert.Equal(t, tt.wantMsg, err.Error())
+			// IsZeroValueError detection
+			tt.wantIsZeroVal(t, IsZeroValueError(err))
+			// negative cases
+			assert.False(t, IsZeroValueError(nil))
+			assert.False(t, IsZeroValueError(errors.New("generic")))
+		})
+	}
+
+	// Multi-level wrapping should still be detected
+	wrapped := fmt.Errorf("outer: %w", ZeroValueError("key must not be zero value"))
+	assert.True(t, IsZeroValueError(wrapped))
+}
+
+func TestBusClosedError(t *testing.T) {
+	err := BusClosedError()
+
+	// Test that IsBusClosedError correctly identifies the error
+	assert.True(t, IsBusClosedError(err))
+	assert.Equal(t, "eventbus: bus is closed", err.Error())
+
+	// Test that nil is not identified as BusClosedError
+	assert.False(t, IsBusClosedError(nil))
+
+	// Test that generic errors are not identified as BusClosedError
+	assert.False(t, IsBusClosedError(errors.New("generic error")))
+
+	// Test wrapped BusClosedError is still detected
+	wrappedErr := fmt.Errorf("operation failed: %w", err)
+	assert.True(t, IsBusClosedError(wrappedErr))
+
+	// Test that errors.As works correctly
+	var target *busClosedError
+	assert.True(t, errors.As(err, &target))
+	assert.Equal(t, "eventbus: bus is closed", target.Error())
+}
+
+func TestNilHandlerError(t *testing.T) {
+	err := NilHandlerError()
+
+	// Test that IsNilHandlerError correctly identifies the error
+	assert.True(t, IsNilHandlerError(err))
+	assert.Equal(t, "eventbus: handler cannot be nil", err.Error())
+
+	// Test that nil is not identified as NilHandlerError
+	assert.False(t, IsNilHandlerError(nil))
+
+	// Test that generic errors are not identified as NilHandlerError
+	assert.False(t, IsNilHandlerError(errors.New("generic error")))
+
+	// Test wrapped NilHandlerError is still detected
+	wrappedErr := fmt.Errorf("subscription failed: %w", err)
+	assert.True(t, IsNilHandlerError(wrappedErr))
+
+	// Test that errors.As works correctly
+	var target *nilHandlerError
+	assert.True(t, errors.As(err, &target))
+	assert.Equal(t, "eventbus: handler cannot be nil", target.Error())
+}
+
+func TestAutogrowPolicyInUseError(t *testing.T) {
+	tests := []struct {
+		name        string
+		policyName  string
+		volumeCount int
+		volumes     []string
+		expectedMsg string
+		testIsFunc  bool
+	}{
+		{
+			name:        "Single volume using policy",
+			policyName:  "gold-policy",
+			volumeCount: 1,
+			volumes:     []string{"vol1"},
+			expectedMsg: "cannot delete policy gold-policy: in use by 1 volume(s): [vol1]",
+			testIsFunc:  true,
+		},
+		{
+			name:        "Multiple volumes using policy",
+			policyName:  "silver-policy",
+			volumeCount: 3,
+			volumes:     []string{"vol1", "vol2", "vol3"},
+			expectedMsg: "cannot delete policy silver-policy: in use by 3 volume(s): [vol1 vol2 vol3]",
+			testIsFunc:  true,
+		},
+		{
+			name:        "No volumes (count zero)",
+			policyName:  "bronze-policy",
+			volumeCount: 0,
+			volumes:     []string{},
+			expectedMsg: "cannot delete policy bronze-policy: in use by 0 volume(s): []",
+			testIsFunc:  true,
+		},
+		{
+			name:        "Empty policy name",
+			policyName:  "",
+			volumeCount: 1,
+			volumes:     []string{"vol1"},
+			expectedMsg: "cannot delete policy : in use by 1 volume(s): [vol1]",
+			testIsFunc:  true,
+		},
+		{
+			name:        "Nil volumes slice",
+			policyName:  "test-policy",
+			volumeCount: 0,
+			volumes:     nil,
+			expectedMsg: "cannot delete policy test-policy: in use by 0 volume(s): []",
+			testIsFunc:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := AutogrowPolicyInUseError(tt.policyName, tt.volumeCount, tt.volumes)
+
+			assert.Equal(t, tt.expectedMsg, err.Error())
+
+			if tt.testIsFunc {
+				assert.True(t, IsAutogrowPolicyInUseError(err), "IsAutogrowPolicyInUseError should detect this error")
+			}
+		})
+	}
+
+	// Test negative cases for IsAutogrowPolicyInUseError
+	t.Run("IsAutogrowPolicyInUseError_NilError", func(t *testing.T) {
+		assert.False(t, IsAutogrowPolicyInUseError(nil))
+	})
+
+	t.Run("IsAutogrowPolicyInUseError_DifferentErrorType", func(t *testing.T) {
+		assert.False(t, IsAutogrowPolicyInUseError(errors.New("generic error")))
+		assert.False(t, IsAutogrowPolicyInUseError(NotFoundError("not found")))
+	})
+
+	// Test wrapped error detection
+	t.Run("IsAutogrowPolicyInUseError_WrappedError", func(t *testing.T) {
+		originalErr := AutogrowPolicyInUseError("test-policy", 2, []string{"vol1", "vol2"})
+		wrappedErr := fmt.Errorf("operation failed: %w", originalErr)
+
+		assert.True(t, IsAutogrowPolicyInUseError(wrappedErr), "Should detect wrapped autogrow policy in use error")
+	})
+}
+
+func TestAutogrowPolicyNotUsableError(t *testing.T) {
+	tests := []struct {
+		name        string
+		policyName  string
+		state       string
+		expectedMsg string
+		testIsFunc  bool
+	}{
+		{
+			name:        "Policy in Failed state",
+			policyName:  "gold-policy",
+			state:       "Failed",
+			expectedMsg: "autogrow policy 'gold-policy' exists but is in 'Failed' state and cannot be used",
+			testIsFunc:  true,
+		},
+		{
+			name:        "Policy in Deleting state",
+			policyName:  "silver-policy",
+			state:       "Deleting",
+			expectedMsg: "autogrow policy 'silver-policy' exists but is in 'Deleting' state and cannot be used",
+			testIsFunc:  true,
+		},
+		{
+			name:        "Empty policy name",
+			policyName:  "",
+			state:       "Failed",
+			expectedMsg: "autogrow policy '' exists but is in 'Failed' state and cannot be used",
+			testIsFunc:  true,
+		},
+		{
+			name:        "Empty state",
+			policyName:  "test-policy",
+			state:       "",
+			expectedMsg: "autogrow policy 'test-policy' exists but is in '' state and cannot be used",
+			testIsFunc:  true,
+		},
+		{
+			name:        "Custom state value",
+			policyName:  "custom-policy",
+			state:       "CustomState",
+			expectedMsg: "autogrow policy 'custom-policy' exists but is in 'CustomState' state and cannot be used",
+			testIsFunc:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := AutogrowPolicyNotUsableError(tt.policyName, tt.state)
+
+			// Verify error message
+			assert.Equal(t, tt.expectedMsg, err.Error())
+
+			// Verify IsAutogrowPolicyNotUsableError detects it
+			if tt.testIsFunc {
+				assert.True(t, IsAutogrowPolicyNotUsableError(err), "IsAutogrowPolicyNotUsableError should detect this error")
+			}
+		})
+	}
+
+	// Test negative cases for IsAutogrowPolicyNotUsableError
+	t.Run("IsAutogrowPolicyNotUsableError_NilError", func(t *testing.T) {
+		assert.False(t, IsAutogrowPolicyNotUsableError(nil))
+	})
+
+	t.Run("IsAutogrowPolicyNotUsableError_DifferentErrorType", func(t *testing.T) {
+		assert.False(t, IsAutogrowPolicyNotUsableError(errors.New("generic error")))
+		assert.False(t, IsAutogrowPolicyNotUsableError(NotFoundError("not found")))
+		assert.False(t, IsAutogrowPolicyNotUsableError(AutogrowPolicyInUseError("policy", 1, []string{"vol1"})))
+	})
+
+	// Test wrapped error detection
+	t.Run("IsAutogrowPolicyNotUsableError_WrappedError", func(t *testing.T) {
+		originalErr := AutogrowPolicyNotUsableError("test-policy", "Failed")
+		wrappedErr := fmt.Errorf("validation failed: %w", originalErr)
+
+		assert.True(t, IsAutogrowPolicyNotUsableError(wrappedErr), "Should detect wrapped autogrow policy not usable error")
+	})
+}
+
+func TestAutogrowPolicyNotFoundError(t *testing.T) {
+	tests := []struct {
+		name           string
+		policyName     string
+		expectedSubstr string
+	}{
+		{
+			name:           "Simple policy name",
+			policyName:     "test-policy",
+			expectedSubstr: "autogrow policy 'test-policy' not found",
+		},
+		{
+			name:           "Policy with special characters",
+			policyName:     "my-policy-123",
+			expectedSubstr: "autogrow policy 'my-policy-123' not found",
+		},
+		{
+			name:           "Empty policy name",
+			policyName:     "",
+			expectedSubstr: "autogrow policy '' not found",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := AutogrowPolicyNotFoundError(tt.policyName)
+
+			// Verify error message contains expected content
+			assert.Contains(t, err.Error(), tt.expectedSubstr)
+
+			// Verify IsAutogrowPolicyNotFoundError detects it
+			assert.True(t, IsAutogrowPolicyNotFoundError(err), "IsAutogrowPolicyNotFoundError should detect this error")
+		})
+	}
+
+	// Test negative cases for IsAutogrowPolicyNotFoundError
+	t.Run("IsAutogrowPolicyNotFoundError_NilError", func(t *testing.T) {
+		assert.False(t, IsAutogrowPolicyNotFoundError(nil))
+	})
+
+	t.Run("IsAutogrowPolicyNotFoundError_DifferentErrorType", func(t *testing.T) {
+		assert.False(t, IsAutogrowPolicyNotFoundError(errors.New("generic error")))
+		assert.False(t, IsAutogrowPolicyNotFoundError(NotFoundError("not found")))
+		assert.False(t, IsAutogrowPolicyNotFoundError(AutogrowPolicyInUseError("policy", 1, []string{"vol1"})))
+		assert.False(t, IsAutogrowPolicyNotFoundError(AutogrowPolicyNotUsableError("policy", "Failed")))
+	})
+
+	// Test wrapped error detection
+	t.Run("IsAutogrowPolicyNotFoundError_WrappedError", func(t *testing.T) {
+		originalErr := AutogrowPolicyNotFoundError("test-policy")
+		wrappedErr := fmt.Errorf("lookup failed: %w", originalErr)
+
+		assert.True(t, IsAutogrowPolicyNotFoundError(wrappedErr), "Should detect wrapped autogrow policy not found error")
+	})
 }

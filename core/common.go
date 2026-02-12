@@ -8,6 +8,8 @@ import (
 	"os"
 	"time"
 
+	"golang.org/x/time/rate"
+
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core/metrics"
 	. "github.com/netapp/trident/logging"
@@ -19,6 +21,15 @@ const (
 	NodeAccessReconcilePeriod      = time.Second * 30
 	NodeRegistrationCooldownPeriod = time.Second * 30
 	AttachISCSIVolumeTimeoutLong   = time.Second * 90
+
+	// VP sync rate limiter constants
+	// Limits VP field propagation to 1 QPS with burst of 2
+	vpUpdateRateLimit = 1
+	vpUpdateBurst     = 2
+)
+
+var (
+	vpSyncRateLimiter *rate.Limiter // Rate limiter for VP field updates
 
 	FlagConcurrent = "concurrent"
 )
@@ -144,13 +155,55 @@ func getProtocol(
 	return res.protocol, res.err
 }
 
-func generateVolumePublication(volName string, publishInfo *models.VolumePublishInfo) *models.VolumePublication {
+// isVolumeAutogrowIneligible returns true if the volume should be excluded
+// from autogrow monitoring based on its configuration.
+//
+// A volume is ineligible if:
+// 1. Unmanaged Import - Trident doesn't manage it, can't resize
+// 2. Managed Import with Thick Provisioning (raw block SAN- NAS/file can autogrow)
+// 3. Read-Only Clone - Immutable, can't be resized
+func isVolumeAutogrowIneligible(volConfig *storage.VolumeConfig) bool {
+	// Unmanaged imports are ineligible
+	if volConfig.ImportNotManaged {
+		return true
+	}
+
+	// Managed imports with thick provisioning (SpaceReserve == "volume") are ineligible
+	// ONLY for SAN volumes - NAS volumes can be autogrown regardless of thick/thin provisioning
+	if volConfig.ImportOriginalName != "" && volConfig.SpaceReserve == "volume" {
+		// Use getProtocol to determine actual protocol based on volume configuration
+		protocol, err := getProtocol(context.Background(), volConfig.VolumeMode, volConfig.AccessMode, volConfig.Protocol)
+		// If protocol determination succeeds and it's NOT file (i.e., it's block/SAN), the volume is ineligible
+		if err == nil && protocol != config.File {
+			return true
+		}
+	}
+
+	// Read-only clones are ineligible
+	if volConfig.ReadOnlyClone {
+		return true
+	}
+
+	return false
+}
+
+func generateVolumePublication(volName string, publishInfo *models.VolumePublishInfo, volConfig *storage.VolumeConfig) *models.VolumePublication {
 	vp := &models.VolumePublication{
-		Name:       models.GenerateVolumePublishName(volName, publishInfo.HostName),
-		VolumeName: volName,
-		NodeName:   publishInfo.HostName,
-		ReadOnly:   publishInfo.ReadOnly,
-		AccessMode: publishInfo.AccessMode,
+		Name:               models.GenerateVolumePublishName(volName, publishInfo.HostName),
+		VolumeName:         volName,
+		NodeName:           publishInfo.HostName,
+		ReadOnly:           publishInfo.ReadOnly,
+		AccessMode:         publishInfo.AccessMode,
+		StorageClass:       publishInfo.StorageClass,
+		BackendUUID:        publishInfo.BackendUUID,
+		Pool:               publishInfo.Pool,
+		AutogrowPolicy:     volConfig.RequestedAutogrowPolicy,
+		AutogrowIneligible: isVolumeAutogrowIneligible(volConfig),
+	}
+
+	// Initialize labels with node name label
+	vp.Labels = map[string]string{
+		config.TridentNodeNameLabel: publishInfo.HostName,
 	}
 
 	return vp
@@ -169,4 +222,76 @@ func isCRDContext(ctx context.Context) bool {
 func isPeriodicContext(ctx context.Context) bool {
 	ctxSource := ctx.Value(ContextKeyRequestSource)
 	return ctxSource != nil && ctxSource == ContextSourcePeriodic
+}
+
+// syncVolumePublicationFields compares TVol and VP fields and returns which fields need syncing.
+// Modifies the VP in place to match the source volume's current state.
+func syncVolumePublicationFields(vol *storage.Volume, vp *models.VolumePublication) bool {
+	syncNeeded := false
+
+	// Sync legacy fields (remove this logic once 26.02 reaches its EOL)
+	{
+		if vp.StorageClass != vol.Config.StorageClass {
+			vp.StorageClass = vol.Config.StorageClass
+			syncNeeded = true
+		}
+
+		if vp.BackendUUID != vol.BackendUUID {
+			vp.BackendUUID = vol.BackendUUID
+			syncNeeded = true
+		}
+
+		if vp.Pool != vol.Pool {
+			vp.Pool = vol.Pool
+			syncNeeded = true
+		}
+
+		isIneligible := isVolumeAutogrowIneligible(vol.Config)
+		if vp.AutogrowIneligible != isIneligible {
+			vp.AutogrowIneligible = isIneligible
+			syncNeeded = true
+		}
+
+		// Check if labels need sync
+		expectedLabels := map[string]string{
+			config.TridentNodeNameLabel: vp.NodeName,
+		}
+
+		if labelsNeedSync(vp.Labels, expectedLabels) {
+			// Initialize labels if nil
+			if vp.Labels == nil {
+				vp.Labels = make(map[string]string)
+			}
+
+			// Update labels
+			for k, v := range expectedLabels {
+				vp.Labels[k] = v
+			}
+
+			syncNeeded = true
+		}
+	}
+
+	if vp.AutogrowPolicy != vol.Config.RequestedAutogrowPolicy {
+		vp.AutogrowPolicy = vol.Config.RequestedAutogrowPolicy
+		syncNeeded = true
+	}
+
+	return syncNeeded
+}
+
+// labelsNeedSync returns true if any desired label is missing from current or has a different value
+func labelsNeedSync(current, desired map[string]string) bool {
+	if current == nil && desired == nil {
+		return false
+	}
+
+	// Check if all desired labels are present and have correct values
+	for k, desiredVal := range desired {
+		if currentVal, exists := current[k]; !exists || currentVal != desiredVal {
+			return true
+		}
+	}
+
+	return false
 }

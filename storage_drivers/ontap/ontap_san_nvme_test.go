@@ -91,6 +91,11 @@ func newNVMeDriverAndMockApi(t *testing.T) (*NVMeStorageDriver, *mockapi.MockOnt
 	return newNVMeDriver(mockAPI, nil, nil), mockAPI
 }
 
+func TestNVMeStorageDriverGetResizeDeltaBytes(t *testing.T) {
+	driver, _ := newNVMeDriverAndMockApi(t)
+	assert.Equal(t, int64(tridentconfig.SANResizeDelta), driver.GetResizeDeltaBytes())
+}
+
 func TestNVMeBackendName(t *testing.T) {
 	d := newNVMeDriver(nil, nil, nil)
 

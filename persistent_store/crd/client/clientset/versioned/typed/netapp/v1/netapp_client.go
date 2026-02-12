@@ -14,6 +14,8 @@ type TridentV1Interface interface {
 	RESTClient() rest.Interface
 	TridentActionMirrorUpdatesGetter
 	TridentActionSnapshotRestoresGetter
+	TridentAutogrowPoliciesGetter
+	TridentAutogrowRequestInternalsGetter
 	TridentBackendsGetter
 	TridentBackendConfigsGetter
 	TridentGroupSnapshotsGetter
@@ -42,6 +44,14 @@ func (c *TridentV1Client) TridentActionMirrorUpdates(namespace string) TridentAc
 
 func (c *TridentV1Client) TridentActionSnapshotRestores(namespace string) TridentActionSnapshotRestoreInterface {
 	return newTridentActionSnapshotRestores(c, namespace)
+}
+
+func (c *TridentV1Client) TridentAutogrowPolicies() TridentAutogrowPolicyInterface {
+	return newTridentAutogrowPolicies(c)
+}
+
+func (c *TridentV1Client) TridentAutogrowRequestInternals(namespace string) TridentAutogrowRequestInternalInterface {
+	return newTridentAutogrowRequestInternals(c, namespace)
 }
 
 func (c *TridentV1Client) TridentBackends(namespace string) TridentBackendInterface {

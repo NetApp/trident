@@ -117,6 +117,12 @@ type StateGetter interface {
 	GetBackendState(ctx context.Context) (string, *roaring.Bitmap)
 }
 
+// ResizeDeltaGetter is optionally implemented by drivers that treat resize requests
+// within a certain delta of current size as a no-op (e.g. ontap-san, solidfire-san).
+type ResizeDeltaGetter interface {
+	GetResizeDeltaBytes() int64
+}
+
 // VolumeUpdater provides a common interface for backends that support updating the volume
 type VolumeUpdater interface {
 	Update(
@@ -170,6 +176,15 @@ func (b *StorageBackend) UpdateVolume(
 	})
 
 	return volUpdateDriver.Update(ctx, volConfig, updateInfo, allVolumes)
+}
+
+// GetResizeDeltaBytes returns the resize delta (bytes) for this backend.
+// If the driver implements ResizeDeltaGetter, that value is returned; otherwise 0.
+func (b *StorageBackend) GetResizeDeltaBytes() int64 {
+	if rd, ok := b.driver.(ResizeDeltaGetter); ok {
+		return rd.GetResizeDeltaBytes()
+	}
+	return 0
 }
 
 func (b *StorageBackend) Driver() Driver {

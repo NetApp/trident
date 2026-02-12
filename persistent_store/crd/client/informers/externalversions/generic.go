@@ -43,6 +43,10 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentActionMirrorUpdates().Informer()}, nil
 	case v1.SchemeGroupVersion.WithResource("tridentactionsnapshotrestores"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentActionSnapshotRestores().Informer()}, nil
+	case v1.SchemeGroupVersion.WithResource("tridentautogrowpolicies"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentAutogrowPolicies().Informer()}, nil
+	case v1.SchemeGroupVersion.WithResource("tridentautogrowrequestinternals"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentAutogrowRequestInternals().Informer()}, nil
 	case v1.SchemeGroupVersion.WithResource("tridentbackends"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Trident().V1().TridentBackends().Informer()}, nil
 	case v1.SchemeGroupVersion.WithResource("tridentbackendconfigs"):

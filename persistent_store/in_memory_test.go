@@ -1310,3 +1310,220 @@ func TestInMemoryClient_MultipleOperations(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Empty(t, nodes)
 }
+
+func TestInMemoryClient_GetAutogrowPolicy(t *testing.T) {
+	client := NewInMemoryClient()
+
+	tests := []struct {
+		name          string
+		policyName    string
+		addPolicy     bool
+		policyData    *storage.AutogrowPolicyPersistent
+		expectError   bool
+		errorContains string
+	}{
+		{
+			name:       "Get existing policy",
+			policyName: "test-policy",
+			addPolicy:  true,
+			policyData: &storage.AutogrowPolicyPersistent{
+				Name:          "test-policy",
+				UsedThreshold: "80%",
+				GrowthAmount:  "20%",
+				MaxSize:       "1000Gi",
+				State:         storage.AutogrowPolicyStateSuccess,
+			},
+			expectError: false,
+		},
+		{
+			name:          "Get non-existent policy",
+			policyName:    "nonexistent-policy",
+			addPolicy:     false,
+			expectError:   true,
+			errorContains: "Unable to find key",
+		},
+		{
+			name:       "Get policy with empty MaxSize",
+			policyName: "policy-no-max",
+			addPolicy:  true,
+			policyData: &storage.AutogrowPolicyPersistent{
+				Name:          "policy-no-max",
+				UsedThreshold: "90%",
+				GrowthAmount:  "10%",
+				MaxSize:       "",
+				State:         storage.AutogrowPolicyStateSuccess,
+			},
+			expectError: false,
+		},
+		{
+			name:       "Get policy in Failed state",
+			policyName: "failed-policy",
+			addPolicy:  true,
+			policyData: &storage.AutogrowPolicyPersistent{
+				Name:          "failed-policy",
+				UsedThreshold: "85%",
+				GrowthAmount:  "15%",
+				MaxSize:       "2000Gi",
+				State:         storage.AutogrowPolicyStateFailed,
+			},
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Add policy to in-memory store if needed
+			if tt.addPolicy {
+				client.autogrowPolicies[tt.policyData.Name] = tt.policyData
+			}
+
+			// Get the policy
+			policy, err := client.GetAutogrowPolicy(testCtx(), tt.policyName)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Nil(t, policy)
+				if tt.errorContains != "" {
+					assert.Contains(t, err.Error(), tt.errorContains)
+				}
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, policy)
+				assert.Equal(t, tt.policyData.Name, policy.Name)
+				assert.Equal(t, tt.policyData.UsedThreshold, policy.UsedThreshold)
+				assert.Equal(t, tt.policyData.GrowthAmount, policy.GrowthAmount)
+				assert.Equal(t, tt.policyData.MaxSize, policy.MaxSize)
+				assert.Equal(t, tt.policyData.State, policy.State)
+			}
+
+			// Cleanup
+			if tt.addPolicy {
+				delete(client.autogrowPolicies, tt.policyName)
+			}
+		})
+	}
+}
+
+func TestInMemoryClient_GetAutogrowPolicies(t *testing.T) {
+	tests := []struct {
+		name          string
+		policies      map[string]*storage.AutogrowPolicyPersistent
+		expectedCount int
+		expectedNames []string
+	}{
+		{
+			name: "Get multiple policies",
+			policies: map[string]*storage.AutogrowPolicyPersistent{
+				"policy1": {
+					Name:          "policy1",
+					UsedThreshold: "80%",
+					GrowthAmount:  "20%",
+					MaxSize:       "1000Gi",
+					State:         storage.AutogrowPolicyStateSuccess,
+				},
+				"policy2": {
+					Name:          "policy2",
+					UsedThreshold: "90%",
+					GrowthAmount:  "10%",
+					MaxSize:       "2000Gi",
+					State:         storage.AutogrowPolicyStateSuccess,
+				},
+				"policy3": {
+					Name:          "policy3",
+					UsedThreshold: "85%",
+					GrowthAmount:  "15%",
+					MaxSize:       "",
+					State:         storage.AutogrowPolicyStateFailed,
+				},
+			},
+			expectedCount: 3,
+			expectedNames: []string{"policy1", "policy2", "policy3"},
+		},
+		{
+			name:          "Get empty policy list",
+			policies:      map[string]*storage.AutogrowPolicyPersistent{},
+			expectedCount: 0,
+			expectedNames: []string{},
+		},
+		{
+			name: "Get single policy",
+			policies: map[string]*storage.AutogrowPolicyPersistent{
+				"only-policy": {
+					Name:          "only-policy",
+					UsedThreshold: "75%",
+					GrowthAmount:  "25%",
+					MaxSize:       "5000Gi",
+					State:         storage.AutogrowPolicyStateSuccess,
+				},
+			},
+			expectedCount: 1,
+			expectedNames: []string{"only-policy"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client := NewInMemoryClient()
+			client.autogrowPolicies = tt.policies
+
+			// Get all policies
+			policies, err := client.GetAutogrowPolicies(testCtx())
+			assert.NoError(t, err)
+			assert.Len(t, policies, tt.expectedCount)
+
+			// Verify all expected policies are present
+			policyNames := make(map[string]bool)
+			for _, policy := range policies {
+				policyNames[policy.Name] = true
+			}
+
+			for _, expectedName := range tt.expectedNames {
+				assert.True(t, policyNames[expectedName], "expected policy %s to be in list", expectedName)
+			}
+		})
+	}
+}
+
+func TestInMemoryClient_GetAutogrowPolicies_AllStates(t *testing.T) {
+	client := NewInMemoryClient()
+
+	// Add policies with different states
+	client.autogrowPolicies = map[string]*storage.AutogrowPolicyPersistent{
+		"success-policy": {
+			Name:          "success-policy",
+			UsedThreshold: "80%",
+			GrowthAmount:  "20%",
+			MaxSize:       "1000Gi",
+			State:         storage.AutogrowPolicyStateSuccess,
+		},
+		"failed-policy": {
+			Name:          "failed-policy",
+			UsedThreshold: "90%",
+			GrowthAmount:  "10%",
+			MaxSize:       "2000Gi",
+			State:         storage.AutogrowPolicyStateFailed,
+		},
+		"deleting-policy": {
+			Name:          "deleting-policy",
+			UsedThreshold: "85%",
+			GrowthAmount:  "15%",
+			MaxSize:       "3000Gi",
+			State:         storage.AutogrowPolicyStateDeleting,
+		},
+	}
+
+	// Get all policies
+	policies, err := client.GetAutogrowPolicies(testCtx())
+	assert.NoError(t, err)
+	assert.Len(t, policies, 3)
+
+	// Verify states are preserved
+	policyStates := make(map[string]storage.AutogrowPolicyState)
+	for _, policy := range policies {
+		policyStates[policy.Name] = policy.State
+	}
+
+	assert.Equal(t, storage.AutogrowPolicyStateSuccess, policyStates["success-policy"])
+	assert.Equal(t, storage.AutogrowPolicyStateFailed, policyStates["failed-policy"])
+	assert.Equal(t, storage.AutogrowPolicyStateDeleting, policyStates["deleting-policy"])
+}

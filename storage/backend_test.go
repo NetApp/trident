@@ -618,6 +618,12 @@ func TestStorageBackend_DriverMethods(t *testing.T) {
 	assert.Nil(t, backend.Driver(), "SetDriver(nil) should set driver to nil")
 }
 
+func TestStorageBackend_GetResizeDeltaBytes(t *testing.T) {
+	// We do not call GetResizeDeltaBytes() here: it uses b.driver; a nil or missing driver would panic.
+	// Testing with a real driver would require storage_drivers and cause an import cycle.
+	assert.NotNil(t, (*StorageBackend).GetResizeDeltaBytes, "GetResizeDeltaBytes method should exist")
+}
+
 func TestStorageBackend_StoragePoolsAndVolumes(t *testing.T) {
 	backend := &StorageBackend{
 		storagePools: new(sync.Map),

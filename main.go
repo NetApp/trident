@@ -20,7 +20,8 @@ import (
 	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/core"
 	"github.com/netapp/trident/frontend"
-	"github.com/netapp/trident/frontend/crd/controller"
+	controllercrd "github.com/netapp/trident/frontend/crd/controller"
+	nodecrd "github.com/netapp/trident/frontend/crd/node"
 	"github.com/netapp/trident/frontend/csi"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	k8sctrlhelper "github.com/netapp/trident/frontend/csi/controller_helpers/kubernetes"
@@ -135,6 +136,13 @@ var (
 	backendStoragePollInterval = flag.Duration("backend_storage_poll_interval", config.BackendStoragePollInterval,
 		"Interval at which core polls backend storage for its state")
 
+	// Autogrow
+	autogrowPeriod = flag.Duration("autogrow_period", 1*time.Minute,
+		"Interval at which the Autogrow schedules volumes for polling")
+	tagriTimeout = flag.Duration("tagri_timeout",
+		time.Duration(config.DefaultTagriTimeoutSeconds)*time.Second,
+		"Absolute max age for any Trident Autogrow Request Internal (TAGRI) CRs before forced deletion.")
+
 	storeClient  persistentstore.Client
 	enableDocker bool
 	enableCSI    bool
@@ -162,6 +170,7 @@ func processCmdLineArgs(ctx context.Context) {
 		config.K8sAPIQPS = config.DefaultK8sAPIQPS
 	}
 	config.K8sAPIBurst = *k8sApiBurst
+	config.TagriTimeout = *tagriTimeout
 
 	Logc(ctx).Debugf("Setting Kubernetes client QPS to %v and burst to %v", *k8sApiQPS, *k8sApiBurst)
 
@@ -529,16 +538,31 @@ func main() {
 		orchestrator.AddFrontend(ctx, csiFrontend)
 		postBootstrapFrontends = append(postBootstrapFrontends, csiFrontend)
 
-		if *useCRD {
-			crdController, err := controller.NewTridentCrdController(orchestrator, *k8sAPIServer, *k8sConfigPath)
-			if err != nil {
-				Log().Fatalf("Unable to start the Trident CRD controller frontend. %v", err)
-			}
-			orchestrator.AddFrontend(ctx, crdController)
-			postBootstrapFrontends = append(postBootstrapFrontends, crdController)
+		if *k8sAPIServer != "" || *k8sPod {
+			switch *csiRole {
+			case csi.CSIController:
+				crdController, err := controllercrd.NewTridentCrdController(orchestrator, *k8sAPIServer, *k8sConfigPath)
+				if err != nil {
+					Log().Fatalf("Unable to start the Trident CRD controller frontend. %v", err)
+				}
+				orchestrator.AddFrontend(ctx, crdController)
+				postBootstrapFrontends = append(postBootstrapFrontends, crdController)
 
-			if *enableForceDetach {
-				crdController.SetForceDetach(true)
+				if *enableForceDetach {
+					crdController.SetForceDetach(true)
+				}
+
+			case csi.CSINode:
+				crdController, err := nodecrd.NewTridentNodeCrdController(*k8sAPIServer, *k8sConfigPath, *csiNodeName, csiFrontend, *autogrowPeriod)
+				if err != nil {
+					Log().Fatalf("Unable to start the Trident Node CRD controller frontend. %v", err)
+				}
+				orchestrator.AddFrontend(ctx, crdController)
+				postBootstrapFrontends = append(postBootstrapFrontends, crdController)
+
+			case csi.CSIAllInOne:
+				// TODO (@pshashan): Instantiate both controller and node crdController for CSIAllInOne
+
 			}
 		}
 

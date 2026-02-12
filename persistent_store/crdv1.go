@@ -1744,3 +1744,44 @@ func (k *CRDClientV1) DeleteGroupSnapshots(ctx context.Context) error {
 
 	return nil
 }
+
+func (k *CRDClientV1) GetAutogrowPolicy(ctx context.Context, agPolicyName string) (*storage.AutogrowPolicyPersistent, error) {
+	agPolicy, err := k.crdClient.TridentV1().TridentAutogrowPolicies().Get(ctx, v1.NameFix(agPolicyName), getOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	persistentAGPolicy, err := agPolicy.Persistent()
+	if err != nil {
+		return nil, err
+	}
+
+	return persistentAGPolicy, nil
+}
+
+func (k *CRDClientV1) GetAutogrowPolicies(ctx context.Context) ([]*storage.AutogrowPolicyPersistent, error) {
+	agPolicyList, err := k.crdClient.TridentV1().TridentAutogrowPolicies().List(ctx, listOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	agPolicies := make([]*storage.AutogrowPolicyPersistent, 0)
+
+	for _, agPolicy := range agPolicyList.Items {
+		if !agPolicy.ObjectMeta.DeletionTimestamp.IsZero() {
+			Logc(ctx).WithFields(LogFields{
+				"agPolicyName":      agPolicy.Name,
+				"DeletionTimestamp": agPolicy.DeletionTimestamp,
+			}).Debug("GetAutogrowPolices skipping deleted Autogrow Policy")
+			continue
+		}
+
+		persistentAGPolicy, err := agPolicy.Persistent()
+		if err != nil {
+			return nil, err
+		}
+		agPolicies = append(agPolicies, persistentAGPolicy)
+	}
+
+	return agPolicies, nil
+}

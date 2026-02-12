@@ -784,6 +784,23 @@ func (h *helper) RecordNodeEvent(ctx context.Context, name, eventType, reason, m
 	}
 }
 
+// RecordStorageClassEvent accepts the name of a storage class and posts an event message
+// on the StorageClass object with the K8S API server.
+func (h *helper) RecordStorageClassEvent(ctx context.Context, name, eventType, reason, message string) {
+	Logc(ctx).WithFields(LogFields{
+		"name":      name,
+		"eventType": eventType,
+		"reason":    reason,
+		"message":   message,
+	}).Debug("StorageClass event.")
+
+	if sc, err := h.getStorageClass(ctx, name); err != nil {
+		Logc(ctx).WithError(err).Debug("Failed to find StorageClass for event.")
+	} else {
+		h.eventRecorder.Event(sc, mapEventType(eventType), reason, message)
+	}
+}
+
 // IsValidResourceName determines if a string meets the Kubernetes requirements for object names.
 func (h *helper) IsValidResourceName(name string) bool {
 	if len(name) > maxResourceNameLength {
@@ -912,6 +929,7 @@ func getVolumeConfig(
 		SMBShareACL:               smbShareACL,
 		TieringPolicy:             getAnnotation(annotations, AnnTieringPolicy),
 		TieringMinimumCoolingDays: getAnnotation(annotations, AnnTieringMinimumCoolingDays),
+		RequestedAutogrowPolicy:   getAnnotation(annotations, AnnAutogrowPolicy),
 	}
 }
 

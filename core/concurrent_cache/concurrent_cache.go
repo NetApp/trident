@@ -68,6 +68,10 @@ func Initialize() {
 		data:          make(map[string]SmartCopier),
 		resourceLocks: locks.NewGCNamedMutex(),
 	}
+	autogrowPolicies = cache{
+		data:          make(map[string]SmartCopier),
+		resourceLocks: locks.NewGCNamedMutex(),
+	}
 
 	inverseSchema = make(map[resource][]resource, len(schema))
 	for r, c := range schema {
@@ -146,6 +150,7 @@ var (
 	subordinateVolumes cache
 	volumePublications cache
 	snapshots          cache
+	autogrowPolicies   cache
 
 	caches = map[resource]*cache{
 		node:              &nodes,
@@ -155,6 +160,7 @@ var (
 		subordinateVolume: &subordinateVolumes,
 		volumePublication: &volumePublications,
 		snapshot:          &snapshots,
+		autogrowPolicy:    &autogrowPolicies,
 	}
 
 	inverseSchema map[resource][]resource
@@ -699,6 +705,7 @@ type Result struct {
 	SubordinateVolumes []*storage.Volume
 	VolumePublications []*models.VolumePublication
 	Snapshots          []*storage.Snapshot
+	AutogrowPolicies   []*storage.AutogrowPolicy
 
 	Node              NodeResult
 	StorageClass      StorageClassResult
@@ -707,6 +714,7 @@ type Result struct {
 	SubordinateVolume SubordinateVolumeResult
 	VolumePublication VolumePublicationResult
 	Snapshot          SnapshotResult
+	AutogrowPolicy    AutogrowPolicyResult
 }
 
 type NodeResult struct {
@@ -751,6 +759,12 @@ type SnapshotResult struct {
 	Delete func()
 }
 
+type AutogrowPolicyResult struct {
+	Read   *storage.AutogrowPolicy
+	Upsert func(*storage.AutogrowPolicy)
+	Delete func()
+}
+
 type resource int
 
 func (r resource) String() string {
@@ -768,6 +782,7 @@ var resourceNames = map[resource]string{
 	subordinateVolume: "Subordinate Volume",
 	volumePublication: "Volume Publication",
 	snapshot:          "Snapshot",
+	autogrowPolicy:    "Autogrow Policy",
 }
 
 const (
@@ -778,8 +793,8 @@ const (
 	subordinateVolume
 	volumePublication
 	snapshot
-
-	resourceCount = int(snapshot) + 1
+	autogrowPolicy
+	resourceCount = int(autogrowPolicy) + 1
 )
 
 type operation int
@@ -813,6 +828,7 @@ var schema = map[resource][]resource{
 	node:              nil,
 	storageClass:      nil,
 	backend:           nil,
+	autogrowPolicy:    nil,
 	volume:            {backend},
 	subordinateVolume: {volume},
 	volumePublication: {volume, node},

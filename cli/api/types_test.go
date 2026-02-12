@@ -245,6 +245,169 @@ func TestMultipleStorageClassResponse(t *testing.T) {
 	assert.Len(t, result.Items, 2)
 }
 
+func TestMultipleAutogrowPolicyResponse(t *testing.T) {
+	tests := []struct {
+		name     string
+		policies []storage.AutogrowPolicyExternal
+	}{
+		{
+			name: "multiple policies",
+			policies: []storage.AutogrowPolicyExternal{
+				{
+					Name:          "policy1",
+					UsedThreshold: "80",
+					GrowthAmount:  "20",
+					MaxSize:       "1000",
+					State:         storage.AutogrowPolicyStateSuccess,
+					Volumes:       []string{"vol1", "vol2"},
+					VolumeCount:   2,
+				},
+				{
+					Name:          "policy2",
+					UsedThreshold: "90",
+					GrowthAmount:  "10",
+					MaxSize:       "2000",
+					State:         storage.AutogrowPolicyStateSuccess,
+					Volumes:       []string{"vol3"},
+					VolumeCount:   1,
+				},
+			},
+		},
+		{
+			name: "single policy",
+			policies: []storage.AutogrowPolicyExternal{
+				{
+					Name:          "policy1",
+					UsedThreshold: "85",
+					GrowthAmount:  "15",
+					MaxSize:       "1500",
+					State:         storage.AutogrowPolicyStateFailed,
+					Volumes:       []string{},
+					VolumeCount:   0,
+				},
+			},
+		},
+		{
+			name:     "empty policies",
+			policies: []storage.AutogrowPolicyExternal{},
+		},
+		{
+			name: "policy with empty maxSize",
+			policies: []storage.AutogrowPolicyExternal{
+				{
+					Name:          "policy-no-max",
+					UsedThreshold: "80",
+					GrowthAmount:  "20",
+					MaxSize:       "",
+					State:         storage.AutogrowPolicyStateSuccess,
+					Volumes:       []string{"vol1"},
+					VolumeCount:   1,
+				},
+			},
+		},
+		{
+			name: "policy with deleting state",
+			policies: []storage.AutogrowPolicyExternal{
+				{
+					Name:          "policy-deleting",
+					UsedThreshold: "75",
+					GrowthAmount:  "25",
+					MaxSize:       "3000",
+					State:         storage.AutogrowPolicyStateDeleting,
+					Volumes:       []string{"vol1", "vol2", "vol3"},
+					VolumeCount:   3,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			response := MultipleAutogrowPolicyResponse{Items: tt.policies}
+
+			// Test marshaling
+			jsonData, err := json.Marshal(response)
+			require.NoError(t, err)
+			assert.Contains(t, string(jsonData), "items")
+
+			// Verify JSON structure
+			var jsonMap map[string]interface{}
+			err = json.Unmarshal(jsonData, &jsonMap)
+			require.NoError(t, err)
+			assert.Contains(t, jsonMap, "items")
+
+			// Test unmarshaling
+			var result MultipleAutogrowPolicyResponse
+			err = json.Unmarshal(jsonData, &result)
+			require.NoError(t, err)
+			assert.Len(t, result.Items, len(tt.policies))
+
+			// Verify individual policy data
+			for i, policy := range tt.policies {
+				assert.Equal(t, policy.Name, result.Items[i].Name)
+				assert.Equal(t, policy.UsedThreshold, result.Items[i].UsedThreshold)
+				assert.Equal(t, policy.GrowthAmount, result.Items[i].GrowthAmount)
+				assert.Equal(t, policy.MaxSize, result.Items[i].MaxSize)
+				assert.Equal(t, policy.State, result.Items[i].State)
+				assert.Equal(t, policy.VolumeCount, result.Items[i].VolumeCount)
+				assert.ElementsMatch(t, policy.Volumes, result.Items[i].Volumes)
+			}
+		})
+	}
+}
+
+func TestMultipleAutogrowPolicyResponse_JSONRoundTrip(t *testing.T) {
+	// Test that data survives JSON encoding/decoding cycle
+	original := MultipleAutogrowPolicyResponse{
+		Items: []storage.AutogrowPolicyExternal{
+			{
+				Name:          "test-policy",
+				UsedThreshold: "80",
+				GrowthAmount:  "20",
+				MaxSize:       "1000",
+				State:         storage.AutogrowPolicyStateSuccess,
+				Volumes:       []string{"volume-1", "volume-2", "volume-3"},
+				VolumeCount:   3,
+			},
+		},
+	}
+
+	// Marshal to JSON
+	jsonData, err := json.Marshal(original)
+	require.NoError(t, err)
+
+	// Unmarshal back
+	var decoded MultipleAutogrowPolicyResponse
+	err = json.Unmarshal(jsonData, &decoded)
+	require.NoError(t, err)
+
+	// Verify data integrity
+	require.Len(t, decoded.Items, 1)
+	assert.Equal(t, original.Items[0].Name, decoded.Items[0].Name)
+	assert.Equal(t, original.Items[0].UsedThreshold, decoded.Items[0].UsedThreshold)
+	assert.Equal(t, original.Items[0].GrowthAmount, decoded.Items[0].GrowthAmount)
+	assert.Equal(t, original.Items[0].MaxSize, decoded.Items[0].MaxSize)
+	assert.Equal(t, original.Items[0].State, decoded.Items[0].State)
+	assert.Equal(t, original.Items[0].VolumeCount, decoded.Items[0].VolumeCount)
+	assert.ElementsMatch(t, original.Items[0].Volumes, decoded.Items[0].Volumes)
+}
+
+func TestMultipleAutogrowPolicyResponse_NilItems(t *testing.T) {
+	// Test with nil Items slice
+	response := MultipleAutogrowPolicyResponse{Items: nil}
+
+	// Test marshaling
+	jsonData, err := json.Marshal(response)
+	require.NoError(t, err)
+
+	// Test unmarshaling
+	var result MultipleAutogrowPolicyResponse
+	err = json.Unmarshal(jsonData, &result)
+	require.NoError(t, err)
+	// Note: nil slices become empty slices after JSON round-trip in Go
+	assert.Empty(t, result.Items)
+}
+
 func TestMultipleVolumeResponse(t *testing.T) {
 	volumes := []storage.VolumeExternal{
 		{

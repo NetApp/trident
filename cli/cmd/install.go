@@ -55,6 +55,8 @@ const (
 	VolumePublicationCRDName       = "tridentvolumepublications.trident.netapp.io"
 	VolumeReferenceCRDName         = "tridentvolumereferences.trident.netapp.io"
 	ConfiguratorCRDName            = "tridentconfigurators.trident.netapp.io"
+	AutogrowPolicyCRDName          = "tridentautogrowpolicies.trident.netapp.io"
+	AutogrowRequestInternalCRDName = "tridentautogrowrequestinternals.trident.netapp.io"
 
 	ControllerRoleFilename               = "trident-controller-role.yaml"
 	ControllerClusterRoleFilename        = "trident-controller-clusterrole.yaml"
@@ -63,15 +65,19 @@ const (
 	ControllerClusterRoleBindingFilename = "trident-controller-clusterrolebinding.yaml"
 	ControllerSCCFilename                = "trident-controller-scc.yaml"
 
-	NodeLinuxRoleFilename           = "trident-node-linux-role.yaml"
-	NodeLinuxRoleBindingFilename    = "trident-node-linux-rolebinding.yaml"
-	NodeLinuxServiceAccountFilename = "trident-node-linux-serviceaccount.yaml"
-	NodeLinuxSCCFilename            = "trident-node-linux-scc.yaml"
+	NodeLinuxRoleFilename               = "trident-node-linux-role.yaml"
+	NodeLinuxRoleBindingFilename        = "trident-node-linux-rolebinding.yaml"
+	NodeLinuxServiceAccountFilename     = "trident-node-linux-serviceaccount.yaml"
+	NodeLinuxSCCFilename                = "trident-node-linux-scc.yaml"
+	NodeLinuxClusterRoleFilename        = "trident-node-linux-clusterrole.yaml"
+	NodeLinuxClusterRoleBindingFilename = "trident-node-linux-clusterrolebinding.yaml"
 
-	NodeWindowsRoleFilename           = "trident-node-windows-role.yaml"
-	NodeWindowsRoleBindingFilename    = "trident-node-windows-rolebinding.yaml"
-	NodeWindowsServiceAccountFilename = "trident-node-windows-serviceaccount.yaml"
-	NodeWindowsSCCFilename            = "trident-node-windows-scc.yaml"
+	NodeWindowsRoleFilename               = "trident-node-windows-role.yaml"
+	NodeWindowsRoleBindingFilename        = "trident-node-windows-rolebinding.yaml"
+	NodeWindowsServiceAccountFilename     = "trident-node-windows-serviceaccount.yaml"
+	NodeWindowsSCCFilename                = "trident-node-windows-scc.yaml"
+	NodeWindowsClusterRoleFilename        = "trident-node-windows-clusterrole.yaml"
+	NodeWindowsClusterRoleBindingFilename = "trident-node-windows-clusterrolebinding.yaml"
 
 	CRDsFilename             = "trident-crds.yaml"
 	DaemonSetFilename        = "trident-daemonset.yaml"
@@ -142,32 +148,36 @@ var (
 	client k8sclient.KubernetesClient
 
 	// File paths
-	installerDirectoryPath           string
-	setupPath                        string
-	namespacePath                    string
-	controllerServiceAccountPath     string
-	nodeLinuxServiceAccountPath      string
-	nodeWindowsServiceAccountPath    string
-	controllerRolePath               string
-	controllerClusterRolePath        string
-	nodeLinuxRolePath                string
-	nodeWindowsRolePath              string
-	crdsPath                         string
-	controllerRoleBindingPath        string
-	controllerClusterRoleBindingPath string
-	nodeLinuxRoleBindingPath         string
-	nodeWindowsRoleBindingPath       string
-	deploymentPath                   string
-	servicePath                      string
-	daemonsetPath                    string
-	windowsDaemonSetPath             string
-	resourceQuotaPath                string
-	controllerSCCPath                string
-	nodeLinuxSCCPath                 string
-	nodeWindowsSCCPath               string
-	setupYAMLPaths                   []string
-	nodeRemediationTemplatePath      string
-	nodeRemediationClusterRolePath   string
+	installerDirectoryPath            string
+	setupPath                         string
+	namespacePath                     string
+	controllerServiceAccountPath      string
+	nodeLinuxServiceAccountPath       string
+	nodeWindowsServiceAccountPath     string
+	controllerRolePath                string
+	controllerClusterRolePath         string
+	nodeLinuxRolePath                 string
+	nodeWindowsRolePath               string
+	crdsPath                          string
+	controllerRoleBindingPath         string
+	controllerClusterRoleBindingPath  string
+	nodeLinuxRoleBindingPath          string
+	nodeLinuxClusterRolePath          string
+	nodeLinuxClusterRoleBindingPath   string
+	nodeWindowsRoleBindingPath        string
+	nodeWindowsClusterRolePath        string
+	nodeWindowsClusterRoleBindingPath string
+	deploymentPath                    string
+	servicePath                       string
+	daemonsetPath                     string
+	windowsDaemonSetPath              string
+	resourceQuotaPath                 string
+	controllerSCCPath                 string
+	nodeLinuxSCCPath                  string
+	nodeWindowsSCCPath                string
+	setupYAMLPaths                    []string
+	nodeRemediationTemplatePath       string
+	nodeRemediationClusterRolePath    string
 
 	appLabel      string
 	appLabelKey   string
@@ -196,6 +206,8 @@ var (
 		VolumePublicationCRDName,
 		ActionSnapshotRestoreCRDName,
 		ConfiguratorCRDName,
+		AutogrowPolicyCRDName,
+		AutogrowRequestInternalCRDName,
 	}
 )
 
@@ -553,10 +565,14 @@ func prepareYAMLFilePaths() error {
 	nodeLinuxRolePath = path.Join(setupPath, NodeLinuxRoleFilename)
 	nodeLinuxRoleBindingPath = path.Join(setupPath, NodeLinuxRoleBindingFilename)
 	nodeLinuxServiceAccountPath = path.Join(setupPath, NodeLinuxServiceAccountFilename)
+	nodeLinuxClusterRolePath = path.Join(setupPath, NodeLinuxClusterRoleFilename)
+	nodeLinuxClusterRoleBindingPath = path.Join(setupPath, NodeLinuxClusterRoleBindingFilename)
 
 	nodeWindowsRolePath = path.Join(setupPath, NodeWindowsRoleFilename)
 	nodeWindowsRoleBindingPath = path.Join(setupPath, NodeWindowsRoleBindingFilename)
 	nodeWindowsServiceAccountPath = path.Join(setupPath, NodeWindowsServiceAccountFilename)
+	nodeWindowsClusterRolePath = path.Join(setupPath, NodeWindowsClusterRoleFilename)
+	nodeWindowsClusterRoleBindingPath = path.Join(setupPath, NodeWindowsClusterRoleBindingFilename)
 
 	crdsPath = path.Join(setupPath, CRDsFilename)
 	servicePath = path.Join(setupPath, ServiceFilename)
@@ -576,10 +592,14 @@ func prepareYAMLFilePaths() error {
 		controllerRoleBindingPath,
 		controllerClusterRolePath,
 		nodeLinuxRolePath,
-		nodeWindowsRolePath,
-		controllerClusterRoleBindingPath,
 		nodeLinuxRoleBindingPath,
+		nodeLinuxClusterRolePath,
+		nodeLinuxClusterRoleBindingPath,
+		nodeWindowsRolePath,
 		nodeWindowsRoleBindingPath,
+		nodeWindowsClusterRolePath,
+		nodeWindowsClusterRoleBindingPath,
+		controllerClusterRoleBindingPath,
 		crdsPath,
 		deploymentPath,
 		servicePath,
@@ -661,6 +681,19 @@ func prepareYAMLFiles() error {
 		nil, daemonSetlabels, nil, "")
 	if err = writeFile(nodeLinuxServiceAccountPath, nodeServiceAccountYAML); err != nil {
 		return fmt.Errorf("could not write node linux service account YAML file; %v", err)
+	}
+
+	// Creating cluster role for node linux
+	nodeLinuxClusterRoleYAML := k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(false), daemonSetlabels, nil)
+	if err = writeFile(nodeLinuxClusterRolePath, nodeLinuxClusterRoleYAML); err != nil {
+		return fmt.Errorf("could not write node linux cluster role YAML file; %v", err)
+	}
+
+	// Creating cluster role binding for node linux
+	nodeLinuxClusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace,
+		getNodeRBACResourceName(false), client.Flavor(), daemonSetlabels, nil)
+	if err = writeFile(nodeLinuxClusterRoleBindingPath, nodeLinuxClusterRoleBindingYAML); err != nil {
+		return fmt.Errorf("could not write node linux cluster role binding YAML file; %v", err)
 	}
 
 	crdsYAML := k8sclient.GetCRDsYAML()
@@ -813,6 +846,19 @@ func prepareYAMLFiles() error {
 			daemonSetlabels, nil, "")
 		if err = writeFile(nodeWindowsServiceAccountPath, nodeWindowsServiceAccountYAML); err != nil {
 			return fmt.Errorf("could not write node windows service account YAML file; %v", err)
+		}
+
+		// Creating cluster role for node windows
+		nodeWindowsClusterRoleYAML := k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(true), daemonSetlabels, nil)
+		if err = writeFile(nodeWindowsClusterRolePath, nodeWindowsClusterRoleYAML); err != nil {
+			return fmt.Errorf("could not write node windows cluster role YAML file; %v", err)
+		}
+
+		// Creating cluster role binding for node windows
+		nodeWindowsClusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace,
+			getNodeRBACResourceName(true), client.Flavor(), daemonSetlabels, nil)
+		if err = writeFile(nodeWindowsClusterRoleBindingPath, nodeWindowsClusterRoleBindingYAML); err != nil {
+			return fmt.Errorf("could not write node windows cluster role binding YAML file; %v", err)
 		}
 
 		if client.Flavor() == k8sclient.FlavorOpenShift {
@@ -1673,6 +1719,23 @@ func createRBACObjects() (returnError error) {
 	}
 	Log().WithFields(logFields).Info("Created node linux service account.")
 
+	// Create cluster role for node linux
+	if createObjectFunc(nodeLinuxClusterRolePath,
+		k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(false), daemonSetlabels, nil)) != nil {
+		returnError = fmt.Errorf("could not create node linux cluster role; %v", returnError)
+		return returnError
+	}
+	Log().WithFields(logFields).Info("Created node linux cluster role.")
+
+	// Create cluster role binding for node linux
+	if createObjectFunc(nodeLinuxClusterRoleBindingPath,
+		k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, getNodeRBACResourceName(false), client.Flavor(),
+			daemonSetlabels, nil)) != nil {
+		returnError = fmt.Errorf("could not create node linux cluster role binding; %v", returnError)
+		return returnError
+	}
+	Log().WithFields(logFields).Info("Created node linux cluster role binding.")
+
 	// Creating node windows RBAC Objects
 	if windows {
 		if createObjectFunc(nodeWindowsServiceAccountPath,
@@ -1681,6 +1744,23 @@ func createRBACObjects() (returnError error) {
 			return returnError
 		}
 		Log().WithFields(logFields).Info("Created node windows service account.")
+
+		// Creating node windows cluster role
+		if createObjectFunc(nodeWindowsClusterRolePath,
+			k8sclient.GetClusterRoleYAML(getNodeRBACResourceName(true), daemonSetlabels, nil)) != nil {
+			returnError = fmt.Errorf("could not create node windows cluster role; %v", returnError)
+			return returnError
+		}
+		Log().WithFields(logFields).Info("Created node windows cluster role.")
+
+		// Create cluster role binding for node windows
+		if createObjectFunc(nodeWindowsClusterRoleBindingPath,
+			k8sclient.GetClusterRoleBindingYAML(TridentPodNamespace, getNodeRBACResourceName(true), client.Flavor(),
+				daemonSetlabels, nil)) != nil {
+			returnError = fmt.Errorf("could not create node windows cluster role binding; %v", returnError)
+			return returnError
+		}
+		Log().WithFields(logFields).Info("Created node windows cluster role binding.")
 	}
 
 	// If OpenShift, add Trident to security context constraint(s)

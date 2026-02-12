@@ -41,7 +41,8 @@ const (
 )
 
 type Plugin struct {
-	orchestrator core.Orchestrator
+	orchestrator  core.Orchestrator
+	activatedChan chan struct{}
 
 	name     string
 	nodeName string
@@ -124,6 +125,7 @@ func NewControllerPlugin(
 		opCache:           sync.Map{},
 		command:           execCmd.NewCommand(),
 		osutils:           osutils.New(),
+		activatedChan:     make(chan struct{}, 1),
 	}
 
 	var err error
@@ -216,13 +218,13 @@ func NewNodePlugin(
 		nvmeHandler:              nvme.NewNVMeHandler(),
 		nvmeSelfHealingInterval:  nvmeSelfHealingInterval,
 		iscsi:                    iscsiClient,
-		// NewClient() must plugin default implementation of the various package clients.
-		fcp:     fcpClient,
-		devices: devices.New(),
-		mount:   mountClient,
-		fs:      fs,
-		command: execCmd.NewCommand(),
-		osutils: osutils.New(),
+		fcp:                      fcpClient,
+		devices:                  devices.New(),
+		mount:                    mountClient,
+		fs:                       fs,
+		command:                  execCmd.NewCommand(),
+		osutils:                  osutils.New(),
+		activatedChan:            make(chan struct{}, 1),
 	}
 
 	if runtime.GOOS == "windows" {
@@ -333,6 +335,7 @@ func NewAllInOnePlugin(
 		fs:                       fs,
 		command:                  execCmd.NewCommand(),
 		osutils:                  osutils.New(),
+		activatedChan:            make(chan struct{}, 1),
 	}
 
 	port := "34571"
@@ -392,6 +395,17 @@ func NewAllInOnePlugin(
 	return p, nil
 }
 
+func (p *Plugin) WaitForActivation(ctx context.Context) error {
+	// Wait for the plugin to activate.
+	select {
+	case <-ctx.Done():
+		return fmt.Errorf("time out waiting for plugin activation")
+	case <-p.activatedChan:
+		Logc(ctx).Debug("CSI frontend activated.")
+		return nil
+	}
+}
+
 func (p *Plugin) Activate() error {
 	go func() {
 		ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowPluginActivate, LogLayerCSIFrontend)
@@ -436,6 +450,9 @@ func (p *Plugin) Activate() error {
 			p.topologyInUse = topologyInUse
 		}
 
+		// Communicate the plugin is activated.
+		p.activatedChan <- struct{}{}
+
 		p.grpc.Start(p.endpoint, p, p, p, p)
 	}()
 	return nil
@@ -463,6 +480,11 @@ func (p *Plugin) Deactivate() error {
 
 func (p *Plugin) GetName() string {
 	return string(tridentconfig.ContextCSI)
+}
+
+// GetNodeHelper returns the NodeHelper interface
+func (p *Plugin) GetNodeHelper() nodehelpers.NodeHelper {
+	return p.nodeHelper
 }
 
 func (p *Plugin) Version() string {

@@ -66,6 +66,10 @@ type ControllerHelper interface {
 	// event message in a manner appropriate to the container orchestrator.
 	RecordNodeEvent(ctx context.Context, name, eventType, reason, message string)
 
+	// RecordStorageClassEvent accepts the name of a StorageClass and writes the specified
+	// event message in a manner appropriate to the container orchestrator.
+	RecordStorageClassEvent(ctx context.Context, name, eventType, reason, message string)
+
 	// IsValidResourceName accepts the name of a resource and returns whether it meets the requirements of that CO.
 	IsValidResourceName(name string) bool
 

@@ -102,13 +102,13 @@ func (c *TridentCrdController) updateTMRHandler(old, new interface{}) {
 		}
 
 		if !newRelationship.ObjectMeta.DeletionTimestamp.IsZero() {
-			c.addEventToWorkqueue(key, EventUpdate, ctx, newRelationship.GetKind())
+			c.addEventToWorkqueue(key, EventUpdate, ctx, ObjectType(newRelationship.GetKind()))
 			return
 		} else if len(newRelationship.Status.Conditions) == 0 || collection.ContainsString(
 			netappv1.GetTransitioningMirrorStatusStates(), newRelationship.Status.Conditions[0].MirrorState,
 		) {
 			// TMR is currently transitioning actual states
-			c.addEventToWorkqueue(key, EventUpdate, ctx, newRelationship.GetKind())
+			c.addEventToWorkqueue(key, EventUpdate, ctx, ObjectType(newRelationship.GetKind()))
 			return
 		} else if oldRelationship.Generation == newRelationship.Generation {
 			// User has not changed the TMR

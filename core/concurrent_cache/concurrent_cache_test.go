@@ -300,6 +300,7 @@ func initCaches() {
 	volumes.data = make(map[string]SmartCopier)
 	volumePublications.data = make(map[string]SmartCopier)
 	snapshots.data = make(map[string]SmartCopier)
+	autogrowPolicies.data = make(map[string]SmartCopier)
 
 	nodes.data["node1"] = &models.Node{}
 	backends.data["backend1"] = storage.NewTestStorageBackend()
@@ -319,6 +320,7 @@ func initCaches() {
 			VolumeName: "volume1",
 		},
 	}
+	autogrowPolicies.data["policy1"] = storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
 }
 
 func cleanCaches() {
@@ -327,6 +329,7 @@ func cleanCaches() {
 	volumes.data = make(map[string]SmartCopier)
 	volumePublications.data = make(map[string]SmartCopier)
 	snapshots.data = make(map[string]SmartCopier)
+	autogrowPolicies.data = make(map[string]SmartCopier)
 }
 
 func createQueryGenerators(numIds int) [][]queryGenerator {
@@ -392,6 +395,25 @@ func createQueryGenerators(numIds int) [][]queryGenerator {
 			{name: "ReadSubordinateVolume", fn: func() Subquery { return ReadSubordinateVolume(subordinateVolumeName) }},
 			{name: "UpsertSubordinateVolume", fn: func() Subquery { return UpsertSubordinateVolume(subordinateVolumeName, volumeName) }},
 			{name: "DeleteSubordinateVolume", fn: func() Subquery { return DeleteSubordinateVolume(subordinateVolumeName) }},
+
+			// AutogrowPolicy queries
+			{name: "ListAutogrowPolicies", fn: ListAutogrowPolicies},
+			{name: "InconsistentReadAutogrowPolicy", fn: func() Subquery {
+				policyName := fmt.Sprintf("policy%d", i+1)
+				return InconsistentReadAutogrowPolicy(policyName)
+			}},
+			{name: "ReadAutogrowPolicy", fn: func() Subquery {
+				policyName := fmt.Sprintf("policy%d", i+1)
+				return ReadAutogrowPolicy(policyName)
+			}},
+			{name: "UpsertAutogrowPolicy", fn: func() Subquery {
+				policyName := fmt.Sprintf("policy%d", i+1)
+				return UpsertAutogrowPolicy(policyName)
+			}},
+			{name: "DeleteAutogrowPolicy", fn: func() Subquery {
+				policyName := fmt.Sprintf("policy%d", i+1)
+				return DeleteAutogrowPolicy(policyName)
+			}},
 		})
 	}
 
@@ -742,6 +764,17 @@ func setupTestData(t *testing.T, numIds int) {
 			NodeName:   nodeName,
 		}
 		volumePublications.unlock()
+
+		autogrowPolicies.lock()
+		autogrowPolicyName := fmt.Sprintf("policy%d", i+1)
+		autogrowPolicies.data[autogrowPolicyName] = storage.NewAutogrowPolicy(
+			autogrowPolicyName,
+			"80",
+			"20",
+			"1000Gi",
+			storage.AutogrowPolicyStateSuccess,
+		)
+		autogrowPolicies.unlock()
 	}
 }
 
@@ -776,6 +809,10 @@ func cleanupTestData() {
 	volumePublications.lock()
 	volumePublications.data = make(map[string]SmartCopier)
 	volumePublications.unlock()
+
+	autogrowPolicies.lock()
+	autogrowPolicies.data = make(map[string]SmartCopier)
+	autogrowPolicies.unlock()
 }
 
 func TestLockCancel(t *testing.T) {
@@ -805,6 +842,8 @@ func TestInitialize(t *testing.T) {
 	assert.NotNil(t, volumePublications.resourceLocks, "volumePublications resourceLocks should be initialized")
 	assert.NotNil(t, subordinateVolumes.data, "subordinateVolumes data should be initialized")
 	assert.NotNil(t, subordinateVolumes.resourceLocks, "subordinateVolumes resourceLocks should be initialized")
+	assert.NotNil(t, autogrowPolicies.data, "autogrowPolicies data should be initialized")
+	assert.NotNil(t, autogrowPolicies.resourceLocks, "autogrowPolicies resourceLocks should be initialized")
 
 	// Test the caches are working
 	nodes.lock()
@@ -820,6 +859,7 @@ func TestInitialize(t *testing.T) {
 	assert.Empty(t, snapshots.data, "snapshots data should be empty after re-initialization")
 	assert.Empty(t, volumePublications.data, "volumePublications data should be empty after re-initialization")
 	assert.Empty(t, subordinateVolumes.data, "subordinateVolumes data should be empty after re-initialization")
+	assert.Empty(t, autogrowPolicies.data, "autogrowPolicies data should be empty after re-initialization")
 }
 
 func TestQuery(t *testing.T) {

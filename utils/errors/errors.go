@@ -588,6 +588,31 @@ func IsUnsupportedConfigError(err error) bool {
 }
 
 // ///////////////////////////////////////////////////////////////////////////
+// usageStatsUnavailableError
+// ///////////////////////////////////////////////////////////////////////////
+
+type usageStatsUnavailableError struct {
+	message string
+}
+
+func (e *usageStatsUnavailableError) Error() string { return e.message }
+
+func UsageStatsUnavailableError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &usageStatsUnavailableError{message: message}
+	}
+	return &usageStatsUnavailableError{message: fmt.Sprintf(message, a...)}
+}
+
+func IsUsageStatsUnavailableError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPointer *usageStatsUnavailableError
+	return errors.As(err, &errPointer)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
 // unlicensedError
 // ///////////////////////////////////////////////////////////////////////////
 
@@ -1217,5 +1242,313 @@ func IsMustRetryError(err error) bool {
 		return false
 	}
 	var errPtr *mustRetryError
+	return errors.As(err, &errPtr)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// interfaceNotSupportedError
+// ///////////////////////////////////////////////////////////////////////////
+
+// interfaceNotSupportedError is returned when a requested type doesn't support the requested interface.
+type interfaceNotSupportedError struct {
+	message string
+}
+
+func (e *interfaceNotSupportedError) Error() string { return e.message }
+
+// InterfaceNotSupportedError creates a new error when a requested type doesn't support the requested interface.
+func InterfaceNotSupportedError(requestedType, interfaceName string) error {
+	return &interfaceNotSupportedError{
+		message: fmt.Sprintf("requested type %q does not support interface %s",
+			requestedType, interfaceName),
+	}
+}
+
+// IsInterfaceNotSupportedError returns true if err is an interfaceNotSupportedError.
+func IsInterfaceNotSupportedError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var interfaceNotSupportedError *interfaceNotSupportedError
+	ok := errors.As(err, &interfaceNotSupportedError)
+	return ok
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// zeroValueError
+// ///////////////////////////////////////////////////////////////////////////
+
+type zeroValueError struct {
+	message string
+}
+
+func (e *zeroValueError) Error() string { return e.message }
+
+// ZeroValueError creates a new error when a value is a zero value.
+func ZeroValueError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &zeroValueError{message: message}
+	}
+	return &zeroValueError{message: fmt.Sprintf(message, a...)}
+}
+
+// IsZeroValueError returns true if the error is a zero value error.
+func IsZeroValueError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var zeroValueError *zeroValueError
+	ok := errors.As(err, &zeroValueError)
+	return ok
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// busClosedError
+// ///////////////////////////////////////////////////////////////////////////
+
+// busClosedError indicates an operation was attempted on a closed EventBus.
+type busClosedError struct {
+	message string
+}
+
+func (e *busClosedError) Error() string { return e.message }
+
+// BusClosedError creates a new bus closed error.
+func BusClosedError() error {
+	return &busClosedError{
+		message: "eventbus: bus is closed",
+	}
+}
+
+// IsBusClosedError returns true if the error is a bus closed error.
+func IsBusClosedError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var busClosedError *busClosedError
+	ok := errors.As(err, &busClosedError)
+	return ok
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// nilHandlerError
+// ///////////////////////////////////////////////////////////////////////////
+
+// nilHandlerError indicates a nil handler was passed to Subscribe.
+type nilHandlerError struct {
+	message string
+}
+
+func (e *nilHandlerError) Error() string { return e.message }
+
+// NilHandlerError creates a new nil handler error.
+func NilHandlerError() error {
+	return &nilHandlerError{
+		message: "eventbus: handler cannot be nil",
+	}
+}
+
+// IsNilHandlerError returns true if the error is a nil handler error.
+func IsNilHandlerError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var nilHandlerError *nilHandlerError
+	ok := errors.As(err, &nilHandlerError)
+	return ok
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// StateError - error that contains state and optional message
+// ///////////////////////////////////////////////////////////////////////////
+
+type StateError struct {
+	State   string // The state (e.g., "Starting", "Stopping", "Running", "Stopped")
+	Message string // Optional message
+}
+
+func (e *StateError) Error() string {
+	if e.Message != "" {
+		return fmt.Sprintf("state: %s; %s", e.State, e.Message)
+	}
+	return fmt.Sprintf("state: %s", e.State)
+}
+
+// NewStateError creates a new error with state and optional message
+func NewStateError(state string, message string) error {
+	return &StateError{State: state, Message: message}
+}
+
+// IsStateError returns true if the error is a state error
+func IsStateError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *StateError
+	return errors.As(err, &errPtr)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// autogrowPolicyInUseError
+// ///////////////////////////////////////////////////////////////////////////
+
+type autogrowPolicyInUseError struct {
+	message string
+}
+
+func (e *autogrowPolicyInUseError) Error() string { return e.message }
+
+// AutogrowPolicyInUseError creates an error when policy cannot be deleted because volumes are using it
+func AutogrowPolicyInUseError(policyName string, volumeCount int, volumes []string) error {
+	return &autogrowPolicyInUseError{
+		message: fmt.Sprintf("cannot delete policy %s: in use by %d volume(s): %v",
+			policyName, volumeCount, volumes),
+	}
+}
+
+func IsAutogrowPolicyInUseError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	var policyInUseErr *autogrowPolicyInUseError
+	return errors.As(err, &policyInUseErr)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// autogrowPolicyNotUsableError
+// ///////////////////////////////////////////////////////////////////////////
+type autogrowPolicyNotUsableError struct {
+	message string
+}
+
+func (e *autogrowPolicyNotUsableError) Error() string { return e.message }
+
+// AutogrowPolicyNotUsableError when policy exists but is in Failed/Deleting state
+func AutogrowPolicyNotUsableError(policyName string, state string) error {
+	return &autogrowPolicyNotUsableError{
+		message: fmt.Sprintf("autogrow policy '%s' exists but is in '%s' state and cannot be used", policyName, state),
+	}
+}
+
+func IsAutogrowPolicyNotUsableError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *autogrowPolicyNotUsableError
+	return errors.As(err, &errPtr)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// keyError - error for operations involving keys
+// ///////////////////////////////////////////////////////////////////////////
+
+type keyError struct {
+	key     string // String representation of the key
+	message string // Error message
+}
+
+func (e *keyError) Error() string {
+	return e.message
+}
+
+// Key returns the key that caused the error
+func (e *keyError) Key() string {
+	return e.key
+}
+
+// KeyNotFoundError creates an error when a key is not found
+func KeyNotFoundError(key any) error {
+	return &keyError{
+		key:     fmt.Sprintf("%v", key),
+		message: fmt.Sprintf("key %v does not exist in cache", key),
+	}
+}
+
+// IsKeyError returns true if the error is a key error
+func IsKeyError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *keyError
+	return errors.As(err, &errPtr)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// valueError - error for operations involving values
+// ///////////////////////////////////////////////////////////////////////////
+
+type valueError struct {
+	key     string // String representation of the key (optional)
+	value   string // String representation of the value
+	message string // Error message
+}
+
+func (e *valueError) Error() string {
+	return e.message
+}
+
+// Key returns the key that caused the error (may be empty if no key was provided)
+func (e *valueError) Key() string {
+	return e.key
+}
+
+// Value returns the value that caused the error
+func (e *valueError) Value() string {
+	return e.value
+}
+
+// ValueNotFoundError creates an error when a value is not found
+// If key is provided, the error message includes the key context
+// Usage: ValueNotFoundError(value) or ValueNotFoundError(value, key)
+func ValueNotFoundError(value any, key ...any) error {
+	var keyStr string
+	var msg string
+
+	if len(key) > 0 && key[0] != nil {
+		keyStr = fmt.Sprintf("%v", key[0])
+		msg = fmt.Sprintf("for key %v, value %v does not exist in cache", key[0], value)
+	} else {
+		msg = fmt.Sprintf("value %v does not exist in cache", value)
+	}
+
+	return &valueError{
+		key:     keyStr,
+		value:   fmt.Sprintf("%v", value),
+		message: msg,
+	}
+}
+
+// IsValueError returns true if the error is a value error
+func IsValueError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *valueError
+	return errors.As(err, &errPtr)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// autogrowPolicyNotFoundError
+// ///////////////////////////////////////////////////////////////////////////
+
+type autogrowPolicyNotFoundError struct {
+	message string
+}
+
+func (e *autogrowPolicyNotFoundError) Error() string { return e.message }
+
+// AutogrowPolicyNotFoundError creates an error when a referenced Autogrow policy does not exist
+func AutogrowPolicyNotFoundError(policyName string) error {
+	return &autogrowPolicyNotFoundError{
+		message: fmt.Sprintf("autogrow policy '%s' not found", policyName),
+	}
+}
+
+func IsAutogrowPolicyNotFoundError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *autogrowPolicyNotFoundError
 	return errors.As(err, &errPtr)
 }

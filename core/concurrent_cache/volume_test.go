@@ -1126,6 +1126,7 @@ func TestListVolumesForNode(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
 			volumes.lock()
 			volumes.data = make(map[string]SmartCopier)
 			for k, v := range tt.volumes {
@@ -1147,12 +1148,538 @@ func TestListVolumesForNode(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Len(t, result.Volumes, tt.expectedCount)
 
+			// Clean up
 			volumes.lock()
 			volumes.data = make(map[string]SmartCopier)
 			volumes.unlock()
 			volumePublications.lock()
 			volumePublications.data = make(map[string]SmartCopier)
 			volumePublications.unlock()
+		})
+	}
+}
+
+func TestListVolumesForAutogrowPolicy(t *testing.T) {
+	tests := []struct {
+		name               string
+		volumes            map[string]*storage.Volume
+		autogrowPolicyName string
+		expectedCount      int
+	}{
+		{
+			name:               "no matching volumes",
+			volumes:            map[string]*storage.Volume{},
+			autogrowPolicyName: "policy1",
+			expectedCount:      0,
+		},
+		{
+			name: "single matching volume",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name: "vol1",
+					},
+					BackendUUID: "backend1",
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "policy1",
+					},
+				},
+				"vol2": {
+					Config: &storage.VolumeConfig{
+						Name: "vol2",
+					},
+					BackendUUID: "backend1",
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "policy2",
+					},
+				},
+			},
+			autogrowPolicyName: "policy1",
+			expectedCount:      1,
+		},
+		{
+			name: "multiple matching volumes",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name: "vol1",
+					},
+					BackendUUID: "backend1",
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "policy1",
+					},
+				},
+				"vol2": {
+					Config: &storage.VolumeConfig{
+						Name: "vol2",
+					},
+					BackendUUID: "backend1",
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "policy1",
+					},
+				},
+				"vol3": {
+					Config: &storage.VolumeConfig{
+						Name: "vol3",
+					},
+					BackendUUID: "backend1",
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "policy2",
+					},
+				},
+			},
+			autogrowPolicyName: "policy1",
+			expectedCount:      2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			for k, v := range tt.volumes {
+				volumes.data[k] = v
+			}
+			volumes.unlock()
+
+			// Execute ListVolumesForAutogrowPolicy
+			subquery := ListVolumesForAutogrowPolicy(tt.autogrowPolicyName)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ListVolumesForAutogrowPolicy setResults should not error")
+
+			// Verify results
+			assert.Len(t, result.Volumes, tt.expectedCount, "Number of volumes should match expected")
+			for _, volume := range result.Volumes {
+				assert.Equal(t, tt.autogrowPolicyName, volume.EffectiveAGPolicy.PolicyName, "Volume autogrow policy should match filter")
+			}
+
+			// Clean up
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			volumes.unlock()
+		})
+	}
+}
+
+func TestListVolumesForStorageClass(t *testing.T) {
+	tests := []struct {
+		name          string
+		volumes       map[string]*storage.Volume
+		scName        string
+		expectedCount int
+	}{
+		{
+			name:          "no matching volumes",
+			volumes:       map[string]*storage.Volume{},
+			scName:        "sc1",
+			expectedCount: 0,
+		},
+		{
+			name: "single matching volume",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name:         "vol1",
+						StorageClass: "sc1",
+					},
+					BackendUUID: "backend1",
+				},
+				"vol2": {
+					Config: &storage.VolumeConfig{
+						Name:         "vol2",
+						StorageClass: "sc2",
+					},
+					BackendUUID: "backend1",
+				},
+			},
+			scName:        "sc1",
+			expectedCount: 1,
+		},
+		{
+			name: "multiple matching volumes",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name:         "vol1",
+						StorageClass: "sc1",
+					},
+					BackendUUID: "backend1",
+				},
+				"vol2": {
+					Config: &storage.VolumeConfig{
+						Name:         "vol2",
+						StorageClass: "sc1",
+					},
+					BackendUUID: "backend1",
+				},
+				"vol3": {
+					Config: &storage.VolumeConfig{
+						Name:         "vol3",
+						StorageClass: "sc2",
+					},
+					BackendUUID: "backend1",
+				},
+			},
+			scName:        "sc1",
+			expectedCount: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			for k, v := range tt.volumes {
+				volumes.data[k] = v
+			}
+			volumes.unlock()
+
+			// Execute ListVolumesForStorageClass
+			subquery := ListVolumesForStorageClass(tt.scName)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ListVolumesForStorageClass setResults should not error")
+
+			// Verify results
+			assert.Len(t, result.Volumes, tt.expectedCount, "Number of volumes should match expected")
+			for _, volume := range result.Volumes {
+				assert.Equal(t, tt.scName, volume.Config.StorageClass, "Volume storage class should match filter")
+			}
+
+			// Clean up
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			volumes.unlock()
+		})
+	}
+}
+
+func TestListVolumesForStorageClassWithoutPVCOverride(t *testing.T) {
+	tests := []struct {
+		name          string
+		volumes       map[string]*storage.Volume
+		scName        string
+		expectedCount int
+	}{
+		{
+			name:          "no matching volumes",
+			volumes:       map[string]*storage.Volume{},
+			scName:        "sc1",
+			expectedCount: 0,
+		},
+		{
+			name: "volumes with and without PVC annotation",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name:                    "vol1",
+						StorageClass:            "sc1",
+						RequestedAutogrowPolicy: "",
+					},
+					BackendUUID: "backend1",
+				},
+				"vol2": {
+					Config: &storage.VolumeConfig{
+						Name:                    "vol2",
+						StorageClass:            "sc1",
+						RequestedAutogrowPolicy: "policy1",
+					},
+					BackendUUID: "backend1",
+				},
+				"vol3": {
+					Config: &storage.VolumeConfig{
+						Name:                    "vol3",
+						StorageClass:            "sc2",
+						RequestedAutogrowPolicy: "",
+					},
+					BackendUUID: "backend1",
+				},
+			},
+			scName:        "sc1",
+			expectedCount: 1, // Only vol1 matches (sc1 with no annotation)
+		},
+		{
+			name: "all volumes have annotations",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name:                    "vol1",
+						StorageClass:            "sc1",
+						RequestedAutogrowPolicy: "policy1",
+					},
+					BackendUUID: "backend1",
+				},
+				"vol2": {
+					Config: &storage.VolumeConfig{
+						Name:                    "vol2",
+						StorageClass:            "sc1",
+						RequestedAutogrowPolicy: "policy2",
+					},
+					BackendUUID: "backend1",
+				},
+			},
+			scName:        "sc1",
+			expectedCount: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			for k, v := range tt.volumes {
+				volumes.data[k] = v
+			}
+			volumes.unlock()
+
+			// Execute ListVolumesForStorageClassWithoutVolumesOverride
+			subquery := ListVolumesForStorageClassWithoutAutogrowOverride(tt.scName)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ListVolumesForStorageClassWithoutVolumesOverride setResults should not error")
+
+			// Verify results
+			assert.Len(t, result.Volumes, tt.expectedCount, "Number of volumes should match expected")
+			for _, volume := range result.Volumes {
+				assert.Equal(t, tt.scName, volume.Config.StorageClass, "Volume storage class should match filter")
+				assert.Empty(t, volume.Config.RequestedAutogrowPolicy, "Volume should have no PVC annotation")
+			}
+
+			// Clean up
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			volumes.unlock()
+		})
+	}
+}
+
+func TestListVolumesForPolicyReevaluation(t *testing.T) {
+	tests := []struct {
+		name          string
+		volumes       map[string]*storage.Volume
+		policyName    string
+		expectedCount int
+		expectedVols  []string
+	}{
+		{
+			name:          "no volumes",
+			volumes:       map[string]*storage.Volume{},
+			policyName:    "policy1",
+			expectedCount: 0,
+		},
+		{
+			name: "volume with matching annotation not using policy",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name:                    "vol1",
+						RequestedAutogrowPolicy: "policy1",
+					},
+					BackendUUID: "backend1",
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "", // Not using the policy yet
+					},
+				},
+			},
+			policyName:    "policy1",
+			expectedCount: 1,
+			expectedVols:  []string{"vol1"},
+		},
+		{
+			name: "volume with no annotation not using policy",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name:                    "vol1",
+						RequestedAutogrowPolicy: "",
+					},
+					BackendUUID: "backend1",
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "", // Not using the policy yet
+					},
+				},
+			},
+			policyName:    "policy1",
+			expectedCount: 1,
+			expectedVols:  []string{"vol1"},
+		},
+		{
+			name: "volume already using policy - should be excluded",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name:                    "vol1",
+						RequestedAutogrowPolicy: "policy1",
+					},
+					BackendUUID: "backend1",
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "policy1", // Already using it
+					},
+				},
+			},
+			policyName:    "policy1",
+			expectedCount: 0,
+		},
+		{
+			name: "volume with 'none' annotation - should be excluded",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name:                    "vol1",
+						RequestedAutogrowPolicy: "none",
+					},
+					BackendUUID: "backend1",
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "",
+					},
+				},
+			},
+			policyName:    "policy1",
+			expectedCount: 0,
+		},
+		{
+			name: "volume with different policy annotation - should be excluded",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name:                    "vol1",
+						RequestedAutogrowPolicy: "policy2",
+					},
+					BackendUUID: "backend1",
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "",
+					},
+				},
+			},
+			policyName:    "policy1",
+			expectedCount: 0,
+		},
+		{
+			name: "mixed scenario",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name:                    "vol1",
+						RequestedAutogrowPolicy: "policy1",
+					},
+					BackendUUID: "backend1",
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "",
+					},
+				},
+				"vol2": {
+					Config: &storage.VolumeConfig{
+						Name:                    "vol2",
+						RequestedAutogrowPolicy: "",
+					},
+					BackendUUID: "backend1",
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "",
+					},
+				},
+				"vol3": {
+					Config: &storage.VolumeConfig{
+						Name:                    "vol3",
+						RequestedAutogrowPolicy: "policy1",
+					},
+					BackendUUID: "backend1",
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "policy1", // Already using it
+					},
+				},
+				"vol4": {
+					Config: &storage.VolumeConfig{
+						Name:                    "vol4",
+						RequestedAutogrowPolicy: "none",
+					},
+					BackendUUID: "backend1",
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "",
+					},
+				},
+				"vol5": {
+					Config: &storage.VolumeConfig{
+						Name:                    "vol5",
+						RequestedAutogrowPolicy: "policy2",
+					},
+					BackendUUID: "backend1",
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "",
+					},
+				},
+			},
+			policyName:    "policy1",
+			expectedCount: 2, // vol1 and vol2
+			expectedVols:  []string{"vol1", "vol2"},
+		},
+		{
+			name: "case insensitive matching",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name:                    "vol1",
+						RequestedAutogrowPolicy: "Policy1", // Different case
+					},
+					BackendUUID: "backend1",
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "",
+					},
+				},
+				"vol2": {
+					Config: &storage.VolumeConfig{
+						Name:                    "vol2",
+						RequestedAutogrowPolicy: "NONE", // Different case for none
+					},
+					BackendUUID: "backend1",
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "",
+					},
+				},
+			},
+			policyName:    "policy1",
+			expectedCount: 1, // vol1 matches (case-insensitive), vol2 excluded (none)
+			expectedVols:  []string{"vol1"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up initial state
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			for k, v := range tt.volumes {
+				volumes.data[k] = v
+			}
+			volumes.unlock()
+
+			// Execute ListVolumesForPolicyReevaluation
+			subquery := ListVolumesForAutogrowPolicyReevaluation(tt.policyName)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err, "ListVolumesForPolicyReevaluation setResults should not error")
+
+			// Verify results
+			assert.Len(t, result.Volumes, tt.expectedCount, "Number of volumes should match expected")
+
+			// Verify specific volumes if provided
+			if len(tt.expectedVols) > 0 {
+				volumeNames := make([]string, len(result.Volumes))
+				for i, vol := range result.Volumes {
+					volumeNames[i] = vol.Config.Name
+				}
+				for _, expectedVol := range tt.expectedVols {
+					assert.Contains(t, volumeNames, expectedVol, "Expected volume should be in results")
+				}
+			}
+
+			// Clean up
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			volumes.unlock()
 		})
 	}
 }

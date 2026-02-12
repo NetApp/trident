@@ -315,6 +315,11 @@ func TestOntapSanEcoStorageDriverConfigString(t *testing.T) {
 	}
 }
 
+func TestSANEconomyStorageDriverGetResizeDeltaBytes(t *testing.T) {
+	_, driver := newMockOntapSanEcoDriver(t)
+	assert.Equal(t, int64(tridentconfig.SANResizeDelta), driver.GetResizeDeltaBytes())
+}
+
 func TestOntapSanEconomyTerminate(t *testing.T) {
 	vserverAdminHost := ONTAPTEST_LOCALHOST
 	vserverAggrName := ONTAPTEST_VSERVER_AGGR_NAME

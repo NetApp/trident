@@ -20,6 +20,18 @@ type TridentActionSnapshotRestoreListerExpansion interface{}
 // TridentActionSnapshotRestoreNamespaceLister.
 type TridentActionSnapshotRestoreNamespaceListerExpansion interface{}
 
+// TridentAutogrowPolicyListerExpansion allows custom methods to be added to
+// TridentAutogrowPolicyLister.
+type TridentAutogrowPolicyListerExpansion interface{}
+
+// TridentAutogrowRequestInternalListerExpansion allows custom methods to be added to
+// TridentAutogrowRequestInternalLister.
+type TridentAutogrowRequestInternalListerExpansion interface{}
+
+// TridentAutogrowRequestInternalNamespaceListerExpansion allows custom methods to be added to
+// TridentAutogrowRequestInternalNamespaceLister.
+type TridentAutogrowRequestInternalNamespaceListerExpansion interface{}
+
 // TridentBackendListerExpansion allows custom methods to be added to
 // TridentBackendLister.
 type TridentBackendListerExpansion interface{}

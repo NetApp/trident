@@ -13,7 +13,7 @@ func (l LogLayer) String() string {
 }
 
 const (
-	// By default, specifying a log layer in addition to a workflow will reduce the the workflow logging to only
+	// By default, specifying a log layer in addition to a workflow will reduce the workflow logging to only
 	// workflows within that layer. Putting this modifier in front of a layer will log things in that layer in addition
 	// to the workflow.
 	additiveModifier  = "+"
@@ -39,6 +39,7 @@ const (
 	LogLayerKubernetesAPI           = LogLayer("kubernetes_api")
 	LogLayerFakeDriver              = LogLayer(FakeStorageDriverName)
 	LogLayerUtils                   = LogLayer("utils")
+	LogLayerAutogrow                = LogLayer("autogrow")
 	LogLayerAll                     = LogLayer("all")
 	LogLayerNone                    = LogLayer("none")
 )
@@ -58,5 +59,6 @@ var Layers = []LogLayer{
 	LogLayerOntapSANDriver,
 	LogLayerOntapSANEcoDriver,
 	LogLayerFakeDriver,
+	LogLayerAutogrow,
 	LogLayerAll,
 }

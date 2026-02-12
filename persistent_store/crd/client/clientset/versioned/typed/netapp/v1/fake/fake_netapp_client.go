@@ -22,6 +22,14 @@ func (c *FakeTridentV1) TridentActionSnapshotRestores(namespace string) v1.Tride
 	return &FakeTridentActionSnapshotRestores{c, namespace}
 }
 
+func (c *FakeTridentV1) TridentAutogrowPolicies() v1.TridentAutogrowPolicyInterface {
+	return &FakeTridentAutogrowPolicies{c}
+}
+
+func (c *FakeTridentV1) TridentAutogrowRequestInternals(namespace string) v1.TridentAutogrowRequestInternalInterface {
+	return &FakeTridentAutogrowRequestInternals{c, namespace}
+}
+
 func (c *FakeTridentV1) TridentBackends(namespace string) v1.TridentBackendInterface {
 	return &FakeTridentBackends{c, namespace}
 }

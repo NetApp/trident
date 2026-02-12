@@ -332,6 +332,10 @@ func (s *StorageClass) GetStoragePoolsForProtocol(
 	return ret
 }
 
+func (s *StorageClass) GetAutogrowPolicy() string {
+	return s.config.AutogrowPolicy
+}
+
 // FilterPoolsOnNasType returns pools filtered over nasType SMB. If not found returns the provided pool list as it is.
 func FilterPoolsOnNasType(
 	ctx context.Context, pools []storage.Pool, scAttributes map[string]storageattribute.Request,

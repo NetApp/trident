@@ -21,6 +21,7 @@ type Config struct {
 	Pools           map[string][]string                 `json:"storagePools,omitempty"`
 	AdditionalPools map[string][]string                 `json:"additionalStoragePools,omitempty"`
 	ExcludePools    map[string][]string                 `json:"excludeStoragePools,omitempty"`
+	AutogrowPolicy  string                              `json:"autogrowPolicy,omitempty"`
 }
 
 type External struct {

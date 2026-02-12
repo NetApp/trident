@@ -486,3 +486,11 @@ func (c *PassthroughClient) DeleteGroupSnapshot(context.Context, *storage.GroupS
 func (c *PassthroughClient) DeleteGroupSnapshots(context.Context) error {
 	return nil
 }
+
+func (c *PassthroughClient) GetAutogrowPolicy(context.Context, string) (*storage.AutogrowPolicyPersistent, error) {
+	return nil, NewPersistentStoreError(KeyNotFoundErr, "Autogrow policies not supported in passthrough mode")
+}
+
+func (c *PassthroughClient) GetAutogrowPolicies(context.Context) ([]*storage.AutogrowPolicyPersistent, error) {
+	return make([]*storage.AutogrowPolicyPersistent, 0), nil
+}

@@ -57,6 +57,7 @@ type Backend interface {
 	) error
 	UnpublishVolume(ctx context.Context, volConfig *VolumeConfig, publishInfo *models.VolumePublishInfo) error
 	UpdateVolume(ctx context.Context, volConfig *VolumeConfig, updateInfo *models.VolumeUpdateInfo) (map[string]*Volume, error)
+	GetResizeDeltaBytes() int64
 	GetVolumeForImport(ctx context.Context, volumeID string) (*VolumeExternal, error)
 	ImportVolume(ctx context.Context, volConfig *VolumeConfig) (*Volume, error)
 	ResizeVolume(ctx context.Context, volConfig *VolumeConfig, newSize string) error

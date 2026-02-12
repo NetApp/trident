@@ -5,6 +5,7 @@ package core
 import (
 	"context"
 	"fmt"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -14,6 +15,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/google/uuid"
 	"go.uber.org/multierr"
+	"golang.org/x/time/rate"
 
 	"github.com/netapp/trident/config"
 	db "github.com/netapp/trident/core/concurrent_cache"
@@ -31,6 +33,7 @@ import (
 	storageclass "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/fake"
+	"github.com/netapp/trident/utils/autogrow"
 	"github.com/netapp/trident/utils/errors"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/models"
@@ -42,6 +45,7 @@ type ConcurrentTridentOrchestrator struct {
 	uuid           string
 	bootstrapped   bool
 	bootstrapError error
+	bootstrapCond  *sync.Cond // Signals when bootstrap is complete
 
 	// mtx locks brief access to orchestrator state
 	mtx *sync.Mutex
@@ -72,11 +76,16 @@ var (
 )
 
 func NewConcurrentTridentOrchestrator(client persistentstore.Client) (Orchestrator, error) {
+	// Initialize global VP sync rate limiter if not already initialized
+	if vpSyncRateLimiter == nil {
+		vpSyncRateLimiter = rate.NewLimiter(vpUpdateRateLimit, vpUpdateBurst)
+	}
 	return &ConcurrentTridentOrchestrator{
 		frontends:                 make(map[string]frontend.Plugin),
 		storeClient:               client,
 		bootstrapped:              false,
 		bootstrapError:            errors.NotReadyError(),
+		bootstrapCond:             sync.NewCond(&sync.Mutex{}),
 		mtx:                       &sync.Mutex{},
 		scPoolMap:                 storageclass.NewPoolMap(),
 		scPoolMapMutex:            &sync.RWMutex{},
@@ -189,12 +198,20 @@ func (o *ConcurrentTridentOrchestrator) Bootstrap(_ bool) error {
 
 	// Bootstrap state from persistent store
 	if err = o.bootstrap(ctx); err != nil {
+		o.bootstrapCond.L.Lock()
 		o.bootstrapError = errors.BootstrapError(err)
+		o.bootstrapCond.Broadcast()
+		o.bootstrapCond.L.Unlock()
 		return o.bootstrapError
 	}
 
+	// Signal any goroutines waiting for bootstrap to complete
+	o.bootstrapCond.L.Lock()
 	o.bootstrapped = true
 	o.bootstrapError = nil
+	o.bootstrapCond.Broadcast()
+	o.bootstrapCond.L.Unlock()
+
 	Logc(ctx).Infof("%s bootstrapped successfully.", convert.ToTitle(config.OrchestratorName))
 	return nil
 }
@@ -206,6 +223,8 @@ func (o *ConcurrentTridentOrchestrator) bootstrap(ctx context.Context) error {
 	type bootstrapFunc func(context.Context) error
 	for _, f := range []bootstrapFunc{
 		o.bootstrapBackends,
+		// Autogrow policies loaded before volumes so volumes can be associated with policies
+		o.bootstrapAutogrowPolicies,
 		// Volumes, storage classes, and snapshots require backends to be bootstrapped.
 		o.bootstrapStorageClasses, o.bootstrapVolumes, o.bootstrapSnapshots,
 		// Volume transactions require volumes and snapshots to be bootstrapped.
@@ -359,6 +378,7 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumes(ctx context.Context) er
 
 	for _, v := range volumes {
 		vol := storage.NewVolume(v.Config, v.BackendUUID, v.Pool, v.Orphaned, v.State)
+		vol.AutogrowStatus = v.AutogrowStatus
 
 		if vol.IsSubordinate() {
 
@@ -413,6 +433,26 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumes(ctx context.Context) er
 				if fakeDriver, ok := backend.Driver().(*fake.StorageDriver); ok {
 					fakeDriver.BootstrapVolume(ctx, vol)
 				}
+			}
+
+			// Rebuild Autogrow policy associations (CSI mode only)
+			if config.CurrentDriverContext == config.ContextCSI {
+				// Resolve effective Autogrow policy
+				effectiveAGPolicy, policyErr := o.resolveEffectiveAutogrowPolicy(ctx, vol.Config)
+				if policyErr != nil {
+					if errors.IsAutogrowPolicyNotFoundError(policyErr) {
+						Logc(ctx).WithFields(LogFields{
+							"volume": vol.Config.Name,
+						}).Debug("Referenced Autogrow policy not found during bootstrap.")
+					} else if errors.IsAutogrowPolicyNotUsableError(policyErr) {
+						Logc(ctx).WithFields(LogFields{
+							"volume": vol.Config.Name,
+						}).Debug("Referenced Autogrow policy not usable during bootstrap.")
+					}
+				}
+
+				// Always set effective Autogrow policy even if it does not exist yet
+				vol.EffectiveAGPolicy = effectiveAGPolicy
 			}
 
 			upserter(vol)
@@ -499,6 +539,44 @@ func (o *ConcurrentTridentOrchestrator) bootstrapSnapshots(ctx context.Context) 
 	return nil
 }
 
+// bootstrapAutogrowPolicies reads Autogrow policies from the persistent store and loads them into the concurrent cache.
+func (o *ConcurrentTridentOrchestrator) bootstrapAutogrowPolicies(ctx context.Context) error {
+	persistentAGPolicies, storeErr := o.storeClient.GetAutogrowPolicies(ctx)
+	if storeErr != nil {
+		Logc(ctx).WithError(storeErr).Error("Failed to get autogrow policies from the persistent store.")
+		return storeErr
+	}
+
+	agpCount := 0
+
+	for _, persistentAGPolicy := range persistentAGPolicies {
+		// Create autogrow policy object with empty volume list (associations rebuilt during bootstrapVolumes)
+		agPolicy := storage.NewAutogrowPolicyFromPersistent(persistentAGPolicy)
+
+		results, unlocker, upsertErr := db.Lock(ctx, db.Query(db.UpsertAutogrowPolicy(agPolicy.Name())))
+		if upsertErr != nil {
+			Logc(ctx).WithField("autogrowPolicy", agPolicy.Name()).WithError(upsertErr).Error(
+				"Failed to lock autogrow policy for upsert.")
+			unlocker()
+			return upsertErr
+		}
+
+		results[0].AutogrowPolicy.Upsert(agPolicy)
+		unlocker()
+
+		Logc(ctx).WithFields(LogFields{
+			"autogrowPolicyName":  agPolicy.Name(),
+			"autogrowPolicyState": agPolicy.State(),
+			"handler":             "Bootstrap",
+		}).Info("Added an existing autogrow policy.")
+
+		agpCount++
+	}
+
+	Logc(ctx).Infof("Added %d existing autogrow policy(ies).", agpCount)
+	return nil
+}
+
 // bootstrapVolTxns reads volume transactions from the persistent store and processes them.
 func (o *ConcurrentTridentOrchestrator) bootstrapVolTxns(ctx context.Context) error {
 	volTxns, storeErr := o.storeClient.GetVolumeTransactions(ctx)
@@ -537,9 +615,34 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumePublications(ctx context.
 	}
 
 	vpCount := 0
+	vpsToBeSynced := make([]*models.VolumePublication, 0, len(volumePublications))
 
 	for _, vp := range volumePublications {
+		// Update VP fields from corresponding TridentVolume (use inconsistent read since we're only examining)
+		volResults, volUnlocker, volErr := db.Lock(ctx, db.Query(db.InconsistentReadVolume(vp.VolumeName)))
+		volUnlocker()
+		if volErr != nil {
+			Logc(ctx).WithFields(LogFields{
+				"volumeName": vp.VolumeName,
+				"nodeName":   vp.NodeName,
+			}).WithError(volErr).Warn("Failed to read volume for VP sync during bootstrap")
+		} else if volResults[0].Volume.Read == nil {
+			Logc(ctx).WithFields(LogFields{
+				"volumeName": vp.VolumeName,
+				"nodeName":   vp.NodeName,
+			}).Debug("Volume not found for volume publication during bootstrap, skipping sync")
+		} else {
+			vol := volResults[0].Volume.Read
+			// syncVolumePublicationFields modifies vp in place and returns true if sync is needed
+			syncNeeded := syncVolumePublicationFields(vol, vp)
 
+			// Add it to the list of vpsToBeSynced if syncNeeded is true
+			if syncNeeded {
+				vpsToBeSynced = append(vpsToBeSynced, vp)
+			}
+		}
+
+		// Add VP to cache with updated information
 		results, unlocker, upsertErr := db.Lock(ctx, db.Query(db.UpsertVolumePublication(vp.VolumeName, vp.NodeName)))
 		if upsertErr != nil {
 			Logc(ctx).WithField("publication", vp.Name).WithError(upsertErr).Error(
@@ -551,10 +654,38 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumePublications(ctx context.
 		results[0].VolumePublication.Upsert(vp)
 		unlocker()
 
+		Logc(ctx).WithFields(LogFields{
+			"volumeName": vp.VolumeName,
+			"nodeName":   vp.NodeName,
+		}).Trace("Loaded volume publication into cache during bootstrap")
+
 		vpCount++
 	}
 
 	Logc(ctx).Infof("Added %d existing volume publications(s).", vpCount)
+
+	// Asynchronously persist VPs that need syncing (e.g., after upgrade)
+	// The goroutine will wait for bootstrap to complete before proceeding
+	if len(vpsToBeSynced) > 0 {
+		go func() {
+			// Wait for bootstrap to complete
+			o.bootstrapCond.L.Lock()
+			for !o.bootstrapped && (o.bootstrapError == nil || errors.IsNotReadyError(o.bootstrapError)) {
+				o.bootstrapCond.Wait()
+			}
+			err := o.bootstrapError
+			o.bootstrapCond.L.Unlock()
+
+			if err != nil {
+				Logc(ctx).WithError(err).Error("Bootstrap failed, skipping volume publication sync")
+				return
+			}
+
+			// Now safe to proceed with sync
+			o.SyncVolumePublications(ctx, vpsToBeSynced)
+		}()
+	}
+
 	return nil
 }
 
@@ -1273,6 +1404,19 @@ func (o *ConcurrentTridentOrchestrator) GetBackendByBackendUUID(
 		"backendExternal.State": backendExternal.State.String(),
 	}).Trace("GetBackend information.")
 	return backendExternal, nil
+}
+
+// GetResizeDeltaForBackend returns the resize delta (bytes) for the backend.
+// Returns (0, err) when the orchestrator is not ready (e.g. bootstrap error).
+func (o *ConcurrentTridentOrchestrator) GetResizeDeltaForBackend(ctx context.Context, backendUUID string) (int64, error) {
+	if o.bootstrapError != nil {
+		return 0, o.bootstrapError
+	}
+	backend, err := getInconsistentBackendByUUID(backendUUID)
+	if err != nil {
+		return 0, nil
+	}
+	return backend.GetResizeDeltaBytes(), nil
 }
 
 // NOTE: DO NOT USE THIS FUNCTION INSIDE ANOTHER LOCK CONTEXT
@@ -2231,6 +2375,21 @@ func (o *ConcurrentTridentOrchestrator) addVolumeFinish(
 		return nil, err
 	}
 
+	// Resolve effective Autogrow policy
+	effectiveAGPolicy, policyErr := o.resolveEffectiveAutogrowPolicy(ctx, vol.Config)
+	if policyErr != nil {
+		if errors.IsAutogrowPolicyNotFoundError(policyErr) {
+			Logc(ctx).WithFields(LogFields{
+				"volume": vol.Config.Name,
+			}).Warn("Referenced Autogrow policy not found during volume creation.")
+		} else if errors.IsAutogrowPolicyNotUsableError(policyErr) {
+			Logc(ctx).WithFields(LogFields{
+				"volume": vol.Config.Name,
+			}).Warn("Referenced Autogrow policy not usable during volume creation.")
+		}
+	}
+	vol.EffectiveAGPolicy = effectiveAGPolicy
+
 	// Return external form of the volume
 	return vol.ConstructExternal(), nil
 }
@@ -2321,6 +2480,67 @@ func (o *ConcurrentTridentOrchestrator) UpdateVolumeLUKSPassphraseNames(
 
 	upserter(volume)
 	return nil
+}
+
+// UpdateVolumeAutogrowStatus updates the volume's AutogrowStatus in the in-memory cache and in the
+// persistent store (TridentVolume CR).
+//
+// We do inconsistent reads first (volume and subordinate volume) so we know exactly which lock to take,
+// then take the appropriate write lock.
+func (o *ConcurrentTridentOrchestrator) UpdateVolumeAutogrowStatus(
+	ctx context.Context, volumeName string, status *models.VolumeAutogrowStatus,
+) (err error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+	// Inconsistent read first to know whether this is a main volume or subordinate
+	results, unlocker, err := db.Lock(
+		ctx,
+		db.Query(db.InconsistentReadVolume(volumeName)),
+		db.Query(db.InconsistentReadSubordinateVolume(volumeName)))
+	unlocker()
+	if err != nil {
+		return fmt.Errorf("error updating volume autogrow status: %w", err)
+	}
+	vol := results[0].Volume.Read
+	subVol := results[1].SubordinateVolume.Read
+
+	if vol != nil {
+		// Main volume: take write lock and update
+		results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertVolume(volumeName, "")))
+		defer unlocker()
+		if err != nil {
+			return fmt.Errorf("error updating volume autogrow status: %w", err)
+		}
+		volume := results[0].Volume.Read
+		upserter := results[0].Volume.Upsert
+		if volume == nil {
+			return errors.NotFoundError("volume %v was not found", volumeName)
+		}
+		volume.AutogrowStatus = status
+		upserter(volume)
+		return o.storeClient.UpdateVolume(ctx, volume)
+	} else if subVol != nil {
+		// Subordinate volume: take write lock and update
+		sourceName := subVol.Config.ShareSourceVolume
+		results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertSubordinateVolume(volumeName, sourceName)))
+		defer unlocker()
+		if err != nil {
+			return fmt.Errorf("error updating volume autogrow status: %w", err)
+		}
+		vol := results[0].SubordinateVolume.Read
+		if vol == nil {
+			return errors.NotFoundError("volume %v was not found", volumeName)
+		}
+		vol.AutogrowStatus = status
+		if results[0].SubordinateVolume.Upsert != nil {
+			results[0].SubordinateVolume.Upsert(vol)
+		}
+		return o.storeClient.UpdateVolume(ctx, vol)
+	} else {
+		return errors.NotFoundError("volume %v was not found", volumeName)
+	}
 }
 
 // AttachVolume mounts a volume to the local host.  This method is currently only used by Docker,
@@ -3132,6 +3352,21 @@ func (o *ConcurrentTridentOrchestrator) importVolume(ctx context.Context,
 		return nil, importErr
 	}
 
+	// Resolve the effective Autogrow policy for the volume
+	effectiveAGPolicy, policyErr := o.resolveEffectiveAutogrowPolicy(ctx, volume.Config)
+	if policyErr != nil {
+		if errors.IsAutogrowPolicyNotFoundError(policyErr) {
+			Logc(ctx).WithFields(LogFields{
+				"volume": volume.Config.Name,
+			}).Warn("Referenced Autogrow policy not found during volume import")
+		} else if errors.IsAutogrowPolicyNotUsableError(policyErr) {
+			Logc(ctx).WithFields(LogFields{
+				"volume": volume.Config.Name,
+			}).Warn("Referenced Autogrow policy not usable during volume import")
+		}
+	}
+	volume.EffectiveAGPolicy = effectiveAGPolicy
+
 	insertVolumeInCache(volume)
 
 	return volume, nil
@@ -3418,11 +3653,16 @@ func (o *ConcurrentTridentOrchestrator) publishVolume(ctx context.Context, volum
 		return err
 	}
 	vp := &models.VolumePublication{
-		Name:       models.GenerateVolumePublishName(volumeName, publishInfo.HostName),
-		VolumeName: volumeName,
-		NodeName:   publishInfo.HostName,
-		ReadOnly:   publishInfo.ReadOnly,
-		AccessMode: publishInfo.AccessMode,
+		Name:               models.GenerateVolumePublishName(volumeName, publishInfo.HostName),
+		VolumeName:         volumeName,
+		NodeName:           publishInfo.HostName,
+		ReadOnly:           publishInfo.ReadOnly,
+		AccessMode:         publishInfo.AccessMode,
+		AutogrowPolicy:     volume.Config.RequestedAutogrowPolicy,
+		AutogrowIneligible: isVolumeAutogrowIneligible(volume.Config),
+		StorageClass:       volume.Config.StorageClass,
+		BackendUUID:        backend.BackendUUID(),
+		Pool:               volume.Pool,
 	}
 	if err := o.storeClient.AddVolumePublication(ctx, vp); err != nil {
 		// Handle idempotent publish - if publication already exists, treat as success
@@ -5004,11 +5244,23 @@ func (o *ConcurrentTridentOrchestrator) AddStorageClass(
 	results[0].StorageClass.Upsert(sc.SmartCopy().(*storageclass.StorageClass))
 	unlocker()
 
+	// Check if Autogrow policy exists
+	autogrowPolicy := sc.GetAutogrowPolicy()
+	var addErr error
+	if autogrowPolicy != "" {
+		Logc(ctx).WithFields(LogFields{
+			"storageClass":   scName,
+			"AutogrowPolicy": autogrowPolicy,
+		}).Info("StorageClass has Autogrow policy; updating affected volumes.")
+
+		addErr = o.upsertStorageClassAutogrowPolicyInternal(ctx, scName)
+	}
+
 	// Update storage class to pool map
 	o.RebuildStorageClassPoolMap(ctx)
 
 	return sc.ConstructExternalWithPoolMap(ctx,
-		o.GetStorageClassPoolMap().BackendPoolMapForStorageClass(ctx, scName)), nil
+		o.GetStorageClassPoolMap().BackendPoolMapForStorageClass(ctx, scName)), addErr
 }
 
 func (o *ConcurrentTridentOrchestrator) UpdateStorageClass(
@@ -5045,13 +5297,30 @@ func (o *ConcurrentTridentOrchestrator) UpdateStorageClass(
 
 	// Add storage class to cache
 	results[0].StorageClass.Upsert(newSC.SmartCopy().(*storageclass.StorageClass))
+
 	unlocker()
+
+	// Check if Autogrow policy changed
+	oldAGPolicy := oldSC.GetAutogrowPolicy()
+	newAGPolicy := newSC.GetAutogrowPolicy()
+
+	var updateErr error
+	if oldAGPolicy != newAGPolicy {
+		Logc(ctx).WithFields(LogFields{
+			"storageClass":      scName,
+			"oldAutogrowPolicy": oldAGPolicy,
+			"newAutogrowPolicy": newAGPolicy,
+		}).Info("StorageClass Autogrow policy changed; updating affected volumes.")
+
+		updateErr = o.upsertStorageClassAutogrowPolicyInternal(ctx, scName)
+
+	}
 
 	// Update storage class to pool map
 	o.RebuildStorageClassPoolMap(ctx)
 
 	return newSC.ConstructExternalWithPoolMap(ctx,
-		o.GetStorageClassPoolMap().BackendPoolMapForStorageClass(ctx, scName)), nil
+		o.GetStorageClassPoolMap().BackendPoolMapForStorageClass(ctx, scName)), updateErr
 }
 
 func (o *ConcurrentTridentOrchestrator) DeleteStorageClass(ctx context.Context, scName string) (err error) {
@@ -5075,6 +5344,10 @@ func (o *ConcurrentTridentOrchestrator) DeleteStorageClass(ctx context.Context, 
 		return errors.NotFoundError("storage class %v was not found", scName)
 	}
 
+	// Get SC Autogrow policy before deletion
+	// This is needed to know which volumes might be affected
+	scAutogrowPolicy := sc.GetAutogrowPolicy()
+
 	// Note that we don't need a transaction here.  If this crashes prior
 	// to successful deletion, the storage class will be reloaded upon reboot
 	// automatically, which is consistent with the method never having returned
@@ -5087,7 +5360,79 @@ func (o *ConcurrentTridentOrchestrator) DeleteStorageClass(ctx context.Context, 
 
 	// Delete storage class from cache
 	results[0].StorageClass.Delete()
+
 	unlocker()
+
+	// Re-resolve effective Autogrow policy for affected volumes
+	// This handles the case where SC had an Autogrow policy and volumes were inheriting from it
+	// After SC deletion, volumes should fall back to next priority (TBC in future, or empty)
+	if scAutogrowPolicy != "" {
+		Logc(ctx).WithFields(LogFields{
+			"storageClass":   scName,
+			"autogrowPolicy": scAutogrowPolicy,
+		}).Debug("Re-resolving Autogrow policy for volumes after StorageClass deletion.")
+
+		// List volumes using this deleted SC without PVC override (optimized query)
+		volResults, volUnlocker, volLockErr := db.Lock(ctx, db.Query(db.ListVolumesForStorageClassWithoutAutogrowOverride(scName)))
+		if volLockErr == nil {
+			volumes := volResults[0].Volumes
+			volUnlocker()
+
+			// Find all volumes using this deleted SC
+			for _, volume := range volumes {
+				// Only update volumes that:
+				//  1. Were using this SC
+				//  2. Have NO volume-level autogrow policy (were inheriting from SC)
+
+				// Lock this specific volume for update
+				volUpdateResults, volUpdateUnlocker, volUpdateLockErr := db.Lock(ctx, db.Query(db.UpsertVolume(volume.Config.Name, "")))
+				if volUpdateLockErr != nil {
+					Logc(ctx).WithFields(LogFields{
+						"volume":       volume.Config.Name,
+						"storageClass": scName,
+					}).WithError(volUpdateLockErr).Warn("Failed to lock volume for re-evaluation after SC deletion.")
+					volUpdateUnlocker()
+					continue
+				}
+
+				vol := volUpdateResults[0].Volume.Read
+				if vol == nil {
+					volUpdateUnlocker()
+					continue
+				}
+
+				oldEffectiveAGPolicy := vol.EffectiveAGPolicy
+
+				// Re-resolve effective Autogrow policy (SC now gone, will fall to TBC or empty)
+				// Current: Returns "" (no TBC support yet)
+				// Future: Will check TBC and return TBC policy if configured
+				newEffectiveAGPolicy, _ := o.resolveEffectiveAutogrowPolicy(ctx, vol.Config)
+
+				// Update effective policy
+				vol.EffectiveAGPolicy = newEffectiveAGPolicy
+
+				// Log if Autogrow policy changed
+				if oldEffectiveAGPolicy.PolicyName != newEffectiveAGPolicy.PolicyName {
+					Logc(ctx).WithFields(LogFields{
+						"volume":                vol.Config.Name,
+						"oldAutogrowPolicyName": oldEffectiveAGPolicy.PolicyName,
+						"newAutogrowPolicyName": newEffectiveAGPolicy.PolicyName,
+					}).Debug("Re-resolved effective Autogrow policy after StorageClass deletion.")
+				}
+
+				volUpdateResults[0].Volume.Upsert(vol)
+				volUpdateUnlocker()
+			}
+		} else {
+			volUnlocker()
+			Logc(ctx).WithField("storageClass", scName).WithError(volLockErr).
+				Warn("Failed to list volumes for re-evaluation after SC deletion.")
+		}
+
+		Logc(ctx).WithFields(LogFields{
+			"storageClass": scName,
+		}).Info("Re-resolved Autogrow policy for volumes after StorageClass deletion.")
+	}
 
 	// Update storage class to pool map
 	o.RebuildStorageClassPoolMap(ctx)
@@ -5652,6 +5997,158 @@ func (o *ConcurrentTridentOrchestrator) ListVolumePublications(
 		publications = append(publications, pub.ConstructExternal())
 	}
 	return
+}
+
+// SyncVolumePublications asynchronously persists VP fields to the store with rate limiting.
+// The VPs are already updated in cache; this method only persists them to the store.
+//
+// Used by:
+//   - Bootstrap: Syncing/migrating all VPs (labels, AGP, legacy fields)
+//   - UpdateVolumeAutogrowPolicy: Propagating AGP changes to RWX/RO volume's VPs
+func (o *ConcurrentTridentOrchestrator) SyncVolumePublications(
+	ctx context.Context, vpsToBeSynced []*models.VolumePublication,
+) {
+	Logc(ctx).WithField("vpCount", len(vpsToBeSynced)).Debug(">>>>>> SyncVolumePublications")
+	defer Logc(ctx).Debug("<<<<<< SyncVolumePublications")
+
+	Logc(ctx).WithField("vpCount", len(vpsToBeSynced)).Info("Starting volume publication sync")
+
+	if len(vpsToBeSynced) == 0 {
+		Logc(ctx).Debug("No volume publications to sync")
+		return
+	}
+
+	// Configure exponential backoff for rate limiter waits
+	rateLimiterBackoff := backoff.NewExponentialBackOff()
+	rateLimiterBackoff.InitialInterval = 500 * time.Millisecond
+	rateLimiterBackoff.Multiplier = 1.5
+	rateLimiterBackoff.MaxInterval = 2 * time.Second // Cap at 2s for rate limiting
+	rateLimiterBackoff.RandomizationFactor = 0.2
+	rateLimiterBackoff.MaxElapsedTime = 0 // Retry indefinitely
+
+	// Configure exponential backoff for store update retries
+	vpStoreBackoff := backoff.NewExponentialBackOff()
+	vpStoreBackoff.InitialInterval = 1 * time.Second
+	vpStoreBackoff.Multiplier = 2.0
+	vpStoreBackoff.MaxInterval = 30 * time.Second
+	vpStoreBackoff.RandomizationFactor = 0.2
+	vpStoreBackoff.MaxElapsedTime = 0 // Retry indefinitely
+
+	for i := range vpsToBeSynced {
+		// Reset rate limiter backoff for this VP
+		rateLimiterBackoff.Reset()
+
+		// Wait for rate limiter token WITHOUT holding lock to avoid blocking other operations
+		for !vpSyncRateLimiter.Allow() {
+			waitDuration := rateLimiterBackoff.NextBackOff()
+			Logc(ctx).WithFields(LogFields{
+				"volumeName":  vpsToBeSynced[i].VolumeName,
+				"nodeName":    vpsToBeSynced[i].NodeName,
+				"backoffWait": waitDuration.String(),
+			}).Debug("Rate limiter throttling VP sync, backing off before retry")
+
+			// Sleep with exponential backoff to give rate limiter time to refill
+			time.Sleep(waitDuration)
+		}
+
+		// Reset store update backoff for this VP
+		vpStoreBackoff.Reset()
+
+		// Log progress
+		vpsRemaining := len(vpsToBeSynced) - i
+		Logc(ctx).WithFields(LogFields{
+			"vpsRemaining": vpsRemaining,
+			"vpsTotal":     len(vpsToBeSynced),
+		}).Debug("Syncing volume publications")
+
+		// Retry logic for persisting VP to store with exponential backoff
+		// The lock is acquired and released for each attempt, allowing other operations to proceed
+		vpStoreUpdateAttempt := func() error {
+			// Try to persist this VP
+			err := o.syncVolumePublication(ctx, vpsToBeSynced[i])
+			if err != nil {
+				Logc(ctx).WithFields(LogFields{
+					"volumeName": vpsToBeSynced[i].VolumeName,
+					"nodeName":   vpsToBeSynced[i].NodeName,
+				}).WithError(err).Warn("Failed to sync VP fields to store, will retry")
+				return err
+			}
+			return nil
+		}
+
+		// Persist the VP to the store with exponential backoff retry
+		// The backoff sleep happens WITHOUT holding the lock
+		// Will retry indefinitely until success or VP is deleted from cache
+		if err := backoff.RetryNotify(vpStoreUpdateAttempt, vpStoreBackoff, nil); err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"volumeName": vpsToBeSynced[i].VolumeName,
+				"nodeName":   vpsToBeSynced[i].NodeName,
+			}).WithError(err).Error("Failed to sync VP fields to store (unexpected error)")
+		}
+
+		// Yield CPU to give other goroutines priority (this is a low-priority background operation)
+		runtime.Gosched()
+	}
+
+	Logc(ctx).WithField("vpCount", len(vpsToBeSynced)).Info("Completed propagating fields to all volume publications")
+}
+
+// syncVolumePublication persists a single VP from cache to store.
+//
+// This function reads the latest VP state from cache (source of truth) and persists it to the store.
+// If the VP was deleted from cache between queueing and persistence, the update is safely skipped.
+//
+// IMPORTANT: This does NOT acquire the global mutex like orchestrator_core, instead it uses
+// concurrent cache locking pattern which is the standard for concurrent_core.
+func (o *ConcurrentTridentOrchestrator) syncVolumePublication(
+	ctx context.Context, vp *models.VolumePublication,
+) error {
+	Logc(ctx).WithFields(LogFields{
+		"volumeName": vp.VolumeName,
+		"nodeName":   vp.NodeName,
+	}).Debug(">>>>>> syncVolumePublication")
+	defer Logc(ctx).Debug("<<<<<< syncVolumePublication")
+
+	// Fetch the latest VP from cache using concurrent core's locking pattern
+	results, unlocker, err := db.Lock(ctx, db.Query(db.UpsertVolumePublication(vp.VolumeName, vp.NodeName)))
+	defer unlocker()
+
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"volumeName": vp.VolumeName,
+			"nodeName":   vp.NodeName,
+		}).WithError(err).Debug("Failed to lock VP for sync, skipping update")
+		return err
+	}
+
+	latestVP := results[0].VolumePublication.Read
+	if latestVP == nil {
+		// VP was deleted while we were waiting in rate limiter - skip update
+		Logc(ctx).WithFields(LogFields{
+			"volumeName": vp.VolumeName,
+			"nodeName":   vp.NodeName,
+		}).Debug("VP not found in cache, skipping update (may have been deleted)")
+		return err
+	}
+
+	// Persist the vp to the store
+	if err := o.storeClient.UpdateVolumePublication(ctx, latestVP); err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"publication": latestVP.Name,
+			"volumeName":  latestVP.VolumeName,
+			"nodeName":    latestVP.NodeName,
+		}).WithError(err).Error("Failed to sync VP fields to store")
+		return err
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"volumeName": latestVP.VolumeName,
+		"nodeName":   latestVP.NodeName,
+		"labels":     latestVP.Labels,
+		"agPolicy":   latestVP.AutogrowPolicy,
+	}).Debug("Successfully synced VP fields to store")
+
+	return nil
 }
 
 // ListVolumePublicationsForVolume returns a list of all volume publications for a given volume.
@@ -6648,4 +7145,878 @@ func (o *ConcurrentTridentOrchestrator) updateBackendOnPersistentStore(
 		}
 	}
 	return nil
+}
+
+// ============================================================================
+// Autogrow Policy CRUD Operations
+// ============================================================================
+
+// AddAutogrowPolicy creates a new Autogrow policy in the orchestrator. The policy can be referenced
+// by volumes directly or as a default in StorageClass. This method does
+// not persist policies to the backing store as they are managed by the frontend.
+func (o *ConcurrentTridentOrchestrator) AddAutogrowPolicy(
+	ctx context.Context, config *storage.AutogrowPolicyConfig,
+) (*storage.AutogrowPolicyExternal, error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	var err error
+	defer recordTiming("autogrowpolicy_add", &err)()
+
+	Logc(ctx).WithFields(LogFields{
+		"autogrowPolicyName": config.Name,
+		"usedThreshold":      config.UsedThreshold,
+		"growthAmount":       config.GrowthAmount,
+		"maxSize":            config.MaxSize,
+	}).Debug("Adding Autogrow policy.")
+
+	// Lock the Autogrow policy
+	results, unlocker, lockErr := db.Lock(ctx, db.Query(db.UpsertAutogrowPolicy(config.Name)))
+	if lockErr != nil {
+		unlocker()
+		return nil, fmt.Errorf("error locking Autogrow policy %s; %w", config.Name, lockErr)
+	}
+
+	// Check if policy already exists
+	if results[0].AutogrowPolicy.Read != nil {
+		unlocker()
+		return nil, errors.AlreadyExistsError("Autogrow policy %s already exists", config.Name)
+	}
+
+	autogrowPolicy := storage.NewAutogrowPolicyFromConfig(config)
+	results[0].AutogrowPolicy.Upsert(autogrowPolicy)
+
+	// UNLOCK BEFORE calling helper function that acquires more locks
+	unlocker()
+
+	// Retroactively re-evaluate existing volumes for this newly created policy
+	// This works for both Success and Failed states:
+	// - Success: volumes get associated with the policy
+	// - Failed: volumes get updated with Reason="Unusable"
+	Logc(ctx).WithFields(LogFields{
+		"autogrowPolicyName": config.Name,
+		"state":              autogrowPolicy.State(),
+	}).Debug("Re-evaluating volumes for newly added policy.")
+	o.reevaluateVolumesForPolicy(ctx, config.Name)
+
+	Logc(ctx).WithField("autogrowPolicyName", config.Name).Info("Autogrow policy added.")
+
+	// Get volumes using concurrent_cache query (should be empty for new policy)
+	volResults, volUnlocker, volLockErr := db.Lock(ctx, db.Query(db.ListVolumesForAutogrowPolicy(config.Name)))
+	defer volUnlocker()
+
+	var volumes []string
+	if volLockErr == nil {
+		volumes = make([]string, 0, len(volResults[0].Volumes))
+		for _, vol := range volResults[0].Volumes {
+			volumes = append(volumes, vol.Config.Name)
+		}
+	} else {
+		volumes = []string{}
+	}
+
+	return autogrowPolicy.ConstructExternalWithVolumes(ctx, volumes), nil
+}
+
+// UpdateAutogrowPolicy updates an existing Autogrow policy with new configuration values. Volumes
+// already associated with the policy will use the updated settings. This method updates the policy
+// configuration but does not re-associate existing volumes.
+func (o *ConcurrentTridentOrchestrator) UpdateAutogrowPolicy(
+	ctx context.Context, config *storage.AutogrowPolicyConfig,
+) (*storage.AutogrowPolicyExternal, error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	var err error
+	defer recordTiming("autogrowpolicy_update", &err)()
+
+	Logc(ctx).WithFields(LogFields{
+		"autogrowPolicyName": config.Name,
+		"usedThreshold":      config.UsedThreshold,
+		"growthAmount":       config.GrowthAmount,
+		"maxSize":            config.MaxSize,
+	}).Debug("Updating Autogrow policy.")
+
+	// Lock the Autogrow policy
+	results, unlocker, lockErr := db.Lock(ctx, db.Query(db.UpsertAutogrowPolicy(config.Name)))
+	if lockErr != nil {
+		unlocker()
+		return nil, fmt.Errorf("error locking Autogrow policy %s; %w", config.Name, lockErr)
+	}
+
+	policy := results[0].AutogrowPolicy.Read
+	if policy == nil {
+		unlocker()
+		return nil, errors.AutogrowPolicyNotFoundError(config.Name)
+	}
+
+	// Store old state to detect state transitions
+	oldAGPState := policy.State()
+
+	// Update the policy spec + status in cache to match with the external world (CR)
+	policy.UpdateFromConfig(config)
+	results[0].AutogrowPolicy.Upsert(policy)
+
+	// UNLOCK BEFORE calling helper functions that acquire more locks
+	unlocker()
+
+	// Handle state transitions by re-evaluating volume associations
+	if oldAGPState != config.State {
+		// State transitions require re-evaluation because:
+		// - Success → Failed/Deleting: Volumes can't use this policy anymore
+		// - Failed/Deleting → Success: Volumes can now use this policy
+		// - Without re-evaluation, volumes would have stale associations
+		Logc(ctx).WithFields(LogFields{
+			"autogrowPolicyName": config.Name,
+			"oldAGPState":        oldAGPState,
+			"newAGPState":        config.State,
+		}).Info("Autogrow policy state changed, re-evaluating volume associations.")
+
+		if config.State.IsSuccess() {
+			// Policy is now Success (was Failed/Deleting) - re-evaluate ALL volumes
+			o.reevaluateVolumesForPolicy(ctx, config.Name)
+		} else {
+			// Policy is Failed/Deleting
+			// NO re-resolution needed - policy settings haven't changed, so NO fallbacks exist
+			// Just invalidate all volumes directly
+			o.invalidateVolumesForPolicy(ctx, config.Name)
+		}
+	}
+
+	Logc(ctx).WithField("autogrowPolicyName", config.Name).Info("Autogrow policy updated.")
+
+	// Get volumes using concurrent_cache query
+	volResults, volUnlocker, volLockErr := db.Lock(ctx, db.Query(db.ListVolumesForAutogrowPolicy(config.Name)))
+	defer volUnlocker()
+
+	var volumes []string
+	if volLockErr == nil {
+		volumes = make([]string, 0, len(volResults[0].Volumes))
+		for _, vol := range volResults[0].Volumes {
+			volumes = append(volumes, vol.Config.Name)
+		}
+	} else {
+		volumes = []string{}
+	}
+
+	return policy.ConstructExternalWithVolumes(ctx, volumes), nil
+}
+
+// DeleteAutogrowPolicy removes an Autogrow policy from the orchestrator.
+//
+// Behavior:
+//   - If policy has no volumes: Immediately deletes from cache (hard delete)
+//   - If policy has volumes: Sets state to Deleting (soft delete), returns nil
+//   - Soft-deleted policies are automatically cleaned up when the last volume is disassociated
+//
+// This matches the backend deletion pattern for consistency.
+func (o *ConcurrentTridentOrchestrator) DeleteAutogrowPolicy(
+	ctx context.Context, agPolicyName string,
+) error {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	var err error
+	defer recordTiming("autogrowpolicy_delete", &err)()
+
+	Logc(ctx).WithField("autogrowPolicyName", agPolicyName).Info("Deleting Autogrow policy.")
+
+	// Phase 1: Read policy to verify it exists
+	readResults, readUnlocker, readLockErr := db.Lock(ctx, db.Query(db.ReadAutogrowPolicy(agPolicyName)))
+	if readLockErr != nil {
+		readUnlocker()
+		return fmt.Errorf("error locking Autogrow policy %s; %w", agPolicyName, readLockErr)
+	}
+
+	policy := readResults[0].AutogrowPolicy.Read
+	if policy == nil {
+		readUnlocker()
+		return errors.AutogrowPolicyNotFoundError(agPolicyName)
+	}
+
+	// UNLOCK policy before checking volumes
+	readUnlocker()
+
+	// Check if any volumes use this policy (no locks held)
+	volResults, volUnlocker, volLockErr := db.Lock(ctx, db.Query(db.ListVolumesForAutogrowPolicy(agPolicyName)))
+	if volLockErr != nil {
+		volUnlocker()
+		return fmt.Errorf("error checking volumes for policy %s; %w", agPolicyName, volLockErr)
+	}
+	volumes := make([]string, 0, len(volResults[0].Volumes))
+	for _, vol := range volResults[0].Volumes {
+		volumes = append(volumes, vol.Config.Name)
+	}
+	volUnlocker()
+
+	if len(volumes) > 0 {
+		// Soft delete: Re-acquire policy lock for update
+		updateResults, updateUnlocker, updateLockErr := db.Lock(ctx, db.Query(db.UpsertAutogrowPolicy(agPolicyName)))
+		defer updateUnlocker()
+		if updateLockErr != nil {
+			return fmt.Errorf("error locking Autogrow policy %s; %w", agPolicyName, updateLockErr)
+		}
+
+		updatePolicy := updateResults[0].AutogrowPolicy.Read
+		if updatePolicy == nil {
+			return errors.AutogrowPolicyNotFoundError(agPolicyName)
+		}
+
+		// Set Deleting state (soft delete)
+		updatePolicy.UpdateFromConfig(&storage.AutogrowPolicyConfig{
+			Name:  updatePolicy.Name(),
+			State: storage.AutogrowPolicyStateDeleting,
+		})
+		updateResults[0].AutogrowPolicy.Upsert(updatePolicy)
+
+		Logc(ctx).WithFields(LogFields{
+			"autogrowPolicyName": agPolicyName,
+			"volumeCount":        len(volumes),
+			"volumes":            volumes,
+		}).Info("Autogrow policy has associated volumes, setting to Deleting state.")
+
+		return nil
+	}
+
+	// Hard delete: Re-acquire lock for deletion
+	deleteResults, deleteUnlocker, deleteLockErr := db.Lock(ctx, db.Query(db.DeleteAutogrowPolicy(agPolicyName)))
+	defer deleteUnlocker()
+	if deleteLockErr != nil {
+		return fmt.Errorf("error locking Autogrow policy %s; %w", agPolicyName, deleteLockErr)
+	}
+
+	deletePolicy := deleteResults[0].AutogrowPolicy.Read
+	if deletePolicy == nil {
+		// Policy was already deleted (race condition - another thread deleted it)
+		Logc(ctx).WithField("autogrowPolicyName", agPolicyName).
+			Debug("Policy already deleted by another operation.")
+		return nil
+	}
+
+	// Proceed with hard delete
+	// If a volume is created referencing this policy during deletion,
+	// the volume will be created successfully but without the autogrow policy association (warning logged)
+	deleteResults[0].AutogrowPolicy.Delete()
+
+	Logc(ctx).WithField("autogrowPolicyName", agPolicyName).Info("Autogrow policy deleted.")
+	return nil
+}
+
+// GetAutogrowPolicy retrieves a single Autogrow policy by name. The returned external representation
+// includes the policy configuration and a list of all volumes currently using the policy.
+func (o *ConcurrentTridentOrchestrator) GetAutogrowPolicy(
+	ctx context.Context, agPolicyName string,
+) (*storage.AutogrowPolicyExternal, error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	var err error
+	defer recordTiming("autogrowpolicy_get", &err)()
+
+	// Lock the Autogrow policy for read
+	results, unlocker, lockErr := db.Lock(ctx, db.Query(db.InconsistentReadAutogrowPolicy(agPolicyName)))
+	if lockErr != nil {
+		unlocker()
+		return nil, fmt.Errorf("error locking Autogrow policy %s; %w", agPolicyName, lockErr)
+	}
+
+	policy := results[0].AutogrowPolicy.Read
+	if policy == nil {
+		unlocker()
+		return nil, errors.AutogrowPolicyNotFoundError(agPolicyName)
+	}
+
+	// UNLOCK policy before acquiring volume locks
+	unlocker()
+
+	// Get volumes using concurrent_cache query
+	volResults, volUnlocker, volLockErr := db.Lock(ctx, db.Query(db.ListVolumesForAutogrowPolicy(agPolicyName)))
+	defer volUnlocker()
+
+	var volumes []string
+	if volLockErr == nil {
+		volumes = make([]string, 0, len(volResults[0].Volumes))
+		for _, vol := range volResults[0].Volumes {
+			volumes = append(volumes, vol.Config.Name)
+		}
+	} else {
+		Logc(ctx).WithError(volLockErr).Warn("Failed to get volumes for policy.")
+		volumes = []string{}
+	}
+
+	return policy.ConstructExternalWithVolumes(ctx, volumes), nil
+}
+
+// ListAutogrowPolicies returns all Autogrow policies currently registered in the orchestrator. Each
+// policy includes its configuration and the list of volumes using it.
+func (o *ConcurrentTridentOrchestrator) ListAutogrowPolicies(
+	ctx context.Context,
+) ([]*storage.AutogrowPolicyExternal, error) {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return nil, o.bootstrapError
+	}
+
+	var err error
+	defer recordTiming("autogrowpolicy_list", &err)()
+
+	// List all Autogrow policies
+	results, unlocker, lockErr := db.Lock(ctx, db.Query(db.ListAutogrowPolicies()))
+	if lockErr != nil {
+		unlocker()
+		return nil, fmt.Errorf("error listing Autogrow policies; %w", lockErr)
+	}
+
+	policiesList := results[0].AutogrowPolicies
+
+	// UNLOCK policy list before acquiring volume locks
+	unlocker()
+
+	policies := make([]*storage.AutogrowPolicyExternal, 0, len(policiesList))
+	for _, policy := range policiesList {
+		// Get volumes for each policy using concurrent_cache query
+		volResults, volUnlocker, volLockErr := db.Lock(ctx, db.Query(db.ListVolumesForAutogrowPolicy(policy.Name())))
+
+		var volumes []string
+		if volLockErr == nil {
+			volumes = make([]string, 0, len(volResults[0].Volumes))
+			for _, vol := range volResults[0].Volumes {
+				volumes = append(volumes, vol.Config.Name)
+			}
+		} else {
+			Logc(ctx).WithError(volLockErr).Warn("Failed to get volumes for policy.")
+			volumes = []string{}
+		}
+		volUnlocker()
+
+		policies = append(policies, policy.ConstructExternalWithVolumes(ctx, volumes))
+	}
+
+	return policies, nil
+}
+
+// UpdateVolumeAutogrowPolicy updates a volume when its autogrow policy changes.
+// This resolves the new effective policy, validates it exists, and updates associations.
+// Returns AutogrowPolicyNotFoundError or AutogrowPolicyNotUsableError for event recording.
+func (o *ConcurrentTridentOrchestrator) UpdateVolumeAutogrowPolicy(
+	ctx context.Context, volumeName, requestedAutogrowPolicy string,
+) error {
+	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
+
+	if o.bootstrapError != nil {
+		return o.bootstrapError
+	}
+
+	var err error
+	defer recordTiming("volume_autogrow_policy_update", &err)()
+
+	Logc(ctx).WithFields(LogFields{
+		"volumeName":              volumeName,
+		"requestedAutogrowPolicy": requestedAutogrowPolicy,
+	}).Debug("Updating volume Autogrow policy.")
+
+	// Lock the volume for update
+	results, unlocker, lockErr := db.Lock(ctx, db.Query(db.UpsertVolume(volumeName, "")))
+
+	if lockErr != nil {
+		unlocker()
+		return fmt.Errorf("error locking volume %s; %w", volumeName, lockErr)
+	}
+
+	volume := results[0].Volume.Read
+	if volume == nil {
+		unlocker()
+		return errors.NotFoundError("volume %s not found", volumeName)
+	}
+
+	// Store old effective Autogrow policy for comparison
+	oldEffectiveAGPolicy := volume.EffectiveAGPolicy
+
+	// Update the requested autogrow policy in volume config
+	volume.Config.RequestedAutogrowPolicy = requestedAutogrowPolicy
+
+	// Persist the updated volume to the store
+	if err := o.storeClient.UpdateVolume(ctx, volume); err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"volumeName": volumeName,
+		}).Error("Failed to persist volume Autogrow policy update to store.")
+		unlocker()
+		return err
+	}
+
+	// Resolve new effective policy
+	newEffectiveAGPolicy, policyErr := o.resolveEffectiveAutogrowPolicy(ctx, volume.Config)
+	if policyErr != nil {
+		if errors.IsAutogrowPolicyNotFoundError(policyErr) {
+			Logc(ctx).WithField("volume", volume.Config.Name).
+				Warn("Referenced Autogrow policy not found during volume autogrow policy update.")
+		} else if errors.IsAutogrowPolicyNotUsableError(policyErr) {
+			Logc(ctx).WithField("volume", volume.Config.Name).
+				Warn("Referenced Autogrow policy not usable during volume autogrow policy update.")
+		}
+	}
+
+	// Update effective Autogrow policy for the volume
+	volume.EffectiveAGPolicy = newEffectiveAGPolicy
+
+	// Log if policy changed
+	if oldEffectiveAGPolicy.PolicyName != newEffectiveAGPolicy.PolicyName {
+		Logc(ctx).WithFields(LogFields{
+			"volumeName":            volumeName,
+			"oldAutogrowPolicyName": oldEffectiveAGPolicy.PolicyName,
+			"newAutogrowPolicyName": newEffectiveAGPolicy.PolicyName,
+		}).Info("Updated volume's effective Autogrow policy.")
+	}
+
+	// Upsert the volume back to cache
+	results[0].Volume.Upsert(volume)
+	unlocker()
+
+	Logc(ctx).WithField("volumeName", volumeName).Debug("Syncing volume publications after Autogrow policy update")
+
+	// Propagate AGP changes to all the VPs associated with this volume
+	vpResults, vpUnlocker, vpErr := db.Lock(ctx, db.Query(db.ListVolumePublicationsForVolume(volumeName)))
+	if vpErr != nil {
+		Logc(ctx).WithError(vpErr).Warn("Failed to lock VPs for sync after Autogrow policy update")
+		vpUnlocker()
+		return policyErr
+	}
+	vps := vpResults[0].VolumePublications
+	syncNeededVPS := make([]*models.VolumePublication, 0)
+	vpUnlocker()
+
+	Logc(ctx).WithFields(LogFields{
+		"volumeName": volumeName,
+		"vpCount":    len(vps),
+	}).Debug("Locked volume publications for Autogrow policy sync")
+
+	// Detect and modify VPs that need syncing
+	for _, vp := range vps {
+		// Update cache with modified VP (using upsert query)
+		vpUpsertResults, vpUpsertUnlocker, vpUpsertErr := db.Lock(ctx, db.Query(db.UpsertVolumePublication(vp.VolumeName, vp.NodeName)))
+		if vpUpsertErr != nil {
+			Logc(ctx).WithFields(LogFields{
+				"volumeName": vp.VolumeName,
+				"nodeName":   vp.NodeName,
+			}).WithError(vpUpsertErr).Error("Failed to update VP cache")
+			vpUpsertUnlocker()
+			continue
+		}
+		vp = vpUpsertResults[0].VolumePublication.Read
+		syncNeeded := syncVolumePublicationFields(volume, vp)
+
+		if syncNeeded {
+			Logc(ctx).WithFields(LogFields{
+				"volumeName": vp.VolumeName,
+				"nodeName":   vp.NodeName,
+			}).Debug("Volume publication requires sync after policy update")
+			syncNeededVPS = append(syncNeededVPS, vp)
+
+			vpUpsertResults[0].VolumePublication.Upsert(vp)
+		}
+		vpUpsertUnlocker()
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"volumeName":      volumeName,
+		"totalVPs":        len(vps),
+		"syncNeededCount": len(syncNeededVPS),
+	}).Debug("Completed VP sync check after Autogrow policy update")
+
+	// Propagate changes with optimization for single VP
+	if len(syncNeededVPS) > 1 {
+		Logc(ctx).WithFields(LogFields{
+			"volumeName": volumeName,
+			"vpCount":    len(syncNeededVPS),
+		}).Debug("Asynchronously propagating Autogrow policy changes to volume publications")
+		// For multiple VPs, use async goroutine to avoid blocking
+		go o.SyncVolumePublications(ctx, syncNeededVPS)
+	} else if len(syncNeededVPS) == 1 {
+		Logc(ctx).WithFields(LogFields{
+			"volumeName": volumeName,
+			"nodeName":   syncNeededVPS[0].NodeName,
+		}).Debug("Synchronously propagating Autogrow policy change to single volume publication")
+		// For single VP, update synchronously in this goroutine
+		err := o.syncVolumePublication(ctx, syncNeededVPS[0])
+		if err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"volumeName": volumeName,
+				"nodeName":   syncNeededVPS[0].NodeName,
+			}).WithError(err).Errorf("failed to update Autogrow policy change to volume publication store")
+		}
+	}
+
+	return policyErr
+}
+
+// ============================================================================
+// Autogrow Policy Helper Methods
+// ============================================================================
+
+// resolveEffectiveAutogrowPolicy determines the effective Autogrow policy for a volume.
+// It uses the stateless utils function and concurrent cache's StorageClass data.
+// Returns policy info (name + reason) and error if the policy doesn't exist or is not usable.
+func (o *ConcurrentTridentOrchestrator) resolveEffectiveAutogrowPolicy(
+	ctx context.Context, volumeConfig *storage.VolumeConfig,
+) (models.EffectiveAutogrowPolicyInfo, error) {
+
+	// Check if volume is fundamentally ineligible for autogrow
+	// This must be checked FIRST before any policy resolution
+	if isVolumeAutogrowIneligible(volumeConfig) {
+		Logc(ctx).WithFields(LogFields{
+			"volume":             volumeConfig.Name,
+			"importNotManaged":   volumeConfig.ImportNotManaged,
+			"importOriginalName": volumeConfig.ImportOriginalName,
+			"spaceReserve":       volumeConfig.SpaceReserve,
+			"readOnlyClone":      volumeConfig.ReadOnlyClone,
+			"shareSourceVolume":  volumeConfig.ShareSourceVolume,
+		}).Debug("Volume is ineligible for autogrow based on configuration.")
+		return models.EffectiveAutogrowPolicyInfo{
+			PolicyName: "",
+			Reason:     models.AutogrowPolicyReasonIneligible,
+		}, nil
+	}
+
+	// Get StorageClass Autogrow policy from concurrent cache
+	// Use inconsistent read for performance since this is a non-critical lookup
+	scAutogrowPolicy := ""
+	if volumeConfig.StorageClass != "" {
+		results, unlocker, lockErr := db.Lock(ctx, db.Query(db.InconsistentReadStorageClass(volumeConfig.StorageClass)))
+		if lockErr == nil {
+			sc := results[0].StorageClass.Read
+			if sc != nil {
+				scAutogrowPolicy = sc.GetAutogrowPolicy()
+			} else {
+				Logc(ctx).WithField("storageClass", volumeConfig.StorageClass).Warn("StorageClass not found in orchestrator while resolving Autogrow policy.")
+			}
+			unlocker()
+		}
+	}
+
+	// Get volume autogrow policy
+	volumeAutogrowPolicy := volumeConfig.RequestedAutogrowPolicy
+
+	effectiveAGPolicyName := autogrow.ResolveEffectiveAutogrowPolicy(
+		ctx,
+		volumeConfig.Name,
+		volumeConfig.RequestedAutogrowPolicy,
+		scAutogrowPolicy,
+	)
+
+	// If empty, determine WHY it's empty
+	if effectiveAGPolicyName == "" {
+		// Check if explicitly disabled with "none" in either volume or StorageClass (case-insensitive)
+		if strings.EqualFold(volumeAutogrowPolicy, autogrow.AutogrowPolicyNone) ||
+			strings.EqualFold(scAutogrowPolicy, autogrow.AutogrowPolicyNone) {
+			return models.EffectiveAutogrowPolicyInfo{
+				PolicyName: "",
+				Reason:     models.AutogrowPolicyReasonDisabled,
+			}, nil
+		}
+		// Not configured at all
+		return models.EffectiveAutogrowPolicyInfo{
+			PolicyName: "",
+			Reason:     models.AutogrowPolicyReasonNotConfigured,
+		}, nil
+	}
+
+	// Validate policy exists in concurrent cache
+	// Use inconsistent read to check policy existence and state
+	results, unlocker, lockErr := db.Lock(ctx, db.Query(db.InconsistentReadAutogrowPolicy(effectiveAGPolicyName)))
+	defer unlocker()
+	if lockErr != nil {
+		return models.EffectiveAutogrowPolicyInfo{
+			PolicyName: "",
+			Reason:     models.AutogrowPolicyReasonNotFound,
+		}, errors.AutogrowPolicyNotFoundError(effectiveAGPolicyName)
+	}
+
+	autogrowPolicy := results[0].AutogrowPolicy.Read
+	if autogrowPolicy == nil {
+		// Policy doesn't exist - return empty string and AutogrowPolicyNotFoundError
+		return models.EffectiveAutogrowPolicyInfo{
+			PolicyName: "",
+			Reason:     models.AutogrowPolicyReasonNotFound,
+		}, errors.AutogrowPolicyNotFoundError(effectiveAGPolicyName)
+	}
+
+	if !autogrowPolicy.State().IsSuccess() {
+		// Policy exists but is Failed or Deleting:
+		// - Failed: Validation failed, policy shouldn't be used
+		// - Deleting: Policy deletion in progress, volumes being migrated
+		// Return policy info (empty string + reason) to prevent new associations
+		Logc(ctx).WithFields(LogFields{
+			"volume": volumeConfig.Name,
+			"policy": effectiveAGPolicyName,
+			"state":  autogrowPolicy.State(),
+		}).Debug("Autogrow policy exists but not in Success state.")
+		// Return NEW AutogrowPolicyNotUsableError
+		return models.EffectiveAutogrowPolicyInfo{
+			PolicyName: "",
+			Reason:     models.AutogrowPolicyReasonUnusable,
+		}, errors.AutogrowPolicyNotUsableError(effectiveAGPolicyName, string(autogrowPolicy.State()))
+	}
+
+	// Policy is active
+	return models.EffectiveAutogrowPolicyInfo{
+		PolicyName: effectiveAGPolicyName,
+		Reason:     models.AutogrowPolicyReasonActive,
+	}, nil
+}
+
+// invalidateVolumesForPolicy invalidates volumes using a policy when it transitions to Failed or Deleting state.
+// Uses concurrent_cache query to find volumes associated with the policy.
+func (o *ConcurrentTridentOrchestrator) invalidateVolumesForPolicy(
+	ctx context.Context, agPolicyName string,
+) {
+	// Use concurrent_cache query to find volumes with this policy
+	results, unlocker, lockErr := db.Lock(ctx, db.Query(db.ListVolumesForAutogrowPolicy(agPolicyName)))
+	if lockErr != nil {
+		unlocker()
+		Logc(ctx).WithError(lockErr).Warn("Failed to list volumes for invalidation.")
+		return
+	}
+
+	associatedVolumes := results[0].Volumes
+
+	// UNLOCK BEFORE processing individual volumes (avoids holding list lock)
+	unlocker()
+
+	for _, volume := range associatedVolumes {
+		// Lock the volume for update
+		volResults, volUnlocker, volLockErr := db.Lock(ctx, db.Query(db.UpsertVolume(volume.Config.Name, "")))
+		if volLockErr != nil {
+			Logc(ctx).WithFields(LogFields{
+				"volume":     volume.Config.Name,
+				"policyName": agPolicyName,
+			}).WithError(volLockErr).Warn("Failed to lock volume for invalidation.")
+			volUnlocker()
+			continue
+		}
+
+		vol := volResults[0].Volume.Read
+		if vol == nil {
+			volUnlocker()
+			continue
+		}
+
+		// Re-validate: Only invalidate if still using this policy (race condition protection)
+		if vol.EffectiveAGPolicy.PolicyName == agPolicyName {
+			vol.EffectiveAGPolicy = models.EffectiveAutogrowPolicyInfo{
+				PolicyName: "",
+				Reason:     models.AutogrowPolicyReasonUnusable,
+			}
+
+			volResults[0].Volume.Upsert(vol)
+		}
+
+		volUnlocker()
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"policyName":   agPolicyName,
+		"volumesTotal": len(associatedVolumes),
+	}).Info("Completed invalidating volumes for policy.")
+}
+
+// reevaluateVolumesForPolicy checks all volumes to see if they should now use the given policy.
+// Used when a policy transitions to Success state from Failed or Deleting.
+func (o *ConcurrentTridentOrchestrator) reevaluateVolumesForPolicy(ctx context.Context, agPolicyName string) {
+	// List all volumes
+	results, unlocker, lockErr := db.Lock(ctx, db.Query(db.ListVolumesForAutogrowPolicyReevaluation(agPolicyName)))
+	if lockErr != nil {
+		Logc(ctx).WithField("policyName", agPolicyName).WithError(lockErr).
+			Warn("Failed to list volumes for re-evaluation.")
+		unlocker()
+		return
+	}
+	volumes := results[0].Volumes
+	unlocker()
+
+	// No more filtering needed in the loop - query already filtered
+	for _, volume := range volumes {
+		// Phase 1: Read lock to check if update is needed (cheap, allows concurrency)
+		volResults, volUnlocker, volLockErr := db.Lock(ctx, db.Query(db.ReadVolume(volume.Config.Name)))
+		if volLockErr != nil {
+			Logc(ctx).WithFields(LogFields{
+				"volume":     volume.Config.Name,
+				"policyName": agPolicyName,
+			}).WithError(volLockErr).Warn("Failed to lock volume for re-evaluation.")
+			volUnlocker()
+			continue
+		}
+
+		vol := volResults[0].Volume.Read
+		if vol == nil {
+			volUnlocker()
+			continue
+		}
+
+		// Re-resolve effective policy
+		effectiveAGPolicy, _ := o.resolveEffectiveAutogrowPolicy(ctx, vol.Config)
+
+		volUnlocker() // Release read lock
+
+		// Only acquire write lock if the effective policy actually changed
+		// This works for Success, Failed, NotFound - any state transition
+		if vol.EffectiveAGPolicy.PolicyName != effectiveAGPolicy.PolicyName ||
+			vol.EffectiveAGPolicy.Reason != effectiveAGPolicy.Reason {
+			// Phase 2: Write lock only if update is needed (expensive, exclusive)
+			updateResults, updateUnlocker, updateLockErr := db.Lock(ctx, db.Query(db.UpsertVolume(volume.Config.Name, "")))
+			if updateLockErr != nil {
+				Logc(ctx).WithFields(LogFields{
+					"volume":     volume.Config.Name,
+					"policyName": agPolicyName,
+				}).WithError(updateLockErr).Warn("Failed to lock volume for update.")
+				updateUnlocker()
+				continue
+			}
+
+			// Re-read after write lock
+			updateVol := updateResults[0].Volume.Read
+			if updateVol != nil {
+				// Re-resolve with fresh data
+				effectiveAGPolicy, _ := o.resolveEffectiveAutogrowPolicy(ctx, updateVol.Config)
+
+				// Always update effective policy
+				// This ensures the reason is updated even for Failed/Unusable policies
+				updateVol.EffectiveAGPolicy = effectiveAGPolicy
+				updateResults[0].Volume.Upsert(updateVol)
+			}
+
+			updateUnlocker()
+		}
+
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"policyName": agPolicyName,
+	}).Info("Completed re-evaluating volumes for policy.")
+}
+
+// upsertStorageClassAutogrowPolicyInternal handles Autogrow policy changes in StorageClass.
+// This is an internal helper that updates effective policies for all volumes that use this StorageClass
+// and have no volume-level autogrow policy.
+func (o *ConcurrentTridentOrchestrator) upsertStorageClassAutogrowPolicyInternal(
+	ctx context.Context, scName string,
+) error {
+	// List volumes using this storage class without PVC override (optimized query)
+	results, unlocker, lockErr := db.Lock(ctx, db.Query(db.ListVolumesForStorageClassWithoutAutogrowOverride(scName)))
+	if lockErr != nil {
+		Logc(ctx).WithField("storageClass", scName).WithError(lockErr).
+			Warn("Failed to list volumes for storage class autogrow policy update.")
+		unlocker()
+		return lockErr
+	}
+	volumes := results[0].Volumes
+	unlocker()
+
+	var policyErr error
+
+	// Process all matched volumes (no filtering needed - query already filtered)
+	for _, volume := range volumes {
+		// Phase 1: Read lock to check if update is needed (cheap, allows concurrency)
+		volResults, volUnlocker, volLockErr := db.Lock(ctx, db.Query(db.ReadVolume(volume.Config.Name)))
+		if volLockErr != nil {
+			Logc(ctx).WithFields(LogFields{
+				"volume":       volume.Config.Name,
+				"storageClass": scName,
+			}).WithError(volLockErr).Warn("Failed to lock volume for autogrow policy check.")
+			volUnlocker()
+			continue
+		}
+
+		vol := volResults[0].Volume.Read
+		if vol == nil {
+			volUnlocker()
+			continue
+		}
+
+		// Resolve the effective policy with current state (read lock phase)
+		effectiveAGPolicy, resolveErr := o.resolveEffectiveAutogrowPolicy(ctx, vol.Config)
+
+		volUnlocker() // Release read lock
+
+		if resolveErr != nil {
+			policyErr = resolveErr
+		}
+
+		// Check if this volume should be updated
+		if vol.Config.StorageClass == scName &&
+			vol.Config.RequestedAutogrowPolicy == "" &&
+			vol.EffectiveAGPolicy.PolicyName != effectiveAGPolicy.PolicyName {
+
+			// Phase 2: Write lock only if update is needed (expensive, exclusive)
+			updateResults, updateUnlocker, updateLockErr := db.Lock(ctx, db.Query(db.UpsertVolume(volume.Config.Name, "")))
+			if updateLockErr != nil {
+				Logc(ctx).WithFields(LogFields{
+					"volume":       volume.Config.Name,
+					"storageClass": scName,
+				}).WithError(updateLockErr).Warn("Failed to lock volume for autogrow policy update.")
+				updateUnlocker()
+				continue
+			}
+
+			// Re-read after write lock
+			updateVol := updateResults[0].Volume.Read
+			if updateVol == nil {
+				updateUnlocker()
+				continue
+			}
+
+			// Re-resolve effective policy with fresh data (protects against changes between locks)
+			newEffectiveAGPolicy, newPolicyErr := o.resolveEffectiveAutogrowPolicy(ctx, updateVol.Config)
+
+			// Skip if policy resolution failed
+			if newPolicyErr != nil {
+				policyErr = newPolicyErr
+			}
+
+			// Skip if volume state changed between locks
+			if updateVol.Config.StorageClass != scName {
+				updateUnlocker()
+				continue
+			}
+			if updateVol.Config.RequestedAutogrowPolicy != "" {
+				updateUnlocker()
+				continue
+			}
+			if updateVol.EffectiveAGPolicy.PolicyName == newEffectiveAGPolicy.PolicyName {
+				updateUnlocker()
+				continue
+			}
+
+			// Update the volume
+			oldPolicyName := updateVol.EffectiveAGPolicy.PolicyName
+			updateVol.EffectiveAGPolicy = newEffectiveAGPolicy
+
+			Logc(ctx).WithFields(LogFields{
+				"volumeName":            updateVol.Config.Name,
+				"oldAutogrowPolicyName": oldPolicyName,
+				"newAutogrowPolicyName": newEffectiveAGPolicy.PolicyName,
+			}).Debug("Updated volume effective Autogrow policy due to StorageClass change.")
+
+			updateResults[0].Volume.Upsert(updateVol)
+			updateUnlocker()
+		}
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"storageClass": scName,
+	}).Info("Completed updating volumes for StorageClass Autogrow policy change.")
+
+	return policyErr
 }

@@ -4477,3 +4477,225 @@ func TestVolumePublicationsResponse_Methods(t *testing.T) {
 		})
 	})
 }
+
+func TestGetAutogrowPolicy(t *testing.T) {
+	tests := []struct {
+		name              string
+		policyName        string
+		setupMock         func(*mockcore.MockOrchestrator)
+		expectedStatus    int
+		expectErrorInBody bool
+	}{
+		{
+			name:       "SuccessfulGet",
+			policyName: "test-policy",
+			setupMock: func(m *mockcore.MockOrchestrator) {
+				policy := &storage.AutogrowPolicyExternal{
+					Name:          "test-policy",
+					UsedThreshold: "80%",
+					GrowthAmount:  "20%",
+					MaxSize:       "1000Gi",
+					State:         storage.AutogrowPolicyStateSuccess,
+					Volumes:       []string{"vol1", "vol2"},
+					VolumeCount:   2,
+				}
+				m.EXPECT().GetAutogrowPolicy(gomock.Any(), "test-policy").Return(policy, nil).Times(1)
+			},
+			expectedStatus:    http.StatusOK,
+			expectErrorInBody: false,
+		},
+		{
+			name:       "PolicyNotFound",
+			policyName: "nonexistent-policy",
+			setupMock: func(m *mockcore.MockOrchestrator) {
+				m.EXPECT().GetAutogrowPolicy(gomock.Any(), "nonexistent-policy").Return(nil, errors.NotFoundError("autogrow policy not found")).Times(1)
+			},
+			expectedStatus:    http.StatusNotFound,
+			expectErrorInBody: true,
+		},
+		{
+			name:       "OrchestratorError",
+			policyName: "error-policy",
+			setupMock: func(m *mockcore.MockOrchestrator) {
+				m.EXPECT().GetAutogrowPolicy(gomock.Any(), "error-policy").Return(nil, errors.New("get error")).Times(1)
+			},
+			expectedStatus:    http.StatusBadRequest,
+			expectErrorInBody: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up mocks
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+			oldOrchestrator := orchestrator
+			orchestrator = mockOrchestrator
+			defer func() { orchestrator = oldOrchestrator }()
+
+			tt.setupMock(mockOrchestrator)
+
+			// Create test server
+			server := httptest.NewServer(NewRouter(false))
+			defer server.Close()
+
+			// Create request
+			url := server.URL + "/trident/v1/autogrowpolicy/" + tt.policyName
+			req, err := http.NewRequest(http.MethodGet, url, nil)
+			assert.NoError(t, err)
+
+			// Make request
+			res, err := http.DefaultClient.Do(req)
+			assert.NoError(t, err)
+			assert.NotNil(t, res)
+			defer res.Body.Close()
+
+			// Verify status code
+			assert.Equal(t, tt.expectedStatus, res.StatusCode)
+
+			// Parse response
+			responseBody, err := io.ReadAll(res.Body)
+			assert.NoError(t, err)
+
+			var response GetAutogrowPolicyResponse
+			err = json.Unmarshal(responseBody, &response)
+			assert.NoError(t, err)
+
+			// Verify response content
+			if tt.expectErrorInBody {
+				assert.NotEmpty(t, response.Error, "expected error in response body")
+			} else {
+				assert.Empty(t, response.Error, "expected no error in response body")
+				assert.Equal(t, tt.policyName, response.AutogrowPolicy.Name)
+			}
+		})
+	}
+}
+
+func TestListAutogrowPolicies(t *testing.T) {
+	tests := []struct {
+		name              string
+		setupMock         func(*mockcore.MockOrchestrator)
+		expectedStatus    int
+		expectErrorInBody bool
+		expectedCount     int
+		expectedPolicies  []string
+	}{
+		{
+			name: "SuccessfulList",
+			setupMock: func(m *mockcore.MockOrchestrator) {
+				policies := []*storage.AutogrowPolicyExternal{
+					{Name: "policy1", UsedThreshold: "80%", GrowthAmount: "20%"},
+					{Name: "policy2", UsedThreshold: "90%", GrowthAmount: "10%"},
+					{Name: "policy3", UsedThreshold: "85%", GrowthAmount: "15%"},
+				}
+				m.EXPECT().ListAutogrowPolicies(gomock.Any()).Return(policies, nil).Times(1)
+			},
+			expectedStatus:    http.StatusOK,
+			expectErrorInBody: false,
+			expectedCount:     3,
+			expectedPolicies:  []string{"policy1", "policy2", "policy3"},
+		},
+		{
+			name: "EmptyList",
+			setupMock: func(m *mockcore.MockOrchestrator) {
+				m.EXPECT().ListAutogrowPolicies(gomock.Any()).Return([]*storage.AutogrowPolicyExternal{}, nil).Times(1)
+			},
+			expectedStatus:    http.StatusOK,
+			expectErrorInBody: false,
+			expectedCount:     0,
+			expectedPolicies:  []string{},
+		},
+		{
+			name: "SinglePolicy",
+			setupMock: func(m *mockcore.MockOrchestrator) {
+				policies := []*storage.AutogrowPolicyExternal{
+					{Name: "only-policy", UsedThreshold: "75%", GrowthAmount: "25%"},
+				}
+				m.EXPECT().ListAutogrowPolicies(gomock.Any()).Return(policies, nil).Times(1)
+			},
+			expectedStatus:    http.StatusOK,
+			expectErrorInBody: false,
+			expectedCount:     1,
+			expectedPolicies:  []string{"only-policy"},
+		},
+		{
+			name: "OrchestratorError",
+			setupMock: func(m *mockcore.MockOrchestrator) {
+				m.EXPECT().ListAutogrowPolicies(gomock.Any()).Return(nil, errors.New("list error")).Times(1)
+			},
+			expectedStatus:    http.StatusBadRequest,
+			expectErrorInBody: true,
+			expectedCount:     0,
+		},
+		{
+			name: "UnsortedPolicies_ShouldBeSorted",
+			setupMock: func(m *mockcore.MockOrchestrator) {
+				policies := []*storage.AutogrowPolicyExternal{
+					{Name: "zebra", UsedThreshold: "80%"},
+					{Name: "alpha", UsedThreshold: "90%"},
+					{Name: "beta", UsedThreshold: "85%"},
+				}
+				m.EXPECT().ListAutogrowPolicies(gomock.Any()).Return(policies, nil).Times(1)
+			},
+			expectedStatus:    http.StatusOK,
+			expectErrorInBody: false,
+			expectedCount:     3,
+			expectedPolicies:  []string{"alpha", "beta", "zebra"}, // Should be sorted
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set up mocks
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			mockOrchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+			oldOrchestrator := orchestrator
+			orchestrator = mockOrchestrator
+			defer func() { orchestrator = oldOrchestrator }()
+
+			tt.setupMock(mockOrchestrator)
+
+			// Create test server
+			server := httptest.NewServer(NewRouter(false))
+			defer server.Close()
+
+			// Create request
+			url := server.URL + "/trident/v1/autogrowpolicy"
+			req, err := http.NewRequest(http.MethodGet, url, nil)
+			assert.NoError(t, err)
+
+			// Make request
+			res, err := http.DefaultClient.Do(req)
+			assert.NoError(t, err)
+			assert.NotNil(t, res)
+			defer res.Body.Close()
+
+			// Verify status code
+			assert.Equal(t, tt.expectedStatus, res.StatusCode)
+
+			// Parse response
+			responseBody, err := io.ReadAll(res.Body)
+			assert.NoError(t, err)
+
+			var response ListAutogrowPoliciesResponse
+			err = json.Unmarshal(responseBody, &response)
+			assert.NoError(t, err)
+
+			// Verify response content
+			if tt.expectErrorInBody {
+				assert.NotEmpty(t, response.Error, "expected error in response body")
+			} else {
+				assert.Empty(t, response.Error, "expected no error in response body")
+				assert.Len(t, response.AutogrowPolicies, tt.expectedCount)
+				if tt.expectedCount > 0 {
+					assert.Equal(t, tt.expectedPolicies, response.AutogrowPolicies, "policies should match and be sorted")
+				}
+			}
+		})
+	}
+}

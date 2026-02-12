@@ -64,6 +64,53 @@ func TestMain_processCommandLineArgs_QPS(t *testing.T) {
 	}
 }
 
+func TestMain_processCommandLineArgs_TagriTimeout(t *testing.T) {
+	originalTagriTimeout := tagriTimeout
+	originalConfigTagriTimeout := config.TagriTimeout
+	defer func() {
+		tagriTimeout = originalTagriTimeout
+		config.TagriTimeout = originalConfigTagriTimeout
+	}()
+
+	tests := []struct {
+		name             string
+		tagriTimeoutSecs int
+		expectedDuration time.Duration
+	}{
+		{
+			name:             "default tagri_timeout (5 minutes)",
+			tagriTimeoutSecs: 300,
+			expectedDuration: 300 * time.Second,
+		},
+		{
+			name:             "custom tagri_timeout (10 minutes)",
+			tagriTimeoutSecs: 600,
+			expectedDuration: 600 * time.Second,
+		},
+		{
+			name:             "custom tagri_timeout (1 minute)",
+			tagriTimeoutSecs: 60,
+			expectedDuration: 60 * time.Second,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			customTimeout := time.Duration(tt.tagriTimeoutSecs) * time.Second
+			tagriTimeout = &customTimeout
+			csiEndpoint = pointer.String("true")
+			useInMemory = pointer.Bool(true)
+			k8sApiQPS = pointer.Float64(config.DefaultK8sAPIQPS)
+			k8sApiBurst = pointer.Int(config.DefaultK8sAPIBurst)
+
+			processCmdLineArgs(context.TODO())
+
+			assert.Equal(t, tt.expectedDuration, config.TagriTimeout,
+				"config.TagriTimeout should be set from --tagri_timeout flag")
+		})
+	}
+}
+
 func TestGetenvAsPointerToBool(t *testing.T) {
 	ctx := context.Background()
 	testKey := "TEST_BOOL_VAR"
@@ -1089,6 +1136,12 @@ func TestMainFunctionCSIPaths(t *testing.T) {
 			csiEndpoint = pointer.String("")
 		case "csi_no_node_name":
 			csiNodeName = pointer.String("")
+		case "csi_node_no_crd":
+			csiRole = pointer.String("node")
+			useCRD = pointer.Bool(false)
+		case "csi_all_in_one_no_crd":
+			csiRole = pointer.String("allInOne")
+			useCRD = pointer.Bool(false)
 		}
 
 		// Call main - this will exit with various error conditions
@@ -1144,6 +1197,20 @@ func TestMainFunctionCSIPaths(t *testing.T) {
 			expectExit:   true,
 			expectedCode: 1, // Should fatal on missing node name
 			description:  "Should exit with code 1 when CSI node name missing",
+		},
+		{
+			name:         "CSI Node role without CRD persistence",
+			testCase:     "csi_node_no_crd",
+			expectExit:   true,
+			expectedCode: 1, // Will eventually fail creating CSI frontend
+			description:  "Should configure CSI node role without creating Node CRD controller when CRD persistence is disabled",
+		},
+		{
+			name:         "CSI All-in-One role without CRD persistence",
+			testCase:     "csi_all_in_one_no_crd",
+			expectExit:   true,
+			expectedCode: 1, // Will eventually fail creating CSI frontend
+			description:  "Should configure CSI all-in-one role without creating Node CRD controller when CRD persistence is disabled",
 		},
 	}
 

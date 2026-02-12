@@ -3,6 +3,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
@@ -19,11 +20,15 @@ import (
 
 var (
 	fakeVolumePublication = &VolumePublication{
-		Name:       "node1volume1",
-		VolumeName: "volume1",
-		NodeName:   "node1",
-		ReadOnly:   true,
-		AccessMode: 1,
+		Name:           "node1volume1",
+		VolumeName:     "volume1",
+		NodeName:       "node1",
+		ReadOnly:       true,
+		AccessMode:     1,
+		AutogrowPolicy: "aggressive",
+		StorageClass:   "gold",
+		BackendUUID:    "backend-uuid-123",
+		Pool:           "pool1",
 	}
 
 	fakeNode = &Node{
@@ -51,11 +56,15 @@ func TestVolumePublicationCopy(t *testing.T) {
 
 func TestVolumePublicationConstructExternal(t *testing.T) {
 	expectedPub := &VolumePublicationExternal{
-		Name:       "node1volume1",
-		VolumeName: "volume1",
-		NodeName:   "node1",
-		ReadOnly:   true,
-		AccessMode: 1,
+		Name:           "node1volume1",
+		VolumeName:     "volume1",
+		NodeName:       "node1",
+		ReadOnly:       true,
+		AccessMode:     1,
+		AutogrowPolicy: "aggressive",
+		StorageClass:   "gold",
+		BackendUUID:    "backend-uuid-123",
+		Pool:           "pool1",
 	}
 
 	result := fakeVolumePublication.ConstructExternal()
@@ -1381,4 +1390,492 @@ func TestVolumePublication_SmartCopy(t *testing.T) {
 
 	// Check that the copied volume publication does not point to the same memory
 	assert.False(t, volumePublication == copiedVolumePublication)
+}
+
+// TestVolumePublicationCopy_WithNewFields tests that the Copy method preserves all fields including the new ones
+func TestVolumePublicationCopy_WithNewFields(t *testing.T) {
+	original := &VolumePublication{
+		Name:           "test-pub",
+		VolumeName:     "test-volume",
+		NodeName:       "test-node",
+		ReadOnly:       false,
+		AccessMode:     5,
+		AutogrowPolicy: "conservative",
+		StorageClass:   "premium",
+		BackendUUID:    "backend-uuid-abc",
+		Pool:           "pool-xyz",
+	}
+
+	copied := original.Copy()
+
+	// Verify all fields are copied
+	assert.Equal(t, original.Name, copied.Name)
+	assert.Equal(t, original.VolumeName, copied.VolumeName)
+	assert.Equal(t, original.NodeName, copied.NodeName)
+	assert.Equal(t, original.ReadOnly, copied.ReadOnly)
+	assert.Equal(t, original.AccessMode, copied.AccessMode)
+	assert.Equal(t, original.AutogrowPolicy, copied.AutogrowPolicy)
+	assert.Equal(t, original.StorageClass, copied.StorageClass)
+	assert.Equal(t, original.BackendUUID, copied.BackendUUID)
+	assert.Equal(t, original.Pool, copied.Pool)
+
+	// Verify it's a deep copy
+	assert.False(t, original == copied)
+
+	// Modify copied and verify original is unchanged
+	copied.StorageClass = "changed"
+	copied.BackendUUID = "changed"
+	copied.Pool = "changed"
+	assert.Equal(t, "premium", original.StorageClass)
+	assert.Equal(t, "backend-uuid-abc", original.BackendUUID)
+	assert.Equal(t, "pool-xyz", original.Pool)
+}
+
+// TestVolumePublicationConstructExternal_WithNewFields tests that ConstructExternal preserves all fields
+func TestVolumePublicationConstructExternal_WithNewFields(t *testing.T) {
+	internal := &VolumePublication{
+		Name:           "test-pub",
+		VolumeName:     "test-volume",
+		NodeName:       "test-node",
+		ReadOnly:       true,
+		AccessMode:     3,
+		AutogrowPolicy: "aggressive",
+		StorageClass:   "gold",
+		BackendUUID:    "backend-123",
+		Pool:           "pool-456",
+	}
+
+	external := internal.ConstructExternal()
+
+	// Verify all fields are preserved in external representation
+	assert.Equal(t, internal.Name, external.Name)
+	assert.Equal(t, internal.VolumeName, external.VolumeName)
+	assert.Equal(t, internal.NodeName, external.NodeName)
+	assert.Equal(t, internal.ReadOnly, external.ReadOnly)
+	assert.Equal(t, internal.AccessMode, external.AccessMode)
+	assert.Equal(t, internal.AutogrowPolicy, external.AutogrowPolicy)
+	assert.Equal(t, internal.StorageClass, external.StorageClass)
+	assert.Equal(t, internal.BackendUUID, external.BackendUUID)
+	assert.Equal(t, internal.Pool, external.Pool)
+}
+
+// TestVolumePublicationNewFields_EmptyValues tests that empty values for new fields are handled correctly
+func TestVolumePublicationNewFields_EmptyValues(t *testing.T) {
+	pub := &VolumePublication{
+		Name:           "test-pub",
+		VolumeName:     "test-volume",
+		NodeName:       "test-node",
+		ReadOnly:       false,
+		AccessMode:     1,
+		AutogrowPolicy: "",
+		StorageClass:   "",
+		BackendUUID:    "",
+		Pool:           "",
+	}
+
+	// Test Copy with empty values
+	copied := pub.Copy()
+	assert.Equal(t, "", copied.StorageClass)
+	assert.Equal(t, "", copied.BackendUUID)
+	assert.Equal(t, "", copied.Pool)
+
+	// Test ConstructExternal with empty values
+	external := pub.ConstructExternal()
+	assert.Equal(t, "", external.StorageClass)
+	assert.Equal(t, "", external.BackendUUID)
+	assert.Equal(t, "", external.Pool)
+}
+
+// TestVolumePublicationNewFields_SpecialCharacters tests new fields with special characters
+func TestVolumePublicationNewFields_SpecialCharacters(t *testing.T) {
+	testCases := []struct {
+		name         string
+		storageClass string
+		backendUUID  string
+		pool         string
+	}{
+		{
+			name:         "with dashes",
+			storageClass: "storage-class-with-dashes",
+			backendUUID:  "backend-uuid-with-dashes-123",
+			pool:         "pool-with-dashes",
+		},
+		{
+			name:         "with underscores",
+			storageClass: "storage_class_with_underscores",
+			backendUUID:  "backend_uuid_with_underscores",
+			pool:         "pool_with_underscores",
+		},
+		{
+			name:         "with mixed characters",
+			storageClass: "storage-class_123.test",
+			backendUUID:  "backend-uuid_abc-def.123",
+			pool:         "pool-name_123.xyz",
+		},
+		{
+			name:         "with numbers",
+			storageClass: "storage123",
+			backendUUID:  "backend456",
+			pool:         "pool789",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			pub := &VolumePublication{
+				Name:         "test-pub",
+				VolumeName:   "test-volume",
+				NodeName:     "test-node",
+				ReadOnly:     false,
+				AccessMode:   1,
+				StorageClass: tc.storageClass,
+				BackendUUID:  tc.backendUUID,
+				Pool:         tc.pool,
+			}
+
+			// Test Copy preserves special characters
+			copied := pub.Copy()
+			assert.Equal(t, tc.storageClass, copied.StorageClass)
+			assert.Equal(t, tc.backendUUID, copied.BackendUUID)
+			assert.Equal(t, tc.pool, copied.Pool)
+
+			// Test ConstructExternal preserves special characters
+			external := pub.ConstructExternal()
+			assert.Equal(t, tc.storageClass, external.StorageClass)
+			assert.Equal(t, tc.backendUUID, external.BackendUUID)
+			assert.Equal(t, tc.pool, external.Pool)
+		})
+	}
+}
+
+func TestAutogrowPolicyReason_String(t *testing.T) {
+	tests := []struct {
+		name     string
+		reason   AutogrowPolicyReason
+		expected string
+	}{
+		{
+			name:     "Active reason",
+			reason:   AutogrowPolicyReasonActive,
+			expected: "Autogrow policy is active",
+		},
+		{
+			name:     "NotConfigured reason",
+			reason:   AutogrowPolicyReasonNotConfigured,
+			expected: "No autogrow policy configured",
+		},
+		{
+			name:     "Disabled reason",
+			reason:   AutogrowPolicyReasonDisabled,
+			expected: "Autogrow explicitly disabled via 'none' annotation",
+		},
+		{
+			name:     "NotFound reason",
+			reason:   AutogrowPolicyReasonNotFound,
+			expected: "Configured autogrow policy does not exist",
+		},
+		{
+			name:     "Unusable reason",
+			reason:   AutogrowPolicyReasonUnusable,
+			expected: "Autogrow policy exists but is in Failed or Deleting state",
+		},
+		{
+			name:     "Unknown reason (custom value)",
+			reason:   AutogrowPolicyReason("CustomReason"),
+			expected: "CustomReason",
+		},
+		{
+			name:     "Empty reason",
+			reason:   AutogrowPolicyReason(""),
+			expected: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.reason.String()
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+// TestVolumePublicationNewFields_MaxLength tests with very long field values
+func TestVolumePublicationNewFields_MaxLength(t *testing.T) {
+	// Create a very long value to test maximum field lengths
+	longValue := strings.Repeat("a", 1000)
+
+	pub := &VolumePublication{
+		Name:         "test-pub",
+		VolumeName:   "test-volume",
+		NodeName:     "test-node",
+		ReadOnly:     false,
+		AccessMode:   1,
+		StorageClass: longValue,
+		BackendUUID:  longValue,
+		Pool:         longValue,
+	}
+
+	// Test Copy with long values
+	copied := pub.Copy()
+	assert.Equal(t, longValue, copied.StorageClass)
+	assert.Equal(t, longValue, copied.BackendUUID)
+	assert.Equal(t, longValue, copied.Pool)
+
+	// Test ConstructExternal with long values
+	external := pub.ConstructExternal()
+	assert.Equal(t, longValue, external.StorageClass)
+	assert.Equal(t, longValue, external.BackendUUID)
+	assert.Equal(t, longValue, external.Pool)
+}
+
+// TestVolumePublicationCopy_Independence tests that copied publications are independent
+func TestVolumePublicationCopy_Independence(t *testing.T) {
+	original := &VolumePublication{
+		Name:           "test-pub",
+		VolumeName:     "test-volume",
+		NodeName:       "test-node",
+		ReadOnly:       false,
+		AccessMode:     1,
+		AutogrowPolicy: "original-policy",
+		StorageClass:   "original-class",
+		BackendUUID:    "original-backend",
+		Pool:           "original-pool",
+	}
+
+	// Create copy
+	copied := original.Copy()
+
+	// Modify copy - should not affect original
+	copied.StorageClass = "modified-class"
+	copied.BackendUUID = "modified-backend"
+	copied.Pool = "modified-pool"
+	copied.AutogrowPolicy = "modified-policy"
+	copied.VolumeName = "modified-volume"
+	copied.NodeName = "modified-node"
+	copied.ReadOnly = true
+	copied.AccessMode = 99
+
+	// Verify original is unchanged
+	assert.Equal(t, "original-class", original.StorageClass)
+	assert.Equal(t, "original-backend", original.BackendUUID)
+	assert.Equal(t, "original-pool", original.Pool)
+	assert.Equal(t, "original-policy", original.AutogrowPolicy)
+	assert.Equal(t, "test-volume", original.VolumeName)
+	assert.Equal(t, "test-node", original.NodeName)
+	assert.Equal(t, false, original.ReadOnly)
+	assert.Equal(t, int32(1), original.AccessMode)
+}
+
+// TestVolumePublicationExternal_AllFieldsPresent verifies VolumePublicationExternal has all fields
+func TestVolumePublicationExternal_AllFieldsPresent(t *testing.T) {
+	external := &VolumePublicationExternal{
+		Name:           "test-pub",
+		VolumeName:     "test-volume",
+		NodeName:       "test-node",
+		ReadOnly:       true,
+		AccessMode:     3,
+		AutogrowPolicy: "aggressive",
+		StorageClass:   "platinum",
+		BackendUUID:    "backend-xyz",
+		Pool:           "pool-abc",
+	}
+
+	// Verify all fields can be set and retrieved
+	assert.Equal(t, "test-pub", external.Name)
+	assert.Equal(t, "test-volume", external.VolumeName)
+	assert.Equal(t, "test-node", external.NodeName)
+	assert.Equal(t, true, external.ReadOnly)
+	assert.Equal(t, int32(3), external.AccessMode)
+	assert.Equal(t, "aggressive", external.AutogrowPolicy)
+	assert.Equal(t, "platinum", external.StorageClass)
+	assert.Equal(t, "backend-xyz", external.BackendUUID)
+	assert.Equal(t, "pool-abc", external.Pool)
+}
+
+func TestAutogrowPolicyReason_MarshalJSON(t *testing.T) {
+	tests := []struct {
+		name         string
+		reason       AutogrowPolicyReason
+		expectedJSON string
+	}{
+		{
+			name:         "Active reason",
+			reason:       AutogrowPolicyReasonActive,
+			expectedJSON: `"Autogrow policy is active"`,
+		},
+		{
+			name:         "NotConfigured reason",
+			reason:       AutogrowPolicyReasonNotConfigured,
+			expectedJSON: `"No autogrow policy configured"`,
+		},
+		{
+			name:         "Disabled reason",
+			reason:       AutogrowPolicyReasonDisabled,
+			expectedJSON: `"Autogrow explicitly disabled via 'none' annotation"`,
+		},
+		{
+			name:         "NotFound reason",
+			reason:       AutogrowPolicyReasonNotFound,
+			expectedJSON: `"Configured autogrow policy does not exist"`,
+		},
+		{
+			name:         "Unusable reason",
+			reason:       AutogrowPolicyReasonUnusable,
+			expectedJSON: `"Autogrow policy exists but is in Failed or Deleting state"`,
+		},
+		{
+			name:         "Unknown reason",
+			reason:       AutogrowPolicyReason("CustomReason"),
+			expectedJSON: `"CustomReason"`,
+		},
+		{
+			name:         "Empty reason",
+			reason:       AutogrowPolicyReason(""),
+			expectedJSON: `""`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			jsonBytes, err := tt.reason.MarshalJSON()
+			assert.NoError(t, err, "MarshalJSON should not return error")
+			assert.Equal(t, tt.expectedJSON, string(jsonBytes))
+		})
+	}
+}
+
+func TestAutogrowPolicyReason_Constants(t *testing.T) {
+	tests := []struct {
+		name     string
+		constant AutogrowPolicyReason
+		expected string
+	}{
+		{
+			name:     "Active constant value",
+			constant: AutogrowPolicyReasonActive,
+			expected: "Active",
+		},
+		{
+			name:     "NotConfigured constant value",
+			constant: AutogrowPolicyReasonNotConfigured,
+			expected: "NotConfigured",
+		},
+		{
+			name:     "Disabled constant value",
+			constant: AutogrowPolicyReasonDisabled,
+			expected: "Disabled",
+		},
+		{
+			name:     "NotFound constant value",
+			constant: AutogrowPolicyReasonNotFound,
+			expected: "NotFound",
+		},
+		{
+			name:     "Unusable constant value",
+			constant: AutogrowPolicyReasonUnusable,
+			expected: "Unusable",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, string(tt.constant))
+		})
+	}
+}
+
+func TestEffectiveAutogrowPolicyInfo(t *testing.T) {
+	tests := []struct {
+		name       string
+		policyInfo EffectiveAutogrowPolicyInfo
+	}{
+		{
+			name: "Active policy",
+			policyInfo: EffectiveAutogrowPolicyInfo{
+				PolicyName: "gold-policy",
+				Reason:     AutogrowPolicyReasonActive,
+			},
+		},
+		{
+			name: "Not configured",
+			policyInfo: EffectiveAutogrowPolicyInfo{
+				PolicyName: "",
+				Reason:     AutogrowPolicyReasonNotConfigured,
+			},
+		},
+		{
+			name: "Disabled policy",
+			policyInfo: EffectiveAutogrowPolicyInfo{
+				PolicyName: "",
+				Reason:     AutogrowPolicyReasonDisabled,
+			},
+		},
+		{
+			name: "Not found policy",
+			policyInfo: EffectiveAutogrowPolicyInfo{
+				PolicyName: "missing-policy",
+				Reason:     AutogrowPolicyReasonNotFound,
+			},
+		},
+		{
+			name: "Unusable policy",
+			policyInfo: EffectiveAutogrowPolicyInfo{
+				PolicyName: "failed-policy",
+				Reason:     AutogrowPolicyReasonUnusable,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Verify PolicyName field
+			assert.Equal(t, tt.policyInfo.PolicyName, tt.policyInfo.PolicyName)
+
+			// Verify Reason field
+			assert.Equal(t, tt.policyInfo.Reason, tt.policyInfo.Reason)
+
+			// Verify Reason.String() works
+			reasonStr := tt.policyInfo.Reason.String()
+			assert.NotEmpty(t, reasonStr)
+		})
+	}
+}
+
+// TestVolumeAutogrowStatus verifies VolumeAutogrowStatus struct fields and JSON round-trip
+func TestVolumeAutogrowStatus(t *testing.T) {
+	attemptedAt := time.Date(2025, 1, 15, 10, 0, 0, 0, time.UTC)
+	successAt := time.Date(2025, 1, 16, 12, 0, 0, 0, time.UTC)
+
+	status := &VolumeAutogrowStatus{
+		LastAutogrowPolicyUsed:   "aggressive",
+		LastAutogrowAttemptedAt:  &attemptedAt,
+		LastProposedSize:         "10Gi",
+		LastSuccessfulAutogrowAt: &successAt,
+		LastSuccessfulSize:       "10Gi",
+		LastError:                "",
+		TotalAutogrowAttempted:   5,
+		TotalSuccessfulAutogrow:  4,
+	}
+
+	assert.Equal(t, "aggressive", status.LastAutogrowPolicyUsed)
+	assert.Equal(t, "10Gi", status.LastProposedSize)
+	assert.Equal(t, "10Gi", status.LastSuccessfulSize)
+	assert.Equal(t, "", status.LastError)
+	assert.Equal(t, 5, status.TotalAutogrowAttempted)
+	assert.Equal(t, 4, status.TotalSuccessfulAutogrow)
+	assert.NotNil(t, status.LastAutogrowAttemptedAt)
+	assert.Equal(t, attemptedAt, *status.LastAutogrowAttemptedAt)
+	assert.NotNil(t, status.LastSuccessfulAutogrowAt)
+	assert.Equal(t, successAt, *status.LastSuccessfulAutogrowAt)
+
+	// JSON round-trip
+	jsonBytes, err := json.Marshal(status)
+	assert.NoError(t, err)
+	var decoded VolumeAutogrowStatus
+	err = json.Unmarshal(jsonBytes, &decoded)
+	assert.NoError(t, err)
+	assert.Equal(t, status.LastAutogrowPolicyUsed, decoded.LastAutogrowPolicyUsed)
+	assert.Equal(t, status.LastProposedSize, decoded.LastProposedSize)
+	assert.Equal(t, status.TotalAutogrowAttempted, decoded.TotalAutogrowAttempted)
+	assert.Equal(t, status.TotalSuccessfulAutogrow, decoded.TotalSuccessfulAutogrow)
 }

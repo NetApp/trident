@@ -5,6 +5,8 @@ package v1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -42,6 +44,16 @@ type TridentVolumePublication struct {
 	ReadOnly bool `json:"readOnly"`
 	// AccessMode describes how the CO intends to use the volume
 	AccessMode int32 `json:"accessMode,omitempty"`
+	// AutogrowPolicy describes the Autogrow policy for the volume
+	AutogrowPolicy string `json:"autogrowPolicy,omitempty"`
+	// AutogrowIneligible indicates if volume is ineligible for autogrow monitoring
+	AutogrowIneligible bool `json:"autogrowIneligible,omitempty"`
+	// StorageClass is the name of the StorageClass used by this volume
+	StorageClass string `json:"storageClass,omitempty"`
+	// BackendUUID is the UUID of the backend hosting this volume
+	BackendUUID string `json:"backendUUID,omitempty"`
+	// Pool is the storage pool hosting this volume
+	Pool string `json:"pool,omitempty"`
 }
 
 // TridentVolumePublicationList is a list of TridentVolumePublication objects.
@@ -359,6 +371,8 @@ type TridentVolume struct {
 	Orphaned bool `json:"orphaned"`
 	// State records the TridentVolume's state
 	State string `json:"state"`
+	// AutogrowStatus tracks the autogrow feature state and history for this volume
+	AutogrowStatus *models.VolumeAutogrowStatus `json:"autogrowStatus,omitempty"`
 }
 
 // TridentVolumeList is a list of TridentVolume objects.
@@ -615,4 +629,118 @@ type TridentActionSnapshotRestoreList struct {
 
 	// List of TridentActionSnapshotRestore objects
 	Items []*TridentActionSnapshotRestore `json:"items"`
+}
+
+/************************
+* Trident Autogrow Policy
+************************/
+
+// +genclient
+// +genclient:nonNamespaced
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// TridentAutogrowPolicy is the Schema for the tridentautogrowpolicies API
+type TridentAutogrowPolicy struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   TridentAutogrowPolicySpec   `json:"spec"`
+	Status TridentAutogrowPolicyStatus `json:"status,omitempty"`
+}
+
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// TridentAutogrowPolicyList contains a list of TridentAutogrowPolicy
+type TridentAutogrowPolicyList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+
+	Items []TridentAutogrowPolicy `json:"items"`
+}
+
+type TridentAutogrowPolicySpec struct {
+	// UsedThreshold specifies when to trigger Autogrow.
+	// Can be either:
+	// - Percentage format: "80%" (triggers when volume reaches 80% usage)
+	// - Absolute format: "50Gi" (triggers when volume has used 50Gi)
+	UsedThreshold string `json:"usedThreshold"`
+
+	// GrowthAmount specifies how much to grow the volume.
+	// Can be either:
+	// - Percentage format: "10%" (grow by 10% of current size)
+	// - Absolute format: "5Gi" (grow by exactly 5Gi)
+	// Default: "10%" if not specified
+	GrowthAmount string `json:"growthAmount,omitempty"`
+
+	// MaxSize specifies the maximum size the volume can grow to.
+	// Must be a valid Kubernetes resource.Quantity (e.g., "100Gi", "1Ti")
+	// Optional: if not specified, volume can grow indefinitely (subject to backend limits)
+	MaxSize string `json:"maxSize,omitempty"`
+}
+
+// TridentAutogrowPolicyStatus defines the observed state of TridentAutogrowPolicy
+type TridentAutogrowPolicyStatus struct {
+	// State represents the current state of the policy.
+	// Valid values: "Success", "Failed", "Deleting"
+	State string `json:"state,omitempty"`
+
+	// Message provides detailed information about the policy status.
+	// This field contains error messages for failed validation or
+	// information about volumes blocking deletion.
+	Message string `json:"message,omitempty"`
+}
+
+/********************************
+* Trident Autogrow Request Internal
+********************************/
+
+// +genclient
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// TridentAutogrowRequestInternal is the Schema for the tridentautogrowrequestinternals API
+// This is a namespaced, ephemeral CRD that acts as a signaling mechanism between Trident node pods and controller pod
+type TridentAutogrowRequestInternal struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   TridentAutogrowRequestInternalSpec   `json:"spec"`
+	Status TridentAutogrowRequestInternalStatus `json:"status,omitempty"`
+}
+
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// TridentAutogrowRequestInternalList contains a list of TridentAutogrowRequestInternal
+type TridentAutogrowRequestInternalList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+
+	Items []TridentAutogrowRequestInternal `json:"items"`
+}
+
+type TridentAutogrowRequestInternalSpec struct {
+	// Volume is the name of the PersistentVolume to be expanded
+	Volume string `json:"volume"`
+
+	// AutogrowPolicyRef identifies the TridentAutogrowPolicy governing this request
+	AutogrowPolicyRef TridentAutogrowRequestInternalPolicyRef `json:"autogrowPolicyRef"`
+
+	ObservedUsedPercent   float32 `json:"observedUsedPercent,omitempty"`   // Percent used that triggered this request (observability)
+	ObservedUsedBytes     string  `json:"observedUsedBytes,omitempty"`     // Used bytes at request time (observability; optional)
+	ObservedCapacityBytes string  `json:"observedCapacityBytes,omitempty"` // Total size host sees at request time; required, must be valid resource.Quantity > 0
+
+	NodeName  string      `json:"nodeName,omitempty"`  // Node that created this request
+	Timestamp metav1.Time `json:"timestamp,omitempty"` // When the threshold was breached (observability)
+}
+
+type TridentAutogrowRequestInternalPolicyRef struct {
+	Name       string `json:"name"`
+	Generation int64  `json:"generation"`
+}
+
+type TridentAutogrowRequestInternalStatus struct {
+	Phase              string       `json:"phase,omitempty"`
+	Message            string       `json:"message,omitempty"`
+	FinalCapacityBytes string       `json:"finalCapacityBytes,omitempty"`
+	ProcessedAt        *metav1.Time `json:"processedAt,omitempty"` // Time when TAGRI moved to terminal phase (Completed/Failed/Rejected)
+	RetryCount         int          `json:"retryCount,omitempty"`
 }

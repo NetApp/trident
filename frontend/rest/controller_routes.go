@@ -354,4 +354,18 @@ var controllerRoutes = Routes{
 		nil,
 		SetLoggingLayers,
 	},
+	Route{
+		"GetAutogrowPolicy",
+		"GET",
+		config.AutogrowPolicyURL + "/{autogrowPolicy}",
+		nil,
+		GetAutogrowPolicy,
+	},
+	Route{
+		"ListAutogrowPolicies",
+		"GET",
+		config.AutogrowPolicyURL,
+		nil,
+		ListAutogrowPolicies,
+	},
 }

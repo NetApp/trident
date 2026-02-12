@@ -265,6 +265,10 @@ rules:
       - tridentorchestrators/status # Required to update Torc's status section
       - tridentconfigurators # Required for tconf
       - tridentconfigurators/status # Required to update tconf's status section
+      - tridentautogrowpolicies
+      - tridentautogrowpolicies/status
+      - tridentautogrowrequestinternals
+      - tridentautogrowrequestinternals/status
     verbs:
       - get
       - list

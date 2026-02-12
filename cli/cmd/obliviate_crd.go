@@ -114,6 +114,8 @@ func obliviateCRDs(skipCRDs []string) error {
 		"tridentnoderemediationtemplates.trident.netapp.io",
 		"tridentconfigurators.trident.netapp.io",
 		"tridentorchestrators.trident.netapp.io",
+		"tridentautogrowpolicies.trident.netapp.io",
+		"tridentautogrowrequestinternals.trident.netapp.io",
 	}
 	skipCRDMap := make(map[string]bool)
 	for _, crd := range skipCRDs {
@@ -219,6 +221,14 @@ func deleteCRs(filteredCRDs []string) error {
 			}
 		case "tridentorchestrators.trident.netapp.io":
 			if err := deleteTridentOrchestrators(); err != nil {
+				return err
+			}
+		case "tridentautogrowpolicies.trident.netapp.io":
+			if err := deleteTridentAutogrowPolicies(); err != nil {
+				return err
+			}
+		case "tridentautogrowrequestinternals.trident.netapp.io":
+			if err := deleteTridentAutogrowRequestInternals(); err != nil {
 				return err
 			}
 		default:
@@ -332,6 +342,121 @@ func deleteTridentOrchestrators() error {
 
 		deleteFunc := operatorCrdClientSet.TridentV1().TridentOrchestrators().Delete
 		if err := deleteWithRetry(deleteFunc, ctx(), orchestrator.Name, nil); err != nil {
+			Log().Errorf("Problem deleting resource: %v", err)
+			return err
+		}
+	}
+
+	Log().WithFields(logFields).Info("Resources deleted.")
+	return nil
+}
+
+func deleteTridentAutogrowPolicies() error {
+	crd := "tridentautogrowpolicies.trident.netapp.io"
+	logFields := LogFields{"CRD": crd}
+
+	// See if CRD exists
+	exists, err := k8sClient.CheckCRDExists(crd)
+	if err != nil {
+		return err
+	} else if !exists {
+		Log().WithFields(logFields).Debug("CRD not present.")
+		return nil
+	}
+
+	policies, err := crdClientset.TridentV1().TridentAutogrowPolicies().List(ctx(), listOpts)
+	if err != nil {
+		return err
+	} else if len(policies.Items) == 0 {
+		Log().WithFields(logFields).Info("Resources not present.")
+		return nil
+	}
+
+	for _, policy := range policies.Items {
+		if policy.DeletionTimestamp.IsZero() {
+			_ = crdClientset.TridentV1().TridentAutogrowPolicies().Delete(ctx(), policy.Name, deleteOpts)
+		}
+	}
+
+	policies, err = crdClientset.TridentV1().TridentAutogrowPolicies().List(ctx(), listOpts)
+	if err != nil {
+		return err
+	}
+
+	for _, policy := range policies.Items {
+		if policy.HasTridentFinalizers() {
+			crCopy := policy.DeepCopy()
+			crCopy.RemoveTridentFinalizers()
+			_, err := crdClientset.TridentV1().TridentAutogrowPolicies().Update(ctx(), crCopy, updateOpts)
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
+				Log().Errorf("Problem removing finalizers: %v", err)
+				return err
+			}
+		}
+
+		deleteFunc := crdClientset.TridentV1().TridentAutogrowPolicies().Delete
+		if err := deleteWithRetry(deleteFunc, ctx(), policy.Name, nil); err != nil {
+			Log().Errorf("Problem deleting resource: %v", err)
+			return err
+		}
+	}
+
+	Log().WithFields(logFields).Info("Resources deleted.")
+	return nil
+}
+
+func deleteTridentAutogrowRequestInternals() error {
+	crd := "tridentautogrowrequestinternals.trident.netapp.io"
+	logFields := LogFields{"CRD": crd}
+
+	// See if CRD exists
+	exists, err := k8sClient.CheckCRDExists(crd)
+	if err != nil {
+		return err
+	} else if !exists {
+		Log().WithFields(logFields).Debug("CRD not present.")
+		return nil
+	}
+
+	// List requests in all namespaces
+	requests, err := crdClientset.TridentV1().TridentAutogrowRequestInternals("").List(ctx(), listOpts)
+	if err != nil {
+		return err
+	} else if len(requests.Items) == 0 {
+		Log().WithFields(logFields).Info("Resources not present.")
+		return nil
+	}
+
+	for _, request := range requests.Items {
+		if request.DeletionTimestamp.IsZero() {
+			_ = crdClientset.TridentV1().TridentAutogrowRequestInternals(request.Namespace).Delete(ctx(), request.Name, deleteOpts)
+		}
+	}
+
+	requests, err = crdClientset.TridentV1().TridentAutogrowRequestInternals("").List(ctx(), listOpts)
+	if err != nil {
+		return err
+	}
+
+	for _, request := range requests.Items {
+		if request.HasTridentFinalizers() {
+			crCopy := request.DeepCopy()
+			crCopy.RemoveTridentFinalizers()
+			_, err := crdClientset.TridentV1().TridentAutogrowRequestInternals(request.Namespace).Update(ctx(), crCopy, updateOpts)
+			if isNotFoundError(err) {
+				continue
+			} else if err != nil {
+				Log().Errorf("Problem removing finalizers: %v", err)
+				return err
+			}
+		}
+
+		deleteFunc := func(ctx context.Context, name string, opts metav1.DeleteOptions) error {
+			return crdClientset.TridentV1().TridentAutogrowRequestInternals(request.Namespace).Delete(ctx, name, opts)
+		}
+		if err := deleteWithRetry(deleteFunc, ctx(), request.Name, nil); err != nil {
 			Log().Errorf("Problem deleting resource: %v", err)
 			return err
 		}

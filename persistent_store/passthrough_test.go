@@ -892,3 +892,100 @@ func TestPassthroughClient_DeleteSnapshots(t *testing.T) {
 		t.Error("Could not delete snapshots from passthrough client!")
 	}
 }
+
+func TestPassthroughClient_GetAutogrowPolicy(t *testing.T) {
+	p := newPassthroughClient()
+
+	tests := []struct {
+		name          string
+		policyName    string
+		expectError   bool
+		errorContains string
+	}{
+		{
+			name:          "Get any policy returns not supported error",
+			policyName:    "test-policy",
+			expectError:   true,
+			errorContains: "Unable to find key",
+		},
+		{
+			name:          "Get with empty policy name",
+			policyName:    "",
+			expectError:   true,
+			errorContains: "Unable to find key",
+		},
+		{
+			name:          "Get with special characters in name",
+			policyName:    "policy-with-special_chars.123",
+			expectError:   true,
+			errorContains: "Unable to find key",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			policy, err := p.GetAutogrowPolicy(ctx(), tt.policyName)
+
+			if tt.expectError {
+				if err == nil {
+					t.Error("Expected error but got none")
+				}
+				if policy != nil {
+					t.Error("Expected nil policy but got non-nil")
+				}
+				if tt.errorContains != "" {
+					if err != nil && err.Error() != "" {
+						found := false
+						if err.Error() == tt.errorContains {
+							found = true
+						}
+						// Also check if it contains the substring
+						if !found {
+							t.Errorf("Expected error to contain '%s', got '%s'", tt.errorContains, err.Error())
+						}
+					}
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Expected no error but got: %v", err)
+				}
+			}
+		})
+	}
+}
+
+func TestPassthroughClient_GetAutogrowPolicies(t *testing.T) {
+	p := newPassthroughClient()
+
+	// GetAutogrowPolicies always returns empty slice, no error
+	policies, err := p.GetAutogrowPolicies(ctx())
+
+	if err != nil {
+		t.Errorf("Expected no error but got: %v", err)
+	}
+	if policies == nil {
+		t.Error("Expected non-nil slice but got nil")
+	}
+	if len(policies) != 0 {
+		t.Errorf("Expected empty slice but got %d policies", len(policies))
+	}
+}
+
+func TestPassthroughClient_GetAutogrowPolicies_MultipleCallsConsistent(t *testing.T) {
+	p := newPassthroughClient()
+
+	// Call multiple times to ensure consistent behavior
+	for i := 0; i < 3; i++ {
+		policies, err := p.GetAutogrowPolicies(ctx())
+
+		if err != nil {
+			t.Errorf("Call %d: Expected no error but got: %v", i+1, err)
+		}
+		if policies == nil {
+			t.Errorf("Call %d: Expected non-nil slice but got nil", i+1)
+		}
+		if len(policies) != 0 {
+			t.Errorf("Call %d: Expected empty slice but got %d policies", i+1, len(policies))
+		}
+	}
+}

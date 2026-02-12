@@ -1781,7 +1781,7 @@ func TestCreateRBACObjects(t *testing.T) {
 			cloudIdentity: "",
 			k8sFlavor:     "kubernetes",
 			setupMocks: func(mockClient *mockK8sClient.MockKubernetesClient) {
-				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(6)
+				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(8)
 				mockClient.EXPECT().Flavor().Return(k8sclient.OrchestratorFlavor("kubernetes")).AnyTimes()
 			},
 			expectedErrorContains: "",
@@ -1793,7 +1793,7 @@ func TestCreateRBACObjects(t *testing.T) {
 			cloudIdentity: "",
 			k8sFlavor:     "kubernetes",
 			setupMocks: func(mockClient *mockK8sClient.MockKubernetesClient) {
-				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(7)
+				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(11)
 				mockClient.EXPECT().Flavor().Return(k8sclient.OrchestratorFlavor("kubernetes")).AnyTimes()
 			},
 			expectedErrorContains: "",
@@ -1805,7 +1805,7 @@ func TestCreateRBACObjects(t *testing.T) {
 			cloudIdentity: "",
 			k8sFlavor:     "openshift",
 			setupMocks: func(mockClient *mockK8sClient.MockKubernetesClient) {
-				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(6)
+				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(8)
 				mockClient.EXPECT().Flavor().Return(k8sclient.OrchestratorFlavor("openshift")).AnyTimes()
 				mockClient.EXPECT().RemoveTridentUserFromOpenShiftSCC(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
@@ -1820,7 +1820,7 @@ func TestCreateRBACObjects(t *testing.T) {
 			cloudIdentity: "",
 			k8sFlavor:     "openshift",
 			setupMocks: func(mockClient *mockK8sClient.MockKubernetesClient) {
-				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(7)
+				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(11)
 				mockClient.EXPECT().Flavor().Return(k8sclient.OrchestratorFlavor("openshift")).AnyTimes()
 
 				mockClient.EXPECT().RemoveTridentUserFromOpenShiftSCC(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
@@ -1923,7 +1923,7 @@ func TestCreateRBACObjects(t *testing.T) {
 			k8sFlavor:     "kubernetes",
 			setupMocks: func(mockClient *mockK8sClient.MockKubernetesClient) {
 				gomock.InOrder(
-					mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(6),
+					mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(8),
 					mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(errors.New("node windows service account creation failed")).Times(1),
 				)
 				mockClient.EXPECT().Flavor().Return(k8sclient.OrchestratorFlavor("kubernetes")).AnyTimes()
@@ -1937,7 +1937,7 @@ func TestCreateRBACObjects(t *testing.T) {
 			cloudIdentity: "test-identity",
 			k8sFlavor:     "kubernetes",
 			setupMocks: func(mockClient *mockK8sClient.MockKubernetesClient) {
-				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(6)
+				mockClient.EXPECT().CreateObjectByYAML(gomock.Any()).Return(nil).Times(8)
 				mockClient.EXPECT().Flavor().Return(k8sclient.OrchestratorFlavor("kubernetes")).AnyTimes()
 			},
 			expectedErrorContains: "",
@@ -2760,7 +2760,7 @@ func TestPrepareYAMLFilePaths(t *testing.T) {
 				assert.NotEmpty(t, setupPath)
 				assert.Contains(t, setupPath, "setup")
 
-				assert.Len(t, setupYAMLPaths, 20)
+				assert.Len(t, setupYAMLPaths, 24)
 
 				assert.Contains(t, setupYAMLPaths, namespacePath)
 				assert.Contains(t, setupYAMLPaths, controllerServiceAccountPath)
@@ -2780,7 +2780,7 @@ func TestPrepareYAMLFilePaths(t *testing.T) {
 				assert.NotEmpty(t, installerDirectoryPath)
 				assert.NotEmpty(t, setupPath)
 
-				assert.Len(t, setupYAMLPaths, 23)
+				assert.Len(t, setupYAMLPaths, 27)
 
 				assert.Contains(t, setupYAMLPaths, controllerSCCPath)
 				assert.Contains(t, setupYAMLPaths, nodeLinuxSCCPath)
@@ -2838,7 +2838,7 @@ func TestPrepareYAMLFiles(t *testing.T) {
 				mockClient.EXPECT().ServerVersion().Return(versionutils.MustParseSemantic("v1.25.0")).AnyTimes()
 			},
 			expectedError: "",
-			expectedFiles: 14,
+			expectedFiles: 16,
 		},
 		{
 			name:          "successful_kubernetes_with_windows",
@@ -2850,7 +2850,7 @@ func TestPrepareYAMLFiles(t *testing.T) {
 				mockClient.EXPECT().ServerVersion().Return(versionutils.MustParseSemantic("v1.25.0")).AnyTimes()
 			},
 			expectedError: "",
-			expectedFiles: 16,
+			expectedFiles: 20,
 		},
 		{
 			name:          "successful_openshift_linux_only",
@@ -2862,7 +2862,7 @@ func TestPrepareYAMLFiles(t *testing.T) {
 				mockClient.EXPECT().ServerVersion().Return(versionutils.MustParseSemantic("v1.25.0")).AnyTimes()
 			},
 			expectedError: "",
-			expectedFiles: 16,
+			expectedFiles: 18,
 		},
 		{
 			name:          "successful_openshift_with_windows",
@@ -2874,7 +2874,7 @@ func TestPrepareYAMLFiles(t *testing.T) {
 				mockClient.EXPECT().ServerVersion().Return(versionutils.MustParseSemantic("v1.25.0")).AnyTimes()
 			},
 			expectedError: "",
-			expectedFiles: 19,
+			expectedFiles: 23,
 		},
 		{
 			name:          "with_cloud_identity",
@@ -2886,7 +2886,7 @@ func TestPrepareYAMLFiles(t *testing.T) {
 				mockClient.EXPECT().ServerVersion().Return(versionutils.MustParseSemantic("v1.25.0")).AnyTimes()
 			},
 			expectedError: "",
-			expectedFiles: 14,
+			expectedFiles: 16,
 		},
 	}
 
@@ -2901,6 +2901,10 @@ func TestPrepareYAMLFiles(t *testing.T) {
 			controllerRoleBindingPath = filepath.Join(tempDir, "controller-rb.yaml")
 			controllerClusterRoleBindingPath = filepath.Join(tempDir, "controller-crb.yaml")
 			nodeLinuxServiceAccountPath = filepath.Join(tempDir, "node-sa.yaml")
+			nodeLinuxClusterRolePath = filepath.Join(tempDir, "node-linux-cluster-role.yaml")
+			nodeLinuxClusterRoleBindingPath = filepath.Join(tempDir, "node-linux-crb.yaml")
+			nodeWindowsClusterRolePath = filepath.Join(tempDir, "node-windows-cluster-role.yaml")
+			nodeWindowsClusterRoleBindingPath = filepath.Join(tempDir, "node-windows-crb.yaml")
 			crdsPath = filepath.Join(tempDir, "crds.yaml")
 			servicePath = filepath.Join(tempDir, "service.yaml")
 			resourceQuotaPath = filepath.Join(tempDir, "quota.yaml")

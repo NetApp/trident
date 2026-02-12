@@ -44,7 +44,9 @@ func (f *FSClient) GetFilesystemStats(
 	//goland:noinspection GoRedundantConversion
 	available = int64(buf.Bavail) * int64(buf.Bsize)
 	capacity = size
-	usage = capacity - available
+	// Usage should be calculated from Bfree (total free), not Bavail (available to non-root)
+	// The difference between Bfree and Bavail is space reserved for root
+	usage = (int64(buf.Blocks) - int64(buf.Bfree)) * int64(buf.Bsize)
 	inodes = int64(buf.Files)
 	inodesFree = int64(buf.Ffree)
 	inodesUsed = inodes - inodesFree

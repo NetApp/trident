@@ -121,6 +121,11 @@ func TestSolidfireSANStorageDriverConfigString(t *testing.T) {
 	}
 }
 
+func TestSolidfireSANStorageDriverGetResizeDeltaBytes(t *testing.T) {
+	d := newTestSolidfireSANDriver()
+	assert.Equal(t, int64(tridentconfig.SANResizeDelta), d.GetResizeDeltaBytes())
+}
+
 func TestValidateStoragePrefix(t *testing.T) {
 	tests := []struct {
 		Name          string

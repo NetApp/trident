@@ -695,7 +695,6 @@ func (c *TridentCrdController) updateTridentBackendConfigCR(
 
 	// Update phase of the tbcCR
 	Logx(ctx).WithFields(logFields).Trace("Updating the TridentBackendConfig CR")
-
 	newTbcCR, err := c.crdClientset.TridentV1().TridentBackendConfigs(tbcCR.Namespace).Update(ctx, tbcCR, updateOpts)
 	if err != nil {
 		Logx(ctx).WithFields(logFields).Errorf("could not update TridentBackendConfig CR; %v", err)

@@ -5502,6 +5502,11 @@ func TestOntapSANDriverName(t *testing.T) {
 	assert.Equal(t, tridentconfig.OntapSANStorageDriverName, name)
 }
 
+func TestOntapSANDriverGetResizeDeltaBytes(t *testing.T) {
+	_, driver := newMockOntapSANDriver(t)
+	assert.Equal(t, int64(tridentconfig.SANResizeDelta), driver.GetResizeDeltaBytes())
+}
+
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Utility Functions Tests
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////

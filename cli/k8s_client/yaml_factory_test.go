@@ -11,6 +11,7 @@ import (
 	"github.com/ghodss/yaml"
 	scc "github.com/openshift/api/security/v1"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	csiv1 "k8s.io/api/storage/v1"
@@ -19,7 +20,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/netapp/trident/config"
-	commonconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/pkg/convert"
 	versionutils "github.com/netapp/trident/utils/version"
 )
@@ -2349,6 +2349,26 @@ func getVolumePublicationAPIExtension(t *testing.T) apiextensionsv1.CustomResour
 					Type:   "integer",
 					Format: "int32",
 				},
+				"autogrowPolicy": {
+					Type:        "string",
+					Description: "Autogrow policy for the volume present on PVC annotation",
+				},
+				"storageClass": {
+					Type:        "string",
+					Description: "Name of the StorageClass used by this volume",
+				},
+				"backendUUID": {
+					Type:        "string",
+					Description: "UUID of the backend hosting this volume",
+				},
+				"pool": {
+					Type:        "string",
+					Description: "Name of the storage pool hosting this volume",
+				},
+				"autogrowIneligible": {
+					Type:        "boolean",
+					Description: "Indicates if volume is ineligible for autogrow monitoring",
+				},
 			},
 			Required: []string{"volumeID", "nodeID", "readOnly"},
 		},
@@ -2400,6 +2420,41 @@ func getVolumePublicationAPIExtension(t *testing.T) apiextensionsv1.CustomResour
 							Description: "Node ID",
 							Priority:    int32(0),
 							JSONPath:    ".nodeID",
+						},
+						{
+							Name:        "AutogrowPolicy",
+							Type:        "string",
+							Description: "Autogrow Policy",
+							Priority:    int32(1),
+							JSONPath:    ".autogrowPolicy",
+						},
+						{
+							Name:        "StorageClass",
+							Type:        "string",
+							Description: "Storage Class",
+							Priority:    int32(1),
+							JSONPath:    ".storageClass",
+						},
+						{
+							Name:        "Backend",
+							Type:        "string",
+							Description: "Backend UUID",
+							Priority:    int32(1),
+							JSONPath:    ".backendUUID",
+						},
+						{
+							Name:        "Pool",
+							Type:        "string",
+							Description: "Storage Pool",
+							Priority:    int32(1),
+							JSONPath:    ".pool",
+						},
+						{
+							Name:        "AutogrowIneligible",
+							Type:        "boolean",
+							Description: "Autogrow Ineligible",
+							Priority:    int32(1),
+							JSONPath:    ".autogrowIneligible",
 						},
 					},
 				},
@@ -3082,7 +3137,7 @@ func TestGetResourceQuotaYAML(t *testing.T) {
 func TestGenerateResourcesYAML(t *testing.T) {
 	tests := []struct {
 		name              string
-		containerResource *commonconfig.ContainerResource
+		containerResource *config.ContainerResource
 		indent            string
 		expectedYAML      string
 	}{
@@ -3094,13 +3149,13 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name:              "empty container resource",
-			containerResource: &commonconfig.ContainerResource{},
+			containerResource: &config.ContainerResource{},
 			indent:            "",
 			expectedYAML:      "",
 		},
 		{
 			name: "nil requests and limits",
-			containerResource: &commonconfig.ContainerResource{
+			containerResource: &config.ContainerResource{
 				Requests: nil,
 				Limits:   nil,
 			},
@@ -3109,8 +3164,8 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "empty requests - both CPU and memory zero",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0")),
 					Memory: convert.ToPtr(resource.MustParse("0")),
 				},
@@ -3120,8 +3175,8 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "empty limits - both CPU and memory zero",
-			containerResource: &commonconfig.ContainerResource{
-				Limits: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0")),
 					Memory: convert.ToPtr(resource.MustParse("0")),
 				},
@@ -3131,8 +3186,8 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "requests only - CPU and memory",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("100m")),
 					Memory: convert.ToPtr(resource.MustParse("128Mi")),
 				},
@@ -3146,8 +3201,8 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "limits only - CPU and memory",
-			containerResource: &commonconfig.ContainerResource{
-				Limits: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("500m")),
 					Memory: convert.ToPtr(resource.MustParse("512Mi")),
 				},
@@ -3161,12 +3216,12 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "requests and limits - both CPU and memory",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("100m")),
 					Memory: convert.ToPtr(resource.MustParse("128Mi")),
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("500m")),
 					Memory: convert.ToPtr(resource.MustParse("512Mi")),
 				},
@@ -3183,8 +3238,8 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "requests only - CPU only",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("200m")),
 					Memory: convert.ToPtr(resource.MustParse("0")),
 				},
@@ -3197,8 +3252,8 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "requests only - memory only",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0")),
 					Memory: convert.ToPtr(resource.MustParse("256Mi")),
 				},
@@ -3211,8 +3266,8 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "limits only - CPU only",
-			containerResource: &commonconfig.ContainerResource{
-				Limits: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("1")),
 					Memory: convert.ToPtr(resource.MustParse("0")),
 				},
@@ -3225,8 +3280,8 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "limits only - memory only",
-			containerResource: &commonconfig.ContainerResource{
-				Limits: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0")),
 					Memory: convert.ToPtr(resource.MustParse("1Gi")),
 				},
@@ -3239,12 +3294,12 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "mixed - requests CPU only, limits memory only",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("150m")),
 					Memory: convert.ToPtr(resource.MustParse("0")),
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0")),
 					Memory: convert.ToPtr(resource.MustParse("2Gi")),
 				},
@@ -3259,12 +3314,12 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "mixed - requests memory only, limits CPU only",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0")),
 					Memory: convert.ToPtr(resource.MustParse("64Mi")),
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("2")),
 					Memory: convert.ToPtr(resource.MustParse("0")),
 				},
@@ -3279,8 +3334,8 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "with custom indent",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("100m")),
 					Memory: convert.ToPtr(resource.MustParse("128Mi")),
 				},
@@ -3294,8 +3349,8 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "with tabs as indent",
-			containerResource: &commonconfig.ContainerResource{
-				Limits: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("500m")),
 					Memory: convert.ToPtr(resource.MustParse("512Mi")),
 				},
@@ -3309,12 +3364,12 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "fractional CPU values",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0.5")),
 					Memory: convert.ToPtr(resource.MustParse("0")), // Must provide Memory even if zero
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("1.5")),
 					Memory: convert.ToPtr(resource.MustParse("0")), // Must provide Memory even if zero
 				},
@@ -3329,12 +3384,12 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "large memory values",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0")), // Must provide CPU even if zero
 					Memory: convert.ToPtr(resource.MustParse("4Gi")),
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0")), // Must provide CPU even if zero
 					Memory: convert.ToPtr(resource.MustParse("8Gi")),
 				},
@@ -3349,12 +3404,12 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "small memory values in bytes",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0")), // Must provide CPU even if zero
 					Memory: convert.ToPtr(resource.MustParse("1024")),
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0")), // Must provide CPU even if zero
 					Memory: convert.ToPtr(resource.MustParse("2048")),
 				},
@@ -3369,8 +3424,8 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "zero CPU in requests - only memory",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0")),
 					Memory: convert.ToPtr(resource.MustParse("128Mi")),
 				},
@@ -3383,8 +3438,8 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "zero memory in limits - only CPU",
-			containerResource: &commonconfig.ContainerResource{
-				Limits: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("500m")),
 					Memory: convert.ToPtr(resource.MustParse("0")),
 				},
@@ -3397,12 +3452,12 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "zero values and non-zero mixed",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0")),
 					Memory: convert.ToPtr(resource.MustParse("128Mi")),
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("500m")),
 					Memory: convert.ToPtr(resource.MustParse("0")),
 				},
@@ -3417,12 +3472,12 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "CPU cores as integers",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("1")),
 					Memory: convert.ToPtr(resource.MustParse("0")), // Must provide Memory even if zero
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("4")),
 					Memory: convert.ToPtr(resource.MustParse("0")), // Must provide Memory even if zero
 				},
@@ -3437,12 +3492,12 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "edge case - very small CPU values",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("1m")),
 					Memory: convert.ToPtr(resource.MustParse("0")), // Must provide Memory even if zero
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("10m")),
 					Memory: convert.ToPtr(resource.MustParse("0")), // Must provide Memory even if zero
 				},
@@ -3457,12 +3512,12 @@ func TestGenerateResourcesYAML(t *testing.T) {
 		},
 		{
 			name: "edge case - very small memory values",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0")), // Must provide CPU even if zero
 					Memory: convert.ToPtr(resource.MustParse("1Ki")),
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0")), // Must provide CPU even if zero
 					Memory: convert.ToPtr(resource.MustParse("1Mi")),
 				},
@@ -3492,15 +3547,15 @@ func TestReplaceResourcesInTemplate(t *testing.T) {
 		name              string
 		template          string
 		containerName     string
-		containerResource *commonconfig.ContainerResource
+		containerResource *config.ContainerResource
 		expectedTemplate  string
 	}{
 		{
 			name:          "template without resource tag",
 			template:      "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: test",
 			containerName: "trident-main",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("100m")),
 					Memory: convert.ToPtr(resource.MustParse("128Mi")),
 				},
@@ -3516,12 +3571,12 @@ func TestReplaceResourcesInTemplate(t *testing.T) {
   env:
   - name: TZ`,
 			containerName: "{TRIDENT_MAIN_RESOURCES}",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("100m")),
 					Memory: convert.ToPtr(resource.MustParse("128Mi")),
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("500m")),
 					Memory: convert.ToPtr(resource.MustParse("512Mi")),
 				},
@@ -3548,8 +3603,8 @@ func TestReplaceResourcesInTemplate(t *testing.T) {
   env:
   - name: TZ`,
 			containerName: "{TRIDENT_MAIN_RESOURCES}",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("200m")),
 					Memory: convert.ToPtr(resource.MustParse("256Mi")),
 				},
@@ -3573,8 +3628,8 @@ func TestReplaceResourcesInTemplate(t *testing.T) {
   env:
   - name: TZ`,
 			containerName: "{TRIDENT_MAIN_RESOURCES}",
-			containerResource: &commonconfig.ContainerResource{
-				Limits: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("1")),
 					Memory: convert.ToPtr(resource.MustParse("1Gi")),
 				},
@@ -3599,8 +3654,8 @@ func TestReplaceResourcesInTemplate(t *testing.T) {
     env:
     - name: TZ`,
 			containerName: "{TRIDENT_MAIN_RESOURCES}",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("100m")),
 					Memory: convert.ToPtr(resource.MustParse("128Mi")),
 				},
@@ -3626,8 +3681,8 @@ func TestReplaceResourcesInTemplate(t *testing.T) {
       env:
       - name: TZ`,
 			containerName: "{TRIDENT_MAIN_RESOURCES}",
-			containerResource: &commonconfig.ContainerResource{
-				Limits: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("500m")),
 					Memory: convert.ToPtr(resource.MustParse("512Mi")),
 				},
@@ -3653,8 +3708,8 @@ func TestReplaceResourcesInTemplate(t *testing.T) {
 	  env:
 	  - name: TZ`,
 			containerName: "{TRIDENT_MAIN_RESOURCES}",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("150m")),
 					Memory: convert.ToPtr(resource.MustParse("64Mi")),
 				},
@@ -3684,8 +3739,8 @@ func TestReplaceResourcesInTemplate(t *testing.T) {
   env:
   - name: INTERVAL`,
 			containerName: "{TRIDENT_MAIN_RESOURCES}",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("100m")),
 					Memory: convert.ToPtr(resource.MustParse("128Mi")),
 				},
@@ -3714,8 +3769,8 @@ func TestReplaceResourcesInTemplate(t *testing.T) {
   env:
   - name: TZ`,
 			containerName: "{TRIDENT_MAIN_RESOURCES}",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("100m")),
 					Memory: convert.ToPtr(resource.MustParse("0")),
 				},
@@ -3739,8 +3794,8 @@ resources:
 	  env:
 	  - name: TZ`,
 			containerName: "{TRIDENT_MAIN_RESOURCES}",
-			containerResource: &commonconfig.ContainerResource{
-				Limits: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0")),
 					Memory: convert.ToPtr(resource.MustParse("1Gi")),
 				},
@@ -3773,12 +3828,12 @@ spec:
         ports:
         - containerPort: 8443`,
 			containerName: "{TRIDENT_MAIN_RESOURCES}",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("100m")),
 					Memory: convert.ToPtr(resource.MustParse("128Mi")),
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("500m")),
 					Memory: convert.ToPtr(resource.MustParse("512Mi")),
 				},
@@ -3814,12 +3869,12 @@ spec:
   env:
   - name: TZ`,
 			containerName: "{TRIDENT_MAIN_RESOURCES}",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("250m")),
 					Memory: convert.ToPtr(resource.MustParse("0")),
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("1")),
 					Memory: convert.ToPtr(resource.MustParse("0")),
 				},
@@ -3844,12 +3899,12 @@ spec:
   env:
   - name: TZ`,
 			containerName: "{TRIDENT_MAIN_RESOURCES}",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0")),
 					Memory: convert.ToPtr(resource.MustParse("64Mi")),
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0")),
 					Memory: convert.ToPtr(resource.MustParse("2Gi")),
 				},
@@ -3874,12 +3929,12 @@ spec:
   command:
   - /usr/local/bin/trident-autosupport`,
 			containerName: "{TRIDENT_AUTOSUPPORT_RESOURCES}",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("10m")),
 					Memory: convert.ToPtr(resource.MustParse("16Mi")),
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("100m")),
 					Memory: convert.ToPtr(resource.MustParse("128Mi")),
 				},
@@ -3906,12 +3961,12 @@ spec:
   securityContext:
     privileged: true`,
 			containerName: "{TRIDENT_NODE_RESOURCES}",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("200m")),
 					Memory: convert.ToPtr(resource.MustParse("256Mi")),
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("2")),
 					Memory: convert.ToPtr(resource.MustParse("4Gi")),
 				},
@@ -3938,8 +3993,8 @@ spec:
   env:
   - name: TZ`,
 			containerName: "{TRIDENT_MAIN_RESOURCES}",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("100m")),
 					Memory: convert.ToPtr(resource.MustParse("128Mi")),
 				},
@@ -3960,12 +4015,12 @@ spec:
   env:
   - name: TZ`,
 			containerName: "{TRIDENT_MAIN_RESOURCES}",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("0.5")),
 					Memory: convert.ToPtr(resource.MustParse("8Gi")),
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("2.5")),
 					Memory: convert.ToPtr(resource.MustParse("16Gi")),
 				},
@@ -4000,7 +4055,7 @@ func TestReplaceResourcesInTemplate_Integration(t *testing.T) {
 		name                string
 		template            string
 		containerName       string
-		containerResource   *commonconfig.ContainerResource
+		containerResource   *config.ContainerResource
 		expectedContains    []string
 		expectedNotContains []string
 	}{
@@ -4031,12 +4086,12 @@ spec:
         - name: TZ
           value: UTC`,
 			containerName: "TRIDENT_MAIN",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("100m")),
 					Memory: convert.ToPtr(resource.MustParse("128Mi")),
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("500m")),
 					Memory: convert.ToPtr(resource.MustParse("512Mi")),
 				},
@@ -4080,12 +4135,12 @@ spec:
             fieldRef:
               fieldPath: spec.nodeName`,
 			containerName: "TRIDENT_NODE",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("200m")),
 					Memory: convert.ToPtr(resource.MustParse("256Mi")),
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("2")),
 					Memory: convert.ToPtr(resource.MustParse("4Gi")),
 				},
@@ -4119,12 +4174,12 @@ spec:
   command:
   - /usr/local/bin/trident-autosupport`,
 			containerName: "TRIDENT_AUTOSUPPORT",
-			containerResource: &commonconfig.ContainerResource{
-				Requests: &commonconfig.ResourceRequirements{
+			containerResource: &config.ContainerResource{
+				Requests: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("10m")),
 					Memory: convert.ToPtr(resource.MustParse("16Mi")),
 				},
-				Limits: &commonconfig.ResourceRequirements{
+				Limits: &config.ResourceRequirements{
 					CPU:    convert.ToPtr(resource.MustParse("50m")),
 					Memory: convert.ToPtr(resource.MustParse("64Mi")),
 				},
@@ -4169,4 +4224,129 @@ spec:
 			}
 		})
 	}
+}
+
+func TestGetAutogrowPolicyCRDYAML(t *testing.T) {
+	preserveValue := true
+	schema := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type:                   "object",
+			XPreserveUnknownFields: &preserveValue,
+		},
+	}
+
+	expected := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentautogrowpolicies.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Scope: apiextensionsv1.ClusterScoped,
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentautogrowpolicies",
+				Singular:   "tridentautogrowpolicy",
+				Kind:       "TridentAutogrowPolicy",
+				ListKind:   "TridentAutogrowPolicyList",
+				ShortNames: []string{"tap"},
+			},
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema,
+				},
+			},
+		},
+	}
+
+	actualYAML := GetAutogrowPolicyCRDYAML()
+	var actual apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+}
+
+func TestGetAutogrowRequestInternalCRDYAML(t *testing.T) {
+	preserveValue := true
+	schema := apiextensionsv1.CustomResourceValidation{
+		OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+			Type:                   "object",
+			XPreserveUnknownFields: &preserveValue,
+		},
+	}
+
+	expected := apiextensionsv1.CustomResourceDefinition{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CustomResourceDefinition",
+			APIVersion: "apiextensions.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "tridentautogrowrequestinternals.trident.netapp.io",
+		},
+		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+			Group: "trident.netapp.io",
+			Scope: apiextensionsv1.NamespaceScoped,
+			Names: apiextensionsv1.CustomResourceDefinitionNames{
+				Plural:     "tridentautogrowrequestinternals",
+				Singular:   "tridentautogrowrequestinternal",
+				Kind:       "TridentAutogrowRequestInternal",
+				ListKind:   "TridentAutogrowRequestInternalList",
+				ShortNames: []string{"tagri"},
+				Categories: []string{"trident", "trident-internal"},
+			},
+			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1",
+					Served:  true,
+					Storage: true,
+					Schema:  &schema,
+				},
+			},
+		},
+	}
+
+	actualYAML := GetAutogrowRequestInternalCRDYAML()
+	var actual apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &actual), "invalid YAML")
+	assert.True(t, reflect.DeepEqual(expected.TypeMeta, actual.TypeMeta))
+	assert.True(t, reflect.DeepEqual(expected.ObjectMeta, actual.ObjectMeta))
+	assert.Equal(t, expected.Spec.Group, actual.Spec.Group)
+	assert.Equal(t, expected.Spec.Scope, actual.Spec.Scope)
+	assert.Equal(t, expected.Spec.Names, actual.Spec.Names)
+}
+
+// TestGetAutogrowRequestInternalCRDYAML_AdditionalPrinterColumns verifies the TAGRI CRD defines
+// printer columns in the correct order and priority (default view vs -o wide).
+func TestGetAutogrowRequestInternalCRDYAML_AdditionalPrinterColumns(t *testing.T) {
+	actualYAML := GetAutogrowRequestInternalCRDYAML()
+	var crd apiextensionsv1.CustomResourceDefinition
+	assert.Nil(t, yaml.Unmarshal([]byte(actualYAML), &crd), "invalid YAML")
+	require.Len(t, crd.Spec.Versions, 1)
+
+	cols := crd.Spec.Versions[0].AdditionalPrinterColumns
+	require.NotEmpty(t, cols, "TAGRI CRD should define additionalPrinterColumns")
+
+	// Default view (kubectl get tagri): Volume, Autogrow Policy, Observed Used%, Observed Capacity, Final Size, Phase, Age
+	defaultNames := []string{"Volume", "Autogrow Policy", "Observed Used%", "Observed Capacity", "Final Size", "Phase", "Age"}
+	// Wide view adds: Observed Used Bytes, Node Name, Breached At
+	wideNames := []string{"Observed Used Bytes", "Node Name", "Breached At"}
+
+	var defaultIdx, wideIdx int
+	for _, c := range cols {
+		if defaultIdx < len(defaultNames) && c.Name == defaultNames[defaultIdx] {
+			assert.Equal(t, int32(0), c.Priority, "column %q should be priority 0 (default view)", c.Name)
+			defaultIdx++
+		} else if wideIdx < len(wideNames) && c.Name == wideNames[wideIdx] {
+			assert.Equal(t, int32(1), c.Priority, "column %q should be priority 1 (wide view)", c.Name)
+			wideIdx++
+		}
+	}
+	assert.Equal(t, len(defaultNames), defaultIdx, "missing default columns: expected %v", defaultNames)
+	assert.Equal(t, len(wideNames), wideIdx, "missing wide columns: expected %v", wideNames)
+	assert.Len(t, cols, len(defaultNames)+len(wideNames), "unexpected number of columns")
 }

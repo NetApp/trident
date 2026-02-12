@@ -36,6 +36,7 @@ type helper struct {
 	enableForceDetach                bool
 	mount                            mount.Mount
 	nodehelpers.VolumePublishManager // Embedded/extended interface
+	nodehelpers.VolumeStatsManager   // Embedded/extended interface
 }
 
 // NewHelper instantiates this helper when running outside a pod.
@@ -50,12 +51,18 @@ func NewHelper(orchestrator core.Orchestrator, kubeConfigPath string, enableForc
 
 	mountClient, err := mount.New()
 	if err != nil {
-		return nil, fmt.Errorf("could not initialize mount client; %v", err)
+		return nil, fmt.Errorf("could not initialize mount client; %w", err)
 	}
 
 	publishManager, err := csi.NewVolumePublishManager(config.VolumeTrackingInfoPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not initialize VolumePublishManager; %v", err)
+		return nil, fmt.Errorf("could not initialize VolumePublishManager; %w", err)
+	}
+
+	// Initialize VolumeStatsManager
+	volumeStatsManager, err := nodehelpers.NewVolumeStatsManager(publishManager)
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize VolumeStatsManager; %w", err)
 	}
 
 	h := &helper{
@@ -66,6 +73,7 @@ func NewHelper(orchestrator core.Orchestrator, kubeConfigPath string, enableForc
 		enableForceDetach:    enableForceDetach,
 		mount:                mountClient,
 		VolumePublishManager: publishManager,
+		VolumeStatsManager:   volumeStatsManager,
 	}
 
 	return h, nil
@@ -120,12 +128,12 @@ func (h *helper) reconcileVolumePublishInfo(ctx context.Context) error {
 	if len(files) > 0 {
 		publishedPaths, err := h.discoverPVCsToPublishedPathsFilesystemVolumes(ctx)
 		if err != nil {
-			return fmt.Errorf("could not discover published paths: %v", err)
+			return fmt.Errorf("could not discover published paths: %w", err)
 		}
 
 		err = h.discoverPVCsToPublishedPathsRawDevices(ctx, publishedPaths)
 		if err != nil {
-			return fmt.Errorf("could not discover published raw devices: %v", err)
+			return fmt.Errorf("could not discover published raw devices: %w", err)
 		}
 
 		h.publishedPaths = publishedPaths
@@ -177,7 +185,7 @@ func (h *helper) reconcileVolumePublishInfoFile(
 	// everything is cleaned up properly.
 	if shouldDelete {
 		if err = h.VolumePublishManager.DeleteTrackingInfo(ctx, volumeId); err != nil {
-			return csi.TerminalReconciliationError(fmt.Sprintf("could not delete the tracking file: %v", err))
+			return csi.TerminalReconciliationError(fmt.Errorf("could not delete the tracking file: %w", err).Error())
 		}
 	}
 
@@ -236,7 +244,7 @@ func (h *helper) discoverPVCsToPublishedPathsFilesystemVolumes(ctx context.Conte
 	pods, err := afero.ReadDir(osFs, h.podsPath)
 	if err != nil {
 		fields := LogFields{"helperPodsPath": h.podsPath}
-		Logc(ctx).WithFields(fields).Errorf("Error reading pods path; %v", err)
+		Logc(ctx).WithFields(fields).Errorf("Error reading pods path; %w", err)
 		return nil, err
 	}
 
@@ -246,7 +254,7 @@ func (h *helper) discoverPVCsToPublishedPathsFilesystemVolumes(ctx context.Conte
 		Logc(ctx).WithFields(fields).Debug("Current pod UUID path.")
 		volumes, err := afero.ReadDir(osFs, podUUIDPath)
 		if err != nil && !os.IsNotExist(err) {
-			Logc(ctx).WithFields(fields).Errorf("Error reading pod UUID directory; %v", err)
+			Logc(ctx).WithFields(fields).Errorf("Error reading pod UUID directory; %w", err)
 			return mapping, err
 		}
 
@@ -282,7 +290,7 @@ func (h *helper) discoverPVCsToPublishedPathsRawDevices(ctx context.Context, map
 
 	volumes, err := afero.ReadDir(osFs, publishedRawDevicePath)
 	if err != nil && !os.IsNotExist(err) {
-		Logc(ctx).WithFields(fields).Errorf("Error reading raw device directory; %v", err)
+		Logc(ctx).WithFields(fields).Errorf("Error reading raw device directory; %w", err)
 		return err
 	}
 
@@ -299,7 +307,7 @@ func (h *helper) discoverPVCsToPublishedPathsRawDevices(ctx context.Context, map
 		fields = LogFields{"volumePath": volumePath}
 		podUUIDs, err := afero.ReadDir(osFs, volumePath)
 		if err != nil && !os.IsNotExist(err) {
-			Logc(ctx).WithFields(fields).Errorf("Error reading pods path; %v", err)
+			Logc(ctx).WithFields(fields).Errorf("Error reading pods path; %w", err)
 			return err
 		}
 

@@ -879,3 +879,57 @@ func TestUpdateDynamicTelemetryTimeWindow(t *testing.T) {
 	assert.True(t, updateCalled, "update after interval should proceed")
 	assert.Equal(t, "updated", testTelemetry3.Platform)
 }
+
+func TestGetTagriTimeout(t *testing.T) {
+	originalTimeout := TagriTimeout
+	defer func() { TagriTimeout = originalTimeout }()
+
+	tests := []struct {
+		name       string
+		setSeconds int // 0 = unset (use default), else set TagriTimeout to this many seconds
+		expected   time.Duration
+	}{
+		{
+			name:       "Default when unset (0)",
+			setSeconds: 0,
+			expected:   DefaultTagriTimeoutSeconds * time.Second,
+		},
+		{
+			name:       "User value 30s",
+			setSeconds: 30,
+			expected:   30 * time.Second,
+		},
+		{
+			name:       "User value 60s",
+			setSeconds: 60,
+			expected:   60 * time.Second,
+		},
+		{
+			name:       "User value 120s",
+			setSeconds: 120,
+			expected:   120 * time.Second,
+		},
+		{
+			name:       "User value 3600s",
+			setSeconds: 3600,
+			expected:   3600 * time.Second,
+		},
+		{
+			name:       "Very large value 86400s",
+			setSeconds: 86400,
+			expected:   86400 * time.Second,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.setSeconds == 0 {
+				TagriTimeout = 0
+			} else {
+				TagriTimeout = time.Duration(tt.setSeconds) * time.Second
+			}
+			result := GetTagriTimeout()
+			assert.Equal(t, tt.expected, result, "GetTagriTimeout() with setSeconds=%d", tt.setSeconds)
+		})
+	}
+}

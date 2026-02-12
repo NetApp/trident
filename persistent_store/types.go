@@ -88,6 +88,9 @@ type Client interface {
 	UpdateGroupSnapshot(ctx context.Context, groupSnapshot *storage.GroupSnapshot) error
 	DeleteGroupSnapshot(ctx context.Context, groupSnapshot *storage.GroupSnapshot) error
 	DeleteGroupSnapshots(ctx context.Context) error
+
+	GetAutogrowPolicy(ctx context.Context, agPolicyName string) (*storage.AutogrowPolicyPersistent, error)
+	GetAutogrowPolicies(ctx context.Context) ([]*storage.AutogrowPolicyPersistent, error)
 }
 
 type CRDClient interface {

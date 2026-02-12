@@ -17,6 +17,7 @@ import (
 type helper struct {
 	orchestrator                     core.Orchestrator
 	nodehelpers.VolumePublishManager // Embedded/extended interface
+	nodehelpers.VolumeStatsManager   // Embedded/extended interface
 }
 
 // NewHelper instantiates this plugin.
@@ -27,13 +28,22 @@ func NewHelper(orchestrator core.Orchestrator) (frontend.Plugin, error) {
 
 	publishManager, err := csi.NewVolumePublishManager("")
 	if err != nil {
-		return nil, fmt.Errorf("could not initialize VolumePublishManager; %v", err)
+		return nil, fmt.Errorf("could not initialize VolumePublishManager; %w", err)
 	}
 
-	return &helper{
+	// Initialize VolumeStatsManager
+	volumeStatsManager, err := nodehelpers.NewVolumeStatsManager(publishManager)
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize VolumeStatsManager; %w", err)
+	}
+
+	h := &helper{
 		orchestrator:         orchestrator,
 		VolumePublishManager: publishManager,
-	}, nil
+		VolumeStatsManager:   volumeStatsManager,
+	}
+
+	return h, nil
 }
 
 // Activate starts this Trident frontend.

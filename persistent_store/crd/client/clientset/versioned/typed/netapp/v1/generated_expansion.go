@@ -8,6 +8,10 @@ type TridentActionMirrorUpdateExpansion interface{}
 
 type TridentActionSnapshotRestoreExpansion interface{}
 
+type TridentAutogrowPolicyExpansion interface{}
+
+type TridentAutogrowRequestInternalExpansion interface{}
+
 type TridentBackendExpansion interface{}
 
 type TridentBackendConfigExpansion interface{}

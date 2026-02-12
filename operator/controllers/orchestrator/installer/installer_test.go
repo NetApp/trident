@@ -1747,7 +1747,7 @@ func TestCreateAndEnsureCRDs(t *testing.T) {
 			NodeRemediationCRDName, NodeRemediationTemplateCRDName, TransactionCRDName,
 			SnapshotCRDName, GroupSnapshotCRDName, VolumeReferenceCRDName,
 			MirrorRelationshipCRDName, ActionMirrorUpdateCRDName, ActionSnapshotRestoreCRDName,
-			ConfiguratorCRDName,
+			ConfiguratorCRDName, AutogrowPolicyCRDName, AutogrowRequestInternalCRDName,
 		}
 
 		for _, crdName := range crdNames {
@@ -1777,7 +1777,7 @@ func TestCreateAndEnsureCRDs(t *testing.T) {
 			NodeRemediationCRDName, NodeRemediationTemplateCRDName, TransactionCRDName,
 			SnapshotCRDName, GroupSnapshotCRDName, VolumeReferenceCRDName,
 			MirrorRelationshipCRDName, ActionMirrorUpdateCRDName, ActionSnapshotRestoreCRDName,
-			ConfiguratorCRDName,
+			ConfiguratorCRDName, AutogrowPolicyCRDName, AutogrowRequestInternalCRDName,
 		}
 
 		for _, crdName := range crdNames {

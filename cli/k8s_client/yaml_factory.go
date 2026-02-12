@@ -102,7 +102,12 @@ func GetClusterRoleYAML(clusterRoleName string, labels, controllingCRDetails map
 	}).Trace(">>>> GetClusterRoleYAML")
 	defer func() { Log().Trace("<<<< GetClusterRoleYAML") }()
 
-	clusterRoleYAML := controllerClusterRoleCSIYAMLTemplate
+	var clusterRoleYAML string
+	if isControllerRBACResource(labels) {
+		clusterRoleYAML = controllerClusterRoleCSIYAMLTemplate
+	} else {
+		clusterRoleYAML = nodeClusterRoleCSIYAMLTemplate
+	}
 	clusterRoleYAML = strings.ReplaceAll(clusterRoleYAML, "{CLUSTER_ROLE_NAME}", clusterRoleName)
 	clusterRoleYAML = yaml.ReplaceMultilineTag(clusterRoleYAML, "LABELS", constructLabels(labels))
 	clusterRoleYAML = yaml.ReplaceMultilineTag(clusterRoleYAML, "OWNER_REF", constructOwnerRef(controllingCRDetails))
@@ -187,7 +192,9 @@ rules:
 "tridentactionsnapshotrestores", "tridentactionsnapshotrestores/status",
 "tridentnoderemediations", "tridentnoderemediations/status",
 "tridentnoderemediationtemplates", "tridentnoderemediationtemplates/status",
-"tridentgroupsnapshots", "tridentgroupsnapshots/status"]
+"tridentgroupsnapshots", "tridentgroupsnapshots/status",
+"tridentautogrowpolicies", "tridentautogrowpolicies/status",
+"tridentautogrowrequestinternals", "tridentautogrowrequestinternals/status"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]
@@ -197,6 +204,26 @@ rules:
   - apiGroups: ["apiextensions.k8s.io"]
     resources: ["customresourcedefinitions"]
     verbs: ["get"]
+`
+
+// Minimal permissions for node pods
+const nodeClusterRoleCSIYAMLTemplate = `---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {CLUSTER_ROLE_NAME}
+  {LABELS}
+  {OWNER_REF}
+rules:
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["trident.netapp.io"]
+    resources: ["tridentvolumepublications", "tridentbackends", "tridentautogrowpolicies"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["trident.netapp.io"]
+    resources: ["tridentautogrowrequestinternals"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
 `
 
 func GetRoleYAML(namespace, roleName string, labels, controllingCRDetails map[string]string) string {
@@ -1931,6 +1958,18 @@ func GetConfiguratorCRDYAML() string {
 	return tridentConfiguratorCRDYAMLv1
 }
 
+func GetAutogrowPolicyCRDYAML() string {
+	Log().Trace(">>>> GetAutogrowPolicyCRDYAML")
+	defer func() { Log().Trace("<<<< GetAutogrowPolicyCRDYAML") }()
+	return tridentAutogrowPolicyCRDYAMLv1
+}
+
+func GetAutogrowRequestInternalCRDYAML() string {
+	Log().Trace(">>>> GetAutogrowRequestInternalCRDYAML")
+	defer func() { Log().Trace("<<<< GetAutogrowRequestInternalCRDYAML") }()
+	return tridentAutogrowRequestInternalCRDYAMLv1
+}
+
 func GetMirrorRelationshipCRDYAML() string {
 	Log().Trace(">>>> GetMirrorRelationshipCRDYAML")
 	defer func() { Log().Trace("<<<< GetMirrorRelationshipCRDYAML") }()
@@ -2603,6 +2642,21 @@ spec:
             accessMode:
               type: integer
               format: int32
+            autogrowPolicy:
+              type: string
+              description: "Autogrow policy for the volume present on PVC annotation"
+            storageClass:
+              type: string
+              description: "Name of the StorageClass used by this volume"
+            backendUUID:
+              type: string
+              description: "UUID of the backend hosting this volume"
+            pool:
+              type: string
+              description: "Name of the storage pool hosting this volume"
+            autogrowIneligible:
+              type: boolean
+              description: "Indicates if volume is ineligible for autogrow monitoring"
           required:
               - volumeID
               - nodeID
@@ -2618,6 +2672,31 @@ spec:
           description: Node ID
           priority: 0
           jsonPath: .nodeID
+        - name: AutogrowPolicy
+          type: string
+          description: Autogrow Policy
+          priority: 1
+          jsonPath: .autogrowPolicy
+        - name: StorageClass
+          type: string
+          description: Storage Class
+          priority: 1
+          jsonPath: .storageClass
+        - name: Backend
+          type: string
+          description: Backend UUID
+          priority: 1
+          jsonPath: .backendUUID
+        - name: Pool
+          type: string
+          description: Storage Pool
+          priority: 1
+          jsonPath: .pool
+        - name: AutogrowIneligible
+          type: boolean
+          description: Autogrow Ineligible
+          priority: 1
+          jsonPath: .autogrowIneligible
   scope: Namespaced
   names:
     plural: tridentvolumepublications
@@ -3007,6 +3086,249 @@ spec:
 const tridentNodeRemediationYAMLv1 = tridentNodeRemediationClusterRoleYAMLv1 +
 	"\n---" + tridentNodeRemediationDefaultTemplate
 
+const tridentAutogrowPolicyCRDYAMLv1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name:  tridentautogrowpolicies.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                usedThreshold:
+                  type: string
+                  description: "Usage threshold at which the volume should be auto-grown. Must be a percentage between 1% and 99% (e.g., 80%)."
+                  pattern: '^([1-9]|[1-9][0-9])(\.[0-9]+)?%$'
+                growthAmount:
+                  type: string
+                  description: "Amount by which the volume size should be increased. Can be percentage (10%) or absolute (5Gi)."
+                  default: "10%"
+                  pattern: '^([1-9][0-9]*(\.[0-9]+)?%|[0-9]+(\.[0-9]+)?(E|P|T|G|M|k|Ei|Pi|Ti|Gi|Mi|Ki))$'
+                maxSize:
+                  type: string
+                  description: "The maximum allowable volume size growth expressed as an absolute value. Set to 0 for unlimited growth."
+                  default: "0"
+                  pattern: '^(0|[0-9]+(\.[0-9]+)?(E|P|T|G|M|k|Ei|Pi|Ti|Gi|Mi|Ki))$'
+              required:
+                - usedThreshold
+            status:
+              type: object
+              properties:
+                state:
+                  type: string
+                  description: "State represents the current state of the policy lifecycle."
+                  enum:
+                    - Success
+                    - Failed
+                    - Deleting
+                message:
+                  type: string
+                  description: "Message provides detailed information about the policy status."
+          x-kubernetes-validations:
+            - rule: "self.metadata.name != 'NONE'"
+              message: "metadata.name cannot be 'NONE'"
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Used Threshold
+          type: string
+          description: Usage threshold for autogrow
+          priority: 0
+          jsonPath: .spec.usedThreshold
+        - name: Growth Amount
+          type: string
+          description: Amount to grow by
+          priority: 0
+          jsonPath: .spec.growthAmount
+        - name: Max Size
+          type: string
+          description: Maximum allowed size
+          priority: 1
+          jsonPath: .spec.maxSize
+        - name: State
+          type: string
+          description: The policy state
+          priority: 0
+          jsonPath: .status.state
+        - name: Message
+          type: string
+          description: Status message
+          priority: 1
+          jsonPath: .status.message
+  scope: Cluster
+  names:
+    plural: tridentautogrowpolicies
+    singular: tridentautogrowpolicy
+    kind: TridentAutogrowPolicy
+    shortNames:
+      - tap
+      - tagp
+      - tautogrowpolicy
+    categories:
+      - trident
+      - trident-internal
+`
+
+const tridentAutogrowRequestInternalCRDYAMLv1 = `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentautogrowrequestinternals.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  names:
+    kind: TridentAutogrowRequestInternal
+    listKind: TridentAutogrowRequestInternalList
+    plural: tridentautogrowrequestinternals
+    singular: tridentautogrowrequestinternal
+    shortNames:
+      - tagri
+    categories:
+      - trident
+      - trident-internal
+  scope: Namespaced
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required:
+                - volume
+                - autogrowPolicyRef
+                - observedCapacityBytes
+                - observedUsedPercent
+                - observedUsedBytes
+                - nodeName
+              properties:
+                volume:
+                  type: string
+                  description: Name of the PersistentVolume to be expanded
+                observedUsedPercent:
+                  type: number
+                  format: float
+                  description: Current used size of the volume in percentage
+                observedUsedBytes:
+                  type: string
+                  description: Current used size of the volume in bytes
+                observedCapacityBytes:
+                  type: string
+                  description: Current capacity of the volume in bytes
+                nodeName:
+                  type: string
+                  description: Name of the node that created this request
+                timestamp:
+                  type: string
+                  format: date-time
+                  description: When the threshold was breached (optional, for observability)
+                autogrowPolicyRef:
+                  type: object
+                  required:
+                    - name
+                    - generation
+                  properties:
+                    name:
+                      type: string
+                      description: Name of the TridentAutogrowPolicy being applied
+                    generation:
+                      type: integer
+                      format: int64
+                      description: Generation number of the TridentAutogrowPolicy when request was created
+            status:
+              type: object
+              properties:
+                phase:
+                  type: string
+                  enum:
+                    - Pending
+                    - InProgress
+                    - Completed
+                    - Rejected
+                    - Failed
+                  description: Current phase of the request
+                message:
+                  type: string
+                  description: Human-readable message describing the status
+                finalCapacityBytes:
+                  type: string
+                  description: Final capacity after resize (if approved)
+                processedAt:
+                  type: string
+                  format: date-time
+                  description: Time when TAGRI moved to terminal phase (Completed/Failed/Rejected)
+                retryCount:
+                  type: integer
+                  description: Number of retries attempted
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        # Default view: Volume, Autogrow Policy, Observed Used%, Observed Capacity, Final Size, Phase, Age
+        - name: Volume
+          type: string
+          description: PersistentVolume to be expanded
+          priority: 0
+          jsonPath: .spec.volume
+        - name: Autogrow Policy
+          type: string
+          description: Policy applied for this request
+          priority: 0
+          jsonPath: .spec.autogrowPolicyRef.name
+        - name: Observed Used%
+          type: string
+          description: Volume usage percent when request was created
+          priority: 0
+          jsonPath: .spec.observedUsedPercent
+        - name: Observed Capacity
+          type: string
+          description: Observed capacity at request time
+          priority: 0
+          jsonPath: .spec.observedCapacityBytes
+        - name: Final Size
+          type: string
+          description: Target capacity after resize
+          priority: 0
+          jsonPath: .status.finalCapacityBytes
+        - name: Phase
+          type: string
+          description: Current phase (Pending/InProgress/Completed/Rejected/Failed)
+          priority: 0
+          jsonPath: .status.phase
+        - name: Age
+          type: date
+          description: Time since creation
+          priority: 0
+          jsonPath: .metadata.creationTimestamp
+        # Wide view only: adds Observed Used Bytes, Node Name, Breached At
+        - name: Observed Used Bytes
+          type: string
+          description: Volume used bytes when request was created
+          priority: 1
+          jsonPath: .spec.observedUsedBytes
+        - name: Node Name
+          type: string
+          description: Node that created this request
+          priority: 1
+          jsonPath: .spec.nodeName
+        - name: Breached At
+          type: date
+          description: When threshold was breached
+          priority: 1
+          jsonPath: .spec.timestamp
+`
+
 const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentBackendCRDYAMLv1 +
 	"\n---" + tridentBackendConfigCRDYAMLv1 +
@@ -3024,7 +3346,9 @@ const customResourceDefinitionYAMLv1 = tridentVersionCRDYAMLv1 +
 	"\n---" + tridentGroupSnapshotCRDYAMLv1 +
 	"\n---" + tridentVolumeReferenceCRDYAMLv1 +
 	"\n---" + tridentActionSnapshotRestoreCRDYAMLv1 +
-	"\n---" + tridentConfiguratorCRDYAMLv1 + "\n"
+	"\n---" + tridentConfiguratorCRDYAMLv1 +
+	"\n---" + tridentAutogrowPolicyCRDYAMLv1 +
+	"\n---" + tridentAutogrowRequestInternalCRDYAMLv1 + "\n"
 
 func GetCSIDriverYAML(name, fsGroupPolicy string, labels, controllingCRDetails map[string]string) string {
 	Log().WithFields(LogFields{

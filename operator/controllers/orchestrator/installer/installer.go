@@ -58,6 +58,8 @@ const (
 	GroupSnapshotCRDName           = "tridentgroupsnapshots.trident.netapp.io"
 	VolumeReferenceCRDName         = "tridentvolumereferences.trident.netapp.io"
 	ConfiguratorCRDName            = "tridentconfigurators.trident.netapp.io"
+	AutogrowPolicyCRDName          = "tridentautogrowpolicies.trident.netapp.io"
+	AutogrowRequestInternalCRDName = "tridentautogrowrequestinternals.trident.netapp.io"
 
 	DefaultTimeout = 180
 )
@@ -146,6 +148,8 @@ var (
 		VolumeReferenceCRDName,
 		VolumePublicationCRDName,
 		ConfiguratorCRDName,
+		AutogrowPolicyCRDName,
+		AutogrowRequestInternalCRDName,
 	}
 )
 
@@ -1131,6 +1135,14 @@ func (i *Installer) createCRDs(performOperationOnce bool) error {
 		return err
 	}
 	if err = i.CreateOrPatchCRD(ConfiguratorCRDName, k8sclient.GetConfiguratorCRDYAML(), false); err != nil {
+		return err
+	}
+
+	if err = i.CreateOrPatchCRD(AutogrowPolicyCRDName, k8sclient.GetAutogrowPolicyCRDYAML(), false); err != nil {
+		return err
+	}
+
+	if err = i.CreateOrPatchCRD(AutogrowRequestInternalCRDName, k8sclient.GetAutogrowRequestInternalCRDYAML(), false); err != nil {
 		return err
 	}
 

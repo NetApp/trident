@@ -36,6 +36,7 @@ import (
 	mockcore "github.com/netapp/trident/mocks/mock_core"
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
 	mockNodeHelpers "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_node_helpers"
+	mock_blockdevice "github.com/netapp/trident/mocks/mock_utils/mock_blockdevice"
 	"github.com/netapp/trident/mocks/mock_utils/mock_devices"
 	"github.com/netapp/trident/mocks/mock_utils/mock_filesystem"
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
@@ -998,7 +999,6 @@ func TestFixISCSISessions(t *testing.T) {
 			SimulateConditions: func(publishedSessions, currentSessions *models.ISCSISessions,
 				portalActions []PortalAction,
 			) {
-				return
 			},
 		},
 		{
@@ -11171,10 +11171,10 @@ func TestNodeGetVolumeStats(t *testing.T) {
 		{
 			name: "Volume publish path does not exist",
 			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath},
-			setupOsutils: func() osutils.Utils {
-				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
-				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(false, errors.New(""))
-				return mockOSUtils
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().VerifyVolumePath(gomock.Any(), volumePath).Return(errors.New("could not find volume mount at path"))
+				return mockNodeHelper
 			},
 			expErrCode: codes.NotFound,
 		},
@@ -11183,36 +11183,30 @@ func TestNodeGetVolumeStats(t *testing.T) {
 			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath, StagingTargetPath: stagingPath},
 			setupNodeHelperMock: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().VerifyVolumePath(gomock.Any(), volumePath).Return(nil)
 				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
 					gomock.Any()).Return(nil, errors.NotFoundError("")).AnyTimes()
 
 				return mockNodeHelper
 			},
 			expErrCode: codes.FailedPrecondition,
-			setupOsutils: func() osutils.Utils {
-				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
-				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
-				return mockOSUtils
-			},
 		},
 		{
 			name: "Raw block volume",
 			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath, StagingTargetPath: stagingPath},
 			setupNodeHelperMock: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().VerifyVolumePath(gomock.Any(), volumePath).Return(nil)
 				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
 					gomock.Any()).Return(&models.VolumeTrackingInfo{
 					VolumePublishInfo: models.VolumePublishInfo{
 						FilesystemType: filesystem.Raw,
 					},
 				}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().IsRawBlockVolume(gomock.Any()).Return(true)
+				mockNodeHelper.EXPECT().GetBlockDeviceStatsByID(gomock.Any(), gomock.Any(), gomock.Any()).Return(&nodehelpers.VolumeStats{}, nil)
 
 				return mockNodeHelper
-			},
-			setupOsutils: func() osutils.Utils {
-				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
-				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
-				return mockOSUtils
 			},
 			expErrCode: codes.OK,
 			expResp:    &csi.NodeGetVolumeStatsResponse{},
@@ -11222,31 +11216,25 @@ func TestNodeGetVolumeStats(t *testing.T) {
 			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath, StagingTargetPath: stagingPath},
 			setupNodeHelperMock: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().VerifyVolumePath(gomock.Any(), volumePath).Return(nil)
 				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
 					gomock.Any()).Return(nil, errors.New("")).AnyTimes()
 
 				return mockNodeHelper
-			},
-			setupOsutils: func() osutils.Utils {
-				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
-				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
-				return mockOSUtils
 			},
 			expErrCode: codes.Internal,
 		},
 		{
 			name: "Filesystem stats error",
 			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath},
-			setupOsutils: func() osutils.Utils {
-				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
-				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
-				return mockOSUtils
-			},
-			mockFilesystem: func() filesystem.Filesystem {
-				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
-				mockFilesystem1.EXPECT().GetFilesystemStats(gomock.Any(), gomock.Any()).Return(
-					int64(0), int64(0), int64(0), int64(0), int64(0), int64(0), errors.New("")).AnyTimes()
-				return mockFilesystem1
+			setupNodeHelperMock: func() nodehelpers.NodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().VerifyVolumePath(gomock.Any(), volumePath).Return(nil)
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
+					gomock.Any()).Return(&models.VolumeTrackingInfo{}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().IsRawBlockVolume(gomock.Any()).Return(false)
+				mockNodeHelper.EXPECT().GetFilesystemStatsByID(gomock.Any(), volumePath).Return(nil, errors.New("stats error"))
+				return mockNodeHelper
 			},
 
 			expErrCode: codes.Unknown,
@@ -11256,23 +11244,20 @@ func TestNodeGetVolumeStats(t *testing.T) {
 			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath},
 			setupNodeHelperMock: func() nodehelpers.NodeHelper {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
+				mockNodeHelper.EXPECT().VerifyVolumePath(gomock.Any(), volumePath).Return(nil)
 				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(),
 					gomock.Any()).Return(&models.VolumeTrackingInfo{}, nil).AnyTimes()
+				mockNodeHelper.EXPECT().IsRawBlockVolume(gomock.Any()).Return(false)
+				mockNodeHelper.EXPECT().GetFilesystemStatsByID(gomock.Any(), volumePath).Return(&nodehelpers.VolumeStats{
+					Total:      int64(2),
+					Used:       int64(1),
+					Available:  int64(1),
+					Inodes:     int64(2),
+					InodesUsed: int64(1),
+					InodesFree: int64(1),
+				}, nil)
 
 				return mockNodeHelper
-			},
-			mockFilesystem: func() filesystem.Filesystem {
-				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
-				mockFilesystem1.EXPECT().GetFilesystemStats(gomock.Any(), gomock.Any()).Return(
-					int64(1), int64(2), int64(1), int64(1), int64(1), int64(2), nil,
-				).AnyTimes()
-
-				return mockFilesystem1
-			},
-			setupOsutils: func() osutils.Utils {
-				mockOSUtils := mock_osutils.NewMockUtils(gomock.NewController(t))
-				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
-				return mockOSUtils
 			},
 			expErrCode: codes.OK,
 		},
@@ -11291,16 +11276,13 @@ func TestNodeGetVolumeStats(t *testing.T) {
 
 			plugin.InitializeNodeLimiter(ctx)
 
-			if tc.mockFilesystem != nil {
-				plugin.fs = tc.mockFilesystem()
-			}
-
 			if tc.setupNodeHelperMock != nil {
 				plugin.nodeHelper = tc.setupNodeHelperMock()
 			}
 
-			if tc.setupOsutils != nil {
-				plugin.osutils = tc.setupOsutils()
+			// Ensure nodeHelper is set to get VolumeStatsManager
+			if plugin.nodeHelper == nil {
+				plugin.nodeHelper = mockNodeHelpers.NewMockNodeHelper(mockCtrl)
 			}
 
 			resp, err := plugin.NodeGetVolumeStats(ctx, tc.req)
@@ -11317,6 +11299,458 @@ func TestNodeGetVolumeStats(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.NotNil(t, resp)
+		})
+	}
+}
+
+// TestNodeGetVolumeStats_RawBlockWithBlockDevice tests raw block volume stats with block device client
+func TestNodeGetVolumeStats_RawBlockWithBlockDevice(t *testing.T) {
+	volumeID := "vol-raw-block-123"
+	volumePath := "/mnt/vol-raw-block-123"
+	stagingPath := "/staging/vol-raw-block-123"
+
+	testCases := []struct {
+		name                string
+		req                 *csi.NodeGetVolumeStatsRequest
+		setupNodeHelperMock func(ctrl *gomock.Controller) *mockNodeHelpers.MockNodeHelper
+		setupBlockdevice    func(ctrl *gomock.Controller) *mock_blockdevice.MockBlockDevice
+		setupOsutils        func(ctrl *gomock.Controller) *mock_osutils.MockUtils
+		expErrCode          codes.Code
+		validateResponse    func(*testing.T, *csi.NodeGetVolumeStatsResponse)
+	}{
+		{
+			name: "Raw block volume - iSCSI with valid stats",
+			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath, StagingTargetPath: stagingPath},
+			setupNodeHelperMock: func(ctrl *gomock.Controller) *mockNodeHelpers.MockNodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), volumeID).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: filesystem.Raw,
+						DevicePath:     "/dev/sdb",
+						SANType:        "iSCSI",
+					},
+				}, nil)
+				return mockNodeHelper
+			},
+			setupBlockdevice: func(ctrl *gomock.Controller) *mock_blockdevice.MockBlockDevice {
+				mockBD := mock_blockdevice.NewMockBlockDevice(ctrl)
+				mockBD.EXPECT().GetBlockDeviceStats(gomock.Any(), "/dev/sdb", "iscsi").Return(
+					int64(50*1024*1024*1024),  // 50 GB used
+					int64(50*1024*1024*1024),  // 50 GB available
+					int64(100*1024*1024*1024), // 100 GB capacity
+					nil,
+				)
+				return mockBD
+			},
+			setupOsutils: func(ctrl *gomock.Controller) *mock_osutils.MockUtils {
+				mockOSUtils := mock_osutils.NewMockUtils(ctrl)
+				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), volumePath, gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			expErrCode: codes.OK,
+			validateResponse: func(t *testing.T, resp *csi.NodeGetVolumeStatsResponse) {
+				assert.NotNil(t, resp)
+				assert.Len(t, resp.Usage, 1, "Should have 1 usage entry")
+				assert.Equal(t, csi.VolumeUsage_BYTES, resp.Usage[0].Unit)
+				assert.Equal(t, int64(100*1024*1024*1024), resp.Usage[0].Total, "Total capacity mismatch")
+				assert.Equal(t, int64(50*1024*1024*1024), resp.Usage[0].Used, "Used mismatch")
+				assert.Equal(t, int64(50*1024*1024*1024), resp.Usage[0].Available, "Available should be Total-Used")
+			},
+		},
+		{
+			name: "Raw block volume - NVMe with valid stats",
+			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath, StagingTargetPath: stagingPath},
+			setupNodeHelperMock: func(ctrl *gomock.Controller) *mockNodeHelpers.MockNodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), volumeID).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: filesystem.Raw,
+						DevicePath:     "/dev/nvme0n1",
+						SANType:        "NVMe",
+					},
+				}, nil)
+				return mockNodeHelper
+			},
+			setupBlockdevice: func(ctrl *gomock.Controller) *mock_blockdevice.MockBlockDevice {
+				mockBD := mock_blockdevice.NewMockBlockDevice(ctrl)
+				mockBD.EXPECT().GetBlockDeviceStats(gomock.Any(), "/dev/nvme0n1", "nvme").Return(
+					int64(250*1024*1024*1024), // 250 GB used
+					int64(250*1024*1024*1024), // 250 GB available
+					int64(500*1024*1024*1024), // 500 GB capacity
+					nil,
+				)
+				return mockBD
+			},
+			setupOsutils: func(ctrl *gomock.Controller) *mock_osutils.MockUtils {
+				mockOSUtils := mock_osutils.NewMockUtils(ctrl)
+				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), volumePath, gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			expErrCode: codes.OK,
+			validateResponse: func(t *testing.T, resp *csi.NodeGetVolumeStatsResponse) {
+				assert.NotNil(t, resp)
+				assert.Len(t, resp.Usage, 1, "Should have 1 usage entry")
+				assert.Equal(t, int64(500*1024*1024*1024), resp.Usage[0].Total)
+				assert.Equal(t, int64(250*1024*1024*1024), resp.Usage[0].Used)
+				assert.Equal(t, int64(250*1024*1024*1024), resp.Usage[0].Available)
+			},
+		},
+		{
+			name: "Raw block volume - FC protocol",
+			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath, StagingTargetPath: stagingPath},
+			setupNodeHelperMock: func(ctrl *gomock.Controller) *mockNodeHelpers.MockNodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), volumeID).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: filesystem.Raw,
+						DevicePath:     "/dev/sdc",
+						SANType:        "fcp",
+					},
+				}, nil)
+				return mockNodeHelper
+			},
+			setupBlockdevice: func(ctrl *gomock.Controller) *mock_blockdevice.MockBlockDevice {
+				mockBD := mock_blockdevice.NewMockBlockDevice(ctrl)
+				mockBD.EXPECT().GetBlockDeviceStats(gomock.Any(), "/dev/sdc", "fcp").Return(
+					int64(1024*1024*1024*1024),   // 1 TB used
+					int64(1024*1024*1024*1024),   // 1 TB available
+					int64(2*1024*1024*1024*1024), // 2 TB capacity
+					nil,
+				)
+				return mockBD
+			},
+			setupOsutils: func(ctrl *gomock.Controller) *mock_osutils.MockUtils {
+				mockOSUtils := mock_osutils.NewMockUtils(ctrl)
+				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), volumePath, gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			expErrCode: codes.OK,
+			validateResponse: func(t *testing.T, resp *csi.NodeGetVolumeStatsResponse) {
+				assert.NotNil(t, resp)
+				assert.Len(t, resp.Usage, 1)
+				assert.Equal(t, int64(2*1024*1024*1024*1024), resp.Usage[0].Total)
+				assert.Equal(t, int64(1024*1024*1024*1024), resp.Usage[0].Used)
+			},
+		},
+		{
+			name: "Raw block volume - GetBlockDeviceStats fails, returns empty",
+			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath, StagingTargetPath: stagingPath},
+			setupNodeHelperMock: func(ctrl *gomock.Controller) *mockNodeHelpers.MockNodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), volumeID).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: filesystem.Raw,
+						DevicePath:     "/dev/sdd",
+						SANType:        "iSCSI",
+					},
+				}, nil)
+				return mockNodeHelper
+			},
+			setupBlockdevice: func(ctrl *gomock.Controller) *mock_blockdevice.MockBlockDevice {
+				mockBD := mock_blockdevice.NewMockBlockDevice(ctrl)
+				mockBD.EXPECT().GetBlockDeviceStats(gomock.Any(), "/dev/sdd", "iscsi").Return(
+					int64(0), int64(0), int64(0), errors.New("device not accessible"),
+				)
+				return mockBD
+			},
+			setupOsutils: func(ctrl *gomock.Controller) *mock_osutils.MockUtils {
+				mockOSUtils := mock_osutils.NewMockUtils(ctrl)
+				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), volumePath, gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			expErrCode: codes.OK,
+			validateResponse: func(t *testing.T, resp *csi.NodeGetVolumeStatsResponse) {
+				assert.NotNil(t, resp)
+				assert.Empty(t, resp.Usage, "Should return empty usage when stats fail")
+			},
+		},
+		{
+			name: "Raw block volume - empty device path, fallback to RawDevicePath",
+			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath, StagingTargetPath: stagingPath},
+			setupNodeHelperMock: func(ctrl *gomock.Controller) *mockNodeHelpers.MockNodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), volumeID).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: filesystem.Raw,
+						DevicePath:     "",
+						RawDevicePath:  "/dev/sde",
+						SANType:        "iSCSI",
+					},
+				}, nil)
+				return mockNodeHelper
+			},
+			setupBlockdevice: func(ctrl *gomock.Controller) *mock_blockdevice.MockBlockDevice {
+				mockBD := mock_blockdevice.NewMockBlockDevice(ctrl)
+				mockBD.EXPECT().GetBlockDeviceStats(gomock.Any(), "/dev/sde", "iscsi").Return(
+					int64(10*1024*1024*1024), // 10 GB used
+					int64(10*1024*1024*1024), // 10 GB available
+					int64(20*1024*1024*1024), // 20 GB capacity
+					nil,
+				)
+				return mockBD
+			},
+			setupOsutils: func(ctrl *gomock.Controller) *mock_osutils.MockUtils {
+				mockOSUtils := mock_osutils.NewMockUtils(ctrl)
+				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), volumePath, gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			expErrCode: codes.OK,
+			validateResponse: func(t *testing.T, resp *csi.NodeGetVolumeStatsResponse) {
+				assert.NotNil(t, resp)
+				assert.Len(t, resp.Usage, 1)
+			},
+		},
+		{
+			name: "Raw block volume - no device path at all, returns empty",
+			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath, StagingTargetPath: stagingPath},
+			setupNodeHelperMock: func(ctrl *gomock.Controller) *mockNodeHelpers.MockNodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), volumeID).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: filesystem.Raw,
+						DevicePath:     "",
+						RawDevicePath:  "",
+						SANType:        "iSCSI",
+					},
+				}, nil)
+				return mockNodeHelper
+			},
+			setupOsutils: func(ctrl *gomock.Controller) *mock_osutils.MockUtils {
+				mockOSUtils := mock_osutils.NewMockUtils(ctrl)
+				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), volumePath, gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			expErrCode: codes.OK,
+			validateResponse: func(t *testing.T, resp *csi.NodeGetVolumeStatsResponse) {
+				assert.NotNil(t, resp)
+				assert.Empty(t, resp.Usage, "Should return empty when no device path")
+			},
+		},
+		{
+			name: "Raw block volume - unknown protocol, auto-detect",
+			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath, StagingTargetPath: stagingPath},
+			setupNodeHelperMock: func(ctrl *gomock.Controller) *mockNodeHelpers.MockNodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), volumeID).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: filesystem.Raw,
+						DevicePath:     "/dev/mapper/mpatha",
+						SANType:        "UnknownProtocol",
+					},
+				}, nil)
+				return mockNodeHelper
+			},
+			setupBlockdevice: func(ctrl *gomock.Controller) *mock_blockdevice.MockBlockDevice {
+				mockBD := mock_blockdevice.NewMockBlockDevice(ctrl)
+				// With unknown protocol, empty string passed for auto-detect
+				mockBD.EXPECT().GetBlockDeviceStats(gomock.Any(), "/dev/mapper/mpatha", "").Return(
+					int64(5*1024*1024*1024),  // 5 GB used
+					int64(5*1024*1024*1024),  // 5 GB available
+					int64(10*1024*1024*1024), // 10 GB capacity
+					nil,
+				)
+				return mockBD
+			},
+			setupOsutils: func(ctrl *gomock.Controller) *mock_osutils.MockUtils {
+				mockOSUtils := mock_osutils.NewMockUtils(ctrl)
+				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), volumePath, gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			expErrCode: codes.OK,
+			validateResponse: func(t *testing.T, resp *csi.NodeGetVolumeStatsResponse) {
+				assert.NotNil(t, resp)
+				assert.Len(t, resp.Usage, 1)
+			},
+		},
+		{
+			name: "Raw block volume - fully used device",
+			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath, StagingTargetPath: stagingPath},
+			setupNodeHelperMock: func(ctrl *gomock.Controller) *mockNodeHelpers.MockNodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), volumeID).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: filesystem.Raw,
+						DevicePath:     "/dev/sdf",
+						SANType:        "iSCSI",
+					},
+				}, nil)
+				return mockNodeHelper
+			},
+			setupBlockdevice: func(ctrl *gomock.Controller) *mock_blockdevice.MockBlockDevice {
+				mockBD := mock_blockdevice.NewMockBlockDevice(ctrl)
+				capacity := int64(100 * 1024 * 1024 * 1024)
+				mockBD.EXPECT().GetBlockDeviceStats(gomock.Any(), "/dev/sdf", "iscsi").Return(
+					capacity, int64(0), capacity, nil, // Fully used, no space available
+				)
+				return mockBD
+			},
+			setupOsutils: func(ctrl *gomock.Controller) *mock_osutils.MockUtils {
+				mockOSUtils := mock_osutils.NewMockUtils(ctrl)
+				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), volumePath, gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			expErrCode: codes.OK,
+			validateResponse: func(t *testing.T, resp *csi.NodeGetVolumeStatsResponse) {
+				assert.NotNil(t, resp)
+				assert.Len(t, resp.Usage, 1)
+				assert.Equal(t, int64(100*1024*1024*1024), resp.Usage[0].Total)
+				assert.Equal(t, int64(100*1024*1024*1024), resp.Usage[0].Used)
+				assert.Equal(t, int64(0), resp.Usage[0].Available, "Available should be 0 when fully used")
+			},
+		},
+		{
+			name: "Raw block volume - empty device (not used)",
+			req:  &csi.NodeGetVolumeStatsRequest{VolumeId: volumeID, VolumePath: volumePath, StagingTargetPath: stagingPath},
+			setupNodeHelperMock: func(ctrl *gomock.Controller) *mockNodeHelpers.MockNodeHelper {
+				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(ctrl)
+				mockNodeHelper.EXPECT().ReadTrackingInfo(gomock.Any(), volumeID).Return(&models.VolumeTrackingInfo{
+					VolumePublishInfo: models.VolumePublishInfo{
+						FilesystemType: filesystem.Raw,
+						DevicePath:     "/dev/sdg",
+						SANType:        "iSCSI",
+					},
+				}, nil)
+				return mockNodeHelper
+			},
+			setupBlockdevice: func(ctrl *gomock.Controller) *mock_blockdevice.MockBlockDevice {
+				mockBD := mock_blockdevice.NewMockBlockDevice(ctrl)
+				capacity := int64(100 * 1024 * 1024 * 1024)
+				mockBD.EXPECT().GetBlockDeviceStats(gomock.Any(), "/dev/sdg", "iscsi").Return(
+					int64(0), // No data written
+					capacity, // Full capacity available
+					capacity,
+					nil,
+				)
+				return mockBD
+			},
+			setupOsutils: func(ctrl *gomock.Controller) *mock_osutils.MockUtils {
+				mockOSUtils := mock_osutils.NewMockUtils(ctrl)
+				mockOSUtils.EXPECT().PathExistsWithTimeout(gomock.Any(), volumePath, gomock.Any()).Return(true, nil)
+				return mockOSUtils
+			},
+			expErrCode: codes.OK,
+			validateResponse: func(t *testing.T, resp *csi.NodeGetVolumeStatsResponse) {
+				assert.NotNil(t, resp)
+				assert.Len(t, resp.Usage, 1)
+				assert.Equal(t, int64(0), resp.Usage[0].Used)
+				assert.Equal(t, int64(100*1024*1024*1024), resp.Usage[0].Available)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			ctx := context.Background()
+			plugin := &Plugin{
+				role:             CSINode,
+				limiterSharedMap: make(map[string]limiter.Limiter),
+			}
+
+			plugin.InitializeNodeLimiter(ctx)
+
+			// Setup nodeHelper mock
+			var mockBD *mock_blockdevice.MockBlockDevice
+			if tc.setupBlockdevice != nil {
+				mockBD = tc.setupBlockdevice(mockCtrl)
+			}
+
+			// Create or use existing nodeHelper mock
+			var mockHelper *mockNodeHelpers.MockNodeHelper
+			if tc.setupNodeHelperMock != nil {
+				plugin.nodeHelper = tc.setupNodeHelperMock(mockCtrl)
+				mockHelper, _ = plugin.nodeHelper.(*mockNodeHelpers.MockNodeHelper)
+			} else {
+				mockHelper = mockNodeHelpers.NewMockNodeHelper(mockCtrl)
+				plugin.nodeHelper = mockHelper
+			}
+
+			// Mock VolumeStatsManager methods on nodeHelper
+			if mockHelper != nil {
+				// Mock VerifyVolumePath
+				if tc.setupOsutils != nil {
+					mockOSUtils := tc.setupOsutils(mockCtrl)
+					mockHelper.EXPECT().VerifyVolumePath(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, path string) error {
+						exists, err := mockOSUtils.PathExistsWithTimeout(ctx, path, 5*time.Second)
+						if !exists || err != nil {
+							return fmt.Errorf("could not find volume mount at path: %s", path)
+						}
+						return nil
+					}).AnyTimes()
+				} else {
+					mockHelper.EXPECT().VerifyVolumePath(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				}
+
+				// Mock IsRawBlockVolume
+				mockHelper.EXPECT().IsRawBlockVolume(gomock.Any()).DoAndReturn(func(ti *models.VolumeTrackingInfo) bool {
+					if ti == nil {
+						return false
+					}
+					return ti.VolumePublishInfo.FilesystemType == filesystem.Raw
+				}).AnyTimes()
+
+				// Mock GetBlockDeviceStatsByID only if we have a blockdevice mock
+				if mockBD != nil {
+					mockHelper.EXPECT().GetBlockDeviceStatsByID(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, volID string, ti *models.VolumeTrackingInfo) (*nodehelpers.VolumeStats, error) {
+						devicePath := ti.VolumePublishInfo.DevicePath
+						if devicePath == "" {
+							devicePath = ti.VolumePublishInfo.RawDevicePath
+						}
+						if devicePath == "" {
+							return nil, fmt.Errorf("unable to determine device path for raw block volume: %s", volID)
+						}
+						protocol := strings.ToLower(ti.VolumePublishInfo.SANType)
+						if protocol != "iscsi" && protocol != "nvme" && protocol != "fcp" {
+							protocol = ""
+						}
+						used, available, capacity, err := mockBD.GetBlockDeviceStats(ctx, devicePath, protocol)
+						if err != nil {
+							return nil, fmt.Errorf("failed to get block device volume statistics for %s: %w", volID, err)
+						}
+						var usedPercentage float32
+						if (used + available) > 0 {
+							usedPercentage = float32((float64(used) / float64(used+available)) * 100.0)
+						}
+						return &nodehelpers.VolumeStats{
+							Total:          capacity,
+							Used:           used,
+							Available:      available,
+							UsedPercentage: usedPercentage,
+						}, nil
+					}).AnyTimes()
+				} else {
+					// If no blockdevice mock, just return an error for GetBlockDeviceStatsByID
+					mockHelper.EXPECT().GetBlockDeviceStatsByID(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, volID string, ti *models.VolumeTrackingInfo) (*nodehelpers.VolumeStats, error) {
+						devicePath := ti.VolumePublishInfo.DevicePath
+						if devicePath == "" {
+							devicePath = ti.VolumePublishInfo.RawDevicePath
+						}
+						if devicePath == "" {
+							return nil, fmt.Errorf("unable to determine device path for raw block volume: %s", volID)
+						}
+						return nil, fmt.Errorf("no blockdevice mock configured")
+					}).AnyTimes()
+				}
+			}
+
+			resp, err := plugin.NodeGetVolumeStats(ctx, tc.req)
+
+			if tc.expErrCode != codes.OK {
+				assert.Error(t, err)
+				if err != nil {
+					st, _ := status.FromError(err)
+					assert.Equal(t, tc.expErrCode, st.Code(), "Expected error code %v, got %v", tc.expErrCode, st.Code())
+				}
+				assert.Nil(t, resp)
+				return
+			}
+
+			assert.NoError(t, err)
+			if tc.validateResponse != nil {
+				tc.validateResponse(t, resp)
+			}
 		})
 	}
 }

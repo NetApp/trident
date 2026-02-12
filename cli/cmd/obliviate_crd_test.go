@@ -96,6 +96,8 @@ func getAllTridentCRDs() []string {
 		"tridentactionsnapshotrestores.trident.netapp.io",
 		"tridentconfigurators.trident.netapp.io",
 		"tridentorchestrators.trident.netapp.io",
+		"tridentautogrowpolicies.trident.netapp.io",
+		"tridentautogrowrequestinternals.trident.netapp.io",
 		"tridentnoderemediations.trident.netapp.io",
 		"tridentnoderemediationtemplates.trident.netapp.io",
 	}

@@ -14,6 +14,10 @@ type Interface interface {
 	TridentActionMirrorUpdates() TridentActionMirrorUpdateInformer
 	// TridentActionSnapshotRestores returns a TridentActionSnapshotRestoreInformer.
 	TridentActionSnapshotRestores() TridentActionSnapshotRestoreInformer
+	// TridentAutogrowPolicies returns a TridentAutogrowPolicyInformer.
+	TridentAutogrowPolicies() TridentAutogrowPolicyInformer
+	// TridentAutogrowRequestInternals returns a TridentAutogrowRequestInternalInformer.
+	TridentAutogrowRequestInternals() TridentAutogrowRequestInternalInformer
 	// TridentBackends returns a TridentBackendInformer.
 	TridentBackends() TridentBackendInformer
 	// TridentBackendConfigs returns a TridentBackendConfigInformer.
@@ -65,6 +69,16 @@ func (v *version) TridentActionMirrorUpdates() TridentActionMirrorUpdateInformer
 // TridentActionSnapshotRestores returns a TridentActionSnapshotRestoreInformer.
 func (v *version) TridentActionSnapshotRestores() TridentActionSnapshotRestoreInformer {
 	return &tridentActionSnapshotRestoreInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// TridentAutogrowPolicies returns a TridentAutogrowPolicyInformer.
+func (v *version) TridentAutogrowPolicies() TridentAutogrowPolicyInformer {
+	return &tridentAutogrowPolicyInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+}
+
+// TridentAutogrowRequestInternals returns a TridentAutogrowRequestInternalInformer.
+func (v *version) TridentAutogrowRequestInternals() TridentAutogrowRequestInternalInformer {
+	return &tridentAutogrowRequestInternalInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // TridentBackends returns a TridentBackendInformer.

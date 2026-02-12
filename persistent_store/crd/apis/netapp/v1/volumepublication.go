@@ -5,6 +5,7 @@ package v1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/netapp/trident/config"
 	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/utils/models"
 )
@@ -42,17 +43,50 @@ func (in *TridentVolumePublication) Apply(persistent *models.VolumePublication) 
 	in.VolumeID = persistent.VolumeName
 	in.ReadOnly = persistent.ReadOnly
 	in.AccessMode = persistent.AccessMode
+	in.AutogrowPolicy = persistent.AutogrowPolicy
+	in.StorageClass = persistent.StorageClass
+	in.BackendUUID = persistent.BackendUUID
+	in.Pool = persistent.Pool
+	in.AutogrowIneligible = persistent.AutogrowIneligible
+
+	// Initialize labels if needed
+	if in.ObjectMeta.Labels == nil {
+		in.ObjectMeta.Labels = make(map[string]string)
+	}
+
+	// Copy labels from internal model to CRD metadata
+	if persistent.Labels != nil {
+		for k, v := range persistent.Labels {
+			in.ObjectMeta.Labels[k] = v
+		}
+	}
+
+	// Always ensure the node name label is set
+	in.ObjectMeta.Labels[config.TridentNodeNameLabel] = persistent.NodeName
 
 	return nil
 }
 
 func (in *TridentVolumePublication) Persistent() (*models.VolumePublication, error) {
 	persistent := &models.VolumePublication{
-		Name:       in.Name,
-		NodeName:   in.NodeID,
-		VolumeName: in.VolumeID,
-		ReadOnly:   in.ReadOnly,
-		AccessMode: in.AccessMode,
+		Name:               in.Name,
+		NodeName:           in.NodeID,
+		VolumeName:         in.VolumeID,
+		ReadOnly:           in.ReadOnly,
+		AccessMode:         in.AccessMode,
+		AutogrowPolicy:     in.AutogrowPolicy,
+		StorageClass:       in.StorageClass,
+		BackendUUID:        in.BackendUUID,
+		Pool:               in.Pool,
+		AutogrowIneligible: in.AutogrowIneligible,
+	}
+
+	// Copy labels from CRD metadata to internal model
+	if in.ObjectMeta.Labels != nil {
+		persistent.Labels = make(map[string]string, len(in.ObjectMeta.Labels))
+		for k, v := range in.ObjectMeta.Labels {
+			persistent.Labels[k] = v
+		}
 	}
 
 	return persistent, nil

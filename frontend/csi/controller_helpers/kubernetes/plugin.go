@@ -73,6 +73,8 @@ type K8SControllerHelperPlugin interface {
 	frontend.Plugin
 	ImportVolume(ctx context.Context, request *storage.ImportVolumeRequest) (*storage.VolumeExternal, error)
 	GetNodePublicationState(ctx context.Context, nodeName string) (*models.NodePublicationStateFlags, error)
+	GetPVC(ctx context.Context, namespace, name string) (*v1.PersistentVolumeClaim, error)
+	GetPVCForPV(ctx context.Context, pvName string) (*v1.PersistentVolumeClaim, error)
 }
 
 type helper struct {
@@ -648,24 +650,31 @@ func (h *helper) addPVC(obj interface{}) {
 
 	switch pvc := obj.(type) {
 	case *v1.PersistentVolumeClaim:
-		h.processPVC(ctx, pvc, eventAdd)
+		h.processPVC(ctx, nil, pvc, eventAdd)
 	default:
 		Logc(ctx).Errorf("K8S helper expected PVC; got %v", obj)
 	}
 }
 
 // updatePVC is the update handler for the PVC watcher.
-func (h *helper) updatePVC(_, newObj interface{}) {
+func (h *helper) updatePVC(oldObj, newObj interface{}) {
 	ctx := GenerateRequestContext(nil, "", ContextSourceK8S, WorkflowVolumeUpdate, LogLayerCSIFrontend)
 	Logc(ctx).Trace(">>>> updatePVC")
 	defer Logc(ctx).Trace("<<<< updatePVC")
 
-	switch pvc := newObj.(type) {
-	case *v1.PersistentVolumeClaim:
-		h.processPVC(ctx, pvc, eventUpdate)
-	default:
-		Logc(ctx).Errorf("K8S helper expected PVC; got %v", newObj)
+	oldPVC, ok := oldObj.(*v1.PersistentVolumeClaim)
+	if !ok {
+		Logc(ctx).Errorf("K8S helper expected PVC; got %v", oldObj)
+		return
 	}
+
+	newPVC, ok := newObj.(*v1.PersistentVolumeClaim)
+	if !ok {
+		Logc(ctx).Errorf("K8S helper expected PVC; got %v", newObj)
+		return
+	}
+
+	h.processPVC(ctx, oldPVC, newPVC, eventUpdate)
 }
 
 // deletePVC is the delete handler for the PVC watcher.
@@ -676,40 +685,86 @@ func (h *helper) deletePVC(obj interface{}) {
 
 	switch pvc := obj.(type) {
 	case *v1.PersistentVolumeClaim:
-		h.processPVC(ctx, pvc, eventDelete)
+		h.processPVC(ctx, nil, pvc, eventDelete)
 	default:
 		Logc(ctx).Errorf("K8S helper expected PVC; got %v", obj)
 	}
 }
 
 // processPVC logs the add/update/delete PVC events.
-func (h *helper) processPVC(ctx context.Context, pvc *v1.PersistentVolumeClaim, eventType string) {
+func (h *helper) processPVC(ctx context.Context, oldPVC, newPVC *v1.PersistentVolumeClaim, eventType string) {
 	Logc(ctx).Trace(">>>> processPVC")
 	defer Logc(ctx).Trace("<<<< processPVC")
+
 	// Validate the PVC
-	size, ok := pvc.Spec.Resources.Requests[v1.ResourceStorage]
+	size, ok := newPVC.Spec.Resources.Requests[v1.ResourceStorage]
 	if !ok {
-		Logc(ctx).WithField("name", pvc.Name).Debug("Rejecting PVC, no size specified.")
+		Logc(ctx).WithField("name", newPVC.Name).Debug("Rejecting PVC, no size specified.")
 		return
 	}
 
 	logFields := LogFields{
-		"name":         pvc.Name,
-		"phase":        pvc.Status.Phase,
+		"name":         newPVC.Name,
+		"phase":        newPVC.Status.Phase,
 		"size":         size.String(),
-		"uid":          pvc.UID,
-		"storageClass": getStorageClassForPVC(pvc),
-		"accessModes":  pvc.Spec.AccessModes,
-		"pv":           pvc.Spec.VolumeName,
+		"uid":          newPVC.UID,
+		"storageClass": getStorageClassForPVC(newPVC),
+		"accessModes":  newPVC.Spec.AccessModes,
+		"pv":           newPVC.Spec.VolumeName,
 	}
 
 	switch eventType {
 	case eventAdd:
+		// initial Autogrow policy are handled via the gRPC CreateVolume() flow.
+		// Unlike eventUpdate, no Autogrow policy annotation checking is needed here.
 		Logc(ctx).WithFields(logFields).Trace("PVC added to cache.")
 	case eventUpdate:
+		// Check if Autogrow policy annotation changed (only if oldPVC is available)
+		if oldPVC != nil {
+			oldPVCAGPolicyAnnotation := getCaseFoldedAnnotation(oldPVC.Annotations, AnnAutogrowPolicy)
+			newPVCAGPolicyAnnotation := getCaseFoldedAnnotation(newPVC.Annotations, AnnAutogrowPolicy)
+
+			if oldPVCAGPolicyAnnotation != newPVCAGPolicyAnnotation && oldPVC.Spec.VolumeName != "" {
+				h.handlePVCAutogrowPolicyAnnotationChange(ctx, newPVC, oldPVC.Spec.VolumeName, oldPVCAGPolicyAnnotation, newPVCAGPolicyAnnotation)
+			}
+		}
 		Logc(ctx).WithFields(logFields).Trace("PVC updated in cache.")
 	case eventDelete:
 		Logc(ctx).WithFields(logFields).Trace("PVC deleted from cache.")
+	}
+}
+
+// handlePVCAutogrowPolicyAnnotationChange handles changes to the Autogrow policy annotation on a PVC.
+// It updates the volume's effective Autogrow policy in the orchestrator and records appropriate events.
+func (h *helper) handlePVCAutogrowPolicyAnnotationChange(
+	ctx context.Context,
+	pvc *v1.PersistentVolumeClaim,
+	volumeName string,
+	oldPVCAGPolicyAnnotation string,
+	newPVCAGPolicyAnnotation string,
+) {
+	Logc(ctx).WithFields(LogFields{
+		"pvc":        pvc.Name,
+		"namespace":  pvc.Namespace,
+		"volumeName": volumeName,
+		"oldPolicy":  oldPVCAGPolicyAnnotation,
+		"newPolicy":  newPVCAGPolicyAnnotation,
+	}).Info("PVC Autogrow policy annotation changed.")
+
+	if err := h.orchestrator.UpdateVolumeAutogrowPolicy(ctx, volumeName, newPVCAGPolicyAnnotation); err != nil {
+		if errors.IsAutogrowPolicyNotFoundError(err) {
+			h.RecordVolumeEvent(ctx, volumeName, controllerhelpers.EventTypeWarning,
+				"AutogrowPolicyNotFound",
+				fmt.Sprintf("Referenced Autogrow policy '%s' not found", newPVCAGPolicyAnnotation))
+			Logc(ctx).WithError(err).Warn("Autogrow policy not found")
+		} else if errors.IsAutogrowPolicyNotUsableError(err) {
+			h.RecordVolumeEvent(ctx, volumeName, controllerhelpers.EventTypeWarning,
+				"AutogrowPolicyNotUsable",
+				fmt.Sprintf("Referenced Autogrow policy is not in Success state: %s", err.Error()))
+			Logc(ctx).WithError(err).Warn("Autogrow policy not usable")
+		} else {
+			Logc(ctx).WithError(err).Error("Failed to update volume Autogrow policy.")
+		}
 	}
 }
 
@@ -735,6 +790,38 @@ func (h *helper) getCachedPVCByName(ctx context.Context, name, namespace string)
 		Logc(ctx).WithFields(logFields).Debug("Found cached PVC by name.")
 		return pvc, nil
 	}
+}
+
+// GetPVC returns a PVC by namespace and name, using the informer cache first and falling back to the API
+// when the PVC is not in cache (e.g. cache not synced yet). This allows shared use of the cache without
+// blocking on cache sync.
+func (h *helper) GetPVC(ctx context.Context, namespace, name string) (*v1.PersistentVolumeClaim, error) {
+	pvc, err := h.getCachedPVCByName(ctx, name, namespace)
+	if err == nil {
+		return pvc, nil
+	}
+	return h.kubeClient.CoreV1().PersistentVolumeClaims(namespace).Get(ctx, name, metav1.GetOptions{})
+}
+
+// GetPVCForPV returns the PVC that is currently bound to the given PV (by PV name), using the PV's
+// ClaimRef. It uses the PV and PVC informer caches first with API fallback. This supports scenarios
+// (e.g. KubeVirt) where a PV may be reassigned from one PVC to another; the ClaimRef reflects the
+// current binding. Returns an error if the PV is not found, has no ClaimRef, or the referenced PVC
+// cannot be found.
+func (h *helper) GetPVCForPV(ctx context.Context, pvName string) (*v1.PersistentVolumeClaim, error) {
+	pv, err := h.getCachedPVByName(ctx, pvName)
+	if err != nil {
+		// Fall back to API in case PV is not in cache yet
+		pv, err = h.kubeClient.CoreV1().PersistentVolumes().Get(ctx, pvName, metav1.GetOptions{})
+		if err != nil {
+			return nil, fmt.Errorf("could not get PV %s: %w", pvName, err)
+		}
+	}
+	if pv.Spec.ClaimRef == nil || pv.Spec.ClaimRef.Namespace == "" || pv.Spec.ClaimRef.Name == "" {
+		return nil, fmt.Errorf("PV %s has no bound PVC (ClaimRef empty)", pvName)
+	}
+	ns, name := pv.Spec.ClaimRef.Namespace, pv.Spec.ClaimRef.Name
+	return h.GetPVC(ctx, ns, name)
 }
 
 // waitForCachedPVCByUID returns a PVC (identified by namespace/name) from the client's cache, waiting in a
@@ -1091,23 +1178,42 @@ func (h *helper) processStorageClass(ctx context.Context, sc *k8sstoragev1.Stora
 			Logc(ctx).WithFields(logFields).WithField("additionalStoragePools", v).Trace(
 				"Using additionalStoragePools from annotation to override parameter")
 		}
+		if k == AnnAutogrowPolicy {
+			scConfig.AutogrowPolicy = v
+			Logc(ctx).WithFields(logFields).WithField("autogrowPolicy", v).
+				Debug("Using autogrowPolicy from annotation to override parameter")
+		}
 	}
 
+	var err error
 	if update {
 		// Update the storage class
-		if _, err := h.orchestrator.UpdateStorageClass(ctx, scConfig); err != nil {
-			Logc(ctx).WithFields(logFields).WithError(err).Warning("K8S helper could not update a storage class.")
-			return
-		}
-		Logc(ctx).WithFields(logFields).Trace("K8S helper updated a storage class.")
+		_, err = h.orchestrator.UpdateStorageClass(ctx, scConfig)
 	} else {
 		// Add the storage class
-		if _, err := h.orchestrator.AddStorageClass(ctx, scConfig); err != nil {
-			Logc(ctx).WithFields(logFields).WithError(err).Warning("K8S helper could not add a storage class.")
+		_, err = h.orchestrator.AddStorageClass(ctx, scConfig)
+	}
+
+	// Handle errors (same for both add and update)
+	if err != nil {
+		if errors.IsAutogrowPolicyNotFoundError(err) {
+			// Send warning event to StorageClass
+			h.RecordStorageClassEvent(ctx, sc.Name, controllerhelpers.EventTypeWarning,
+				"AutogrowPolicyNotFound",
+				fmt.Sprintf("Referenced autogrow policy '%s' not found", scConfig.AutogrowPolicy))
+			Logc(ctx).WithError(err).Warn("StorageClass references non-existent Autogrow policy.")
+		} else if errors.IsAutogrowPolicyNotUsableError(err) {
+			h.RecordStorageClassEvent(ctx, sc.Name, controllerhelpers.EventTypeWarning,
+				"AutogrowPolicyNotUsable",
+				fmt.Sprintf("Referenced Autogrow policy is not in Success state: %s", err.Error()))
+			Logc(ctx).WithError(err).Warn("StorageClass references policy in non-Success state.")
+		} else {
+			Logc(ctx).WithFields(logFields).WithError(err).Warning("K8S helper could not upsert a storage class.")
 			return
 		}
-		Logc(ctx).WithFields(logFields).Trace("K8S helper added a storage class.")
 	}
+
+	Logc(ctx).WithFields(logFields).Trace("K8S helper upserted a storage class.")
 }
 
 // processDeletedStorageClass informs the orchestrator of a deleted storage class.

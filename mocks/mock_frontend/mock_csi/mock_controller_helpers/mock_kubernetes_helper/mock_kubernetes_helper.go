@@ -16,6 +16,7 @@ import (
 	storage "github.com/netapp/trident/storage"
 	models "github.com/netapp/trident/utils/models"
 	gomock "go.uber.org/mock/gomock"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // MockK8SControllerHelperPlugin is a mock of K8SControllerHelperPlugin interface.
@@ -126,4 +127,34 @@ func (m *MockK8SControllerHelperPlugin) Version() string {
 func (mr *MockK8SControllerHelperPluginMockRecorder) Version() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Version", reflect.TypeOf((*MockK8SControllerHelperPlugin)(nil).Version))
+}
+
+// GetPVC mocks base method.
+func (m *MockK8SControllerHelperPlugin) GetPVC(ctx context.Context, namespace, name string) (*corev1.PersistentVolumeClaim, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPVC", ctx, namespace, name)
+	ret0, _ := ret[0].(*corev1.PersistentVolumeClaim)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPVC indicates an expected call of GetPVC.
+func (mr *MockK8SControllerHelperPluginMockRecorder) GetPVC(ctx, namespace, name any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPVC", reflect.TypeOf((*MockK8SControllerHelperPlugin)(nil).GetPVC), ctx, namespace, name)
+}
+
+// GetPVCForPV mocks base method.
+func (m *MockK8SControllerHelperPlugin) GetPVCForPV(ctx context.Context, pvName string) (*corev1.PersistentVolumeClaim, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPVCForPV", ctx, pvName)
+	ret0, _ := ret[0].(*corev1.PersistentVolumeClaim)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPVCForPV indicates an expected call of GetPVCForPV.
+func (mr *MockK8SControllerHelperPluginMockRecorder) GetPVCForPV(ctx, pvName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPVCForPV", reflect.TypeOf((*MockK8SControllerHelperPlugin)(nil).GetPVCForPV), ctx, pvName)
 }
