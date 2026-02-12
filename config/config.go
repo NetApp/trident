@@ -144,31 +144,6 @@ type PersistentStateVersion struct {
 	PublicationsSynced     bool   `json:"publications_synced,omitempty"`
 }
 
-type ContainersResourceRequirements map[string]*ContainerResource
-
-// Resources mirrors trident/operator/crd/apis/netapp/v1/Resources exactly.
-// The duplication exists because Trident currently has no admission webhook to validate CRD fields.
-// TODO(pshashan): Remove or refactor this if an admission webhook is ever implemented.
-type Resources struct {
-	Controller ContainersResourceRequirements `json:"controller,omitempty"`
-	Node       *NodeResources                 `json:"node,omitempty"`
-}
-
-type NodeResources struct {
-	Linux   ContainersResourceRequirements `json:"linux,omitempty"`
-	Windows ContainersResourceRequirements `json:"windows,omitempty"`
-}
-
-type ContainerResource struct {
-	Requests *ResourceRequirements `json:"requests,omitempty"`
-	Limits   *ResourceRequirements `json:"limits,omitempty"`
-}
-
-type ResourceRequirements struct {
-	CPU    *resource.Quantity `json:"cpu,omitempty"`
-	Memory *resource.Quantity `json:"memory,omitempty"`
-}
-
 const (
 	/* Misc. orchestrator constants */
 	OrchestratorName                 = "trident"
