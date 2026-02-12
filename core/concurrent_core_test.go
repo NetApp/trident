@@ -659,7 +659,6 @@ func TestBootstrapConcurrentCore(t *testing.T) {
 			db.Initialize()
 
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
 			o := getConcurrentOrchestrator()
@@ -842,7 +841,6 @@ func TestBootstrapBackendsConcurrentCore(t *testing.T) {
 			db.Initialize()
 
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
 			o := getConcurrentOrchestrator()
@@ -9384,6 +9382,57 @@ func TestCreateSnapshotConcurrentCore(t *testing.T) {
 			persistenceCleanup(t, o)
 		})
 	}
+}
+
+func TestCreateSnapshotConcurrentCore_ConfigComplete(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+
+	// Re-initialize the concurrent cache for each test
+	db.Initialize()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	vol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			InternalName:        "vol1",
+			Name:                "vol1",
+			LUKSPassphraseNames: []string{"pass1", "pass2"},
+		},
+		BackendUUID: "backend-uuid1",
+	}
+
+	mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+	mockBackend.EXPECT().CanSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockBackend.EXPECT().CreateSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(
+		&storage.Snapshot{
+			Config: &storage.SnapshotConfig{Name: "snapshot1", VolumeName: "vol1"},
+		}, nil).Times(1)
+
+	addBackendsToCache(t, mockBackend)
+	addVolumesToCache(t, vol)
+
+	mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+	mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, txn *storage.VolumeTransaction) error {
+		assert.NotNil(t, txn.SnapshotConfig)
+		assert.Equal(t, "snapshot1", txn.SnapshotConfig.Name)
+		assert.Equal(t, "vol1", txn.SnapshotConfig.VolumeInternalName)
+		assert.ElementsMatch(t, []string{"pass2", "pass1"}, txn.SnapshotConfig.LUKSPassphraseNames)
+		return nil
+	}).Times(1)
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockStoreClient.EXPECT().AddSnapshot(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+	snapshotConfig := &storage.SnapshotConfig{
+		Name:       "snapshot1",
+		VolumeName: "vol1",
+	}
+
+	_, err := o.CreateSnapshot(testCtx, snapshotConfig)
+	assert.NoError(t, err)
+
+	persistenceCleanup(t, o)
 }
 
 func TestRestoreSnapshotConcurrentCore(t *testing.T) {

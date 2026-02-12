@@ -31,7 +31,6 @@ func TestUpsertBackend_Metrics(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			// Reset metrics before each test
 			metrics.BackendsGauge.Reset()
@@ -132,7 +131,6 @@ func TestDeleteBackend_Metrics(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			// Reset metrics before each test
 			metrics.BackendsGauge.Reset()
@@ -294,7 +292,6 @@ func TestReadBackend(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			// Set up initial state
 			backends.lock()
@@ -354,7 +351,6 @@ func TestInconsistentReadBackend(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			// Set up initial state
 			backends.lock()
@@ -417,7 +413,6 @@ func TestReadBackendByName(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			// Set up initial state
 			backends.lock()
@@ -485,7 +480,6 @@ func TestInconsistentReadBackendByName(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			// Set up initial state
 			backends.lock()

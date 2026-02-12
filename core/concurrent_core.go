@@ -820,7 +820,8 @@ func (o *ConcurrentTridentOrchestrator) cleanupDeletingBackends(ctx context.Cont
 	}
 }
 
-// Stop stops the orchestrator core.
+// Stop stops the orchestrator core; this is expected to be called during shutdown,
+// and new cache locks will block forever.
 func (o *ConcurrentTridentOrchestrator) Stop() {
 	// Stop the node access and backends' state reconciliation background tasks
 	if o.stopNodeAccessLoop != nil {
@@ -829,6 +830,13 @@ func (o *ConcurrentTridentOrchestrator) Stop() {
 	if o.stopReconcileBackendLoop != nil {
 		o.stopReconcileBackendLoop <- true
 	}
+
+	_, _, err := db.Lock(context.Background(), db.Query(db.LockCache()))
+	if err != nil {
+		Log().WithError(err).Error("Failed to lock cache during orchestrator stop, stopping immediately.")
+		return
+	}
+	Log().Info("Stopped concurrent Trident orchestrator.")
 }
 
 // validateAndCreateBackendFromConfig validates config and creates backend based on Config
@@ -4500,6 +4508,11 @@ func (o *ConcurrentTridentOrchestrator) CreateSnapshot(
 		return nil, errors.NotFoundError("source volume %s not found", snapshotConfig.VolumeName)
 	}
 
+	// Complete the snapshot config
+	snapshotConfig.InternalName = snapshotConfig.Name
+	snapshotConfig.VolumeInternalName = volume.Config.InternalName
+	snapshotConfig.LUKSPassphraseNames = volume.Config.LUKSPassphraseNames
+
 	// Add transaction in case the operation must be rolled back later
 	txn := &storage.VolumeTransaction{
 		Config:         volume.Config,
@@ -4557,11 +4570,6 @@ func (o *ConcurrentTridentOrchestrator) CreateSnapshot(
 		return nil, errors.NotFoundError("backend %s for the source volume not found: %s",
 			volume.BackendUUID, snapshotConfig.VolumeName)
 	}
-
-	// Complete the snapshot config
-	snapshotConfig.InternalName = snapshotConfig.Name
-	snapshotConfig.VolumeInternalName = volume.Config.InternalName
-	snapshotConfig.LUKSPassphraseNames = volume.Config.LUKSPassphraseNames
 
 	// Ensure a snapshot is even possible before creating the transaction
 	if err = backend.CanSnapshot(ctx, snapshotConfig, volume.Config); err != nil {

@@ -50,7 +50,6 @@ func TestUpsertSnapshot_Metrics(t *testing.T) {
 			metrics.SnapshotAllocatedBytesGauge.Reset()
 
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			// Create mock backend and volume
 			mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
@@ -203,7 +202,6 @@ func TestDeleteSnapshot_Metrics(t *testing.T) {
 			metrics.SnapshotAllocatedBytesGauge.Reset()
 
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			// Create mock backend
 			mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{

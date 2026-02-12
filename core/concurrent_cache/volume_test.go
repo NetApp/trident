@@ -83,7 +83,6 @@ func TestUpsertVolumeByInternalName_Metrics(t *testing.T) {
 			metrics.VolumeAllocatedBytesGauge.Reset()
 
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			// Create mock backend
 			mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
@@ -285,7 +284,6 @@ func TestUpsertVolume_Metrics(t *testing.T) {
 			metrics.VolumeAllocatedBytesGauge.Reset()
 
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			// Create mock backend
 			mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
@@ -467,7 +465,6 @@ func TestUpsertVolumeByBackendName_Metrics(t *testing.T) {
 			metrics.VolumeAllocatedBytesGauge.Reset()
 
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			// Create mock backend
 			mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
@@ -650,7 +647,6 @@ func TestDeleteVolume_Metrics(t *testing.T) {
 			metrics.VolumeAllocatedBytesGauge.Reset()
 
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			// Create mock backend
 			mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{

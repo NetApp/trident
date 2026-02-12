@@ -164,7 +164,6 @@ func TestFillInIDs(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			initCaches()
-			defer cleanCaches()
 			m, err := dedupe(tt.query)
 			assert.NoError(t, err)
 			query, roots := buildTrees(m, tt.query)
@@ -214,7 +213,6 @@ func TestMergeQueries(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			initCaches()
 			nodes.data["node2"] = &models.Node{Name: "node2"}
-			defer cleanCaches()
 
 			queries := make([][]Subquery, 0, len(tt.queries))
 			for _, q := range tt.queries {
@@ -229,7 +227,7 @@ func TestMergeQueries(t *testing.T) {
 			}
 
 			merged := mergeQueries(queries)
-			assert.Len(t, merged, 13)
+			assert.Len(t, merged, 14)
 		})
 	}
 }
@@ -238,7 +236,6 @@ func TestLock(t *testing.T) {
 	// start two goroutines that try to update the same resources using multiple queries
 	// passes if there is no deadlock
 	initCaches()
-	defer cleanCaches()
 	makeQueries := func() [][]Subquery {
 		return [][]Subquery{
 			{
@@ -295,14 +292,11 @@ func TestLock(t *testing.T) {
 }
 
 func initCaches() {
-	nodes.data = make(map[string]SmartCopier)
-	backends.data = make(map[string]SmartCopier)
-	volumes.data = make(map[string]SmartCopier)
-	volumePublications.data = make(map[string]SmartCopier)
-	snapshots.data = make(map[string]SmartCopier)
-	autogrowPolicies.data = make(map[string]SmartCopier)
+	Initialize()
 
-	nodes.data["node1"] = &models.Node{}
+	nodes.data["node1"] = &models.Node{
+		Name: "node1",
+	}
 	backends.data["backend1"] = storage.NewTestStorageBackend()
 	volumes.data["volume1"] = &storage.Volume{
 		BackendUUID: "backend1",
@@ -321,15 +315,6 @@ func initCaches() {
 		},
 	}
 	autogrowPolicies.data["policy1"] = storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
-}
-
-func cleanCaches() {
-	nodes.data = make(map[string]SmartCopier)
-	backends.data = make(map[string]SmartCopier)
-	volumes.data = make(map[string]SmartCopier)
-	volumePublications.data = make(map[string]SmartCopier)
-	snapshots.data = make(map[string]SmartCopier)
-	autogrowPolicies.data = make(map[string]SmartCopier)
 }
 
 func createQueryGenerators(numIds int) [][]queryGenerator {

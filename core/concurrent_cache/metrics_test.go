@@ -91,7 +91,6 @@ func TestAddAndDeleteBackendMetrics(t *testing.T) {
 			metrics.TridentBackendInfo.Reset()
 
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			// Create mock backend
 			mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
@@ -150,7 +149,6 @@ func TestAddAndDeleteBackendMetrics_MultipleBackends(t *testing.T) {
 	// Add all backends to metrics
 	for i, b := range backends {
 		mockCtrl := gomock.NewController(t)
-		defer mockCtrl.Finish()
 
 		mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
 			"driverName": b.driverName,
@@ -243,7 +241,6 @@ func TestAddAndDeleteVolumeMetrics(t *testing.T) {
 			metrics.VolumeAllocatedBytesGauge.Reset()
 
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			// Create mock backend
 			mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
@@ -348,7 +345,6 @@ func TestAddAndDeleteVolumeMetrics_InvalidSize(t *testing.T) {
 			metrics.VolumeAllocatedBytesGauge.Reset()
 
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			// Create mock backend
 			mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
@@ -457,7 +453,6 @@ func TestAddAndDeleteSnapshotMetrics(t *testing.T) {
 			metrics.SnapshotAllocatedBytesGauge.Reset()
 
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 
 			// Create mock backend
 			mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{

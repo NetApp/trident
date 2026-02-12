@@ -28,6 +28,10 @@ func init() {
 
 // Initialize Need this as public for unit tests
 func Initialize() {
+	rootCache = cache{
+		data:          make(map[string]SmartCopier),
+		resourceLocks: locks.NewGCNamedMutex(),
+	}
 	nodes = cache{
 		data:          make(map[string]SmartCopier),
 		resourceLocks: locks.NewGCNamedMutex(),
@@ -49,7 +53,6 @@ func Initialize() {
 	volumes = cache{
 		data:          make(map[string]SmartCopier),
 		resourceLocks: locks.NewGCNamedMutex(),
-
 		// volume internal name
 		key: &uniqueKey{
 			data:     make(map[string]string),
@@ -84,6 +87,8 @@ func Initialize() {
 	for r := range schema {
 		resourceRanks[r] = rankForResource(r)
 	}
+
+	rootCache.data["."] = SmartCopier(nil)
 }
 
 // SmartCopier is an interface for objects that can be copied for the cache. If the object implements interior
@@ -143,6 +148,7 @@ func (c *cache) runlock() {
 }
 
 var (
+	rootCache          cache
 	nodes              cache
 	storageClasses     cache
 	backends           cache
@@ -153,6 +159,7 @@ var (
 	autogrowPolicies   cache
 
 	caches = map[resource]*cache{
+		root:              &rootCache,
 		node:              &nodes,
 		storageClass:      &storageClasses,
 		backend:           &backends,
@@ -244,6 +251,7 @@ func assembleQueries(queries [][]Subquery, roots [][]int, cachesPresent map[reso
 		}
 		queries[i], roots[i] = buildTrees(ri, q)
 	}
+
 	return nil
 }
 
@@ -363,7 +371,7 @@ func dedupe(query []Subquery) (map[resource]int, error) {
 	return resourceIndices, nil
 }
 
-// buildTrees takes subqueries and finds the roots, and fills in any missing parents
+// buildTrees takes subqueries and finds the roots, and fills in any missing dependencies
 func buildTrees(resourceIndices map[resource]int, query []Subquery) ([]Subquery, []int) {
 	roots := make([]int, 0)
 	l := len(query)
@@ -377,11 +385,11 @@ func buildTrees(resourceIndices map[resource]int, query []Subquery) ([]Subquery,
 			continue
 		}
 
-		// if the current subquery has ownable resources in the query it is not a root
+		// if the current subquery has dependent resources in the query it is not a root
 		root := true
-		ownables := inverseSchema[query[i].res]
-		for j := 0; j < len(ownables) && root; j++ {
-			if _, ok := resourceIndices[ownables[j]]; ok {
+		dependents := inverseSchema[query[i].res]
+		for j := 0; j < len(dependents) && root; j++ {
+			if _, ok := resourceIndices[dependents[j]]; ok {
 				root = false
 			}
 		}
@@ -479,11 +487,13 @@ func fillInIDs(root int, query []Subquery) error {
 }
 
 func mergeQueries(queries [][]Subquery) []Subquery {
-	length := 0
+	length := 1
 	for _, q := range queries {
 		length += len(q)
 	}
 	merged := make([]Subquery, 0, length)
+	// always add implied read root, if write root is present it will take precedence
+	merged = append(merged, Subquery{res: root, op: read, id: "."})
 	for i, q := range queries {
 		for j := range q {
 			q[j].result = i
@@ -505,9 +515,9 @@ func mergeQueries(queries [][]Subquery) []Subquery {
 		}
 
 		switch {
-		case resourceRanks[i.res] > resourceRanks[j.res]:
-			return -1
 		case resourceRanks[i.res] < resourceRanks[j.res]:
+			return -1
+		case resourceRanks[i.res] > resourceRanks[j.res]:
 			return 1
 		}
 
@@ -688,7 +698,7 @@ func checkDependency(s []Subquery, i int, r resource) error {
 
 func rankForResource(r resource) int {
 	rank := 0
-	for _, c := range inverseSchema[r] {
+	for _, c := range schema[r] {
 		cRank := 1 + rankForResource(c)
 		if cRank > rank {
 			rank = cRank
@@ -786,7 +796,8 @@ var resourceNames = map[resource]string{
 }
 
 const (
-	node = resource(iota)
+	root = resource(iota)
+	node
 	storageClass
 	backend
 	volume
@@ -825,6 +836,7 @@ const (
 // schema is the authoritative source for relationships between resources. For example,
 // a snapshot depends on a volume, and a volume depends on a backend.
 var schema = map[resource][]resource{
+	root:              nil, // root is an implied dependency for all resources
 	node:              nil,
 	storageClass:      nil,
 	backend:           nil,
