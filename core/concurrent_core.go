@@ -64,15 +64,7 @@ type ConcurrentTridentOrchestrator struct {
 }
 
 var (
-	_                 Orchestrator = &ConcurrentTridentOrchestrator{}
-	supportedBackends              = []string{
-		"ontap-san",
-		"fake",
-		"ontap-nas",
-		"google-cloud-netapp-volumes",
-		"ontap-nas-economy",
-		"ontap-san-economy",
-	}
+	_ Orchestrator = &ConcurrentTridentOrchestrator{}
 )
 
 func NewConcurrentTridentOrchestrator(client persistentstore.Client) (Orchestrator, error) {
@@ -177,6 +169,7 @@ func (o *ConcurrentTridentOrchestrator) transformPersistentState(ctx context.Con
 }
 
 func (o *ConcurrentTridentOrchestrator) Bootstrap(_ bool) error {
+	config.IsConcurrent = true
 	ctx := GenerateRequestContext(nil, "", ContextSourceInternal, WorkflowCoreBootstrap, LogLayerCore)
 	var err error
 
@@ -851,7 +844,7 @@ func (o *ConcurrentTridentOrchestrator) validateAndCreateBackendFromConfig(
 
 	commonConfig.Flags[FlagConcurrent] = "true"
 
-	if !collection.StringInSlice(commonConfig.StorageDriverName, supportedBackends) {
+	if !collection.StringInSlice(commonConfig.StorageDriverName, config.ConcurrentBackends) {
 		return nil, fmt.Errorf("backend type %s is not yet supported by concurrent Trident",
 			commonConfig.StorageDriverName)
 	}

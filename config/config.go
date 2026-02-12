@@ -444,6 +444,17 @@ var (
 	K8sAPIQPS   float32
 	K8sAPIBurst int
 
+	// Concurrency context
+	IsConcurrent       bool
+	ConcurrentBackends = []string{
+		"ontap-san",
+		"fake",
+		"ontap-nas",
+		"google-cloud-netapp-volumes",
+		"ontap-nas-economy",
+		"ontap-san-economy",
+	}
+
 	// Absolute max age for ANY TAGRI (safety net to prevent stuck states) before forced deletion
 	TagriTimeout time.Duration
 

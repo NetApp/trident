@@ -5,6 +5,7 @@ package ontap
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -119,6 +120,10 @@ func getSANStorageDriverBasedOnPersonality(
 		// Setup personality to be used by ASUP
 		ontapConfig.Flags[FlagPersonality] = PersonalityASAr2
 		isASAr2 = true
+	}
+
+	if isASAr2 && config.IsConcurrent {
+		return nil, errors.New("ASA r2 backend type is not yet supported by concurrent Trident")
 	}
 
 	switch driverProtocol {

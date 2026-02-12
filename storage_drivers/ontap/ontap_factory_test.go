@@ -66,6 +66,7 @@ func TestGetSANStorageDriverBasedOnPersonality(t *testing.T) {
 
 	tests := []struct {
 		name               string
+		concurrent         bool
 		sanOptimized       bool
 		disaggregated      bool
 		driverProtocol     string
@@ -74,6 +75,7 @@ func TestGetSANStorageDriverBasedOnPersonality(t *testing.T) {
 	}{
 		{
 			name:               "ASA optimized and disaggregated with iSCSI",
+			concurrent:         false,
 			sanOptimized:       true,
 			disaggregated:      true,
 			driverProtocol:     sa.ISCSI,
@@ -81,7 +83,26 @@ func TestGetSANStorageDriverBasedOnPersonality(t *testing.T) {
 			expectError:        false,
 		},
 		{
+			name:               "ASA optimized and disaggregated with iSCSI, concurrent",
+			concurrent:         true,
+			sanOptimized:       true,
+			disaggregated:      true,
+			driverProtocol:     sa.ISCSI,
+			expectedDriverType: nil,
+			expectError:        true,
+		},
+		{
 			name:               "SAN optimized but not disaggregated with iSCSI",
+			concurrent:         false,
+			sanOptimized:       true,
+			disaggregated:      false,
+			driverProtocol:     sa.ISCSI,
+			expectedDriverType: &SANStorageDriver{},
+			expectError:        false,
+		},
+		{
+			name:               "SAN optimized but not disaggregated with iSCSI, concurrent",
+			concurrent:         true,
 			sanOptimized:       true,
 			disaggregated:      false,
 			driverProtocol:     sa.ISCSI,
@@ -90,6 +111,16 @@ func TestGetSANStorageDriverBasedOnPersonality(t *testing.T) {
 		},
 		{
 			name:               "Standard SAN with iSCSI",
+			concurrent:         false,
+			sanOptimized:       false,
+			disaggregated:      false,
+			driverProtocol:     sa.ISCSI,
+			expectedDriverType: &SANStorageDriver{},
+			expectError:        false,
+		},
+		{
+			name:               "Standard SAN with iSCSI, concurrent",
+			concurrent:         true,
 			sanOptimized:       false,
 			disaggregated:      false,
 			driverProtocol:     sa.ISCSI,
@@ -98,6 +129,16 @@ func TestGetSANStorageDriverBasedOnPersonality(t *testing.T) {
 		},
 		{
 			name:               "Standard SAN with NVMe",
+			concurrent:         false,
+			sanOptimized:       false,
+			disaggregated:      false,
+			driverProtocol:     sa.NVMe,
+			expectedDriverType: &NVMeStorageDriver{},
+			expectError:        false,
+		},
+		{
+			name:               "Standard SAN with NVMe, concurrent",
+			concurrent:         true,
 			sanOptimized:       false,
 			disaggregated:      false,
 			driverProtocol:     sa.NVMe,
@@ -106,6 +147,16 @@ func TestGetSANStorageDriverBasedOnPersonality(t *testing.T) {
 		},
 		{
 			name:               "Standard SAN with FCP",
+			concurrent:         false,
+			sanOptimized:       false,
+			disaggregated:      false,
+			driverProtocol:     sa.FCP,
+			expectedDriverType: &SANStorageDriver{},
+			expectError:        false,
+		},
+		{
+			name:               "Standard SAN with FCP, concurrent",
+			concurrent:         true,
 			sanOptimized:       false,
 			disaggregated:      false,
 			driverProtocol:     sa.FCP,
@@ -114,6 +165,7 @@ func TestGetSANStorageDriverBasedOnPersonality(t *testing.T) {
 		},
 		{
 			name:               "Unsupported protocol",
+			concurrent:         false,
 			sanOptimized:       false,
 			disaggregated:      false,
 			driverProtocol:     "unsupported",
@@ -124,6 +176,8 @@ func TestGetSANStorageDriverBasedOnPersonality(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			config.IsConcurrent = test.concurrent
+
 			driver, err := getSANStorageDriverBasedOnPersonality(
 				test.sanOptimized, test.disaggregated, test.driverProtocol, &ontapConfig, mockAPI, mockAWSAPI,
 			)
