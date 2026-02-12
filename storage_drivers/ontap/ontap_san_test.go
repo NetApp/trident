@@ -2951,13 +2951,18 @@ func TestOntapSanVolumeSnapshotGet(t *testing.T) {
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "pvc-1234_snap",
+		InternalName: "trident-pvc-1234_snap",
+	}
+
 	snapshotConfig := &storage.SnapshotConfig{
 		InternalName: "trident-pvc-1234_snap",
 	}
 
 	mockAPI.EXPECT().VolumeExists(ctx, snapshotConfig.InternalName).Return(true, nil)
 
-	err := driver.Get(ctx, snapshotConfig.InternalName)
+	err := driver.Get(ctx, volConfig1)
 
 	assert.NoError(t, err, "Failed to get the snapshot")
 }
@@ -2968,6 +2973,11 @@ func TestOntapSanVolumeSnapshotGet_fail(t *testing.T) {
 	mockAPI, driver := newMockOntapSANDriver(t)
 	mockAPI.EXPECT().SVMName().AnyTimes().Return("SVM1")
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
+
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "pvc-1234_snap",
+		InternalName: "trident-pvc-1234_snap",
+	}
 
 	snapshotConfig := &storage.SnapshotConfig{
 		InternalName: "trident-pvc-1234_snap",
@@ -3002,7 +3012,7 @@ func TestOntapSanVolumeSnapshotGet_fail(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			test.mocks(mockAPI)
 
-			err := driver.Get(ctx, snapshotConfig.InternalName)
+			err := driver.Get(ctx, volConfig1)
 			if !test.wantErr(t, err, test.assertMessage) {
 				return
 			}

@@ -3683,7 +3683,12 @@ func TestOntapNasFlexgroupStorageDriverVolumeGet(t *testing.T) {
 
 	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(true, nil)
 
-	result := driver.Get(ctx, "vol1")
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "vol1",
+		InternalName: "vol1",
+	}
+
+	result := driver.Get(ctx, volConfig1)
 
 	assert.NoError(t, result)
 }
@@ -3693,7 +3698,12 @@ func TestOntapNasFlexgroupStorageDriverVolumeGet_Error(t *testing.T) {
 
 	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, errors.New("error checking for existing volume"))
 
-	result := driver.Get(ctx, "vol1")
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "vol1",
+		InternalName: "vol1",
+	}
+
+	result := driver.Get(ctx, volConfig1)
 
 	assert.Error(t, result, "Flexgroup volume exists")
 	assert.Contains(t, result.Error(), "error checking for existing volume")
@@ -3704,7 +3714,12 @@ func TestOntapNasFlexgroupStorageDriverVolumeGet_DoesNotExist(t *testing.T) {
 
 	mockAPI.EXPECT().FlexgroupExists(ctx, "vol1").Return(false, nil)
 
-	result := driver.Get(ctx, "vol1")
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "vol1",
+		InternalName: "vol1",
+	}
+
+	result := driver.Get(ctx, volConfig1)
 
 	assert.Error(t, result, "Flexgroup volume exists")
 }

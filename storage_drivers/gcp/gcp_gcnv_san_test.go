@@ -3935,7 +3935,7 @@ func TestSANDriver_Get_Success(t *testing.T) {
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByName(ctx, testVolumeName).Return(volume, nil)
 
-	err := driver.Get(ctx, testVolumeName)
+	err := driver.Get(ctx, &storage.VolumeConfig{InternalName: testVolumeName})
 	assert.NoError(t, err, "Get should succeed")
 }
 
@@ -3944,7 +3944,7 @@ func TestSANDriver_Get_RefreshError(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(errFailed).Times(1)
 
-	err := driver.Get(ctx, testVolumeName)
+	err := driver.Get(ctx, &storage.VolumeConfig{InternalName: testVolumeName})
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "could not refresh GCNV resources")
 }
@@ -3955,7 +3955,7 @@ func TestSANDriver_Get_VolumeLookupError(t *testing.T) {
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByName(ctx, testVolumeName).Return(nil, errFailed).Times(1)
 
-	err := driver.Get(ctx, testVolumeName)
+	err := driver.Get(ctx, &storage.VolumeConfig{InternalName: testVolumeName})
 	assert.Error(t, err)
 }
 

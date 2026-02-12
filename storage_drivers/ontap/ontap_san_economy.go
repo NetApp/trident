@@ -2089,7 +2089,8 @@ func (d *SANEconomyStorageDriver) ConstructGroupSnapshot(
 }
 
 // Get tests for the existence of a volume
-func (d *SANEconomyStorageDriver) Get(ctx context.Context, name string) error {
+func (d *SANEconomyStorageDriver) Get(ctx context.Context, volConfig *storage.VolumeConfig) error {
+	name := volConfig.InternalName
 	fields := LogFields{"Method": "Get", "Type": "SANEconomyStorageDriver"}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Get")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Get")
@@ -2097,7 +2098,7 @@ func (d *SANEconomyStorageDriver) Get(ctx context.Context, name string) error {
 	// Generic user-facing message
 	getError := errors.NotFoundError("volume %s not found", name)
 
-	exists, bucketVol, err := d.LUNExists(ctx, name, "", d.FlexvolNamePrefix())
+	exists, bucketVol, err := d.LUNExists(ctx, name, volConfig.InternalID, d.FlexvolNamePrefix())
 	if err != nil {
 		Logc(ctx).WithError(err).Errorf("Error checking for existing LUN %s", name)
 		return getError

@@ -1415,7 +1415,8 @@ func (d *NASFlexGroupStorageDriver) DeleteSnapshot(
 
 // Get tests the existence of a FlexGroup. Returns nil if the FlexGroup
 // exists and an error otherwise.
-func (d *NASFlexGroupStorageDriver) Get(ctx context.Context, name string) error {
+func (d *NASFlexGroupStorageDriver) Get(ctx context.Context, volConfig *storage.VolumeConfig) error {
+	name := volConfig.InternalName
 	fields := LogFields{"Method": "Get", "Type": "NASFlexGroupStorageDriver"}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Get")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Get")

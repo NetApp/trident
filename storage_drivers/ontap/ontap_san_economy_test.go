@@ -4057,41 +4057,111 @@ func TestOntapSanEconomyVolumeDeleteSnapshot_LUNDoesNotExist(t *testing.T) {
 func TestOntapSanEconomyGet(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
 
-	mockAPI.EXPECT().LunList(ctx,
-		gomock.Any()).Times(1).Return(api.Luns{
+	d.flexvolNamePrefix = fmt.Sprintf("%s_lun_pool_%s", "trident", *d.Config.StoragePrefix)
+	path := "/vol/trident_lun_pool_test_my_Bucket/test_my_Lun"
+	wildcardPath := "/vol/trident_lun_pool_test_*/test_my_Lun"
+
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "my_Lun",
+		InternalName: "test_my_Lun",
+	}
+
+	mockAPI.EXPECT().LunList(ctx, wildcardPath).Times(1).Return(api.Luns{
 		api.Lun{
 			Size:       "1073741824",
-			Name:       "/vol/my_Bucket/storagePrefix_my_Lun_my_Bucket",
-			VolumeName: "my_Bucket",
+			Name:       path,
+			VolumeName: "trident_lun_pool_test_my_Bucket",
 		},
-	},
-		nil)
+	}, nil)
 
-	result := d.Get(ctx, "my_Bucket")
+	result := d.Get(ctx, volConfig1)
+
+	assert.NoError(t, result)
+}
+
+func TestOntapSanEconomyGet_InternalID(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+
+	d.flexvolNamePrefix = fmt.Sprintf("%s_lun_pool_%s", "trident", *d.Config.StoragePrefix)
+	path := "/vol/trident_lun_pool_test_my_Bucket/test_my_Lun"
+	internalID := d.CreateLUNInternalID("SVM1", "trident_lun_pool_test_my_Bucket", "test_my_Lun")
+
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "my_Lun",
+		InternalName: "test_my_Lun",
+		InternalID:   internalID,
+	}
+
+	mockAPI.EXPECT().LunList(ctx, path).Times(1).Return(api.Luns{
+		api.Lun{
+			Size:       "1073741824",
+			Name:       path,
+			VolumeName: "trident_lun_pool_test_my_Bucket",
+		},
+	}, nil)
+
+	result := d.Get(ctx, volConfig1)
+
+	assert.NoError(t, result)
+}
+
+func TestOntapSanEconomyGet_InvalidInternalID(t *testing.T) {
+	mockAPI, d := newMockOntapSanEcoDriver(t)
+
+	d.flexvolNamePrefix = fmt.Sprintf("%s_lun_pool_%s", "trident", *d.Config.StoragePrefix)
+	path := "/vol/trident_lun_pool_test_my_Bucket/test_my_Lun"
+	wildcardPath := "/vol/trident_lun_pool_test_*/test_my_Lun"
+	internalID := "invalid"
+
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "my_Lun",
+		InternalName: "test_my_Lun",
+		InternalID:   internalID,
+	}
+
+	mockAPI.EXPECT().LunList(ctx, wildcardPath).Times(1).Return(api.Luns{
+		api.Lun{
+			Size:       "1073741824",
+			Name:       path,
+			VolumeName: "trident_lun_pool_test_my_Bucket",
+		},
+	}, nil)
+
+	result := d.Get(ctx, volConfig1)
 
 	assert.NoError(t, result)
 }
 
 func TestOntapSanEconomyGet_ImportPath(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
-	testLUNPath := "/vol/my_Bucket/storagePrefix_my_Lun_my_Bucket"
+
 	testLUN := api.Lun{
 		Size:       "1073741824",
 		Name:       "/vol/my_Bucket/storagePrefix_my_Lun_my_Bucket",
 		VolumeName: "my_Bucket",
 	}
 
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "my_Bucket",
+		InternalName: "my_Bucket",
+	}
+
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(api.Luns{testLUN}, nil)
-	result := d.Get(ctx, testLUNPath)
+	result := d.Get(ctx, volConfig1)
 	assert.NoError(t, result, "error in LunGetByName")
 
 	mockAPI.EXPECT().LunList(ctx, gomock.Any()).Times(1).Return(api.Luns{}, nil)
-	result = d.Get(ctx, testLUNPath)
+	result = d.Get(ctx, volConfig1)
 	assert.Error(t, result, "LUN found")
 }
 
 func TestOntapSanEconomyGet_LUNDoesNotExist(t *testing.T) {
 	mockAPI, d := newMockOntapSanEcoDriver(t)
+
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "my_Bucket",
+		InternalName: "my_Bucket",
+	}
 
 	tests := []struct {
 		message     string
@@ -4108,7 +4178,7 @@ func TestOntapSanEconomyGet_LUNDoesNotExist(t *testing.T) {
 				mockAPI.EXPECT().LunList(ctx, gomock.Any()).Return(nil, nil)
 			}
 
-			result := d.Get(ctx, "my_Bucket")
+			result := d.Get(ctx, volConfig1)
 
 			assert.Error(t, result)
 		})

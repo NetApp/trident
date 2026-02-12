@@ -47,7 +47,7 @@ type Driver interface {
 	Destroy(ctx context.Context, volConfig *VolumeConfig) error
 	Rename(ctx context.Context, name, newName string) error
 	Resize(ctx context.Context, volConfig *VolumeConfig, sizeBytes uint64) error
-	Get(ctx context.Context, name string) error
+	Get(ctx context.Context, volConfig *VolumeConfig) error
 	GetInternalVolumeName(ctx context.Context, volConfig *VolumeConfig, storagePool Pool) string
 	GetStorageBackendSpecs(ctx context.Context, backend Backend) error
 	GetStorageBackendPhysicalPoolNames(ctx context.Context) []string
@@ -615,7 +615,7 @@ func (b *StorageBackend) CloneVolume(
 	if !cloneVolConfig.ReadOnlyClone {
 		// The clone may not be fully created when the clone API returns, so wait here until it exists.
 		checkCloneExists := func() error {
-			return b.driver.Get(ctx, cloneVolConfig.InternalName)
+			return b.driver.Get(ctx, cloneVolConfig)
 		}
 		cloneExistsNotify := func(err error, duration time.Duration) {
 			Logc(ctx).WithField("increment", duration).Debug("Clone not yet present, waiting.")
@@ -823,7 +823,7 @@ func (b *StorageBackend) RenameVolume(ctx context.Context, volConfig *VolumeConf
 		return err
 	}
 
-	if err := b.driver.Get(ctx, oldName); err != nil {
+	if err := b.driver.Get(ctx, volConfig); err != nil {
 		return fmt.Errorf("volume %s not found on backend %s; %v", oldName, b.name, err)
 	}
 	if err := b.driver.Rename(ctx, oldName, newName); err != nil {

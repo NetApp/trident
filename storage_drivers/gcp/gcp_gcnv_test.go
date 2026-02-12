@@ -6424,7 +6424,12 @@ func TestGCNVGet(t *testing.T) {
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByName(ctx, "volume1").Return(volumes, nil).Times(1)
 
-	result := driver.Get(ctx, "volume1")
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "volume1",
+		InternalName: "volume1",
+	}
+
+	result := driver.Get(ctx, volConfig1)
 
 	assert.Nil(t, result, "not nil")
 }
@@ -6437,7 +6442,12 @@ func TestGet_DiscoveryFailed(t *testing.T) {
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(errFailed).Times(1)
 
-	result := driver.Get(ctx, "volume1")
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "volume1",
+		InternalName: "volume1",
+	}
+
+	result := driver.Get(ctx, volConfig1)
 
 	assert.Error(t, result, "expected error")
 }
@@ -6451,7 +6461,12 @@ func TestGet_NotFound(t *testing.T) {
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByName(ctx, "volume1").Return(nil, errFailed).Times(1)
 
-	result := driver.Get(ctx, "volume1")
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "volume1",
+		InternalName: "volume1",
+	}
+
+	result := driver.Get(ctx, volConfig1)
 
 	assert.Error(t, result, "expected error")
 }

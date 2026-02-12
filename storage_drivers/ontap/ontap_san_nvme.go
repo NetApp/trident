@@ -1234,7 +1234,8 @@ func (d *NVMeStorageDriver) ConstructGroupSnapshot(
 }
 
 // Get tests for the existence of a volume.
-func (d *NVMeStorageDriver) Get(ctx context.Context, name string) error {
+func (d *NVMeStorageDriver) Get(ctx context.Context, volConfig *storage.VolumeConfig) error {
+	name := volConfig.InternalName
 	fields := LogFields{
 		"method": "Get",
 		"type":   "NVMeStorageDriver",

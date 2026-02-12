@@ -12838,6 +12838,15 @@ func TestValidateBackendUpdateConcurrentCore(t *testing.T) {
 }
 
 func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "testVolume1",
+		InternalName: "testVolume1",
+	}
+	volConfig2 := &storage.VolumeConfig{
+		Name:         "testVolume2",
+		InternalName: "testVolume2",
+	}
+
 	tests := []struct {
 		name           string
 		setupMocks     func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend
@@ -12852,10 +12861,7 @@ func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
 
 				// Setup volume that exists in cache but not on backend (should become orphaned)
 				vol := &storage.Volume{
-					Config: &storage.VolumeConfig{
-						Name:         "testVolume1",
-						InternalName: "testVolume1",
-					},
+					Config:      volConfig1,
 					BackendUUID: "backend-uuid1",
 					Orphaned:    false,
 				}
@@ -12864,7 +12870,7 @@ func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
 				addBackendsToCache(t, mockBackend)
 
 				mockBackend.EXPECT().Driver().Return(mockDriver).Times(1)
-				mockDriver.EXPECT().Get(gomock.Any(), "testVolume1").Return(errors.New("volume not found")).Times(1)
+				mockDriver.EXPECT().Get(gomock.Any(), volConfig1).Return(errors.New("volume not found")).Times(1)
 
 				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, volume *storage.Volume) error {
 					assert.True(t, volume.Orphaned)
@@ -12893,10 +12899,7 @@ func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
 
 				// Setup orphaned volume that now exists on backend (should be recovered)
 				vol := &storage.Volume{
-					Config: &storage.VolumeConfig{
-						Name:         "testVolume1",
-						InternalName: "testVolume1",
-					},
+					Config:      volConfig1,
 					BackendUUID: "backend-uuid1",
 					Orphaned:    true,
 				}
@@ -12905,7 +12908,7 @@ func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
 				addBackendsToCache(t, mockBackend)
 
 				mockBackend.EXPECT().Driver().Return(mockDriver).Times(1)
-				mockDriver.EXPECT().Get(gomock.Any(), "testVolume1").Return(nil).Times(1)
+				mockDriver.EXPECT().Get(gomock.Any(), volConfig1).Return(nil).Times(1)
 
 				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, volume *storage.Volume) error {
 					assert.False(t, volume.Orphaned)
@@ -12934,10 +12937,7 @@ func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
 
 				// Setup volume that exists and is not orphaned (no change needed)
 				vol := &storage.Volume{
-					Config: &storage.VolumeConfig{
-						Name:         "testVolume1",
-						InternalName: "testVolume1",
-					},
+					Config:      volConfig1,
 					BackendUUID: "backend-uuid1",
 					Orphaned:    false,
 				}
@@ -12946,7 +12946,7 @@ func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
 				addBackendsToCache(t, mockBackend)
 
 				mockBackend.EXPECT().Driver().Return(mockDriver).Times(1)
-				mockDriver.EXPECT().Get(gomock.Any(), "testVolume1").Return(nil).Times(1)
+				mockDriver.EXPECT().Get(gomock.Any(), volConfig1).Return(nil).Times(1)
 
 				// No UpdateVolume call expected since state doesn't change
 				mockBackend.EXPECT().Volumes().Return(&sync.Map{}).Times(1)
@@ -12971,18 +12971,12 @@ func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
 
 				// Setup multiple volumes with different states
 				vol1 := &storage.Volume{
-					Config: &storage.VolumeConfig{
-						Name:         "testVolume1",
-						InternalName: "testVolume1",
-					},
+					Config:      volConfig1,
 					BackendUUID: "backend-uuid1",
 					Orphaned:    false,
 				}
 				vol2 := &storage.Volume{
-					Config: &storage.VolumeConfig{
-						Name:         "testVolume2",
-						InternalName: "testVolume2",
-					},
+					Config:      volConfig2,
 					BackendUUID: "backend-uuid1",
 					Orphaned:    true,
 				}
@@ -12992,9 +12986,9 @@ func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
 
 				mockBackend.EXPECT().Driver().Return(mockDriver).Times(2)
 				// Vol1 not found on backend (becomes orphaned)
-				mockDriver.EXPECT().Get(gomock.Any(), "testVolume1").Return(errors.New("not found")).Times(1)
+				mockDriver.EXPECT().Get(gomock.Any(), volConfig1).Return(errors.New("not found")).Times(1)
 				// Vol2 found on backend (recovered)
-				mockDriver.EXPECT().Get(gomock.Any(), "testVolume2").Return(nil).Times(1)
+				mockDriver.EXPECT().Get(gomock.Any(), volConfig2).Return(nil).Times(1)
 
 				// Expect two update calls
 				gomock.InOrder(
@@ -13035,10 +13029,7 @@ func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
 				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
 
 				vol := &storage.Volume{
-					Config: &storage.VolumeConfig{
-						Name:         "testVolume1",
-						InternalName: "testVolume1",
-					},
+					Config:      volConfig1,
 					BackendUUID: "backend-uuid1",
 					Orphaned:    false,
 				}
@@ -13061,10 +13052,7 @@ func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
 				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
 
 				vol := &storage.Volume{
-					Config: &storage.VolumeConfig{
-						Name:         "testVolume1",
-						InternalName: "testVolume1",
-					},
+					Config:      volConfig1,
 					BackendUUID: "backend-uuid1",
 					Orphaned:    false,
 				}
@@ -13091,10 +13079,7 @@ func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
 				mockDriver := mockstorage.NewMockDriver(mockCtrl)
 
 				vol := &storage.Volume{
-					Config: &storage.VolumeConfig{
-						Name:         "testVolume1",
-						InternalName: "testVolume1",
-					},
+					Config:      volConfig1,
 					BackendUUID: "backend-uuid1",
 					Orphaned:    false,
 				}
@@ -13103,7 +13088,7 @@ func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
 				addBackendsToCache(t, mockBackend)
 
 				mockBackend.EXPECT().Driver().Return(mockDriver).Times(1)
-				mockDriver.EXPECT().Get(gomock.Any(), "testVolume1").Return(errors.New("not found")).Times(1)
+				mockDriver.EXPECT().Get(gomock.Any(), volConfig1).Return(errors.New("not found")).Times(1)
 
 				// Simulate store update failure
 				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(errors.New("store error")).Times(1)

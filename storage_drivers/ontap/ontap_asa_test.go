@@ -2355,6 +2355,11 @@ func TestGet(t *testing.T) {
 		driver  *ASAStorageDriver
 	)
 
+	volConfig := &storage.VolumeConfig{
+		Name:         "testLUN",
+		InternalName: "testLUN",
+	}
+
 	initializeFunction := func() {
 		mockAPI, driver = newMockOntapASADriver(t)
 	}
@@ -2364,7 +2369,7 @@ func TestGet(t *testing.T) {
 
 		mockAPI.EXPECT().LunExists(ctx, "testLUN").Return(true, nil).Times(1)
 
-		err := driver.Get(ctx, "testLUN")
+		err := driver.Get(ctx, volConfig)
 		assert.NoError(t, err, "Expected no error when LUN exists")
 	})
 
@@ -2373,7 +2378,7 @@ func TestGet(t *testing.T) {
 
 		mockAPI.EXPECT().LunExists(ctx, "testLUN").Return(false, nil).Times(1)
 
-		err := driver.Get(ctx, "testLUN")
+		err := driver.Get(ctx, volConfig)
 		assert.Error(t, err, "Expected error when LUN does not exist")
 		assert.Contains(t, err.Error(), "LUN testLUN does not exist", "Expected not found error message")
 	})
@@ -2383,7 +2388,7 @@ func TestGet(t *testing.T) {
 
 		mockAPI.EXPECT().LunExists(ctx, "testLUN").Return(false, errors.New("error checking LUN")).Times(1)
 
-		err := driver.Get(ctx, "testLUN")
+		err := driver.Get(ctx, volConfig)
 		assert.Error(t, err, "Expected error when checking LUN existence fails")
 		assert.Contains(t, err.Error(), "error checking for existing LUN", "Expected error message")
 	})

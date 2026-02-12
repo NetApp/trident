@@ -1199,7 +1199,8 @@ func (d *StorageDriver) ConstructGroupSnapshot(
 	return groupSnapshot.ConstructClone(), nil
 }
 
-func (d *StorageDriver) Get(_ context.Context, name string) error {
+func (d *StorageDriver) Get(_ context.Context, volConfig *storage.VolumeConfig) error {
+	name := volConfig.InternalName
 	_, ok := d.Volumes[name]
 	if !ok {
 		return fmt.Errorf("could not find volume %s", name)

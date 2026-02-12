@@ -2625,7 +2625,12 @@ func TestOntapNasStorageDriverVolumeGet(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(true, nil)
 
-	result := driver.Get(ctx, "vol1")
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "vol1",
+		InternalName: "vol1",
+	}
+
+	result := driver.Get(ctx, volConfig1)
 
 	assert.NoError(t, result)
 }
@@ -2635,7 +2640,12 @@ func TestOntapNasStorageDriverVolumeGet_Error(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, errors.New("error checking for existing volume"))
 
-	result := driver.Get(ctx, "vol1")
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "vol1",
+		InternalName: "vol1",
+	}
+
+	result := driver.Get(ctx, volConfig1)
 
 	assert.Error(t, result)
 }
@@ -2645,7 +2655,12 @@ func TestOntapNasStorageDriverVolumeGet_DoesNotExist(t *testing.T) {
 
 	mockAPI.EXPECT().VolumeExists(ctx, "vol1").Return(false, nil)
 
-	result := driver.Get(ctx, "vol1")
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "vol1",
+		InternalName: "vol1",
+	}
+
+	result := driver.Get(ctx, volConfig1)
 
 	assert.Error(t, result)
 }
@@ -5947,14 +5962,23 @@ func TestOntapNasGet(t *testing.T) {
 	ctx := context.Background()
 	mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
 
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "existing_vol",
+		InternalName: "existing_vol",
+	}
+	volConfig2 := &storage.VolumeConfig{
+		Name:         "missing_vol",
+		InternalName: "missing_vol",
+	}
+
 	// Test successful volume existence check
 	mockAPI.EXPECT().VolumeExists(ctx, "existing_vol").Return(true, nil)
-	err := driver.Get(ctx, "existing_vol")
+	err := driver.Get(ctx, volConfig1)
 	assert.NoError(t, err)
 
 	// Test non-existent volume
 	mockAPI.EXPECT().VolumeExists(ctx, "missing_vol").Return(false, nil)
-	err = driver.Get(ctx, "missing_vol")
+	err = driver.Get(ctx, volConfig2)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "does not exist")
 }
@@ -6592,10 +6616,15 @@ func TestNASDriver_CanSnapshot(t *testing.T) {
 }
 
 func TestNASDriver_Get(t *testing.T) {
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "test-vol",
+		InternalName: "test-vol",
+	}
+
 	tests := []struct {
 		name        string
 		setupMocks  func(*mockapi.MockOntapAPI)
-		volumeName  string
+		volConfig   *storage.VolumeConfig
 		expectError bool
 	}{
 		{
@@ -6603,7 +6632,7 @@ func TestNASDriver_Get(t *testing.T) {
 			setupMocks: func(m *mockapi.MockOntapAPI) {
 				m.EXPECT().VolumeExists(ctx, "test-vol").Return(true, nil)
 			},
-			volumeName:  "test-vol",
+			volConfig:   volConfig1,
 			expectError: false,
 		},
 		{
@@ -6611,7 +6640,7 @@ func TestNASDriver_Get(t *testing.T) {
 			setupMocks: func(m *mockapi.MockOntapAPI) {
 				m.EXPECT().VolumeExists(ctx, "test-vol").Return(false, nil)
 			},
-			volumeName:  "test-vol",
+			volConfig:   volConfig1,
 			expectError: true,
 		},
 	}
@@ -6624,7 +6653,7 @@ func TestNASDriver_Get(t *testing.T) {
 				tt.setupMocks(mockAPI)
 			}
 
-			err := driver.Get(ctx, tt.volumeName)
+			err := driver.Get(ctx, tt.volConfig)
 
 			if tt.expectError {
 				assert.Error(t, err)

@@ -172,17 +172,17 @@ func (mr *MockDriverMockRecorder) Destroy(ctx, volConfig any) *gomock.Call {
 }
 
 // Get mocks base method.
-func (m *MockDriver) Get(ctx context.Context, name string) error {
+func (m *MockDriver) Get(ctx context.Context, volConfig *storage.VolumeConfig) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, name)
+	ret := m.ctrl.Call(m, "Get", ctx, volConfig)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockDriverMockRecorder) Get(ctx, name any) *gomock.Call {
+func (mr *MockDriverMockRecorder) Get(ctx, volConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockDriver)(nil).Get), ctx, name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockDriver)(nil).Get), ctx, volConfig)
 }
 
 // GetCommonConfig mocks base method.

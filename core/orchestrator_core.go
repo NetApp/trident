@@ -1448,7 +1448,7 @@ func (o *TridentOrchestrator) updateBackendByBackendUUID(
 		if vol.BackendUUID == originalBackend.BackendUUID() {
 			vol.BackendUUID = backend.BackendUUID()
 			updatePersistentStore := false
-			volumeExists := backend.Driver().Get(ctx, vol.Config.InternalName) == nil
+			volumeExists := backend.Driver().Get(ctx, vol.Config) == nil
 			if !volumeExists {
 				if !vol.Orphaned {
 					vol.Orphaned = true

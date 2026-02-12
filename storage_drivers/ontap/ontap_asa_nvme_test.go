@@ -2324,6 +2324,11 @@ func TestGetNVMe(t *testing.T) {
 		driver  *ASANVMeStorageDriver
 	)
 
+	volConfig := &storage.VolumeConfig{
+		Name:         "testNS",
+		InternalName: "testNS",
+	}
+
 	initializeFunction := func() {
 		mockAPI, driver = newMockOntapASANVMeDriver(t)
 	}
@@ -2333,7 +2338,7 @@ func TestGetNVMe(t *testing.T) {
 
 		mockAPI.EXPECT().NVMeNamespaceExists(ctx, "testNS").Return(true, nil).Times(1)
 
-		err := driver.Get(ctx, "testNS")
+		err := driver.Get(ctx, volConfig)
 		assert.NoError(t, err, "Expected no error when Namespace exists")
 	})
 
@@ -2342,7 +2347,7 @@ func TestGetNVMe(t *testing.T) {
 
 		mockAPI.EXPECT().NVMeNamespaceExists(ctx, "testNS").Return(false, nil).Times(1)
 
-		err := driver.Get(ctx, "testNS")
+		err := driver.Get(ctx, volConfig)
 		assert.Error(t, err, "Expected error when Namespace does not exist")
 		assert.Contains(t, err.Error(), "NVMe namespace testNS does not exist", "Expected not found error message")
 	})
@@ -2352,7 +2357,7 @@ func TestGetNVMe(t *testing.T) {
 
 		mockAPI.EXPECT().NVMeNamespaceExists(ctx, "testNS").Return(false, fmt.Errorf("error checking Namespace")).Times(1)
 
-		err := driver.Get(ctx, "testNS")
+		err := driver.Get(ctx, volConfig)
 		assert.Error(t, err, "Expected error when checking Namespace existence fails")
 		assert.Contains(t, err.Error(), "error checking for existing ASA NVMe namespace", "Expected error message")
 	})

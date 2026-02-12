@@ -1450,14 +1450,46 @@ func TestRestoreSnapshot_NotSupported(t *testing.T) {
 }
 
 func TestGet_Success(t *testing.T) {
-	volName := "testVol"
-	volNameInternal := volName + "Internal"
-
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
-	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).AnyTimes().Return(
+
+	driver.Config.StoragePrefix = convert.ToPtr("test_")
+	driver.flexvolNamePrefix = fmt.Sprintf("%s_qtree_pool_%s", "trident", *driver.Config.StoragePrefix)
+	volName := "vol1"
+	volNameInternal := "test_vol1"
+
+	volConfig1 := &storage.VolumeConfig{
+		Name:         volName,
+		InternalName: volNameInternal,
+	}
+
+	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, "trident_qtree_pool_test_*").AnyTimes().Return(
 		true, volName, nil)
 
-	result := driver.Get(ctx, volNameInternal)
+	result := driver.Get(ctx, volConfig1)
+
+	assert.NoError(t, result, "Expected no error in Get, got error")
+}
+
+func TestGet_Success_InternalID(t *testing.T) {
+	mockAPI, driver := newMockOntapNasQtreeDriver(t)
+
+	driver.Config.StoragePrefix = convert.ToPtr("test_")
+	driver.flexvolNamePrefix = fmt.Sprintf("%s_qtree_pool_%s", "trident", *driver.Config.StoragePrefix)
+	volName := "vol1"
+	volNameInternal := "test_vol1"
+	internalID := "/svm/SVM1/flexvol/trident_qtree_pool_test_my_Bucket/qtree/test_vol1"
+
+	volConfig1 := &storage.VolumeConfig{
+		Name:         volName,
+		InternalName: volNameInternal,
+		InternalID:   internalID,
+	}
+
+	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, "trident_qtree_pool_test_my_Bucket").AnyTimes().Return(
+		true, volName, nil)
+
+	result := driver.Get(ctx, volConfig1)
+
 	assert.NoError(t, result, "Expected no error in Get, got error")
 }
 
@@ -1465,20 +1497,24 @@ func TestGet_WithErrorInApiOperation(t *testing.T) {
 	volName := "testVol"
 	volNameInternal := volName + "Internal"
 
+	volConfig1 := &storage.VolumeConfig{
+		Name:         volName,
+		InternalName: volNameInternal,
+	}
+
 	// CASE 1: Error while checking for qtree existence
 	mockAPI, driver := newMockOntapNasQtreeDriver(t)
 	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).AnyTimes().Return(
 		false, volName, mockError)
 
-	result1 := driver.Get(ctx, volNameInternal)
+	result1 := driver.Get(ctx, volConfig1)
 	assert.Error(t, result1, "Expected error when api failed to check qtree existence, got nil")
 
 	// CASE 2: Qtree does not exist
 	mockAPI, driver = newMockOntapNasQtreeDriver(t)
-	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).AnyTimes().Return(
-		false, "", nil)
+	mockAPI.EXPECT().QtreeExists(ctx, volNameInternal, gomock.Any()).AnyTimes().Return(false, "", nil)
 
-	result2 := driver.Get(ctx, volNameInternal)
+	result2 := driver.Get(ctx, volConfig1)
 	assert.Error(t, result2, "Expected error when qtree does not exist, got nil")
 }
 

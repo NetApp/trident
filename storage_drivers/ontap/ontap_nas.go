@@ -1377,7 +1377,8 @@ func (d *NASStorageDriver) ConstructGroupSnapshot(
 }
 
 // Get tests for the existence of a volume
-func (d *NASStorageDriver) Get(ctx context.Context, name string) error {
+func (d *NASStorageDriver) Get(ctx context.Context, volConfig *storage.VolumeConfig) error {
+	name := volConfig.InternalName
 	fields := LogFields{"Method": "Get", "Type": "NASStorageDriver"}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Get")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Get")

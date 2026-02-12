@@ -1231,7 +1231,8 @@ func (d *SANStorageDriver) ConstructGroupSnapshot(
 }
 
 // Get tests for the existence of a volume
-func (d *SANStorageDriver) Get(ctx context.Context, name string) error {
+func (d *SANStorageDriver) Get(ctx context.Context, volConfig *storage.VolumeConfig) error {
+	name := volConfig.InternalName
 	fields := LogFields{"Method": "Get", "Type": "SANStorageDriver"}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Get")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Get")

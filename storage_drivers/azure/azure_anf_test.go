@@ -7771,7 +7771,12 @@ func TestGet(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, "volume1").Return(filesystem, nil).Times(1)
 
-	result := driver.Get(ctx, "volume1")
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "volume1",
+		InternalName: "volume1",
+	}
+
+	result := driver.Get(ctx, volConfig1)
 
 	assert.NoError(t, result, "expected no error")
 }
@@ -7782,7 +7787,12 @@ func TestGet_DiscoveryFailed(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(errFailed).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, "volume1").Times(0)
 
-	result := driver.Get(ctx, "volume1")
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "volume1",
+		InternalName: "volume1",
+	}
+
+	result := driver.Get(ctx, volConfig1)
 
 	assert.Error(t, result, "expected error")
 }
@@ -7793,7 +7803,12 @@ func TestGet_NotFound(t *testing.T) {
 	mockAPI.EXPECT().RefreshAzureResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeByCreationToken(ctx, "volume1").Return(nil, errFailed).Times(1)
 
-	result := driver.Get(ctx, "volume1")
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "volume1",
+		InternalName: "volume1",
+	}
+
+	result := driver.Get(ctx, volConfig1)
 
 	assert.Error(t, result, "expected error")
 }

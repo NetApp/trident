@@ -3165,9 +3165,14 @@ func TestNVMeGetGroupSnapshotTarget(t *testing.T) {
 func TestNVMeGet_Success(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 
-	mAPI.EXPECT().VolumeExists(ctx, "test-vol").Return(true, nil)
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "test-vol",
+		InternalName: "trident_test_vol",
+	}
 
-	err := d.Get(ctx, "test-vol")
+	mAPI.EXPECT().VolumeExists(ctx, "trident_test_vol").Return(true, nil)
+
+	err := d.Get(ctx, volConfig1)
 
 	assert.NoError(t, err)
 }
@@ -3175,9 +3180,14 @@ func TestNVMeGet_Success(t *testing.T) {
 func TestNVMeGet_NotFound(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 
-	mAPI.EXPECT().VolumeExists(ctx, "missing-vol").Return(false, nil)
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "missing-vol",
+		InternalName: "trident_missing_vol",
+	}
 
-	err := d.Get(ctx, "missing-vol")
+	mAPI.EXPECT().VolumeExists(ctx, "trident_missing_vol").Return(false, nil)
+
+	err := d.Get(ctx, volConfig1)
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "does not exist")
@@ -3186,9 +3196,14 @@ func TestNVMeGet_NotFound(t *testing.T) {
 func TestNVMeGet_APIError(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 
-	mAPI.EXPECT().VolumeExists(ctx, "test-vol").Return(false, errors.New("API error"))
+	volConfig1 := &storage.VolumeConfig{
+		Name:         "test-vol",
+		InternalName: "trident_test_vol",
+	}
 
-	err := d.Get(ctx, "test-vol")
+	mAPI.EXPECT().VolumeExists(ctx, "trident_test_vol").Return(false, errors.New("API error"))
+
+	err := d.Get(ctx, volConfig1)
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "error checking for existing volume")

@@ -1103,7 +1103,8 @@ func (d *ASANVMeStorageDriver) DeleteSnapshot(
 }
 
 // Get tests for the existence of a volume
-func (d *ASANVMeStorageDriver) Get(ctx context.Context, name string) error {
+func (d *ASANVMeStorageDriver) Get(ctx context.Context, volConfig *storage.VolumeConfig) error {
+	name := volConfig.InternalName
 	fields := LogFields{"Method": "Get", "Type": "ASANVMeStorageDriver"}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Get")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Get")

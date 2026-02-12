@@ -1289,17 +1289,14 @@ func (d *NASQtreeStorageDriver) DeleteSnapshot(
 }
 
 // Get tests for the existence of a volume
-func (d *NASQtreeStorageDriver) Get(ctx context.Context, name string) error {
+func (d *NASQtreeStorageDriver) Get(ctx context.Context, volConfig *storage.VolumeConfig) error {
+	name := volConfig.InternalName
 	fields := LogFields{"Method": "Get", "Type": "NASQtreeStorageDriver"}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Get")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Get")
 
 	// Generic user-facing message
 	getError := fmt.Errorf("volume %s not found", name)
-
-	volConfig := &storage.VolumeConfig{
-		InternalName: name,
-	}
 
 	volumePattern, name, err := d.SetVolumePatternToFindQtree(ctx, volConfig.InternalID, volConfig.InternalName,
 		d.FlexvolNamePrefix())
@@ -2701,11 +2698,17 @@ func (d *NASQtreeStorageDriver) SetVolumePatternToFindQtree(
 			return "", "", fmt.Errorf("error in parsing Internal ID %s", internalID)
 		}
 	}
+
 	fields := LogFields{
 		"volumePattern": volumePattern,
 		"qtreeName":     qtreeName,
+		"internalID":    internalID,
 	}
-	Logc(ctx).WithFields(fields).Debug("setting volumePattern")
+	if internalID != "" {
+		Logc(ctx).WithFields(fields).Trace("Optimized qtree search: targeting specific flexvol.")
+	} else {
+		Logc(ctx).WithFields(fields).Trace("Unoptimized qtree search: using wildcard pattern.")
+	}
 
 	return volumePattern, qtreeName, nil
 }
