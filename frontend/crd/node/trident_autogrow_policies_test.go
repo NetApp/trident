@@ -5,6 +5,7 @@ package crd
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -33,6 +34,19 @@ import (
 func getTestContext() context.Context {
 	ctx := context.Background()
 	return ctx
+}
+
+func TestMain(m *testing.M) {
+	// Setup test environment once for all tests in the package
+	os.Setenv("KUBE_FEATURE_WatchListClient", "false")
+
+	// Run all tests
+	code := m.Run()
+
+	// Cleanup
+	os.Unsetenv("KUBE_FEATURE_WatchListClient")
+
+	os.Exit(code)
 }
 
 // createTestAGP creates a test TridentAutogrowPolicy object

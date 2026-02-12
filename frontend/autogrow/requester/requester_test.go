@@ -5,6 +5,7 @@ package requester
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -110,6 +111,18 @@ func (f *fakeAGPLister) Get(name string) (*v1.TridentAutogrowPolicy, error) {
 // ============================================================================
 // Helper Functions
 // ============================================================================
+func TestMain(m *testing.M) {
+	// Setup test environment once for all tests in the package
+	os.Setenv("KUBE_FEATURE_WatchListClient", "false")
+
+	// Run all tests
+	code := m.Run()
+
+	// Cleanup
+	os.Unsetenv("KUBE_FEATURE_WatchListClient")
+
+	os.Exit(code)
+}
 
 func setupTestEnvironment(t *testing.T, policies ...*v1.TridentAutogrowPolicy) (
 	*fake.Clientset,

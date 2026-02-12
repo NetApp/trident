@@ -4,6 +4,7 @@ package autogrow
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
@@ -37,6 +38,19 @@ import (
 func getTestContext() context.Context {
 	ctx := context.Background()
 	return ctx
+}
+
+func TestMain(m *testing.M) {
+	// Disable WatchListClient feature for all tests to prevent fake client bookmark issues
+	os.Setenv("KUBE_FEATURE_WatchListClient", "false")
+
+	// Run all tests
+	code := m.Run()
+
+	// Cleanup
+	os.Unsetenv("KUBE_FEATURE_WatchListClient")
+
+	os.Exit(code)
 }
 
 // setupTestListers creates fake K8s listers for testing

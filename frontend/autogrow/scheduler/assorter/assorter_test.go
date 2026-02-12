@@ -4,6 +4,7 @@ package assorter
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
@@ -24,6 +25,19 @@ func getTestContext() (context.Context, context.CancelFunc) {
 
 func mockPublishFunc(ctx context.Context, volumeNames []string) error {
 	return nil
+}
+
+func TestMain(m *testing.M) {
+	// Setup test environment once for all tests in the package
+	os.Setenv("KUBE_FEATURE_WatchListClient", "false")
+
+	// Run all tests
+	code := m.Run()
+
+	// Cleanup
+	os.Unsetenv("KUBE_FEATURE_WatchListClient")
+
+	os.Exit(code)
 }
 
 // fakeConfig is a fake config type for testing unsupported config scenarios

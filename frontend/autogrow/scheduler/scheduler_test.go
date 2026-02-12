@@ -5,6 +5,7 @@ package scheduler
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -45,6 +46,19 @@ import (
 // and returns a predetermined error
 type fakeTVPLister struct {
 	err error
+}
+
+func TestMain(m *testing.M) {
+	// Setup test environment once for all tests in the package
+	os.Setenv("KUBE_FEATURE_WatchListClient", "false")
+
+	// Run all tests
+	code := m.Run()
+
+	// Cleanup
+	os.Unsetenv("KUBE_FEATURE_WatchListClient")
+
+	os.Exit(code)
 }
 
 func (f *fakeTVPLister) List(selector labels.Selector) (ret []*v1.TridentVolumePublication, err error) {

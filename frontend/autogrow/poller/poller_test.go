@@ -5,6 +5,7 @@ package poller
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -41,6 +42,19 @@ import (
 func getTestContext() context.Context {
 	ctx := context.Background()
 	return ctx
+}
+
+func TestMain(m *testing.M) {
+	// Disable WatchListClient feature for all tests to prevent fake client bookmark issues
+	os.Setenv("KUBE_FEATURE_WatchListClient", "false")
+
+	// Run all tests
+	code := m.Run()
+
+	// Cleanup
+	os.Unsetenv("KUBE_FEATURE_WatchListClient")
+
+	os.Exit(code)
 }
 
 // getTestAutogrowCache returns a test autogrow cache instance
