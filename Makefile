@@ -280,6 +280,7 @@ docker_build_windows = $1 build \
 docker_build_operator = $1 build \
 	--platform $2 \
 	--file operator/Dockerfile \
+	--build-arg ARCH=$(call arch,$2) \
 	--build-arg BIN=$(call binary_path,trident-operator,$2) \
 	--build-arg VERSION=$(VERSION) \
 	$(if $(TRIDENT_DEPS_IMAGE),--build-arg DEPS_IMAGE=$(TRIDENT_DEPS_IMAGE)) \
