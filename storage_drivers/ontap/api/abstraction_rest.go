@@ -2224,7 +2224,7 @@ func (d OntapAPIREST) LunDestroy(ctx context.Context, lunPath string) error {
 }
 
 func (d OntapAPIREST) LunSetAttribute(
-	ctx context.Context, lunPath, attribute, fstype, context, luks, formatOptions string,
+	ctx context.Context, lunPath, attribute, fstype, context, luks, formatOptions, poolName string,
 ) error {
 	if strings.Contains(lunPath, failureLUNSetAttr) {
 		return errors.New("injected error")
@@ -2254,6 +2254,12 @@ func (d OntapAPIREST) LunSetAttribute(
 			Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the format options attribute for new LUN.")
 			return fmt.Errorf("failed to save the formatOptions attribute for new LUN: %w", err)
 		}
+	}
+
+	// Save the pool name attribute at the end. Set new attribute as needed before this.
+	if err := d.api.LunSetAttribute(ctx, lunPath, "poolName", poolName); err != nil {
+		Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the pool name attribute for new LUN.")
+		return fmt.Errorf("failed to save the pool name attribute for new LUN: %w", err)
 	}
 
 	return nil

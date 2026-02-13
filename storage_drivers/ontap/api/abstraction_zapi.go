@@ -571,7 +571,7 @@ func (d OntapAPIZAPI) LunGetAttribute(ctx context.Context, lunPath, attributeNam
 }
 
 func (d OntapAPIZAPI) LunSetAttribute(
-	ctx context.Context, lunPath, attribute, fstype, context, luks, formatOptions string,
+	ctx context.Context, lunPath, attribute, fstype, context, luks, formatOptions, poolName string,
 ) error {
 	var attrResponse interface{}
 	var err error
@@ -605,6 +605,13 @@ func (d OntapAPIZAPI) LunSetAttribute(
 			Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the format options attribute for new LUN.")
 			return fmt.Errorf("failed to save the formatOptions attribute for new LUN: %w", err)
 		}
+	}
+
+	// Save the pool name attribute at the end. Set new attribute as needed before this.
+	attrResponse, err = d.api.LunSetAttribute(lunPath, "poolName", poolName)
+	if err = azgo.GetError(ctx, attrResponse, err); err != nil {
+		Logc(ctx).WithField("LUN", lunPath).Warning("Failed to save the pool name attribute for new LUN.")
+		return fmt.Errorf("failed to save the pool name attribute for new LUN: %w", err)
 	}
 
 	return nil

@@ -3791,18 +3791,19 @@ func TestLunSetAttribute(t *testing.T) {
 
 	// case 1: Positive test, update LUN attribute. context is empty.
 	rsi.EXPECT().LunSetAttribute(ctx, "/", "filesystem", "fake-FStype").Return(nil)
-	err := oapi.LunSetAttribute(ctx, "/", "filesystem", "fake-FStype", "", "", "")
+	rsi.EXPECT().LunSetAttribute(ctx, "/", "poolName", "").Return(nil)
+	err := oapi.LunSetAttribute(ctx, "/", "filesystem", "fake-FStype", "", "", "", "")
 	assert.NoError(t, err, "error returned while modifying a LUN attribute")
 
 	// case 2: Positive test, update LUN attribute. pass the value in context..
 	rsi.EXPECT().LunSetAttribute(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	err = oapi.LunSetAttribute(ctx, "/", "filesystem", "fake-FStype",
-		"context", "LUKS", "formatOptions")
+		"context", "LUKS", "formatOptions", "poolName")
 	assert.NoError(t, err, "error returned while modifying a LUN attribute")
 
 	// case 3 Negative test, update LUN attribute returned error..
 	err = oapi.LunSetAttribute(ctx, "failure_7c3a89e2_7d83_457b_9e29_bfdb082c1d8b",
-		"filesystem", "fake-FStype", "context", "LUKS", "formatOptions")
+		"filesystem", "fake-FStype", "context", "LUKS", "formatOptions", "poolName")
 	assert.Error(t, err, "no error returned while modifying a LUN attribute")
 }
 

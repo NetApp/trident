@@ -751,7 +751,7 @@ func (d *SANEconomyStorageDriver) Create(
 
 		// Save the fstype in a LUN attribute so we know what to do in Attach
 		err = d.API.LunSetAttribute(ctx, lunPathEco, LUNAttributeFSType, fstype, string(d.Config.DriverContext),
-			luksEncryption, formatOptions)
+			luksEncryption, formatOptions, storagePool.Name())
 		if err != nil {
 
 			errMessage := fmt.Sprintf(

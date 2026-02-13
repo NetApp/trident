@@ -985,17 +985,17 @@ func (mr *MockOntapAPIMockRecorder) LunRename(ctx, lunPath, newLunPath any) *gom
 }
 
 // LunSetAttribute mocks base method.
-func (m *MockOntapAPI) LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, arg4, luks, formatOptions string) error {
+func (m *MockOntapAPI) LunSetAttribute(ctx context.Context, lunPath, attribute, fstype, arg4, luks, formatOptions, poolName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LunSetAttribute", ctx, lunPath, attribute, fstype, arg4, luks, formatOptions)
+	ret := m.ctrl.Call(m, "LunSetAttribute", ctx, lunPath, attribute, fstype, arg4, luks, formatOptions, poolName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // LunSetAttribute indicates an expected call of LunSetAttribute.
-func (mr *MockOntapAPIMockRecorder) LunSetAttribute(ctx, lunPath, attribute, fstype, arg4, luks, formatOptions any) *gomock.Call {
+func (mr *MockOntapAPIMockRecorder) LunSetAttribute(ctx, lunPath, attribute, fstype, arg4, luks, formatOptions, poolName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunSetAttribute", reflect.TypeOf((*MockOntapAPI)(nil).LunSetAttribute), ctx, lunPath, attribute, fstype, arg4, luks, formatOptions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LunSetAttribute", reflect.TypeOf((*MockOntapAPI)(nil).LunSetAttribute), ctx, lunPath, attribute, fstype, arg4, luks, formatOptions, poolName)
 }
 
 // LunSetComment mocks base method.
