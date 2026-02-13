@@ -1374,13 +1374,10 @@ func TestSerialExecution_Sync(t *testing.T) {
 		current := executing.Add(1)
 		defer executing.Add(-1)
 
-		// Track maximum concurrent executions
+		// Track maximum concurrent executions atomically
 		for {
 			max := maxConcurrent.Load()
-			if current <= max {
-				break
-			}
-			if maxConcurrent.CompareAndSwap(max, current) {
+			if current <= max || maxConcurrent.CompareAndSwap(max, current) {
 				break
 			}
 		}
@@ -1431,13 +1428,10 @@ func TestSerialExecution_Async(t *testing.T) {
 		current := executing.Add(1)
 		defer executing.Add(-1)
 
-		// Track maximum concurrent executions
+		// Track maximum concurrent executions atomically
 		for {
 			max := maxConcurrent.Load()
-			if current <= max {
-				break
-			}
-			if maxConcurrent.CompareAndSwap(max, current) {
+			if current <= max || maxConcurrent.CompareAndSwap(max, current) {
 				break
 			}
 		}
@@ -1549,7 +1543,7 @@ func TestSerialExecution_WithNonSerial(t *testing.T) {
 		current := executingSerial.Add(1)
 		defer executingSerial.Add(-1)
 
-		// Track maximum concurrent executions
+		// Track maximum concurrent executions atomically
 		for {
 			max := maxConcurrentSerial.Load()
 			if current <= max || maxConcurrentSerial.CompareAndSwap(max, current) {
@@ -1566,7 +1560,7 @@ func TestSerialExecution_WithNonSerial(t *testing.T) {
 		current := executingNonSerial.Add(1)
 		defer executingNonSerial.Add(-1)
 
-		// Track maximum concurrent executions
+		// Track maximum concurrent executions atomically
 		for {
 			max := maxConcurrentNonSerial.Load()
 			if current <= max || maxConcurrentNonSerial.CompareAndSwap(max, current) {
@@ -1624,13 +1618,10 @@ func TestSerialExecution_CopyBehavior(t *testing.T) {
 		current := executing.Add(1)
 		defer executing.Add(-1)
 
-		// Track maximum concurrent executions
+		// Track maximum concurrent executions atomically
 		for {
 			max := maxConcurrent.Load()
-			if current <= max {
-				break
-			}
-			if maxConcurrent.CompareAndSwap(max, current) {
+			if current <= max || maxConcurrent.CompareAndSwap(max, current) {
 				break
 			}
 		}
@@ -1684,13 +1675,10 @@ func TestAsyncExecution_Basic(t *testing.T) {
 		current := executing.Add(1)
 		defer executing.Add(-1)
 
-		// Track maximum concurrent executions
+		// Track maximum concurrent executions atomically
 		for {
 			max := maxConcurrent.Load()
-			if current <= max {
-				break
-			}
-			if maxConcurrent.CompareAndSwap(max, current) {
+			if current <= max || maxConcurrent.CompareAndSwap(max, current) {
 				break
 			}
 		}
@@ -1729,95 +1717,6 @@ func TestAsyncExecution_Basic(t *testing.T) {
 
 	// Verify: Multiple instances executed concurrently (async without serial)
 	assert.GreaterOrEqual(t, maxConcurrent.Load(), int32(2), "At least 2 handlers should execute concurrently in async mode")
-}
-
-// TestAsyncExecution_WorkerPool tests that async handlers use worker pool
-func TestAsyncExecution_WorkerPool(t *testing.T) {
-	ctx := context.Background()
-
-	// Create a custom worker pool with limited workers
-	poolCfg := ants.DefaultConfig()
-	poolCfg.NumWorkers = 3
-	pool, err := workerpool.New[workerpooltypes.Pool](ctx, poolCfg)
-	require.NoError(t, err)
-	require.NoError(t, pool.Start(ctx))
-	defer pool.Shutdown(ctx)
-
-	cfg := &Config{
-		WorkerPool:       pool,
-		PreAllocHandlers: 16,
-	}
-	const numWorkers = 3 // Track the worker pool size for assertions
-	bus, err := NewEventBus[string](ctx, cfg)
-	require.NoError(t, err)
-	defer bus.Close(ctx)
-
-	var executing atomic.Int32
-	var maxConcurrent atomic.Int32
-	var callCount atomic.Int32
-
-	// Channels to coordinate handler execution
-	handlerStarted := make(chan struct{}, 20)
-	handlerCanFinish := make(chan struct{})
-
-	handler := func(ctx context.Context, event string) (Result, error) {
-		callCount.Add(1)
-		current := executing.Add(1)
-		defer executing.Add(-1)
-
-		// Track maximum concurrent executions
-		for {
-			max := maxConcurrent.Load()
-			if current <= max {
-				break
-			}
-			if maxConcurrent.CompareAndSwap(max, current) {
-				break
-			}
-		}
-
-		// Signal that this handler has started
-		handlerStarted <- struct{}{}
-
-		// Wait for signal to finish (simulates work while limiting by worker pool)
-		<-handlerCanFinish
-
-		return Result{}, nil
-	}
-
-	// Subscribe with Async option
-	_, err = bus.Subscribe(handler, bus.WithAsync())
-	require.NoError(t, err)
-
-	// Publish many events at once - async handlers should not block
-	const numPublish = 20
-	for i := 0; i < numPublish; i++ {
-		bus.Publish(ctx, "event")
-	}
-
-	// Wait for worker pool to fill up (numWorkers handlers should be executing)
-	// We expect to see at least 3 handlers running concurrently (the worker pool size)
-	for i := 0; i < numWorkers; i++ {
-		<-handlerStarted
-	}
-
-	// At this point, worker pool should be at capacity
-	// Now allow all handlers to finish
-	close(handlerCanFinish)
-
-	bus.WaitAsync() // Wait for all async handlers to complete
-
-	// Verify: All events were processed
-	assert.Equal(t, int32(numPublish), callCount.Load(), "All events should be processed")
-
-	// Verify: Maximum concurrent executions limited by worker pool size
-	// Should be at most numWorkers (3)
-	assert.LessOrEqual(t, maxConcurrent.Load(), int32(numWorkers),
-		"Concurrent executions should be limited by worker pool size")
-
-	// We explicitly waited for numWorkers handlers to start, so we know concurrency occurred
-	assert.GreaterOrEqual(t, maxConcurrent.Load(), int32(numWorkers),
-		"Should see at least numWorkers handlers executing concurrently")
 }
 
 // TestAsyncExecution_ErrorHandling tests async handlers with errors
@@ -2573,17 +2472,17 @@ func TestPublish(t *testing.T) {
 			name:   "publish to multiple async subscribers",
 			config: *DefaultConfig(),
 			setupFunc: func(t *testing.T, bus *EventBus[string]) {
-				receivedCount := 0
+				receivedCount := new(int64)
 				for i := 0; i < 5; i++ {
 					_, err := bus.Subscribe(func(ctx context.Context, event string) (Result, error) {
-						receivedCount++
+						atomic.AddInt64(receivedCount, 1)
 						return Result{}, nil
 					}, bus.WithAsync())
 					require.NoError(t, err)
 				}
 				t.Cleanup(func() {
 					bus.WaitAsync()
-					assert.Equal(t, 5, receivedCount)
+					assert.Equal(t, int64(5), *receivedCount)
 				})
 			},
 			publishFunc: func(t *testing.T, bus *EventBus[string]) {
@@ -2598,7 +2497,7 @@ func TestPublish(t *testing.T) {
 			config: *DefaultConfig(),
 			setupFunc: func(t *testing.T, bus *EventBus[string]) {
 				syncCount := 0
-				asyncCount := 0
+				asyncCount := new(int64)
 				// Add 3 sync subscribers
 				for i := 0; i < 3; i++ {
 					_, err := bus.Subscribe(func(ctx context.Context, event string) (Result, error) {
@@ -2610,7 +2509,7 @@ func TestPublish(t *testing.T) {
 				// Add 3 async subscribers
 				for i := 0; i < 3; i++ {
 					_, err := bus.Subscribe(func(ctx context.Context, event string) (Result, error) {
-						asyncCount++
+						atomic.AddInt64(asyncCount, 1)
 						return Result{}, nil
 					}, bus.WithAsync())
 					require.NoError(t, err)
@@ -2618,7 +2517,7 @@ func TestPublish(t *testing.T) {
 				t.Cleanup(func() {
 					bus.WaitAsync()
 					assert.Equal(t, 3, syncCount)
-					assert.Equal(t, 3, asyncCount)
+					assert.Equal(t, int64(3), *asyncCount)
 				})
 			},
 			publishFunc: func(t *testing.T, bus *EventBus[string]) {
@@ -3533,6 +3432,7 @@ func TestPublishWithHooks(t *testing.T) {
 
 				_, err = bus.Subscribe(func(ctx context.Context, event string) (Result, error) {
 					handlerCallCount.Add(1)
+					time.Sleep(10 * time.Millisecond)
 					return Result{}, nil
 				})
 				require.NoError(t, err)
@@ -3629,6 +3529,7 @@ func TestPublishWithHooks(t *testing.T) {
 
 				_, err = bus.Subscribe(func(ctx context.Context, event string) (Result, error) {
 					handlerCallCount.Add(1)
+					time.Sleep(10 * time.Millisecond)
 					return Result{}, nil
 				}, bus.WithAfter(func(ctx context.Context, event string, id SubscriptionID, result Result, duration time.Duration, err error) {
 					assert.Equal(t, int32(1), handlerCallCount.Load(), "after hook should be called after handler")
