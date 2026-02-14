@@ -55,18 +55,18 @@ func (mr *MockISCSIMockRecorder) AddSession(ctx, sessions, publishInfo, volID, s
 }
 
 // AttachVolumeRetry mocks base method.
-func (m *MockISCSI) AttachVolumeRetry(ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string, timeout time.Duration) (int64, error) {
+func (m *MockISCSI) AttachVolumeRetry(ctx context.Context, publishInfo *models.VolumePublishInfo, timeout time.Duration) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AttachVolumeRetry", ctx, name, mountpoint, publishInfo, secrets, timeout)
+	ret := m.ctrl.Call(m, "AttachVolumeRetry", ctx, publishInfo, timeout)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AttachVolumeRetry indicates an expected call of AttachVolumeRetry.
-func (mr *MockISCSIMockRecorder) AttachVolumeRetry(ctx, name, mountpoint, publishInfo, secrets, timeout any) *gomock.Call {
+func (mr *MockISCSIMockRecorder) AttachVolumeRetry(ctx, publishInfo, timeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachVolumeRetry", reflect.TypeOf((*MockISCSI)(nil).AttachVolumeRetry), ctx, name, mountpoint, publishInfo, secrets, timeout)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachVolumeRetry", reflect.TypeOf((*MockISCSI)(nil).AttachVolumeRetry), ctx, publishInfo, timeout)
 }
 
 // EnsureSessionWithPortalDiscovery mocks base method.
@@ -95,6 +95,20 @@ func (m *MockISCSI) EnsureSessionsWithPortalDiscovery(ctx context.Context, hostD
 func (mr *MockISCSIMockRecorder) EnsureSessionsWithPortalDiscovery(ctx, hostDataIPs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureSessionsWithPortalDiscovery", reflect.TypeOf((*MockISCSI)(nil).EnsureSessionsWithPortalDiscovery), ctx, hostDataIPs)
+}
+
+// EnsureVolumeFormattedAndMounted mocks base method.
+func (m *MockISCSI) EnsureVolumeFormattedAndMounted(ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureVolumeFormattedAndMounted", ctx, name, mountPoint, publishInfo, luksFormatted)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnsureVolumeFormattedAndMounted indicates an expected call of EnsureVolumeFormattedAndMounted.
+func (mr *MockISCSIMockRecorder) EnsureVolumeFormattedAndMounted(ctx, name, mountPoint, publishInfo, luksFormatted any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVolumeFormattedAndMounted", reflect.TypeOf((*MockISCSI)(nil).EnsureVolumeFormattedAndMounted), ctx, name, mountPoint, publishInfo, luksFormatted)
 }
 
 // GetDeviceInfoForLUN mocks base method.

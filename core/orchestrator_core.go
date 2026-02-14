@@ -38,7 +38,10 @@ import (
 	drivers "github.com/netapp/trident/storage_drivers"
 	"github.com/netapp/trident/storage_drivers/fake"
 	"github.com/netapp/trident/utils/autogrow"
+	"github.com/netapp/trident/utils/devices"
+	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/fcp"
 	"github.com/netapp/trident/utils/filesystem"
 	"github.com/netapp/trident/utils/iscsi"
@@ -4082,13 +4085,50 @@ func (o *TridentOrchestrator) AttachVolume(
 		var err error
 		if publishInfo.SANType == sa.NVMe {
 			nvmeHandler := nvme.NewNVMeHandler()
-			err = nvmeHandler.AttachNVMeVolumeRetry(ctx, volumeName, mountpoint, publishInfo, map[string]string{},
-				nvme.NVMeAttachTimeout)
+			err = nvmeHandler.AttachNVMeVolumeRetry(ctx, publishInfo, nvme.NVMeAttachTimeout)
+			if err != nil {
+				return err
+			}
+
+			// Cryptsetup format if necessary and map to host
+			var luksFormatted bool
+			luksFormatted, err = nvmeHandler.EnsureCryptsetupFormattedAndMappedOnHost(
+				ctx, volumeName, publishInfo, map[string]string{},
+			)
+			if err != nil {
+				return err
+			}
+
+			// Format and mount if necessary
+			if err = nvmeHandler.EnsureVolumeFormattedAndMounted(
+				ctx, volumeName, mountpoint, publishInfo, luksFormatted,
+			); err != nil {
+				return err
+			}
 		}
 
 		if publishInfo.SANType == sa.ISCSI {
-			_, err = o.iscsi.AttachVolumeRetry(ctx, volumeName, mountpoint, publishInfo, map[string]string{},
-				AttachISCSIVolumeTimeoutLong)
+			_, err = o.iscsi.AttachVolumeRetry(ctx, publishInfo, AttachISCSIVolumeTimeoutLong)
+			if err != nil {
+				return err
+			}
+
+			// Cryptsetup format if necessary and map to host
+			command := exec.NewCommand()
+			var luksFormatted bool
+			luksFormatted, err = luks.EnsureCryptsetupFormattedAndMappedOnHost(
+				ctx, volumeName, publishInfo, map[string]string{}, command, devices.New(),
+			)
+			if err != nil {
+				return err
+			}
+
+			// Format and mount if necessary
+			if err = o.iscsi.EnsureVolumeFormattedAndMounted(
+				ctx, volumeName, mountpoint, publishInfo, luksFormatted,
+			); err != nil {
+				return err
+			}
 		}
 		return err
 	}

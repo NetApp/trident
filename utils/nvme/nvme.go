@@ -15,7 +15,6 @@ import (
 
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
@@ -257,15 +256,14 @@ func extractIPFromNVMeAddress(a string) string {
 }
 
 func (nh *NVMeHandler) AttachNVMeVolumeRetry(
-	ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
-	timeout time.Duration,
+	ctx context.Context, publishInfo *models.VolumePublishInfo, timeout time.Duration,
 ) error {
 	Logc(ctx).Debug(">>>> nvme.AttachNVMeVolumeRetry")
 	defer Logc(ctx).Debug("<<<< nvme.AttachNVMeVolumeRetry")
 	var err error
 
 	checkAttachNVMeVolume := func() error {
-		return nh.AttachNVMeVolume(ctx, name, mountpoint, publishInfo, secrets)
+		return nh.AttachNVMeVolume(ctx, publishInfo)
 	}
 
 	attachNotify := func(err error, duration time.Duration) {
@@ -286,7 +284,7 @@ func (nh *NVMeHandler) AttachNVMeVolumeRetry(
 }
 
 func (nh *NVMeHandler) AttachNVMeVolume(
-	ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
+	ctx context.Context, publishInfo *models.VolumePublishInfo,
 ) error {
 	Logc(ctx).Debug(">>>> nvme.AttachNVMeVolume")
 	defer Logc(ctx).Debug("<<<< nvme.AttachNVMeVolume")
@@ -307,48 +305,32 @@ func (nh *NVMeHandler) AttachNVMeVolume(
 	devPath := nvmeDev.GetPath()
 	publishInfo.DevicePath = devPath
 
-	if err = nh.NVMeMountVolume(ctx, name, mountpoint, publishInfo, secrets); err != nil {
-		return err
-	}
-
 	return nil
 }
 
-func (nh *NVMeHandler) NVMeMountVolume(
-	ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
+// EnsureVolumeFormattedAndMounted checks if the device is formatted and formats if necessary.
+// If the mountPoint parameter is specified, the volume will be mounted to it.
+// The device path is set on the in-out publishInfo parameter so that it may be mounted later instead.
+func (nh *NVMeHandler) EnsureVolumeFormattedAndMounted(
+	ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted bool,
 ) error {
-	Logc(ctx).Debug(">>>> nvme.NVMeMountVolume")
-	defer Logc(ctx).Debug("<<<< nvme.NVMeMountVolume")
+	Logc(ctx).Debug(">>>> nvme.EnsureVolumeFormattedAndMounted")
+	defer Logc(ctx).Debug("<<<< nvme.EnsureVolumeFormattedAndMounted")
+
+	// No filesystem work is required for raw block; return early.
+	if publishInfo.FilesystemType == filesystem.Raw {
+		return nil
+	}
 
 	// Initially, the device path raw device path for this NVMe namespace.
 	devicePath := publishInfo.DevicePath
 
-	// If LUKS encryption is requested, ensure the device is formatted and open.
-	var luksFormatted bool
-	var err error
-	isLUKSDevice := convert.ToBool(publishInfo.LUKSEncryption)
+	isLUKSDevice, err := luks.IsLuksDevice(publishInfo)
+	if err != nil {
+		return err
+	}
 	if isLUKSDevice {
-		luksDevice := luks.NewDevice(devicePath, name, nh.command)
-		if luksDevice.IsMappingStale(ctx) {
-			luksPath := luksDevice.MappedDevicePath()
-			Logc(ctx).WithFields(LogFields{
-				"device": devicePath,
-				"mapper": luksPath,
-			}).Info("Removing stale LUKS mapping.")
-			if err := nh.devicesClient.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksPath); err != nil {
-				return fmt.Errorf("could not remove LUKS mapping '%s' for device '%s'; %w", luksPath, devicePath, err)
-			}
-		}
-
-		luksFormatted, err = luksDevice.EnsureDeviceMappedOnHost(ctx, name, secrets)
-		if err != nil {
-			return err
-		}
-
-		if err := afterFormatBeforeFileSystem.Inject(); err != nil {
-			return err
-		}
-
+		luksDevice := luks.NewDevice(devicePath, name, nh.command, nh.devicesClient)
 		devicePath = luksDevice.MappedDevicePath()
 	}
 
@@ -361,11 +343,6 @@ func (nh *NVMeHandler) NVMeMountVolume(
 			"shouldBeLUKS":    isLUKSDevice,
 		}).Error("Device should be a LUKS device but is not LUKS formatted.")
 		return errors.New("device should be a LUKS device but is not LUKS formatted")
-	}
-
-	// No filesystem work is required for raw block; return early.
-	if publishInfo.FilesystemType == filesystem.Raw {
-		return nil
 	}
 
 	existingFstype, err := nh.devicesClient.GetDeviceFSType(ctx, devicePath)
@@ -425,13 +402,12 @@ func (nh *NVMeHandler) NVMeMountVolume(
 	}
 
 	// Optionally mount the device
-	if mountpoint != "" {
-		if err := nh.mountClient.MountDevice(ctx, devicePath, mountpoint, publishInfo.MountOptions, false); err != nil {
+	if mountPoint != "" {
+		if err := nh.mountClient.MountDevice(ctx, devicePath, mountPoint, publishInfo.MountOptions, false); err != nil {
 			return fmt.Errorf("error mounting Namespace %v, device %v, mountpoint %v; %s",
-				name, devicePath, mountpoint, err)
+				name, devicePath, mountPoint, err)
 		}
 	}
-
 	return nil
 }
 
@@ -718,4 +694,45 @@ func (nh *NVMeHandler) RectifyNVMeSession(
 			Logc(ctx).Infof("NVMe Self healing succeeded for %s", subsystemToFix.NQN)
 		}
 	}
+}
+
+// EnsureCryptsetupFormattedAndMappedOnHost checks if the device is a LUKS device, and ensures it is formatted and
+// mapped on the host. If the device mapping is stale, it removes the stale mapping before proceeding.
+func (nh *NVMeHandler) EnsureCryptsetupFormattedAndMappedOnHost(
+	ctx context.Context, name string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
+) (bool, error) {
+	Logc(ctx).Debug(">>>> nvme.EnsureCryptsetupFormattedAndMappedOnHost")
+	defer Logc(ctx).Debug("<<<< nvme.EnsureCryptsetupFormattedAndMappedOnHost")
+	// Initially, the device path raw device path for this NVMe namespace.
+	devicePath := publishInfo.DevicePath
+
+	isLUKSDevice, err := luks.IsLuksDevice(publishInfo)
+	if err != nil {
+		return false, err
+	}
+
+	// Specific for NVMe, if the device mapping is stale, close it before proceeding.
+	var luksFormatted bool
+	if isLUKSDevice {
+		luksDevice := luks.NewDevice(devicePath, name, nh.command, nh.devicesClient)
+		if luksDevice.IsMappingStale(ctx) {
+			luksPath := luksDevice.MappedDevicePath()
+			Logc(ctx).WithFields(LogFields{
+				"device": devicePath,
+				"mapper": luksPath,
+			}).Info("Removing stale LUKS mapping.")
+			if err := nh.devicesClient.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksPath); err != nil {
+				return false, fmt.Errorf("could not remove LUKS mapping '%s' for device '%s'; %w", luksPath, devicePath, err)
+			}
+		}
+		luksFormatted, err = luksDevice.EnsureDeviceMappedOnHost(ctx, name, secrets)
+		if err != nil {
+			return false, err
+		}
+
+		if err := afterFormatBeforeFileSystem.Inject(); err != nil {
+			return false, err
+		}
+	}
+	return luksFormatted, nil
 }

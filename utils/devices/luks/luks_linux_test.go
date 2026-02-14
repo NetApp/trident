@@ -545,7 +545,7 @@ func TestNewDeviceFromMappingPath_Succeeds(t *testing.T) {
 	mockCommand := mockexec.NewMockCommand(mockCtrl)
 	mockCryptsetupLuksStatusWithDevicePath(mockCommand).Return([]byte(execReturnValue), nil)
 
-	luksDevice, err := NewDeviceFromMappingPath(ctx, mockCommand, "/dev/mapper/luks-pvc-test", "pvc-test")
+	luksDevice, err := NewDeviceFromMappingPath(ctx, mockCommand, nil, "/dev/mapper/luks-pvc-test", "pvc-test")
 	assert.NoError(t, err)
 	assert.Equal(t, luksDevice.RawDevicePath(), "/dev/sdb")
 	assert.Equal(t, luksDevice.MappedDevicePath(), "/dev/mapper/luks-pvc-test")
@@ -560,9 +560,28 @@ func TestNewDeviceFromMappingPath_Fails(t *testing.T) {
 	mockCommand := mockexec.NewMockCommand(mockCtrl)
 	mockCryptsetupLuksStatusWithDevicePath(mockCommand).Return([]byte(execReturnValue), nil)
 
-	luksDevice, err := NewDeviceFromMappingPath(ctx, mockCommand, "/dev/mapper/luks-pvc-test", "pvc-test")
+	luksDevice, err := NewDeviceFromMappingPath(ctx, mockCommand, nil, "/dev/mapper/luks-pvc-test", "pvc-test")
 	assert.Error(t, err)
 	assert.Nil(t, luksDevice)
+}
+
+func TestNewDeviceFromMappingPath_Error(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	ctx := context.TODO()
+	mockCommand := mockexec.NewMockCommand(ctrl)
+
+	// Mock command to simulate failure
+	mockCommand.EXPECT().ExecuteWithTimeoutAndInput(
+		gomock.Any(), "cryptsetup", gomock.Any(), true, "", "status", "/dev/mapper/luks-test",
+	).Return(nil, errors.New("command failed"))
+
+	device, err := NewDeviceFromMappingPath(ctx, mockCommand, nil, "/dev/mapper/luks-test", "pvc-test")
+
+	assert.Nil(t, device)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "could not determine underlying device for LUKS mapping")
 }
 
 func TestResize_Succeeds(t *testing.T) {

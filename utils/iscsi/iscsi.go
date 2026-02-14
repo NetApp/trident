@@ -25,7 +25,6 @@ import (
 	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/collection"
-	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/devices/luks"
@@ -93,8 +92,9 @@ var (
 )
 
 type ISCSI interface {
-	AttachVolumeRetry(ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo,
-		secrets map[string]string, timeout time.Duration) (int64, error)
+	AttachVolumeRetry(
+		ctx context.Context, publishInfo *models.VolumePublishInfo, timeout time.Duration,
+	) (int64, error)
 	AddSession(
 		ctx context.Context, sessions *models.ISCSISessions, publishInfo *models.VolumePublishInfo,
 		volID, sessionNumber string, reasonInvalid models.PortalInvalid,
@@ -127,6 +127,9 @@ type ISCSI interface {
 	Supported(ctx context.Context) bool
 	IsPortalAccessible(ctx context.Context, portal string) (bool, error)
 	IsSessionStale(ctx context.Context, sessionID string) bool
+	EnsureVolumeFormattedAndMounted(
+		ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted bool,
+	) error
 }
 
 // Exclusion list contains keywords if found in any Target IQN should not be considered for
@@ -192,8 +195,7 @@ func NewDetailed(chrootPathPrefix string, command tridentexec.Command, selfHeali
 
 // AttachVolumeRetry attaches a volume with retry by invoking AttachVolume with backoff.
 func (client *Client) AttachVolumeRetry(
-	ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
-	timeout time.Duration,
+	ctx context.Context, publishInfo *models.VolumePublishInfo, timeout time.Duration,
 ) (int64, error) {
 	Logc(ctx).Debug(">>>> iscsi.AttachVolumeRetry")
 	defer Logc(ctx).Debug("<<<< iscsi.AttachVolumeRetry")
@@ -205,7 +207,7 @@ func (client *Client) AttachVolumeRetry(
 	}
 
 	checkAttachISCSIVolume := func() error {
-		mpathSize, err = client.AttachVolume(ctx, name, mountpoint, publishInfo, secrets)
+		mpathSize, err = client.AttachVolume(ctx, publishInfo)
 		return err
 	}
 
@@ -359,13 +361,9 @@ func (client *Client) findLUNBySerial(
 // AttachVolume attaches the volume to the local host.
 // This method must be able to accomplish its task using only the publish information passed in.
 // It may be assumed that this method always runs on the host to which the volume will be attached.
-// If the mountpoint parameter is specified, the volume will be mounted to it.
-// The device path is set on the in-out publishInfo parameter so that it may be mounted later instead.
 // If multipath device size is found to be inconsistent with device size, then the correct size is returned.
 func (client *Client) AttachVolume(
-	ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo,
-	secrets map[string]string,
-) (int64, error) {
+	ctx context.Context, publishInfo *models.VolumePublishInfo) (int64, error) {
 	Logc(ctx).Debug(">>>> iscsi.AttachVolume")
 	defer Logc(ctx).Debug("<<<< iscsi.AttachVolume")
 
@@ -389,8 +387,6 @@ func (client *Client) AttachVolume(
 	}
 
 	Logc(ctx).WithFields(LogFields{
-		"volume":         name,
-		"mountPoint":     mountPoint,
 		"lunID":          lunID,
 		"portals":        portals,
 		"targetIQN":      publishInfo.IscsiTargetIQN,
@@ -617,7 +613,9 @@ func (client *Client) AttachVolume(
 	}
 
 	if deviceToUse == "" {
-		return mpathSize, fmt.Errorf("could not determine device to use for %v", name)
+		return mpathSize, fmt.Errorf(
+			"could not determine device to use for LUN: %v, IQN: %s", deviceInfo.LUN, deviceInfo.IQN,
+		)
 	}
 
 	devicePath := "/dev/" + deviceToUse
@@ -627,100 +625,6 @@ func (client *Client) AttachVolume(
 
 	// Return the device in the publish info in case the mount will be done later
 	publishInfo.DevicePath = devicePath
-
-	// If LUKS encryption is requested, ensure the device is formatted and open.
-	var luksFormatted bool
-	isLUKSDevice := convert.ToBool(publishInfo.LUKSEncryption)
-	if isLUKSDevice {
-		luksDevice := luks.NewDevice(devicePath, name, client.command)
-		luksFormatted, err = luksDevice.EnsureDeviceMappedOnHost(ctx, name, secrets)
-		if err != nil {
-			return mpathSize, err
-		}
-
-		devicePath = luksDevice.MappedDevicePath()
-	}
-
-	// Fail fast if the device should be a LUKS device but is not LUKS formatted.
-	if isLUKSDevice && !luksFormatted {
-		Logc(ctx).WithFields(LogFields{
-			"devicePath":      publishInfo.DevicePath,
-			"luksMapperPath":  devicePath,
-			"isLUKSFormatted": luksFormatted,
-			"isLUKSDevice":    isLUKSDevice,
-		}).Error("Device should be a LUKS device but is not LUKS formatted.")
-		return mpathSize, errors.New("device should be a LUKS device but is not LUKS formatted")
-	}
-
-	if publishInfo.FilesystemType == filesystem.Raw {
-		return mpathSize, nil
-	}
-
-	existingFstype, err := client.devices.GetDeviceFSType(ctx, devicePath)
-	if err != nil {
-		return mpathSize, err
-	}
-	if existingFstype == "" {
-		if !isLUKSDevice {
-			if unformatted, err := client.devices.IsDeviceUnformatted(ctx, devicePath); err != nil {
-				Logc(ctx).WithField(
-					"device", devicePath,
-				).WithError(err).Errorf("Unable to identify if the device is not formatted.")
-				return mpathSize, err
-			} else if !unformatted {
-				Logc(ctx).WithField(
-					"device", devicePath,
-				).WithError(err).Errorf("Device is not unformatted.")
-				return mpathSize, fmt.Errorf("device %v is not unformatted", devicePath)
-			}
-		}
-
-		Logc(ctx).WithFields(LogFields{
-			"volume":        name,
-			"lunID":         lunID,
-			"fstype":        publishInfo.FilesystemType,
-			"formatOptions": publishInfo.FormatOptions,
-		}).Debug("Formatting iSCSI LUN.")
-		err = client.fileSystemClient.FormatVolume(ctx, devicePath, publishInfo.FilesystemType, publishInfo.FormatOptions)
-		if err != nil {
-			return mpathSize, fmt.Errorf("error formatting LUN %s, device %s: %v", name, deviceToUse, err)
-		}
-	} else if existingFstype != filesystem.UnknownFstype && existingFstype != publishInfo.FilesystemType {
-		Logc(ctx).WithFields(LogFields{
-			"volume":          name,
-			"existingFstype":  existingFstype,
-			"requestedFstype": publishInfo.FilesystemType,
-		}).Error("LUN already formatted with a different file system type.")
-		return mpathSize, fmt.Errorf("LUN %s, device %s already formatted with other filesystem: %s",
-			name, deviceToUse, existingFstype)
-	} else {
-		Logc(ctx).WithFields(LogFields{
-			"volume": name,
-			"fstype": deviceInfo.Filesystem,
-		}).Debug("LUN already formatted.")
-	}
-
-	// Attempt to resolve any filesystem inconsistencies that might be due to dirty node shutdowns, cloning
-	// in-use volumes, or creating volumes from snapshots taken from in-use volumes.  This is only safe to do
-	// if a device is not mounted.  The fsck command returns a non-zero exit code if filesystem errors are found,
-	// even if they are completely and automatically fixed, so we don't return any error here.
-	mounted, err := client.mountClient.IsMounted(ctx, devicePath, "", "")
-	if err != nil {
-		return mpathSize, err
-	}
-	if !mounted {
-		client.fileSystemClient.RepairVolume(ctx, devicePath, publishInfo.FilesystemType)
-	}
-
-	// Optionally mount the device
-	if mountPoint != "" {
-		if err := client.mountClient.MountDevice(ctx, devicePath, mountPoint, publishInfo.MountOptions,
-			false); err != nil {
-			return mpathSize, fmt.Errorf("error mounting LUN %v, device %v, mountpoint %v; %s",
-				name, deviceToUse, mountPoint, err)
-		}
-	}
-
 	return mpathSize, nil
 }
 
@@ -3473,5 +3377,107 @@ func InitiateScanForLuns(ctx context.Context, luns []int32, target string) error
 		return fmt.Errorf("failed to initiate scan; %w", err)
 	}
 
+	return nil
+}
+
+// EnsureVolumeFormattedAndMounted checks if the device is formatted and formats if necessary.
+// If the mountPoint parameter is specified, the volume will be mounted to it.
+// The device path is set on the in-out publishInfo parameter so that it may be mounted later instead.
+func (client *Client) EnsureVolumeFormattedAndMounted(
+	ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted bool,
+) error {
+	Logc(ctx).Debug(">>>> iscsi.EnsureVolumeFormattedAndMounted")
+	defer Logc(ctx).Debug("<<<< iscsi.EnsureVolumeFormattedAndMounted")
+	devicePath := publishInfo.DevicePath
+
+	isLUKSDevice, err := luks.IsLuksDevice(publishInfo)
+	if err != nil {
+		return err
+	}
+	if isLUKSDevice {
+		luksDevice := luks.NewDevice(devicePath, name, client.command, client.devices)
+		devicePath = luksDevice.MappedDevicePath()
+	}
+
+	// Fail fast if the device should be a LUKS device but is not LUKS formatted.
+	if isLUKSDevice && !luksFormatted {
+		Logc(ctx).WithFields(LogFields{
+			"devicePath":      publishInfo.DevicePath,
+			"luksMapperPath":  devicePath,
+			"isLUKSFormatted": luksFormatted,
+			"isLUKSDevice":    isLUKSDevice,
+		}).Error("Device should be a LUKS device but is not LUKS formatted.")
+		return errors.New("device should be a LUKS device but is not LUKS formatted")
+	}
+
+	if publishInfo.FilesystemType == filesystem.Raw {
+		return nil
+	}
+
+	existingFstype, err := client.devices.GetDeviceFSType(ctx, devicePath)
+	if err != nil {
+		return err
+	}
+	if existingFstype == "" {
+		if !isLUKSDevice {
+			if unformatted, err := client.devices.IsDeviceUnformatted(ctx, devicePath); err != nil {
+				Logc(ctx).WithField(
+					"device", devicePath,
+				).WithError(err).Errorf("Unable to identify if the device is not formatted.")
+				return err
+			} else if !unformatted {
+				Logc(ctx).WithField(
+					"device", devicePath,
+				).WithError(err).Errorf("Device is not unformatted.")
+				return fmt.Errorf("device %v is not unformatted", devicePath)
+			}
+		}
+
+		lunID := int(publishInfo.IscsiLunNumber)
+		Logc(ctx).WithFields(LogFields{
+			"volume":        name,
+			"lunID":         lunID,
+			"fstype":        publishInfo.FilesystemType,
+			"formatOptions": publishInfo.FormatOptions,
+		}).Debug("Formatting iSCSI LUN.")
+		err = client.fileSystemClient.FormatVolume(ctx, devicePath, publishInfo.FilesystemType, publishInfo.FormatOptions)
+		if err != nil {
+			return fmt.Errorf("error formatting LUN %s, device %s: %v", name, devicePath, err)
+		}
+	} else if existingFstype != filesystem.UnknownFstype && existingFstype != publishInfo.FilesystemType {
+		Logc(ctx).WithFields(LogFields{
+			"volume":          name,
+			"existingFstype":  existingFstype,
+			"requestedFstype": publishInfo.FilesystemType,
+		}).Error("LUN already formatted with a different file system type.")
+		return fmt.Errorf("LUN %s, device %s already formatted with other filesystem: %s",
+			name, devicePath, existingFstype)
+	} else {
+		Logc(ctx).WithFields(LogFields{
+			"volume": name,
+			"fstype": existingFstype,
+		}).Debug("LUN already formatted.")
+	}
+
+	// Attempt to resolve any filesystem inconsistencies that might be due to dirty node shutdowns, cloning
+	// in-use volumes, or creating volumes from snapshots taken from in-use volumes.  This is only safe to do
+	// if a device is not mounted.  The fsck command returns a non-zero exit code if filesystem errors are found,
+	// even if they are completely and automatically fixed, so we don't return any error here.
+	mounted, err := client.mountClient.IsMounted(ctx, devicePath, "", "")
+	if err != nil {
+		return err
+	}
+	if !mounted {
+		client.fileSystemClient.RepairVolume(ctx, devicePath, publishInfo.FilesystemType)
+	}
+
+	// Optionally mount the device
+	if mountPoint != "" {
+		if err := client.mountClient.MountDevice(ctx, devicePath, mountPoint, publishInfo.MountOptions,
+			false); err != nil {
+			return fmt.Errorf("error mounting LUN %v, device %v, mountpoint %v; %s",
+				name, devicePath, mountPoint, err)
+		}
+	}
 	return nil
 }

@@ -20,7 +20,6 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/mocks/mock_utils/mock_devices"
-	"github.com/netapp/trident/mocks/mock_utils/mock_devices/mock_luks"
 	mockexec "github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	"github.com/netapp/trident/mocks/mock_utils/mock_filesystem"
 	"github.com/netapp/trident/mocks/mock_utils/mock_iscsi"
@@ -28,7 +27,6 @@ import (
 	"github.com/netapp/trident/mocks/mock_utils/mock_osutils"
 	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/utils/devices"
-	"github.com/netapp/trident/utils/devices/luks"
 	"github.com/netapp/trident/utils/errors"
 	tridentexec "github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/filesystem"
@@ -180,7 +178,8 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 				mockDevices.EXPECT().VerifyMultipathDeviceSize(context.TODO(), "dm-0", "sda").Return(int64(0), true,
 					nil)
 				mockDevices.EXPECT().WaitForDevice(context.TODO(), "/dev/dm-0").Return(nil)
-				mockDevices.EXPECT().GetDeviceFSType(context.TODO(), "/dev/dm-0").Return(filesystem.Ext4, nil)
+				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
+				mockDevices.EXPECT().GetLunSerial(context.TODO(), "/dev/sda").Return("SYA5GZFJ8G1M905GVH7H", nil).AnyTimes()
 				return mockDevices
 			},
 			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
@@ -189,7 +188,6 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 			},
 			getMountClient: func(controller *gomock.Controller) mount.Mount {
 				mockMount := mock_mount.NewMockMount(controller)
-				mockMount.EXPECT().IsMounted(context.TODO(), "/dev/dm-0", "", "").Return(true, nil)
 				return mockMount
 			},
 			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
@@ -214,6 +212,7 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 						IscsiTargetPortal: "127.0.0.1",
 						IscsiPortals:      []string{""},
 						IscsiTargetIQN:    "iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.25",
+						IscsiLunSerial:    "SYA5GZFJ8G1M905GVH7H",
 					},
 				},
 			},
@@ -307,7 +306,7 @@ tcp: [4] 127.0.0.1:3260,1029 iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3 (non-f
 				params.getMountClient(ctrl), params.getReconcileUtils(ctrl),
 				afero.Afero{Fs: params.getFileSystemUtils()}, nil)
 
-			mpathSize, err := iscsiClient.AttachVolumeRetry(context.TODO(), "", "", &params.publishInfo, nil,
+			mpathSize, err := iscsiClient.AttachVolumeRetry(context.TODO(), &params.publishInfo,
 				testTimeout)
 			if params.assertError != nil {
 				params.assertError(t, err)
@@ -324,7 +323,6 @@ func TestClient_AttachVolume(t *testing.T) {
 		getCommand          func(controller *gomock.Controller) tridentexec.Command
 		getOSClient         func(controller *gomock.Controller) OS
 		getDeviceClient     func(controller *gomock.Controller) devices.Devices
-		getLuksDevice       func(controller *gomock.Controller) luks.Device
 		getFileSystemClient func(controller *gomock.Controller) filesystem.Filesystem
 		getMountClient      func(controller *gomock.Controller) mount.Mount
 		getReconcileUtils   func(controller *gomock.Controller) IscsiReconcileUtils
@@ -1430,834 +1428,6 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			volumeAuthSecrets: make(map[string]string, 0),
 			assertError:       assert.Error,
 		},
-		"failure ensuring LUKS device mapped on host": {
-			chrootPathPrefix: "",
-			getCommand: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
-					"session").Return([]byte(iscsiadmSessionOutput), nil)
-				return mockCommand
-			},
-			getOSClient: func(controller *gomock.Controller) OS {
-				mockOsClient := mock_iscsi.NewMockOS(controller)
-				mockOsClient.EXPECT().PathExists("/dev/sda/block").Return(true, nil)
-				return mockOsClient
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().WaitForDevice(gomock.Any(), "/dev/dm-0").Return(nil)
-				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
-				mockDevices.EXPECT().GetLunSerial(gomock.Any(), "/dev/sda").Return(vpdpg80Serial, nil).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanAll).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanZeros).AnyTimes()
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").Times(2)
-				mockDevices.EXPECT().VerifyMultipathDeviceSize(gomock.Any(), "dm-0", "sda").Return(int64(0), true,
-					nil)
-				return mockDevices
-			},
-			getLuksDevice: func(controller *gomock.Controller) luks.Device {
-				luksDevice := mock_luks.NewMockDevice(controller)
-				luksDevice.EXPECT().EnsureDeviceMappedOnHost(gomock.Any(), "test-volume",
-					map[string]string{}).Return(false, errors.New("some error"))
-				return luksDevice
-			},
-			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
-				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
-				return mockFileSystem
-			},
-			getMountClient: func(controller *gomock.Controller) mount.Mount {
-				mockMount := mock_mount.NewMockMount(controller)
-				return mockMount
-			},
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(), targetIQN).
-					Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(), gomock.Any()).Return([]string{"/dev/sda"}).AnyTimes()
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).AnyTimes()
-				return mockReconcileUtils
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				f, err := fs.Create("/dev/sda/vpd_pg80")
-				assert.NoError(t, err)
-
-				_, err = f.Write(vpdpg80SerialBytes(vpdpg80Serial))
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/rescan")
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/delete")
-				assert.NoError(t, err)
-
-				err = fs.MkdirAll("/sys/block/sda/holders/dm-0", 777)
-				assert.NoError(t, err)
-				return fs
-			},
-			publishInfo: models.VolumePublishInfo{
-				LUKSEncryption: "true",
-				FilesystemType: filesystem.Ext4,
-				VolumeAccessInfo: models.VolumeAccessInfo{
-					IscsiAccessInfo: models.IscsiAccessInfo{
-						IscsiTargetPortal: "127.0.0.1",
-						IscsiPortals:      []string{"127.0.0.2"},
-						IscsiTargetIQN:    targetIQN,
-						IscsiLunSerial:    vpdpg80Serial,
-					},
-				},
-			},
-			volumeName:        "test-volume",
-			volumeMountPoint:  "/mnt/test-volume",
-			volumeAuthSecrets: make(map[string]string, 0),
-			assertError:       assert.Error,
-		},
-		"failed to get file system type of device": {
-			chrootPathPrefix: "",
-			getCommand: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
-					"session").Return([]byte(iscsiadmSessionOutput), nil)
-				return mockCommand
-			},
-			getOSClient: func(controller *gomock.Controller) OS {
-				mockOsClient := mock_iscsi.NewMockOS(controller)
-				mockOsClient.EXPECT().PathExists("/dev/sda/block").Return(true, nil)
-				return mockOsClient
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().WaitForDevice(gomock.Any(), "/dev/dm-0").Return(nil)
-				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
-				mockDevices.EXPECT().GetLunSerial(gomock.Any(), "/dev/sda").Return(vpdpg80Serial, nil).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanAll).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanZeros).AnyTimes()
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").Times(2)
-				mockDevices.EXPECT().VerifyMultipathDeviceSize(gomock.Any(), "dm-0", "sda").Return(int64(0), true,
-					nil)
-				return mockDevices
-			},
-			getLuksDevice: func(controller *gomock.Controller) luks.Device {
-				luksDevice := mock_luks.NewMockDevice(controller)
-				luksDevice.EXPECT().MappedDevicePath().Return("/dev/mapper/dm-0")
-				luksDevice.EXPECT().EnsureDeviceMappedOnHost(gomock.Any(), "test-volume",
-					map[string]string{}).Return(true, nil)
-				return luksDevice
-			},
-			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
-				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
-				return mockFileSystem
-			},
-			getMountClient: func(controller *gomock.Controller) mount.Mount {
-				mockMount := mock_mount.NewMockMount(controller)
-				return mockMount
-			},
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(), targetIQN).
-					Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(), gomock.Any()).Return([]string{"/dev/sda"}).AnyTimes()
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).AnyTimes()
-				return mockReconcileUtils
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				f, err := fs.Create("/dev/sda/vpd_pg80")
-				assert.NoError(t, err)
-
-				_, err = f.Write(vpdpg80SerialBytes(vpdpg80Serial))
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/rescan")
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/delete")
-				assert.NoError(t, err)
-
-				err = fs.MkdirAll("/sys/block/sda/holders/dm-0", 777)
-				assert.NoError(t, err)
-				return fs
-			},
-			publishInfo: models.VolumePublishInfo{
-				LUKSEncryption: "true",
-				FilesystemType: filesystem.Ext4,
-				VolumeAccessInfo: models.VolumeAccessInfo{
-					IscsiAccessInfo: models.IscsiAccessInfo{
-						IscsiTargetPortal: "127.0.0.1",
-						IscsiPortals:      []string{"127.0.0.2"},
-						IscsiTargetIQN:    targetIQN,
-						IscsiLunSerial:    vpdpg80Serial,
-					},
-				},
-			},
-			volumeName:        "test-volume",
-			volumeMountPoint:  "/mnt/test-volume",
-			volumeAuthSecrets: make(map[string]string, 0),
-			assertError:       assert.Error,
-		},
-		"failure determining if device is formatted": {
-			chrootPathPrefix: "",
-			getCommand: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
-					"session").Return([]byte(iscsiadmSessionOutput), nil)
-				return mockCommand
-			},
-			getOSClient: func(controller *gomock.Controller) OS {
-				mockOsClient := mock_iscsi.NewMockOS(controller)
-				mockOsClient.EXPECT().PathExists("/dev/sda/block").Return(true, nil)
-				return mockOsClient
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().WaitForDevice(gomock.Any(), "/dev/dm-0").Return(nil)
-				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/dm-0").Return("", nil)
-				mockDevices.EXPECT().IsDeviceUnformatted(gomock.Any(), "/dev/dm-0").Return(false, errors.New("some error"))
-				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
-				mockDevices.EXPECT().GetLunSerial(gomock.Any(), "/dev/sda").Return(vpdpg80Serial, nil).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanAll).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanZeros).AnyTimes()
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").Times(2)
-				mockDevices.EXPECT().VerifyMultipathDeviceSize(gomock.Any(), "dm-0", "sda").Return(int64(0), true,
-					nil)
-				return mockDevices
-			},
-			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
-				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
-				return mockFileSystem
-			},
-			getMountClient: func(controller *gomock.Controller) mount.Mount {
-				mockMount := mock_mount.NewMockMount(controller)
-				return mockMount
-			},
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(), targetIQN).
-					Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(), gomock.Any()).Return([]string{"/dev/sda"}).AnyTimes()
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).AnyTimes()
-				return mockReconcileUtils
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				f, err := fs.Create("/dev/sda/vpd_pg80")
-				assert.NoError(t, err)
-
-				_, err = f.Write(vpdpg80SerialBytes(vpdpg80Serial))
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/rescan")
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/delete")
-				assert.NoError(t, err)
-
-				err = fs.MkdirAll("/sys/block/sda/holders/dm-0", 777)
-				assert.NoError(t, err)
-				return fs
-			},
-			publishInfo: models.VolumePublishInfo{
-				FilesystemType: filesystem.Ext4,
-				VolumeAccessInfo: models.VolumeAccessInfo{
-					IscsiAccessInfo: models.IscsiAccessInfo{
-						IscsiTargetPortal: "127.0.0.1",
-						IscsiPortals:      []string{"127.0.0.2"},
-						IscsiTargetIQN:    targetIQN,
-						IscsiLunSerial:    vpdpg80Serial,
-					},
-				},
-			},
-			volumeName:        "test-volume",
-			volumeMountPoint:  "/mnt/test-volume",
-			volumeAuthSecrets: make(map[string]string, 0),
-			assertError:       assert.Error,
-		},
-		"device is already formatted": {
-			chrootPathPrefix: "",
-			getCommand: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
-					"session").Return([]byte(iscsiadmSessionOutput), nil)
-				return mockCommand
-			},
-			getOSClient: func(controller *gomock.Controller) OS {
-				mockOsClient := mock_iscsi.NewMockOS(controller)
-				mockOsClient.EXPECT().PathExists("/dev/sda/block").Return(true, nil)
-				return mockOsClient
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().GetLunSerial(gomock.Any(), "/dev/sda").Return(vpdpg80Serial, nil).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanAll).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanZeros).AnyTimes()
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").Times(2)
-				mockDevices.EXPECT().VerifyMultipathDeviceSize(gomock.Any(), "dm-0", "sda").Return(int64(0), true,
-					nil)
-				mockDevices.EXPECT().WaitForDevice(gomock.Any(), "/dev/dm-0").Return(nil)
-				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/dm-0").Return("", nil)
-				mockDevices.EXPECT().IsDeviceUnformatted(gomock.Any(), "/dev/dm-0").Return(false, nil)
-				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
-				return mockDevices
-			},
-			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
-				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
-				return mockFileSystem
-			},
-			getMountClient: func(controller *gomock.Controller) mount.Mount {
-				mockMount := mock_mount.NewMockMount(controller)
-				return mockMount
-			},
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(), targetIQN).
-					Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(), gomock.Any()).Return([]string{"/dev/sda"}).AnyTimes()
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).AnyTimes()
-				return mockReconcileUtils
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				f, err := fs.Create("/dev/sda/vpd_pg80")
-				assert.NoError(t, err)
-
-				_, err = f.Write(vpdpg80SerialBytes(vpdpg80Serial))
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/rescan")
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/delete")
-				assert.NoError(t, err)
-
-				err = fs.MkdirAll("/sys/block/sda/holders/dm-0", 777)
-				assert.NoError(t, err)
-				return fs
-			},
-			publishInfo: models.VolumePublishInfo{
-				FilesystemType: filesystem.Ext4,
-				VolumeAccessInfo: models.VolumeAccessInfo{
-					IscsiAccessInfo: models.IscsiAccessInfo{
-						IscsiTargetPortal: "127.0.0.1",
-						IscsiPortals:      []string{"127.0.0.2"},
-						IscsiTargetIQN:    targetIQN,
-						IscsiLunSerial:    vpdpg80Serial,
-					},
-				},
-			},
-			volumeName:        "test-volume",
-			volumeMountPoint:  "/mnt/test-volume",
-			volumeAuthSecrets: make(map[string]string, 0),
-			assertError:       assert.Error,
-		},
-		"failure formatting LUN": {
-			chrootPathPrefix: "",
-			getCommand: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
-					"session").Return([]byte(iscsiadmSessionOutput), nil)
-				return mockCommand
-			},
-			getOSClient: func(controller *gomock.Controller) OS {
-				mockOsClient := mock_iscsi.NewMockOS(controller)
-				mockOsClient.EXPECT().PathExists("/dev/sda/block").Return(true, nil)
-				return mockOsClient
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().WaitForDevice(gomock.Any(), "/dev/dm-0").Return(nil)
-				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/dm-0").Return("", nil)
-				mockDevices.EXPECT().IsDeviceUnformatted(gomock.Any(), "/dev/dm-0").Return(true, nil)
-				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
-				mockDevices.EXPECT().GetLunSerial(gomock.Any(), "/dev/sda").Return(vpdpg80Serial, nil).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanAll).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanZeros).AnyTimes()
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").Times(2)
-				mockDevices.EXPECT().VerifyMultipathDeviceSize(gomock.Any(), "dm-0", "sda").Return(int64(0), true,
-					nil)
-				return mockDevices
-			},
-			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
-				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
-				mockFileSystem.EXPECT().FormatVolume(gomock.Any(), "/dev/dm-0", filesystem.Ext4, "").Return(errors.New("some error"))
-				return mockFileSystem
-			},
-			getMountClient: func(controller *gomock.Controller) mount.Mount {
-				mockMount := mock_mount.NewMockMount(controller)
-				return mockMount
-			},
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(), targetIQN).
-					Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(), gomock.Any()).Return([]string{"/dev/sda"}).AnyTimes()
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).AnyTimes()
-				return mockReconcileUtils
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				f, err := fs.Create("/dev/sda/vpd_pg80")
-				assert.NoError(t, err)
-
-				_, err = f.Write(vpdpg80SerialBytes(vpdpg80Serial))
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/rescan")
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/delete")
-				assert.NoError(t, err)
-
-				err = fs.MkdirAll("/sys/block/sda/holders/dm-0", 777)
-				assert.NoError(t, err)
-				return fs
-			},
-			publishInfo: models.VolumePublishInfo{
-				FilesystemType: filesystem.Ext4,
-				VolumeAccessInfo: models.VolumeAccessInfo{
-					IscsiAccessInfo: models.IscsiAccessInfo{
-						IscsiTargetPortal: "127.0.0.1",
-						IscsiPortals:      []string{"127.0.0.2"},
-						IscsiTargetIQN:    targetIQN,
-						IscsiLunSerial:    vpdpg80Serial,
-					},
-				},
-			},
-			volumeName:        "test-volume",
-			volumeMountPoint:  "/mnt/test-volume",
-			volumeAuthSecrets: make(map[string]string, 0),
-			assertError:       assert.Error,
-		},
-		"existing file system on device does not match the request file system": {
-			chrootPathPrefix: "",
-			getCommand: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
-					"session").Return([]byte(iscsiadmSessionOutput), nil)
-				return mockCommand
-			},
-			getOSClient: func(controller *gomock.Controller) OS {
-				mockOsClient := mock_iscsi.NewMockOS(controller)
-				mockOsClient.EXPECT().PathExists("/dev/sda/block").Return(true, nil)
-				return mockOsClient
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().WaitForDevice(gomock.Any(), "/dev/dm-0").Return(nil)
-				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/dm-0").Return(filesystem.Ext3, nil)
-				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
-				mockDevices.EXPECT().GetLunSerial(gomock.Any(), "/dev/sda").Return(vpdpg80Serial, nil).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanAll).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanZeros).AnyTimes()
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").Times(2)
-				mockDevices.EXPECT().VerifyMultipathDeviceSize(gomock.Any(), "dm-0", "sda").Return(int64(0), true,
-					nil)
-				return mockDevices
-			},
-			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
-				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
-				return mockFileSystem
-			},
-			getMountClient: func(controller *gomock.Controller) mount.Mount {
-				mockMount := mock_mount.NewMockMount(controller)
-				return mockMount
-			},
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(), targetIQN).
-					Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(), gomock.Any()).Return([]string{"/dev/sda"}).AnyTimes()
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).AnyTimes()
-				return mockReconcileUtils
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				f, err := fs.Create("/dev/sda/vpd_pg80")
-				assert.NoError(t, err)
-
-				_, err = f.Write(vpdpg80SerialBytes(vpdpg80Serial))
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/rescan")
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/delete")
-				assert.NoError(t, err)
-
-				err = fs.MkdirAll("/sys/block/sda/holders/dm-0", 777)
-				assert.NoError(t, err)
-				return fs
-			},
-			publishInfo: models.VolumePublishInfo{
-				FilesystemType: filesystem.Ext4,
-				VolumeAccessInfo: models.VolumeAccessInfo{
-					IscsiAccessInfo: models.IscsiAccessInfo{
-						IscsiTargetPortal: "127.0.0.1",
-						IscsiPortals:      []string{"127.0.0.2"},
-						IscsiTargetIQN:    targetIQN,
-						IscsiLunSerial:    vpdpg80Serial,
-					},
-				},
-			},
-			volumeName:        "test-volume",
-			volumeMountPoint:  "/mnt/test-volume",
-			volumeAuthSecrets: make(map[string]string, 0),
-			assertError:       assert.Error,
-		},
-		"failure determining if LUN is mounted": {
-			chrootPathPrefix: "",
-			getCommand: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
-					"session").Return([]byte(iscsiadmSessionOutput), nil)
-				return mockCommand
-			},
-			getOSClient: func(controller *gomock.Controller) OS {
-				mockOsClient := mock_iscsi.NewMockOS(controller)
-				mockOsClient.EXPECT().PathExists("/dev/sda/block").Return(true, nil)
-				return mockOsClient
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().WaitForDevice(gomock.Any(), "/dev/dm-0").Return(nil)
-				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/dm-0").Return(filesystem.UnknownFstype, nil)
-				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
-				mockDevices.EXPECT().GetLunSerial(gomock.Any(), "/dev/sda").Return(vpdpg80Serial, nil).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanAll).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanZeros).AnyTimes()
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").Times(2)
-				mockDevices.EXPECT().VerifyMultipathDeviceSize(gomock.Any(), "dm-0", "sda").Return(int64(0), true,
-					nil)
-				return mockDevices
-			},
-			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
-				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
-				return mockFileSystem
-			},
-			getMountClient: func(controller *gomock.Controller) mount.Mount {
-				mockMount := mock_mount.NewMockMount(controller)
-				mockMount.EXPECT().IsMounted(gomock.Any(), "/dev/dm-0", "", "").Return(false, errors.New("some error"))
-				return mockMount
-			},
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(), targetIQN).
-					Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(), gomock.Any()).Return([]string{"/dev/sda"}).AnyTimes()
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).AnyTimes()
-				return mockReconcileUtils
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				f, err := fs.Create("/dev/sda/vpd_pg80")
-				assert.NoError(t, err)
-
-				_, err = f.Write(vpdpg80SerialBytes(vpdpg80Serial))
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/rescan")
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/delete")
-				assert.NoError(t, err)
-
-				err = fs.MkdirAll("/sys/block/sda/holders/dm-0", 777)
-				assert.NoError(t, err)
-				return fs
-			},
-			publishInfo: models.VolumePublishInfo{
-				FilesystemType: filesystem.Ext4,
-				VolumeAccessInfo: models.VolumeAccessInfo{
-					IscsiAccessInfo: models.IscsiAccessInfo{
-						IscsiTargetPortal: "127.0.0.1",
-						IscsiPortals:      []string{"127.0.0.2"},
-						IscsiTargetIQN:    targetIQN,
-						IscsiLunSerial:    vpdpg80Serial,
-					},
-				},
-			},
-			volumeName:        "test-volume",
-			volumeMountPoint:  "/mnt/test-volume",
-			volumeAuthSecrets: make(map[string]string, 0),
-			assertError:       assert.Error,
-		},
-		"no mount path provided": {
-			chrootPathPrefix: "",
-			getCommand: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
-					"session").Return([]byte(iscsiadmSessionOutput), nil)
-				return mockCommand
-			},
-			getOSClient: func(controller *gomock.Controller) OS {
-				mockOsClient := mock_iscsi.NewMockOS(controller)
-				mockOsClient.EXPECT().PathExists("/dev/sda/block").Return(true, nil)
-				return mockOsClient
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().WaitForDevice(gomock.Any(), "/dev/dm-0").Return(nil)
-				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/dm-0").Return(filesystem.UnknownFstype, nil)
-				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
-				mockDevices.EXPECT().GetLunSerial(gomock.Any(), "/dev/sda").Return(vpdpg80Serial, nil).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanAll).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanZeros).AnyTimes()
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").Times(2)
-				mockDevices.EXPECT().VerifyMultipathDeviceSize(gomock.Any(), "dm-0", "sda").Return(int64(0), true,
-					nil)
-				return mockDevices
-			},
-			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
-				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
-				mockFileSystem.EXPECT().RepairVolume(gomock.Any(), "/dev/dm-0", filesystem.Ext4)
-				return mockFileSystem
-			},
-			getMountClient: func(controller *gomock.Controller) mount.Mount {
-				mockMount := mock_mount.NewMockMount(controller)
-				mockMount.EXPECT().IsMounted(gomock.Any(), "/dev/dm-0", "", "").Return(false, nil)
-				return mockMount
-			},
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(), targetIQN).
-					Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(), gomock.Any()).Return([]string{"/dev/sda"}).AnyTimes()
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).AnyTimes()
-				return mockReconcileUtils
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				f, err := fs.Create("/dev/sda/vpd_pg80")
-				assert.NoError(t, err)
-
-				_, err = f.Write(vpdpg80SerialBytes(vpdpg80Serial))
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/rescan")
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/delete")
-				assert.NoError(t, err)
-
-				err = fs.MkdirAll("/sys/block/sda/holders/dm-0", 777)
-				assert.NoError(t, err)
-				return fs
-			},
-			publishInfo: models.VolumePublishInfo{
-				FilesystemType: filesystem.Ext4,
-				VolumeAccessInfo: models.VolumeAccessInfo{
-					IscsiAccessInfo: models.IscsiAccessInfo{
-						IscsiTargetPortal: "127.0.0.1",
-						IscsiPortals:      []string{"127.0.0.2"},
-						IscsiTargetIQN:    targetIQN,
-						IscsiLunSerial:    vpdpg80Serial,
-					},
-				},
-			},
-			volumeName:        "test-volume",
-			volumeMountPoint:  "",
-			volumeAuthSecrets: make(map[string]string, 0),
-			assertError:       assert.NoError,
-		},
-		"failure mounting LUN": {
-			chrootPathPrefix: "",
-			getCommand: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
-					"session").Return([]byte(iscsiadmSessionOutput), nil)
-				return mockCommand
-			},
-			getOSClient: func(controller *gomock.Controller) OS {
-				mockOsClient := mock_iscsi.NewMockOS(controller)
-				mockOsClient.EXPECT().PathExists("/dev/sda/block").Return(true, nil)
-				return mockOsClient
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().WaitForDevice(gomock.Any(), "/dev/dm-0").Return(nil)
-				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/dm-0").Return(filesystem.UnknownFstype, nil)
-				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
-				mockDevices.EXPECT().GetLunSerial(gomock.Any(), "/dev/sda").Return(vpdpg80Serial, nil).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanAll).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanZeros).AnyTimes()
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").Times(2)
-				mockDevices.EXPECT().VerifyMultipathDeviceSize(gomock.Any(), "dm-0", "sda").Return(int64(0), true,
-					nil)
-				return mockDevices
-			},
-			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
-				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
-				mockFileSystem.EXPECT().RepairVolume(gomock.Any(), "/dev/dm-0", filesystem.Ext4)
-				return mockFileSystem
-			},
-			getMountClient: func(controller *gomock.Controller) mount.Mount {
-				mockMount := mock_mount.NewMockMount(controller)
-				mockMount.EXPECT().IsMounted(gomock.Any(), "/dev/dm-0", "", "").Return(false, nil)
-				mockMount.EXPECT().MountDevice(gomock.Any(), "/dev/dm-0", "/mnt/test-volume", "",
-					false).Return(errors.New("some error"))
-				return mockMount
-			},
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(), targetIQN).
-					Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(), gomock.Any()).Return([]string{"/dev/sda"}).AnyTimes()
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).AnyTimes()
-				return mockReconcileUtils
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				f, err := fs.Create("/dev/sda/vpd_pg80")
-				assert.NoError(t, err)
-
-				_, err = f.Write(vpdpg80SerialBytes(vpdpg80Serial))
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/rescan")
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/delete")
-				assert.NoError(t, err)
-
-				err = fs.MkdirAll("/sys/block/sda/holders/dm-0", 777)
-				assert.NoError(t, err)
-				return fs
-			},
-			publishInfo: models.VolumePublishInfo{
-				FilesystemType: filesystem.Ext4,
-				VolumeAccessInfo: models.VolumeAccessInfo{
-					IscsiAccessInfo: models.IscsiAccessInfo{
-						IscsiTargetPortal: "127.0.0.1",
-						IscsiPortals:      []string{"127.0.0.2"},
-						IscsiTargetIQN:    targetIQN,
-						IscsiLunSerial:    vpdpg80Serial,
-					},
-				},
-			},
-			volumeName:        "test-volume",
-			volumeMountPoint:  "/mnt/test-volume",
-			volumeAuthSecrets: make(map[string]string, 0),
-			assertError:       assert.Error,
-		},
-		"happy path": {
-			chrootPathPrefix: "",
-			getCommand: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
-				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
-					"config").Return([]byte(multipathConfig("no", false)), nil)
-				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
-					"session").Return([]byte(iscsiadmSessionOutput), nil)
-				return mockCommand
-			},
-			getOSClient: func(controller *gomock.Controller) OS {
-				mockOsClient := mock_iscsi.NewMockOS(controller)
-				mockOsClient.EXPECT().PathExists("/dev/sda/block").Return(true, nil)
-				return mockOsClient
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().GetLunSerial(gomock.Any(), "/dev/sda").Return(vpdpg80Serial, nil).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanAll).AnyTimes()
-				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), ScsiScanZeros).AnyTimes()
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(gomock.Any(), "sda").Return("dm-0").Times(2)
-				mockDevices.EXPECT().VerifyMultipathDeviceSize(gomock.Any(), "dm-0", "sda").Return(int64(0), true,
-					nil)
-				mockDevices.EXPECT().WaitForDevice(gomock.Any(), "/dev/dm-0").Return(nil)
-				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/dm-0").Return(filesystem.UnknownFstype, nil)
-				mockDevices.EXPECT().GetMultipathDeviceUUID("dm-0").Return("mpath-53594135475a464a3847314d3930354756483748", nil)
-				return mockDevices
-			},
-			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
-				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
-				mockFileSystem.EXPECT().RepairVolume(gomock.Any(), "/dev/dm-0", filesystem.Ext4)
-				return mockFileSystem
-			},
-			getMountClient: func(controller *gomock.Controller) mount.Mount {
-				mockMount := mock_mount.NewMockMount(controller)
-				mockMount.EXPECT().IsMounted(gomock.Any(), "/dev/dm-0", "", "").Return(false, nil)
-				mockMount.EXPECT().MountDevice(gomock.Any(), "/dev/dm-0", "/mnt/test-volume", "",
-					false).Return(nil)
-				return mockMount
-			},
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(), targetIQN).
-					Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(gomock.Any(), gomock.Any()).Return([]string{"/dev/sda"}).AnyTimes()
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil).AnyTimes()
-				return mockReconcileUtils
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				f, err := fs.Create("/dev/sda/vpd_pg80")
-				assert.NoError(t, err)
-
-				_, err = f.Write(vpdpg80SerialBytes(vpdpg80Serial))
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/rescan")
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/dev/sda/delete")
-				assert.NoError(t, err)
-
-				err = fs.MkdirAll("/sys/block/sda/holders/dm-0", 777)
-				assert.NoError(t, err)
-				return fs
-			},
-			publishInfo: models.VolumePublishInfo{
-				FilesystemType: filesystem.Ext4,
-				VolumeAccessInfo: models.VolumeAccessInfo{
-					IscsiAccessInfo: models.IscsiAccessInfo{
-						IscsiTargetPortal: "127.0.0.1",
-						IscsiPortals:      []string{"127.0.0.2"},
-						IscsiTargetIQN:    targetIQN,
-						IscsiLunSerial:    vpdpg80Serial,
-					},
-				},
-			},
-			volumeName:        "test-volume",
-			volumeMountPoint:  "/mnt/test-volume",
-			volumeAuthSecrets: make(map[string]string, 0),
-			assertError:       assert.NoError,
-		},
 	}
 
 	for name, params := range tests {
@@ -2272,8 +1442,7 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer cancel()
 
-			mpathSize, err := iscsiClient.AttachVolume(ctx, params.volumeName, params.volumeMountPoint,
-				&params.publishInfo, params.volumeAuthSecrets)
+			mpathSize, err := iscsiClient.AttachVolume(ctx, &params.publishInfo)
 			if params.assertError != nil {
 				params.assertError(t, err)
 			}
@@ -7241,6 +6410,311 @@ func TestGetAllVolumeIDs(t *testing.T) {
 
 			// Cleanup
 			_ = fs.RemoveAll(dir)
+		})
+	}
+}
+
+func TestClient_EnsureVolumeFormattedAndMounted(t *testing.T) {
+	type parameters struct {
+		chrootPathPrefix    string
+		getCommand          func(controller *gomock.Controller) tridentexec.Command
+		getDeviceClient     func(controller *gomock.Controller) devices.Devices
+		getFileSystemClient func(controller *gomock.Controller) filesystem.Filesystem
+		getMountClient      func(controller *gomock.Controller) mount.Mount
+
+		publishInfo   models.VolumePublishInfo
+		volumeName    string
+		mountPoint    string
+		luksFormatted bool
+
+		assertError assert.ErrorAssertionFunc
+	}
+
+	tests := map[string]parameters{
+		"failed to get file system type of device": {
+			chrootPathPrefix: "",
+			getCommand: func(controller *gomock.Controller) tridentexec.Command {
+				mockCommand := mockexec.NewMockCommand(controller)
+				return mockCommand
+			},
+			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/dm-0").Return("", errors.New("some error"))
+				return mockDevices
+			},
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
+				return mockFileSystem
+			},
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
+				return mockMount
+			},
+			publishInfo: models.VolumePublishInfo{
+				DevicePath:     "/dev/dm-0",
+				FilesystemType: filesystem.Ext4,
+			},
+			volumeName:    "test-volume",
+			mountPoint:    "/mnt/test-volume",
+			luksFormatted: false,
+			assertError:   assert.Error,
+		},
+		"failure determining if device is formatted": {
+			chrootPathPrefix: "",
+			getCommand: func(controller *gomock.Controller) tridentexec.Command {
+				mockCommand := mockexec.NewMockCommand(controller)
+				return mockCommand
+			},
+			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/dm-0").Return("", nil)
+				mockDevices.EXPECT().IsDeviceUnformatted(gomock.Any(), "/dev/dm-0").Return(false, errors.New("some error"))
+				return mockDevices
+			},
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
+				return mockFileSystem
+			},
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
+				return mockMount
+			},
+			publishInfo: models.VolumePublishInfo{
+				DevicePath:     "/dev/dm-0",
+				FilesystemType: filesystem.Ext4,
+			},
+			volumeName:    "test-volume",
+			mountPoint:    "/mnt/test-volume",
+			luksFormatted: false,
+			assertError:   assert.Error,
+		},
+		"device not formatted": {
+			chrootPathPrefix: "",
+			getCommand: func(controller *gomock.Controller) tridentexec.Command {
+				mockCommand := mockexec.NewMockCommand(controller)
+				return mockCommand
+			},
+			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/dm-0").Return("", nil)
+				mockDevices.EXPECT().IsDeviceUnformatted(gomock.Any(), "/dev/dm-0").Return(false, nil)
+				return mockDevices
+			},
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
+				return mockFileSystem
+			},
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
+				return mockMount
+			},
+			publishInfo: models.VolumePublishInfo{
+				DevicePath:     "/dev/dm-0",
+				FilesystemType: filesystem.Ext4,
+			},
+			volumeName:    "test-volume",
+			mountPoint:    "/mnt/test-volume",
+			luksFormatted: false,
+			assertError:   assert.Error,
+		},
+		"failure formatting LUN": {
+			chrootPathPrefix: "",
+			getCommand: func(controller *gomock.Controller) tridentexec.Command {
+				mockCommand := mockexec.NewMockCommand(controller)
+				return mockCommand
+			},
+			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/dm-0").Return("", nil)
+				mockDevices.EXPECT().IsDeviceUnformatted(gomock.Any(), "/dev/dm-0").Return(true, nil)
+				return mockDevices
+			},
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
+				mockFileSystem.EXPECT().FormatVolume(gomock.Any(), "/dev/dm-0", filesystem.Ext4, "").Return(errors.New("some error"))
+				return mockFileSystem
+			},
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
+				return mockMount
+			},
+			publishInfo: models.VolumePublishInfo{
+				DevicePath:     "/dev/dm-0",
+				FilesystemType: filesystem.Ext4,
+			},
+			volumeName:    "test-volume",
+			mountPoint:    "/mnt/test-volume",
+			luksFormatted: false,
+			assertError:   assert.Error,
+		},
+		"existing file system on device does not match the request file system": {
+			chrootPathPrefix: "",
+			getCommand: func(controller *gomock.Controller) tridentexec.Command {
+				mockCommand := mockexec.NewMockCommand(controller)
+				return mockCommand
+			},
+			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/dm-0").Return(filesystem.Ext3, nil)
+				return mockDevices
+			},
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
+				return mockFileSystem
+			},
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
+				return mockMount
+			},
+			publishInfo: models.VolumePublishInfo{
+				DevicePath:     "/dev/dm-0",
+				FilesystemType: filesystem.Ext4,
+			},
+			volumeName:    "test-volume",
+			mountPoint:    "/mnt/test-volume",
+			luksFormatted: false,
+			assertError:   assert.Error,
+		},
+		"failure determining if LUN is mounted": {
+			chrootPathPrefix: "",
+			getCommand: func(controller *gomock.Controller) tridentexec.Command {
+				mockCommand := mockexec.NewMockCommand(controller)
+				return mockCommand
+			},
+			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/dm-0").Return(filesystem.UnknownFstype, nil)
+				return mockDevices
+			},
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
+				return mockFileSystem
+			},
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
+				mockMount.EXPECT().IsMounted(gomock.Any(), "/dev/dm-0", "", "").Return(false, errors.New("some error"))
+				return mockMount
+			},
+			publishInfo: models.VolumePublishInfo{
+				DevicePath:     "/dev/dm-0",
+				FilesystemType: filesystem.Ext4,
+			},
+			volumeName:    "test-volume",
+			mountPoint:    "/mnt/test-volume",
+			luksFormatted: false,
+			assertError:   assert.Error,
+		},
+		"no mount path provided": {
+			chrootPathPrefix: "",
+			getCommand: func(controller *gomock.Controller) tridentexec.Command {
+				mockCommand := mockexec.NewMockCommand(controller)
+				return mockCommand
+			},
+			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/dm-0").Return(filesystem.UnknownFstype, nil)
+				return mockDevices
+			},
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
+				mockFileSystem.EXPECT().RepairVolume(gomock.Any(), "/dev/dm-0", filesystem.Ext4)
+				return mockFileSystem
+			},
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
+				mockMount.EXPECT().IsMounted(gomock.Any(), "/dev/dm-0", "", "").Return(false, nil)
+				return mockMount
+			},
+			publishInfo: models.VolumePublishInfo{
+				DevicePath:     "/dev/dm-0",
+				FilesystemType: filesystem.Ext4,
+			},
+			volumeName:    "test-volume",
+			mountPoint:    "",
+			luksFormatted: false,
+			assertError:   assert.NoError,
+		},
+		"failure mounting LUN": {
+			chrootPathPrefix: "",
+			getCommand: func(controller *gomock.Controller) tridentexec.Command {
+				mockCommand := mockexec.NewMockCommand(controller)
+				return mockCommand
+			},
+			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/dm-0").Return(filesystem.UnknownFstype, nil)
+				return mockDevices
+			},
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
+				mockFileSystem.EXPECT().RepairVolume(gomock.Any(), "/dev/dm-0", filesystem.Ext4)
+				return mockFileSystem
+			},
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
+				mockMount.EXPECT().IsMounted(gomock.Any(), "/dev/dm-0", "", "").Return(false, nil)
+				mockMount.EXPECT().MountDevice(gomock.Any(), "/dev/dm-0", "/mnt/test-volume", "",
+					false).Return(errors.New("some error"))
+				return mockMount
+			},
+			publishInfo: models.VolumePublishInfo{
+				DevicePath:     "/dev/dm-0",
+				FilesystemType: filesystem.Ext4,
+			},
+			volumeName:    "test-volume",
+			mountPoint:    "/mnt/test-volume",
+			luksFormatted: false,
+			assertError:   assert.Error,
+		},
+		"happy path": {
+			chrootPathPrefix: "",
+			getCommand: func(controller *gomock.Controller) tridentexec.Command {
+				mockCommand := mockexec.NewMockCommand(controller)
+				return mockCommand
+			},
+			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/dm-0").Return(filesystem.UnknownFstype, nil)
+				return mockDevices
+			},
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				mockFileSystem := mock_filesystem.NewMockFilesystem(controller)
+				mockFileSystem.EXPECT().RepairVolume(gomock.Any(), "/dev/dm-0", filesystem.Ext4)
+				return mockFileSystem
+			},
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(controller)
+				mockMount.EXPECT().IsMounted(gomock.Any(), "/dev/dm-0", "", "").Return(false, nil)
+				mockMount.EXPECT().MountDevice(gomock.Any(), "/dev/dm-0", "/mnt/test-volume", "",
+					false).Return(nil)
+				return mockMount
+			},
+			publishInfo: models.VolumePublishInfo{
+				DevicePath:     "/dev/dm-0",
+				FilesystemType: filesystem.Ext4,
+			},
+			volumeName:    "test-volume",
+			mountPoint:    "/mnt/test-volume",
+			luksFormatted: false,
+			assertError:   assert.NoError,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			iscsiClient := NewDetailed(params.chrootPathPrefix, params.getCommand(ctrl), DefaultSelfHealingExclusion,
+				nil, params.getDeviceClient(ctrl), params.getFileSystemClient(ctrl),
+				params.getMountClient(ctrl), nil,
+				afero.Afero{Fs: afero.NewMemMapFs()}, nil)
+
+			ctx := context.Background()
+
+			err := iscsiClient.EnsureVolumeFormattedAndMounted(ctx, params.volumeName, params.mountPoint,
+				&params.publishInfo, params.luksFormatted)
+			if params.assertError != nil {
+				params.assertError(t, err)
+			}
 		})
 	}
 }

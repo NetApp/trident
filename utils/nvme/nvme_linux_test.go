@@ -452,15 +452,13 @@ func TestNewNVMeSubsystem(t *testing.T) {
 
 func TestAttachNVMeVolumeRetry(t *testing.T) {
 	tests := map[string]struct {
-		name           string
-		mountpoint     string
-		publishInfo    *models.VolumePublishInfo
-		secrets        map[string]string
-		timeout        time.Duration
-		getFs          func() (afero.Fs, error)
-		getMockDevices func(ctrl *gomock.Controller) devices.Devices
-		getMockMount   func(ctrl *gomock.Controller) mount.Mount
-		expectErr      bool
+		name        string
+		mountpoint  string
+		publishInfo *models.VolumePublishInfo
+		secrets     map[string]string
+		timeout     time.Duration
+		getFs       func() (afero.Fs, error)
+		expectErr   bool
 	}{
 		"Attach success on retry": {
 			name:       "/sys/class/nvme-subsystem/subsystem0/nvme123n456",
@@ -485,29 +483,16 @@ func TestAttachNVMeVolumeRetry(t *testing.T) {
 				}
 				return fs, nil
 			},
-			getMockDevices: func(ctrl *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(ctrl)
-				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/nvme0n1").Return(filesystem.Ext4, nil)
-				return mockDevices
-			},
-			getMockMount: func(ctrl *gomock.Controller) mount.Mount {
-				mockMount := mock_mount.NewMockMount(ctrl)
-				mockMount.EXPECT().IsMounted(gomock.Any(), "/dev/nvme0n1", "", "").Return(true, nil)
-				mockMount.EXPECT().MountDevice(gomock.Any(), "/dev/nvme0n1", "/mock/mountpoint", "", false).Return(nil)
-				return mockMount
-			},
+			expectErr: false,
 		},
 	}
 
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
 			fs, err := params.getFs()
 			assert.NoError(t, err)
-			handler := NewNVMeHandlerDetailed(nil, params.getMockDevices(ctrl), params.getMockMount(ctrl),
-				nil, fs)
-			err = handler.AttachNVMeVolumeRetry(context.Background(), params.name, params.mountpoint,
-				params.publishInfo, params.secrets, params.timeout)
+			handler := NewNVMeHandlerDetailed(nil, nil, nil, nil, fs)
+			err = handler.AttachNVMeVolumeRetry(context.Background(), params.publishInfo, params.timeout)
 			if params.expectErr {
 				assert.Error(t, err)
 			} else {
@@ -517,65 +502,18 @@ func TestAttachNVMeVolumeRetry(t *testing.T) {
 	}
 }
 
-func TestNVMeMountVolume(t *testing.T) {
+func TestEnsureVolumeFormattedAndMounted(t *testing.T) {
 	tests := map[string]struct {
 		name           string
 		mountpoint     string
 		publishInfo    *models.VolumePublishInfo
-		secrets        map[string]string
+		luksFormatted  bool
 		getMockCommand func(ctrl *gomock.Controller) exec.Command
 		getMockDevices func(ctrl *gomock.Controller) devices.Devices
 		getMockMount   func(ctrl *gomock.Controller) mount.Mount
 		getFsClient    func(ctrl *gomock.Controller) filesystem.Filesystem
 		expectErr      bool
 	}{
-		"Mount Success LUKS": {
-			name:       "mockName",
-			mountpoint: "/mock/mountpoint",
-			publishInfo: &models.VolumePublishInfo{
-				FilesystemType: filesystem.Ext4,
-				LUKSEncryption: "true",
-				VolumeAccessInfo: models.VolumeAccessInfo{
-					NVMeAccessInfo: models.NVMeAccessInfo{
-						NVMeSubsystemNQN:  "mock-nqn",
-						NVMeSubsystemUUID: "1234",
-						NVMeNamespaceUUID: "1234",
-					},
-				},
-			},
-			secrets: map[string]string{
-				"luks-passphrase":               "mockPassphrase",
-				"luks-passphrase-name":          "mockPassphraseName",
-				"previous-luks-passphrase":      "mockPreviousPassphrase",
-				"previous-luks-passphrase-name": "mockPreviousPassphraseName",
-			},
-			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
-				mockCommand := mockexec.NewMockCommand(ctrl)
-				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(
-					gomock.Any(), "cryptsetup", 30*time.Second, true, "", "status",
-					"/dev/mapper/luks-mockName").Return([]byte{}, mockexec.NewMockExitError(4,
-					"device does not exist"))
-				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(gomock.Any(), "cryptsetup", 30*time.Second, true, "",
-					"status",
-					"/dev/mapper/luks-mockName").Return([]byte{}, nil)
-				return mockCommand
-			},
-			getMockDevices: func(ctrl *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(ctrl)
-				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/mapper/luks-mockName").Return(filesystem.Ext4, nil)
-				return mockDevices
-			},
-			getMockMount: func(ctrl *gomock.Controller) mount.Mount {
-				mockMount := mock_mount.NewMockMount(ctrl)
-				mockMount.EXPECT().IsMounted(gomock.Any(), "/dev/mapper/luks-mockName", "", "").Return(true, nil)
-				mockMount.EXPECT().MountDevice(gomock.Any(), "/dev/mapper/luks-mockName", "/mock/mountpoint", "", false).Return(nil)
-				return mockMount
-			},
-			getFsClient: func(ctrl *gomock.Controller) filesystem.Filesystem {
-				return mock_filesystem.NewMockFilesystem(ctrl)
-			},
-			expectErr: false,
-		},
 		"Mount success, formatted": {
 			name:       "mockName",
 			mountpoint: "/mock/mountpoint",
@@ -590,7 +528,7 @@ func TestNVMeMountVolume(t *testing.T) {
 					},
 				},
 			},
-			secrets: map[string]string{},
+			luksFormatted: false,
 			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
 				return mockexec.NewMockCommand(ctrl)
 			},
@@ -613,6 +551,41 @@ func TestNVMeMountVolume(t *testing.T) {
 			},
 			expectErr: false,
 		},
+		"Mount success with LUKS formatted device": {
+			name:       "mockName",
+			mountpoint: "/mock/mountpoint",
+			publishInfo: &models.VolumePublishInfo{
+				FilesystemType: filesystem.Ext4,
+				LUKSEncryption: "true",
+				DevicePath:     "/dev/mock-device",
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					NVMeAccessInfo: models.NVMeAccessInfo{
+						NVMeSubsystemNQN:  "mock-nqn",
+						NVMeSubsystemUUID: "1234",
+						NVMeNamespaceUUID: "1234",
+					},
+				},
+			},
+			luksFormatted: true,
+			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
+				return mockexec.NewMockCommand(ctrl)
+			},
+			getMockDevices: func(ctrl *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(ctrl)
+				mockDevices.EXPECT().GetDeviceFSType(gomock.Any(), "/dev/mapper/luks-mockName").Return(filesystem.Ext4, nil)
+				return mockDevices
+			},
+			getMockMount: func(ctrl *gomock.Controller) mount.Mount {
+				mockMount := mock_mount.NewMockMount(ctrl)
+				mockMount.EXPECT().IsMounted(gomock.Any(), "/dev/mapper/luks-mockName", "", "").Return(true, nil)
+				mockMount.EXPECT().MountDevice(gomock.Any(), "/dev/mapper/luks-mockName", "/mock/mountpoint", "", false).Return(nil)
+				return mockMount
+			},
+			getFsClient: func(ctrl *gomock.Controller) filesystem.Filesystem {
+				return mock_filesystem.NewMockFilesystem(ctrl)
+			},
+			expectErr: false,
+		},
 		"Mount failure unknown format": {
 			name:       "mockName",
 			mountpoint: "/mock/mountpoint",
@@ -627,7 +600,7 @@ func TestNVMeMountVolume(t *testing.T) {
 					},
 				},
 			},
-			secrets: map[string]string{},
+			luksFormatted: false,
 			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
 				return mockexec.NewMockCommand(ctrl)
 			},
@@ -659,7 +632,7 @@ func TestNVMeMountVolume(t *testing.T) {
 					},
 				},
 			},
-			secrets: map[string]string{},
+			luksFormatted: false,
 			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
 				return mockexec.NewMockCommand(ctrl)
 			},
@@ -691,7 +664,7 @@ func TestNVMeMountVolume(t *testing.T) {
 					},
 				},
 			},
-			secrets: map[string]string{},
+			luksFormatted: false,
 			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
 				return mockexec.NewMockCommand(ctrl)
 			},
@@ -722,7 +695,7 @@ func TestNVMeMountVolume(t *testing.T) {
 					},
 				},
 			},
-			secrets: map[string]string{},
+			luksFormatted: false,
 			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
 				return mockexec.NewMockCommand(ctrl)
 			},
@@ -746,6 +719,35 @@ func TestNVMeMountVolume(t *testing.T) {
 			},
 			expectErr: true,
 		},
+		"Raw filesystem - no formatting or mounting": {
+			name:       "mockName",
+			mountpoint: "/mock/mountpoint",
+			publishInfo: &models.VolumePublishInfo{
+				FilesystemType: filesystem.Raw,
+				DevicePath:     "/dev/mock-device",
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					NVMeAccessInfo: models.NVMeAccessInfo{
+						NVMeSubsystemNQN:  "mock-nqn",
+						NVMeSubsystemUUID: "1234",
+						NVMeNamespaceUUID: "1234",
+					},
+				},
+			},
+			luksFormatted: false,
+			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
+				return mockexec.NewMockCommand(ctrl)
+			},
+			getMockDevices: func(ctrl *gomock.Controller) devices.Devices {
+				return mock_devices.NewMockDevices(ctrl)
+			},
+			getMockMount: func(ctrl *gomock.Controller) mount.Mount {
+				return mock_mount.NewMockMount(ctrl)
+			},
+			getFsClient: func(ctrl *gomock.Controller) filesystem.Filesystem {
+				return mock_filesystem.NewMockFilesystem(ctrl)
+			},
+			expectErr: false,
+		},
 	}
 
 	for name, params := range tests {
@@ -753,7 +755,170 @@ func TestNVMeMountVolume(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			handler := NewNVMeHandlerDetailed(params.getMockCommand(ctrl), params.getMockDevices(ctrl),
 				params.getMockMount(ctrl), params.getFsClient(ctrl), nil)
-			err := handler.NVMeMountVolume(context.Background(), params.name, params.mountpoint, params.publishInfo, params.secrets)
+			err := handler.EnsureVolumeFormattedAndMounted(context.Background(), params.name, params.mountpoint, params.publishInfo, params.luksFormatted)
+			if params.expectErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestEnsureCryptsetupFormattedAndMappedOnHost(t *testing.T) {
+	tests := map[string]struct {
+		name            string
+		publishInfo     *models.VolumePublishInfo
+		secrets         map[string]string
+		getMockCommand  func(ctrl *gomock.Controller) exec.Command
+		getMockDevices  func(ctrl *gomock.Controller) devices.Devices
+		expectFormatted bool
+		expectErr       bool
+	}{
+		"LUKS format and map success": {
+			name: "mockName",
+			publishInfo: &models.VolumePublishInfo{
+				FilesystemType: filesystem.Ext4,
+				LUKSEncryption: "true",
+				DevicePath:     "/dev/mock-device",
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					NVMeAccessInfo: models.NVMeAccessInfo{
+						NVMeSubsystemNQN:  "mock-nqn",
+						NVMeSubsystemUUID: "1234",
+						NVMeNamespaceUUID: "1234",
+					},
+				},
+			},
+			secrets: map[string]string{
+				"luks-passphrase":      "mockPassphrase",
+				"luks-passphrase-name": "mockPassphraseName",
+			},
+			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
+				mockCommand := mockexec.NewMockCommand(ctrl)
+				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(
+					gomock.Any(), gomock.Eq("cryptsetup"), gomock.Any(), gomock.Any(), gomock.Eq(""), "status", gomock.Any()).
+					Return([]byte{}, mockexec.NewMockExitError(4, "device does not exist")).Times(1)
+				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(
+					gomock.Any(), gomock.Eq("cryptsetup"), gomock.Any(), gomock.Any(), gomock.Any(), "isLuks", gomock.Any()).
+					Return([]byte{}, mockexec.NewMockExitError(1, "not a luks device")).Times(1)
+				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), "luksFormat", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return([]byte{}, nil).Times(1)
+				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(
+					gomock.Any(), gomock.Eq("cryptsetup"), gomock.Any(), gomock.Any(), gomock.Any(), "isLuks", gomock.Any()).
+					Return([]byte{}, nil).Times(1)
+				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(
+					gomock.Any(), gomock.Eq("cryptsetup"), gomock.Any(), gomock.Any(), gomock.Any(), "open", gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Return([]byte{}, nil).Times(1)
+				return mockCommand
+			},
+			getMockDevices: func(ctrl *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(ctrl)
+				mockDevices.EXPECT().IsDeviceUnformatted(gomock.Any(), gomock.Any()).Return(true, nil).Times(1)
+				return mockDevices
+			},
+			expectFormatted: true,
+			expectErr:       false,
+		},
+		"LUKS already formatted and mapped": {
+			name: "mockName",
+			publishInfo: &models.VolumePublishInfo{
+				FilesystemType: filesystem.Ext4,
+				LUKSEncryption: "true",
+				DevicePath:     "/dev/mock-device",
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					NVMeAccessInfo: models.NVMeAccessInfo{
+						NVMeSubsystemNQN:  "mock-nqn",
+						NVMeSubsystemUUID: "1234",
+						NVMeNamespaceUUID: "1234",
+					},
+				},
+			},
+			secrets: map[string]string{
+				"luks-passphrase":      "mockPassphrase",
+				"luks-passphrase-name": "mockPassphraseName",
+			},
+			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
+				mockCommand := mockexec.NewMockCommand(ctrl)
+				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(
+					gomock.Any(), gomock.Eq("cryptsetup"), gomock.Any(), gomock.Any(), gomock.Eq(""), "status", gomock.Any()).
+					Return([]byte{}, mockexec.NewMockExitError(4, "device does not exist")).Times(1)
+				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(
+					gomock.Any(), gomock.Eq("cryptsetup"), gomock.Any(), gomock.Any(), gomock.Any(), "isLuks", gomock.Any()).
+					Return([]byte{}, nil).Times(1)
+				mockCommand.EXPECT().ExecuteWithTimeoutAndInput(
+					gomock.Any(), gomock.Eq("cryptsetup"), gomock.Any(), gomock.Any(), gomock.Any(), "open", gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Return([]byte{}, nil).Times(1)
+				return mockCommand
+			},
+			getMockDevices: func(ctrl *gomock.Controller) devices.Devices {
+				return mock_devices.NewMockDevices(ctrl)
+			},
+			expectFormatted: true,
+			expectErr:       false,
+		},
+		"Non-LUKS device returns false": {
+			name: "mockName",
+			publishInfo: &models.VolumePublishInfo{
+				FilesystemType: filesystem.Ext4,
+				LUKSEncryption: "false",
+				DevicePath:     "/dev/mock-device",
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					NVMeAccessInfo: models.NVMeAccessInfo{
+						NVMeSubsystemNQN:  "mock-nqn",
+						NVMeSubsystemUUID: "1234",
+						NVMeNamespaceUUID: "1234",
+					},
+				},
+			},
+			secrets: map[string]string{},
+			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
+				return mockexec.NewMockCommand(ctrl)
+			},
+			getMockDevices: func(ctrl *gomock.Controller) devices.Devices {
+				return mock_devices.NewMockDevices(ctrl)
+			},
+			expectFormatted: false,
+			expectErr:       false,
+		},
+		"LUKS with invalid encryption value": {
+			name: "mockName",
+			publishInfo: &models.VolumePublishInfo{
+				FilesystemType: filesystem.Ext4,
+				LUKSEncryption: "invalid",
+				DevicePath:     "/dev/mock-device",
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					NVMeAccessInfo: models.NVMeAccessInfo{
+						NVMeSubsystemNQN:  "mock-nqn",
+						NVMeSubsystemUUID: "1234",
+						NVMeNamespaceUUID: "1234",
+					},
+				},
+			},
+			secrets: map[string]string{},
+			getMockCommand: func(ctrl *gomock.Controller) exec.Command {
+				return mockexec.NewMockCommand(ctrl)
+			},
+			getMockDevices: func(ctrl *gomock.Controller) devices.Devices {
+				return mock_devices.NewMockDevices(ctrl)
+			},
+			expectFormatted: false,
+			expectErr:       true,
+		},
+	}
+
+	for name, params := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			handler := NewNVMeHandlerDetailed(params.getMockCommand(ctrl), params.getMockDevices(ctrl),
+				nil, nil, nil)
+			luksFormatted, err := handler.EnsureCryptsetupFormattedAndMappedOnHost(context.Background(),
+				params.name, params.publishInfo, params.secrets)
+
+			assert.Equal(t, params.expectFormatted, luksFormatted)
 			if params.expectErr {
 				assert.Error(t, err)
 			} else {

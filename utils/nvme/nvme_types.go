@@ -174,15 +174,17 @@ type NVMeInterface interface {
 	PopulateCurrentNVMeSessions(ctx context.Context, currSessions *NVMeSessions) error
 	InspectNVMeSessions(ctx context.Context, pubSessions, currSessions *NVMeSessions) []NVMeSubsystem
 	RectifyNVMeSession(ctx context.Context, subsystemToFix NVMeSubsystem, pubSessions *NVMeSessions)
-	NVMeMountVolume(
-		ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
-	) error
 	AttachNVMeVolume(
-		ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
+		ctx context.Context, publishInfo *models.VolumePublishInfo,
 	) error
 	AttachNVMeVolumeRetry(
-		ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
-		timeout time.Duration,
+		ctx context.Context, publishInfo *models.VolumePublishInfo, timeout time.Duration,
 	) error
 	GetNVMeSubsystem(ctx context.Context, nqn string) (*NVMeSubsystem, error)
+	EnsureVolumeFormattedAndMounted(
+		ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted bool,
+	) error
+	EnsureCryptsetupFormattedAndMappedOnHost(
+		ctx context.Context, name string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
+	) (bool, error)
 }

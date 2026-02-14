@@ -1400,8 +1400,24 @@ func (p *Plugin) nodeStageFCPVolume(
 	}()
 
 	var mpathSize int64
-	mpathSize, err = p.ensureAttachFCPVolume(ctx, req, "", publishInfo, AttachFCPVolumeTimeoutShort)
+	// Attach the volume to the node
+	mpathSize, err = p.ensureAttachFCPVolume(ctx, publishInfo, AttachFCPVolumeTimeoutShort)
 	if err != nil {
+		return err
+	}
+
+	// Cryptsetup format if necessary and map to host
+	luksFormatted, err := luks.EnsureCryptsetupFormattedAndMappedOnHost(
+		ctx, req.VolumeContext["internalName"], publishInfo, req.GetSecrets(), p.command, p.devices,
+	)
+	if err != nil {
+		return err
+	}
+
+	// Format and mount if necessary
+	if err = p.fcp.EnsureVolumeFormattedAndMounted(
+		ctx, req.VolumeContext["internalName"], "", publishInfo, luksFormatted,
+	); err != nil {
 		return err
 	}
 
@@ -1410,7 +1426,7 @@ func (p *Plugin) nodeStageFCPVolume(
 			return err
 		}
 
-		luksDevice := luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
+		luksDevice := luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command, p.devices)
 
 		// Ensure we update the passphrase in case it has never been set before
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
@@ -1438,8 +1454,7 @@ func (p *Plugin) nodeStageFCPVolume(
 // ensureAttachFCPVolume attempts to attach the volume to the local host
 // with a retry logic based on the publish information passed in.
 func (p *Plugin) ensureAttachFCPVolume(
-	ctx context.Context, req *csi.NodeStageVolumeRequest, mountpoint string,
-	publishInfo *models.VolumePublishInfo, attachTimeout time.Duration,
+	ctx context.Context, publishInfo *models.VolumePublishInfo, attachTimeout time.Duration,
 ) (int64, error) {
 	var err error
 	var mpathSize int64
@@ -1448,8 +1463,7 @@ func (p *Plugin) ensureAttachFCPVolume(
 	defer Logc(ctx).Debug("<<<< ensureAttachFCPVolume")
 
 	// Perform the login/rescan/discovery/(optionally)format, mount & get the device back in the publish info
-	if mpathSize, err = p.fcp.AttachVolumeRetry(ctx, req.VolumeContext["internalName"], mountpoint,
-		publishInfo, req.GetSecrets(), attachTimeout); err != nil {
+	if mpathSize, err = p.fcp.AttachVolumeRetry(ctx, publishInfo, attachTimeout); err != nil {
 		return mpathSize, status.Error(codes.Internal, fmt.Sprintf("failed to stage volume: %v", err))
 	}
 
@@ -1697,13 +1711,13 @@ func (p *Plugin) nodePublishFCPVolume(
 		if luks.IsLegacyDevicePath(devicePath) {
 			// Supports legacy volumes that store the LUKS device path
 			luksDevice, err = luks.NewDeviceFromMappingPath(
-				ctx, p.command, devicePath, req.VolumeContext["internalName"],
+				ctx, p.command, p.devices, devicePath, req.VolumeContext["internalName"],
 			)
 			if err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
 			}
 		} else {
-			luksDevice = luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
+			luksDevice = luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command, p.devices)
 		}
 
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, req.GetVolumeId(), req.GetSecrets(), false)
@@ -1864,8 +1878,24 @@ func (p *Plugin) nodeStageISCSIVolume(
 	}()
 
 	var mpathSize int64
-	mpathSize, err = p.ensureAttachISCSIVolume(ctx, req, "", publishInfo, AttachISCSIVolumeTimeoutShort)
+	// Attach the volume to the node
+	mpathSize, err = p.ensureAttachISCSIVolume(ctx, req, publishInfo, AttachISCSIVolumeTimeoutShort)
 	if err != nil {
+		return err
+	}
+
+	// Cryptsetup format if necessary and map to host
+	luksFormatted, err := luks.EnsureCryptsetupFormattedAndMappedOnHost(
+		ctx, req.VolumeContext["internalName"], publishInfo, req.GetSecrets(), p.command, p.devices,
+	)
+	if err != nil {
+		return err
+	}
+
+	// Format and mount if necessary
+	if err = p.iscsi.EnsureVolumeFormattedAndMounted(
+		ctx, req.VolumeContext["internalName"], "", publishInfo, luksFormatted,
+	); err != nil {
 		return err
 	}
 
@@ -1874,7 +1904,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 			return err
 		}
 
-		luksDevice := luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
+		luksDevice := luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command, p.devices)
 
 		// Ensure we update the passphrase in case it has never been set before
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
@@ -1918,15 +1948,14 @@ func (p *Plugin) nodeStageISCSIVolume(
 // ensureAttachISCSIVolume attempts to attach the volume to the local host
 // with a retry logic based on the publish information passed in.
 func (p *Plugin) ensureAttachISCSIVolume(
-	ctx context.Context, req *csi.NodeStageVolumeRequest, mountpoint string,
+	ctx context.Context, req *csi.NodeStageVolumeRequest,
 	publishInfo *models.VolumePublishInfo, attachTimeout time.Duration,
 ) (int64, error) {
 	var err error
 	var mpathSize int64
 
 	// Perform the login/rescan/discovery/(optionally)format, mount & get the device back in the publish info
-	if mpathSize, err = p.iscsi.AttachVolumeRetry(ctx, req.VolumeContext["internalName"], mountpoint,
-		publishInfo, req.GetSecrets(), attachTimeout); err != nil {
+	if mpathSize, err = p.iscsi.AttachVolumeRetry(ctx, publishInfo, attachTimeout); err != nil {
 		// Did we fail to log in?
 		if errors.IsAuthError(err) {
 			// Update CHAP info from the controller and try one more time.
@@ -1934,9 +1963,7 @@ func (p *Plugin) ensureAttachISCSIVolume(
 			if err = p.updateChapInfoFromController(ctx, req, publishInfo); err != nil {
 				return mpathSize, status.Error(codes.Internal, err.Error())
 			}
-			if mpathSize, err = p.iscsi.AttachVolumeRetry(ctx, req.VolumeContext["internalName"], mountpoint,
-				publishInfo,
-				req.GetSecrets(), attachTimeout); err != nil {
+			if mpathSize, err = p.iscsi.AttachVolumeRetry(ctx, publishInfo, attachTimeout); err != nil {
 				// Bail out no matter what as we've now tried with updated credentials
 				return mpathSize, status.Error(codes.Internal, err.Error())
 			}
@@ -2303,10 +2330,10 @@ func (p *Plugin) nodePublishISCSIVolume(
 		var err error
 		if luks.IsLegacyDevicePath(devicePath) {
 			// Supports legacy volumes that store the LUKS device path
-			luksDevice, err = luks.NewDeviceFromMappingPath(ctx, p.command, devicePath,
+			luksDevice, err = luks.NewDeviceFromMappingPath(ctx, p.command, p.devices, devicePath,
 				req.VolumeContext["internalName"])
 		} else {
-			luksDevice = luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
+			luksDevice = luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command, p.devices)
 		}
 
 		if err != nil {
@@ -2669,7 +2696,7 @@ func (p *Plugin) selfHealingRectifySession(ctx context.Context, portal string, a
 		}
 
 		publishedCHAPCredentials := publishInfo.IscsiChapInfo
-		if _, err = p.ensureAttachISCSIVolume(ctx, req, "", publishInfo, iSCSILoginTimeout); err != nil {
+		if _, err = p.ensureAttachISCSIVolume(ctx, req, publishInfo, iSCSILoginTimeout); err != nil {
 			return fmt.Errorf("failed to login to the target")
 		}
 
@@ -3014,10 +3041,23 @@ func (p *Plugin) nodeStageNVMeVolume(
 	publishInfo.SANType = req.PublishContext["SANType"]
 	publishInfo.FormatOptions = req.PublishContext["formatOptions"]
 
-	err := p.nvmeHandler.AttachNVMeVolumeRetry(
-		ctx, req.VolumeContext["internalName"], "", publishInfo, req.GetSecrets(), nvme.NVMeAttachTimeout,
+	err := p.nvmeHandler.AttachNVMeVolumeRetry(ctx, publishInfo, nvme.NVMeAttachTimeout)
+	if err != nil {
+		return err
+	}
+
+	// Cryptsetup format if necessary and map to host
+	luksFormatted, err := p.nvmeHandler.EnsureCryptsetupFormattedAndMappedOnHost(
+		ctx, req.VolumeContext["internalName"], publishInfo, req.GetSecrets(),
 	)
 	if err != nil {
+		return err
+	}
+
+	// Format and mount if necessary
+	if err = p.nvmeHandler.EnsureVolumeFormattedAndMounted(
+		ctx, req.VolumeContext["internalName"], "", publishInfo, luksFormatted,
+	); err != nil {
 		return err
 	}
 
@@ -3031,7 +3071,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 			return err
 		}
 
-		luksDevice := luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command)
+		luksDevice := luks.NewDevice(publishInfo.DevicePath, req.VolumeContext["internalName"], p.command, p.devices)
 
 		// Ensure we update the passphrase in case it has never been set before
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, volumeId, req.GetSecrets(), true)
@@ -3259,7 +3299,7 @@ func (p *Plugin) nodePublishNVMeVolume(
 	devicePath := publishInfo.DevicePath
 	if convert.ToBool(publishInfo.LUKSEncryption) {
 		// Rotate the LUKS passphrase if needed, on failure, log and continue to publish
-		luksDevice := luks.NewDevice(devicePath, req.VolumeContext["internalName"], p.command)
+		luksDevice := luks.NewDevice(devicePath, req.VolumeContext["internalName"], p.command, p.devices)
 
 		err = ensureLUKSVolumePassphrase(ctx, p.restClient, luksDevice, req.GetVolumeId(), req.GetSecrets(), false)
 		if err != nil {

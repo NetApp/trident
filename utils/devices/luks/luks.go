@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/afero"
@@ -17,6 +18,7 @@ import (
 	"github.com/netapp/trident/utils/errors"
 	execCmd "github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/lsblk"
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -93,9 +95,9 @@ type LUKSDevice struct {
 	osFs             OS
 }
 
-func NewDevice(rawDevicePath, volumeId string, command execCmd.Command) *LUKSDevice {
+func NewDevice(rawDevicePath, volumeId string, command execCmd.Command, devices devices.Devices) *LUKSDevice {
 	luksDeviceName := devicePrefix + volumeId
-	return NewDetailed(rawDevicePath, luksDeviceName, command, devices.New(), afero.NewOsFs())
+	return NewDetailed(rawDevicePath, luksDeviceName, command, devices, afero.NewOsFs())
 }
 
 func NewDetailed(
@@ -111,13 +113,13 @@ func NewDetailed(
 }
 
 func NewDeviceFromMappingPath(
-	ctx context.Context, command execCmd.Command, mappingPath, volumeId string,
+	ctx context.Context, command execCmd.Command, devices devices.Devices, mappingPath, volumeId string,
 ) (*LUKSDevice, error) {
 	rawDevicePath, err := GetUnderlyingDevicePathForDevice(ctx, command, mappingPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not determine underlying device for LUKS mapping; %v", err)
 	}
-	return NewDevice(rawDevicePath, volumeId, command), nil
+	return NewDevice(rawDevicePath, volumeId, command, devices), nil
 }
 
 // EnsureDeviceMappedOnHost ensures the specified device is LUKS formatted, opened, and has the current passphrase.
@@ -260,4 +262,43 @@ func GetDmDevicePathFromLUKSLegacyPath(
 		}).WithError(err).Error("Unable to determine LUKS parent device.")
 	}
 	return devices.DevPrefix + dev, nil
+}
+
+// IsLuksDevice parses the VolumePublishInfo to determine if it is a LUKS device.
+func IsLuksDevice(publishInfo *models.VolumePublishInfo) (bool, error) {
+	var err error
+	var isLUKSDevice bool
+	if publishInfo.LUKSEncryption != "" {
+		isLUKSDevice, err = strconv.ParseBool(publishInfo.LUKSEncryption)
+		if err != nil {
+			return false, fmt.Errorf("could not parse LUKSEncryption into a bool, got %v",
+				publishInfo.LUKSEncryption)
+		}
+	}
+	return isLUKSDevice, nil
+}
+
+// EnsureCryptsetupFormattedAndMappedOnHost checks if the device is a LUKS device, and ensures it is formatted and
+// mapped on the host.
+func EnsureCryptsetupFormattedAndMappedOnHost(
+	ctx context.Context, name string, publishInfo *models.VolumePublishInfo, secrets map[string]string, command execCmd.Command,
+	devices devices.Devices,
+) (bool, error) {
+	Logc(ctx).Debug(">>>> EnsureCryptsetupFormattedAndMappedOnHost")
+	defer Logc(ctx).Debug("<<<< EnsureCryptsetupFormattedAndMappedOnHost")
+
+	isLUKSDevice, err := IsLuksDevice(publishInfo)
+	if err != nil {
+		return isLUKSDevice, err
+	}
+
+	var luksFormatted bool
+	if isLUKSDevice {
+		luksDevice := NewDevice(publishInfo.DevicePath, name, command, devices)
+		luksFormatted, err = luksDevice.EnsureDeviceMappedOnHost(ctx, name, secrets)
+		if err != nil {
+			return luksFormatted, err
+		}
+	}
+	return luksFormatted, nil
 }

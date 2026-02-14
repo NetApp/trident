@@ -56,31 +56,60 @@ func (mr *MockNVMeInterfaceMockRecorder) AddPublishedNVMeSession(pubSessions, pu
 }
 
 // AttachNVMeVolume mocks base method.
-func (m *MockNVMeInterface) AttachNVMeVolume(ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string) error {
+func (m *MockNVMeInterface) AttachNVMeVolume(ctx context.Context, publishInfo *models.VolumePublishInfo) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AttachNVMeVolume", ctx, name, mountpoint, publishInfo, secrets)
+	ret := m.ctrl.Call(m, "AttachNVMeVolume", ctx, publishInfo)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AttachNVMeVolume indicates an expected call of AttachNVMeVolume.
-func (mr *MockNVMeInterfaceMockRecorder) AttachNVMeVolume(ctx, name, mountpoint, publishInfo, secrets any) *gomock.Call {
+func (mr *MockNVMeInterfaceMockRecorder) AttachNVMeVolume(ctx, publishInfo any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachNVMeVolume", reflect.TypeOf((*MockNVMeInterface)(nil).AttachNVMeVolume), ctx, name, mountpoint, publishInfo, secrets)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachNVMeVolume", reflect.TypeOf((*MockNVMeInterface)(nil).AttachNVMeVolume), ctx, publishInfo)
 }
 
 // AttachNVMeVolumeRetry mocks base method.
-func (m *MockNVMeInterface) AttachNVMeVolumeRetry(ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string, timeout time.Duration) error {
+func (m *MockNVMeInterface) AttachNVMeVolumeRetry(ctx context.Context, publishInfo *models.VolumePublishInfo, timeout time.Duration) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AttachNVMeVolumeRetry", ctx, name, mountpoint, publishInfo, secrets, timeout)
+	ret := m.ctrl.Call(m, "AttachNVMeVolumeRetry", ctx, publishInfo, timeout)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AttachNVMeVolumeRetry indicates an expected call of AttachNVMeVolumeRetry.
-func (mr *MockNVMeInterfaceMockRecorder) AttachNVMeVolumeRetry(ctx, name, mountpoint, publishInfo, secrets, timeout any) *gomock.Call {
+func (mr *MockNVMeInterfaceMockRecorder) AttachNVMeVolumeRetry(ctx, publishInfo, timeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachNVMeVolumeRetry", reflect.TypeOf((*MockNVMeInterface)(nil).AttachNVMeVolumeRetry), ctx, name, mountpoint, publishInfo, secrets, timeout)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachNVMeVolumeRetry", reflect.TypeOf((*MockNVMeInterface)(nil).AttachNVMeVolumeRetry), ctx, publishInfo, timeout)
+}
+
+// EnsureCryptsetupFormattedAndMappedOnHost mocks base method.
+func (m *MockNVMeInterface) EnsureCryptsetupFormattedAndMappedOnHost(ctx context.Context, name string, publishInfo *models.VolumePublishInfo, secrets map[string]string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureCryptsetupFormattedAndMappedOnHost", ctx, name, publishInfo, secrets)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EnsureCryptsetupFormattedAndMappedOnHost indicates an expected call of EnsureCryptsetupFormattedAndMappedOnHost.
+func (mr *MockNVMeInterfaceMockRecorder) EnsureCryptsetupFormattedAndMappedOnHost(ctx, name, publishInfo, secrets any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureCryptsetupFormattedAndMappedOnHost", reflect.TypeOf((*MockNVMeInterface)(nil).EnsureCryptsetupFormattedAndMappedOnHost), ctx, name, publishInfo, secrets)
+}
+
+// EnsureVolumeFormattedAndMounted mocks base method.
+func (m *MockNVMeInterface) EnsureVolumeFormattedAndMounted(ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureVolumeFormattedAndMounted", ctx, name, mountPoint, publishInfo, luksFormatted)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnsureVolumeFormattedAndMounted indicates an expected call of EnsureVolumeFormattedAndMounted.
+func (mr *MockNVMeInterfaceMockRecorder) EnsureVolumeFormattedAndMounted(ctx, name, mountPoint, publishInfo, luksFormatted any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVolumeFormattedAndMounted", reflect.TypeOf((*MockNVMeInterface)(nil).EnsureVolumeFormattedAndMounted), ctx, name, mountPoint, publishInfo, luksFormatted)
 }
 
 // GetHostNqn mocks base method.
@@ -140,20 +169,6 @@ func (m *MockNVMeInterface) NVMeActiveOnHost(ctx context.Context) (bool, error) 
 func (mr *MockNVMeInterfaceMockRecorder) NVMeActiveOnHost(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeActiveOnHost", reflect.TypeOf((*MockNVMeInterface)(nil).NVMeActiveOnHost), ctx)
-}
-
-// NVMeMountVolume mocks base method.
-func (m *MockNVMeInterface) NVMeMountVolume(ctx context.Context, name, mountpoint string, publishInfo *models.VolumePublishInfo, secrets map[string]string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NVMeMountVolume", ctx, name, mountpoint, publishInfo, secrets)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// NVMeMountVolume indicates an expected call of NVMeMountVolume.
-func (mr *MockNVMeInterfaceMockRecorder) NVMeMountVolume(ctx, name, mountpoint, publishInfo, secrets any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NVMeMountVolume", reflect.TypeOf((*MockNVMeInterface)(nil).NVMeMountVolume), ctx, name, mountpoint, publishInfo, secrets)
 }
 
 // NewNVMeSubsystem mocks base method.
