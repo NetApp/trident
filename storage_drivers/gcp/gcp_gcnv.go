@@ -777,6 +777,11 @@ func (d *NASStorageDriver) Create(
 		sizeBytes = minimumGCNVVolumeSizeBytes
 	}
 
+	// Ensure sizeBytes is a multiple of 1 GiB
+	if remainder := sizeBytes % capacity.OneGiB; remainder != 0 {
+		sizeBytes = ((sizeBytes / capacity.OneGiB) + 1) * capacity.OneGiB
+	}
+
 	// Get the volume size based on the snapshot reserve
 	sizeWithReserveBytes := drivers.CalculateVolumeSizeBytes(ctx, name, sizeBytes, snapshotReserveInt)
 
@@ -2071,6 +2076,12 @@ func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	if volume.SnapshotReserve > math.MaxInt {
 		return fmt.Errorf("snapshot reserve too large")
 	}
+
+	// Ensure sizeBytes is a multiple of 1 GiB
+	if remainder := sizeBytes % capacity.OneGiB; remainder != 0 {
+		sizeBytes = ((sizeBytes / capacity.OneGiB) + 1) * capacity.OneGiB
+	}
+
 	sizeWithReserveBytes := drivers.CalculateVolumeSizeBytes(ctx, name, sizeBytes, int(volume.SnapshotReserve))
 
 	// If the volume is already the requested size, there's nothing to do
