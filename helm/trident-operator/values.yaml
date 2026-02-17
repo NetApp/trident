@@ -97,6 +97,9 @@ tridentExcludeAutosupport: false
 # tridentAutosupportImage allows the complete override of the image for Trident's Autosupport container.
 tridentAutosupportImage: ""
 
+# tridentAutosupportImageRegistry allows to override the registry for Trident's Autosupport container.
+tridentAutosupportImageRegistry: ""
+
 # tridentAutosupportImageTag allows overriding the tag of the image for Trident's Autosupport container.
 tridentAutosupportImageTag: "25.10"
 
@@ -126,6 +129,9 @@ tridentLogLayers: ""
 
 # tridentImage allows the complete override of the image for Trident.
 tridentImage: ""
+
+# tridentImage allows to override the registry for the image of Trident.
+tridentImageRegistry: ""
 
 # tridentImageTag allows overriding the tag of the image for Trident.
 tridentImageTag: ""
