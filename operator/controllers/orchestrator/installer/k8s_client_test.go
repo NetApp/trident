@@ -1023,6 +1023,7 @@ func TestGetClusterRoleInformation(t *testing.T) {
 	var label, name, invalidName, namespace string
 	var validClusterRole, invalidClusterRole rbacv1.ClusterRole
 	var unwantedClusterRoles, combinationClusterRoles, emptyClusterRoles []rbacv1.ClusterRole
+	var nodeLinuxClusterRole, nodeWindowsClusterRole, oldClusterRole rbacv1.ClusterRole
 
 	label = "tridentCSILabel"
 	name = getControllerRBACResourceName() // could be anything
@@ -1045,9 +1046,30 @@ func TestGetClusterRoleInformation(t *testing.T) {
 	combinationClusterRoles = append([]rbacv1.ClusterRole{validClusterRole}, append(combinationClusterRoles,
 		unwantedClusterRoles...)...)
 
+	// Additional test data for allow-list functionality (node RBAC)
+	nodeLinuxClusterRole = rbacv1.ClusterRole{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      TridentNodeLinuxResourceName, // "trident-node-linux"
+			Namespace: namespace,
+		},
+	}
+	nodeWindowsClusterRole = rbacv1.ClusterRole{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      TridentNodeWindowsResourceName, // "trident-node-windows"
+			Namespace: namespace,
+		},
+	}
+	oldClusterRole = rbacv1.ClusterRole{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "old-trident-node", // Not in allowed list
+			Namespace: namespace,
+		},
+	}
+
 	// setup input and output test types for easy use
 	type input struct {
 		name         string
+		allowedNames []string
 		label        string
 		shouldUpdate bool
 	}
@@ -1070,6 +1092,7 @@ func TestGetClusterRoleInformation(t *testing.T) {
 			input: input{
 				label:        label,
 				name:         name,
+				allowedNames: []string{name},
 				shouldUpdate: true,
 			},
 			output: output{
@@ -1088,6 +1111,7 @@ func TestGetClusterRoleInformation(t *testing.T) {
 			input: input{
 				label:        label,
 				name:         invalidName,
+				allowedNames: []string{invalidName},
 				shouldUpdate: false,
 			},
 			output: output{
@@ -1107,6 +1131,7 @@ func TestGetClusterRoleInformation(t *testing.T) {
 			input: input{
 				label:        label,
 				name:         name,
+				allowedNames: []string{name},
 				shouldUpdate: false,
 			},
 			output: output{
@@ -1120,6 +1145,63 @@ func TestGetClusterRoleInformation(t *testing.T) {
 				mockKubeClient.EXPECT().GetClusterRolesByLabel(args[0]).Return(combinationClusterRoles, nil)
 			},
 		},
+		"allow-list: processing Linux node should not mark Windows node as unwanted": {
+			input: input{
+				label:        TridentNodeLabel,
+				name:         TridentNodeLinuxResourceName,
+				allowedNames: []string{TridentNodeLinuxResourceName, TridentNodeWindowsResourceName},
+				shouldUpdate: false,
+			},
+			output: output{
+				currentClusterRole:   &nodeLinuxClusterRole,
+				unwantedClusterRoles: nil, // Windows node should NOT be in unwanted
+				createClusterRole:    false,
+				err:                  nil,
+			},
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// Return both Linux and Windows cluster roles with the same label
+				clusterRoles := []rbacv1.ClusterRole{nodeLinuxClusterRole, nodeWindowsClusterRole}
+				mockKubeClient.EXPECT().GetClusterRolesByLabel(args[0]).Return(clusterRoles, nil)
+			},
+		},
+		"allow-list: processing Windows node should not mark Linux node as unwanted": {
+			input: input{
+				label:        TridentNodeLabel,
+				name:         TridentNodeWindowsResourceName,
+				allowedNames: []string{TridentNodeLinuxResourceName, TridentNodeWindowsResourceName},
+				shouldUpdate: false,
+			},
+			output: output{
+				currentClusterRole:   &nodeWindowsClusterRole,
+				unwantedClusterRoles: nil, // Linux node should NOT be in unwanted
+				createClusterRole:    false,
+				err:                  nil,
+			},
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// Return both Linux and Windows cluster roles with the same label
+				clusterRoles := []rbacv1.ClusterRole{nodeLinuxClusterRole, nodeWindowsClusterRole}
+				mockKubeClient.EXPECT().GetClusterRolesByLabel(args[0]).Return(clusterRoles, nil)
+			},
+		},
+		"allow-list: should mark old cluster role not in allowed list as unwanted": {
+			input: input{
+				label:        TridentNodeLabel,
+				name:         TridentNodeLinuxResourceName,
+				allowedNames: []string{TridentNodeLinuxResourceName, TridentNodeWindowsResourceName},
+				shouldUpdate: false,
+			},
+			output: output{
+				currentClusterRole:   &nodeLinuxClusterRole,
+				unwantedClusterRoles: []rbacv1.ClusterRole{oldClusterRole}, // Old role SHOULD be unwanted
+				createClusterRole:    false,
+				err:                  nil,
+			},
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// Return Linux, Windows, and old cluster role with the same label
+				clusterRoles := []rbacv1.ClusterRole{nodeLinuxClusterRole, nodeWindowsClusterRole, oldClusterRole}
+				mockKubeClient.EXPECT().GetClusterRolesByLabel(args[0]).Return(clusterRoles, nil)
+			},
+		},
 	}
 
 	for name, test := range tests {
@@ -1130,7 +1212,7 @@ func TestGetClusterRoleInformation(t *testing.T) {
 				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
 
 				// extract the input variables from the test case definition
-				label, name, shouldUpdate := test.input.label, test.input.name, test.input.shouldUpdate
+				label, name, allowedNames, shouldUpdate := test.input.label, test.input.name, test.input.allowedNames, test.input.shouldUpdate
 
 				// extract the output variables from the test case definition
 				expectedClusterRole, expectedUnwantedClusterRoles, expectedCreateClusterRole,
@@ -1142,7 +1224,7 @@ func TestGetClusterRoleInformation(t *testing.T) {
 				test.mocks(mockKubeClient, label, name, shouldUpdate)
 				extendedK8sClient := &K8sClient{mockKubeClient}
 				currentClusterRole, unwantedClusterRoles, createClusterRole, err := extendedK8sClient.GetClusterRoleInformation(name,
-					label, shouldUpdate)
+					allowedNames, label, shouldUpdate)
 
 				assert.EqualValues(t, expectedClusterRole, currentClusterRole)
 				assert.EqualValues(t, expectedUnwantedClusterRoles, unwantedClusterRoles)
@@ -1476,6 +1558,7 @@ func TestGetClusterRoleBindingInformation(t *testing.T) {
 	var label, name, invalidName, namespace string
 	var validClusterRoleBinding, invalidClusterRoleBinding rbacv1.ClusterRoleBinding
 	var unwantedClusterRoleBindings, combinationClusterRoleBindings, emptyClusterRoleBindings []rbacv1.ClusterRoleBinding
+	var nodeLinuxClusterRoleBinding, nodeWindowsClusterRoleBinding, oldClusterRoleBinding rbacv1.ClusterRoleBinding
 
 	label = "tridentCSILabel"
 	name = getControllerRBACResourceName() // could be anything
@@ -1499,9 +1582,30 @@ func TestGetClusterRoleBindingInformation(t *testing.T) {
 		append(combinationClusterRoleBindings,
 			unwantedClusterRoleBindings...)...)
 
+	// Additional test data for allow-list functionality (node RBAC)
+	nodeLinuxClusterRoleBinding = rbacv1.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      TridentNodeLinuxResourceName, // "trident-node-linux"
+			Namespace: namespace,
+		},
+	}
+	nodeWindowsClusterRoleBinding = rbacv1.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      TridentNodeWindowsResourceName, // "trident-node-windows"
+			Namespace: namespace,
+		},
+	}
+	oldClusterRoleBinding = rbacv1.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "old-trident-node", // Not in allowed list
+			Namespace: namespace,
+		},
+	}
+
 	// setup input and output test types for easy use
 	type input struct {
 		name         string
+		allowedNames []string
 		label        string
 		shouldUpdate bool
 	}
@@ -1524,6 +1628,7 @@ func TestGetClusterRoleBindingInformation(t *testing.T) {
 			input: input{
 				label:        label,
 				name:         name,
+				allowedNames: []string{name},
 				shouldUpdate: true,
 			},
 			output: output{
@@ -1542,6 +1647,7 @@ func TestGetClusterRoleBindingInformation(t *testing.T) {
 			input: input{
 				label:        label,
 				name:         invalidName,
+				allowedNames: []string{invalidName},
 				shouldUpdate: false,
 			},
 			output: output{
@@ -1561,6 +1667,7 @@ func TestGetClusterRoleBindingInformation(t *testing.T) {
 			input: input{
 				label:        label,
 				name:         name,
+				allowedNames: []string{name},
 				shouldUpdate: false,
 			},
 			output: output{
@@ -1575,6 +1682,63 @@ func TestGetClusterRoleBindingInformation(t *testing.T) {
 					nil)
 			},
 		},
+		"allow-list: processing Linux node should not mark Windows node as unwanted": {
+			input: input{
+				label:        TridentNodeLabel,
+				name:         TridentNodeLinuxResourceName,
+				allowedNames: []string{TridentNodeLinuxResourceName, TridentNodeWindowsResourceName},
+				shouldUpdate: false,
+			},
+			output: output{
+				currentClusterRoleBinding:   &nodeLinuxClusterRoleBinding,
+				unwantedClusterRoleBindings: nil, // Windows node should NOT be in unwanted
+				createClusterRoleBinding:    false,
+				err:                         nil,
+			},
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// Return both Linux and Windows cluster role bindings with the same label
+				clusterRoleBindings := []rbacv1.ClusterRoleBinding{nodeLinuxClusterRoleBinding, nodeWindowsClusterRoleBinding}
+				mockKubeClient.EXPECT().GetClusterRoleBindingsByLabel(args[0]).Return(clusterRoleBindings, nil)
+			},
+		},
+		"allow-list: processing Windows node should not mark Linux node as unwanted": {
+			input: input{
+				label:        TridentNodeLabel,
+				name:         TridentNodeWindowsResourceName,
+				allowedNames: []string{TridentNodeLinuxResourceName, TridentNodeWindowsResourceName},
+				shouldUpdate: false,
+			},
+			output: output{
+				currentClusterRoleBinding:   &nodeWindowsClusterRoleBinding,
+				unwantedClusterRoleBindings: nil, // Linux node should NOT be in unwanted
+				createClusterRoleBinding:    false,
+				err:                         nil,
+			},
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// Return both Linux and Windows cluster role bindings with the same label
+				clusterRoleBindings := []rbacv1.ClusterRoleBinding{nodeLinuxClusterRoleBinding, nodeWindowsClusterRoleBinding}
+				mockKubeClient.EXPECT().GetClusterRoleBindingsByLabel(args[0]).Return(clusterRoleBindings, nil)
+			},
+		},
+		"allow-list: should mark old cluster role binding not in allowed list as unwanted": {
+			input: input{
+				label:        TridentNodeLabel,
+				name:         TridentNodeLinuxResourceName,
+				allowedNames: []string{TridentNodeLinuxResourceName, TridentNodeWindowsResourceName},
+				shouldUpdate: false,
+			},
+			output: output{
+				currentClusterRoleBinding:   &nodeLinuxClusterRoleBinding,
+				unwantedClusterRoleBindings: []rbacv1.ClusterRoleBinding{oldClusterRoleBinding}, // Old binding SHOULD be unwanted
+				createClusterRoleBinding:    false,
+				err:                         nil,
+			},
+			mocks: func(mockKubeClient *mockK8sClient.MockKubernetesClient, args ...interface{}) {
+				// Return Linux, Windows, and old cluster role binding with the same label
+				clusterRoleBindings := []rbacv1.ClusterRoleBinding{nodeLinuxClusterRoleBinding, nodeWindowsClusterRoleBinding, oldClusterRoleBinding}
+				mockKubeClient.EXPECT().GetClusterRoleBindingsByLabel(args[0]).Return(clusterRoleBindings, nil)
+			},
+		},
 	}
 
 	for name, test := range tests {
@@ -1585,7 +1749,7 @@ func TestGetClusterRoleBindingInformation(t *testing.T) {
 				mockKubeClient := mockK8sClient.NewMockKubernetesClient(mockCtrl)
 
 				// extract the input variables from the test case definition
-				label, name, shouldUpdate := test.input.label, test.input.name, test.input.shouldUpdate
+				label, name, allowedNames, shouldUpdate := test.input.label, test.input.name, test.input.allowedNames, test.input.shouldUpdate
 
 				// extract the output variables from the test case definition
 				expectedCurrentClusterRoleBinding, expectedUnwantedClusterRoleBindings,
@@ -1599,7 +1763,7 @@ func TestGetClusterRoleBindingInformation(t *testing.T) {
 				extendedK8sClient := &K8sClient{mockKubeClient}
 				currentClusterRoleBinding, unwantedClusterRoleBindings, createClusterRoleBinding,
 					err := extendedK8sClient.GetClusterRoleBindingInformation(name,
-					label, shouldUpdate)
+					allowedNames, label, shouldUpdate)
 
 				assert.EqualValues(t, expectedCurrentClusterRoleBinding, currentClusterRoleBinding)
 				assert.EqualValues(t, expectedUnwantedClusterRoleBindings, unwantedClusterRoleBindings)

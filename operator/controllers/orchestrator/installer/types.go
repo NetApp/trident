@@ -49,7 +49,7 @@ type ExtendedK8sClient interface {
 	RemoveMultipleCSIDriverCRs(unwantedCSIDriverCRs []storagev1.CSIDriver) error
 
 	GetClusterRoleInformation(
-		clusterRoleName, appLabel string, shouldUpdate bool,
+		clusterRoleName string, allowedClusterRoleNames []string, appLabel string, shouldUpdate bool,
 	) (*rbacv1.ClusterRole, []rbacv1.ClusterRole, bool, error)
 	PutClusterRole(
 		currentClusterRole *rbacv1.ClusterRole, createClusterRole bool, newClusterRoleYAML, appLabel string,
@@ -58,7 +58,7 @@ type ExtendedK8sClient interface {
 	RemoveMultipleClusterRoles(unwantedClusterRoles []rbacv1.ClusterRole) error
 
 	GetClusterRoleBindingInformation(
-		clusterRoleBindingName, appLabel string, shouldUpdate bool,
+		clusterRoleBindingName string, allowedClusterRoleBindingNames []string, appLabel string, shouldUpdate bool,
 	) (*rbacv1.ClusterRoleBinding, []rbacv1.ClusterRoleBinding, bool, error)
 	PutClusterRoleBinding(
 		currentClusterRoleBinding *rbacv1.ClusterRoleBinding, createClusterRoleBinding bool,

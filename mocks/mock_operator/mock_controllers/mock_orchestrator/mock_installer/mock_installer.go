@@ -1238,9 +1238,9 @@ func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleBindingByLabelAndName
 }
 
 // GetClusterRoleBindingInformation mocks base method.
-func (m *MockExtendedK8sClient) GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel string, shouldUpdate bool) (*v14.ClusterRoleBinding, []v14.ClusterRoleBinding, bool, error) {
+func (m *MockExtendedK8sClient) GetClusterRoleBindingInformation(clusterRoleBindingName string, allowedClusterRoleBindingNames []string, appLabel string, shouldUpdate bool) (*v14.ClusterRoleBinding, []v14.ClusterRoleBinding, bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetClusterRoleBindingInformation", clusterRoleBindingName, appLabel, shouldUpdate)
+	ret := m.ctrl.Call(m, "GetClusterRoleBindingInformation", clusterRoleBindingName, allowedClusterRoleBindingNames, appLabel, shouldUpdate)
 	ret0, _ := ret[0].(*v14.ClusterRoleBinding)
 	ret1, _ := ret[1].([]v14.ClusterRoleBinding)
 	ret2, _ := ret[2].(bool)
@@ -1249,9 +1249,9 @@ func (m *MockExtendedK8sClient) GetClusterRoleBindingInformation(clusterRoleBind
 }
 
 // GetClusterRoleBindingInformation indicates an expected call of GetClusterRoleBindingInformation.
-func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel, shouldUpdate any) *gomock.Call {
+func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleBindingInformation(clusterRoleBindingName, allowedClusterRoleBindingNames, appLabel, shouldUpdate any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClusterRoleBindingInformation", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetClusterRoleBindingInformation), clusterRoleBindingName, appLabel, shouldUpdate)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClusterRoleBindingInformation", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetClusterRoleBindingInformation), clusterRoleBindingName, allowedClusterRoleBindingNames, appLabel, shouldUpdate)
 }
 
 // GetClusterRoleBindingsByLabel mocks base method.
@@ -1300,9 +1300,9 @@ func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleByLabelAndName(label,
 }
 
 // GetClusterRoleInformation mocks base method.
-func (m *MockExtendedK8sClient) GetClusterRoleInformation(clusterRoleName, appLabel string, shouldUpdate bool) (*v14.ClusterRole, []v14.ClusterRole, bool, error) {
+func (m *MockExtendedK8sClient) GetClusterRoleInformation(clusterRoleName string, allowedClusterRoleNames []string, appLabel string, shouldUpdate bool) (*v14.ClusterRole, []v14.ClusterRole, bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetClusterRoleInformation", clusterRoleName, appLabel, shouldUpdate)
+	ret := m.ctrl.Call(m, "GetClusterRoleInformation", clusterRoleName, allowedClusterRoleNames, appLabel, shouldUpdate)
 	ret0, _ := ret[0].(*v14.ClusterRole)
 	ret1, _ := ret[1].([]v14.ClusterRole)
 	ret2, _ := ret[2].(bool)
@@ -1311,9 +1311,9 @@ func (m *MockExtendedK8sClient) GetClusterRoleInformation(clusterRoleName, appLa
 }
 
 // GetClusterRoleInformation indicates an expected call of GetClusterRoleInformation.
-func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleInformation(clusterRoleName, appLabel, shouldUpdate any) *gomock.Call {
+func (mr *MockExtendedK8sClientMockRecorder) GetClusterRoleInformation(clusterRoleName, allowedClusterRoleNames, appLabel, shouldUpdate any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClusterRoleInformation", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetClusterRoleInformation), clusterRoleName, appLabel, shouldUpdate)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClusterRoleInformation", reflect.TypeOf((*MockExtendedK8sClient)(nil).GetClusterRoleInformation), clusterRoleName, allowedClusterRoleNames, appLabel, shouldUpdate)
 }
 
 // GetClusterRolesByLabel mocks base method.

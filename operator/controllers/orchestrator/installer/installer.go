@@ -1360,31 +1360,36 @@ func (i *Installer) createOrPatchTridentServiceAccounts(
 func (i *Installer) createOrPatchTridentClusterRole(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
-	clusterRoleName := getControllerRBACResourceName()
+	// Create cluster roles for all RBAC resources (controller and node pods)
+	rbacResourceNames := getRBACResourceNames()
 
-	currentClusterRole, unwantedClusterRoles, createClusterRole, err := i.client.GetClusterRoleInformation(
-		clusterRoleName, appLabel, shouldUpdate)
-	if err != nil {
-		return fmt.Errorf("failed to get Trident cluster roles; %v", err)
-	}
+	// Create or update cluster role for each RBAC resource
+	for _, resourceName := range rbacResourceNames {
+		// Get appropriate labels for this resource type (controller vs node)
+		resourceLabels, resourceLabelString := getAppLabelForResource(resourceName)
 
-	// Retrieve cluster roles with node label
-	// This needs to happen to identify the cluster roles defined for node pods, prior to 23.xx so that
-	// they can be removed
-	nodeClusterRoles, err := i.client.GetClusterRolesByLabel(TridentNodeLabel)
-	if err == nil && len(nodeClusterRoles) > 0 {
-		unwantedClusterRoles = append(unwantedClusterRoles, nodeClusterRoles...)
-	}
+		// Get cluster role information for this resource
+		// Pass all RBAC resource names to prevent accidental deletion of related resources
+		currentClusterRole, unwantedClusterRoles, createClusterRole, err := i.client.GetClusterRoleInformation(
+			resourceName, rbacResourceNames, resourceLabelString, shouldUpdate)
+		if err != nil {
+			return fmt.Errorf("failed to get Trident cluster role %s; %v", resourceName, err)
+		}
 
-	if err = i.client.RemoveMultipleClusterRoles(unwantedClusterRoles); err != nil {
-		return fmt.Errorf("failed to remove unwanted Trident cluster roles; %v", err)
-	}
+		// Remove unwanted cluster roles
+		if len(unwantedClusterRoles) > 0 {
+			if err = i.client.RemoveMultipleClusterRoles(unwantedClusterRoles); err != nil {
+				return fmt.Errorf("failed to remove unwanted cluster roles; %v", err)
+			}
+		}
 
-	newClusterRoleYAML := k8sclient.GetClusterRoleYAML(clusterRoleName, labels, controllingCRDetails)
+		// Create or patch the cluster role
+		newClusterRoleYAML := k8sclient.GetClusterRoleYAML(resourceName, resourceLabels, controllingCRDetails)
 
-	err = i.client.PutClusterRole(currentClusterRole, createClusterRole, newClusterRoleYAML, appLabel)
-	if err != nil {
-		return fmt.Errorf("failed to create or patch Trident cluster role; %v", err)
+		err = i.client.PutClusterRole(currentClusterRole, createClusterRole, newClusterRoleYAML, resourceLabelString)
+		if err != nil {
+			return fmt.Errorf("failed to create or patch Trident cluster role %s; %v", resourceName, err)
+		}
 	}
 
 	return nil
@@ -1459,33 +1464,38 @@ func (i *Installer) createOrPatchTridentRoleBindings(
 func (i *Installer) createOrPatchTridentClusterRoleBinding(
 	controllingCRDetails, labels map[string]string, shouldUpdate bool,
 ) error {
-	clusterRoleBindingName := getControllerRBACResourceName()
+	// Create cluster role bindings for all RBAC resources (controller and node pods)
+	rbacResourceNames := getRBACResourceNames()
 
-	currentClusterRoleBinding, unwantedClusterRoleBindings, createClusterRoleBinding,
-		err := i.client.GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel, shouldUpdate)
-	if err != nil {
-		return fmt.Errorf("failed to get Trident cluster role bindings; %v", err)
-	}
+	// Create or update cluster role binding for each RBAC resource
+	for _, resourceName := range rbacResourceNames {
+		// Get appropriate labels for this resource type (controller vs node)
+		resourceLabels, resourceLabelString := getAppLabelForResource(resourceName)
 
-	// Retrieve cluster role bindings with node label
-	// This needs to happen to identify the cluster role bindings defined for node pods, prior to 23.xx so that
-	// they can be removed
-	nodeClusterRoleBindings, err := i.client.GetClusterRoleBindingsByLabel(TridentNodeLabel)
-	if err == nil && len(nodeClusterRoleBindings) > 0 {
-		unwantedClusterRoleBindings = append(unwantedClusterRoleBindings, nodeClusterRoleBindings...)
-	}
+		// Get cluster role binding information for this resource
+		// Pass all RBAC resource names to prevent accidental deletion of related resources
+		currentClusterRoleBinding, unwantedClusterRoleBindings, createClusterRoleBinding, err := i.client.GetClusterRoleBindingInformation(
+			resourceName, rbacResourceNames, resourceLabelString, shouldUpdate)
+		if err != nil {
+			return fmt.Errorf("failed to get Trident cluster role binding %s; %v", resourceName, err)
+		}
 
-	if err = i.client.RemoveMultipleClusterRoleBindings(unwantedClusterRoleBindings); err != nil {
-		return fmt.Errorf("failed to remove unwanted Trident cluster role bindings; %v", err)
-	}
+		// Remove unwanted cluster role bindings
+		if len(unwantedClusterRoleBindings) > 0 {
+			if err = i.client.RemoveMultipleClusterRoleBindings(unwantedClusterRoleBindings); err != nil {
+				return fmt.Errorf("failed to remove unwanted cluster role bindings; %v", err)
+			}
+		}
 
-	newClusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(i.namespace, clusterRoleBindingName,
-		i.client.Flavor(), labels, controllingCRDetails)
+		// Create or patch the cluster role binding
+		newClusterRoleBindingYAML := k8sclient.GetClusterRoleBindingYAML(i.namespace, resourceName,
+			i.client.Flavor(), resourceLabels, controllingCRDetails)
 
-	err = i.client.PutClusterRoleBinding(currentClusterRoleBinding, createClusterRoleBinding,
-		newClusterRoleBindingYAML, appLabel)
-	if err != nil {
-		return fmt.Errorf("failed to create or patch Trident cluster role binding; %v", err)
+		err = i.client.PutClusterRoleBinding(currentClusterRoleBinding, createClusterRoleBinding,
+			newClusterRoleBindingYAML, resourceLabelString)
+		if err != nil {
+			return fmt.Errorf("failed to create or patch Trident cluster role binding %s; %v", resourceName, err)
+		}
 	}
 
 	return nil

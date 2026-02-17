@@ -1907,15 +1907,15 @@ func TestInstallOrPatchTrident(t *testing.T) {
 		mockK8sClient.EXPECT().RemoveMultipleServiceAccounts(gomock.AssignableToTypeOf([]corev1.ServiceAccount{})).Return(nil)
 		mockK8sClient.EXPECT().PutServiceAccount(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(false, nil).AnyTimes()
 
-		mockK8sClient.EXPECT().GetClusterRoleInformation(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, []rbacv1.ClusterRole{}, true, nil)
+		mockK8sClient.EXPECT().GetClusterRoleInformation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, []rbacv1.ClusterRole{}, true, nil).Times(2)
 		mockK8sClient.EXPECT().GetClusterRolesByLabel(gomock.Any()).Return([]rbacv1.ClusterRole{}, nil).AnyTimes()
 		mockK8sClient.EXPECT().RemoveMultipleClusterRoles(gomock.AssignableToTypeOf([]rbacv1.ClusterRole{})).Return(nil).AnyTimes()
-		mockK8sClient.EXPECT().PutClusterRole(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		mockK8sClient.EXPECT().PutClusterRole(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
-		mockK8sClient.EXPECT().GetClusterRoleBindingInformation(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, []rbacv1.ClusterRoleBinding{}, true, nil)
+		mockK8sClient.EXPECT().GetClusterRoleBindingInformation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, []rbacv1.ClusterRoleBinding{}, true, nil).Times(2)
 		mockK8sClient.EXPECT().GetClusterRoleBindingsByLabel(gomock.Any()).Return([]rbacv1.ClusterRoleBinding{}, nil).AnyTimes()
 		mockK8sClient.EXPECT().RemoveMultipleClusterRoleBindings(gomock.AssignableToTypeOf([]rbacv1.ClusterRoleBinding{})).Return(nil).AnyTimes()
-		mockK8sClient.EXPECT().PutClusterRoleBinding(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		mockK8sClient.EXPECT().PutClusterRoleBinding(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 		mockK8sClient.EXPECT().GetMultipleRoleInformation(gomock.Any(), gomock.Any(), gomock.Any()).Return(
 			make(map[string]*rbacv1.Role), []rbacv1.Role{}, make(map[string]bool), nil)
@@ -3604,15 +3604,31 @@ func TestCreateOrPatchTridentClusterRole(t *testing.T) {
 
 	t.Run("successful cluster role creation", func(t *testing.T) {
 		clusterRoleName := getControllerRBACResourceName()
+		nodeResourceNames := getNodeResourceNames()
+
+		// The allowedClusterRoleNames now includes all RBAC resource names
+		allowedClusterRoleNames := append([]string{clusterRoleName}, nodeResourceNames...)
 		var currentClusterRole *rbacv1.ClusterRole = nil
 		unwantedClusterRoles := []rbacv1.ClusterRole{}
 		createClusterRole := true
 
-		mockK8sClient.EXPECT().GetClusterRoleInformation(clusterRoleName, appLabel, false).Return(
+		// Get the label for controller resource
+		_, controllerLabelString := getAppLabelForResource(clusterRoleName)
+
+		mockK8sClient.EXPECT().GetClusterRoleInformation(clusterRoleName, allowedClusterRoleNames, controllerLabelString, false).Return(
 			currentClusterRole, unwantedClusterRoles, createClusterRole, nil)
-		mockK8sClient.EXPECT().GetClusterRolesByLabel(TridentNodeLabel).Return([]rbacv1.ClusterRole{}, nil)
-		mockK8sClient.EXPECT().RemoveMultipleClusterRoles(unwantedClusterRoles).Return(nil)
-		mockK8sClient.EXPECT().PutClusterRole(currentClusterRole, createClusterRole, gomock.Any(), appLabel).Return(nil)
+		// No RemoveMultipleClusterRoles call expected because unwantedClusterRoles is empty
+		mockK8sClient.EXPECT().PutClusterRole(currentClusterRole, createClusterRole, gomock.Any(), controllerLabelString).Return(nil)
+
+		// Also expect calls for node resource names
+		for _, nodeResourceName := range nodeResourceNames {
+			nodeLabels, nodeLabelString := getAppLabelForResource(nodeResourceName)
+			_ = nodeLabels // unused in test
+			mockK8sClient.EXPECT().GetClusterRoleInformation(nodeResourceName, allowedClusterRoleNames, nodeLabelString, false).Return(
+				nil, []rbacv1.ClusterRole{}, true, nil)
+			// No RemoveMultipleClusterRoles call expected because unwantedClusterRoles is empty
+			mockK8sClient.EXPECT().PutClusterRole(nil, true, gomock.Any(), nodeLabelString).Return(nil)
+		}
 
 		err := installer.createOrPatchTridentClusterRole(controllingCRDetails, labels, false)
 		assert.NoError(t, err, "Should not error when creating Trident cluster role")
@@ -3620,30 +3636,41 @@ func TestCreateOrPatchTridentClusterRole(t *testing.T) {
 
 	t.Run("failure getting cluster role information", func(t *testing.T) {
 		clusterRoleName := getControllerRBACResourceName()
+		nodeResourceNames := getNodeResourceNames()
+		allowedClusterRoleNames := append([]string{clusterRoleName}, nodeResourceNames...)
+		_, controllerLabelString := getAppLabelForResource(clusterRoleName)
 
-		mockK8sClient.EXPECT().GetClusterRoleInformation(clusterRoleName, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetClusterRoleInformation(clusterRoleName, allowedClusterRoleNames, controllerLabelString, false).Return(
 			nil, nil, false, fmt.Errorf("failed to get cluster role"))
 
 		err := installer.createOrPatchTridentClusterRole(controllingCRDetails, labels, false)
 		assert.Error(t, err, "expected error when getting cluster role information fails")
-		assert.Contains(t, err.Error(), "failed to get Trident cluster roles")
+		assert.Contains(t, err.Error(), "failed to get Trident cluster role")
 		assert.Contains(t, err.Error(), "failed to get cluster role")
 	})
 
 	t.Run("successful cluster role creation with node cleanup", func(t *testing.T) {
 		clusterRoleName := getControllerRBACResourceName()
+		nodeResourceNames := getNodeResourceNames()
+		allowedClusterRoleNames := append([]string{clusterRoleName}, nodeResourceNames...)
+
 		var currentClusterRole *rbacv1.ClusterRole = nil
 		unwantedClusterRoles := []rbacv1.ClusterRole{}
-		nodeClusterRoles := []rbacv1.ClusterRole{{}, {}}
 		createClusterRole := true
+		_, controllerLabelString := getAppLabelForResource(clusterRoleName)
 
-		mockK8sClient.EXPECT().GetClusterRoleInformation(clusterRoleName, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetClusterRoleInformation(clusterRoleName, allowedClusterRoleNames, controllerLabelString, false).Return(
 			currentClusterRole, unwantedClusterRoles, createClusterRole, nil)
-		mockK8sClient.EXPECT().GetClusterRolesByLabel(TridentNodeLabel).Return(nodeClusterRoles, nil)
-		// Should remove both unwanted and node cluster roles
-		combinedUnwanted := append(unwantedClusterRoles, nodeClusterRoles...)
-		mockK8sClient.EXPECT().RemoveMultipleClusterRoles(combinedUnwanted).Return(nil)
-		mockK8sClient.EXPECT().PutClusterRole(currentClusterRole, createClusterRole, gomock.Any(), appLabel).Return(nil)
+		mockK8sClient.EXPECT().PutClusterRole(currentClusterRole, createClusterRole, gomock.Any(), controllerLabelString).Return(nil)
+
+		// Expect calls for node resource names
+		for _, nodeResourceName := range nodeResourceNames {
+			nodeLabels, nodeLabelString := getAppLabelForResource(nodeResourceName)
+			_ = nodeLabels // unused in test
+			mockK8sClient.EXPECT().GetClusterRoleInformation(nodeResourceName, allowedClusterRoleNames, nodeLabelString, false).Return(
+				nil, []rbacv1.ClusterRole{}, true, nil)
+			mockK8sClient.EXPECT().PutClusterRole(nil, true, gomock.Any(), nodeLabelString).Return(nil)
+		}
 
 		err := installer.createOrPatchTridentClusterRole(controllingCRDetails, labels, false)
 		assert.NoError(t, err, "Should not error when creating Trident cluster role")
@@ -3651,16 +3678,26 @@ func TestCreateOrPatchTridentClusterRole(t *testing.T) {
 
 	t.Run("ignores error getting node cluster roles", func(t *testing.T) {
 		clusterRoleName := getControllerRBACResourceName()
+		nodeResourceNames := getNodeResourceNames()
+		allowedClusterRoleNames := append([]string{clusterRoleName}, nodeResourceNames...)
+
 		var currentClusterRole *rbacv1.ClusterRole = nil
 		unwantedClusterRoles := []rbacv1.ClusterRole{}
 		createClusterRole := true
+		_, controllerLabelString := getAppLabelForResource(clusterRoleName)
 
-		mockK8sClient.EXPECT().GetClusterRoleInformation(clusterRoleName, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetClusterRoleInformation(clusterRoleName, allowedClusterRoleNames, controllerLabelString, false).Return(
 			currentClusterRole, unwantedClusterRoles, createClusterRole, nil)
-		// Node cluster role retrieval fails, but function should continue
-		mockK8sClient.EXPECT().GetClusterRolesByLabel(TridentNodeLabel).Return(nil, fmt.Errorf("node lookup failed"))
-		mockK8sClient.EXPECT().RemoveMultipleClusterRoles(unwantedClusterRoles).Return(nil)
-		mockK8sClient.EXPECT().PutClusterRole(currentClusterRole, createClusterRole, gomock.Any(), appLabel).Return(nil)
+		mockK8sClient.EXPECT().PutClusterRole(currentClusterRole, createClusterRole, gomock.Any(), controllerLabelString).Return(nil)
+
+		// Expect calls for node resource names
+		for _, nodeResourceName := range nodeResourceNames {
+			nodeLabels, nodeLabelString := getAppLabelForResource(nodeResourceName)
+			_ = nodeLabels // unused in test
+			mockK8sClient.EXPECT().GetClusterRoleInformation(nodeResourceName, allowedClusterRoleNames, nodeLabelString, false).Return(
+				nil, []rbacv1.ClusterRole{}, true, nil)
+			mockK8sClient.EXPECT().PutClusterRole(nil, true, gomock.Any(), nodeLabelString).Return(nil)
+		}
 
 		err := installer.createOrPatchTridentClusterRole(controllingCRDetails, labels, false)
 		assert.NoError(t, err, "Should not error when creating Trident cluster role")
@@ -3668,32 +3705,37 @@ func TestCreateOrPatchTridentClusterRole(t *testing.T) {
 
 	t.Run("failure removing unwanted cluster roles", func(t *testing.T) {
 		clusterRoleName := getControllerRBACResourceName()
+		nodeResourceNames := getNodeResourceNames()
+		allowedClusterRoleNames := append([]string{clusterRoleName}, nodeResourceNames...)
+
 		var currentClusterRole *rbacv1.ClusterRole = nil
 		unwantedClusterRoles := []rbacv1.ClusterRole{{}}
 		createClusterRole := true
+		_, controllerLabelString := getAppLabelForResource(clusterRoleName)
 
-		mockK8sClient.EXPECT().GetClusterRoleInformation(clusterRoleName, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetClusterRoleInformation(clusterRoleName, allowedClusterRoleNames, controllerLabelString, false).Return(
 			currentClusterRole, unwantedClusterRoles, createClusterRole, nil)
-		mockK8sClient.EXPECT().GetClusterRolesByLabel(TridentNodeLabel).Return([]rbacv1.ClusterRole{}, nil)
 		mockK8sClient.EXPECT().RemoveMultipleClusterRoles(unwantedClusterRoles).Return(fmt.Errorf("failed to remove cluster roles"))
 
 		err := installer.createOrPatchTridentClusterRole(controllingCRDetails, labels, false)
 		assert.Error(t, err, "expected error when removing unwanted cluster roles fails")
-		assert.Contains(t, err.Error(), "failed to remove unwanted Trident cluster roles")
+		assert.Contains(t, err.Error(), "failed to remove unwanted cluster roles")
 		assert.Contains(t, err.Error(), "failed to remove cluster roles")
 	})
 
 	t.Run("failure creating/patching cluster role", func(t *testing.T) {
 		clusterRoleName := getControllerRBACResourceName()
+		nodeResourceNames := getNodeResourceNames()
+		allowedClusterRoleNames := append([]string{clusterRoleName}, nodeResourceNames...)
+
 		var currentClusterRole *rbacv1.ClusterRole = nil
 		unwantedClusterRoles := []rbacv1.ClusterRole{}
 		createClusterRole := true
+		_, controllerLabelString := getAppLabelForResource(clusterRoleName)
 
-		mockK8sClient.EXPECT().GetClusterRoleInformation(clusterRoleName, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetClusterRoleInformation(clusterRoleName, allowedClusterRoleNames, controllerLabelString, false).Return(
 			currentClusterRole, unwantedClusterRoles, createClusterRole, nil)
-		mockK8sClient.EXPECT().GetClusterRolesByLabel(TridentNodeLabel).Return([]rbacv1.ClusterRole{}, nil)
-		mockK8sClient.EXPECT().RemoveMultipleClusterRoles(unwantedClusterRoles).Return(nil)
-		mockK8sClient.EXPECT().PutClusterRole(currentClusterRole, createClusterRole, gomock.Any(), appLabel).Return(
+		mockK8sClient.EXPECT().PutClusterRole(currentClusterRole, createClusterRole, gomock.Any(), controllerLabelString).Return(
 			fmt.Errorf("failed to put cluster role"))
 
 		err := installer.createOrPatchTridentClusterRole(controllingCRDetails, labels, false)
@@ -3704,15 +3746,26 @@ func TestCreateOrPatchTridentClusterRole(t *testing.T) {
 
 	t.Run("successful cluster role update (shouldUpdate=true)", func(t *testing.T) {
 		clusterRoleName := getControllerRBACResourceName()
+		nodeResourceNames := getNodeResourceNames()
+		allowedClusterRoleNames := append([]string{clusterRoleName}, nodeResourceNames...)
+
 		currentClusterRole := &rbacv1.ClusterRole{}
 		unwantedClusterRoles := []rbacv1.ClusterRole{}
 		createClusterRole := false
+		_, controllerLabelString := getAppLabelForResource(clusterRoleName)
 
-		mockK8sClient.EXPECT().GetClusterRoleInformation(clusterRoleName, appLabel, true).Return(
+		mockK8sClient.EXPECT().GetClusterRoleInformation(clusterRoleName, allowedClusterRoleNames, controllerLabelString, true).Return(
 			currentClusterRole, unwantedClusterRoles, createClusterRole, nil)
-		mockK8sClient.EXPECT().GetClusterRolesByLabel(TridentNodeLabel).Return([]rbacv1.ClusterRole{}, nil)
-		mockK8sClient.EXPECT().RemoveMultipleClusterRoles(unwantedClusterRoles).Return(nil)
-		mockK8sClient.EXPECT().PutClusterRole(currentClusterRole, createClusterRole, gomock.Any(), appLabel).Return(nil)
+		mockK8sClient.EXPECT().PutClusterRole(currentClusterRole, createClusterRole, gomock.Any(), controllerLabelString).Return(nil)
+
+		// Expect calls for node resource names
+		for _, nodeResourceName := range nodeResourceNames {
+			nodeLabels, nodeLabelString := getAppLabelForResource(nodeResourceName)
+			_ = nodeLabels // unused in test
+			mockK8sClient.EXPECT().GetClusterRoleInformation(nodeResourceName, allowedClusterRoleNames, nodeLabelString, true).Return(
+				&rbacv1.ClusterRole{}, []rbacv1.ClusterRole{}, false, nil)
+			mockK8sClient.EXPECT().PutClusterRole(gomock.Any(), false, gomock.Any(), nodeLabelString).Return(nil)
+		}
 
 		err := installer.createOrPatchTridentClusterRole(controllingCRDetails, labels, true)
 		assert.NoError(t, err, "Should not error when creating Trident cluster role with shouldUpdate=true")
@@ -3732,16 +3785,28 @@ func TestCreateOrPatchTridentClusterRoleBinding(t *testing.T) {
 
 	t.Run("successful cluster role binding creation", func(t *testing.T) {
 		clusterRoleBindingName := getControllerRBACResourceName()
+		nodeResourceNames := getNodeResourceNames()
+		allowedClusterRoleBindingNames := append([]string{clusterRoleBindingName}, nodeResourceNames...)
+
 		var currentClusterRoleBinding *rbacv1.ClusterRoleBinding = nil
 		unwantedClusterRoleBindings := []rbacv1.ClusterRoleBinding{}
 		createClusterRoleBinding := true
+		_, controllerLabelString := getAppLabelForResource(clusterRoleBindingName)
 
-		mockK8sClient.EXPECT().GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetClusterRoleBindingInformation(clusterRoleBindingName, allowedClusterRoleBindingNames, controllerLabelString, false).Return(
 			currentClusterRoleBinding, unwantedClusterRoleBindings, createClusterRoleBinding, nil)
-		mockK8sClient.EXPECT().GetClusterRoleBindingsByLabel(TridentNodeLabel).Return([]rbacv1.ClusterRoleBinding{}, nil)
-		mockK8sClient.EXPECT().RemoveMultipleClusterRoleBindings(unwantedClusterRoleBindings).Return(nil)
 		mockK8sClient.EXPECT().Flavor().Return(k8sclient.FlavorKubernetes)
-		mockK8sClient.EXPECT().PutClusterRoleBinding(currentClusterRoleBinding, createClusterRoleBinding, gomock.Any(), appLabel).Return(nil)
+		mockK8sClient.EXPECT().PutClusterRoleBinding(currentClusterRoleBinding, createClusterRoleBinding, gomock.Any(), controllerLabelString).Return(nil)
+
+		// Expect calls for node resource names
+		for _, nodeResourceName := range nodeResourceNames {
+			nodeLabels, nodeLabelString := getAppLabelForResource(nodeResourceName)
+			_ = nodeLabels // unused in test
+			mockK8sClient.EXPECT().GetClusterRoleBindingInformation(nodeResourceName, allowedClusterRoleBindingNames, nodeLabelString, false).Return(
+				nil, []rbacv1.ClusterRoleBinding{}, true, nil)
+			mockK8sClient.EXPECT().Flavor().Return(k8sclient.FlavorKubernetes)
+			mockK8sClient.EXPECT().PutClusterRoleBinding(nil, true, gomock.Any(), nodeLabelString).Return(nil)
+		}
 
 		err := installer.createOrPatchTridentClusterRoleBinding(controllingCRDetails, labels, false)
 		assert.NoError(t, err, "Should not error when creating Trident cluster role binding")
@@ -3749,31 +3814,43 @@ func TestCreateOrPatchTridentClusterRoleBinding(t *testing.T) {
 
 	t.Run("failure getting cluster role binding information", func(t *testing.T) {
 		clusterRoleBindingName := getControllerRBACResourceName()
+		nodeResourceNames := getNodeResourceNames()
+		allowedClusterRoleBindingNames := append([]string{clusterRoleBindingName}, nodeResourceNames...)
+		_, controllerLabelString := getAppLabelForResource(clusterRoleBindingName)
 
-		mockK8sClient.EXPECT().GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetClusterRoleBindingInformation(clusterRoleBindingName, allowedClusterRoleBindingNames, controllerLabelString, false).Return(
 			nil, nil, false, fmt.Errorf("failed to get cluster role binding"))
 
 		err := installer.createOrPatchTridentClusterRoleBinding(controllingCRDetails, labels, false)
 		assert.Error(t, err, "expected error when getting cluster role binding information fails")
-		assert.Contains(t, err.Error(), "failed to get Trident cluster role bindings")
+		assert.Contains(t, err.Error(), "failed to get Trident cluster role binding")
 		assert.Contains(t, err.Error(), "failed to get cluster role binding")
 	})
 
 	t.Run("successful cluster role binding creation with node cleanup", func(t *testing.T) {
 		clusterRoleBindingName := getControllerRBACResourceName()
+		nodeResourceNames := getNodeResourceNames()
+		allowedClusterRoleBindingNames := append([]string{clusterRoleBindingName}, nodeResourceNames...)
+
 		var currentClusterRoleBinding *rbacv1.ClusterRoleBinding = nil
 		unwantedClusterRoleBindings := []rbacv1.ClusterRoleBinding{}
-		nodeClusterRoleBindings := []rbacv1.ClusterRoleBinding{{}, {}}
 		createClusterRoleBinding := true
+		_, controllerLabelString := getAppLabelForResource(clusterRoleBindingName)
 
-		mockK8sClient.EXPECT().GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetClusterRoleBindingInformation(clusterRoleBindingName, allowedClusterRoleBindingNames, controllerLabelString, false).Return(
 			currentClusterRoleBinding, unwantedClusterRoleBindings, createClusterRoleBinding, nil)
-		mockK8sClient.EXPECT().GetClusterRoleBindingsByLabel(TridentNodeLabel).Return(nodeClusterRoleBindings, nil)
-		// Should remove both unwanted and node cluster role bindings
-		combinedUnwanted := append(unwantedClusterRoleBindings, nodeClusterRoleBindings...)
-		mockK8sClient.EXPECT().RemoveMultipleClusterRoleBindings(combinedUnwanted).Return(nil)
 		mockK8sClient.EXPECT().Flavor().Return(k8sclient.FlavorKubernetes)
-		mockK8sClient.EXPECT().PutClusterRoleBinding(currentClusterRoleBinding, createClusterRoleBinding, gomock.Any(), appLabel).Return(nil)
+		mockK8sClient.EXPECT().PutClusterRoleBinding(currentClusterRoleBinding, createClusterRoleBinding, gomock.Any(), controllerLabelString).Return(nil)
+
+		// Expect calls for node resource names
+		for _, nodeResourceName := range nodeResourceNames {
+			nodeLabels, nodeLabelString := getAppLabelForResource(nodeResourceName)
+			_ = nodeLabels // unused in test
+			mockK8sClient.EXPECT().GetClusterRoleBindingInformation(nodeResourceName, allowedClusterRoleBindingNames, nodeLabelString, false).Return(
+				nil, []rbacv1.ClusterRoleBinding{}, true, nil)
+			mockK8sClient.EXPECT().Flavor().Return(k8sclient.FlavorKubernetes)
+			mockK8sClient.EXPECT().PutClusterRoleBinding(nil, true, gomock.Any(), nodeLabelString).Return(nil)
+		}
 
 		err := installer.createOrPatchTridentClusterRoleBinding(controllingCRDetails, labels, false)
 		assert.NoError(t, err, "Should not error when creating Trident cluster role binding")
@@ -3781,17 +3858,28 @@ func TestCreateOrPatchTridentClusterRoleBinding(t *testing.T) {
 
 	t.Run("ignores error getting node cluster role bindings", func(t *testing.T) {
 		clusterRoleBindingName := getControllerRBACResourceName()
+		nodeResourceNames := getNodeResourceNames()
+		allowedClusterRoleBindingNames := append([]string{clusterRoleBindingName}, nodeResourceNames...)
+
 		var currentClusterRoleBinding *rbacv1.ClusterRoleBinding = nil
 		unwantedClusterRoleBindings := []rbacv1.ClusterRoleBinding{}
 		createClusterRoleBinding := true
+		_, controllerLabelString := getAppLabelForResource(clusterRoleBindingName)
 
-		mockK8sClient.EXPECT().GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetClusterRoleBindingInformation(clusterRoleBindingName, allowedClusterRoleBindingNames, controllerLabelString, false).Return(
 			currentClusterRoleBinding, unwantedClusterRoleBindings, createClusterRoleBinding, nil)
-		// Node cluster role binding retrieval fails, but function should continue
-		mockK8sClient.EXPECT().GetClusterRoleBindingsByLabel(TridentNodeLabel).Return(nil, fmt.Errorf("node lookup failed"))
-		mockK8sClient.EXPECT().RemoveMultipleClusterRoleBindings(unwantedClusterRoleBindings).Return(nil)
 		mockK8sClient.EXPECT().Flavor().Return(k8sclient.FlavorKubernetes)
-		mockK8sClient.EXPECT().PutClusterRoleBinding(currentClusterRoleBinding, createClusterRoleBinding, gomock.Any(), appLabel).Return(nil)
+		mockK8sClient.EXPECT().PutClusterRoleBinding(currentClusterRoleBinding, createClusterRoleBinding, gomock.Any(), controllerLabelString).Return(nil)
+
+		// Expect calls for node resource names
+		for _, nodeResourceName := range nodeResourceNames {
+			nodeLabels, nodeLabelString := getAppLabelForResource(nodeResourceName)
+			_ = nodeLabels // unused in test
+			mockK8sClient.EXPECT().GetClusterRoleBindingInformation(nodeResourceName, allowedClusterRoleBindingNames, nodeLabelString, false).Return(
+				nil, []rbacv1.ClusterRoleBinding{}, true, nil)
+			mockK8sClient.EXPECT().Flavor().Return(k8sclient.FlavorKubernetes)
+			mockK8sClient.EXPECT().PutClusterRoleBinding(nil, true, gomock.Any(), nodeLabelString).Return(nil)
+		}
 
 		err := installer.createOrPatchTridentClusterRoleBinding(controllingCRDetails, labels, false)
 		assert.NoError(t, err, "Should not error when creating Trident cluster role binding")
@@ -3799,33 +3887,38 @@ func TestCreateOrPatchTridentClusterRoleBinding(t *testing.T) {
 
 	t.Run("failure removing unwanted cluster role bindings", func(t *testing.T) {
 		clusterRoleBindingName := getControllerRBACResourceName()
+		nodeResourceNames := getNodeResourceNames()
+		allowedClusterRoleBindingNames := append([]string{clusterRoleBindingName}, nodeResourceNames...)
+
 		var currentClusterRoleBinding *rbacv1.ClusterRoleBinding = nil
 		unwantedClusterRoleBindings := []rbacv1.ClusterRoleBinding{{}}
 		createClusterRoleBinding := true
+		_, controllerLabelString := getAppLabelForResource(clusterRoleBindingName)
 
-		mockK8sClient.EXPECT().GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetClusterRoleBindingInformation(clusterRoleBindingName, allowedClusterRoleBindingNames, controllerLabelString, false).Return(
 			currentClusterRoleBinding, unwantedClusterRoleBindings, createClusterRoleBinding, nil)
-		mockK8sClient.EXPECT().GetClusterRoleBindingsByLabel(TridentNodeLabel).Return([]rbacv1.ClusterRoleBinding{}, nil)
 		mockK8sClient.EXPECT().RemoveMultipleClusterRoleBindings(unwantedClusterRoleBindings).Return(fmt.Errorf("failed to remove cluster role bindings"))
 
 		err := installer.createOrPatchTridentClusterRoleBinding(controllingCRDetails, labels, false)
 		assert.Error(t, err, "expected error when removing unwanted cluster role bindings fails")
-		assert.Contains(t, err.Error(), "failed to remove unwanted Trident cluster role bindings")
+		assert.Contains(t, err.Error(), "failed to remove unwanted cluster role bindings")
 		assert.Contains(t, err.Error(), "failed to remove cluster role bindings")
 	})
 
 	t.Run("failure creating/patching cluster role binding", func(t *testing.T) {
 		clusterRoleBindingName := getControllerRBACResourceName()
+		nodeResourceNames := getNodeResourceNames()
+		allowedClusterRoleBindingNames := append([]string{clusterRoleBindingName}, nodeResourceNames...)
+
 		var currentClusterRoleBinding *rbacv1.ClusterRoleBinding = nil
 		unwantedClusterRoleBindings := []rbacv1.ClusterRoleBinding{}
 		createClusterRoleBinding := true
+		_, controllerLabelString := getAppLabelForResource(clusterRoleBindingName)
 
-		mockK8sClient.EXPECT().GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel, false).Return(
+		mockK8sClient.EXPECT().GetClusterRoleBindingInformation(clusterRoleBindingName, allowedClusterRoleBindingNames, controllerLabelString, false).Return(
 			currentClusterRoleBinding, unwantedClusterRoleBindings, createClusterRoleBinding, nil)
-		mockK8sClient.EXPECT().GetClusterRoleBindingsByLabel(TridentNodeLabel).Return([]rbacv1.ClusterRoleBinding{}, nil)
-		mockK8sClient.EXPECT().RemoveMultipleClusterRoleBindings(unwantedClusterRoleBindings).Return(nil)
 		mockK8sClient.EXPECT().Flavor().Return(k8sclient.FlavorKubernetes)
-		mockK8sClient.EXPECT().PutClusterRoleBinding(currentClusterRoleBinding, createClusterRoleBinding, gomock.Any(), appLabel).Return(
+		mockK8sClient.EXPECT().PutClusterRoleBinding(currentClusterRoleBinding, createClusterRoleBinding, gomock.Any(), controllerLabelString).Return(
 			fmt.Errorf("failed to put cluster role binding"))
 
 		err := installer.createOrPatchTridentClusterRoleBinding(controllingCRDetails, labels, false)
@@ -3836,16 +3929,28 @@ func TestCreateOrPatchTridentClusterRoleBinding(t *testing.T) {
 
 	t.Run("successful cluster role binding update (shouldUpdate=true)", func(t *testing.T) {
 		clusterRoleBindingName := getControllerRBACResourceName()
+		nodeResourceNames := getNodeResourceNames()
+		allowedClusterRoleBindingNames := append([]string{clusterRoleBindingName}, nodeResourceNames...)
+
 		currentClusterRoleBinding := &rbacv1.ClusterRoleBinding{}
 		unwantedClusterRoleBindings := []rbacv1.ClusterRoleBinding{}
 		createClusterRoleBinding := false
+		_, controllerLabelString := getAppLabelForResource(clusterRoleBindingName)
 
-		mockK8sClient.EXPECT().GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel, true).Return(
+		mockK8sClient.EXPECT().GetClusterRoleBindingInformation(clusterRoleBindingName, allowedClusterRoleBindingNames, controllerLabelString, true).Return(
 			currentClusterRoleBinding, unwantedClusterRoleBindings, createClusterRoleBinding, nil)
-		mockK8sClient.EXPECT().GetClusterRoleBindingsByLabel(TridentNodeLabel).Return([]rbacv1.ClusterRoleBinding{}, nil)
-		mockK8sClient.EXPECT().RemoveMultipleClusterRoleBindings(unwantedClusterRoleBindings).Return(nil)
 		mockK8sClient.EXPECT().Flavor().Return(k8sclient.FlavorOpenShift)
-		mockK8sClient.EXPECT().PutClusterRoleBinding(currentClusterRoleBinding, createClusterRoleBinding, gomock.Any(), appLabel).Return(nil)
+		mockK8sClient.EXPECT().PutClusterRoleBinding(currentClusterRoleBinding, createClusterRoleBinding, gomock.Any(), controllerLabelString).Return(nil)
+
+		// Expect calls for node resource names
+		for _, nodeResourceName := range nodeResourceNames {
+			nodeLabels, nodeLabelString := getAppLabelForResource(nodeResourceName)
+			_ = nodeLabels // unused in test
+			mockK8sClient.EXPECT().GetClusterRoleBindingInformation(nodeResourceName, allowedClusterRoleBindingNames, nodeLabelString, true).Return(
+				&rbacv1.ClusterRoleBinding{}, []rbacv1.ClusterRoleBinding{}, false, nil)
+			mockK8sClient.EXPECT().Flavor().Return(k8sclient.FlavorOpenShift)
+			mockK8sClient.EXPECT().PutClusterRoleBinding(gomock.Any(), false, gomock.Any(), nodeLabelString).Return(nil)
+		}
 
 		err := installer.createOrPatchTridentClusterRoleBinding(controllingCRDetails, labels, true)
 		assert.NoError(t, err, "Should not error when creating Trident cluster role binding with shouldUpdate=true")
