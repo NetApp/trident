@@ -4484,6 +4484,140 @@ func TestDeleteNode(t *testing.T) {
 	}
 }
 
+// TestDeleteNode_SoftDeleteUpdatesCacheDeletedFlag verifies that when a node is
+// soft-deleted (marked Deleted=true because it still has volume publications),
+// the in-memory cache is updated with the Deleted flag.
+func TestDeleteNode_SoftDeleteUpdatesCacheDeletedFlag(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	o := getOrchestrator(t, false)
+	o.storeClient = mockStoreClient
+
+	nodeName := "test-node-1"
+	volumeName := "test-vol-1"
+
+	// Set up a node.
+	o.nodes.Set(nodeName, &models.Node{
+		Name:    nodeName,
+		IPs:     []string{"10.0.0.1"},
+		Deleted: false,
+	})
+
+	// Set up a volume publication so DeleteNode takes the soft-delete path.
+	err := o.volumePublications.Set(volumeName, nodeName, &models.VolumePublication{
+		NodeName:   nodeName,
+		VolumeName: volumeName,
+	})
+	assert.NoError(t, err)
+
+	// Mock: AddOrUpdateNode is called to persist the soft-delete.
+	mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil)
+
+	// Act: Delete the node while it still has publications -> soft-delete.
+	err = o.DeleteNode(ctx(), nodeName)
+	assert.NoError(t, err)
+
+	// Assert: Node should still be in cache (not hard-deleted).
+	node := o.nodes.Get(nodeName)
+	assert.NotNil(t, node, "Node should still be in cache after soft-delete")
+
+	// Assert: The Deleted flag in the cache MUST be true.
+	// NodeCache.Get() returns a deep copy.
+	// DeleteNode was modifying the copy and persisting to store, but never
+	// calling o.nodes.Set() to update the cache. So the cache still had Deleted=false.
+	assert.True(t, node.Deleted,
+		"Node in cache should have Deleted=true after soft-delete; "+
+			"if this fails, the cache was not updated")
+}
+
+// TestDeleteNode_SoftDeletedNodeCleanedUpAfterLastUnpublish verifies the full
+// end-to-end flow: when a node is soft-deleted and then all its volumes are
+// unpublished, the tridentNode CR (and cache entry) should be cleaned up.
+func TestDeleteNode_SoftDeletedNodeCleanedUpAfterLastUnpublish(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	backendUUID := "backend-uuid-1"
+	nodeName := "test-node-1"
+	volumeName := "test-vol-1"
+
+	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+	mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	o := getOrchestrator(t, false)
+	o.storeClient = mockStoreClient
+
+	// Set up a node.
+	o.nodes.Set(nodeName, &models.Node{
+		Name:    nodeName,
+		IPs:     []string{"10.0.0.1"},
+		Deleted: false,
+	})
+
+	// Set up a volume.
+	o.volumes = map[string]*storage.Volume{
+		volumeName: {
+			BackendUUID: backendUUID,
+			Config:      &storage.VolumeConfig{Name: volumeName},
+		},
+	}
+
+	// Set up a single volume publication.
+	err := o.volumePublications.Set(volumeName, nodeName, &models.VolumePublication{
+		NodeName:   nodeName,
+		VolumeName: volumeName,
+	})
+	assert.NoError(t, err)
+
+	// --- Step 1: Delete the node (soft-delete because publication exists) ---
+	// Note: Don't add the mock backend to o.backends yet, because DeleteNode calls
+	// updateMetrics() which would call backend methods we don't want to mock here.
+	mockStoreClient.EXPECT().AddOrUpdateNode(gomock.Any(), gomock.Any()).Return(nil)
+
+	err = o.DeleteNode(ctx(), nodeName)
+	assert.NoError(t, err)
+
+	// Node should still exist in cache (soft-deleted).
+	node := o.nodes.Get(nodeName)
+	assert.NotNil(t, node, "Node should still be in cache after soft-delete")
+
+	// --- Step 2: Unpublish the last volume from the soft-deleted node ---
+	// Now add the backend (needed for the unpublish flow).
+	o.backends[backendUUID] = mockBackend
+
+	// Mock expectations for the unpublish flow.
+	mockBackend.EXPECT().UnpublishVolume(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(nil)
+	mockStoreClient.EXPECT().DeleteVolumePublication(gomock.Any(), gomock.Any()).Return(nil)
+
+	// These are called by deleteNode() when the soft-deleted node is finally cleaned up.
+	// We require exactly one call each to verify the persistent-store cleanup and
+	// backend invalidation actually occur on the success path.
+	nodeDeleted := false
+	mockStoreClient.EXPECT().DeleteNode(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ context.Context, _ *models.Node) error {
+			nodeDeleted = true
+			return nil
+		}).Times(1)
+	mockBackend.EXPECT().InvalidateNodeAccess().Times(1)
+
+	err = o.unpublishVolume(coreCtx, volumeName, nodeName)
+	assert.NoError(t, err)
+
+	// Assert: deleteNode was called to remove the soft-deleted node from the persistent store.
+	assert.True(t, nodeDeleted,
+		"storeClient.DeleteNode should have been called to clean up the soft-deleted node")
+
+	// Assert: The node should now be fully removed from cache.
+	node = o.nodes.Get(nodeName)
+	assert.Nil(t, node,
+		"Node should be removed from cache after last volume is unpublished from soft-deleted node")
+}
+
 func TestSnapshotVolumes(t *testing.T) {
 	mockPools := tu.GetFakePools()
 	orchestrator := getOrchestrator(t, false)
