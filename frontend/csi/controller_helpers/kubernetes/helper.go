@@ -449,20 +449,6 @@ func (h *helper) getCloneSourceInfo(ctx context.Context, clonePVC *v1.Persistent
 		}
 	}
 
-	// Check that both source and clone PVCs have the same storage class
-	// NOTE: For VolumeContentSource this check is performed by CSI
-	if getStorageClassForPVC(sourcePVC) != getStorageClassForPVC(clonePVC) {
-		Logc(ctx).WithFields(LogFields{
-			"clonePVCName":          clonePVC.Name,
-			"clonePVCNamespace":     clonePVC.Namespace,
-			"clonePVCStorageClass":  getStorageClassForPVC(clonePVC),
-			"sourcePVCName":         sourcePVC.Name,
-			"sourcePVCNamespace":    sourcePVC.Namespace,
-			"sourcePVCStorageClass": getStorageClassForPVC(sourcePVC),
-		}).Error("Cloning from a PVC requires both PVCs have the same storage class.")
-		return "", fmt.Errorf("cloning from a PVC requires both PVCs have the same storage class")
-	}
-
 	// Check that the source PVC has an associated PV
 	sourcePVName := sourcePVC.Spec.VolumeName
 	if sourcePVName == "" {

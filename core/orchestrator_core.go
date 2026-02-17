@@ -2463,10 +2463,20 @@ func (o *TridentOrchestrator) cloneVolumeInitial(
 		return nil, errors.NotFoundError("source volume not found: %s", volumeConfig.CloneSourceVolume)
 	}
 
-	// Check if the storage class of source and clone volume is different, only if the orchestrator is not in Docker plugin mode. In Docker plugin mode, the storage class of source and clone volume will be different.
+	// Check if the source volume's backend is honored by the target storage class, only if the orchestrator
+	// is not in Docker plugin mode. In Docker plugin mode, the storage class of source and clone volume
+	// will be different.
 	if !isDockerPluginMode() && volumeConfig.StorageClass != sourceVolume.Config.StorageClass {
-		return nil, errors.MismatchedStorageClassError("clone volume %s from source volume %s with"+
-			" different storage classes is not allowed", volumeConfig.Name, volumeConfig.CloneSourceVolume)
+		srcBackend, srcBackendFound := o.backends[sourceVolume.BackendUUID]
+		dstSC, dstSCFound := o.storageClasses[volumeConfig.StorageClass]
+		// If the source backend is not found in the cache, or the destination storage class is not found in the cache,
+		// or the destination storage class is not added to the source backend,
+		// then return an error as cloning across different storage classes that have no common backends is not allowed.
+		if !srcBackendFound || !dstSCFound || !dstSC.IsAddedToBackend(srcBackend, volumeConfig.StorageClass) {
+			return nil, errors.MismatchedStorageClassError("clone volume %s from source volume %s with"+
+				" different storage classes that have no common backends is not allowed",
+				volumeConfig.Name, volumeConfig.CloneSourceVolume)
+		}
 	}
 
 	Logc(ctx).WithFields(LogFields{
@@ -2716,12 +2726,6 @@ func (o *TridentOrchestrator) cloneVolumeRetry(
 	sourceVolume, found := o.volumes[cloneConfig.CloneSourceVolume]
 	if !found {
 		return nil, errors.NotFoundError("source volume not found: %s", cloneConfig.CloneSourceVolume)
-	}
-
-	// Check if the storage class of source and clone volume is different, only if the orchestrator is not in Docker plugin mode. In Docker plugin mode, the storage class of source and clone volume will be different at times.
-	if !isDockerPluginMode() && cloneConfig.StorageClass != sourceVolume.Config.StorageClass {
-		return nil, errors.MismatchedStorageClassError("clone volume %s from source volume %s with "+
-			"different storage classes is not allowed", cloneConfig.Name, cloneConfig.CloneSourceVolume)
 	}
 
 	backend, found = o.backends[txn.VolumeCreatingConfig.BackendUUID]

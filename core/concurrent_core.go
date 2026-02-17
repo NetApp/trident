@@ -2675,10 +2675,16 @@ func (o *ConcurrentTridentOrchestrator) cloneVolume(
 		return nil, errors.NotFoundError("backend for source volume %s not found", volConfig.CloneSourceVolume)
 	}
 
-	// Check if the storage class of source and clone volume is different, only if the orchestrator is not in Docker plugin mode. In Docker plugin mode, the storage class of source and clone volume will be different at times.
+	// Check if the source volume's backend is honored by the target storage class, only if the orchestrator
+	// is not in Docker plugin mode. In Docker plugin mode, the storage class of source and clone volume
+	// will be different at times.
 	if !isDockerPluginMode() && volConfig.StorageClass != sourceVolume.Config.StorageClass {
-		return nil, errors.MismatchedStorageClassError("clone volume %s from source volume %s with "+
-			"different storage classes is not allowed", volConfig.Name, volConfig.CloneSourceVolume)
+		poolMap := o.GetStorageClassPoolMap()
+		if !poolMap.BackendMatchesStorageClass(ctx, backend.Name(), volConfig.StorageClass) {
+			return nil, errors.MismatchedStorageClassError("clone volume %s from source volume %s with "+
+				"different storage classes that have no common backends is not allowed",
+				volConfig.Name, volConfig.CloneSourceVolume)
+		}
 	}
 
 	if volConfig.Size != "" {
@@ -2876,13 +2882,6 @@ func (o *ConcurrentTridentOrchestrator) cloneVolumeRetry(
 	}
 
 	Logc(ctx).WithFields(logFields).Debug("Cloning volume.")
-
-	// Check if the storage class of source and clone volume is different, only if the orchestrator is not in Docker
-	// plugin mode. In Docker plugin mode, the storage class of source and clone volume will be different at times.
-	if !isDockerPluginMode() && cloneConfig.StorageClass != sourceVolConfig.StorageClass {
-		return nil, errors.MismatchedStorageClassError("clone volume %s from source volume %s "+
-			"with different storage classes is not allowed", cloneConfig.Name, cloneConfig.CloneSourceVolume)
-	}
 
 	// Create the volume
 	createVolume := func() error {

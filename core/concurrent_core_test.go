@@ -6481,6 +6481,171 @@ func TestCloneVolumeConcurrentCore(t *testing.T) {
 				assert.Nil(t, volume)
 			},
 		},
+		{
+			name:         "CloneVolumeFromDifferentStorageClassSameBackendSuccess",
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid")
+
+				fakePool := storage.NewStoragePool(nil, "pool1")
+				fakePool.AddStorageClass("sc-source")
+				fakePool.AddStorageClass("sc-dest")
+				fakePool.SetBackend(mockBackend)
+
+				mockBackend.EXPECT().StoragePools().Return(
+					func() *sync.Map {
+						m := sync.Map{}
+						m.Store("pool1", fakePool)
+						return &m
+					}(),
+				).AnyTimes()
+				mockBackend.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any())
+				mockBackend.EXPECT().CloneVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(
+					&storage.Volume{
+						Config: &storage.VolumeConfig{
+							InternalName:              "cloneVolume",
+							Name:                      "cloneVolume",
+							Size:                      "1073741824",
+							VolumeMode:                config.Filesystem,
+							CloneSourceVolume:         "sourceVolume",
+							CloneSourceVolumeInternal: "sourceVolume",
+							StorageClass:              "sc-dest",
+						},
+						BackendUUID: "backend-uuid",
+					}, nil).Times(1)
+
+				sourceVolumeDiffSC := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						InternalName: "sourceVolume",
+						Name:         "sourceVolume",
+						Size:         "1073741824",
+						VolumeMode:   config.Filesystem,
+						StorageClass: "sc-source",
+					},
+					BackendUUID: "backend-uuid",
+				}
+
+				scSource := storageclass.New(&storageclass.Config{
+					Name:            "sc-source",
+					AdditionalPools: map[string][]string{"testBackend": {"pool1"}},
+				})
+				scDest := storageclass.New(&storageclass.Config{
+					Name:            "sc-dest",
+					AdditionalPools: map[string][]string{"testBackend": {"pool1"}},
+				})
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, sourceVolumeDiffSC)
+				addStorageClassesToCache(t, scSource, scDest)
+
+				o.RebuildStorageClassPoolMap(testCtx)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			volumeConfig: &storage.VolumeConfig{
+				InternalName:              "cloneVolume",
+				Name:                      "cloneVolume",
+				Size:                      "1073741824",
+				VolumeMode:                config.Filesystem,
+				CloneSourceVolume:         "sourceVolume",
+				CloneSourceVolumeInternal: "sourceVolume",
+				StorageClass:              "sc-dest",
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				require.NotNil(t, result)
+				assert.Equal(t, "cloneVolume", result.Config.Name)
+
+				// Additionally verify the volume is added to the cache
+				volume := getVolumeByNameFromCache(t, "cloneVolume")
+				assert.NotNil(t, volume)
+			},
+		},
+		{
+			name:         "CloneVolumeFromDifferentStorageClassDifferentBackendFailed",
+			bootstrapErr: nil,
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend1 := getMockBackend(mockCtrl, "testBackend1", "backend-uuid-1")
+				mockBackend2 := getMockBackend(mockCtrl, "testBackend2", "backend-uuid-2")
+
+				fakePool1 := storage.NewStoragePool(nil, "pool1")
+				fakePool1.AddStorageClass("sc-source")
+				fakePool1.SetBackend(mockBackend1)
+
+				fakePool2 := storage.NewStoragePool(nil, "pool2")
+				fakePool2.AddStorageClass("sc-dest")
+				fakePool2.SetBackend(mockBackend2)
+
+				mockBackend1.EXPECT().StoragePools().Return(
+					func() *sync.Map {
+						m := sync.Map{}
+						m.Store("pool1", fakePool1)
+						return &m
+					}(),
+				).AnyTimes()
+				mockBackend2.EXPECT().StoragePools().Return(
+					func() *sync.Map {
+						m := sync.Map{}
+						m.Store("pool2", fakePool2)
+						return &m
+					}(),
+				).AnyTimes()
+
+				sourceVolumeDiffBackend := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						InternalName: "sourceVolume",
+						Name:         "sourceVolume",
+						Size:         "1073741824",
+						VolumeMode:   config.Filesystem,
+						StorageClass: "sc-source",
+					},
+					BackendUUID: "backend-uuid-1",
+				}
+
+				scSource := storageclass.New(&storageclass.Config{
+					Name:            "sc-source",
+					AdditionalPools: map[string][]string{"testBackend1": {"pool1"}},
+				})
+				scDest := storageclass.New(&storageclass.Config{
+					Name:            "sc-dest",
+					AdditionalPools: map[string][]string{"testBackend2": {"pool2"}},
+				})
+
+				addBackendsToCache(t, mockBackend1, mockBackend2)
+				addVolumesToCache(t, sourceVolumeDiffBackend)
+				addStorageClassesToCache(t, scSource, scDest)
+
+				o.RebuildStorageClassPoolMap(testCtx)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			volumeConfig: &storage.VolumeConfig{
+				InternalName:              "cloneVolume",
+				Name:                      "cloneVolume",
+				Size:                      "1073741824",
+				VolumeMode:                config.Filesystem,
+				CloneSourceVolume:         "sourceVolume",
+				CloneSourceVolumeInternal: "sourceVolume",
+				StorageClass:              "sc-dest",
+			},
+			verifyError: func(err error) {
+				assert.True(t, errors.IsMismatchedStorageClassError(err))
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				require.Nil(t, result)
+				// Additionally verify the volume is not added to the cache
+				volume := getVolumeByNameFromCache(t, "cloneVolume")
+				assert.Nil(t, volume)
+			},
+		},
 	}
 
 	for _, tt := range tests {
