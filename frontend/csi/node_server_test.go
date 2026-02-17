@@ -12430,7 +12430,7 @@ func TestNodeUnStageVolume(t *testing.T) {
 			setupNVMeHandler: func() nvme.NVMeInterface {
 				mockNvmeHandler := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
 				mockNvmeHandler.EXPECT().RemovePublishedNVMeSession(gomock.Any(), gomock.Any(), gomock.Any()).Return(false).AnyTimes()
-				mockNvmeHandler.EXPECT().NewNVMeSubsystem(gomock.Any(), gomock.Any()).Return(nvme.NewNVMeSubsystemDetailed("mock-nqn", "mock-name", []nvme.Path{{Address: "mock-address"}}, nil, afero.NewMemMapFs())).AnyTimes()
+				mockNvmeHandler.EXPECT().NewNVMeSubsystem(gomock.Any(), gomock.Any()).Return(nvme.NewNVMeSubsystemDetailed("mock-nqn", "mock-name", []nvme.Path{{Address: "mock-address"}}, execCmd.NewCommand(), afero.NewMemMapFs())).AnyTimes()
 				return mockNvmeHandler
 			},
 			getDeviceClient: func() devices.Devices {
