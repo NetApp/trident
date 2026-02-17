@@ -6552,6 +6552,8 @@ func (o *TridentOrchestrator) DeleteNode(ctx context.Context, nodeName string) (
 		if err = o.storeClient.AddOrUpdateNode(ctx, node); err != nil {
 			return err
 		}
+
+		o.nodes.Set(nodeName, node)
 	}
 
 	return nil

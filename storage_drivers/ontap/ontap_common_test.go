@@ -3369,6 +3369,116 @@ func TestRemoveExportPolicyRules_CNVA_ContinueOnPartialErrors(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+// TestRemoveExportPolicyRules_SameIPOnDepartingAndActiveNode reproduces the customer bug
+// where a volume migrates from an old node to a new node that received the same IP address (DHCP/IP reuse).
+// The publish for the new node arrives first (no-op since IP already in policy), then the unpublish for the old
+// node arrives and must NOT remove the IP because the new node still needs it.
+func TestRemoveExportPolicyRules_SameIPOnDepartingAndActiveNode(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "trident_pvc_test"
+
+	// Scenario: NodeA (old) is being unpublished. NodeB (new) remains active.
+	// Both nodes share the same IP 10.10.1.1 due to DHCP/IP reuse after migration.
+	sharedIP := "10.10.1.1"
+
+	// publishInfo as constructed by the orchestrator during unpublish:
+	// - HostIP: departing node's IPs (NodeA)
+	// - Nodes:  remaining active nodes (NodeB), which has the same IP
+	publishInfo := &tridentmodels.VolumePublishInfo{
+		HostName: "node-a",
+		HostIP:   []string{sharedIP, "10.10.1.2"},
+		Nodes: []*tridentmodels.Node{
+			createTestNode("node-b", []string{sharedIP}),
+		},
+	}
+
+	// Export policy currently has rules for both of NodeA's IPs
+	existingRules := map[int]string{
+		1: sharedIP,    // Shared IP - must be PRESERVED (NodeB still needs it)
+		2: "10.10.1.2", // NodeA-only IP - should be removed
+	}
+	finalRules := map[int]string{
+		1: sharedIP, // Preserved because NodeB is still active with this IP
+	}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil) // Only remove NodeA-only IP
+	// ExportRuleDestroy for rule 1 (shared IP) must NOT be called
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(finalRules, nil)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+// TestRemoveExportPolicyRules_SameIPOnDepartingAndActiveNode_OnlyIPIsShared tests the edge case
+// where the departing node's only IP is the same as the active node's IP.
+// No export policy rules should be removed since the active node still needs the rule.
+func TestRemoveExportPolicyRules_SameIPOnDepartingAndActiveNode_OnlyIPIsShared(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "trident_pvc_test"
+
+	sharedIP := "10.10.1.1"
+
+	publishInfo := &tridentmodels.VolumePublishInfo{
+		HostName: "node-a",
+		HostIP:   []string{sharedIP},
+		Nodes: []*tridentmodels.Node{
+			createTestNode("node-b", []string{sharedIP}),
+		},
+	}
+
+	existingRules := map[int]string{
+		1: sharedIP,
+	}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
+	// No ExportRuleDestroy calls expected - the shared IP must be preserved
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
+// TestRemoveExportPolicyRules_SameIPOnDepartingAndMultipleActiveNodes tests IP reuse across
+// multiple active nodes where the departing node shares IPs with more than one remaining node.
+func TestRemoveExportPolicyRules_SameIPOnDepartingAndMultipleActiveNodes(t *testing.T) {
+	ctx := context.TODO()
+	mockAPI := newMockOntapAPI(t)
+	exportPolicy := "trident_pvc_test"
+
+	sharedIP := "10.10.1.1"
+
+	publishInfo := &tridentmodels.VolumePublishInfo{
+		HostName: "node-a",
+		HostIP:   []string{sharedIP, "10.10.1.2"},
+		Nodes: []*tridentmodels.Node{
+			createTestNode("node-b", []string{sharedIP}),
+			createTestNode("node-c", []string{"10.10.1.3"}),
+		},
+	}
+
+	existingRules := map[int]string{
+		1: sharedIP,    // Keep - NodeB still needs it
+		2: "10.10.1.2", // Remove - only NodeA had this
+		3: "10.10.1.3", // Keep - NodeC still needs it
+		4: "10.10.1.4", // Remove - not in any active node
+	}
+	finalRules := map[int]string{
+		1: sharedIP,
+		3: "10.10.1.3",
+	}
+
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(existingRules, nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 2).Return(nil)
+	mockAPI.EXPECT().ExportRuleDestroy(ctx, exportPolicy, 4).Return(nil)
+	mockAPI.EXPECT().ExportRuleList(ctx, exportPolicy).Return(finalRules, nil)
+
+	err := removeExportPolicyRules(ctx, exportPolicy, publishInfo, mockAPI)
+	assert.NoError(t, err)
+}
+
 func TestDeleteExportPolicy(t *testing.T) {
 	// Test-1: Positive flow
 
