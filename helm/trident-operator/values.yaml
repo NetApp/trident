@@ -37,6 +37,9 @@ affinity:
               - linux
 
 
+## PodDisruptionBudget for pods
+podDisruptionBudget: {}
+
 # tridentControllerPluginNodeSelector additional nodeSelectors for the Pod running the Trident Controller CSI Plugin.
 # tridentControllerPluginNodeSelector : {}
 
