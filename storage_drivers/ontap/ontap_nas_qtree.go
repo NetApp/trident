@@ -19,6 +19,7 @@ import (
 	"github.com/netapp/trident/acp"
 	tridentconfig "github.com/netapp/trident/config"
 	"github.com/netapp/trident/internal/crypto"
+	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/capacity"
 	"github.com/netapp/trident/pkg/collection"
@@ -34,6 +35,11 @@ import (
 )
 
 var QtreeInternalIDRegex = regexp.MustCompile(`^/svm/(?P<svm>[^/]+)/flexvol/(?P<flexvol>[^/]+)/qtree/(?P<qtree>[^/]+)$`)
+
+var (
+	// FIJI injection point: triggers after export policy is destroyed during unpublish (qtree)
+	duringUnpublishQtreeAfterExportPolicyDestroy = fiji.Register("duringUnpublishQtreeAfterExportPolicyDestroy", "ontap_nas_qtree")
+)
 
 const (
 	deletedQtreeNamePrefix                  = "deleted_"
@@ -838,37 +844,41 @@ func (d *NASQtreeStorageDriver) publishQtreeShare(
 
 	volConfig.ExportPolicy = qtreePolicyName
 
-	if err := ensureNodeAccessForPolicy(ctx, targetNode, d.API, &d.Config, qtreePolicyName); err != nil {
+	// Use ensureNodeAccessForPolicyAndApply to hold the lock for both rule creation and policy assignment.
+	// This prevents a race condition where a concurrent unpublish could delete the policy between
+	// ensureNodeAccessForPolicy releasing the lock and QtreeModifyExportPolicy being called.
+	applyQtreePolicy := func() error {
+		if err := d.API.QtreeModifyExportPolicy(ctx, qtree, flexvol, qtreePolicyName); err != nil {
+			err = fmt.Errorf("error modifying qtree export policy; %v", err)
+			Logc(ctx).WithFields(LogFields{
+				"Qtree":        qtree,
+				"FlexVol":      flexvol,
+				"ExportPolicy": qtreePolicyName,
+			}).Error(err)
+			return err
+		}
+		return nil
+	}
+
+	if err := ensureNodeAccessForPolicyAndApply(ctx, targetNode, d.API, &d.Config, qtreePolicyName, applyQtreePolicy); err != nil {
 		return err
 	}
 
-	err := d.API.QtreeModifyExportPolicy(ctx, qtree, flexvol, qtreePolicyName)
-	if err != nil {
-		err = fmt.Errorf("error modifying qtree export policy; %v", err)
-		Logc(ctx).WithFields(LogFields{
-			"Qtree":        qtree,
-			"FlexVol":      flexvol,
-			"ExportPolicy": qtreePolicyName,
-		}).Error(err)
-		return err
+	// Ensure the parent flex-vol has the correct export policy and rules applied.
+	// Use ensureNodeAccessForPolicyAndApply to hold the lock for both rule creation and policy assignment.
+	applyFlexvolPolicy := func() error {
+		if err := d.API.VolumeModifyExportPolicy(ctx, flexvol, backendPolicyName); err != nil {
+			err = fmt.Errorf("error modifying flexvol export policy; %v", err)
+			Logc(ctx).WithFields(LogFields{
+				"FlexVol":      flexvol,
+				"ExportPolicy": backendPolicyName,
+			}).Error(err)
+			return err
+		}
+		return nil
 	}
 
-	// Ensure the parent flex-vol has the correct export policy and rules applied
-	if err := ensureNodeAccessForPolicy(ctx, targetNode, d.API, &d.Config, backendPolicyName); err != nil {
-		return err
-	}
-
-	err = d.API.VolumeModifyExportPolicy(ctx, flexvol, backendPolicyName)
-	if err != nil {
-		err = fmt.Errorf("error modifying flexvol export policy; %v", err)
-		Logc(ctx).WithFields(LogFields{
-			"FlexVol":      flexvol,
-			"ExportPolicy": backendPolicyName,
-		}).Error(err)
-		return err
-	}
-
-	return nil
+	return ensureNodeAccessForPolicyAndApply(ctx, targetNode, d.API, &d.Config, backendPolicyName, applyFlexvolPolicy)
 }
 
 // Unpublish the volume from the host specified in publishInfo.  This method may or may not be running on the host
@@ -915,52 +925,122 @@ func (d *NASQtreeStorageDriver) Unpublish(
 		return errors.NotFoundError("qtree not found")
 	}
 
-	// NOTE: FlexVol lock is NOT needed here even though we modify export policies.
-	// Reasons:
-	// 1. Export policy modifications are protected by exportPolicyMutex (per-policy locking)
-	// 2. Destroy already holds the FlexVol lock, preventing races with qtree deletion
-	// 3. Export policy rule removal is idempotent - safe to run concurrently
-	// 4. ONTAP API calls are atomic - no partial state is visible
-	// Adding FlexVol lock here causes unnecessary serialization of concurrent unpublish operations.
+	// Use ONTAP as source of truth for export policy state
+	// This prevents issues where volConfig.ExportPolicy is stale after a restart
+	actualExportPolicy := qtree.ExportPolicy
+	emptyPolicyName := getEmptyExportPolicyName(*d.Config.StoragePrefix)
 
-	exportPolicy := volConfig.ExportPolicy
-	if exportPolicy == "" {
-		exportPolicy = qtree.ExportPolicy
+	Logc(ctx).WithFields(LogFields{
+		"cachedPolicy": volConfig.ExportPolicy,
+		"actualPolicy": actualExportPolicy,
+	}).Debug("Export policy state check.")
+
+	// Sync volConfig with ONTAP's actual state
+	volConfig.ExportPolicy = actualExportPolicy
+
+	// If qtree is already using the empty policy, nothing to clean up
+	if actualExportPolicy == emptyPolicyName {
+		Logc(ctx).Debug("Qtree already using empty export policy, nothing to clean up.")
+		return nil
 	}
-	if exportPolicy == qtreeName {
-		// Remove export policy rules matching the node IP address from qtree level policy
-		if err = removeExportPolicyRules(ctx, exportPolicy, publishInfo, d.API); err != nil {
-			Logc(ctx).WithError(err).Errorf("Error cleaning up export policy rules in %s.", exportPolicy)
+
+	// Handle qtree-level export policy (named after the qtree)
+	if actualExportPolicy == qtreeName {
+		return d.unpublishQtreePolicy(ctx, volConfig, publishInfo, qtreeName, qtree.Volume, emptyPolicyName)
+	}
+
+	// Qtree is using a backend-based policy or migrating to using autoExportPolicies.
+	if len(publishInfo.Nodes) == 0 {
+		Logc(ctx).Debug("No remaining nodes, switching qtree to empty policy.")
+		if err = d.setQtreeToEmptyPolicy(ctx, qtreeName, qtree.Volume); err != nil {
+			return err
+		}
+		volConfig.ExportPolicy = emptyPolicyName
+	}
+
+	return nil
+}
+
+// unpublishQtreePolicy handles unpublishing for qtree-level export policies.
+// It holds the export policy mutex for the entire operation to prevent race conditions.
+func (d *NASQtreeStorageDriver) unpublishQtreePolicy(
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
+	qtreeName, flexvol, emptyPolicyName string,
+) error {
+	policyName := qtreeName // Qtree-level policy is named after the qtree
+
+	fields := LogFields{
+		"Method":     "unpublishQtreePolicy",
+		"policyName": policyName,
+		"qtreeName":  qtreeName,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> unpublishQtreePolicy")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< unpublishQtreePolicy")
+
+	// Ensure empty policy exists BEFORE acquiring qtree policy lock.
+	// This prevents nested locking (qtree_policy -> empty_policy) which could
+	// cause unnecessary contention. The empty policy creation is idempotent.
+	if err := ensureExportPolicyExists(ctx, emptyPolicyName, d.API); err != nil {
+		Logc(ctx).WithField("emptyPolicy", emptyPolicyName).WithError(err).Error(
+			"Could not ensure empty export policy exists.")
+		return err
+	}
+
+	// Hold the export policy mutex for the entire operation to prevent race conditions
+	// This ensures that rule removal, rule listing, and policy deletion are atomic
+	exportPolicyMutex.Lock(policyName)
+	defer exportPolicyMutex.Unlock(policyName)
+
+	// Check if policy still exists (another operation might have deleted it)
+	exists, err := d.API.ExportPolicyExists(ctx, policyName)
+	if err != nil {
+		Logc(ctx).WithField("policy", policyName).WithError(err).Error(
+			"Could not check if export policy exists")
+		return err
+	}
+	if !exists {
+		Logc(ctx).WithField("policy", policyName).Debug(
+			"Export policy already deleted, switching qtree to empty policy.")
+		// Policy already gone - just update the qtree to use empty policy
+		if err = d.setQtreeToEmptyPolicy(ctx, qtreeName, flexvol); err != nil {
+			return err
+		}
+		volConfig.ExportPolicy = emptyPolicyName
+		return nil
+	}
+
+	// Remove export policy rules for departing node(s)
+	if err = removeExportPolicyRules(ctx, policyName, publishInfo, d.API); err != nil {
+		Logc(ctx).WithError(err).Errorf("Error cleaning up export policy rules in %s.", policyName)
+		return err
+	}
+
+	// Check if any rules remain in the export policy
+	allExportRules, err := d.API.ExportRuleList(ctx, policyName)
+	if err != nil {
+		Logc(ctx).Errorf("Could not list export rules for policy %s.", policyName)
+		return err
+	}
+
+	// If no rules remain, clean up the policy
+	if len(allExportRules) == 0 {
+		// First, switch qtree to empty policy
+		if err = d.setQtreeToEmptyPolicy(ctx, qtreeName, flexvol); err != nil {
 			return err
 		}
 
-		// Check for other rules in the export policy
-		allExportRules, err := d.API.ExportRuleList(ctx, exportPolicy)
-		if err != nil {
-			Logc(ctx).Errorf("Could not list export rules for policy %s.", exportPolicy)
+		volConfig.ExportPolicy = emptyPolicyName
+
+		// Delete the old export policy
+		if err = destroyExportPolicy(ctx, policyName, d.API); err != nil {
+			Logc(ctx).WithError(err).Errorf("Could not delete export policy %s.", policyName)
 			return err
 		}
-		if len(allExportRules) == 0 {
-			// Set qtree to the empty policy
-			if err = d.setQtreeToEmptyPolicy(ctx, qtreeName, qtree.Volume); err != nil {
-				return err
-			}
 
-			volConfig.ExportPolicy = getEmptyExportPolicyName(*d.Config.StoragePrefix)
-
-			// Remove export policy if no rules exist
-			if err = d.API.ExportPolicyDestroy(ctx, exportPolicy); err != nil {
-				Logc(ctx).WithError(err).Errorf("Error deleting export policy %s.", exportPolicy)
-			}
-		}
-
-	} else {
-		// Qtree is using a backend-based policy or migrating to using autoExportPolicies.
-		if len(publishInfo.Nodes) == 0 {
-			if err = d.setQtreeToEmptyPolicy(ctx, qtreeName, qtree.Volume); err != nil {
-				return err
-			}
-			volConfig.ExportPolicy = getEmptyExportPolicyName(*d.Config.StoragePrefix)
+		// FIJI: Inject fault after export policy is destroyed but before returning
+		// This simulates a crash after ONTAP state changes but before cache/CR update
+		if err = duringUnpublishQtreeAfterExportPolicyDestroy.Inject(); err != nil {
+			return err
 		}
 	}
 
