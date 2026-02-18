@@ -1775,6 +1775,189 @@ func TestCloneVolumeWithMismatchedStorageClass(t *testing.T) {
 	cleanup(t, orchestrator)
 }
 
+func TestCloneVolumeWithDifferentStorageClassSameBackend(t *testing.T) {
+	ctx := context.Background()
+	mockPools := tu.GetFakePools()
+	orchestrator := getOrchestrator(t, false)
+
+	// Add a backend with a pool that satisfies both storage classes
+	backendConfig, err := fakedriver.NewFakeStorageDriverConfigJSON(
+		"fast-backend",
+		config.File,
+		map[string]*fake.StoragePool{
+			tu.FastSmall: mockPools[tu.FastSmall],
+		},
+		[]fake.Volume{},
+	)
+	if err != nil {
+		t.Fatalf("Unable to generate backend config JSON: %v", err)
+	}
+	_, err = orchestrator.AddBackend(ctx, backendConfig, "")
+	if err != nil {
+		t.Fatalf("Unable to add backend: %v", err)
+	}
+
+	// Add two storage classes that both match the same backend via AdditionalPools
+	storageClasses := []storageClassTest{
+		{
+			config: &storageclass.Config{
+				Name:            "sc-source",
+				AdditionalPools: map[string][]string{"fast-backend": {tu.FastSmall}},
+			},
+			expected: []*tu.PoolMatch{{Backend: "fast-backend", Pool: tu.FastSmall}},
+		},
+		{
+			config: &storageclass.Config{
+				Name:            "sc-dest",
+				AdditionalPools: map[string][]string{"fast-backend": {tu.FastSmall}},
+			},
+			expected: []*tu.PoolMatch{{Backend: "fast-backend", Pool: tu.FastSmall}},
+		},
+	}
+	for _, sc := range storageClasses {
+		if _, err := orchestrator.AddStorageClass(ctx, sc.config); err != nil {
+			t.Fatalf("Unable to add storage class %s: %v", sc.config.Name, err)
+		}
+	}
+
+	// Create source volume with sc-source
+	sourceConfig := tu.GenerateVolumeConfig("source-vol", 1, "sc-source", config.File)
+	_, err = orchestrator.AddVolume(ctx, sourceConfig)
+	if err != nil {
+		t.Fatalf("Unable to add source volume: %v", err)
+	}
+
+	// Clone with a different storage class (sc-dest) that shares the same backend
+	cloneConfig := &storage.VolumeConfig{
+		Name:              "clone-vol",
+		StorageClass:      "sc-dest",
+		CloneSourceVolume: "source-vol",
+		VolumeMode:        config.Filesystem,
+	}
+	cloneResult, err := orchestrator.CloneVolume(ctx, cloneConfig)
+
+	// Verify success - different SC but same backend should be allowed
+	if err != nil {
+		t.Errorf("Expected clone to succeed with different storage class on same backend, got error: %v", err)
+	}
+	if cloneResult == nil {
+		t.Fatal("Expected clone result, got nil")
+	}
+
+	// Verify clone was created and resides on the same backend
+	orchestrator.mutex.Lock()
+	sourceVol, found := orchestrator.volumes["source-vol"]
+	if !found {
+		t.Fatal("Source volume not found in cache")
+	}
+	cloneVol, found := orchestrator.volumes["clone-vol"]
+	if !found {
+		t.Fatal("Clone volume not found in cache")
+	}
+	if cloneVol.BackendUUID != sourceVol.BackendUUID {
+		t.Errorf("Clone placed on unexpected backend: %s (expected %s)", cloneVol.BackendUUID, sourceVol.BackendUUID)
+	}
+	orchestrator.mutex.Unlock()
+
+	cleanup(t, orchestrator)
+}
+
+func TestCloneVolumeWithDifferentStorageClassDifferentBackend(t *testing.T) {
+	ctx := context.Background()
+	mockPools := tu.GetFakePools()
+	orchestrator := getOrchestrator(t, false)
+
+	// Add first backend (fast) with a fast pool
+	backendConfig1, err := fakedriver.NewFakeStorageDriverConfigJSON(
+		"fast-backend",
+		config.File,
+		map[string]*fake.StoragePool{
+			tu.FastSmall: mockPools[tu.FastSmall],
+		},
+		[]fake.Volume{},
+	)
+	if err != nil {
+		t.Fatalf("Unable to generate backend config JSON: %v", err)
+	}
+	_, err = orchestrator.AddBackend(ctx, backendConfig1, "")
+	if err != nil {
+		t.Fatalf("Unable to add first backend: %v", err)
+	}
+
+	// Add second backend (slow) with a slow pool
+	backendConfig2, err := fakedriver.NewFakeStorageDriverConfigJSON(
+		"slow-backend",
+		config.File,
+		map[string]*fake.StoragePool{
+			tu.SlowSnapshots: mockPools[tu.SlowSnapshots],
+		},
+		[]fake.Volume{},
+	)
+	if err != nil {
+		t.Fatalf("Unable to generate backend config JSON: %v", err)
+	}
+	_, err = orchestrator.AddBackend(ctx, backendConfig2, "")
+	if err != nil {
+		t.Fatalf("Unable to add second backend: %v", err)
+	}
+
+	// Add two storage classes, each matching a different backend exclusively
+	storageClasses := []storageClassTest{
+		{
+			config: &storageclass.Config{
+				Name:            "sc-fast",
+				AdditionalPools: map[string][]string{"fast-backend": {tu.FastSmall}},
+			},
+			expected: []*tu.PoolMatch{{Backend: "fast-backend", Pool: tu.FastSmall}},
+		},
+		{
+			config: &storageclass.Config{
+				Name:            "sc-slow",
+				AdditionalPools: map[string][]string{"slow-backend": {tu.SlowSnapshots}},
+			},
+			expected: []*tu.PoolMatch{{Backend: "slow-backend", Pool: tu.SlowSnapshots}},
+		},
+	}
+	for _, sc := range storageClasses {
+		if _, err := orchestrator.AddStorageClass(ctx, sc.config); err != nil {
+			t.Fatalf("Unable to add storage class %s: %v", sc.config.Name, err)
+		}
+	}
+
+	// Create source volume on sc-fast (goes to fast-backend)
+	sourceConfig := tu.GenerateVolumeConfig("source-vol", 1, "sc-fast", config.File)
+	_, err = orchestrator.AddVolume(ctx, sourceConfig)
+	if err != nil {
+		t.Fatalf("Unable to add source volume: %v", err)
+	}
+
+	// Attempt to clone with sc-slow (only has slow-backend, not fast-backend)
+	cloneConfig := &storage.VolumeConfig{
+		Name:              "clone-vol",
+		StorageClass:      "sc-slow",
+		CloneSourceVolume: "source-vol",
+		VolumeMode:        config.Filesystem,
+	}
+	_, err = orchestrator.CloneVolume(ctx, cloneConfig)
+
+	// Verify error - different SCs with different backends should fail
+	if err == nil {
+		t.Error("Expected error when cloning with different storage class on different backend, but got none")
+	} else if !errors.IsMismatchedStorageClassError(err) {
+		t.Errorf("Expected MismatchedStorageClassError, got: %v", err)
+	}
+
+	// Verify clone was not created
+	orchestrator.mutex.Lock()
+	_, found := orchestrator.volumes["clone-vol"]
+	if found {
+		t.Error("Clone volume was created despite different backends")
+	}
+	orchestrator.mutex.Unlock()
+
+	cleanup(t, orchestrator)
+}
+
 func addBackend(
 	t *testing.T, orchestrator *TridentOrchestrator, backendName string, backendProtocol config.Protocol,
 ) {
