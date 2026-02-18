@@ -1334,6 +1334,70 @@ func TestBootstrapVolumePublicationsConcurrentCore(t *testing.T) {
 			},
 		},
 		{
+			name: "SuccessWithSubordinateVolumeVPSync",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				config.CurrentDriverContext = config.ContextCSI
+
+				// Create a volume publication for a subordinate volume that needs syncing
+				vpToSync := &models.VolumePublication{
+					NodeName:       "node1",
+					VolumeName:     "sub-vol1",
+					StorageClass:   "", // Empty, needs to be synced from subordinate volume
+					BackendUUID:    "", // Empty, needs to be synced
+					Pool:           "", // Empty, needs to be synced
+					AutogrowPolicy: "", // Empty, needs to be synced
+				}
+
+				// Create source volume
+				sourceVol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:                    "source-vol",
+						StorageClass:            "gold",
+						RequestedAutogrowPolicy: "aggressive",
+					},
+					BackendUUID: "backend1",
+					Pool:        "pool1",
+					State:       storage.VolumeStateOnline,
+				}
+
+				// Create subordinate volume linked to source
+				subVol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:                    "sub-vol1",
+						StorageClass:            "gold",
+						ShareSourceVolume:       "source-vol",
+						RequestedAutogrowPolicy: "aggressive",
+					},
+					BackendUUID: "backend1",
+					Pool:        "pool1",
+					State:       storage.VolumeStateSubordinate,
+				}
+
+				addVolumesToCache(t, sourceVol)
+				addSubordinateVolumesToCache(t, subVol)
+
+				// VP sync happens asynchronously, so we allow UpdateVolumePublication to be called
+				mockStoreClient.EXPECT().GetVolumePublications(gomock.Any()).Return([]*models.VolumePublication{vpToSync}, nil)
+				mockStoreClient.EXPECT().UpdateVolumePublication(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+
+				// Verify VP was loaded into cache
+				result := getVolumePublicationByIDFromCache(t, "sub-vol1", "node1")
+				assert.NotNil(t, result, "VP should be present in cache")
+
+				// Verify VP has correct volume name
+				assert.Equal(t, "sub-vol1", result.VolumeName, "VP should have correct volume name")
+
+				// Verify fields were synced from subordinate volume
+				assert.Equal(t, "gold", result.StorageClass, "StorageClass should be synced from subordinate volume")
+				assert.Equal(t, "backend1", result.BackendUUID, "BackendUUID should be synced from subordinate volume")
+				assert.Equal(t, "pool1", result.Pool, "Pool should be synced from subordinate volume")
+				assert.Equal(t, "aggressive", result.AutogrowPolicy, "AutogrowPolicy should be synced from subordinate volume")
+			},
+		},
+		{
 			name: "VolumeNotFoundForVP",
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
 				config.CurrentDriverContext = config.ContextCSI
