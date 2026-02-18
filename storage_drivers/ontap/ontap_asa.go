@@ -420,9 +420,9 @@ func (d *ASAStorageDriver) Create(
 
 	// Save the fstype in a LUN attribute so we know what to do in Attach.  If this fails, clean up and
 	// move on to the next pool.
-	// Save the context, fstype, and LUKS value in LUN comment
+	// Save the context, fstype, LUKS value, and pool name in LUN comment
 	err = d.API.LunSetAttribute(ctx, name, LUNAttributeFSType, fstype, string(d.Config.DriverContext),
-		luksEncryption, formatOptions)
+		luksEncryption, formatOptions, storagePool.Name())
 	if err != nil {
 
 		errMessage := fmt.Sprintf("error saving file system type for LUN %s: %v", name, err)

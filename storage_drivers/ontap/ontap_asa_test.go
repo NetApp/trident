@@ -737,7 +737,7 @@ func TestCreateASA(t *testing.T) {
 				mockAPI.EXPECT().TieringPolicyValue(ctx).Return("fake").Times(1)
 				mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Return(nil).Times(1)
 				mockAPI.EXPECT().LunSetComment(ctx, volumeName, labels).Return(nil).Times(1)
-				mockAPI.EXPECT().LunSetAttribute(ctx, volumeName, LUNAttributeFSType, storagePool.InternalAttributes()[FileSystemType], string(driver.Config.DriverContext), storagePool.InternalAttributes()[LUKSEncryption], storagePool.InternalAttributes()[FormatOptions]).Return(nil).Times(1)
+				mockAPI.EXPECT().LunSetAttribute(ctx, volumeName, LUNAttributeFSType, storagePool.InternalAttributes()[FileSystemType], string(driver.Config.DriverContext), storagePool.InternalAttributes()[LUKSEncryption], storagePool.InternalAttributes()[FormatOptions], storagePool.Name()).Return(nil).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
 				assert.NoError(t, err, "Should not be an error")
@@ -763,7 +763,7 @@ func TestCreateASA(t *testing.T) {
 				mockAPI.EXPECT().TieringPolicyValue(ctx).Return("fake").Times(1)
 				mockAPI.EXPECT().LunCreate(ctx, gomock.Any()).Return(nil).Times(1)
 				mockAPI.EXPECT().LunSetComment(ctx, volumeName, labels).Return(nil).Times(1)
-				mockAPI.EXPECT().LunSetAttribute(ctx, volumeName, LUNAttributeFSType, storagePool.InternalAttributes()[FileSystemType], string(driver.Config.DriverContext), storagePool.InternalAttributes()[LUKSEncryption], storagePool.InternalAttributes()[FormatOptions]).Return(nil).Times(1)
+				mockAPI.EXPECT().LunSetAttribute(ctx, volumeName, LUNAttributeFSType, storagePool.InternalAttributes()[FileSystemType], string(driver.Config.DriverContext), storagePool.InternalAttributes()[LUKSEncryption], storagePool.InternalAttributes()[FormatOptions], storagePool.Name()).Return(nil).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
 				assert.NoError(t, err, "Should not be an error")
@@ -782,7 +782,7 @@ func TestCreateASA(t *testing.T) {
 						assert.Equal(t, expectedLabels, labels, "Labels should match the expected value")
 						return nil
 					}).Times(1)
-				mockAPI.EXPECT().LunSetAttribute(ctx, volumeName, LUNAttributeFSType, storagePool.InternalAttributes()[FileSystemType], string(driver.Config.DriverContext), storagePool.InternalAttributes()[LUKSEncryption], storagePool.InternalAttributes()[FormatOptions]).Return(nil).Times(1)
+				mockAPI.EXPECT().LunSetAttribute(ctx, volumeName, LUNAttributeFSType, storagePool.InternalAttributes()[FileSystemType], string(driver.Config.DriverContext), storagePool.InternalAttributes()[LUKSEncryption], storagePool.InternalAttributes()[FormatOptions], storagePool.Name()).Return(nil).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
 				assert.NoError(t, err, "Should not be an error")
@@ -857,7 +857,8 @@ func TestCreateASA(t *testing.T) {
 					storagePool.InternalAttributes()[FileSystemType],
 					string(driver.Config.DriverContext),
 					storagePool.InternalAttributes()[LUKSEncryption],
-					storagePool.InternalAttributes()[FormatOptions]).
+					storagePool.InternalAttributes()[FormatOptions],
+					storagePool.Name()).
 					Return(errors.New("api-error")).Times(1)
 				mockAPI.EXPECT().LunDestroy(ctx, volumeName).Return(nil).Times(1)
 			},
