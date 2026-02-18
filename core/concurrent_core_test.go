@@ -18679,3 +18679,621 @@ func TestConcurrent_SyncVolumePublications(t *testing.T) {
 		})
 	}
 }
+
+// ============================================================================
+// Tests for subordinate volume support in autogrow policy operations
+// ============================================================================
+
+func TestBootstrapVolumes_SubordinateAutogrowPolicy(t *testing.T) {
+	tests := []struct {
+		name        string
+		setupMocks  func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
+		verifyError func(err error)
+	}{
+		{
+			name: "SubordinateVolume_AutogrowPolicyResolved_CSI",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				config.CurrentDriverContext = config.ContextCSI
+
+				// Add autogrow policy to cache
+				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
+				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				results[0].AutogrowPolicy.Upsert(policy)
+				unlocker()
+
+				// Add backend
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid")
+				mockBackend.EXPECT().Driver().Return(&fakedriver.StorageDriver{}).AnyTimes()
+				mockBackend.EXPECT().HealVolumePublishEnforcement(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+				addBackendsToCache(t, mockBackend)
+
+				// Return subordinate volume from store
+				subVolConfig := &storage.VolumeConfig{
+					Version:                 "1",
+					Name:                    "subvol1",
+					InternalName:            "subvol1",
+					ShareSourceVolume:       "vol1",
+					RequestedAutogrowPolicy: "policy1",
+				}
+				subVolume := storage.Volume{
+					Config:      subVolConfig,
+					BackendUUID: "backend-uuid",
+					State:       storage.VolumeStateSubordinate,
+				}
+				volumes := []*storage.VolumeExternal{subVolume.ConstructExternal()}
+				mockStoreClient.EXPECT().GetVolumes(gomock.Any()).Return(volumes, nil).AnyTimes()
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+
+				result := getSubordinateVolumeByNameFromCache(t, "subvol1")
+				require.NotNil(t, result)
+				assert.Equal(t, storage.VolumeStateSubordinate, result.State)
+				// Verify autogrow policy was resolved
+				assert.Equal(t, "policy1", result.EffectiveAGPolicy.PolicyName)
+				assert.Equal(t, models.AutogrowPolicyReasonActive, result.EffectiveAGPolicy.Reason)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient, o)
+			}
+
+			err := o.bootstrapVolumes(testCtx)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestAddSubordinateVolume_AutogrowPolicyResolution(t *testing.T) {
+	volumeConfig := &storage.VolumeConfig{
+		Name:              "vol1",
+		InternalName:      "vol1",
+		Size:              "1G",
+		Protocol:          config.File,
+		StorageClass:      "gold",
+		ShareSourceVolume: "",
+		VolumeMode:        config.Filesystem,
+		AccessMode:        config.ReadWriteMany,
+		AccessInfo: models.VolumeAccessInfo{
+			NfsAccessInfo: models.NfsAccessInfo{
+				NfsPath: "10.10.10.10/path",
+			},
+		},
+	}
+
+	parentVolume := &storage.Volume{
+		Config:      volumeConfig,
+		BackendUUID: "backend-uuid1",
+		State:       storage.VolumeStateOnline,
+	}
+
+	tests := []struct {
+		name         string
+		subVolConfig *storage.VolumeConfig
+		setupMocks   func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
+		verifyResult func(result *storage.VolumeExternal)
+		verifyError  func(err error)
+	}{
+		{
+			name: "SubordinateVolume_WithAutogrowPolicy",
+			subVolConfig: &storage.VolumeConfig{
+				Name:                    "subvol1",
+				InternalName:            "subvol1",
+				Size:                    "1G",
+				ShareSourceVolume:       "vol1",
+				StorageClass:            "gold",
+				RequestedAutogrowPolicy: "policy1",
+			},
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
+
+				// Add autogrow policy
+				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
+				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				results[0].AutogrowPolicy.Upsert(policy)
+				unlocker()
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, parentVolume)
+
+				mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(err error) {
+				assert.NoError(t, err)
+			},
+			verifyResult: func(result *storage.VolumeExternal) {
+				require.NotNil(t, result)
+				assert.Equal(t, "subvol1", result.Config.Name)
+
+				// Verify autogrow policy was resolved for the subordinate volume
+				subVol := getSubordinateVolumeByNameFromCache(t, "subvol1")
+				require.NotNil(t, subVol)
+				assert.Equal(t, "policy1", subVol.EffectiveAGPolicy.PolicyName)
+				assert.Equal(t, models.AutogrowPolicyReasonActive, subVol.EffectiveAGPolicy.Reason)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient, o)
+			}
+
+			result, err := o.AddVolume(testCtx, tt.subVolConfig)
+
+			if tt.verifyError != nil {
+				tt.verifyError(err)
+			}
+			if tt.verifyResult != nil {
+				tt.verifyResult(result)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestDeleteStorageClass_SubordinateVolumes_AutogrowPolicy(t *testing.T) {
+	tests := []struct {
+		name        string
+		setupMocks  func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator)
+		verifyError func(t *testing.T, err error, o *ConcurrentTridentOrchestrator)
+	}{
+		{
+			name: "DeleteStorageClass_SubordinateVolume_AutogrowPolicyUpdated",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				// Create SC with autogrow policy
+				scConfigWithPolicy := &storageclass.Config{
+					Version:        "1",
+					Name:           "sc1",
+					AutogrowPolicy: "policy1",
+				}
+				scWithPolicy := storageclass.New(scConfigWithPolicy)
+				addStorageClassesToCache(t, scWithPolicy)
+
+				// Add autogrow policy
+				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
+				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				results[0].AutogrowPolicy.Upsert(policy)
+				unlocker()
+
+				// Add backend
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend.EXPECT().StoragePools().Return(&sync.Map{}).AnyTimes()
+				addBackendsToCache(t, mockBackend)
+
+				// Add parent volume
+				vol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:         "vol1",
+						StorageClass: "sc1",
+					},
+					BackendUUID: "backend-uuid1",
+				}
+				addVolumesToCache(t, vol)
+
+				// Add subordinate volume using this SC with inherited autogrow policy
+				subVol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:                    "subvol1",
+						StorageClass:            "sc1",
+						ShareSourceVolume:       "vol1",
+						RequestedAutogrowPolicy: "", // Inherits from SC
+					},
+					BackendUUID: "backend-uuid1",
+					State:       storage.VolumeStateSubordinate,
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "policy1",
+						Reason:     models.AutogrowPolicyReasonActive,
+					},
+				}
+				addSubordinateVolumesToCache(t, subVol)
+
+				o.RebuildStorageClassPoolMap(testCtx)
+
+				mockStoreClient.EXPECT().DeleteStorageClass(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error, o *ConcurrentTridentOrchestrator) {
+				assert.NoError(t, err)
+
+				// Subordinate volume should have been updated to empty policy
+				subVol := getSubordinateVolumeByNameFromCache(t, "subvol1")
+				assert.NotNil(t, subVol)
+				assert.Equal(t, "", subVol.EffectiveAGPolicy.PolicyName)
+				assert.Equal(t, models.AutogrowPolicyReasonNotConfigured, subVol.EffectiveAGPolicy.Reason)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			db.Initialize()
+
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o := getConcurrentOrchestrator()
+			o.storeClient = mockStoreClient
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockCtrl, mockStoreClient, o)
+			}
+
+			err := o.DeleteStorageClass(testCtx, "sc1")
+
+			if tt.verifyError != nil {
+				tt.verifyError(t, err, o)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestConcurrent_UpdateVolumeAutogrowPolicy_SubordinateVolume(t *testing.T) {
+	tests := []struct {
+		name                    string
+		volumeName              string
+		requestedAutogrowPolicy string
+		setupCache              func(*mockpersistentstore.MockStoreClient)
+		expectError             bool
+		expectedEffectivePolicy string
+	}{
+		{
+			name:                    "Update subordinate volume to use specific policy",
+			volumeName:              "subvol1",
+			requestedAutogrowPolicy: "policy-new",
+			setupCache: func(mockStore *mockpersistentstore.MockStoreClient) {
+				policy := storage.NewAutogrowPolicy("policy-new", "90", "30", "2000Gi", storage.AutogrowPolicyStateSuccess)
+				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-new")))
+				results[0].AutogrowPolicy.Upsert(policy)
+				unlocker()
+
+				backend := getFakeBackend("backend1", "backend1", nil)
+				addBackendsToCache(t, backend)
+
+				// Add parent volume
+				vol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:         "vol1",
+						StorageClass: "sc1",
+					},
+					BackendUUID: "backend1",
+				}
+				addVolumesToCache(t, vol)
+
+				// Add subordinate volume
+				subVol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:                    "subvol1",
+						StorageClass:            "sc1",
+						ShareSourceVolume:       "vol1",
+						RequestedAutogrowPolicy: "",
+					},
+					BackendUUID: "backend1",
+					State:       storage.VolumeStateSubordinate,
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "",
+						Reason:     models.AutogrowPolicyReasonNotConfigured,
+					},
+				}
+				addSubordinateVolumesToCache(t, subVol)
+
+				mockStore.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			expectError:             false,
+			expectedEffectivePolicy: "policy-new",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			db.Initialize()
+			o := getConcurrentOrchestrator()
+			mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+			o.storeClient = mockStoreClient
+
+			if tt.setupCache != nil {
+				tt.setupCache(mockStoreClient)
+			}
+
+			err := o.UpdateVolumeAutogrowPolicy(testCtx, tt.volumeName, tt.requestedAutogrowPolicy)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			// Verify subordinate volume was updated
+			results, unlocker, _ := db.Lock(testCtx, db.Query(db.ReadSubordinateVolume(tt.volumeName)))
+			subVol := results[0].SubordinateVolume.Read
+			unlocker()
+
+			assert.NotNil(t, subVol)
+			assert.Equal(t, tt.requestedAutogrowPolicy, subVol.Config.RequestedAutogrowPolicy)
+			assert.Equal(t, tt.expectedEffectivePolicy, subVol.EffectiveAGPolicy.PolicyName)
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestConcurrent_InvalidateVolumesForPolicy_SubordinateVolumes(t *testing.T) {
+	tests := []struct {
+		name                   string
+		policyName             string
+		setupCache             func()
+		expectedInvalidVolumes []string
+		expectedInvalidSubVols []string
+	}{
+		{
+			name:       "Subordinate volume using policy is invalidated",
+			policyName: "policy1",
+			setupCache: func() {
+				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
+				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				results[0].AutogrowPolicy.Upsert(policy)
+				unlocker()
+
+				backend := getFakeBackend("backend1", "backend1", nil)
+				addBackendsToCache(t, backend)
+
+				// Regular volume using policy1
+				vol1 := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name: "vol1",
+					},
+					BackendUUID: "backend1",
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "policy1",
+						Reason:     models.AutogrowPolicyReasonActive,
+					},
+				}
+				addVolumesToCache(t, vol1)
+
+				// Subordinate volume using policy1
+				subVol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:              "subvol1",
+						ShareSourceVolume: "vol1",
+					},
+					BackendUUID: "backend1",
+					State:       storage.VolumeStateSubordinate,
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "policy1",
+						Reason:     models.AutogrowPolicyReasonActive,
+					},
+				}
+				addSubordinateVolumesToCache(t, subVol)
+			},
+			expectedInvalidVolumes: []string{"vol1"},
+			expectedInvalidSubVols: []string{"subvol1"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+			o := getConcurrentOrchestrator()
+
+			if tt.setupCache != nil {
+				tt.setupCache()
+			}
+
+			o.invalidateVolumesForPolicy(testCtx, tt.policyName)
+
+			// Verify regular volumes
+			for _, volName := range tt.expectedInvalidVolumes {
+				vol := getVolumeByNameFromCache(t, volName)
+				require.NotNil(t, vol)
+				assert.Equal(t, "", vol.EffectiveAGPolicy.PolicyName, "Volume %s should be invalidated", volName)
+				assert.Equal(t, models.AutogrowPolicyReasonUnusable, vol.EffectiveAGPolicy.Reason)
+			}
+
+			// Verify subordinate volumes
+			for _, subVolName := range tt.expectedInvalidSubVols {
+				subVol := getSubordinateVolumeByNameFromCache(t, subVolName)
+				require.NotNil(t, subVol)
+				assert.Equal(t, "", subVol.EffectiveAGPolicy.PolicyName, "SubVolume %s should be invalidated", subVolName)
+				assert.Equal(t, models.AutogrowPolicyReasonUnusable, subVol.EffectiveAGPolicy.Reason)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestConcurrent_ReevaluateVolumesForPolicy_SubordinateVolumes(t *testing.T) {
+	tests := []struct {
+		name       string
+		policyName string
+		setupCache func()
+		verify     func(t *testing.T)
+	}{
+		{
+			name:       "Subordinate volume re-evaluated when policy transitions to Success",
+			policyName: "policy1",
+			setupCache: func() {
+				policy := storage.NewAutogrowPolicy("policy1", "80", "20", "1000Gi", storage.AutogrowPolicyStateSuccess)
+				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy1")))
+				results[0].AutogrowPolicy.Upsert(policy)
+				unlocker()
+
+				backend := getFakeBackend("backend1", "backend1", nil)
+				addBackendsToCache(t, backend)
+
+				vol1 := &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: "vol1"},
+					BackendUUID: "backend1",
+				}
+				addVolumesToCache(t, vol1)
+
+				// Subordinate volume that was previously unusable
+				subVol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:                    "subvol1",
+						ShareSourceVolume:       "vol1",
+						RequestedAutogrowPolicy: "policy1",
+					},
+					BackendUUID: "backend1",
+					State:       storage.VolumeStateSubordinate,
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "",
+						Reason:     models.AutogrowPolicyReasonUnusable,
+					},
+				}
+				addSubordinateVolumesToCache(t, subVol)
+			},
+			verify: func(t *testing.T) {
+				subVol := getSubordinateVolumeByNameFromCache(t, "subvol1")
+				require.NotNil(t, subVol)
+				assert.Equal(t, "policy1", subVol.EffectiveAGPolicy.PolicyName)
+				assert.Equal(t, models.AutogrowPolicyReasonActive, subVol.EffectiveAGPolicy.Reason)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+			o := getConcurrentOrchestrator()
+
+			if tt.setupCache != nil {
+				tt.setupCache()
+			}
+
+			o.reevaluateVolumesForPolicy(testCtx, tt.policyName)
+
+			if tt.verify != nil {
+				tt.verify(t)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestConcurrent_UpsertStorageClassAutogrowPolicyInternal_SubordinateVolumes(t *testing.T) {
+	tests := []struct {
+		name            string
+		scName          string
+		setupCache      func()
+		expectedUpdated []string // subordinate volume names that should be updated
+		expectError     bool
+	}{
+		{
+			name:   "Subordinate volumes using SC without volume-level AGP are updated",
+			scName: "sc1",
+			setupCache: func() {
+				scConfig := &storageclass.Config{
+					Name:           "sc1",
+					AutogrowPolicy: "policy-new",
+				}
+				sc := storageclass.New(scConfig)
+				results, unlocker, _ := db.Lock(testCtx, db.Query(db.UpsertStorageClass("sc1")))
+				results[0].StorageClass.Upsert(sc)
+				unlocker()
+
+				policyNew := storage.NewAutogrowPolicy("policy-new", "90", "30", "2000Gi", storage.AutogrowPolicyStateSuccess)
+				results2, unlocker2, _ := db.Lock(testCtx, db.Query(db.UpsertAutogrowPolicy("policy-new")))
+				results2[0].AutogrowPolicy.Upsert(policyNew)
+				unlocker2()
+
+				backend := getFakeBackend("backend1", "backend1", nil)
+				addBackendsToCache(t, backend)
+
+				// Parent volume
+				vol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:         "vol1",
+						StorageClass: "sc1",
+					},
+					BackendUUID: "backend1",
+				}
+				addVolumesToCache(t, vol)
+
+				// Subordinate volume inheriting from SC (no volume-level AGP)
+				subVol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:                    "subvol1",
+						StorageClass:            "sc1",
+						ShareSourceVolume:       "vol1",
+						RequestedAutogrowPolicy: "",
+					},
+					BackendUUID: "backend1",
+					State:       storage.VolumeStateSubordinate,
+					EffectiveAGPolicy: models.EffectiveAutogrowPolicyInfo{
+						PolicyName: "policy-old",
+						Reason:     models.AutogrowPolicyReasonActive,
+					},
+				}
+				addSubordinateVolumesToCache(t, subVol)
+			},
+			expectedUpdated: []string{"subvol1"},
+			expectError:     false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+			o := getConcurrentOrchestrator()
+
+			if tt.setupCache != nil {
+				tt.setupCache()
+			}
+
+			err := o.upsertStorageClassAutogrowPolicyInternal(testCtx, tt.scName)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			for _, subVolName := range tt.expectedUpdated {
+				subVol := getSubordinateVolumeByNameFromCache(t, subVolName)
+				require.NotNil(t, subVol)
+				assert.Equal(t, "policy-new", subVol.EffectiveAGPolicy.PolicyName,
+					"Subordinate volume %s should use new SC policy", subVolName)
+				assert.Equal(t, models.AutogrowPolicyReasonActive, subVol.EffectiveAGPolicy.Reason)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
