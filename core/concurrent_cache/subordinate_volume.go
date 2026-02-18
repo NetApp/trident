@@ -1,6 +1,8 @@
 package concurrent_cache
 
 import (
+	"strings"
+
 	"github.com/netapp/trident/storage"
 )
 
@@ -23,6 +25,76 @@ func ListSubordinateVolumesForVolume(volumeID string) Subquery {
 				return true
 			}
 			return false
+		}),
+	}
+}
+
+// ListSubordinateVolumesForAutogrowPolicy returns all subordinate volumes using a specific autogrow policy
+func ListSubordinateVolumesForAutogrowPolicy(autogrowPolicyName string) Subquery {
+	return Subquery{
+		res: subordinateVolume,
+		op:  list,
+		setResults: listSubordinateVolumesSetResults(func(v *storage.Volume) bool {
+			return v.EffectiveAGPolicy.PolicyName == autogrowPolicyName
+		}),
+	}
+}
+
+// ListSubordinateVolumesForStorageClass returns all subordinate volumes using a specific storage class
+func ListSubordinateVolumesForStorageClass(scName string) Subquery {
+	return Subquery{
+		res: subordinateVolume,
+		op:  list,
+		setResults: listSubordinateVolumesSetResults(func(v *storage.Volume) bool {
+			return v.Config.StorageClass == scName
+		}),
+	}
+}
+
+// ListSubordinateVolumesForStorageClassWithoutAutogrowOverride returns subordinate volumes using a specific storage
+// class
+// that have NO volume-level autogrow policy (i.e., they inherit from StorageClass)
+func ListSubordinateVolumesForStorageClassWithoutAutogrowOverride(scName string) Subquery {
+	return Subquery{
+		res: subordinateVolume,
+		op:  list,
+		setResults: listSubordinateVolumesSetResults(func(v *storage.Volume) bool {
+			return v.Config.StorageClass == scName && v.Config.RequestedAutogrowPolicy == ""
+		}),
+	}
+}
+
+// ListSubordinateVolumesForAutogrowPolicyReevaluation returns subordinate volumes that might need to use the given
+// policy.
+// This includes subordinate volumes that:
+// 1. Have a volume-level autogrow policy matching the policy name (case-insensitive), OR
+// 2. Have no volume-level autogrow policy (might inherit from StorageClass)
+// AND are not already using the policy.
+func ListSubordinateVolumesForAutogrowPolicyReevaluation(policyName string) Subquery {
+	return Subquery{
+		res: subordinateVolume,
+		op:  list,
+		setResults: listSubordinateVolumesSetResults(func(v *storage.Volume) bool {
+			requestedAutogrowPolicy := v.Config.RequestedAutogrowPolicy
+
+			// Skip if requestedAutogrowPolicy is "none" (any case variation)
+			if strings.EqualFold(requestedAutogrowPolicy, "none") {
+				return false
+			}
+
+			// Skip if requestedAutogrowPolicy explicitly references a different policy
+			if requestedAutogrowPolicy != "" && !strings.EqualFold(requestedAutogrowPolicy, policyName) {
+				return false
+			}
+
+			// Skip if already using this policy
+			if v.EffectiveAGPolicy.PolicyName == policyName {
+				return false
+			}
+
+			// Include: no requestedAutogrowPolicy OR requestedAutogrowPolicy matches policy,
+			// and not currently using it
+			return true
 		}),
 	}
 }
