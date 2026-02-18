@@ -125,18 +125,19 @@ func TestLunSetAttributeZapi(t *testing.T) {
 
 	// case 1a: Positive test, update LUN attribute - fsType.
 	zapi.EXPECT().LunSetAttribute(tempLunPath, tempAttribute, "fake-FStype").Return(&response, nil).Times(1)
-	err = oapi.LunSetAttribute(ctx, tempLunPath, tempAttribute, "fake-FStype", "", "", "")
+	zapi.EXPECT().LunSetAttribute(tempLunPath, "poolName", "").Return(&response, nil).Times(1)
+	err = oapi.LunSetAttribute(ctx, tempLunPath, tempAttribute, "fake-FStype", "", "", "", "")
 	assert.NoError(t, err, "error returned while modifying a LUN attribute")
 
 	// case 1b: Negative test, d.api.LunSetAttribute for fsType return error
 	zapi.EXPECT().LunSetAttribute(tempLunPath, tempAttribute, "fake-FStype").Return(nil, fmt.Errorf("error")).Times(1)
-	err = oapi.LunSetAttribute(ctx, tempLunPath, tempAttribute, "fake-FStype", "", "", "")
+	err = oapi.LunSetAttribute(ctx, tempLunPath, tempAttribute, "fake-FStype", "", "", "", "")
 	assert.Error(t, err)
 
-	// case 2: Positive test, update LUN attributes those are: context, luks, formatOptions.
+	// case 2: Positive test, update LUN attributes those are: context, luks, formatOptions, poolName.
 	zapi.EXPECT().LunSetAttribute(tempLunPath, gomock.Any(), gomock.Any()).Return(&response, nil).AnyTimes()
 	err = oapi.LunSetAttribute(ctx, tempLunPath, "filesystem", "",
-		"context", "LUKS", "formatOptions")
+		"context", "LUKS", "formatOptions", "poolName")
 	assert.NoError(t, err, "error returned while modifying a LUN attribute")
 }
 
