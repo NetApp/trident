@@ -3440,17 +3440,16 @@ func (p *Plugin) disconnectNVMeSubsystemIfNeeded(
 	defer locks.Unlock(ctx, lockContext, nvmeSubsystemDisconnectLock)
 
 	// Get the number of namespaces associated with the subsystem (inside lock to avoid race conditions)
-	numNs, err := nvmeSubsys.GetNamespaceCount(ctx)
-	if err != nil {
-		Logc(ctx).WithField(
-			"subsystem", publishInfo.NVMeSubsystemNQN,
-		).WithError(err).Debug("Error getting Namespace count.")
-	}
+	numNs := publishedNVMeSessions.GetNamespaceCountForSession(publishInfo.NVMeSubsystemNQN)
+	Logc(ctx).WithFields(LogFields{
+		"subsystem":      publishInfo.NVMeSubsystemNQN,
+		"namespaceCount": numNs,
+		"disconnectFlag": disconnect,
+	}).Info("Checking if subsystem should be disconnected.")
 
-	// If number of namespaces is more than 1, don't disconnect the subsystem. If we get any issues while getting the
-	// number of namespaces through the CLI, we can rely on the disconnect flag from NVMe self-healing sessions (if
+	// If number of namespaces is 0, disconnect the subsystem. we can rely on the disconnect flag from NVMe self-healing sessions (if
 	// NVMe self-healing is enabled), which keeps track of namespaces associated with the subsystem.
-	if (err == nil && numNs <= 1) || (p.nvmeSelfHealingInterval > 0 && err != nil && disconnect) {
+	if (numNs == 0) || (p.nvmeSelfHealingInterval > 0 && disconnect) {
 		if err := nvmeSubsys.Disconnect(ctx); err != nil {
 			Logc(ctx).WithField(
 				"subsystem", publishInfo.NVMeSubsystemNQN,

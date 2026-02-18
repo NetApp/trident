@@ -431,10 +431,7 @@ func (p *Plugin) Activate() error {
 				Logc(ctx).WithError(err).Warn("Failed to clean node; self-healing features may be unreliable.")
 			}
 
-			// Populate the published sessions IFF iSCSI/NVMe self-healing is enabled.
-			if p.iSCSISelfHealingInterval > 0 || p.nvmeSelfHealingInterval > 0 {
-				p.populatePublishedSessions(ctx)
-			}
+			p.populatePublishedSessions(ctx)
 
 			p.startISCSISelfHealingThread(ctx)
 			p.startNVMeSelfHealingThread(ctx)
