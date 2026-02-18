@@ -318,9 +318,22 @@ func ensureExportPolicyExists(ctx context.Context, policyName string, clientAPI 
 	return clientAPI.ExportPolicyCreate(ctx, policyName)
 }
 
+// destroyExportPolicy destroys an export policy.
+// NOTE: Caller MUST hold the exportPolicyMutex for policyName before calling this function.
+// This function is idempotent - if the export policy doesn't exist, it returns success.
 func destroyExportPolicy(ctx context.Context, policyName string, clientAPI api.OntapAPI) error {
-	exportPolicyMutex.Lock(policyName)
-	defer exportPolicyMutex.Unlock(policyName)
+	// Check if the policy exists before attempting to delete
+	exists, err := clientAPI.ExportPolicyExists(ctx, policyName)
+	if err != nil {
+		Logc(ctx).WithField("exportPolicy", policyName).WithError(err).Error(
+			"Could not check if export policy exists before deletion.")
+		return err
+	}
+	if !exists {
+		Logc(ctx).WithField("exportPolicy", policyName).Debug(
+			"Export policy does not exist, nothing to delete (idempotent).")
+		return nil
+	}
 
 	return clientAPI.ExportPolicyDestroy(ctx, policyName)
 }
@@ -474,6 +487,118 @@ func ensureNodeAccessForPolicy(
 				}
 				return err
 			}
+		}
+	}
+
+	return nil
+}
+
+// ensureNodeAccessForPolicyAndApply ensures an export policy exists with the correct rules for the target node,
+// then calls the provided applyPolicy function while still holding the export policy lock.
+// This prevents race conditions where a concurrent unpublish could delete the policy between
+// rule creation and policy assignment to a volume/qtree.
+//
+// The applyPolicy function should perform the actual assignment (e.g., VolumeModifyExportPolicy or
+// QtreeModifyExportPolicy) and will be called while the export policy mutex is held.
+func ensureNodeAccessForPolicyAndApply(
+	ctx context.Context, targetNode *tridentmodels.Node, clientAPI api.OntapAPI,
+	config *drivers.OntapStorageDriverConfig, policyName string,
+	applyPolicy func() error,
+) error {
+	fields := LogFields{
+		"Method":        "ensureNodeAccessForPolicyAndApply",
+		"Type":          "ontap_common",
+		"policyName":    policyName,
+		"targetNodeIPs": targetNode.IPs,
+	}
+
+	Logc(ctx).WithFields(fields).Debug(">>>> ensureNodeAccessForPolicyAndApply")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< ensureNodeAccessForPolicyAndApply")
+
+	exportPolicyMutex.Lock(policyName)
+	defer exportPolicyMutex.Unlock(policyName)
+
+	if exists, err := clientAPI.ExportPolicyExists(ctx, policyName); err != nil {
+		return err
+	} else if !exists {
+		Logc(ctx).WithField("exportPolicy", policyName).Debug("Export policy missing, will create it.")
+
+		if err = clientAPI.ExportPolicyCreate(ctx, policyName); err != nil {
+			return err
+		}
+	}
+
+	desiredRules, err := network.FilterIPs(ctx, targetNode.IPs, config.AutoExportCIDRs)
+	if err != nil {
+		err = fmt.Errorf("unable to determine desired export policy rules; %v", err)
+		Logc(ctx).Error(err)
+		return err
+	}
+	Logc(ctx).WithField("desiredRules", desiredRules).Debug("Desired export policy rules.")
+
+	// first grab all existing rules
+	existingRules, err := clientAPI.ExportRuleList(ctx, policyName)
+	if err != nil {
+		// Could not list rules, just log it, no action required.
+		Logc(ctx).WithField("error", err).Debug("Export policy rules could not be listed.")
+	}
+	Logc(ctx).WithField("existingRules", existingRules).Debug("Existing export policy rules.")
+
+	for _, desiredRule := range desiredRules {
+		desiredRule = strings.TrimSpace(desiredRule)
+
+		desiredIP := net.ParseIP(desiredRule)
+		if desiredIP == nil {
+			Logc(ctx).WithField("desiredRule", desiredRule).Debug("Invalid desired rule IP")
+			continue
+		}
+
+		// Loop through the existing rules one by one and compare to make sure we cover the scenario where the
+		// existing rule is of format "1.1.1.1, 2.2.2.2" and the desired rule is format "1.1.1.1".
+		// This can happen because of the difference in how ONTAP ZAPI and ONTAP REST creates export rule.
+
+		ruleFound := false
+		for _, existingRule := range existingRules {
+			existingIPs := strings.Split(existingRule, ",")
+
+			for _, ip := range existingIPs {
+				ip = strings.TrimSpace(ip)
+
+				existingIP := net.ParseIP(ip)
+				if existingIP == nil {
+					Logc(ctx).WithField("existingRule", existingRule).Debug("Invalid existing rule IP")
+					continue
+				}
+
+				if existingIP.Equal(desiredIP) {
+					ruleFound = true
+					break
+				}
+			}
+
+			if ruleFound {
+				break
+			}
+		}
+
+		// Rule does not exist, so create it
+		if !ruleFound {
+			if err = clientAPI.ExportRuleCreate(ctx, policyName, desiredRule, config.NASType); err != nil {
+				// Check if error is that the export policy rule already exist error
+				if errors.IsAlreadyExistsError(err) {
+					Logc(ctx).WithField("desiredRule", desiredRule).WithError(err).Debug(
+						"Export policy rule already exists")
+					continue
+				}
+				return err
+			}
+		}
+	}
+
+	// Apply the policy while still holding the lock
+	if applyPolicy != nil {
+		if err = applyPolicy(); err != nil {
+			return err
 		}
 	}
 
@@ -4968,6 +5093,7 @@ func deleteAutomaticSnapshot(
 // removeExportPolicyRules takes an export policy name,
 // retrieves its rules and matches the rules that exist to the IP addresses from the node.
 // Any matched IP addresses will be removed from the export policy.
+// NOTE: Caller MUST hold the exportPolicyMutex for exportPolicy before calling this function.
 func removeExportPolicyRules(
 	ctx context.Context, exportPolicy string, publishInfo *tridentmodels.VolumePublishInfo, clientAPI api.OntapAPI,
 ) error {
@@ -4979,9 +5105,6 @@ func removeExportPolicyRules(
 
 	Logc(ctx).WithFields(fields).Debug(">>>> removeExportPolicyRules")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< removeExportPolicyRules")
-
-	exportPolicyMutex.Lock(exportPolicy)
-	defer exportPolicyMutex.Unlock(exportPolicy)
 
 	// CNVA-AWARE EXPORT POLICY MANAGEMENT:
 	// Instead of blindly removing rules for the departing node, we implement "keep only active nodes" logic.

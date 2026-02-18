@@ -3512,6 +3512,72 @@ func TestEnsureExportPolicyExists(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+// Tests for destroyExportPolicy - idempotent export policy deletion
+
+func TestDestroyExportPolicy_PolicyExists_Success(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	policyName := "testPolicy"
+
+	// Policy exists and delete succeeds
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(true, nil)
+	mockAPI.EXPECT().ExportPolicyDestroy(ctx, policyName).Return(nil)
+
+	err := destroyExportPolicy(ctx, policyName, mockAPI)
+
+	assert.NoError(t, err)
+}
+
+func TestDestroyExportPolicy_PolicyDoesNotExist_Idempotent(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	policyName := "testPolicy"
+
+	// Policy doesn't exist - should return success (idempotent)
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(false, nil)
+	// ExportPolicyDestroy should NOT be called
+
+	err := destroyExportPolicy(ctx, policyName, mockAPI)
+
+	assert.NoError(t, err)
+}
+
+func TestDestroyExportPolicy_ExistenceCheckError(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	policyName := "testPolicy"
+
+	// Error checking existence - should return error
+	expectedErr := errors.New("API error checking policy existence")
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(false, expectedErr)
+	// ExportPolicyDestroy should NOT be called
+
+	err := destroyExportPolicy(ctx, policyName, mockAPI)
+
+	assert.Error(t, err)
+	assert.Equal(t, expectedErr, err)
+}
+
+func TestDestroyExportPolicy_DestroyError(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+	policyName := "testPolicy"
+
+	// Policy exists but delete fails
+	expectedErr := errors.New("error destroying export policy")
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Return(true, nil)
+	mockAPI.EXPECT().ExportPolicyDestroy(ctx, policyName).Return(expectedErr)
+
+	err := destroyExportPolicy(ctx, policyName, mockAPI)
+
+	assert.Error(t, err)
+	assert.Equal(t, expectedErr, err)
+}
+
 func TestReconcileExportPolicyRules_AllRulesExist(t *testing.T) {
 	ctx := context.TODO()
 	policyName := "testPolicy"
@@ -4505,6 +4571,149 @@ func TestEnsureNodeAccessForPolicy_OverlappingStringInIPs(t *testing.T) {
 
 	err = ensureNodeAccessForPolicy(ctx, node, mockAPI, &driver.Config, policyName)
 	assert.NoError(t, err, "expected no error")
+}
+
+func TestEnsureNodeAccessForPolicyAndApply_Success(t *testing.T) {
+	ctx := context.Background()
+	ontapConfig := newOntapStorageDriverConfig()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodeIP := "1.1.1.1"
+	nodes := make([]*tridentmodels.Node, 0)
+	nodes = append(nodes, &tridentmodels.Node{Name: "node1", IPs: []string{nodeIP}})
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(make(map[int]string), nil)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP, gomock.Any()).After(ruleListCall).Return(nil)
+
+	ontapConfig.AutoExportPolicy = true
+	ontapConfig.AutoExportCIDRs = []string{"0.0.0.0/0"}
+
+	// applyPolicy callback should be called and return success
+	applyPolicyCalled := false
+	applyPolicy := func() error {
+		applyPolicyCalled = true
+		return nil
+	}
+
+	err := ensureNodeAccessForPolicyAndApply(ctx, nodes[0], mockAPI, ontapConfig, policyName, applyPolicy)
+	assert.NoError(t, err)
+	assert.True(t, applyPolicyCalled, "applyPolicy callback should have been called")
+}
+
+func TestEnsureNodeAccessForPolicyAndApply_ApplyPolicyError(t *testing.T) {
+	ctx := context.Background()
+	ontapConfig := newOntapStorageDriverConfig()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodeIP := "1.1.1.1"
+	nodes := make([]*tridentmodels.Node, 0)
+	nodes = append(nodes, &tridentmodels.Node{Name: "node1", IPs: []string{nodeIP}})
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(make(map[int]string), nil)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP, gomock.Any()).After(ruleListCall).Return(nil)
+
+	ontapConfig.AutoExportPolicy = true
+	ontapConfig.AutoExportCIDRs = []string{"0.0.0.0/0"}
+
+	// applyPolicy callback returns an error
+	applyPolicyErr := errors.New("error setting export policy on volume")
+	applyPolicy := func() error {
+		return applyPolicyErr
+	}
+
+	err := ensureNodeAccessForPolicyAndApply(ctx, nodes[0], mockAPI, ontapConfig, policyName, applyPolicy)
+	assert.Error(t, err)
+	assert.Equal(t, applyPolicyErr, err, "error from applyPolicy should be propagated")
+}
+
+func TestEnsureNodeAccessForPolicyAndApply_NilCallback(t *testing.T) {
+	ctx := context.Background()
+	ontapConfig := newOntapStorageDriverConfig()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodeIP := "1.1.1.1"
+	nodes := make([]*tridentmodels.Node, 0)
+	nodes = append(nodes, &tridentmodels.Node{Name: "node1", IPs: []string{nodeIP}})
+
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(true, nil)
+	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(make(map[int]string), nil)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP, gomock.Any()).After(ruleListCall).Return(nil)
+
+	ontapConfig.AutoExportPolicy = true
+	ontapConfig.AutoExportCIDRs = []string{"0.0.0.0/0"}
+
+	// nil applyPolicy callback should work without error
+	err := ensureNodeAccessForPolicyAndApply(ctx, nodes[0], mockAPI, ontapConfig, policyName, nil)
+	assert.NoError(t, err)
+}
+
+func TestEnsureNodeAccessForPolicyAndApply_EarlyError_ApplyPolicyNotCalled(t *testing.T) {
+	ctx := context.Background()
+	ontapConfig := newOntapStorageDriverConfig()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodeIP := "1.1.1.1"
+	nodes := make([]*tridentmodels.Node, 0)
+	nodes = append(nodes, &tridentmodels.Node{Name: "node1", IPs: []string{nodeIP}})
+
+	// ExportPolicyExists returns an error
+	expectedErr := errors.New("API error checking policy")
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(false, expectedErr)
+
+	ontapConfig.AutoExportPolicy = true
+	ontapConfig.AutoExportCIDRs = []string{"0.0.0.0/0"}
+
+	// applyPolicy callback should NOT be called when an earlier step fails
+	applyPolicyCalled := false
+	applyPolicy := func() error {
+		applyPolicyCalled = true
+		return nil
+	}
+
+	err := ensureNodeAccessForPolicyAndApply(ctx, nodes[0], mockAPI, ontapConfig, policyName, applyPolicy)
+	assert.Error(t, err)
+	assert.False(t, applyPolicyCalled, "applyPolicy callback should NOT have been called on early error")
+}
+
+func TestEnsureNodeAccessForPolicyAndApply_PolicyCreatedAndApplied(t *testing.T) {
+	ctx := context.Background()
+	ontapConfig := newOntapStorageDriverConfig()
+	policyName := "trident-fakeUUID"
+	mockCtrl := gomock.NewController(t)
+	mockAPI := mockapi.NewMockOntapAPI(mockCtrl)
+
+	nodeIP := "1.1.1.1"
+	nodes := make([]*tridentmodels.Node, 0)
+	nodes = append(nodes, &tridentmodels.Node{Name: "node1", IPs: []string{nodeIP}})
+
+	// Policy doesn't exist, should be created
+	mockAPI.EXPECT().ExportPolicyExists(ctx, policyName).Times(1).Return(false, nil)
+	mockAPI.EXPECT().ExportPolicyCreate(ctx, policyName).Times(1).Return(nil)
+	ruleListCall := mockAPI.EXPECT().ExportRuleList(gomock.Any(), policyName).Return(make(map[int]string), nil)
+	mockAPI.EXPECT().ExportRuleCreate(gomock.Any(), gomock.Any(), nodeIP, gomock.Any()).After(ruleListCall).Return(nil)
+
+	ontapConfig.AutoExportPolicy = true
+	ontapConfig.AutoExportCIDRs = []string{"0.0.0.0/0"}
+
+	applyPolicyCalled := false
+	applyPolicy := func() error {
+		applyPolicyCalled = true
+		return nil
+	}
+
+	err := ensureNodeAccessForPolicyAndApply(ctx, nodes[0], mockAPI, ontapConfig, policyName, applyPolicy)
+	assert.NoError(t, err)
+	assert.True(t, applyPolicyCalled, "applyPolicy callback should have been called after policy creation")
 }
 
 func TestIsDefaultAuthTypeOfType(t *testing.T) {

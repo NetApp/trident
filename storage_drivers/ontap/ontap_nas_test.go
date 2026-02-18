@@ -702,6 +702,8 @@ func TestOntapNasStorageDriverTerminate_Scenarios(t *testing.T) {
 			driver.telemetry = nil
 			driver.initialized = true
 
+			// destroyExportPolicy checks existence before deleting (idempotent)
+			mockAPI.EXPECT().ExportPolicyExists(ctx, "trident-dummy").Return(true, nil)
 			mockAPI.EXPECT().ExportPolicyDestroy(ctx, "trident-dummy").Return(tt.err)
 			mockAPI.EXPECT().Terminate().AnyTimes()
 
@@ -724,6 +726,8 @@ func TestOntapNasStorageDriverTerminate_TelemetryFailure(t *testing.T) {
 	}
 	driver.initialized = true
 
+	// destroyExportPolicy checks existence before deleting (idempotent)
+	mockAPI.EXPECT().ExportPolicyExists(ctx, "trident-dummy").Return(true, nil)
 	mockAPI.EXPECT().ExportPolicyDestroy(ctx, "trident-dummy").Return(errors.New("policy not found"))
 	mockAPI.EXPECT().Terminate().AnyTimes()
 
@@ -5764,12 +5768,15 @@ func TestOntapNasUnpublish(t *testing.T) {
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
 				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil)  // ensureExportPolicyExists before lock
+				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil) // Check policy exists
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).
 					Return(map[int]string{1: "1.1.1.1", 2: "2.2.2.2"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, gomock.Any()).Times(2)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName)
 				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
 				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty")
+				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil) // destroyExportPolicy checks
 				mockAPI.EXPECT().ExportPolicyDestroy(ctx, volName)
 			},
 			wantErr: assert.NoError,
@@ -5792,13 +5799,15 @@ func TestOntapNasUnpublish(t *testing.T) {
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
 				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil)  // ensureExportPolicyExists before lock
+				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil) // Check policy exists
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).
 					Return(map[int]string{1: "1.1.1.1", 2: "2.2.2.2"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, gomock.Any()).Times(2)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName)
-				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(false, nil)
-				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty")
+				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil) // Now exists after pre-creation
 				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty")
+				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil) // destroyExportPolicy checks
 				mockAPI.EXPECT().ExportPolicyDestroy(ctx, volName)
 			},
 			wantErr: assert.NoError,
@@ -5811,6 +5820,8 @@ func TestOntapNasUnpublish(t *testing.T) {
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
 				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil)  // ensureExportPolicyExists before lock
+				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil) // Check policy exists
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).
 					Return(map[int]string{1: "1.1.1.1", 2: "2.2.2.2", 4: "4.4.4.4", 5: "5.5.5.5"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, gomock.Any()).Times(2)
@@ -5837,6 +5848,8 @@ func TestOntapNasUnpublish(t *testing.T) {
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
 				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil)  // ensureExportPolicyExists before lock
+				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil) // Check policy exists
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(nil, errors.New("some api error"))
 			},
 			wantErr: assert.Error,
@@ -5845,6 +5858,8 @@ func TestOntapNasUnpublish(t *testing.T) {
 			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
 			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
 				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil)  // ensureExportPolicyExists before lock
+				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil) // Check policy exists
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{1: "1.1.1.1", 2: "2.2.2.2"}, nil)
 				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, gomock.Any()).Times(2)
 				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(nil, errors.New("some api error"))
@@ -5864,6 +5879,134 @@ func TestOntapNasUnpublish(t *testing.T) {
 			},
 			wantErr: assert.NoError,
 		},
+		"exportPolicyExistsCheckError": {
+			// When ExportPolicyExists returns an error during unpublish, the operation should fail
+			// and return the error (fail fast approach).
+			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil) // ensureExportPolicyExists before lock
+				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(false, errors.New("API error checking policy"))
+			},
+			wantErr: assert.Error,
+		},
+		"exportPolicyAlreadyDeleted": {
+			// When the export policy doesn't exist (already deleted by another operation),
+			// unpublish should succeed by switching volume to empty policy (idempotent).
+			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil) // ensureExportPolicyExists before lock
+				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(false, nil)
+				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty")
+			},
+			wantErr: assert.NoError,
+		},
+		"destroyExportPolicyIdempotent": {
+			// When policy exists and has no rules after cleanup, destroyExportPolicy checks
+			// existence before deleting (idempotent).
+			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil) // ensureExportPolicyExists before lock
+				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil)
+				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{1: "1.1.1.1"}, nil)
+				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, 1).Return(nil)
+				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{}, nil) // No rules after cleanup
+				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty")
+				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil) // destroyExportPolicy checks existence
+				mockAPI.EXPECT().ExportPolicyDestroy(ctx, volName).Return(nil)
+			},
+			wantErr: assert.NoError,
+		},
+		"volumeAlreadyUsingEmptyPolicy": {
+			// When volume is already using empty policy, unpublish should return early
+			// with no additional API calls (idempotent).
+			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "test_empty"},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
+				// ONTAP returns that volume is already using empty policy
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: "test_empty"}, nil)
+				// No further API calls expected - early return
+			},
+			wantErr: assert.NoError,
+		},
+		"ontapPolicyDiffersFromCached": {
+			// When cached volConfig.ExportPolicy differs from ONTAP's actual policy,
+			// ONTAP is used as source of truth (fixes stale state after restart).
+			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "stale_policy"},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
+				// ONTAP returns actual policy (volume name) different from cached "stale_policy"
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil) // ensureExportPolicyExists before lock
+				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil)
+				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{1: "1.1.1.1"}, nil)
+				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, 1).Return(nil)
+				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{}, nil)
+				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty")
+				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil)
+				mockAPI.EXPECT().ExportPolicyDestroy(ctx, volName).Return(nil)
+			},
+			wantErr: assert.NoError,
+		},
+		"backendPolicyUnpublishNoNodes": {
+			// When volume uses backend-based policy (trident-<backendUUID>) and no nodes remain,
+			// switch to empty policy without touching the shared backend policy.
+			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident-1234"},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
+				// ONTAP returns backend policy (different from volume name)
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: backendPolicy}, nil)
+				// Just switch to empty policy, don't delete the shared backend policy
+				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty")
+			},
+			wantErr: assert.NoError,
+		},
+		"setVolToEmptyPolicyError": {
+			// When VolumeModifyExportPolicy fails during setVolToEmptyPolicy, the error should be returned.
+			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil) // ensureExportPolicyExists before lock
+				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil)
+				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{1: "1.1.1.1"}, nil)
+				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, 1).Return(nil)
+				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{}, nil)
+				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty").Return(errors.New("ONTAP API error"))
+			},
+			wantErr: assert.Error,
+		},
+		"destroyExportPolicyAPIError": {
+			// When ExportPolicyDestroy fails, the error should be returned.
+			// Note: Volume is already switched to empty policy at this point (safe state).
+			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(nil) // ensureExportPolicyExists before lock
+				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil)
+				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{1: "1.1.1.1"}, nil)
+				mockAPI.EXPECT().ExportRuleDestroy(ctx, volName, 1).Return(nil)
+				mockAPI.EXPECT().ExportRuleList(ctx, volName).Return(map[int]string{}, nil)
+				mockAPI.EXPECT().ExportPolicyExists(ctx, "test_empty").Return(true, nil)
+				mockAPI.EXPECT().VolumeModifyExportPolicy(ctx, volName, "test_empty").Return(nil)
+				mockAPI.EXPECT().ExportPolicyExists(ctx, volName).Return(true, nil)
+				mockAPI.EXPECT().ExportPolicyDestroy(ctx, volName).Return(errors.New("ONTAP API error"))
+			},
+			wantErr: assert.Error,
+		},
+		"emptyPolicyCreateError": {
+			// When ExportPolicyCreate fails for the empty policy (before lock), the error should be returned.
+			args: args{publishEnforcement: false, autoExportPolicy: true, exportPolicy: "trident_pvc_123"},
+			mocks: func(mockAPI *mockapi.MockOntapAPI, volName, backendPolicy string) {
+				mockAPI.EXPECT().VolumeInfo(ctx, volName).Return(&api.Volume{ExportPolicy: volName}, nil)
+				// ensureExportPolicyExists fails before acquiring the volume policy lock
+				mockAPI.EXPECT().ExportPolicyCreate(ctx, "test_empty").Return(errors.New("ONTAP API error"))
+			},
+			wantErr: assert.Error,
+		},
 	}
 
 	for name, params := range tt {
@@ -5880,8 +6023,9 @@ func TestOntapNasUnpublish(t *testing.T) {
 				VolumeAccessInfo: models.VolumeAccessInfo{PublishEnforcement: params.args.publishEnforcement},
 			}
 
-			// Add Nodes field only for CNVA behavior tests (those expecting selective rule removal)
-			if name == "volumeWithTwoMounts" {
+			// Add Nodes field based on test scenario
+			switch name {
+			case "volumeWithTwoMounts":
 				// CNVA: After unpublishing node1, only node2 remains active
 				publishInfo.Nodes = []*models.Node{
 					{
@@ -5889,6 +6033,9 @@ func TestOntapNasUnpublish(t *testing.T) {
 						IPs:  []string{"4.4.4.4", "5.5.5.5"}, // Remaining active node
 					},
 				}
+			case "backendPolicyUnpublishNoNodes":
+				// No remaining nodes - tests the switch to empty policy path
+				publishInfo.Nodes = nil
 			}
 
 			mockAPI, driver := newMockOntapNASDriverWithSVM(t, "SVM1")
@@ -6523,6 +6670,8 @@ func TestNASDriver_Terminate(t *testing.T) {
 		{
 			name: "WithAutoExportPolicy",
 			setupMocks: func(m *mockapi.MockOntapAPI) {
+				// destroyExportPolicy checks existence before deleting (idempotent)
+				m.EXPECT().ExportPolicyExists(ctx, "trident-test-uuid").Return(true, nil)
 				m.EXPECT().ExportPolicyDestroy(ctx, "trident-test-uuid").Return(nil)
 				m.EXPECT().Terminate().AnyTimes()
 			},
