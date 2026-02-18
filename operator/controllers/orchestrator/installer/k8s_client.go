@@ -4,6 +4,7 @@ package installer
 
 import (
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -350,8 +351,22 @@ func (k *K8sClient) RemoveMultipleClusterRoles(unwantedClusterRoles []rbacv1.Clu
 	return nil
 }
 
-// GetClusterRoleInformation gets the Cluster Role info.
-func (k *K8sClient) GetClusterRoleInformation(clusterRoleName, appLabel string, shouldUpdate bool) (*rbacv1.ClusterRole,
+// GetClusterRoleInformation retrieves information about a Trident cluster role and identifies any unwanted cluster roles.
+// The function supports multiple cluster roles with the same label (e.g., trident-node-linux and trident-node-windows)
+// by using an allow-list to prevent accidental deletion of related resources.
+//
+// Parameters:
+//   - clusterRoleName: The specific cluster role name to retrieve
+//   - allowedClusterRoleNames: List of cluster role names that are allowed to exist with this label
+//   - appLabel: The label used to identify Trident cluster roles
+//   - shouldUpdate: If true, marks all existing cluster roles as unwanted for replacement
+//
+// Returns:
+//   - currentClusterRole: The existing cluster role matching clusterRoleName, or nil if not found
+//   - unwantedClusterRoles: List of cluster roles that should be deleted
+//   - createClusterRole: Boolean indicating whether a new cluster role should be created
+//   - error: Any error encountered during the operation
+func (k *K8sClient) GetClusterRoleInformation(clusterRoleName string, allowedClusterRoleNames []string, appLabel string, shouldUpdate bool) (*rbacv1.ClusterRole,
 	[]rbacv1.ClusterRole, bool, error,
 ) {
 	createClusterRole := true
@@ -365,38 +380,46 @@ func (k *K8sClient) GetClusterRoleInformation(clusterRoleName, appLabel string, 
 		}).Errorf("Unable to get list of cluster roles by label.")
 		return nil, nil, true, fmt.Errorf("unable to get list of cluster roles")
 	} else if len(clusterRoles) == 0 {
-		Log().Info("Trident cluster role not found.")
+		Log().WithField("clusterRoleName", clusterRoleName).Info("Trident cluster role not found.")
 
-		Log().Debug("Deleting unlabeled Trident cluster role by name as it can cause issues during installation.")
+		Log().WithField("clusterRoleName", clusterRoleName).Debug("Deleting unlabeled Trident cluster role by name as it can cause issues during installation.")
 		if err = k.DeleteClusterRole(clusterRoleName); err != nil {
 			if !errors.IsResourceNotFoundError(err) {
-				Log().WithField("error", err).Warning("Could not delete Trident cluster role")
+				Log().WithField("error", err).Warning("Could not delete unlabeled Trident cluster role.")
 			}
 		} else {
-			Log().WithField("ClusterRole", clusterRoleName).Info(
+			Log().WithField("clusterRole", clusterRoleName).Info(
 				"Deleted unlabeled Trident cluster role; replacing it with a labeled Trident cluster role.")
 		}
 	} else if shouldUpdate {
 		unwantedClusterRoles = clusterRoles
 	} else {
-		// Rules:
-		// 1. If there is no cluster role matching the allowed name and one or many other cluster roles
-		//    exist that matches the label then remove all the cluster roles.
-		// 2. If there is a cluster role named matching the allowed name and one or many other cluster roles
-		//    exist that matches the label then remove all other cluster roles.
+		// Processing cluster roles with selective deletion logic:
+		// 1. Keep cluster roles that match names in allowedClusterRoleNames (e.g., trident-controller,
+		//    trident-node-linux, trident-node-windows).
+		// 2. Mark cluster roles with the label but not in the allowed list for deletion.
+		// This ensures that when processing node RBAC resources (e.g., trident-node-linux), we don't
+		// accidentally delete related resources (e.g., trident-node-windows) that share the same label.
 		for _, clusterRole := range clusterRoles {
-			if clusterRole.Name == clusterRoleName {
-				// Found a cluster role matching the allowed name
-				Log().WithField("clusterRole", clusterRoleName).Infof("A Trident cluster role found by label.")
+			// Check if this cluster role is in the allowed list
+			if slices.Contains(allowedClusterRoleNames, clusterRole.Name) {
+				// Found an allowed cluster role
+				Log().WithField("clusterRole", clusterRole.Name).Infof("Trident cluster role found by label.")
 
-				// allocate new memory for currentClusterRole to avoid unintentional reassignments due to reuse of the
-				// clusterRole variable across iterations
-				currentClusterRole = &rbacv1.ClusterRole{}
-				*currentClusterRole = clusterRole
-				createClusterRole = false
+				if clusterRole.Name == clusterRoleName {
+
+					// Allocate new memory for currentClusterRole to avoid unintentional reassignments due to reuse of the
+					// clusterRole variable across iterations
+					currentClusterRole = &rbacv1.ClusterRole{}
+					*currentClusterRole = clusterRole
+					createClusterRole = false
+				}
 			} else {
-				Log().WithField("clusterRole", clusterRole.Name).Errorf("A cluster role was found by label "+
-					"but does not meet name '%s' requirement, marking it for deletion.", clusterRoleName)
+				// This cluster role is not in the allowed list, mark it for deletion
+				Log().WithFields(LogFields{
+					"clusterRole":  clusterRole.Name,
+					"allowedNames": allowedClusterRoleNames,
+				}).Warn("Cluster role found by label but not in the allowed list; marking for deletion.")
 
 				unwantedClusterRoles = append(unwantedClusterRoles, clusterRole)
 			}
@@ -637,8 +660,22 @@ func (k *K8sClient) DeleteMultipleTridentRoles(roleNames []string, appLabel stri
 	return nil
 }
 
-// GetClusterRoleBindingInformation gets the info on a Cluster Role Binding associated with Trident.
-func (k *K8sClient) GetClusterRoleBindingInformation(clusterRoleBindingName, appLabel string, shouldUpdate bool) (*rbacv1.ClusterRoleBinding,
+// GetClusterRoleBindingInformation retrieves information about a Trident cluster role binding and identifies any unwanted cluster role bindings.
+// The function supports multiple cluster role bindings with the same label (e.g., trident-node-linux and trident-node-windows)
+// by using an allow-list to prevent accidental deletion of related resources.
+//
+// Parameters:
+//   - clusterRoleBindingName: The specific cluster role binding name to retrieve
+//   - allowedClusterRoleBindingNames: List of cluster role binding names that are allowed to exist with this label
+//   - appLabel: The label used to identify Trident cluster role bindings
+//   - shouldUpdate: If true, marks all existing cluster role bindings as unwanted for replacement
+//
+// Returns:
+//   - currentClusterRoleBinding: The existing cluster role binding matching clusterRoleBindingName, or nil if not found
+//   - unwantedClusterRoleBindings: List of cluster role bindings that should be deleted
+//   - createClusterRoleBinding: Boolean indicating whether a new cluster role binding should be created
+//   - error: Any error encountered during the operation
+func (k *K8sClient) GetClusterRoleBindingInformation(clusterRoleBindingName string, allowedClusterRoleBindingNames []string, appLabel string, shouldUpdate bool) (*rbacv1.ClusterRoleBinding,
 	[]rbacv1.ClusterRoleBinding, bool, error,
 ) {
 	createClusterRoleBinding := true
@@ -652,41 +689,46 @@ func (k *K8sClient) GetClusterRoleBindingInformation(clusterRoleBindingName, app
 		}).Errorf("Unable to get list of cluster role bindings by label.")
 		return nil, nil, true, fmt.Errorf("unable to get list of cluster role bindings")
 	} else if len(clusterRoleBindings) == 0 {
-		Log().Info("Trident cluster role binding not found.")
+		Log().WithField("clusterRoleBindingName", clusterRoleBindingName).Info("Trident cluster role binding not found.")
 
-		Log().Debug("Deleting unlabeled Trident cluster role binding by name as it can cause issues during installation.")
+		Log().WithField("clusterRoleBindingName", clusterRoleBindingName).Debug("Deleting unlabeled Trident cluster role binding by name as it can cause issues during installation.")
 		if err = k.DeleteClusterRoleBinding(clusterRoleBindingName); err != nil {
 			if !errors.IsResourceNotFoundError(err) {
-				Log().WithField("error", err).Warning("Could not delete Trident cluster role binding.")
+				Log().WithField("error", err).Warning("Could not delete unlabeled Trident cluster role binding.")
 			}
 		} else {
-			Log().WithField("Cluster Role Binding", clusterRoleBindingName).Info(
-				"Deleted unlabeled Trident cluster role binding; replacing it with a labeled Trident cluster role" +
-					" binding.")
+			Log().WithField("clusterRoleBinding", clusterRoleBindingName).Info(
+				"Deleted unlabeled Trident cluster role binding; replacing it with a labeled Trident cluster role binding.")
 		}
 	} else if shouldUpdate {
 		unwantedClusterRoleBindings = clusterRoleBindings
 	} else {
-		// Rules:
-		// 1. If there is no cluster role binding matching the allowed name and one or many other cluster role bindings
-		//    exist that matches the label then remove all the cluster role bindings.
-		// 2. If there is a cluster role binding matching the allowed name and one or many other cluster role bindings
-		//    exist that matches the label then remove all other cluster role bindings.
+		// Processing cluster role bindings with selective deletion logic:
+		// 1. Keep cluster role bindings that match names in allowedClusterRoleBindingNames (e.g., trident-controller,
+		//    trident-node-linux, trident-node-windows).
+		// 2. Mark cluster role bindings with the label but not in the allowed list for deletion.
+		// This ensures that when processing node RBAC resources (e.g., trident-node-linux), we don't
+		// accidentally delete related resources (e.g., trident-node-windows) that share the same label.
 		for _, clusterRoleBinding := range clusterRoleBindings {
-			if clusterRoleBinding.Name == clusterRoleBindingName {
-				// Found a cluster role binding matching the allowed name
-				Log().WithField("clusterRoleBinding", clusterRoleBindingName).Infof(
-					"A Trident cluster role binding was found by label.")
+			// Check if this cluster role binding is in the allowed list
+			if slices.Contains(allowedClusterRoleBindingNames, clusterRoleBinding.Name) {
+				// Found an allowed cluster role binding
+				Log().WithField("clusterRoleBinding", clusterRoleBinding.Name).Infof(
+					"Trident cluster role binding found by label.")
 
-				// allocate new memory for currentClusterRoleBinding to avoid unintentional reassignments due to reuse of the
-				// clusterRoleBinding variable across iterations
-				currentClusterRoleBinding = &rbacv1.ClusterRoleBinding{}
-				*currentClusterRoleBinding = clusterRoleBinding
-				createClusterRoleBinding = false
+				if clusterRoleBinding.Name == clusterRoleBindingName {
+					// Allocate new memory for currentClusterRoleBinding to avoid unintentional reassignments due to reuse of the
+					// clusterRoleBinding variable across iterations
+					currentClusterRoleBinding = &rbacv1.ClusterRoleBinding{}
+					*currentClusterRoleBinding = clusterRoleBinding
+					createClusterRoleBinding = false
+				}
 			} else {
-				Log().WithField("clusterRoleBinding", clusterRoleBinding.Name).Errorf(
-					"A cluster role binding was found by label "+
-						"but does not meet name '%s' requirement, marking it for deletion.", clusterRoleBindingName)
+				// This cluster role binding is not in the allowed list, mark it for deletion
+				Log().WithFields(LogFields{
+					"clusterRoleBinding": clusterRoleBinding.Name,
+					"allowedNames":       allowedClusterRoleBindingNames,
+				}).Warn("Cluster role binding found by label but not in the allowed list; marking for deletion.")
 
 				unwantedClusterRoleBindings = append(unwantedClusterRoleBindings, clusterRoleBinding)
 			}
