@@ -602,20 +602,36 @@ func (o *ConcurrentTridentOrchestrator) bootstrapVolumePublications(ctx context.
 
 	for _, vp := range volumePublications {
 		// Update VP fields from corresponding TridentVolume (use inconsistent read since we're only examining)
-		volResults, volUnlocker, volErr := db.Lock(ctx, db.Query(db.InconsistentReadVolume(vp.VolumeName)))
-		volUnlocker()
-		if volErr != nil {
+		// Check both regular volumes and subordinate volumes in a single query
+		results, unlocker, err := db.Lock(
+			ctx,
+			db.Query(db.InconsistentReadVolume(vp.VolumeName)),
+			db.Query(db.InconsistentReadSubordinateVolume(vp.VolumeName)))
+		unlocker()
+
+		var vol *storage.Volume
+
+		if err != nil {
 			Logc(ctx).WithFields(LogFields{
 				"volumeName": vp.VolumeName,
 				"nodeName":   vp.NodeName,
-			}).WithError(volErr).Warn("Failed to read volume for VP sync during bootstrap")
-		} else if volResults[0].Volume.Read == nil {
+			}).WithError(err).Warn("Failed to read volume for VP sync during bootstrap")
+		} else if results[0].Volume.Read != nil {
+			// Regular volume found
+			vol = results[0].Volume.Read
+		} else if results[1].SubordinateVolume.Read != nil {
+			// Subordinate volume found
+			vol = results[1].SubordinateVolume.Read
+		} else {
+			// Neither found
 			Logc(ctx).WithFields(LogFields{
 				"volumeName": vp.VolumeName,
 				"nodeName":   vp.NodeName,
 			}).Debug("Volume not found for volume publication during bootstrap, skipping sync")
-		} else {
-			vol := volResults[0].Volume.Read
+		}
+
+		// Common sync logic - executes if vol was found (either regular or subordinate)
+		if vol != nil {
 			// syncVolumePublicationFields modifies vp in place and returns true if sync is needed
 			syncNeeded := syncVolumePublicationFields(vol, vp)
 

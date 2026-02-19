@@ -160,7 +160,7 @@ func getProtocol(
 //
 // A volume is ineligible if:
 // 1. Unmanaged Import - Trident doesn't manage it, can't resize
-// 2. Managed Import with Thick Provisioning (raw block SAN- NAS/file can autogrow)
+// 2. Thick Provisioning on SAN volumes - space-reserved volumes can't be autogrown (NAS/file can autogrow)
 // 3. Read-Only Clone - Immutable, can't be resized
 func isVolumeAutogrowIneligible(volConfig *storage.VolumeConfig) bool {
 	// Unmanaged imports are ineligible
@@ -168,20 +168,19 @@ func isVolumeAutogrowIneligible(volConfig *storage.VolumeConfig) bool {
 		return true
 	}
 
-	// Managed imports with thick provisioning (SpaceReserve == "volume") are ineligible
-	// ONLY for SAN volumes - NAS volumes can be autogrown regardless of thick/thin provisioning
-	if volConfig.ImportOriginalName != "" && volConfig.SpaceReserve == "volume" {
-		// Use getProtocol to determine actual protocol based on volume configuration
+	// Read-only clones are ineligible
+	if volConfig.ReadOnlyClone {
+		return true
+	}
+
+	// Thick provisioning (SpaceReserve == "volume") is ineligible for SAN volumes
+	// NAS volumes can be autogrown regardless of thick/thin provisioning
+	if volConfig.SpaceReserve == "volume" {
 		protocol, err := getProtocol(context.Background(), volConfig.VolumeMode, volConfig.AccessMode, volConfig.Protocol)
 		// If protocol determination succeeds and it's NOT file (i.e., it's block/SAN), the volume is ineligible
 		if err == nil && protocol != config.File {
 			return true
 		}
-	}
-
-	// Read-only clones are ineligible
-	if volConfig.ReadOnlyClone {
-		return true
 	}
 
 	return false

@@ -4404,6 +4404,159 @@ func TestPersistVolumePublicationUpdate_StoreError(t *testing.T) {
 	assert.Contains(t, err.Error(), "store error")
 }
 
+func TestSyncVolumePublicationFields_SubordinateVolume(t *testing.T) {
+	tests := []struct {
+		name           string
+		volume         *storage.Volume
+		vp             *models.VolumePublication
+		expectSync     bool
+		expectedFields map[string]interface{}
+	}{
+		{
+			name: "SubordinateVolume_AllFieldsNeedSync",
+			volume: &storage.Volume{
+				Config: &storage.VolumeConfig{
+					Name:                    "sub-vol-1",
+					StorageClass:            "gold",
+					ShareSourceVolume:       "source-vol",
+					RequestedAutogrowPolicy: "aggressive",
+				},
+				BackendUUID: "backend-123",
+				Pool:        "pool-abc",
+				State:       storage.VolumeStateSubordinate,
+			},
+			vp: &models.VolumePublication{
+				VolumeName:     "sub-vol-1",
+				NodeName:       "node-1",
+				StorageClass:   "", // Empty, needs sync
+				BackendUUID:    "", // Empty, needs sync
+				Pool:           "", // Empty, needs sync
+				AutogrowPolicy: "", // Empty, needs sync
+			},
+			expectSync: true,
+			expectedFields: map[string]interface{}{
+				"StorageClass":   "gold",
+				"BackendUUID":    "backend-123",
+				"Pool":           "pool-abc",
+				"AutogrowPolicy": "aggressive",
+			},
+		},
+		{
+			name: "SubordinateVolume_SomeFieldsNeedSync",
+			volume: &storage.Volume{
+				Config: &storage.VolumeConfig{
+					Name:                    "sub-vol-2",
+					StorageClass:            "silver",
+					ShareSourceVolume:       "source-vol",
+					RequestedAutogrowPolicy: "moderate",
+				},
+				BackendUUID: "backend-456",
+				Pool:        "pool-xyz",
+				State:       storage.VolumeStateSubordinate,
+			},
+			vp: &models.VolumePublication{
+				VolumeName:     "sub-vol-2",
+				NodeName:       "node-2",
+				StorageClass:   "silver", // Already correct
+				BackendUUID:    "",       // Needs sync
+				Pool:           "",       // Needs sync
+				AutogrowPolicy: "",       // Needs sync
+			},
+			expectSync: true,
+			expectedFields: map[string]interface{}{
+				"StorageClass":   "silver",
+				"BackendUUID":    "backend-456",
+				"Pool":           "pool-xyz",
+				"AutogrowPolicy": "moderate",
+			},
+		},
+		{
+			name: "SubordinateVolume_NoSyncNeeded",
+			volume: &storage.Volume{
+				Config: &storage.VolumeConfig{
+					Name:                    "sub-vol-3",
+					StorageClass:            "bronze",
+					ShareSourceVolume:       "source-vol",
+					RequestedAutogrowPolicy: "conservative",
+				},
+				BackendUUID: "backend-789",
+				Pool:        "pool-def",
+				State:       storage.VolumeStateSubordinate,
+			},
+			vp: &models.VolumePublication{
+				VolumeName:     "sub-vol-3",
+				NodeName:       "node-3",
+				StorageClass:   "bronze",       // Already synced
+				BackendUUID:    "backend-789",  // Already synced
+				Pool:           "pool-def",     // Already synced
+				AutogrowPolicy: "conservative", // Already synced
+				Labels: map[string]string{ // Labels already set
+					config.TridentNodeNameLabel: "node-3",
+				},
+			},
+			expectSync: false,
+			expectedFields: map[string]interface{}{
+				"StorageClass":   "bronze",
+				"BackendUUID":    "backend-789",
+				"Pool":           "pool-def",
+				"AutogrowPolicy": "conservative",
+			},
+		},
+		{
+			name: "RegularVolume_WithSubordinateFields",
+			volume: &storage.Volume{
+				Config: &storage.VolumeConfig{
+					Name:                    "regular-vol",
+					StorageClass:            "premium",
+					RequestedAutogrowPolicy: "fast",
+				},
+				BackendUUID: "backend-111",
+				Pool:        "pool-premium",
+				State:       storage.VolumeStateOnline, // Not subordinate
+			},
+			vp: &models.VolumePublication{
+				VolumeName:     "regular-vol",
+				NodeName:       "node-4",
+				StorageClass:   "",
+				BackendUUID:    "",
+				Pool:           "",
+				AutogrowPolicy: "",
+			},
+			expectSync: true,
+			expectedFields: map[string]interface{}{
+				"StorageClass":   "premium",
+				"BackendUUID":    "backend-111",
+				"Pool":           "pool-premium",
+				"AutogrowPolicy": "fast",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Store original identity fields to verify they remain unchanged
+			originalVolumeName := tt.vp.VolumeName
+			originalNodeName := tt.vp.NodeName
+
+			// Call syncVolumePublicationFields
+			syncNeeded := syncVolumePublicationFields(tt.volume, tt.vp)
+
+			// Verify sync result
+			assert.Equal(t, tt.expectSync, syncNeeded, "syncNeeded should match expected value")
+
+			// Verify all fields were synced correctly
+			assert.Equal(t, tt.expectedFields["StorageClass"], tt.vp.StorageClass, "StorageClass should match")
+			assert.Equal(t, tt.expectedFields["BackendUUID"], tt.vp.BackendUUID, "BackendUUID should match")
+			assert.Equal(t, tt.expectedFields["Pool"], tt.vp.Pool, "Pool should match")
+			assert.Equal(t, tt.expectedFields["AutogrowPolicy"], tt.vp.AutogrowPolicy, "AutogrowPolicy should match")
+
+			// Verify VP identity unchanged
+			assert.Equal(t, originalVolumeName, tt.vp.VolumeName, "VolumeName should not change")
+			assert.Equal(t, originalNodeName, tt.vp.NodeName, "NodeName should not change")
+		})
+	}
+}
+
 func TestAddNode(t *testing.T) {
 	node := &models.Node{
 		Name:             "testNode",

@@ -573,8 +573,13 @@ func (o *TridentOrchestrator) bootstrapVolumePublications(ctx context.Context) e
 	vpsToBeSynced := make([]*models.VolumePublication, 0, len(volumePublications))
 
 	for _, vp := range volumePublications {
-		// Update VP fields from corresponding TridentVolume
-		if vol, ok := o.volumes[vp.VolumeName]; ok {
+		// Update VP fields from corresponding TridentVolume (check both regular and subordinate volumes)
+		var vol *storage.Volume
+		var ok bool
+		if vol, ok = o.volumes[vp.VolumeName]; !ok {
+			vol, ok = o.subordinateVolumes[vp.VolumeName]
+		}
+		if ok {
 			// syncVolumePublicationFields modifies vp in place and returns true if sync is needed
 			syncNeeded := syncVolumePublicationFields(vol, vp)
 
