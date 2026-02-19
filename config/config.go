@@ -281,7 +281,7 @@ const (
 	CSISidecarProvisionerImageTag         = "csi-provisioner:v6.1.0"
 	CSISidecarAttacherImageTag            = "csi-attacher:v4.10.0"
 	CSISidecarResizerImageTag             = "csi-resizer:v2.0.0"
-	CSISidecarSnapshotterImageTag         = "csi-snapshotter:v8.4.0"
+	CSISidecarSnapshotterImageTag         = "csi-snapshotter:v8.5.0"
 	CSISidecarNodeDriverRegistrarImageTag = "csi-node-driver-registrar:v2.15.0"
 	CSISidecarLivenessProbeImageTag       = "livenessprobe:v2.17.0"
 
