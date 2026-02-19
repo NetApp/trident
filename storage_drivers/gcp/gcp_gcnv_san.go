@@ -1433,6 +1433,10 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 	}
 
 	volConfig.Size = strconv.FormatUint(uint64(volume.SizeBytes), 10)
+
+	// The GCNV creation token cannot be changed, so use it as the internal name
+	volConfig.InternalName = originalName
+
 	// Always save the full GCP ID
 	volConfig.InternalID = volume.FullName
 

@@ -4531,3 +4531,48 @@ func TestSANStorageDriver_Create_PoolNotFound(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "pool unknown_pool does not exist")
 }
+
+func TestSANStorageDriver_Import_PreservesInternalName(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockAPI := mockapi.NewMockGCNV(mockCtrl)
+
+	driver := &SANStorageDriver{
+		initialized: true,
+		Config: drivers.GCNVStorageDriverConfig{
+			CommonStorageDriverConfig: &drivers.CommonStorageDriverConfig{
+				StorageDriverName: "google-cloud-netapp-volumes-san",
+			},
+		},
+		API: mockAPI,
+	}
+
+	originalName := "existing-volume"
+	volume := &api.Volume{
+		Name:          originalName,
+		FullName:      "projects/test-project/locations/us-central1/volumes/existing-volume",
+		CreationToken: originalName,
+		SizeBytes:     testVolumeSize,
+		CapacityPool:  "test-pool",
+		State:         api.VolumeStateReady,
+		ProtocolTypes: []string{api.ProtocolTypeISCSI},
+	}
+
+	volConfig := &storage.VolumeConfig{
+		Name:             "new-volume",
+		InternalName:     "new_volume",
+		ImportNotManaged: true,
+	}
+
+	mockAPI.EXPECT().RefreshGCNVResources(gomock.Any()).Return(nil)
+	mockAPI.EXPECT().VolumeByName(gomock.Any(), originalName).Return(volume, nil)
+	mockAPI.EXPECT().EnsureVolumeInValidCapacityPool(gomock.Any(), volume).Return(nil)
+
+	err := driver.Import(context.Background(), volConfig, originalName)
+
+	assert.NoError(t, err)
+	assert.Equal(t, originalName, volConfig.InternalName, "internal name should match original volume name")
+	assert.Equal(t, volume.FullName, volConfig.InternalID, "internal ID should be set to full volume name")
+	assert.Equal(t, strconv.FormatUint(uint64(volume.SizeBytes), 10), volConfig.Size)
+}
