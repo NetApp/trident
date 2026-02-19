@@ -772,6 +772,32 @@ func (o *TridentOrchestrator) updateMetrics() {
 			}
 		}
 	}
+
+	metrics.AutogrowPolicyGauge.Set(float64(len(o.autogrowPolicies)))
+
+	metrics.AutogrowVolumes.Reset()
+	for _, volume := range o.volumes {
+		if volume == nil {
+			continue
+		}
+		if volume.EffectiveAGPolicy.PolicyName != "" {
+			metrics.AutogrowVolumes.WithLabelValues(
+				volume.EffectiveAGPolicy.PolicyName,
+				volume.Config.StorageClass,
+			).Inc()
+		}
+	}
+	for _, volume := range o.subordinateVolumes {
+		if volume == nil {
+			continue
+		}
+		if volume.EffectiveAGPolicy.PolicyName != "" {
+			metrics.AutogrowVolumes.WithLabelValues(
+				volume.EffectiveAGPolicy.PolicyName,
+				volume.Config.StorageClass,
+			).Inc()
+		}
+	}
 }
 
 func (o *TridentOrchestrator) handleFailedTransaction(ctx context.Context, v *storage.VolumeTransaction) error {

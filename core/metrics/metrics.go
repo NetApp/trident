@@ -94,4 +94,19 @@ var (
 		},
 		[]string{"operation", "success"},
 	)
+	AutogrowPolicyGauge = promauto.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: config.OrchestratorName,
+			Name:      "autogrow_policy_count",
+			Help:      "The total number of Autogrow policies",
+		},
+	)
+	AutogrowVolumes = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: config.OrchestratorName,
+			Name:      "autogrow_volume_count",
+			Help:      "The total number of volumes on which Autogrow is enabled",
+		},
+		[]string{"autogrow_policy", "storage_class"},
+	)
 )
