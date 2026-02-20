@@ -392,7 +392,13 @@ func (k *K8sClient) GetClusterRoleInformation(clusterRoleName string, allowedClu
 				"Deleted unlabeled Trident cluster role; replacing it with a labeled Trident cluster role.")
 		}
 	} else if shouldUpdate {
-		unwantedClusterRoles = clusterRoles
+		// During updates, only delete the specific cluster role being processed, not siblings with same label
+		for _, clusterRole := range clusterRoles {
+			if clusterRole.Name == clusterRoleName {
+				// This is the one we're updating - mark for deletion and recreation
+				unwantedClusterRoles = append(unwantedClusterRoles, clusterRole)
+			}
+		}
 	} else {
 		// Processing cluster roles with selective deletion logic:
 		// 1. Keep cluster roles that match names in allowedClusterRoleNames (e.g., trident-controller,
@@ -540,6 +546,13 @@ func (k *K8sClient) PutClusterRole(currentClusterRole *rbacv1.ClusterRole, creat
 
 	if currentClusterRole != nil {
 		clusterRoleName = currentClusterRole.Name
+	} else {
+		// get cluster role from newClusterRoleYAML
+		var clusterRoleFromYAML rbacv1.ClusterRole
+		if err := yaml.Unmarshal([]byte(newClusterRoleYAML), &clusterRoleFromYAML); err != nil {
+			return fmt.Errorf("could not unmarshal new cluster role YAML; %v", err)
+		}
+		clusterRoleName = clusterRoleFromYAML.Name
 	}
 
 	logFields := LogFields{
@@ -566,7 +579,7 @@ func (k *K8sClient) PutClusterRole(currentClusterRole *rbacv1.ClusterRole, creat
 
 		// Apply the patch to the current Cluster Role
 		patchType := types.MergePatchType
-		if err = k.PatchClusterRoleByLabel(appLabel, patchBytes, patchType); err != nil {
+		if err = k.PatchClusterRoleByLabelAndName(appLabel, currentClusterRole.Name, patchBytes, patchType); err != nil {
 			return fmt.Errorf("could not patch Trident Cluster role; %v", err)
 		}
 
@@ -701,7 +714,13 @@ func (k *K8sClient) GetClusterRoleBindingInformation(clusterRoleBindingName stri
 				"Deleted unlabeled Trident cluster role binding; replacing it with a labeled Trident cluster role binding.")
 		}
 	} else if shouldUpdate {
-		unwantedClusterRoleBindings = clusterRoleBindings
+		// During updates, only delete the specific cluster role binding being processed, not siblings with same label
+		for _, clusterRoleBinding := range clusterRoleBindings {
+			if clusterRoleBinding.Name == clusterRoleBindingName {
+				// This is the one we're updating - mark for deletion and recreation
+				unwantedClusterRoleBindings = append(unwantedClusterRoleBindings, clusterRoleBinding)
+			}
+		}
 	} else {
 		// Processing cluster role bindings with selective deletion logic:
 		// 1. Keep cluster role bindings that match names in allowedClusterRoleBindingNames (e.g., trident-controller,
@@ -743,6 +762,13 @@ func (k *K8sClient) PutClusterRoleBinding(currentClusterRoleBinding *rbacv1.Clus
 
 	if currentClusterRoleBinding != nil {
 		clusterRoleBindingName = currentClusterRoleBinding.Name
+	} else {
+		// get cluster role from newClusterRoleYAML
+		var clusterRoleBindingYAML rbacv1.ClusterRole
+		if err := yaml.Unmarshal([]byte(newClusterRoleBindingYAML), &clusterRoleBindingYAML); err != nil {
+			return fmt.Errorf("could not unmarshal new cluster role YAML; %v", err)
+		}
+		clusterRoleBindingName = clusterRoleBindingYAML.Name
 	}
 
 	logFields := LogFields{
@@ -769,7 +795,8 @@ func (k *K8sClient) PutClusterRoleBinding(currentClusterRoleBinding *rbacv1.Clus
 
 		// Apply the patch to the current Cluster Role Binding
 		patchType := types.MergePatchType
-		if err = k.PatchClusterRoleBindingByLabel(appLabel, patchBytes, patchType); err != nil {
+		if err = k.PatchClusterRoleBindingByLabelAndName(appLabel, currentClusterRoleBinding.Name, patchBytes,
+			patchType); err != nil {
 			return fmt.Errorf("could not patch cluster role binding; %v", err)
 		}
 
