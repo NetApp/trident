@@ -218,8 +218,10 @@ func Lock(ctx context.Context, queries ...[]Subquery) (results []Result, unlocke
 
 	roots := make([][]int, len(queries))
 	cachesPresent := make(map[resource]struct{}, resourceCount)
+	// if there are no consistent locks, we don't add the root lock
+	hasConsistentLocks := false
 	// phase 1, requires no locks, check errors, dedupe, and build trees
-	if err = assembleQueries(queries, roots, cachesPresent); err != nil {
+	if hasConsistentLocks, err = assembleQueries(queries, roots, cachesPresent); err != nil {
 		return nil, func() {}, err
 	}
 
@@ -229,7 +231,7 @@ func Lock(ctx context.Context, queries ...[]Subquery) (results []Result, unlocke
 	}
 
 	// phase 3, takes per-resource locks
-	merged := mergeQueries(queries)
+	merged := mergeQueries(queries, hasConsistentLocks)
 	results, unlocker, err = lockQuery(merged, len(queries))
 	if err == nil && ctx.Err() != nil {
 		err = ctx.Err()
@@ -237,22 +239,26 @@ func Lock(ctx context.Context, queries ...[]Subquery) (results []Result, unlocke
 	return results, unlocker, err
 }
 
-func assembleQueries(queries [][]Subquery, roots [][]int, cachesPresent map[resource]struct{}) error {
+func assembleQueries(queries [][]Subquery, roots [][]int, cachesPresent map[resource]struct{}) (bool, error) {
+	hasConsistentLocks := false
 	for i, q := range queries {
 		if err := checkError(q); err != nil {
-			return err
+			return false, err
 		}
 		ri, err := dedupe(q)
 		if err != nil {
-			return err
+			return false, err
 		}
 		for _, sq := range q {
 			cachesPresent[sq.res] = struct{}{}
+			if sq.op != list && sq.op != inconsistentRead {
+				hasConsistentLocks = true
+			}
 		}
 		queries[i], roots[i] = buildTrees(ri, q)
 	}
 
-	return nil
+	return hasConsistentLocks, nil
 }
 
 func lockCachesAndFillInIDs(queries [][]Subquery, roots [][]int, cachesPresent map[resource]struct{}) error {
@@ -486,14 +492,16 @@ func fillInIDs(root int, query []Subquery) error {
 	return nil
 }
 
-func mergeQueries(queries [][]Subquery) []Subquery {
+func mergeQueries(queries [][]Subquery, hasConsistentLocks bool) []Subquery {
 	length := 1
 	for _, q := range queries {
 		length += len(q)
 	}
 	merged := make([]Subquery, 0, length)
-	// always add implied read root, if write root is present it will take precedence
-	merged = append(merged, Subquery{res: root, op: read, id: "."})
+	// if there are consistent locks, we need to add the root lock to block during shutdown. Inconsistent reads are still allowed.
+	if hasConsistentLocks {
+		merged = append(merged, Subquery{res: root, op: read, id: "."})
+	}
 	for i, q := range queries {
 		for j := range q {
 			q[j].result = i
