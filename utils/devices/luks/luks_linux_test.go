@@ -110,7 +110,8 @@ func TestLUKSDevice_Format(t *testing.T) {
 	mockDevices.EXPECT().IsDeviceUnformatted(gomock.Any(), "/dev/sdb").Return(true, nil)
 
 	luksDevice := NewDetailed("/dev/sdb", "pvc-test", mockCommand, mockDevices, afero.NewMemMapFs())
-	err := luksDevice.formatUnformattedDevice(context.Background(), "passphrase")
+	safeToFormat, err := luksDevice.formatUnformattedDevice(context.Background(), "passphrase")
+	assert.True(t, safeToFormat)
 	assert.NoError(t, err)
 }
 
@@ -126,7 +127,8 @@ func TestLUKSFormat_UnformattedCheckError(t *testing.T) {
 	mockDevices.EXPECT().IsDeviceUnformatted(gomock.Any(), "/dev/sdb").Return(false, errors.New("mock error"))
 
 	luksDevice := NewDetailed("/dev/sdb", "pvc-test", mockCommand, mockDevices, afero.NewMemMapFs())
-	err := luksDevice.formatUnformattedDevice(context.Background(), "passphrase")
+	safeToFormat, err := luksDevice.formatUnformattedDevice(context.Background(), "passphrase")
+	assert.False(t, safeToFormat)
 	assert.Error(t, err)
 }
 
@@ -145,7 +147,8 @@ func TestLUKSFormat_SecondFormatCheckError(t *testing.T) {
 	mockDevices.EXPECT().IsDeviceUnformatted(gomock.Any(), "/dev/sdb").Return(true, nil)
 
 	luksDevice := NewDetailed("/dev/sdb", "pvc-test", mockCommand, mockDevices, afero.NewMemMapFs())
-	err := luksDevice.formatUnformattedDevice(context.Background(), "passphrase")
+	safeToFormat, err := luksDevice.formatUnformattedDevice(context.Background(), "passphrase")
+	assert.False(t, safeToFormat)
 	assert.Error(t, err)
 }
 
@@ -162,7 +165,8 @@ func TestLUKSDevice_LUKSFormat_FailsCheckingIfDeviceIsLUKS(t *testing.T) {
 	// Mock any cryptsetup calls that may occur.
 	mockCryptsetupIsLuks(mockCommand).Return([]byte(""), luksError)
 
-	err := luksDevice.formatUnformattedDevice(ctx, "mysecretlukspassphrase")
+	safeToFormat, err := luksDevice.formatUnformattedDevice(ctx, "mysecretlukspassphrase")
+	assert.False(t, safeToFormat)
 	assert.Error(t, err)
 }
 
@@ -278,7 +282,8 @@ func TestEnsureLUKSDevice_FailsWithExecError(t *testing.T) {
 	mockCryptsetupLuksStatus(mockCommand).Return([]byte(""), luksError)
 	luksDevice := NewDetailed("/dev/sdb", devicePrefix+"pvc-test", mockCommand, devices.New(), afero.NewMemMapFs())
 
-	luksFormatted, err := luksDevice.ensureLUKSDevice(context.Background(), "mysecretlukspassphrase")
+	luksFormatted, safeToFormat, err := luksDevice.ensureLUKSDevice(context.Background(), "mysecretlukspassphrase")
+	assert.False(t, safeToFormat)
 	assert.Error(t, err)
 	assert.Equal(t, false, luksFormatted)
 }
@@ -291,7 +296,8 @@ func TestEnsureLUKSDevice_IsOpen(t *testing.T) {
 	mockCryptsetupLuksStatus(mockCommand)
 	luksDevice := NewDetailed("/dev/sdb", devicePrefix+"pvc-test", mockCommand, devices.New(), afero.NewMemMapFs())
 
-	luksFormatted, err := luksDevice.ensureLUKSDevice(context.Background(), "mysecretlukspassphrase")
+	luksFormatted, safeToFormat, err := luksDevice.ensureLUKSDevice(context.Background(), "mysecretlukspassphrase")
+	assert.False(t, safeToFormat)
 	assert.NoError(t, err)
 	assert.True(t, luksFormatted)
 }
@@ -314,7 +320,8 @@ func TestEnsureLUKSDevice_LUKSFormatFails(t *testing.T) {
 
 	luksDevice := NewDetailed(rawDevicePath, devicePrefix+"pvc-test", mockCommand, mockDevices, afero.NewMemMapFs())
 
-	luksFormatted, err := luksDevice.ensureLUKSDevice(context.Background(), "mysecretlukspassphrase")
+	luksFormatted, safeToFormat, err := luksDevice.ensureLUKSDevice(context.Background(), "mysecretlukspassphrase")
+	assert.False(t, safeToFormat)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
 }
@@ -618,7 +625,8 @@ func TestEnsureFormattedAndOpen(t *testing.T) {
 	mockCommand := mock_exec.NewMockCommand(gomock.NewController(t))
 	mockCryptsetupLuksStatus(mockCommand)
 	luksDevice := NewDetailed("/dev/sdb", "1234", mockCommand, nil, nil)
-	formatted, err := luksDevice.EnsureFormattedAndOpen(context.Background(), passphrase)
+	formatted, safeToFormat, err := luksDevice.EnsureFormattedAndOpen(context.Background(), passphrase)
+	assert.False(t, safeToFormat)
 	assert.True(t, formatted)
 	assert.NoError(t, err)
 }
@@ -633,7 +641,8 @@ func TestMountLUKSDevice_firstPassphraseSuccess(t *testing.T) {
 	mockCryptsetupLuksOpen(mockCommand).Return([]byte{}, nil)
 	luksDevice := NewDetailed("/dev/sdb", "1234", mockCommand, nil, nil)
 
-	luksFormatted, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	luksFormatted, safeToFormat, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	assert.False(t, safeToFormat)
 	assert.NoError(t, err)
 	assert.True(t, luksFormatted)
 }
@@ -654,7 +663,8 @@ func TestMountLUKSDevice_secondPassphraseSuccess(t *testing.T) {
 	mockCryptsetupLuksOpen(mockCommand).Return([]byte{}, nil)
 	luksDevice := NewDetailed("/dev/sdb", "1234", mockCommand, nil, nil)
 
-	luksFormatted, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	luksFormatted, safeToFormat, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	assert.False(t, safeToFormat)
 	assert.NoError(t, err)
 	assert.True(t, luksFormatted)
 }
@@ -671,7 +681,8 @@ func TestMountLUKSDevice_passphraseRotationFails(t *testing.T) {
 	mockCryptsetupLuksStatus(mockCommand).Return([]byte{}, fmt.Errorf("mock error")).Times(2)
 	luksDevice := NewDetailed("/dev/sdb", "1234", mockCommand, nil, nil)
 
-	luksFormatted, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	luksFormatted, safeToFormat, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	assert.False(t, safeToFormat)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
 }
@@ -682,7 +693,8 @@ func TestMountLUKSDevice_NoPassphraseFailure(t *testing.T) {
 	luksDevice := NewDetailed("/dev/sdb", "1234", mockCommand, nil, nil)
 
 	secrets := map[string]string{}
-	luksFormatted, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	luksFormatted, safeToFormat, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	assert.False(t, safeToFormat)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
 }
@@ -695,7 +707,8 @@ func TestMountLUKSDevice_NoPassphraseNameFailure(t *testing.T) {
 	secrets := map[string]string{
 		"luks-passphrase": "secretA",
 	}
-	luksFormatted, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	luksFormatted, safeToFormat, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	assert.False(t, safeToFormat)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
 }
@@ -711,7 +724,8 @@ func TestMountLUKSDevice_NoSecondPassphraseNameFailure(t *testing.T) {
 	luksDevice := NewDetailed("/dev/sdb", "1234", mockCommand, nil, nil)
 	mockCryptsetupLuksStatus(mockCommand).Return([]byte{}, fmt.Errorf("mock error")).Times(1)
 
-	luksFormatted, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	luksFormatted, safeToFormat, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	assert.False(t, safeToFormat)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
 }
@@ -727,7 +741,8 @@ func TestMountLUKSDevice_NoSecondPassphraseNameSpecifiedFailure(t *testing.T) {
 		"luks-passphrase":      "secretA",
 		"luks-passphrase-name": "A",
 	}
-	luksFormatted, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	luksFormatted, safeToFormat, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	assert.False(t, safeToFormat)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
 }
@@ -743,7 +758,8 @@ func TestMountLUKSDevice_NoSecondPassphraseNameBlankFailure(t *testing.T) {
 		"previous-luks-passphrase":      "",
 		"previous-luks-passphrase-name": "",
 	}
-	luksFormatted, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	luksFormatted, safeToFormat, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	assert.False(t, safeToFormat)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
 }
@@ -759,7 +775,8 @@ func TestMountLUKSDevice_DuplicatePassphraseFailure(t *testing.T) {
 		"previous-luks-passphrase":      "secretA",
 		"previous-luks-passphrase-name": "A",
 	}
-	luksFormatted, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	luksFormatted, safeToFormat, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	assert.False(t, safeToFormat)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
 }
@@ -774,7 +791,8 @@ func TestMountLUKSDevice_FirstPassphraseBlankFailure(t *testing.T) {
 		"previous-luks-passphrase":      "secretB",
 		"previous-luks-passphrase-name": "B",
 	}
-	luksFormatted, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	luksFormatted, safeToFormat, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	assert.False(t, safeToFormat)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
 }
@@ -791,7 +809,8 @@ func TestMountLUKSDevice_FirstPassphraseBlankFailureasdf(t *testing.T) {
 	luksDevice := NewDetailed("/dev/sdb", "1234", mockCommand, nil, nil)
 	mockCryptsetupLuksStatus(mockCommand).Return([]byte{}, fmt.Errorf("mock-error")).Times(2)
 
-	luksFormatted, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	luksFormatted, safeToFormat, err := luksDevice.EnsureDeviceMappedOnHost(context.Background(), "pvc-test", secrets)
+	assert.False(t, safeToFormat)
 	assert.Error(t, err)
 	assert.False(t, luksFormatted)
 }

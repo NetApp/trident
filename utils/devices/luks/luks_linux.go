@@ -119,22 +119,23 @@ func (d *LUKSDevice) format(ctx context.Context, luksPassphrase string) error {
 
 // formatUnformattedDevice attempts to set up LUKS headers on a device with the specified passphrase, but bails out if the
 // underlying device already has a format present.
-func (d *LUKSDevice) formatUnformattedDevice(ctx context.Context, luksPassphrase string) error {
+// Returns true if the device was just crypt formatted and ready for file format.
+func (d *LUKSDevice) formatUnformattedDevice(ctx context.Context, luksPassphrase string) (bool, error) {
 	fields := LogFields{"device": d.RawDevicePath()}
 
 	// Check if the device is already LUKS formatted.
 	if luksFormatted, err := d.IsLUKSFormatted(ctx); err != nil {
-		return fmt.Errorf("failed to check if device is LUKS formatted; %w", err)
+		return false, fmt.Errorf("failed to check if device is LUKS formatted; %w", err)
 	} else if luksFormatted {
 		Logc(ctx).WithFields(fields).Debug("Device is already LUKS formatted.")
-		return nil
+		return false, nil
 	}
 
 	// Ensure the device is empty before attempting LUKS format.
 	if unformatted, err := d.devices.IsDeviceUnformatted(ctx, d.RawDevicePath()); err != nil {
-		return fmt.Errorf("failed to check if device is unformatted; %w", err)
+		return false, fmt.Errorf("failed to check if device is unformatted; %w", err)
 	} else if !unformatted {
-		return fmt.Errorf("cannot LUKS format device; device is not empty")
+		return false, fmt.Errorf("cannot LUKS format device; device is not empty")
 	}
 
 	// Attempt LUKS format.
@@ -148,18 +149,18 @@ func (d *LUKSDevice) formatUnformattedDevice(ctx context.Context, luksPassphrase
 				Logc(ctx).WithError(clearFormatErr).Error("Failed to clear LUKS format. Format retries may fail.")
 			}
 		}
-		return fmt.Errorf("failed to LUKS format device; %w", err)
+		return false, fmt.Errorf("failed to LUKS format device; %w", err)
 	}
 
 	// At this point, the device should be LUKS formatted. If it still is not formatted, fail.
 	if luksFormatted, err := d.IsLUKSFormatted(ctx); err != nil {
-		return fmt.Errorf("failed to check if device is LUKS formatted; %w", err)
+		return false, fmt.Errorf("failed to check if device is LUKS formatted; %w", err)
 	} else if !luksFormatted {
-		return fmt.Errorf("device is not LUKS formatted")
+		return false, fmt.Errorf("device is not LUKS formatted")
 	}
 
 	Logc(ctx).WithFields(fields).Debug("Device is LUKS formatted.")
-	return nil
+	return true, nil
 }
 
 // IsLUKSFormatted returns whether LUKS headers have been placed on the device

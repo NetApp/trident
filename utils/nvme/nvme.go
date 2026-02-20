@@ -325,6 +325,7 @@ func (nh *NVMeHandler) NVMeMountVolume(
 	// If LUKS encryption is requested, ensure the device is formatted and open.
 	var luksFormatted bool
 	var err error
+	var safeToFormat bool
 	isLUKSDevice := convert.ToBool(publishInfo.LUKSEncryption)
 	if isLUKSDevice {
 		luksDevice := luks.NewDevice(devicePath, name, nh.command)
@@ -339,7 +340,7 @@ func (nh *NVMeHandler) NVMeMountVolume(
 			}
 		}
 
-		luksFormatted, err = luksDevice.EnsureDeviceMappedOnHost(ctx, name, secrets)
+		luksFormatted, safeToFormat, err = luksDevice.EnsureDeviceMappedOnHost(ctx, name, secrets)
 		if err != nil {
 			return err
 		}
@@ -367,10 +368,16 @@ func (nh *NVMeHandler) NVMeMountVolume(
 		return nil
 	}
 
-	existingFstype, err := nh.devicesClient.GetDeviceFSType(ctx, devicePath)
-	if err != nil {
-		return err
+	var existingFstype string
+	if isLUKSDevice && safeToFormat {
+		existingFstype = ""
+	} else {
+		existingFstype, err = nh.devicesClient.GetDeviceFSType(ctx, devicePath)
+		if err != nil {
+			return err
+		}
 	}
+
 	if existingFstype == "" {
 		if !isLUKSDevice {
 			if unformatted, err := nh.devicesClient.IsDeviceUnformatted(ctx, devicePath); err != nil {

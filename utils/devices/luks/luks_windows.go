@@ -38,10 +38,10 @@ func (d *LUKSDevice) IsOpen(ctx context.Context) (bool, error) {
 
 // formatUnformattedDevice attempts to set up LUKS headers on a device with the specified passphrase, but bails if thea
 // underlying device already has a format present that is not LUKS.
-func (d *LUKSDevice) formatUnformattedDevice(ctx context.Context, _ string) error {
+func (d *LUKSDevice) formatUnformattedDevice(ctx context.Context, _ string) (bool, error) {
 	Logc(ctx).Debug(">>>> devices_windows.formatUnformattedDevice")
 	defer Logc(ctx).Debug("<<<< devices_windows.formatUnformattedDevice")
-	return errors.UnsupportedError("formatUnformattedDevice is not supported for windows")
+	return false, errors.UnsupportedError("formatUnformattedDevice is not supported for windows")
 }
 
 // Open makes the device accessible on the host
