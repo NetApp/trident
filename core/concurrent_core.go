@@ -3067,6 +3067,23 @@ func (o *ConcurrentTridentOrchestrator) deleteVolume(ctx context.Context, volume
 	deleter()
 	unlocker()
 
+	// Check if we need to remove a soft-deleted source volume after deleting a clone.
+	// This must happen before backend cleanup so the parent volume can still use the backend.
+	if volume.Config.CloneSourceVolume != "" {
+		cloneSourceName := volume.Config.CloneSourceVolume
+		checkResults, checkUnlocker, checkErr := db.Lock(ctx,
+			db.Query(db.InconsistentReadVolume(cloneSourceName)))
+		checkUnlocker()
+		if checkErr == nil {
+			if srcVol := checkResults[0].Volume.Read; srcVol != nil && srcVol.State.IsDeleting() {
+				if volDeleteErr := o.deleteVolume(ctx, cloneSourceName); volDeleteErr != nil {
+					Logc(ctx).WithError(volDeleteErr).WithField("name", cloneSourceName).Warning(
+						"Could not delete volume in deleting state.")
+				}
+			}
+		}
+	}
+
 	// Check if we need to remove a soft-deleted backend
 	if backendDeleting {
 		if backendDeleteErr := o.cleanupDeletingBackend(ctx, backend.BackendUUID()); backendDeleteErr != nil {
@@ -3552,17 +3569,91 @@ func (o *ConcurrentTridentOrchestrator) PublishVolume(ctx context.Context, volum
 	return
 }
 
+// discoverSubordinateVolume uses an inconsistent read to check if a volume is a subordinate
+// and returns its source volume name. The TOCTOU window between this discovery and the main
+// lock phase is safe because Phase 2 re-reads everything and handles missing resources gracefully.
+func (o *ConcurrentTridentOrchestrator) discoverSubordinateVolume(
+	ctx context.Context, volumeName string,
+) (isSubordinate bool, sourceVolumeName string, err error) {
+	results, unlocker, err := db.Lock(ctx, db.Query(
+		db.InconsistentReadSubordinateVolume(volumeName),
+		db.InconsistentReadVolume(volumeName),
+	))
+	defer unlocker()
+	if err != nil {
+		return false, "", err
+	}
+
+	if subVol := results[0].SubordinateVolume.Read; subVol != nil {
+		return true, subVol.Config.ShareSourceVolume, nil
+	}
+
+	if results[0].Volume.Read == nil {
+		return false, "", errors.NotFoundError("volume %s was not found", volumeName)
+	}
+
+	return false, "", nil
+}
+
+// discoverROCloneSource uses an inconsistent read to check if a volume is a read-only clone
+// and returns its clone source volume name. Only called for non-subordinate volumes.
+func (o *ConcurrentTridentOrchestrator) discoverROCloneSource(
+	ctx context.Context, volumeName string,
+) (isROClone bool, cloneSourceName string, err error) {
+	results, unlocker, err := db.Lock(ctx, db.Query(
+		db.InconsistentReadVolume(volumeName),
+	))
+	defer unlocker()
+	if err != nil {
+		return false, "", err
+	}
+
+	if vol := results[0].Volume.Read; vol != nil && vol.Config.ReadOnlyClone {
+		return true, vol.Config.CloneSourceVolume, nil
+	}
+
+	return false, "", nil
+}
+
 func (o *ConcurrentTridentOrchestrator) publishVolume(ctx context.Context, volumeName string,
 	publishInfo *models.VolumePublishInfo,
 ) error {
-	results, unlocker, err := db.Lock(ctx, db.Query(
+	nodeName := publishInfo.HostName
+
+	// Phase 1: Discover if this is a subordinate volume via inconsistent read.
+	isSubordinate, sourceVolumeName, err := o.discoverSubordinateVolume(ctx, volumeName)
+	if err != nil {
+		return err
+	}
+
+	// For subordinate volumes, all operations target the source volume.
+	targetVolumeName := volumeName
+	if isSubordinate {
+		if sourceVolumeName == "" {
+			return errors.NotFoundError("subordinate volume %s has no source volume configured", volumeName)
+		}
+		targetVolumeName = sourceVolumeName
+	}
+
+	// Phase 2: Acquire locks based on volume type.
+	// UpsertVolumePublication is isolated in a separate query because for subordinates
+	// its volume dependency ID (the subordinate name) conflicts with UpsertVolume(targetVolumeName).
+	query0 := []db.Subquery{
 		db.ListVolumePublications(),
+		db.ListSubordinateVolumesForVolume(targetVolumeName),
 		db.ListNodes(),
-		db.UpsertVolumePublication(volumeName, publishInfo.HostName),
+		db.UpsertVolume(targetVolumeName, ""),
 		db.ReadBackend(""),
-		db.ReadNode(""),
-		db.UpsertVolume("", ""),
-	))
+		db.ReadNode(nodeName),
+	}
+	if isSubordinate {
+		query0 = append(query0, db.ReadSubordinateVolume(volumeName))
+	}
+
+	results, unlocker, err := db.Lock(ctx,
+		query0,
+		db.Query(db.UpsertVolumePublication(volumeName, nodeName)),
+	)
 	defer unlocker()
 	if err != nil {
 		return err
@@ -3570,11 +3661,15 @@ func (o *ConcurrentTridentOrchestrator) publishVolume(ctx context.Context, volum
 
 	volume := results[0].Volume.Read
 	if volume == nil {
+		if isSubordinate {
+			return errors.NotFoundError("source volume %s for subordinate volume %s was not found",
+				sourceVolumeName, volumeName)
+		}
 		return errors.NotFoundError("volume %v was not found", volumeName)
 	}
 	node := results[0].Node.Read
 	if node == nil {
-		return errors.NotFoundError("node %v was not found", publishInfo.HostName)
+		return errors.NotFoundError("node %v was not found", nodeName)
 	}
 	backend := results[0].Backend.Read
 	if backend == nil {
@@ -3583,35 +3678,45 @@ func (o *ConcurrentTridentOrchestrator) publishVolume(ctx context.Context, volum
 
 	fields := LogFields{
 		"volumeName": volumeName,
-		"nodeName":   publishInfo.HostName,
+		"nodeName":   nodeName,
+	}
+	if isSubordinate {
+		fields["sourceVolume"] = sourceVolumeName
 	}
 	Logc(ctx).WithFields(fields).Debug(">>>>>> Orchestrator#publishVolume")
 	defer Logc(ctx).Debug("<<<<<< Orchestrator#publishVolume")
 
 	if volume.State.IsDeleting() {
-		return errors.VolumeStateError(fmt.Sprintf("volume %s is deleting", volumeName))
+		return errors.VolumeStateError(fmt.Sprintf("volume %s is deleting", targetVolumeName))
 	}
 
 	// Publish enforcement is considered only when the backend supports publish enforcement in CSI deployments.
 	publishEnforceable := config.CurrentDriverContext == config.ContextCSI && backend.CanEnablePublishEnforcement()
 	if publishEnforceable {
 		if node.PublicationState != models.NodeClean {
-			return errors.NodeNotSafeToPublishForBackendError(publishInfo.HostName, backend.GetDriverName())
+			return errors.NodeNotSafeToPublishForBackendError(nodeName, backend.GetDriverName())
 		}
 	}
 
 	publishInfo.TridentUUID = o.uuid
 	publishInfo.BackendUUID = backend.BackendUUID()
 
-	// Enable publish enforcement if the backend supports it and the volume isn't already enforced
+	// Enable publish enforcement if the backend supports it and the volume isn't already enforced.
+	// Consider publications for the target volume and all its subordinates.
 	if publishEnforceable && !volume.Config.AccessInfo.PublishEnforcement {
+		sharedPolicyVolumes := map[string]struct{}{targetVolumeName: {}}
+		for _, sv := range results[0].SubordinateVolumes {
+			sharedPolicyVolumes[sv.Config.Name] = struct{}{}
+		}
+
 		publications := make([]*models.VolumePublication, 0)
 		for _, vp := range results[0].VolumePublications {
-			if vp.VolumeName == volumeName {
+			if _, ok := sharedPolicyVolumes[vp.VolumeName]; ok {
 				publications = append(publications, vp)
 			}
 		}
-		safeToEnable := len(publications) == 0 || len(publications) == 1 && publications[0].VolumeName == volumeName
+		safeToEnable := len(publications) == 0 ||
+			(len(publications) == 1 && publications[0].VolumeName == volumeName)
 		if safeToEnable {
 			if err := backend.EnablePublishEnforcement(ctx, volume); err != nil {
 				if !errors.IsUnsupportedError(err) {
@@ -3633,9 +3738,9 @@ func (o *ConcurrentTridentOrchestrator) publishVolume(ctx context.Context, volum
 		return err
 	}
 	vp := &models.VolumePublication{
-		Name:               models.GenerateVolumePublishName(volumeName, publishInfo.HostName),
+		Name:               models.GenerateVolumePublishName(volumeName, nodeName),
 		VolumeName:         volumeName,
-		NodeName:           publishInfo.HostName,
+		NodeName:           nodeName,
 		ReadOnly:           publishInfo.ReadOnly,
 		AccessMode:         publishInfo.AccessMode,
 		AutogrowPolicy:     volume.Config.RequestedAutogrowPolicy,
@@ -3645,8 +3750,8 @@ func (o *ConcurrentTridentOrchestrator) publishVolume(ctx context.Context, volum
 		Pool:               volume.Pool,
 	}
 	if err := o.storeClient.AddVolumePublication(ctx, vp); err != nil {
-		// Handle idempotent publish - if publication already exists, treat as success
-		// This can happen when Kubernetes retries ControllerPublishVolume
+		// Handle idempotent publish - if publication already exists, treat as success.
+		// This can happen when Kubernetes retries ControllerPublishVolume.
 		if !persistentstore.IsAlreadyExistsError(err) {
 			return err
 		}
@@ -3657,7 +3762,7 @@ func (o *ConcurrentTridentOrchestrator) publishVolume(ctx context.Context, volum
 		return err
 	}
 
-	results[0].VolumePublication.Upsert(vp)
+	results[1].VolumePublication.Upsert(vp)
 	return nil
 }
 
@@ -3707,26 +3812,92 @@ func (o *ConcurrentTridentOrchestrator) UnpublishVolume(ctx context.Context, vol
 func (o *ConcurrentTridentOrchestrator) unpublishVolume(
 	ctx context.Context, volumeName, nodeName string,
 ) (bool, error) {
+	// Phase 1: Discover volume type via inconsistent reads.
+	isSubordinate, sourceVolumeName, err := o.discoverSubordinateVolume(ctx, volumeName)
+	if err != nil {
+		if errors.IsNotFoundError(err) {
+			Logc(ctx).WithError(err).WithFields(LogFields{
+				"volumeName": volumeName,
+				"nodeName":   nodeName,
+			}).Warn("Volume not found during unpublish; doing nothing.")
+			return false, nil
+		}
+		return false, err
+	}
+
+	targetVolumeName := volumeName
+	if isSubordinate {
+		if sourceVolumeName == "" {
+			return false, errors.NotFoundError("subordinate volume %s has no source volume configured", volumeName)
+		}
+		targetVolumeName = sourceVolumeName
+	}
+
+	// Check if the target volume (the volume itself, or the source if subordinate) is an RO clone.
+	// For subordinates, the source volume may be an RO clone that shares an export policy with
+	// its clone source and siblings -- we need to discover this to build the full family.
+	var isROClone bool
+	var cloneSourceName string
+	isROClone, cloneSourceName, err = o.discoverROCloneSource(ctx, targetVolumeName)
+	if err != nil {
+		return false, err
+	}
+
 	fields := LogFields{
 		"volumeName": volumeName,
 		"nodeName":   nodeName,
 	}
+	if isSubordinate {
+		fields["sourceVolume"] = sourceVolumeName
+	}
+	if isROClone {
+		fields["cloneSource"] = cloneSourceName
+	}
 	Logc(ctx).WithFields(fields).Debug(">>>>>> Orchestrator#unpublishVolume")
 	defer Logc(ctx).Debug("<<<<<< Orchestrator#unpublishVolume")
 
-	results, unlocker, err := db.Lock(ctx,
-		db.Query(
-			db.ListVolumePublicationsForVolume(volumeName),
-			db.ReadNode(""),
-			db.ListNodes(),
-			db.ReadBackend(""),
-			db.UpsertVolume("", ""),
-			db.DeleteVolumePublication(volumeName, nodeName),
-		),
-		db.Query(
-			db.ListVolumesForNode(nodeName),
-		),
-	)
+	// Phase 2: Acquire locks based on volume type.
+	// All paths list all publications and all subordinates so we can compute the
+	// complete set of remaining published nodes across the entire volume family
+	// (source + subordinates + RO clones + their subordinates).
+	roCloneSources := []string{targetVolumeName}
+	if isROClone && cloneSourceName != "" {
+		roCloneSources = []string{targetVolumeName, cloneSourceName}
+	}
+
+	// NOTE: rewrite this to use sub-locks when it is available
+	query0 := []db.Subquery{
+		db.ListVolumePublications(),
+		db.ListSubordinateVolumes(),
+		db.ListReadOnlyCloneVolumesForSources(roCloneSources...),
+		db.ReadNode(nodeName),
+		db.ListNodes(),
+		db.ReadBackend(""),
+		db.UpsertVolume(targetVolumeName, ""),
+	}
+	if isSubordinate {
+		query0 = append(query0, db.ReadSubordinateVolume(volumeName))
+	}
+
+	// DeleteVolumePublication is isolated in a separate query because for subordinates
+	// its volume dependency ID (the subordinate name) conflicts with UpsertVolume(targetVolumeName).
+	queries := [][]db.Subquery{
+		query0,
+		db.Query(db.DeleteVolumePublication(volumeName, nodeName)),
+	}
+
+	// If the target volume is an RO clone, lock the clone source volume to serialize
+	// concurrent unpublish operations on sibling clones that share the same export policy.
+	if isROClone && cloneSourceName != "" {
+		queries = append(queries, db.Query(db.UpsertVolume(cloneSourceName, "")))
+	}
+
+	nvmeResultIdx := len(queries)
+	queries = append(queries, db.Query(db.ListVolumesForNode(nodeName)))
+
+	var results []db.Result
+	var unlocker func()
+	results, unlocker, err = db.Lock(ctx, queries...)
 	defer unlocker()
 	if err != nil {
 		if errors.IsNotFoundError(err) {
@@ -3734,6 +3905,15 @@ func (o *ConcurrentTridentOrchestrator) unpublishVolume(
 			return false, nil
 		}
 		return false, err
+	}
+
+	volumePublication := results[1].VolumePublication.Read
+	if volumePublication == nil {
+		if config.CurrentDriverContext != config.ContextDocker {
+			Logc(ctx).WithError(errors.NotFoundError("unable to get volume publication record")).
+				WithFields(fields).Warn("Volume is not published to node; doing nothing.")
+			return false, nil
+		}
 	}
 
 	node := results[0].Node.Read
@@ -3746,18 +3926,11 @@ func (o *ConcurrentTridentOrchestrator) unpublishVolume(
 	}
 	volume := results[0].Volume.Read
 	if volume == nil {
-		return false, errors.NotFoundError("volume %v was not found", volumeName)
-	}
-
-	volumePublication := results[0].VolumePublication.Read
-	if volumePublication == nil {
-		// If the publication couldn't be found and Trident isn't in docker mode, bail out.
-		// Otherwise, continue un-publishing. It is ok for the publication to not exist at this point for docker.
-		if config.CurrentDriverContext != config.ContextDocker {
-			Logc(ctx).WithError(errors.NotFoundError("unable to get volume publication record")).
-				WithFields(fields).Warn("Volume is not published to node; doing nothing.")
-			return false, nil
+		if isSubordinate {
+			return false, errors.NotFoundError("source volume %s for subordinate volume %s was not found",
+				sourceVolumeName, volumeName)
 		}
+		return false, errors.NotFoundError("volume %v was not found", volumeName)
 	}
 
 	publishInfo := &models.VolumePublishInfo{
@@ -3767,6 +3940,27 @@ func (o *ConcurrentTridentOrchestrator) unpublishVolume(
 		HostIP:      node.IPs,
 	}
 
+	// Build the family of volume names whose publications affect the shared export policy.
+	sharedPolicyVolumes := make(map[string]struct{})
+	sharedPolicyVolumes[targetVolumeName] = struct{}{}
+
+	if isROClone && cloneSourceName != "" {
+		sharedPolicyVolumes[cloneSourceName] = struct{}{}
+	}
+
+	// Add RO clone siblings/children discovered by the query.
+	for _, clone := range results[0].Volumes {
+		sharedPolicyVolumes[clone.Config.Name] = struct{}{}
+	}
+
+	// Add subordinates of any volume already in the family.
+	for _, sv := range results[0].SubordinateVolumes {
+		if _, ok := sharedPolicyVolumes[sv.Config.ShareSourceVolume]; ok {
+			sharedPolicyVolumes[sv.Config.Name] = struct{}{}
+		}
+	}
+
+	// Build remaining node list from publications of the entire volume family.
 	nodesByName := make(map[string]*models.Node)
 	for _, n := range results[0].Nodes {
 		nodesByName[n.Name] = n
@@ -3776,7 +3970,12 @@ func (o *ConcurrentTridentOrchestrator) unpublishVolume(
 		if pub.VolumeName == volumeName && pub.NodeName == nodeName {
 			continue
 		}
-		nodeMap[pub.NodeName] = nodesByName[pub.NodeName]
+		if _, ok := sharedPolicyVolumes[pub.VolumeName]; !ok {
+			continue
+		}
+		if n, ok := nodesByName[pub.NodeName]; ok {
+			nodeMap[pub.NodeName] = n
+		}
 	}
 	nodes := make([]*models.Node, 0, len(nodeMap))
 	for _, n := range nodeMap {
@@ -3785,11 +3984,9 @@ func (o *ConcurrentTridentOrchestrator) unpublishVolume(
 	publishInfo.Nodes = nodes
 
 	// Build list of NVMe namespace UUIDs that remain published to this host.
-	// This is used to determine if the host should be removed from a SuperSubsystem.
-	// Only collect namespace UUIDs if this volume is NVMe (has a namespace UUID).
 	if volume.Config.AccessInfo.NVMeNamespaceUUID != "" {
 		namespaceUUIDs := make([]string, 0)
-		for _, vol := range results[1].Volumes {
+		for _, vol := range results[nvmeResultIdx].Volumes {
 			if vol.Config.Name == volumeName {
 				continue
 			}
@@ -3817,13 +4014,15 @@ func (o *ConcurrentTridentOrchestrator) unpublishVolume(
 		return false, err
 	}
 
-	results[0].VolumePublication.Delete()
+	results[1].VolumePublication.Delete()
 	return node.Deleted, nil
 }
 
 func (o *ConcurrentTridentOrchestrator) tryDeleteSoftDeletedNode(ctx context.Context, nodeName string) error {
-	// Check that the node is still soft-deleted.
-	results, unlocker, err := db.Lock(ctx, db.Query(db.DeleteNode(nodeName)))
+	results, unlocker, err := db.Lock(ctx, db.Query(
+		db.DeleteNode(nodeName),
+		db.ListVolumePublicationsForNode(nodeName),
+	))
 	defer unlocker()
 	if err != nil {
 		return err
@@ -3831,19 +4030,10 @@ func (o *ConcurrentTridentOrchestrator) tryDeleteSoftDeletedNode(ctx context.Con
 
 	node := results[0].Node.Read
 	if node == nil || !node.Deleted {
-		// node is gone from cache or it's no longer deleted, nothing to do
 		return nil
 	}
 
-	// Check if the node has any publications left
-	listResults, listUnlocker, err := db.Lock(ctx, db.Query(db.ListVolumePublicationsForNode(nodeName)))
-	defer listUnlocker()
-	if err != nil {
-		return err
-	}
-
-	if len(listResults[0].VolumePublications) == 0 {
-		// No publications left, we can delete the node
+	if len(results[0].VolumePublications) == 0 {
 		if err := o.storeClient.DeleteNode(ctx, node); err != nil {
 			return fmt.Errorf("failed to delete node %s: %w", nodeName, err)
 		}

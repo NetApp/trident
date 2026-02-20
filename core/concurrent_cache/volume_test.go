@@ -1679,3 +1679,187 @@ func TestListVolumesForPolicyReevaluation(t *testing.T) {
 		})
 	}
 }
+
+func TestListReadOnlyCloneVolumesForSources(t *testing.T) {
+	tests := []struct {
+		name        string
+		volumes     map[string]*storage.Volume
+		sources     []string
+		expected    int
+		expectedVol []string
+	}{
+		{
+			name:     "no volumes in cache",
+			volumes:  map[string]*storage.Volume{},
+			sources:  []string{"sourceVol"},
+			expected: 0,
+		},
+		{
+			name: "no matching sources",
+			volumes: map[string]*storage.Volume{
+				"clone1": {
+					Config: &storage.VolumeConfig{
+						Name:              "clone1",
+						ReadOnlyClone:     true,
+						CloneSourceVolume: "otherSource",
+					},
+				},
+			},
+			sources:  []string{"sourceVol"},
+			expected: 0,
+		},
+		{
+			name: "single matching source",
+			volumes: map[string]*storage.Volume{
+				"clone1": {
+					Config: &storage.VolumeConfig{
+						Name:              "clone1",
+						ReadOnlyClone:     true,
+						CloneSourceVolume: "sourceVol",
+					},
+				},
+				"normalVol": {
+					Config: &storage.VolumeConfig{
+						Name: "normalVol",
+					},
+				},
+			},
+			sources:     []string{"sourceVol"},
+			expected:    1,
+			expectedVol: []string{"clone1"},
+		},
+		{
+			name: "multiple matching sources",
+			volumes: map[string]*storage.Volume{
+				"cloneA": {
+					Config: &storage.VolumeConfig{
+						Name:              "cloneA",
+						ReadOnlyClone:     true,
+						CloneSourceVolume: "source1",
+					},
+				},
+				"cloneB": {
+					Config: &storage.VolumeConfig{
+						Name:              "cloneB",
+						ReadOnlyClone:     true,
+						CloneSourceVolume: "source2",
+					},
+				},
+				"cloneC": {
+					Config: &storage.VolumeConfig{
+						Name:              "cloneC",
+						ReadOnlyClone:     true,
+						CloneSourceVolume: "source3",
+					},
+				},
+			},
+			sources:     []string{"source1", "source2"},
+			expected:    2,
+			expectedVol: []string{"cloneA", "cloneB"},
+		},
+		{
+			name: "non-RO clone volumes ignored even with CloneSourceVolume set",
+			volumes: map[string]*storage.Volume{
+				"notClone": {
+					Config: &storage.VolumeConfig{
+						Name:              "notClone",
+						ReadOnlyClone:     false,
+						CloneSourceVolume: "sourceVol",
+					},
+				},
+			},
+			sources:  []string{"sourceVol"},
+			expected: 0,
+		},
+		{
+			name: "RO clone with empty CloneSourceVolume ignored",
+			volumes: map[string]*storage.Volume{
+				"emptySource": {
+					Config: &storage.VolumeConfig{
+						Name:              "emptySource",
+						ReadOnlyClone:     true,
+						CloneSourceVolume: "",
+					},
+				},
+			},
+			sources:  []string{"sourceVol"},
+			expected: 0,
+		},
+		{
+			name: "mixed volumes",
+			volumes: map[string]*storage.Volume{
+				"matchingClone": {
+					Config: &storage.VolumeConfig{
+						Name:              "matchingClone",
+						ReadOnlyClone:     true,
+						CloneSourceVolume: "sourceVol",
+					},
+				},
+				"nonMatchingClone": {
+					Config: &storage.VolumeConfig{
+						Name:              "nonMatchingClone",
+						ReadOnlyClone:     true,
+						CloneSourceVolume: "otherSource",
+					},
+				},
+				"normalVol": {
+					Config: &storage.VolumeConfig{
+						Name: "normalVol",
+					},
+				},
+				"emptySourceClone": {
+					Config: &storage.VolumeConfig{
+						Name:              "emptySourceClone",
+						ReadOnlyClone:     true,
+						CloneSourceVolume: "",
+					},
+				},
+				"falseClone": {
+					Config: &storage.VolumeConfig{
+						Name:              "falseClone",
+						ReadOnlyClone:     false,
+						CloneSourceVolume: "sourceVol",
+					},
+				},
+			},
+			sources:     []string{"sourceVol"},
+			expected:    1,
+			expectedVol: []string{"matchingClone"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			for k, v := range tt.volumes {
+				volumes.data[k] = v
+			}
+			volumes.unlock()
+
+			subquery := ListReadOnlyCloneVolumesForSources(tt.sources...)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err)
+
+			assert.Len(t, result.Volumes, tt.expected)
+			if len(tt.expectedVol) > 0 {
+				volNames := make([]string, len(result.Volumes))
+				for i, v := range result.Volumes {
+					volNames[i] = v.Config.Name
+				}
+				for _, expected := range tt.expectedVol {
+					assert.Contains(t, volNames, expected)
+				}
+			}
+			for _, v := range result.Volumes {
+				assert.True(t, v.Config.ReadOnlyClone)
+				assert.NotEmpty(t, v.Config.CloneSourceVolume)
+			}
+
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			volumes.unlock()
+		})
+	}
+}

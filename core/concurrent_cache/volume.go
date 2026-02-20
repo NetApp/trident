@@ -105,6 +105,26 @@ func ListReadOnlyCloneVolumes() Subquery {
 	}
 }
 
+// ListReadOnlyCloneVolumesForSources returns all read-only clone volumes whose
+// CloneSourceVolume matches any of the provided source volume names.
+func ListReadOnlyCloneVolumesForSources(sourceVolumeNames ...string) Subquery {
+	sourceSet := make(map[string]struct{}, len(sourceVolumeNames))
+	for _, name := range sourceVolumeNames {
+		sourceSet[name] = struct{}{}
+	}
+	return Subquery{
+		res: volume,
+		op:  list,
+		setResults: listVolumesSetResults(func(v *storage.Volume) bool {
+			if !v.Config.ReadOnlyClone || v.Config.CloneSourceVolume == "" {
+				return false
+			}
+			_, match := sourceSet[v.Config.CloneSourceVolume]
+			return match
+		}),
+	}
+}
+
 func ListVolumesByInternalName(internalVolName string) Subquery {
 	return Subquery{
 		res: volume,
