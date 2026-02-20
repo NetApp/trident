@@ -293,3 +293,74 @@ func QuantityToHumanReadableString(q resource.Quantity) string {
 		return fmt.Sprintf("%d", bytes)
 	}
 }
+
+// Decimal size units (SI: 1000-based) for display of byte counts.
+const (
+	decimalGB = 1e9
+	decimalMB = 1e6
+	decimalKB = 1e3
+)
+
+// BytesToDecimalSizeString formats a byte count in decimal (SI) units for display, e.g. "51MB", "1.50GB".
+func BytesToDecimalSizeString(bytes int64) string {
+	if bytes < 0 {
+		return fmt.Sprintf("%d", bytes)
+	}
+	if bytes == 0 {
+		return "0"
+	}
+	switch {
+	case bytes >= decimalGB:
+		val := roundToTwoDecimals(float64(bytes) / float64(decimalGB))
+		return formatDecimalSize(val, "GB")
+	case bytes >= decimalMB:
+		val := roundToTwoDecimals(float64(bytes) / float64(decimalMB))
+		return formatDecimalSize(val, "MB")
+	case bytes >= decimalKB:
+		val := roundToTwoDecimals(float64(bytes) / float64(decimalKB))
+		return formatDecimalSize(val, "KB")
+	default:
+		return fmt.Sprintf("%dB", bytes)
+	}
+}
+
+func formatDecimalSize(val float64, unit string) string {
+	if val == float64(int64(val)) {
+		return fmt.Sprintf("%d%s", int64(val), unit)
+	}
+	return fmt.Sprintf("%.2f%s", val, unit)
+}
+
+// roundToTwoDecimals rounds to nearest 2 decimal places (for display, e.g. "1.50GB").
+// For sizing we use roundUpToDecimals so we never request less than the computed value.
+func roundToTwoDecimals(val float64) float64 {
+	return math.Round(val*100) / 100
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+//
+// Quantity to bytes (floor)
+//
+// ///////////////////////////////////////////////////////////////////////////
+
+// ParseQuantityFloorBytes parses a quantity string and returns the floor of its value in bytes.
+// Returns 0 if the string is empty or invalid. (e.g. "1.7Gi" → 1825361100, instead of 1825361101).
+func ParseQuantityFloorBytes(s string) uint64 {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return 0
+	}
+	qty, err := resource.ParseQuantity(s)
+	if err != nil || qty.Sign() < 0 {
+		return 0
+	}
+	return uint64(math.Floor(qty.AsApproximateFloat64()))
+}
+
+// QuantityFloorBytes returns the floor of the quantity's value in bytes. Returns 0 if qty is nil or invalid.
+func QuantityFloorBytes(qty *resource.Quantity) uint64 {
+	if qty == nil || qty.Sign() < 0 {
+		return 0
+	}
+	return uint64(math.Floor(qty.AsApproximateFloat64()))
+}

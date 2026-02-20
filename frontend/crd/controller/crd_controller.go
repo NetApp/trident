@@ -8,6 +8,7 @@ import (
 	"time"
 
 	k8ssnapshots "github.com/kubernetes-csi/external-snapshotter/client/v8/clientset/versioned"
+	"golang.org/x/time/rate"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -64,9 +65,12 @@ const (
 	OperationStatusSuccess string = "Success"
 	OperationStatusFailed  string = "Failed"
 
-	controllerName         = "crd"
-	controllerAgentName    = "trident-crd-controller"
-	crdControllerQueueName = "trident-crd-workqueue"
+	controllerName           = "crd"
+	controllerAgentName      = "trident-crd-controller"
+	crdControllerQueueName   = "trident-crd-workqueue"
+	tagriWorkqueueName       = "trident-tagri-workqueue"
+	tagriWorkqueueQPS        = 8.0
+	tagriWorkqueueBucketSize = 100
 
 	transactionSyncPeriod = 60 * time.Second
 )
@@ -191,6 +195,18 @@ type TridentCrdController struct {
 	// simultaneously in two different workers.
 	workqueue workqueue.RateLimitingInterface
 
+	// tagriWorkqueue is a dedicated rate-limited queue for TridentAutogrowRequestInternal (TAGRI) CRs.
+	// It uses a higher QPS/bucket than the main workqueue so TAGRI processing is isolated and can
+	// drain faster without blocking or being blocked by other CR types. A dedicated worker processes it.
+	// Uses deprecated RateLimitingInterface because KeyItem contains context.Context and is not comparable,
+	// so TypedRateLimitingInterface[KeyItem] cannot be used (workqueue requires T comparable).
+	tagriWorkqueue workqueue.RateLimitingInterface
+
+	// tagriRateLimiter is the same rate limiter used by tagriWorkqueue. Kept so we can call When(item)
+	// to decide whether to use AddRateLimited or AddAfter(maxDuration) when ReconcileDeferredWithMaxDuration
+	// is used (e.g. Failed phase), ensuring tagriTimeout is never exceeded.
+	tagriRateLimiter workqueue.RateLimiter
+
 	// recorder is an event recorder for recording Event resources to the Kubernetes API.
 	recorder                  record.EventRecorder
 	actionMirrorUpdatesSynced func() bool
@@ -269,6 +285,13 @@ func newTridentCrdControllerImpl(
 	eventBroadcaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: kubeClientset.CoreV1().Events("")})
 	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: controllerAgentName})
 
+	// Use deprecated workqueue rate limiter API: KeyItem is not comparable, so TAGRI cannot use the typed queue/limiter.
+	// 5ms and 1000s match client-go default exponential backoff;
+	// bucket uses tagriWorkqueueQPS (8) so the default queue (10 QPS) has preference for API server capacity over TAGRI.
+	tagriRateLimiter := workqueue.NewMaxOfRateLimiter(
+		workqueue.NewItemExponentialFailureRateLimiter(5*time.Millisecond, 1000*time.Second),
+		&workqueue.BucketRateLimiter{Limiter: rate.NewLimiter(rate.Limit(tagriWorkqueueQPS), tagriWorkqueueBucketSize)},
+	)
 	controller := &TridentCrdController{
 		orchestrator:                  orchestrator,
 		kubeClientset:                 kubeClientset,
@@ -317,6 +340,8 @@ func newTridentCrdControllerImpl(
 		autogrowRequestInternalSynced: autogrowRequestInternalInformer.Informer().HasSynced,
 		workqueue: workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(),
 			crdControllerQueueName),
+		tagriRateLimiter:     tagriRateLimiter,
+		tagriWorkqueue:       workqueue.NewNamedRateLimitingQueue(tagriRateLimiter, tagriWorkqueueName),
 		recorder:             recorder,
 		indexers:             indexers,
 		nodeRemediationUtils: nodeRemediationUtils,
@@ -452,6 +477,7 @@ func (c *TridentCrdController) Run(ctx context.Context, threadiness int, stopCh 
 
 	defer utilruntime.HandleCrash()
 	defer c.workqueue.ShutDown()
+	defer c.tagriWorkqueue.ShutDown()
 
 	// Start the informer factories to begin populating the informer caches
 	Log().Info("Starting Trident CRD controller.")
@@ -478,11 +504,13 @@ func (c *TridentCrdController) Run(ctx context.Context, threadiness int, stopCh 
 		return
 	}
 
-	// Launch workers to process CRD resources
+	// Launch workers to process CRD resources (main queue only; TAGRI has its own queue and worker).
 	Logx(ctx).Debug("Starting workers.")
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
+	// One dedicated worker for the TAGRI queue so TAGRI processing is isolated and does not block other CRs.
+	go wait.Until(c.runTagriWorker, time.Second, stopCh)
 
 	Logx(ctx).Debug("Started workers.")
 	<-stopCh
@@ -499,6 +527,15 @@ func (c *TridentCrdController) runWorker() {
 	}
 }
 
+// runTagriWorker processes items from the dedicated TAGRI workqueue only. All requeues
+// (AddRateLimited, AddAfter) go to tagriWorkqueue so TAGRI handling is fully isolated.
+func (c *TridentCrdController) runTagriWorker() {
+	ctx := GenerateRequestContext(nil, "", "", WorkflowNone, LogLayerCRDFrontend)
+	Logx(ctx).Trace("TridentCrdController runTagriWorker started.")
+	for c.processNextTagriWorkItem() {
+	}
+}
+
 func (c *TridentCrdController) addEventToWorkqueue(key string, event EventType, ctx context.Context, objKind ObjectType) {
 	keyItem := KeyItem{
 		key:        key,
@@ -507,6 +544,12 @@ func (c *TridentCrdController) addEventToWorkqueue(key string, event EventType, 
 		objectType: objKind,
 	}
 
+	// Route TAGRI events to the dedicated TAGRI workqueue for isolation and a higher rate limit.
+	if objKind == ObjectTypeTridentAutogrowRequestInternal {
+		c.tagriWorkqueue.Add(keyItem)
+		Logx(ctx).WithFields(LogFields{"key": key, "kind": objKind, "event": event}).Debug("Added TAGRI event to tagri workqueue.")
+		return
+	}
 	c.workqueue.Add(keyItem)
 	fields := LogFields{
 		"key":   key,
@@ -677,8 +720,6 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 			handleFunction = c.handleTridentNodeRemediation
 		case ObjectTypeTridentAutogrowPolicy:
 			handleFunction = c.handleAutogrowPolicy
-		case ObjectTypeTridentAutogrowRequestInternal:
-			handleFunction = c.handleTridentAutogrowRequestInternal
 		default:
 			return fmt.Errorf("unknown objectType in the workqueue: %v", keyItem.objectType)
 		}
@@ -743,6 +784,101 @@ func (c *TridentCrdController) processNextWorkItem() bool {
 		return true
 	}
 
+	return true
+}
+
+// processNextTagriWorkItem reads one item from the TAGRI workqueue and processes it
+// with handleTridentAutogrowRequestInternal. All requeues use tagriWorkqueue.
+func (c *TridentCrdController) processNextTagriWorkItem() bool {
+	ctx := GenerateRequestContext(nil, "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
+	Logx(ctx).Trace("TridentCrdController#processNextTagriWorkItem")
+
+	obj, shutdown := c.tagriWorkqueue.Get()
+	if shutdown {
+		Logx(ctx).Trace("TridentCrdController#processNextTagriWorkItem shutting down")
+		return false
+	}
+
+	err := func(obj interface{}) error {
+		defer c.tagriWorkqueue.Done(obj)
+		var keyItem KeyItem
+		var ok bool
+		if keyItem, ok = obj.(KeyItem); !ok {
+			c.tagriWorkqueue.Forget(obj)
+			Logx(ctx).Errorf("expected KeyItem in tagri workqueue but got %#v", obj)
+			return nil
+		}
+		if keyItem == (KeyItem{}) {
+			c.tagriWorkqueue.Forget(keyItem)
+			return fmt.Errorf("keyItem is empty")
+		}
+
+		keyItemName := keyItem.key
+		if err := c.handleTridentAutogrowRequestInternal(&keyItem); err != nil {
+			if errors.IsUnsupportedConfigError(err) {
+				c.tagriWorkqueue.Forget(keyItem)
+				Logx(keyItem.ctx).Errorf("found unsupported configuration, error syncing '%v', not requeuing: %v", keyItem.key, err)
+			} else if duration, ok := errors.ReconcileDeferredWithDurationValue(err); ok {
+				if duration <= 0 {
+					// Defense in depth: handler normally deletes when at/past timeout and does not send duration <= 0.
+					// If we see it (e.g. bug or clock skew), requeue immediately so the next run sees timeout exceeded and deletes.
+					// Idempotency is preserved because the handler is idempotent; we only schedule another reconciliation.
+					Logx(keyItem.ctx).Infof("deferred TAGRI '%v', duration <= 0 (%v), requeuing immediately so next run can handle; %v", keyItem.key, duration, err.Error())
+					keyItem.isRetry = true
+					c.tagriWorkqueue.Add(keyItem)
+				} else {
+					Logx(keyItem.ctx).Infof("deferred TAGRI '%v', requeuing with AddAfter(%v); %v", keyItem.key, duration, err.Error())
+					keyItem.isRetry = true
+					c.tagriWorkqueue.AddAfter(keyItem, duration)
+				}
+			} else if maxDuration, ok := errors.ReconcileDeferredWithMaxDurationValue(err); ok {
+				if maxDuration <= 0 {
+					// Defense in depth: handler normally deletes when at/past timeout and does not send maxDuration <= 0.
+					// If we see it, requeue immediately so the next run sees timeout exceeded and deletes. Idempotency preserved.
+					Logx(keyItem.ctx).Infof("deferred TAGRI '%v', maxDuration <= 0 (%v), requeuing immediately so next run can handle; %v", keyItem.key, maxDuration, err.Error())
+					keyItem.isRetry = true
+					c.tagriWorkqueue.Add(keyItem)
+				} else {
+					nextDelay := c.tagriRateLimiter.When(keyItem)
+					if nextDelay > maxDuration {
+						Logx(keyItem.ctx).Infof("deferred TAGRI '%v', next backoff %v > max %v, requeuing with AddAfter(%v); %v", keyItem.key, nextDelay, maxDuration, maxDuration, err.Error())
+						keyItem.isRetry = true
+						// Forget first so the rate limiter does not count this as another failure; then schedule.
+						// We are not using AddRateLimited here; the next process will happen when AddAfter(maxDuration) fires.
+						c.tagriWorkqueue.Forget(keyItem)
+						c.tagriWorkqueue.AddAfter(keyItem, maxDuration)
+					} else {
+						// Use AddAfter(nextDelay), not AddRateLimited: we already called When() above (which updated
+						// the rate limiter). AddRateLimited would call When() again and double-count. We do not
+						// Forget here so the limiter keeps this failure count; the next failure will get a longer delay.
+						Logx(keyItem.ctx).Infof("deferred TAGRI '%v', requeuing with rate limit (next %v <= max %v); %v", keyItem.key, nextDelay, maxDuration, err.Error())
+						keyItem.isRetry = true
+						c.tagriWorkqueue.AddAfter(keyItem, nextDelay)
+					}
+				}
+			} else if errors.IsReconcileDeferredError(err) {
+				Logx(keyItem.ctx).Infof("deferred syncing TAGRI '%v', requeuing; %v", keyItem.key, err.Error())
+				keyItem.isRetry = true
+				c.tagriWorkqueue.AddRateLimited(keyItem)
+			} else if errors.IsReconcileIncompleteError(err) {
+				Logx(keyItem.ctx).Errorf("error syncing TAGRI '%v', requeuing immediately; %v", keyItem.key, err.Error())
+				keyItem.isRetry = true
+				c.tagriWorkqueue.Add(keyItem)
+			} else {
+				// Unhandled error type: return so caller logs it; item is not Forgotten (Done already deferred).
+				return err
+			}
+			return nil
+		}
+
+		c.tagriWorkqueue.Forget(obj)
+		Logx(keyItem.ctx).Tracef("Synced TAGRI '%s'", keyItemName)
+		return nil
+	}(obj)
+	if err != nil {
+		Logx(ctx).Error(err)
+		return true
+	}
 	return true
 }
 

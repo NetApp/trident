@@ -8,7 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/resource"
 
+	"github.com/netapp/trident/config"
 	tridentv1 "github.com/netapp/trident/persistent_store/crd/apis/netapp/v1"
+	"github.com/netapp/trident/utils/errors"
 )
 
 // TestValidateAutogrowPolicySpec_ValidFormats tests validation with valid formats
@@ -50,8 +52,8 @@ func TestValidateAutogrowPolicySpec_ValidFormats(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.NotNil(t, result)
-			assert.Greater(t, result.UsedThresholdPercent, float32(0.0))
-			assert.Equal(t, tt.expectedUsedThresholdPercent, true) // Always true now
+			assert.Greater(t, result.UsedThresholdPercent, float32(0))
+			assert.True(t, tt.expectedUsedThresholdPercent) // usedThreshold is always percentage
 
 			if tt.growthAmount != "" {
 				assert.NotNil(t, result.GrowthAmount)
@@ -208,8 +210,8 @@ func TestValidateAutogrowPolicySpec_NormalizedValues(t *testing.T) {
 			assert.NotNil(t, result)
 
 			// Check usedThreshold (always percentage now)
-			assert.Equal(t, tt.expectedUsedThresholdPct, true) // Always true
-			assert.Equal(t, tt.expectedUsedThreshold, result.UsedThresholdPercent)
+			assert.True(t, tt.expectedUsedThresholdPct)
+			assert.Equal(t, float32(tt.expectedUsedThreshold), result.UsedThresholdPercent)
 
 			// Check growthAmount
 			if tt.growthAmount != "" {
@@ -302,11 +304,11 @@ func createTestPolicy(usedThreshold, growthAmount, maxSize string) *tridentv1.Tr
 func TestCalculateFinalCapacity_NilPolicy(t *testing.T) {
 	currentSize := resource.MustParse("10Gi")
 
-	result, err := CalculateFinalCapacity(currentSize, nil, 0)
+	result, err := CalculateFinalCapacity(FinalCapacityRequest{CurrentSize: currentSize, Policy: nil, ResizeDeltaBytes: 0, CustomCeilingSize: ""})
 
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "autogrow policy is nil")
-	assert.Equal(t, resource.Quantity{}, result)
+	assert.True(t, errors.IsAutogrowPolicyNilError(err))
+	assert.Equal(t, resource.Quantity{}, result.FinalCapacity)
 }
 
 // TestCalculateFinalCapacity_InvalidPolicySpec tests invalid policy validation
@@ -377,11 +379,11 @@ func TestCalculateFinalCapacity_InvalidPolicySpec(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			currentSize := resource.MustParse(tt.currentSize)
 
-			result, err := CalculateFinalCapacity(currentSize, tt.policy, 0)
+			result, err := CalculateFinalCapacity(FinalCapacityRequest{CurrentSize: currentSize, Policy: tt.policy, ResizeDeltaBytes: 0, CustomCeilingSize: ""})
 
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), tt.errorContains)
-			assert.Equal(t, resource.Quantity{}, result)
+			assert.Equal(t, resource.Quantity{}, result.FinalCapacity)
 		})
 	}
 }
@@ -465,12 +467,12 @@ func TestCalculateFinalCapacity_PercentageGrowth(t *testing.T) {
 			currentSize := resource.MustParse(tt.currentSize)
 			policy := createTestPolicy("80%", tt.growthPercent, tt.maxSize)
 
-			result, err := CalculateFinalCapacity(currentSize, policy, 0)
+			result, err := CalculateFinalCapacity(FinalCapacityRequest{CurrentSize: currentSize, Policy: policy, ResizeDeltaBytes: 0, CustomCeilingSize: ""})
 
 			assert.NoError(t, err)
 			expected := resource.MustParse(tt.expectedFinalSize)
 			// Allow small rounding differences for decimal percentages
-			assert.InDelta(t, expected.Value(), result.Value(), float64(expected.Value())*0.01)
+			assert.InDelta(t, expected.Value(), result.FinalCapacity.Value(), float64(expected.Value())*0.01)
 		})
 	}
 }
@@ -540,11 +542,11 @@ func TestCalculateFinalCapacity_AbsoluteGrowth(t *testing.T) {
 			currentSize := resource.MustParse(tt.currentSize)
 			policy := createTestPolicy("80%", tt.growthAmount, tt.maxSize)
 
-			result, err := CalculateFinalCapacity(currentSize, policy, 0)
+			result, err := CalculateFinalCapacity(FinalCapacityRequest{CurrentSize: currentSize, Policy: policy, ResizeDeltaBytes: 0, CustomCeilingSize: ""})
 
 			assert.NoError(t, err)
 			expected := resource.MustParse(tt.expectedFinalSize)
-			assert.Equal(t, expected.Value(), result.Value())
+			assert.Equal(t, expected.Value(), result.FinalCapacity.Value())
 		})
 	}
 }
@@ -583,65 +585,82 @@ func TestCalculateFinalCapacity_DefaultGrowth(t *testing.T) {
 			currentSize := resource.MustParse(tt.currentSize)
 			policy := createTestPolicy("80%", "", "") // Empty growthAmount triggers default
 
-			result, err := CalculateFinalCapacity(currentSize, policy, 0)
+			result, err := CalculateFinalCapacity(FinalCapacityRequest{CurrentSize: currentSize, Policy: policy, ResizeDeltaBytes: 0, CustomCeilingSize: ""})
 
 			assert.NoError(t, err)
 			expected := resource.MustParse(tt.expectedFinalSize)
-			assert.InDelta(t, expected.Value(), result.Value(), float64(expected.Value())*0.01)
+			assert.InDelta(t, expected.Value(), result.FinalCapacity.Value(), float64(expected.Value())*0.01)
 		})
 	}
 }
 
-// TestCalculateFinalCapacity_MaxSizeExceeded tests maxSize validation
+// TestCalculateFinalCapacity_MaxSizeExceeded tests maxSize capping and the already-at-maxSize error.
+// When growth would exceed maxSize we cap at maxSize (grow as much as possible). We only error when
+// current size is already at or above maxSize (AutogrowAlreadyAtMaxSizeError).
 func TestCalculateFinalCapacity_MaxSizeExceeded(t *testing.T) {
 	tests := []struct {
-		name         string
-		currentSize  string
-		growthAmount string
-		maxSize      string
-		shouldFail   bool
+		name                      string
+		currentSize               string
+		growthAmount              string
+		maxSize                   string
+		expectAlreadyAtMaxSizeErr bool   // when true, expect AutogrowAlreadyAtMaxSizeError
+		expectedResult            string // when !expectAlreadyAtMaxSizeErr, expected result (e.g. "120Gi" when capped)
 	}{
 		{
-			name:         "Percentage growth exceeds maxSize",
-			currentSize:  "100Gi",
-			growthAmount: "50%",   // Would be 150Gi
-			maxSize:      "120Gi", // Max is 120Gi
-			shouldFail:   true,
+			name:           "Percentage growth exceeds maxSize — cap at maxSize",
+			currentSize:    "100Gi",
+			growthAmount:   "50%",   // Would be 150Gi
+			maxSize:        "120Gi", // Cap at 120Gi
+			expectedResult: "120Gi",
 		},
 		{
-			name:         "Absolute growth exceeds maxSize",
-			currentSize:  "100Gi",
-			growthAmount: "30Gi",  // Would be 130Gi
-			maxSize:      "120Gi", // Max is 120Gi
-			shouldFail:   true,
+			name:           "Absolute growth exceeds maxSize — cap at maxSize",
+			currentSize:    "100Gi",
+			growthAmount:   "30Gi",  // Would be 130Gi
+			maxSize:        "120Gi", // Cap at 120Gi
+			expectedResult: "120Gi",
 		},
 		{
-			name:         "Default growth exceeds maxSize",
-			currentSize:  "100Gi",
-			growthAmount: "",      // Default 10% = 110Gi
-			maxSize:      "105Gi", // Max is 105Gi
-			shouldFail:   true,
+			name:           "Default growth exceeds maxSize — cap at maxSize",
+			currentSize:    "100Gi",
+			growthAmount:   "",      // Default 10% = 110Gi
+			maxSize:        "105Gi", // Cap at 105Gi
+			expectedResult: "105Gi",
 		},
 		{
-			name:         "Growth equals maxSize exactly (should pass)",
-			currentSize:  "100Gi",
-			growthAmount: "10Gi", // Would be 110Gi
-			maxSize:      "110Gi",
-			shouldFail:   false,
+			name:           "Growth equals maxSize exactly (unchanged)",
+			currentSize:    "100Gi",
+			growthAmount:   "10Gi", // Would be 110Gi
+			maxSize:        "110Gi",
+			expectedResult: "110Gi",
 		},
 		{
-			name:         "Growth just under maxSize (should pass)",
-			currentSize:  "100Gi",
-			growthAmount: "9Gi", // Would be 109Gi
-			maxSize:      "110Gi",
-			shouldFail:   false,
+			name:           "Growth just under maxSize (unchanged)",
+			currentSize:    "100Gi",
+			growthAmount:   "9Gi", // Would be 109Gi
+			maxSize:        "110Gi",
+			expectedResult: "109Gi",
 		},
 		{
-			name:         "Large percentage exceeds maxSize",
-			currentSize:  "10Gi",
-			growthAmount: "200%", // Would be 30Gi
-			maxSize:      "20Gi",
-			shouldFail:   true,
+			name:           "Large percentage exceeds maxSize — cap at maxSize",
+			currentSize:    "10Gi",
+			growthAmount:   "200%", // Would be 30Gi
+			maxSize:        "20Gi", // Cap at 20Gi
+			expectedResult: "20Gi",
+		},
+		{
+			name:                      "Already at maxSize — error",
+			currentSize:               "120Gi",
+			growthAmount:              "10%",
+			maxSize:                   "120Gi",
+			expectAlreadyAtMaxSizeErr: true,
+		},
+		{
+			name:                      "Already above maxSize — error",
+			currentSize:               "121Gi",
+			growthAmount:              "10%",
+			maxSize:                   "120Gi",
+			expectAlreadyAtMaxSizeErr: true,
 		},
 	}
 
@@ -650,17 +669,65 @@ func TestCalculateFinalCapacity_MaxSizeExceeded(t *testing.T) {
 			currentSize := resource.MustParse(tt.currentSize)
 			policy := createTestPolicy("80%", tt.growthAmount, tt.maxSize)
 
-			result, err := CalculateFinalCapacity(currentSize, policy, 0)
+			result, err := CalculateFinalCapacity(FinalCapacityRequest{CurrentSize: currentSize, Policy: policy, ResizeDeltaBytes: 0, CustomCeilingSize: ""})
 
-			if tt.shouldFail {
+			if tt.expectAlreadyAtMaxSizeErr {
 				assert.Error(t, err)
-				assert.Contains(t, err.Error(), "exceeds maxSize")
-				assert.Equal(t, resource.Quantity{}, result)
+				assert.True(t, errors.IsAutogrowAlreadyAtMaxSizeError(err))
+				assert.Equal(t, resource.Quantity{}, result.FinalCapacity)
 			} else {
 				assert.NoError(t, err)
-				maxQty := resource.MustParse(tt.maxSize)
-				assert.LessOrEqual(t, result.Value(), maxQty.Value())
+				expected := resource.MustParse(tt.expectedResult)
+				assert.Equal(t, 0, result.FinalCapacity.Cmp(expected), "expected %s, got %s", tt.expectedResult, result.FinalCapacity.String())
 			}
+		})
+	}
+}
+
+// TestCalculateFinalCapacity_DecimalMaxSizeNeverExceeded ensures that when maxSize is a decimal (e.g. "1.7Gi"),
+// the final capacity never exceeds the user's limit. ParseQuantity can round up; we use floor when capping so we never patch beyond max.
+func TestCalculateFinalCapacity_DecimalMaxSizeNeverExceeded(t *testing.T) {
+	tests := []struct {
+		name             string
+		currentSizeBytes int64
+		growthAmount     string
+		maxSize          string
+		wantCapBytes     int64
+		wantCappedAtMax  bool
+	}{
+		{
+			name:             "Growth would exceed decimal max — capped at floor of max, not rounded over",
+			currentSizeBytes: 1546188225, // 1.44 GiB
+			growthAmount:     "20%",
+			maxSize:          "1.7Gi",
+			wantCapBytes:     1825361100, // floor(1.7 * 1024^3)
+			wantCappedAtMax:  true,
+		},
+		{
+			name:             "Growth below decimal max — result unchanged, not capped",
+			currentSizeBytes: 1073741824, // 1 GiB
+			growthAmount:     "20%",
+			maxSize:          "1.7Gi",
+			wantCapBytes:     1288490188, // 1.2 GiB
+			wantCappedAtMax:  false,
+		},
+		{
+			name:             "Another decimal max (3.7Gi) — when growth would exceed, cap at floor of max",
+			currentSizeBytes: 3758096384, // 3.5 GiB
+			growthAmount:     "20%",
+			maxSize:          "3.7Gi",
+			wantCapBytes:     3972844748, // floor(3.7 * 1024^3)
+			wantCappedAtMax:  true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			currentSize := *resource.NewQuantity(tt.currentSizeBytes, resource.BinarySI)
+			policy := createTestPolicy("80%", tt.growthAmount, tt.maxSize)
+			result, err := CalculateFinalCapacity(FinalCapacityRequest{CurrentSize: currentSize, Policy: policy, ResizeDeltaBytes: 0, CustomCeilingSize: ""})
+			assert.NoError(t, err)
+			assert.Equal(t, tt.wantCapBytes, result.FinalCapacity.Value(), "final capacity must not exceed maxSize (expected %d)", tt.wantCapBytes)
+			assert.Equal(t, tt.wantCappedAtMax, result.CappedAtPolicyMaxSize)
 		})
 	}
 }
@@ -692,10 +759,10 @@ func TestCalculateFinalCapacity_MaxSizeZero(t *testing.T) {
 			currentSize := resource.MustParse(tt.currentSize)
 			policy := createTestPolicy("80%", tt.growthAmount, tt.maxSize)
 
-			result, err := CalculateFinalCapacity(currentSize, policy, 0)
+			result, err := CalculateFinalCapacity(FinalCapacityRequest{CurrentSize: currentSize, Policy: policy, ResizeDeltaBytes: 0, CustomCeilingSize: ""})
 
 			assert.NoError(t, err)
-			assert.Greater(t, result.Value(), currentSize.Value())
+			assert.Greater(t, result.FinalCapacity.Value(), currentSize.Value())
 		})
 	}
 }
@@ -741,11 +808,11 @@ func TestCalculateFinalCapacity_WhitespaceHandling(t *testing.T) {
 			currentSize := resource.MustParse(tt.currentSize)
 			policy := createTestPolicy(tt.usedThreshold, tt.growthAmount, tt.maxSize)
 
-			result, err := CalculateFinalCapacity(currentSize, policy, 0)
+			result, err := CalculateFinalCapacity(FinalCapacityRequest{CurrentSize: currentSize, Policy: policy, ResizeDeltaBytes: 0, CustomCeilingSize: ""})
 
 			assert.NoError(t, err)
 			expected := resource.MustParse(tt.expectedFinalSize)
-			assert.Equal(t, expected.Value(), result.Value())
+			assert.Equal(t, expected.Value(), result.FinalCapacity.Value())
 		})
 	}
 }
@@ -815,13 +882,13 @@ func TestCalculateFinalCapacity_EdgeCases(t *testing.T) {
 			currentSize := resource.MustParse(tt.currentSize)
 			policy := createTestPolicy("80%", tt.growthAmount, tt.maxSize)
 
-			result, err := CalculateFinalCapacity(currentSize, policy, 0)
+			result, err := CalculateFinalCapacity(FinalCapacityRequest{CurrentSize: currentSize, Policy: policy, ResizeDeltaBytes: 0, CustomCeilingSize: ""})
 
 			if tt.shouldFail {
 				assert.Error(t, err, tt.description)
 			} else {
 				assert.NoError(t, err, tt.description)
-				assert.Greater(t, result.Value(), currentSize.Value(), tt.description)
+				assert.Greater(t, result.FinalCapacity.Value(), currentSize.Value(), tt.description)
 			}
 		})
 	}
@@ -866,54 +933,269 @@ func TestCalculateFinalCapacity_MixedUnits(t *testing.T) {
 			currentSize := resource.MustParse(tt.currentSize)
 			policy := createTestPolicy("80%", tt.growthAmount, "")
 
-			result, err := CalculateFinalCapacity(currentSize, policy, 0)
+			result, err := CalculateFinalCapacity(FinalCapacityRequest{CurrentSize: currentSize, Policy: policy, ResizeDeltaBytes: 0, CustomCeilingSize: ""})
 
 			assert.NoError(t, err, tt.description)
-			assert.Greater(t, result.Value(), currentSize.Value(), tt.description)
+			assert.Greater(t, result.FinalCapacity.Value(), currentSize.Value(), tt.description)
 
 			// Verify the growth amount was added correctly
 			growthQty := resource.MustParse(tt.growthAmount)
 			expected := currentSize.DeepCopy()
 			expected.Add(growthQty)
-			assert.Equal(t, expected.Value(), result.Value())
+			assert.Equal(t, expected.Value(), result.FinalCapacity.Value())
 		})
 	}
 }
 
-// TestCalculateFinalCapacity_ResizeDelta tests that resizeDeltaBytes bumps small growth and is capped by maxSize
+// TestCalculateFinalCapacity_ResizeDelta tests that resizeDeltaBytes bumps small growth and is capped by maxSize.
+// Uses config.SANResizeDelta (50 MB) + ExtraBytesAboveResizeDelta (1 MB) to simulate SAN-style backend behavior.
 func TestCalculateFinalCapacity_ResizeDelta(t *testing.T) {
-	const delta int64 = 50 * 1024 * 1024 // 50Mi
-	t.Run("Zero delta no effect", func(t *testing.T) {
-		currentSize := resource.MustParse("100Gi")
-		policy := createTestPolicy("80%", "5Gi", "200Gi")
-		result, err := CalculateFinalCapacity(currentSize, policy, 0)
-		assert.NoError(t, err)
-		assert.Equal(t, 0, result.Cmp(resource.MustParse("105Gi")))
-	})
-	t.Run("Growth above delta unchanged", func(t *testing.T) {
-		currentSize := resource.MustParse("100Gi")
-		policy := createTestPolicy("80%", "50Gi", "200Gi")
-		result, err := CalculateFinalCapacity(currentSize, policy, delta)
-		assert.NoError(t, err)
-		assert.Equal(t, 0, result.Cmp(resource.MustParse("150Gi")))
-	})
-	t.Run("Growth below delta bumps to current+delta+1MiB", func(t *testing.T) {
-		currentSize := resource.MustParse("100Gi")
-		policy := createTestPolicy("80%", "10Mi", "200Gi")
-		result, err := CalculateFinalCapacity(currentSize, policy, delta)
-		assert.NoError(t, err)
-		expected := *resource.NewQuantity(currentSize.Value()+delta+ExtraBytesAboveResizeDelta, resource.BinarySI)
-		assert.Equal(t, 0, result.Cmp(expected))
-	})
-	t.Run("Bumped result exceeds maxSize returns error", func(t *testing.T) {
-		// Current just under 100Gi so policy+10Mi is valid; bump would exceed 100Gi so we error instead of cap
-		maxQty := resource.MustParse("100Gi")
-		currentSize := *resource.NewQuantity(maxQty.Value()-20*1024*1024, resource.BinarySI)
-		policy := createTestPolicy("80%", "10Mi", "100Gi")
-		_, err := CalculateFinalCapacity(currentSize, policy, delta)
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "exceeds maxSize")
-		assert.Contains(t, err.Error(), "resize delta")
-		assert.Contains(t, err.Error(), "policy growthAmount")
-	})
+	delta := int64(config.SANResizeDelta)                // 50 MB — backend minimum growth to trigger resize
+	deltaAfterBump := delta + ExtraBytesAboveResizeDelta // 50 MB + 1 MB — applied when policy growth <= delta
+	// Expected result when current 100Gi is bumped by deltaAfterBump (used for "growth below/equal delta" cases).
+	base100Gi := resource.MustParse("100Gi")
+	expected100GiBumped := resource.NewQuantity(base100Gi.Value()+deltaAfterBump, resource.BinarySI).String()
+
+	tests := []struct {
+		name                   string
+		currentSizeStr         string
+		currentSizeMinusBump   bool // if true, current = parse(currentSizeStr).Value() - deltaAfterBump (for cap-at-maxSize case)
+		growthAmount           string
+		maxSize                string
+		resizeDelta            int64
+		expectStuckResizeError bool   // expect AutogrowStuckResizeAtMaxSizeError
+		expectedResult         string // when no error: expected capacity string
+	}{
+		{
+			name:           "Zero delta no effect",
+			currentSizeStr: "100Gi",
+			growthAmount:   "5Gi",
+			maxSize:        "200Gi",
+			resizeDelta:    0,
+			expectedResult: "105Gi",
+		},
+		{
+			name:           "Growth above delta unchanged",
+			currentSizeStr: "100Gi",
+			growthAmount:   "50Gi",
+			maxSize:        "200Gi",
+			resizeDelta:    delta,
+			expectedResult: "150Gi",
+		},
+		{
+			name:           "Growth below delta bumps to current+delta+1MB",
+			currentSizeStr: "100Gi",
+			growthAmount:   "10Mi",
+			maxSize:        "200Gi",
+			resizeDelta:    delta,
+			expectedResult: expected100GiBumped,
+		},
+		{
+			name:           "Growth equal to delta bumps to current+delta+1MB",
+			currentSizeStr: "100Gi",
+			growthAmount:   "50M", // 50e6 bytes = delta; backend treats <= delta as no-op
+			maxSize:        "200Gi",
+			resizeDelta:    delta,
+			expectedResult: expected100GiBumped,
+		},
+		{
+			name:                 "Bumped result exceeds maxSize — cap at maxSize when growth after cap >= bumpBytes",
+			currentSizeStr:       "100Gi",
+			currentSizeMinusBump: true,
+			growthAmount:         "10Mi",
+			maxSize:              "100Gi",
+			resizeDelta:          delta,
+			expectedResult:       "100Gi",
+		},
+		{
+			name:                   "Capped at maxSize but growth below resize delta — error (stuck resize)",
+			currentSizeStr:         "980M",
+			growthAmount:           "10M",
+			maxSize:                "1G",
+			resizeDelta:            delta,
+			expectStuckResizeError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var currentSize resource.Quantity
+			if tt.currentSizeMinusBump {
+				maxQty := resource.MustParse(tt.currentSizeStr)
+				currentSize = *resource.NewQuantity(maxQty.Value()-deltaAfterBump, resource.BinarySI)
+			} else {
+				currentSize = resource.MustParse(tt.currentSizeStr)
+			}
+			policy := createTestPolicy("80%", tt.growthAmount, tt.maxSize)
+
+			result, err := CalculateFinalCapacity(FinalCapacityRequest{CurrentSize: currentSize, Policy: policy, ResizeDeltaBytes: tt.resizeDelta, CustomCeilingSize: ""})
+
+			if tt.expectStuckResizeError {
+				assert.Error(t, err)
+				assert.True(t, errors.IsAutogrowStuckResizeAtMaxSizeError(err))
+				assert.True(t, result.FinalCapacity.IsZero())
+				return
+			}
+			assert.NoError(t, err)
+			expected := resource.MustParse(tt.expectedResult)
+			assert.Equal(t, 0, result.FinalCapacity.Cmp(expected), "expected %s, got %s", tt.expectedResult, result.FinalCapacity.String())
+		})
+	}
+}
+
+// TestCalculateFinalCapacity_CustomCeilingBytes tests the optional custom ceiling (e.g. subordinate source size).
+// Effective max = min(policy maxSize, floor(customCeilingSize)); parse and floor done in CalculateFinalCapacity.
+func TestCalculateFinalCapacity_CustomCeilingBytes(t *testing.T) {
+	tests := []struct {
+		name                        string
+		currentSize                 string
+		growthAmount                string
+		maxSize                     string
+		customCeiling               string // empty = no ceiling
+		expectedResult              string
+		expectCappedAtPolicyMaxSize bool
+		expectCappedAtCustomCeiling bool
+		expectedEffectiveCap        string // expected CappedAtBytes when capped; empty = 0
+		expectAlreadyAtMaxSizeErr   bool
+		expectStuckResizeError      bool
+		resizeDelta                 int64
+	}{
+		{
+			name:                        "customCeiling empty — no effect",
+			currentSize:                 "100Gi",
+			growthAmount:                "10%",
+			maxSize:                     "200Gi",
+			customCeiling:               "",
+			expectedResult:              "110Gi",
+			expectCappedAtPolicyMaxSize: false,
+			expectCappedAtCustomCeiling: false,
+			expectedEffectiveCap:        "",
+		},
+		{
+			name:                        "Custom ceiling below policy maxSize — cap at ceiling (subordinate at source size)",
+			currentSize:                 "100Gi",
+			growthAmount:                "50%", // 150Gi
+			maxSize:                     "200Gi",
+			customCeiling:               "120Gi",
+			expectedResult:              "120Gi",
+			expectCappedAtPolicyMaxSize: false,
+			expectCappedAtCustomCeiling: true,
+			expectedEffectiveCap:        "120Gi",
+		},
+		{
+			name:                        "Custom ceiling above policy maxSize — effective max is policy maxSize",
+			currentSize:                 "100Gi",
+			growthAmount:                "150%", // 250Gi
+			maxSize:                     "200Gi",
+			customCeiling:               "300Gi",
+			expectedResult:              "200Gi",
+			expectCappedAtPolicyMaxSize: true,
+			expectCappedAtCustomCeiling: false,
+			expectedEffectiveCap:        "200Gi",
+		},
+		{
+			name:                        "Policy has no maxSize, custom ceiling set — cap at ceiling",
+			currentSize:                 "100Gi",
+			growthAmount:                "50%",
+			maxSize:                     "",
+			customCeiling:               "120Gi",
+			expectedResult:              "120Gi",
+			expectCappedAtPolicyMaxSize: false,
+			expectCappedAtCustomCeiling: true,
+			expectedEffectiveCap:        "120Gi",
+		},
+		{
+			name:                        "Growth below custom ceiling — not capped",
+			currentSize:                 "100Gi",
+			growthAmount:                "10%", // 110Gi
+			maxSize:                     "200Gi",
+			customCeiling:               "120Gi",
+			expectedResult:              "110Gi",
+			expectCappedAtPolicyMaxSize: false,
+			expectCappedAtCustomCeiling: false,
+			expectedEffectiveCap:        "",
+		},
+		{
+			name:                      "Already at custom ceiling — error",
+			currentSize:               "120Gi",
+			growthAmount:              "10%",
+			maxSize:                   "200Gi",
+			customCeiling:             "120Gi",
+			expectAlreadyAtMaxSizeErr: true,
+		},
+		{
+			name:                        "Capped at custom ceiling, CappedAtBytes set",
+			currentSize:                 "50Gi",
+			growthAmount:                "200%", // 150Gi
+			maxSize:                     "200Gi",
+			customCeiling:               "100Gi",
+			expectedResult:              "100Gi",
+			expectCappedAtPolicyMaxSize: false,
+			expectCappedAtCustomCeiling: true,
+			expectedEffectiveCap:        "100Gi",
+		},
+		{
+			name:                        "Capped at custom ceiling with resize delta — growth after cap >= bumpBytes (ok)",
+			currentSize:                 "100Gi",
+			growthAmount:                "20%", // 120Gi, cap at 110Gi -> growth 10Gi > bumpBytes
+			maxSize:                     "200Gi",
+			customCeiling:               "110Gi",
+			expectedResult:              "110Gi",
+			expectCappedAtPolicyMaxSize: false,
+			expectCappedAtCustomCeiling: true,
+			expectedEffectiveCap:        "110Gi",
+			resizeDelta:                 int64(config.SANResizeDelta),
+		},
+		{
+			name:                   "Stuck resize when capped at custom ceiling — growth after cap < bumpBytes",
+			currentSize:            "1000Mi", // close to 1Gi so cap leaves growth < 50MB+1MB
+			growthAmount:           "10M",
+			maxSize:                "2Gi",
+			customCeiling:          "1Gi",
+			expectStuckResizeError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			currentSize := resource.MustParse(tt.currentSize)
+			policy := createTestPolicy("80%", tt.growthAmount, tt.maxSize)
+
+			resizeDelta := tt.resizeDelta
+			if tt.expectStuckResizeError && resizeDelta == 0 {
+				resizeDelta = int64(config.SANResizeDelta)
+			}
+
+			result, err := CalculateFinalCapacity(FinalCapacityRequest{CurrentSize: currentSize, Policy: policy, ResizeDeltaBytes: resizeDelta, CustomCeilingSize: tt.customCeiling})
+
+			if tt.expectAlreadyAtMaxSizeErr {
+				assert.Error(t, err)
+				assert.True(t, errors.IsAutogrowAlreadyAtMaxSizeError(err))
+				assert.True(t, result.FinalCapacity.IsZero())
+				return
+			}
+			if tt.expectStuckResizeError {
+				assert.Error(t, err)
+				assert.True(t, errors.IsAutogrowStuckResizeAtMaxSizeError(err))
+				assert.True(t, result.FinalCapacity.IsZero())
+				return
+			}
+
+			assert.NoError(t, err)
+			expected := resource.MustParse(tt.expectedResult)
+			assert.Equal(t, 0, result.FinalCapacity.Cmp(expected), "expected %s, got %s", tt.expectedResult, result.FinalCapacity.String())
+			assert.Equal(t, tt.expectCappedAtPolicyMaxSize, result.CappedAtPolicyMaxSize)
+			if tt.expectedEffectiveCap != "" {
+				expectedCap := resource.MustParse(tt.expectedEffectiveCap)
+				assert.Equal(t, expectedCap.Value(), result.CappedAtBytes)
+			} else {
+				assert.Equal(t, int64(0), result.CappedAtBytes)
+			}
+			if tt.expectCappedAtCustomCeiling {
+				assert.True(t, result.CappedAtCustomCeiling, "expected CappedAtCustomCeiling")
+			} else if !tt.expectAlreadyAtMaxSizeErr && !tt.expectStuckResizeError {
+				assert.False(t, result.CappedAtCustomCeiling)
+			}
+		})
+	}
 }
