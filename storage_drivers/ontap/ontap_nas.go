@@ -961,7 +961,7 @@ func (d *NASStorageDriver) Unpublish(
 	Logc(ctx).WithFields(LogFields{
 		"cachedPolicy": volConfig.ExportPolicy,
 		"actualPolicy": actualExportPolicy,
-	}).Debug("Export policy state check.")
+	}).Trace("Export policy state check.")
 
 	// Sync volConfig with ONTAP's actual state
 	volConfig.ExportPolicy = actualExportPolicy

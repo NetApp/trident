@@ -7161,6 +7161,185 @@ func TestDeleteVolumeConcurrentCore(t *testing.T) {
 				assert.Nil(t, volume)
 			},
 		},
+		{
+			name:       "CloneDeleteTriggersParentCleanup",
+			volumeName: "cloneVol",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
+				mockBackend.EXPECT().RemoveVolume(gomock.Any(), gomock.Any()).Return(nil).Times(2)
+
+				parentVol := &storage.Volume{
+					Config:      &storage.VolumeConfig{InternalName: "parentVol", Name: "parentVol"},
+					BackendUUID: "backend-uuid1",
+					State:       storage.VolumeStateDeleting,
+				}
+				cloneVol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						InternalName:      "cloneVol",
+						Name:              "cloneVol",
+						CloneSourceVolume: "parentVol",
+					},
+					BackendUUID: "backend-uuid1",
+					State:       storage.VolumeStateOnline,
+				}
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, parentVol, cloneVol)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolume(gomock.Any(), gomock.Any()).Return(nil).Times(2)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+
+				// Verify the clone volume is removed from the cache
+				cloneVolume := getVolumeByNameFromCache(t, "cloneVol")
+				assert.Nil(t, cloneVolume)
+
+				// Verify the soft-deleted parent volume is also removed from the cache
+				parentVolume := getVolumeByNameFromCache(t, "parentVol")
+				assert.Nil(t, parentVolume)
+			},
+		},
+		{
+			name:       "CloneDeleteParentNotDeleting",
+			volumeName: "cloneVol",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
+				mockBackend.EXPECT().RemoveVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+				parentVol := &storage.Volume{
+					Config:      &storage.VolumeConfig{InternalName: "parentVol", Name: "parentVol"},
+					BackendUUID: "backend-uuid1",
+					State:       storage.VolumeStateOnline,
+				}
+				cloneVol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						InternalName:      "cloneVol",
+						Name:              "cloneVol",
+						CloneSourceVolume: "parentVol",
+					},
+					BackendUUID: "backend-uuid1",
+					State:       storage.VolumeStateOnline,
+				}
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, parentVol, cloneVol)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+
+				// Verify the clone volume is removed from the cache
+				cloneVolume := getVolumeByNameFromCache(t, "cloneVol")
+				assert.Nil(t, cloneVolume)
+
+				// Verify the parent volume is NOT removed (it's not in deleting state)
+				parentVolume := getVolumeByNameFromCache(t, "parentVol")
+				assert.NotNil(t, parentVolume)
+			},
+		},
+		{
+			name:       "CloneDeleteParentCleanupFails",
+			volumeName: "cloneVol",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
+				mockBackend.EXPECT().RemoveVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockBackend.EXPECT().RemoveVolume(gomock.Any(), gomock.Any()).Return(failed).Times(1)
+
+				parentVol := &storage.Volume{
+					Config:      &storage.VolumeConfig{InternalName: "parentVol", Name: "parentVol"},
+					BackendUUID: "backend-uuid1",
+					State:       storage.VolumeStateDeleting,
+				}
+				cloneVol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						InternalName:      "cloneVol",
+						Name:              "cloneVol",
+						CloneSourceVolume: "parentVol",
+					},
+					BackendUUID: "backend-uuid1",
+					State:       storage.VolumeStateOnline,
+				}
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, parentVol, cloneVol)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+
+				// Verify the clone volume is removed from the cache
+				cloneVolume := getVolumeByNameFromCache(t, "cloneVol")
+				assert.Nil(t, cloneVolume)
+
+				// Verify the parent volume is still in the cache (cleanup failed but clone deletion succeeded)
+				parentVolume := getVolumeByNameFromCache(t, "parentVol")
+				assert.NotNil(t, parentVolume)
+			},
+		},
+		{
+			name:       "CloneDeleteParentStillHasSnapshots",
+			volumeName: "cloneVol",
+			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
+				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
+				mockBackend.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
+				mockBackend.EXPECT().RemoveVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+				parentVol := &storage.Volume{
+					Config:      &storage.VolumeConfig{InternalName: "parentVol", Name: "parentVol"},
+					BackendUUID: "backend-uuid1",
+					State:       storage.VolumeStateDeleting,
+				}
+				cloneVol := &storage.Volume{
+					Config: &storage.VolumeConfig{
+						InternalName:      "cloneVol",
+						Name:              "cloneVol",
+						CloneSourceVolume: "parentVol",
+					},
+					BackendUUID: "backend-uuid1",
+					State:       storage.VolumeStateOnline,
+				}
+				snap := &storage.Snapshot{
+					Config: &storage.SnapshotConfig{Name: "snap1", VolumeName: "parentVol"},
+				}
+
+				addBackendsToCache(t, mockBackend)
+				addVolumesToCache(t, parentVol, cloneVol)
+				addSnapshotsToCache(t, snap)
+
+				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+				mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().DeleteVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+			},
+			verifyError: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+
+				// Verify the clone volume is removed from the cache
+				cloneVolume := getVolumeByNameFromCache(t, "cloneVol")
+				assert.Nil(t, cloneVolume)
+
+				// Verify the parent volume remains in the cache (still has snapshots pinning it)
+				parentVolume := getVolumeByNameFromCache(t, "parentVol")
+				assert.NotNil(t, parentVolume)
+				assert.Equal(t, storage.VolumeStateDeleting, parentVolume.State)
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -12590,6 +12769,945 @@ func TestUnpublishVolumeConcurrentCore(t *testing.T) {
 			err := o.UnpublishVolume(testCtx, tt.volumeName, tt.nodeName)
 			if tt.verifyError != nil {
 				tt.verifyError(t, err)
+			}
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestDiscoverSubordinateVolume(t *testing.T) {
+	tests := []struct {
+		name              string
+		volumeName        string
+		setupCache        func(*testing.T)
+		expectSubordinate bool
+		expectSource      string
+		expectNotFound    bool
+	}{
+		{
+			name:       "normal volume",
+			volumeName: "normalVol",
+			setupCache: func(t *testing.T) {
+				addVolumesToCache(t, &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: "normalVol"},
+					BackendUUID: "uuid",
+				})
+			},
+			expectSubordinate: false,
+			expectSource:      "",
+		},
+		{
+			name:       "subordinate volume",
+			volumeName: "subVol",
+			setupCache: func(t *testing.T) {
+				addVolumesToCache(t, &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: "sourceVol"},
+					BackendUUID: "uuid",
+				})
+				addSubordinateVolumesToCache(t, &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:              "subVol",
+						ShareSourceVolume: "sourceVol",
+					},
+					State: storage.VolumeStateSubordinate,
+				})
+			},
+			expectSubordinate: true,
+			expectSource:      "sourceVol",
+		},
+		{
+			name:           "volume not found",
+			volumeName:     "nonExistent",
+			setupCache:     func(t *testing.T) {},
+			expectNotFound: true,
+		},
+		{
+			name:       "subordinate with empty source",
+			volumeName: "subVolEmpty",
+			setupCache: func(t *testing.T) {
+				addSubordinateVolumesToCache(t, &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:              "subVolEmpty",
+						ShareSourceVolume: "",
+					},
+					State: storage.VolumeStateSubordinate,
+				})
+			},
+			expectSubordinate: true,
+			expectSource:      "",
+		},
+		{
+			name:       "RO clone is not a subordinate",
+			volumeName: "cloneVol",
+			setupCache: func(t *testing.T) {
+				addVolumesToCache(t, &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:              "cloneVol",
+						ReadOnlyClone:     true,
+						CloneSourceVolume: "sourceVol",
+					},
+					BackendUUID: "uuid",
+				})
+			},
+			expectSubordinate: false,
+			expectSource:      "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+			o := getConcurrentOrchestrator()
+			tt.setupCache(t)
+
+			isSub, source, err := o.discoverSubordinateVolume(testCtx, tt.volumeName)
+
+			if tt.expectNotFound {
+				assert.True(t, errors.IsNotFoundError(err))
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectSubordinate, isSub)
+			assert.Equal(t, tt.expectSource, source)
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestDiscoverROCloneSource(t *testing.T) {
+	tests := []struct {
+		name              string
+		volumeName        string
+		setupCache        func(*testing.T)
+		expectROClone     bool
+		expectCloneSource string
+	}{
+		{
+			name:       "normal volume is not an RO clone",
+			volumeName: "normalVol",
+			setupCache: func(t *testing.T) {
+				addVolumesToCache(t, &storage.Volume{
+					Config:      &storage.VolumeConfig{Name: "normalVol"},
+					BackendUUID: "uuid",
+				})
+			},
+			expectROClone:     false,
+			expectCloneSource: "",
+		},
+		{
+			name:       "read-only clone volume",
+			volumeName: "cloneVol",
+			setupCache: func(t *testing.T) {
+				addVolumesToCache(t, &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:              "cloneVol",
+						ReadOnlyClone:     true,
+						CloneSourceVolume: "sourceVol",
+					},
+					BackendUUID: "uuid",
+				})
+			},
+			expectROClone:     true,
+			expectCloneSource: "sourceVol",
+		},
+		{
+			name:       "RO clone with empty source",
+			volumeName: "cloneEmpty",
+			setupCache: func(t *testing.T) {
+				addVolumesToCache(t, &storage.Volume{
+					Config: &storage.VolumeConfig{
+						Name:              "cloneEmpty",
+						ReadOnlyClone:     true,
+						CloneSourceVolume: "",
+					},
+					BackendUUID: "uuid",
+				})
+			},
+			expectROClone:     true,
+			expectCloneSource: "",
+		},
+		{
+			name:              "volume not in cache",
+			volumeName:        "nonExistent",
+			setupCache:        func(t *testing.T) {},
+			expectROClone:     false,
+			expectCloneSource: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+			o := getConcurrentOrchestrator()
+			tt.setupCache(t)
+
+			isClone, cloneSource, err := o.discoverROCloneSource(testCtx, tt.volumeName)
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectROClone, isClone)
+			assert.Equal(t, tt.expectCloneSource, cloneSource)
+
+			persistenceCleanup(t, o)
+		})
+	}
+}
+
+func TestPublishVolumeSubordinate(t *testing.T) {
+	config.CurrentDriverContext = config.ContextCSI
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	driver := mockstorage.NewMockDriver(mockCtrl)
+	driver.EXPECT().Name().Return(config.FakeStorageDriverName).AnyTimes()
+	driver.EXPECT().GetStorageBackendSpecs(gomock.Any(), gomock.Any()).Return(nil)
+	driver.EXPECT().CreateFollowup(gomock.Any(), gomock.Any()).Return(nil)
+	driver.EXPECT().Publish(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+	fakeNode := getFakeNode("testNode")
+	addNodesToCache(t, fakeNode)
+	fakeBackend := getFakeBackend("testBackend", "uuid", driver)
+	addBackendsToCache(t, fakeBackend)
+
+	sourceVol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "sourceVol", InternalName: "sourceVol"},
+		BackendUUID: "uuid",
+	}
+	addVolumesToCache(t, sourceVol)
+	addVolumesToPersistence(t, o, sourceVol)
+
+	subVol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "subVol",
+			InternalName:      "subVol",
+			ShareSourceVolume: "sourceVol",
+		},
+		State:       storage.VolumeStateSubordinate,
+		BackendUUID: "uuid",
+	}
+	addSubordinateVolumesToCache(t, subVol)
+
+	err := o.PublishVolume(testCtx, "subVol", &models.VolumePublishInfo{HostName: "testNode"})
+	assert.NoError(t, err)
+
+	persistenceCleanup(t, o)
+}
+
+func TestPublishVolumeSubordinate_SourceNotFound(t *testing.T) {
+	config.CurrentDriverContext = config.ContextCSI
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	fakeNode := getFakeNode("testNode")
+	addNodesToCache(t, fakeNode)
+	fakeBackend := getFakeBackend("testBackend", "uuid", nil)
+	addBackendsToCache(t, fakeBackend)
+
+	subVol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "subVol",
+			ShareSourceVolume: "missingSource",
+		},
+		State:       storage.VolumeStateSubordinate,
+		BackendUUID: "uuid",
+	}
+	addSubordinateVolumesToCache(t, subVol)
+
+	err := o.PublishVolume(testCtx, "subVol", &models.VolumePublishInfo{HostName: "testNode"})
+	assert.Error(t, err)
+	assert.True(t, errors.IsNotFoundError(err))
+	assert.ErrorContains(t, err, "source volume missingSource")
+
+	persistenceCleanup(t, o)
+}
+
+func TestPublishVolumeROClone(t *testing.T) {
+	config.CurrentDriverContext = config.ContextCSI
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	driver := mockstorage.NewMockDriver(mockCtrl)
+	driver.EXPECT().Name().Return(config.FakeStorageDriverName).AnyTimes()
+	driver.EXPECT().GetStorageBackendSpecs(gomock.Any(), gomock.Any()).Return(nil)
+	driver.EXPECT().CreateFollowup(gomock.Any(), gomock.Any()).Return(nil)
+	driver.EXPECT().Publish(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+	fakeNode := getFakeNode("testNode")
+	addNodesToCache(t, fakeNode)
+	fakeBackend := getFakeBackend("testBackend", "uuid", driver)
+	addBackendsToCache(t, fakeBackend)
+
+	cloneVol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "cloneVol",
+			InternalName:      "cloneVol",
+			ReadOnlyClone:     true,
+			CloneSourceVolume: "sourceVol",
+		},
+		BackendUUID: "uuid",
+	}
+	addVolumesToCache(t, cloneVol)
+	addVolumesToPersistence(t, o, cloneVol)
+
+	err := o.PublishVolume(testCtx, "cloneVol", &models.VolumePublishInfo{HostName: "testNode"})
+	assert.NoError(t, err)
+
+	persistenceCleanup(t, o)
+}
+
+func TestPublishVolumeSubordinate_SourceDeleting(t *testing.T) {
+	config.CurrentDriverContext = config.ContextCSI
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	fakeNode := getFakeNode("testNode")
+	addNodesToCache(t, fakeNode)
+	fakeBackend := getFakeBackend("testBackend", "uuid", nil)
+	addBackendsToCache(t, fakeBackend)
+
+	sourceVol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "sourceVol", InternalName: "sourceVol"},
+		BackendUUID: "uuid",
+		State:       storage.VolumeStateDeleting,
+	}
+	addVolumesToCache(t, sourceVol)
+	addVolumesToPersistence(t, o, sourceVol)
+
+	subVol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "subVol",
+			ShareSourceVolume: "sourceVol",
+		},
+		State:       storage.VolumeStateSubordinate,
+		BackendUUID: "uuid",
+	}
+	addSubordinateVolumesToCache(t, subVol)
+
+	err := o.PublishVolume(testCtx, "subVol", &models.VolumePublishInfo{HostName: "testNode"})
+	assert.Error(t, err)
+	assert.True(t, errors.IsVolumeStateError(err))
+
+	persistenceCleanup(t, o)
+}
+
+func TestPublishVolumeSubordinate_EmptySource(t *testing.T) {
+	config.CurrentDriverContext = config.ContextCSI
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	subVol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "subVol",
+			ShareSourceVolume: "",
+		},
+		State:       storage.VolumeStateSubordinate,
+		BackendUUID: "uuid",
+	}
+	addSubordinateVolumesToCache(t, subVol)
+
+	err := o.PublishVolume(testCtx, "subVol", &models.VolumePublishInfo{HostName: "testNode"})
+	assert.Error(t, err)
+	assert.True(t, errors.IsNotFoundError(err))
+
+	persistenceCleanup(t, o)
+}
+
+func TestUnpublishVolumeSubordinate(t *testing.T) {
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	fakeNode := getFakeNode("testNode")
+	addNodesToCache(t, fakeNode)
+	fakeBackend := getFakeBackend("testBackend", "uuid", nil)
+	addBackendsToCache(t, fakeBackend)
+
+	sourceVol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "sourceVol", InternalName: "sourceVol"},
+		BackendUUID: "uuid",
+	}
+	addVolumesToCache(t, sourceVol)
+	addVolumesToPersistence(t, o, sourceVol)
+
+	subVol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "subVol",
+			ShareSourceVolume: "sourceVol",
+		},
+		State:       storage.VolumeStateSubordinate,
+		BackendUUID: "uuid",
+	}
+	addSubordinateVolumesToCache(t, subVol)
+
+	pub := getFakeVolumePublication("subVol", "testNode")
+	addVolumePublicationsToCache(t, pub)
+	addVolumePublicationsToPersistence(t, o, pub)
+
+	err := o.UnpublishVolume(testCtx, "subVol", "testNode")
+	assert.NoError(t, err)
+
+	persistenceCleanup(t, o)
+}
+
+func TestUnpublishVolumeSubordinate_SourceNotFound(t *testing.T) {
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	fakeNode := getFakeNode("testNode")
+	addNodesToCache(t, fakeNode)
+	fakeBackend := getFakeBackend("testBackend", "uuid", nil)
+	addBackendsToCache(t, fakeBackend)
+
+	subVol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "subVol",
+			ShareSourceVolume: "missingSource",
+		},
+		State:       storage.VolumeStateSubordinate,
+		BackendUUID: "uuid",
+	}
+	addSubordinateVolumesToCache(t, subVol)
+
+	pub := getFakeVolumePublication("subVol", "testNode")
+	addVolumePublicationsToCache(t, pub)
+	addVolumePublicationsToPersistence(t, o, pub)
+
+	err := o.UnpublishVolume(testCtx, "subVol", "testNode")
+	assert.Error(t, err)
+	assert.True(t, errors.IsNotFoundError(err))
+
+	persistenceCleanup(t, o)
+}
+
+func TestUnpublishVolumeROClone_WithSiblings(t *testing.T) {
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	node1 := getFakeNode("node1")
+	node2 := getFakeNode("node2")
+	addNodesToCache(t, node1, node2)
+
+	fakeBackend := getFakeBackend("testBackend", "uuid", nil)
+	addBackendsToCache(t, fakeBackend)
+
+	sourceVol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "sourceVol", InternalName: "sourceVol"},
+		BackendUUID: "uuid",
+	}
+	cloneVol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "cloneVol",
+			InternalName:      "cloneVol",
+			ReadOnlyClone:     true,
+			CloneSourceVolume: "sourceVol",
+		},
+		BackendUUID: "uuid",
+	}
+	siblingClone := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "siblingClone",
+			InternalName:      "siblingClone",
+			ReadOnlyClone:     true,
+			CloneSourceVolume: "sourceVol",
+		},
+		BackendUUID: "uuid",
+	}
+	addVolumesToCache(t, sourceVol, cloneVol, siblingClone)
+	addVolumesToPersistence(t, o, cloneVol)
+
+	pubClone := getFakeVolumePublication("cloneVol", "node1")
+	pubSibling := getFakeVolumePublication("siblingClone", "node2")
+	addVolumePublicationsToCache(t, pubClone, pubSibling)
+	addVolumePublicationsToPersistence(t, o, pubClone)
+
+	err := o.UnpublishVolume(testCtx, "cloneVol", "node1")
+	assert.NoError(t, err)
+
+	persistenceCleanup(t, o)
+}
+
+func TestUnpublishVolume_NormalWithChildClones(t *testing.T) {
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	node1 := getFakeNode("node1")
+	node2 := getFakeNode("node2")
+	addNodesToCache(t, node1, node2)
+
+	fakeBackend := getFakeBackend("testBackend", "uuid", nil)
+	addBackendsToCache(t, fakeBackend)
+
+	sourceVol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "sourceVol", InternalName: "sourceVol"},
+		BackendUUID: "uuid",
+	}
+	childClone := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "childClone",
+			InternalName:      "childClone",
+			ReadOnlyClone:     true,
+			CloneSourceVolume: "sourceVol",
+		},
+		BackendUUID: "uuid",
+	}
+	addVolumesToCache(t, sourceVol, childClone)
+	addVolumesToPersistence(t, o, sourceVol)
+
+	pubSource := getFakeVolumePublication("sourceVol", "node1")
+	pubChild := getFakeVolumePublication("childClone", "node2")
+	addVolumePublicationsToCache(t, pubSource, pubChild)
+	addVolumePublicationsToPersistence(t, o, pubSource)
+
+	err := o.UnpublishVolume(testCtx, "sourceVol", "node1")
+	assert.NoError(t, err)
+
+	persistenceCleanup(t, o)
+}
+
+func TestUnpublishVolume_NormalWithSubordinates(t *testing.T) {
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	node1 := getFakeNode("node1")
+	node2 := getFakeNode("node2")
+	addNodesToCache(t, node1, node2)
+
+	fakeBackend := getFakeBackend("testBackend", "uuid", nil)
+	addBackendsToCache(t, fakeBackend)
+
+	sourceVol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "sourceVol", InternalName: "sourceVol"},
+		BackendUUID: "uuid",
+	}
+	addVolumesToCache(t, sourceVol)
+	addVolumesToPersistence(t, o, sourceVol)
+
+	subVol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "subVol",
+			ShareSourceVolume: "sourceVol",
+		},
+		State:       storage.VolumeStateSubordinate,
+		BackendUUID: "uuid",
+	}
+	addSubordinateVolumesToCache(t, subVol)
+
+	pubSource := getFakeVolumePublication("sourceVol", "node1")
+	pubSub := getFakeVolumePublication("subVol", "node2")
+	addVolumePublicationsToCache(t, pubSource, pubSub)
+	addVolumePublicationsToPersistence(t, o, pubSource)
+
+	err := o.UnpublishVolume(testCtx, "sourceVol", "node1")
+	assert.NoError(t, err)
+
+	persistenceCleanup(t, o)
+}
+
+// TestUnpublishVolume_SourceWithSubordinatesAndROClones tests unpublishing a source volume
+// that has both subordinate volumes and RO clones published to different nodes.
+// Family: sourceVol + subVol_A (subordinate) + clone_B (RO clone).
+func TestUnpublishVolume_SourceWithSubordinatesAndROClones(t *testing.T) {
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	node1 := getFakeNode("node1")
+	node2 := getFakeNode("node2")
+	node3 := getFakeNode("node3")
+	addNodesToCache(t, node1, node2, node3)
+
+	fakeBackend := getFakeBackend("testBackend", "uuid", nil)
+	addBackendsToCache(t, fakeBackend)
+
+	sourceVol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "sourceVol", InternalName: "sourceVol"},
+		BackendUUID: "uuid",
+	}
+	cloneB := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "cloneB",
+			InternalName:      "cloneB",
+			ReadOnlyClone:     true,
+			CloneSourceVolume: "sourceVol",
+		},
+		BackendUUID: "uuid",
+	}
+	addVolumesToCache(t, sourceVol, cloneB)
+	addVolumesToPersistence(t, o, sourceVol)
+
+	subVolA := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "subVolA",
+			ShareSourceVolume: "sourceVol",
+		},
+		State:       storage.VolumeStateSubordinate,
+		BackendUUID: "uuid",
+	}
+	addSubordinateVolumesToCache(t, subVolA)
+
+	pubSource := getFakeVolumePublication("sourceVol", "node1")
+	pubSub := getFakeVolumePublication("subVolA", "node2")
+	pubClone := getFakeVolumePublication("cloneB", "node3")
+	addVolumePublicationsToCache(t, pubSource, pubSub, pubClone)
+	addVolumePublicationsToPersistence(t, o, pubSource)
+
+	err := o.UnpublishVolume(testCtx, "sourceVol", "node1")
+	assert.NoError(t, err)
+
+	persistenceCleanup(t, o)
+}
+
+// TestUnpublishVolume_SubordinateWhereSourceHasROClones tests unpublishing a subordinate volume
+// when the source volume also has RO clones. The remaining node list must include nodes
+// from the source, other subordinates, and RO clones.
+// Family: sourceVol + subVol (subordinate being unpublished) + cloneB (RO clone of source).
+func TestUnpublishVolume_SubordinateWhereSourceHasROClones(t *testing.T) {
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	node1 := getFakeNode("node1")
+	node2 := getFakeNode("node2")
+	node3 := getFakeNode("node3")
+	addNodesToCache(t, node1, node2, node3)
+
+	fakeBackend := getFakeBackend("testBackend", "uuid", nil)
+	addBackendsToCache(t, fakeBackend)
+
+	sourceVol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "sourceVol", InternalName: "sourceVol"},
+		BackendUUID: "uuid",
+	}
+	cloneB := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "cloneB",
+			InternalName:      "cloneB",
+			ReadOnlyClone:     true,
+			CloneSourceVolume: "sourceVol",
+		},
+		BackendUUID: "uuid",
+	}
+	addVolumesToCache(t, sourceVol, cloneB)
+	addVolumesToPersistence(t, o, sourceVol)
+
+	subVol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "subVol",
+			ShareSourceVolume: "sourceVol",
+		},
+		State:       storage.VolumeStateSubordinate,
+		BackendUUID: "uuid",
+	}
+	addSubordinateVolumesToCache(t, subVol)
+
+	pubSub := getFakeVolumePublication("subVol", "node1")
+	pubSource := getFakeVolumePublication("sourceVol", "node2")
+	pubClone := getFakeVolumePublication("cloneB", "node3")
+	addVolumePublicationsToCache(t, pubSub, pubSource, pubClone)
+	addVolumePublicationsToPersistence(t, o, pubSub)
+
+	err := o.UnpublishVolume(testCtx, "subVol", "node1")
+	assert.NoError(t, err)
+
+	persistenceCleanup(t, o)
+}
+
+// TestUnpublishVolume_SubordinateWhereSourceIsROClone tests unpublishing a subordinate volume
+// whose source volume is itself an RO clone. The full family must include the clone source
+// (grandparent) and sibling clones so the export policy retains access for their published nodes.
+func TestUnpublishVolume_SubordinateWhereSourceIsROClone(t *testing.T) {
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	node1 := getFakeNode("node1")
+	node2 := getFakeNode("node2")
+	node3 := getFakeNode("node3")
+	addNodesToCache(t, node1, node2, node3)
+
+	fakeBackend := getFakeBackend("testBackend", "uuid", nil)
+	addBackendsToCache(t, fakeBackend)
+
+	grandparent := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "grandparent", InternalName: "grandparent"},
+		BackendUUID: "uuid",
+	}
+	cloneA := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "cloneA",
+			InternalName:      "cloneA",
+			ReadOnlyClone:     true,
+			CloneSourceVolume: "grandparent",
+		},
+		BackendUUID: "uuid",
+	}
+	cloneB := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "cloneB",
+			InternalName:      "cloneB",
+			ReadOnlyClone:     true,
+			CloneSourceVolume: "grandparent",
+		},
+		BackendUUID: "uuid",
+	}
+	addVolumesToCache(t, grandparent, cloneA, cloneB)
+	addVolumesToPersistence(t, o, cloneA)
+
+	subVol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "subVol",
+			ShareSourceVolume: "cloneA",
+		},
+		State:       storage.VolumeStateSubordinate,
+		BackendUUID: "uuid",
+	}
+	addSubordinateVolumesToCache(t, subVol)
+
+	pubSub := getFakeVolumePublication("subVol", "node1")
+	pubGrandparent := getFakeVolumePublication("grandparent", "node2")
+	pubCloneB := getFakeVolumePublication("cloneB", "node3")
+	addVolumePublicationsToCache(t, pubSub, pubGrandparent, pubCloneB)
+	addVolumePublicationsToPersistence(t, o, pubSub)
+
+	err := o.UnpublishVolume(testCtx, "subVol", "node1")
+	assert.NoError(t, err)
+
+	persistenceCleanup(t, o)
+}
+
+// TestUnpublishVolume_ROCloneLastClone tests unpublishing the last (and only) RO clone
+// of a source volume with no siblings.
+func TestUnpublishVolume_ROCloneLastClone(t *testing.T) {
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	node1 := getFakeNode("node1")
+	node2 := getFakeNode("node2")
+	addNodesToCache(t, node1, node2)
+
+	fakeBackend := getFakeBackend("testBackend", "uuid", nil)
+	addBackendsToCache(t, fakeBackend)
+
+	sourceVol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "sourceVol", InternalName: "sourceVol"},
+		BackendUUID: "uuid",
+	}
+	cloneVol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "cloneVol",
+			InternalName:      "cloneVol",
+			ReadOnlyClone:     true,
+			CloneSourceVolume: "sourceVol",
+		},
+		BackendUUID: "uuid",
+	}
+	addVolumesToCache(t, sourceVol, cloneVol)
+	addVolumesToPersistence(t, o, cloneVol)
+
+	pubClone := getFakeVolumePublication("cloneVol", "node1")
+	pubSource := getFakeVolumePublication("sourceVol", "node2")
+	addVolumePublicationsToCache(t, pubClone, pubSource)
+	addVolumePublicationsToPersistence(t, o, pubClone)
+
+	err := o.UnpublishVolume(testCtx, "cloneVol", "node1")
+	assert.NoError(t, err)
+
+	persistenceCleanup(t, o)
+}
+
+// TestUnpublishVolume_ROCloneWithSubordinates tests unpublishing an RO clone when the
+// source volume has subordinate volumes published to other nodes.
+// Family: sourceVol + cloneVol (RO clone being unpublished) + subVol (subordinate of source).
+func TestUnpublishVolume_ROCloneWithSubordinates(t *testing.T) {
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	node1 := getFakeNode("node1")
+	node2 := getFakeNode("node2")
+	node3 := getFakeNode("node3")
+	addNodesToCache(t, node1, node2, node3)
+
+	fakeBackend := getFakeBackend("testBackend", "uuid", nil)
+	addBackendsToCache(t, fakeBackend)
+
+	sourceVol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "sourceVol", InternalName: "sourceVol"},
+		BackendUUID: "uuid",
+	}
+	cloneVol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "cloneVol",
+			InternalName:      "cloneVol",
+			ReadOnlyClone:     true,
+			CloneSourceVolume: "sourceVol",
+		},
+		BackendUUID: "uuid",
+	}
+	addVolumesToCache(t, sourceVol, cloneVol)
+	addVolumesToPersistence(t, o, cloneVol)
+
+	subVol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:              "subVol",
+			ShareSourceVolume: "sourceVol",
+		},
+		State:       storage.VolumeStateSubordinate,
+		BackendUUID: "uuid",
+	}
+	addSubordinateVolumesToCache(t, subVol)
+
+	pubClone := getFakeVolumePublication("cloneVol", "node1")
+	pubSource := getFakeVolumePublication("sourceVol", "node2")
+	pubSub := getFakeVolumePublication("subVol", "node3")
+	addVolumePublicationsToCache(t, pubClone, pubSource, pubSub)
+	addVolumePublicationsToPersistence(t, o, pubClone)
+
+	err := o.UnpublishVolume(testCtx, "cloneVol", "node1")
+	assert.NoError(t, err)
+
+	persistenceCleanup(t, o)
+}
+
+func TestUnpublishVolume_PublicationNotFound(t *testing.T) {
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	fakeNode := getFakeNode("testNode")
+	addNodesToCache(t, fakeNode)
+	fakeBackend := getFakeBackend("testBackend", "uuid", nil)
+	addBackendsToCache(t, fakeBackend)
+
+	vol := &storage.Volume{
+		Config:      &storage.VolumeConfig{Name: "testVol", InternalName: "testVol"},
+		BackendUUID: "uuid",
+	}
+	addVolumesToCache(t, vol)
+	addVolumesToPersistence(t, o, vol)
+
+	err := o.UnpublishVolume(testCtx, "testVol", "testNode")
+	assert.NoError(t, err)
+
+	persistenceCleanup(t, o)
+}
+
+func TestUnpublishVolume_VolumeNotFound(t *testing.T) {
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	err := o.UnpublishVolume(testCtx, "nonExistent", "testNode")
+	assert.NoError(t, err)
+
+	persistenceCleanup(t, o)
+}
+
+// TestUnpublishVolume_DriverMutationPersisted verifies that when backend.UnpublishVolume
+// mutates volume.Config (e.g. updating ExportPolicy), the mutation is persisted back to
+// both the store and the cache via updateVolumeInStoreAndCache.
+func TestUnpublishVolume_DriverMutationPersisted(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+	o := getConcurrentOrchestrator()
+
+	mockBackend := getMockBackend(mockCtrl, "testBackend", "uuid")
+	mockBackend.EXPECT().UnpublishVolume(gomock.Any(), gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ context.Context, volConfig *storage.VolumeConfig, _ *models.VolumePublishInfo) error {
+			volConfig.ExportPolicy = "updated-policy"
+			return nil
+		})
+	addBackendsToCache(t, mockBackend)
+
+	node := getFakeNode("node1")
+	addNodesToCache(t, node)
+
+	vol := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			Name:         "testVol",
+			InternalName: "testVol",
+			ExportPolicy: "original-policy",
+		},
+		BackendUUID: "uuid",
+	}
+	addVolumesToCache(t, vol)
+	addVolumesToPersistence(t, o, vol)
+
+	pub := getFakeVolumePublication("testVol", "node1")
+	addVolumePublicationsToCache(t, pub)
+	addVolumePublicationsToPersistence(t, o, pub)
+
+	err := o.UnpublishVolume(testCtx, "testVol", "node1")
+	assert.NoError(t, err)
+
+	// Verify the driver's mutation was persisted to cache.
+	readResults, readUnlocker, readErr := db.Lock(testCtx, db.Query(db.InconsistentReadVolume("testVol")))
+	defer readUnlocker()
+	require.NoError(t, readErr)
+
+	cachedVol := readResults[0].Volume.Read
+	require.NotNil(t, cachedVol)
+	assert.Equal(t, "updated-policy", cachedVol.Config.ExportPolicy,
+		"driver mutation to ExportPolicy should be persisted to cache")
+
+	persistenceCleanup(t, o)
+}
+
+func TestTryDeleteSoftDeletedNode(t *testing.T) {
+	tests := []struct {
+		name              string
+		setupNode         *models.Node
+		setupPublications []*models.VolumePublication
+		expectNodeDeleted bool
+	}{
+		{
+			name:              "NodeNotInCache",
+			setupNode:         nil,
+			expectNodeDeleted: false,
+		},
+		{
+			name:              "NodeNotDeleted",
+			setupNode:         &models.Node{Name: "node1", Deleted: false},
+			expectNodeDeleted: false,
+		},
+		{
+			name:              "SoftDeletedNodeWithPublications",
+			setupNode:         &models.Node{Name: "node1", Deleted: true},
+			setupPublications: []*models.VolumePublication{{VolumeName: "vol1", NodeName: "node1"}},
+			expectNodeDeleted: false,
+		},
+		{
+			name:              "SoftDeletedNodeNoPublications",
+			setupNode:         &models.Node{Name: "node1", Deleted: true},
+			expectNodeDeleted: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db.Initialize()
+			o := getConcurrentOrchestrator()
+
+			if tt.setupNode != nil {
+				addNodesToCache(t, tt.setupNode)
+				err := o.storeClient.AddOrUpdateNode(testCtx, tt.setupNode)
+				require.NoError(t, err)
+			}
+			for _, pub := range tt.setupPublications {
+				addVolumePublicationsToCache(t, pub)
+				addVolumePublicationsToPersistence(t, o, pub)
+			}
+
+			err := o.tryDeleteSoftDeletedNode(testCtx, "node1")
+			assert.NoError(t, err)
+
+			cachedNode := getNodeByNameFromCache(t, "node1")
+			if tt.expectNodeDeleted {
+				assert.Nil(t, cachedNode, "node should be removed from cache")
+			} else if tt.setupNode != nil {
+				assert.NotNil(t, cachedNode, "node should still be in cache")
 			}
 
 			persistenceCleanup(t, o)
