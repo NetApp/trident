@@ -19,6 +19,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	k8sfake "k8s.io/client-go/kubernetes/fake"
+	ktesting "k8s.io/client-go/testing"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/util/workqueue"
 
 	"github.com/netapp/trident/config"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
@@ -2802,4 +2806,298 @@ func TestGetTridentBackend_EdgeCases(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, backend)
 	assert.Equal(t, "test-uuid-123", backend.BackendUUID)
+}
+
+// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TAGRI workqueue and rate limiter unit tests (processNextTagriWorkItem requeue behavior)
+// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// fakeTagriQueue wraps a real RateLimitingInterface and records AddAfter, AddRateLimited, Add, Forget calls.
+type fakeTagriQueue struct {
+	inner         workqueue.RateLimitingInterface
+	AddAfterCalls []struct {
+		Item interface{}
+		D    time.Duration
+	}
+	AddRateLimitedCalls []interface{}
+	AddCalls            []interface{}
+	ForgetCalls         []interface{}
+}
+
+func (s *fakeTagriQueue) Add(item interface{}) {
+	s.AddCalls = append(s.AddCalls, item)
+	s.inner.Add(item)
+}
+
+func (s *fakeTagriQueue) AddAfter(item interface{}, d time.Duration) {
+	s.AddAfterCalls = append(s.AddAfterCalls, struct {
+		Item interface{}
+		D    time.Duration
+	}{item, d})
+	s.inner.AddAfter(item, d)
+}
+
+func (s *fakeTagriQueue) AddRateLimited(item interface{}) {
+	s.AddRateLimitedCalls = append(s.AddRateLimitedCalls, item)
+	s.inner.AddRateLimited(item)
+}
+
+func (s *fakeTagriQueue) Get() (interface{}, bool) {
+	return s.inner.Get()
+}
+
+func (s *fakeTagriQueue) Done(item interface{}) {
+	s.inner.Done(item)
+}
+
+func (s *fakeTagriQueue) Forget(item interface{}) {
+	s.ForgetCalls = append(s.ForgetCalls, item)
+	s.inner.Forget(item)
+}
+
+func (s *fakeTagriQueue) Len() int {
+	return s.inner.Len()
+}
+
+func (s *fakeTagriQueue) ShutDown() {
+	s.inner.ShutDown()
+}
+
+func (s *fakeTagriQueue) ShutDownWithDrain() {
+	s.inner.ShutDownWithDrain()
+}
+
+func (s *fakeTagriQueue) ShuttingDown() bool {
+	return s.inner.ShuttingDown()
+}
+
+func (s *fakeTagriQueue) NumRequeues(item interface{}) int {
+	return s.inner.NumRequeues(item)
+}
+
+// fixedWhenRateLimiter is a workqueue.RateLimiter that returns a fixed When() delay (for testing nextDelay > maxDuration).
+type fixedWhenRateLimiter struct {
+	WhenDelay time.Duration
+}
+
+func (f *fixedWhenRateLimiter) When(item interface{}) time.Duration { return f.WhenDelay }
+func (f *fixedWhenRateLimiter) Forget(item interface{})             {}
+func (f *fixedWhenRateLimiter) NumRequeues(item interface{}) int    { return 0 }
+
+// TestWorkqueueRateLimiter_WhenThenAddRateLimited_DoubleCounts confirms that client-go's
+// AddRateLimited calls the rate limiter's When() internally, and When() increments the requeue count.
+// So calling When() then AddRateLimited() double-counts one failure (NumRequeues becomes 2).
+// Our controller avoids this by calling When() once and then AddAfter(item, nextDelay).
+func TestWorkqueueRateLimiter_WhenThenAddRateLimited_DoubleCounts(t *testing.T) {
+	limiter := workqueue.NewItemExponentialFailureRateLimiter(5*time.Millisecond, 1000*time.Second)
+	queue := workqueue.NewRateLimitingQueue(limiter)
+	item := "test-item"
+
+	// Simulate: get delay (When increments count to 1), then AddRateLimited (calls When again, count 2).
+	_ = limiter.When(item)
+	queue.AddRateLimited(item)
+	assert.Equal(t, 2, queue.NumRequeues(item), "When() then AddRateLimited() calls When() twice; NumRequeues should be 2")
+}
+
+// TestWorkqueueRateLimiter_WhenThenAddAfter_SingleCount confirms that calling When() once then
+// AddAfter(item, delay) does not call When() again, so the failure is counted once (NumRequeues == 1).
+func TestWorkqueueRateLimiter_WhenThenAddAfter_SingleCount(t *testing.T) {
+	limiter := workqueue.NewItemExponentialFailureRateLimiter(5*time.Millisecond, 1000*time.Second)
+	queue := workqueue.NewRateLimitingQueue(limiter)
+	item := "test-item"
+
+	delay := limiter.When(item)
+	queue.AddAfter(item, delay)
+	assert.Equal(t, 1, queue.NumRequeues(item), "When() then AddAfter() only calls When() once; NumRequeues should be 1")
+}
+
+// tagriTestKey returns the workqueue key for a TAGRI (namespace/name).
+func tagriTestKey(name string) string { return config.OrchestratorName + "/" + name }
+
+// setupTagriControllerWithInformerSync creates a controller and populates the informer with the given TAGRI
+// by using a List reactor (avoids fake tracker panic on CreationTimestamp). Starts the informer and waits
+// for cache sync. Caller must defer close(stopCh).
+func setupTagriControllerWithInformerSync(t *testing.T, tagri *tridentv1.TridentAutogrowRequestInternal) (
+	*TridentCrdController, chan struct{},
+) {
+	t.Helper()
+	mockCtrl := gomock.NewController(t)
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	orchestrator.EXPECT().GetResizeDeltaForBackend(gomock.Any(), gomock.Any()).Return(int64(0), nil).AnyTimes()
+	orchestrator.EXPECT().GetFrontend(gomock.Any(), controllerhelpers.KubernetesHelper).Return(nil, fmt.Errorf("not found")).AnyTimes()
+	orchestrator.EXPECT().UpdateVolumeAutogrowStatus(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	crdClient := GetTestCrdClientset()
+	// Inject TAGRI via List reactor so the informer sees it (fake tracker panics on CreationTimestamp if we Add it).
+	listReactor := func(action ktesting.Action) (handled bool, ret runtime.Object, err error) {
+		if action.GetResource().Resource != "tridentautogrowrequestinternals" || action.GetVerb() != "list" {
+			return false, nil, nil
+		}
+		list := &tridentv1.TridentAutogrowRequestInternalList{Items: []tridentv1.TridentAutogrowRequestInternal{*tagri}}
+		return true, list, nil
+	}
+	crdClient.PrependReactor("list", "tridentautogrowrequestinternals", listReactor)
+
+	kubeClient := GetTestKubernetesClientset()
+	snapClient := GetTestSnapshotClientset()
+	controller, err := newTridentCrdControllerImpl(orchestrator, config.OrchestratorName, kubeClient, snapClient, crdClient, nil, nil)
+	require.NoError(t, err)
+	controller.recorder = record.NewFakeRecorder(10)
+
+	stopCh := make(chan struct{})
+	controller.crdInformerFactory.Start(stopCh)
+	ok := cache.WaitForCacheSync(stopCh, controller.autogrowRequestInternalSynced)
+	require.True(t, ok, "autogrow request internal cache should sync")
+	return controller, stopCh
+}
+
+func TestProcessNextTagriWorkItem_ReconcileDeferredWithDuration_UsesAddAfter(t *testing.T) {
+	// Rejected phase with timeUntilTimeout > 0 causes handler to return ReconcileDeferredWithDuration.
+	tagri := &tridentv1.TridentAutogrowRequestInternal{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "rejected-tagri",
+			Namespace:         config.OrchestratorName,
+			CreationTimestamp: metav1.NewTime(time.Now().Add(-1 * time.Minute)),
+		},
+		Spec: tridentv1.TridentAutogrowRequestInternalSpec{
+			Volume:                "pv1",
+			ObservedCapacityBytes: "50Gi",
+			AutogrowPolicyRef:     tridentv1.TridentAutogrowRequestInternalPolicyRef{Name: "p1", Generation: 1},
+		},
+		Status: tridentv1.TridentAutogrowRequestInternalStatus{Phase: "Rejected"},
+	}
+	controller, stopCh := setupTagriControllerWithInformerSync(t, tagri)
+	defer close(stopCh)
+
+	fake := &fakeTagriQueue{inner: controller.tagriWorkqueue}
+	controller.tagriWorkqueue = fake
+
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
+	keyItem := KeyItem{key: tagriTestKey(tagri.Name), event: EventAdd, ctx: ctx, objectType: ObjectTypeTridentAutogrowRequestInternal}
+	fake.Add(keyItem)
+
+	got := controller.processNextTagriWorkItem()
+	assert.True(t, got)
+	assert.Len(t, fake.AddAfterCalls, 1, "should call AddAfter once for ReconcileDeferredWithDuration")
+	assert.Len(t, fake.AddRateLimitedCalls, 0)
+	assert.Greater(t, fake.AddAfterCalls[0].D, time.Duration(0))
+	assert.LessOrEqual(t, fake.AddAfterCalls[0].D, config.GetTagriTimeout())
+}
+
+func TestProcessNextTagriWorkItem_ReconcileDeferredWithMaxDuration_NextDelayExceedsMax_UsesAddAfterAndForget(t *testing.T) {
+	// Failed with timeUntilTimeout > 0 returns ReconcileDeferredWithMaxDuration. Use a fake limiter that returns
+	// a delay larger than timeUntilTimeout so we take the AddAfter(maxDuration)+Forget path.
+	tagri := &tridentv1.TridentAutogrowRequestInternal{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "failed-tagri",
+			Namespace:         config.OrchestratorName,
+			CreationTimestamp: metav1.NewTime(time.Now().Add(-1 * time.Minute)),
+		},
+		Spec: tridentv1.TridentAutogrowRequestInternalSpec{
+			Volume:                "pv1",
+			ObservedCapacityBytes: "50Gi",
+			AutogrowPolicyRef:     tridentv1.TridentAutogrowRequestInternalPolicyRef{Name: "p1", Generation: 1},
+		},
+		Status: tridentv1.TridentAutogrowRequestInternalStatus{Phase: "Failed"},
+	}
+	controller, stopCh := setupTagriControllerWithInformerSync(t, tagri)
+	defer close(stopCh)
+
+	fake := &fakeTagriQueue{inner: controller.tagriWorkqueue}
+	controller.tagriWorkqueue = fake
+	// Next backoff (10min) > timeUntilTimeout (~4min) => use AddAfter(timeUntilTimeout) and Forget.
+	controller.tagriRateLimiter = &fixedWhenRateLimiter{WhenDelay: 10 * time.Minute}
+
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
+	keyItem := KeyItem{key: tagriTestKey(tagri.Name), event: EventAdd, ctx: ctx, objectType: ObjectTypeTridentAutogrowRequestInternal}
+	fake.Add(keyItem)
+
+	got := controller.processNextTagriWorkItem()
+	assert.True(t, got)
+	assert.Len(t, fake.AddAfterCalls, 1, "nextDelay > maxDuration should use AddAfter(maxDuration)")
+	assert.Len(t, fake.ForgetCalls, 1, "should Forget when capping by maxDuration")
+	assert.Len(t, fake.AddRateLimitedCalls, 0)
+	assert.Greater(t, fake.AddAfterCalls[0].D, time.Duration(0))
+	assert.LessOrEqual(t, fake.AddAfterCalls[0].D, config.GetTagriTimeout())
+}
+
+func TestProcessNextTagriWorkItem_ReconcileDeferredWithMaxDuration_NextDelayWithinMax_SchedulesWithAddAfter(t *testing.T) {
+	// Failed phase with timeUntilTimeout > 0 returns ReconcileDeferredWithMaxDuration.
+	// When nextDelay <= maxDuration, item is requeued with AddAfter(nextDelay) (default limiter first When is 5ms).
+	tagri := &tridentv1.TridentAutogrowRequestInternal{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "failed-tagri",
+			Namespace:         config.OrchestratorName,
+			CreationTimestamp: metav1.NewTime(time.Now().Add(-1 * time.Minute)),
+		},
+		Spec: tridentv1.TridentAutogrowRequestInternalSpec{
+			Volume:                "pv1",
+			ObservedCapacityBytes: "50Gi",
+			AutogrowPolicyRef:     tridentv1.TridentAutogrowRequestInternalPolicyRef{Name: "p1", Generation: 1},
+		},
+		Status: tridentv1.TridentAutogrowRequestInternalStatus{Phase: "Failed"},
+	}
+	controller, stopCh := setupTagriControllerWithInformerSync(t, tagri)
+	defer close(stopCh)
+
+	fake := &fakeTagriQueue{inner: controller.tagriWorkqueue}
+	controller.tagriWorkqueue = fake
+
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
+	keyItem := KeyItem{key: tagriTestKey(tagri.Name), event: EventAdd, ctx: ctx, objectType: ObjectTypeTridentAutogrowRequestInternal}
+	fake.Add(keyItem)
+
+	got := controller.processNextTagriWorkItem()
+	assert.True(t, got)
+	assert.Len(t, fake.AddAfterCalls, 1)
+	assert.Equal(t, 5*time.Millisecond, fake.AddAfterCalls[0].D)
+	assert.Len(t, fake.AddRateLimitedCalls, 0)
+	assert.Len(t, fake.ForgetCalls, 0)
+}
+
+func TestProcessNextTagriWorkItem_Success_ForgetCalled(t *testing.T) {
+	// TAGRI in Completed phase => handleTimeoutAndTerminalPhase deletes and returns (true, nil) => handler returns nil => Forget.
+	tagri := &tridentv1.TridentAutogrowRequestInternal{
+		ObjectMeta: metav1.ObjectMeta{Name: "completed-tagri", Namespace: config.OrchestratorName},
+		Spec: tridentv1.TridentAutogrowRequestInternalSpec{
+			Volume:                "pv1",
+			ObservedCapacityBytes: "50Gi",
+			AutogrowPolicyRef:     tridentv1.TridentAutogrowRequestInternalPolicyRef{Name: "p1", Generation: 1},
+		},
+		Status: tridentv1.TridentAutogrowRequestInternalStatus{Phase: "Completed"},
+	}
+	controller, stopCh := setupTagriControllerWithInformerSync(t, tagri)
+	defer close(stopCh)
+
+	fake := &fakeTagriQueue{inner: controller.tagriWorkqueue}
+	controller.tagriWorkqueue = fake
+
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
+	keyItem := KeyItem{key: tagriTestKey(tagri.Name), event: EventAdd, ctx: ctx, objectType: ObjectTypeTridentAutogrowRequestInternal}
+	fake.Add(keyItem)
+
+	got := controller.processNextTagriWorkItem()
+	assert.True(t, got)
+	assert.Len(t, fake.ForgetCalls, 1, "successful sync should call Forget")
+	assert.Len(t, fake.AddAfterCalls, 0)
+	assert.Len(t, fake.AddRateLimitedCalls, 0)
+}
+
+func TestAddEventToWorkqueue_TAGRI_GoesToTagriWorkqueue(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+	tridentNamespace := "trident"
+	kubeClient := GetTestKubernetesClientset()
+	snapClient := GetTestSnapshotClientset()
+	crdClient := GetTestCrdClientset()
+	controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
+	require.NoError(t, err)
+
+	ctx := GenerateRequestContext(context.Background(), "", ContextSourceCRD, WorkflowCRReconcile, LogLayerCRDFrontend)
+	controller.addEventToWorkqueue("trident/tagri-1", EventAdd, ctx, ObjectTypeTridentAutogrowRequestInternal)
+
+	assert.Equal(t, 1, controller.tagriWorkqueue.Len(), "TAGRI event should be in tagriWorkqueue")
+	assert.Equal(t, 0, controller.workqueue.Len(), "TAGRI event should not be in main workqueue")
 }

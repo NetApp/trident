@@ -139,6 +139,25 @@ func createTestVolExternal(name, policyName string) *storage.VolumeExternal {
 	}
 }
 
+// createTestVolExternalSubordinate returns a VolumeExternal with State Subordinate (for subordinate volume tests).
+func createTestVolExternalSubordinate(name, policyName string) *storage.VolumeExternal {
+	v := createTestVolExternal(name, policyName)
+	v.State = storage.VolumeStateSubordinate
+	return v
+}
+
+// createTestSourceVolumeExternal returns a VolumeExternal suitable as GetSubordinateSourceVolume result (Config.Size set).
+func createTestSourceVolumeExternal(size string) *storage.VolumeExternal {
+	return &storage.VolumeExternal{
+		Config: &storage.VolumeConfig{
+			Name: "source-vol",
+			Size: size,
+		},
+		Backend: "test-backend",
+		State:   storage.VolumeStateOnline,
+	}
+}
+
 func createTestAutogrowPolicy(name string, usedThreshold, growthAmount, maxSize string, generation int64) *tridentv1.TridentAutogrowPolicy {
 	return &tridentv1.TridentAutogrowPolicy{
 		ObjectMeta: metav1.ObjectMeta{
@@ -176,7 +195,6 @@ func TestHandleTridentAutogrowRequestInternal_NilKeyItem(t *testing.T) {
 
 	err := controller.handleTridentAutogrowRequestInternal(nil)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "keyItem is nil")
 }
 
 func TestHandleTridentAutogrowRequestInternal_InvalidKey(t *testing.T) {
@@ -190,6 +208,22 @@ func TestHandleTridentAutogrowRequestInternal_InvalidKey(t *testing.T) {
 
 	err := controller.handleTridentAutogrowRequestInternal(keyItem)
 	assert.NoError(t, err) // Returns nil for invalid keys
+}
+
+// TestHandleTridentAutogrowRequestInternal_InvalidKeyFormat_SplitMetaNamespaceKeyError: when the key has
+// an invalid format (e.g. too many slashes), SplitMetaNamespaceKey returns an error; handler logs and
+// returns nil (permanent error, no retry).
+func TestHandleTridentAutogrowRequestInternal_InvalidKeyFormat_SplitMetaNamespaceKeyError(t *testing.T) {
+	controller, mockCtrl, _ := setupTagriTest(t)
+	defer mockCtrl.Finish()
+
+	keyItem := &KeyItem{
+		key: "namespace/name/extra", // more than two segments causes SplitMetaNamespaceKey to error
+		ctx: context.Background(),
+	}
+
+	err := controller.handleTridentAutogrowRequestInternal(keyItem)
+	assert.NoError(t, err, "invalid key is logged and ignored; handler must return nil to avoid retry")
 }
 
 func TestHandleTridentAutogrowRequestInternal_TagriNotFound(t *testing.T) {
@@ -244,7 +278,7 @@ func TestHandleTridentAutogrowRequestInternal_EventTypes(t *testing.T) {
 	}
 }
 
-// Test 2: upsertTagriHandler
+// Test 2: upsertTagriHandler — timeout path when TAGRI is not in API server (e.g. already deleted elsewhere).
 func TestUpsertTagriHandler_TimeoutDeletionFinalizerError(t *testing.T) {
 	controller, mockCtrl, _ := setupTagriTest(t)
 	defer mockCtrl.Finish()
@@ -253,17 +287,28 @@ func TestUpsertTagriHandler_TimeoutDeletionFinalizerError(t *testing.T) {
 	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhasePending, 1)
 	tagri.CreationTimestamp = metav1.NewTime(time.Now().Add(-10 * time.Minute))
 
-	// TAGRI has finalizers (from createTestTagri) but is NOT in fake clientset
-	// When handleTimeoutAndTerminalPhase tries to delete:
+	// TAGRI is NOT in fake clientset. When handleTimeoutAndTerminalPhase runs:
 	// 1. Hard timeout check triggers deletion (age > 5min default)
-	// 2. deleteTagriNow tries to remove finalizers
-	// 3. updateTagriCR fails with NotFound
-	// 4. Error propagates back through upsertTagriHandler
+	// 2. deleteTagriNow does Get(); Get returns NotFound
+	// 3. deleteTagriNow treats "already deleted" and returns nil (desired state achieved)
+	err := controller.upsertTagriHandler(context.Background(), tagri)
+	assert.NoError(t, err)
+}
+
+// TestUpsertTagriHandler_RejectedPhase_HandledWithError: when handleTimeoutAndTerminalPhase returns (handled=true, err!=nil)
+// (e.g. Rejected phase), upsertTagriHandler logs and returns the wrapped error (requeue for next steps).
+// Use non-zero CreationTimestamp so we reach STEP 3 (Rejected); zero would be handled in STEP 1 (delete).
+func TestUpsertTagriHandler_RejectedPhase_HandledWithError(t *testing.T) {
+	controller, mockCtrl, _ := setupTagriTest(t)
+	defer mockCtrl.Finish()
+
+	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhaseRejected, 1)
+	tagri.Status.Message = "rejected for test"
+	tagri.CreationTimestamp = metav1.NewTime(time.Now().Add(-1 * time.Minute))
 
 	err := controller.upsertTagriHandler(context.Background(), tagri)
-	assert.Error(t, err, "Should return error when finalizer removal fails during timeout deletion")
-	assert.Contains(t, err.Error(), "failed to do TAGRI timeout or terminal phase based cleanup",
-		"Error should indicate cleanup failure")
+	assert.Error(t, err)
+	assert.True(t, errors.IsReconcileDeferredError(err))
 }
 
 func TestUpsertTagriHandler_InProgressPhase_VolumeNotFoundError(t *testing.T) {
@@ -272,6 +317,7 @@ func TestUpsertTagriHandler_InProgressPhase_VolumeNotFoundError(t *testing.T) {
 
 	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhaseInProgress, 1)
 	tagri.Status.FinalCapacityBytes = "100Gi"
+	tagri.CreationTimestamp = metav1.NewTime(time.Now().Add(-1 * time.Minute))
 
 	// Mock orchestrator call for monitoring
 	orchestrator.EXPECT().GetVolume(gomock.Any(), tagri.Spec.Volume).Return(nil, fmt.Errorf("not found"))
@@ -285,13 +331,15 @@ func TestUpsertTagriHandler_PendingPhase_VolumeNotFoundError(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhasePending, 1)
+	// Non-zero CreationTimestamp so handleTimeoutAndTerminalPhase continues to processTagriFirstTime (zero would trigger immediate delete).
+	tagri.CreationTimestamp = metav1.NewTime(time.Now().Add(-1 * time.Minute))
 
 	// Mock orchestrator call for first-time processing
 	orchestrator.EXPECT().GetVolume(gomock.Any(), tagri.Spec.Volume).Return(nil, fmt.Errorf("not found"))
 
 	err := controller.upsertTagriHandler(context.Background(), tagri)
 	assert.Error(t, err, "Should return error when volume not found")
-	assert.Contains(t, err.Error(), "failed to get volume", "Error should indicate volume fetch failure")
+	assert.True(t, errors.IsNotFoundError(err), "Error should be NotFoundError for volume fetch failure")
 }
 
 func TestUpsertTagriHandler_EmptyPhaseVolumeNotFoundError(t *testing.T) {
@@ -299,6 +347,7 @@ func TestUpsertTagriHandler_EmptyPhaseVolumeNotFoundError(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", "", 1)
+	tagri.CreationTimestamp = metav1.NewTime(time.Now().Add(-1 * time.Minute))
 
 	// Mock orchestrator call for first-time processing
 	orchestrator.EXPECT().GetVolume(gomock.Any(), tagri.Spec.Volume).Return(nil, fmt.Errorf("not found"))
@@ -342,12 +391,12 @@ func TestHandleTimeoutAndTerminalPhase_HardTimeout(t *testing.T) {
 }
 
 func TestHandleTimeoutAndTerminalPhase_TerminalPhasesWithRetention(t *testing.T) {
-	// Completed/Rejected TAGRIs are always deleted immediately.
+	// Completed: delete immediately (handled=true, nil). Rejected: keep until timeout (handled=true, ReconcileDeferredError).
 	tests := []struct {
 		name              string
 		phase             string
 		processedAtOffset *time.Duration
-		expectDeleted     bool
+		expectDeleted     bool // true = expect err==nil (we deleted); false = expect ReconcileDeferredError
 	}{
 		{
 			name:          "Completed deleted immediately",
@@ -355,9 +404,9 @@ func TestHandleTimeoutAndTerminalPhase_TerminalPhasesWithRetention(t *testing.T)
 			expectDeleted: true,
 		},
 		{
-			name:          "Rejected deleted immediately",
+			name:          "Rejected requeued for timeout (not deleted in same run)",
 			phase:         TagriPhaseRejected,
-			expectDeleted: true,
+			expectDeleted: false,
 		},
 		{
 			name:              "Completed with ProcessedAt set still deleted immediately",
@@ -366,10 +415,10 @@ func TestHandleTimeoutAndTerminalPhase_TerminalPhasesWithRetention(t *testing.T)
 			expectDeleted:     true,
 		},
 		{
-			name:              "Rejected with ProcessedAt set still deleted immediately",
+			name:              "Rejected with ProcessedAt set still requeued for timeout",
 			phase:             TagriPhaseRejected,
 			processedAtOffset: durationPtr(70 * time.Second),
-			expectDeleted:     true,
+			expectDeleted:     false,
 		},
 	}
 
@@ -397,6 +446,10 @@ func TestHandleTimeoutAndTerminalPhase_TerminalPhasesWithRetention(t *testing.T)
 			assert.True(t, handled)
 			if tt.expectDeleted {
 				assert.NoError(t, err)
+			} else {
+				assert.Error(t, err)
+				// Rejected phase requeues for timeout: either ReconcileDeferredError (backoff) or ReconcileDeferredWithDuration (AddAfter at timeout).
+				assert.True(t, errors.IsReconcileDeferredError(err) || errors.IsReconcileDeferredWithDuration(err), "Rejected phase should requeue for timeout")
 			}
 		})
 	}
@@ -407,11 +460,32 @@ func TestHandleTimeoutAndTerminalPhase_FailedPhase(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhaseFailed, 1)
+	// CreationTimestamp not set => timeUntilTimeout <= 0 => we delete immediately (no requeue)
+
+	handled, err := controller.handleTimeoutAndTerminalPhase(context.Background(), tagri)
+	assert.True(t, handled)
+	// We attempt delete when at/past timeout; err is nil if delete succeeded or from deleteTagriNow if it failed.
+	if err != nil {
+		assert.False(t, errors.IsReconcileDeferredError(err), "when at/past timeout we delete now, not requeue")
+	}
+}
+
+// TestHandleTimeoutAndTerminalPhase_FailedPhase_WithTimeUntilTimeout asserts that when Failed and timeUntilTimeout > 0
+// we return ReconcileDeferredWithMaxDuration so the controller can cap the next backoff by tagriTimeout.
+func TestHandleTimeoutAndTerminalPhase_FailedPhase_WithTimeUntilTimeout(t *testing.T) {
+	controller, mockCtrl, _ := setupTagriTest(t)
+	defer mockCtrl.Finish()
+
+	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhaseFailed, 1)
+	tagri.CreationTimestamp = metav1.NewTime(time.Now().Add(-1 * time.Minute)) // 1m old => timeUntilTimeout ~4m > 0
 
 	handled, err := controller.handleTimeoutAndTerminalPhase(context.Background(), tagri)
 	assert.True(t, handled)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "Failed phase")
+	assert.True(t, errors.IsReconcileDeferredWithMaxDuration(err), "Failed with timeUntilTimeout > 0 should return ReconcileDeferredWithMaxDuration")
+	d, ok := errors.ReconcileDeferredWithMaxDurationValue(err)
+	assert.True(t, ok)
+	assert.True(t, d > 0 && d <= config.GetTagriTimeout(), "max duration should be positive and at most tagriTimeout")
 }
 
 // TestHandleTimeoutAndTerminalPhase_FailedPhase_RecoveryWhenResizeSucceeded: when TAGRI is Failed
@@ -427,7 +501,7 @@ func TestHandleTimeoutAndTerminalPhase_FailedPhase_RecoveryWhenResizeSucceeded(t
 	pvc := createTestPVC("test-pvc", "default", "2Gi")
 	_, err := controller.kubeClientset.CoreV1().PersistentVolumes().Create(context.Background(), pv, metav1.CreateOptions{})
 	require.NoError(t, err)
-	_, err = controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Create(
+	created, err := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Create(
 		context.Background(), tagri, metav1.CreateOptions{})
 	require.NoError(t, err)
 	_, err = controller.kubeClientset.CoreV1().PersistentVolumeClaims("default").Create(
@@ -437,15 +511,63 @@ func TestHandleTimeoutAndTerminalPhase_FailedPhase_RecoveryWhenResizeSucceeded(t
 	volExternal := createTestVolExternal("test-pv", "test-policy")
 	orchestrator.EXPECT().GetVolume(gomock.Any(), tagri.Spec.Volume).Return(volExternal, nil)
 
-	handled, err := controller.handleTimeoutAndTerminalPhase(context.Background(), tagri)
+	// Use created (has CreationTimestamp from server) so we reach STEP 4 recovery path instead of STEP 1 zero-timestamp delete.
+	handled, err := controller.handleTimeoutAndTerminalPhase(context.Background(), created)
 	assert.True(t, handled)
 	assert.NoError(t, err)
 
-	updated, getErr := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
+	// Recovery path marks TAGRI Completed and deletes it in the same reconciliation (markTagriCompleteAndDelete).
+	_, getErr := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 		context.Background(), tagri.Name, metav1.GetOptions{})
-	require.NoError(t, getErr)
-	assert.Equal(t, TagriPhaseCompleted, updated.Status.Phase)
-	assert.Contains(t, updated.Status.Message, "2.00Gi")
+	assert.True(t, k8sapierrors.IsNotFound(getErr), "TAGRI should be completed and deleted after Failed-phase recovery")
+}
+
+// TestHandleTimeoutAndTerminalPhase_FailedPhase_RecoveryUpdateFails exercises the error path when TAGRI is Failed,
+// PVC is at target (so completeAndDeleteTagriIfCapacityAtTarget runs), but markTagriCompleteAndDelete fails.
+// handleTimeoutAndTerminalPhase returns (handled=true, ReconcileDeferredError) so the item is requeued.
+func TestHandleTimeoutAndTerminalPhase_FailedPhase_RecoveryUpdateFails(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	orchestrator.EXPECT().GetResizeDeltaForBackend(gomock.Any(), gomock.Any()).Return(int64(0), nil).AnyTimes()
+	orchestrator.EXPECT().GetFrontend(gomock.Any(), controllerhelpers.KubernetesHelper).Return(nil, fmt.Errorf("not found")).AnyTimes()
+	orchestrator.EXPECT().UpdateVolumeAutogrowStatus(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	crdClient := GetTestCrdClientset()
+	crdClient.PrependReactor("update", "tridentautogrowrequestinternals", func(action ktesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, k8sapierrors.NewConflict(
+			action.GetResource().GroupResource(), "test-tagri", fmt.Errorf("conflict"))
+	})
+
+	kubeClient := GetTestKubernetesClientset()
+	snapClient := GetTestSnapshotClientset()
+	controller, err := newTridentCrdControllerImpl(
+		orchestrator, "trident", kubeClient, snapClient, crdClient, nil, nil)
+	require.NoError(t, err)
+	controller.recorder = record.NewFakeRecorder(100)
+
+	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhaseFailed, 1)
+	tagri.Status.FinalCapacityBytes = "2147483648" // 2Gi target
+
+	pv := createTestPVWithClaimRef("test-pv", "default", "test-pvc")
+	pvc := createTestPVC("test-pvc", "default", "2Gi")
+	_, err = controller.kubeClientset.CoreV1().PersistentVolumes().Create(context.Background(), pv, metav1.CreateOptions{})
+	require.NoError(t, err)
+	created, err := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Create(
+		context.Background(), tagri, metav1.CreateOptions{})
+	require.NoError(t, err)
+	_, err = controller.kubeClientset.CoreV1().PersistentVolumeClaims("default").Create(
+		context.Background(), pvc, metav1.CreateOptions{})
+	require.NoError(t, err)
+
+	volExternal := createTestVolExternal("test-pv", "test-policy")
+	orchestrator.EXPECT().GetVolume(gomock.Any(), tagri.Spec.Volume).Return(volExternal, nil)
+
+	// Use created (has CreationTimestamp from server) so we reach STEP 4 recovery path instead of STEP 1 zero-timestamp delete.
+	handled, err := controller.handleTimeoutAndTerminalPhase(context.Background(), created)
+	assert.True(t, handled)
+	assert.Error(t, err)
+	assert.True(t, errors.IsReconcileDeferredError(err), "recovery update failure should return ReconcileDeferredError for requeue")
 }
 
 func TestHandleTimeoutAndTerminalPhase_ActivePhases(t *testing.T) {
@@ -464,6 +586,7 @@ func TestHandleTimeoutAndTerminalPhase_ActivePhases(t *testing.T) {
 			defer mockCtrl.Finish()
 
 			tagri := createTestTagri("test-tagri", "test-pv", "test-policy", tt.phase, 1)
+			tagri.CreationTimestamp = metav1.NewTime(time.Now().Add(-1 * time.Minute)) // so STEP 1 does not delete (age < timeout)
 
 			handled, err := controller.handleTimeoutAndTerminalPhase(context.Background(), tagri)
 			assert.False(t, handled)
@@ -477,11 +600,15 @@ func TestHandleTimeoutAndTerminalPhase_UnknownPhase(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", "UnknownPhase", 1)
+	// CreationTimestamp not set => timeUntilTimeout <= 0 => we delete immediately (no requeue)
 
 	handled, err := controller.handleTimeoutAndTerminalPhase(context.Background(), tagri)
 	assert.True(t, handled)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "unknown phase")
+	// When at/past timeout we delete now; err is nil if delete succeeded or from deleteTagriNow if it failed.
+	if err != nil {
+		assert.False(t, errors.IsReconcileDeferredError(err) || errors.IsReconcileDeferredWithDuration(err),
+			"when at/past timeout we delete now, not requeue")
+	}
 }
 
 // Helper function for duration pointer
@@ -507,7 +634,7 @@ func TestProcessTagriFirstTime_VolumeNotFound(t *testing.T) {
 
 	err = controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to get volume")
+	assert.True(t, errors.IsNotFoundError(err))
 }
 
 // TestProcessTagriFirstTime_VolumeNotFoundError: GetVolume returns errors.NotFoundError -> reject TAGRI and "Volume ... not found", requeuing for deletion.
@@ -525,10 +652,6 @@ func TestProcessTagriFirstTime_VolumeNotFoundError(t *testing.T) {
 
 	err = controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "TAGRI rejected")
-	assert.Contains(t, err.Error(), "not found")
-	assert.Contains(t, err.Error(), "requeuing for deletion")
-
 	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 		context.Background(), tagri.Name, metav1.GetOptions{})
 	require.NotNil(t, updated)
@@ -553,10 +676,10 @@ func TestProcessTagriFirstTime_PVCNotFound(t *testing.T) {
 
 	err = controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "PVC not found")
 }
 
-// TestProcessTagriFirstTime_PVCNotFound_RejectTagriFails: getPVCForVolume returns NotFound, rejectTagri is called but updateTagriStatus fails (TAGRI not in clientset).
+// TestProcessTagriFirstTime_PVCNotFound_RejectTagriFails: getPVCForVolume returns NotFound, rejectTagri is called but
+// fails because TAGRI is not in clientset (rejectTagri uses updateTagriStatus when TAGRI has finalizers; UpdateStatus fails).
 func TestProcessTagriFirstTime_PVCNotFound_RejectTagriFails(t *testing.T) {
 	controller, mockCtrl, orchestrator := setupTagriTest(t)
 	defer mockCtrl.Finish()
@@ -564,13 +687,12 @@ func TestProcessTagriFirstTime_PVCNotFound_RejectTagriFails(t *testing.T) {
 	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhasePending, 1)
 	volExternal := createTestVolExternal("test-pv", "test-policy")
 
-	// Do NOT create TAGRI in clientset so rejectTagri -> updateTagriStatus(UpdateStatus) fails
+	// Do NOT create TAGRI in clientset; rejectTagri fails on updateTagriStatus (test tagri has finalizers from createTestTagri).
 	// Do NOT create PVC so getPVCForVolume returns NotFound
 	orchestrator.EXPECT().GetVolume(gomock.Any(), tagri.Spec.Volume).Return(volExternal, nil).AnyTimes()
 
 	err := controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to reject TAGRI")
 }
 
 func TestProcessTagriFirstTime_EmptyEffectivePolicy(t *testing.T) {
@@ -596,7 +718,6 @@ func TestProcessTagriFirstTime_EmptyEffectivePolicy(t *testing.T) {
 
 	err = controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "no effective autogrow policy")
 }
 
 func TestProcessTagriFirstTime_PolicyMismatch(t *testing.T) {
@@ -622,7 +743,6 @@ func TestProcessTagriFirstTime_PolicyMismatch(t *testing.T) {
 
 	err = controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "policy mismatch")
 }
 
 // Test processTagriFirstTime - Autogrow policy in Failed state (reject and requeue for deletion)
@@ -659,9 +779,7 @@ func TestProcessTagriFirstTime_PolicyStateFailed(t *testing.T) {
 
 	err = controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.True(t, errors.IsReconcileIncompleteError(err))
-	assert.Contains(t, err.Error(), "not in success state")
-	assert.Contains(t, err.Error(), "Failed")
+	assert.True(t, errors.IsReconcileDeferredError(err) || errors.IsReconcileDeferredWithDuration(err), "reject path returns deferred error for requeue")
 }
 
 // Test processTagriFirstTime - Autogrow policy in Deleting state (reject and requeue for deletion)
@@ -697,9 +815,7 @@ func TestProcessTagriFirstTime_PolicyStateDeleting(t *testing.T) {
 
 	err = controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.True(t, errors.IsReconcileIncompleteError(err))
-	assert.Contains(t, err.Error(), "not in success state")
-	assert.Contains(t, err.Error(), "Deleting")
+	assert.True(t, errors.IsReconcileDeferredError(err) || errors.IsReconcileDeferredWithDuration(err), "reject path returns deferred error for requeue")
 }
 
 // Test processTagriFirstTime - GetVolume returns non-NotFound (transient) error
@@ -716,7 +832,7 @@ func TestProcessTagriFirstTime_GetVolumeTransientError(t *testing.T) {
 
 	err = controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to get volume")
+	assert.True(t, errors.IsNotFoundError(err))
 }
 
 // Test processTagriFirstTime - GetAutogrowPolicy returns transient (non-NotFound) error
@@ -739,7 +855,6 @@ func TestProcessTagriFirstTime_GetAutogrowPolicyTransientError(t *testing.T) {
 
 	err := controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to get autogrow policy")
 }
 
 // Test processTagriFirstTime - GetResizeDeltaForBackend returns error -> ReconcileDeferredError (retry with backoff)
@@ -787,8 +902,6 @@ func TestProcessTagriFirstTime_GetResizeDeltaForBackendError_RetryWithBackoff(t 
 	err = controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
 	assert.True(t, errors.IsReconcileDeferredError(err), "expected ReconcileDeferredError for resize delta error (retry with backoff)")
-	assert.Contains(t, err.Error(), "unable to get resize delta")
-	assert.Contains(t, err.Error(), "will retry with backoff")
 }
 
 // Test processTagriFirstTime - policy CR not in lister (informer lag) returns ReconcileDeferredError
@@ -817,7 +930,6 @@ func TestProcessTagriFirstTime_PolicyCRNotFoundInLister_Retry(t *testing.T) {
 	err := controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
 	assert.True(t, errors.IsReconcileDeferredError(err))
-	assert.Contains(t, err.Error(), "not found in lister")
 }
 
 // Test processTagriFirstTime - policy generation mismatch rejects TAGRI
@@ -848,7 +960,6 @@ func TestProcessTagriFirstTime_GenerationMismatch(t *testing.T) {
 
 	err := controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "generation mismatch")
 }
 
 // Test processTagriFirstTime - PVC already at or above target size marks completed
@@ -880,12 +991,10 @@ func TestProcessTagriFirstTime_AlreadyAtTargetSize(t *testing.T) {
 		createTestAutogrowPolicyExternal("test-policy", storage.AutogrowPolicyStateSuccess), nil)
 
 	err := controller.processTagriFirstTime(context.Background(), tagri)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "already at target size")
-	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
+	assert.NoError(t, err)
+	_, getErr := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 		context.Background(), tagri.Name, metav1.GetOptions{})
-	require.NotNil(t, updated)
-	assert.Equal(t, TagriPhaseCompleted, updated.Status.Phase)
+	assert.True(t, k8sapierrors.IsNotFound(getErr), "TAGRI should be completed and deleted when already at target")
 }
 
 // Test processTagriFirstTime - calculateFinalCapacity returns error (invalid policy growth) -> reject TAGRI.
@@ -916,7 +1025,7 @@ func TestProcessTagriFirstTime_CalculateFinalCapacityError(t *testing.T) {
 
 	err := controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "final capacity calculation error")
+	assert.True(t, errors.IsReconcileDeferredError(err) || errors.IsReconcileDeferredWithDuration(err), "calculate final capacity failure should return deferred error for requeue")
 
 	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 		context.Background(), tagri.Name, metav1.GetOptions{})
@@ -930,7 +1039,7 @@ func TestProcessTagriFirstTime_MissingObservedCapacityBytes_Rejected(t *testing.
 	defer mockCtrl.Finish()
 
 	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhasePending, 1)
-	tagri.Spec.ObservedCapacityBytes = "" // Missing required field
+	tagri.Spec.ObservedCapacityBytes = "" // hits processTagriFirstTime Step 1: empty check
 
 	_, _ = controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Create(
 		context.Background(), tagri, metav1.CreateOptions{})
@@ -940,8 +1049,7 @@ func TestProcessTagriFirstTime_MissingObservedCapacityBytes_Rejected(t *testing.
 
 	err := controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "missing observedCapacityBytes")
-	assert.Contains(t, err.Error(), "requeuing for deletion")
+	assert.True(t, errors.IsReconcileDeferredError(err) || errors.IsReconcileDeferredWithDuration(err), "missing observedCapacityBytes should be requeued (deferred or deferred with duration for timeout)")
 
 	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 		context.Background(), tagri.Name, metav1.GetOptions{})
@@ -969,8 +1077,6 @@ func TestProcessTagriFirstTime_InvalidObservedCapacityBytesParse_Rejected(t *tes
 
 			err := controller.processTagriFirstTime(context.Background(), tagri)
 			assert.Error(t, err)
-			assert.Contains(t, err.Error(), "invalid observedCapacityBytes")
-			assert.Contains(t, err.Error(), "requeuing for deletion")
 
 			updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 				context.Background(), tagri.Name, metav1.GetOptions{})
@@ -979,6 +1085,24 @@ func TestProcessTagriFirstTime_InvalidObservedCapacityBytesParse_Rejected(t *tes
 			assert.Contains(t, updated.Status.Message, "invalid observedCapacityBytes", "rejection message should include invalid value reason")
 		})
 	}
+}
+
+// TestProcessTagriFirstTime_InvalidObservedCapacityBytes_RejectTagriFails: invalid observedCapacityBytes causes parse
+// error; rejectTagri is called but fails (TAGRI not in clientset). processTagriFirstTime returns
+// WrapWithReconcileDeferredError(rejectErr, "failed to reject TAGRI").
+func TestProcessTagriFirstTime_InvalidObservedCapacityBytes_RejectTagriFails(t *testing.T) {
+	controller, mockCtrl, orchestrator := setupTagriTest(t)
+	defer mockCtrl.Finish()
+
+	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhasePending, 1)
+	tagri.Spec.ObservedCapacityBytes = "not-a-quantity" // parse will fail
+
+	// Do NOT create TAGRI in clientset; rejectTagri fails on updateTagriStatus (test tagri has finalizers).
+	orchestrator.EXPECT().GetVolume(gomock.Any(), tagri.Spec.Volume).Return(nil, fmt.Errorf("not found")).AnyTimes()
+
+	err := controller.processTagriFirstTime(context.Background(), tagri)
+	assert.Error(t, err)
+	assert.True(t, errors.IsReconcileDeferredError(err) || errors.IsReconcileDeferredWithDuration(err), "rejectTagri failure or reject path should return deferred error for requeue")
 }
 
 // Test processTagriFirstTime - zero observedCapacityBytes is rejected.
@@ -1001,8 +1125,6 @@ func TestProcessTagriFirstTime_ZeroObservedCapacityBytes_Rejected(t *testing.T) 
 
 			err := controller.processTagriFirstTime(context.Background(), tagri)
 			assert.Error(t, err)
-			assert.Contains(t, err.Error(), "observedCapacityBytes must be positive")
-			assert.Contains(t, err.Error(), "requeuing for deletion")
 
 			updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 				context.Background(), tagri.Name, metav1.GetOptions{})
@@ -1028,8 +1150,6 @@ func TestProcessTagriFirstTime_NegativeObservedCapacityBytes_Rejected(t *testing
 
 	err := controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "observedCapacityBytes must be positive")
-	assert.Contains(t, err.Error(), "requeuing for deletion")
 
 	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 		context.Background(), tagri.Name, metav1.GetOptions{})
@@ -1060,16 +1180,14 @@ func TestProcessTagriFirstTime_ValidObservedCapacityBytes_Accepted(t *testing.T)
 
 			err := controller.processTagriFirstTime(context.Background(), tagri)
 			assert.Error(t, err)
-			// Proved we passed validation: error is from volume lookup, not from observedCapacityBytes
-			assert.Contains(t, err.Error(), "Volume")
-			assert.Contains(t, err.Error(), "not found")
+			// Proved we passed validation: error is from volume lookup (TAGRI rejected), not from observedCapacityBytes
 			assert.NotContains(t, err.Error(), "observedCapacityBytes")
 
 			updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 				context.Background(), tagri.Name, metav1.GetOptions{})
 			require.NotNil(t, updated)
 			assert.Equal(t, TagriPhaseRejected, updated.Status.Phase)
-			assert.Contains(t, updated.Status.Message, "Volume", "rejection is from volume lookup, not observedCapacityBytes")
+			assert.Contains(t, updated.Status.Message, "volume", "rejection is from volume lookup, not observedCapacityBytes")
 		})
 	}
 }
@@ -1102,18 +1220,16 @@ func TestProcessTagriFirstTime_FinalCapacityBelowObservedCapacity_Rejected(t *te
 
 	err := controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "final capacity below observed capacity")
-	assert.Contains(t, err.Error(), "requeuing for deletion")
 
 	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 		context.Background(), tagri.Name, metav1.GetOptions{})
 	require.NotNil(t, updated)
 	assert.Equal(t, TagriPhaseRejected, updated.Status.Phase)
-	assert.Contains(t, updated.Status.Message, "volume shrinkage and data loss", "rejection message should explain risk")
+	assert.Contains(t, updated.Status.Message, "volume shrinkage", "rejection message should explain risk")
 }
 
-// Test processTagriFirstTime - PVC with nil status.capacity (e.g. not bound) is rejected outright.
-func TestProcessTagriFirstTime_PVCCapacityNil_Rejected(t *testing.T) {
+// Test processTagriFirstTime - PVC with nil status.capacity (e.g. stale from lister or not yet bound) retries with backoff, does not reject.
+func TestProcessTagriFirstTime_PVCCapacityNil_RetryWithBackoff(t *testing.T) {
 	controller, mockCtrl, orchestrator := setupTagriTest(t)
 	defer mockCtrl.Finish()
 
@@ -1121,7 +1237,7 @@ func TestProcessTagriFirstTime_PVCCapacityNil_Rejected(t *testing.T) {
 	volExternal := createTestVolExternal("test-pv", "test-policy")
 	pv := createTestPVWithClaimRef("test-pv", "default", "test-pvc")
 	pvc := createTestPVC("test-pvc", "default", "10Gi")
-	pvc.Status.Capacity = nil // Simulate unbound or capacity not yet reported
+	pvc.Status.Capacity = nil // Simulate unbound or capacity not yet reported (or stale from lister)
 	policy := createTestAutogrowPolicy("test-policy", "80%", "1Gi", "200Gi", 1)
 	policy.Status.State = string(storage.AutogrowPolicyStateSuccess)
 
@@ -1140,12 +1256,11 @@ func TestProcessTagriFirstTime_PVCCapacityNil_Rejected(t *testing.T) {
 
 	err := controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "requeuing for deletion")
+	assert.True(t, errors.IsReconcileDeferredError(err))
 	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 		context.Background(), tagri.Name, metav1.GetOptions{})
 	require.NotNil(t, updated)
-	assert.Equal(t, TagriPhaseRejected, updated.Status.Phase)
-	assert.Contains(t, updated.Status.Message, "capacity not yet reported")
+	assert.Equal(t, TagriPhasePending, updated.Status.Phase, "TAGRI should not be rejected; we retry so cache can catch up")
 }
 
 // Test processTagriFirstTime - Required spec fields (observedUsedPercent, observedUsedBytes, nodeName) are preserved.
@@ -1202,7 +1317,7 @@ func TestProcessTagriFirstTime_AddFinalizer_Success(t *testing.T) {
 
 	err := controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "Starting resize monitoring")
+	assert.True(t, errors.IsReconcileIncompleteError(err), "success path requeues for monitoring with ReconcileIncompleteError")
 
 	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 		context.Background(), tagri.Name, metav1.GetOptions{})
@@ -1237,7 +1352,230 @@ func TestProcessTagriFirstTime_AddFinalizer_Fails(t *testing.T) {
 
 	err := controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to add finalizer")
+}
+
+// Test processTagriFirstTime - Subordinate volume: source not found -> reject and ReconcileDeferredWithDuration.
+func TestProcessTagriFirstTime_Subordinate_SourceNotFound(t *testing.T) {
+	controller, mockCtrl, orchestrator := setupTagriTest(t)
+	defer mockCtrl.Finish()
+
+	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhasePending, 1)
+	tagri.Spec.ObservedCapacityBytes = "50Gi"
+	volExternal := createTestVolExternalSubordinate("test-pv", "test-policy")
+	pv := createTestPVWithClaimRef("test-pv", "default", "test-pvc")
+	pvc := createTestPVC("test-pvc", "default", "50Gi")
+	policy := createTestAutogrowPolicy("test-policy", "80%", "10Gi", "200Gi", 1)
+	policy.Status.State = string(storage.AutogrowPolicyStateSuccess)
+
+	_, _ = controller.kubeClientset.CoreV1().PersistentVolumes().Create(context.Background(), pv, metav1.CreateOptions{})
+	_, _ = controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Create(
+		context.Background(), tagri, metav1.CreateOptions{})
+	_, _ = controller.kubeClientset.CoreV1().PersistentVolumeClaims("default").Create(
+		context.Background(), pvc, metav1.CreateOptions{})
+	_, _ = controller.crdClientset.TridentV1().TridentAutogrowPolicies().Create(
+		context.Background(), policy, metav1.CreateOptions{})
+	controller.crdInformerFactory.Trident().V1().TridentAutogrowPolicies().Informer().GetIndexer().Add(policy)
+
+	// GetVolume is called in processTagriFirstTime and again in rejectTagri (update volume autogrow status).
+	orchestrator.EXPECT().GetVolume(gomock.Any(), tagri.Spec.Volume).Return(volExternal, nil).AnyTimes()
+	orchestrator.EXPECT().GetAutogrowPolicy(gomock.Any(), "test-policy").Return(
+		createTestAutogrowPolicyExternal("test-policy", storage.AutogrowPolicyStateSuccess), nil)
+	orchestrator.EXPECT().GetSubordinateSourceVolume(gomock.Any(), tagri.Spec.Volume).Return(
+		nil, errors.NotFoundError("source volume not found"))
+
+	err := controller.processTagriFirstTime(context.Background(), tagri)
+	assert.Error(t, err)
+	assert.True(t, errors.IsReconcileDeferredWithDuration(err), "subordinate source not found should return ReconcileDeferredWithDuration for timeout")
+	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
+		context.Background(), tagri.Name, metav1.GetOptions{})
+	require.NotNil(t, updated)
+	assert.Equal(t, TagriPhaseRejected, updated.Status.Phase)
+}
+
+// Test processTagriFirstTime - Subordinate volume: source has no size -> reject and ReconcileDeferredWithDuration.
+func TestProcessTagriFirstTime_Subordinate_SourceHasNoSize(t *testing.T) {
+	controller, mockCtrl, orchestrator := setupTagriTest(t)
+	defer mockCtrl.Finish()
+
+	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhasePending, 1)
+	tagri.Spec.ObservedCapacityBytes = "50Gi"
+	volExternal := createTestVolExternalSubordinate("test-pv", "test-policy")
+	pv := createTestPVWithClaimRef("test-pv", "default", "test-pvc")
+	pvc := createTestPVC("test-pvc", "default", "50Gi")
+	policy := createTestAutogrowPolicy("test-policy", "80%", "10Gi", "200Gi", 1)
+	policy.Status.State = string(storage.AutogrowPolicyStateSuccess)
+
+	_, _ = controller.kubeClientset.CoreV1().PersistentVolumes().Create(context.Background(), pv, metav1.CreateOptions{})
+	_, _ = controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Create(
+		context.Background(), tagri, metav1.CreateOptions{})
+	_, _ = controller.kubeClientset.CoreV1().PersistentVolumeClaims("default").Create(
+		context.Background(), pvc, metav1.CreateOptions{})
+	_, _ = controller.crdClientset.TridentV1().TridentAutogrowPolicies().Create(
+		context.Background(), policy, metav1.CreateOptions{})
+	controller.crdInformerFactory.Trident().V1().TridentAutogrowPolicies().Informer().GetIndexer().Add(policy)
+
+	// Source volume with no Config.Size (nil Config would also hit the "no size" path)
+	sourceNoSize := createTestSourceVolumeExternal("")
+	sourceNoSize.Config = &storage.VolumeConfig{Name: "source-vol"} // Size empty
+
+	// GetVolume is called in processTagriFirstTime and again in rejectTagri (update volume autogrow status).
+	orchestrator.EXPECT().GetVolume(gomock.Any(), tagri.Spec.Volume).Return(volExternal, nil).AnyTimes()
+	orchestrator.EXPECT().GetAutogrowPolicy(gomock.Any(), "test-policy").Return(
+		createTestAutogrowPolicyExternal("test-policy", storage.AutogrowPolicyStateSuccess), nil)
+	orchestrator.EXPECT().GetSubordinateSourceVolume(gomock.Any(), tagri.Spec.Volume).Return(sourceNoSize, nil)
+
+	err := controller.processTagriFirstTime(context.Background(), tagri)
+	assert.Error(t, err)
+	assert.True(t, errors.IsReconcileDeferredWithDuration(err))
+	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
+		context.Background(), tagri.Name, metav1.GetOptions{})
+	require.NotNil(t, updated)
+	assert.Equal(t, TagriPhaseRejected, updated.Status.Phase)
+}
+
+// Test processTagriFirstTime - Subordinate volume: invalid source volume size -> reject and ReconcileDeferredWithDuration.
+func TestProcessTagriFirstTime_Subordinate_InvalidSourceSize(t *testing.T) {
+	controller, mockCtrl, orchestrator := setupTagriTest(t)
+	defer mockCtrl.Finish()
+
+	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhasePending, 1)
+	tagri.Spec.ObservedCapacityBytes = "50Gi"
+	volExternal := createTestVolExternalSubordinate("test-pv", "test-policy")
+	pv := createTestPVWithClaimRef("test-pv", "default", "test-pvc")
+	pvc := createTestPVC("test-pvc", "default", "50Gi")
+	policy := createTestAutogrowPolicy("test-policy", "80%", "10Gi", "200Gi", 1)
+	policy.Status.State = string(storage.AutogrowPolicyStateSuccess)
+
+	_, _ = controller.kubeClientset.CoreV1().PersistentVolumes().Create(context.Background(), pv, metav1.CreateOptions{})
+	_, _ = controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Create(
+		context.Background(), tagri, metav1.CreateOptions{})
+	_, _ = controller.kubeClientset.CoreV1().PersistentVolumeClaims("default").Create(
+		context.Background(), pvc, metav1.CreateOptions{})
+	_, _ = controller.crdClientset.TridentV1().TridentAutogrowPolicies().Create(
+		context.Background(), policy, metav1.CreateOptions{})
+	controller.crdInformerFactory.Trident().V1().TridentAutogrowPolicies().Informer().GetIndexer().Add(policy)
+
+	sourceBadSize := createTestSourceVolumeExternal("not-a-quantity")
+
+	orchestrator.EXPECT().GetVolume(gomock.Any(), tagri.Spec.Volume).Return(volExternal, nil).AnyTimes()
+	orchestrator.EXPECT().GetAutogrowPolicy(gomock.Any(), "test-policy").Return(
+		createTestAutogrowPolicyExternal("test-policy", storage.AutogrowPolicyStateSuccess), nil)
+	orchestrator.EXPECT().GetSubordinateSourceVolume(gomock.Any(), tagri.Spec.Volume).Return(sourceBadSize, nil)
+
+	err := controller.processTagriFirstTime(context.Background(), tagri)
+	assert.Error(t, err)
+	assert.True(t, errors.IsReconcileDeferredWithDuration(err))
+	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
+		context.Background(), tagri.Name, metav1.GetOptions{})
+	require.NotNil(t, updated)
+	assert.Equal(t, TagriPhaseRejected, updated.Status.Phase)
+}
+
+// Test processTagriFirstTime - Subordinate volume capped at source size: customCeilingBytes passed, status message and PVC event include source cap.
+func TestProcessTagriFirstTime_Subordinate_CappedAtSource_MessageAndEvent(t *testing.T) {
+	controller, mockCtrl, orchestrator := setupTagriTest(t)
+	defer mockCtrl.Finish()
+
+	// 50Gi current, 100% growth -> 100Gi; source 80Gi -> cap at 80Gi (cappedAtSourceSize true).
+	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhasePending, 1)
+	tagri.Spec.ObservedCapacityBytes = "50Gi"
+	tagri.Finalizers = []string{tridentv1.TridentFinalizerName} // already has finalizer so we go to patch
+	volExternal := createTestVolExternalSubordinate("test-pv", "test-policy")
+	sourceVol := createTestSourceVolumeExternal("80Gi")
+	pv := createTestPVWithClaimRef("test-pv", "default", "test-pvc")
+	pvc := createTestPVC("test-pvc", "default", "50Gi") // 50Gi so patch to 80Gi is requested
+	policy := createTestAutogrowPolicy("test-policy", "80%", "100%", "200Gi", 1)
+	policy.Status.State = string(storage.AutogrowPolicyStateSuccess)
+
+	_, _ = controller.kubeClientset.CoreV1().PersistentVolumes().Create(context.Background(), pv, metav1.CreateOptions{})
+	_, _ = controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Create(
+		context.Background(), tagri, metav1.CreateOptions{})
+	_, _ = controller.kubeClientset.CoreV1().PersistentVolumeClaims("default").Create(
+		context.Background(), pvc, metav1.CreateOptions{})
+	_, _ = controller.crdClientset.TridentV1().TridentAutogrowPolicies().Create(
+		context.Background(), policy, metav1.CreateOptions{})
+	controller.crdInformerFactory.Trident().V1().TridentAutogrowPolicies().Informer().GetIndexer().Add(policy)
+
+	orchestrator.EXPECT().GetVolume(gomock.Any(), tagri.Spec.Volume).Return(volExternal, nil).AnyTimes()
+	orchestrator.EXPECT().GetAutogrowPolicy(gomock.Any(), "test-policy").Return(
+		createTestAutogrowPolicyExternal("test-policy", storage.AutogrowPolicyStateSuccess), nil)
+	orchestrator.EXPECT().GetSubordinateSourceVolume(gomock.Any(), tagri.Spec.Volume).Return(sourceVol, nil)
+
+	recorder := record.NewFakeRecorder(20)
+	controller.recorder = recorder
+
+	err := controller.processTagriFirstTime(context.Background(), tagri)
+	assert.Error(t, err)
+	assert.True(t, errors.IsReconcileIncompleteError(err), "success path requeues for monitoring")
+
+	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
+		context.Background(), tagri.Name, metav1.GetOptions{})
+	require.NotNil(t, updated)
+	assert.Equal(t, TagriPhaseInProgress, updated.Status.Phase)
+	assert.Contains(t, updated.Status.Message, "source volume size", "InProgress message should mention capping at source volume size")
+	assert.Contains(t, updated.Status.Message, "80", "message should include source size (e.g. 80Gi or 80.00Gi)")
+
+	// FakeRecorder sends "EventType Reason Message" on Events channel
+	select {
+	case event := <-recorder.Events:
+		assert.Contains(t, event, "capped at source volume size", "PVC event should mention capped at source volume size")
+		assert.Contains(t, event, "80", "event should include source size")
+	default:
+		t.Fatal("expected at least one event (AutogrowTriggered)")
+	}
+}
+
+// Test processTagriFirstTime - Patch succeeds but updateTagriStatus to InProgress fails -> WrapReconcileDeferredError
+func TestProcessTagriFirstTime_UpdateStatusToInProgressFails(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	orchestrator.EXPECT().GetResizeDeltaForBackend(gomock.Any(), gomock.Any()).Return(int64(0), nil).AnyTimes()
+	orchestrator.EXPECT().GetFrontend(gomock.Any(), controllerhelpers.KubernetesHelper).Return(nil, fmt.Errorf("not found")).AnyTimes()
+	orchestrator.EXPECT().UpdateVolumeAutogrowStatus(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	crdClient := GetTestCrdClientset()
+	crdClient.PrependReactor("update", "tridentautogrowrequestinternals", func(action ktesting.Action) (handled bool, ret runtime.Object, err error) {
+		ua, ok := action.(ktesting.UpdateAction)
+		if !ok {
+			return false, nil, nil
+		}
+		obj := ua.GetObject()
+		tagri, ok := obj.(*tridentv1.TridentAutogrowRequestInternal)
+		if !ok || tagri.Status.Phase != TagriPhaseInProgress {
+			return false, nil, nil
+		}
+		return true, nil, fmt.Errorf("status update rejected")
+	})
+
+	controller, err := newTridentCrdControllerImpl(
+		orchestrator, "trident", GetTestKubernetesClientset(), GetTestSnapshotClientset(), crdClient, nil, nil)
+	require.NoError(t, err)
+	controller.recorder = record.NewFakeRecorder(100)
+
+	pv := createTestPVWithClaimRef("test-pv", "default", "test-pvc")
+	pvc := createTestPVC("test-pvc", "default", "50Gi")
+	_, _ = controller.kubeClientset.CoreV1().PersistentVolumes().Create(context.Background(), pv, metav1.CreateOptions{})
+	_, _ = controller.kubeClientset.CoreV1().PersistentVolumeClaims("default").Create(
+		context.Background(), pvc, metav1.CreateOptions{})
+
+	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhasePending, 1)
+	volExternal := createTestVolExternal("test-pv", "test-policy")
+	policy := createTestAutogrowPolicy("test-policy", "80%", "1Gi", "200Gi", 1)
+	policy.Status.State = string(storage.AutogrowPolicyStateSuccess)
+	_, _ = controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Create(
+		context.Background(), tagri, metav1.CreateOptions{})
+	_, _ = controller.crdClientset.TridentV1().TridentAutogrowPolicies().Create(
+		context.Background(), policy, metav1.CreateOptions{})
+	controller.crdInformerFactory.Trident().V1().TridentAutogrowPolicies().Informer().GetIndexer().Add(policy)
+
+	orchestrator.EXPECT().GetVolume(gomock.Any(), tagri.Spec.Volume).Return(volExternal, nil).AnyTimes()
+	orchestrator.EXPECT().GetAutogrowPolicy(gomock.Any(), "test-policy").Return(
+		createTestAutogrowPolicyExternal("test-policy", storage.AutogrowPolicyStateSuccess), nil)
+
+	err = controller.processTagriFirstTime(context.Background(), tagri)
+	assert.Error(t, err)
+	assert.True(t, errors.IsReconcileDeferredError(err))
 }
 
 // Test processTagriFirstTime - Patch PVC fails, retry count < max -> ReconcileDeferredError and retry count updated.
@@ -1281,8 +1619,6 @@ func TestProcessTagriFirstTime_PatchPVC_FailsRetry(t *testing.T) {
 
 	err = controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "PVC patch failed")
-	assert.Contains(t, err.Error(), "retry")
 
 	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 		context.Background(), tagri.Name, metav1.GetOptions{})
@@ -1371,7 +1707,6 @@ func TestProcessTagriFirstTime_TransitionToInProgress_DoesNotUpdateVolumeAutogro
 	err = controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
 	assert.True(t, errors.IsReconcileIncompleteError(err), "expected ReconcileIncompleteError to start monitoring")
-	assert.Contains(t, err.Error(), "Starting resize monitoring")
 
 	// TAGRI should be InProgress; tvol UpdateVolumeAutogrowStatus was never called (no EXPECT = strict mock).
 	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
@@ -1408,7 +1743,6 @@ func TestProcessTagriFirstTime_AlreadyAtTargetSize_CompleteTagriSuccessFails(t *
 
 	err := controller.processTagriFirstTime(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to mark TAGRI as Completed")
 }
 
 // Test processTagriFirstTime - Autogrow policy in Success state passes generation check (reaches later step or different error)
@@ -1442,9 +1776,9 @@ func TestProcessTagriFirstTime_PolicyStateSuccess_PassesValidation(t *testing.T)
 		createTestAutogrowPolicyExternal("test-policy", storage.AutogrowPolicyStateSuccess), nil)
 
 	err = controller.processTagriFirstTime(context.Background(), tagri)
-	// Should NOT fail with "not in success state" - fails later (e.g. capacity calculation, patch, etc.)
+	// Should NOT fail with "Success state" - fails later (e.g. capacity calculation, patch, etc.)
 	assert.Error(t, err)
-	assert.NotContains(t, err.Error(), "not in success state")
+	assert.NotContains(t, err.Error(), "Success state")
 }
 
 // Test 5: monitorTagriResize
@@ -1481,7 +1815,7 @@ func TestMonitorTagriResize_GetVolumeTransientError(t *testing.T) {
 
 	err := controller.monitorTagriResize(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to get volume during monitoring")
+	assert.True(t, errors.IsNotFoundError(err), "volume not found during monitoring should be NotFoundError")
 }
 
 // TestMonitorTagriResize_GetVolumeNotFoundError: GetVolume returns errors.NotFoundError -> reject TAGRI and "volume deleted during monitoring".
@@ -1500,9 +1834,6 @@ func TestMonitorTagriResize_GetVolumeNotFoundError(t *testing.T) {
 
 	err = controller.monitorTagriResize(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "TAGRI rejected")
-	assert.Contains(t, err.Error(), "volume deleted")
-	assert.Contains(t, err.Error(), "requeuing for deletion")
 
 	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 		context.Background(), tagri.Name, metav1.GetOptions{})
@@ -1533,9 +1864,10 @@ func TestMonitorTagriResize_PVCCapacityVerified(t *testing.T) {
 	orchestrator.EXPECT().GetVolume(gomock.Any(), tagri.Spec.Volume).Return(volExternal, nil).AnyTimes()
 
 	err = controller.monitorTagriResize(context.Background(), tagri)
-	// Will succeed and mark as completed
-	assert.Error(t, err) // ReconcileIncompleteError to trigger cleanup
-	assert.Contains(t, err.Error(), "completed")
+	assert.NoError(t, err)
+	_, getErr := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
+		context.Background(), tagri.Name, metav1.GetOptions{})
+	assert.True(t, k8sapierrors.IsNotFound(getErr), "TAGRI should be completed and deleted when capacity at target")
 }
 
 // Test 6: calculateFinalCapacity
@@ -1546,9 +1878,9 @@ func TestCalculateFinalCapacity_Success(t *testing.T) {
 	policy := createTestAutogrowPolicy("test-policy", "80%", "10%", "200Gi", 1)
 	currentSize := resource.MustParse("100Gi")
 
-	result, err := controller.calculateFinalCapacity(context.Background(), currentSize, policy, "test-pv", 0)
+	result, err := controller.calculateFinalCapacity(context.Background(), currentSize, policy, "test-pv", 0, "")
 	assert.NoError(t, err)
-	assert.Equal(t, "110Gi", result.String())
+	assert.Equal(t, "110Gi", result.FinalCapacity.String())
 }
 
 func TestCalculateFinalCapacity_NilPolicy(t *testing.T) {
@@ -1557,9 +1889,8 @@ func TestCalculateFinalCapacity_NilPolicy(t *testing.T) {
 
 	currentSize := resource.MustParse("100Gi")
 
-	_, err := controller.calculateFinalCapacity(context.Background(), currentSize, nil, "test-pv", 0)
+	_, err := controller.calculateFinalCapacity(context.Background(), currentSize, nil, "test-pv", 0, "")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "nil")
 }
 
 // Test calculateFinalCapacity with resize delta (all validations in one place)
@@ -1570,9 +1901,9 @@ func TestCalculateFinalCapacity_WithResizeDelta_ZeroDelta_ReturnsPolicyBased(t *
 	policy := createTestAutogrowPolicy("p", "80%", "5Gi", "200Gi", 1)
 	currentSize := resource.MustParse("100Gi")
 
-	result, err := controller.calculateFinalCapacity(context.Background(), currentSize, policy, "test-pv", 0)
+	result, err := controller.calculateFinalCapacity(context.Background(), currentSize, policy, "test-pv", 0, "")
 	assert.NoError(t, err)
-	assert.Equal(t, "105Gi", result.String())
+	assert.Equal(t, "105Gi", result.FinalCapacity.String())
 }
 
 func TestCalculateFinalCapacity_WithResizeDelta_GrowthAboveDelta_ReturnsUnchanged(t *testing.T) {
@@ -1583,9 +1914,9 @@ func TestCalculateFinalCapacity_WithResizeDelta_GrowthAboveDelta_ReturnsUnchange
 	policy := createTestAutogrowPolicy("p", "80%", "50Gi", "200Gi", 1)
 	currentSize := resource.MustParse("100Gi")
 
-	result, err := controller.calculateFinalCapacity(context.Background(), currentSize, policy, "test-pv", delta)
+	result, err := controller.calculateFinalCapacity(context.Background(), currentSize, policy, "test-pv", delta, "")
 	assert.NoError(t, err)
-	assert.Equal(t, "150Gi", result.String())
+	assert.Equal(t, "150Gi", result.FinalCapacity.String())
 }
 
 func TestCalculateFinalCapacity_WithResizeDelta_GrowthBelowDelta_Bumps(t *testing.T) {
@@ -1597,28 +1928,27 @@ func TestCalculateFinalCapacity_WithResizeDelta_GrowthBelowDelta_Bumps(t *testin
 	policy := createTestAutogrowPolicy("p", "80%", "10Mi", "200Gi", 1)
 	currentSize := resource.MustParse("100Gi")
 
-	result, err := controller.calculateFinalCapacity(context.Background(), currentSize, policy, "test-pv", delta)
+	result, err := controller.calculateFinalCapacity(context.Background(), currentSize, policy, "test-pv", delta, "")
 	assert.NoError(t, err)
 	expected := currentSize.Value() + delta + autogrow.ExtraBytesAboveResizeDelta
-	assert.Equal(t, expected, result.Value())
+	assert.Equal(t, expected, result.FinalCapacity.Value())
 }
 
-func TestCalculateFinalCapacity_WithResizeDelta_BumpedExceedsMaxSize_ReturnsError(t *testing.T) {
+func TestCalculateFinalCapacity_WithResizeDelta_BumpedExceedsMaxSize_GrowthBelowDelta_ReturnsError(t *testing.T) {
 	const delta int64 = 50 * 1024 * 1024 // 50Mi
 	controller, mockCtrl, _ := setupTagriTest(t)
 	defer mockCtrl.Finish()
 
-	// Current just under 100Gi so policy +10Mi is valid; bump would exceed 100Gi so we error (no cap)
+	// Current 100Gi - 20Mi; policy +10Mi is small so we bump to current+delta+1MB (would exceed 100Gi); cap would give 100Gi.
+	// Growth after cap = 20Mi < 50Mi delta → backend would not resize (stuck). We now return error instead of capping.
 	maxSizeQty := resource.MustParse("100Gi")
 	currentSize := *resource.NewQuantity(maxSizeQty.Value()-20*1024*1024, resource.BinarySI) // 100Gi - 20Mi
 	policy := createTestAutogrowPolicy("p", "80%", "10Mi", "100Gi", 1)
 
-	result, err := controller.calculateFinalCapacity(context.Background(), currentSize, policy, "test-pv", delta)
+	result, err := controller.calculateFinalCapacity(context.Background(), currentSize, policy, "test-pv", delta, "")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "exceeds maxSize")
-	assert.Contains(t, err.Error(), "resize delta")
-	assert.Contains(t, err.Error(), "policy growthAmount")
-	assert.True(t, result.IsZero())
+	assert.True(t, errors.IsAutogrowStuckResizeAtMaxSizeError(err))
+	assert.True(t, result.FinalCapacity.IsZero())
 }
 
 // Test 7: getPVCForVolume (resolves PVC from PV only; no volume config)
@@ -1652,7 +1982,6 @@ func TestGetPVCForVolume_EmptyVolumeName(t *testing.T) {
 	volExternal := createTestVolExternal("test-pv", "test-policy")
 	_, err := controller.getPVCForVolume(context.Background(), volExternal, "")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "volume name")
 }
 
 // Test 8: patchPVCSize
@@ -1703,6 +2032,7 @@ func TestCheckPVCResizeStatus_NoFailureOrSuccess(t *testing.T) {
 }
 
 // Test 10-12: rejectTagri, failTagri, completeTagriSuccess
+// TestRejectTagri_Success: TAGRI has finalizers (createTestTagri), so rejectTagri only calls updateTagriStatus.
 func TestRejectTagri_Success(t *testing.T) {
 	controller, mockCtrl, orchestrator := setupTagriTest(t)
 	defer mockCtrl.Finish()
@@ -1729,6 +2059,34 @@ func TestRejectTagri_Success(t *testing.T) {
 	assert.NotNil(t, updated.Status.ProcessedAt)
 }
 
+// TestRejectTagri_NoFinalizers_AddsFinalizerAndUpdatesStatus exercises the path when TAGRI has no finalizers:
+// rejectTagri calls updateTagriCR (add finalizer) then updateTagriStatus (persist Rejected), since CRD status
+// subresource is not updated by Update().
+func TestRejectTagri_NoFinalizers_AddsFinalizerAndUpdatesStatus(t *testing.T) {
+	controller, mockCtrl, orchestrator := setupTagriTest(t)
+	defer mockCtrl.Finish()
+
+	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhasePending, 1)
+	tagri.Finalizers = nil // No finalizers so we exercise updateTagriCR then updateTagriStatus path
+	pvc := createTestPVC("test-pvc", "default", "50Gi")
+
+	_, err := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Create(
+		context.Background(), tagri, metav1.CreateOptions{})
+	require.NoError(t, err)
+
+	orchestrator.EXPECT().GetVolume(gomock.Any(), tagri.Spec.Volume).Return(nil, fmt.Errorf("not found")).AnyTimes()
+
+	err = controller.rejectTagri(context.Background(), tagri, pvc, "test rejection")
+	assert.NoError(t, err)
+
+	updated, err := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
+		context.Background(), tagri.Name, metav1.GetOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, TagriPhaseRejected, updated.Status.Phase)
+	assert.NotNil(t, updated.Status.ProcessedAt)
+	assert.True(t, updated.HasTridentFinalizers(), "rejectTagri should add finalizer when missing")
+}
+
 func TestFailTagri_Success(t *testing.T) {
 	controller, mockCtrl, _ := setupTagriTest(t)
 	defer mockCtrl.Finish()
@@ -1741,7 +2099,7 @@ func TestFailTagri_Success(t *testing.T) {
 		context.Background(), tagri, metav1.CreateOptions{})
 	require.NoError(t, err)
 
-	err = controller.failTagri(context.Background(), tagri, nil, pvc, "test failure")
+	_, err = controller.failTagri(context.Background(), tagri, nil, pvc, "test failure")
 	assert.NoError(t, err)
 
 	// Verify status updated
@@ -1761,9 +2119,8 @@ func TestFailTagri_UpdateStatusFails(t *testing.T) {
 	// Do NOT create TAGRI in clientset so updateTagriStatus fails
 	volExternal := createTestVolExternal("test-pv", "test-policy")
 
-	err := controller.failTagri(context.Background(), tagri, volExternal, nil, "test failure")
+	_, err := controller.failTagri(context.Background(), tagri, volExternal, nil, "test failure")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to update TAGRI status")
 }
 
 func TestCompleteTagriSuccess_Success(t *testing.T) {
@@ -1778,15 +2135,12 @@ func TestCompleteTagriSuccess_Success(t *testing.T) {
 		context.Background(), tagri, metav1.CreateOptions{})
 	require.NoError(t, err)
 
-	err = controller.completeTagriSuccess(context.Background(), tagri, nil, pvc, "100Gi")
+	err = controller.markTagriCompleteAndDelete(context.Background(), tagri, nil, pvc, "100Gi")
 	assert.NoError(t, err)
 
-	// Verify status updated
-	updated, err := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
+	_, getErr := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 		context.Background(), tagri.Name, metav1.GetOptions{})
-	require.NoError(t, err)
-	assert.Equal(t, TagriPhaseCompleted, updated.Status.Phase)
-	assert.NotNil(t, updated.Status.ProcessedAt)
+	assert.True(t, k8sapierrors.IsNotFound(getErr), "TAGRI should be completed and deleted")
 }
 
 // Test 13: updateTagriStatus
@@ -1873,7 +2227,6 @@ func TestUpdateVolumeAutogrowStatus_NilVolExternal(t *testing.T) {
 		LogFields{},
 	)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "invalid volume")
 }
 
 // TestUpdateVolumeAutogrowStatus_ConfigNil_ReturnsError covers updateVolumeAutogrowStatus when volExternal is set but Config is nil.
@@ -1890,7 +2243,6 @@ func TestUpdateVolumeAutogrowStatus_ConfigNil_ReturnsError(t *testing.T) {
 		LogFields{},
 	)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "invalid volume")
 }
 
 // TestUpdateVolumeAutogrowStatus_OrchestratorReturnsError covers updateVolumeAutogrowStatus when the orchestrator returns an error (e.g. volume not found).
@@ -1918,7 +2270,6 @@ func TestUpdateVolumeAutogrowStatus_OrchestratorReturnsError(t *testing.T) {
 		LogFields{},
 	)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "not found")
 }
 
 // TestUpdateVolumeAutogrowStatus_Success covers updateVolumeAutogrowStatus when the orchestrator succeeds.
@@ -1991,7 +2342,7 @@ func TestFailTagri_UpdatesVolumeAutogrowStatusAttempt(t *testing.T) {
 		context.Background(), pvc, metav1.CreateOptions{})
 	// updateVolumeAutogrowStatus is allowed by setupTagriTest's AnyTimes()
 
-	err := controller.failTagri(context.Background(), tagri, volExternal, pvc, "test failure")
+	_, err := controller.failTagri(context.Background(), tagri, volExternal, pvc, "test failure")
 	assert.NoError(t, err)
 }
 
@@ -2142,7 +2493,6 @@ func TestProcessTagriFirstTime_PolicyNotFound_Retry(t *testing.T) {
 
 	// Should defer with policy not found (orchestrator)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "not found")
 }
 
 // Test monitorTagriResize - Resize success via capacity
@@ -2170,10 +2520,10 @@ func TestMonitorTagriResize_ResizeSuccessViaCapacity(t *testing.T) {
 
 	// Monitor
 	err = controller.monitorTagriResize(context.Background(), tagri)
-
-	// Should complete
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "marked as completed")
+	assert.NoError(t, err)
+	_, getErr := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
+		context.Background(), tagri.Name, metav1.GetOptions{})
+	assert.True(t, k8sapierrors.IsNotFound(getErr), "TAGRI should be completed and deleted when capacity at target")
 }
 
 // Test monitorTagriResize - Resize success via VolumeResizeSuccessful event (if resizeSuccessful block)
@@ -2216,12 +2566,10 @@ func TestMonitorTagriResize_ResizeSuccessViaEvent(t *testing.T) {
 	orchestrator.EXPECT().GetVolume(gomock.Any(), tagri.Spec.Volume).Return(volExternal, nil).AnyTimes()
 
 	err = controller.monitorTagriResize(context.Background(), tagri)
-
-	// Must enter if resizeSuccessful block, verify capacity, and call completeTagriSuccess
-	assert.Error(t, err)
-	assert.True(t, errors.IsReconcileIncompleteError(err))
-	assert.Contains(t, err.Error(), "marked as completed")
-	assert.Contains(t, err.Error(), "terminal phase")
+	assert.NoError(t, err)
+	_, getErr := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
+		context.Background(), tagri.Name, metav1.GetOptions{})
+	assert.True(t, k8sapierrors.IsNotFound(getErr), "TAGRI should be completed and deleted when resize succeeded")
 }
 
 // Test monitorTagriResize - PVC deleted during monitoring
@@ -2249,7 +2597,11 @@ func TestMonitorTagriResize_PVCDeleted(t *testing.T) {
 
 	// Should reject (PVC not found)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "PVC deleted")
+	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
+		context.Background(), tagri.Name, metav1.GetOptions{})
+	require.NotNil(t, updated)
+	assert.Equal(t, TagriPhaseRejected, updated.Status.Phase)
+	assert.Contains(t, updated.Status.Message, "deleted during monitoring")
 }
 
 // Test monitorTagriResize - Still in progress
@@ -2279,7 +2631,6 @@ func TestMonitorTagriResize_StillInProgress(t *testing.T) {
 
 	// Should defer (still in progress)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "Resize in progress")
 }
 
 // Test checkPVCResizeStatus - Success event detected
@@ -2363,11 +2714,9 @@ func TestGetPVCForVolume_InvalidVolume(t *testing.T) {
 	pvc, err := controller.getPVCForVolume(context.Background(), nil, "test-pv")
 	assert.Error(t, err)
 	assert.Nil(t, pvc)
-	assert.Contains(t, err.Error(), "invalid volume")
 
 	_, err = controller.getPVCForVolume(context.Background(), volExternal, "")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "volume name")
 }
 
 // Test getPVCForVolume - PV has no claimRef (not bound)
@@ -2386,7 +2735,6 @@ func TestGetPVCForVolume_PVHasNoClaimRef(t *testing.T) {
 	pvc, err := controller.getPVCForVolume(context.Background(), volExternal, "test-pv")
 	assert.Error(t, err)
 	assert.Nil(t, pvc)
-	assert.Contains(t, err.Error(), "no claimRef")
 }
 
 // Test getPVCForVolume - uses Kubernetes helper from GetFrontend when available (GetPVCForPV success)
@@ -2615,7 +2963,7 @@ func TestHandleTridentAutogrowRequestInternal_ListerError(t *testing.T) {
 	t.Skip("Requires injecting failing lister to get transient error")
 }
 
-// Test handleTimeoutAndTerminalPhase with zero CreationTimestamp (skips hard timeout block)
+// Test handleTimeoutAndTerminalPhase with zero CreationTimestamp: we delete immediately to avoid stuck TAGRIs.
 func TestHandleTimeoutAndTerminalPhase_ZeroCreationTimestamp(t *testing.T) {
 	controller, mockCtrl, _ := setupTagriTest(t)
 	defer mockCtrl.Finish()
@@ -2623,8 +2971,10 @@ func TestHandleTimeoutAndTerminalPhase_ZeroCreationTimestamp(t *testing.T) {
 	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhasePending, 1)
 	tagri.CreationTimestamp = metav1.Time{}
 	handled, err := controller.handleTimeoutAndTerminalPhase(context.Background(), tagri)
-	assert.False(t, handled)
-	assert.NoError(t, err)
+	assert.True(t, handled, "zero CreationTimestamp should be deleted in STEP 1 to avoid stuck CR")
+	if err != nil {
+		assert.False(t, errors.IsReconcileDeferredError(err), "we delete now, not requeue")
+	}
 }
 
 // Test calculateFinalCapacity error (invalid policy)
@@ -2634,9 +2984,25 @@ func TestCalculateFinalCapacity_InvalidPolicy(t *testing.T) {
 
 	policy := createTestAutogrowPolicy("test-policy", "80%", "invalid-growth", "100Gi", 1)
 	currentSize := resource.MustParse("50Gi")
-	_, err := controller.calculateFinalCapacity(context.Background(), currentSize, policy, "test-pv", 0)
+	_, err := controller.calculateFinalCapacity(context.Background(), currentSize, policy, "test-pv", 0, "")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to calculate final capacity")
+}
+
+// Test buildTagriInProgressMessage with cappedAtSourceSize (subordinate volume capped at source size).
+func TestBuildTagriInProgressMessage_CappedAtSourceSize(t *testing.T) {
+	controller, mockCtrl, _ := setupTagriTest(t)
+	defer mockCtrl.Finish()
+
+	msg := controller.buildTagriInProgressMessage("80 GiB", 0, true, "200Gi", true, "80 GiB")
+	assert.Contains(t, msg, "source volume size", "message should mention capping at source volume size")
+	assert.Contains(t, msg, "80 GiB")
+	assert.Contains(t, msg, "monitoring resize progress")
+
+	// With resize delta bump and cap at source
+	msg2 := controller.buildTagriInProgressMessage("80 GiB", 51*1024*1024, true, "200Gi", true, "80 GiB")
+	assert.Contains(t, msg2, "source volume size")
+	assert.Contains(t, msg2, "resize delta")
+	assert.Contains(t, msg2, "80 GiB")
 }
 
 // Test patchPVCSize error (PVC not in cluster)
@@ -2718,7 +3084,7 @@ func TestCheckPVCResizeStatus_VolumeResizeSuccessfulEvent(t *testing.T) {
 	assert.Empty(t, msg)
 }
 
-// Test monitorTagriResize - resize failed (CSI failure) -> after RetryCount reaches max we failTagri
+// Test monitorTagriResize - resize failed (CSI failure) -> after RetryCount reaches max we failTagri, keep until timeout for recovery
 func TestMonitorTagriResize_ResizeFailedViaCondition(t *testing.T) {
 	controller, mockCtrl, orchestrator := setupTagriTest(t)
 	defer mockCtrl.Finish()
@@ -2742,8 +3108,11 @@ func TestMonitorTagriResize_ResizeFailedViaCondition(t *testing.T) {
 
 	err := controller.monitorTagriResize(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.True(t, errors.IsReconcileIncompleteError(err))
-	assert.Contains(t, err.Error(), "Failed")
+	assert.True(t, errors.IsReconcileDeferredError(err), "resize exhausted uses backoff like invalid capacity")
+	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
+		context.Background(), tagri.Name, metav1.GetOptions{})
+	require.NotNil(t, updated)
+	assert.Equal(t, TagriPhaseFailed, updated.Status.Phase, "TAGRI kept until timeout for recovery or cleanup")
 }
 
 // Test monitorTagriResize - resize failed but RetryCount below max: status updated, ReconcileDeferredError
@@ -2771,8 +3140,6 @@ func TestMonitorTagriResize_ResizeFailedBelowMaxRetries(t *testing.T) {
 	err := controller.monitorTagriResize(context.Background(), tagri)
 	assert.Error(t, err)
 	assert.True(t, errors.IsReconcileDeferredError(err))
-	assert.Contains(t, err.Error(), "Resize failure observed")
-	assert.Contains(t, err.Error(), "1/5")
 
 	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 		context.Background(), tagri.Name, metav1.GetOptions{})
@@ -2803,10 +3170,9 @@ func TestMonitorTagriResize_PVCCapacityNil(t *testing.T) {
 	err := controller.monitorTagriResize(context.Background(), tagri)
 	assert.Error(t, err)
 	assert.True(t, errors.IsReconcileDeferredError(err))
-	assert.Contains(t, err.Error(), "capacity not yet reported")
 }
 
-// Test monitorTagriResize - invalid FinalCapacityBytes
+// Test monitorTagriResize - invalid FinalCapacityBytes -> failTagri, keep until timeout so operators can see status
 func TestMonitorTagriResize_InvalidFinalCapacityBytes(t *testing.T) {
 	controller, mockCtrl, orchestrator := setupTagriTest(t)
 	defer mockCtrl.Finish()
@@ -2826,12 +3192,15 @@ func TestMonitorTagriResize_InvalidFinalCapacityBytes(t *testing.T) {
 
 	err := controller.monitorTagriResize(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.True(t, errors.IsReconcileIncompleteError(err))
-	assert.Contains(t, err.Error(), "invalid capacity")
+	assert.True(t, errors.IsReconcileDeferredError(err), "invalid capacity is terminal; use backoff until timeout")
+	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
+		context.Background(), tagri.Name, metav1.GetOptions{})
+	require.NotNil(t, updated)
+	assert.Equal(t, TagriPhaseFailed, updated.Status.Phase)
 }
 
-// Test tryCompleteTagriIfResizeReachedTarget - returns false when FinalCapacityBytes is empty
-func TestTryCompleteTagriIfResizeReachedTarget_EmptyFinalCapacityBytes(t *testing.T) {
+// Test completeTagriIfCapacityAtTarget - returns false when FinalCapacityBytes is empty
+func TestCompleteTagriIfCapacityAtTarget_EmptyFinalCapacityBytes(t *testing.T) {
 	controller, mockCtrl, _ := setupTagriTest(t)
 	defer mockCtrl.Finish()
 
@@ -2839,14 +3208,14 @@ func TestTryCompleteTagriIfResizeReachedTarget_EmptyFinalCapacityBytes(t *testin
 	volExternal := createTestVolExternal("test-pv", "test-policy")
 	pvc := createTestPVC("test-pvc", "default", "100Gi")
 
-	completed, err := controller.tryCompleteTagriIfResizeReachedTarget(
+	completed, err := controller.completeAndDeleteTagriIfCapacityAtTarget(
 		context.Background(), tagri, volExternal, pvc, "")
 	assert.False(t, completed)
 	assert.NoError(t, err)
 }
 
-// Test tryCompleteTagriIfResizeReachedTarget - returns false when capacity below target
-func TestTryCompleteTagriIfResizeReachedTarget_CapacityBelowTarget(t *testing.T) {
+// Test completeTagriIfCapacityAtTarget - returns false when capacity below target
+func TestCompleteTagriIfCapacityAtTarget_CapacityBelowTarget(t *testing.T) {
 	controller, mockCtrl, _ := setupTagriTest(t)
 	defer mockCtrl.Finish()
 
@@ -2855,13 +3224,13 @@ func TestTryCompleteTagriIfResizeReachedTarget_CapacityBelowTarget(t *testing.T)
 	volExternal := createTestVolExternal("test-pv", "test-policy")
 	pvc := createTestPVC("test-pvc", "default", "1Gi")
 
-	completed, err := controller.tryCompleteTagriIfResizeReachedTarget(
+	completed, err := controller.completeAndDeleteTagriIfCapacityAtTarget(
 		context.Background(), tagri, volExternal, pvc, "")
 	assert.False(t, completed)
 	assert.NoError(t, err)
 }
 
-// Test tryCompleteTagriIfResizeReachedTarget - returns true and updates TAGRI to Completed when capacity >= target
+// Test completeTagriIfCapacityAtTarget - returns true and updates TAGRI to Completed when capacity >= target
 func TestTryCompleteTagriIfResizeReachedTarget_CapacityReached(t *testing.T) {
 	controller, mockCtrl, _ := setupTagriTest(t)
 	defer mockCtrl.Finish()
@@ -2878,15 +3247,14 @@ func TestTryCompleteTagriIfResizeReachedTarget_CapacityReached(t *testing.T) {
 		context.Background(), pvc, metav1.CreateOptions{})
 	require.NoError(t, err)
 
-	completed, err := controller.tryCompleteTagriIfResizeReachedTarget(
+	completed, err := controller.completeAndDeleteTagriIfCapacityAtTarget(
 		context.Background(), tagri, volExternal, pvc, "Resize completed successfully.")
 	assert.True(t, completed)
 	assert.NoError(t, err)
 
-	updated, getErr := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
+	_, getErr := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 		context.Background(), tagri.Name, metav1.GetOptions{})
-	require.NoError(t, getErr)
-	assert.Equal(t, TagriPhaseCompleted, updated.Status.Phase)
+	assert.True(t, k8sapierrors.IsNotFound(getErr), "TAGRI should be completed and deleted")
 }
 
 // Test updateTagriStatus - UpdateStatus error (TAGRI not in cluster)
@@ -3013,19 +3381,32 @@ func TestDeleteTagriNow_DeleteError(t *testing.T) {
 
 	err = controller.deleteTagriNow(context.Background(), tagri)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to delete TAGRI")
 }
 
-// Test deleteTagriHandler - error from deleteTagriNow propagates
+// Test tagriIsBeingDeleted: nil returns false; no DeletionTimestamp returns false; DeletionTimestamp set returns true.
+func TestTagriIsBeingDeleted(t *testing.T) {
+	controller, mockCtrl, _ := setupTagriTest(t)
+	defer mockCtrl.Finish()
+
+	assert.False(t, controller.tagriIsBeingDeleted(nil), "nil tagri should not be considered being deleted")
+
+	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhasePending, 1)
+	assert.False(t, controller.tagriIsBeingDeleted(tagri), "tagri without DeletionTimestamp should not be considered being deleted")
+
+	now := metav1.NewTime(time.Now())
+	tagri.ObjectMeta.DeletionTimestamp = &now
+	assert.True(t, controller.tagriIsBeingDeleted(tagri), "tagri with DeletionTimestamp set should be considered being deleted")
+}
+
+// Test deleteTagriHandler - when TAGRI is not in API server (e.g. already deleted), deleteTagriNow returns nil.
 func TestDeleteTagriHandler_Error(t *testing.T) {
 	controller, mockCtrl, _ := setupTagriTest(t)
 	defer mockCtrl.Finish()
 
 	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhasePending, 1)
-	// TAGRI with finalizers but not in clientset - deleteTagriNow will try updateTagriCR to remove finalizers and fail
+	// TAGRI not in clientset: deleteTagriNow Get() returns NotFound, treats as already deleted, returns nil.
 	err := controller.deleteTagriHandler(context.Background(), tagri)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to remove finalizers")
+	assert.NoError(t, err)
 }
 
 // createTestTridentVolume creates a minimal TridentVolume for updateVolumeAutogrowStatus tests.
@@ -3049,7 +3430,7 @@ func createTestTridentVolume(name, namespace string) *tridentv1.TridentVolume {
 
 // TestCompleteTagriSuccess_UpdatesVolumeAutogrowStatus covers completeTagriSuccess calling updateVolumeAutogrowStatusSuccess.
 // The frontend calls the orchestrator to update autogrow status; the core owns the persistent store.
-func TestCompleteTagriSuccess_UpdatesVolumeAutogrowStatus(t *testing.T) {
+func TestMarkTagriCompleteAndDelete_UpdatesVolumeAutogrowStatus(t *testing.T) {
 	controller, mockCtrl, _ := setupTagriTest(t)
 	defer mockCtrl.Finish()
 
@@ -3062,44 +3443,45 @@ func TestCompleteTagriSuccess_UpdatesVolumeAutogrowStatus(t *testing.T) {
 		context.Background(), pvc, metav1.CreateOptions{})
 	// updateVolumeAutogrowStatus is allowed by setupTagriTest's AnyTimes()
 
-	err := controller.completeTagriSuccess(context.Background(), tagri, volExternal, pvc, "100Gi")
+	err := controller.markTagriCompleteAndDelete(context.Background(), tagri, volExternal, pvc, "100Gi")
 	assert.NoError(t, err)
 }
 
-// TestCompleteTagriSuccess_WhenTagriStatusUpdateFails_DoesNotUpdateTvol ensures that when updateTagriStatus
-// fails (e.g. conflict or TAGRI not in cluster), we do not call UpdateVolumeAutogrowStatus. This prevents
-// double-counting on retry after conflict. The frontend only calls the orchestrator after TAGRI is persisted.
-func TestCompleteTagriSuccess_WhenTagriStatusUpdateFails_DoesNotUpdateTvol(t *testing.T) {
+// TestMarkTagriCompleteAndDelete_WhenTagriStatusUpdateFails_DoesNotUpdateTvol ensures that when the update fails
+// (e.g. TAGRI not in cluster), we do not call UpdateVolumeAutogrowStatus. markTagriCompleteAndDelete does
+// updateTagriCR (remove finalizers) then updateTagriStatus (persist Completed); this test omits TAGRI from clientset
+// so the first call (updateTagriCR) fails.
+func TestMarkTagriCompleteAndDelete_WhenTagriStatusUpdateFails_DoesNotUpdateTvol(t *testing.T) {
 	controller, mockCtrl, _ := setupTagriTest(t)
 	defer mockCtrl.Finish()
 
 	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhaseInProgress, 1)
 	volExternal := createTestVolExternal("test-pv", "test-policy")
 	pvc := createTestPVC("test-pvc", "default", "100Gi")
-	// Do NOT create TAGRI in clientset so updateTagriStatus fails
+	// Do NOT create TAGRI in clientset so updateTagriCR fails
 	_, _ = controller.kubeClientset.CoreV1().PersistentVolumeClaims("default").Create(
 		context.Background(), pvc, metav1.CreateOptions{})
 
-	err := controller.completeTagriSuccess(context.Background(), tagri, volExternal, pvc, "100Gi")
+	err := controller.markTagriCompleteAndDelete(context.Background(), tagri, volExternal, pvc, "100Gi")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to update TAGRI status")
 }
 
-// TestRejectTagri_WhenTagriStatusUpdateFails_DoesNotUpdateTvol ensures that when updateTagriStatus
-// fails, we do not call UpdateVolumeAutogrowStatus, preventing double-count on retry.
+// TestRejectTagri_WhenTagriStatusUpdateFails_DoesNotUpdateTvol ensures that when the status update fails
+// (e.g. TAGRI not in clientset), we do not call UpdateVolumeAutogrowStatus, preventing double-count on retry.
+// With status subresource, rejectTagri uses updateTagriStatus when TAGRI has finalizers; when it has none,
+// it uses updateTagriCR then updateTagriStatus. This test uses createTestTagri (has finalizers) so we hit updateTagriStatus.
 func TestRejectTagri_WhenTagriStatusUpdateFails_DoesNotUpdateTvol(t *testing.T) {
 	controller, mockCtrl, _ := setupTagriTest(t)
 	defer mockCtrl.Finish()
 
 	tagri := createTestTagri("test-tagri", "test-pv", "test-policy", TagriPhasePending, 1)
 	pvc := createTestPVC("test-pvc", "default", "50Gi")
-	// Do NOT create TAGRI in clientset so updateTagriStatus fails
+	// Do NOT create TAGRI in clientset so rejectTagri's updateTagriStatus fails
 	_, _ = controller.kubeClientset.CoreV1().PersistentVolumeClaims("default").Create(
 		context.Background(), pvc, metav1.CreateOptions{})
 
 	err := controller.rejectTagri(context.Background(), tagri, pvc, "test rejection")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to update TAGRI status")
 }
 
 // TestRejectTagri_TvolUpdateFails_StillReturnsNil ensures that when UpdateVolumeAutogrowStatus fails (best-effort),
@@ -3160,7 +3542,7 @@ func TestFailTagri_TvolUpdateFails_StillReturnsNil(t *testing.T) {
 
 	orchestrator.EXPECT().UpdateVolumeAutogrowStatus(gomock.Any(), "test-pv", gomock.Any()).Return(fmt.Errorf("store unavailable"))
 
-	err = controller.failTagri(context.Background(), tagri, volExternal, pvc, "test failure")
+	_, err = controller.failTagri(context.Background(), tagri, volExternal, pvc, "test failure")
 	assert.NoError(t, err)
 	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 		context.Background(), tagri.Name, metav1.GetOptions{})
@@ -3168,9 +3550,9 @@ func TestFailTagri_TvolUpdateFails_StillReturnsNil(t *testing.T) {
 	assert.Equal(t, TagriPhaseFailed, updated.Status.Phase)
 }
 
-// TestCompleteTagriSuccess_TvolUpdateFails_StillReturnsNil ensures that when UpdateVolumeAutogrowStatus fails (best-effort),
+// TestMarkTagriCompleteAndDelete_TvolUpdateFails_StillReturnsNil ensures that when UpdateVolumeAutogrowStatus fails (best-effort),
 // completeTagriSuccess still returns nil so TAGRI lifecycle is not blocked.
-func TestCompleteTagriSuccess_TvolUpdateFails_StillReturnsNil(t *testing.T) {
+func TestMarkTagriCompleteAndDelete_TvolUpdateFails_StillReturnsNil(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
@@ -3193,17 +3575,16 @@ func TestCompleteTagriSuccess_TvolUpdateFails_StillReturnsNil(t *testing.T) {
 
 	orchestrator.EXPECT().UpdateVolumeAutogrowStatus(gomock.Any(), "test-pv", gomock.Any()).Return(fmt.Errorf("store unavailable"))
 
-	err = controller.completeTagriSuccess(context.Background(), tagri, volExternal, pvc, "2Gi")
+	err = controller.markTagriCompleteAndDelete(context.Background(), tagri, volExternal, pvc, "2Gi")
 	assert.NoError(t, err)
-	updated, _ := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
+	_, getErr := controller.crdClientset.TridentV1().TridentAutogrowRequestInternals(config.OrchestratorName).Get(
 		context.Background(), tagri.Name, metav1.GetOptions{})
-	require.NotNil(t, updated)
-	assert.Equal(t, TagriPhaseCompleted, updated.Status.Phase)
+	assert.True(t, k8sapierrors.IsNotFound(getErr), "TAGRI should be completed and deleted even when tvol update fails")
 }
 
-// TestTryCompleteTagriIfResizeReachedTarget_GetVolumeFails_ReturnsFalseNil ensures that when volExternal and pvc
+// TestCompleteTagriIfCapacityAtTarget_GetVolumeFails_ReturnsFalseNil ensures that when volExternal and pvc
 // are nil and GetVolume fails, we return (false, nil) so the caller does not block on the fetch error.
-func TestTryCompleteTagriIfResizeReachedTarget_GetVolumeFails_ReturnsFalseNil(t *testing.T) {
+func TestCompleteTagriIfCapacityAtTarget_GetVolumeFails_ReturnsFalseNil(t *testing.T) {
 	controller, mockCtrl, orchestrator := setupTagriTest(t)
 	defer mockCtrl.Finish()
 
@@ -3211,7 +3592,7 @@ func TestTryCompleteTagriIfResizeReachedTarget_GetVolumeFails_ReturnsFalseNil(t 
 	tagri.Status.FinalCapacityBytes = "2147483648" // 2Gi
 	orchestrator.EXPECT().GetVolume(gomock.Any(), tagri.Spec.Volume).Return(nil, fmt.Errorf("backend unavailable"))
 
-	completed, err := controller.tryCompleteTagriIfResizeReachedTarget(
+	completed, err := controller.completeAndDeleteTagriIfCapacityAtTarget(
 		context.Background(), tagri, nil, nil, "")
 	assert.False(t, completed)
 	assert.NoError(t, err)

@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/multierr"
@@ -697,6 +698,78 @@ func TestAsInvalidJSONError(t *testing.T) {
 			assert.Equal(t, args.Expected, isInvalidErr, args.UnexpectedStr)
 		})
 	}
+}
+
+func TestReconcileDeferredWithDuration(t *testing.T) {
+	d := 5 * time.Millisecond
+	err := ReconcileDeferredWithDuration(d, "wait for timeout (%s)", "5ms")
+	assert.True(t, IsReconcileDeferredWithDuration(err))
+	assert.False(t, IsReconcileDeferredError(err))
+	got, ok := ReconcileDeferredWithDurationValue(err)
+	assert.True(t, ok)
+	assert.Equal(t, d, got)
+	assert.Contains(t, err.Error(), "5ms")
+
+	err2 := ReconcileDeferredWithDuration(0, "zero duration")
+	assert.True(t, IsReconcileDeferredWithDuration(err2))
+	got2, ok2 := ReconcileDeferredWithDurationValue(err2)
+	assert.True(t, ok2)
+	assert.Equal(t, time.Duration(0), got2)
+
+	assert.False(t, IsReconcileDeferredWithDuration(nil))
+	_, ok3 := ReconcileDeferredWithDurationValue(ReconcileDeferredError("other"))
+	assert.False(t, ok3)
+}
+
+// emptyError is an error whose Error() returns ""; used to cover Error() branches.
+type emptyError struct{}
+
+func (emptyError) Error() string { return "" }
+
+func TestReconcileDeferredWithDurationError_Error(t *testing.T) {
+	// Path 1: inner != nil && inner.Error() != "" → "message; inner"
+	e1 := &reconcileDeferredWithDurationError{
+		duration: time.Second,
+		inner:    fmt.Errorf("underlying cause"),
+		message:  "wait for timeout",
+	}
+	assert.Equal(t, "wait for timeout; underlying cause", e1.Error())
+
+	// Path 2: message != "" (inner nil or inner.Error() empty)
+	e2 := &reconcileDeferredWithDurationError{duration: 0, inner: nil, message: "custom msg"}
+	assert.Equal(t, "custom msg", e2.Error())
+
+	e2b := &reconcileDeferredWithDurationError{duration: 0, inner: emptyError{}, message: "only message"}
+	assert.Equal(t, "only message", e2b.Error())
+
+	// Path 3: inner != nil, message == "", inner.Error() == ""
+	e3 := &reconcileDeferredWithDurationError{duration: 0, inner: emptyError{}, message: ""}
+	assert.Equal(t, "", e3.Error())
+
+	// Path 4: default fallback when both message and inner are empty
+	e4 := &reconcileDeferredWithDurationError{duration: 0, inner: nil, message: ""}
+	assert.Equal(t, "reconcile deferred with duration", e4.Error())
+}
+
+func TestReconcileDeferredWithMaxDuration(t *testing.T) {
+	d := 5 * time.Millisecond
+	err := ReconcileDeferredWithMaxDuration(d, "wait for recovery or timeout (%s)", "5ms")
+	assert.True(t, IsReconcileDeferredWithMaxDuration(err))
+	assert.False(t, IsReconcileDeferredWithDuration(err))
+	got, ok := ReconcileDeferredWithMaxDurationValue(err)
+	assert.True(t, ok)
+	assert.Equal(t, d, got)
+	assert.Contains(t, err.Error(), "5ms")
+
+	err2 := ReconcileDeferredWithMaxDuration(0, "zero max duration")
+	assert.True(t, IsReconcileDeferredWithMaxDuration(err2))
+	got2, ok2 := ReconcileDeferredWithMaxDurationValue(err2)
+	assert.True(t, ok2)
+	assert.Equal(t, time.Duration(0), got2)
+
+	assert.False(t, IsReconcileDeferredWithMaxDuration(nil))
+	_, ok3 := ReconcileDeferredWithMaxDurationValue(ReconcileDeferredError("other"))
+	assert.False(t, ok3)
 }
 
 // Test constructor functions
@@ -1667,5 +1740,76 @@ func TestAutogrowPolicyNotFoundError(t *testing.T) {
 		wrappedErr := fmt.Errorf("lookup failed: %w", originalErr)
 
 		assert.True(t, IsAutogrowPolicyNotFoundError(wrappedErr), "Should detect wrapped autogrow policy not found error")
+	})
+}
+
+// TestAutogrowPolicyNilError (TAGRI) tests the error when CalculateFinalCapacity is called with nil policy.
+func TestAutogrowPolicyNilError(t *testing.T) {
+	err := AutogrowPolicyNilError()
+	assert.Equal(t, "autogrow policy is nil", err.Error())
+	assert.True(t, IsAutogrowPolicyNilError(err))
+
+	t.Run("IsAutogrowPolicyNilError_NilError", func(t *testing.T) {
+		assert.False(t, IsAutogrowPolicyNilError(nil))
+	})
+
+	t.Run("IsAutogrowPolicyNilError_DifferentErrorType", func(t *testing.T) {
+		assert.False(t, IsAutogrowPolicyNilError(errors.New("generic")))
+		assert.False(t, IsAutogrowPolicyNilError(AutogrowPolicyNotFoundError("x")))
+	})
+
+	t.Run("IsAutogrowPolicyNilError_WrappedError", func(t *testing.T) {
+		wrapped := fmt.Errorf("wrapped: %w", err)
+		assert.True(t, IsAutogrowPolicyNilError(wrapped))
+	})
+}
+
+// TestAutogrowAlreadyAtMaxSizeError (TAGRI) tests the error when volume is already at or above policy maxSize.
+func TestAutogrowAlreadyAtMaxSizeError(t *testing.T) {
+	err := AutogrowAlreadyAtMaxSizeError("100Gi")
+	assert.Contains(t, err.Error(), "volume already at or above maxSize")
+	assert.Contains(t, err.Error(), "100Gi")
+	assert.True(t, IsAutogrowAlreadyAtMaxSizeError(err))
+
+	t.Run("IsAutogrowAlreadyAtMaxSizeError_NilError", func(t *testing.T) {
+		assert.False(t, IsAutogrowAlreadyAtMaxSizeError(nil))
+	})
+
+	t.Run("IsAutogrowAlreadyAtMaxSizeError_DifferentErrorType", func(t *testing.T) {
+		assert.False(t, IsAutogrowAlreadyAtMaxSizeError(errors.New("generic")))
+		assert.False(t, IsAutogrowAlreadyAtMaxSizeError(AutogrowPolicyNilError()))
+	})
+
+	t.Run("IsAutogrowAlreadyAtMaxSizeError_WrappedError", func(t *testing.T) {
+		wrapped := fmt.Errorf("wrapped: %w", err)
+		assert.True(t, IsAutogrowAlreadyAtMaxSizeError(wrapped))
+	})
+}
+
+// TestAutogrowStuckResizeAtMaxSizeError (TAGRI) tests the error when capping at maxSize would leave growth below backend minimum.
+func TestAutogrowStuckResizeAtMaxSizeError(t *testing.T) {
+	err := AutogrowStuckResizeAtMaxSizeError("volume cannot be autogrown: %s when capped at maxSize %s", "1Gi", "1Gi")
+	assert.Contains(t, err.Error(), "volume cannot be autogrown")
+	assert.Contains(t, err.Error(), "1Gi")
+	assert.True(t, IsAutogrowStuckResizeAtMaxSizeError(err))
+
+	t.Run("IsAutogrowStuckResizeAtMaxSizeError_NilError", func(t *testing.T) {
+		assert.False(t, IsAutogrowStuckResizeAtMaxSizeError(nil))
+	})
+
+	t.Run("IsAutogrowStuckResizeAtMaxSizeError_DifferentErrorType", func(t *testing.T) {
+		assert.False(t, IsAutogrowStuckResizeAtMaxSizeError(errors.New("generic")))
+		assert.False(t, IsAutogrowStuckResizeAtMaxSizeError(AutogrowPolicyNilError()))
+	})
+
+	t.Run("IsAutogrowStuckResizeAtMaxSizeError_WrappedError", func(t *testing.T) {
+		wrapped := fmt.Errorf("wrapped: %w", err)
+		assert.True(t, IsAutogrowStuckResizeAtMaxSizeError(wrapped))
+	})
+
+	t.Run("AutogrowStuckResizeAtMaxSizeError_NoFormatArgs", func(t *testing.T) {
+		errNoArgs := AutogrowStuckResizeAtMaxSizeError("stuck resize")
+		assert.Equal(t, "stuck resize", errNoArgs.Error())
+		assert.True(t, IsAutogrowStuckResizeAtMaxSizeError(errNoArgs))
 	})
 }

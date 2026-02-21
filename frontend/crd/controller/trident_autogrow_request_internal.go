@@ -54,6 +54,15 @@ const (
 	EventReasonAutogrowRejected  = "AutogrowRejected"
 )
 
+// tagriIsBeingDeleted returns true if the TAGRI has a non-zero DeletionTimestamp (is being deleted).
+// Safe to call with nil tagri (returns false).
+func (c *TridentCrdController) tagriIsBeingDeleted(tagri *tridentv1.TridentAutogrowRequestInternal) bool {
+	if tagri == nil {
+		return false
+	}
+	return !tagri.ObjectMeta.DeletionTimestamp.IsZero()
+}
+
 // handleTridentAutogrowRequestInternal is the main handler for TridentAutogrowRequestInternal CRs.
 // It routes to first-time processing or monitoring mode based on the CR's current status.
 func (c *TridentCrdController) handleTridentAutogrowRequestInternal(keyItem *KeyItem) error {
@@ -69,20 +78,20 @@ func (c *TridentCrdController) handleTridentAutogrowRequestInternal(keyItem *Key
 	defer Logx(ctx).Debug("<<<< handleTridentAutogrowRequestInternal")
 
 	// Get TAGRI from lister (Info so operators see TAGRI processing at default log level)
-	Logx(ctx).WithFields(LogFields{"key": key, "eventType": eventType}).Info("Processing TAGRI")
+	Logx(ctx).WithFields(LogFields{"key": key, "eventType": eventType}).Info("Processing TAGRI.")
 
 	// Get TAGRI from lister
 	namespace, name, err := cache.SplitMetaNamespaceKey(key)
 	if err != nil {
 		// Invalid key is a permanent error, will not get fixed on retry. Thus, log and ignore.
-		Logx(ctx).WithField("key", key).WithError(err).Error("Invalid key. Ignoring.")
+		Logx(ctx).WithField("key", key).WithError(err).Error("Invalid key, ignoring.")
 		return nil
 	}
 
 	tagri, err := c.autogrowRequestInternalLister.TridentAutogrowRequestInternals(namespace).Get(name)
 	if err != nil {
 		if k8sapierrors.IsNotFound(err) {
-			Logx(ctx).WithField("key", key).WithError(err).Debug("TAGRI in work queue no longer exists. Ignoring.")
+			Logx(ctx).WithField("key", key).WithError(err).Debug("TAGRI in work queue no longer exists, ignoring.")
 			return nil
 		}
 		// Lister error (transient) - retry with exponential backoff
@@ -90,7 +99,7 @@ func (c *TridentCrdController) handleTridentAutogrowRequestInternal(keyItem *Key
 	}
 
 	// Delete can be delivered as Update when the object gets DeletionTimestamp set; route to delete handler.
-	if !tagri.ObjectMeta.DeletionTimestamp.IsZero() {
+	if c.tagriIsBeingDeleted(tagri) {
 		Logx(ctx).WithFields(LogFields{
 			"tagri":             tagri.Name,
 			"deletionTimestamp": tagri.ObjectMeta.DeletionTimestamp,
@@ -115,7 +124,7 @@ func (c *TridentCrdController) handleTridentAutogrowRequestInternal(keyItem *Key
 		"processedAt":                 tagri.Status.ProcessedAt,
 		"retryCount":                  tagri.Status.RetryCount,
 		"eventType":                   eventType,
-	}).Debug("Handling TAGRI event")
+	}).Debug("Handling TAGRI event.")
 
 	switch eventType {
 	case EventAdd, EventForceUpdate, EventUpdate:
@@ -123,6 +132,8 @@ func (c *TridentCrdController) handleTridentAutogrowRequestInternal(keyItem *Key
 	case EventDelete:
 		return c.deleteTagriHandler(ctx, tagri)
 	default:
+		// Unknown event type: ignore this enqueue.
+		Logx(ctx).WithField("eventType", eventType).Debug("Unknown event type, ignoring.")
 		return nil
 	}
 }
@@ -131,22 +142,27 @@ func (c *TridentCrdController) upsertTagriHandler(ctx context.Context, tagri *tr
 	Logx(ctx).WithField("tagri", tagri.Name).Debug(">>>> upsertTagriHandler")
 	defer Logx(ctx).WithField("tagri", tagri.Name).Debug("<<<< upsertTagriHandler")
 
-	// Handle TAGRI timeout and terminal phase cleanup.
-	// When handled is true, we either deleted the TAGRI or deferred (error); caller must stop and return.
+	// Handle TAGRI timeout and terminal phase deletion.
+	// When handled is true, we either deleted the TAGRI (err=nil) or we're in a terminal/timeout path and requeuing (err!=nil).
+	// Hence, no need of continuing to next step of phase routing (first-time or monitoring).
 	// When handled is false and err is nil, continue to phase routing (first-time or monitoring).
 	handled, err := c.handleTimeoutAndTerminalPhase(ctx, tagri)
 	if handled {
 		if err != nil {
-			return errors.WrapWithReconcileDeferredError(err, "failed to do TAGRI timeout or terminal phase based cleanup")
+			Logx(ctx).WithFields(LogFields{
+				"tagri": tagri.Name,
+				"phase": tagri.Status.Phase,
+			}).Debug("TAGRI in terminal or timeout path, requeuing for next steps.")
+			return errors.WrapWithReconcileDeferredError(err, "TAGRI handled in timeout or terminal path, requeuing for next steps")
 		}
 		Logx(ctx).WithFields(LogFields{
 			"tagri": tagri.Name,
 			"phase": tagri.Status.Phase,
-		}).Debug("TAGRI already handled (deleted), nothing more required")
+		}).Debug("TAGRI already handled (deleted), nothing more required.")
 		return nil
 	}
 	if err != nil {
-		return errors.WrapWithReconcileDeferredError(err, "failed to do TAGRI timeout or terminal phase based cleanup")
+		return errors.WrapWithReconcileDeferredError(err, "failed to do TAGRI timeout or terminal phase based deletion")
 	}
 
 	// Route based on current phase
@@ -159,72 +175,126 @@ func (c *TridentCrdController) upsertTagriHandler(ctx context.Context, tagri *tr
 	return c.processTagriFirstTime(ctx, tagri)
 }
 
-// handleTimeoutAndTerminalPhase returns (handled, err). When handled is true, the caller must stop
-// (either we deleted the TAGRI or deferred with error). When handled is false and err is nil, continue to
-// phase routing (processTagriFirstTime or monitorTagriResize).
-func (c *TridentCrdController) handleTimeoutAndTerminalPhase(ctx context.Context, tagri *tridentv1.TridentAutogrowRequestInternal) (handled bool, err error) {
+// handleTimeoutAndTerminalPhase runs timeout check first, then terminal-phase handling (Completed, Rejected, Failed).
+// Returns (handled, err).
+// When handled is true, the caller must stop and return as there is nothing more to do (we either deleted the TAGRI or deferred with error).
+// When handled is false and err is nil, continue to next step i.e phase routing (processTagriFirstTime or monitorTagriResize).
+//
+// Terminal phase behavior (idempotency preserved in all cases):
+//   - Rejected: hold until age-based timeout (STEP 3); operator can see status.message. Rejected conditions
+//     are not re-evaluated (they are permanent for this CR); after timeout the Trident node can create a new
+//     TAGRI if the underlying issue is fixed. We rely on Rejected status in the TAGRI CR to prevent further processing
+//     and just wait for timeout to occur.
+//   - Completed: delete in same reconciliation (STEP 2 or via markTagriCompleteAndDelete). No requeue for
+//     deletion; if delete fails we requeue and next run sees Phase=Completed and only deletes (idempotent).
+//   - Failed→recovery: when resize later succeeds we mark TAGRI as Complete and delete immediately as part of
+//     the same reconciliation (run markTagriCompleteAndDelete).
+//   - Failed: when resize has not recovered, wait for age-based timeout.
+func (c *TridentCrdController) handleTimeoutAndTerminalPhase(
+	ctx context.Context, tagri *tridentv1.TridentAutogrowRequestInternal) (handled bool, err error) {
 	Logx(ctx).WithField("tagri", tagri.Name).Debug(">>>> handleTimeoutAndTerminalPhase")
 	defer Logx(ctx).Debug("<<<< handleTimeoutAndTerminalPhase")
 
-	// STEP 1: Check hard timeout (ALWAYS FIRST, applies to ALL phases)
-	// This is the safety net that prevents TAGRIs from being stuck indefinitely in any phase
-	hardTimeout := config.GetTagriTimeout()
-	if !tagri.CreationTimestamp.IsZero() {
+	// STEP 1: Check age-based timeout (ALWAYS FIRST, applies to ALL phases)
+	// This is the safety net that prevents TAGRIs from being stuck indefinitely in any phase.
+	tagriTimeout := config.GetTagriTimeout()
+	Logx(ctx).WithFields(LogFields{"tagri": tagri.Name, "tagriTimeout": tagriTimeout.Truncate(time.Second)}).Debug("TAGRI timeout (age-based).")
+	if tagri.CreationTimestamp.IsZero() {
+		// No creation time (e.g. test object or malformed): we cannot enforce timeout, and it won't recover.
+		// Delete so the TAGRI does not float indefinitely; the node can create a new TAGRI if needed.
+		Logx(ctx).WithFields(LogFields{"tagri": tagri.Name, "phase": tagri.Status.Phase}).Warn("TAGRI has zero CreationTimestamp, deleting to avoid stuck CR.")
+		return true, c.deleteTagriNow(ctx, tagri)
+	} else {
 		age := time.Since(tagri.CreationTimestamp.Time)
-		if age >= hardTimeout {
+		if age >= tagriTimeout {
 			Logx(ctx).WithFields(LogFields{
-				"tagri":       tagri.Name,
-				"phase":       tagri.Status.Phase,
-				"age":         age.Truncate(time.Second),
-				"hardTimeout": hardTimeout.Truncate(time.Second),
-			}).Info("TAGRI exceeded hard timeout (age-based), deleting immediately")
+				"tagri":        tagri.Name,
+				"phase":        tagri.Status.Phase,
+				"age":          age.Truncate(time.Second),
+				"tagriTimeout": tagriTimeout.Truncate(time.Second),
+			}).Info("TAGRI exceeded timeout, deleting immediately.")
 			return true, c.deleteTagriNow(ctx, tagri)
 		}
 	}
 
-	// STEP 2: Handle terminal phases (Completed/Rejected) — delete immediately
-	if tagri.Status.Phase == TagriPhaseCompleted || tagri.Status.Phase == TagriPhaseRejected {
+	// STEP 2: Completed — mark it as handled and delete immediately
+	if tagri.Status.Phase == TagriPhaseCompleted {
 		Logx(ctx).WithFields(LogFields{
 			"tagri": tagri.Name,
 			"phase": tagri.Status.Phase,
-		}).Debug("TAGRI is in terminal phase, deleting immediately")
+		}).Debug("TAGRI is in Completed phase, deleting immediately.")
 		return true, c.deleteTagriNow(ctx, tagri)
 	}
 
-	// STEP 3: Failed phase - wait for hard timeout, unless resize has since succeeded
+	// STEP 3: Rejected — hold until age-based timeout.
+	// Rejected is only used for irrecoverable conditions; no reprocessing. After timeout
+	// the node can create a new TAGRI if the underlying issue is fixed. Schedule next run at timeout via AddAfter.
+	if tagri.Status.Phase == TagriPhaseRejected {
+		timeUntilTimeout := tagriTimeout - time.Since(tagri.CreationTimestamp.Time)
+		if timeUntilTimeout <= 0 {
+			// Ideally we should not have come here as STEP 1 should have handled this.
+			Logx(ctx).WithFields(LogFields{
+				"tagri": tagri.Name, "phase": tagri.Status.Phase, "message": tagri.Status.Message,
+			}).Info("TAGRI in Rejected phase at or past timeout, deleting immediately.")
+			return true, c.deleteTagriNow(ctx, tagri)
+		}
+		Logx(ctx).WithFields(LogFields{
+			"tagri":        tagri.Name,
+			"phase":        tagri.Status.Phase,
+			"message":      tagri.Status.Message,
+			"tagriTimeout": tagriTimeout.Truncate(time.Second),
+		}).Debug("TAGRI is in Rejected phase, waiting for timeout based deletion.")
+		return true, errors.ReconcileDeferredWithDuration(timeUntilTimeout,
+			"TAGRI rejected, waiting for timeout based deletion (%s)", tagriTimeout.Truncate(time.Second))
+	}
+
+	// STEP 4: Failed phase - wait for age-based timeout, unless resize has since succeeded
 	// If we previously marked Failed (e.g. after max resize retries) but resize later succeeded
 	// (e.g. backend came back online), transition to Completed so we delete immediately.
 	if tagri.Status.Phase == TagriPhaseFailed {
-		completed, err := c.tryCompleteTagriIfResizeReachedTarget(ctx, tagri, nil, nil, "TAGRI was Failed but resize has since succeeded")
+		completed, err := c.completeAndDeleteTagriIfCapacityAtTarget(ctx, tagri, nil, nil, "TAGRI was Failed but resize has since succeeded")
 		if err != nil {
 			return true, errors.WrapWithReconcileDeferredError(err, "failed to mark TAGRI as completed after recovery")
 		}
 		if completed {
 			return true, nil
 		}
-		return true, errors.ReconcileDeferredError(
-			"TAGRI in Failed phase, waiting for hard timeout (%s)", hardTimeout.Truncate(time.Second))
+		// No error; capacity not at target yet. Requeue with rate-limited backoff but cap by timeUntilTimeout
+		// so tagriTimeout is strictly adhered (next run is never scheduled past timeout).
+		timeUntilTimeout := tagriTimeout - time.Since(tagri.CreationTimestamp.Time)
+		if timeUntilTimeout <= 0 {
+			// Ideally we should not have come here as STEP 1 should have handled this.
+			Logx(ctx).WithFields(LogFields{"tagri": tagri.Name, "phase": tagri.Status.Phase}).
+				Info("TAGRI in Failed phase at or past timeout, deleting immediately.")
+			return true, c.deleteTagriNow(ctx, tagri)
+		}
+		return true, errors.ReconcileDeferredWithMaxDuration(timeUntilTimeout,
+			"TAGRI in Failed phase, waiting for recovery or timeout based deletion (%s)", tagriTimeout.Truncate(time.Second))
 	}
 
-	// STEP 4: Active phases (Pending/InProgress/empty) - continue processing
-	// These will be monitored and eventually timeout via hard timeout if stuck
+	// STEP 5: Active phases (Pending/InProgress/empty) - continue processing
+	// These will be monitored and eventually timeout via age-based timeout if stuck
 	if tagri.Status.Phase == TagriPhasePending || tagri.Status.Phase == TagriPhaseInProgress || tagri.Status.Phase == "" {
-		// Return handled=false so caller continues to processTagriFirstTime or monitorTagriResize
+		// Return handled=false so caller continues to phase-based routing (processTagriFirstTime or monitorTagriResize)
 		Logx(ctx).WithFields(LogFields{
 			"tagri": tagri.Name,
 			"phase": tagri.Status.Phase,
-		}).Debug("TAGRI in active phase, continuing to reconciliation")
+		}).Debug("TAGRI in active phase, continuing to reconciliation.")
 		return false, nil
 	}
 
-	// STEP 5: Unknown/unexpected phase - defer processing
-	// Do NOT fall through to processTagriFirstTime() which could corrupt state.
-	// Return handled=true so caller stops; ReconcileDeferredError will requeue with backoff.
-	Logx(ctx).WithFields(LogFields{
-		"tagri": tagri.Name,
-		"phase": tagri.Status.Phase,
-	}).Warn("TAGRI has unknown phase; deferring reconciliation, hard timeout will clean up if stuck")
-	return true, errors.ReconcileDeferredError("TAGRI has unknown phase: %s", tagri.Status.Phase)
+	// STEP 6: Unknown/unexpected phase - defer processing. No recovery path; schedule next run at timeout via AddAfter.
+	timeUntilTimeout := tagriTimeout - time.Since(tagri.CreationTimestamp.Time)
+	if timeUntilTimeout <= 0 {
+		// Ideally we should not have come here as STEP 1 should have handled this.
+		Logx(ctx).WithFields(LogFields{"tagri": tagri.Name, "phase": tagri.Status.Phase}).
+			Info("TAGRI has unknown phase at or past timeout, deleting immediately.")
+		return true, c.deleteTagriNow(ctx, tagri)
+	}
+	Logx(ctx).WithFields(LogFields{"tagri": tagri.Name, "phase": tagri.Status.Phase}).
+		Warn("TAGRI has unknown phase; deferring reconciliation, age based timeout will clean up.")
+	return true, errors.ReconcileDeferredWithDuration(timeUntilTimeout,
+		"TAGRI has unknown phase: %s, waiting for timeout based deletion (%s)", tagri.Status.Phase, tagriTimeout.Truncate(time.Second))
 }
 
 // processTagriFirstTime handles the first-time processing of a TAGRI:
@@ -233,39 +303,38 @@ func (c *TridentCrdController) processTagriFirstTime(ctx context.Context, tagri 
 	Logx(ctx).WithField("tagri", tagri.Name).Debug(">>>> processTagriFirstTime")
 	defer Logx(ctx).Debug("<<<< processTagriFirstTime")
 
-	// Step 1: Validate mandatory observed capacity (total size host sees; required for safe growth; prevents shrinkage/data loss).
+	// Step 1: Validate the field observedCapacityBytes provided by node (total size host sees; required for safe growth; prevents shrinkage/data loss).
 	// Done first so invalid TAGRIs are rejected before any orchestrator or API calls.
 	if tagri.Spec.ObservedCapacityBytes == "" {
 		if err := c.rejectTagri(ctx, tagri, nil, "observedCapacityBytes is required"); err != nil {
 			return errors.WrapWithReconcileDeferredError(err, "failed to reject TAGRI")
 		}
-		return errors.ReconcileIncompleteError("TAGRI rejected (missing observedCapacityBytes), requeuing for deletion")
+		return errors.ReconcileDeferredWithDuration(config.GetTagriTimeout(), "TAGRI rejected, waiting for timeout based deletion (%s); missing observedCapacityBytes", config.GetTagriTimeout().Truncate(time.Second))
 	}
 	observedCapacity, parseErr := resource.ParseQuantity(tagri.Spec.ObservedCapacityBytes)
 	if parseErr != nil {
-		if err := c.rejectTagri(ctx, tagri, nil, fmt.Sprintf("invalid observedCapacityBytes %q: %v", tagri.Spec.ObservedCapacityBytes, parseErr)); err != nil {
-			return errors.WrapWithReconcileDeferredError(err, "failed to reject TAGRI")
+		if rejectErr := c.rejectTagri(ctx, tagri, nil, fmt.Sprintf("invalid observedCapacityBytes %q: %v", tagri.Spec.ObservedCapacityBytes, parseErr)); rejectErr != nil {
+			return errors.WrapWithReconcileDeferredError(rejectErr, "failed to reject TAGRI")
 		}
-		return errors.ReconcileIncompleteError("TAGRI rejected (invalid observedCapacityBytes), requeuing for deletion")
+		return errors.ReconcileDeferredWithDuration(config.GetTagriTimeout(), "TAGRI rejected, waiting for timeout based deletion (%s); %v", config.GetTagriTimeout().Truncate(time.Second), parseErr)
 	}
 	if observedCapacity.Sign() <= 0 {
 		if err := c.rejectTagri(ctx, tagri, nil, "observedCapacityBytes must be greater than 0"); err != nil {
 			return errors.WrapWithReconcileDeferredError(err, "failed to reject TAGRI")
 		}
-		return errors.ReconcileIncompleteError("TAGRI rejected (observedCapacityBytes must be positive), requeuing for deletion")
+		return errors.ReconcileDeferredWithDuration(config.GetTagriTimeout(), "TAGRI rejected, waiting for timeout based deletion (%s); observedCapacityBytes must be greater than 0", config.GetTagriTimeout().Truncate(time.Second))
 	}
 
 	// Step 2: Get TridentVolume from core cache
 	volExternal, err := c.orchestrator.GetVolume(ctx, tagri.Spec.Volume)
 	if err != nil {
 		if errors.IsNotFoundError(err) {
-			// Volume not found in core cache - this is a permanent validation error, reject and requeue for immediate deletion
-			if err := c.rejectTagri(ctx, tagri, nil, fmt.Sprintf("Volume %s not found", tagri.Spec.Volume)); err != nil {
-				return errors.WrapWithReconcileDeferredError(err, "failed to reject TAGRI")
+			if rejectErr := c.rejectTagri(ctx, tagri, nil, fmt.Sprintf("volume %s not found", tagri.Spec.Volume)); rejectErr != nil {
+				return errors.WrapWithReconcileDeferredError(rejectErr, "failed to reject TAGRI")
 			}
-			return errors.ReconcileIncompleteError("TAGRI rejected (Volume %s not found), requeuing for deletion", tagri.Spec.Volume)
+			return errors.ReconcileDeferredWithDuration(config.GetTagriTimeout(), "TAGRI rejected, waiting for timeout based deletion (%s); %v", config.GetTagriTimeout().Truncate(time.Second), err)
 		}
-		return errors.WrapWithReconcileDeferredError(err, "failed to get volume")
+		return errors.WrapWithReconcileDeferredError(errors.WrapWithNotFoundError(err, "volume %s not found", tagri.Spec.Volume), "failed to get volume")
 	}
 
 	// Step 3: Get PVC corresponding to the volume -
@@ -273,44 +342,39 @@ func (c *TridentCrdController) processTagriFirstTime(ctx context.Context, tagri 
 	pvc, err := c.getPVCForVolume(ctx, volExternal, tagri.Spec.Volume)
 	if err != nil {
 		if k8sapierrors.IsNotFound(err) {
-			// PVC not found - this is a permanent validation error, reject and requeue for immediate deletion
-			if err := c.rejectTagri(ctx, tagri, pvc, fmt.Sprintf("PVC not found for volume %s", tagri.Spec.Volume)); err != nil {
-				return errors.WrapWithReconcileDeferredError(err, "failed to reject TAGRI")
+			if rejectErr := c.rejectTagri(ctx, tagri, pvc, fmt.Sprintf("PVC not found for volume %s", tagri.Spec.Volume)); rejectErr != nil {
+				return errors.WrapWithReconcileDeferredError(rejectErr, "failed to reject TAGRI")
 			}
-			return errors.ReconcileIncompleteError("TAGRI rejected (PVC not found), requeuing for deletion")
+			return errors.ReconcileDeferredWithDuration(config.GetTagriTimeout(), "TAGRI rejected, waiting for timeout based deletion (%s); %v", config.GetTagriTimeout().Truncate(time.Second), err)
 		}
 		return errors.WrapWithReconcileDeferredError(err, "failed to get PVC")
 	}
 
-	// Step 4: Validate effective policy
+	// Step 4: Validate effective policy (from orchestrator cache; the policy actually applied to the volume)
 	effectivePolicy := volExternal.EffectiveAutogrowPolicy
 	if effectivePolicy.PolicyName == "" {
-		// EffectiveAutogrowPolicy is empty - this indicates:
-		// 1. Volume was created without autogrow policy, OR
-		// 2. Autogrow policy was removed/unset after volume creation, OR
-		// 3. Race condition: autogrow policy not yet propagated to volume config
-		//
-		// Since node created TAGRI with policy reference, this is likely a configuration error
-		// or the autogrow policy was removed after node observed it. Reject the request.
+		// EffectiveAutogrowPolicy is empty in controller cache. So either there is no effective policy
+		// for the volume (e.g. created without one, or policy removed), or controller cache / node
+		// autogrow info is stale. We treat the Trident controller as source of truth: reject this TAGRI
+		// and hold until timeout. Node and controller will eventually reflect correct state; the node
+		// can then create a new TAGRI if appropriate.
 		Logx(ctx).WithFields(LogFields{
 			"volume":          tagri.Spec.Volume,
 			"requestedPolicy": tagri.Spec.AutogrowPolicyRef.Name,
-		}).Warn("Volume has no effective autogrow policy configured, rejecting TAGRI")
+		}).Warn("TAGRI rejected, volume has no effective autogrow policy configured.")
 
-		if err := c.rejectTagri(ctx, tagri, pvc, "No effective autogrow policy found for this volume"); err != nil {
+		if err := c.rejectTagri(ctx, tagri, pvc, "no effective autogrow policy found for this volume"); err != nil {
 			return errors.WrapWithReconcileDeferredError(err, "failed to reject TAGRI")
 		}
-		return errors.ReconcileIncompleteError("TAGRI rejected (no effective autogrow policy found for this volume), requeuing for deletion")
+		return errors.ReconcileDeferredWithDuration(config.GetTagriTimeout(), "TAGRI rejected, waiting for timeout based deletion (%s); no effective autogrow policy found for volume %s", config.GetTagriTimeout().Truncate(time.Second), tagri.Spec.Volume)
 	}
 
 	if effectivePolicy.PolicyName != tagri.Spec.AutogrowPolicyRef.Name {
-		// Autogrow policy mismatch - validation error, reject and requeue for immediate deletion
-		if err := c.rejectTagri(ctx, tagri, pvc, fmt.Sprintf("Autogrow policy mismatch: effective=%s, requested=%s",
+		if err := c.rejectTagri(ctx, tagri, pvc, fmt.Sprintf("autogrow policy mismatch: effective=%s, requested=%s",
 			effectivePolicy.PolicyName, tagri.Spec.AutogrowPolicyRef.Name)); err != nil {
 			return errors.WrapWithReconcileDeferredError(err, "failed to reject TAGRI")
 		}
-		return errors.ReconcileIncompleteError(fmt.Sprintf("TAGRI rejected (autogrow policy mismatch: effective=%s, requested=%s), requeuing for deletion",
-			effectivePolicy.PolicyName, tagri.Spec.AutogrowPolicyRef.Name))
+		return errors.ReconcileDeferredWithDuration(config.GetTagriTimeout(), "TAGRI rejected, waiting for timeout based deletion (%s); autogrow policy mismatch: effective=%s, requested=%s", config.GetTagriTimeout().Truncate(time.Second), effectivePolicy.PolicyName, tagri.Spec.AutogrowPolicyRef.Name)
 	}
 
 	// Step 5: Validate autogrow policy existence and Success state from core cache (orchestrator).
@@ -320,45 +384,52 @@ func (c *TridentCrdController) processTagriFirstTime(ctx context.Context, tagri 
 	if err != nil {
 		if errors.IsNotFoundError(err) {
 			// Policy not in core - may be still syncing or deleted. Retry with backoff.
-			return errors.ReconcileDeferredError("Autogrow policy %s not found, will retry with exponential backoff", tagri.Spec.AutogrowPolicyRef.Name)
+			return errors.ReconcileDeferredError("autogrow policy %s not found, will retry with exponential backoff", tagri.Spec.AutogrowPolicyRef.Name)
 		}
 		return errors.WrapWithReconcileDeferredError(err, "failed to get autogrow policy")
 	}
 	if !orchPolicy.State.IsSuccess() {
-		if err := c.rejectTagri(ctx, tagri, pvc, fmt.Sprintf("Autogrow policy is not in %s state: current state is=%s", storage.AutogrowPolicyStateSuccess, orchPolicy.State)); err != nil {
+		if err := c.rejectTagri(ctx, tagri, pvc, fmt.Sprintf("autogrow policy is not in %s state: current state is=%s", storage.AutogrowPolicyStateSuccess, orchPolicy.State)); err != nil {
 			return errors.WrapWithReconcileDeferredError(err, "failed to reject TAGRI")
 		}
-		return errors.ReconcileIncompleteError(fmt.Sprintf("TAGRI rejected (autogrow policy is not in success state, current state is=%s), requeuing for deletion", orchPolicy.State))
+		return errors.ReconcileDeferredWithDuration(config.GetTagriTimeout(), "TAGRI rejected, waiting for timeout based deletion (%s); autogrow policy %s is not in Success state, current state is=%s", config.GetTagriTimeout().Truncate(time.Second), tagri.Spec.AutogrowPolicyRef.Name, orchPolicy.State)
 	}
 
 	// Step 6: Get autogrow policy CR from lister for generation check (CR is source of truth for metadata.generation)
 	policy, err := c.autogrowPoliciesLister.Get(tagri.Spec.AutogrowPolicyRef.Name)
 	if err != nil {
 		if k8sapierrors.IsNotFound(err) {
-			// CR not in lister yet (e.g. informer lag) although orchestrator has policy; retry.
-			return errors.ReconcileDeferredError("Autogrow policy CR %s not found in lister, will retry with exponential backoff", tagri.Spec.AutogrowPolicyRef.Name)
+			// CR not in lister yet (e.g. informer lag) although orchestrator has policy; retry with backoff.
+			// Idempotent: no state written yet; next run re-processes from Step 1.
+			return errors.ReconcileDeferredError("autogrow policy CR %s not found in lister, will retry with exponential backoff", tagri.Spec.AutogrowPolicyRef.Name)
 		}
 		return errors.WrapWithReconcileDeferredError(err, "failed to get autogrow policy CR from lister")
 	}
 
 	// Step 7: Validate generation (CR generation must match TAGRI's policy ref)
 	if policy.Generation != tagri.Spec.AutogrowPolicyRef.Generation {
-		if err := c.rejectTagri(ctx, tagri, pvc, fmt.Sprintf("Autogrow policy generation mismatch: current=%d, requested=%d",
+		if err := c.rejectTagri(ctx, tagri, pvc, fmt.Sprintf("autogrow policy generation mismatch: current=%d, requested=%d",
 			policy.Generation, tagri.Spec.AutogrowPolicyRef.Generation)); err != nil {
 			return errors.WrapWithReconcileDeferredError(err, "failed to reject TAGRI")
 		}
-		return errors.ReconcileIncompleteError(
-			fmt.Sprintf("TAGRI rejected (autogrow policy generation mismatch: current=%d, requested=%d), requeuing for deletion", policy.Generation, tagri.Spec.AutogrowPolicyRef.Generation))
+		return errors.ReconcileDeferredWithDuration(config.GetTagriTimeout(),
+			"TAGRI rejected, waiting for timeout based deletion (%s); autogrow policy %s generation mismatch: current=%d, requested=%d",
+			config.GetTagriTimeout().Truncate(time.Second),
+			tagri.Spec.AutogrowPolicyRef.Name,
+			policy.Generation,
+			tagri.Spec.AutogrowPolicyRef.Generation)
 	}
 
 	// Step 8: Get backend resize delta (if any), then calculate final capacity in one place (policy + delta + maxSize).
 	// Every TAGRI is a fresh look: use only current PVC actual size (status.capacity) for calculation.
-	// If status.capacity is nil (e.g. PVC not bound), reject outright — we need a real current size to grow from.
+	// If status.capacity is nil, retry with backoff: PVC is from the lister and may be stale, or binding may be in progress.
+	// Idempotent: no state written; next run re-processes from Step 1. Age-based timeout cleans up if capacity never appears.
 	if pvc.Status.Capacity == nil {
-		if err := c.rejectTagri(ctx, tagri, pvc, "PVC capacity not yet reported (PVC may not be bound); cannot calculate final capacity"); err != nil {
-			return errors.WrapWithReconcileDeferredError(err, "failed to reject TAGRI")
-		}
-		return errors.ReconcileIncompleteError("TAGRI rejected (PVC capacity not reported), requeuing for deletion")
+		Logx(ctx).WithFields(LogFields{
+			"tagri": tagri.Name,
+			"pvc":   pvc.Name,
+		}).Warn("PVC capacity not yet reported, will retry with backoff.")
+		return errors.ReconcileDeferredError("PVC %s capacity not yet reported, will retry with backoff", pvc.Name)
 	}
 	currentSize := pvc.Status.Capacity[corev1.ResourceStorage]
 	resizeDeltaBytes, err := c.orchestrator.GetResizeDeltaForBackend(ctx, volExternal.BackendUUID)
@@ -369,33 +440,74 @@ func (c *TridentCrdController) processTagriFirstTime(ctx context.Context, tagri 
 			"volume":      tagri.Spec.Volume,
 			"backendUUID": volExternal.BackendUUID,
 			"error":       err,
-		}).Warn("Unable to get resize delta; will retry with backoff")
-		return errors.ReconcileDeferredError("unable to get resize delta; will retry with backoff: %v", err)
+		}).Warn("Unable to get resize delta, will retry with backoff.")
+		return errors.WrapWithReconcileDeferredError(err, "unable to get resize delta, will retry with backoff")
 	}
-	finalCapacity, err := c.calculateFinalCapacity(ctx, currentSize, policy, tagri.Spec.Volume, resizeDeltaBytes)
-	if err != nil {
-		// Size calculation error - validation error, reject and requeue for immediate deletion
-		if err := c.rejectTagri(ctx, tagri, pvc, fmt.Sprintf("Failed to calculate final capacity: %v", err)); err != nil {
-			return errors.WrapWithReconcileDeferredError(err, "failed to reject TAGRI")
+
+	// Subordinate volumes can only be expanded up to the size of their source (parent) volume.
+	var sourceVolumeSize string
+	var readableSourceSizeStr string
+	if volExternal.State.IsSubordinate() {
+		Logx(ctx).WithFields(LogFields{"volume": tagri.Spec.Volume}).Debug("Subordinate volume; fetching source volume size.")
+		sourceVol, err := c.orchestrator.GetSubordinateSourceVolume(ctx, tagri.Spec.Volume)
+		if err != nil {
+			if errors.IsNotFoundError(err) {
+				if rejectErr := c.rejectTagri(ctx, tagri, pvc, fmt.Sprintf("source volume for subordinate volume %s not found", tagri.Spec.Volume)); rejectErr != nil {
+					return errors.WrapWithReconcileDeferredError(rejectErr, "failed to reject TAGRI")
+				}
+				return errors.ReconcileDeferredWithDuration(config.GetTagriTimeout(), "TAGRI rejected, waiting for timeout based deletion (%s); %v", config.GetTagriTimeout().Truncate(time.Second), err)
+			}
+			return errors.WrapWithReconcileDeferredError(errors.WrapWithNotFoundError(err, "source volume for subordinate volume %s not found", tagri.Spec.Volume), "failed to get source volume for subordinate")
 		}
-		return errors.ReconcileIncompleteError("TAGRI rejected (final capacity calculation error), requeuing for deletion")
+		if sourceVol == nil || sourceVol.Config == nil || sourceVol.Config.Size == "" {
+			if rejectErr := c.rejectTagri(ctx, tagri, pvc, fmt.Sprintf("subordinate volume %s: source volume has no size", tagri.Spec.Volume)); rejectErr != nil {
+				return errors.WrapWithReconcileDeferredError(rejectErr, "failed to reject TAGRI")
+			}
+			return errors.ReconcileDeferredWithDuration(config.GetTagriTimeout(), "TAGRI rejected, waiting for timeout based deletion (%s); subordinate source size unknown", config.GetTagriTimeout().Truncate(time.Second))
+		}
+		sourceQty, parseErr := resource.ParseQuantity(sourceVol.Config.Size)
+		if parseErr != nil {
+			if rejectErr := c.rejectTagri(ctx, tagri, pvc, fmt.Sprintf("subordinate volume %s: invalid source volume size %q", tagri.Spec.Volume, sourceVol.Config.Size)); rejectErr != nil {
+				return errors.WrapWithReconcileDeferredError(rejectErr, "failed to reject TAGRI")
+			}
+			return errors.ReconcileDeferredWithDuration(config.GetTagriTimeout(), "TAGRI rejected, waiting for timeout based deletion (%s); %v", config.GetTagriTimeout().Truncate(time.Second), parseErr)
+		}
+		sourceVolumeSize = sourceVol.Config.Size
+		readableSourceSizeStr = capacity.QuantityToHumanReadableString(sourceQty)
+		Logx(ctx).WithFields(LogFields{
+			"tagri":                 tagri.Name,
+			"volume":                tagri.Spec.Volume,
+			"sourceVolumeSize":      sourceVolumeSize,
+			"readableSourceSizeStr": readableSourceSizeStr,
+		}).Debug("Subordinate volume: successfully fetched source volume size.")
 	}
+
+	capacityResponse, err := c.calculateFinalCapacity(ctx, currentSize, policy, tagri.Spec.Volume, resizeDeltaBytes, sourceVolumeSize)
+	if err != nil {
+		// Size calculation error (e.g. current already at maxSize, stuck resize at max) — reject and hold until timeout
+		if rejectErr := c.rejectTagri(ctx, tagri, pvc, fmt.Sprintf("failed to calculate final capacity: %v", err)); rejectErr != nil {
+			return errors.WrapWithReconcileDeferredError(rejectErr, "failed to reject TAGRI")
+		}
+		// Wrap so typed autogrow errors (e.g. AutogrowAlreadyAtMaxSizeError, AutogrowStuckResizeAtMaxSizeError) are preserved for callers/tests
+		return errors.ReconcileDeferredWithDuration(config.GetTagriTimeout(), "TAGRI rejected, waiting for timeout based deletion (%s); %v", config.GetTagriTimeout().Truncate(time.Second), err)
+	}
+	finalCapacity := capacityResponse.FinalCapacity
 
 	// Step 9: Reject if final capacity would be below observed capacity (total size host sees); prevents volume shrinkage and data loss.
 	if finalCapacity.Value() < observedCapacity.Value() {
-		msg := fmt.Sprintf("Rejected: final capacity %d bytes would be less than observed capacity %d bytes (%s), may cause volume shrinkage and data loss",
-			finalCapacity.Value(), observedCapacity.Value(), tagri.Spec.ObservedCapacityBytes)
+		rejectReason := fmt.Sprintf("final capacity %d bytes would be less than observed capacity %s, may cause volume shrinkage",
+			finalCapacity.Value(), tagri.Spec.ObservedCapacityBytes)
 		Logx(ctx).WithFields(LogFields{
 			"tagri":                 tagri.Name,
 			"finalCapacityBytes":    tagri.Status.FinalCapacityBytes,
 			"observedCapacityBytes": tagri.Spec.ObservedCapacityBytes,
 			"finalCapacity":         finalCapacity.Value(),
 			"observedCapacity":      observedCapacity.Value(),
-		}).Warn(msg)
-		if err := c.rejectTagri(ctx, tagri, pvc, msg); err != nil {
-			return errors.WrapWithReconcileDeferredError(err, "failed to reject TAGRI")
+		}).Warn("TAGRI rejected: " + rejectReason + ".")
+		if rejectErr := c.rejectTagri(ctx, tagri, pvc, rejectReason); rejectErr != nil {
+			return errors.WrapWithReconcileDeferredError(rejectErr, "failed to reject TAGRI")
 		}
-		return errors.ReconcileIncompleteError("TAGRI rejected (final capacity below observed capacity), requeuing for deletion")
+		return errors.ReconcileDeferredWithDuration(config.GetTagriTimeout(), "TAGRI rejected, waiting for timeout based deletion (%s); final capacity below observed capacity", config.GetTagriTimeout().Truncate(time.Second))
 	}
 
 	// Human-readable only for display and logs; all actual operations use exact finalCapacity (bytes).
@@ -407,22 +519,21 @@ func (c *TridentCrdController) processTagriFirstTime(ctx context.Context, tagri 
 		if currentCapacity.Cmp(finalCapacity) >= 0 {
 			currentCapacityStr := capacity.QuantityToHumanReadableString(currentCapacity)
 			Logx(ctx).WithFields(LogFields{
-				"pvc":                  pvc.Name,
-				"currentCapacity":      currentCapacityStr,
-				"currentCapacityBytes": currentCapacity.Value(),
-				"targetCapacity":       readableCapacityStr,
-				"targetCapacityBytes":  finalCapacity.Value(),
-			}).Info("PVC already at or above target size, marking as completed")
+				"pvc":             pvc.Name,
+				"currentCapacity": currentCapacityStr,
+				"targetCapacity":  readableCapacityStr,
+			}).Info("PVC already at or above target size, marking as completed.")
 
-			// Success - mark as completed and requeue for immediate deletion (human-readable for display only)
-			if err := c.completeTagriSuccess(ctx, tagri, volExternal, pvc, readableCapacityStr); err != nil {
-				return errors.WrapWithReconcileDeferredError(err, "failed to mark TAGRI as Completed")
-			}
-			return errors.ReconcileIncompleteError("TAGRI completed (already at target size), requeuing for deletion")
+			// Success - mark as completed and delete
+			return c.markTagriCompleteAndDelete(ctx, tagri, volExternal, pvc, readableCapacityStr)
 		}
 	}
 
-	// Step 11: Add finalizer
+	// Steps 11–13: TAGRI update count is at most 2 per reconciliation (for K8s API QPS).
+	//   (1) Step 11: add finalizer if missing — must be before patch so we never have "PVC resized but TAGRI has no finalizer".
+	//   (2) Either Step 13 (InProgress on patch success) or RetryCount (on patch failure).
+	// We cannot coalesce (1) and (2) on the success path without adding finalizer after patch, which would be unsafe.
+	// On patch failure we cannot coalesce (1) and (2) either: at Step 11 we don't know the patch will fail.
 	if !tagri.HasTridentFinalizers() {
 		tagriCopy := tagri.DeepCopy()
 		tagriCopy.AddTridentFinalizers()
@@ -432,20 +543,31 @@ func (c *TridentCrdController) processTagriFirstTime(ctx context.Context, tagri 
 		}
 	}
 
-	// Step 12: Patch PVC with exact calculated size (bytes); display/log use human-readable
-	err = c.patchPVCSize(ctx, pvc, finalCapacity)
+	// Step 12: Patch PVC with exact calculated size (bytes); display/log use human-readable. Skip if request already equals target.
+	currentRequest := pvc.Spec.Resources.Requests[corev1.ResourceStorage]
+	if currentRequest.Cmp(finalCapacity) != 0 {
+		err = c.patchPVCSize(ctx, pvc, finalCapacity)
+	} else {
+		Logx(ctx).WithFields(LogFields{
+			"pvc":           pvc.Name,
+			"requestedSize": readableCapacityStr,
+		}).Debug("PVC request already at final capacity, skipping patch.")
+		err = nil
+	}
 	if err != nil {
 		// Check retry count
 		if tagri.Status.RetryCount >= MaxTagriRetries {
 			// PVC patch permanently failed after 5 attempts (~75s with exponential backoff)
 			// This is likely a permanent issue (RBAC, API rejection, PVC state)
 			// Mark as failed, emit event, and delete immediately to unblock node
-			if err := c.failTagri(ctx, tagri, volExternal, pvc,
-				fmt.Sprintf("Failed to patch PVC after %d attempts: %v", MaxTagriRetries, err)); err != nil {
-				return errors.WrapWithReconcileDeferredError(err, "failed to mark TAGRI as Failed")
+			patchErr := err
+			updatedTagri, failErr := c.failTagri(ctx, tagri, volExternal, pvc,
+				fmt.Sprintf("failed to patch PVC %s after %d attempts: %v", pvc.Name, MaxTagriRetries, patchErr))
+			if failErr != nil {
+				return errors.WrapWithReconcileDeferredError(failErr, "failed to mark TAGRI as Failed; %v", patchErr)
 			}
-			// Delete immediately - no need to wait for age-based timeout
-			return c.deleteTagriNow(ctx, tagri)
+			// Delete immediately - use updated TAGRI so remove-finalizers update has current ResourceVersion (avoids 409 Conflict).
+			return c.deleteTagriNow(ctx, updatedTagri)
 		}
 
 		// Increment retry and requeue with exponential backoff
@@ -455,15 +577,21 @@ func (c *TridentCrdController) processTagriFirstTime(ctx context.Context, tagri 
 			return errors.WrapWithReconcileDeferredError(err, "failed to update retry count")
 		}
 
-		return errors.ReconcileDeferredError("PVC patch failed, retry %d/%d: %v",
-			tagriCopy.Status.RetryCount, MaxTagriRetries, err)
+		return errors.WrapWithReconcileDeferredError(err, "PVC patch failed, retry %d/%d", tagriCopy.Status.RetryCount, MaxTagriRetries)
 	}
 
-	// Step 13: Update TAGRI status to InProgress (FinalCapacityBytes = numeric bytes; Message = human-readable for display)
+	// Emit AutogrowTriggered event on PVC with details (volume, policy, target size; bump/cap when applicable).
+	policyName := tagri.Spec.AutogrowPolicyRef.Name
+	policyMaxSizeStr := strings.TrimSpace(policy.Spec.MaxSize)
+	// Capped at source when we passed a subordinate ceiling and the applied cap equals it.
+	cappedAtSourceSize := capacityResponse.CappedAtCustomCeiling
+	c.emitPVCEventAutogrowTriggered(pvc, tagri.Spec.Volume, policyName, readableCapacityStr, capacityResponse.ResizeDeltaBumpBytes, capacityResponse.CappedAtPolicyMaxSize, policyMaxSizeStr, cappedAtSourceSize, readableSourceSizeStr)
+
+	// Step 13: Update TAGRI status to InProgress (FinalCapacityBytes = value we requested for monitoring).
 	tagriCopy := tagri.DeepCopy()
 	tagriCopy.Status.Phase = TagriPhaseInProgress
 	tagriCopy.Status.FinalCapacityBytes = fmt.Sprintf("%d", finalCapacity.Value())
-	tagriCopy.Status.Message = fmt.Sprintf("PVC patched, monitoring resize progress (target: %s)", readableCapacityStr)
+	tagriCopy.Status.Message = c.buildTagriInProgressMessage(readableCapacityStr, capacityResponse.ResizeDeltaBumpBytes, capacityResponse.CappedAtPolicyMaxSize, policyMaxSizeStr, cappedAtSourceSize, readableSourceSizeStr)
 	tagriCopy.Status.RetryCount = 0 // Reset for monitoring phase (used as "resize failure observed" count if resize fails)
 
 	tagri, err = c.updateTagriStatus(ctx, tagriCopy)
@@ -475,11 +603,10 @@ func (c *TridentCrdController) processTagriFirstTime(ctx context.Context, tagri 
 		return nil
 	}
 
-	// TotalAutogrowAttempted is incremented only when TAGRI reaches a terminal state (Rejected, Failed, or Completed).
-	// RetryCount and TAGRI phase/status capture in-progress retries; tvol attempted = number of requests concluded.
-
-	// Step 14: Return ReconcileIncompleteError to start monitoring
-	return errors.ReconcileIncompleteError("Starting resize monitoring for TAGRI %s", tagri.Name)
+	// Step 14: Requeue to start monitoring. ReconcileIncompleteError = immediate requeue so we enter
+	// monitorTagriResize without delay. (Ongoing "resize in progress" in monitorTagriResize uses
+	// ReconcileDeferredError for rate-limited backoff to avoid hammering the API server.)
+	return errors.ReconcileIncompleteError("starting resize monitoring for TAGRI %s", tagri.Name)
 }
 
 // monitorTagriResize monitors the PVC resize progress for a TAGRI in InProgress phase.
@@ -492,23 +619,23 @@ func (c *TridentCrdController) monitorTagriResize(ctx context.Context, tagri *tr
 	if err != nil {
 		if errors.IsNotFoundError(err) {
 			// Volume deleted during monitoring; mark TAGRI as Rejected
-			if err := c.rejectTagri(ctx, tagri, nil, fmt.Sprintf("Volume %s deleted during monitoring", tagri.Spec.Volume)); err != nil {
-				return errors.WrapWithReconcileDeferredError(err, "failed to reject TAGRI")
+			if rejectErr := c.rejectTagri(ctx, tagri, nil, fmt.Sprintf("volume %s deleted during monitoring", tagri.Spec.Volume)); rejectErr != nil {
+				return errors.WrapWithReconcileDeferredError(rejectErr, "failed to reject TAGRI")
 			}
-			return errors.ReconcileIncompleteError("TAGRI rejected (volume deleted), requeuing for deletion")
+			return errors.ReconcileDeferredWithDuration(config.GetTagriTimeout(), "TAGRI rejected, waiting for timeout based deletion (%s); %v", config.GetTagriTimeout().Truncate(time.Second), err)
 		}
-		return errors.WrapWithReconcileDeferredError(err, "failed to get volume during monitoring")
+		return errors.WrapWithReconcileDeferredError(errors.WrapWithNotFoundError(err, "volume %s not found during monitoring", tagri.Spec.Volume), "failed to get volume during monitoring")
 	}
 
 	// Step 2: Get PVC (fetch once and reuse)
 	pvc, err := c.getPVCForVolume(ctx, volExternal, tagri.Spec.Volume)
 	if err != nil {
 		if k8sapierrors.IsNotFound(err) {
-			// PVC deleted during monitoring; mark TAGRI as Rejected
-			if err := c.rejectTagri(ctx, tagri, nil, "PVC deleted during monitoring"); err != nil {
-				return errors.WrapWithReconcileDeferredError(err, "failed to reject TAGRI")
+			// PVC deleted during monitoring; mark TAGRI as Rejected (pvc is nil when NotFound)
+			if rejectErr := c.rejectTagri(ctx, tagri, nil, fmt.Sprintf("PVC for volume %s deleted during monitoring", tagri.Spec.Volume)); rejectErr != nil {
+				return errors.WrapWithReconcileDeferredError(rejectErr, "failed to reject TAGRI")
 			}
-			return errors.ReconcileIncompleteError("TAGRI rejected (PVC deleted), requeuing for deletion")
+			return errors.ReconcileDeferredWithDuration(config.GetTagriTimeout(), "TAGRI rejected, waiting for timeout based deletion (%s); %v", config.GetTagriTimeout().Truncate(time.Second), err)
 		}
 		return errors.WrapWithReconcileDeferredError(err, "failed to get PVC during monitoring")
 	}
@@ -520,15 +647,19 @@ func (c *TridentCrdController) monitorTagriResize(ctx context.Context, tagri *tr
 	// Check success first: if both success and failure events exist, success takes precedence
 	// This handles cases where resize initially failed but succeeded on retry
 	if resizeSuccessful {
-		Logx(ctx).WithFields(LogFields{"tagri": tagri.Name, "pvc": pvc.Name}).Debug("Detected VolumeResizeSuccessful event, verifying capacity")
-		completed, err := c.tryCompleteTagriIfResizeReachedTarget(ctx, tagri, volExternal, pvc, "Resize completed successfully.")
+		Logx(ctx).WithFields(LogFields{"tagri": tagri.Name, "pvc": pvc.Name}).Debug("Detected VolumeResizeSuccessful event, verifying capacity.")
+		completed, err := c.completeAndDeleteTagriIfCapacityAtTarget(ctx, tagri, volExternal, pvc, "Resize completed successfully.")
 		if err != nil {
 			return errors.WrapWithReconcileDeferredError(err, "failed to mark TAGRI as completed")
 		}
 		if completed {
-			return errors.ReconcileIncompleteError("TAGRI marked as completed, waiting for terminal phase based deletion")
+			Logx(ctx).WithFields(LogFields{
+				"tagri": tagri.Name,
+				"pvc":   pvc.Name,
+			}).Debug("Resize completed successfully, TAGRI should be deleted by now; nothing more to do.")
+			return nil // Tagri already deleted by now; nothing more to do
 		}
-		Logx(ctx).WithFields(LogFields{"tagri": tagri.Name, "pvc": pvc.Name}).Debug("VolumeResizeSuccessful event detected but capacity not yet updated, continuing to check capacity")
+		Logx(ctx).WithFields(LogFields{"tagri": tagri.Name, "pvc": pvc.Name}).Debug("VolumeResizeSuccessful event detected but capacity not yet updated, continuing to check capacity.")
 	}
 
 	// Check failure: we reach here when (a) most recent terminal event was VolumeResizeFailed,
@@ -536,17 +667,21 @@ func (c *TridentCrdController) monitorTagriResize(ctx context.Context, tagri *tr
 	// Only in (a) do we enter the block below; in (b) resizeFailed is false and we fall through to check capacity.
 	// When resizeFailed: reuse RetryCount (reset to 0 when we entered InProgress) to give transient CSI errors during resize
 	// a chance to clear up before concluding the TAGRI as failed.
-	// We only mark Failed after MaxTagriPatchRetries observations; until then phase stays InProgress
+	// We only mark Failed after MaxTagriRetries observations; until then phase stays InProgress
 	// and we keep re-checking (success event or capacity >= target will complete).
 	if resizeFailed {
 		// If capacity already >= target (e.g. retry succeeded and capacity updated), don't mark Failed - complete
-		completed, err := c.tryCompleteTagriIfResizeReachedTarget(ctx, tagri, volExternal, pvc,
-			"Resize completed (capacity at target despite failure event), marking as completed")
+		completed, err := c.completeAndDeleteTagriIfCapacityAtTarget(ctx, tagri, volExternal, pvc,
+			"Volume resize failure event detected, but PVC capacity already at target, marking as completed.")
 		if err != nil {
 			return errors.WrapWithReconcileDeferredError(err, "failed to mark TAGRI as completed")
 		}
 		if completed {
-			return errors.ReconcileIncompleteError("TAGRI marked as completed, waiting for terminal phase based deletion")
+			Logx(ctx).WithFields(LogFields{
+				"tagri": tagri.Name,
+				"pvc":   pvc.Name,
+			}).Debug("Resize completed successfully, TAGRI should be deleted by now; nothing more to do.")
+			return nil // Tagri already deleted by now; nothing more to do
 		}
 
 		// Increment RetryCount (same field as patch retries; in InProgress it means "resize failure observed" count) and persist
@@ -557,26 +692,30 @@ func (c *TridentCrdController) monitorTagriResize(ctx context.Context, tagri *tr
 				return errors.WrapWithReconcileDeferredError(err, "failed to update retry count (resize failure observed)")
 			}
 			Logx(ctx).WithFields(LogFields{
-				"tagri":    tagri.Name,
-				"pvc":      pvc.Name,
-				"count":    tagriCopy.Status.RetryCount,
-				"max":      MaxTagriRetries,
-				"errorMsg": errorMsg,
-			}).Warn("Resize failure observed (potentially transient), will retry before concluding failed")
-			return errors.ReconcileDeferredError("Resize failure observed (potentially transient), count %d/%d - will retry before concluding failed",
-				tagriCopy.Status.RetryCount, MaxTagriRetries)
+				"tagri":         tagri.Name,
+				"pvc":           pvc.Name,
+				"retryCount":    tagriCopy.Status.RetryCount,
+				"maxRetryCount": MaxTagriRetries,
+				"errorMsg":      errorMsg,
+			}).Warn("Resize failure observed, will retry before concluding failed.")
+			return errors.ReconcileDeferredError(
+				"Resize failure observed, will retry before concluding failed; count %d/%d; %v",
+				tagriCopy.Status.RetryCount, MaxTagriRetries, errorMsg)
 		}
 
-		// RetryCount reached max - conclude failed
+		// RetryCount reached max - conclude failed. Keep CR until timeout so operators can see what went wrong
+		// and so Failed->recovery can run (CSI resize may still succeed before timeout).
+		// Pass tagriCopy (with RetryCount already incremented to MaxTagriRetries) so the Failed status shows the final count.
 		Logx(ctx).WithFields(LogFields{
-			"tagri":    tagri.Name,
-			"pvc":      pvc.Name,
-			"errorMsg": errorMsg,
-		}).Warn("CSI resize failed after max retry count, marking TAGRI as Failed")
-		if err := c.failTagri(ctx, tagri, volExternal, pvc, fmt.Sprintf("CSI resize failure: %s", errorMsg)); err != nil {
-			return errors.WrapWithReconcileDeferredError(err, "failed to mark TAGRI as Failed")
+			"tagri":         tagri.Name,
+			"pvc":           pvc.Name,
+			"maxRetryCount": MaxTagriRetries,
+			"errorMsg":      errorMsg,
+		}).Warn("CSI resize failed after max retry count, marking TAGRI as Failed.")
+		if _, failErr := c.failTagri(ctx, tagriCopy, volExternal, pvc, fmt.Sprintf("CSI resize failure: %s", errorMsg)); failErr != nil {
+			return errors.WrapWithReconcileDeferredError(failErr, "failed to mark TAGRI as Failed")
 		}
-		return errors.ReconcileIncompleteError("TAGRI marked as Failed, waiting for age-based timeout before deletion")
+		return errors.ReconcileDeferredError("TAGRI marked Failed, requeuing for recovery check or timeout based deletion; %v", errorMsg)
 	}
 
 	// Step 4: Check PVC capacity
@@ -586,21 +725,25 @@ func (c *TridentCrdController) monitorTagriResize(ctx context.Context, tagri *tr
 	}
 
 	// Check if resize has reached target (reuse same helper as success/failure event paths)
-	completed, err := c.tryCompleteTagriIfResizeReachedTarget(ctx, tagri, volExternal, pvc, "Resize completed successfully.")
+	completed, err := c.completeAndDeleteTagriIfCapacityAtTarget(ctx, tagri, volExternal, pvc, "Resize completed successfully.")
 	if err != nil {
 		return errors.WrapWithReconcileDeferredError(err, "failed to mark TAGRI as completed")
 	}
 	if completed {
-		return errors.ReconcileIncompleteError("TAGRI marked as completed, waiting for terminal phase based deletion")
+		Logx(ctx).WithFields(LogFields{
+			"tagri": tagri.Name,
+			"pvc":   pvc.Name,
+		}).Debug("Resize completed successfully, TAGRI should be deleted by now; nothing more to do.")
+		return nil // Tagri already deleted by now; nothing more to do
 	}
 
 	targetCapacity, err := resource.ParseQuantity(tagri.Status.FinalCapacityBytes)
 	if err != nil {
-		// Invalid capacity - unlikely to happen in monitoring stage. Nonetheless, mark TAGRI as Failed.
-		if err := c.failTagri(ctx, tagri, volExternal, pvc, fmt.Sprintf("Invalid target capacity: %v", err)); err != nil {
-			return errors.WrapWithReconcileDeferredError(err, "failed to mark TAGRI as Failed")
+		// Invalid capacity - unlikely to happen in monitoring stage. Mark Failed and keep until timeout so operators can see status.
+		if _, failErr := c.failTagri(ctx, tagri, volExternal, pvc, fmt.Sprintf("invalid target capacity: %v", err)); failErr != nil {
+			return errors.WrapWithReconcileDeferredError(failErr, "failed to mark TAGRI as Failed")
 		}
-		return errors.ReconcileIncompleteError("TAGRI marked as Failed (invalid capacity), requeuing for age-based timeout deletion")
+		return errors.WrapWithReconcileDeferredError(err, "TAGRI marked Failed, waiting for timeout based deletion")
 	}
 
 	currentCapacity := pvc.Status.Capacity[corev1.ResourceStorage]
@@ -616,38 +759,138 @@ func (c *TridentCrdController) monitorTagriResize(ctx context.Context, tagri *tr
 		"currentCapacityBytes": currentCapacity.Value(),
 		"targetCapacity":       targetCapacityStr,
 		"targetCapacityBytes":  targetCapacity.Value(),
-	}).Debug("Resize still in progress, continuing to monitor")
+	}).Debug("Resize still in progress, continuing to monitor.")
 
-	return errors.ReconcileDeferredError("Resize in progress: %s/%s",
+	return errors.ReconcileDeferredError("resize in progress: %s/%s",
 		currentCapacity.String(), targetCapacity.String())
 }
 
 // calculateFinalCapacity delegates to autogrow.CalculateFinalCapacity (policy + optional resize delta + maxSize).
+// When customCeilingSize is non-empty (e.g. subordinate volume cap at source size), effective max is min(policy maxSize, floor(customCeilingSize)).
+// Builds FinalCapacityRequest, logs request and response, returns FinalCapacityResponse.
 func (c *TridentCrdController) calculateFinalCapacity(
 	ctx context.Context,
 	currentSize resource.Quantity,
 	policy *tridentv1.TridentAutogrowPolicy,
 	volumeName string,
 	resizeDeltaBytes int64,
-) (resource.Quantity, error) {
+	customCeilingSize string,
+) (autogrow.FinalCapacityResponse, error) {
 	Logx(ctx).Debug(">>>> calculateFinalCapacity")
 	defer Logx(ctx).Debug("<<<< calculateFinalCapacity")
-	finalCapacity, err := autogrow.CalculateFinalCapacity(currentSize, policy, resizeDeltaBytes)
+
+	req := autogrow.FinalCapacityRequest{
+		CurrentSize:       currentSize,
+		Policy:            policy,
+		ResizeDeltaBytes:  resizeDeltaBytes,
+		CustomCeilingSize: customCeilingSize,
+	}
+	requestLog := LogFields{
+		"volume":           volumeName,
+		"currentSize":      currentSize.String(),
+		"currentSizeBytes": currentSize.Value(),
+		"resizeDeltaBytes": resizeDeltaBytes,
+	}
+	if customCeilingSize != "" {
+		requestLog["customCeilingSize"] = customCeilingSize
+	}
+	if policy != nil {
+		requestLog["autogrowPolicyName"] = policy.Name
+		requestLog["autogrowPolicyGrowthAmount"] = policy.Spec.GrowthAmount
+		requestLog["autogrowPolicyMaxSize"] = policy.Spec.MaxSize
+	}
+	Logx(ctx).WithFields(requestLog).Debug("Final capacity request.")
+
+	response, err := autogrow.CalculateFinalCapacity(req)
 	if err != nil {
-		return resource.Quantity{}, fmt.Errorf("failed to calculate final capacity for volume %s: %w", volumeName, err)
+		Logx(ctx).WithError(err).Error("Failed to calculate final capacity.")
+		return autogrow.FinalCapacityResponse{}, err
 	}
 
 	Logx(ctx).WithFields(LogFields{
-		"volume":             volumeName,
-		"currentSize":        currentSize.String(),
-		"currentSizeBytes":   currentSize.Value(),
-		"growthAmount":       policy.Spec.GrowthAmount,
-		"maxSize":            policy.Spec.MaxSize,
-		"finalCapacity":      capacity.QuantityToHumanReadableString(finalCapacity),
-		"finalCapacityBytes": finalCapacity.Value(),
-	}).Debug("Calculated final capacity")
+		"volume":                   volumeName,
+		"policyBasedCapacity":      capacity.QuantityToHumanReadableString(response.PolicyBasedCapacity),
+		"policyBasedCapacityBytes": response.PolicyBasedCapacity.Value(),
+		"finalCapacity":            capacity.QuantityToHumanReadableString(response.FinalCapacity),
+		"finalCapacityBytes":       response.FinalCapacity.Value(),
+		"resizeDeltaBumpBytes":     response.ResizeDeltaBumpBytes,
+		"cappedAtPolicyMaxSize":    response.CappedAtPolicyMaxSize,
+		"cappedAtCustomCeiling":    response.CappedAtCustomCeiling,
+		"cappedAtBytes":            response.CappedAtBytes,
+	}).Debug("Final capacity response.")
 
-	return finalCapacity, nil
+	return response, nil
+}
+
+// buildTagriInProgressMessage returns the TAGRI status message for InProgress phase: "PVC patched..." with bump/cap detail and values when applicable.
+// When cappedAtSourceSize is true and sourceSizeStr is set, message indicates capping at source volume size (subordinate volumes).
+func (c *TridentCrdController) buildTagriInProgressMessage(targetSizeStr string, resizeDeltaBumpBytes int64, cappedAtMaxSize bool, policyMaxSizeStr string, cappedAtSourceSize bool, sourceSizeStr string) string {
+	const monitoring = "; monitoring resize progress (target: %s)"
+	if cappedAtSourceSize && sourceSizeStr != "" {
+		if resizeDeltaBumpBytes > 0 {
+			bumpStr := capacity.BytesToDecimalSizeString(resizeDeltaBumpBytes)
+			return fmt.Sprintf("PVC patched after bumping by resize delta of %s and capping till source volume size (%s)"+monitoring, bumpStr, sourceSizeStr, targetSizeStr)
+		}
+		return fmt.Sprintf("PVC patched after capping till source volume size (%s)"+monitoring, sourceSizeStr, targetSizeStr)
+	}
+	if resizeDeltaBumpBytes > 0 && cappedAtMaxSize {
+		bumpStr := capacity.BytesToDecimalSizeString(resizeDeltaBumpBytes)
+		maxStr := policyMaxSizeStr
+		if maxStr == "" {
+			maxStr = "policy max"
+		}
+		return fmt.Sprintf("PVC patched after bumping by resize delta of %s and capping till max size (%s)"+monitoring, bumpStr, maxStr, targetSizeStr)
+	}
+	if resizeDeltaBumpBytes > 0 {
+		bumpStr := capacity.BytesToDecimalSizeString(resizeDeltaBumpBytes)
+		return fmt.Sprintf("PVC patched after bumping by resize delta of %s"+monitoring, bumpStr, targetSizeStr)
+	}
+	if cappedAtMaxSize {
+		maxStr := policyMaxSizeStr
+		if maxStr == "" {
+			maxStr = "policy max"
+		}
+		return fmt.Sprintf("PVC patched after capping till max size (%s)"+monitoring, maxStr, targetSizeStr)
+	}
+	return fmt.Sprintf("PVC patched"+monitoring, targetSizeStr)
+}
+
+// emitPVCEventAutogrowTriggered emits a Normal event on the PVC when the PVC has been successfully patched.
+// Message includes volume, effective policy, target size; when applicable, the minimum resize delta bump
+// (resizeDeltaBumpBytes), capping at policy maxSize (policyMaxSizeStr), and/or capping at source volume size (subordinate).
+func (c *TridentCrdController) emitPVCEventAutogrowTriggered(
+	pvc *corev1.PersistentVolumeClaim,
+	volumeName, policyName, targetSizeStr string,
+	resizeDeltaBumpBytes int64,
+	cappedAtMaxSize bool,
+	policyMaxSizeStr string,
+	cappedAtSourceSize bool,
+	sourceSizeStr string,
+) {
+	if pvc == nil {
+		return
+	}
+	// Base message aligned with other autogrow events (e.g. AutogrowRejected: "volume %s with effective autogrow policy %s").
+	msg := fmt.Sprintf("Autogrow triggered for volume %s with effective autogrow policy %s: expanding to %s", volumeName, policyName, targetSizeStr)
+	var suffixes []string
+	if resizeDeltaBumpBytes > 0 {
+		bumpStr := capacity.BytesToDecimalSizeString(resizeDeltaBumpBytes)
+		suffixes = append(suffixes, fmt.Sprintf("final size bumped by minimum resize delta %s required by backend", bumpStr))
+	}
+	if cappedAtSourceSize && sourceSizeStr != "" {
+		suffixes = append(suffixes, fmt.Sprintf("capped at source volume size %s; subordinate volume cannot exceed source", sourceSizeStr))
+	}
+	if cappedAtMaxSize && !cappedAtSourceSize {
+		if policyMaxSizeStr != "" {
+			suffixes = append(suffixes, fmt.Sprintf("capped at policy maxSize %s; volume will not autogrow beyond this size", policyMaxSizeStr))
+		} else {
+			suffixes = append(suffixes, "capped at policy maxSize; volume will not autogrow beyond this size")
+		}
+	}
+	if len(suffixes) > 0 {
+		msg += " (" + strings.Join(suffixes, "; ") + ")"
+	}
+	c.recorder.Event(pvc, corev1.EventTypeNormal, EventReasonAutogrowTriggered, msg)
 }
 
 // getPVCForVolume returns the PVC corresponding to the given volume (PV name). It resolves PVC only from
@@ -670,7 +913,7 @@ func (c *TridentCrdController) getPVCForVolume(ctx context.Context, volExternal 
 		if err == nil {
 			return pvc, nil
 		}
-		Logx(ctx).WithError(err).WithField("volumeName", volumeName).Debug("Failed to resolve PVC from PV, returning error for retry")
+		Logx(ctx).WithError(err).WithField("volumeName", volumeName).Debug("Failed to resolve PVC from PV, returning error for retry.")
 		return nil, err
 	}
 
@@ -695,7 +938,6 @@ func (c *TridentCrdController) getPVCForVolume(ctx context.Context, volExternal 
 }
 
 // patchPVCSize patches the PVC's spec.resources.requests.storage with the exact new size (bytes).
-// Logs show both human-readable and bytes for observability.
 func (c *TridentCrdController) patchPVCSize(ctx context.Context, pvc *corev1.PersistentVolumeClaim, newSize resource.Quantity) error {
 	Logx(ctx).Debug(">>>> patchPVCSize")
 	defer Logx(ctx).Debug("<<<< patchPVCSize")
@@ -710,7 +952,7 @@ func (c *TridentCrdController) patchPVCSize(ctx context.Context, pvc *corev1.Per
 			"newSize":      readableSizeStr,
 			"newSizeBytes": newSize.Value(),
 			"error":        err,
-		}).Error("Failed to patch PVC size")
+		}).Error("Failed to patch PVC size.")
 		return err
 	}
 
@@ -718,7 +960,7 @@ func (c *TridentCrdController) patchPVCSize(ctx context.Context, pvc *corev1.Per
 		"pvc":          pvc.Name,
 		"newSize":      readableSizeStr,
 		"newSizeBytes": newSize.Value(),
-	}).Info("Successfully patched PVC size")
+	}).Info("Successfully patched PVC size.")
 
 	return nil
 }
@@ -746,12 +988,13 @@ func (c *TridentCrdController) checkPVCResizeStatus(ctx context.Context, pvc *co
 		}
 	}
 
-	// Step 2: Fetch PVC events once (single API call)
+	// Step 2: Fetch PVC events once (single API call). Limit response size to avoid large payloads.
 	events, err := c.kubeClientset.CoreV1().Events(pvc.Namespace).List(ctx, metav1.ListOptions{
 		FieldSelector: fmt.Sprintf("involvedObject.name=%s,involvedObject.kind=PersistentVolumeClaim", pvc.Name),
+		Limit:         int64(MaxEventsToCheckForResize), // we only inspect up to this many events after sort
 	})
 	if err != nil {
-		Logx(ctx).WithError(err).Warn("Failed to get PVC events for resize status check")
+		Logx(ctx).WithError(err).Warn("Failed to get PVC events for resize status check.")
 		return false, false, ""
 	}
 
@@ -772,7 +1015,7 @@ func (c *TridentCrdController) checkPVCResizeStatus(ctx context.Context, pvc *co
 				"pvc":     pvc.Name,
 				"reason":  event.Reason,
 				"message": event.Message,
-			}).Warn("Detected most recent PVC resize failure event")
+			}).Warn("Detected most recent PVC resize failure event.")
 			return true, false, event.Message
 		}
 		if event.Reason == "VolumeResizeSuccessful" || event.Reason == "FileSystemResizeSuccessful" {
@@ -780,7 +1023,7 @@ func (c *TridentCrdController) checkPVCResizeStatus(ctx context.Context, pvc *co
 				"pvc":     pvc.Name,
 				"reason":  event.Reason,
 				"message": event.Message,
-			}).Debug("Detected most recent PVC resize success event")
+			}).Debug("Detected most recent PVC resize success event.")
 			return false, true, ""
 		}
 	}
@@ -788,9 +1031,14 @@ func (c *TridentCrdController) checkPVCResizeStatus(ctx context.Context, pvc *co
 	return false, false, ""
 }
 
-// rejectTagri marks a TAGRI as Rejected due to validation errors.
-// The TAGRI will be deleted immediately by handleTimeoutAndTerminalPhase() on next reconcile.
-// Observability is provided via TridentVolume autogrow status and K8s Events.
+// rejectTagri marks a TAGRI as Rejected due to validation or permanent conditions.
+// Rejected is only used when the condition is irrecoverable for this TAGRI (no retry will fix it);
+// the node can create a new TAGRI after the underlying issue is fixed. All current rejection paths are
+// permanent: invalid/missing spec (observedCapacityBytes), volume/PVC not found or deleted, no effective
+// policy or policy mismatch/generation/not Success, final capacity calculation error (e.g. already at max),
+// or final capacity below observed (would shrink). Transient failures use ReconcileDeferredError and retry.
+// It adds a finalizer when rejecting so the CR is held until timeout-based deletion (same as Failed).
+// Observability: TridentVolume + K8s Events.
 func (c *TridentCrdController) rejectTagri(
 	ctx context.Context,
 	tagri *tridentv1.TridentAutogrowRequestInternal,
@@ -801,50 +1049,70 @@ func (c *TridentCrdController) rejectTagri(
 	Logx(ctx).WithFields(LogFields{
 		"tagri":  tagri.Name,
 		"reason": reason,
-	}).Info("Rejecting TAGRI")
+	}).Info("Rejecting TAGRI.")
 
-	// Update TAGRI status to Rejected first. Only after this succeeds do we update tvol and emit event,
-	// so that retries (e.g. on conflict) do not double-increment TotalAutogrowAttempted.
+	// Update TAGRI status to Rejected and add finalizer if missing (so CR is held until timeout, like Failed).
+	// Only after this succeeds do we update tvol and emit event.
+	// When the CRD has a status subresource, Update() does not persist status; we must use UpdateStatus() for phase/message.
+	// So when adding a finalizer we do updateTagriCR (persists finalizer), then updateTagriStatus (persists Rejected).
 	tagriCopy := tagri.DeepCopy()
 	tagriCopy.Status.Phase = TagriPhaseRejected
 	tagriCopy.Status.Message = reason
 	now := metav1.NewTime(time.Now())
 	tagriCopy.Status.ProcessedAt = &now
-	if _, err := c.updateTagriStatus(ctx, tagriCopy); err != nil {
-		return errors.WrapWithReconcileDeferredError(err, "failed to update TAGRI status")
+	addedFinalizer := !tagri.HasTridentFinalizers()
+	if addedFinalizer {
+		tagriCopy.AddTridentFinalizers()
+		updated, err := c.updateTagriCR(ctx, tagriCopy)
+		if err != nil {
+			return errors.WrapWithReconcileDeferredError(err, "failed to add finalizer when rejecting TAGRI")
+		}
+		// Status is not persisted by Update() when CRD has status subresource; persist it explicitly.
+		// Use updated (current ResourceVersion) and set status for UpdateStatus call.
+		statusCopy := updated.DeepCopy()
+		statusCopy.Status.Phase = TagriPhaseRejected
+		statusCopy.Status.Message = reason
+		statusCopy.Status.ProcessedAt = &now
+		if _, err := c.updateTagriStatus(ctx, statusCopy); err != nil {
+			return errors.WrapWithReconcileDeferredError(err, "failed to update TAGRI status to Rejected")
+		}
+	} else {
+		if _, err := c.updateTagriStatus(ctx, tagriCopy); err != nil {
+			return errors.WrapWithReconcileDeferredError(err, "failed to update TAGRI status")
+		}
 	}
 
 	// Update TridentVolume (best effort)
 	if volExternal, err := c.orchestrator.GetVolume(ctx, tagri.Spec.Volume); err == nil {
 		err = c.updateVolumeAutogrowStatusAttempt(ctx, volExternal, "", reason, tagri)
 		if err != nil {
-			Logx(ctx).WithError(err).Warn("Failed to update TridentVolume autogrow status (best effort); ignoring error to avoid blocking TAGRI lifecycle")
+			Logx(ctx).WithError(err).Warn("Failed to update TridentVolume autogrow status (best effort), ignoring error to avoid blocking TAGRI lifecycle.")
 		}
 	}
 
-	// Emit event on PVC for observability
+	// Emit event on PVC for observability (include policy name; reason may already mention it in some cases)
 	if pvc != nil {
+		policyName := tagri.Spec.AutogrowPolicyRef.Name
 		c.recorder.Event(pvc, corev1.EventTypeWarning, EventReasonAutogrowRejected,
-			fmt.Sprintf("Autogrow request rejected for volume %s: %s", tagri.Spec.Volume, reason))
+			fmt.Sprintf("Autogrow request rejected for volume %s with effective autogrow policy %s: %s", tagri.Spec.Volume, policyName, reason))
 	}
 
 	return nil
 }
 
-// tryCompleteTagriIfResizeReachedTarget checks if the PVC's current capacity has reached the TAGRI's
+// completeAndDeleteTagriIfCapacityAtTarget checks if the PVC's current capacity has reached the TAGRI's
 // target (FinalCapacityBytes). If volExternal and pvc are nil, they are fetched using tagri.Spec.Volume.
-// If capacity >= target, the TAGRI is marked Completed and (true, nil) or (true, err) is returned.
-// Otherwise (false, nil) is returned. Used by handleTimeoutAndTerminalPhase (Failed recovery) and
-// by monitorTagriResize for all success paths.
-func (c *TridentCrdController) tryCompleteTagriIfResizeReachedTarget(
+// If capacity >= target, the TAGRI is marked Completed and deleted via markTagriCompleteAndDelete;
+// returns (true, nil) or (true, err). Otherwise returns (false, nil).
+func (c *TridentCrdController) completeAndDeleteTagriIfCapacityAtTarget(
 	ctx context.Context,
 	tagri *tridentv1.TridentAutogrowRequestInternal,
 	volExternal *storage.VolumeExternal,
 	pvc *corev1.PersistentVolumeClaim,
 	logContext string,
 ) (completed bool, err error) {
-	Logx(ctx).Debug(">>>> tryCompleteTagriIfResizeReachedTarget")
-	defer Logx(ctx).Debug("<<<< tryCompleteTagriIfResizeReachedTarget")
+	Logx(ctx).Debug(">>>> completeTagriIfCapacityAtTarget")
+	defer Logx(ctx).Debug("<<<< completeTagriIfCapacityAtTarget")
 	if tagri.Status.FinalCapacityBytes == "" {
 		return false, nil
 	}
@@ -873,10 +1141,10 @@ func (c *TridentCrdController) tryCompleteTagriIfResizeReachedTarget(
 			"pvc":             pvc.Name,
 			"currentCapacity": currentCapacity.String(),
 			"targetCapacity":  targetCapacity.String(),
-		}).Info(logContext)
+		}).Debug(logContext)
 	}
 	targetCapacityStr := capacity.QuantityToHumanReadableString(targetCapacity)
-	if err := c.completeTagriSuccess(ctx, tagri, volExternal, pvc, targetCapacityStr); err != nil {
+	if err := c.markTagriCompleteAndDelete(ctx, tagri, volExternal, pvc, targetCapacityStr); err != nil {
 		return true, err
 	}
 	return true, nil
@@ -886,19 +1154,21 @@ func (c *TridentCrdController) tryCompleteTagriIfResizeReachedTarget(
 // The TAGRI will be deleted by handleTimeoutAndTerminalPhase() after the age-based timeout expires.
 // This gives operators time to investigate and fix issues before the next TAGRI is created.
 // Observability is provided via TridentVolume autogrow status and K8s Events on the PVC.
+// Returns the updated TAGRI (with current ResourceVersion) so callers that immediately delete
+// (e.g. deleteTagriNow) use a fresh object and avoid 409 Conflict on the next update.
 func (c *TridentCrdController) failTagri(
 	ctx context.Context,
 	tagri *tridentv1.TridentAutogrowRequestInternal,
 	volExternal *storage.VolumeExternal,
 	pvc *corev1.PersistentVolumeClaim,
 	reason string,
-) error {
+) (*tridentv1.TridentAutogrowRequestInternal, error) {
 	Logx(ctx).Debug(">>>> failTagri")
 	defer Logx(ctx).Debug("<<<< failTagri")
 	Logx(ctx).WithFields(LogFields{
 		"tagri":  tagri.Name,
 		"reason": reason,
-	}).Warn("Failing TAGRI")
+	}).Warn("Failing TAGRI.")
 
 	// Update TAGRI status to Failed first. Only after this succeeds do we update tvol and emit event,
 	// so that retries (e.g. on conflict) do not double-increment TotalAutogrowAttempted.
@@ -907,69 +1177,104 @@ func (c *TridentCrdController) failTagri(
 	tagriCopy.Status.Message = reason
 	now := metav1.NewTime(time.Now())
 	tagriCopy.Status.ProcessedAt = &now
-	if _, err := c.updateTagriStatus(ctx, tagriCopy); err != nil {
-		return errors.WrapWithReconcileDeferredError(err, "failed to update TAGRI status")
+	updated, err := c.updateTagriStatus(ctx, tagriCopy)
+	if err != nil {
+		return nil, errors.WrapWithReconcileDeferredError(err, "failed to update TAGRI status")
+	}
+	// Use updated TAGRI when available so callers get current ResourceVersion; otherwise use original (e.g. if CR was deleted during update).
+	if updated == nil {
+		updated = tagri
 	}
 
 	// Update TridentVolume (best effort)
 	if volExternal != nil {
 		if err := c.updateVolumeAutogrowStatusAttempt(ctx, volExternal, "", reason, tagri); err != nil {
-			Logx(ctx).WithError(err).Warn("Failed to update TridentVolume autogrow status (best effort); ignoring error to avoid blocking TAGRI lifecycle")
+			Logx(ctx).WithError(err).Warn("Failed to update TridentVolume autogrow status (best effort), ignoring error to avoid blocking TAGRI lifecycle.")
 		}
 	}
 
 	// Emit event on PVC for observability
 	if pvc != nil {
+		policyName := tagri.Spec.AutogrowPolicyRef.Name
 		c.recorder.Event(pvc, corev1.EventTypeWarning, EventReasonAutogrowFailed,
-			fmt.Sprintf("Autogrow request failed for volume %s: %s", tagri.Spec.Volume, reason))
+			fmt.Sprintf("Autogrow request failed for volume %s with effective autogrow policy %s: %s", tagri.Spec.Volume, policyName, reason))
 	}
 
-	return nil
+	return updated, nil
 }
 
-// completeTagriSuccess marks a TAGRI as Completed.
-// The TAGRI will be deleted immediately by handleTimeoutAndTerminalPhase() on next reconcile.
-// Observability is provided via TridentVolume autogrow status and K8s Events on the PVC.
-// We persist TAGRI status first so that on conflict/requeue we don't double-count tvol TotalSuccessfulAutogrow/TotalAutogrowAttempted.
-func (c *TridentCrdController) completeTagriSuccess(
+// markTagriCompleteAndDelete marks the TAGRI as Completed and deletes it in the same reconciliation.
+//
+// The order of steps below is important and must be followed:
+//  1. Remove finalizers (updateTagriCR) then persist Phase=Completed (updateTagriStatus). When the CRD has a status
+//     subresource, Update() does not persist status, so we do both. If either fails, return — do not run steps 2–4.
+//  2. Update TridentVolume autogrow status (best effort).
+//  3. Emit success event on the PVC.
+//  4. Delete the TAGRI (deleteTagriCROnly; no need to remove finalizers as they were removed in step 1).
+//
+// Idempotency: Step 1 ensures that if step 4 fails and the item is requeued, the next run sees Phase=Completed
+// and only runs delete in handleTimeoutAndTerminalPhase — no second tvol update or PVC event.
+// Observability: logging, TridentVolume autogrow status, and K8s Events on the PVC.
+func (c *TridentCrdController) markTagriCompleteAndDelete(
 	ctx context.Context,
 	tagri *tridentv1.TridentAutogrowRequestInternal,
 	volExternal *storage.VolumeExternal,
 	pvc *corev1.PersistentVolumeClaim,
 	finalSize string,
 ) error {
-	Logx(ctx).Debug(">>>> completeTagriSuccess")
-	defer Logx(ctx).Debug("<<<< completeTagriSuccess")
+	Logx(ctx).Debug(">>>> markTagriCompleteAndDelete")
+	defer Logx(ctx).Debug("<<<< markTagriCompleteAndDelete")
+
+	// If TAGRI is already being deleted, skip all steps; treat work as done (no double tvol/event, no redundant delete).
+	if c.tagriIsBeingDeleted(tagri) {
+		Logx(ctx).WithFields(LogFields{
+			"tagri":             tagri.Name,
+			"deletionTimestamp": tagri.ObjectMeta.DeletionTimestamp,
+		}).Debug("TAGRI is being deleted, skipping complete-and-delete steps; work considered done.")
+		return nil
+	}
+
 	Logx(ctx).WithFields(LogFields{
 		"tagri":     tagri.Name,
 		"finalSize": finalSize,
-	}).Info("TAGRI completed successfully")
+	}).Info("TAGRI completed successfully.")
 
-	// Update TAGRI status to Completed first. Only after this succeeds do we update tvol and emit event,
-	// so that retries (e.g. on conflict) do not double-increment TotalSuccessfulAutogrow/TotalAutogrowAttempted.
+	// Remove finalizers first; status is not persisted by Update() when CRD has status subresource, so we persist it explicitly after.
 	tagriCopy := tagri.DeepCopy()
 	tagriCopy.Status.Phase = TagriPhaseCompleted
 	tagriCopy.Status.Message = fmt.Sprintf("Volume successfully auto-grown to %s", finalSize)
 	now := metav1.NewTime(time.Now())
 	tagriCopy.Status.ProcessedAt = &now
-	if _, err := c.updateTagriStatus(ctx, tagriCopy); err != nil {
-		return errors.WrapWithReconcileDeferredError(err, "failed to update TAGRI status")
+	tagriCopy.RemoveTridentFinalizers()
+	updated, err := c.updateTagriCR(ctx, tagriCopy)
+	if err != nil {
+		return errors.WrapWithReconcileDeferredError(err, "failed to remove finalizer when marking TAGRI completed")
+	}
+	// Persist status (Phase=Completed, Message, ProcessedAt) via UpdateStatus; use updated for current ResourceVersion.
+	statusCopy := updated.DeepCopy()
+	statusCopy.Status.Phase = TagriPhaseCompleted
+	statusCopy.Status.Message = tagriCopy.Status.Message
+	statusCopy.Status.ProcessedAt = &now
+	if _, err := c.updateTagriStatus(ctx, statusCopy); err != nil {
+		return errors.WrapWithReconcileDeferredError(err, "failed to update TAGRI status to Completed")
 	}
 
-	// Update TridentVolume with success (best effort) - only after TAGRI is persisted
+	// Update TridentVolume with success (best effort)
 	if volExternal != nil {
 		if err := c.updateVolumeAutogrowStatusSuccess(ctx, volExternal, finalSize, tagri); err != nil {
-			Logx(ctx).WithError(err).Warn("Failed to update TridentVolume success status (best effort); ignoring error to avoid blocking TAGRI lifecycle")
+			Logx(ctx).WithError(err).Warn("Failed to update TridentVolume success status (best effort), ignoring error to avoid blocking TAGRI lifecycle.")
 		}
 	}
 
-	// Emit success event on PVC for observability
+	// Emit success event on PVC
 	if pvc != nil {
+		policyName := tagri.Spec.AutogrowPolicyRef.Name
 		c.recorder.Event(pvc, corev1.EventTypeNormal, EventReasonAutogrowSucceeded,
-			fmt.Sprintf("Autogrow request succeeded: volume %s expanded to %s", tagri.Spec.Volume, finalSize))
+			fmt.Sprintf("Volume %s with effective policy %s autogrown to %s", tagri.Spec.Volume, policyName, finalSize))
 	}
 
-	return nil
+	// Finalizers already removed above; just delete.
+	return c.deleteTagriCROnly(ctx, tagri.Namespace, tagri.Name)
 }
 
 // updateTagriStatus updates the status of a TAGRI CR.
@@ -980,11 +1285,11 @@ func (c *TridentCrdController) updateTagriStatus(
 	Logx(ctx).Debug(">>>> updateTagriStatus")
 	defer Logx(ctx).Debug("<<<< updateTagriStatus")
 	// Check if TAGRI is being deleted - skip update to avoid race condition
-	if !tagri.ObjectMeta.DeletionTimestamp.IsZero() {
+	if c.tagriIsBeingDeleted(tagri) {
 		Logx(ctx).WithFields(LogFields{
 			"tagri":             tagri.Name,
 			"deletionTimestamp": tagri.ObjectMeta.DeletionTimestamp,
-		}).Debug("TAGRI is being deleted, skipping status update to avoid race condition")
+		}).Debug("TAGRI is being deleted, skipping status update to avoid race condition.")
 		return tagri, nil
 	}
 
@@ -995,21 +1300,21 @@ func (c *TridentCrdController) updateTagriStatus(
 		if k8sapierrors.IsConflict(err) && strings.Contains(err.Error(), "UID in object meta:") {
 			Logx(ctx).WithFields(LogFields{
 				"tagri": tagri.Name,
-			}).Debug("TAGRI was deleted during status update (race condition), ignoring")
+			}).Debug("TAGRI was deleted during status update (race condition), ignoring.")
 			return nil, nil
 		}
 
 		Logx(ctx).WithFields(LogFields{
 			"tagri": tagri.Name,
 			"error": err,
-		}).Error("Failed to update TAGRI status")
+		}).Error("Failed to update TAGRI status.")
 		return nil, err
 	}
 
 	Logx(ctx).WithFields(LogFields{
 		"tagri": tagri.Name,
 		"phase": tagri.Status.Phase,
-	}).Debug("Updated TAGRI status")
+	}).Debug("Updated TAGRI status.")
 
 	return updated, nil
 }
@@ -1027,40 +1332,50 @@ func (c *TridentCrdController) updateTagriCR(
 		Logx(ctx).WithFields(LogFields{
 			"tagri": tagri.Name,
 			"error": err,
-		}).Error("Failed to update TAGRI CR")
+		}).Error("Failed to update TAGRI CR.")
 		return nil, err
 	}
 
 	return updated, nil
 }
 
-// deleteTagriNow removes finalizers and deletes the TAGRI CR immediately.
-// Use this when you want to unblock nodes from creating new TAGRIs.
+// deleteTagriCROnly performs the Delete API call only. Used when finalizers were already removed (e.g. in markTagriCompleteAndDelete).
+func (c *TridentCrdController) deleteTagriCROnly(ctx context.Context, namespace, name string) error {
+	Logx(ctx).WithFields(LogFields{"tagri": name, "namespace": namespace}).Debug(">>>> deleteTagriCROnly")
+	defer Logx(ctx).WithFields(LogFields{"tagri": name, "namespace": namespace}).Debug("<<<< deleteTagriCROnly")
+	err := c.crdClientset.TridentV1().TridentAutogrowRequestInternals(namespace).Delete(ctx, name, metav1.DeleteOptions{})
+	if err != nil && !k8sapierrors.IsNotFound(err) {
+		Logx(ctx).WithFields(LogFields{"tagri": name, "error": err}).Error("Failed to delete TAGRI.")
+		return errors.WrapWithReconcileDeferredError(err, "failed to delete TAGRI")
+	}
+	if err == nil {
+		Logx(ctx).WithField("tagri", name).Info("TAGRI deleted successfully.")
+	}
+	return nil
+}
+
+// deleteTagriNow removes finalizers (if any) and deletes the TAGRI CR.
+// On 409 Conflict (object modified), returns ReconcileIncompleteError so the item is requeued
+// immediately and the next reconciliation retries delete with fresh state from the lister.
 func (c *TridentCrdController) deleteTagriNow(ctx context.Context, tagri *tridentv1.TridentAutogrowRequestInternal) error {
 	Logx(ctx).Debug(">>>> deleteTagriNow")
 	defer Logx(ctx).Debug("<<<< deleteTagriNow")
-	// Remove finalizers
+
 	if tagri.HasTridentFinalizers() {
 		tagriCopy := tagri.DeepCopy()
 		tagriCopy.RemoveTridentFinalizers()
 		if _, err := c.updateTagriCR(ctx, tagriCopy); err != nil {
+			if k8sapierrors.IsNotFound(err) {
+				Logx(ctx).WithField("tagri", tagri.Name).Debug("TAGRI already deleted.")
+				return nil
+			}
+			if k8sapierrors.IsConflict(err) {
+				return errors.WrapWithReconcileIncompleteError(err, "TAGRI object modified, requeuing to retry delete")
+			}
 			return errors.WrapWithReconcileDeferredError(err, "failed to remove finalizers")
 		}
 	}
-
-	// Delete CR
-	err := c.crdClientset.TridentV1().TridentAutogrowRequestInternals(tagri.Namespace).Delete(
-		ctx, tagri.Name, metav1.DeleteOptions{})
-	if err != nil && !k8sapierrors.IsNotFound(err) {
-		Logx(ctx).WithFields(LogFields{
-			"tagri": tagri.Name,
-			"error": err,
-		}).Error("Failed to delete TAGRI")
-		return errors.WrapWithReconcileDeferredError(err, "failed to delete TAGRI")
-	}
-
-	Logx(ctx).WithField("tagri", tagri.Name).Info("TAGRI deleted immediately")
-	return nil
+	return c.deleteTagriCROnly(ctx, tagri.Namespace, tagri.Name)
 }
 
 // updateVolumeAutogrowStatus updates the volume's autogrow status via the orchestrator, both in-memory and persistence layer.
@@ -1085,12 +1400,12 @@ func (c *TridentCrdController) updateVolumeAutogrowStatus(
 	updateFunc(status)
 
 	if err := c.orchestrator.UpdateVolumeAutogrowStatus(ctx, volumeName, status); err != nil {
-		Logx(ctx).WithError(err).Warnf("Failed to update volume autogrow status (%s)", logMsg)
+		Logx(ctx).WithError(err).Warnf("Failed to update volume autogrow status; %s.", logMsg)
 		return err
 	}
 
 	logFields["volume"] = volumeName
-	Logx(ctx).WithFields(logFields).Debugf("Updated volume autogrow status (%s)", logMsg)
+	Logx(ctx).WithFields(logFields).Debugf("Updated volume autogrow status; %s.", logMsg)
 	return nil
 }
 
@@ -1110,6 +1425,10 @@ func (c *TridentCrdController) updateVolumeAutogrowStatusAttempt(
 	if tagri == nil {
 		return nil
 	}
+	totalAttempts := 1
+	if volExternal.AutogrowStatus != nil {
+		totalAttempts = volExternal.AutogrowStatus.TotalAutogrowAttempted + 1
+	}
 	return c.updateVolumeAutogrowStatus(ctx, volExternal,
 		func(status *models.VolumeAutogrowStatus) {
 			now := time.Now()
@@ -1122,7 +1441,7 @@ func (c *TridentCrdController) updateVolumeAutogrowStatusAttempt(
 		"attempt",
 		LogFields{
 			"proposedSize":  proposedSize,
-			"totalAttempts": 0, // Will be set by helper after update
+			"totalAttempts": totalAttempts,
 		},
 	)
 }
@@ -1141,6 +1460,11 @@ func (c *TridentCrdController) updateVolumeAutogrowStatusSuccess(
 	if tagri == nil {
 		return nil
 	}
+	totalSuccesses, totalAttempts := 1, 1
+	if volExternal.AutogrowStatus != nil {
+		totalSuccesses = volExternal.AutogrowStatus.TotalSuccessfulAutogrow + 1
+		totalAttempts = volExternal.AutogrowStatus.TotalAutogrowAttempted + 1
+	}
 	return c.updateVolumeAutogrowStatus(ctx, volExternal,
 		func(status *models.VolumeAutogrowStatus) {
 			now := time.Now()
@@ -1154,7 +1478,8 @@ func (c *TridentCrdController) updateVolumeAutogrowStatusSuccess(
 		"success",
 		LogFields{
 			"finalSize":      finalSize,
-			"totalSuccesses": 0, // Will be set by helper after update
+			"totalSuccesses": totalSuccesses,
+			"totalAttempts":  totalAttempts,
 		},
 	)
 }
@@ -1168,7 +1493,7 @@ func (c *TridentCrdController) deleteTagriHandler(ctx context.Context, tagri *tr
 		Logx(ctx).WithFields(LogFields{
 			"tagri": tagri.Name,
 			"error": err,
-		}).Error("Failed to delete TAGRI via delete event handler, will retry")
+		}).Error("Failed to delete TAGRI via delete event handler, will retry.")
 		return err
 	}
 

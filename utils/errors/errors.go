@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"go.uber.org/multierr"
 )
@@ -463,6 +464,114 @@ func IsReconcileDeferredError(err error) bool {
 	}
 	var errPointer *reconcileDeferredError
 	return errors.As(err, &errPointer)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// reconcileDeferredWithDurationError
+// ///////////////////////////////////////////////////////////////////////////
+
+type reconcileDeferredWithDurationError struct {
+	duration time.Duration
+	inner    error
+	message  string
+}
+
+func (e *reconcileDeferredWithDurationError) Error() string {
+	if e.inner != nil && e.inner.Error() != "" {
+		return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+	}
+	if e.message != "" {
+		return e.message
+	}
+	if e.inner != nil {
+		return e.inner.Error()
+	}
+	return "reconcile deferred with duration"
+}
+
+func (e *reconcileDeferredWithDurationError) Unwrap() error {
+	return e.inner
+}
+
+// ReconcileDeferredWithDuration returns an error that carries a duration for
+// requeuing with AddAfter(duration).
+func ReconcileDeferredWithDuration(duration time.Duration, message string, a ...any) error {
+	msg := message
+	if len(a) > 0 {
+		msg = fmt.Sprintf(message, a...)
+	}
+	return &reconcileDeferredWithDurationError{duration: duration, message: msg}
+}
+
+func IsReconcileDeferredWithDuration(err error) bool {
+	if err == nil {
+		return false
+	}
+	var p *reconcileDeferredWithDurationError
+	return errors.As(err, &p)
+}
+
+// ReconcileDeferredWithDurationValue returns the duration and true if err is
+// a ReconcileDeferredWithDuration error; otherwise 0 and false.
+func ReconcileDeferredWithDurationValue(err error) (time.Duration, bool) {
+	var p *reconcileDeferredWithDurationError
+	if err == nil || !errors.As(err, &p) {
+		return 0, false
+	}
+	return p.duration, true
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// reconcileDeferredWithMaxDurationError
+// ///////////////////////////////////////////////////////////////////////////
+//
+// Used when requeuing with rate-limited backoff (AddRateLimited) but the next
+// backoff must not exceed a maximum duration. The controller
+// should call the rate limiter's When(item); if that delay > maxDuration, use
+// AddAfter(item, maxDuration) and Forget(item) so the deadline is strictly met.
+type reconcileDeferredWithMaxDurationError struct {
+	maxDuration time.Duration
+	message     string
+}
+
+func (e *reconcileDeferredWithMaxDurationError) Error() string {
+	if e.message != "" {
+		return e.message
+	}
+	return "reconcile deferred with max duration"
+}
+
+func (e *reconcileDeferredWithMaxDurationError) Unwrap() error {
+	return nil
+}
+
+// ReconcileDeferredWithMaxDuration returns an error that carries a maximum
+// requeue duration. The controller should use rate-limited backoff but cap the
+// next delay by this duration so the deadline is respected.
+func ReconcileDeferredWithMaxDuration(maxDuration time.Duration, message string, a ...any) error {
+	msg := message
+	if len(a) > 0 {
+		msg = fmt.Sprintf(message, a...)
+	}
+	return &reconcileDeferredWithMaxDurationError{maxDuration: maxDuration, message: msg}
+}
+
+func IsReconcileDeferredWithMaxDuration(err error) bool {
+	if err == nil {
+		return false
+	}
+	var p *reconcileDeferredWithMaxDurationError
+	return errors.As(err, &p)
+}
+
+// ReconcileDeferredWithMaxDurationValue returns the max duration and true if err
+// is a ReconcileDeferredWithMaxDuration error; otherwise 0 and false.
+func ReconcileDeferredWithMaxDurationValue(err error) (time.Duration, bool) {
+	var p *reconcileDeferredWithMaxDurationError
+	if err == nil || !errors.As(err, &p) {
+		return 0, false
+	}
+	return p.maxDuration, true
 }
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -1550,5 +1659,75 @@ func IsAutogrowPolicyNotFoundError(err error) bool {
 		return false
 	}
 	var errPtr *autogrowPolicyNotFoundError
+	return errors.As(err, &errPtr)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// Autogrow TridentAutogrowRequestInternal (TAGRI) errors
+// ///////////////////////////////////////////////////////////////////////////
+
+// autogrowPolicyNilError is returned when CalculateFinalCapacity is called with a nil policy.
+type autogrowPolicyNilError struct {
+	message string
+}
+
+func (e *autogrowPolicyNilError) Error() string { return e.message }
+
+// AutogrowPolicyNilError creates an error when the autogrow policy is nil.
+func AutogrowPolicyNilError() error {
+	return &autogrowPolicyNilError{message: "autogrow policy is nil"}
+}
+
+func IsAutogrowPolicyNilError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *autogrowPolicyNilError
+	return errors.As(err, &errPtr)
+}
+
+// autogrowAlreadyAtMaxSizeError is returned when the volume is already at or above the policy maxSize.
+type autogrowAlreadyAtMaxSizeError struct {
+	message string
+}
+
+func (e *autogrowAlreadyAtMaxSizeError) Error() string { return e.message }
+
+// AutogrowAlreadyAtMaxSizeError creates an error when the volume is already at or above maxSize.
+func AutogrowAlreadyAtMaxSizeError(maxSize string) error {
+	return &autogrowAlreadyAtMaxSizeError{
+		message: fmt.Sprintf("volume already at or above maxSize %s", maxSize),
+	}
+}
+
+func IsAutogrowAlreadyAtMaxSizeError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *autogrowAlreadyAtMaxSizeError
+	return errors.As(err, &errPtr)
+}
+
+// autogrowStuckResizeAtMaxSizeError is returned when capping at maxSize would leave growth below the backend minimum (resize would not occur).
+type autogrowStuckResizeAtMaxSizeError struct {
+	message string
+}
+
+func (e *autogrowStuckResizeAtMaxSizeError) Error() string { return e.message }
+
+// AutogrowStuckResizeAtMaxSizeError creates an error when the volume cannot be autogrown
+// because growth after capping at maxSize is below the minimum required to trigger a resize for the backend.
+func AutogrowStuckResizeAtMaxSizeError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &autogrowStuckResizeAtMaxSizeError{message: message}
+	}
+	return &autogrowStuckResizeAtMaxSizeError{message: fmt.Sprintf(message, a...)}
+}
+
+func IsAutogrowStuckResizeAtMaxSizeError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *autogrowStuckResizeAtMaxSizeError
 	return errors.As(err, &errPtr)
 }
