@@ -1312,7 +1312,7 @@ func TestPutClusterRole(t *testing.T) {
 				patchBytes, _ := args[2].([]byte)
 				patchType, _ := args[3].(types.PatchType)
 				patchBytesMatcher := &JSONMatcher{patchBytes}
-				mockKubeClient.EXPECT().PatchClusterRoleByLabel(appLabel, patchBytesMatcher,
+				mockKubeClient.EXPECT().PatchClusterRoleByLabelAndName(appLabel, clusterRoleName, patchBytesMatcher,
 					patchType).Return(k8sClientErr)
 			},
 		},
@@ -1330,7 +1330,7 @@ func TestPutClusterRole(t *testing.T) {
 				patchBytes, _ := args[2].([]byte)
 				patchType, _ := args[3].(types.PatchType)
 				patchBytesMatcher := &JSONMatcher{patchBytes}
-				mockKubeClient.EXPECT().PatchClusterRoleByLabel(appLabel, patchBytesMatcher,
+				mockKubeClient.EXPECT().PatchClusterRoleByLabelAndName(appLabel, clusterRoleName, patchBytesMatcher,
 					patchType).Return(nil)
 			},
 		},
@@ -1853,7 +1853,7 @@ func TestPutClusterRoleBinding(t *testing.T) {
 				patchBytes, _ := args[2].([]byte)
 				patchType, _ := args[3].(types.PatchType)
 				patchBytesMatcher := &JSONMatcher{patchBytes}
-				mockKubeClient.EXPECT().PatchClusterRoleBindingByLabel(appLabel, patchBytesMatcher,
+				mockKubeClient.EXPECT().PatchClusterRoleBindingByLabelAndName(appLabel, clusterRoleBindingName, patchBytesMatcher,
 					patchType).Return(k8sClientErr)
 			},
 		},
@@ -1871,7 +1871,7 @@ func TestPutClusterRoleBinding(t *testing.T) {
 				patchBytes, _ := args[2].([]byte)
 				patchType, _ := args[3].(types.PatchType)
 				patchBytesMatcher := &JSONMatcher{patchBytes}
-				mockKubeClient.EXPECT().PatchClusterRoleBindingByLabel(appLabel, patchBytesMatcher,
+				mockKubeClient.EXPECT().PatchClusterRoleBindingByLabelAndName(appLabel, clusterRoleBindingName, patchBytesMatcher,
 					patchType).Return(nil)
 			},
 		},
