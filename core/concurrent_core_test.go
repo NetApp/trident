@@ -12727,6 +12727,78 @@ func TestPublishVolumeConcurrentCore_PublicationAlreadyExists(t *testing.T) {
 	assert.NoError(t, err, "PublishVolume should succeed even when publication already exists")
 }
 
+// TestPublishVolume_AccessModeClobbered_ConcurrentCore documents and verifies the bug where
+// publishInfo.VolumeAccessInfo = volume.Config.AccessInfo overwrites the CSI-provided AccessMode
+// and ReadOnly fields because VolumeAccessInfo is embedded in VolumePublishInfo.
+// The concurrent core creates the VolumePublication AFTER this overwrite (unlike the orchestrator
+// core which creates it before), so the VP ends up with zeroed AccessMode and ReadOnly.
+// The test also verifies that Labels are correctly set on the VolumePublication.
+func TestPublishVolume_AccessModeClobbered_ConcurrentCore(t *testing.T) {
+	config.CurrentDriverContext = config.ContextCSI
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	db.Initialize()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	driver := mockstorage.NewMockDriver(mockCtrl)
+	driver.EXPECT().Name().Return(config.FakeStorageDriverName).AnyTimes()
+	driver.EXPECT().GetStorageBackendSpecs(gomock.Any(), gomock.Any()).Return(nil)
+	driver.EXPECT().CreateFollowup(gomock.Any(), gomock.Any()).Return(nil)
+	driver.EXPECT().Publish(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+	fakeNode := getFakeNode("testNode")
+	addNodesToCache(t, fakeNode)
+	fakeBackend := getFakeBackend("testBackend", "uuid", driver)
+	addBackendsToCache(t, fakeBackend)
+
+	// Volume with AccessInfo that has ZERO AccessMode and ReadOnly=false (the default).
+	// This simulates a real NAS volume where AccessInfo.AccessMode is never explicitly set.
+	fakeVolume := getFakeVolume("testVolume", "uuid")
+	fakeVolume.Config.AccessInfo = models.VolumeAccessInfo{
+		NfsAccessInfo: models.NfsAccessInfo{NfsServerIP: "10.0.0.1", NfsPath: "/vol1"},
+	}
+	addVolumesToCache(t, fakeVolume)
+
+	// Capture the VolumePublication passed to AddVolumePublication
+	var capturedVP *models.VolumePublication
+	mockStoreClient.EXPECT().AddVolumePublication(gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, vp *models.VolumePublication) error {
+			capturedVP = vp
+			return nil
+		})
+	mockStoreClient.EXPECT().UpdateVolume(gomock.Any(), gomock.Any()).Return(nil)
+
+	// CSI request with non-zero AccessMode (SINGLE_NODE_MULTI_WRITER=7) and ReadOnly=true
+	const csiAccessMode int32 = 7
+	publishInfo := &models.VolumePublishInfo{
+		HostName: "testNode",
+	}
+	publishInfo.ReadOnly = true
+	publishInfo.AccessMode = csiAccessMode
+
+	err := o.PublishVolume(testCtx, "testVolume", publishInfo)
+	require.NoError(t, err)
+	require.NotNil(t, capturedVP, "AddVolumePublication should have been called")
+
+	// BUG: The VolumeAccessInfo overwrite at line 3745 clobbers these CSI-provided values.
+	// publishInfo.VolumeAccessInfo = volume.Config.AccessInfo replaces the entire embedded struct,
+	// zeroing AccessMode (from 7 to 0) and ReadOnly (from true to false).
+	assert.Equal(t, csiAccessMode, capturedVP.AccessMode,
+		"VP AccessMode should preserve CSI-provided value, not be clobbered by volume.Config.AccessInfo")
+	assert.True(t, capturedVP.ReadOnly,
+		"VP ReadOnly should preserve CSI-provided value, not be clobbered by volume.Config.AccessInfo")
+
+	// BUG: Labels are not set in the concurrent core, unlike the orchestrator core's
+	// generateVolumePublication helper which initializes Labels with TridentNodeNameLabel.
+	assert.NotNil(t, capturedVP.Labels, "VP should have Labels set")
+	assert.Equal(t, "testNode", capturedVP.Labels[config.TridentNodeNameLabel],
+		"VP Labels should include TridentNodeNameLabel")
+}
+
 func TestUnpublishVolumeConcurrentCore(t *testing.T) {
 	tests := []struct {
 		name        string

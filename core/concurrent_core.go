@@ -3730,6 +3730,13 @@ func (o *ConcurrentTridentOrchestrator) publishVolume(ctx context.Context, volum
 		}
 	}
 
+	// Save CSI-provided values before the VolumeAccessInfo overwrite clobbers them.
+	// VolumeAccessInfo is embedded in VolumePublishInfo, so assigning it replaces
+	// AccessMode and ReadOnly (set from the CSI request) with the volume's stored
+	// values (typically zero/false for NAS volumes).
+	accessMode := publishInfo.AccessMode
+	readOnly := publishInfo.ReadOnly
+
 	// Fill in what we already know
 	publishInfo.VolumeAccessInfo = volume.Config.AccessInfo
 	publishInfo.Nodes = results[0].Nodes
@@ -3741,13 +3748,16 @@ func (o *ConcurrentTridentOrchestrator) publishVolume(ctx context.Context, volum
 		Name:               models.GenerateVolumePublishName(volumeName, nodeName),
 		VolumeName:         volumeName,
 		NodeName:           nodeName,
-		ReadOnly:           publishInfo.ReadOnly,
-		AccessMode:         publishInfo.AccessMode,
+		ReadOnly:           readOnly,
+		AccessMode:         accessMode,
 		AutogrowPolicy:     volume.Config.RequestedAutogrowPolicy,
 		AutogrowIneligible: isVolumeAutogrowIneligible(volume.Config),
 		StorageClass:       volume.Config.StorageClass,
 		BackendUUID:        backend.BackendUUID(),
 		Pool:               volume.Pool,
+		Labels: map[string]string{
+			config.TridentNodeNameLabel: nodeName,
+		},
 	}
 	if err := o.storeClient.AddVolumePublication(ctx, vp); err != nil {
 		// Handle idempotent publish - if publication already exists, treat as success.
