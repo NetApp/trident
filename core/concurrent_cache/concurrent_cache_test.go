@@ -226,7 +226,7 @@ func TestMergeQueries(t *testing.T) {
 				queries = append(queries, q)
 			}
 
-			merged := mergeQueries(queries)
+			merged := mergeQueries(queries, true)
 			assert.Len(t, merged, 14)
 		})
 	}
@@ -1040,4 +1040,19 @@ func TestCheckDependency(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestAllowInconsistentReadWithRootLock tests that inconsistent reads and lists can occur while the root lock is held.
+func TestAllowInconsistentReadWithRootLock(t *testing.T) {
+	initCaches()
+
+	_, unlocker, err := Lock(context.Background(), Query(LockCache()))
+	defer unlocker()
+
+	assert.NoError(t, err)
+	results, unlocker2, err := Lock(context.Background(), Query(InconsistentReadBackend("backend1"), ListVolumes()))
+	defer unlocker2()
+	assert.NoError(t, err)
+	assert.NotNil(t, results[0].Backend.Read)
+	assert.NotEmpty(t, results[0].Volumes)
 }
