@@ -213,10 +213,10 @@ func getFsxnTBCYaml(svm SVM, tridentNamespace, backendName, protocolType, tconfN
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{SVM_NAME}", svm.SvmName)
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{AWS_ARN}", svm.SecretARNName)
 	tbcYaml = strings.ReplaceAll(tbcYaml, "{DRIVER_TYPE}", storageDriverName)
+	labels := fmt.Sprintf("labels:\n    trident.netapp.io/configurator: %s\n", tconfName)
+	tbcYaml = strings.ReplaceAll(tbcYaml, "{LABELS}", labels)
 
 	if scManagedTconf {
-		labels := fmt.Sprintf("labels:\n    trident.netapp.io/configurator: %s\n", tconfName)
-		tbcYaml = strings.ReplaceAll(tbcYaml, "{LABELS}", labels)
 
 		tbcYaml = replaceBoolIfPresent(tbcYaml, "{USE_REST}", tconfSpec, "useREST")
 		tbcYaml = replaceBoolIfPresent(tbcYaml, "{AUTO_EXPORT_POLICY}", tconfSpec, "autoExportPolicy")
@@ -242,7 +242,6 @@ func getFsxnTBCYaml(svm SVM, tridentNamespace, backendName, protocolType, tconfN
 
 		tbcYaml = replaceDefaultsSection(tbcYaml, tconfSpec)
 	} else {
-		tbcYaml = strings.ReplaceAll(tbcYaml, "{LABELS}", "")
 		tbcYaml = setEmptyOptionalFields(tbcYaml)
 	}
 
