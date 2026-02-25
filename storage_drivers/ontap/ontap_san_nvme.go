@@ -18,6 +18,7 @@ import (
 	"github.com/RoaringBitmap/roaring/v2"
 
 	tridentconfig "github.com/netapp/trident/config"
+	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/capacity"
 	"github.com/netapp/trident/pkg/collection"
@@ -37,6 +38,11 @@ import (
 // NVMeNamespaceRegExp RegExp to match the namespace path either empty string or
 // string of the form /vol/<flexVolName>/<Namespacename>
 var NVMeNamespaceRegExp = regexp.MustCompile(`[^(\/vol\/.+\/.+)?$]`)
+
+var (
+	beforeNQNRemovalFromSubsystem     = fiji.Register("beforeNQNRemovalFromSubsystem", "ontap_san_nvme")
+	beforeNamespaceUnmapFromSubsystem = fiji.Register("beforeNamespaceUnmapFromSubsystem", "ontap_san_nvme")
+)
 
 // NVMeStorageDriver is for NVMe storage provisioning.
 type NVMeStorageDriver struct {
@@ -1044,6 +1050,10 @@ func (d *NVMeStorageDriver) Unpublish(
 	unlock := lockNamespaceAndSubsystem(namespaceUUID, subsystemUUID)
 	defer unlock()
 
+	if err := beforeNQNRemovalFromSubsystem.Inject(); err != nil {
+		return err
+	}
+
 	// Remove host from subsystem if it has no other published volumes from this subsystem
 	_, err := RemoveHostFromSubsystem(
 		ctx,
@@ -1054,6 +1064,10 @@ func (d *NVMeStorageDriver) Unpublish(
 	)
 	if err != nil {
 		return fmt.Errorf("failed to remove host from subsystem: %w", err)
+	}
+
+	if err := beforeNamespaceUnmapFromSubsystem.Inject(); err != nil {
+		return err
 	}
 
 	// Unmap namespace from subsystem if no other hosts in SS need it
