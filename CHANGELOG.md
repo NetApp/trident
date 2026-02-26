@@ -2,7 +2,46 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
-## Changes since v25.06.0
+## Changes since v25.10.0
+
+### Trident
+
+**Fixes:**
+
+- **Kubernetes:** Fixed an issue where unpublishing a read-only clone removed export policy rules from the source volume in ONTAP-NAS, ONTAP-NAS-Economy, and GCNV drivers (Issue [#1086](https://github.com/NetApp/trident/issues/1086)).
+- **Kubernetes:** Switched kubectl images from deprecated Bitnami to lightweight Alpine-based variants to prevent pull failures following Bitnami's public image deprecation (Issue [#1080](https://github.com/NetApp/trident/issues/1080)).
+- **Kubernetes:** Allow clone across different storage classes if both storage classes are pointing to the same backend (Issue [#1104](https://github.com/NetApp/trident/issues/1104)).
+- **Kubernetes:** Fixed node prep failures caused by timeouts in cloud environments with network latencies. Increased timeout values for cloud-based installations
+- **Kubernetes:** Fixed an issue in LUN creation that caused the filesystem type attribute to remain unset when the process entered a retry state
+- **Kubernetes:** Fixed REST API volume lookup to ignore volume state, preventing false negatives during volume queries.
+- **Kubernetes:** Improved Trident controller efficiency for ontap-nas-economy driver when used at scale.
+- **Kubernetes:** Set internalID during LUN import in ontap-san-economy driver.
+- **Kubernetes:** Increased Azure Resource Graph query limits to handle more subnets.
+- **Kubernetes:** Improved CSI and ONTAP clone split timeouts to avoid race conditions with some backup applications (Issues [#1098](https://github.com/NetApp/trident/issues/1098), [#1100](https://github.com/NetApp/trident/issues/1100)).
+- **Kubernetes:** Fixed suppression of LUKS error messages (Issue [#1069](https://github.com/NetApp/trident/issues/1069)).
+- **Kubernetes:** Fixed handling of stale LUKS mappers for both iSCSI and NVMe protocols. Enhanced cleanup logic prevents mount failures from orphaned device mappers.
+- Fixed scale limitations for RWX NVMe volumes.
+- Updated package "telemetry/opentelemetry-go" to fix CVE-2026-24051.
+
+**Enhancements:**
+
+- **Kubernetes:** Added support for Kubernetes 1.35.
+- **Kubernetes:** Concurrency support for ONTAP-NAS (NFS only), ONTAP-SAN (iSCSI, FCP), ONTAP-SAN (NVMe) and GCNV drivers is now generally available (GA), graduated from Tech Preview.
+- **Kubernetes:** Added support for volume autogrow in Trident based on user-defined Trident AutoGrow Policies.
+- **Kubernetes:** Enhanced Trident node concurrency for higher scalability of node operations for NVMe volumes.
+- **Kubernetes:** Added support for GCNV NAS volume auto-tiering via PVC annotations (tieringPolicy, tieringMinimumCoolingDays), with pool selection and clone inheritance.
+- **Kubernetes:** Added support for GCNV SAN block (iSCSI) volumes via the google-cloud-netapp-volumes-san driver, including provisioning, per-node host group mapping for LUN access, and clone-from-volume for Flex pools.
+- Added support for automatic backend configuration for AWS FSxN drivers.
+- Added support for different Azure clouds (e.g. Azure Government, Azure China) and custom cloud configuration for azure-netapp-files (ANF) backends (Issue [#632](https://github.com/NetApp/trident/issues/632)).
+- **Kubernetes:** Trident preserves annotation of existing deployment during upgrade (Issue [#1004](https://github.com/NetApp/trident/issues/1004)).
+
+**Experimental Enhancements:**
+
+**NOTE:** Not for use in production environments.
+
+- [Tech Preview] Added support for concurrency for ONTAP-NAS-Economy and ONTAP-SAN-Economy drivers.
+
+## v25.10.0
 
 ### Trident
 
