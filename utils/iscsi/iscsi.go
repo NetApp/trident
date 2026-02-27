@@ -126,6 +126,7 @@ type ISCSI interface {
 	IsSessionStale(ctx context.Context, sessionID string) bool
 	EnsureVolumeFormattedAndMounted(
 		ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted bool,
+		safeToFsFormat bool,
 	) error
 }
 
@@ -3088,6 +3089,7 @@ func InitiateScanForLuns(ctx context.Context, luns []int32, target string) error
 // The device path is set on the in-out publishInfo parameter so that it may be mounted later instead.
 func (client *Client) EnsureVolumeFormattedAndMounted(
 	ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted bool,
+	safeToFsFormat bool,
 ) error {
 	Logc(ctx).Debug(">>>> iscsi.EnsureVolumeFormattedAndMounted")
 	defer Logc(ctx).Debug("<<<< iscsi.EnsureVolumeFormattedAndMounted")
@@ -3117,10 +3119,16 @@ func (client *Client) EnsureVolumeFormattedAndMounted(
 		return nil
 	}
 
-	existingFstype, err := client.devices.GetDeviceFSType(ctx, devicePath)
-	if err != nil {
-		return err
+	var existingFstype string
+	if isLUKSDevice && safeToFsFormat {
+		existingFstype = ""
+	} else {
+		existingFstype, err = client.devices.GetDeviceFSType(ctx, devicePath)
+		if err != nil {
+			return err
+		}
 	}
+
 	if existingFstype == "" {
 		if !isLUKSDevice {
 			if unformatted, err := client.devices.IsDeviceUnformatted(ctx, devicePath); err != nil {

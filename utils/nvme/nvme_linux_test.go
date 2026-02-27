@@ -755,7 +755,9 @@ func TestEnsureVolumeFormattedAndMounted(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			handler := NewNVMeHandlerDetailed(params.getMockCommand(ctrl), params.getMockDevices(ctrl),
 				params.getMockMount(ctrl), params.getFsClient(ctrl), nil)
-			err := handler.EnsureVolumeFormattedAndMounted(context.Background(), params.name, params.mountpoint, params.publishInfo, params.luksFormatted)
+			err := handler.EnsureVolumeFormattedAndMounted(
+				context.Background(), params.name, params.mountpoint, params.publishInfo, params.luksFormatted, false,
+			)
 			if params.expectErr {
 				assert.Error(t, err)
 			} else {
@@ -767,13 +769,14 @@ func TestEnsureVolumeFormattedAndMounted(t *testing.T) {
 
 func TestEnsureCryptsetupFormattedAndMappedOnHost(t *testing.T) {
 	tests := map[string]struct {
-		name            string
-		publishInfo     *models.VolumePublishInfo
-		secrets         map[string]string
-		getMockCommand  func(ctrl *gomock.Controller) exec.Command
-		getMockDevices  func(ctrl *gomock.Controller) devices.Devices
-		expectFormatted bool
-		expectErr       bool
+		name               string
+		publishInfo        *models.VolumePublishInfo
+		secrets            map[string]string
+		getMockCommand     func(ctrl *gomock.Controller) exec.Command
+		getMockDevices     func(ctrl *gomock.Controller) devices.Devices
+		expectSafeToFormat bool
+		expectFormatted    bool
+		expectErr          bool
 	}{
 		"LUKS format and map success": {
 			name: "mockName",
@@ -819,8 +822,9 @@ func TestEnsureCryptsetupFormattedAndMappedOnHost(t *testing.T) {
 				mockDevices.EXPECT().IsDeviceUnformatted(gomock.Any(), gomock.Any()).Return(true, nil).Times(1)
 				return mockDevices
 			},
-			expectFormatted: true,
-			expectErr:       false,
+			expectSafeToFormat: true,
+			expectFormatted:    true,
+			expectErr:          false,
 		},
 		"LUKS already formatted and mapped": {
 			name: "mockName",
@@ -857,8 +861,9 @@ func TestEnsureCryptsetupFormattedAndMappedOnHost(t *testing.T) {
 			getMockDevices: func(ctrl *gomock.Controller) devices.Devices {
 				return mock_devices.NewMockDevices(ctrl)
 			},
-			expectFormatted: true,
-			expectErr:       false,
+			expectSafeToFormat: false,
+			expectFormatted:    true,
+			expectErr:          false,
 		},
 		"Non-LUKS device returns false": {
 			name: "mockName",
@@ -881,8 +886,9 @@ func TestEnsureCryptsetupFormattedAndMappedOnHost(t *testing.T) {
 			getMockDevices: func(ctrl *gomock.Controller) devices.Devices {
 				return mock_devices.NewMockDevices(ctrl)
 			},
-			expectFormatted: false,
-			expectErr:       false,
+			expectSafeToFormat: false,
+			expectFormatted:    false,
+			expectErr:          false,
 		},
 		"LUKS with invalid encryption value": {
 			name: "mockName",
@@ -905,8 +911,9 @@ func TestEnsureCryptsetupFormattedAndMappedOnHost(t *testing.T) {
 			getMockDevices: func(ctrl *gomock.Controller) devices.Devices {
 				return mock_devices.NewMockDevices(ctrl)
 			},
-			expectFormatted: false,
-			expectErr:       true,
+			expectSafeToFormat: false,
+			expectFormatted:    false,
+			expectErr:          true,
 		},
 	}
 
@@ -915,9 +922,10 @@ func TestEnsureCryptsetupFormattedAndMappedOnHost(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			handler := NewNVMeHandlerDetailed(params.getMockCommand(ctrl), params.getMockDevices(ctrl),
 				nil, nil, nil)
-			luksFormatted, err := handler.EnsureCryptsetupFormattedAndMappedOnHost(context.Background(),
+			luksFormatted, safeToFormat, err := handler.EnsureCryptsetupFormattedAndMappedOnHost(context.Background(),
 				params.name, params.publishInfo, params.secrets)
 
+			assert.Equal(t, params.expectSafeToFormat, safeToFormat)
 			assert.Equal(t, params.expectFormatted, luksFormatted)
 			if params.expectErr {
 				assert.Error(t, err)

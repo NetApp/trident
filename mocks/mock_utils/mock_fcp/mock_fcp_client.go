@@ -58,17 +58,17 @@ func (mr *MockFCPMockRecorder) AttachVolumeRetry(ctx, publishInfo, timeout any) 
 }
 
 // EnsureVolumeFormattedAndMounted mocks base method.
-func (m *MockFCP) EnsureVolumeFormattedAndMounted(ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted bool) error {
+func (m *MockFCP) EnsureVolumeFormattedAndMounted(ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted, safeToFsFormat bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnsureVolumeFormattedAndMounted", ctx, name, mountPoint, publishInfo, luksFormatted)
+	ret := m.ctrl.Call(m, "EnsureVolumeFormattedAndMounted", ctx, name, mountPoint, publishInfo, luksFormatted, safeToFsFormat)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // EnsureVolumeFormattedAndMounted indicates an expected call of EnsureVolumeFormattedAndMounted.
-func (mr *MockFCPMockRecorder) EnsureVolumeFormattedAndMounted(ctx, name, mountPoint, publishInfo, luksFormatted any) *gomock.Call {
+func (mr *MockFCPMockRecorder) EnsureVolumeFormattedAndMounted(ctx, name, mountPoint, publishInfo, luksFormatted, safeToFsFormat any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVolumeFormattedAndMounted", reflect.TypeOf((*MockFCP)(nil).EnsureVolumeFormattedAndMounted), ctx, name, mountPoint, publishInfo, luksFormatted)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVolumeFormattedAndMounted", reflect.TypeOf((*MockFCP)(nil).EnsureVolumeFormattedAndMounted), ctx, name, mountPoint, publishInfo, luksFormatted, safeToFsFormat)
 }
 
 // GetDeviceInfoForFCPLUN mocks base method.

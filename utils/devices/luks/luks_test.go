@@ -23,9 +23,10 @@ func TestNewDevice(t *testing.T) {
 
 func TestIsLegacyDevicePath(t *testing.T) {
 	tests := map[string]struct {
-		name       string
-		devicePath string
-		expected   bool
+		name                 string
+		devicePath           string
+		expected             bool
+		expectedSafeToFormat bool
 	}{
 		"legacy luks device path": {
 			devicePath: "/dev/mapper/luks-trident_pvc_4b7874ba_58d7_4d93_8d36_09a09b837f81",
@@ -47,13 +48,14 @@ func TestEnsureCryptsetupFormattedAndMappedOnHost(t *testing.T) {
 	ctx := context.TODO()
 
 	tests := map[string]struct {
-		name          string
-		publishInfo   *models.VolumePublishInfo
-		secrets       map[string]string
-		setupMocks    func(*gomock.Controller) *mockexec.MockCommand
-		expectedBool  bool
-		expectedError bool
-		errorContains string
+		name                 string
+		publishInfo          *models.VolumePublishInfo
+		secrets              map[string]string
+		setupMocks           func(*gomock.Controller) *mockexec.MockCommand
+		expectedSafeToFormat bool
+		expectedBool         bool
+		expectedError        bool
+		errorContains        string
 	}{
 		"non-LUKS device returns false": {
 			name: "test-volume",
@@ -65,8 +67,9 @@ func TestEnsureCryptsetupFormattedAndMappedOnHost(t *testing.T) {
 			setupMocks: func(ctrl *gomock.Controller) *mockexec.MockCommand {
 				return mockexec.NewMockCommand(ctrl)
 			},
-			expectedBool:  false,
-			expectedError: false,
+			expectedSafeToFormat: false,
+			expectedBool:         false,
+			expectedError:        false,
 		},
 		"empty LUKS encryption field returns false": {
 			name: "test-volume",
@@ -78,8 +81,9 @@ func TestEnsureCryptsetupFormattedAndMappedOnHost(t *testing.T) {
 			setupMocks: func(ctrl *gomock.Controller) *mockexec.MockCommand {
 				return mockexec.NewMockCommand(ctrl)
 			},
-			expectedBool:  false,
-			expectedError: false,
+			expectedSafeToFormat: false,
+			expectedBool:         false,
+			expectedError:        false,
 		},
 		"invalid LUKS encryption value returns error": {
 			name: "test-volume",
@@ -91,9 +95,10 @@ func TestEnsureCryptsetupFormattedAndMappedOnHost(t *testing.T) {
 			setupMocks: func(ctrl *gomock.Controller) *mockexec.MockCommand {
 				return mockexec.NewMockCommand(ctrl)
 			},
-			expectedBool:  false,
-			expectedError: true,
-			errorContains: "could not parse LUKSEncryption into a bool",
+			expectedSafeToFormat: false,
+			expectedBool:         false,
+			expectedError:        true,
+			errorContains:        "could not parse LUKSEncryption into a bool",
 		},
 		"LUKS device with missing passphrase returns error": {
 			name: "test-volume",
@@ -123,9 +128,10 @@ func TestEnsureCryptsetupFormattedAndMappedOnHost(t *testing.T) {
 			setupMocks: func(ctrl *gomock.Controller) *mockexec.MockCommand {
 				return mockexec.NewMockCommand(ctrl)
 			},
-			expectedBool:  false,
-			expectedError: true,
-			errorContains: "LUKS passphrase name cannot be empty",
+			expectedSafeToFormat: false,
+			expectedBool:         false,
+			expectedError:        true,
+			errorContains:        "LUKS passphrase name cannot be empty",
 		},
 	}
 
@@ -137,10 +143,11 @@ func TestEnsureCryptsetupFormattedAndMappedOnHost(t *testing.T) {
 			mockCommand := params.setupMocks(ctrl)
 			mockDevices := mock_devices.NewMockDevices(ctrl)
 
-			luksFormatted, err := EnsureCryptsetupFormattedAndMappedOnHost(
+			luksFormatted, safeToFormat, err := EnsureCryptsetupFormattedAndMappedOnHost(
 				ctx, params.name, params.publishInfo, params.secrets, mockCommand, mockDevices,
 			)
 
+			assert.Equal(t, params.expectedSafeToFormat, safeToFormat)
 			assert.Equal(t, params.expectedBool, luksFormatted)
 			if params.expectedError {
 				assert.Error(t, err)

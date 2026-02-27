@@ -77,11 +77,11 @@ func (o *osFs) ReadlinkIfPossible(name string) (string, error) {
 }
 
 type Device interface {
-	EnsureDeviceMappedOnHost(ctx context.Context, name string, secrets map[string]string) (bool, error)
+	EnsureDeviceMappedOnHost(ctx context.Context, name string, secrets map[string]string) (bool, bool, error)
 	MappedDevicePath() string
 	MappedDeviceName() string
 	RawDevicePath() string
-	EnsureFormattedAndOpen(ctx context.Context, luksPassphrase string) (bool, error)
+	EnsureFormattedAndOpen(ctx context.Context, luksPassphrase string) (bool, bool, error)
 	CheckPassphrase(ctx context.Context, luksPassphrase string) (bool, error)
 	RotatePassphrase(ctx context.Context, volumeId, previousLUKSPassphrase, luksPassphrase string) error
 	IsMappingStale(ctx context.Context) bool
@@ -123,48 +123,48 @@ func NewDeviceFromMappingPath(
 }
 
 // EnsureDeviceMappedOnHost ensures the specified device is LUKS formatted, opened, and has the current passphrase.
-func (d *LUKSDevice) EnsureDeviceMappedOnHost(ctx context.Context, name string, secrets map[string]string) (bool, error) {
+func (d *LUKSDevice) EnsureDeviceMappedOnHost(ctx context.Context, name string, secrets map[string]string) (bool, bool, error) {
 	// Try to Open with current luks passphrase
 	luksPassphraseName, luksPassphrase, previousLUKSPassphraseName, previousLUKSPassphrase := GetLUKSPassphrasesFromSecretMap(secrets)
 	if luksPassphrase == "" {
-		return false, errors.New("LUKS passphrase cannot be empty")
+		return false, false, errors.New("LUKS passphrase cannot be empty")
 	}
 	if luksPassphraseName == "" {
-		return false, errors.New("LUKS passphrase name cannot be empty")
+		return false, false, errors.New("LUKS passphrase name cannot be empty")
 	}
 
 	Logc(ctx).WithFields(LogFields{
 		"volume":               name,
 		"luks-passphrase-name": luksPassphraseName,
 	}).Info("Opening encrypted volume.")
-	luksFormatted, err := d.EnsureFormattedAndOpen(ctx, luksPassphrase)
+	luksFormatted, safeToFormat, err := d.EnsureFormattedAndOpen(ctx, luksPassphrase)
 
 	// If we fail due to a format issue there is no need to try to open the device.
 	if err == nil || errors.IsFormatError(err) {
-		return luksFormatted, err
+		return luksFormatted, safeToFormat, err
 	}
 
 	// If we failed to open, try previous passphrase
 	if previousLUKSPassphrase == "" {
 		// Return original error if there is no previous passphrase to use
-		return luksFormatted, fmt.Errorf("could not open LUKS device; %v", err)
+		return luksFormatted, safeToFormat, fmt.Errorf("could not open LUKS device; %v", err)
 	}
 	if luksPassphrase == previousLUKSPassphrase {
-		return luksFormatted, errors.New("could not open LUKS device, previous passphrase matches current")
+		return luksFormatted, safeToFormat, errors.New("could not open LUKS device, previous passphrase matches current")
 	}
 	if previousLUKSPassphraseName == "" {
-		return luksFormatted, errors.New("could not open LUKS device, no previous passphrase name provided")
+		return luksFormatted, safeToFormat, errors.New("could not open LUKS device, no previous passphrase name provided")
 	}
 	Logc(ctx).WithFields(LogFields{
 		"volume":               name,
 		"luks-passphrase-name": previousLUKSPassphraseName,
 	}).Info("Opening encrypted volume.")
-	luksFormatted, err = d.EnsureFormattedAndOpen(ctx, previousLUKSPassphrase)
+	luksFormatted, safeToFormat, err = d.EnsureFormattedAndOpen(ctx, previousLUKSPassphrase)
 	if err != nil {
-		return luksFormatted, fmt.Errorf("could not open LUKS device; %v", err)
+		return luksFormatted, safeToFormat, fmt.Errorf("could not open LUKS device; %v", err)
 	}
 
-	return luksFormatted, nil
+	return luksFormatted, safeToFormat, nil
 }
 
 // MappedDevicePath returns the location of the LUKS device when opened.
@@ -183,7 +183,11 @@ func (d *LUKSDevice) RawDevicePath() string {
 }
 
 // EnsureFormattedAndOpen ensures the specified device is LUKS formatted and opened.
-func (d *LUKSDevice) EnsureFormattedAndOpen(ctx context.Context, luksPassphrase string) (formatted bool, err error) {
+// Returns two booleans: the first indicates if the device is crypt formatted,
+// the second indicates if the device is safe to file format, meaning the device was empty before being crypt formatted.
+func (d *LUKSDevice) EnsureFormattedAndOpen(ctx context.Context, luksPassphrase string) (
+	formatted, safeToFileFormat bool, err error,
+) {
 	return d.ensureLUKSDevice(ctx, luksPassphrase)
 }
 
@@ -199,7 +203,10 @@ func (d *LUKSDevice) IsMappingStale(ctx context.Context) bool {
 	return d.isMappingStale(ctx)
 }
 
-func (d *LUKSDevice) ensureLUKSDevice(ctx context.Context, luksPassphrase string) (bool, error) {
+// ensureLUKSDevice ensures the device is LUKS formatted and opened.
+// Returns two booleans: the first indicates if the device is formatted,
+// the second indicates if the device is safe to file format, meaning the device was empty before being crypt formatted.
+func (d *LUKSDevice) ensureLUKSDevice(ctx context.Context, luksPassphrase string) (bool, bool, error) {
 	// First check if LUKS device is already opened. This is OK to check even if the device isn't LUKS formatted.
 	if isOpen, err := d.IsOpen(ctx); err != nil {
 		// If the LUKS device isn't found, it means that we need to check if the device is LUKS formatted.
@@ -207,16 +214,18 @@ func (d *LUKSDevice) ensureLUKSDevice(ctx context.Context, luksPassphrase string
 		// If any other error occurs, bail out.
 		if !errors.IsNotFoundError(err) {
 			Logc(ctx).WithError(err).Error("Could not check if device is an open LUKS device.")
-			return false, err
+			return false, false, err
 		}
 	} else if isOpen {
 		Logc(ctx).Debug("Device is LUKS formatted and open.")
-		return true, nil
+		return true, false, nil
 	}
 
-	if err := d.formatUnformattedDevice(ctx, luksPassphrase); err != nil {
+	var safeToFileFormat bool
+	var err error
+	if safeToFileFormat, err = d.formatUnformattedDevice(ctx, luksPassphrase); err != nil {
 		Logc(ctx).WithError(err).Error("Could not LUKS format device.")
-		return false, fmt.Errorf("could not LUKS format device; %w", err)
+		return false, safeToFileFormat, fmt.Errorf("could not LUKS format device; %w", err)
 	}
 
 	// At this point, we should be able to open the device.
@@ -224,11 +233,11 @@ func (d *LUKSDevice) ensureLUKSDevice(ctx context.Context, luksPassphrase string
 		// At this point, we couldn't open the LUKS device, but we do know
 		// the device is LUKS formatted because LUKSFormat didn't fail.
 		Logc(ctx).WithError(err).Error("Could not open LUKS formatted device.")
-		return true, fmt.Errorf("could not open LUKS device; %v", err)
+		return true, safeToFileFormat, fmt.Errorf("could not open LUKS device; %v", err)
 	}
 
 	Logc(ctx).Debug("Device is LUKS formatted and open.")
-	return true, nil
+	return true, safeToFileFormat, nil
 }
 
 func GetLUKSPassphrasesFromSecretMap(secrets map[string]string) (string, string, string, string) {
@@ -283,22 +292,23 @@ func IsLuksDevice(publishInfo *models.VolumePublishInfo) (bool, error) {
 func EnsureCryptsetupFormattedAndMappedOnHost(
 	ctx context.Context, name string, publishInfo *models.VolumePublishInfo, secrets map[string]string, command execCmd.Command,
 	devices devices.Devices,
-) (bool, error) {
+) (bool, bool, error) {
 	Logc(ctx).Debug(">>>> EnsureCryptsetupFormattedAndMappedOnHost")
 	defer Logc(ctx).Debug("<<<< EnsureCryptsetupFormattedAndMappedOnHost")
 
 	isLUKSDevice, err := IsLuksDevice(publishInfo)
 	if err != nil {
-		return isLUKSDevice, err
+		return isLUKSDevice, false, err
 	}
 
 	var luksFormatted bool
+	var safeToFsFormat bool
 	if isLUKSDevice {
 		luksDevice := NewDevice(publishInfo.DevicePath, name, command, devices)
-		luksFormatted, err = luksDevice.EnsureDeviceMappedOnHost(ctx, name, secrets)
+		luksFormatted, safeToFsFormat, err = luksDevice.EnsureDeviceMappedOnHost(ctx, name, secrets)
 		if err != nil {
-			return luksFormatted, err
+			return luksFormatted, safeToFsFormat, err
 		}
 	}
-	return luksFormatted, nil
+	return luksFormatted, safeToFsFormat, nil
 }

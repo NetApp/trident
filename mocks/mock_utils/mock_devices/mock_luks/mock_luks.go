@@ -156,12 +156,13 @@ func (mr *MockDeviceMockRecorder) CheckPassphrase(ctx, luksPassphrase any) *gomo
 }
 
 // EnsureDeviceMappedOnHost mocks base method.
-func (m *MockDevice) EnsureDeviceMappedOnHost(ctx context.Context, name string, secrets map[string]string) (bool, error) {
+func (m *MockDevice) EnsureDeviceMappedOnHost(ctx context.Context, name string, secrets map[string]string) (bool, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EnsureDeviceMappedOnHost", ctx, name, secrets)
 	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // EnsureDeviceMappedOnHost indicates an expected call of EnsureDeviceMappedOnHost.
@@ -171,12 +172,13 @@ func (mr *MockDeviceMockRecorder) EnsureDeviceMappedOnHost(ctx, name, secrets an
 }
 
 // EnsureFormattedAndOpen mocks base method.
-func (m *MockDevice) EnsureFormattedAndOpen(ctx context.Context, luksPassphrase string) (bool, error) {
+func (m *MockDevice) EnsureFormattedAndOpen(ctx context.Context, luksPassphrase string) (bool, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EnsureFormattedAndOpen", ctx, luksPassphrase)
 	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // EnsureFormattedAndOpen indicates an expected call of EnsureFormattedAndOpen.

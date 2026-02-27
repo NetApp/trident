@@ -182,9 +182,10 @@ type NVMeInterface interface {
 	) error
 	GetNVMeSubsystem(ctx context.Context, nqn string) (*NVMeSubsystem, error)
 	EnsureVolumeFormattedAndMounted(
-		ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted bool,
+		ctx context.Context, name string, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted bool,
+		safeToFsFormat bool,
 	) error
 	EnsureCryptsetupFormattedAndMappedOnHost(
 		ctx context.Context, name string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
-	) (bool, error)
+	) (bool, bool, error)
 }

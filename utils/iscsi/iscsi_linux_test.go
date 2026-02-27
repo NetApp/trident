@@ -209,7 +209,7 @@ func TestClient_EnsureVolumeFormattedAndMounted_LUKS(t *testing.T) {
 				afero.Afero{Fs: afero.NewMemMapFs()}, nil)
 
 			err := iscsiClient.EnsureVolumeFormattedAndMounted(context.TODO(), params.volumeName, params.volumeMountPoint,
-				&params.publishInfo, params.luksFormatted)
+				&params.publishInfo, params.luksFormatted, false)
 			if params.assertError != nil {
 				params.assertError(t, err)
 			}

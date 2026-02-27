@@ -84,12 +84,13 @@ func (mr *MockNVMeInterfaceMockRecorder) AttachNVMeVolumeRetry(ctx, publishInfo,
 }
 
 // EnsureCryptsetupFormattedAndMappedOnHost mocks base method.
-func (m *MockNVMeInterface) EnsureCryptsetupFormattedAndMappedOnHost(ctx context.Context, name string, publishInfo *models.VolumePublishInfo, secrets map[string]string) (bool, error) {
+func (m *MockNVMeInterface) EnsureCryptsetupFormattedAndMappedOnHost(ctx context.Context, name string, publishInfo *models.VolumePublishInfo, secrets map[string]string) (bool, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EnsureCryptsetupFormattedAndMappedOnHost", ctx, name, publishInfo, secrets)
 	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // EnsureCryptsetupFormattedAndMappedOnHost indicates an expected call of EnsureCryptsetupFormattedAndMappedOnHost.
@@ -99,17 +100,17 @@ func (mr *MockNVMeInterfaceMockRecorder) EnsureCryptsetupFormattedAndMappedOnHos
 }
 
 // EnsureVolumeFormattedAndMounted mocks base method.
-func (m *MockNVMeInterface) EnsureVolumeFormattedAndMounted(ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted bool) error {
+func (m *MockNVMeInterface) EnsureVolumeFormattedAndMounted(ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted, safeToFsFormat bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnsureVolumeFormattedAndMounted", ctx, name, mountPoint, publishInfo, luksFormatted)
+	ret := m.ctrl.Call(m, "EnsureVolumeFormattedAndMounted", ctx, name, mountPoint, publishInfo, luksFormatted, safeToFsFormat)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // EnsureVolumeFormattedAndMounted indicates an expected call of EnsureVolumeFormattedAndMounted.
-func (mr *MockNVMeInterfaceMockRecorder) EnsureVolumeFormattedAndMounted(ctx, name, mountPoint, publishInfo, luksFormatted any) *gomock.Call {
+func (mr *MockNVMeInterfaceMockRecorder) EnsureVolumeFormattedAndMounted(ctx, name, mountPoint, publishInfo, luksFormatted, safeToFsFormat any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVolumeFormattedAndMounted", reflect.TypeOf((*MockNVMeInterface)(nil).EnsureVolumeFormattedAndMounted), ctx, name, mountPoint, publishInfo, luksFormatted)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVolumeFormattedAndMounted", reflect.TypeOf((*MockNVMeInterface)(nil).EnsureVolumeFormattedAndMounted), ctx, name, mountPoint, publishInfo, luksFormatted, safeToFsFormat)
 }
 
 // GetHostNqn mocks base method.

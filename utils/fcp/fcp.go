@@ -69,6 +69,7 @@ type FCP interface {
 	) (*models.ScsiDeviceInfo, error)
 	EnsureVolumeFormattedAndMounted(
 		ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted bool,
+		safeToFsFormat bool,
 	) error
 }
 
@@ -1123,6 +1124,7 @@ func (client *Client) GetDeviceInfoForFCPLUN(
 // The device path is set on the in-out publishInfo parameter so that it may be mounted later instead.
 func (client *Client) EnsureVolumeFormattedAndMounted(
 	ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted bool,
+	safeToFsFormat bool,
 ) error {
 	Logc(ctx).Debug(">>>> fcp.EnsureVolumeFormattedAndMounted")
 	defer Logc(ctx).Debug("<<<< fcp.EnsureVolumeFormattedAndMounted")
@@ -1142,10 +1144,16 @@ func (client *Client) EnsureVolumeFormattedAndMounted(
 		devicePath = luksDevice.MappedDevicePath()
 	}
 
-	existingFstype, err := client.deviceClient.GetDeviceFSType(ctx, devicePath)
-	if err != nil {
-		return err
+	var existingFstype string
+	if isLUKSDevice && safeToFsFormat {
+		existingFstype = ""
+	} else {
+		existingFstype, err = client.deviceClient.GetDeviceFSType(ctx, devicePath)
+		if err != nil {
+			return err
+		}
 	}
+
 	if existingFstype == "" {
 		if !isLUKSDevice {
 			if unformatted, err := client.deviceClient.IsDeviceUnformatted(ctx, devicePath); err != nil {

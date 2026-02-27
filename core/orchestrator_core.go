@@ -4086,7 +4086,8 @@ func (o *TridentOrchestrator) AttachVolume(
 
 			// Cryptsetup format if necessary and map to host
 			var luksFormatted bool
-			luksFormatted, err = nvmeHandler.EnsureCryptsetupFormattedAndMappedOnHost(
+			var safeToFsFormat bool
+			luksFormatted, safeToFsFormat, err = nvmeHandler.EnsureCryptsetupFormattedAndMappedOnHost(
 				ctx, volumeName, publishInfo, map[string]string{},
 			)
 			if err != nil {
@@ -4095,7 +4096,7 @@ func (o *TridentOrchestrator) AttachVolume(
 
 			// Format and mount if necessary
 			if err = nvmeHandler.EnsureVolumeFormattedAndMounted(
-				ctx, volumeName, mountpoint, publishInfo, luksFormatted,
+				ctx, volumeName, mountpoint, publishInfo, luksFormatted, safeToFsFormat,
 			); err != nil {
 				return err
 			}
@@ -4110,7 +4111,8 @@ func (o *TridentOrchestrator) AttachVolume(
 			// Cryptsetup format if necessary and map to host
 			command := exec.NewCommand()
 			var luksFormatted bool
-			luksFormatted, err = luks.EnsureCryptsetupFormattedAndMappedOnHost(
+			var safeToFsFormat bool
+			luksFormatted, safeToFsFormat, err = luks.EnsureCryptsetupFormattedAndMappedOnHost(
 				ctx, volumeName, publishInfo, map[string]string{}, command, devices.New(),
 			)
 			if err != nil {
@@ -4119,7 +4121,7 @@ func (o *TridentOrchestrator) AttachVolume(
 
 			// Format and mount if necessary
 			if err = o.iscsi.EnsureVolumeFormattedAndMounted(
-				ctx, volumeName, mountpoint, publishInfo, luksFormatted,
+				ctx, volumeName, mountpoint, publishInfo, luksFormatted, safeToFsFormat,
 			); err != nil {
 				return err
 			}

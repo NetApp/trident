@@ -313,6 +313,7 @@ func (nh *NVMeHandler) AttachNVMeVolume(
 // The device path is set on the in-out publishInfo parameter so that it may be mounted later instead.
 func (nh *NVMeHandler) EnsureVolumeFormattedAndMounted(
 	ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted bool,
+	safeToFsFormat bool,
 ) error {
 	Logc(ctx).Debug(">>>> nvme.EnsureVolumeFormattedAndMounted")
 	defer Logc(ctx).Debug("<<<< nvme.EnsureVolumeFormattedAndMounted")
@@ -345,10 +346,16 @@ func (nh *NVMeHandler) EnsureVolumeFormattedAndMounted(
 		return errors.New("device should be a LUKS device but is not LUKS formatted")
 	}
 
-	existingFstype, err := nh.devicesClient.GetDeviceFSType(ctx, devicePath)
-	if err != nil {
-		return err
+	var existingFstype string
+	if isLUKSDevice && safeToFsFormat {
+		existingFstype = ""
+	} else {
+		existingFstype, err = nh.devicesClient.GetDeviceFSType(ctx, devicePath)
+		if err != nil {
+			return err
+		}
 	}
+
 	if existingFstype == "" {
 		if !isLUKSDevice {
 			if unformatted, err := nh.devicesClient.IsDeviceUnformatted(ctx, devicePath); err != nil {
@@ -700,7 +707,7 @@ func (nh *NVMeHandler) RectifyNVMeSession(
 // mapped on the host. If the device mapping is stale, it removes the stale mapping before proceeding.
 func (nh *NVMeHandler) EnsureCryptsetupFormattedAndMappedOnHost(
 	ctx context.Context, name string, publishInfo *models.VolumePublishInfo, secrets map[string]string,
-) (bool, error) {
+) (bool, bool, error) {
 	Logc(ctx).Debug(">>>> nvme.EnsureCryptsetupFormattedAndMappedOnHost")
 	defer Logc(ctx).Debug("<<<< nvme.EnsureCryptsetupFormattedAndMappedOnHost")
 	// Initially, the device path raw device path for this NVMe namespace.
@@ -708,11 +715,12 @@ func (nh *NVMeHandler) EnsureCryptsetupFormattedAndMappedOnHost(
 
 	isLUKSDevice, err := luks.IsLuksDevice(publishInfo)
 	if err != nil {
-		return false, err
+		return false, false, err
 	}
 
 	// Specific for NVMe, if the device mapping is stale, close it before proceeding.
 	var luksFormatted bool
+	var safeToFsFormat bool
 	if isLUKSDevice {
 		luksDevice := luks.NewDevice(devicePath, name, nh.command, nh.devicesClient)
 		if luksDevice.IsMappingStale(ctx) {
@@ -722,17 +730,17 @@ func (nh *NVMeHandler) EnsureCryptsetupFormattedAndMappedOnHost(
 				"mapper": luksPath,
 			}).Info("Removing stale LUKS mapping.")
 			if err := nh.devicesClient.EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, luksPath); err != nil {
-				return false, fmt.Errorf("could not remove LUKS mapping '%s' for device '%s'; %w", luksPath, devicePath, err)
+				return false, false, fmt.Errorf("could not remove LUKS mapping '%s' for device '%s'; %w", luksPath, devicePath, err)
 			}
 		}
-		luksFormatted, err = luksDevice.EnsureDeviceMappedOnHost(ctx, name, secrets)
+		luksFormatted, safeToFsFormat, err = luksDevice.EnsureDeviceMappedOnHost(ctx, name, secrets)
 		if err != nil {
-			return false, err
+			return false, safeToFsFormat, err
 		}
 
 		if err := afterFormatBeforeFileSystem.Inject(); err != nil {
-			return false, err
+			return false, safeToFsFormat, err
 		}
 	}
-	return luksFormatted, nil
+	return luksFormatted, safeToFsFormat, nil
 }

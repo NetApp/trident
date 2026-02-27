@@ -5836,7 +5836,7 @@ func TestClient_EnsureVolumeFormattedAndMounted(t *testing.T) {
 			ctx := context.Background()
 
 			err := iscsiClient.EnsureVolumeFormattedAndMounted(ctx, params.volumeName, params.mountPoint,
-				&params.publishInfo, params.luksFormatted)
+				&params.publishInfo, params.luksFormatted, false)
 			if params.assertError != nil {
 				params.assertError(t, err)
 			}

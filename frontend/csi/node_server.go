@@ -1407,7 +1407,7 @@ func (p *Plugin) nodeStageFCPVolume(
 	}
 
 	// Cryptsetup format if necessary and map to host
-	luksFormatted, err := luks.EnsureCryptsetupFormattedAndMappedOnHost(
+	luksFormatted, safeToFsFormat, err := luks.EnsureCryptsetupFormattedAndMappedOnHost(
 		ctx, req.VolumeContext["internalName"], publishInfo, req.GetSecrets(), p.command, p.devices,
 	)
 	if err != nil {
@@ -1416,7 +1416,7 @@ func (p *Plugin) nodeStageFCPVolume(
 
 	// Format and mount if necessary
 	if err = p.fcp.EnsureVolumeFormattedAndMounted(
-		ctx, req.VolumeContext["internalName"], "", publishInfo, luksFormatted,
+		ctx, req.VolumeContext["internalName"], "", publishInfo, luksFormatted, safeToFsFormat,
 	); err != nil {
 		return err
 	}
@@ -1885,7 +1885,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 	}
 
 	// Cryptsetup format if necessary and map to host
-	luksFormatted, err := luks.EnsureCryptsetupFormattedAndMappedOnHost(
+	luksFormatted, safeToFsFormat, err := luks.EnsureCryptsetupFormattedAndMappedOnHost(
 		ctx, req.VolumeContext["internalName"], publishInfo, req.GetSecrets(), p.command, p.devices,
 	)
 	if err != nil {
@@ -1894,7 +1894,7 @@ func (p *Plugin) nodeStageISCSIVolume(
 
 	// Format and mount if necessary
 	if err = p.iscsi.EnsureVolumeFormattedAndMounted(
-		ctx, req.VolumeContext["internalName"], "", publishInfo, luksFormatted,
+		ctx, req.VolumeContext["internalName"], "", publishInfo, luksFormatted, safeToFsFormat,
 	); err != nil {
 		return err
 	}
@@ -3047,7 +3047,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 	}
 
 	// Cryptsetup format if necessary and map to host
-	luksFormatted, err := p.nvmeHandler.EnsureCryptsetupFormattedAndMappedOnHost(
+	luksFormatted, safeToFormat, err := p.nvmeHandler.EnsureCryptsetupFormattedAndMappedOnHost(
 		ctx, req.VolumeContext["internalName"], publishInfo, req.GetSecrets(),
 	)
 	if err != nil {
@@ -3056,7 +3056,7 @@ func (p *Plugin) nodeStageNVMeVolume(
 
 	// Format and mount if necessary
 	if err = p.nvmeHandler.EnsureVolumeFormattedAndMounted(
-		ctx, req.VolumeContext["internalName"], "", publishInfo, luksFormatted,
+		ctx, req.VolumeContext["internalName"], "", publishInfo, luksFormatted, safeToFormat,
 	); err != nil {
 		return err
 	}
