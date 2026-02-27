@@ -6,6 +6,10 @@
 
 ### Trident
 
+**IMPORTANT:** There is a known issue with the csi-snapshotter sidecar. In all versions of Kubernetes VolumeGroupSnapshots v1beta1 will not allow VolumeSnapshots to become ReadyToUse. There are 2 workarounds:
+* Delete VolumeGroupSnapshots CRDs, which will disable VolumeGroupSnapshots, and reinstall Trident.
+* Install VolumeGroupSnapshots v1beta2 and snapshot-controller v8.4.0 or later, and reinstall Trident. **VolumeGroupSnapshots will not function on Kubernetes versions lower than v1.34.**
+
 **Fixes:**
 
 - **Kubernetes:** Fixed an issue where unpublishing a read-only clone removed export policy rules from the source volume in ONTAP-NAS, ONTAP-NAS-Economy, and GCNV drivers (Issue [#1086](https://github.com/NetApp/trident/issues/1086)).
@@ -28,6 +32,7 @@
 - **Kubernetes:** Added support for Kubernetes 1.35.
 - **Kubernetes:** Concurrency support for ONTAP-NAS (NFS only), ONTAP-SAN (iSCSI, FCP), ONTAP-SAN (NVMe) and GCNV drivers is now generally available (GA), graduated from Tech Preview.
 - **Kubernetes:** Added support for volume autogrow in Trident based on user-defined Trident AutoGrow Policies.
+- **Kubernetes:** Added support for VolumeGroupSnapshot for ontap-san (NVMe/TCP), in addition to existing support for ontap-nas (NFS), ontap-san (iSCSI and FC), and ontap-san-economy.
 - **Kubernetes:** Enhanced Trident node concurrency for higher scalability of node operations for NVMe volumes.
 - **Kubernetes:** Added support for GCNV NAS volume auto-tiering via PVC annotations (tieringPolicy, tieringMinimumCoolingDays), with pool selection and clone inheritance.
 - **Kubernetes:** Added support for GCNV SAN block (iSCSI) volumes via the google-cloud-netapp-volumes-san driver, including provisioning, per-node host group mapping for LUN access, and clone-from-volume for Flex pools.
