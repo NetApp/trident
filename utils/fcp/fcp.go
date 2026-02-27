@@ -497,10 +497,10 @@ func (client *Client) AttachVolume(
 	}
 	// Return the device in the publish info in case the mount will be done later
 	publishInfo.DevicePath = devicePath
-
+	var safeToFormat bool
 	if isLUKSDevice {
 		luksDevice := luks.NewDevice(devicePath, name, client.command)
-		luksFormatted, err = luksDevice.EnsureDeviceMappedOnHost(ctx, name, secrets)
+		luksFormatted, safeToFormat, err = luksDevice.EnsureDeviceMappedOnHost(ctx, name, secrets)
 		if err != nil {
 			return mpathSize, err
 		}
@@ -511,10 +511,16 @@ func (client *Client) AttachVolume(
 		return mpathSize, nil
 	}
 
-	existingFstype, err := client.deviceClient.GetDeviceFSType(ctx, devicePath)
-	if err != nil {
-		return mpathSize, err
+	var existingFstype string
+	if isLUKSDevice && safeToFormat {
+		existingFstype = ""
+	} else {
+		existingFstype, err = client.deviceClient.GetDeviceFSType(ctx, devicePath)
+		if err != nil {
+			return mpathSize, err
+		}
 	}
+
 	if existingFstype == "" {
 		if !isLUKSDevice {
 			if unformatted, err := client.deviceClient.IsDeviceUnformatted(ctx, devicePath); err != nil {
