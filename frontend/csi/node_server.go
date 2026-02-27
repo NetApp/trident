@@ -768,7 +768,7 @@ func (p *Plugin) nodePrepareISCSIVolumeForExpansion(
 	}).Debug("PublishInfo for block device to expand.")
 
 	// Resize the volume.
-	if err := p.iscsi.ResizeVolumeRetry(ctx, publishInfo, requiredBytes, ResizeISCSIVolumeTimeout); err != nil {
+	if err := p.iscsi.ExpandVolume(ctx, publishInfo, requiredBytes); err != nil {
 		Logc(ctx).WithFields(LogFields{
 			"lunID":      publishInfo.IscsiLunNumber,
 			"devicePath": publishInfo.DevicePath,

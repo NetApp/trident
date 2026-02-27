@@ -1,8 +1,9 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package models
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/netapp/trident/internal/crypto"
 	. "github.com/netapp/trident/logging"
+	"github.com/netapp/trident/pkg/collection"
 	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/pkg/network"
 	"github.com/netapp/trident/utils/errors"
@@ -162,7 +164,73 @@ type ScsiDeviceInfo struct {
 	CHAPInfo        IscsiChapInfo
 }
 
-//
+func (s *ScsiDeviceInfo) String() string {
+	fields := []string{
+		fmt.Sprintf("address: %s", s.ScsiDeviceAddress.String()),
+		fmt.Sprintf("devices: [%s]", strings.Join(s.Devices, ", ")),
+		fmt.Sprintf("devicePaths: [%s]", strings.Join(s.DevicePaths, ", ")),
+		fmt.Sprintf("multipathDevice: %s", s.MultipathDevice),
+		fmt.Sprintf("filesystem: %s", s.Filesystem),
+		fmt.Sprintf("IQN: %s", s.IQN),
+		fmt.Sprintf("WWNN: %s", s.WWNN),
+		fmt.Sprintf("sessionNumber: %d", s.SessionNumber),
+		fmt.Sprintf("chapInfo: %s", s.CHAPInfo.String()),
+	}
+	return strings.Join(fields, ", ")
+}
+
+func (s *ScsiDeviceInfo) Copy() *ScsiDeviceInfo {
+	devices := make([]string, len(s.Devices))
+	copy(devices, s.Devices)
+
+	paths := make([]string, len(s.DevicePaths))
+	copy(paths, s.DevicePaths)
+
+	return &ScsiDeviceInfo{
+		ScsiDeviceAddress: s.ScsiDeviceAddress,
+		Devices:           devices,
+		DevicePaths:       paths,
+		MultipathDevice:   s.MultipathDevice,
+		Filesystem:        s.Filesystem,
+		IQN:               s.IQN,
+		WWNN:              s.WWNN,
+		SessionNumber:     s.SessionNumber,
+		CHAPInfo:          s.CHAPInfo,
+	}
+}
+
+func (s *ScsiDeviceInfo) Equal(other *ScsiDeviceInfo) bool {
+	if s.ScsiDeviceAddress != other.ScsiDeviceAddress {
+		return false
+	}
+	if s.MultipathDevice != other.MultipathDevice {
+		return false
+	}
+	if s.Filesystem != other.Filesystem {
+		return false
+	}
+	if s.IQN != other.IQN {
+		return false
+	}
+	if s.WWNN != other.WWNN {
+		return false
+	}
+	if s.SessionNumber != other.SessionNumber {
+		return false
+	}
+	if s.CHAPInfo != other.CHAPInfo {
+		return false
+	}
+	if !collection.EqualValues(s.Devices, other.Devices) {
+		return false
+	}
+	if !collection.EqualValues(s.DevicePaths, other.DevicePaths) {
+		return false
+	}
+	return true
+}
+
+type SCSIDeviceInfoGetter func(ctx context.Context) (*ScsiDeviceInfo, error)
 
 // ScsiDeviceAddress is a data structure for representing a SCSI device address
 type ScsiDeviceAddress struct {
@@ -170,6 +238,10 @@ type ScsiDeviceAddress struct {
 	Channel string
 	Target  string
 	LUN     string
+}
+
+func (s ScsiDeviceAddress) String() string {
+	return fmt.Sprintf("%s:%s:%s:%s", s.Host, s.Channel, s.Target, s.LUN)
 }
 
 const (

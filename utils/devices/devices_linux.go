@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 // NOTE: This file should only contain functions for handling devices for linux flavor
 
@@ -7,6 +7,8 @@ package devices
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -20,6 +22,7 @@ import (
 	"github.com/netapp/trident/utils/errors"
 	execCmd "github.com/netapp/trident/utils/exec"
 	"github.com/netapp/trident/utils/filesystem"
+	"github.com/netapp/trident/utils/models"
 )
 
 const (
@@ -27,6 +30,8 @@ const (
 	luksCloseMaxWaitDuration             = 2 * time.Minute
 	luksCloseDeviceSafelyClosedExitCode  = 0
 	luksCloseDeviceAlreadyClosedExitCode = 4
+
+	scsiDeviceStateRunning = "running"
 )
 
 var (
@@ -83,6 +88,443 @@ func (c *DiskSizeGetter) GetDiskSize(ctx context.Context, devicePath string) (in
 	}
 
 	return size, nil
+}
+
+// deviceState gets the state of a SCSI device from the sysfs block SCSI device state file.
+// This will not work for non-SCSI devices.
+func (c *Client) deviceState(ctx context.Context, deviceName string) (string, error) {
+	fields := LogFields{"deviceName": deviceName}
+	Logc(ctx).WithFields(fields).Trace(">>>> devices_linux.deviceState")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< devices_linux.deviceState")
+
+	deviceName = strings.TrimPrefix(deviceName, DevPrefix)
+	if deviceName == "" {
+		return "", fmt.Errorf("device name is empty")
+	}
+
+	// Read in the device state from the sysfs block SCSI device state file.
+	// filePath = "/sys/block/<deviceName>/device/state"
+	const sysBlockDeviceStatePath = "/sys/block/%s/device/state"
+	filePath := filepath.Join(c.chrootPathPrefix, fmt.Sprintf(sysBlockDeviceStatePath, deviceName))
+	out, err := c.osFs.ReadFile(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read device state for %s: %w", deviceName, err)
+	}
+
+	return strings.TrimSpace(string(out)), nil
+}
+
+// deviceSize gets the size of a device by name from the Kernel's virtual block device interface.
+// It returns the size in bytes of a block device as seen by the kernel.
+func (c *Client) deviceSize(ctx context.Context, deviceName string) (int64, error) {
+	fields := LogFields{"deviceName": deviceName}
+	Logc(ctx).WithFields(fields).Trace(">>>> devices_linux.deviceSize")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< devices_linux.deviceSize")
+
+	// Callers may supply the full device path ("/dev/dm-#", "/dev/sdX", etc.) or the device name ("dm-#", "sdX", etc.).
+	deviceName = strings.TrimPrefix(deviceName, DevPrefix)
+	if deviceName == "" {
+		return 0, fmt.Errorf("device name is empty")
+	}
+
+	const (
+		// sysBlockSizePath is the path to the sysfs block size file.
+		// This file reports the number of 512-byte sectors on the device.
+		sysBlockSizePath = "/sys/block/%s/size"
+		// kernelSectorSize is the sector size used by the kernel to express the capacity of a device in /sys/block/<dev>/size.
+		// The kernel shouuld express this value in 512-byte units regardless of the device's physical or logical block size.
+		// This is a long-standing convention relied upon by userspace tools like lsblk, fdisk, and parted.
+		kernelSectorSize = int64(512)
+	)
+
+	// filePath = "/sys/block/<deviceName>/size"
+	filePath := filepath.Join(c.chrootPathPrefix, fmt.Sprintf(sysBlockSizePath, deviceName))
+	out, err := c.osFs.ReadFile(filePath)
+	if err != nil {
+		return 0, fmt.Errorf("failed to read device size for %s: %w", deviceName, err)
+	}
+
+	sectorCount, err := strconv.ParseInt(strings.TrimSpace(string(out)), 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse device size for %s: %w", deviceName, err)
+	}
+	if sectorCount <= 0 {
+		return 0, fmt.Errorf("unexpected sector count %d for %s", sectorCount, deviceName)
+	}
+
+	return sectorCount * kernelSectorSize, nil
+}
+
+// isRunning reads a SCSI device state from the sysfs block SCSI device state file and
+// returns whether the device is in a "running" state.
+func (c *Client) isRunning(ctx context.Context, device string) bool {
+	fields := LogFields{"device": device}
+	Logc(ctx).WithFields(fields).Trace(">>>> devices_linux.isRunning")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< devices_linux.isRunning")
+
+	deviceState, err := c.deviceState(ctx, device)
+	if err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Debug("Failed to get device state; treating device as unhealthy.")
+		return false
+	}
+	return deviceState == scsiDeviceStateRunning
+}
+
+func (c *Client) discoverUnhealthyDevices(ctx context.Context, devices []string) []string {
+	fields := LogFields{"devices": devices}
+	Logc(ctx).WithFields(fields).Trace(">>>> devices_linux.discoverUnhealthyDevices")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< devices_linux.discoverUnhealthyDevices")
+
+	unhealthyDevices := make([]string, 0)
+	for _, device := range devices {
+		// Any non-running state is considered unhealthy.
+		if !c.isRunning(ctx, device) {
+			unhealthyDevices = append(unhealthyDevices, device)
+		}
+	}
+
+	return unhealthyDevices
+}
+
+// rescanDevice tells the kernel to rescan a single SCSI disk/block device.
+// This tells the kernel to re-query the device size by issuing a SCSI 'READ CAPACITY' command.
+func (c *Client) rescanDevice(ctx context.Context, deviceName string) error {
+	fields := LogFields{"deviceName": deviceName}
+	Logc(ctx).WithFields(fields).Trace(">>>> devices_linux.rescanDevice")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< devices_linux.rescanDevice")
+
+	// Callers may supply the full device path or the device name.
+	deviceName = strings.TrimPrefix(deviceName, DevPrefix)
+	if deviceName == "" {
+		return fmt.Errorf("device name is empty")
+	}
+
+	const sysBlockDeviceRescanPath = "/sys/block/%s/device/rescan"
+	filePath := filepath.Join(c.chrootPathPrefix, fmt.Sprintf(sysBlockDeviceRescanPath, deviceName))
+	fields["filepath"] = filePath
+
+	file, err := c.osFs.OpenFile(filePath, os.O_WRONLY, 0)
+	if err != nil {
+		Logc(ctx).WithFields(fields).Warning("Could not open file for writing.")
+		return fmt.Errorf("failed to open file %s: %w", filePath, err)
+	}
+
+	defer func() {
+		_ = file.Close()
+	}()
+
+	written, err := file.WriteString("1")
+	if err != nil {
+		Logc(ctx).WithFields(fields).WithError(err).Warn("Could not write to file.")
+		return fmt.Errorf("failed to write to file %s: %w", filePath, err)
+	} else if written == 0 {
+		Logc(ctx).WithFields(fields).Warn("Zero bytes written to file.")
+		return fmt.Errorf("no data written to %s", filePath)
+	}
+
+	return nil
+}
+
+// rescanUndersizedDevices rescans any of the supplied devices that are smaller than supplied targetSizeBytes.
+// It returns nil if no rescans were needed or at least one succeeded and an error if all rescans failed.
+func (c *Client) rescanUndersizedDevices(ctx context.Context, devices []string, targetSizeBytes int64) error {
+	if len(devices) == 0 {
+		return errors.New("no devices provided to rescan")
+	}
+	if targetSizeBytes <= 0 {
+		return fmt.Errorf("invalid minimum size '%d': value must be greater than 0", targetSizeBytes)
+	}
+	fields := LogFields{
+		"devices":         devices,
+		"targetSizeBytes": targetSizeBytes,
+	}
+	Logc(ctx).WithFields(fields).Trace(">>>> devices_linux.rescanUndersizedDevices")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< devices_linux.rescanUndersizedDevices")
+
+	var rescanErrs error
+	devicesUndersize := make([]string, 0)
+	devicesRescanned := make([]string, 0)
+	for _, device := range devices {
+		sizeBytes, err := c.deviceSize(ctx, device)
+		if err == nil && sizeBytes >= targetSizeBytes {
+			continue // Already at target size.
+		}
+
+		// Read the SCSI device state for every undersized/unreadable device.
+		// This is cheap (one sysfs read) and provides immediate diagnostics:
+		devicesUndersize = append(devicesUndersize, device)
+
+		// Rescan the device. Track failures separately from size-read errors.
+		if scanErr := c.rescanDevice(ctx, device); scanErr != nil {
+			rescanErrs = errors.Join(rescanErrs, fmt.Errorf("failed to rescan %s: %w", device, scanErr))
+			continue
+		}
+
+		devicesRescanned = append(devicesRescanned, device)
+	}
+
+	// If no devices are undersized, return early.
+	if len(devicesUndersize) == 0 {
+		Logc(ctx).WithFields(fields).Debug("All devices at target size; no rescans needed.")
+		return nil
+	}
+
+	// If some devices were undersized, but none were rescanned, return an error.
+	if len(devicesRescanned) == 0 {
+		Logc(ctx).WithFields(fields).WithFields(LogFields{
+			"undersizedDevices": devicesUndersize,
+		}).WithError(rescanErrs).Warn("All device rescans failed; connection to storage may be unstable.")
+		return fmt.Errorf("no devices could be rescanned: %w", rescanErrs)
+	}
+
+	// Log partial failures so operators can see which devices stayed down,
+	// even though at least one rescan succeeded and we're returning nil.
+	if rescanErrs != nil {
+		Logc(ctx).WithFields(fields).WithFields(LogFields{
+			"undersizedDevices": devicesUndersize,
+			"devicesRescanned":  devicesRescanned,
+		}).WithError(rescanErrs).Warn("Some device rescans failed; connection to storage may be unstable.")
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"undersizedDevices": devicesUndersize,
+		"devicesRescanned":  devicesRescanned,
+	}).Debug("Devices rescanned.")
+	return nil
+}
+
+// resizeMultipathMap issues a multipathd resize map command to the host.
+// It sends "resize map <device mapper name>" to the multipathd daemon which triggers resize_map(device)
+// inside the multipathd daemon.
+// If any paths are unhealthy, this command will fail with exit status 1.
+func (c *Client) resizeMultipathMap(ctx context.Context, mapperName string) error {
+	fields := LogFields{"mapperName": mapperName}
+	Logc(ctx).WithFields(fields).Trace(">>>> devices_linux.resizeMultipathMap")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< devices_linux.resizeMultipathMap")
+
+	// Use the single-command form of the multipathd CLI: -k<command>.
+	// This must be a single argv entry so the shell doesn't split it into separate arguments.
+	// "resize map <device>" → resize_map(device)
+	const resizeCmd = "-kresize map %s"
+	resizeDeviceCmd := fmt.Sprintf(resizeCmd, mapperName)
+	out, err := c.command.ExecuteWithTimeout(ctx, "multipathd", 10*time.Second, true, resizeDeviceCmd)
+	if err != nil {
+		Logc(ctx).WithFields(LogFields{
+			"output": string(out),
+		}).WithError(err).Error("Failed to resize multipath map.")
+		return fmt.Errorf("failed to resize multipath map %s: %w", mapperName, err)
+	}
+
+	return nil
+}
+
+// getDeviceMapperName reads the name of a device mapper from the sysfs block dm-# device name file.
+// Linux utils like multipath-tools and cryptsetup use the device mapper name to identify the device mapper.
+func (c *Client) getDeviceMapperName(ctx context.Context, device string) (string, error) {
+	fields := LogFields{"device": device}
+	Logc(ctx).WithFields(fields).Trace(">>>> devices_linux.getDeviceMapperName")
+	defer Logc(ctx).WithFields(fields).Trace("<<<< devices_linux.getDeviceMapperName")
+
+	const sysBlockDMDeviceNamePath = "/sys/block/%s/dm/name"
+	dmNamePath := filepath.Join(c.chrootPathPrefix, fmt.Sprintf(sysBlockDMDeviceNamePath, device))
+	exists, err := PathExists(c.osFs, dmNamePath)
+	if !exists || err != nil {
+		return "", errors.NotFoundError("multipath device '%s' name not found", device)
+	}
+
+	dmNameRaw, err := c.osFs.ReadFile(dmNamePath)
+	if err != nil {
+		return "", err
+	}
+
+	return strings.TrimSpace(string(dmNameRaw)), nil
+}
+
+// ExpandMultipathDevice polls the multipath device for the specified LUN until it reports a size >= targetSizeBytes.
+// On each iteration it rescans any undersized SCSI paths and reloads the multipath device map,
+// then confirms convergence by requiring consecutive stable size reads on the multipath device.
+// It returns nil once convergence is confirmed, or an error if the context deadline is reached first.
+// If the context has no deadline, a default timeout is applied to guarantee bounded execution.
+func (c *Client) ExpandMultipathDevice(
+	ctx context.Context, getter models.SCSIDeviceInfoGetter, targetSizeBytes int64,
+) error {
+	if getter == nil {
+		return errors.New("device info getter is nil")
+	}
+
+	const (
+		requiredStableReads  = 3
+		stableReadInterval   = 3 * time.Second
+		defaultResizeTimeout = 60 * time.Second
+	)
+
+	// Validate the specified minimum size.
+	if targetSizeBytes <= 0 {
+		return errors.New("minimum size must be greater than 0")
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"targetSizeBytes": targetSizeBytes,
+	}).Debug(">>>> devices_linux.ExpandMultipathDevice")
+	defer Logc(ctx).Debug("<<<< devices_linux.ExpandMultipathDevice")
+
+	// If the context doesn't have a timeout, add one.
+	if _, ok := ctx.Deadline(); !ok {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, defaultResizeTimeout)
+		defer cancel()
+	}
+
+	var stableReads int
+	var lastKnownSizeBytes int64
+	var lastKnownMpathName string
+	var lastKnownDeviceInfo *models.ScsiDeviceInfo
+	timer := time.NewTimer(0) // First attempt fires immediately.
+	defer timer.Stop()
+
+	// This loop will continue until the context is done or the volume size has converged.
+	// The size converges when the multipath device size is at or above the target size for a few consecutive reads.
+	// If the context is done or the volume size has not converged after the default timeout, an error is returned.
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf(
+				"multipath device '%s' size '%d' did not reach target size '%d' bytes: %w",
+				lastKnownMpathName, lastKnownSizeBytes, targetSizeBytes, ctx.Err(),
+			)
+
+		case <-timer.C:
+			// Schedule the next retry; the select will block until it fires or the context is done.
+			timer.Reset(stableReadInterval)
+
+			// Discover SCSI devices and multipath device for this LUN.
+			// This must always happen to mitigate race conditions with freshly appearing paths and devices.
+			deviceInfo, err := getter(ctx)
+			if err != nil {
+				Logc(ctx).WithError(err).Warn("Failed to get device information; retrying.")
+				stableReads = 0
+				continue
+			} else if deviceInfo == nil {
+				Logc(ctx).Warn("No device information found; retrying.")
+				stableReads = 0
+				continue
+			}
+
+			// If no multipath device is found, reset the stable read counter and try again.
+			if deviceInfo.MultipathDevice == "" {
+				Logc(ctx).Warn("No multipath device found for LUN; retrying.")
+				stableReads = 0
+				continue
+			} else if len(deviceInfo.Devices) == 0 {
+				Logc(ctx).Warn("No underlying SCSI devices found for LUN; retrying.")
+				stableReads = 0
+				continue
+			}
+
+			// Underlying paths and dm-slaves could change between convergence loop iterations due to
+			// concurrently or late arriving iSCSI sessions, loss of an iSCSI session entirely, etc.
+			// Track the last known device info so we're always working with the latest.
+			if lastKnownDeviceInfo == nil {
+				Logc(ctx).WithField(
+					"deviceInfo", deviceInfo,
+				).Debug("Discovered device info during multipath device expansion.")
+				lastKnownDeviceInfo = deviceInfo.Copy()
+			}
+
+			// If any device info has changed reset the stable read counter and try again.
+			// This can happen due to a multipath dm-# device, new device paths due to
+			// sessions and paths being added or removed on the host in parallel.
+			if !lastKnownDeviceInfo.Equal(deviceInfo) {
+				Logc(ctx).WithFields(LogFields{
+					"newDeviceInfo": deviceInfo,
+					"oldDeviceInfo": lastKnownDeviceInfo,
+				}).Info("Device info changed during multipath device expansion.")
+
+				stableReads = 0
+				lastKnownDeviceInfo = deviceInfo.Copy()
+			}
+			// Track this separately for observability.
+			lastKnownMpathName = deviceInfo.MultipathDevice
+
+			// Discover if there are any unhealthy devices.
+			// If a single device is unhealthy, do not initiate rescans or resize the multipath map.
+			unhealthyDevices := c.discoverUnhealthyDevices(ctx, deviceInfo.Devices)
+			if len(unhealthyDevices) != 0 {
+				Logc(ctx).WithFields(LogFields{
+					"lunID":            deviceInfo.LUN,
+					"multipathDevice":  deviceInfo.MultipathDevice,
+					"allDevices":       deviceInfo.Devices,
+					"unhealthyDevices": unhealthyDevices,
+				}).Warn("Volume expansion cannot proceed while some devices are unhealthy; connection to storage may be unstable.")
+				return fmt.Errorf("volume expansion cannot proceed; some devices %v are unhealthy", unhealthyDevices)
+			}
+
+			// Always rescan undersized dm-slaves.
+			// This call is idempotent and will only rescan devices that are undersized.
+			if err := c.rescanUndersizedDevices(ctx, deviceInfo.Devices, targetSizeBytes); err != nil {
+				Logc(ctx).WithError(err).Warn("Failed to read or rescan devices; retrying.")
+				stableReads = 0
+				continue
+			}
+
+			// Read the size of the multipath device.
+			mpathSizeBytes, err := c.deviceSize(ctx, deviceInfo.MultipathDevice)
+			if err != nil {
+				Logc(ctx).WithError(err).Warn("Failed to read multipath device size; retrying.")
+				stableReads = 0
+				continue
+			}
+			// Track this separately for observability.
+			lastKnownSizeBytes = mpathSizeBytes
+
+			// Multipath device is undersized — reconfigure the multipath device map.
+			if mpathSizeBytes < targetSizeBytes {
+				fields := LogFields{
+					"lunID":           deviceInfo.LUN,
+					"multipathDevice": deviceInfo.MultipathDevice,
+					"deviceSizeBytes": mpathSizeBytes,
+					"targetSizeBytes": targetSizeBytes,
+				}
+				Logc(ctx).WithFields(fields).Debug("Multipath device requires expansion.")
+
+				// Get the device mapper name from the multipath device path.
+				// "/dev/dm-#" -> "3600a098038314865515d4c5a70644636"
+				mapperName, err := c.getDeviceMapperName(ctx, deviceInfo.MultipathDevice)
+				if err != nil {
+					Logc(ctx).WithFields(fields).WithError(err).Warn("Failed to get device mapper name; retrying.")
+					stableReads = 0
+					continue
+				}
+
+				// Resize the multipath device map.
+				if err = c.resizeMultipathMap(ctx, mapperName); err != nil {
+					Logc(ctx).WithFields(fields).WithError(err).Warn("Failed to resize multipath map; retrying.")
+				}
+
+				stableReads = 0
+				continue
+			}
+
+			// Multipath device is at or above target size — count a stable read.
+			stableReads++
+			fields := LogFields{
+				"stableReads":     stableReads,
+				"lunID":           deviceInfo.LUN,
+				"multipathDevice": deviceInfo.MultipathDevice,
+				"deviceSizeBytes": mpathSizeBytes,
+				"targetSizeBytes": targetSizeBytes,
+			}
+
+			// If stable reads are less than required, continue to the next iteration. Otherwise return success.
+			if stableReads < requiredStableReads {
+				Logc(ctx).WithFields(fields).Debug("Multipath device now at target size; re-reading size to confirm size convergence.")
+				continue
+			}
+
+			Logc(ctx).WithFields(fields).Info("Multipath device expanded.")
+			return nil
+		}
+	}
 }
 
 // VerifyMultipathDeviceSize compares the size of the DM device with the size

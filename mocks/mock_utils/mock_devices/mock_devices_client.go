@@ -112,6 +112,20 @@ func (mr *MockDevicesMockRecorder) EnsureLUKSDeviceClosedWithMaxWaitLimit(ctx, l
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureLUKSDeviceClosedWithMaxWaitLimit", reflect.TypeOf((*MockDevices)(nil).EnsureLUKSDeviceClosedWithMaxWaitLimit), ctx, luksDevicePath)
 }
 
+// ExpandMultipathDevice mocks base method.
+func (m *MockDevices) ExpandMultipathDevice(ctx context.Context, getter models.SCSIDeviceInfoGetter, targetSizeBytes int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExpandMultipathDevice", ctx, getter, targetSizeBytes)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExpandMultipathDevice indicates an expected call of ExpandMultipathDevice.
+func (mr *MockDevicesMockRecorder) ExpandMultipathDevice(ctx, getter, targetSizeBytes any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExpandMultipathDevice", reflect.TypeOf((*MockDevices)(nil).ExpandMultipathDevice), ctx, getter, targetSizeBytes)
+}
+
 // FindDevicesForMultipathDevice mocks base method.
 func (m *MockDevices) FindDevicesForMultipathDevice(ctx context.Context, device string) []string {
 	m.ctrl.T.Helper()
