@@ -129,6 +129,7 @@ type OntapStorageDriverConfig struct {
 	CloneSplitDelay                  string     `json:"cloneSplitDelay,omitempty"`        // in seconds, default to 86400
 	NfsMountOptions                  string     `json:"nfsMountOptions"`
 	LimitAggregateUsage              string     `json:"limitAggregateUsage"`
+	LimitAggregateUsageOnResize      string     `json:"limitAggregateUsageOnResize"`
 	LimitVolumePoolSize              string     `json:"limitVolumePoolSize"`
 	DenyNewVolumePools               string     `json:"denyNewVolumePools"`
 	AutoExportPolicy                 bool       `json:"autoExportPolicy"`
