@@ -392,6 +392,102 @@ func TestReplaceAtIndex(t *testing.T) {
 	assert.Equal(t, "boo", actual)
 }
 
+func TestEqualValues(t *testing.T) {
+	tests := map[string]struct {
+		s1    []string
+		s2    []string
+		equal bool
+	}{
+		"identical slices": {
+			s1:    []string{"a", "b", "c"},
+			s2:    []string{"a", "b", "c"},
+			equal: true,
+		},
+		"same elements different order": {
+			s1:    []string{"c", "a", "b"},
+			s2:    []string{"a", "b", "c"},
+			equal: true,
+		},
+		"both nil": {
+			s1:    nil,
+			s2:    nil,
+			equal: true,
+		},
+		"both empty": {
+			s1:    []string{},
+			s2:    []string{},
+			equal: true,
+		},
+		"nil and empty are equal": {
+			s1:    nil,
+			s2:    []string{},
+			equal: true,
+		},
+		"empty and nil are equal": {
+			s1:    []string{},
+			s2:    nil,
+			equal: true,
+		},
+		"different lengths": {
+			s1:    []string{"a", "b"},
+			s2:    []string{"a", "b", "c"},
+			equal: false,
+		},
+		"same length different values": {
+			s1:    []string{"a", "b", "c"},
+			s2:    []string{"a", "b", "d"},
+			equal: false,
+		},
+		"one nil one populated": {
+			s1:    nil,
+			s2:    []string{"a"},
+			equal: false,
+		},
+		"one empty one populated": {
+			s1:    []string{},
+			s2:    []string{"a"},
+			equal: false,
+		},
+		"duplicate elements equal cardinality": {
+			s1:    []string{"a", "a", "b"},
+			s2:    []string{"a", "b", "a"},
+			equal: true,
+		},
+		"duplicate elements unequal cardinality": {
+			s1:    []string{"a", "a", "b"},
+			s2:    []string{"a", "b", "b"},
+			equal: false,
+		},
+		"single element equal": {
+			s1:    []string{"x"},
+			s2:    []string{"x"},
+			equal: true,
+		},
+		"single element not equal": {
+			s1:    []string{"x"},
+			s2:    []string{"y"},
+			equal: false,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, tc.equal, EqualValues(tc.s1, tc.s2))
+		})
+	}
+
+	// Also test with int type to verify generics work.
+	t.Run("int slices same elements different order", func(t *testing.T) {
+		assert.True(t, EqualValues([]int{3, 1, 2}, []int{1, 2, 3}))
+	})
+	t.Run("int slices different values", func(t *testing.T) {
+		assert.False(t, EqualValues([]int{1, 2, 3}, []int{1, 2, 4}))
+	})
+	t.Run("int nil and empty are equal", func(t *testing.T) {
+		assert.True(t, EqualValues[int](nil, []int{}))
+	})
+}
+
 func TestAppendToStringList(t *testing.T) {
 	tests := []struct {
 		stringList    string

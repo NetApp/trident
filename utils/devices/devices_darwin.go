@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 // NOTE: This file should only contain functions for handling devices for Darwin flavor
 
@@ -9,6 +9,7 @@ import (
 
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/models"
 )
 
 // flushOneDevice unused stub function
@@ -67,4 +68,12 @@ func (c *Client) CloseLUKSDevice(ctx context.Context, devicePath string) error {
 	Logc(ctx).Debug(">>>> devices_darwin.CloseLUKSDevice")
 	defer Logc(ctx).Debug("<<<< devices_darwin.CloseLUKSDevice")
 	return errors.UnsupportedError("CloseLUKSDevice is not supported for darwin")
+}
+
+func (c *Client) ExpandMultipathDevice(
+	ctx context.Context, _ models.SCSIDeviceInfoGetter, _ int64,
+) error {
+	Logc(ctx).Debug(">>>> devices_darwin.ExpandMultipathDevice")
+	defer Logc(ctx).Debug("<<<< devices_darwin.ExpandMultipathDevice")
+	return errors.UnsupportedError("ExpandMultipathDevice is not supported for darwin")
 }

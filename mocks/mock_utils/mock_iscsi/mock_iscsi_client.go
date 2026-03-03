@@ -97,6 +97,34 @@ func (mr *MockISCSIMockRecorder) EnsureSessionsWithPortalDiscovery(ctx, hostData
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureSessionsWithPortalDiscovery", reflect.TypeOf((*MockISCSI)(nil).EnsureSessionsWithPortalDiscovery), ctx, hostDataIPs)
 }
 
+// EnsureVolumeFormattedAndMounted mocks base method.
+func (m *MockISCSI) EnsureVolumeFormattedAndMounted(ctx context.Context, name, mountPoint string, publishInfo *models.VolumePublishInfo, luksFormatted bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureVolumeFormattedAndMounted", ctx, name, mountPoint, publishInfo, luksFormatted)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnsureVolumeFormattedAndMounted indicates an expected call of EnsureVolumeFormattedAndMounted.
+func (mr *MockISCSIMockRecorder) EnsureVolumeFormattedAndMounted(ctx, name, mountPoint, publishInfo, luksFormatted any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureVolumeFormattedAndMounted", reflect.TypeOf((*MockISCSI)(nil).EnsureVolumeFormattedAndMounted), ctx, name, mountPoint, publishInfo, luksFormatted)
+}
+
+// ExpandVolume mocks base method.
+func (m *MockISCSI) ExpandVolume(ctx context.Context, publishInfo *models.VolumePublishInfo, targetSizeBytes int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExpandVolume", ctx, publishInfo, targetSizeBytes)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExpandVolume indicates an expected call of ExpandVolume.
+func (mr *MockISCSIMockRecorder) ExpandVolume(ctx, publishInfo, targetSizeBytes any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExpandVolume", reflect.TypeOf((*MockISCSI)(nil).ExpandVolume), ctx, publishInfo, targetSizeBytes)
+}
+
 // GetDeviceInfoForLUN mocks base method.
 func (m *MockISCSI) GetDeviceInfoForLUN(ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string, needFSType bool) (*models.ScsiDeviceInfo, error) {
 	m.ctrl.T.Helper()
@@ -279,20 +307,6 @@ func (m *MockISCSI) RemovePortalsFromSession(ctx context.Context, publishInfo *m
 func (mr *MockISCSIMockRecorder) RemovePortalsFromSession(ctx, publishInfo, sessions any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemovePortalsFromSession", reflect.TypeOf((*MockISCSI)(nil).RemovePortalsFromSession), ctx, publishInfo, sessions)
-}
-
-// RescanDevices mocks base method.
-func (m *MockISCSI) RescanDevices(ctx context.Context, targetIQN string, lunID int32, minSize int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RescanDevices", ctx, targetIQN, lunID, minSize)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RescanDevices indicates an expected call of RescanDevices.
-func (mr *MockISCSIMockRecorder) RescanDevices(ctx, targetIQN, lunID, minSize any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RescanDevices", reflect.TypeOf((*MockISCSI)(nil).RescanDevices), ctx, targetIQN, lunID, minSize)
 }
 
 // SafeToLogOut mocks base method.
