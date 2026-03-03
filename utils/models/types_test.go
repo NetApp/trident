@@ -109,6 +109,349 @@ func TestNodeConstructExternal(t *testing.T) {
 	assert.True(t, reflect.DeepEqual(expectedNode, result), "External node does not match.")
 }
 
+func TestScsiDeviceAddress_String(t *testing.T) {
+	tests := map[string]struct {
+		address  ScsiDeviceAddress
+		expected string
+	}{
+		"fully populated": {
+			address: ScsiDeviceAddress{
+				Host:    "1",
+				Channel: "0",
+				Target:  "0",
+				LUN:     "0",
+			},
+			expected: "1:0:0:0",
+		},
+		"zero value": {
+			address:  ScsiDeviceAddress{},
+			expected: ":::",
+		},
+		"multi-digit values": {
+			address: ScsiDeviceAddress{
+				Host:    "12",
+				Channel: "0",
+				Target:  "3",
+				LUN:     "42",
+			},
+			expected: "12:0:3:42",
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, tc.address.String())
+		})
+	}
+}
+
+func TestScsiDeviceInfo_String(t *testing.T) {
+	t.Run("fully populated struct returns non-empty string", func(t *testing.T) {
+		info := &ScsiDeviceInfo{
+			ScsiDeviceAddress: ScsiDeviceAddress{
+				Host:    "1",
+				Channel: "0",
+				Target:  "0",
+				LUN:     "0",
+			},
+			Devices:         []string{"sda", "sdb"},
+			DevicePaths:     []string{"/dev/sda", "/dev/sdb"},
+			MultipathDevice: "dm-0",
+			Filesystem:      "ext4",
+			IQN:             "iqn.2010-01.com.netapp:target",
+			WWNN:            "0x5000cca",
+			SessionNumber:   3,
+		}
+		result := info.String()
+		assert.NotEmpty(t, result)
+	})
+
+	t.Run("zero value struct returns non-empty string", func(t *testing.T) {
+		info := &ScsiDeviceInfo{}
+		result := info.String()
+		assert.NotEmpty(t, result)
+	})
+}
+
+func TestScsiDeviceInfo_Copy(t *testing.T) {
+	t.Run("all fields are copied", func(t *testing.T) {
+		original := &ScsiDeviceInfo{
+			ScsiDeviceAddress: ScsiDeviceAddress{
+				Host:    "1",
+				Channel: "0",
+				Target:  "0",
+				LUN:     "0",
+			},
+			Devices:         []string{"sda", "sdb"},
+			DevicePaths:     []string{"/dev/sda", "/dev/sdb"},
+			MultipathDevice: "dm-0",
+			Filesystem:      "ext4",
+			IQN:             "iqn.2010-01.com.netapp:target",
+			WWNN:            "0x5000cca",
+			SessionNumber:   3,
+			CHAPInfo: IscsiChapInfo{
+				UseCHAP:              true,
+				IscsiUsername:        "user",
+				IscsiInitiatorSecret: "secret",
+				IscsiTargetUsername:  "tuser",
+				IscsiTargetSecret:    "tsecret",
+			},
+		}
+
+		copied := original.Copy()
+
+		assert.NotNil(t, copied)
+		assert.True(t, original.Equal(copied))
+		assert.Equal(t, original.ScsiDeviceAddress, copied.ScsiDeviceAddress)
+		assert.Equal(t, original.MultipathDevice, copied.MultipathDevice)
+		assert.Equal(t, original.Filesystem, copied.Filesystem)
+		assert.Equal(t, original.IQN, copied.IQN)
+		assert.Equal(t, original.WWNN, copied.WWNN)
+		assert.Equal(t, original.SessionNumber, copied.SessionNumber)
+		assert.Equal(t, original.CHAPInfo, copied.CHAPInfo)
+		assert.Equal(t, original.Devices, copied.Devices)
+		assert.Equal(t, original.DevicePaths, copied.DevicePaths)
+	})
+
+	t.Run("copy is not the same pointer", func(t *testing.T) {
+		original := &ScsiDeviceInfo{
+			Devices:     []string{"sda"},
+			DevicePaths: []string{"/dev/sda"},
+		}
+
+		copied := original.Copy()
+		assert.False(t, original == copied)
+	})
+
+	t.Run("modifying copy slices does not affect original", func(t *testing.T) {
+		original := &ScsiDeviceInfo{
+			ScsiDeviceAddress: ScsiDeviceAddress{Host: "1", Channel: "0", Target: "0", LUN: "0"},
+			Devices:           []string{"sda", "sdb"},
+			DevicePaths:       []string{"/dev/sda", "/dev/sdb"},
+			MultipathDevice:   "dm-0",
+		}
+
+		copied := original.Copy()
+
+		// Mutate the copy's slices.
+		copied.Devices[0] = "sdc"
+		copied.DevicePaths[0] = "/dev/sdc"
+		copied.MultipathDevice = "dm-1"
+
+		// Original should be unaffected.
+		assert.Equal(t, "sda", original.Devices[0])
+		assert.Equal(t, "/dev/sda", original.DevicePaths[0])
+		assert.Equal(t, "dm-0", original.MultipathDevice)
+	})
+
+	t.Run("copy with empty slices", func(t *testing.T) {
+		original := &ScsiDeviceInfo{
+			Devices:     []string{},
+			DevicePaths: []string{},
+		}
+
+		copied := original.Copy()
+		assert.NotNil(t, copied)
+		assert.Empty(t, copied.Devices)
+		assert.Empty(t, copied.DevicePaths)
+	})
+
+	t.Run("copy with nil slices", func(t *testing.T) {
+		original := &ScsiDeviceInfo{}
+		copied := original.Copy()
+		assert.NotNil(t, copied)
+		assert.Empty(t, copied.Devices)
+		assert.Empty(t, copied.DevicePaths)
+	})
+}
+
+func TestScsiDeviceInfo_Equal(t *testing.T) {
+	base := func() *ScsiDeviceInfo {
+		return &ScsiDeviceInfo{
+			ScsiDeviceAddress: ScsiDeviceAddress{Host: "1", Channel: "0", Target: "0", LUN: "0"},
+			Devices:           []string{"sda", "sdb"},
+			DevicePaths:       []string{"/dev/sda", "/dev/sdb"},
+			MultipathDevice:   "dm-0",
+			Filesystem:        "ext4",
+			IQN:               "iqn.test",
+			WWNN:              "0x5000",
+			SessionNumber:     1,
+			CHAPInfo:          IscsiChapInfo{UseCHAP: true, IscsiUsername: "user"},
+		}
+	}
+
+	tests := map[string]struct {
+		a     *ScsiDeviceInfo
+		b     *ScsiDeviceInfo
+		equal bool
+	}{
+		"identical structs": {
+			a:     base(),
+			b:     base(),
+			equal: true,
+		},
+		"devices in different order": {
+			a: base(),
+			b: func() *ScsiDeviceInfo {
+				s := base()
+				s.Devices = []string{"sdb", "sda"}
+				return s
+			}(),
+			equal: true,
+		},
+		"device paths in different order": {
+			a: base(),
+			b: func() *ScsiDeviceInfo {
+				s := base()
+				s.DevicePaths = []string{"/dev/sdb", "/dev/sda"}
+				return s
+			}(),
+			equal: true,
+		},
+		"different address": {
+			a: base(),
+			b: func() *ScsiDeviceInfo {
+				s := base()
+				s.ScsiDeviceAddress.Host = "2"
+				return s
+			}(),
+			equal: false,
+		},
+		"different multipath device": {
+			a: base(),
+			b: func() *ScsiDeviceInfo {
+				s := base()
+				s.MultipathDevice = "dm-1"
+				return s
+			}(),
+			equal: false,
+		},
+		"different filesystem": {
+			a: base(),
+			b: func() *ScsiDeviceInfo {
+				s := base()
+				s.Filesystem = "xfs"
+				return s
+			}(),
+			equal: false,
+		},
+		"different IQN": {
+			a: base(),
+			b: func() *ScsiDeviceInfo {
+				s := base()
+				s.IQN = "iqn.other"
+				return s
+			}(),
+			equal: false,
+		},
+		"different WWNN": {
+			a: base(),
+			b: func() *ScsiDeviceInfo {
+				s := base()
+				s.WWNN = "0x6000"
+				return s
+			}(),
+			equal: false,
+		},
+		"different session number": {
+			a: base(),
+			b: func() *ScsiDeviceInfo {
+				s := base()
+				s.SessionNumber = 99
+				return s
+			}(),
+			equal: false,
+		},
+		"different CHAP info": {
+			a: base(),
+			b: func() *ScsiDeviceInfo {
+				s := base()
+				s.CHAPInfo = IscsiChapInfo{UseCHAP: false}
+				return s
+			}(),
+			equal: false,
+		},
+		"extra device in one": {
+			a: base(),
+			b: func() *ScsiDeviceInfo {
+				s := base()
+				s.Devices = append(s.Devices, "sdc")
+				return s
+			}(),
+			equal: false,
+		},
+		"extra device path in one": {
+			a: base(),
+			b: func() *ScsiDeviceInfo {
+				s := base()
+				s.DevicePaths = append(s.DevicePaths, "/dev/sdc")
+				return s
+			}(),
+			equal: false,
+		},
+		"one has empty devices other has populated": {
+			a: base(),
+			b: func() *ScsiDeviceInfo {
+				s := base()
+				s.Devices = []string{}
+				return s
+			}(),
+			equal: false,
+		},
+		"both have empty slices": {
+			a: &ScsiDeviceInfo{
+				Devices:     []string{},
+				DevicePaths: []string{},
+			},
+			b: &ScsiDeviceInfo{
+				Devices:     []string{},
+				DevicePaths: []string{},
+			},
+			equal: true,
+		},
+		"nil slices equal empty slices": {
+			a: &ScsiDeviceInfo{
+				Devices:     nil,
+				DevicePaths: nil,
+			},
+			b: &ScsiDeviceInfo{
+				Devices:     []string{},
+				DevicePaths: []string{},
+			},
+			equal: true,
+		},
+		"both have nil slices": {
+			a:     &ScsiDeviceInfo{},
+			b:     &ScsiDeviceInfo{},
+			equal: true,
+		},
+		"copy equals original": {
+			a: func() *ScsiDeviceInfo {
+				return &ScsiDeviceInfo{
+					ScsiDeviceAddress: ScsiDeviceAddress{Host: "1", Channel: "0", Target: "0", LUN: "0"},
+					Devices:           []string{"sda"},
+					MultipathDevice:   "dm-0",
+				}
+			}(),
+			b: func() *ScsiDeviceInfo {
+				s := &ScsiDeviceInfo{
+					ScsiDeviceAddress: ScsiDeviceAddress{Host: "1", Channel: "0", Target: "0", LUN: "0"},
+					Devices:           []string{"sda"},
+					MultipathDevice:   "dm-0",
+				}
+				return s.Copy()
+			}(),
+			equal: true,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, tc.equal, tc.a.Equal(tc.b))
+		})
+	}
+}
+
 func TestISCSIAction(t *testing.T) {
 	assert.Equal(t, NoAction.String(), "no action", "String output mismatch")
 	assert.Equal(t, Scan.String(), "LUN scanning", "String output mismatch")

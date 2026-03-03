@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 //go:generate mockgen -destination=../../mocks/mock_utils/mock_devices/mock_devices_client.go github.com/netapp/trident/utils/devices Devices
 //go:generate mockgen -destination=../../mocks/mock_utils/mock_devices/mock_size_getter_client.go github.com/netapp/trident/utils/devices SizeGetter
@@ -80,6 +80,9 @@ type Devices interface {
 		sleep time.Duration) error
 	ClearFormatting(ctx context.Context, devicePath string) error
 	GetMultipathDeviceBySerial(ctx context.Context, hexSerial string) (string, error)
+	// ExpandMultipathDevice expands a multipath device by resizing all dm-slaves then
+	// resizing the multipath device-mapper and waiting for all devices sizes to converge.
+	ExpandMultipathDevice(ctx context.Context, getter models.SCSIDeviceInfoGetter, targetSizeBytes int64) error
 }
 
 type SizeGetter interface {

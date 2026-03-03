@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package collection
 
@@ -141,4 +141,25 @@ func StringInSlice(s string, list []string) bool {
 		}
 	}
 	return false
+}
+
+// EqualValues accepts 2 slices of any standard comparable type and returns whether their values are equivalent.
+func EqualValues[C comparable](s1 []C, s2 []C) bool {
+	if len(s1) != len(s2) {
+		return false
+	}
+
+	elemOccurrences := make(map[any]int, len(s1))
+	for _, elem := range s1 {
+		elemOccurrences[elem] += 1
+	}
+
+	for _, v := range s2 {
+		elemOccurrences[v]--
+		if elemOccurrences[v] < 0 {
+			return false
+		}
+	}
+
+	return true
 }
