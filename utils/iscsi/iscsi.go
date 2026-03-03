@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package iscsi
 
@@ -95,7 +95,7 @@ type ISCSI interface {
 		volID, sessionNumber string, reasonInvalid models.PortalInvalid,
 	)
 	PreChecks(ctx context.Context) error
-	RescanDevices(ctx context.Context, targetIQN string, lunID int32, minSize int64) error
+	ExpandVolume(ctx context.Context, publishInfo *models.VolumePublishInfo, targetSizeBytes int64) error
 	IsAlreadyAttached(ctx context.Context, lunID int, targetIqn string) bool
 	RemoveLUNFromSessions(ctx context.Context, publishInfo *models.VolumePublishInfo, sessions *models.ISCSISessions)
 	RemovePortalsFromSession(ctx context.Context, publishInfo *models.VolumePublishInfo, sessions *models.ISCSISessions)
@@ -597,193 +597,6 @@ func (client *Client) AddSession(
 	}
 }
 
-// filterDevicesBySize builds a map of disk devices to their size, filtered by a minimum size requirement.
-// If any errors occur when checking the size of a device, it captures the error and moves onto the next device.
-func (client *Client) filterDevicesBySize(
-	ctx context.Context, deviceInfo *models.ScsiDeviceInfo, minSize int64,
-) (map[string]int64, error) {
-	var errs error
-	deviceSizeMap := make(map[string]int64, 0)
-	for _, diskDevice := range deviceInfo.Devices {
-		size, err := client.devices.GetDiskSize(ctx, devices.DevPrefix+diskDevice)
-		if err != nil {
-			errs = errors.Join(errs, err)
-			// Only consider devices whose size can be gathered.
-			continue
-		}
-
-		if size < minSize {
-			// Only consider devices that are undersized.
-			deviceSizeMap[diskDevice] = size
-		}
-	}
-
-	if errs != nil {
-		return nil, errs
-	}
-	return deviceSizeMap, nil
-}
-
-// rescanDevices accepts a map of disk devices to sizes and initiates a rescan for each device.
-// If any rescan fails it captures the error and moves onto the next rescanning the next device.
-func (client *Client) rescanDevices(ctx context.Context, deviceSizeMap map[string]int64) error {
-	var errs error
-	for diskDevice := range deviceSizeMap {
-		if err := client.rescanDisk(ctx, diskDevice); err != nil {
-			errs = errors.Join(errs, fmt.Errorf("failed to rescan disk %s: %s", diskDevice, err))
-		}
-	}
-
-	if errs != nil {
-		return errs
-	}
-	return nil
-}
-
-func (client *Client) RescanDevices(ctx context.Context, targetIQN string, lunID int32, minSize int64) error {
-	GenerateRequestContextForLayer(ctx, LogLayerUtils)
-
-	fields := LogFields{"targetIQN": targetIQN, "lunID": lunID}
-	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.RescanDevices")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.RescanDevices")
-
-	hostSessionMap := client.iscsiUtils.GetISCSIHostSessionMapForTarget(ctx, targetIQN)
-	if len(hostSessionMap) == 0 {
-		return fmt.Errorf("error getting iSCSI device information: no host session found")
-	}
-	deviceInfo, err := client.GetDeviceInfoForLUN(ctx, hostSessionMap, int(lunID), targetIQN, false)
-	if err != nil {
-		return fmt.Errorf("error getting iSCSI device information: %s", err)
-	}
-
-	// Get all disk devices that require a rescan.
-	devicesBySize, err := client.filterDevicesBySize(ctx, deviceInfo, minSize)
-	if err != nil {
-		Logc(ctx).WithError(err).Error("Failed to read disk size for devices.")
-		return err
-	}
-
-	if len(devicesBySize) != 0 {
-		fields = LogFields{
-			"lunID":   lunID,
-			"devices": devicesBySize,
-			"minSize": minSize,
-		}
-
-		Logc(ctx).WithFields(fields).Debug("Found devices that require a rescan.")
-		if err := client.rescanDevices(ctx, devicesBySize); err != nil {
-			Logc(ctx).WithError(err).Error("Failed to initiate rescanning for devices.")
-			return err
-		}
-
-		// Sleep for a second to give the SCSI subsystem time to rescan the devices.
-		time.Sleep(time.Second)
-
-		// Reread the devices to check if any are undersized.
-		devicesBySize, err = client.filterDevicesBySize(ctx, deviceInfo, minSize)
-		if err != nil {
-			Logc(ctx).WithError(err).Error("Failed to read disk size for devices after rescan.")
-			return err
-		}
-
-		if len(devicesBySize) != 0 {
-			Logc(ctx).WithFields(fields).Error("Some devices are still undersized after rescan.")
-			return fmt.Errorf("devices are still undersized after rescan")
-		}
-	}
-
-	if deviceInfo.MultipathDevice != "" {
-		multipathDevice := deviceInfo.MultipathDevice
-		size, err := client.devices.GetDiskSize(ctx, devices.DevPrefix+multipathDevice)
-		if err != nil {
-			return err
-		}
-
-		fields = LogFields{"size": size, "minSize": minSize}
-		if size < minSize {
-			Logc(ctx).WithFields(fields).Debug("Reloading the multipath device.")
-			if err := client.reloadMultipathDevice(ctx, multipathDevice); err != nil {
-				return err
-			}
-			time.Sleep(time.Second)
-
-			size, err := client.devices.GetDiskSize(ctx, devices.DevPrefix+multipathDevice)
-			if err != nil {
-				return err
-			}
-
-			if size < minSize {
-				Logc(ctx).Error("Multipath device not large enough after resize.")
-				return fmt.Errorf("multipath device not large enough after resize: %d < %d", size, minSize)
-			}
-		} else {
-			Logc(ctx).WithFields(fields).Debug("Not reloading the multipath device because the size is greater than or equal to the minimum size.")
-		}
-	}
-
-	return nil
-}
-
-// rescanDisk causes the kernel to rescan a single iSCSI disk/block device.
-// This is how size changes are found when expanding a volume.
-func (client *Client) rescanDisk(ctx context.Context, deviceName string) error {
-	fields := LogFields{"deviceName": deviceName}
-	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.rescanDisk")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.rescanDisk")
-
-	client.devices.ListAllDevices(ctx)
-	filename := fmt.Sprintf(client.chrootPathPrefix+"/sys/block/%s/device/rescan", deviceName)
-	Logc(ctx).WithField("filename", filename).Debug("Opening file for writing.")
-
-	f, err := client.os.OpenFile(filename, os.O_WRONLY, 0)
-	if err != nil {
-		Logc(ctx).WithField("file", filename).Warning("Could not open file for writing.")
-		return err
-	}
-
-	defer func() {
-		_ = f.Close()
-	}()
-
-	written, err := f.WriteString("1")
-	if err != nil {
-		Logc(ctx).WithFields(LogFields{
-			"file":  filename,
-			"error": err,
-		}).Warning("Could not write to file.")
-		return err
-	} else if written == 0 {
-		Logc(ctx).WithField("file", filename).Warning("Zero bytes written to file.")
-		return fmt.Errorf("no data written to %s", filename)
-	}
-
-	client.devices.ListAllDevices(ctx)
-	return nil
-}
-
-func (client *Client) reloadMultipathDevice(ctx context.Context, multipathDevice string) error {
-	fields := LogFields{"multipathDevice": multipathDevice}
-	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.reloadMultipathDevice")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.reloadMultipathDevice")
-
-	if multipathDevice == "" {
-		return fmt.Errorf("cannot reload an empty multipathDevice")
-	}
-
-	_, err := client.command.ExecuteWithTimeout(ctx, "multipath", 10*time.Second, true, "-r",
-		devices.DevPrefix+multipathDevice)
-	if err != nil {
-		Logc(ctx).WithFields(LogFields{
-			"device": multipathDevice,
-			"error":  err,
-		}).Error("Failed to reload multipathDevice.")
-		return fmt.Errorf("failed to reload multipathDevice %s: %s", multipathDevice, err)
-	}
-
-	Logc(ctx).WithFields(fields).Debug("Multipath device reloaded.")
-	return nil
-}
-
 // IsAlreadyAttached checks if there is already an established iSCSI session to the specified LUN.
 func (client *Client) IsAlreadyAttached(ctx context.Context, lunID int, targetIqn string) bool {
 	hostSessionMap := client.iscsiUtils.GetISCSIHostSessionMapForTarget(ctx, targetIqn)
@@ -802,7 +615,54 @@ func (client *Client) IsAlreadyAttached(ctx context.Context, lunID int, targetIq
 	return 0 < len(devices)
 }
 
-// getDeviceInfoForLUN finds iSCSI devices using /dev/disk/by-path values.  This method should be
+// ExpandVolume extracts the LUN ID and target IQN from the publish info and delegates to ExpandMultipathDevice
+// to ensure the host-side multipath device reflects the expected size. This is a public entry point
+// for CSI node volume expansion; the actual convergence logic lives in ExpandMultipathDevice.
+func (client *Client) ExpandVolume(
+	ctx context.Context, publishInfo *models.VolumePublishInfo, targetSizeBytes int64,
+) error {
+	if publishInfo == nil {
+		return errors.New("nil publish info")
+	}
+	if targetSizeBytes <= 0 {
+		return errors.New("target size must be greater than 0")
+	}
+
+	lunID := int(publishInfo.IscsiLunNumber)
+	targetIQN := publishInfo.IscsiTargetIQN
+	fields := LogFields{
+		"lunID":           lunID,
+		"targetIQN":       targetIQN,
+		"targetSizeBytes": targetSizeBytes,
+	}
+	Logc(ctx).WithFields(fields).Debug(">>>> iscsi.ExpandVolume")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< iscsi.ExpandVolume")
+
+	getter := func(ctx context.Context) (*models.ScsiDeviceInfo, error) {
+		return client.getDeviceInfoForLUNAndTarget(ctx, lunID, targetIQN)
+	}
+	return client.devices.ExpandMultipathDevice(ctx, getter, targetSizeBytes)
+}
+
+func (client *Client) getDeviceInfoForLUNAndTarget(
+	ctx context.Context, lunID int, targetIQN string,
+) (*models.ScsiDeviceInfo, error) {
+	hostSessionMap := client.iscsiUtils.GetISCSIHostSessionMapForTarget(ctx, targetIQN)
+	if len(hostSessionMap) == 0 {
+		return nil, fmt.Errorf("error getting iSCSI device information: no host session found")
+	}
+
+	deviceInfo, err := client.GetDeviceInfoForLUN(ctx, hostSessionMap, lunID, targetIQN, false)
+	if err != nil {
+		return nil, err
+	} else if deviceInfo == nil {
+		return nil, fmt.Errorf("failed to get device information from host")
+	}
+
+	return deviceInfo, nil
+}
+
+// GetDeviceInfoForLUN finds iSCSI devices using /dev/disk/by-path values.  This method should be
 // called after calling waitForDeviceScan so that the device paths are known to exist.
 func (client *Client) GetDeviceInfoForLUN(
 	ctx context.Context, hostSessionMap map[int]int, lunID int, iSCSINodeName string, needFSType bool,
@@ -975,7 +835,7 @@ func (client *Client) waitForMultipathDeviceForDevices(ctx context.Context, devi
 		return "", fmt.Errorf("multipath device not found when it is expected")
 
 	} else {
-		Logc(ctx).WithField("multipathDevice", multipathDevice).Debug("Multipath device found.")
+		Logc(ctx).WithField("multipathDevice", multipathDevice).Info("Multipath device found.")
 	}
 
 	return multipathDevice, nil

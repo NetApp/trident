@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package devices
 
@@ -498,7 +498,7 @@ func TestVerifyMultipathDevice(t *testing.T) {
 			},
 			expectError: false,
 		},
-		"CompareWithPublishedSerialNumber GetMultipathDeviceUUID Error": {
+		"CompareWithPublishedSerialNumber GetDeviceMapperUUID Error": {
 			publishInfo: &models.VolumePublishInfo{
 				DevicePath: "",
 				VolumeAccessInfo: models.VolumeAccessInfo{
@@ -564,57 +564,6 @@ func TestVerifyMultipathDevice(t *testing.T) {
 				return fs
 			},
 			expectError: true,
-		},
-		"CompareWithPublishedSerialNumber Ghost Device": {
-			publishInfo: &models.VolumePublishInfo{
-				DevicePath: "",
-				VolumeAccessInfo: models.VolumeAccessInfo{
-					IscsiAccessInfo: models.IscsiAccessInfo{
-						IscsiLunSerial: "yocwB?Wl7x2l",
-					},
-				},
-			},
-			deviceInfo: &models.ScsiDeviceInfo{
-				MultipathDevice: "/dev/dm-0",
-				DevicePaths:     []string{"/dev/sda"},
-			},
-			getFs: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				// Defines LUN serial
-				afero.WriteFile(fs, "/dev/sda/vpd_pg80", []byte{
-					0, 128, 0, 12, 121, 111, 99, 119, 66, 63, 87, 108,
-					55, 120, 50, 108,
-				}, 0o755)
-				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("mpath-3600a0980796f6377423f576c3778326c"), 0o755)
-				fs.Mkdir("/sys/block/dm-1/slaves/sdb", 0o755)
-				return fs
-			},
-			expectError: false,
-		},
-		"CompareWithPublishedSerialNumber Not Ghost Device": {
-			publishInfo: &models.VolumePublishInfo{
-				DevicePath: "",
-				VolumeAccessInfo: models.VolumeAccessInfo{
-					IscsiAccessInfo: models.IscsiAccessInfo{
-						IscsiLunSerial: "yocwB?Wl7x2l",
-					},
-				},
-			},
-			deviceInfo: &models.ScsiDeviceInfo{
-				MultipathDevice: "/dev/dm-0",
-				DevicePaths:     []string{"/dev/sda"},
-			},
-			getFs: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				afero.WriteFile(fs, "/dev/sda/vpd_pg80", []byte{
-					0, 128, 0, 12, 121, 111, 99, 119, 66, 63, 87, 108,
-					55, 120, 50, 108,
-				}, 0o755)
-				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("mpath-3600a0980796f6377423f576c3778326c"), 0o755)
-				fs.Mkdir("/sys/block/dm-1/slaves/", 0o755)
-				return fs
-			},
-			expectError: false,
 		},
 		"CompareWithAllPublishInfos Happy Path": {
 			publishInfo: &models.VolumePublishInfo{

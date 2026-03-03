@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package iscsi
 
@@ -2205,603 +2205,137 @@ func TestClient_AddSession(t *testing.T) {
 	}
 }
 
-func TestClient_filterDevicesBySize(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	mockDevices := mock_devices.NewMockDevices(mockCtrl)
+func TestClient_ExpandVolume(t *testing.T) {
+	const (
+		targetIQN       = "iqn.2010-01.com.netapp:target-1"
+		targetSizeBytes = int64(21474836480)
 
-	client := NewDetailed(
-		"",
-		nil,
-		nil,
-		nil,
-		mockDevices,
-		nil,
-		nil,
-		nil,
-		afero.Afero{},
-		nil,
+		multipathDevice = "dm-0"
 	)
 
-	ctx := context.TODO()
-	deviceInfo := &models.ScsiDeviceInfo{
-		Devices: []string{"sda", "sdb"},
-	}
-	minSize := int64(10)
+	t.Run("error when publishInfo is nil", func(t *testing.T) {
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{}, nil)
+		err := client.ExpandVolume(context.TODO(), nil, targetSizeBytes)
+		assert.Error(t, err)
+	})
 
-	// Negative case.
-	mockDevices.EXPECT().GetDiskSize(ctx, "/dev/sda").Return(int64(1), nil)
-	mockDevices.EXPECT().GetDiskSize(ctx, "/dev/sdb").Return(int64(0), errors.New("failed to open disk"))
-	deviceSizeMap, err := client.filterDevicesBySize(ctx, deviceInfo, minSize)
-	assert.Error(t, err)
-	assert.Nil(t, deviceSizeMap)
-	assert.NotEqual(t, len(deviceInfo.Devices), len(deviceSizeMap))
+	t.Run("error when requiredSize is zero", func(t *testing.T) {
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{}, nil)
+		publishInfo := &models.VolumePublishInfo{}
+		err := client.ExpandVolume(context.TODO(), publishInfo, 0)
+		assert.Error(t, err)
+	})
 
-	// Positive case #1: Only one device needs a resize.
-	mockDevices.EXPECT().GetDiskSize(ctx, "/dev/sda").Return(minSize, nil)
-	mockDevices.EXPECT().GetDiskSize(ctx, "/dev/sdb").Return(int64(1), nil)
-	deviceSizeMap, err = client.filterDevicesBySize(ctx, deviceInfo, minSize)
-	assert.NoError(t, err)
-	assert.NotNil(t, deviceSizeMap)
-	assert.NotEqual(t, len(deviceInfo.Devices), len(deviceSizeMap))
+	t.Run("error when requiredSize is negative", func(t *testing.T) {
+		client := NewDetailed("", nil, nil, nil, nil, nil, nil, nil, afero.Afero{}, nil)
+		publishInfo := &models.VolumePublishInfo{}
+		err := client.ExpandVolume(context.TODO(), publishInfo, -100)
+		assert.Error(t, err)
+	})
 
-	// Positive case #2: All devices need to resize.
-	mockDevices.EXPECT().GetDiskSize(ctx, "/dev/sda").Return(int64(1), nil)
-	mockDevices.EXPECT().GetDiskSize(ctx, "/dev/sdb").Return(int64(1), nil)
-	deviceSizeMap, err = client.filterDevicesBySize(ctx, deviceInfo, minSize)
-	assert.NoError(t, err)
-	assert.NotNil(t, deviceSizeMap)
-	assert.Equal(t, len(deviceInfo.Devices), len(deviceSizeMap))
-}
+	t.Run("happy path: delegates to ExpandMultipathDevice and succeeds", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+		mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(ctrl)
 
-func TestClient_rescanDevices(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	mockDevices := mock_devices.NewMockDevices(mockCtrl)
+		hostSessionMap := map[int]int{0: 0}
+		sysfsPaths := []string{"/sys/block/sda"}
+		pathDevices := []string{"sda"}
 
-	fs := afero.NewMemMapFs()
-	_, err := fs.Create("/sys/block/sda/device/rescan")
-	assert.NoError(t, err)
+		mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(
+			gomock.Any(), targetIQN,
+		).Return(hostSessionMap).AnyTimes()
+		mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(
+			0, hostSessionMap,
+		).Return(sysfsPaths).AnyTimes()
+		mockReconcileUtils.EXPECT().GetDevicesForLUN(
+			sysfsPaths,
+		).Return(pathDevices, nil).AnyTimes()
+		mockDevicesClient.EXPECT().FindMultipathDeviceForDevice(
+			gomock.Any(), "sda",
+		).Return(multipathDevice).AnyTimes()
 
-	client := NewDetailed(
-		"",
-		nil,
-		nil,
-		nil,
-		mockDevices,
-		nil,
-		nil,
-		nil,
-		afero.Afero{Fs: fs},
-		nil,
-	)
+		mockDevicesClient.EXPECT().ExpandMultipathDevice(
+			gomock.Any(), gomock.Any(), targetSizeBytes,
+		).Return(nil)
 
-	ctx := context.TODO()
-	deviceSizeMap := map[string]int64{
-		"sda": 1,
-		"sdb": 1,
-	}
+		publishInfo := &models.VolumePublishInfo{
+			VolumeAccessInfo: models.VolumeAccessInfo{
+				IscsiAccessInfo: models.IscsiAccessInfo{
+					IscsiLunNumber: 0,
+					IscsiTargetIQN: targetIQN,
+				},
+			},
+		}
 
-	// Should fail because a device path does not exist.
-	mockDevices.EXPECT().ListAllDevices(ctx).AnyTimes()
-	err = client.rescanDevices(ctx, deviceSizeMap)
-	assert.Error(t, err)
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
+			mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
 
-	// Add the missing device path.
-	_, err = fs.Create("/sys/block/sdb/device/rescan")
-	assert.NoError(t, err)
+		err := client.ExpandVolume(context.Background(), publishInfo, targetSizeBytes)
+		assert.NoError(t, err)
+	})
 
-	// Should succeed now that the device path exists.
-	err = client.rescanDevices(ctx, deviceSizeMap)
-	assert.NoError(t, err)
-}
+	t.Run("error when ExpandMultipathDevice fails", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+		mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(ctrl)
 
-func TestClient_RescanDevices(t *testing.T) {
-	type parameters struct {
-		targetIQN string
-		lunID     int32
-		minSize   int64
+		mockDevicesClient.EXPECT().ExpandMultipathDevice(
+			gomock.Any(), gomock.Any(), targetSizeBytes,
+		).Return(errors.New("expand failed"))
 
-		getReconcileUtils  func(controller *gomock.Controller) IscsiReconcileUtils
-		getDeviceClient    func(controller *gomock.Controller) devices.Devices
-		getCommandClient   func(controller *gomock.Controller) tridentexec.Command
-		getFileSystemUtils func() afero.Fs
-		assertError        assert.ErrorAssertionFunc
-	}
+		publishInfo := &models.VolumePublishInfo{
+			VolumeAccessInfo: models.VolumeAccessInfo{
+				IscsiAccessInfo: models.IscsiAccessInfo{
+					IscsiLunNumber: 0,
+					IscsiTargetIQN: targetIQN,
+				},
+			},
+		}
 
-	const targetIQN = "iqn.2010-01.com.netapp:target-1"
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
+			mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
 
-	tests := map[string]parameters{
-		"error getting device information": {
-			targetIQN: targetIQN,
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				return NewReconcileUtils()
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				return mockDevices
-			},
-			getCommandClient: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				return mockCommand
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				return fs
-			},
-			assertError: assert.Error,
-		},
-		"error getting iscsi disk size": {
-			targetIQN: targetIQN,
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(),
-					targetIQN).Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"})
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil)
-				return mockReconcileUtils
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), errors.New("some error"))
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0")
-				return mockDevices
-			},
-			getCommandClient: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				return mockCommand
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				return fs
-			},
-			assertError: assert.Error,
-		},
-		"failed to rescan disk": {
-			targetIQN: targetIQN,
-			minSize:   1,
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(),
-					targetIQN).Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"})
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil)
-				return mockReconcileUtils
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil)
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(1)
-				mockDevices.EXPECT().ListAllDevices(context.TODO()).Times(1)
-				return mockDevices
-			},
-			getCommandClient: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				return mockCommand
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				return fs
-			},
-			assertError: assert.Error,
-		},
-		"failure to resize the disk": {
-			targetIQN: targetIQN,
-			minSize:   1,
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(),
-					targetIQN).Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"})
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil)
-				return mockReconcileUtils
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil).Times(2)
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(1)
-				mockDevices.EXPECT().ListAllDevices(context.TODO()).Times(2)
-				return mockDevices
-			},
-			getCommandClient: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				return mockCommand
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				_, err := fs.Create("/sys/block/sda/device/rescan")
-				assert.NoError(t, err)
-				return fs
-			},
-			assertError: assert.Error,
-		},
-		"error validating if disk is resized": {
-			targetIQN: targetIQN,
-			minSize:   1,
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(),
-					targetIQN).Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"})
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil)
-				return mockReconcileUtils
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), errors.New("some error"))
-				mockDevices.EXPECT().ListAllDevices(context.TODO()).Times(2)
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(1)
-				return mockDevices
-			},
-			getCommandClient: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				return mockCommand
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				_, err := fs.Create("/sys/block/sda/device/rescan")
-				assert.NoError(t, err)
-				return fs
-			},
-			assertError: assert.Error,
-		},
-		"disk resized successfully": {
-			targetIQN: targetIQN,
-			minSize:   1,
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(),
-					targetIQN).Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"})
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil)
-				return mockReconcileUtils
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(1)
+		err := client.ExpandVolume(context.Background(), publishInfo, targetSizeBytes)
+		assert.Error(t, err)
+	})
 
-				// This will be called twice because we read from each disk twice during an expansion.
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil).Times(1)
-				mockDevices.EXPECT().ListAllDevices(context.TODO()).Times(2)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(1), nil).Times(1)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(1), nil)
-				return mockDevices
-			},
-			getCommandClient: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				return mockCommand
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				_, err := fs.Create("/sys/block/sda/device/rescan")
-				assert.NoError(t, err)
-				return fs
-			},
-			assertError: assert.NoError,
-		},
-		"failure getting multipath device size": {
-			targetIQN: targetIQN,
-			minSize:   1,
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(),
-					targetIQN).Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"})
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil)
-				return mockReconcileUtils
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(1), nil)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(1), errors.New("some error"))
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0")
-				mockDevices.EXPECT().ListAllDevices(context.TODO()).Times(2)
-				return mockDevices
-			},
-			getCommandClient: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				return mockCommand
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				_, err := fs.Create("/sys/block/sda/device/rescan")
-				assert.NoError(t, err)
+	t.Run("builds getter with correct LUN ID and target IQN", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockDevicesClient := mock_devices.NewMockDevices(ctrl)
+		mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(ctrl)
 
-				_, err = fs.Create("/sys/block/sda/holders/dm-0")
-				assert.NoError(t, err)
-				return fs
-			},
-			assertError: assert.Error,
-		},
-		"multipath device size already greater than min size": {
-			targetIQN: targetIQN,
-			minSize:   1,
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(),
-					targetIQN).Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"})
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil)
-				return mockReconcileUtils
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(1), nil)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(1), nil)
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0")
-				mockDevices.EXPECT().ListAllDevices(context.TODO()).Times(2)
-				return mockDevices
-			},
-			getCommandClient: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				return mockCommand
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				_, err := fs.Create("/sys/block/sda/device/rescan")
-				assert.NoError(t, err)
+		const lunID = 5
 
-				_, err = fs.Create("/sys/block/sda/holders/dm-0")
-				assert.NoError(t, err)
-				return fs
-			},
-			assertError: assert.NoError,
-		},
-		"failure reloading multipaths map": {
-			targetIQN: targetIQN,
-			minSize:   1,
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(),
-					targetIQN).Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"})
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil)
-				return mockReconcileUtils
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(1), nil)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), nil)
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0")
-				mockDevices.EXPECT().ListAllDevices(context.TODO()).Times(2)
-				return mockDevices
-			},
-			getCommandClient: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "multipath", 10*time.Second, true, "-r",
-					"/dev/dm-0").Return(nil, errors.New("some error"))
-				return mockCommand
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				_, err := fs.Create("/sys/block/sda/device/rescan")
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/sys/block/sda/holders/dm-0")
-				assert.NoError(t, err)
-				return fs
-			},
-			assertError: assert.Error,
-		},
-		"error determining the size of the multipath device after reload": {
-			targetIQN: targetIQN,
-			minSize:   1,
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(),
-					targetIQN).Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"})
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil)
-				return mockReconcileUtils
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(1), nil)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), nil)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), errors.New("some error"))
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0")
-				mockDevices.EXPECT().ListAllDevices(context.TODO()).Times(2)
-				return mockDevices
-			},
-			getCommandClient: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "multipath", 10*time.Second, true, "-r",
-					"/dev/dm-0").Return(nil, nil)
-				return mockCommand
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				_, err := fs.Create("/sys/block/sda/device/rescan")
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/sys/block/sda/holders/dm-0")
-				assert.NoError(t, err)
-				return fs
-			},
-			assertError: assert.Error,
-		},
-		"multipath device too small even after reloading multipath map": {
-			targetIQN: targetIQN,
-			minSize:   1,
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(),
-					targetIQN).Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"})
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil)
-				return mockReconcileUtils
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(1), nil)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), nil).Times(2)
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0")
-				mockDevices.EXPECT().ListAllDevices(context.TODO()).Times(2)
-				return mockDevices
-			},
-			getCommandClient: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "multipath", 10*time.Second, true, "-r",
-					"/dev/dm-0").Return(nil, nil)
-				return mockCommand
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				_, err := fs.Create("/sys/block/sda/device/rescan")
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/sys/block/sda/holders/dm-0")
-				assert.NoError(t, err)
-				return fs
-			},
-			assertError: assert.Error,
-		},
-		"multipath device successfully resized": {
-			targetIQN: targetIQN,
-			minSize:   1,
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(),
-					targetIQN).Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"})
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil)
-				return mockReconcileUtils
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(1), nil)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(0), nil)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(1), nil)
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(1)
-				mockDevices.EXPECT().ListAllDevices(context.TODO()).Times(2)
-				return mockDevices
-			},
-			getCommandClient: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "multipath", 10*time.Second, true, "-r",
-					"/dev/dm-0").Return(nil, nil)
-				return mockCommand
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				_, err := fs.Create("/sys/block/sda/device/rescan")
-				assert.NoError(t, err)
-
-				_, err = fs.Create("/sys/block/sda/holders/dm-0")
-				assert.NoError(t, err)
-				return fs
-			},
-			assertError: assert.NoError,
-		},
-		"happy path": {
-			minSize:   10,
-			targetIQN: targetIQN,
-			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
-				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
-				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(context.TODO(),
-					targetIQN).Return(map[int]int{0: 0})
-				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"})
-				mockReconcileUtils.EXPECT().GetDevicesForLUN([]string{"/dev/sda"}).Return([]string{"sda"}, nil)
-				return mockReconcileUtils
-			},
-			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
-				mockDevices := mock_devices.NewMockDevices(controller)
-				mockDevices.EXPECT().FindMultipathDeviceForDevice(context.TODO(), "sda").Return("dm-0").Times(1)
-
-				// This will be called twice because we read from each disk twice during an expansion.
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(0), nil).Times(1)
-				mockDevices.EXPECT().ListAllDevices(context.TODO()).Times(2)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/sda").Return(int64(10), nil).Times(1)
-				mockDevices.EXPECT().GetDiskSize(context.TODO(), "/dev/dm-0").Return(int64(10), nil)
-				return mockDevices
-			},
-			getCommandClient: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				return mockCommand
-			},
-			getFileSystemUtils: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				_, err := fs.Create("/sys/block/sda/device/rescan")
-				assert.NoError(t, err)
-				return fs
-			},
-			assertError: assert.NoError,
-		},
-	}
-
-	for name, params := range tests {
-		t.Run(name, func(t *testing.T) {
-			controller := gomock.NewController(t)
-
-			client := NewDetailed("", params.getCommandClient(controller), DefaultSelfHealingExclusion, nil,
-				params.getDeviceClient(controller), nil, nil, params.getReconcileUtils(controller),
-				afero.Afero{Fs: params.getFileSystemUtils()}, nil)
-
-			err := client.RescanDevices(context.TODO(), params.targetIQN, params.lunID, params.minSize)
-			if params.assertError != nil {
-				params.assertError(t, err)
-			}
+		// Verify the getter uses the correct LUN ID and target IQN from publishInfo.
+		mockDevicesClient.EXPECT().ExpandMultipathDevice(
+			gomock.Any(), gomock.Any(), targetSizeBytes,
+		).DoAndReturn(func(ctx context.Context, getter models.SCSIDeviceInfoGetter, size int64) error {
+			// The getter should call GetISCSIHostSessionMapForTarget with our target IQN.
+			// Since we return an empty map, the getter will fail — that's fine, we just
+			// want to verify it was called with the right args.
+			mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(
+				gomock.Any(), targetIQN,
+			).Return(map[int]int{})
+			_, err := getter(ctx)
+			assert.Error(t, err)
+			return err
 		})
-	}
-}
 
-func TestClient_reloadMultipathDevice(t *testing.T) {
-	type parameters struct {
-		multipathDeviceName string
-		getCommand          func(controller *gomock.Controller) tridentexec.Command
-		assertError         assert.ErrorAssertionFunc
-	}
-
-	const multipathDeviceName = "dm-0"
-	const moultipathDevicePath = "/dev/" + multipathDeviceName
-
-	tests := map[string]parameters{
-		"no multipath device provided": {
-			multipathDeviceName: "",
-			getCommand: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				return mockCommand
+		publishInfo := &models.VolumePublishInfo{
+			VolumeAccessInfo: models.VolumeAccessInfo{
+				IscsiAccessInfo: models.IscsiAccessInfo{
+					IscsiLunNumber: lunID,
+					IscsiTargetIQN: targetIQN,
+				},
 			},
-			assertError: assert.Error,
-		},
-		"error executing multipath map reload": {
-			multipathDeviceName: multipathDeviceName,
-			getCommand: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "multipath", 10*time.Second, true, "-r",
-					moultipathDevicePath).Return(nil, errors.New("some error"))
-				return mockCommand
-			},
-			assertError: assert.Error,
-		},
-		"happy path": {
-			multipathDeviceName: multipathDeviceName,
-			getCommand: func(controller *gomock.Controller) tridentexec.Command {
-				mockCommand := mockexec.NewMockCommand(controller)
-				mockCommand.EXPECT().ExecuteWithTimeout(context.TODO(), "multipath", 10*time.Second, true, "-r",
-					moultipathDevicePath).Return(nil, nil)
-				return mockCommand
-			},
-			assertError: assert.NoError,
-		},
-	}
+		}
 
-	for name, params := range tests {
-		t.Run(name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			client := NewDetailed("", params.getCommand(ctrl), nil, nil, nil, nil, nil, nil, afero.Afero{}, nil)
+		client := NewDetailed("", nil, nil, nil, mockDevicesClient, nil, nil,
+			mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()}, nil)
 
-			err := client.reloadMultipathDevice(context.TODO(), params.multipathDeviceName)
-			if params.assertError != nil {
-				params.assertError(t, err)
-			}
-		})
-	}
+		_ = client.ExpandVolume(context.Background(), publishInfo, targetSizeBytes)
+	})
 }
 
 func TestClient_IsAlreadyAttached(t *testing.T) {
