@@ -46,6 +46,25 @@
 
 - [Tech Preview] Added support for concurrency for ONTAP-NAS-Economy and ONTAP-SAN-Economy drivers.
 
+### Trident Protect
+
+**Fixes:**
+
+- Fixed sorting of Kubernetes resources for restore operations.
+- Handled non-unique IDs during restores.
+- Fixed cluster name in `tridentctl-protect` output.
+- Fixed Kopia restore errors being ignored.
+- Fixed app definition when it has no included PV.
+- Fixed restoring of 2 PVCs with same name in 2 different namespaces.
+
+**Enhancements:**
+
+- Ability to define `execHooks` in CR spec.
+- Added `data-mover-timeout-sec` annotation to `Schedule` CR.
+- Allow destination app name to be specified during restore operations.
+- Allow `Schedule` CR to create a snapshot immediately rather than wait for first occurrence.
+- `Schedule` CRs are now disabled during IPR operations and re-enabled when complete.
+
 ## v25.10.0
 
 ### Trident
