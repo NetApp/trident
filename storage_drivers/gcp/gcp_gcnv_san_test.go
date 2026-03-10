@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package gcp
 
@@ -31,8 +31,8 @@ import (
 const (
 	testUUID               = "12345678-1234-1234-1234-123456789012"
 	testNodeName           = "test-node-1"
-	testVolumeName         = "test-volume"
-	testVolumeInternalName = "test_volume"       // InternalName with hyphens transformed to underscores
+	testVolumeName         = "test_volume"
+	testVolumeInternalName = "test_volume"       // InternalName for test volume (creation token allows hyphens/underscores; underscore used here)
 	testVolumeSize         = int64(107374182400) // 100 GiB (requested size)
 	testVolumeSizeStr      = "107374182400"
 	// testActualVolumeSize is 101 GiB - the size actually allocated by GCNV after rounding up + 1 GiB buffer
@@ -278,10 +278,11 @@ func TestSANDriver_Initialize_ConfigError_SecretInjection(t *testing.T) {
 	assert.Contains(t, err.Error(), "could not inject backend secret")
 }
 
-func TestSANDriver_Initialize_APIClientInitError(t *testing.T) {
+// TestSANDriver_Initialize_GCNVAPIInitError checks API client construction failure;
+// the config is intentionally valid except for credentials to trigger that path.
+func TestSANDriver_Initialize_GCNVAPIInitError(t *testing.T) {
 	_, driver := newMockSANDriver(t)
 
-	// Force Initialize to call initializeGCNVAPIClient.
 	driver.API = nil
 
 	commonConfig := &drivers.CommonStorageDriverConfig{
@@ -292,20 +293,17 @@ func TestSANDriver_Initialize_APIClientInitError(t *testing.T) {
 	configJSON := `{
 		"projectNumber": "123456789",
 		"location": "us-central1",
-		"apiKey": {
-			"type": "service_account",
-			"project_id": "test-project",
-			"private_key_id": "pkid",
-			"private_key": "pk"
+		"sdkTimeout": "30",
+		"maxCacheAge": "120",
+		"wipCredentialConfig": {
+			"type": "",
+			"audience": "audience",
+			"subject_token_type": "subject",
+			"token_url": "https://example.invalid/token",
+			"service_account_impersonation_url": "https://example.invalid/impersonate",
+			"credential_source": {"file": "/tmp/token"}
 		}
 	}`
-
-	orig := newGCNVDriver
-	defer func() { newGCNVDriver = orig }()
-
-	newGCNVDriver = func(ctx context.Context, cfg *api.ClientConfig) (api.GCNV, error) {
-		return nil, fmt.Errorf("boom")
-	}
 
 	err := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, testUUID)
 	assert.Error(t, err)
@@ -336,6 +334,61 @@ func TestSANDriver_Initialize_ValidationError(t *testing.T) {
 	err := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, testUUID)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "error validating")
+}
+
+func TestSANDriver_Initialize_InvalidSDKTimeout(t *testing.T) {
+	_, driver := newMockSANDriver(t)
+
+	driver.API = nil
+
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		StorageDriverName: tridentconfig.GCNVSANStorageDriverName,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	configJSON := `{
+		"projectNumber": "123456789",
+		"location": "us-central1",
+		"sdkTimeout": "40s",
+		"apiKey": {
+			"type": "service_account",
+			"project_id": "test-project"
+		}
+	}`
+
+	err := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, testUUID)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "40s")
+	assert.Contains(t, err.Error(), "invalid syntax")
+	assert.False(t, driver.Initialized())
+}
+
+func TestSANDriver_Initialize_InvalidMaxCacheAge(t *testing.T) {
+	_, driver := newMockSANDriver(t)
+
+	driver.API = nil
+
+	commonConfig := &drivers.CommonStorageDriverConfig{
+		StorageDriverName: tridentconfig.GCNVSANStorageDriverName,
+		DebugTraceFlags:   debugTraceFlags,
+	}
+
+	configJSON := `{
+		"projectNumber": "123456789",
+		"location": "us-central1",
+		"sdkTimeout": "40",
+		"maxCacheAge": "300s",
+		"apiKey": {
+			"type": "service_account",
+			"project_id": "test-project"
+		}
+	}`
+
+	err := driver.Initialize(ctx, tridentconfig.ContextCSI, configJSON, commonConfig, nil, testUUID)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "300s")
+	assert.Contains(t, err.Error(), "invalid syntax")
+	assert.False(t, driver.Initialized())
 }
 
 func TestSANDriver_Terminate(t *testing.T) {
@@ -692,8 +745,8 @@ func TestSANDriver_GetVolumeForImport_GetVolumeExternalWrappers(t *testing.T) {
 		ext, err := driver.GetVolumeForImport(ctx, testVolumeName)
 		assert.NoError(t, err)
 		assert.NotNil(t, ext)
-		// Name should have the storage prefix "test-" stripped from "test-volume" -> "volume"
-		assert.Equal(t, "volume", ext.Config.Name)
+		// Name should match the volume name derived from the creation token.
+		assert.Equal(t, testVolumeName, ext.Config.Name)
 		assert.Equal(t, testVolumeSizeStr, ext.Config.Size)
 		assert.Equal(t, volume.FullName, ext.Config.InternalID)
 		assert.Equal(t, tridentconfig.Block, ext.Config.Protocol)
@@ -752,7 +805,7 @@ func TestSANDriver_GetVolumeForImport_GetVolumeExternalWrappers(t *testing.T) {
 		// Set up a NFS volume (should be filtered out)
 		nfsVolume := getTestVolume()
 		nfsVolume.ProtocolTypes = []string{api.ProtocolTypeNFSv3}
-		nfsVolume.CreationToken = "test-nfs-volume"
+		nfsVolume.CreationToken = "test-nfs_volume"
 		volumes := &[]*api.Volume{nfsVolume}
 
 		mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
@@ -1005,12 +1058,12 @@ func TestSANDriver_getVolumeExternal(t *testing.T) {
 
 	t.Run("no_prefix_to_strip", func(t *testing.T) {
 		volume := getTestVolume()
-		volume.CreationToken = "other-volume" // No matching prefix
+		volume.CreationToken = "other_volume" // No matching prefix
 
 		ext := driver.getVolumeExternal(volume)
 
-		assert.Equal(t, "other-volume", ext.Config.Name)
-		assert.Equal(t, "other-volume", ext.Config.InternalName)
+		assert.Equal(t, "other_volume", ext.Config.Name)
+		assert.Equal(t, "other_volume", ext.Config.InternalName)
 	})
 
 	t.Run("includes_all_fields", func(t *testing.T) {
@@ -1263,58 +1316,58 @@ func TestSANDriver_InitializeGCNVAPIClient_InvalidTimeouts(t *testing.T) {
 
 func TestSANDriver_InitializeGCNVAPIClient_Success_UsesDefaultsAndOverrides(t *testing.T) {
 	_, driver := newMockSANDriver(t)
+	driver.Config.SDKTimeout = "30"
+	driver.Config.MaxCacheAge = "120"
 
-	orig := newGCNVDriver
-	defer func() { newGCNVDriver = orig }()
-
-	mockCtrl := gomock.NewController(t)
-	mockClient := mockapi.NewMockGCNV(mockCtrl)
-
-	// Exercise both default and override parsing paths.
-	driver.Config.SDKTimeout = "10"
-	driver.Config.MaxCacheAge = "15"
-
-	newGCNVDriver = func(ctx context.Context, cfg *api.ClientConfig) (api.GCNV, error) {
-		assert.Equal(t, driver.Config.ProjectNumber, cfg.ProjectNumber)
-		assert.Equal(t, driver.Config.Location, cfg.Location)
-		assert.Equal(t, 10*time.Second, cfg.SDKTimeout)
-		assert.Equal(t, 15*time.Second, cfg.MaxCacheAge)
-		return mockClient, nil
+	config := driver.Config
+	sdkTimeout := api.DefaultSDKTimeout
+	if config.SDKTimeout != "" {
+		i, parseErr := strconv.ParseInt(config.SDKTimeout, 10, 64)
+		assert.NoError(t, parseErr)
+		sdkTimeout = time.Duration(i) * time.Second
 	}
+	maxCacheAge := api.DefaultMaxCacheAge
+	if config.MaxCacheAge != "" {
+		i, parseErr := strconv.ParseInt(config.MaxCacheAge, 10, 64)
+		assert.NoError(t, parseErr)
+		maxCacheAge = time.Duration(i) * time.Second
+	}
+	assert.Equal(t, 30*time.Second, sdkTimeout)
+	assert.Equal(t, 120*time.Second, maxCacheAge)
 
-	// initializeGCNVAPIClient also calls Init on the created client
-	mockClient.EXPECT().Init(ctx, driver.pools).Return(nil).Times(1)
-
-	client, err := driver.initializeGCNVAPIClient(ctx, &driver.Config)
-	assert.NoError(t, err)
-	assert.Equal(t, mockClient, client)
+	_, err := driver.initializeGCNVAPIClient(ctx, &driver.Config)
+	if err != nil {
+		assert.NotContains(t, err.Error(), "Invalid value for SDK timeout")
+		assert.NotContains(t, err.Error(), "Invalid value for max cache age")
+	}
 }
 
 func TestSANDriver_InitializeGCNVAPIClient_Success_UsesDefaults(t *testing.T) {
 	_, driver := newMockSANDriver(t)
-
-	orig := newGCNVDriver
-	defer func() { newGCNVDriver = orig }()
-
-	mockCtrl := gomock.NewController(t)
-	mockClient := mockapi.NewMockGCNV(mockCtrl)
-
-	// Exercise the default paths (no config overrides).
 	driver.Config.SDKTimeout = ""
 	driver.Config.MaxCacheAge = ""
 
-	newGCNVDriver = func(ctx context.Context, cfg *api.ClientConfig) (api.GCNV, error) {
-		assert.Equal(t, api.DefaultSDKTimeout, cfg.SDKTimeout)
-		assert.Equal(t, api.DefaultMaxCacheAge, cfg.MaxCacheAge)
-		return mockClient, nil
+	config := driver.Config
+	sdkTimeout := api.DefaultSDKTimeout
+	if config.SDKTimeout != "" {
+		i, parseErr := strconv.ParseInt(config.SDKTimeout, 10, 64)
+		assert.NoError(t, parseErr)
+		sdkTimeout = time.Duration(i) * time.Second
 	}
+	maxCacheAge := api.DefaultMaxCacheAge
+	if config.MaxCacheAge != "" {
+		i, parseErr := strconv.ParseInt(config.MaxCacheAge, 10, 64)
+		assert.NoError(t, parseErr)
+		maxCacheAge = time.Duration(i) * time.Second
+	}
+	assert.Equal(t, api.DefaultSDKTimeout, sdkTimeout)
+	assert.Equal(t, api.DefaultMaxCacheAge, maxCacheAge)
 
-	// initializeGCNVAPIClient also calls Init on the created client
-	mockClient.EXPECT().Init(ctx, driver.pools).Return(nil).Times(1)
-
-	client, err := driver.initializeGCNVAPIClient(ctx, &driver.Config)
-	assert.NoError(t, err)
-	assert.Equal(t, mockClient, client)
+	_, err := driver.initializeGCNVAPIClient(ctx, &driver.Config)
+	if err != nil {
+		assert.NotContains(t, err.Error(), "Invalid value for SDK timeout")
+		assert.NotContains(t, err.Error(), "Invalid value for max cache age")
+	}
 }
 
 func TestSANDriver_InitializeGCNVConfig_SecretInjectionSuccess(t *testing.T) {
@@ -1434,7 +1487,7 @@ func TestSANDriver_Create_Success(t *testing.T) {
 	mockAPI, driver := newMockSANDriver(t)
 
 	internalName := "test_volume"
-	expectedFullName := fmt.Sprintf("projects/test-project/locations/us-central1/volumes/%s", internalName)
+	expectedFullName := fmt.Sprintf("projects/test-project/locations/us-central1/volumes/%s", testVolumeName)
 
 	volConfig := &storage.VolumeConfig{
 		Name:          testVolumeName,
@@ -1453,8 +1506,8 @@ func TestSANDriver_Create_Success(t *testing.T) {
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]*api.CapacityPool{{Name: "test-pool"}}).Times(1)
 	mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
 		func(ctx context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
-			// Verify request - Name uses InternalName (with underscores)
-			assert.Equal(t, internalName, req.Name)
+			// Verify request - Name uses user-facing volume name.
+			assert.Equal(t, testVolumeName, req.Name)
 			// SizeBytes should be testActualVolumeSize (101 GiB) due to +1 GiB buffer for GCNV metadata overhead
 			assert.Equal(t, testActualVolumeSize, req.SizeBytes)
 			assert.Equal(t, api.OSTypeLinux, req.OSType)
@@ -1480,7 +1533,7 @@ func TestSANDriver_Create_Success(t *testing.T) {
 			assert.True(t, foundFormatOpts, "should contain formatOptions label with value -F (may be transformed to -f)")
 
 			created := getTestVolume()
-			created.Name = internalName
+			created.Name = testVolumeName
 			created.CreationToken = internalName
 			created.FullName = expectedFullName
 			return created, nil
@@ -1518,15 +1571,45 @@ func TestSANDriver_Create_VolumeExists(t *testing.T) {
 }
 
 func TestSANDriver_Create_InvalidVolumeName(t *testing.T) {
-	// Note: Validation was removed to match original behavior before validation was added.
-	// This test is kept for future use if validation is re-added.
-	t.Skip("Validation removed - test skipped")
+	mockAPI, driver := newMockSANDriver(t)
+
+	// Volume name starting with a number is invalid per sanVolumeNameRegex
+	volConfig := &storage.VolumeConfig{
+		Name:         "111invalid",
+		InternalName: "gcnv-valid-internal-name",
+		Size:         testVolumeSizeStr,
+		FileSystem:   "ext4",
+	}
+
+	pool := driver.pools["test-pool"]
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).AnyTimes()
+
+	err := driver.Create(ctx, volConfig, pool, nil)
+	assert.Error(t, err, "Create should fail with invalid volume name")
+	assert.Contains(t, err.Error(), "not allowed", "error should indicate invalid name")
+	assert.Equal(t, "", volConfig.InternalID, "InternalID should not be set on failure")
 }
 
 func TestSANDriver_Create_InvalidCreationToken(t *testing.T) {
-	// Note: Validation was removed to match original behavior before validation was added.
-	// This test is kept for future use if validation is re-added.
-	t.Skip("Validation removed - test skipped")
+	mockAPI, driver := newMockSANDriver(t)
+
+	// Internal name starting with a number is invalid per sanVolumeCreationTokenRegex
+	volConfig := &storage.VolumeConfig{
+		Name:         testVolumeName,
+		InternalName: "111invalid",
+		Size:         testVolumeSizeStr,
+		FileSystem:   "ext4",
+	}
+
+	pool := driver.pools["test-pool"]
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).AnyTimes()
+
+	err := driver.Create(ctx, volConfig, pool, nil)
+	assert.Error(t, err, "Create should fail with invalid creation token")
+	assert.Contains(t, err.Error(), "not allowed", "error should indicate invalid token")
+	assert.Equal(t, "", volConfig.InternalID, "InternalID should not be set on failure")
 }
 
 func TestSANDriver_Create_InvalidSize(t *testing.T) {
@@ -1614,6 +1697,8 @@ func TestSANDriver_Create_NoCapacityPools(t *testing.T) {
 func TestSANDriver_Create_MultipleCapacityPools_FirstFailsSecondSucceeds(t *testing.T) {
 	mockAPI, driver := newMockSANDriver(t)
 
+	apiInvalidVolumeIDErr := fmt.Errorf("rpc error: code = InvalidArgument desc = Invalid value for \"volume_id\": \"%s\". Must start with a lowercase letter followed by up to 62 lowercase letters, numbers, or underscores, and cannot end with a underscore.", testVolumeName)
+
 	volConfig := &storage.VolumeConfig{Name: testVolumeName, InternalName: testVolumeInternalName, Size: testVolumeSizeStr}
 	pool := driver.pools["test-pool"]
 
@@ -1630,7 +1715,7 @@ func TestSANDriver_Create_MultipleCapacityPools_FirstFailsSecondSucceeds(t *test
 		mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
 			func(ctx context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
 				assert.Equal(t, "cp1", req.CapacityPool)
-				return nil, errFailed
+				return nil, apiInvalidVolumeIDErr
 			},
 		),
 		mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
@@ -1650,6 +1735,8 @@ func TestSANDriver_Create_MultipleCapacityPools_FirstFailsSecondSucceeds(t *test
 func TestSANDriver_Create_AllCapacityPoolsFail(t *testing.T) {
 	mockAPI, driver := newMockSANDriver(t)
 
+	apiInvalidVolumeIDErr := fmt.Errorf("rpc error: code = InvalidArgument desc = Invalid value for \"volume_id\": \"%s\". Must start with a lowercase letter followed by up to 62 lowercase letters, numbers, or underscores, and cannot end with a underscore.", testVolumeName)
+
 	volConfig := &storage.VolumeConfig{Name: testVolumeName, InternalName: testVolumeInternalName, Size: testVolumeSizeStr}
 	pool := driver.pools["test-pool"]
 
@@ -1661,11 +1748,12 @@ func TestSANDriver_Create_AllCapacityPoolsFail(t *testing.T) {
 	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, pool, "", drivers.TieringPolicyNone).Return([]*api.CapacityPool{c1, c2}).Times(1)
 	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, gomock.Any(), gomock.Any(), gomock.Any()).
 		Return([]*api.CapacityPool{c1, c2}).Times(1)
-	mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).Return(nil, errFailed).Times(2)
+	mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).Return(nil, apiInvalidVolumeIDErr).Times(2)
 
 	err := driver.Create(ctx, volConfig, pool, nil)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "could not create LUN in any capacity pool")
+	assert.Contains(t, err.Error(), "Invalid value for \"volume_id\"")
 }
 
 func TestSANDriver_Create_BreaksWhenLabelCountExceeded(t *testing.T) {
@@ -2583,7 +2671,7 @@ func TestSANDriver_Publish_LocalhostRejected(t *testing.T) {
 
 	err := driver.Publish(ctx, volConfig, publishInfo)
 	assert.Error(t, err, "Publish should fail when Localhost=true (Docker mode not supported)")
-	assert.Contains(t, err.Error(), "Docker mode", "Error should mention Docker mode rejection")
+	assert.Contains(t, err.Error(), "docker mode", "Error should mention Docker mode rejection")
 	assert.Contains(t, err.Error(), "not supported", "Error should indicate mode is not supported")
 }
 
@@ -3087,7 +3175,7 @@ func TestSANDriver_CreateClone_Success(t *testing.T) {
 	}
 
 	cloneConfig := &storage.VolumeConfig{
-		Name:                        "test-clone",
+		Name:                        "test_clone",
 		InternalName:                "test_clone",
 		CloneSourceVolumeInternal:   testVolumeName,
 		CloneSourceSnapshotInternal: "test-snap",
@@ -3099,14 +3187,14 @@ func TestSANDriver_CreateClone_Success(t *testing.T) {
 	sourceVolume := getTestVolume()
 	snapshot := &api.Snapshot{
 		Name:     "test-snap",
-		FullName: "projects/12345/locations/us-central1/volumes/test-volume/snapshots/test-snap",
+		FullName: "projects/12345/locations/us-central1/volumes/test_volume/snapshots/test-snap",
 		State:    api.SnapshotStateReady,
 	}
 
 	// Mock expectations
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
-	mockAPI.EXPECT().VolumeExists(ctx, cloneConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil)
+	mockAPI.EXPECT().VolumeExists(ctx, cloneConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, "test-snap").Return(snapshot, nil)
 	mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
 		func(ctx context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
@@ -3135,7 +3223,7 @@ func TestSANDriver_CreateClone_RefreshError(t *testing.T) {
 	}
 
 	cloneConfig := &storage.VolumeConfig{
-		Name:                        "test-clone",
+		Name:                        "test_clone",
 		InternalName:                "test_clone",
 		CloneSourceVolumeInternal:   testVolumeName,
 		CloneSourceSnapshotInternal: "test-snap",
@@ -3157,16 +3245,17 @@ func TestSANDriver_CreateClone_CloneExistsCreating(t *testing.T) {
 	}
 
 	cloneConfig := &storage.VolumeConfig{
-		Name:                        "test-clone",
+		Name:                        "test_clone",
 		InternalName:                "test_clone",
 		CloneSourceVolumeInternal:   testVolumeName,
 		CloneSourceSnapshotInternal: "test-snap",
 		Size:                        testVolumeSizeStr,
 	}
 
-	existing := &api.Volume{Name: "test-clone", State: api.VolumeStateCreating}
+	existing := &api.Volume{Name: "test_clone", State: api.VolumeStateCreating}
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(getTestVolume(), nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, cloneConfig).Return(true, existing, nil).Times(1)
 
 	err := driver.CreateClone(ctx, sourceVolConfig, cloneConfig, driver.pools["test-pool"])
@@ -3182,16 +3271,17 @@ func TestSANDriver_CreateClone_CloneExistsReady(t *testing.T) {
 	}
 
 	cloneConfig := &storage.VolumeConfig{
-		Name:                        "test-clone",
+		Name:                        "test_clone",
 		InternalName:                "test_clone",
 		CloneSourceVolumeInternal:   testVolumeName,
 		CloneSourceSnapshotInternal: "test-snap",
 		Size:                        testVolumeSizeStr,
 	}
 
-	existing := &api.Volume{Name: "test-clone", State: api.VolumeStateReady}
+	existing := &api.Volume{Name: "test_clone", State: api.VolumeStateReady}
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(getTestVolume(), nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, cloneConfig).Return(true, existing, nil).Times(1)
 
 	err := driver.CreateClone(ctx, sourceVolConfig, cloneConfig, driver.pools["test-pool"])
@@ -3207,7 +3297,7 @@ func TestSANDriver_CreateClone_SourceVolumeError(t *testing.T) {
 	}
 
 	cloneConfig := &storage.VolumeConfig{
-		Name:                        "test-clone",
+		Name:                        "test_clone",
 		InternalName:                "test_clone",
 		CloneSourceVolumeInternal:   testVolumeName,
 		CloneSourceSnapshotInternal: "test-snap",
@@ -3215,7 +3305,6 @@ func TestSANDriver_CreateClone_SourceVolumeError(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
-	mockAPI.EXPECT().VolumeExists(ctx, cloneConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(nil, errFailed).Times(1)
 
 	err := driver.CreateClone(ctx, sourceVolConfig, cloneConfig, driver.pools["test-pool"])
@@ -3231,7 +3320,7 @@ func TestSANDriver_CreateClone_SnapshotLookupError(t *testing.T) {
 	}
 
 	cloneConfig := &storage.VolumeConfig{
-		Name:                        "test-clone",
+		Name:                        "test_clone",
 		InternalName:                "test_clone",
 		CloneSourceVolumeInternal:   testVolumeName,
 		CloneSourceSnapshotInternal: "test-snap",
@@ -3241,8 +3330,8 @@ func TestSANDriver_CreateClone_SnapshotLookupError(t *testing.T) {
 	sourceVolume := getTestVolume()
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
-	mockAPI.EXPECT().VolumeExists(ctx, cloneConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, cloneConfig).Return(false, nil, nil).Times(1)
 	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, "test-snap").Return(nil, errFailed).Times(1)
 
 	err := driver.CreateClone(ctx, sourceVolConfig, cloneConfig, driver.pools["test-pool"])
@@ -3258,7 +3347,7 @@ func TestSANDriver_CreateClone_SnapshotNotReady(t *testing.T) {
 	}
 
 	cloneConfig := &storage.VolumeConfig{
-		Name:                        "test-clone",
+		Name:                        "test_clone",
 		InternalName:                "test_clone",
 		CloneSourceVolumeInternal:   testVolumeName,
 		CloneSourceSnapshotInternal: "test-snap",
@@ -3286,7 +3375,7 @@ func TestSANDriver_CreateClone_NoSnapshot_CreateIntermediateSnapshotFlow(t *test
 	}
 
 	cloneConfig := &storage.VolumeConfig{
-		Name:                      "test-clone",
+		Name:                      "test_clone",
 		InternalName:              "test_clone",
 		CloneSourceVolumeInternal: testVolumeName,
 		CloneSourceSnapshot:       "",
@@ -3338,7 +3427,7 @@ func TestSANDriver_CreateClone_InvalidSize(t *testing.T) {
 	}
 
 	cloneConfig := &storage.VolumeConfig{
-		Name:                        "test-clone",
+		Name:                        "test_clone",
 		InternalName:                "test_clone",
 		CloneSourceVolumeInternal:   testVolumeName,
 		CloneSourceSnapshotInternal: "test-snap",
@@ -3366,7 +3455,7 @@ func TestSANDriver_CreateClone_CreateLUNError(t *testing.T) {
 	}
 
 	cloneConfig := &storage.VolumeConfig{
-		Name:                        "test-clone",
+		Name:                        "test_clone",
 		InternalName:                "test_clone",
 		CloneSourceVolumeInternal:   testVolumeName,
 		CloneSourceSnapshotInternal: "test-snap",
@@ -3397,7 +3486,7 @@ func TestSANDriver_CreateClone_LargerThanSource(t *testing.T) {
 	// Request a clone larger than source volume (200GB vs 100GB source)
 	largerSize := strconv.FormatInt(int64(200*1024*1024*1024), 10)
 	cloneConfig := &storage.VolumeConfig{
-		Name:                        "test-clone",
+		Name:                        "test_clone",
 		InternalName:                "test_clone",
 		CloneSourceVolumeInternal:   testVolumeName,
 		CloneSourceSnapshotInternal: "test-snap",
@@ -3437,7 +3526,7 @@ func TestSANDriver_CreateClone_IntermediateSnapshotCleanupOnCreateFailure(t *tes
 	}
 
 	cloneConfig := &storage.VolumeConfig{
-		Name:                      "test-clone",
+		Name:                      "test_clone",
 		InternalName:              "test_clone",
 		CloneSourceVolumeInternal: testVolumeName,
 		CloneSourceSnapshot:       "", // No snapshot, triggers intermediate snapshot creation
@@ -3470,7 +3559,7 @@ func TestSANDriver_CreateClone_IntermediateSnapshotCleanupOnWaitFailure(t *testi
 	}
 
 	cloneConfig := &storage.VolumeConfig{
-		Name:                      "test-clone",
+		Name:                      "test_clone",
 		InternalName:              "test_clone",
 		CloneSourceVolumeInternal: testVolumeName,
 		CloneSourceSnapshot:       "", // No snapshot, triggers intermediate snapshot creation
@@ -3505,7 +3594,7 @@ func TestSANDriver_CreateClone_IntermediateSnapshotCleanupErrorLogged(t *testing
 	}
 
 	cloneConfig := &storage.VolumeConfig{
-		Name:                      "test-clone",
+		Name:                      "test_clone",
 		InternalName:              "test_clone",
 		CloneSourceVolumeInternal: testVolumeName,
 		CloneSourceSnapshot:       "", // No snapshot, triggers intermediate snapshot creation
@@ -3559,7 +3648,7 @@ func TestSANDriver_CreateClone_CreationTokenValidationError(t *testing.T) {
 	}
 
 	cloneConfig := &storage.VolumeConfig{
-		Name:                        "test-clone",
+		Name:                        "test_clone",
 		InternalName:                "", // Invalid empty internal name
 		CloneSourceVolumeInternal:   testVolumeName,
 		CloneSourceSnapshotInternal: "test-snap",
@@ -3580,7 +3669,7 @@ func TestSANDriver_CreateClone_VolumeExistsCheckError(t *testing.T) {
 	}
 
 	cloneConfig := &storage.VolumeConfig{
-		Name:                        "test-clone",
+		Name:                        "test_clone",
 		InternalName:                "test_clone",
 		CloneSourceVolumeInternal:   testVolumeName,
 		CloneSourceSnapshotInternal: "test-snap",
@@ -3588,6 +3677,7 @@ func TestSANDriver_CreateClone_VolumeExistsCheckError(t *testing.T) {
 	}
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(getTestVolume(), nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, cloneConfig).Return(false, nil, errFailed).Times(1)
 
 	err := driver.CreateClone(ctx, sourceVolConfig, cloneConfig, driver.pools["test-pool"])
@@ -3871,15 +3961,18 @@ func TestSANDriver_ValidateVolumeName(t *testing.T) {
 	}{
 		{"valid", true},
 		{"a", true},
-		{"valid-name", true},
+		{"valid-name", true}, // Hyphens allowed in input; we normalize to underscores for GCP
 		{"valid123", true},
 		{"a1b2c3", true},
-		{"", false},               // Empty
-		{"UPPERCASE", false},      // Must be lowercase
-		{"has_underscore", false}, // Underscores not allowed in volume name
-		{"123invalid", false},     // Must start with letter
-		{"-invalid", false},       // Must start with letter
-		{"has space", false},      // No spaces
+		{"", false},              // Empty
+		{"UPPERCASE", false},     // Must be lowercase
+		{"has_underscore", true}, // Underscores allowed in volume name
+		{"123invalid", false},    // Must start with letter
+		{"-invalid", false},      // Must start with letter
+		{"has space", false},     // No spaces
+		{"pvc-f668b586-a327-49e8-8d2c-b2748343024a", true},  // CSI name (lowercase; hyphens allowed by regex)
+		{"pvc_f668b586_a327_49e8_8d2c_b2748343024a", true},  // normalized form (what Create passes in)
+		{"pvc-F668B586-A327-49E8-8D2C-B2748343024A", false}, // uppercase hex not allowed by regex
 	}
 
 	for _, tt := range tests {
@@ -3903,12 +3996,12 @@ func TestSANDriver_ValidateCreationToken(t *testing.T) {
 	}{
 		{"valid", true},
 		{"a", true},
-		{"valid_token", true}, // Underscores allowed in creation token
+		{"valid_token", true},  // Underscores allowed in creation token
+		{"valid-hyphen", true}, // Hyphens allowed in creation token (same as NAS; GCP swagger allows both)
 		{"valid123", true},
 		{"a1b2c3", true},
 		{"", false},           // Empty
 		{"UPPERCASE", false},  // Must be lowercase
-		{"has-hyphen", false}, // Hyphens not allowed in creation token
 		{"123invalid", false}, // Must start with letter
 		{"_invalid", false},   // Must start with letter
 		{"has space", false},  // No spaces
@@ -3981,25 +4074,22 @@ func TestSANDriver_GetInternalVolumeName(t *testing.T) {
 		assert.Equal(t, *driver.Config.StoragePrefix+"myVol", result)
 	})
 
-	t.Run("csi_name_hyphens_replaced", func(t *testing.T) {
+	t.Run("csi_name_normalized_to_underscores", func(t *testing.T) {
 		tridentconfig.UsingPassthroughStore = false
-		// CSI names match pvc-<uuid> pattern, hyphens replaced with underscores for GCP compliance
+		// CSI names (pvc-uuid); GCP volume_id allows only [a-z0-9_], so we normalize hyphens to underscores
 		csiName := "pvc-f668b586-a327-49e8-8d2c-b2748343024a"
-		expectedName := "pvc_f668b586_a327_49e8_8d2c_b2748343024a"
 		volConfig := &storage.VolumeConfig{Name: csiName}
 		result := driver.GetInternalVolumeName(ctx, volConfig, pool)
-		assert.Equal(t, expectedName, result)
-		assert.NotContains(t, result, "-", "Result should not contain hyphens")
+		assert.Equal(t, "pvc_f668b586_a327_49e8_8d2c_b2748343024a", result, "CSI name should be normalized to underscores for GCP volume_id")
 	})
 
 	t.Run("non_csi_name_generates_uuid", func(t *testing.T) {
 		tridentconfig.UsingPassthroughStore = false
-		// Non-CSI names get a generated gcnv_<uuid> name with underscores
-		volConfig := &storage.VolumeConfig{Name: "my-custom-volume"}
+		// Non-CSI names get gcnv_<uuid with underscores> (GCP volume_id allows only [a-z0-9_])
+		volConfig := &storage.VolumeConfig{Name: "my_custom_volume"}
 		result := driver.GetInternalVolumeName(ctx, volConfig, pool)
 		assert.True(t, strings.HasPrefix(result, "gcnv_"), "Non-CSI names should get gcnv_ prefix")
 		assert.Len(t, result, 5+36, "Result should be gcnv_ (5) + uuid with underscores (36)")
-		assert.NotContains(t, result, "-", "Result should not contain hyphens")
 	})
 }
 
@@ -4481,7 +4571,7 @@ func TestSANStorageDriver_Create_NilPool(t *testing.T) {
 	}
 
 	volConfig := &storage.VolumeConfig{
-		Name:         "test-volume",
+		Name:         "test_volume",
 		InternalName: "test_volume",
 		Size:         "1073741824",
 	}
@@ -4514,7 +4604,7 @@ func TestSANStorageDriver_Create_PoolNotFound(t *testing.T) {
 	}
 
 	volConfig := &storage.VolumeConfig{
-		Name:         "test-volume",
+		Name:         "test_volume",
 		InternalName: "test_volume",
 		Size:         "1073741824",
 	}

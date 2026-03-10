@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package gcp
 
@@ -46,60 +46,19 @@ const (
 	DefaultExt3FormatOptions = ""
 	DefaultExt4FormatOptions = ""
 	DefaultXfsFormatOptions  = ""
-)
 
-// newGCNVDriver is injected for unit testing to avoid needing real GCP credentials.
-// Production code uses api.NewDriver.
-var newGCNVDriver = api.NewDriver
+	// MaxGCNVVolumeSizeBytes is the maximum volume size supported by GCNV for iSCSI volumes
+	// (128 TiB as per GCNV documentation for Flex service level with Unified storage pools).
+	MaxGCNVVolumeSizeBytes = int64(128) * 1024 * api.GiBBytes // 128 TiB
+
+)
 
 var (
-	// sanVolumeNameRegex validates the user-visible volume name (1-63 chars, lowercase alphanumeric, start with letter)
-	sanVolumeNameRegex = regexp.MustCompile(`^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$`)
-	// sanVolumeCreationTokenRegex validates the internal volume name (1-80 chars, lowercase alphanumeric, start with letter)
-	sanVolumeCreationTokenRegex = regexp.MustCompile(`^[a-z]([a-z0-9_]{0,78}[a-z0-9])?$`)
+	sanVolumeNameRegex          = regexp.MustCompile(`^[a-z]([a-z0-9-_]{0,61}[a-z0-9])?$`)
+	sanVolumeCreationTokenRegex = regexp.MustCompile(`^[a-z]([a-z0-9-_]{0,78}[a-z0-9])?$`)
 )
 
-// MaxGCNVVolumeSizeBytes is the maximum volume size supported by GCNV for iSCSI volumes
-// (128 TiB as per GCNV documentation for Flex service level with Unified storage pools).
-const MaxGCNVVolumeSizeBytes = int64(128) * 1024 * api.GiBBytes // 128 TiB
-
-// calculateActualSizeBytes computes the actual size to request from GCNV to ensure the
-// kernel-visible LUN usable space is greater than or equal to what the user requested.
-//
-// GCNV block volumes exhibit a small discrepancy between the requested capacity and the
-// actual kernel-visible device size due to internal metadata overhead. Testing shows:
-//   - On initial creation: ~300 KiB less than requested
-//   - On resize: potentially up to ~107 MiB less than requested
-//
-// To guarantee users always get at least their requested usable space, we:
-//  1. Round up to the next whole GiB (GCNV only accepts whole GiB values, and integer
-//     division in the API layer would otherwise truncate/round down)
-//  2. Add 1 GiB buffer to absorb the metadata overhead
-//
-// Example: User requests 2.5 GiB → rounds up to 3 GiB → adds 1 GiB → requests 4 GiB from GCNV
-// Result: User gets ~3.999+ GiB usable space, well above their 2.5 GiB request
-//
-// Returns an error if the calculated size would exceed GCNV's 128 TiB maximum volume size.
-func calculateActualSizeBytes(requestedBytes int64) (int64, error) {
-	// GCNV supports volumes up to 128 TiB. Since we add up to 2 GiB (rounding + buffer),
-	// the maximum safe request is 128 TiB - 2 GiB.
-	maxSafeRequest := MaxGCNVVolumeSizeBytes - 2*api.GiBBytes
-	if requestedBytes > maxSafeRequest {
-		return 0, fmt.Errorf("requested size %d bytes exceeds GCNV maximum; "+
-			"maximum supported request is %d bytes (128 TiB - 2 GiB buffer)",
-			requestedBytes, maxSafeRequest)
-	}
-
-	// Round up to next whole GiB (ceiling division)
-	requestedGiB := (requestedBytes + api.GiBBytes - 1) / api.GiBBytes
-
-	// Add 1 GiB buffer to ensure usable space exceeds requested size
-	actualGiB := requestedGiB + 1
-
-	return actualGiB * api.GiBBytes, nil
-}
-
-// SANStorageDriver is for iSCSI storage provisioning using Google Cloud NetApp Volumes
+// SANStorageDriver is for iSCSI storage provisioning using the Google Cloud NetApp Volumes service.
 type SANStorageDriver struct {
 	initialized         bool
 	Config              drivers.GCNVStorageDriverConfig
@@ -114,7 +73,13 @@ type SANStorageDriver struct {
 
 // Name returns the name of this driver.
 func (d *SANStorageDriver) Name() string {
+
 	return tridentconfig.GCNVSANStorageDriverName
+}
+
+// GetConfig returns the config of this driver.
+func (d *SANStorageDriver) GetConfig() drivers.DriverConfig {
+	return &d.Config
 }
 
 // defaultBackendName returns the default name of the backend managed by this driver instance.
@@ -134,11 +99,17 @@ func (d *SANStorageDriver) BackendName() string {
 	return d.defaultBackendName()
 }
 
-// validateVolumeName checks that the name of a new volume matches the requirements of a GCNV volume name.
+// poolName constructs the name of the pool reported by this driver instance.
+func (d *SANStorageDriver) poolName(name string) string {
+	return fmt.Sprintf("%s_%s", d.BackendName(), strings.Replace(name, "-", "", -1))
+}
+
+// validateVolumeName checks that the volume name matches GCNV SAN volume name requirements.
+// Expects normalized name (hyphens already converted to underscores for CSI volumes).
 func (d *SANStorageDriver) validateVolumeName(name string) error {
 	if !sanVolumeNameRegex.MatchString(name) {
 		return fmt.Errorf("volume name '%s' is not allowed; it must be 1-63 characters long, "+
-			"begin with a letter, and contain only lowercase letters, numbers, or hyphens", name)
+			"begin with a lowercase letter, and contain only lowercase letters, numbers, or underscores", name)
 	}
 	return nil
 }
@@ -152,19 +123,12 @@ func (d *SANStorageDriver) validateCreationToken(name string) error {
 	return nil
 }
 
-// GetConfig returns the config of this driver.
-func (d *SANStorageDriver) GetConfig() drivers.DriverConfig {
-	return &d.Config
-}
-
 // defaultCreateTimeout sets the driver timeout for volume create/delete operations.
-// Note: SAN driver only supports CSI context (Docker is rejected in Initialize).
 func (d *SANStorageDriver) defaultCreateTimeout() time.Duration {
 	return api.VolumeCreateTimeout
 }
 
-// defaultTimeout sets the driver timeout for most API operations.
-// Note: SAN driver only supports CSI context (Docker is rejected in Initialize).
+// defaultTimeout controls the driver timeout for most workflows.
 func (d *SANStorageDriver) defaultTimeout() time.Duration {
 	return api.DefaultTimeout
 }
@@ -247,7 +211,7 @@ func (d *SANStorageDriver) Initialized() bool {
 }
 
 // Terminate stops the driver prior to its being unloaded.
-func (d *SANStorageDriver) Terminate(ctx context.Context, backendUUID string) {
+func (d *SANStorageDriver) Terminate(ctx context.Context, _ string) {
 	fields := LogFields{"Method": "Terminate", "Type": "SANStorageDriver"}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Terminate")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Terminate")
@@ -255,94 +219,81 @@ func (d *SANStorageDriver) Terminate(ctx context.Context, backendUUID string) {
 	d.initialized = false
 }
 
-// Helper methods
-
-// initializeGCNVConfig parses the GCNV config, mixing in the specified common config.
-func (d *SANStorageDriver) initializeGCNVConfig(
-	ctx context.Context, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
-	backendSecret map[string]string,
-) (*drivers.GCNVStorageDriverConfig, error) {
-	fields := LogFields{"Method": "initializeGCNVConfig", "Type": "SANStorageDriver"}
-	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(
-		">>>> initializeGCNVConfig")
-	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(
-		"<<<< initializeGCNVConfig")
-
-	config := &drivers.GCNVStorageDriverConfig{}
-	config.CommonStorageDriverConfig = commonConfig
-
-	// decode configJSON into GCNVStorageDriverConfig object
-	err := json.Unmarshal([]byte(configJSON), &config)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode JSON configuration. %v", err)
-	}
-
-	// Inject secret if not empty
-	if len(backendSecret) != 0 {
-		err = config.InjectSecrets(backendSecret)
-		if err != nil {
-			return nil, fmt.Errorf("could not inject backend secret; err: %v", err)
-		}
-	}
-
-	return config, nil
-}
-
-// initializeGCNVAPIClient returns a GCNV API client.
-func (d *SANStorageDriver) initializeGCNVAPIClient(
+// populateConfigurationDefaults fills in default values for configuration settings if not supplied in the config.
+func (d *SANStorageDriver) populateConfigurationDefaults(
 	ctx context.Context, config *drivers.GCNVStorageDriverConfig,
-) (api.GCNV, error) {
-	fields := LogFields{"Method": "initializeGCNVAPIClient", "Type": "SANStorageDriver"}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(
-		">>>> initializeGCNVAPIClient")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(
-		"<<<< initializeGCNVAPIClient")
+) error {
+	fields := LogFields{"Method": "populateConfigurationDefaults", "Type": "SANStorageDriver"}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> populateConfigurationDefaults")
+	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< populateConfigurationDefaults")
 
-	sdkTimeout := api.DefaultSDKTimeout
-	if config.SDKTimeout != "" {
-		if i, parseErr := strconv.ParseInt(d.Config.SDKTimeout, 10, 64); parseErr != nil {
-			Logc(ctx).WithField("interval", d.Config.SDKTimeout).WithError(parseErr).Error(
-				"Invalid value for SDK timeout.")
-			return nil, parseErr
-		} else {
-			sdkTimeout = time.Duration(i) * time.Second
+	if config.StoragePrefix == nil {
+		defaultPrefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
+		defaultPrefix = strings.Replace(defaultPrefix, "_", "-", -1)
+		config.StoragePrefix = &defaultPrefix
+	}
+
+	if config.Size == "" {
+		config.Size = drivers.DefaultVolumeSize
+	}
+
+	if config.ServiceLevel == "" {
+		config.ServiceLevel = api.ServiceLevelFlex
+	}
+
+	if config.SnapshotReserve == "" {
+		config.SnapshotReserve = defaultSnapshotReserve
+	}
+
+	if config.LimitVolumeSize == "" {
+		config.LimitVolumeSize = defaultLimitVolumeSize
+	}
+
+	// VolumeCreateTimeout
+	volumeCreateTimeout := d.defaultCreateTimeout()
+	if config.VolumeCreateTimeout != "" {
+		i, err := strconv.ParseInt(config.VolumeCreateTimeout, 10, 64)
+		if err != nil {
+			Logc(ctx).WithField("interval", config.VolumeCreateTimeout).Errorf(
+				"Invalid volume create timeout period. %v", err)
+			return err
+		}
+		volumeCreateTimeout = time.Duration(i) * time.Second
+	}
+	d.volumeCreateTimeout = volumeCreateTimeout
+
+	// FileSystemType defaults to ext4
+	if config.FileSystemType == "" {
+		config.FileSystemType = drivers.DefaultFileSystemType
+	}
+
+	// FormatOptions defaults based on the filesystem type
+	if config.FormatOptions == "" {
+		switch config.FileSystemType {
+		case "ext3":
+			config.FormatOptions = DefaultExt3FormatOptions
+		case "ext4":
+			config.FormatOptions = DefaultExt4FormatOptions
+		case "xfs":
+			config.FormatOptions = DefaultXfsFormatOptions
 		}
 	}
 
-	maxCacheAge := api.DefaultMaxCacheAge
-	if config.MaxCacheAge != "" {
-		if i, parseErr := strconv.ParseInt(d.Config.MaxCacheAge, 10, 64); parseErr != nil {
-			Logc(ctx).WithField("interval", d.Config.MaxCacheAge).WithError(parseErr).Error(
-				"Invalid value for max cache age.")
-			return nil, parseErr
-		} else {
-			maxCacheAge = time.Duration(i) * time.Second
-		}
-	}
+	Logc(ctx).WithFields(LogFields{
+		"StoragePrefix":       *config.StoragePrefix,
+		"Size":                config.Size,
+		"ServiceLevel":        config.ServiceLevel,
+		"SnapshotReserve":     config.SnapshotReserve,
+		"LimitVolumeSize":     config.LimitVolumeSize,
+		"VolumeCreateTimeout": d.volumeCreateTimeout,
+		"FileSystemType":      config.FileSystemType,
+		"FormatOptions":       config.FormatOptions,
+	}).Debug("Configuration defaults")
 
-	gcnv, err := newGCNVDriver(ctx, &api.ClientConfig{
-		ProjectNumber:       config.ProjectNumber,
-		Location:            config.Location,
-		APIKey:              &config.APIKey,
-		APIEndpoint:         config.APIEndpoint,
-		WIPCredentialConfig: config.WIPCredentialConfig,
-		DebugTraceFlags:     config.DebugTraceFlags,
-		SDKTimeout:          sdkTimeout,
-		MaxCacheAge:         maxCacheAge,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	// The storage pools should already be set up by this point. We register the pools with the
-	// API layer to enable matching of storage pools with discovered GCNV resources.
-	if err = gcnv.Init(ctx, d.pools); err != nil {
-		return nil, err
-	}
-
-	return gcnv, nil
+	return nil
 }
 
+// initializeStoragePools defines the pools reported to Trident, whether physical or virtual.
 func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) {
 	d.pools = make(map[string]storage.Pool)
 
@@ -463,80 +414,6 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) {
 	}
 }
 
-// populateConfigurationDefaults fills in default values for configuration settings if not supplied in the config.
-func (d *SANStorageDriver) populateConfigurationDefaults(
-	ctx context.Context, config *drivers.GCNVStorageDriverConfig,
-) error {
-	fields := LogFields{"Method": "populateConfigurationDefaults", "Type": "SANStorageDriver"}
-	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> populateConfigurationDefaults")
-	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< populateConfigurationDefaults")
-
-	if config.StoragePrefix == nil {
-		defaultPrefix := drivers.GetDefaultStoragePrefix(config.DriverContext)
-		defaultPrefix = strings.Replace(defaultPrefix, "_", "-", -1)
-		config.StoragePrefix = &defaultPrefix
-	}
-
-	if config.Size == "" {
-		config.Size = drivers.DefaultVolumeSize
-	}
-
-	if config.ServiceLevel == "" {
-		config.ServiceLevel = api.ServiceLevelFlex
-	}
-
-	if config.SnapshotReserve == "" {
-		config.SnapshotReserve = defaultSnapshotReserve
-	}
-
-	if config.LimitVolumeSize == "" {
-		config.LimitVolumeSize = defaultLimitVolumeSize
-	}
-
-	// VolumeCreateTimeout
-	volumeCreateTimeout := d.defaultCreateTimeout()
-	if config.VolumeCreateTimeout != "" {
-		i, err := strconv.ParseInt(config.VolumeCreateTimeout, 10, 64)
-		if err != nil {
-			Logc(ctx).WithField("interval", config.VolumeCreateTimeout).Errorf(
-				"Invalid volume create timeout period. %v", err)
-			return err
-		}
-		volumeCreateTimeout = time.Duration(i) * time.Second
-	}
-	d.volumeCreateTimeout = volumeCreateTimeout
-
-	// FileSystemType defaults to ext4
-	if config.FileSystemType == "" {
-		config.FileSystemType = drivers.DefaultFileSystemType
-	}
-
-	// FormatOptions defaults based on filesystem type
-	if config.FormatOptions == "" {
-		switch config.FileSystemType {
-		case "ext3":
-			config.FormatOptions = DefaultExt3FormatOptions
-		case "ext4":
-			config.FormatOptions = DefaultExt4FormatOptions
-		case "xfs":
-			config.FormatOptions = DefaultXfsFormatOptions
-		}
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"StoragePrefix":       *config.StoragePrefix,
-		"Size":                config.Size,
-		"ServiceLevel":        config.ServiceLevel,
-		"SnapshotReserve":     config.SnapshotReserve,
-		"LimitVolumeSize":     config.LimitVolumeSize,
-		"VolumeCreateTimeout": d.volumeCreateTimeout,
-		"FileSystemType":      config.FileSystemType,
-		"FormatOptions":       config.FormatOptions,
-	}).Debug("Configuration defaults")
-
-	return nil
-}
-
 // initializeTelemetry initializes the telemetry struct with backend information.
 func (d *SANStorageDriver) initializeTelemetry(_ context.Context, backendUUID string) {
 	telemetry := tridentconfig.OrchestratorTelemetry
@@ -547,13 +424,99 @@ func (d *SANStorageDriver) initializeTelemetry(_ context.Context, backendUUID st
 	}
 }
 
-// validate ensures the driver configuration and execution environment are valid and working.
+// initializeGCNVConfig parses the GCNV config, mixing in the specified common config.
+func (d *SANStorageDriver) initializeGCNVConfig(
+	ctx context.Context, configJSON string, commonConfig *drivers.CommonStorageDriverConfig,
+	backendSecret map[string]string,
+) (*drivers.GCNVStorageDriverConfig, error) {
+	fields := LogFields{"Method": "initializeGCNVConfig", "Type": "SANStorageDriver"}
+	Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(
+		">>>> initializeGCNVConfig")
+	defer Logd(ctx, commonConfig.StorageDriverName, commonConfig.DebugTraceFlags["method"]).WithFields(fields).Trace(
+		"<<<< initializeGCNVConfig")
+
+	config := &drivers.GCNVStorageDriverConfig{}
+	config.CommonStorageDriverConfig = commonConfig
+
+	// decode configJSON into GCNVStorageDriverConfig object
+	err := json.Unmarshal([]byte(configJSON), &config)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode JSON configuration. %v", err)
+	}
+
+	// Inject secret if not empty
+	if len(backendSecret) != 0 {
+		err = config.InjectSecrets(backendSecret)
+		if err != nil {
+			return nil, fmt.Errorf("could not inject backend secret; err: %v", err)
+		}
+	}
+
+	return config, nil
+}
+
+// initializeGCNVAPIClient returns a GCNV API client.
+func (d *SANStorageDriver) initializeGCNVAPIClient(
+	ctx context.Context, config *drivers.GCNVStorageDriverConfig,
+) (api.GCNV, error) {
+	fields := LogFields{"Method": "initializeGCNVAPIClient", "Type": "SANStorageDriver"}
+	Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(
+		">>>> initializeGCNVAPIClient")
+	defer Logd(ctx, config.StorageDriverName, config.DebugTraceFlags["method"]).WithFields(fields).Trace(
+		"<<<< initializeGCNVAPIClient")
+
+	sdkTimeout := api.DefaultSDKTimeout
+	if config.SDKTimeout != "" {
+		if i, parseErr := strconv.ParseInt(d.Config.SDKTimeout, 10, 64); parseErr != nil {
+			Logc(ctx).WithField("interval", d.Config.SDKTimeout).WithError(parseErr).Error(
+				"Invalid value for SDK timeout.")
+			return nil, parseErr
+		} else {
+			sdkTimeout = time.Duration(i) * time.Second
+		}
+	}
+
+	maxCacheAge := api.DefaultMaxCacheAge
+	if config.MaxCacheAge != "" {
+		if i, parseErr := strconv.ParseInt(d.Config.MaxCacheAge, 10, 64); parseErr != nil {
+			Logc(ctx).WithField("interval", d.Config.MaxCacheAge).WithError(parseErr).Error(
+				"Invalid value for max cache age.")
+			return nil, parseErr
+		} else {
+			maxCacheAge = time.Duration(i) * time.Second
+		}
+	}
+
+	gcnv, err := api.NewDriver(ctx, &api.ClientConfig{
+		ProjectNumber:       config.ProjectNumber,
+		Location:            config.Location,
+		APIKey:              &config.APIKey,
+		APIEndpoint:         config.APIEndpoint,
+		WIPCredentialConfig: config.WIPCredentialConfig,
+		DebugTraceFlags:     config.DebugTraceFlags,
+		SDKTimeout:          sdkTimeout,
+		MaxCacheAge:         maxCacheAge,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// The storage pools should already be set up by this point. We register the pools with the
+	// API layer to enable matching of storage pools with discovered GCNV resources.
+	if err = gcnv.Init(ctx, d.pools); err != nil {
+		return nil, err
+	}
+
+	return gcnv, nil
+}
+
+// validate ensures the driver configuration and execution environments are valid and working.
 func (d *SANStorageDriver) validate(ctx context.Context) error {
 	fields := LogFields{"Method": "validate", "Type": "SANStorageDriver"}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> validate")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< validate")
 
-	// Ensure storage prefix is compatible with cloud service
+	// Ensure the storage prefix is compatible with cloud service
 	if err := validateGCNVStoragePrefix(*d.Config.StoragePrefix); err != nil {
 		return err
 	}
@@ -601,143 +564,517 @@ func (d *SANStorageDriver) validate(ctx context.Context) error {
 	return nil
 }
 
-// getStorageBackendPools returns the storage backend pools for this driver.
-func (d *SANStorageDriver) getStorageBackendPools(ctx context.Context) []drivers.GCNVStorageBackendPool {
-	fields := LogFields{"Method": "getStorageBackendPools", "Type": "SANStorageDriver"}
-	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
-	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
+// Create creates a new volume.
+func (d *SANStorageDriver) Create(
+	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, _ map[string]sa.Request,
+) error {
+	name := volConfig.InternalName
+	// GCP volume_id allows only [a-z][a-z0-9_] for SAN volumes. Normalize and validate once.
+	normalizedName := strings.ToLower(strings.ReplaceAll(volConfig.Name, "-", "_"))
 
-	// For this driver, a discrete storage pool is composed of the following:
-	// 1. Project number
-	// 2. Location
-	// 3. Storage pool - contains at least one pool depending on the backend configuration.
-	cPools := d.API.CapacityPoolsForStoragePools(ctx)
-	backendPools := make([]drivers.GCNVStorageBackendPool, 0, len(cPools))
+	fields := LogFields{
+		"Method": "Create",
+		"Type":   "SANStorageDriver",
+		"name":   name,
+		"size":   volConfig.Size,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
+
+	// Update the resource cache as needed
+	if err := d.API.RefreshGCNVResources(ctx); err != nil {
+		return fmt.Errorf("could not refresh GCNV resources: %v", err)
+	}
+
+	if err := d.validateVolumeName(normalizedName); err != nil {
+		return err
+	}
+
+	// Make sure we got a valid creation token
+	if err := d.validateCreationToken(name); err != nil {
+		return err
+	}
+
+	// Get the pool since most default values are pool-specific
+	if storagePool == nil {
+		return errors.New("pool not specified")
+	}
+	pool, ok := d.pools[storagePool.Name()]
+	if !ok {
+		return fmt.Errorf("pool %s does not exist", storagePool.Name())
+	}
+
+	// Check if volume already exists
+	volumeExists, existingVolume, err := d.API.VolumeExists(ctx, volConfig)
+	if err != nil {
+		return fmt.Errorf("error checking for existing volume %s; %v", name, err)
+	}
+	if volumeExists {
+		// Volume exists - check its state for proper idempotent handling
+		if existingVolume.State == api.VolumeStateCreating {
+			// This is a retry and the volume still isn't ready, so no need to wait further.
+			return errors.VolumeCreatingError(
+				fmt.Sprintf("volume state is still %s, not %s", api.VolumeStateCreating, api.VolumeStateReady))
+		}
+
+		Logc(ctx).WithFields(LogFields{
+			"name":  name,
+			"state": existingVolume.State,
+		}).Debug("Volume already exists.")
+
+		return drivers.NewVolumeExistsError(name)
+	}
+
+	// Parse size
+	sizeBytes, err := strconv.ParseUint(volConfig.Size, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid volume size: %v", err)
+	}
+
+	// Ensure the volume size meets minimum requirements
+	if err = drivers.CheckMinVolumeSize(sizeBytes, MinimumVolumeSizeBytes); err != nil {
+		return err
+	}
+
+	// NOTE: Snapshot reserve is applied later after parsing; the size checks below use the base size.
+	// The actualSizeBytes calculation will be done after the snapshot reserve is parsed.
+
+	Logc(ctx).WithFields(LogFields{
+		"requestedBytes": sizeBytes,
+		"requestedGiB":   float64(sizeBytes) / float64(api.GiBBytes),
+	}).Debug("Parsed volume size request.")
+
+	// Check for a supported file system type (volConfig takes precedence, e.g. from PVC annotation)
+	fstype := volConfig.FileSystem
+	if fstype == "" {
+		fstype = pool.InternalAttributes()[FileSystemType]
+	}
+	fstype, err = drivers.CheckSupportedFilesystem(ctx, fstype, name)
+	if err != nil {
+		return err
+	}
+	volConfig.FileSystem = fstype
+
+	// Get service level from storage pool
+	serviceLevel := pool.InternalAttributes()[ServiceLevel]
+	volConfig.ServiceLevel = serviceLevel
+
+	// Get snapshot reserve (volConfig takes precedence, e.g. from PVC annotation)
+	snapshotReserve := volConfig.SnapshotReserve
+	if snapshotReserve == "" {
+		snapshotReserve = pool.InternalAttributes()[SnapshotReserve]
+	}
+	var snapshotReservePtr *int64
+	var snapshotReserveInt int
+	if snapshotReserve != "" {
+		snapshotReserveInt64, err := strconv.ParseInt(snapshotReserve, 10, 0)
+		if err != nil {
+			return fmt.Errorf("invalid value for snapshotReserve: %v", err)
+		}
+		snapshotReserveInt = int(snapshotReserveInt64)
+		snapshotReservePtr = &snapshotReserveInt64
+	}
+	volConfig.SnapshotReserve = snapshotReserve
+
+	// Get the volume size based on the snapshot reserve
+	sizeWithReserveBytes := drivers.CalculateVolumeSizeBytes(ctx, name, sizeBytes, snapshotReserveInt)
+
+	// Check configured maximum volume size (if any)
+	_, _, err = drivers.CheckVolumeSizeLimits(ctx, sizeWithReserveBytes, d.Config.CommonStorageDriverConfig)
+	if err != nil {
+		return err
+	}
+
+	// Calculate actual size to request from GCNV (rounds up to whole GiB + 1 GiB buffer)
+	actualSizeBytes, err := calculateActualSizeBytes(int64(sizeWithReserveBytes))
+	if err != nil {
+		return err
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"requestedBytes":       sizeBytes,
+		"snapshotReserve":      snapshotReserve,
+		"sizeWithReserveBytes": sizeWithReserveBytes,
+		"actualSizeBytes":      actualSizeBytes,
+		"actualSizeGiB":        actualSizeBytes / api.GiBBytes,
+	}).Debug("Adjusted volume size to include snapshot reserve and ensure usable space.")
+
+	// Find matching capacity pools
+	cPools := d.API.CapacityPoolsForStoragePool(ctx, pool, serviceLevel, drivers.TieringPolicyNone)
+
+	// Filter capacity pools based on the requisite topology
+	cPools = d.API.FilterCapacityPoolsOnTopology(ctx, cPools, volConfig.RequisiteTopologies, volConfig.PreferredTopologies)
+
+	if len(cPools) == 0 {
+		return fmt.Errorf("no GCNV storage pools found for Trident pool %s", pool.Name())
+	}
+
+	// Prepare labels (used for all capacity pool attempts)
+	labels := d.getTelemetryLabels(ctx)
+
+	// Add pool labels (user-defined labels from backend config)
+	for k, v := range pool.GetLabels(ctx, "") {
+		if key, keyOK := d.fixGCPLabelKey(k); keyOK {
+			labels[key] = d.fixGCPLabelValue(v)
+		}
+		if len(labels) > api.MaxLabelCount {
+			break
+		}
+	}
+
+	// Add volume-specific labels (fstype and formatOptions)
+	if key, ok := d.fixGCPLabelKey(TridentLabelFSType); ok {
+		labels[key] = d.fixGCPLabelValue(volConfig.FileSystem)
+	}
+	if volConfig.FormatOptions != "" {
+		if key, ok := d.fixGCPLabelKey(TridentLabelFormatOptions); ok {
+			labels[key] = d.fixGCPLabelValue(volConfig.FormatOptions)
+		}
+	}
+
+	// Try each capacity pool until one succeeds
+	var createErr error
 	for _, cPool := range cPools {
-		backendPool := drivers.GCNVStorageBackendPool{
-			ProjectNumber: d.Config.ProjectNumber,
-			Location:      cPool.Location,
-			StoragePool:   cPool.Name,
+
+		Logc(ctx).WithFields(LogFields{
+			"capacityPool":    cPool.Name,
+			"name":            name,
+			"requestedSize":   sizeBytes,
+			"snapshotReserve": snapshotReserve,
+			"actualSizeBytes": actualSizeBytes,
+		}).Debug("Attempting to create LUN in capacity pool.")
+
+		createReq := &api.VolumeCreateRequest{
+			Name:            normalizedName,
+			CreationToken:   name,
+			CapacityPool:    cPool.Name,
+			SizeBytes:       actualSizeBytes,
+			Labels:          labels,
+			SnapshotReserve: snapshotReservePtr,
+			ProtocolTypes:   []string{api.ProtocolTypeISCSI},
+			OSType:          api.OSTypeLinux,
 		}
-		backendPools = append(backendPools, backendPool)
+
+		volume, err := d.API.CreateVolume(ctx, createReq)
+		if err != nil {
+			errMessage := fmt.Sprintf("GCNV pool %s; error creating LUN %s: %v", cPool.Name, name, err)
+			Logc(ctx).Error(errMessage)
+			createErr = multierr.Append(createErr, errors.New(errMessage))
+			continue
+		}
+
+		// Always save the full GCP ID (projects/.../locations/.../volumes/...)
+		volConfig.InternalID = volume.FullName
+
+		// Report the actual allocated size so PV reflects what GCNV created (and bills for)
+		volConfig.Size = strconv.FormatUint(uint64(actualSizeBytes), 10)
+
+		Logc(ctx).WithField("capacityPool", cPool.Name).Debug("LUN create request issued.")
+
+		// Wait for creation to complete so that the volume is ready for publishing
+		return d.waitForVolumeCreate(ctx, volume)
 	}
-	return backendPools
+
+	// All capacity pools failed
+	return fmt.Errorf("could not create LUN in any capacity pool: %w", createErr)
 }
 
-// poolName constructs the name of the pool reported by this driver instance.
-func (d *SANStorageDriver) poolName(name string) string {
-	return fmt.Sprintf("%s_%s", d.BackendName(), strings.Replace(name, "-", "", -1))
-}
+// CreateClone clones an existing volume. If a snapshot is not specified, one is created.
+func (d *SANStorageDriver) CreateClone(
+	ctx context.Context, sourceVolConfig, cloneVolConfig *storage.VolumeConfig, _ storage.Pool,
+) error {
+	name := cloneVolConfig.InternalName
+	// GCP volume_id allows only [a-z][a-z0-9_] for SAN volumes. Normalize and validate once.
+	normalizedName := strings.ToLower(strings.ReplaceAll(cloneVolConfig.Name, "-", "_"))
+	source := cloneVolConfig.CloneSourceVolumeInternal
+	snapshot := cloneVolConfig.CloneSourceSnapshotInternal
 
-// getNodeSpecificHostGroupName generates a valid GCNV host group ID that:
-// - Starts with a lowercase letter
-// - Contains only lowercase letters, numbers, and hyphens
-// - Does not end with a hyphen
-// - Is at most 63 characters long (GCNV requirement: 1 letter + up to 62 alphanumeric/hyphens)
-// - Is unique per node and backend
-//
-// Note: This differs from ONTAP's getNodeSpecificIgroupName which simply truncates the node name
-// when the igroup name exceeds 96 chars. GCNV uses SHA256 hashing instead of truncation to avoid
-// collisions (GCNV has a stricter 63-char limit). The hash approach is borrowed from ONTAP's
-// getUniqueNodeSpecificSubsystemName (NVMe subsystems) which also uses SHA256 when names exceed
-// limits. GCNV also requires additional normalization (lowercase, char filtering) that ONTAP
-// igroups don't need.
-func (d *SANStorageDriver) getNodeSpecificHostGroupName(nodeName string) string {
-	const maxLength = 63
-	const prefix = "trident-node-"
+	fields := LogFields{
+		"Method":         "CreateClone",
+		"Type":           "SANStorageDriver",
+		"name":           name,
+		"sourceVolume":   source,
+		"sourceSnapshot": snapshot,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateClone")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateClone")
 
-	// Try the full name first
-	fullName := fmt.Sprintf("%s%s-%s", prefix, nodeName, d.tridentUUID)
+	// Discover GCNV resources (capacity pools, volumes, etc.)
+	if err := d.API.RefreshGCNVResources(ctx); err != nil {
+		return fmt.Errorf("could not refresh GCNV resources: %v", err)
+	}
 
-	// Normalize: convert to lowercase, replace invalid chars with hyphens
-	normalized := strings.ToLower(fullName)
-	normalized = strings.ReplaceAll(normalized, "_", "-")
+	if err := d.validateVolumeName(normalizedName); err != nil {
+		return err
+	}
 
-	// Remove any characters that aren't lowercase letters, numbers, or hyphens
-	var builder strings.Builder
-	for _, r := range normalized {
-		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '-' {
-			builder.WriteRune(r)
-		} else {
-			builder.WriteRune('-')
+	// Make sure we got a valid creation token
+	if err := d.validateCreationToken(name); err != nil {
+		return err
+	}
+
+	// Get the source volume
+	sourceVolume, err := d.API.Volume(ctx, sourceVolConfig)
+	if err != nil {
+		return fmt.Errorf("could not find source volume: %v", err)
+	}
+
+	// If the volume already exists, bail out
+	volumeExists, extantVolume, err := d.API.VolumeExists(ctx, cloneVolConfig)
+	if err != nil {
+		return fmt.Errorf("error checking for existing volume %s; %v", name, err)
+	}
+	if volumeExists {
+		// Clone volume exists - check its state for proper idempotent handling
+		if extantVolume.State == api.VolumeStateCreating {
+			// This is a retry and the volume still isn't ready, so no need to wait further.
+			return errors.VolumeCreatingError(
+				fmt.Sprintf("volume state is still %s, not %s", api.VolumeStateCreating, api.VolumeStateReady))
+		}
+		return drivers.NewVolumeExistsError(name)
+	}
+
+	var sourceSnapshot *api.Snapshot
+
+	if snapshot != "" {
+		// Get the source snapshot
+		sourceSnapshot, err = d.API.SnapshotForVolume(ctx, sourceVolume, snapshot)
+		if err != nil {
+			return fmt.Errorf("could not find snapshot: %v", err)
+		}
+
+		// Ensure snapshot is in a usable state
+		if sourceSnapshot.State != api.SnapshotStateReady {
+			return fmt.Errorf("source snapshot state is %s, it must be %s",
+				sourceSnapshot.State, api.SnapshotStateReady)
+		}
+
+		Logc(ctx).WithFields(LogFields{
+			"snapshot": snapshot,
+			"source":   sourceVolume.Name,
+		}).Debug("Found source snapshot.")
+
+	} else {
+		// No source snapshot specified, so create an intermediate one for direct PVC clone
+		snapName := "snap-" + strings.ToLower(time.Now().UTC().Format(storage.SnapshotNameFormat))
+
+		Logc(ctx).WithFields(LogFields{
+			"snapshot": snapName,
+			"source":   sourceVolume.Name,
+		}).Debug("Creating intermediate snapshot for direct PVC clone.")
+
+		sourceSnapshot, err = d.API.CreateSnapshot(ctx, sourceVolume, snapName, api.SnapshotTimeout)
+		if err != nil {
+			return fmt.Errorf("could not create intermediate snapshot: %v", err)
+		}
+
+		// Re-fetch the snapshot to populate the properties after create has completed
+		sourceSnapshot, err = d.API.SnapshotForVolume(ctx, sourceVolume, snapName)
+		if err != nil {
+			return fmt.Errorf("could not retrieve newly-created snapshot: %v", err)
+		}
+
+		// Save the snapshot name in the volume config so we can auto-delete it later
+		cloneVolConfig.CloneSourceSnapshotInternal = sourceSnapshot.Name
+
+		Logc(ctx).WithFields(LogFields{
+			"snapshot": sourceSnapshot.Name,
+			"source":   sourceVolume.Name,
+		}).Debug("Created intermediate snapshot for direct PVC clone.")
+
+		// Defer cleanup of intermediate snapshot - runs on success or failure
+		defer func() {
+			if delErr := d.API.DeleteSnapshot(ctx, sourceVolume, sourceSnapshot, api.DefaultTimeout); delErr != nil {
+				Logc(ctx).WithFields(LogFields{
+					"snapshot": sourceSnapshot.Name,
+					"source":   sourceVolume.Name,
+				}).WithError(delErr).Debug("Could not delete intermediate snapshot.")
+			}
+		}()
+	}
+
+	// Parse size
+	sizeBytes, err := strconv.ParseUint(cloneVolConfig.Size, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid volume size: %v", err)
+	}
+
+	// Create labels
+	labels := d.getTelemetryLabels(ctx)
+	// Add volume-specific labels (fstype and formatOptions) - sanitize keys for GCP API
+	if key, ok := d.fixGCPLabelKey(TridentLabelFSType); ok {
+		labels[key] = d.fixGCPLabelValue(cloneVolConfig.FileSystem)
+	}
+	if cloneVolConfig.FormatOptions != "" {
+		if key, ok := d.fixGCPLabelKey(TridentLabelFormatOptions); ok {
+			labels[key] = d.fixGCPLabelValue(cloneVolConfig.FormatOptions)
 		}
 	}
-	normalized = builder.String()
 
-	// Remove consecutive hyphens
-	for strings.Contains(normalized, "--") {
-		normalized = strings.ReplaceAll(normalized, "--", "-")
+	// Clone size must be at least as large as the source volume.
+	// Use source volume's actual size (which includes the +1 GiB buffer from Create).
+	cloneSizeBytes := sourceVolume.SizeBytes
+	if int64(sizeBytes) > cloneSizeBytes {
+		// If user requests larger than source, apply the buffer to the requested size
+		var err error
+		cloneSizeBytes, err = calculateActualSizeBytes(int64(sizeBytes))
+		if err != nil {
+			return err
+		}
 	}
 
-	// NOTE: We don't need a separate "ensure starts with a letter" check here:
-	// - The non-hashed path always starts with `prefix` ("trident-node-"), which starts with 't'.
-	// - The hashed path always starts with `prefix + "t"`.
-	// The construction guarantees a non-empty result because the prefix and UUID are always present.
-	// Note: nodeName is assumed to be non-empty by callers; an empty nodeName would produce a
-	// valid but non-unique identifier. After hashing, the result always fits within maxLength.
+	Logc(ctx).WithFields(LogFields{
+		"creationToken":   name,
+		"sourceVolume":    sourceVolume.CreationToken,
+		"sourceSnapshot":  sourceSnapshot.Name,
+		"snapshotReserve": sourceVolume.SnapshotReserve,
+	}).Debug("Cloning volume.")
 
-	// If still too long, hash the node name + UUID and use that
-	if len(normalized) > maxLength {
-		// Create a hash of nodeName + UUID for uniqueness
-		hashInput := fmt.Sprintf("%s-%s", nodeName, d.tridentUUID)
-		hash := sha256.Sum256([]byte(hashInput))
-		hashStr := hex.EncodeToString(hash[:])
-
-		// Use prefix + first part of hash, ensuring it starts with a letter
-		// Reserve space for prefix + 1 letter + hash.
-		availableForHash := maxLength - len(prefix) - 1
-		normalized = prefix + "t" + hashStr[:availableForHash]
+	createReq := &api.VolumeCreateRequest{
+		Name:            normalizedName,
+		CreationToken:   name,
+		CapacityPool:    sourceVolume.CapacityPool,
+		SizeBytes:       cloneSizeBytes,
+		Labels:          labels,
+		SnapshotReserve: convert.ToPtr(sourceVolume.SnapshotReserve),
+		SnapshotID:      sourceSnapshot.FullName,
+		ProtocolTypes:   []string{api.ProtocolTypeISCSI},
+		OSType:          api.OSTypeLinux,
 	}
 
-	// Ensure it doesn't end with a hyphen
-	normalized = strings.TrimRight(normalized, "-")
+	clone, err := d.API.CreateVolume(ctx, createReq)
+	if err != nil {
+		return fmt.Errorf("could not create clone: %v", err)
+	}
 
-	return normalized
+	// Always save the full GCP ID for efficient future lookups
+	cloneVolConfig.InternalID = clone.FullName
+
+	// Report the actual allocated size so PV reflects what GCNV created
+	cloneVolConfig.Size = strconv.FormatUint(uint64(cloneSizeBytes), 10)
+
+	// Wait for clone creation to complete so that the volume is ready for publishing
+	return d.waitForVolumeCreate(ctx, clone)
 }
 
-// extractNodeNameFromHostGroupName extracts the Kubernetes node name from a host group name.
-func (d *SANStorageDriver) extractNodeNameFromHostGroupName(hostGroupName string) string {
-	// Extract node name from host group name format: "trident-node-{nodeName}-{uuid}"
-	// or full path: "projects/.../hostGroups/trident-node-{nodeName}-{uuid}"
-	const prefix = "trident-node-"
+// Import finds an existing volume and makes it available for containers.
+func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.VolumeConfig, originalName string) error {
+	fields := LogFields{
+		"Method":       "Import",
+		"Type":         "SANStorageDriver",
+		"originalName": originalName,
+		"newName":      volConfig.InternalName,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
 
-	// Extract just the name part if it's a full path
-	name := hostGroupName
-	if idx := strings.LastIndex(hostGroupName, "/"); idx >= 0 {
-		name = hostGroupName[idx+1:]
+	// Discover GCNV resources
+	if err := d.API.RefreshGCNVResources(ctx); err != nil {
+		return fmt.Errorf("could not refresh GCNV resources: %v", err)
 	}
 
-	// Check if it starts with the prefix
-	if !strings.HasPrefix(name, prefix) {
-		return ""
+	// Get existing volume
+	volume, err := d.API.VolumeByName(ctx, originalName)
+	if err != nil {
+		return fmt.Errorf("could not find volume to import: %v", err)
 	}
 
-	// Remove the prefix
-	name = name[len(prefix):]
-
-	// The UUID is at the end and has a known format (from tridentUUID)
-	// Format: {nodeName}-{uuid}
-	// The UUID format is: {8hex}-{4hex}-{4hex}-{4hex}-{12hex}
-	// We can find the UUID by looking for the pattern at the end
-	// But a simpler approach: find the last occurrence of the UUID pattern
-	// Since we have d.tridentUUID, we can use it to find where the UUID starts
-	uuidLen := len(d.tridentUUID)
-	if len(name) <= uuidLen {
-		return ""
+	// Ensure volume is in a valid state
+	if volume.State != api.VolumeStateReady {
+		return fmt.Errorf("volume %s is in state %s and is not available", originalName, volume.State)
 	}
 
-	// Check if the name ends with the UUID
-	if !strings.HasSuffix(name, d.tridentUUID) {
-		return ""
+	// Verify it's a block/iSCSI volume.
+	//
+	// In GCNV, iSCSI (block) volumes surface with either iSCSI in `ProtocolTypes` or populated `BlockDevices`.
+	// Although we generally expect a single LUN/block device per volume today, the wire format is modeled as a list,
+	// so we treat a non-empty list as "this is a block volume". As a fallback (and to mirror API conventions),
+	// also accept volumes whose ProtocolTypes include ISCSI.
+	isISCSI := len(volume.BlockDevices) > 0
+	if !isISCSI && len(volume.ProtocolTypes) > 0 {
+		for _, proto := range volume.ProtocolTypes {
+			if proto == api.ProtocolTypeISCSI {
+				isISCSI = true
+				break
+			}
+		}
+	}
+	if !isISCSI {
+		return fmt.Errorf("volume %s is not an iSCSI volume", originalName)
 	}
 
-	// Extract node name (everything before the UUID and the hyphen before it)
-	nodeName := name[:len(name)-uuidLen-1] // -1 for the hyphen before UUID
-	return nodeName
+	// Ensure the volume may be imported by a capacity pool managed by this backend
+	if err = d.API.EnsureVolumeInValidCapacityPool(ctx, volume); err != nil {
+		return err
+	}
+
+	volConfig.Size = strconv.FormatUint(uint64(volume.SizeBytes), 10)
+
+	// The GCNV creation token cannot be changed, so use it as the internal name
+	volConfig.InternalName = originalName
+
+	// Always save the full GCP ID
+	volConfig.InternalID = volume.FullName
+
+	Logc(ctx).WithFields(LogFields{
+		"creationToken": volume.CreationToken,
+		"managed":       !volConfig.ImportNotManaged,
+		"state":         volume.State,
+		"capacityPool":  volume.CapacityPool,
+		"sizeBytes":     volume.SizeBytes,
+	}).Debug("Found volume to import.")
+
+	// Modify the volume if Trident will manage its lifecycle
+	if !volConfig.ImportNotManaged {
+		// Update the volume labels with telemetry information
+		labels := d.updateTelemetryLabels(ctx, volume)
+
+		// Update volume labels using UpdateVolume API (preserves block_devices)
+		updateReq := &api.VolumeUpdateRequest{
+			Labels:    labels,
+			FieldMask: []string{"labels"},
+		}
+		if _, err := d.API.UpdateSANVolume(ctx, volume, updateReq); err != nil {
+			Logc(ctx).WithField("originalName", originalName).WithError(err).Error(
+				"Could not import volume, volume label update failed.")
+			return fmt.Errorf("could not import volume %s, volume label update failed; %v", originalName, err)
+		}
+
+		Logc(ctx).WithFields(LogFields{
+			"name":          volume.Name,
+			"creationToken": volume.CreationToken,
+			"labels":        labels,
+		}).Info("Volume labels updated during import.")
+
+		// Wait for the update to complete
+		if _, err = d.API.WaitForVolumeState(
+			ctx, volume, api.VolumeStateReady, []string{api.VolumeStateError}, d.defaultTimeout()); err != nil {
+			return fmt.Errorf("could not import volume %s; %v", originalName, err)
+		}
+	}
+
+	return nil
+}
+
+// Rename changes the name of a volume. Not supported by this driver.
+func (d *SANStorageDriver) Rename(ctx context.Context, name, newName string) error {
+	fields := LogFields{
+		"Method":  "Rename",
+		"Type":    "SANStorageDriver",
+		"name":    name,
+		"newName": newName,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Rename")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Rename")
+
+	// Rename is only needed for the import workflow, and we aren't currently renaming the
+	// GCNV volume when importing, so do nothing here lest we set the volume name incorrectly
+	// during an import failure cleanup.
+	return nil
 }
 
 // getTelemetryLabels returns a map of labels to be applied to volumes for telemetry purposes.
-func (d *SANStorageDriver) getTelemetryLabels(ctx context.Context) map[string]string {
+func (d *SANStorageDriver) getTelemetryLabels(_ context.Context) map[string]string {
 	return map[string]string{
 		"version":          d.fixGCPLabelValue(d.telemetry.TridentVersion),
 		"backend_uuid":     d.fixGCPLabelValue(d.telemetry.TridentBackendUUID),
@@ -851,225 +1188,6 @@ func (d *SANStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.
 	}
 
 	return nil
-}
-
-// CreatePrepare is called prior to volume creation. Its role is to set the internal volume name.
-func (d *SANStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool) {
-	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig, pool)
-}
-
-// Create creates a new volume.
-func (d *SANStorageDriver) Create(
-	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
-) error {
-	name := volConfig.InternalName
-	fields := LogFields{
-		"Method": "Create",
-		"Type":   "SANStorageDriver",
-		"name":   name,
-		"size":   volConfig.Size,
-	}
-	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
-
-	// Discover GCNV resources (capacity pools, etc.)
-	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not refresh GCNV resources: %v", err)
-	}
-
-	// Make sure we got a valid name
-	if err := d.validateVolumeName(volConfig.Name); err != nil {
-		return err
-	}
-
-	// Make sure we got a valid creation token
-	if err := d.validateCreationToken(name); err != nil {
-		return err
-	}
-
-	// Get the pool since most default values are pool-specific
-	if storagePool == nil {
-		return errors.New("pool not specified")
-	}
-	pool, ok := d.pools[storagePool.Name()]
-	if !ok {
-		return fmt.Errorf("pool %s does not exist", storagePool.Name())
-	}
-
-	// Check if volume already exists
-	volumeExists, existingVolume, err := d.API.VolumeExists(ctx, volConfig)
-	if err != nil {
-		return fmt.Errorf("error checking for existing volume %s; %v", name, err)
-	}
-	if volumeExists {
-		// Volume exists - check its state for proper idempotent handling
-		if existingVolume.State == api.VolumeStateCreating {
-			// This is a retry and the volume still isn't ready, so no need to wait further.
-			return errors.VolumeCreatingError(
-				fmt.Sprintf("volume state is still %s, not %s", api.VolumeStateCreating, api.VolumeStateReady))
-		}
-
-		Logc(ctx).WithFields(LogFields{
-			"name":  name,
-			"state": existingVolume.State,
-		}).Debug("Volume already exists.")
-
-		return drivers.NewVolumeExistsError(name)
-	}
-
-	// Parse size
-	sizeBytes, err := strconv.ParseUint(volConfig.Size, 10, 64)
-	if err != nil {
-		return fmt.Errorf("invalid volume size: %v", err)
-	}
-
-	// Ensure the volume size meets minimum requirements
-	if err = drivers.CheckMinVolumeSize(sizeBytes, MinimumVolumeSizeBytes); err != nil {
-		return err
-	}
-
-	// NOTE: Snapshot reserve is applied later after parsing; size checks below use the base size.
-	// The actualSizeBytes calculation will be done after snapshot reserve is parsed.
-
-	Logc(ctx).WithFields(LogFields{
-		"requestedBytes": sizeBytes,
-		"requestedGiB":   float64(sizeBytes) / float64(api.GiBBytes),
-	}).Debug("Parsed volume size request.")
-
-	// Check for a supported file system type (volConfig takes precedence, e.g. from PVC annotation)
-	fstype := volConfig.FileSystem
-	if fstype == "" {
-		fstype = pool.InternalAttributes()[FileSystemType]
-	}
-	fstype, err = drivers.CheckSupportedFilesystem(ctx, fstype, name)
-	if err != nil {
-		return err
-	}
-	volConfig.FileSystem = fstype
-
-	// Get service level from storage pool
-	serviceLevel := pool.InternalAttributes()[ServiceLevel]
-	volConfig.ServiceLevel = serviceLevel
-
-	// Get snapshot reserve (volConfig takes precedence, e.g. from PVC annotation)
-	snapshotReserve := volConfig.SnapshotReserve
-	if snapshotReserve == "" {
-		snapshotReserve = pool.InternalAttributes()[SnapshotReserve]
-	}
-	var snapshotReservePtr *int64
-	var snapshotReserveInt int
-	if snapshotReserve != "" {
-		snapshotReserveInt64, err := strconv.ParseInt(snapshotReserve, 10, 0)
-		if err != nil {
-			return fmt.Errorf("invalid value for snapshotReserve: %v", err)
-		}
-		snapshotReserveInt = int(snapshotReserveInt64)
-		snapshotReservePtr = &snapshotReserveInt64
-	}
-	volConfig.SnapshotReserve = snapshotReserve
-
-	// Get the volume size based on the snapshot reserve
-	sizeWithReserveBytes := drivers.CalculateVolumeSizeBytes(ctx, name, sizeBytes, snapshotReserveInt)
-
-	// Check configured maximum volume size (if any)
-	_, _, err = drivers.CheckVolumeSizeLimits(ctx, sizeWithReserveBytes, d.Config.CommonStorageDriverConfig)
-	if err != nil {
-		return err
-	}
-
-	// Calculate actual size to request from GCNV (rounds up to whole GiB + 1 GiB buffer)
-	actualSizeBytes, err := calculateActualSizeBytes(int64(sizeWithReserveBytes))
-	if err != nil {
-		return err
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"requestedBytes":       sizeBytes,
-		"snapshotReserve":      snapshotReserve,
-		"sizeWithReserveBytes": sizeWithReserveBytes,
-		"actualSizeBytes":      actualSizeBytes,
-		"actualSizeGiB":        actualSizeBytes / api.GiBBytes,
-	}).Debug("Adjusted volume size to include snapshot reserve and ensure usable space.")
-
-	// Find matching capacity pools
-	cPools := d.API.CapacityPoolsForStoragePool(ctx, pool, serviceLevel, drivers.TieringPolicyNone)
-
-	// Filter capacity pools based on requisite topology
-	cPools = d.API.FilterCapacityPoolsOnTopology(ctx, cPools, volConfig.RequisiteTopologies, volConfig.PreferredTopologies)
-
-	if len(cPools) == 0 {
-		return fmt.Errorf("no GCNV storage pools found for Trident pool %s", pool.Name())
-	}
-
-	// Prepare labels (used for all capacity pool attempts)
-	labels := d.getTelemetryLabels(ctx)
-
-	// Add pool labels (user-defined labels from backend config)
-	for k, v := range pool.GetLabels(ctx, "") {
-		if key, keyOK := d.fixGCPLabelKey(k); keyOK {
-			labels[key] = d.fixGCPLabelValue(v)
-		}
-		if len(labels) > api.MaxLabelCount {
-			break
-		}
-	}
-
-	// Add volume-specific labels (fstype and formatOptions)
-	if key, ok := d.fixGCPLabelKey(TridentLabelFSType); ok {
-		labels[key] = d.fixGCPLabelValue(volConfig.FileSystem)
-	}
-	if volConfig.FormatOptions != "" {
-		if key, ok := d.fixGCPLabelKey(TridentLabelFormatOptions); ok {
-			labels[key] = d.fixGCPLabelValue(volConfig.FormatOptions)
-		}
-	}
-
-	// Try each capacity pool until one succeeds
-	var createErr error
-	for _, cPool := range cPools {
-
-		Logc(ctx).WithFields(LogFields{
-			"capacityPool":    cPool.Name,
-			"name":            name,
-			"requestedSize":   sizeBytes,
-			"snapshotReserve": snapshotReserve,
-			"actualSizeBytes": actualSizeBytes,
-		}).Debug("Attempting to create LUN in capacity pool.")
-
-		// Create block volume (LUN) with empty host groups
-		createReq := &api.VolumeCreateRequest{
-			Name:            name,
-			CreationToken:   name,
-			CapacityPool:    cPool.Name,
-			SizeBytes:       actualSizeBytes,
-			Labels:          labels,
-			SnapshotReserve: snapshotReservePtr,
-			ProtocolTypes:   []string{api.ProtocolTypeISCSI},
-			OSType:          api.OSTypeLinux,
-		}
-
-		volume, err := d.API.CreateVolume(ctx, createReq)
-		if err != nil {
-			errMessage := fmt.Sprintf("GCNV pool %s; error creating LUN %s: %v", cPool.Name, name, err)
-			Logc(ctx).Error(errMessage)
-			createErr = multierr.Append(createErr, errors.New(errMessage))
-			continue
-		}
-
-		// Always save the full GCP ID (projects/.../locations/.../volumes/...)
-		volConfig.InternalID = volume.FullName
-
-		// Report the actual allocated size so PV reflects what GCNV created (and bills for)
-		volConfig.Size = strconv.FormatUint(uint64(actualSizeBytes), 10)
-
-		Logc(ctx).WithField("capacityPool", cPool.Name).Debug("LUN create request issued.")
-
-		// Wait for creation to complete so that the volume is ready for publishing
-		return d.waitForVolumeCreate(ctx, volume)
-	}
-
-	// All capacity pools failed
-	return fmt.Errorf("could not create LUN in any capacity pool: %w", createErr)
 }
 
 // Destroy deletes a volume.
@@ -1188,391 +1306,6 @@ func (d *SANStorageDriver) deleteAutomaticSnapshot(
 	}
 }
 
-// Rename changes the name of a volume.
-// Rename changes the name of a volume. Not supported by this driver.
-func (d *SANStorageDriver) Rename(ctx context.Context, name, newName string) error {
-	fields := LogFields{
-		"Method":  "Rename",
-		"Type":    "SANStorageDriver",
-		"name":    name,
-		"newName": newName,
-	}
-	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Rename")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Rename")
-
-	// Rename is only needed for the import workflow, and we aren't currently renaming the
-	// GCNV volume when importing, so do nothing here lest we set the volume name incorrectly
-	// during an import failure cleanup.
-	return nil
-}
-
-// CreateClone clones an existing volume. If a snapshot is not specified, one is created.
-func (d *SANStorageDriver) CreateClone(
-	ctx context.Context, sourceVolConfig, cloneConfig *storage.VolumeConfig, _ storage.Pool,
-) error {
-	name := cloneConfig.InternalName
-	fields := LogFields{
-		"Method":         "CreateClone",
-		"Type":           "SANStorageDriver",
-		"name":           name,
-		"sourceVolume":   cloneConfig.CloneSourceVolumeInternal,
-		"sourceSnapshot": cloneConfig.CloneSourceSnapshot,
-	}
-	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateClone")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateClone")
-
-	// Discover GCNV resources (capacity pools, volumes, etc.)
-	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not refresh GCNV resources: %v", err)
-	}
-
-	// Make sure we got a valid name
-	if err := d.validateVolumeName(cloneConfig.Name); err != nil {
-		return err
-	}
-
-	// Make sure we got a valid creation token
-	if err := d.validateCreationToken(name); err != nil {
-		return err
-	}
-
-	// Check if clone volume already exists (for idempotency)
-	cloneExists, existingVolume, err := d.API.VolumeExists(ctx, cloneConfig)
-	if err != nil {
-		return fmt.Errorf("error checking for existing volume %s; %v", name, err)
-	}
-	if cloneExists {
-		// Clone volume exists - check its state for proper idempotent handling
-		if existingVolume.State == api.VolumeStateCreating {
-			// This is a retry and the volume still isn't ready, so no need to wait further.
-			return errors.VolumeCreatingError(
-				fmt.Sprintf("volume state is still %s, not %s", api.VolumeStateCreating, api.VolumeStateReady))
-		}
-		return drivers.NewVolumeExistsError(name)
-	}
-
-	// Get source volume (uses InternalID if available for faster lookup)
-	sourceVolume, err := d.API.Volume(ctx, sourceVolConfig)
-	if err != nil {
-		return fmt.Errorf("could not find source volume: %v", err)
-	}
-
-	var snapshot *api.Snapshot
-
-	if cloneConfig.CloneSourceSnapshotInternal != "" {
-		// Get the source snapshot
-		snapshot, err = d.API.SnapshotForVolume(ctx, sourceVolume, cloneConfig.CloneSourceSnapshotInternal)
-		if err != nil {
-			return fmt.Errorf("could not find snapshot: %v", err)
-		}
-
-		// Ensure snapshot is in a usable state
-		if snapshot.State != api.SnapshotStateReady {
-			return fmt.Errorf("source snapshot state is %s, it must be %s",
-				snapshot.State, api.SnapshotStateReady)
-		}
-
-		Logc(ctx).WithFields(LogFields{
-			"snapshot": cloneConfig.CloneSourceSnapshotInternal,
-			"source":   sourceVolume.Name,
-		}).Debug("Found source snapshot.")
-
-	} else {
-		// No source snapshot specified, so create an intermediate one for direct PVC clone
-		snapName := "snap-" + strings.ToLower(time.Now().UTC().Format(storage.SnapshotNameFormat))
-
-		Logc(ctx).WithFields(LogFields{
-			"snapshot": snapName,
-			"source":   sourceVolume.Name,
-		}).Debug("Creating intermediate snapshot for direct PVC clone.")
-
-		snapshot, err = d.API.CreateSnapshot(ctx, sourceVolume, snapName, api.SnapshotTimeout)
-		if err != nil {
-			return fmt.Errorf("could not create intermediate snapshot: %v", err)
-		}
-
-		// Re-fetch the snapshot to populate the properties after create has completed
-		snapshot, err = d.API.SnapshotForVolume(ctx, sourceVolume, snapName)
-		if err != nil {
-			return fmt.Errorf("could not retrieve newly-created snapshot: %v", err)
-		}
-
-		// Save the snapshot name in the volume config so we can auto-delete it later
-		cloneConfig.CloneSourceSnapshotInternal = snapshot.Name
-
-		Logc(ctx).WithFields(LogFields{
-			"snapshot": snapshot.Name,
-			"source":   sourceVolume.Name,
-		}).Debug("Created intermediate snapshot for direct PVC clone.")
-
-		// Defer cleanup of intermediate snapshot - runs on success or failure
-		defer func() {
-			if delErr := d.API.DeleteSnapshot(ctx, sourceVolume, snapshot, api.DefaultTimeout); delErr != nil {
-				Logc(ctx).WithFields(LogFields{
-					"snapshot": snapshot.Name,
-					"source":   sourceVolume.Name,
-				}).WithError(delErr).Debug("Could not delete intermediate snapshot.")
-			}
-		}()
-	}
-
-	// Parse size
-	sizeBytes, err := strconv.ParseUint(cloneConfig.Size, 10, 64)
-	if err != nil {
-		return fmt.Errorf("invalid volume size: %v", err)
-	}
-
-	// Create labels
-	labels := d.getTelemetryLabels(ctx)
-	// Add volume-specific labels (fstype and formatOptions) - sanitize keys for GCP API
-	if key, ok := d.fixGCPLabelKey(TridentLabelFSType); ok {
-		labels[key] = d.fixGCPLabelValue(cloneConfig.FileSystem)
-	}
-	if cloneConfig.FormatOptions != "" {
-		if key, ok := d.fixGCPLabelKey(TridentLabelFormatOptions); ok {
-			labels[key] = d.fixGCPLabelValue(cloneConfig.FormatOptions)
-		}
-	}
-
-	// Clone size must be at least as large as the source volume.
-	// Use source volume's actual size (which includes the +1 GiB buffer from Create).
-	cloneSizeBytes := sourceVolume.SizeBytes
-	if int64(sizeBytes) > cloneSizeBytes {
-		// If user requests larger than source, apply the buffer to the requested size
-		var err error
-		cloneSizeBytes, err = calculateActualSizeBytes(int64(sizeBytes))
-		if err != nil {
-			return err
-		}
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"creationToken":   name,
-		"sourceVolume":    sourceVolume.CreationToken,
-		"sourceSnapshot":  snapshot.Name,
-		"snapshotReserve": sourceVolume.SnapshotReserve,
-	}).Debug("Cloning volume.")
-
-	// Create clone from snapshot with empty host groups
-	createReq := &api.VolumeCreateRequest{
-		Name:            name,
-		CreationToken:   name,
-		CapacityPool:    sourceVolume.CapacityPool,
-		SizeBytes:       cloneSizeBytes,
-		Labels:          labels,
-		SnapshotReserve: convert.ToPtr(sourceVolume.SnapshotReserve),
-		SnapshotID:      snapshot.FullName, // Use full resource path for v1 protobuf SDK
-		ProtocolTypes:   []string{api.ProtocolTypeISCSI},
-		OSType:          api.OSTypeLinux,
-	}
-
-	clone, err := d.API.CreateVolume(ctx, createReq)
-	if err != nil {
-		return fmt.Errorf("could not create clone: %v", err)
-	}
-
-	// Always save the full GCP ID for efficient future lookups
-	cloneConfig.InternalID = clone.FullName
-
-	// Report the actual allocated size so PV reflects what GCNV created
-	cloneConfig.Size = strconv.FormatUint(uint64(cloneSizeBytes), 10)
-
-	// Wait for clone creation to complete so that the volume is ready for publishing
-	return d.waitForVolumeCreate(ctx, clone)
-}
-
-// Import finds an existing volume and makes it available for containers.
-func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.VolumeConfig, originalName string) error {
-	fields := LogFields{
-		"Method":       "Import",
-		"Type":         "SANStorageDriver",
-		"originalName": originalName,
-		"newName":      volConfig.InternalName,
-	}
-	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
-
-	// Discover GCNV resources
-	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not refresh GCNV resources: %v", err)
-	}
-
-	// Get existing volume
-	volume, err := d.API.VolumeByName(ctx, originalName)
-	if err != nil {
-		return fmt.Errorf("could not find volume to import: %v", err)
-	}
-
-	// Ensure volume is in a valid state
-	if volume.State != api.VolumeStateReady {
-		return fmt.Errorf("volume %s is in state %s and is not available", originalName, volume.State)
-	}
-
-	// Verify it's a block/iSCSI volume.
-	//
-	// In GCNV, iSCSI (block) volumes surface with either iSCSI in `ProtocolTypes` or populated `BlockDevices`.
-	// Although we generally expect a single LUN/block device per volume today, the wire format is modeled as a list,
-	// so we treat a non-empty list as "this is a block volume". As a fallback (and to mirror API conventions),
-	// also accept volumes whose ProtocolTypes include ISCSI.
-	isISCSI := len(volume.BlockDevices) > 0
-	if !isISCSI && len(volume.ProtocolTypes) > 0 {
-		for _, proto := range volume.ProtocolTypes {
-			if proto == api.ProtocolTypeISCSI {
-				isISCSI = true
-				break
-			}
-		}
-	}
-	if !isISCSI {
-		return fmt.Errorf("volume %s is not an iSCSI volume", originalName)
-	}
-
-	// Ensure the volume may be imported by a capacity pool managed by this backend
-	if err = d.API.EnsureVolumeInValidCapacityPool(ctx, volume); err != nil {
-		return err
-	}
-
-	volConfig.Size = strconv.FormatUint(uint64(volume.SizeBytes), 10)
-
-	// The GCNV creation token cannot be changed, so use it as the internal name
-	volConfig.InternalName = originalName
-
-	// Always save the full GCP ID
-	volConfig.InternalID = volume.FullName
-
-	Logc(ctx).WithFields(LogFields{
-		"creationToken": volume.CreationToken,
-		"managed":       !volConfig.ImportNotManaged,
-		"state":         volume.State,
-		"capacityPool":  volume.CapacityPool,
-		"sizeBytes":     volume.SizeBytes,
-	}).Debug("Found volume to import.")
-
-	// Modify the volume if Trident will manage its lifecycle
-	if !volConfig.ImportNotManaged {
-		// Update the volume labels with telemetry information
-		labels := d.updateTelemetryLabels(ctx, volume)
-
-		// Update volume labels using UpdateVolume API (preserves block_devices)
-		updateReq := &api.VolumeUpdateRequest{
-			Labels:    labels,
-			FieldMask: []string{"labels"},
-		}
-		if _, err := d.API.UpdateSANVolume(ctx, volume, updateReq); err != nil {
-			Logc(ctx).WithField("originalName", originalName).WithError(err).Error(
-				"Could not import volume, volume label update failed.")
-			return fmt.Errorf("could not import volume %s, volume label update failed; %v", originalName, err)
-		}
-
-		Logc(ctx).WithFields(LogFields{
-			"name":          volume.Name,
-			"creationToken": volume.CreationToken,
-			"labels":        labels,
-		}).Info("Volume labels updated during import.")
-
-		// Wait for the update to complete
-		if _, err = d.API.WaitForVolumeState(
-			ctx, volume, api.VolumeStateReady, []string{api.VolumeStateError}, d.defaultTimeout()); err != nil {
-			return fmt.Errorf("could not import volume %s; %v", originalName, err)
-		}
-	}
-
-	return nil
-}
-
-// Get tests for the existence of a volume.
-func (d *SANStorageDriver) Get(ctx context.Context, volConfig *storage.VolumeConfig) error {
-	name := volConfig.InternalName
-	fields := LogFields{"Method": "Get", "Type": "SANStorageDriver", "name": name}
-	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Get")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Get")
-
-	// Discover GCNV resources
-	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not refresh GCNV resources: %v", err)
-	}
-
-	_, err := d.API.VolumeByName(ctx, name)
-	return err
-}
-
-// Resize increases a volume's quota.
-func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64) error {
-	name := volConfig.InternalName
-	fields := LogFields{
-		"Method":    "Resize",
-		"Type":      "SANStorageDriver",
-		"name":      name,
-		"sizeBytes": sizeBytes,
-	}
-	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
-
-	// Discover GCNV resources
-	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not refresh GCNV resources: %v", err)
-	}
-
-	// Get volume (uses InternalID if available for faster lookup)
-	volume, err := d.API.Volume(ctx, volConfig)
-	if err != nil {
-		return err
-	}
-
-	// If the volume state isn't Ready, return an error
-	if volume.State != api.VolumeStateReady {
-		return fmt.Errorf("volume %s state is %s, not %s", name, volume.State, api.VolumeStateReady)
-	}
-
-	// Include the snapshot reserve in the new size
-	if volume.SnapshotReserve > math.MaxInt {
-		return fmt.Errorf("snapshot reserve too large")
-	}
-	sizeWithReserveBytes := drivers.CalculateVolumeSizeBytes(ctx, name, sizeBytes, int(volume.SnapshotReserve))
-
-	// Calculate actual size to request from GCNV (rounds up to whole GiB + 1 GiB buffer)
-	actualSizeBytes, err := calculateActualSizeBytes(int64(sizeWithReserveBytes))
-	if err != nil {
-		return err
-	}
-
-	// If the volume is already the requested size, there's nothing to do
-	if actualSizeBytes == volume.SizeBytes {
-		volConfigSize := strconv.FormatUint(sizeBytes, 10)
-		if volConfigSize != volConfig.Size {
-			volConfig.Size = volConfigSize
-		}
-		return nil
-	}
-
-	// Make sure we're not shrinking the volume
-	if actualSizeBytes < volume.SizeBytes {
-		return fmt.Errorf("requested size %d is less than existing volume size %d",
-			actualSizeBytes, volume.SizeBytes)
-	}
-
-	// Make sure the request isn't above the configured maximum volume size (if any)
-	_, _, err = drivers.CheckVolumeSizeLimits(ctx, sizeBytes, d.Config.CommonStorageDriverConfig)
-	if err != nil {
-		return err
-	}
-
-	Logc(ctx).WithFields(LogFields{
-		"requestedBytes":  sizeBytes,
-		"requestedGiB":    float64(sizeBytes) / float64(api.GiBBytes),
-		"actualSizeBytes": actualSizeBytes,
-		"actualSizeGiB":   actualSizeBytes / api.GiBBytes,
-	}).Debug("Adjusted resize to ensure usable space meets requested capacity.")
-
-	if err = d.API.ResizeVolume(ctx, volume, actualSizeBytes); err != nil {
-		return err
-	}
-
-	// Report the actual allocated size to match what GCNV shows (and bills for)
-	volConfig.Size = strconv.FormatUint(uint64(actualSizeBytes), 10)
-	return nil
-}
-
 // Publish the volume to the host specified in publishInfo. This method may or may not be running on the host
 // where the volume will be mounted, so it should limit itself to updating access rules, initiator groups, etc.
 // that require some host identity (but not locality) as well as storage controller API access.
@@ -1611,7 +1344,7 @@ func (d *SANStorageDriver) Publish(
 	// must provide the node's IQN via publishInfo.HostIQN.
 	// Note: Docker mode (publishInfo.Localhost == true) is not supported (see design doc).
 	if publishInfo.Localhost {
-		return fmt.Errorf("Docker mode (Localhost=true) is not supported by GCNV SAN driver; only CSI mode is supported")
+		return fmt.Errorf("docker mode (Localhost=true) is not supported by GCNV SAN driver; only CSI mode is supported")
 	}
 
 	var nodeIQN string
@@ -1775,68 +1508,114 @@ func (d *SANStorageDriver) Publish(
 	return nil
 }
 
-// Unpublish removes volume access from the host specified in publishInfo.
-func (d *SANStorageDriver) Unpublish(ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo) error {
-	name := volConfig.InternalName
+// CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
+func (d *SANStorageDriver) CanSnapshot(ctx context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig) error {
 	fields := LogFields{
-		"Method": "Unpublish",
+		"Method": "CanSnapshot",
 		"Type":   "SANStorageDriver",
-		"name":   name,
-		"node":   publishInfo.HostName,
 	}
-	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Unpublish")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Unpublish")
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CanSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CanSnapshot")
 
-	// Discover GCNV resources (volumes, host groups, etc.)
+	return nil
+}
+
+// GetSnapshot gets a snapshot. To distinguish between an API error reading the snapshot
+// and a non-existent snapshot, this method may return (nil, nil).
+func (d *SANStorageDriver) GetSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
+) (*storage.Snapshot, error) {
+	internalSnapName := snapConfig.InternalName
+	internalVolName := snapConfig.VolumeInternalName
+
+	fields := LogFields{
+		"Method":       "GetSnapshot",
+		"Type":         "SANStorageDriver",
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
+
+	// Discover GCNV resources
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not refresh GCNV resources: %v", err)
+		return nil, fmt.Errorf("could not refresh GCNV resources: %v", err)
 	}
 
-	// Acquire mutexes
-	d.lunMutex.Lock(name)
-	defer d.lunMutex.Unlock(name)
+	// Get the volume (uses InternalID if available for faster lookup)
+	volumeExists, volume, err := d.API.VolumeExists(ctx, volConfig)
+	if err != nil {
+		return nil, fmt.Errorf("error checking for existing volume %s; %v", internalVolName, err)
+	}
+	if !volumeExists {
+		return nil, nil
+	}
 
-	d.hostGroupMutex.Lock(publishInfo.HostName)
-	defer d.hostGroupMutex.Unlock(publishInfo.HostName)
+	// Get the specific snapshot directly (efficient - no need to list all snapshots)
+	snapshot, err := d.API.SnapshotForVolume(ctx, volume, internalSnapName)
+	if err != nil {
+		if errors.IsNotFoundError(err) {
+			return nil, nil // Snapshot not found
+		}
+		return nil, fmt.Errorf("could not check for existing snapshot; %v", err)
+	}
+
+	// Check if snapshot is ready
+	if snapshot.State != api.SnapshotStateReady {
+		return nil, nil
+	}
+
+	return &storage.Snapshot{
+		Config:    snapConfig,
+		Created:   snapshot.Created.Format(time.RFC3339),
+		SizeBytes: 0,
+		State:     storage.SnapshotStateOnline,
+	}, nil
+}
+
+// GetSnapshots returns the list of snapshots associated with the specified volume.
+func (d *SANStorageDriver) GetSnapshots(
+	ctx context.Context, volConfig *storage.VolumeConfig,
+) ([]*storage.Snapshot, error) {
+	internalVolName := volConfig.InternalName
+	fields := LogFields{
+		"Method":     "GetSnapshots",
+		"Type":       "SANStorageDriver",
+		"volumeName": internalVolName,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshots")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshots")
+
+	// Discover GCNV resources
+	if err := d.API.RefreshGCNVResources(ctx); err != nil {
+		return nil, fmt.Errorf("could not refresh GCNV resources: %v", err)
+	}
 
 	// Get volume (uses InternalID if available for faster lookup)
 	volume, err := d.API.Volume(ctx, volConfig)
 	if err != nil {
-		if errors.IsNotFoundError(err) {
-			Logc(ctx).WithField("volume", name).Debug("Volume not found, assuming already unpublished.")
-			return nil
-		}
-		return fmt.Errorf("could not find volume: %v", err)
-	} // Get host group
-	hostGroupName := d.getNodeSpecificHostGroupName(publishInfo.HostName)
-	hostGroup, err := d.API.HostGroupByName(ctx, hostGroupName)
+		return nil, err
+	}
+
+	snapshots, err := d.API.SnapshotsForVolume(ctx, volume)
 	if err != nil {
-		if errors.IsNotFoundError(err) {
-			Logc(ctx).WithField("hostGroup", hostGroupName).Debug("Host group not found, assuming already unpublished.")
-			return nil
-		}
-		return fmt.Errorf("could not find host group: %v", err)
+		return nil, err
 	}
 
-	// Unmap volume from host group
-	if err := d.API.RemoveHostGroupFromVolume(ctx, volume.FullName, hostGroup.Name); err != nil {
-		return fmt.Errorf("could not unmap volume from host group: %v", err)
+	result := make([]*storage.Snapshot, 0, len(*snapshots))
+	for _, snap := range *snapshots {
+		result = append(result, &storage.Snapshot{
+			Config: &storage.SnapshotConfig{
+				InternalName:       snap.Name,
+				VolumeInternalName: volConfig.InternalName,
+			},
+			Created:   snap.Created.Format(time.RFC3339),
+			SizeBytes: 0,
+			State:     storage.SnapshotStateOnline,
+		})
 	}
 
-	// Check if host group has any remaining volumes
-	volumes, err := d.API.HostGroupVolumes(ctx, hostGroup.Name)
-	if err != nil {
-		return fmt.Errorf("could not check host group volumes: %v", err)
-	}
-
-	// Delete host group if no volumes remain
-	if len(volumes) == 0 {
-		if err := d.API.DeleteHostGroup(ctx, hostGroup); err != nil {
-			return fmt.Errorf("could not delete empty host group: %v", err)
-		}
-	}
-
-	return nil
+	return result, nil
 }
 
 // CreateSnapshot creates a snapshot for the given volume.
@@ -1901,7 +1680,9 @@ func (d *SANStorageDriver) CreateSnapshot(
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
-func (d *SANStorageDriver) RestoreSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig) error {
+func (d *SANStorageDriver) RestoreSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
+) error {
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 	fields := LogFields{
@@ -1943,7 +1724,9 @@ func (d *SANStorageDriver) RestoreSnapshot(ctx context.Context, snapConfig *stor
 }
 
 // DeleteSnapshot deletes a snapshot of a volume.
-func (d *SANStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig) error {
+func (d *SANStorageDriver) DeleteSnapshot(
+	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
+) error {
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 	fields := LogFields{
@@ -1988,11 +1771,413 @@ func (d *SANStorageDriver) DeleteSnapshot(ctx context.Context, snapConfig *stora
 	return d.API.DeleteSnapshot(ctx, volume, snapshot, api.DefaultTimeout)
 }
 
+// List returns the names of all volumes managed by this driver instance.
+func (d *SANStorageDriver) List(ctx context.Context) ([]string, error) {
+	fields := LogFields{"Method": "List", "Type": "SANStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> List")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< List")
+
+	// Update resource cache as needed
+	if err := d.API.RefreshGCNVResources(ctx); err != nil {
+		return nil, fmt.Errorf("could not refresh GCNV resources: %v", err)
+	}
+
+	volumes, err := d.API.Volumes(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	prefix := *d.Config.StoragePrefix
+	volumeNames := make([]string, 0)
+
+	for _, volume := range *volumes {
+		// Filter out non-iSCSI volumes (this driver only manages iSCSI volumes)
+		isISCSI := false
+		for _, proto := range volume.ProtocolTypes {
+			if proto == api.ProtocolTypeISCSI {
+				isISCSI = true
+				break
+			}
+		}
+		if !isISCSI {
+			continue
+		}
+
+		// Filter out volumes in an unavailable state
+		switch volume.State {
+		case api.VolumeStateDeleting, api.VolumeStateError, api.VolumeStateDisabled:
+			continue
+		}
+
+		// Filter out volumes without the prefix (pass all if prefix is empty)
+		if !strings.HasPrefix(volume.CreationToken, prefix) {
+			continue
+		}
+
+		volumeName := volume.CreationToken[len(prefix):]
+		volumeNames = append(volumeNames, volumeName)
+	}
+
+	return volumeNames, nil
+}
+
+// Get tests for the existence of a volume.
+func (d *SANStorageDriver) Get(ctx context.Context, volConfig *storage.VolumeConfig) error {
+	name := volConfig.InternalName
+	fields := LogFields{"Method": "Get", "Type": "SANStorageDriver", "name": name}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Get")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Get")
+
+	// Discover GCNV resources
+	if err := d.API.RefreshGCNVResources(ctx); err != nil {
+		return fmt.Errorf("could not refresh GCNV resources: %v", err)
+	}
+
+	_, err := d.API.VolumeByName(ctx, name)
+	return err
+}
+
+// Resize increases a volume's quota.
+func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.VolumeConfig, sizeBytes uint64) error {
+	name := volConfig.InternalName
+	fields := LogFields{
+		"Method":    "Resize",
+		"Type":      "SANStorageDriver",
+		"name":      name,
+		"sizeBytes": sizeBytes,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
+
+	// Discover GCNV resources
+	if err := d.API.RefreshGCNVResources(ctx); err != nil {
+		return fmt.Errorf("could not refresh GCNV resources: %v", err)
+	}
+
+	// Get volume (uses InternalID if available for faster lookup)
+	volume, err := d.API.Volume(ctx, volConfig)
+	if err != nil {
+		return err
+	}
+
+	// If the volume state isn't Ready, return an error
+	if volume.State != api.VolumeStateReady {
+		return fmt.Errorf("volume %s state is %s, not %s", name, volume.State, api.VolumeStateReady)
+	}
+
+	// Include the snapshot reserve in the new size
+	if volume.SnapshotReserve > math.MaxInt {
+		return fmt.Errorf("snapshot reserve too large")
+	}
+	sizeWithReserveBytes := drivers.CalculateVolumeSizeBytes(ctx, name, sizeBytes, int(volume.SnapshotReserve))
+
+	// Calculate actual size to request from GCNV (rounds up to whole GiB + 1 GiB buffer)
+	actualSizeBytes, err := calculateActualSizeBytes(int64(sizeWithReserveBytes))
+	if err != nil {
+		return err
+	}
+
+	// If the volume is already the requested size, there's nothing to do
+	if actualSizeBytes == volume.SizeBytes {
+		volConfigSize := strconv.FormatUint(sizeBytes, 10)
+		if volConfigSize != volConfig.Size {
+			volConfig.Size = volConfigSize
+		}
+		return nil
+	}
+
+	// Make sure we're not shrinking the volume
+	if actualSizeBytes < volume.SizeBytes {
+		return fmt.Errorf("requested size %d is less than existing volume size %d",
+			actualSizeBytes, volume.SizeBytes)
+	}
+
+	// Make sure the request isn't above the configured maximum volume size (if any)
+	_, _, err = drivers.CheckVolumeSizeLimits(ctx, sizeBytes, d.Config.CommonStorageDriverConfig)
+	if err != nil {
+		return err
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"requestedBytes":  sizeBytes,
+		"requestedGiB":    float64(sizeBytes) / float64(api.GiBBytes),
+		"actualSizeBytes": actualSizeBytes,
+		"actualSizeGiB":   actualSizeBytes / api.GiBBytes,
+	}).Debug("Adjusted resize to ensure usable space meets requested capacity.")
+
+	if err = d.API.ResizeVolume(ctx, volume, actualSizeBytes); err != nil {
+		return err
+	}
+
+	// Report the actual allocated size to match what GCNV shows (and bills for)
+	volConfig.Size = strconv.FormatUint(uint64(actualSizeBytes), 10)
+	return nil
+}
+
+// GetStorageBackendSpecs retrieves storage capabilities and registers pools with specified backend.
+func (d *SANStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
+	backend.SetName(d.BackendName())
+
+	for _, pool := range d.pools {
+		pool.SetBackend(backend)
+		backend.AddStoragePool(pool)
+	}
+
+	return nil
+}
+
+// CreatePrepare is called prior to volume creation. Its role is to set the internal volume name.
+func (d *SANStorageDriver) CreatePrepare(ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool) {
+	volConfig.InternalName = d.GetInternalVolumeName(ctx, volConfig, pool)
+}
+
+// GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools.
+func (d *SANStorageDriver) GetStorageBackendPhysicalPoolNames(_ context.Context) []string {
+	physicalPoolNames := make([]string, 0, len(d.pools))
+	for poolName := range d.pools {
+		physicalPoolNames = append(physicalPoolNames, poolName)
+	}
+	return physicalPoolNames
+}
+
+// getStorageBackendPools returns the storage backend pools for this driver.
+func (d *SANStorageDriver) getStorageBackendPools(ctx context.Context) []drivers.GCNVStorageBackendPool {
+	fields := LogFields{"Method": "getStorageBackendPools", "Type": "SANStorageDriver"}
+	Logc(ctx).WithFields(fields).Debug(">>>> getStorageBackendPools")
+	defer Logc(ctx).WithFields(fields).Debug("<<<< getStorageBackendPools")
+
+	// For this driver, a discrete storage pool is composed of the following:
+	// 1. Project number
+	// 2. Location
+	// 3. Storage pool - contains at least one pool depending on the backend configuration.
+	cPools := d.API.CapacityPoolsForStoragePools(ctx)
+	backendPools := make([]drivers.GCNVStorageBackendPool, 0, len(cPools))
+	for _, cPool := range cPools {
+		backendPool := drivers.GCNVStorageBackendPool{
+			ProjectNumber: d.Config.ProjectNumber,
+			Location:      cPool.Location,
+			StoragePool:   cPool.Name,
+		}
+		backendPools = append(backendPools, backendPool)
+	}
+	return backendPools
+}
+
+// GetInternalVolumeName accepts the name of a volume being created and returns what the internal name
+// should be, depending on backend requirements and Trident's operating context.
+func (d *SANStorageDriver) GetInternalVolumeName(
+	ctx context.Context, volConfig *storage.VolumeConfig, _ storage.Pool,
+) string {
+	if tridentconfig.UsingPassthroughStore {
+		// With a passthrough store, the name mapping must remain reversible
+		return *d.Config.StoragePrefix + volConfig.Name
+	} else if csiRegex.MatchString(volConfig.Name) {
+		// CSI name (pvc-uuid); GCP volume_id allows only [a-z0-9_], so normalize hyphens to underscores.
+		normalized := strings.ReplaceAll(volConfig.Name, "-", "_")
+		Logc(ctx).WithFields(LogFields{"volumeInternal": normalized, "original": volConfig.Name}).Debug("Using normalized CSI name as internal name for GCP.")
+		return normalized
+	} else {
+		// Cloud volumes have strict limits on volume names, so for cloud
+		// infrastructure like Trident, the simplest approach is to generate a
+		// UUID-based name with a prefix that won't exceed the length limit.
+		// Replace hyphens with underscores for GCP compliance.
+		return "gcnv_" + strings.ReplaceAll(uuid.NewString(), "-", "_")
+	}
+}
+
+// CreateFollowup is called after volume creation and sets the access info in the volume config.
+func (d *SANStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
+	fields := LogFields{
+		"Method": "CreateFollowup",
+		"Type":   "SANStorageDriver",
+		"name":   volConfig.InternalName,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateFollowup")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateFollowup")
+
+	return nil
+}
+
+// GetProtocol returns the protocol supported by this driver (Block).
+func (d *SANStorageDriver) GetProtocol(_ context.Context) tridentconfig.Protocol {
+	return tridentconfig.Block
+}
+
+// StoreConfig adds this backend's config to the persistent config struct, as needed by Trident's persistence layer.
+func (d *SANStorageDriver) StoreConfig(_ context.Context, b *storage.PersistentStorageBackendConfig) {
+	drivers.SanitizeCommonStorageDriverConfig(d.Config.CommonStorageDriverConfig)
+	b.GCNVConfig = &d.Config
+}
+
+// GetExternalConfig returns a clone of this backend's config, sanitized for external consumption.
+func (d *SANStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
+	// Clone the config so we don't risk altering the original
+	var cloneConfig drivers.GCNVStorageDriverConfig
+	drivers.Clone(ctx, d.Config, &cloneConfig)
+
+	cloneConfig.APIKey = drivers.GCPPrivateKey{
+		Type:                    tridentconfig.REDACTED,
+		ProjectID:               tridentconfig.REDACTED,
+		PrivateKeyID:            tridentconfig.REDACTED,
+		PrivateKey:              tridentconfig.REDACTED,
+		ClientEmail:             tridentconfig.REDACTED,
+		ClientID:                tridentconfig.REDACTED,
+		AuthURI:                 tridentconfig.REDACTED,
+		TokenURI:                tridentconfig.REDACTED,
+		AuthProviderX509CertURL: tridentconfig.REDACTED,
+		ClientX509CertURL:       tridentconfig.REDACTED,
+	}
+	cloneConfig.Credentials = map[string]string{
+		drivers.KeyName: tridentconfig.REDACTED,
+		drivers.KeyType: tridentconfig.REDACTED,
+	} // redact the credentials
+
+	return cloneConfig
+}
+
+// GetVolumeForImport queries the storage backend for all relevant info about a single volume.
+func (d *SANStorageDriver) GetVolumeForImport(ctx context.Context, volumeName string) (*storage.VolumeExternal, error) {
+	// Discover GCNV resources
+	if err := d.API.RefreshGCNVResources(ctx); err != nil {
+		return nil, fmt.Errorf("could not refresh GCNV resources: %v", err)
+	}
+
+	volume, err := d.API.VolumeByNameOrID(ctx, volumeName)
+	if err != nil {
+		return nil, err
+	}
+
+	return d.getVolumeExternal(volume), nil
+}
+
+// GetVolumeExternalWrappers queries the storage backend for all relevant info about
+// container volumes managed by this driver. It then writes a VolumeExternal
+// representation of each volume to the supplied channel, closing the channel when finished.
+func (d *SANStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channel chan *storage.VolumeExternalWrapper) {
+	fields := LogFields{"Method": "GetVolumeExternalWrappers", "Type": "SANStorageDriver"}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetVolumeExternalWrappers")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetVolumeExternalWrappers")
+
+	// Let the caller know we're done by closing the channel
+	defer close(channel)
+
+	// Update resource cache as needed
+	if err := d.API.RefreshGCNVResources(ctx); err != nil {
+		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
+		return
+	}
+
+	// Get all volumes
+	volumes, err := d.API.Volumes(ctx)
+	if err != nil {
+		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
+		return
+	}
+
+	prefix := *d.Config.StoragePrefix
+
+	// Convert all volumes to VolumeExternal and write them to the channel
+	for _, volume := range *volumes {
+		// Filter out non-iSCSI volumes (this driver only manages iSCSI volumes)
+		isISCSI := false
+		for _, proto := range volume.ProtocolTypes {
+			if proto == api.ProtocolTypeISCSI {
+				isISCSI = true
+				break
+			}
+		}
+		if !isISCSI {
+			continue
+		}
+
+		// Filter out volumes in an unavailable state
+		switch volume.State {
+		case api.VolumeStateDeleting, api.VolumeStateError, api.VolumeStateDisabled:
+			continue
+		}
+
+		// Filter out volumes without the prefix (pass all if prefix is empty)
+		if !strings.HasPrefix(volume.CreationToken, prefix) {
+			continue
+		}
+
+		channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(volume), Error: nil}
+	}
+}
+
+// getVolumeExternal converts a volume from the API to a VolumeExternal representation.
+func (d *SANStorageDriver) getVolumeExternal(volume *api.Volume) *storage.VolumeExternal {
+	internalName := volume.CreationToken
+	name := internalName
+	prefix := *d.Config.StoragePrefix
+	if strings.HasPrefix(internalName, prefix) {
+		name = internalName[len(prefix):]
+	}
+
+	volumeConfig := &storage.VolumeConfig{
+		Version:        tridentconfig.OrchestratorAPIVersion,
+		Name:           name,
+		InternalName:   internalName,
+		InternalID:     volume.FullName,
+		Size:           strconv.FormatInt(volume.SizeBytes, 10),
+		Protocol:       tridentconfig.Block,
+		SnapshotPolicy: "",
+		AccessMode:     tridentconfig.ReadWriteOnce,
+		AccessInfo: models.VolumeAccessInfo{
+			IscsiAccessInfo: models.IscsiAccessInfo{
+				IscsiTargetPortal: volume.ISCSITargetPortal,
+				IscsiPortals:      volume.ISCSIPortals,
+				IscsiTargetIQN:    volume.ISCSITargetIQN,
+				IscsiLunNumber:    int32(volume.LunID),
+				IscsiLunSerial:    volume.SerialNumber,
+			},
+		},
+		ServiceLevel: volume.ServiceLevel,
+	}
+
+	return &storage.VolumeExternal{
+		Config: volumeConfig,
+		Pool:   volume.CapacityPool,
+	}
+}
+
+// String implements the Stringer interface for the SANStorageDriver.
+func (d *SANStorageDriver) String() string {
+	return convert.ToStringRedacted(d, []string{"API"}, d.GetExternalConfig(context.Background()))
+}
+
+// GoString implements the GoStringer interface for the SANStorageDriver.
+func (d *SANStorageDriver) GoString() string {
+	return d.String()
+}
+
+// GetUpdateType returns a bitmap populated with updates to the driver.
+func (d *SANStorageDriver) GetUpdateType(_ context.Context, driverOrig storage.Driver) *roaring.Bitmap {
+	bitmap := roaring.New()
+	dOrig, ok := driverOrig.(*SANStorageDriver)
+	if !ok {
+		bitmap.Add(storage.InvalidUpdate)
+		return bitmap
+	}
+
+	if !reflect.DeepEqual(d.Config.StoragePrefix, dOrig.Config.StoragePrefix) {
+		bitmap.Add(storage.PrefixChange)
+	}
+
+	if !drivers.AreSameCredentials(d.Config.Credentials, dOrig.Config.Credentials) {
+		bitmap.Add(storage.CredentialsChange)
+	}
+
+	return bitmap
+}
+
 // ReconcileNodeAccess reconciles host group state with cluster nodes.
 // The orchestrator filters TridentVolumePublication CRs to determine which nodes have volumes
 // on this backend, and passes the filtered node list to this method.
 // This method ensures per-node host groups exist for active nodes and cleans up orphaned groups.
-func (d *SANStorageDriver) ReconcileNodeAccess(ctx context.Context, nodes []*models.Node, _, _ string) error {
+func (d *SANStorageDriver) ReconcileNodeAccess(
+	ctx context.Context, nodes []*models.Node, _, _ string,
+) error {
 	fields := LogFields{
 		"Method": "ReconcileNodeAccess",
 		"Type":   "SANStorageDriver",
@@ -2102,399 +2287,216 @@ func (d *SANStorageDriver) ReconcileVolumeNodeAccess(
 	return nil
 }
 
-// Remaining interface methods
-
-// GetInternalVolumeName accepts the name of a volume being created and returns what the internal name
-// should be, depending on backend requirements and Trident's operating context.
-func (d *SANStorageDriver) GetInternalVolumeName(
-	ctx context.Context, volConfig *storage.VolumeConfig, pool storage.Pool,
-) string {
-	if tridentconfig.UsingPassthroughStore {
-		// With a passthrough store, the name mapping must remain reversible
-		return *d.Config.StoragePrefix + volConfig.Name
-	} else if csiRegex.MatchString(volConfig.Name) {
-		// If the name is from CSI (i.e. contains a UUID), replace hyphens with underscores
-		// GCP block volume names only allow lowercase letters, numbers, and underscores
-		internalName := strings.ReplaceAll(volConfig.Name, "-", "_")
-		Logc(ctx).WithField("volumeInternal", internalName).Debug("Using volume name as internal name.")
-		return internalName
-	} else {
-		// Cloud volumes have strict limits on volume names, so for cloud
-		// infrastructure like Trident, the simplest approach is to generate a
-		// UUID-based name with a prefix that won't exceed the length limit.
-		// Replace hyphens with underscores for GCP compliance.
-		return "gcnv_" + strings.ReplaceAll(uuid.NewString(), "-", "_")
-	}
-}
-
-// GetStorageBackendSpecs retrieves storage capabilities and registers pools with specified backend.
-func (d *SANStorageDriver) GetStorageBackendSpecs(_ context.Context, backend storage.Backend) error {
-	backend.SetName(d.BackendName())
-
-	for _, pool := range d.pools {
-		pool.SetBackend(backend)
-		backend.AddStoragePool(pool)
-	}
-
-	return nil
-}
-
-// GetStorageBackendPhysicalPoolNames retrieves storage backend physical pools.
-func (d *SANStorageDriver) GetStorageBackendPhysicalPoolNames(ctx context.Context) []string {
-	physicalPoolNames := make([]string, 0, len(d.pools))
-	for poolName := range d.pools {
-		physicalPoolNames = append(physicalPoolNames, poolName)
-	}
-	return physicalPoolNames
-}
-
-// GetProtocol returns the protocol supported by this driver (Block).
-func (d *SANStorageDriver) GetProtocol(ctx context.Context) tridentconfig.Protocol {
-	return tridentconfig.Block
-}
-
-// StoreConfig adds this backend's config to the persistent config struct, as needed by Trident's persistence layer.
-func (d *SANStorageDriver) StoreConfig(ctx context.Context, b *storage.PersistentStorageBackendConfig) {
-	drivers.SanitizeCommonStorageDriverConfig(d.Config.CommonStorageDriverConfig)
-	b.GCNVConfig = &d.Config
-}
-
-// GetExternalConfig returns a clone of this backend's config, sanitized for external consumption.
-func (d *SANStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
-	// Clone the config so we don't risk altering the original
-	var cloneConfig drivers.GCNVStorageDriverConfig
-	drivers.Clone(ctx, d.Config, &cloneConfig)
-
-	cloneConfig.APIKey = drivers.GCPPrivateKey{
-		Type:                    tridentconfig.REDACTED,
-		ProjectID:               tridentconfig.REDACTED,
-		PrivateKeyID:            tridentconfig.REDACTED,
-		PrivateKey:              tridentconfig.REDACTED,
-		ClientEmail:             tridentconfig.REDACTED,
-		ClientID:                tridentconfig.REDACTED,
-		AuthURI:                 tridentconfig.REDACTED,
-		TokenURI:                tridentconfig.REDACTED,
-		AuthProviderX509CertURL: tridentconfig.REDACTED,
-		ClientX509CertURL:       tridentconfig.REDACTED,
-	}
-	cloneConfig.Credentials = map[string]string{
-		drivers.KeyName: tridentconfig.REDACTED,
-		drivers.KeyType: tridentconfig.REDACTED,
-	} // redact the credentials
-
-	return cloneConfig
-}
-
-// getVolumeExternal converts a volume from the API to a VolumeExternal representation.
-func (d *SANStorageDriver) getVolumeExternal(volume *api.Volume) *storage.VolumeExternal {
-	internalName := volume.CreationToken
-	name := internalName
-	prefix := *d.Config.StoragePrefix
-	if strings.HasPrefix(internalName, prefix) {
-		name = internalName[len(prefix):]
-	}
-
-	volumeConfig := &storage.VolumeConfig{
-		Version:        tridentconfig.OrchestratorAPIVersion,
-		Name:           name,
-		InternalName:   internalName,
-		InternalID:     volume.FullName,
-		Size:           strconv.FormatInt(volume.SizeBytes, 10),
-		Protocol:       tridentconfig.Block,
-		SnapshotPolicy: "",
-		AccessMode:     tridentconfig.ReadWriteOnce,
-		AccessInfo: models.VolumeAccessInfo{
-			IscsiAccessInfo: models.IscsiAccessInfo{
-				IscsiTargetPortal: volume.ISCSITargetPortal,
-				IscsiPortals:      volume.ISCSIPortals,
-				IscsiTargetIQN:    volume.ISCSITargetIQN,
-				IscsiLunNumber:    int32(volume.LunID),
-				IscsiLunSerial:    volume.SerialNumber,
-			},
-		},
-		ServiceLevel: volume.ServiceLevel,
-	}
-
-	return &storage.VolumeExternal{
-		Config: volumeConfig,
-		Pool:   volume.CapacityPool,
-	}
-}
-
-// GetVolumeExternalWrappers queries the storage backend for all relevant info about
-// container volumes managed by this driver. It then writes a VolumeExternal
-// representation of each volume to the supplied channel, closing the channel when finished.
-func (d *SANStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channel chan *storage.VolumeExternalWrapper) {
-	fields := LogFields{"Method": "GetVolumeExternalWrappers", "Type": "SANStorageDriver"}
-	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetVolumeExternalWrappers")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetVolumeExternalWrappers")
-
-	// Let the caller know we're done by closing the channel
-	defer close(channel)
-
-	// Update resource cache as needed
-	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
-		return
-	}
-
-	// Get all volumes
-	volumes, err := d.API.Volumes(ctx)
-	if err != nil {
-		channel <- &storage.VolumeExternalWrapper{Volume: nil, Error: err}
-		return
-	}
-
-	prefix := *d.Config.StoragePrefix
-
-	// Convert all volumes to VolumeExternal and write them to the channel
-	for _, volume := range *volumes {
-		// Filter out non-iSCSI volumes (this driver only manages iSCSI volumes)
-		isISCSI := false
-		for _, proto := range volume.ProtocolTypes {
-			if proto == api.ProtocolTypeISCSI {
-				isISCSI = true
-				break
-			}
-		}
-		if !isISCSI {
-			continue
-		}
-
-		// Filter out volumes in an unavailable state
-		switch volume.State {
-		case api.VolumeStateDeleting, api.VolumeStateError, api.VolumeStateDisabled:
-			continue
-		}
-
-		// Filter out volumes without the prefix (pass all if prefix is empty)
-		if !strings.HasPrefix(volume.CreationToken, prefix) {
-			continue
-		}
-
-		channel <- &storage.VolumeExternalWrapper{Volume: d.getVolumeExternal(volume), Error: nil}
-	}
-}
-
-// GetUpdateType returns a bitmap populated with updates to the driver.
-func (d *SANStorageDriver) GetUpdateType(_ context.Context, driverOrig storage.Driver) *roaring.Bitmap {
-	bitmap := roaring.New()
-	dOrig, ok := driverOrig.(*SANStorageDriver)
-	if !ok {
-		bitmap.Add(storage.InvalidUpdate)
-		return bitmap
-	}
-
-	if !reflect.DeepEqual(d.Config.StoragePrefix, dOrig.Config.StoragePrefix) {
-		bitmap.Add(storage.PrefixChange)
-	}
-
-	if !drivers.AreSameCredentials(d.Config.Credentials, dOrig.Config.Credentials) {
-		bitmap.Add(storage.CredentialsChange)
-	}
-
-	return bitmap
-}
-
-// String implements the Stringer interface for the SANStorageDriver.
-// It returns a redacted version of the driver configuration to prevent
-// sensitive credentials from being logged.
-func (d *SANStorageDriver) String() string {
-	return convert.ToStringRedacted(d, []string{"API"}, d.GetExternalConfig(context.Background()))
-}
-
-// GoString implements the GoStringer interface for the SANStorageDriver.
-func (d *SANStorageDriver) GoString() string {
-	return d.String()
-}
-
 // GetCommonConfig returns driver's CommonConfig.
-func (d *SANStorageDriver) GetCommonConfig(ctx context.Context) *drivers.CommonStorageDriverConfig {
+func (d *SANStorageDriver) GetCommonConfig(_ context.Context) *drivers.CommonStorageDriverConfig {
 	return d.Config.CommonStorageDriverConfig
 }
 
-// CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
-func (d *SANStorageDriver) CanSnapshot(ctx context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig) error {
+// Unpublish removes volume access from the host specified in publishInfo.
+func (d *SANStorageDriver) Unpublish(
+	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
+) error {
+	name := volConfig.InternalName
 	fields := LogFields{
-		"Method": "CanSnapshot",
+		"Method": "Unpublish",
 		"Type":   "SANStorageDriver",
+		"name":   name,
+		"node":   publishInfo.HostName,
 	}
-	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CanSnapshot")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CanSnapshot")
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Unpublish")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Unpublish")
 
-	return nil
-}
-
-// GetSnapshot gets a snapshot. To distinguish between an API error reading the snapshot
-// and a non-existent snapshot, this method may return (nil, nil).
-func (d *SANStorageDriver) GetSnapshot(
-	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
-) (*storage.Snapshot, error) {
-	internalSnapName := snapConfig.InternalName
-	internalVolName := snapConfig.VolumeInternalName
-
-	fields := LogFields{
-		"Method":       "GetSnapshot",
-		"Type":         "SANStorageDriver",
-		"snapshotName": internalSnapName,
-		"volumeName":   internalVolName,
-	}
-	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
-
-	// Discover GCNV resources
+	// Discover GCNV resources (volumes, host groups, etc.)
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return nil, fmt.Errorf("could not refresh GCNV resources: %v", err)
+		return fmt.Errorf("could not refresh GCNV resources: %v", err)
 	}
 
-	// Get the volume (uses InternalID if available for faster lookup)
-	volumeExists, volume, err := d.API.VolumeExists(ctx, volConfig)
-	if err != nil {
-		return nil, fmt.Errorf("error checking for existing volume %s; %v", internalVolName, err)
-	}
-	if !volumeExists {
-		return nil, nil
-	}
+	// Acquire mutexes
+	d.lunMutex.Lock(name)
+	defer d.lunMutex.Unlock(name)
 
-	// Get the specific snapshot directly (efficient - no need to list all snapshots)
-	snapshot, err := d.API.SnapshotForVolume(ctx, volume, internalSnapName)
-	if err != nil {
-		if errors.IsNotFoundError(err) {
-			return nil, nil // Snapshot not found
-		}
-		return nil, fmt.Errorf("could not check for existing snapshot; %v", err)
-	}
-
-	// Check if snapshot is ready
-	if snapshot.State != api.SnapshotStateReady {
-		return nil, nil
-	}
-
-	return &storage.Snapshot{
-		Config:    snapConfig,
-		Created:   snapshot.Created.Format(time.RFC3339),
-		SizeBytes: 0,
-		State:     storage.SnapshotStateOnline,
-	}, nil
-}
-
-// GetSnapshots returns the list of snapshots associated with the specified volume.
-func (d *SANStorageDriver) GetSnapshots(ctx context.Context, volConfig *storage.VolumeConfig) ([]*storage.Snapshot, error) {
-	internalVolName := volConfig.InternalName
-	fields := LogFields{
-		"Method":     "GetSnapshots",
-		"Type":       "SANStorageDriver",
-		"volumeName": internalVolName,
-	}
-	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshots")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshots")
-
-	// Discover GCNV resources
-	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return nil, fmt.Errorf("could not refresh GCNV resources: %v", err)
-	}
+	d.hostGroupMutex.Lock(publishInfo.HostName)
+	defer d.hostGroupMutex.Unlock(publishInfo.HostName)
 
 	// Get volume (uses InternalID if available for faster lookup)
 	volume, err := d.API.Volume(ctx, volConfig)
 	if err != nil {
-		return nil, err
-	}
-
-	snapshots, err := d.API.SnapshotsForVolume(ctx, volume)
+		if errors.IsNotFoundError(err) {
+			Logc(ctx).WithField("volume", name).Debug("Volume not found, assuming already unpublished.")
+			return nil
+		}
+		return fmt.Errorf("could not find volume: %v", err)
+	} // Get host group
+	hostGroupName := d.getNodeSpecificHostGroupName(publishInfo.HostName)
+	hostGroup, err := d.API.HostGroupByName(ctx, hostGroupName)
 	if err != nil {
-		return nil, err
+		if errors.IsNotFoundError(err) {
+			Logc(ctx).WithField("hostGroup", hostGroupName).Debug("Host group not found, assuming already unpublished.")
+			return nil
+		}
+		return fmt.Errorf("could not find host group: %v", err)
 	}
 
-	result := make([]*storage.Snapshot, 0, len(*snapshots))
-	for _, snap := range *snapshots {
-		result = append(result, &storage.Snapshot{
-			Config: &storage.SnapshotConfig{
-				InternalName:       snap.Name,
-				VolumeInternalName: volConfig.InternalName,
-			},
-			Created:   snap.Created.Format(time.RFC3339),
-			SizeBytes: 0,
-			State:     storage.SnapshotStateOnline,
-		})
+	// Unmap volume from host group
+	if err := d.API.RemoveHostGroupFromVolume(ctx, volume.FullName, hostGroup.Name); err != nil {
+		return fmt.Errorf("could not unmap volume from host group: %v", err)
 	}
 
-	return result, nil
-}
-
-// CreateFollowup is called after volume creation and sets the access info in the volume config.
-func (d *SANStorageDriver) CreateFollowup(ctx context.Context, volConfig *storage.VolumeConfig) error {
-	fields := LogFields{
-		"Method": "CreateFollowup",
-		"Type":   "SANStorageDriver",
-		"name":   volConfig.InternalName,
+	// Check if host group has any remaining volumes
+	volumes, err := d.API.HostGroupVolumes(ctx, hostGroup.Name)
+	if err != nil {
+		return fmt.Errorf("could not check host group volumes: %v", err)
 	}
-	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateFollowup")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateFollowup")
+
+	// Delete host group if no volumes remain
+	if len(volumes) == 0 {
+		if err := d.API.DeleteHostGroup(ctx, hostGroup); err != nil {
+			return fmt.Errorf("could not delete empty host group: %v", err)
+		}
+	}
 
 	return nil
 }
 
-// GetVolumeForImport queries the storage backend for all relevant info about a single volume.
-func (d *SANStorageDriver) GetVolumeForImport(ctx context.Context, volumeName string) (*storage.VolumeExternal, error) {
-	// Discover GCNV resources
-	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return nil, fmt.Errorf("could not refresh GCNV resources: %v", err)
+// getNodeSpecificHostGroupName generates a valid GCNV host group ID that:
+// - Starts with a lowercase letter
+// - Contains only lowercase letters, numbers, and hyphens
+// - Does not end with a hyphen
+// - Is at most 63 characters long (GCNV requirement: 1 letter + up to 62 alphanumeric/hyphens)
+// - Is unique per node and backend
+//
+// Note: This differs from ONTAP's getNodeSpecificIgroupName which simply truncates the node name
+// when the igroup name exceeds 96 chars. GCNV uses SHA256 hashing instead of truncation to avoid
+// collisions (GCNV has a stricter 63-char limit). The hash approach is borrowed from ONTAP's
+// getUniqueNodeSpecificSubsystemName (NVMe subsystems) which also uses SHA256 when names exceed
+// limits. GCNV also requires additional normalization (lowercase, char filtering) that ONTAP
+// igroups don't need.
+func (d *SANStorageDriver) getNodeSpecificHostGroupName(nodeName string) string {
+	const maxLength = 63
+	const prefix = "trident-node-"
+
+	// Try the full name first
+	fullName := fmt.Sprintf("%s%s-%s", prefix, nodeName, d.tridentUUID)
+
+	// Normalize: convert to lowercase, replace invalid chars with hyphens
+	normalized := strings.ToLower(fullName)
+	normalized = strings.ReplaceAll(normalized, "_", "-")
+
+	// Remove any characters that aren't lowercase letters, numbers, or hyphens
+	var builder strings.Builder
+	for _, r := range normalized {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '-' {
+			builder.WriteRune(r)
+		} else {
+			builder.WriteRune('-')
+		}
+	}
+	normalized = builder.String()
+
+	// Remove consecutive hyphens
+	for strings.Contains(normalized, "--") {
+		normalized = strings.ReplaceAll(normalized, "--", "-")
 	}
 
-	volume, err := d.API.VolumeByNameOrID(ctx, volumeName)
-	if err != nil {
-		return nil, err
+	// NOTE: We don't need a separate "ensure starts with a letter" check here:
+	// - The non-hashed path always starts with `prefix` ("trident-node-"), which starts with 't'.
+	// - The hashed path always starts with `prefix + "t"`.
+	// The construction guarantees a non-empty result because the prefix and UUID are always present.
+	// Note: nodeName is assumed to be non-empty by callers; an empty nodeName would produce a
+	// valid but non-unique identifier. After hashing, the result always fits within maxLength.
+
+	// If still too long, hash the node name + UUID and use that
+	if len(normalized) > maxLength {
+		// Create a hash of nodeName + UUID for uniqueness
+		hashInput := fmt.Sprintf("%s-%s", nodeName, d.tridentUUID)
+		hash := sha256.Sum256([]byte(hashInput))
+		hashStr := hex.EncodeToString(hash[:])
+
+		// Use prefix + first part of hash, ensuring it starts with a letter
+		// Reserve space for prefix + 1 letter + hash.
+		availableForHash := maxLength - len(prefix) - 1
+		normalized = prefix + "t" + hashStr[:availableForHash]
 	}
 
-	return d.getVolumeExternal(volume), nil
+	// Ensure it doesn't end with a hyphen
+	normalized = strings.TrimRight(normalized, "-")
+
+	return normalized
 }
 
-// List returns the names of all volumes managed by this driver instance.
-func (d *SANStorageDriver) List(ctx context.Context) ([]string, error) {
-	fields := LogFields{"Method": "List", "Type": "SANStorageDriver"}
-	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> List")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< List")
+// extractNodeNameFromHostGroupName extracts the Kubernetes node name from a host group name.
+func (d *SANStorageDriver) extractNodeNameFromHostGroupName(hostGroupName string) string {
+	// Extract node name from host group name format: "trident-node-{nodeName}-{uuid}"
+	// or full path: "projects/.../hostGroups/trident-node-{nodeName}-{uuid}"
+	const prefix = "trident-node-"
 
-	// Update resource cache as needed
-	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return nil, fmt.Errorf("could not refresh GCNV resources: %v", err)
+	// Extract just the name part if it's a full path
+	name := hostGroupName
+	if idx := strings.LastIndex(hostGroupName, "/"); idx >= 0 {
+		name = hostGroupName[idx+1:]
 	}
 
-	volumes, err := d.API.Volumes(ctx)
-	if err != nil {
-		return nil, err
+	// Check if it starts with the prefix
+	if !strings.HasPrefix(name, prefix) {
+		return ""
 	}
 
-	prefix := *d.Config.StoragePrefix
-	volumeNames := make([]string, 0)
+	// Remove the prefix
+	name = name[len(prefix):]
 
-	for _, volume := range *volumes {
-		// Filter out non-iSCSI volumes (this driver only manages iSCSI volumes)
-		isISCSI := false
-		for _, proto := range volume.ProtocolTypes {
-			if proto == api.ProtocolTypeISCSI {
-				isISCSI = true
-				break
-			}
-		}
-		if !isISCSI {
-			continue
-		}
-
-		// Filter out volumes in an unavailable state
-		switch volume.State {
-		case api.VolumeStateDeleting, api.VolumeStateError, api.VolumeStateDisabled:
-			continue
-		}
-
-		// Filter out volumes without the prefix (pass all if prefix is empty)
-		if !strings.HasPrefix(volume.CreationToken, prefix) {
-			continue
-		}
-
-		volumeName := volume.CreationToken[len(prefix):]
-		volumeNames = append(volumeNames, volumeName)
+	// The UUID is at the end and has a known format (from tridentUUID)
+	// Format: {nodeName}-{uuid}
+	// The UUID format is: {8hex}-{4hex}-{4hex}-{4hex}-{12hex}
+	// We can find the UUID by looking for the pattern at the end
+	// But a simpler approach: find the last occurrence of the UUID pattern
+	// Since we have d.tridentUUID, we can use it to find where the UUID starts
+	uuidLen := len(d.tridentUUID)
+	if len(name) <= uuidLen {
+		return ""
 	}
 
-	return volumeNames, nil
+	// Check if the name ends with the UUID
+	if !strings.HasSuffix(name, d.tridentUUID) {
+		return ""
+	}
+
+	// Extract node name (everything before the UUID and the hyphen before it)
+	nodeName := name[:len(name)-uuidLen-1] // -1 for the hyphen before UUID
+	return nodeName
+}
+
+// calculateActualSizeBytes computes the actual size to request from GCNV to ensure the
+// kernel-visible LUN usable space is greater than or equal to what the user requested.
+//
+// GCNV block volumes exhibit a small discrepancy between the requested capacity and the
+// actual kernel-visible device size due to internal metadata overhead. Testing shows:
+//   - On initial creation: ~300 KiB less than requested
+//   - On resize: potentially up to ~107 MiB less than requested
+//
+// To guarantee users always get at least their requested usable space, we:
+//  1. Round up to the next whole GiB (GCNV only accepts whole GiB values, and integer
+//     division in the API layer would otherwise truncate/round down)
+//  2. Add 1 GiB buffer to absorb the metadata overhead
+//
+// Example: User requests 2.5 GiB → rounds up to 3 GiB → adds 1 GiB → requests 4 GiB from GCNV
+// Result: User gets ~3.999+ GiB usable space, well above their 2.5 GiB request
+//
+// Returns an error if the calculated size would exceed GCNV's 128 TiB maximum volume size.
+func calculateActualSizeBytes(requestedBytes int64) (int64, error) {
+	// GCNV supports volumes up to 128 TiB. Since we add up to 2 GiB (rounding + buffer),
+	// the maximum safe request is 128 TiB - 2 GiB.
+	maxSafeRequest := MaxGCNVVolumeSizeBytes - 2*api.GiBBytes
+	if requestedBytes > maxSafeRequest {
+		return 0, fmt.Errorf("requested size %d bytes exceeds GCNV maximum; "+
+			"maximum supported request is %d bytes (128 TiB - 2 GiB buffer)",
+			requestedBytes, maxSafeRequest)
+	}
+
+	// Round up to next whole GiB (ceiling division)
+	requestedGiB := (requestedBytes + api.GiBBytes - 1) / api.GiBBytes
+
+	// Add 1 GiB buffer to ensure usable space exceeds requested size
+	actualGiB := requestedGiB + 1
+
+	return actualGiB * api.GiBBytes, nil
 }

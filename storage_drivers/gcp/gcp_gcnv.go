@@ -676,7 +676,7 @@ func (d *NASStorageDriver) Create(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
-	// Update resource cache as needed
+	// Update the resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
 		return fmt.Errorf("could not update GCNV resource cache; %v", err)
 	}

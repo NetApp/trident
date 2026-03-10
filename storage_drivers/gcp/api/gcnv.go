@@ -972,13 +972,14 @@ func (c Client) CreateVolume(ctx context.Context, request *VolumeCreateRequest) 
 
 	Logc(ctx).WithFields(logFields).Info("Volume create request issued.")
 
-	if _, pollErr := poller.Poll(sdkCtx); pollErr != nil {
+	waitCtx, waitCancel := context.WithTimeout(ctx, DefaultTimeout)
+	defer waitCancel()
+	gcnvVol, pollErr := poller.Wait(waitCtx)
+	if pollErr != nil {
+		Logc(ctx).WithFields(logFields).WithError(pollErr).Error("Error waiting for volume create operation to complete.")
 		return nil, pollErr
 	}
-	// The volume doesn't exist yet, so forge the name & network IDs to enable conversion to a Volume struct
-	newVol.Name = c.createVolumeID(cPool.Location, request.Name)
-	newVol.Network = cPool.NetworkFullName
-	return c.newVolumeFromGCNVVolume(ctx, newVol)
+	return c.newVolumeFromGCNVVolume(ctx, gcnvVol)
 }
 
 // UpdateNASVolume updates NAS-specific attributes of a volume: labels, unix permissions, and snapshot directory access.
@@ -1107,7 +1108,10 @@ func (c Client) DeleteVolume(ctx context.Context, volume *Volume) error {
 
 	Logc(ctx).WithFields(logFields).Debug("Volume delete request issued.")
 
-	if pollErr := poller.Poll(sdkCtx); pollErr != nil {
+	waitCtx, waitCancel := context.WithTimeout(ctx, DefaultTimeout)
+	defer waitCancel()
+	if pollErr := poller.Wait(waitCtx); pollErr != nil {
+		Logc(ctx).WithFields(logFields).WithError(pollErr).Error("Error waiting for volume delete operation to complete.")
 		return pollErr
 	}
 
