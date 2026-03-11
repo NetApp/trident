@@ -2914,6 +2914,22 @@ func TestSANDriver_ReconcileNodeAccess_KeepOrphanedHostGroupsWithVolumes(t *test
 	assert.NoError(t, err, "ReconcileNodeAccess should succeed")
 }
 
+func TestSANDriver_ReconcileNodeAccess_HostGroupsError(t *testing.T) {
+	mockAPI, driver := newMockSANDriver(t)
+
+	nodes := []*models.Node{
+		{Name: "node-1", IQN: "iqn.xxx.node-1"},
+	}
+
+	// Mock expectations - HostGroups returns error (e.g., location not configured)
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().HostGroups(ctx).Return(nil, fmt.Errorf("backend config location is not set"))
+
+	err := driver.ReconcileNodeAccess(ctx, nodes, "", "")
+	assert.Error(t, err, "ReconcileNodeAccess should fail when HostGroups fails")
+	assert.Contains(t, err.Error(), "could not list host groups", "Error should mention host groups")
+}
+
 // ============================================================================
 // Snapshot tests
 // ============================================================================
