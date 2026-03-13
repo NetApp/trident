@@ -74,9 +74,12 @@ func TestNodeStageVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(1), nil)
 				mockISCSIClient.EXPECT().ExpandVolume(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+				)
 				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 				return mockISCSIClient
 			},
@@ -250,8 +253,11 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(1), nil)
+				mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+				)
 				mockISCSIClient.EXPECT().ExpandVolume(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 				return mockISCSIClient
@@ -281,8 +287,11 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(0), nil)
+				mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+				)
 				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 				return mockISCSIClient
 			},
@@ -299,8 +308,11 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(0), nil)
+				mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+				)
 				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 				return mockISCSIClient
 			},
@@ -323,8 +335,11 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(0), nil)
+				mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+				)
 				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 				return mockISCSIClient
 			},
@@ -341,8 +356,11 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(0), nil)
+				mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+				)
 				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 				return mockISCSIClient
 			},
@@ -365,8 +383,11 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(0), nil)
+				mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+				)
 				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 				return mockISCSIClient
 			},
@@ -383,8 +404,11 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(0), nil)
+				mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+				)
 				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 				return mockISCSIClient
 			},
@@ -407,8 +431,11 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(0), nil)
+				mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+				)
 				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 				return mockISCSIClient
 			},
@@ -425,8 +452,11 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(0), nil)
+				mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+				)
 				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 				return mockISCSIClient
 			},
@@ -460,8 +490,11 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(0), nil)
+				mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+				)
 				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 				return mockISCSIClient
 			},
@@ -501,7 +534,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(0), errors.New("some error"))
 				return mockISCSIClient
 			},
@@ -517,8 +550,11 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(1), nil)
+				mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+				)
 				mockISCSIClient.EXPECT().ExpandVolume(
 					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(errors.New("volume not attached"))
@@ -537,8 +573,11 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(1), nil)
+				mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+				)
 				mockISCSIClient.EXPECT().ExpandVolume(
 					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(errors.New("volume resize failed"))
@@ -557,8 +596,11 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(1), nil)
+				mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+				)
 				mockISCSIClient.EXPECT().ExpandVolume(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 				return mockISCSIClient
@@ -577,7 +619,7 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 			getISCSIClient: func() iscsi.ISCSI {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(0), errors.New("some error"))
 				return mockISCSIClient
 			},
@@ -2730,8 +2772,11 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 		// Setting up mocks expectation for each request.
 		for i := 0; i < numOfRequests; i++ {
 			mockISCSIClient.EXPECT().AttachVolumeRetry(
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(),
 			).Return(int64(1), nil)
+			mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+			)
 			mockISCSIClient.EXPECT().ExpandVolume(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
@@ -2885,8 +2930,11 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequestsISCSI; i++ {
 			// Setting up mocks expectation for iSCSI request.
 			mockISCSIClient.EXPECT().AttachVolumeRetry(
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(),
 			).Return(int64(1), nil)
+			mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+			)
 			mockISCSIClient.EXPECT().ExpandVolume(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
@@ -2895,8 +2943,14 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 		for i := 0; i < numOfRequestsNVMe; i++ {
 			// Setting up mocks expectation for NVMe request.
 			mockNVMeClient.EXPECT().AttachNVMeVolumeRetry(
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(),
 			).Return(nil)
+			mockNVMeClient.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(false, false, nil)
+			mockNVMeClient.EXPECT().EnsureVolumeFormattedAndMounted(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+			)
 			mockNVMeClient.EXPECT().AddPublishedNVMeSession(gomock.Any(), gomock.Any())
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 		}
@@ -3038,8 +3092,11 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 		// Setting up expectations for each request
 		for i := 0; i < numOfRequests; i++ {
 			mockFCPClient.EXPECT().AttachVolumeRetry(
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(),
 			).Return(int64(0), nil).Times(1)
+			mockFCPClient.EXPECT().EnsureVolumeFormattedAndMounted(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+			)
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
 		}
 
@@ -3108,7 +3165,10 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 			time.Sleep(600 * time.Millisecond)
 			return nil
 		}).Times(1)
-		mockFCPClient.EXPECT().AttachVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(0), nil).Times(1)
+		mockFCPClient.EXPECT().AttachVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(0), nil).Times(1)
+		mockFCPClient.EXPECT().EnsureVolumeFormattedAndMounted(
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+		)
 		mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
 		// Creating a node plugin
@@ -5987,8 +6047,11 @@ func TestNodeStageFCPVolume_Multithreaded(t *testing.T) {
 
 		// Setting up expectations for numOfParallelRequestsAllowed requests
 		mockFCPClient.EXPECT().AttachVolumeRetry(
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			gomock.Any(), gomock.Any(), gomock.Any(),
 		).Return(int64(0), nil).Times(numOfRequests)
+		mockFCPClient.EXPECT().EnsureVolumeFormattedAndMounted(
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+		).Times(numOfRequests)
 		mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2 * numOfRequests)
 
 		// Creating a node plugin
@@ -6060,8 +6123,11 @@ func TestNodeStageFCPVolume_Multithreaded(t *testing.T) {
 			return nil
 		}).Times(numOfParallelRequestsAllowed)
 		mockFCPClient.EXPECT().AttachVolumeRetry(
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			gomock.Any(), gomock.Any(), gomock.Any(),
 		).Return(int64(0), nil).Times(numOfParallelRequestsAllowed)
+		mockFCPClient.EXPECT().EnsureVolumeFormattedAndMounted(
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+		).Times(numOfParallelRequestsAllowed)
 		mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(numOfParallelRequestsAllowed)
 
 		// Creating a node plugin
@@ -6147,7 +6213,10 @@ func TestNodeStageFCPVolume_Multithreaded(t *testing.T) {
 		}).Times(numOfParallelRequestsAllowed)
 		mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(numOfRequests - numOfParallelRequestsAllowed)
 		mockFCPClient.EXPECT().AttachVolumeRetry(
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(0), nil).Times(numOfRequests)
+			gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(0), nil).Times(numOfRequests)
+		mockFCPClient.EXPECT().EnsureVolumeFormattedAndMounted(
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+		).Times(numOfRequests)
 		mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(numOfRequests)
 
 		// Creating a node plugin
@@ -6982,8 +7051,11 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		// Setting up expectations for each request
 		for i := 0; i < numOfRequests; i++ {
 			mockISCSIClient.EXPECT().AttachVolumeRetry(
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(),
 			).Return(int64(0), nil)
+			mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+			).Return(nil)
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil) // Initial and deferred write
 			mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 		}
@@ -7067,8 +7139,11 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		// Setting up expectations for each request
 		for i := 0; i < numOfRequests; i++ {
 			mockISCSIClient.EXPECT().AttachVolumeRetry(
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(),
 			).Return(int64(0), nil)
+			mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+			).Return(nil)
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil) // Initial and deferred write
 			mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 		}
@@ -7139,8 +7214,11 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		// Setting up expectations for each requests
 		for i := 0; i < numOfRequests; i++ {
 			mockFCPClient.EXPECT().AttachVolumeRetry(
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(),
 			).Return(int64(0), nil).Times(1)
+			mockFCPClient.EXPECT().EnsureVolumeFormattedAndMounted(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+			).Return(nil)
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
 		}
 
@@ -7208,8 +7286,11 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		// Setting up expectations for each requests
 		for i := 0; i < numOfRequests; i++ {
 			mockFCPClient.EXPECT().AttachVolumeRetry(
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(),
 			).Return(int64(0), nil).Times(1)
+			mockFCPClient.EXPECT().EnsureVolumeFormattedAndMounted(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+			).Return(nil).Times(1)
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
 		}
 
@@ -7284,7 +7365,13 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		// Setting up expectations for each request
 		for i := 0; i < numOfRequests; i++ {
 			mockNVMeClient.EXPECT().AttachNVMeVolumeRetry(
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(nil)
+			mockNVMeClient.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(false, false, nil)
+			mockNVMeClient.EXPECT().EnsureVolumeFormattedAndMounted(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
 			).Return(nil)
 			mockNVMeClient.EXPECT().AddPublishedNVMeSession(gomock.Any(), gomock.Any())
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -7352,7 +7439,13 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		// Setting up expectations for each request
 		for i := 0; i < numOfRequests; i++ {
 			mockNVMeClient.EXPECT().AttachNVMeVolumeRetry(
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(nil)
+			mockNVMeClient.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(false, false, nil)
+			mockNVMeClient.EXPECT().EnsureVolumeFormattedAndMounted(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
 			).Return(nil)
 			mockNVMeClient.EXPECT().AddPublishedNVMeSession(gomock.Any(), gomock.Any())
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -7436,8 +7529,11 @@ func TestNodeStageISCSIVolume_Multithreaded(t *testing.T) {
 		// Setting up expectations for each request
 		for i := 0; i < numOfRequests; i++ {
 			mockISCSIClient.EXPECT().AttachVolumeRetry(
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(),
 			).Return(int64(0), nil)
+			mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+			)
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2) // Initial and deferred write
 			mockISCSIClient.EXPECT().AddSession(gomock.Any(), publishedISCSISessions, publishInfos[i], requests[i].VolumeId, "", models.NotInvalid).Return()
 		}
@@ -7510,8 +7606,11 @@ func TestNodeStageISCSIVolume_Multithreaded(t *testing.T) {
 		// Setting up expectations for numOfParallelRequestsAllowed requests
 		for i := 0; i < numOfParallelRequestsAllowed; i++ {
 			mockISCSIClient.EXPECT().AttachVolumeRetry(
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(),
 			).Return(int64(0), nil)
+			mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+			)
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, volumeID string, info *models.VolumeTrackingInfo) error {
 				signalChan <- struct{}{}
 				time.Sleep(600 * time.Millisecond)
@@ -7595,8 +7694,11 @@ func TestNodeStageISCSIVolume_Multithreaded(t *testing.T) {
 		// Setting up expectations for numOfParallelRequestsAllowed requests
 		for i := 0; i < numOfParallelRequestsAllowed; i++ {
 			mockISCSIClient.EXPECT().AttachVolumeRetry(
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(),
 			).Return(int64(0), nil)
+			mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+			)
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, volumeID string, info *models.VolumeTrackingInfo) error {
 				signalChan <- struct{}{}
 				time.Sleep(100 * time.Millisecond)
@@ -7608,8 +7710,11 @@ func TestNodeStageISCSIVolume_Multithreaded(t *testing.T) {
 		// Setting up expectations for remaining requests
 		for i := numOfParallelRequestsAllowed; i < numOfRequests; i++ {
 			mockISCSIClient.EXPECT().AttachVolumeRetry(
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(),
 			).Return(int64(0), nil)
+			mockISCSIClient.EXPECT().EnsureVolumeFormattedAndMounted(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+			)
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2) // Initial and deferred write
 			mockISCSIClient.EXPECT().AddSession(gomock.Any(), publishedISCSISessions, publishInfos[i], requests[i].VolumeId, "", models.NotInvalid).Return()
 		}
@@ -8238,7 +8343,13 @@ func TestNodeStageNVMeVolume_Multithreaded(t *testing.T) {
 		// Setting up expectations for each request
 		for i := 0; i < numOfRequests; i++ {
 			mockNVMeClient.EXPECT().AttachNVMeVolumeRetry(
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(nil)
+			mockNVMeClient.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(false, false, nil)
+			mockNVMeClient.EXPECT().EnsureVolumeFormattedAndMounted(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
 			).Return(nil)
 			mockNVMeClient.EXPECT().AddPublishedNVMeSession(gomock.Any(), gomock.Any())
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -8303,8 +8414,12 @@ func TestNodeStageNVMeVolume_Multithreaded(t *testing.T) {
 		// Setting up expectations for numOfParallelRequestsAllowed requests
 		for i := 0; i < numOfParallelRequestsAllowed; i++ {
 			mockNVMeClient.EXPECT().AttachNVMeVolumeRetry(
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(),
 			).Return(nil)
+			mockNVMeClient.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
+			mockNVMeClient.EXPECT().EnsureVolumeFormattedAndMounted(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+			)
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, volumeID string, info *models.VolumeTrackingInfo) error {
 				signalChan <- struct{}{}
 				time.Sleep(600 * time.Millisecond)
@@ -8382,7 +8497,13 @@ func TestNodeStageNVMeVolume_Multithreaded(t *testing.T) {
 		mockNVMeClient := mock_nvme.NewMockNVMeInterface(ctrl)
 
 		// Setting up expectations - all requests may process concurrently
-		mockNVMeClient.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(numOfRequests)
+		mockNVMeClient.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(numOfRequests)
+		mockNVMeClient.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		).Return(false, false, nil).Times(numOfRequests)
+		mockNVMeClient.EXPECT().EnsureVolumeFormattedAndMounted(
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+		).Return(nil).Times(numOfRequests)
 		mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(numOfRequests)
 		mockNVMeClient.EXPECT().AddPublishedNVMeSession(gomock.Any(), gomock.Any()).Times(numOfRequests)
 
@@ -9352,7 +9473,7 @@ func TestNodeStageFCPVolume(t *testing.T) {
 			getFCPClient: func() fcp.FCP {
 				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
 				mockFCPClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(0), errors.New("some error"))
 				return mockFCPClient
 			},
@@ -9900,7 +10021,7 @@ func TestNodeStageVolume1(t *testing.T) {
 			},
 			setupNVMeHandler: func() nvme.NVMeInterface {
 				mockNvmeHandler := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
-				mockNvmeHandler.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
+				mockNvmeHandler.EXPECT().AttachNVMeVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
 				return mockNvmeHandler
 			},
 		},
@@ -13461,7 +13582,7 @@ func TestNodeStageFCPVolume_FailureCases(t *testing.T) {
 			setupFCPMock: func() fcp.FCP {
 				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
 				mockFCPClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(3), nil)
 				return mockFCPClient
 			},
@@ -13497,8 +13618,11 @@ func TestNodeStageFCPVolume_FailureCases(t *testing.T) {
 			setupFCPMock: func() fcp.FCP {
 				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
 				mockFCPClient.EXPECT().AttachVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(int64(3), nil)
+				mockFCPClient.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+				)
 				return mockFCPClient
 			},
 			expErrCode: codes.OK,
@@ -14627,7 +14751,7 @@ func TestNodeStageNVMeVolume(t *testing.T) {
 			setupNvmeHandlerMock: func() nvme.NVMeInterface {
 				setupNvmeHandlerMock := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
 				setupNvmeHandlerMock.EXPECT().AttachNVMeVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(errors.New("")).AnyTimes()
 				return setupNvmeHandlerMock
 			},
@@ -14644,8 +14768,12 @@ func TestNodeStageNVMeVolume(t *testing.T) {
 			setupNvmeHandlerMock: func() nvme.NVMeInterface {
 				setupNvmeHandlerMock := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
 				setupNvmeHandlerMock.EXPECT().AttachNVMeVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(nil).AnyTimes()
+				setupNvmeHandlerMock.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+				).AnyTimes()
+				setupNvmeHandlerMock.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 				return setupNvmeHandlerMock
 			},
 			publishInfo: &models.VolumePublishInfo{},
@@ -14667,7 +14795,7 @@ func TestNodeStageNVMeVolume(t *testing.T) {
 			setupNvmeHandlerMock: func() nvme.NVMeInterface {
 				setupNvmeHandlerMock := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
 				setupNvmeHandlerMock.EXPECT().AttachNVMeVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(errors.New("")).AnyTimes()
 				return setupNvmeHandlerMock
 			},
@@ -14686,8 +14814,14 @@ func TestNodeStageNVMeVolume(t *testing.T) {
 			setupNvmeHandlerMock: func() nvme.NVMeInterface {
 				setupNvmeHandlerMock := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
 				setupNvmeHandlerMock.EXPECT().AttachNVMeVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(nil).AnyTimes()
+				setupNvmeHandlerMock.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+				).AnyTimes()
+				setupNvmeHandlerMock.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).AnyTimes()
 				return setupNvmeHandlerMock
 			},
 			publishInfo: &models.VolumePublishInfo{
@@ -14705,8 +14839,14 @@ func TestNodeStageNVMeVolume(t *testing.T) {
 			setupNvmeHandlerMock: func() nvme.NVMeInterface {
 				setupNvmeHandlerMock := mock_nvme.NewMockNVMeInterface(gomock.NewController(t))
 				setupNvmeHandlerMock.EXPECT().AttachNVMeVolumeRetry(
-					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(nil).AnyTimes()
+				setupNvmeHandlerMock.EXPECT().EnsureVolumeFormattedAndMounted(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false,
+				).Times(1)
+				setupNvmeHandlerMock.EXPECT().EnsureCryptsetupFormattedAndMappedOnHost(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Times(1)
 				setupNvmeHandlerMock.EXPECT().AddPublishedNVMeSession(gomock.Any(), gomock.Any()).AnyTimes()
 				return setupNvmeHandlerMock
 			},
@@ -15186,7 +15326,7 @@ func TestSelfHealingRectifySession(t *testing.T) {
 				mockISCSIClient := mock_iscsi.NewMockISCSI(gomock.NewController(t))
 				mockISCSIClient.EXPECT().IsPortalAccessible(gomock.Any(), gomock.Any()).Return(true, nil)
 				mockISCSIClient.EXPECT().Logout(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				mockISCSIClient.EXPECT().AttachVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+				mockISCSIClient.EXPECT().AttachVolumeRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
 				return mockISCSIClient
 			},
 			getIscsiReconcileUtilsClient: func() iscsi.IscsiReconcileUtils {

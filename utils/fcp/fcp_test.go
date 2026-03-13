@@ -163,8 +163,7 @@ func TestClient_AttachVolumeRetry_preCheckFailure(t *testing.T) {
 	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
 		mockOsClient, mockDevices, mockFileSystem,
 		mockMount, mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()})
-	_, err := fcpClient.AttachVolumeRetry(context.TODO(), "", "", &publishInfo, nil,
-		testTimeout)
+	_, err := fcpClient.AttachVolumeRetry(context.TODO(), &publishInfo, testTimeout)
 	assert.NotNil(t, err, "AttachVolumeRetry returns nil error")
 }
 
@@ -184,8 +183,7 @@ func TestClient_AttachVolumeRetry_attachVolumeFailure(t *testing.T) {
 	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
 		mockOsClient, mockDevices, mockFileSystem,
 		mockMount, mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()})
-	_, err := fcpClient.AttachVolumeRetry(context.TODO(), "", "", &publishInfo, nil,
-		testTimeout)
+	_, err := fcpClient.AttachVolumeRetry(context.TODO(), &publishInfo, testTimeout)
 	assert.NotNil(t, err, "AttachVolumeRetry returns nil error")
 }
 
@@ -229,8 +227,7 @@ func TestClient_AttachVolumeRetry(t *testing.T) {
 	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
 		mockOsClient, mockDevices, mockFileSystem,
 		mockMount, mockReconcileUtils, afero.Afero{Fs: fs})
-	_, attachVolumeErr := fcpClient.AttachVolumeRetry(context.TODO(), "", "", &publishInfo, nil,
-		testTimeout)
+	_, attachVolumeErr := fcpClient.AttachVolumeRetry(context.TODO(), &publishInfo, testTimeout)
 	assert.Nil(t, attachVolumeErr, "AttachVolumeRetry returns error")
 }
 
@@ -664,14 +661,12 @@ func TestClient_AttachVolume(t *testing.T) {
 			},
 		},
 	}
-	volumeAuthSecrets := make(map[string]string, 0)
 
 	fcpClient := NewDetailed("", mockCommand, DefaultSelfHealingExclusion,
 		mockOsClient, mockDevices, mockFileSystem,
 		mockMount, mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()})
 
-	_, attachErr := fcpClient.AttachVolume(context.TODO(), "test-volume", "/mnt/test-volume",
-		&publishInfo, volumeAuthSecrets)
+	_, attachErr := fcpClient.AttachVolume(context.TODO(), &publishInfo)
 	assert.Nil(t, attachErr, "AttachVolume returns error")
 }
 
@@ -690,8 +685,7 @@ func TestClient_AttachVolume_preCheckFailure(t *testing.T) {
 		mockOsClient, mockDevices, mockFileSystem,
 		mockMount, mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()})
 
-	_, attachErr := fcpClient.AttachVolume(context.TODO(), "test-volume", "/mnt/test-volume",
-		&publishInfo, nil)
+	_, attachErr := fcpClient.AttachVolume(context.TODO(), &publishInfo)
 	assert.NotNil(t, attachErr, "AttachVolume returns nil error")
 }
 
@@ -699,9 +693,6 @@ func TestClient_AttachVolume_preCheckFailureMultiPathFailure(t *testing.T) {
 	publishInfo := models.VolumePublishInfo{
 		FilesystemType: filesystem.Ext4,
 	}
-	volumeName := "test-volume"
-	volumeMountPoint := "/mnt/test-volume"
-	volumeAuthSecrets := make(map[string]string, 0)
 	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, _ := NewDrivers()
 
 	mockCommand.EXPECT().Execute(context.TODO(), "pgrep", "multipathd").
@@ -713,8 +704,7 @@ func TestClient_AttachVolume_preCheckFailureMultiPathFailure(t *testing.T) {
 		mockOsClient, mockDevices, mockFileSystem,
 		mockMount, mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()})
 
-	_, attachErr := fcpClient.AttachVolume(context.TODO(), volumeName, volumeMountPoint,
-		&publishInfo, volumeAuthSecrets)
+	_, attachErr := fcpClient.AttachVolume(context.TODO(), &publishInfo)
 	assert.NotNil(t, attachErr, "AttachVolume returns nil error")
 }
 
@@ -722,9 +712,6 @@ func TestClient_AttachVolume_zoningCheckFailed(t *testing.T) {
 	publishInfo := models.VolumePublishInfo{
 		FilesystemType: filesystem.Ext4,
 	}
-	volumeName := "test-volume"
-	volumeMountPoint := "/mnt/test-volume"
-	volumeAuthSecrets := make(map[string]string, 0)
 	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, _ := NewDrivers()
 
 	mockCommand.EXPECT().Execute(context.TODO(), "pgrep", "multipathd").
@@ -740,8 +727,7 @@ func TestClient_AttachVolume_zoningCheckFailed(t *testing.T) {
 		mockOsClient, mockDevices, mockFileSystem,
 		mockMount, mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()})
 
-	_, attachErr := fcpClient.AttachVolume(context.TODO(), volumeName, volumeMountPoint,
-		&publishInfo, volumeAuthSecrets)
+	_, attachErr := fcpClient.AttachVolume(context.TODO(), &publishInfo)
 	assert.NotNil(t, attachErr, "AttachVolume returns nil error")
 }
 
@@ -749,8 +735,6 @@ func TestClient_AttachVolume_hostSessionNil(t *testing.T) {
 	publishInfo := models.VolumePublishInfo{
 		FilesystemType: filesystem.Ext4,
 	}
-	volumeName := "test-volume"
-	volumeMountPoint := "/mnt/test-volume"
 	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, _ := NewDrivers()
 
 	mockCommand.EXPECT().Execute(context.TODO(), "pgrep", "multipathd").Return([]byte("150"), nil).AnyTimes()
@@ -764,8 +748,7 @@ func TestClient_AttachVolume_hostSessionNil(t *testing.T) {
 		mockOsClient, mockDevices, mockFileSystem,
 		mockMount, mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()})
 
-	_, attachErr := fcpClient.AttachVolume(context.TODO(), volumeName, volumeMountPoint,
-		&publishInfo, nil)
+	_, attachErr := fcpClient.AttachVolume(context.TODO(), &publishInfo)
 	assert.NotNil(t, attachErr, "AttachVolume returns nil error")
 }
 
@@ -779,8 +762,6 @@ func TestClient_AttachVolume_invalidSerials(t *testing.T) {
 			},
 		},
 	}
-	volumeName := "test-volume"
-	volumeMountPoint := "/mnt/test-volume"
 	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, _ := NewDrivers()
 
 	mockCommand.EXPECT().Execute(context.TODO(), "pgrep", "multipathd").Return([]byte("150"), nil).AnyTimes()
@@ -798,8 +779,7 @@ func TestClient_AttachVolume_invalidSerials(t *testing.T) {
 		mockOsClient, mockDevices, mockFileSystem,
 		mockMount, mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()})
 
-	_, attachErr := fcpClient.AttachVolume(context.TODO(), volumeName, volumeMountPoint,
-		&publishInfo, nil)
+	_, attachErr := fcpClient.AttachVolume(context.TODO(), &publishInfo)
 	assert.NotNil(t, attachErr, "AttachVolume returns nil error")
 }
 
@@ -813,8 +793,6 @@ func TestClient_AttachVolume_invalidSerialsErr(t *testing.T) {
 			},
 		},
 	}
-	volumeName := "test-volume"
-	volumeMountPoint := "/mnt/test-volume"
 
 	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, _ := NewDrivers()
 
@@ -834,8 +812,7 @@ func TestClient_AttachVolume_invalidSerialsErr(t *testing.T) {
 		mockOsClient, mockDevices, mockFileSystem,
 		mockMount, mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()})
 
-	_, attachErr := fcpClient.AttachVolume(context.TODO(), volumeName, volumeMountPoint,
-		&publishInfo, nil)
+	_, attachErr := fcpClient.AttachVolume(context.TODO(), &publishInfo)
 	assert.NotNil(t, attachErr, "AttachVolume returns nil error")
 }
 
@@ -843,8 +820,6 @@ func TestClient_AttachVolume_AttachVolumeFailed(t *testing.T) {
 	publishInfo := models.VolumePublishInfo{
 		FilesystemType: filesystem.Ext4,
 	}
-	volumeName := "test-volume"
-	volumeMountPoint := "/mnt/test-volume"
 	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, _ := NewDrivers()
 
 	mockCommand.EXPECT().Execute(context.TODO(), "pgrep", "multipathd").Return([]byte("150"), nil).AnyTimes()
@@ -857,8 +832,7 @@ func TestClient_AttachVolume_AttachVolumeFailed(t *testing.T) {
 		mockOsClient, mockDevices, mockFileSystem,
 		mockMount, mockReconcileUtils, afero.Afero{Fs: afero.NewMemMapFs()})
 
-	_, attachErr := fcpClient.AttachVolume(context.TODO(), volumeName, volumeMountPoint,
-		&publishInfo, nil)
+	_, attachErr := fcpClient.AttachVolume(context.TODO(), &publishInfo)
 	assert.NotNil(t, attachErr, "AttachVolume returns nil error")
 }
 
