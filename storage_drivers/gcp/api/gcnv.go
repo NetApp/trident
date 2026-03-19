@@ -55,6 +55,7 @@ var (
 	volumeNameRegex       = regexp.MustCompile(`^projects/(?P<projectNumber>[^/]+)/locations/(?P<location>[^/]+)/volumes/(?P<volume>[^/]+)$`)
 	snapshotNameRegex     = regexp.MustCompile(`^projects/(?P<projectNumber>[^/]+)/locations/(?P<location>[^/]+)/volumes/(?P<volume>[^/]+)/snapshots/(?P<snapshot>[^/]+)$`)
 	networkNameRegex      = regexp.MustCompile(`^projects/(?P<projectNumber>[^/]+)/global/networks/(?P<network>[^/]+)$`)
+	zoneSuffixRegex       = regexp.MustCompile(`-[a-z]$`)
 )
 
 // ClientConfig holds configuration data for the API driver object.
@@ -368,14 +369,16 @@ func (c Client) findAllLocationsFromCapacityPool(flexPoolsCount int) map[string]
 	return locations
 }
 
-// getLocationFromCapacityPools returns the location from the first available capacity pool.
-// Returns an error if no capacity pools are available.
-func (c Client) getLocationFromCapacityPools() (string, error) {
-	pools := c.CapacityPools()
-	if pools == nil || len(*pools) == 0 {
-		return "", fmt.Errorf("no capacity pools available")
+// getRegionalLocation returns the regional location from the backend config.
+// Host groups are regional resources and must use a regional location (e.g., "us-east4"), even when
+// the backend config specifies a zonal location. The zone suffix is stripped if present.
+// Zonal locations like "us-east4-a" are trimmed to "us-east4".
+// Regional locations like "us-east4" are returned as-is.
+func (c Client) getRegionalLocation() (string, error) {
+	if c.config.Location == "" {
+		return "", fmt.Errorf("backend config location is not set")
 	}
-	return (*pools)[0].Location, nil
+	return zoneSuffixRegex.ReplaceAllString(c.config.Location, ""), nil
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -1874,9 +1877,9 @@ func (c Client) HostGroups(ctx context.Context) ([]*HostGroup, error) {
 
 	Logc(ctx).WithFields(logFields).Debug("Listing host groups via v1 protobuf SDK.")
 
-	location, err := c.getLocationFromCapacityPools()
+	location, err := c.getRegionalLocation()
 	if err != nil {
-		return []*HostGroup{}, nil
+		return nil, err
 	}
 
 	sdkCtx, cancel := context.WithTimeout(ctx, c.config.SDKTimeout)
@@ -1913,7 +1916,7 @@ func (c Client) HostGroupByName(ctx context.Context, name string) (*HostGroup, e
 
 	Logc(ctx).WithFields(logFields).Debug("Fetching host group by name via v1 protobuf SDK.")
 
-	location, err := c.getLocationFromCapacityPools()
+	location, err := c.getRegionalLocation()
 	if err != nil {
 		return nil, err
 	}
@@ -1951,7 +1954,7 @@ func (c Client) CreateHostGroup(ctx context.Context, request *HostGroupCreateReq
 
 	Logc(ctx).WithFields(logFields).Debug("Creating host group via v1 protobuf SDK.")
 
-	location, err := c.getLocationFromCapacityPools()
+	location, err := c.getRegionalLocation()
 	if err != nil {
 		return nil, err
 	}

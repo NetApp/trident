@@ -1943,3 +1943,41 @@ func TestListComputeZones_Success(t *testing.T) {
 	// making it difficult to mock without a full gRPC mock setup.
 	t.Skip("ListComputeZones requires compute client mocking which is complex")
 }
+
+func TestGetRegionalLocation(t *testing.T) {
+	t.Run("regional config location returned as-is", func(t *testing.T) {
+		sdk := getFakeSDK(false)
+		sdk.config.Location = "us-east4"
+
+		location, err := sdk.getRegionalLocation()
+		assert.NoError(t, err)
+		assert.Equal(t, "us-east4", location)
+	})
+
+	t.Run("zonal config location stripped to region", func(t *testing.T) {
+		sdk := getFakeSDK(false)
+		sdk.config.Location = "us-east4-a"
+
+		location, err := sdk.getRegionalLocation()
+		assert.NoError(t, err)
+		assert.Equal(t, "us-east4", location)
+	})
+
+	t.Run("different region zonal stripped", func(t *testing.T) {
+		sdk := getFakeSDK(false)
+		sdk.config.Location = "europe-west1-b"
+
+		location, err := sdk.getRegionalLocation()
+		assert.NoError(t, err)
+		assert.Equal(t, "europe-west1", location)
+	})
+
+	t.Run("empty location returns error", func(t *testing.T) {
+		sdk := getFakeSDK(false)
+		sdk.config.Location = ""
+
+		_, err := sdk.getRegionalLocation()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "backend config location is not set")
+	})
+}
