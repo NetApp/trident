@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 
 	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/google/uuid"
@@ -72,7 +71,6 @@ var (
 	storagePrefixRegex       = regexp.MustCompile(`^$|^[a-zA-Z][a-zA-Z-]*$`)
 	volumeNameRegex          = regexp.MustCompile(`^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$`)
 	volumeCreationTokenRegex = regexp.MustCompile(`^[a-z]([a-z0-9-]{0,78}[a-z0-9])?$`)
-	gcpLabelRegex            = regexp.MustCompile(`[^-_a-z0-9\p{L}]`)
 	csiRegex                 = regexp.MustCompile(`^pvc-[\da-fA-F]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}$`)
 	nfsMountPathRegex        = regexp.MustCompile(`^(?P<server>.+):/(?P<share>.+)$`)
 	smbMountPathRegex        = regexp.MustCompile(`\\\\(?P<server>.+)\\(?P<share>.+)$`)
@@ -148,12 +146,7 @@ func (d *NASStorageDriver) validateCreationToken(name string) error {
 // defaultCreateTimeout sets the driver timeout for volume create/delete operations.  Docker gets more time, since
 // it doesn't have a mechanism to retry.
 func (d *NASStorageDriver) defaultCreateTimeout() time.Duration {
-	switch d.Config.DriverContext {
-	case tridentconfig.ContextDocker:
-		return tridentconfig.DockerCreateTimeout
-	default:
-		return api.VolumeCreateTimeout
-	}
+	return DefaultCreateTimeout(d.Config.DriverContext)
 }
 
 // defaultTimeout controls the driver timeout for most workflows.
@@ -305,9 +298,9 @@ func (d *NASStorageDriver) populateConfigurationDefaults(
 	// VolumeCreateTimeoutSeconds is the timeout value in seconds.
 	volumeCreateTimeout := d.defaultCreateTimeout()
 	if config.VolumeCreateTimeout != "" {
-		i, err := strconv.ParseInt(d.Config.VolumeCreateTimeout, 10, 64)
+		i, err := strconv.ParseInt(config.VolumeCreateTimeout, 10, 64)
 		if err != nil {
-			Logc(ctx).WithField("interval", d.Config.VolumeCreateTimeout).Errorf(
+			Logc(ctx).WithField("interval", config.VolumeCreateTimeout).Errorf(
 				"Invalid volume create timeout period. %v", err)
 			return err
 		}
@@ -676,9 +669,9 @@ func (d *NASStorageDriver) Create(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
-	// Update the resource cache as needed
+	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not update GCNV resource cache; %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
 	// Make sure we got a valid name
@@ -1022,7 +1015,7 @@ func (d *NASStorageDriver) CreateClone(
 
 	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not update GCNV resource cache; %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
 	// ensure new volume doesn't exist, fail if so
@@ -1231,7 +1224,7 @@ func (d *NASStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 
 	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not update GCNV resource cache; %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
 	// Get the volume
@@ -1389,47 +1382,15 @@ func (d *NASStorageDriver) updateTelemetryLabels(ctx context.Context, volume *ap
 // fixGCPLabelKey accepts a label key and modifies it to satisfy GCP label key rules, or returns
 // false if not possible.
 func (d *NASStorageDriver) fixGCPLabelKey(s string) (string, bool) {
-	// Check if the string is empty
-	if len(s) == 0 {
-		return "", false
-	}
-
-	// Convert the string to lowercase
-	s = strings.ToLower(s)
-
-	// Replace all disallowed characters with underscores
-	s = gcpLabelRegex.ReplaceAllStringFunc(s, func(m string) string {
-		return strings.Repeat("_", len(m))
-	})
-
-	// Check if the first character is a lowercase letter
-	if !unicode.IsLower(rune(s[0])) {
-		return "", false
-	}
-
-	// Shorten the string to a maximum of 63 characters
-	s = convert.TruncateString(s, api.MaxLabelLength)
-
-	return s, true
+	return FixGCPLabelKey(s)
 }
 
 // fixGCPLabelValue accepts a label value and modifies it to satisfy GCP label value rules.
 func (d *NASStorageDriver) fixGCPLabelValue(s string) string {
-	// Convert the string to lowercase
-	s = strings.ToLower(s)
-
-	// Replace all disallowed characters with underscores
-	s = gcpLabelRegex.ReplaceAllStringFunc(s, func(m string) string {
-		return strings.Repeat("_", len(m))
-	})
-
-	// Shorten the string to a maximum of 63 characters
-	s = convert.TruncateString(s, api.MaxLabelLength)
-
-	return s
+	return FixGCPLabelValue(s)
 }
 
-// waitForVolumeCreate waits for volume creation to complete by reaching the Available state.  If the
+// waitForVolumeCreate waits for volume creation to complete by reaching the Ready state.  If the
 // volume reaches a terminal state (Error), the volume is deleted.  If the wait times out and the volume
 // is still creating, a VolumeCreatingError is returned so the caller may try again.
 func (d *NASStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.Volume) error {
@@ -1499,7 +1460,7 @@ func (d *NASStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 
 	// Update resource cache as needed
 	if err = d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not update GCNV resource cache; %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
 	// If this volume was cloned from an automatic snapshot, delete the snapshot after deleting the volume.
@@ -1628,7 +1589,7 @@ func (d *NASStorageDriver) Publish(
 
 	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not update GCNV resource cache; %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
 	// If it's a RO clone, get source volume to populate publish info
@@ -1702,7 +1663,8 @@ func (d *NASStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotCon
 	return nil
 }
 
-// GetSnapshot returns a snapshot of a volume, or an error if it does not exist.
+// GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
+// and a non-existent snapshot, this method may return (nil, nil).
 func (d *NASStorageDriver) GetSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
@@ -1719,7 +1681,7 @@ func (d *NASStorageDriver) GetSnapshot(
 
 	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return nil, fmt.Errorf("could not update GCNV resource cache; %v", err)
+		return nil, ErrRefreshGCNVResourceCache(err)
 	}
 
 	// Get the volume
@@ -1782,7 +1744,7 @@ func (d *NASStorageDriver) GetSnapshots(
 
 	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return nil, fmt.Errorf("could not update GCNV resource cache; %v", err)
+		return nil, ErrRefreshGCNVResourceCache(err)
 	}
 
 	// Get the volume
@@ -1839,7 +1801,7 @@ func (d *NASStorageDriver) CreateSnapshot(
 
 	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return nil, fmt.Errorf("could not update GCNV resource cache; %v", err)
+		return nil, ErrRefreshGCNVResourceCache(err)
 	}
 
 	// Check if volume exists
@@ -1901,7 +1863,7 @@ func (d *NASStorageDriver) RestoreSnapshot(
 
 	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not update GCNV resource cache; %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
 	// Get the volume
@@ -1921,7 +1883,7 @@ func (d *NASStorageDriver) RestoreSnapshot(
 		return err
 	}
 
-	// Wait for snapshot deletion to complete
+	// Wait for volume to return to Ready state after restore
 	_, err = d.API.WaitForVolumeState(ctx, volume, api.VolumeStateReady,
 		[]string{api.VolumeStateError, api.VolumeStateDeleting, api.VolumeStateDeleted}, api.DefaultSDKTimeout,
 	)
@@ -1945,7 +1907,7 @@ func (d *NASStorageDriver) DeleteSnapshot(
 
 	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not update GCNV resource cache; %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
 	// Get the volume
@@ -1980,7 +1942,7 @@ func (d *NASStorageDriver) DeleteSnapshot(
 		default:
 			fields["state"] = snapshot.State
 			Logc(ctx).WithFields(fields).Debug("Snapshot exists but is not Ready.")
-			return fmt.Errorf("snapshot %s already exists but is %s, not %s",
+			return fmt.Errorf("snapshot %s is %s; cannot delete unless state is %s",
 				internalSnapName, snapshot.State, api.SnapshotStateReady)
 		}
 	}
@@ -1994,7 +1956,7 @@ func (d *NASStorageDriver) List(ctx context.Context) ([]string, error) {
 
 	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return nil, fmt.Errorf("could not update GCNV resource cache; %v", err)
+		return nil, ErrRefreshGCNVResourceCache(err)
 	}
 
 	volumes, err := d.API.Volumes(ctx)
@@ -2006,6 +1968,9 @@ func (d *NASStorageDriver) List(ctx context.Context) ([]string, error) {
 	volumeNames := make([]string, 0)
 
 	for _, volume := range *volumes {
+		if !d.isNASProtocolVolume(volume) {
+			continue
+		}
 
 		// Filter out volumes in an unavailable state
 		switch volume.State {
@@ -2034,7 +1999,7 @@ func (d *NASStorageDriver) Get(ctx context.Context, volConfig *storage.VolumeCon
 
 	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not update GCNV resource cache; %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
 	if _, err := d.API.VolumeByName(ctx, name); err != nil {
@@ -2058,7 +2023,7 @@ func (d *NASStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 
 	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not update GCNV resource cache; %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
 	// Get the volume
@@ -2195,7 +2160,7 @@ func (d *NASStorageDriver) CreateFollowup(ctx context.Context, volConfig *storag
 
 	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not update GCNV resource cache; %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
 	// If it's a RO clone, get source volume to populate access details
@@ -2284,7 +2249,7 @@ func (d *NASStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 func (d *NASStorageDriver) GetVolumeForImport(ctx context.Context, volumeID string) (*storage.VolumeExternal, error) {
 	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return nil, fmt.Errorf("could not update GCNV resource cache; %v", err)
+		return nil, ErrRefreshGCNVResourceCache(err)
 	}
 
 	filesystem, err := d.API.VolumeByNameOrID(ctx, volumeID)
@@ -2325,6 +2290,9 @@ func (d *NASStorageDriver) GetVolumeExternalWrappers(ctx context.Context, channe
 
 	// Convert all volumes to VolumeExternal and write them to the channel
 	for _, volume := range *volumes {
+		if !d.isNASProtocolVolume(volume) {
+			continue
+		}
 
 		// Filter out volumes in an unavailable state
 		switch volume.State {
@@ -2522,6 +2490,23 @@ func (d *NASStorageDriver) isDualProtocolVolume(volume *api.Volume) bool {
 		}
 	}
 	return nfs && smb
+}
+
+// isNASProtocolVolume reports whether the volume exposes NFS or SMB file protocols.
+func (d *NASStorageDriver) isNASProtocolVolume(volume *api.Volume) bool {
+	for _, proto := range volume.ProtocolTypes {
+		switch proto {
+		case api.ProtocolTypeNFSv3, api.ProtocolTypeNFSv41, api.ProtocolTypeSMB:
+			return true
+		case "CIFS": // dual-protocol file volumes (NFS + SMB/CIFS)
+			return true
+		default:
+			if strings.HasPrefix(proto, api.ProtocolTypeNFSPrefix) || proto == "NFS" {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func constructVolumeAccessPath(

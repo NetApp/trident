@@ -14,7 +14,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 
 	"github.com/RoaringBitmap/roaring/v2"
 	"github.com/google/uuid"
@@ -73,7 +72,6 @@ type SANStorageDriver struct {
 
 // Name returns the name of this driver.
 func (d *SANStorageDriver) Name() string {
-
 	return tridentconfig.GCNVSANStorageDriverName
 }
 
@@ -95,8 +93,10 @@ func (d *SANStorageDriver) defaultBackendName() string {
 func (d *SANStorageDriver) BackendName() string {
 	if d.Config.BackendName != "" {
 		return d.Config.BackendName
+	} else {
+		// Use the old naming scheme if no name is specified
+		return d.defaultBackendName()
 	}
-	return d.defaultBackendName()
 }
 
 // poolName constructs the name of the pool reported by this driver instance.
@@ -104,8 +104,7 @@ func (d *SANStorageDriver) poolName(name string) string {
 	return fmt.Sprintf("%s_%s", d.BackendName(), strings.Replace(name, "-", "", -1))
 }
 
-// validateVolumeName checks that the volume name matches GCNV SAN volume name requirements.
-// Expects normalized name (hyphens already converted to underscores for CSI volumes).
+// validateVolumeName checks that the name of a new volume matches the requirements of a GCNV SAN volume name.
 func (d *SANStorageDriver) validateVolumeName(name string) error {
 	if !sanVolumeNameRegex.MatchString(name) {
 		return fmt.Errorf("volume name '%s' is not allowed; it must be 1-63 characters long, "+
@@ -125,7 +124,7 @@ func (d *SANStorageDriver) validateCreationToken(name string) error {
 
 // defaultCreateTimeout sets the driver timeout for volume create/delete operations.
 func (d *SANStorageDriver) defaultCreateTimeout() time.Duration {
-	return api.VolumeCreateTimeout
+	return DefaultCreateTimeout(d.Config.DriverContext)
 }
 
 // defaultTimeout controls the driver timeout for most workflows.
@@ -184,7 +183,7 @@ func (d *SANStorageDriver) Initialize(
 		return fmt.Errorf("error validating %s driver. %v", d.Name(), err)
 	}
 
-	// Identify non-overlapping storage backend pools on the driver backend
+	// Identify non-overlapping storage backend pools on the driver backend.
 	pools, err := drivers.EncodeStorageBackendPools(ctx, commonConfig, d.getStorageBackendPools(ctx))
 	if err != nil {
 		return fmt.Errorf("failed to encode storage backend pools: %v", err)
@@ -219,7 +218,7 @@ func (d *SANStorageDriver) Terminate(ctx context.Context, _ string) {
 	d.initialized = false
 }
 
-// populateConfigurationDefaults fills in default values for configuration settings if not supplied in the config.
+// populateConfigurationDefaults fills in default values for configuration settings if not supplied in the config file
 func (d *SANStorageDriver) populateConfigurationDefaults(
 	ctx context.Context, config *drivers.GCNVStorageDriverConfig,
 ) error {
@@ -249,7 +248,6 @@ func (d *SANStorageDriver) populateConfigurationDefaults(
 		config.LimitVolumeSize = defaultLimitVolumeSize
 	}
 
-	// VolumeCreateTimeout
 	volumeCreateTimeout := d.defaultCreateTimeout()
 	if config.VolumeCreateTimeout != "" {
 		i, err := strconv.ParseInt(config.VolumeCreateTimeout, 10, 64)
@@ -280,14 +278,14 @@ func (d *SANStorageDriver) populateConfigurationDefaults(
 	}
 
 	Logc(ctx).WithFields(LogFields{
-		"StoragePrefix":       *config.StoragePrefix,
-		"Size":                config.Size,
-		"ServiceLevel":        config.ServiceLevel,
-		"SnapshotReserve":     config.SnapshotReserve,
-		"LimitVolumeSize":     config.LimitVolumeSize,
-		"VolumeCreateTimeout": d.volumeCreateTimeout,
-		"FileSystemType":      config.FileSystemType,
-		"FormatOptions":       config.FormatOptions,
+		"StoragePrefix":              *config.StoragePrefix,
+		"Size":                       config.Size,
+		"ServiceLevel":               config.ServiceLevel,
+		"SnapshotReserve":            config.SnapshotReserve,
+		"LimitVolumeSize":            config.LimitVolumeSize,
+		"VolumeCreateTimeoutSeconds": config.VolumeCreateTimeout,
+		"FileSystemType":             config.FileSystemType,
+		"FormatOptions":              config.FormatOptions,
 	}).Debug("Configuration defaults")
 
 	return nil
@@ -298,6 +296,7 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) {
 	d.pools = make(map[string]storage.Pool)
 
 	if len(d.Config.Storage) == 0 {
+
 		Logc(ctx).Debug("No vpools defined, reporting single pool.")
 
 		// No vpools defined, so report region/zone as a single pool
@@ -329,10 +328,12 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) {
 
 		d.pools[pool.Name()] = pool
 	} else {
+
 		Logc(ctx).Debug("One or more vpools defined.")
 
 		// Report a pool for each virtual pool in the config
 		for index, vpool := range d.Config.Storage {
+
 			region := d.Config.Region
 			if vpool.Region != "" {
 				region = vpool.Region
@@ -412,9 +413,11 @@ func (d *SANStorageDriver) initializeStoragePools(ctx context.Context) {
 			d.pools[pool.Name()] = pool
 		}
 	}
+
+	return
 }
 
-// initializeTelemetry initializes the telemetry struct with backend information.
+// initializeTelemetry assembles all the telemetry data to be used as volume labels.
 func (d *SANStorageDriver) initializeTelemetry(_ context.Context, backendUUID string) {
 	telemetry := tridentconfig.OrchestratorTelemetry
 	telemetry.TridentBackendUUID = backendUUID
@@ -510,20 +513,21 @@ func (d *SANStorageDriver) initializeGCNVAPIClient(
 	return gcnv, nil
 }
 
-// validate ensures the driver configuration and execution environments are valid and working.
+// validate ensures the driver configuration and execution environment are valid and working.
 func (d *SANStorageDriver) validate(ctx context.Context) error {
 	fields := LogFields{"Method": "validate", "Type": "SANStorageDriver"}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> validate")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< validate")
 
-	// Ensure the storage prefix is compatible with cloud service
+	// Ensure storage prefix is compatible with cloud service
 	if err := validateGCNVStoragePrefix(*d.Config.StoragePrefix); err != nil {
 		return err
 	}
 
 	// Validate pool-level attributes
 	for poolName, pool := range d.pools {
-		// Validate service level - SAN driver requires Flex service level for unified storage pools
+
+		// Validate service level (it is allowed to be blank)
 		serviceLevel := pool.InternalAttributes()[ServiceLevel]
 		switch serviceLevel {
 		case api.ServiceLevelFlex, "":
@@ -581,11 +585,12 @@ func (d *SANStorageDriver) Create(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
-	// Update the resource cache as needed
+	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not refresh GCNV resources: %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
+	// Make sure we got a valid name
 	if err := d.validateVolumeName(normalizedName); err != nil {
 		return err
 	}
@@ -604,14 +609,13 @@ func (d *SANStorageDriver) Create(
 		return fmt.Errorf("pool %s does not exist", storagePool.Name())
 	}
 
-	// Check if volume already exists
-	volumeExists, existingVolume, err := d.API.VolumeExists(ctx, volConfig)
+	// If the volume already exists, bail out
+	volumeExists, extantVolume, err := d.API.VolumeExists(ctx, volConfig)
 	if err != nil {
 		return fmt.Errorf("error checking for existing volume %s; %v", name, err)
 	}
 	if volumeExists {
-		// Volume exists - check its state for proper idempotent handling
-		if existingVolume.State == api.VolumeStateCreating {
+		if extantVolume.State == api.VolumeStateCreating {
 			// This is a retry and the volume still isn't ready, so no need to wait further.
 			return errors.VolumeCreatingError(
 				fmt.Sprintf("volume state is still %s, not %s", api.VolumeStateCreating, api.VolumeStateReady))
@@ -619,7 +623,7 @@ func (d *SANStorageDriver) Create(
 
 		Logc(ctx).WithFields(LogFields{
 			"name":  name,
-			"state": existingVolume.State,
+			"state": extantVolume.State,
 		}).Debug("Volume already exists.")
 
 		return drivers.NewVolumeExistsError(name)
@@ -779,7 +783,7 @@ func (d *SANStorageDriver) Create(
 	return fmt.Errorf("could not create LUN in any capacity pool: %w", createErr)
 }
 
-// CreateClone clones an existing volume. If a snapshot is not specified, one is created.
+// CreateClone clones an existing volume.  If a snapshot is not specified, one is created.
 func (d *SANStorageDriver) CreateClone(
 	ctx context.Context, sourceVolConfig, cloneVolConfig *storage.VolumeConfig, _ storage.Pool,
 ) error {
@@ -799,11 +803,12 @@ func (d *SANStorageDriver) CreateClone(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateClone")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateClone")
 
-	// Discover GCNV resources (capacity pools, volumes, etc.)
+	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not refresh GCNV resources: %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
+	// Make sure we got a valid name
 	if err := d.validateVolumeName(normalizedName); err != nil {
 		return err
 	}
@@ -816,7 +821,7 @@ func (d *SANStorageDriver) CreateClone(
 	// Get the source volume
 	sourceVolume, err := d.API.Volume(ctx, sourceVolConfig)
 	if err != nil {
-		return fmt.Errorf("could not find source volume: %v", err)
+		return fmt.Errorf("could not find source volume; %v", err)
 	}
 
 	// If the volume already exists, bail out
@@ -825,7 +830,6 @@ func (d *SANStorageDriver) CreateClone(
 		return fmt.Errorf("error checking for existing volume %s; %v", name, err)
 	}
 	if volumeExists {
-		// Clone volume exists - check its state for proper idempotent handling
 		if extantVolume.State == api.VolumeStateCreating {
 			// This is a retry and the volume still isn't ready, so no need to wait further.
 			return errors.VolumeCreatingError(
@@ -837,10 +841,11 @@ func (d *SANStorageDriver) CreateClone(
 	var sourceSnapshot *api.Snapshot
 
 	if snapshot != "" {
+
 		// Get the source snapshot
 		sourceSnapshot, err = d.API.SnapshotForVolume(ctx, sourceVolume, snapshot)
 		if err != nil {
-			return fmt.Errorf("could not find snapshot: %v", err)
+			return fmt.Errorf("could not find snapshot %s; %v", snapshot, err)
 		}
 
 		// Ensure snapshot is in a usable state
@@ -942,12 +947,13 @@ func (d *SANStorageDriver) CreateClone(
 		OSType:          api.OSTypeLinux,
 	}
 
+	// Clone the volume
 	clone, err := d.API.CreateVolume(ctx, createReq)
 	if err != nil {
-		return fmt.Errorf("could not create clone: %v", err)
+		return fmt.Errorf("could not create clone; %w", err)
 	}
 
-	// Always save the full GCP ID for efficient future lookups
+	// Always save the full GCP ID
 	cloneVolConfig.InternalID = clone.FullName
 
 	// Report the actual allocated size so PV reflects what GCNV created
@@ -957,7 +963,8 @@ func (d *SANStorageDriver) CreateClone(
 	return d.waitForVolumeCreate(ctx, clone)
 }
 
-// Import finds an existing volume and makes it available for containers.
+// Import finds an existing volume and makes it available for containers.  If ImportNotManaged is false, the
+// volume is fully brought under Trident's management.
 func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.VolumeConfig, originalName string) error {
 	fields := LogFields{
 		"Method":       "Import",
@@ -968,18 +975,16 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Import")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Import")
 
-	// Discover GCNV resources
+	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not refresh GCNV resources: %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
-	// Get existing volume
+	// Get the volume
 	volume, err := d.API.VolumeByName(ctx, originalName)
 	if err != nil {
-		return fmt.Errorf("could not find volume to import: %v", err)
+		return fmt.Errorf("could not find volume to import %s; %v", originalName, err)
 	}
-
-	// Ensure volume is in a valid state
 	if volume.State != api.VolumeStateReady {
 		return fmt.Errorf("volume %s is in state %s and is not available", originalName, volume.State)
 	}
@@ -1008,13 +1013,8 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 		return err
 	}
 
-	volConfig.Size = strconv.FormatUint(uint64(volume.SizeBytes), 10)
-
-	// The GCNV creation token cannot be changed, so use it as the internal name
-	volConfig.InternalName = originalName
-
-	// Always save the full GCP ID
-	volConfig.InternalID = volume.FullName
+	// Get the volume size
+	volConfig.Size = strconv.FormatInt(volume.SizeBytes, 10)
 
 	Logc(ctx).WithFields(LogFields{
 		"creationToken": volume.CreationToken,
@@ -1052,6 +1052,12 @@ func (d *SANStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 			return fmt.Errorf("could not import volume %s; %v", originalName, err)
 		}
 	}
+
+	// The GCNV creation token cannot be changed, so use it as the internal name
+	volConfig.InternalName = originalName
+
+	// Always save the full GCP ID
+	volConfig.InternalID = volume.FullName
 
 	return nil
 }
@@ -1100,48 +1106,16 @@ func (d *SANStorageDriver) updateTelemetryLabels(ctx context.Context, volume *ap
 // fixGCPLabelKey accepts a label key and modifies it to satisfy GCP label key rules, or returns
 // false if not possible.
 func (d *SANStorageDriver) fixGCPLabelKey(s string) (string, bool) {
-	// Check if the string is empty
-	if len(s) == 0 {
-		return "", false
-	}
-
-	// Convert the string to lowercase
-	s = strings.ToLower(s)
-
-	// Replace all disallowed characters with underscores
-	s = gcpLabelRegex.ReplaceAllStringFunc(s, func(m string) string {
-		return strings.Repeat("_", len(m))
-	})
-
-	// Check if the first character is a lowercase letter
-	if !unicode.IsLower(rune(s[0])) {
-		return "", false
-	}
-
-	// Shorten the string to a maximum of 63 characters
-	s = convert.TruncateString(s, api.MaxLabelLength)
-
-	return s, true
+	return FixGCPLabelKey(s)
 }
 
 // fixGCPLabelValue accepts a label value and modifies it to satisfy GCP label value rules.
 func (d *SANStorageDriver) fixGCPLabelValue(s string) string {
-	// Convert the string to lowercase
-	s = strings.ToLower(s)
-
-	// Replace all disallowed characters with underscores
-	s = gcpLabelRegex.ReplaceAllStringFunc(s, func(m string) string {
-		return strings.Repeat("_", len(m))
-	})
-
-	// Shorten the string to a maximum of 63 characters
-	s = convert.TruncateString(s, api.MaxLabelLength)
-
-	return s
+	return FixGCPLabelValue(s)
 }
 
-// waitForVolumeCreate waits for volume creation to complete by reaching the Ready state. If the
-// volume reaches a terminal state (Error), the volume is deleted. If the wait times out and the volume
+// waitForVolumeCreate waits for volume creation to complete by reaching the Ready state.  If the
+// volume reaches a terminal state (Error), the volume is deleted.  If the wait times out and the volume
 // is still creating, a VolumeCreatingError is returned so the caller may try again.
 func (d *SANStorageDriver) waitForVolumeCreate(ctx context.Context, volume *api.Volume) error {
 	state, err := d.API.WaitForVolumeState(
@@ -1197,9 +1171,9 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Destroy")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Destroy")
 
-	// Discover GCNV resources
+	// Update resource cache as needed
 	if err = d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not refresh GCNV resources: %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
 	// If this volume was cloned from an automatic snapshot, delete the snapshot after deleting the volume.
@@ -1237,8 +1211,8 @@ func (d *SANStorageDriver) Destroy(ctx context.Context, volConfig *storage.Volum
 
 // deleteAutomaticSnapshot deletes a snapshot that was created automatically during volume clone creation.
 // An automatic snapshot is detected by the presence of CloneSourceSnapshotInternal in the volume config
-// while CloneSourceSnapshot is not set. This method is called after the volume has been deleted, and it
-// will only attempt snapshot deletion if the clone volume deletion completed without error. This is a
+// while CloneSourceSnapshot is not set.  This method is called after the volume has been deleted, and it
+// will only attempt snapshot deletion if the clone volume deletion completed without error.  This is a
 // best-effort method, and any errors encountered will be logged but not returned.
 func (d *SANStorageDriver) deleteAutomaticSnapshot(
 	ctx context.Context, volDeleteError error, volConfig *storage.VolumeConfig,
@@ -1304,6 +1278,8 @@ func (d *SANStorageDriver) deleteAutomaticSnapshot(
 		Logc(ctx).WithFields(logFields).WithError(err).Errorf("Automatic snapshot could not be " +
 			"cleaned up and must be manually deleted.")
 	}
+
+	return
 }
 
 // Publish the volume to the host specified in publishInfo. This method may or may not be running on the host
@@ -1322,9 +1298,9 @@ func (d *SANStorageDriver) Publish(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Publish")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Publish")
 
-	// Discover GCNV resources (volumes, host groups, etc.)
+	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not refresh GCNV resources: %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
 	// Acquire mutexes in order to prevent deadlock
@@ -1509,25 +1485,17 @@ func (d *SANStorageDriver) Publish(
 }
 
 // CanSnapshot determines whether a snapshot as specified in the provided snapshot config may be taken.
-func (d *SANStorageDriver) CanSnapshot(ctx context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig) error {
-	fields := LogFields{
-		"Method": "CanSnapshot",
-		"Type":   "SANStorageDriver",
-	}
-	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CanSnapshot")
-	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CanSnapshot")
-
+func (d *SANStorageDriver) CanSnapshot(_ context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig) error {
 	return nil
 }
 
-// GetSnapshot gets a snapshot. To distinguish between an API error reading the snapshot
+// GetSnapshot gets a snapshot.  To distinguish between an API error reading the snapshot
 // and a non-existent snapshot, this method may return (nil, nil).
 func (d *SANStorageDriver) GetSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
 	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
-
 	fields := LogFields{
 		"Method":       "GetSnapshot",
 		"Type":         "SANStorageDriver",
@@ -1537,37 +1505,51 @@ func (d *SANStorageDriver) GetSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshot")
 
-	// Discover GCNV resources
+	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return nil, fmt.Errorf("could not refresh GCNV resources: %v", err)
+		return nil, ErrRefreshGCNVResourceCache(err)
 	}
 
-	// Get the volume (uses InternalID if available for faster lookup)
-	volumeExists, volume, err := d.API.VolumeExists(ctx, volConfig)
+	// Get the volume
+	volumeExists, extantVolume, err := d.API.VolumeExists(ctx, volConfig)
 	if err != nil {
 		return nil, fmt.Errorf("error checking for existing volume %s; %v", internalVolName, err)
 	}
 	if !volumeExists {
+		// The GCNV volume is backed by ONTAP, so if the volume doesn't exist, neither does the snapshot.
+
+		Logc(ctx).WithFields(LogFields{
+			"snapshotName": internalSnapName,
+			"volumeName":   internalVolName,
+		}).Debug("Volume for snapshot not found.")
+
 		return nil, nil
 	}
 
-	// Get the specific snapshot directly (efficient - no need to list all snapshots)
-	snapshot, err := d.API.SnapshotForVolume(ctx, volume, internalSnapName)
+	// Get the snapshot
+	snapshot, err := d.API.SnapshotForVolume(ctx, extantVolume, internalSnapName)
 	if err != nil {
 		if errors.IsNotFoundError(err) {
-			return nil, nil // Snapshot not found
+			return nil, nil
 		}
 		return nil, fmt.Errorf("could not check for existing snapshot; %v", err)
 	}
 
-	// Check if snapshot is ready
 	if snapshot.State != api.SnapshotStateReady {
 		return nil, nil
 	}
 
+	created := snapshot.Created.UTC().Format(convert.TimestampFormat)
+
+	Logc(ctx).WithFields(LogFields{
+		"snapshotName": internalSnapName,
+		"volumeName":   internalVolName,
+		"created":      created,
+	}).Debug("Found snapshot.")
+
 	return &storage.Snapshot{
 		Config:    snapConfig,
-		Created:   snapshot.Created.Format(time.RFC3339),
+		Created:   created,
 		SizeBytes: 0,
 		State:     storage.SnapshotStateOnline,
 	}, nil
@@ -1586,15 +1568,15 @@ func (d *SANStorageDriver) GetSnapshots(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> GetSnapshots")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< GetSnapshots")
 
-	// Discover GCNV resources
+	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return nil, fmt.Errorf("could not refresh GCNV resources: %v", err)
+		return nil, ErrRefreshGCNVResourceCache(err)
 	}
 
-	// Get volume (uses InternalID if available for faster lookup)
+	// Get the volume
 	volume, err := d.API.Volume(ctx, volConfig)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not find volume %s; %v", internalVolName, err)
 	}
 
 	snapshots, err := d.API.SnapshotsForVolume(ctx, volume)
@@ -1602,43 +1584,54 @@ func (d *SANStorageDriver) GetSnapshots(
 		return nil, err
 	}
 
-	result := make([]*storage.Snapshot, 0, len(*snapshots))
-	for _, snap := range *snapshots {
-		result = append(result, &storage.Snapshot{
+	snapshotList := make([]*storage.Snapshot, 0, len(*snapshots))
+
+	for _, snapshot := range *snapshots {
+
+		// Filter out snapshots in an unavailable state
+		if snapshot.State != api.SnapshotStateReady {
+			continue
+		}
+
+		snapshotList = append(snapshotList, &storage.Snapshot{
 			Config: &storage.SnapshotConfig{
-				InternalName:       snap.Name,
+				Version:            tridentconfig.OrchestratorAPIVersion,
+				Name:               snapshot.Name,
+				InternalName:       snapshot.Name,
+				VolumeName:         volConfig.Name,
 				VolumeInternalName: volConfig.InternalName,
 			},
-			Created:   snap.Created.Format(time.RFC3339),
+			Created:   snapshot.Created.UTC().Format(convert.TimestampFormat),
 			SizeBytes: 0,
 			State:     storage.SnapshotStateOnline,
 		})
 	}
 
-	return result, nil
+	return snapshotList, nil
 }
 
 // CreateSnapshot creates a snapshot for the given volume.
 func (d *SANStorageDriver) CreateSnapshot(
 	ctx context.Context, snapConfig *storage.SnapshotConfig, volConfig *storage.VolumeConfig,
 ) (*storage.Snapshot, error) {
+	internalSnapName := snapConfig.InternalName
 	internalVolName := snapConfig.VolumeInternalName
 	fields := LogFields{
 		"Method":       "CreateSnapshot",
 		"Type":         "SANStorageDriver",
-		"snapshotName": snapConfig.InternalName,
+		"snapshotName": internalSnapName,
 		"volumeName":   internalVolName,
 	}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> CreateSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< CreateSnapshot")
 
-	// Discover GCNV resources
+	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return nil, fmt.Errorf("could not refresh GCNV resources: %v", err)
+		return nil, ErrRefreshGCNVResourceCache(err)
 	}
 
-	// Check if volume exists (uses InternalID if available for faster lookup)
-	volumeExists, volume, err := d.API.VolumeExists(ctx, volConfig)
+	// Check if volume exists
+	volumeExists, sourceVolume, err := d.API.VolumeExists(ctx, volConfig)
 	if err != nil {
 		return nil, fmt.Errorf("error checking for existing volume %s; %v", internalVolName, err)
 	}
@@ -1646,17 +1639,17 @@ func (d *SANStorageDriver) CreateSnapshot(
 		return nil, fmt.Errorf("volume %s does not exist", internalVolName)
 	}
 
-	// Check if snapshot already exists (for idempotency)
-	snapshot, err := d.API.SnapshotForVolume(ctx, volume, snapConfig.InternalName)
+	// Check if snapshot exists
+	snapshot, err := d.API.SnapshotForVolume(ctx, sourceVolume, internalSnapName)
 	if err != nil && !errors.IsNotFoundError(err) {
-		return nil, fmt.Errorf("error checking for existing snapshot %s; %w", snapConfig.InternalName, err)
+		return nil, fmt.Errorf("error checking for existing snapshot %s; %w", internalSnapName, err)
 	}
 
-	// Create the snapshot if it doesn't exist
+	// Create the snapshot
 	if snapshot == nil {
-		snapshot, err = d.API.CreateSnapshot(ctx, volume, snapConfig.InternalName, api.SnapshotTimeout)
+		snapshot, err = d.API.CreateSnapshot(ctx, sourceVolume, internalSnapName, api.SnapshotTimeout)
 		if err != nil {
-			return nil, fmt.Errorf("could not create snapshot: %v", err)
+			return nil, fmt.Errorf("could not create snapshot; %v", err)
 		}
 	}
 
@@ -1666,8 +1659,8 @@ func (d *SANStorageDriver) CreateSnapshot(
 
 		return &storage.Snapshot{
 			Config:    snapConfig,
-			Created:   snapshot.Created.Format(time.RFC3339),
-			SizeBytes: volume.SizeBytes,
+			Created:   snapshot.Created.UTC().Format(convert.TimestampFormat),
+			SizeBytes: sourceVolume.SizeBytes,
 			State:     storage.SnapshotStateOnline,
 		}, nil
 	}
@@ -1676,7 +1669,7 @@ func (d *SANStorageDriver) CreateSnapshot(
 	Logc(ctx).WithFields(fields).Debug("Snapshot already exists but is not Ready.")
 
 	return nil, fmt.Errorf("snapshot %s already exists but is %s, not %s",
-		snapConfig.InternalName, snapshot.State, api.SnapshotStateReady)
+		internalSnapName, snapshot.State, api.SnapshotStateReady)
 }
 
 // RestoreSnapshot restores a volume (in place) from a snapshot.
@@ -1694,12 +1687,12 @@ func (d *SANStorageDriver) RestoreSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> RestoreSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< RestoreSnapshot")
 
-	// Discover GCNV resources
+	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not refresh GCNV resources: %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
-	// Get the volume (uses InternalID if available for faster lookup)
+	// Get the volume
 	volume, err := d.API.Volume(ctx, volConfig)
 	if err != nil {
 		return fmt.Errorf("could not find volume %s; %v", internalVolName, err)
@@ -1716,7 +1709,7 @@ func (d *SANStorageDriver) RestoreSnapshot(
 		return err
 	}
 
-	// Wait for volume to return to Ready state
+	// Wait for volume to return to Ready state after restore
 	_, err = d.API.WaitForVolumeState(ctx, volume, api.VolumeStateReady,
 		[]string{api.VolumeStateError, api.VolumeStateDeleting, api.VolumeStateDeleted}, api.DefaultSDKTimeout,
 	)
@@ -1738,40 +1731,50 @@ func (d *SANStorageDriver) DeleteSnapshot(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> DeleteSnapshot")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< DeleteSnapshot")
 
-	// Discover GCNV resources
+	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not refresh GCNV resources: %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
-	// Get volume (uses InternalID if available for faster lookup)
-	volumeExists, volume, err := d.API.VolumeExists(ctx, volConfig)
+	// Get the volume
+	volumeExists, extantVolume, err := d.API.VolumeExists(ctx, volConfig)
 	if err != nil {
 		return fmt.Errorf("error checking for existing volume %s; %v", internalVolName, err)
 	}
 	if !volumeExists {
-		// If the volume doesn't exist, neither does the snapshot
+		// The GCNV volume is backed by ONTAP, so if the volume doesn't exist, neither does the snapshot.
+
 		Logc(ctx).WithFields(LogFields{
 			"snapshotName": internalSnapName,
 			"volumeName":   internalVolName,
 		}).Debug("Volume for snapshot not found.")
+
 		return nil
 	}
 
-	// Get snapshot
-	snapshot, err := d.API.SnapshotForVolume(ctx, volume, internalSnapName)
+	snapshot, err := d.API.SnapshotForVolume(ctx, extantVolume, internalSnapName)
 	if err != nil {
+		// If the snapshot is already gone, return success
 		if errors.IsNotFoundError(err) {
-			Logc(ctx).WithField("snapshot", internalSnapName).Debug("Snapshot already deleted.")
 			return nil
 		}
-		return err
+		return fmt.Errorf("unable to find snapshot %s; %v", internalSnapName, err)
+	} else {
+		switch snapshot.State {
+		case api.SnapshotStateError:
+			fallthrough
+		case api.SnapshotStateReady:
+			return d.API.DeleteSnapshot(ctx, extantVolume, snapshot, api.DefaultTimeout)
+		default:
+			fields["state"] = snapshot.State
+			Logc(ctx).WithFields(fields).Debug("Snapshot exists but is not Ready.")
+			return fmt.Errorf("snapshot %s is %s; cannot delete unless state is %s",
+				internalSnapName, snapshot.State, api.SnapshotStateReady)
+		}
 	}
-
-	// Delete snapshot
-	return d.API.DeleteSnapshot(ctx, volume, snapshot, api.DefaultTimeout)
 }
 
-// List returns the names of all volumes managed by this driver instance.
+// List returns the list of volumes associated with this backend.
 func (d *SANStorageDriver) List(ctx context.Context) ([]string, error) {
 	fields := LogFields{"Method": "List", "Type": "SANStorageDriver"}
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> List")
@@ -1779,7 +1782,7 @@ func (d *SANStorageDriver) List(ctx context.Context) ([]string, error) {
 
 	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return nil, fmt.Errorf("could not refresh GCNV resources: %v", err)
+		return nil, ErrRefreshGCNVResourceCache(err)
 	}
 
 	volumes, err := d.API.Volumes(ctx)
@@ -1828,13 +1831,16 @@ func (d *SANStorageDriver) Get(ctx context.Context, volConfig *storage.VolumeCon
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Get")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Get")
 
-	// Discover GCNV resources
+	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not refresh GCNV resources: %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
-	_, err := d.API.VolumeByName(ctx, name)
-	return err
+	if _, err := d.API.VolumeByName(ctx, name); err != nil {
+		return fmt.Errorf("could not get volume %s; %v", name, err)
+	}
+
+	return nil
 }
 
 // Resize increases a volume's quota.
@@ -1849,15 +1855,15 @@ func (d *SANStorageDriver) Resize(ctx context.Context, volConfig *storage.Volume
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Resize")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Resize")
 
-	// Discover GCNV resources
+	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not refresh GCNV resources: %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
-	// Get volume (uses InternalID if available for faster lookup)
+	// Get the volume
 	volume, err := d.API.Volume(ctx, volConfig)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not find volume %s; %v", name, err)
 	}
 
 	// If the volume state isn't Ready, return an error
@@ -2036,13 +2042,13 @@ func (d *SANStorageDriver) GetExternalConfig(ctx context.Context) interface{} {
 }
 
 // GetVolumeForImport queries the storage backend for all relevant info about a single volume.
-func (d *SANStorageDriver) GetVolumeForImport(ctx context.Context, volumeName string) (*storage.VolumeExternal, error) {
-	// Discover GCNV resources
+func (d *SANStorageDriver) GetVolumeForImport(ctx context.Context, volumeID string) (*storage.VolumeExternal, error) {
+	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return nil, fmt.Errorf("could not refresh GCNV resources: %v", err)
+		return nil, ErrRefreshGCNVResourceCache(err)
 	}
 
-	volume, err := d.API.VolumeByNameOrID(ctx, volumeName)
+	volume, err := d.API.VolumeByNameOrID(ctx, volumeID)
 	if err != nil {
 		return nil, err
 	}
@@ -2185,9 +2191,9 @@ func (d *SANStorageDriver) ReconcileNodeAccess(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> ReconcileNodeAccess")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< ReconcileNodeAccess")
 
-	// Discover GCNV resources (host groups, etc.)
+	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not refresh GCNV resources: %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
 	// Get all host groups
@@ -2306,9 +2312,9 @@ func (d *SANStorageDriver) Unpublish(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Unpublish")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Unpublish")
 
-	// Discover GCNV resources (volumes, host groups, etc.)
+	// Update resource cache as needed
 	if err := d.API.RefreshGCNVResources(ctx); err != nil {
-		return fmt.Errorf("could not refresh GCNV resources: %v", err)
+		return ErrRefreshGCNVResourceCache(err)
 	}
 
 	// Acquire mutexes

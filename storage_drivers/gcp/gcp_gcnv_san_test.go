@@ -1643,7 +1643,7 @@ func TestSANDriver_Create_RefreshError(t *testing.T) {
 
 	err := driver.Create(ctx, volConfig, pool, nil)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "could not refresh GCNV resources")
+	assert.Contains(t, err.Error(), "could not update GCNV resource cache")
 }
 
 func TestSANDriver_Create_VolumeCreatingState(t *testing.T) {
@@ -1697,7 +1697,7 @@ func TestSANDriver_Create_NoCapacityPools(t *testing.T) {
 func TestSANDriver_Create_MultipleCapacityPools_FirstFailsSecondSucceeds(t *testing.T) {
 	mockAPI, driver := newMockSANDriver(t)
 
-	apiInvalidVolumeIDErr := fmt.Errorf("rpc error: code = InvalidArgument desc = Invalid value for \"volume_id\": \"%s\". Must start with a lowercase letter followed by up to 62 lowercase letters, numbers, or underscores, and cannot end with a underscore.", testVolumeName)
+	apiInvalidVolumeIDErr := fmt.Errorf("rpc error: code = InvalidArgument desc = Invalid value for \"volume_id\": \"%s\". Must start with a lowercase letter followed by up to 62 lowercase letters, numbers, or underscores, and cannot end with an underscore.", testVolumeName)
 
 	volConfig := &storage.VolumeConfig{Name: testVolumeName, InternalName: testVolumeInternalName, Size: testVolumeSizeStr}
 	pool := driver.pools["test-pool"]
@@ -1735,7 +1735,7 @@ func TestSANDriver_Create_MultipleCapacityPools_FirstFailsSecondSucceeds(t *test
 func TestSANDriver_Create_AllCapacityPoolsFail(t *testing.T) {
 	mockAPI, driver := newMockSANDriver(t)
 
-	apiInvalidVolumeIDErr := fmt.Errorf("rpc error: code = InvalidArgument desc = Invalid value for \"volume_id\": \"%s\". Must start with a lowercase letter followed by up to 62 lowercase letters, numbers, or underscores, and cannot end with a underscore.", testVolumeName)
+	apiInvalidVolumeIDErr := fmt.Errorf("rpc error: code = InvalidArgument desc = Invalid value for \"volume_id\": \"%s\". Must start with a lowercase letter followed by up to 62 lowercase letters, numbers, or underscores, and cannot end with an underscore.", testVolumeName)
 
 	volConfig := &storage.VolumeConfig{Name: testVolumeName, InternalName: testVolumeInternalName, Size: testVolumeSizeStr}
 	pool := driver.pools["test-pool"]
@@ -1864,8 +1864,9 @@ func TestSANDriver_populateConfigurationDefaults_VolumeCreateTimeout(t *testing.
 		},
 		VolumeCreateTimeout: "300",
 	}
+	driver.Config = *config
 
-	err := driver.populateConfigurationDefaults(ctx, config)
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
 
 	assert.NoError(t, err)
 	assert.Equal(t, 300*time.Second, driver.volumeCreateTimeout)
@@ -1881,8 +1882,9 @@ func TestSANDriver_populateConfigurationDefaults_InvalidVolumeCreateTimeout(t *t
 		},
 		VolumeCreateTimeout: "not-a-number",
 	}
+	driver.Config = *config
 
-	err := driver.populateConfigurationDefaults(ctx, config)
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
 
 	assert.Error(t, err)
 }
@@ -2127,7 +2129,7 @@ func TestSANDriver_Destroy_RefreshError(t *testing.T) {
 
 	err := driver.Destroy(ctx, &storage.VolumeConfig{InternalName: testVolumeName})
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "could not refresh GCNV resources")
+	assert.Contains(t, err.Error(), "could not update GCNV resource cache")
 }
 
 func TestSANDriver_Destroy_VolumeExistsError(t *testing.T) {
@@ -2977,7 +2979,7 @@ func TestSANDriver_CreateSnapshot_RefreshError(t *testing.T) {
 		&storage.VolumeConfig{InternalName: testVolumeName},
 	)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "could not refresh GCNV resources")
+	assert.Contains(t, err.Error(), "could not update GCNV resource cache")
 }
 
 func TestSANDriver_CreateSnapshot_VolumeError(t *testing.T) {
@@ -3085,7 +3087,8 @@ func TestSANDriver_DeleteSnapshot_Success(t *testing.T) {
 
 	volume := getTestVolume()
 	snapshot := &api.Snapshot{
-		Name: "test-snap",
+		Name:  "test-snap",
+		State: api.SnapshotStateReady,
 	}
 
 	// Mock expectations
@@ -3108,7 +3111,7 @@ func TestSANDriver_DeleteSnapshot_RefreshError(t *testing.T) {
 		&storage.VolumeConfig{InternalName: testVolumeName},
 	)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "could not refresh GCNV resources")
+	assert.Contains(t, err.Error(), "could not update GCNV resource cache")
 }
 
 func TestSANDriver_DeleteSnapshot_VolumeError(t *testing.T) {
@@ -3165,7 +3168,7 @@ func TestSANDriver_DeleteSnapshot_DeleteError(t *testing.T) {
 
 	volume := getTestVolume()
 	volConfig := &storage.VolumeConfig{InternalName: testVolumeName}
-	snapshot := &api.Snapshot{Name: "test-snap"}
+	snapshot := &api.Snapshot{Name: "test-snap", State: api.SnapshotStateReady}
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(true, volume, nil).Times(1)
@@ -3250,7 +3253,7 @@ func TestSANDriver_CreateClone_RefreshError(t *testing.T) {
 
 	err := driver.CreateClone(ctx, sourceVolConfig, cloneConfig, driver.pools["test-pool"])
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "could not refresh GCNV resources")
+	assert.Contains(t, err.Error(), "could not update GCNV resource cache")
 }
 
 func TestSANDriver_CreateClone_CloneExistsCreating(t *testing.T) {
@@ -3814,24 +3817,6 @@ func TestSANDriver_ExtractNodeNameFromHostGroupName_TooShort(t *testing.T) {
 	assert.Empty(t, driver.extractNodeNameFromHostGroupName(hostGroupName))
 }
 
-func TestSANDriver_FixGCPLabelKey(t *testing.T) {
-	_, driver := newMockSANDriver(t)
-
-	// Empty is invalid.
-	_, ok := driver.fixGCPLabelKey("")
-	assert.False(t, ok)
-
-	// Must start with a lowercase letter.
-	_, ok = driver.fixGCPLabelKey("1abc")
-	assert.False(t, ok)
-
-	// Replace disallowed chars and truncate.
-	key, ok := driver.fixGCPLabelKey("Trident.NetApp.IO/This-Is-A-Very-Long-Key-That-Should-Be-Truncated-Because-It-Is-Way-Too-Long")
-	assert.True(t, ok)
-	assert.LessOrEqual(t, len(key), api.MaxLabelLength)
-	assert.True(t, strings.HasPrefix(key, "trident_netapp_io"))
-}
-
 // ============================================================================
 // Additional driver interface tests
 // ============================================================================
@@ -3868,7 +3853,7 @@ func TestSANDriver_Resize_RefreshError(t *testing.T) {
 
 	err := driver.Resize(ctx, &storage.VolumeConfig{InternalName: testVolumeName}, 1024)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "could not refresh GCNV resources")
+	assert.Contains(t, err.Error(), "could not update GCNV resource cache")
 }
 
 func TestSANDriver_Resize_VolumeLookupError(t *testing.T) {
@@ -4055,7 +4040,7 @@ func TestSANDriver_Get_RefreshError(t *testing.T) {
 
 	err := driver.Get(ctx, &storage.VolumeConfig{InternalName: testVolumeName})
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "could not refresh GCNV resources")
+	assert.Contains(t, err.Error(), "could not update GCNV resource cache")
 }
 
 func TestSANDriver_Get_VolumeLookupError(t *testing.T) {
@@ -4142,7 +4127,7 @@ func TestSANDriver_Import_RefreshError(t *testing.T) {
 
 	err := driver.Import(ctx, &storage.VolumeConfig{InternalName: "new-name"}, "original-name")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "could not refresh GCNV resources")
+	assert.Contains(t, err.Error(), "could not update GCNV resource cache")
 }
 
 func TestSANDriver_Import_VolumeLookupError(t *testing.T) {

@@ -203,26 +203,6 @@ func TestValidateCreationToken(t *testing.T) {
 	}
 }
 
-func TestDefaultCreateTimeout(t *testing.T) {
-	tests := []struct {
-		Context  tridentconfig.DriverContext
-		Expected time.Duration
-	}{
-		{tridentconfig.ContextDocker, tridentconfig.DockerCreateTimeout},
-		{tridentconfig.ContextCSI, api.VolumeCreateTimeout},
-		{"", api.VolumeCreateTimeout},
-	}
-	for _, test := range tests {
-		t.Run(string(test.Context), func(t *testing.T) {
-			_, driver := newMockGCNVDriver(t)
-			driver.Config.DriverContext = test.Context
-
-			result := driver.defaultCreateTimeout()
-			assert.Equal(t, test.Expected, result, "mismatched durations")
-		})
-	}
-}
-
 func TestDefaultTimeout(t *testing.T) {
 	tests := []struct {
 		Context  tridentconfig.DriverContext
@@ -6374,22 +6354,27 @@ func getVolumesForList() *[]*api.Volume {
 		{
 			State:         api.VolumeStateReady,
 			CreationToken: "myPrefix-testvol1",
+			ProtocolTypes: []string{api.ProtocolTypeNFSv3},
 		},
 		{
 			State:         api.VolumeStateReady,
 			CreationToken: "myPrefix-testvol2",
+			ProtocolTypes: []string{api.ProtocolTypeNFSv3},
 		},
 		{
 			State:         api.VolumeStateDeleting,
 			CreationToken: "myPrefix-testvol3",
+			ProtocolTypes: []string{api.ProtocolTypeNFSv3},
 		},
 		{
 			State:         api.VolumeStateError,
 			CreationToken: "myPrefix-testvol5",
+			ProtocolTypes: []string{api.ProtocolTypeNFSv3},
 		},
 		{
 			State:         api.VolumeStateReady,
 			CreationToken: "testvol6",
+			ProtocolTypes: []string{api.ProtocolTypeNFSv3},
 		},
 	}
 }
@@ -6453,6 +6438,40 @@ func TestList_ListNone(t *testing.T) {
 
 	assert.Nil(t, result, "not nil")
 	assert.Equal(t, []string{}, list, "list not equal")
+}
+
+func TestListOnlyNASProtocolVolumes(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+	storagePrefix := "p-"
+	driver.Config.StoragePrefix = &storagePrefix
+
+	nfsVol := &api.Volume{
+		State:         api.VolumeStateReady,
+		CreationToken: "p-nfs1",
+		ProtocolTypes: []string{api.ProtocolTypeNFSv3},
+	}
+	nonNASVol := &api.Volume{
+		State:         api.VolumeStateReady,
+		CreationToken: "p-other1",
+		ProtocolTypes: []string{api.ProtocolTypeISCSI},
+	}
+	smbVol := &api.Volume{
+		State:         api.VolumeStateReady,
+		CreationToken: "p-smb1",
+		ProtocolTypes: []string{api.ProtocolTypeSMB},
+	}
+	noFileProto := &api.Volume{
+		State:         api.VolumeStateReady,
+		CreationToken: "p-nometadata1",
+		ProtocolTypes: nil,
+	}
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volumes(ctx).Return(&[]*api.Volume{nfsVol, nonNASVol, smbVol, noFileProto}, nil).Times(1)
+
+	list, err := driver.List(ctx)
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, []string{"nfs1", "smb1"}, list)
 }
 
 func TestGCNVGet(t *testing.T) {
@@ -7121,6 +7140,37 @@ func TestGCNVGetVolumeExternalWrappers(t *testing.T) {
 	}
 
 	assert.Len(t, volumesExternal, 2, "wrong number of volumes")
+}
+
+func TestGetVolumeExternalWrappersOnlyNASProtocolVolumes(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+	storagePrefix := "p-"
+	driver.Config.StoragePrefix = &storagePrefix
+
+	nfsVol := &api.Volume{
+		State:         api.VolumeStateReady,
+		CreationToken: "p-nfs1",
+		ProtocolTypes: []string{api.ProtocolTypeNFSv41},
+	}
+	iscsiVol := &api.Volume{
+		State:         api.VolumeStateReady,
+		CreationToken: "p-iscsi1",
+		ProtocolTypes: []string{api.ProtocolTypeISCSI},
+	}
+	volumes := &[]*api.Volume{nfsVol, iscsiVol}
+	channel := make(chan *storage.VolumeExternalWrapper, 4)
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volumes(ctx).Return(volumes, nil).Times(1)
+
+	driver.GetVolumeExternalWrappers(ctx, channel)
+
+	var tokens []string
+	for wrapper := range channel {
+		assert.NoError(t, wrapper.Error)
+		tokens = append(tokens, wrapper.Volume.Config.InternalName)
+	}
+	assert.Equal(t, []string{"p-nfs1"}, tokens)
 }
 
 func TestGetVolumeExternalWrappers_DiscoveryFailed(t *testing.T) {
