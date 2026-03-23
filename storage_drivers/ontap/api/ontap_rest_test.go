@@ -6552,16 +6552,40 @@ func TestOntapQtree_DestroyAsync(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			server := httptest.NewServer(http.HandlerFunc(test.mockFunction))
+			var requests []struct {
+				Method string
+				Path   string
+			}
+			var mu sync.Mutex
+			handler := func(w http.ResponseWriter, r *http.Request) {
+				mu.Lock()
+				requests = append(requests, struct {
+					Method string
+					Path   string
+				}{Method: r.Method, Path: r.URL.Path})
+				mu.Unlock()
+				test.mockFunction(w, r)
+			}
+
+			server := httptest.NewServer(http.HandlerFunc(handler))
+
 			rs := newRestClient(server.Listener.Addr().String(), server.Client())
 			assert.NotNil(t, rs)
 
 			err := rs.QtreeDestroyAsync(ctx, "/vol1/qtree_vol1", false)
 			if !test.isErrorExpected {
 				assert.NoError(t, err, "could not delete the qtree")
+				mu.Lock()
+				assert.Len(t, requests, 2, "expected exactly 2 requests (qtree lookup + delete); job poll would add GET to cluster/jobs")
+				for _, req := range requests {
+					assert.NotRegexp(t, `.*/cluster/jobs/.*`, req.Path,
+						"must not poll job endpoint when qtree delete returns 202 Accepted; got %s %s", req.Method, req.Path)
+				}
+				mu.Unlock()
 			} else {
 				assert.Error(t, err, "qtree deleted")
 			}
+
 			server.Close()
 		})
 	}
