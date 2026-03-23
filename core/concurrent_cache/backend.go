@@ -121,6 +121,14 @@ func UpsertBackend(id, name, newName string) Subquery {
 
 				backends.lock()
 
+				// Update circular references
+				b.StoragePools().Range(func(k, v interface{}) bool {
+					if pool, poolOK := v.(storage.Pool); poolOK {
+						pool.SetBackend(b)
+					}
+					return true
+				})
+
 				// This is the canonical method for upserting with a unique key.
 				// There are 4 cases: key and newKey are equal, key is empty, newKey is empty,
 				// and key and newKey are different. In all cases expect #3,

@@ -1,6 +1,7 @@
 package concurrent_cache
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/prometheus/client_golang/prometheus/testutil"
@@ -8,6 +9,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/netapp/trident/core/metrics"
+	mockstorage "github.com/netapp/trident/mocks/mock_storage"
 	"github.com/netapp/trident/storage"
 )
 
@@ -44,6 +46,7 @@ func TestUpsertBackend_Metrics(t *testing.T) {
 					"state":      string(storage.Online),
 					"uuid":       "test-backend-uuid",
 				})
+
 				backends.lock()
 				backends.data["test-backend-uuid"] = tt.initialBackend
 				backends.unlock()
@@ -56,12 +59,20 @@ func TestUpsertBackend_Metrics(t *testing.T) {
 			initialTridentBackendInfo := testutil.ToFloat64(metrics.TridentBackendInfo.WithLabelValues("test-driver", "existing-backend", "test-backend-uuid"))
 
 			// Create upsert backend
-			tt.upsertBackend = getMockBackendWithMap(mockCtrl, map[string]string{
+			mockUpsertBackend := getMockBackendWithMap(mockCtrl, map[string]string{
 				"name":       "updated-backend",
 				"driverName": "test-driver",
 				"state":      string(storage.Online),
 				"uuid":       "test-backend-uuid",
 			})
+
+			mockPool := mockstorage.NewMockPool(mockCtrl)
+			mockPool.EXPECT().SetBackend(mockUpsertBackend).Times(1)
+			mockPoolMap := sync.Map{}
+			mockPoolMap.Store("mock-pool", mockPool)
+
+			mockUpsertBackend.EXPECT().StoragePools().Return(&mockPoolMap).AnyTimes()
+			tt.upsertBackend = mockUpsertBackend
 
 			// Execute upsert operation
 			subquery := UpsertBackend("test-backend-uuid", "test-backend", "updated-backend")

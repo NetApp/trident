@@ -26,6 +26,7 @@ import (
 	"github.com/netapp/trident/pkg/convert"
 	"github.com/netapp/trident/storage"
 	"github.com/netapp/trident/storage/fake"
+	sa "github.com/netapp/trident/storage_attribute"
 	storageclass "github.com/netapp/trident/storage_class"
 	drivers "github.com/netapp/trident/storage_drivers"
 	fakedriver "github.com/netapp/trident/storage_drivers/fake"
@@ -334,14 +335,30 @@ func getMockBackend(mockCtrl *gomock.Controller, name, uuid string) *mockstorage
 	mockBackend.EXPECT().GetUniqueKey().Return(name).AnyTimes()
 	mockBackend.EXPECT().ConstructPersistent(gomock.Any()).Return(&storage.BackendPersistent{Name: name, BackendUUID: uuid}).AnyTimes()
 
+	pool := storage.NewStoragePool(mockBackend, "pool1")
+	pools := sync.Map{}
+	pools.Store("pool1", pool)
+	mockBackend.EXPECT().StoragePools().Return(&pools).AnyTimes()
+
 	return mockBackend
 }
 
-func getMockBackendWithMap(mockCtrl *gomock.Controller, attributes map[string]string) *mockstorage.MockBackend {
+func getMockBackendWithMap(
+	mockCtrl *gomock.Controller, pools []storage.Pool, attributes map[string]string) *mockstorage.MockBackend {
 	mockBackend := mockstorage.NewMockBackend(mockCtrl)
+
+	if pools != nil {
+		poolMap := &sync.Map{}
+		for _, pool := range pools {
+			pool.SetBackend(mockBackend)
+			poolMap.Store(pool.Name(), pool)
+		}
+		mockBackend.EXPECT().StoragePools().Return(poolMap).AnyTimes()
+	}
 
 	if name, ok := attributes["name"]; ok {
 		mockBackend.EXPECT().Name().Return(name).AnyTimes()
+		mockBackend.EXPECT().GetUniqueKey().Return(name).AnyTimes()
 	}
 	if uuid, ok := attributes["uuid"]; ok {
 		mockBackend.EXPECT().BackendUUID().Return(uuid).AnyTimes()
@@ -2995,9 +3012,18 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 					},
 				}
 				fakeStorageClass := getFakeStorageClass("gold")
-				fakePool1 := storage.NewStoragePool(nil, "pool1")
 
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				fakePool1 := storage.NewStoragePool(nil, "pool1")
+				fakePool1.AddStorageClass("gold")
+
+				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
+					"name":       "testBackend1",
+					"uuid":       "backend-uuid1",
+					"driverName": "ontap-nas",
+					"state":      string(storage.Online),
+					"protocol":   string(config.File),
+				})
+
 				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalBackendVolume").Return(originalBackendVol, nil).Times(1)
 				mockBackend.EXPECT().ImportVolume(gomock.Any(), gomock.Any()).Return(
 					&storage.Volume{
@@ -3006,16 +3032,6 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 							InternalName: "originalBackendVolume",
 						},
 					}, nil).Times(1)
-				mockBackend.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
-
-				fakePool1.SetBackend(mockBackend)
-				fakePool1.AddStorageClass("gold")
 
 				addStorageClassesToCache(t, fakeStorageClass)
 				addBackendsToCache(t, mockBackend)
@@ -3326,17 +3342,24 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 			},
 			bootstrapErr: nil,
 			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
-				fakeStorageClass := getFakeStorageClass("gold")
+				scConfig := &storageclass.Config{
+					Name:       "gold",
+					Attributes: make(map[string]sa.Request),
+				}
+				scConfig.Attributes["media"] = sa.NewStringRequest("hdd")
+
+				fakeStorageClass := storageclass.New(scConfig)
+
 				fakePool1 := storage.NewStoragePool(nil, "pool1")
 				fakePool1.AddStorageClass("silver") // Mismatched storage class
-				fakePool1.SetBackend(mockBackend)
 
-				mockBackend.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						return &sync.Map{}
-					}(),
-				).Times(1)
+				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
+					"name":       "testBackend1",
+					"uuid":       "backend-uuid1",
+					"driverName": "ontap-nas",
+					"state":      string(storage.Online),
+					"protocol":   string(config.File),
+				})
 
 				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
 					Return(&storage.VolumeExternal{
@@ -3373,20 +3396,17 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 			},
 			bootstrapErr: nil,
 			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
 				fakeStorageClass := getFakeStorageClass("gold")
+
 				fakePool1 := storage.NewStoragePool(nil, "pool1")
-
 				fakePool1.AddStorageClass("gold")
-				fakePool1.SetBackend(mockBackend)
 
-				mockBackend.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
+				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
+					"name":       "testBackend1",
+					"uuid":       "backend-uuid1",
+					"driverName": "ontap-nas",
+					"state":      string(storage.Online),
+				})
 
 				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
 					Return(&storage.VolumeExternal{
@@ -3426,20 +3446,18 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 			},
 			bootstrapErr: nil,
 			setupMocks: func(volConfig *storage.VolumeConfig, mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
 				fakeStorageClass := getFakeStorageClass("gold")
+
 				fakePool1 := storage.NewStoragePool(nil, "pool1")
-
 				fakePool1.AddStorageClass("gold")
-				fakePool1.SetBackend(mockBackend)
 
-				mockBackend.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
+				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
+					"name":       "testBackend1",
+					"uuid":       "backend-uuid1",
+					"driverName": "ontap-nas",
+					"state":      string(storage.Online),
+					"protocol":   string(config.File),
+				})
 
 				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").
 					Return(&storage.VolumeExternal{
@@ -3542,9 +3560,17 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 					},
 				}
 				fakeStorageClass := getFakeStorageClass("gold")
-				fakePool1 := storage.NewStoragePool(nil, "pool1")
 
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				fakePool1 := storage.NewStoragePool(nil, "pool1")
+				fakePool1.AddStorageClass("gold")
+
+				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
+					"name":       "testBackend1",
+					"uuid":       "backend-uuid1",
+					"driverName": "ontap-nas",
+					"state":      string(storage.Online),
+					"protocol":   string(config.File),
+				})
 				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").Return(originalBackendVol, nil).Times(1)
 				mockBackend.EXPECT().ImportVolume(gomock.Any(), gomock.Any()).Return(
 					nil, errors.New("volume import error in backend")).Times(1)
@@ -3555,19 +3581,8 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 				mockBackend.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(nil).Times(1)
 				mockBackend.EXPECT().RemoveCachedVolume("testVolume").Times(1)
 
-				fakePool1.SetBackend(mockBackend)
-				fakePool1.AddStorageClass("gold")
-
 				addStorageClassesToCache(t, fakeStorageClass)
 				addBackendsToCache(t, mockBackend)
-
-				mockBackend.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
 
 				o.RebuildStorageClassPoolMap(testCtx)
 
@@ -3603,9 +3618,18 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 					},
 				}
 				fakeStorageClass := getFakeStorageClass("gold")
-				fakePool1 := storage.NewStoragePool(nil, "pool1")
 
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				fakePool1 := storage.NewStoragePool(nil, "pool1")
+				fakePool1.AddStorageClass("gold")
+
+				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
+					"name":       "testBackend1",
+					"uuid":       "backend-uuid1",
+					"driverName": "ontap-nas",
+					"state":      string(storage.Online),
+					"protocol":   string(config.File),
+				})
+
 				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").Return(originalBackendVol, nil).Times(1)
 				mockBackend.EXPECT().ImportVolume(gomock.Any(), gomock.Any()).Return(
 					nil, errors.New("volume import error in backend")).Times(1)
@@ -3622,14 +3646,6 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 
 				addStorageClassesToCache(t, fakeStorageClass)
 				addBackendsToCache(t, mockBackend)
-
-				mockBackend.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
 
 				o.RebuildStorageClassPoolMap(testCtx)
 
@@ -3665,9 +3681,18 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 					},
 				}
 				fakeStorageClass := getFakeStorageClass("gold")
-				fakePool1 := storage.NewStoragePool(nil, "pool1")
 
-				mockBackend := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
+				fakePool1 := storage.NewStoragePool(nil, "pool1")
+				fakePool1.AddStorageClass("gold")
+
+				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
+					"name":       "testBackend1",
+					"uuid":       "backend-uuid1",
+					"driverName": "ontap-nas",
+					"state":      string(storage.Online),
+					"protocol":   string(config.File),
+				})
+
 				mockBackend.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").Return(originalBackendVol, nil).Times(1)
 				mockBackend.EXPECT().ImportVolume(gomock.Any(), gomock.Any()).Return(
 					&storage.Volume{
@@ -3688,14 +3713,6 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 
 				addStorageClassesToCache(t, fakeStorageClass)
 				addBackendsToCache(t, mockBackend)
-
-				mockBackend.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
 
 				o.RebuildStorageClassPoolMap(testCtx)
 
@@ -3741,12 +3758,44 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 					},
 				}
 				fakeStorageClass := getFakeStorageClass("gold")
-				fakePool1 := storage.NewStoragePool(nil, "pool1")
 
-				mockBackend1 := getMockBackend(mockCtrl, "testBackend1", "backend-uuid1")
-				mockBackend2 := getMockBackend(mockCtrl, "testBackend2", "backend-uuid2")
-				mockBackend3 := getMockBackend(mockCtrl, "testBackend3", "backend-uuid3")
-				mockBackend4 := getMockBackend(mockCtrl, "testBackend4", "backend-uuid4")
+				fakePool1 := storage.NewStoragePool(nil, "pool1")
+				fakePool1.AddStorageClass("gold")
+				fakePool2 := storage.NewStoragePool(nil, "pool2")
+				fakePool2.AddStorageClass("gold")
+				fakePool3 := storage.NewStoragePool(nil, "pool3")
+				fakePool3.AddStorageClass("gold")
+				fakePool4 := storage.NewStoragePool(nil, "pool4")
+				fakePool4.AddStorageClass("gold")
+
+				mockBackend1 := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
+					"name":       "testBackend1",
+					"uuid":       "backend-uuid1",
+					"driverName": "ontap-nas",
+					"state":      string(storage.Online),
+					"protocol":   string(config.File),
+				})
+				mockBackend2 := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool2}, map[string]string{
+					"name":       "testBackend2",
+					"uuid":       "backend-uuid2",
+					"driverName": "ontap-nas",
+					"state":      string(storage.Online),
+					"protocol":   string(config.File),
+				})
+				mockBackend3 := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool3}, map[string]string{
+					"name":       "testBackend3",
+					"uuid":       "backend-uuid3",
+					"driverName": "ontap-nas",
+					"state":      string(storage.Online),
+					"protocol":   string(config.File),
+				})
+				mockBackend4 := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool4}, map[string]string{
+					"name":       "testBackend4",
+					"uuid":       "backend-uuid4",
+					"driverName": "ontap-nas",
+					"state":      string(storage.Online),
+					"protocol":   string(config.File),
+				})
 
 				mockBackend1.EXPECT().GetVolumeForImport(gomock.Any(), "originalVolume").Return(originalBackendVol, nil).Times(1)
 				mockBackend1.EXPECT().ImportVolume(gomock.Any(), gomock.Any()).Return(
@@ -3761,43 +3810,8 @@ func TestImportVolumeConcurrentCore(t *testing.T) {
 
 				mockBackend1.EXPECT().RenameVolume(gomock.Any(), gomock.Any(), "originalVolume").Return(nil).Times(1)
 
-				fakePool1.SetBackend(mockBackend1)
-				fakePool1.AddStorageClass("gold")
-
 				addStorageClassesToCache(t, fakeStorageClass)
 				addBackendsToCache(t, mockBackend2, mockBackend3, mockBackend4, mockBackend1)
-
-				mockBackend1.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
-
-				mockBackend2.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
-
-				mockBackend3.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
-
-				mockBackend4.EXPECT().StoragePools().Return(
-					func() *sync.Map {
-						m := sync.Map{}
-						m.Store("pool1", fakePool1)
-						return &m
-					}(),
-				).Times(1)
 
 				o.RebuildStorageClassPoolMap(testCtx)
 
@@ -4653,9 +4667,13 @@ func TestAddVolumeConcurrentCore(t *testing.T) {
 			volumeConfig: volumeConfig,
 			bootstrapErr: nil,
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
-				mockBackend.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
-				mockBackend.EXPECT().StoragePools().Return(makeSyncMapFromMap(map[string]storage.Pool{"pool1": fakePool1, "pool2": fakePool2})).AnyTimes()
+				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1, fakePool2}, map[string]string{
+					"name":       "testBackend1",
+					"uuid":       "backend-uuid1",
+					"driverName": "ontap-nas",
+					"state":      string(storage.Online),
+					"protocol":   string(config.File),
+				})
 				mockBackend.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any()).Times(2)
 				mockBackend.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(nil, failed)
 				mockBackend.EXPECT().AddVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).Return(
@@ -4667,8 +4685,6 @@ func TestAddVolumeConcurrentCore(t *testing.T) {
 				addBackendsToCache(t, mockBackend)
 				addStorageClassesToCache(t, fakeStorageClass)
 
-				fakePool1.SetBackend(mockBackend)
-				fakePool2.SetBackend(mockBackend)
 				o.RebuildStorageClassPoolMap(testCtx)
 
 				mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
@@ -6331,8 +6347,13 @@ func TestCloneVolumeConcurrentCore(t *testing.T) {
 			name:         "SuccessSourceVirtualPoolKnown",
 			bootstrapErr: nil,
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid")
-				mockBackend.EXPECT().StoragePools().Return(makeSyncMapFromMap(map[string]storage.Pool{"pool1": fakePool1})).AnyTimes()
+				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
+					"name":       "testBackend",
+					"uuid":       "backend-uuid",
+					"driverName": "ontap-nas",
+					"state":      string(storage.Online),
+					"protocol":   string(config.File),
+				})
 				mockBackend.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), fakePool1)
 				mockBackend.EXPECT().CloneVolume(gomock.Any(), gomock.Any(), gomock.Any(), fakePool1, false).Return(cloneVolume, nil).Times(1)
 
@@ -6759,6 +6780,9 @@ func TestDeleteVolumeConcurrentCore(t *testing.T) {
 		State:       storage.VolumeStateSubordinate,
 	}
 
+	fakePool1 := storage.NewStoragePool(nil, "pool1")
+	fakePool1.AddStorageClass("gold")
+
 	tests := []struct {
 		name         string
 		volumeName   string
@@ -7072,13 +7096,12 @@ func TestDeleteVolumeConcurrentCore(t *testing.T) {
 			name:       "DeletingBackendDeleted",
 			volumeName: "vol1",
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
 					"name":       "testBackend",
 					"uuid":       "backend-uuid1",
 					"state":      string(storage.Deleting),
 					"driverName": "ontap-nas",
 				})
-				mockBackend.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
 				mockBackend.EXPECT().HasVolumes().Return(false).AnyTimes()
 				mockBackend.EXPECT().RemoveVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				mockBackend.EXPECT().Terminate(gomock.Any()).Times(1)
@@ -7104,13 +7127,12 @@ func TestDeleteVolumeConcurrentCore(t *testing.T) {
 			name:       "DeletingBackendDeleteFailedWarning",
 			volumeName: "vol1",
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
 					"name":       "testBackend",
 					"uuid":       "backend-uuid1",
 					"state":      string(storage.Deleting),
 					"driverName": "ontap-nas",
 				})
-				mockBackend.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
 				mockBackend.EXPECT().HasVolumes().Return(false).AnyTimes()
 				mockBackend.EXPECT().RemoveVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
@@ -7135,13 +7157,12 @@ func TestDeleteVolumeConcurrentCore(t *testing.T) {
 			name:       "DeletingBackendHasVolumes",
 			volumeName: "vol1",
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
 					"name":       "testBackend",
 					"uuid":       "backend-uuid1",
 					"state":      string(storage.Deleting),
 					"driverName": "ontap-nas",
 				})
-				mockBackend.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
 				mockBackend.EXPECT().HasVolumes().Return(true).AnyTimes()
 				mockBackend.EXPECT().RemoveVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
@@ -10368,14 +10389,13 @@ func TestUpdateStorageClassConcurrentCore(t *testing.T) {
 			scConfig:     scConfigUpdated,
 			bootstrapErr: nil,
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
-				mockBackend.EXPECT().StoragePools().Return(makeSyncMapFromMap(map[string]storage.Pool{
-					"pool1": fakePool1,
-					"pool2": fakePool2,
-				})).AnyTimes()
-
-				fakePool1.SetBackend(mockBackend)
-				fakePool2.SetBackend(mockBackend)
+				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1, fakePool2}, map[string]string{
+					"name":       "testBackend",
+					"uuid":       "backend-uuid1",
+					"driverName": "ontap-nas",
+					"state":      string(storage.Online),
+					"protocol":   string(config.File),
+				})
 
 				addBackendsToCache(t, mockBackend)
 				addStorageClassesToCache(t, sc)
@@ -10427,14 +10447,13 @@ func TestUpdateStorageClassConcurrentCore(t *testing.T) {
 			scConfig:     scConfig,
 			bootstrapErr: nil,
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
-				mockBackend.EXPECT().StoragePools().Return(makeSyncMapFromMap(map[string]storage.Pool{
-					"pool1": fakePool1,
-					"pool2": fakePool2,
-				})).AnyTimes()
-
-				fakePool1.SetBackend(mockBackend)
-				fakePool2.SetBackend(mockBackend)
+				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1, fakePool2}, map[string]string{
+					"name":       "testBackend",
+					"uuid":       "backend-uuid1",
+					"driverName": "ontap-nas",
+					"state":      string(storage.Online),
+					"protocol":   string(config.File),
+				})
 
 				addBackendsToCache(t, mockBackend)
 			},
@@ -10450,14 +10469,13 @@ func TestUpdateStorageClassConcurrentCore(t *testing.T) {
 			scConfig:     scConfig,
 			bootstrapErr: nil,
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
-				mockBackend.EXPECT().StoragePools().Return(makeSyncMapFromMap(map[string]storage.Pool{
-					"pool1": fakePool1,
-					"pool2": fakePool2,
-				})).AnyTimes()
-
-				fakePool1.SetBackend(mockBackend)
-				fakePool2.SetBackend(mockBackend)
+				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1, fakePool2}, map[string]string{
+					"name":       "testBackend",
+					"uuid":       "backend-uuid1",
+					"driverName": "ontap-nas",
+					"state":      string(storage.Online),
+					"protocol":   string(config.File),
+				})
 
 				addBackendsToCache(t, mockBackend)
 				addStorageClassesToCache(t, sc)
@@ -11783,6 +11801,9 @@ func TestPeriodicallyReconcileBackendStateConcurrentCore(t *testing.T) {
 }
 
 func TestReconcileBackendStateConcurrentCore(t *testing.T) {
+	fakePool1 := storage.NewStoragePool(nil, "pool1")
+	fakePool1.AddStorageClass("gold")
+
 	tests := []struct {
 		name        string
 		backendUUID string
@@ -11957,7 +11978,7 @@ func TestReconcileBackendStateConcurrentCore(t *testing.T) {
 			name:        "ReconcileBackendPoolsChange",
 			backendUUID: "uuid1",
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
-				mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
 					"name":       "backend1",
 					"uuid":       "uuid1",
 					"state":      string(storage.Online),
@@ -11983,7 +12004,6 @@ func TestReconcileBackendStateConcurrentCore(t *testing.T) {
 				mockBackend.EXPECT().Online().Return(true).AnyTimes()
 				mockBackend.EXPECT().HasVolumes().Return(true).AnyTimes()
 				mockBackend.EXPECT().SmartCopy().Return(mockBackend).AnyTimes()
-				mockBackend.EXPECT().GetUniqueKey().Return("backend1").AnyTimes()
 				mockBackend.EXPECT().ConstructPersistent(gomock.Any()).Return(&storage.BackendPersistent{Name: "backend1", BackendUUID: "uuid1"}).AnyTimes()
 				mockBackend.EXPECT().Terminate(gomock.Any()).Times(1)
 				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(nil).Times(1)
@@ -12001,7 +12021,7 @@ func TestReconcileBackendStateConcurrentCore(t *testing.T) {
 			name:        "ReconcileBackendVersionChangeStoreError",
 			backendUUID: "uuid1",
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) storage.Backend {
-				mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
 					"name":       "backend1",
 					"uuid":       "uuid1",
 					"state":      string(storage.Online),
@@ -12027,7 +12047,6 @@ func TestReconcileBackendStateConcurrentCore(t *testing.T) {
 				mockBackend.EXPECT().Online().Return(true).AnyTimes()
 				mockBackend.EXPECT().HasVolumes().Return(true).AnyTimes()
 				mockBackend.EXPECT().SmartCopy().Return(mockBackend).AnyTimes()
-				mockBackend.EXPECT().GetUniqueKey().Return("backend1").AnyTimes()
 				mockBackend.EXPECT().ConstructPersistent(gomock.Any()).Return(&storage.BackendPersistent{Name: "backend1", BackendUUID: "uuid1"}).AnyTimes()
 				mockStoreClient.EXPECT().UpdateBackend(gomock.Any(), gomock.Any()).Return(failed).Times(1)
 
@@ -14608,18 +14627,20 @@ func TestCleanupDeletingBackendsConcurrentCore(t *testing.T) {
 		{
 			name: "SkipBackendsWithVolumes",
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient) {
-				mockBackend := mockstorage.NewMockBackend(mockCtrl)
+				fakePool1 := storage.NewStoragePool(nil, "pool1")
+				fakePool1.AddStorageClass("gold")
+
+				mockBackend := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
+					"name":       "testBackend1",
+					"uuid":       "backend-uuid1",
+					"state":      string(storage.Online),
+					"driverName": "ontap-nas",
+				})
 
 				// Backend is deleting but has volumes - should be skipped
-				mockBackend.EXPECT().Name().Return("testBackend1").AnyTimes()
-				mockBackend.EXPECT().BackendUUID().Return("backend-uuid1").AnyTimes()
 				mockBackend.EXPECT().GetProtocol(gomock.Any()).Return(config.File).AnyTimes()
-				mockBackend.EXPECT().GetDriverName().Return("ontap-nas").AnyTimes()
-				mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
-				mockBackend.EXPECT().Online().Return(true).AnyTimes()
 				mockBackend.EXPECT().HasVolumes().Return(true).AnyTimes()
 				mockBackend.EXPECT().SmartCopy().Return(mockBackend).AnyTimes()
-				mockBackend.EXPECT().GetUniqueKey().Return("testBackend1").AnyTimes()
 				mockBackend.EXPECT().ConstructPersistent(gomock.Any()).Return(&storage.BackendPersistent{Name: "testBackend1", BackendUUID: "backend-uuid1"}).AnyTimes()
 
 				addBackendsToCache(t, mockBackend)
@@ -15100,6 +15121,9 @@ func TestUpdateBackendVolumesConcurrentCore(t *testing.T) {
 }
 
 func TestHandleFailedTransactionAddVolumeConcurrentCore(t *testing.T) {
+	fakePool1 := storage.NewStoragePool(nil, "pool1")
+	fakePool2 := storage.NewStoragePool(nil, "pool2")
+
 	tests := []struct {
 		name        string
 		ctx         context.Context
@@ -15174,16 +15198,15 @@ func TestHandleFailedTransactionAddVolumeConcurrentCore(t *testing.T) {
 				Op:     storage.AddVolume,
 			},
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend1 := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend1 := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
 					"name":       "testBackend1",
 					"uuid":       "backend-uuid1",
 					"state":      string(storage.Online),
 					"driverName": "ontap-nas",
 				})
-				mockBackend1.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
 				mockBackend1.EXPECT().RemoveVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
-				mockBackend2 := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend2 := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool2}, map[string]string{
 					"name":       "testBackend2",
 					"uuid":       "backend-uuid2",
 					"state":      string(storage.Failed),
@@ -15207,22 +15230,20 @@ func TestHandleFailedTransactionAddVolumeConcurrentCore(t *testing.T) {
 				Op:     storage.AddVolume,
 			},
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend1 := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend1 := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
 					"name":       "testBackend1",
 					"uuid":       "backend-uuid1",
 					"state":      string(storage.Online),
 					"driverName": "ontap-nas",
 				})
-				mockBackend1.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
 				mockBackend1.EXPECT().RemoveVolume(gomock.Any(), gomock.Any()).Return(failed).Times(1)
 
-				mockBackend2 := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend2 := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool2}, map[string]string{
 					"name":       "testBackend2",
 					"uuid":       "backend-uuid2",
 					"state":      string(storage.Failed),
 					"driverName": "ontap-nas",
 				})
-				mockBackend2.EXPECT().GetUniqueKey().Return("testBackend2").AnyTimes()
 
 				addBackendsToCache(t, mockBackend1, mockBackend2)
 			},
@@ -15302,6 +15323,9 @@ func TestHandleFailedTransactionAddVolumeConcurrentCore(t *testing.T) {
 }
 
 func TestHandleFailedTransactionDeleteVolumeConcurrentCore(t *testing.T) {
+	fakePool1 := storage.NewStoragePool(nil, "pool1")
+	fakePool2 := storage.NewStoragePool(nil, "pool2")
+
 	tests := []struct {
 		name        string
 		ctx         context.Context
@@ -15377,21 +15401,19 @@ func TestHandleFailedTransactionDeleteVolumeConcurrentCore(t *testing.T) {
 				Op:     storage.DeleteVolume,
 			},
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend1 := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend1 := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
 					"name":       "testBackend1",
 					"uuid":       "backend-uuid1",
 					"state":      string(storage.Online),
 					"driverName": "ontap-nas",
 				})
-				mockBackend1.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
 
-				mockBackend2 := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend2 := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool2}, map[string]string{
 					"name":       "testBackend2",
 					"uuid":       "backend-uuid2",
 					"state":      string(storage.Failed),
 					"driverName": "ontap-nas",
 				})
-				mockBackend2.EXPECT().GetUniqueKey().Return("testBackend2").AnyTimes()
 
 				addBackendsToCache(t, mockBackend1, mockBackend2)
 
@@ -15473,6 +15495,9 @@ func TestHandleFailedTransactionDeleteVolumeConcurrentCore(t *testing.T) {
 }
 
 func TestHandleFailedTransactionAddSnapshotConcurrentCore(t *testing.T) {
+	fakePool1 := storage.NewStoragePool(nil, "pool1")
+	fakePool2 := storage.NewStoragePool(nil, "pool2")
+
 	tests := []struct {
 		name        string
 		ctx         context.Context
@@ -15557,22 +15582,20 @@ func TestHandleFailedTransactionAddSnapshotConcurrentCore(t *testing.T) {
 				Op:             storage.AddSnapshot,
 			},
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend1 := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend1 := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
 					"name":       "testBackend1",
 					"uuid":       "backend-uuid1",
 					"state":      string(storage.Online),
 					"driverName": "ontap-nas",
 				})
-				mockBackend1.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
 				mockBackend1.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
-				mockBackend2 := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend2 := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool2}, map[string]string{
 					"name":       "testBackend2",
 					"uuid":       "backend-uuid2",
 					"state":      string(storage.Failed),
 					"driverName": "ontap-nas",
 				})
-				mockBackend2.EXPECT().GetUniqueKey().Return("testBackend2").AnyTimes()
 
 				addBackendsToCache(t, mockBackend1, mockBackend2)
 
@@ -15590,22 +15613,20 @@ func TestHandleFailedTransactionAddSnapshotConcurrentCore(t *testing.T) {
 				Op:             storage.AddSnapshot,
 			},
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend1 := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend1 := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
 					"name":       "testBackend1",
 					"uuid":       "backend-uuid1",
 					"state":      string(storage.Online),
 					"driverName": "ontap-nas",
 				})
-				mockBackend1.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
 				mockBackend1.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(failed).Times(1)
 
-				mockBackend2 := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend2 := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool2}, map[string]string{
 					"name":       "testBackend2",
 					"uuid":       "backend-uuid2",
 					"state":      string(storage.Failed),
 					"driverName": "ontap-nas",
 				})
-				mockBackend2.EXPECT().GetUniqueKey().Return("testBackend2").AnyTimes()
 
 				addBackendsToCache(t, mockBackend1, mockBackend2)
 			},
@@ -15690,6 +15711,9 @@ func TestHandleFailedTransactionAddSnapshotConcurrentCore(t *testing.T) {
 }
 
 func TestHandleFailedTransactionDeleteSnapshotConcurrentCore(t *testing.T) {
+	fakePool1 := storage.NewStoragePool(nil, "pool1")
+	fakePool2 := storage.NewStoragePool(nil, "pool2")
+
 	tests := []struct {
 		name        string
 		ctx         context.Context
@@ -15774,21 +15798,19 @@ func TestHandleFailedTransactionDeleteSnapshotConcurrentCore(t *testing.T) {
 				Op:             storage.DeleteSnapshot,
 			},
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend1 := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend1 := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
 					"name":       "testBackend1",
 					"uuid":       "backend-uuid1",
 					"state":      string(storage.Online),
 					"driverName": "ontap-nas",
 				})
-				mockBackend1.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
 
-				mockBackend2 := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend2 := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool2}, map[string]string{
 					"name":       "testBackend2",
 					"uuid":       "backend-uuid2",
 					"state":      string(storage.Failed),
 					"driverName": "ontap-nas",
 				})
-				mockBackend2.EXPECT().GetUniqueKey().Return("testBackend2").AnyTimes()
 
 				addBackendsToCache(t, mockBackend1, mockBackend2)
 
@@ -15875,6 +15897,9 @@ func TestHandleFailedTransactionDeleteSnapshotConcurrentCore(t *testing.T) {
 }
 
 func TestHandleFailedTransactionResizeVolumeConcurrentCore(t *testing.T) {
+	fakePool1 := storage.NewStoragePool(nil, "pool1")
+	fakePool2 := storage.NewStoragePool(nil, "pool2")
+
 	tests := []struct {
 		name        string
 		ctx         context.Context
@@ -15949,21 +15974,19 @@ func TestHandleFailedTransactionResizeVolumeConcurrentCore(t *testing.T) {
 				Op:     storage.ResizeVolume,
 			},
 			setupMocks: func(mockCtrl *gomock.Controller, mockStoreClient *mockpersistentstore.MockStoreClient, o *ConcurrentTridentOrchestrator) {
-				mockBackend1 := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend1 := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool1}, map[string]string{
 					"name":       "testBackend1",
 					"uuid":       "backend-uuid1",
 					"state":      string(storage.Online),
 					"driverName": "ontap-nas",
 				})
-				mockBackend1.EXPECT().GetUniqueKey().Return("testBackend").AnyTimes()
 
-				mockBackend2 := getMockBackendWithMap(mockCtrl, map[string]string{
+				mockBackend2 := getMockBackendWithMap(mockCtrl, []storage.Pool{fakePool2}, map[string]string{
 					"name":       "testBackend2",
 					"uuid":       "backend-uuid2",
 					"state":      string(storage.Failed),
 					"driverName": "ontap-nas",
 				})
-				mockBackend2.EXPECT().GetUniqueKey().Return("testBackend2").AnyTimes()
 
 				addBackendsToCache(t, mockBackend1, mockBackend2)
 
@@ -20142,7 +20165,6 @@ func TestDeleteStorageClass_SubordinateVolumes_AutogrowPolicy(t *testing.T) {
 
 				// Add backend
 				mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid1")
-				mockBackend.EXPECT().StoragePools().Return(&sync.Map{}).AnyTimes()
 				addBackendsToCache(t, mockBackend)
 
 				// Add parent volume
