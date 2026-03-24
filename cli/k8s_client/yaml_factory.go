@@ -2298,64 +2298,64 @@ spec:
 `
 
 const tridentActionMirrorUpdateCRDYAMLv1 = `
- apiVersion: apiextensions.k8s.io/v1
- kind: CustomResourceDefinition
- metadata:
-   name: tridentactionmirrorupdates.trident.netapp.io
- spec:
-   group: trident.netapp.io
-   versions:
-     - name: v1
-       served: true
-       storage: true
-       schema:
-         openAPIV3Schema:
-           type: object
-           x-kubernetes-preserve-unknown-fields: true
-       additionalPrinterColumns:
-         - description: Namespace
-           jsonPath: .metadata.namespace
-           name: Namespace
-           type: string
-           priority: 0
-         - description: State
-           jsonPath: .status.state
-           name: State
-           type: string
-           priority: 0
-         - description: CompletionTime
-           jsonPath: .status.completionTime
-           name: CompletionTime
-           type: date
-           priority: 0
-         - description: Message
-           jsonPath: .status.message
-           name: Message
-           type: string
-           priority: 1
-         - description: LocalVolumeHandle
-           jsonPath: .status.localVolumeHandle
-           name: LocalVolumeHandle
-           type: string
-           priority: 1
-         - description: RemoteVolumeHandle
-           jsonPath: .status.remoteVolumeHandle
-           name: RemoteVolumeHandle
-           type: string
-           priority: 1
-   scope: Namespaced
-   names:
-     plural: tridentactionmirrorupdates
-     singular: tridentactionmirrorupdate
-     kind: TridentActionMirrorUpdate
-     shortNames:
-     - tamu
-     - tamupdate
-     - tamirrorupdate
-     categories:
-     - trident
-     - trident-external
- `
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentactionmirrorupdates.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+        - description: Namespace
+          jsonPath: .metadata.namespace
+          name: Namespace
+          type: string
+          priority: 0
+        - description: State
+          jsonPath: .status.state
+          name: State
+          type: string
+          priority: 0
+        - description: CompletionTime
+          jsonPath: .status.completionTime
+          name: CompletionTime
+          type: date
+          priority: 0
+        - description: Message
+          jsonPath: .status.message
+          name: Message
+          type: string
+          priority: 1
+        - description: LocalVolumeHandle
+          jsonPath: .status.localVolumeHandle
+          name: LocalVolumeHandle
+          type: string
+          priority: 1
+        - description: RemoteVolumeHandle
+          jsonPath: .status.remoteVolumeHandle
+          name: RemoteVolumeHandle
+          type: string
+          priority: 1
+  scope: Namespaced
+  names:
+    plural: tridentactionmirrorupdates
+    singular: tridentactionmirrorupdate
+    kind: TridentActionMirrorUpdate
+    shortNames:
+    - tamu
+    - tamupdate
+    - tamirrorupdate
+    categories:
+    - trident
+    - trident-external
+`
 
 const tridentSnapshotInfoCRDYAMLv1 = `
 apiVersion: apiextensions.k8s.io/v1
