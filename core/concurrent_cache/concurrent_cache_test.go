@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	mockstorage "github.com/netapp/trident/mocks/mock_storage"
 	"github.com/netapp/trident/storage"
 	storageclass "github.com/netapp/trident/storage_class"
 	"github.com/netapp/trident/utils/models"
@@ -677,6 +678,7 @@ func setupTestData(t *testing.T, numIds int) {
 
 	for i := 0; i < numIds; i++ {
 		backendName := fmt.Sprintf("backend%d", i+1)
+		poolName := fmt.Sprintf("pool%d", i+1)
 		volumeName := fmt.Sprintf("volume%d", i+1)
 		snapshotName := fmt.Sprintf("snapshot%d", i+1)
 		nodeName := fmt.Sprintf("node%d", i+1)
@@ -684,14 +686,22 @@ func setupTestData(t *testing.T, numIds int) {
 		subordinateVolumeName := fmt.Sprintf("subvol%d", i+1)
 
 		// Add some test data to avoid nil pointer dereferences
-		backends.lock()
-		backends.data[backendName] = getMockBackendWithMap(mockCtrl, map[string]string{
+		mockBackend := getMockBackendWithMap(mockCtrl, map[string]string{
 			"name":       backendName,
 			"driverName": "test-driver",
 			"uuid":       backendName,
 			"uniqueKey":  backendName,
 			"state":      "online",
 		})
+
+		mockPool := mockstorage.NewMockPool(mockCtrl)
+		mockPool.EXPECT().SetBackend(mockBackend).AnyTimes()
+		mockPoolMap := sync.Map{}
+		mockPoolMap.Store(poolName, mockPool)
+		mockBackend.EXPECT().StoragePools().Return(&mockPoolMap).AnyTimes()
+
+		backends.lock()
+		backends.data[backendName] = mockBackend
 		backends.key.data[backendName] = backendName
 		backends.unlock()
 

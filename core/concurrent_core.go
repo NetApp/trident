@@ -19,6 +19,7 @@ import (
 
 	"github.com/netapp/trident/config"
 	db "github.com/netapp/trident/core/concurrent_cache"
+	"github.com/netapp/trident/core/metrics"
 	"github.com/netapp/trident/frontend"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	. "github.com/netapp/trident/logging"
@@ -247,6 +248,9 @@ func (o *ConcurrentTridentOrchestrator) bootstrap(ctx context.Context) error {
 	o.cleanupDeletingBackends(ctx)
 
 	o.RebuildStorageClassPoolMap(ctx)
+
+	metrics.TridentBuildInfo.WithLabelValues(config.BuildHash,
+		config.OrchestratorVersion.ShortString(), config.BuildType).Set(float64(1))
 
 	return nil
 }
