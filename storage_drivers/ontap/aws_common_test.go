@@ -332,7 +332,7 @@ func TestParseSecretARN(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			secretARN := test.userName
 
-			_, _, _, err := awsapi.ParseSecretARN(secretARN)
+			_, _, _, _, err := awsapi.ParseSecretARN(secretARN)
 			if test.error == "" {
 				assert.Nil(t, err)
 			} else {
@@ -363,7 +363,7 @@ func TestParseVolumeARN(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			volumeARN := test.userName
 
-			_, _, _, _, err := awsapi.ParseVolumeARN(volumeARN)
+			_, _, _, _, _, err := awsapi.ParseVolumeARN(volumeARN)
 			if test.error == "" {
 				assert.Nil(t, err)
 			} else {

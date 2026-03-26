@@ -198,6 +198,7 @@ func TestParseVolumeARN(t *testing.T) {
 		name                 string
 		arn                  string
 		expectError          bool
+		expectedPartition    string
 		expectedRegion       string
 		expectedAccountID    string
 		expectedFilesystemID string
@@ -207,6 +208,7 @@ func TestParseVolumeARN(t *testing.T) {
 			name:                 "ValidARN",
 			arn:                  testVolumeARN,
 			expectError:          false,
+			expectedPartition:    "aws",
 			expectedRegion:       "us-east-1",
 			expectedAccountID:    testAccountID,
 			expectedFilesystemID: testFilesystemID,
@@ -236,6 +238,7 @@ func TestParseVolumeARN(t *testing.T) {
 			name:                 "AWSChinaPartition",
 			arn:                  "arn:aws-cn:fsx:cn-north-1:123456789012:volume/fs-1234567890abcdef0/fv-1234567890abcdef0",
 			expectError:          false,
+			expectedPartition:    "aws-cn",
 			expectedRegion:       "cn-north-1",
 			expectedAccountID:    testAccountID,
 			expectedFilesystemID: testFilesystemID,
@@ -245,7 +248,28 @@ func TestParseVolumeARN(t *testing.T) {
 			name:                 "AWSGovCloudPartition",
 			arn:                  "arn:aws-us-gov:fsx:us-gov-east-1:123456789012:volume/fs-1234567890abcdef0/fv-1234567890abcdef0",
 			expectError:          false,
+			expectedPartition:    "aws-us-gov",
 			expectedRegion:       "us-gov-east-1",
+			expectedAccountID:    testAccountID,
+			expectedFilesystemID: testFilesystemID,
+			expectedVolumeID:     testVolumeID,
+		},
+		{
+			name:                 "AWSTopSecretPartition",
+			arn:                  "arn:aws-iso:fsx:us-iso-east-1:123456789012:volume/fs-1234567890abcdef0/fv-1234567890abcdef0",
+			expectError:          false,
+			expectedPartition:    "aws-iso",
+			expectedRegion:       "us-iso-east-1",
+			expectedAccountID:    testAccountID,
+			expectedFilesystemID: testFilesystemID,
+			expectedVolumeID:     testVolumeID,
+		},
+		{
+			name:                 "AWSSecretPartition",
+			arn:                  "arn:aws-iso-b:fsx:us-iso-b-east-1:123456789012:volume/fs-1234567890abcdef0/fv-1234567890abcdef0",
+			expectError:          false,
+			expectedPartition:    "aws-iso-b",
+			expectedRegion:       "us-iso-b-east-1",
 			expectedAccountID:    testAccountID,
 			expectedFilesystemID: testFilesystemID,
 			expectedVolumeID:     testVolumeID,
@@ -254,7 +278,7 @@ func TestParseVolumeARN(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			region, accountID, filesystemID, volumeID, err := ParseVolumeARN(tt.arn)
+			partition, region, accountID, filesystemID, volumeID, err := ParseVolumeARN(tt.arn)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -263,6 +287,7 @@ func TestParseVolumeARN(t *testing.T) {
 			}
 
 			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedPartition, partition)
 			assert.Equal(t, tt.expectedRegion, region)
 			assert.Equal(t, tt.expectedAccountID, accountID)
 			assert.Equal(t, tt.expectedFilesystemID, filesystemID)
@@ -276,6 +301,7 @@ func TestParseSecretARN(t *testing.T) {
 		name               string
 		arn                string
 		expectError        bool
+		expectedPartition  string
 		expectedRegion     string
 		expectedAccountID  string
 		expectedSecretName string
@@ -284,6 +310,7 @@ func TestParseSecretARN(t *testing.T) {
 			name:               "ValidARN",
 			arn:                testSecretARN,
 			expectError:        false,
+			expectedPartition:  "aws",
 			expectedRegion:     "us-east-1",
 			expectedAccountID:  testAccountID,
 			expectedSecretName: testSecretName,
@@ -312,7 +339,44 @@ func TestParseSecretARN(t *testing.T) {
 			name:               "SpecialCharacters",
 			arn:                "arn:aws:secretsmanager:us-east-1:123456789012:secret:my/secret_name.with+special@chars-AbCdEf",
 			expectError:        false,
+			expectedPartition:  "aws",
 			expectedRegion:     "us-east-1",
+			expectedAccountID:  testAccountID,
+			expectedSecretName: "my/secret_name.with+special@chars",
+		},
+		{
+			name:               "AWSChinaPartition",
+			arn:                "arn:aws-cn:secretsmanager:cn-north-1:123456789012:secret:my/secret_name.with+special@chars-AbCdEf",
+			expectError:        false,
+			expectedPartition:  "aws-cn",
+			expectedRegion:     "cn-north-1",
+			expectedAccountID:  testAccountID,
+			expectedSecretName: "my/secret_name.with+special@chars",
+		},
+		{
+			name:               "AWSGovCloudPartition",
+			arn:                "arn:aws-us-gov:secretsmanager:us-gov-east-1:123456789012:secret:my/secret_name.with+special@chars-AbCdEf",
+			expectError:        false,
+			expectedPartition:  "aws-us-gov",
+			expectedRegion:     "us-gov-east-1",
+			expectedAccountID:  testAccountID,
+			expectedSecretName: "my/secret_name.with+special@chars",
+		},
+		{
+			name:               "AWSTopSecretPartition",
+			arn:                "arn:aws-iso:secretsmanager:us-iso-east-1:123456789012:secret:my/secret_name.with+special@chars-AbCdEf",
+			expectError:        false,
+			expectedPartition:  "aws-iso",
+			expectedRegion:     "us-iso-east-1",
+			expectedAccountID:  testAccountID,
+			expectedSecretName: "my/secret_name.with+special@chars",
+		},
+		{
+			name:               "AWSSecretPartition",
+			arn:                "arn:aws-iso-b:secretsmanager:us-iso-b-east-1:123456789012:secret:my/secret_name.with+special@chars-AbCdEf",
+			expectError:        false,
+			expectedPartition:  "aws-iso-b",
+			expectedRegion:     "us-iso-b-east-1",
 			expectedAccountID:  testAccountID,
 			expectedSecretName: "my/secret_name.with+special@chars",
 		},
@@ -320,7 +384,7 @@ func TestParseSecretARN(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			region, accountID, secretName, err := ParseSecretARN(tt.arn)
+			partition, region, accountID, secretName, err := ParseSecretARN(tt.arn)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -329,6 +393,7 @@ func TestParseSecretARN(t *testing.T) {
 			}
 
 			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedPartition, partition)
 			assert.Equal(t, tt.expectedRegion, region)
 			assert.Equal(t, tt.expectedAccountID, accountID)
 			assert.Equal(t, tt.expectedSecretName, secretName)

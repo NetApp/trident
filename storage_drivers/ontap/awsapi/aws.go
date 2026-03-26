@@ -35,8 +35,8 @@ const (
 )
 
 var (
-	volumeARNRegex = regexp.MustCompile(`^arn:(?P<partition>aws|aws-cn|aws-us-gov){1}:fsx:(?P<region>[^:]+):(?P<accountID>\d{12}):volume/(?P<filesystemID>[A-z0-9-]+)/(?P<volumeID>[A-z0-9-]+)$`)
-	secretARNRegex = regexp.MustCompile(`^arn:(?P<partition>aws|aws-cn|aws-us-gov){1}:secretsmanager:(?P<region>[^:]+):(?P<accountID>\d{12}):secret:(?P<secretName>[A-z0-9/_+=.@-]+)-[A-z0-9/_+=.@-]{6}$`)
+	volumeARNRegex = regexp.MustCompile(`^arn:(?P<partition>aws|aws-cn|aws-us-gov|aws-eusc|aws-iso(?:-[a-z0-9]+)?):fsx:(?P<region>[^:]+):(?P<accountID>\d{12}):volume/(?P<filesystemID>[A-z0-9-]+)/(?P<volumeID>[A-z0-9-]+)$`)
+	secretARNRegex = regexp.MustCompile(`^arn:(?P<partition>aws|aws-cn|aws-us-gov|aws-eusc|aws-iso(?:-[a-z0-9]+)?):secretsmanager:(?P<region>[^:]+):(?P<accountID>\d{12}):secret:(?P<secretName>[A-z0-9/_+=.@-]+)-[A-z0-9/_+=.@-]{6}$`)
 )
 
 // ClientConfig holds configuration data for the API driver object.
@@ -207,7 +207,7 @@ func (d *Client) DeleteSecret(ctx context.Context, secretARN string) error {
 }
 
 // ParseVolumeARN parses the AWS-style ARN for a volume.
-func ParseVolumeARN(volumeARN string) (region, accountID, filesystemID, volumeID string, err error) {
+func ParseVolumeARN(volumeARN string) (partition, region, accountID, filesystemID, volumeID string, err error) {
 	match := volumeARNRegex.FindStringSubmatch(volumeARN)
 
 	if match == nil {
@@ -222,6 +222,7 @@ func ParseVolumeARN(volumeARN string) (region, accountID, filesystemID, volumeID
 		}
 	}
 
+	partition = paramsMap["partition"]
 	region = paramsMap["region"]
 	accountID = paramsMap["accountID"]
 	filesystemID = paramsMap["filesystemID"]
@@ -231,7 +232,7 @@ func ParseVolumeARN(volumeARN string) (region, accountID, filesystemID, volumeID
 }
 
 // ParseSecretARN parses the AWS-style ARN for a secret.
-func ParseSecretARN(secretARN string) (region, accountID, secretName string, err error) {
+func ParseSecretARN(secretARN string) (partition, region, accountID, secretName string, err error) {
 	match := secretARNRegex.FindStringSubmatch(secretARN)
 
 	if match == nil {
@@ -246,6 +247,7 @@ func ParseSecretARN(secretARN string) (region, accountID, secretName string, err
 		}
 	}
 
+	partition = paramsMap["partition"]
 	region = paramsMap["region"]
 	accountID = paramsMap["accountID"]
 	secretName = paramsMap["secretName"]
@@ -568,7 +570,7 @@ func (d *Client) GetVolumeByName(ctx context.Context, name string) (*Volume, err
 }
 
 func (d *Client) GetVolumeByARN(ctx context.Context, volumeARN string) (*Volume, error) {
-	_, _, _, volumeID, err := ParseVolumeARN(volumeARN)
+	_, _, _, _, volumeID, err := ParseVolumeARN(volumeARN)
 	if err != nil {
 		return nil, err
 	}
@@ -663,7 +665,7 @@ func (d *Client) VolumeExistsByName(ctx context.Context, name string) (bool, *Vo
 }
 
 func (d *Client) VolumeExistsByARN(ctx context.Context, volumeARN string) (bool, *Volume, error) {
-	_, _, _, volumeID, err := ParseVolumeARN(volumeARN)
+	_, _, _, _, volumeID, err := ParseVolumeARN(volumeARN)
 	if err != nil {
 		return false, nil, err
 	}
