@@ -88,7 +88,7 @@ func initializeAWSAPI(
 	}
 	if secretARN != "" {
 		var err error
-		secretManagerRegion, _, _, err = awsapi.ParseSecretARN(secretARN)
+		_, secretManagerRegion, _, _, err = awsapi.ParseSecretARN(secretARN)
 		if err != nil {
 			return nil, err
 		}
@@ -192,7 +192,7 @@ func getAWSSecretsManagerARNFromConfig(_ context.Context, config *drivers.OntapS
 		return config.Credentials[drivers.KeyName], nil
 	}
 
-	_, _, _, err := awsapi.ParseSecretARN(config.Username)
+	_, _, _, _, err := awsapi.ParseSecretARN(config.Username)
 	if err != nil {
 		return config.Username, errors.NotFoundError("%s, %s driver with FSxN personality must include Credentials of type %s "+
 			"in the configuration", err, config.StorageDriverName, string(drivers.CredentialStoreAWSARN))
