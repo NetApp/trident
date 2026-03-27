@@ -102,6 +102,6 @@ func ResolveEffectiveAutogrowPolicy(ctx context.Context, volumeName, pvcAnnotati
 	}
 
 	// Priority 3: No Autogrow policy specified in SC or PVC annotation
-	Logc(ctx).WithField("volumeName", volumeName).Info("No Autogrow policy configured for the volume.")
+	Logc(ctx).WithField("volumeName", volumeName).Trace("No Autogrow policy configured for the volume.")
 	return ""
 }
