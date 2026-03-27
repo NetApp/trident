@@ -4903,7 +4903,20 @@ func (c *RestClient) QtreeDestroyAsync(ctx context.Context, path string, force b
 		return nil
 	} else if deleteAccepted != nil {
 		jobLink := getGenericJobLinkFromQtreeJobLink(deleteAccepted.Payload)
-		return c.PollJobStatus(ctx, jobLink)
+		job := jobLink.Job
+		if job == nil {
+			return fmt.Errorf("missing job result")
+		}
+		if job.UUID == nil {
+			return fmt.Errorf("missing job uuid for result")
+		}
+		jobUUID := *job.UUID
+		// qtree files take a long time to delete, so we return immediately without polling for job completion.
+		Logc(ctx).WithFields(LogFields{
+			"path":    path,
+			"jobUUID": jobUUID,
+		}).Debug("Qtree deleting asynchronously.")
+		return nil
 	}
 	return fmt.Errorf("unexpected response from qtree delete")
 }
