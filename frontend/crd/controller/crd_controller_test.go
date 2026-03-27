@@ -678,10 +678,6 @@ func TestDeleteCRHandler(t *testing.T) {
 // TestGetPVCGetter exercises getPVCGetter: GetFrontend(KubernetesHelper) success, error, and wrong type.
 func TestGetPVCGetter(t *testing.T) {
 	ctx := context.Background()
-	tridentNamespace := "trident"
-	kubeClient := GetTestKubernetesClientset()
-	snapClient := GetTestSnapshotClientset()
-	crdClient := GetTestCrdClientset()
 
 	t.Run("returns_K8s_helper_when_GetFrontend_returns_it", func(t *testing.T) {
 		mockCtrl := gomock.NewController(t)
@@ -689,9 +685,7 @@ func TestGetPVCGetter(t *testing.T) {
 		orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 		mockK8s := mockk8s.NewMockK8SControllerHelperPlugin(mockCtrl)
 		orchestrator.EXPECT().GetFrontend(gomock.Any(), controllerhelpers.KubernetesHelper).Return(mockK8s, nil)
-		controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
-		require.NoError(t, err)
-		got := controller.getPVCGetter(ctx)
+		got := getPVCGetter(ctx, orchestrator)
 		assert.Same(t, mockK8s, got)
 	})
 
@@ -700,9 +694,7 @@ func TestGetPVCGetter(t *testing.T) {
 		defer mockCtrl.Finish()
 		orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 		orchestrator.EXPECT().GetFrontend(gomock.Any(), controllerhelpers.KubernetesHelper).Return(nil, fmt.Errorf("not found"))
-		controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
-		require.NoError(t, err)
-		got := controller.getPVCGetter(ctx)
+		got := getPVCGetter(ctx, orchestrator)
 		assert.Nil(t, got)
 	})
 
@@ -712,9 +704,7 @@ func TestGetPVCGetter(t *testing.T) {
 		orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 		// Frontend is nil (e.g. not yet registered); type assertion in getPVCGetter yields nil.
 		orchestrator.EXPECT().GetFrontend(gomock.Any(), controllerhelpers.KubernetesHelper).Return(nil, nil)
-		controller, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient, crdClient, nil, nil)
-		require.NoError(t, err)
-		got := controller.getPVCGetter(ctx)
+		got := getPVCGetter(ctx, orchestrator)
 		assert.Nil(t, got)
 	})
 }

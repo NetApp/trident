@@ -85,6 +85,21 @@ func (mr *MockNodeRemediationUtilsMockRecorder) GetNodePods(ctx, nodeName any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNodePods", reflect.TypeOf((*MockNodeRemediationUtils)(nil).GetNodePods), ctx, nodeName)
 }
 
+// GetPVC mocks base method.
+func (m *MockNodeRemediationUtils) GetPVC(ctx context.Context, namespace, name string) (*v1.PersistentVolumeClaim, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPVC", ctx, namespace, name)
+	ret0, _ := ret[0].(*v1.PersistentVolumeClaim)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPVC indicates an expected call of GetPVC.
+func (mr *MockNodeRemediationUtilsMockRecorder) GetPVC(ctx, namespace, name any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPVC", reflect.TypeOf((*MockNodeRemediationUtils)(nil).GetPVC), ctx, namespace, name)
+}
+
 // GetPodsToDelete mocks base method.
 func (m *MockNodeRemediationUtils) GetPodsToDelete(ctx context.Context, nodePods []*v1.Pod, pvcToTvolMap map[string]*storage.VolumeExternal) []*v1.Pod {
 	m.ctrl.T.Helper()
@@ -100,18 +115,31 @@ func (mr *MockNodeRemediationUtilsMockRecorder) GetPodsToDelete(ctx, nodePods, p
 }
 
 // GetPvcToTvolMap mocks base method.
-func (m *MockNodeRemediationUtils) GetPvcToTvolMap(ctx context.Context, nodeName string) (map[string]*storage.VolumeExternal, error) {
+func (m *MockNodeRemediationUtils) GetPvcToTvolMap(ctx context.Context, pvcs []*v1.PersistentVolumeClaim) map[string]*storage.VolumeExternal {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPvcToTvolMap", ctx, nodeName)
+	ret := m.ctrl.Call(m, "GetPvcToTvolMap", ctx, pvcs)
 	ret0, _ := ret[0].(map[string]*storage.VolumeExternal)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	return ret0
 }
 
 // GetPvcToTvolMap indicates an expected call of GetPvcToTvolMap.
-func (mr *MockNodeRemediationUtilsMockRecorder) GetPvcToTvolMap(ctx, nodeName any) *gomock.Call {
+func (mr *MockNodeRemediationUtilsMockRecorder) GetPvcToTvolMap(ctx, pvcs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPvcToTvolMap", reflect.TypeOf((*MockNodeRemediationUtils)(nil).GetPvcToTvolMap), ctx, nodeName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPvcToTvolMap", reflect.TypeOf((*MockNodeRemediationUtils)(nil).GetPvcToTvolMap), ctx, pvcs)
+}
+
+// GetPvcsForPods mocks base method.
+func (m *MockNodeRemediationUtils) GetPvcsForPods(ctx context.Context, pods []*v1.Pod) []*v1.PersistentVolumeClaim {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPvcsForPods", ctx, pods)
+	ret0, _ := ret[0].([]*v1.PersistentVolumeClaim)
+	return ret0
+}
+
+// GetPvcsForPods indicates an expected call of GetPvcsForPods.
+func (mr *MockNodeRemediationUtilsMockRecorder) GetPvcsForPods(ctx, pods any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPvcsForPods", reflect.TypeOf((*MockNodeRemediationUtils)(nil).GetPvcsForPods), ctx, pods)
 }
 
 // GetTridentVolumesOnNode mocks base method.
@@ -142,4 +170,18 @@ func (m *MockNodeRemediationUtils) GetVolumeAttachmentsToDelete(ctx context.Cont
 func (mr *MockNodeRemediationUtilsMockRecorder) GetVolumeAttachmentsToDelete(ctx, podsToDelete, pvcToTvols, nodeName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumeAttachmentsToDelete", reflect.TypeOf((*MockNodeRemediationUtils)(nil).GetVolumeAttachmentsToDelete), ctx, podsToDelete, pvcToTvols, nodeName)
+}
+
+// NamespacedPvcName mocks base method.
+func (m *MockNodeRemediationUtils) NamespacedPvcName(namespace, pvcName string) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NamespacedPvcName", namespace, pvcName)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// NamespacedPvcName indicates an expected call of NamespacedPvcName.
+func (mr *MockNodeRemediationUtilsMockRecorder) NamespacedPvcName(namespace, pvcName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NamespacedPvcName", reflect.TypeOf((*MockNodeRemediationUtils)(nil).NamespacedPvcName), namespace, pvcName)
 }

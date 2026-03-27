@@ -313,11 +313,8 @@ func (c *TridentCrdController) failoverDetach(
 		return err
 	}
 
-	pvcToTvolMap, err := c.nodeRemediationUtils.GetPvcToTvolMap(ctx, nodeName)
-	if err != nil {
-		Logc(ctx).WithError(err).Error("Failed to get PVC to Tvol map.")
-		return err
-	}
+	nodePvcs := c.nodeRemediationUtils.GetPvcsForPods(ctx, nodePods)
+	pvcToTvolMap := c.nodeRemediationUtils.GetPvcToTvolMap(ctx, nodePvcs)
 
 	// Get pods to delete
 	Logc(ctx).WithField("node", nodeName).Info("Finding pods to remove from failed node.")

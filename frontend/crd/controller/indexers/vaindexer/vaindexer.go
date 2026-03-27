@@ -17,7 +17,7 @@ import (
 // Indexer keys
 const vaByNodeIndex = "vaByNode"
 
-type vaIndexer struct {
+type VaIndexer struct {
 	// Volume Attachment Indexer
 	vaIndexer            cache.Indexer
 	vaController         cache.SharedIndexInformer
@@ -26,8 +26,8 @@ type vaIndexer struct {
 	vaSynced             cache.InformerSynced
 }
 
-func NewVolumeAttachmentIndexer(kubeClient kubernetes.Interface) *vaIndexer {
-	va := &vaIndexer{}
+func NewVolumeAttachmentIndexer(kubeClient kubernetes.Interface) *VaIndexer {
+	va := &VaIndexer{}
 
 	// Init stop channels
 	va.vaControllerStopChan = make(chan struct{})
@@ -40,7 +40,7 @@ func NewVolumeAttachmentIndexer(kubeClient kubernetes.Interface) *vaIndexer {
 		fields.Everything(),
 	)
 
-	// Set cachSyncPeriod to 0 to disable resync. This is to avoid scaling concens with large number of VAs.
+	// Set cacheSyncPeriod to 0 to disable resync. This is to avoid scaling concerns with large number of VAs.
 	const cacheSyncPeriod = 0
 
 	// Set up the VolumeAttachments indexing controller
@@ -55,21 +55,21 @@ func NewVolumeAttachmentIndexer(kubeClient kubernetes.Interface) *vaIndexer {
 	return va
 }
 
-func (v *vaIndexer) Activate() {
+func (v *VaIndexer) Activate() {
 	go v.vaController.Run(v.vaControllerStopChan)
 }
 
-func (v *vaIndexer) Deactivate() {
+func (v *VaIndexer) Deactivate() {
 	close(v.vaControllerStopChan)
 }
 
-// getCachedVolumeAttachmentsByNode returns a VA list from the client's cache, or an error if not found.
-func (v *vaIndexer) GetCachedVolumeAttachmentsByNode(
+// GetCachedVolumeAttachmentsByNode returns a VA list for a node from the client's cache.
+func (v *VaIndexer) GetCachedVolumeAttachmentsByNode(
 	ctx context.Context, nodeName string,
 ) ([]*k8sstoragev1.VolumeAttachment, error) {
 	logFields := LogFields{"nodeName": nodeName}
-	Logc(ctx).WithFields(logFields).Trace(">>>> getCachedVolumeAttachmentsByNode")
-	defer Logc(ctx).Trace("<<<< getCachedVolumeAttachmentsByNode")
+	Logc(ctx).WithFields(logFields).Trace(">>>> GetCachedVolumeAttachmentsByNode")
+	defer Logc(ctx).Trace("<<<< GetCachedVolumeAttachmentsByNode")
 
 	items, err := v.vaIndexer.ByIndex(vaByNodeIndex, nodeName)
 	if err != nil {
@@ -94,14 +94,12 @@ func (v *vaIndexer) GetCachedVolumeAttachmentsByNode(
 	return attachments, nil
 }
 
-func (v *vaIndexer) WaitForCacheSync(ctx context.Context) bool {
-	successful := true
-	if ok := cache.WaitForCacheSync(v.vaControllerStopChan, v.vaSynced); !ok {
-		successful = false
-		err := fmt.Errorf("failed to wait for vaController cache to sync")
-		Logc(ctx).Errorf("Error: %v", err)
+func (v *VaIndexer) WaitForCacheSync(ctx context.Context) bool {
+	var ok bool
+	if ok = cache.WaitForCacheSync(v.vaControllerStopChan, v.vaSynced); !ok {
+		Logc(ctx).Errorf("failed to wait for vaController cache to sync")
 	}
-	return successful
+	return ok
 }
 
 // volumeAttachmentsByNodeKeyFunc is a indexer KeyFunc which knows how to make keys for VolumeAttachment by node.

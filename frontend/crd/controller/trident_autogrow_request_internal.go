@@ -907,7 +907,7 @@ func (c *TridentCrdController) getPVCForVolume(ctx context.Context, volExternal 
 		return nil, fmt.Errorf("invalid volume name")
 	}
 
-	getter := c.getPVCGetter(ctx)
+	getter := getPVCGetter(ctx, c.orchestrator)
 	if getter != nil {
 		pvc, err := getter.GetPVCForPV(ctx, volumeName)
 		if err == nil {

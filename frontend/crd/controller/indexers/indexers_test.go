@@ -13,9 +13,22 @@ import (
 	mock_indexer "github.com/netapp/trident/mocks/mock_frontend/crd/controller/indexers/indexer"
 )
 
+func GetMockK8sIndexer(ctrl *gomock.Controller) (
+	*K8sIndexers, *mock_indexer.MockVolumeAttachmentIndexer,
+) {
+	// Create mock VolumeAttachmentIndexer
+	mockVAIndexer := mock_indexer.NewMockVolumeAttachmentIndexer(ctrl)
+
+	// Create k8sIndexers with mock
+	indexers := &K8sIndexers{
+		vaIndexer: mockVAIndexer,
+	}
+	return indexers, mockVAIndexer
+}
+
 func TestNewIndexers(t *testing.T) {
 	// Create a fake Kubernetes client
-	kubeClient := fake.NewSimpleClientset()
+	kubeClient := fake.NewClientset()
 
 	// Test creating new indexers
 	indexers := NewIndexers(kubeClient)
@@ -36,13 +49,8 @@ func TestK8sIndexers_Activate(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	// Create mock VolumeAttachmentIndexer
-	mockVAIndexer := mock_indexer.NewMockVolumeAttachmentIndexer(ctrl)
-
-	// Create k8sIndexers with mock
-	indexers := &k8sIndexers{
-		vaIndexer: mockVAIndexer,
-	}
+	// Create mock indexers
+	indexers, mockVAIndexer := GetMockK8sIndexer(ctrl)
 
 	// Set expectation for Activate call
 	mockVAIndexer.EXPECT().Activate().Times(1)
@@ -55,13 +63,8 @@ func TestK8sIndexers_Deactivate(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	// Create mock VolumeAttachmentIndexer
-	mockVAIndexer := mock_indexer.NewMockVolumeAttachmentIndexer(ctrl)
-
-	// Create k8sIndexers with mock
-	indexers := &k8sIndexers{
-		vaIndexer: mockVAIndexer,
-	}
+	// Create mock indexers
+	indexers, mockVAIndexer := GetMockK8sIndexer(ctrl)
 
 	// Set expectation for Deactivate call
 	mockVAIndexer.EXPECT().Deactivate().Times(1)
@@ -74,13 +77,8 @@ func TestK8sIndexers_VolumeAttachmentIndexer(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	// Create mock VolumeAttachmentIndexer
-	mockVAIndexer := mock_indexer.NewMockVolumeAttachmentIndexer(ctrl)
-
-	// Create k8sIndexers with mock
-	indexers := &k8sIndexers{
-		vaIndexer: mockVAIndexer,
-	}
+	// Create mock indexers
+	indexers, mockVAIndexer := GetMockK8sIndexer(ctrl)
 
 	// Test VolumeAttachmentIndexer returns correct indexer
 	result := indexers.VolumeAttachmentIndexer()

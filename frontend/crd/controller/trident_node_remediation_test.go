@@ -238,7 +238,7 @@ func TestHandleTridentNodeRemediation_RemediatingStateDirtyNodeWithPublications(
 	mockIndexers, mockVaIndexer := setupMockIndexers(mockCtrl)
 	mockVaIndexer.EXPECT().GetCachedVolumeAttachmentsByNode(gomock.Any(), nodeName).
 		Return([]*storagev1.VolumeAttachment{mockVolAttachment}, nil).AnyTimes()
-	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, mockIndexers)
+	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, mockIndexers, nil)
 	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
 		crdClient, mockIndexers, remediationUtils)
 	if err != nil {
@@ -261,7 +261,6 @@ func TestHandleTridentNodeRemediation_RemediatingStateDirtyNodeWithPublications(
 			RequestName: "pvc-0",
 		},
 	}, nil).AnyTimes()
-	orchestrator.EXPECT().ListVolumePublicationsForNode(ctx(), nodeName)
 	orchestrator.EXPECT().GetNode(gomock.Any(), nodeName).Return(nodeExternal, nil)
 	orchestrator.EXPECT().ListVolumePublicationsForNode(gomock.Any(), nodeName).Return(publications, nil)
 	orchestrator.EXPECT().UpdateNode(ctx(), nodeName, gomock.Any()).Return(nil).AnyTimes()
@@ -287,7 +286,8 @@ func TestHandleTridentNodeRemediation_RemediatingStateDirtyNodeNoPublications(t 
 	snapClient := GetTestSnapshotClientset()
 	crdClient := GetTestCrdClientset()
 	mockIndexers, mockVaIndexer := setupMockIndexers(mockCtrl)
-	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, mockIndexers)
+	mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, mockIndexers, mockPvcGetter)
 	mockVaIndexer.EXPECT().GetCachedVolumeAttachmentsByNode(gomock.Any(), nodeName).Return([]*storagev1.VolumeAttachment{}, nil).AnyTimes()
 	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
 		crdClient, mockIndexers, remediationUtils)
@@ -305,7 +305,7 @@ func TestHandleTridentNodeRemediation_RemediatingStateDirtyNodeNoPublications(t 
 	nodeExternal := fakeNodeExternal(nodeName, models.NodeDirty)
 	publications := []*models.VolumePublicationExternal{}
 	orchestrator.EXPECT().GetNode(gomock.Any(), nodeName).Return(nodeExternal, nil)
-	orchestrator.EXPECT().ListVolumePublicationsForNode(gomock.Any(), nodeName).Return(publications, nil).Times(2)
+	orchestrator.EXPECT().ListVolumePublicationsForNode(gomock.Any(), nodeName).Return(publications, nil)
 	orchestrator.EXPECT().UpdateNode(gomock.Any(), nodeName, gomock.Any()).Return(nil)
 
 	keyItem := makeKeyItem(t, tridentNamespace, nodeName)
@@ -525,7 +525,8 @@ func TestHandleTridentNodeRemediation_RemediatingStateListPublicationsError(t *t
 	crdClient := GetTestCrdClientset()
 	mockIndexers, mockVaIndexer := setupMockIndexers(mockCtrl)
 	mockVaIndexer.EXPECT().GetCachedVolumeAttachmentsByNode(gomock.Any(), nodeName).Return([]*storagev1.VolumeAttachment{}, nil).AnyTimes()
-	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, mockIndexers)
+	mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, mockIndexers, mockPvcGetter)
 	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
 		crdClient, mockIndexers, remediationUtils)
 	if err != nil {
@@ -541,7 +542,6 @@ func TestHandleTridentNodeRemediation_RemediatingStateListPublicationsError(t *t
 	// Mock orchestrator calls - node is dirty but error listing publications
 	nodeExternal := fakeNodeExternal(nodeName, models.NodeDirty)
 	orchestrator.EXPECT().GetNode(gomock.Any(), nodeName).Return(nodeExternal, nil)
-	orchestrator.EXPECT().ListVolumePublicationsForNode(gomock.Any(), nodeName).Return([]*models.VolumePublicationExternal{}, nil)
 	orchestrator.EXPECT().ListVolumePublicationsForNode(gomock.Any(), nodeName).Return(nil, fmt.Errorf("listing error"))
 	// No UpdateNode call expected because the error causes a break
 
@@ -571,7 +571,8 @@ func TestHandleTridentNodeRemediation_RemediatingStateUpdateNodeError(t *testing
 	crdClient := GetTestCrdClientset()
 	mockIndexers, mockVaIndexer := setupMockIndexers(mockCtrl)
 	mockVaIndexer.EXPECT().GetCachedVolumeAttachmentsByNode(gomock.Any(), nodeName).Return([]*storagev1.VolumeAttachment{}, nil).AnyTimes()
-	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, mockIndexers)
+	mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, mockIndexers, mockPvcGetter)
 	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
 		crdClient, mockIndexers, remediationUtils)
 	if err != nil {
@@ -588,7 +589,7 @@ func TestHandleTridentNodeRemediation_RemediatingStateUpdateNodeError(t *testing
 	nodeExternal := fakeNodeExternal(nodeName, models.NodeDirty)
 	publications := []*models.VolumePublicationExternal{}
 	orchestrator.EXPECT().GetNode(gomock.Any(), nodeName).Return(nodeExternal, nil)
-	orchestrator.EXPECT().ListVolumePublicationsForNode(gomock.Any(), nodeName).Return(publications, nil).Times(2)
+	orchestrator.EXPECT().ListVolumePublicationsForNode(gomock.Any(), nodeName).Return(publications, nil)
 	orchestrator.EXPECT().UpdateNode(gomock.Any(), nodeName, gomock.Any()).Return(fmt.Errorf("update failed"))
 
 	keyItem := makeKeyItem(t, tridentNamespace, nodeName)
@@ -1336,6 +1337,14 @@ func TestFailoverDetach_Success(t *testing.T) {
 			},
 		},
 	}
+	nodePvcs := []*corev1.PersistentVolumeClaim{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "pvc-1",
+				Namespace: "testNs",
+			},
+		},
+	}
 	pvcToTvolMap := map[string]*storage.VolumeExternal{
 		"pvc-1": {
 			Config: &storage.VolumeConfig{
@@ -1345,8 +1354,11 @@ func TestFailoverDetach_Success(t *testing.T) {
 		},
 	}
 
-	remediationUtils.EXPECT().GetNodePods(ctx(), nodeName).Return([]*corev1.Pod{}, nil)
-	remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nodeName).Return(pvcToTvolMap, nil)
+	remediationUtils.EXPECT().GetNodePods(ctx(), nodeName).Return([]*corev1.Pod{
+		testPod,
+	}, nil)
+	remediationUtils.EXPECT().GetPvcsForPods(ctx(), gomock.Any()).Return(nodePvcs)
+	remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nodePvcs).Return(pvcToTvolMap)
 	remediationUtils.EXPECT().GetPodsToDelete(ctx(), gomock.Any(), pvcToTvolMap).Return([]*corev1.Pod{testPod})
 	remediationUtils.EXPECT().GetVolumeAttachmentsToDelete(ctx(), []*corev1.Pod{testPod}, pvcToTvolMap, nodeName).
 		Return(map[string]string{"va1": "vol1"}, nil)
@@ -1392,33 +1404,6 @@ func TestFailoverDetach_GetNodePodsError(t *testing.T) {
 	assert.Error(t, err)
 }
 
-// TestFailoverDetach_GetPvcToTvolMapError tests error handling when retrieving PVC to volume mapping fails
-func TestFailoverDetach_GetPvcToTvolMapError(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
-
-	tridentNamespace := "trident"
-	kubeClient := GetTestKubernetesClientset()
-	snapClient := GetTestSnapshotClientset()
-	crdClient := GetTestCrdClientset()
-	remediationUtils := mock_controller_crd.NewMockNodeRemediationUtils(mockCtrl)
-
-	remediationUtils.EXPECT().GetNodePods(ctx(), nodeName).Return([]*corev1.Pod{}, nil)
-	remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nodeName).Return(nil, fmt.Errorf("mock error"))
-
-	crdController, err := newTridentCrdControllerImpl(orchestrator, tridentNamespace, kubeClient, snapClient,
-		crdClient, nil, remediationUtils)
-	assert.NoError(t, err)
-
-	tnr := fakeTridentNodeRemediation(nodeName, tridentNamespace, netappv1.TridentNodeRemediatingState)
-	_, err = crdClient.TridentV1().TridentNodeRemediations(tridentNamespace).Create(ctx(), tnr, createOpts)
-	assert.NoError(t, err)
-
-	err = crdController.failoverDetach(ctx(), tnr, nodeName)
-	assert.Error(t, err)
-}
-
 // TestFailoverDetach_GetVolumeAttachmentsToDeleteError tests error handling when retrieving VAs to delete
 func TestFailoverDetach_GetVolumeAttachmentsToDeleteError(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
@@ -1432,7 +1417,8 @@ func TestFailoverDetach_GetVolumeAttachmentsToDeleteError(t *testing.T) {
 	remediationUtils := mock_controller_crd.NewMockNodeRemediationUtils(mockCtrl)
 
 	remediationUtils.EXPECT().GetNodePods(ctx(), nodeName).Return([]*corev1.Pod{}, nil)
-	remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nodeName).Return(map[string]*storage.VolumeExternal{}, nil)
+	remediationUtils.EXPECT().GetPvcsForPods(ctx(), gomock.Any()).Return(nil)
+	remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nil).Return(map[string]*storage.VolumeExternal{})
 	remediationUtils.EXPECT().GetPodsToDelete(ctx(), gomock.Any(), gomock.Any()).Return([]*corev1.Pod{})
 	remediationUtils.EXPECT().GetVolumeAttachmentsToDelete(ctx(), gomock.Any(), gomock.Any(), nodeName).
 		Return(map[string]string{}, fmt.Errorf("mock error"))
@@ -1462,7 +1448,8 @@ func TestFailoverDetach_UpdateCrVolAttachementsError(t *testing.T) {
 	remediationUtils := mock_controller_crd.NewMockNodeRemediationUtils(mockCtrl)
 
 	remediationUtils.EXPECT().GetNodePods(ctx(), nodeName).Return([]*corev1.Pod{}, nil)
-	remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nodeName).Return(map[string]*storage.VolumeExternal{}, nil)
+	remediationUtils.EXPECT().GetPvcsForPods(ctx(), gomock.Any()).Return(nil)
+	remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nil).Return(map[string]*storage.VolumeExternal{})
 	remediationUtils.EXPECT().GetPodsToDelete(ctx(), gomock.Any(), gomock.Any()).Return([]*corev1.Pod{})
 	remediationUtils.EXPECT().GetVolumeAttachmentsToDelete(ctx(), gomock.Any(), gomock.Any(), nodeName).
 		Return(map[string]string{}, nil)
@@ -1498,7 +1485,8 @@ func TestFailoverDetach_Scenarios(t *testing.T) {
 				volumeAttachments := map[string]string{"va1": "vol1"}
 
 				remediationUtils.EXPECT().GetNodePods(ctx(), nodeName).Return([]*corev1.Pod{}, nil)
-				remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nodeName).Return(pvcToTvolMap, nil)
+				remediationUtils.EXPECT().GetPvcsForPods(ctx(), gomock.Any()).Return(nil)
+				remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nil).Return(pvcToTvolMap)
 				remediationUtils.EXPECT().GetPodsToDelete(ctx(), gomock.Any(), pvcToTvolMap).Return([]*corev1.Pod{testPod})
 				remediationUtils.EXPECT().GetVolumeAttachmentsToDelete(ctx(), []*corev1.Pod{testPod}, pvcToTvolMap, nodeName).
 					Return(volumeAttachments, nil)
@@ -1513,17 +1501,11 @@ func TestFailoverDetach_Scenarios(t *testing.T) {
 			},
 			expectError: true,
 		},
-		"GetPvcToTvolMapError": {
-			setupMocks: func(remediationUtils *mock_controller_crd.MockNodeRemediationUtils) {
-				remediationUtils.EXPECT().GetNodePods(ctx(), nodeName).Return([]*corev1.Pod{}, nil)
-				remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nodeName).Return(nil, fmt.Errorf("mock error"))
-			},
-			expectError: true,
-		},
 		"GetVolumeAttachmentsToDeleteError": {
 			setupMocks: func(remediationUtils *mock_controller_crd.MockNodeRemediationUtils) {
 				remediationUtils.EXPECT().GetNodePods(ctx(), nodeName).Return([]*corev1.Pod{}, nil)
-				remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nodeName).Return(map[string]*storage.VolumeExternal{}, nil)
+				remediationUtils.EXPECT().GetPvcsForPods(ctx(), gomock.Any()).Return(nil)
+				remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nil).Return(map[string]*storage.VolumeExternal{})
 				remediationUtils.EXPECT().GetPodsToDelete(ctx(), gomock.Any(), gomock.Any()).Return([]*corev1.Pod{})
 				remediationUtils.EXPECT().GetVolumeAttachmentsToDelete(ctx(), gomock.Any(), gomock.Any(), nodeName).
 					Return(nil, fmt.Errorf("mock error"))
@@ -1536,9 +1518,9 @@ func TestFailoverDetach_Scenarios(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{Name: "test-pod", Namespace: "default"},
 				}
 				pvcToTvolMap := map[string]*storage.VolumeExternal{}
-
 				remediationUtils.EXPECT().GetNodePods(ctx(), nodeName).Return([]*corev1.Pod{}, nil)
-				remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nodeName).Return(pvcToTvolMap, nil)
+				remediationUtils.EXPECT().GetPvcsForPods(ctx(), gomock.Any()).Return(nil)
+				remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nil).Return(pvcToTvolMap)
 				remediationUtils.EXPECT().GetPodsToDelete(ctx(), gomock.Any(), pvcToTvolMap).Return([]*corev1.Pod{testPod})
 				remediationUtils.EXPECT().GetVolumeAttachmentsToDelete(ctx(), []*corev1.Pod{testPod}, pvcToTvolMap, nodeName).
 					Return(map[string]string{}, nil)
@@ -1555,7 +1537,8 @@ func TestFailoverDetach_Scenarios(t *testing.T) {
 				volumeAttachments := map[string]string{"va1": "vol1"}
 
 				remediationUtils.EXPECT().GetNodePods(ctx(), nodeName).Return([]*corev1.Pod{}, nil)
-				remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nodeName).Return(pvcToTvolMap, nil)
+				remediationUtils.EXPECT().GetPvcsForPods(ctx(), gomock.Any()).Return(nil)
+				remediationUtils.EXPECT().GetPvcToTvolMap(ctx(), nil).Return(pvcToTvolMap)
 				remediationUtils.EXPECT().GetPodsToDelete(ctx(), gomock.Any(), pvcToTvolMap).Return([]*corev1.Pod{testPod})
 				remediationUtils.EXPECT().GetVolumeAttachmentsToDelete(ctx(), []*corev1.Pod{testPod}, pvcToTvolMap, nodeName).
 					Return(volumeAttachments, nil)

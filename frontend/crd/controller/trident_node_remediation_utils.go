@@ -1,6 +1,7 @@
 package controller
 
 //go:generate mockgen -destination=../../../mocks/mock_frontend/crd/controller/mock_node_remediation.go github.com/netapp/trident/frontend/crd/controller NodeRemediationUtils
+//go:generate mockgen -destination=../../../mocks/mock_frontend/crd/controller/mock_pvc_getter.go github.com/netapp/trident/frontend/crd/controller PVCGetter
 
 import (
 	"context"
@@ -23,7 +24,7 @@ import (
 
 type NodeRemediationUtils interface {
 	GetNodePods(ctx context.Context, nodeName string) ([]*corev1.Pod, error)
-	GetPvcToTvolMap(ctx context.Context, nodeName string) (map[string]*storage.VolumeExternal, error)
+	GetPvcToTvolMap(ctx context.Context, pvcs []*corev1.PersistentVolumeClaim) map[string]*storage.VolumeExternal
 	GetVolumeAttachmentsToDelete(ctx context.Context, podsToDelete []*corev1.Pod,
 		pvcToTvols map[string]*storage.VolumeExternal, nodeName string) (map[string]string, error)
 	ForceDeletePod(ctx context.Context, pod *corev1.Pod) error
@@ -32,22 +33,39 @@ type NodeRemediationUtils interface {
 	GetPodsToDelete(
 		ctx context.Context, nodePods []*corev1.Pod, pvcToTvolMap map[string]*storage.VolumeExternal,
 	) []*corev1.Pod
+	NamespacedPvcName(namespace, pvcName string) string
+	GetPvcsForPods(ctx context.Context, pods []*corev1.Pod) []*corev1.PersistentVolumeClaim
+	GetPVC(ctx context.Context, namespace, name string) (*corev1.PersistentVolumeClaim, error)
+}
+
+type PVCGetter interface {
+	GetPVC(ctx context.Context, namespace, name string) (*corev1.PersistentVolumeClaim, error)
 }
 
 type nodeRemediationUtils struct {
 	kubeClientset kubernetes.Interface
 	orchestrator  core.Orchestrator
 	indexers      indexers.Indexers
+	pvcGetter     PVCGetter
 }
 
 func NewNodeRemediationUtils(
 	kubeClientset kubernetes.Interface, orchestrator core.Orchestrator, indexers indexers.Indexers,
+	pvcGetter PVCGetter,
 ) *nodeRemediationUtils {
 	return &nodeRemediationUtils{
 		kubeClientset: kubeClientset,
 		orchestrator:  orchestrator,
 		indexers:      indexers,
+		pvcGetter:     pvcGetter,
 	}
+}
+
+func (n *nodeRemediationUtils) GetPVC(ctx context.Context, namespace, name string) (*corev1.PersistentVolumeClaim, error) {
+	if n.pvcGetter != nil {
+		return n.pvcGetter.GetPVC(ctx, namespace, name)
+	}
+	return nil, fmt.Errorf("pvcGetter not available")
 }
 
 // GetNodePods retrieves all pods on the specified node
@@ -98,38 +116,38 @@ func (n *nodeRemediationUtils) GetTridentVolumesOnNode(ctx context.Context, node
 	return volList, err
 }
 
-// GetPvcToTvolMap creates a map of "namespace/pvc"-> tvol for all volumes on the node
-func (n *nodeRemediationUtils) GetPvcToTvolMap(
-	ctx context.Context, nodeName string,
-) (map[string]*storage.VolumeExternal, error) {
-	tridentVolumesOnNode, err := n.GetTridentVolumesOnNode(ctx, nodeName)
-	if err != nil {
-		Logc(ctx).WithField("node", nodeName).WithError(err).
-			Error("Could not get trident volume publications for node.")
-		return nil, err
-	}
+func (n *nodeRemediationUtils) NamespacedPvcName(namespace, pvcName string) string {
+	return fmt.Sprintf("%s/%s", namespace, pvcName)
+}
 
+// GetPvcToTvolMap creates a map of "namespace/pvc"-> tvol for all volumes on the node.
+// If the tvol isn't found for a PVC, it is skipped. Non-trident PVCs will not have a tvol.
+func (n *nodeRemediationUtils) GetPvcToTvolMap(
+	ctx context.Context, pvcs []*corev1.PersistentVolumeClaim,
+) map[string]*storage.VolumeExternal {
 	pvcToTvolMap := make(map[string]*storage.VolumeExternal)
-	for _, volumeName := range tridentVolumesOnNode {
+	for _, pvc := range pvcs {
+		volumeName := pvc.Spec.VolumeName
+		if volumeName == "" {
+			Logc(ctx).WithFields(LogFields{
+				"namespace": pvc.Namespace,
+				"pvc":       pvc.Name,
+			}).Debug("PVC has no associated volume.")
+			continue
+		}
 		tvol, err := n.orchestrator.GetVolume(ctx, volumeName)
 		if err != nil {
-			Logc(ctx).WithError(err).Warnf("Could not get volume %s.", volumeName)
+			Logc(ctx).WithFields(LogFields{
+				"pvc":        pvc.Name,
+				"namespace":  pvc.Namespace,
+				"volumeName": volumeName,
+			}).WithError(err).Debug("Could not get volume for PVC.")
 			continue
 		}
-		pvcName := tvol.Config.RequestName
-		if pvcName == "" { // Sanity check, should never be empty
-			Logc(ctx).WithField("volume", volumeName).Warn("Volume has no PVC associated with it.")
-			continue
-		}
-		namespace := tvol.Config.Namespace
-		if namespace == "" { // Sanity check, should never be empty
-			Logc(ctx).WithField("volume", volumeName).Warn("Volume has no namespace associated with it.")
-			continue
-		}
-		key := fmt.Sprintf("%s/%s", namespace, pvcName)
+		key := n.NamespacedPvcName(pvc.Namespace, pvc.Name)
 		pvcToTvolMap[key] = tvol
 	}
-	return pvcToTvolMap, nil
+	return pvcToTvolMap
 }
 
 // GetVolumeAttachmentsToDelete returns a map of VolumeAttachment names to volume names that should be deleted
@@ -153,7 +171,8 @@ func (n *nodeRemediationUtils) GetVolumeAttachmentsToDelete(
 			key := fmt.Sprintf("%s/%s", pod.Namespace, pvcName)
 			tvol, exists := pvcToTvols[key]
 			if !exists {
-				// This might not be a Tridnet backed PVC. Get the PV name from the PVC.
+				// This might not be a Trident backed PVC. Get the PV name from the PVC.
+				// This can happen if the user has annotated the pod to be deleted.
 				volName, err = n.getPVNameForPVC(ctx, pvcName, pod.Namespace)
 				if err != nil {
 					if apierrors.IsNotFound(err) {
@@ -192,12 +211,12 @@ func (n *nodeRemediationUtils) GetVolumeAttachmentsToDelete(
 func (n *nodeRemediationUtils) getVolAttachmentMap(
 	ctx context.Context, nodeName string,
 ) (map[string]*storagev1.VolumeAttachment, error) {
-	attachemntsOnNode, err := n.indexers.VolumeAttachmentIndexer().GetCachedVolumeAttachmentsByNode(ctx, nodeName)
+	attachmentsOnNode, err := n.indexers.VolumeAttachmentIndexer().GetCachedVolumeAttachmentsByNode(ctx, nodeName)
 	if err != nil {
 		return nil, err
 	}
 	pvToVa := map[string]*storagev1.VolumeAttachment{}
-	for _, va := range attachemntsOnNode {
+	for _, va := range attachmentsOnNode {
 		if va.Spec.Source.PersistentVolumeName != nil {
 			pvToVa[*va.Spec.Source.PersistentVolumeName] = va
 		}
@@ -207,7 +226,7 @@ func (n *nodeRemediationUtils) getVolAttachmentMap(
 
 // getPVNameForPVC retrieves the PV name for the specified PVC
 func (n *nodeRemediationUtils) getPVNameForPVC(ctx context.Context, pvcName, namespace string) (string, error) {
-	pvc, err := n.kubeClientset.CoreV1().PersistentVolumeClaims(namespace).Get(ctx, pvcName, getOpts)
+	pvc, err := n.GetPVC(ctx, namespace, pvcName)
 	if err != nil {
 		return "", err
 	}
@@ -313,6 +332,39 @@ func (n *nodeRemediationUtils) GetPodsToDelete(
 	return podsToDelete
 }
 
+// GetPvcsForPods retrieves the PVCs used by the specified pods.
+// If a PVC cannot be found in the cache, it is skipped to prevent blocking failover.
+func (n *nodeRemediationUtils) GetPvcsForPods(
+	ctx context.Context, pods []*corev1.Pod,
+) []*corev1.PersistentVolumeClaim {
+	pvcs := make([]*corev1.PersistentVolumeClaim, 0)
+	seenPVCs := make(map[string]struct{})
+	for _, pod := range pods {
+		for _, volume := range pod.Spec.Volumes {
+			if volume.PersistentVolumeClaim != nil {
+				pvcName := volume.PersistentVolumeClaim.ClaimName
+				namespace := pod.Namespace
+				pvc, err := n.GetPVC(ctx, namespace, pvcName)
+				if err != nil {
+					Logc(ctx).WithFields(LogFields{
+						"namespace": namespace,
+						"pvc":       pvcName,
+					}).WithError(err).Warn("Failed to get PVC from cache; continuing automatic failover.")
+					continue
+				}
+				// Check if we've already processed this PVC to avoid duplicates in the list
+				key := fmt.Sprintf("%s/%s", namespace, pvcName)
+				if _, exists := seenPVCs[key]; exists {
+					continue
+				}
+				seenPVCs[key] = struct{}{}
+				pvcs = append(pvcs, pvc)
+			}
+		}
+	}
+	return pvcs
+}
+
 // isForceDetachSupported checks if all of the pod's PVCs are backed by volumes that support force detach
 func (n *nodeRemediationUtils) isForceDetachSupported(
 	ctx context.Context, pod *corev1.Pod, pvcToTvolMap map[string]*storage.VolumeExternal,
@@ -336,11 +388,12 @@ func (n *nodeRemediationUtils) isForceDetachSupported(
 
 			if !tvol.Config.AccessInfo.PublishEnforcement {
 				Logc(ctx).WithFields(LogFields{
-					"namespace": pod.Namespace,
-					"pod":       pod.Name,
-					"pvc":       pvcName,
-					"volume":    tvol.Config.Name,
-				}).Debug("Volume does not support force detach.")
+					"namespace":          pod.Namespace,
+					"pod":                pod.Name,
+					"pvc":                pvcName,
+					"volume":             tvol.Config.Name,
+					"publishEnforcement": tvol.Config.AccessInfo.PublishEnforcement,
+				}).Debug("Volume does not support force detach. PublishEnforcement is disabled.")
 				return false
 			}
 		}
