@@ -67,13 +67,15 @@ const (
 )
 
 var (
-	supportedNFSVersions     = []string{nfsVersion3, nfsVersion4, nfsVersion41}
-	storagePrefixRegex       = regexp.MustCompile(`^$|^[a-zA-Z][a-zA-Z-]*$`)
-	volumeNameRegex          = regexp.MustCompile(`^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$`)
-	volumeCreationTokenRegex = regexp.MustCompile(`^[a-z]([a-z0-9-]{0,78}[a-z0-9])?$`)
-	csiRegex                 = regexp.MustCompile(`^pvc-[\da-fA-F]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}$`)
-	nfsMountPathRegex        = regexp.MustCompile(`^(?P<server>.+):/(?P<share>.+)$`)
-	smbMountPathRegex        = regexp.MustCompile(`\\\\(?P<server>.+)\\(?P<share>.+)$`)
+	supportedNFSVersions            = []string{nfsVersion3, nfsVersion4, nfsVersion41}
+	storagePrefixRegex              = regexp.MustCompile(`^$|^[a-zA-Z][a-zA-Z-]*$`)
+	volumeNameRegex                 = regexp.MustCompile(`^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$`)
+	unifiedVolumeNameRegex          = regexp.MustCompile(`^[a-z]([a-z0-9_]{0,61}[a-z0-9])?$`)
+	volumeCreationTokenRegex        = regexp.MustCompile(`^[a-z]([a-z0-9-]{0,78}[a-z0-9])?$`)
+	unifiedVolumeCreationTokenRegex = regexp.MustCompile(`^[a-z]([a-z0-9_-]{0,253}[a-z0-9])?$`)
+	csiRegex                        = regexp.MustCompile(`^pvc-[\da-fA-F]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}$`)
+	nfsMountPathRegex               = regexp.MustCompile(`^(?P<server>.+):/(?P<share>.+)$`)
+	smbMountPathRegex               = regexp.MustCompile(`\\\\(?P<server>.+)\\(?P<share>.+)$`)
 )
 
 type Telemetry struct {
@@ -134,11 +136,33 @@ func (d *NASStorageDriver) validateVolumeName(name string) error {
 	return nil
 }
 
+// validateUnifiedVolumeName checks that the name of a new volume matches the requirements of a GCNV UNIFIED pool volume name.
+func (d *NASStorageDriver) validateUnifiedVolumeName(name string) error {
+	if !unifiedVolumeNameRegex.MatchString(name) {
+		return fmt.Errorf("volume name '%s' is not allowed; it must be 1-63 characters long, "+
+			"begin with a lowercase letter, not end with an underscore, "+
+			"and contain only lowercase letters, digits, and underscores", name)
+	}
+	return nil
+}
+
 // validateCreationToken checks that the creation token of a new volume matches the requirements of a creation token.
 func (d *NASStorageDriver) validateCreationToken(name string) error {
 	if !volumeCreationTokenRegex.MatchString(name) {
 		return fmt.Errorf("volume internal name '%s' is not allowed; it must be 1-80 characters long, "+
-			"begin with a letter, not end with a hyphen, and contain only letters, digits, and hyphens", name)
+			"begin with a lowercase letter, not end with a hyphen, and contain only lowercase letters, digits, and hyphens", name)
+	}
+	return nil
+}
+
+// validateUnifiedCreationToken validates that the creation token for a UNIFIED pool volume meets the ONTAP share
+// name requirements: 1–255 characters, starting with a lowercase letter, ending alphanumerically,
+// containing only lowercase letters, digits, hyphens, and underscores.
+func (d *NASStorageDriver) validateUnifiedCreationToken(name string) error {
+	if !unifiedVolumeCreationTokenRegex.MatchString(name) {
+		return fmt.Errorf("volume creation token '%s' is not allowed for unified pools; it must be 1-255 characters long, "+
+			"begin with a lowercase letter, not end with a hyphen or underscore, "+
+			"and contain only lowercase letters, digits, hyphens, and underscores", name)
 	}
 	return nil
 }
@@ -969,6 +993,21 @@ func (d *NASStorageDriver) Create(
 			TieringMinimumCoolingDays: tieringMinimumCoolingDays,
 		}
 
+		// GCNV volume ID naming differs by pool type:
+		//   UNIFIED: API Name is volConfig.Name with hyphens→underscores (ONTAP volume name rules); CreationToken
+		//            is InternalName from CreatePrepare (up to 255 chars; hyphens/underscores allowed).
+		//   FILE: no extra transformation beyond the default Name (1-63 chars) and CreationToken (1-80 chars).
+		if cPool.IsUnified() {
+			unifiedName := strings.ReplaceAll(volConfig.Name, "-", "_")
+			if err := d.validateUnifiedVolumeName(unifiedName); err != nil {
+				return err
+			}
+			if err := d.validateUnifiedCreationToken(name); err != nil {
+				return err
+			}
+			createRequest.Name = unifiedName
+		}
+
 		// Add unix permissions and export policy fields only to NFS volume
 		if d.Config.NASType == sa.NFS {
 			createRequest.UnixPermissions = unixPermissions
@@ -1189,6 +1228,20 @@ func (d *NASStorageDriver) CreateClone(
 		SnapshotID:                sourceSnapshot.FullName,
 		TieringPolicy:             cloneTieringPolicy,
 		TieringMinimumCoolingDays: cloneTieringMinimumCoolingDays,
+	}
+
+	// GCNV volume ID naming differs by pool type (same rules as Create):
+	//   UNIFIED: API Name is cloneVolConfig.Name with hyphens→underscores; CreationToken is InternalName.
+	//   FILE: no extra transformation beyond the default Name (1-63 chars) and CreationToken (1-80 chars).
+	if sourceVolume.IsUnified() {
+		unifiedName := strings.ReplaceAll(cloneVolConfig.Name, "-", "_")
+		if err := d.validateUnifiedVolumeName(unifiedName); err != nil {
+			return err
+		}
+		if err := d.validateUnifiedCreationToken(name); err != nil {
+			return err
+		}
+		createRequest.Name = unifiedName
 	}
 
 	// Add unix permissions and export policy fields only to NFS volume

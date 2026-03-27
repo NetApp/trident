@@ -479,6 +479,12 @@ func (c Client) newVolumeFromGCNVVolume(ctx context.Context, volume *netapppb.Vo
 		}
 	}
 
+	cPool := c.capacityPool(volume.StoragePool)
+	storagePoolType := ""
+	if cPool != nil {
+		storagePoolType = cPool.PoolType
+	}
+
 	result := &Volume{
 		Name:                      volumeName,
 		CreationToken:             volume.ShareName,
@@ -488,7 +494,8 @@ func (c Client) newVolumeFromGCNVVolume(ctx context.Context, volume *netapppb.Vo
 		CapacityPool:              volume.StoragePool,
 		NetworkName:               network,
 		NetworkFullName:           volume.Network,
-		ServiceLevel:              ServiceLevelFromCapacityPool(c.capacityPool(volume.StoragePool)),
+		ServiceLevel:              ServiceLevelFromCapacityPool(cPool),
+		StoragePoolType:           storagePoolType,
 		SizeBytes:                 volume.CapacityGib * GiBBytes,
 		ExportPolicy:              c.exportPolicyImport(volume.ExportPolicy),
 		ProtocolTypes:             protocolTypes,
@@ -651,14 +658,38 @@ func (c Client) Volumes(ctx context.Context) (*[]*Volume, error) {
 }
 
 // Volume uses a volume config record to fetch a volume by the most efficient means.
+func gcnvVolumeFallbackNames(volConfig *storage.VolumeConfig) (string, string) {
+	primary := volConfig.InternalName
+	secondary := strings.ReplaceAll(volConfig.Name, "-", "_")
+	if secondary == primary {
+		secondary = ""
+	}
+	return primary, secondary
+}
+
 func (c Client) Volume(ctx context.Context, volConfig *storage.VolumeConfig) (*Volume, error) {
 	// When we know the internal ID, use that as it is vastly more efficient
 	if volConfig.InternalID != "" {
 		return c.VolumeByID(ctx, volConfig.InternalID)
 	}
 
-	// Fall back to the name
-	return c.VolumeByName(ctx, volConfig.InternalName)
+	primaryName, secondaryName := gcnvVolumeFallbackNames(volConfig)
+
+	// Fall back to the creation token.
+	volume, err := c.VolumeByName(ctx, primaryName)
+	if err == nil {
+		return volume, nil
+	}
+	if !errors.IsNotFoundError(err) {
+		return nil, err
+	}
+
+	// For UNIFIED naming, also try underscore-normalized display name.
+	if secondaryName == "" {
+		return nil, err
+	}
+
+	return c.VolumeByName(ctx, secondaryName)
 }
 
 func (c Client) VolumeByName(ctx context.Context, name string) (*Volume, error) {
@@ -734,8 +765,23 @@ func (c Client) VolumeExists(ctx context.Context, volConfig *storage.VolumeConfi
 	if volConfig.InternalID != "" {
 		return c.VolumeExistsByID(ctx, volConfig.InternalID)
 	}
-	// Fall back to the creation token
-	return c.VolumeExistsByName(ctx, volConfig.InternalName)
+	primaryName, secondaryName := gcnvVolumeFallbackNames(volConfig)
+
+	// Fall back to the creation token.
+	exists, volume, err := c.VolumeExistsByName(ctx, primaryName)
+	if err != nil {
+		return false, nil, err
+	}
+	if exists {
+		return true, volume, nil
+	}
+
+	// For UNIFIED naming, also try underscore-normalized display name.
+	if secondaryName == "" {
+		return false, nil, nil
+	}
+
+	return c.VolumeExistsByName(ctx, secondaryName)
 }
 
 // VolumeByID returns a volume based on its full GCNV-style resource ID.
