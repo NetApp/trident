@@ -34,27 +34,27 @@ type VolumeAttachmentIndexer interface {
 	GetCachedVolumeAttachmentsByNode(ctx context.Context, nodeName string) ([]*k8sstoragev1.VolumeAttachment, error)
 }
 
-type k8sIndexers struct {
+type K8sIndexers struct {
 	Indexer
 	vaIndexer VolumeAttachmentIndexer
 }
 
-func NewIndexers(kubeClient kubernetes.Interface) *k8sIndexers {
-	indexers := &k8sIndexers{}
+func NewIndexers(kubeClient kubernetes.Interface) *K8sIndexers {
+	indexers := &K8sIndexers{}
 	indexers.vaIndexer = vaindexer.NewVolumeAttachmentIndexer(kubeClient)
 	return indexers
 }
 
 // Activate starts all the indexers
-func (k *k8sIndexers) Activate() {
+func (k *K8sIndexers) Activate() {
 	k.vaIndexer.Activate()
 }
 
 // Deactivate stops all the indexers
-func (k *k8sIndexers) Deactivate() {
+func (k *K8sIndexers) Deactivate() {
 	k.vaIndexer.Deactivate()
 }
 
-func (k *k8sIndexers) VolumeAttachmentIndexer() VolumeAttachmentIndexer {
+func (k *K8sIndexers) VolumeAttachmentIndexer() VolumeAttachmentIndexer {
 	return k.vaIndexer
 }

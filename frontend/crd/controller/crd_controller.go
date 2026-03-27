@@ -228,7 +228,10 @@ func NewTridentCrdController(
 
 	indexers := indexers.NewIndexers(clients.KubeClient)
 	indexers.Activate()
-	remediationUtils := NewNodeRemediationUtils(clients.KubeClient, orchestrator, indexers)
+
+	pvcGetter := getPVCGetter(ctx, orchestrator)
+
+	remediationUtils := NewNodeRemediationUtils(clients.KubeClient, orchestrator, indexers, pvcGetter)
 
 	return newTridentCrdControllerImpl(orchestrator, clients.Namespace, clients.KubeClient,
 		clients.SnapshotClient, clients.TridentClient, indexers, remediationUtils)
@@ -1249,13 +1252,16 @@ func (c *TridentCrdController) SetForceDetach(enableForceDetach bool) {
 
 // getPVCGetter returns the Kubernetes helper frontend from the orchestrator (by name) for cache-first
 // PVC lookup, or nil if not available (e.g. plain CSI helper or not yet registered).
-func (c *TridentCrdController) getPVCGetter(ctx context.Context) k8shelper.K8SControllerHelperPlugin {
-	frontend, err := c.orchestrator.GetFrontend(ctx, controllerhelpers.KubernetesHelper)
+func getPVCGetter(ctx context.Context, orchestrator core.Orchestrator) k8shelper.K8SControllerHelperPlugin {
+	if orchestrator == nil {
+		return nil
+	}
+	frontend, err := orchestrator.GetFrontend(ctx, controllerhelpers.KubernetesHelper)
 	if err != nil {
 		return nil
 	}
-	if k8s, ok := frontend.(k8shelper.K8SControllerHelperPlugin); ok {
-		return k8s
+	if helper, ok := frontend.(k8shelper.K8SControllerHelperPlugin); ok {
+		return helper
 	}
 	return nil
 }

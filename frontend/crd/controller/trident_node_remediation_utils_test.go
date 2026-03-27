@@ -17,6 +17,7 @@ import (
 	"github.com/netapp/trident/frontend/crd/controller/indexers"
 	k8shelper "github.com/netapp/trident/frontend/csi/controller_helpers/kubernetes"
 	mockcore "github.com/netapp/trident/mocks/mock_core"
+	mock_controller_crd "github.com/netapp/trident/mocks/mock_frontend/crd/controller"
 	mockindexers "github.com/netapp/trident/mocks/mock_frontend/crd/controller/indexers"
 	mockindexer "github.com/netapp/trident/mocks/mock_frontend/crd/controller/indexers/indexer"
 	"github.com/netapp/trident/storage"
@@ -35,7 +36,8 @@ func TestGetNodePods(t *testing.T) {
 	pod3, _, _ := getPodPvcAndVolExt("test3", "ns-3", "otherNode")
 	kubeClient := GetTestKubernetesClientset(pod1, pod2, pod3)
 
-	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil)
+	mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil, mockPvcGetter)
 
 	podList, err := remediationUtils.GetNodePods(ctx(), nodeName)
 	assert.NoError(t, err)
@@ -58,7 +60,8 @@ func TestGetTridentVolumesOnNode(t *testing.T) {
 				NodeName:   nodeName,
 			},
 		}, nil)
-	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil)
+	mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil, mockPvcGetter)
 
 	tVols, err := remediationUtils.GetTridentVolumesOnNode(ctx(), nodeName)
 	assert.NoError(t, err)
@@ -71,46 +74,173 @@ func TestGetPVCtoTvolMap(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
-	orchestrator.EXPECT().ListVolumePublicationsForNode(ctx(), nodeName).
-		Return([]*models.VolumePublicationExternal{
-			{
-				VolumeName: "vol1",
-				NodeName:   nodeName,
-			},
-			{
-				VolumeName: "vol2",
-				NodeName:   nodeName,
-			},
-		}, nil)
-	orchestrator.EXPECT().GetVolume(ctx(), "vol1").
+
+	// Create PVCs with associated PV names
+	pvc1 := &corev1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "pvc1",
+			Namespace: "ns1",
+		},
+		Spec: corev1.PersistentVolumeClaimSpec{
+			VolumeName: "pv-vol1",
+		},
+	}
+	pvc2 := &corev1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "pvc2",
+			Namespace: "ns2",
+		},
+		Spec: corev1.PersistentVolumeClaimSpec{
+			VolumeName: "pv-vol2",
+		},
+	}
+
+	// Mock orchestrator to return volumes for the PV names
+	orchestrator.EXPECT().GetVolume(ctx(), "pv-vol1").
 		Return(&storage.VolumeExternal{
 			Config: &storage.VolumeConfig{
-				Name:        "vol1",
-				RequestName: "pvc1",
+				Name:        "pv-vol1",
+				RequestName: "prime-pvc1",
 				Namespace:   "ns1",
 			},
 		}, nil)
-	orchestrator.EXPECT().GetVolume(ctx(), "vol2").
+	orchestrator.EXPECT().GetVolume(ctx(), "pv-vol2").
 		Return(&storage.VolumeExternal{
 			Config: &storage.VolumeConfig{
-				Name:        "vol2",
+				Name:        "pv-vol2",
+				RequestName: "prime-pvc2",
+				Namespace:   "ns2",
+			},
+		}, nil)
+
+	kubeClient := GetTestKubernetesClientset()
+	mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil, mockPvcGetter)
+
+	pvcs := []*corev1.PersistentVolumeClaim{pvc1, pvc2}
+	tvolMap := remediationUtils.GetPvcToTvolMap(ctx(), pvcs)
+
+	assert.Len(t, tvolMap, 2)
+	assert.Equal(t, "prime-pvc1", tvolMap["ns1/pvc1"].Config.RequestName)
+	assert.Equal(t, "prime-pvc2", tvolMap["ns2/pvc2"].Config.RequestName)
+	assert.Equal(t, "ns1", tvolMap["ns1/pvc1"].Config.Namespace)
+	assert.Equal(t, "ns2", tvolMap["ns2/pvc2"].Config.Namespace)
+	assert.Equal(t, "pv-vol1", tvolMap["ns1/pvc1"].Config.Name)
+	assert.Equal(t, "pv-vol2", tvolMap["ns2/pvc2"].Config.Name)
+}
+
+func TestGetPVCtoTvolMap_EmptyPVCList(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+	kubeClient := GetTestKubernetesClientset()
+	mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil, mockPvcGetter)
+
+	pvcs := []*corev1.PersistentVolumeClaim{}
+	tvolMap := remediationUtils.GetPvcToTvolMap(ctx(), pvcs)
+
+	assert.Len(t, tvolMap, 0)
+}
+
+func TestGetPVCtoTvolMap_PVCWithNoVolumeName(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+	// Create PVC without a volume name (unbound PVC)
+	pvc1 := &corev1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "pvc1",
+			Namespace: "ns1",
+		},
+		Spec: corev1.PersistentVolumeClaimSpec{
+			VolumeName: "", // No volume name
+		},
+	}
+	pvc2 := &corev1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "pvc2",
+			Namespace: "ns2",
+		},
+		Spec: corev1.PersistentVolumeClaimSpec{
+			VolumeName: "pv-vol2",
+		},
+	}
+
+	// Only expect GetVolume to be called for pvc2
+	orchestrator.EXPECT().GetVolume(ctx(), "pv-vol2").
+		Return(&storage.VolumeExternal{
+			Config: &storage.VolumeConfig{
+				Name:        "pv-vol2",
 				RequestName: "pvc2",
 				Namespace:   "ns2",
 			},
 		}, nil)
 
 	kubeClient := GetTestKubernetesClientset()
-	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil)
+	mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil, mockPvcGetter)
 
-	tvolMap, err := remediationUtils.GetPvcToTvolMap(ctx(), nodeName)
-	assert.NoError(t, err)
-	assert.Len(t, tvolMap, 2)
-	assert.Equal(t, "pvc1", tvolMap["ns1/pvc1"].Config.RequestName)
-	assert.Equal(t, "pvc2", tvolMap["ns2/pvc2"].Config.RequestName)
-	assert.Equal(t, "ns1", tvolMap["ns1/pvc1"].Config.Namespace)
-	assert.Equal(t, "ns2", tvolMap["ns2/pvc2"].Config.Namespace)
-	assert.Equal(t, "vol1", tvolMap["ns1/pvc1"].Config.Name)
-	assert.Equal(t, "vol2", tvolMap["ns2/pvc2"].Config.Name)
+	pvcs := []*corev1.PersistentVolumeClaim{pvc1, pvc2}
+	tvolMap := remediationUtils.GetPvcToTvolMap(ctx(), pvcs)
+
+	// Only pvc2 should be in the map since pvc1 has no volume name
+	assert.Len(t, tvolMap, 1)
+	assert.NotNil(t, tvolMap["ns2/pvc2"])
+	assert.Nil(t, tvolMap["ns1/pvc1"])
+}
+
+func TestGetPVCtoTvolMap_GetVolumeError(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
+
+	pvc1 := &corev1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "pvc1",
+			Namespace: "ns1",
+		},
+		Spec: corev1.PersistentVolumeClaimSpec{
+			VolumeName: "pv-vol1",
+		},
+	}
+	pvc2 := &corev1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "pvc2",
+			Namespace: "ns2",
+		},
+		Spec: corev1.PersistentVolumeClaimSpec{
+			VolumeName: "pv-vol2",
+		},
+	}
+
+	// Mock GetVolume to fail for pvc1 but succeed for pvc2
+	orchestrator.EXPECT().GetVolume(ctx(), "pv-vol1").
+		Return(nil, fmt.Errorf("volume not found"))
+	orchestrator.EXPECT().GetVolume(ctx(), "pv-vol2").
+		Return(&storage.VolumeExternal{
+			Config: &storage.VolumeConfig{
+				Name:        "pv-vol2",
+				RequestName: "pvc2",
+				Namespace:   "ns2",
+			},
+		}, nil)
+
+	kubeClient := GetTestKubernetesClientset()
+	mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil, mockPvcGetter)
+
+	pvcs := []*corev1.PersistentVolumeClaim{pvc1, pvc2}
+	tvolMap := remediationUtils.GetPvcToTvolMap(ctx(), pvcs)
+
+	// Only pvc2 should be in the map since GetVolume failed for pvc1
+	assert.Len(t, tvolMap, 1)
+	assert.NotNil(t, tvolMap["ns2/pvc2"])
+	assert.Nil(t, tvolMap["ns1/pvc1"])
 }
 
 // TestIsForceDetachSupported_AllVolumesSupported tests that the function returns true
@@ -122,7 +252,8 @@ func TestIsForceDetachSupported_AllVolumesSupported(t *testing.T) {
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	kubeClient := GetTestKubernetesClientset()
-	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil)
+	mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil, mockPvcGetter)
 
 	pod, pvc, volExternal := getPodPvcAndVolExt("test", "test-namespace", nodeName)
 	volExternal.Config.AccessInfo.PublishEnforcement = true
@@ -144,7 +275,8 @@ func TestIsForceDetachSupported_VolumeNotSupported(t *testing.T) {
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	kubeClient := GetTestKubernetesClientset()
-	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil)
+	mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil, mockPvcGetter)
 
 	pod, pvc, volExternal := getPodPvcAndVolExt("test", "test-namespace", nodeName)
 	volExternal.Config.AccessInfo.PublishEnforcement = false
@@ -163,7 +295,8 @@ func TestIsForceDetachSupported_NonTridentVol(t *testing.T) {
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	kubeClient := GetTestKubernetesClientset()
-	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil)
+	mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil, mockPvcGetter)
 
 	pod, _, volExternal := getPodPvcAndVolExt("test", "test-namespace", nodeName)
 	volExternal.Config.AccessInfo.PublishEnforcement = false
@@ -183,7 +316,8 @@ func TestIsForceDetachSupported_PodNoPVCs(t *testing.T) {
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	kubeClient := GetTestKubernetesClientset()
-	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil)
+	mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil, mockPvcGetter)
 
 	pod := getPodNoPVC("test", "test-namespace", nodeName)
 
@@ -201,7 +335,8 @@ func TestIsForceDetachSupported_MultipleVolumesMixed(t *testing.T) {
 	orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 	kubeClient := GetTestKubernetesClientset()
-	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil)
+	mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+	remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil, mockPvcGetter)
 
 	// Create pod with multiple PVCs
 	pod := &corev1.Pod{
@@ -428,7 +563,8 @@ func TestGetPodsToDelete(t *testing.T) {
 			orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 
 			kubeClient := GetTestKubernetesClientset()
-			remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil)
+			mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+			remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil, mockPvcGetter)
 
 			podList := tc.setupPods()
 			pvcToTvolMap := tc.setupPvcToTvolMap()
@@ -524,8 +660,8 @@ func TestForceDeletePod(t *testing.T) {
 
 			pod := tc.setupPod()
 			kubeClient := tc.setupKubeClient(pod)
-
-			remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil)
+			mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+			remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil, mockPvcGetter)
 
 			err := remediationUtils.ForceDeletePod(ctx(), pod)
 
@@ -671,7 +807,8 @@ func TestDeleteVolumeAttachment(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			orchestrator := mockcore.NewMockOrchestrator(mockCtrl)
 			kubeClient := params.kubeClient()
-			remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil)
+			mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+			remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, nil, mockPvcGetter)
 			err := remediationUtils.DeleteVolumeAttachment(ctx(), va.Name)
 			assert.Equal(t, params.expectErr, err != nil)
 		})
@@ -686,6 +823,7 @@ func TestGetVolumeAttachmentsToDelete(t *testing.T) {
 		setupPodsToDelete func() []*corev1.Pod
 		setupPvcToTvolMap func() map[string]*storage.VolumeExternal
 		setupIndexers     func(*gomock.Controller) indexers.Indexers
+		setupPvcGetter    func(*gomock.Controller) *mock_controller_crd.MockPVCGetter
 		expectedVAMap     map[string]string
 		expectedError     bool
 		errorContains     string
@@ -734,6 +872,19 @@ func TestGetVolumeAttachmentsToDelete(t *testing.T) {
 				mockIndexers.EXPECT().VolumeAttachmentIndexer().Return(mockVaIndexer)
 				return mockIndexers
 			},
+			setupPvcGetter: func(mockCtrl *gomock.Controller) *mock_controller_crd.MockPVCGetter {
+				mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+				mockPvcGetter.EXPECT().GetPVC(gomock.Any(), "test-namespace", "test-pvc").Return(&corev1.PersistentVolumeClaim{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-pvc",
+						Namespace: "test-namespace",
+					},
+					Spec: corev1.PersistentVolumeClaimSpec{
+						VolumeName: "non-trident-pv",
+					},
+				}, nil)
+				return mockPvcGetter
+			},
 			expectedVAMap: map[string]string{
 				"non-trident-va": "non-trident-pv",
 			},
@@ -762,6 +913,19 @@ func TestGetVolumeAttachmentsToDelete(t *testing.T) {
 					},
 				}
 				return []*corev1.Pod{pod}
+			},
+			setupPvcGetter: func(mockCtrl *gomock.Controller) *mock_controller_crd.MockPVCGetter {
+				mockPvcGetter := mock_controller_crd.NewMockPVCGetter(mockCtrl)
+				mockPvcGetter.EXPECT().GetPVC(gomock.Any(), "test-namespace", "test-pvc").Return(&corev1.PersistentVolumeClaim{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-pvc",
+						Namespace: "test-namespace",
+					},
+					Spec: corev1.PersistentVolumeClaimSpec{
+						VolumeName: "test-pv",
+					},
+				}, nil)
+				return mockPvcGetter
 			},
 			setupPvcToTvolMap: func() map[string]*storage.VolumeExternal {
 				return map[string]*storage.VolumeExternal{}
@@ -830,6 +994,10 @@ func TestGetVolumeAttachmentsToDelete(t *testing.T) {
 			podsToDelete := tc.setupPodsToDelete()
 			pvcToTvolMap := tc.setupPvcToTvolMap()
 			indexers := tc.setupIndexers(mockCtrl)
+			var mockPvcGetter *mock_controller_crd.MockPVCGetter
+			if tc.setupPvcGetter != nil {
+				mockPvcGetter = tc.setupPvcGetter(mockCtrl)
+			}
 
 			// Create PVCs in the clientset for non-Trident backed volumes
 			var kubeObjects []runtime.Object
@@ -854,7 +1022,7 @@ func TestGetVolumeAttachmentsToDelete(t *testing.T) {
 			}
 
 			kubeClient := GetTestKubernetesClientset(kubeObjects...)
-			remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, indexers)
+			remediationUtils := NewNodeRemediationUtils(kubeClient, orchestrator, indexers, mockPvcGetter)
 
 			// Execute the function
 			vaMap, err := remediationUtils.GetVolumeAttachmentsToDelete(ctx(), podsToDelete, pvcToTvolMap, nodeName)
