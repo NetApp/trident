@@ -42,6 +42,8 @@ var NVMeNamespaceRegExp = regexp.MustCompile(`[^(\/vol\/.+\/.+)?$]`)
 var (
 	beforeNQNRemovalFromSubsystem     = fiji.Register("beforeNQNRemovalFromSubsystem", "ontap_san_nvme")
 	beforeNamespaceUnmapFromSubsystem = fiji.Register("beforeNamespaceUnmapFromSubsystem", "ontap_san_nvme")
+	beforeNamespaceCreate             = fiji.Register("beforeNamespaceCreate", "ontap_san_nvme")
+	afterNamespaceCreate              = fiji.Register("afterNamespaceCreate", "ontap_san_nvme")
 )
 
 // NVMeStorageDriver is for NVMe storage provisioning.
@@ -267,6 +269,118 @@ func (d *NVMeStorageDriver) validate(ctx context.Context) error {
 }
 
 // Create a Volume+Namespace with the specified options.
+// cleanupIncompleteNamespace checks if a FlexVol exists without its NVMe namespace.
+// Returns (true, nil) if both volume and namespace exist (complete).
+// Returns (false, nil) if no volume exists or orphaned volume was cleaned up.
+// Returns (_, error) on API errors or if cleanup fails.
+func (d *NVMeStorageDriver) cleanupIncompleteNamespace(
+	ctx context.Context, volConfig *storage.VolumeConfig,
+) error {
+	name := volConfig.InternalName
+
+	fields := LogFields{
+		"method": "cleanupIncompleteNamespace",
+		"type":   "NVMeStorageDriver",
+		"name":   name,
+	}
+	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(
+		">>>> cleanupIncompleteNamespace")
+	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(
+		"<<<< cleanupIncompleteNamespace")
+
+	volExists, err := d.API.VolumeExists(ctx, name)
+	if err != nil {
+		return fmt.Errorf("error checking for existing volume: %v", err)
+	}
+	if !volExists {
+		return nil
+	}
+	if volConfig.IsMirrorDestination {
+		return drivers.NewVolumeExistsError(name)
+	}
+
+	nsName := extractNamespaceName(volConfig.InternalID)
+	nsPath := createNamespacePath(name, nsName)
+
+	ns, nsErr := d.API.NVMeNamespaceGetByName(ctx, nsPath)
+	if nsErr != nil && !errors.IsNotFoundError(nsErr) {
+		return fmt.Errorf("error checking for existing namespace %s: %v", nsPath, nsErr)
+	}
+
+	// If both volume and namespace exist and volConfig has all critical fields populated,
+	// this is a fully formed volume from a prior successful create -- report it as existing.
+	if ns != nil && volConfig.FileSystem != "" {
+		Logc(ctx).WithFields(LogFields{
+			"volume":    name,
+			"namespace": nsPath,
+			"uuid":      ns.UUID,
+		}).Debug("Found existing volume and namespace.")
+		volConfig.AccessInfo.NVMeNamespaceUUID = ns.UUID
+		volConfig.InternalID = nsPath
+		return drivers.NewVolumeExistsError(name)
+	}
+
+	// Either the namespace is missing (partial create) or volConfig is incomplete (e.g. empty
+	// FileSystem from a fresh CSI retry). In both cases, destroy the FlexVol so Create can
+	// re-create it with a fully populated volConfig.
+	reason := "namespace missing"
+	if ns != nil {
+		reason = "volConfig.FileSystem is empty"
+	}
+	Logc(ctx).WithFields(LogFields{
+		"volume": name,
+		"reason": reason,
+	}).Warning("Cleaning up incomplete volume to allow re-creation.")
+	// Destroying the FlexVol is safe: ONTAP implicitly removes any contained namespaces,
+	// and no pod can be using this volume yet since Create has not returned success.
+	if err = d.API.VolumeDestroy(ctx, name, true, true); err != nil {
+		return fmt.Errorf("could not clean up incomplete volume %s: %v", name, err)
+	}
+	return nil
+}
+
+// getNamespaceWithRetry retrieves a namespace by path, retrying with linear backoff to handle
+// ONTAP eventual consistency where a namespace may not be visible immediately after creation.
+func (d *NVMeStorageDriver) getNamespaceWithRetry(
+	ctx context.Context, nsPath string,
+) (*api.NVMeNamespace, error) {
+	const maxRetries = 3
+	var ns *api.NVMeNamespace
+	var err error
+
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		ns, err = d.API.NVMeNamespaceGetByName(ctx, nsPath)
+		if err == nil && ns != nil {
+			return ns, nil
+		}
+
+		if attempt < maxRetries {
+			Logc(ctx).WithFields(LogFields{
+				"namespace": nsPath,
+				"attempt":   attempt,
+				"error":     err,
+			}).Trace("Namespace not yet visible after creation, retrying.")
+
+			select {
+			case <-time.After(time.Duration(attempt) * time.Second):
+			case <-ctx.Done():
+				return nil, fmt.Errorf("context cancelled while waiting for namespace visibility: %v", ctx.Err())
+			}
+		} else {
+			Logc(ctx).WithFields(LogFields{
+				"namespace": nsPath,
+				"attempt":   attempt,
+				"error":     err,
+			}).Error("Namespace not visible after all retries.")
+		}
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving namespace %s after creation: %v", nsPath, err)
+	}
+	return nil, fmt.Errorf("newly created namespace %s not found", nsPath)
+}
+
 func (d *NVMeStorageDriver) Create(
 	ctx context.Context, volConfig *storage.VolumeConfig, storagePool storage.Pool, volAttributes map[string]sa.Request,
 ) error {
@@ -281,20 +395,10 @@ func (d *NVMeStorageDriver) Create(
 	Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace(">>>> Create")
 	defer Logd(ctx, d.Name(), d.Config.DebugTraceFlags["method"]).WithFields(fields).Trace("<<<< Create")
 
-	// If the volume already exists, bail out.
-	volExists, err := d.API.VolumeExists(ctx, name)
-	if err != nil {
-		return fmt.Errorf("error checking for existing volume: %v", err)
-	}
-	if volExists {
-		return drivers.NewVolumeExistsError(name)
-	}
-
-	// If volume shall be mirrored, check that the SVM is peered with the other side.
-	if volConfig.PeerVolumeHandle != "" {
-		if err = checkSVMPeered(ctx, volConfig, d.API.SVMName(), d.API); err != nil {
-			return err
-		}
+	// Check if volume+namespace already exist. Clean up orphaned FlexVols (volume without namespace).
+	// Returns VolumeExistsError if both are present, nil if creation should proceed.
+	if err := d.cleanupIncompleteNamespace(ctx, volConfig); err != nil {
+		return err
 	}
 
 	// Get candidate physical pools.
@@ -403,6 +507,13 @@ func (d *NVMeStorageDriver) Create(
 	volConfig.LUKSEncryption = luksEncryption
 	volConfig.FileSystem = fstype
 
+	// If volume shall be mirrored, check that the SVM is peered with the other side.
+	if volConfig.PeerVolumeHandle != "" {
+		if err = checkSVMPeered(ctx, volConfig, d.API.SVMName(), d.API); err != nil {
+			return err
+		}
+	}
+
 	Logc(ctx).WithFields(LogFields{
 		"name":              name,
 		"namespaceSize":     namespaceSize,
@@ -472,20 +583,20 @@ func (d *NVMeStorageDriver) Create(
 				DPVolume:        volConfig.IsMirrorDestination,
 			})
 		if err != nil {
-			if api.IsVolumeCreateJobExistsError(err) {
-				// TODO(sphadnis): If it was decided that iSCSI has a bug here, make similar changes for NVMe.
-				return nil
+			if !api.IsVolumeCreateJobExistsError(err) {
+				errMessage := fmt.Sprintf(
+					"ONTAP-NVMe pool %s/%s; error creating volume %s: %v", storagePool.Name(),
+					aggregate, name, err,
+				)
+				Logc(ctx).Error(errMessage)
+				createErrors = append(createErrors, errors.New(errMessage))
+
+				// Move on to the next pool.
+				continue
 			}
-
-			errMessage := fmt.Sprintf(
-				"ONTAP-NVMe pool %s/%s; error creating volume %s: %v", storagePool.Name(),
-				aggregate, name, err,
-			)
-			Logc(ctx).Error(errMessage)
-			createErrors = append(createErrors, errors.New(errMessage))
-
-			// Move on to the next pool.
-			continue
+			// Log a message. Proceed to create Namespace, hoping volume would have been created by the time
+			// we send Namespace create request.
+			Logc(ctx).WithField("volume", name).Debug("Volume create is already in progress.")
 		}
 
 		osType := "linux"
@@ -506,6 +617,10 @@ func (d *NVMeStorageDriver) Create(
 			if err != nil {
 				// If we come here due to any failure, namespace creation will fail for all the pools as this is a
 				// necessary step before we call NVMeNamespaceCreate. So, we return from here itself.
+				return err
+			}
+
+			if err := beforeNamespaceCreate.Inject(); err != nil {
 				return err
 			}
 
@@ -537,17 +652,11 @@ func (d *NVMeStorageDriver) Create(
 				continue
 			}
 
-			// Get the newly created namespace and save the UUID
-			newNamespace, err := d.API.NVMeNamespaceGetByName(ctx, nsPath)
+			newNamespace, err := d.getNamespaceWithRetry(ctx, nsPath)
 			if err != nil {
-				return fmt.Errorf("failure checking for existence of volume: %v", err)
+				return err
 			}
 
-			if newNamespace == nil {
-				return fmt.Errorf("newly created volume %s not found", name)
-			}
-
-			// Store the Namespace UUID and Namespace Path for future operations.
 			volConfig.AccessInfo.NVMeNamespaceUUID = newNamespace.UUID
 			volConfig.InternalID = nsPath
 
@@ -558,6 +667,11 @@ func (d *NVMeStorageDriver) Create(
 				"internalID":    volConfig.InternalID,
 			}).Debug("Created FlexVol with NVMe namespace.")
 		}
+
+		if err := afterNamespaceCreate.Inject(); err != nil {
+			return err
+		}
+
 		return nil
 	}
 
