@@ -1981,3 +1981,94 @@ func TestGetRegionalLocation(t *testing.T) {
 		assert.Contains(t, err.Error(), "backend config location is not set")
 	})
 }
+
+func TestCapacityPool_IsUnified(t *testing.T) {
+	tests := []struct {
+		PoolType string
+		Expected bool
+	}{
+		{StoragePoolTypeFile, false},
+		{StoragePoolTypeUnified, true},
+		{StoragePoolTypeUnifiedLargeCap, true},
+	}
+	for _, test := range tests {
+		t.Run(test.PoolType, func(t *testing.T) {
+			pool := &CapacityPool{
+				Name:     "test-pool",
+				PoolType: test.PoolType,
+			}
+
+			result := pool.IsUnified()
+
+			assert.Equal(t, test.Expected, result, "IsUnified() mismatch for pool type %s", test.PoolType)
+		})
+	}
+}
+
+func TestVolume_IsUnified(t *testing.T) {
+	tests := []struct {
+		StoragePoolType string
+		Expected        bool
+	}{
+		{StoragePoolTypeFile, false},
+		{StoragePoolTypeUnified, true},
+		{StoragePoolTypeUnifiedLargeCap, true},
+	}
+	for _, test := range tests {
+		t.Run(test.StoragePoolType, func(t *testing.T) {
+			vol := &Volume{
+				Name:            "test-volume",
+				StoragePoolType: test.StoragePoolType,
+			}
+
+			result := vol.IsUnified()
+
+			assert.Equal(t, test.Expected, result, "IsUnified() mismatch for pool type %s", test.StoragePoolType)
+		})
+	}
+}
+
+func TestGCNVVolumeFallbackNames(t *testing.T) {
+	tests := []struct {
+		name          string
+		volConfig     *storage.VolumeConfig
+		expectedFirst string
+		expectedNext  string
+	}{
+		{
+			name: "uses internal then underscore display variant",
+			volConfig: &storage.VolumeConfig{
+				InternalName: "my-vol",
+				Name:         "my-vol",
+			},
+			expectedFirst: "my-vol",
+			expectedNext:  "my_vol",
+		},
+		{
+			name: "no second lookup when same as internal",
+			volConfig: &storage.VolumeConfig{
+				InternalName: "my_vol",
+				Name:         "my_vol",
+			},
+			expectedFirst: "my_vol",
+			expectedNext:  "",
+		},
+		{
+			name: "no second lookup when display name empty",
+			volConfig: &storage.VolumeConfig{
+				InternalName: "token-1",
+				Name:         "",
+			},
+			expectedFirst: "token-1",
+			expectedNext:  "",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			first, next := gcnvVolumeFallbackNames(test.volConfig)
+			assert.Equal(t, test.expectedFirst, first)
+			assert.Equal(t, test.expectedNext, next)
+		})
+	}
+}

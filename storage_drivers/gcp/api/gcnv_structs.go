@@ -52,6 +52,10 @@ const (
 	StoragePoolStateDisabled    = "Disabled"
 	StoragePoolStateError       = "Error"
 
+	StoragePoolTypeFile            = "FILE"
+	StoragePoolTypeUnified         = "UNIFIED"
+	StoragePoolTypeUnifiedLargeCap = "UNIFIED_LARGE_CAPACITY"
+
 	VolumeStateUnspecified = "Unspecified"
 	VolumeStateReady       = "Ready"
 	VolumeStateCreating    = "Creating"
@@ -134,6 +138,12 @@ type CapacityPool struct {
 	NetworkFullName string
 	Zone            string
 	AutoTiering     bool
+	PoolType        string
+}
+
+// IsUnified returns true if the pool type is UNIFIED or UNIFIED_LARGE_CAPACITY.
+func (c *CapacityPool) IsUnified() bool {
+	return c.PoolType == StoragePoolTypeUnified || c.PoolType == StoragePoolTypeUnifiedLargeCap
 }
 
 // Volume records details of a discovered GCNV volume.
@@ -147,6 +157,7 @@ type Volume struct {
 	NetworkName               string
 	NetworkFullName           string
 	ServiceLevel              string
+	StoragePoolType           string
 	SizeBytes                 int64
 	ExportPolicy              *ExportPolicy
 	ProtocolTypes             []string
@@ -164,6 +175,11 @@ type Volume struct {
 	SerialNumber              string
 	TieringPolicy             string
 	TieringMinimumCoolingDays *int32
+}
+
+// IsUnified returns true if the volume resides on a UNIFIED or UNIFIED_LARGE_CAPACITY pool.
+func (v *Volume) IsUnified() bool {
+	return v.StoragePoolType == StoragePoolTypeUnified || v.StoragePoolType == StoragePoolTypeUnifiedLargeCap
 }
 
 // VolumeCreateRequest embodies all the details of a volume to be created.

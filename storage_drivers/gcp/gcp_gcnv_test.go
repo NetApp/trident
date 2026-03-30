@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -183,6 +184,7 @@ func TestValidateCreationToken(t *testing.T) {
 		{"_volume", false},
 		{"volume&", false},
 		{"Volume_1-A", false},
+		{"volume_1", false}, // underscores not allowed by volumeCreationTokenRegex (master); UNIFIED uses validateUnifiedCreationToken
 		// Valid names
 		{"v", true},
 		{"volume-1", true},
@@ -1360,6 +1362,7 @@ func getStructsForCreateNFSVolume(ctx context.Context, driver *NASStorageDriver,
 		State:           api.StateReady,
 		NetworkName:     api.NetworkName,
 		NetworkFullName: api.NetworkFullName,
+		PoolType:        api.StoragePoolTypeFile,
 	}
 
 	volume := &api.Volume{
@@ -1384,8 +1387,8 @@ func getStructsForCreateNFSVolume(ctx context.Context, driver *NASStorageDriver,
 	}
 
 	createRequest := &api.VolumeCreateRequest{
-		Name:            "testvol1",
-		CreationToken:   "trident-testvol1",
+		Name:            volConfig.Name,
+		CreationToken:   volConfig.InternalName,
 		CapacityPool:    "CP1",
 		SizeBytes:       api.VolumeSizeI64,
 		ExportPolicy:    exportPolicy,
@@ -1418,6 +1421,7 @@ func getMultipleCapacityPoolsForCreateVolume() []*api.CapacityPool {
 			State:           api.StateReady,
 			NetworkName:     api.NetworkName,
 			NetworkFullName: api.NetworkFullName,
+			PoolType:        api.StoragePoolTypeFile,
 		},
 		{
 			Name:            "CP2",
@@ -1427,6 +1431,7 @@ func getMultipleCapacityPoolsForCreateVolume() []*api.CapacityPool {
 			State:           api.StateReady,
 			NetworkName:     api.NetworkName,
 			NetworkFullName: api.NetworkFullName,
+			PoolType:        api.StoragePoolTypeFile,
 		},
 		{
 			Name:            "CP3",
@@ -1436,6 +1441,7 @@ func getMultipleCapacityPoolsForCreateVolume() []*api.CapacityPool {
 			State:           api.StateReady,
 			NetworkName:     api.NetworkName,
 			NetworkFullName: api.NetworkFullName,
+			PoolType:        api.StoragePoolTypeFile,
 		},
 	}
 }
@@ -1451,6 +1457,7 @@ func getFlexServiceCapacityPoolForCreateVolume() []*api.CapacityPool {
 			NetworkName:     api.NetworkName,
 			NetworkFullName: api.NetworkFullName,
 			Zone:            "asia-east1-c",
+			PoolType:        api.StoragePoolTypeFile,
 		},
 	}
 }
@@ -1492,6 +1499,191 @@ func TestCreate_NFSVolume(t *testing.T) {
 	assert.Equal(t, api.ServiceLevelPremium, volConfig.ServiceLevel)
 	assert.Equal(t, "true", volConfig.SnapshotDir)
 	assert.Equal(t, "0777", volConfig.UnixPermissions)
+}
+
+func TestCreate_NFSVolume_NameNormalizationByPoolType(t *testing.T) {
+	tests := []struct {
+		name                  string
+		poolType              string
+		expectedVolumeID      string
+		expectedCreationToken string
+	}{
+		{
+			name:                  "file pool keeps master (Name=volConfig.Name, CreationToken=name)",
+			poolType:              api.StoragePoolTypeFile,
+			expectedVolumeID:      "testvol1",
+			expectedCreationToken: "trident-testvol1",
+		},
+		{
+			name:                  "unified pool API Name from volConfig.Name (hyphens to underscores); CreationToken is InternalName",
+			poolType:              api.StoragePoolTypeUnified,
+			expectedVolumeID:      "testvol1",
+			expectedCreationToken: "trident-testvol1",
+		},
+		{
+			name:                  "unified large capacity same as unified",
+			poolType:              api.StoragePoolTypeUnifiedLargeCap,
+			expectedVolumeID:      "testvol1",
+			expectedCreationToken: "trident-testvol1",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			mockAPI, driver := newMockGCNVDriver(t)
+
+			driver.Config.BackendName = "gcnv"
+			driver.Config.ServiceLevel = api.ServiceLevelPremium
+			driver.Config.NASType = "nfs"
+
+			err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+			assert.NoError(t, err, "error occurred")
+
+			driver.initializeStoragePools(ctx)
+			driver.initializeTelemetry(ctx, api.BackendUUID)
+
+			storagePool := driver.pools["gcnv_pool"]
+			volConfig, capacityPool, volume, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+			capacityPool.PoolType = tc.poolType
+			volume.UnixPermissions = "0777"
+
+			mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+			mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+			mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+				api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
+			mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
+
+			mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
+				func(_ context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
+					assert.Equal(t, tc.expectedVolumeID, req.Name)
+					assert.Equal(t, tc.expectedCreationToken, req.CreationToken)
+					assert.Equal(t, "0777", req.UnixPermissions, "unix permissions should be set for all pool types")
+					return volume, nil
+				},
+			).Times(1)
+
+			mockAPI.EXPECT().WaitForVolumeState(ctx, volume, api.VolumeStateReady, []string{api.VolumeStateError},
+				driver.volumeCreateTimeout).Return(api.VolumeStateReady, nil).Times(1)
+
+			result := driver.Create(ctx, volConfig, storagePool, nil)
+			assert.NoError(t, result, "create failed")
+		})
+	}
+}
+
+func TestCreate_NFSVolume_UnifiedHyphenatedDisplayName(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err, "error occurred")
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool"]
+	volConfig, capacityPool, volume, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	volConfig.Name = "pvc-dead-beef"
+	volConfig.InternalName = "trident-pvc-dead-beef"
+	capacityPool.PoolType = api.StoragePoolTypeUnified
+	volume.Name = "pvc_dead_beef"
+	volume.UnixPermissions = "0777"
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool}, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
+
+	mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
+		func(_ context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
+			assert.Equal(t, "pvc_dead_beef", req.Name, "unified API Name uses underscores")
+			assert.Equal(t, "trident-pvc-dead-beef", req.CreationToken, "unified CreationToken is InternalName")
+			return volume, nil
+		},
+	).Times(1)
+
+	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, api.VolumeStateReady, []string{api.VolumeStateError},
+		driver.volumeCreateTimeout).Return(api.VolumeStateReady, nil).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+	assert.NoError(t, result, "create failed")
+}
+
+func TestNASDriver_validateUnifiedVolumeName(t *testing.T) {
+	_, driver := newMockGCNVDriver(t)
+	tests := []struct {
+		name    string
+		input   string
+		wantErr bool
+	}{
+		{name: "valid simple", input: "pvc_dead_beef", wantErr: false},
+		{name: "valid single char", input: "a", wantErr: false},
+		{name: "invalid uppercase", input: "Pvc_dead", wantErr: true},
+		{name: "invalid hyphen", input: "pvc_dead-beef", wantErr: true},
+		{name: "invalid trailing underscore", input: "pvc_dead_", wantErr: true},
+		{name: "invalid empty", input: "", wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := driver.validateUnifiedVolumeName(tt.input)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestNASDriver_validateUnifiedCreationToken(t *testing.T) {
+	_, driver := newMockGCNVDriver(t)
+	// Max length 255: [a-z] + up to 253 middle chars + trailing [a-z0-9]
+	valid255 := "a" + strings.Repeat("b", 253) + "c"
+	assert.Len(t, valid255, 255)
+
+	tests := []struct {
+		name    string
+		input   string
+		wantErr bool
+	}{
+		{name: "valid hyphenated", input: "trident-pvc-dead-beef", wantErr: false},
+		{name: "valid underscore", input: "trident_pvc_dead_beef", wantErr: false},
+		{name: "valid max length", input: valid255, wantErr: false},
+		{name: "invalid too long", input: valid255 + "d", wantErr: true},
+		{name: "invalid uppercase", input: "Trident-bad", wantErr: true},
+		{name: "invalid trailing hyphen", input: "trident-bad-", wantErr: true},
+		{name: "invalid trailing underscore", input: "trident-bad_", wantErr: true},
+		{name: "invalid empty", input: "", wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := driver.validateUnifiedCreationToken(tt.input)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestNASDriver_getVolumeExternal(t *testing.T) {
+	_, driver := newMockGCNVDriver(t)
+	vol := &api.Volume{
+		Name:              "test-volx",
+		CreationToken:     "ctok",
+		SizeBytes:         4096,
+		UnixPermissions:   "0755",
+		SnapshotDirectory: false,
+		ServiceLevel:      api.ServiceLevelPremium,
+	}
+	ext := driver.getVolumeExternal(vol)
+	assert.Equal(t, "volx", ext.Config.Name)
+	assert.Equal(t, "ctok", ext.Config.InternalName)
 }
 
 func TestCreate_NFSVolume_MultipleCapacityPools_FirstSucceeds(t *testing.T) {
@@ -1635,6 +1827,50 @@ func TestCreate_NFSVolume_MultipleCapacityPools_NoneSucceeds(t *testing.T) {
 
 	assert.Error(t, result, "create failed")
 	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
+}
+
+func TestCreate_NFSVolume_CreateFailure(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err, "error occurred")
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool"]
+	volConfig, _, _, createRequest := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	createRequest.UnixPermissions = "0777"
+
+	capacityPools := []*api.CapacityPool{
+		{
+			Name:            "CP_UNIFIED",
+			FullName:        "projects/fake-project/locations/fake-location/storagePools/CP_UNIFIED",
+			ServiceLevel:    api.ServiceLevelPremium,
+			NetworkName:     api.NetworkName,
+			NetworkFullName: api.NetworkFullName,
+			State:           api.StateReady,
+			PoolType:        api.StoragePoolTypeUnified,
+		},
+	}
+	createRequest.CapacityPool = capacityPools[0].Name
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool, api.ServiceLevelPremium, gomock.Any()).
+		Return(capacityPools).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, capacityPools, volConfig.RequisiteTopologies, volConfig.PreferredTopologies).
+		Return(capacityPools).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(nil, errFailed).Times(1)
+
+	result := driver.Create(ctx, volConfig, storagePool, nil)
+
+	assert.Error(t, result, "create should fail")
+	assert.Equal(t, "", volConfig.InternalID, "internal ID should be empty on create failure")
 }
 
 func TestCreate_DiscoveryFailed(t *testing.T) {
@@ -2752,6 +2988,7 @@ func getStructsForCreateSMBVolume(ctx context.Context, driver *NASStorageDriver,
 		State:           api.StateReady,
 		NetworkName:     api.NetworkName,
 		NetworkFullName: api.NetworkFullName,
+		PoolType:        api.StoragePoolTypeFile,
 	}
 
 	volume := &api.Volume{
@@ -2773,8 +3010,8 @@ func getStructsForCreateSMBVolume(ctx context.Context, driver *NASStorageDriver,
 	}
 
 	createRequest := &api.VolumeCreateRequest{
-		Name:          "testvol1",
-		CreationToken: "trident-testvol1",
+		Name:          volConfig.Name,
+		CreationToken: volConfig.InternalName,
 		CapacityPool:  "CP1",
 		SizeBytes:     api.VolumeSizeI64,
 		ProtocolTypes: []string{api.ProtocolTypeSMB},
@@ -3110,6 +3347,116 @@ func TestCreateClone_NoSnapshot(t *testing.T) {
 
 	assert.NoError(t, result, "create failed")
 	assert.Equal(t, cloneVolume.FullName, cloneVolConfig.InternalID, "internal ID not set on volConfig")
+}
+
+func TestCreateClone_NameNormalizationByPoolType(t *testing.T) {
+	tests := []struct {
+		name                  string
+		poolType              string
+		expectedVolumeID      string
+		expectedCreationToken string
+	}{
+		{
+			name:                  "file source pool keeps master (Name=cloneVolConfig.Name, CreationToken=name)",
+			poolType:              api.StoragePoolTypeFile,
+			expectedVolumeID:      "testvol2",
+			expectedCreationToken: "trident-testvol2",
+		},
+		{
+			name:                  "unified source pool API Name from cloneVolConfig.Name; CreationToken is clone InternalName",
+			poolType:              api.StoragePoolTypeUnified,
+			expectedVolumeID:      "testvol2",
+			expectedCreationToken: "trident-testvol2",
+		},
+		{
+			name:                  "unified large capacity source pool same as unified",
+			poolType:              api.StoragePoolTypeUnifiedLargeCap,
+			expectedVolumeID:      "testvol2",
+			expectedCreationToken: "trident-testvol2",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			mockAPI, driver := newMockGCNVDriver(t)
+
+			driver.Config.BackendName = "gcnv"
+			driver.Config.ServiceLevel = api.ServiceLevelPremium
+			driver.Config.NASType = "nfs"
+
+			err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+			assert.NoError(t, err, "error occurred")
+
+			driver.initializeStoragePools(ctx)
+			driver.initializeTelemetry(ctx, api.BackendUUID)
+
+			storagePool := driver.pools["gcnv_pool"]
+			sourceVolConfig, cloneVolConfig, _, sourceVolume, cloneVolume, snapshot := getStructsForCreateClone(ctx, driver, storagePool)
+			sourceVolume.StoragePoolType = tc.poolType
+
+			mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+			mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil).Times(1)
+			mockAPI.EXPECT().VolumeExists(ctx, cloneVolConfig).Return(false, nil, nil).Times(1)
+			mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any(), gomock.Any()).Return(snapshot, nil).Times(1)
+			mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, gomock.Any()).Return(snapshot, nil).Times(1)
+
+			mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
+				func(_ context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
+					assert.Equal(t, tc.expectedVolumeID, req.Name)
+					assert.Equal(t, tc.expectedCreationToken, req.CreationToken)
+					assert.Equal(t, "0755", req.UnixPermissions, "unix permissions should be set for all pool types")
+					return cloneVolume, nil
+				},
+			).Times(1)
+
+			mockAPI.EXPECT().WaitForVolumeState(ctx, cloneVolume, api.VolumeStateReady, []string{api.VolumeStateError},
+				driver.volumeCreateTimeout).Return(api.VolumeStateReady, nil).Times(1)
+
+			result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
+			assert.NoError(t, result, "create clone failed")
+		})
+	}
+}
+
+func TestCreateClone_UnifiedHyphenatedCloneDisplayName(t *testing.T) {
+	mockAPI, driver := newMockGCNVDriver(t)
+
+	driver.Config.BackendName = "gcnv"
+	driver.Config.ServiceLevel = api.ServiceLevelPremium
+	driver.Config.NASType = "nfs"
+
+	err := driver.populateConfigurationDefaults(ctx, &driver.Config)
+	assert.NoError(t, err, "error occurred")
+
+	driver.initializeStoragePools(ctx)
+	driver.initializeTelemetry(ctx, api.BackendUUID)
+
+	storagePool := driver.pools["gcnv_pool"]
+	sourceVolConfig, cloneVolConfig, _, sourceVolume, cloneVolume, snapshot := getStructsForCreateClone(ctx, driver, storagePool)
+	sourceVolume.StoragePoolType = api.StoragePoolTypeUnified
+	cloneVolConfig.Name = "pvc-clone-abc"
+	cloneVolConfig.InternalName = "trident-pvc-clone-abc"
+	cloneVolume.Name = "pvc_clone_abc"
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().Volume(ctx, sourceVolConfig).Return(sourceVolume, nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, cloneVolConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CreateSnapshot(ctx, sourceVolume, gomock.Any(), gomock.Any()).Return(snapshot, nil).Times(1)
+	mockAPI.EXPECT().SnapshotForVolume(ctx, sourceVolume, gomock.Any()).Return(snapshot, nil).Times(1)
+
+	mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
+		func(_ context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
+			assert.Equal(t, "pvc_clone_abc", req.Name)
+			assert.Equal(t, "trident-pvc-clone-abc", req.CreationToken)
+			return cloneVolume, nil
+		},
+	).Times(1)
+
+	mockAPI.EXPECT().WaitForVolumeState(ctx, cloneVolume, api.VolumeStateReady, []string{api.VolumeStateError},
+		driver.volumeCreateTimeout).Return(api.VolumeStateReady, nil).Times(1)
+
+	result := driver.CreateClone(ctx, sourceVolConfig, cloneVolConfig, nil)
+	assert.NoError(t, result, "create clone failed")
 }
 
 func TestCreateClone_Snapshot(t *testing.T) {
@@ -6760,8 +7107,8 @@ func TestGetInternalVolumeName_NonCSI(t *testing.T) {
 
 	result := driver.GetInternalVolumeName(ctx, volConfig, storagePool)
 
-	gcnvRegex := regexp.MustCompile(`^gcnv-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
-	assert.True(t, gcnvRegex.MatchString(result), "internal name mismatch")
+	gcnvRegex := regexp.MustCompile(`^gcnv-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
+	assert.True(t, gcnvRegex.MatchString(result), "internal name mismatch (expect gcnv- + UUID with hyphens)")
 }
 
 func TestCreateFollowup_NFSVolume(t *testing.T) {

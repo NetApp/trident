@@ -204,12 +204,33 @@ func TestCapacityPools(t *testing.T) {
 func TestCapacityPool_FullNameAndEmpty(t *testing.T) {
 	sdk := getFakeSDK(true)
 
-	// Full name should resolve
+	// Full name should resolve (O(1) map lookup) to same pool as short name (fallback scan)
 	fullName := "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP1"
 	assert.Equal(t, sdk.capacityPool("CP1"), sdk.capacityPool(fullName))
 
 	// Empty input should return nil
 	assert.Nil(t, sdk.capacityPool(""))
+}
+
+// TestCapacityPool_UnknownFullNameReturnsNil ensures that a full resource name not present
+// in the cache returns nil (map GetOk path), and does not match by short name.
+func TestCapacityPool_UnknownFullNameReturnsNil(t *testing.T) {
+	sdk := getFakeSDK(true)
+
+	unknownFullName := "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/nonexistent"
+	assert.Nil(t, sdk.capacityPool(unknownFullName))
+}
+
+// TestCapacityPool_ShortNameFallback ensures that when the cache is keyed by full name,
+// lookup by short name (Name) still returns the pool via fallback scan.
+func TestCapacityPool_ShortNameFallback(t *testing.T) {
+	sdk := getFakeSDK(true)
+
+	byShort := sdk.capacityPool("CP2")
+	byFull := sdk.capacityPool("projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP2")
+	assert.NotNil(t, byShort)
+	assert.Equal(t, byShort, byFull)
+	assert.Equal(t, "CP2", byShort.Name)
 }
 
 func TestCapacityPoolsForStoragePools(t *testing.T) {

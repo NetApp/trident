@@ -52,6 +52,37 @@ func TestNewVolumeFromGCNVVolume_ISCSIBlockDevicesAndPortals(t *testing.T) {
 	assert.Equal(t, 0, vol.LunID)
 }
 
+// TestNewVolumeFromGCNVVolume_ServiceLevelAndStoragePoolTypeFromSingleLookup verifies that
+// ServiceLevel and StoragePoolType are derived from a single capacity pool lookup (no duplicate scan),
+// and that StoragePoolType is empty when the pool is not found.
+func TestNewVolumeFromGCNVVolume_ServiceLevelAndStoragePoolTypeFromSingleLookup(t *testing.T) {
+	sdk := getFakeSDK(true)
+	cp1FullName := "projects/123456789/locations/fake-location/storagePools/CP1"
+
+	// Volume with StoragePool that resolves to CP1 (Premium); PoolType not set in getFakeSDK
+	volPB := &netapppb.Volume{
+		Name:        "projects/123456789/locations/fake-location/volumes/vol1",
+		Network:     "projects/123456789/global/networks/default",
+		StoragePool: cp1FullName,
+		CapacityGib: 10,
+		ShareName:   "share1",
+		Protocols:   []netapppb.Protocols{netapppb.Protocols_NFSV3},
+	}
+	vol, err := sdk.newVolumeFromGCNVVolume(ctx, volPB)
+	assert.NoError(t, err)
+	assert.NotNil(t, vol)
+	assert.Equal(t, ServiceLevelPremium, vol.ServiceLevel)
+	assert.Equal(t, "", vol.StoragePoolType)
+
+	// When pool is not in cache, StoragePoolType must be empty (nil-safe)
+	sdkNoPools := getFakeSDK()
+	volPB.StoragePool = cp1FullName
+	vol2, err := sdkNoPools.newVolumeFromGCNVVolume(ctx, volPB)
+	assert.NoError(t, err)
+	assert.NotNil(t, vol2)
+	assert.Equal(t, "", vol2.StoragePoolType)
+}
+
 func TestNewHostGroupFromGCNVHostGroup_Basic(t *testing.T) {
 	sdk := getFakeSDK()
 	hgPB := &netapppb.HostGroup{

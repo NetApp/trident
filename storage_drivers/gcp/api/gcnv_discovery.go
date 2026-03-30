@@ -298,6 +298,7 @@ func (c Client) discoverCapacityPools(ctx context.Context) (*[]*CapacityPool, er
 				NetworkFullName: pool.Network,
 				Zone:            pool.Zone,
 				AutoTiering:     pool.AllowAutoTiering,
+				PoolType:        pool.GetType().String(),
 			})
 		}
 	}
@@ -327,13 +328,18 @@ func (c Client) CapacityPools() *[]*CapacityPool {
 // capacityPool returns a single discovered capacity pool by name.
 // Accepts either the short name (e.g., "pool-1") or the full name
 // (e.g., "projects/<project>/locations/<loc>/storagePools/<pool>").
+// Full-name lookups are O(1) via map; short names fall back to a linear scan.
 func (c Client) capacityPool(cPoolName string) *CapacityPool {
 	if cPoolName == "" {
 		return nil
 	}
+	cPools := c.sdkClient.resources.GetCapacityPools()
+	if cPool, ok := cPools.GetOk(cPoolName); ok && cPool != nil {
+		return cPool
+	}
 	var matchingCPool *CapacityPool
-	c.sdkClient.resources.GetCapacityPools().Range(func(_ string, cPool *CapacityPool) bool {
-		if cPool.Name == cPoolName || cPool.FullName == cPoolName {
+	cPools.Range(func(_ string, cPool *CapacityPool) bool {
+		if cPool.Name == cPoolName {
 			matchingCPool = cPool
 			return false
 		}
