@@ -110,6 +110,13 @@ type LunMapDeleteCollectionParams struct {
 	*/
 	Info LunMapDeleteCollectionBody
 
+	/* LocalDeleteOnly.
+
+	   Delete the local map and set the `replicated` property of the peer map to _false_.
+
+	*/
+	LocalDeleteOnly *bool
+
 	/* LogicalUnitNumber.
 
 	   Filter by logical_unit_number
@@ -145,6 +152,12 @@ type LunMapDeleteCollectionParams struct {
 	   Filter by lun.uuid
 	*/
 	LunUUID *string
+
+	/* Replicated.
+
+	   Filter by replicated
+	*/
+	Replicated *bool
 
 	/* ReportingNodesName.
 
@@ -353,6 +366,17 @@ func (o *LunMapDeleteCollectionParams) SetInfo(info LunMapDeleteCollectionBody) 
 	o.Info = info
 }
 
+// WithLocalDeleteOnly adds the localDeleteOnly to the lun map delete collection params
+func (o *LunMapDeleteCollectionParams) WithLocalDeleteOnly(localDeleteOnly *bool) *LunMapDeleteCollectionParams {
+	o.SetLocalDeleteOnly(localDeleteOnly)
+	return o
+}
+
+// SetLocalDeleteOnly adds the localDeleteOnly to the lun map delete collection params
+func (o *LunMapDeleteCollectionParams) SetLocalDeleteOnly(localDeleteOnly *bool) {
+	o.LocalDeleteOnly = localDeleteOnly
+}
+
 // WithLogicalUnitNumber adds the logicalUnitNumber to the lun map delete collection params
 func (o *LunMapDeleteCollectionParams) WithLogicalUnitNumber(logicalUnitNumber *int64) *LunMapDeleteCollectionParams {
 	o.SetLogicalUnitNumber(logicalUnitNumber)
@@ -417,6 +441,17 @@ func (o *LunMapDeleteCollectionParams) WithLunUUID(lunUUID *string) *LunMapDelet
 // SetLunUUID adds the lunUuid to the lun map delete collection params
 func (o *LunMapDeleteCollectionParams) SetLunUUID(lunUUID *string) {
 	o.LunUUID = lunUUID
+}
+
+// WithReplicated adds the replicated to the lun map delete collection params
+func (o *LunMapDeleteCollectionParams) WithReplicated(replicated *bool) *LunMapDeleteCollectionParams {
+	o.SetReplicated(replicated)
+	return o
+}
+
+// SetReplicated adds the replicated to the lun map delete collection params
+func (o *LunMapDeleteCollectionParams) SetReplicated(replicated *bool) {
+	o.Replicated = replicated
 }
 
 // WithReportingNodesName adds the reportingNodesName to the lun map delete collection params
@@ -626,6 +661,23 @@ func (o *LunMapDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 		return err
 	}
 
+	if o.LocalDeleteOnly != nil {
+
+		// query param local_delete_only
+		var qrLocalDeleteOnly bool
+
+		if o.LocalDeleteOnly != nil {
+			qrLocalDeleteOnly = *o.LocalDeleteOnly
+		}
+		qLocalDeleteOnly := swag.FormatBool(qrLocalDeleteOnly)
+		if qLocalDeleteOnly != "" {
+
+			if err := r.SetQueryParam("local_delete_only", qLocalDeleteOnly); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.LogicalUnitNumber != nil {
 
 		// query param logical_unit_number
@@ -723,6 +775,23 @@ func (o *LunMapDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 		if qLunUUID != "" {
 
 			if err := r.SetQueryParam("lun.uuid", qLunUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Replicated != nil {
+
+		// query param replicated
+		var qrReplicated bool
+
+		if o.Replicated != nil {
+			qrReplicated = *o.Replicated
+		}
+		qReplicated := swag.FormatBool(qrReplicated)
+		if qReplicated != "" {
+
+			if err := r.SetQueryParam("replicated", qReplicated); err != nil {
 				return err
 			}
 		}

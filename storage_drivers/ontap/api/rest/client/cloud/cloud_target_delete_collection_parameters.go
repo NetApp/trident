@@ -622,15 +622,15 @@ func (o *CloudTargetDeleteCollectionParams) SetSvmUUID(svmUUID *string) {
 	o.SvmUUID = svmUUID
 }
 
-// WithURLStyle adds the uRLStyle to the cloud target delete collection params
-func (o *CloudTargetDeleteCollectionParams) WithURLStyle(uRLStyle *string) *CloudTargetDeleteCollectionParams {
-	o.SetURLStyle(uRLStyle)
+// WithURLStyle adds the urlStyle to the cloud target delete collection params
+func (o *CloudTargetDeleteCollectionParams) WithURLStyle(urlStyle *string) *CloudTargetDeleteCollectionParams {
+	o.SetURLStyle(urlStyle)
 	return o
 }
 
 // SetURLStyle adds the urlStyle to the cloud target delete collection params
-func (o *CloudTargetDeleteCollectionParams) SetURLStyle(uRLStyle *string) {
-	o.URLStyle = uRLStyle
+func (o *CloudTargetDeleteCollectionParams) SetURLStyle(urlStyle *string) {
+	o.URLStyle = urlStyle
 }
 
 // WithUseHTTPProxy adds the useHTTPProxy to the cloud target delete collection params

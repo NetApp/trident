@@ -228,15 +228,15 @@ func (o *HostsSettingsModifyCollectionParams) SetContinueOnFailure(continueOnFai
 	o.ContinueOnFailure = continueOnFailure
 }
 
-// WithDNSTTLEnabled adds the dNSTTLEnabled to the hosts settings modify collection params
-func (o *HostsSettingsModifyCollectionParams) WithDNSTTLEnabled(dNSTTLEnabled *bool) *HostsSettingsModifyCollectionParams {
-	o.SetDNSTTLEnabled(dNSTTLEnabled)
+// WithDNSTTLEnabled adds the dnsTTLEnabled to the hosts settings modify collection params
+func (o *HostsSettingsModifyCollectionParams) WithDNSTTLEnabled(dnsTTLEnabled *bool) *HostsSettingsModifyCollectionParams {
+	o.SetDNSTTLEnabled(dnsTTLEnabled)
 	return o
 }
 
 // SetDNSTTLEnabled adds the dnsTtlEnabled to the hosts settings modify collection params
-func (o *HostsSettingsModifyCollectionParams) SetDNSTTLEnabled(dNSTTLEnabled *bool) {
-	o.DNSTTLEnabled = dNSTTLEnabled
+func (o *HostsSettingsModifyCollectionParams) SetDNSTTLEnabled(dnsTTLEnabled *bool) {
+	o.DNSTTLEnabled = dnsTTLEnabled
 }
 
 // WithEnabled adds the enabled to the hosts settings modify collection params

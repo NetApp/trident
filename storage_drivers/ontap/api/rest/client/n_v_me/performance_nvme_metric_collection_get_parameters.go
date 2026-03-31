@@ -758,147 +758,147 @@ func (o *PerformanceNvmeMetricCollectionGetParams) SetSvmUUID(svmUUID string) {
 	o.SvmUUID = svmUUID
 }
 
-// WithTCPDuration adds the tCPDuration to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPDuration(tCPDuration *string) *PerformanceNvmeMetricCollectionGetParams {
-	o.SetTCPDuration(tCPDuration)
+// WithTCPDuration adds the tcpDuration to the performance nvme metric collection get params
+func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPDuration(tcpDuration *string) *PerformanceNvmeMetricCollectionGetParams {
+	o.SetTCPDuration(tcpDuration)
 	return o
 }
 
 // SetTCPDuration adds the tcpDuration to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPDuration(tCPDuration *string) {
-	o.TCPDuration = tCPDuration
+func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPDuration(tcpDuration *string) {
+	o.TCPDuration = tcpDuration
 }
 
-// WithTCPIopsOther adds the tCPIopsOther to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPIopsOther(tCPIopsOther *int64) *PerformanceNvmeMetricCollectionGetParams {
-	o.SetTCPIopsOther(tCPIopsOther)
+// WithTCPIopsOther adds the tcpIopsOther to the performance nvme metric collection get params
+func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPIopsOther(tcpIopsOther *int64) *PerformanceNvmeMetricCollectionGetParams {
+	o.SetTCPIopsOther(tcpIopsOther)
 	return o
 }
 
 // SetTCPIopsOther adds the tcpIopsOther to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPIopsOther(tCPIopsOther *int64) {
-	o.TCPIopsOther = tCPIopsOther
+func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPIopsOther(tcpIopsOther *int64) {
+	o.TCPIopsOther = tcpIopsOther
 }
 
-// WithTCPIopsRead adds the tCPIopsRead to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPIopsRead(tCPIopsRead *int64) *PerformanceNvmeMetricCollectionGetParams {
-	o.SetTCPIopsRead(tCPIopsRead)
+// WithTCPIopsRead adds the tcpIopsRead to the performance nvme metric collection get params
+func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPIopsRead(tcpIopsRead *int64) *PerformanceNvmeMetricCollectionGetParams {
+	o.SetTCPIopsRead(tcpIopsRead)
 	return o
 }
 
 // SetTCPIopsRead adds the tcpIopsRead to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPIopsRead(tCPIopsRead *int64) {
-	o.TCPIopsRead = tCPIopsRead
+func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPIopsRead(tcpIopsRead *int64) {
+	o.TCPIopsRead = tcpIopsRead
 }
 
-// WithTCPIopsTotal adds the tCPIopsTotal to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPIopsTotal(tCPIopsTotal *int64) *PerformanceNvmeMetricCollectionGetParams {
-	o.SetTCPIopsTotal(tCPIopsTotal)
+// WithTCPIopsTotal adds the tcpIopsTotal to the performance nvme metric collection get params
+func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPIopsTotal(tcpIopsTotal *int64) *PerformanceNvmeMetricCollectionGetParams {
+	o.SetTCPIopsTotal(tcpIopsTotal)
 	return o
 }
 
 // SetTCPIopsTotal adds the tcpIopsTotal to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPIopsTotal(tCPIopsTotal *int64) {
-	o.TCPIopsTotal = tCPIopsTotal
+func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPIopsTotal(tcpIopsTotal *int64) {
+	o.TCPIopsTotal = tcpIopsTotal
 }
 
-// WithTCPIopsWrite adds the tCPIopsWrite to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPIopsWrite(tCPIopsWrite *int64) *PerformanceNvmeMetricCollectionGetParams {
-	o.SetTCPIopsWrite(tCPIopsWrite)
+// WithTCPIopsWrite adds the tcpIopsWrite to the performance nvme metric collection get params
+func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPIopsWrite(tcpIopsWrite *int64) *PerformanceNvmeMetricCollectionGetParams {
+	o.SetTCPIopsWrite(tcpIopsWrite)
 	return o
 }
 
 // SetTCPIopsWrite adds the tcpIopsWrite to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPIopsWrite(tCPIopsWrite *int64) {
-	o.TCPIopsWrite = tCPIopsWrite
+func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPIopsWrite(tcpIopsWrite *int64) {
+	o.TCPIopsWrite = tcpIopsWrite
 }
 
-// WithTCPLatencyOther adds the tCPLatencyOther to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPLatencyOther(tCPLatencyOther *int64) *PerformanceNvmeMetricCollectionGetParams {
-	o.SetTCPLatencyOther(tCPLatencyOther)
+// WithTCPLatencyOther adds the tcpLatencyOther to the performance nvme metric collection get params
+func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPLatencyOther(tcpLatencyOther *int64) *PerformanceNvmeMetricCollectionGetParams {
+	o.SetTCPLatencyOther(tcpLatencyOther)
 	return o
 }
 
 // SetTCPLatencyOther adds the tcpLatencyOther to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPLatencyOther(tCPLatencyOther *int64) {
-	o.TCPLatencyOther = tCPLatencyOther
+func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPLatencyOther(tcpLatencyOther *int64) {
+	o.TCPLatencyOther = tcpLatencyOther
 }
 
-// WithTCPLatencyRead adds the tCPLatencyRead to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPLatencyRead(tCPLatencyRead *int64) *PerformanceNvmeMetricCollectionGetParams {
-	o.SetTCPLatencyRead(tCPLatencyRead)
+// WithTCPLatencyRead adds the tcpLatencyRead to the performance nvme metric collection get params
+func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPLatencyRead(tcpLatencyRead *int64) *PerformanceNvmeMetricCollectionGetParams {
+	o.SetTCPLatencyRead(tcpLatencyRead)
 	return o
 }
 
 // SetTCPLatencyRead adds the tcpLatencyRead to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPLatencyRead(tCPLatencyRead *int64) {
-	o.TCPLatencyRead = tCPLatencyRead
+func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPLatencyRead(tcpLatencyRead *int64) {
+	o.TCPLatencyRead = tcpLatencyRead
 }
 
-// WithTCPLatencyTotal adds the tCPLatencyTotal to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPLatencyTotal(tCPLatencyTotal *int64) *PerformanceNvmeMetricCollectionGetParams {
-	o.SetTCPLatencyTotal(tCPLatencyTotal)
+// WithTCPLatencyTotal adds the tcpLatencyTotal to the performance nvme metric collection get params
+func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPLatencyTotal(tcpLatencyTotal *int64) *PerformanceNvmeMetricCollectionGetParams {
+	o.SetTCPLatencyTotal(tcpLatencyTotal)
 	return o
 }
 
 // SetTCPLatencyTotal adds the tcpLatencyTotal to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPLatencyTotal(tCPLatencyTotal *int64) {
-	o.TCPLatencyTotal = tCPLatencyTotal
+func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPLatencyTotal(tcpLatencyTotal *int64) {
+	o.TCPLatencyTotal = tcpLatencyTotal
 }
 
-// WithTCPLatencyWrite adds the tCPLatencyWrite to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPLatencyWrite(tCPLatencyWrite *int64) *PerformanceNvmeMetricCollectionGetParams {
-	o.SetTCPLatencyWrite(tCPLatencyWrite)
+// WithTCPLatencyWrite adds the tcpLatencyWrite to the performance nvme metric collection get params
+func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPLatencyWrite(tcpLatencyWrite *int64) *PerformanceNvmeMetricCollectionGetParams {
+	o.SetTCPLatencyWrite(tcpLatencyWrite)
 	return o
 }
 
 // SetTCPLatencyWrite adds the tcpLatencyWrite to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPLatencyWrite(tCPLatencyWrite *int64) {
-	o.TCPLatencyWrite = tCPLatencyWrite
+func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPLatencyWrite(tcpLatencyWrite *int64) {
+	o.TCPLatencyWrite = tcpLatencyWrite
 }
 
-// WithTCPStatus adds the tCPStatus to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPStatus(tCPStatus *string) *PerformanceNvmeMetricCollectionGetParams {
-	o.SetTCPStatus(tCPStatus)
+// WithTCPStatus adds the tcpStatus to the performance nvme metric collection get params
+func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPStatus(tcpStatus *string) *PerformanceNvmeMetricCollectionGetParams {
+	o.SetTCPStatus(tcpStatus)
 	return o
 }
 
 // SetTCPStatus adds the tcpStatus to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPStatus(tCPStatus *string) {
-	o.TCPStatus = tCPStatus
+func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPStatus(tcpStatus *string) {
+	o.TCPStatus = tcpStatus
 }
 
-// WithTCPThroughputRead adds the tCPThroughputRead to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPThroughputRead(tCPThroughputRead *int64) *PerformanceNvmeMetricCollectionGetParams {
-	o.SetTCPThroughputRead(tCPThroughputRead)
+// WithTCPThroughputRead adds the tcpThroughputRead to the performance nvme metric collection get params
+func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPThroughputRead(tcpThroughputRead *int64) *PerformanceNvmeMetricCollectionGetParams {
+	o.SetTCPThroughputRead(tcpThroughputRead)
 	return o
 }
 
 // SetTCPThroughputRead adds the tcpThroughputRead to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPThroughputRead(tCPThroughputRead *int64) {
-	o.TCPThroughputRead = tCPThroughputRead
+func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPThroughputRead(tcpThroughputRead *int64) {
+	o.TCPThroughputRead = tcpThroughputRead
 }
 
-// WithTCPThroughputTotal adds the tCPThroughputTotal to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPThroughputTotal(tCPThroughputTotal *int64) *PerformanceNvmeMetricCollectionGetParams {
-	o.SetTCPThroughputTotal(tCPThroughputTotal)
+// WithTCPThroughputTotal adds the tcpThroughputTotal to the performance nvme metric collection get params
+func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPThroughputTotal(tcpThroughputTotal *int64) *PerformanceNvmeMetricCollectionGetParams {
+	o.SetTCPThroughputTotal(tcpThroughputTotal)
 	return o
 }
 
 // SetTCPThroughputTotal adds the tcpThroughputTotal to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPThroughputTotal(tCPThroughputTotal *int64) {
-	o.TCPThroughputTotal = tCPThroughputTotal
+func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPThroughputTotal(tcpThroughputTotal *int64) {
+	o.TCPThroughputTotal = tcpThroughputTotal
 }
 
-// WithTCPThroughputWrite adds the tCPThroughputWrite to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPThroughputWrite(tCPThroughputWrite *int64) *PerformanceNvmeMetricCollectionGetParams {
-	o.SetTCPThroughputWrite(tCPThroughputWrite)
+// WithTCPThroughputWrite adds the tcpThroughputWrite to the performance nvme metric collection get params
+func (o *PerformanceNvmeMetricCollectionGetParams) WithTCPThroughputWrite(tcpThroughputWrite *int64) *PerformanceNvmeMetricCollectionGetParams {
+	o.SetTCPThroughputWrite(tcpThroughputWrite)
 	return o
 }
 
 // SetTCPThroughputWrite adds the tcpThroughputWrite to the performance nvme metric collection get params
-func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPThroughputWrite(tCPThroughputWrite *int64) {
-	o.TCPThroughputWrite = tCPThroughputWrite
+func (o *PerformanceNvmeMetricCollectionGetParams) SetTCPThroughputWrite(tcpThroughputWrite *int64) {
+	o.TCPThroughputWrite = tcpThroughputWrite
 }
 
 // WithThroughputRead adds the throughputRead to the performance nvme metric collection get params

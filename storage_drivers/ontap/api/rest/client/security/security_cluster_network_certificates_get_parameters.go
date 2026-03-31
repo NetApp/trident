@@ -68,11 +68,11 @@ type SecurityClusterNetworkCertificatesGetParams struct {
 	*/
 	Fields []string
 
-	/* NodeName.
+	/* NodeUUID.
 
-	   The name of the node.
+	   Node UUID.
 	*/
-	NodeName string
+	NodeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -138,15 +138,15 @@ func (o *SecurityClusterNetworkCertificatesGetParams) SetFields(fields []string)
 	o.Fields = fields
 }
 
-// WithNodeName adds the nodeName to the security cluster network certificates get params
-func (o *SecurityClusterNetworkCertificatesGetParams) WithNodeName(nodeName string) *SecurityClusterNetworkCertificatesGetParams {
-	o.SetNodeName(nodeName)
+// WithNodeUUID adds the nodeUUID to the security cluster network certificates get params
+func (o *SecurityClusterNetworkCertificatesGetParams) WithNodeUUID(nodeUUID string) *SecurityClusterNetworkCertificatesGetParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeName adds the nodeName to the security cluster network certificates get params
-func (o *SecurityClusterNetworkCertificatesGetParams) SetNodeName(nodeName string) {
-	o.NodeName = nodeName
+// SetNodeUUID adds the nodeUuid to the security cluster network certificates get params
+func (o *SecurityClusterNetworkCertificatesGetParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -168,8 +168,8 @@ func (o *SecurityClusterNetworkCertificatesGetParams) WriteToRequest(r runtime.C
 		}
 	}
 
-	// path param node.name
-	if err := r.SetPathParam("node.name", o.NodeName); err != nil {
+	// path param node.uuid
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 

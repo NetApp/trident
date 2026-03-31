@@ -114,6 +114,12 @@ type VolumeModifyParams struct {
 	*/
 	RestoreToRestorePath *string
 
+	/* RestoreToSnapshotForce.
+
+	   Set the force flag to true to perform a forced snapshot restore. When true, the restore proceeds even if newer snapshots exist or have protective metadata (such as owners, tags, or retention), bypassing those protections to allow the revert.
+	*/
+	RestoreToSnapshotForce *bool
+
 	/* RestoreToSnapshotName.
 
 	   Name of the snapshot to restore volume to the point in time the snapshot was taken.
@@ -203,6 +209,8 @@ func (o *VolumeModifyParams) SetDefaults() {
 
 		preserveLunIdsDefault = bool(false)
 
+		restoreToSnapshotForceDefault = bool(false)
+
 		returnTimeoutDefault = int64(0)
 
 		scheduledSnapshotNamingSchemeDefault = string("create_time")
@@ -215,6 +223,7 @@ func (o *VolumeModifyParams) SetDefaults() {
 	val := VolumeModifyParams{
 		AggressiveReadaheadMode:        &aggressiveReadaheadModeDefault,
 		PreserveLunIds:                 &preserveLunIdsDefault,
+		RestoreToSnapshotForce:         &restoreToSnapshotForceDefault,
 		ReturnTimeout:                  &returnTimeoutDefault,
 		ScheduledSnapshotNamingScheme:  &scheduledSnapshotNamingSchemeDefault,
 		SizingMethod:                   &sizingMethodDefault,
@@ -346,6 +355,17 @@ func (o *VolumeModifyParams) WithRestoreToRestorePath(restoreToRestorePath *stri
 // SetRestoreToRestorePath adds the restoreToRestorePath to the volume modify params
 func (o *VolumeModifyParams) SetRestoreToRestorePath(restoreToRestorePath *string) {
 	o.RestoreToRestorePath = restoreToRestorePath
+}
+
+// WithRestoreToSnapshotForce adds the restoreToSnapshotForce to the volume modify params
+func (o *VolumeModifyParams) WithRestoreToSnapshotForce(restoreToSnapshotForce *bool) *VolumeModifyParams {
+	o.SetRestoreToSnapshotForce(restoreToSnapshotForce)
+	return o
+}
+
+// SetRestoreToSnapshotForce adds the restoreToSnapshotForce to the volume modify params
+func (o *VolumeModifyParams) SetRestoreToSnapshotForce(restoreToSnapshotForce *bool) {
+	o.RestoreToSnapshotForce = restoreToSnapshotForce
 }
 
 // WithRestoreToSnapshotName adds the restoreToSnapshotName to the volume modify params
@@ -574,6 +594,23 @@ func (o *VolumeModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		if qRestoreToRestorePath != "" {
 
 			if err := r.SetQueryParam("restore_to.restore_path", qRestoreToRestorePath); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RestoreToSnapshotForce != nil {
+
+		// query param restore_to.snapshot.force
+		var qrRestoreToSnapshotForce bool
+
+		if o.RestoreToSnapshotForce != nil {
+			qrRestoreToSnapshotForce = *o.RestoreToSnapshotForce
+		}
+		qRestoreToSnapshotForce := swag.FormatBool(qrRestoreToSnapshotForce)
+		if qRestoreToSnapshotForce != "" {
+
+			if err := r.SetQueryParam("restore_to.snapshot.force", qRestoreToSnapshotForce); err != nil {
 				return err
 			}
 		}

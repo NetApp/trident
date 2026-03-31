@@ -365,48 +365,48 @@ func (o *NvmeInterfaceCollectionGetParams) SetInterfaceType(interfaceType *strin
 	o.InterfaceType = interfaceType
 }
 
-// WithIPInterfaceIPAddress adds the iPInterfaceIPAddress to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceIPAddress(iPInterfaceIPAddress *string) *NvmeInterfaceCollectionGetParams {
-	o.SetIPInterfaceIPAddress(iPInterfaceIPAddress)
+// WithIPInterfaceIPAddress adds the ipInterfaceIPAddress to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceIPAddress(ipInterfaceIPAddress *string) *NvmeInterfaceCollectionGetParams {
+	o.SetIPInterfaceIPAddress(ipInterfaceIPAddress)
 	return o
 }
 
 // SetIPInterfaceIPAddress adds the ipInterfaceIpAddress to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceIPAddress(iPInterfaceIPAddress *string) {
-	o.IPInterfaceIPAddress = iPInterfaceIPAddress
+func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceIPAddress(ipInterfaceIPAddress *string) {
+	o.IPInterfaceIPAddress = ipInterfaceIPAddress
 }
 
-// WithIPInterfaceLocationPortName adds the iPInterfaceLocationPortName to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceLocationPortName(iPInterfaceLocationPortName *string) *NvmeInterfaceCollectionGetParams {
-	o.SetIPInterfaceLocationPortName(iPInterfaceLocationPortName)
+// WithIPInterfaceLocationPortName adds the ipInterfaceLocationPortName to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceLocationPortName(ipInterfaceLocationPortName *string) *NvmeInterfaceCollectionGetParams {
+	o.SetIPInterfaceLocationPortName(ipInterfaceLocationPortName)
 	return o
 }
 
 // SetIPInterfaceLocationPortName adds the ipInterfaceLocationPortName to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceLocationPortName(iPInterfaceLocationPortName *string) {
-	o.IPInterfaceLocationPortName = iPInterfaceLocationPortName
+func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceLocationPortName(ipInterfaceLocationPortName *string) {
+	o.IPInterfaceLocationPortName = ipInterfaceLocationPortName
 }
 
-// WithIPInterfaceLocationPortNodeName adds the iPInterfaceLocationPortNodeName to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceLocationPortNodeName(iPInterfaceLocationPortNodeName *string) *NvmeInterfaceCollectionGetParams {
-	o.SetIPInterfaceLocationPortNodeName(iPInterfaceLocationPortNodeName)
+// WithIPInterfaceLocationPortNodeName adds the ipInterfaceLocationPortNodeName to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceLocationPortNodeName(ipInterfaceLocationPortNodeName *string) *NvmeInterfaceCollectionGetParams {
+	o.SetIPInterfaceLocationPortNodeName(ipInterfaceLocationPortNodeName)
 	return o
 }
 
 // SetIPInterfaceLocationPortNodeName adds the ipInterfaceLocationPortNodeName to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceLocationPortNodeName(iPInterfaceLocationPortNodeName *string) {
-	o.IPInterfaceLocationPortNodeName = iPInterfaceLocationPortNodeName
+func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceLocationPortNodeName(ipInterfaceLocationPortNodeName *string) {
+	o.IPInterfaceLocationPortNodeName = ipInterfaceLocationPortNodeName
 }
 
-// WithIPInterfaceLocationPortUUID adds the iPInterfaceLocationPortUUID to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceLocationPortUUID(iPInterfaceLocationPortUUID *string) *NvmeInterfaceCollectionGetParams {
-	o.SetIPInterfaceLocationPortUUID(iPInterfaceLocationPortUUID)
+// WithIPInterfaceLocationPortUUID adds the ipInterfaceLocationPortUUID to the nvme interface collection get params
+func (o *NvmeInterfaceCollectionGetParams) WithIPInterfaceLocationPortUUID(ipInterfaceLocationPortUUID *string) *NvmeInterfaceCollectionGetParams {
+	o.SetIPInterfaceLocationPortUUID(ipInterfaceLocationPortUUID)
 	return o
 }
 
 // SetIPInterfaceLocationPortUUID adds the ipInterfaceLocationPortUuid to the nvme interface collection get params
-func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceLocationPortUUID(iPInterfaceLocationPortUUID *string) {
-	o.IPInterfaceLocationPortUUID = iPInterfaceLocationPortUUID
+func (o *NvmeInterfaceCollectionGetParams) SetIPInterfaceLocationPortUUID(ipInterfaceLocationPortUUID *string) {
+	o.IPInterfaceLocationPortUUID = ipInterfaceLocationPortUUID
 }
 
 // WithMaxRecords adds the maxRecords to the nvme interface collection get params

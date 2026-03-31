@@ -402,12 +402,6 @@ type DcnNodeDeleteCollectionParams struct {
 	*/
 	UUID *string
 
-	/* VendorSerialNumber.
-
-	   Filter by vendor_serial_number
-	*/
-	VendorSerialNumber *string
-
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -1095,17 +1089,6 @@ func (o *DcnNodeDeleteCollectionParams) WithUUID(uuid *string) *DcnNodeDeleteCol
 // SetUUID adds the uuid to the dcn node delete collection params
 func (o *DcnNodeDeleteCollectionParams) SetUUID(uuid *string) {
 	o.UUID = uuid
-}
-
-// WithVendorSerialNumber adds the vendorSerialNumber to the dcn node delete collection params
-func (o *DcnNodeDeleteCollectionParams) WithVendorSerialNumber(vendorSerialNumber *string) *DcnNodeDeleteCollectionParams {
-	o.SetVendorSerialNumber(vendorSerialNumber)
-	return o
-}
-
-// SetVendorSerialNumber adds the vendorSerialNumber to the dcn node delete collection params
-func (o *DcnNodeDeleteCollectionParams) SetVendorSerialNumber(vendorSerialNumber *string) {
-	o.VendorSerialNumber = vendorSerialNumber
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -2049,23 +2032,6 @@ func (o *DcnNodeDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, 
 		if qUUID != "" {
 
 			if err := r.SetQueryParam("uuid", qUUID); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.VendorSerialNumber != nil {
-
-		// query param vendor_serial_number
-		var qrVendorSerialNumber string
-
-		if o.VendorSerialNumber != nil {
-			qrVendorSerialNumber = *o.VendorSerialNumber
-		}
-		qVendorSerialNumber := qrVendorSerialNumber
-		if qVendorSerialNumber != "" {
-
-			if err := r.SetQueryParam("vendor_serial_number", qVendorSerialNumber); err != nil {
 				return err
 			}
 		}

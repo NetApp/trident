@@ -14,6 +14,7 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 )
 
 // NewLunMapDeleteParams creates a new LunMapDeleteParams object,
@@ -67,6 +68,13 @@ type LunMapDeleteParams struct {
 
 	*/
 	IgroupUUID string
+
+	/* LocalDeleteOnly.
+
+	   Delete the local map and set the `replicated` property of the peer map to _false_.
+
+	*/
+	LocalDeleteOnly *bool
 
 	/* LunUUID.
 
@@ -139,6 +147,17 @@ func (o *LunMapDeleteParams) SetIgroupUUID(igroupUUID string) {
 	o.IgroupUUID = igroupUUID
 }
 
+// WithLocalDeleteOnly adds the localDeleteOnly to the lun map delete params
+func (o *LunMapDeleteParams) WithLocalDeleteOnly(localDeleteOnly *bool) *LunMapDeleteParams {
+	o.SetLocalDeleteOnly(localDeleteOnly)
+	return o
+}
+
+// SetLocalDeleteOnly adds the localDeleteOnly to the lun map delete params
+func (o *LunMapDeleteParams) SetLocalDeleteOnly(localDeleteOnly *bool) {
+	o.LocalDeleteOnly = localDeleteOnly
+}
+
 // WithLunUUID adds the lunUUID to the lun map delete params
 func (o *LunMapDeleteParams) WithLunUUID(lunUUID string) *LunMapDeleteParams {
 	o.SetLunUUID(lunUUID)
@@ -161,6 +180,23 @@ func (o *LunMapDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 	// path param igroup.uuid
 	if err := r.SetPathParam("igroup.uuid", o.IgroupUUID); err != nil {
 		return err
+	}
+
+	if o.LocalDeleteOnly != nil {
+
+		// query param local_delete_only
+		var qrLocalDeleteOnly bool
+
+		if o.LocalDeleteOnly != nil {
+			qrLocalDeleteOnly = *o.LocalDeleteOnly
+		}
+		qLocalDeleteOnly := swag.FormatBool(qrLocalDeleteOnly)
+		if qLocalDeleteOnly != "" {
+
+			if err := r.SetQueryParam("local_delete_only", qLocalDeleteOnly); err != nil {
+				return err
+			}
+		}
 	}
 
 	// path param lun.uuid

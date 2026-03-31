@@ -211,15 +211,15 @@ func (o *HostsSettingsGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithDNSTTLEnabled adds the dNSTTLEnabled to the hosts settings get params
-func (o *HostsSettingsGetParams) WithDNSTTLEnabled(dNSTTLEnabled *bool) *HostsSettingsGetParams {
-	o.SetDNSTTLEnabled(dNSTTLEnabled)
+// WithDNSTTLEnabled adds the dnsTTLEnabled to the hosts settings get params
+func (o *HostsSettingsGetParams) WithDNSTTLEnabled(dnsTTLEnabled *bool) *HostsSettingsGetParams {
+	o.SetDNSTTLEnabled(dnsTTLEnabled)
 	return o
 }
 
 // SetDNSTTLEnabled adds the dnsTtlEnabled to the hosts settings get params
-func (o *HostsSettingsGetParams) SetDNSTTLEnabled(dNSTTLEnabled *bool) {
-	o.DNSTTLEnabled = dNSTTLEnabled
+func (o *HostsSettingsGetParams) SetDNSTTLEnabled(dnsTTLEnabled *bool) {
+	o.DNSTTLEnabled = dnsTTLEnabled
 }
 
 // WithEnabled adds the enabled to the hosts settings get params

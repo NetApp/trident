@@ -247,15 +247,15 @@ func (o *AccountDuoDeleteCollectionParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAPIHost adds the aPIHost to the account duo delete collection params
-func (o *AccountDuoDeleteCollectionParams) WithAPIHost(aPIHost *string) *AccountDuoDeleteCollectionParams {
-	o.SetAPIHost(aPIHost)
+// WithAPIHost adds the apiHost to the account duo delete collection params
+func (o *AccountDuoDeleteCollectionParams) WithAPIHost(apiHost *string) *AccountDuoDeleteCollectionParams {
+	o.SetAPIHost(apiHost)
 	return o
 }
 
 // SetAPIHost adds the apiHost to the account duo delete collection params
-func (o *AccountDuoDeleteCollectionParams) SetAPIHost(aPIHost *string) {
-	o.APIHost = aPIHost
+func (o *AccountDuoDeleteCollectionParams) SetAPIHost(apiHost *string) {
+	o.APIHost = apiHost
 }
 
 // WithAutoPush adds the autoPush to the account duo delete collection params
@@ -313,15 +313,15 @@ func (o *AccountDuoDeleteCollectionParams) SetFingerprint(fingerprint *string) {
 	o.Fingerprint = fingerprint
 }
 
-// WithHTTPProxy adds the hTTPProxy to the account duo delete collection params
-func (o *AccountDuoDeleteCollectionParams) WithHTTPProxy(hTTPProxy *string) *AccountDuoDeleteCollectionParams {
-	o.SetHTTPProxy(hTTPProxy)
+// WithHTTPProxy adds the httpProxy to the account duo delete collection params
+func (o *AccountDuoDeleteCollectionParams) WithHTTPProxy(httpProxy *string) *AccountDuoDeleteCollectionParams {
+	o.SetHTTPProxy(httpProxy)
 	return o
 }
 
 // SetHTTPProxy adds the httpProxy to the account duo delete collection params
-func (o *AccountDuoDeleteCollectionParams) SetHTTPProxy(hTTPProxy *string) {
-	o.HTTPProxy = hTTPProxy
+func (o *AccountDuoDeleteCollectionParams) SetHTTPProxy(httpProxy *string) {
+	o.HTTPProxy = httpProxy
 }
 
 // WithInfo adds the info to the account duo delete collection params

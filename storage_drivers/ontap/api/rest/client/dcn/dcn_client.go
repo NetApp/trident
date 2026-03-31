@@ -62,6 +62,10 @@ type ClientService interface {
 
 	DcnNodeModifyCollection(params *DcnNodeModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnNodeModifyCollectionOK, *DcnNodeModifyCollectionAccepted, error)
 
+	DcnStatusGet(params *DcnStatusGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnStatusGetOK, error)
+
+	DcnStatusModify(params *DcnStatusModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnStatusModifyOK, *DcnStatusModifyAccepted, error)
+
 	SetTransport(transport runtime.ClientTransport)
 }
 
@@ -740,6 +744,86 @@ func (a *Client) DcnNodeModifyCollection(params *DcnNodeModifyCollectionParams, 
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*DcnNodeModifyCollectionDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+DcnStatusGet Retrieves the ONTAP status related to compute cluster compatibility and node discovery.
+*/
+func (a *Client) DcnStatusGet(params *DcnStatusGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnStatusGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDcnStatusGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "dcn_status_get",
+		Method:             "GET",
+		PathPattern:        "/dcn",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DcnStatusGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DcnStatusGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DcnStatusGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	DcnStatusModify Modify the ONTAP status related to compute cluster support. Only `discoverability.enabled` is writable.
+
+Compatibility-related fields are read-only and returned in responses.
+*/
+func (a *Client) DcnStatusModify(params *DcnStatusModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DcnStatusModifyOK, *DcnStatusModifyAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDcnStatusModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "dcn_status_modify",
+		Method:             "PATCH",
+		PathPattern:        "/dcn",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &DcnStatusModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, nil, err
+	}
+	switch value := result.(type) {
+	case *DcnStatusModifyOK:
+		return value, nil, nil
+	case *DcnStatusModifyAccepted:
+		return nil, value, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DcnStatusModifyDefault)
 	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

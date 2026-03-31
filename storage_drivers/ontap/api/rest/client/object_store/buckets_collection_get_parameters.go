@@ -278,11 +278,29 @@ type BucketsCollectionGetParams struct {
 	*/
 	PolicyStatementsConditionsDelimiters *string
 
+	/* PolicyStatementsConditionsIfMatch.
+
+	   Filter by policy.statements.conditions.if_match
+	*/
+	PolicyStatementsConditionsIfMatch *string
+
+	/* PolicyStatementsConditionsIfNoneMatch.
+
+	   Filter by policy.statements.conditions.if_none_match
+	*/
+	PolicyStatementsConditionsIfNoneMatch *bool
+
 	/* PolicyStatementsConditionsMaxKeys.
 
 	   Filter by policy.statements.conditions.max_keys
 	*/
 	PolicyStatementsConditionsMaxKeys *int64
+
+	/* PolicyStatementsConditionsObjectCreationOperation.
+
+	   Filter by policy.statements.conditions.object_creation_operation
+	*/
+	PolicyStatementsConditionsObjectCreationOperation *bool
 
 	/* PolicyStatementsConditionsOperator.
 
@@ -455,6 +473,30 @@ type BucketsCollectionGetParams struct {
 	   Filter by snapshot_policy.uuid
 	*/
 	SnapshotPolicyUUID *string
+
+	/* SnapshotRestoreObjectsRemaining.
+
+	   Filter by snapshot_restore.objects_remaining
+	*/
+	SnapshotRestoreObjectsRemaining *int64
+
+	/* SnapshotRestoreProgress.
+
+	   Filter by snapshot_restore.progress
+	*/
+	SnapshotRestoreProgress *int64
+
+	/* SnapshotRestoreSnapshot.
+
+	   Filter by snapshot_restore.snapshot
+	*/
+	SnapshotRestoreSnapshot *string
+
+	/* SnapshotRestoreState.
+
+	   Filter by snapshot_restore.state
+	*/
+	SnapshotRestoreState *string
 
 	/* SvmName.
 
@@ -961,6 +1003,28 @@ func (o *BucketsCollectionGetParams) SetPolicyStatementsConditionsDelimiters(pol
 	o.PolicyStatementsConditionsDelimiters = policyStatementsConditionsDelimiters
 }
 
+// WithPolicyStatementsConditionsIfMatch adds the policyStatementsConditionsIfMatch to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithPolicyStatementsConditionsIfMatch(policyStatementsConditionsIfMatch *string) *BucketsCollectionGetParams {
+	o.SetPolicyStatementsConditionsIfMatch(policyStatementsConditionsIfMatch)
+	return o
+}
+
+// SetPolicyStatementsConditionsIfMatch adds the policyStatementsConditionsIfMatch to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetPolicyStatementsConditionsIfMatch(policyStatementsConditionsIfMatch *string) {
+	o.PolicyStatementsConditionsIfMatch = policyStatementsConditionsIfMatch
+}
+
+// WithPolicyStatementsConditionsIfNoneMatch adds the policyStatementsConditionsIfNoneMatch to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithPolicyStatementsConditionsIfNoneMatch(policyStatementsConditionsIfNoneMatch *bool) *BucketsCollectionGetParams {
+	o.SetPolicyStatementsConditionsIfNoneMatch(policyStatementsConditionsIfNoneMatch)
+	return o
+}
+
+// SetPolicyStatementsConditionsIfNoneMatch adds the policyStatementsConditionsIfNoneMatch to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetPolicyStatementsConditionsIfNoneMatch(policyStatementsConditionsIfNoneMatch *bool) {
+	o.PolicyStatementsConditionsIfNoneMatch = policyStatementsConditionsIfNoneMatch
+}
+
 // WithPolicyStatementsConditionsMaxKeys adds the policyStatementsConditionsMaxKeys to the buckets collection get params
 func (o *BucketsCollectionGetParams) WithPolicyStatementsConditionsMaxKeys(policyStatementsConditionsMaxKeys *int64) *BucketsCollectionGetParams {
 	o.SetPolicyStatementsConditionsMaxKeys(policyStatementsConditionsMaxKeys)
@@ -970,6 +1034,17 @@ func (o *BucketsCollectionGetParams) WithPolicyStatementsConditionsMaxKeys(polic
 // SetPolicyStatementsConditionsMaxKeys adds the policyStatementsConditionsMaxKeys to the buckets collection get params
 func (o *BucketsCollectionGetParams) SetPolicyStatementsConditionsMaxKeys(policyStatementsConditionsMaxKeys *int64) {
 	o.PolicyStatementsConditionsMaxKeys = policyStatementsConditionsMaxKeys
+}
+
+// WithPolicyStatementsConditionsObjectCreationOperation adds the policyStatementsConditionsObjectCreationOperation to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithPolicyStatementsConditionsObjectCreationOperation(policyStatementsConditionsObjectCreationOperation *bool) *BucketsCollectionGetParams {
+	o.SetPolicyStatementsConditionsObjectCreationOperation(policyStatementsConditionsObjectCreationOperation)
+	return o
+}
+
+// SetPolicyStatementsConditionsObjectCreationOperation adds the policyStatementsConditionsObjectCreationOperation to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetPolicyStatementsConditionsObjectCreationOperation(policyStatementsConditionsObjectCreationOperation *bool) {
+	o.PolicyStatementsConditionsObjectCreationOperation = policyStatementsConditionsObjectCreationOperation
 }
 
 // WithPolicyStatementsConditionsOperator adds the policyStatementsConditionsOperator to the buckets collection get params
@@ -1278,6 +1353,50 @@ func (o *BucketsCollectionGetParams) WithSnapshotPolicyUUID(snapshotPolicyUUID *
 // SetSnapshotPolicyUUID adds the snapshotPolicyUuid to the buckets collection get params
 func (o *BucketsCollectionGetParams) SetSnapshotPolicyUUID(snapshotPolicyUUID *string) {
 	o.SnapshotPolicyUUID = snapshotPolicyUUID
+}
+
+// WithSnapshotRestoreObjectsRemaining adds the snapshotRestoreObjectsRemaining to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithSnapshotRestoreObjectsRemaining(snapshotRestoreObjectsRemaining *int64) *BucketsCollectionGetParams {
+	o.SetSnapshotRestoreObjectsRemaining(snapshotRestoreObjectsRemaining)
+	return o
+}
+
+// SetSnapshotRestoreObjectsRemaining adds the snapshotRestoreObjectsRemaining to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetSnapshotRestoreObjectsRemaining(snapshotRestoreObjectsRemaining *int64) {
+	o.SnapshotRestoreObjectsRemaining = snapshotRestoreObjectsRemaining
+}
+
+// WithSnapshotRestoreProgress adds the snapshotRestoreProgress to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithSnapshotRestoreProgress(snapshotRestoreProgress *int64) *BucketsCollectionGetParams {
+	o.SetSnapshotRestoreProgress(snapshotRestoreProgress)
+	return o
+}
+
+// SetSnapshotRestoreProgress adds the snapshotRestoreProgress to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetSnapshotRestoreProgress(snapshotRestoreProgress *int64) {
+	o.SnapshotRestoreProgress = snapshotRestoreProgress
+}
+
+// WithSnapshotRestoreSnapshot adds the snapshotRestoreSnapshot to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithSnapshotRestoreSnapshot(snapshotRestoreSnapshot *string) *BucketsCollectionGetParams {
+	o.SetSnapshotRestoreSnapshot(snapshotRestoreSnapshot)
+	return o
+}
+
+// SetSnapshotRestoreSnapshot adds the snapshotRestoreSnapshot to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetSnapshotRestoreSnapshot(snapshotRestoreSnapshot *string) {
+	o.SnapshotRestoreSnapshot = snapshotRestoreSnapshot
+}
+
+// WithSnapshotRestoreState adds the snapshotRestoreState to the buckets collection get params
+func (o *BucketsCollectionGetParams) WithSnapshotRestoreState(snapshotRestoreState *string) *BucketsCollectionGetParams {
+	o.SetSnapshotRestoreState(snapshotRestoreState)
+	return o
+}
+
+// SetSnapshotRestoreState adds the snapshotRestoreState to the buckets collection get params
+func (o *BucketsCollectionGetParams) SetSnapshotRestoreState(snapshotRestoreState *string) {
+	o.SnapshotRestoreState = snapshotRestoreState
 }
 
 // WithSvmName adds the svmName to the buckets collection get params
@@ -1965,6 +2084,40 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
+	if o.PolicyStatementsConditionsIfMatch != nil {
+
+		// query param policy.statements.conditions.if_match
+		var qrPolicyStatementsConditionsIfMatch string
+
+		if o.PolicyStatementsConditionsIfMatch != nil {
+			qrPolicyStatementsConditionsIfMatch = *o.PolicyStatementsConditionsIfMatch
+		}
+		qPolicyStatementsConditionsIfMatch := qrPolicyStatementsConditionsIfMatch
+		if qPolicyStatementsConditionsIfMatch != "" {
+
+			if err := r.SetQueryParam("policy.statements.conditions.if_match", qPolicyStatementsConditionsIfMatch); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PolicyStatementsConditionsIfNoneMatch != nil {
+
+		// query param policy.statements.conditions.if_none_match
+		var qrPolicyStatementsConditionsIfNoneMatch bool
+
+		if o.PolicyStatementsConditionsIfNoneMatch != nil {
+			qrPolicyStatementsConditionsIfNoneMatch = *o.PolicyStatementsConditionsIfNoneMatch
+		}
+		qPolicyStatementsConditionsIfNoneMatch := swag.FormatBool(qrPolicyStatementsConditionsIfNoneMatch)
+		if qPolicyStatementsConditionsIfNoneMatch != "" {
+
+			if err := r.SetQueryParam("policy.statements.conditions.if_none_match", qPolicyStatementsConditionsIfNoneMatch); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.PolicyStatementsConditionsMaxKeys != nil {
 
 		// query param policy.statements.conditions.max_keys
@@ -1977,6 +2130,23 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		if qPolicyStatementsConditionsMaxKeys != "" {
 
 			if err := r.SetQueryParam("policy.statements.conditions.max_keys", qPolicyStatementsConditionsMaxKeys); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PolicyStatementsConditionsObjectCreationOperation != nil {
+
+		// query param policy.statements.conditions.object_creation_operation
+		var qrPolicyStatementsConditionsObjectCreationOperation bool
+
+		if o.PolicyStatementsConditionsObjectCreationOperation != nil {
+			qrPolicyStatementsConditionsObjectCreationOperation = *o.PolicyStatementsConditionsObjectCreationOperation
+		}
+		qPolicyStatementsConditionsObjectCreationOperation := swag.FormatBool(qrPolicyStatementsConditionsObjectCreationOperation)
+		if qPolicyStatementsConditionsObjectCreationOperation != "" {
+
+			if err := r.SetQueryParam("policy.statements.conditions.object_creation_operation", qPolicyStatementsConditionsObjectCreationOperation); err != nil {
 				return err
 			}
 		}
@@ -2453,6 +2623,74 @@ func (o *BucketsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		if qSnapshotPolicyUUID != "" {
 
 			if err := r.SetQueryParam("snapshot_policy.uuid", qSnapshotPolicyUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnapshotRestoreObjectsRemaining != nil {
+
+		// query param snapshot_restore.objects_remaining
+		var qrSnapshotRestoreObjectsRemaining int64
+
+		if o.SnapshotRestoreObjectsRemaining != nil {
+			qrSnapshotRestoreObjectsRemaining = *o.SnapshotRestoreObjectsRemaining
+		}
+		qSnapshotRestoreObjectsRemaining := swag.FormatInt64(qrSnapshotRestoreObjectsRemaining)
+		if qSnapshotRestoreObjectsRemaining != "" {
+
+			if err := r.SetQueryParam("snapshot_restore.objects_remaining", qSnapshotRestoreObjectsRemaining); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnapshotRestoreProgress != nil {
+
+		// query param snapshot_restore.progress
+		var qrSnapshotRestoreProgress int64
+
+		if o.SnapshotRestoreProgress != nil {
+			qrSnapshotRestoreProgress = *o.SnapshotRestoreProgress
+		}
+		qSnapshotRestoreProgress := swag.FormatInt64(qrSnapshotRestoreProgress)
+		if qSnapshotRestoreProgress != "" {
+
+			if err := r.SetQueryParam("snapshot_restore.progress", qSnapshotRestoreProgress); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnapshotRestoreSnapshot != nil {
+
+		// query param snapshot_restore.snapshot
+		var qrSnapshotRestoreSnapshot string
+
+		if o.SnapshotRestoreSnapshot != nil {
+			qrSnapshotRestoreSnapshot = *o.SnapshotRestoreSnapshot
+		}
+		qSnapshotRestoreSnapshot := qrSnapshotRestoreSnapshot
+		if qSnapshotRestoreSnapshot != "" {
+
+			if err := r.SetQueryParam("snapshot_restore.snapshot", qSnapshotRestoreSnapshot); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnapshotRestoreState != nil {
+
+		// query param snapshot_restore.state
+		var qrSnapshotRestoreState string
+
+		if o.SnapshotRestoreState != nil {
+			qrSnapshotRestoreState = *o.SnapshotRestoreState
+		}
+		qSnapshotRestoreState := qrSnapshotRestoreState
+		if qSnapshotRestoreState != "" {
+
+			if err := r.SetQueryParam("snapshot_restore.state", qSnapshotRestoreState); err != nil {
 				return err
 			}
 		}

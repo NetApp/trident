@@ -203,15 +203,15 @@ func (o *SnmpTraphostsCollectionGetParams) SetHost(host *string) {
 	o.Host = host
 }
 
-// WithIPAddress adds the iPAddress to the snmp traphosts collection get params
-func (o *SnmpTraphostsCollectionGetParams) WithIPAddress(iPAddress *string) *SnmpTraphostsCollectionGetParams {
-	o.SetIPAddress(iPAddress)
+// WithIPAddress adds the ipAddress to the snmp traphosts collection get params
+func (o *SnmpTraphostsCollectionGetParams) WithIPAddress(ipAddress *string) *SnmpTraphostsCollectionGetParams {
+	o.SetIPAddress(ipAddress)
 	return o
 }
 
 // SetIPAddress adds the ipAddress to the snmp traphosts collection get params
-func (o *SnmpTraphostsCollectionGetParams) SetIPAddress(iPAddress *string) {
-	o.IPAddress = iPAddress
+func (o *SnmpTraphostsCollectionGetParams) SetIPAddress(ipAddress *string) {
+	o.IPAddress = ipAddress
 }
 
 // WithMaxRecords adds the maxRecords to the snmp traphosts collection get params

@@ -196,6 +196,7 @@ func (a *Client) AllSvmBucketsCollectionGet(params *AllSvmBucketsCollectionGetPa
 * `vserver object-store-server bucket policy statement show`
 * `vserver object-store-server bucket policy-statement-condition show`
 * `vserver object-store-server bucket lifecycle-management-rule show`
+* `vserver object-store-server bucket snapshot restore show`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/buckets`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets)
 */
@@ -284,6 +285,7 @@ func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCol
 - "qos_policy" can be specified if a bucket needs to be attached to a QoS group policy during creation time.
 - "audit_event_selector" can be specified if a bucket needs to be specify access and permission type for auditing.
 - A CORS configuration can be specified along with bucket creation.
+- If no optional size parameter is provided, the system will attempt to provision a bucket with a default size of 800GB. If there is not enough storage space available, a smaller bucket size is tried until the minimum bucket size limit of 100GB is reached.
 </personalities>
 <personalities supports=aiml>
 ### Important notes
@@ -292,6 +294,7 @@ func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCol
 - "qos_policy" can be specified if a bucket needs to be attached to a QoS group policy during creation time.
 - "audit_event_selector" can be specified if a bucket needs to be specify access and permission type for auditing.
 - A CORS configuration can be specified along with bucket creation.
+- If no optional size parameter is provided, the system will attempt to provision a bucket with a default size of 1TB * number of nodes. If there is not enough storage space available, the request will fail.
 </personalities>
 ### Required properties
 * `svm.uuid or svm.name` - Existing SVM in which to create the bucket configuration.
@@ -315,7 +318,7 @@ func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCol
 * `snapshot_policy` - Snapshot policy for the bucket.
 * `is_nas_path_mutable` - Specifies whether the NAS bucket mapping with a NAS volume can change according to the changes in the NAS volume junction-path due to volume operations like mount and unmount.
 ### Default property values
-* `size` - 800MB
+* `size` - 800GB
 * `comment` - ""
 * `aggregates` - No default value.
 * `constituents_per_aggregate` - _4_ , if an aggregates list is specified. Otherwise, no default value.
@@ -344,7 +347,7 @@ func (a *Client) PerformanceS3MetricCollectionGet(params *PerformanceS3MetricCol
 * `snapshot_policy` - Snapshot policy for the bucket.
 * `is_nas_path_mutable` - Specifies whether the NAS bucket mapping with a NAS volume can change according to the changes in the NAS volume junction-path due to volume operations like mount and unmount.
 ### Default property values
-* `size` - 800MB
+* `size` - 1TB * number of nodes
 * `comment` - ""
 * `policy.statements.actions` - GetObject, PutObject, DeleteObject, ListBucket, ListBucketMultipartUploads, ListMultipartUploadParts, GetObjectTagging, PutObjectTagging, DeleteObjectTagging, GetBucketVersioning, PutBucketVersioning.
 * `policy.statements.principals` - all S3 users and groups in the SVM or the NAS groups.
@@ -497,6 +500,7 @@ func (a *Client) S3BucketDeleteCollection(params *S3BucketDeleteCollectionParams
 * `vserver object-store-server bucket policy-statement-condition show`
 * `vserver object-store-server bucket lifecycle-management-rule show`
 * `vserver object-store-server bucket cors-rule show`
+* `vserver object-store-server bucket snapshot restore show`
 ### Learn more
 * [`DOC /protocols/s3/buckets`](#docs-object-store-protocols_s3_buckets)
 */
@@ -874,6 +878,7 @@ func (a *Client) S3BucketLifecycleRuleModifyCollection(params *S3BucketLifecycle
   - `retention.default_period` - Specifies the duration of default-retention applicable for objects on the object store bucket.
   - `cors` - Specifying CORS rules enables the bucket to service the cross-origin requests. Note that the new CORS configuration specified will replace the existing one. If you need to retain any of the existing CORS rules, specify those rules again as part of the new CORS rules. To remove all the existing rules, specify an empty CORS configuration as input.
   - `snapshot_policy` - Snapshot policy for the bucket.
+  - `restore_to` - Start a snapshot restore operation for S3 bucket
 
 ### Related ONTAP commands
 * `vserver object-store-server bucket modify`
@@ -881,6 +886,7 @@ func (a *Client) S3BucketLifecycleRuleModifyCollection(params *S3BucketLifecycle
 * `vserver object-store-server bucket policy-statement-condition modify`
 * `vserver object-store-server bucket cors-rule create`
 * `vserver object-store-server bucket cors-rule delete`
+* `vserver object-store-server bucket snapshot restore start`
 ### Learn more
 * [`DOC /protocols/s3/buckets`](#docs-object-store-protocols_s3_buckets)
 */
@@ -1187,6 +1193,7 @@ func (a *Client) S3BucketSnapshotGet(params *S3BucketSnapshotGetParams, authInfo
 - "qos_policy" can be specified if a bucket needs to be attached to a QoS group policy during creation time.
 - "audit_event_selector" can be specified if a bucket needs to be specify access and permission type for auditing.
 - Cross-origin resource sharing (CORS) configuration can be specified when a bucket is created.
+- If no optional size parameter is provided, the system will attempt to provision a bucket with a default size of 800GB. If there is not enough storage space available, a smaller bucket size is tried until the minimum bucket size limit of 100GB is reached.
 </personalities>
 <personalities supports=aiml>
 ### Important notes
@@ -1195,6 +1202,7 @@ func (a *Client) S3BucketSnapshotGet(params *S3BucketSnapshotGetParams, authInfo
 - "qos_policy" can be specified if a bucket needs to be attached to a QoS group policy during creation time.
 - "audit_event_selector" can be specified if a bucket needs to be specify access and permission type for auditing.
 - Cross-origin resource sharing (CORS) configuration can be specified when a bucket is created.
+- If no optional size parameter is provided, the system will attempt to provision a bucket with a default size of 1TB * number of nodes. If there is not enough storage space available, the request will fail.
 </personalities>
 ### Required properties
 * `svm.uuid` - Existing SVM in which to create the bucket configuration.
@@ -1218,6 +1226,7 @@ func (a *Client) S3BucketSnapshotGet(params *S3BucketSnapshotGetParams, authInfo
 * `snapshot_policy` - Snapshot policy for the bucket.
 * `is_consistent_etag` - Return a consistent ETag for NAS buckets.
 * `is_nas_path_mutable` - Specifies whether the NAS bucket mapping with a NAS volume can change according to the changes in the NAS volume junction-path due to volume operations like mount and unmount.
+* `snapshot_restore` - Specifies information regarding a snapshot restore operation on the bucket.
 ### Default property values
 * `size` - 800GB
 * `comment` - ""
@@ -1251,7 +1260,7 @@ func (a *Client) S3BucketSnapshotGet(params *S3BucketSnapshotGetParams, authInfo
 * `is_consistent_etag` - Return a consistent ETag for NAS buckets.
 * `is_nas_path_mutable` - Specifies whether the NAS bucket mapping with a NAS volume can change according to the changes in the NAS volume junction-path due to volume operations like mount and unmount.
 ### Default property values
-* `size` - 800MB
+* `size` - 1TB * number of nodes
 * `comment` - ""
 * `policy.statements.actions` - GetObject, PutObject, DeleteObject, ListBucket, ListBucketMultipartUploads, ListMultipartUploadParts, GetObjectTagging, PutObjectTagging, DeleteObjectTagging, GetBucketVersioning, PutBucketVersioning.
 * `policy.statements.principals` - all S3 users and groups in the SVM or the NAS groups.
@@ -1407,6 +1416,7 @@ func (a *Client) S3BucketSvmDeleteCollection(params *S3BucketSvmDeleteCollection
 * `vserver object-store-server bucket policy-statement-condition show`
 * `vserver object-store-server bucket lifecycle-management-rule show`
 * `vserver object-store-server bucket cors-rule show`
+* `vserver object-store-server bucket snapshot restore show`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/buckets`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets)
 */
@@ -1461,6 +1471,7 @@ func (a *Client) S3BucketSvmGet(params *S3BucketSvmGetParams, authInfo runtime.C
   - `cors` - Specifying CORS rules enables the bucket to service the cross-origin requests. New CORS rules are created after existing rules are deleted. To retain any of the existing rules, you need to specify those CORS rules again. To remove all the existing CORS rules, specify an empty CORS rules list.
   - `snapshot_policy` - Snapshot policy for the bucket.
   - `is_consistent_etag` - Return a consistent ETag for NAS buckets.
+  - `restore_to` - Start a snapshot restore operation for S3 bucket
 
 ### Related ONTAP commands
 * `vserver object-store-server bucket modify`
@@ -1468,6 +1479,7 @@ func (a *Client) S3BucketSvmGet(params *S3BucketSvmGetParams, authInfo runtime.C
 * `vserver object-store-server bucket policy-statement-condition modify`
 * `vserver object-store-server bucket cors-rule create`
 * `vserver object-store-server bucket cors-rule delete`
+* `vserver object-store-server bucket snapshot restore start`
 ### Learn more
 * [`DOC /protocols/s3/services/{svm.uuid}/buckets`](#docs-object-store-protocols_s3_services_{svm.uuid}_buckets)
 */

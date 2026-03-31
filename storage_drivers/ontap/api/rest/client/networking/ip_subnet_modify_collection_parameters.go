@@ -382,37 +382,37 @@ func (o *IPSubnetModifyCollectionParams) SetInfo(info IPSubnetModifyCollectionBo
 	o.Info = info
 }
 
-// WithIPRangesEnd adds the iPRangesEnd to the ip subnet modify collection params
-func (o *IPSubnetModifyCollectionParams) WithIPRangesEnd(iPRangesEnd *string) *IPSubnetModifyCollectionParams {
-	o.SetIPRangesEnd(iPRangesEnd)
+// WithIPRangesEnd adds the ipRangesEnd to the ip subnet modify collection params
+func (o *IPSubnetModifyCollectionParams) WithIPRangesEnd(ipRangesEnd *string) *IPSubnetModifyCollectionParams {
+	o.SetIPRangesEnd(ipRangesEnd)
 	return o
 }
 
 // SetIPRangesEnd adds the ipRangesEnd to the ip subnet modify collection params
-func (o *IPSubnetModifyCollectionParams) SetIPRangesEnd(iPRangesEnd *string) {
-	o.IPRangesEnd = iPRangesEnd
+func (o *IPSubnetModifyCollectionParams) SetIPRangesEnd(ipRangesEnd *string) {
+	o.IPRangesEnd = ipRangesEnd
 }
 
-// WithIPRangesFamily adds the iPRangesFamily to the ip subnet modify collection params
-func (o *IPSubnetModifyCollectionParams) WithIPRangesFamily(iPRangesFamily *string) *IPSubnetModifyCollectionParams {
-	o.SetIPRangesFamily(iPRangesFamily)
+// WithIPRangesFamily adds the ipRangesFamily to the ip subnet modify collection params
+func (o *IPSubnetModifyCollectionParams) WithIPRangesFamily(ipRangesFamily *string) *IPSubnetModifyCollectionParams {
+	o.SetIPRangesFamily(ipRangesFamily)
 	return o
 }
 
 // SetIPRangesFamily adds the ipRangesFamily to the ip subnet modify collection params
-func (o *IPSubnetModifyCollectionParams) SetIPRangesFamily(iPRangesFamily *string) {
-	o.IPRangesFamily = iPRangesFamily
+func (o *IPSubnetModifyCollectionParams) SetIPRangesFamily(ipRangesFamily *string) {
+	o.IPRangesFamily = ipRangesFamily
 }
 
-// WithIPRangesStart adds the iPRangesStart to the ip subnet modify collection params
-func (o *IPSubnetModifyCollectionParams) WithIPRangesStart(iPRangesStart *string) *IPSubnetModifyCollectionParams {
-	o.SetIPRangesStart(iPRangesStart)
+// WithIPRangesStart adds the ipRangesStart to the ip subnet modify collection params
+func (o *IPSubnetModifyCollectionParams) WithIPRangesStart(ipRangesStart *string) *IPSubnetModifyCollectionParams {
+	o.SetIPRangesStart(ipRangesStart)
 	return o
 }
 
 // SetIPRangesStart adds the ipRangesStart to the ip subnet modify collection params
-func (o *IPSubnetModifyCollectionParams) SetIPRangesStart(iPRangesStart *string) {
-	o.IPRangesStart = iPRangesStart
+func (o *IPSubnetModifyCollectionParams) SetIPRangesStart(ipRangesStart *string) {
+	o.IPRangesStart = ipRangesStart
 }
 
 // WithIpspaceName adds the ipspaceName to the ip subnet modify collection params

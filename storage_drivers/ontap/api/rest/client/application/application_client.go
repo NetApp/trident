@@ -6,8 +6,6 @@ package application
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"fmt"
-
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 )
@@ -1666,6 +1664,7 @@ func (a *Client) ConsistencyGroupMetricsCollectionGet(params *ConsistencyGroupMe
 
 <br>Note that this operation will never delete storage elements. You can specify only elements that should be added to the consistency group regardless of existing storage objects.
 <personalities supports=unified>Mapping or unmapping a consistency group from igroups or subsystems is not supported.</personalities>
+<personalities supports=aiml,unified>The QoS policy can be set using a consistency group PATCH operation only when provisioning new objects (for example, a new volume on an existing consistency group or a new volume on a new child consistency group).</personalities>
 ## Related ONTAP commands
 * `vserver consistency-group modify`
 */
@@ -2088,10 +2087,10 @@ func (a *Client) ConsistencyGroupSnapshotModifyCollection(params *ConsistencyGro
 </personalities>
 <personalities supports=aiml,unified>
 Creates one or more of the following:
-* New NAS FlexVol or FlexGroup volumes
-* S3 buckets
-* Access policies for NFS, CIFS and S3
-* FlexCache volumes
+  - New NAS FlexVol or FlexGroup volumes (with or without S3 buckets)
+  - Access policies for NFS, CIFS, and S3
+  - FlexCache volumes
+
 ## Required properties
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the container.
 * `volumes`
@@ -2134,9 +2133,9 @@ func (a *Client) ContainerCreate(params *ContainerCreateParams, authInfo runtime
 	case *ContainerCreateAccepted:
 		return nil, value, nil
 	}
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for application: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
+	// unexpected success response
+	unexpectedSuccess := result.(*ContainerCreateDefault)
+	return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 // SetTransport changes the transport on the client

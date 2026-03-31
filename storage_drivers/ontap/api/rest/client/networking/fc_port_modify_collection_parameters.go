@@ -354,6 +354,18 @@ type FcPortModifyCollectionParams struct {
 	*/
 	SupportedProtocols *string
 
+	/* TopologyConfigured.
+
+	   Filter by topology.configured
+	*/
+	TopologyConfigured *string
+
+	/* TopologySupported.
+
+	   Filter by topology.supported
+	*/
+	TopologySupported *string
+
 	/* TransceiverCapabilities.
 
 	   Filter by transceiver.capabilities
@@ -995,6 +1007,28 @@ func (o *FcPortModifyCollectionParams) WithSupportedProtocols(supportedProtocols
 // SetSupportedProtocols adds the supportedProtocols to the fc port modify collection params
 func (o *FcPortModifyCollectionParams) SetSupportedProtocols(supportedProtocols *string) {
 	o.SupportedProtocols = supportedProtocols
+}
+
+// WithTopologyConfigured adds the topologyConfigured to the fc port modify collection params
+func (o *FcPortModifyCollectionParams) WithTopologyConfigured(topologyConfigured *string) *FcPortModifyCollectionParams {
+	o.SetTopologyConfigured(topologyConfigured)
+	return o
+}
+
+// SetTopologyConfigured adds the topologyConfigured to the fc port modify collection params
+func (o *FcPortModifyCollectionParams) SetTopologyConfigured(topologyConfigured *string) {
+	o.TopologyConfigured = topologyConfigured
+}
+
+// WithTopologySupported adds the topologySupported to the fc port modify collection params
+func (o *FcPortModifyCollectionParams) WithTopologySupported(topologySupported *string) *FcPortModifyCollectionParams {
+	o.SetTopologySupported(topologySupported)
+	return o
+}
+
+// SetTopologySupported adds the topologySupported to the fc port modify collection params
+func (o *FcPortModifyCollectionParams) SetTopologySupported(topologySupported *string) {
+	o.TopologySupported = topologySupported
 }
 
 // WithTransceiverCapabilities adds the transceiverCapabilities to the fc port modify collection params
@@ -1879,6 +1913,40 @@ func (o *FcPortModifyCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 		if qSupportedProtocols != "" {
 
 			if err := r.SetQueryParam("supported_protocols", qSupportedProtocols); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TopologyConfigured != nil {
+
+		// query param topology.configured
+		var qrTopologyConfigured string
+
+		if o.TopologyConfigured != nil {
+			qrTopologyConfigured = *o.TopologyConfigured
+		}
+		qTopologyConfigured := qrTopologyConfigured
+		if qTopologyConfigured != "" {
+
+			if err := r.SetQueryParam("topology.configured", qTopologyConfigured); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TopologySupported != nil {
+
+		// query param topology.supported
+		var qrTopologySupported string
+
+		if o.TopologySupported != nil {
+			qrTopologySupported = *o.TopologySupported
+		}
+		qTopologySupported := qrTopologySupported
+		if qTopologySupported != "" {
+
+			if err := r.SetQueryParam("topology.supported", qTopologySupported); err != nil {
 				return err
 			}
 		}

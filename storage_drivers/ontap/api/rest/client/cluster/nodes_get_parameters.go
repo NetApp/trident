@@ -356,6 +356,30 @@ type NodesGetParams struct {
 	*/
 	HaGivebackStatusState *string
 
+	/* HaGivebackOfFailureCode.
+
+	   Filter by ha.giveback_of.failure.code
+	*/
+	HaGivebackOfFailureCode *int64
+
+	/* HaGivebackOfFailureMessage.
+
+	   Filter by ha.giveback_of.failure.message
+	*/
+	HaGivebackOfFailureMessage *string
+
+	/* HaGivebackOfState.
+
+	   Filter by ha.giveback_of.state
+	*/
+	HaGivebackOfState *string
+
+	/* HaGivebackOfPossible.
+
+	   Filter by ha.giveback_of_possible
+	*/
+	HaGivebackOfPossible *bool
+
 	/* HaInterconnectAdapter.
 
 	   Filter by ha.interconnect.adapter
@@ -379,6 +403,54 @@ type NodesGetParams struct {
 	   Filter by ha.partners.uuid
 	*/
 	HaPartnersUUID *string
+
+	/* HaPeeringDstPeerNode1Name.
+
+	   Filter by ha.peering.dst_peer_node1.name
+	*/
+	HaPeeringDstPeerNode1Name *string
+
+	/* HaPeeringDstPeerNode1UUID.
+
+	   Filter by ha.peering.dst_peer_node1.uuid
+	*/
+	HaPeeringDstPeerNode1UUID *string
+
+	/* HaPeeringDstPeerNode2Name.
+
+	   Filter by ha.peering.dst_peer_node2.name
+	*/
+	HaPeeringDstPeerNode2Name *string
+
+	/* HaPeeringDstPeerNode2UUID.
+
+	   Filter by ha.peering.dst_peer_node2.uuid
+	*/
+	HaPeeringDstPeerNode2UUID *string
+
+	/* HaPeeringDstPeerNode3Name.
+
+	   Filter by ha.peering.dst_peer_node3.name
+	*/
+	HaPeeringDstPeerNode3Name *string
+
+	/* HaPeeringDstPeerNode3UUID.
+
+	   Filter by ha.peering.dst_peer_node3.uuid
+	*/
+	HaPeeringDstPeerNode3UUID *string
+
+	/* HaPeeringIneligible.
+
+	   Filter by ha.peering.ineligible
+	*/
+	HaPeeringIneligible *bool
+
+	/* HaPeeringNodeProtectionLevel.
+
+	   Filter by ha.peering.node_protection_level
+	*/
+	HaPeeringNodeProtectionLevel *int64
 
 	/* HaPortsNumber.
 
@@ -421,6 +493,30 @@ type NodesGetParams struct {
 	   Filter by ha.takeover_check.takeover_possible
 	*/
 	HaTakeoverCheckTakeoverPossible *bool
+
+	/* HaTakeoverOfFailureCode.
+
+	   Filter by ha.takeover_of.failure.code
+	*/
+	HaTakeoverOfFailureCode *int64
+
+	/* HaTakeoverOfFailureMessage.
+
+	   Filter by ha.takeover_of.failure.message
+	*/
+	HaTakeoverOfFailureMessage *string
+
+	/* HaTakeoverOfState.
+
+	   Filter by ha.takeover_of.state
+	*/
+	HaTakeoverOfState *string
+
+	/* HaTakeoverOfPossible.
+
+	   Filter by ha.takeover_of_possible
+	*/
+	HaTakeoverOfPossible *bool
 
 	/* HaType.
 
@@ -648,17 +744,17 @@ type NodesGetParams struct {
 	*/
 	ServiceProcessorAPIServicePort *int64
 
-	/* ServiceProcessorAutoConfigIPV4Subnet.
+	/* ServiceProcessorAutoConfigIPv4Subnet.
 
 	   Filter by service_processor.auto_config.ipv4_subnet
 	*/
-	ServiceProcessorAutoConfigIPV4Subnet *string
+	ServiceProcessorAutoConfigIPv4Subnet *string
 
-	/* ServiceProcessorAutoConfigIPV6Subnet.
+	/* ServiceProcessorAutoConfigIPv6Subnet.
 
 	   Filter by service_processor.auto_config.ipv6_subnet
 	*/
-	ServiceProcessorAutoConfigIPV6Subnet *string
+	ServiceProcessorAutoConfigIPv6Subnet *string
 
 	/* ServiceProcessorAutoupdateEnabled.
 
@@ -696,83 +792,83 @@ type NodesGetParams struct {
 	*/
 	ServiceProcessorFirmwareVersion *string
 
-	/* ServiceProcessorIPV4InterfaceAddress.
+	/* ServiceProcessorIPv4InterfaceAddress.
 
 	   Filter by service_processor.ipv4_interface.address
 	*/
-	ServiceProcessorIPV4InterfaceAddress *string
+	ServiceProcessorIPv4InterfaceAddress *string
 
-	/* ServiceProcessorIPV4InterfaceEnabled.
+	/* ServiceProcessorIPv4InterfaceEnabled.
 
 	   Filter by service_processor.ipv4_interface.enabled
 	*/
-	ServiceProcessorIPV4InterfaceEnabled *bool
+	ServiceProcessorIPv4InterfaceEnabled *bool
 
-	/* ServiceProcessorIPV4InterfaceGateway.
+	/* ServiceProcessorIPv4InterfaceGateway.
 
 	   Filter by service_processor.ipv4_interface.gateway
 	*/
-	ServiceProcessorIPV4InterfaceGateway *string
+	ServiceProcessorIPv4InterfaceGateway *string
 
-	/* ServiceProcessorIPV4InterfaceNetmask.
+	/* ServiceProcessorIPv4InterfaceNetmask.
 
 	   Filter by service_processor.ipv4_interface.netmask
 	*/
-	ServiceProcessorIPV4InterfaceNetmask *string
+	ServiceProcessorIPv4InterfaceNetmask *string
 
-	/* ServiceProcessorIPV4InterfaceSetupState.
+	/* ServiceProcessorIPv4InterfaceSetupState.
 
 	   Filter by service_processor.ipv4_interface.setup_state
 	*/
-	ServiceProcessorIPV4InterfaceSetupState *string
+	ServiceProcessorIPv4InterfaceSetupState *string
 
-	/* ServiceProcessorIPV6InterfaceAddress.
+	/* ServiceProcessorIPv6InterfaceAddress.
 
 	   Filter by service_processor.ipv6_interface.address
 	*/
-	ServiceProcessorIPV6InterfaceAddress *string
+	ServiceProcessorIPv6InterfaceAddress *string
 
-	/* ServiceProcessorIPV6InterfaceEnabled.
+	/* ServiceProcessorIPv6InterfaceEnabled.
 
 	   Filter by service_processor.ipv6_interface.enabled
 	*/
-	ServiceProcessorIPV6InterfaceEnabled *bool
+	ServiceProcessorIPv6InterfaceEnabled *bool
 
-	/* ServiceProcessorIPV6InterfaceGateway.
+	/* ServiceProcessorIPv6InterfaceGateway.
 
 	   Filter by service_processor.ipv6_interface.gateway
 	*/
-	ServiceProcessorIPV6InterfaceGateway *string
+	ServiceProcessorIPv6InterfaceGateway *string
 
-	/* ServiceProcessorIPV6InterfaceIsIPV6RaEnabled.
+	/* ServiceProcessorIPv6InterfaceIsIPv6RaEnabled.
 
 	   Filter by service_processor.ipv6_interface.is_ipv6_ra_enabled
 	*/
-	ServiceProcessorIPV6InterfaceIsIPV6RaEnabled *bool
+	ServiceProcessorIPv6InterfaceIsIPv6RaEnabled *bool
 
-	/* ServiceProcessorIPV6InterfaceLinkLocalIP.
+	/* ServiceProcessorIPv6InterfaceLinkLocalIP.
 
 	   Filter by service_processor.ipv6_interface.link_local_ip
 	*/
-	ServiceProcessorIPV6InterfaceLinkLocalIP *string
+	ServiceProcessorIPv6InterfaceLinkLocalIP *string
 
-	/* ServiceProcessorIPV6InterfaceNetmask.
+	/* ServiceProcessorIPv6InterfaceNetmask.
 
 	   Filter by service_processor.ipv6_interface.netmask
 	*/
-	ServiceProcessorIPV6InterfaceNetmask *int64
+	ServiceProcessorIPv6InterfaceNetmask *int64
 
-	/* ServiceProcessorIPV6InterfaceRouterIP.
+	/* ServiceProcessorIPv6InterfaceRouterIP.
 
 	   Filter by service_processor.ipv6_interface.router_ip
 	*/
-	ServiceProcessorIPV6InterfaceRouterIP *string
+	ServiceProcessorIPv6InterfaceRouterIP *string
 
-	/* ServiceProcessorIPV6InterfaceSetupState.
+	/* ServiceProcessorIPv6InterfaceSetupState.
 
 	   Filter by service_processor.ipv6_interface.setup_state
 	*/
-	ServiceProcessorIPV6InterfaceSetupState *string
+	ServiceProcessorIPv6InterfaceSetupState *string
 
 	/* ServiceProcessorIsIPConfigured.
 
@@ -1578,6 +1674,50 @@ func (o *NodesGetParams) SetHaGivebackStatusState(haGivebackStatusState *string)
 	o.HaGivebackStatusState = haGivebackStatusState
 }
 
+// WithHaGivebackOfFailureCode adds the haGivebackOfFailureCode to the nodes get params
+func (o *NodesGetParams) WithHaGivebackOfFailureCode(haGivebackOfFailureCode *int64) *NodesGetParams {
+	o.SetHaGivebackOfFailureCode(haGivebackOfFailureCode)
+	return o
+}
+
+// SetHaGivebackOfFailureCode adds the haGivebackOfFailureCode to the nodes get params
+func (o *NodesGetParams) SetHaGivebackOfFailureCode(haGivebackOfFailureCode *int64) {
+	o.HaGivebackOfFailureCode = haGivebackOfFailureCode
+}
+
+// WithHaGivebackOfFailureMessage adds the haGivebackOfFailureMessage to the nodes get params
+func (o *NodesGetParams) WithHaGivebackOfFailureMessage(haGivebackOfFailureMessage *string) *NodesGetParams {
+	o.SetHaGivebackOfFailureMessage(haGivebackOfFailureMessage)
+	return o
+}
+
+// SetHaGivebackOfFailureMessage adds the haGivebackOfFailureMessage to the nodes get params
+func (o *NodesGetParams) SetHaGivebackOfFailureMessage(haGivebackOfFailureMessage *string) {
+	o.HaGivebackOfFailureMessage = haGivebackOfFailureMessage
+}
+
+// WithHaGivebackOfState adds the haGivebackOfState to the nodes get params
+func (o *NodesGetParams) WithHaGivebackOfState(haGivebackOfState *string) *NodesGetParams {
+	o.SetHaGivebackOfState(haGivebackOfState)
+	return o
+}
+
+// SetHaGivebackOfState adds the haGivebackOfState to the nodes get params
+func (o *NodesGetParams) SetHaGivebackOfState(haGivebackOfState *string) {
+	o.HaGivebackOfState = haGivebackOfState
+}
+
+// WithHaGivebackOfPossible adds the haGivebackOfPossible to the nodes get params
+func (o *NodesGetParams) WithHaGivebackOfPossible(haGivebackOfPossible *bool) *NodesGetParams {
+	o.SetHaGivebackOfPossible(haGivebackOfPossible)
+	return o
+}
+
+// SetHaGivebackOfPossible adds the haGivebackOfPossible to the nodes get params
+func (o *NodesGetParams) SetHaGivebackOfPossible(haGivebackOfPossible *bool) {
+	o.HaGivebackOfPossible = haGivebackOfPossible
+}
+
 // WithHaInterconnectAdapter adds the haInterconnectAdapter to the nodes get params
 func (o *NodesGetParams) WithHaInterconnectAdapter(haInterconnectAdapter *string) *NodesGetParams {
 	o.SetHaInterconnectAdapter(haInterconnectAdapter)
@@ -1620,6 +1760,94 @@ func (o *NodesGetParams) WithHaPartnersUUID(haPartnersUUID *string) *NodesGetPar
 // SetHaPartnersUUID adds the haPartnersUuid to the nodes get params
 func (o *NodesGetParams) SetHaPartnersUUID(haPartnersUUID *string) {
 	o.HaPartnersUUID = haPartnersUUID
+}
+
+// WithHaPeeringDstPeerNode1Name adds the haPeeringDstPeerNode1Name to the nodes get params
+func (o *NodesGetParams) WithHaPeeringDstPeerNode1Name(haPeeringDstPeerNode1Name *string) *NodesGetParams {
+	o.SetHaPeeringDstPeerNode1Name(haPeeringDstPeerNode1Name)
+	return o
+}
+
+// SetHaPeeringDstPeerNode1Name adds the haPeeringDstPeerNode1Name to the nodes get params
+func (o *NodesGetParams) SetHaPeeringDstPeerNode1Name(haPeeringDstPeerNode1Name *string) {
+	o.HaPeeringDstPeerNode1Name = haPeeringDstPeerNode1Name
+}
+
+// WithHaPeeringDstPeerNode1UUID adds the haPeeringDstPeerNode1UUID to the nodes get params
+func (o *NodesGetParams) WithHaPeeringDstPeerNode1UUID(haPeeringDstPeerNode1UUID *string) *NodesGetParams {
+	o.SetHaPeeringDstPeerNode1UUID(haPeeringDstPeerNode1UUID)
+	return o
+}
+
+// SetHaPeeringDstPeerNode1UUID adds the haPeeringDstPeerNode1Uuid to the nodes get params
+func (o *NodesGetParams) SetHaPeeringDstPeerNode1UUID(haPeeringDstPeerNode1UUID *string) {
+	o.HaPeeringDstPeerNode1UUID = haPeeringDstPeerNode1UUID
+}
+
+// WithHaPeeringDstPeerNode2Name adds the haPeeringDstPeerNode2Name to the nodes get params
+func (o *NodesGetParams) WithHaPeeringDstPeerNode2Name(haPeeringDstPeerNode2Name *string) *NodesGetParams {
+	o.SetHaPeeringDstPeerNode2Name(haPeeringDstPeerNode2Name)
+	return o
+}
+
+// SetHaPeeringDstPeerNode2Name adds the haPeeringDstPeerNode2Name to the nodes get params
+func (o *NodesGetParams) SetHaPeeringDstPeerNode2Name(haPeeringDstPeerNode2Name *string) {
+	o.HaPeeringDstPeerNode2Name = haPeeringDstPeerNode2Name
+}
+
+// WithHaPeeringDstPeerNode2UUID adds the haPeeringDstPeerNode2UUID to the nodes get params
+func (o *NodesGetParams) WithHaPeeringDstPeerNode2UUID(haPeeringDstPeerNode2UUID *string) *NodesGetParams {
+	o.SetHaPeeringDstPeerNode2UUID(haPeeringDstPeerNode2UUID)
+	return o
+}
+
+// SetHaPeeringDstPeerNode2UUID adds the haPeeringDstPeerNode2Uuid to the nodes get params
+func (o *NodesGetParams) SetHaPeeringDstPeerNode2UUID(haPeeringDstPeerNode2UUID *string) {
+	o.HaPeeringDstPeerNode2UUID = haPeeringDstPeerNode2UUID
+}
+
+// WithHaPeeringDstPeerNode3Name adds the haPeeringDstPeerNode3Name to the nodes get params
+func (o *NodesGetParams) WithHaPeeringDstPeerNode3Name(haPeeringDstPeerNode3Name *string) *NodesGetParams {
+	o.SetHaPeeringDstPeerNode3Name(haPeeringDstPeerNode3Name)
+	return o
+}
+
+// SetHaPeeringDstPeerNode3Name adds the haPeeringDstPeerNode3Name to the nodes get params
+func (o *NodesGetParams) SetHaPeeringDstPeerNode3Name(haPeeringDstPeerNode3Name *string) {
+	o.HaPeeringDstPeerNode3Name = haPeeringDstPeerNode3Name
+}
+
+// WithHaPeeringDstPeerNode3UUID adds the haPeeringDstPeerNode3UUID to the nodes get params
+func (o *NodesGetParams) WithHaPeeringDstPeerNode3UUID(haPeeringDstPeerNode3UUID *string) *NodesGetParams {
+	o.SetHaPeeringDstPeerNode3UUID(haPeeringDstPeerNode3UUID)
+	return o
+}
+
+// SetHaPeeringDstPeerNode3UUID adds the haPeeringDstPeerNode3Uuid to the nodes get params
+func (o *NodesGetParams) SetHaPeeringDstPeerNode3UUID(haPeeringDstPeerNode3UUID *string) {
+	o.HaPeeringDstPeerNode3UUID = haPeeringDstPeerNode3UUID
+}
+
+// WithHaPeeringIneligible adds the haPeeringIneligible to the nodes get params
+func (o *NodesGetParams) WithHaPeeringIneligible(haPeeringIneligible *bool) *NodesGetParams {
+	o.SetHaPeeringIneligible(haPeeringIneligible)
+	return o
+}
+
+// SetHaPeeringIneligible adds the haPeeringIneligible to the nodes get params
+func (o *NodesGetParams) SetHaPeeringIneligible(haPeeringIneligible *bool) {
+	o.HaPeeringIneligible = haPeeringIneligible
+}
+
+// WithHaPeeringNodeProtectionLevel adds the haPeeringNodeProtectionLevel to the nodes get params
+func (o *NodesGetParams) WithHaPeeringNodeProtectionLevel(haPeeringNodeProtectionLevel *int64) *NodesGetParams {
+	o.SetHaPeeringNodeProtectionLevel(haPeeringNodeProtectionLevel)
+	return o
+}
+
+// SetHaPeeringNodeProtectionLevel adds the haPeeringNodeProtectionLevel to the nodes get params
+func (o *NodesGetParams) SetHaPeeringNodeProtectionLevel(haPeeringNodeProtectionLevel *int64) {
+	o.HaPeeringNodeProtectionLevel = haPeeringNodeProtectionLevel
 }
 
 // WithHaPortsNumber adds the haPortsNumber to the nodes get params
@@ -1697,6 +1925,50 @@ func (o *NodesGetParams) WithHaTakeoverCheckTakeoverPossible(haTakeoverCheckTake
 // SetHaTakeoverCheckTakeoverPossible adds the haTakeoverCheckTakeoverPossible to the nodes get params
 func (o *NodesGetParams) SetHaTakeoverCheckTakeoverPossible(haTakeoverCheckTakeoverPossible *bool) {
 	o.HaTakeoverCheckTakeoverPossible = haTakeoverCheckTakeoverPossible
+}
+
+// WithHaTakeoverOfFailureCode adds the haTakeoverOfFailureCode to the nodes get params
+func (o *NodesGetParams) WithHaTakeoverOfFailureCode(haTakeoverOfFailureCode *int64) *NodesGetParams {
+	o.SetHaTakeoverOfFailureCode(haTakeoverOfFailureCode)
+	return o
+}
+
+// SetHaTakeoverOfFailureCode adds the haTakeoverOfFailureCode to the nodes get params
+func (o *NodesGetParams) SetHaTakeoverOfFailureCode(haTakeoverOfFailureCode *int64) {
+	o.HaTakeoverOfFailureCode = haTakeoverOfFailureCode
+}
+
+// WithHaTakeoverOfFailureMessage adds the haTakeoverOfFailureMessage to the nodes get params
+func (o *NodesGetParams) WithHaTakeoverOfFailureMessage(haTakeoverOfFailureMessage *string) *NodesGetParams {
+	o.SetHaTakeoverOfFailureMessage(haTakeoverOfFailureMessage)
+	return o
+}
+
+// SetHaTakeoverOfFailureMessage adds the haTakeoverOfFailureMessage to the nodes get params
+func (o *NodesGetParams) SetHaTakeoverOfFailureMessage(haTakeoverOfFailureMessage *string) {
+	o.HaTakeoverOfFailureMessage = haTakeoverOfFailureMessage
+}
+
+// WithHaTakeoverOfState adds the haTakeoverOfState to the nodes get params
+func (o *NodesGetParams) WithHaTakeoverOfState(haTakeoverOfState *string) *NodesGetParams {
+	o.SetHaTakeoverOfState(haTakeoverOfState)
+	return o
+}
+
+// SetHaTakeoverOfState adds the haTakeoverOfState to the nodes get params
+func (o *NodesGetParams) SetHaTakeoverOfState(haTakeoverOfState *string) {
+	o.HaTakeoverOfState = haTakeoverOfState
+}
+
+// WithHaTakeoverOfPossible adds the haTakeoverOfPossible to the nodes get params
+func (o *NodesGetParams) WithHaTakeoverOfPossible(haTakeoverOfPossible *bool) *NodesGetParams {
+	o.SetHaTakeoverOfPossible(haTakeoverOfPossible)
+	return o
+}
+
+// SetHaTakeoverOfPossible adds the haTakeoverOfPossible to the nodes get params
+func (o *NodesGetParams) SetHaTakeoverOfPossible(haTakeoverOfPossible *bool) {
+	o.HaTakeoverOfPossible = haTakeoverOfPossible
 }
 
 // WithHaType adds the haType to the nodes get params
@@ -2106,26 +2378,26 @@ func (o *NodesGetParams) SetServiceProcessorAPIServicePort(serviceProcessorAPISe
 	o.ServiceProcessorAPIServicePort = serviceProcessorAPIServicePort
 }
 
-// WithServiceProcessorAutoConfigIPV4Subnet adds the serviceProcessorAutoConfigIPV4Subnet to the nodes get params
-func (o *NodesGetParams) WithServiceProcessorAutoConfigIPV4Subnet(serviceProcessorAutoConfigIPV4Subnet *string) *NodesGetParams {
-	o.SetServiceProcessorAutoConfigIPV4Subnet(serviceProcessorAutoConfigIPV4Subnet)
+// WithServiceProcessorAutoConfigIPv4Subnet adds the serviceProcessorAutoConfigIPv4Subnet to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorAutoConfigIPv4Subnet(serviceProcessorAutoConfigIPv4Subnet *string) *NodesGetParams {
+	o.SetServiceProcessorAutoConfigIPv4Subnet(serviceProcessorAutoConfigIPv4Subnet)
 	return o
 }
 
-// SetServiceProcessorAutoConfigIPV4Subnet adds the serviceProcessorAutoConfigIpv4Subnet to the nodes get params
-func (o *NodesGetParams) SetServiceProcessorAutoConfigIPV4Subnet(serviceProcessorAutoConfigIPV4Subnet *string) {
-	o.ServiceProcessorAutoConfigIPV4Subnet = serviceProcessorAutoConfigIPV4Subnet
+// SetServiceProcessorAutoConfigIPv4Subnet adds the serviceProcessorAutoConfigIpv4Subnet to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorAutoConfigIPv4Subnet(serviceProcessorAutoConfigIPv4Subnet *string) {
+	o.ServiceProcessorAutoConfigIPv4Subnet = serviceProcessorAutoConfigIPv4Subnet
 }
 
-// WithServiceProcessorAutoConfigIPV6Subnet adds the serviceProcessorAutoConfigIPV6Subnet to the nodes get params
-func (o *NodesGetParams) WithServiceProcessorAutoConfigIPV6Subnet(serviceProcessorAutoConfigIPV6Subnet *string) *NodesGetParams {
-	o.SetServiceProcessorAutoConfigIPV6Subnet(serviceProcessorAutoConfigIPV6Subnet)
+// WithServiceProcessorAutoConfigIPv6Subnet adds the serviceProcessorAutoConfigIPv6Subnet to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorAutoConfigIPv6Subnet(serviceProcessorAutoConfigIPv6Subnet *string) *NodesGetParams {
+	o.SetServiceProcessorAutoConfigIPv6Subnet(serviceProcessorAutoConfigIPv6Subnet)
 	return o
 }
 
-// SetServiceProcessorAutoConfigIPV6Subnet adds the serviceProcessorAutoConfigIpv6Subnet to the nodes get params
-func (o *NodesGetParams) SetServiceProcessorAutoConfigIPV6Subnet(serviceProcessorAutoConfigIPV6Subnet *string) {
-	o.ServiceProcessorAutoConfigIPV6Subnet = serviceProcessorAutoConfigIPV6Subnet
+// SetServiceProcessorAutoConfigIPv6Subnet adds the serviceProcessorAutoConfigIpv6Subnet to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorAutoConfigIPv6Subnet(serviceProcessorAutoConfigIPv6Subnet *string) {
+	o.ServiceProcessorAutoConfigIPv6Subnet = serviceProcessorAutoConfigIPv6Subnet
 }
 
 // WithServiceProcessorAutoupdateEnabled adds the serviceProcessorAutoupdateEnabled to the nodes get params
@@ -2194,147 +2466,147 @@ func (o *NodesGetParams) SetServiceProcessorFirmwareVersion(serviceProcessorFirm
 	o.ServiceProcessorFirmwareVersion = serviceProcessorFirmwareVersion
 }
 
-// WithServiceProcessorIPV4InterfaceAddress adds the serviceProcessorIPV4InterfaceAddress to the nodes get params
-func (o *NodesGetParams) WithServiceProcessorIPV4InterfaceAddress(serviceProcessorIPV4InterfaceAddress *string) *NodesGetParams {
-	o.SetServiceProcessorIPV4InterfaceAddress(serviceProcessorIPV4InterfaceAddress)
+// WithServiceProcessorIPv4InterfaceAddress adds the serviceProcessorIPv4InterfaceAddress to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPv4InterfaceAddress(serviceProcessorIPv4InterfaceAddress *string) *NodesGetParams {
+	o.SetServiceProcessorIPv4InterfaceAddress(serviceProcessorIPv4InterfaceAddress)
 	return o
 }
 
-// SetServiceProcessorIPV4InterfaceAddress adds the serviceProcessorIpv4InterfaceAddress to the nodes get params
-func (o *NodesGetParams) SetServiceProcessorIPV4InterfaceAddress(serviceProcessorIPV4InterfaceAddress *string) {
-	o.ServiceProcessorIPV4InterfaceAddress = serviceProcessorIPV4InterfaceAddress
+// SetServiceProcessorIPv4InterfaceAddress adds the serviceProcessorIpv4InterfaceAddress to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPv4InterfaceAddress(serviceProcessorIPv4InterfaceAddress *string) {
+	o.ServiceProcessorIPv4InterfaceAddress = serviceProcessorIPv4InterfaceAddress
 }
 
-// WithServiceProcessorIPV4InterfaceEnabled adds the serviceProcessorIPV4InterfaceEnabled to the nodes get params
-func (o *NodesGetParams) WithServiceProcessorIPV4InterfaceEnabled(serviceProcessorIPV4InterfaceEnabled *bool) *NodesGetParams {
-	o.SetServiceProcessorIPV4InterfaceEnabled(serviceProcessorIPV4InterfaceEnabled)
+// WithServiceProcessorIPv4InterfaceEnabled adds the serviceProcessorIPv4InterfaceEnabled to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPv4InterfaceEnabled(serviceProcessorIPv4InterfaceEnabled *bool) *NodesGetParams {
+	o.SetServiceProcessorIPv4InterfaceEnabled(serviceProcessorIPv4InterfaceEnabled)
 	return o
 }
 
-// SetServiceProcessorIPV4InterfaceEnabled adds the serviceProcessorIpv4InterfaceEnabled to the nodes get params
-func (o *NodesGetParams) SetServiceProcessorIPV4InterfaceEnabled(serviceProcessorIPV4InterfaceEnabled *bool) {
-	o.ServiceProcessorIPV4InterfaceEnabled = serviceProcessorIPV4InterfaceEnabled
+// SetServiceProcessorIPv4InterfaceEnabled adds the serviceProcessorIpv4InterfaceEnabled to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPv4InterfaceEnabled(serviceProcessorIPv4InterfaceEnabled *bool) {
+	o.ServiceProcessorIPv4InterfaceEnabled = serviceProcessorIPv4InterfaceEnabled
 }
 
-// WithServiceProcessorIPV4InterfaceGateway adds the serviceProcessorIPV4InterfaceGateway to the nodes get params
-func (o *NodesGetParams) WithServiceProcessorIPV4InterfaceGateway(serviceProcessorIPV4InterfaceGateway *string) *NodesGetParams {
-	o.SetServiceProcessorIPV4InterfaceGateway(serviceProcessorIPV4InterfaceGateway)
+// WithServiceProcessorIPv4InterfaceGateway adds the serviceProcessorIPv4InterfaceGateway to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPv4InterfaceGateway(serviceProcessorIPv4InterfaceGateway *string) *NodesGetParams {
+	o.SetServiceProcessorIPv4InterfaceGateway(serviceProcessorIPv4InterfaceGateway)
 	return o
 }
 
-// SetServiceProcessorIPV4InterfaceGateway adds the serviceProcessorIpv4InterfaceGateway to the nodes get params
-func (o *NodesGetParams) SetServiceProcessorIPV4InterfaceGateway(serviceProcessorIPV4InterfaceGateway *string) {
-	o.ServiceProcessorIPV4InterfaceGateway = serviceProcessorIPV4InterfaceGateway
+// SetServiceProcessorIPv4InterfaceGateway adds the serviceProcessorIpv4InterfaceGateway to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPv4InterfaceGateway(serviceProcessorIPv4InterfaceGateway *string) {
+	o.ServiceProcessorIPv4InterfaceGateway = serviceProcessorIPv4InterfaceGateway
 }
 
-// WithServiceProcessorIPV4InterfaceNetmask adds the serviceProcessorIPV4InterfaceNetmask to the nodes get params
-func (o *NodesGetParams) WithServiceProcessorIPV4InterfaceNetmask(serviceProcessorIPV4InterfaceNetmask *string) *NodesGetParams {
-	o.SetServiceProcessorIPV4InterfaceNetmask(serviceProcessorIPV4InterfaceNetmask)
+// WithServiceProcessorIPv4InterfaceNetmask adds the serviceProcessorIPv4InterfaceNetmask to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPv4InterfaceNetmask(serviceProcessorIPv4InterfaceNetmask *string) *NodesGetParams {
+	o.SetServiceProcessorIPv4InterfaceNetmask(serviceProcessorIPv4InterfaceNetmask)
 	return o
 }
 
-// SetServiceProcessorIPV4InterfaceNetmask adds the serviceProcessorIpv4InterfaceNetmask to the nodes get params
-func (o *NodesGetParams) SetServiceProcessorIPV4InterfaceNetmask(serviceProcessorIPV4InterfaceNetmask *string) {
-	o.ServiceProcessorIPV4InterfaceNetmask = serviceProcessorIPV4InterfaceNetmask
+// SetServiceProcessorIPv4InterfaceNetmask adds the serviceProcessorIpv4InterfaceNetmask to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPv4InterfaceNetmask(serviceProcessorIPv4InterfaceNetmask *string) {
+	o.ServiceProcessorIPv4InterfaceNetmask = serviceProcessorIPv4InterfaceNetmask
 }
 
-// WithServiceProcessorIPV4InterfaceSetupState adds the serviceProcessorIPV4InterfaceSetupState to the nodes get params
-func (o *NodesGetParams) WithServiceProcessorIPV4InterfaceSetupState(serviceProcessorIPV4InterfaceSetupState *string) *NodesGetParams {
-	o.SetServiceProcessorIPV4InterfaceSetupState(serviceProcessorIPV4InterfaceSetupState)
+// WithServiceProcessorIPv4InterfaceSetupState adds the serviceProcessorIPv4InterfaceSetupState to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPv4InterfaceSetupState(serviceProcessorIPv4InterfaceSetupState *string) *NodesGetParams {
+	o.SetServiceProcessorIPv4InterfaceSetupState(serviceProcessorIPv4InterfaceSetupState)
 	return o
 }
 
-// SetServiceProcessorIPV4InterfaceSetupState adds the serviceProcessorIpv4InterfaceSetupState to the nodes get params
-func (o *NodesGetParams) SetServiceProcessorIPV4InterfaceSetupState(serviceProcessorIPV4InterfaceSetupState *string) {
-	o.ServiceProcessorIPV4InterfaceSetupState = serviceProcessorIPV4InterfaceSetupState
+// SetServiceProcessorIPv4InterfaceSetupState adds the serviceProcessorIpv4InterfaceSetupState to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPv4InterfaceSetupState(serviceProcessorIPv4InterfaceSetupState *string) {
+	o.ServiceProcessorIPv4InterfaceSetupState = serviceProcessorIPv4InterfaceSetupState
 }
 
-// WithServiceProcessorIPV6InterfaceAddress adds the serviceProcessorIPV6InterfaceAddress to the nodes get params
-func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceAddress(serviceProcessorIPV6InterfaceAddress *string) *NodesGetParams {
-	o.SetServiceProcessorIPV6InterfaceAddress(serviceProcessorIPV6InterfaceAddress)
+// WithServiceProcessorIPv6InterfaceAddress adds the serviceProcessorIPv6InterfaceAddress to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPv6InterfaceAddress(serviceProcessorIPv6InterfaceAddress *string) *NodesGetParams {
+	o.SetServiceProcessorIPv6InterfaceAddress(serviceProcessorIPv6InterfaceAddress)
 	return o
 }
 
-// SetServiceProcessorIPV6InterfaceAddress adds the serviceProcessorIpv6InterfaceAddress to the nodes get params
-func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceAddress(serviceProcessorIPV6InterfaceAddress *string) {
-	o.ServiceProcessorIPV6InterfaceAddress = serviceProcessorIPV6InterfaceAddress
+// SetServiceProcessorIPv6InterfaceAddress adds the serviceProcessorIpv6InterfaceAddress to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPv6InterfaceAddress(serviceProcessorIPv6InterfaceAddress *string) {
+	o.ServiceProcessorIPv6InterfaceAddress = serviceProcessorIPv6InterfaceAddress
 }
 
-// WithServiceProcessorIPV6InterfaceEnabled adds the serviceProcessorIPV6InterfaceEnabled to the nodes get params
-func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceEnabled(serviceProcessorIPV6InterfaceEnabled *bool) *NodesGetParams {
-	o.SetServiceProcessorIPV6InterfaceEnabled(serviceProcessorIPV6InterfaceEnabled)
+// WithServiceProcessorIPv6InterfaceEnabled adds the serviceProcessorIPv6InterfaceEnabled to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPv6InterfaceEnabled(serviceProcessorIPv6InterfaceEnabled *bool) *NodesGetParams {
+	o.SetServiceProcessorIPv6InterfaceEnabled(serviceProcessorIPv6InterfaceEnabled)
 	return o
 }
 
-// SetServiceProcessorIPV6InterfaceEnabled adds the serviceProcessorIpv6InterfaceEnabled to the nodes get params
-func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceEnabled(serviceProcessorIPV6InterfaceEnabled *bool) {
-	o.ServiceProcessorIPV6InterfaceEnabled = serviceProcessorIPV6InterfaceEnabled
+// SetServiceProcessorIPv6InterfaceEnabled adds the serviceProcessorIpv6InterfaceEnabled to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPv6InterfaceEnabled(serviceProcessorIPv6InterfaceEnabled *bool) {
+	o.ServiceProcessorIPv6InterfaceEnabled = serviceProcessorIPv6InterfaceEnabled
 }
 
-// WithServiceProcessorIPV6InterfaceGateway adds the serviceProcessorIPV6InterfaceGateway to the nodes get params
-func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceGateway(serviceProcessorIPV6InterfaceGateway *string) *NodesGetParams {
-	o.SetServiceProcessorIPV6InterfaceGateway(serviceProcessorIPV6InterfaceGateway)
+// WithServiceProcessorIPv6InterfaceGateway adds the serviceProcessorIPv6InterfaceGateway to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPv6InterfaceGateway(serviceProcessorIPv6InterfaceGateway *string) *NodesGetParams {
+	o.SetServiceProcessorIPv6InterfaceGateway(serviceProcessorIPv6InterfaceGateway)
 	return o
 }
 
-// SetServiceProcessorIPV6InterfaceGateway adds the serviceProcessorIpv6InterfaceGateway to the nodes get params
-func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceGateway(serviceProcessorIPV6InterfaceGateway *string) {
-	o.ServiceProcessorIPV6InterfaceGateway = serviceProcessorIPV6InterfaceGateway
+// SetServiceProcessorIPv6InterfaceGateway adds the serviceProcessorIpv6InterfaceGateway to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPv6InterfaceGateway(serviceProcessorIPv6InterfaceGateway *string) {
+	o.ServiceProcessorIPv6InterfaceGateway = serviceProcessorIPv6InterfaceGateway
 }
 
-// WithServiceProcessorIPV6InterfaceIsIPV6RaEnabled adds the serviceProcessorIPV6InterfaceIsIPV6RaEnabled to the nodes get params
-func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceIsIPV6RaEnabled(serviceProcessorIPV6InterfaceIsIPV6RaEnabled *bool) *NodesGetParams {
-	o.SetServiceProcessorIPV6InterfaceIsIPV6RaEnabled(serviceProcessorIPV6InterfaceIsIPV6RaEnabled)
+// WithServiceProcessorIPv6InterfaceIsIPv6RaEnabled adds the serviceProcessorIPv6InterfaceIsIPv6RaEnabled to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPv6InterfaceIsIPv6RaEnabled(serviceProcessorIPv6InterfaceIsIPv6RaEnabled *bool) *NodesGetParams {
+	o.SetServiceProcessorIPv6InterfaceIsIPv6RaEnabled(serviceProcessorIPv6InterfaceIsIPv6RaEnabled)
 	return o
 }
 
-// SetServiceProcessorIPV6InterfaceIsIPV6RaEnabled adds the serviceProcessorIpv6InterfaceIsIpv6RaEnabled to the nodes get params
-func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceIsIPV6RaEnabled(serviceProcessorIPV6InterfaceIsIPV6RaEnabled *bool) {
-	o.ServiceProcessorIPV6InterfaceIsIPV6RaEnabled = serviceProcessorIPV6InterfaceIsIPV6RaEnabled
+// SetServiceProcessorIPv6InterfaceIsIPv6RaEnabled adds the serviceProcessorIpv6InterfaceIsIpv6RaEnabled to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPv6InterfaceIsIPv6RaEnabled(serviceProcessorIPv6InterfaceIsIPv6RaEnabled *bool) {
+	o.ServiceProcessorIPv6InterfaceIsIPv6RaEnabled = serviceProcessorIPv6InterfaceIsIPv6RaEnabled
 }
 
-// WithServiceProcessorIPV6InterfaceLinkLocalIP adds the serviceProcessorIPV6InterfaceLinkLocalIP to the nodes get params
-func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceLinkLocalIP(serviceProcessorIPV6InterfaceLinkLocalIP *string) *NodesGetParams {
-	o.SetServiceProcessorIPV6InterfaceLinkLocalIP(serviceProcessorIPV6InterfaceLinkLocalIP)
+// WithServiceProcessorIPv6InterfaceLinkLocalIP adds the serviceProcessorIPv6InterfaceLinkLocalIP to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPv6InterfaceLinkLocalIP(serviceProcessorIPv6InterfaceLinkLocalIP *string) *NodesGetParams {
+	o.SetServiceProcessorIPv6InterfaceLinkLocalIP(serviceProcessorIPv6InterfaceLinkLocalIP)
 	return o
 }
 
-// SetServiceProcessorIPV6InterfaceLinkLocalIP adds the serviceProcessorIpv6InterfaceLinkLocalIp to the nodes get params
-func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceLinkLocalIP(serviceProcessorIPV6InterfaceLinkLocalIP *string) {
-	o.ServiceProcessorIPV6InterfaceLinkLocalIP = serviceProcessorIPV6InterfaceLinkLocalIP
+// SetServiceProcessorIPv6InterfaceLinkLocalIP adds the serviceProcessorIpv6InterfaceLinkLocalIp to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPv6InterfaceLinkLocalIP(serviceProcessorIPv6InterfaceLinkLocalIP *string) {
+	o.ServiceProcessorIPv6InterfaceLinkLocalIP = serviceProcessorIPv6InterfaceLinkLocalIP
 }
 
-// WithServiceProcessorIPV6InterfaceNetmask adds the serviceProcessorIPV6InterfaceNetmask to the nodes get params
-func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceNetmask(serviceProcessorIPV6InterfaceNetmask *int64) *NodesGetParams {
-	o.SetServiceProcessorIPV6InterfaceNetmask(serviceProcessorIPV6InterfaceNetmask)
+// WithServiceProcessorIPv6InterfaceNetmask adds the serviceProcessorIPv6InterfaceNetmask to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPv6InterfaceNetmask(serviceProcessorIPv6InterfaceNetmask *int64) *NodesGetParams {
+	o.SetServiceProcessorIPv6InterfaceNetmask(serviceProcessorIPv6InterfaceNetmask)
 	return o
 }
 
-// SetServiceProcessorIPV6InterfaceNetmask adds the serviceProcessorIpv6InterfaceNetmask to the nodes get params
-func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceNetmask(serviceProcessorIPV6InterfaceNetmask *int64) {
-	o.ServiceProcessorIPV6InterfaceNetmask = serviceProcessorIPV6InterfaceNetmask
+// SetServiceProcessorIPv6InterfaceNetmask adds the serviceProcessorIpv6InterfaceNetmask to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPv6InterfaceNetmask(serviceProcessorIPv6InterfaceNetmask *int64) {
+	o.ServiceProcessorIPv6InterfaceNetmask = serviceProcessorIPv6InterfaceNetmask
 }
 
-// WithServiceProcessorIPV6InterfaceRouterIP adds the serviceProcessorIPV6InterfaceRouterIP to the nodes get params
-func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceRouterIP(serviceProcessorIPV6InterfaceRouterIP *string) *NodesGetParams {
-	o.SetServiceProcessorIPV6InterfaceRouterIP(serviceProcessorIPV6InterfaceRouterIP)
+// WithServiceProcessorIPv6InterfaceRouterIP adds the serviceProcessorIPv6InterfaceRouterIP to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPv6InterfaceRouterIP(serviceProcessorIPv6InterfaceRouterIP *string) *NodesGetParams {
+	o.SetServiceProcessorIPv6InterfaceRouterIP(serviceProcessorIPv6InterfaceRouterIP)
 	return o
 }
 
-// SetServiceProcessorIPV6InterfaceRouterIP adds the serviceProcessorIpv6InterfaceRouterIp to the nodes get params
-func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceRouterIP(serviceProcessorIPV6InterfaceRouterIP *string) {
-	o.ServiceProcessorIPV6InterfaceRouterIP = serviceProcessorIPV6InterfaceRouterIP
+// SetServiceProcessorIPv6InterfaceRouterIP adds the serviceProcessorIpv6InterfaceRouterIp to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPv6InterfaceRouterIP(serviceProcessorIPv6InterfaceRouterIP *string) {
+	o.ServiceProcessorIPv6InterfaceRouterIP = serviceProcessorIPv6InterfaceRouterIP
 }
 
-// WithServiceProcessorIPV6InterfaceSetupState adds the serviceProcessorIPV6InterfaceSetupState to the nodes get params
-func (o *NodesGetParams) WithServiceProcessorIPV6InterfaceSetupState(serviceProcessorIPV6InterfaceSetupState *string) *NodesGetParams {
-	o.SetServiceProcessorIPV6InterfaceSetupState(serviceProcessorIPV6InterfaceSetupState)
+// WithServiceProcessorIPv6InterfaceSetupState adds the serviceProcessorIPv6InterfaceSetupState to the nodes get params
+func (o *NodesGetParams) WithServiceProcessorIPv6InterfaceSetupState(serviceProcessorIPv6InterfaceSetupState *string) *NodesGetParams {
+	o.SetServiceProcessorIPv6InterfaceSetupState(serviceProcessorIPv6InterfaceSetupState)
 	return o
 }
 
-// SetServiceProcessorIPV6InterfaceSetupState adds the serviceProcessorIpv6InterfaceSetupState to the nodes get params
-func (o *NodesGetParams) SetServiceProcessorIPV6InterfaceSetupState(serviceProcessorIPV6InterfaceSetupState *string) {
-	o.ServiceProcessorIPV6InterfaceSetupState = serviceProcessorIPV6InterfaceSetupState
+// SetServiceProcessorIPv6InterfaceSetupState adds the serviceProcessorIpv6InterfaceSetupState to the nodes get params
+func (o *NodesGetParams) SetServiceProcessorIPv6InterfaceSetupState(serviceProcessorIPv6InterfaceSetupState *string) {
+	o.ServiceProcessorIPv6InterfaceSetupState = serviceProcessorIPv6InterfaceSetupState
 }
 
 // WithServiceProcessorIsIPConfigured adds the serviceProcessorIsIPConfigured to the nodes get params
@@ -2689,15 +2961,15 @@ func (o *NodesGetParams) SetVersionMinor(versionMinor *int64) {
 	o.VersionMinor = versionMinor
 }
 
-// WithVMProviderType adds the vMProviderType to the nodes get params
-func (o *NodesGetParams) WithVMProviderType(vMProviderType *string) *NodesGetParams {
-	o.SetVMProviderType(vMProviderType)
+// WithVMProviderType adds the vmProviderType to the nodes get params
+func (o *NodesGetParams) WithVMProviderType(vmProviderType *string) *NodesGetParams {
+	o.SetVMProviderType(vmProviderType)
 	return o
 }
 
 // SetVMProviderType adds the vmProviderType to the nodes get params
-func (o *NodesGetParams) SetVMProviderType(vMProviderType *string) {
-	o.VMProviderType = vMProviderType
+func (o *NodesGetParams) SetVMProviderType(vmProviderType *string) {
+	o.VMProviderType = vmProviderType
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -3535,6 +3807,74 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
+	if o.HaGivebackOfFailureCode != nil {
+
+		// query param ha.giveback_of.failure.code
+		var qrHaGivebackOfFailureCode int64
+
+		if o.HaGivebackOfFailureCode != nil {
+			qrHaGivebackOfFailureCode = *o.HaGivebackOfFailureCode
+		}
+		qHaGivebackOfFailureCode := swag.FormatInt64(qrHaGivebackOfFailureCode)
+		if qHaGivebackOfFailureCode != "" {
+
+			if err := r.SetQueryParam("ha.giveback_of.failure.code", qHaGivebackOfFailureCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaGivebackOfFailureMessage != nil {
+
+		// query param ha.giveback_of.failure.message
+		var qrHaGivebackOfFailureMessage string
+
+		if o.HaGivebackOfFailureMessage != nil {
+			qrHaGivebackOfFailureMessage = *o.HaGivebackOfFailureMessage
+		}
+		qHaGivebackOfFailureMessage := qrHaGivebackOfFailureMessage
+		if qHaGivebackOfFailureMessage != "" {
+
+			if err := r.SetQueryParam("ha.giveback_of.failure.message", qHaGivebackOfFailureMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaGivebackOfState != nil {
+
+		// query param ha.giveback_of.state
+		var qrHaGivebackOfState string
+
+		if o.HaGivebackOfState != nil {
+			qrHaGivebackOfState = *o.HaGivebackOfState
+		}
+		qHaGivebackOfState := qrHaGivebackOfState
+		if qHaGivebackOfState != "" {
+
+			if err := r.SetQueryParam("ha.giveback_of.state", qHaGivebackOfState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaGivebackOfPossible != nil {
+
+		// query param ha.giveback_of_possible
+		var qrHaGivebackOfPossible bool
+
+		if o.HaGivebackOfPossible != nil {
+			qrHaGivebackOfPossible = *o.HaGivebackOfPossible
+		}
+		qHaGivebackOfPossible := swag.FormatBool(qrHaGivebackOfPossible)
+		if qHaGivebackOfPossible != "" {
+
+			if err := r.SetQueryParam("ha.giveback_of_possible", qHaGivebackOfPossible); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.HaInterconnectAdapter != nil {
 
 		// query param ha.interconnect.adapter
@@ -3598,6 +3938,142 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		if qHaPartnersUUID != "" {
 
 			if err := r.SetQueryParam("ha.partners.uuid", qHaPartnersUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaPeeringDstPeerNode1Name != nil {
+
+		// query param ha.peering.dst_peer_node1.name
+		var qrHaPeeringDstPeerNode1Name string
+
+		if o.HaPeeringDstPeerNode1Name != nil {
+			qrHaPeeringDstPeerNode1Name = *o.HaPeeringDstPeerNode1Name
+		}
+		qHaPeeringDstPeerNode1Name := qrHaPeeringDstPeerNode1Name
+		if qHaPeeringDstPeerNode1Name != "" {
+
+			if err := r.SetQueryParam("ha.peering.dst_peer_node1.name", qHaPeeringDstPeerNode1Name); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaPeeringDstPeerNode1UUID != nil {
+
+		// query param ha.peering.dst_peer_node1.uuid
+		var qrHaPeeringDstPeerNode1UUID string
+
+		if o.HaPeeringDstPeerNode1UUID != nil {
+			qrHaPeeringDstPeerNode1UUID = *o.HaPeeringDstPeerNode1UUID
+		}
+		qHaPeeringDstPeerNode1UUID := qrHaPeeringDstPeerNode1UUID
+		if qHaPeeringDstPeerNode1UUID != "" {
+
+			if err := r.SetQueryParam("ha.peering.dst_peer_node1.uuid", qHaPeeringDstPeerNode1UUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaPeeringDstPeerNode2Name != nil {
+
+		// query param ha.peering.dst_peer_node2.name
+		var qrHaPeeringDstPeerNode2Name string
+
+		if o.HaPeeringDstPeerNode2Name != nil {
+			qrHaPeeringDstPeerNode2Name = *o.HaPeeringDstPeerNode2Name
+		}
+		qHaPeeringDstPeerNode2Name := qrHaPeeringDstPeerNode2Name
+		if qHaPeeringDstPeerNode2Name != "" {
+
+			if err := r.SetQueryParam("ha.peering.dst_peer_node2.name", qHaPeeringDstPeerNode2Name); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaPeeringDstPeerNode2UUID != nil {
+
+		// query param ha.peering.dst_peer_node2.uuid
+		var qrHaPeeringDstPeerNode2UUID string
+
+		if o.HaPeeringDstPeerNode2UUID != nil {
+			qrHaPeeringDstPeerNode2UUID = *o.HaPeeringDstPeerNode2UUID
+		}
+		qHaPeeringDstPeerNode2UUID := qrHaPeeringDstPeerNode2UUID
+		if qHaPeeringDstPeerNode2UUID != "" {
+
+			if err := r.SetQueryParam("ha.peering.dst_peer_node2.uuid", qHaPeeringDstPeerNode2UUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaPeeringDstPeerNode3Name != nil {
+
+		// query param ha.peering.dst_peer_node3.name
+		var qrHaPeeringDstPeerNode3Name string
+
+		if o.HaPeeringDstPeerNode3Name != nil {
+			qrHaPeeringDstPeerNode3Name = *o.HaPeeringDstPeerNode3Name
+		}
+		qHaPeeringDstPeerNode3Name := qrHaPeeringDstPeerNode3Name
+		if qHaPeeringDstPeerNode3Name != "" {
+
+			if err := r.SetQueryParam("ha.peering.dst_peer_node3.name", qHaPeeringDstPeerNode3Name); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaPeeringDstPeerNode3UUID != nil {
+
+		// query param ha.peering.dst_peer_node3.uuid
+		var qrHaPeeringDstPeerNode3UUID string
+
+		if o.HaPeeringDstPeerNode3UUID != nil {
+			qrHaPeeringDstPeerNode3UUID = *o.HaPeeringDstPeerNode3UUID
+		}
+		qHaPeeringDstPeerNode3UUID := qrHaPeeringDstPeerNode3UUID
+		if qHaPeeringDstPeerNode3UUID != "" {
+
+			if err := r.SetQueryParam("ha.peering.dst_peer_node3.uuid", qHaPeeringDstPeerNode3UUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaPeeringIneligible != nil {
+
+		// query param ha.peering.ineligible
+		var qrHaPeeringIneligible bool
+
+		if o.HaPeeringIneligible != nil {
+			qrHaPeeringIneligible = *o.HaPeeringIneligible
+		}
+		qHaPeeringIneligible := swag.FormatBool(qrHaPeeringIneligible)
+		if qHaPeeringIneligible != "" {
+
+			if err := r.SetQueryParam("ha.peering.ineligible", qHaPeeringIneligible); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaPeeringNodeProtectionLevel != nil {
+
+		// query param ha.peering.node_protection_level
+		var qrHaPeeringNodeProtectionLevel int64
+
+		if o.HaPeeringNodeProtectionLevel != nil {
+			qrHaPeeringNodeProtectionLevel = *o.HaPeeringNodeProtectionLevel
+		}
+		qHaPeeringNodeProtectionLevel := swag.FormatInt64(qrHaPeeringNodeProtectionLevel)
+		if qHaPeeringNodeProtectionLevel != "" {
+
+			if err := r.SetQueryParam("ha.peering.node_protection_level", qHaPeeringNodeProtectionLevel); err != nil {
 				return err
 			}
 		}
@@ -3717,6 +4193,74 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		if qHaTakeoverCheckTakeoverPossible != "" {
 
 			if err := r.SetQueryParam("ha.takeover_check.takeover_possible", qHaTakeoverCheckTakeoverPossible); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaTakeoverOfFailureCode != nil {
+
+		// query param ha.takeover_of.failure.code
+		var qrHaTakeoverOfFailureCode int64
+
+		if o.HaTakeoverOfFailureCode != nil {
+			qrHaTakeoverOfFailureCode = *o.HaTakeoverOfFailureCode
+		}
+		qHaTakeoverOfFailureCode := swag.FormatInt64(qrHaTakeoverOfFailureCode)
+		if qHaTakeoverOfFailureCode != "" {
+
+			if err := r.SetQueryParam("ha.takeover_of.failure.code", qHaTakeoverOfFailureCode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaTakeoverOfFailureMessage != nil {
+
+		// query param ha.takeover_of.failure.message
+		var qrHaTakeoverOfFailureMessage string
+
+		if o.HaTakeoverOfFailureMessage != nil {
+			qrHaTakeoverOfFailureMessage = *o.HaTakeoverOfFailureMessage
+		}
+		qHaTakeoverOfFailureMessage := qrHaTakeoverOfFailureMessage
+		if qHaTakeoverOfFailureMessage != "" {
+
+			if err := r.SetQueryParam("ha.takeover_of.failure.message", qHaTakeoverOfFailureMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaTakeoverOfState != nil {
+
+		// query param ha.takeover_of.state
+		var qrHaTakeoverOfState string
+
+		if o.HaTakeoverOfState != nil {
+			qrHaTakeoverOfState = *o.HaTakeoverOfState
+		}
+		qHaTakeoverOfState := qrHaTakeoverOfState
+		if qHaTakeoverOfState != "" {
+
+			if err := r.SetQueryParam("ha.takeover_of.state", qHaTakeoverOfState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.HaTakeoverOfPossible != nil {
+
+		// query param ha.takeover_of_possible
+		var qrHaTakeoverOfPossible bool
+
+		if o.HaTakeoverOfPossible != nil {
+			qrHaTakeoverOfPossible = *o.HaTakeoverOfPossible
+		}
+		qHaTakeoverOfPossible := swag.FormatBool(qrHaTakeoverOfPossible)
+		if qHaTakeoverOfPossible != "" {
+
+			if err := r.SetQueryParam("ha.takeover_of_possible", qHaTakeoverOfPossible); err != nil {
 				return err
 			}
 		}
@@ -4345,35 +4889,35 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
-	if o.ServiceProcessorAutoConfigIPV4Subnet != nil {
+	if o.ServiceProcessorAutoConfigIPv4Subnet != nil {
 
 		// query param service_processor.auto_config.ipv4_subnet
-		var qrServiceProcessorAutoConfigIPV4Subnet string
+		var qrServiceProcessorAutoConfigIPv4Subnet string
 
-		if o.ServiceProcessorAutoConfigIPV4Subnet != nil {
-			qrServiceProcessorAutoConfigIPV4Subnet = *o.ServiceProcessorAutoConfigIPV4Subnet
+		if o.ServiceProcessorAutoConfigIPv4Subnet != nil {
+			qrServiceProcessorAutoConfigIPv4Subnet = *o.ServiceProcessorAutoConfigIPv4Subnet
 		}
-		qServiceProcessorAutoConfigIPV4Subnet := qrServiceProcessorAutoConfigIPV4Subnet
-		if qServiceProcessorAutoConfigIPV4Subnet != "" {
+		qServiceProcessorAutoConfigIPv4Subnet := qrServiceProcessorAutoConfigIPv4Subnet
+		if qServiceProcessorAutoConfigIPv4Subnet != "" {
 
-			if err := r.SetQueryParam("service_processor.auto_config.ipv4_subnet", qServiceProcessorAutoConfigIPV4Subnet); err != nil {
+			if err := r.SetQueryParam("service_processor.auto_config.ipv4_subnet", qServiceProcessorAutoConfigIPv4Subnet); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.ServiceProcessorAutoConfigIPV6Subnet != nil {
+	if o.ServiceProcessorAutoConfigIPv6Subnet != nil {
 
 		// query param service_processor.auto_config.ipv6_subnet
-		var qrServiceProcessorAutoConfigIPV6Subnet string
+		var qrServiceProcessorAutoConfigIPv6Subnet string
 
-		if o.ServiceProcessorAutoConfigIPV6Subnet != nil {
-			qrServiceProcessorAutoConfigIPV6Subnet = *o.ServiceProcessorAutoConfigIPV6Subnet
+		if o.ServiceProcessorAutoConfigIPv6Subnet != nil {
+			qrServiceProcessorAutoConfigIPv6Subnet = *o.ServiceProcessorAutoConfigIPv6Subnet
 		}
-		qServiceProcessorAutoConfigIPV6Subnet := qrServiceProcessorAutoConfigIPV6Subnet
-		if qServiceProcessorAutoConfigIPV6Subnet != "" {
+		qServiceProcessorAutoConfigIPv6Subnet := qrServiceProcessorAutoConfigIPv6Subnet
+		if qServiceProcessorAutoConfigIPv6Subnet != "" {
 
-			if err := r.SetQueryParam("service_processor.auto_config.ipv6_subnet", qServiceProcessorAutoConfigIPV6Subnet); err != nil {
+			if err := r.SetQueryParam("service_processor.auto_config.ipv6_subnet", qServiceProcessorAutoConfigIPv6Subnet); err != nil {
 				return err
 			}
 		}
@@ -4481,222 +5025,222 @@ func (o *NodesGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 		}
 	}
 
-	if o.ServiceProcessorIPV4InterfaceAddress != nil {
+	if o.ServiceProcessorIPv4InterfaceAddress != nil {
 
 		// query param service_processor.ipv4_interface.address
-		var qrServiceProcessorIPV4InterfaceAddress string
+		var qrServiceProcessorIPv4InterfaceAddress string
 
-		if o.ServiceProcessorIPV4InterfaceAddress != nil {
-			qrServiceProcessorIPV4InterfaceAddress = *o.ServiceProcessorIPV4InterfaceAddress
+		if o.ServiceProcessorIPv4InterfaceAddress != nil {
+			qrServiceProcessorIPv4InterfaceAddress = *o.ServiceProcessorIPv4InterfaceAddress
 		}
-		qServiceProcessorIPV4InterfaceAddress := qrServiceProcessorIPV4InterfaceAddress
-		if qServiceProcessorIPV4InterfaceAddress != "" {
+		qServiceProcessorIPv4InterfaceAddress := qrServiceProcessorIPv4InterfaceAddress
+		if qServiceProcessorIPv4InterfaceAddress != "" {
 
-			if err := r.SetQueryParam("service_processor.ipv4_interface.address", qServiceProcessorIPV4InterfaceAddress); err != nil {
+			if err := r.SetQueryParam("service_processor.ipv4_interface.address", qServiceProcessorIPv4InterfaceAddress); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.ServiceProcessorIPV4InterfaceEnabled != nil {
+	if o.ServiceProcessorIPv4InterfaceEnabled != nil {
 
 		// query param service_processor.ipv4_interface.enabled
-		var qrServiceProcessorIPV4InterfaceEnabled bool
+		var qrServiceProcessorIPv4InterfaceEnabled bool
 
-		if o.ServiceProcessorIPV4InterfaceEnabled != nil {
-			qrServiceProcessorIPV4InterfaceEnabled = *o.ServiceProcessorIPV4InterfaceEnabled
+		if o.ServiceProcessorIPv4InterfaceEnabled != nil {
+			qrServiceProcessorIPv4InterfaceEnabled = *o.ServiceProcessorIPv4InterfaceEnabled
 		}
-		qServiceProcessorIPV4InterfaceEnabled := swag.FormatBool(qrServiceProcessorIPV4InterfaceEnabled)
-		if qServiceProcessorIPV4InterfaceEnabled != "" {
+		qServiceProcessorIPv4InterfaceEnabled := swag.FormatBool(qrServiceProcessorIPv4InterfaceEnabled)
+		if qServiceProcessorIPv4InterfaceEnabled != "" {
 
-			if err := r.SetQueryParam("service_processor.ipv4_interface.enabled", qServiceProcessorIPV4InterfaceEnabled); err != nil {
+			if err := r.SetQueryParam("service_processor.ipv4_interface.enabled", qServiceProcessorIPv4InterfaceEnabled); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.ServiceProcessorIPV4InterfaceGateway != nil {
+	if o.ServiceProcessorIPv4InterfaceGateway != nil {
 
 		// query param service_processor.ipv4_interface.gateway
-		var qrServiceProcessorIPV4InterfaceGateway string
+		var qrServiceProcessorIPv4InterfaceGateway string
 
-		if o.ServiceProcessorIPV4InterfaceGateway != nil {
-			qrServiceProcessorIPV4InterfaceGateway = *o.ServiceProcessorIPV4InterfaceGateway
+		if o.ServiceProcessorIPv4InterfaceGateway != nil {
+			qrServiceProcessorIPv4InterfaceGateway = *o.ServiceProcessorIPv4InterfaceGateway
 		}
-		qServiceProcessorIPV4InterfaceGateway := qrServiceProcessorIPV4InterfaceGateway
-		if qServiceProcessorIPV4InterfaceGateway != "" {
+		qServiceProcessorIPv4InterfaceGateway := qrServiceProcessorIPv4InterfaceGateway
+		if qServiceProcessorIPv4InterfaceGateway != "" {
 
-			if err := r.SetQueryParam("service_processor.ipv4_interface.gateway", qServiceProcessorIPV4InterfaceGateway); err != nil {
+			if err := r.SetQueryParam("service_processor.ipv4_interface.gateway", qServiceProcessorIPv4InterfaceGateway); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.ServiceProcessorIPV4InterfaceNetmask != nil {
+	if o.ServiceProcessorIPv4InterfaceNetmask != nil {
 
 		// query param service_processor.ipv4_interface.netmask
-		var qrServiceProcessorIPV4InterfaceNetmask string
+		var qrServiceProcessorIPv4InterfaceNetmask string
 
-		if o.ServiceProcessorIPV4InterfaceNetmask != nil {
-			qrServiceProcessorIPV4InterfaceNetmask = *o.ServiceProcessorIPV4InterfaceNetmask
+		if o.ServiceProcessorIPv4InterfaceNetmask != nil {
+			qrServiceProcessorIPv4InterfaceNetmask = *o.ServiceProcessorIPv4InterfaceNetmask
 		}
-		qServiceProcessorIPV4InterfaceNetmask := qrServiceProcessorIPV4InterfaceNetmask
-		if qServiceProcessorIPV4InterfaceNetmask != "" {
+		qServiceProcessorIPv4InterfaceNetmask := qrServiceProcessorIPv4InterfaceNetmask
+		if qServiceProcessorIPv4InterfaceNetmask != "" {
 
-			if err := r.SetQueryParam("service_processor.ipv4_interface.netmask", qServiceProcessorIPV4InterfaceNetmask); err != nil {
+			if err := r.SetQueryParam("service_processor.ipv4_interface.netmask", qServiceProcessorIPv4InterfaceNetmask); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.ServiceProcessorIPV4InterfaceSetupState != nil {
+	if o.ServiceProcessorIPv4InterfaceSetupState != nil {
 
 		// query param service_processor.ipv4_interface.setup_state
-		var qrServiceProcessorIPV4InterfaceSetupState string
+		var qrServiceProcessorIPv4InterfaceSetupState string
 
-		if o.ServiceProcessorIPV4InterfaceSetupState != nil {
-			qrServiceProcessorIPV4InterfaceSetupState = *o.ServiceProcessorIPV4InterfaceSetupState
+		if o.ServiceProcessorIPv4InterfaceSetupState != nil {
+			qrServiceProcessorIPv4InterfaceSetupState = *o.ServiceProcessorIPv4InterfaceSetupState
 		}
-		qServiceProcessorIPV4InterfaceSetupState := qrServiceProcessorIPV4InterfaceSetupState
-		if qServiceProcessorIPV4InterfaceSetupState != "" {
+		qServiceProcessorIPv4InterfaceSetupState := qrServiceProcessorIPv4InterfaceSetupState
+		if qServiceProcessorIPv4InterfaceSetupState != "" {
 
-			if err := r.SetQueryParam("service_processor.ipv4_interface.setup_state", qServiceProcessorIPV4InterfaceSetupState); err != nil {
+			if err := r.SetQueryParam("service_processor.ipv4_interface.setup_state", qServiceProcessorIPv4InterfaceSetupState); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.ServiceProcessorIPV6InterfaceAddress != nil {
+	if o.ServiceProcessorIPv6InterfaceAddress != nil {
 
 		// query param service_processor.ipv6_interface.address
-		var qrServiceProcessorIPV6InterfaceAddress string
+		var qrServiceProcessorIPv6InterfaceAddress string
 
-		if o.ServiceProcessorIPV6InterfaceAddress != nil {
-			qrServiceProcessorIPV6InterfaceAddress = *o.ServiceProcessorIPV6InterfaceAddress
+		if o.ServiceProcessorIPv6InterfaceAddress != nil {
+			qrServiceProcessorIPv6InterfaceAddress = *o.ServiceProcessorIPv6InterfaceAddress
 		}
-		qServiceProcessorIPV6InterfaceAddress := qrServiceProcessorIPV6InterfaceAddress
-		if qServiceProcessorIPV6InterfaceAddress != "" {
+		qServiceProcessorIPv6InterfaceAddress := qrServiceProcessorIPv6InterfaceAddress
+		if qServiceProcessorIPv6InterfaceAddress != "" {
 
-			if err := r.SetQueryParam("service_processor.ipv6_interface.address", qServiceProcessorIPV6InterfaceAddress); err != nil {
+			if err := r.SetQueryParam("service_processor.ipv6_interface.address", qServiceProcessorIPv6InterfaceAddress); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.ServiceProcessorIPV6InterfaceEnabled != nil {
+	if o.ServiceProcessorIPv6InterfaceEnabled != nil {
 
 		// query param service_processor.ipv6_interface.enabled
-		var qrServiceProcessorIPV6InterfaceEnabled bool
+		var qrServiceProcessorIPv6InterfaceEnabled bool
 
-		if o.ServiceProcessorIPV6InterfaceEnabled != nil {
-			qrServiceProcessorIPV6InterfaceEnabled = *o.ServiceProcessorIPV6InterfaceEnabled
+		if o.ServiceProcessorIPv6InterfaceEnabled != nil {
+			qrServiceProcessorIPv6InterfaceEnabled = *o.ServiceProcessorIPv6InterfaceEnabled
 		}
-		qServiceProcessorIPV6InterfaceEnabled := swag.FormatBool(qrServiceProcessorIPV6InterfaceEnabled)
-		if qServiceProcessorIPV6InterfaceEnabled != "" {
+		qServiceProcessorIPv6InterfaceEnabled := swag.FormatBool(qrServiceProcessorIPv6InterfaceEnabled)
+		if qServiceProcessorIPv6InterfaceEnabled != "" {
 
-			if err := r.SetQueryParam("service_processor.ipv6_interface.enabled", qServiceProcessorIPV6InterfaceEnabled); err != nil {
+			if err := r.SetQueryParam("service_processor.ipv6_interface.enabled", qServiceProcessorIPv6InterfaceEnabled); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.ServiceProcessorIPV6InterfaceGateway != nil {
+	if o.ServiceProcessorIPv6InterfaceGateway != nil {
 
 		// query param service_processor.ipv6_interface.gateway
-		var qrServiceProcessorIPV6InterfaceGateway string
+		var qrServiceProcessorIPv6InterfaceGateway string
 
-		if o.ServiceProcessorIPV6InterfaceGateway != nil {
-			qrServiceProcessorIPV6InterfaceGateway = *o.ServiceProcessorIPV6InterfaceGateway
+		if o.ServiceProcessorIPv6InterfaceGateway != nil {
+			qrServiceProcessorIPv6InterfaceGateway = *o.ServiceProcessorIPv6InterfaceGateway
 		}
-		qServiceProcessorIPV6InterfaceGateway := qrServiceProcessorIPV6InterfaceGateway
-		if qServiceProcessorIPV6InterfaceGateway != "" {
+		qServiceProcessorIPv6InterfaceGateway := qrServiceProcessorIPv6InterfaceGateway
+		if qServiceProcessorIPv6InterfaceGateway != "" {
 
-			if err := r.SetQueryParam("service_processor.ipv6_interface.gateway", qServiceProcessorIPV6InterfaceGateway); err != nil {
+			if err := r.SetQueryParam("service_processor.ipv6_interface.gateway", qServiceProcessorIPv6InterfaceGateway); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.ServiceProcessorIPV6InterfaceIsIPV6RaEnabled != nil {
+	if o.ServiceProcessorIPv6InterfaceIsIPv6RaEnabled != nil {
 
 		// query param service_processor.ipv6_interface.is_ipv6_ra_enabled
-		var qrServiceProcessorIPV6InterfaceIsIPV6RaEnabled bool
+		var qrServiceProcessorIPv6InterfaceIsIPv6RaEnabled bool
 
-		if o.ServiceProcessorIPV6InterfaceIsIPV6RaEnabled != nil {
-			qrServiceProcessorIPV6InterfaceIsIPV6RaEnabled = *o.ServiceProcessorIPV6InterfaceIsIPV6RaEnabled
+		if o.ServiceProcessorIPv6InterfaceIsIPv6RaEnabled != nil {
+			qrServiceProcessorIPv6InterfaceIsIPv6RaEnabled = *o.ServiceProcessorIPv6InterfaceIsIPv6RaEnabled
 		}
-		qServiceProcessorIPV6InterfaceIsIPV6RaEnabled := swag.FormatBool(qrServiceProcessorIPV6InterfaceIsIPV6RaEnabled)
-		if qServiceProcessorIPV6InterfaceIsIPV6RaEnabled != "" {
+		qServiceProcessorIPv6InterfaceIsIPv6RaEnabled := swag.FormatBool(qrServiceProcessorIPv6InterfaceIsIPv6RaEnabled)
+		if qServiceProcessorIPv6InterfaceIsIPv6RaEnabled != "" {
 
-			if err := r.SetQueryParam("service_processor.ipv6_interface.is_ipv6_ra_enabled", qServiceProcessorIPV6InterfaceIsIPV6RaEnabled); err != nil {
+			if err := r.SetQueryParam("service_processor.ipv6_interface.is_ipv6_ra_enabled", qServiceProcessorIPv6InterfaceIsIPv6RaEnabled); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.ServiceProcessorIPV6InterfaceLinkLocalIP != nil {
+	if o.ServiceProcessorIPv6InterfaceLinkLocalIP != nil {
 
 		// query param service_processor.ipv6_interface.link_local_ip
-		var qrServiceProcessorIPV6InterfaceLinkLocalIP string
+		var qrServiceProcessorIPv6InterfaceLinkLocalIP string
 
-		if o.ServiceProcessorIPV6InterfaceLinkLocalIP != nil {
-			qrServiceProcessorIPV6InterfaceLinkLocalIP = *o.ServiceProcessorIPV6InterfaceLinkLocalIP
+		if o.ServiceProcessorIPv6InterfaceLinkLocalIP != nil {
+			qrServiceProcessorIPv6InterfaceLinkLocalIP = *o.ServiceProcessorIPv6InterfaceLinkLocalIP
 		}
-		qServiceProcessorIPV6InterfaceLinkLocalIP := qrServiceProcessorIPV6InterfaceLinkLocalIP
-		if qServiceProcessorIPV6InterfaceLinkLocalIP != "" {
+		qServiceProcessorIPv6InterfaceLinkLocalIP := qrServiceProcessorIPv6InterfaceLinkLocalIP
+		if qServiceProcessorIPv6InterfaceLinkLocalIP != "" {
 
-			if err := r.SetQueryParam("service_processor.ipv6_interface.link_local_ip", qServiceProcessorIPV6InterfaceLinkLocalIP); err != nil {
+			if err := r.SetQueryParam("service_processor.ipv6_interface.link_local_ip", qServiceProcessorIPv6InterfaceLinkLocalIP); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.ServiceProcessorIPV6InterfaceNetmask != nil {
+	if o.ServiceProcessorIPv6InterfaceNetmask != nil {
 
 		// query param service_processor.ipv6_interface.netmask
-		var qrServiceProcessorIPV6InterfaceNetmask int64
+		var qrServiceProcessorIPv6InterfaceNetmask int64
 
-		if o.ServiceProcessorIPV6InterfaceNetmask != nil {
-			qrServiceProcessorIPV6InterfaceNetmask = *o.ServiceProcessorIPV6InterfaceNetmask
+		if o.ServiceProcessorIPv6InterfaceNetmask != nil {
+			qrServiceProcessorIPv6InterfaceNetmask = *o.ServiceProcessorIPv6InterfaceNetmask
 		}
-		qServiceProcessorIPV6InterfaceNetmask := swag.FormatInt64(qrServiceProcessorIPV6InterfaceNetmask)
-		if qServiceProcessorIPV6InterfaceNetmask != "" {
+		qServiceProcessorIPv6InterfaceNetmask := swag.FormatInt64(qrServiceProcessorIPv6InterfaceNetmask)
+		if qServiceProcessorIPv6InterfaceNetmask != "" {
 
-			if err := r.SetQueryParam("service_processor.ipv6_interface.netmask", qServiceProcessorIPV6InterfaceNetmask); err != nil {
+			if err := r.SetQueryParam("service_processor.ipv6_interface.netmask", qServiceProcessorIPv6InterfaceNetmask); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.ServiceProcessorIPV6InterfaceRouterIP != nil {
+	if o.ServiceProcessorIPv6InterfaceRouterIP != nil {
 
 		// query param service_processor.ipv6_interface.router_ip
-		var qrServiceProcessorIPV6InterfaceRouterIP string
+		var qrServiceProcessorIPv6InterfaceRouterIP string
 
-		if o.ServiceProcessorIPV6InterfaceRouterIP != nil {
-			qrServiceProcessorIPV6InterfaceRouterIP = *o.ServiceProcessorIPV6InterfaceRouterIP
+		if o.ServiceProcessorIPv6InterfaceRouterIP != nil {
+			qrServiceProcessorIPv6InterfaceRouterIP = *o.ServiceProcessorIPv6InterfaceRouterIP
 		}
-		qServiceProcessorIPV6InterfaceRouterIP := qrServiceProcessorIPV6InterfaceRouterIP
-		if qServiceProcessorIPV6InterfaceRouterIP != "" {
+		qServiceProcessorIPv6InterfaceRouterIP := qrServiceProcessorIPv6InterfaceRouterIP
+		if qServiceProcessorIPv6InterfaceRouterIP != "" {
 
-			if err := r.SetQueryParam("service_processor.ipv6_interface.router_ip", qServiceProcessorIPV6InterfaceRouterIP); err != nil {
+			if err := r.SetQueryParam("service_processor.ipv6_interface.router_ip", qServiceProcessorIPv6InterfaceRouterIP); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.ServiceProcessorIPV6InterfaceSetupState != nil {
+	if o.ServiceProcessorIPv6InterfaceSetupState != nil {
 
 		// query param service_processor.ipv6_interface.setup_state
-		var qrServiceProcessorIPV6InterfaceSetupState string
+		var qrServiceProcessorIPv6InterfaceSetupState string
 
-		if o.ServiceProcessorIPV6InterfaceSetupState != nil {
-			qrServiceProcessorIPV6InterfaceSetupState = *o.ServiceProcessorIPV6InterfaceSetupState
+		if o.ServiceProcessorIPv6InterfaceSetupState != nil {
+			qrServiceProcessorIPv6InterfaceSetupState = *o.ServiceProcessorIPv6InterfaceSetupState
 		}
-		qServiceProcessorIPV6InterfaceSetupState := qrServiceProcessorIPV6InterfaceSetupState
-		if qServiceProcessorIPV6InterfaceSetupState != "" {
+		qServiceProcessorIPv6InterfaceSetupState := qrServiceProcessorIPv6InterfaceSetupState
+		if qServiceProcessorIPv6InterfaceSetupState != "" {
 
-			if err := r.SetQueryParam("service_processor.ipv6_interface.setup_state", qServiceProcessorIPV6InterfaceSetupState); err != nil {
+			if err := r.SetQueryParam("service_processor.ipv6_interface.setup_state", qServiceProcessorIPv6InterfaceSetupState); err != nil {
 				return err
 			}
 		}

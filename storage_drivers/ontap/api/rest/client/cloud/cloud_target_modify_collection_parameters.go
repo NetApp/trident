@@ -656,15 +656,15 @@ func (o *CloudTargetModifyCollectionParams) SetSvmUUID(svmUUID *string) {
 	o.SvmUUID = svmUUID
 }
 
-// WithURLStyle adds the uRLStyle to the cloud target modify collection params
-func (o *CloudTargetModifyCollectionParams) WithURLStyle(uRLStyle *string) *CloudTargetModifyCollectionParams {
-	o.SetURLStyle(uRLStyle)
+// WithURLStyle adds the urlStyle to the cloud target modify collection params
+func (o *CloudTargetModifyCollectionParams) WithURLStyle(urlStyle *string) *CloudTargetModifyCollectionParams {
+	o.SetURLStyle(urlStyle)
 	return o
 }
 
 // SetURLStyle adds the urlStyle to the cloud target modify collection params
-func (o *CloudTargetModifyCollectionParams) SetURLStyle(uRLStyle *string) {
-	o.URLStyle = uRLStyle
+func (o *CloudTargetModifyCollectionParams) SetURLStyle(urlStyle *string) {
+	o.URLStyle = urlStyle
 }
 
 // WithUseHTTPProxy adds the useHTTPProxy to the cloud target modify collection params

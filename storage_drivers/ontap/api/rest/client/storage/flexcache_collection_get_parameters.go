@@ -140,6 +140,18 @@ type FlexcacheCollectionGetParams struct {
 	*/
 	MaxRecords *int64
 
+	/* MtimeScrubberEnabled.
+
+	   Filter by mtime_scrubber.enabled
+	*/
+	MtimeScrubberEnabled *bool
+
+	/* MtimeScrubberThreshold.
+
+	   Filter by mtime_scrubber.threshold
+	*/
+	MtimeScrubberThreshold *int64
+
 	/* Name.
 
 	   Filter by name
@@ -293,6 +305,12 @@ type FlexcacheCollectionGetParams struct {
 	   Filter by uuid
 	*/
 	UUID *string
+
+	/* WriteAbsorptionEnabled.
+
+	   Filter by write_absorption.enabled
+	*/
+	WriteAbsorptionEnabled *bool
 
 	/* WritebackEnabled.
 
@@ -508,6 +526,28 @@ func (o *FlexcacheCollectionGetParams) WithMaxRecords(maxRecords *int64) *Flexca
 // SetMaxRecords adds the maxRecords to the flexcache collection get params
 func (o *FlexcacheCollectionGetParams) SetMaxRecords(maxRecords *int64) {
 	o.MaxRecords = maxRecords
+}
+
+// WithMtimeScrubberEnabled adds the mtimeScrubberEnabled to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithMtimeScrubberEnabled(mtimeScrubberEnabled *bool) *FlexcacheCollectionGetParams {
+	o.SetMtimeScrubberEnabled(mtimeScrubberEnabled)
+	return o
+}
+
+// SetMtimeScrubberEnabled adds the mtimeScrubberEnabled to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetMtimeScrubberEnabled(mtimeScrubberEnabled *bool) {
+	o.MtimeScrubberEnabled = mtimeScrubberEnabled
+}
+
+// WithMtimeScrubberThreshold adds the mtimeScrubberThreshold to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithMtimeScrubberThreshold(mtimeScrubberThreshold *int64) *FlexcacheCollectionGetParams {
+	o.SetMtimeScrubberThreshold(mtimeScrubberThreshold)
+	return o
+}
+
+// SetMtimeScrubberThreshold adds the mtimeScrubberThreshold to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetMtimeScrubberThreshold(mtimeScrubberThreshold *int64) {
+	o.MtimeScrubberThreshold = mtimeScrubberThreshold
 }
 
 // WithName adds the name to the flexcache collection get params
@@ -785,6 +825,17 @@ func (o *FlexcacheCollectionGetParams) SetUUID(uuid *string) {
 	o.UUID = uuid
 }
 
+// WithWriteAbsorptionEnabled adds the writeAbsorptionEnabled to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) WithWriteAbsorptionEnabled(writeAbsorptionEnabled *bool) *FlexcacheCollectionGetParams {
+	o.SetWriteAbsorptionEnabled(writeAbsorptionEnabled)
+	return o
+}
+
+// SetWriteAbsorptionEnabled adds the writeAbsorptionEnabled to the flexcache collection get params
+func (o *FlexcacheCollectionGetParams) SetWriteAbsorptionEnabled(writeAbsorptionEnabled *bool) {
+	o.WriteAbsorptionEnabled = writeAbsorptionEnabled
+}
+
 // WithWritebackEnabled adds the writebackEnabled to the flexcache collection get params
 func (o *FlexcacheCollectionGetParams) WithWritebackEnabled(writebackEnabled *bool) *FlexcacheCollectionGetParams {
 	o.SetWritebackEnabled(writebackEnabled)
@@ -1014,6 +1065,40 @@ func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qMaxRecords != "" {
 
 			if err := r.SetQueryParam("max_records", qMaxRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MtimeScrubberEnabled != nil {
+
+		// query param mtime_scrubber.enabled
+		var qrMtimeScrubberEnabled bool
+
+		if o.MtimeScrubberEnabled != nil {
+			qrMtimeScrubberEnabled = *o.MtimeScrubberEnabled
+		}
+		qMtimeScrubberEnabled := swag.FormatBool(qrMtimeScrubberEnabled)
+		if qMtimeScrubberEnabled != "" {
+
+			if err := r.SetQueryParam("mtime_scrubber.enabled", qMtimeScrubberEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MtimeScrubberThreshold != nil {
+
+		// query param mtime_scrubber.threshold
+		var qrMtimeScrubberThreshold int64
+
+		if o.MtimeScrubberThreshold != nil {
+			qrMtimeScrubberThreshold = *o.MtimeScrubberThreshold
+		}
+		qMtimeScrubberThreshold := swag.FormatInt64(qrMtimeScrubberThreshold)
+		if qMtimeScrubberThreshold != "" {
+
+			if err := r.SetQueryParam("mtime_scrubber.threshold", qMtimeScrubberThreshold); err != nil {
 				return err
 			}
 		}
@@ -1433,6 +1518,23 @@ func (o *FlexcacheCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qUUID != "" {
 
 			if err := r.SetQueryParam("uuid", qUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.WriteAbsorptionEnabled != nil {
+
+		// query param write_absorption.enabled
+		var qrWriteAbsorptionEnabled bool
+
+		if o.WriteAbsorptionEnabled != nil {
+			qrWriteAbsorptionEnabled = *o.WriteAbsorptionEnabled
+		}
+		qWriteAbsorptionEnabled := swag.FormatBool(qrWriteAbsorptionEnabled)
+		if qWriteAbsorptionEnabled != "" {
+
+			if err := r.SetQueryParam("write_absorption.enabled", qWriteAbsorptionEnabled); err != nil {
 				return err
 			}
 		}

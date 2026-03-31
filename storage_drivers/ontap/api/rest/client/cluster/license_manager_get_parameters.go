@@ -158,15 +158,15 @@ func (o *LicenseManagerGetParams) SetFields(fields []string) {
 	o.Fields = fields
 }
 
-// WithURIHost adds the uRIHost to the license manager get params
-func (o *LicenseManagerGetParams) WithURIHost(uRIHost *string) *LicenseManagerGetParams {
-	o.SetURIHost(uRIHost)
+// WithURIHost adds the uriHost to the license manager get params
+func (o *LicenseManagerGetParams) WithURIHost(uriHost *string) *LicenseManagerGetParams {
+	o.SetURIHost(uriHost)
 	return o
 }
 
 // SetURIHost adds the uriHost to the license manager get params
-func (o *LicenseManagerGetParams) SetURIHost(uRIHost *string) {
-	o.URIHost = uRIHost
+func (o *LicenseManagerGetParams) SetURIHost(uriHost *string) {
+	o.URIHost = uriHost
 }
 
 // WithUUID adds the uuid to the license manager get params

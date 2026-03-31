@@ -247,15 +247,15 @@ func (o *LicenseManagerCollectionGetParams) SetReturnTimeout(returnTimeout *int6
 	o.ReturnTimeout = returnTimeout
 }
 
-// WithURIHost adds the uRIHost to the license manager collection get params
-func (o *LicenseManagerCollectionGetParams) WithURIHost(uRIHost *string) *LicenseManagerCollectionGetParams {
-	o.SetURIHost(uRIHost)
+// WithURIHost adds the uriHost to the license manager collection get params
+func (o *LicenseManagerCollectionGetParams) WithURIHost(uriHost *string) *LicenseManagerCollectionGetParams {
+	o.SetURIHost(uriHost)
 	return o
 }
 
 // SetURIHost adds the uriHost to the license manager collection get params
-func (o *LicenseManagerCollectionGetParams) SetURIHost(uRIHost *string) {
-	o.URIHost = uRIHost
+func (o *LicenseManagerCollectionGetParams) SetURIHost(uriHost *string) {
+	o.URIHost = uriHost
 }
 
 // WithUUID adds the uuid to the license manager collection get params

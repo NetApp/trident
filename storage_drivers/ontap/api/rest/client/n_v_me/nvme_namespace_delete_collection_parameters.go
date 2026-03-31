@@ -85,6 +85,12 @@ type NvmeNamespaceDeleteCollectionParams struct {
 	*/
 	BypassRecoveryQueue *bool
 
+	/* CloneCreatedAsClone.
+
+	   Filter by clone.created_as_clone
+	*/
+	CloneCreatedAsClone *bool
+
 	/* Comment.
 
 	   Filter by comment
@@ -721,6 +727,17 @@ func (o *NvmeNamespaceDeleteCollectionParams) WithBypassRecoveryQueue(bypassReco
 // SetBypassRecoveryQueue adds the bypassRecoveryQueue to the nvme namespace delete collection params
 func (o *NvmeNamespaceDeleteCollectionParams) SetBypassRecoveryQueue(bypassRecoveryQueue *bool) {
 	o.BypassRecoveryQueue = bypassRecoveryQueue
+}
+
+// WithCloneCreatedAsClone adds the cloneCreatedAsClone to the nvme namespace delete collection params
+func (o *NvmeNamespaceDeleteCollectionParams) WithCloneCreatedAsClone(cloneCreatedAsClone *bool) *NvmeNamespaceDeleteCollectionParams {
+	o.SetCloneCreatedAsClone(cloneCreatedAsClone)
+	return o
+}
+
+// SetCloneCreatedAsClone adds the cloneCreatedAsClone to the nvme namespace delete collection params
+func (o *NvmeNamespaceDeleteCollectionParams) SetCloneCreatedAsClone(cloneCreatedAsClone *bool) {
+	o.CloneCreatedAsClone = cloneCreatedAsClone
 }
 
 // WithComment adds the comment to the nvme namespace delete collection params
@@ -1734,6 +1751,23 @@ func (o *NvmeNamespaceDeleteCollectionParams) WriteToRequest(r runtime.ClientReq
 		if qBypassRecoveryQueue != "" {
 
 			if err := r.SetQueryParam("bypass_recovery_queue", qBypassRecoveryQueue); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneCreatedAsClone != nil {
+
+		// query param clone.created_as_clone
+		var qrCloneCreatedAsClone bool
+
+		if o.CloneCreatedAsClone != nil {
+			qrCloneCreatedAsClone = *o.CloneCreatedAsClone
+		}
+		qCloneCreatedAsClone := swag.FormatBool(qrCloneCreatedAsClone)
+		if qCloneCreatedAsClone != "" {
+
+			if err := r.SetQueryParam("clone.created_as_clone", qCloneCreatedAsClone); err != nil {
 				return err
 			}
 		}

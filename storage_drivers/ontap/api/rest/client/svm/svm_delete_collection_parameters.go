@@ -486,6 +486,12 @@ type SvmDeleteCollectionParams struct {
 	*/
 	S3SecurePort *int64
 
+	/* SanMultipathing.
+
+	   Filter by san_multipathing.
+	*/
+	SanMultipathing *string
+
 	/* SerialRecords.
 
 	   Perform the operation on the records synchronously.
@@ -869,26 +875,26 @@ func (o *SvmDeleteCollectionParams) SetContinueOnFailure(continueOnFailure *bool
 	o.ContinueOnFailure = continueOnFailure
 }
 
-// WithDNSDomains adds the dNSDomains to the svm delete collection params
-func (o *SvmDeleteCollectionParams) WithDNSDomains(dNSDomains *string) *SvmDeleteCollectionParams {
-	o.SetDNSDomains(dNSDomains)
+// WithDNSDomains adds the dnsDomains to the svm delete collection params
+func (o *SvmDeleteCollectionParams) WithDNSDomains(dnsDomains *string) *SvmDeleteCollectionParams {
+	o.SetDNSDomains(dnsDomains)
 	return o
 }
 
 // SetDNSDomains adds the dnsDomains to the svm delete collection params
-func (o *SvmDeleteCollectionParams) SetDNSDomains(dNSDomains *string) {
-	o.DNSDomains = dNSDomains
+func (o *SvmDeleteCollectionParams) SetDNSDomains(dnsDomains *string) {
+	o.DNSDomains = dnsDomains
 }
 
-// WithDNSServers adds the dNSServers to the svm delete collection params
-func (o *SvmDeleteCollectionParams) WithDNSServers(dNSServers *string) *SvmDeleteCollectionParams {
-	o.SetDNSServers(dNSServers)
+// WithDNSServers adds the dnsServers to the svm delete collection params
+func (o *SvmDeleteCollectionParams) WithDNSServers(dnsServers *string) *SvmDeleteCollectionParams {
+	o.SetDNSServers(dnsServers)
 	return o
 }
 
 // SetDNSServers adds the dnsServers to the svm delete collection params
-func (o *SvmDeleteCollectionParams) SetDNSServers(dNSServers *string) {
-	o.DNSServers = dNSServers
+func (o *SvmDeleteCollectionParams) SetDNSServers(dnsServers *string) {
+	o.DNSServers = dnsServers
 }
 
 // WithFcInterfacesDataProtocol adds the fcInterfacesDataProtocol to the svm delete collection params
@@ -1417,6 +1423,17 @@ func (o *SvmDeleteCollectionParams) WithS3SecurePort(s3SecurePort *int64) *SvmDe
 // SetS3SecurePort adds the s3SecurePort to the svm delete collection params
 func (o *SvmDeleteCollectionParams) SetS3SecurePort(s3SecurePort *int64) {
 	o.S3SecurePort = s3SecurePort
+}
+
+// WithSanMultipathing adds the sanMultipathing to the svm delete collection params
+func (o *SvmDeleteCollectionParams) WithSanMultipathing(sanMultipathing *string) *SvmDeleteCollectionParams {
+	o.SetSanMultipathing(sanMultipathing)
+	return o
+}
+
+// SetSanMultipathing adds the sanMultipathing to the svm delete collection params
+func (o *SvmDeleteCollectionParams) SetSanMultipathing(sanMultipathing *string) {
+	o.SanMultipathing = sanMultipathing
 }
 
 // WithSerialRecords adds the serialRecords to the svm delete collection params
@@ -2763,6 +2780,23 @@ func (o *SvmDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qS3SecurePort != "" {
 
 			if err := r.SetQueryParam("s3.secure_port", qS3SecurePort); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SanMultipathing != nil {
+
+		// query param san_multipathing
+		var qrSanMultipathing string
+
+		if o.SanMultipathing != nil {
+			qrSanMultipathing = *o.SanMultipathing
+		}
+		qSanMultipathing := qrSanMultipathing
+		if qSanMultipathing != "" {
+
+			if err := r.SetQueryParam("san_multipathing", qSanMultipathing); err != nil {
 				return err
 			}
 		}

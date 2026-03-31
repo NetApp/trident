@@ -268,6 +268,7 @@ func (a *Client) SvmCollectionGet(params *SvmCollectionGetParams, authInfo runti
 * `auto_enable_activity_tracking` - Auto-enable volume activity-tracking on new volumes created in the SVM.
 * `storage.limit` - Maximum storage permitted on a single SVM.
 * `storage.limit_threshold_alert` - At what percentage of storage capacity, alert message needs to be sent.
+* `san_multipathing` - SAN multipathing mode.
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `language` - _C.UTF-8_
@@ -440,6 +441,14 @@ If not specified in POST, the following default property values are assigned:
     <br/>
 
 </personalities>
+
+		<br/>
+	  - Creates an SVM and specifies the SAN multipathing mode.
+	    <br/>
+	    ```
+	    POST "/api/svm/svms" '{"name":"testVs", "san_multipathing":"active_active"}}'
+	    ```
+
 ### Learn more
 * [`DOC /svm/svms`](#docs-svm-svm_svms)
 */

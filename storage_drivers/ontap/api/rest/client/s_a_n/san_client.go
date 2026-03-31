@@ -160,6 +160,10 @@ type ClientService interface {
 
 	LunMapGet(params *LunMapGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapGetOK, error)
 
+	LunMapModify(params *LunMapModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapModifyOK, error)
+
+	LunMapModifyCollection(params *LunMapModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapModifyCollectionOK, error)
+
 	LunMapReportingNodeCollectionGet(params *LunMapReportingNodeCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeCollectionGetOK, error)
 
 	LunMapReportingNodeCreate(params *LunMapReportingNodeCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapReportingNodeCreateCreated, error)
@@ -2620,9 +2624,11 @@ If not specified in POST, the follow default property values are assigned.
 ### Related ONTAP commands
 * `lun create`
 * `lun convert-from-namespace`
+<personalities supports=unified>
 * `lun copy start`
 * `volume file clone autodelete`
 * `volume file clone create`
+</personalities>
 <personalities supports=asar2>
 The `name` property is required when creating a new LUN. The name must start with an alphabetic character (a to z or A to Z) or an underscore (_). The name must be 203 characters or less in length. The `location` properties are not supported.
 </personalities>
@@ -2876,6 +2882,7 @@ func (a *Client) LunFormDataGet(params *LunFormDataGetParams, authInfo runtime.C
 - Overwrites the contents of a LUN as a clone of another.
 - Begins the movement of a LUN between volumes. PATCH can also pause and resume the movement of a LUN between volumes that is already in active.
 ### Related ONTAP commands
+<personalities supports=unified>
 * `lun copy modify`
 * `lun copy pause`
 * `lun copy resume`
@@ -2887,6 +2894,12 @@ func (a *Client) LunFormDataGet(params *LunFormDataGetParams, authInfo runtime.C
 * `lun move start`
 * `lun resize`
 * `volume file clone autodelete`
+</personalities>
+<personalities supports=asar2>
+* `lun modify`
+* `lun resize`
+* `lun rename`
+</personalities>
 <personalities supports=asar2>
 PATCH is asynchronous when modifying `name` or `qos_policy`.
 </personalities>
@@ -3211,6 +3224,87 @@ func (a *Client) LunMapGet(params *LunMapGetParams, authInfo runtime.ClientAuthI
 }
 
 /*
+	LunMapModify Modifies a LUN map.
+
+### Related ONTAP commands
+* `lun mapping modify`
+### Learn more
+* [`DOC /protocols/san/lun-maps`](#docs-SAN-protocols_san_lun-maps)
+*/
+func (a *Client) LunMapModify(params *LunMapModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunMapModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_map_modify",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/san/lun-maps/{lun.uuid}/{igroup.uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunMapModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LunMapModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunMapModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+LunMapModifyCollection lun map modify collection API
+*/
+func (a *Client) LunMapModifyCollection(params *LunMapModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*LunMapModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLunMapModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "lun_map_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/protocols/san/lun-maps",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &LunMapModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LunMapModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LunMapModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
 	LunMapReportingNodeCollectionGet Retrieves LUN map reporting nodes.
 
 ### Related ONTAP commands
@@ -3430,6 +3524,7 @@ func (a *Client) LunMapReportingNodeGet(params *LunMapReportingNodeGetParams, au
 - Overwrites the contents of a LUN as a clone of another.
 - Begins the movement of a LUN between volumes. PATCH can also pause and resume the movement of a LUN between volumes that is already in active.
 ### Related ONTAP commands
+<personalities supports=unified>
 * `lun copy modify`
 * `lun copy pause`
 * `lun copy resume`
@@ -3441,6 +3536,12 @@ func (a *Client) LunMapReportingNodeGet(params *LunMapReportingNodeGetParams, au
 * `lun move start`
 * `lun resize`
 * `volume file clone autodelete`
+</personalities>
+<personalities supports=asar2>
+* `lun modify`
+* `lun resize`
+* `lun rename`
+</personalities>
 <personalities supports=asar2>
 PATCH is asynchronous when modifying `name` or `qos_policy`.
 </personalities>

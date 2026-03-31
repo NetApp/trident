@@ -3261,21 +3261,19 @@ If not specified in POST, the following default property values are assigned:
 * `scope`
   - _svm_ if svm parameter is specified.
   - _cluster_ if svm parameter is not specified
-
-* `enabled` - _true_
-* `location.auto_revert` - _true_
-* `service_policy`
-  - **Unified ONTAP**: _default-data-files_ if scope is `svm`
-  - **ASA r2**: _default-data-blocks_ if scope is `svm`
+  - `enabled` - _true_
+  - `location.auto_revert` - _true_
+  - `service_policy`
+    <personalities supports=unified,aiml>* _default-data-files_ if scope is `svm`</personalities>
+    <personalities supports=asar2>* _default-data-blocks_ if scope is `svm`</personalities>
   - _default-management_ if scope is `cluster` and IPspace is not `Cluster`
   - _default-cluster_ if scope is `cluster` and IPspace is `Cluster`
-
-* `failover` - Selects the least restrictive failover policy supported by all the services in the service policy.
-* `ddns_enabled`
+  - `failover` - Selects the least restrictive failover policy supported by all the services in the service policy.
+  - `ddns_enabled`
   - _true_ if the interface supports _data_nfs_ or _data_cifs_ services
   - _false_ otherwise
+  - `fail_if_subnet_conflicts` - _true_
 
-* `fail_if_subnet_conflicts` - _true_
 ### Related ONTAP commands
 * `network interface create`
 */

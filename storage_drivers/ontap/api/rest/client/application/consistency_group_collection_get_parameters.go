@@ -218,6 +218,18 @@ type ConsistencyGroupCollectionGetParams struct {
 	*/
 	ConsistencyGroupsApplicationType *string
 
+	/* ConsistencyGroupsLunsAccessMode.
+
+	   Filter by consistency_groups.luns.access_mode
+	*/
+	ConsistencyGroupsLunsAccessMode *string
+
+	/* ConsistencyGroupsLunsCloneCreatedAsClone.
+
+	   Filter by consistency_groups.luns.clone.created_as_clone
+	*/
+	ConsistencyGroupsLunsCloneCreatedAsClone *bool
+
 	/* ConsistencyGroupsLunsComment.
 
 	   Filter by consistency_groups.luns.comment
@@ -1039,6 +1051,18 @@ type ConsistencyGroupCollectionGetParams struct {
 	   Specify the fields to return.
 	*/
 	Fields []string
+
+	/* LunsAccessMode.
+
+	   Filter by luns.access_mode
+	*/
+	LunsAccessMode *string
+
+	/* LunsCloneCreatedAsClone.
+
+	   Filter by luns.clone.created_as_clone
+	*/
+	LunsCloneCreatedAsClone *bool
 
 	/* LunsComment.
 
@@ -2517,6 +2541,28 @@ func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsApplicationTy
 // SetConsistencyGroupsApplicationType adds the consistencyGroupsApplicationType to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsApplicationType(consistencyGroupsApplicationType *string) {
 	o.ConsistencyGroupsApplicationType = consistencyGroupsApplicationType
+}
+
+// WithConsistencyGroupsLunsAccessMode adds the consistencyGroupsLunsAccessMode to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsAccessMode(consistencyGroupsLunsAccessMode *string) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsAccessMode(consistencyGroupsLunsAccessMode)
+	return o
+}
+
+// SetConsistencyGroupsLunsAccessMode adds the consistencyGroupsLunsAccessMode to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsAccessMode(consistencyGroupsLunsAccessMode *string) {
+	o.ConsistencyGroupsLunsAccessMode = consistencyGroupsLunsAccessMode
+}
+
+// WithConsistencyGroupsLunsCloneCreatedAsClone adds the consistencyGroupsLunsCloneCreatedAsClone to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithConsistencyGroupsLunsCloneCreatedAsClone(consistencyGroupsLunsCloneCreatedAsClone *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetConsistencyGroupsLunsCloneCreatedAsClone(consistencyGroupsLunsCloneCreatedAsClone)
+	return o
+}
+
+// SetConsistencyGroupsLunsCloneCreatedAsClone adds the consistencyGroupsLunsCloneCreatedAsClone to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetConsistencyGroupsLunsCloneCreatedAsClone(consistencyGroupsLunsCloneCreatedAsClone *bool) {
+	o.ConsistencyGroupsLunsCloneCreatedAsClone = consistencyGroupsLunsCloneCreatedAsClone
 }
 
 // WithConsistencyGroupsLunsComment adds the consistencyGroupsLunsComment to the consistency group collection get params
@@ -4024,6 +4070,28 @@ func (o *ConsistencyGroupCollectionGetParams) WithFields(fields []string) *Consi
 // SetFields adds the fields to the consistency group collection get params
 func (o *ConsistencyGroupCollectionGetParams) SetFields(fields []string) {
 	o.Fields = fields
+}
+
+// WithLunsAccessMode adds the lunsAccessMode to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsAccessMode(lunsAccessMode *string) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsAccessMode(lunsAccessMode)
+	return o
+}
+
+// SetLunsAccessMode adds the lunsAccessMode to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsAccessMode(lunsAccessMode *string) {
+	o.LunsAccessMode = lunsAccessMode
+}
+
+// WithLunsCloneCreatedAsClone adds the lunsCloneCreatedAsClone to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) WithLunsCloneCreatedAsClone(lunsCloneCreatedAsClone *bool) *ConsistencyGroupCollectionGetParams {
+	o.SetLunsCloneCreatedAsClone(lunsCloneCreatedAsClone)
+	return o
+}
+
+// SetLunsCloneCreatedAsClone adds the lunsCloneCreatedAsClone to the consistency group collection get params
+func (o *ConsistencyGroupCollectionGetParams) SetLunsCloneCreatedAsClone(lunsCloneCreatedAsClone *bool) {
+	o.LunsCloneCreatedAsClone = lunsCloneCreatedAsClone
 }
 
 // WithLunsComment adds the lunsComment to the consistency group collection get params
@@ -6533,6 +6601,40 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		}
 	}
 
+	if o.ConsistencyGroupsLunsAccessMode != nil {
+
+		// query param consistency_groups.luns.access_mode
+		var qrConsistencyGroupsLunsAccessMode string
+
+		if o.ConsistencyGroupsLunsAccessMode != nil {
+			qrConsistencyGroupsLunsAccessMode = *o.ConsistencyGroupsLunsAccessMode
+		}
+		qConsistencyGroupsLunsAccessMode := qrConsistencyGroupsLunsAccessMode
+		if qConsistencyGroupsLunsAccessMode != "" {
+
+			if err := r.SetQueryParam("consistency_groups.luns.access_mode", qConsistencyGroupsLunsAccessMode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsLunsCloneCreatedAsClone != nil {
+
+		// query param consistency_groups.luns.clone.created_as_clone
+		var qrConsistencyGroupsLunsCloneCreatedAsClone bool
+
+		if o.ConsistencyGroupsLunsCloneCreatedAsClone != nil {
+			qrConsistencyGroupsLunsCloneCreatedAsClone = *o.ConsistencyGroupsLunsCloneCreatedAsClone
+		}
+		qConsistencyGroupsLunsCloneCreatedAsClone := swag.FormatBool(qrConsistencyGroupsLunsCloneCreatedAsClone)
+		if qConsistencyGroupsLunsCloneCreatedAsClone != "" {
+
+			if err := r.SetQueryParam("consistency_groups.luns.clone.created_as_clone", qConsistencyGroupsLunsCloneCreatedAsClone); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ConsistencyGroupsLunsComment != nil {
 
 		// query param consistency_groups.luns.comment
@@ -8853,6 +8955,40 @@ func (o *ConsistencyGroupCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.LunsAccessMode != nil {
+
+		// query param luns.access_mode
+		var qrLunsAccessMode string
+
+		if o.LunsAccessMode != nil {
+			qrLunsAccessMode = *o.LunsAccessMode
+		}
+		qLunsAccessMode := qrLunsAccessMode
+		if qLunsAccessMode != "" {
+
+			if err := r.SetQueryParam("luns.access_mode", qLunsAccessMode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LunsCloneCreatedAsClone != nil {
+
+		// query param luns.clone.created_as_clone
+		var qrLunsCloneCreatedAsClone bool
+
+		if o.LunsCloneCreatedAsClone != nil {
+			qrLunsCloneCreatedAsClone = *o.LunsCloneCreatedAsClone
+		}
+		qLunsCloneCreatedAsClone := swag.FormatBool(qrLunsCloneCreatedAsClone)
+		if qLunsCloneCreatedAsClone != "" {
+
+			if err := r.SetQueryParam("luns.clone.created_as_clone", qLunsCloneCreatedAsClone); err != nil {
+				return err
+			}
 		}
 	}
 

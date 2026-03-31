@@ -288,6 +288,18 @@ type SnapmirrorRelationshipsGetParams struct {
 	*/
 	ReturnTimeout *int64
 
+	/* SelectiveVolumesMode.
+
+	   Filter by selective_volumes.mode
+	*/
+	SelectiveVolumesMode *string
+
+	/* SelectiveVolumesName.
+
+	   Filter by selective_volumes.name
+	*/
+	SelectiveVolumesName *string
+
 	/* SourceClusterName.
 
 	   Filter by source.cluster.name
@@ -916,6 +928,28 @@ func (o *SnapmirrorRelationshipsGetParams) WithReturnTimeout(returnTimeout *int6
 // SetReturnTimeout adds the returnTimeout to the snapmirror relationships get params
 func (o *SnapmirrorRelationshipsGetParams) SetReturnTimeout(returnTimeout *int64) {
 	o.ReturnTimeout = returnTimeout
+}
+
+// WithSelectiveVolumesMode adds the selectiveVolumesMode to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithSelectiveVolumesMode(selectiveVolumesMode *string) *SnapmirrorRelationshipsGetParams {
+	o.SetSelectiveVolumesMode(selectiveVolumesMode)
+	return o
+}
+
+// SetSelectiveVolumesMode adds the selectiveVolumesMode to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetSelectiveVolumesMode(selectiveVolumesMode *string) {
+	o.SelectiveVolumesMode = selectiveVolumesMode
+}
+
+// WithSelectiveVolumesName adds the selectiveVolumesName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) WithSelectiveVolumesName(selectiveVolumesName *string) *SnapmirrorRelationshipsGetParams {
+	o.SetSelectiveVolumesName(selectiveVolumesName)
+	return o
+}
+
+// SetSelectiveVolumesName adds the selectiveVolumesName to the snapmirror relationships get params
+func (o *SnapmirrorRelationshipsGetParams) SetSelectiveVolumesName(selectiveVolumesName *string) {
+	o.SelectiveVolumesName = selectiveVolumesName
 }
 
 // WithSourceClusterName adds the sourceClusterName to the snapmirror relationships get params
@@ -1824,6 +1858,40 @@ func (o *SnapmirrorRelationshipsGetParams) WriteToRequest(r runtime.ClientReques
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SelectiveVolumesMode != nil {
+
+		// query param selective_volumes.mode
+		var qrSelectiveVolumesMode string
+
+		if o.SelectiveVolumesMode != nil {
+			qrSelectiveVolumesMode = *o.SelectiveVolumesMode
+		}
+		qSelectiveVolumesMode := qrSelectiveVolumesMode
+		if qSelectiveVolumesMode != "" {
+
+			if err := r.SetQueryParam("selective_volumes.mode", qSelectiveVolumesMode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SelectiveVolumesName != nil {
+
+		// query param selective_volumes.name
+		var qrSelectiveVolumesName string
+
+		if o.SelectiveVolumesName != nil {
+			qrSelectiveVolumesName = *o.SelectiveVolumesName
+		}
+		qSelectiveVolumesName := qrSelectiveVolumesName
+		if qSelectiveVolumesName != "" {
+
+			if err := r.SetQueryParam("selective_volumes.name", qSelectiveVolumesName); err != nil {
 				return err
 			}
 		}

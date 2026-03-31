@@ -247,15 +247,15 @@ func (o *DuoModifyCollectionParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAPIHost adds the aPIHost to the duo modify collection params
-func (o *DuoModifyCollectionParams) WithAPIHost(aPIHost *string) *DuoModifyCollectionParams {
-	o.SetAPIHost(aPIHost)
+// WithAPIHost adds the apiHost to the duo modify collection params
+func (o *DuoModifyCollectionParams) WithAPIHost(apiHost *string) *DuoModifyCollectionParams {
+	o.SetAPIHost(apiHost)
 	return o
 }
 
 // SetAPIHost adds the apiHost to the duo modify collection params
-func (o *DuoModifyCollectionParams) SetAPIHost(aPIHost *string) {
-	o.APIHost = aPIHost
+func (o *DuoModifyCollectionParams) SetAPIHost(apiHost *string) {
+	o.APIHost = apiHost
 }
 
 // WithAutoPush adds the autoPush to the duo modify collection params
@@ -313,15 +313,15 @@ func (o *DuoModifyCollectionParams) SetFingerprint(fingerprint *string) {
 	o.Fingerprint = fingerprint
 }
 
-// WithHTTPProxy adds the hTTPProxy to the duo modify collection params
-func (o *DuoModifyCollectionParams) WithHTTPProxy(hTTPProxy *string) *DuoModifyCollectionParams {
-	o.SetHTTPProxy(hTTPProxy)
+// WithHTTPProxy adds the httpProxy to the duo modify collection params
+func (o *DuoModifyCollectionParams) WithHTTPProxy(httpProxy *string) *DuoModifyCollectionParams {
+	o.SetHTTPProxy(httpProxy)
 	return o
 }
 
 // SetHTTPProxy adds the httpProxy to the duo modify collection params
-func (o *DuoModifyCollectionParams) SetHTTPProxy(hTTPProxy *string) {
-	o.HTTPProxy = hTTPProxy
+func (o *DuoModifyCollectionParams) SetHTTPProxy(httpProxy *string) {
+	o.HTTPProxy = httpProxy
 }
 
 // WithInfo adds the info to the duo modify collection params

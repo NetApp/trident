@@ -152,6 +152,12 @@ type LunMapCollectionGetParams struct {
 	*/
 	OrderBy []string
 
+	/* Replicated.
+
+	   Filter by replicated
+	*/
+	Replicated *bool
+
 	/* ReportingNodesName.
 
 	   Filter by reporting_nodes.name
@@ -422,6 +428,17 @@ func (o *LunMapCollectionGetParams) WithOrderBy(orderBy []string) *LunMapCollect
 // SetOrderBy adds the orderBy to the lun map collection get params
 func (o *LunMapCollectionGetParams) SetOrderBy(orderBy []string) {
 	o.OrderBy = orderBy
+}
+
+// WithReplicated adds the replicated to the lun map collection get params
+func (o *LunMapCollectionGetParams) WithReplicated(replicated *bool) *LunMapCollectionGetParams {
+	o.SetReplicated(replicated)
+	return o
+}
+
+// SetReplicated adds the replicated to the lun map collection get params
+func (o *LunMapCollectionGetParams) SetReplicated(replicated *bool) {
+	o.Replicated = replicated
 }
 
 // WithReportingNodesName adds the reportingNodesName to the lun map collection get params
@@ -738,6 +755,23 @@ func (o *LunMapCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.Replicated != nil {
+
+		// query param replicated
+		var qrReplicated bool
+
+		if o.Replicated != nil {
+			qrReplicated = *o.Replicated
+		}
+		qReplicated := swag.FormatBool(qrReplicated)
+		if qReplicated != "" {
+
+			if err := r.SetQueryParam("replicated", qReplicated); err != nil {
+				return err
+			}
 		}
 	}
 

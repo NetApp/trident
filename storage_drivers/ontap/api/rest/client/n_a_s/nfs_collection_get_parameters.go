@@ -590,6 +590,12 @@ type NfsCollectionGetParams struct {
 	*/
 	ProtocolV41FeaturesWriteDelegationEnabled *bool
 
+	/* ProtocolV42Enabled.
+
+	   Filter by protocol.v42_enabled
+	*/
+	ProtocolV42Enabled *bool
+
 	/* ProtocolV42FeaturesSeclabelEnabled.
 
 	   Filter by protocol.v42_features.seclabel_enabled
@@ -2112,6 +2118,17 @@ func (o *NfsCollectionGetParams) WithProtocolV41FeaturesWriteDelegationEnabled(p
 // SetProtocolV41FeaturesWriteDelegationEnabled adds the protocolV41FeaturesWriteDelegationEnabled to the nfs collection get params
 func (o *NfsCollectionGetParams) SetProtocolV41FeaturesWriteDelegationEnabled(protocolV41FeaturesWriteDelegationEnabled *bool) {
 	o.ProtocolV41FeaturesWriteDelegationEnabled = protocolV41FeaturesWriteDelegationEnabled
+}
+
+// WithProtocolV42Enabled adds the protocolV42Enabled to the nfs collection get params
+func (o *NfsCollectionGetParams) WithProtocolV42Enabled(protocolV42Enabled *bool) *NfsCollectionGetParams {
+	o.SetProtocolV42Enabled(protocolV42Enabled)
+	return o
+}
+
+// SetProtocolV42Enabled adds the protocolV42Enabled to the nfs collection get params
+func (o *NfsCollectionGetParams) SetProtocolV42Enabled(protocolV42Enabled *bool) {
+	o.ProtocolV42Enabled = protocolV42Enabled
 }
 
 // WithProtocolV42FeaturesSeclabelEnabled adds the protocolV42FeaturesSeclabelEnabled to the nfs collection get params
@@ -4481,6 +4498,23 @@ func (o *NfsCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qProtocolV41FeaturesWriteDelegationEnabled != "" {
 
 			if err := r.SetQueryParam("protocol.v41_features.write_delegation_enabled", qProtocolV41FeaturesWriteDelegationEnabled); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ProtocolV42Enabled != nil {
+
+		// query param protocol.v42_enabled
+		var qrProtocolV42Enabled bool
+
+		if o.ProtocolV42Enabled != nil {
+			qrProtocolV42Enabled = *o.ProtocolV42Enabled
+		}
+		qProtocolV42Enabled := swag.FormatBool(qrProtocolV42Enabled)
+		if qProtocolV42Enabled != "" {
+
+			if err := r.SetQueryParam("protocol.v42_enabled", qProtocolV42Enabled); err != nil {
 				return err
 			}
 		}

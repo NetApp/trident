@@ -492,6 +492,12 @@ type SvmCollectionGetParams struct {
 	*/
 	S3SecurePort *int64
 
+	/* SanMultipathing.
+
+	   Filter by san_multipathing.
+	*/
+	SanMultipathing *string
+
 	/* SnapshotAutodeleteEnabled.
 
 	   Filter by snapshot_autodelete_enabled
@@ -852,26 +858,26 @@ func (o *SvmCollectionGetParams) SetComment(comment *string) {
 	o.Comment = comment
 }
 
-// WithDNSDomains adds the dNSDomains to the svm collection get params
-func (o *SvmCollectionGetParams) WithDNSDomains(dNSDomains *string) *SvmCollectionGetParams {
-	o.SetDNSDomains(dNSDomains)
+// WithDNSDomains adds the dnsDomains to the svm collection get params
+func (o *SvmCollectionGetParams) WithDNSDomains(dnsDomains *string) *SvmCollectionGetParams {
+	o.SetDNSDomains(dnsDomains)
 	return o
 }
 
 // SetDNSDomains adds the dnsDomains to the svm collection get params
-func (o *SvmCollectionGetParams) SetDNSDomains(dNSDomains *string) {
-	o.DNSDomains = dNSDomains
+func (o *SvmCollectionGetParams) SetDNSDomains(dnsDomains *string) {
+	o.DNSDomains = dnsDomains
 }
 
-// WithDNSServers adds the dNSServers to the svm collection get params
-func (o *SvmCollectionGetParams) WithDNSServers(dNSServers *string) *SvmCollectionGetParams {
-	o.SetDNSServers(dNSServers)
+// WithDNSServers adds the dnsServers to the svm collection get params
+func (o *SvmCollectionGetParams) WithDNSServers(dnsServers *string) *SvmCollectionGetParams {
+	o.SetDNSServers(dnsServers)
 	return o
 }
 
 // SetDNSServers adds the dnsServers to the svm collection get params
-func (o *SvmCollectionGetParams) SetDNSServers(dNSServers *string) {
-	o.DNSServers = dNSServers
+func (o *SvmCollectionGetParams) SetDNSServers(dnsServers *string) {
+	o.DNSServers = dnsServers
 }
 
 // WithFcInterfacesDataProtocol adds the fcInterfacesDataProtocol to the svm collection get params
@@ -1422,6 +1428,17 @@ func (o *SvmCollectionGetParams) WithS3SecurePort(s3SecurePort *int64) *SvmColle
 // SetS3SecurePort adds the s3SecurePort to the svm collection get params
 func (o *SvmCollectionGetParams) SetS3SecurePort(s3SecurePort *int64) {
 	o.S3SecurePort = s3SecurePort
+}
+
+// WithSanMultipathing adds the sanMultipathing to the svm collection get params
+func (o *SvmCollectionGetParams) WithSanMultipathing(sanMultipathing *string) *SvmCollectionGetParams {
+	o.SetSanMultipathing(sanMultipathing)
+	return o
+}
+
+// SetSanMultipathing adds the sanMultipathing to the svm collection get params
+func (o *SvmCollectionGetParams) SetSanMultipathing(sanMultipathing *string) {
+	o.SanMultipathing = sanMultipathing
 }
 
 // WithSnapshotAutodeleteEnabled adds the snapshotAutodeleteEnabled to the svm collection get params
@@ -2776,6 +2793,23 @@ func (o *SvmCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qS3SecurePort != "" {
 
 			if err := r.SetQueryParam("s3.secure_port", qS3SecurePort); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SanMultipathing != nil {
+
+		// query param san_multipathing
+		var qrSanMultipathing string
+
+		if o.SanMultipathing != nil {
+			qrSanMultipathing = *o.SanMultipathing
+		}
+		qSanMultipathing := qrSanMultipathing
+		if qSanMultipathing != "" {
+
+			if err := r.SetQueryParam("san_multipathing", qSanMultipathing); err != nil {
 				return err
 			}
 		}

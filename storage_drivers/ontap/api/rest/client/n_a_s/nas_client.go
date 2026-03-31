@@ -5295,9 +5295,9 @@ func (a *Client) FpolicyConnectionModifyCollection(params *FpolicyConnectionModi
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the FPolicy configuration.
 ### Recommended optional properties
 * `engines` -  External server to which the notifications will be sent.
-* `events` - File operations to monitor.
+* `events` - File or object operations to monitor.
 * `policies` - Policy configuration which acts as a container for FPolicy event and FPolicy engine.
-* `scope` - Scope of the policy. Can be limited to exports, volumes, shares or file extensions.
+* `scope` - Scope of the policy. Can be limited to exports, volumes, shares, file extensions, or buckets.
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `engines.type` - _synchronous_
@@ -6459,7 +6459,7 @@ func (a *Client) FpolicyPolicyCollectionGet(params *FpolicyPolicyCollectionGetPa
 * `svm.uuid` - Existing SVM in which to create the FPolicy policy.
 * `events` - Name of the events to monitor.
 * `name` - Name of the FPolicy policy.
-* `scope` - Scope of the policy. Can be limited to exports, volumes, shares or file extensions.
+* `scope` - Scope of the policy. Can be limited to exports, volumes, shares, file extensions, or buckets.
 * `priority`- Priority of the policy (ranging from 1 to 10).
 ### Default property values
 * `mandatory` - _true_
@@ -8980,6 +8980,7 @@ If not specified in POST, the following default property values are assigned:
 * `protocol.v4_grace_seconds` - 45
 * `protocol.v4_session_slots` - 180
 * `protocol.v4_session_slot_reply_cache_size` - 640
+* `protocol.v42_enabled` - _true_
 ### Related ONTAP commands
 * `vserver nfs create`
 * `export-policy access-cache config show`

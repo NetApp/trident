@@ -138,7 +138,7 @@ type CifsShareModifyCollectionParams struct {
 
 	   Filter by dir_umask
 	*/
-	DirUmask *string
+	DirUmask *int64
 
 	/* Encryption.
 
@@ -150,7 +150,7 @@ type CifsShareModifyCollectionParams struct {
 
 	   Filter by file_umask
 	*/
-	FileUmask *string
+	FileUmask *int64
 
 	/* ForceGroupForCreate.
 
@@ -488,13 +488,13 @@ func (o *CifsShareModifyCollectionParams) SetContinuouslyAvailable(continuouslyA
 }
 
 // WithDirUmask adds the dirUmask to the cifs share modify collection params
-func (o *CifsShareModifyCollectionParams) WithDirUmask(dirUmask *string) *CifsShareModifyCollectionParams {
+func (o *CifsShareModifyCollectionParams) WithDirUmask(dirUmask *int64) *CifsShareModifyCollectionParams {
 	o.SetDirUmask(dirUmask)
 	return o
 }
 
 // SetDirUmask adds the dirUmask to the cifs share modify collection params
-func (o *CifsShareModifyCollectionParams) SetDirUmask(dirUmask *string) {
+func (o *CifsShareModifyCollectionParams) SetDirUmask(dirUmask *int64) {
 	o.DirUmask = dirUmask
 }
 
@@ -510,13 +510,13 @@ func (o *CifsShareModifyCollectionParams) SetEncryption(encryption *bool) {
 }
 
 // WithFileUmask adds the fileUmask to the cifs share modify collection params
-func (o *CifsShareModifyCollectionParams) WithFileUmask(fileUmask *string) *CifsShareModifyCollectionParams {
+func (o *CifsShareModifyCollectionParams) WithFileUmask(fileUmask *int64) *CifsShareModifyCollectionParams {
 	o.SetFileUmask(fileUmask)
 	return o
 }
 
 // SetFileUmask adds the fileUmask to the cifs share modify collection params
-func (o *CifsShareModifyCollectionParams) SetFileUmask(fileUmask *string) {
+func (o *CifsShareModifyCollectionParams) SetFileUmask(fileUmask *int64) {
 	o.FileUmask = fileUmask
 }
 
@@ -966,12 +966,12 @@ func (o *CifsShareModifyCollectionParams) WriteToRequest(r runtime.ClientRequest
 	if o.DirUmask != nil {
 
 		// query param dir_umask
-		var qrDirUmask string
+		var qrDirUmask int64
 
 		if o.DirUmask != nil {
 			qrDirUmask = *o.DirUmask
 		}
-		qDirUmask := qrDirUmask
+		qDirUmask := swag.FormatInt64(qrDirUmask)
 		if qDirUmask != "" {
 
 			if err := r.SetQueryParam("dir_umask", qDirUmask); err != nil {
@@ -1000,12 +1000,12 @@ func (o *CifsShareModifyCollectionParams) WriteToRequest(r runtime.ClientRequest
 	if o.FileUmask != nil {
 
 		// query param file_umask
-		var qrFileUmask string
+		var qrFileUmask int64
 
 		if o.FileUmask != nil {
 			qrFileUmask = *o.FileUmask
 		}
-		qFileUmask := qrFileUmask
+		qFileUmask := swag.FormatInt64(qrFileUmask)
 		if qFileUmask != "" {
 
 			if err := r.SetQueryParam("file_umask", qFileUmask); err != nil {

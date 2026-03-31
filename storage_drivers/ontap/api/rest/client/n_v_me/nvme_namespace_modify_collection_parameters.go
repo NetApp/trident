@@ -68,6 +68,12 @@ type NvmeNamespaceModifyCollectionParams struct {
 	*/
 	AutoDelete *bool
 
+	/* CloneCreatedAsClone.
+
+	   Filter by clone.created_as_clone
+	*/
+	CloneCreatedAsClone *bool
+
 	/* Comment.
 
 	   Filter by comment
@@ -676,6 +682,17 @@ func (o *NvmeNamespaceModifyCollectionParams) WithAutoDelete(autoDelete *bool) *
 // SetAutoDelete adds the autoDelete to the nvme namespace modify collection params
 func (o *NvmeNamespaceModifyCollectionParams) SetAutoDelete(autoDelete *bool) {
 	o.AutoDelete = autoDelete
+}
+
+// WithCloneCreatedAsClone adds the cloneCreatedAsClone to the nvme namespace modify collection params
+func (o *NvmeNamespaceModifyCollectionParams) WithCloneCreatedAsClone(cloneCreatedAsClone *bool) *NvmeNamespaceModifyCollectionParams {
+	o.SetCloneCreatedAsClone(cloneCreatedAsClone)
+	return o
+}
+
+// SetCloneCreatedAsClone adds the cloneCreatedAsClone to the nvme namespace modify collection params
+func (o *NvmeNamespaceModifyCollectionParams) SetCloneCreatedAsClone(cloneCreatedAsClone *bool) {
+	o.CloneCreatedAsClone = cloneCreatedAsClone
 }
 
 // WithComment adds the comment to the nvme namespace modify collection params
@@ -1655,6 +1672,23 @@ func (o *NvmeNamespaceModifyCollectionParams) WriteToRequest(r runtime.ClientReq
 		if qAutoDelete != "" {
 
 			if err := r.SetQueryParam("auto_delete", qAutoDelete); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneCreatedAsClone != nil {
+
+		// query param clone.created_as_clone
+		var qrCloneCreatedAsClone bool
+
+		if o.CloneCreatedAsClone != nil {
+			qrCloneCreatedAsClone = *o.CloneCreatedAsClone
+		}
+		qCloneCreatedAsClone := swag.FormatBool(qrCloneCreatedAsClone)
+		if qCloneCreatedAsClone != "" {
+
+			if err := r.SetQueryParam("clone.created_as_clone", qCloneCreatedAsClone); err != nil {
 				return err
 			}
 		}

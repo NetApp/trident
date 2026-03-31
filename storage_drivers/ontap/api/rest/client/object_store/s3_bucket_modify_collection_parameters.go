@@ -278,11 +278,29 @@ type S3BucketModifyCollectionParams struct {
 	*/
 	PolicyStatementsConditionsDelimiters *string
 
+	/* PolicyStatementsConditionsIfMatch.
+
+	   Filter by policy.statements.conditions.if_match
+	*/
+	PolicyStatementsConditionsIfMatch *string
+
+	/* PolicyStatementsConditionsIfNoneMatch.
+
+	   Filter by policy.statements.conditions.if_none_match
+	*/
+	PolicyStatementsConditionsIfNoneMatch *bool
+
 	/* PolicyStatementsConditionsMaxKeys.
 
 	   Filter by policy.statements.conditions.max_keys
 	*/
 	PolicyStatementsConditionsMaxKeys *int64
+
+	/* PolicyStatementsConditionsObjectCreationOperation.
+
+	   Filter by policy.statements.conditions.object_creation_operation
+	*/
+	PolicyStatementsConditionsObjectCreationOperation *bool
 
 	/* PolicyStatementsConditionsOperator.
 
@@ -461,6 +479,30 @@ type S3BucketModifyCollectionParams struct {
 	   Filter by snapshot_policy.uuid
 	*/
 	SnapshotPolicyUUID *string
+
+	/* SnapshotRestoreObjectsRemaining.
+
+	   Filter by snapshot_restore.objects_remaining
+	*/
+	SnapshotRestoreObjectsRemaining *int64
+
+	/* SnapshotRestoreProgress.
+
+	   Filter by snapshot_restore.progress
+	*/
+	SnapshotRestoreProgress *int64
+
+	/* SnapshotRestoreSnapshot.
+
+	   Filter by snapshot_restore.snapshot
+	*/
+	SnapshotRestoreSnapshot *string
+
+	/* SnapshotRestoreState.
+
+	   Filter by snapshot_restore.state
+	*/
+	SnapshotRestoreState *string
 
 	/* SvmName.
 
@@ -973,6 +1015,28 @@ func (o *S3BucketModifyCollectionParams) SetPolicyStatementsConditionsDelimiters
 	o.PolicyStatementsConditionsDelimiters = policyStatementsConditionsDelimiters
 }
 
+// WithPolicyStatementsConditionsIfMatch adds the policyStatementsConditionsIfMatch to the s3 bucket modify collection params
+func (o *S3BucketModifyCollectionParams) WithPolicyStatementsConditionsIfMatch(policyStatementsConditionsIfMatch *string) *S3BucketModifyCollectionParams {
+	o.SetPolicyStatementsConditionsIfMatch(policyStatementsConditionsIfMatch)
+	return o
+}
+
+// SetPolicyStatementsConditionsIfMatch adds the policyStatementsConditionsIfMatch to the s3 bucket modify collection params
+func (o *S3BucketModifyCollectionParams) SetPolicyStatementsConditionsIfMatch(policyStatementsConditionsIfMatch *string) {
+	o.PolicyStatementsConditionsIfMatch = policyStatementsConditionsIfMatch
+}
+
+// WithPolicyStatementsConditionsIfNoneMatch adds the policyStatementsConditionsIfNoneMatch to the s3 bucket modify collection params
+func (o *S3BucketModifyCollectionParams) WithPolicyStatementsConditionsIfNoneMatch(policyStatementsConditionsIfNoneMatch *bool) *S3BucketModifyCollectionParams {
+	o.SetPolicyStatementsConditionsIfNoneMatch(policyStatementsConditionsIfNoneMatch)
+	return o
+}
+
+// SetPolicyStatementsConditionsIfNoneMatch adds the policyStatementsConditionsIfNoneMatch to the s3 bucket modify collection params
+func (o *S3BucketModifyCollectionParams) SetPolicyStatementsConditionsIfNoneMatch(policyStatementsConditionsIfNoneMatch *bool) {
+	o.PolicyStatementsConditionsIfNoneMatch = policyStatementsConditionsIfNoneMatch
+}
+
 // WithPolicyStatementsConditionsMaxKeys adds the policyStatementsConditionsMaxKeys to the s3 bucket modify collection params
 func (o *S3BucketModifyCollectionParams) WithPolicyStatementsConditionsMaxKeys(policyStatementsConditionsMaxKeys *int64) *S3BucketModifyCollectionParams {
 	o.SetPolicyStatementsConditionsMaxKeys(policyStatementsConditionsMaxKeys)
@@ -982,6 +1046,17 @@ func (o *S3BucketModifyCollectionParams) WithPolicyStatementsConditionsMaxKeys(p
 // SetPolicyStatementsConditionsMaxKeys adds the policyStatementsConditionsMaxKeys to the s3 bucket modify collection params
 func (o *S3BucketModifyCollectionParams) SetPolicyStatementsConditionsMaxKeys(policyStatementsConditionsMaxKeys *int64) {
 	o.PolicyStatementsConditionsMaxKeys = policyStatementsConditionsMaxKeys
+}
+
+// WithPolicyStatementsConditionsObjectCreationOperation adds the policyStatementsConditionsObjectCreationOperation to the s3 bucket modify collection params
+func (o *S3BucketModifyCollectionParams) WithPolicyStatementsConditionsObjectCreationOperation(policyStatementsConditionsObjectCreationOperation *bool) *S3BucketModifyCollectionParams {
+	o.SetPolicyStatementsConditionsObjectCreationOperation(policyStatementsConditionsObjectCreationOperation)
+	return o
+}
+
+// SetPolicyStatementsConditionsObjectCreationOperation adds the policyStatementsConditionsObjectCreationOperation to the s3 bucket modify collection params
+func (o *S3BucketModifyCollectionParams) SetPolicyStatementsConditionsObjectCreationOperation(policyStatementsConditionsObjectCreationOperation *bool) {
+	o.PolicyStatementsConditionsObjectCreationOperation = policyStatementsConditionsObjectCreationOperation
 }
 
 // WithPolicyStatementsConditionsOperator adds the policyStatementsConditionsOperator to the s3 bucket modify collection params
@@ -1301,6 +1376,50 @@ func (o *S3BucketModifyCollectionParams) WithSnapshotPolicyUUID(snapshotPolicyUU
 // SetSnapshotPolicyUUID adds the snapshotPolicyUuid to the s3 bucket modify collection params
 func (o *S3BucketModifyCollectionParams) SetSnapshotPolicyUUID(snapshotPolicyUUID *string) {
 	o.SnapshotPolicyUUID = snapshotPolicyUUID
+}
+
+// WithSnapshotRestoreObjectsRemaining adds the snapshotRestoreObjectsRemaining to the s3 bucket modify collection params
+func (o *S3BucketModifyCollectionParams) WithSnapshotRestoreObjectsRemaining(snapshotRestoreObjectsRemaining *int64) *S3BucketModifyCollectionParams {
+	o.SetSnapshotRestoreObjectsRemaining(snapshotRestoreObjectsRemaining)
+	return o
+}
+
+// SetSnapshotRestoreObjectsRemaining adds the snapshotRestoreObjectsRemaining to the s3 bucket modify collection params
+func (o *S3BucketModifyCollectionParams) SetSnapshotRestoreObjectsRemaining(snapshotRestoreObjectsRemaining *int64) {
+	o.SnapshotRestoreObjectsRemaining = snapshotRestoreObjectsRemaining
+}
+
+// WithSnapshotRestoreProgress adds the snapshotRestoreProgress to the s3 bucket modify collection params
+func (o *S3BucketModifyCollectionParams) WithSnapshotRestoreProgress(snapshotRestoreProgress *int64) *S3BucketModifyCollectionParams {
+	o.SetSnapshotRestoreProgress(snapshotRestoreProgress)
+	return o
+}
+
+// SetSnapshotRestoreProgress adds the snapshotRestoreProgress to the s3 bucket modify collection params
+func (o *S3BucketModifyCollectionParams) SetSnapshotRestoreProgress(snapshotRestoreProgress *int64) {
+	o.SnapshotRestoreProgress = snapshotRestoreProgress
+}
+
+// WithSnapshotRestoreSnapshot adds the snapshotRestoreSnapshot to the s3 bucket modify collection params
+func (o *S3BucketModifyCollectionParams) WithSnapshotRestoreSnapshot(snapshotRestoreSnapshot *string) *S3BucketModifyCollectionParams {
+	o.SetSnapshotRestoreSnapshot(snapshotRestoreSnapshot)
+	return o
+}
+
+// SetSnapshotRestoreSnapshot adds the snapshotRestoreSnapshot to the s3 bucket modify collection params
+func (o *S3BucketModifyCollectionParams) SetSnapshotRestoreSnapshot(snapshotRestoreSnapshot *string) {
+	o.SnapshotRestoreSnapshot = snapshotRestoreSnapshot
+}
+
+// WithSnapshotRestoreState adds the snapshotRestoreState to the s3 bucket modify collection params
+func (o *S3BucketModifyCollectionParams) WithSnapshotRestoreState(snapshotRestoreState *string) *S3BucketModifyCollectionParams {
+	o.SetSnapshotRestoreState(snapshotRestoreState)
+	return o
+}
+
+// SetSnapshotRestoreState adds the snapshotRestoreState to the s3 bucket modify collection params
+func (o *S3BucketModifyCollectionParams) SetSnapshotRestoreState(snapshotRestoreState *string) {
+	o.SnapshotRestoreState = snapshotRestoreState
 }
 
 // WithSvmName adds the svmName to the s3 bucket modify collection params
@@ -1986,6 +2105,40 @@ func (o *S3BucketModifyCollectionParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
+	if o.PolicyStatementsConditionsIfMatch != nil {
+
+		// query param policy.statements.conditions.if_match
+		var qrPolicyStatementsConditionsIfMatch string
+
+		if o.PolicyStatementsConditionsIfMatch != nil {
+			qrPolicyStatementsConditionsIfMatch = *o.PolicyStatementsConditionsIfMatch
+		}
+		qPolicyStatementsConditionsIfMatch := qrPolicyStatementsConditionsIfMatch
+		if qPolicyStatementsConditionsIfMatch != "" {
+
+			if err := r.SetQueryParam("policy.statements.conditions.if_match", qPolicyStatementsConditionsIfMatch); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PolicyStatementsConditionsIfNoneMatch != nil {
+
+		// query param policy.statements.conditions.if_none_match
+		var qrPolicyStatementsConditionsIfNoneMatch bool
+
+		if o.PolicyStatementsConditionsIfNoneMatch != nil {
+			qrPolicyStatementsConditionsIfNoneMatch = *o.PolicyStatementsConditionsIfNoneMatch
+		}
+		qPolicyStatementsConditionsIfNoneMatch := swag.FormatBool(qrPolicyStatementsConditionsIfNoneMatch)
+		if qPolicyStatementsConditionsIfNoneMatch != "" {
+
+			if err := r.SetQueryParam("policy.statements.conditions.if_none_match", qPolicyStatementsConditionsIfNoneMatch); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.PolicyStatementsConditionsMaxKeys != nil {
 
 		// query param policy.statements.conditions.max_keys
@@ -1998,6 +2151,23 @@ func (o *S3BucketModifyCollectionParams) WriteToRequest(r runtime.ClientRequest,
 		if qPolicyStatementsConditionsMaxKeys != "" {
 
 			if err := r.SetQueryParam("policy.statements.conditions.max_keys", qPolicyStatementsConditionsMaxKeys); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PolicyStatementsConditionsObjectCreationOperation != nil {
+
+		// query param policy.statements.conditions.object_creation_operation
+		var qrPolicyStatementsConditionsObjectCreationOperation bool
+
+		if o.PolicyStatementsConditionsObjectCreationOperation != nil {
+			qrPolicyStatementsConditionsObjectCreationOperation = *o.PolicyStatementsConditionsObjectCreationOperation
+		}
+		qPolicyStatementsConditionsObjectCreationOperation := swag.FormatBool(qrPolicyStatementsConditionsObjectCreationOperation)
+		if qPolicyStatementsConditionsObjectCreationOperation != "" {
+
+			if err := r.SetQueryParam("policy.statements.conditions.object_creation_operation", qPolicyStatementsConditionsObjectCreationOperation); err != nil {
 				return err
 			}
 		}
@@ -2491,6 +2661,74 @@ func (o *S3BucketModifyCollectionParams) WriteToRequest(r runtime.ClientRequest,
 		if qSnapshotPolicyUUID != "" {
 
 			if err := r.SetQueryParam("snapshot_policy.uuid", qSnapshotPolicyUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnapshotRestoreObjectsRemaining != nil {
+
+		// query param snapshot_restore.objects_remaining
+		var qrSnapshotRestoreObjectsRemaining int64
+
+		if o.SnapshotRestoreObjectsRemaining != nil {
+			qrSnapshotRestoreObjectsRemaining = *o.SnapshotRestoreObjectsRemaining
+		}
+		qSnapshotRestoreObjectsRemaining := swag.FormatInt64(qrSnapshotRestoreObjectsRemaining)
+		if qSnapshotRestoreObjectsRemaining != "" {
+
+			if err := r.SetQueryParam("snapshot_restore.objects_remaining", qSnapshotRestoreObjectsRemaining); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnapshotRestoreProgress != nil {
+
+		// query param snapshot_restore.progress
+		var qrSnapshotRestoreProgress int64
+
+		if o.SnapshotRestoreProgress != nil {
+			qrSnapshotRestoreProgress = *o.SnapshotRestoreProgress
+		}
+		qSnapshotRestoreProgress := swag.FormatInt64(qrSnapshotRestoreProgress)
+		if qSnapshotRestoreProgress != "" {
+
+			if err := r.SetQueryParam("snapshot_restore.progress", qSnapshotRestoreProgress); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnapshotRestoreSnapshot != nil {
+
+		// query param snapshot_restore.snapshot
+		var qrSnapshotRestoreSnapshot string
+
+		if o.SnapshotRestoreSnapshot != nil {
+			qrSnapshotRestoreSnapshot = *o.SnapshotRestoreSnapshot
+		}
+		qSnapshotRestoreSnapshot := qrSnapshotRestoreSnapshot
+		if qSnapshotRestoreSnapshot != "" {
+
+			if err := r.SetQueryParam("snapshot_restore.snapshot", qSnapshotRestoreSnapshot); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SnapshotRestoreState != nil {
+
+		// query param snapshot_restore.state
+		var qrSnapshotRestoreState string
+
+		if o.SnapshotRestoreState != nil {
+			qrSnapshotRestoreState = *o.SnapshotRestoreState
+		}
+		qSnapshotRestoreState := qrSnapshotRestoreState
+		if qSnapshotRestoreState != "" {
+
+			if err := r.SetQueryParam("snapshot_restore.state", qSnapshotRestoreState); err != nil {
 				return err
 			}
 		}

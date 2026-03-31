@@ -2310,6 +2310,12 @@ type VolumeCollectionGetParams struct {
 	*/
 	Size *int64
 
+	/* SmasProtection.
+
+	   Filter by smas_protection
+	*/
+	SmasProtection *string
+
 	/* SnaplockAppendModeEnabled.
 
 	   Filter by snaplock.append_mode_enabled
@@ -3569,6 +3575,12 @@ type VolumeCollectionGetParams struct {
 	   Filter by svm.uuid
 	*/
 	SvmUUID *string
+
+	/* SvmDrProtection.
+
+	   Filter by svm_dr_protection
+	*/
+	SvmDrProtection *string
 
 	/* TieringMinCoolingDays.
 
@@ -7790,6 +7802,17 @@ func (o *VolumeCollectionGetParams) SetSize(size *int64) {
 	o.Size = size
 }
 
+// WithSmasProtection adds the smasProtection to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSmasProtection(smasProtection *string) *VolumeCollectionGetParams {
+	o.SetSmasProtection(smasProtection)
+	return o
+}
+
+// SetSmasProtection adds the smasProtection to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSmasProtection(smasProtection *string) {
+	o.SmasProtection = smasProtection
+}
+
 // WithSnaplockAppendModeEnabled adds the snaplockAppendModeEnabled to the volume collection get params
 func (o *VolumeCollectionGetParams) WithSnaplockAppendModeEnabled(snaplockAppendModeEnabled *bool) *VolumeCollectionGetParams {
 	o.SetSnaplockAppendModeEnabled(snaplockAppendModeEnabled)
@@ -10098,6 +10121,17 @@ func (o *VolumeCollectionGetParams) WithSvmUUID(svmUUID *string) *VolumeCollecti
 // SetSvmUUID adds the svmUuid to the volume collection get params
 func (o *VolumeCollectionGetParams) SetSvmUUID(svmUUID *string) {
 	o.SvmUUID = svmUUID
+}
+
+// WithSvmDrProtection adds the svmDrProtection to the volume collection get params
+func (o *VolumeCollectionGetParams) WithSvmDrProtection(svmDrProtection *string) *VolumeCollectionGetParams {
+	o.SetSvmDrProtection(svmDrProtection)
+	return o
+}
+
+// SetSvmDrProtection adds the svmDrProtection to the volume collection get params
+func (o *VolumeCollectionGetParams) SetSvmDrProtection(svmDrProtection *string) {
+	o.SvmDrProtection = svmDrProtection
 }
 
 // WithTieringMinCoolingDays adds the tieringMinCoolingDays to the volume collection get params
@@ -16520,6 +16554,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		}
 	}
 
+	if o.SmasProtection != nil {
+
+		// query param smas_protection
+		var qrSmasProtection string
+
+		if o.SmasProtection != nil {
+			qrSmasProtection = *o.SmasProtection
+		}
+		qSmasProtection := qrSmasProtection
+		if qSmasProtection != "" {
+
+			if err := r.SetQueryParam("smas_protection", qSmasProtection); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.SnaplockAppendModeEnabled != nil {
 
 		// query param snaplock.append_mode_enabled
@@ -20085,6 +20136,23 @@ func (o *VolumeCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qSvmUUID != "" {
 
 			if err := r.SetQueryParam("svm.uuid", qSvmUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SvmDrProtection != nil {
+
+		// query param svm_dr_protection
+		var qrSvmDrProtection string
+
+		if o.SvmDrProtection != nil {
+			qrSvmDrProtection = *o.SvmDrProtection
+		}
+		qSvmDrProtection := qrSvmDrProtection
+		if qSvmDrProtection != "" {
+
+			if err := r.SetQueryParam("svm_dr_protection", qSvmDrProtection); err != nil {
 				return err
 			}
 		}

@@ -176,6 +176,54 @@ type TopMetricsFileCollectionGetParams struct {
 	*/
 	TopMetric *string
 
+	/* TotalOpsErrorLowerBound.
+
+	   Filter by total_ops.error.lower_bound
+	*/
+	TotalOpsErrorLowerBound *int64
+
+	/* TotalOpsErrorUpperBound.
+
+	   Filter by total_ops.error.upper_bound
+	*/
+	TotalOpsErrorUpperBound *int64
+
+	/* TotalOpsRead.
+
+	   Filter by total_ops.read
+	*/
+	TotalOpsRead *int64
+
+	/* TotalOpsWrite.
+
+	   Filter by total_ops.write
+	*/
+	TotalOpsWrite *int64
+
+	/* TotalThroughputErrorLowerBound.
+
+	   Filter by total_throughput.error.lower_bound
+	*/
+	TotalThroughputErrorLowerBound *int64
+
+	/* TotalThroughputErrorUpperBound.
+
+	   Filter by total_throughput.error.upper_bound
+	*/
+	TotalThroughputErrorUpperBound *int64
+
+	/* TotalThroughputRead.
+
+	   Filter by total_throughput.read
+	*/
+	TotalThroughputRead *int64
+
+	/* TotalThroughputWrite.
+
+	   Filter by total_throughput.write
+	*/
+	TotalThroughputWrite *int64
+
 	/* VolumeName.
 
 	   Filter by volume.name
@@ -454,6 +502,94 @@ func (o *TopMetricsFileCollectionGetParams) WithTopMetric(topMetric *string) *To
 // SetTopMetric adds the topMetric to the top metrics file collection get params
 func (o *TopMetricsFileCollectionGetParams) SetTopMetric(topMetric *string) {
 	o.TopMetric = topMetric
+}
+
+// WithTotalOpsErrorLowerBound adds the totalOpsErrorLowerBound to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithTotalOpsErrorLowerBound(totalOpsErrorLowerBound *int64) *TopMetricsFileCollectionGetParams {
+	o.SetTotalOpsErrorLowerBound(totalOpsErrorLowerBound)
+	return o
+}
+
+// SetTotalOpsErrorLowerBound adds the totalOpsErrorLowerBound to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetTotalOpsErrorLowerBound(totalOpsErrorLowerBound *int64) {
+	o.TotalOpsErrorLowerBound = totalOpsErrorLowerBound
+}
+
+// WithTotalOpsErrorUpperBound adds the totalOpsErrorUpperBound to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithTotalOpsErrorUpperBound(totalOpsErrorUpperBound *int64) *TopMetricsFileCollectionGetParams {
+	o.SetTotalOpsErrorUpperBound(totalOpsErrorUpperBound)
+	return o
+}
+
+// SetTotalOpsErrorUpperBound adds the totalOpsErrorUpperBound to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetTotalOpsErrorUpperBound(totalOpsErrorUpperBound *int64) {
+	o.TotalOpsErrorUpperBound = totalOpsErrorUpperBound
+}
+
+// WithTotalOpsRead adds the totalOpsRead to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithTotalOpsRead(totalOpsRead *int64) *TopMetricsFileCollectionGetParams {
+	o.SetTotalOpsRead(totalOpsRead)
+	return o
+}
+
+// SetTotalOpsRead adds the totalOpsRead to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetTotalOpsRead(totalOpsRead *int64) {
+	o.TotalOpsRead = totalOpsRead
+}
+
+// WithTotalOpsWrite adds the totalOpsWrite to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithTotalOpsWrite(totalOpsWrite *int64) *TopMetricsFileCollectionGetParams {
+	o.SetTotalOpsWrite(totalOpsWrite)
+	return o
+}
+
+// SetTotalOpsWrite adds the totalOpsWrite to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetTotalOpsWrite(totalOpsWrite *int64) {
+	o.TotalOpsWrite = totalOpsWrite
+}
+
+// WithTotalThroughputErrorLowerBound adds the totalThroughputErrorLowerBound to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithTotalThroughputErrorLowerBound(totalThroughputErrorLowerBound *int64) *TopMetricsFileCollectionGetParams {
+	o.SetTotalThroughputErrorLowerBound(totalThroughputErrorLowerBound)
+	return o
+}
+
+// SetTotalThroughputErrorLowerBound adds the totalThroughputErrorLowerBound to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetTotalThroughputErrorLowerBound(totalThroughputErrorLowerBound *int64) {
+	o.TotalThroughputErrorLowerBound = totalThroughputErrorLowerBound
+}
+
+// WithTotalThroughputErrorUpperBound adds the totalThroughputErrorUpperBound to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithTotalThroughputErrorUpperBound(totalThroughputErrorUpperBound *int64) *TopMetricsFileCollectionGetParams {
+	o.SetTotalThroughputErrorUpperBound(totalThroughputErrorUpperBound)
+	return o
+}
+
+// SetTotalThroughputErrorUpperBound adds the totalThroughputErrorUpperBound to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetTotalThroughputErrorUpperBound(totalThroughputErrorUpperBound *int64) {
+	o.TotalThroughputErrorUpperBound = totalThroughputErrorUpperBound
+}
+
+// WithTotalThroughputRead adds the totalThroughputRead to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithTotalThroughputRead(totalThroughputRead *int64) *TopMetricsFileCollectionGetParams {
+	o.SetTotalThroughputRead(totalThroughputRead)
+	return o
+}
+
+// SetTotalThroughputRead adds the totalThroughputRead to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetTotalThroughputRead(totalThroughputRead *int64) {
+	o.TotalThroughputRead = totalThroughputRead
+}
+
+// WithTotalThroughputWrite adds the totalThroughputWrite to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) WithTotalThroughputWrite(totalThroughputWrite *int64) *TopMetricsFileCollectionGetParams {
+	o.SetTotalThroughputWrite(totalThroughputWrite)
+	return o
+}
+
+// SetTotalThroughputWrite adds the totalThroughputWrite to the top metrics file collection get params
+func (o *TopMetricsFileCollectionGetParams) SetTotalThroughputWrite(totalThroughputWrite *int64) {
+	o.TotalThroughputWrite = totalThroughputWrite
 }
 
 // WithVolumeName adds the volumeName to the top metrics file collection get params
@@ -775,6 +911,142 @@ func (o *TopMetricsFileCollectionGetParams) WriteToRequest(r runtime.ClientReque
 		if qTopMetric != "" {
 
 			if err := r.SetQueryParam("top_metric", qTopMetric); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TotalOpsErrorLowerBound != nil {
+
+		// query param total_ops.error.lower_bound
+		var qrTotalOpsErrorLowerBound int64
+
+		if o.TotalOpsErrorLowerBound != nil {
+			qrTotalOpsErrorLowerBound = *o.TotalOpsErrorLowerBound
+		}
+		qTotalOpsErrorLowerBound := swag.FormatInt64(qrTotalOpsErrorLowerBound)
+		if qTotalOpsErrorLowerBound != "" {
+
+			if err := r.SetQueryParam("total_ops.error.lower_bound", qTotalOpsErrorLowerBound); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TotalOpsErrorUpperBound != nil {
+
+		// query param total_ops.error.upper_bound
+		var qrTotalOpsErrorUpperBound int64
+
+		if o.TotalOpsErrorUpperBound != nil {
+			qrTotalOpsErrorUpperBound = *o.TotalOpsErrorUpperBound
+		}
+		qTotalOpsErrorUpperBound := swag.FormatInt64(qrTotalOpsErrorUpperBound)
+		if qTotalOpsErrorUpperBound != "" {
+
+			if err := r.SetQueryParam("total_ops.error.upper_bound", qTotalOpsErrorUpperBound); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TotalOpsRead != nil {
+
+		// query param total_ops.read
+		var qrTotalOpsRead int64
+
+		if o.TotalOpsRead != nil {
+			qrTotalOpsRead = *o.TotalOpsRead
+		}
+		qTotalOpsRead := swag.FormatInt64(qrTotalOpsRead)
+		if qTotalOpsRead != "" {
+
+			if err := r.SetQueryParam("total_ops.read", qTotalOpsRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TotalOpsWrite != nil {
+
+		// query param total_ops.write
+		var qrTotalOpsWrite int64
+
+		if o.TotalOpsWrite != nil {
+			qrTotalOpsWrite = *o.TotalOpsWrite
+		}
+		qTotalOpsWrite := swag.FormatInt64(qrTotalOpsWrite)
+		if qTotalOpsWrite != "" {
+
+			if err := r.SetQueryParam("total_ops.write", qTotalOpsWrite); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TotalThroughputErrorLowerBound != nil {
+
+		// query param total_throughput.error.lower_bound
+		var qrTotalThroughputErrorLowerBound int64
+
+		if o.TotalThroughputErrorLowerBound != nil {
+			qrTotalThroughputErrorLowerBound = *o.TotalThroughputErrorLowerBound
+		}
+		qTotalThroughputErrorLowerBound := swag.FormatInt64(qrTotalThroughputErrorLowerBound)
+		if qTotalThroughputErrorLowerBound != "" {
+
+			if err := r.SetQueryParam("total_throughput.error.lower_bound", qTotalThroughputErrorLowerBound); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TotalThroughputErrorUpperBound != nil {
+
+		// query param total_throughput.error.upper_bound
+		var qrTotalThroughputErrorUpperBound int64
+
+		if o.TotalThroughputErrorUpperBound != nil {
+			qrTotalThroughputErrorUpperBound = *o.TotalThroughputErrorUpperBound
+		}
+		qTotalThroughputErrorUpperBound := swag.FormatInt64(qrTotalThroughputErrorUpperBound)
+		if qTotalThroughputErrorUpperBound != "" {
+
+			if err := r.SetQueryParam("total_throughput.error.upper_bound", qTotalThroughputErrorUpperBound); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TotalThroughputRead != nil {
+
+		// query param total_throughput.read
+		var qrTotalThroughputRead int64
+
+		if o.TotalThroughputRead != nil {
+			qrTotalThroughputRead = *o.TotalThroughputRead
+		}
+		qTotalThroughputRead := swag.FormatInt64(qrTotalThroughputRead)
+		if qTotalThroughputRead != "" {
+
+			if err := r.SetQueryParam("total_throughput.read", qTotalThroughputRead); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.TotalThroughputWrite != nil {
+
+		// query param total_throughput.write
+		var qrTotalThroughputWrite int64
+
+		if o.TotalThroughputWrite != nil {
+			qrTotalThroughputWrite = *o.TotalThroughputWrite
+		}
+		qTotalThroughputWrite := swag.FormatInt64(qrTotalThroughputWrite)
+		if qTotalThroughputWrite != "" {
+
+			if err := r.SetQueryParam("total_throughput.write", qTotalThroughputWrite); err != nil {
 				return err
 			}
 		}

@@ -2267,11 +2267,11 @@ func (c *RestClient) IscsiInitiatorSetDefaultAuth(
 
 	outboundInfo := &models.IscsiCredentialsInlineChapInlineOutbound{}
 	if outbountUserName != "" && outboundPassphrase != "" {
-		outboundInfo.Password = convert.ToPtr(outboundPassphrase)
+		outboundInfo.Password = convert.ToPtr(strfmt.Password(outboundPassphrase))
 		outboundInfo.User = convert.ToPtr(outbountUserName)
 	}
 	inboundInfo := &models.IscsiCredentialsInlineChapInlineInbound{
-		Password: convert.ToPtr(passphrase),
+		Password: convert.ToPtr(strfmt.Password(passphrase)),
 		User:     convert.ToPtr(userName),
 	}
 	chapInfo := &models.IscsiCredentialsInlineChap{

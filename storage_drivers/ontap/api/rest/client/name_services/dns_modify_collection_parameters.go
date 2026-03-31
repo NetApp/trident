@@ -64,7 +64,7 @@ type DNSModifyCollectionParams struct {
 
 	/* Async.
 
-	   An asynchronous task.
+	   If set to true, ONTAP creates and verifies the DNS configuration in the background, returning a job to monitor the result. Otherwise, ONTAP waits until after the configuration has been finalized to return a response to the client.
 	*/
 	Async *bool
 

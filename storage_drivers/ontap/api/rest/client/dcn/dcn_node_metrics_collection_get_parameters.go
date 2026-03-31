@@ -217,26 +217,26 @@ func (o *DcnNodeMetricsCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithCPUMemoryUsed adds the cPUMemoryUsed to the dcn node metrics collection get params
-func (o *DcnNodeMetricsCollectionGetParams) WithCPUMemoryUsed(cPUMemoryUsed *int64) *DcnNodeMetricsCollectionGetParams {
-	o.SetCPUMemoryUsed(cPUMemoryUsed)
+// WithCPUMemoryUsed adds the cpuMemoryUsed to the dcn node metrics collection get params
+func (o *DcnNodeMetricsCollectionGetParams) WithCPUMemoryUsed(cpuMemoryUsed *int64) *DcnNodeMetricsCollectionGetParams {
+	o.SetCPUMemoryUsed(cpuMemoryUsed)
 	return o
 }
 
 // SetCPUMemoryUsed adds the cpuMemoryUsed to the dcn node metrics collection get params
-func (o *DcnNodeMetricsCollectionGetParams) SetCPUMemoryUsed(cPUMemoryUsed *int64) {
-	o.CPUMemoryUsed = cPUMemoryUsed
+func (o *DcnNodeMetricsCollectionGetParams) SetCPUMemoryUsed(cpuMemoryUsed *int64) {
+	o.CPUMemoryUsed = cpuMemoryUsed
 }
 
-// WithCPUProcessorUtilization adds the cPUProcessorUtilization to the dcn node metrics collection get params
-func (o *DcnNodeMetricsCollectionGetParams) WithCPUProcessorUtilization(cPUProcessorUtilization *int64) *DcnNodeMetricsCollectionGetParams {
-	o.SetCPUProcessorUtilization(cPUProcessorUtilization)
+// WithCPUProcessorUtilization adds the cpuProcessorUtilization to the dcn node metrics collection get params
+func (o *DcnNodeMetricsCollectionGetParams) WithCPUProcessorUtilization(cpuProcessorUtilization *int64) *DcnNodeMetricsCollectionGetParams {
+	o.SetCPUProcessorUtilization(cpuProcessorUtilization)
 	return o
 }
 
 // SetCPUProcessorUtilization adds the cpuProcessorUtilization to the dcn node metrics collection get params
-func (o *DcnNodeMetricsCollectionGetParams) SetCPUProcessorUtilization(cPUProcessorUtilization *int64) {
-	o.CPUProcessorUtilization = cPUProcessorUtilization
+func (o *DcnNodeMetricsCollectionGetParams) SetCPUProcessorUtilization(cpuProcessorUtilization *int64) {
+	o.CPUProcessorUtilization = cpuProcessorUtilization
 }
 
 // WithDuration adds the duration to the dcn node metrics collection get params

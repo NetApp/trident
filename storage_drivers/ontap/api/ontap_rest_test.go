@@ -225,8 +225,8 @@ func getIscsiCredentials() *models.IscsiCredentialsResponse {
 	numRecords := int64(1)
 
 	svm := models.IscsiCredentialsInlineSvm{Name: &svmName}
-	inbound := models.IscsiCredentialsInlineChapInlineInbound{User: &chapUser, Password: &chapPassword}
-	outbound := models.IscsiCredentialsInlineChapInlineOutbound{User: &chapUser, Password: &chapPassword}
+	inbound := models.IscsiCredentialsInlineChapInlineInbound{User: &chapUser, Password: (*strfmt.Password)(&chapPassword)}
+	outbound := models.IscsiCredentialsInlineChapInlineOutbound{User: &chapUser, Password: (*strfmt.Password)(&chapPassword)}
 	chap := models.IscsiCredentialsInlineChap{Inbound: &inbound, Outbound: &outbound}
 	iscsiCred := models.IscsiCredentials{Chap: &chap, Initiator: &initiator, AuthenticationType: &authType, Svm: &svm}
 

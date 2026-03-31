@@ -122,6 +122,24 @@ type FpolicyEventCollectionGetParams struct {
 	*/
 	FileOperationsLookup *bool
 
+	/* FileOperationsObjectCreate.
+
+	   Filter by file_operations.object_create
+	*/
+	FileOperationsObjectCreate *bool
+
+	/* FileOperationsObjectDelete.
+
+	   Filter by file_operations.object_delete
+	*/
+	FileOperationsObjectDelete *bool
+
+	/* FileOperationsObjectTag.
+
+	   Filter by file_operations.object_tag
+	*/
+	FileOperationsObjectTag *bool
+
 	/* FileOperationsOpen.
 
 	   Filter by file_operations.open
@@ -188,6 +206,12 @@ type FpolicyEventCollectionGetParams struct {
 	*/
 	FiltersExcludeDirectory *bool
 
+	/* FiltersExcludeMultiDelete.
+
+	   Filter by filters.exclude_multi_delete
+	*/
+	FiltersExcludeMultiDelete *bool
+
 	/* FiltersFirstRead.
 
 	   Filter by filters.first_read
@@ -205,6 +229,36 @@ type FpolicyEventCollectionGetParams struct {
 	   Filter by filters.monitor_ads
 	*/
 	FiltersMonitorAds *bool
+
+	/* FiltersObjectCreateWithCompleteMpu.
+
+	   Filter by filters.object_create_with_complete_mpu
+	*/
+	FiltersObjectCreateWithCompleteMpu *bool
+
+	/* FiltersObjectCreateWithCopy.
+
+	   Filter by filters.object_create_with_copy
+	*/
+	FiltersObjectCreateWithCopy *bool
+
+	/* FiltersObjectCreateWithPut.
+
+	   Filter by filters.object_create_with_put
+	*/
+	FiltersObjectCreateWithPut *bool
+
+	/* FiltersObjectTagDelete.
+
+	   Filter by filters.object_tag_delete
+	*/
+	FiltersObjectTagDelete *bool
+
+	/* FiltersObjectTagPut.
+
+	   Filter by filters.object_tag_put
+	*/
+	FiltersObjectTagPut *bool
 
 	/* FiltersOfflineBit.
 
@@ -525,6 +579,39 @@ func (o *FpolicyEventCollectionGetParams) SetFileOperationsLookup(fileOperations
 	o.FileOperationsLookup = fileOperationsLookup
 }
 
+// WithFileOperationsObjectCreate adds the fileOperationsObjectCreate to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsObjectCreate(fileOperationsObjectCreate *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsObjectCreate(fileOperationsObjectCreate)
+	return o
+}
+
+// SetFileOperationsObjectCreate adds the fileOperationsObjectCreate to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsObjectCreate(fileOperationsObjectCreate *bool) {
+	o.FileOperationsObjectCreate = fileOperationsObjectCreate
+}
+
+// WithFileOperationsObjectDelete adds the fileOperationsObjectDelete to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsObjectDelete(fileOperationsObjectDelete *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsObjectDelete(fileOperationsObjectDelete)
+	return o
+}
+
+// SetFileOperationsObjectDelete adds the fileOperationsObjectDelete to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsObjectDelete(fileOperationsObjectDelete *bool) {
+	o.FileOperationsObjectDelete = fileOperationsObjectDelete
+}
+
+// WithFileOperationsObjectTag adds the fileOperationsObjectTag to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFileOperationsObjectTag(fileOperationsObjectTag *bool) *FpolicyEventCollectionGetParams {
+	o.SetFileOperationsObjectTag(fileOperationsObjectTag)
+	return o
+}
+
+// SetFileOperationsObjectTag adds the fileOperationsObjectTag to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFileOperationsObjectTag(fileOperationsObjectTag *bool) {
+	o.FileOperationsObjectTag = fileOperationsObjectTag
+}
+
 // WithFileOperationsOpen adds the fileOperationsOpen to the fpolicy event collection get params
 func (o *FpolicyEventCollectionGetParams) WithFileOperationsOpen(fileOperationsOpen *bool) *FpolicyEventCollectionGetParams {
 	o.SetFileOperationsOpen(fileOperationsOpen)
@@ -646,6 +733,17 @@ func (o *FpolicyEventCollectionGetParams) SetFiltersExcludeDirectory(filtersExcl
 	o.FiltersExcludeDirectory = filtersExcludeDirectory
 }
 
+// WithFiltersExcludeMultiDelete adds the filtersExcludeMultiDelete to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersExcludeMultiDelete(filtersExcludeMultiDelete *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersExcludeMultiDelete(filtersExcludeMultiDelete)
+	return o
+}
+
+// SetFiltersExcludeMultiDelete adds the filtersExcludeMultiDelete to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersExcludeMultiDelete(filtersExcludeMultiDelete *bool) {
+	o.FiltersExcludeMultiDelete = filtersExcludeMultiDelete
+}
+
 // WithFiltersFirstRead adds the filtersFirstRead to the fpolicy event collection get params
 func (o *FpolicyEventCollectionGetParams) WithFiltersFirstRead(filtersFirstRead *bool) *FpolicyEventCollectionGetParams {
 	o.SetFiltersFirstRead(filtersFirstRead)
@@ -677,6 +775,61 @@ func (o *FpolicyEventCollectionGetParams) WithFiltersMonitorAds(filtersMonitorAd
 // SetFiltersMonitorAds adds the filtersMonitorAds to the fpolicy event collection get params
 func (o *FpolicyEventCollectionGetParams) SetFiltersMonitorAds(filtersMonitorAds *bool) {
 	o.FiltersMonitorAds = filtersMonitorAds
+}
+
+// WithFiltersObjectCreateWithCompleteMpu adds the filtersObjectCreateWithCompleteMpu to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersObjectCreateWithCompleteMpu(filtersObjectCreateWithCompleteMpu *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersObjectCreateWithCompleteMpu(filtersObjectCreateWithCompleteMpu)
+	return o
+}
+
+// SetFiltersObjectCreateWithCompleteMpu adds the filtersObjectCreateWithCompleteMpu to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersObjectCreateWithCompleteMpu(filtersObjectCreateWithCompleteMpu *bool) {
+	o.FiltersObjectCreateWithCompleteMpu = filtersObjectCreateWithCompleteMpu
+}
+
+// WithFiltersObjectCreateWithCopy adds the filtersObjectCreateWithCopy to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersObjectCreateWithCopy(filtersObjectCreateWithCopy *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersObjectCreateWithCopy(filtersObjectCreateWithCopy)
+	return o
+}
+
+// SetFiltersObjectCreateWithCopy adds the filtersObjectCreateWithCopy to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersObjectCreateWithCopy(filtersObjectCreateWithCopy *bool) {
+	o.FiltersObjectCreateWithCopy = filtersObjectCreateWithCopy
+}
+
+// WithFiltersObjectCreateWithPut adds the filtersObjectCreateWithPut to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersObjectCreateWithPut(filtersObjectCreateWithPut *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersObjectCreateWithPut(filtersObjectCreateWithPut)
+	return o
+}
+
+// SetFiltersObjectCreateWithPut adds the filtersObjectCreateWithPut to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersObjectCreateWithPut(filtersObjectCreateWithPut *bool) {
+	o.FiltersObjectCreateWithPut = filtersObjectCreateWithPut
+}
+
+// WithFiltersObjectTagDelete adds the filtersObjectTagDelete to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersObjectTagDelete(filtersObjectTagDelete *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersObjectTagDelete(filtersObjectTagDelete)
+	return o
+}
+
+// SetFiltersObjectTagDelete adds the filtersObjectTagDelete to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersObjectTagDelete(filtersObjectTagDelete *bool) {
+	o.FiltersObjectTagDelete = filtersObjectTagDelete
+}
+
+// WithFiltersObjectTagPut adds the filtersObjectTagPut to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) WithFiltersObjectTagPut(filtersObjectTagPut *bool) *FpolicyEventCollectionGetParams {
+	o.SetFiltersObjectTagPut(filtersObjectTagPut)
+	return o
+}
+
+// SetFiltersObjectTagPut adds the filtersObjectTagPut to the fpolicy event collection get params
+func (o *FpolicyEventCollectionGetParams) SetFiltersObjectTagPut(filtersObjectTagPut *bool) {
+	o.FiltersObjectTagPut = filtersObjectTagPut
 }
 
 // WithFiltersOfflineBit adds the filtersOfflineBit to the fpolicy event collection get params
@@ -1104,6 +1257,57 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
+	if o.FileOperationsObjectCreate != nil {
+
+		// query param file_operations.object_create
+		var qrFileOperationsObjectCreate bool
+
+		if o.FileOperationsObjectCreate != nil {
+			qrFileOperationsObjectCreate = *o.FileOperationsObjectCreate
+		}
+		qFileOperationsObjectCreate := swag.FormatBool(qrFileOperationsObjectCreate)
+		if qFileOperationsObjectCreate != "" {
+
+			if err := r.SetQueryParam("file_operations.object_create", qFileOperationsObjectCreate); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FileOperationsObjectDelete != nil {
+
+		// query param file_operations.object_delete
+		var qrFileOperationsObjectDelete bool
+
+		if o.FileOperationsObjectDelete != nil {
+			qrFileOperationsObjectDelete = *o.FileOperationsObjectDelete
+		}
+		qFileOperationsObjectDelete := swag.FormatBool(qrFileOperationsObjectDelete)
+		if qFileOperationsObjectDelete != "" {
+
+			if err := r.SetQueryParam("file_operations.object_delete", qFileOperationsObjectDelete); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FileOperationsObjectTag != nil {
+
+		// query param file_operations.object_tag
+		var qrFileOperationsObjectTag bool
+
+		if o.FileOperationsObjectTag != nil {
+			qrFileOperationsObjectTag = *o.FileOperationsObjectTag
+		}
+		qFileOperationsObjectTag := swag.FormatBool(qrFileOperationsObjectTag)
+		if qFileOperationsObjectTag != "" {
+
+			if err := r.SetQueryParam("file_operations.object_tag", qFileOperationsObjectTag); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.FileOperationsOpen != nil {
 
 		// query param file_operations.open
@@ -1291,6 +1495,23 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		}
 	}
 
+	if o.FiltersExcludeMultiDelete != nil {
+
+		// query param filters.exclude_multi_delete
+		var qrFiltersExcludeMultiDelete bool
+
+		if o.FiltersExcludeMultiDelete != nil {
+			qrFiltersExcludeMultiDelete = *o.FiltersExcludeMultiDelete
+		}
+		qFiltersExcludeMultiDelete := swag.FormatBool(qrFiltersExcludeMultiDelete)
+		if qFiltersExcludeMultiDelete != "" {
+
+			if err := r.SetQueryParam("filters.exclude_multi_delete", qFiltersExcludeMultiDelete); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.FiltersFirstRead != nil {
 
 		// query param filters.first_read
@@ -1337,6 +1558,91 @@ func (o *FpolicyEventCollectionGetParams) WriteToRequest(r runtime.ClientRequest
 		if qFiltersMonitorAds != "" {
 
 			if err := r.SetQueryParam("filters.monitor_ads", qFiltersMonitorAds); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FiltersObjectCreateWithCompleteMpu != nil {
+
+		// query param filters.object_create_with_complete_mpu
+		var qrFiltersObjectCreateWithCompleteMpu bool
+
+		if o.FiltersObjectCreateWithCompleteMpu != nil {
+			qrFiltersObjectCreateWithCompleteMpu = *o.FiltersObjectCreateWithCompleteMpu
+		}
+		qFiltersObjectCreateWithCompleteMpu := swag.FormatBool(qrFiltersObjectCreateWithCompleteMpu)
+		if qFiltersObjectCreateWithCompleteMpu != "" {
+
+			if err := r.SetQueryParam("filters.object_create_with_complete_mpu", qFiltersObjectCreateWithCompleteMpu); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FiltersObjectCreateWithCopy != nil {
+
+		// query param filters.object_create_with_copy
+		var qrFiltersObjectCreateWithCopy bool
+
+		if o.FiltersObjectCreateWithCopy != nil {
+			qrFiltersObjectCreateWithCopy = *o.FiltersObjectCreateWithCopy
+		}
+		qFiltersObjectCreateWithCopy := swag.FormatBool(qrFiltersObjectCreateWithCopy)
+		if qFiltersObjectCreateWithCopy != "" {
+
+			if err := r.SetQueryParam("filters.object_create_with_copy", qFiltersObjectCreateWithCopy); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FiltersObjectCreateWithPut != nil {
+
+		// query param filters.object_create_with_put
+		var qrFiltersObjectCreateWithPut bool
+
+		if o.FiltersObjectCreateWithPut != nil {
+			qrFiltersObjectCreateWithPut = *o.FiltersObjectCreateWithPut
+		}
+		qFiltersObjectCreateWithPut := swag.FormatBool(qrFiltersObjectCreateWithPut)
+		if qFiltersObjectCreateWithPut != "" {
+
+			if err := r.SetQueryParam("filters.object_create_with_put", qFiltersObjectCreateWithPut); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FiltersObjectTagDelete != nil {
+
+		// query param filters.object_tag_delete
+		var qrFiltersObjectTagDelete bool
+
+		if o.FiltersObjectTagDelete != nil {
+			qrFiltersObjectTagDelete = *o.FiltersObjectTagDelete
+		}
+		qFiltersObjectTagDelete := swag.FormatBool(qrFiltersObjectTagDelete)
+		if qFiltersObjectTagDelete != "" {
+
+			if err := r.SetQueryParam("filters.object_tag_delete", qFiltersObjectTagDelete); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.FiltersObjectTagPut != nil {
+
+		// query param filters.object_tag_put
+		var qrFiltersObjectTagPut bool
+
+		if o.FiltersObjectTagPut != nil {
+			qrFiltersObjectTagPut = *o.FiltersObjectTagPut
+		}
+		qFiltersObjectTagPut := swag.FormatBool(qrFiltersObjectTagPut)
+		if qFiltersObjectTagPut != "" {
+
+			if err := r.SetQueryParam("filters.object_tag_put", qFiltersObjectTagPut); err != nil {
 				return err
 			}
 		}

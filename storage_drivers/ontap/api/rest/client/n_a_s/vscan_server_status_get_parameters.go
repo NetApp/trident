@@ -122,6 +122,12 @@ type VscanServerStatusGetParams struct {
 	*/
 	OrderBy []string
 
+	/* PrivilegedUser.
+
+	   Filter by privileged_user
+	*/
+	PrivilegedUser *string
+
 	/* ReturnRecords.
 
 	   The default is true for GET calls.  When set to false, only the number of records is returned.
@@ -355,6 +361,17 @@ func (o *VscanServerStatusGetParams) WithOrderBy(orderBy []string) *VscanServerS
 // SetOrderBy adds the orderBy to the vscan server status get params
 func (o *VscanServerStatusGetParams) SetOrderBy(orderBy []string) {
 	o.OrderBy = orderBy
+}
+
+// WithPrivilegedUser adds the privilegedUser to the vscan server status get params
+func (o *VscanServerStatusGetParams) WithPrivilegedUser(privilegedUser *string) *VscanServerStatusGetParams {
+	o.SetPrivilegedUser(privilegedUser)
+	return o
+}
+
+// SetPrivilegedUser adds the privilegedUser to the vscan server status get params
+func (o *VscanServerStatusGetParams) SetPrivilegedUser(privilegedUser *string) {
+	o.PrivilegedUser = privilegedUser
 }
 
 // WithReturnRecords adds the returnRecords to the vscan server status get params
@@ -619,6 +636,23 @@ func (o *VscanServerStatusGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.PrivilegedUser != nil {
+
+		// query param privileged_user
+		var qrPrivilegedUser string
+
+		if o.PrivilegedUser != nil {
+			qrPrivilegedUser = *o.PrivilegedUser
+		}
+		qPrivilegedUser := qrPrivilegedUser
+		if qPrivilegedUser != "" {
+
+			if err := r.SetQueryParam("privileged_user", qPrivilegedUser); err != nil {
+				return err
+			}
 		}
 	}
 

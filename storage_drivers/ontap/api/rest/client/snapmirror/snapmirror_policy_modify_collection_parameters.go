@@ -120,7 +120,7 @@ type SnapmirrorPolicyModifyCollectionParams struct {
 
 	   Filter by retention.count
 	*/
-	RetentionCount *int64
+	RetentionCount *string
 
 	/* RetentionCreationScheduleName.
 
@@ -431,13 +431,13 @@ func (o *SnapmirrorPolicyModifyCollectionParams) SetNetworkCompressionEnabled(ne
 }
 
 // WithRetentionCount adds the retentionCount to the snapmirror policy modify collection params
-func (o *SnapmirrorPolicyModifyCollectionParams) WithRetentionCount(retentionCount *int64) *SnapmirrorPolicyModifyCollectionParams {
+func (o *SnapmirrorPolicyModifyCollectionParams) WithRetentionCount(retentionCount *string) *SnapmirrorPolicyModifyCollectionParams {
 	o.SetRetentionCount(retentionCount)
 	return o
 }
 
 // SetRetentionCount adds the retentionCount to the snapmirror policy modify collection params
-func (o *SnapmirrorPolicyModifyCollectionParams) SetRetentionCount(retentionCount *int64) {
+func (o *SnapmirrorPolicyModifyCollectionParams) SetRetentionCount(retentionCount *string) {
 	o.RetentionCount = retentionCount
 }
 
@@ -833,12 +833,12 @@ func (o *SnapmirrorPolicyModifyCollectionParams) WriteToRequest(r runtime.Client
 	if o.RetentionCount != nil {
 
 		// query param retention.count
-		var qrRetentionCount int64
+		var qrRetentionCount string
 
 		if o.RetentionCount != nil {
 			qrRetentionCount = *o.RetentionCount
 		}
-		qRetentionCount := swag.FormatInt64(qrRetentionCount)
+		qRetentionCount := qrRetentionCount
 		if qRetentionCount != "" {
 
 			if err := r.SetQueryParam("retention.count", qRetentionCount); err != nil {

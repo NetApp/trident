@@ -266,11 +266,29 @@ type S3ServiceCollectionGetParams struct {
 	*/
 	BucketsPolicyStatementsConditionsDelimiters *string
 
+	/* BucketsPolicyStatementsConditionsIfMatch.
+
+	   Filter by buckets.policy.statements.conditions.if_match
+	*/
+	BucketsPolicyStatementsConditionsIfMatch *string
+
+	/* BucketsPolicyStatementsConditionsIfNoneMatch.
+
+	   Filter by buckets.policy.statements.conditions.if_none_match
+	*/
+	BucketsPolicyStatementsConditionsIfNoneMatch *bool
+
 	/* BucketsPolicyStatementsConditionsMaxKeys.
 
 	   Filter by buckets.policy.statements.conditions.max_keys
 	*/
 	BucketsPolicyStatementsConditionsMaxKeys *int64
+
+	/* BucketsPolicyStatementsConditionsObjectCreationOperation.
+
+	   Filter by buckets.policy.statements.conditions.object_creation_operation
+	*/
+	BucketsPolicyStatementsConditionsObjectCreationOperation *bool
 
 	/* BucketsPolicyStatementsConditionsOperator.
 
@@ -427,6 +445,30 @@ type S3ServiceCollectionGetParams struct {
 	   Filter by buckets.snapshot_policy.uuid
 	*/
 	BucketsSnapshotPolicyUUID *string
+
+	/* BucketsSnapshotRestoreObjectsRemaining.
+
+	   Filter by buckets.snapshot_restore.objects_remaining
+	*/
+	BucketsSnapshotRestoreObjectsRemaining *int64
+
+	/* BucketsSnapshotRestoreProgress.
+
+	   Filter by buckets.snapshot_restore.progress
+	*/
+	BucketsSnapshotRestoreProgress *int64
+
+	/* BucketsSnapshotRestoreSnapshot.
+
+	   Filter by buckets.snapshot_restore.snapshot
+	*/
+	BucketsSnapshotRestoreSnapshot *string
+
+	/* BucketsSnapshotRestoreState.
+
+	   Filter by buckets.snapshot_restore.state
+	*/
+	BucketsSnapshotRestoreState *string
 
 	/* BucketsSvmName.
 
@@ -785,6 +827,30 @@ type S3ServiceCollectionGetParams struct {
 	   Filter by users.key_time_to_live
 	*/
 	UsersKeyTimeToLive *string
+
+	/* UsersKeysAccessKey.
+
+	   Filter by users.keys.access_key
+	*/
+	UsersKeysAccessKey *string
+
+	/* UsersKeysExpiryTime.
+
+	   Filter by users.keys.expiry_time
+	*/
+	UsersKeysExpiryTime *string
+
+	/* UsersKeysID.
+
+	   Filter by users.keys.id
+	*/
+	UsersKeysID *int64
+
+	/* UsersKeysTimeToLive.
+
+	   Filter by users.keys.time_to_live
+	*/
+	UsersKeysTimeToLive *string
 
 	/* UsersName.
 
@@ -1245,6 +1311,28 @@ func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsDelim
 	o.BucketsPolicyStatementsConditionsDelimiters = bucketsPolicyStatementsConditionsDelimiters
 }
 
+// WithBucketsPolicyStatementsConditionsIfMatch adds the bucketsPolicyStatementsConditionsIfMatch to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsIfMatch(bucketsPolicyStatementsConditionsIfMatch *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsConditionsIfMatch(bucketsPolicyStatementsConditionsIfMatch)
+	return o
+}
+
+// SetBucketsPolicyStatementsConditionsIfMatch adds the bucketsPolicyStatementsConditionsIfMatch to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsIfMatch(bucketsPolicyStatementsConditionsIfMatch *string) {
+	o.BucketsPolicyStatementsConditionsIfMatch = bucketsPolicyStatementsConditionsIfMatch
+}
+
+// WithBucketsPolicyStatementsConditionsIfNoneMatch adds the bucketsPolicyStatementsConditionsIfNoneMatch to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsIfNoneMatch(bucketsPolicyStatementsConditionsIfNoneMatch *bool) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsConditionsIfNoneMatch(bucketsPolicyStatementsConditionsIfNoneMatch)
+	return o
+}
+
+// SetBucketsPolicyStatementsConditionsIfNoneMatch adds the bucketsPolicyStatementsConditionsIfNoneMatch to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsIfNoneMatch(bucketsPolicyStatementsConditionsIfNoneMatch *bool) {
+	o.BucketsPolicyStatementsConditionsIfNoneMatch = bucketsPolicyStatementsConditionsIfNoneMatch
+}
+
 // WithBucketsPolicyStatementsConditionsMaxKeys adds the bucketsPolicyStatementsConditionsMaxKeys to the s3 service collection get params
 func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsMaxKeys(bucketsPolicyStatementsConditionsMaxKeys *int64) *S3ServiceCollectionGetParams {
 	o.SetBucketsPolicyStatementsConditionsMaxKeys(bucketsPolicyStatementsConditionsMaxKeys)
@@ -1254,6 +1342,17 @@ func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsMaxK
 // SetBucketsPolicyStatementsConditionsMaxKeys adds the bucketsPolicyStatementsConditionsMaxKeys to the s3 service collection get params
 func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsMaxKeys(bucketsPolicyStatementsConditionsMaxKeys *int64) {
 	o.BucketsPolicyStatementsConditionsMaxKeys = bucketsPolicyStatementsConditionsMaxKeys
+}
+
+// WithBucketsPolicyStatementsConditionsObjectCreationOperation adds the bucketsPolicyStatementsConditionsObjectCreationOperation to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsPolicyStatementsConditionsObjectCreationOperation(bucketsPolicyStatementsConditionsObjectCreationOperation *bool) *S3ServiceCollectionGetParams {
+	o.SetBucketsPolicyStatementsConditionsObjectCreationOperation(bucketsPolicyStatementsConditionsObjectCreationOperation)
+	return o
+}
+
+// SetBucketsPolicyStatementsConditionsObjectCreationOperation adds the bucketsPolicyStatementsConditionsObjectCreationOperation to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsPolicyStatementsConditionsObjectCreationOperation(bucketsPolicyStatementsConditionsObjectCreationOperation *bool) {
+	o.BucketsPolicyStatementsConditionsObjectCreationOperation = bucketsPolicyStatementsConditionsObjectCreationOperation
 }
 
 // WithBucketsPolicyStatementsConditionsOperator adds the bucketsPolicyStatementsConditionsOperator to the s3 service collection get params
@@ -1540,6 +1639,50 @@ func (o *S3ServiceCollectionGetParams) WithBucketsSnapshotPolicyUUID(bucketsSnap
 // SetBucketsSnapshotPolicyUUID adds the bucketsSnapshotPolicyUuid to the s3 service collection get params
 func (o *S3ServiceCollectionGetParams) SetBucketsSnapshotPolicyUUID(bucketsSnapshotPolicyUUID *string) {
 	o.BucketsSnapshotPolicyUUID = bucketsSnapshotPolicyUUID
+}
+
+// WithBucketsSnapshotRestoreObjectsRemaining adds the bucketsSnapshotRestoreObjectsRemaining to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsSnapshotRestoreObjectsRemaining(bucketsSnapshotRestoreObjectsRemaining *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsSnapshotRestoreObjectsRemaining(bucketsSnapshotRestoreObjectsRemaining)
+	return o
+}
+
+// SetBucketsSnapshotRestoreObjectsRemaining adds the bucketsSnapshotRestoreObjectsRemaining to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsSnapshotRestoreObjectsRemaining(bucketsSnapshotRestoreObjectsRemaining *int64) {
+	o.BucketsSnapshotRestoreObjectsRemaining = bucketsSnapshotRestoreObjectsRemaining
+}
+
+// WithBucketsSnapshotRestoreProgress adds the bucketsSnapshotRestoreProgress to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsSnapshotRestoreProgress(bucketsSnapshotRestoreProgress *int64) *S3ServiceCollectionGetParams {
+	o.SetBucketsSnapshotRestoreProgress(bucketsSnapshotRestoreProgress)
+	return o
+}
+
+// SetBucketsSnapshotRestoreProgress adds the bucketsSnapshotRestoreProgress to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsSnapshotRestoreProgress(bucketsSnapshotRestoreProgress *int64) {
+	o.BucketsSnapshotRestoreProgress = bucketsSnapshotRestoreProgress
+}
+
+// WithBucketsSnapshotRestoreSnapshot adds the bucketsSnapshotRestoreSnapshot to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsSnapshotRestoreSnapshot(bucketsSnapshotRestoreSnapshot *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsSnapshotRestoreSnapshot(bucketsSnapshotRestoreSnapshot)
+	return o
+}
+
+// SetBucketsSnapshotRestoreSnapshot adds the bucketsSnapshotRestoreSnapshot to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsSnapshotRestoreSnapshot(bucketsSnapshotRestoreSnapshot *string) {
+	o.BucketsSnapshotRestoreSnapshot = bucketsSnapshotRestoreSnapshot
+}
+
+// WithBucketsSnapshotRestoreState adds the bucketsSnapshotRestoreState to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithBucketsSnapshotRestoreState(bucketsSnapshotRestoreState *string) *S3ServiceCollectionGetParams {
+	o.SetBucketsSnapshotRestoreState(bucketsSnapshotRestoreState)
+	return o
+}
+
+// SetBucketsSnapshotRestoreState adds the bucketsSnapshotRestoreState to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetBucketsSnapshotRestoreState(bucketsSnapshotRestoreState *string) {
+	o.BucketsSnapshotRestoreState = bucketsSnapshotRestoreState
 }
 
 // WithBucketsSvmName adds the bucketsSvmName to the s3 service collection get params
@@ -2191,6 +2334,50 @@ func (o *S3ServiceCollectionGetParams) SetUsersKeyTimeToLive(usersKeyTimeToLive 
 	o.UsersKeyTimeToLive = usersKeyTimeToLive
 }
 
+// WithUsersKeysAccessKey adds the usersKeysAccessKey to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithUsersKeysAccessKey(usersKeysAccessKey *string) *S3ServiceCollectionGetParams {
+	o.SetUsersKeysAccessKey(usersKeysAccessKey)
+	return o
+}
+
+// SetUsersKeysAccessKey adds the usersKeysAccessKey to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetUsersKeysAccessKey(usersKeysAccessKey *string) {
+	o.UsersKeysAccessKey = usersKeysAccessKey
+}
+
+// WithUsersKeysExpiryTime adds the usersKeysExpiryTime to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithUsersKeysExpiryTime(usersKeysExpiryTime *string) *S3ServiceCollectionGetParams {
+	o.SetUsersKeysExpiryTime(usersKeysExpiryTime)
+	return o
+}
+
+// SetUsersKeysExpiryTime adds the usersKeysExpiryTime to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetUsersKeysExpiryTime(usersKeysExpiryTime *string) {
+	o.UsersKeysExpiryTime = usersKeysExpiryTime
+}
+
+// WithUsersKeysID adds the usersKeysID to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithUsersKeysID(usersKeysID *int64) *S3ServiceCollectionGetParams {
+	o.SetUsersKeysID(usersKeysID)
+	return o
+}
+
+// SetUsersKeysID adds the usersKeysId to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetUsersKeysID(usersKeysID *int64) {
+	o.UsersKeysID = usersKeysID
+}
+
+// WithUsersKeysTimeToLive adds the usersKeysTimeToLive to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) WithUsersKeysTimeToLive(usersKeysTimeToLive *string) *S3ServiceCollectionGetParams {
+	o.SetUsersKeysTimeToLive(usersKeysTimeToLive)
+	return o
+}
+
+// SetUsersKeysTimeToLive adds the usersKeysTimeToLive to the s3 service collection get params
+func (o *S3ServiceCollectionGetParams) SetUsersKeysTimeToLive(usersKeysTimeToLive *string) {
+	o.UsersKeysTimeToLive = usersKeysTimeToLive
+}
+
 // WithUsersName adds the usersName to the s3 service collection get params
 func (o *S3ServiceCollectionGetParams) WithUsersName(usersName *string) *S3ServiceCollectionGetParams {
 	o.SetUsersName(usersName)
@@ -2810,6 +2997,40 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.BucketsPolicyStatementsConditionsIfMatch != nil {
+
+		// query param buckets.policy.statements.conditions.if_match
+		var qrBucketsPolicyStatementsConditionsIfMatch string
+
+		if o.BucketsPolicyStatementsConditionsIfMatch != nil {
+			qrBucketsPolicyStatementsConditionsIfMatch = *o.BucketsPolicyStatementsConditionsIfMatch
+		}
+		qBucketsPolicyStatementsConditionsIfMatch := qrBucketsPolicyStatementsConditionsIfMatch
+		if qBucketsPolicyStatementsConditionsIfMatch != "" {
+
+			if err := r.SetQueryParam("buckets.policy.statements.conditions.if_match", qBucketsPolicyStatementsConditionsIfMatch); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsPolicyStatementsConditionsIfNoneMatch != nil {
+
+		// query param buckets.policy.statements.conditions.if_none_match
+		var qrBucketsPolicyStatementsConditionsIfNoneMatch bool
+
+		if o.BucketsPolicyStatementsConditionsIfNoneMatch != nil {
+			qrBucketsPolicyStatementsConditionsIfNoneMatch = *o.BucketsPolicyStatementsConditionsIfNoneMatch
+		}
+		qBucketsPolicyStatementsConditionsIfNoneMatch := swag.FormatBool(qrBucketsPolicyStatementsConditionsIfNoneMatch)
+		if qBucketsPolicyStatementsConditionsIfNoneMatch != "" {
+
+			if err := r.SetQueryParam("buckets.policy.statements.conditions.if_none_match", qBucketsPolicyStatementsConditionsIfNoneMatch); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.BucketsPolicyStatementsConditionsMaxKeys != nil {
 
 		// query param buckets.policy.statements.conditions.max_keys
@@ -2822,6 +3043,23 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qBucketsPolicyStatementsConditionsMaxKeys != "" {
 
 			if err := r.SetQueryParam("buckets.policy.statements.conditions.max_keys", qBucketsPolicyStatementsConditionsMaxKeys); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsPolicyStatementsConditionsObjectCreationOperation != nil {
+
+		// query param buckets.policy.statements.conditions.object_creation_operation
+		var qrBucketsPolicyStatementsConditionsObjectCreationOperation bool
+
+		if o.BucketsPolicyStatementsConditionsObjectCreationOperation != nil {
+			qrBucketsPolicyStatementsConditionsObjectCreationOperation = *o.BucketsPolicyStatementsConditionsObjectCreationOperation
+		}
+		qBucketsPolicyStatementsConditionsObjectCreationOperation := swag.FormatBool(qrBucketsPolicyStatementsConditionsObjectCreationOperation)
+		if qBucketsPolicyStatementsConditionsObjectCreationOperation != "" {
+
+			if err := r.SetQueryParam("buckets.policy.statements.conditions.object_creation_operation", qBucketsPolicyStatementsConditionsObjectCreationOperation); err != nil {
 				return err
 			}
 		}
@@ -3264,6 +3502,74 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qBucketsSnapshotPolicyUUID != "" {
 
 			if err := r.SetQueryParam("buckets.snapshot_policy.uuid", qBucketsSnapshotPolicyUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsSnapshotRestoreObjectsRemaining != nil {
+
+		// query param buckets.snapshot_restore.objects_remaining
+		var qrBucketsSnapshotRestoreObjectsRemaining int64
+
+		if o.BucketsSnapshotRestoreObjectsRemaining != nil {
+			qrBucketsSnapshotRestoreObjectsRemaining = *o.BucketsSnapshotRestoreObjectsRemaining
+		}
+		qBucketsSnapshotRestoreObjectsRemaining := swag.FormatInt64(qrBucketsSnapshotRestoreObjectsRemaining)
+		if qBucketsSnapshotRestoreObjectsRemaining != "" {
+
+			if err := r.SetQueryParam("buckets.snapshot_restore.objects_remaining", qBucketsSnapshotRestoreObjectsRemaining); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsSnapshotRestoreProgress != nil {
+
+		// query param buckets.snapshot_restore.progress
+		var qrBucketsSnapshotRestoreProgress int64
+
+		if o.BucketsSnapshotRestoreProgress != nil {
+			qrBucketsSnapshotRestoreProgress = *o.BucketsSnapshotRestoreProgress
+		}
+		qBucketsSnapshotRestoreProgress := swag.FormatInt64(qrBucketsSnapshotRestoreProgress)
+		if qBucketsSnapshotRestoreProgress != "" {
+
+			if err := r.SetQueryParam("buckets.snapshot_restore.progress", qBucketsSnapshotRestoreProgress); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsSnapshotRestoreSnapshot != nil {
+
+		// query param buckets.snapshot_restore.snapshot
+		var qrBucketsSnapshotRestoreSnapshot string
+
+		if o.BucketsSnapshotRestoreSnapshot != nil {
+			qrBucketsSnapshotRestoreSnapshot = *o.BucketsSnapshotRestoreSnapshot
+		}
+		qBucketsSnapshotRestoreSnapshot := qrBucketsSnapshotRestoreSnapshot
+		if qBucketsSnapshotRestoreSnapshot != "" {
+
+			if err := r.SetQueryParam("buckets.snapshot_restore.snapshot", qBucketsSnapshotRestoreSnapshot); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BucketsSnapshotRestoreState != nil {
+
+		// query param buckets.snapshot_restore.state
+		var qrBucketsSnapshotRestoreState string
+
+		if o.BucketsSnapshotRestoreState != nil {
+			qrBucketsSnapshotRestoreState = *o.BucketsSnapshotRestoreState
+		}
+		qBucketsSnapshotRestoreState := qrBucketsSnapshotRestoreState
+		if qBucketsSnapshotRestoreState != "" {
+
+			if err := r.SetQueryParam("buckets.snapshot_restore.state", qBucketsSnapshotRestoreState); err != nil {
 				return err
 			}
 		}
@@ -4255,6 +4561,74 @@ func (o *S3ServiceCollectionGetParams) WriteToRequest(r runtime.ClientRequest, r
 		if qUsersKeyTimeToLive != "" {
 
 			if err := r.SetQueryParam("users.key_time_to_live", qUsersKeyTimeToLive); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UsersKeysAccessKey != nil {
+
+		// query param users.keys.access_key
+		var qrUsersKeysAccessKey string
+
+		if o.UsersKeysAccessKey != nil {
+			qrUsersKeysAccessKey = *o.UsersKeysAccessKey
+		}
+		qUsersKeysAccessKey := qrUsersKeysAccessKey
+		if qUsersKeysAccessKey != "" {
+
+			if err := r.SetQueryParam("users.keys.access_key", qUsersKeysAccessKey); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UsersKeysExpiryTime != nil {
+
+		// query param users.keys.expiry_time
+		var qrUsersKeysExpiryTime string
+
+		if o.UsersKeysExpiryTime != nil {
+			qrUsersKeysExpiryTime = *o.UsersKeysExpiryTime
+		}
+		qUsersKeysExpiryTime := qrUsersKeysExpiryTime
+		if qUsersKeysExpiryTime != "" {
+
+			if err := r.SetQueryParam("users.keys.expiry_time", qUsersKeysExpiryTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UsersKeysID != nil {
+
+		// query param users.keys.id
+		var qrUsersKeysID int64
+
+		if o.UsersKeysID != nil {
+			qrUsersKeysID = *o.UsersKeysID
+		}
+		qUsersKeysID := swag.FormatInt64(qrUsersKeysID)
+		if qUsersKeysID != "" {
+
+			if err := r.SetQueryParam("users.keys.id", qUsersKeysID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UsersKeysTimeToLive != nil {
+
+		// query param users.keys.time_to_live
+		var qrUsersKeysTimeToLive string
+
+		if o.UsersKeysTimeToLive != nil {
+			qrUsersKeysTimeToLive = *o.UsersKeysTimeToLive
+		}
+		qUsersKeysTimeToLive := qrUsersKeysTimeToLive
+		if qUsersKeysTimeToLive != "" {
+
+			if err := r.SetQueryParam("users.keys.time_to_live", qUsersKeysTimeToLive); err != nil {
 				return err
 			}
 		}

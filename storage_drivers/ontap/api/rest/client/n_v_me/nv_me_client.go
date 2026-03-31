@@ -268,8 +268,10 @@ If not specified in POST, the following default property values are assigned:
 * `auto_delete` - _false_
 * `space.block_size` - _4096_ ( _512_ when 'os_type' is _vmware_ )
 ### Related ONTAP commands
+<personalities supports=unified>
 * `volume file clone autodelete`
 * `volume file clone create`
+</personalities>
 * `vserver nvme namespace convert-from-lun`
 * `vserver nvme namespace create`
 <personalities supports=asar2>
@@ -463,8 +465,13 @@ func (a *Client) NvmeNamespaceGet(params *NvmeNamespaceGetParams, authInfo runti
 	NvmeNamespaceModify Updates an NVMe namespace.
 
 ### Related ONTAP commands
+<personalities supports=unified>
 * `volume file clone autodelete`
+</personalities>
 * `vserver nvme namespace modify`
+<personalities supports=asar2>
+* `vserver nvme namespace rename`
+</personalities>
 <personalities supports=asar2>
 PATCH is asynchronous when modifying `name` or `qos_policy`.
 </personalities>
@@ -983,6 +990,8 @@ func (a *Client) NvmeSubsystemControllerGet(params *NvmeSubsystemControllerGetPa
 * `svm.uuid` or `svm.name` - Existing SVM in which to create the NVMe subsystem.
 * `name` - Name for NVMe subsystem. Once created, an NVMe subsystem cannot be renamed.
 * `os_type` - Operating system of the NVMe subsystem's hosts.
+* `hosts.dh_hmac_chap.host_secret_key` - When created with the subsystem host, authentication host secret key must be provided if the TLS key type is "generated".
+Note: The `hosts.dh_hmac_chap.group_size` property should not be set to "None". If the `hosts.dh_hmac_chap.group_size` property is not provided, then DH group size of 2048-bit is considered by default.
 ### Related ONTAP commands
 * `vserver nvme subsystem create`
 ### Learn more
@@ -1155,9 +1164,6 @@ func (a *Client) NvmeSubsystemGet(params *NvmeSubsystemGetParams, authInfo runti
 /*
 	NvmeSubsystemHostCollectionGet Retrieves the NVMe subsystem hosts of an NVMe subsystem.
 
-### Expensive properties
-There is an added computational cost to retrieving values for these properties. They are not included by default in GET results and must be explicitly requested using the `fields` query parameter. See [`Requesting specific fields`](#Requesting_specific_fields) to learn more.
-* `subsystem_maps.*`
 ### Related ONTAP commands
 * `vserver nvme subsystem map show`
 * `vserver nvme subsystem show`
@@ -1204,6 +1210,8 @@ func (a *Client) NvmeSubsystemHostCollectionGet(params *NvmeSubsystemHostCollect
 
 ### Required properties
 * `nqn` or `records.nqn` - NVMe host(s) NQN(s) to add to the NVMe subsystem.
+* `hosts.dh_hmac_chap.host_secret_key` - Authentication Host Secret Key must be provided if the TLS Key type is "generated".
+Note: The `hosts.dh_hmac_chap.group_size` property should not be set to "None". If the `hosts.dh_hmac_chap.group_size` property is not provided, then DH Group size of 2048-bit is considered by default.
 ### Related ONTAP commands
 * `vserver nvme subsystem host add`
 ### Learn more

@@ -92,6 +92,30 @@ type S3UserCollectionGetParams struct {
 	*/
 	KeyTimeToLive *string
 
+	/* KeysAccessKey.
+
+	   Filter by keys.access_key
+	*/
+	KeysAccessKey *string
+
+	/* KeysExpiryTime.
+
+	   Filter by keys.expiry_time
+	*/
+	KeysExpiryTime *string
+
+	/* KeysID.
+
+	   Filter by keys.id
+	*/
+	KeysID *int64
+
+	/* KeysTimeToLive.
+
+	   Filter by keys.time_to_live
+	*/
+	KeysTimeToLive *string
+
 	/* MaxRecords.
 
 	   Limit the number of records returned.
@@ -260,6 +284,50 @@ func (o *S3UserCollectionGetParams) SetKeyTimeToLive(keyTimeToLive *string) {
 	o.KeyTimeToLive = keyTimeToLive
 }
 
+// WithKeysAccessKey adds the keysAccessKey to the s3 user collection get params
+func (o *S3UserCollectionGetParams) WithKeysAccessKey(keysAccessKey *string) *S3UserCollectionGetParams {
+	o.SetKeysAccessKey(keysAccessKey)
+	return o
+}
+
+// SetKeysAccessKey adds the keysAccessKey to the s3 user collection get params
+func (o *S3UserCollectionGetParams) SetKeysAccessKey(keysAccessKey *string) {
+	o.KeysAccessKey = keysAccessKey
+}
+
+// WithKeysExpiryTime adds the keysExpiryTime to the s3 user collection get params
+func (o *S3UserCollectionGetParams) WithKeysExpiryTime(keysExpiryTime *string) *S3UserCollectionGetParams {
+	o.SetKeysExpiryTime(keysExpiryTime)
+	return o
+}
+
+// SetKeysExpiryTime adds the keysExpiryTime to the s3 user collection get params
+func (o *S3UserCollectionGetParams) SetKeysExpiryTime(keysExpiryTime *string) {
+	o.KeysExpiryTime = keysExpiryTime
+}
+
+// WithKeysID adds the keysID to the s3 user collection get params
+func (o *S3UserCollectionGetParams) WithKeysID(keysID *int64) *S3UserCollectionGetParams {
+	o.SetKeysID(keysID)
+	return o
+}
+
+// SetKeysID adds the keysId to the s3 user collection get params
+func (o *S3UserCollectionGetParams) SetKeysID(keysID *int64) {
+	o.KeysID = keysID
+}
+
+// WithKeysTimeToLive adds the keysTimeToLive to the s3 user collection get params
+func (o *S3UserCollectionGetParams) WithKeysTimeToLive(keysTimeToLive *string) *S3UserCollectionGetParams {
+	o.SetKeysTimeToLive(keysTimeToLive)
+	return o
+}
+
+// SetKeysTimeToLive adds the keysTimeToLive to the s3 user collection get params
+func (o *S3UserCollectionGetParams) SetKeysTimeToLive(keysTimeToLive *string) {
+	o.KeysTimeToLive = keysTimeToLive
+}
+
 // WithMaxRecords adds the maxRecords to the s3 user collection get params
 func (o *S3UserCollectionGetParams) WithMaxRecords(maxRecords *int64) *S3UserCollectionGetParams {
 	o.SetMaxRecords(maxRecords)
@@ -419,6 +487,74 @@ func (o *S3UserCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qKeyTimeToLive != "" {
 
 			if err := r.SetQueryParam("key_time_to_live", qKeyTimeToLive); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.KeysAccessKey != nil {
+
+		// query param keys.access_key
+		var qrKeysAccessKey string
+
+		if o.KeysAccessKey != nil {
+			qrKeysAccessKey = *o.KeysAccessKey
+		}
+		qKeysAccessKey := qrKeysAccessKey
+		if qKeysAccessKey != "" {
+
+			if err := r.SetQueryParam("keys.access_key", qKeysAccessKey); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.KeysExpiryTime != nil {
+
+		// query param keys.expiry_time
+		var qrKeysExpiryTime string
+
+		if o.KeysExpiryTime != nil {
+			qrKeysExpiryTime = *o.KeysExpiryTime
+		}
+		qKeysExpiryTime := qrKeysExpiryTime
+		if qKeysExpiryTime != "" {
+
+			if err := r.SetQueryParam("keys.expiry_time", qKeysExpiryTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.KeysID != nil {
+
+		// query param keys.id
+		var qrKeysID int64
+
+		if o.KeysID != nil {
+			qrKeysID = *o.KeysID
+		}
+		qKeysID := swag.FormatInt64(qrKeysID)
+		if qKeysID != "" {
+
+			if err := r.SetQueryParam("keys.id", qKeysID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.KeysTimeToLive != nil {
+
+		// query param keys.time_to_live
+		var qrKeysTimeToLive string
+
+		if o.KeysTimeToLive != nil {
+			qrKeysTimeToLive = *o.KeysTimeToLive
+		}
+		qKeysTimeToLive := qrKeysTimeToLive
+		if qKeysTimeToLive != "" {
+
+			if err := r.SetQueryParam("keys.time_to_live", qKeysTimeToLive); err != nil {
 				return err
 			}
 		}

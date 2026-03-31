@@ -66,7 +66,7 @@ type DNSModifyParams struct {
 
 	/* Async.
 
-	   An asynchronous task.
+	   If set to true, ONTAP creates and verifies the DNS configuration in the background, returning a job to monitor the result. Otherwise, ONTAP waits until after the configuration has been finalized to return a response to the client.
 	*/
 	Async *bool
 
@@ -75,6 +75,12 @@ type DNSModifyParams struct {
 	   Info specification
 	*/
 	Info *models.DNS
+
+	/* ReturnTimeout.
+
+	   The number of seconds to allow the call to execute before returning. When doing a POST, PATCH, or DELETE operation on a single record, the default is 0 seconds.  This means that if an asynchronous operation is started, the server immediately returns HTTP code 202 (Accepted) along with a link to the job.  If a non-zero value is specified for POST, PATCH, or DELETE operations, ONTAP waits that length of time to see if the job completes so it can return something other than 202.
+	*/
+	ReturnTimeout *int64
 
 	/* UUID.
 
@@ -101,10 +107,13 @@ func (o *DNSModifyParams) WithDefaults() *DNSModifyParams {
 func (o *DNSModifyParams) SetDefaults() {
 	var (
 		asyncDefault = bool(false)
+
+		returnTimeoutDefault = int64(0)
 	)
 
 	val := DNSModifyParams{
-		Async: &asyncDefault,
+		Async:         &asyncDefault,
+		ReturnTimeout: &returnTimeoutDefault,
 	}
 
 	val.timeout = o.timeout
@@ -168,6 +177,17 @@ func (o *DNSModifyParams) SetInfo(info *models.DNS) {
 	o.Info = info
 }
 
+// WithReturnTimeout adds the returnTimeout to the dns modify params
+func (o *DNSModifyParams) WithReturnTimeout(returnTimeout *int64) *DNSModifyParams {
+	o.SetReturnTimeout(returnTimeout)
+	return o
+}
+
+// SetReturnTimeout adds the returnTimeout to the dns modify params
+func (o *DNSModifyParams) SetReturnTimeout(returnTimeout *int64) {
+	o.ReturnTimeout = returnTimeout
+}
+
 // WithUUID adds the uuid to the dns modify params
 func (o *DNSModifyParams) WithUUID(uuid string) *DNSModifyParams {
 	o.SetUUID(uuid)
@@ -206,6 +226,23 @@ func (o *DNSModifyParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err
+		}
+	}
+
+	if o.ReturnTimeout != nil {
+
+		// query param return_timeout
+		var qrReturnTimeout int64
+
+		if o.ReturnTimeout != nil {
+			qrReturnTimeout = *o.ReturnTimeout
+		}
+		qReturnTimeout := swag.FormatInt64(qrReturnTimeout)
+		if qReturnTimeout != "" {
+
+			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
 		}
 	}
 

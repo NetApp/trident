@@ -62,6 +62,12 @@ MediatorCollectionGetParams contains all the parameters to send to the API endpo
 */
 type MediatorCollectionGetParams struct {
 
+	/* ConnectionType.
+
+	   Filter by connection_type
+	*/
+	ConnectionType *string
+
 	/* Fields.
 
 	   Specify the fields to return.
@@ -229,6 +235,17 @@ func (o *MediatorCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithConnectionType adds the connectionType to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithConnectionType(connectionType *string) *MediatorCollectionGetParams {
+	o.SetConnectionType(connectionType)
+	return o
+}
+
+// SetConnectionType adds the connectionType to the mediator collection get params
+func (o *MediatorCollectionGetParams) SetConnectionType(connectionType *string) {
+	o.ConnectionType = connectionType
+}
+
 // WithFields adds the fields to the mediator collection get params
 func (o *MediatorCollectionGetParams) WithFields(fields []string) *MediatorCollectionGetParams {
 	o.SetFields(fields)
@@ -240,15 +257,15 @@ func (o *MediatorCollectionGetParams) SetFields(fields []string) {
 	o.Fields = fields
 }
 
-// WithIPAddress adds the iPAddress to the mediator collection get params
-func (o *MediatorCollectionGetParams) WithIPAddress(iPAddress *string) *MediatorCollectionGetParams {
-	o.SetIPAddress(iPAddress)
+// WithIPAddress adds the ipAddress to the mediator collection get params
+func (o *MediatorCollectionGetParams) WithIPAddress(ipAddress *string) *MediatorCollectionGetParams {
+	o.SetIPAddress(ipAddress)
 	return o
 }
 
 // SetIPAddress adds the ipAddress to the mediator collection get params
-func (o *MediatorCollectionGetParams) SetIPAddress(iPAddress *string) {
-	o.IPAddress = iPAddress
+func (o *MediatorCollectionGetParams) SetIPAddress(ipAddress *string) {
+	o.IPAddress = ipAddress
 }
 
 // WithLocalMediatorConnectivity adds the localMediatorConnectivity to the mediator collection get params
@@ -412,6 +429,23 @@ func (o *MediatorCollectionGetParams) WriteToRequest(r runtime.ClientRequest, re
 		return err
 	}
 	var res []error
+
+	if o.ConnectionType != nil {
+
+		// query param connection_type
+		var qrConnectionType string
+
+		if o.ConnectionType != nil {
+			qrConnectionType = *o.ConnectionType
+		}
+		qConnectionType := qrConnectionType
+		if qConnectionType != "" {
+
+			if err := r.SetQueryParam("connection_type", qConnectionType); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.Fields != nil {
 

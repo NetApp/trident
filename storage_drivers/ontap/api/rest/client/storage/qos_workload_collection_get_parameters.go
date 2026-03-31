@@ -86,6 +86,30 @@ type QosWorkloadCollectionGetParams struct {
 	*/
 	MaxRecords *int64
 
+	/* MaxThroughput.
+
+	   Filter by max_throughput
+	*/
+	MaxThroughput *string
+
+	/* MaxThroughputIops.
+
+	   Filter by max_throughput_iops
+	*/
+	MaxThroughputIops *int64
+
+	/* MinThroughput.
+
+	   Filter by min_throughput
+	*/
+	MinThroughput *string
+
+	/* MinThroughputIops.
+
+	   Filter by min_throughput_iops
+	*/
+	MinThroughputIops *int64
+
 	/* Name.
 
 	   Filter by name
@@ -277,6 +301,50 @@ func (o *QosWorkloadCollectionGetParams) WithMaxRecords(maxRecords *int64) *QosW
 // SetMaxRecords adds the maxRecords to the qos workload collection get params
 func (o *QosWorkloadCollectionGetParams) SetMaxRecords(maxRecords *int64) {
 	o.MaxRecords = maxRecords
+}
+
+// WithMaxThroughput adds the maxThroughput to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithMaxThroughput(maxThroughput *string) *QosWorkloadCollectionGetParams {
+	o.SetMaxThroughput(maxThroughput)
+	return o
+}
+
+// SetMaxThroughput adds the maxThroughput to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetMaxThroughput(maxThroughput *string) {
+	o.MaxThroughput = maxThroughput
+}
+
+// WithMaxThroughputIops adds the maxThroughputIops to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithMaxThroughputIops(maxThroughputIops *int64) *QosWorkloadCollectionGetParams {
+	o.SetMaxThroughputIops(maxThroughputIops)
+	return o
+}
+
+// SetMaxThroughputIops adds the maxThroughputIops to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetMaxThroughputIops(maxThroughputIops *int64) {
+	o.MaxThroughputIops = maxThroughputIops
+}
+
+// WithMinThroughput adds the minThroughput to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithMinThroughput(minThroughput *string) *QosWorkloadCollectionGetParams {
+	o.SetMinThroughput(minThroughput)
+	return o
+}
+
+// SetMinThroughput adds the minThroughput to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetMinThroughput(minThroughput *string) {
+	o.MinThroughput = minThroughput
+}
+
+// WithMinThroughputIops adds the minThroughputIops to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) WithMinThroughputIops(minThroughputIops *int64) *QosWorkloadCollectionGetParams {
+	o.SetMinThroughputIops(minThroughputIops)
+	return o
+}
+
+// SetMinThroughputIops adds the minThroughputIops to the qos workload collection get params
+func (o *QosWorkloadCollectionGetParams) SetMinThroughputIops(minThroughputIops *int64) {
+	o.MinThroughputIops = minThroughputIops
 }
 
 // WithName adds the name to the qos workload collection get params
@@ -487,6 +555,74 @@ func (o *QosWorkloadCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qMaxRecords != "" {
 
 			if err := r.SetQueryParam("max_records", qMaxRecords); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxThroughput != nil {
+
+		// query param max_throughput
+		var qrMaxThroughput string
+
+		if o.MaxThroughput != nil {
+			qrMaxThroughput = *o.MaxThroughput
+		}
+		qMaxThroughput := qrMaxThroughput
+		if qMaxThroughput != "" {
+
+			if err := r.SetQueryParam("max_throughput", qMaxThroughput); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MaxThroughputIops != nil {
+
+		// query param max_throughput_iops
+		var qrMaxThroughputIops int64
+
+		if o.MaxThroughputIops != nil {
+			qrMaxThroughputIops = *o.MaxThroughputIops
+		}
+		qMaxThroughputIops := swag.FormatInt64(qrMaxThroughputIops)
+		if qMaxThroughputIops != "" {
+
+			if err := r.SetQueryParam("max_throughput_iops", qMaxThroughputIops); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MinThroughput != nil {
+
+		// query param min_throughput
+		var qrMinThroughput string
+
+		if o.MinThroughput != nil {
+			qrMinThroughput = *o.MinThroughput
+		}
+		qMinThroughput := qrMinThroughput
+		if qMinThroughput != "" {
+
+			if err := r.SetQueryParam("min_throughput", qMinThroughput); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.MinThroughputIops != nil {
+
+		// query param min_throughput_iops
+		var qrMinThroughputIops int64
+
+		if o.MinThroughputIops != nil {
+			qrMinThroughputIops = *o.MinThroughputIops
+		}
+		qMinThroughputIops := swag.FormatInt64(qrMinThroughputIops)
+		if qMinThroughputIops != "" {
+
+			if err := r.SetQueryParam("min_throughput_iops", qMinThroughputIops); err != nil {
 				return err
 			}
 		}

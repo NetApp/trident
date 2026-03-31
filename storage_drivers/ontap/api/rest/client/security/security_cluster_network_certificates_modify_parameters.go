@@ -69,11 +69,11 @@ type SecurityClusterNetworkCertificatesModifyParams struct {
 	*/
 	Info *models.SecurityClusterNetworkCertificates
 
-	/* NodeName.
+	/* NodeUUID.
 
-	   The name of the node.
+	   Node UUID.
 	*/
-	NodeName string
+	NodeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -139,15 +139,15 @@ func (o *SecurityClusterNetworkCertificatesModifyParams) SetInfo(info *models.Se
 	o.Info = info
 }
 
-// WithNodeName adds the nodeName to the security cluster network certificates modify params
-func (o *SecurityClusterNetworkCertificatesModifyParams) WithNodeName(nodeName string) *SecurityClusterNetworkCertificatesModifyParams {
-	o.SetNodeName(nodeName)
+// WithNodeUUID adds the nodeUUID to the security cluster network certificates modify params
+func (o *SecurityClusterNetworkCertificatesModifyParams) WithNodeUUID(nodeUUID string) *SecurityClusterNetworkCertificatesModifyParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeName adds the nodeName to the security cluster network certificates modify params
-func (o *SecurityClusterNetworkCertificatesModifyParams) SetNodeName(nodeName string) {
-	o.NodeName = nodeName
+// SetNodeUUID adds the nodeUuid to the security cluster network certificates modify params
+func (o *SecurityClusterNetworkCertificatesModifyParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -163,8 +163,8 @@ func (o *SecurityClusterNetworkCertificatesModifyParams) WriteToRequest(r runtim
 		}
 	}
 
-	// path param node.name
-	if err := r.SetPathParam("node.name", o.NodeName); err != nil {
+	// path param node.uuid
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 

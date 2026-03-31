@@ -218,6 +218,18 @@ type ConsistencyGroupDeleteCollectionParams struct {
 	*/
 	ConsistencyGroupsApplicationType *string
 
+	/* ConsistencyGroupsLunsAccessMode.
+
+	   Filter by consistency_groups.luns.access_mode
+	*/
+	ConsistencyGroupsLunsAccessMode *string
+
+	/* ConsistencyGroupsLunsCloneCreatedAsClone.
+
+	   Filter by consistency_groups.luns.clone.created_as_clone
+	*/
+	ConsistencyGroupsLunsCloneCreatedAsClone *bool
+
 	/* ConsistencyGroupsLunsComment.
 
 	   Filter by consistency_groups.luns.comment
@@ -1045,6 +1057,18 @@ type ConsistencyGroupDeleteCollectionParams struct {
 	   Info specification
 	*/
 	Info ConsistencyGroupDeleteCollectionBody
+
+	/* LunsAccessMode.
+
+	   Filter by luns.access_mode
+	*/
+	LunsAccessMode *string
+
+	/* LunsCloneCreatedAsClone.
+
+	   Filter by luns.clone.created_as_clone
+	*/
+	LunsCloneCreatedAsClone *bool
 
 	/* LunsComment.
 
@@ -2523,6 +2547,28 @@ func (o *ConsistencyGroupDeleteCollectionParams) WithConsistencyGroupsApplicatio
 // SetConsistencyGroupsApplicationType adds the consistencyGroupsApplicationType to the consistency group delete collection params
 func (o *ConsistencyGroupDeleteCollectionParams) SetConsistencyGroupsApplicationType(consistencyGroupsApplicationType *string) {
 	o.ConsistencyGroupsApplicationType = consistencyGroupsApplicationType
+}
+
+// WithConsistencyGroupsLunsAccessMode adds the consistencyGroupsLunsAccessMode to the consistency group delete collection params
+func (o *ConsistencyGroupDeleteCollectionParams) WithConsistencyGroupsLunsAccessMode(consistencyGroupsLunsAccessMode *string) *ConsistencyGroupDeleteCollectionParams {
+	o.SetConsistencyGroupsLunsAccessMode(consistencyGroupsLunsAccessMode)
+	return o
+}
+
+// SetConsistencyGroupsLunsAccessMode adds the consistencyGroupsLunsAccessMode to the consistency group delete collection params
+func (o *ConsistencyGroupDeleteCollectionParams) SetConsistencyGroupsLunsAccessMode(consistencyGroupsLunsAccessMode *string) {
+	o.ConsistencyGroupsLunsAccessMode = consistencyGroupsLunsAccessMode
+}
+
+// WithConsistencyGroupsLunsCloneCreatedAsClone adds the consistencyGroupsLunsCloneCreatedAsClone to the consistency group delete collection params
+func (o *ConsistencyGroupDeleteCollectionParams) WithConsistencyGroupsLunsCloneCreatedAsClone(consistencyGroupsLunsCloneCreatedAsClone *bool) *ConsistencyGroupDeleteCollectionParams {
+	o.SetConsistencyGroupsLunsCloneCreatedAsClone(consistencyGroupsLunsCloneCreatedAsClone)
+	return o
+}
+
+// SetConsistencyGroupsLunsCloneCreatedAsClone adds the consistencyGroupsLunsCloneCreatedAsClone to the consistency group delete collection params
+func (o *ConsistencyGroupDeleteCollectionParams) SetConsistencyGroupsLunsCloneCreatedAsClone(consistencyGroupsLunsCloneCreatedAsClone *bool) {
+	o.ConsistencyGroupsLunsCloneCreatedAsClone = consistencyGroupsLunsCloneCreatedAsClone
 }
 
 // WithConsistencyGroupsLunsComment adds the consistencyGroupsLunsComment to the consistency group delete collection params
@@ -4041,6 +4087,28 @@ func (o *ConsistencyGroupDeleteCollectionParams) WithInfo(info ConsistencyGroupD
 // SetInfo adds the info to the consistency group delete collection params
 func (o *ConsistencyGroupDeleteCollectionParams) SetInfo(info ConsistencyGroupDeleteCollectionBody) {
 	o.Info = info
+}
+
+// WithLunsAccessMode adds the lunsAccessMode to the consistency group delete collection params
+func (o *ConsistencyGroupDeleteCollectionParams) WithLunsAccessMode(lunsAccessMode *string) *ConsistencyGroupDeleteCollectionParams {
+	o.SetLunsAccessMode(lunsAccessMode)
+	return o
+}
+
+// SetLunsAccessMode adds the lunsAccessMode to the consistency group delete collection params
+func (o *ConsistencyGroupDeleteCollectionParams) SetLunsAccessMode(lunsAccessMode *string) {
+	o.LunsAccessMode = lunsAccessMode
+}
+
+// WithLunsCloneCreatedAsClone adds the lunsCloneCreatedAsClone to the consistency group delete collection params
+func (o *ConsistencyGroupDeleteCollectionParams) WithLunsCloneCreatedAsClone(lunsCloneCreatedAsClone *bool) *ConsistencyGroupDeleteCollectionParams {
+	o.SetLunsCloneCreatedAsClone(lunsCloneCreatedAsClone)
+	return o
+}
+
+// SetLunsCloneCreatedAsClone adds the lunsCloneCreatedAsClone to the consistency group delete collection params
+func (o *ConsistencyGroupDeleteCollectionParams) SetLunsCloneCreatedAsClone(lunsCloneCreatedAsClone *bool) {
+	o.LunsCloneCreatedAsClone = lunsCloneCreatedAsClone
 }
 
 // WithLunsComment adds the lunsComment to the consistency group delete collection params
@@ -6539,6 +6607,40 @@ func (o *ConsistencyGroupDeleteCollectionParams) WriteToRequest(r runtime.Client
 		}
 	}
 
+	if o.ConsistencyGroupsLunsAccessMode != nil {
+
+		// query param consistency_groups.luns.access_mode
+		var qrConsistencyGroupsLunsAccessMode string
+
+		if o.ConsistencyGroupsLunsAccessMode != nil {
+			qrConsistencyGroupsLunsAccessMode = *o.ConsistencyGroupsLunsAccessMode
+		}
+		qConsistencyGroupsLunsAccessMode := qrConsistencyGroupsLunsAccessMode
+		if qConsistencyGroupsLunsAccessMode != "" {
+
+			if err := r.SetQueryParam("consistency_groups.luns.access_mode", qConsistencyGroupsLunsAccessMode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ConsistencyGroupsLunsCloneCreatedAsClone != nil {
+
+		// query param consistency_groups.luns.clone.created_as_clone
+		var qrConsistencyGroupsLunsCloneCreatedAsClone bool
+
+		if o.ConsistencyGroupsLunsCloneCreatedAsClone != nil {
+			qrConsistencyGroupsLunsCloneCreatedAsClone = *o.ConsistencyGroupsLunsCloneCreatedAsClone
+		}
+		qConsistencyGroupsLunsCloneCreatedAsClone := swag.FormatBool(qrConsistencyGroupsLunsCloneCreatedAsClone)
+		if qConsistencyGroupsLunsCloneCreatedAsClone != "" {
+
+			if err := r.SetQueryParam("consistency_groups.luns.clone.created_as_clone", qConsistencyGroupsLunsCloneCreatedAsClone); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ConsistencyGroupsLunsComment != nil {
 
 		// query param consistency_groups.luns.comment
@@ -8869,6 +8971,40 @@ func (o *ConsistencyGroupDeleteCollectionParams) WriteToRequest(r runtime.Client
 	}
 	if err := r.SetBodyParam(o.Info); err != nil {
 		return err
+	}
+
+	if o.LunsAccessMode != nil {
+
+		// query param luns.access_mode
+		var qrLunsAccessMode string
+
+		if o.LunsAccessMode != nil {
+			qrLunsAccessMode = *o.LunsAccessMode
+		}
+		qLunsAccessMode := qrLunsAccessMode
+		if qLunsAccessMode != "" {
+
+			if err := r.SetQueryParam("luns.access_mode", qLunsAccessMode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.LunsCloneCreatedAsClone != nil {
+
+		// query param luns.clone.created_as_clone
+		var qrLunsCloneCreatedAsClone bool
+
+		if o.LunsCloneCreatedAsClone != nil {
+			qrLunsCloneCreatedAsClone = *o.LunsCloneCreatedAsClone
+		}
+		qLunsCloneCreatedAsClone := swag.FormatBool(qrLunsCloneCreatedAsClone)
+		if qLunsCloneCreatedAsClone != "" {
+
+			if err := r.SetQueryParam("luns.clone.created_as_clone", qLunsCloneCreatedAsClone); err != nil {
+				return err
+			}
+		}
 	}
 
 	if o.LunsComment != nil {

@@ -382,37 +382,37 @@ func (o *IPSubnetDeleteCollectionParams) SetInfo(info IPSubnetDeleteCollectionBo
 	o.Info = info
 }
 
-// WithIPRangesEnd adds the iPRangesEnd to the ip subnet delete collection params
-func (o *IPSubnetDeleteCollectionParams) WithIPRangesEnd(iPRangesEnd *string) *IPSubnetDeleteCollectionParams {
-	o.SetIPRangesEnd(iPRangesEnd)
+// WithIPRangesEnd adds the ipRangesEnd to the ip subnet delete collection params
+func (o *IPSubnetDeleteCollectionParams) WithIPRangesEnd(ipRangesEnd *string) *IPSubnetDeleteCollectionParams {
+	o.SetIPRangesEnd(ipRangesEnd)
 	return o
 }
 
 // SetIPRangesEnd adds the ipRangesEnd to the ip subnet delete collection params
-func (o *IPSubnetDeleteCollectionParams) SetIPRangesEnd(iPRangesEnd *string) {
-	o.IPRangesEnd = iPRangesEnd
+func (o *IPSubnetDeleteCollectionParams) SetIPRangesEnd(ipRangesEnd *string) {
+	o.IPRangesEnd = ipRangesEnd
 }
 
-// WithIPRangesFamily adds the iPRangesFamily to the ip subnet delete collection params
-func (o *IPSubnetDeleteCollectionParams) WithIPRangesFamily(iPRangesFamily *string) *IPSubnetDeleteCollectionParams {
-	o.SetIPRangesFamily(iPRangesFamily)
+// WithIPRangesFamily adds the ipRangesFamily to the ip subnet delete collection params
+func (o *IPSubnetDeleteCollectionParams) WithIPRangesFamily(ipRangesFamily *string) *IPSubnetDeleteCollectionParams {
+	o.SetIPRangesFamily(ipRangesFamily)
 	return o
 }
 
 // SetIPRangesFamily adds the ipRangesFamily to the ip subnet delete collection params
-func (o *IPSubnetDeleteCollectionParams) SetIPRangesFamily(iPRangesFamily *string) {
-	o.IPRangesFamily = iPRangesFamily
+func (o *IPSubnetDeleteCollectionParams) SetIPRangesFamily(ipRangesFamily *string) {
+	o.IPRangesFamily = ipRangesFamily
 }
 
-// WithIPRangesStart adds the iPRangesStart to the ip subnet delete collection params
-func (o *IPSubnetDeleteCollectionParams) WithIPRangesStart(iPRangesStart *string) *IPSubnetDeleteCollectionParams {
-	o.SetIPRangesStart(iPRangesStart)
+// WithIPRangesStart adds the ipRangesStart to the ip subnet delete collection params
+func (o *IPSubnetDeleteCollectionParams) WithIPRangesStart(ipRangesStart *string) *IPSubnetDeleteCollectionParams {
+	o.SetIPRangesStart(ipRangesStart)
 	return o
 }
 
 // SetIPRangesStart adds the ipRangesStart to the ip subnet delete collection params
-func (o *IPSubnetDeleteCollectionParams) SetIPRangesStart(iPRangesStart *string) {
-	o.IPRangesStart = iPRangesStart
+func (o *IPSubnetDeleteCollectionParams) SetIPRangesStart(ipRangesStart *string) {
+	o.IPRangesStart = ipRangesStart
 }
 
 // WithIpspaceName adds the ipspaceName to the ip subnet delete collection params

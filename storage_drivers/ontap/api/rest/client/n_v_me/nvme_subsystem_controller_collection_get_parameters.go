@@ -616,37 +616,37 @@ func (o *NvmeSubsystemControllerCollectionGetParams) SetSvmUUID(svmUUID *string)
 	o.SvmUUID = svmUUID
 }
 
-// WithTLSCipher adds the tLSCipher to the nvme subsystem controller collection get params
-func (o *NvmeSubsystemControllerCollectionGetParams) WithTLSCipher(tLSCipher *string) *NvmeSubsystemControllerCollectionGetParams {
-	o.SetTLSCipher(tLSCipher)
+// WithTLSCipher adds the tlsCipher to the nvme subsystem controller collection get params
+func (o *NvmeSubsystemControllerCollectionGetParams) WithTLSCipher(tlsCipher *string) *NvmeSubsystemControllerCollectionGetParams {
+	o.SetTLSCipher(tlsCipher)
 	return o
 }
 
 // SetTLSCipher adds the tlsCipher to the nvme subsystem controller collection get params
-func (o *NvmeSubsystemControllerCollectionGetParams) SetTLSCipher(tLSCipher *string) {
-	o.TLSCipher = tLSCipher
+func (o *NvmeSubsystemControllerCollectionGetParams) SetTLSCipher(tlsCipher *string) {
+	o.TLSCipher = tlsCipher
 }
 
-// WithTLSKeyType adds the tLSKeyType to the nvme subsystem controller collection get params
-func (o *NvmeSubsystemControllerCollectionGetParams) WithTLSKeyType(tLSKeyType *string) *NvmeSubsystemControllerCollectionGetParams {
-	o.SetTLSKeyType(tLSKeyType)
+// WithTLSKeyType adds the tlsKeyType to the nvme subsystem controller collection get params
+func (o *NvmeSubsystemControllerCollectionGetParams) WithTLSKeyType(tlsKeyType *string) *NvmeSubsystemControllerCollectionGetParams {
+	o.SetTLSKeyType(tlsKeyType)
 	return o
 }
 
 // SetTLSKeyType adds the tlsKeyType to the nvme subsystem controller collection get params
-func (o *NvmeSubsystemControllerCollectionGetParams) SetTLSKeyType(tLSKeyType *string) {
-	o.TLSKeyType = tLSKeyType
+func (o *NvmeSubsystemControllerCollectionGetParams) SetTLSKeyType(tlsKeyType *string) {
+	o.TLSKeyType = tlsKeyType
 }
 
-// WithTLSPskIdentity adds the tLSPskIdentity to the nvme subsystem controller collection get params
-func (o *NvmeSubsystemControllerCollectionGetParams) WithTLSPskIdentity(tLSPskIdentity *string) *NvmeSubsystemControllerCollectionGetParams {
-	o.SetTLSPskIdentity(tLSPskIdentity)
+// WithTLSPskIdentity adds the tlsPskIdentity to the nvme subsystem controller collection get params
+func (o *NvmeSubsystemControllerCollectionGetParams) WithTLSPskIdentity(tlsPskIdentity *string) *NvmeSubsystemControllerCollectionGetParams {
+	o.SetTLSPskIdentity(tlsPskIdentity)
 	return o
 }
 
 // SetTLSPskIdentity adds the tlsPskIdentity to the nvme subsystem controller collection get params
-func (o *NvmeSubsystemControllerCollectionGetParams) SetTLSPskIdentity(tLSPskIdentity *string) {
-	o.TLSPskIdentity = tLSPskIdentity
+func (o *NvmeSubsystemControllerCollectionGetParams) SetTLSPskIdentity(tlsPskIdentity *string) {
+	o.TLSPskIdentity = tlsPskIdentity
 }
 
 // WithTransportProtocol adds the transportProtocol to the nvme subsystem controller collection get params

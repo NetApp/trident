@@ -86,6 +86,12 @@ type SecurityKeystoreCollectionGetParams struct {
 	*/
 	Fields []string
 
+	/* IsSvmKek.
+
+	   Filter by is_svm_kek
+	*/
+	IsSvmKek *bool
+
 	/* Location.
 
 	   Filter by location
@@ -265,6 +271,17 @@ func (o *SecurityKeystoreCollectionGetParams) WithFields(fields []string) *Secur
 // SetFields adds the fields to the security keystore collection get params
 func (o *SecurityKeystoreCollectionGetParams) SetFields(fields []string) {
 	o.Fields = fields
+}
+
+// WithIsSvmKek adds the isSvmKek to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) WithIsSvmKek(isSvmKek *bool) *SecurityKeystoreCollectionGetParams {
+	o.SetIsSvmKek(isSvmKek)
+	return o
+}
+
+// SetIsSvmKek adds the isSvmKek to the security keystore collection get params
+func (o *SecurityKeystoreCollectionGetParams) SetIsSvmKek(isSvmKek *bool) {
+	o.IsSvmKek = isSvmKek
 }
 
 // WithLocation adds the location to the security keystore collection get params
@@ -455,6 +472,23 @@ func (o *SecurityKeystoreCollectionGetParams) WriteToRequest(r runtime.ClientReq
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.IsSvmKek != nil {
+
+		// query param is_svm_kek
+		var qrIsSvmKek bool
+
+		if o.IsSvmKek != nil {
+			qrIsSvmKek = *o.IsSvmKek
+		}
+		qIsSvmKek := swag.FormatBool(qrIsSvmKek)
+		if qIsSvmKek != "" {
+
+			if err := r.SetQueryParam("is_svm_kek", qIsSvmKek); err != nil {
+				return err
+			}
 		}
 	}
 

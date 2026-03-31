@@ -126,7 +126,7 @@ type SnapmirrorPoliciesGetParams struct {
 
 	   Filter by retention.count
 	*/
-	RetentionCount *int64
+	RetentionCount *string
 
 	/* RetentionCreationScheduleName.
 
@@ -436,13 +436,13 @@ func (o *SnapmirrorPoliciesGetParams) SetOrderBy(orderBy []string) {
 }
 
 // WithRetentionCount adds the retentionCount to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) WithRetentionCount(retentionCount *int64) *SnapmirrorPoliciesGetParams {
+func (o *SnapmirrorPoliciesGetParams) WithRetentionCount(retentionCount *string) *SnapmirrorPoliciesGetParams {
 	o.SetRetentionCount(retentionCount)
 	return o
 }
 
 // SetRetentionCount adds the retentionCount to the snapmirror policies get params
-func (o *SnapmirrorPoliciesGetParams) SetRetentionCount(retentionCount *int64) {
+func (o *SnapmirrorPoliciesGetParams) SetRetentionCount(retentionCount *string) {
 	o.RetentionCount = retentionCount
 }
 
@@ -846,12 +846,12 @@ func (o *SnapmirrorPoliciesGetParams) WriteToRequest(r runtime.ClientRequest, re
 	if o.RetentionCount != nil {
 
 		// query param retention.count
-		var qrRetentionCount int64
+		var qrRetentionCount string
 
 		if o.RetentionCount != nil {
 			qrRetentionCount = *o.RetentionCount
 		}
-		qRetentionCount := swag.FormatInt64(qrRetentionCount)
+		qRetentionCount := qrRetentionCount
 		if qRetentionCount != "" {
 
 			if err := r.SetQueryParam("retention.count", qRetentionCount); err != nil {

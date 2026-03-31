@@ -98,6 +98,24 @@ type QosPolicyModifyCollectionParams struct {
 	*/
 	AdaptivePeakIopsAllocation *string
 
+	/* BurstDuration.
+
+	   Filter by burst.duration
+	*/
+	BurstDuration *int64
+
+	/* BurstIops.
+
+	   Filter by burst.iops
+	*/
+	BurstIops *int64
+
+	/* BurstPercent.
+
+	   Filter by burst.percent
+	*/
+	BurstPercent *int64
+
 	/* ContinueOnFailure.
 
 	   Continue even when the operation fails on one of the records.
@@ -359,6 +377,39 @@ func (o *QosPolicyModifyCollectionParams) WithAdaptivePeakIopsAllocation(adaptiv
 // SetAdaptivePeakIopsAllocation adds the adaptivePeakIopsAllocation to the qos policy modify collection params
 func (o *QosPolicyModifyCollectionParams) SetAdaptivePeakIopsAllocation(adaptivePeakIopsAllocation *string) {
 	o.AdaptivePeakIopsAllocation = adaptivePeakIopsAllocation
+}
+
+// WithBurstDuration adds the burstDuration to the qos policy modify collection params
+func (o *QosPolicyModifyCollectionParams) WithBurstDuration(burstDuration *int64) *QosPolicyModifyCollectionParams {
+	o.SetBurstDuration(burstDuration)
+	return o
+}
+
+// SetBurstDuration adds the burstDuration to the qos policy modify collection params
+func (o *QosPolicyModifyCollectionParams) SetBurstDuration(burstDuration *int64) {
+	o.BurstDuration = burstDuration
+}
+
+// WithBurstIops adds the burstIops to the qos policy modify collection params
+func (o *QosPolicyModifyCollectionParams) WithBurstIops(burstIops *int64) *QosPolicyModifyCollectionParams {
+	o.SetBurstIops(burstIops)
+	return o
+}
+
+// SetBurstIops adds the burstIops to the qos policy modify collection params
+func (o *QosPolicyModifyCollectionParams) SetBurstIops(burstIops *int64) {
+	o.BurstIops = burstIops
+}
+
+// WithBurstPercent adds the burstPercent to the qos policy modify collection params
+func (o *QosPolicyModifyCollectionParams) WithBurstPercent(burstPercent *int64) *QosPolicyModifyCollectionParams {
+	o.SetBurstPercent(burstPercent)
+	return o
+}
+
+// SetBurstPercent adds the burstPercent to the qos policy modify collection params
+func (o *QosPolicyModifyCollectionParams) SetBurstPercent(burstPercent *int64) {
+	o.BurstPercent = burstPercent
 }
 
 // WithContinueOnFailure adds the continueOnFailure to the qos policy modify collection params
@@ -686,6 +737,57 @@ func (o *QosPolicyModifyCollectionParams) WriteToRequest(r runtime.ClientRequest
 		if qAdaptivePeakIopsAllocation != "" {
 
 			if err := r.SetQueryParam("adaptive.peak_iops_allocation", qAdaptivePeakIopsAllocation); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BurstDuration != nil {
+
+		// query param burst.duration
+		var qrBurstDuration int64
+
+		if o.BurstDuration != nil {
+			qrBurstDuration = *o.BurstDuration
+		}
+		qBurstDuration := swag.FormatInt64(qrBurstDuration)
+		if qBurstDuration != "" {
+
+			if err := r.SetQueryParam("burst.duration", qBurstDuration); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BurstIops != nil {
+
+		// query param burst.iops
+		var qrBurstIops int64
+
+		if o.BurstIops != nil {
+			qrBurstIops = *o.BurstIops
+		}
+		qBurstIops := swag.FormatInt64(qrBurstIops)
+		if qBurstIops != "" {
+
+			if err := r.SetQueryParam("burst.iops", qBurstIops); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.BurstPercent != nil {
+
+		// query param burst.percent
+		var qrBurstPercent int64
+
+		if o.BurstPercent != nil {
+			qrBurstPercent = *o.BurstPercent
+		}
+		qBurstPercent := swag.FormatInt64(qrBurstPercent)
+		if qBurstPercent != "" {
+
+			if err := r.SetQueryParam("burst.percent", qBurstPercent); err != nil {
 				return err
 			}
 		}

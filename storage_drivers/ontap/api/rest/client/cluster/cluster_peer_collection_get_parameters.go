@@ -62,11 +62,77 @@ ClusterPeerCollectionGetParams contains all the parameters to send to the API en
 */
 type ClusterPeerCollectionGetParams struct {
 
+	/* AuthenticationExpiryTime.
+
+	   Filter by authentication.expiry_time
+	*/
+	AuthenticationExpiryTime *string
+
+	/* AuthenticationInUse.
+
+	   Filter by authentication.in_use
+	*/
+	AuthenticationInUse *string
+
+	/* AuthenticationPassphrase.
+
+	   Filter by authentication.passphrase
+	*/
+	AuthenticationPassphrase *string
+
+	/* AuthenticationState.
+
+	   Filter by authentication.state
+	*/
+	AuthenticationState *string
+
+	/* EncryptionProposed.
+
+	   Filter by encryption.proposed
+	*/
+	EncryptionProposed *string
+
+	/* EncryptionState.
+
+	   Filter by encryption.state
+	*/
+	EncryptionState *string
+
 	/* Fields.
 
 	   Specify the fields to return.
 	*/
 	Fields []string
+
+	/* InitialAllowedSvmsName.
+
+	   Filter by initial_allowed_svms.name
+	*/
+	InitialAllowedSvmsName *string
+
+	/* InitialAllowedSvmsUUID.
+
+	   Filter by initial_allowed_svms.uuid
+	*/
+	InitialAllowedSvmsUUID *string
+
+	/* IPAddress.
+
+	   Filter by ip_address
+	*/
+	IPAddress *string
+
+	/* IpspaceName.
+
+	   Filter by ipspace.name
+	*/
+	IpspaceName *string
+
+	/* IpspaceUUID.
+
+	   Filter by ipspace.uuid
+	*/
+	IpspaceUUID *string
 
 	/* MaxRecords.
 
@@ -74,11 +140,41 @@ type ClusterPeerCollectionGetParams struct {
 	*/
 	MaxRecords *int64
 
+	/* Name.
+
+	   Filter by name
+	*/
+	Name *string
+
 	/* OrderBy.
 
 	   Order results by specified fields and optional [asc|desc] direction. Default direction is 'asc' for ascending.
 	*/
 	OrderBy []string
+
+	/* PeerApplications.
+
+	   Filter by peer_applications
+	*/
+	PeerApplications *string
+
+	/* RemoteIPAddresses.
+
+	   Filter by remote.ip_addresses
+	*/
+	RemoteIPAddresses *string
+
+	/* RemoteName.
+
+	   Filter by remote.name
+	*/
+	RemoteName *string
+
+	/* RemoteSerialNumber.
+
+	   Filter by remote.serial_number
+	*/
+	RemoteSerialNumber *string
 
 	/* ReturnRecords.
 
@@ -95,6 +191,48 @@ type ClusterPeerCollectionGetParams struct {
 	   Default: 15
 	*/
 	ReturnTimeout *int64
+
+	/* StatusState.
+
+	   Filter by status.state
+	*/
+	StatusState *string
+
+	/* StatusUpdateTime.
+
+	   Filter by status.update_time
+	*/
+	StatusUpdateTime *string
+
+	/* UUID.
+
+	   Filter by uuid
+	*/
+	UUID *string
+
+	/* VersionFull.
+
+	   Filter by version.full
+	*/
+	VersionFull *string
+
+	/* VersionGeneration.
+
+	   Filter by version.generation
+	*/
+	VersionGeneration *int64
+
+	/* VersionMajor.
+
+	   Filter by version.major
+	*/
+	VersionMajor *int64
+
+	/* VersionMinor.
+
+	   Filter by version.minor
+	*/
+	VersionMinor *int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -163,6 +301,72 @@ func (o *ClusterPeerCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithAuthenticationExpiryTime adds the authenticationExpiryTime to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithAuthenticationExpiryTime(authenticationExpiryTime *string) *ClusterPeerCollectionGetParams {
+	o.SetAuthenticationExpiryTime(authenticationExpiryTime)
+	return o
+}
+
+// SetAuthenticationExpiryTime adds the authenticationExpiryTime to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetAuthenticationExpiryTime(authenticationExpiryTime *string) {
+	o.AuthenticationExpiryTime = authenticationExpiryTime
+}
+
+// WithAuthenticationInUse adds the authenticationInUse to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithAuthenticationInUse(authenticationInUse *string) *ClusterPeerCollectionGetParams {
+	o.SetAuthenticationInUse(authenticationInUse)
+	return o
+}
+
+// SetAuthenticationInUse adds the authenticationInUse to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetAuthenticationInUse(authenticationInUse *string) {
+	o.AuthenticationInUse = authenticationInUse
+}
+
+// WithAuthenticationPassphrase adds the authenticationPassphrase to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithAuthenticationPassphrase(authenticationPassphrase *string) *ClusterPeerCollectionGetParams {
+	o.SetAuthenticationPassphrase(authenticationPassphrase)
+	return o
+}
+
+// SetAuthenticationPassphrase adds the authenticationPassphrase to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetAuthenticationPassphrase(authenticationPassphrase *string) {
+	o.AuthenticationPassphrase = authenticationPassphrase
+}
+
+// WithAuthenticationState adds the authenticationState to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithAuthenticationState(authenticationState *string) *ClusterPeerCollectionGetParams {
+	o.SetAuthenticationState(authenticationState)
+	return o
+}
+
+// SetAuthenticationState adds the authenticationState to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetAuthenticationState(authenticationState *string) {
+	o.AuthenticationState = authenticationState
+}
+
+// WithEncryptionProposed adds the encryptionProposed to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithEncryptionProposed(encryptionProposed *string) *ClusterPeerCollectionGetParams {
+	o.SetEncryptionProposed(encryptionProposed)
+	return o
+}
+
+// SetEncryptionProposed adds the encryptionProposed to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetEncryptionProposed(encryptionProposed *string) {
+	o.EncryptionProposed = encryptionProposed
+}
+
+// WithEncryptionState adds the encryptionState to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithEncryptionState(encryptionState *string) *ClusterPeerCollectionGetParams {
+	o.SetEncryptionState(encryptionState)
+	return o
+}
+
+// SetEncryptionState adds the encryptionState to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetEncryptionState(encryptionState *string) {
+	o.EncryptionState = encryptionState
+}
+
 // WithFields adds the fields to the cluster peer collection get params
 func (o *ClusterPeerCollectionGetParams) WithFields(fields []string) *ClusterPeerCollectionGetParams {
 	o.SetFields(fields)
@@ -172,6 +376,61 @@ func (o *ClusterPeerCollectionGetParams) WithFields(fields []string) *ClusterPee
 // SetFields adds the fields to the cluster peer collection get params
 func (o *ClusterPeerCollectionGetParams) SetFields(fields []string) {
 	o.Fields = fields
+}
+
+// WithInitialAllowedSvmsName adds the initialAllowedSvmsName to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithInitialAllowedSvmsName(initialAllowedSvmsName *string) *ClusterPeerCollectionGetParams {
+	o.SetInitialAllowedSvmsName(initialAllowedSvmsName)
+	return o
+}
+
+// SetInitialAllowedSvmsName adds the initialAllowedSvmsName to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetInitialAllowedSvmsName(initialAllowedSvmsName *string) {
+	o.InitialAllowedSvmsName = initialAllowedSvmsName
+}
+
+// WithInitialAllowedSvmsUUID adds the initialAllowedSvmsUUID to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithInitialAllowedSvmsUUID(initialAllowedSvmsUUID *string) *ClusterPeerCollectionGetParams {
+	o.SetInitialAllowedSvmsUUID(initialAllowedSvmsUUID)
+	return o
+}
+
+// SetInitialAllowedSvmsUUID adds the initialAllowedSvmsUuid to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetInitialAllowedSvmsUUID(initialAllowedSvmsUUID *string) {
+	o.InitialAllowedSvmsUUID = initialAllowedSvmsUUID
+}
+
+// WithIPAddress adds the ipAddress to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithIPAddress(ipAddress *string) *ClusterPeerCollectionGetParams {
+	o.SetIPAddress(ipAddress)
+	return o
+}
+
+// SetIPAddress adds the ipAddress to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetIPAddress(ipAddress *string) {
+	o.IPAddress = ipAddress
+}
+
+// WithIpspaceName adds the ipspaceName to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithIpspaceName(ipspaceName *string) *ClusterPeerCollectionGetParams {
+	o.SetIpspaceName(ipspaceName)
+	return o
+}
+
+// SetIpspaceName adds the ipspaceName to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetIpspaceName(ipspaceName *string) {
+	o.IpspaceName = ipspaceName
+}
+
+// WithIpspaceUUID adds the ipspaceUUID to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithIpspaceUUID(ipspaceUUID *string) *ClusterPeerCollectionGetParams {
+	o.SetIpspaceUUID(ipspaceUUID)
+	return o
+}
+
+// SetIpspaceUUID adds the ipspaceUuid to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetIpspaceUUID(ipspaceUUID *string) {
+	o.IpspaceUUID = ipspaceUUID
 }
 
 // WithMaxRecords adds the maxRecords to the cluster peer collection get params
@@ -185,6 +444,17 @@ func (o *ClusterPeerCollectionGetParams) SetMaxRecords(maxRecords *int64) {
 	o.MaxRecords = maxRecords
 }
 
+// WithName adds the name to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithName(name *string) *ClusterPeerCollectionGetParams {
+	o.SetName(name)
+	return o
+}
+
+// SetName adds the name to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetName(name *string) {
+	o.Name = name
+}
+
 // WithOrderBy adds the orderBy to the cluster peer collection get params
 func (o *ClusterPeerCollectionGetParams) WithOrderBy(orderBy []string) *ClusterPeerCollectionGetParams {
 	o.SetOrderBy(orderBy)
@@ -194,6 +464,50 @@ func (o *ClusterPeerCollectionGetParams) WithOrderBy(orderBy []string) *ClusterP
 // SetOrderBy adds the orderBy to the cluster peer collection get params
 func (o *ClusterPeerCollectionGetParams) SetOrderBy(orderBy []string) {
 	o.OrderBy = orderBy
+}
+
+// WithPeerApplications adds the peerApplications to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithPeerApplications(peerApplications *string) *ClusterPeerCollectionGetParams {
+	o.SetPeerApplications(peerApplications)
+	return o
+}
+
+// SetPeerApplications adds the peerApplications to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetPeerApplications(peerApplications *string) {
+	o.PeerApplications = peerApplications
+}
+
+// WithRemoteIPAddresses adds the remoteIPAddresses to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithRemoteIPAddresses(remoteIPAddresses *string) *ClusterPeerCollectionGetParams {
+	o.SetRemoteIPAddresses(remoteIPAddresses)
+	return o
+}
+
+// SetRemoteIPAddresses adds the remoteIpAddresses to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetRemoteIPAddresses(remoteIPAddresses *string) {
+	o.RemoteIPAddresses = remoteIPAddresses
+}
+
+// WithRemoteName adds the remoteName to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithRemoteName(remoteName *string) *ClusterPeerCollectionGetParams {
+	o.SetRemoteName(remoteName)
+	return o
+}
+
+// SetRemoteName adds the remoteName to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetRemoteName(remoteName *string) {
+	o.RemoteName = remoteName
+}
+
+// WithRemoteSerialNumber adds the remoteSerialNumber to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithRemoteSerialNumber(remoteSerialNumber *string) *ClusterPeerCollectionGetParams {
+	o.SetRemoteSerialNumber(remoteSerialNumber)
+	return o
+}
+
+// SetRemoteSerialNumber adds the remoteSerialNumber to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetRemoteSerialNumber(remoteSerialNumber *string) {
+	o.RemoteSerialNumber = remoteSerialNumber
 }
 
 // WithReturnRecords adds the returnRecords to the cluster peer collection get params
@@ -218,6 +532,83 @@ func (o *ClusterPeerCollectionGetParams) SetReturnTimeout(returnTimeout *int64) 
 	o.ReturnTimeout = returnTimeout
 }
 
+// WithStatusState adds the statusState to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithStatusState(statusState *string) *ClusterPeerCollectionGetParams {
+	o.SetStatusState(statusState)
+	return o
+}
+
+// SetStatusState adds the statusState to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetStatusState(statusState *string) {
+	o.StatusState = statusState
+}
+
+// WithStatusUpdateTime adds the statusUpdateTime to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithStatusUpdateTime(statusUpdateTime *string) *ClusterPeerCollectionGetParams {
+	o.SetStatusUpdateTime(statusUpdateTime)
+	return o
+}
+
+// SetStatusUpdateTime adds the statusUpdateTime to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetStatusUpdateTime(statusUpdateTime *string) {
+	o.StatusUpdateTime = statusUpdateTime
+}
+
+// WithUUID adds the uuid to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithUUID(uuid *string) *ClusterPeerCollectionGetParams {
+	o.SetUUID(uuid)
+	return o
+}
+
+// SetUUID adds the uuid to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetUUID(uuid *string) {
+	o.UUID = uuid
+}
+
+// WithVersionFull adds the versionFull to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithVersionFull(versionFull *string) *ClusterPeerCollectionGetParams {
+	o.SetVersionFull(versionFull)
+	return o
+}
+
+// SetVersionFull adds the versionFull to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetVersionFull(versionFull *string) {
+	o.VersionFull = versionFull
+}
+
+// WithVersionGeneration adds the versionGeneration to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithVersionGeneration(versionGeneration *int64) *ClusterPeerCollectionGetParams {
+	o.SetVersionGeneration(versionGeneration)
+	return o
+}
+
+// SetVersionGeneration adds the versionGeneration to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetVersionGeneration(versionGeneration *int64) {
+	o.VersionGeneration = versionGeneration
+}
+
+// WithVersionMajor adds the versionMajor to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithVersionMajor(versionMajor *int64) *ClusterPeerCollectionGetParams {
+	o.SetVersionMajor(versionMajor)
+	return o
+}
+
+// SetVersionMajor adds the versionMajor to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetVersionMajor(versionMajor *int64) {
+	o.VersionMajor = versionMajor
+}
+
+// WithVersionMinor adds the versionMinor to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) WithVersionMinor(versionMinor *int64) *ClusterPeerCollectionGetParams {
+	o.SetVersionMinor(versionMinor)
+	return o
+}
+
+// SetVersionMinor adds the versionMinor to the cluster peer collection get params
+func (o *ClusterPeerCollectionGetParams) SetVersionMinor(versionMinor *int64) {
+	o.VersionMinor = versionMinor
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *ClusterPeerCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -225,6 +616,108 @@ func (o *ClusterPeerCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		return err
 	}
 	var res []error
+
+	if o.AuthenticationExpiryTime != nil {
+
+		// query param authentication.expiry_time
+		var qrAuthenticationExpiryTime string
+
+		if o.AuthenticationExpiryTime != nil {
+			qrAuthenticationExpiryTime = *o.AuthenticationExpiryTime
+		}
+		qAuthenticationExpiryTime := qrAuthenticationExpiryTime
+		if qAuthenticationExpiryTime != "" {
+
+			if err := r.SetQueryParam("authentication.expiry_time", qAuthenticationExpiryTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AuthenticationInUse != nil {
+
+		// query param authentication.in_use
+		var qrAuthenticationInUse string
+
+		if o.AuthenticationInUse != nil {
+			qrAuthenticationInUse = *o.AuthenticationInUse
+		}
+		qAuthenticationInUse := qrAuthenticationInUse
+		if qAuthenticationInUse != "" {
+
+			if err := r.SetQueryParam("authentication.in_use", qAuthenticationInUse); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AuthenticationPassphrase != nil {
+
+		// query param authentication.passphrase
+		var qrAuthenticationPassphrase string
+
+		if o.AuthenticationPassphrase != nil {
+			qrAuthenticationPassphrase = *o.AuthenticationPassphrase
+		}
+		qAuthenticationPassphrase := qrAuthenticationPassphrase
+		if qAuthenticationPassphrase != "" {
+
+			if err := r.SetQueryParam("authentication.passphrase", qAuthenticationPassphrase); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.AuthenticationState != nil {
+
+		// query param authentication.state
+		var qrAuthenticationState string
+
+		if o.AuthenticationState != nil {
+			qrAuthenticationState = *o.AuthenticationState
+		}
+		qAuthenticationState := qrAuthenticationState
+		if qAuthenticationState != "" {
+
+			if err := r.SetQueryParam("authentication.state", qAuthenticationState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EncryptionProposed != nil {
+
+		// query param encryption.proposed
+		var qrEncryptionProposed string
+
+		if o.EncryptionProposed != nil {
+			qrEncryptionProposed = *o.EncryptionProposed
+		}
+		qEncryptionProposed := qrEncryptionProposed
+		if qEncryptionProposed != "" {
+
+			if err := r.SetQueryParam("encryption.proposed", qEncryptionProposed); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EncryptionState != nil {
+
+		// query param encryption.state
+		var qrEncryptionState string
+
+		if o.EncryptionState != nil {
+			qrEncryptionState = *o.EncryptionState
+		}
+		qEncryptionState := qrEncryptionState
+		if qEncryptionState != "" {
+
+			if err := r.SetQueryParam("encryption.state", qEncryptionState); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.Fields != nil {
 
@@ -234,6 +727,91 @@ func (o *ClusterPeerCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		// query array param fields
 		if err := r.SetQueryParam("fields", joinedFields...); err != nil {
 			return err
+		}
+	}
+
+	if o.InitialAllowedSvmsName != nil {
+
+		// query param initial_allowed_svms.name
+		var qrInitialAllowedSvmsName string
+
+		if o.InitialAllowedSvmsName != nil {
+			qrInitialAllowedSvmsName = *o.InitialAllowedSvmsName
+		}
+		qInitialAllowedSvmsName := qrInitialAllowedSvmsName
+		if qInitialAllowedSvmsName != "" {
+
+			if err := r.SetQueryParam("initial_allowed_svms.name", qInitialAllowedSvmsName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.InitialAllowedSvmsUUID != nil {
+
+		// query param initial_allowed_svms.uuid
+		var qrInitialAllowedSvmsUUID string
+
+		if o.InitialAllowedSvmsUUID != nil {
+			qrInitialAllowedSvmsUUID = *o.InitialAllowedSvmsUUID
+		}
+		qInitialAllowedSvmsUUID := qrInitialAllowedSvmsUUID
+		if qInitialAllowedSvmsUUID != "" {
+
+			if err := r.SetQueryParam("initial_allowed_svms.uuid", qInitialAllowedSvmsUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IPAddress != nil {
+
+		// query param ip_address
+		var qrIPAddress string
+
+		if o.IPAddress != nil {
+			qrIPAddress = *o.IPAddress
+		}
+		qIPAddress := qrIPAddress
+		if qIPAddress != "" {
+
+			if err := r.SetQueryParam("ip_address", qIPAddress); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IpspaceName != nil {
+
+		// query param ipspace.name
+		var qrIpspaceName string
+
+		if o.IpspaceName != nil {
+			qrIpspaceName = *o.IpspaceName
+		}
+		qIpspaceName := qrIpspaceName
+		if qIpspaceName != "" {
+
+			if err := r.SetQueryParam("ipspace.name", qIpspaceName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.IpspaceUUID != nil {
+
+		// query param ipspace.uuid
+		var qrIpspaceUUID string
+
+		if o.IpspaceUUID != nil {
+			qrIpspaceUUID = *o.IpspaceUUID
+		}
+		qIpspaceUUID := qrIpspaceUUID
+		if qIpspaceUUID != "" {
+
+			if err := r.SetQueryParam("ipspace.uuid", qIpspaceUUID); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -254,6 +832,23 @@ func (o *ClusterPeerCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		}
 	}
 
+	if o.Name != nil {
+
+		// query param name
+		var qrName string
+
+		if o.Name != nil {
+			qrName = *o.Name
+		}
+		qName := qrName
+		if qName != "" {
+
+			if err := r.SetQueryParam("name", qName); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.OrderBy != nil {
 
 		// binding items for order_by
@@ -262,6 +857,74 @@ func (o *ClusterPeerCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		// query array param order_by
 		if err := r.SetQueryParam("order_by", joinedOrderBy...); err != nil {
 			return err
+		}
+	}
+
+	if o.PeerApplications != nil {
+
+		// query param peer_applications
+		var qrPeerApplications string
+
+		if o.PeerApplications != nil {
+			qrPeerApplications = *o.PeerApplications
+		}
+		qPeerApplications := qrPeerApplications
+		if qPeerApplications != "" {
+
+			if err := r.SetQueryParam("peer_applications", qPeerApplications); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RemoteIPAddresses != nil {
+
+		// query param remote.ip_addresses
+		var qrRemoteIPAddresses string
+
+		if o.RemoteIPAddresses != nil {
+			qrRemoteIPAddresses = *o.RemoteIPAddresses
+		}
+		qRemoteIPAddresses := qrRemoteIPAddresses
+		if qRemoteIPAddresses != "" {
+
+			if err := r.SetQueryParam("remote.ip_addresses", qRemoteIPAddresses); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RemoteName != nil {
+
+		// query param remote.name
+		var qrRemoteName string
+
+		if o.RemoteName != nil {
+			qrRemoteName = *o.RemoteName
+		}
+		qRemoteName := qrRemoteName
+		if qRemoteName != "" {
+
+			if err := r.SetQueryParam("remote.name", qRemoteName); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.RemoteSerialNumber != nil {
+
+		// query param remote.serial_number
+		var qrRemoteSerialNumber string
+
+		if o.RemoteSerialNumber != nil {
+			qrRemoteSerialNumber = *o.RemoteSerialNumber
+		}
+		qRemoteSerialNumber := qrRemoteSerialNumber
+		if qRemoteSerialNumber != "" {
+
+			if err := r.SetQueryParam("remote.serial_number", qRemoteSerialNumber); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -294,6 +957,125 @@ func (o *ClusterPeerCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatusState != nil {
+
+		// query param status.state
+		var qrStatusState string
+
+		if o.StatusState != nil {
+			qrStatusState = *o.StatusState
+		}
+		qStatusState := qrStatusState
+		if qStatusState != "" {
+
+			if err := r.SetQueryParam("status.state", qStatusState); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.StatusUpdateTime != nil {
+
+		// query param status.update_time
+		var qrStatusUpdateTime string
+
+		if o.StatusUpdateTime != nil {
+			qrStatusUpdateTime = *o.StatusUpdateTime
+		}
+		qStatusUpdateTime := qrStatusUpdateTime
+		if qStatusUpdateTime != "" {
+
+			if err := r.SetQueryParam("status.update_time", qStatusUpdateTime); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.UUID != nil {
+
+		// query param uuid
+		var qrUUID string
+
+		if o.UUID != nil {
+			qrUUID = *o.UUID
+		}
+		qUUID := qrUUID
+		if qUUID != "" {
+
+			if err := r.SetQueryParam("uuid", qUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VersionFull != nil {
+
+		// query param version.full
+		var qrVersionFull string
+
+		if o.VersionFull != nil {
+			qrVersionFull = *o.VersionFull
+		}
+		qVersionFull := qrVersionFull
+		if qVersionFull != "" {
+
+			if err := r.SetQueryParam("version.full", qVersionFull); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VersionGeneration != nil {
+
+		// query param version.generation
+		var qrVersionGeneration int64
+
+		if o.VersionGeneration != nil {
+			qrVersionGeneration = *o.VersionGeneration
+		}
+		qVersionGeneration := swag.FormatInt64(qrVersionGeneration)
+		if qVersionGeneration != "" {
+
+			if err := r.SetQueryParam("version.generation", qVersionGeneration); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VersionMajor != nil {
+
+		// query param version.major
+		var qrVersionMajor int64
+
+		if o.VersionMajor != nil {
+			qrVersionMajor = *o.VersionMajor
+		}
+		qVersionMajor := swag.FormatInt64(qrVersionMajor)
+		if qVersionMajor != "" {
+
+			if err := r.SetQueryParam("version.major", qVersionMajor); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.VersionMinor != nil {
+
+		// query param version.minor
+		var qrVersionMinor int64
+
+		if o.VersionMinor != nil {
+			qrVersionMinor = *o.VersionMinor
+		}
+		qVersionMinor := swag.FormatInt64(qrVersionMinor)
+		if qVersionMinor != "" {
+
+			if err := r.SetQueryParam("version.minor", qVersionMinor); err != nil {
 				return err
 			}
 		}

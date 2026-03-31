@@ -602,6 +602,10 @@ type ClientService interface {
 
 	WebauthnGlobalGet(params *WebauthnGlobalGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnGlobalGetOK, error)
 
+	WebauthnGlobalModify(params *WebauthnGlobalModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnGlobalModifyOK, error)
+
+	WebauthnGlobalModifyCollection(params *WebauthnGlobalModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnGlobalModifyCollectionOK, error)
+
 	WhoamiGet(params *WhoamiGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WhoamiGetOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
@@ -1229,8 +1233,10 @@ func (a *Client) AccountPublickeyDeleteCollection(params *AccountPublickeyDelete
 }
 
 /*
-	AccountTotpDelete Deletes the TOTP profile for a user account.
+	AccountTotpDelete The DELETE method is no longer supported for this API.
 
+Deletion of TOTP profiles now requires interactive confirmation using a one-time password or scratch code, which cannot be securely handled over REST.
+You can use the ONTAP CLI command \"security login totp delete\" to remove a TOTP profile. The CLI prompts you for verification and provides proper authentication.
 ### Related ONTAP commands
 * `security login totp delete`
 ### Learn more
@@ -2236,7 +2242,8 @@ func (a *Client) AzureKeyVaultCollectionGet(params *AzureKeyVaultCollectionGetPa
 ### Optional parameters:
 * `create_inactive` - Create an AKV configuration without enabling it. This flag is set to "false" by default.
 ### Related ONTAP commands
-* `security key-manager external azure enable`
+* `security key-manager external azure enable (DEPRECATED)`
+* `security key-manager keystore enable`
 * `security key-manager external azure create-config`
 * `security key-manager external azure update-config`
 */
@@ -2281,7 +2288,9 @@ func (a *Client) AzureKeyVaultCreate(params *AzureKeyVaultCreateParams, authInfo
 	AzureKeyVaultDelete Deletes an AKV configuration.
 
 ### Related ONTAP commands
-* `security key-manager external azure disable`
+* `security key-manager external azure disable (DEPRECATED)`
+* `security key-manager keystore disable`
+* `security key-manager keystore delete`
 */
 func (a *Client) AzureKeyVaultDelete(params *AzureKeyVaultDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AzureKeyVaultDeleteOK, *AzureKeyVaultDeleteAccepted, error) {
 	// TODO: Validate the params before sending
@@ -7587,7 +7596,7 @@ func (a *Client) RolePrivilegeCollectionGet(params *RolePrivilegeCollectionGetPa
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/directories</i>
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/files</i>
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><br/>
-<personalities supports=aiml>
+<personalities supports=aiml,unified>
 #### Artificial Intelligence Data Engine (AIDE) APIs
 ##### Data Compute Node (DCN) APIs
 &ndash; <i>/api/dcn/cluster/nodes/{node.uuid}/metrics</i>
@@ -7611,7 +7620,7 @@ func (a *Client) RolePrivilegeCollectionGet(params *RolePrivilegeCollectionGetPa
 When used in the context of data collection APIs, <i>{version.uuid}</i> refers to a data collection version. In the context of workspace APIs, it refers to a workspace version.<br/>
 </personalities>
 In the APIs above, and in the context of REST roles, the wildcard character &#42; can be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to represent <i>all</i> volumes or <i>all</i> SVMs, depending on whether the REST endpoint references volumes or SVMs. The <i>{volume.uuid}</i> corresponds to the <i>-instance-uuid</i> field in the output of the \"volume show\" command at the diagnostic privilege level. It can also be retrieved through the REST endpoint <i>/api/storage/volumes</i>.<br/>
-<personalities supports=aiml>
+<personalities supports=aiml,unified>
 In the AIDE APIs described above, and in the context of REST roles, the wildcard character &#42; can be used in place of variable components in the Uniform Resource Identifier (URI) path, such as <i>{node.uuid}</i>, <i>{port.uuid}</i>, <i>{policy.uuid}</i>, <i>{workspace.uuid}</i>, <i>{datacollection.uuid}</i>, <i>{entity.uuid}</i>, <i>{version.uuid}</i>, or <i>{query.uuid}</i>. The specific variable to be replaced depends on whether the REST endpoint references nodes, ports, policies, workspaces, data collections, entities, versions, or queries.<br/>
 However, when using the wildcard character &#42; in place of a variable component in a URI path, it must replace <b>all</b> variable components in that path. Mixing wildcards and specific values for different variable components within the same URI path is not supported in REST roles. For example, a URI path such as <i>/api/data-engine/workspaces/c6e1b325-4125-11f0-abb5-bc2411f6fd43/data-collections/[*]/search</i> is not supported.<br/>
 In summary, only the following two types of resource-qualified endpoints are supported in a REST role:
@@ -7683,7 +7692,7 @@ func (a *Client) RolePrivilegeCreate(params *RolePrivilegeCreateParams, authInfo
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><br/>
 #### ONTAP S3 APIs
 &ndash; <i>/api/protocols/s3/services/{svm.uuid}/users</i><br/>
-<personalities supports=aiml>
+<personalities supports=aiml,unified>
 #### Artificial Intelligence Data Engine (AIDE) APIs
 ##### Data Compute Node (DCN) APIs
 &ndash; <i>/api/dcn/cluster/nodes/{node.uuid}/metrics</i>
@@ -7707,7 +7716,7 @@ func (a *Client) RolePrivilegeCreate(params *RolePrivilegeCreateParams, authInfo
 When used in the context of data collection APIs, <i>{version.uuid}</i> refers to a data collection version. In the context of workspace APIs, it refers to a workspace version.<br/>
 </personalities>
 In the APIs above, and in the context of REST roles, the wildcard character &#42; can be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to represent <i>all</i> volumes or <i>all</i> SVMs, depending on whether the REST endpoint references volumes or SVMs. The <i>{volume.uuid}</i> corresponds to the <i>-instance-uuid</i> field in the output of the \"volume show\" command at the diagnostic privilege level. It can also be retrieved through the REST endpoint <i>/api/storage/volumes</i>.<br/>
-<personalities supports=aiml>
+<personalities supports=aiml,unified>
 In the AIDE APIs described above, and in the context of REST roles, the wildcard character &#42; can be used in place of variable components in the Uniform Resource Identifier (URI) path, such as <i>{node.uuid}</i>, <i>{port.uuid}</i>, <i>{policy.uuid}</i>, <i>{workspace.uuid}</i>, <i>{datacollection.uuid}</i>, <i>{entity.uuid}</i>, <i>{version.uuid}</i>, or <i>{query.uuid}</i>. The specific variable to be replaced depends on whether the REST endpoint references nodes, ports, policies, workspaces, data collections, entities, versions, or queries.<br/>
 However, when using the wildcard character &#42; in place of a variable component in a URI path, it must replace <b>all</b> variable components in that path. Mixing wildcards and specific values for different variable components within the same URI path is not supported in REST roles. For example, a URI path such as <i>/api/data-engine/workspaces/c6e1b325-4125-11f0-abb5-bc2411f6fd43/data-collections/[*]/search</i> is not supported.<br/>
 In summary, only the following two types of resource-qualified endpoints are supported in a REST role:
@@ -7722,7 +7731,7 @@ AIDE APIs are supported only in cluster-scoped REST roles, not in SVM-scoped RES
 ### Required parameters
 * `owner.uuid` - UUID of the SVM which houses this role.
 * `name` - Name of the role to be updated.
-* `path` - Constituent REST API path or command/command directory path to be deleted from this role. Can be a resource-qualified endpoint (example: <i>/api/svm/svms/43256a71-be02-474d-a2a9-9642e12a6a2c/top-metrics/users</i>). Currently, resource-qualified endpoints are limited to the <i>Snapshots</i>, <i>File System Analytics</i><personalities supports=aiml><i>, Artificial Intelligence Data Engine (AIDE)</i></personalities> and <i>ONTAP S3</i> endpoints listed above in the description.
+* `path` - Constituent REST API path or command/command directory path to be deleted from this role. Can be a resource-qualified endpoint (example: <i>/api/svm/svms/43256a71-be02-474d-a2a9-9642e12a6a2c/top-metrics/users</i>). Currently, resource-qualified endpoints are limited to the <i>Snapshots</i>, <i>File System Analytics</i><personalities supports=aiml,unified><i>, Artificial Intelligence Data Engine (AIDE)</i></personalities> and <i>ONTAP S3</i> endpoints listed above in the description.
 ### Related ONTAP commands
 * `security login rest-role delete`
 * `security login role delete`
@@ -7820,7 +7829,7 @@ func (a *Client) RolePrivilegeDeleteCollection(params *RolePrivilegeDeleteCollec
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><br/>
 #### ONTAP S3 APIs
 &ndash; <i>/api/protocols/s3/services/{svm.uuid}/users</i><br/>
-<personalities supports=aiml>
+<personalities supports=aiml,unified>
 #### Artificial Intelligence Data Engine (AIDE) APIs
 ##### Data Compute Node (DCN) APIs
 &ndash; <i>/api/dcn/cluster/nodes/{node.uuid}/metrics</i>
@@ -7844,7 +7853,7 @@ func (a *Client) RolePrivilegeDeleteCollection(params *RolePrivilegeDeleteCollec
 When used in the context of data collection APIs, <i>{version.uuid}</i> refers to a data collection version. In the context of workspace APIs, it refers to a workspace version.<br/>
 </personalities>
 In the APIs above, and in the context of REST roles, the wildcard character &#42; can be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to represent <i>all</i> volumes or <i>all</i> SVMs, depending on whether the REST endpoint references volumes or SVMs. The <i>{volume.uuid}</i> corresponds to the <i>-instance-uuid</i> field in the output of the \"volume show\" command at the diagnostic privilege level. It can also be retrieved through the REST endpoint <i>/api/storage/volumes</i>.<br/>
-<personalities supports=aiml>
+<personalities supports=aiml,unified>
 In the AIDE APIs described above, and in the context of REST roles, the wildcard character &#42; can be used in place of variable components in the Uniform Resource Identifier (URI) path, such as <i>{node.uuid}</i>, <i>{port.uuid}</i>, <i>{policy.uuid}</i>, <i>{workspace.uuid}</i>, <i>{datacollection.uuid}</i>, <i>{entity.uuid}</i>, <i>{version.uuid}</i>, or <i>{query.uuid}</i>. The specific variable to be replaced depends on whether the REST endpoint references nodes, ports, policies, workspaces, data collections, entities, versions, or queries.<br/>
 However, when using the wildcard character &#42; in place of a variable component in a URI path, it must replace <b>all</b> variable components in that path. Mixing wildcards and specific values for different variable components within the same URI path is not supported in REST roles. For example, a URI path such as <i>/api/data-engine/workspaces/c6e1b325-4125-11f0-abb5-bc2411f6fd43/data-collections/[*]/search</i> is not supported.<br/>
 In summary, only the following two types of resource-qualified endpoints are supported in a REST role:
@@ -7915,7 +7924,7 @@ func (a *Client) RolePrivilegeGet(params *RolePrivilegeGetParams, authInfo runti
 &ndash; <i>/api/svm/svms/{svm.uuid}/top-metrics/users</i><br/>
 #### ONTAP S3 APIs
 &ndash; <i>/api/protocols/s3/services/{svm.uuid}/users</i><br/>
-<personalities supports=aiml>
+<personalities supports=aiml,unified>
 #### Artificial Intelligence Data Engine (AIDE) APIs
 ##### Data Compute Node (DCN) APIs
 &ndash; <i>/api/dcn/cluster/nodes/{node.uuid}/metrics</i>
@@ -7939,7 +7948,7 @@ func (a *Client) RolePrivilegeGet(params *RolePrivilegeGetParams, authInfo runti
 When used in the context of data collection APIs, <i>{version.uuid}</i> refers to a data collection version. In the context of workspace APIs, it refers to a workspace version.<br/>
 </personalities>
 In the APIs above, and in the context of REST roles, the wildcard character &#42; can be used in place of <i>{volume.uuid}</i> or <i>{svm.uuid}</i> to represent <i>all</i> volumes or <i>all</i> SVMs, depending on whether the REST endpoint references volumes or SVMs. The <i>{volume.uuid}</i> corresponds to the <i>-instance-uuid</i> field in the output of the \"volume show\" command at the diagnostic privilege level. It can also be retrieved through the REST endpoint <i>/api/storage/volumes</i>.<br/>
-<personalities supports=aiml>
+<personalities supports=aiml,unified>
 In the AIDE APIs described above, and in the context of REST roles, the wildcard character &#42; can be used in place of variable components in the Uniform Resource Identifier (URI) path, such as <i>{node.uuid}</i>, <i>{port.uuid}</i>, <i>{policy.uuid}</i>, <i>{workspace.uuid}</i>, <i>{datacollection.uuid}</i>, <i>{entity.uuid}</i>, <i>{version.uuid}</i>, or <i>{query.uuid}</i>. The specific variable to be replaced depends on whether the REST endpoint references nodes, ports, policies, workspaces, data collections, entities, versions, or queries.<br/>
 However, when using the wildcard character &#42; in place of a variable component in a URI path, it must replace <b>all</b> variable components in that path. Mixing wildcards and specific values for different variable components within the same URI path is not supported in REST roles. For example, a URI path such as <i>/api/data-engine/workspaces/c6e1b325-4125-11f0-abb5-bc2411f6fd43/data-collections/[*]/search</i> is not supported.<br/>
 In summary, only the following two types of resource-qualified endpoints are supported in a REST role:
@@ -7954,7 +7963,7 @@ AIDE APIs are supported only in cluster-scoped REST roles, not in SVM-scoped RES
 ### Required parameters
 * `owner.uuid` - UUID of the SVM that houses this role.
 * `name` - Name of the role to be updated.
-* `path` - Constituent REST API path or command/command directory path, whose access level and/or query are/is to be updated. Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the <i>Snapshots</i>, <i>File System Analytics</i><personalities supports=aiml><i>, Artificial Intelligence Data Engine (AIDE)</i></personalities> and <i>ONTAP S3</i> endpoints listed above in the description.
+* `path` - Constituent REST API path or command/command directory path, whose access level and/or query are/is to be updated. Can be a resource-qualified endpoint (example: <i>/api/storage/volumes/43256a71-be02-474d-a2a9-9642e12a6a2c/snapshots</i>). Currently, resource-qualified endpoints are limited to the <i>Snapshots</i>, <i>File System Analytics</i><personalities supports=aiml,unified><i>, Artificial Intelligence Data Engine (AIDE)</i></personalities> and <i>ONTAP S3</i> endpoints listed above in the description.
 ### Optional parameters
 * `access` - Access level for the path.
 * `query` - Optional query, if the path refers to a command/command directory path.
@@ -8613,7 +8622,7 @@ func (a *Client) SecurityClusterNetworkCertificatesCreate(params *SecurityCluste
 	SecurityClusterNetworkCertificatesDelete Deletes the certificate configuration for cluster network security for a given node.
 
 ### Required properties
-* `node: The name of the node`
+* `node: Node UUID`
 ### Related ONTAP commands
 * 'security cluster-network certificate delete'
 */
@@ -8625,7 +8634,7 @@ func (a *Client) SecurityClusterNetworkCertificatesDelete(params *SecurityCluste
 	op := &runtime.ClientOperation{
 		ID:                 "security_cluster_network_certificates_delete",
 		Method:             "DELETE",
-		PathPattern:        "/security/cluster-network/certificates/{node.name}",
+		PathPattern:        "/security/cluster-network/certificates/{node.uuid}",
 		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
 		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
@@ -8704,7 +8713,7 @@ func (a *Client) SecurityClusterNetworkCertificatesGet(params *SecurityClusterNe
 	op := &runtime.ClientOperation{
 		ID:                 "security_cluster_network_certificates_get",
 		Method:             "GET",
-		PathPattern:        "/security/cluster-network/certificates/{node.name}",
+		PathPattern:        "/security/cluster-network/certificates/{node.uuid}",
 		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
 		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
@@ -8735,7 +8744,7 @@ func (a *Client) SecurityClusterNetworkCertificatesGet(params *SecurityClusterNe
 	SecurityClusterNetworkCertificatesModify Updates the certificate configuration for cluster network security for a given node.
 
 ### Required properties
-* `node: The name of the node`
+* `node: Node UUID`
 ### Related ONTAP commands
 * 'security cluster-network certificate modify'
 */
@@ -8747,7 +8756,7 @@ func (a *Client) SecurityClusterNetworkCertificatesModify(params *SecurityCluste
 	op := &runtime.ClientOperation{
 		ID:                 "security_cluster_network_certificates_modify",
 		Method:             "PATCH",
-		PathPattern:        "/security/cluster-network/certificates/{node.name}",
+		PathPattern:        "/security/cluster-network/certificates/{node.uuid}",
 		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
 		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
 		Schemes:            []string{"https"},
@@ -13067,6 +13076,85 @@ func (a *Client) WebauthnGlobalGet(params *WebauthnGlobalGetParams, authInfo run
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*WebauthnGlobalGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+	WebauthnGlobalModify Updates a WebAuthn global settings for a cluster or an SVM.
+
+### Related ONTAP commands
+* `security webauthn modify`
+*/
+func (a *Client) WebauthnGlobalModify(params *WebauthnGlobalModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnGlobalModifyOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewWebauthnGlobalModifyParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "webauthn_global_modify",
+		Method:             "PATCH",
+		PathPattern:        "/security/webauthn/global-settings/{owner.uuid}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &WebauthnGlobalModifyReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*WebauthnGlobalModifyOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*WebauthnGlobalModifyDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+WebauthnGlobalModifyCollection webauthn global modify collection API
+*/
+func (a *Client) WebauthnGlobalModifyCollection(params *WebauthnGlobalModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*WebauthnGlobalModifyCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewWebauthnGlobalModifyCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "webauthn_global_modify_collection",
+		Method:             "PATCH",
+		PathPattern:        "/security/webauthn/global-settings",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &WebauthnGlobalModifyCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*WebauthnGlobalModifyCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*WebauthnGlobalModifyCollectionDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

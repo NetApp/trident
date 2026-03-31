@@ -410,12 +410,6 @@ type DcnClusterGetParams struct {
 	*/
 	NodesUUID *string
 
-	/* NodesVendorSerialNumber.
-
-	   Filter by nodes.vendor_serial_number
-	*/
-	NodesVendorSerialNumber *string
-
 	/* ServiceIPAddress.
 
 	   Filter by service_ip.address
@@ -1159,17 +1153,6 @@ func (o *DcnClusterGetParams) WithNodesUUID(nodesUUID *string) *DcnClusterGetPar
 // SetNodesUUID adds the nodesUuid to the dcn cluster get params
 func (o *DcnClusterGetParams) SetNodesUUID(nodesUUID *string) {
 	o.NodesUUID = nodesUUID
-}
-
-// WithNodesVendorSerialNumber adds the nodesVendorSerialNumber to the dcn cluster get params
-func (o *DcnClusterGetParams) WithNodesVendorSerialNumber(nodesVendorSerialNumber *string) *DcnClusterGetParams {
-	o.SetNodesVendorSerialNumber(nodesVendorSerialNumber)
-	return o
-}
-
-// SetNodesVendorSerialNumber adds the nodesVendorSerialNumber to the dcn cluster get params
-func (o *DcnClusterGetParams) SetNodesVendorSerialNumber(nodesVendorSerialNumber *string) {
-	o.NodesVendorSerialNumber = nodesVendorSerialNumber
 }
 
 // WithServiceIPAddress adds the serviceIPAddress to the dcn cluster get params
@@ -2254,23 +2237,6 @@ func (o *DcnClusterGetParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		if qNodesUUID != "" {
 
 			if err := r.SetQueryParam("nodes.uuid", qNodesUUID); err != nil {
-				return err
-			}
-		}
-	}
-
-	if o.NodesVendorSerialNumber != nil {
-
-		// query param nodes.vendor_serial_number
-		var qrNodesVendorSerialNumber string
-
-		if o.NodesVendorSerialNumber != nil {
-			qrNodesVendorSerialNumber = *o.NodesVendorSerialNumber
-		}
-		qNodesVendorSerialNumber := qrNodesVendorSerialNumber
-		if qNodesVendorSerialNumber != "" {
-
-			if err := r.SetQueryParam("nodes.vendor_serial_number", qNodesVendorSerialNumber); err != nil {
 				return err
 			}
 		}

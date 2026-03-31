@@ -254,6 +254,24 @@ type FpolicyCollectionGetParams struct {
 	*/
 	EventsFileOperationsLookup *bool
 
+	/* EventsFileOperationsObjectCreate.
+
+	   Filter by events.file_operations.object_create
+	*/
+	EventsFileOperationsObjectCreate *bool
+
+	/* EventsFileOperationsObjectDelete.
+
+	   Filter by events.file_operations.object_delete
+	*/
+	EventsFileOperationsObjectDelete *bool
+
+	/* EventsFileOperationsObjectTag.
+
+	   Filter by events.file_operations.object_tag
+	*/
+	EventsFileOperationsObjectTag *bool
+
 	/* EventsFileOperationsOpen.
 
 	   Filter by events.file_operations.open
@@ -320,6 +338,12 @@ type FpolicyCollectionGetParams struct {
 	*/
 	EventsFiltersExcludeDirectory *bool
 
+	/* EventsFiltersExcludeMultiDelete.
+
+	   Filter by events.filters.exclude_multi_delete
+	*/
+	EventsFiltersExcludeMultiDelete *bool
+
 	/* EventsFiltersFirstRead.
 
 	   Filter by events.filters.first_read
@@ -337,6 +361,36 @@ type FpolicyCollectionGetParams struct {
 	   Filter by events.filters.monitor_ads
 	*/
 	EventsFiltersMonitorAds *bool
+
+	/* EventsFiltersObjectCreateWithCompleteMpu.
+
+	   Filter by events.filters.object_create_with_complete_mpu
+	*/
+	EventsFiltersObjectCreateWithCompleteMpu *bool
+
+	/* EventsFiltersObjectCreateWithCopy.
+
+	   Filter by events.filters.object_create_with_copy
+	*/
+	EventsFiltersObjectCreateWithCopy *bool
+
+	/* EventsFiltersObjectCreateWithPut.
+
+	   Filter by events.filters.object_create_with_put
+	*/
+	EventsFiltersObjectCreateWithPut *bool
+
+	/* EventsFiltersObjectTagDelete.
+
+	   Filter by events.filters.object_tag_delete
+	*/
+	EventsFiltersObjectTagDelete *bool
+
+	/* EventsFiltersObjectTagPut.
+
+	   Filter by events.filters.object_tag_put
+	*/
+	EventsFiltersObjectTagPut *bool
 
 	/* EventsFiltersOfflineBit.
 
@@ -554,6 +608,12 @@ type FpolicyCollectionGetParams struct {
 	*/
 	PoliciesScopeCheckExtensionsOnDirectories *bool
 
+	/* PoliciesScopeExcludeBuckets.
+
+	   Filter by policies.scope.exclude_buckets
+	*/
+	PoliciesScopeExcludeBuckets *string
+
 	/* PoliciesScopeExcludeExportPolicies.
 
 	   Filter by policies.scope.exclude_export_policies
@@ -577,6 +637,12 @@ type FpolicyCollectionGetParams struct {
 	   Filter by policies.scope.exclude_volumes
 	*/
 	PoliciesScopeExcludeVolumes *string
+
+	/* PoliciesScopeIncludeBuckets.
+
+	   Filter by policies.scope.include_buckets
+	*/
+	PoliciesScopeIncludeBuckets *string
 
 	/* PoliciesScopeIncludeExportPolicies.
 
@@ -1055,6 +1121,39 @@ func (o *FpolicyCollectionGetParams) SetEventsFileOperationsLookup(eventsFileOpe
 	o.EventsFileOperationsLookup = eventsFileOperationsLookup
 }
 
+// WithEventsFileOperationsObjectCreate adds the eventsFileOperationsObjectCreate to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEventsFileOperationsObjectCreate(eventsFileOperationsObjectCreate *bool) *FpolicyCollectionGetParams {
+	o.SetEventsFileOperationsObjectCreate(eventsFileOperationsObjectCreate)
+	return o
+}
+
+// SetEventsFileOperationsObjectCreate adds the eventsFileOperationsObjectCreate to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEventsFileOperationsObjectCreate(eventsFileOperationsObjectCreate *bool) {
+	o.EventsFileOperationsObjectCreate = eventsFileOperationsObjectCreate
+}
+
+// WithEventsFileOperationsObjectDelete adds the eventsFileOperationsObjectDelete to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEventsFileOperationsObjectDelete(eventsFileOperationsObjectDelete *bool) *FpolicyCollectionGetParams {
+	o.SetEventsFileOperationsObjectDelete(eventsFileOperationsObjectDelete)
+	return o
+}
+
+// SetEventsFileOperationsObjectDelete adds the eventsFileOperationsObjectDelete to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEventsFileOperationsObjectDelete(eventsFileOperationsObjectDelete *bool) {
+	o.EventsFileOperationsObjectDelete = eventsFileOperationsObjectDelete
+}
+
+// WithEventsFileOperationsObjectTag adds the eventsFileOperationsObjectTag to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEventsFileOperationsObjectTag(eventsFileOperationsObjectTag *bool) *FpolicyCollectionGetParams {
+	o.SetEventsFileOperationsObjectTag(eventsFileOperationsObjectTag)
+	return o
+}
+
+// SetEventsFileOperationsObjectTag adds the eventsFileOperationsObjectTag to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEventsFileOperationsObjectTag(eventsFileOperationsObjectTag *bool) {
+	o.EventsFileOperationsObjectTag = eventsFileOperationsObjectTag
+}
+
 // WithEventsFileOperationsOpen adds the eventsFileOperationsOpen to the fpolicy collection get params
 func (o *FpolicyCollectionGetParams) WithEventsFileOperationsOpen(eventsFileOperationsOpen *bool) *FpolicyCollectionGetParams {
 	o.SetEventsFileOperationsOpen(eventsFileOperationsOpen)
@@ -1176,6 +1275,17 @@ func (o *FpolicyCollectionGetParams) SetEventsFiltersExcludeDirectory(eventsFilt
 	o.EventsFiltersExcludeDirectory = eventsFiltersExcludeDirectory
 }
 
+// WithEventsFiltersExcludeMultiDelete adds the eventsFiltersExcludeMultiDelete to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEventsFiltersExcludeMultiDelete(eventsFiltersExcludeMultiDelete *bool) *FpolicyCollectionGetParams {
+	o.SetEventsFiltersExcludeMultiDelete(eventsFiltersExcludeMultiDelete)
+	return o
+}
+
+// SetEventsFiltersExcludeMultiDelete adds the eventsFiltersExcludeMultiDelete to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEventsFiltersExcludeMultiDelete(eventsFiltersExcludeMultiDelete *bool) {
+	o.EventsFiltersExcludeMultiDelete = eventsFiltersExcludeMultiDelete
+}
+
 // WithEventsFiltersFirstRead adds the eventsFiltersFirstRead to the fpolicy collection get params
 func (o *FpolicyCollectionGetParams) WithEventsFiltersFirstRead(eventsFiltersFirstRead *bool) *FpolicyCollectionGetParams {
 	o.SetEventsFiltersFirstRead(eventsFiltersFirstRead)
@@ -1207,6 +1317,61 @@ func (o *FpolicyCollectionGetParams) WithEventsFiltersMonitorAds(eventsFiltersMo
 // SetEventsFiltersMonitorAds adds the eventsFiltersMonitorAds to the fpolicy collection get params
 func (o *FpolicyCollectionGetParams) SetEventsFiltersMonitorAds(eventsFiltersMonitorAds *bool) {
 	o.EventsFiltersMonitorAds = eventsFiltersMonitorAds
+}
+
+// WithEventsFiltersObjectCreateWithCompleteMpu adds the eventsFiltersObjectCreateWithCompleteMpu to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEventsFiltersObjectCreateWithCompleteMpu(eventsFiltersObjectCreateWithCompleteMpu *bool) *FpolicyCollectionGetParams {
+	o.SetEventsFiltersObjectCreateWithCompleteMpu(eventsFiltersObjectCreateWithCompleteMpu)
+	return o
+}
+
+// SetEventsFiltersObjectCreateWithCompleteMpu adds the eventsFiltersObjectCreateWithCompleteMpu to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEventsFiltersObjectCreateWithCompleteMpu(eventsFiltersObjectCreateWithCompleteMpu *bool) {
+	o.EventsFiltersObjectCreateWithCompleteMpu = eventsFiltersObjectCreateWithCompleteMpu
+}
+
+// WithEventsFiltersObjectCreateWithCopy adds the eventsFiltersObjectCreateWithCopy to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEventsFiltersObjectCreateWithCopy(eventsFiltersObjectCreateWithCopy *bool) *FpolicyCollectionGetParams {
+	o.SetEventsFiltersObjectCreateWithCopy(eventsFiltersObjectCreateWithCopy)
+	return o
+}
+
+// SetEventsFiltersObjectCreateWithCopy adds the eventsFiltersObjectCreateWithCopy to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEventsFiltersObjectCreateWithCopy(eventsFiltersObjectCreateWithCopy *bool) {
+	o.EventsFiltersObjectCreateWithCopy = eventsFiltersObjectCreateWithCopy
+}
+
+// WithEventsFiltersObjectCreateWithPut adds the eventsFiltersObjectCreateWithPut to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEventsFiltersObjectCreateWithPut(eventsFiltersObjectCreateWithPut *bool) *FpolicyCollectionGetParams {
+	o.SetEventsFiltersObjectCreateWithPut(eventsFiltersObjectCreateWithPut)
+	return o
+}
+
+// SetEventsFiltersObjectCreateWithPut adds the eventsFiltersObjectCreateWithPut to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEventsFiltersObjectCreateWithPut(eventsFiltersObjectCreateWithPut *bool) {
+	o.EventsFiltersObjectCreateWithPut = eventsFiltersObjectCreateWithPut
+}
+
+// WithEventsFiltersObjectTagDelete adds the eventsFiltersObjectTagDelete to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEventsFiltersObjectTagDelete(eventsFiltersObjectTagDelete *bool) *FpolicyCollectionGetParams {
+	o.SetEventsFiltersObjectTagDelete(eventsFiltersObjectTagDelete)
+	return o
+}
+
+// SetEventsFiltersObjectTagDelete adds the eventsFiltersObjectTagDelete to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEventsFiltersObjectTagDelete(eventsFiltersObjectTagDelete *bool) {
+	o.EventsFiltersObjectTagDelete = eventsFiltersObjectTagDelete
+}
+
+// WithEventsFiltersObjectTagPut adds the eventsFiltersObjectTagPut to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithEventsFiltersObjectTagPut(eventsFiltersObjectTagPut *bool) *FpolicyCollectionGetParams {
+	o.SetEventsFiltersObjectTagPut(eventsFiltersObjectTagPut)
+	return o
+}
+
+// SetEventsFiltersObjectTagPut adds the eventsFiltersObjectTagPut to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetEventsFiltersObjectTagPut(eventsFiltersObjectTagPut *bool) {
+	o.EventsFiltersObjectTagPut = eventsFiltersObjectTagPut
 }
 
 // WithEventsFiltersOfflineBit adds the eventsFiltersOfflineBit to the fpolicy collection get params
@@ -1605,6 +1770,17 @@ func (o *FpolicyCollectionGetParams) SetPoliciesScopeCheckExtensionsOnDirectorie
 	o.PoliciesScopeCheckExtensionsOnDirectories = policiesScopeCheckExtensionsOnDirectories
 }
 
+// WithPoliciesScopeExcludeBuckets adds the policiesScopeExcludeBuckets to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithPoliciesScopeExcludeBuckets(policiesScopeExcludeBuckets *string) *FpolicyCollectionGetParams {
+	o.SetPoliciesScopeExcludeBuckets(policiesScopeExcludeBuckets)
+	return o
+}
+
+// SetPoliciesScopeExcludeBuckets adds the policiesScopeExcludeBuckets to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetPoliciesScopeExcludeBuckets(policiesScopeExcludeBuckets *string) {
+	o.PoliciesScopeExcludeBuckets = policiesScopeExcludeBuckets
+}
+
 // WithPoliciesScopeExcludeExportPolicies adds the policiesScopeExcludeExportPolicies to the fpolicy collection get params
 func (o *FpolicyCollectionGetParams) WithPoliciesScopeExcludeExportPolicies(policiesScopeExcludeExportPolicies *string) *FpolicyCollectionGetParams {
 	o.SetPoliciesScopeExcludeExportPolicies(policiesScopeExcludeExportPolicies)
@@ -1647,6 +1823,17 @@ func (o *FpolicyCollectionGetParams) WithPoliciesScopeExcludeVolumes(policiesSco
 // SetPoliciesScopeExcludeVolumes adds the policiesScopeExcludeVolumes to the fpolicy collection get params
 func (o *FpolicyCollectionGetParams) SetPoliciesScopeExcludeVolumes(policiesScopeExcludeVolumes *string) {
 	o.PoliciesScopeExcludeVolumes = policiesScopeExcludeVolumes
+}
+
+// WithPoliciesScopeIncludeBuckets adds the policiesScopeIncludeBuckets to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) WithPoliciesScopeIncludeBuckets(policiesScopeIncludeBuckets *string) *FpolicyCollectionGetParams {
+	o.SetPoliciesScopeIncludeBuckets(policiesScopeIncludeBuckets)
+	return o
+}
+
+// SetPoliciesScopeIncludeBuckets adds the policiesScopeIncludeBuckets to the fpolicy collection get params
+func (o *FpolicyCollectionGetParams) SetPoliciesScopeIncludeBuckets(policiesScopeIncludeBuckets *string) {
+	o.PoliciesScopeIncludeBuckets = policiesScopeIncludeBuckets
 }
 
 // WithPoliciesScopeIncludeExportPolicies adds the policiesScopeIncludeExportPolicies to the fpolicy collection get params
@@ -2300,6 +2487,57 @@ func (o *FpolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
+	if o.EventsFileOperationsObjectCreate != nil {
+
+		// query param events.file_operations.object_create
+		var qrEventsFileOperationsObjectCreate bool
+
+		if o.EventsFileOperationsObjectCreate != nil {
+			qrEventsFileOperationsObjectCreate = *o.EventsFileOperationsObjectCreate
+		}
+		qEventsFileOperationsObjectCreate := swag.FormatBool(qrEventsFileOperationsObjectCreate)
+		if qEventsFileOperationsObjectCreate != "" {
+
+			if err := r.SetQueryParam("events.file_operations.object_create", qEventsFileOperationsObjectCreate); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EventsFileOperationsObjectDelete != nil {
+
+		// query param events.file_operations.object_delete
+		var qrEventsFileOperationsObjectDelete bool
+
+		if o.EventsFileOperationsObjectDelete != nil {
+			qrEventsFileOperationsObjectDelete = *o.EventsFileOperationsObjectDelete
+		}
+		qEventsFileOperationsObjectDelete := swag.FormatBool(qrEventsFileOperationsObjectDelete)
+		if qEventsFileOperationsObjectDelete != "" {
+
+			if err := r.SetQueryParam("events.file_operations.object_delete", qEventsFileOperationsObjectDelete); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EventsFileOperationsObjectTag != nil {
+
+		// query param events.file_operations.object_tag
+		var qrEventsFileOperationsObjectTag bool
+
+		if o.EventsFileOperationsObjectTag != nil {
+			qrEventsFileOperationsObjectTag = *o.EventsFileOperationsObjectTag
+		}
+		qEventsFileOperationsObjectTag := swag.FormatBool(qrEventsFileOperationsObjectTag)
+		if qEventsFileOperationsObjectTag != "" {
+
+			if err := r.SetQueryParam("events.file_operations.object_tag", qEventsFileOperationsObjectTag); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.EventsFileOperationsOpen != nil {
 
 		// query param events.file_operations.open
@@ -2487,6 +2725,23 @@ func (o *FpolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
+	if o.EventsFiltersExcludeMultiDelete != nil {
+
+		// query param events.filters.exclude_multi_delete
+		var qrEventsFiltersExcludeMultiDelete bool
+
+		if o.EventsFiltersExcludeMultiDelete != nil {
+			qrEventsFiltersExcludeMultiDelete = *o.EventsFiltersExcludeMultiDelete
+		}
+		qEventsFiltersExcludeMultiDelete := swag.FormatBool(qrEventsFiltersExcludeMultiDelete)
+		if qEventsFiltersExcludeMultiDelete != "" {
+
+			if err := r.SetQueryParam("events.filters.exclude_multi_delete", qEventsFiltersExcludeMultiDelete); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.EventsFiltersFirstRead != nil {
 
 		// query param events.filters.first_read
@@ -2533,6 +2788,91 @@ func (o *FpolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		if qEventsFiltersMonitorAds != "" {
 
 			if err := r.SetQueryParam("events.filters.monitor_ads", qEventsFiltersMonitorAds); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EventsFiltersObjectCreateWithCompleteMpu != nil {
+
+		// query param events.filters.object_create_with_complete_mpu
+		var qrEventsFiltersObjectCreateWithCompleteMpu bool
+
+		if o.EventsFiltersObjectCreateWithCompleteMpu != nil {
+			qrEventsFiltersObjectCreateWithCompleteMpu = *o.EventsFiltersObjectCreateWithCompleteMpu
+		}
+		qEventsFiltersObjectCreateWithCompleteMpu := swag.FormatBool(qrEventsFiltersObjectCreateWithCompleteMpu)
+		if qEventsFiltersObjectCreateWithCompleteMpu != "" {
+
+			if err := r.SetQueryParam("events.filters.object_create_with_complete_mpu", qEventsFiltersObjectCreateWithCompleteMpu); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EventsFiltersObjectCreateWithCopy != nil {
+
+		// query param events.filters.object_create_with_copy
+		var qrEventsFiltersObjectCreateWithCopy bool
+
+		if o.EventsFiltersObjectCreateWithCopy != nil {
+			qrEventsFiltersObjectCreateWithCopy = *o.EventsFiltersObjectCreateWithCopy
+		}
+		qEventsFiltersObjectCreateWithCopy := swag.FormatBool(qrEventsFiltersObjectCreateWithCopy)
+		if qEventsFiltersObjectCreateWithCopy != "" {
+
+			if err := r.SetQueryParam("events.filters.object_create_with_copy", qEventsFiltersObjectCreateWithCopy); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EventsFiltersObjectCreateWithPut != nil {
+
+		// query param events.filters.object_create_with_put
+		var qrEventsFiltersObjectCreateWithPut bool
+
+		if o.EventsFiltersObjectCreateWithPut != nil {
+			qrEventsFiltersObjectCreateWithPut = *o.EventsFiltersObjectCreateWithPut
+		}
+		qEventsFiltersObjectCreateWithPut := swag.FormatBool(qrEventsFiltersObjectCreateWithPut)
+		if qEventsFiltersObjectCreateWithPut != "" {
+
+			if err := r.SetQueryParam("events.filters.object_create_with_put", qEventsFiltersObjectCreateWithPut); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EventsFiltersObjectTagDelete != nil {
+
+		// query param events.filters.object_tag_delete
+		var qrEventsFiltersObjectTagDelete bool
+
+		if o.EventsFiltersObjectTagDelete != nil {
+			qrEventsFiltersObjectTagDelete = *o.EventsFiltersObjectTagDelete
+		}
+		qEventsFiltersObjectTagDelete := swag.FormatBool(qrEventsFiltersObjectTagDelete)
+		if qEventsFiltersObjectTagDelete != "" {
+
+			if err := r.SetQueryParam("events.filters.object_tag_delete", qEventsFiltersObjectTagDelete); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.EventsFiltersObjectTagPut != nil {
+
+		// query param events.filters.object_tag_put
+		var qrEventsFiltersObjectTagPut bool
+
+		if o.EventsFiltersObjectTagPut != nil {
+			qrEventsFiltersObjectTagPut = *o.EventsFiltersObjectTagPut
+		}
+		qEventsFiltersObjectTagPut := swag.FormatBool(qrEventsFiltersObjectTagPut)
+		if qEventsFiltersObjectTagPut != "" {
+
+			if err := r.SetQueryParam("events.filters.object_tag_put", qEventsFiltersObjectTagPut); err != nil {
 				return err
 			}
 		}
@@ -3138,6 +3478,23 @@ func (o *FpolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
+	if o.PoliciesScopeExcludeBuckets != nil {
+
+		// query param policies.scope.exclude_buckets
+		var qrPoliciesScopeExcludeBuckets string
+
+		if o.PoliciesScopeExcludeBuckets != nil {
+			qrPoliciesScopeExcludeBuckets = *o.PoliciesScopeExcludeBuckets
+		}
+		qPoliciesScopeExcludeBuckets := qrPoliciesScopeExcludeBuckets
+		if qPoliciesScopeExcludeBuckets != "" {
+
+			if err := r.SetQueryParam("policies.scope.exclude_buckets", qPoliciesScopeExcludeBuckets); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.PoliciesScopeExcludeExportPolicies != nil {
 
 		// query param policies.scope.exclude_export_policies
@@ -3201,6 +3558,23 @@ func (o *FpolicyCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg
 		if qPoliciesScopeExcludeVolumes != "" {
 
 			if err := r.SetQueryParam("policies.scope.exclude_volumes", qPoliciesScopeExcludeVolumes); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.PoliciesScopeIncludeBuckets != nil {
+
+		// query param policies.scope.include_buckets
+		var qrPoliciesScopeIncludeBuckets string
+
+		if o.PoliciesScopeIncludeBuckets != nil {
+			qrPoliciesScopeIncludeBuckets = *o.PoliciesScopeIncludeBuckets
+		}
+		qPoliciesScopeIncludeBuckets := qrPoliciesScopeIncludeBuckets
+		if qPoliciesScopeIncludeBuckets != "" {
+
+			if err := r.SetQueryParam("policies.scope.include_buckets", qPoliciesScopeIncludeBuckets); err != nil {
 				return err
 			}
 		}

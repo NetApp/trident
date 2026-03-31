@@ -365,37 +365,37 @@ func (o *IPSubnetCollectionGetParams) SetGateway(gateway *string) {
 	o.Gateway = gateway
 }
 
-// WithIPRangesEnd adds the iPRangesEnd to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithIPRangesEnd(iPRangesEnd *string) *IPSubnetCollectionGetParams {
-	o.SetIPRangesEnd(iPRangesEnd)
+// WithIPRangesEnd adds the ipRangesEnd to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithIPRangesEnd(ipRangesEnd *string) *IPSubnetCollectionGetParams {
+	o.SetIPRangesEnd(ipRangesEnd)
 	return o
 }
 
 // SetIPRangesEnd adds the ipRangesEnd to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetIPRangesEnd(iPRangesEnd *string) {
-	o.IPRangesEnd = iPRangesEnd
+func (o *IPSubnetCollectionGetParams) SetIPRangesEnd(ipRangesEnd *string) {
+	o.IPRangesEnd = ipRangesEnd
 }
 
-// WithIPRangesFamily adds the iPRangesFamily to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithIPRangesFamily(iPRangesFamily *string) *IPSubnetCollectionGetParams {
-	o.SetIPRangesFamily(iPRangesFamily)
+// WithIPRangesFamily adds the ipRangesFamily to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithIPRangesFamily(ipRangesFamily *string) *IPSubnetCollectionGetParams {
+	o.SetIPRangesFamily(ipRangesFamily)
 	return o
 }
 
 // SetIPRangesFamily adds the ipRangesFamily to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetIPRangesFamily(iPRangesFamily *string) {
-	o.IPRangesFamily = iPRangesFamily
+func (o *IPSubnetCollectionGetParams) SetIPRangesFamily(ipRangesFamily *string) {
+	o.IPRangesFamily = ipRangesFamily
 }
 
-// WithIPRangesStart adds the iPRangesStart to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) WithIPRangesStart(iPRangesStart *string) *IPSubnetCollectionGetParams {
-	o.SetIPRangesStart(iPRangesStart)
+// WithIPRangesStart adds the ipRangesStart to the ip subnet collection get params
+func (o *IPSubnetCollectionGetParams) WithIPRangesStart(ipRangesStart *string) *IPSubnetCollectionGetParams {
+	o.SetIPRangesStart(ipRangesStart)
 	return o
 }
 
 // SetIPRangesStart adds the ipRangesStart to the ip subnet collection get params
-func (o *IPSubnetCollectionGetParams) SetIPRangesStart(iPRangesStart *string) {
-	o.IPRangesStart = iPRangesStart
+func (o *IPSubnetCollectionGetParams) SetIPRangesStart(ipRangesStart *string) {
+	o.IPRangesStart = ipRangesStart
 }
 
 // WithIpspaceName adds the ipspaceName to the ip subnet collection get params

@@ -1010,7 +1010,10 @@ func (a *Client) CloudStoreModifyCollection(params *CloudStoreModifyCollectionPa
 }
 
 /*
-ClusterSpaceModify Updates full_threshold_percent and nearly_full_threshold_percent for the complete cluster.
+	ClusterSpaceModify Updates full_threshold_percent and nearly_full_threshold_percent for the complete cluster.
+
+### Related ONTAP commands
+* `cluster space modify`
 */
 func (a *Client) ClusterSpaceModify(params *ClusterSpaceModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterSpaceModifyOK, *ClusterSpaceModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -1959,6 +1962,9 @@ If not specified in POST, the following default property values are assigned:
 * `nfsv4.enabled` - false. This property specifies whether NFSv4 is enabled for the FlexCache volume.
 * `cifs.enabled` - false. This property specifies whether CIFS is enabled for the FlexCache volume.
 * `s3.enabled` - false. This property specifies whether S3 is enabled for the FlexCache volume.
+* `write_absorption.enabled` - false. This property specifies whether Write Absorption is enabled for the FlexCache volume.
+* `mtime_scrubber.enabled` - false. This property specifies whether the mtime-based scrubber is enabled for the FlexCache volume.
+* `mtime_scrubber.threshold` - 120. This property specifies the mtime threshold in seconds for the scrubber. Valid range is 5 to 2592000 seconds (5 seconds to 30 days).
 * `cifs_change_notify.enabled` - false. This property specifies whether a CIFS change notification is enabled for the FlexCache volume. <personalities supports=aiml>
 * `constituent_count` - 1. This property specifies the number of constituents in the FlexGroup volume upon Flexcache create. </personalities>
 ### Related ONTAP commands
@@ -2157,6 +2163,9 @@ func (a *Client) FlexcacheGet(params *FlexcacheGetParams, authInfo runtime.Clien
 * `nfsv4.enabled` - This property specifies whether NFSv4 is enabled for the FlexCache volume.
 * `cifs.enabled` - This property specifies whether CIFS is enabled for the FlexCache volume.
 * `s3.enabled` - This property specifies whether S3 is enabled for the FlexCache volume.
+* `write_absorption.enabled` - false. This property specifies whether Write Absorption is enabled for the FlexCache volume.
+* `mtime_scrubber.enabled` - false. This property specifies whether the mtime-based scrubber is enabled for the FlexCache volume.
+* `mtime_scrubber.threshold` - 120. This property specifies the mtime threshold in seconds for the scrubber. Valid range is 5 seconds to 2592000 seconds (5 seconds to 30 days).
 ### Default property values
 If not specified in PATCH, the following default property value is assigned:
 * `prepopulate.recurse` - Default value is "true".
@@ -2348,6 +2357,7 @@ func (a *Client) FlexcacheOriginGet(params *FlexcacheOriginGetParams, authInfo r
 ### Required properties
 * `uuid` - Origin volume UUID.
 * `block_level_invalidation` - Value for the Block Level Invalidation flag - options {true|false}.
+* `global_file_locking_enabled` - Value for the Global File Locking flag - options {true|false}.
 ### Related ONTAP commands
 * `volume flexcache origin config modify`
 ### Learn more
@@ -4345,6 +4355,7 @@ func (a *Client) SnapshotPolicyCollectionGet(params *SnapshotPolicyCollectionGet
 * `copies.prefix` - Prefix to use when creating snapshots at regular intervals.
 * `copies.snapmirror_label` - Label for SnapMirror operations.
 * `copies.retention_period` - Retention period for snapshot locking enabled volumes.The duration must be specified in ISO format or \"infinite\".
+* `copies.snapmirror_label` - Label for SnapMirror operations. Must be 1-31 characters.
 ### Default property values
 If not specified in POST, the following default property values are assigned:
 * `svm.uuid` or `svm.name` - If not specified, the snapshot policy will be created on the cluster admin SVM.
@@ -5325,6 +5336,8 @@ func (a *Client) SplitStatusGet(params *SplitStatusGetParams, authInfo runtime.C
 	StorageAvailabilityZoneCollectionGet Retrieves storage details for all availability zones of the cluster. By default, the availability zone UUID is retrieved. Other Storage details can
 
 be retrieved using fields parameter. Storage details include storage efficiency and other storage related information.
+### Related ONTAP commands
+* `storage availability-zone show`
 */
 func (a *Client) StorageAvailabilityZoneCollectionGet(params *StorageAvailabilityZoneCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageAvailabilityZoneCollectionGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5365,6 +5378,8 @@ func (a *Client) StorageAvailabilityZoneCollectionGet(params *StorageAvailabilit
 	StorageAvailabilityZoneGet Retrieves storage details for an individual availability zone of the cluster. By default, this endpoint returns all fields.
 
 Storage details include storage efficiency and other storage related information.
+### Related ONTAP commands
+* `storage availability-zone show`
 */
 func (a *Client) StorageAvailabilityZoneGet(params *StorageAvailabilityZoneGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageAvailabilityZoneGetOK, error) {
 	// TODO: Validate the params before sending
@@ -5402,7 +5417,10 @@ func (a *Client) StorageAvailabilityZoneGet(params *StorageAvailabilityZoneGetPa
 }
 
 /*
-StorageAvailabilityZoneModify Updates full_threshold_percent and nearly_full_threshold_percent for an individual availability zone of the cluster.
+	StorageAvailabilityZoneModify Updates full_threshold_percent and nearly_full_threshold_percent for an individual availability zone of the cluster.
+
+### Related ONTAP commands
+* `storage availability-zone modify`
 */
 func (a *Client) StorageAvailabilityZoneModify(params *StorageAvailabilityZoneModifyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageAvailabilityZoneModifyOK, *StorageAvailabilityZoneModifyAccepted, error) {
 	// TODO: Validate the params before sending
@@ -5572,6 +5590,8 @@ func (a *Client) StorageBridgeGet(params *StorageBridgeGetParams, authInfo runti
 
 Storage details include storage efficiency, block storage and cloud storage information.
 Supports the following roles: admin, and readonly.
+### Related ONTAP commands
+* `cluster space show`
 */
 func (a *Client) StorageClusterGet(params *StorageClusterGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*StorageClusterGetOK, error) {
 	// TODO: Validate the params before sending
@@ -7016,7 +7036,12 @@ func (a *Client) VolumeCollectionGet(params *VolumeCollectionGetParams, authInfo
 ### Default property values
 * `state` -  _online_
 * `size` - _20MB_
-* `style` - _flexvol_
+<personalities supports=unified,asar2>
+* `style` - Determined by the specified aggregates. Specifying a single aggregate, without "constituents_per_aggregate", creates a FlexVol. Specifying multiple aggregates, or a single aggregate with "constituents_per_aggregate", creates a FlexGroup.
+</personalities>
+<personalities supports=aiml>
+* `style` - _flexgroup_
+</personalities>
 * `type` - _rw_
 * `encryption.enabled` - _false_
 * `snapshot_policy.name` - _default_

@@ -2312,6 +2312,12 @@ type VolumeModifyCollectionParams struct {
 	*/
 	RestoreToRestorePath *string
 
+	/* RestoreToSnapshotForce.
+
+	   Set the force flag to true to perform a forced snapshot restore. When true, the restore proceeds even if newer snapshots exist or have protective metadata (such as owners, tags, or retention), bypassing those protections to allow the revert.
+	*/
+	RestoreToSnapshotForce *bool
+
 	/* RestoreToSnapshotName.
 
 	   Name of the snapshot to restore volume to the point in time the snapshot was taken.
@@ -2374,6 +2380,12 @@ type VolumeModifyCollectionParams struct {
 	     Default: "use_existing_resources"
 	*/
 	SizingMethod *string
+
+	/* SmasProtection.
+
+	   Filter by smas_protection
+	*/
+	SmasProtection *string
 
 	/* SnaplockAppendModeEnabled.
 
@@ -3635,6 +3647,12 @@ type VolumeModifyCollectionParams struct {
 	*/
 	SvmUUID *string
 
+	/* SvmDrProtection.
+
+	   Filter by svm_dr_protection
+	*/
+	SvmDrProtection *string
+
 	/* TieringMinCoolingDays.
 
 	   Filter by tiering.min_cooling_days
@@ -3695,6 +3713,8 @@ func (o *VolumeModifyCollectionParams) SetDefaults() {
 
 		preserveLunIdsDefault = bool(false)
 
+		restoreToSnapshotForceDefault = bool(false)
+
 		returnRecordsDefault = bool(true)
 
 		returnTimeoutDefault = int64(15)
@@ -3705,13 +3725,14 @@ func (o *VolumeModifyCollectionParams) SetDefaults() {
 	)
 
 	val := VolumeModifyCollectionParams{
-		ContinueOnFailure: &continueOnFailureDefault,
-		IsConstituent:     &isConstituentDefault,
-		PreserveLunIds:    &preserveLunIdsDefault,
-		ReturnRecords:     &returnRecordsDefault,
-		ReturnTimeout:     &returnTimeoutDefault,
-		SerialRecords:     &serialRecordsDefault,
-		SizingMethod:      &sizingMethodDefault,
+		ContinueOnFailure:      &continueOnFailureDefault,
+		IsConstituent:          &isConstituentDefault,
+		PreserveLunIds:         &preserveLunIdsDefault,
+		RestoreToSnapshotForce: &restoreToSnapshotForceDefault,
+		ReturnRecords:          &returnRecordsDefault,
+		ReturnTimeout:          &returnTimeoutDefault,
+		SerialRecords:          &serialRecordsDefault,
+		SizingMethod:           &sizingMethodDefault,
 	}
 
 	val.timeout = o.timeout
@@ -7878,6 +7899,17 @@ func (o *VolumeModifyCollectionParams) SetRestoreToRestorePath(restoreToRestoreP
 	o.RestoreToRestorePath = restoreToRestorePath
 }
 
+// WithRestoreToSnapshotForce adds the restoreToSnapshotForce to the volume modify collection params
+func (o *VolumeModifyCollectionParams) WithRestoreToSnapshotForce(restoreToSnapshotForce *bool) *VolumeModifyCollectionParams {
+	o.SetRestoreToSnapshotForce(restoreToSnapshotForce)
+	return o
+}
+
+// SetRestoreToSnapshotForce adds the restoreToSnapshotForce to the volume modify collection params
+func (o *VolumeModifyCollectionParams) SetRestoreToSnapshotForce(restoreToSnapshotForce *bool) {
+	o.RestoreToSnapshotForce = restoreToSnapshotForce
+}
+
 // WithRestoreToSnapshotName adds the restoreToSnapshotName to the volume modify collection params
 func (o *VolumeModifyCollectionParams) WithRestoreToSnapshotName(restoreToSnapshotName *string) *VolumeModifyCollectionParams {
 	o.SetRestoreToSnapshotName(restoreToSnapshotName)
@@ -7975,6 +8007,17 @@ func (o *VolumeModifyCollectionParams) WithSizingMethod(sizingMethod *string) *V
 // SetSizingMethod adds the sizingMethod to the volume modify collection params
 func (o *VolumeModifyCollectionParams) SetSizingMethod(sizingMethod *string) {
 	o.SizingMethod = sizingMethod
+}
+
+// WithSmasProtection adds the smasProtection to the volume modify collection params
+func (o *VolumeModifyCollectionParams) WithSmasProtection(smasProtection *string) *VolumeModifyCollectionParams {
+	o.SetSmasProtection(smasProtection)
+	return o
+}
+
+// SetSmasProtection adds the smasProtection to the volume modify collection params
+func (o *VolumeModifyCollectionParams) SetSmasProtection(smasProtection *string) {
+	o.SmasProtection = smasProtection
 }
 
 // WithSnaplockAppendModeEnabled adds the snaplockAppendModeEnabled to the volume modify collection params
@@ -10285,6 +10328,17 @@ func (o *VolumeModifyCollectionParams) WithSvmUUID(svmUUID *string) *VolumeModif
 // SetSvmUUID adds the svmUuid to the volume modify collection params
 func (o *VolumeModifyCollectionParams) SetSvmUUID(svmUUID *string) {
 	o.SvmUUID = svmUUID
+}
+
+// WithSvmDrProtection adds the svmDrProtection to the volume modify collection params
+func (o *VolumeModifyCollectionParams) WithSvmDrProtection(svmDrProtection *string) *VolumeModifyCollectionParams {
+	o.SetSvmDrProtection(svmDrProtection)
+	return o
+}
+
+// SetSvmDrProtection adds the svmDrProtection to the volume modify collection params
+func (o *VolumeModifyCollectionParams) SetSvmDrProtection(svmDrProtection *string) {
+	o.SvmDrProtection = svmDrProtection
 }
 
 // WithTieringMinCoolingDays adds the tieringMinCoolingDays to the volume modify collection params
@@ -16722,6 +16776,23 @@ func (o *VolumeModifyCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 		}
 	}
 
+	if o.RestoreToSnapshotForce != nil {
+
+		// query param restore_to.snapshot.force
+		var qrRestoreToSnapshotForce bool
+
+		if o.RestoreToSnapshotForce != nil {
+			qrRestoreToSnapshotForce = *o.RestoreToSnapshotForce
+		}
+		qRestoreToSnapshotForce := swag.FormatBool(qrRestoreToSnapshotForce)
+		if qRestoreToSnapshotForce != "" {
+
+			if err := r.SetQueryParam("restore_to.snapshot.force", qRestoreToSnapshotForce); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.RestoreToSnapshotName != nil {
 
 		// query param restore_to.snapshot.name
@@ -16870,6 +16941,23 @@ func (o *VolumeModifyCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 		if qSizingMethod != "" {
 
 			if err := r.SetQueryParam("sizing_method", qSizingMethod); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SmasProtection != nil {
+
+		// query param smas_protection
+		var qrSmasProtection string
+
+		if o.SmasProtection != nil {
+			qrSmasProtection = *o.SmasProtection
+		}
+		qSmasProtection := qrSmasProtection
+		if qSmasProtection != "" {
+
+			if err := r.SetQueryParam("smas_protection", qSmasProtection); err != nil {
 				return err
 			}
 		}
@@ -20440,6 +20528,23 @@ func (o *VolumeModifyCollectionParams) WriteToRequest(r runtime.ClientRequest, r
 		if qSvmUUID != "" {
 
 			if err := r.SetQueryParam("svm.uuid", qSvmUUID); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SvmDrProtection != nil {
+
+		// query param svm_dr_protection
+		var qrSvmDrProtection string
+
+		if o.SvmDrProtection != nil {
+			qrSvmDrProtection = *o.SvmDrProtection
+		}
+		qSvmDrProtection := qrSvmDrProtection
+		if qSvmDrProtection != "" {
+
+			if err := r.SetQueryParam("svm_dr_protection", qSvmDrProtection); err != nil {
 				return err
 			}
 		}

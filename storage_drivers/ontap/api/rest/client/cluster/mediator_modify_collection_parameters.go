@@ -62,6 +62,12 @@ MediatorModifyCollectionParams contains all the parameters to send to the API en
 */
 type MediatorModifyCollectionParams struct {
 
+	/* ConnectionType.
+
+	   Filter by connection_type
+	*/
+	ConnectionType *string
+
 	/* ContinueOnFailure.
 
 	   Continue even when the operation fails on one of the records.
@@ -235,6 +241,17 @@ func (o *MediatorModifyCollectionParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithConnectionType adds the connectionType to the mediator modify collection params
+func (o *MediatorModifyCollectionParams) WithConnectionType(connectionType *string) *MediatorModifyCollectionParams {
+	o.SetConnectionType(connectionType)
+	return o
+}
+
+// SetConnectionType adds the connectionType to the mediator modify collection params
+func (o *MediatorModifyCollectionParams) SetConnectionType(connectionType *string) {
+	o.ConnectionType = connectionType
+}
+
 // WithContinueOnFailure adds the continueOnFailure to the mediator modify collection params
 func (o *MediatorModifyCollectionParams) WithContinueOnFailure(continueOnFailure *bool) *MediatorModifyCollectionParams {
 	o.SetContinueOnFailure(continueOnFailure)
@@ -257,15 +274,15 @@ func (o *MediatorModifyCollectionParams) SetInfo(info MediatorModifyCollectionBo
 	o.Info = info
 }
 
-// WithIPAddress adds the iPAddress to the mediator modify collection params
-func (o *MediatorModifyCollectionParams) WithIPAddress(iPAddress *string) *MediatorModifyCollectionParams {
-	o.SetIPAddress(iPAddress)
+// WithIPAddress adds the ipAddress to the mediator modify collection params
+func (o *MediatorModifyCollectionParams) WithIPAddress(ipAddress *string) *MediatorModifyCollectionParams {
+	o.SetIPAddress(ipAddress)
 	return o
 }
 
 // SetIPAddress adds the ipAddress to the mediator modify collection params
-func (o *MediatorModifyCollectionParams) SetIPAddress(iPAddress *string) {
-	o.IPAddress = iPAddress
+func (o *MediatorModifyCollectionParams) SetIPAddress(ipAddress *string) {
+	o.IPAddress = ipAddress
 }
 
 // WithLocalMediatorConnectivity adds the localMediatorConnectivity to the mediator modify collection params
@@ -418,6 +435,23 @@ func (o *MediatorModifyCollectionParams) WriteToRequest(r runtime.ClientRequest,
 		return err
 	}
 	var res []error
+
+	if o.ConnectionType != nil {
+
+		// query param connection_type
+		var qrConnectionType string
+
+		if o.ConnectionType != nil {
+			qrConnectionType = *o.ConnectionType
+		}
+		qConnectionType := qrConnectionType
+		if qConnectionType != "" {
+
+			if err := r.SetQueryParam("connection_type", qConnectionType); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.ContinueOnFailure != nil {
 

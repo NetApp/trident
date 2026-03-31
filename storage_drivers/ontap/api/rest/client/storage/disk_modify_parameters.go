@@ -88,7 +88,7 @@ type DiskModifyParams struct {
 
 	/* Node.
 
-	   Node to assign disk. This property is not supported on the ASA r2 platform.
+	   Node to assign disk.
 	*/
 	Node *string
 

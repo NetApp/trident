@@ -306,6 +306,18 @@ type SnapmirrorRelationshipModifyCollectionParams struct {
 	*/
 	ReturnTimeout *int64
 
+	/* SelectiveVolumesMode.
+
+	   Filter by selective_volumes.mode
+	*/
+	SelectiveVolumesMode *string
+
+	/* SelectiveVolumesName.
+
+	   Filter by selective_volumes.name
+	*/
+	SelectiveVolumesName *string
+
 	/* SerialRecords.
 
 	   Perform the operation on the records synchronously.
@@ -997,6 +1009,28 @@ func (o *SnapmirrorRelationshipModifyCollectionParams) WithReturnTimeout(returnT
 // SetReturnTimeout adds the returnTimeout to the snapmirror relationship modify collection params
 func (o *SnapmirrorRelationshipModifyCollectionParams) SetReturnTimeout(returnTimeout *int64) {
 	o.ReturnTimeout = returnTimeout
+}
+
+// WithSelectiveVolumesMode adds the selectiveVolumesMode to the snapmirror relationship modify collection params
+func (o *SnapmirrorRelationshipModifyCollectionParams) WithSelectiveVolumesMode(selectiveVolumesMode *string) *SnapmirrorRelationshipModifyCollectionParams {
+	o.SetSelectiveVolumesMode(selectiveVolumesMode)
+	return o
+}
+
+// SetSelectiveVolumesMode adds the selectiveVolumesMode to the snapmirror relationship modify collection params
+func (o *SnapmirrorRelationshipModifyCollectionParams) SetSelectiveVolumesMode(selectiveVolumesMode *string) {
+	o.SelectiveVolumesMode = selectiveVolumesMode
+}
+
+// WithSelectiveVolumesName adds the selectiveVolumesName to the snapmirror relationship modify collection params
+func (o *SnapmirrorRelationshipModifyCollectionParams) WithSelectiveVolumesName(selectiveVolumesName *string) *SnapmirrorRelationshipModifyCollectionParams {
+	o.SetSelectiveVolumesName(selectiveVolumesName)
+	return o
+}
+
+// SetSelectiveVolumesName adds the selectiveVolumesName to the snapmirror relationship modify collection params
+func (o *SnapmirrorRelationshipModifyCollectionParams) SetSelectiveVolumesName(selectiveVolumesName *string) {
+	o.SelectiveVolumesName = selectiveVolumesName
 }
 
 // WithSerialRecords adds the serialRecords to the snapmirror relationship modify collection params
@@ -1976,6 +2010,40 @@ func (o *SnapmirrorRelationshipModifyCollectionParams) WriteToRequest(r runtime.
 		if qReturnTimeout != "" {
 
 			if err := r.SetQueryParam("return_timeout", qReturnTimeout); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SelectiveVolumesMode != nil {
+
+		// query param selective_volumes.mode
+		var qrSelectiveVolumesMode string
+
+		if o.SelectiveVolumesMode != nil {
+			qrSelectiveVolumesMode = *o.SelectiveVolumesMode
+		}
+		qSelectiveVolumesMode := qrSelectiveVolumesMode
+		if qSelectiveVolumesMode != "" {
+
+			if err := r.SetQueryParam("selective_volumes.mode", qSelectiveVolumesMode); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.SelectiveVolumesName != nil {
+
+		// query param selective_volumes.name
+		var qrSelectiveVolumesName string
+
+		if o.SelectiveVolumesName != nil {
+			qrSelectiveVolumesName = *o.SelectiveVolumesName
+		}
+		qSelectiveVolumesName := qrSelectiveVolumesName
+		if qSelectiveVolumesName != "" {
+
+			if err := r.SetQueryParam("selective_volumes.name", qSelectiveVolumesName); err != nil {
 				return err
 			}
 		}

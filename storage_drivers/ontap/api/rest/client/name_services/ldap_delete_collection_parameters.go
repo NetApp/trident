@@ -252,53 +252,53 @@ type LdapDeleteCollectionParams struct {
 	*/
 	StatusDnMessage *string
 
-	/* StatusIPV4Code.
+	/* StatusIPv4Code.
 
 	   Filter by status.ipv4.code
 	*/
-	StatusIPV4Code *int64
+	StatusIPv4Code *int64
 
-	/* StatusIPV4DnMessages.
+	/* StatusIPv4DnMessages.
 
 	   Filter by status.ipv4.dn_messages
 	*/
-	StatusIPV4DnMessages *string
+	StatusIPv4DnMessages *string
 
-	/* StatusIPV4Message.
+	/* StatusIPv4Message.
 
 	   Filter by status.ipv4.message
 	*/
-	StatusIPV4Message *string
+	StatusIPv4Message *string
 
-	/* StatusIPV4State.
+	/* StatusIPv4State.
 
-	   Filter by status.ipv4_state
+	   Filter by status.ipv4.state
 	*/
-	StatusIPV4State *string
+	StatusIPv4State *string
 
-	/* StatusIPV6Code.
+	/* StatusIPv6Code.
 
 	   Filter by status.ipv6.code
 	*/
-	StatusIPV6Code *int64
+	StatusIPv6Code *int64
 
-	/* StatusIPV6DnMessages.
+	/* StatusIPv6DnMessages.
 
 	   Filter by status.ipv6.dn_messages
 	*/
-	StatusIPV6DnMessages *string
+	StatusIPv6DnMessages *string
 
-	/* StatusIPV6Message.
+	/* StatusIPv6Message.
 
 	   Filter by status.ipv6.message
 	*/
-	StatusIPV6Message *string
+	StatusIPv6Message *string
 
-	/* StatusIPV6State.
+	/* StatusIPv6State.
 
-	   Filter by status.ipv6.state
+	   Filter by status.ipv6_state
 	*/
-	StatusIPV6State *string
+	StatusIPv6State *string
 
 	/* StatusMessage.
 
@@ -762,92 +762,92 @@ func (o *LdapDeleteCollectionParams) SetStatusDnMessage(statusDnMessage *string)
 	o.StatusDnMessage = statusDnMessage
 }
 
-// WithStatusIPV4Code adds the statusIPV4Code to the ldap delete collection params
-func (o *LdapDeleteCollectionParams) WithStatusIPV4Code(statusIPV4Code *int64) *LdapDeleteCollectionParams {
-	o.SetStatusIPV4Code(statusIPV4Code)
+// WithStatusIPv4Code adds the statusIPv4Code to the ldap delete collection params
+func (o *LdapDeleteCollectionParams) WithStatusIPv4Code(statusIPv4Code *int64) *LdapDeleteCollectionParams {
+	o.SetStatusIPv4Code(statusIPv4Code)
 	return o
 }
 
-// SetStatusIPV4Code adds the statusIpv4Code to the ldap delete collection params
-func (o *LdapDeleteCollectionParams) SetStatusIPV4Code(statusIPV4Code *int64) {
-	o.StatusIPV4Code = statusIPV4Code
+// SetStatusIPv4Code adds the statusIpv4Code to the ldap delete collection params
+func (o *LdapDeleteCollectionParams) SetStatusIPv4Code(statusIPv4Code *int64) {
+	o.StatusIPv4Code = statusIPv4Code
 }
 
-// WithStatusIPV4DnMessages adds the statusIPV4DnMessages to the ldap delete collection params
-func (o *LdapDeleteCollectionParams) WithStatusIPV4DnMessages(statusIPV4DnMessages *string) *LdapDeleteCollectionParams {
-	o.SetStatusIPV4DnMessages(statusIPV4DnMessages)
+// WithStatusIPv4DnMessages adds the statusIPv4DnMessages to the ldap delete collection params
+func (o *LdapDeleteCollectionParams) WithStatusIPv4DnMessages(statusIPv4DnMessages *string) *LdapDeleteCollectionParams {
+	o.SetStatusIPv4DnMessages(statusIPv4DnMessages)
 	return o
 }
 
-// SetStatusIPV4DnMessages adds the statusIpv4DnMessages to the ldap delete collection params
-func (o *LdapDeleteCollectionParams) SetStatusIPV4DnMessages(statusIPV4DnMessages *string) {
-	o.StatusIPV4DnMessages = statusIPV4DnMessages
+// SetStatusIPv4DnMessages adds the statusIpv4DnMessages to the ldap delete collection params
+func (o *LdapDeleteCollectionParams) SetStatusIPv4DnMessages(statusIPv4DnMessages *string) {
+	o.StatusIPv4DnMessages = statusIPv4DnMessages
 }
 
-// WithStatusIPV4Message adds the statusIPV4Message to the ldap delete collection params
-func (o *LdapDeleteCollectionParams) WithStatusIPV4Message(statusIPV4Message *string) *LdapDeleteCollectionParams {
-	o.SetStatusIPV4Message(statusIPV4Message)
+// WithStatusIPv4Message adds the statusIPv4Message to the ldap delete collection params
+func (o *LdapDeleteCollectionParams) WithStatusIPv4Message(statusIPv4Message *string) *LdapDeleteCollectionParams {
+	o.SetStatusIPv4Message(statusIPv4Message)
 	return o
 }
 
-// SetStatusIPV4Message adds the statusIpv4Message to the ldap delete collection params
-func (o *LdapDeleteCollectionParams) SetStatusIPV4Message(statusIPV4Message *string) {
-	o.StatusIPV4Message = statusIPV4Message
+// SetStatusIPv4Message adds the statusIpv4Message to the ldap delete collection params
+func (o *LdapDeleteCollectionParams) SetStatusIPv4Message(statusIPv4Message *string) {
+	o.StatusIPv4Message = statusIPv4Message
 }
 
-// WithStatusIPV4State adds the statusIPV4State to the ldap delete collection params
-func (o *LdapDeleteCollectionParams) WithStatusIPV4State(statusIPV4State *string) *LdapDeleteCollectionParams {
-	o.SetStatusIPV4State(statusIPV4State)
+// WithStatusIPv4State adds the statusIPv4State to the ldap delete collection params
+func (o *LdapDeleteCollectionParams) WithStatusIPv4State(statusIPv4State *string) *LdapDeleteCollectionParams {
+	o.SetStatusIPv4State(statusIPv4State)
 	return o
 }
 
-// SetStatusIPV4State adds the statusIpv4State to the ldap delete collection params
-func (o *LdapDeleteCollectionParams) SetStatusIPV4State(statusIPV4State *string) {
-	o.StatusIPV4State = statusIPV4State
+// SetStatusIPv4State adds the statusIpv4State to the ldap delete collection params
+func (o *LdapDeleteCollectionParams) SetStatusIPv4State(statusIPv4State *string) {
+	o.StatusIPv4State = statusIPv4State
 }
 
-// WithStatusIPV6Code adds the statusIPV6Code to the ldap delete collection params
-func (o *LdapDeleteCollectionParams) WithStatusIPV6Code(statusIPV6Code *int64) *LdapDeleteCollectionParams {
-	o.SetStatusIPV6Code(statusIPV6Code)
+// WithStatusIPv6Code adds the statusIPv6Code to the ldap delete collection params
+func (o *LdapDeleteCollectionParams) WithStatusIPv6Code(statusIPv6Code *int64) *LdapDeleteCollectionParams {
+	o.SetStatusIPv6Code(statusIPv6Code)
 	return o
 }
 
-// SetStatusIPV6Code adds the statusIpv6Code to the ldap delete collection params
-func (o *LdapDeleteCollectionParams) SetStatusIPV6Code(statusIPV6Code *int64) {
-	o.StatusIPV6Code = statusIPV6Code
+// SetStatusIPv6Code adds the statusIpv6Code to the ldap delete collection params
+func (o *LdapDeleteCollectionParams) SetStatusIPv6Code(statusIPv6Code *int64) {
+	o.StatusIPv6Code = statusIPv6Code
 }
 
-// WithStatusIPV6DnMessages adds the statusIPV6DnMessages to the ldap delete collection params
-func (o *LdapDeleteCollectionParams) WithStatusIPV6DnMessages(statusIPV6DnMessages *string) *LdapDeleteCollectionParams {
-	o.SetStatusIPV6DnMessages(statusIPV6DnMessages)
+// WithStatusIPv6DnMessages adds the statusIPv6DnMessages to the ldap delete collection params
+func (o *LdapDeleteCollectionParams) WithStatusIPv6DnMessages(statusIPv6DnMessages *string) *LdapDeleteCollectionParams {
+	o.SetStatusIPv6DnMessages(statusIPv6DnMessages)
 	return o
 }
 
-// SetStatusIPV6DnMessages adds the statusIpv6DnMessages to the ldap delete collection params
-func (o *LdapDeleteCollectionParams) SetStatusIPV6DnMessages(statusIPV6DnMessages *string) {
-	o.StatusIPV6DnMessages = statusIPV6DnMessages
+// SetStatusIPv6DnMessages adds the statusIpv6DnMessages to the ldap delete collection params
+func (o *LdapDeleteCollectionParams) SetStatusIPv6DnMessages(statusIPv6DnMessages *string) {
+	o.StatusIPv6DnMessages = statusIPv6DnMessages
 }
 
-// WithStatusIPV6Message adds the statusIPV6Message to the ldap delete collection params
-func (o *LdapDeleteCollectionParams) WithStatusIPV6Message(statusIPV6Message *string) *LdapDeleteCollectionParams {
-	o.SetStatusIPV6Message(statusIPV6Message)
+// WithStatusIPv6Message adds the statusIPv6Message to the ldap delete collection params
+func (o *LdapDeleteCollectionParams) WithStatusIPv6Message(statusIPv6Message *string) *LdapDeleteCollectionParams {
+	o.SetStatusIPv6Message(statusIPv6Message)
 	return o
 }
 
-// SetStatusIPV6Message adds the statusIpv6Message to the ldap delete collection params
-func (o *LdapDeleteCollectionParams) SetStatusIPV6Message(statusIPV6Message *string) {
-	o.StatusIPV6Message = statusIPV6Message
+// SetStatusIPv6Message adds the statusIpv6Message to the ldap delete collection params
+func (o *LdapDeleteCollectionParams) SetStatusIPv6Message(statusIPv6Message *string) {
+	o.StatusIPv6Message = statusIPv6Message
 }
 
-// WithStatusIPV6State adds the statusIPV6State to the ldap delete collection params
-func (o *LdapDeleteCollectionParams) WithStatusIPV6State(statusIPV6State *string) *LdapDeleteCollectionParams {
-	o.SetStatusIPV6State(statusIPV6State)
+// WithStatusIPv6State adds the statusIPv6State to the ldap delete collection params
+func (o *LdapDeleteCollectionParams) WithStatusIPv6State(statusIPv6State *string) *LdapDeleteCollectionParams {
+	o.SetStatusIPv6State(statusIPv6State)
 	return o
 }
 
-// SetStatusIPV6State adds the statusIpv6State to the ldap delete collection params
-func (o *LdapDeleteCollectionParams) SetStatusIPV6State(statusIPV6State *string) {
-	o.StatusIPV6State = statusIPV6State
+// SetStatusIPv6State adds the statusIpv6State to the ldap delete collection params
+func (o *LdapDeleteCollectionParams) SetStatusIPv6State(statusIPv6State *string) {
+	o.StatusIPv6State = statusIPv6State
 }
 
 // WithStatusMessage adds the statusMessage to the ldap delete collection params
@@ -1459,137 +1459,137 @@ func (o *LdapDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, reg
 		}
 	}
 
-	if o.StatusIPV4Code != nil {
+	if o.StatusIPv4Code != nil {
 
 		// query param status.ipv4.code
-		var qrStatusIPV4Code int64
+		var qrStatusIPv4Code int64
 
-		if o.StatusIPV4Code != nil {
-			qrStatusIPV4Code = *o.StatusIPV4Code
+		if o.StatusIPv4Code != nil {
+			qrStatusIPv4Code = *o.StatusIPv4Code
 		}
-		qStatusIPV4Code := swag.FormatInt64(qrStatusIPV4Code)
-		if qStatusIPV4Code != "" {
+		qStatusIPv4Code := swag.FormatInt64(qrStatusIPv4Code)
+		if qStatusIPv4Code != "" {
 
-			if err := r.SetQueryParam("status.ipv4.code", qStatusIPV4Code); err != nil {
+			if err := r.SetQueryParam("status.ipv4.code", qStatusIPv4Code); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.StatusIPV4DnMessages != nil {
+	if o.StatusIPv4DnMessages != nil {
 
 		// query param status.ipv4.dn_messages
-		var qrStatusIPV4DnMessages string
+		var qrStatusIPv4DnMessages string
 
-		if o.StatusIPV4DnMessages != nil {
-			qrStatusIPV4DnMessages = *o.StatusIPV4DnMessages
+		if o.StatusIPv4DnMessages != nil {
+			qrStatusIPv4DnMessages = *o.StatusIPv4DnMessages
 		}
-		qStatusIPV4DnMessages := qrStatusIPV4DnMessages
-		if qStatusIPV4DnMessages != "" {
+		qStatusIPv4DnMessages := qrStatusIPv4DnMessages
+		if qStatusIPv4DnMessages != "" {
 
-			if err := r.SetQueryParam("status.ipv4.dn_messages", qStatusIPV4DnMessages); err != nil {
+			if err := r.SetQueryParam("status.ipv4.dn_messages", qStatusIPv4DnMessages); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.StatusIPV4Message != nil {
+	if o.StatusIPv4Message != nil {
 
 		// query param status.ipv4.message
-		var qrStatusIPV4Message string
+		var qrStatusIPv4Message string
 
-		if o.StatusIPV4Message != nil {
-			qrStatusIPV4Message = *o.StatusIPV4Message
+		if o.StatusIPv4Message != nil {
+			qrStatusIPv4Message = *o.StatusIPv4Message
 		}
-		qStatusIPV4Message := qrStatusIPV4Message
-		if qStatusIPV4Message != "" {
+		qStatusIPv4Message := qrStatusIPv4Message
+		if qStatusIPv4Message != "" {
 
-			if err := r.SetQueryParam("status.ipv4.message", qStatusIPV4Message); err != nil {
+			if err := r.SetQueryParam("status.ipv4.message", qStatusIPv4Message); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.StatusIPV4State != nil {
+	if o.StatusIPv4State != nil {
 
-		// query param status.ipv4_state
-		var qrStatusIPV4State string
+		// query param status.ipv4.state
+		var qrStatusIPv4State string
 
-		if o.StatusIPV4State != nil {
-			qrStatusIPV4State = *o.StatusIPV4State
+		if o.StatusIPv4State != nil {
+			qrStatusIPv4State = *o.StatusIPv4State
 		}
-		qStatusIPV4State := qrStatusIPV4State
-		if qStatusIPV4State != "" {
+		qStatusIPv4State := qrStatusIPv4State
+		if qStatusIPv4State != "" {
 
-			if err := r.SetQueryParam("status.ipv4_state", qStatusIPV4State); err != nil {
+			if err := r.SetQueryParam("status.ipv4.state", qStatusIPv4State); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.StatusIPV6Code != nil {
+	if o.StatusIPv6Code != nil {
 
 		// query param status.ipv6.code
-		var qrStatusIPV6Code int64
+		var qrStatusIPv6Code int64
 
-		if o.StatusIPV6Code != nil {
-			qrStatusIPV6Code = *o.StatusIPV6Code
+		if o.StatusIPv6Code != nil {
+			qrStatusIPv6Code = *o.StatusIPv6Code
 		}
-		qStatusIPV6Code := swag.FormatInt64(qrStatusIPV6Code)
-		if qStatusIPV6Code != "" {
+		qStatusIPv6Code := swag.FormatInt64(qrStatusIPv6Code)
+		if qStatusIPv6Code != "" {
 
-			if err := r.SetQueryParam("status.ipv6.code", qStatusIPV6Code); err != nil {
+			if err := r.SetQueryParam("status.ipv6.code", qStatusIPv6Code); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.StatusIPV6DnMessages != nil {
+	if o.StatusIPv6DnMessages != nil {
 
 		// query param status.ipv6.dn_messages
-		var qrStatusIPV6DnMessages string
+		var qrStatusIPv6DnMessages string
 
-		if o.StatusIPV6DnMessages != nil {
-			qrStatusIPV6DnMessages = *o.StatusIPV6DnMessages
+		if o.StatusIPv6DnMessages != nil {
+			qrStatusIPv6DnMessages = *o.StatusIPv6DnMessages
 		}
-		qStatusIPV6DnMessages := qrStatusIPV6DnMessages
-		if qStatusIPV6DnMessages != "" {
+		qStatusIPv6DnMessages := qrStatusIPv6DnMessages
+		if qStatusIPv6DnMessages != "" {
 
-			if err := r.SetQueryParam("status.ipv6.dn_messages", qStatusIPV6DnMessages); err != nil {
+			if err := r.SetQueryParam("status.ipv6.dn_messages", qStatusIPv6DnMessages); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.StatusIPV6Message != nil {
+	if o.StatusIPv6Message != nil {
 
 		// query param status.ipv6.message
-		var qrStatusIPV6Message string
+		var qrStatusIPv6Message string
 
-		if o.StatusIPV6Message != nil {
-			qrStatusIPV6Message = *o.StatusIPV6Message
+		if o.StatusIPv6Message != nil {
+			qrStatusIPv6Message = *o.StatusIPv6Message
 		}
-		qStatusIPV6Message := qrStatusIPV6Message
-		if qStatusIPV6Message != "" {
+		qStatusIPv6Message := qrStatusIPv6Message
+		if qStatusIPv6Message != "" {
 
-			if err := r.SetQueryParam("status.ipv6.message", qStatusIPV6Message); err != nil {
+			if err := r.SetQueryParam("status.ipv6.message", qStatusIPv6Message); err != nil {
 				return err
 			}
 		}
 	}
 
-	if o.StatusIPV6State != nil {
+	if o.StatusIPv6State != nil {
 
-		// query param status.ipv6.state
-		var qrStatusIPV6State string
+		// query param status.ipv6_state
+		var qrStatusIPv6State string
 
-		if o.StatusIPV6State != nil {
-			qrStatusIPV6State = *o.StatusIPV6State
+		if o.StatusIPv6State != nil {
+			qrStatusIPv6State = *o.StatusIPv6State
 		}
-		qStatusIPV6State := qrStatusIPV6State
-		if qStatusIPV6State != "" {
+		qStatusIPv6State := qrStatusIPv6State
+		if qStatusIPv6State != "" {
 
-			if err := r.SetQueryParam("status.ipv6.state", qStatusIPV6State); err != nil {
+			if err := r.SetQueryParam("status.ipv6_state", qStatusIPv6State); err != nil {
 				return err
 			}
 		}

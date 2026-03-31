@@ -104,6 +104,12 @@ type DcnClusterSoftwarePackageModifyCollectionParams struct {
 	*/
 	InstallStatusMessage *string
 
+	/* InstallStatusScope.
+
+	   Filter by install_status.scope
+	*/
+	InstallStatusScope *string
+
 	/* InstallStatusStartTime.
 
 	   Filter by install_status.start_time
@@ -334,6 +340,17 @@ func (o *DcnClusterSoftwarePackageModifyCollectionParams) WithInstallStatusMessa
 // SetInstallStatusMessage adds the installStatusMessage to the dcn cluster software package modify collection params
 func (o *DcnClusterSoftwarePackageModifyCollectionParams) SetInstallStatusMessage(installStatusMessage *string) {
 	o.InstallStatusMessage = installStatusMessage
+}
+
+// WithInstallStatusScope adds the installStatusScope to the dcn cluster software package modify collection params
+func (o *DcnClusterSoftwarePackageModifyCollectionParams) WithInstallStatusScope(installStatusScope *string) *DcnClusterSoftwarePackageModifyCollectionParams {
+	o.SetInstallStatusScope(installStatusScope)
+	return o
+}
+
+// SetInstallStatusScope adds the installStatusScope to the dcn cluster software package modify collection params
+func (o *DcnClusterSoftwarePackageModifyCollectionParams) SetInstallStatusScope(installStatusScope *string) {
+	o.InstallStatusScope = installStatusScope
 }
 
 // WithInstallStatusStartTime adds the installStatusStartTime to the dcn cluster software package modify collection params
@@ -587,6 +604,23 @@ func (o *DcnClusterSoftwarePackageModifyCollectionParams) WriteToRequest(r runti
 		if qInstallStatusMessage != "" {
 
 			if err := r.SetQueryParam("install_status.message", qInstallStatusMessage); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.InstallStatusScope != nil {
+
+		// query param install_status.scope
+		var qrInstallStatusScope string
+
+		if o.InstallStatusScope != nil {
+			qrInstallStatusScope = *o.InstallStatusScope
+		}
+		qInstallStatusScope := qrInstallStatusScope
+		if qInstallStatusScope != "" {
+
+			if err := r.SetQueryParam("install_status.scope", qInstallStatusScope); err != nil {
 				return err
 			}
 		}

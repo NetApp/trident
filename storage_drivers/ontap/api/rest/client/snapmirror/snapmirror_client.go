@@ -138,6 +138,7 @@ It takes the following values:
 - The property "retention.count" specifies the maximum number of snapshots that are retained on the SnapMirror destination volume.
 - When the property "retention.label" is specified, the snapshots that have a SnapMirror label matching this property is transferred to the SnapMirror destination.
 - When the property "retention.creation_schedule" is specified, snapshots are directly created on the SnapMirror destination. The snapshots created have the same content as the latest snapshot already present on the SnapMirror destination.
+- Policies with the property "retention.creation_schedule" are supported only on the final SnapMirror destination volume in the cascade.
 - The property "transfer_schedule" cannot be set to null (no-quotes) during SnapMirror policy POST.
 - The properties "retention.label" and "retention.count" must be specified for "async" policies with "create_snapshot_on_source" set to "false".
 - The property "retention.warn" is not supported for a policy when the "retention.preserve" property is false.
@@ -536,9 +537,9 @@ func (a *Client) SnapmirrorPolicyModifyCollection(params *SnapmirrorPolicyModify
 }
 
 /*
-	SnapmirrorRelationshipCreate Creates a SnapMirror relationship. This API can optionally provision the destination endpoint when it does not exist. This API must be executed on the cluster containing the destination endpoint unless the destination endpoint is being provisioned. When the destination endpoint is being provisioned, this API can also be executed from the cluster containing the source endpoint. Provisioning of the destination endpoint from the source cluster is supported for the FlexVol volume, FlexGroup volume and Application Consistency Group endpoints.<br/>
+	SnapmirrorRelationshipCreate Creates a SnapMirror relationship. This API can optionally provision the destination endpoint when it does not exist. This API must be executed on the cluster containing the destination endpoint unless the destination endpoint is being provisioned. When the destination endpoint is being provisioned, this API can also be executed from the cluster containing the source endpoint. Provisioning of the destination endpoint from the source cluster is supported for the FlexVol volume, FlexGroup volume, Application Consistency Group  endpoints.<br/>
 
-For SVM endpoints, provisioning the destination SVM endpoint is not supported from the source cluster. When the destination endpoint exists, the source SVM and the destination SVM must be in an SVM peer relationship. When provisioning the destination endpoint, the SVM peer relationship between the source SVM and the destination SVM is established as part of the destination provision, provided that the source SVM has SVM peering permissions for the destination cluster.
+For SVM endpoints, when the destination endpoint exists, the source SVM and the destination SVM must be in an SVM peer relationship. When provisioning the destination endpoint, the SVM peer relationship between the source SVM and the destination SVM is established as part of the destination provision, provided that the source SVM has SVM peering permissions for the destination cluster.
 
 ### Required properties
 * `source.path` - Path to the source endpoint of the SnapMirror relationship.
@@ -599,6 +600,7 @@ The following examples show how to create FlexVol volumes, FlexGroup volumes, SV
 	```
 	POST "/api/snapmirror/relationships/" '{"source": { "path": "src_svm:"}, "destination": { "path": "dst_svm:"}}'
 	```
+
 	<br/>
 	Creating a SnapMirror relationship in order to restore from a destination.
 	<br/>
@@ -757,7 +759,7 @@ The following examples show how to delete the relationship from both the source 
 	DELETE "/api/snapmirror/relationships/93e828ba-02bc-11e9-acc7-005056a7697f/?source_only=true"
 	```
 	<br/>
-	Deleting the source information only. This API must be run on the cluster containing the source endpoint. This does not delete the common snapshots between the source and destination.
+	Deleting the source information only. This API can be run on the both the clusters containing the source or destination endpoint. This does not delete the common snapshots between the source and destination.
 	<br/>
 	```
 	DELETE "/api/snapmirror/relationships/caf545a2-fc60-11e8-aa13-005056a707ff/?source_info_only=true"
@@ -942,6 +944,7 @@ func (a *Client) SnapmirrorRelationshipGet(params *SnapmirrorRelationshipGetPara
 * The properties "transfer_schedule" and "throttle" are not supported when the direction of the relationship is being reversed.
 * To remove a transfer_schedule on a SnapMirror relationship set the "transfer_schedule" to null (no-quotes) during SnapMirror relationship PATCH.
 * The property "identity_preservation" value can be changed from a higher "identity_preservation" threshold value to a lower "identity_preservation" threshold value but not vice-versa. For example, the threshold value of the "identity_preservation" property can be changed from "full" to "exclude_network_config", but cannot be increased from "exclude_network_and_protocol_config" to "exclude_network_config" to "full". The threshold value of the "identity_preservation" cannot be changed to "exclude_network_and_protocol_config" for IDP SVMDR.
+* Policies with the property "retention.creation_schedule" are supported only on the final SnapMirror destination volume in the cascade.
 
 * The property "backoff_level" is only applicable for FlexVol SnapMirror relationships.
 ### Examples

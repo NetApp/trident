@@ -558,15 +558,15 @@ func (o *NetworkIPInterfaceDeleteCollectionParams) SetDdnsEnabled(ddnsEnabled *b
 	o.DdnsEnabled = ddnsEnabled
 }
 
-// WithDNSZone adds the dNSZone to the network ip interface delete collection params
-func (o *NetworkIPInterfaceDeleteCollectionParams) WithDNSZone(dNSZone *string) *NetworkIPInterfaceDeleteCollectionParams {
-	o.SetDNSZone(dNSZone)
+// WithDNSZone adds the dnsZone to the network ip interface delete collection params
+func (o *NetworkIPInterfaceDeleteCollectionParams) WithDNSZone(dnsZone *string) *NetworkIPInterfaceDeleteCollectionParams {
+	o.SetDNSZone(dnsZone)
 	return o
 }
 
 // SetDNSZone adds the dnsZone to the network ip interface delete collection params
-func (o *NetworkIPInterfaceDeleteCollectionParams) SetDNSZone(dNSZone *string) {
-	o.DNSZone = dNSZone
+func (o *NetworkIPInterfaceDeleteCollectionParams) SetDNSZone(dnsZone *string) {
+	o.DNSZone = dnsZone
 }
 
 // WithEnabled adds the enabled to the network ip interface delete collection params
@@ -591,37 +591,37 @@ func (o *NetworkIPInterfaceDeleteCollectionParams) SetInfo(info NetworkIPInterfa
 	o.Info = info
 }
 
-// WithIPAddress adds the iPAddress to the network ip interface delete collection params
-func (o *NetworkIPInterfaceDeleteCollectionParams) WithIPAddress(iPAddress *string) *NetworkIPInterfaceDeleteCollectionParams {
-	o.SetIPAddress(iPAddress)
+// WithIPAddress adds the ipAddress to the network ip interface delete collection params
+func (o *NetworkIPInterfaceDeleteCollectionParams) WithIPAddress(ipAddress *string) *NetworkIPInterfaceDeleteCollectionParams {
+	o.SetIPAddress(ipAddress)
 	return o
 }
 
 // SetIPAddress adds the ipAddress to the network ip interface delete collection params
-func (o *NetworkIPInterfaceDeleteCollectionParams) SetIPAddress(iPAddress *string) {
-	o.IPAddress = iPAddress
+func (o *NetworkIPInterfaceDeleteCollectionParams) SetIPAddress(ipAddress *string) {
+	o.IPAddress = ipAddress
 }
 
-// WithIPFamily adds the iPFamily to the network ip interface delete collection params
-func (o *NetworkIPInterfaceDeleteCollectionParams) WithIPFamily(iPFamily *string) *NetworkIPInterfaceDeleteCollectionParams {
-	o.SetIPFamily(iPFamily)
+// WithIPFamily adds the ipFamily to the network ip interface delete collection params
+func (o *NetworkIPInterfaceDeleteCollectionParams) WithIPFamily(ipFamily *string) *NetworkIPInterfaceDeleteCollectionParams {
+	o.SetIPFamily(ipFamily)
 	return o
 }
 
 // SetIPFamily adds the ipFamily to the network ip interface delete collection params
-func (o *NetworkIPInterfaceDeleteCollectionParams) SetIPFamily(iPFamily *string) {
-	o.IPFamily = iPFamily
+func (o *NetworkIPInterfaceDeleteCollectionParams) SetIPFamily(ipFamily *string) {
+	o.IPFamily = ipFamily
 }
 
-// WithIPNetmask adds the iPNetmask to the network ip interface delete collection params
-func (o *NetworkIPInterfaceDeleteCollectionParams) WithIPNetmask(iPNetmask *string) *NetworkIPInterfaceDeleteCollectionParams {
-	o.SetIPNetmask(iPNetmask)
+// WithIPNetmask adds the ipNetmask to the network ip interface delete collection params
+func (o *NetworkIPInterfaceDeleteCollectionParams) WithIPNetmask(ipNetmask *string) *NetworkIPInterfaceDeleteCollectionParams {
+	o.SetIPNetmask(ipNetmask)
 	return o
 }
 
 // SetIPNetmask adds the ipNetmask to the network ip interface delete collection params
-func (o *NetworkIPInterfaceDeleteCollectionParams) SetIPNetmask(iPNetmask *string) {
-	o.IPNetmask = iPNetmask
+func (o *NetworkIPInterfaceDeleteCollectionParams) SetIPNetmask(ipNetmask *string) {
+	o.IPNetmask = ipNetmask
 }
 
 // WithIpspaceName adds the ipspaceName to the network ip interface delete collection params

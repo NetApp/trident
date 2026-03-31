@@ -869,15 +869,15 @@ func (o *StorageBridgeCollectionGetParams) SetFirmwareVersion(firmwareVersion *s
 	o.FirmwareVersion = firmwareVersion
 }
 
-// WithIPAddress adds the iPAddress to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) WithIPAddress(iPAddress *string) *StorageBridgeCollectionGetParams {
-	o.SetIPAddress(iPAddress)
+// WithIPAddress adds the ipAddress to the storage bridge collection get params
+func (o *StorageBridgeCollectionGetParams) WithIPAddress(ipAddress *string) *StorageBridgeCollectionGetParams {
+	o.SetIPAddress(ipAddress)
 	return o
 }
 
 // SetIPAddress adds the ipAddress to the storage bridge collection get params
-func (o *StorageBridgeCollectionGetParams) SetIPAddress(iPAddress *string) {
-	o.IPAddress = iPAddress
+func (o *StorageBridgeCollectionGetParams) SetIPAddress(ipAddress *string) {
+	o.IPAddress = ipAddress
 }
 
 // WithLastRebootReasonArgumentsCode adds the lastRebootReasonArgumentsCode to the storage bridge collection get params

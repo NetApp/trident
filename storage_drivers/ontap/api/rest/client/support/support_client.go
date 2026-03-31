@@ -824,7 +824,7 @@ func (a *Client) ConfigurationBackupFileCollectionGet(params *ConfigurationBacku
 }
 
 /*
-	ConfigurationBackupFileCreate Creates a configuration backup. The required backup file name must end with .7z extension.
+	ConfigurationBackupFileCreate Creates a configuration backup. The required backup file name must end with .7z extension. In clusters with greater than 32 nodes, a multi-part backup will be generated with each part containing the cluster-wide replica and up to 32 individual node backups.
 
 ### Required properties
 * `node.uuid` or `node.name` - The node UUID or node name on which the configuration backup will be created.

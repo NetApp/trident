@@ -62,6 +62,12 @@ LunDeleteCollectionParams contains all the parameters to send to the API endpoin
 */
 type LunDeleteCollectionParams struct {
 
+	/* AccessMode.
+
+	   Filter by access_mode
+	*/
+	AccessMode *string
+
 	/* AllowDeleteWhileMapped.
 
 	     Allows deletion of a mapped LUN.<br/>
@@ -102,6 +108,12 @@ type LunDeleteCollectionParams struct {
 	   Filter by class
 	*/
 	Class *string
+
+	/* CloneCreatedAsClone.
+
+	   Filter by clone.created_as_clone
+	*/
+	CloneCreatedAsClone *bool
 
 	/* Comment.
 
@@ -954,6 +966,17 @@ func (o *LunDeleteCollectionParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithAccessMode adds the accessMode to the lun delete collection params
+func (o *LunDeleteCollectionParams) WithAccessMode(accessMode *string) *LunDeleteCollectionParams {
+	o.SetAccessMode(accessMode)
+	return o
+}
+
+// SetAccessMode adds the accessMode to the lun delete collection params
+func (o *LunDeleteCollectionParams) SetAccessMode(accessMode *string) {
+	o.AccessMode = accessMode
+}
+
 // WithAllowDeleteWhileMapped adds the allowDeleteWhileMapped to the lun delete collection params
 func (o *LunDeleteCollectionParams) WithAllowDeleteWhileMapped(allowDeleteWhileMapped *bool) *LunDeleteCollectionParams {
 	o.SetAllowDeleteWhileMapped(allowDeleteWhileMapped)
@@ -1018,6 +1041,17 @@ func (o *LunDeleteCollectionParams) WithClass(class *string) *LunDeleteCollectio
 // SetClass adds the class to the lun delete collection params
 func (o *LunDeleteCollectionParams) SetClass(class *string) {
 	o.Class = class
+}
+
+// WithCloneCreatedAsClone adds the cloneCreatedAsClone to the lun delete collection params
+func (o *LunDeleteCollectionParams) WithCloneCreatedAsClone(cloneCreatedAsClone *bool) *LunDeleteCollectionParams {
+	o.SetCloneCreatedAsClone(cloneCreatedAsClone)
+	return o
+}
+
+// SetCloneCreatedAsClone adds the cloneCreatedAsClone to the lun delete collection params
+func (o *LunDeleteCollectionParams) SetCloneCreatedAsClone(cloneCreatedAsClone *bool) {
+	o.CloneCreatedAsClone = cloneCreatedAsClone
 }
 
 // WithComment adds the comment to the lun delete collection params
@@ -2436,6 +2470,23 @@ func (o *LunDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, reg 
 	}
 	var res []error
 
+	if o.AccessMode != nil {
+
+		// query param access_mode
+		var qrAccessMode string
+
+		if o.AccessMode != nil {
+			qrAccessMode = *o.AccessMode
+		}
+		qAccessMode := qrAccessMode
+		if qAccessMode != "" {
+
+			if err := r.SetQueryParam("access_mode", qAccessMode); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.AllowDeleteWhileMapped != nil {
 
 		// query param allow_delete_while_mapped
@@ -2533,6 +2584,23 @@ func (o *LunDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest, reg 
 		if qClass != "" {
 
 			if err := r.SetQueryParam("class", qClass); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneCreatedAsClone != nil {
+
+		// query param clone.created_as_clone
+		var qrCloneCreatedAsClone bool
+
+		if o.CloneCreatedAsClone != nil {
+			qrCloneCreatedAsClone = *o.CloneCreatedAsClone
+		}
+		qCloneCreatedAsClone := swag.FormatBool(qrCloneCreatedAsClone)
+		if qCloneCreatedAsClone != "" {
+
+			if err := r.SetQueryParam("clone.created_as_clone", qCloneCreatedAsClone); err != nil {
 				return err
 			}
 		}

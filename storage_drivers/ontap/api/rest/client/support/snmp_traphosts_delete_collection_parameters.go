@@ -220,15 +220,15 @@ func (o *SnmpTraphostsDeleteCollectionParams) SetInfo(info SnmpTraphostsDeleteCo
 	o.Info = info
 }
 
-// WithIPAddress adds the iPAddress to the snmp traphosts delete collection params
-func (o *SnmpTraphostsDeleteCollectionParams) WithIPAddress(iPAddress *string) *SnmpTraphostsDeleteCollectionParams {
-	o.SetIPAddress(iPAddress)
+// WithIPAddress adds the ipAddress to the snmp traphosts delete collection params
+func (o *SnmpTraphostsDeleteCollectionParams) WithIPAddress(ipAddress *string) *SnmpTraphostsDeleteCollectionParams {
+	o.SetIPAddress(ipAddress)
 	return o
 }
 
 // SetIPAddress adds the ipAddress to the snmp traphosts delete collection params
-func (o *SnmpTraphostsDeleteCollectionParams) SetIPAddress(iPAddress *string) {
-	o.IPAddress = iPAddress
+func (o *SnmpTraphostsDeleteCollectionParams) SetIPAddress(ipAddress *string) {
+	o.IPAddress = ipAddress
 }
 
 // WithReturnRecords adds the returnRecords to the snmp traphosts delete collection params

@@ -253,15 +253,15 @@ func (o *LicenseManagerModifyCollectionParams) SetSerialRecords(serialRecords *b
 	o.SerialRecords = serialRecords
 }
 
-// WithURIHost adds the uRIHost to the license manager modify collection params
-func (o *LicenseManagerModifyCollectionParams) WithURIHost(uRIHost *string) *LicenseManagerModifyCollectionParams {
-	o.SetURIHost(uRIHost)
+// WithURIHost adds the uriHost to the license manager modify collection params
+func (o *LicenseManagerModifyCollectionParams) WithURIHost(uriHost *string) *LicenseManagerModifyCollectionParams {
+	o.SetURIHost(uriHost)
 	return o
 }
 
 // SetURIHost adds the uriHost to the license manager modify collection params
-func (o *LicenseManagerModifyCollectionParams) SetURIHost(uRIHost *string) {
-	o.URIHost = uRIHost
+func (o *LicenseManagerModifyCollectionParams) SetURIHost(uriHost *string) {
+	o.URIHost = uriHost
 }
 
 // WithUUID adds the uuid to the license manager modify collection params

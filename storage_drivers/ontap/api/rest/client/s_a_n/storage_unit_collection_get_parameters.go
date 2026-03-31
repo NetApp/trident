@@ -62,6 +62,12 @@ StorageUnitCollectionGetParams contains all the parameters to send to the API en
 */
 type StorageUnitCollectionGetParams struct {
 
+	/* AccessMode.
+
+	   Filter by access_mode
+	*/
+	AccessMode *string
+
 	/* AntiRansomwareAttackProbability.
 
 	   Filter by anti_ransomware.attack_probability
@@ -743,6 +749,17 @@ func (o *StorageUnitCollectionGetParams) WithHTTPClient(client *http.Client) *St
 // SetHTTPClient adds the HTTPClient to the storage unit collection get params
 func (o *StorageUnitCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
+}
+
+// WithAccessMode adds the accessMode to the storage unit collection get params
+func (o *StorageUnitCollectionGetParams) WithAccessMode(accessMode *string) *StorageUnitCollectionGetParams {
+	o.SetAccessMode(accessMode)
+	return o
+}
+
+// SetAccessMode adds the accessMode to the storage unit collection get params
+func (o *StorageUnitCollectionGetParams) SetAccessMode(accessMode *string) {
+	o.AccessMode = accessMode
 }
 
 // WithAntiRansomwareAttackProbability adds the antiRansomwareAttackProbability to the storage unit collection get params
@@ -1874,6 +1891,23 @@ func (o *StorageUnitCollectionGetParams) WriteToRequest(r runtime.ClientRequest,
 		return err
 	}
 	var res []error
+
+	if o.AccessMode != nil {
+
+		// query param access_mode
+		var qrAccessMode string
+
+		if o.AccessMode != nil {
+			qrAccessMode = *o.AccessMode
+		}
+		qAccessMode := qrAccessMode
+		if qAccessMode != "" {
+
+			if err := r.SetQueryParam("access_mode", qAccessMode); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.AntiRansomwareAttackProbability != nil {
 

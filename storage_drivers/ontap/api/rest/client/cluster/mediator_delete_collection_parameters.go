@@ -62,6 +62,12 @@ MediatorDeleteCollectionParams contains all the parameters to send to the API en
 */
 type MediatorDeleteCollectionParams struct {
 
+	/* ConnectionType.
+
+	   Filter by connection_type
+	*/
+	ConnectionType *string
+
 	/* ContinueOnFailure.
 
 	   Continue even when the operation fails on one of the records.
@@ -235,6 +241,17 @@ func (o *MediatorDeleteCollectionParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithConnectionType adds the connectionType to the mediator delete collection params
+func (o *MediatorDeleteCollectionParams) WithConnectionType(connectionType *string) *MediatorDeleteCollectionParams {
+	o.SetConnectionType(connectionType)
+	return o
+}
+
+// SetConnectionType adds the connectionType to the mediator delete collection params
+func (o *MediatorDeleteCollectionParams) SetConnectionType(connectionType *string) {
+	o.ConnectionType = connectionType
+}
+
 // WithContinueOnFailure adds the continueOnFailure to the mediator delete collection params
 func (o *MediatorDeleteCollectionParams) WithContinueOnFailure(continueOnFailure *bool) *MediatorDeleteCollectionParams {
 	o.SetContinueOnFailure(continueOnFailure)
@@ -257,15 +274,15 @@ func (o *MediatorDeleteCollectionParams) SetInfo(info MediatorDeleteCollectionBo
 	o.Info = info
 }
 
-// WithIPAddress adds the iPAddress to the mediator delete collection params
-func (o *MediatorDeleteCollectionParams) WithIPAddress(iPAddress *string) *MediatorDeleteCollectionParams {
-	o.SetIPAddress(iPAddress)
+// WithIPAddress adds the ipAddress to the mediator delete collection params
+func (o *MediatorDeleteCollectionParams) WithIPAddress(ipAddress *string) *MediatorDeleteCollectionParams {
+	o.SetIPAddress(ipAddress)
 	return o
 }
 
 // SetIPAddress adds the ipAddress to the mediator delete collection params
-func (o *MediatorDeleteCollectionParams) SetIPAddress(iPAddress *string) {
-	o.IPAddress = iPAddress
+func (o *MediatorDeleteCollectionParams) SetIPAddress(ipAddress *string) {
+	o.IPAddress = ipAddress
 }
 
 // WithLocalMediatorConnectivity adds the localMediatorConnectivity to the mediator delete collection params
@@ -418,6 +435,23 @@ func (o *MediatorDeleteCollectionParams) WriteToRequest(r runtime.ClientRequest,
 		return err
 	}
 	var res []error
+
+	if o.ConnectionType != nil {
+
+		// query param connection_type
+		var qrConnectionType string
+
+		if o.ConnectionType != nil {
+			qrConnectionType = *o.ConnectionType
+		}
+		qConnectionType := qrConnectionType
+		if qConnectionType != "" {
+
+			if err := r.SetQueryParam("connection_type", qConnectionType); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.ContinueOnFailure != nil {
 

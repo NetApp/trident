@@ -61,11 +61,11 @@ SecurityClusterNetworkCertificatesDeleteParams contains all the parameters to se
 */
 type SecurityClusterNetworkCertificatesDeleteParams struct {
 
-	/* NodeName.
+	/* NodeUUID.
 
-	   The name of the node.
+	   Node UUID.
 	*/
-	NodeName string
+	NodeUUID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -120,15 +120,15 @@ func (o *SecurityClusterNetworkCertificatesDeleteParams) SetHTTPClient(client *h
 	o.HTTPClient = client
 }
 
-// WithNodeName adds the nodeName to the security cluster network certificates delete params
-func (o *SecurityClusterNetworkCertificatesDeleteParams) WithNodeName(nodeName string) *SecurityClusterNetworkCertificatesDeleteParams {
-	o.SetNodeName(nodeName)
+// WithNodeUUID adds the nodeUUID to the security cluster network certificates delete params
+func (o *SecurityClusterNetworkCertificatesDeleteParams) WithNodeUUID(nodeUUID string) *SecurityClusterNetworkCertificatesDeleteParams {
+	o.SetNodeUUID(nodeUUID)
 	return o
 }
 
-// SetNodeName adds the nodeName to the security cluster network certificates delete params
-func (o *SecurityClusterNetworkCertificatesDeleteParams) SetNodeName(nodeName string) {
-	o.NodeName = nodeName
+// SetNodeUUID adds the nodeUuid to the security cluster network certificates delete params
+func (o *SecurityClusterNetworkCertificatesDeleteParams) SetNodeUUID(nodeUUID string) {
+	o.NodeUUID = nodeUUID
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -139,8 +139,8 @@ func (o *SecurityClusterNetworkCertificatesDeleteParams) WriteToRequest(r runtim
 	}
 	var res []error
 
-	// path param node.name
-	if err := r.SetPathParam("node.name", o.NodeName); err != nil {
+	// path param node.uuid
+	if err := r.SetPathParam("node.uuid", o.NodeUUID); err != nil {
 		return err
 	}
 

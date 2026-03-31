@@ -92,6 +92,12 @@ type SecurityKeystoreModifyCollectionParams struct {
 	*/
 	Info SecurityKeystoreModifyCollectionBody
 
+	/* IsSvmKek.
+
+	   Filter by is_svm_kek
+	*/
+	IsSvmKek *bool
+
 	/* Location.
 
 	   Filter by location
@@ -284,6 +290,17 @@ func (o *SecurityKeystoreModifyCollectionParams) SetInfo(info SecurityKeystoreMo
 	o.Info = info
 }
 
+// WithIsSvmKek adds the isSvmKek to the security keystore modify collection params
+func (o *SecurityKeystoreModifyCollectionParams) WithIsSvmKek(isSvmKek *bool) *SecurityKeystoreModifyCollectionParams {
+	o.SetIsSvmKek(isSvmKek)
+	return o
+}
+
+// SetIsSvmKek adds the isSvmKek to the security keystore modify collection params
+func (o *SecurityKeystoreModifyCollectionParams) SetIsSvmKek(isSvmKek *bool) {
+	o.IsSvmKek = isSvmKek
+}
+
 // WithLocation adds the location to the security keystore modify collection params
 func (o *SecurityKeystoreModifyCollectionParams) WithLocation(location *string) *SecurityKeystoreModifyCollectionParams {
 	o.SetLocation(location)
@@ -471,6 +488,23 @@ func (o *SecurityKeystoreModifyCollectionParams) WriteToRequest(r runtime.Client
 	}
 	if err := r.SetBodyParam(o.Info); err != nil {
 		return err
+	}
+
+	if o.IsSvmKek != nil {
+
+		// query param is_svm_kek
+		var qrIsSvmKek bool
+
+		if o.IsSvmKek != nil {
+			qrIsSvmKek = *o.IsSvmKek
+		}
+		qIsSvmKek := swag.FormatBool(qrIsSvmKek)
+		if qIsSvmKek != "" {
+
+			if err := r.SetQueryParam("is_svm_kek", qIsSvmKek); err != nil {
+				return err
+			}
+		}
 	}
 
 	if o.Location != nil {

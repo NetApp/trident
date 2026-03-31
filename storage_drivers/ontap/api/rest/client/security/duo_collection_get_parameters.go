@@ -241,15 +241,15 @@ func (o *DuoCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithAPIHost adds the aPIHost to the duo collection get params
-func (o *DuoCollectionGetParams) WithAPIHost(aPIHost *string) *DuoCollectionGetParams {
-	o.SetAPIHost(aPIHost)
+// WithAPIHost adds the apiHost to the duo collection get params
+func (o *DuoCollectionGetParams) WithAPIHost(apiHost *string) *DuoCollectionGetParams {
+	o.SetAPIHost(apiHost)
 	return o
 }
 
 // SetAPIHost adds the apiHost to the duo collection get params
-func (o *DuoCollectionGetParams) SetAPIHost(aPIHost *string) {
-	o.APIHost = aPIHost
+func (o *DuoCollectionGetParams) SetAPIHost(apiHost *string) {
+	o.APIHost = apiHost
 }
 
 // WithAutoPush adds the autoPush to the duo collection get params
@@ -307,15 +307,15 @@ func (o *DuoCollectionGetParams) SetFingerprint(fingerprint *string) {
 	o.Fingerprint = fingerprint
 }
 
-// WithHTTPProxy adds the hTTPProxy to the duo collection get params
-func (o *DuoCollectionGetParams) WithHTTPProxy(hTTPProxy *string) *DuoCollectionGetParams {
-	o.SetHTTPProxy(hTTPProxy)
+// WithHTTPProxy adds the httpProxy to the duo collection get params
+func (o *DuoCollectionGetParams) WithHTTPProxy(httpProxy *string) *DuoCollectionGetParams {
+	o.SetHTTPProxy(httpProxy)
 	return o
 }
 
 // SetHTTPProxy adds the httpProxy to the duo collection get params
-func (o *DuoCollectionGetParams) SetHTTPProxy(hTTPProxy *string) {
-	o.HTTPProxy = hTTPProxy
+func (o *DuoCollectionGetParams) SetHTTPProxy(httpProxy *string) {
+	o.HTTPProxy = httpProxy
 }
 
 // WithIntegrationKey adds the integrationKey to the duo collection get params

@@ -88,6 +88,18 @@ type ClientService interface {
 
 	ClusterPeerModifyCollection(params *ClusterPeerModifyCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ClusterPeerModifyCollectionOK, error)
 
+	CounterCacheCollectionGet(params *CounterCacheCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterCacheCollectionGetOK, error)
+
+	CounterCacheManifestsCollectionGet(params *CounterCacheManifestsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterCacheManifestsCollectionGetOK, error)
+
+	CounterCacheManifestsCreate(params *CounterCacheManifestsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterCacheManifestsCreateCreated, error)
+
+	CounterCacheManifestsDelete(params *CounterCacheManifestsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterCacheManifestsDeleteOK, error)
+
+	CounterCacheManifestsDeleteCollection(params *CounterCacheManifestsDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterCacheManifestsDeleteCollectionOK, error)
+
+	CounterCacheManifestsGet(params *CounterCacheManifestsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterCacheManifestsGetOK, error)
+
 	CounterRowCollectionGet(params *CounterRowCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterRowCollectionGetOK, error)
 
 	CounterRowGet(params *CounterRowGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterRowGetOK, error)
@@ -254,7 +266,7 @@ type ClientService interface {
 }
 
 /*
-MediatorPing Pings BlueXP cloud service.
+MediatorPing Pings the NetApp Console cloud service.
 */
 func (a *Client) MediatorPing(params *MediatorPingParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MediatorPingOK, error) {
 	// TODO: Validate the params before sending
@@ -522,6 +534,9 @@ func (a *Client) ClusterCollectionPerformanceMetricsGet(params *ClusterCollectio
 * `management_interface`
 * `nodes`
 * `timezone`
+<personalities supports=aiml>
+* `ha`
+</personalities>
 ### Learn more
 * [`DOC /cluster`](#docs-cluster-cluster)
 */
@@ -1558,6 +1573,234 @@ func (a *Client) ClusterPeerModifyCollection(params *ClusterPeerModifyCollection
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*ClusterPeerModifyCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+CounterCacheCollectionGet Retrieves a list of available protobuf files.
+*/
+func (a *Client) CounterCacheCollectionGet(params *CounterCacheCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterCacheCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCounterCacheCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "counter_cache_collection_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/counter-cache/files",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CounterCacheCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CounterCacheCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CounterCacheCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+CounterCacheManifestsCollectionGet Retrieves a list of cached metrics manifests.
+*/
+func (a *Client) CounterCacheManifestsCollectionGet(params *CounterCacheManifestsCollectionGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterCacheManifestsCollectionGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCounterCacheManifestsCollectionGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "counter_cache_manifests_collection_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/counter-cache/manifests",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CounterCacheManifestsCollectionGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CounterCacheManifestsCollectionGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CounterCacheManifestsCollectionGetDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+CounterCacheManifestsCreate Creates cached metrics manifest(s).
+*/
+func (a *Client) CounterCacheManifestsCreate(params *CounterCacheManifestsCreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterCacheManifestsCreateCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCounterCacheManifestsCreateParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "counter_cache_manifests_create",
+		Method:             "POST",
+		PathPattern:        "/cluster/counter-cache/manifests",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CounterCacheManifestsCreateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CounterCacheManifestsCreateCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CounterCacheManifestsCreateDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+CounterCacheManifestsDelete Deletes the cached metrics manifest based on the provided name.
+*/
+func (a *Client) CounterCacheManifestsDelete(params *CounterCacheManifestsDeleteParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterCacheManifestsDeleteOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCounterCacheManifestsDeleteParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "counter_cache_manifests_delete",
+		Method:             "DELETE",
+		PathPattern:        "/cluster/counter-cache/manifests/{preset}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CounterCacheManifestsDeleteReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CounterCacheManifestsDeleteOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CounterCacheManifestsDeleteDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+CounterCacheManifestsDeleteCollection counter cache manifests delete collection API
+*/
+func (a *Client) CounterCacheManifestsDeleteCollection(params *CounterCacheManifestsDeleteCollectionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterCacheManifestsDeleteCollectionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCounterCacheManifestsDeleteCollectionParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "counter_cache_manifests_delete_collection",
+		Method:             "DELETE",
+		PathPattern:        "/cluster/counter-cache/manifests",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CounterCacheManifestsDeleteCollectionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CounterCacheManifestsDeleteCollectionOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CounterCacheManifestsDeleteCollectionDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+CounterCacheManifestsGet Retrieves a cached metrics manifest based on the given preset name.
+*/
+func (a *Client) CounterCacheManifestsGet(params *CounterCacheManifestsGetParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CounterCacheManifestsGetOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCounterCacheManifestsGetParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "counter_cache_manifests_get",
+		Method:             "GET",
+		PathPattern:        "/cluster/counter-cache/manifests/{preset}",
+		ProducesMediaTypes: []string{"application/json", "application/hal+json"},
+		ConsumesMediaTypes: []string{"application/json", "application/hal+json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &CounterCacheManifestsGetReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CounterCacheManifestsGetOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CounterCacheManifestsGetDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

@@ -82,7 +82,7 @@ type SnapmirrorRelationshipDeleteParams struct {
 
 	/* SourceInfoOnly.
 
-	   Deletes relationship information on the source only. This parameter is applicable only when the call is executed on the cluster that contains the source endpoint.
+	   Deletes relationship information on the source only. This parameter is applicable on both clusters containing source and destination endpoint.
 	*/
 	SourceInfoOnly *bool
 

@@ -2697,7 +2697,7 @@ func (d OntapAPIREST) IscsiInitiatorGetDefaultAuth(ctx context.Context) (IscsiIn
 				authInfo.ChapUser = *record.Chap.Inbound.User
 			}
 			if record.Chap.Inbound.Password != nil {
-				authInfo.ChapPassphrase = *record.Chap.Inbound.Password
+				authInfo.ChapPassphrase = string(*record.Chap.Inbound.Password)
 			}
 		}
 
@@ -2706,7 +2706,7 @@ func (d OntapAPIREST) IscsiInitiatorGetDefaultAuth(ctx context.Context) (IscsiIn
 				authInfo.ChapOutboundUser = *record.Chap.Outbound.User
 			}
 			if record.Chap.Outbound.Password != nil {
-				authInfo.ChapOutboundPassphrase = *record.Chap.Outbound.Password
+				authInfo.ChapOutboundPassphrase = string(*record.Chap.Outbound.Password)
 			}
 		}
 	}

@@ -541,15 +541,15 @@ func (o *NetworkIPInterfacesGetParams) SetDdnsEnabled(ddnsEnabled *bool) {
 	o.DdnsEnabled = ddnsEnabled
 }
 
-// WithDNSZone adds the dNSZone to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithDNSZone(dNSZone *string) *NetworkIPInterfacesGetParams {
-	o.SetDNSZone(dNSZone)
+// WithDNSZone adds the dnsZone to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithDNSZone(dnsZone *string) *NetworkIPInterfacesGetParams {
+	o.SetDNSZone(dnsZone)
 	return o
 }
 
 // SetDNSZone adds the dnsZone to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetDNSZone(dNSZone *string) {
-	o.DNSZone = dNSZone
+func (o *NetworkIPInterfacesGetParams) SetDNSZone(dnsZone *string) {
+	o.DNSZone = dnsZone
 }
 
 // WithEnabled adds the enabled to the network ip interfaces get params
@@ -574,37 +574,37 @@ func (o *NetworkIPInterfacesGetParams) SetFields(fields []string) {
 	o.Fields = fields
 }
 
-// WithIPAddress adds the iPAddress to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithIPAddress(iPAddress *string) *NetworkIPInterfacesGetParams {
-	o.SetIPAddress(iPAddress)
+// WithIPAddress adds the ipAddress to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithIPAddress(ipAddress *string) *NetworkIPInterfacesGetParams {
+	o.SetIPAddress(ipAddress)
 	return o
 }
 
 // SetIPAddress adds the ipAddress to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetIPAddress(iPAddress *string) {
-	o.IPAddress = iPAddress
+func (o *NetworkIPInterfacesGetParams) SetIPAddress(ipAddress *string) {
+	o.IPAddress = ipAddress
 }
 
-// WithIPFamily adds the iPFamily to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithIPFamily(iPFamily *string) *NetworkIPInterfacesGetParams {
-	o.SetIPFamily(iPFamily)
+// WithIPFamily adds the ipFamily to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithIPFamily(ipFamily *string) *NetworkIPInterfacesGetParams {
+	o.SetIPFamily(ipFamily)
 	return o
 }
 
 // SetIPFamily adds the ipFamily to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetIPFamily(iPFamily *string) {
-	o.IPFamily = iPFamily
+func (o *NetworkIPInterfacesGetParams) SetIPFamily(ipFamily *string) {
+	o.IPFamily = ipFamily
 }
 
-// WithIPNetmask adds the iPNetmask to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) WithIPNetmask(iPNetmask *string) *NetworkIPInterfacesGetParams {
-	o.SetIPNetmask(iPNetmask)
+// WithIPNetmask adds the ipNetmask to the network ip interfaces get params
+func (o *NetworkIPInterfacesGetParams) WithIPNetmask(ipNetmask *string) *NetworkIPInterfacesGetParams {
+	o.SetIPNetmask(ipNetmask)
 	return o
 }
 
 // SetIPNetmask adds the ipNetmask to the network ip interfaces get params
-func (o *NetworkIPInterfacesGetParams) SetIPNetmask(iPNetmask *string) {
-	o.IPNetmask = iPNetmask
+func (o *NetworkIPInterfacesGetParams) SetIPNetmask(ipNetmask *string) {
+	o.IPNetmask = ipNetmask
 }
 
 // WithIpspaceName adds the ipspaceName to the network ip interfaces get params

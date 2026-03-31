@@ -162,6 +162,12 @@ type FpolicyPolicyCollectionGetParams struct {
 	*/
 	ScopeCheckExtensionsOnDirectories *bool
 
+	/* ScopeExcludeBuckets.
+
+	   Filter by scope.exclude_buckets
+	*/
+	ScopeExcludeBuckets *string
+
 	/* ScopeExcludeExportPolicies.
 
 	   Filter by scope.exclude_export_policies
@@ -185,6 +191,12 @@ type FpolicyPolicyCollectionGetParams struct {
 	   Filter by scope.exclude_volumes
 	*/
 	ScopeExcludeVolumes *string
+
+	/* ScopeIncludeBuckets.
+
+	   Filter by scope.include_buckets
+	*/
+	ScopeIncludeBuckets *string
 
 	/* ScopeIncludeExportPolicies.
 
@@ -465,6 +477,17 @@ func (o *FpolicyPolicyCollectionGetParams) SetScopeCheckExtensionsOnDirectories(
 	o.ScopeCheckExtensionsOnDirectories = scopeCheckExtensionsOnDirectories
 }
 
+// WithScopeExcludeBuckets adds the scopeExcludeBuckets to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithScopeExcludeBuckets(scopeExcludeBuckets *string) *FpolicyPolicyCollectionGetParams {
+	o.SetScopeExcludeBuckets(scopeExcludeBuckets)
+	return o
+}
+
+// SetScopeExcludeBuckets adds the scopeExcludeBuckets to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetScopeExcludeBuckets(scopeExcludeBuckets *string) {
+	o.ScopeExcludeBuckets = scopeExcludeBuckets
+}
+
 // WithScopeExcludeExportPolicies adds the scopeExcludeExportPolicies to the fpolicy policy collection get params
 func (o *FpolicyPolicyCollectionGetParams) WithScopeExcludeExportPolicies(scopeExcludeExportPolicies *string) *FpolicyPolicyCollectionGetParams {
 	o.SetScopeExcludeExportPolicies(scopeExcludeExportPolicies)
@@ -507,6 +530,17 @@ func (o *FpolicyPolicyCollectionGetParams) WithScopeExcludeVolumes(scopeExcludeV
 // SetScopeExcludeVolumes adds the scopeExcludeVolumes to the fpolicy policy collection get params
 func (o *FpolicyPolicyCollectionGetParams) SetScopeExcludeVolumes(scopeExcludeVolumes *string) {
 	o.ScopeExcludeVolumes = scopeExcludeVolumes
+}
+
+// WithScopeIncludeBuckets adds the scopeIncludeBuckets to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) WithScopeIncludeBuckets(scopeIncludeBuckets *string) *FpolicyPolicyCollectionGetParams {
+	o.SetScopeIncludeBuckets(scopeIncludeBuckets)
+	return o
+}
+
+// SetScopeIncludeBuckets adds the scopeIncludeBuckets to the fpolicy policy collection get params
+func (o *FpolicyPolicyCollectionGetParams) SetScopeIncludeBuckets(scopeIncludeBuckets *string) {
+	o.ScopeIncludeBuckets = scopeIncludeBuckets
 }
 
 // WithScopeIncludeExportPolicies adds the scopeIncludeExportPolicies to the fpolicy policy collection get params
@@ -843,6 +877,23 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		}
 	}
 
+	if o.ScopeExcludeBuckets != nil {
+
+		// query param scope.exclude_buckets
+		var qrScopeExcludeBuckets string
+
+		if o.ScopeExcludeBuckets != nil {
+			qrScopeExcludeBuckets = *o.ScopeExcludeBuckets
+		}
+		qScopeExcludeBuckets := qrScopeExcludeBuckets
+		if qScopeExcludeBuckets != "" {
+
+			if err := r.SetQueryParam("scope.exclude_buckets", qScopeExcludeBuckets); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.ScopeExcludeExportPolicies != nil {
 
 		// query param scope.exclude_export_policies
@@ -906,6 +957,23 @@ func (o *FpolicyPolicyCollectionGetParams) WriteToRequest(r runtime.ClientReques
 		if qScopeExcludeVolumes != "" {
 
 			if err := r.SetQueryParam("scope.exclude_volumes", qScopeExcludeVolumes); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.ScopeIncludeBuckets != nil {
+
+		// query param scope.include_buckets
+		var qrScopeIncludeBuckets string
+
+		if o.ScopeIncludeBuckets != nil {
+			qrScopeIncludeBuckets = *o.ScopeIncludeBuckets
+		}
+		qScopeIncludeBuckets := qrScopeIncludeBuckets
+		if qScopeIncludeBuckets != "" {
+
+			if err := r.SetQueryParam("scope.include_buckets", qScopeIncludeBuckets); err != nil {
 				return err
 			}
 		}

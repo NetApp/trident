@@ -62,6 +62,12 @@ LunCollectionGetParams contains all the parameters to send to the API endpoint
 */
 type LunCollectionGetParams struct {
 
+	/* AccessMode.
+
+	   Filter by access_mode
+	*/
+	AccessMode *string
+
 	/* AttributesName.
 
 	   Filter by attributes.name
@@ -85,6 +91,12 @@ type LunCollectionGetParams struct {
 	   Filter by class
 	*/
 	Class *string
+
+	/* CloneCreatedAsClone.
+
+	   Filter by clone.created_as_clone
+	*/
+	CloneCreatedAsClone *bool
 
 	/* Comment.
 
@@ -925,6 +937,17 @@ func (o *LunCollectionGetParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithAccessMode adds the accessMode to the lun collection get params
+func (o *LunCollectionGetParams) WithAccessMode(accessMode *string) *LunCollectionGetParams {
+	o.SetAccessMode(accessMode)
+	return o
+}
+
+// SetAccessMode adds the accessMode to the lun collection get params
+func (o *LunCollectionGetParams) SetAccessMode(accessMode *string) {
+	o.AccessMode = accessMode
+}
+
 // WithAttributesName adds the attributesName to the lun collection get params
 func (o *LunCollectionGetParams) WithAttributesName(attributesName *string) *LunCollectionGetParams {
 	o.SetAttributesName(attributesName)
@@ -967,6 +990,17 @@ func (o *LunCollectionGetParams) WithClass(class *string) *LunCollectionGetParam
 // SetClass adds the class to the lun collection get params
 func (o *LunCollectionGetParams) SetClass(class *string) {
 	o.Class = class
+}
+
+// WithCloneCreatedAsClone adds the cloneCreatedAsClone to the lun collection get params
+func (o *LunCollectionGetParams) WithCloneCreatedAsClone(cloneCreatedAsClone *bool) *LunCollectionGetParams {
+	o.SetCloneCreatedAsClone(cloneCreatedAsClone)
+	return o
+}
+
+// SetCloneCreatedAsClone adds the cloneCreatedAsClone to the lun collection get params
+func (o *LunCollectionGetParams) SetCloneCreatedAsClone(cloneCreatedAsClone *bool) {
+	o.CloneCreatedAsClone = cloneCreatedAsClone
 }
 
 // WithComment adds the comment to the lun collection get params
@@ -2385,6 +2419,23 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 	}
 	var res []error
 
+	if o.AccessMode != nil {
+
+		// query param access_mode
+		var qrAccessMode string
+
+		if o.AccessMode != nil {
+			qrAccessMode = *o.AccessMode
+		}
+		qAccessMode := qrAccessMode
+		if qAccessMode != "" {
+
+			if err := r.SetQueryParam("access_mode", qAccessMode); err != nil {
+				return err
+			}
+		}
+	}
+
 	if o.AttributesName != nil {
 
 		// query param attributes.name
@@ -2448,6 +2499,23 @@ func (o *LunCollectionGetParams) WriteToRequest(r runtime.ClientRequest, reg str
 		if qClass != "" {
 
 			if err := r.SetQueryParam("class", qClass); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.CloneCreatedAsClone != nil {
+
+		// query param clone.created_as_clone
+		var qrCloneCreatedAsClone bool
+
+		if o.CloneCreatedAsClone != nil {
+			qrCloneCreatedAsClone = *o.CloneCreatedAsClone
+		}
+		qCloneCreatedAsClone := swag.FormatBool(qrCloneCreatedAsClone)
+		if qCloneCreatedAsClone != "" {
+
+			if err := r.SetQueryParam("clone.created_as_clone", qCloneCreatedAsClone); err != nil {
 				return err
 			}
 		}

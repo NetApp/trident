@@ -321,26 +321,26 @@ func (o *NetgroupsSettingsModifyCollectionParams) SetSvmUUID(svmUUID *string) {
 	o.SvmUUID = svmUUID
 }
 
-// WithTTLByhost adds the tTLByhost to the netgroups settings modify collection params
-func (o *NetgroupsSettingsModifyCollectionParams) WithTTLByhost(tTLByhost *string) *NetgroupsSettingsModifyCollectionParams {
-	o.SetTTLByhost(tTLByhost)
+// WithTTLByhost adds the ttlByhost to the netgroups settings modify collection params
+func (o *NetgroupsSettingsModifyCollectionParams) WithTTLByhost(ttlByhost *string) *NetgroupsSettingsModifyCollectionParams {
+	o.SetTTLByhost(ttlByhost)
 	return o
 }
 
 // SetTTLByhost adds the ttlByhost to the netgroups settings modify collection params
-func (o *NetgroupsSettingsModifyCollectionParams) SetTTLByhost(tTLByhost *string) {
-	o.TTLByhost = tTLByhost
+func (o *NetgroupsSettingsModifyCollectionParams) SetTTLByhost(ttlByhost *string) {
+	o.TTLByhost = ttlByhost
 }
 
-// WithTTLForMembers adds the tTLForMembers to the netgroups settings modify collection params
-func (o *NetgroupsSettingsModifyCollectionParams) WithTTLForMembers(tTLForMembers *string) *NetgroupsSettingsModifyCollectionParams {
-	o.SetTTLForMembers(tTLForMembers)
+// WithTTLForMembers adds the ttlForMembers to the netgroups settings modify collection params
+func (o *NetgroupsSettingsModifyCollectionParams) WithTTLForMembers(ttlForMembers *string) *NetgroupsSettingsModifyCollectionParams {
+	o.SetTTLForMembers(ttlForMembers)
 	return o
 }
 
 // SetTTLForMembers adds the ttlForMembers to the netgroups settings modify collection params
-func (o *NetgroupsSettingsModifyCollectionParams) SetTTLForMembers(tTLForMembers *string) {
-	o.TTLForMembers = tTLForMembers
+func (o *NetgroupsSettingsModifyCollectionParams) SetTTLForMembers(ttlForMembers *string) {
+	o.TTLForMembers = ttlForMembers
 }
 
 // WriteToRequest writes these params to a swagger request
