@@ -2404,12 +2404,19 @@ func (c Client) GetSVMState(ctx context.Context) (string, error) {
 	info := azgo.NewVserverInfoType().SetVserverName(c.SVMName())
 	query.SetVserverInfo(*info)
 
-	response, err := azgo.NewVserverGetIterRequest().
+	request := azgo.NewVserverGetIterRequest().
 		SetMaxRecords(DefaultZapiRecords).
-		SetQuery(*query).
-		ExecuteUsing(c.zr)
+		SetQuery(*query)
+
+	// Use context-aware execution to respect timeout
+	result, err := c.zr.ExecuteUsingWithContext(ctx, request, "VserverGetIterRequest", azgo.NewVserverGetIterResponse())
 	if err != nil {
 		return "", err
+	}
+
+	response, ok := result.(*azgo.VserverGetIterResponse)
+	if !ok {
+		return "", fmt.Errorf("unexpected response type from VserverGetIterRequest: %T", result)
 	}
 
 	if response.Result.NumRecords() != 1 ||

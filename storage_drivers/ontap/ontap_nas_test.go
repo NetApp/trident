@@ -3594,7 +3594,7 @@ func TestOntapNasStorageDriverReconcileNodeAccess(t *testing.T) {
 func TestNASStorageDriverGetBackendState(t *testing.T) {
 	mockApi, mockDriver := newMockOntapNASDriverWithSVM(t, "SVM1")
 
-	mockApi.EXPECT().GetSVMState(ctx).Return("", errors.New("returning test error"))
+	mockApi.EXPECT().GetSVMState(gomock.Any()).Return("", errors.New("returning test error"))
 	mockApi.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockApi.EXPECT().IsSANOptimized().AnyTimes().Return(true)
 
@@ -3606,7 +3606,7 @@ func TestNASStorageDriverGetBackendState(t *testing.T) {
 func TestNASStorageDriverGetBackendState_AFX(t *testing.T) {
 	mockApi, mockDriver := newMockOntapNASDriverWithSVM(t, "SVM1")
 
-	mockApi.EXPECT().GetSVMState(ctx).Return("", errors.New("returning test error"))
+	mockApi.EXPECT().GetSVMState(gomock.Any()).Return("", errors.New("returning test error"))
 	mockApi.EXPECT().IsDisaggregated().AnyTimes().Return(true)
 	mockApi.EXPECT().IsSANOptimized().AnyTimes().Return(true)
 

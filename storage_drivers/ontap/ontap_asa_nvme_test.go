@@ -3013,7 +3013,7 @@ func TestGetBackendStateASANVMe(t *testing.T) {
 	physicalPools := map[string]storage.Pool{ONTAPTEST_VSERVER_AGGR_NAME: pool1}
 	driver.physicalPools = physicalPools
 
-	mockAPI.EXPECT().GetSVMState(ctx).Return(restAPIModels.SvmStateRunning, nil).AnyTimes().Times(1)
+	mockAPI.EXPECT().GetSVMState(gomock.Any()).Return(restAPIModels.SvmStateRunning, nil).Times(1)
 	mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).AnyTimes()
 	mockAPI.EXPECT().IsDisaggregated().AnyTimes().Return(false)
 	mockAPI.EXPECT().IsSANOptimized().AnyTimes().Return(false)

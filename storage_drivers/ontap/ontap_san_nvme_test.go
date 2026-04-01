@@ -3051,7 +3051,7 @@ func TestCreateNamespacePath(t *testing.T) {
 func TestGetBackendState(t *testing.T) {
 	d, mAPI := newNVMeDriverAndMockApi(t)
 
-	mAPI.EXPECT().GetSVMState(ctx).Return("", errors.New("returning test error"))
+	mAPI.EXPECT().GetSVMState(gomock.Any()).Return("", errors.New("returning test error"))
 
 	reason, changeMap := d.GetBackendState(ctx)
 

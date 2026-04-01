@@ -6195,7 +6195,7 @@ func TestOntapSanEconomyEnablePublishEnforcement_EnablesAccessControl(t *testing
 func TestSANEconomyStorageDriverGetBackendState(t *testing.T) {
 	mockApi, mockDriver := newMockOntapSanEcoDriver(t)
 
-	mockApi.EXPECT().GetSVMState(ctx).Return("", errors.New("returning test error"))
+	mockApi.EXPECT().GetSVMState(gomock.Any()).Return("", errors.New("returning test error"))
 
 	reason, changeMap := mockDriver.GetBackendState(ctx)
 	assert.Equal(t, reason, StateReasonSVMUnreachable, "should be 'SVM is not reachable'")

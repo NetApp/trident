@@ -821,7 +821,7 @@ func TestSANStorageDriverGetBackendState(t *testing.T) {
 	mockDriver := newTestOntapSANDriver(ONTAPTEST_LOCALHOST, "0", ONTAPTEST_VSERVER_AGGR_NAME, true, nil, mockAPI)
 	mockDriver.API = mockAPI
 
-	mockAPI.EXPECT().GetSVMState(ctx).Return("", errors.New("returning test error"))
+	mockAPI.EXPECT().GetSVMState(gomock.Any()).Return("", errors.New("returning test error"))
 
 	reason, changeMap := mockDriver.GetBackendState(ctx)
 	assert.Equal(t, reason, StateReasonSVMUnreachable, "should be 'SVM is not reachable'")

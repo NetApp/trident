@@ -9455,7 +9455,7 @@ func TestGetSVMState(t *testing.T) {
 
 	// Test 1
 	// a: API.GetSVMState returns error
-	mockAPI.EXPECT().GetSVMState(ctx).Return("TestStateInvalid", errors.New("GetSVMState returned error"))
+	mockAPI.EXPECT().GetSVMState(gomock.Any()).Return("TestStateInvalid", errors.New("GetSVMState returned error"))
 
 	state, code := getSVMState(ctx, mockAPI, sa.ISCSI, derivedPoolsNil, aggrsNil...)
 	assert.Equal(t, StateReasonSVMUnreachable, state, "state returned should be TestStateUnknown")
@@ -9464,14 +9464,14 @@ func TestGetSVMState(t *testing.T) {
 
 	// Test 2
 	// a: SVM is stopped
-	mockAPI.EXPECT().GetSVMState(ctx).Return(models.SvmStateStopped, nil).Times(1)
+	mockAPI.EXPECT().GetSVMState(gomock.Any()).Return(models.SvmStateStopped, nil).Times(1)
 
 	state, code = getSVMState(ctx, mockAPI, sa.ISCSI, derivedPoolsNil, aggrsNil...)
 	assert.Equal(t, StateReasonSVMStopped, state, "state should be SVM stopped")
 	assert.False(t, code.Contains(storage.BackendStatePoolsChange), "Should not be pool change")
 	assert.False(t, code.Contains(storage.BackendStateAPIVersionChange), "Should not be API version change")
 
-	mockAPI.EXPECT().GetSVMState(ctx).Return(models.SvmStateRunning, nil).AnyTimes()
+	mockAPI.EXPECT().GetSVMState(gomock.Any()).Return(models.SvmStateRunning, nil).AnyTimes()
 
 	// Test 3
 	// a: client.GetSVMAggregateNames returns error

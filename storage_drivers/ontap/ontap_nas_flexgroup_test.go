@@ -1115,7 +1115,7 @@ func TestNASFlexGroupStorageDriverGetBackendState(t *testing.T) {
 
 	// set fake values
 	mockDriver.physicalPool = storage.NewStoragePool(nil, "pool1")
-	mockApi.EXPECT().GetSVMState(ctx).Return("", errors.New("returning test error"))
+	mockApi.EXPECT().GetSVMState(gomock.Any()).Return("", errors.New("returning test error"))
 
 	reason, changeMap := mockDriver.GetBackendState(ctx)
 	assert.Equal(t, reason, StateReasonSVMUnreachable, "should be 'SVM is not reachable'")

@@ -171,12 +171,17 @@ func (o *ZapiRunner) GetOntapApiVersion() string {
 
 // SendZapi sends the provided ZAPIRequest to the Ontap system
 func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
+	return o.SendZapiWithContext(context.Background(), r)
+}
+
+// SendZapiWithContext sends the provided ZAPIRequest to the Ontap system using the provided context
+func (o *ZapiRunner) SendZapiWithContext(ctx context.Context, r ZAPIRequest) (*http.Response, error) {
 	startTime := time.Now()
 
 	if o.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "SendZapi", "Type": "ZapiRunner"}
-		log.WithFields(fields).Debug(">>>> SendZapi")
-		defer log.WithFields(fields).Debug("<<<< SendZapi")
+		fields := log.Fields{"Method": "SendZapiWithContext", "Type": "ZapiRunner"}
+		log.WithFields(fields).Debug(">>>> SendZapiWithContext")
+		defer log.WithFields(fields).Debug("<<<< SendZapiWithContext")
 	}
 
 	zapiCommand, err := r.ToXML()
@@ -226,8 +231,12 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 	}
 
 	b := []byte(s)
-	ctx, cancel := context.WithTimeout(context.Background(), tridentconfig.StorageAPITimeout)
+
+	// Add default timeout
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithTimeout(ctx, tridentconfig.StorageAPITimeout)
 	defer cancel()
+
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(b))
 	if err != nil {
 		return nil, err
@@ -254,6 +263,11 @@ func (o *ZapiRunner) SendZapi(r ZAPIRequest) (*http.Response, error) {
 
 // ExecuteUsing converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer
 func (o *ZapiRunner) ExecuteUsing(z ZAPIRequest, requestType string, v interface{}) (interface{}, error) {
+	return o.ExecuteUsingWithContext(context.Background(), z, requestType, v)
+}
+
+// ExecuteUsingWithContext converts this object to a ZAPI XML representation and uses the supplied ZapiRunner to send to a filer with context support
+func (o *ZapiRunner) ExecuteUsingWithContext(ctx context.Context, z ZAPIRequest, requestType string, v interface{}) (interface{}, error) {
 	// Copy the v interface, in case we need a clean version for a retry
 	o.m.RLock()
 	var vCopy interface{}
@@ -266,7 +280,7 @@ func (o *ZapiRunner) ExecuteUsing(z ZAPIRequest, requestType string, v interface
 	svm := o.svm
 
 	// Try API call as-is first
-	response, err := o.executeWithoutIteration(z, requestType, v)
+	response, err := o.executeWithoutIterationWithContext(ctx, z, requestType, v)
 	o.m.RUnlock()
 	if err != nil {
 		// Always return an error if the call itself failed
@@ -289,18 +303,23 @@ func (o *ZapiRunner) ExecuteUsing(z ZAPIRequest, requestType string, v interface
 		o.svm = fmt.Sprintf("%s-mc", svm)
 	}
 
-	return o.executeWithoutIteration(z, requestType, vCopy)
+	return o.executeWithoutIterationWithContext(ctx, z, requestType, vCopy)
 }
 
 // executeWithoutIteration does not attempt to perform any nextTag style iteration
 func (o *ZapiRunner) executeWithoutIteration(z ZAPIRequest, requestType string, v interface{}) (interface{}, error) {
+	return o.executeWithoutIterationWithContext(context.Background(), z, requestType, v)
+}
+
+// executeWithoutIterationWithContext does not attempt to perform any nextTag style iteration, with context support
+func (o *ZapiRunner) executeWithoutIterationWithContext(ctx context.Context, z ZAPIRequest, requestType string, v interface{}) (interface{}, error) {
 	if o.DebugTraceFlags["method"] {
-		fields := log.Fields{"Method": "ExecuteUsing", "Type": requestType}
-		log.WithFields(fields).Debug(">>>> ExecuteUsing")
-		defer log.WithFields(fields).Debug("<<<< ExecuteUsing")
+		fields := log.Fields{"Method": "executeWithoutIterationWithContext", "Type": requestType}
+		log.WithFields(fields).Debug(">>>> executeWithoutIterationWithContext")
+		defer log.WithFields(fields).Debug("<<<< executeWithoutIterationWithContext")
 	}
 
-	resp, err := o.SendZapi(z)
+	resp, err := o.SendZapiWithContext(ctx, z)
 	if err != nil {
 		log.Errorf("API invocation failed. %v", err.Error())
 		return nil, err

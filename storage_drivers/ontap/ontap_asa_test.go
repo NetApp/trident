@@ -3013,7 +3013,7 @@ func TestGetBackendStateASA(t *testing.T) {
 				driver.physicalPools = physicalPools
 			},
 			setupMocks: func() {
-				mockAPI.EXPECT().GetSVMState(ctx).Return(restAPIModels.SvmStateRunning, nil).Times(1)
+				mockAPI.EXPECT().GetSVMState(gomock.Any()).Return(restAPIModels.SvmStateRunning, nil).Times(1)
 				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).Times(1)
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.ISCSI).Return([]string{"1.2.3.4"}, nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
@@ -3034,7 +3034,7 @@ func TestGetBackendStateASA(t *testing.T) {
 				driver.physicalPools = physicalPools
 			},
 			setupMocks: func() {
-				mockAPI.EXPECT().GetSVMState(ctx).Return(restAPIModels.SvmStateRunning, nil).Times(1)
+				mockAPI.EXPECT().GetSVMState(gomock.Any()).Return(restAPIModels.SvmStateRunning, nil).Times(1)
 				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).Times(1)
 				mockAPI.EXPECT().NetFcpInterfaceGetDataLIFs(ctx, sa.FCP).Return([]string{"20:00:00:25:b5:11:a0:01", "20:00:00:25:b5:11:a0:02"}, nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)
@@ -3055,7 +3055,7 @@ func TestGetBackendStateASA(t *testing.T) {
 				driver.physicalPools = physicalPools
 			},
 			setupMocks: func() {
-				mockAPI.EXPECT().GetSVMState(ctx).Return(restAPIModels.SvmStateRunning, nil).Times(1)
+				mockAPI.EXPECT().GetSVMState(gomock.Any()).Return(restAPIModels.SvmStateRunning, nil).Times(1)
 				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).Times(1)
 				mockAPI.EXPECT().NetFcpInterfaceGetDataLIFs(ctx, sa.FCP).Return([]string{}, nil).Times(1)
 				mockAPI.EXPECT().IsDisaggregated().Return(false).Times(1)
@@ -3074,7 +3074,7 @@ func TestGetBackendStateASA(t *testing.T) {
 				driver.physicalPools = physicalPools
 			},
 			setupMocks: func() {
-				mockAPI.EXPECT().GetSVMState(ctx).Return(restAPIModels.SvmStateRunning, nil).Times(1)
+				mockAPI.EXPECT().GetSVMState(gomock.Any()).Return(restAPIModels.SvmStateRunning, nil).Times(1)
 				mockAPI.EXPECT().GetSVMAggregateNames(ctx).Return(derivedPools, nil).Times(1)
 				mockAPI.EXPECT().NetInterfaceGetDataLIFs(ctx, sa.ISCSI).Return([]string{"127.0.0.1"}, nil).Times(1)
 				mockAPI.EXPECT().APIVersion(ctx, true).Return("9.14.1", nil).Times(1)

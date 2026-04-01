@@ -119,6 +119,7 @@ const (
 	// maxSnapshotDeleteWait and maxSnapshotDeleteRetry should be used
 	// together to balance snapshot deletion wait times and retries.
 	maxSnapshotDeleteWait = 60 * time.Second
+	getSVMStateTimeout    = 20 * time.Second
 
 	VolTypeRW  = "rw"  // read-write
 	VolTypeLS  = "ls"  // load-sharing
@@ -736,7 +737,11 @@ func getSVMState(
 	ctx context.Context, client api.OntapAPI, protocol string, pools []string, configAggrs ...string,
 ) (string, *roaring.Bitmap) {
 	changeMap := roaring.New()
-	svmState, err := client.GetSVMState(ctx)
+
+	stateCtx, cancel := context.WithTimeout(ctx, getSVMStateTimeout)
+	defer cancel()
+
+	svmState, err := client.GetSVMState(stateCtx)
 	if err != nil {
 		// Could not get the SVM info or SVM is unreachable. Just log it.
 		// Set state offline and reason as unreachable.
