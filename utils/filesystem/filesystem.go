@@ -225,6 +225,7 @@ func (f *FSClient) RepairVolume(ctx context.Context, device, fstype string) {
 	case "ext4":
 		_, err = f.command.Execute(ctx, "fsck.ext4", "-p", device)
 	default:
+		logFields["reason"] = "unsupported_fstype"
 		Logc(ctx).WithFields(logFields).Errorf("Unsupported file system type: %s.", fstype)
 	}
 
@@ -242,8 +243,12 @@ func (f *FSClient) RepairVolume(ctx context.Context, device, fstype string) {
 				Logc(ctx).WithFields(logFields).Debug("Filesystem check errors.")
 			case fsckFsErrorsUncorrected, fsckSyntaxError:
 				Logc(ctx).WithError(err).WithFields(logFields).Error("Failed to repair filesystem errors.")
+			default:
+				logFields["reason"] = "fsck_unexpected_exit_code"
+				Logc(ctx).WithError(err).WithFields(logFields).Error("Unexpected fsck exit code.")
 			}
 		} else {
+			logFields["reason"] = "fsck_exec_error"
 			Logc(ctx).WithError(err).WithFields(logFields).Error("Error executing fsck command.")
 		}
 	}

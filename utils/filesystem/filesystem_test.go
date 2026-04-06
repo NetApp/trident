@@ -6,13 +6,20 @@ import (
 	"context"
 	"encoding/json"
 	"io/fs"
+	"os"
+	"os/exec"
+	"strconv"
+	"sync"
 	"testing"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+	logtest "github.com/sirupsen/logrus/hooks/test"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	"github.com/netapp/trident/logging"
 	"github.com/netapp/trident/mocks/mock_utils/mock_exec"
 	"github.com/netapp/trident/utils/errors"
 	execCmd "github.com/netapp/trident/utils/exec"
@@ -24,6 +31,8 @@ import (
 type MockFs struct {
 	afero.MemMapFs
 }
+
+var globalLogMutationMutex sync.Mutex
 
 func (m *MockFs) Open(name string) (afero.File, error) {
 	return nil, fs.ErrPermission
@@ -343,6 +352,43 @@ func TestFormatVolumeRetry(t *testing.T) {
 	}
 }
 
+func newExitErrorForCode(t *testing.T, code int) error {
+	t.Helper()
+	exePath, err := os.Executable()
+	assert.NoError(t, err)
+
+	// Spawn this test binary as a helper process and force it to exit with the requested code.
+	// This gives us a real *exec.ExitError in a cross-platform way (no shell dependency).
+	cmd := exec.Command(exePath, "-test.run=TestExitWithCodeHelperProcess", "--", strconv.Itoa(code))
+	// Gate helper mode so normal test runs don't execute the forced os.Exit path.
+	cmd.Env = append(os.Environ(), "GO_WANT_HELPER_PROCESS=1")
+	err = cmd.Run()
+	assert.Error(t, err)
+	var exitErr *exec.ExitError
+	assert.ErrorAs(t, err, &exitErr)
+	return err
+}
+
+func TestExitWithCodeHelperProcess(t *testing.T) {
+	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
+		return
+	}
+
+	for i, arg := range os.Args {
+		if arg != "--" || i+1 >= len(os.Args) {
+			continue
+		}
+
+		code, err := strconv.Atoi(os.Args[i+1])
+		if err != nil {
+			os.Exit(2)
+		}
+		os.Exit(code)
+	}
+
+	os.Exit(2)
+}
+
 func TestRepairVolume(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockExec := mock_exec.NewMockCommand(mockCtrl)
@@ -352,6 +398,9 @@ func TestRepairVolume(t *testing.T) {
 		device    string
 		fstype    string
 		mockSetup func()
+		logLevel  log.Level
+		exitCode  *int
+		reason    string
 	}
 	tests := map[string]parameters{
 		"fsck.xfs does nothing": {
@@ -377,6 +426,8 @@ func TestRepairVolume(t *testing.T) {
 			device:    "/dev/sda1",
 			fstype:    "unsupported",
 			mockSetup: func() {},
+			logLevel:  log.ErrorLevel,
+			reason:    "unsupported_fstype",
 		},
 		"Error executing fsck": {
 			device: "/dev/sda1",
@@ -384,13 +435,65 @@ func TestRepairVolume(t *testing.T) {
 			mockSetup: func() {
 				mockExec.EXPECT().Execute(gomock.Any(), "fsck.ext4", "-p", "/dev/sda1").Return(nil, errors.New("mock error")).Times(1)
 			},
+			logLevel: log.ErrorLevel,
+			reason:   "fsck_exec_error",
+		},
+		"Unexpected fsck exit code is handled": {
+			device: "/dev/sda1",
+			fstype: Ext4,
+			mockSetup: func() {
+				mockExec.EXPECT().Execute(
+					gomock.Any(), "fsck.ext4", "-p", "/dev/sda1",
+				).Return(nil, newExitErrorForCode(t, 42)).Times(1)
+			},
+			logLevel: log.ErrorLevel,
+			exitCode: func() *int { v := 42; return &v }(),
+			reason:   "fsck_unexpected_exit_code",
 		},
 	}
 
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
+			globalLogMutationMutex.Lock()
+			originalDefaultLevel := logging.GetDefaultLogLevel()
+			hook := logtest.NewGlobal()
+			assert.NoError(t, logging.SetDefaultLogLevel("trace"))
+			t.Cleanup(func() {
+				hook.Reset()
+				assert.NoError(t, logging.SetDefaultLogLevel(originalDefaultLevel))
+				globalLogMutationMutex.Unlock()
+			})
+
 			params.mockSetup()
 			fsClient.RepairVolume(context.Background(), params.device, params.fstype)
+			if params.exitCode != nil || params.reason != "" {
+				found := false
+				for _, e := range hook.AllEntries() {
+					if e.Level != params.logLevel {
+						continue
+					}
+					if params.exitCode != nil {
+						rawCode, ok := e.Data["exitCode"]
+						if !ok {
+							continue
+						}
+						assert.Equal(t, *params.exitCode, rawCode)
+					}
+					if params.reason != "" {
+						rawReason, ok := e.Data["reason"]
+						if !ok {
+							continue
+						}
+						assert.Equal(t, params.reason, rawReason)
+					}
+					found = true
+					break
+				}
+				assert.True(
+					t, found, "expected matching log criteria level=%s exitCode=%v reason=%q, got entries: %#v",
+					params.logLevel, params.exitCode, params.reason, hook.AllEntries(),
+				)
+			}
 		})
 	}
 }
