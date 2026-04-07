@@ -382,7 +382,10 @@ func main() {
 
 	var orchestrator core.Orchestrator
 	if *enableConcurrency {
-		Log().Warning("Concurrency is enabled, feature is in tech preview and may not work as expected.")
+		Log().WithField("drivers", strings.Join(config.ConcurrencyGADrivers, ", ")).
+			Info("Concurrency is enabled. Controller scalability is generally available for the following drivers.")
+		Log().WithField("drivers", strings.Join(config.ConcurrencyTechPreviewDrivers, ", ")).
+			Warning("Controller scalability is in technical preview for the following drivers and may not work as expected.")
 		orchestrator, err = core.NewConcurrentTridentOrchestrator(storeClient)
 		if err != nil {
 			_, _ = fmt.Fprint(os.Stderr, err)
