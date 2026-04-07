@@ -14,6 +14,22 @@ import (
 	"github.com/netapp/trident/utils/models"
 )
 
+// ShiftConfig holds all metadata needed for the NetApp Shift integration.
+// Fields are transient (json:"-") so they are never persisted to CRDs.
+type ShiftConfig struct {
+	Endpoint      string `json:"-"`
+	BackendUUID   string `json:"-"`
+	ManagementLIF string `json:"-"`
+	SVM           string `json:"-"`
+	Username      string `json:"-"`
+	Password      string `json:"-"`
+	DiskPath      string `json:"-"`
+	NFSServer     string `json:"-"`
+	NFSPath       string `json:"-"`
+	VMID          string `json:"-"`
+	VMUUID        string `json:"-"`
+}
+
 type VolumeConfig struct {
 	Version                     string                  `json:"version"`
 	Name                        string                  `json:"name"`
@@ -80,6 +96,8 @@ type VolumeConfig struct {
 	// RequestedAutogrowPolicy stores the autogrow policy on volume
 	// This IS persisted so we can recompute the effective policy after restart
 	RequestedAutogrowPolicy string `json:"requestedAutogrowPolicy,omitempty"`
+	// Shift holds transient shift-integration metadata; never persisted.
+	Shift *ShiftConfig `json:"-"`
 }
 
 type VolumeCreatingConfig struct {

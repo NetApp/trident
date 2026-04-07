@@ -81,6 +81,18 @@ const (
 	AnnTieringPolicy             = prefix + "/tieringPolicy"
 	AnnTieringMinimumCoolingDays = prefix + "/tieringMinimumCoolingDays"
 
+	// Shift/MTV StorageClass annotations
+	AnnShiftStorageClassType   = "shift.netapp.io/storage-class-type"
+	AnnShiftTridentBackendUUID = "shift.netapp.io/trident-backend-uuid"
+	AnnShiftEndpoint           = "shift.netapp.io/endpoint"
+
+	// MTV PVC annotations
+	AnnMTVDiskPath  = "mtv.redhat.com/disk-path"
+	AnnMTVNFSServer = "mtv.redhat.com/nfs-server"
+	AnnMTVNFSPath   = "mtv.redhat.com/nfs-path"
+	AnnMTVVMID      = "mtv.redhat.com/vm-id"
+	AnnMTVVMUUID    = "mtv.redhat.com/vm-uuid"
+
 	// Pod remediation policy annotation and values
 	AnnPodRemediationPolicyAnnotation = prefix + "/podRemediationPolicy"
 	PodRemediationPolicyDelete        = "delete"

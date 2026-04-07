@@ -20,6 +20,7 @@ import (
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
 	controllerhelpers "github.com/netapp/trident/frontend/csi/controller_helpers"
 	nodehelpers "github.com/netapp/trident/frontend/csi/node_helpers"
+	"github.com/netapp/trident/frontend/csi/shift"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/utils/devices"
 	"github.com/netapp/trident/utils/errors"
@@ -60,6 +61,7 @@ type Plugin struct {
 	restClient       controllerAPI.TridentController
 	controllerHelper controllerhelpers.ControllerHelper
 	nodeHelper       nodehelpers.NodeHelper
+	shiftClient      shift.Client
 
 	aesKey []byte
 
@@ -126,6 +128,7 @@ func NewControllerPlugin(
 		command:           execCmd.NewCommand(),
 		osutils:           osutils.New(),
 		activatedChan:     make(chan struct{}, 1),
+		shiftClient:       shift.NewClient(),
 	}
 
 	var err error
@@ -336,6 +339,7 @@ func NewAllInOnePlugin(
 		command:                  execCmd.NewCommand(),
 		osutils:                  osutils.New(),
 		activatedChan:            make(chan struct{}, 1),
+		shiftClient:              shift.NewClient(),
 	}
 
 	port := "34571"
