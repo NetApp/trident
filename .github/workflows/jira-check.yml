@@ -1,0 +1,68 @@
+name: jira-check
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+    branches:
+      - master
+      - stable/**
+
+permissions:
+  pull-requests: read
+
+jobs:
+  jira-check:
+    name: JIRA ticket validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate JIRA reference in PR body
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          JIRA_PROJECT_KEY: ${{ vars.JIRA_PROJECT_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${JIRA_PROJECT_KEY:-}" ]]; then
+            echo "::error::Repository variable JIRA_PROJECT_KEY is not set."
+            exit 1
+          fi
+
+          if [[ -z "${PR_BODY:-}" ]]; then
+            echo "::error::PR body is empty. Please use the PR template and provide a JIRA ticket under '## Project tracking'."
+            exit 1
+          fi
+
+          # Extract the "Project tracking" section (between its heading and the next ## heading).
+          SECTION=$(printf '%s\n' "$PR_BODY" | sed -n '/^## Project tracking/,/^## /{/^## Project tracking/d;/^## /d;p}')
+
+          if [[ -z "$SECTION" ]]; then
+            echo "::error::Could not find the '## Project tracking' section in the PR body. Please use the PR template."
+            exit 1
+          fi
+
+          if grep -iqE "${JIRA_PROJECT_KEY}-[0-9]+" <<<"$SECTION"; then
+            echo "Found JIRA reference in Project tracking section."
+            exit 0
+          fi
+
+          # No JIRA found — check for the override checkbox.
+          if grep -qE '^\s*- \[[xX]\]' <<<"$SECTION"; then
+            # Checkbox is checked. Now verify an explanation exists after the checkbox line.
+            # Grab all lines after the checkbox, strip HTML comments and blank lines.
+            EXPLANATION=$(printf '%s\n' "$SECTION" \
+              | sed -n '/^\s*- \[[xX]\]/,$ p' \
+              | tail -n +2 \
+              | sed 's/<!--.*-->//g' \
+              | grep -v '^\s*$' || true)
+
+            if [[ -n "$EXPLANATION" ]]; then
+              echo "No JIRA required — override accepted with explanation."
+              exit 0
+            else
+              echo "::error::Override checkbox is checked but no explanation was provided. Please explain why a JIRA ticket is not needed."
+              exit 1
+            fi
+          fi
+
+          echo "::error::No JIRA ticket found in the '## Project tracking' section. Either add a JIRA reference or check the override checkbox and provide an explanation."
+          exit 1

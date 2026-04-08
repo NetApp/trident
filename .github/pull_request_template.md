@@ -3,7 +3,11 @@
 
 
 ## Project tracking
-<!-- What is the Jira Issue URL for this PR? -->
+<!-- Required: Provide the Jira Issue key or URL below. Use the override checkbox if not applicable. -->
+
+
+- [ ] This PR does not require a JIRA ticket (explain below why)
+<!-- If checked, you MUST provide an explanation below or the PR will be blocked. -->
 
 
 ## Do any added TODOs have an issue in the backlog?
