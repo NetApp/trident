@@ -135,7 +135,6 @@ func TestEnsureLUKSVolumePassphrase(t *testing.T) {
 		"luks-passphrase":      "passphraseA",
 	}
 	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(true, nil)
-	mockClient.EXPECT().UpdateVolumeLUKSPassphraseNames(gomock.Any(), "test-vol", []string{"A"}).Return(nil)
 	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, true)
 	assert.NoError(t, err)
 	mockCtrl.Finish()
@@ -153,10 +152,7 @@ func TestEnsureLUKSVolumePassphrase(t *testing.T) {
 	}
 	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(false, nil)
 	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(true, nil)
-	mockClient.EXPECT().UpdateVolumeLUKSPassphraseNames(gomock.Any(), "test-vol", []string{"B", "A"}).Return(nil)
 	mockLUKSDevice.EXPECT().RotatePassphrase(gomock.Any(), "test-vol", "passphraseA", "passphraseB").Return(nil)
-	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(true, nil)
-	mockClient.EXPECT().UpdateVolumeLUKSPassphraseNames(gomock.Any(), "test-vol", []string{"B"}).Return(nil)
 	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
 	assert.NoError(t, err)
 	mockCtrl.Finish()
@@ -197,24 +193,6 @@ func TestEnsureLUKSVolumePassphrase_Error(t *testing.T) {
 	mockCtrl.Finish()
 
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Negative case: Sending pre-rotation passphrases to trident controller fails
-	mockCtrl = gomock.NewController(t)
-	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
-	secrets = map[string]string{
-		"luks-passphrase-name":          "B",
-		"luks-passphrase":               "passphraseB",
-		"previous-luks-passphrase-name": "A",
-		"previous-luks-passphrase":      "passphraseA",
-	}
-	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(false, nil)
-	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(true, nil)
-	mockClient.EXPECT().UpdateVolumeLUKSPassphraseNames(gomock.Any(), "test-vol", []string{"B", "A"}).Return(fmt.Errorf("test error"))
-	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
-	assert.Error(t, err)
-	mockCtrl.Finish()
-
-	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Negative case: Passphrase rotation fails
 	mockCtrl = gomock.NewController(t)
 	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
@@ -227,49 +205,7 @@ func TestEnsureLUKSVolumePassphrase_Error(t *testing.T) {
 	}
 	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(false, nil)
 	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(true, nil)
-	mockClient.EXPECT().UpdateVolumeLUKSPassphraseNames(gomock.Any(), "test-vol", []string{"B", "A"}).Return(nil)
 	mockLUKSDevice.EXPECT().RotatePassphrase(gomock.Any(), "test-vol", "passphraseA", "passphraseB").Return(fmt.Errorf("test error"))
-	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
-	assert.Error(t, err)
-	mockCtrl.Finish()
-
-	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Negative case: Verifying passphrase rotation fails
-	mockCtrl = gomock.NewController(t)
-	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
-	secrets = map[string]string{
-		"luks-passphrase-name":          "B",
-		"luks-passphrase":               "passphraseB",
-		"previous-luks-passphrase-name": "A",
-		"previous-luks-passphrase":      "passphraseA",
-	}
-	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(false, nil)
-	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(true, nil)
-	mockClient.EXPECT().UpdateVolumeLUKSPassphraseNames(gomock.Any(), "test-vol", []string{"B", "A"}).Return(nil)
-	mockLUKSDevice.EXPECT().RotatePassphrase(gomock.Any(), "test-vol", "passphraseA", "passphraseB").Return(nil)
-	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(true, fmt.Errorf("test error"))
-	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
-	assert.Error(t, err)
-	mockCtrl.Finish()
-
-	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Negative case: Sending post-rotation passphrases to trident controller fails
-	mockCtrl = gomock.NewController(t)
-	mockClient = mockControllerAPI.NewMockTridentController(mockCtrl)
-	mockLUKSDevice = mock_luks.NewMockDevice(mockCtrl)
-	secrets = map[string]string{
-		"luks-passphrase-name":          "B",
-		"luks-passphrase":               "passphraseB",
-		"previous-luks-passphrase-name": "A",
-		"previous-luks-passphrase":      "passphraseA",
-	}
-	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(false, nil)
-	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseA").Return(true, nil)
-	mockClient.EXPECT().UpdateVolumeLUKSPassphraseNames(gomock.Any(), "test-vol", []string{"B", "A"}).Return(nil)
-	mockLUKSDevice.EXPECT().RotatePassphrase(gomock.Any(), "test-vol", "passphraseA", "passphraseB").Return(nil)
-	mockLUKSDevice.EXPECT().CheckPassphrase(gomock.Any(), "passphraseB").Return(true, nil)
-	mockClient.EXPECT().UpdateVolumeLUKSPassphraseNames(gomock.Any(), "test-vol", []string{"B"}).Return(fmt.Errorf("test error"))
 	err = ensureLUKSVolumePassphrase(context.TODO(), mockClient, mockLUKSDevice, "test-vol", secrets, false)
 	assert.Error(t, err)
 	mockCtrl.Finish()
