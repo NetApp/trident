@@ -1633,6 +1633,41 @@ func TestSANDriver_Create_InvalidSize(t *testing.T) {
 	assert.Contains(t, err.Error(), "invalid volume size")
 }
 
+func TestSANDriver_Create_BelowMinimumSize(t *testing.T) {
+	mockAPI, driver := newMockSANDriver(t)
+
+	// Request half of MinimumVolumeSizeBytes (512 MiB) — should normalize up, not fail.
+	belowMinSize := strconv.FormatUint(MinimumVolumeSizeBytes/2, 10)
+
+	volConfig := &storage.VolumeConfig{
+		Name:         testVolumeName,
+		InternalName: testVolumeInternalName,
+		Size:         belowMinSize,
+		FileSystem:   "ext4",
+	}
+
+	pool := driver.pools["test-pool"]
+
+	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
+	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, pool, "", drivers.TieringPolicyNone).Return([]*api.CapacityPool{{Name: "test-pool"}}).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]*api.CapacityPool{{Name: "test-pool"}}).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, gomock.Any()).DoAndReturn(
+		func(_ context.Context, req *api.VolumeCreateRequest) (*api.Volume, error) {
+			// Size must be >= MinimumVolumeSizeBytes after normalization
+			assert.GreaterOrEqual(t, req.SizeBytes, int64(MinimumVolumeSizeBytes), "create request size must be at least minimum")
+			v := getTestVolume()
+			v.Name = testVolumeName
+			v.CreationToken = testVolumeInternalName
+			return v, nil
+		},
+	)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, gomock.Any(), api.VolumeStateReady, gomock.Any(), gomock.Any()).Return(api.VolumeStateReady, nil).Times(1)
+
+	err := driver.Create(ctx, volConfig, pool, nil)
+	assert.NoError(t, err, "Create should succeed for sub-minimum size by normalizing up")
+}
+
 func TestSANDriver_Create_RefreshError(t *testing.T) {
 	mockAPI, driver := newMockSANDriver(t)
 

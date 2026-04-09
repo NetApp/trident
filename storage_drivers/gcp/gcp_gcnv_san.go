@@ -636,8 +636,14 @@ func (d *SANStorageDriver) Create(
 	}
 
 	// Ensure the volume size meets minimum requirements
-	if err = drivers.CheckMinVolumeSize(sizeBytes, MinimumVolumeSizeBytes); err != nil {
-		return err
+	if sizeBytes < MinimumVolumeSizeBytes {
+		Logc(ctx).WithFields(LogFields{
+			"name":          name,
+			"requestedSize": sizeBytes,
+			"minimumSize":   MinimumVolumeSizeBytes,
+		}).Warningf("Requested size is too small. Setting volume size to the minimum allowable.")
+
+		sizeBytes = MinimumVolumeSizeBytes
 	}
 
 	// NOTE: Snapshot reserve is applied later after parsing; the size checks below use the base size.

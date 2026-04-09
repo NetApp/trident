@@ -2255,17 +2255,28 @@ func TestCreate_BelowAbsoluteMinimumSize(t *testing.T) {
 
 	storagePool := driver.pools["gcnv_pool"]
 
-	volConfig, _, _, _ := getStructsForCreateNFSVolume(ctx, driver, storagePool)
-	volConfig.Size = "1k"
+	volConfig, capacityPool, volume, createRequest := getStructsForCreateNFSVolume(ctx, driver, storagePool)
+	volConfig.Size = "1024"
+	createRequest.UnixPermissions = "0777"
+	createRequest.SizeBytes = int64(capacity.OneGiB * 100)
+	volume.SizeBytes = int64(capacity.OneGiB * 100)
 
 	mockAPI.EXPECT().RefreshGCNVResources(ctx).Return(nil).Times(1)
 	mockAPI.EXPECT().VolumeExists(ctx, volConfig).Return(false, nil, nil).Times(1)
+	mockAPI.EXPECT().CapacityPoolsForStoragePool(ctx, storagePool,
+		api.ServiceLevelPremium, gomock.Any()).Return([]*api.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().FilterCapacityPoolsOnTopology(ctx, []*api.CapacityPool{capacityPool},
+		volConfig.RequisiteTopologies, volConfig.PreferredTopologies).Return([]*api.CapacityPool{capacityPool}).Times(1)
+	mockAPI.EXPECT().CreateVolume(ctx, createRequest).Return(volume, nil).Times(1)
+	mockAPI.EXPECT().WaitForVolumeState(ctx, volume, api.VolumeStateReady, []string{api.VolumeStateError},
+		driver.volumeCreateTimeout).Return(api.VolumeStateReady, nil).Times(1)
 
 	result := driver.Create(ctx, volConfig, storagePool, nil)
-	fmt.Println("------", result)
 
-	assert.Error(t, result, "create failed")
-	assert.Equal(t, "", volConfig.InternalID, "internal ID set on volConfig")
+	assert.NoError(t, result, "create failed")
+	assert.Equal(t, int64(capacity.OneGiB*100), createRequest.SizeBytes, "request size mismatch")
+	assert.Equal(t, defaultVolumeSizeStr, volConfig.Size, "config size mismatch")
+	assert.Equal(t, volume.FullName, volConfig.InternalID, "internal ID not set on volConfig")
 }
 
 func TestCreate_AboveMaximumSize(t *testing.T) {

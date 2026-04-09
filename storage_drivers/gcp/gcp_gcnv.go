@@ -779,9 +779,6 @@ func (d *NASStorageDriver) Create(
 		defaultSize, _ := capacity.ToBytes(pool.InternalAttributes()[Size])
 		sizeBytes, _ = strconv.ParseUint(defaultSize, 10, 64)
 	}
-	if err = drivers.CheckMinVolumeSize(sizeBytes, MinimumVolumeSizeBytes); err != nil {
-		return err
-	}
 
 	if sizeBytes < minimumGCNVVolumeSizeBytes {
 
