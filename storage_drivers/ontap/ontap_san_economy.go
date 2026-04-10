@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -593,6 +593,7 @@ func (d *SANEconomyStorageDriver) Create(
 	volConfig.QosPolicy = qosPolicy
 	volConfig.AdaptiveQosPolicy = adaptiveQosPolicy
 	volConfig.LUKSEncryption = luksEncryption
+	volConfig.FileSystem = fstype
 	volConfig.FormatOptions = formatOptions
 
 	createErrors := make([]error, 0)
@@ -1350,7 +1351,7 @@ func (d *SANEconomyStorageDriver) Publish(
 		return err
 	}
 
-	err = PublishLUN(ctx, d.API, &d.Config, d.ips, publishInfo, extantLUNPath, igroupName, iSCSINodeName)
+	err = PublishLUN(ctx, d.API, &d.Config, d.ips, publishInfo, extantLUNPath, igroupName, iSCSINodeName, volConfig)
 	if err != nil {
 		return fmt.Errorf("error publishing LUN %s: %w", name, err)
 	}

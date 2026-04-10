@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -6614,6 +6614,11 @@ func TestPublishLun(t *testing.T) {
 
 	config.SANType = sa.ISCSI
 
+	publishVolCfg := func(fileSystem, formatOptions string) *storage.VolumeConfig {
+		return &storage.VolumeConfig{FileSystem: fileSystem, FormatOptions: formatOptions}
+	}
+	volNoFsOrFmt := publishVolCfg("", "")
+
 	publishInfo := &tridentmodels.VolumePublishInfo{
 		BackendUUID: "fakeBackendUUID",
 		Localhost:   false,
@@ -6630,7 +6635,7 @@ func TestPublishLun(t *testing.T) {
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
 	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
 
-	err := PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
+	err := PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName, volNoFsOrFmt)
 
 	assert.NoError(t, err)
 
@@ -6639,7 +6644,7 @@ func TestPublishLun(t *testing.T) {
 	publishInfo.Localhost = false
 	publishInfo.HostIQN = []string{}
 
-	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName, volNoFsOrFmt)
 
 	assert.Error(t, err)
 
@@ -6654,11 +6659,12 @@ func TestPublishLun(t *testing.T) {
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
 	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
 
-	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName, volNoFsOrFmt)
 
 	assert.NoError(t, err)
+	assert.Equal(t, drivers.DefaultFileSystemType, publishInfo.FilesystemType)
 
-	// Test 4 - LunGetFSType returns error
+	// Test 4 - LunGetAttribute returns error (fstype still from LUN)
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	publishInfo.HostIQN = []string{"host_iqn"}
 	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("fsType", nil)
@@ -6669,9 +6675,10 @@ func TestPublishLun(t *testing.T) {
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
 	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
 
-	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName, volNoFsOrFmt)
 
 	assert.NoError(t, err)
+	assert.Equal(t, "fsType", publishInfo.FilesystemType)
 
 	// Test 5 - No target node found
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
@@ -6681,7 +6688,7 @@ func TestPublishLun(t *testing.T) {
 	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
 	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
 
-	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName, volNoFsOrFmt)
 
 	assert.Error(t, err)
 
@@ -6699,7 +6706,7 @@ func TestPublishLun(t *testing.T) {
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName,
 		gomock.Any()).Return(errors.New("EnsureIgroupAdded returned error"))
 
-	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName, volNoFsOrFmt)
 
 	assert.Error(t, err)
 
@@ -6711,7 +6718,7 @@ func TestPublishLun(t *testing.T) {
 		errors.New("EnsureLunMapped returned error"))
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, gomock.Any()).Return(nil)
 
-	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName, volNoFsOrFmt)
 
 	assert.Error(t, err)
 
@@ -6720,7 +6727,7 @@ func TestPublishLun(t *testing.T) {
 	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
 	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, errors.New("LunGetByName returned error"))
 
-	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName, volNoFsOrFmt)
 
 	assert.Error(t, err)
 
@@ -6729,7 +6736,7 @@ func TestPublishLun(t *testing.T) {
 	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
 	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLunNoSerial, nil)
 
-	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName, volNoFsOrFmt)
 
 	assert.Error(t, err)
 
@@ -6750,9 +6757,102 @@ func TestPublishLun(t *testing.T) {
 	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
 	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
 
-	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName)
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName, volNoFsOrFmt)
 	assert.NoError(t, err)
 	assert.Equal(t, tempFormatOptions, publishInfo.FormatOptions)
+
+	// Test 11 - volume FileSystem (volConfig) is "xfs", LunGetFSType should NOT be called
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+	publishInfo = &tridentmodels.VolumePublishInfo{
+		BackendUUID: "fakeBackendUUID",
+		Localhost:   false,
+		Unmanaged:   true,
+		Nodes:       nodeList,
+		HostIQN:     []string{"host_iqn"},
+	}
+	config.FileSystemType = ""
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
+	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
+	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
+	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
+
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName,
+		publishVolCfg("xfs", ""))
+
+	assert.NoError(t, err)
+	assert.Equal(t, "xfs", publishInfo.FilesystemType)
+	assert.Contains(t, publishInfo.MountOptions, "nouuid")
+
+	// Test 11b - FileSystem and FormatOptions from vol (as after Create); no LunGetFSType or LunGetAttribute
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+	publishInfo = &tridentmodels.VolumePublishInfo{
+		BackendUUID: "fakeBackendUUID",
+		Localhost:   false,
+		Unmanaged:   true,
+		Nodes:       nodeList,
+		HostIQN:     []string{"host_iqn"},
+	}
+	volFmtOpts := "-b 4096 -T stride=256"
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
+	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
+	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
+	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
+
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName,
+		publishVolCfg("xfs", volFmtOpts))
+	assert.NoError(t, err)
+	assert.Equal(t, "xfs", publishInfo.FilesystemType)
+	assert.Equal(t, volFmtOpts, publishInfo.FormatOptions)
+	assert.Contains(t, publishInfo.MountOptions, "nouuid")
+
+	// Test 12 - volume fstype empty, LunGetFSType returns empty string with no error, use default
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+	publishInfo = &tridentmodels.VolumePublishInfo{
+		BackendUUID: "fakeBackendUUID",
+		Localhost:   false,
+		Unmanaged:   true,
+		Nodes:       nodeList,
+		HostIQN:     []string{"host_iqn"},
+	}
+	config.FileSystemType = ""
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("", nil)
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
+	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
+	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
+	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
+
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName, volNoFsOrFmt)
+
+	assert.NoError(t, err)
+	assert.Equal(t, drivers.DefaultFileSystemType, publishInfo.FilesystemType)
+
+	// Test 13 - volume fstype empty, LunGetFSType returns error, use default
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+	publishInfo = &tridentmodels.VolumePublishInfo{
+		BackendUUID: "fakeBackendUUID",
+		Localhost:   false,
+		Unmanaged:   true,
+		Nodes:       nodeList,
+		HostIQN:     []string{"host_iqn"},
+	}
+	config.FileSystemType = ""
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("", errors.New("LunGetFSType returned error"))
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
+	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
+	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
+	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
+
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName, volNoFsOrFmt)
+
+	assert.NoError(t, err)
+	assert.Equal(t, drivers.DefaultFileSystemType, publishInfo.FilesystemType)
 }
 
 func TestValidateSANDriver(t *testing.T) {
