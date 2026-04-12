@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -15,17 +15,14 @@ import (
 
 func (p *Plugin) Probe(
 	ctx context.Context, req *csi.ProbeRequest,
-) (*csi.ProbeResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowIdentityProbe)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.ProbeResponse, err error) {
 	fields := LogFields{"Method": "Probe", "Type": "CSI_Identity"}
 	Logc(ctx).WithFields(fields).Trace(">>>> Probe")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< Probe")
 
 	// Ensure Trident bootstrapped OK.  We only return an error if Trident bootstrapping
 	// failed (i.e. unrecoverable), not if Trident is still initializing.
-	_, err := p.orchestrator.GetVersion(ctx)
+	_, err = p.orchestrator.GetVersion(ctx)
 	if errors.IsBootstrapError(err) {
 		return &csi.ProbeResponse{}, status.Error(codes.FailedPrecondition, err.Error())
 	}
@@ -35,10 +32,7 @@ func (p *Plugin) Probe(
 
 func (p *Plugin) GetPluginInfo(
 	ctx context.Context, req *csi.GetPluginInfoRequest,
-) (*csi.GetPluginInfoResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowIdentityGetInfo)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.GetPluginInfoResponse, err error) {
 	fields := LogFields{"Method": "GetPluginInfo", "Type": "CSI_Identity"}
 	Logc(ctx).WithFields(fields).Trace(">>>> GetPluginInfo")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< GetPluginInfo")
@@ -51,10 +45,7 @@ func (p *Plugin) GetPluginInfo(
 
 func (p *Plugin) GetPluginCapabilities(
 	ctx context.Context, req *csi.GetPluginCapabilitiesRequest,
-) (*csi.GetPluginCapabilitiesResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowIdentityGetCapabilities)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.GetPluginCapabilitiesResponse, err error) {
 	fields := LogFields{"Method": "GetPluginCapabilities", "Type": "CSI_Identity", "topologyInUse": p.topologyInUse}
 	Logc(ctx).WithFields(fields).Trace(">>>> GetPluginCapabilities")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< GetPluginCapabilities")

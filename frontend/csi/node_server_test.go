@@ -2697,8 +2697,8 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
@@ -2752,8 +2752,8 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
@@ -2817,8 +2817,8 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
@@ -2897,8 +2897,8 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		NASrequests := make([]*csi.NodeStageVolumeRequest, numOfRequestsNAS)
 		ISCSIrequests := make([]*csi.NodeStageVolumeRequest, numOfRequestsISCSI)
@@ -3007,8 +3007,8 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		NFSrequests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
 		SMBrequests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
@@ -3076,8 +3076,8 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		requests, publishInfos := createFCPStageRequests(numOfRequests)
 
@@ -3140,8 +3140,8 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		requests, _ := createFCPStageRequests(numOfRequests)
 		csiNodeLockTimeout = 500 * time.Millisecond
@@ -3223,11 +3223,11 @@ func TestNodeStageNFSVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
@@ -3287,11 +3287,11 @@ func TestNodeStageNFSVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
@@ -3365,11 +3365,11 @@ func TestNodeStageNFSVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
@@ -3450,11 +3450,11 @@ func TestNodeStageSMBVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
@@ -3515,11 +3515,11 @@ func TestNodeStageSMBVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
@@ -3593,11 +3593,11 @@ func TestNodeStageSMBVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
@@ -3680,8 +3680,8 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		requests := func() []*csi.NodeUnstageVolumeRequest {
 			requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
@@ -3737,8 +3737,8 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		requests := func() []*csi.NodeUnstageVolumeRequest {
 			requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
@@ -3825,8 +3825,8 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
@@ -3898,8 +3898,8 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		NASrequests := make([]*csi.NodeUnstageVolumeRequest, numOfRequestsNAS)
 		ISCSIrequests := make([]*csi.NodeUnstageVolumeRequest, numOfRequestsISCSI)
@@ -4045,8 +4045,8 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		csiNodeLockTimeout = 500 * time.Millisecond
 
@@ -4132,8 +4132,8 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		defer func(fcUtils fcp.FcpReconcileUtils) {
 			fcpUtils = fcUtils
@@ -4195,8 +4195,8 @@ func TestNodeUnstageVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		defer func(fcUtils fcp.FcpReconcileUtils) {
 			fcpUtils = fcUtils
@@ -4287,11 +4287,11 @@ func TestNodeUnstageNFSVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
@@ -4342,11 +4342,11 @@ func TestNodeUnstageNFSVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		signalChan := make(chan struct{}, numOfParallelRequestsAllowed)
@@ -4411,11 +4411,11 @@ func TestNodeUnstageNFSVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
@@ -4487,11 +4487,11 @@ func TestNodeUnstageSMBVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
@@ -4553,11 +4553,11 @@ func TestNodeUnstageSMBVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
@@ -4633,11 +4633,11 @@ func TestNodeUnstageSMBVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
@@ -4727,8 +4727,8 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		requests := func() []*csi.NodePublishVolumeRequest {
 			requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
@@ -4789,8 +4789,8 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
@@ -4862,8 +4862,8 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		NFSrequests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
 		SMBrequests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
@@ -4954,11 +4954,11 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
@@ -5020,8 +5020,8 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		NFSrequests := make([]*csi.NodePublishVolumeRequest, numOfRequestsNFS)
 		ISCSIrequests := make([]*csi.NodePublishVolumeRequest, numOfRequestsISCSI)
@@ -5154,8 +5154,8 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		defer func(fcUtils fcp.FcpReconcileUtils) {
 			fcpUtils = fcUtils
@@ -5211,8 +5211,8 @@ func TestNodePublishVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		defer func(fcUtils fcp.FcpReconcileUtils) {
 			fcpUtils = fcUtils
@@ -5290,11 +5290,11 @@ func TestNodePublishNFSVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
@@ -5355,11 +5355,11 @@ func TestNodePublishNFSVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
@@ -5433,11 +5433,11 @@ func TestNodePublishNFSVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
@@ -5522,11 +5522,11 @@ func TestNodePublishSMBVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
@@ -5578,11 +5578,11 @@ func TestNodePublishSMBVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
@@ -5648,11 +5648,11 @@ func TestNodePublishSMBVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
@@ -5728,8 +5728,8 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		requests := func() []*csi.NodeUnpublishVolumeRequest {
 			requests := make([]*csi.NodeUnpublishVolumeRequest, numOfRequests)
@@ -5788,8 +5788,8 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		requests := make([]*csi.NodeUnpublishVolumeRequest, numOfRequests)
 		for i := 0; i < numOfRequests; i++ {
@@ -5863,11 +5863,11 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(ctx, csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodeUnpublishVolumeRequest, numOfRequests)
@@ -5941,8 +5941,8 @@ func TestNodeUnpublishVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		csiNodeLockTimeout = 500 * time.Millisecond //  This csiNodeLockTimeout is just for the limiter and not for the whole operation.
 		ctx, cancel := context.WithTimeout(ctx, csiNodeLockTimeout)
@@ -6031,12 +6031,12 @@ func TestNodeStageFCPVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		requests, publishInfos := createFCPStageRequests(numOfRequests)
 
-		csiKubeletTimeout = 500 * time.Millisecond
+		csiNodeRequestTimeout = 500 * time.Millisecond
 
 		// Setting up mock clients
 		ctrl := gomock.NewController(t)
@@ -6095,13 +6095,13 @@ func TestNodeStageFCPVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 100 * time.Millisecond
+		csiNodeRequestTimeout = 100 * time.Millisecond
 
 		timedContext := func() (context.Context, context.CancelFunc) {
-			return context.WithTimeout(ctx, csiKubeletTimeout)
+			return context.WithTimeout(ctx, csiNodeRequestTimeout)
 		}
 
 		requests, publishInfos := createFCPStageRequests(numOfRequests)
@@ -6186,13 +6186,13 @@ func TestNodeStageFCPVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
+		csiNodeRequestTimeout = 500 * time.Millisecond
 
 		timedContext := func() (context.Context, context.CancelFunc) {
-			return context.WithTimeout(ctx, csiKubeletTimeout)
+			return context.WithTimeout(ctx, csiNodeRequestTimeout)
 		}
 
 		requests, publishInfos := createFCPStageRequests(numOfRequests)
@@ -6261,18 +6261,18 @@ func TestNodeUnstageFCPVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		defer func(fcUtils fcp.FcpReconcileUtils) {
 			fcpUtils = fcUtils
 		}(fcpUtils)
 
 		timedContext := func() (context.Context, context.CancelFunc) {
-			return context.WithTimeout(ctx, csiKubeletTimeout)
+			return context.WithTimeout(ctx, csiNodeRequestTimeout)
 		}
 
-		csiKubeletTimeout = 500 * time.Millisecond
+		csiNodeRequestTimeout = 500 * time.Millisecond
 
 		requests, publishInfos := createFCPUnstageRequests(numOfRequests)
 
@@ -6328,18 +6328,18 @@ func TestNodeUnstageFCPVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		defer func(fcUtils fcp.FcpReconcileUtils) {
 			fcpUtils = fcUtils
 		}(fcpUtils)
 
 		timedContext := func() (context.Context, context.CancelFunc) {
-			return context.WithTimeout(ctx, csiKubeletTimeout)
+			return context.WithTimeout(ctx, csiNodeRequestTimeout)
 		}
 
-		csiKubeletTimeout = 100 * time.Millisecond
+		csiNodeRequestTimeout = 100 * time.Millisecond
 
 		signalChan := make(chan struct{}, numOfParallelRequestsAllowed) // For synchronization only.
 		startChan := make(chan struct{})
@@ -6418,18 +6418,18 @@ func TestNodeUnstageFCPVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		defer func(fcUtils fcp.FcpReconcileUtils) {
 			fcpUtils = fcUtils
 		}(fcpUtils)
 
 		timedContext := func() (context.Context, context.CancelFunc) {
-			return context.WithTimeout(ctx, csiKubeletTimeout)
+			return context.WithTimeout(ctx, csiNodeRequestTimeout)
 		}
 
-		csiKubeletTimeout = 500 * time.Millisecond
+		csiNodeRequestTimeout = 500 * time.Millisecond
 
 		startChan := make(chan struct{}, numOfParallelRequestsAllowed) // For synchronization only.
 
@@ -6493,18 +6493,18 @@ func TestNodePublishFCPVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		defer func(fcUtils fcp.FcpReconcileUtils) {
 			fcpUtils = fcUtils
 		}(fcpUtils)
 
 		timedContext := func() (context.Context, context.CancelFunc) {
-			return context.WithTimeout(ctx, csiKubeletTimeout)
+			return context.WithTimeout(ctx, csiNodeRequestTimeout)
 		}
 
-		csiKubeletTimeout = 500 * time.Millisecond
+		csiNodeRequestTimeout = 500 * time.Millisecond
 
 		requests := createFCPPublishRequests(numOfRequests, false)
 
@@ -6564,18 +6564,18 @@ func TestNodePublishFCPVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		defer func(fcUtils fcp.FcpReconcileUtils) {
 			fcpUtils = fcUtils
 		}(fcpUtils)
 
 		timedContext := func() (context.Context, context.CancelFunc) {
-			return context.WithTimeout(ctx, csiKubeletTimeout)
+			return context.WithTimeout(ctx, csiNodeRequestTimeout)
 		}
 
-		csiKubeletTimeout = 100 * time.Millisecond
+		csiNodeRequestTimeout = 100 * time.Millisecond
 
 		requests := createFCPPublishRequests(numOfRequests, false)
 
@@ -6657,18 +6657,18 @@ func TestNodePublishFCPVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		defer func(fcUtils fcp.FcpReconcileUtils) {
 			fcpUtils = fcUtils
 		}(fcpUtils)
 
 		timedContext := func() (context.Context, context.CancelFunc) {
-			return context.WithTimeout(ctx, csiKubeletTimeout)
+			return context.WithTimeout(ctx, csiNodeRequestTimeout)
 		}
 
-		csiKubeletTimeout = 500 * time.Millisecond
+		csiNodeRequestTimeout = 500 * time.Millisecond
 
 		requests := createFCPPublishRequests(numOfRequests, false)
 
@@ -6749,8 +6749,8 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		numOfRequests := 100
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		// ---- NodeStage nodeStageRequests ----
 		nodeStageRequests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
@@ -6759,7 +6759,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		}
 
 		csiNodeLockTimeout = 500 * time.Millisecond
-		csiKubeletTimeout = 500 * time.Millisecond
+		csiNodeRequestTimeout = 500 * time.Millisecond
 
 		// Creating mock clients.
 		ctrl := gomock.NewController(t)
@@ -6878,8 +6878,8 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		// ---- NodeStage nodeStageRequests ----
 		nodeStageRequests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
@@ -6888,7 +6888,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		}
 
 		csiNodeLockTimeout = 500 * time.Millisecond
-		csiKubeletTimeout = 500 * time.Millisecond
+		csiNodeRequestTimeout = 500 * time.Millisecond
 
 		// Creating mock clients.
 		ctrl := gomock.NewController(t)
@@ -7022,8 +7022,8 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		// ---- NodeStage nodeStageRequests ----
 		nodeStageRequests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
@@ -7034,7 +7034,7 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 		}
 
 		csiNodeLockTimeout = 500 * time.Millisecond
-		csiKubeletTimeout = 500 * time.Millisecond
+		csiNodeRequestTimeout = 500 * time.Millisecond
 
 		// Creating mock clients.
 		ctrl := gomock.NewController(t)
@@ -7190,15 +7190,15 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		defer func(fcUtils fcp.FcpReconcileUtils) {
 			fcpUtils = fcUtils
 		}(fcpUtils)
 
 		csiNodeLockTimeout = 500 * time.Millisecond
-		csiKubeletTimeout = 500 * time.Millisecond
+		csiNodeRequestTimeout = 500 * time.Millisecond
 
 		// Setting up mock clients
 		ctrl := gomock.NewController(t)
@@ -7346,11 +7346,11 @@ func Test_NodeStage_NodeUnstage_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		csiNodeLockTimeout = 500 * time.Millisecond
-		csiKubeletTimeout = 500 * time.Millisecond
+		csiNodeRequestTimeout = 500 * time.Millisecond
 
 		// Setting up mock clients
 		ctrl := gomock.NewController(t)
@@ -7505,11 +7505,11 @@ func TestNodeStageISCSIVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
@@ -7580,11 +7580,11 @@ func TestNodeStageISCSIVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
@@ -7668,11 +7668,11 @@ func TestNodeStageISCSIVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodeStageVolumeRequest, numOfRequests)
@@ -7769,11 +7769,11 @@ func TestNodeUnstageISCSIVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
@@ -7858,11 +7858,11 @@ func TestNodeUnstageISCSIVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodeUnstageVolumeRequest, numOfRequests)
@@ -7982,11 +7982,11 @@ func TestNodePublishISCSIVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
@@ -8048,11 +8048,11 @@ func TestNodePublishISCSIVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
@@ -8126,11 +8126,11 @@ func TestNodePublishISCSIVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
@@ -8206,11 +8206,11 @@ func TestNodePublishISCSIVolume_Multithreaded(t *testing.T) {
 		numOfRequests := 100
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
@@ -8262,11 +8262,11 @@ func TestNodePublishISCSIVolume_Multithreaded(t *testing.T) {
 		numOfRequests := 100
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := make([]*csi.NodePublishVolumeRequest, numOfRequests)
@@ -8325,13 +8325,13 @@ func TestNodeStageNVMeVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		requests, publishInfos := createNVMeStageRequests(numOfRequests)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiNodeRequestTimeout)
 		defer cancel()
 
 		// Setting up mock clients
@@ -8394,11 +8394,11 @@ func TestNodeStageNVMeVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiNodeRequestTimeout)
 		defer cancel()
 
 		requests, publishInfos := createNVMeStageRequests(numOfRequests)
@@ -8477,12 +8477,12 @@ func TestNodeStageNVMeVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
 		requests, publishInfos := createNVMeStageRequests(numOfRequests)
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiNodeRequestTimeout)
 		defer cancel()
 
 		volumeID := "1234-5678" // Making volume.uuid same for all the requests.
@@ -8552,11 +8552,11 @@ func TestNodeUnstageNVMeVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiNodeRequestTimeout)
 		defer cancel()
 
 		requests, publishInfos := createNVMeUnstageRequests(numOfRequests)
@@ -8623,11 +8623,11 @@ func TestNodePublishNVMeVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := createNVMePublishRequests(numOfRequests, false)
@@ -8689,11 +8689,11 @@ func TestNodePublishNVMeVolume_Multithreaded(t *testing.T) {
 
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := createNVMePublishRequests(numOfRequests, false)
@@ -8768,11 +8768,11 @@ func TestNodePublishNVMeVolume_Multithreaded(t *testing.T) {
 		numOfRequests := 100
 		defer func(csiNodeLockTimeoutTemp, csiKubeletTimeoutTemp time.Duration) {
 			csiNodeLockTimeout = csiNodeLockTimeoutTemp
-			csiKubeletTimeout = csiKubeletTimeoutTemp
-		}(csiNodeLockTimeout, csiKubeletTimeout)
+			csiNodeRequestTimeout = csiKubeletTimeoutTemp
+		}(csiNodeLockTimeout, csiNodeRequestTimeout)
 
-		csiKubeletTimeout = 500 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), csiKubeletTimeout)
+		csiNodeRequestTimeout = 500 * time.Millisecond
+		ctx, cancel := context.WithTimeout(context.Background(), csiNodeRequestTimeout)
 		defer cancel()
 
 		requests := createNVMePublishRequests(numOfRequests, true)

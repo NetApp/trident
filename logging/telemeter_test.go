@@ -1,16 +1,19 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package logging
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/testutil"
+	dto "github.com/prometheus/client_model/go"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/netapp/trident/utils/errors"
+	tridentErrors "github.com/netapp/trident/utils/errors"
 )
 
 // helper to build a context with common labels
@@ -28,520 +31,435 @@ func makeOutgoingCtx() context.Context {
 		BuildContext()
 }
 
-func TestIncomingAPIRequestInFlightTelemeter_IncrementsAndDecrementsOnce(t *testing.T) {
-	// Arrange
-	ctx := makeIncomingCtx()
-	client := getContextClient(ctx)
-	method := getContextMethod(ctx)
-	g := incomingAPIRequestsInFlight.WithLabelValues(client, method)
-	before := testutil.ToFloat64(g)
-
-	// Act
-	rec := IncomingAPIRequestInFlightTelemeter(ctx)
-	afterInc := testutil.ToFloat64(g)
-
-	// Assert incremented by 1
-	assert.Equal(t, before+1, afterInc)
-
-	// Act: call recorder multiple times; due to once.Do, it should only decrement once
-	var noErr error
-	rec(&noErr)
-	rec(&noErr)
-	afterDec := testutil.ToFloat64(g)
-
-	// Assert decremented by 1 overall (back to original value)
-	assert.Equal(t, before, afterDec)
+// readGauge returns the current value of a gauge for the given label values.
+func readGauge(g *prometheus.GaugeVec, labels ...string) float64 {
+	return testutil.ToFloat64(g.WithLabelValues(labels...))
 }
 
-func TestIncomingAPIRequestDurationTelemeter_RecordsOnce_WithErrorAndCancellation(t *testing.T) {
-	// Arrange
-	ctx, cancel := context.WithCancel(makeIncomingCtx())
-	rec := IncomingAPIRequestDurationTelemeter(ctx)
-	// give some time so duration is non-zero
-	time.Sleep(5 * time.Millisecond)
-	// simulate operation error and cancellation
-	err := assert.AnError
+// readCounter returns the current value of a counter for the given label values.
+func readCounter(c *prometheus.CounterVec, labels ...string) float64 {
+	return testutil.ToFloat64(c.WithLabelValues(labels...))
+}
+
+// readHistogramCount returns the number of observations recorded in a histogram for the given label values.
+func readHistogramCount(h *prometheus.HistogramVec, labels ...string) uint64 {
+	m := &dto.Metric{}
+	if metric, ok := h.WithLabelValues(labels...).(prometheus.Metric); ok {
+		_ = metric.Write(m)
+	}
+	return m.GetHistogram().GetSampleCount()
+}
+
+// uniqueLabel returns a label value that is unique to a test to prevent cross-test metric interference.
+func uniqueLabel(t *testing.T, role string) string {
+	t.Helper()
+	return fmt.Sprintf("%s-%s", t.Name(), role)
+}
+
+// expiredCtx returns a context whose deadline has already passed.
+func expiredCtx() (context.Context, context.CancelFunc) {
+	return context.WithDeadline(context.Background(), time.Now().Add(-time.Second))
+}
+
+// ---- IncomingAPITelemeter ----
+
+func TestIncomingAPITelemeter_InFlight_IncrementOnStart(t *testing.T) {
+	client, method := uniqueLabel(t, "client"), uniqueLabel(t, "method")
+
+	tel := IncomingAPITelemeter(client, method)
+
+	assert.Equal(t, float64(0), readGauge(incomingAPIRequestsInFlight, client, method))
+	_ = tel(context.Background())
+	assert.Equal(t, float64(1), readGauge(incomingAPIRequestsInFlight, client, method))
+}
+
+func TestIncomingAPITelemeter_InFlight_DecrementOnRecord(t *testing.T) {
+	client, method := uniqueLabel(t, "client"), uniqueLabel(t, "method")
+
+	rec := IncomingAPITelemeter(client, method)(context.Background())
+	assert.Equal(t, float64(1), readGauge(incomingAPIRequestsInFlight, client, method))
+
+	var err error
+	rec(&err)
+	assert.Equal(t, float64(0), readGauge(incomingAPIRequestsInFlight, client, method))
+}
+
+func TestIncomingAPITelemeter_Duration_Success(t *testing.T) {
+	client, method := uniqueLabel(t, "client"), uniqueLabel(t, "method")
+
+	rec := IncomingAPITelemeter(client, method)(context.Background())
+
+	var err error
+	rec(&err)
+
+	assert.Equal(t, uint64(1),
+		readHistogramCount(incomingAPIRequestDurationSeconds, metricStatusSuccess, client, method),
+		"expected one duration observation with status=success",
+	)
+}
+
+func TestIncomingAPITelemeter_Duration_Failure(t *testing.T) {
+	client, method := uniqueLabel(t, "client"), uniqueLabel(t, "method")
+
+	rec := IncomingAPITelemeter(client, method)(context.Background())
+
+	err := fmt.Errorf("request failed")
+	rec(&err)
+
+	assert.Equal(t, uint64(1),
+		readHistogramCount(incomingAPIRequestDurationSeconds, metricStatusFailure, client, method),
+		"expected one duration observation with status=failure",
+	)
+}
+
+func TestIncomingAPITelemeter_Duration_Canceled(t *testing.T) {
+	client, method := uniqueLabel(t, "client"), uniqueLabel(t, "method")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	rec := IncomingAPITelemeter(client, method)(ctx)
 	cancel()
 
-	// Act
-	before := testutil.CollectAndCount(incomingAPIRequestDurationSeconds)
+	// resolveStatus derives "canceled" from ctx.Err(), not from the error value.
+	// Any non-nil error causes it to fall through to the ctx.Err() check.
+	err := fmt.Errorf("transport: read on canceled context")
 	rec(&err)
-	rec(&err)
-	after := testutil.CollectAndCount(incomingAPIRequestDurationSeconds)
 
-	// Assert: observed exactly once
-	assert.Equal(t, before+1, after)
+	assert.Equal(t, uint64(1),
+		readHistogramCount(incomingAPIRequestDurationSeconds, metricStatusCanceled, client, method),
+		"expected one duration observation with status=canceled",
+	)
 }
 
-func TestOutgoingAPIRequestDurationTelemeter_RecordsOnce_WithDeadlineExceeded(t *testing.T) {
-	// Arrange
-	ctx, cancel := context.WithTimeout(makeOutgoingCtx(), 1*time.Nanosecond)
+func TestIncomingAPITelemeter_Duration_Canceled_NilError_StillSuccess(t *testing.T) {
+	// resolveStatus short-circuits to "success" when err==nil, even if the context
+	// is already canceled. This test documents that invariant explicitly.
+	client, method := uniqueLabel(t, "client"), uniqueLabel(t, "method")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	rec := IncomingAPITelemeter(client, method)(ctx)
+	cancel()
+
+	var err error
+	rec(&err)
+
+	assert.Equal(t, uint64(1),
+		readHistogramCount(incomingAPIRequestDurationSeconds, metricStatusSuccess, client, method),
+		"nil error should resolve to success even when the context is canceled",
+	)
+}
+
+func TestIncomingAPITelemeter_Duration_DeadlineExceeded(t *testing.T) {
+	client, method := uniqueLabel(t, "client"), uniqueLabel(t, "method")
+
+	ctx, cancel := expiredCtx()
 	defer cancel()
-	// Let the deadline pass
-	time.Sleep(1 * time.Millisecond)
-	rec := OutgoingAPIRequestDurationTelemeter(ctx)
-	// give some time
-	time.Sleep(5 * time.Millisecond)
+	rec := IncomingAPITelemeter(client, method)(ctx)
 
-	// Act
-	before := testutil.CollectAndCount(outgoingAPIRequestDurationSeconds)
-	rec(nil)
-	rec(nil)
-	after := testutil.CollectAndCount(outgoingAPIRequestDurationSeconds)
-
-	// Assert
-	assert.Equal(t, before+1, after)
-}
-
-func TestOutgoingAPIRequestInFlightTelemeter_IncrementsAndDecrementsOnce(t *testing.T) {
-	// Arrange
-	ctx := makeOutgoingCtx()
-	target := getContextTarget(ctx)
-	address := getContextAddress(ctx)
-	method := getContextMethod(ctx)
-	g := outgoingAPIRequestsInFlight.WithLabelValues(target, address, method)
-	before := testutil.ToFloat64(g)
-
-	// Act
-	rec := OutgoingAPIRequestInFlightTelemeter(ctx)
-	afterInc := testutil.ToFloat64(g)
-	assert.Equal(t, before+1, afterInc)
-
-	// Act: call recorder multiple times; only one decrement
-	var noErr error
-	rec(&noErr)
-	rec(&noErr)
-	afterDec := testutil.ToFloat64(g)
-	assert.Equal(t, before, afterDec)
-}
-
-func TestOutgoingAPIRequestLimitedDurationTelemeter(t *testing.T) {
-	tests := map[string]struct {
-		injectLatency time.Duration
-	}{
-		"with known duration": {
-			injectLatency: 25 * time.Millisecond,
-		},
-		"with measured duration": {
-			injectLatency: 25 * time.Millisecond,
-		},
-		"with zero duration": {
-			injectLatency: 0,
-		},
-		"with negative duration": {
-			injectLatency: -10 * time.Millisecond,
-		},
-	}
-
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			// Arrange context with labels
-			ctx := context.Background()
-			ctx = setContextTarget(ctx, ContextRequestTargetONTAP)
-			ctx = setContextAddress(ctx, "10.0.0.2")
-			ctx = setContextMethod(ctx, "POST-"+name)
-			ctx = setContextDuration(ctx, tc.injectLatency)
-
-			// Baseline
-			before := testutil.CollectAndCount(outgoingAPIRequestLimitedDurationSeconds)
-
-			// Act: build recorder and simulate a limited event
-			rec := OutgoingAPIRequestLimitedDurationTelemeter(ctx)
-			err := errors.TooManyRequestsError("throttled")
-			rec(&err)
-			after := testutil.CollectAndCount(outgoingAPIRequestLimitedDurationSeconds)
-
-			// If the injected latency is zero or negative, no metrics should be recorded
-			if tc.injectLatency <= 0 {
-				assert.Equal(t, before, after)
-				return
-			}
-			// Assert: one observation recorded
-			assert.Equal(t, before+1, after)
-		})
-	}
-}
-
-func TestIncomingTelemeters(t *testing.T) {
-	// Build test table
-	tests := map[string]struct {
-		setupCtx func() context.Context
-		setErr   func() *error
-	}{
-		"success": {
-			setupCtx: func() context.Context { return makeIncomingCtx() },
-			setErr:   func() *error { return nil },
-		},
-		"failure": {
-			setupCtx: func() context.Context { return makeIncomingCtx() },
-			setErr:   func() *error { e := assert.AnError; return &e },
-		},
-		"canceled": {
-			setupCtx: func() context.Context {
-				ctx, cancel := context.WithCancel(makeIncomingCtx())
-				// cancel before record
-				cancel()
-				return ctx
-			},
-			setErr: func() *error { return nil },
-		},
-		"deadline_exceeded": {
-			setupCtx: func() context.Context {
-				ctx, cancel := context.WithTimeout(makeIncomingCtx(), 1*time.Nanosecond)
-				defer cancel()
-				// let deadline pass
-				time.Sleep(1 * time.Millisecond)
-				return ctx
-			},
-			setErr: func() *error { return nil },
-		},
-	}
-
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			ctx := tc.setupCtx()
-			// Ensure unique label set per test to avoid collisions with prior series
-			ctx = setContextMethod(ctx, "List-"+name)
-			// Labels for specific gauge vector
-			caller := getContextClient(ctx)
-			method := getContextMethod(ctx)
-			g := incomingAPIRequestsInFlight.WithLabelValues(caller, method)
-
-			// Baselines
-			gBefore := testutil.ToFloat64(g)
-			// For histogram, count total metrics; we only verify it increments by one per record
-			hBefore := testutil.CollectAndCount(incomingAPIRequestDurationSeconds)
-
-			// Compose telemeters
-			telemeters := []Telemeter{
-				IncomingAPIRequestInFlightTelemeter,
-				IncomingAPIRequestDurationTelemeter,
-			}
-			// Create recorders and perform the in-flight increment (happens on creation)
-			recorders := make([]Recorder, 0, len(telemeters))
-			for _, tele := range telemeters {
-				recorders = append(recorders, tele(ctx))
-			}
-
-			// Verify in-flight increment occurred
-			gAfterInc := testutil.ToFloat64(g)
-			assert.Equal(t, gBefore+1, gAfterInc)
-
-			// Record once for each telemeter with configured error
-			errPtr := tc.setErr()
-			for _, rec := range recorders {
-				rec(errPtr)
-			}
-
-			// Gauge should be back to baseline
-			gAfterDec := testutil.ToFloat64(g)
-			assert.Equal(t, gBefore, gAfterDec)
-
-			// Histogram should have one more observation
-			hAfter := testutil.CollectAndCount(incomingAPIRequestDurationSeconds)
-			assert.Equal(t, hBefore+1, hAfter)
-		})
-	}
-}
-
-func TestIncomingAPIRequestDurationTelemeter_UsesContextDurationWhenSet(t *testing.T) {
-	tests := map[string]struct {
-		duration time.Duration
-		sleep    time.Duration
-	}{
-		"with known duration": {
-			duration: 40 * time.Millisecond,
-			sleep:    5 * time.Millisecond,
-		},
-		"with short known duration": {
-			duration: 2 * time.Millisecond,
-			sleep:    10 * time.Millisecond,
-		},
-	}
-
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			// Arrange: context with client/method and an explicit duration
-			ctx := NewContextBuilder(context.Background()).
-				WithClient(ContextRequestClientTridentCLI).
-				WithMethod("POST-" + name).
-				WithDuration(tc.duration).
-				BuildContext()
-
-			// Build recorder and add a small sleep to simulate runtime
-			rec := IncomingAPIRequestDurationTelemeter(ctx)
-			time.Sleep(tc.sleep)
-
-			// Act
-			before := testutil.CollectAndCount(incomingAPIRequestDurationSeconds)
-			rec(nil)
-			after := testutil.CollectAndCount(incomingAPIRequestDurationSeconds)
-
-			// Assert: exactly one observation recorded
-			assert.Equal(t, before+1, after)
-		})
-	}
-}
-
-func TestOutgoingAPIRequestDurationTelemeter_UsesContextDurationWhenSet(t *testing.T) {
-	tests := map[string]struct {
-		duration time.Duration
-		sleep    time.Duration
-	}{
-		"with known duration": {
-			duration: 30 * time.Millisecond,
-			sleep:    5 * time.Millisecond,
-		},
-		"with short known duration": {
-			duration: 1 * time.Millisecond,
-			sleep:    10 * time.Millisecond,
-		},
-	}
-
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			// Arrange: context with target/address/method and an explicit duration
-			ctx := NewContextBuilder(context.Background()).
-				WithTarget(ContextRequestTargetKubernetes).
-				WithAddress("10.43.0.1:443").
-				WithMethod("GET-" + name).
-				WithDuration(tc.duration).
-				BuildContext()
-
-			// Build recorder and add a small sleep to simulate runtime
-			rec := OutgoingAPIRequestDurationTelemeter(ctx)
-			time.Sleep(tc.sleep)
-
-			// Act
-			before := testutil.CollectAndCount(outgoingAPIRequestDurationSeconds)
-			rec(nil)
-			after := testutil.CollectAndCount(outgoingAPIRequestDurationSeconds)
-
-			// Assert: exactly one observation recorded
-			assert.Equal(t, before+1, after)
-		})
-	}
-}
-
-func TestOutgoingAPIRequestRetryTotalTelemeter(t *testing.T) {
-	tests := map[string]struct {
-		errFunc         func() error
-		expectIncrement bool
-	}{
-		"with MustRetryError": {
-			errFunc: func() error {
-				return errors.MustRetryError("retry required")
-			},
-			expectIncrement: true,
-		},
-		"with non-retry error": {
-			errFunc: func() error {
-				return assert.AnError
-			},
-			expectIncrement: false,
-		},
-		"with nil error": {
-			errFunc: func() error {
-				return nil
-			},
-			expectIncrement: false,
-		},
-	}
-
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			// Arrange context with unique method to avoid label collision
-			ctx := NewContextBuilder(context.Background()).
-				WithTarget(ContextRequestTargetKubernetes).
-				WithAddress("10.43.0.1:443").
-				WithMethod("POST-" + name).
-				BuildContext()
-
-			// Baseline
-			before := testutil.CollectAndCount(outgoingAPIRequestRetryTotal)
-
-			// Act: build recorder and invoke with the configured error
-			rec := OutgoingAPIRequestRetryTotalTelemeter(ctx)
-			err := tc.errFunc()
-			rec(&err)
-
-			// Assert: counter incremented only if MustRetryError
-			after := testutil.CollectAndCount(outgoingAPIRequestRetryTotal)
-			if tc.expectIncrement {
-				assert.Greater(t, after, before)
-			} else {
-				assert.Equal(t, before, after)
-			}
-		})
-	}
-}
-
-func TestOutgoingAPIRequestRetryTotalTelemeter_UnsetLabels(t *testing.T) {
-	// Arrange: context with missing required labels (target="unknown", method="unknown")
-	rec := NewContextBuilder(context.Background()).
-		WithTelemetry(OutgoingAPIRequestRetryTotalTelemeter).
-		BuildTelemetry()
-
-	// Baseline
-	before := testutil.CollectAndCount(outgoingAPIRequestRetryTotal)
-
-	// Act: telemeter should return a no-op recorder due to invalid labels
-	err := errors.MustRetryError("retry required")
+	// resolveStatus derives "deadline_exceeded" from ctx.Err(), not from the error value.
+	err := fmt.Errorf("transport: read on expired context")
 	rec(&err)
 
-	// Assert: Should increment with default labels.
-	after := testutil.CollectAndCount(outgoingAPIRequestRetryTotal)
-	assert.Greater(t, after, before)
+	assert.Equal(t, uint64(1),
+		readHistogramCount(incomingAPIRequestDurationSeconds, metricStatusDeadlineExceeded, client, method),
+		"expected one duration observation with status=deadline_exceeded",
+	)
 }
 
-func TestOutgoingAPIRequestLimitedDurationTelemeter_NonThrottleError(t *testing.T) {
-	// Arrange
-	ctx := NewContextBuilder(context.Background()).
-		WithTarget(ContextRequestTargetKubernetes).
-		WithAddress("10.43.0.1:443").
-		WithMethod("GET").
-		BuildContext()
+func TestIncomingAPITelemeter_Duration_DeadlineExceeded_NilError_StillSuccess(t *testing.T) {
+	// resolveStatus short-circuits to "success" when err==nil, even if the deadline
+	// has passed. This test documents that invariant explicitly.
+	client, method := uniqueLabel(t, "client"), uniqueLabel(t, "method")
 
-	// Baseline
-	before := testutil.CollectAndCount(outgoingAPIRequestLimitedDurationSeconds)
+	ctx, cancel := expiredCtx()
+	defer cancel()
+	rec := IncomingAPITelemeter(client, method)(ctx)
 
-	// Act: record with a non-throttle error
-	rec := OutgoingAPIRequestLimitedDurationTelemeter(ctx)
-	err := assert.AnError
+	var err error
 	rec(&err)
 
-	// Assert: no observation because error wasn't a throttle/retry error
-	after := testutil.CollectAndCount(outgoingAPIRequestLimitedDurationSeconds)
-	assert.Equal(t, before, after)
+	assert.Equal(t, uint64(1),
+		readHistogramCount(incomingAPIRequestDurationSeconds, metricStatusSuccess, client, method),
+		"nil error should resolve to success even when the deadline has passed",
+	)
 }
 
-func TestOutgoingAPIRequestLimitedDurationTelemeter_BothErrorTypes(t *testing.T) {
-	tests := map[string]struct {
-		errFunc           func() error
-		expectObservation bool
-	}{
-		"with TooManyRequestsError": {
-			errFunc: func() error {
-				return errors.TooManyRequestsError("429 too many requests")
-			},
-			expectObservation: true,
-		},
-		"with generic error": {
-			errFunc: func() error {
-				return assert.AnError
-			},
-			expectObservation: false,
-		},
-		"with nil error": {
-			errFunc: func() error {
-				return nil
-			},
-			expectObservation: false,
-		},
-	}
+// ---- OutgoingAPITelemeter ----
 
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			// Arrange
-			ctx := NewContextBuilder(context.Background()).
-				WithTarget(ContextRequestTargetKubernetes).
-				WithAddress("10.43.0.1:443").
-				WithMethod("GET-" + name).
-				WithDuration(10 * time.Millisecond).
-				BuildContext()
+func TestOutgoingAPITelemeter_InFlight_IncrementOnStart(t *testing.T) {
+	target, address, method := uniqueLabel(t, "target"), uniqueLabel(t, "address"), uniqueLabel(t, "method")
 
-			// Baseline
-			before := testutil.CollectAndCount(outgoingAPIRequestLimitedDurationSeconds)
+	tel := OutgoingAPITelemeter(target, address, method)
 
-			// Act
-			rec := OutgoingAPIRequestLimitedDurationTelemeter(ctx)
-			err := tc.errFunc()
-			rec(&err)
-
-			// Assert
-			after := testutil.CollectAndCount(outgoingAPIRequestLimitedDurationSeconds)
-			if tc.expectObservation {
-				assert.Equal(t, before+1, after)
-			} else {
-				assert.Equal(t, before, after)
-			}
-		})
-	}
+	assert.Equal(t, float64(0), readGauge(outgoingAPIRequestsInFlight, target, address, method))
+	_ = tel(context.Background())
+	assert.Equal(t, float64(1), readGauge(outgoingAPIRequestsInFlight, target, address, method))
 }
 
-func TestOutgoingTelemeters(t *testing.T) {
-	tests := map[string]struct {
-		setupCtx func() context.Context
-		setErr   func() *error
-	}{
-		"success": {
-			setupCtx: func() context.Context { return makeOutgoingCtx() },
-			setErr:   func() *error { return nil },
-		},
-		"failure": {
-			setupCtx: func() context.Context { return makeOutgoingCtx() },
-			setErr:   func() *error { e := assert.AnError; return &e },
-		},
-		"canceled": {
-			setupCtx: func() context.Context {
-				ctx, cancel := context.WithCancel(makeOutgoingCtx())
-				cancel()
-				return ctx
-			},
-			setErr: func() *error { return nil },
-		},
-		"deadline_exceeded": {
-			setupCtx: func() context.Context {
-				ctx, cancel := context.WithTimeout(makeOutgoingCtx(), 1*time.Nanosecond)
-				defer cancel()
-				time.Sleep(1 * time.Millisecond)
-				return ctx
-			},
-			setErr: func() *error { return nil },
-		},
-	}
+func TestOutgoingAPITelemeter_InFlight_DecrementOnRecord(t *testing.T) {
+	target, address, method := uniqueLabel(t, "target"), uniqueLabel(t, "address"), uniqueLabel(t, "method")
 
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			ctx := tc.setupCtx()
-			// Unique method per test to avoid label collision
-			ctx = setContextMethod(ctx, "GET-"+name)
-			target := getContextTarget(ctx)
-			address := getContextAddress(ctx)
-			method := getContextMethod(ctx)
-			g := outgoingAPIRequestsInFlight.WithLabelValues(target, address, method)
+	rec := OutgoingAPITelemeter(target, address, method)(context.Background())
+	assert.Equal(t, float64(1), readGauge(outgoingAPIRequestsInFlight, target, address, method))
 
-			// Baselines
-			gBefore := testutil.ToFloat64(g)
-			hBefore := testutil.CollectAndCount(outgoingAPIRequestDurationSeconds)
+	var err error
+	rec(&err)
+	assert.Equal(t, float64(0), readGauge(outgoingAPIRequestsInFlight, target, address, method))
+}
 
-			// Compose telemeters (excluding limited and retry since they need specific errors)
-			telemeters := []Telemeter{
-				OutgoingAPIRequestInFlightTelemeter,
-				OutgoingAPIRequestDurationTelemeter,
-			}
-			recorders := make([]Recorder, 0, len(telemeters))
-			for _, tele := range telemeters {
-				recorders = append(recorders, tele(ctx))
-			}
+func TestOutgoingAPITelemeter_Duration_Success(t *testing.T) {
+	target, address, method := uniqueLabel(t, "target"), uniqueLabel(t, "address"), uniqueLabel(t, "method")
 
-			// Verify in-flight increment
-			gAfterInc := testutil.ToFloat64(g)
-			assert.Equal(t, gBefore+1, gAfterInc)
+	rec := OutgoingAPITelemeter(target, address, method)(context.Background())
 
-			// Record once for each telemeter
-			errPtr := tc.setErr()
-			for _, rec := range recorders {
-				rec(errPtr)
-			}
+	var err error
+	rec(&err)
 
-			// Gauge back to baseline
-			gAfterDec := testutil.ToFloat64(g)
-			assert.Equal(t, gBefore, gAfterDec)
+	assert.Equal(t, uint64(1),
+		readHistogramCount(outgoingAPIRequestDurationSeconds, metricStatusSuccess, target, address, method),
+		"expected one duration observation with status=success",
+	)
+}
 
-			// Histogram incremented by one
-			hAfter := testutil.CollectAndCount(outgoingAPIRequestDurationSeconds)
-			assert.Equal(t, hBefore+1, hAfter)
-		})
-	}
+func TestOutgoingAPITelemeter_Duration_Failure(t *testing.T) {
+	target, address, method := uniqueLabel(t, "target"), uniqueLabel(t, "address"), uniqueLabel(t, "method")
+
+	rec := OutgoingAPITelemeter(target, address, method)(context.Background())
+
+	err := fmt.Errorf("backend unavailable")
+	rec(&err)
+
+	assert.Equal(t, uint64(1),
+		readHistogramCount(outgoingAPIRequestDurationSeconds, metricStatusFailure, target, address, method),
+		"expected one duration observation with status=failure",
+	)
+}
+
+func TestOutgoingAPITelemeter_Duration_Canceled(t *testing.T) {
+	target, address, method := uniqueLabel(t, "target"), uniqueLabel(t, "address"), uniqueLabel(t, "method")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	rec := OutgoingAPITelemeter(target, address, method)(ctx)
+	cancel()
+
+	// resolveStatus derives "canceled" from ctx.Err(), not from the error value.
+	err := fmt.Errorf("transport: read on canceled context")
+	rec(&err)
+
+	assert.Equal(t, uint64(1),
+		readHistogramCount(outgoingAPIRequestDurationSeconds, metricStatusCanceled, target, address, method),
+	)
+}
+
+func TestOutgoingAPITelemeter_Duration_Canceled_NilError_StillSuccess(t *testing.T) {
+	target, address, method := uniqueLabel(t, "target"), uniqueLabel(t, "address"), uniqueLabel(t, "method")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	rec := OutgoingAPITelemeter(target, address, method)(ctx)
+	cancel()
+
+	var err error
+	rec(&err)
+
+	assert.Equal(t, uint64(1),
+		readHistogramCount(outgoingAPIRequestDurationSeconds, metricStatusSuccess, target, address, method),
+		"nil error should resolve to success even when the context is canceled",
+	)
+}
+
+func TestOutgoingAPITelemeter_Duration_DeadlineExceeded(t *testing.T) {
+	target, address, method := uniqueLabel(t, "target"), uniqueLabel(t, "address"), uniqueLabel(t, "method")
+
+	ctx, cancel := expiredCtx()
+	defer cancel()
+	rec := OutgoingAPITelemeter(target, address, method)(ctx)
+
+	// resolveStatus derives "deadline_exceeded" from ctx.Err(), not from the error value.
+	err := fmt.Errorf("transport: read on expired context")
+	rec(&err)
+
+	assert.Equal(t, uint64(1),
+		readHistogramCount(outgoingAPIRequestDurationSeconds, metricStatusDeadlineExceeded, target, address, method),
+	)
+}
+
+func TestOutgoingAPITelemeter_Duration_DeadlineExceeded_NilError_StillSuccess(t *testing.T) {
+	target, address, method := uniqueLabel(t, "target"), uniqueLabel(t, "address"), uniqueLabel(t, "method")
+
+	ctx, cancel := expiredCtx()
+	defer cancel()
+	rec := OutgoingAPITelemeter(target, address, method)(ctx)
+
+	var err error
+	rec(&err)
+
+	assert.Equal(t, uint64(1),
+		readHistogramCount(outgoingAPIRequestDurationSeconds, metricStatusSuccess, target, address, method),
+		"nil error should resolve to success even when the deadline has passed",
+	)
+}
+
+func TestOutgoingAPITelemeter_RetryTotal_NoIncrementOnSuccess(t *testing.T) {
+	// The telemeter no longer manages the retry counter — that is done directly by
+	// CaptureOutgoingAPIRequestRetryTotal inside LimitedRetryTransport on each EOF retry.
+	target, address, method := uniqueLabel(t, "target"), uniqueLabel(t, "address"), uniqueLabel(t, "method")
+
+	rec := OutgoingAPITelemeter(target, address, method)(context.Background())
+
+	var err error
+	rec(&err)
+
+	assert.Equal(t, float64(0),
+		readCounter(outgoingAPIRequestRetryTotal, target, address, method),
+		"telemeter must not increment the retry counter — that is LimitedRetryTransport's job",
+	)
+}
+
+func TestOutgoingAPITelemeter_RetryTotal_NoIncrementOnOrdinaryError(t *testing.T) {
+	target, address, method := uniqueLabel(t, "target"), uniqueLabel(t, "address"), uniqueLabel(t, "method")
+
+	rec := OutgoingAPITelemeter(target, address, method)(context.Background())
+
+	err := fmt.Errorf("ordinary error, not retryable")
+	rec(&err)
+
+	assert.Equal(t, float64(0),
+		readCounter(outgoingAPIRequestRetryTotal, target, address, method),
+		"telemeter must not increment the retry counter on a non-retryable error",
+	)
+}
+
+// ---- OutgoingAPITelemeter — backpressure counter ----
+
+func TestOutgoingAPITelemeter_Backpressure_IncrementOnServerBackPressure(t *testing.T) {
+	target, address, method := uniqueLabel(t, "target"), uniqueLabel(t, "address"), uniqueLabel(t, "method")
+
+	rec := OutgoingAPITelemeter(target, address, method)(context.Background())
+
+	err := tridentErrors.ServerBackPressureError("received status: 429 from server")
+	rec(&err)
+
+	assert.Equal(t, float64(1),
+		readCounter(outgoingAPIRequestBackpressureTotal, target, address, method),
+		"backpressure counter should be incremented on ServerBackPressureError",
+	)
+}
+
+func TestOutgoingAPITelemeter_Backpressure_IncrementOnWrappedServerBackPressure(t *testing.T) {
+	// Errors produced by WrapWithServerBackPressureError (e.g. EOF wrapped as backpressure)
+	// must also trigger the counter because IsServerBackPressureError uses errors.As.
+	target, address, method := uniqueLabel(t, "target"), uniqueLabel(t, "address"), uniqueLabel(t, "method")
+
+	rec := OutgoingAPITelemeter(target, address, method)(context.Background())
+
+	err := tridentErrors.WrapWithServerBackPressureError(fmt.Errorf("EOF"), "received EOF from server")
+	rec(&err)
+
+	assert.Equal(t, float64(1),
+		readCounter(outgoingAPIRequestBackpressureTotal, target, address, method),
+		"backpressure counter should be incremented on wrapped ServerBackPressureError",
+	)
+}
+
+func TestOutgoingAPITelemeter_Backpressure_NoIncrementOnSuccess(t *testing.T) {
+	target, address, method := uniqueLabel(t, "target"), uniqueLabel(t, "address"), uniqueLabel(t, "method")
+
+	rec := OutgoingAPITelemeter(target, address, method)(context.Background())
+
+	var err error
+	rec(&err)
+
+	assert.Equal(t, float64(0),
+		readCounter(outgoingAPIRequestBackpressureTotal, target, address, method),
+		"backpressure counter should not be incremented on success",
+	)
+}
+
+func TestOutgoingAPITelemeter_Backpressure_NoIncrementOnOrdinaryError(t *testing.T) {
+	target, address, method := uniqueLabel(t, "target"), uniqueLabel(t, "address"), uniqueLabel(t, "method")
+
+	rec := OutgoingAPITelemeter(target, address, method)(context.Background())
+
+	err := fmt.Errorf("ordinary error, not backpressure")
+	rec(&err)
+
+	assert.Equal(t, float64(0),
+		readCounter(outgoingAPIRequestBackpressureTotal, target, address, method),
+		"backpressure counter should not be incremented on a non-backpressure error",
+	)
+}
+
+// ---- OutgoingAPITelemeter — idempotency (sync.Once) ----
+
+func TestOutgoingAPITelemeter_RecorderIsIdempotent(t *testing.T) {
+	target, address, method := uniqueLabel(t, "target"), uniqueLabel(t, "address"), uniqueLabel(t, "method")
+
+	rec := OutgoingAPITelemeter(target, address, method)(context.Background())
+
+	var err error
+	rec(&err)
+	rec(&err) // second call must be a no-op
+
+	assert.Equal(t, float64(0), readGauge(outgoingAPIRequestsInFlight, target, address, method),
+		"in-flight gauge must not go negative when the recorder is called more than once",
+	)
+	assert.Equal(t, uint64(1),
+		readHistogramCount(outgoingAPIRequestDurationSeconds, metricStatusSuccess, target, address, method),
+		"duration must only be observed once even when the recorder is called multiple times",
+	)
+}
+
+func TestIncomingAPITelemeter_RecorderIsIdempotent(t *testing.T) {
+	client, method := uniqueLabel(t, "client"), uniqueLabel(t, "method")
+
+	rec := IncomingAPITelemeter(client, method)(context.Background())
+
+	var err error
+	rec(&err)
+	rec(&err) // second call must be a no-op
+
+	assert.Equal(t, float64(0), readGauge(incomingAPIRequestsInFlight, client, method),
+		"in-flight gauge must not go negative when the recorder is called more than once",
+	)
+	assert.Equal(t, uint64(1),
+		readHistogramCount(incomingAPIRequestDurationSeconds, metricStatusSuccess, client, method),
+		"duration must only be observed once even when the recorder is called multiple times",
+	)
+}
+
+// ---- CaptureOutgoingAPIRequestTokenDuration ----
+
+func TestCaptureOutgoingAPIRequestTokenDuration_ObservesAboveThreshold(t *testing.T) {
+	target, address, method := uniqueLabel(t, "target"), uniqueLabel(t, "address"), uniqueLabel(t, "method")
+
+	CaptureOutgoingAPIRequestTokenDuration(context.Background(), target, address, method, 5*time.Millisecond)
+
+	assert.Equal(t, uint64(1),
+		readHistogramCount(outgoingAPIRequestTokenDurationSeconds, target, address, method),
+		"token duration histogram should be observed for waits at or above 1ms",
+	)
+}
+
+func TestCaptureOutgoingAPIRequestTokenDuration_IgnoresSubMillisecond(t *testing.T) {
+	target, address, method := uniqueLabel(t, "target"), uniqueLabel(t, "address"), uniqueLabel(t, "method")
+
+	// Capture the count before the call to establish a baseline, then verify it is unchanged.
+	before := readHistogramCount(outgoingAPIRequestTokenDurationSeconds, target, address, method)
+	CaptureOutgoingAPIRequestTokenDuration(context.Background(), target, address, method, 500*time.Microsecond)
+	after := readHistogramCount(outgoingAPIRequestTokenDurationSeconds, target, address, method)
+
+	assert.Equal(t, before, after, "sub-millisecond waits should be silently ignored to avoid noise")
+}
+
+// ---- CaptureOutgoingAPIRequestRetryTotal ----
+
+func TestCaptureOutgoingAPIRequestRetryTotal_Increments(t *testing.T) {
+	target, address, method := uniqueLabel(t, "target"), uniqueLabel(t, "address"), uniqueLabel(t, "method")
+
+	CaptureOutgoingAPIRequestRetryTotal(context.Background(), target, address, method)
+	CaptureOutgoingAPIRequestRetryTotal(context.Background(), target, address, method)
+
+	assert.Equal(t, float64(2),
+		readCounter(outgoingAPIRequestRetryTotal, target, address, method),
+		"each call to CaptureOutgoingAPIRequestRetryTotal should increment the retry counter by 1",
+	)
 }

@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"net/http"
 	"reflect"
 	"strconv"
 	"strings"
@@ -34,20 +33,6 @@ import (
 func (p *Plugin) CreateVolume(
 	ctx context.Context, req *csi.CreateVolumeRequest,
 ) (res *csi.CreateVolumeResponse, err error) {
-	ctx, rec := NewContextBuilder(ctx).
-		WithWorkflow(WorkflowVolumeCreate).
-		WithLayer(LogLayerCSIFrontend).
-		WithSource(ContextSourceCSI).
-		WithClient(ContextRequestClientCSIProvisioner).
-		WithRoute(csi.Controller_CreateVolume_FullMethodName).
-		WithMethod(http.MethodPost).
-		WithTelemetry(
-			IncomingAPIRequestInFlightTelemeter,
-			IncomingAPIRequestDurationTelemeter,
-		).
-		BuildContextAndTelemetry()
-	defer rec(&err)
-
 	fields := LogFields{"Method": "CreateVolume", "Type": "CSI_Controller", "name": req.Name}
 	Logc(ctx).WithFields(fields).Debug(">>>> CreateVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< CreateVolume")
@@ -316,20 +301,6 @@ func (p *Plugin) CreateVolume(
 func (p *Plugin) DeleteVolume(
 	ctx context.Context, req *csi.DeleteVolumeRequest,
 ) (res *csi.DeleteVolumeResponse, err error) {
-	ctx, rec := NewContextBuilder(ctx).
-		WithWorkflow(WorkflowVolumeDelete).
-		WithLayer(LogLayerCSIFrontend).
-		WithSource(ContextSourceCSI).
-		WithClient(ContextRequestClientCSIProvisioner).
-		WithRoute(csi.Controller_DeleteVolume_FullMethodName).
-		WithMethod(http.MethodDelete).
-		WithTelemetry(
-			IncomingAPIRequestInFlightTelemeter,
-			IncomingAPIRequestDurationTelemeter,
-		).
-		BuildContextAndTelemetry()
-	defer rec(&err)
-
 	fields := LogFields{"Method": "DeleteVolume", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Debug(">>>> DeleteVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteVolume")
@@ -366,10 +337,7 @@ func stashIscsiTargetPortals(publishInfo map[string]string, volumePublishInfo *m
 
 func (p *Plugin) ControllerPublishVolume(
 	ctx context.Context, req *csi.ControllerPublishVolumeRequest,
-) (*csi.ControllerPublishVolumeResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowControllerPublish)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.ControllerPublishVolumeResponse, err error) {
 	fields := LogFields{"Method": "ControllerPublishVolume", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Debug(">>>> ControllerPublishVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< ControllerPublishVolume")
@@ -524,10 +492,7 @@ func populatePublishInfoFromCSIPublishRequest(info *models.VolumePublishInfo, re
 
 func (p *Plugin) ControllerUnpublishVolume(
 	ctx context.Context, req *csi.ControllerUnpublishVolumeRequest,
-) (*csi.ControllerUnpublishVolumeResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowControllerUnpublish)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.ControllerUnpublishVolumeResponse, err error) {
 	fields := LogFields{"Method": "ControllerUnpublishVolume", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Debug(">>>> ControllerUnpublishVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< ControllerUnpublishVolume")
@@ -581,10 +546,7 @@ func (p *Plugin) ControllerUnpublishVolume(
 
 func (p *Plugin) ValidateVolumeCapabilities(
 	ctx context.Context, req *csi.ValidateVolumeCapabilitiesRequest,
-) (*csi.ValidateVolumeCapabilitiesResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowVolumeGetCapabilities)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.ValidateVolumeCapabilitiesResponse, err error) {
 	volumeID := req.GetVolumeId()
 	if volumeID == "" {
 		return nil, status.Error(codes.InvalidArgument, "no volume ID provided")
@@ -628,10 +590,7 @@ func (p *Plugin) ValidateVolumeCapabilities(
 
 func (p *Plugin) ListVolumes(
 	ctx context.Context, req *csi.ListVolumesRequest,
-) (*csi.ListVolumesResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowVolumeList)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.ListVolumesResponse, err error) {
 	fields := LogFields{"Method": "ListVolumes", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Trace(">>>> ListVolumes")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< ListVolumes")
@@ -710,10 +669,7 @@ func (p *Plugin) GetCapacity(_ context.Context, _ *csi.GetCapacityRequest) (*csi
 
 func (p *Plugin) ControllerGetCapabilities(
 	ctx context.Context, _ *csi.ControllerGetCapabilitiesRequest,
-) (*csi.ControllerGetCapabilitiesResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowControllerGetCapabilities)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.ControllerGetCapabilitiesResponse, err error) {
 	fields := LogFields{"Method": "ControllerGetCapabilities", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Trace(">>>> ControllerGetCapabilities")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< ControllerGetCapabilities")
@@ -723,10 +679,7 @@ func (p *Plugin) ControllerGetCapabilities(
 
 func (p *Plugin) CreateSnapshot(
 	ctx context.Context, req *csi.CreateSnapshotRequest,
-) (*csi.CreateSnapshotResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowSnapshotCreate)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.CreateSnapshotResponse, err error) {
 	fields := LogFields{"Method": "CreateSnapshot", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Debug(">>>> CreateSnapshot")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< CreateSnapshot")
@@ -802,10 +755,7 @@ func (p *Plugin) CreateSnapshot(
 
 func (p *Plugin) DeleteSnapshot(
 	ctx context.Context, req *csi.DeleteSnapshotRequest,
-) (*csi.DeleteSnapshotResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowSnapshotDelete)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.DeleteSnapshotResponse, err error) {
 	fields := LogFields{"Method": "DeleteSnapshot", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Debug(">>>> DeleteSnapshot")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< DeleteSnapshot")
@@ -842,10 +792,7 @@ func (p *Plugin) DeleteSnapshot(
 
 func (p *Plugin) ListSnapshots(
 	ctx context.Context, req *csi.ListSnapshotsRequest,
-) (*csi.ListSnapshotsResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowSnapshotList)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.ListSnapshotsResponse, err error) {
 	fields := LogFields{"Method": "ListSnapshots", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Trace(">>>> ListSnapshots")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< ListSnapshots")
@@ -973,10 +920,7 @@ func (p *Plugin) getListSnapshots(
 
 func (p *Plugin) ControllerExpandVolume(
 	ctx context.Context, req *csi.ControllerExpandVolumeRequest,
-) (*csi.ControllerExpandVolumeResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowVolumeResize)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.ControllerExpandVolumeResponse, err error) {
 	fields := LogFields{"Method": "ControllerExpandVolume", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Debug(">>>> ControllerExpandVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< ControllerExpandVolume")

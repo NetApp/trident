@@ -605,6 +605,13 @@ func TestWrappingErrorTypes(t *testing.T) {
 			isErrFunc:   IsAlreadyExistsError,
 			errorType:   "already exists",
 		},
+		{
+			name:        "ServerBackPressureError",
+			createErr:   ServerBackPressureError,
+			wrapWithErr: WrapWithServerBackPressureError,
+			isErrFunc:   IsServerBackPressureError,
+			errorType:   "server backpressure",
+		},
 	}
 
 	for _, tt := range tests {
@@ -654,6 +661,12 @@ func TestWrappingErrorTypes(t *testing.T) {
 			assert.True(t, tt.isErrFunc(deepErr))
 		})
 	}
+}
+
+func TestServerBackPressureError_UnwrapReachesInner(t *testing.T) {
+	wrapped := WrapWithServerBackPressureError(io.EOF, "received EOF from server")
+	assert.True(t, IsServerBackPressureError(wrapped))
+	assert.True(t, errors.Is(wrapped, io.EOF))
 }
 
 func TestAsInvalidJSONError(t *testing.T) {

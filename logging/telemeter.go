@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package logging
 
@@ -55,7 +55,9 @@ var (
 
 	outgoingAPIRequestSharedLabels = []string{"target", "address", "method"}
 	// outgoingAPIRequestDurationSeconds tracks the duration of outgoing API requests.
-	// i.e. "How long are outgoing API calls taking?
+	// This metric only tracks the time spent from when an HTTP request is made to when the response is received.
+	// This metric does not include the time spent waiting for a rate limit token or a semaphore lock.
+	// i.e. "How long are outgoing API calls taking once they hit the wire, from start to finish?"
 	outgoingAPIRequestDurationSeconds = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Namespace: config.OrchestratorName,
@@ -66,23 +68,18 @@ var (
 		},
 		append([]string{"status"}, outgoingAPIRequestSharedLabels...),
 	)
-	// outgoingAPIRequestsInFlight tracks the number of in-flight outgoing API requests.
-	// i.e. "How many outgoing API calls are in-flight at any given time? And to which targets?"
-	outgoingAPIRequestsInFlight = promauto.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Namespace: config.OrchestratorName,
-			Subsystem: "outgoing_api",
-			Name:      "requests_in_flight",
-			Help:      "Number of in-flight outgoing API requests.",
-		},
-		outgoingAPIRequestSharedLabels,
-	)
-	outgoingAPIRequestLimitedDurationSeconds = promauto.NewHistogramVec(
+	// outgoingAPIRequestPendingDurationSeconds tracks the client-side queuing delay before
+	// an outgoing API request is dispatched. This covers time spent waiting for a rate-limit
+	// token (e.g. the Kubernetes client-go token bucket) or a concurrency slot (e.g. the
+	// ONTAP semaphore). It does not include the HTTP round-trip, which is captured separately in outgoingAPIRequestDurationSeconds.
+	// The goal of this metric is to track the latency introduced by the client-side rate limiting or lock contention around an API.
+	// i.e. "How long are outgoing API requests waiting before they even hit the wire?"
+	outgoingAPIRequestTokenDurationSeconds = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Namespace: config.OrchestratorName,
 			Subsystem: "outgoing_api",
 			Name:      "requests_limited_duration_seconds",
-			Help:      "Duration of outgoing API calls that were throttled due to rate limiting.",
+			Help:      "Duration of outgoing API calls waiting for a rate limit token or semaphore lock.",
 			// Default K8s API QPS is 100 (10ms token refill), burst=50.
 			// Buckets - 10ms (1 token), 50-100ms (5-10 tokens), 500ms-1s (moderate),
 			// 2.5s-5s (heavy), 10s+ (severe sustained throttling).
@@ -90,6 +87,21 @@ var (
 		},
 		outgoingAPIRequestSharedLabels,
 	)
+	// outgoingAPIRequestBackpressureTotal tracks how often the server signals overload
+	// on outgoing API requests (e.g. 429, 503, EOF). Unlike outgoingAPIRequestRetryTotal,
+	// this only increments on explicit server-side backpressure, not on all retryable failures.
+	// i.e. "How often is the server telling us to back off?"
+	outgoingAPIRequestBackpressureTotal = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: config.OrchestratorName,
+			Subsystem: "outgoing_api",
+			Name:      "requests_backpressure_total",
+			Help:      "Total number of outgoing API requests that were rejected by the server due to overload (e.g. 429, 503, EOF).",
+		},
+		outgoingAPIRequestSharedLabels,
+	)
+	// outgoingAPIRequestRetryTotal tracks the total number of outgoing API requests that were retried.
+	// i.e. "How many times did we have to retry an outgoing API request?"
 	outgoingAPIRequestRetryTotal = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: config.OrchestratorName,
@@ -99,198 +111,142 @@ var (
 		},
 		outgoingAPIRequestSharedLabels,
 	)
-
-	// Compile time safety; every telemeter must conform to the Telemeter type.
-	_ Telemeter = IncomingAPIRequestDurationTelemeter
-	_ Telemeter = IncomingAPIRequestInFlightTelemeter
-	_ Telemeter = OutgoingAPIRequestDurationTelemeter
-	_ Telemeter = OutgoingAPIRequestInFlightTelemeter
-	_ Telemeter = OutgoingAPIRequestRetryTotalTelemeter
-	_ Telemeter = OutgoingAPIRequestLimitedDurationTelemeter
+	// outgoingAPIRequestsInFlight tracks the number of in-flight outgoing API requests.
+	// i.e. "How many outgoing API calls are on the wire, to which targets, at a given point in time?"
+	outgoingAPIRequestsInFlight = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: config.OrchestratorName,
+			Subsystem: "outgoing_api",
+			Name:      "requests_in_flight",
+			Help:      "Number of in-flight outgoing API requests.",
+		},
+		outgoingAPIRequestSharedLabels,
+	)
 )
 
-// IncomingAPIRequestDurationTelemeter creates a Telemeter for measuring how long API requests take.
-// The returned Recorder captures a context to update metrics.
-func IncomingAPIRequestDurationTelemeter(ctx context.Context) Recorder {
-	status := metricStatusSuccess
-	client := getContextClient(ctx)
-	method := getContextMethod(ctx)
-	values := []string{
-		client, // client is treated as the "caller" for incoming API metrics
-		method, // API method
-	}
-
-	// Create a UUID for this request.
-	duration := getContextDuration(ctx)
-	startTime := time.Now()
-	var once sync.Once
-	return func(errPtr *error) {
-		once.Do(func() {
-			elapsed := time.Since(startTime).Seconds()
-			if duration > 0 {
-				elapsed = duration.Seconds()
-			}
-			if err := convert.ToVal(errPtr); err != nil {
-				status = metricStatusFailure
-			}
-			if ctxErr := ctx.Err(); ctxErr != nil {
-				switch ctxErr {
-				case context.Canceled:
-					status = metricStatusCanceled
-				case context.DeadlineExceeded:
-					status = metricStatusDeadlineExceeded
-				}
-			}
-
-			values = append([]string{status}, values...)
-			incomingAPIRequestDurationSeconds.WithLabelValues(values...).Observe(elapsed)
-		})
-	}
-}
-
-// IncomingAPIRequestInFlightTelemeter creates a Telemeter for gauging incoming API requests.
-// The returned Recorder captures a context to update metrics.
-func IncomingAPIRequestInFlightTelemeter(ctx context.Context) Recorder {
-	client := getContextClient(ctx)
-	method := getContextMethod(ctx)
-	values := []string{
-		client, // client is treated as the "caller" for incoming API metrics
-		method, // API method
-	}
-
-	// Increment the count with appropriate values.
-	incomingAPIRequestsInFlight.WithLabelValues(values...).Inc()
-	var once sync.Once
-	return func(_ *error) {
-		once.Do(func() {
-			incomingAPIRequestsInFlight.WithLabelValues(values...).Dec()
-		})
-	}
-}
-
-// OutgoingAPIRequestDurationTelemeter creates a Telemeter for measuring how long outgoing API requests take.
-// The returned Recorder captures a context to update metrics.
-func OutgoingAPIRequestDurationTelemeter(ctx context.Context) Recorder {
-	status := metricStatusSuccess
-	target := getContextTarget(ctx)
-	address := getContextAddress(ctx)
-	method := getContextMethod(ctx)
-	values := []string{
-		target,
-		address,
-		method,
-	}
-
-	// Create a UUID for this request.
-	duration := getContextDuration(ctx)
-	startTime := time.Now()
-	var once sync.Once
-	return func(errPtr *error) {
-		once.Do(func() {
-			elapsed := time.Since(startTime).Seconds()
-			if duration > 0 {
-				elapsed = duration.Seconds()
-			}
-
-			if err := convert.ToVal(errPtr); err != nil {
-				status = metricStatusFailure
-			}
-			if ctxErr := ctx.Err(); ctxErr != nil {
-				switch ctxErr {
-				case context.Canceled:
-					status = metricStatusCanceled
-				case context.DeadlineExceeded:
-					status = metricStatusDeadlineExceeded
-				}
-			}
-
-			values = append([]string{status}, values...)
-			outgoingAPIRequestDurationSeconds.WithLabelValues(values...).Observe(elapsed)
-		})
-	}
-}
-
-// OutgoingAPIRequestInFlightTelemeter creates a Telemeter for gauging outgoing API requests.
-// The returned Recorder captures a context to update metrics.
-func OutgoingAPIRequestInFlightTelemeter(ctx context.Context) Recorder {
-	target := getContextTarget(ctx)
-	address := getContextAddress(ctx)
-	method := getContextMethod(ctx)
-	values := []string{
-		target,
-		address,
-		method,
-	}
-
-	outgoingAPIRequestsInFlight.WithLabelValues(values...).Inc()
-	var once sync.Once
-	return func(_ *error) {
-		once.Do(func() {
-			outgoingAPIRequestsInFlight.WithLabelValues(values...).Dec()
-		})
-	}
-}
-
-// OutgoingAPIRequestRetryTotalTelemeter creates a Telemeter for counting outgoing API requests that have been retried.
-// Retries could be due to rate limiting or other transient errors.
-// The returned Recorder captures a context to update metrics.
-func OutgoingAPIRequestRetryTotalTelemeter(ctx context.Context) Recorder {
-	target := getContextTarget(ctx)
-	address := getContextAddress(ctx)
-	method := getContextMethod(ctx)
-	values := []string{
-		target,
-		address,
-		method,
-	}
-
-	return func(errPtr *error) {
-		err := convert.ToVal(errPtr)
-		if err == nil {
-			return
+// IncomingAPITelemeter starts tracking an incoming request. It captures all incoming API metrics:
+// in-flight count and request duration.
+// client and method are required — they are Prometheus label fields.
+// ctx is used only for lifecycle signals (cancellation, deadline).
+func IncomingAPITelemeter(client, method string) Telemeter {
+	return func(ctx context.Context) Recorder {
+		fields := LogFields{
+			"client": client,
+			"method": method,
 		}
-		// This telemeter only cares about rate limiting and throttling errors.
-		if errors.IsMustRetryError(err) {
-			outgoingAPIRequestRetryTotal.WithLabelValues(values...).Inc()
+		Logc(ctx).WithFields(fields).Trace("Recording incoming API request metrics.")
+
+		// Record the start time.
+		startTime := time.Now()
+
+		// Increment the in-flight count.
+		incomingAPIRequestsInFlight.WithLabelValues(client, method).Inc()
+
+		var once sync.Once
+		return func(errPtr *error) {
+			once.Do(func() {
+				// Decrement the in-flight count.
+				incomingAPIRequestsInFlight.WithLabelValues(client, method).Dec()
+
+				// Calculate the elapsed time.
+				elapsed := time.Since(startTime).Seconds()
+
+				// Resolve the status.
+				status := resolveStatus(ctx, errPtr)
+				incomingAPIRequestDurationSeconds.WithLabelValues(status, client, method).Observe(elapsed)
+
+				Logc(ctx).WithFields(fields).WithFields(LogFields{
+					"status":  status,
+					"elapsed": elapsed,
+				}).Trace("Recorded incoming API request metrics.")
+			})
 		}
 	}
 }
 
-// OutgoingAPIRequestLimitedDurationTelemeter creates a Telemeter that measures the duration of
-// outgoing API requests that were limited due to rate limiting. This telemeter requires a duration
-// in the supplied context, otherwise it will not record any metrics.
-// The returned Recorder captures a context to update metrics.
-func OutgoingAPIRequestLimitedDurationTelemeter(ctx context.Context) Recorder {
-	target := getContextTarget(ctx)
-	address := getContextAddress(ctx)
-	method := getContextMethod(ctx)
-	values := []string{
-		target,
-		address,
-		method,
+// OutgoingAPITelemeter starts tracking an outgoing request. It captures outgoing API metrics:
+// in-flight count, request duration, and backpressure.
+func OutgoingAPITelemeter(target, address, method string) Telemeter {
+	return func(ctx context.Context) Recorder {
+		fields := LogFields{
+			"target":  target,
+			"address": address,
+			"method":  method,
+		}
+		Logc(ctx).WithFields(fields).Trace("Recording outgoing API request metrics.")
+
+		// Record the start time.
+		startTime := time.Now()
+
+		// Increment the in-flight count.
+		outgoingAPIRequestsInFlight.WithLabelValues(target, address, method).Inc()
+
+		var once sync.Once
+		return func(errPtr *error) {
+			once.Do(func() {
+				// Decrement the in-flight count.
+				outgoingAPIRequestsInFlight.WithLabelValues(target, address, method).Dec()
+
+				// Calculate the elapsed time.
+				elapsed := time.Since(startTime).Seconds()
+
+				// Resolve the status.
+				status := resolveStatus(ctx, errPtr)
+
+				// Record when we hit server-side backpressure.
+				err := convert.ToVal(errPtr)
+				if errors.IsServerBackPressureError(err) {
+					outgoingAPIRequestBackpressureTotal.WithLabelValues(target, address, method).Inc()
+				}
+
+				// Record the duration.
+				outgoingAPIRequestDurationSeconds.WithLabelValues(status, target, address, method).Observe(elapsed)
+
+				Logc(ctx).WithFields(fields).WithFields(LogFields{
+					"status":  status,
+					"elapsed": elapsed,
+				}).Trace("Recorded outgoing API request metrics.")
+			})
+		}
+	}
+}
+
+func resolveStatus(ctx context.Context, errPtr *error) string {
+	if err := convert.ToVal(errPtr); err == nil {
+		return metricStatusSuccess
 	}
 
-	duration := getContextDuration(ctx)
-	var once sync.Once
-	return func(errPtr *error) {
-		once.Do(func() {
-			// If no duration was set in the context, do not record any metrics.
-			if duration <= 0 {
-				return
-			}
-
-			// Check if the error indicates rate limiting.
-			// If an error wasn't  it for this telemeter.
-			var err error
-			if err = convert.ToVal(errPtr); err == nil {
-				return
-			}
-
-			// This telemeter only cares about rate limiting and throttling errors.
-			if errors.IsTooManyRequestsError(err) {
-				elapsed := duration.Seconds()
-				outgoingAPIRequestLimitedDurationSeconds.WithLabelValues(values...).Observe(elapsed)
-			}
-		})
+	if ctxErr := ctx.Err(); ctxErr != nil {
+		switch {
+		case errors.Is(ctxErr, context.Canceled):
+			return metricStatusCanceled
+		case errors.Is(ctxErr, context.DeadlineExceeded):
+			return metricStatusDeadlineExceeded
+		}
 	}
+	return metricStatusFailure
+}
+
+// CaptureOutgoingAPIRequestTokenDuration records how long outgoing API requests waited for a rate limit token or lock.
+// This does not include time spent on the wire.
+// Sub-millisecond waits are ignored — they represent uncontended overhead, not real queuing pressure.
+func CaptureOutgoingAPIRequestTokenDuration(ctx context.Context, target, address, method string, latency time.Duration) {
+	if latency < time.Millisecond {
+		// Ignore sub-millisecond waits — these are uncontended overhead, not real client-side queuing pressure.
+		return
+	}
+
+	Logc(ctx).WithFields(LogFields{
+		"target": target, "address": address, "method": method, "latency_seconds": latency.Seconds(),
+	}).Trace("Recording outgoing API request token duration.")
+	outgoingAPIRequestTokenDurationSeconds.WithLabelValues(target, address, method).Observe(latency.Seconds())
+}
+
+// CaptureOutgoingAPIRequestRetryTotal records the total number of outgoing API requests that were retried.
+// This should only be used in cases when it is already known that a retry has occurred.
+func CaptureOutgoingAPIRequestRetryTotal(ctx context.Context, target, address, method string) {
+	Logc(ctx).WithFields(LogFields{
+		"target": target, "address": address, "method": method,
+	}).Trace("Incrementing outgoing retry API total.")
+	outgoingAPIRequestRetryTotal.WithLabelValues(target, address, method).Inc()
 }

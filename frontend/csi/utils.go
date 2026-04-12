@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 // Copyright 2017 The Kubernetes Authors.
 
@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
-	"google.golang.org/grpc"
 
 	"github.com/netapp/trident/config"
 	controllerAPI "github.com/netapp/trident/frontend/csi/controller_api"
@@ -66,29 +65,6 @@ func NewGroupControllerServiceCapability(
 			},
 		},
 	}
-}
-
-// logGRPC is a unary interceptor that logs GRPC requests.
-func logGRPC(
-	ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler,
-) (interface{}, error) {
-	ctx = GenerateRequestContext(ctx, "", ContextSourceCSI, WorkflowNone, LogLayerCSIFrontend)
-	Audit().Logf(ctx, AuditGRPCAccess, LogFields{}, "GRPC call: %s", info.FullMethod)
-	logFields := LogFields{
-		"Request": fmt.Sprintf("GRPC request: %+v", req),
-	}
-
-	Logc(ctx).WithFields(logFields).Debugf("GRPC call: %s", info.FullMethod)
-
-	// Handle the actual request.
-	resp, err := handler(ctx, req)
-	if err != nil {
-		Logc(ctx).Errorf("GRPC error: %v", err)
-	} else {
-		Logc(ctx).Tracef("GRPC response: %+v", resp)
-	}
-
-	return resp, err
 }
 
 // encryptCHAPPublishInfo will encrypt the CHAP credentials from volumePublish and add them to publishInfo

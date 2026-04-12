@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package api
 
@@ -197,7 +197,7 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM, driverName str
 	transport = NewMetricsTransport(transport, WithMetricsTransportTarget(ContextRequestTargetONTAP))
 	// Create a retry transport round tripper that uses semaphores for rate limiting.
 	transport = drivers.NewLimitedRetryTransport(
-		drivers.NewSemaphore(config.ManagementLIF, drivers.ONTAPRequestLimit), transport,
+		drivers.NewSemaphore(config.ManagementLIF, drivers.ONTAPRequestLimit), transport, ContextRequestTargetONTAP,
 	)
 	result.httpClient = &http.Client{
 		Transport: transport,

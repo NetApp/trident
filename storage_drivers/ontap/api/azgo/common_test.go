@@ -1,3 +1,5 @@
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
+
 package azgo
 
 import (
@@ -159,7 +161,7 @@ func TestZapiRunner_ExecuteUsing_Parallel_MC(t *testing.T) {
 		}, nil
 	})
 	zRunner.httpClient = &http.Client{
-		Transport: drivers.NewLimitedRetryTransport(semaphore.NewWeighted(1), mockTransport),
+		Transport: drivers.NewLimitedRetryTransport(semaphore.NewWeighted(1), mockTransport, ""),
 	}
 
 	var wg sync.WaitGroup

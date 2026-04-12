@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -114,9 +114,7 @@ const (
 )
 
 var (
-	// TODO (pshashan): Unify both csiNodeLockTimeout and csiKubeletTimeout
 	csiNodeLockTimeout = 60 * time.Second
-	csiKubeletTimeout  = 110 * time.Second
 
 	topologyLabels = make(map[string]string)
 	iscsiUtils     = iscsi.IscsiUtils
@@ -163,12 +161,7 @@ func attemptLock(ctx context.Context, lockContext, lockID string, lockTimeout ti
 
 func (p *Plugin) NodeStageVolume(
 	ctx context.Context, req *csi.NodeStageVolumeRequest,
-) (*csi.NodeStageVolumeResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowNodeStage)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-	ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
-	defer cancel()
-
+) (res *csi.NodeStageVolumeResponse, err error) {
 	fields := LogFields{"Method": "NodeStageVolume", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeStageVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeStageVolume")
@@ -179,15 +172,12 @@ func (p *Plugin) NodeStageVolume(
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
 	}
 
-	var resp *csi.NodeStageVolumeResponse
-	var err error
-
 	switch req.PublishContext["protocol"] {
 	case string(tridentconfig.File):
 		if req.PublishContext["filesystemType"] == smb.SMB {
-			resp, err = p.nodeStageSMBVolume(ctx, req)
+			res, err = p.nodeStageSMBVolume(ctx, req)
 		} else {
-			resp, err = p.nodeStageNFSVolume(ctx, req)
+			res, err = p.nodeStageNFSVolume(ctx, req)
 		}
 	case string(tridentconfig.Block):
 		return p.nodeStageSANVolume(ctx, req)
@@ -201,17 +191,12 @@ func (p *Plugin) NodeStageVolume(
 		}
 		return nil, err
 	}
-	return resp, nil
+	return res, nil
 }
 
 func (p *Plugin) NodeUnstageVolume(
 	ctx context.Context, req *csi.NodeUnstageVolumeRequest,
-) (*csi.NodeUnstageVolumeResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowNodeUnstage)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-	ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
-	defer cancel()
-
+) (res *csi.NodeUnstageVolumeResponse, err error) {
 	return p.nodeUnstageVolume(ctx, req, false)
 }
 
@@ -303,12 +288,7 @@ func (p *Plugin) nodeUnstageVolume(
 
 func (p *Plugin) NodePublishVolume(
 	ctx context.Context, req *csi.NodePublishVolumeRequest,
-) (*csi.NodePublishVolumeResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowNodePublish)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-	ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
-	defer cancel()
-
+) (res *csi.NodePublishVolumeResponse, err error) {
 	fields := LogFields{"Method": "NodePublishVolume", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Debug(">>>> NodePublishVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodePublishVolume")
@@ -318,9 +298,6 @@ func (p *Plugin) NodePublishVolume(
 	if !attemptLock(ctx, lockContext, req.GetVolumeId(), csiNodeLockTimeout) {
 		return nil, status.Error(codes.Aborted, "request waited too long for the lock")
 	}
-
-	var resp *csi.NodePublishVolumeResponse
-	var err error
 
 	switch req.PublishContext["protocol"] {
 	case string(tridentconfig.File):
@@ -334,9 +311,9 @@ func (p *Plugin) NodePublishVolume(
 			}
 		}
 		if trackingInfo.VolumePublishInfo.FilesystemType == smb.SMB {
-			resp, err = p.nodePublishSMBVolume(ctx, req)
+			res, err = p.nodePublishSMBVolume(ctx, req)
 		} else {
-			resp, err = p.nodePublishNFSVolume(ctx, req)
+			res, err = p.nodePublishNFSVolume(ctx, req)
 		}
 	case string(tridentconfig.Block):
 		if req.PublishContext["SANType"] == sa.NVMe {
@@ -355,17 +332,12 @@ func (p *Plugin) NodePublishVolume(
 		}
 		return nil, err
 	}
-	return resp, nil
+	return res, nil
 }
 
 func (p *Plugin) NodeUnpublishVolume(
 	ctx context.Context, req *csi.NodeUnpublishVolumeRequest,
-) (*csi.NodeUnpublishVolumeResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowNodeUnpublish)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-	ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
-	defer cancel()
-
+) (res *csi.NodeUnpublishVolumeResponse, err error) {
 	fields := LogFields{"Method": "NodeUnpublishVolume", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeUnpublishVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeUnpublishVolume")
@@ -455,10 +427,7 @@ func (p *Plugin) NodeUnpublishVolume(
 
 func (p *Plugin) NodeGetVolumeStats(
 	ctx context.Context, req *csi.NodeGetVolumeStatsRequest,
-) (*csi.NodeGetVolumeStatsResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowVolumeGetStats)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.NodeGetVolumeStatsResponse, err error) {
 	Logc(ctx).WithFields(LogFields{
 		"volumeId":          req.VolumeId,
 		"volumePath":        req.GetVolumePath(),
@@ -547,15 +516,10 @@ func (p *Plugin) NodeGetVolumeStats(
 // return false when the protocol is file.
 func (p *Plugin) NodeExpandVolume(
 	ctx context.Context, req *csi.NodeExpandVolumeRequest,
-) (*csi.NodeExpandVolumeResponse, error) {
+) (res *csi.NodeExpandVolumeResponse, err error) {
 	fields := LogFields{"Method": "NodeExpandVolume", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Debug(">>>> NodeExpandVolume")
 	defer Logc(ctx).WithFields(fields).Debug("<<<< NodeExpandVolume")
-
-	ctx = SetContextWorkflow(ctx, WorkflowVolumeResize)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-	ctx, cancel := context.WithTimeout(ctx, csiKubeletTimeout)
-	defer cancel()
 
 	if err := p.limiterSharedMap[NodeExpandVolume].Wait(ctx); err != nil {
 		return nil, err
@@ -781,10 +745,7 @@ func (p *Plugin) nodePrepareISCSIVolumeForExpansion(
 
 func (p *Plugin) NodeGetCapabilities(
 	ctx context.Context, _ *csi.NodeGetCapabilitiesRequest,
-) (*csi.NodeGetCapabilitiesResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowNodeGetCapabilities)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.NodeGetCapabilitiesResponse, err error) {
 	fields := LogFields{"Method": "NodeGetCapabilities", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Trace(">>>> NodeGetCapabilities")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< NodeGetCapabilities")
@@ -794,10 +755,7 @@ func (p *Plugin) NodeGetCapabilities(
 
 func (p *Plugin) NodeGetInfo(
 	ctx context.Context, _ *csi.NodeGetInfoRequest,
-) (*csi.NodeGetInfoResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowNodeGetInfo)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.NodeGetInfoResponse, err error) {
 	fields := LogFields{"Method": "NodeGetInfo", "Type": "CSI_Node"}
 	Logc(ctx).WithFields(fields).Trace(">>>> NodeGetInfo")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< NodeGetInfo")
@@ -2611,7 +2569,6 @@ func (p *Plugin) cleanStalePublications(
 				Logc(ctx).WithFields(fields).Debug("Unpublished stale volume.")
 			}
 		}
-
 		fields = LogFields{
 			"volumeID":          volumeID,
 			"stagingTargetPath": trackingInfo.StagingTargetPath,

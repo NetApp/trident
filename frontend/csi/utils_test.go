@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -10,7 +10,6 @@ import (
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"google.golang.org/grpc"
 
 	"github.com/netapp/trident/config"
 	mockControllerAPI "github.com/netapp/trident/mocks/mock_frontend/mock_csi/mock_controller_api"
@@ -523,50 +522,6 @@ func TestNewGroupControllerServiceCapability(t *testing.T) {
 			rpc := result.GetRpc()
 			assert.NotNil(t, rpc)
 			assert.Equal(t, tc.expectedCap, rpc.Type)
-		})
-	}
-}
-
-func TestLogGRPC(t *testing.T) {
-	testCases := []struct {
-		name         string
-		handlerError error
-		assertErr    assert.ErrorAssertionFunc
-	}{
-		{
-			name:         "Success - No error",
-			handlerError: nil,
-			assertErr:    assert.NoError,
-		},
-		{
-			name:         "Error - Handler returns error",
-			handlerError: fmt.Errorf("handler error"),
-			assertErr:    assert.Error,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			// Skip if logging is not properly initialized
-			defer func() {
-				if r := recover(); r != nil {
-					t.Skip("Logging not initialized, skipping test")
-				}
-			}()
-
-			// Mock handler
-			handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-				return "response", tc.handlerError
-			}
-
-			// Mock info
-			info := &grpc.UnaryServerInfo{
-				FullMethod: "/test.Service/TestMethod",
-			}
-
-			_, err := logGRPC(context.Background(), "test request", info, handler)
-
-			tc.assertErr(t, err)
 		})
 	}
 }

@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package csi
 
@@ -23,10 +23,7 @@ var volumeGroupSnapshotBackoff = 10 * time.Second
 
 func (p *Plugin) GroupControllerGetCapabilities(
 	ctx context.Context, _ *csi.GroupControllerGetCapabilitiesRequest,
-) (*csi.GroupControllerGetCapabilitiesResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowControllerGetCapabilities)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.GroupControllerGetCapabilitiesResponse, err error) {
 	fields := LogFields{"Method": "GroupControllerGetCapabilities", "Type": "CSI_Controller"}
 	Logc(ctx).WithFields(fields).Trace(">>>> GroupControllerGetCapabilities")
 	defer Logc(ctx).WithFields(fields).Trace("<<<< GroupControllerGetCapabilities")
@@ -36,10 +33,7 @@ func (p *Plugin) GroupControllerGetCapabilities(
 
 func (p *Plugin) CreateVolumeGroupSnapshot(
 	ctx context.Context, req *csi.CreateVolumeGroupSnapshotRequest,
-) (*csi.CreateVolumeGroupSnapshotResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowGroupSnapshotCreate)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.CreateVolumeGroupSnapshotResponse, err error) {
 	fields := LogFields{
 		"Method":  "CreateVolumeGroupSnapshot",
 		"Type":    p.name,
@@ -135,10 +129,7 @@ func (p *Plugin) CreateVolumeGroupSnapshot(
 
 func (p *Plugin) GetVolumeGroupSnapshot(
 	ctx context.Context, req *csi.GetVolumeGroupSnapshotRequest,
-) (*csi.GetVolumeGroupSnapshotResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowGroupSnapshotGet)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.GetVolumeGroupSnapshotResponse, err error) {
 	fields := LogFields{
 		"Method":    "GetVolumeGroupSnapshot",
 		"Type":      p.name,
@@ -192,10 +183,7 @@ func (p *Plugin) GetVolumeGroupSnapshot(
 
 func (p *Plugin) DeleteVolumeGroupSnapshot(
 	ctx context.Context, req *csi.DeleteVolumeGroupSnapshotRequest,
-) (*csi.DeleteVolumeGroupSnapshotResponse, error) {
-	ctx = SetContextWorkflow(ctx, WorkflowGroupSnapshotDelete)
-	ctx = GenerateRequestContextForLayer(ctx, LogLayerCSIFrontend)
-
+) (res *csi.DeleteVolumeGroupSnapshotResponse, err error) {
 	fields := LogFields{
 		"Method":    "DeleteVolumeGroupSnapshot",
 		"Type":      p.name,

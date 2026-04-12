@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package logging
 
@@ -172,6 +172,8 @@ var (
 	WorkflowControllerPublish         = Workflow{CategoryControllerServer, OpPublish}
 	WorkflowControllerUnpublish       = Workflow{CategoryControllerServer, OpUnpublish}
 	WorkflowControllerGetCapabilities = Workflow{CategoryControllerServer, OpGetCapabilties}
+
+	WorkflowGroupControllerGetCapabilities = Workflow{CategoryGroupControllerServer, OpGetCapabilties}
 
 	WorkflowNodeStage         = Workflow{CategoryNodeServer, OpStage}
 	WorkflowNodeUnstage       = Workflow{CategoryNodeServer, OpUnstage}

@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package azgo
 
@@ -109,7 +109,7 @@ func NewZapiRunner(managementLIF, svm, username, password, clientPrivateKey, cli
 	// Create a metrics transport that captures request metrics.
 	transport = NewMetricsTransport(transport, WithMetricsTransportTarget(ContextRequestTargetONTAP))
 	// Create a limited retry transport to limit concurrent requests.
-	transport = drivers.NewLimitedRetryTransport(sem, transport)
+	transport = drivers.NewLimitedRetryTransport(sem, transport, ContextRequestTargetONTAP)
 	zr.httpClient = &http.Client{
 		Transport: transport,
 	}
