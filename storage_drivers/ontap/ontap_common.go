@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -1058,10 +1058,14 @@ func getNodeSpecificFCPIgroupName(nodeName, tridentUUID string) string {
 // mounted, so it should limit itself to updating access rules, initiator groups, etc. that require
 // some host identity (but not locality) as well as storage controller API access.
 // This function assumes that the list of data LIF IP addresses does not change between driver initialization
-// and publish
+// and publish.
+// volConfig supplies per-volume settings from create (or import): FileSystem and FormatOptions. When FileSystem is
+// non-empty it is used as-is; when empty, fstype is read from the LUN via LunGetFSType, or drivers.DefaultFileSystemType
+// if that fails or returns empty. When FormatOptions is non-empty it is used as-is; when empty, format options are
+// read from the LUN attribute "formatOptions" (config.FileSystemType is not consulted for fstype here).
 func PublishLUN(
 	ctx context.Context, clientAPI api.OntapAPI, config *drivers.OntapStorageDriverConfig, ips []string,
-	publishInfo *tridentmodels.VolumePublishInfo, lunPath, igroupName, nodeName string,
+	publishInfo *tridentmodels.VolumePublishInfo, lunPath, igroupName, nodeName string, volConfig *storage.VolumeConfig,
 ) error {
 	lunMutex.Lock(lunPath)
 	defer lunMutex.Unlock(lunPath)
@@ -1104,27 +1108,31 @@ func PublishLUN(
 		}
 	}
 
-	// Get the fstype
-	fstype := drivers.DefaultFileSystemType
-	lunFSType, err := clientAPI.LunGetFSType(ctx, lunPath)
-	if err != nil || lunFSType == "" {
-		if err != nil {
-			Logc(ctx).Warnf("failed to get fstype for LUN: %v", err)
+	// Resolve fstype: prefer volume config (orchestrator), then LUN attribute, then driver default.
+	fstype := volConfig.FileSystem
+	if fstype == "" {
+		fstype, err = clientAPI.LunGetFSType(ctx, lunPath)
+		if err != nil || fstype == "" {
+			if err != nil {
+				Logc(ctx).WithError(err).Error("failed to get fstype for LUN")
+			}
+			Logc(ctx).WithFields(LogFields{
+				"LUN":    lunPath,
+				"fstype": fstype,
+			}).Error("LUN attribute fstype not found, using default.")
+			fstype = drivers.DefaultFileSystemType
 		}
-		Logc(ctx).WithFields(LogFields{
-			"LUN":    lunPath,
-			"fstype": fstype,
-		}).Warn("LUN attribute fstype not found, using default.")
-	} else {
-		fstype = lunFSType
 	}
 
 	// Get the format options
 	// An example of how formatOption may look like:
 	// "-E stride=256,stripe_width=16 -F -b 2435965"
-	formatOptions, err := clientAPI.LunGetAttribute(ctx, lunPath, "formatOptions")
-	if err != nil {
-		Logc(ctx).Warnf("Failed to get format options for LUN: %v", err)
+	formatOptions := volConfig.FormatOptions
+	if formatOptions == "" {
+		formatOptions, err = clientAPI.LunGetAttribute(ctx, lunPath, "formatOptions")
+		if err != nil {
+			Logc(ctx).WithError(err).Error("Failed to get format options for LUN")
+		}
 	}
 
 	// Get LUN Serial Number
