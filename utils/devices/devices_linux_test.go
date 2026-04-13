@@ -1708,3 +1708,122 @@ func TestVerifyMultipathDeviceSerial(t *testing.T) {
 		})
 	}
 }
+
+func TestGetMultipathDeviceBySerial(t *testing.T) {
+	const hexSerial = "3600a098038314461522451712f316969"
+
+	tests := map[string]struct {
+		setupFs        func() afero.Fs
+		hexSerial      string
+		expectedDevice string
+		expectError    bool
+		expectNotFound bool
+	}{
+		"ErrorWhenSysBlockUnreadable": {
+			setupFs: func() afero.Fs {
+				// Empty fs — /sys/block/ does not exist.
+				return afero.NewMemMapFs()
+			},
+			hexSerial:   hexSerial,
+			expectError: true,
+		},
+		"NotFoundWhenNoDmDevicesExist": {
+			setupFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// Only non-dm block devices present.
+				fs.MkdirAll("/sys/block/sda", 0o755)
+				fs.MkdirAll("/sys/block/sdb", 0o755)
+				return fs
+			},
+			hexSerial:      hexSerial,
+			expectNotFound: true,
+		},
+		"NotFoundWhenNoDmDeviceHasMatchingUUID": {
+			setupFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				afero.WriteFile(fs, "/sys/block/dm-0/dm/uuid", []byte("mpath-0000000000000000000000000000000000"), 0o644)
+				return fs
+			},
+			hexSerial:      hexSerial,
+			expectNotFound: true,
+		},
+		"ReturnsDeviceWhenUUIDContainsSerial": {
+			setupFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				afero.WriteFile(fs, "/sys/block/dm-0/dm/uuid",
+					[]byte("mpath-"+hexSerial), 0o644)
+				return fs
+			},
+			hexSerial:      hexSerial,
+			expectedDevice: "dm-0",
+		},
+		"SkipsNonDmBlockDevices": {
+			setupFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// sda has the serial in its name (shouldn't be examined).
+				fs.MkdirAll("/sys/block/sda", 0o755)
+				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid",
+					[]byte("mpath-"+hexSerial), 0o644)
+				return fs
+			},
+			hexSerial:      hexSerial,
+			expectedDevice: "dm-1",
+		},
+		"SkipsDmDeviceWithMissingUUIDFile": {
+			setupFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// dm-0 has no uuid file; dm-1 has a matching uuid.
+				fs.MkdirAll("/sys/block/dm-0", 0o755)
+				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid",
+					[]byte("mpath-"+hexSerial), 0o644)
+				return fs
+			},
+			hexSerial:      hexSerial,
+			expectedDevice: "dm-1",
+		},
+		"SkipsPartitionDevicesEvenWhenUUIDContainsSerial": {
+			setupFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// Partition entry — uuid contains "part", must be skipped.
+				afero.WriteFile(fs, "/sys/block/dm-0/dm/uuid",
+					[]byte("part1-mpath-"+hexSerial), 0o644)
+				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid",
+					[]byte("mpath-"+hexSerial), 0o644)
+				return fs
+			},
+			hexSerial:      hexSerial,
+			expectedDevice: "dm-1",
+		},
+		"ReturnsFirstMatchingDeviceWhenMultipleDmDevicesExist": {
+			setupFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// dm-0 does not match; dm-1 matches.
+				afero.WriteFile(fs, "/sys/block/dm-0/dm/uuid", []byte("mpath-wrongDevice"), 0o644)
+				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid",
+					[]byte("mpath-"+hexSerial), 0o644)
+				return fs
+			},
+			hexSerial:      hexSerial,
+			expectedDevice: "dm-1",
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			client := NewDetailed(nil, tc.setupFs(), nil)
+			got, err := client.GetMultipathDeviceBySerial(context.Background(), tc.hexSerial)
+
+			switch {
+			case tc.expectError && !tc.expectNotFound:
+				assert.Error(t, err)
+				assert.False(t, errors.IsNotFoundError(err))
+			case tc.expectNotFound:
+				assert.Error(t, err)
+				assert.True(t, errors.IsNotFoundError(err))
+			default:
+				assert.NoError(t, err)
+				assert.Equal(t, tc.expectedDevice, got)
+			}
+		})
+	}
+}

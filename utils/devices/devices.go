@@ -667,12 +667,23 @@ func (c *Client) GetMultipathDeviceBySerial(ctx context.Context, hexSerial strin
 			continue
 		}
 
-		if strings.Contains(uuid, hexSerial) {
-			Logc(ctx).WithFields(LogFields{
-				"UUID":            hexSerial,
-				"multipathDevice": dmDeviceName,
-			}).Debug("Found multipath device by UUID.")
-			return dmDeviceName, nil
+		// Find the matching UUID while filtering out child partitions (e.g. part1-mpath-3600a098038314461522451712f316969)
+		trimmedUUID := strings.TrimSpace(uuid)
+		if strings.Contains(trimmedUUID, hexSerial) {
+			if strings.HasPrefix(trimmedUUID, "mpath-") {
+				Logc(ctx).WithFields(LogFields{
+					"serial":          hexSerial,
+					"UUID":            trimmedUUID,
+					"multipathDevice": dmDeviceName,
+				}).Debug("Found multipath device by UUID.")
+				return dmDeviceName, nil
+			} else {
+				Logc(ctx).WithFields(LogFields{
+					"serial":          hexSerial,
+					"UUID":            trimmedUUID,
+					"multipathDevice": dmDeviceName,
+				}).Debug("DM Device contains LUN serial, but is not a top-level multipath device.")
+			}
 		}
 	}
 
