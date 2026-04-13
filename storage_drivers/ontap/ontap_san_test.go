@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -359,6 +359,7 @@ func TestOntapSANVolumeCreate(t *testing.T) {
 		SecurityStyle:     "mixed",
 		Encryption:        "false",
 		TieringPolicy:     "none",
+		FormatOptions:     "-b 4096",
 		SkipRecoveryQueue: "true",
 		QosPolicy:         "fake-qos-policy",
 		AdaptiveQosPolicy: "",
@@ -384,6 +385,7 @@ func TestOntapSANVolumeCreate(t *testing.T) {
 	assert.Equal(t, "", volConfig.AdaptiveQosPolicy)
 	assert.Equal(t, "true", volConfig.LUKSEncryption)
 	assert.Equal(t, "xfs", volConfig.FileSystem)
+	assert.Equal(t, "-b 4096", volConfig.FormatOptions)
 }
 
 // TestOntapSanVolumeCreate_InvalidSkipRecoveryQueue tests volume creation with invalid recovery queue configuration
@@ -680,6 +682,7 @@ func TestOntapSanVolumePublishManaged(t *testing.T) {
 
 	volConfig := getVolumeConfig()
 	volConfig.InternalName = "lunName"
+	volConfig.FormatOptions = "-b 4096"
 
 	publishInfo := &models.VolumePublishInfo{
 		HostName:         "bar",
@@ -697,8 +700,6 @@ func TestOntapSanVolumePublishManaged(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{AccessType: VolTypeRW}, nil)
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
-	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/lunName/lun0")
-	mockAPI.EXPECT().LunGetAttribute(ctx, "/vol/lunName/lun0", "formatOptions")
 	mockAPI.EXPECT().LunGetByName(ctx, "/vol/lunName/lun0").Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, gomock.Any(), gomock.Any()).Times(1)
 	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
@@ -727,6 +728,7 @@ func TestOntapSanVolumePublishUnmanaged(t *testing.T) {
 
 	volConfig := getVolumeConfig()
 	volConfig.InternalName = "lunName"
+	volConfig.FormatOptions = "-b 4096"
 
 	publishInfo := &models.VolumePublishInfo{
 		HostName:    "bar",
@@ -744,8 +746,6 @@ func TestOntapSanVolumePublishUnmanaged(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{AccessType: VolTypeRW}, nil)
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
-	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/lunName/lun0")
-	mockAPI.EXPECT().LunGetAttribute(ctx, "/vol/lunName/lun0", "formatOptions")
 	mockAPI.EXPECT().LunGetByName(ctx, "/vol/lunName/lun0").Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, gomock.Any(), gomock.Any()).Times(1)
 	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
@@ -774,6 +774,7 @@ func TestOntapSanVolumePublishSLMError(t *testing.T) {
 
 	volConfig := getVolumeConfig()
 	volConfig.InternalName = "lunName"
+	volConfig.FormatOptions = "-b 4096"
 
 	publishInfo := &models.VolumePublishInfo{
 		HostName:         "bar",
@@ -791,8 +792,6 @@ func TestOntapSanVolumePublishSLMError(t *testing.T) {
 	mockAPI.EXPECT().VolumeInfo(ctx, gomock.Any()).Times(1).Return(&api.Volume{AccessType: VolTypeRW}, nil)
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
-	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/lunName/lun0")
-	mockAPI.EXPECT().LunGetAttribute(ctx, "/vol/lunName/lun0", "formatOptions")
 	mockAPI.EXPECT().LunGetByName(ctx, "/vol/lunName/lun0").Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, gomock.Any(), gomock.Any()).Times(1)
 	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
@@ -3771,6 +3770,7 @@ func TestOntapSanVolumePublishisFlexvolRW(t *testing.T) {
 
 	volConfig := getVolumeConfig()
 	volConfig.InternalName = "lunName"
+	volConfig.FormatOptions = "-b 4096"
 
 	publishInfo := &models.VolumePublishInfo{
 		HostName:         "bar",
@@ -3836,8 +3836,6 @@ func TestOntapSanVolumePublishisFlexvolRW(t *testing.T) {
 	mockAPI.EXPECT().IgroupCreate(ctx, gomock.Any(), "iscsi", "linux").Return(nil)
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
-	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/lunName/lun0")
-	mockAPI.EXPECT().LunGetAttribute(ctx, "/vol/lunName/lun0", "formatOptions")
 	mockAPI.EXPECT().LunGetByName(ctx, "/vol/lunName/lun0").Return(dummyLun, nil)
 
 	err := driver.Publish(ctx, &volConfig, publishInfo)

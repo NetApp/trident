@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -748,6 +748,7 @@ func TestCreateASA(t *testing.T) {
 				assert.Equal(t, storagePool.InternalAttributes()[QosPolicy], volConfig.QosPolicy)
 				assert.Equal(t, storagePool.InternalAttributes()[LUKSEncryption], volConfig.LUKSEncryption)
 				assert.Equal(t, storagePool.InternalAttributes()[FileSystemType], volConfig.FileSystem)
+				assert.Equal(t, storagePool.InternalAttributes()[FormatOptions], volConfig.FormatOptions)
 				assert.Equal(t, "true", volConfig.SkipRecoveryQueue, "SkipRecoveryQueue does not match")
 			},
 		},
@@ -1496,6 +1497,8 @@ func TestPublishASA(t *testing.T) {
 	initializeFunction := func() {
 		volConfig = getASAVolumeConfig()
 		volConfig.InternalName = "testVol"
+		// Set on Create; PublishLUN uses volConfig.FormatOptions and skips LunGetAttribute when non-empty.
+		volConfig.FormatOptions = "formatOptions"
 
 		driver.Config.IgroupName = "testIgroup"
 
@@ -1528,8 +1531,6 @@ func TestPublishASA(t *testing.T) {
 				mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
 				mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("nodeName", nil).Times(1)
 				mockAPI.EXPECT().IscsiInterfaceGet(ctx, driver.Config.SVM).Return([]string{"iscsiInterfaces"}, nil).Times(1)
-				mockAPI.EXPECT().LunGetFSType(ctx, volConfig.InternalName).Return("ext4", nil).Times(1)
-				mockAPI.EXPECT().LunGetAttribute(ctx, volConfig.InternalName, "formatOptions").Return("formatOptions", nil).Times(1)
 				mockAPI.EXPECT().LunGetByName(ctx, volConfig.InternalName).Return(lun, nil).Times(1)
 				mockAPI.EXPECT().EnsureLunMapped(ctx, driver.Config.IgroupName, volConfig.InternalName).Return(1123, nil).Times(1)
 			},
@@ -1550,8 +1551,6 @@ func TestPublishASA(t *testing.T) {
 				}).Times(1)
 				mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("nodeName", nil).Times(1)
 				mockAPI.EXPECT().IscsiInterfaceGet(ctx, driver.Config.SVM).Return([]string{"iscsiInterfaces"}, nil).Times(1)
-				mockAPI.EXPECT().LunGetFSType(ctx, volConfig.InternalName).Return("lunFSType", nil).Times(1)
-				mockAPI.EXPECT().LunGetAttribute(ctx, volConfig.InternalName, "formatOptions").Return("formatOptions", nil).Times(1)
 				mockAPI.EXPECT().LunGetByName(ctx, volConfig.InternalName).Return(lun, nil).Times(1)
 				mockAPI.EXPECT().EnsureLunMapped(ctx, getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID), volConfig.InternalName).Return(1123, nil).Times(1)
 			},
@@ -1595,8 +1594,6 @@ func TestPublishASA(t *testing.T) {
 				mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
 				mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Return("nodeName", nil).Times(1)
 				mockAPI.EXPECT().IscsiInterfaceGet(ctx, driver.Config.SVM).Return([]string{"iscsiInterfaces"}, nil).Times(1)
-				mockAPI.EXPECT().LunGetFSType(ctx, volConfig.InternalName).Return("lunFSType", nil).Times(1)
-				mockAPI.EXPECT().LunGetAttribute(ctx, volConfig.InternalName, "formatOptions").Return("formatOptions", nil).Times(1)
 				mockAPI.EXPECT().LunGetByName(ctx, volConfig.InternalName).Return(nil, errors.New("error")).Times(1)
 			},
 			verify: func(t *testing.T, err error) {
@@ -1618,8 +1615,6 @@ func TestPublishASA(t *testing.T) {
 				mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
 				mockAPI.EXPECT().FcpNodeGetNameRequest(ctx).Return("10:00:00:00:00:00:00:01", nil).Times(1)
 				mockAPI.EXPECT().FcpInterfaceGet(ctx, driver.Config.SVM).Return([]string{"10:00:00:00:00:00:00:01"}, nil).Times(1)
-				mockAPI.EXPECT().LunGetFSType(ctx, volConfig.InternalName).Return("ext4", nil).Times(1)
-				mockAPI.EXPECT().LunGetAttribute(ctx, volConfig.InternalName, "formatOptions").Return("formatOptions", nil).Times(1)
 				mockAPI.EXPECT().LunGetByName(ctx, volConfig.InternalName).Return(lun, nil).Times(1)
 				mockAPI.EXPECT().EnsureIgroupAdded(ctx, driver.Config.IgroupName, "10:00:00:00:00:00:00:01").Return(nil).AnyTimes()
 				mockAPI.EXPECT().EnsureLunMapped(ctx, driver.Config.IgroupName, volConfig.InternalName).Return(1123, nil).AnyTimes()
@@ -1690,8 +1685,6 @@ func TestPublishASA(t *testing.T) {
 				mockAPI.EXPECT().VolumeInfo(ctx, volConfig.InternalName).Return(flexVol, nil).Times(1)
 				mockAPI.EXPECT().FcpNodeGetNameRequest(ctx).Return("10:00:00:00:00:00:00:01", nil).Times(1)
 				mockAPI.EXPECT().FcpInterfaceGet(ctx, driver.Config.SVM).Return([]string{"10:00:00:00:00:00:00:01"}, nil).Times(1)
-				mockAPI.EXPECT().LunGetFSType(ctx, volConfig.InternalName).Return("ext4", nil).Times(1)
-				mockAPI.EXPECT().LunGetAttribute(ctx, volConfig.InternalName, "formatOptions").Return("formatOptions", nil).Times(1)
 				mockAPI.EXPECT().LunGetByName(ctx, volConfig.InternalName).Return(lun, nil).Times(1)
 				mockAPI.EXPECT().EnsureLunMapped(ctx, driver.Config.IgroupName, volConfig.InternalName).Return(1123, nil).AnyTimes()
 			},

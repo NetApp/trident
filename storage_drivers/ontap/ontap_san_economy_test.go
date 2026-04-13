@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package ontap
 
@@ -616,6 +616,7 @@ func TestOntapSanEconomyVolumeCreate(t *testing.T) {
 		SecurityStyle:     "mixed",
 		Encryption:        "false",
 		TieringPolicy:     "none",
+		FormatOptions:     "-b 4096",
 		QosPolicy:         "fake-qos-policy",
 		AdaptiveQosPolicy: "",
 		LUKSEncryption:    "false",
@@ -655,6 +656,7 @@ func TestOntapSanEconomyVolumeCreate(t *testing.T) {
 	assert.Equal(t, "", volConfig.AdaptiveQosPolicy)
 	assert.Equal(t, "false", volConfig.LUKSEncryption)
 	assert.Equal(t, "xfs", volConfig.FileSystem)
+	assert.Equal(t, "-b 4096", volConfig.FormatOptions)
 
 	// The flexvol pool is randomized, so we can only check the prefix and suffix of the internalID
 	assert.True(t, strings.HasPrefix(volConfig.InternalID, "/svm/SVM1/flexvol/"))
@@ -2529,6 +2531,7 @@ func TestOntapSanEconomyVolumePublish(t *testing.T) {
 		Size:             "1g",
 		Encryption:       "false",
 		FileSystem:       "xfs",
+		FormatOptions:    "-b 4096",
 		ImportNotManaged: true,
 	}
 	publishInfo := &models.VolumePublishInfo{
@@ -2548,8 +2551,6 @@ func TestOntapSanEconomyVolumePublish(t *testing.T) {
 	mockAPI.EXPECT().IgroupCreate(ctx, gomock.Any(), "iscsi", "linux").Return(nil)
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
-	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/volumeName/lunName")
-	mockAPI.EXPECT().LunGetAttribute(ctx, "/vol/volumeName/lunName", "formatOptions")
 	mockAPI.EXPECT().LunGetByName(ctx, "/vol/volumeName/lunName").Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, gomock.Any(), gomock.Any()).Times(1)
 	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
@@ -2578,6 +2579,7 @@ func TestOntapSanEconomyVolumePublish_InternalID(t *testing.T) {
 		Size:             "1g",
 		Encryption:       "false",
 		FileSystem:       "xfs",
+		FormatOptions:    "-b 4096",
 		ImportNotManaged: true,
 	}
 	publishInfo := &models.VolumePublishInfo{
@@ -2597,8 +2599,6 @@ func TestOntapSanEconomyVolumePublish_InternalID(t *testing.T) {
 	mockAPI.EXPECT().IgroupCreate(ctx, gomock.Any(), "iscsi", "linux").Return(nil)
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
-	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/volumeName/lunName")
-	mockAPI.EXPECT().LunGetAttribute(ctx, "/vol/volumeName/lunName", "formatOptions")
 	mockAPI.EXPECT().LunGetByName(ctx, "/vol/volumeName/lunName").Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, gomock.Any(), gomock.Any()).Times(1)
 	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
@@ -2618,10 +2618,11 @@ func TestOntapSanEconomyVolumePublishSLMError(t *testing.T) {
 	d.Config.SANType = sa.ISCSI
 
 	volConfig := &storage.VolumeConfig{
-		InternalName: "lunName",
-		Size:         "1g",
-		Encryption:   "false",
-		FileSystem:   "xfs",
+		InternalName:  "lunName",
+		Size:          "1g",
+		Encryption:    "false",
+		FileSystem:    "xfs",
+		FormatOptions: "-b 4096",
 	}
 	publishInfo := &models.VolumePublishInfo{
 		HostName:         "bar",
@@ -2640,8 +2641,6 @@ func TestOntapSanEconomyVolumePublishSLMError(t *testing.T) {
 		gomock.Any()).Times(1).Return(api.Luns{api.Lun{Size: "1g", Name: "lunName", VolumeName: "volumeName"}}, nil)
 	mockAPI.EXPECT().IscsiNodeGetNameRequest(ctx).Times(1).Return("node1", nil)
 	mockAPI.EXPECT().IscsiInterfaceGet(ctx, gomock.Any()).Return([]string{"iscsi_if"}, nil).Times(1)
-	mockAPI.EXPECT().LunGetFSType(ctx, "/vol/volumeName/lunName")
-	mockAPI.EXPECT().LunGetAttribute(ctx, "/vol/volumeName/lunName", "formatOptions")
 	mockAPI.EXPECT().LunGetByName(ctx, "/vol/volumeName/lunName").Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, gomock.Any(), gomock.Any()).Times(1)
 	mockAPI.EXPECT().EnsureLunMapped(ctx, gomock.Any(), gomock.Any()).Times(1).Return(1, nil)
