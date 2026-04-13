@@ -1,3 +1,5 @@
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
+
 package concurrent_cache
 
 import (
@@ -121,6 +123,25 @@ func ListReadOnlyCloneVolumesForSources(sourceVolumeNames ...string) Subquery {
 			}
 			_, match := sourceSet[v.Config.CloneSourceVolume]
 			return match
+		}),
+	}
+}
+
+// ListCloneVolumesBySnapshot returns all clone volumes created from a snapshot.
+// A clone volume snapshot source can be the snapshot name or internal snapshot name.
+// Both snapshot name and internal snapshot name must be provided.
+// If either is empty, no clone volumes will be returned.
+func ListCloneVolumesBySnapshot(snapshotName, internalSnapshotName string) Subquery {
+	return Subquery{
+		res: volume,
+		op:  list,
+		setResults: listVolumesSetResults(func(v *storage.Volume) bool {
+			if snapshotName == "" || internalSnapshotName == "" {
+				return false
+			}
+
+			return v.Config.CloneSourceSnapshot == snapshotName ||
+				v.Config.CloneSourceSnapshotInternal == internalSnapshotName
 		}),
 	}
 }

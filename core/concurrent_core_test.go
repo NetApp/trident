@@ -20573,3 +20573,441 @@ func TestConcurrent_UpsertStorageClassAutogrowPolicyInternal_SubordinateVolumes(
 		})
 	}
 }
+
+func TestDeleteCloneSnapshotsConcurrentCore(t *testing.T) {
+	backendUUID := "backend-uuid-1"
+	snapName := "snap1"
+	snapInternalName := "snap1-internal"
+	cloneVolName := "cloneVol"
+	cloneVolInternalName := "cloneVol-internal"
+
+	newCloneVolume := func(opts ...func(*storage.VolumeConfig)) *storage.Volume {
+		cfg := &storage.VolumeConfig{
+			Name:                        cloneVolName,
+			InternalName:                cloneVolInternalName,
+			CloneSourceVolume:           "parentVol",
+			CloneSourceSnapshot:         snapName,
+			CloneSourceSnapshotInternal: snapInternalName,
+		}
+		for _, opt := range opts {
+			opt(cfg)
+		}
+		return &storage.Volume{
+			Config:      cfg,
+			BackendUUID: backendUUID,
+		}
+	}
+
+	setupMockBackend := func(t *testing.T) (*gomock.Controller, *mockstorage.MockBackend) {
+		t.Helper()
+		mockCtrl := gomock.NewController(t)
+		mockBackend := getMockBackend(mockCtrl, "testBackend", backendUUID)
+		return mockCtrl, mockBackend
+	}
+
+	t.Run("EmptyBackendUUID", func(t *testing.T) {
+		db.Initialize()
+		o := getConcurrentOrchestrator()
+		o.deleteCloneSnapshots(testCtx, "", snapName, snapInternalName)
+	})
+
+	t.Run("EmptySnapshotName", func(t *testing.T) {
+		db.Initialize()
+		o := getConcurrentOrchestrator()
+		o.deleteCloneSnapshots(testCtx, backendUUID, "", snapInternalName)
+	})
+
+	t.Run("EmptyInternalSnapName", func(t *testing.T) {
+		db.Initialize()
+		o := getConcurrentOrchestrator()
+		o.deleteCloneSnapshots(testCtx, backendUUID, snapName, "")
+	})
+
+	t.Run("BackendNotFound", func(t *testing.T) {
+		db.Initialize()
+		o := getConcurrentOrchestrator()
+		addVolumesToCache(t, newCloneVolume())
+
+		o.deleteCloneSnapshots(testCtx, backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("NoCloneVolumes", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl, mockBackend := setupMockBackend(t)
+		defer mockCtrl.Finish()
+
+		o := getConcurrentOrchestrator()
+		addBackendsToCache(t, mockBackend)
+
+		o.deleteCloneSnapshots(testCtx, backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("CleanupSucceeds", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl, mockBackend := setupMockBackend(t)
+		defer mockCtrl.Finish()
+
+		mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+		o := getConcurrentOrchestrator()
+		addBackendsToCache(t, mockBackend)
+		addVolumesToCache(t, newCloneVolume())
+
+		o.deleteCloneSnapshots(testCtx, backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("CleanupFailsGracefully", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl, mockBackend := setupMockBackend(t)
+		defer mockCtrl.Finish()
+
+		mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(
+			errors.New("snapshot busy")).Times(1)
+
+		o := getConcurrentOrchestrator()
+		addBackendsToCache(t, mockBackend)
+		addVolumesToCache(t, newCloneVolume())
+
+		o.deleteCloneSnapshots(testCtx, backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("CleanupNotFoundIgnored", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl, mockBackend := setupMockBackend(t)
+		defer mockCtrl.Finish()
+
+		mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(
+			errors.NotFoundError("not found")).Times(1)
+
+		o := getConcurrentOrchestrator()
+		addBackendsToCache(t, mockBackend)
+		addVolumesToCache(t, newCloneVolume())
+
+		o.deleteCloneSnapshots(testCtx, backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("SplitOnCloneDoesNotAffectCleanup", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl, mockBackend := setupMockBackend(t)
+		defer mockCtrl.Finish()
+
+		mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+		o := getConcurrentOrchestrator()
+		addBackendsToCache(t, mockBackend)
+		addVolumesToCache(t, newCloneVolume(func(c *storage.VolumeConfig) {
+			c.SplitOnClone = "false"
+		}))
+
+		o.deleteCloneSnapshots(testCtx, backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("ReadOnlyCloneSkipped", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl, mockBackend := setupMockBackend(t)
+		defer mockCtrl.Finish()
+
+		roClone := &storage.Volume{
+			Config: &storage.VolumeConfig{
+				Name:                        "roClone",
+				InternalName:                "roClone-internal",
+				CloneSourceSnapshot:         snapName,
+				CloneSourceSnapshotInternal: snapInternalName,
+				ReadOnlyClone:               true,
+			},
+			BackendUUID: backendUUID,
+		}
+
+		o := getConcurrentOrchestrator()
+		addBackendsToCache(t, mockBackend)
+		addVolumesToCache(t, roClone)
+
+		o.deleteCloneSnapshots(testCtx, backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("MultipleCloneVolumes", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl, mockBackend := setupMockBackend(t)
+		defer mockCtrl.Finish()
+
+		cloneVol2 := &storage.Volume{
+			Config: &storage.VolumeConfig{
+				Name:                        "cloneVol2",
+				InternalName:                "cloneVol2-internal",
+				CloneSourceVolume:           "parentVol",
+				CloneSourceSnapshot:         snapName,
+				CloneSourceSnapshotInternal: snapInternalName,
+			},
+			BackendUUID: backendUUID,
+		}
+
+		mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
+
+		o := getConcurrentOrchestrator()
+		addBackendsToCache(t, mockBackend)
+		addVolumesToCache(t, newCloneVolume(), cloneVol2)
+
+		o.deleteCloneSnapshots(testCtx, backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("CloneWithDifferentSnapshotIgnored", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl, mockBackend := setupMockBackend(t)
+		defer mockCtrl.Finish()
+
+		unrelatedClone := &storage.Volume{
+			Config: &storage.VolumeConfig{
+				Name:                        "unrelatedClone",
+				InternalName:                "unrelatedClone-internal",
+				CloneSourceSnapshot:         "other-snap",
+				CloneSourceSnapshotInternal: "other-snap-internal",
+			},
+			BackendUUID: backendUUID,
+		}
+
+		o := getConcurrentOrchestrator()
+		addBackendsToCache(t, mockBackend)
+		addVolumesToCache(t, unrelatedClone)
+
+		o.deleteCloneSnapshots(testCtx, backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("NoCleanupWhenSnapshotImportedSameName", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl, mockBackend := setupMockBackend(t)
+		defer mockCtrl.Finish()
+
+		o := getConcurrentOrchestrator()
+		addBackendsToCache(t, mockBackend)
+		addVolumesToCache(t, newCloneVolume())
+		addSnapshotsToCache(t, &storage.Snapshot{
+			Config: &storage.SnapshotConfig{
+				Name:               snapName,
+				InternalName:       snapInternalName,
+				VolumeName:         cloneVolName,
+				VolumeInternalName: cloneVolInternalName,
+			},
+		})
+
+		o.deleteCloneSnapshots(testCtx, backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("NoCleanupWhenSnapshotImportedDifferentName", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl, mockBackend := setupMockBackend(t)
+		defer mockCtrl.Finish()
+
+		o := getConcurrentOrchestrator()
+		addBackendsToCache(t, mockBackend)
+		addVolumesToCache(t, newCloneVolume())
+		addSnapshotsToCache(t, &storage.Snapshot{
+			Config: &storage.SnapshotConfig{
+				Name:               "imported-snap-content",
+				InternalName:       snapInternalName,
+				VolumeName:         cloneVolName,
+				VolumeInternalName: cloneVolInternalName,
+			},
+		})
+
+		o.deleteCloneSnapshots(testCtx, backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("CleanupWhenCloneSourceSnapshotInternalEmpty", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl, mockBackend := setupMockBackend(t)
+		defer mockCtrl.Finish()
+
+		legacyClone := &storage.Volume{
+			Config: &storage.VolumeConfig{
+				Name:                        "legacyClone",
+				InternalName:                "legacyClone-internal",
+				CloneSourceVolume:           "parentVol",
+				CloneSourceSnapshot:         snapName,
+				CloneSourceSnapshotInternal: "",
+			},
+			BackendUUID: backendUUID,
+		}
+
+		mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+		o := getConcurrentOrchestrator()
+		addBackendsToCache(t, mockBackend)
+		addVolumesToCache(t, legacyClone)
+
+		o.deleteCloneSnapshots(testCtx, backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("NoCleanupWhenLegacyCloneHasTrackedSnapshot", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl, mockBackend := setupMockBackend(t)
+		defer mockCtrl.Finish()
+
+		legacyClone := &storage.Volume{
+			Config: &storage.VolumeConfig{
+				Name:                        "legacyClone",
+				InternalName:                "legacyClone-internal",
+				CloneSourceVolume:           "parentVol",
+				CloneSourceSnapshot:         snapName,
+				CloneSourceSnapshotInternal: "",
+			},
+			BackendUUID: backendUUID,
+		}
+
+		o := getConcurrentOrchestrator()
+		addBackendsToCache(t, mockBackend)
+		addVolumesToCache(t, legacyClone)
+		addSnapshotsToCache(t, &storage.Snapshot{
+			Config: &storage.SnapshotConfig{
+				Name:               "imported-snap",
+				InternalName:       snapInternalName,
+				VolumeName:         "legacyClone",
+				VolumeInternalName: "legacyClone-internal",
+			},
+		})
+
+		o.deleteCloneSnapshots(testCtx, backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("CrossMatchOnSnapshotFieldsIgnored", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl, mockBackend := setupMockBackend(t)
+		defer mockCtrl.Finish()
+
+		crossMatchClone := &storage.Volume{
+			Config: &storage.VolumeConfig{
+				Name:                        "crossMatchClone",
+				InternalName:                "crossMatchClone-internal",
+				CloneSourceVolume:           "parentVol",
+				CloneSourceSnapshot:         snapInternalName,
+				CloneSourceSnapshotInternal: snapName,
+			},
+			BackendUUID: backendUUID,
+		}
+
+		o := getConcurrentOrchestrator()
+		addBackendsToCache(t, mockBackend)
+		addVolumesToCache(t, crossMatchClone)
+
+		o.deleteCloneSnapshots(testCtx, backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("CloneMatchesByInternalNameOnly", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl, mockBackend := setupMockBackend(t)
+		defer mockCtrl.Finish()
+
+		internalMatchClone := &storage.Volume{
+			Config: &storage.VolumeConfig{
+				Name:                        "internalMatchClone",
+				InternalName:                "internalMatchClone-internal",
+				CloneSourceVolume:           "parentVol",
+				CloneSourceSnapshot:         "different-external-name",
+				CloneSourceSnapshotInternal: snapInternalName,
+			},
+			BackendUUID: backendUUID,
+		}
+
+		mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+		o := getConcurrentOrchestrator()
+		addBackendsToCache(t, mockBackend)
+		addVolumesToCache(t, internalMatchClone)
+
+		o.deleteCloneSnapshots(testCtx, backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("SnapshotIndexUsesInternalName", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl, mockBackend := setupMockBackend(t)
+		defer mockCtrl.Finish()
+
+		o := getConcurrentOrchestrator()
+		addBackendsToCache(t, mockBackend)
+		addVolumesToCache(t, newCloneVolume())
+		addSnapshotsToCache(t, &storage.Snapshot{
+			Config: &storage.SnapshotConfig{
+				Name:               "vsc-content-12345",
+				InternalName:       snapInternalName,
+				VolumeName:         cloneVolName,
+				VolumeInternalName: cloneVolInternalName,
+			},
+		})
+
+		o.deleteCloneSnapshots(testCtx, backendUUID, snapName, snapInternalName)
+	})
+
+	// Verify the write lock prevents concurrent snapshot imports on clone volumes.
+	// deleteCloneSnapshots holds a write lock on the clone volume during cleanup.
+	// A concurrent import that needs a write lock on the same volume should be blocked
+	// until cleanup finishes.
+	t.Run("ConcurrentSnapshotImportBlockedByLock", func(t *testing.T) {
+		db.Initialize()
+		mockCtrl, mockBackend := setupMockBackend(t)
+		defer mockCtrl.Finish()
+
+		deleteStarted := make(chan struct{})
+		deleteDone := make(chan struct{})
+		mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ context.Context, _ *storage.SnapshotConfig, _ *storage.VolumeConfig) error {
+				close(deleteStarted)
+				<-deleteDone
+				return nil
+			}).Times(1)
+
+		o := getConcurrentOrchestrator()
+		addBackendsToCache(t, mockBackend)
+		addVolumesToCache(t, newCloneVolume())
+
+		var wg sync.WaitGroup
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			o.deleteCloneSnapshots(testCtx, backendUUID, snapName, snapInternalName)
+		}()
+
+		// Wait for backend.DeleteSnapshot to start (inside the write lock).
+		<-deleteStarted
+
+		// Attempt to import a snapshot on the same clone volume concurrently.
+		// This needs a write lock on cloneVolName which deleteCloneSnapshots holds.
+		importDone := make(chan struct{})
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			snapID := storage.MakeSnapshotID(cloneVolName, "imported-snap")
+			results, unlocker, err := db.Lock(testCtx, db.Query(
+				db.UpsertSnapshot(cloneVolName, snapID),
+			))
+			if err == nil {
+				results[0].Snapshot.Upsert(&storage.Snapshot{
+					Config: &storage.SnapshotConfig{
+						Name:               "imported-snap",
+						InternalName:       snapInternalName,
+						VolumeName:         cloneVolName,
+						VolumeInternalName: cloneVolInternalName,
+					},
+				})
+			}
+			unlocker()
+			close(importDone)
+		}()
+
+		// The import should be blocked while the write lock is held.
+		select {
+		case <-importDone:
+			t.Fatal("Import completed while deleteCloneSnapshots held the write lock; expected it to be blocked")
+		case <-time.After(200 * time.Millisecond):
+		}
+
+		// Release the delete so cleanup finishes and the lock is released.
+		close(deleteDone)
+
+		wg.Wait()
+
+		// The import should have completed after the lock was released.
+		snapID := storage.MakeSnapshotID(cloneVolName, "imported-snap")
+		imported := getSnapshotByIDFromCache(t, snapID)
+		assert.NotNil(t, imported, "Snapshot import should succeed after cleanup lock is released")
+	})
+}

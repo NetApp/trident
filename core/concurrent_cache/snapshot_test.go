@@ -455,6 +455,110 @@ func TestListSnapshotsByName(t *testing.T) {
 	}
 }
 
+func TestListSnapshotsByInternalName(t *testing.T) {
+	tests := []struct {
+		name         string
+		snapshots    map[string]*storage.Snapshot
+		internalName string
+		expected     int
+	}{
+		{
+			name:         "no matching snapshots",
+			snapshots:    map[string]*storage.Snapshot{},
+			internalName: "nonexistent-internal",
+			expected:     0,
+		},
+		{
+			name: "single matching snapshot",
+			snapshots: map[string]*storage.Snapshot{
+				"vol1/snap1": {
+					Config: &storage.SnapshotConfig{
+						Name:         "snap1",
+						InternalName: "internal-snap-target",
+						VolumeName:   "vol1",
+					},
+				},
+				"vol2/snap2": {
+					Config: &storage.SnapshotConfig{
+						Name:         "snap2",
+						InternalName: "internal-snap-other",
+						VolumeName:   "vol2",
+					},
+				},
+			},
+			internalName: "internal-snap-target",
+			expected:     1,
+		},
+		{
+			name: "multiple matching snapshots across volumes",
+			snapshots: map[string]*storage.Snapshot{
+				"vol1/snap1": {
+					Config: &storage.SnapshotConfig{
+						Name:         "snap1",
+						InternalName: "shared-internal-name",
+						VolumeName:   "vol1",
+					},
+				},
+				"vol2/snap2": {
+					Config: &storage.SnapshotConfig{
+						Name:         "snap2",
+						InternalName: "shared-internal-name",
+						VolumeName:   "vol2",
+					},
+				},
+				"vol3/snap3": {
+					Config: &storage.SnapshotConfig{
+						Name:         "snap3",
+						InternalName: "different-internal-name",
+						VolumeName:   "vol3",
+					},
+				},
+			},
+			internalName: "shared-internal-name",
+			expected:     2,
+		},
+		{
+			name: "no match when internal name differs",
+			snapshots: map[string]*storage.Snapshot{
+				"vol1/snap1": {
+					Config: &storage.SnapshotConfig{
+						Name:         "snap1",
+						InternalName: "internal-snap-1",
+						VolumeName:   "vol1",
+					},
+				},
+			},
+			internalName: "internal-snap-2",
+			expected:     0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			snapshots.lock()
+			snapshots.data = make(map[string]SmartCopier)
+			for k, v := range tt.snapshots {
+				snapshots.data[k] = v
+			}
+			snapshots.unlock()
+
+			subquery := ListSnapshotsByInternalName(tt.internalName)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err)
+
+			assert.Len(t, result.Snapshots, tt.expected)
+			for _, snap := range result.Snapshots {
+				assert.Equal(t, tt.internalName, snap.Config.InternalName)
+			}
+
+			snapshots.lock()
+			snapshots.data = make(map[string]SmartCopier)
+			snapshots.unlock()
+		})
+	}
+}
+
 func TestListSnapshotsForVolume(t *testing.T) {
 	tests := []struct {
 		name       string

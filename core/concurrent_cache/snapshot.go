@@ -1,3 +1,5 @@
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
+
 package concurrent_cache
 
 import (
@@ -20,6 +22,16 @@ func ListSnapshotsByName(snapshotName string) Subquery {
 		op:  list,
 		setResults: listSnapshotsSetResults(func(s *storage.Snapshot) bool {
 			return s.Config.Name == snapshotName
+		}),
+	}
+}
+
+func ListSnapshotsByInternalName(internalName string) Subquery {
+	return Subquery{
+		res: snapshot,
+		op:  list,
+		setResults: listSnapshotsSetResults(func(s *storage.Snapshot) bool {
+			return s.Config.InternalName == internalName
 		}),
 	}
 }

@@ -1680,6 +1680,243 @@ func TestListVolumesForPolicyReevaluation(t *testing.T) {
 	}
 }
 
+func TestListCloneVolumesBySnapshot(t *testing.T) {
+	tests := []struct {
+		name                 string
+		volumes              map[string]*storage.Volume
+		snapshotName         string
+		internalSnapshotName string
+		expected             int
+		expectedVol          []string
+	}{
+		{
+			name:                 "no volumes in cache",
+			volumes:              map[string]*storage.Volume{},
+			snapshotName:         "snap1",
+			internalSnapshotName: "internal-snap1",
+			expected:             0,
+		},
+		{
+			name: "both params empty returns nothing",
+			volumes: map[string]*storage.Volume{
+				"clone1": {
+					Config: &storage.VolumeConfig{
+						Name:                "clone1",
+						CloneSourceSnapshot: "snap1",
+					},
+				},
+			},
+			snapshotName:         "",
+			internalSnapshotName: "",
+			expected:             0,
+		},
+		{
+			name: "empty snapshot name returns nothing",
+			volumes: map[string]*storage.Volume{
+				"clone1": {
+					Config: &storage.VolumeConfig{
+						Name:                        "clone1",
+						CloneSourceSnapshot:         "snap1",
+						CloneSourceSnapshotInternal: "internal-snap1",
+					},
+				},
+			},
+			snapshotName:         "",
+			internalSnapshotName: "internal-snap1",
+			expected:             0,
+		},
+		{
+			name: "empty internal snapshot name returns nothing",
+			volumes: map[string]*storage.Volume{
+				"clone1": {
+					Config: &storage.VolumeConfig{
+						Name:                        "clone1",
+						CloneSourceSnapshot:         "snap1",
+						CloneSourceSnapshotInternal: "internal-snap1",
+					},
+				},
+			},
+			snapshotName:         "snap1",
+			internalSnapshotName: "",
+			expected:             0,
+		},
+		{
+			name: "match on CloneSourceSnapshot",
+			volumes: map[string]*storage.Volume{
+				"clone1": {
+					Config: &storage.VolumeConfig{
+						Name:                        "clone1",
+						CloneSourceSnapshot:         "snap1",
+						CloneSourceSnapshotInternal: "different-internal",
+					},
+				},
+				"vol2": {
+					Config: &storage.VolumeConfig{
+						Name:                "vol2",
+						CloneSourceSnapshot: "snap2",
+					},
+				},
+			},
+			snapshotName:         "snap1",
+			internalSnapshotName: "nonexistent-internal",
+			expected:             1,
+			expectedVol:          []string{"clone1"},
+		},
+		{
+			name: "match on CloneSourceSnapshotInternal",
+			volumes: map[string]*storage.Volume{
+				"clone1": {
+					Config: &storage.VolumeConfig{
+						Name:                        "clone1",
+						CloneSourceSnapshot:         "snap1",
+						CloneSourceSnapshotInternal: "internal-snap1",
+					},
+				},
+			},
+			snapshotName:         "nonexistent-snap",
+			internalSnapshotName: "internal-snap1",
+			expected:             1,
+			expectedVol:          []string{"clone1"},
+		},
+		{
+			name: "match on either snapshot name or internal name across volumes",
+			volumes: map[string]*storage.Volume{
+				"clone1": {
+					Config: &storage.VolumeConfig{
+						Name:                        "clone1",
+						CloneSourceSnapshot:         "snap-external",
+						CloneSourceSnapshotInternal: "snap-internal",
+					},
+				},
+				"clone2": {
+					Config: &storage.VolumeConfig{
+						Name:                        "clone2",
+						CloneSourceSnapshot:         "snap-other",
+						CloneSourceSnapshotInternal: "snap-other-internal",
+					},
+				},
+			},
+			snapshotName:         "snap-external",
+			internalSnapshotName: "snap-other-internal",
+			expected:             2,
+			expectedVol:          []string{"clone1", "clone2"},
+		},
+		{
+			name: "no matching volumes",
+			volumes: map[string]*storage.Volume{
+				"clone1": {
+					Config: &storage.VolumeConfig{
+						Name:                        "clone1",
+						CloneSourceSnapshot:         "snap1",
+						CloneSourceSnapshotInternal: "internal-snap1",
+					},
+				},
+			},
+			snapshotName:         "nonexistent-snap",
+			internalSnapshotName: "nonexistent-internal",
+			expected:             0,
+		},
+		{
+			name: "volumes without clone source snapshot are excluded",
+			volumes: map[string]*storage.Volume{
+				"vol1": {
+					Config: &storage.VolumeConfig{
+						Name: "vol1",
+					},
+				},
+				"clone1": {
+					Config: &storage.VolumeConfig{
+						Name:                        "clone1",
+						CloneSourceSnapshot:         "snap1",
+						CloneSourceSnapshotInternal: "internal-snap1",
+					},
+				},
+			},
+			snapshotName:         "snap1",
+			internalSnapshotName: "internal-snap1",
+			expected:             1,
+			expectedVol:          []string{"clone1"},
+		},
+		{
+			name: "both fields match same volume counted once",
+			volumes: map[string]*storage.Volume{
+				"clone1": {
+					Config: &storage.VolumeConfig{
+						Name:                        "clone1",
+						CloneSourceSnapshot:         "snap1",
+						CloneSourceSnapshotInternal: "internal-snap1",
+					},
+				},
+			},
+			snapshotName:         "snap1",
+			internalSnapshotName: "internal-snap1",
+			expected:             1,
+			expectedVol:          []string{"clone1"},
+		},
+		{
+			name: "cross-match on CloneSourceSnapshotInternal equals snapshotName not returned",
+			volumes: map[string]*storage.Volume{
+				"clone1": {
+					Config: &storage.VolumeConfig{
+						Name:                        "clone1",
+						CloneSourceSnapshot:         "other-snap",
+						CloneSourceSnapshotInternal: "snap1",
+					},
+				},
+			},
+			snapshotName:         "snap1",
+			internalSnapshotName: "internal-snap1",
+			expected:             0,
+		},
+		{
+			name: "cross-match on CloneSourceSnapshot equals internalSnapshotName not returned",
+			volumes: map[string]*storage.Volume{
+				"clone1": {
+					Config: &storage.VolumeConfig{
+						Name:                        "clone1",
+						CloneSourceSnapshot:         "internal-snap1",
+						CloneSourceSnapshotInternal: "other-internal",
+					},
+				},
+			},
+			snapshotName:         "snap1",
+			internalSnapshotName: "internal-snap1",
+			expected:             0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			for k, v := range tt.volumes {
+				volumes.data[k] = v
+			}
+			volumes.unlock()
+
+			subquery := ListCloneVolumesBySnapshot(tt.snapshotName, tt.internalSnapshotName)
+			result := &Result{}
+			err := subquery.setResults(&subquery, result)
+			assert.NoError(t, err)
+
+			assert.Len(t, result.Volumes, tt.expected)
+			if len(tt.expectedVol) > 0 {
+				volNames := make([]string, len(result.Volumes))
+				for i, v := range result.Volumes {
+					volNames[i] = v.Config.Name
+				}
+				for _, expected := range tt.expectedVol {
+					assert.Contains(t, volNames, expected)
+				}
+			}
+
+			volumes.lock()
+			volumes.data = make(map[string]SmartCopier)
+			volumes.unlock()
+		})
+	}
+}
+
 func TestListReadOnlyCloneVolumesForSources(t *testing.T) {
 	tests := []struct {
 		name        string

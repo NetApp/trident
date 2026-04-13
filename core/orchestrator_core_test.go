@@ -9546,10 +9546,22 @@ func TestHandleFailedSnapshot(t *testing.T) {
 func TestDeleteMountedSnapshot(t *testing.T) {
 	volName := "vol"
 	snapName := "snap"
-	snapshot := &storage.Snapshot{Config: &storage.SnapshotConfig{Name: snapName, VolumeName: volName}}
+	snapInternalName := "snap-internal"
+	snapshot := &storage.Snapshot{
+		Config: &storage.SnapshotConfig{
+			Name:         snapName,
+			InternalName: snapInternalName,
+			VolumeName:   volName,
+		},
+	}
 	snapID := storage.MakeSnapshotID(volName, snapName)
 	volume := &storage.Volume{
-		Config: &storage.VolumeConfig{Name: volName, ReadOnlyClone: true, CloneSourceSnapshot: snapName},
+		Config: &storage.VolumeConfig{
+			Name:                        volName,
+			ReadOnlyClone:               true,
+			CloneSourceSnapshot:         snapName,
+			CloneSourceSnapshotInternal: snapInternalName,
+		},
 	}
 
 	o := getOrchestrator(t, false)
@@ -9559,6 +9571,348 @@ func TestDeleteMountedSnapshot(t *testing.T) {
 	err := o.DeleteSnapshot(ctx(), volName, snapName)
 	assert.Error(t, err, "An error is expected")
 	assert.Equal(t, err.Error(), "unable to delete snapshot snap as it is a source for read-only clone vol")
+}
+
+func TestDeleteCloneSnapshots(t *testing.T) {
+	backendUUID := "backend-uuid-1"
+	snapName := "snap1"
+	snapInternalName := "snap1-internal"
+	cloneVolName := "cloneVol"
+	cloneVolInternalName := "cloneVol-internal"
+
+	newCloneVolume := func(splitOnClone string) *storage.Volume {
+		return &storage.Volume{
+			Config: &storage.VolumeConfig{
+				Name:                        cloneVolName,
+				InternalName:                cloneVolInternalName,
+				CloneSourceVolume:           "parentVol",
+				CloneSourceSnapshot:         snapName,
+				CloneSourceSnapshotInternal: snapInternalName,
+				SplitOnClone:                splitOnClone,
+			},
+			BackendUUID: backendUUID,
+		}
+	}
+
+	setupMocks := func(t *testing.T) (*gomock.Controller, *mockstorage.MockBackend) {
+		mockCtrl := gomock.NewController(t)
+		mockBackend := mockstorage.NewMockBackend(mockCtrl)
+		mockBackend.EXPECT().BackendUUID().Return(backendUUID).AnyTimes()
+		mockBackend.EXPECT().Name().Return("testBackend").AnyTimes()
+		mockBackend.EXPECT().GetDriverName().Return("ontap-san").AnyTimes()
+		mockBackend.EXPECT().State().Return(storage.Online).AnyTimes()
+		return mockCtrl, mockBackend
+	}
+
+	t.Run("EmptyBackendUUID", func(t *testing.T) {
+		o := getOrchestrator(t, false)
+		o.deleteCloneSnapshots(ctx(), "", snapName, snapInternalName)
+	})
+
+	t.Run("EmptySnapshotName", func(t *testing.T) {
+		o := getOrchestrator(t, false)
+		o.deleteCloneSnapshots(ctx(), backendUUID, "", snapInternalName)
+	})
+
+	t.Run("EmptyInternalSnapName", func(t *testing.T) {
+		o := getOrchestrator(t, false)
+		o.deleteCloneSnapshots(ctx(), backendUUID, snapName, "")
+	})
+
+	t.Run("BackendNotFound", func(t *testing.T) {
+		o := getOrchestrator(t, false)
+		o.volumes[cloneVolName] = newCloneVolume("true")
+
+		o.deleteCloneSnapshots(ctx(), backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("NoCloneVolumes", func(t *testing.T) {
+		mockCtrl, mockBackend := setupMocks(t)
+		defer mockCtrl.Finish()
+
+		o := getOrchestrator(t, false)
+		o.backends[backendUUID] = mockBackend
+
+		o.deleteCloneSnapshots(ctx(), backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("CleanupSucceeds", func(t *testing.T) {
+		mockCtrl, mockBackend := setupMocks(t)
+		defer mockCtrl.Finish()
+
+		mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+		o := getOrchestrator(t, false)
+		o.backends[backendUUID] = mockBackend
+		o.volumes[cloneVolName] = newCloneVolume("true")
+
+		o.deleteCloneSnapshots(ctx(), backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("CleanupFailsGracefully", func(t *testing.T) {
+		mockCtrl, mockBackend := setupMocks(t)
+		defer mockCtrl.Finish()
+
+		mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(
+			errors.New("snapshot busy")).Times(1)
+
+		o := getOrchestrator(t, false)
+		o.backends[backendUUID] = mockBackend
+		o.volumes[cloneVolName] = newCloneVolume("true")
+
+		o.deleteCloneSnapshots(ctx(), backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("CleanupNotFoundIgnored", func(t *testing.T) {
+		mockCtrl, mockBackend := setupMocks(t)
+		defer mockCtrl.Finish()
+
+		mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(
+			errors.NotFoundError("not found")).Times(1)
+
+		o := getOrchestrator(t, false)
+		o.backends[backendUUID] = mockBackend
+		o.volumes[cloneVolName] = newCloneVolume("true")
+
+		o.deleteCloneSnapshots(ctx(), backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("SplitOnCloneDoesNotAffectCleanup", func(t *testing.T) {
+		mockCtrl, mockBackend := setupMocks(t)
+		defer mockCtrl.Finish()
+
+		mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+		o := getOrchestrator(t, false)
+		o.backends[backendUUID] = mockBackend
+		o.volumes[cloneVolName] = newCloneVolume("false")
+
+		o.deleteCloneSnapshots(ctx(), backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("ReadOnlyCloneSkipped", func(t *testing.T) {
+		mockCtrl, mockBackend := setupMocks(t)
+		defer mockCtrl.Finish()
+
+		roClone := &storage.Volume{
+			Config: &storage.VolumeConfig{
+				Name:                        "roClone",
+				InternalName:                "roClone-internal",
+				CloneSourceSnapshot:         snapName,
+				CloneSourceSnapshotInternal: snapInternalName,
+				ReadOnlyClone:               true,
+			},
+			BackendUUID: backendUUID,
+		}
+
+		o := getOrchestrator(t, false)
+		o.backends[backendUUID] = mockBackend
+		o.volumes["roClone"] = roClone
+
+		o.deleteCloneSnapshots(ctx(), backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("MultipleCloneVolumes", func(t *testing.T) {
+		mockCtrl, mockBackend := setupMocks(t)
+		defer mockCtrl.Finish()
+
+		cloneVol2 := &storage.Volume{
+			Config: &storage.VolumeConfig{
+				Name:                        "cloneVol2",
+				InternalName:                "cloneVol2-internal",
+				CloneSourceVolume:           "parentVol",
+				CloneSourceSnapshot:         snapName,
+				CloneSourceSnapshotInternal: snapInternalName,
+			},
+			BackendUUID: backendUUID,
+		}
+
+		mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
+
+		o := getOrchestrator(t, false)
+		o.backends[backendUUID] = mockBackend
+		o.volumes[cloneVolName] = newCloneVolume("true")
+		o.volumes["cloneVol2"] = cloneVol2
+
+		o.deleteCloneSnapshots(ctx(), backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("CloneWithDifferentSnapshotIgnored", func(t *testing.T) {
+		mockCtrl, mockBackend := setupMocks(t)
+		defer mockCtrl.Finish()
+
+		unrelatedClone := &storage.Volume{
+			Config: &storage.VolumeConfig{
+				Name:                        "unrelatedClone",
+				InternalName:                "unrelatedClone-internal",
+				CloneSourceSnapshot:         "other-snap",
+				CloneSourceSnapshotInternal: "other-snap-internal",
+			},
+			BackendUUID: backendUUID,
+		}
+
+		o := getOrchestrator(t, false)
+		o.backends[backendUUID] = mockBackend
+		o.volumes["unrelatedClone"] = unrelatedClone
+
+		o.deleteCloneSnapshots(ctx(), backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("NoCleanupWhenSnapshotImportedSameName", func(t *testing.T) {
+		mockCtrl, mockBackend := setupMocks(t)
+		defer mockCtrl.Finish()
+
+		// Clone's snapshot is already tracked by Trident with the same internal name;
+		// cleanup should be skipped.
+		cloneSnapID := storage.MakeSnapshotID(cloneVolName, snapName)
+
+		o := getOrchestrator(t, false)
+		o.backends[backendUUID] = mockBackend
+		o.volumes[cloneVolName] = newCloneVolume("true")
+		o.snapshots[cloneSnapID] = &storage.Snapshot{
+			Config: &storage.SnapshotConfig{
+				Name:               snapName,
+				InternalName:       snapInternalName,
+				VolumeName:         cloneVolName,
+				VolumeInternalName: cloneVolInternalName,
+			},
+		}
+
+		o.deleteCloneSnapshots(ctx(), backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("NoCleanupWhenSnapshotImportedDifferentName", func(t *testing.T) {
+		mockCtrl, mockBackend := setupMocks(t)
+		defer mockCtrl.Finish()
+
+		// Imported via VolumeSnapshotContent with a different external name but the
+		// same internal name. The snapshot index lookup uses internal name, so this
+		// should still be detected and skipped.
+		importedSnapName := "imported-snap-content"
+		importedSnapID := storage.MakeSnapshotID(cloneVolName, importedSnapName)
+
+		o := getOrchestrator(t, false)
+		o.backends[backendUUID] = mockBackend
+		o.volumes[cloneVolName] = newCloneVolume("true")
+		o.snapshots[importedSnapID] = &storage.Snapshot{
+			Config: &storage.SnapshotConfig{
+				Name:               importedSnapName,
+				InternalName:       snapInternalName,
+				VolumeName:         cloneVolName,
+				VolumeInternalName: cloneVolInternalName,
+			},
+		}
+
+		o.deleteCloneSnapshots(ctx(), backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("CleanupWhenCloneSourceSnapshotInternalEmpty", func(t *testing.T) {
+		mockCtrl, mockBackend := setupMocks(t)
+		defer mockCtrl.Finish()
+
+		// Older clone volume with no CloneSourceSnapshotInternal set;
+		// matches by external CloneSourceSnapshot name.
+		legacyClone := &storage.Volume{
+			Config: &storage.VolumeConfig{
+				Name:                        "legacyClone",
+				InternalName:                "legacyClone-internal",
+				CloneSourceVolume:           "parentVol",
+				CloneSourceSnapshot:         snapName,
+				CloneSourceSnapshotInternal: "",
+			},
+			BackendUUID: backendUUID,
+		}
+
+		mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+		o := getOrchestrator(t, false)
+		o.backends[backendUUID] = mockBackend
+		o.volumes["legacyClone"] = legacyClone
+
+		o.deleteCloneSnapshots(ctx(), backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("NoCleanupWhenLegacyCloneHasTrackedSnapshot", func(t *testing.T) {
+		mockCtrl, mockBackend := setupMocks(t)
+		defer mockCtrl.Finish()
+
+		// Legacy clone with empty CloneSourceSnapshotInternal, but Trident already
+		// tracks an imported snapshot on the clone with the source's internal name.
+		legacyClone := &storage.Volume{
+			Config: &storage.VolumeConfig{
+				Name:                        "legacyClone",
+				InternalName:                "legacyClone-internal",
+				CloneSourceVolume:           "parentVol",
+				CloneSourceSnapshot:         snapName,
+				CloneSourceSnapshotInternal: "",
+			},
+			BackendUUID: backendUUID,
+		}
+		importedSnapID := storage.MakeSnapshotID("legacyClone", "imported-snap")
+
+		o := getOrchestrator(t, false)
+		o.backends[backendUUID] = mockBackend
+		o.volumes["legacyClone"] = legacyClone
+		o.snapshots[importedSnapID] = &storage.Snapshot{
+			Config: &storage.SnapshotConfig{
+				Name:               "imported-snap",
+				InternalName:       snapInternalName,
+				VolumeName:         "legacyClone",
+				VolumeInternalName: "legacyClone-internal",
+			},
+		}
+
+		o.deleteCloneSnapshots(ctx(), backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("CloneMatchesByInternalNameOnly", func(t *testing.T) {
+		mockCtrl, mockBackend := setupMocks(t)
+		defer mockCtrl.Finish()
+
+		// Clone whose external CloneSourceSnapshot differs but internal name matches.
+		internalMatchClone := &storage.Volume{
+			Config: &storage.VolumeConfig{
+				Name:                        "internalMatchClone",
+				InternalName:                "internalMatchClone-internal",
+				CloneSourceVolume:           "parentVol",
+				CloneSourceSnapshot:         "different-external-name",
+				CloneSourceSnapshotInternal: snapInternalName,
+			},
+			BackendUUID: backendUUID,
+		}
+
+		mockBackend.EXPECT().DeleteSnapshot(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+		o := getOrchestrator(t, false)
+		o.backends[backendUUID] = mockBackend
+		o.volumes["internalMatchClone"] = internalMatchClone
+
+		o.deleteCloneSnapshots(ctx(), backendUUID, snapName, snapInternalName)
+	})
+
+	t.Run("SnapshotIndexUsesInternalName", func(t *testing.T) {
+		mockCtrl, mockBackend := setupMocks(t)
+		defer mockCtrl.Finish()
+
+		// An imported snapshot on the clone with a different external name but
+		// the same internal name. The snapshot index key is
+		// "cloneVol/snap1-internal", so this clone should be skipped.
+		importedID := storage.MakeSnapshotID(cloneVolName, "vsc-content-12345")
+
+		o := getOrchestrator(t, false)
+		o.backends[backendUUID] = mockBackend
+		o.volumes[cloneVolName] = newCloneVolume("true")
+		o.snapshots[importedID] = &storage.Snapshot{
+			Config: &storage.SnapshotConfig{
+				Name:               "vsc-content-12345",
+				InternalName:       snapInternalName,
+				VolumeName:         cloneVolName,
+				VolumeInternalName: cloneVolInternalName,
+			},
+		}
+
+		o.deleteCloneSnapshots(ctx(), backendUUID, snapName, snapInternalName)
+	})
 }
 
 func TestListLogWorkflows(t *testing.T) {

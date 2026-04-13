@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -5230,7 +5230,7 @@ func (o *ConcurrentTridentOrchestrator) deleteSnapshot(ctx context.Context, volu
 	}
 
 	// Note that this block will only be entered in the case that the snapshot
-	// is missing it's volume and the volume is nil. If the volume does not
+	// is missing its volume and the volume is nil. If the volume does not
 	// exist, delete the snapshot and clean up, then return.
 	if volume == nil {
 		if err = o.storeClient.DeleteSnapshot(ctx, snapshot); err != nil {
@@ -5318,6 +5318,161 @@ func (o *ConcurrentTridentOrchestrator) deleteSnapshotCleanup(
 	return combinedErr
 }
 
+// deleteCloneSnapshots performs an opportune, best-effort cleanup of any extant
+// snapshots with the same name that may exist in clones but are unknown to Trident.
+// This intentionally does not return anything and should never cause a workflow to fail.
+func (o *ConcurrentTridentOrchestrator) deleteCloneSnapshots(
+	ctx context.Context, backendUUID, snapshotName, internalSnapName string,
+) {
+	if backendUUID == "" {
+		return
+	}
+	if snapshotName == "" {
+		return
+	}
+	if internalSnapName == "" {
+		return
+	}
+
+	fields := LogFields{
+		"backendUUID":      backendUUID,
+		"snapshotName":     snapshotName,
+		"internalSnapName": internalSnapName,
+	}
+
+	results, unlocker, err := db.Lock(ctx, db.Query(
+		// Specify the snapshot name and the internal snapshot name.
+		// Clones may have been cloned from an imported snapshot.
+		db.ListCloneVolumesBySnapshot(snapshotName, internalSnapName),
+		// Use the internal snapshot name.
+		// Pinned snapshots in the clone may have been imported.
+		db.ListSnapshotsByInternalName(internalSnapName),
+		db.InconsistentReadBackend(backendUUID),
+	))
+	unlocker()
+	if err != nil {
+		return
+	}
+
+	backend := results[0].Backend.Read
+	volumes := results[0].Volumes
+	snapshots := results[0].Snapshots
+
+	if backend == nil {
+		Logc(ctx).WithFields(fields).Debug("No backend found for extant snapshot deletion.")
+		return
+	}
+	if len(volumes) == 0 {
+		Logc(ctx).WithFields(fields).Debug("No clone volumes from snapshot found for extant snapshot deletion.")
+		return
+	}
+
+	// Build an index of snapshots by volume and snapshot internal name.
+	// It is better to avoid relying on the internal snapshot name in the core, as that field
+	// is owned by the backends. However, this is the only means of uniquely identifying a
+	// snapshot across clones and snapshot imports so we must rely on it for this case.
+	// The snapshot index is the: "<volumeName>/<snapshotInternalName>".
+	snapshotIndexes := make(map[string]struct{})
+	for _, snap := range snapshots {
+		snapshotIndexes[snap.Config.VolumeName+"/"+snap.Config.InternalName] = struct{}{}
+	}
+
+	// Look through each volume and filter out the clones that are not candidates for additional cleanup.
+	// Clones should only be considered for additional cleanup IFF the following are true:
+	//  1. The clone was created using the specified snapshot as a source.
+	//  2. Trident does not already track a snapshot with the same internal name on the clone.
+	// If both are true, the clone volume may have a duplicate of the snapshot that can be removed.
+	cloneVolumeConfigs := make([]*storage.VolumeConfig, 0)
+	for _, vol := range volumes {
+		cloneSourceSnapshot := vol.Config.CloneSourceSnapshot
+
+		// Ignore snapshots being used as sources for read only clones.
+		if vol.Config.ReadOnlyClone && cloneSourceSnapshot == snapshotName {
+			continue
+		}
+
+		// Use internalSnapName (the source snapshot's internal name) rather than cloneSourceInternal,
+		// because that's the name we'll use for the backend delete, and cloneSourceInternal may be
+		// empty on legacy clone volumes.
+		if _, ok := snapshotIndexes[vol.Config.Name+"/"+internalSnapName]; ok {
+			continue
+		}
+
+		cloneVolumeConfigs = append(cloneVolumeConfigs, vol.Config.ConstructClone())
+	}
+
+	if len(cloneVolumeConfigs) == 0 {
+		Logc(ctx).WithFields(fields).Debug("No clone volumes found for extant snapshot deletion.")
+		return
+	}
+
+	// Attempt best-effort removal of duplicate snapshots that may exist on cloned volumes.
+	// The source snapshot was deleted successfully.
+	Logc(ctx).WithField("sourceSnapshotName", snapshotName).Debug(
+		"Determined cloned volumes may contain duplicates of the source snapshot. " +
+			"Performing a best-effort cleanup.",
+	)
+
+	// Lock all the resources to avoid users modifying the backend,
+	// volume or importing a duplicate snapshot while we delete it.
+	lockQuery := make([][]db.Subquery, 0, len(cloneVolumeConfigs)+1)
+	lockQuery = append(lockQuery, db.Query(db.UpsertBackend(backendUUID, "", "")))
+	for _, volConfig := range cloneVolumeConfigs {
+		lockQuery = append(lockQuery, db.Query(db.UpsertVolume(volConfig.Name, backendUUID)))
+	}
+	results, unlocker, err = db.Lock(ctx, lockQuery...)
+	defer unlocker()
+	if err != nil {
+		return
+	}
+
+	backend = results[0].Backend.Read
+	if backend == nil {
+		Logc(ctx).WithFields(fields).Debug("No backend found for clone snapshot deletion.")
+		return
+	}
+
+	// Customers may have golden images that have been used many times to create clones (virtual machines).
+	// Do this removal in parallel.
+	var wg sync.WaitGroup
+	for _, volConfig := range cloneVolumeConfigs {
+		wg.Go(func() {
+			cloneVolumeConfig := volConfig
+			cloneVolumeName := volConfig.Name
+			internalVolName := volConfig.InternalName
+
+			fields := LogFields{
+				"cloneVolumeName":    cloneVolumeName,
+				"extantSnapshotName": snapshotName,
+			}
+
+			// Build a snapshot config for the extant snapshot.
+			extantSnapshotConfig := &storage.SnapshotConfig{
+				// Name here will be wrong for imported snapshots.
+				// Storage backends rely on InternalName, so this is OK.
+				Name:               snapshotName,
+				InternalName:       internalSnapName,
+				VolumeName:         cloneVolumeName,
+				VolumeInternalName: internalVolName,
+			}
+
+			// This is a best-effort cleanup to remove extant snapshots.
+			// If we fail to delete the extant snapshot we can log a warning and move on.
+			if deleteErr := backend.DeleteSnapshot(ctx, extantSnapshotConfig, cloneVolumeConfig); deleteErr != nil {
+				if !errors.IsNotFoundError(deleteErr) {
+					Logc(ctx).WithError(deleteErr).WithFields(fields).
+						Warn("Could not delete duplicate snapshot in clone; snapshot may persist until manual removal.")
+				}
+				return
+			}
+
+			Logc(ctx).WithFields(fields).Debug("Deleted duplicate snapshot in clone.")
+		})
+	}
+
+	wg.Wait()
+}
+
 func (o *ConcurrentTridentOrchestrator) DeleteSnapshot(
 	ctx context.Context, volumeName, snapshotName string,
 ) (err error) {
@@ -5390,6 +5545,15 @@ func (o *ConcurrentTridentOrchestrator) DeleteSnapshot(
 			return o.deleteVolume(ctx, volume.Config.Name)
 		}
 	}
+
+	var backendUUID, internalSnapName string
+	if volume != nil {
+		backendUUID = volume.BackendUUID
+	}
+	if snapshot.Config != nil {
+		internalSnapName = snapshot.Config.InternalName
+	}
+	o.deleteCloneSnapshots(ctx, backendUUID, snapshotName, internalSnapName)
 
 	return nil
 }

@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package core
 
@@ -5425,6 +5425,118 @@ func (o *TridentOrchestrator) deleteSnapshot(ctx context.Context, snapshotConfig
 	return nil
 }
 
+// deleteCloneSnapshots performs an opportune, best-effort cleanup of any extant
+// snapshots with the same name that may exist in clones but are unknown to Trident.
+// This intentionally does not return anything and should never cause a workflow to fail.
+func (o *TridentOrchestrator) deleteCloneSnapshots(
+	ctx context.Context, backendUUID, snapshotName, internalSnapName string,
+) {
+	if backendUUID == "" {
+		return
+	}
+	if snapshotName == "" {
+		return
+	}
+	if internalSnapName == "" {
+		return
+	}
+
+	fields := LogFields{
+		"backendUUID":      backendUUID,
+		"snapshotName":     snapshotName,
+		"internalSnapName": internalSnapName,
+	}
+
+	// Build an index of snapshots by volume and snapshot internal name.
+	// It is better to avoid relying on the internal snapshot name in the core, as that field
+	// is owned by the backends. However, this is the only means of uniquely identifying a
+	// snapshot across clones and snapshot imports so we must rely on it for this case.
+	// The snapshot index is the: "<volumeName>/<snapshotInternalName>".
+	snapshotIndexes := make(map[string]struct{})
+	for _, snap := range o.snapshots {
+		snapshotIndexes[snap.Config.VolumeName+"/"+snap.Config.InternalName] = struct{}{}
+	}
+
+	// Look through each volume and filter out the clones that are not candidates for additional cleanup.
+	// Clones should only be considered for additional cleanup IFF the following are true:
+	//  1. The clone was created using the specified snapshot as a source.
+	//  2. Trident does not already track a snapshot with the same internal name on the clone.
+	// If both are true, the clone volume may have a duplicate of the snapshot that can be removed.
+	cloneVolumeConfigs := make([]*storage.VolumeConfig, 0)
+	for _, vol := range o.volumes {
+		cloneSourceSnapshot := vol.Config.CloneSourceSnapshot
+		cloneSourceSnapshotInternal := vol.Config.CloneSourceSnapshotInternal
+
+		// Ignore snapshots being used as sources for read only clones.
+		if vol.Config.ReadOnlyClone && cloneSourceSnapshot == snapshotName {
+			continue
+		}
+
+		// If neither the clone source snapshot name nor internal name matches the snapshot to delete, ignore it.
+		if !(cloneSourceSnapshot == snapshotName || cloneSourceSnapshotInternal == internalSnapName) {
+			continue
+		}
+
+		// If Trident already tracks a snapshot with the same internal name on the clone, skip it.
+		// Use internalSnapName (the source snapshot's internal name) rather than cloneSourceInternal,
+		// because that's the name we'll use for the backend delete, and cloneSourceInternal may be
+		// empty on legacy clone volumes.
+		if _, ok := snapshotIndexes[vol.Config.Name+"/"+internalSnapName]; ok {
+			continue
+		}
+
+		cloneVolumeConfigs = append(cloneVolumeConfigs, vol.Config.ConstructClone())
+	}
+
+	backend, ok := o.backends[backendUUID]
+	if !ok {
+		Logc(ctx).WithFields(fields).Debug("No backend found for clone snapshot deletion.")
+		return
+	}
+
+	if len(cloneVolumeConfigs) == 0 {
+		Logc(ctx).WithFields(fields).Debug("No clone volumes found for extant snapshot deletion.")
+		return
+	}
+
+	// Attempt best-effort removal of duplicate snapshots that may exist on cloned volumes.
+	// The source snapshot was deleted successfully.
+	Logc(ctx).WithField("sourceSnapshotName", snapshotName).Debug(
+		"Determined cloned volumes may contain duplicates of the source snapshot. " +
+			"Performing a best-effort cleanup.",
+	)
+	for _, volConfig := range cloneVolumeConfigs {
+		fields := LogFields{
+			"backendName":     backend.Name(),
+			"backendUUID":     backend.BackendUUID(),
+			"snapshotName":    snapshotName,
+			"cloneVolumeName": volConfig.Name,
+		}
+
+		// Build a snapshot config for the extant snapshot.
+		extantSnapshotConfig := &storage.SnapshotConfig{
+			// Name here will be wrong for imported snapshots.
+			// Storage backends rely on InternalName, so this is OK.
+			Name:               snapshotName,
+			InternalName:       internalSnapName,
+			VolumeName:         volConfig.Name,
+			VolumeInternalName: volConfig.InternalName,
+		}
+
+		// This is a best effort to work around some backend idiosyncrasies.
+		// If we fail to delete the extant snapshot we can log a warning and move on.
+		if deleteErr := backend.DeleteSnapshot(ctx, extantSnapshotConfig, volConfig); deleteErr != nil {
+			if !errors.IsNotFoundError(deleteErr) {
+				Logc(ctx).WithError(deleteErr).WithFields(fields).
+					Warn("Could not delete duplicate snapshot in clone; snapshot may persist until manual removal.")
+			}
+			continue
+		}
+
+		Logc(ctx).WithFields(fields).Debug("Deleted duplicate snapshot in clone.")
+	}
+}
+
 // DeleteSnapshot deletes a snapshot of the given volume
 func (o *TridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, snapshotName string) (err error) {
 	ctx = GenerateRequestContextForLayer(ctx, LogLayerCore)
@@ -5482,8 +5594,8 @@ func (o *TridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, sn
 		return nil
 	}
 
-	// Check if the snapshot is a source for a read-only volume. If so, return error.
 	for _, vol := range o.volumes {
+		// If the specified snapshot has a read only clone, fail immediately.
 		if vol.Config.ReadOnlyClone && vol.Config.CloneSourceSnapshot == snapshotName {
 			return errors.ConflictError("unable to delete snapshot %s as it is a source "+
 				"for read-only clone %s", snapshotName, vol.Config.Name)
@@ -5550,7 +5662,16 @@ func (o *TridentOrchestrator) DeleteSnapshot(ctx context.Context, volumeName, sn
 	}()
 
 	// Delete the snapshot
-	return o.deleteSnapshot(ctx, snapshot.Config)
+	internalSnapName := snapshot.Config.InternalName
+	if err := o.deleteSnapshot(ctx, snapshot.Config); err != nil {
+		return err
+	}
+
+	// Attempt best-effort removal of duplicate snapshots that may exist on cloned volumes.
+	// The source snapshot was deleted successfully.
+	o.deleteCloneSnapshots(ctx, backend.BackendUUID(), snapshotName, internalSnapName)
+
+	return nil
 }
 
 func (o *TridentOrchestrator) ListSnapshots(ctx context.Context) (snapshots []*storage.SnapshotExternal, err error) {
