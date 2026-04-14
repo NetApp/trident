@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package errors
 
@@ -1351,6 +1351,48 @@ func IsMustRetryError(err error) bool {
 		return false
 	}
 	var errPtr *mustRetryError
+	return errors.As(err, &errPtr)
+}
+
+// ///////////////////////////////////////////////////////////////////////////
+// serverBackPressure (error type for many HTTP codes that signal API server backpressure)
+// ///////////////////////////////////////////////////////////////////////////
+
+type serverBackPressureError struct {
+	inner   error
+	message string
+}
+
+func (e *serverBackPressureError) Error() string {
+	if e.inner == nil || e.inner.Error() == "" {
+		return e.message
+	} else if e.message == "" {
+		return e.inner.Error()
+	}
+	return fmt.Sprintf("%v; %v", e.message, e.inner.Error())
+}
+
+func (e *serverBackPressureError) Unwrap() error { return e.inner }
+
+func ServerBackPressureError(message string, a ...any) error {
+	if len(a) == 0 {
+		return &serverBackPressureError{message: message}
+	}
+	return &serverBackPressureError{message: fmt.Sprintf(message, a...)}
+}
+
+func WrapWithServerBackPressureError(err error, message string, a ...any) error {
+	return &serverBackPressureError{
+		inner:   err,
+		message: fmt.Sprintf(message, a...),
+	}
+}
+
+func IsServerBackPressureError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errPtr *serverBackPressureError
 	return errors.As(err, &errPtr)
 }
 

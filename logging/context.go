@@ -1,27 +1,25 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package logging
 
 import (
 	"context"
-	"time"
 )
 
 // Context Keys are top-level keys for context.Context values used in Trident logging and context-based
 // telemetry. These keys should be unique and not primitive types to avoid collisions.
 // When adding new ContextKey constants, ensure they are added to the contextKeys list.
 const (
-	ContextKeyWorkflow        ContextKey = "workflow"
-	ContextKeyLogLayer        ContextKey = "logLayer"
-	ContextKeyRequestID       ContextKey = "requestID"
-	ContextKeyRequestSource   ContextKey = "requestSource"
-	ContextKeyRequestClient   ContextKey = "requestClient"
-	ContextKeyRequestTarget   ContextKey = "requestTarget"
-	ContextKeyRequestAddress  ContextKey = "requestAddress"
-	ContextKeyRequestRoute    ContextKey = "requestRoute"
-	ContextKeyRequestMethod   ContextKey = "requestMethod"
-	ContextKeyRequestDuration ContextKey = "requestDuration"
-	CRDControllerEvent        ContextKey = "crdControllerEvent"
+	ContextKeyWorkflow       ContextKey = "workflow"
+	ContextKeyLogLayer       ContextKey = "logLayer"
+	ContextKeyRequestID      ContextKey = "requestID"
+	ContextKeyRequestSource  ContextKey = "requestSource"
+	ContextKeyRequestClient  ContextKey = "requestClient"
+	ContextKeyRequestTarget  ContextKey = "requestTarget"
+	ContextKeyRequestAddress ContextKey = "requestAddress"
+	ContextKeyRequestRoute   ContextKey = "requestRoute"
+	ContextKeyRequestMethod  ContextKey = "requestMethod"
+	CRDControllerEvent       ContextKey = "crdControllerEvent"
 )
 
 // contextKeys is a list of all ContextKey constants used in mergeContextWithPriority.
@@ -36,7 +34,6 @@ var contextKeys = []ContextKey{
 	ContextKeyRequestAddress,
 	ContextKeyRequestRoute,
 	ContextKeyRequestMethod,
-	ContextKeyRequestDuration,
 	CRDControllerEvent,
 }
 
@@ -59,6 +56,7 @@ const (
 // based on the client system or component.
 const (
 	ContextRequestClientUnknown                ContextRequestClient = "unknown"
+	ContextRequestClientCSIAny                 ContextRequestClient = "csi-any"
 	ContextRequestClientCSIProvisioner         ContextRequestClient = "csi-provisioner"
 	ContextRequestClientCSIResizer             ContextRequestClient = "csi-resizer"
 	ContextRequestClientCSISnapshotter         ContextRequestClient = "csi-snapshotter"
@@ -100,9 +98,6 @@ type (
 	ContextRequestRoute = string
 	// ContextRequestMethod models the method of a request in the context.
 	ContextRequestMethod = string
-	// ContextRequestDuration models the duration of a request in the context.
-	// This should only be used when the duration is already known.
-	ContextRequestDuration = time.Duration
 )
 
 func setContextWorkflow(ctx context.Context, workflow Workflow) context.Context {
@@ -186,16 +181,6 @@ func setContextMethod(ctx context.Context, method ContextRequestMethod) context.
 	return context.WithValue(ctx, ContextKeyRequestMethod, method)
 }
 
-func setContextDuration(ctx context.Context, duration ContextRequestDuration) context.Context {
-	if existing, ok := ctx.Value(ContextKeyRequestDuration).(ContextRequestDuration); ok && existing == duration {
-		return ctx
-	}
-	if duration < 0 {
-		return ctx
-	}
-	return context.WithValue(ctx, ContextKeyRequestDuration, duration)
-}
-
 func getContextWorkflow(ctx context.Context) Workflow {
 	workflow, ok := ctx.Value(ContextKeyWorkflow).(Workflow)
 	if !ok {
@@ -261,16 +246,6 @@ func getContextMethod(ctx context.Context) ContextRequestMethod {
 		return ContextRequestMethodUnknown
 	}
 	return method
-}
-
-// getContextDuration retrieves the ContextRequestDuration from the context.
-// If the duration is not set or is negative, it returns -1.
-func getContextDuration(ctx context.Context) ContextRequestDuration {
-	duration, ok := ctx.Value(ContextKeyRequestDuration).(ContextRequestDuration)
-	if !ok || duration < 0 {
-		return ContextRequestDuration(-1)
-	}
-	return duration
 }
 
 // mergeContextWithPriority merges two contexts where `parent` preserves cancellation/deadline

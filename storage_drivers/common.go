@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package storagedrivers
 
@@ -464,36 +464,55 @@ type LimitedRetryTransport struct {
 	base http.RoundTripper
 	sem  *semaphore.Weighted
 	b    *backoff.ExponentialBackOff
+	t    ContextRequestTarget
 }
 
 // NewLimitedRetryTransport wraps a base transport to limit the number of concurrent requests and add retries
 // on io.EOF errors.
-func NewLimitedRetryTransport(sem *semaphore.Weighted, base http.RoundTripper) *LimitedRetryTransport {
+func NewLimitedRetryTransport(
+	sem *semaphore.Weighted, base http.RoundTripper, target ContextRequestTarget,
+) *LimitedRetryTransport {
 	b := backoff.NewExponentialBackOff()
 	b.InitialInterval = initialInterval
 	b.Multiplier = multiplier
 	b.MaxInterval = maxInterval
 	b.RandomizationFactor = randomFactor
+
+	if target == "" {
+		target = ContextRequestTargetUnknown
+	}
 	return &LimitedRetryTransport{
 		base: base,
 		sem:  sem,
 		b:    b,
+		t:    target,
 	}
 }
 
 func (lrt *LimitedRetryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	var resp *http.Response
 	f := func() error {
+		waitStart := time.Now()
 		if err := lrt.sem.Acquire(req.Context(), 1); err != nil {
 			return backoff.Permanent(err)
-		} else {
-			defer lrt.sem.Release(1)
 		}
+		defer lrt.sem.Release(1)
+
+		// Capture how long the request was waiting for a semaphore lock.
+		CaptureOutgoingAPIRequestTokenDuration(req.Context(), lrt.t, req.URL.Host, req.Method, time.Since(waitStart))
+
 		r, err := lrt.base.RoundTrip(req)
 		resp = r
-		if err != nil && !errors.Is(err, io.EOF) {
+		if err == nil {
+			return nil
+		}
+
+		if !errors.Is(err, io.EOF) {
 			return backoff.Permanent(err)
 		}
+
+		// If we hit an EOF, we can retry and increment the total.
+		CaptureOutgoingAPIRequestRetryTotal(req.Context(), lrt.t, req.URL.Host, req.Method)
 		return err
 	}
 	lrt.b.Reset()

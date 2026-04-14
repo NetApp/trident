@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package logging
 
@@ -113,33 +113,42 @@ func (cb ContextBuilder) WithMethod(m ContextRequestMethod) ContextBuilder {
 	}
 }
 
-// WithDuration sets the ContextRequestDuration in the context.
-// This is typically used in situations where the latency of a request is already known.
-// This forces any telemeters capturing duration, to use this value instead of measuring it themselves.
-func (cb ContextBuilder) WithDuration(t ContextRequestDuration) ContextBuilder {
+// WithIncomingAPIMetrics sets the client and method label values in the context and registers an
+// IncomingAPITelemeter that will record in-flight count and request duration when the returned
+// Recorder is called. It should be used for all incoming API entry points.
+// Any previously assigned client or method will be overridden in the context by calling this method.
+func (cb ContextBuilder) WithIncomingAPIMetrics(client ContextRequestClient, method ContextRequestMethod) ContextBuilder {
 	return func() (context.Context, []Telemeter) {
 		ctx, telemeters := cb()
-		return setContextDuration(ctx, t), telemeters
+		ctx = setContextClient(ctx, client)
+		ctx = setContextMethod(ctx, method)
+		return ctx, append(telemeters, IncomingAPITelemeter(client, method))
 	}
 }
 
-// WithTelemetry adds the specified telemeters to those already in the context
-// This can be called multiple times to add more telemeters, or once with a batch.
-func (cb ContextBuilder) WithTelemetry(telemeters ...Telemeter) ContextBuilder {
+// WithOutgoingAPIMetrics sets the target, address, and method values in the context and adds the outgoing API telemeters to gather
+// metrics for the request.
+// This should be used for all outgoing API requests.
+// This can be safely used with 1-many other Telemeters.
+// Any previously assigned target, address, or method will be overridden in the context by calling this method.
+func (cb ContextBuilder) WithOutgoingAPIMetrics(target ContextRequestTarget, address ContextRequestAddress, method ContextRequestMethod) ContextBuilder {
 	return func() (context.Context, []Telemeter) {
-		ctx, existingTelemeters := cb()
-		return ctx, append(existingTelemeters, telemeters...)
+		ctx, telemeters := cb()
+		ctx = setContextTarget(ctx, target)
+		ctx = setContextAddress(ctx, address)
+		ctx = setContextMethod(ctx, method)
+		return ctx, append(telemeters, OutgoingAPITelemeter(target, address, method))
 	}
 }
 
-// BuildContext builds and returns the context without telemetry.
+// BuildContext builds and returns the context without any Recorder.
 func (cb ContextBuilder) BuildContext() context.Context {
 	ctx, _ := cb()
 	return ctx
 }
 
 // BuildTelemetry builds and returns a set a Recorder to capture all supplied Telemetry metrics.
-// If this is called without first supplying telemeters via WithTelemetry, the Recorder will be a no-op.
+// If no Telemeter is set, the returned Recorder will be a NOP.
 func (cb ContextBuilder) BuildTelemetry() Recorder {
 	ctx, telemeters := cb()
 	_, recorder := makeContextBasedTelemetry(ctx, telemeters...)
@@ -147,7 +156,7 @@ func (cb ContextBuilder) BuildTelemetry() Recorder {
 }
 
 // BuildContextAndTelemetry builds the context along with a Recorder to capture all supplied Telemetry metrics.
-// If this is called without first supplying telemeters via WithTelemetry, the Recorder will be a no-op.
+// If no Telemeter is set, the returned Recorder will be a NOP.
 func (cb ContextBuilder) BuildContextAndTelemetry() (context.Context, Recorder) {
 	ctx, telemeters := cb()
 	return makeContextBasedTelemetry(ctx, telemeters...)

@@ -91,11 +91,6 @@ func CreateK8SClients(masterURL, kubeConfigPath, overrideNamespace string) (*Cli
 		return NewMetricsTransport(
 			rt,
 			WithMetricsTransportTarget(ContextRequestTargetKubernetes),
-			WithMetricsTransportTelemeters(
-				// client-go/metrics is configured to track certain metrics, so we avoid duplicating those here.
-				OutgoingAPIRequestDurationTelemeter,
-				OutgoingAPIRequestInFlightTelemeter,
-			),
 		)
 	})
 

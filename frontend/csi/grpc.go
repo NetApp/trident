@@ -1,4 +1,4 @@
-// Copyright 2025 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 // Copyright 2017 The Kubernetes Authors.
 
@@ -104,7 +104,10 @@ func (s *nonBlockingGRPCServer) serve(
 	}
 
 	opts := []grpc.ServerOption{
-		grpc.UnaryInterceptor(logGRPC),
+		// The first interceptor is always the outermost.
+		// When CSI calls come in, the outermost interceptor is hit first.
+		// The log gRPC and timeout interceptors should always be the first in the chain.
+		grpc.ChainUnaryInterceptor(logGRPCInterceptor, timeoutInterceptor, incomingRequestMetricsInterceptor),
 	}
 	server := grpc.NewServer(opts...)
 	s.server = server
