@@ -83,8 +83,8 @@ func incomingRequestMetricsInterceptor(
 	return handler(ctx, req)
 }
 
-// timeoutInterceptor applies a default request timeout for Node and AllInOne deployments.
-// All RPCs served by these roles receive the timeout; Controller deployments are unaffected.
+// timeoutInterceptor applies a default request timeout for Node deployments.
+// All RPCs served by the Node role receive the timeout; Controller and AIO deployments are unaffected.
 // It must be the second from outermost interceptor in the chain so that downstream interceptors
 // capture the timeout-aware context.
 func timeoutInterceptor(

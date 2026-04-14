@@ -7,6 +7,7 @@ import (
 	stdErrors "errors"
 	"io"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,12 +34,21 @@ func makeResponse(statusCode int) *http.Response {
 	return &http.Response{StatusCode: statusCode}
 }
 
-// ---- ONTAP EOF handling ----
+// roundTrip is a shorthand that constructs a MetricsTransport from a stub and calls RoundTrip.
+// It uses a unique host derived from the test name so Prometheus counters never collide across tests,
+// while preserving the real target value for code-path correctness.
+func roundTrip(
+	t *testing.T, target ContextRequestTarget, base *stubRoundTripper, method string,
+) (*http.Response, error, string, string, string) {
+	t.Helper()
+	host := strings.ReplaceAll(t.Name(), "/", "_")
+	mt := &MetricsTransport{base: base, target: target}
+	req := makeRequest(context.Background(), method, "https://"+host+"/path")
+	resp, err := mt.RoundTrip(req)
+	return resp, err, string(target), host, method
+}
 
 func TestMetricsTransport_ONTAP_EOF_WrapsAsServerBackPressure(t *testing.T) {
-	// ONTAP signals overload with a bare EOF instead of an HTTP status code.
-	// MetricsTransport must wrap it as a ServerBackPressureError so the telemeter
-	// increments the backpressure counter correctly.
 	base := &stubRoundTripper{resp: nil, err: io.EOF}
 	mt := NewMetricsTransport(base, WithMetricsTransportTarget(ContextRequestTargetONTAP))
 	req := makeRequest(context.Background(), http.MethodGet, "https://ontap.local/cluster")
@@ -51,8 +61,6 @@ func TestMetricsTransport_ONTAP_EOF_WrapsAsServerBackPressure(t *testing.T) {
 }
 
 func TestMetricsTransport_ONTAP_EOF_PreservesEOFInChain(t *testing.T) {
-	// LimitedRetryTransport uses errors.Is(err, io.EOF) to decide whether to retry.
-	// The wrapping must preserve io.EOF in the chain so retries still trigger.
 	base := &stubRoundTripper{resp: nil, err: io.EOF}
 	mt := NewMetricsTransport(base, WithMetricsTransportTarget(ContextRequestTargetONTAP))
 	req := makeRequest(context.Background(), http.MethodGet, "https://ontap.local/cluster")
@@ -64,7 +72,6 @@ func TestMetricsTransport_ONTAP_EOF_PreservesEOFInChain(t *testing.T) {
 }
 
 func TestMetricsTransport_NonONTAP_EOF_PassesThrough(t *testing.T) {
-	// Only ONTAP gets EOF-to-backpressure wrapping; other targets pass EOF through unchanged.
 	base := &stubRoundTripper{resp: nil, err: io.EOF}
 	mt := NewMetricsTransport(base, WithMetricsTransportTarget(ContextRequestTargetKubernetes))
 	req := makeRequest(context.Background(), http.MethodGet, "https://k8s.local/api/v1/pods")
@@ -166,10 +173,7 @@ func TestMetricsTransport_HTTP200_Success(t *testing.T) {
 	assert.NoError(t, gotErr, "HTTP 200 should return no error")
 }
 
-// ---- Non-backpressure transport errors pass through unchanged ----
-
 func TestMetricsTransport_TransportError_PassesThrough(t *testing.T) {
-	// Connection-level errors that are not EOF pass through as-is for all targets.
 	someErr := stdErrors.New("connection refused")
 	base := &stubRoundTripper{resp: nil, err: someErr}
 	mt := NewMetricsTransport(base, WithMetricsTransportTarget(ContextRequestTargetUnknown))
@@ -180,4 +184,196 @@ func TestMetricsTransport_TransportError_PassesThrough(t *testing.T) {
 	assert.True(t, stdErrors.Is(gotErr, someErr),
 		"non-EOF transport errors should be returned unchanged")
 	assert.False(t, utilsErrors.IsServerBackPressureError(gotErr))
+}
+
+func TestMetricsTransport_ONTAP_HTTP429_RecordsBackpressureMetric(t *testing.T) {
+	_, _, target, host, method := roundTrip(
+		t, ContextRequestTargetONTAP,
+		&stubRoundTripper{resp: makeResponse(http.StatusTooManyRequests)},
+		http.MethodGet,
+	)
+
+	assert.Equal(t, float64(1),
+		readCounter(outgoingAPIRequestBackpressureTotal, target, host, method),
+		"backpressure counter must increment for ONTAP 429",
+	)
+}
+
+func TestMetricsTransport_Kubernetes_HTTP429_RecordsBackpressureMetric(t *testing.T) {
+	resp, err, target, host, method := roundTrip(
+		t, ContextRequestTargetKubernetes,
+		&stubRoundTripper{resp: makeResponse(http.StatusTooManyRequests)},
+		http.MethodGet,
+	)
+
+	assert.NoError(t, err, "caller must get nil error per RoundTripper semantics")
+	assert.Equal(t, http.StatusTooManyRequests, resp.StatusCode)
+	assert.Equal(t, float64(1),
+		readCounter(outgoingAPIRequestBackpressureTotal, target, host, method),
+		"backpressure counter must increment for Kubernetes 429 even though caller gets nil error",
+	)
+}
+
+func TestMetricsTransport_Kubernetes_HTTP503_RecordsBackpressureMetric(t *testing.T) {
+	resp, err, target, host, method := roundTrip(
+		t, ContextRequestTargetKubernetes,
+		&stubRoundTripper{resp: makeResponse(http.StatusServiceUnavailable)},
+		http.MethodGet,
+	)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusServiceUnavailable, resp.StatusCode)
+	assert.Equal(t, float64(1),
+		readCounter(outgoingAPIRequestBackpressureTotal, target, host, method),
+		"backpressure counter must increment for Kubernetes 503",
+	)
+}
+
+func TestMetricsTransport_Kubernetes_HTTP504_RecordsBackpressureMetric(t *testing.T) {
+	resp, err, target, host, method := roundTrip(
+		t, ContextRequestTargetKubernetes,
+		&stubRoundTripper{resp: makeResponse(http.StatusGatewayTimeout)},
+		http.MethodGet,
+	)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusGatewayTimeout, resp.StatusCode)
+	assert.Equal(t, float64(1),
+		readCounter(outgoingAPIRequestBackpressureTotal, target, host, method),
+		"backpressure counter must increment for Kubernetes 504",
+	)
+}
+
+func TestMetricsTransport_Unknown_HTTP429_ReturnsNilError(t *testing.T) {
+	resp, err, target, host, method := roundTrip(
+		t, ContextRequestTargetUnknown,
+		&stubRoundTripper{resp: makeResponse(http.StatusTooManyRequests)},
+		http.MethodGet,
+	)
+
+	assert.NoError(t, err,
+		"unknown targets must return nil error to preserve RoundTripper semantics")
+	assert.NotNil(t, resp)
+	assert.Equal(t, http.StatusTooManyRequests, resp.StatusCode)
+	assert.Equal(t, float64(1),
+		readCounter(outgoingAPIRequestBackpressureTotal, target, host, method),
+		"backpressure counter must still increment for unknown target 429",
+	)
+}
+
+func TestMetricsTransport_ONTAP_EOF_RecordsBackpressureMetric(t *testing.T) {
+	_, _, target, host, method := roundTrip(
+		t, ContextRequestTargetONTAP,
+		&stubRoundTripper{err: io.EOF},
+		http.MethodGet,
+	)
+
+	assert.Equal(t, float64(1),
+		readCounter(outgoingAPIRequestBackpressureTotal, target, host, method),
+		"backpressure counter must increment for ONTAP EOF",
+	)
+}
+
+func TestMetricsTransport_HTTP200_NoBackpressureMetric(t *testing.T) {
+	_, _, target, host, method := roundTrip(
+		t, ContextRequestTargetONTAP,
+		&stubRoundTripper{resp: makeResponse(http.StatusOK)},
+		http.MethodGet,
+	)
+
+	assert.Equal(t, float64(0),
+		readCounter(outgoingAPIRequestBackpressureTotal, target, host, method),
+		"backpressure counter must not increment for 200 OK",
+	)
+}
+
+func TestMetricsTransport_HTTP200_RecordsDurationAsSuccess(t *testing.T) {
+	_, _, target, host, method := roundTrip(
+		t, ContextRequestTargetONTAP,
+		&stubRoundTripper{resp: makeResponse(http.StatusOK)},
+		http.MethodGet,
+	)
+
+	assert.Equal(t, uint64(1),
+		readHistogramCount(outgoingAPIRequestDurationSeconds, metricStatusSuccess, target, host, method),
+	)
+}
+
+func TestMetricsTransport_ONTAP_HTTP429_RecordsDurationAsFailure(t *testing.T) {
+	_, _, target, host, method := roundTrip(
+		t, ContextRequestTargetONTAP,
+		&stubRoundTripper{resp: makeResponse(http.StatusTooManyRequests)},
+		http.MethodGet,
+	)
+
+	assert.Equal(t, uint64(1),
+		readHistogramCount(outgoingAPIRequestDurationSeconds, metricStatusFailure, target, host, method),
+		"ONTAP 429 must be recorded as failure in the duration histogram",
+	)
+}
+
+func TestMetricsTransport_Kubernetes_HTTP429_RecordsDurationAsFailure(t *testing.T) {
+	_, err, target, host, method := roundTrip(
+		t, ContextRequestTargetKubernetes,
+		&stubRoundTripper{resp: makeResponse(http.StatusTooManyRequests)},
+		http.MethodGet,
+	)
+
+	assert.NoError(t, err, "caller gets nil")
+	assert.Equal(t, uint64(1),
+		readHistogramCount(outgoingAPIRequestDurationSeconds, metricStatusFailure, target, host, method),
+		"Kubernetes 429 must be recorded as failure in the duration histogram even though caller gets nil",
+	)
+}
+
+func TestMetricsTransport_TransportError_RecordsDurationAsFailure(t *testing.T) {
+	_, _, target, host, method := roundTrip(
+		t, ContextRequestTargetUnknown,
+		&stubRoundTripper{err: stdErrors.New("connection refused")},
+		http.MethodGet,
+	)
+
+	assert.Equal(t, uint64(1),
+		readHistogramCount(outgoingAPIRequestDurationSeconds, metricStatusFailure, target, host, method),
+		"transport errors must be recorded as failure",
+	)
+}
+
+func TestMetricsTransport_InFlight_ReturnsToZeroAfterSuccess(t *testing.T) {
+	_, _, target, host, method := roundTrip(
+		t, ContextRequestTargetONTAP,
+		&stubRoundTripper{resp: makeResponse(http.StatusOK)},
+		http.MethodGet,
+	)
+
+	assert.Equal(t, float64(0),
+		readGauge(outgoingAPIRequestsInFlight, target, host, method),
+		"in-flight gauge must return to zero after a completed request",
+	)
+}
+
+func TestMetricsTransport_InFlight_ReturnsToZeroAfterError(t *testing.T) {
+	_, _, target, host, method := roundTrip(
+		t, ContextRequestTargetUnknown,
+		&stubRoundTripper{err: stdErrors.New("fail")},
+		http.MethodGet,
+	)
+
+	assert.Equal(t, float64(0),
+		readGauge(outgoingAPIRequestsInFlight, target, host, method),
+		"in-flight gauge must return to zero after an error",
+	)
+}
+
+func TestMetricsTransport_InFlight_ReturnsToZeroAfterKubernetesBackpressure(t *testing.T) {
+	_, _, target, host, method := roundTrip(
+		t, ContextRequestTargetKubernetes,
+		&stubRoundTripper{resp: makeResponse(http.StatusTooManyRequests)},
+		http.MethodGet,
+	)
+
+	assert.Equal(t, float64(0),
+		readGauge(outgoingAPIRequestsInFlight, target, host, method),
+		"in-flight gauge must return to zero after Kubernetes backpressure",
+	)
 }
