@@ -6898,7 +6898,7 @@ func (o *ConcurrentTridentOrchestrator) EstablishMirror(
 	}
 
 	if !backend.CanMirror() {
-		return fmt.Errorf("backend does not support mirroring")
+		return errors.UnsupportedError("backend does not support mirroring")
 	}
 
 	_, unlocker, err := db.Lock(ctx, db.Query(
@@ -6933,7 +6933,7 @@ func (o *ConcurrentTridentOrchestrator) ReestablishMirror(
 	}
 
 	if !backend.CanMirror() {
-		return fmt.Errorf("backend does not support mirroring")
+		return errors.UnsupportedError("backend does not support mirroring")
 	}
 
 	_, unlocker, err := db.Lock(ctx, db.Query(
@@ -6967,7 +6967,7 @@ func (o *ConcurrentTridentOrchestrator) PromoteMirror(
 	}
 
 	if !backend.CanMirror() {
-		return false, fmt.Errorf("backend does not support mirroring")
+		return false, errors.UnsupportedError("backend does not support mirroring")
 	}
 
 	_, unlocker, err := db.Lock(ctx, db.Query(
@@ -7001,7 +7001,7 @@ func (o *ConcurrentTridentOrchestrator) GetMirrorStatus(
 	}
 
 	if !backend.CanMirror() {
-		return "", fmt.Errorf("backend does not support mirroring")
+		return "", errors.UnsupportedError("backend does not support mirroring")
 	}
 	return backend.GetMirrorStatus(ctx, localInternalVolumeName, remoteVolumeHandle)
 }
@@ -7040,7 +7040,7 @@ func (o *ConcurrentTridentOrchestrator) ReleaseMirror(
 	}
 
 	if !backend.CanMirror() {
-		return fmt.Errorf("backend does not support mirroring")
+		return errors.UnsupportedError("backend does not support mirroring")
 	}
 
 	_, unlocker, err := db.Lock(ctx, db.Query(
@@ -7073,7 +7073,7 @@ func (o *ConcurrentTridentOrchestrator) GetReplicationDetails(
 	}
 
 	if !backend.CanMirror() {
-		return "", "", "", fmt.Errorf("backend does not support mirroring")
+		return "", "", "", errors.UnsupportedError("backend does not support mirroring")
 	}
 
 	return backend.GetReplicationDetails(ctx, localInternalVolumeName, remoteVolumeHandle)
@@ -7102,7 +7102,7 @@ func (o *ConcurrentTridentOrchestrator) UpdateMirror(ctx context.Context, volume
 	}
 
 	if !backend.CanMirror() {
-		return fmt.Errorf("backend does not support mirroring")
+		return errors.UnsupportedError("backend does not support mirroring")
 	}
 
 	_, unlocker, err := db.Lock(ctx, db.Query(
@@ -7149,7 +7149,7 @@ func (o *ConcurrentTridentOrchestrator) CheckMirrorTransferState(
 	}
 
 	if !backend.CanMirror() {
-		return nil, fmt.Errorf("backend does not support mirroring")
+		return nil, errors.UnsupportedError("backend does not support mirroring")
 	}
 
 	// Check transfer state of mirror relationship
@@ -7180,7 +7180,7 @@ func (o *ConcurrentTridentOrchestrator) GetMirrorTransferTime(
 	}
 
 	if !backend.CanMirror() {
-		return nil, fmt.Errorf("backend does not support mirroring")
+		return nil, errors.UnsupportedError("backend does not support mirroring")
 	}
 
 	// Get last transfer time of mirror relationship
