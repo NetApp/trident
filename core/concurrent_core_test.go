@@ -16583,6 +16583,8 @@ func TestReleaseMirrorConcurrentCore(t *testing.T) {
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "backend does not support mirroring")
+				assert.True(t, errors.IsUnsupportedError(err),
+					"must be UnsupportedError so CRD mirror reconciliation treats non-mirroring backends like StorageBackend")
 			},
 		},
 		{
@@ -16825,6 +16827,8 @@ func TestGetMirrorStatusConcurrentCore(t *testing.T) {
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "backend does not support mirroring")
+				assert.True(t, errors.IsUnsupportedError(err),
+					"must be UnsupportedError so CRD mirror reconciliation treats non-mirroring backends like StorageBackend")
 			},
 			verifyResult: func(status string) {
 				assert.Empty(t, status)
@@ -16977,6 +16981,8 @@ func TestPromoteMirrorConcurrentCore(t *testing.T) {
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "backend does not support mirroring")
+				assert.True(t, errors.IsUnsupportedError(err),
+					"must be UnsupportedError so CRD mirror reconciliation treats non-mirroring backends like StorageBackend")
 			},
 			verifyResult: func(promoted bool) {
 				assert.False(t, promoted)
@@ -17203,6 +17209,8 @@ func TestReestablishMirrorConcurrentCore(t *testing.T) {
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "backend does not support mirroring")
+				assert.True(t, errors.IsUnsupportedError(err),
+					"must be UnsupportedError so CRD mirror reconciliation treats non-mirroring backends like StorageBackend")
 			},
 		},
 		{
@@ -17403,6 +17411,8 @@ func TestEstablishMirrorConcurrentCore(t *testing.T) {
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "backend does not support mirroring")
+				assert.True(t, errors.IsUnsupportedError(err),
+					"must be UnsupportedError so CRD mirror reconciliation treats non-mirroring backends like StorageBackend")
 			},
 		},
 		{
@@ -17679,6 +17689,8 @@ func TestGetReplicationDetailsConcurrentCore(t *testing.T) {
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "backend does not support mirroring")
+				assert.True(t, errors.IsUnsupportedError(err),
+					"must be UnsupportedError so CRD mirror reconciliation treats non-mirroring backends like StorageBackend")
 			},
 			verifyResult: func(replicationPolicy, replicationSchedule, remoteVolumeState string) {
 				assert.Empty(t, replicationPolicy)
@@ -17918,6 +17930,8 @@ func TestUpdateMirrorConcurrentCore(t *testing.T) {
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "backend does not support mirroring")
+				assert.True(t, errors.IsUnsupportedError(err),
+					"must be UnsupportedError so CRD mirror reconciliation treats non-mirroring backends like StorageBackend")
 			},
 		},
 		{
@@ -18129,6 +18143,8 @@ func TestCheckMirrorTransferStateConcurrentCore(t *testing.T) {
 			},
 			verifyError: func(err error) {
 				assert.ErrorContains(t, err, "backend does not support mirroring")
+				assert.True(t, errors.IsUnsupportedError(err),
+					"must be UnsupportedError so CRD mirror reconciliation treats non-mirroring backends like StorageBackend")
 			},
 			verifyResult: func(result *time.Time) {
 				assert.Nil(t, result)
