@@ -7,7 +7,10 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"math/big"
+	"regexp"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -242,4 +245,71 @@ func TestGenerateRandomPassword(t *testing.T) {
 			}
 		})
 	}
+}
+
+type failingReader struct{}
+
+func (f failingReader) Read([]byte) (int, error) {
+	return 0, errors.New("simulated crypto/rand failure")
+}
+
+func TestRandomLowerAlphaNumericString_Format(t *testing.T) {
+	s := RandomLowerAlphaNumericString(6)
+	pattern := regexp.MustCompile(`^[a-z0-9]{6}$`)
+	assert.Regexp(t, pattern, s)
+}
+
+func TestRandomLowerAlphaNumericString_Length(t *testing.T) {
+	for _, n := range []int{1, 3, 6, 10} {
+		assert.Equal(t, n, len(RandomLowerAlphaNumericString(n)))
+	}
+}
+
+func TestRandomLowerAlphaNumericString_ConcurrentUniqueness(t *testing.T) {
+	const goroutines = 100
+	results := make([]string, goroutines)
+	var wg sync.WaitGroup
+
+	wg.Add(goroutines)
+	for i := 0; i < goroutines; i++ {
+		go func(idx int) {
+			defer wg.Done()
+			results[idx] = RandomLowerAlphaNumericString(6)
+		}(i)
+	}
+	wg.Wait()
+
+	seen := make(map[string]bool, goroutines)
+	for _, s := range results {
+		assert.False(t, seen[s], "duplicate string generated: %s", s)
+		seen[s] = true
+	}
+}
+
+func TestRandomLowerAlphaNumericString_FallbackOnRandFailure(t *testing.T) {
+	original := randReader
+	randReader = failingReader{}
+	defer func() { randReader = original }()
+
+	s := RandomLowerAlphaNumericString(6)
+
+	pattern := regexp.MustCompile(`^[a-z0-9]{6}$`)
+	assert.Regexp(t, pattern, s)
+	assert.Equal(t, 6, len(s))
+}
+
+func TestRandomLowerAlphaNumericString_FallbackProducesDifferentValues(t *testing.T) {
+	original := randReader
+	randReader = failingReader{}
+	defer func() { randReader = original }()
+
+	seen := make(map[string]bool)
+	for i := 0; i < 100; i++ {
+		seen[RandomLowerAlphaNumericString(6)] = true
+	}
+	assert.Greater(t, len(seen), 1, "fallback should produce varying values")
+}
+
+func TestRandomLowerAlphaNumericString_DefaultReader(t *testing.T) {
+	assert.Equal(t, rand.Reader, randReader)
 }

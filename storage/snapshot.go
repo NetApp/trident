@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/brunoga/deep"
+
+	"github.com/netapp/trident/internal/crypto"
 )
 
 const (
@@ -16,6 +18,13 @@ const (
 )
 
 var snapshotIDRegex = regexp.MustCompile(`^(?P<volume>[^\s/]+)/(?P<snapshot>[^\s/]+)$`)
+
+// GenerateUniqueSnapshotName returns a timestamp-based snapshot name with a random suffix
+// to avoid collisions when multiple snapshots are created on the same volume within the same second.
+func GenerateUniqueSnapshotName() string {
+	timestamp := time.Now().UTC().Format(SnapshotNameFormat)
+	return timestamp + crypto.RandomLowerAlphaNumericString(6)
+}
 
 type SnapshotConfig struct {
 	Version             string   `json:"version,omitempty"`

@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -7772,7 +7773,10 @@ func TestCloneFlexvol(t *testing.T) {
 		"Snapshot cleanup on vol create error": {
 			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(ctx, internalName).Return(false, nil)
-				mockAPI.EXPECT().VolumeSnapshotCreate(ctx, gomock.Any(), "fakeSource").Return(nil)
+				mockAPI.EXPECT().VolumeSnapshotCreate(ctx, gomock.Cond(func(x any) bool {
+					s, ok := x.(string)
+					return ok && regexp.MustCompile(`^\d{8}T\d{6}Z[a-z0-9]{6}$`).MatchString(s)
+				}), "fakeSource").Return(nil)
 				mockAPI.EXPECT().VolumeCloneCreate(
 					ctx, internalName, cloneSourceVolumeInternal, gomock.Any(), false,
 				).Return(fmt.Errorf("error creating clone"))
@@ -7789,8 +7793,10 @@ func TestCloneFlexvol(t *testing.T) {
 		"No specific snapshot was requested": {
 			configureOntapAPI: func(mockAPI *mockapi.MockOntapAPI) {
 				mockAPI.EXPECT().VolumeExists(ctx, internalName).Return(false, nil)
-				mockAPI.EXPECT().VolumeSnapshotCreate(ctx, time.Now().UTC().Format(storage.SnapshotNameFormat),
-					"fakeSource").Return(errors.New("VolumeSnapshotCreate returned error"))
+				mockAPI.EXPECT().VolumeSnapshotCreate(ctx, gomock.Cond(func(x any) bool {
+					s, ok := x.(string)
+					return ok && regexp.MustCompile(`^\d{8}T\d{6}Z[a-z0-9]{6}$`).MatchString(s)
+				}), "fakeSource").Return(errors.New("VolumeSnapshotCreate returned error"))
 			},
 			cloneVolumeConfig:   cloneVolumeConfigNoSnapshot,
 			storageDriverConfig: storageDriverConfig,

@@ -1249,7 +1249,7 @@ func (d *NASStorageDriver) CreateClone(
 	} else {
 
 		// No source snapshot specified, so create one
-		snapName := time.Now().UTC().Format(storage.SnapshotNameFormat)
+		snapName := storage.GenerateUniqueSnapshotName()
 
 		Logc(ctx).WithFields(LogFields{
 			"snapshot": snapName,
