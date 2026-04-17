@@ -749,7 +749,7 @@ func cloneFlexgroup(
 
 	// If no specific snapshot was requested, create one
 	if snapshot == "" {
-		snapshot = time.Now().UTC().Format(storage.SnapshotNameFormat)
+		snapshot = storage.GenerateUniqueSnapshotName()
 		if err = client.FlexgroupSnapshotCreate(ctx, snapshot, source); err != nil {
 			return err
 		}

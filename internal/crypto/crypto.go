@@ -307,6 +307,28 @@ func RandomNumber(max int) int {
 	return int(randomNo.Int64())
 }
 
+// randReader is the entropy source for random string generation; overridable in tests.
+var randReader io.Reader = cryptoRand.Reader
+
+// RandomLowerAlphaNumericString returns a string of the specified length consisting of
+// lowercase alphabetic characters and digits. If crypto/rand fails, it falls back to
+// nanosecond timestamp bits as an entropy source.
+func RandomLowerAlphaNumericString(n int) string {
+	const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+	b := make([]byte, n)
+	if _, err := io.ReadFull(randReader, b); err != nil {
+		log.WithError(err).Warning("Unable to generate secure random bytes; using timestamp-based fallback entropy")
+		nano := time.Now().UnixNano()
+		for i := range b {
+			b[i] = byte(nano >> (i * 8))
+		}
+	}
+	for i := range b {
+		b[i] = chars[b[i]%byte(len(chars))]
+	}
+	return string(b)
+}
+
 // RandomString returns a string of the specified length consisting only of alphabetic characters.
 func RandomString(strSize int) string {
 	chars := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"

@@ -4538,7 +4538,7 @@ func cloneFlexvol(
 
 	// If no specific snapshot was requested, create one
 	if snapshot == "" {
-		snapshot = time.Now().UTC().Format(storage.SnapshotNameFormat)
+		snapshot = storage.GenerateUniqueSnapshotName()
 		if err = client.VolumeSnapshotCreate(ctx, snapshot, source); err != nil {
 			return err
 		}
@@ -5569,7 +5569,7 @@ func cloneASAvol(
 
 	// If no specific snapshot was requested, create one
 	if snapshot == "" {
-		snapshot = time.Now().UTC().Format(storage.SnapshotNameFormat)
+		snapshot = storage.GenerateUniqueSnapshotName()
 		if err = client.StorageUnitSnapshotCreate(ctx, snapshot, source); err != nil {
 			return err
 		}
