@@ -517,7 +517,7 @@ func (d *SANStorageDriver) Create(
 		physicalPoolNames = append(physicalPoolNames, aggregate)
 
 		if aggrLimitsErr := checkAggregateLimits(
-			ctx, aggregate, spaceReserve, flexvolBufferSize, d.Config, d.GetAPI(),
+			ctx, aggregate, spaceReserve, flexvolBufferSize, "create", d.Config, d.GetAPI(),
 		); aggrLimitsErr != nil {
 			errMessage := fmt.Sprintf("ONTAP-SAN pool %s/%s; error: %v", storagePool.Name(), aggregate, aggrLimitsErr)
 			Logc(ctx).Error(errMessage)
