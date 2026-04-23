@@ -2,6 +2,29 @@
 
 [Releases](https://github.com/NetApp/trident/releases)
 
+## Changes since v26.02.0
+
+### Trident
+
+**Fixes:**
+
+- Fixed an issue where iSCSI device resize would fail if available paths and portals did not match.
+- Fixed an intermittent issue where `blkid` misidentifies the filesystem type for LUKS devices preventing new volume creations.
+- Fixed an issue for GCNV SAN where FLEX UNIFIED ZONAL pools were not able to be used. Now Zonal works as well as Regional.
+- **Kubernetes:** Fixed indentation in tridentactionmirrorupdates k8s CRD YAML (Issue [#1120](https://github.com/NetApp/trident/issues/1120)).
+- Fixed REST qtree asynchronous delete API call (Issue [#1121](https://github.com/NetApp/trident/issues/1121)).
+- Enhanced AWS ARN handling to support special regions.
+- **Kubernetes:** Fixed an issue preventing KubeVirt VMs using dataVolumes from failing over using Trident Automated Workload Failover.
+- Fixed an issue in the GCNV NAS driver for UNIFIED pools by applying UNIFIED-specific naming and validation and improving fallback volume lookup when InternalID is absent.
+- Fixed NVMe/TCP namespace race condition during concurrent volume creation (Issue [#1089](https://github.com/NetApp/trident/issues/1089)).
+- Fixed controller startup log to correctly report concurrency driver status.
+- Fixed handling of suspended backends in concurrent Trident.
+- Fixed ControllerPublish to use volume config file system type to avoid using incorrect default file system type.
+- Fixed an issue where LUKS publish and stage operations at scale could block Trident controller. Users are now expected to track LUKS passphrases used by volumes.
+- Fixed an issue where iSCSI multipath partitions could show up as ghost devices, preventing CSI NodeUnstage operations from succeeding.
+- **Kubernetes:** Fixed an error when attempting to delete an invalid TridentMirrorRelationship CR with trident concurrent core.
+- Fixed concurrent clone snapshot when snapshots are executed in the same second.
+
 ## Changes since v25.10.0
 
 ### Trident
