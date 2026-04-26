@@ -302,6 +302,28 @@ func TestRefreshGCNVResources_CacheNotExpired(t *testing.T) {
 	}
 }
 
+func TestCapacityPoolsForStoragePool_ExcludesOntapMode(t *testing.T) {
+	sdk := getFakeSDK(true)
+	sPool := storage.NewStoragePool(nil, "testPool")
+	sPool.InternalAttributes()[network] = NetworkName
+
+	ontapPool := &CapacityPool{
+		Name:            "CP_ONTAP",
+		FullName:        "projects/" + ProjectNumber + "/locations/" + Location + "/storagePools/CP_ONTAP",
+		Location:        Location,
+		ServiceLevel:    ServiceLevelPremium,
+		State:           StateReady,
+		NetworkName:     NetworkName,
+		NetworkFullName: NetworkFullName,
+		Mode:            StoragePoolModeOntap,
+	}
+	addCapacityPool(sdk, ontapPool)
+
+	cPools := sdk.CapacityPoolsForStoragePool(context.TODO(), sPool, "Premium", "")
+	assert.ElementsMatch(t, []*CapacityPool{sdk.capacityPool("CP1")}, cPools,
+		"ONTAP-mode pool must not be selected for native GCNV provisioning")
+}
+
 func TestCapacityPoolsForStoragePool(t *testing.T) {
 	sdk := getFakeSDK(true)
 	CP1 := sdk.capacityPool("CP1")

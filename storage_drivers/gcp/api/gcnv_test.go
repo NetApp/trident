@@ -2005,6 +2005,25 @@ func TestCapacityPool_IsUnified(t *testing.T) {
 	}
 }
 
+func TestCapacityPool_IsOntapMode(t *testing.T) {
+	tests := []struct {
+		name     string
+		mode     string
+		expected bool
+	}{
+		{name: "empty_mode", mode: "", expected: false},
+		{name: "unspecified", mode: StoragePoolModeUnspecified, expected: false},
+		{name: "default", mode: StoragePoolModeDefault, expected: false},
+		{name: "ontap", mode: StoragePoolModeOntap, expected: true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			pool := &CapacityPool{Name: "test-pool", Mode: test.mode}
+			assert.Equal(t, test.expected, pool.IsOntapMode())
+		})
+	}
+}
+
 func TestVolume_IsUnified(t *testing.T) {
 	tests := []struct {
 		StoragePoolType string

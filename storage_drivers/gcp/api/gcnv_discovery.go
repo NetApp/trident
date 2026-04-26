@@ -299,6 +299,7 @@ func (c Client) discoverCapacityPools(ctx context.Context) (*[]*CapacityPool, er
 				Zone:            pool.Zone,
 				AutoTiering:     pool.AllowAutoTiering,
 				PoolType:        pool.GetType().String(),
+				Mode:            pool.GetMode().String(),
 			})
 		}
 	}
@@ -383,9 +384,14 @@ func (c Client) CapacityPoolsForStoragePool(
 	// This map tracks which capacity pools have passed the filters
 	filteredCapacityPoolMap := make(map[string]bool)
 	cPools := c.sdkClient.resources.GetCapacityPools()
-	// Start with all capacity pools marked as passing the filters
-	cPools.Range(func(cPoolFullName string, _ *CapacityPool) bool {
-		filteredCapacityPoolMap[cPoolFullName] = true
+	cPools.Range(func(cPoolFullName string, cPool *CapacityPool) bool {
+		eligible := cPool == nil || !cPool.IsOntapMode()
+		filteredCapacityPoolMap[cPoolFullName] = eligible
+		if !eligible {
+			Logd(ctx, c.config.StorageDriverName, c.config.DebugTraceFlags["discovery"]).Tracef(
+				"Ignoring capacity pool %s, ONTAP mode is not supported by the native GCNV driver.",
+				cPoolFullName)
+		}
 		return true
 	})
 

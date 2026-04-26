@@ -56,6 +56,11 @@ const (
 	StoragePoolTypeUnified         = "UNIFIED"
 	StoragePoolTypeUnifiedLargeCap = "UNIFIED_LARGE_CAPACITY"
 
+	// StoragePoolMode* values match pool.GetMode().String().
+	StoragePoolModeUnspecified = "MODE_UNSPECIFIED"
+	StoragePoolModeDefault     = "DEFAULT"
+	StoragePoolModeOntap       = "ONTAP"
+
 	VolumeStateUnspecified = "Unspecified"
 	VolumeStateReady       = "Ready"
 	VolumeStateCreating    = "Creating"
@@ -139,11 +144,18 @@ type CapacityPool struct {
 	Zone            string
 	AutoTiering     bool
 	PoolType        string
+	// Mode is the backend pool mode (for example, DEFAULT or ONTAP).
+	Mode string
 }
 
 // IsUnified returns true if the pool type is UNIFIED or UNIFIED_LARGE_CAPACITY.
 func (c *CapacityPool) IsUnified() bool {
 	return c.PoolType == StoragePoolTypeUnified || c.PoolType == StoragePoolTypeUnifiedLargeCap
+}
+
+// IsOntapMode reports whether the pool mode is ONTAP.
+func (c *CapacityPool) IsOntapMode() bool {
+	return c.Mode == StoragePoolModeOntap
 }
 
 // Volume records details of a discovered GCNV volume.
