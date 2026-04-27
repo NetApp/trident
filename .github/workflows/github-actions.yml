@@ -20,7 +20,12 @@ jobs:
     name: base-ref
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           ref: ${{ github.event.pull_request.base.ref }}
       - name: Check base ref
@@ -35,11 +40,16 @@ jobs:
     name: linters
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v5
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: true
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: golangci-lint
         # Switch back to the official action after this bug is fixed: https://github.com/golangci/golangci-lint/issues/3107
         run: |
@@ -49,8 +59,13 @@ jobs:
     name: go mod tidy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: true
@@ -65,12 +80,17 @@ jobs:
     runs-on: ${{matrix.os}}
     name: unit tests ${{ matrix.os }}
     steps:
-      - uses: actions/setup-go@v5
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: true
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           # In order:
           # * Module download cache
@@ -117,7 +137,7 @@ jobs:
           echo "PR_Number=${{ github.event.pull_request.number }}"
       - if: runner.os != 'Windows'
         name: Upload the artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: "coverage-report-${{ runner.os }}-${{ github.run_number }}.html"
           path: ${{ runner.os }}-coverage.html
@@ -126,11 +146,16 @@ jobs:
       name: UT Code Coverage Report
       runs-on: ubuntu-latest
       steps:
+        - name: Harden the runner (Audit all outbound calls)
+          uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+          with:
+            egress-policy: audit
+
         - name: Check out code
-          uses: actions/checkout@v4
+          uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
         - name: Setup Golang for unit test
-          uses: actions/setup-go@v5
+          uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
           with:
             go-version-file: "${{ github.workspace }}/go.mod"
             cache: false
@@ -186,7 +211,7 @@ jobs:
               < ${{ runner.os }}-coverage_filtered.out > cobertura-coverage.xml
 
         - name: Summarize code coverage
-          uses: irongut/CodeCoverageSummary@v1.3.0
+          uses: irongut/CodeCoverageSummary@51cc3a756ddcd398d447c044c02cb6aa83fdae95 # v1.3.0
           with:
             filename: cobertura-coverage.xml
             badge: true
@@ -198,14 +223,14 @@ jobs:
             thresholds: '75 100'
 
         - name: Add coverage PR comment
-          uses: marocchino/sticky-pull-request-comment@v2
+          uses: step-security/sticky-pull-request-comment@d6ddd35ce6ef8c21e2a3b4697cfcc2def0c8a71c # v2.9.4
           if: github.event_name == 'pull_request'
           with:
             recreate: true
             path: code-coverage-results.md
 
         - name: Upload coverage as artifacts
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
           if: always()
           with:
             name: code-coverage
