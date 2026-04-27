@@ -775,6 +775,17 @@ spec:
           initialDelaySeconds: 120
           periodSeconds: 120
           timeoutSeconds: 90
+        readinessProbe:
+          exec:
+            command:
+            - tridentctl
+            - -s
+            - "{IP_LOCALHOST}:8000"
+            - version
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
         {CSI_TRIDENT_MAIN_RESOURCES}
         env:
         - name: KUBE_NODE_NAME
