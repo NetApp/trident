@@ -38,6 +38,7 @@ import (
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/client/svm"
 	"github.com/netapp/trident/storage_drivers/ontap/api/rest/models"
 	"github.com/netapp/trident/utils/errors"
+	"github.com/netapp/trident/utils/filesystem"
 	tridentmodels "github.com/netapp/trident/utils/models"
 )
 
@@ -6762,7 +6763,8 @@ func TestPublishLun(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, tempFormatOptions, publishInfo.FormatOptions)
 
-	// Test 11 - volume FileSystem (volConfig) is "xfs", LunGetFSType should NOT be called
+	// Test 11 - volConfig is "xfs" and LUN attribute also returns "xfs" (normal Trident-created volume).
+	// LunGetFSType is now always called; the LUN attribute matches volConfig so the result is unchanged.
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	publishInfo = &tridentmodels.VolumePublishInfo{
 		BackendUUID: "fakeBackendUUID",
@@ -6772,6 +6774,7 @@ func TestPublishLun(t *testing.T) {
 		HostIQN:     []string{"host_iqn"},
 	}
 	config.FileSystemType = ""
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("xfs", nil)
 	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("formatOptions", nil)
 	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
@@ -6786,7 +6789,8 @@ func TestPublishLun(t *testing.T) {
 	assert.Equal(t, "xfs", publishInfo.FilesystemType)
 	assert.Contains(t, publishInfo.MountOptions, "nouuid")
 
-	// Test 11b - FileSystem and FormatOptions from vol (as after Create); no LunGetFSType or LunGetAttribute
+	// Test 11b - volConfig has both FileSystem and FormatOptions (as set after Create); LunGetFSType is
+	// called (always) and returns matching "xfs". LunGetAttribute is skipped because FormatOptions is set.
 	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
 	publishInfo = &tridentmodels.VolumePublishInfo{
 		BackendUUID: "fakeBackendUUID",
@@ -6796,6 +6800,7 @@ func TestPublishLun(t *testing.T) {
 		HostIQN:     []string{"host_iqn"},
 	}
 	volFmtOpts := "-b 4096 -T stride=256"
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("xfs", nil)
 	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
 	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
 	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
@@ -6854,6 +6859,125 @@ func TestPublishLun(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, drivers.DefaultFileSystemType, publishInfo.FilesystemType)
+
+	// Test 14 - volConfig "raw", LUN attribute returns "ext4": LUN attribute wins.
+	// Surfaces the real on-disk fstype so the node-side mismatch guard can fire.
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+	publishInfo = &tridentmodels.VolumePublishInfo{
+		BackendUUID: "fakeBackendUUID",
+		Localhost:   false,
+		Unmanaged:   true,
+		Nodes:       nodeList,
+		HostIQN:     []string{"host_iqn"},
+	}
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("ext4", nil)
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("", nil)
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
+	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
+	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
+	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
+
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName,
+		publishVolCfg(filesystem.Raw, ""))
+
+	assert.NoError(t, err)
+	assert.Equal(t, "ext4", publishInfo.FilesystemType)
+
+	// Test 15 - volConfig "xfs", LUN attribute returns "ext4": LUN attribute wins (fstype mismatch on import).
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+	publishInfo = &tridentmodels.VolumePublishInfo{
+		BackendUUID: "fakeBackendUUID",
+		Localhost:   false,
+		Unmanaged:   true,
+		Nodes:       nodeList,
+		HostIQN:     []string{"host_iqn"},
+	}
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("ext4", nil)
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("", nil)
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
+	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
+	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
+	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
+
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName,
+		publishVolCfg("xfs", ""))
+
+	assert.NoError(t, err)
+	assert.Equal(t, "ext4", publishInfo.FilesystemType)
+
+	// Test 16 - volConfig "raw", LUN has no attribute (externally-created LUN).
+	// LunGetFSType returns empty: fall back to volConfig "raw", preserving raw block intent.
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+	publishInfo = &tridentmodels.VolumePublishInfo{
+		BackendUUID: "fakeBackendUUID",
+		Localhost:   false,
+		Unmanaged:   true,
+		Nodes:       nodeList,
+		HostIQN:     []string{"host_iqn"},
+	}
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("", nil)
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("", nil)
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
+	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
+	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
+	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
+
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName,
+		publishVolCfg(filesystem.Raw, ""))
+
+	assert.NoError(t, err)
+	assert.Equal(t, filesystem.Raw, publishInfo.FilesystemType)
+
+	// Test 17 - volConfig "raw", LunGetFSType returns error (externally-created LUN, API failure).
+	// Fall back to volConfig "raw", preserving raw block intent.
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+	publishInfo = &tridentmodels.VolumePublishInfo{
+		BackendUUID: "fakeBackendUUID",
+		Localhost:   false,
+		Unmanaged:   true,
+		Nodes:       nodeList,
+		HostIQN:     []string{"host_iqn"},
+	}
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("", errors.New("LunGetFSType returned error"))
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("", nil)
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
+	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
+	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
+	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
+
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName,
+		publishVolCfg(filesystem.Raw, ""))
+
+	assert.NoError(t, err)
+	assert.Equal(t, filesystem.Raw, publishInfo.FilesystemType)
+
+	// Test 18 - volConfig "ext4", LUN has no attribute (externally-created LUN).
+	// LunGetFSType returns empty: fall back to volConfig "ext4".
+	mockAPI = mockapi.NewMockOntapAPI(mockCtrl)
+	publishInfo = &tridentmodels.VolumePublishInfo{
+		BackendUUID: "fakeBackendUUID",
+		Localhost:   false,
+		Unmanaged:   true,
+		Nodes:       nodeList,
+		HostIQN:     []string{"host_iqn"},
+	}
+	mockAPI.EXPECT().LunGetFSType(ctx, lunPath).Return("", nil)
+	mockAPI.EXPECT().LunGetAttribute(ctx, lunPath, "formatOptions").Return("", nil)
+	mockAPI.EXPECT().LunGetByName(ctx, lunPath).Return(dummyLun, nil)
+	mockAPI.EXPECT().EnsureIgroupAdded(ctx, igroupName, publishInfo.HostIQN[0])
+	mockAPI.EXPECT().EnsureLunMapped(ctx, igroupName, lunPath).Return(1111, nil)
+	mockAPI.EXPECT().LunMapGetReportingNodes(ctx, igroupName, lunPath).Return([]string{"Node1"}, nil)
+	mockAPI.EXPECT().GetSLMDataLifs(ctx, ips, []string{"Node1"}).Return([]string{}, nil)
+
+	err = PublishLUN(ctx, mockAPI, config, ips, publishInfo, lunPath, igroupName, iSCSINodeName,
+		publishVolCfg("ext4", ""))
+
+	assert.NoError(t, err)
+	assert.Equal(t, "ext4", publishInfo.FilesystemType)
 }
 
 func TestValidateSANDriver(t *testing.T) {

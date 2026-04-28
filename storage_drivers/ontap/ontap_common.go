@@ -1108,20 +1108,25 @@ func PublishLUN(
 		}
 	}
 
-	// Resolve fstype: prefer volume config (orchestrator), then LUN attribute, then driver default.
+	// Prefer the LUN attribute fstype (authoritative, records what is on disk) over volConfig
+	// to catch import mismatches. Fall back to volConfig, then driver default if absent.
 	fstype := volConfig.FileSystem
-	if fstype == "" {
-		fstype, err = clientAPI.LunGetFSType(ctx, lunPath)
-		if err != nil || fstype == "" {
-			if err != nil {
-				Logc(ctx).WithError(err).Error("failed to get fstype for LUN")
-			}
+	lunFstype, lunErr := clientAPI.LunGetFSType(ctx, lunPath)
+	if lunErr != nil || lunFstype == "" {
+		if lunErr != nil {
+			Logc(ctx).WithError(lunErr).Error("failed to get fstype for LUN")
+		}
+		if fstype == "" {
 			Logc(ctx).WithFields(LogFields{
 				"LUN":    lunPath,
 				"fstype": fstype,
 			}).Error("LUN attribute fstype not found, using default.")
 			fstype = drivers.DefaultFileSystemType
 		}
+		// else: keep volConfig value ("raw", "ext4", "xfs", etc.) — LUN has no attribute
+	} else {
+		// LUN attribute is present; it takes precedence over volConfig.
+		fstype = lunFstype
 	}
 
 	// Get the format options
