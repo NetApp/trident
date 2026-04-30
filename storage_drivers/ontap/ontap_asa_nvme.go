@@ -15,6 +15,7 @@ import (
 	"github.com/RoaringBitmap/roaring/v2"
 
 	tridentconfig "github.com/netapp/trident/config"
+	"github.com/netapp/trident/internal/fiji"
 	. "github.com/netapp/trident/logging"
 	"github.com/netapp/trident/pkg/capacity"
 	"github.com/netapp/trident/pkg/collection"
@@ -46,6 +47,11 @@ type ASANVMeStorageDriver struct {
 
 const (
 	asaNVMeSubsystemPrefix = "an"
+)
+
+var (
+	beforeASANQNRemovalFromSubsystem     = fiji.Register("beforeASANQNRemovalFromSubsystem", "ontap_asa_nvme")
+	beforeASANamespaceUnmapFromSubsystem = fiji.Register("beforeASANamespaceUnmapFromSubsystem", "ontap_asa_nvme")
 )
 
 func (d *ASANVMeStorageDriver) GetConfig() drivers.DriverConfig {
@@ -560,6 +566,9 @@ func (d *ASANVMeStorageDriver) Import(ctx context.Context, volConfig *storage.Vo
 		volConfig.FileSystem = d.Config.FileSystemType
 	}
 
+	namespaceMutex.Lock(nsInfo.UUID)
+	defer namespaceMutex.Unlock(nsInfo.UUID)
+
 	// The Namespace should be online
 	if nsInfo.State != "online" {
 		return fmt.Errorf("ASA NVMe namespace %s is not online", nsInfo.Name)
@@ -919,6 +928,9 @@ func (d *ASANVMeStorageDriver) Publish(
 		return fmt.Errorf("no subsystem returned after subsystem create")
 	}
 
+	unlock := lockNamespaceAndSubsystem(nsUUID, subsystem.UUID)
+	defer unlock()
+
 	// Fill important info in publishInfo
 	publishInfo.NVMeSubsystemNQN = subsystem.NQN
 	publishInfo.NVMeSubsystemUUID = subsystem.UUID
@@ -968,6 +980,13 @@ func (d *ASANVMeStorageDriver) Unpublish(
 	subsystemUUID := volConfig.AccessInfo.NVMeSubsystemUUID
 	namespaceUUID := volConfig.AccessInfo.NVMeNamespaceUUID
 
+	unlock := lockNamespaceAndSubsystem(namespaceUUID, subsystemUUID)
+	defer unlock()
+
+	if err := beforeASANQNRemovalFromSubsystem.Inject(); err != nil {
+		return err
+	}
+
 	// Remove host from subsystem if it has no other published volumes from this subsystem
 	_, err := RemoveHostFromSubsystem(
 		ctx,
@@ -978,6 +997,10 @@ func (d *ASANVMeStorageDriver) Unpublish(
 	)
 	if err != nil {
 		return fmt.Errorf("failed to remove host from subsystem: %w", err)
+	}
+
+	if err := beforeASANamespaceUnmapFromSubsystem.Inject(); err != nil {
+		return err
 	}
 
 	// Unmap namespace from subsystem if no other hosts need it

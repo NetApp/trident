@@ -619,7 +619,9 @@ func (d *ASAStorageDriver) Import(ctx context.Context, volConfig *storage.Volume
 			}
 		}
 
+		lunMutex.Lock(volConfig.InternalName)
 		err = LunUnmapAllIgroups(ctx, d.GetAPI(), volConfig.InternalName)
+		lunMutex.Unlock(volConfig.InternalName)
 		if err != nil {
 			Logc(ctx).WithField("LUN", lunInfo.Name).Warnf("Unmapping of igroups failed: %v", err)
 			return fmt.Errorf("failed to unmap igroups for LUN %s: %v", lunInfo.Name, err)
@@ -807,6 +809,8 @@ func (d *ASAStorageDriver) Unpublish(
 	ctx context.Context, volConfig *storage.VolumeConfig, publishInfo *models.VolumePublishInfo,
 ) error {
 	name := volConfig.InternalName
+	lunMutex.Lock(name)
+	defer lunMutex.Unlock(name)
 
 	var igroupName string
 	fields := LogFields{
@@ -822,6 +826,8 @@ func (d *ASAStorageDriver) Unpublish(
 	}
 	if d.Config.SANType == sa.FCP {
 		igroupName = getNodeSpecificFCPIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+		igroupMutex.Lock(igroupName)
+		defer igroupMutex.Unlock(igroupName)
 		lunPath := name
 		if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath); err != nil {
 			return fmt.Errorf("error unmapping LUN %s from igroup %s; %v", lunPath, igroupName, err)
@@ -833,6 +839,8 @@ func (d *ASAStorageDriver) Unpublish(
 	} else {
 		// Attempt to unmap the LUN from the per-node igroup.
 		igroupName = getNodeSpecificIgroupName(publishInfo.HostName, publishInfo.TridentUUID)
+		igroupMutex.Lock(igroupName)
+		defer igroupMutex.Unlock(igroupName)
 		lunPath := name
 		if err := LunUnmapIgroup(ctx, d.API, igroupName, lunPath); err != nil {
 			return fmt.Errorf("error unmapping LUN %s from igroup %s; %v", lunPath, igroupName, err)

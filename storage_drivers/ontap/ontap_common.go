@@ -937,9 +937,14 @@ func reconcileSANNodeAccess(
 		"backendUUID":   backendUUID,
 	}).Debug("Attempting to delete unused igroups")
 	for _, igroup := range igroups {
-		igroupMutex.Lock(igroup)
-		defer igroupMutex.Unlock(igroup)
-		if err := DestroyUnmappedIgroup(ctx, clientAPI, igroup); err != nil {
+		// Scoped to release igroupMutex per-iteration; using `defer` directly in the loop
+		// would hold every iteration's lock until reconcileSANNodeAccess returns, blocking
+		// concurrent Publish/Unpublish operations on every igroup processed so far.
+		if err := func() error {
+			igroupMutex.Lock(igroup)
+			defer igroupMutex.Unlock(igroup)
+			return DestroyUnmappedIgroup(ctx, clientAPI, igroup)
+		}(); err != nil {
 			return err
 		}
 	}
@@ -4612,16 +4617,21 @@ func LunUnmapAllIgroups(ctx context.Context, clientAPI api.OntapAPI, lunPath str
 
 	errored := false
 	for _, igroup := range igroups {
-		igroupMutex.Lock(igroup)
-		defer igroupMutex.Unlock(igroup)
-		err = clientAPI.LunUnmap(ctx, igroup, lunPath)
-		if err != nil {
-			errored = true
-			Logc(ctx).WithFields(LogFields{
-				"LUN":    lunPath,
-				"igroup": igroup,
-			}).WithError(err).Error("Error unmapping LUN from igroup.")
-		}
+		// Scoped to release igroupMutex per-iteration. Using `defer` directly in the loop
+		// would hold every igroup lock taken so far until LunUnmapAllIgroups returns,
+		// which can deadlock with PublishLUN/Unpublish flows that take igroupMutex in a
+		// different order across multiple LUNs.
+		func() {
+			igroupMutex.Lock(igroup)
+			defer igroupMutex.Unlock(igroup)
+			if err = clientAPI.LunUnmap(ctx, igroup, lunPath); err != nil {
+				errored = true
+				Logc(ctx).WithFields(LogFields{
+					"LUN":    lunPath,
+					"igroup": igroup,
+				}).WithError(err).Error("Error unmapping LUN from igroup.")
+			}
+		}()
 	}
 	if errored {
 		return fmt.Errorf("error unmapping one or more LUN mappings")

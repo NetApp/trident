@@ -88,8 +88,8 @@ func TestGetSANStorageDriverBasedOnPersonality(t *testing.T) {
 			sanOptimized:       true,
 			disaggregated:      true,
 			driverProtocol:     sa.ISCSI,
-			expectedDriverType: nil,
-			expectError:        true,
+			expectedDriverType: &ASAStorageDriver{},
+			expectError:        false,
 		},
 		{
 			name:               "SAN optimized but not disaggregated with iSCSI",

@@ -353,6 +353,7 @@ var (
 	ConcurrencyTechPreviewDrivers = []string{
 		OntapNASQtreeStorageDriverName,   // ontap-nas-economy
 		OntapSANEconomyStorageDriverName, // ontap-san-economy
+		"asa-r2",
 	}
 
 	ValidProtocols = map[Protocol]bool{
