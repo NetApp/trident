@@ -427,3 +427,27 @@ func TestErrorConcurrency(t *testing.T) {
 		wg.Wait()
 	})
 }
+
+func TestIsVolumeBusyRESTError(t *testing.T) {
+	tests := map[string]struct {
+		err  error
+		want bool
+	}{
+		"nil error":           {err: nil, want: false},
+		"unrelated error":     {err: errors.New("snapshot not found"), want: false},
+		"different REST code": {err: errors.New("API State: failure, Message: not busy, Code: 13115"), want: false},
+		"matches REST code":   {err: errors.New("API State: failure, Message: vol offline: Volume busy., Code: 524486"), want: true},
+		"comma-heavy Message": {err: errors.New(
+			"API State: failure, Message: offlining volume \"x\", retry later, still busy, Code: 524486"),
+			want: true},
+		"code prefix longer number": {err: errors.New("API State: failure, Message: unrelated, Code: 5244860"), want: false},
+		"code suffix longer number": {err: errors.New("API State: failure, Message: unrelated, Code: 1524486"), want: false},
+		"case insensitive Code":     {err: errors.New("api state: failure, message: busy, code: 524486"), want: true},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, tc.want, IsVolumeBusyRESTError(tc.err))
+		})
+	}
+}

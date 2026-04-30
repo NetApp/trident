@@ -197,10 +197,34 @@ func (d OntapAPIREST) VolumeCreate(ctx context.Context, volume Volume) error {
 }
 
 func (d OntapAPIREST) VolumeDestroy(ctx context.Context, name string, force, skipRecoveryQueue bool) error {
-	deletionErr := d.api.VolumeDestroy(ctx, name, skipRecoveryQueue)
-	if deletionErr != nil {
-		return fmt.Errorf("error destroying volume %v: %v", name, deletionErr)
+	destroyVolume := func() error {
+		deletionErr := d.api.VolumeDestroy(ctx, name, skipRecoveryQueue)
+		if deletionErr != nil && !IsVolumeBusyRESTError(deletionErr) {
+			return backoff.Permanent(fmt.Errorf("error destroying volume %v: %v", name, deletionErr))
+		}
+		if deletionErr != nil {
+			return fmt.Errorf("error destroying volume %v: %v", name, deletionErr)
+		}
+		return nil
 	}
+	destroyNotify := func(err error, duration time.Duration) {
+		Logc(ctx).WithField("increment", duration).Debug("Volume busy, waiting.")
+	}
+	bo := backoff.NewExponentialBackOff()
+	bo.InitialInterval = 2 * time.Second
+	bo.MaxInterval = 10 * time.Second
+	bo.Multiplier = 2
+	bo.RandomizationFactor = 0.1
+	bo.MaxElapsedTime = 60 * time.Second
+	if err := backoff.RetryNotify(destroyVolume, bo, destroyNotify); err != nil {
+		var perm *backoff.PermanentError
+		if errors.As(err, &perm) {
+			return perm.Err
+		}
+		Logc(ctx).WithField("volume", name).Warnf("Volume not destroyed after %3.2f seconds.", bo.MaxElapsedTime.Seconds())
+		return err
+	}
+	Logc(ctx).WithField("volume", name).Debugf("Volume destroyed after %3.2f seconds.", bo.GetElapsedTime().Seconds())
 	return nil
 }
 

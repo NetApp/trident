@@ -2,6 +2,8 @@
 
 package api
 
+import "regexp"
+
 // ///////////////////////////////////////////////////////////////////////////
 // REST error codes
 // ///////////////////////////////////////////////////////////////////////////
@@ -19,7 +21,21 @@ const (
 	EXPORT_POLICY_RULE_EXISTS                  = "1704070"
 	CONSISTENCY_GROUP_SNAP_EXISTS_ERROR        = "53411921"
 	NVME_SUBSYSTEM_ALREADY_EXISTS              = "72090025"
+	VOLUME_BUSY_ERROR_REST                     = "524486"
 )
+
+// VolumeBusyRESTCodeRegexp matches REST errno VOLUME_BUSY_ERROR_REST when comma-heavy Messages break ExtractError.
+var VolumeBusyRESTCodeRegexp = regexp.MustCompile(`(?i)\bCode:\s*` + VOLUME_BUSY_ERROR_REST + `\b`)
+
+// IsVolumeBusyRESTError reports whether err is the ONTAP REST "Volume busy" response (code 524486) seen during
+// volume-offline in a forced delete.
+func IsVolumeBusyRESTError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, _, code := ExtractError(err)
+	return code == VOLUME_BUSY_ERROR_REST || VolumeBusyRESTCodeRegexp.MatchString(err.Error())
+}
 
 // ///////////////////////////////////////////////////////////////////////////
 // volumeCreateJobExistsError

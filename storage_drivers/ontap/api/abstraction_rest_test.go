@@ -4,6 +4,7 @@ package api_test
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -1546,6 +1547,12 @@ func TestVolumeDestroy(t *testing.T) {
 	rsi.EXPECT().VolumeDestroy(ctx, "vol1", false).Return(errors.New("failed to delete volume"))
 	err = oapi.VolumeDestroy(ctx, "vol1", false, false)
 	assert.Error(t, err, "no error returned while deleting a volume")
+
+	// case 3: Non-busy error is not retried.
+	rsi.EXPECT().VolumeDestroy(ctx, "vol1", false).Return(stderrors.New("snapshot not found")).Times(1)
+	err = oapi.VolumeDestroy(ctx, "vol1", false, false)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "snapshot not found")
 }
 
 func TestVolumeInfo(t *testing.T) {
