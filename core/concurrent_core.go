@@ -2748,6 +2748,7 @@ func (o *ConcurrentTridentOrchestrator) cloneVolume(
 	cloneConfig.CloneSourceSnapshotInternal = volConfig.CloneSourceSnapshotInternal
 	cloneConfig.Qos = volConfig.Qos
 	cloneConfig.QosType = volConfig.QosType
+	cloneConfig.RequestedAutogrowPolicy = volConfig.RequestedAutogrowPolicy
 	// Clear these values as they were copied from the source volume Config
 	cloneConfig.SubordinateVolumes = make(map[string]interface{})
 	cloneConfig.ShareSourceVolume = ""

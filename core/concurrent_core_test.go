@@ -6767,6 +6767,82 @@ func TestCloneVolumeConcurrentCore(t *testing.T) {
 	}
 }
 
+// TestConcurrentCloneVolume_OverlaysRequestedAutogrowPolicyFromCloneVolumeConfig asserts the concurrent
+// orchestrator passes the clone request's RequestedAutogrowPolicy into the VolumeConfig given to
+// Backend.CloneVolume, matching TridentOrchestrator.cloneVolumeInitial (non-concurrent path).
+// When enableConcurrency is true, missing this overlay leaves the policy inherited only from the
+// source volume (ConstructClone), so clone PVC annotations cannot override autogrow.
+func TestConcurrentCloneVolume_OverlaysRequestedAutogrowPolicyFromCloneVolumeConfig(t *testing.T) {
+	prevDriverCtx := config.CurrentDriverContext
+	config.CurrentDriverContext = config.ContextCSI
+	t.Cleanup(func() { config.CurrentDriverContext = prevDriverCtx })
+
+	const (
+		sourcePolicy = "policy-from-source-volume-config"
+		clonePolicy  = "policy-from-clone-pvc-request"
+	)
+
+	sourceVolume := &storage.Volume{
+		Config: &storage.VolumeConfig{
+			InternalName:              "sourceVolume",
+			Name:                      "sourceVolume",
+			Size:                      "1073741824",
+			VolumeMode:                config.Filesystem,
+			RequestedAutogrowPolicy:   sourcePolicy,
+			CloneSourceVolume:         "",
+			CloneSourceVolumeInternal: "",
+		},
+		BackendUUID: "backend-uuid",
+	}
+
+	cloneVolumeConfig := &storage.VolumeConfig{
+		InternalName:              "cloneVolume",
+		Name:                      "cloneVolume",
+		Size:                      "1073741824",
+		VolumeMode:                config.Filesystem,
+		CloneSourceVolume:         "sourceVolume",
+		CloneSourceVolumeInternal: "sourceVolume",
+		RequestedAutogrowPolicy:   clonePolicy,
+	}
+
+	cloneVolume := &storage.Volume{
+		Config:      cloneVolumeConfig,
+		BackendUUID: "backend-uuid",
+	}
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	db.Initialize()
+
+	mockStoreClient := mockpersistentstore.NewMockStoreClient(mockCtrl)
+	o := getConcurrentOrchestrator()
+	o.storeClient = mockStoreClient
+
+	mockBackend := getMockBackend(mockCtrl, "testBackend", "backend-uuid")
+	mockBackend.EXPECT().CreatePrepare(gomock.Any(), gomock.Any(), gomock.Any())
+	mockBackend.EXPECT().CloneVolume(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), false).
+		DoAndReturn(func(_ context.Context, _ *storage.VolumeConfig, cloneCfg *storage.VolumeConfig, _ storage.Pool, _ bool) (*storage.Volume, error) {
+			assert.Equal(t, clonePolicy, cloneCfg.RequestedAutogrowPolicy,
+				"clone VolumeConfig passed to the backend must carry RequestedAutogrowPolicy from the clone request, not only from ConstructClone(source)")
+			return cloneVolume, nil
+		}).Times(1)
+
+	addBackendsToCache(t, mockBackend)
+	addVolumesToCache(t, sourceVolume)
+
+	mockStoreClient.EXPECT().GetVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockStoreClient.EXPECT().AddVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockStoreClient.EXPECT().UpdateVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockStoreClient.EXPECT().DeleteVolumeTransaction(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockStoreClient.EXPECT().AddVolume(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+	_, err := o.CloneVolume(testCtx, cloneVolumeConfig)
+	assert.NoError(t, err)
+
+	persistenceCleanup(t, o)
+}
+
 func TestDeleteVolumeConcurrentCore(t *testing.T) {
 	vol := &storage.Volume{
 		Config:      &storage.VolumeConfig{InternalName: "vol1", Name: "vol1"},
