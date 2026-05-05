@@ -2450,9 +2450,21 @@ func (client *Client) PrepareDeviceForRemoval(
 	// CSI Case
 	// We can't verify a multipath device if we couldn't find it in sysfs.
 	if publishInfo.IscsiTargetPortal != "" && deviceInfo.MultipathDevice != "" {
-		_, err := client.devices.VerifyMultipathDevice(ctx, publishInfo, allPublishInfos, deviceInfo)
+		isGhost, err := client.devices.VerifyMultipathDevice(ctx, publishInfo, allPublishInfos, deviceInfo)
 		if err != nil {
 			return "", err
+		}
+
+		if isGhost {
+			if err := client.devices.RemoveGhostMultipathDevice(ctx,
+				deviceInfo.MultipathDevice, publishInfo.IscsiLunSerial); err != nil {
+				Logc(ctx).WithFields(LogFields{
+					"lunID":           lunID,
+					"lunSerialNumber": publishInfo.IscsiLunSerial,
+					"multipathDevice": deviceInfo.MultipathDevice,
+				}).WithError(err).Warn("Could not remove ghost multipath device; continuing with device removal.")
+			}
+			return "", nil
 		}
 	}
 

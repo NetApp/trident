@@ -80,6 +80,7 @@ type Devices interface {
 		sleep time.Duration) error
 	ClearFormatting(ctx context.Context, devicePath string) error
 	GetMultipathDeviceBySerial(ctx context.Context, hexSerial string) (string, error)
+	RemoveGhostMultipathDevice(ctx context.Context, multipathDevice, expectedLUNSerial string) error
 	// ExpandMultipathDevice expands a multipath device by resizing all dm-slaves then
 	// resizing the multipath device-mapper and waiting for all devices sizes to converge.
 	ExpandMultipathDevice(ctx context.Context, getter models.SCSIDeviceInfoGetter, targetSizeBytes int64) error
@@ -341,7 +342,8 @@ func (c *Client) FindDevicesForMultipathDevice(ctx context.Context, device strin
 	return devices
 }
 
-// compareWithPublishedDevicePath verifies that published path matches the discovered device path
+// compareWithPublishedDevicePath verifies that published path matches the discovered device path.
+// This function also checks if the discovered multipath device is a ghost device.
 func (c *Client) compareWithPublishedDevicePath(
 	ctx context.Context, publishInfo *models.VolumePublishInfo, deviceInfo *models.ScsiDeviceInfo,
 ) (bool, error) {
@@ -350,46 +352,35 @@ func (c *Client) compareWithPublishedDevicePath(
 	publishedMpath := strings.TrimPrefix(publishInfo.DevicePath, DevPrefix)
 
 	if discoverMpath != publishedMpath {
-		// If this is the case, a wrong multipath device has been identified.
-		// Reset the Multipath device and disks
 		Logc(ctx).WithFields(LogFields{
-			"lun":                       publishInfo.IscsiLunNumber,
+			"lunID":                     publishInfo.IscsiLunNumber,
+			"recordedMultipathDevice":   publishedMpath,
 			"discoveredMultipathDevice": discoverMpath,
-			"publishedMultipathDevice":  publishedMpath,
-		}).Debug("Discovered multipath device may not be correct.")
+		}).Debug("Discovered multipath device path differs from recorded device path.")
 
+		// Reassign this to what we know it should be.
 		deviceInfo.MultipathDevice = strings.TrimPrefix(publishedMpath, DevPrefix)
 		deviceInfo.Devices = []string{}
+	}
 
-		// Get Device based on the multipath value at the same time identify if it is a ghost device.
-		devices, err := c.GetMultipathDeviceDisks(ctx, deviceInfo.MultipathDevice)
-		if err != nil {
-			return false, fmt.Errorf("failed to verify multipath disks for '%v'; %v ",
-				deviceInfo.MultipathDevice, err)
-		}
+	devices, err := c.GetMultipathDeviceDisks(ctx, deviceInfo.MultipathDevice)
+	if err != nil {
+		return false, fmt.Errorf("failed to verify paths for '%v'; %v", deviceInfo.MultipathDevice, err)
+	}
+	deviceInfo.Devices = devices
 
-		isProbablyGhostDevice = devices == nil || len(devices) == 0
-		if isProbablyGhostDevice {
-			Logc(ctx).WithFields(LogFields{
-				"lun":             publishInfo.IscsiLunNumber,
-				"multipathDevice": deviceInfo.MultipathDevice,
-			}).Debug("Multipath device may be a ghost device.")
-		} else {
-			deviceInfo.Devices = devices
-		}
-
+	isProbablyGhostDevice = len(devices) == 0
+	if isProbablyGhostDevice {
 		Logc(ctx).WithFields(LogFields{
-			"lun":             publishInfo.IscsiLunNumber,
+			"lunID":           publishInfo.IscsiLunNumber,
 			"multipathDevice": deviceInfo.MultipathDevice,
-			"devices":         deviceInfo.Devices,
-		}).Debug("Updated Multipath device and devices.")
+		}).Warn("Multipath device has no paths; likely a ghost.")
 	} else {
 		Logc(ctx).WithFields(LogFields{
-			"lun":                       publishInfo.IscsiLunNumber,
-			"publishedMultipathDevice":  publishedMpath,
-			"discoveredMultipathDevice": discoverMpath,
-			"devices":                   deviceInfo.Devices,
-		}).Debug("Discovered multipath device is valid.")
+			"lunID":             publishInfo.IscsiLunNumber,
+			"multipathDevice":   deviceInfo.MultipathDevice,
+			"underlyingDevices": deviceInfo.Devices,
+		}).Debug("Multipath device has active paths.")
 	}
 
 	return isProbablyGhostDevice, nil
@@ -596,6 +587,81 @@ func (c *Client) RemoveMultipathDeviceMappingWithRetries(ctx context.Context, de
 	return nil
 }
 
+// RemoveGhostMultipathDevice removes a ghost or orphan dm device via dmsetup remove.
+// A ghost device can exist in /dev/ and /sys/block/ but have no slave devices, meaning
+// multipathd can no longer manage it and the multipath CLI cannot operate on it.
+// Safety gates (all must pass):
+//  1. "dm-" prefix on device name
+//  2. "/sys/block/<dev>/slaves/" is empty (no active paths)
+//  3. UUID starts with "mpath-" (confirms multipath, not LUKS/LVM/other dm)
+//  4. If expectedLUNSerial is non-empty, UUID must contain its hex encoding
+//     (confirms this ghost belongs to the volume being unstaged, not another)
+//  5. Kernel DM_DEV_REMOVE itself returns EBUSY if open_count > 0
+func (c *Client) RemoveGhostMultipathDevice(
+	ctx context.Context, multipathDevice, expectedLUNSerial string,
+) error {
+	Logc(ctx).WithField("device", multipathDevice).Debug(">>>> devices.RemoveGhostMultipathDevice")
+	defer Logc(ctx).Debug("<<<< devices.RemoveGhostMultipathDevice")
+
+	// Callers may have the full device path ("/dev/dm-#") or just the device name ("dm-#").
+	// Always normalize the multipath device.
+	device := strings.TrimPrefix(multipathDevice, DevPrefix)
+	if !strings.HasPrefix(device, "dm-") {
+		return fmt.Errorf("cannot remove non-dm device %q", multipathDevice)
+	}
+
+	slavesDir := c.chrootPathPrefix + "/sys/block/" + device + "/slaves"
+	slaveDirs, err := c.osFs.ReadDir(slavesDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			Logc(ctx).WithField("device", device).Debug("Device no longer exists in sysfs; nothing to remove.")
+			return nil
+		}
+		return fmt.Errorf("failed to read slaves dir for %q: %v", device, err)
+	}
+	if len(slaveDirs) > 0 {
+		return fmt.Errorf("refusing to remove %q: device still has %d slave(s)", device, len(slaveDirs))
+	}
+
+	deviceUUID, err := c.GetMultipathDeviceUUID(device)
+	if err != nil && !errors.IsNotFoundError(err) {
+		Logc(ctx).WithField("device", device).WithError(err).Debug("Cannot read device UUID.")
+		return fmt.Errorf("failed to get multipath device UUID for %q: %v", device, err)
+	}
+	if !strings.HasPrefix(deviceUUID, "mpath-") {
+		return fmt.Errorf("cannot safely remove device %q: UUID %q has no 'mpath-' prefix", device, deviceUUID)
+	}
+
+	if expectedLUNSerial != "" {
+		expectedHex := hex.EncodeToString([]byte(expectedLUNSerial))
+		if !strings.Contains(deviceUUID, expectedHex) {
+			return fmt.Errorf(
+				"cannot safely remove device %q: device UUID %q does not contain expected serial hex %q",
+				device, deviceUUID, expectedHex)
+		}
+	}
+
+	devicePath := DevPrefix + device
+	Logc(ctx).WithFields(LogFields{
+		"devicePath": devicePath,
+		"deviceUUID": deviceUUID,
+	}).Info("Attempting to remove ghost multipath device.")
+
+	out, err := c.command.ExecuteWithTimeout(ctx, "dmsetup", deviceOperationsTimeout, true,
+		"remove", devicePath)
+	if err != nil {
+		outStr := strings.ToLower(strings.TrimSpace(string(out)))
+		if strings.Contains(outStr, "device does not exist") {
+			Logc(ctx).WithField("device", device).Debug("Ghost device already removed.")
+			return nil
+		}
+		return fmt.Errorf("'dmsetup remove %s' failed: %v (output: %s)", devicePath, err, outStr)
+	}
+
+	Logc(ctx).WithField("device", device).Info("Successfully removed ghost multipath device.")
+	return nil
+}
+
 // FindMultipathDeviceForDevice finds the devicemapper parent of a device name like /dev/sdx.
 func (c *Client) FindMultipathDeviceForDevice(ctx context.Context, device string) string {
 	Logc(ctx).WithField("device", device).Debug(">>>> iscsi.findMultipathDeviceForDevice")
@@ -662,25 +728,23 @@ func (c *Client) GetMultipathDeviceBySerial(ctx context.Context, hexSerial strin
 			Logc(ctx).WithFields(LogFields{
 				"UUID":            hexSerial,
 				"multipathDevice": dmDeviceName,
-				"err":             err,
-			}).Error("Failed to get UUID of multipath device.")
+			}).WithError(err).Error("Failed to get UUID of multipath device.")
 			continue
 		}
 
 		// Find the matching UUID while filtering out child partitions (e.g. part1-mpath-3600a098038314461522451712f316969)
-		trimmedUUID := strings.TrimSpace(uuid)
-		if strings.Contains(trimmedUUID, hexSerial) {
-			if strings.HasPrefix(trimmedUUID, "mpath-") {
+		if strings.Contains(uuid, hexSerial) {
+			if strings.HasPrefix(uuid, "mpath-") {
 				Logc(ctx).WithFields(LogFields{
 					"serial":          hexSerial,
-					"UUID":            trimmedUUID,
+					"UUID":            uuid,
 					"multipathDevice": dmDeviceName,
 				}).Debug("Found multipath device by UUID.")
 				return dmDeviceName, nil
 			} else {
 				Logc(ctx).WithFields(LogFields{
 					"serial":          hexSerial,
-					"UUID":            trimmedUUID,
+					"UUID":            uuid,
 					"multipathDevice": dmDeviceName,
 				}).Debug("DM Device contains LUN serial, but is not a top-level multipath device.")
 			}
@@ -706,7 +770,7 @@ func (c *Client) GetMultipathDeviceUUID(multipathDevicePath string) (string, err
 		return "", err
 	}
 
-	return string(UUID), nil
+	return strings.TrimSpace(string(UUID)), nil
 }
 
 // removeDevice tells Linux that a device will be removed.
@@ -795,8 +859,12 @@ func (c *Client) GetLUKSDeviceForMultipathDevice(multipathDevice string) (string
 	dmDevice := strings.TrimSuffix(strings.TrimPrefix(multipathDevice, "/dev/"), "/")
 
 	// Get holder of mpath device
-	dirents, err := c.osFs.ReadDir(fmt.Sprintf("/sys/block/%s/holders/", dmDevice))
+	holdersDir := fmt.Sprintf("/sys/block/%s/holders/", dmDevice)
+	dirents, err := c.osFs.ReadDir(holdersDir)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return "", errors.NotFoundError("holders dir not found for %s", dmDevice)
+		}
 		return "", err
 	}
 

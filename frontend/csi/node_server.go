@@ -2062,15 +2062,18 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	locks.Unlock(ctx, lockContext, iSCSISelfHealingSessionLock)
 
 	var luksMapperPath string
-	// If the multipath device is not present, the LUKS device should not exist.
-	if convert.ToBool(publishInfo.LUKSEncryption) && deviceInfo != nil && deviceInfo.MultipathDevice != "" {
+	if convert.ToBool(publishInfo.LUKSEncryption) && publishInfo.DevicePath != "" {
 		fields := LogFields{
 			"lunID":           publishInfo.IscsiLunNumber,
 			"publishedDevice": publishInfo.DevicePath,
-			"multipathDevice": deviceInfo.MultipathDevice,
 		}
 
-		luksMapperPath, err = p.devices.GetLUKSDeviceForMultipathDevice(deviceInfo.MultipathDevice)
+		// Use publishInfo.DevicePath (serial-resolved) rather than deviceInfo.MultipathDevice
+		// (sysfs LUN discovery). The two can disagree when the kernel renumbers dm devices or
+		// discovery finds a stale/wrong multipath node. publishInfo.DevicePath is authoritative
+		// because it was resolved from the LUN serial at the top of this function, and is the
+		// same identity that VerifyMultipathDevice will reconcile to inside PrepareDeviceForRemoval.
+		luksMapperPath, err = p.devices.GetLUKSDeviceForMultipathDevice(publishInfo.DevicePath)
 		if err != nil {
 			if !errors.IsNotFoundError(err) {
 				Logc(ctx).WithFields(fields).WithError(err).Error("Failed to get LUKS device path from multipath device.")
@@ -2093,20 +2096,22 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 		}
 
 		// Set device path to dm device to correctly verify legacy volumes.
-		if luks.IsLegacyDevicePath(publishInfo.DevicePath) {
+		if deviceInfo != nil && luks.IsLegacyDevicePath(publishInfo.DevicePath) {
 			publishInfo.DevicePath = deviceInfo.MultipathDevice
 		}
 	}
 
 	// Delete the device from the host.
-	var unmappedMpathDevice string
+	// Default this value to the healed value from before.
+	// This must be tracked because if the SCSI devices are already gone, the deviceInfo above may be nil.
+	mpathDevicePath := publishInfo.DevicePath
 	if deviceInfo != nil {
-		unmappedMpathDevice, err = p.iscsi.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, p.unsafeDetach,
+		unmappedMpathDevice, err := p.iscsi.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo, nil, p.unsafeDetach,
 			force)
 		if err != nil {
 			if errors.IsISCSISameLunNumberError(err) {
 				// There is a need to pass all the publish infos this time
-				unmappedMpathDevice, err = p.iscsi.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo,
+				mpathDevicePath, err = p.iscsi.PrepareDeviceForRemoval(ctx, deviceInfo, publishInfo,
 					p.readAllTrackingFiles(ctx),
 					p.unsafeDetach, force)
 			}
@@ -2114,6 +2119,20 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 			if err != nil && !p.unsafeDetach {
 				return status.Error(codes.Internal, err.Error())
 			}
+		}
+
+		if unmappedMpathDevice != "" {
+			mpathDevicePath = unmappedMpathDevice
+		}
+	}
+
+	// Always check for a ghost multipath device.
+	if mpathDevicePath != "" {
+		err = p.devices.RemoveGhostMultipathDevice(ctx, mpathDevicePath, publishInfo.IscsiLunSerial)
+		if err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"devicePath": mpathDevicePath,
+			}).WithError(err).Warn("Failed to remove ghost multipath device.")
 		}
 	}
 
@@ -2186,7 +2205,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 
 	// If the LUKS device still exists, it means the device was unable to be closed prior to removing the block
 	// device. This can happen if the LUN was deleted or offline. It should be removable by this point.
-	// It needs to be removed prior to removing the 'unmappedMpathDevice' device below.
+	// It needs to be removed prior to removing the 'mpathDevicePath' device below.
 	if luksMapperPath != "" {
 		// EnsureLUKSDeviceClosed will not return an error if the device is already closed or removed.
 		if err = p.devices.EnsureLUKSDeviceClosed(ctx, luksMapperPath); err != nil {
@@ -2199,7 +2218,7 @@ func (p *Plugin) nodeUnstageISCSIVolume(
 	}
 
 	// If there is multipath device, flush(remove) mappings
-	if err := p.devices.RemoveMultipathDeviceMappingWithRetries(ctx, unmappedMpathDevice,
+	if err := p.devices.RemoveMultipathDeviceMappingWithRetries(ctx, mpathDevicePath,
 		removeMultipathDeviceMappingRetries, removeMultipathDeviceMappingRetryDelay); err != nil {
 		return err
 	}

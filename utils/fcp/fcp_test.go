@@ -1769,7 +1769,7 @@ func TestPrepareDeviceForRemoval(t *testing.T) {
 	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, fs := NewDrivers()
 
 	mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
-		gomock.Any()).Return(true, nil)
+		gomock.Any()).Return(false, nil)
 	mockDevices.EXPECT().ListAllDevices(gomock.Any()).Times(2)
 	mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any()).Return(nil)
 	mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -1805,7 +1805,7 @@ func TestPrepareDeviceForRemoval_deferrefDeviceRemoval(t *testing.T) {
 	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, fs := NewDrivers()
 
 	mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
-		gomock.Any()).Return(true, nil)
+		gomock.Any()).Return(false, nil)
 	mockDevices.EXPECT().ListAllDevices(gomock.Any()).Times(2)
 	mockDevices.EXPECT().RemoveDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 	mockDevices.EXPECT().WaitForDevicesRemoval(gomock.Any(), DevPrefix, gomock.Any(),
@@ -1839,7 +1839,7 @@ func TestPrepareDeviceForRemoval_VerifyMpathError(t *testing.T) {
 	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, fs := NewDrivers()
 
 	mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
-		gomock.Any()).Return(true, errors.New("error"))
+		gomock.Any()).Return(false, errors.New("error"))
 
 	fcpClient := NewDetailed("/host", mockCommand, DefaultSelfHealingExclusion,
 		mockOsClient, mockDevices, mockFileSystem,
@@ -1854,6 +1854,55 @@ func TestPrepareDeviceForRemoval_VerifyMpathError(t *testing.T) {
 		force,
 	)
 	assert.NotNil(t, err, "PrepareDeviceForRemoval returns nil error")
+}
+
+func TestPrepareDeviceForRemoval_GhostDeviceRemoval(t *testing.T) {
+	publishInfo := &mockPublushInfo
+	allPublishInfos := []models.VolumePublishInfo{}
+
+	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, fs := NewDrivers()
+
+	mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any()).Return(true, nil)
+	mockDevices.EXPECT().RemoveGhostMultipathDevice(gomock.Any(), "dm-0", gomock.Any()).Return(nil)
+
+	fcpClient := NewDetailed("/host", mockCommand, DefaultSelfHealingExclusion,
+		mockOsClient, mockDevices, mockFileSystem,
+		mockMount, mockReconcileUtils, afero.Afero{Fs: fs})
+
+	deviceInfo := &models.ScsiDeviceInfo{
+		MultipathDevice: "dm-0",
+		Devices:         []string{},
+	}
+	multipath, err := fcpClient.PrepareDeviceForRemoval(
+		context.TODO(), deviceInfo, publishInfo, allPublishInfos, false, false)
+	assert.Nil(t, err)
+	assert.Equal(t, "", multipath)
+}
+
+func TestPrepareDeviceForRemoval_GhostDeviceRemovalFails_LogsAndContinues(t *testing.T) {
+	publishInfo := &mockPublushInfo
+	allPublishInfos := []models.VolumePublishInfo{}
+
+	mockCommand, mockOsClient, mockDevices, mockFileSystem, mockMount, mockReconcileUtils, _, fs := NewDrivers()
+
+	mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any()).Return(true, nil)
+	mockDevices.EXPECT().RemoveGhostMultipathDevice(gomock.Any(), "dm-0", gomock.Any()).
+		Return(errors.New("dmsetup remove failed"))
+
+	fcpClient := NewDetailed("/host", mockCommand, DefaultSelfHealingExclusion,
+		mockOsClient, mockDevices, mockFileSystem,
+		mockMount, mockReconcileUtils, afero.Afero{Fs: fs})
+
+	deviceInfo := &models.ScsiDeviceInfo{
+		MultipathDevice: "dm-0",
+		Devices:         []string{},
+	}
+	multipath, err := fcpClient.PrepareDeviceForRemoval(
+		context.TODO(), deviceInfo, publishInfo, allPublishInfos, false, false)
+	assert.Nil(t, err, "ghost removal failure should not propagate as error")
+	assert.Equal(t, "", multipath)
 }
 
 func TestRemoveSCSIDevice_TimeOutError(t *testing.T) {

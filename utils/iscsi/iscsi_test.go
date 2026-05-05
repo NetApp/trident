@@ -3941,7 +3941,7 @@ func TestPrepareDeviceForRemoval(t *testing.T) {
 			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any()).Return(true, nil)
+					gomock.Any()).Return(false, nil)
 				mockDevices.EXPECT().ListAllDevices(gomock.Any()).Times(2)
 				mockDevices.EXPECT().MultipathFlushDevice(gomock.Any(), gomock.Any()).Return(nil)
 				mockDevices.EXPECT().FlushDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -3965,7 +3965,7 @@ func TestPrepareDeviceForRemoval(t *testing.T) {
 			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any()).Return(true, nil)
+					gomock.Any()).Return(false, nil)
 				mockDevices.EXPECT().ListAllDevices(gomock.Any()).Times(2)
 				mockDevices.EXPECT().RemoveDevice(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockDevices.EXPECT().WaitForDevicesRemoval(gomock.Any(), DevPrefix, gomock.Any(),
@@ -3987,7 +3987,7 @@ func TestPrepareDeviceForRemoval(t *testing.T) {
 			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
 				mockDevices := mock_devices.NewMockDevices(controller)
 				mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
-					gomock.Any()).Return(true, errors.New("error"))
+					gomock.Any()).Return(false, errors.New("error"))
 				return mockDevices
 			},
 			deviceInfo: &models.ScsiDeviceInfo{
@@ -4000,6 +4000,45 @@ func TestPrepareDeviceForRemoval(t *testing.T) {
 			force:             false,
 			expectedMultipath: "",
 			expectedError:     true,
+		},
+		"Ghost device removal succeeds": {
+			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any()).Return(true, nil)
+				mockDevices.EXPECT().RemoveGhostMultipathDevice(gomock.Any(), "dm-0", gomock.Any()).Return(nil)
+				return mockDevices
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "dm-0",
+				Devices:         []string{},
+			},
+			publishInfo:       &mockPublushInfo,
+			allPublishInfos:   []models.VolumePublishInfo{},
+			ignoreErrors:      false,
+			force:             false,
+			expectedMultipath: "",
+			expectedError:     false,
+		},
+		"Ghost device removal fails, logs warning and continues": {
+			getDevicesClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				mockDevices.EXPECT().VerifyMultipathDevice(gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any()).Return(true, nil)
+				mockDevices.EXPECT().RemoveGhostMultipathDevice(gomock.Any(), "dm-0", gomock.Any()).
+					Return(errors.New("dmsetup remove failed"))
+				return mockDevices
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "dm-0",
+				Devices:         []string{},
+			},
+			publishInfo:       &mockPublushInfo,
+			allPublishInfos:   []models.VolumePublishInfo{},
+			ignoreErrors:      false,
+			force:             false,
+			expectedMultipath: "",
+			expectedError:     false,
 		},
 	}
 

@@ -342,6 +342,20 @@ func (mr *MockDevicesMockRecorder) RemoveDevice(ctx, devices, ignoreErrors any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveDevice", reflect.TypeOf((*MockDevices)(nil).RemoveDevice), ctx, devices, ignoreErrors)
 }
 
+// RemoveGhostMultipathDevice mocks base method.
+func (m *MockDevices) RemoveGhostMultipathDevice(ctx context.Context, multipathDevice, expectedLUNSerial string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveGhostMultipathDevice", ctx, multipathDevice, expectedLUNSerial)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveGhostMultipathDevice indicates an expected call of RemoveGhostMultipathDevice.
+func (mr *MockDevicesMockRecorder) RemoveGhostMultipathDevice(ctx, multipathDevice, expectedLUNSerial any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveGhostMultipathDevice", reflect.TypeOf((*MockDevices)(nil).RemoveGhostMultipathDevice), ctx, multipathDevice, expectedLUNSerial)
+}
+
 // RemoveMultipathDeviceMapping mocks base method.
 func (m *MockDevices) RemoveMultipathDeviceMapping(ctx context.Context, devicePath string) error {
 	m.ctrl.T.Helper()

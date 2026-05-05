@@ -1,4 +1,4 @@
-// Copyright 2024 NetApp, Inc. All Rights Reserved.
+// Copyright 2026 NetApp, Inc. All Rights Reserved.
 
 package fcp
 
@@ -1010,9 +1010,21 @@ func (client *Client) PrepareDeviceForRemoval(
 	// CSI Case
 	// We can't verify a multipath device if we couldn't find it in sysfs.
 	if deviceInfo.MultipathDevice != "" {
-		_, err := client.deviceClient.VerifyMultipathDevice(ctx, publishInfo, allPublishInfos, deviceInfo)
+		isGhost, err := client.deviceClient.VerifyMultipathDevice(ctx, publishInfo, allPublishInfos, deviceInfo)
 		if err != nil {
 			return "", err
+		}
+
+		if isGhost {
+			if err := client.deviceClient.RemoveGhostMultipathDevice(ctx,
+				deviceInfo.MultipathDevice, publishInfo.FCPLunSerial); err != nil {
+				Logc(ctx).WithFields(LogFields{
+					"lunID":           lunID,
+					"lunSerialNumber": publishInfo.FCPLunSerial,
+					"multipathDevice": deviceInfo.MultipathDevice,
+				}).WithError(err).Warn("Could not remove ghost multipath device; continuing with device removal.")
+			}
+			return "", nil
 		}
 	}
 

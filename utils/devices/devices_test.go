@@ -433,6 +433,7 @@ func TestVerifyMultipathDevice(t *testing.T) {
 		publishInfo     *models.VolumePublishInfo
 		deviceInfo      *models.ScsiDeviceInfo
 		allPublishInfos []models.VolumePublishInfo
+		expectGhost     bool
 		expectError     bool
 	}{
 		"CompareWithPublishedDevicePath Happy Path": {
@@ -443,8 +444,25 @@ func TestVerifyMultipathDevice(t *testing.T) {
 				MultipathDevice: "/dev/dm-0",
 			},
 			getFs: func() afero.Fs {
-				return afero.NewMemMapFs()
+				fs := afero.NewMemMapFs()
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves/sda", 0o755)
+				return fs
 			},
+			expectError: false,
+		},
+		"CompareWithPublishedDevicePath Matching Names, Ghost Device": {
+			publishInfo: &models.VolumePublishInfo{
+				DevicePath: "/dev/dm-0",
+			},
+			deviceInfo: &models.ScsiDeviceInfo{
+				MultipathDevice: "/dev/dm-0",
+			},
+			getFs: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves", 0o755)
+				return fs
+			},
+			expectGhost: true,
 			expectError: false,
 		},
 		"CompareWithPublishedDevicePath Incorrect Multipath": {
@@ -456,7 +474,7 @@ func TestVerifyMultipathDevice(t *testing.T) {
 			},
 			getFs: func() afero.Fs {
 				fs := afero.NewMemMapFs()
-				fs.Mkdir("/sys/block/dm-0/slaves/sda", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves/sda", 0o755)
 				return fs
 			},
 			expectError: false,
@@ -470,9 +488,10 @@ func TestVerifyMultipathDevice(t *testing.T) {
 			},
 			getFs: func() afero.Fs {
 				fs := afero.NewMemMapFs()
-				fs.Mkdir("/sys/block/dm-0/slaves", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-0/slaves", 0o755)
 				return fs
 			},
+			expectGhost: true,
 			expectError: false,
 		},
 		"CompareWithPublishedSerialNumber Happy Path": {
@@ -517,7 +536,7 @@ func TestVerifyMultipathDevice(t *testing.T) {
 					0, 128, 0, 12, 121, 111, 99, 119, 66, 63, 87, 108,
 					55, 120, 50, 108,
 				}, 0o755)
-				fs.Mkdir("/sys/block/dm-0", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-0", 0o755)
 				return fs
 			},
 			expectError: true,
@@ -594,7 +613,7 @@ func TestVerifyMultipathDevice(t *testing.T) {
 					55, 120, 50, 108,
 				}, 0o755)
 				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("mpath-3600a0980796f6377423f576c3778326c"), 0o755)
-				fs.Mkdir("/sys/block/dm-1/slaves/", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves/", 0o755)
 				return fs
 			},
 			expectError: false,
@@ -620,7 +639,7 @@ func TestVerifyMultipathDevice(t *testing.T) {
 					55, 120, 50, 108,
 				}, 0o755)
 				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("mpath-3600a0980796f6377423f576c3778326c"), 0o755)
-				fs.Mkdir("/sys/block/dm-1/slaves/", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves/", 0o755)
 				return fs
 			},
 			expectError: true,
@@ -662,7 +681,7 @@ func TestVerifyMultipathDevice(t *testing.T) {
 					55, 120, 50, 108,
 				}, 0o755)
 				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("mpath-3600a0980796f6377423f576c3778326c"), 0o755)
-				fs.Mkdir("/sys/block/dm-1/slaves/", 0o755)
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves/", 0o755)
 				return fs
 			},
 			expectError: true,
@@ -671,7 +690,7 @@ func TestVerifyMultipathDevice(t *testing.T) {
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			deviceClient := NewDetailed(nil, params.getFs(), nil)
-			_, err := deviceClient.VerifyMultipathDevice(context.TODO(), params.publishInfo,
+			isGhost, err := deviceClient.VerifyMultipathDevice(context.TODO(), params.publishInfo,
 				params.allPublishInfos,
 				params.deviceInfo)
 			if params.expectError {
@@ -679,6 +698,7 @@ func TestVerifyMultipathDevice(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
+			assert.Equal(t, params.expectGhost, isGhost)
 		})
 	}
 }
@@ -725,72 +745,98 @@ func TestRemoveDevice(t *testing.T) {
 }
 
 func TestGetLUKSDeviceForMultipathDevice(t *testing.T) {
-	multipathDevice := "/dev/dm-0"
 	tests := map[string]struct {
-		getFs       func() afero.Fs
-		expectError bool
+		multipathDevice string
+		getFs           func() afero.Fs
+		expectError     bool
+		expectNotFound  bool
+		expectResult    string
 	}{
 		"Happy Path": {
+			multipathDevice: "/dev/dm-0",
 			getFs: func() afero.Fs {
 				fs := afero.NewMemMapFs()
 				fs.Create("/sys/block/dm-0/holders/dm-1")
 				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("CRYPT-LUKS2-b600e061186e46ac8b05590f389da249-luks-trident_pvc_4b7874ba_58d7_4d93_8d36_09a09b837f81"), 0o755)
 				return fs
 			},
-			expectError: false,
+			expectResult: "/dev/mapper/luks-trident_pvc_4b7874ba_58d7_4d93_8d36_09a09b837f81",
 		},
 		"No Holders Found": {
+			multipathDevice: "/dev/dm-0",
 			getFs: func() afero.Fs {
 				fs := afero.NewMemMapFs()
-				fs.Mkdir("/sys/block/dm-0/holders/", 0o755)
-				// afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("CRYPT-LUKS2-b600e061186e46ac8b05590f389da249-luks-trident_pvc_4b7874ba_58d7_4d93_8d36_09a09b837f81"), 0755)
+				_ = fs.MkdirAll("/sys/block/dm-0/holders/", 0o755)
 				return fs
 			},
-			expectError: true,
+			expectError:    true,
+			expectNotFound: true,
 		},
 		"Multiple Holders Found": {
+			multipathDevice: "/dev/dm-0",
 			getFs: func() afero.Fs {
 				fs := afero.NewMemMapFs()
 				fs.Create("/sys/block/dm-0/holders/dm-1")
 				fs.Create("/sys/block/dm-0/holders/dm-2")
-				// afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("CRYPT-LUKS2-b600e061186e46ac8b05590f389da249-luks-trident_pvc_4b7874ba_58d7_4d93_8d36_09a09b837f81"), 0755)
 				return fs
 			},
-			expectError: true,
+			expectError:    true,
+			expectNotFound: false,
 		},
 		"Not LUKS Device": {
+			multipathDevice: "/dev/dm-0",
 			getFs: func() afero.Fs {
 				fs := afero.NewMemMapFs()
 				fs.Create("/sys/block/dm-0/holders/dm-1")
 				afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("not-a-luks-uuid"), 0o755)
 				return fs
 			},
-			expectError: true,
-		},
-		"Error Reading Holders Dir": {
-			getFs: func() afero.Fs {
-				fs := afero.NewMemMapFs()
-				return fs
-			},
-			expectError: true,
+			expectError:    true,
+			expectNotFound: false,
 		},
 		"Error Reading UUID": {
+			multipathDevice: "/dev/dm-0",
 			getFs: func() afero.Fs {
 				fs := afero.NewMemMapFs()
 				fs.Create("/sys/block/dm-0/holders/dm-1")
 				return fs
 			},
-			expectError: true,
+			expectError:    true,
+			expectNotFound: false,
+		},
+		"device gone from sysfs returns NotFoundError": {
+			multipathDevice: "/dev/dm-0",
+			getFs: func() afero.Fs {
+				return afero.NewMemMapFs()
+			},
+			expectError:    true,
+			expectNotFound: true,
+		},
+		"legacy LUKS mapper path returns NotFoundError": {
+			multipathDevice: "/dev/mapper/luks-trident_pvc_4b7874ba_58d7_4d93_8d36_09a09b837f81",
+			getFs: func() afero.Fs {
+				return afero.NewMemMapFs()
+			},
+			expectError:    true,
+			expectNotFound: true,
 		},
 	}
 	for name, params := range tests {
 		t.Run(name, func(t *testing.T) {
 			deviceClient := NewDetailed(nil, params.getFs(), NewDiskSizeGetter())
-			_, err := deviceClient.GetLUKSDeviceForMultipathDevice(multipathDevice)
+			result, err := deviceClient.GetLUKSDeviceForMultipathDevice(params.multipathDevice)
 			if params.expectError {
 				assert.Error(t, err)
+				if params.expectNotFound {
+					assert.True(t, tridentError.IsNotFoundError(err),
+						"expected NotFoundError, got: %v", err)
+				} else {
+					assert.False(t, tridentError.IsNotFoundError(err),
+						"expected non-NotFoundError, got: %v", err)
+				}
 			} else {
 				assert.NoError(t, err)
+				assert.Equal(t, params.expectResult, result)
 			}
 		})
 	}
@@ -966,6 +1012,188 @@ func TestRemoveMultipathDeviceMappingWithRetries(t *testing.T) {
 				params.sleep)
 			if params.expectError {
 				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestRemoveOrphanedMultipathDevice(t *testing.T) {
+	ctx := context.Background()
+
+	tests := map[string]struct {
+		multipathDevice   string
+		expectedLUNSerial string
+		setupFs           func(fs afero.Fs)
+		mockCmd           func(cmd *mockexec.MockCommand)
+		expectError       bool
+		errorContains     string
+	}{
+		"success: ghost device removed (no serial)": {
+			multipathDevice: "dm-1",
+			setupFs: func(fs afero.Fs) {
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("mpath-3600a098038314461\n"), 0o644)
+			},
+			mockCmd: func(cmd *mockexec.MockCommand) {
+				cmd.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "dmsetup", deviceOperationsTimeout, true, "remove", "/dev/dm-1",
+				).Return([]byte(""), nil)
+			},
+			expectError: false,
+		},
+		"success: ghost device removed (serial matches UUID)": {
+			multipathDevice:   "dm-1",
+			expectedLUNSerial: "81DaN?Qa0gRQ",
+			setupFs: func(fs afero.Fs) {
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves", 0o755)
+				// UUID contains hex of "81DaN?Qa0gRQ" = 383144614e3f516130675251
+				_ = afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid",
+					[]byte("mpath-3600a0980383144614e3f516130675251\n"), 0o644)
+			},
+			mockCmd: func(cmd *mockexec.MockCommand) {
+				cmd.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "dmsetup", deviceOperationsTimeout, true, "remove", "/dev/dm-1",
+				).Return([]byte(""), nil)
+			},
+			expectError: false,
+		},
+		"error: serial does not match UUID": {
+			multipathDevice:   "dm-1",
+			expectedLUNSerial: "WRONG_SERIAL",
+			setupFs: func(fs afero.Fs) {
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("mpath-3600a098038314461\n"), 0o644)
+			},
+			mockCmd:       func(cmd *mockexec.MockCommand) {},
+			expectError:   true,
+			errorContains: "expected serial hex",
+		},
+		"success: empty serial skips serial check": {
+			multipathDevice:   "dm-1",
+			expectedLUNSerial: "",
+			setupFs: func(fs afero.Fs) {
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("mpath-3600a098038314461\n"), 0o644)
+			},
+			mockCmd: func(cmd *mockexec.MockCommand) {
+				cmd.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "dmsetup", deviceOperationsTimeout, true, "remove", "/dev/dm-1",
+				).Return([]byte(""), nil)
+			},
+			expectError: false,
+		},
+		"success: device already gone (sysfs missing)": {
+			multipathDevice: "dm-99",
+			setupFs:         func(fs afero.Fs) {},
+			mockCmd:         func(cmd *mockexec.MockCommand) {},
+			expectError:     false,
+		},
+		"success: device already gone (dmsetup says so)": {
+			multipathDevice: "dm-1",
+			setupFs: func(fs afero.Fs) {
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("mpath-3600a098038314461\n"), 0o644)
+			},
+			mockCmd: func(cmd *mockexec.MockCommand) {
+				cmd.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "dmsetup", deviceOperationsTimeout, true, "remove", "/dev/dm-1",
+				).Return([]byte("Device does not exist."), fmt.Errorf("exit status 1"))
+			},
+			expectError: false,
+		},
+		"error: UUID file missing rejected by mpath prefix check": {
+			multipathDevice: "dm-1",
+			setupFs: func(fs afero.Fs) {
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves", 0o755)
+			},
+			mockCmd:       func(cmd *mockexec.MockCommand) {},
+			expectError:   true,
+			errorContains: "no 'mpath-' prefix",
+		},
+		"error: UUID read failure propagated": {
+			multipathDevice: "dm-1",
+			setupFs: func(fs afero.Fs) {
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte(""), 0o644)
+			},
+			mockCmd:       func(cmd *mockexec.MockCommand) {},
+			expectError:   true,
+			errorContains: "no 'mpath-' prefix",
+		},
+		"error: non-dm device rejected": {
+			multipathDevice: "sda",
+			setupFs:         func(fs afero.Fs) {},
+			mockCmd:         func(cmd *mockexec.MockCommand) {},
+			expectError:     true,
+			errorContains:   "non-dm device",
+		},
+		"error: device still has slaves": {
+			multipathDevice: "dm-1",
+			setupFs: func(fs afero.Fs) {
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves/sdb", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("mpath-3600a098038314461\n"), 0o644)
+			},
+			mockCmd:       func(cmd *mockexec.MockCommand) {},
+			expectError:   true,
+			errorContains: "still has",
+		},
+		"error: UUID not mpath prefix": {
+			multipathDevice: "dm-1",
+			setupFs: func(fs afero.Fs) {
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("CRYPT-LUKS2-abc123\n"), 0o644)
+			},
+			mockCmd:       func(cmd *mockexec.MockCommand) {},
+			expectError:   true,
+			errorContains: "no 'mpath-' prefix",
+		},
+		"error: dmsetup remove fails (EBUSY)": {
+			multipathDevice: "dm-1",
+			setupFs: func(fs afero.Fs) {
+				_ = fs.MkdirAll("/sys/block/dm-1/slaves", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-1/dm/uuid", []byte("mpath-3600a098038314461\n"), 0o644)
+			},
+			mockCmd: func(cmd *mockexec.MockCommand) {
+				cmd.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "dmsetup", deviceOperationsTimeout, true, "remove", "/dev/dm-1",
+				).Return([]byte("device-mapper: remove ioctl on dm-1 failed: Device or resource busy"),
+					fmt.Errorf("exit status 1"))
+			},
+			expectError:   true,
+			errorContains: "dmsetup remove",
+		},
+		"success: /dev/ prefix stripped correctly": {
+			multipathDevice: "/dev/dm-5",
+			setupFs: func(fs afero.Fs) {
+				_ = fs.MkdirAll("/sys/block/dm-5/slaves", 0o755)
+				_ = afero.WriteFile(fs, "/sys/block/dm-5/dm/uuid", []byte("mpath-360000\n"), 0o644)
+			},
+			mockCmd: func(cmd *mockexec.MockCommand) {
+				cmd.EXPECT().ExecuteWithTimeout(
+					gomock.Any(), "dmsetup", deviceOperationsTimeout, true, "remove", "/dev/dm-5",
+				).Return([]byte(""), nil)
+			},
+			expectError: false,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockCmd := mockexec.NewMockCommand(ctrl)
+			fs := afero.NewMemMapFs()
+			tt.setupFs(fs)
+			tt.mockCmd(mockCmd)
+
+			client := NewDetailed(mockCmd, fs, NewDiskSizeGetter())
+			err := client.RemoveGhostMultipathDevice(ctx, tt.multipathDevice, tt.expectedLUNSerial)
+			if tt.expectError {
+				assert.Error(t, err)
+				if tt.errorContains != "" {
+					assert.Contains(t, err.Error(), tt.errorContains)
+				}
 			} else {
 				assert.NoError(t, err)
 			}
