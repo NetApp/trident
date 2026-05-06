@@ -507,6 +507,8 @@ func (client *Client) AttachVolume(
 
 			// Update to the correct LUN ID and rescan
 			lunID = discoveredLunID
+			// Persist real LUN on publishInfo so staging metadata and NodeExpandVolume scan the correct device.
+			publishInfo.IscsiLunNumber = int32(discoveredLunID)
 
 			// Wait for the correct LUN's devices
 			err = client.waitForDeviceScan(ctx, hostSessionMap, lunID, publishInfo.IscsiTargetIQN)

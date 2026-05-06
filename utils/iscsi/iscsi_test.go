@@ -336,6 +336,7 @@ func TestClient_AttachVolume(t *testing.T) {
 
 		assertError       assert.ErrorAssertionFunc
 		expectedMpathSize int64
+		expectedLunNumber int32 // if non-zero, asserts publishInfo.IscsiLunNumber after AttachVolume
 	}
 
 	const targetIQN = "iqn.2016-04.com.open-iscsi:ef9f41e2ffa7:vs.3"
@@ -1429,6 +1430,86 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			volumeAuthSecrets: make(map[string]string, 0),
 			assertError:       assert.Error,
 		},
+		// Controller hint LUN vs backend-assigned LUN; serial match must update publishInfo for expand.
+		"LUN auto-discovery: publishInfo.IscsiLunNumber updated when backend auto-assigns LUN ID": {
+			chrootPathPrefix: "",
+			getCommand: func(controller *gomock.Controller) tridentexec.Command {
+				mockCommand := mockexec.NewMockCommand(controller)
+				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-V").Return(nil, nil)
+				mockCommand.EXPECT().Execute(gomock.Any(), "pgrep", "multipathd").Return([]byte("150"), nil)
+				mockCommand.EXPECT().ExecuteWithTimeout(gomock.Any(), "multipathd", 5*time.Second, false, "show",
+					"config").Return([]byte(multipathConfig("no", false)), nil)
+				// Sessions already exist for targetIQN → portalsToLogin returns empty list, no new login needed.
+				mockCommand.EXPECT().Execute(gomock.Any(), "iscsiadm", "-m",
+					"session").Return([]byte(iscsiadmSessionOutput), nil)
+				// Debug commands emitted by waitForDeviceScan when the LUN 1 device is not yet visible.
+				mockCommand.EXPECT().Execute(gomock.Any(), "ls", "-al", "/dev").Return(nil, errors.New("some error"))
+				mockCommand.EXPECT().Execute(gomock.Any(), "ls", "-al", "/dev/mapper/").Return(nil, errors.New("some error"))
+				mockCommand.EXPECT().Execute(gomock.Any(), "ls", "-al", "/dev/disk/by-path").Return(nil, errors.New("some error"))
+				mockCommand.EXPECT().Execute(gomock.Any(), "lsscsi").Return(nil, errors.New("some error"))
+				mockCommand.EXPECT().Execute(gomock.Any(), "lsscsi", "-t").Return(nil, errors.New("some error"))
+				mockCommand.EXPECT().Execute(gomock.Any(), "free").Return(nil, errors.New("some error"))
+				return mockCommand
+			},
+			getOSClient: func(controller *gomock.Controller) OS {
+				mockOsClient := mock_iscsi.NewMockOS(controller)
+				// LUN 0 device (/dev/sda) is visible after rescan/purge cycle.
+				mockOsClient.EXPECT().PathExists("/dev/sda/block").Return(true, nil)
+				// LUN 1 device (/dev/sdb) is not yet visible → waitForDeviceScan(lunID=1) returns error.
+				// This causes AttachVolume to fail, but publishInfo.IscsiLunNumber must already be 1.
+				mockOsClient.EXPECT().PathExists("/dev/sdb/block").Return(false, nil)
+				return mockOsClient
+			},
+			getDeviceClient: func(controller *gomock.Controller) devices.Devices {
+				mockDevices := mock_devices.NewMockDevices(controller)
+				// LUN 0's device has the source serial (wrong for the clone).
+				mockDevices.EXPECT().GetLunSerial(gomock.Any(), "/dev/sda").Return("SOURCESERIAL", nil).AnyTimes()
+				// LUN 1's device has the clone serial (correct).
+				mockDevices.EXPECT().GetLunSerial(gomock.Any(), "/dev/sdb").Return("CLONESERIAL", nil).AnyTimes()
+				mockDevices.EXPECT().ScanTargetLUN(gomock.Any(), gomock.Any()).AnyTimes()
+				return mockDevices
+			},
+			getFileSystemClient: func(controller *gomock.Controller) filesystem.Filesystem {
+				return mock_filesystem.NewMockFilesystem(controller)
+			},
+			getMountClient: func(controller *gomock.Controller) mount.Mount {
+				return mock_mount.NewMockMount(controller)
+			},
+			getReconcileUtils: func(controller *gomock.Controller) IscsiReconcileUtils {
+				mockReconcileUtils := mock_iscsi.NewMockIscsiReconcileUtils(controller)
+				mockReconcileUtils.EXPECT().GetISCSIHostSessionMapForTarget(gomock.Any(), targetIQN).
+					Return(map[int]int{0: 0})
+				// LUN 0 paths: source volume device.
+				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(0, gomock.Any()).Return([]string{"/dev/sda"}).AnyTimes()
+				// LUN 1 paths: clone volume device (found by findLUNBySerial).
+				mockReconcileUtils.EXPECT().GetSysfsBlockDirsForLUN(1, gomock.Any()).Return([]string{"/dev/sdb"}).AnyTimes()
+				return mockReconcileUtils
+			},
+			getFileSystemUtils: func() afero.Fs {
+				fs := afero.NewMemMapFs()
+				// rescanOneLun and purgeOneLun write to these sysfs files.
+				_, _ = fs.Create("/dev/sda/rescan")
+				_, _ = fs.Create("/dev/sda/delete")
+				return fs
+			},
+			publishInfo: models.VolumePublishInfo{
+				FilesystemType: filesystem.Ext4,
+				VolumeAccessInfo: models.VolumeAccessInfo{
+					IscsiAccessInfo: models.IscsiAccessInfo{
+						IscsiTargetPortal: "127.0.0.1",
+						IscsiPortals:      []string{"127.0.0.2"},
+						IscsiTargetIQN:    targetIQN,
+						IscsiLunSerial:    "CLONESERIAL",
+						IscsiLunNumber:    0, // controller hint (wrong; backend auto-assigned LUN 1)
+					},
+				},
+			},
+			volumeName:        "test-volume",
+			volumeMountPoint:  "/mnt/test-volume",
+			volumeAuthSecrets: make(map[string]string, 0),
+			assertError:       assert.Error,
+			expectedLunNumber: 1, // must be updated from hint (0) to discovered LUN ID (1)
+		},
 	}
 
 	for name, params := range tests {
@@ -1449,6 +1530,10 @@ tcp: [4] 127.0.0.2:3260,1029 ` + targetIQN + ` (non-flash)`
 			}
 
 			assert.Equal(t, params.expectedMpathSize, mpathSize)
+			if params.expectedLunNumber != 0 {
+				assert.Equal(t, params.expectedLunNumber, params.publishInfo.IscsiLunNumber,
+					"publishInfo.IscsiLunNumber should be updated to the discovered LUN ID")
+			}
 		})
 	}
 }

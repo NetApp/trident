@@ -7,7 +7,12 @@ package filesystem
 import (
 	"context"
 	"fmt"
+	"os"
+	"syscall"
 	"time"
+	"unsafe"
+
+	"golang.org/x/sys/unix"
 
 	"github.com/netapp/trident/internal/syswrap"
 	. "github.com/netapp/trident/logging"
@@ -53,15 +58,21 @@ func (f *FSClient) GetFilesystemStats(
 	return available, capacity, usage, inodes, inodesFree, inodesUsed, nil
 }
 
-// getFilesystemSize returns the size of the filesystem for the given path.
-// The caller of the func is responsible for verifying the mountPoint existence and readiness.
-func (f *FSClient) getFilesystemSize(ctx context.Context, path string) (int64, error) {
-	Logc(ctx).Debug(">>>> filesystem_linux.getFilesystemSize")
-	defer Logc(ctx).Debug("<<<< filesystem_linux.getFilesystemSize")
+// getBlockDeviceSize reports devicePath capacity via BLKGETSIZE64 (kernel-visible; may trail provisioned size slightly).
+func (f *FSClient) getBlockDeviceSize(ctx context.Context, devicePath string) (int64, error) {
+	Logc(ctx).WithField("devicePath", devicePath).Debug(">>>> filesystem_linux.getBlockDeviceSize")
+	defer Logc(ctx).WithField("devicePath", devicePath).Debug("<<<< filesystem_linux.getBlockDeviceSize")
 
-	_, size, _, _, _, _, err := f.GetFilesystemStats(ctx, path)
+	disk, err := os.Open(devicePath)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to open block device %s: %w", devicePath, err)
+	}
+	defer disk.Close()
+
+	var size int64
+	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, disk.Fd(), unix.BLKGETSIZE64, uintptr(unsafe.Pointer(&size)))
+	if errno != 0 {
+		return 0, fmt.Errorf("BLKGETSIZE64 ioctl failed for %s: %w", devicePath, os.NewSyscallError("ioctl", errno))
 	}
 
 	return size, nil

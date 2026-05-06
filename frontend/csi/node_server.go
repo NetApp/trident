@@ -598,7 +598,11 @@ func (p *Plugin) nodeExpandVolume(
 		return status.Errorf(codes.FailedPrecondition, "unable to read protocol info from publish info; %s", err)
 	}
 
-	var fsType, mountOptions string
+	var (
+		fsType, mountOptions     string
+		preExpandFilesystemSize  int64
+		preExpandDeviceSizeBytes int64
+	)
 
 	switch protocol {
 	case tridentconfig.File:
@@ -608,6 +612,25 @@ func (p *Plugin) nodeExpandVolume(
 		if fsType, err = filesystem.VerifyFilesystemSupport(publishInfo.FilesystemType); err != nil {
 			break
 		}
+
+		// Capture pre-expand filesystem size via statfs on the kubelet-staged mount.
+		if fsType != filesystem.Raw {
+			preExpandFilesystemSize, err = p.fs.GetFilesystemSize(ctx, stagingTargetPath)
+			if err != nil {
+				return status.Error(codes.Internal, err.Error())
+			}
+		}
+
+		// Capture pre-expand block device size before any rescan/resize work.
+		if publishInfo.DevicePath != "" {
+			preExpandDeviceSizeBytes, err = p.devices.GetDiskSize(ctx, publishInfo.DevicePath)
+			if err != nil {
+				Logc(ctx).WithFields(LogFields{
+					"devicePath": publishInfo.DevicePath,
+				}).WithError(err).Warn("Failed to read pre-expand device size; skipping device growth check.")
+			}
+		}
+
 		// We don't need to rescan mount devices for NVMe protocol backend. Automatic namespace rescanning happens
 		// everytime the NVMe controller is reset, or if the controller posts an asynchronous event indicating
 		// namespace attributes have changed.
@@ -663,10 +686,22 @@ func (p *Plugin) nodeExpandVolume(
 		}
 	}
 
+	// Read the device size after rescan/resize but before filesystem expand.
+	var postExpandDeviceSizeBytes int64
+	if publishInfo.DevicePath != "" {
+		postExpandDeviceSizeBytes, err = p.devices.GetDiskSize(ctx, publishInfo.DevicePath)
+		if err != nil {
+			Logc(ctx).WithFields(LogFields{
+				"devicePath": publishInfo.DevicePath,
+			}).WithError(err).Warn("Failed to read post-expand device size; skipping device growth check.")
+		}
+	}
+	devicesGrew := preExpandDeviceSizeBytes > 0 && postExpandDeviceSizeBytes > preExpandDeviceSizeBytes
+
 	// Expand filesystem.
 	if fsType != filesystem.Raw {
-		filesystemSize, err := p.fs.ExpandFilesystemOnNode(ctx, publishInfo, devicePath, stagingTargetPath, fsType,
-			mountOptions)
+		newFilesystemSize, err := p.fs.ExpandFilesystemOnNode(ctx, publishInfo, devicePath, stagingTargetPath, fsType,
+			mountOptions, requiredBytes)
 		if err != nil {
 			Logc(ctx).WithFields(LogFields{
 				"device":         publishInfo.DevicePath,
@@ -674,8 +709,20 @@ func (p *Plugin) nodeExpandVolume(
 			}).WithError(err).Error("Unable to expand filesystem.")
 			return status.Error(codes.Internal, err.Error())
 		}
+
+		if devicesGrew && newFilesystemSize <= preExpandFilesystemSize {
+			Logc(ctx).WithFields(LogFields{
+				"preExpandFilesystemSize":   preExpandFilesystemSize,
+				"newFilesystemSize":         newFilesystemSize,
+				"preExpandDeviceSizeBytes":  preExpandDeviceSizeBytes,
+				"postExpandDeviceSizeBytes": postExpandDeviceSizeBytes,
+				"requiredBytes":             requiredBytes,
+			}).Error("Filesystem did not grow despite block device growing during expand.")
+			return status.Error(codes.Internal, "filesystem size did not grow")
+		}
+
 		Logc(ctx).WithFields(LogFields{
-			"filesystemSize": filesystemSize,
+			"filesystemSize": newFilesystemSize,
 			"requiredBytes":  requiredBytes,
 		}).Debug("Filesystem size after expand.")
 	}

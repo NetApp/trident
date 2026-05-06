@@ -19,11 +19,11 @@ func (f *FSClient) GetFilesystemStats(ctx context.Context, _ string) (int64, int
 	return 0, 0, 0, 0, 0, 0, errors.UnsupportedError("GetFilesystemStats is not supported for darwin")
 }
 
-// getFilesystemSize unused stub function
-func (f *FSClient) getFilesystemSize(ctx context.Context, _ string) (int64, error) {
-	Logc(ctx).Debug(">>>> filesystem_darwin.getFilesystemSize")
-	defer Logc(ctx).Debug("<<<< filesystem_darwin.getFilesystemSize")
-	return 0, errors.UnsupportedError("getFilesystemSize is not supported for darwin")
+// getBlockDeviceSize unused stub function.
+func (f *FSClient) getBlockDeviceSize(ctx context.Context, _ string) (int64, error) {
+	Logc(ctx).Debug(">>>> filesystem_darwin.getBlockDeviceSize")
+	defer Logc(ctx).Debug("<<<< filesystem_darwin.getBlockDeviceSize")
+	return 0, errors.UnsupportedError("getBlockDeviceSize is not supported for darwin")
 }
 
 // GetDeviceFilePath returns the staging path for volume.

@@ -62,6 +62,8 @@ func TestNodeStageVolume(t *testing.T) {
 	type parameters struct {
 		getISCSIClient          func() iscsi.ISCSI
 		getNodeHelper           func() nodehelpers.NodeHelper
+		getFilesystemClient     func() filesystem.Filesystem
+		getDeviceClient         func() devices.Devices
 		nodeStageVolumeRequest  *csi.NodeStageVolumeRequest
 		assertError             assert.ErrorAssertionFunc
 		nodeStageVolumeResponse *csi.NodeStageVolumeResponse
@@ -89,6 +91,17 @@ func TestNodeStageVolume(t *testing.T) {
 				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return mockNodeHelper
 			},
+			getFilesystemClient: func() filesystem.Filesystem {
+				mockFS := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFS.EXPECT().GetFilesystemSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				mockFS.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+				return mockFS
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDiskSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				return mockDeviceClient
+			},
 			nodeStageVolumeRequest:  request,
 			assertError:             assert.NoError,
 			nodeStageVolumeResponse: &csi.NodeStageVolumeResponse{},
@@ -114,6 +127,14 @@ func TestNodeStageVolume(t *testing.T) {
 
 			if params.getNodeHelper != nil {
 				plugin.nodeHelper = params.getNodeHelper()
+			}
+
+			if params.getFilesystemClient != nil {
+				plugin.fs = params.getFilesystemClient()
+			}
+
+			if params.getDeviceClient != nil {
+				plugin.devices = params.getDeviceClient()
 			}
 
 			nodeStageVolumeResponse, err := plugin.NodeStageVolume(context.Background(), params.nodeStageVolumeRequest)
@@ -204,6 +225,8 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 		getISCSIClient         func() iscsi.ISCSI
 		getNodeHelper          func() nodehelpers.NodeHelper
 		getRestClient          func() controllerAPI.TridentController
+		getFilesystemClient    func() filesystem.Filesystem
+		getDeviceClient        func() devices.Devices
 		nodeStageVolumeRequest *csi.NodeStageVolumeRequest
 		assertError            assert.ErrorAssertionFunc
 		aesKey                 []byte
@@ -267,6 +290,17 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 				mockNodeHelper := mockNodeHelpers.NewMockNodeHelper(gomock.NewController(t))
 				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return mockNodeHelper
+			},
+			getFilesystemClient: func() filesystem.Filesystem {
+				mockFS := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFS.EXPECT().GetFilesystemSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				mockFS.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+				return mockFS
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDiskSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				return mockDeviceClient
 			},
 			nodeStageVolumeRequest: badLuksEncryptionRequest,
 			assertError:            assert.NoError,
@@ -566,6 +600,16 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return mockNodeHelper
 			},
+			getFilesystemClient: func() filesystem.Filesystem {
+				mockFS := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFS.EXPECT().GetFilesystemSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				return mockFS
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDiskSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				return mockDeviceClient
+			},
 			nodeStageVolumeRequest: request,
 			assertError:            assert.NoError,
 		},
@@ -589,6 +633,16 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 				return mockNodeHelper
 			},
+			getFilesystemClient: func() filesystem.Filesystem {
+				mockFS := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFS.EXPECT().GetFilesystemSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				return mockFS
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDiskSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				return mockDeviceClient
+			},
 			nodeStageVolumeRequest: request,
 			assertError:            assert.NoError,
 		},
@@ -611,6 +665,17 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockNodeHelper.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("some error"))
 				return mockNodeHelper
+			},
+			getFilesystemClient: func() filesystem.Filesystem {
+				mockFS := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFS.EXPECT().GetFilesystemSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				mockFS.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+				return mockFS
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDiskSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				return mockDeviceClient
 			},
 			nodeStageVolumeRequest: request,
 			assertError:            assert.Error,
@@ -659,6 +724,14 @@ func TestNodeStageISCSIVolume(t *testing.T) {
 
 			if params.getRestClient != nil {
 				plugin.restClient = params.getRestClient()
+			}
+
+			if params.getFilesystemClient != nil {
+				plugin.fs = params.getFilesystemClient()
+			}
+
+			if params.getDeviceClient != nil {
+				plugin.devices = params.getDeviceClient()
 			}
 
 			sharedTarget, err := strconv.ParseBool(params.nodeStageVolumeRequest.PublishContext["sharedTarget"])
@@ -2822,7 +2895,8 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
 		mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
-		mountClient, _ := mount.New()
+		mockFS := mock_filesystem.NewMockFilesystem(ctrl)
+		mockDeviceClient := mock_devices.NewMockDevices(ctrl)
 
 		// Setting up mocks expectation for each request.
 		for i := 0; i < numOfRequests; i++ {
@@ -2836,6 +2910,9 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 			mockISCSIClient.EXPECT().AddSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil)
 		}
+		mockFS.EXPECT().GetFilesystemSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+		mockFS.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+		mockDeviceClient.EXPECT().GetDiskSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
 
 		// Creating a node plugin.
 		plugin := &Plugin{
@@ -2843,7 +2920,8 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 			role:             CSINode,
 			limiterSharedMap: make(map[string]limiter.Limiter),
 			nodeHelper:       mockTrackingClient,
-			fs:               filesystem.New(mountClient),
+			fs:               mockFS,
+			devices:          mockDeviceClient,
 			iscsi:            mockISCSIClient,
 		}
 
@@ -2974,7 +3052,8 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 		mockTrackingClient := mockNodeHelpers.NewMockNodeHelper(ctrl)
 		mockISCSIClient := mock_iscsi.NewMockISCSI(ctrl)
 		mockNVMeClient := mock_nvme.NewMockNVMeInterface(ctrl)
-		mountClient, _ := mount.New()
+		mockFS := mock_filesystem.NewMockFilesystem(ctrl)
+		mockDeviceClient := mock_devices.NewMockDevices(ctrl)
 
 		for i := 0; i < numOfRequestsNAS; i++ {
 			// Setting up mocks expectation for NAS request.
@@ -3009,6 +3088,9 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 			mockNVMeClient.EXPECT().AddPublishedNVMeSession(gomock.Any(), gomock.Any())
 			mockTrackingClient.EXPECT().WriteTrackingInfo(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 		}
+		mockFS.EXPECT().GetFilesystemSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+		mockFS.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+		mockDeviceClient.EXPECT().GetDiskSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
 
 		// Creating a node plugin.
 		plugin := &Plugin{
@@ -3019,7 +3101,8 @@ func TestNodeStageVolume_Multithreaded(t *testing.T) {
 			nodeHelper:       mockTrackingClient,
 			iscsi:            mockISCSIClient,
 			nvmeHandler:      mockNVMeClient,
-			fs:               filesystem.New(mountClient),
+			fs:               mockFS,
+			devices:          mockDeviceClient,
 		}
 
 		plugin.InitializeNodeLimiter(ctx)
@@ -13105,9 +13188,15 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			mockFilesystem: func() filesystem.Filesystem {
 				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
-				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+				mockFilesystem1.EXPECT().GetFilesystemSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
 
 				return mockFilesystem1
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDiskSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				return mockDeviceClient
 			},
 			expectedResponse: &csi.NodeExpandVolumeResponse{},
 			expErrCode:       codes.OK,
@@ -13144,7 +13233,11 @@ func TestNodeExpandVolume(t *testing.T) {
 					gomock.Any()).Return(errors.New("failure")).AnyTimes()
 				return mockISCSIClient
 			},
-
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().GetFilesystemSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				return mockFilesystem1
+			},
 			expErrCode: codes.Internal,
 		},
 		{
@@ -13178,7 +13271,12 @@ func TestNodeExpandVolume(t *testing.T) {
 				mockISCSIClient.EXPECT().ExpandVolume(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 				return mockISCSIClient
 			},
-
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().GetFilesystemSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(0), errors.New("expand error")).AnyTimes()
+				return mockFilesystem1
+			},
 			expErrCode: codes.Internal,
 		},
 		{
@@ -13214,9 +13312,15 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			mockFilesystem: func() filesystem.Filesystem {
 				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
-				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(0), errors.New("some error")).AnyTimes()
+				mockFilesystem1.EXPECT().GetFilesystemSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(0), errors.New("some error")).AnyTimes()
 
 				return mockFilesystem1
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDiskSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				return mockDeviceClient
 			},
 			expErrCode: codes.Internal,
 		},
@@ -13253,6 +13357,11 @@ func TestNodeExpandVolume(t *testing.T) {
 				mockFCPClient := mock_fcp.NewMockFCP(gomock.NewController(t))
 				mockFCPClient.EXPECT().IsAlreadyAttached(gomock.Any(), gomock.Any(), gomock.Any()).Return(false).AnyTimes()
 				return mockFCPClient
+			},
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().GetFilesystemSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				return mockFilesystem1
 			},
 			expErrCode: codes.Internal,
 		},
@@ -13291,6 +13400,11 @@ func TestNodeExpandVolume(t *testing.T) {
 				mockFCPClient.EXPECT().RescanDevices(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("")).AnyTimes()
 				return mockFCPClient
 			},
+			mockFilesystem: func() filesystem.Filesystem {
+				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
+				mockFilesystem1.EXPECT().GetFilesystemSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				return mockFilesystem1
+			},
 			expErrCode: codes.Internal,
 		},
 		{
@@ -13322,9 +13436,15 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			mockFilesystem: func() filesystem.Filesystem {
 				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
-				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+				mockFilesystem1.EXPECT().GetFilesystemSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
 
 				return mockFilesystem1
+			},
+			getDeviceClient: func() devices.Devices {
+				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDiskSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				return mockDeviceClient
 			},
 			expectedResponse: &csi.NodeExpandVolumeResponse{},
 			expErrCode:       codes.OK,
@@ -13364,12 +13484,14 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			mockFilesystem: func() filesystem.Filesystem {
 				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
-				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+				mockFilesystem1.EXPECT().GetFilesystemSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
 
 				return mockFilesystem1
 			},
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDiskSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
 				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("", errors.New(""))
 				return mockDeviceClient
 			},
@@ -13411,12 +13533,14 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			mockFilesystem: func() filesystem.Filesystem {
 				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
-				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+				mockFilesystem1.EXPECT().GetFilesystemSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
 
 				return mockFilesystem1
 			},
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDiskSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
 				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("x/device-path", nil).AnyTimes()
 				return mockDeviceClient
 			},
@@ -13459,12 +13583,14 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			mockFilesystem: func() filesystem.Filesystem {
 				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
-				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+				mockFilesystem1.EXPECT().GetFilesystemSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
 
 				return mockFilesystem1
 			},
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDiskSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
 				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("x/device-path", nil).AnyTimes()
 				return mockDeviceClient
 			},
@@ -13507,12 +13633,14 @@ func TestNodeExpandVolume(t *testing.T) {
 			},
 			mockFilesystem: func() filesystem.Filesystem {
 				mockFilesystem1 := mock_filesystem.NewMockFilesystem(gomock.NewController(t))
-				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
+				mockFilesystem1.EXPECT().GetFilesystemSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+				mockFilesystem1.EXPECT().ExpandFilesystemOnNode(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(2), nil).AnyTimes()
 
 				return mockFilesystem1
 			},
 			getDeviceClient: func() devices.Devices {
 				mockDeviceClient := mock_devices.NewMockDevices(gomock.NewController(t))
+				mockDeviceClient.EXPECT().GetDiskSize(gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
 				mockDeviceClient.EXPECT().GetLUKSDeviceForMultipathDevice(gomock.Any()).Return("x/device-path", nil).AnyTimes()
 				return mockDeviceClient
 			},

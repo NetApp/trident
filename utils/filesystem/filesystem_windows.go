@@ -14,10 +14,10 @@ import (
 	"github.com/netapp/trident/utils/models"
 )
 
-func (f *FSClient) getFilesystemSize(ctx context.Context, _ string) (int64, error) {
-	Logc(ctx).Debug(">>>> filesystem_windows.getFilesystemSize")
-	defer Logc(ctx).Debug("<<<< filesystem_windows.getFilesystemSize")
-	return 0, errors.UnsupportedError("getFilesystemSize is not supported for windows")
+func (f *FSClient) getBlockDeviceSize(ctx context.Context, _ string) (int64, error) {
+	Logc(ctx).Debug(">>>> filesystem_windows.getBlockDeviceSize")
+	defer Logc(ctx).Debug("<<<< filesystem_windows.getBlockDeviceSize")
+	return 0, errors.UnsupportedError("getBlockDeviceSize is not supported for windows")
 }
 
 func (f *FSClient) GetFilesystemStats(ctx context.Context, path string) (int64, int64, int64, int64, int64, int64,

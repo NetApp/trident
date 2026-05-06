@@ -60,11 +60,13 @@ type Filesystem interface {
 	RepairVolume(ctx context.Context, device, fstype string)
 	ExpandFilesystemOnNode(
 		ctx context.Context, publishInfo *models.VolumePublishInfo, devicePath, stagedTargetPath, fsType, mountOptions string,
+		targetSizeBytes int64,
 	) (int64, error)
 	DeleteFile(ctx context.Context, filepath, fileDescription string) (string, error)
 	GetFilesystemStats(
 		ctx context.Context, path string,
 	) (available, capacity, usage, inodes, inodesFree, inodesUsed int64, err error)
+	GetFilesystemSize(ctx context.Context, path string) (int64, error)
 	GetUnmountPath(ctx context.Context, trackingInfo *models.VolumeTrackingInfo) (string, error)
 	ScanFile(filename string) ([]byte, error)
 	ScanDir(path string) ([]os.FileInfo, error)
@@ -91,6 +93,12 @@ func NewDetailed(command tridentexec.Command, osFs afero.Fs, mount Mount) *FSCli
 		osFs:        osFs,
 		mountClient: mount,
 	}
+}
+
+// GetFilesystemSize returns the total capacity in bytes of the filesystem at the given path.
+func (f *FSClient) GetFilesystemSize(ctx context.Context, path string) (int64, error) {
+	_, capacity, _, _, _, _, err := f.GetFilesystemStats(ctx, path)
+	return capacity, err
 }
 
 // GetDFOutput returns parsed DF output
@@ -254,9 +262,10 @@ func (f *FSClient) RepairVolume(ctx context.Context, device, fstype string) {
 	}
 }
 
-// ExpandFilesystemOnNode will expand the filesystem of an already expanded volume.
+// ExpandFilesystemOnNode expands the filesystem after the volume capacity step.
 func (f *FSClient) ExpandFilesystemOnNode(
 	ctx context.Context, publishInfo *models.VolumePublishInfo, devicePath, stagedTargetPath, fsType, mountOptions string,
+	targetSizeBytes int64,
 ) (int64, error) {
 	GenerateRequestContextForLayer(ctx, LogLayerUtils)
 
@@ -269,6 +278,7 @@ func (f *FSClient) ExpandFilesystemOnNode(
 		"mountOptions":      mountOptions,
 		"filesystemType":    fsType,
 		"stagingMountpoint": expansionMountPoint,
+		"targetSizeBytes":   targetSizeBytes,
 	}
 	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.ExpandFilesystemOnNode")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.ExpandFilesystemOnNode")
@@ -289,9 +299,17 @@ func (f *FSClient) ExpandFilesystemOnNode(
 	var size int64
 	switch fsType {
 	case "xfs":
-		size, err = f.expandFilesystem(ctx, "xfs_growfs", expansionMountPoint, expansionMountPoint)
+		size, err = expandFilesystem(
+			ctx, f.command,
+			"xfs_growfs", expansionMountPoint, expansionMountPoint,
+			f.GetFilesystemSize,
+		)
 	case "ext3", "ext4":
-		size, err = f.expandFilesystem(ctx, "resize2fs", devicePath, expansionMountPoint)
+		size, err = expandFilesystem(
+			ctx, f.command,
+			"resize2fs", devicePath, expansionMountPoint,
+			f.GetFilesystemSize,
+		)
 	default:
 		err = fmt.Errorf("unsupported file system type: %s", fsType)
 	}
@@ -301,32 +319,29 @@ func (f *FSClient) ExpandFilesystemOnNode(
 	return size, err
 }
 
-func (f *FSClient) expandFilesystem(ctx context.Context, cmd, cmdArguments, tmpMountPoint string) (int64, error) {
+// expandFilesystem runs the resize tool and returns the post-expand filesystem size.
+func expandFilesystem(
+	ctx context.Context, cmd tridentexec.Command,
+	cmdName, cmdArguments, tmpMountPoint string,
+	getFilesystemSize func(context.Context, string) (int64, error),
+) (int64, error) {
 	logFields := LogFields{
-		"cmd":           cmd,
+		"cmd":           cmdName,
 		"cmdArguments":  cmdArguments,
 		"tmpMountPoint": tmpMountPoint,
 	}
 	Logc(ctx).WithFields(logFields).Debug(">>>> filesystem.expandFilesystem")
 	defer Logc(ctx).WithFields(logFields).Debug("<<<< filesystem.expandFilesystem")
 
-	preExpandSize, err := f.getFilesystemSize(ctx, tmpMountPoint)
-	if err != nil {
-		return 0, err
-	}
-	_, err = f.command.Execute(ctx, cmd, cmdArguments)
+	_, err := cmd.Execute(ctx, cmdName, cmdArguments)
 	if err != nil {
 		Logc(ctx).Errorf("Expanding filesystem failed; %s", err)
 		return 0, err
 	}
 
-	postExpandSize, err := f.getFilesystemSize(ctx, tmpMountPoint)
+	postExpandSize, err := getFilesystemSize(ctx, tmpMountPoint)
 	if err != nil {
 		return 0, err
-	}
-
-	if postExpandSize == preExpandSize {
-		Logc(ctx).Warnf("Failed to expand filesystem; size=%d", postExpandSize)
 	}
 
 	return postExpandSize, nil

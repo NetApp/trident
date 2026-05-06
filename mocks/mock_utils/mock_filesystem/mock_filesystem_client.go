@@ -58,18 +58,18 @@ func (mr *MockFilesystemMockRecorder) DeleteFile(ctx, filepath, fileDescription 
 }
 
 // ExpandFilesystemOnNode mocks base method.
-func (m *MockFilesystem) ExpandFilesystemOnNode(ctx context.Context, publishInfo *models.VolumePublishInfo, devicePath, stagedTargetPath, fsType, mountOptions string) (int64, error) {
+func (m *MockFilesystem) ExpandFilesystemOnNode(ctx context.Context, publishInfo *models.VolumePublishInfo, devicePath, stagedTargetPath, fsType, mountOptions string, targetSizeBytes int64) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExpandFilesystemOnNode", ctx, publishInfo, devicePath, stagedTargetPath, fsType, mountOptions)
+	ret := m.ctrl.Call(m, "ExpandFilesystemOnNode", ctx, publishInfo, devicePath, stagedTargetPath, fsType, mountOptions, targetSizeBytes)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ExpandFilesystemOnNode indicates an expected call of ExpandFilesystemOnNode.
-func (mr *MockFilesystemMockRecorder) ExpandFilesystemOnNode(ctx, publishInfo, devicePath, stagedTargetPath, fsType, mountOptions any) *gomock.Call {
+func (mr *MockFilesystemMockRecorder) ExpandFilesystemOnNode(ctx, publishInfo, devicePath, stagedTargetPath, fsType, mountOptions, targetSizeBytes any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExpandFilesystemOnNode", reflect.TypeOf((*MockFilesystem)(nil).ExpandFilesystemOnNode), ctx, publishInfo, devicePath, stagedTargetPath, fsType, mountOptions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExpandFilesystemOnNode", reflect.TypeOf((*MockFilesystem)(nil).ExpandFilesystemOnNode), ctx, publishInfo, devicePath, stagedTargetPath, fsType, mountOptions, targetSizeBytes)
 }
 
 // FormatVolume mocks base method.
@@ -99,6 +99,21 @@ func (m *MockFilesystem) GetDFOutput(ctx context.Context) ([]models.DFInfo, erro
 func (mr *MockFilesystemMockRecorder) GetDFOutput(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDFOutput", reflect.TypeOf((*MockFilesystem)(nil).GetDFOutput), ctx)
+}
+
+// GetFilesystemSize mocks base method.
+func (m *MockFilesystem) GetFilesystemSize(ctx context.Context, path string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFilesystemSize", ctx, path)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFilesystemSize indicates an expected call of GetFilesystemSize.
+func (mr *MockFilesystemMockRecorder) GetFilesystemSize(ctx, path any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilesystemSize", reflect.TypeOf((*MockFilesystem)(nil).GetFilesystemSize), ctx, path)
 }
 
 // GetFilesystemStats mocks base method.
