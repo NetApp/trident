@@ -971,6 +971,10 @@ func TestNamespaceOperations(t *testing.T) {
 	assert.False(t, exists)
 	assert.NoError(t, err) // Existence checks should not error
 
+	// Test CheckNamespaceLabels
+	hasLabel := suite.kubeClient.CheckNamespaceLabels("nonexistent", map[string]string{"kubernetes.io/metadata.name": "test-namespace"})
+	assert.False(t, hasLabel)
+
 	// Test GetNamespace
 	namespace, err := suite.kubeClient.GetNamespace("test-namespace")
 	// Fake client may behave differently - accept either outcome

@@ -1853,6 +1853,8 @@ func (k *KubeClient) PatchCSIDriverByLabel(label string, patchBytes []byte, patc
 	return nil
 }
 
+
+// CheckNamespaceExists checks if the installation namespace already exists
 func (k *KubeClient) CheckNamespaceExists(namespace string) (bool, error) {
 	if _, err := k.GetNamespace(namespace); err != nil {
 		if statusErr, ok := err.(*apierrors.StatusError); ok && statusErr.Status().Reason == metav1.StatusReasonNotFound {
@@ -1862,6 +1864,22 @@ func (k *KubeClient) CheckNamespaceExists(namespace string) (bool, error) {
 	}
 	return true, nil
 }
+
+// CheckNamespaceLabels checks if the installation namespace already has the required labels
+func (k *KubeClient) CheckNamespaceLabels(namespace string, labels map[string]string) bool {
+	ns, err := k.GetNamespace(namespace)
+	if err != nil {
+		return false
+	}
+
+	for key, value := range labels {
+		if ns.Labels[key] != value {
+			return false
+		}
+	}
+	return true
+}
+
 
 // PatchNamespaceLabels patches the namespace with provided labels
 func (k *KubeClient) PatchNamespaceLabels(namespace string, labels map[string]string) error {

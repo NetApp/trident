@@ -1865,6 +1865,19 @@ func TestInstallOrPatchTrident(t *testing.T) {
 		assert.Empty(t, acpVersion)
 	})
 
+	t.Run("namespace exists but missing labels", func(t *testing.T) {
+		// Setup: namespace exists BUT labels check fails
+		mockK8sClient.EXPECT().CheckNamespaceExists(installer.namespace).Return(true, nil)
+		mockK8sClient.EXPECT().CheckNamespaceLabels(installer.namespace, mock.Anything).Return(false)
+
+		// Maybe we expect it to patch the labels?
+		mockK8sClient.EXPECT().PatchNamespaceLabels(installer.namespace, mock.Anything).Return(nil)
+
+		// When we call the function, it should handle the missing labels
+		err := installer.createOrPatchTridentInstallationNamespace()
+		assert.NoError(t, err)
+	})
+
 	t.Run("failure creating RBAC objects", func(t *testing.T) {
 		// Mock setInstallationParams to succeed
 		mockK8sClient.EXPECT().ServerVersion().Return(&version.Version{}).AnyTimes()
@@ -3210,6 +3223,32 @@ func TestCreateOrPatchTridentInstallationNamespace(t *testing.T) {
 
 		assert.Error(t, err, "expected error when creating namespace fails")
 		assert.Contains(t, err.Error(), "failed to create Trident installation namespace")
+	})
+
+	t.Run("failure checking if the namespace has labels", func(t *testing.T) {
+		// Mock CheckNamespaceExists to return true (namespace exists)
+		mockK8sClient.EXPECT().CheckNamespaceExists(installer.namespace).Return(true, nil)
+
+		// Mock GetNamespace to return namespace WITHOUT the required labels
+		mockK8sClient.EXPECT().GetNamespace(installer.namespace).Return(
+			&corev1.Namespace{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:   installer.namespace,
+					Labels: map[string]string{}, // Empty labels
+				},
+			},
+			nil,
+		)
+
+		// Mock CheckNamespaceLabels to return false (labels missing)
+		mockK8sClient.EXPECT().CheckNamespaceLabels(
+			installer.namespace,
+			map[string]string{"kubernetes.io/metadata.name": installer.namespace},
+		).Return(false)
+
+		err := installer.createOrPatchTridentInstallationNamespace()
+		assert.Error(t, err, "expected error when checking namespace labels fails")
+		assert.Contains(t, err.Error(), "Trident installation namespace does not have expected labels")
 	})
 
 	t.Run("failure patching namespace labels", func(t *testing.T) {
