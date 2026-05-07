@@ -199,6 +199,8 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM, driverName str
 	transport = drivers.NewLimitedRetryTransport(
 		drivers.NewSemaphore(config.ManagementLIF, drivers.ONTAPRequestLimit), transport, ContextRequestTargetONTAP,
 	)
+	// Stamp the X-Dot-Client-App header on every request so ONTAP can track per-app usage.
+	transport = NewClientAppTransport(transport, ClientAppHeaderValue())
 	result.httpClient = &http.Client{
 		Transport: transport,
 	}
@@ -215,6 +217,10 @@ func NewRestClient(ctx context.Context, config ClientConfig, SVM, driverName str
 		}
 		rClient.SetLogger(apiLogger)
 		rClient.SetDebug(config.DebugTraceFlags["api"])
+		// Also install our transport on the go-openapi runtime so the header is
+		// applied to any REST call path that does not explicitly set
+		// params.HTTPClient on the generated operation params.
+		rClient.Transport = transport
 	}
 
 	return result, nil
